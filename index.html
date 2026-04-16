@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campos HR &mdash; Panel de evaluaciones</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-brand">
+    <span class="topnav-brand-name">Campos HR</span>
+    <span class="topnav-brand-sub">Consulting Services</span>
+  </a>
+  <div class="topnav-user">
+    <span>Lic. Lorena Campos</span>
+    <div class="topnav-avatar">LC</div>
+  </div>
+</nav>
+
+<div class="container" style="padding-top: 32px;">
+
+  <div class="page-header">
+    <div class="page-header-title">Panel de evaluaciones</div>
+    <div class="page-header-sub">Todos tus clientes y evaluaciones en un solo lugar.</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Clientes activos</div>
+      <div class="stat-value">3</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Evaluaciones totales</div>
+      <div class="stat-value">7</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Este mes</div>
+      <div class="stat-value">2</div>
+      <div class="stat-hint">Marzo 2026</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pendientes de entrega</div>
+      <div class="stat-value">1</div>
+    </div>
+  </div>
+
+  <div class="page-header" style="margin-bottom: 20px;">
+    <div class="page-header-title" style="font-size: 20px;">Clientes</div>
+  </div>
+
+  <div class="client-grid">
+
+    <a href="federada.html" class="client-card">
+      <div class="client-card-name">Federada Salud</div>
+      <div class="client-card-meta">Obra social. Rosario, Santa Fe.<br>Contacto: RRHH corporativo.</div>
+      <div class="client-card-footer">
+        <div>
+          <div class="client-card-count">3</div>
+          <div class="client-card-count-label">evaluaciones</div>
+        </div>
+        <span class="link-arrow">Ver &rarr;</span>
+      </div>
+    </a>
+
+    <a href="#" class="client-card">
+      <div class="client-card-name">Grupo Sancor</div>
+      <div class="client-card-meta">Seguros y servicios financieros.<br>Sunchales, Santa Fe.</div>
+      <div class="client-card-footer">
+        <div>
+          <div class="client-card-count">2</div>
+          <div class="client-card-count-label">evaluaciones</div>
+        </div>
+        <span class="link-arrow">Ver &rarr;</span>
+      </div>
+    </a>
+
+    <a href="#" class="client-card">
+      <div class="client-card-name">Laboratorio Eriochem</div>
+      <div class="client-card-meta">Industria farmac&eacute;utica.<br>Rosario, Santa Fe.</div>
+      <div class="client-card-footer">
+        <div>
+          <div class="client-card-count">2</div>
+          <div class="client-card-count-label">evaluaciones</div>
+        </div>
+        <span class="link-arrow">Ver &rarr;</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="data-table-wrap">
+    <div class="data-table-header">
+      <div class="data-table-title">&Uacute;ltimas evaluaciones</div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Candidato</th>
+          <th>Cliente</th>
+          <th>Puesto</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sair Rodr&iacute;guez del Portal</td>
+          <td>Federada Salud</td>
+          <td>Analista de transformaci&oacute;n digital</td>
+          <td>Mar 2026</td>
+          <td><span class="badge badge-amber"><span class="badge-dot"></span>Apto c/ obs.</span></td>
+          <td><a href="informes/sair-rodriguez.html" class="link-arrow">Ver informe &rarr;</a></td>
+        </tr>
+        <tr>
+          <td>Mart&iacute;n Gonz&aacute;lez</td>
+          <td>Federada Salud</td>
+          <td>Coordinador de sistemas</td>
+          <td>Feb 2026</td>
+          <td><span class="badge badge-green"><span class="badge-dot"></span>Apto</span></td>
+          <td><span class="link-arrow" style="color: var(--slate-light);">Pr&oacute;ximamente</span></td>
+        </tr>
+        <tr>
+          <td>Luc&iacute;a Fern&aacute;ndez</td>
+          <td>Grupo Sancor</td>
+          <td>Analista de riesgos</td>
+          <td>Feb 2026</td>
+          <td><span class="badge badge-green"><span class="badge-dot"></span>Apto</span></td>
+          <td><span class="link-arrow" style="color: var(--slate-light);">Pr&oacute;ximamente</span></td>
+        </tr>
+        <tr>
+          <td>Carlos Medina</td>
+          <td>Federada Salud</td>
+          <td>Jefe de operaciones</td>
+          <td>Ene 2026</td>
+          <td><span class="badge badge-red"><span class="badge-dot"></span>No apto</span></td>
+          <td><span class="link-arrow" style="color: var(--slate-light);">Pr&oacute;ximamente</span></td>
+        </tr>
+        <tr>
+          <td>Ana Ruiz</td>
+          <td>Lab. Eriochem</td>
+          <td>Responsable de calidad</td>
+          <td>Ene 2026</td>
+          <td><span class="badge badge-amber"><span class="badge-dot"></span>Apto c/ obs.</span></td>
+          <td><span class="link-arrow" style="color: var(--slate-light);">Pr&oacute;ximamente</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+</body>
+</html>
