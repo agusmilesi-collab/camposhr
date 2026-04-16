@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluación Psicotécnica — Sair Rodríguez del Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #2C3E6B;
+  --navy-deep: #1B2A4A;
+  --navy-light: #4A6FA5;
+  --blue-soft: #7BA1CC;
+  --blue-pale: #C5D8EC;
+  --blue-wash: #EDF2F8;
+  --blue-ghost: #F6F9FC;
+  --slate: #64748B;
+  --slate-light: #94A3B8;
+  --ink: #0F172A;
+  --ink-soft: #334155;
+  --white: #FFFFFF;
+  --green: #059669;
+  --green-bg: #ECFDF5;
+  --green-dark: #065F46;
+  --amber: #D97706;
+  --amber-bg: #FFFBEB;
+  --amber-dark: #92400E;
+  --amber-border: #FCD34D;
+  --red: #DC2626;
+  --red-bg: #FEF2F2;
+  --border: #E2E8F0;
+  --border-light: #F1F5F9;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--blue-ghost);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.02em;
+}
+.brand-sub {
+  font-size: 12px;
+  color: var(--slate-light);
+  letter-spacing: 0.04em;
+}
+.header-meta {
+  text-align: right;
+  font-size: 13px;
+  color: var(--slate);
+  line-height: 1.6;
+}
+
+.candidate-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 20px;
+}
+.candidate-name {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--navy-deep);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+.candidate-details {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--slate-light);
+}
+.detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.verdict-card {
+  background: var(--amber-bg);
+  border: 1.5px solid var(--amber-border);
+  border-radius: var(--radius);
+  padding: 24px 32px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.verdict-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--amber);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.verdict-icon svg { width: 24px; height: 24px; }
+.verdict-text {
+  flex: 1;
+}
+.verdict-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--amber-dark);
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
+}
+.verdict-desc {
+  font-size: 14px;
+  color: var(--amber-dark);
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+.section {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 20px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.section-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy-light);
+  background: var(--blue-wash);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.section-title {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--navy-deep);
+}
+
+.gauges {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 8px 12px;
+  background: var(--blue-ghost);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+.gauge svg { margin-bottom: 8px; }
+.gauge-pct {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.gauge-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--navy);
+  text-align: center;
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+.gauge-desc {
+  font-size: 10px;
+  color: var(--slate);
+  text-align: center;
+  line-height: 1.4;
+}
+.gauge-ref {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--slate-light);
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+.gauge-ref span { font-weight: 600; }
+
+.comp-group {
+  margin-bottom: 20px;
+}
+.comp-group:last-child { margin-bottom: 0; }
+.comp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.comp-tag.destacado { background: var(--green-bg); color: var(--green-dark); }
+.comp-tag.esperado { background: var(--blue-wash); color: var(--navy); }
+.comp-tag.desarrollo { background: var(--red-bg); color: var(--red); }
+.comp-tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.comp-tag.destacado .comp-tag-dot { background: var(--green); }
+.comp-tag.esperado .comp-tag-dot { background: var(--navy-light); }
+.comp-tag.desarrollo .comp-tag-dot { background: var(--red); }
+
+.comp-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.comp-item {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.65;
+  padding-left: 16px;
+  position: relative;
+}
+.comp-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--blue-pale);
+}
+
+.reco-phases {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.reco-phase {
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+}
+.reco-phase.p1 { background: var(--green-bg); }
+.reco-phase.p2 { background: var(--amber-bg); }
+.reco-phase-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.reco-phase.p1 .reco-phase-title { color: var(--green-dark); }
+.reco-phase.p2 .reco-phase-title { color: var(--amber-dark); }
+.reco-phase-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.reco-item {
+  font-size: 13px;
+  line-height: 1.6;
+  padding-left: 14px;
+  position: relative;
+}
+.reco-phase.p1 .reco-item { color: var(--green-dark); }
+.reco-phase.p2 .reco-item { color: var(--amber-dark); }
+.reco-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+.reco-phase.p1 .reco-item::before { background: var(--green); }
+.reco-phase.p2 .reco-item::before { background: var(--amber); }
+
+.benz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.benz-card {
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: var(--blue-ghost);
+}
+.benz-card.dominant {
+  border-color: var(--navy-light);
+  background: var(--blue-wash);
+}
+.benz-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.benz-card-desc {
+  font-size: 12px;
+  color: var(--slate);
+  line-height: 1.5;
+}
+.benz-dominant-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--navy-light);
+  background: var(--white);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+}
+.stress-bar {
+  margin-top: 16px;
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  background: var(--red-bg);
+  border-left: 3px solid var(--red);
+}
+.stress-bar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--red);
+  margin-bottom: 4px;
+}
+.stress-bar-desc {
+  font-size: 12px;
+  color: #991B1B;
+  line-height: 1.5;
+}
+
+.footer {
+  text-align: center;
+  padding: 24px 0;
+  font-size: 12px;
+  color: var(--slate-light);
+  line-height: 1.7;
+}
+.footer-name {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.footer-divider {
+  width: 40px;
+  height: 2px;
+  background: var(--blue-pale);
+  margin: 16px auto;
+  border-radius: 1px;
+}
+
+@media print {
+  body { background: white; }
+  .page { padding: 16px; max-width: 100%; }
+  .section, .candidate-card, .verdict-card { break-inside: avoid; }
+}
+@media (max-width: 640px) {
+  .gauges { grid-template-columns: repeat(3, 1fr); }
+  .benz-grid { grid-template-columns: 1fr; }
+  .candidate-details { gap: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-name">Campos HR</div>
+      <div class="brand-sub">Consulting Services</div>
+    </div>
+    <div class="header-meta">
+      Evaluaci&oacute;n Psicot&eacute;cnica<br>
+      Marzo 2026
+    </div>
+  </div>
+
+  <div class="candidate-card">
+    <div class="candidate-name">Sair Rodr&iacute;guez del Portal</div>
+    <div class="candidate-details">
+      <div class="detail">
+        <span class="detail-label">Edad</span>
+        <span class="detail-value">32 a&ntilde;os</span>
+      </div>
+      <div class="detail">
+        <span class="detail-label">Estudios</span>
+        <span class="detail-value">Ingenier&iacute;a Industrial. Doctorado en Ingenier&iacute;a.</span>
+      </div>
+      <div class="detail">
+        <span class="detail-label">Rol aspirado</span>
+        <span class="detail-value">Analista de transformaci&oacute;n digital</span>
+      </div>
+      <div class="detail">
+        <span class="detail-label">Empresa</span>
+        <span class="detail-value">Federada Salud</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict-card">
+    <div class="verdict-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 9v4"/>
+        <path d="M12 17h.01"/>
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+    </div>
+    <div class="verdict-text">
+      <div class="verdict-title">Apto con observaciones</div>
+      <div class="verdict-desc">Se recomienda su incorporaci&oacute;n siempre que el jefe directo pueda brindar acompa&ntilde;amiento cercano durante los primeros 90 d&iacute;as.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: flex-start; gap: 14px; padding: 16px 20px; margin-bottom: 20px; background: var(--blue-wash); border-radius: var(--radius-sm);">
+    <div style="font-size: 24px; color: var(--navy-light); line-height: 1; flex-shrink: 0; font-family: 'Fraunces', serif;">&ldquo;</div>
+    <div>
+      <div style="font-family: 'Fraunces', serif; font-size: 15px; color: var(--navy-deep); font-style: italic; line-height: 1.5; margin-bottom: 4px;">Inc&oacute;moda &mdash; y segura de s&iacute; misma</div>
+      <div style="font-size: 12px; color: var(--slate); line-height: 1.55;">As&iacute; se describe Sair ante la pregunta por su estado emocional. Conf&iacute;a en su capacidad intelectual pero experimenta malestar por la sobrecarga y la autoexigencia.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div class="section-title">Competencias evaluadas</div>
+    </div>
+    <div class="gauges">
+      <div class="gauge">
+        <svg width="100" height="64" viewBox="0 0 100 64"><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#E2E8F0" stroke-width="8" stroke-linecap="round"/><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" stroke-dasharray="71.6 47.8"/></svg>
+        <div class="gauge-pct" style="color:#D97706">60%</div>
+        <div class="gauge-label">Habilidad<br>cognitiva</div>
+        <div class="gauge-desc">Estilo de aprendizaje:<br>capacidad de l&oacute;gica abstracta<br>vs. pensamiento concreto<br>y pr&aacute;ctico.</div>
+      </div>
+      <div class="gauge">
+        <svg width="100" height="64" viewBox="0 0 100 64"><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#E2E8F0" stroke-width="8" stroke-linecap="round"/><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#DC2626" stroke-width="8" stroke-linecap="round" stroke-dasharray="47.8 71.6"/></svg>
+        <div class="gauge-pct" style="color:#DC2626">40%</div>
+        <div class="gauge-label">Autogesti&oacute;n</div>
+        <div class="gauge-desc">Coordinaci&oacute;n de tareas en<br>funci&oacute;n del tiempo. Identificar<br>prioridades. Gesti&oacute;n del<br>cambio.</div>
+      </div>
+      <div class="gauge">
+        <svg width="100" height="64" viewBox="0 0 100 64"><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#E2E8F0" stroke-width="8" stroke-linecap="round"/><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#DC2626" stroke-width="8" stroke-linecap="round" stroke-dasharray="47.8 71.6"/></svg>
+        <div class="gauge-pct" style="color:#DC2626">40%</div>
+        <div class="gauge-label">Control<br>emocional</div>
+        <div class="gauge-desc">Tolerancia a la presi&oacute;n.<br>Modulaci&oacute;n de las emociones<br>en la resoluci&oacute;n de<br>conflictos.</div>
+      </div>
+      <div class="gauge">
+        <svg width="100" height="64" viewBox="0 0 100 64"><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#E2E8F0" stroke-width="8" stroke-linecap="round"/><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" stroke-dasharray="59.7 59.7"/></svg>
+        <div class="gauge-pct" style="color:#D97706">50%</div>
+        <div class="gauge-label">Habilidad<br>interpersonal</div>
+        <div class="gauge-desc">Negociaci&oacute;n.<br>Orientaci&oacute;n al cliente.<br>Capacidad de comunicaci&oacute;n.<br>Empat&iacute;a.</div>
+      </div>
+      <div class="gauge">
+        <svg width="100" height="64" viewBox="0 0 100 64"><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#E2E8F0" stroke-width="8" stroke-linecap="round"/><path d="M 12 56 A 38 38 0 0 1 88 56" fill="none" stroke="#DC2626" stroke-width="8" stroke-linecap="round" stroke-dasharray="47.8 71.6"/></svg>
+        <div class="gauge-pct" style="color:#DC2626">40%</div>
+        <div class="gauge-label">Proactividad</div>
+        <div class="gauge-desc">Orientaci&oacute;n al resultado.<br>Iniciativa. Rol activo en los<br>grupos. Gesti&oacute;n de la<br>innovaci&oacute;n.</div>
+      </div>
+    </div>
+    <div class="gauge-ref">
+      <span>Alto</span> (80&ndash;100%)&ensp;&middot;&ensp;<span>Adecuado</span> (65&ndash;79%)&ensp;&middot;&ensp;<span>Medio</span> (50&ndash;64%)&ensp;&middot;&ensp;<span>Bajo</span> (&lt;50%)
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div class="section-title">An&aacute;lisis cualitativo</div>
+    </div>
+
+    <div class="comp-group">
+      <div class="comp-tag destacado"><span class="comp-tag-dot"></span> Desarrollo destacado</div>
+      <div class="comp-items">
+        <div class="comp-item">Elevada motivaci&oacute;n a procesar informaci&oacute;n, investigar y buscar datos.</div>
+        <div class="comp-item">Intenta abarcarlo todo, consigue tener visi&oacute;n global de las situaciones.</div>
+      </div>
+    </div>
+
+    <div class="comp-group">
+      <div class="comp-tag esperado"><span class="comp-tag-dot"></span> Desarrollo esperado</div>
+      <div class="comp-items">
+        <div class="comp-item">Percibe la informaci&oacute;n como la mayor&iacute;a de las personas, logrando adecuada interpretaci&oacute;n y comprensi&oacute;n. La calidad de sus ideas es correcta.</div>
+        <div class="comp-item">Prefiere no verse implicada en situaciones emocionalmente cargadas; esta tendencia neutraliza los problemas de descontrol, si los hubiera.</div>
+        <div class="comp-item">Contactos interpersonales correctos, tal vez superficialmente, con dificultad en empat&iacute;a. Capacidad de l&oacute;gica abstracta dentro de lo esperado.</div>
+      </div>
+    </div>
+
+    <div class="comp-group">
+      <div class="comp-tag desarrollo"><span class="comp-tag-dot"></span> Necesidad de desarrollo</div>
+      <div style="font-size: 13px; color: var(--red); font-weight: 600; margin-bottom: 12px; padding: 10px 14px; background: var(--red-bg); border-radius: var(--radius-sm); line-height: 1.5;">Los siguientes indicadores representan vulnerabilidades significativas. Son manejables con acompa&ntilde;amiento adecuado, pero sin &eacute;l pueden comprometer seriamente el desempe&ntilde;o.</div>
+      <div class="comp-items">
+        <div class="comp-item">Intenta captar todo sin discriminar entre informaci&oacute;n relevante y accesoria. Sus pensamientos se sobrecargan, lo que merma su eficacia.</div>
+        <div class="comp-item">Tiende a comprometerse con asignaciones sin revisar si cuenta con los recursos. Le cuesta decir que no o poner l&iacute;mites.</div>
+        <div class="comp-item">En situaciones donde se vea sobrepasada puede activarse comportamiento impulsivo, resolviendo sin ser reflexiva.</div>
+        <div class="comp-item">Necesidad de satisfacer expectativas ajenas. Autoevaluaci&oacute;n severa y negativa, pocas veces conforme con su desempe&ntilde;o.</div>
+        <div class="comp-item">Marcada tendencia a ver las cosas desde su punto de vista. Si el entorno la presiona a ajustarse, el riesgo de conflicto se incrementa.</div>
+        <div class="comp-item">Estilo de decisi&oacute;n ambivalente: a veces l&oacute;gico, a veces emocional. Puede generar demora e imprevisibilidad.</div>
+        <div class="comp-item">Puede expresar afectos sin filtros. Mayor necesidad de cercan&iacute;a pero logra apenas contactos significativos. No ser&aacute; emp&aacute;tica.</div>
+        <div class="comp-item">Sobrecarga habitual instalada en su funcionamiento, exacerbada por factores situacionales, que genera potencial de impulsividad ante situaciones complejas.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <div class="section-title">Recomendaciones</div>
+    </div>
+    <div class="reco-phases">
+      <div class="reco-phase p1">
+        <div class="reco-phase-title">Desde el ingreso</div>
+        <div class="reco-phase-items">
+          <div class="reco-item">Ayudarla a priorizar para que no se vea afectada su eficacia. Cuando tenga que resolver algo r&aacute;pido, guiarla para que lo haga sin impulsividad.</div>
+          <div class="reco-item">Marcar los detalles necesarios a los cuales debe prestar atenci&oacute;n, ayudarla generando checklists o procedimientos acordes.</div>
+          <div class="reco-item">Antes de asignarle una nueva tarea, chequear si realmente cuenta con los recursos para responder en tiempo y forma.</div>
+          <div class="reco-item">Clarificar expectativas reales y criterios de desempe&ntilde;o para que no haga de m&aacute;s sin necesidad.</div>
+          <div class="reco-item">Marcarle qu&eacute; cosas se hacen de una manera determinada y d&oacute;nde puede poner su impronta.</div>
+        </div>
+      </div>
+      <div class="reco-phase p2">
+        <div class="reco-phase-title">Acompa&ntilde;amiento continuo</div>
+        <div class="reco-phase-items">
+          <div class="reco-item">Pedirle que comparta su razonamiento antes de avanzar con una decisi&oacute;n para chequear criterios.</div>
+          <div class="reco-item">Adoptar un estilo cercano de liderazgo para brindarle contenci&oacute;n. Evitar la elevada exigencia externa porque ya se exige internamente.</div>
+          <div class="reco-item">Mostrarle los filtros esperados y la informaci&oacute;n que debe mantenerse confidencial.</div>
+          <div class="reco-item">En instancias de negociaci&oacute;n, mostrarle datos para ayudarla a considerar una visi&oacute;n distinta a la suya.</div>
+          <div class="reco-item">Reconocer expl&iacute;citamente sus resultados. Proveer acompa&ntilde;amiento ante cambios o situaciones tensionantes.</div>
+          <div class="reco-item">Puede preferir trabajar de manera independiente y con pocos contactos interpersonales.</div>
+          <div class="reco-item">Ayudarla a detectar para qu&eacute; tipo de tareas necesita espacios cerrados sin est&iacute;mulos y proveerle una oficina acorde. Para algunas tareas logra buena concentraci&oacute;n en ambientes abiertos, pero para otras requiere un espacio sin distracciones.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <div class="section-title">Estilo de pensamiento &mdash; Benziger (BTSA)</div>
+    </div>
+
+    <div style="background: var(--navy-deep); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 14px;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--navy-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--blue-pale); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Dominancia natural</div>
+          <div style="font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: var(--white);">Basal izquierdo</div>
+        </div>
+      </div>
+      <div style="font-size: 14px; color: var(--blue-pale); line-height: 1.7; margin-bottom: 12px;">El pensamiento de Sair es <span style="color: white; font-weight: 600;">ordenado, leal, cumplidor y confiable</span>. Se basa en procedimientos y se distingue por la habilidad de repetir una acci&oacute;n de manera consistente y precisa a lo largo del tiempo. Aprecia los valores tradicionales y prefiere abordar las tareas y resolver los problemas paso a paso.</div>
+      <div style="font-size: 14px; color: var(--blue-pale); line-height: 1.7;">Tareas como <span style="color: white; font-weight: 600;">controles, monitoreo y procedimentales</span> le ser&aacute;n naturales de ejecutar, sin gasto de energ&iacute;a cerebral adicional, sin agotarse. Construye, mantiene y garantiza cimientos s&oacute;lidos y ordenados.</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+      <div style="background: var(--green-bg); border-radius: var(--radius-sm); padding: 14px 16px;">
+        <div style="font-size: 11px; font-weight: 700; color: var(--green-dark); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">Perfil coherente</div>
+        <div style="font-size: 13px; color: var(--green-dark); line-height: 1.55;">El desarrollo en el hemisferio izquierdo es coherente tanto en su adolescencia como en la vida adulta. No exige desarrollar cuadrantes no naturales a sus preferencias. <strong>Este es un perfil estable, no es un momento.</strong></div>
+      </div>
+      <div style="background: var(--amber-bg); border-radius: var(--radius-sm); padding: 14px 16px;">
+        <div style="font-size: 11px; font-weight: 700; color: var(--amber-dark); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">Lo que m&aacute;s la cansa</div>
+        <div style="font-size: 13px; color: var(--amber-dark); line-height: 1.55;">Las tareas asociadas al cuadrante Frontal Derecho: <strong>buscar soluciones creativas, arriesgar, innovar, experimentar</strong>. Estas actividades le demandan mucha energ&iacute;a y la agotan r&aacute;pido.</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-light);">
+      <div style="font-size: 11px; font-weight: 600; color: var(--slate-light); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px;">Referencia: los 4 cuadrantes del modelo Benziger</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="benz-card">
+          <div class="benz-card-title">Frontal izquierdo</div>
+          <div class="benz-card-desc">An&aacute;lisis financiero, estructural y matem&aacute;tico. Evaluar variables sin emoci&oacute;n. Tomar decisiones l&oacute;gicas. Asignar prioridades.</div>
+        </div>
+        <div class="benz-card">
+          <div class="benz-card-title">Frontal derecho</div>
+          <div class="benz-card-desc">Imaginativos, metaf&oacute;ricos, visionarios, creativos. Tomadores de riesgo. Se centran en inventar y experimentar.</div>
+        </div>
+        <div class="benz-card">
+          <div class="benz-card-title">Basal izquierdo</div>
+          <div class="benz-card-desc">Monitoreo y control. Poner atenci&oacute;n a los detalles. Seguimiento de procedimientos. Mantener planificaciones y procesos administrativos.</div>
+        </div>
+        <div class="benz-card">
+          <div class="benz-card-title">Basal derecho</div>
+          <div class="benz-card-desc">Sensibles, promueven armon&iacute;a en los grupos. Se conectan con el entorno para ayudar y alentar. Emp&aacute;ticos.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--red-bg); border: 1.5px solid #FCA5A5; border-radius: var(--radius); padding: 20px 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--red); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div style="font-size: 16px; font-weight: 700; color: #991B1B;">Nivel de estr&eacute;s: elevado</div>
+      </div>
+      <div style="font-size: 14px; color: #991B1B; line-height: 1.65; margin-bottom: 10px;">Se registran herramientas insuficientes para tolerar las presiones elevadas. Se recomienda no dejarla sola para ayudarla en su control emocional.</div>
+      <div style="font-size: 13px; color: #B91C1C; line-height: 1.6;">Para realizar algunas tareas logra una concentraci&oacute;n de buena calidad en ambientes con est&iacute;mulos, sin embargo para otras asignaciones <strong>requiere de un espacio sin est&iacute;mulos en el entorno</strong> para concentrarse de manera efectiva. Se recomienda ayudarla a detectar para qu&eacute; tipo de tareas necesita espacios cerrados y proveerle una oficina acorde.</div>
+    </div>
+  </div>
+
+  <div class="section" style="padding: 24px 32px;">
+    <div style="font-size: 12px; color: var(--slate); line-height: 1.6;">
+      <strong style="color: var(--ink-soft);">T&eacute;cnicas utilizadas:</strong> Entrevista por competencias, Test de Bender, Test gr&aacute;fico (dos personas trabajando), Raven Serie Avanzada II, Test de Rorschach, Cuestionario Benziger (licencia original).
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-divider"></div>
+    <div class="footer-name">Lorena Campos</div>
+    Lic. en Psicolog&iacute;a &mdash; Mat.: 5217<br>
+    lorecamposhr@gmail.com
+    <div style="margin-top: 16px; font-size: 11px; color: var(--slate-light); max-width: 500px; margin-left: auto; margin-right: auto;">
+      Los resultados contenidos en este informe son confidenciales. La informaci&oacute;n se refiere al objetivo espec&iacute;fico determinado con el cliente y puede contar con validez de hasta 1 a&ntilde;o calendario.
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
