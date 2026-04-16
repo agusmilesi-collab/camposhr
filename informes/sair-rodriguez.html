@@ -402,6 +402,7 @@ body {
   body { background: white; }
   .page { padding: 16px; max-width: 100%; }
   .section, .candidate-card, .verdict-card { break-inside: avoid; }
+  .no-print { display: none; }
 }
 @media (max-width: 640px) {
   .gauges { grid-template-columns: repeat(3, 1fr); }
@@ -418,9 +419,15 @@ body {
       <div class="brand-name">Campos HR</div>
       <div class="brand-sub">Consulting Services</div>
     </div>
-    <div class="header-meta">
-      Evaluaci&oacute;n Psicot&eacute;cnica<br>
-      Marzo 2026
+    <div style="display: flex; align-items: flex-start; gap: 16px;">
+      <div class="header-meta">
+        Evaluaci&oacute;n Psicot&eacute;cnica<br>
+        Marzo 2026
+      </div>
+      <button class="no-print" onclick="window.print()" style="background: #2C3E6B; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; white-space: nowrap;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar PDF
+      </button>
     </div>
   </div>
 
