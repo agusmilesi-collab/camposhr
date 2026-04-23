@@ -68,6 +68,24 @@ a { text-decoration: none; color: inherit; }
   color: var(--blue-pale);
   letter-spacing: 0.03em;
 }
+.topnav-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.topnav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.topnav-cta:hover { background: rgba(255,255,255,0.16); }
 .topnav-user {
   display: flex;
   align-items: center;
