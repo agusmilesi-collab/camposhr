@@ -168,14 +168,13 @@
   <script>
     // ---------------- Config ----------------
     const TOTAL = 12;
-    const STROKE_TTL = 1000;  // ms visibles al 100% luego de soltar
-    const FADE_MS = 300;      // ms de fade out
+    const LIFE_MS = 3000;     // cada punto del trazo se desvanece linealmente en este tiempo desde su creacion
     const STROKE_WIDTH = 6;
     const STROKE_COLOR = '#000000';
 
     // ---------------- Estado ----------------
     let currentPlate = 1;
-    let strokes = [];       // { points: [{x,y}], endTime|null }
+    let strokes = [];       // { points: [{x,y,t}] }
     let currentStroke = null;
     let drawing = false;
 
@@ -236,21 +235,18 @@
       if (isOverUI(e.target)) return;
       if (e.button !== 0) return;
       drawing = true;
-      currentStroke = { points: [{ x: e.clientX, y: e.clientY }], endTime: null };
+      currentStroke = { points: [{ x: e.clientX, y: e.clientY, t: performance.now() }] };
       strokes.push(currentStroke);
     });
 
     document.addEventListener('mousemove', (e) => {
       movePointer(e.clientX, e.clientY);
       if (drawing && currentStroke) {
-        currentStroke.points.push({ x: e.clientX, y: e.clientY });
+        currentStroke.points.push({ x: e.clientX, y: e.clientY, t: performance.now() });
       }
     }, { passive: true });
 
     function finishStroke() {
-      if (currentStroke) {
-        currentStroke.endTime = performance.now() + STROKE_TTL;
-      }
       currentStroke = null;
       drawing = false;
     }
@@ -266,7 +262,11 @@
       const now = performance.now();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      strokes = strokes.filter(s => !(s.endTime && now > s.endTime + FADE_MS));
+      // Limpiar puntos ya invisibles y strokes vacios
+      for (const s of strokes) {
+        s.points = s.points.filter(p => (now - p.t) < LIFE_MS);
+      }
+      strokes = strokes.filter(s => s.points.length > 0);
 
       ctx.lineWidth = STROKE_WIDTH;
       ctx.lineCap = 'round';
@@ -275,17 +275,19 @@
 
       for (const s of strokes) {
         if (s.points.length < 2) continue;
-        let alpha = 1;
-        if (s.endTime && now > s.endTime) {
-          alpha = Math.max(0, 1 - (now - s.endTime) / FADE_MS);
-        }
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.moveTo(s.points[0].x, s.points[0].y);
         for (let i = 1; i < s.points.length; i++) {
-          ctx.lineTo(s.points[i].x, s.points[i].y);
+          const p1 = s.points[i - 1];
+          const p2 = s.points[i];
+          const a1 = 1 - (now - p1.t) / LIFE_MS;
+          const a2 = 1 - (now - p2.t) / LIFE_MS;
+          const alpha = Math.max(0, (a1 + a2) / 2);
+          if (alpha <= 0) continue;
+          ctx.globalAlpha = alpha;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
         }
-        ctx.stroke();
       }
       ctx.globalAlpha = 1;
       requestAnimationFrame(render);
