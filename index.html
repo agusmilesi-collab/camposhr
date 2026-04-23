@@ -43,7 +43,7 @@
             Abrir test
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
           </a>
-          <button class="btn-icon" id="copyRorschach" aria-label="Copiar link para compartir" title="Copiar link para compartir">
+          <button class="btn-icon copy-link" data-copy-path="/test-rorschach/" aria-label="Copiar link para compartir" title="Copiar link para compartir">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
@@ -81,11 +81,19 @@
             </svg>
           </div>
           <h2>Test de Zulliger</h2>
-          <span class="tag">Próximamente</span>
         </div>
-        <p>Test proyectivo abreviado (3 láminas). Variante rápida para evaluaciones grupales o entrevistas de tiempo limitado.</p>
+        <p>Test proyectivo abreviado con 3 láminas. Variante rápida para evaluaciones grupales o entrevistas de tiempo limitado.</p>
         <div class="tool-actions">
-          <a href="/test-zulliger/" class="btn btn-ghost">Vista previa</a>
+          <a href="/test-zulliger/" class="btn btn-primary">
+            Abrir test
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </a>
+          <button class="btn-icon copy-link" data-copy-path="/test-zulliger/" aria-label="Copiar link para compartir" title="Copiar link para compartir">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+          </button>
         </div>
       </article>
 
@@ -95,10 +103,15 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
-    const copyBtn = document.getElementById('copyRorschach');
-    const toast   = document.getElementById('toast');
+    const toast = document.getElementById('toast');
+    let toastTimer = null;
 
-    const rorschachUrl = window.location.origin + '/test-rorschach/';
+    function showToast(msg) {
+      toast.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
 
     async function copy(text) {
       try {
@@ -120,23 +133,18 @@
       }
     }
 
-    let toastTimer = null;
-    function showToast(msg) {
-      toast.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + msg;
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
-    }
-
-    copyBtn.addEventListener('click', async () => {
-      const ok = await copy(rorschachUrl);
-      if (ok) {
-        showToast('Link copiado');
-        copyBtn.classList.add('copied');
-        setTimeout(() => copyBtn.classList.remove('copied'), 1800);
-      } else {
-        showToast('No se pudo copiar');
-      }
+    document.querySelectorAll('.copy-link').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const url = window.location.origin + btn.dataset.copyPath;
+        const ok = await copy(url);
+        if (ok) {
+          showToast('Link copiado');
+          btn.classList.add('copied');
+          setTimeout(() => btn.classList.remove('copied'), 1800);
+        } else {
+          showToast('No se pudo copiar');
+        }
+      });
     });
   </script>
 </body>
