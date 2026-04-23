@@ -1,162 +1,143 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Campos HR &mdash; Panel de evaluaciones</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Herramientas — Campos HR</title>
+  <link rel="stylesheet" href="/theme.css" />
 </head>
 <body>
+  <div class="bg-gradient"></div>
 
-<nav class="topnav">
-  <a href="index.html" class="topnav-brand">
-    <span class="topnav-brand-name">Campos HR</span>
-    <span class="topnav-brand-sub">Consulting Services</span>
-  </a>
-  <div class="topnav-right">
-    <a href="/herramientas/" class="topnav-cta">
-      Herramientas
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-    </a>
-    <div class="topnav-user">
-      <span>Lic. Lorena Campos</span>
-      <div class="topnav-avatar">LC</div>
-    </div>
-  </div>
-</nav>
-
-<div class="container" style="padding-top: 32px;">
-
-  <div class="page-header">
-    <div class="page-header-title">Panel de evaluaciones</div>
-    <div class="page-header-sub">Todos tus clientes y evaluaciones en un solo lugar.</div>
-  </div>
-
-  <div class="stats">
-    <div class="stat-card">
-      <div class="stat-label">Clientes activos</div>
-      <div class="stat-value">3</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Evaluaciones totales</div>
-      <div class="stat-value">7</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Este mes</div>
-      <div class="stat-value">2</div>
-      <div class="stat-hint">Marzo 2026</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Pendientes de entrega</div>
-      <div class="stat-value">1</div>
-    </div>
-  </div>
-
-  <div class="page-header" style="margin-bottom: 20px;">
-    <div class="page-header-title" style="font-size: 20px;">Clientes</div>
-  </div>
-
-  <div class="client-grid">
-
-    <a href="federada.html" class="client-card">
-      <div class="client-card-name">Federada Salud</div>
-      <div class="client-card-meta">Obra social. Rosario, Santa Fe.<br>Contacto: RRHH corporativo.</div>
-      <div class="client-card-footer">
-        <div>
-          <div class="client-card-count">3</div>
-          <div class="client-card-count-label">evaluaciones</div>
-        </div>
-        <span class="link-arrow">Ver &rarr;</span>
+  <nav class="topbar">
+    <a href="/" class="logo" aria-label="Inicio Campos HR">
+      <div class="logo-mark">CH</div>
+      <div class="logo-text">
+        <span class="logo-name">Campos HR</span>
+        <span class="logo-sub">Consulting Services</span>
       </div>
     </a>
+  </nav>
 
-    <a href="#" class="client-card">
-      <div class="client-card-name">Grupo Sancor</div>
-      <div class="client-card-meta">Seguros y servicios financieros.<br>Sunchales, Santa Fe.</div>
-      <div class="client-card-footer">
-        <div>
-          <div class="client-card-count">2</div>
-          <div class="client-card-count-label">evaluaciones</div>
+  <main class="page">
+    <header class="hero">
+      <h1>Herramientas de evaluación</h1>
+      <p>Tests psicotécnicos e informes, en un solo lugar. Compartí el link con el entrevistado y administrá la sesión en tiempo real.</p>
+    </header>
+
+    <section class="tools-grid" aria-label="Herramientas disponibles">
+
+      <article class="tool-card featured">
+        <div class="tool-header">
+          <div class="tool-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3c-3 4-5 6-5 10a5 5 0 0 0 10 0c0-4-2-6-5-10z"/>
+              <path d="M8 14c0 2 1.5 3 4 3s4-1 4-3"/>
+            </svg>
+          </div>
+          <h2>Test de Rorschach</h2>
         </div>
-        <span class="link-arrow">Ver &rarr;</span>
-      </div>
-    </a>
-
-    <a href="#" class="client-card">
-      <div class="client-card-name">Laboratorio Eriochem</div>
-      <div class="client-card-meta">Industria farmac&eacute;utica.<br>Rosario, Santa Fe.</div>
-      <div class="client-card-footer">
-        <div>
-          <div class="client-card-count">2</div>
-          <div class="client-card-count-label">evaluaciones</div>
+        <p>12 láminas con puntero de señalización y pincel temporal. Administración remota vía Meet: compartí el link al entrevistado y vos ves sus gestos sobre la placa.</p>
+        <div class="tool-actions">
+          <a href="/test-rorschach/" class="btn btn-primary">
+            Abrir test
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </a>
+          <button class="btn-icon" id="copyRorschach" aria-label="Copiar link para compartir" title="Copiar link para compartir">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+          </button>
         </div>
-        <span class="link-arrow">Ver &rarr;</span>
-      </div>
-    </a>
+      </article>
 
-  </div>
+      <article class="tool-card">
+        <div class="tool-header">
+          <div class="tool-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6z"/>
+              <path d="M14 3v6h6"/>
+              <path d="M8 13h8"/>
+              <path d="M8 17h6"/>
+            </svg>
+          </div>
+          <h2>Informes</h2>
+        </div>
+        <p>Informes de evaluaciones completadas, listos para imprimir o exportar. Acceso directo desde el dashboard.</p>
+        <div class="tool-actions">
+          <a href="/informes/sair-rodriguez.html" class="btn btn-secondary">
+            Ver informes
+          </a>
+        </div>
+      </article>
 
-  <div class="data-table-wrap">
-    <div class="data-table-header">
-      <div class="data-table-title">&Uacute;ltimas evaluaciones</div>
-    </div>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Candidato</th>
-          <th>Cliente</th>
-          <th>Puesto</th>
-          <th>Fecha</th>
-          <th>Estado</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Sair Rodr&iacute;guez del Portal</td>
-          <td>Federada Salud</td>
-          <td>Analista de transformaci&oacute;n digital</td>
-          <td>Mar 2026</td>
-          <td><span class="badge badge-amber"><span class="badge-dot"></span>Apto c/ obs.</span></td>
-          <td><a href="informes/sair-rodriguez.html" class="link-arrow">Ver informe &rarr;</a></td>
-        </tr>
-        <tr>
-          <td>Mart&iacute;n Gonz&aacute;lez</td>
-          <td>Federada Salud</td>
-          <td>Coordinador de sistemas</td>
-          <td>Feb 2026</td>
-          <td><span class="badge badge-green"><span class="badge-dot"></span>Apto</span></td>
-          <td><span class="link-arrow" style="color: var(--slate-light);">Pr&oacute;ximamente</span></td>
-        </tr>
-        <tr>
-          <td>Luc&iacute;a Fern&aacute;ndez</td>
-          <td>Grupo Sancor</td>
-          <td>Analista de riesgos</td>
-          <td>Feb 2026</td>
-          <td><span class="badge badge-green"><span class="badge-dot"></span>Apto</span></td>
-          <td><span class="link-arrow" style="color: var(--slate-light);">Pr&oacute;ximamente</span></td>
-        </tr>
-        <tr>
-          <td>Carlos Medina</td>
-          <td>Federada Salud</td>
-          <td>Jefe de operaciones</td>
-          <td>Ene 2026</td>
-          <td><span class="badge badge-red"><span class="badge-dot"></span>No apto</span></td>
-          <td><span class="link-arrow" style="color: var(--slate-light);">Pr&oacute;ximamente</span></td>
-        </tr>
-        <tr>
-          <td>Ana Ruiz</td>
-          <td>Lab. Eriochem</td>
-          <td>Responsable de calidad</td>
-          <td>Ene 2026</td>
-          <td><span class="badge badge-amber"><span class="badge-dot"></span>Apto c/ obs.</span></td>
-          <td><span class="link-arrow" style="color: var(--slate-light);">Pr&oacute;ximamente</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+      <article class="tool-card">
+        <div class="tool-header">
+          <div class="tool-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 7v5l3 2"/>
+            </svg>
+          </div>
+          <h2>Test de Zulliger</h2>
+          <span class="tag">Próximamente</span>
+        </div>
+        <p>Test proyectivo abreviado (3 láminas). Variante rápida para evaluaciones grupales o entrevistas de tiempo limitado.</p>
+        <div class="tool-actions">
+          <a href="/test-zulliger/" class="btn btn-ghost">Vista previa</a>
+        </div>
+      </article>
 
-</div>
+    </section>
+  </main>
 
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const copyBtn = document.getElementById('copyRorschach');
+    const toast   = document.getElementById('toast');
+
+    const rorschachUrl = window.location.origin + '/test-rorschach/';
+
+    async function copy(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (_) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          return true;
+        } finally {
+          document.body.removeChild(ta);
+        }
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      toast.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    copyBtn.addEventListener('click', async () => {
+      const ok = await copy(rorschachUrl);
+      if (ok) {
+        showToast('Link copiado');
+        copyBtn.classList.add('copied');
+        setTimeout(() => copyBtn.classList.remove('copied'), 1800);
+      } else {
+        showToast('No se pudo copiar');
+      }
+    });
+  </script>
 </body>
 </html>
