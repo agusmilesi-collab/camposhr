@@ -87,15 +87,25 @@ export type DatosCliente = {
 
 export async function getDatosCliente(empresaId: string): Promise<DatosCliente | null> {
   // 1) La empresa y sus pedidos
-  const pe = new URLSearchParams({ returnFieldsByFieldId: 'true' });
+  // Se usa el endpoint de listado con RECORD_ID() (no el de registro unico):
+  // Airtable rechaza fields[] en la lectura de un registro individual, y esa
+  // lista blanca es la que garantiza que nunca se pidan campos sensibles.
+  const pe = new URLSearchParams({
+    returnFieldsByFieldId: 'true',
+    filterByFormula: orRecordIds([empresaId]),
+    pageSize: '1',
+  });
   Object.values(F_EMPRESA).forEach((f) => pe.append('fields[]', f));
 
-  let empresaRec;
+  let empresaRes;
   try {
-    empresaRec = await get(`${T_EMPRESAS}/${empresaId}`, pe);
+    empresaRes = await get(T_EMPRESAS, pe);
   } catch {
     return null;
   }
+
+  const empresaRec = (empresaRes.records ?? [])[0];
+  if (!empresaRec) return null;
 
   const ef = empresaRec.fields ?? {};
   const empresa: string = ef[F_EMPRESA.nombre] ?? 'Cliente';
