@@ -21,6 +21,10 @@ export default async function Informes() {
   return (
     <main className="wrap">
       <section className="head">
+        <a href="/" className="volver">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
+          Herramientas
+        </a>
         <div className="eyebrow">Accesos de clientes</div>
         <h1>Links de portal</h1>
         <p className="head-nota">
