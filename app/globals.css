@@ -480,4 +480,15 @@ body {
   .c-evaluadora:has(.dash) {
     display: none;
   }
+  /* Encabezado de búsqueda: en mobile el puesto va completo arriba y la
+     fecha/candidatos debajo, para que no se corte el título. */
+  .card-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .card-head h2 {
+    white-space: normal;
+    overflow: visible;
+  }
 }
