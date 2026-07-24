@@ -121,7 +121,7 @@
 </head>
 <body>
   <div class="stage">
-    <img id="plate" class="plate" src="img/1.png" alt="Placa 1" />
+    <img id="plate" class="plate" src="/test-rorschach/img/1.png" alt="Placa 1" />
   </div>
 
   <canvas id="drawCanvas"></canvas>
@@ -203,7 +203,7 @@
     function setPlate(n) {
       if (n < 1 || n > TOTAL || n === currentPlate) return;
       currentPlate = n;
-      plateImg.src = `img/${n}.png`;
+      plateImg.src = `/test-rorschach/img/${n}.png`;
       plateImg.alt = `Placa ${n}`;
       currentNumEl.textContent = n;
       prevBtn.disabled = (n === 1);
