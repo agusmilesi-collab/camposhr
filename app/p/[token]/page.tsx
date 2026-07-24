@@ -13,6 +13,16 @@ const ESTADOS: Record<string, { texto: string; clase: string }> = {
   'Seguimiento':     { texto: 'En seguimiento',            clase: 'violet' },
 };
 
+/** Orden del pipeline: agrupa los candidatos por etapa al mostrarlos. */
+const ORDEN: Record<string, number> = {
+  'Sin asignar': 0,
+  'Por citar': 1,
+  'Por entrevistar': 2,
+  'Por analizar': 3,
+  'Entregado': 4,
+  'Seguimiento': 5,
+};
+
 const TZ = 'America/Argentina/Buenos_Aires';
 const SOLO_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -115,53 +125,79 @@ export default async function Portal({ params }: { params: { token: string } }) 
             </div>
           )}
 
-          {busquedas.map((b: Busqueda) => (
-            <article className="card" key={b.id}>
-              <div className="card-head">
-                <div>
-                  <h2>{b.puesto}</h2>
-                  <div className="sub">
-                    {[b.area, b.seniority].filter(Boolean).join(' · ')}
-                    {b.fecha && (
-                      <>
-                        {(b.area || b.seniority) && ' — '}
-                        solicitada el <b>{fecha(b.fecha)}</b>
-                      </>
-                    )}
+          {busquedas.map((b: Busqueda) => {
+            const cands = [...b.candidatos].sort(
+              (x, y) =>
+                (ORDEN[x.estado] ?? 9) - (ORDEN[y.estado] ?? 9) ||
+                x.nombre.localeCompare(y.nombre)
+            );
+            const n = b.candidatos.length;
+            return (
+              <article className="card" key={b.id}>
+                <div className="card-head">
+                  <div className="card-head-main">
+                    <h2>{b.puesto}</h2>
+                    <div className="sub">
+                      {[b.area, b.seniority].filter(Boolean).join(' · ')}
+                      {b.fecha && (
+                        <>
+                          {(b.area || b.seniority) && ' · '}
+                          solicitada el <b>{fecha(b.fecha)}</b>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="card-head-count">
+                    {n} {n === 1 ? 'candidato' : 'candidatos'}
                   </div>
                 </div>
-              </div>
 
-              {b.candidatos.length === 0 ? (
-                <p className="empty">Sin candidatos asignados todavía.</p>
-              ) : (
-                b.candidatos.map((c) => {
-                  const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
-                  const fe = fecha(c.fechaEntrevista, true);
-                  const fen = fecha(c.fechaEntrega);
-                  return (
-                    <div className="cand" key={c.id}>
-                      <div className="cand-name">{c.nombre}</div>
-                      <span className={`chip ${e.clase}`}>{e.texto}</span>
-                      <div className="cand-dates">
-                        {fe && (
-                          <span>
-                            Entrevista <i>{fe}</i>
-                            {c.modalidad ? ` · ${c.modalidad}` : ''}
-                          </span>
-                        )}
-                        {fen && c.estado !== 'Entregado' && (
-                          <span>
-                            Entrega estimada <i>{fen}</i>
-                          </span>
-                        )}
-                      </div>
+                {cands.length === 0 ? (
+                  <p className="empty">Sin candidatos asignados todavía.</p>
+                ) : (
+                  <div className="tabla">
+                    <div className="tr th">
+                      <span>Candidato</span>
+                      <span>Estado</span>
+                      <span>Entrevista</span>
+                      <span>Entrega est.</span>
                     </div>
-                  );
-                })
-              )}
-            </article>
-          ))}
+                    {cands.map((c) => {
+                      const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
+                      const fe = fecha(c.fechaEntrevista, true);
+                      const fen = fecha(c.fechaEntrega);
+                      return (
+                        <div className="tr" key={c.id}>
+                          <span className="c-name">{c.nombre}</span>
+                          <span className="c-estado" data-label="Estado">
+                            <i className={`dot ${e.clase}`} />
+                            {e.texto}
+                          </span>
+                          <span className="c-fecha" data-label="Entrevista">
+                            {fe ? (
+                              <>
+                                {fe}
+                                {c.modalidad ? <em>· {c.modalidad}</em> : null}
+                              </>
+                            ) : (
+                              <span className="dash">—</span>
+                            )}
+                          </span>
+                          <span className="c-fecha" data-label="Entrega est.">
+                            {fen && c.estado !== 'Entregado' ? (
+                              fen
+                            ) : (
+                              <span className="dash">—</span>
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </section>
       </main>
 
