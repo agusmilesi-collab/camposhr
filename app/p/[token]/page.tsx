@@ -137,11 +137,6 @@ export default async function Portal({ params }: { params: { token: string } }) 
                 <div className="card-head">
                   <div className="card-head-main">
                     <h2>{b.puesto}</h2>
-                    {(b.area || b.seniority) && (
-                      <span className="sub">
-                        {[b.area, b.seniority].filter(Boolean).join(' · ')}
-                      </span>
-                    )}
                   </div>
                   <div className="card-head-count">
                     {b.fecha && (
