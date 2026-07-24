@@ -137,11 +137,15 @@ body {
 }
 
 /* ---------- Accesos de clientes (interno) ---------- */
+.head-top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
 .volver {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 18px;
   font-size: 0.8rem;
   color: var(--muted);
   text-decoration: none;
