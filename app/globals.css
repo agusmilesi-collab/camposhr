@@ -135,6 +135,105 @@ body {
   height: 1px;
   background: var(--line);
 }
+
+/* ---------- Accesos de clientes (interno) ---------- */
+.head-nota {
+  margin-top: 14px;
+  max-width: 52ch;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.accesos {
+  padding-bottom: 72px;
+}
+.acc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.acc-row:last-child {
+  border-bottom: none;
+}
+.acc-th {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: #ece9e2;
+}
+.acc-name {
+  font-weight: 500;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acc-url {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1px;
+  width: fit-content;
+  max-width: 100%;
+}
+.acc-url:hover {
+  color: var(--ink);
+  border-bottom-color: var(--muted);
+}
+.copiar {
+  flex: none;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.copiar:hover {
+  background: #efece5;
+  color: var(--ink);
+}
+.copiar.ok {
+  color: var(--st-green);
+  border-color: var(--st-green);
+  background: #eef3ee;
+}
+@media (max-width: 620px) {
+  .acc-row {
+    grid-template-columns: 1fr auto;
+    gap: 6px 12px;
+  }
+  .acc-th {
+    display: none;
+  }
+  .acc-name {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .copiar {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .acc-url {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: 0.78rem;
+  }
+}
 .card {
   background: var(--card);
   border: 1px solid var(--line);

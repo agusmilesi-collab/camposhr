@@ -7,17 +7,25 @@
  * Formato:
  *   {"A9y4Ysrl...":"recly4kI5GKAPPhkV"}
  */
-export function empresaIdDeToken(token: string): string | null {
+function mapaTokens(): Record<string, string> {
   const raw = process.env.PORTAL_TOKENS;
-  if (!raw) return null;
-
-  let mapa: Record<string, string>;
+  if (!raw) return {};
   try {
-    mapa = JSON.parse(raw);
+    const mapa = JSON.parse(raw);
+    return mapa && typeof mapa === 'object' ? mapa : {};
   } catch {
-    return null;
+    return {};
   }
+}
 
-  const id = mapa[token];
+export function empresaIdDeToken(token: string): string | null {
+  const id = mapaTokens()[token];
   return typeof id === 'string' && id.startsWith('rec') ? id : null;
+}
+
+/** Lista todos los clientes con acceso al portal: token + id de empresa. */
+export function listarClientes(): { token: string; empresaId: string }[] {
+  return Object.entries(mapaTokens())
+    .filter(([, id]) => typeof id === 'string' && id.startsWith('rec'))
+    .map(([token, empresaId]) => ({ token, empresaId }));
 }
