@@ -94,6 +94,37 @@ export type DatosCliente = {
   busquedas: Busqueda[];
 };
 
+/**
+ * Nombres de empresas por id de registro (solo el campo nombre, lista blanca).
+ * Se usa para el listado interno de accesos de clientes.
+ */
+export async function getNombresEmpresas(
+  ids: string[]
+): Promise<Map<string, string>> {
+  const nombres = new Map<string, string>();
+  if (ids.length === 0) return nombres;
+
+  const params = new URLSearchParams({
+    returnFieldsByFieldId: 'true',
+    filterByFormula: orRecordIds(ids),
+    pageSize: '100',
+  });
+  params.append('fields[]', F_EMPRESA.nombre);
+
+  let res;
+  try {
+    res = await get(T_EMPRESAS, params);
+  } catch {
+    return nombres;
+  }
+
+  for (const r of res.records ?? []) {
+    const nombre = r.fields?.[F_EMPRESA.nombre];
+    if (nombre) nombres.set(r.id, nombre);
+  }
+  return nombres;
+}
+
 export async function getDatosCliente(empresaId: string): Promise<DatosCliente | null> {
   // 1) La empresa y sus pedidos
   // Se usa el endpoint de listado con RECORD_ID() (no el de registro unico):

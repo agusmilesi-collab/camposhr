@@ -3,7 +3,6 @@ const nextConfig = {
   // El sitio de herramientas vive en /public con URLs limpias.
   // Estos rewrites mapean esas rutas al archivo estatico correspondiente.
   rewrites: async () => [
-    { source: '/', destination: '/index.html' },
     { source: '/test-rorschach', destination: '/test-rorschach/index.html' },
     { source: '/test-rorschach/', destination: '/test-rorschach/index.html' },
     { source: '/test-zulliger', destination: '/test-zulliger/index.html' },
