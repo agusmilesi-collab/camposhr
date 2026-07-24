@@ -1,5 +1,4 @@
-import { listarClientes } from '@/lib/clients';
-import { getNombresEmpresas } from '@/lib/airtable';
+import { listarClientesConToken } from '@/lib/airtable';
 import CopyLink from './CopyLink';
 
 export const dynamic = 'force-dynamic';
@@ -7,12 +6,11 @@ export const dynamic = 'force-dynamic';
 const BASE_PORTAL = 'https://clientes.camposhr.com';
 
 export default async function Informes() {
-  const clientes = listarClientes();
-  const nombres = await getNombresEmpresas(clientes.map((c) => c.empresaId));
+  const clientes = await listarClientesConToken();
 
   const filas = clientes
     .map((c) => ({
-      nombre: nombres.get(c.empresaId) ?? 'Cliente',
+      nombre: c.nombre,
       token: c.token,
       url: `${BASE_PORTAL}/${c.token}`,
     }))

@@ -1,5 +1,4 @@
 import { Fragment } from 'react';
-import { empresaIdDeToken } from '@/lib/clients';
 import { getDatosCliente, type Busqueda } from '@/lib/airtable';
 
 export const dynamic = 'force-dynamic';
@@ -71,10 +70,7 @@ function Acceso() {
 }
 
 export default async function Portal({ params }: { params: { token: string } }) {
-  const empresaId = empresaIdDeToken(params.token);
-  if (!empresaId) return <Acceso />;
-
-  const datos = await getDatosCliente(empresaId);
+  const datos = await getDatosCliente(params.token);
   if (!datos) return <Acceso />;
 
   const { empresa, busquedas } = datos;
