@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { empresaIdDeToken } from '@/lib/clients';
 import { getDatosCliente, type Busqueda } from '@/lib/airtable';
 
@@ -78,11 +79,14 @@ export default async function Portal({ params }: { params: { token: string } }) 
 
   const { empresa, busquedas } = datos;
 
-  const activas = busquedas.filter((b) => b.estado === 'En curso').length;
-  const candidatos = busquedas.reduce((n, b) => n + b.candidatos.length, 0);
-  const entregados = busquedas.reduce(
-    (n, b) => n + b.candidatos.filter((c) => c.estado === 'Entregado').length,
-    0
+  // Una búsqueda está "completa" cuando tiene candidatos y todos tienen el
+  // informe entregado. Las completas se agrupan al final, separadas del resto.
+  const esCompleta = (b: Busqueda) =>
+    b.candidatos.length > 0 &&
+    b.candidatos.every((c) => c.estado === 'Entregado');
+
+  const ordenadas = [...busquedas].sort(
+    (a, b) => Number(esCompleta(a)) - Number(esCompleta(b))
   );
 
   return (
@@ -90,7 +94,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
       <header className="top">
         <div className="wrap top-inner">
           <div className="brand">
-            Campos HR <span>· seguimiento</span>
+            Campos HR <span>· Portal Clientes</span>
           </div>
           <div className="top-meta">
             Actualizado {new Date().toLocaleDateString('es-AR', { timeZone: TZ })}
@@ -102,20 +106,6 @@ export default async function Portal({ params }: { params: { token: string } }) 
         <section className="head">
           <div className="eyebrow">Estado de evaluaciones</div>
           <h1>{empresa}</h1>
-          <div className="summary">
-            <div className="stat">
-              <span className="n">{activas}</span>
-              <span className="l">búsquedas en curso</span>
-            </div>
-            <div className="stat">
-              <span className="n">{candidatos}</span>
-              <span className="l">candidatos en proceso</span>
-            </div>
-            <div className="stat">
-              <span className="n">{entregados}</span>
-              <span className="l">informes entregados</span>
-            </div>
-          </div>
         </section>
 
         <section className="busquedas">
@@ -125,30 +115,41 @@ export default async function Portal({ params }: { params: { token: string } }) 
             </div>
           )}
 
-          {busquedas.map((b: Busqueda) => {
+          {ordenadas.map((b: Busqueda, i: number) => {
             const cands = [...b.candidatos].sort(
               (x, y) =>
                 (ORDEN[x.estado] ?? 9) - (ORDEN[y.estado] ?? 9) ||
                 x.nombre.localeCompare(y.nombre)
             );
             const n = b.candidatos.length;
+            // El separador aparece antes de la primera búsqueda completa,
+            // siempre que antes hubiera al menos una búsqueda en curso.
+            const mostrarSep =
+              i > 0 && esCompleta(b) && !esCompleta(ordenadas[i - 1]);
             return (
-              <article className="card" key={b.id}>
+              <Fragment key={b.id}>
+                {mostrarSep && (
+                  <div className="group-sep">
+                    <span>Con informes entregados</span>
+                  </div>
+                )}
+              <article className="card">
                 <div className="card-head">
                   <div className="card-head-main">
                     <h2>{b.puesto}</h2>
-                    <div className="sub">
-                      {[b.area, b.seniority].filter(Boolean).join(' · ')}
-                      {b.fecha && (
-                        <>
-                          {(b.area || b.seniority) && ' · '}
-                          solicitada el <b>{fecha(b.fecha)}</b>
-                        </>
-                      )}
-                    </div>
+                    {(b.area || b.seniority) && (
+                      <span className="sub">
+                        {[b.area, b.seniority].filter(Boolean).join(' · ')}
+                      </span>
+                    )}
                   </div>
                   <div className="card-head-count">
-                    {n} {n === 1 ? 'candidato' : 'candidatos'}
+                    {b.fecha && (
+                      <span className="req-date">
+                        solicitada el <b>{fecha(b.fecha)}</b>
+                      </span>
+                    )}
+                    <span>{n} {n === 1 ? 'candidato' : 'candidatos'}</span>
                   </div>
                 </div>
 
@@ -159,6 +160,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
                     <div className="tr th">
                       <span>Candidato</span>
                       <span>Estado</span>
+                      <span>Evaluadora</span>
                       <span>Entrevista</span>
                       <span>Entrega est.</span>
                     </div>
@@ -172,6 +174,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
                           <span className="c-estado" data-label="Estado">
                             <i className={`dot ${e.clase}`} />
                             {e.texto}
+                          </span>
+                          <span className="c-evaluadora" data-label="Evaluadora">
+                            {c.evaluadora ?? <span className="dash">—</span>}
                           </span>
                           <span className="c-fecha" data-label="Entrevista">
                             {fe ? (
@@ -196,6 +201,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
                   </div>
                 )}
               </article>
+              </Fragment>
             );
           })}
         </section>

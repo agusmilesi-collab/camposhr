@@ -14,6 +14,7 @@ const API = 'https://api.airtable.com/v0';
 const T_EMPRESAS = 'tblNKMu8gqYmoA70N';
 const T_PEDIDOS = 'tblA3o1XsDXyJXSgF';
 const T_INDIVIDUO = 'tbl6Ji4P7d6hOKNUY';
+const T_EVALUADORAS = 'tblBhmxk02yBccL8d';
 
 // ---- Campos habilitados (lista blanca) ----
 const F_EMPRESA = {
@@ -37,6 +38,13 @@ const F_INDIVIDUO = {
   fechaEntrega: 'fldaS7nfUewSX3EkQ',
   modalidad: 'fldsKnmbEoilCde7P',
   pedido: 'fldbaPMlvmaIcAwHX',
+  evaluadoras: 'fldsBC99zh44BSgBN',
+};
+
+// Tabla Evaluadoras: sólo el nombre (campo primario). Se usa para resolver
+// los enlaces del campo Evaluadoras de cada individuo a texto legible.
+const F_EVALUADORA = {
+  nombre: 'fldqhNqXayYQcyKJA',
 };
 
 function token(): string {
@@ -65,6 +73,7 @@ export type Candidato = {
   id: string;
   nombre: string;
   estado: string;
+  evaluadora: string | null;
   fechaEntrevista: string | null;
   fechaEntrega: string | null;
   modalidad: string | null;
@@ -133,6 +142,9 @@ export async function getDatosCliente(empresaId: string): Promise<DatosCliente |
   }
 
   const candMap = new Map<string, Candidato>();
+  // candId -> ids de registro de sus evaluadoras (a resolver a nombre después)
+  const candEvalIds = new Map<string, string[]>();
+  const evalIds = new Set<string>();
   if (candIds.size > 0) {
     const pc = new URLSearchParams({
       returnFieldsByFieldId: 'true',
@@ -144,14 +156,43 @@ export async function getDatosCliente(empresaId: string): Promise<DatosCliente |
 
     for (const r of candRes.records ?? []) {
       const f = r.fields ?? {};
+      const eIds: string[] = (f[F_INDIVIDUO.evaluadoras] ?? []).map((e: any) =>
+        typeof e === 'string' ? e : e.id
+      );
+      candEvalIds.set(r.id, eIds);
+      eIds.forEach((id) => evalIds.add(id));
       candMap.set(r.id, {
         id: r.id,
         nombre: f[F_INDIVIDUO.nombre] ?? 'Sin nombre',
         estado: f[F_INDIVIDUO.estado] ?? 'Sin asignar',
+        evaluadora: null,
         fechaEntrevista: f[F_INDIVIDUO.fechaEntrevista] ?? null,
         fechaEntrega: f[F_INDIVIDUO.fechaEntrega] ?? null,
         modalidad: f[F_INDIVIDUO.modalidad] ?? null,
       });
+    }
+  }
+
+  // Resolver los nombres de las evaluadoras y asignarlos a cada candidato
+  if (evalIds.size > 0) {
+    const ev = new URLSearchParams({
+      returnFieldsByFieldId: 'true',
+      filterByFormula: orRecordIds(Array.from(evalIds)),
+      pageSize: '100',
+    });
+    Object.values(F_EVALUADORA).forEach((f) => ev.append('fields[]', f));
+    const evalRes = await get(T_EVALUADORAS, ev);
+
+    const evalNames = new Map<string, string>();
+    for (const r of evalRes.records ?? []) {
+      const nombre = r.fields?.[F_EVALUADORA.nombre];
+      if (nombre) evalNames.set(r.id, nombre);
+    }
+
+    for (const [candId, ids] of candEvalIds) {
+      const nombres = ids.map((id) => evalNames.get(id)).filter(Boolean);
+      const cand = candMap.get(candId);
+      if (cand && nombres.length > 0) cand.evaluadora = nombres.join(', ');
     }
   }
 
