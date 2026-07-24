@@ -22,6 +22,15 @@ const F_EMPRESA = {
   pedidos: 'fldsBK2W9rVdL4GEV',
 };
 
+// Campo del token del portal en la tabla Empresas. Llenarlo da de alta el
+// portal del cliente (clientes.camposhr.com/<token>). No es un dato que se
+// devuelva al cliente: sólo se usa para resolver token -> empresa y para el
+// listado interno de accesos.
+const F_EMPRESA_TOKEN = 'fldyVg8er3tVOx10Z';
+
+// Formato válido de token (base64url). Se valida antes de usarlo.
+const TOKEN_VALIDO = /^[A-Za-z0-9_-]{8,128}$/;
+
 const F_PEDIDO = {
   puesto: 'fldtTUFvYpONO0bVy',
   estado: 'fldVtnnDGanAlNHz8',
@@ -94,64 +103,78 @@ export type DatosCliente = {
   busquedas: Busqueda[];
 };
 
-/**
- * Nombres de empresas por id de registro (solo el campo nombre, lista blanca).
- * Se usa para el listado interno de accesos de clientes.
- */
-export async function getNombresEmpresas(
-  ids: string[]
-): Promise<Map<string, string>> {
-  const nombres = new Map<string, string>();
-  if (ids.length === 0) return nombres;
+type EmpresaPortal = {
+  id: string;
+  nombre: string;
+  token: string;
+  pedidoIds: string[];
+};
 
+/**
+ * Empresas que tienen portal (campo Token portal cargado). Se piden sólo los
+ * campos de la lista blanca por ID (no por nombre), así el token vive en
+ * Airtable y dar de alta un cliente es llenar el campo. Tope de 100 empresas.
+ */
+async function getEmpresasConToken(): Promise<EmpresaPortal[]> {
   const params = new URLSearchParams({
     returnFieldsByFieldId: 'true',
-    filterByFormula: orRecordIds(ids),
     pageSize: '100',
   });
   params.append('fields[]', F_EMPRESA.nombre);
+  params.append('fields[]', F_EMPRESA.pedidos);
+  params.append('fields[]', F_EMPRESA_TOKEN);
 
   let res;
   try {
     res = await get(T_EMPRESAS, params);
   } catch {
-    return nombres;
+    return [];
   }
 
+  const out: EmpresaPortal[] = [];
   for (const r of res.records ?? []) {
-    const nombre = r.fields?.[F_EMPRESA.nombre];
-    if (nombre) nombres.set(r.id, nombre);
+    const f = r.fields ?? {};
+    const tok = f[F_EMPRESA_TOKEN];
+    if (typeof tok !== 'string' || !TOKEN_VALIDO.test(tok)) continue;
+    out.push({
+      id: r.id,
+      nombre: f[F_EMPRESA.nombre] ?? 'Cliente',
+      token: tok,
+      pedidoIds: (f[F_EMPRESA.pedidos] ?? []).map((p: any) =>
+        typeof p === 'string' ? p : p.id
+      ),
+    });
   }
-  return nombres;
+  return out;
 }
 
-export async function getDatosCliente(empresaId: string): Promise<DatosCliente | null> {
-  // 1) La empresa y sus pedidos
-  // Se usa el endpoint de listado con RECORD_ID() (no el de registro unico):
-  // Airtable rechaza fields[] en la lectura de un registro individual, y esa
-  // lista blanca es la que garantiza que nunca se pidan campos sensibles.
-  const pe = new URLSearchParams({
-    returnFieldsByFieldId: 'true',
-    filterByFormula: orRecordIds([empresaId]),
-    pageSize: '1',
-  });
-  Object.values(F_EMPRESA).forEach((f) => pe.append('fields[]', f));
+/**
+ * Clientes con acceso al portal: token + empresa. Para el listado interno.
+ */
+export async function listarClientesConToken(): Promise<
+  { token: string; empresaId: string; nombre: string }[]
+> {
+  const empresas = await getEmpresasConToken();
+  return empresas.map((e) => ({
+    token: e.token,
+    empresaId: e.id,
+    nombre: e.nombre,
+  }));
+}
 
-  let empresaRes;
-  try {
-    empresaRes = await get(T_EMPRESAS, pe);
-  } catch {
-    return null;
-  }
+export async function getDatosCliente(
+  portalToken: string
+): Promise<DatosCliente | null> {
+  if (!TOKEN_VALIDO.test(portalToken)) return null;
 
-  const empresaRec = (empresaRes.records ?? [])[0];
-  if (!empresaRec) return null;
-
-  const ef = empresaRec.fields ?? {};
-  const empresa: string = ef[F_EMPRESA.nombre] ?? 'Cliente';
-  const pedidoIds: string[] = (ef[F_EMPRESA.pedidos] ?? []).map((r: any) =>
-    typeof r === 'string' ? r : r.id
+  // 1) Resolver el token a su empresa (y sus pedidos) desde Airtable.
+  const emp = (await getEmpresasConToken()).find(
+    (e) => e.token === portalToken
   );
+  if (!emp) return null;
+
+  const empresa = emp.nombre;
+  const pedidoIds = emp.pedidoIds;
 
   if (pedidoIds.length === 0) return { empresa, busquedas: [] };
 
