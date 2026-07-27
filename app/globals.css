@@ -172,55 +172,6 @@ body {
 .accesos {
   padding-bottom: 72px;
 }
-/* Generador de token para dar de alta un cliente nuevo */
-.gen {
-  margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line);
-}
-.gen-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.gen-btn {
-  font: inherit;
-  font-size: 0.84rem;
-  font-weight: 500;
-  color: #fff;
-  background: var(--ink);
-  border: 1px solid var(--ink);
-  border-radius: 8px;
-  padding: 8px 15px;
-  cursor: pointer;
-  transition: opacity 0.12s;
-}
-.gen-btn:hover {
-  opacity: 0.88;
-}
-.gen-out {
-  font-family: 'SF Mono', ui-monospace, Menlo, monospace;
-  font-size: 0.82rem;
-  color: var(--ink);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 7px 12px;
-  overflow-x: auto;
-  white-space: nowrap;
-  max-width: 100%;
-}
-.gen-hint {
-  margin-top: 10px;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: var(--muted);
-}
-.gen-hint b {
-  font-weight: 500;
-  color: var(--ink-soft);
-}
 .acc-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) auto;
