@@ -1,6 +1,5 @@
 import { listarClientesConToken } from '@/lib/airtable';
 import CopyLink from './CopyLink';
-import GenerarToken from './GenerarToken';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +31,6 @@ export default async function Informes() {
           El link de cada cliente para seguir el estado de sus evaluaciones.
           Copialo y envialo por el canal acordado.
         </p>
-        <GenerarToken />
       </section>
 
       <section className="accesos">
