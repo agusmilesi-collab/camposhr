@@ -1,0 +1,99 @@
+import { notFound } from 'next/navigation';
+import {
+  firmarSelfies,
+  getEmpresaPorSlug,
+  listarRespuestas,
+} from '@/lib/supabase';
+import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
+import MatrizBenziger, { type Punto } from '@/app/_components/MatrizBenziger';
+import AutoRefresco from './AutoRefresco';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata = {
+  title: 'Matriz de perfiles — Campos HR',
+  robots: { index: false, follow: false },
+};
+
+export default async function MatrizEmpresa({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const empresa = await getEmpresaPorSlug(params.slug);
+  if (!empresa) notFound();
+
+  const respuestas = await listarRespuestas(empresa.id);
+  const fotos = await firmarSelfies(
+    respuestas.map((r) => r.foto_path).filter((p): p is string => Boolean(p))
+  );
+
+  const puntos: Punto[] = respuestas.map((r) => ({
+    id: r.id,
+    nombre: r.nombre,
+    x: r.eje_x,
+    y: r.eje_y,
+    foto: r.foto_path ? fotos.get(r.foto_path) ?? null : null,
+  }));
+
+  // Cada persona se cuenta en el cuadrante que encabeza su resultado.
+  type Ficha = { nombre: string; detalle: string | null };
+  const porCuadrante = new Map<Perfil, Ficha[]>(PERFILES.map((p) => [p, []]));
+  for (const r of respuestas) {
+    const principal = (r.perfiles?.[0] ?? null) as Perfil | null;
+    if (principal && porCuadrante.has(principal)) {
+      const partes = [r.generacion, r.lider_nombre].filter(Boolean);
+      porCuadrante.get(principal)!.push({
+        nombre: r.nombre,
+        detalle: partes.length > 0 ? partes.join(' · ') : null,
+      });
+    }
+  }
+
+  return (
+    <main className="wrap">
+      <section className="head no-print">
+        <div className="head-top">
+          <div className="eyebrow">Cuestionario de perfil</div>
+          <a href="/cuestionario" className="volver">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
+            Empresas
+          </a>
+        </div>
+        <h1>{empresa.nombre}</h1>
+        <p className="head-nota">
+          {respuestas.length === 0
+            ? 'Todavía no respondió nadie. La matriz se completa a medida que el equipo termina el cuestionario.'
+            : `${respuestas.length} ${
+                respuestas.length === 1 ? 'persona respondió' : 'personas respondieron'
+              }. La pantalla se actualiza sola.`}
+        </p>
+        <AutoRefresco />
+      </section>
+
+      <section className="mx-bloque">
+        <MatrizBenziger puntos={puntos} />
+      </section>
+
+      <section className="mx-listas">
+        {PERFILES.map((p) => (
+          <div className="mx-lista" key={p}>
+            <h2>{INFO[p].nombre}</h2>
+            <p className="mx-lista-desc">{INFO[p].descripcion}</p>
+            <ul>
+              {(porCuadrante.get(p) ?? []).map((ficha, i) => (
+                <li key={`${ficha.nombre}-${i}`}>
+                  {ficha.nombre}
+                  {ficha.detalle && <em className="mx-detalle">{ficha.detalle}</em>}
+                </li>
+              ))}
+            </ul>
+            {(porCuadrante.get(p) ?? []).length === 0 && (
+              <p className="mx-vacio">Nadie por ahora.</p>
+            )}
+          </div>
+        ))}
+      </section>
+    </main>
+  );
+}
