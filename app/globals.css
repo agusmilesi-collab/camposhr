@@ -624,6 +624,56 @@ body {
   margin-top: 22px;
 }
 
+/* ---------- Matriz explicativa de la portada ---------- */
+.mp {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px 18px 16px;
+}
+.mp-eje {
+  text-align: center;
+  line-height: 1.25;
+}
+.mp-eje strong {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  display: block;
+}
+.mp-eje span {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.mp-grilla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 12px 0;
+}
+.mp-celda {
+  padding: 18px 16px;
+  text-align: center;
+}
+/* Las líneas interiores dibujan la cruz de la matriz. */
+.mp-celda:nth-child(odd) {
+  border-right: 1px dashed var(--line);
+}
+.mp-celda:nth-child(-n + 2) {
+  border-bottom: 1px dashed var(--line);
+}
+.mp-celda h3 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+.mp-celda p {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 /* ---------- Matriz ---------- */
 .mx {
   background: var(--card);
@@ -880,9 +930,12 @@ body {
 /* Portada */
 .cq-portada {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 36px;
+  grid-template-columns: 1.3fr 0.85fr;
+  gap: 40px;
   align-items: center;
+  /* Más ancha que el resto de las placas: la matriz necesita aire para que
+     las descripciones de los cuadrantes se lean sin cortarse. */
+  max-width: 1020px;
 }
 .cq-portada-texto h1 {
   font-family: 'Instrument Serif', Georgia, serif;
@@ -1199,6 +1252,22 @@ body {
   .cq-portada {
     grid-template-columns: 1fr;
     gap: 24px;
+  }
+  /* La matriz mantiene el 2x2 en el celular, con texto más compacto para que
+     las descripciones no queden en columnas de dos palabras. */
+  .mp {
+    padding: 16px 8px 12px;
+  }
+  .mp-celda {
+    padding: 14px 8px;
+  }
+  .mp-celda h3 {
+    font-size: 1.05rem;
+    margin-bottom: 6px;
+  }
+  .mp-celda p {
+    font-size: 0.72rem;
+    line-height: 1.45;
   }
   .cq-escala {
     gap: 7px;
