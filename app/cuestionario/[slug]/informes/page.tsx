@@ -132,54 +132,72 @@ export default async function Informes({
               </a>
             </div>
 
-            <div className="card">
-              <div className="inf-fila inf-th">
-                <span>Persona</span>
-                <span>Líder</span>
-                <span>Perfil</span>
-                <span className="inf-nums">FI</span>
-                <span className="inf-nums">FD</span>
-                <span className="inf-nums">BI</span>
-                <span className="inf-nums">BD</span>
-                <span>Generación</span>
-                <span />
-              </div>
+            {/* Un bloque por equipo: el líder abre su propia tabla. */}
+            <div className="inf-bloques">
+              {orden.map(([lider, gente]) => {
+                const perfiles = contar(
+                  gente.map((r) => r.perfiles?.[0]).filter(Boolean) as Perfil[]
+                );
+                const dominante = PERFILES.filter((p) => perfiles.get(p)).sort(
+                  (a, b) => (perfiles.get(b) ?? 0) - (perfiles.get(a) ?? 0)
+                )[0];
 
-              {orden.map(([lider, gente]) =>
-                gente
-                  .slice()
-                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
-                  .map((r, i) => {
-                    const totales = (r.totales ?? {}) as Record<string, number>;
-                    const perfil = (r.perfiles?.[0] ?? '') as Perfil;
-                    return (
-                      <div className="inf-fila" key={r.id}>
-                        <span className="acc-name">{r.nombre}</span>
-                        <span className="inf-suave">{i === 0 ? lider : ''}</span>
-                        <span className="inf-perfil">
-                          {perfil ? INFO[perfil].nombre : '—'}
-                        </span>
-                        {PERFILES.map((p) => (
-                          <span
-                            className={
-                              p === perfil ? 'inf-nums inf-nums-on' : 'inf-nums'
-                            }
-                            key={p}
-                          >
-                            {totales[p] ?? '—'}
-                          </span>
-                        ))}
-                        <span className="inf-suave">{r.generacion ?? '—'}</span>
-                        <a
-                          className="inf-ver"
-                          href={`/cuestionario/${empresa.slug}/informes/${r.id}`}
-                        >
-                          Playbook
-                        </a>
-                      </div>
-                    );
-                  })
-              )}
+                return (
+                  <section className="card inf-equipo" key={lider}>
+                    <header className="inf-equipo-top">
+                      <h3>{lider}</h3>
+                      <span className="inf-equipo-meta">
+                        {gente.length} {gente.length === 1 ? 'persona' : 'personas'}
+                        {dominante && ` · mayoría ${INFO[dominante].nombre}`}
+                      </span>
+                    </header>
+
+                    <div className="inf-fila inf-th">
+                      <span>Persona</span>
+                      <span>Perfil</span>
+                      <span className="inf-nums">FI</span>
+                      <span className="inf-nums">FD</span>
+                      <span className="inf-nums">BI</span>
+                      <span className="inf-nums">BD</span>
+                      <span>Generación</span>
+                      <span />
+                    </div>
+
+                    {gente
+                      .slice()
+                      .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                      .map((r) => {
+                        const totales = (r.totales ?? {}) as Record<string, number>;
+                        const perfil = (r.perfiles?.[0] ?? '') as Perfil;
+                        return (
+                          <div className="inf-fila" key={r.id}>
+                            <span className="acc-name">{r.nombre}</span>
+                            <span className="inf-perfil">
+                              {perfil ? INFO[perfil].nombre : '—'}
+                            </span>
+                            {PERFILES.map((p) => (
+                              <span
+                                className={
+                                  p === perfil ? 'inf-nums inf-nums-on' : 'inf-nums'
+                                }
+                                key={p}
+                              >
+                                {totales[p] ?? '—'}
+                              </span>
+                            ))}
+                            <span className="inf-suave">{r.generacion ?? '—'}</span>
+                            <a
+                              className="inf-ver"
+                              href={`/cuestionario/${empresa.slug}/informes/${r.id}`}
+                            >
+                              Playbook
+                            </a>
+                          </div>
+                        );
+                      })}
+                  </section>
+                );
+              })}
             </div>
           </section>
 

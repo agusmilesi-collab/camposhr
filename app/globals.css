@@ -1944,7 +1944,7 @@ body {
 .inf-fila {
   display: grid;
   grid-template-columns:
-    minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 1.1fr)
+    minmax(0, 1.6fr) minmax(0, 1.1fr)
     38px 38px 38px 38px minmax(0, 0.8fr) auto;
   align-items: center;
   gap: 12px;
@@ -2013,4 +2013,30 @@ body {
     grid-column: 2;
     grid-row: 1 / span 2;
   }
+}
+
+/* ---------- Bloques por equipo ---------- */
+.inf-bloques {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.inf-equipo-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  flex-wrap: wrap;
+}
+.inf-equipo-top h3 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+.inf-equipo-meta {
+  font-size: 0.76rem;
+  color: var(--muted);
 }
