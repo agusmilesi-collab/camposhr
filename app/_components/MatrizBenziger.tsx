@@ -51,12 +51,12 @@ function aSvg(x: number, y: number) {
 
 // ------------------------------------------------------- textos de cuadrante
 
-// Los textos van pegados a los laterales: la gente se concentra en el centro
-// de la matriz, así que las columnas de los costados quedan libres.
-const CENTRO_TEXTO = 27; // distancia del borde al centro del bloque
-const ANCHO_TEXTO = 48;
-const CHARS_POR_LINEA = 30;
-const ALTO_LINEA = 2.8;
+// Los textos van pegados a la esquina exterior de su cuadrante: la gente se
+// concentra en el centro, así que los bordes quedan libres.
+const MARGEN_TEXTO = 5; // separación al borde del lienzo
+const ANCHO_TEXTO = 45;
+const CHARS_POR_LINEA = 33;
+const ALTO_LINEA = 2.5;
 const ALTO_TITULO = 6.2; // separación entre las dos palabras del título
 
 /** Corta un texto en líneas, sin partir palabras. */
@@ -77,7 +77,8 @@ function envolver(texto: string, maximo: number): string[] {
 
 type Bloque = {
   perfil: Perfil;
-  cx: number;
+  x: number;
+  anclaje: 'start' | 'end';
   yTitulo: number;
   yDesc: number;
   lineas: string[];
@@ -92,7 +93,10 @@ function bloques(conDescripciones: boolean): Bloque[] {
   return PERFILES.map((perfil) => {
     const arriba = perfil === 'FI' || perfil === 'FD';
     const izquierda = perfil === 'FI' || perfil === 'BI';
-    const cx = izquierda ? CENTRO_TEXTO : ANCHO - CENTRO_TEXTO;
+
+    // Alineado contra el borde exterior de su cuadrante.
+    const x = izquierda ? MARGEN_TEXTO : ANCHO - MARGEN_TEXTO;
+    const anclaje: 'start' | 'end' = izquierda ? 'start' : 'end';
 
     const lineas = conDescripciones
       ? envolver(INFO[perfil].descripcion, CHARS_POR_LINEA)
@@ -103,10 +107,10 @@ function bloques(conDescripciones: boolean): Bloque[] {
     let yTitulo: number;
     let yDesc: number;
     if (arriba) {
-      yTitulo = 14;
+      yTitulo = 10; // pegado al borde superior
       yDesc = yTitulo + ALTO_TITULO + 6.5;
     } else {
-      yDesc = ALTO - 5 - caida; // la última línea queda cerca del borde
+      yDesc = ALTO - 4 - caida; // la última línea queda contra el borde inferior
       yTitulo = yDesc - 6.5 - ALTO_TITULO;
     }
 
@@ -114,90 +118,125 @@ function bloques(conDescripciones: boolean): Bloque[] {
     // y termina bajo la última línea de la descripción.
     const y0 = yTitulo - 5;
     const y1 = (lineas.length ? yDesc + caida : yTitulo + ALTO_TITULO) + 1.5;
+    const x0 = izquierda ? x - 1 : x - ANCHO_TEXTO;
+    const x1 = izquierda ? x + ANCHO_TEXTO : x + 1;
 
-    return {
-      perfil,
-      cx,
-      yTitulo,
-      yDesc,
-      lineas,
-      caja: { x0: cx - ANCHO_TEXTO / 2, y0, x1: cx + ANCHO_TEXTO / 2, y1 },
-    };
+    return { perfil, x, anclaje, yTitulo, yDesc, lineas, caja: { x0, y0, x1, y1 } };
   });
 }
 
 // ------------------------------------------------------------- distribución
 
+type Caja = { x0: number; y0: number; x1: number; y1: number };
+
+const seSolapan = (a: Caja, b: Caja) =>
+  a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+
 /**
- * Separa los puntos que se pisan y los mantiene fuera de los bloques de texto.
+ * Ubica a cada persona lo más cerca posible de su lugar real, pero sin pisar
+ * a nadie ni a los textos de los cuadrantes.
+ *
+ * Empujar a los que se tocan no alcanza cuando el grupo se concentra: los
+ * choques se propagan y el resultado nunca termina de acomodarse. Acá cada
+ * persona busca, en espiral desde su posición ideal, el primer lugar libre.
+ * Van primero las más extremas, que son las que aportan la lectura.
  * Determinista: mismo orden de entrada, mismo resultado.
  */
 function distribuir(
   puntos: Punto[],
   radio: number,
   conNombres: boolean,
-  cajas: Bloque['caja'][]
+  cajasTexto: Caja[]
 ) {
-  const pos = puntos.map((p) => aSvg(p.x, p.y));
+  const ideales = puntos.map((p) => aSvg(p.x, p.y));
 
-  // Zona reservada por persona. Con nombres es más alta que ancha, para que
-  // la etiqueta no se pise con el círculo de abajo; sin nombres alcanza con
-  // que los puntos no se tapen entre sí.
-  const SEP_X = radio * (conNombres ? 2.9 : 2.15);
-  const SEP_Y = radio * (conNombres ? 3.5 : 2.15);
-  const altoEtiqueta = conNombres ? radio + 3.9 : radio;
+  // Espacio que ocupa cada persona en pantalla: el círculo y, debajo, su
+  // nombre. Un nombre largo es más ancho que el círculo.
+  const ALTO_NOMBRE = 3.9;
+  const anchos = puntos.map((p) =>
+    conNombres
+      ? Math.max(radio, (anchoTexto(primerNombre(p.nombre)) + 1.2) / 2)
+      : radio
+  );
+  const arriba = radio + 0.3;
+  const abajo = conNombres ? radio + ALTO_NOMBRE : radio + 0.3;
 
-  /** Empuja el punto fuera de un bloque de texto, por el lado más cercano. */
-  function esquivarTextos(p: { cx: number; cy: number }) {
-    for (const c of cajas) {
-      const dentro =
-        p.cx + radio > c.x0 &&
-        p.cx - radio < c.x1 &&
-        p.cy + altoEtiqueta > c.y0 &&
-        p.cy - radio < c.y1;
-      if (!dentro) continue;
+  const caja = (cx: number, cy: number, w: number): Caja => ({
+    x0: cx - w,
+    y0: cy - arriba,
+    x1: cx + w,
+    y1: cy + abajo,
+  });
 
-      const salidas = [
-        { d: p.cx + radio - c.x0, mover: () => (p.cx = c.x0 - radio) },
-        { d: c.x1 - (p.cx - radio), mover: () => (p.cx = c.x1 + radio) },
-        { d: p.cy + altoEtiqueta - c.y0, mover: () => (p.cy = c.y0 - altoEtiqueta) },
-        { d: c.y1 - (p.cy - radio), mover: () => (p.cy = c.y1 + radio) },
-      ];
-      salidas.sort((a, b) => a.d - b.d)[0].mover();
-    }
-  }
+  const puestas: Caja[] = [];
+  const libre = (c: Caja) =>
+    c.x0 >= 0.5 &&
+    c.x1 <= ANCHO - 0.5 &&
+    c.y0 >= 0.5 &&
+    c.y1 <= ALTO - 0.5 &&
+    !cajasTexto.some((t) => seSolapan(c, t)) &&
+    !puestas.some((q) => seSolapan(c, q));
 
-  for (let paso = 0; paso < 140; paso++) {
-    let movio = false;
-    for (let i = 0; i < pos.length; i++) {
-      for (let j = i + 1; j < pos.length; j++) {
-        const dx = pos[j].cx - pos[i].cx;
-        const dy = pos[j].cy - pos[i].cy;
-        // Distancia en el espacio deformado por la zona reservada: si da
-        // menos de 1, las zonas se superponen.
-        const d = Math.hypot(dx / SEP_X, dy / SEP_Y);
-        if (d >= 1) continue;
+  // Las más alejadas del centro se ubican primero: son las que definen la
+  // lectura del gráfico y las que menos margen tienen para moverse.
+  const orden = puntos
+    .map((p, i) => i)
+    .sort((a, b) => Math.hypot(puntos[b].x, puntos[b].y) - Math.hypot(puntos[a].x, puntos[a].y));
 
-        // Si coinciden exactamente, se los separa en direcciones fijas.
-        const ux = d === 0 ? Math.cos(i * 2.4) : dx / d / SEP_X;
-        const uy = d === 0 ? Math.sin(i * 2.4) : dy / d / SEP_Y;
-        const empuje = (1 - d) / 2;
-        pos[i].cx -= ux * SEP_X * empuje;
-        pos[i].cy -= uy * SEP_Y * empuje;
-        pos[j].cx += ux * SEP_X * empuje;
-        pos[j].cy += uy * SEP_Y * empuje;
-        movio = true;
+  const salida: { cx: number; cy: number }[] = new Array(puntos.length);
+
+  for (const i of orden) {
+    const { cx, cy } = ideales[i];
+    const w = anchos[i];
+    let elegida = caja(cx, cy, w);
+    let encontrada = false;
+
+    // Espiral: primero el lugar exacto, después anillos cada vez más lejos.
+    for (let paso = 0; paso <= 40 && !encontrada; paso++) {
+      const r = paso * 1.6;
+      const vueltas = paso === 0 ? 1 : Math.min(48, 8 + paso * 4);
+      for (let k = 0; k < vueltas; k++) {
+        const ang = (k / vueltas) * Math.PI * 2;
+        const c = caja(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r * 0.75, w);
+        if (libre(c)) {
+          elegida = c;
+          encontrada = true;
+          break;
+        }
       }
     }
-    for (const p of pos) esquivarTextos(p);
-    if (!movio) break;
+
+    // Si la espiral no dio con un hueco (pasa cuando el grupo se amontona),
+    // se barre el lienzo entero y se toma el lugar libre más cercano.
+    if (!encontrada) {
+      let mejor = Infinity;
+      for (let x = w + 0.5; x <= ANCHO - w - 0.5; x += 1.5) {
+        for (let y = arriba + 0.5; y <= ALTO - abajo - 0.5; y += 1.5) {
+          const dist = Math.hypot(x - cx, y - cy);
+          if (dist >= mejor) continue;
+          const c = caja(x, y, w);
+          if (libre(c)) {
+            mejor = dist;
+            elegida = c;
+            encontrada = true;
+          }
+        }
+      }
+    }
+
+    puestas.push(elegida);
+    salida[i] = { cx: (elegida.x0 + elegida.x1) / 2, cy: elegida.y0 + arriba };
   }
 
-  const aire = conNombres ? 2.5 : 1;
-  return pos.map((p) => ({
-    cx: Math.min(Math.max(p.cx, radio + 1), ANCHO - radio - 1),
-    cy: Math.min(Math.max(p.cy, radio + 1), ALTO - radio - aire),
-  }));
+  return salida;
+}
+
+/**
+ * Ancho aproximado de un texto en el lienzo (Inter a 2.7px). Se estima por
+ * lo alto: es preferible reservar de más que terminar con nombres pisados.
+ */
+function anchoTexto(texto: string): number {
+  return texto.length * 1.55;
 }
 
 // ------------------------------------------------------------------ vista
@@ -255,22 +294,22 @@ export default function MatrizBenziger({
         {/* Cuadrantes: nombre y, si se pide, su descripción */}
         {cuadrantes.map((c) => (
           <g key={c.perfil}>
-            <text x={c.cx} y={c.yTitulo} className="mx-cuadrante" textAnchor="middle">
+            <text x={c.x} y={c.yTitulo} className="mx-cuadrante" textAnchor={c.anclaje}>
               {INFO[c.perfil].nombre.split(' ').map((palabra, i) => (
-                <tspan key={i} x={c.cx} dy={i === 0 ? 0 : ALTO_TITULO}>
+                <tspan key={i} x={c.x} dy={i === 0 ? 0 : ALTO_TITULO}>
                   {palabra}
                 </tspan>
               ))}
             </text>
             {c.lineas.length > 0 && (
               <text
-                x={c.cx}
+                x={c.x}
                 y={c.yDesc}
                 className="mx-cuadrante-desc"
-                textAnchor="middle"
+                textAnchor={c.anclaje}
               >
                 {c.lineas.map((linea, i) => (
-                  <tspan key={i} x={c.cx} dy={i === 0 ? 0 : ALTO_LINEA}>
+                  <tspan key={i} x={c.x} dy={i === 0 ? 0 : ALTO_LINEA}>
                     {linea}
                   </tspan>
                 ))}
@@ -330,5 +369,6 @@ function iniciales(nombre: string): string {
 function primerNombre(nombre: string): string {
   const partes = nombre.trim().split(/\s+/);
   const corto = partes[0] ?? '';
-  return corto.length > 12 ? `${corto.slice(0, 11)}…` : corto;
+  // Se acorta: un nombre largo reserva mucho ancho y empuja a los vecinos.
+  return corto.length > 9 ? `${corto.slice(0, 8)}…` : corto;
 }
