@@ -186,7 +186,13 @@ export async function subirSelfie(
 ): Promise<string> {
   const res = await fetch(`${URL_BASE()}/storage/v1/object/${BUCKET}/${ruta}`, {
     method: 'POST',
-    headers: headers({ 'content-type': contentType, 'x-upsert': 'true' }),
+    headers: headers({
+      'content-type': contentType,
+      'x-upsert': 'true',
+      // La foto no cambia nunca: que el navegador la guarde y no la vuelva a
+      // pedir en cada refresco de la matriz.
+      'cache-control': 'max-age=604800',
+    }),
     body: archivo,
   });
   if (!res.ok) throw new Error(`Supabase storage ${res.status}: ${await res.text()}`);
@@ -195,26 +201,45 @@ export async function subirSelfie(
 
 /**
  * URLs firmadas para mostrar las selfies en la matriz interna.
- * Duran una hora; se piden todas juntas en un solo request.
+ *
+ * Las firmas se guardan en memoria y se reutilizan: si cada refresco generara
+ * una URL nueva, el navegador volvería a descargar todas las fotos cada 15
+ * segundos y el egress se dispararía. Con la URL estable, la matriz proyectada
+ * baja cada selfie una sola vez.
  */
+const firmasEnMemoria = new Map<string, { url: string; vence: number }>();
+
 export async function firmarSelfies(
   rutas: string[],
-  segundos = 3600
+  segundos = 60 * 60 * 24 * 7 // una semana
 ): Promise<Map<string, string>> {
   const out = new Map<string, string>();
   if (rutas.length === 0) return out;
 
+  const ahora = Date.now();
+  const faltantes: string[] = [];
+  for (const ruta of rutas) {
+    const guardada = firmasEnMemoria.get(ruta);
+    if (guardada && guardada.vence > ahora) out.set(ruta, guardada.url);
+    else faltantes.push(ruta);
+  }
+  if (faltantes.length === 0) return out;
+
   const res = await fetch(`${URL_BASE()}/storage/v1/object/sign/${BUCKET}`, {
     method: 'POST',
     headers: headers({ 'content-type': 'application/json' }),
-    body: JSON.stringify({ expiresIn: segundos, paths: rutas }),
+    body: JSON.stringify({ expiresIn: segundos, paths: faltantes }),
     cache: 'no-store',
   });
   if (!res.ok) return out;
 
+  // Se renueva antes de que expire, para no servir una URL ya vencida.
+  const vence = ahora + segundos * 1000 * 0.8;
   for (const item of await res.json()) {
     if (item?.path && item?.signedURL) {
-      out.set(item.path, `${URL_BASE()}/storage/v1${item.signedURL}`);
+      const url = `${URL_BASE()}/storage/v1${item.signedURL}`;
+      out.set(item.path, url);
+      firmasEnMemoria.set(item.path, { url, vence });
     }
   }
   return out;
