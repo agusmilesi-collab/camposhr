@@ -11,6 +11,7 @@ import {
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { PLACAS_GENERACIONES } from '@/lib/generaciones';
 import MatrizBenziger from '@/app/_components/MatrizBenziger';
+import MatrizPortada from '@/app/_components/MatrizPortada';
 
 type ResultadoServidor = {
   totales: Record<Perfil, number>;
@@ -167,7 +168,7 @@ export default function Cuestionario({
         {paso === 0 && (
           <section className="cq-placa cq-portada">
             <div className="cq-portada-matriz">
-              <MatrizBenziger />
+              <MatrizPortada />
             </div>
             <div className="cq-portada-texto">
               <h1>{PORTADA.titulo}</h1>
