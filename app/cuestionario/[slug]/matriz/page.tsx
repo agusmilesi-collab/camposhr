@@ -6,7 +6,7 @@ import {
   listarRespuestas,
   type Variante,
 } from '@/lib/supabase';
-import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
+import { coordenadas, INFO, PERFILES, type Perfil, type Puntajes } from '@/lib/perfiles';
 import MatrizBenziger, { type Punto } from '@/app/_components/MatrizBenziger';
 import AutoRefresco from './AutoRefresco';
 import PantallaCompleta from './PantallaCompleta';
@@ -48,13 +48,18 @@ export default async function MatrizEmpresa({
     respuestas.map((r) => r.foto_path).filter((p): p is string => Boolean(p))
   );
 
-  const puntos: Punto[] = respuestas.map((r) => ({
-    id: r.id,
-    nombre: r.nombre,
-    x: r.eje_x,
-    y: r.eje_y,
-    foto: r.foto_path ? fotos.get(r.foto_path) ?? null : null,
-  }));
+  // La posición se deriva de los totales, no de las columnas guardadas: así
+  // un cambio de criterio reubica también las respuestas ya cargadas.
+  const puntos: Punto[] = respuestas.map((r) => {
+    const { x, y } = coordenadas(r.totales as unknown as Puntajes);
+    return {
+      id: r.id,
+      nombre: r.nombre,
+      x,
+      y,
+      foto: r.foto_path ? fotos.get(r.foto_path) ?? null : null,
+    };
+  });
 
   // Cada persona se cuenta en el cuadrante que encabeza su resultado.
   type Ficha = { nombre: string; detalle: string | null };

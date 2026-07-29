@@ -60,6 +60,30 @@ export type Resultado = {
   ejeY: number; // -1 basal (micro) … 1 frontal (macro)
 };
 
+/**
+ * Ubicación de una persona en la matriz, a partir de sus cuatro totales.
+ *
+ * Se mide qué proporción de su propio puntaje va a cada lado, no la
+ * diferencia en puntos: así quien marcó pocas frases y quien marcó muchas se
+ * comparan igual. Después se expande con una raíz, porque las diferencias
+ * reales son chicas y sin eso todo el grupo queda apelotonado en el centro.
+ * El orden entre personas no cambia: solo se usa mejor el cuadro.
+ */
+export function coordenadas(totales: Puntajes): { x: number; y: number } {
+  const suma = totales.FI + totales.FD + totales.BI + totales.BD;
+  if (suma === 0) return { x: 0, y: 0 };
+
+  const horizontal = (totales.FD + totales.BD - totales.FI - totales.BI) / suma;
+  const vertical = (totales.FI + totales.FD - totales.BI - totales.BD) / suma;
+
+  return { x: expandir(horizontal), y: expandir(vertical) };
+}
+
+/** Estira los valores cercanos a cero, conservando el signo y el orden. */
+function expandir(v: number): number {
+  return redondear(Math.sign(v) * Math.abs(v) ** 0.6);
+}
+
 export function totalizar(likert: Puntajes, checklist: Puntajes): Puntajes {
   return {
     FI: likert.FI + checklist.FI,
@@ -88,19 +112,11 @@ export function calcular(likert: Puntajes, checklist: Puntajes): Resultado {
     tipo = 'mixto';
   }
 
-  // Coordenadas continuas: cada persona cae en un punto único del plano.
-  // Quien reparte parejo queda cerca del centro; quien concentra, en el borde.
-  const horizontal = totales.FD + totales.BD - (totales.FI + totales.BI);
-  const vertical = totales.FI + totales.FD - (totales.BI + totales.BD);
-  const escala = MAXIMO * 2; // rango de cada diferencia: -40 a 40
+  // Cada persona cae en un punto único del plano: quien reparte parejo queda
+  // cerca del centro, quien concentra en un lado se va hacia el borde.
+  const { x, y } = coordenadas(totales);
 
-  return {
-    totales,
-    perfiles,
-    tipo,
-    ejeX: redondear(horizontal / escala),
-    ejeY: redondear(vertical / escala),
-  };
+  return { totales, perfiles, tipo, ejeX: x, ejeY: y };
 }
 
 function redondear(n: number): number {
