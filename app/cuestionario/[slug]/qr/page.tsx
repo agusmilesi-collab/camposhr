@@ -57,7 +57,7 @@ export default async function QrEmpresa({
           <p className="qr-url">{url.replace(/^https:\/\//, '')}</p>
         </div>
 
-        <AccionesQR url={url} />
+        <AccionesQR url={url} slug={empresa.slug} />
       </section>
     </main>
   );

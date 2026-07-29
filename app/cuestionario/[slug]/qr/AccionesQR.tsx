@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 
-export default function AccionesQR({ url }: { url: string }) {
+export default function AccionesQR({
+  url,
+  slug,
+}: {
+  url: string;
+  slug: string;
+}) {
   const [copiado, setCopiado] = useState(false);
 
   async function copiar() {
@@ -35,6 +41,9 @@ export default function AccionesQR({ url }: { url: string }) {
       </button>
       <a className="btn-ghost" href={url} target="_blank" rel="noreferrer">
         Abrir cuestionario
+      </a>
+      <a className="btn-ghost" href={`/cuestionario/${slug}/matriz`}>
+        Ver matriz
       </a>
     </div>
   );
