@@ -3,8 +3,19 @@ import { getEmpresaPorSlug, listarLideres, listarRespuestas } from '@/lib/supaba
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { GENERACIONES, INFO_GENERACION, type Generacion } from '@/lib/generaciones';
 import CopiarEnlace from './CopiarEnlace';
+import { claveOrden, nombreCompleto } from '@/lib/personas';
 
 export const dynamic = 'force-dynamic';
+
+/** Fecha corta de la respuesta: 14/11/25. */
+function fechaCorta(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    timeZone: 'America/Argentina/Buenos_Aires',
+  });
+}
 
 export const metadata = {
   title: 'Informes — Campos HR',
@@ -164,18 +175,19 @@ export default async function Informes({
                       <span className="inf-nums">BI</span>
                       <span className="inf-nums">BD</span>
                       <span>Generación</span>
+                      <span>Fecha</span>
                       <span />
                     </div>
 
                     {gente
                       .slice()
-                      .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                      .sort((a, b) => claveOrden(a).localeCompare(claveOrden(b)))
                       .map((r) => {
                         const totales = (r.totales ?? {}) as Record<string, number>;
                         const perfil = (r.perfiles?.[0] ?? '') as Perfil;
                         return (
                           <div className="inf-fila" key={r.id}>
-                            <span className="acc-name">{r.nombre}</span>
+                            <span className="acc-name">{nombreCompleto(r)}</span>
                             <span className="inf-perfil">
                               {perfil ? INFO[perfil].nombre : '—'}
                             </span>
@@ -190,6 +202,7 @@ export default async function Informes({
                               </span>
                             ))}
                             <span className="inf-suave">{r.generacion ?? '—'}</span>
+                            <span className="inf-suave">{fechaCorta(r.created_at)}</span>
                             <a
                               className="inf-ver"
                               href={`/cuestionario/${empresa.slug}/informes/${r.id}`}

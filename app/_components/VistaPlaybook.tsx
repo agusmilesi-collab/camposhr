@@ -11,6 +11,7 @@ import {
 } from '@/lib/perfiles';
 import { GENERACIONES, INFO_GENERACION, type Generacion } from '@/lib/generaciones';
 import { armarPlaybook, opuesto, ranking } from '@/lib/playbook';
+import { nombreCompleto } from '@/lib/personas';
 import Playbook from './Playbook';
 
 /** De la etiqueta guardada ("X", "Boomer/Y") al código de la primera generación. */
@@ -20,6 +21,7 @@ export function generacionDe(etiqueta: string | null): Generacion | null {
 }
 
 export type Persona = {
+  apellido?: string | null;
   nombre: string;
   lider_nombre: string | null;
   totales: Record<string, number>;
@@ -43,7 +45,7 @@ export default function VistaPlaybook({ persona }: { persona: Persona }) {
     <>
       <section className="pb-cabecera">
         <div>
-          <h1>{persona.nombre}</h1>
+          <h1>{nombreCompleto(persona)}</h1>
           {persona.lider_nombre && (
             <p className="pb-lider">Líder: {persona.lider_nombre}</p>
           )}

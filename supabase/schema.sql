@@ -104,3 +104,11 @@ alter table public.lideres
 update public.lideres
    set token = encode(gen_random_bytes(16), 'hex')
  where token is null;
+
+-- ------------------------------------------------ apellido y nombre separados
+-- El cuestionario pide los dos campos por separado. Las respuestas anteriores
+-- guardaron el nombre completo en `nombre` y quedan con `apellido` en null:
+-- no se puede partir un nombre completo sin adivinar, así que se muestran tal
+-- como fueron cargadas.
+alter table public.respuestas
+  add column if not exists apellido text;

@@ -1947,8 +1947,8 @@ body {
      la tiene vacía) repartiría distinto el espacio y los títulos quedarían
      corridos respecto de los valores. */
   grid-template-columns:
-    minmax(0, 1.6fr) minmax(0, 1.1fr)
-    38px 38px 38px 38px minmax(0, 0.8fr) 88px;
+    minmax(0, 1.6fr) minmax(0, 1fr)
+    36px 36px 36px 36px minmax(0, 0.7fr) 64px 88px;
   align-items: center;
   gap: 12px;
   padding: 9px 20px;
@@ -2093,4 +2093,26 @@ body {
 
 .eq-tabla {
   padding-bottom: 40px;
+}
+
+.cq-campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 22px;
+}
+.cq-campo-doble span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.cq-campo-doble .cq-input {
+  margin-top: 0;
+}
+@media (max-width: 560px) {
+  .cq-campos {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
 }
