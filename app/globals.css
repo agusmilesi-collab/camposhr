@@ -823,11 +823,27 @@ body {
   color: var(--muted);
   cursor: pointer;
 }
+/* La matriz se proyecta: usa más ancho que el resto de las pantallas. */
+.wrap-matriz {
+  max-width: 1180px;
+}
+/* Las cuatro listas van en línea, una por cuadrante, en el mismo orden que
+   la matriz de arriba. */
 .mx-listas {
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   padding-bottom: 72px;
+}
+@media (max-width: 900px) {
+  .mx-listas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .mx-listas {
+    grid-template-columns: 1fr;
+  }
 }
 .mx-lista {
   background: var(--card);
