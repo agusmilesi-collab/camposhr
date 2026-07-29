@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import QRCode from 'qrcode';
 import { getEmpresaPorSlug } from '@/lib/supabase';
-import AccionesQR from './AccionesQR';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +56,14 @@ export default async function QrEmpresa({
           <p className="qr-url">{url.replace(/^https:\/\//, '')}</p>
         </div>
 
-        <AccionesQR url={url} slug={empresa.slug} />
+        <div className="qr-acciones no-print">
+          <a className="btn" href={url} target="_blank" rel="noreferrer">
+            Abrir cuestionario
+          </a>
+          <a className="btn-ghost" href={`/cuestionario/${empresa.slug}/matriz`}>
+            Ver matriz
+          </a>
+        </div>
       </section>
     </main>
   );

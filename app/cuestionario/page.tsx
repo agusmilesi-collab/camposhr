@@ -44,29 +44,44 @@ export default async function IndiceCuestionario() {
                   {conteos[i]} {conteos[i] === 1 ? 'persona' : 'personas'}
                 </span>
                 <span className="cu-acciones">
-                  <a
-                    className="btn-ghost"
-                    href={`/cuestionario/${e.slug}/qr`}
-                    title="QR del cuestionario de perfil (solo cuadrantes)"
-                  >
-                    QR Perfil
-                  </a>
-                  <a
-                    className="btn-ghost"
-                    href={`/cuestionario/${e.slug}/qr?v=g`}
-                    title="QR del cuestionario mixto: cuadrantes, generaciones y líder"
-                  >
-                    QR Mixto
-                  </a>
+                  {/* Cada cuestionario con su pantalla: el de perfil se mira
+                      en la matriz, el mixto en los informes. */}
+                  <span className="cu-grupo">
+                    <a
+                      className="btn-ghost"
+                      href={`/cuestionario/${e.slug}/qr`}
+                      title="QR del cuestionario de perfil (solo cuadrantes)"
+                    >
+                      QR Perfil
+                    </a>
+                    <a className="btn" href={`/cuestionario/${e.slug}/matriz`}>
+                      Ver matriz
+                    </a>
+                  </span>
+
+                  <span className="cu-sep" aria-hidden="true" />
+
+                  <span className="cu-grupo">
+                    <a
+                      className="btn-ghost"
+                      href={`/cuestionario/${e.slug}/qr?v=g`}
+                      title="QR del cuestionario mixto: cuadrantes, generaciones y líder"
+                    >
+                      QR Mixto
+                    </a>
+                    <a className="btn" href={`/cuestionario/${e.slug}/informes`}>
+                      Ver informes
+                    </a>
+                  </span>
+
+                  <span className="cu-sep" aria-hidden="true" />
+
                   <a
                     className="btn-ghost"
                     href={`/cuestionario/${e.slug}/export`}
-                    title="Descargar respuestas en CSV"
+                    title="Descargar todas las respuestas en CSV"
                   >
                     CSV
-                  </a>
-                  <a className="btn" href={`/cuestionario/${e.slug}/matriz`}>
-                    Ver matriz
                   </a>
                 </span>
               </div>
