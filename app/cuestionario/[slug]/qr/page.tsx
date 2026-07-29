@@ -49,7 +49,7 @@ export default async function QrEmpresa({
       <section className="qr-bloque">
         <div className="qr-marco">
           <p className="qr-titulo">
-            {conGeneraciones ? 'Cuestionario mixto' : 'Cuestionario de perfil'}
+            {conGeneraciones ? 'Cuestionario de liderazgo' : 'Cuestionario de perfil'}
           </p>
           <p className="qr-empresa">{empresa.nombre}</p>
           <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />

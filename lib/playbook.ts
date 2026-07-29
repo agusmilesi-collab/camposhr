@@ -4,7 +4,7 @@
  * El contenido no se escribe persona por persona. Se escribe una vez por
  * cuadrante y por generación, y acá se combina con los datos de cada uno.
  * Con 4 cuadrantes y 4 generaciones, esta biblioteca cubre las 128 personas
- * del cuestionario mixto y se corrige en un solo lugar.
+ * del cuestionario de liderazgo y se corrige en un solo lugar.
  *
  * Para cada dimensión hay un eje que manda (casi siempre el cuadrante, que
  * es lo estructural) y otro que matiza. El "por qué" siempre suma los dos.

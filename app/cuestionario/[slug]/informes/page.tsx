@@ -37,7 +37,7 @@ export default async function Informes({
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 
-  // El cuestionario mixto es el que trae líder y generación.
+  // El cuestionario de liderazgo es el que trae líder y generación.
   const [respuestas, lideres] = await Promise.all([
     listarRespuestas(empresa.id, 'generaciones'),
     listarLideres(empresa.id),
@@ -76,7 +76,7 @@ export default async function Informes({
     <main className="wrap wrap-matriz">
       <section className="head">
         <div className="head-top">
-          <div className="eyebrow">Informes · cuestionario mixto</div>
+          <div className="eyebrow">Informes · cuestionario de liderazgo</div>
           <a href="/cuestionario" className="volver">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
             Empresas
@@ -88,7 +88,7 @@ export default async function Informes({
       {respuestas.length === 0 ? (
         <section className="accesos">
           <p className="empty">
-            Todavía no hay respuestas del cuestionario mixto para esta empresa.
+            Todavía no hay respuestas del cuestionario de liderazgo para esta empresa.
           </p>
         </section>
       ) : (
