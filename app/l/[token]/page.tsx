@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getLiderPorToken, listarEquipo } from '@/lib/supabase';
-import { coordenadas, INFO, type Perfil, type Puntajes } from '@/lib/perfiles';
+import { coordenadas, INFO, PERFILES, type Perfil, type Puntajes } from '@/lib/perfiles';
 import MatrizBenziger, { type Punto } from '@/app/_components/MatrizBenziger';
 
 export const dynamic = 'force-dynamic';
@@ -58,22 +58,44 @@ export default async function EquipoDelLider({
       )}
 
       {equipo.length > 0 && (
-        <section className="eq-lista">
-          {equipo.map((r) => {
-            const perfil = (r.perfiles?.[0] ?? '') as Perfil;
-            return (
-              <a className="eq-persona" href={`/l/${params.token}/${r.id}`} key={r.id}>
-                <span className="eq-nombre">{r.nombre}</span>
-                <span className="eq-datos">
-                  {perfil ? INFO[perfil].nombre : '—'}
-                  {r.generacion && ` · ${r.generacion}`}
-                </span>
-                <span className="eq-flecha" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
-                </span>
-              </a>
-            );
-          })}
+        <section className="eq-tabla">
+          <div className="card">
+            <div className="inf-fila inf-th">
+              <span>Persona</span>
+              <span>Perfil</span>
+              <span className="inf-nums">FI</span>
+              <span className="inf-nums">FD</span>
+              <span className="inf-nums">BI</span>
+              <span className="inf-nums">BD</span>
+              <span>Generación</span>
+              <span />
+            </div>
+
+            {equipo.map((r) => {
+              const totales = (r.totales ?? {}) as Record<string, number>;
+              const perfil = (r.perfiles?.[0] ?? '') as Perfil;
+              return (
+                <div className="inf-fila" key={r.id}>
+                  <span className="acc-name">{r.nombre}</span>
+                  <span className="inf-perfil">
+                    {perfil ? INFO[perfil].nombre : '—'}
+                  </span>
+                  {PERFILES.map((p) => (
+                    <span
+                      className={p === perfil ? 'inf-nums inf-nums-on' : 'inf-nums'}
+                      key={p}
+                    >
+                      {totales[p] ?? '—'}
+                    </span>
+                  ))}
+                  <span className="inf-suave">{r.generacion ?? '—'}</span>
+                  <a className="inf-ver" href={`/l/${params.token}/${r.id}`}>
+                    Playbook
+                  </a>
+                </div>
+              );
+            })}
+          </div>
         </section>
       )}
 
