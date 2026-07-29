@@ -719,6 +719,10 @@ body {
   font-size: 5.8px;
   fill: #b9b3a8;
 }
+.mx-cuadrante-desc {
+  font-size: 2.5px;
+  fill: #b9b3a8;
+}
 .mx-sinfoto {
   fill: #ece9e2;
 }
@@ -750,6 +754,61 @@ body {
 }
 .mx-bloque {
   padding-bottom: 26px;
+}
+
+/* ---------- Pantalla completa (proyección en el salón) ---------- */
+.mx-caja {
+  position: relative;
+}
+.mx-full {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 11px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s, background 0.15s;
+}
+.mx-full:hover {
+  opacity: 1;
+  background: #efece5;
+}
+.mx-full svg {
+  width: 13px;
+  height: 13px;
+}
+/* Al proyectar, la matriz ocupa toda la pantalla y nada más se ve. */
+.mx-caja:fullscreen {
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2vh 2vw;
+}
+.mx-caja:fullscreen .mx {
+  width: 100%;
+  max-width: calc((100vh - 12vh) * 1.78);
+  border: 0;
+  background: transparent;
+}
+.mx-caja:fullscreen .mx-eje strong {
+  font-size: 1.5rem;
+}
+.mx-caja:fullscreen .mx-eje span {
+  font-size: 1rem;
+}
+.mx-caja:fullscreen .mx-full {
+  opacity: 0.25;
 }
 .mx-filtros {
   display: flex;
