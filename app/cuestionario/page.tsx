@@ -45,7 +45,7 @@ export default async function IndiceCuestionario() {
                 </span>
                 <span className="cu-acciones">
                   {/* Cada cuestionario con su pantalla: el de perfil se mira
-                      en la matriz, el mixto en los informes. */}
+                      en la matriz, el de liderazgo en los informes. */}
                   <span className="cu-grupo">
                     <a
                       className="btn-ghost"
@@ -76,16 +76,16 @@ export default async function IndiceCuestionario() {
                     <a
                       className="btn-ghost"
                       href={`/cuestionario/${e.slug}/qr?v=g`}
-                      title="QR del cuestionario mixto: cuadrantes, generaciones y líder"
+                      title="QR del cuestionario de liderazgo: cuadrantes, generaciones y líder"
                     >
-                      QR Mixto
+                      QR Liderazgo
                     </a>
                     <a
                       className="btn-ghost"
                       href={`/cuestionario/${e.slug}/qr?v=g`}
                       target="_blank"
                       rel="noreferrer"
-                      title="Abrir el QR mixto en otra pestaña"
+                      title="Abrir el QR de liderazgo en otra pestaña"
                     >
                       Abrir
                     </a>

@@ -31,7 +31,7 @@ export default async function MatrizEmpresa({
   if (!empresa) notFound();
 
   // La matriz es la pantalla del taller: muestra el cuestionario de perfil.
-  // Lo que responde el mixto alimenta los informes, no esta vista.
+  // Lo que responde el de liderazgo alimenta los informes, no esta vista.
   const respuestas = await listarRespuestas(empresa.id, 'perfil');
 
   const fotos = await firmarSelfies(
