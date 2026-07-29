@@ -87,7 +87,7 @@ export default async function MatrizEmpresa({
   }
 
   return (
-    <main className="wrap">
+    <main className="wrap wrap-matriz">
       <section className="head no-print">
         <div className="head-top">
           <div className="eyebrow">Cuestionario de perfil</div>
