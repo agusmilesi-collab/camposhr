@@ -54,17 +54,6 @@ export default async function IndiceCuestionario() {
                     >
                       QR Perfil
                     </a>
-                    {/* En otra pestaña, para proyectar el código sin perder
-                        la pantalla donde se está trabajando. */}
-                    <a
-                      className="btn-ghost"
-                      href={`/cuestionario/${e.slug}/qr`}
-                      target="_blank"
-                      rel="noreferrer"
-                      title="Abrir el QR en otra pestaña"
-                    >
-                      Abrir
-                    </a>
                     <a className="btn" href={`/cuestionario/${e.slug}/matriz`}>
                       Ver matriz
                     </a>
@@ -79,15 +68,6 @@ export default async function IndiceCuestionario() {
                       title="QR del cuestionario de liderazgo: cuadrantes, generaciones y líder"
                     >
                       QR Liderazgo
-                    </a>
-                    <a
-                      className="btn-ghost"
-                      href={`/cuestionario/${e.slug}/qr?v=g`}
-                      target="_blank"
-                      rel="noreferrer"
-                      title="Abrir el QR de liderazgo en otra pestaña"
-                    >
-                      Abrir
                     </a>
                     <a className="btn" href={`/cuestionario/${e.slug}/informes`}>
                       Ver informes
