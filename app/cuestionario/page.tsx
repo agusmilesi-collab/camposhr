@@ -51,16 +51,16 @@ export default async function IndiceCuestionario() {
                   <a
                     className="btn-ghost"
                     href={`/cuestionario/${e.slug}/qr`}
-                    title="QR del cuestionario de perfil"
+                    title="QR del cuestionario de perfil (solo cuadrantes)"
                   >
-                    QR perfil
+                    QR Perfil
                   </a>
                   <a
                     className="btn-ghost"
                     href={`/cuestionario/${e.slug}/qr?v=g`}
-                    title="QR de la versión con generaciones y líder"
+                    title="QR del cuestionario mixto: cuadrantes, generaciones y líder"
                   >
-                    QR generaciones
+                    QR Mixto
                   </a>
                   <a
                     className="btn-ghost"

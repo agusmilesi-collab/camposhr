@@ -47,8 +47,8 @@ export default async function QrEmpresa({
         <h1>{empresa.nombre}</h1>
         <p className="head-nota">
           {conGeneraciones
-            ? 'Versión con el bloque de generaciones: además del cuadrante pide el líder de cada persona, y es la que alimenta los informes.'
-            : 'Versión de perfil: las 8 placas de cuadrantes.'}{' '}
+            ? 'Cuestionario mixto: suma el bloque de generaciones y pide el líder de cada persona. Es el que alimenta los informes.'
+            : 'Cuestionario de perfil: las 8 placas de cuadrantes.'}{' '}
           Proyectá o imprimí este código. Cada persona lo escanea con el celular y
           responde; las respuestas quedan asociadas a esta empresa.
         </p>
@@ -57,7 +57,7 @@ export default async function QrEmpresa({
       <section className="qr-bloque">
         <div className="qr-marco">
           <p className="qr-titulo">
-            {conGeneraciones ? 'Cuestionario de perfil y generaciones' : 'Cuestionario de perfil'}
+            {conGeneraciones ? 'Cuestionario mixto' : 'Cuestionario de perfil'}
           </p>
           <p className="qr-empresa">{empresa.nombre}</p>
           <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />
