@@ -37,6 +37,7 @@ export default function Cuestionario({
 }) {
   // 0 portada · 1 identidad · 2..9 placas · 10 autopercepción · 11 resultado
   const [paso, setPaso] = useState(0);
+  const [apellido, setApellido] = useState('');
   const [nombre, setNombre] = useState('');
   const [liderId, setLiderId] = useState('');
   const [foto, setFoto] = useState<{ blob: Blob; url: string } | null>(null);
@@ -67,7 +68,9 @@ export default function Cuestionario({
 
   const pideLider = lideres.length > 0;
   const identidadCompleta =
-    nombre.trim().length >= 2 && (!pideLider || liderId !== '');
+    apellido.trim().length >= 2 &&
+    nombre.trim().length >= 2 &&
+    (!pideLider || liderId !== '');
 
   const perfilesResultado = useMemo(() => {
     if (!resultado) return [];
@@ -119,6 +122,7 @@ export default function Cuestionario({
       datos.append(
         'datos',
         JSON.stringify({
+          apellido: apellido.trim(),
           nombre: nombre.trim(),
           respuestas,
           autopercepcion,
@@ -185,21 +189,36 @@ export default function Cuestionario({
         {paso === 1 && (
           <section className="cq-placa">
             <p className="cq-numero">1</p>
-            <h2 className="cq-pregunta">¿Cuál es tu nombre?</h2>
+            <h2 className="cq-pregunta">¿Cómo te llamás?</h2>
             <p className="cq-ayuda">
-              Se muestra junto a tu foto en la matriz del equipo. Nombre y apellido.
+              Tu nombre se muestra junto a tu foto en la matriz del equipo.
             </p>
 
-            <input
-              className="cq-input"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              placeholder="Escribí acá tu respuesta…"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && identidadCompleta) setPaso(2);
-              }}
-            />
+            <div className="cq-campos">
+              <label className="cq-campo-doble">
+                <span>Apellido</span>
+                <input
+                  className="cq-input"
+                  value={apellido}
+                  onChange={(e) => setApellido(e.target.value)}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && identidadCompleta) setPaso(2);
+                  }}
+                />
+              </label>
+              <label className="cq-campo-doble">
+                <span>Nombre</span>
+                <input
+                  className="cq-input"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && identidadCompleta) setPaso(2);
+                  }}
+                />
+              </label>
+            </div>
 
             {pideLider && (
               <div className="cq-campo">

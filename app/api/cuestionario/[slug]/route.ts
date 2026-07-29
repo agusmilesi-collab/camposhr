@@ -75,6 +75,7 @@ export async function POST(
   }
 
   let datos: {
+    apellido?: unknown;
     nombre?: unknown;
     respuestas?: unknown;
     autopercepcion?: unknown;
@@ -89,8 +90,12 @@ export async function POST(
   }
 
   const nombre = String(datos.nombre ?? '').trim().slice(0, 80);
+  const apellido = String(datos.apellido ?? '').trim().slice(0, 80);
   if (nombre.length < 2) {
     return new NextResponse('Falta el nombre', { status: 400 });
+  }
+  if (apellido.length < 2) {
+    return new NextResponse('Falta el apellido', { status: 400 });
   }
 
   if (!Array.isArray(datos.respuestas) || datos.respuestas.length !== PLACAS.length) {
@@ -172,6 +177,7 @@ export async function POST(
       variante,
       lider_id: liderId,
       lider_nombre: liderNombre,
+      apellido,
       nombre,
       likert,
       checklist,

@@ -77,6 +77,7 @@ export type Respuesta = {
   variante: Variante;
   lider_id: string | null;
   lider_nombre: string | null;
+  apellido: string | null;
   nombre: string;
   totales: Record<string, number>;
   perfiles: string[];
@@ -143,7 +144,7 @@ export async function listarEquipo(liderId: string): Promise<Respuesta[]> {
 }
 
 const CAMPOS_RESPUESTA =
-  'id,empresa_id,variante,lider_id,lider_nombre,nombre,totales,perfiles,' +
+  'id,empresa_id,variante,lider_id,lider_nombre,apellido,nombre,totales,perfiles,' +
   'resultado,eje_x,eje_y,generacion,foto_path,created_at';
 
 export async function listarRespuestas(
@@ -186,6 +187,7 @@ export async function guardarRespuesta(fila: {
   variante: Variante;
   lider_id: string | null;
   lider_nombre: string | null;
+  apellido: string | null;
   nombre: string;
   likert: Record<string, number>;
   checklist: Record<string, number>;
