@@ -9,6 +9,7 @@ import {
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import MatrizBenziger, { type Punto } from '@/app/_components/MatrizBenziger';
 import AutoRefresco from './AutoRefresco';
+import PantallaCompleta from './PantallaCompleta';
 import Filtros from './Filtros';
 
 export const dynamic = 'force-dynamic';
@@ -109,14 +110,15 @@ export default async function MatrizEmpresa({
       </section>
 
       <section className="mx-bloque">
-        <MatrizBenziger puntos={puntos} />
+        <PantallaCompleta>
+          <MatrizBenziger puntos={puntos} conDescripciones />
+        </PantallaCompleta>
       </section>
 
       <section className="mx-listas">
         {PERFILES.map((p) => (
           <div className="mx-lista" key={p}>
             <h2>{INFO[p].nombre}</h2>
-            <p className="mx-lista-desc">{INFO[p].descripcion}</p>
             <ul>
               {(porCuadrante.get(p) ?? []).map((ficha, i) => (
                 <li key={`${ficha.nombre}-${i}`}>
