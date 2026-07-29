@@ -52,6 +52,48 @@ export const INFO: Record<
   },
 };
 
+/**
+ * Lectura de un puntaje suelto, de 0 a 20.
+ *
+ * Un cuadrante puede estar por debajo del umbral y aun así ser el más alto de
+ * la persona: son dos lecturas distintas y el informe necesita las dos. Acá va
+ * la absoluta; la relativa (cuál encabeza) sale del orden de los cuatro.
+ */
+export type Nivel = 'evita' | 'competente' | 'prefiere';
+
+export const NIVELES: Record<Nivel, { titulo: string; texto: string }> = {
+  evita: {
+    titulo: 'Lo evita',
+    texto:
+      'Es la forma de pensar que menos usa. Las tareas de este tipo le cuestan mucho y las posterga o las delega.',
+  },
+  competente: {
+    titulo: 'Es competente',
+    texto:
+      'Habilidad desarrollada pero no preferida. Puede usarla cuando hace falta, aunque le implica esfuerzo y la agota si se sostiene.',
+  },
+  prefiere: {
+    titulo: 'Lo prefiere',
+    texto:
+      'Es su forma natural de pensar. Le sale sin esfuerzo y es donde rinde más.',
+  },
+};
+
+export function nivel(puntaje: number): Nivel {
+  if (puntaje <= 5) return 'evita';
+  if (puntaje <= UMBRAL - 1) return 'competente';
+  return 'prefiere';
+}
+
+/**
+ * Si ningún cuadrante supera el umbral, la persona no tiene una preferencia
+ * marcada: usa los cuatro en un nivel parejo. El más alto sigue siendo su
+ * inclinación, pero conviene decirlo con esa reserva.
+ */
+export function esParejo(totales: Puntajes): boolean {
+  return PERFILES.every((p) => totales[p] <= UMBRAL);
+}
+
 export type Resultado = {
   totales: Puntajes;
   perfiles: Perfil[];
