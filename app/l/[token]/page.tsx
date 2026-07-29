@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getLiderPorToken, listarEquipo } from '@/lib/supabase';
-import { INFO, type Perfil } from '@/lib/perfiles';
+import { coordenadas, INFO, type Perfil, type Puntajes } from '@/lib/perfiles';
+import MatrizBenziger, { type Punto } from '@/app/_components/MatrizBenziger';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,10 +25,17 @@ export default async function EquipoDelLider({
 
   const equipo = await listarEquipo(lider.id);
 
+  // Dónde cae cada persona del equipo en la matriz.
+  const puntos: Punto[] = equipo.map((r) => {
+    const { x, y } = coordenadas(r.totales as unknown as Puntajes);
+    return { id: r.id, nombre: r.nombre, x, y };
+  });
+
   return (
     <main className="wrap pb-wrap">
       <section className="head">
         <div className="eyebrow">{lider.empresa?.nombre}</div>
+        <p className="eq-saludo">Hola, {lider.nombre}</p>
         <h1>Tu equipo</h1>
         <p className="head-nota">
           {equipo.length === 0
@@ -37,6 +45,17 @@ export default async function EquipoDelLider({
               }. Entrá en cada una para ver cómo conducirla: qué la motiva, cómo darle feedback y una acción concreta por semana.`}
         </p>
       </section>
+
+      {equipo.length > 0 && (
+        <section className="eq-matriz">
+          <MatrizBenziger puntos={puntos} />
+          <p className="eq-matriz-pie">
+            Cuanto más arriba, más trabaja con ideas; cuanto más abajo, con el
+            detalle. A la izquierda, la lógica y el procedimiento; a la derecha,
+            lo creativo y lo relacional.
+          </p>
+        </section>
+      )}
 
       {equipo.length > 0 && (
         <section className="eq-lista">
