@@ -168,6 +168,16 @@ function distribuir(
     y1: cy + abajo,
   });
 
+  // No alcanza con que no se toquen: sin un aire mínimo, dos etiquetas
+  // pegadas se leen como una sola.
+  const AIRE = 1.2;
+  const inflar = (c: Caja): Caja => ({
+    x0: c.x0 - AIRE,
+    y0: c.y0 - AIRE,
+    x1: c.x1 + AIRE,
+    y1: c.y1 + AIRE,
+  });
+
   const puestas: Caja[] = [];
   const libre = (c: Caja) =>
     c.x0 >= 0.5 &&
@@ -175,7 +185,7 @@ function distribuir(
     c.y0 >= 0.5 &&
     c.y1 <= ALTO - 0.5 &&
     !cajasTexto.some((t) => seSolapan(c, t)) &&
-    !puestas.some((q) => seSolapan(c, q));
+    !puestas.some((q) => seSolapan(inflar(c), q));
 
   // Las más alejadas del centro se ubican primero: son las que definen la
   // lectura del gráfico y las que menos margen tienen para moverse.
