@@ -17,16 +17,22 @@ export type Punto = {
   destacado?: boolean;
 };
 
-const LADO = 100;
-const MARGEN = 9; // deja aire para que ningún círculo se corte contra el borde
-const RADIO = 3.4;
+// Lienzo 16:9: la matriz se proyecta en pantalla durante el encuentro.
+const ANCHO = 160;
+const ALTO = 90;
+// Aire para que ningún círculo se corte contra el borde. Distinto por eje,
+// porque el lienzo ya no es cuadrado.
+const MARGEN_X = 14;
+const MARGEN_Y = 9;
+const RADIO = 3.6;
 
 /** Pasa las coordenadas -1..1 al sistema del SVG. */
 function aSvg(x: number, y: number) {
-  const util = LADO / 2 - MARGEN;
+  const utilX = ANCHO / 2 - MARGEN_X;
+  const utilY = ALTO / 2 - MARGEN_Y;
   return {
-    cx: LADO / 2 + x * util,
-    cy: LADO / 2 - y * util, // el eje Y del SVG crece hacia abajo
+    cx: ANCHO / 2 + x * utilX,
+    cy: ALTO / 2 - y * utilY, // el eje Y del SVG crece hacia abajo
   };
 }
 
@@ -36,43 +42,49 @@ function aSvg(x: number, y: number) {
  */
 function separar(puntos: Punto[]) {
   const pos = puntos.map((p) => aSvg(p.x, p.y));
-  const minimo = RADIO * 2.15;
 
-  for (let paso = 0; paso < 60; paso++) {
+  // Zona reservada por persona: más alta que ancha, porque debajo de cada
+  // círculo va el nombre. Sin esto las etiquetas se pisan con los vecinos.
+  const SEP_X = RADIO * 2.9;
+  const SEP_Y = RADIO * 3.5;
+
+  for (let paso = 0; paso < 120; paso++) {
     let movio = false;
     for (let i = 0; i < pos.length; i++) {
       for (let j = i + 1; j < pos.length; j++) {
         const dx = pos[j].cx - pos[i].cx;
         const dy = pos[j].cy - pos[i].cy;
-        const dist = Math.hypot(dx, dy);
-        if (dist >= minimo) continue;
+        // Distancia en el espacio deformado por la zona reservada: si da
+        // menos de 1, las zonas se superponen.
+        const d = Math.hypot(dx / SEP_X, dy / SEP_Y);
+        if (d >= 1) continue;
 
         // Si coinciden exactamente, se los separa en direcciones fijas.
-        const ux = dist === 0 ? Math.cos(i * 2.4) : dx / dist;
-        const uy = dist === 0 ? Math.sin(i * 2.4) : dy / dist;
-        const empuje = (minimo - (dist || 0)) / 2;
-        pos[i].cx -= ux * empuje;
-        pos[i].cy -= uy * empuje;
-        pos[j].cx += ux * empuje;
-        pos[j].cy += uy * empuje;
+        const ux = d === 0 ? Math.cos(i * 2.4) : dx / d / SEP_X;
+        const uy = d === 0 ? Math.sin(i * 2.4) : dy / d / SEP_Y;
+        const empuje = (1 - d) / 2;
+        pos[i].cx -= ux * SEP_X * empuje;
+        pos[i].cy -= uy * SEP_Y * empuje;
+        pos[j].cx += ux * SEP_X * empuje;
+        pos[j].cy += uy * SEP_Y * empuje;
         movio = true;
       }
     }
     if (!movio) break;
   }
 
-  const tope = LADO - MARGEN / 2;
   return pos.map((p) => ({
-    cx: Math.min(Math.max(p.cx, MARGEN / 2), tope),
-    cy: Math.min(Math.max(p.cy, MARGEN / 2), tope),
+    cx: Math.min(Math.max(p.cx, RADIO + 1), ANCHO - RADIO - 1),
+    cy: Math.min(Math.max(p.cy, RADIO + 1), ALTO - RADIO - 2.5),
   }));
 }
 
+// Los rótulos van hacia las esquinas, lejos de la zona donde caen las personas.
 const CUADRANTES: { perfil: Perfil; x: number; y: number }[] = [
-  { perfil: 'FI', x: 25, y: 26 },
-  { perfil: 'FD', x: 75, y: 26 },
-  { perfil: 'BI', x: 25, y: 76 },
-  { perfil: 'BD', x: 75, y: 76 },
+  { perfil: 'FI', x: 26, y: 15 },
+  { perfil: 'FD', x: 134, y: 15 },
+  { perfil: 'BI', x: 26, y: 74 },
+  { perfil: 'BD', x: 134, y: 74 },
 ];
 
 export default function MatrizBenziger({
@@ -91,7 +103,7 @@ export default function MatrizBenziger({
         <span>Mundo de las ideas</span>
       </div>
 
-      <svg viewBox={`0 0 ${LADO} ${LADO}`} className="mx-svg" role="img" aria-label="Matriz de perfiles">
+      <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} className="mx-svg" role="img" aria-label="Matriz de perfiles">
         <defs>
           {puntos.map((p, i) =>
             p.foto ? (
@@ -102,17 +114,17 @@ export default function MatrizBenziger({
           )}
         </defs>
 
-        <rect x="0" y="0" width={LADO} height={LADO} rx="2" className="mx-fondo" />
+        <rect x="0" y="0" width={ANCHO} height={ALTO} rx="2" className="mx-fondo" />
 
         {/* Ejes */}
-        <line x1={LADO / 2} y1="2" x2={LADO / 2} y2={LADO - 2} className="mx-linea" />
-        <line x1="2" y1={LADO / 2} x2={LADO - 2} y2={LADO / 2} className="mx-linea" />
+        <line x1={ANCHO / 2} y1="2" x2={ANCHO / 2} y2={ALTO - 2} className="mx-linea" />
+        <line x1="2" y1={ALTO / 2} x2={ANCHO - 2} y2={ALTO / 2} className="mx-linea" />
 
         {/* Nombres de cuadrante */}
         {CUADRANTES.map((c) => (
           <text key={c.perfil} x={c.x} y={c.y} className="mx-cuadrante" textAnchor="middle">
             {INFO[c.perfil].nombre.split(' ').map((palabra, i) => (
-              <tspan key={i} x={c.x} dy={i === 0 ? 0 : 5.4}>
+              <tspan key={i} x={c.x} dy={i === 0 ? 0 : 6.2}>
                 {palabra}
               </tspan>
             ))}
@@ -136,13 +148,13 @@ export default function MatrizBenziger({
               <circle cx={pos[i].cx} cy={pos[i].cy} r={RADIO} className="mx-sinfoto" />
             )}
             {!p.foto && (
-              <text x={pos[i].cx} y={pos[i].cy + 1.1} className="mx-iniciales" textAnchor="middle">
+              <text x={pos[i].cx} y={pos[i].cy + 1.05} className="mx-iniciales" textAnchor="middle">
                 {iniciales(p.nombre)}
               </text>
             )}
             <circle cx={pos[i].cx} cy={pos[i].cy} r={RADIO} className="mx-aro" />
             {conNombres && (
-              <text x={pos[i].cx} y={pos[i].cy + RADIO + 3} className="mx-nombre" textAnchor="middle">
+              <text x={pos[i].cx} y={pos[i].cy + RADIO + 3.4} className="mx-nombre" textAnchor="middle">
                 {primerNombre(p.nombre)}
               </text>
             )}
