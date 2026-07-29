@@ -22,10 +22,6 @@ export default async function IndiceCuestionario() {
           </a>
         </div>
         <h1>Empresas</h1>
-        <p className="head-nota">
-          Un QR por empresa para que el equipo responda desde el celular, y la
-          matriz en vivo para proyectar durante el encuentro.
-        </p>
       </section>
 
       <section className="accesos">

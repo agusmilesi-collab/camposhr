@@ -45,13 +45,6 @@ export default async function QrEmpresa({
           </a>
         </div>
         <h1>{empresa.nombre}</h1>
-        <p className="head-nota">
-          {conGeneraciones
-            ? 'Cuestionario mixto: suma el bloque de generaciones y pide el líder de cada persona. Es el que alimenta los informes.'
-            : 'Cuestionario de perfil: las 8 placas de cuadrantes.'}{' '}
-          Proyectá o imprimí este código. Cada persona lo escanea con el celular y
-          responde; las respuestas quedan asociadas a esta empresa.
-        </p>
       </section>
 
       <section className="qr-bloque">
