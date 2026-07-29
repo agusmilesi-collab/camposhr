@@ -2040,3 +2040,84 @@ body {
   font-size: 0.76rem;
   color: var(--muted);
 }
+
+/* ---------- Enlace del líder ---------- */
+.inf-link {
+  font: inherit;
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.inf-link:hover {
+  background: #efece5;
+  color: var(--ink);
+}
+.inf-link-ok {
+  color: var(--st-green);
+  border-color: var(--st-green);
+  background: #eef3ee;
+}
+.inf-sin-link {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+/* ---------- Portal del líder ---------- */
+.eq-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 40px;
+}
+.eq-persona {
+  display: grid;
+  grid-template-columns: 1fr auto 18px;
+  align-items: center;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 15px 17px;
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+.eq-persona:hover {
+  border-color: var(--ink-soft);
+}
+.eq-nombre {
+  font-weight: 500;
+  color: var(--ink);
+  font-size: 0.98rem;
+}
+.eq-datos {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: right;
+}
+.eq-flecha {
+  color: var(--muted);
+}
+.eq-flecha svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+@media (max-width: 520px) {
+  .eq-persona {
+    grid-template-columns: 1fr 18px;
+  }
+  .eq-datos {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: left;
+  }
+  .eq-flecha {
+    grid-row: 1 / span 2;
+  }
+}

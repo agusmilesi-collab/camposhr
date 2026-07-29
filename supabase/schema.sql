@@ -93,3 +93,14 @@ on conflict (id) do nothing;
 insert into public.empresas (nombre, slug)
 values ('Pla S.A.', 'pla-sa')
 on conflict (slug) do nothing;
+
+-- --------------------------------------------------- enlace propio del líder
+-- Cada líder tiene un enlace secreto con el que ve el playbook de su equipo,
+-- sin cuenta ni contraseña. El token se genera solo al dar de alta al líder.
+alter table public.lideres
+  add column if not exists token text unique
+  default encode(gen_random_bytes(16), 'hex');
+
+update public.lideres
+   set token = encode(gen_random_bytes(16), 'hex')
+ where token is null;

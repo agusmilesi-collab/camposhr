@@ -64,6 +64,8 @@ export type Lider = {
   empresa_id: string;
   nombre: string;
   activo: boolean;
+  /** Enlace propio del líder para ver el playbook de su equipo. */
+  token: string | null;
 };
 
 /** Variantes del cuestionario. 'generaciones' suma 4 placas y pide el líder. */
@@ -109,8 +111,34 @@ export async function getEmpresaPorSlug(slug: string): Promise<Empresa | null> {
 export async function listarLideres(empresaId: string): Promise<Lider[]> {
   return select<Lider>(
     'lideres',
-    `select=id,empresa_id,nombre,activo&empresa_id=eq.${empresaId}` +
+    `select=id,empresa_id,nombre,activo,token&empresa_id=eq.${empresaId}` +
       `&activo=eq.true&order=nombre.asc`
+  );
+}
+
+const TOKEN_LIDER = /^[a-f0-9]{16,64}$/;
+
+/** Resuelve el enlace de un líder. Devuelve el líder y su empresa. */
+export async function getLiderPorToken(
+  token: string
+): Promise<(Lider & { empresa: Empresa }) | null> {
+  if (!TOKEN_LIDER.test(token)) return null;
+  const filas = await select<Lider & { empresas: Empresa }>(
+    'lideres',
+    `select=id,empresa_id,nombre,activo,token,empresas(id,nombre,slug,activa)` +
+      `&token=eq.${token}&activo=eq.true&limit=1`
+  );
+  const l = filas[0];
+  if (!l) return null;
+  const { empresas, ...resto } = l;
+  return { ...resto, empresa: empresas };
+}
+
+/** Respuestas del equipo de un líder. */
+export async function listarEquipo(liderId: string): Promise<Respuesta[]> {
+  return select<Respuesta>(
+    'respuestas',
+    `select=${CAMPOS_RESPUESTA}&lider_id=eq.${liderId}&order=nombre.asc`
   );
 }
 

@@ -24,7 +24,7 @@ const RUTAS_TOOLS = /^\/(test-rorschach|test-zulliger|informes|cuestionario)(\/|
 
 // El cuestionario se responde desde el host principal: /c/<empresa>, más su
 // endpoint de guardado. Son las únicas rutas públicas de la app.
-const RUTAS_PUBLICAS = /^\/(c|api\/cuestionario)\//;
+const RUTAS_PUBLICAS = /^\/(c|l|api\/cuestionario)\//;
 
 export function middleware(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase();
