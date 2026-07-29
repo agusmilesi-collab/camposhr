@@ -2121,3 +2121,19 @@ body {
     grid-row: 1 / span 2;
   }
 }
+
+.eq-saludo {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  margin-bottom: 2px;
+}
+
+.eq-matriz {
+  margin-bottom: 26px;
+}
+.eq-matriz-pie {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
