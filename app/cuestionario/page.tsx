@@ -2,6 +2,9 @@ import { contarRespuestas, listarEmpresas } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+/** Los cuestionarios se responden en el host público, no en tools. */
+const PUBLICO = 'https://camposhr.com';
+
 export const metadata = {
   title: 'Cuestionario de Perfil — Campos HR',
   robots: { index: false, follow: false },
@@ -12,7 +15,7 @@ export default async function IndiceCuestionario() {
   const conteos = await Promise.all(empresas.map((e) => contarRespuestas(e.id)));
 
   return (
-    <main className="wrap">
+    <main className="wrap wrap-matriz">
       <section className="head">
         <div className="head-top">
           <div className="eyebrow">Cuestionario de perfil</div>
@@ -54,6 +57,17 @@ export default async function IndiceCuestionario() {
                     >
                       QR Perfil
                     </a>
+                    {/* El cuestionario en sí vive en el host público: al
+                        proyectarlo no se ve la pantalla interna. */}
+                    <a
+                      className="btn-ghost"
+                      href={`${PUBLICO}/c/${e.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Abrir el cuestionario como lo ve la persona"
+                    >
+                      Abrir
+                    </a>
                     <a className="btn" href={`/cuestionario/${e.slug}/matriz`}>
                       Ver matriz
                     </a>
@@ -68,6 +82,15 @@ export default async function IndiceCuestionario() {
                       title="QR del cuestionario mixto: cuadrantes, generaciones y líder"
                     >
                       QR Mixto
+                    </a>
+                    <a
+                      className="btn-ghost"
+                      href={`${PUBLICO}/c/${e.slug}/g`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Abrir el cuestionario mixto como lo ve la persona"
+                    >
+                      Abrir
                     </a>
                     <a className="btn" href={`/cuestionario/${e.slug}/informes`}>
                       Ver informes

@@ -550,7 +550,9 @@ body {
 /* ---------- Índice de empresas ---------- */
 .cu-row {
   display: grid;
-  grid-template-columns: 1fr 130px auto;
+  /* El nombre de la empresa nunca se aplasta, aunque la fila tenga muchos
+     botones: si hace falta, las acciones bajan a la línea siguiente. */
+  grid-template-columns: minmax(160px, 1fr) 110px auto;
   align-items: center;
   gap: 16px;
   padding: 14px 20px;
