@@ -32,7 +32,7 @@ export default async function EquipoDelLider({
   });
 
   return (
-    <main className="wrap pb-wrap">
+    <main className="wrap wrap-matriz">
       <section className="head">
         <div className="eyebrow">{lider.empresa?.nombre}</div>
         <p className="eq-saludo">Hola, {lider.nombre}</p>
@@ -48,7 +48,7 @@ export default async function EquipoDelLider({
 
       {equipo.length > 0 && (
         <section className="eq-matriz">
-          <MatrizBenziger puntos={puntos} />
+          <MatrizBenziger puntos={puntos} conDescripciones />
           <p className="eq-matriz-pie">
             Cuanto más arriba, más trabaja con ideas; cuanto más abajo, con el
             detalle. A la izquierda, la lógica y el procedimiento; a la derecha,
