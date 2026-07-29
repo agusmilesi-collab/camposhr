@@ -16,6 +16,18 @@ export type Punto = {
   destacado?: boolean;
 };
 
+/**
+ * Los cuatro extremos de la matriz. El vertical separa el mundo de las ideas
+ * del mundo del detalle; el horizontal, lo que se decide con datos de lo que
+ * se decide con percepción y vínculo.
+ */
+export const EJES = {
+  arriba: { titulo: 'Macro', bajada: 'Mundo de las ideas' },
+  abajo: { titulo: 'Micro', bajada: 'Mundo del detalle' },
+  izquierda: { titulo: 'Razón', bajada: 'Mundo de los datos' },
+  derecha: { titulo: 'Emoción', bajada: 'Mundo de las personas' },
+};
+
 // Lienzo 16:9: la matriz se proyecta en pantalla durante el encuentro.
 const ANCHO = 160;
 const ALTO = 90;
@@ -275,9 +287,17 @@ export default function MatrizBenziger({
   return (
     <div className="mx">
       <div className="mx-eje mx-eje-top">
-        <strong>Macro</strong>
-        <span>Mundo de las ideas</span>
+        <strong>{EJES.arriba.titulo}</strong>
+        <span>{EJES.arriba.bajada}</span>
       </div>
+
+      {/* El horizontal va a los costados, girado, para no robarle ancho a la
+          matriz ni pisarse con las descripciones de los cuadrantes. */}
+      <div className="mx-cuerpo">
+        <div className="mx-eje mx-eje-izq">
+          <strong>{EJES.izquierda.titulo}</strong>
+          <span>{EJES.izquierda.bajada}</span>
+        </div>
 
       <svg
         viewBox={`0 0 ${ANCHO} ${ALTO}`}
@@ -357,11 +377,17 @@ export default function MatrizBenziger({
             )}
           </g>
         ))}
-      </svg>
+        </svg>
+
+        <div className="mx-eje mx-eje-der">
+          <strong>{EJES.derecha.titulo}</strong>
+          <span>{EJES.derecha.bajada}</span>
+        </div>
+      </div>
 
       <div className="mx-eje mx-eje-bottom">
-        <strong>Micro</strong>
-        <span>Mundo del detalle</span>
+        <strong>{EJES.abajo.titulo}</strong>
+        <span>{EJES.abajo.bajada}</span>
       </div>
     </div>
   );
