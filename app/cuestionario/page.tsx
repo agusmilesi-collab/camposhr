@@ -2,9 +2,6 @@ import { contarRespuestas, listarEmpresas } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-/** Los cuestionarios se responden en el host público, no en tools. */
-const PUBLICO = 'https://camposhr.com';
-
 export const metadata = {
   title: 'Cuestionario de Perfil — Campos HR',
   robots: { index: false, follow: false },
@@ -57,14 +54,14 @@ export default async function IndiceCuestionario() {
                     >
                       QR Perfil
                     </a>
-                    {/* El cuestionario en sí vive en el host público: al
-                        proyectarlo no se ve la pantalla interna. */}
+                    {/* En otra pestaña, para proyectar el código sin perder
+                        la pantalla donde se está trabajando. */}
                     <a
                       className="btn-ghost"
-                      href={`${PUBLICO}/c/${e.slug}`}
+                      href={`/cuestionario/${e.slug}/qr`}
                       target="_blank"
                       rel="noreferrer"
-                      title="Abrir el cuestionario como lo ve la persona"
+                      title="Abrir el QR en otra pestaña"
                     >
                       Abrir
                     </a>
@@ -85,10 +82,10 @@ export default async function IndiceCuestionario() {
                     </a>
                     <a
                       className="btn-ghost"
-                      href={`${PUBLICO}/c/${e.slug}/g`}
+                      href={`/cuestionario/${e.slug}/qr?v=g`}
                       target="_blank"
                       rel="noreferrer"
-                      title="Abrir el cuestionario mixto como lo ve la persona"
+                      title="Abrir el QR mixto en otra pestaña"
                     >
                       Abrir
                     </a>
