@@ -743,6 +743,63 @@ body {
 .mx-bloque {
   padding-bottom: 26px;
 }
+.mx-filtros {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.mx-chips {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.mx-chip {
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  background: var(--card);
+  border: 0;
+  border-right: 1px solid var(--line);
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.mx-chip:last-child {
+  border-right: 0;
+}
+.mx-chip:hover {
+  background: #efece5;
+}
+.mx-chip-on {
+  background: var(--ink);
+  color: #fff;
+}
+.mx-chip-on:hover {
+  background: var(--ink);
+}
+.mx-select {
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  max-width: 240px;
+}
+.mx-limpiar {
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
 .mx-refresco {
   display: flex;
   align-items: center;

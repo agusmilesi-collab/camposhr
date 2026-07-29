@@ -2,11 +2,14 @@ import { notFound } from 'next/navigation';
 import {
   firmarSelfies,
   getEmpresaPorSlug,
+  listarLideres,
   listarRespuestas,
+  type Variante,
 } from '@/lib/supabase';
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import MatrizBenziger, { type Punto } from '@/app/_components/MatrizBenziger';
 import AutoRefresco from './AutoRefresco';
+import Filtros from './Filtros';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,13 +20,29 @@ export const metadata = {
 
 export default async function MatrizEmpresa({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { lider?: string; v?: string };
 }) {
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 
-  const respuestas = await listarRespuestas(empresa.id);
+  const variante: Variante | '' =
+    searchParams.v === 'perfil' || searchParams.v === 'generaciones'
+      ? searchParams.v
+      : '';
+  const lider = searchParams.lider ?? '';
+
+  const [todas, lideres] = await Promise.all([
+    listarRespuestas(empresa.id, variante || undefined),
+    listarLideres(empresa.id),
+  ]);
+
+  const respuestas = lider
+    ? todas.filter((r) => r.lider_id === lider)
+    : todas;
+
   const fotos = await firmarSelfies(
     respuestas.map((r) => r.foto_path).filter((p): p is string => Boolean(p))
   );
@@ -50,6 +69,23 @@ export default async function MatrizEmpresa({
     }
   }
 
+  const nombreLider = lideres.find((l) => l.id === lider)?.nombre;
+  const filtrando = Boolean(lider || variante);
+
+  function resumen(): string {
+    if (respuestas.length === 0) {
+      return filtrando
+        ? 'Nadie responde a este filtro todavía.'
+        : 'Todavía no respondió nadie. La matriz se completa a medida que el equipo termina el cuestionario.';
+    }
+    const cuantos = `${respuestas.length} ${
+      respuestas.length === 1 ? 'persona' : 'personas'
+    }`;
+    const equipo = nombreLider ? ` del equipo de ${nombreLider}` : '';
+    if (!filtrando) return `${cuantos}. La pantalla se actualiza sola.`;
+    return `${cuantos}${equipo}. La pantalla se actualiza sola.`;
+  }
+
   return (
     <main className="wrap">
       <section className="head no-print">
@@ -61,13 +97,14 @@ export default async function MatrizEmpresa({
           </a>
         </div>
         <h1>{empresa.nombre}</h1>
-        <p className="head-nota">
-          {respuestas.length === 0
-            ? 'Todavía no respondió nadie. La matriz se completa a medida que el equipo termina el cuestionario.'
-            : `${respuestas.length} ${
-                respuestas.length === 1 ? 'persona respondió' : 'personas respondieron'
-              }. La pantalla se actualiza sola.`}
-        </p>
+        <p className="head-nota">{resumen()}</p>
+
+        <Filtros
+          slug={empresa.slug}
+          lideres={lideres.map((l) => ({ id: l.id, nombre: l.nombre }))}
+          liderActual={lider}
+          varianteActual={variante}
+        />
         <AutoRefresco />
       </section>
 
