@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
-import { getEmpresaPorSlug, listarRespuestas } from '@/lib/supabase';
+import { getEmpresaPorSlug, listarLideres, listarRespuestas } from '@/lib/supabase';
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { GENERACIONES, INFO_GENERACION, type Generacion } from '@/lib/generaciones';
+import CopiarEnlace from './CopiarEnlace';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,11 @@ export default async function Informes({
   if (!empresa) notFound();
 
   // El cuestionario mixto es el que trae líder y generación.
-  const respuestas = await listarRespuestas(empresa.id, 'generaciones');
+  const [respuestas, lideres] = await Promise.all([
+    listarRespuestas(empresa.id, 'generaciones'),
+    listarLideres(empresa.id),
+  ]);
+  const tokenDe = new Map(lideres.map((l) => [l.nombre, l.token]));
 
   const porCuadrante = contar(
     respuestas.map((r) => r.perfiles?.[0]).filter(Boolean) as Perfil[]
@@ -51,9 +56,7 @@ export default async function Informes({
     if (!equipos.has(nombre)) equipos.set(nombre, []);
     equipos.get(nombre)!.push(r);
   }
-  const orden = [...equipos.entries()].sort(
-    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])
-  );
+  const orden = [...equipos.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 
   const porcentaje = (n: number) =>
     respuestas.length ? Math.round((n / respuestas.length) * 100) : 0;
@@ -150,6 +153,7 @@ export default async function Informes({
                         {gente.length} {gente.length === 1 ? 'persona' : 'personas'}
                         {dominante && ` · mayoría ${INFO[dominante].nombre}`}
                       </span>
+                      <CopiarEnlace token={tokenDe.get(lider) ?? null} />
                     </header>
 
                     <div className="inf-fila inf-th">
