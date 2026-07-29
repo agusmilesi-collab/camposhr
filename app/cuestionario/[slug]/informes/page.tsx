@@ -161,6 +161,20 @@ export default async function Informes({
                         .map(([g, n]) => `${g} ${n}`)
                         .join(' · ')}
                     </span>
+                    <span className="inf-gente">
+                      {gente
+                        .slice()
+                        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                        .map((r) => (
+                          <a
+                            key={r.id}
+                            className="inf-persona"
+                            href={`/cuestionario/${empresa.slug}/informes/${r.id}`}
+                          >
+                            {r.nombre}
+                          </a>
+                        ))}
+                    </span>
                   </div>
                 );
               })}
