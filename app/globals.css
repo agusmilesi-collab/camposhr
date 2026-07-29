@@ -1923,3 +1923,94 @@ body {
   border-color: var(--ink-soft);
   color: var(--ink);
 }
+
+.pb-nivel {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 7px;
+}
+.pb-puntaje-on .pb-nivel {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.pb-lectura p + p {
+  margin-top: 10px;
+}
+
+/* ---------- Tabla de personas por equipo ---------- */
+.inf-fila {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 1.1fr)
+    38px 38px 38px 38px minmax(0, 0.8fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.83rem;
+}
+.inf-fila:last-child {
+  border-bottom: 0;
+}
+.inf-suave {
+  color: var(--muted);
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.inf-perfil {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.inf-nums {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.inf-nums-on {
+  color: var(--ink);
+  font-weight: 600;
+}
+.inf-ver {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 10px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+}
+.inf-ver:hover {
+  background: #efece5;
+  border-color: var(--ink-soft);
+  color: var(--ink);
+}
+
+@media (max-width: 900px) {
+  .inf-fila {
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+  }
+  .inf-fila.inf-th {
+    display: none;
+  }
+  .inf-perfil,
+  .inf-suave {
+    grid-column: 1;
+  }
+  .inf-nums {
+    display: none;
+  }
+  .inf-ver {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}

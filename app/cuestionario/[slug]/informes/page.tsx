@@ -133,53 +133,56 @@ export default async function Informes({
             </div>
 
             <div className="card">
-              <div className="inf-row inf-th">
+              <div className="inf-fila inf-th">
+                <span>Persona</span>
                 <span>Líder</span>
-                <span>Personas</span>
-                <span>Perfiles</span>
-                <span>Generaciones</span>
+                <span>Perfil</span>
+                <span className="inf-nums">FI</span>
+                <span className="inf-nums">FD</span>
+                <span className="inf-nums">BI</span>
+                <span className="inf-nums">BD</span>
+                <span>Generación</span>
+                <span />
               </div>
-              {orden.map(([lider, gente]) => {
-                const perfiles = contar(
-                  gente.map((r) => r.perfiles?.[0]).filter(Boolean) as Perfil[]
-                );
-                const generaciones = contar(
-                  gente.flatMap((r) => (r.generacion ?? '').split('/').filter(Boolean))
-                );
-                return (
-                  <div className="inf-row" key={lider}>
-                    <span className="acc-name">{lider}</span>
-                    <span className="inf-num">{gente.length}</span>
-                    <span className="inf-mix">
-                      {PERFILES.filter((p) => perfiles.get(p))
-                        .map((p) => `${p} ${perfiles.get(p)}`)
-                        .join(' · ')}
-                    </span>
-                    <span className="inf-mix">
-                      {[...generaciones.entries()]
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([g, n]) => `${g} ${n}`)
-                        .join(' · ')}
-                    </span>
-                    <span className="inf-gente">
-                      {gente
-                        .slice()
-                        .sort((a, b) => a.nombre.localeCompare(b.nombre))
-                        .map((r) => (
-                          <a
-                            key={r.id}
-                            className="inf-persona"
-                            href={`/cuestionario/${empresa.slug}/informes/${r.id}`}
+
+              {orden.map(([lider, gente]) =>
+                gente
+                  .slice()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                  .map((r, i) => {
+                    const totales = (r.totales ?? {}) as Record<string, number>;
+                    const perfil = (r.perfiles?.[0] ?? '') as Perfil;
+                    return (
+                      <div className="inf-fila" key={r.id}>
+                        <span className="acc-name">{r.nombre}</span>
+                        <span className="inf-suave">{i === 0 ? lider : ''}</span>
+                        <span className="inf-perfil">
+                          {perfil ? INFO[perfil].nombre : '—'}
+                        </span>
+                        {PERFILES.map((p) => (
+                          <span
+                            className={
+                              p === perfil ? 'inf-nums inf-nums-on' : 'inf-nums'
+                            }
+                            key={p}
                           >
-                            {r.nombre}
-                          </a>
+                            {totales[p] ?? '—'}
+                          </span>
                         ))}
-                    </span>
-                  </div>
-                );
-              })}
+                        <span className="inf-suave">{r.generacion ?? '—'}</span>
+                        <a
+                          className="inf-ver"
+                          href={`/cuestionario/${empresa.slug}/informes/${r.id}`}
+                        >
+                          Playbook
+                        </a>
+                      </div>
+                    );
+                  })
+              )}
             </div>
           </section>
+
         </>
       )}
     </main>

@@ -28,13 +28,14 @@ export type Dimension = {
   eje: 'cuadrante' | 'generacion';
 };
 
+// Los títulos van en neutro: el mismo playbook se usa para cualquier persona.
 export const DIMENSIONES: Dimension[] = [
-  { id: 'motivar', titulo: 'Cómo motivarla', eje: 'cuadrante' },
-  { id: 'feedback', titulo: 'Cómo darle feedback', eje: 'cuadrante' },
-  { id: 'autonomia', titulo: 'Cuánta autonomía darle', eje: 'generacion' },
-  { id: 'comunicar', titulo: 'Cómo comunicarte', eje: 'cuadrante' },
-  { id: 'tareas', titulo: 'Qué tareas la energizan y cuáles la agotan', eje: 'cuadrante' },
-  { id: 'animo', titulo: 'Cómo levantarle el ánimo', eje: 'cuadrante' },
+  { id: 'motivar', titulo: 'Cómo motivar', eje: 'cuadrante' },
+  { id: 'feedback', titulo: 'Cómo dar feedback', eje: 'cuadrante' },
+  { id: 'autonomia', titulo: 'Cuánta autonomía dar', eje: 'generacion' },
+  { id: 'comunicar', titulo: 'Cómo comunicarse', eje: 'cuadrante' },
+  { id: 'tareas', titulo: 'Qué tareas energizan y cuáles agotan', eje: 'cuadrante' },
+  { id: 'animo', titulo: 'Cómo levantar el ánimo', eje: 'cuadrante' },
 ];
 
 /** Lo que aporta un cuadrante o una generación a una dimensión. */
@@ -62,7 +63,7 @@ export const BLOQUES_CUADRANTE: Record<Perfil, PorDimension> = {
       verde:
         'Se ofrece a ayudar a otros espontáneamente, propone iniciativas de clima, pregunta cómo están antes de arrancar.',
       alerta:
-        'Cumple pero sin iniciativa. Se vuelve callada. Empieza a quejarse de falta de reconocimiento sin decirlo directamente.',
+        'Cumple pero sin iniciativa. Se apaga. Empieza a quejarse de falta de reconocimiento sin decirlo directamente.',
       funciona:
         '"Necesito que cierres esto porque el equipo está esperando para poder avanzar tranquilo."',
       nofunciona: '"Necesito que cierres este proceso para el jueves."',
@@ -88,16 +89,16 @@ export const BLOQUES_CUADRANTE: Record<Perfil, PorDimension> = {
       porque:
         'Su BD capta señales no verbales como fuente primaria de información. Un mensaje escrito le da una parte del mensaje; el resto lo completa con suposiciones, que en un BD suelen ser emocionales.',
       verde: 'Responde rápido, hace preguntas, propone alternativas.',
-      alerta: 'Tarda en responder, contesta con "ok" a cosas que normalmente la movilizarían.',
+      alerta: 'Tarda en responder, contesta con "ok" a cosas que normalmente lo movilizarían.',
       funciona:
-        'Preguntarle cómo está antes de entrar al tema. Para ella es información real, no protocolo.',
+        'Preguntarle cómo está antes de entrar al tema. Es información real, no protocolo.',
       nofunciona:
         'Mensajes largos con instrucciones complejas. Los lee pero queda con dudas que no te hace para no molestar.',
     },
     tareas: {
       core: 'Energiza: mediar conflictos, coordinar trabajo colaborativo, comunicar cambios al equipo. Agota: análisis de datos fríos, decisiones sólo con números.',
       porque:
-        'Usar el cuadrante no preferido consume el doble de energía. Un día entero de planillas la deja agotada aunque técnicamente pueda hacerlo.',
+        'Usar el cuadrante no preferido consume el doble de energía. Un día entero de planillas agota aunque técnicamente pueda hacerlo.',
       verde:
         'Llega con energía a las reuniones con interacción. Propone soluciones relacionales espontáneamente.',
       alerta: 'Llega tarde a entregas de reportes, hace el mínimo en tareas analíticas.',
@@ -106,14 +107,14 @@ export const BLOQUES_CUADRANTE: Record<Perfil, PorDimension> = {
       nofunciona: 'Varios días consecutivos de trabajo individual sin interacción con personas.',
     },
     animo: {
-      core: 'Reconocé algo específico que hizo por alguien. No genérico. Preguntale cómo está ella, no el equipo.',
+      core: 'Reconocé algo específico que hizo por alguien. No genérico. Preguntale cómo está esa persona, no el equipo.',
       porque:
         'El BD da mucho emocionalmente y su mayor vulnerabilidad es no recibir lo mismo. Cuando el balance es asimétrico por mucho tiempo, se agota en silencio. Su punto débil es poner límites.',
       verde: 'Está disponible, pregunta cómo están los demás, propone antes de que le pidas.',
       alerta:
         'Se vuelve más formal, deja de preguntar cómo están los demás, responde más corto.',
       funciona: '"Lo que hiciste con X la semana pasada hizo una diferencia real para el equipo."',
-      nofunciona: '"Buen trabajo." Los reconocimientos genéricos no le llegan de la misma manera.',
+      nofunciona: '"Buen trabajo." Los reconocimientos genéricos no llegan de la misma manera.',
     },
   },
 
@@ -131,9 +132,9 @@ export const BLOQUES_GENERACION: Record<Generacion, PorDimension> = {
       porque: 'La Generación X valora el crecimiento profesional y el propósito más allá del salario.',
     },
     autonomia: {
-      core: 'Mucha. Trabaja bien sola. Lo que necesita es saber que puede venir a vos con los problemas del equipo.',
+      core: 'Mucha. Trabaja bien sin supervisión. Lo que necesita es saber que puede venir a vos con los problemas del equipo.',
       porque:
-        'La Generación X valora resultados sobre proceso. Controlarla paso a paso activa resistencia porque lo lee como desconfianza.',
+        'La Generación X valora resultados sobre proceso. Controlar paso a paso activa resistencia porque se lee como desconfianza.',
       funciona:
         'Checkpoints espaciados, enmarcados como "¿cómo venís vos?" más que "¿cómo viene la tarea?".',
       nofunciona: 'Pedirle avances por pasos o preguntar el estado de cada tarea por separado.',
@@ -167,12 +168,12 @@ export const SEMANAS: Partial<Record<Perfil, Semana[]>> = {
   BD: [
     {
       n: 1,
-      titulo: 'Escucharla a ella',
+      titulo: 'Escuchar a la persona',
       dimension: 'animo',
       accion:
-        'Antes de tu próxima reunión, dedicá los primeros dos minutos a preguntarle cómo está ella. No el equipo, no la tarea. Escuchá sin dar consejos ni resolver nada.',
+        'Antes de tu próxima reunión, dedicá los primeros dos minutos a preguntarle cómo está. No por el equipo ni por la tarea: por la persona. Escuchá sin dar consejos ni resolver nada.',
       porque:
-        'Da mucho emocionalmente y casi nadie le pregunta por ella. Este gesto simple establece el tipo de relación que van a tener y abre el canal para todo lo que viene después.',
+        'Da mucho emocionalmente y casi nadie le pregunta cómo está. Este gesto simple establece el tipo de relación que van a tener y abre el canal para todo lo que viene después.',
     },
     {
       n: 2,
@@ -181,7 +182,7 @@ export const SEMANAS: Partial<Record<Perfil, Semana[]>> = {
       accion:
         'Revisá las tareas que tiene asignadas esta semana. Contá cuántas son analíticas o de datos fríos y cuántas son relacionales. Si el balance está invertido, reasigná o compensá antes del viernes.',
       porque:
-        'Hacer demasiadas tareas frías consecutivas la agota sin que lo diga. Prevenir es más fácil que reconocer el agotamiento después.',
+        'Hacer demasiadas tareas frías consecutivas agota sin que lo diga. Prevenir es más fácil que reconocer el agotamiento después.',
     },
     {
       n: 3,
@@ -197,7 +198,7 @@ export const SEMANAS: Partial<Record<Perfil, Semana[]>> = {
       titulo: 'Canal correcto',
       dimension: 'comunicar',
       accion:
-        'Si tenés algo importante que decirle (una corrección, un cambio, una novedad) buscala en persona o llamala. No lo resuelvas por mensaje aunque sea más rápido.',
+        'Si tenés algo importante que decirle (una corrección, un cambio, una novedad) buscá a la persona o llamala. No lo resuelvas por mensaje aunque sea más rápido.',
       porque:
         'Sin lenguaje corporal ni tono procesa sólo una parte del mensaje y completa el resto con suposiciones emocionales. El canal cambia por completo cómo recibe lo que le decís.',
     },
@@ -208,7 +209,7 @@ export const SEMANAS: Partial<Record<Perfil, Semana[]>> = {
       accion:
         'Preguntale cómo ve el clima del equipo, como consulta genuina y no como control. "¿Cómo notás al equipo últimamente?" y después escuchá sin filtrar ni defender.',
       porque:
-        'Percibe el estado emocional del equipo antes que vos. Ese radar es información real que ningún dato te da. Esta semana integrala como fuente de inteligencia del equipo.',
+        'Percibe el estado emocional del equipo antes que vos. Ese radar es información real que ningún dato te da. Esta semana usalo como fuente de inteligencia del equipo.',
     },
   ],
 };

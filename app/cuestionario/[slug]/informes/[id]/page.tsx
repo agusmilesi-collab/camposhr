@@ -1,8 +1,18 @@
 import { notFound } from 'next/navigation';
 import { getEmpresaPorSlug, listarRespuestas } from '@/lib/supabase';
-import { INFO, PERFILES, type Perfil, type Puntajes, MAXIMO } from '@/lib/perfiles';
+import {
+  esParejo,
+  INFO,
+  MAXIMO,
+  nivel,
+  NIVELES,
+  PERFILES,
+  type Perfil,
+  type Puntajes,
+} from '@/lib/perfiles';
 import { GENERACIONES, INFO_GENERACION, type Generacion } from '@/lib/generaciones';
 import { armarPlaybook, opuesto, ranking } from '@/lib/playbook';
+import { UMBRAL } from '@/lib/perfiles';
 import Playbook from './Playbook';
 
 export const dynamic = 'force-dynamic';
@@ -34,6 +44,8 @@ export default async function PlaybookPersona({
   const perfil = (persona.perfiles?.[0] ?? 'BD') as Perfil;
   const generacion = generacionDe(persona.generacion);
   const playbook = armarPlaybook(perfil, generacion);
+  const parejo = esParejo(totales);
+  const nivelDominante = nivel(totales[perfil]);
 
   return (
     <main className="wrap pb-wrap">
@@ -74,16 +86,34 @@ export default async function PlaybookPersona({
             <span className="pb-barra">
               <span style={{ width: `${(totales[p] / MAXIMO) * 100}%` }} />
             </span>
+            <span className="pb-nivel">{NIVELES[nivel(totales[p])].titulo}</span>
           </div>
         ))}
       </section>
 
-      <p className="pb-lectura">
-        Su cuadrante dominante es <b>{INFO[perfil].nombre}</b>. El opuesto en
-        diagonal, <b>{INFO[opuesto(perfil)].nombre}</b> ({totales[opuesto(perfil)]} puntos),
-        es el que más energía le consume: las tareas de ese tipo le cuestan el doble
-        aunque pueda hacerlas.
-      </p>
+      <div className="pb-lectura">
+        {parejo ? (
+          <p>
+            <b>Perfil parejo.</b> Ningún cuadrante supera los {UMBRAL} puntos: usa
+            los cuatro en un nivel similar y se adapta a contextos distintos, pero
+            ninguna forma de trabajo le resulta francamente natural. El más alto es{' '}
+            <b>{INFO[perfil].nombre}</b> ({totales[perfil]}), y es la inclinación que
+            guía este playbook. Tomá lo que sigue como hipótesis a contrastar con lo
+            que ves en el día a día, no como un rasgo marcado.
+          </p>
+        ) : (
+          <p>
+            Su cuadrante preferido es <b>{INFO[perfil].nombre}</b> ({totales[perfil]}):{' '}
+            {NIVELES[nivelDominante].texto.charAt(0).toLowerCase() +
+              NIVELES[nivelDominante].texto.slice(1)}
+          </p>
+        )}
+        <p>
+          El opuesto en diagonal, <b>{INFO[opuesto(perfil)].nombre}</b>{' '}
+          ({totales[opuesto(perfil)]}), es el que más energía le consume: las tareas
+          de ese tipo le cuestan el doble aunque pueda hacerlas.
+        </p>
+      </div>
 
       <Playbook
         dimensiones={playbook.dimensiones}
