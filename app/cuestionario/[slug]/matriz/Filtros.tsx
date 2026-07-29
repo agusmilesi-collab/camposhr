@@ -35,7 +35,7 @@ export default function Filtros({
         {[
           { valor: '', texto: 'Todos' },
           { valor: 'perfil', texto: 'Perfil' },
-          { valor: 'generaciones', texto: 'Generaciones' },
+          { valor: 'generaciones', texto: 'Mixto' },
         ].map((o) => (
           <button
             key={o.valor}
