@@ -24,7 +24,21 @@ const ALTO = 90;
 // porque el lienzo ya no es cuadrado.
 const MARGEN_X = 14;
 const MARGEN_Y = 9;
-const RADIO = 3.6;
+
+/**
+ * El tamaño del punto depende de cuánta gente hay: con un taller de 30 se
+ * lee cada cara y cada nombre; con la empresa entera lo que importa es la
+ * nube, así que los puntos se achican y las etiquetas desaparecen.
+ */
+function metricas(cantidad: number) {
+  const t = Math.min(1, Math.max(0, (cantidad - 15) / (140 - 15)));
+  const radio = 3.6 - t * 2.3; // de 3.6 (pocos) a 1.3 (muchos)
+  return {
+    radio,
+    conNombres: cantidad <= 45,
+    conIniciales: radio >= 2.4,
+  };
+}
 
 /** Pasa las coordenadas -1..1 al sistema del SVG. */
 function aSvg(x: number, y: number) {
@@ -40,13 +54,14 @@ function aSvg(x: number, y: number) {
  * Separa los puntos que se pisan, empujándolos apenas.
  * Determinista: mismo orden de entrada, mismo resultado.
  */
-function separar(puntos: Punto[]) {
+function separar(puntos: Punto[], radio: number, conNombres: boolean) {
   const pos = puntos.map((p) => aSvg(p.x, p.y));
 
-  // Zona reservada por persona: más alta que ancha, porque debajo de cada
-  // círculo va el nombre. Sin esto las etiquetas se pisan con los vecinos.
-  const SEP_X = RADIO * 2.9;
-  const SEP_Y = RADIO * 3.5;
+  // Zona reservada por persona. Con nombres es más alta que ancha, para que
+  // la etiqueta no se pise con el círculo de abajo; sin nombres alcanza con
+  // que los puntos no se tapen entre sí.
+  const SEP_X = radio * (conNombres ? 2.9 : 2.15);
+  const SEP_Y = radio * (conNombres ? 3.5 : 2.15);
 
   for (let paso = 0; paso < 120; paso++) {
     let movio = false;
@@ -73,9 +88,10 @@ function separar(puntos: Punto[]) {
     if (!movio) break;
   }
 
+  const aire = conNombres ? 2.5 : 1;
   return pos.map((p) => ({
-    cx: Math.min(Math.max(p.cx, RADIO + 1), ANCHO - RADIO - 1),
-    cy: Math.min(Math.max(p.cy, RADIO + 1), ALTO - RADIO - 2.5),
+    cx: Math.min(Math.max(p.cx, radio + 1), ANCHO - radio - 1),
+    cy: Math.min(Math.max(p.cy, radio + 1), ALTO - radio - aire),
   }));
 }
 
@@ -94,7 +110,10 @@ export default function MatrizBenziger({
   puntos?: Punto[];
   conNombres?: boolean;
 }) {
-  const pos = separar(puntos);
+  const m = metricas(puntos.length);
+  const radio = m.radio;
+  const nombres = conNombres && m.conNombres;
+  const pos = separar(puntos, radio, nombres);
 
   return (
     <div className="mx">
@@ -103,12 +122,17 @@ export default function MatrizBenziger({
         <span>Mundo de las ideas</span>
       </div>
 
-      <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} className="mx-svg" role="img" aria-label="Matriz de perfiles">
+      <svg
+        viewBox={`0 0 ${ANCHO} ${ALTO}`}
+        className={m.conIniciales ? 'mx-svg' : 'mx-svg mx-denso'}
+        role="img"
+        aria-label="Matriz de perfiles"
+      >
         <defs>
           {puntos.map((p, i) =>
             p.foto ? (
               <clipPath id={`foto-${p.id}`} key={p.id}>
-                <circle cx={pos[i].cx} cy={pos[i].cy} r={RADIO} />
+                <circle cx={pos[i].cx} cy={pos[i].cy} r={radio} />
               </clipPath>
             ) : null
           )}
@@ -137,24 +161,24 @@ export default function MatrizBenziger({
             {p.foto ? (
               <image
                 href={p.foto}
-                x={pos[i].cx - RADIO}
-                y={pos[i].cy - RADIO}
-                width={RADIO * 2}
-                height={RADIO * 2}
+                x={pos[i].cx - radio}
+                y={pos[i].cy - radio}
+                width={radio * 2}
+                height={radio * 2}
                 preserveAspectRatio="xMidYMid slice"
                 clipPath={`url(#foto-${p.id})`}
               />
             ) : (
-              <circle cx={pos[i].cx} cy={pos[i].cy} r={RADIO} className="mx-sinfoto" />
+              <circle cx={pos[i].cx} cy={pos[i].cy} r={radio} className="mx-sinfoto" />
             )}
-            {!p.foto && (
+            {!p.foto && m.conIniciales && (
               <text x={pos[i].cx} y={pos[i].cy + 1.05} className="mx-iniciales" textAnchor="middle">
                 {iniciales(p.nombre)}
               </text>
             )}
-            <circle cx={pos[i].cx} cy={pos[i].cy} r={RADIO} className="mx-aro" />
-            {conNombres && (
-              <text x={pos[i].cx} y={pos[i].cy + RADIO + 3.4} className="mx-nombre" textAnchor="middle">
+            <circle cx={pos[i].cx} cy={pos[i].cy} r={radio} className="mx-aro" />
+            {nombres && (
+              <text x={pos[i].cx} y={pos[i].cy + radio + 3.4} className="mx-nombre" textAnchor="middle">
                 {primerNombre(p.nombre)}
               </text>
             )}

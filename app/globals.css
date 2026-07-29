@@ -722,6 +722,14 @@ body {
 .mx-sinfoto {
   fill: #ece9e2;
 }
+/* Muchos puntos: sin iniciales adentro, el relleno claro no se vería.
+   Pasa a leerse como una nube de dispersión. */
+.mx-denso .mx-sinfoto {
+  fill: #9d968b;
+}
+.mx-denso .mx-aro {
+  stroke-width: 0.3;
+}
 .mx-iniciales {
   font-size: 3px;
   font-weight: 600;
