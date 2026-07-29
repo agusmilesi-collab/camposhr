@@ -2118,3 +2118,65 @@ body {
     gap: 14px;
   }
 }
+
+/* ---------- Eje horizontal de la matriz ---------- */
+.mx-cuerpo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mx-cuerpo .mx-svg {
+  flex: 1;
+  min-width: 0;
+}
+/* Girados contra cada costado: no le roban ancho a la matriz. */
+.mx-eje-izq,
+.mx-eje-der {
+  flex: none;
+  writing-mode: vertical-rl;
+  line-height: 1.3;
+}
+.mx-eje-izq {
+  transform: rotate(180deg);
+}
+.mx-eje-izq strong,
+.mx-eje-der strong {
+  display: block;
+}
+@media (max-width: 620px) {
+  .mx-eje-izq strong,
+  .mx-eje-der strong {
+    font-size: 0.9rem;
+  }
+  .mx-eje-izq span,
+  .mx-eje-der span {
+    font-size: 0.68rem;
+  }
+}
+
+.mp-cuerpo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.mp-cuerpo .mp-grilla {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.mp-eje-lado {
+  flex: none;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  line-height: 1.3;
+}
+.mp-eje-der {
+  transform: none;
+}
+.mp-eje-lado strong {
+  font-size: 0.95rem;
+}
+.mp-eje-lado span {
+  font-size: 0.7rem;
+}
