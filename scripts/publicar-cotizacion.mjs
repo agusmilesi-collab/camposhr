@@ -6,11 +6,13 @@
  *
  * Qué le agrega al documento:
  *   1. noindex, para que el enlace secreto no lo levante ningún buscador.
- *   2. Las dos acciones del cliente: descargar el archivo y guardarlo en PDF.
- *      Sin librerías: la descarga es el propio HTML y el PDF lo genera el
- *      navegador al imprimir, así que la página no pesa un byte más.
+ *   2. Dos barras de acciones, una arriba y otra al final: descargar el archivo
+ *      y guardarlo en PDF. La de arriba avisa que se puede guardar antes de
+ *      empezar a leer; la de abajo lo deja a mano al terminar, y suma "Ir
+ *      arriba". Sin librerías: la descarga es el propio HTML y el PDF lo arma
+ *      el navegador al imprimir, así que el documento no pesa un byte más.
  *
- * Es idempotente: si el documento ya tiene el bloque, lo reemplaza.
+ * Es idempotente: si el documento ya tiene los bloques, los reemplaza.
  */
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -38,61 +40,114 @@ const nombreArchivo = `Propuesta Campos HR - ${cliente}.html`.replace(
   '-'
 );
 
-const MARCA_INICIO = '<!-- chr:acciones -->';
-const MARCA_FIN = '<!-- /chr:acciones -->';
+const A = '<!-- chr:acciones -->';
+const A_FIN = '<!-- /chr:acciones -->';
+const B = '<!-- chr:acciones-fin -->';
+const B_FIN = '<!-- /chr:acciones-fin -->';
 
-const bloque = `${MARCA_INICIO}
-<style>
-  .chr-acciones {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
+const estilos = `<style>
+  .chr-barra {
     display: flex;
-    gap: 8px;
-    z-index: 60;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 26px 0 30px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line, #e5e2db);
+    border-bottom: 1px solid var(--line, #e5e2db);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  .chr-barra-fin {
+    margin-bottom: 44px;
+  }
+  /* Respaldo por si el documento no define su propio contenedor centrado. */
+  .chr-wrap-fin {
+    max-width: 768px;
+    margin: 0 auto;
+    padding: 0 40px;
+    box-sizing: border-box;
+  }
+  .chr-nota {
+    flex: 1 1 auto;
+    min-width: 12rem;
+    font-size: 0.86rem;
+    color: var(--muted, #7b7770);
   }
   .chr-btn {
     font: inherit;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     line-height: 1;
-    color: #16202b;
+    color: var(--ink, #16202b);
     background: #ffffff;
-    border: 1px solid #e5e2db;
+    border: 1px solid var(--line, #e5e2db);
     border-radius: 8px;
     padding: 10px 15px;
     text-decoration: none;
     cursor: pointer;
-    box-shadow: 0 1px 4px rgba(22, 32, 43, 0.08);
+    white-space: nowrap;
     transition: border-color 0.12s, box-shadow 0.12s;
   }
   .chr-btn:hover {
     border-color: #c9c4ba;
-    box-shadow: 0 2px 8px rgba(22, 32, 43, 0.12);
+    box-shadow: 0 1px 4px rgba(22, 32, 43, 0.1);
+  }
+  .chr-btn-suave {
+    background: transparent;
+    color: var(--muted, #7b7770);
   }
   @media print {
-    .chr-acciones { display: none !important; }
+    .chr-barra { display: none !important; }
   }
   @media (max-width: 640px) {
-    .chr-acciones { right: 12px; bottom: 12px; }
-    .chr-btn { padding: 9px 12px; font-size: 0.78rem; }
+    .chr-wrap-fin { padding: 0 24px; }
+    .chr-nota { flex-basis: 100%; }
   }
-</style>
-<div class="chr-acciones" role="group" aria-label="Acciones del documento">
-  <a class="chr-btn" href="/q/${tokenArg}.html" download="${nombreArchivo}">Descargar</a>
-  <button class="chr-btn" type="button" onclick="window.print()">Guardar en PDF</button>
+</style>`;
+
+const botones = `<a class="chr-btn" href="/q/${tokenArg}.html" download="${nombreArchivo}">Descargar</a>
+  <button class="chr-btn" type="button" onclick="window.print()">Guardar en PDF</button>`;
+
+const bloqueInicio = `${A}
+${estilos}
+<div class="chr-barra" role="group" aria-label="Guardar esta propuesta">
+  <span class="chr-nota">Podés guardarte esta propuesta para leerla cuando quieras.</span>
+  ${botones}
 </div>
-${MARCA_FIN}`;
+${A_FIN}`;
+
+/**
+ * La barra del final va dentro del contenedor centrado del propio documento,
+ * así sus bordes caen exactamente donde caen los del texto. Si el documento no
+ * define `.wrap`, se usa el contenedor de respaldo.
+ */
+function armarBloqueFin(tieneWrap) {
+  const clase = tieneWrap ? 'wrap' : 'chr-wrap-fin';
+  return `${B}
+<div class="${clase}">
+  <div class="chr-barra chr-barra-fin" role="group" aria-label="Guardar esta propuesta">
+    <span class="chr-nota">Guardá esta propuesta o volvé al principio.</span>
+    ${botones}
+    <a class="chr-btn chr-btn-suave" href="#top">Ir arriba</a>
+  </div>
+</div>
+${B_FIN}`;
+}
 
 const rutaOrigen = resolve(origen);
-const rutaDestino = resolve(
-  process.cwd(),
-  'public',
-  'q',
-  `${tokenArg}.html`
-);
+const rutaDestino = resolve(process.cwd(), 'public', 'q', `${tokenArg}.html`);
 
 let html = await readFile(rutaOrigen, 'utf8');
+
+/** Reemplaza el bloque si ya existe; si no, lo inserta donde diga `insertar`. */
+function poner(marcaIni, marcaFin, bloque, insertar) {
+  const i = html.indexOf(marcaIni);
+  if (i !== -1) {
+    const f = html.indexOf(marcaFin) + marcaFin.length;
+    html = html.slice(0, i) + bloque + html.slice(f);
+    return true;
+  }
+  return insertar(bloque);
+}
 
 // 1) noindex
 if (!/name=["']robots["']/i.test(html)) {
@@ -102,16 +157,32 @@ if (!/name=["']robots["']/i.test(html)) {
   );
 }
 
-// 2) acciones del cliente (reemplaza el bloque anterior si ya estaba)
-const yaTiene = html.indexOf(MARCA_INICIO);
-if (yaTiene !== -1) {
-  const fin = html.indexOf(MARCA_FIN) + MARCA_FIN.length;
-  html = html.slice(0, yaTiene) + bloque + html.slice(fin);
-} else if (/<\/body>/i.test(html)) {
-  html = html.replace(/<\/body>/i, `${bloque}\n</body>`);
-} else {
-  html += `\n${bloque}\n`;
+// 2) ancla para "Ir arriba"
+if (!/id=["']top["']/.test(html)) {
+  html = html.replace(/<body([^>]*)>/i, '<body$1>\n<span id="top"></span>');
 }
+
+// 3) barra de arriba: después del encabezado del documento, antes del primer
+//    bloque de contenido. Si el molde cambiara, cae al principio del body.
+poner(A, A_FIN, bloqueInicio, (b) => {
+  if (/<section/i.test(html)) {
+    html = html.replace(/<section/i, `${b}\n<section`);
+    return true;
+  }
+  html = html.replace(/<span id="top"><\/span>/, `<span id="top"></span>\n${b}`);
+  return true;
+});
+
+// 4) barra del final: después del pie del documento.
+const bloqueFin = armarBloqueFin(/\.wrap\s*\{/.test(html));
+poner(B, B_FIN, bloqueFin, (b) => {
+  if (/<\/body>/i.test(html)) {
+    html = html.replace(/<\/body>/i, `${b}\n</body>`);
+    return true;
+  }
+  html += `\n${b}\n`;
+  return true;
+});
 
 await mkdir(dirname(rutaDestino), { recursive: true });
 await writeFile(rutaDestino, html, 'utf8');

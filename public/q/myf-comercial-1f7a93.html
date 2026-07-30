@@ -114,6 +114,7 @@
 </style>
 </head>
 <body>
+<span id="top"></span>
 
 <header class="top">
   <div class="top-inner">
@@ -135,7 +136,72 @@
     </div>
   </div>
 
-  <section>
+  <!-- chr:acciones -->
+<style>
+  .chr-barra {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 26px 0 30px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line, #e5e2db);
+    border-bottom: 1px solid var(--line, #e5e2db);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  .chr-barra-fin {
+    margin-bottom: 44px;
+  }
+  /* Respaldo por si el documento no define su propio contenedor centrado. */
+  .chr-wrap-fin {
+    max-width: 768px;
+    margin: 0 auto;
+    padding: 0 40px;
+    box-sizing: border-box;
+  }
+  .chr-nota {
+    flex: 1 1 auto;
+    min-width: 12rem;
+    font-size: 0.86rem;
+    color: var(--muted, #7b7770);
+  }
+  .chr-btn {
+    font: inherit;
+    font-size: 0.84rem;
+    line-height: 1;
+    color: var(--ink, #16202b);
+    background: #ffffff;
+    border: 1px solid var(--line, #e5e2db);
+    border-radius: 8px;
+    padding: 10px 15px;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.12s, box-shadow 0.12s;
+  }
+  .chr-btn:hover {
+    border-color: #c9c4ba;
+    box-shadow: 0 1px 4px rgba(22, 32, 43, 0.1);
+  }
+  .chr-btn-suave {
+    background: transparent;
+    color: var(--muted, #7b7770);
+  }
+  @media print {
+    .chr-barra { display: none !important; }
+  }
+  @media (max-width: 640px) {
+    .chr-wrap-fin { padding: 0 24px; }
+    .chr-nota { flex-basis: 100%; }
+  }
+</style>
+<div class="chr-barra" role="group" aria-label="Guardar esta propuesta">
+  <span class="chr-nota">Podés guardarte esta propuesta para leerla cuando quieras.</span>
+  <a class="chr-btn" href="/q/myf-comercial-1f7a93.html" download="Propuesta Campos HR - MyF Distribuciones.html">Descargar</a>
+  <button class="chr-btn" type="button" onclick="window.print()">Guardar en PDF</button>
+</div>
+<!-- /chr:acciones -->
+<section>
     <div class="kick">Objetivo</div>
     <p class="claim">Profesionalizar la empresa: que cada puesto tenga un dueño y un resultado, y que quede claro quién decide qué.</p>
 
@@ -166,7 +232,6 @@
       <tr><td><strong>El organigrama real, contra el declarado</strong></td><td>Muestra a quién responde cada uno en los hechos, dónde hay doble mando y qué funciones no tienen dueño. Ordenarlo termina con el trabajo que nadie hace porque cada área supone que lo hace la otra y con la gente que queda en el medio de dos jefes, que es de las causas más comunes de desgaste y de renuncias</td></tr>
       <tr><td><strong>La estructura que el área necesita</strong></td><td>Define cuántos puestos de conducción y de venta pide el negocio, y de qué tamaño queda el equipo. Evita sostener puestos que sobran y descubrir tarde los que faltan, que es plata todos los meses</td></tr>
       <tr><td><strong>La ficha de cada puesto crítico</strong></td><td>La descripción del puesto en una página: su misión, el resultado del que responde y el perfil que exige. Sirve para buscar contra un estándar y bajar los errores de contratación, que se pagan caro, y para que cada uno sepa qué se espera de él, así la conversación de desempeño deja de ser una opinión</td></tr>
-      <tr><td><strong>El encaje de cada persona de la conducción con su puesto</strong></td><td>Muestra quién encaja donde está, a quién conviene desarrollar y quién rendiría más en otro lugar. Una persona en el puesto correcto rinde más y dura más; sostenerla en el equivocado cuesta su sueldo, el rendimiento del equipo alrededor y, casi siempre, la salida</td></tr>
       <tr><td><strong>El diagnóstico de la rotación de preventa</strong></td><td>Separa las causas que la empresa puede intervenir de las que no. Cada punto de rotación que baja se recupera por dos vías: zonas que siguen trabajadas e incorporaciones que ya no hay que hacer</td></tr>
       <tr><td><strong>El tablero de decisiones</strong></td><td>Cada decisión con su evidencia, sus opciones, nuestra recomendación, el impacto económico y el costo de postergarla. Las más difíciles llevan además una ficha con cómo preparar y cómo dar esa conversación. Sirve para decidir a tiempo, que es donde se ahorra de verdad, y para que el equipo vea que las cosas se resuelven</td></tr>
     </table>
@@ -235,7 +300,7 @@
 
     <p>A las tres fuentes se suma <strong>la lectura de lo que ya existe</strong>: organigrama, descripciones de puesto, encuestas anteriores e informes de evaluación previos.</p>
 
-    <p><strong>Con eso producimos</strong> las siete piezas del modelo. Antes de la reunión se validan con Recursos Humanos, para que los socios lleguen a discutir decisiones y no a discutir datos. <strong>Cierra con la reunión de decisiones</strong>, de 90 a 120 minutos, con los cuatro socios.</p>
+    <p><strong>Con eso producimos</strong> las seis piezas del modelo. Antes de la reunión se validan con Recursos Humanos, para que los socios lleguen a discutir decisiones y no a discutir datos. <strong>Cierra con la reunión de decisiones</strong>, de 90 a 120 minutos, con los cuatro socios.</p>
   </section>
 
   <section>
@@ -313,47 +378,15 @@
   <div class="pie">Campos HR · camposhr.com</div>
 
 </div>
-<!-- chr:acciones -->
-<style>
-  .chr-acciones {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    display: flex;
-    gap: 8px;
-    z-index: 60;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  }
-  .chr-btn {
-    font: inherit;
-    font-size: 0.82rem;
-    line-height: 1;
-    color: #16202b;
-    background: #ffffff;
-    border: 1px solid #e5e2db;
-    border-radius: 8px;
-    padding: 10px 15px;
-    text-decoration: none;
-    cursor: pointer;
-    box-shadow: 0 1px 4px rgba(22, 32, 43, 0.08);
-    transition: border-color 0.12s, box-shadow 0.12s;
-  }
-  .chr-btn:hover {
-    border-color: #c9c4ba;
-    box-shadow: 0 2px 8px rgba(22, 32, 43, 0.12);
-  }
-  @media print {
-    .chr-acciones { display: none !important; }
-  }
-  @media (max-width: 640px) {
-    .chr-acciones { right: 12px; bottom: 12px; }
-    .chr-btn { padding: 9px 12px; font-size: 0.78rem; }
-  }
-</style>
-<div class="chr-acciones" role="group" aria-label="Acciones del documento">
-  <a class="chr-btn" href="/q/myf-comercial-1f7a93.html" download="Propuesta Campos HR - MyF Distribuciones.html">Descargar</a>
+<!-- chr:acciones-fin -->
+<div class="wrap">
+  <div class="chr-barra chr-barra-fin" role="group" aria-label="Guardar esta propuesta">
+    <span class="chr-nota">Guardá esta propuesta o volvé al principio.</span>
+    <a class="chr-btn" href="/q/myf-comercial-1f7a93.html" download="Propuesta Campos HR - MyF Distribuciones.html">Descargar</a>
   <button class="chr-btn" type="button" onclick="window.print()">Guardar en PDF</button>
+    <a class="chr-btn chr-btn-suave" href="#top">Ir arriba</a>
+  </div>
 </div>
-<!-- /chr:acciones -->
+<!-- /chr:acciones-fin -->
 </body>
 </html>
