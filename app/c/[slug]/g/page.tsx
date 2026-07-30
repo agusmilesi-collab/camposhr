@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getEmpresaPorSlug, listarLideres } from '@/lib/supabase';
+import { porApellidoSuelto } from '@/lib/personas';
 import Cuestionario from '../Cuestionario';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +22,10 @@ export default async function CuestionarioGeneraciones({
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 
-  const lideres = await listarLideres(empresa.id);
+  // Por apellido: es como la persona busca a su líder en la lista.
+  const lideres = (await listarLideres(empresa.id)).sort((a, b) =>
+    porApellidoSuelto(a.nombre, b.nombre)
+  );
 
   return (
     <Cuestionario

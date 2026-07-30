@@ -3,7 +3,7 @@ import { getEmpresaPorSlug, listarLideres, listarRespuestas } from '@/lib/supaba
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { GENERACIONES, INFO_GENERACION, type Generacion } from '@/lib/generaciones';
 import CopiarEnlace from './CopiarEnlace';
-import { nombreCompleto, porApellido } from '@/lib/personas';
+import { nombreCompleto, porApellido, porApellidoSuelto } from '@/lib/personas';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,7 +67,7 @@ export default async function Informes({
     if (!equipos.has(nombre)) equipos.set(nombre, []);
     equipos.get(nombre)!.push(r);
   }
-  const orden = [...equipos.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const orden = [...equipos.entries()].sort((a, b) => porApellidoSuelto(a[0], b[0]));
 
   const porcentaje = (n: number) =>
     respuestas.length ? Math.round((n / respuestas.length) * 100) : 0;
