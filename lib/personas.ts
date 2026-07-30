@@ -51,3 +51,18 @@ export function porApellidoSuelto(a: string, b: string): number {
   const clave = (n: string) => `${apellidoDe(n)} ${n}`.toLocaleLowerCase('es');
   return clave(a).localeCompare(clave(b), 'es');
 }
+
+/** "Andrés Barrios" -> "Barrios, Andrés". Sin apellido, devuelve lo que hay. */
+export function apellidoNombre(completo: string): string {
+  const limpio = completo.trim();
+  const apellido = apellidoDe(limpio);
+  const nombre = limpio.slice(0, limpio.length - apellido.length).trim();
+  return nombre ? `${apellido}, ${nombre}` : apellido;
+}
+
+/** Sólo el nombre de pila, para saludar. */
+export function soloNombre(completo: string): string {
+  const limpio = completo.trim();
+  const apellido = apellidoDe(limpio);
+  return limpio.slice(0, limpio.length - apellido.length).trim() || limpio;
+}
