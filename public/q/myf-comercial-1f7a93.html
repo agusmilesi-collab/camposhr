@@ -33,7 +33,9 @@
   .top{border-bottom:1px solid var(--line);background:var(--card)}
   .top-inner{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
     padding:22px 40px;flex-wrap:wrap;max-width:768px;margin:0 auto}
-  .brand{font-family:var(--serif);font-size:1.4rem;letter-spacing:-.01em}
+  .brand{font-family:var(--serif);font-size:1.4rem;letter-spacing:-.01em;
+    color:var(--ink);text-decoration:none;display:inline-block}
+  .brand:hover span{color:var(--green)}
   .brand span{font-style:italic;color:var(--muted)}
   .top-meta{font-size:.78rem;color:var(--muted);letter-spacing:.02em}
 
@@ -108,6 +110,8 @@
   .cierre b{color:#fff;font-weight:500}
 
   .pie{padding:30px 0 60px;font-size:.78rem;color:var(--muted)}
+  .pie a{color:var(--green);text-decoration:none;border-bottom:1px solid rgba(64,112,79,.3);padding-bottom:1px}
+  .pie a:hover{border-bottom-color:var(--green)}
 
   @media print{body{background:#fff} .top{border-bottom:1px solid var(--line)} section{page-break-inside:avoid}}
   @media (max-width:720px){.wrap{padding:0 22px} .top-inner{padding:20px 22px} .precio .n{font-size:1.9rem} td:first-child{width:auto}}
@@ -118,7 +122,7 @@
 
 <header class="top">
   <div class="top-inner">
-    <div class="brand">Campos HR <span>propuesta</span></div>
+    <a class="brand" href="https://camposhr.com" target="_blank" rel="noopener">Campos HR. <span>Bienestar Corporativo</span></a>
     <div class="top-meta">MyF Distribuciones · 28 de julio de 2026</div>
   </div>
 </header>
@@ -373,7 +377,7 @@
     </div>
   </section>
 
-  <div class="pie">Campos HR · camposhr.com</div>
+  <div class="pie">Campos HR · <a href="https://camposhr.com" target="_blank" rel="noopener">camposhr.com</a></div>
 
 </div>
 <!-- chr:acciones-fin -->
