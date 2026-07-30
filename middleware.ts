@@ -71,10 +71,10 @@ export function middleware(req: NextRequest) {
   // El cuestionario público vive acá (es el destino de los QR).
   if (RUTAS_PUBLICAS.test(pathname)) return NextResponse.next();
 
-  // Raíz -> placeholder.
+  // Raíz -> home comercial.
   if (pathname === '/') {
     const dest = url.clone();
-    dest.pathname = '/proximamente.html';
+    dest.pathname = '/home.html';
     return NextResponse.rewrite(dest);
   }
   // Herramientas viejas -> se mudaron a tools.camposhr.com.
