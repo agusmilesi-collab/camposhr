@@ -114,10 +114,10 @@ export default function Cotizaciones() {
 
       <p className="cot-pie">
         Para dar de alta una cotización:{' '}
-        <code>node scripts/publicar-cotizacion.mjs &lt;html&gt; &lt;token&gt;
-        &quot;&lt;Cliente&gt;&quot;</code>, sumar la fila en{' '}
+        <code>node scripts/publicar-cotizacion.mjs &lt;html&gt; &lt;token&gt;</code>,
+        sumar la fila en{' '}
         <code>data/cotizaciones.json</code> y publicar. El script deja el
-        documento con sus botones de descarga y sin rastro para los buscadores.
+        documento con su botón de descarga y sin rastro para los buscadores.
       </p>
     </main>
   );

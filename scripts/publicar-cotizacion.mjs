@@ -2,15 +2,15 @@
  * Publica una cotización: copia el HTML de la propuesta a public/q/<token>.html
  * y le agrega lo que necesita para vivir en la web.
  *
- *   node scripts/publicar-cotizacion.mjs <html-origen> <token> "<Cliente>"
+ *   node scripts/publicar-cotizacion.mjs <html-origen> <token>
  *
  * Qué le agrega al documento:
  *   1. noindex, para que el enlace secreto no lo levante ningún buscador.
- *   2. Dos barras de acciones, una arriba y otra al final: descargar el archivo
- *      y guardarlo en PDF. La de arriba avisa que se puede guardar antes de
- *      empezar a leer; la de abajo lo deja a mano al terminar, y suma "Ir
- *      arriba". Sin librerías: la descarga es el propio HTML y el PDF lo arma
- *      el navegador al imprimir, así que el documento no pesa un byte más.
+ *   2. Dos barras con el botón de descarga, una arriba y otra al final. La de
+ *      arriba avisa que se puede descargar antes de empezar a leer; la de abajo
+ *      lo deja a mano al terminar, y suma "Ir arriba". Sin librerías: el PDF lo
+ *      arma el navegador al imprimir, así que el documento no pesa un byte más
+ *      y no hay ningún archivo que generemos ni subamos.
  *
  * Es idempotente: si el documento ya tiene los bloques, los reemplaza.
  */
@@ -18,11 +18,11 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
-const [origen, tokenArg, clienteArg] = process.argv.slice(2);
+const [origen, tokenArg] = process.argv.slice(2);
 
 if (!origen || !tokenArg) {
   console.error(
-    'Uso: node scripts/publicar-cotizacion.mjs <html-origen> <token> "<Cliente>"'
+    'Uso: node scripts/publicar-cotizacion.mjs <html-origen> <token>'
   );
   process.exit(1);
 }
@@ -33,12 +33,6 @@ if (!/^[A-Za-z0-9_-]{6,128}$/.test(tokenArg)) {
   );
   process.exit(1);
 }
-
-const cliente = clienteArg ?? 'Campos HR';
-const nombreArchivo = `Propuesta Campos HR - ${cliente}.html`.replace(
-  /[/\\?%*:|"<>]/g,
-  '-'
-);
 
 const A = '<!-- chr:acciones -->';
 const A_FIN = '<!-- /chr:acciones -->';
@@ -51,9 +45,8 @@ const estilos = `<style>
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
-    margin: 26px 0 30px;
-    padding: 14px 0;
-    border-top: 1px solid var(--line, #e5e2db);
+    margin: 22px 0 30px;
+    padding: 0 0 16px;
     border-bottom: 1px solid var(--line, #e5e2db);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
@@ -104,14 +97,13 @@ const estilos = `<style>
   }
 </style>`;
 
-const botones = `<a class="chr-btn" href="/q/${tokenArg}.html" download="${nombreArchivo}">Descargar</a>
-  <button class="chr-btn" type="button" onclick="window.print()">Guardar en PDF</button>`;
+const boton = `<button class="chr-btn" type="button" onclick="window.print()">Descargar PDF</button>`;
 
 const bloqueInicio = `${A}
 ${estilos}
 <div class="chr-barra" role="group" aria-label="Guardar esta propuesta">
-  <span class="chr-nota">Podés guardarte esta propuesta para leerla cuando quieras.</span>
-  ${botones}
+  <span class="chr-nota">Podés descargarte esta propuesta para leerla cuando quieras.</span>
+  ${boton}
 </div>
 ${A_FIN}`;
 
@@ -125,8 +117,8 @@ function armarBloqueFin(tieneWrap) {
   return `${B}
 <div class="${clase}">
   <div class="chr-barra chr-barra-fin" role="group" aria-label="Guardar esta propuesta">
-    <span class="chr-nota">Guardá esta propuesta o volvé al principio.</span>
-    ${botones}
+    <span class="chr-nota">Descargá esta propuesta o volvé al principio.</span>
+    ${boton}
     <a class="chr-btn chr-btn-suave" href="#top">Ir arriba</a>
   </div>
 </div>
@@ -189,5 +181,4 @@ await writeFile(rutaDestino, html, 'utf8');
 
 console.log(`Publicada: public/q/${tokenArg}.html`);
 console.log(`Enlace:    https://camposhr.com/q/${tokenArg}`);
-console.log(`Descarga:  ${nombreArchivo}`);
 console.log('Falta sumar la fila en data/cotizaciones.json y hacer deploy.');
