@@ -2263,6 +2263,20 @@ body {
 .cot-row > .cot-num {
   justify-content: flex-end;
 }
+/* El botón de copiar va centrado en su celda, con su tamaño natural: como
+   hijo directo del grid se estiraba a la altura entera de la fila. */
+.cot-accion {
+  justify-content: flex-end;
+}
+.cot-accion .copiar {
+  background: var(--card);
+  font-size: 0.75rem;
+  padding: 5px 11px;
+  border-radius: 6px;
+}
+.cot-accion .copiar:hover {
+  border-color: var(--muted);
+}
 .cot-row > *:first-child {
   padding-left: 20px;
 }

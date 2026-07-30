@@ -80,7 +80,9 @@ export const BLOQUES_CUADRANTE: Record<Perfil, PorDimension> = {
       nofunciona: '"Esto no es lo que te pedí", sin contexto ni reconocimiento previo.',
     },
     autonomia: {
-      porque: 'Su BD necesita espacio para gestionar las relaciones del equipo a su manera.',
+      core: 'Alta sobre el cómo, con acceso abierto a vos. Definí el resultado y dejale elegir cómo trabajarlo con los demás, pero dejale claro que puede consultarte sin costo.',
+      porque:
+        'Su BD necesita espacio para gestionar las relaciones del equipo a su manera. Lo que lo frena no es la falta de criterio sino el miedo a molestar: si consultar tiene costo, deja de consultar y resuelve por su cuenta.',
       verde: 'Entrega en tiempo. Te avisa si hay algo que puede afectar el resultado.',
       alerta:
         'Hace preguntas de validación excesivas: señal de que no confía en su propio criterio o no tiene claro el objetivo.',
@@ -141,8 +143,9 @@ export const BLOQUES_CUADRANTE: Record<Perfil, PorDimension> = {
       nofunciona: '"Fijate de mejorar eso", sin decir qué es eso.',
     },
     autonomia: {
+      core: 'Alta dentro de un marco escrito. Dale el procedimiento, el estándar y los límites, y a partir de ahí no lo supervises.',
       porque:
-        'Se agota cuando lo obligan a operar fuera de un marco sistemático: la ambigüedad no la lee como libertad sino como falta de definición.',
+        'Se agota cuando lo obligan a operar fuera de un marco sistemático: la ambigüedad no la lee como libertad sino como falta de definición. Con el marco definido trabaja solo mejor que nadie.',
       verde: 'Organiza su semana sin que se lo pidas.',
       alerta: 'Consulta cada paso: señal de que el objetivo no está claro.',
     },
@@ -195,6 +198,7 @@ export const BLOQUES_CUADRANTE: Record<Perfil, PorDimension> = {
       nofunciona: 'Devolver un trabajo marcando sólo los errores de forma.',
     },
     autonomia: {
+      core: 'Toda sobre el cómo, con fechas de cierre acordadas. No le controles el proceso, controlale las entregas.',
       porque:
         'La autonomía no es su problema: terminar sí. La bibliografía le atribuye dificultad de finalización y de sistematización, así que lo que necesita son hitos de cierre, no supervisión.',
       verde: 'Avanza solo y aparece con algo mejor de lo pedido.',
@@ -249,6 +253,7 @@ export const BLOQUES_CUADRANTE: Record<Perfil, PorDimension> = {
       nofunciona: 'Dar vueltas diez minutos antes de decir el problema.',
     },
     autonomia: {
+      core: 'Toda, con las restricciones sobre la mesa desde el principio: presupuesto, plazo y qué no se negocia. Dentro de eso, decide él.',
       porque:
         'Se agota operando sin objetivos claros ni resultados medibles. Lo que necesita no es supervisión sino restricciones explícitas: presupuesto, plazo, qué no se negocia.',
       verde: 'Toma decisiones dentro de su marco y las informa después.',
@@ -387,7 +392,151 @@ export type Semana = {
   porque: string;
 };
 
-export const SEMANAS: Partial<Record<Perfil, Semana[]>> = {
+export const SEMANAS: Record<Perfil, Semana[]> = {
+  BI: [
+    {
+      n: 1,
+      titulo: 'Cerrale la semana',
+      dimension: 'animo',
+      accion:
+        'El lunes decile qué se espera de él esta semana y qué queda para la siguiente. Si algo todavía no está definido, decí eso también, con fecha.',
+      porque:
+        'Lo que lo desgasta no es la carga sino la incertidumbre. Saber qué viene le permite organizarse, que es su forma de trabajar.',
+    },
+    {
+      n: 2,
+      titulo: 'Explicitá el criterio',
+      dimension: 'feedback',
+      accion:
+        'La próxima vez que le pidas algo, decile además con qué lo vas a mirar: qué tiene que estar sí o sí, y qué es a criterio suyo.',
+      porque:
+        'Le disgusta la ambigüedad. Sin criterio explícito, o pregunta de más o entrega algo que no era, y en los dos casos pierden tiempo los dos.',
+    },
+    {
+      n: 3,
+      titulo: 'Nombrá lo invisible',
+      dimension: 'motivar',
+      accion:
+        'Buscá una cosa que salió bien esta semana porque él la tenía ordenada, y decísela. Concreta, no "sos ordenado".',
+      porque:
+        'Su aporte sólo se nota cuando falla. Si nadie lo nombra, la conclusión que saca es que da lo mismo hacerlo bien.',
+    },
+    {
+      n: 4,
+      titulo: 'Dejalo por escrito',
+      dimension: 'comunicar',
+      accion:
+        'Después de la próxima reunión donde acuerden algo con él, mandale dos líneas por escrito con lo acordado.',
+      porque:
+        'Aprende y trabaja con procedimientos. Lo que se dijo de palabra y no quedó registrado le genera una duda que muchas veces no te trae.',
+    },
+    {
+      n: 5,
+      titulo: 'Protegele el foco',
+      dimension: 'tareas',
+      accion:
+        'Esta semana, antes de interrumpirlo con algo urgente, preguntate si puede esperar al día siguiente. Si puede, esperá.',
+      porque:
+        'Las interrupciones lo sacan de su secuencia y empieza a rehacer chequeos. El costo de la interrupción es más alto que en otros perfiles.',
+    },
+  ],
+
+  FI: [
+    {
+      n: 1,
+      titulo: 'Devolvele una decisión',
+      dimension: 'animo',
+      accion:
+        'Identificá una decisión que hoy tomás vos y que él podría tomar. Pasásela esta semana, con su límite de presupuesto o plazo.',
+      porque:
+        'Lo que lo apaga es ver un problema y no poder tocarlo. Una decisión propia lo recupera más rápido que cualquier conversación.',
+    },
+    {
+      n: 2,
+      titulo: 'Al grano',
+      dimension: 'feedback',
+      accion:
+        'La próxima corrección, decila en la primera frase, con el dato. Sin preámbulo y sin envolverla.',
+      porque:
+        'El rodeo amable no le suaviza el mensaje: le hace perder el dato y sospechar de lo que viene después.',
+    },
+    {
+      n: 3,
+      titulo: 'Dale el problema',
+      dimension: 'motivar',
+      accion:
+        'En vez de asignarle la tarea ya resuelta, contale el problema y las restricciones, y preguntale cómo lo resolvería.',
+      porque:
+        'Su motor es resolver. Un encargo cerrado le saca justo la parte que le interesa y lo deja ejecutando.',
+    },
+    {
+      n: 4,
+      titulo: 'Conclusión primero',
+      dimension: 'comunicar',
+      accion:
+        'Revisá el último mensaje largo que le mandaste. Reescribilo con la decisión que necesitás en la primera línea.',
+      porque:
+        'Filtra rápido lo que no aporta. Si la conclusión llega al final, abandona antes de llegar.',
+    },
+    {
+      n: 5,
+      titulo: 'Sacale una reunión',
+      dimension: 'tareas',
+      accion:
+        'Mirá su semana y encontrá una reunión donde no se decide nada. Sacalo de esa y pasale el resumen.',
+      porque:
+        'Se agota en reuniones sin decisión. Ese tiempo devuelto rinde más que cualquier incentivo.',
+    },
+  ],
+
+  FD: [
+    {
+      n: 1,
+      titulo: 'Dale un problema abierto',
+      dimension: 'motivar',
+      accion:
+        'Buscá algo que en tu área funciona mal hace tiempo y pedile que lo repiense, sin formato previo ni solución sugerida.',
+      porque:
+        'Lo mueve lo que todavía no existe. Un problema abierto lo engancha más que un objetivo claro.',
+    },
+    {
+      n: 2,
+      titulo: 'Primero la idea',
+      dimension: 'feedback',
+      accion:
+        'La próxima devolución, arrancá por el concepto y recién después señalá lo de forma. En ese orden.',
+      porque:
+        'Si el primer comentario es sobre la prolijidad, lee que su aporte no interesó y deja de proponer.',
+    },
+    {
+      n: 3,
+      titulo: 'Poné el hito de cierre',
+      dimension: 'autonomia',
+      accion:
+        'Elegí uno de sus frentes abiertos y acordá una fecha de cierre concreta. Uno solo, no todos.',
+      porque:
+        'La autonomía no es su problema: terminar sí. El hito no es control, es lo que le falta para cerrar.',
+    },
+    {
+      n: 4,
+      titulo: 'Mostrale, no le escribas',
+      dimension: 'comunicar',
+      accion:
+        'Lo próximo complejo que tengas que explicarle, dibujalo o mostrale un ejemplo en vez de mandarlo por escrito.',
+      porque:
+        'Piensa en imágenes. Un instructivo de doce pasos lo entiende, pero no lo usa para construir.',
+    },
+    {
+      n: 5,
+      titulo: 'Quitale una planilla',
+      dimension: 'tareas',
+      accion:
+        'Identificá una tarea administrativa repetitiva que hoy tiene asignada y pasásela a alguien de perfil basal.',
+      porque:
+        'La rutina de control le consume el doble y la posterga hasta que se vuelve urgente. No es desinterés: es su cuadrante opuesto.',
+    },
+  ],
+
   BD: [
     {
       n: 1,
@@ -489,8 +638,14 @@ export function armarPlaybook(
   for (const d of DIMENSIONES) {
     const cuadrante = porCuadrante[d.id];
     const gen = porGeneracion[d.id];
-    const principal = d.eje === 'generacion' ? gen : cuadrante;
-    const secundario = d.eje === 'generacion' ? cuadrante : gen;
+    // El eje que manda escribe la instrucción central; el otro matiza. Si el
+    // que manda no la tiene (por ejemplo, sin generación en el cuestionario de
+    // perfil), la toma el otro en vez de perderse la dimensión entera.
+    let principal = d.eje === 'generacion' ? gen : cuadrante;
+    let secundario = d.eje === 'generacion' ? cuadrante : gen;
+    if (!principal?.core && secundario?.core) {
+      [principal, secundario] = [secundario, principal];
+    }
 
     // Sin la instrucción central no hay nada útil que mostrar.
     if (!principal?.core) {

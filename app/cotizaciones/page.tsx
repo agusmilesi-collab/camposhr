@@ -104,7 +104,9 @@ export default function Cotizaciones() {
                   >
                     /q/{c.token}
                   </a>
-                  <CopyLink url={url} />
+                  <span className="cot-accion">
+                    <CopyLink url={url} />
+                  </span>
                 </div>
               );
             })}
