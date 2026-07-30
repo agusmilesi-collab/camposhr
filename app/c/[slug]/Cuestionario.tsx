@@ -171,9 +171,8 @@ export default function Cuestionario({
         {/* ---------------------------------------------------- portada */}
         {paso === 0 && (
           <section className="cq-placa cq-portada">
-            <div className="cq-portada-matriz">
-              <MatrizPortada />
-            </div>
+            {/* Sin la matriz: ver los cuadrantes antes de responder condiciona
+                las respuestas. Se muestra al final, con el resultado. */}
             <div className="cq-portada-texto">
               <h1>{PORTADA.titulo}</h1>
               <p>{PORTADA.texto}</p>
@@ -510,6 +509,11 @@ export default function Cuestionario({
                   : `Habías elegido ${INFO[autopercepcion].nombre}.`}
               </p>
             )}
+
+            {/* Recién acá se explican los cuatro cuadrantes. */}
+            <div className="cq-resultado-mapa">
+              <MatrizPortada />
+            </div>
 
             <p className="cq-cierre">
               Listo. Ya quedaste en la matriz del equipo, podés cerrar esta página.
