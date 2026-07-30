@@ -2181,3 +2181,241 @@ body {
   font-size: 0.7rem;
 }
 
+
+/* Lo que aporta lo que la persona marcó */
+.pb-propio {
+  background: #faf7f0;
+  border-left: 3px solid #c9b98a;
+  border-radius: 0 9px 9px 0;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.pb-propio .pb-rotulo {
+  color: #8a7a52;
+}
+.pb-propio ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.pb-propio li {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ---- Cotizaciones ---------------------------------------------------- */
+
+.cot-resumen {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.cot-dato {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.cot-dato b {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.cot-dato span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cotizaciones {
+  padding-bottom: 24px;
+}
+.cot-row {
+  display: grid;
+  grid-template-columns:
+    5.5rem minmax(0, 1fr) minmax(0, 1.6fr) 8.5rem 6rem minmax(0, 1.1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.cot-row:last-child {
+  border-bottom: none;
+}
+.cot-th {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: #ece9e2;
+}
+.cot-fecha {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.cot-cliente {
+  font-weight: 500;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cot-concepto {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+.cot-version {
+  display: inline-block;
+  margin-left: 7px;
+  font-style: normal;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+.cot-previa {
+  display: block;
+  margin-top: 3px;
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.cot-num {
+  text-align: right;
+}
+.cot-importe {
+  font-size: 0.88rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.cot-estado {
+  font-style: normal;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.e-borrador { color: var(--st-gray); }
+.e-enviada { color: var(--st-blue); }
+.e-aprobada { color: var(--st-green); }
+.e-rechazada { color: var(--st-amber); }
+.e-cancelada { color: var(--st-gray); opacity: 0.75; }
+
+.cot-pie {
+  padding-bottom: 72px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.cot-pie code {
+  font-size: 0.9em;
+  background: #ece9e2;
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+@media (max-width: 900px) {
+  .cot-resumen {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cot-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 14px;
+    padding: 16px 18px;
+  }
+  .cot-th {
+    display: none;
+  }
+  .cot-fecha {
+    order: -1;
+  }
+  .cot-cliente {
+    order: -1;
+    text-align: right;
+  }
+  .cot-concepto,
+  .cot-importe,
+  .acc-url {
+    grid-column: 1 / -1;
+  }
+  .cot-num {
+    text-align: left;
+  }
+}
+
+/* En sus palabras */
+.pb-dijo {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.pb-dijo h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+.pb-dijo-bajada {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 4px 0 16px;
+}
+.pb-dijo-cols {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.pb-dijo-col {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 15px 16px;
+}
+.pb-dijo-col h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  margin-bottom: 9px;
+}
+.pb-dijo-col h3 em {
+  font-style: normal;
+  color: var(--muted);
+  font-weight: 400;
+}
+.pb-dijo-col ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.pb-dijo-col li {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  padding-left: 12px;
+  position: relative;
+}
+.pb-dijo-col li::before {
+  content: '·';
+  position: absolute;
+  left: 2px;
+  color: var(--muted);
+}

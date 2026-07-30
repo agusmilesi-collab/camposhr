@@ -25,11 +25,14 @@
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background: var(--papel);
       color: var(--tinta);
-      line-height: 1.6;
+      line-height: 1.42;
+      letter-spacing: -0.006em;
       padding: 0 24px;
+      text-align: left;
+      hyphens: manual;
     }
     .hoja {
-      max-width: 38rem;
+      max-width: 600px;
       margin: 0 auto;
       padding: 64px 0 72px;
     }
@@ -37,26 +40,26 @@
     .marca {
       font-family: 'Instrument Serif', Georgia, serif;
       font-size: 1.35rem;
-      letter-spacing: -0.01em;
-      padding-bottom: 52px;
+      letter-spacing: -0.022em;
+      padding-bottom: 44px;
     }
     .marca .bajada { color: var(--suave); }
 
     .tesis {
       font-family: 'Instrument Serif', Georgia, serif;
-      font-size: 2.15rem;
-      line-height: 1.22;
-      letter-spacing: -0.015em;
+      font-size: clamp(1.7rem, 7.4vw, 2.6rem);
+      line-height: 1.06;
+      letter-spacing: -0.03em;
     }
     .apunte {
-      margin-top: 44px;
+      margin-top: 36px;
       font-size: 1.02rem;
       color: var(--suave);
     }
 
     .servicios { margin-top: 14px; }
     .servicio {
-      padding: 24px 0;
+      padding: 20px 0;
       border-top: 1px solid var(--linea);
       display: grid;
       grid-template-columns: 2.2rem 1fr;
@@ -73,22 +76,26 @@
       font-family: 'Instrument Serif', Georgia, serif;
       font-size: 1.35rem;
       font-weight: 400;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
+      line-height: 1.1;
+      letter-spacing: -0.024em;
     }
     .voz {
-      margin-top: 8px;
+      margin-top: 6px;
       font-style: italic;
       font-size: 1.02rem;
+      line-height: 1.34;
+      color: var(--suave);
     }
     .desc {
-      margin-top: 14px;
+      margin-top: 10px;
       font-size: 0.95rem;
+      line-height: 1.44;
       color: #3c4650;
     }
     .caso {
-      margin-top: 8px;
+      margin-top: 7px;
       font-size: 0.88rem;
+      line-height: 1.44;
       color: var(--suave);
     }
     .caso b {
@@ -97,8 +104,8 @@
     }
 
     .pie {
-      margin-top: 44px;
-      padding-top: 26px;
+      margin-top: 36px;
+      padding-top: 22px;
       border-top: 1px solid var(--linea);
       font-size: 0.98rem;
       color: var(--suave);
@@ -107,9 +114,14 @@
     .pie a:hover { border-bottom-color: var(--tinta); }
 
     @media (max-width: 34rem) {
-      .hoja { padding: 44px 0 56px; }
-      .tesis { font-size: 1.7rem; }
-      .servicio { grid-template-columns: 1.6rem 1fr; }
+      body { padding: 0 20px; }
+      .hoja { padding: 40px 0 52px; }
+      .marca { padding-bottom: 32px; }
+      .apunte { margin-top: 28px; }
+      .servicio { grid-template-columns: 1.5rem 1fr; gap: 0 10px; }
+      .num { font-size: 1rem; }
+      .servicio h2 { font-size: 1.22rem; }
+      .voz, .apunte { font-size: 0.98rem; }
     }
   </style>
 </head>
@@ -118,7 +130,7 @@
 
     <div class="marca">Campos HR. <span class="bajada">Bienestar Corporativo</span></div>
 
-    <p class="tesis">Una empresa anda bien cuando su gente está bien: cuando cada uno sabe qué se espera de él, ocupa el puesto que le corresponde y tiene a alguien que sabe conducirlo.</p>
+    <p class="tesis">El mejor beneficio para tu gente<br />es una empresa ordenada.</p>
 
     <p class="apunte">Servicios:</p>
 
@@ -129,28 +141,38 @@
         <div>
           <h2>Diseño organizacional</h2>
           <p class="voz">&ldquo;La empresa creció más rápido que mi capacidad de saber quién tiene que hacer qué.&rdquo;</p>
-          <p class="desc">Cadena de valor, capacidades organizacionales y diseño de puestos con responsabilidad por resultado. Entregamos organigrama real contra organigrama objetivo, fichas de los roles críticos y un memo de decisiones con impacto económico, secuencia y costo de postergar.</p>
-          <p class="caso"><b>Cuándo se usa:</b> la empresa duplicó su tamaño y sigue conducida como antes; el dueño es el cuello de botella de toda decisión; hay una sucesión, un retiro o una venta en el horizonte.</p>
+          <p class="desc">Derivamos de la cadena de valor las capacidades que el negocio exige y los puestos que hacen falta, cada uno con su resultado. Termina en ocho decisiones como máximo, cada una con quién la ejecuta, qué cuesta en plata y qué cuesta dejarla para más adelante.</p>
+          <p class="caso">Se usa cuando la empresa creció y sigue conducida como al principio, o cuando hay una sucesión o una venta a la vista.</p>
         </div>
       </div>
 
       <div class="servicio">
         <div class="num">02</div>
         <div>
-          <h2>Evaluación de candidatos</h2>
+          <h2>Evaluación de personas</h2>
           <p class="voz">&ldquo;Tengo que decidir sobre una persona y no quiero enterarme a los seis meses de que me equivoqué.&rdquo;</p>
-          <p class="desc">Evaluación psicolaboral contra el perfil del puesto: batería clínica (Rorschach por sistema comprehensivo de Exner, Benziger, Raven), entrevista y observación. Informe con veredicto, competencias puntuadas, riesgos y plan de acompañamiento a noventa días, firmado por psicóloga.</p>
-          <p class="caso"><b>Cuándo se usa:</b> finalistas de una búsqueda, antes de firmar; promociones internas a puestos de conducción; armado de un equipo nuevo.</p>
+          <p class="desc">Medimos a cada persona contra el perfil psicolaboral del puesto, cruzando una batería clínica de Rorschach, Benziger y Raven con entrevista y observación. El informe abre por el veredicto y lo firma una psicóloga.</p>
+          <p class="caso">Se usa antes de cerrar con un finalista, o cuando hay que promover a alguien a un puesto de conducción.</p>
         </div>
       </div>
 
       <div class="servicio">
         <div class="num">03</div>
         <div>
-          <h2>Formación de líderes y equipos</h2>
+          <h2>Formación de líderes</h2>
           <p class="voz">&ldquo;Ascendí al mejor de mi equipo y hoy tengo un jefe que no sabe conducir.&rdquo;</p>
-          <p class="desc">Desarrollo de liderazgo para la transición de experto a conductor (devolución de desempeño, conversaciones difíciles, delegación) y atención plena para equipos bajo exigencia sostenida. Modalidad presencial en la empresa, con aprendizaje experiencial sobre casos del propio equipo.</p>
-          <p class="caso"><b>Cuándo se usa:</b> mandos medios recién ascendidos; procesos de cambio que el equipo resiste; reducciones de personal; equipos que trabajan a presión de forma permanente.</p>
+          <p class="desc">Ocho encuentros sobre la transición de experto a conductor, con foco en el uno a uno. El líder aprende a leer qué le pasa a él y qué le pasa a quien tiene enfrente, para conducir distinto a cada persona de su equipo.</p>
+          <p class="caso">Se usa cuando alguien técnicamente muy competente conduce gente por primera vez, o cuando las conversaciones difíciles se postergan hasta que el problema llega a dirección.</p>
+        </div>
+      </div>
+
+      <div class="servicio">
+        <div class="num">04</div>
+        <div>
+          <h2>Talleres de habilidades humanas</h2>
+          <p class="voz">&ldquo;Mi gente sabe hacer su trabajo. Lo que cuesta es todo lo demás.&rdquo;</p>
+          <p class="desc">Encuentros cortos y medidos sobre lo que cada equipo necesita: atención plena para regular el estrés, el HR Help Kit para que Recursos Humanos se proteja del desgaste, y La persona correcta para que los líderes sepan entrevistar.</p>
+          <p class="caso">Se usa cuando el equipo trabaja a presión permanente, o cuando Recursos Humanos absorbe los conflictos de todos los sectores.</p>
         </div>
       </div>
 

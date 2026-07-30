@@ -12,6 +12,7 @@
 
 import { INFO, PERFILES, type Perfil, type Puntajes } from './perfiles';
 import { INFO_GENERACION, type Generacion } from './generaciones';
+import { cuadrantesALeer, facetasActivas, type Faceta } from './facetas';
 
 export type DimensionId =
   | 'motivar'
@@ -118,10 +119,170 @@ export const BLOQUES_CUADRANTE: Record<Perfil, PorDimension> = {
     },
   },
 
-  // Pendientes: mismo formato que BD, uno por dimensión.
-  FI: {},
-  FD: {},
-  BI: {},
+  // Fuentes: [B] Benziger (modos y qué agota a cada uno), [H] Herrmann (qué
+  // frustra y cómo comunicarse), [SM] material de clase de Sentir Mindfulness.
+  BI: {
+    motivar: {
+      core: 'Reconocé la consistencia, no el golpe de efecto. Decile qué salió bien porque el proceso estaba en orden.',
+      porque:
+        'Su fortaleza es la confiabilidad y el cumplimiento de plazos mediante cronogramas. Es un aporte que sólo se nota cuando falla.',
+      verde: 'Avisa antes de que algo se venza y mantiene sus registros al día.',
+      alerta: 'Empieza a cumplir literal, sin anticipar. Deja de avisar problemas.',
+      funciona: '"Esto salió sin sobresaltos porque tenías el seguimiento al día."',
+      nofunciona: '"Sos ordenado", como rasgo de carácter y no como aporte.',
+    },
+    feedback: {
+      core: 'Concreto y con el criterio explícito: cuál es el estándar y en qué punto se apartó.',
+      porque:
+        'Lo que lo frustra son las instrucciones ambiguas. Sin saber contra qué se lo mide, su reacción es pedir más instrucciones, no menos.',
+      verde: 'Pregunta por el criterio, toma nota, repregunta hasta entender.',
+      alerta: 'Pide autorización para cosas que antes resolvía solo.',
+      funciona: '"El procedimiento pide tres controles y se hicieron dos. Ese es el ajuste."',
+      nofunciona: '"Fijate de mejorar eso", sin decir qué es eso.',
+    },
+    autonomia: {
+      porque:
+        'Se agota cuando lo obligan a operar fuera de un marco sistemático: la ambigüedad no la lee como libertad sino como falta de definición.',
+      verde: 'Organiza su semana sin que se lo pidas.',
+      alerta: 'Consulta cada paso: señal de que el objetivo no está claro.',
+    },
+    comunicar: {
+      core: 'Por escrito y con el detalle completo. Es el único cuadrante donde un mensaje largo funciona mejor que una charla.',
+      porque:
+        'Su comunicación es escrita, específica y paso a paso. Aprende con procedimientos e instrucciones, y necesita poder volver a leer.',
+      verde: 'Responde con el detalle y en el formato que le pediste.',
+      alerta: 'Pide que le repitan cosas ya dichas de palabra.',
+      funciona: 'Dejar por escrito lo acordado en la reunión.',
+      nofunciona: 'Cambiar algo acordado sin avisar, aunque el cambio sea menor.',
+    },
+    tareas: {
+      core: 'Energiza: ordenar procesos, controlar, planificar, sostener lo que ya está andando. Agota: improvisar, arrancar sin marco, cambios de último momento.',
+      porque:
+        'Se agota rápido cuando le hacen abandonar procesos establecidos, y los procesos caóticos lo frustran. Las interrupciones lo sacan de foco y empieza a hacer chequeos.',
+      verde: 'Trae el trabajo terminado antes de la fecha.',
+      alerta: 'Se traba y pospone cuando la consigna es abierta.',
+      funciona: 'Si hay que innovar, darle el marco y el objetivo, no la hoja en blanco.',
+      nofunciona: 'Cambiarle la prioridad tres veces en la misma semana.',
+    },
+    animo: {
+      core: 'Devolvele previsibilidad: qué va a pasar, cuándo, y qué depende de él.',
+      porque:
+        'Lo que lo desgasta no es la carga sino la incertidumbre. La rutina es lo que le permite predecir y controlar el tiempo.',
+      verde: 'Pregunta por los próximos pasos y se anticipa.',
+      alerta: 'Se pone rígido con el reglamento, o repite la misma consulta.',
+      funciona: '"Esto se define el jueves. Hasta entonces seguimos como está."',
+      nofunciona: '"Todavía no sabemos, ya vemos."',
+    },
+  },
+
+  FD: {
+    motivar: {
+      core: 'Dale el problema entero y espacio para reformularlo. Lo que lo mueve es lo que todavía no existe.',
+      porque:
+        'Capta conceptos completos a partir de información incompleta y se adapta rápido a lo nuevo. Su objetivo es crear soluciones o generar un cambio, y para eso necesita desafiar los límites.',
+      verde: 'Aparece con ideas que nadie pidió y conecta cosas de áreas distintas.',
+      alerta: 'Se aburre, empieza cosas y no las cierra.',
+      funciona: '"Necesito que repensemos cómo hacemos esto. No hay formato previo."',
+      nofunciona: '"Seguí el procedimiento tal como está."',
+    },
+    feedback: {
+      core: 'Empezá por la idea, no por el error de forma. Separá el concepto de la prolijidad.',
+      porque:
+        'Su dificultad declarada es detectar el detalle y adecuarse a las normas, y las restricciones minuciosas lo frustran. Si el primer mensaje es sobre la forma, lee que su aporte no interesó.',
+      verde: 'Toma el ajuste y vuelve con una versión mejor.',
+      alerta: 'Deja de proponer y se limita a cumplir el pedido literal.',
+      funciona: '"La idea es buena. Para que la puedan usar hay que ordenarla así."',
+      nofunciona: 'Devolver un trabajo marcando sólo los errores de forma.',
+    },
+    autonomia: {
+      porque:
+        'La autonomía no es su problema: terminar sí. La bibliografía le atribuye dificultad de finalización y de sistematización, así que lo que necesita son hitos de cierre, no supervisión.',
+      verde: 'Avanza solo y aparece con algo mejor de lo pedido.',
+      alerta: 'Muchos frentes abiertos y ninguno cerrado.',
+    },
+    comunicar: {
+      core: 'Con imágenes, ejemplos y metáforas. Poco texto y mucho para ver.',
+      porque:
+        'Piensa en voz alta usando metáforas y lenguaje visual. Se toma su tiempo en silencio para resolver y después comunica con imágenes; aprende mejor mirando.',
+      verde: 'Devuelve la idea reformulada y mejorada.',
+      alerta: 'Asiente sin repreguntar: no lo procesó.',
+      funciona: 'Dibujarlo, mostrarle un ejemplo, hacerlo en una pizarra.',
+      nofunciona: 'Un instructivo de doce pasos por escrito.',
+    },
+    tareas: {
+      core: 'Energiza: diseñar, imaginar escenarios, arrancar cosas, integrar mundos distintos. Agota: seguimiento de detalle, control de rutina, carga administrativa.',
+      porque:
+        'Se vuelve inquieto y se desengancha en entornos rutinarios y predecibles, y los procedimientos rígidos lo frustran. Su cuadrante opuesto es Basal Izquierdo.',
+      verde: 'Arranca proyectos y contagia entusiasmo.',
+      alerta: 'Acumula lo administrativo hasta el último día.',
+      funciona: 'Emparejarlo con alguien de perfil basal para el seguimiento.',
+      nofunciona: 'Darle a él la planilla de control.',
+    },
+    animo: {
+      core: 'Devolvele horizonte: para qué sirve lo que está haciendo y hacia dónde va.',
+      porque:
+        'Lo suyo son las ideas nuevas y las grandes tendencias. Sin horizonte queda sosteniendo una máquina andando, que es justo su zona de agotamiento.',
+      verde: 'Pregunta por el largo plazo y propone hacia dónde seguir.',
+      alerta: 'Deja de mirar más allá de la semana.',
+      funciona: '"Esto que estás armando es la base de lo que viene después."',
+      nofunciona: '"Por ahora hacé esto y después vemos", sostenido en el tiempo.',
+    },
+  },
+
+  FI: {
+    motivar: {
+      core: 'Mostrale el problema, no la tarea. Y dejale la decisión sobre cómo resolverlo.',
+      porque:
+        'Está orientado a resultados y decide por análisis de causa y efecto: no sólo descubre el problema, además analiza la causa. Un encargo cerrado le saca la parte que le interesa.',
+      verde: 'Propone alternativas que no le pediste y discute el enfoque.',
+      alerta: 'Ejecuta sin opinar. En este cuadrante el silencio no es acuerdo.',
+      funciona: '"Tenemos este problema y estas restricciones. ¿Cómo lo resolverías?"',
+      nofunciona: '"Hacé esto así", cuando había margen para decidir.',
+    },
+    feedback: {
+      core: 'Directo, con datos y sin rodeos. El preámbulo amable le resulta ruido.',
+      porque:
+        'Su comunicación es concisa y no emocional, y lo frustran las apelaciones emocionales sin datos y las afirmaciones vagas. Disfruta del debate enérgico.',
+      verde: 'Discute el punto, pide precisión, acepta si el argumento cierra.',
+      alerta: 'Concede rápido sin discutir: dejó de considerarlo relevante.',
+      funciona: '"El costo se fue 15% arriba de lo previsto. Quiero entender dónde."',
+      nofunciona: 'Dar vueltas diez minutos antes de decir el problema.',
+    },
+    autonomia: {
+      porque:
+        'Se agota operando sin objetivos claros ni resultados medibles. Lo que necesita no es supervisión sino restricciones explícitas: presupuesto, plazo, qué no se negocia.',
+      verde: 'Toma decisiones dentro de su marco y las informa después.',
+      alerta:
+        'Pide autorización para todo: el marco no está claro, o alguna decisión suya fue desautorizada.',
+    },
+    comunicar: {
+      core: 'Breve, con la conclusión primero y el detalle disponible si lo pide.',
+      porque:
+        'Usa lenguaje analítico y responde a la argumentación basada en evidencia. Aprende analizando lo global para llegar a las causas.',
+      verde: 'Responde corto y concreto.',
+      alerta: 'Deja de leer los hilos largos.',
+      funciona: '"Necesito una decisión sobre X. Contexto abajo."',
+      nofunciona: 'Reuniones para algo que era un párrafo.',
+    },
+    tareas: {
+      core: 'Energiza: analizar, diagnosticar, optimizar, decidir con números. Agota: sostener climas, mediar tensiones, reuniones sin decisión.',
+      porque:
+        'Se agota cuando le exigen trabajo emocional prolongado; su mayor obstáculo declarado es detectar emociones. Su cuadrante opuesto es Basal Derecho.',
+      verde: 'Llega con energía a las reuniones donde se decide algo.',
+      alerta: 'Se impacienta o se desconecta en las conversaciones de clima.',
+      funciona: 'Si hay que manejar algo sensible, darle el objetivo y acompañarlo.',
+      nofunciona: 'Cadenas de reuniones informativas sin nada que resolver.',
+    },
+    animo: {
+      core: 'Devolvele control: sobre su agenda, sobre un proyecto, sobre una decisión que venía pidiendo.',
+      porque:
+        'El modelo lo describe orientado a metas y a controlar las decisiones clave. Ver un problema evidente y no poder tocarlo lo apaga más que la carga de trabajo.',
+      verde: 'Trae propuestas de mejora sin que se las pidan.',
+      alerta: 'Deja de proponer y se limita a cumplir.',
+      funciona: '"Esta decisión es tuya. Contame qué definiste."',
+      nofunciona: 'Pedirle opinión y después resolver distinto sin explicar por qué.',
+    },
+  },
 };
 
 // ------------------------------------------------------ bloques por generación
@@ -148,10 +309,72 @@ export const BLOQUES_GENERACION: Record<Generacion, PorDimension> = {
     },
   },
 
-  // Pendientes: mismo formato que la Generación X.
-  boomer: {},
-  y: {},
-  z: {},
+  // Salen de las cuatro placas generacionales del propio cuestionario.
+  boomer: {
+    motivar: {
+      porque:
+        'A esta generación la mueve la estabilidad, la lealtad y poder compartir su conocimiento con otras generaciones.',
+    },
+    autonomia: {
+      core: 'Acordá el seguimiento en lugar de imponerlo. Prefiere estructura y jerarquía, con reglas claras y respetadas.',
+      porque:
+        'Valora la experiencia acumulada, así que un control que la pase por alto se lee como desautorización.',
+      funciona: 'Definir juntos cada cuánto se conversa el avance, y sostenerlo.',
+      nofunciona: 'Cambiar el esquema de seguimiento sin avisar.',
+    },
+    comunicar: {
+      porque:
+        'Prefiere el cara a cara o el teléfono antes que lo digital, y valora un feedback más formal y reservado.',
+    },
+    animo: {
+      porque:
+        'Aprende con interacción directa con expertos y material presencial; el cambio sin explicación lo desorienta.',
+    },
+  },
+
+  y: {
+    motivar: {
+      porque:
+        'A esta generación la mueve el equilibrio entre vida laboral y personal, la flexibilidad, poder innovar y un propósito más allá del salario.',
+    },
+    autonomia: {
+      core: 'Alta, con las ideas circulando y trabajo en equipo. No confundas frecuencia de contacto con control.',
+      porque:
+        'Se siente cómoda donde las ideas fluyen libremente y el trabajo tiene un propósito que trasciende cumplir tareas.',
+      funciona: 'Conversaciones frecuentes y cortas sobre el sentido de lo que está haciendo.',
+      nofunciona: 'Reuniones de control sin espacio para que proponga.',
+    },
+    comunicar: {
+      porque:
+        'Se maneja con plataformas digitales, con un enfoque equilibrado, formal y textual.',
+    },
+    animo: {
+      porque:
+        'Aprende con videos, plataformas y aplicaciones, y espera devolución rápida y continua, no una vez por semestre.',
+    },
+  },
+
+  z: {
+    motivar: {
+      porque:
+        'A esta generación la mueven los entornos ágiles, el trabajo digital y que se priorice el bienestar personal.',
+    },
+    autonomia: {
+      core: 'Alta en horario y lugar, con objetivos explícitos. La ambigüedad sobre lo que se espera la frena más que a otras generaciones.',
+      porque:
+        'Busca flexibilidad de horario y de ubicación, con acceso a tecnología y aprendizaje continuo.',
+      funciona: 'Dejar el objetivo por escrito y no el procedimiento.',
+      nofunciona: 'Horario fijo sin motivo operativo.',
+    },
+    comunicar: {
+      porque:
+        'Se comunica de manera informal, directa, rápida y visual.',
+    },
+    animo: {
+      porque:
+        'Aprende con videos cortos y contenido disponible cuando lo necesita; los plazos largos sin señales intermedias la desconectan.',
+    },
+  },
 };
 
 // ------------------------------------------------------------ acción semanal
@@ -225,6 +448,8 @@ export type DimensionArmada = {
   alerta?: string;
   funciona?: string;
   nofunciona?: string;
+  /** Lo que suma de las frases que la persona marcó (capa 3). */
+  propio: { faceta: string; texto: string }[];
 };
 
 export type PlaybookPersona = {
@@ -232,6 +457,10 @@ export type PlaybookPersona = {
   semanas: Semana[];
   /** Dimensiones sin contenido cargado todavía, para no publicar a medias. */
   faltantes: DimensionId[];
+  /** Cuadrantes que se leyeron: el dominante y el segundo si está cerca. */
+  leidos: Perfil[];
+  /** Facetas activas, por cuadrante, para mostrarlas si hace falta. */
+  facetas: { perfil: Perfil; faceta: Faceta }[];
 };
 
 /**
@@ -240,10 +469,19 @@ export type PlaybookPersona = {
  */
 export function armarPlaybook(
   perfil: Perfil,
-  generacion: Generacion | null
+  generacion: Generacion | null,
+  /** Frases marcadas por cuadrante. Sin esto el playbook queda en las capas 1 y 2. */
+  marcadas: Partial<Record<Perfil, number[]>> = {},
+  totales?: Puntajes
 ): PlaybookPersona {
   const porCuadrante = BLOQUES_CUADRANTE[perfil] ?? {};
   const porGeneracion = generacion ? BLOQUES_GENERACION[generacion] ?? {} : {};
+
+  // Capa 3: se leen el cuadrante dominante y, si está cerca, el segundo.
+  const leidos = totales ? cuadrantesALeer(totales, perfil) : [perfil];
+  const facetas = leidos.flatMap((p) =>
+    facetasActivas(p, marcadas[p] ?? []).map((faceta) => ({ perfil: p, faceta }))
+  );
 
   const dimensiones: DimensionArmada[] = [];
   const faltantes: DimensionId[] = [];
@@ -260,6 +498,10 @@ export function armarPlaybook(
       continue;
     }
 
+    const propio = facetas
+      .map(({ faceta }) => ({ faceta: faceta.titulo, texto: faceta.aporta[d.id] }))
+      .filter((x): x is { faceta: string; texto: string } => Boolean(x.texto));
+
     dimensiones.push({
       id: d.id,
       titulo: d.titulo,
@@ -269,10 +511,11 @@ export function armarPlaybook(
       alerta: principal.alerta ?? secundario?.alerta,
       funciona: principal.funciona ?? secundario?.funciona,
       nofunciona: principal.nofunciona ?? secundario?.nofunciona,
+      propio,
     });
   }
 
-  return { dimensiones, semanas: SEMANAS[perfil] ?? [], faltantes };
+  return { dimensiones, semanas: SEMANAS[perfil] ?? [], faltantes, leidos, facetas };
 }
 
 /** Cuadrante opuesto en diagonal: el que más energía le consume. */

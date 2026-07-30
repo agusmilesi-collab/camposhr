@@ -67,6 +67,17 @@ export default function Playbook({
                       <p>{d.porque}</p>
                     </div>
 
+                    {d.propio.length > 0 && (
+                      <div className="pb-propio">
+                        <span className="pb-rotulo">En su caso</span>
+                        <ul>
+                          {d.propio.map((x, i) => (
+                            <li key={i}>{x.texto}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
                     {(d.verde || d.alerta) && (
                       <div className="pb-senales">
                         {d.verde && (

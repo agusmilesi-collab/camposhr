@@ -11,6 +11,8 @@ import {
 } from '@/lib/perfiles';
 import { GENERACIONES, INFO_GENERACION, type Generacion } from '@/lib/generaciones';
 import { armarPlaybook, opuesto, ranking } from '@/lib/playbook';
+import { marcadasDe } from '@/lib/facetas';
+import { PLACAS } from '@/lib/cuestionario';
 import { apellidoNombre, nombreCompleto } from '@/lib/personas';
 import Playbook from './Playbook';
 
@@ -27,6 +29,8 @@ export type Persona = {
   totales: Record<string, number>;
   perfiles: string[];
   generacion: string | null;
+  /** Respuestas crudas: de acá salen las frases que marcó (capa 3). */
+  detalle?: unknown;
 };
 
 /**
@@ -37,7 +41,8 @@ export default function VistaPlaybook({ persona }: { persona: Persona }) {
   const totales = persona.totales as unknown as Puntajes;
   const perfil = (persona.perfiles?.[0] ?? 'BD') as Perfil;
   const generacion = generacionDe(persona.generacion);
-  const playbook = armarPlaybook(perfil, generacion);
+  const marcadas = marcadasDe(persona.detalle);
+  const playbook = armarPlaybook(perfil, generacion, marcadas, totales);
   const parejo = esParejo(totales);
   const nivelDominante = nivel(totales[perfil]);
 
@@ -102,6 +107,33 @@ export default function VistaPlaybook({ persona }: { persona: Persona }) {
         semanas={playbook.semanas}
         faltantes={playbook.faltantes.length}
       />
+
+      {/* Dato crudo: lo que la persona marcó, sin interpretación nuestra. */}
+      <section className="pb-dijo">
+        <h2>En sus palabras</h2>
+        <p className="pb-dijo-bajada">
+          Las frases que marcó como descriptivas de sí en el cuestionario.
+        </p>
+        <div className="pb-dijo-cols">
+          {PERFILES.map((p) => {
+            const placa = PLACAS.find((x) => x.tipo === 'frases' && x.perfil === p);
+            const elegidas = marcadas[p] ?? [];
+            if (!placa || placa.tipo !== 'frases' || elegidas.length === 0) return null;
+            return (
+              <div className="pb-dijo-col" key={p}>
+                <h3>
+                  {INFO[p].nombre} <em>{totales[p]}</em>
+                </h3>
+                <ul>
+                  {elegidas.map((i) => (
+                    <li key={i}>{placa.frases[i]}</li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       <section className="pb-orden no-print">
         <h2>Orden de sus cuadrantes</h2>
