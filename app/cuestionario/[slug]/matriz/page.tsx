@@ -14,6 +14,8 @@ import {
 import MatrizBenziger, { type Punto } from '@/app/_components/MatrizBenziger';
 import AutoRefresco from './AutoRefresco';
 import PantallaCompleta from './PantallaCompleta';
+import Tandas from '../informes/Tandas';
+import { filtrarTanda } from '@/lib/tandas';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,15 +26,21 @@ export const metadata = {
 
 export default async function MatrizEmpresa({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { tanda?: string };
 }) {
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 
   // La matriz es la pantalla del taller: muestra el cuestionario de perfil.
   // Lo que responde el de liderazgo alimenta los informes, no esta vista.
-  const respuestas = await listarRespuestas(empresa.id, 'perfil');
+  const todas = await listarRespuestas(empresa.id, 'perfil');
+  const { tanda, filtradas: respuestas, tandas } = filtrarTanda(
+    todas,
+    searchParams.tanda
+  );
 
   const fotos = await firmarSelfies(
     respuestas.map((r) => r.foto_path).filter((p): p is string => Boolean(p))
@@ -78,6 +86,11 @@ export default async function MatrizEmpresa({
                 respuestas.length === 1 ? 'persona' : 'personas'
               }. La pantalla se actualiza sola.`}
         </p>
+        <Tandas
+          base={`/cuestionario/${empresa.slug}/matriz`}
+          tandas={tandas}
+          actual={tanda}
+        />
         <AutoRefresco />
       </section>
 

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getLiderPorToken, listarEquipo } from '@/lib/supabase';
 import { coordenadas, INFO, PERFILES, type Perfil, type Puntajes } from '@/lib/perfiles';
 import { nombreCompleto } from '@/lib/personas';
+import { filtrarTanda } from '@/lib/tandas';
 import MatrizBenziger, { type Punto } from '@/app/_components/MatrizBenziger';
 
 export const dynamic = 'force-dynamic';
@@ -34,7 +35,8 @@ export default async function EquipoDelLider({
   const lider = await getLiderPorToken(params.token);
   if (!lider) notFound();
 
-  const equipo = await listarEquipo(lider.id);
+  // El líder ve la última medición de su equipo.
+  const { filtradas: equipo } = filtrarTanda(await listarEquipo(lider.id));
 
   // Dónde cae cada persona del equipo en la matriz.
   const puntos: Punto[] = equipo.map((r) => {
