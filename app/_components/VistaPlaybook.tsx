@@ -11,7 +11,7 @@ import {
 } from '@/lib/perfiles';
 import { GENERACIONES, INFO_GENERACION, type Generacion } from '@/lib/generaciones';
 import { armarPlaybook, opuesto, ranking } from '@/lib/playbook';
-import { nombreCompleto } from '@/lib/personas';
+import { apellidoNombre, nombreCompleto } from '@/lib/personas';
 import Playbook from './Playbook';
 
 /** De la etiqueta guardada ("X", "Boomer/Y") al código de la primera generación. */
@@ -47,7 +47,7 @@ export default function VistaPlaybook({ persona }: { persona: Persona }) {
         <div>
           <h1>{nombreCompleto(persona)}</h1>
           {persona.lider_nombre && (
-            <p className="pb-lider">Líder: {persona.lider_nombre}</p>
+            <p className="pb-lider">Líder: {apellidoNombre(persona.lider_nombre)}</p>
           )}
         </div>
         <div className="pb-chips">

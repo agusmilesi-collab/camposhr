@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getEmpresaPorSlug, listarLideres } from '@/lib/supabase';
-import { porApellidoSuelto } from '@/lib/personas';
+import { apellidoNombre, porApellidoSuelto } from '@/lib/personas';
 import Cuestionario from '../Cuestionario';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +32,7 @@ export default async function CuestionarioGeneraciones({
       slug={empresa.slug}
       empresa={empresa.nombre}
       variante="generaciones"
-      lideres={lideres.map((l) => ({ id: l.id, nombre: l.nombre }))}
+      lideres={lideres.map((l) => ({ id: l.id, nombre: apellidoNombre(l.nombre) }))}
     />
   );
 }

@@ -3,7 +3,12 @@ import { getEmpresaPorSlug, listarLideres, listarRespuestas } from '@/lib/supaba
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { GENERACIONES, INFO_GENERACION, type Generacion } from '@/lib/generaciones';
 import CopiarEnlace from './CopiarEnlace';
-import { nombreCompleto, porApellido, porApellidoSuelto } from '@/lib/personas';
+import {
+  apellidoNombre,
+  nombreCompleto,
+  porApellido,
+  porApellidoSuelto,
+} from '@/lib/personas';
 
 export const dynamic = 'force-dynamic';
 
@@ -159,7 +164,7 @@ export default async function Informes({
                 return (
                   <section className="card inf-equipo" key={lider}>
                     <header className="inf-equipo-top">
-                      <h3>{lider}</h3>
+                      <h3>{apellidoNombre(lider)}</h3>
                       <span className="inf-equipo-meta">
                         {gente.length} {gente.length === 1 ? 'persona' : 'personas'}
                         {dominante && ` · mayoría ${INFO[dominante].nombre}`}

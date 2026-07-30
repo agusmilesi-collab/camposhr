@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getLiderPorToken, listarEquipo } from '@/lib/supabase';
 import { coordenadas, INFO, PERFILES, type Perfil, type Puntajes } from '@/lib/perfiles';
-import { nombreCompleto, porApellido } from '@/lib/personas';
+import { nombreCompleto, porApellido, soloNombre } from '@/lib/personas';
 import MatrizBenziger, { type Punto } from '@/app/_components/MatrizBenziger';
 
 export const dynamic = 'force-dynamic';
@@ -46,7 +46,7 @@ export default async function EquipoDelLider({
     <main className="wrap wrap-matriz">
       <section className="head">
         <div className="eyebrow">{lider.empresa?.nombre}</div>
-        <p className="eq-saludo">Hola, {lider.nombre}</p>
+        <p className="eq-saludo">Hola, {soloNombre(lider.nombre)}</p>
         <h1>Tu equipo</h1>
         <p className="head-nota">
           {equipo.length === 0
