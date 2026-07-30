@@ -51,16 +51,25 @@
       line-height: 1.06;
       letter-spacing: -0.03em;
     }
-    .apunte {
-      margin-top: 36px;
-      font-size: 1.02rem;
+    .grupo {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 1.62rem;
+      line-height: 1.08;
+      letter-spacing: -0.026em;
       color: var(--suave);
+      margin: 46px 0 7px;
+    }
+    .grupo:first-child {
+      margin-top: 40px;
     }
 
-    .servicios { margin-top: 14px; }
+    .servicios { margin-top: 0; }
+    /* La línea abre cada grupo: entre los servicios de un mismo grupo no va. */
+    .grupo + .servicio {
+      border-top: 1px solid var(--linea);
+    }
     .servicio {
       padding: 20px 0;
-      border-top: 1px solid var(--linea);
       display: grid;
       grid-template-columns: 2.2rem 1fr;
       gap: 0 12px;
@@ -110,11 +119,10 @@
       body { padding: 0 20px; }
       .hoja { padding: 40px 0 52px; }
       .marca { padding-bottom: 32px; }
-      .apunte { margin-top: 28px; }
       .servicio { grid-template-columns: 1.5rem 1fr; gap: 0 10px; }
       .num { font-size: 1rem; }
       .servicio h2 { font-size: 1.22rem; }
-      .apunte { font-size: 0.98rem; }
+      .grupo { font-size: 1.42rem; margin: 36px 0 6px; }
     }
   </style>
 </head>
@@ -124,10 +132,9 @@
     <div class="marca">Campos HR. <span class="bajada">Bienestar Corporativo</span></div>
 
     <p class="tesis">El mejor beneficio para tu gente<br />es una empresa ordenada.</p>
-
-    <p class="apunte">Servicios:</p>
-
     <div class="servicios">
+
+      <p class="grupo">La persona correcta en el lugar correcto.</p>
 
       <div class="servicio">
         <div class="num">01</div>
@@ -147,11 +154,13 @@
         </div>
       </div>
 
+      <p class="grupo">Lo humano también se entrena.</p>
+
       <div class="servicio">
         <div class="num">03</div>
         <div>
           <h2>Formación de líderes</h2>
-          <p class="desc">Ocho encuentros sobre la transición de experto a conductor, con foco en el uno a uno. El líder aprende a leer qué le pasa a él y qué le pasa a quien tiene enfrente, para conducir distinto a cada persona de su equipo.</p>
+          <p class="desc">Trabajamos el liderazgo humano: la transición de experto a conductor, con foco en el uno a uno. Los temas van del autoconocimiento, donde el líder registra y regula lo que le pasa, a las situaciones que más cuestan, comunicar una decisión difícil y frenar un conflicto antes de que escale. Vivencial, sobre casos reales.</p>
           <p class="caso">Se usa cuando alguien técnicamente muy competente conduce gente por primera vez, o cuando las conversaciones difíciles se postergan hasta que el problema llega a dirección.</p>
         </div>
       </div>
@@ -160,7 +169,7 @@
         <div class="num">04</div>
         <div>
           <h2>Talleres de habilidades humanas</h2>
-          <p class="desc">Encuentros cortos y medidos sobre lo que cada equipo necesita: atención plena para regular el estrés, el HR Help Kit para que Recursos Humanos se proteja del desgaste, y La persona correcta para que los líderes sepan entrevistar.</p>
+          <p class="desc">Encuentros cortos y medidos sobre lo que cada equipo necesita: mindfulness para regular el estrés, el HR Help Kit para que Recursos Humanos se proteja del desgaste, y técnicas de entrevista para que cada líder elija mejor a quien suma a su equipo.</p>
           <p class="caso">Se usa cuando el equipo trabaja a presión permanente, o cuando Recursos Humanos absorbe los conflictos de todos los sectores.</p>
         </div>
       </div>
