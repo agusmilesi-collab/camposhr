@@ -20,7 +20,7 @@ export default function Cotizaciones() {
   const montoAprobado = aprobadas.reduce((a, c) => a + c.importe, 0);
 
   return (
-    <main className="wrap">
+    <main className="wrap wrap-ancho">
       <section className="head">
         <div className="head-top">
           <div className="eyebrow">Propuestas enviadas</div>
@@ -102,7 +102,7 @@ export default function Cotizaciones() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {url.replace(/^https:\/\//, '')}
+                    /q/{c.token}
                   </a>
                   <CopyLink url={url} />
                 </div>
