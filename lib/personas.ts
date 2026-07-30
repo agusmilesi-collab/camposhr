@@ -17,3 +17,8 @@ export function nombreCompleto(p: ConNombre): string {
 export function claveOrden(p: ConNombre): string {
   return nombreCompleto(p).toLocaleLowerCase('es');
 }
+
+/** Compara dos personas por apellido, y por nombre si comparten apellido. */
+export function porApellido(a: ConNombre, b: ConNombre): number {
+  return claveOrden(a).localeCompare(claveOrden(b), 'es');
+}

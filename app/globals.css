@@ -2181,36 +2181,3 @@ body {
   font-size: 0.7rem;
 }
 
-/* ---------- Selector de medición ---------- */
-.tandas {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-}
-.tandas-rotulo {
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.tanda {
-  font: inherit;
-  font-size: 0.8rem;
-  color: var(--ink-soft);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 5px 13px;
-  cursor: pointer;
-  font-variant-numeric: tabular-nums;
-  transition: background 0.12s, color 0.12s;
-}
-.tanda:hover {
-  background: #efece5;
-}
-.tanda-on {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
-}
