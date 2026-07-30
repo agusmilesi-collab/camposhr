@@ -10,9 +10,10 @@ import type { NextRequest } from 'next/server';
  *  tools.camposhr.com     -> hub interno (equipo): landing de herramientas,
  *     tests Rorschach/Zulliger e /informes (accesos de clientes).
  *
- *  camposhr.com (y www)   -> liberado para el site comercial.
- *     La raíz muestra un placeholder; las herramientas viejas y los enlaces
- *     de portal redirigen a su subdominio nuevo.
+ *  camposhr.com (y www)   -> site comercial.
+ *     La raíz muestra la home; las herramientas viejas y los enlaces de portal
+ *     redirigen a su subdominio nuevo. Acá viven también las cotizaciones que
+ *     se mandan al cliente: /q/<token> sirve su documento.
  */
 
 const CLIENT_HOST = 'clientes.camposhr.com';
@@ -20,7 +21,11 @@ const TOOLS_HOST = 'tools.camposhr.com';
 
 const TOKEN = /^\/([A-Za-z0-9_-]+)\/?$/;
 const TOKEN_EN_P = /^\/p\/([A-Za-z0-9_-]+)\/?$/;
-const RUTAS_TOOLS = /^\/(test-rorschach|test-zulliger|informes|cuestionario)(\/|$)/;
+const RUTAS_TOOLS = /^\/(test-rorschach|test-zulliger|informes|cuestionario|cotizaciones)(\/|$)/;
+
+// Cotización enviada a un cliente: /q/<token> -> el documento estático que vive
+// en public/q/<token>.html. El token es secreto y la página lleva noindex.
+const COTIZACION = /^\/q\/([A-Za-z0-9_-]{6,128})\/?$/;
 
 // El cuestionario se responde desde el host principal: /c/<empresa>, más su
 // endpoint de guardado. Son las únicas rutas públicas de la app.
@@ -37,6 +42,12 @@ export function middleware(req: NextRequest) {
     if (pathname === '/') {
       const dest = url.clone();
       dest.pathname = '/index.html';
+      return NextResponse.rewrite(dest);
+    }
+    const q = pathname.match(COTIZACION);
+    if (q) {
+      const dest = url.clone();
+      dest.pathname = `/q/${q[1]}.html`;
       return NextResponse.rewrite(dest);
     }
     return NextResponse.next();
@@ -67,9 +78,17 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // --- Host principal: liberado para el site comercial ---
+  // --- Host principal: el site comercial ---
   // El cuestionario público vive acá (es el destino de los QR).
   if (RUTAS_PUBLICAS.test(pathname)) return NextResponse.next();
+
+  // Cotización del cliente: URL limpia sobre el archivo estático.
+  const q = pathname.match(COTIZACION);
+  if (q) {
+    const dest = url.clone();
+    dest.pathname = `/q/${q[1]}.html`;
+    return NextResponse.rewrite(dest);
+  }
 
   // Raíz -> home comercial.
   if (pathname === '/') {

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<!--
+  Propuesta de trabajo · MyF Distribuciones
+  Fuente de contenido: propuesta-myf.md (ese archivo manda; este es el formato de entrega).
+  Estética: camposhr.com (Instrument Serif + Inter, papel #f6f5f2, verde #40704f).
+-->
+<html lang="es">
+<head>
+  <meta name="robots" content="noindex, nofollow" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propuesta · MyF Distribuciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16202b; --ink-soft:#46505c; --muted:#7b7770;
+    --paper:#f6f5f2; --card:#ffffff; --line:#e5e2db; --line-soft:#efede8;
+    --green:#40704f; --amber:#a97722; --blue:#43648f;
+    --serif:'Instrument Serif',Georgia,serif;
+    --sans:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);
+    line-height:1.62;font-size:15px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:768px;margin:0 auto;padding:0 40px}
+  p{margin:0 0 15px}
+  strong{font-weight:600}
+
+  /* Barra superior, igual que el sitio */
+  .top{border-bottom:1px solid var(--line);background:var(--card)}
+  .top-inner{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+    padding:22px 40px;flex-wrap:wrap;max-width:768px;margin:0 auto}
+  .brand{font-family:var(--serif);font-size:1.4rem;letter-spacing:-.01em}
+  .brand span{font-style:italic;color:var(--muted)}
+  .top-meta{font-size:.78rem;color:var(--muted);letter-spacing:.02em}
+
+  /* Encabezado */
+  .head{padding:52px 0 34px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+  .head h1{font-family:var(--serif);font-size:clamp(1.9rem,5vw,2.6rem);line-height:1.14;
+    font-weight:400;letter-spacing:-.01em}
+  .head .sub{color:var(--ink-soft);margin-top:12px;font-size:1rem}
+  .fichas{display:flex;gap:34px;flex-wrap:wrap;margin-top:28px}
+  .ficha b{display:block;font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);font-weight:500;margin-bottom:4px}
+  .ficha{font-size:.86rem;color:var(--ink-soft)}
+
+  /* Jerarquía: 1 etiqueta de sección · 2 tesis · 3 subtítulo · 4 microetiqueta */
+  section{padding:56px 0 52px;border-top:1px solid var(--line)}
+  section:first-of-type{border-top:none;padding-top:44px}
+
+  /* 1 · etiqueta de sección: sans, versalita, verde. Nunca compite con el serif */
+  .kick{font-family:var(--sans);font-size:.72rem;font-weight:600;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--green);margin:0;line-height:1}
+  .kick::after{content:"";display:block;width:28px;height:2px;background:var(--green);
+    opacity:.45;margin:12px 0 26px}
+
+  /* 2 · tesis: único elemento de despliegue del documento */
+  .claim{font-family:var(--serif);font-size:1.95rem;line-height:1.26;margin:0 0 26px;font-weight:400}
+
+  /* 3 · subtítulo dentro de la sección */
+  h3.sub2{font-family:var(--serif);font-size:1.16rem;font-weight:400;letter-spacing:-.01em;
+    color:var(--ink);line-height:1.3;margin:36px 0 12px}
+  .kick + h3.sub2{margin-top:0}
+
+  /* 4 · microetiqueta: gris, más chica, sin regla. Entrada de lista, no título */
+  .lab{font-family:var(--sans);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);font-weight:500;margin:32px 0 12px}
+
+  ul,ol{padding-left:20px;margin:0 0 14px}
+  li{margin:0 0 10px}
+  ul.cards{list-style:none;padding:0;max-width:none}
+  ul.cards li{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:14px 18px;margin:0 0 10px;font-size:.94rem}
+
+  table{border-collapse:collapse;width:100%;margin:16px 0 8px;font-size:.9rem;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th{background:#fbfaf8;text-align:left;font-weight:600;font-size:.65rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);padding:11px 16px;border-bottom:1px solid var(--line)}
+  td{padding:13px 16px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--ink-soft)}
+  td:first-child{width:33%;color:var(--ink)}
+  tr:last-child td{border-bottom:none}
+  table.mini td:first-child{width:auto}
+  table.mini td:last-child{width:96px;text-align:right;color:var(--ink)}
+
+  ol.preguntas{counter-reset:q;list-style:none;padding:0;margin:14px 0 0}
+  ol.preguntas li{counter-increment:q;position:relative;padding-left:36px;margin-bottom:12px;color:var(--ink-soft)}
+  ol.preguntas li::before{content:counter(q);position:absolute;left:0;top:2px;width:22px;height:22px;
+    border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--green);
+    font-size:.72rem;display:flex;align-items:center;justify-content:center;font-weight:600}
+
+  .precio{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px 26px;
+    display:flex;align-items:baseline;gap:22px;flex-wrap:wrap;margin:16px 0 12px}
+  .precio .n{font-family:var(--serif);font-size:2.4rem;line-height:1;color:var(--ink)}
+  .precio .d{font-size:.86rem;color:var(--ink-soft)}
+  .precio .d b{display:block;font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--green);font-weight:600;margin-bottom:4px}
+  .nota{font-size:.84rem;color:var(--muted);margin-top:10px}
+  sup{font-size:.7em;color:var(--green)}
+  .nota-fila{display:block;margin-top:7px;font-size:.82rem;color:var(--muted);line-height:1.5}
+
+  .cierre{background:var(--ink);color:#e7e9ec;border-radius:12px;padding:26px 30px;margin-top:24px}
+  .cierre h3{font-family:var(--serif);font-weight:400;font-size:1.5rem;color:#fff;margin-bottom:8px}
+  .cierre p{margin:0;color:#b9bec6}
+  .cierre b{color:#fff;font-weight:500}
+
+  .pie{padding:30px 0 60px;font-size:.78rem;color:var(--muted)}
+
+  @media print{body{background:#fff} .top{border-bottom:1px solid var(--line)} section{page-break-inside:avoid}}
+  @media (max-width:720px){.wrap{padding:0 22px} .top-inner{padding:20px 22px} .precio .n{font-size:1.9rem} td:first-child{width:auto}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">Campos HR <span>propuesta</span></div>
+    <div class="top-meta">MyF Distribuciones · 28 de julio de 2026</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="head">
+    <div class="eyebrow">Propuesta de trabajo</div>
+    <h1>Diseño organizacional del área comercial</h1>
+    <p class="sub">MyF Distribuciones</p>
+    <div class="fichas">
+      <div class="ficha"><b>Para</b>Irina Lanciotti,<br>Recursos Humanos de MyF</div>
+      <div class="ficha"><b>De</b>Campos HR</div>
+      <div class="ficha"><b>Fecha</b>28 de julio de 2026</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="kick">Objetivo</div>
+    <p class="claim">Profesionalizar la empresa: que cada puesto tenga un dueño y un resultado, y que quede claro quién decide qué.</p>
+
+    <p>Nos llamaron por la rotación en preventa, el equipo que atiende el canal minorista.</p>
+
+    <p class="bisagra">Cuando por un puesto pasan varias personas distintas y el resultado es siempre el mismo, la causa está en el puesto y en cómo se lo conduce.</p>
+
+    <p>La forma de resolverlo es diseñar la organización: qué puestos exige el negocio, de qué responde cada uno y quién decide qué. Eso es profesionalizar, y es lo que hace que una empresa funcione por diseño, con independencia de quién esté cada día.</p>
+
+    <p>MyF pasó de tres vendedores y un operario a sesenta y cinco personas, y sostiene ese tamaño con la misma conducción con la que arrancó. Le pasa a toda empresa que crece: la manera de organizarse que funciona con diez personas deja de alcanzar con sesenta, y cada aumento de tamaño necesita una distinta. El momento se reconoce siempre por las mismas señales, y una de ellas es la rotación concentrada en un solo puesto. Este trabajo define la forma de organizarse que le corresponde a la empresa de hoy y deja tomadas las primeras decisiones, empezando por preventa, que es donde hoy más cuesta.</p>
+
+    <div class="lab">Al terminar van a tener</div>
+    <ul class="cards">
+      <li><strong>Qué se le pide a cada puesto del área comercial, por escrito:</strong> qué resultado tiene que traer, a quién le reporta y qué puede decidir sin consultar. Es lo que permite soltar la operación diaria sin perder de vista lo que pasa.</li>
+      <li><strong>Si cada jefe está en el puesto que le corresponde:</strong> dónde rinde más cada uno y qué conviene hacer con quien hoy no encaja donde está. Empezando por quien conduce preventa, que es la decisión más urgente.</li>
+      <li><strong>Por qué el que entra a preventa se va antes de rendir, y qué cambiar para que se quede:</strong> desde cómo se lo elige hasta quién lo acompaña en las primeras semanas.</li>
+    </ul>
+
+  </section>
+
+  <section>
+    <div class="kick">Entregables</div>
+    <p>El modelo del área comercial, armado de arriba hacia abajo, donde cada pieza se explica por la anterior:</p>
+
+    <table>
+      <tr><th>Pieza</th><th>Qué es y para qué les sirve</th></tr>
+      <tr><td><strong>La cadena de valor del negocio</strong></td><td>Muestra qué actividades sostienen la facturación y dónde está hoy el cuello de botella. Con eso, cada sueldo nuevo se pone donde hace crecer la venta, en lugar de ponerse donde hay más urgencia ese mes</td></tr>
+      <tr><td><strong>El organigrama real, contra el declarado</strong></td><td>Muestra a quién responde cada uno en los hechos, dónde hay doble mando y qué funciones no tienen dueño. Ordenarlo termina con el trabajo que nadie hace porque cada área supone que lo hace la otra y con la gente que queda en el medio de dos jefes, que es de las causas más comunes de desgaste y de renuncias</td></tr>
+      <tr><td><strong>La estructura que el área necesita</strong></td><td>Define cuántos puestos de conducción y de venta pide el negocio, y de qué tamaño queda el equipo. Evita sostener puestos que sobran y descubrir tarde los que faltan, que es plata todos los meses</td></tr>
+      <tr><td><strong>La ficha de cada puesto crítico</strong></td><td>La descripción del puesto en una página: su misión, el resultado del que responde y el perfil que exige. Sirve para buscar contra un estándar y bajar los errores de contratación, que se pagan caro, y para que cada uno sepa qué se espera de él, así la conversación de desempeño deja de ser una opinión</td></tr>
+      <tr><td><strong>El encaje de cada persona de la conducción con su puesto</strong></td><td>Muestra quién encaja donde está, a quién conviene desarrollar y quién rendiría más en otro lugar. Una persona en el puesto correcto rinde más y dura más; sostenerla en el equivocado cuesta su sueldo, el rendimiento del equipo alrededor y, casi siempre, la salida</td></tr>
+      <tr><td><strong>El diagnóstico de la rotación de preventa</strong></td><td>Separa las causas que la empresa puede intervenir de las que no. Cada punto de rotación que baja se recupera por dos vías: zonas que siguen trabajadas e incorporaciones que ya no hay que hacer</td></tr>
+      <tr><td><strong>El tablero de decisiones</strong></td><td>Cada decisión con su evidencia, sus opciones, nuestra recomendación, el impacto económico y el costo de postergarla. Las más difíciles llevan además una ficha con cómo preparar y cómo dar esa conversación. Sirve para decidir a tiempo, que es donde se ahorra de verdad, y para que el equipo vea que las cosas se resuelven</td></tr>
+    </table>
+    <p class="nota"><sup>*</sup> Quien ya se fue cuenta lo que se calla en una entrevista de salida hecha por la propia empresa. Depende de que la empresa facilite el contacto y de que la persona acepte; si no se consigue, esos lugares se ocupan con dos preventistas más.</p>
+
+    <p>Todo eso llega en dos documentos: <strong>el memo de decisiones</strong>, que es el documento corto, el que se lee y se relee, y <strong>el modelo completo</strong>, como respaldo para cuando quieran revisar el fundamento de una recomendación.</p>
+
+    <p>Todo esto sigue sirviendo después del proyecto. La ficha de un puesto sirve para la próxima búsqueda, la estructura definida sirve para la próxima decisión de crecimiento, y el estándar escrito hace que la empresa deje de depender de que alguien se acuerde de cómo era.</p>
+  </section>
+
+  <section>
+    <div class="kick">Situación actual</div>
+    <p>Cada mes se repite la misma escena. Recursos Humanos pregunta cuántas vacantes hay en preventa, el número es cinco, se sale a buscar, entran seis personas, y al mes siguiente la respuesta es siete. Sobre un equipo de quince a dieciocho vendedores, eso significa que <strong>un tercio de la venta de terreno queda sin trabajar, todos los meses</strong>.</p>
+
+    <p>Ese tercio no aparece en ningún resumen de costos, porque no hay una factura que lo registre. Se paga en las zonas: el comercio que nadie visita compra igual, y en general se lo compra a otro distribuidor. Cuando llega el vendedor nuevo, esa relación ya está armada con el otro, y recuperarla cuesta bastante más que haberla sostenido.</p>
+
+    <p>Dentro de la misma empresa hay un dato que muestra que esto tiene solución. El equipo de mayorista, con los mismos productos, el mismo mercado y los mismos dueños, <strong>no rota</strong>: cumple objetivos, casi no falta y trata a los clientes como propios. La explicación de por qué un equipo se queda y el otro se va está adentro de MyF, y nadie la buscó todavía.</p>
+
+    <p>Y el área está por cambiar de tamaño. El vendedor digital va a liberar alrededor de cuatro puestos de preventa, y al mismo tiempo se está evaluando sumar un tercer supervisor. Definir cuántos jefes hacen falta antes de saber de qué tamaño queda el equipo es una decisión que se termina tomando dos veces, y la segunda sale cara.</p>
+
+    <h3 class="sub2">Las preguntas que este trabajo responde, y que hoy no tienen respuesta</h3>
+    <ol class="preguntas">
+      <li>¿Cuánto se deja de facturar cada mes que una zona queda sin vendedor?</li>
+      <li>¿Por qué el equipo de mayorista se queda y el de preventa se va, si son la misma empresa, los mismos productos y el mismo mercado?</li>
+      <li>¿Qué recibe un preventista nuevo en sus primeras semanas, y alcanza para que llegue a rendir?</li>
+      <li>¿Un buen vendedor es la persona indicada para conducir a otros vendedores?</li>
+      <li>¿Cuántos supervisores necesita preventa, y de qué tamaño tiene que ser el equipo?</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="kick">Metodología</div>
+
+    <p>Trabajamos con tres fuentes sobre cada tema: lo que la gente declara, lo que vemos en terreno y lo que miden las evaluaciones. Cuando las tres coinciden, el hallazgo se afirma sin vueltas; cuando dos se contradicen, esa contradicción es el hallazgo.</p>
+
+    <h3 class="sub2">16 entrevistas individuales, de una hora, confidenciales</h3>
+
+    <table class="mini">
+      <tr><th>Con quién</th><th>Cantidad</th></tr>
+      <tr><td>Socios</td><td>4</td></tr>
+      <tr><td>Responsable de Recursos Humanos</td><td>1</td></tr>
+      <tr><td>Conducción comercial: jefe de ventas, supervisor coordinador y supervisores de preventa</td><td>4</td></tr>
+      <tr><td>Vendedores: preventistas nuevos, preventistas de antigüedad y vendedores de mayorista</td><td>5</td></tr>
+      <tr><td>Personas que dejaron la empresa en los últimos seis meses <sup>*</sup>
+        <span class="nota-fila"><sup>*</sup> Quien ya se fue cuenta lo que se calla en una entrevista de salida hecha por la propia empresa. Depende de que la empresa facilite el contacto y de que la persona acepte; si no se consigue, esos lugares se ocupan con dos preventistas más.</span></td><td>hasta 2</td></tr>
+    </table>
+
+    <h3 class="sub2">Dos observaciones en terreno</h3>
+
+    <table>
+      <tr><th>Qué miramos</th><th>Por qué</th></tr>
+      <tr><td><strong>Una matinal completa</strong></td><td>Es el único momento en que el equipo comercial está junto, y donde se ve cómo se conduce</td></tr>
+      <tr><td><strong>Media jornada de ruta con un preventista</strong></td><td>Es el puesto que rota, y el que nadie miró desde adentro</td></tr>
+    </table>
+
+    <h3 class="sub2">Cuatro evaluaciones psicotécnicas, todas en la conducción comercial</h3>
+
+    <table>
+      <tr><th>A quién</th><th>Por qué esa persona</th></tr>
+      <tr><td><strong>Jefe de ventas</strong></td><td>Conduce toda la línea comercial, así que cualquier cambio de estructura pasa por este puesto</td></tr>
+      <tr><td><strong>Supervisor coordinador</strong></td><td>Coordina a los supervisores y atiende dos vendedores de autoservicio: es la bisagra entre la conducción y el terreno</td></tr>
+      <tr><td><strong>Los dos supervisores de preventa</strong></td><td>Ahí está la decisión más urgente. Tienen una evaluación de este año y la repetimos, porque un psicotécnico se lee contra el perfil que el puesto exige y ese perfil lo definimos recién en este trabajo. El informe anterior se suma como antecedente, y comparar los dos momentos agrega información</td></tr>
+    </table>
+
+    <p>Una evaluación sirve cuando hay una decisión que depende de entender cómo funciona una persona en un puesto determinado, y hoy esas decisiones están todas ahí. Al resto del equipo de preventa no lo evaluamos: lo que explica su rotación está en cómo está armado el puesto y en cómo se lo conduce, y eso sale de las entrevistas y de la ruta. Por eso el encaje persona-puesto que entregamos es el de esas cuatro personas. Si aparece una decisión sobre alguien más del equipo que necesite medición, esa evaluación se cotiza aparte.</p>
+
+    <p>A las tres fuentes se suma <strong>la lectura de lo que ya existe</strong>: organigrama, descripciones de puesto, encuestas anteriores e informes de evaluación previos.</p>
+
+    <p><strong>Con eso producimos</strong> las siete piezas del modelo. Antes de la reunión se validan con Recursos Humanos, para que los socios lleguen a discutir decisiones y no a discutir datos. <strong>Cierra con la reunión de decisiones</strong>, de 90 a 120 minutos, con los cuatro socios.</p>
+  </section>
+
+  <section>
+    <div class="kick">Alcance</div>
+
+    <p><strong>Incluye:</strong> el área comercial completa, canal minorista y mayorista, con toda su línea de conducción, y cómo se decide y circula la información dentro de esa línea.</p>
+
+    <p><strong>Incluye también el circuito que cubre las vacantes de preventa</strong>, que es donde el área comercial y Recursos Humanos se cruzan: cómo se busca, cómo se incorpora y qué pasa con el que entra en sus primeras semanas. Es el circuito que se repite todos los meses sin cerrar, así que mirarlo es parte de resolver la rotación.</p>
+
+    <p>Por eso incluye también cómo está armado el puesto de Recursos Humanos, que tiene adentro dos trabajos que piden personas distintas: la administración del personal (altas, bajas, novedades, ausentismos), que tiene fechas de vencimiento, y el desarrollo de la gente (buscar, incorporar, acompañar a los equipos, entender por qué alguien se va), que pide tiempo y contacto. En el mismo puesto, y con pedidos que llegan de los cuatro socios sin una regla de prioridad, el trabajo con fecha se hace primero y el otro queda postergado, mes tras mes. La parte que sostiene el circuito de preventa es justamente la segunda.</p>
+
+    <p><strong>No incluye:</strong> el depósito y la administración. Vimos que hay rotación en los puestos de armado de pedidos y elegimos no abrirlo ahora para concentrar el trabajo en ventas.</p>
+
+    <p><strong>Lo que sí hacemos y se contrata aparte:</strong> el depósito como trabajo propio, la evaluación de los finalistas cuando abran una búsqueda o de alguien del equipo que una decisión puntual lo requiera, a ARS 300.000 por cada evaluación psicotécnica adicional, el acompañamiento de la ejecución una vez tomadas las decisiones, y la formación de quien quede conduciendo preventa.</p>
+
+    <p><strong>Lo que no hacemos, y resuelve otro:</strong> la búsqueda y selección de personal (ustedes o una consultora de selección), los esquemas de compensación y la liquidación de sueldos (su contador), la asesoría legal laboral (su abogado), y los procesos y la gestión por indicadores (un especialista en procesos). Escribir cómo se hace cada tarea, armar tableros de control y definir los indicadores del negocio es un trabajo distinto del nuestro: nosotros trabajamos sobre los puestos y las personas.</p>
+
+    <p><strong>Diseñar el cambio y conducirlo son dos trabajos distintos.</strong> Este define qué tiene que pasar; que pase todos los días pide presencia y autoridad adentro de la empresa, así que la conducción queda de su lado. Por eso el trabajo termina nombrando quién puede conducirlo y desde qué puesto: un cambio que se pide desde un área que no tiene autoridad sobre la línea rara vez avanza, y después se lee como que la gente se resiste. Si hoy no hay quien pueda conducirlo, esa es la primera decisión del tablero, antes que todas las demás.</p>
+  </section>
+
+  <section>
+    <div class="kick">Cronograma</div>
+    <h3 class="sub2">Dos meses desde el arranque</h3>
+
+    <table>
+      <tr><th>Tramo</th><th>Qué pasa</th></tr>
+      <tr><td><strong>Semanas 1 a 4</strong></td><td>Entrevistas, observaciones en terreno y lectura de la documentación</td></tr>
+      <tr><td><strong>Semanas 5 y 6</strong></td><td>Evaluaciones psicotécnicas. Mapa del área y encaje persona-puesto</td></tr>
+      <tr><td><strong>Semanas 7 y 8</strong></td><td>Estructura, fichas de puesto y tablero. Validación y reunión con los socios</td></tr>
+    </table>
+
+    <p>El plazo depende sobre todo del primer tramo. Confirmando antes del <strong>14 de agosto</strong>, arrancamos el <strong>18 de agosto</strong> y la reunión de decisiones queda a mediados de octubre.</p>
+  </section>
+
+  <section>
+    <div class="kick">Requisitos</div>
+    <ol>
+      <li><strong>Acceso a la gente.</strong> Las 16 entrevistas, dentro del primer mes. Nos pasan los contactos y coordinamos nosotros con cada persona, acomodándonos a su día de trabajo. De ustedes necesitamos el aval para que el equipo participe y que esas horas tengan prioridad cuando se cruzan con el día a día.</li>
+      <li><strong>Información.</strong> Cuatro datos (facturación mensual promedio de una zona de preventa, altas y bajas de preventa de los últimos doce meses, nómina por área y masa salarial del área comercial) y los documentos que ya existen. Con esos datos, cada decisión llega con su impacto económico al lado. Sin ellos, las decisiones se entregan sin número.</li>
+      <li><strong>Decisión.</strong> Los cuatro socios juntos en la reunión final. Es el único encuentro que pedimos con todos.</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="kick">Confidencialidad y cuidado de las personas</div>
+    <ul>
+      <li><strong>Las entrevistas al equipo son confidenciales:</strong> se comparten los hallazgos y las frases que los sostienen, sin el nombre de quien las dijo. Es la condición para que un vendedor cuente por qué se está por ir. Lo que dicen los socios y Recursos Humanos va con su atribución.</li>
+      <li><strong>El psicotécnico entra como un insumo más</strong>, con el criterio humano por encima del puntaje.</li>
+      <li><strong>Las decisiones se explican.</strong> Una decisión de gente que el equipo percibe como arbitraria cuesta más que la decisión misma.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="kick">Honorarios</div>
+
+    <div class="precio">
+      <div class="n">ARS 8.800.000</div>
+      <div class="d"><b>Diseño organizacional del área comercial</b>50% al iniciar, 50% en la reunión de decisiones</div>
+    </div>
+    <p class="nota">Se entrega factura C. Las cuatro evaluaciones del proyecto están incluidas. El precio tiene vigencia hasta el 28 de agosto de 2026.</p>
+
+    <p>Una zona sin vendedor deja de facturar mientras dura la vacante, y buena parte de esa compra la termina haciendo otro distribuidor, con una cartera que después cuesta más recuperar. Hoy hay entre cinco y siete zonas en esa situación. A eso se suma lo que ya se gasta todos los meses en incorporar cinco o seis personas al mismo puesto, y lo que costaría un tercer supervisor que no resulte el indicado. Las tres cuentas salen con los números de ustedes.</p>
+  </section>
+
+  <section>
+    <div class="kick">Equipo</div>
+    <p>Campos HR trabaja con PYMEs que crecieron más rápido que su estructura. Las socias son psicólogas, con años evaluando y formando gente en empresas, y ese criterio se aplica a una decisión de negocio: qué puestos necesita la empresa, quién encaja en ellos y qué hacer con quien no.</p>
+
+    <div class="cierre">
+      <h3>Aceptación</h3>
+      <p>Para avanzar alcanza con una confirmación por escrito. Si prefieren revisarla juntos antes de decidir, coordinamos una reunión esta semana.</p>
+    </div>
+  </section>
+
+  <div class="pie">Campos HR · camposhr.com</div>
+
+</div>
+</body>
+</html>

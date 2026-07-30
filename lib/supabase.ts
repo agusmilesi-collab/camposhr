@@ -274,3 +274,12 @@ export async function firmarSelfies(
   }
   return out;
 }
+
+/** El detalle crudo de una respuesta: las frases que marcó en cada placa. */
+export async function detalleDe(id: string): Promise<unknown> {
+  const filas = await select<{ detalle: unknown }>(
+    'respuestas',
+    `select=detalle&id=eq.${id}&limit=1`
+  );
+  return filas[0]?.detalle ?? null;
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "token": "myf-comercial-1f7a93",
+    "fecha": "2026-07-30",
+    "cliente": "MyF Distribuciones",
+    "concepto": "Diseño organizacional del área comercial",
+    "importe": 8800000,
+    "version": "1.0",
+    "estado": "Enviada",
+    "archivo": "myf-comercial-1f7a93.html",
+    "reemplazaA": null,
+    "nota": "50% al iniciar, 50% en la reunión de decisiones."
+  }
+]

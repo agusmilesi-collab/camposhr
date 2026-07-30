@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getLiderPorToken, listarEquipo } from '@/lib/supabase';
 import VistaPlaybook from '@/app/_components/VistaPlaybook';
+import { detalleDe } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,9 @@ export default async function PlaybookDelEquipo({
   const persona = (await listarEquipo(lider.id)).find((r) => r.id === params.id);
   if (!persona) notFound();
 
+  // Las frases que marcó viven en el detalle crudo, aparte del listado.
+  const detalle = await detalleDe(persona.id);
+
   return (
     <main className="wrap pb-wrap">
       <section className="head no-print">
@@ -33,7 +37,7 @@ export default async function PlaybookDelEquipo({
         </div>
       </section>
 
-      <VistaPlaybook persona={persona} />
+      <VistaPlaybook persona={{ ...persona, detalle }} />
     </main>
   );
 }
