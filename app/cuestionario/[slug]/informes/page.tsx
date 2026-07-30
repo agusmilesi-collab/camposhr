@@ -3,6 +3,8 @@ import { getEmpresaPorSlug, listarLideres, listarRespuestas } from '@/lib/supaba
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { GENERACIONES, INFO_GENERACION, type Generacion } from '@/lib/generaciones';
 import CopiarEnlace from './CopiarEnlace';
+import Tandas from './Tandas';
+import { filtrarTanda } from '@/lib/tandas';
 import { claveOrden, nombreCompleto } from '@/lib/personas';
 
 export const dynamic = 'force-dynamic';
@@ -31,17 +33,25 @@ function contar<T extends string>(claves: T[]): Map<T, number> {
 
 export default async function Informes({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { tanda?: string };
 }) {
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 
   // El cuestionario de liderazgo es el que trae líder y generación.
-  const [respuestas, lideres] = await Promise.all([
+  const [todas, lideres] = await Promise.all([
     listarRespuestas(empresa.id, 'generaciones'),
     listarLideres(empresa.id),
   ]);
+
+  // Cada medición se lee por separado: mezclarlas falsea los porcentajes.
+  const { tanda, filtradas: respuestas, tandas } = filtrarTanda(
+    todas,
+    searchParams.tanda
+  );
   const tokenDe = new Map(lideres.map((l) => [l.nombre, l.token]));
 
   const porCuadrante = contar(
@@ -83,6 +93,11 @@ export default async function Informes({
           </a>
         </div>
         <h1>{empresa.nombre}</h1>
+        <Tandas
+          base={`/cuestionario/${empresa.slug}/informes`}
+          tandas={tandas}
+          actual={tanda}
+        />
       </section>
 
       {respuestas.length === 0 ? (
