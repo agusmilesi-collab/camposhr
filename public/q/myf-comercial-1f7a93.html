@@ -313,5 +313,47 @@
   <div class="pie">Campos HR · camposhr.com</div>
 
 </div>
+<!-- chr:acciones -->
+<style>
+  .chr-acciones {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    display: flex;
+    gap: 8px;
+    z-index: 60;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  .chr-btn {
+    font: inherit;
+    font-size: 0.82rem;
+    line-height: 1;
+    color: #16202b;
+    background: #ffffff;
+    border: 1px solid #e5e2db;
+    border-radius: 8px;
+    padding: 10px 15px;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(22, 32, 43, 0.08);
+    transition: border-color 0.12s, box-shadow 0.12s;
+  }
+  .chr-btn:hover {
+    border-color: #c9c4ba;
+    box-shadow: 0 2px 8px rgba(22, 32, 43, 0.12);
+  }
+  @media print {
+    .chr-acciones { display: none !important; }
+  }
+  @media (max-width: 640px) {
+    .chr-acciones { right: 12px; bottom: 12px; }
+    .chr-btn { padding: 9px 12px; font-size: 0.78rem; }
+  }
+</style>
+<div class="chr-acciones" role="group" aria-label="Acciones del documento">
+  <a class="chr-btn" href="/q/myf-comercial-1f7a93.html" download="Propuesta Campos HR - MyF Distribuciones.html">Descargar</a>
+  <button class="chr-btn" type="button" onclick="window.print()">Guardar en PDF</button>
+</div>
+<!-- /chr:acciones -->
 </body>
 </html>
