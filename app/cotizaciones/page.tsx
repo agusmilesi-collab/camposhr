@@ -60,7 +60,7 @@ export default function Cotizaciones() {
         {todas.length === 0 ? (
           <p className="empty">Todavía no hay cotizaciones cargadas.</p>
         ) : (
-          <div className="card">
+          <div className="card cot-tabla">
             <div className="cot-row cot-th">
               <span>Fecha</span>
               <span>Cliente</span>
@@ -113,9 +113,11 @@ export default function Cotizaciones() {
       </section>
 
       <p className="cot-pie">
-        Para dar de alta una cotización: copiar el HTML de la propuesta a{' '}
-        <code>public/q/</code> con el nombre del token y sumar la fila en{' '}
-        <code>data/cotizaciones.json</code>.
+        Para dar de alta una cotización:{' '}
+        <code>node scripts/publicar-cotizacion.mjs &lt;html&gt; &lt;token&gt;
+        &quot;&lt;Cliente&gt;&quot;</code>, sumar la fila en{' '}
+        <code>data/cotizaciones.json</code> y publicar. El script deja el
+        documento con sus botones de descarga y sin rastro para los buscadores.
       </p>
     </main>
   );
