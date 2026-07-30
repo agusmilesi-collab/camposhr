@@ -1638,65 +1638,57 @@ body {
   border-bottom-color: var(--ink);
 }
 
-/* ---------- Dimensiones ---------- */
+/* ---------- Cómo conducirla: dimensiones ----------
+   Sin tarjetas: una lista separada por filetes, y adentro jerarquía
+   tipográfica. La instrucción se lee grande, el resto baja de peso. */
 .pb-dims {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  border-top: 1px solid var(--line);
 }
 .pb-dim {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.pb-dim-on {
-  border-color: var(--ink);
+  border-bottom: 1px solid var(--line);
 }
 .pb-dim-top {
   width: 100%;
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   text-align: left;
   font: inherit;
   background: none;
   border: 0;
-  padding: 15px 17px;
+  padding: 17px 2px;
   cursor: pointer;
 }
 .pb-dim-titulo {
-  display: block;
-  font-weight: 500;
-  font-size: 0.95rem;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.2rem;
+  line-height: 1.2;
+  color: var(--ink-soft);
+}
+.pb-dim-on .pb-dim-titulo {
   color: var(--ink);
 }
-.pb-dim-avance {
-  display: block;
-  font-size: 0.82rem;
-  color: var(--muted);
-  line-height: 1.45;
-  margin-top: 3px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-}
 .pb-mas {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: var(--muted);
   line-height: 1;
   flex: none;
 }
 .pb-dim-cuerpo {
-  padding: 0 17px 17px;
+  padding: 0 2px 30px;
+  max-width: 62ch;
 }
 .pb-core {
-  font-size: 1rem;
+  font-size: 1.06rem;
   line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+}
+.pb-porque {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--muted);
 }
 .pb-rotulo {
   display: block;
@@ -1705,69 +1697,92 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
-.pb-porque {
-  background: var(--paper);
-  border-radius: 9px;
-  padding: 12px 14px;
-  margin-bottom: 10px;
+
+/* Lo que aporta lo que ella misma marcó. */
+.pb-propio {
+  margin-top: 20px;
+  padding-left: 15px;
+  border-left: 2px solid #d9cfae;
 }
-.pb-porque p {
-  font-size: 0.86rem;
+.pb-propio .pb-rotulo {
+  color: #8a7a52;
+}
+.pb-propio ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pb-propio li {
+  font-size: 0.9rem;
   line-height: 1.55;
   color: var(--ink-soft);
 }
+
+/* Señales: dos columnas de texto, diferenciadas por el rótulo. */
 .pb-senales {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 8px 28px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-soft);
 }
-.pb-senal {
-  border-radius: 9px;
-  padding: 11px 12px;
-  border-left: 3px solid;
+.pb-senal dt {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
 }
-.pb-senal p {
-  font-size: 0.8rem;
-  line-height: 1.45;
+.pb-senal dd {
+  font-size: 0.87rem;
+  line-height: 1.6;
   color: var(--ink-soft);
 }
-.pb-verde {
-  background: #f2f6f2;
-  border-left-color: var(--st-green);
-}
-.pb-verde .pb-rotulo {
+.pb-verde dt {
   color: var(--st-green);
 }
-.pb-alerta {
-  background: #faf5ec;
-  border-left-color: var(--st-amber);
-}
-.pb-alerta .pb-rotulo {
+.pb-alerta dt {
   color: var(--st-amber);
 }
+
+/* Las frases de ejemplo: se leen como diálogo, no como cajas. */
 .pb-frases {
-  background: var(--paper);
-  border-radius: 9px;
-  padding: 12px 14px;
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .pb-frase {
-  font-size: 0.85rem;
-  line-height: 1.5;
+  font-size: 0.92rem;
+  line-height: 1.55;
   color: var(--ink-soft);
-  font-style: italic;
-  margin-bottom: 10px;
+  padding-left: 15px;
+  border-left: 2px solid;
 }
-.pb-frase:last-child {
-  margin-bottom: 0;
+.pb-frase span {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
 }
 .pb-si {
+  border-left-color: var(--st-green);
+}
+.pb-si span {
   color: var(--st-green);
 }
 .pb-no {
-  color: #8c3b3b;
+  border-left-color: #b06a6a;
+  color: var(--muted);
+}
+.pb-no span {
+  color: #974949;
 }
 
 /* ---------- Semanas ---------- */
@@ -1933,9 +1948,6 @@ body {
 .pb-puntaje-on .pb-nivel {
   color: var(--ink-soft);
   font-weight: 500;
-}
-.pb-lectura p + p {
-  margin-top: 10px;
 }
 
 /* ---------- Tabla de personas por equipo ---------- */
@@ -2178,29 +2190,6 @@ body {
 }
 
 
-/* Lo que aporta lo que la persona marcó */
-.pb-propio {
-  background: #faf7f0;
-  border-left: 3px solid #c9b98a;
-  border-radius: 0 9px 9px 0;
-  padding: 12px 14px;
-  margin-bottom: 10px;
-}
-.pb-propio .pb-rotulo {
-  color: #8a7a52;
-}
-.pb-propio ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.pb-propio li {
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: var(--ink-soft);
-}
-
 /* ---- Cotizaciones ---------------------------------------------------- */
 
 /* La tabla de cotizaciones tiene siete columnas: necesita más que los 880px
@@ -2247,16 +2236,32 @@ body {
 .cot-tabla {
   display: grid;
   grid-template-columns:
-    5.4rem minmax(7rem, 1fr) minmax(10rem, 1.7fr) max-content max-content minmax(0, auto) max-content;
+    max-content minmax(7rem, 1fr) minmax(10rem, 1.7fr) max-content max-content max-content max-content;
   align-items: center;
+  /* El encabezado tiene fondo propio: sin esto se desborda de las esquinas
+     redondeadas de la tarjeta. */
+  overflow: hidden;
 }
 .cot-row {
   display: contents;
 }
 .cot-row > * {
+  /* Todas las celdas se estiran a la altura de la fila: así el fondo del
+     encabezado y la línea inferior quedan continuos aunque una celda tenga
+     menos contenido que las demás. */
+  align-self: stretch;
+  display: flex;
+  align-items: center;
   padding: 13px 8px;
   border-bottom: 1px solid var(--line-soft);
-  align-self: center;
+}
+/* El concepto puede ocupar varias líneas: fluye desde arriba. */
+.cot-row > .cot-concepto {
+  display: block;
+  padding-top: 12px;
+}
+.cot-row > .cot-num {
+  justify-content: flex-end;
 }
 .cot-row > *:first-child {
   padding-left: 20px;
@@ -2281,6 +2286,7 @@ body {
   font-size: 0.82rem;
   color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .cot-cliente {
   font-weight: 500;
@@ -2384,63 +2390,141 @@ body {
   }
 }
 
-/* En sus palabras */
+/* =================================================================
+   Solapa "Informe": quién es la persona
+   ================================================================= */
+.pb-informe .pb-lectura {
+  margin: 0 0 20px;
+  max-width: 64ch;
+}
+.pb-cuadros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  gap: 14px;
+}
+.pb-cuadro {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 19px 19px;
+}
+.pb-cuadro-fuerte {
+  border-color: var(--ink);
+}
+.pb-cuadro h3 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+.pb-cuadro h3 em {
+  font-style: normal;
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pb-cuadro-desc {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.pb-cuadro-nivel {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.pb-cuadro-pie {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* Lo que marcó de sí: dato crudo, sin interpretación nuestra. */
 .pb-dijo {
-  margin-top: 32px;
-  padding-top: 24px;
+  margin-top: 34px;
+  padding-top: 22px;
   border-top: 1px solid var(--line);
 }
-.pb-dijo h2 {
+.pb-dijo h3 {
   font-family: 'Instrument Serif', Georgia, serif;
   font-size: 1.35rem;
   font-weight: 400;
 }
 .pb-dijo-bajada {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
   color: var(--muted);
-  margin: 4px 0 16px;
+  margin: 5px 0 4px;
+  max-width: 64ch;
 }
-.pb-dijo-cols {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+.pb-dijo-grupo {
+  padding-top: 18px;
+  margin-top: 14px;
+  border-top: 1px solid var(--line-soft);
 }
-.pb-dijo-col {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  padding: 15px 16px;
-}
-.pb-dijo-col h3 {
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--ink);
-  margin-bottom: 9px;
-}
-.pb-dijo-col h3 em {
-  font-style: normal;
-  color: var(--muted);
-  font-weight: 400;
-}
-.pb-dijo-col ul {
-  list-style: none;
+.pb-dijo-grupo h4 {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
+  align-items: baseline;
+  gap: 9px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 10px;
 }
-.pb-dijo-col li {
-  font-size: 0.8rem;
-  line-height: 1.45;
+.pb-dijo-grupo h4 em {
+  font-style: normal;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
   color: var(--ink-soft);
-  padding-left: 12px;
-  position: relative;
+  background: var(--paper);
+  border-radius: 5px;
+  padding: 1px 7px;
 }
-.pb-dijo-col li::before {
+.pb-dijo-grupo h4 span {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+.pb-dijo-grupo ul {
+  list-style: none;
+  columns: 2;
+  column-gap: 28px;
+}
+.pb-dijo-grupo li {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  padding-left: 13px;
+  margin-bottom: 7px;
+  position: relative;
+  break-inside: avoid;
+}
+.pb-dijo-grupo li::before {
   content: '·';
   position: absolute;
   left: 2px;
   color: var(--muted);
+}
+.pb-dijo-vacio {
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .pb-cuadros {
+    grid-template-columns: 1fr;
+  }
+  .pb-dijo-grupo ul {
+    columns: 1;
+  }
 }
 
 .cq-resultado-mapa {
