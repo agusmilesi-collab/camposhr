@@ -10,7 +10,7 @@
   --st-gray: #8a8580;
   --st-amber: #a97722;
   --st-blue: #43648f;
-  --st-green: #40704f;
+  --st-blue-2: #43648f;
   --st-violet: #6a5a8c;
 }
 
@@ -233,8 +233,8 @@ body {
   color: var(--ink);
 }
 .copiar.ok {
-  color: var(--st-green);
-  border-color: var(--st-green);
+  color: var(--st-blue-2);
+  border-color: var(--st-blue-2);
   background: #eef3ee;
 }
 @media (max-width: 620px) {
@@ -386,7 +386,7 @@ body {
 .dot.gray   { color: var(--st-gray); }
 .dot.amber  { color: var(--st-amber); }
 .dot.blue   { color: var(--st-blue); }
-.dot.green  { color: var(--st-green); }
+.dot.green  { color: var(--st-blue-2); }
 .dot.violet { color: var(--st-violet); }
 
 .empty {
@@ -828,7 +828,7 @@ body {
   color: #b9b3a8;
 }
 .mx-textos-amplio .mx-texto {
-  width: 43%;
+  width: 37%;
 }
 .mx-texto h3 {
   display: none;
@@ -923,8 +923,9 @@ body {
   stroke: var(--st-amber);
   stroke-width: 1;
 }
+ /* El tamaño lo fija el componente: se achica hasta que todas las etiquetas
+   entran sin pisarse. */
 .mx-nombre {
-  font-size: 2.7px;
   fill: var(--ink-soft);
 }
 .mx-bloque {
@@ -1779,7 +1780,7 @@ body {
   color: var(--ink-soft);
 }
 .pb-verde dt {
-  color: var(--st-green);
+  color: var(--st-blue-2);
 }
 .pb-alerta dt {
   color: var(--st-amber);
@@ -1808,10 +1809,10 @@ body {
   margin-bottom: 4px;
 }
 .pb-si {
-  border-left-color: var(--st-green);
+  border-left-color: var(--st-blue-2);
 }
 .pb-si span {
-  color: var(--st-green);
+  color: var(--st-blue-2);
 }
 .pb-no {
   border-left-color: #b06a6a;
@@ -1852,8 +1853,8 @@ body {
   color: #fff;
 }
 .pb-numero-hecha {
-  color: var(--st-green);
-  border-color: var(--st-green);
+  color: var(--st-blue-2);
+  border-color: var(--st-blue-2);
 }
 .pb-semana {
   background: var(--card);
@@ -1887,8 +1888,8 @@ body {
   cursor: pointer;
 }
 .pb-tilde-on {
-  background: var(--st-green);
-  border-color: var(--st-green);
+  background: var(--st-blue-2);
+  border-color: var(--st-blue-2);
   color: #fff;
 }
 .pb-semana-cuerpo {
@@ -2111,8 +2112,8 @@ body {
   color: var(--ink);
 }
 .inf-link-ok {
-  color: var(--st-green);
-  border-color: var(--st-green);
+  color: var(--st-blue-2);
+  border-color: var(--st-blue-2);
   background: #eef3ee;
 }
 .inf-sin-link {
@@ -2356,7 +2357,7 @@ body {
 }
 .e-borrador { color: var(--st-gray); }
 .e-enviada { color: var(--st-blue); }
-.e-aprobada { color: var(--st-green); }
+.e-aprobada { color: var(--st-blue-2); }
 .e-rechazada { color: var(--st-amber); }
 .e-cancelada { color: var(--st-gray); opacity: 0.75; }
 

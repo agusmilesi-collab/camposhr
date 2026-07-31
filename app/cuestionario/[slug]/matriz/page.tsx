@@ -45,7 +45,7 @@ export default async function MatrizEmpresa({
     const { x, y } = coordenadas(r.totales as unknown as Puntajes);
     return {
       id: r.id,
-      nombre: r.nombre,
+      nombre: nombreCompleto(r),
       x,
       y,
       foto: r.foto_path ? fotos.get(r.foto_path) ?? null : null,

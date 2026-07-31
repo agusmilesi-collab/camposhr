@@ -163,8 +163,11 @@ function bloques(modo: ModoTexto): Bloque[] {
  * la última palabra.
  */
 function cajasDescripcion(amplio: boolean): Caja[] {
-  const anchoCaja = amplio ? ANCHO * 0.5 : ANCHO * 0.38;
-  const altoCaja = amplio ? ALTO * 0.47 : ALTO * 0.46;
+  // Dos bloques enfrentados no pueden sumar el ancho entero: sin una franja
+  // central libre, las personas no tienen dónde ubicarse y la etiqueta se
+  // achica hasta no leerse.
+  const anchoCaja = amplio ? ANCHO * 0.42 : ANCHO * 0.38;
+  const altoCaja = amplio ? ALTO * 0.44 : ALTO * 0.46;
 
   return PERFILES.map((perfil) => {
     const arriba = perfil === 'FI' || perfil === 'FD';
@@ -199,16 +202,18 @@ function distribuir(
   puntos: Punto[],
   radio: number,
   conNombres: boolean,
-  cajasTexto: Caja[]
+  cajasTexto: Caja[],
+  /** Cuánto se achica la etiqueta respecto de su tamaño base. */
+  escala: number
 ) {
   const ideales = puntos.map((p) => aSvg(p.x, p.y));
 
-  // Espacio que ocupa cada persona en pantalla: el círculo y, debajo, su
-  // nombre. Un nombre largo es más ancho que el círculo.
-  const ALTO_NOMBRE = 3.9;
+  // Espacio que ocupa cada persona: el círculo y, debajo, su etiqueta. Con
+  // apellido y nombre, la etiqueta es bastante más ancha que el círculo.
+  const ALTO_NOMBRE = FUENTE_NOMBRE * escala + 1.1;
   const anchos = puntos.map((p) =>
     conNombres
-      ? Math.max(radio, (anchoTexto(primerNombre(p.nombre)) + 1.2) / 2)
+      ? Math.max(radio, (anchoTexto(etiqueta(p.nombre), escala) + 1.2) / 2)
       : radio
   );
   const arriba = radio + 0.3;
@@ -247,6 +252,7 @@ function distribuir(
     .sort((a, b) => Math.hypot(puntos[b].x, puntos[b].y) - Math.hypot(puntos[a].x, puntos[a].y));
 
   const salida: { cx: number; cy: number }[] = new Array(puntos.length);
+  let todosUbicados = true;
 
   for (const i of orden) {
     const { cx, cy } = ideales[i];
@@ -287,19 +293,51 @@ function distribuir(
       }
     }
 
+    if (!encontrada) todosUbicados = false;
     puestas.push(elegida);
     salida[i] = { cx: (elegida.x0 + elegida.x1) / 2, cy: elegida.y0 + arriba };
   }
 
-  return salida;
+  return { salida, todosUbicados, altoNombre: ALTO_NOMBRE };
+}
+
+/** Tamaño de la etiqueta cuando hay lugar de sobra. */
+const FUENTE_NOMBRE = 2.7;
+
+/**
+ * Ancho aproximado de un texto en el lienzo. Se estima por lo alto: es
+ * preferible reservar de más que terminar con etiquetas pisadas.
+ */
+function anchoTexto(texto: string, escala: number): number {
+  return texto.length * 1.55 * escala;
 }
 
 /**
- * Ancho aproximado de un texto en el lienzo (Inter a 2.7px). Se estima por
- * lo alto: es preferible reservar de más que terminar con nombres pisados.
+ * Ubica a todas las personas y, si no entran, vuelve a intentarlo con la
+ * etiqueta más chica.
+ *
+ * Con apellido y nombre las etiquetas son largas, y en un equipo grande no hay
+ * lugar para todas al tamaño de siempre. Antes, la persona que no encontraba
+ * hueco se quedaba en su posición ideal, encima de otra. Ahora se baja el
+ * tamaño hasta que todas entran, así el gráfico nunca sale con nombres
+ * pisados: con poca gente la letra queda grande y con mucha, más chica.
  */
-function anchoTexto(texto: string): number {
-  return texto.length * 1.55;
+function acomodar(
+  puntos: Punto[],
+  radio: number,
+  conNombres: boolean,
+  cajasTexto: Caja[]
+) {
+  let ultimo = distribuir(puntos, radio, conNombres, cajasTexto, 1);
+  if (ultimo.todosUbicados || !conNombres) return { ...ultimo, escala: 1 };
+
+  for (const escala of [0.94, 0.88, 0.82, 0.76, 0.7, 0.64, 0.58, 0.52, 0.46, 0.4]) {
+    ultimo = distribuir(puntos, radio, conNombres, cajasTexto, escala);
+    if (ultimo.todosUbicados) return { ...ultimo, escala };
+  }
+  // Ni al mínimo entran: se devuelve el último intento, que es el que menos
+  // superposiciones deja.
+  return { ...ultimo, escala: 0.4 };
 }
 
 // ------------------------------------------------------------------ vista
@@ -321,7 +359,7 @@ export default function MatrizBenziger({
   const enHtml = modo === 'html' || modo === 'html-amplio';
   const amplio = modo === 'html-amplio';
   const cuadrantes = bloques(modo);
-  const pos = distribuir(
+  const { salida: pos, escala, altoNombre } = acomodar(
     puntos,
     radio,
     nombres,
@@ -436,8 +474,14 @@ export default function MatrizBenziger({
             )}
             <circle cx={pos[i].cx} cy={pos[i].cy} r={radio} className="mx-aro" />
             {nombres && (
-              <text x={pos[i].cx} y={pos[i].cy + radio + 3.4} className="mx-nombre" textAnchor="middle">
-                {primerNombre(p.nombre)}
+              <text
+                x={pos[i].cx}
+                y={pos[i].cy + radio + altoNombre - 0.6}
+                className="mx-nombre"
+                fontSize={FUENTE_NOMBRE * escala}
+                textAnchor="middle"
+              >
+                {etiqueta(p.nombre)}
               </text>
             )}
           </g>
@@ -474,9 +518,24 @@ function iniciales(nombre: string): string {
     .join('');
 }
 
-function primerNombre(nombre: string): string {
-  const partes = nombre.trim().split(/\s+/);
-  const corto = partes[0] ?? '';
-  // Se acorta: un nombre largo reserva mucho ancho y empuja a los vecinos.
-  return corto.length > 9 ? `${corto.slice(0, 8)}…` : corto;
+/**
+ * Lo que se escribe debajo del círculo.
+ *
+ * Cuando la persona llega con apellido ("López, Augusto Amadeo") se muestran
+ * el apellido y el primer nombre: en un equipo hay nombres repetidos y el
+ * apellido es lo que distingue. Del segundo nombre en adelante se descarta,
+ * porque cada letra de más empuja a los vecinos.
+ */
+function etiqueta(nombre: string): string {
+  const limpio = nombre.trim();
+  const coma = limpio.indexOf(',');
+  if (coma === -1) return recortar(limpio.split(/\s+/)[0] ?? '', 11);
+
+  const apellido = recortar(limpio.slice(0, coma), 14);
+  const pila = limpio.slice(coma + 1).trim().split(/\s+/)[0] ?? '';
+  return pila ? `${apellido}, ${recortar(pila, 10)}` : apellido;
+}
+
+function recortar(texto: string, maximo: number): string {
+  return texto.length > maximo ? `${texto.slice(0, maximo - 1)}…` : texto;
 }
