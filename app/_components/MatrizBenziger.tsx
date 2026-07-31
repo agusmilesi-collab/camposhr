@@ -229,11 +229,11 @@ function distribuir(
   // No alcanza con que no se toquen: sin un aire mínimo, dos etiquetas
   // pegadas se leen como una sola.
   const AIRE = 1.2;
-  const inflar = (c: Caja): Caja => ({
-    x0: c.x0 - AIRE,
-    y0: c.y0 - AIRE,
-    x1: c.x1 + AIRE,
-    y1: c.y1 + AIRE,
+  const inflar = (c: Caja, aire = AIRE): Caja => ({
+    x0: c.x0 - aire,
+    y0: c.y0 - aire,
+    x1: c.x1 + aire,
+    y1: c.y1 + aire,
   });
 
   const puestas: Caja[] = [];
@@ -242,7 +242,7 @@ function distribuir(
     c.x1 <= ANCHO - 0.5 &&
     c.y0 >= 0.5 &&
     c.y1 <= ALTO - 0.5 &&
-    !cajasTexto.some((t) => seSolapan(c, t)) &&
+    !cajasTexto.some((t) => seSolapan(inflar(c, 0.8), t)) &&
     !puestas.some((q) => seSolapan(inflar(c), q));
 
   // Las más alejadas del centro se ubican primero: son las que definen la

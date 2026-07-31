@@ -18,6 +18,12 @@
     --sidebar:236px;
   }
   *{margin:0;padding:0;box-sizing:border-box}
+  /* Foco visible en todo lo que se puede recorrer con el teclado. */
+  a:focus-visible,button:focus-visible,input:focus-visible{
+    outline:2px solid var(--azul);outline-offset:2px;border-radius:6px}
+  .saltar{position:absolute;left:-9999px;top:8px;background:var(--ink);color:#fff;
+    padding:8px 14px;border-radius:8px;z-index:99;font-size:.85rem}
+  .saltar:focus{left:8px}
   body{font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--ink);
        font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
@@ -63,10 +69,12 @@
   .icono svg{width:16px;height:16px;stroke:var(--ink-soft);fill:none;stroke-width:1.6;
        stroke-linecap:round;stroke-linejoin:round}
   .punto{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--red)}
-  .btn{font:inherit;font-size:.84rem;font-weight:500;padding:8px 15px;border-radius:9px;cursor:pointer;
-       border:1px solid var(--ink);background:var(--ink);color:#fff}
+  .btn{font:inherit;font-size:.88rem;font-weight:600;padding:10px 18px;border-radius:9px;cursor:pointer;
+       border:1px solid var(--ink);background:var(--ink);color:#fff;display:inline-flex;align-items:center;gap:7px}
+  .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
   .btn:hover{background:#0d1620}
-  .btn-2{background:var(--card);color:var(--ink);border-color:var(--line)}
+  .btn-2{background:transparent;color:var(--ink-soft);border-color:transparent;font-weight:500;
+       font-size:.84rem;padding:9px 12px}
   .btn-2:hover{border-color:var(--muted);background:var(--card)}
 
   /* ---------- Contenido ---------- */
@@ -119,6 +127,12 @@
   .mini:hover{border-color:var(--muted)}
   .mini svg{width:14px;height:14px;stroke:var(--ink-soft);fill:none;stroke-width:1.6;
         stroke-linecap:round;stroke-linejoin:round}
+  /* Explicación breve al pasar el cursor, sin robar espacio en pantalla. */
+  [data-tip]{position:relative}
+  [data-tip]:hover::after,[data-tip]:focus-visible::after{
+    content:attr(data-tip);position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;font-size:.72rem;padding:5px 9px;border-radius:6px;
+    white-space:nowrap;z-index:20;pointer-events:none}
 
   .lista{padding:6px 0}
   .item{display:flex;gap:11px;padding:10px 17px;align-items:flex-start}
@@ -138,10 +152,54 @@
   .herr b{display:block;font-size:.85rem;font-weight:500}
   .herr span{display:block;font-size:.74rem;color:var(--muted);margin-top:1px}
 
+  /* --- Visualizaciones --- */
+  .graficos{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;margin-bottom:22px}
+  .barras{display:flex;align-items:flex-end;gap:14px;padding:18px 17px 12px;height:168px}
+  .barra-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px;height:100%}
+  .barra-col .torre{width:100%;max-width:34px;border-radius:5px 5px 0 0;background:var(--azul);
+       opacity:.28;transition:opacity .15s}
+  .barra-col:hover .torre{opacity:.55}
+  .barra-col.hoy .torre{opacity:1}
+  .barra-col span{font-size:.7rem;color:var(--muted)}
+  .barra-col b{font-size:.72rem;font-weight:500;color:var(--ink-soft)}
+  .dona{display:flex;align-items:center;gap:16px;padding:18px 17px}
+  .dona svg{flex:none}
+  .dona-ref{display:grid;gap:7px;font-size:.78rem}
+  .dona-ref div{display:flex;align-items:center;gap:7px;color:var(--ink-soft)}
+  .dona-ref i{width:9px;height:9px;border-radius:3px;flex:none}
+  .dona-ref b{margin-left:auto;font-family:var(--mono);font-size:.75rem}
+
+  /* --- Estado vacío --- */
+  .vacio{padding:26px 17px;text-align:center}
+  .vacio .ic{width:38px;height:38px;border-radius:11px;background:var(--paper);display:grid;
+       place-items:center;margin:0 auto 10px}
+  .vacio .ic svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:1.5;
+       stroke-linecap:round;stroke-linejoin:round}
+  .vacio p{font-size:.85rem;color:var(--ink-soft)}
+  .vacio span{display:block;font-size:.76rem;color:var(--muted);margin-top:3px}
+
+  /* --- Orden de columnas --- */
+  th button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;display:inline-flex;
+       align-items:center;gap:4px;letter-spacing:inherit;text-transform:inherit}
+  th button svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;opacity:.45}
+  th button:hover{color:var(--ink)} th button.act svg{opacity:1;color:var(--azul)}
+
+  /* --- Primeros pasos --- */
+  .arranque{padding:14px 17px}
+  .arranque .lin{display:flex;align-items:center;gap:9px;font-size:.83rem;padding:5px 0;color:var(--ink-soft)}
+  .arranque .tic{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--line);flex:none;
+       display:grid;place-items:center}
+  .arranque .lin.ok .tic{background:var(--azul);border-color:var(--azul)}
+  .arranque .lin.ok .tic svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:3}
+  .arranque .lin.ok{color:var(--muted);text-decoration:line-through}
+  .prog{height:5px;border-radius:99px;background:var(--line-soft);margin:9px 0 4px;overflow:hidden}
+  .prog i{display:block;height:100%;background:var(--azul);width:60%}
+  .prog-txt{font-size:.74rem;color:var(--muted)}
+
   .aviso{margin-top:20px;font-size:.76rem;color:var(--muted);text-align:center}
 
   @media(max-width:1100px){
-    .grilla{grid-template-columns:1fr}
+    .grilla,.graficos{grid-template-columns:1fr}
     .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   }
   @media(max-width:860px){
@@ -155,6 +213,7 @@
 </style>
 </head>
 <body>
+<a class="saltar" href="#contenido">Ir al contenido</a>
 <div class="app">
 
   <!-- ---------- Barra lateral ---------- -->
@@ -231,12 +290,15 @@
         <button class="icono" aria-label="Novedades"><span class="punto"></span>
           <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
         </button>
-        <button class="btn-2 btn" type="button">Nuevo pedido</button>
-        <button class="btn" type="button">Cargar evaluación</button>
+        <button class="btn btn-2" type="button">Nuevo pedido</button>
+        <button class="btn" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Cargar evaluación
+        </button>
       </div>
     </header>
 
-    <main class="main">
+    <main class="main" id="contenido">
       <div class="cab">
         <div>
           <h1>Panel</h1>
@@ -272,6 +334,49 @@
         </div>
       </section>
 
+      <section class="graficos">
+        <div class="panel">
+          <div class="panel-cab">
+            <h2>Informes entregados</h2>
+            <span class="sub">últimas ocho semanas</span>
+            <div class="der"><span class="badge b-azul">31 en total</span></div>
+          </div>
+          <div class="barras" role="img" aria-label="Informes entregados por semana: 2, 4, 3, 5, 4, 6, 3 y 4.">
+            <div class="barra-col"><b>2</b><div class="torre" style="height:33%"></div><span>02/06</span></div>
+            <div class="barra-col"><b>4</b><div class="torre" style="height:66%"></div><span>09/06</span></div>
+            <div class="barra-col"><b>3</b><div class="torre" style="height:50%"></div><span>16/06</span></div>
+            <div class="barra-col"><b>5</b><div class="torre" style="height:83%"></div><span>23/06</span></div>
+            <div class="barra-col"><b>4</b><div class="torre" style="height:66%"></div><span>30/06</span></div>
+            <div class="barra-col"><b>6</b><div class="torre" style="height:100%"></div><span>07/07</span></div>
+            <div class="barra-col"><b>3</b><div class="torre" style="height:50%"></div><span>14/07</span></div>
+            <div class="barra-col hoy"><b>4</b><div class="torre" style="height:66%"></div><span>esta</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-cab"><h2>En qué estado están</h2></div>
+          <div class="dona">
+            <svg width="112" height="112" viewBox="0 0 42 42" role="img" aria-label="Tres en informe, dos esperando evaluadora, uno demorado y uno entregado.">
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--line-soft)" stroke-width="5"></circle>
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="#6a5a8c" stroke-width="5"
+                      stroke-dasharray="43 57" stroke-dashoffset="25"></circle>
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="#a97722" stroke-width="5"
+                      stroke-dasharray="28 72" stroke-dashoffset="-18"></circle>
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="#7b7770" stroke-width="5"
+                      stroke-dasharray="15 85" stroke-dashoffset="-46"></circle>
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="#33507a" stroke-width="5"
+                      stroke-dasharray="14 86" stroke-dashoffset="-61"></circle>
+            </svg>
+            <div class="dona-ref">
+              <div><i style="background:#6a5a8c"></i> En informe <b>3</b></div>
+              <div><i style="background:#a97722"></i> Sin evaluadora <b>2</b></div>
+              <div><i style="background:#7b7770"></i> Demoradas <b>1</b></div>
+              <div><i style="background:#33507a"></i> Entregadas <b>1</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div class="grilla">
 
         <section class="panel">
@@ -287,8 +392,15 @@
           <table>
             <thead>
               <tr>
-                <th>Candidato</th><th>Empresa</th><th>Puesto</th>
-                <th>Evaluadora</th><th>Avance</th><th>Estado</th><th></th>
+                <th><button type="button" class="act">Candidato
+                  <svg viewBox="0 0 24 24"><path d="M6 9l6-6 6 6"/><path d="M6 15l6 6 6-6"/></svg></button></th>
+                <th><button type="button">Empresa
+                  <svg viewBox="0 0 24 24"><path d="M6 9l6-6 6 6"/><path d="M6 15l6 6 6-6"/></svg></button></th>
+                <th>Puesto</th>
+                <th>Evaluadora</th>
+                <th><button type="button">Avance
+                  <svg viewBox="0 0 24 24"><path d="M6 9l6-6 6 6"/><path d="M6 15l6 6 6-6"/></svg></button></th>
+                <th>Estado</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -300,8 +412,8 @@
                 <td><div class="barra"><i style="width:85%"></i></div></td>
                 <td><span class="badge b-violeta">En informe</span></td>
                 <td><div class="acciones">
-                  <button class="mini" aria-label="Ver"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
-                  <button class="mini" aria-label="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+                  <button class="mini" aria-label="Ver la ficha" data-tip="Ver la ficha"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="mini" aria-label="Editar" data-tip="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
                 </div></td>
               </tr>
               <tr>
@@ -312,8 +424,8 @@
                 <td><div class="barra"><i style="width:60%"></i></div></td>
                 <td><span class="badge b-violeta">En informe</span></td>
                 <td><div class="acciones">
-                  <button class="mini" aria-label="Ver"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
-                  <button class="mini" aria-label="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+                  <button class="mini" aria-label="Ver la ficha" data-tip="Ver la ficha"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="mini" aria-label="Editar" data-tip="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
                 </div></td>
               </tr>
               <tr>
@@ -324,8 +436,8 @@
                 <td><div class="barra"><i style="width:25%"></i></div></td>
                 <td><span class="badge b-ocre">Sin evaluadora</span></td>
                 <td><div class="acciones">
-                  <button class="mini" aria-label="Ver"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
-                  <button class="mini" aria-label="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+                  <button class="mini" aria-label="Ver la ficha" data-tip="Ver la ficha"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="mini" aria-label="Editar" data-tip="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
                 </div></td>
               </tr>
               <tr>
@@ -336,8 +448,8 @@
                 <td><div class="barra"><i style="width:100%"></i></div></td>
                 <td><span class="badge b-verde">Entregado</span></td>
                 <td><div class="acciones">
-                  <button class="mini" aria-label="Ver"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
-                  <button class="mini" aria-label="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+                  <button class="mini" aria-label="Ver la ficha" data-tip="Ver la ficha"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="mini" aria-label="Editar" data-tip="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
                 </div></td>
               </tr>
               <tr>
@@ -348,8 +460,8 @@
                 <td><div class="barra"><i style="width:45%"></i></div></td>
                 <td><span class="badge b-gris">Demorado</span></td>
                 <td><div class="acciones">
-                  <button class="mini" aria-label="Ver"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
-                  <button class="mini" aria-label="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+                  <button class="mini" aria-label="Ver la ficha" data-tip="Ver la ficha"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="mini" aria-label="Editar" data-tip="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
                 </div></td>
               </tr>
             </tbody>
@@ -405,6 +517,36 @@
                 <div class="ic"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></div>
                 <b>Accesos</b><span>9 portales</span>
               </a>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-cab">
+              <h2>Alertas</h2>
+              <span class="sub">nada pendiente</span>
+            </div>
+            <div class="vacio">
+              <div class="ic">
+                <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <p>Ningún informe vencido.</p>
+              <span>Los que pasen de siete días aparecen acá.</span>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-cab">
+              <h2>Para dejar listo</h2>
+              <span class="sub">3 de 5</span>
+            </div>
+            <div class="arranque">
+              <div class="prog"><i></i></div>
+              <div class="prog-txt">Faltan dos pasos para tener el espacio completo.</div>
+              <div class="lin ok"><span class="tic"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> Cargar las empresas</div>
+              <div class="lin ok"><span class="tic"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> Sumar a las evaluadoras</div>
+              <div class="lin ok"><span class="tic"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> Abrir el primer pedido</div>
+              <div class="lin"><span class="tic"></span> Definir el perfil de cada puesto</div>
+              <div class="lin"><span class="tic"></span> Dar acceso de portal a los clientes</div>
             </div>
           </section>
 
