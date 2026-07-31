@@ -18,6 +18,9 @@ import type { NextRequest } from 'next/server';
 
 const CLIENT_HOST = 'clientes.camposhr.com';
 const TOOLS_HOST = 'tools.camposhr.com';
+// Prototipo de interfaz del hub. Vive en public/v2/ y se ve en su propio
+// subdominio o en <host>/v2. No tiene datos reales ni acciones conectadas.
+const TOOLS_V2_HOST = 'toolsversion2.camposhr.com';
 
 const TOKEN = /^\/([A-Za-z0-9_-]+)\/?$/;
 const TOKEN_EN_P = /^\/p\/([A-Za-z0-9_-]+)\/?$/;
@@ -66,6 +69,16 @@ export function middleware(req: NextRequest) {
       status: 404,
       headers: { 'content-type': 'text/plain; charset=utf-8' },
     });
+  }
+
+  // --- Prototipo del hub (solo para mirar la interfaz) ---
+  if (host === TOOLS_V2_HOST) {
+    if (pathname === '/') {
+      const dest = url.clone();
+      dest.pathname = '/v2/index.html';
+      return NextResponse.rewrite(dest);
+    }
+    return NextResponse.next();
   }
 
   // --- Hub interno de herramientas ---
