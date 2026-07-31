@@ -154,9 +154,9 @@ export const PLACAS: Placa[] = [
 
 /** Texto de la portada. */
 export const PORTADA = {
-  titulo: '¿Cuál sos vos?',
+  titulo: '¿Cómo trabajás?',
   texto:
-    'Toda persona tiene uno de estos cuadrantes como dominante, un tipo de pensamiento que resulta naturalmente más eficiente. Se detecta para aumentar su productividad y determinar el mejor campo de acción de una persona sin exigirlo ni llegar al burn out (estrés).',
+    'Hay cuatro formas de trabajar y de procesar información. Este cuestionario identifica cuál te resulta más natural, la que te demanda menos esfuerzo. Lo que mide es preferencia: qué forma de trabajar reconocés como propia. No evalúa capacidad ni desempeño. Sirve para ubicarte en tareas donde rindas sin desgastarte, y para que quien te conduce sepa cómo hacerlo.',
   boton: 'Comenzar',
   duracion: 'Dura entre 8 y 10 minutos',
 };
