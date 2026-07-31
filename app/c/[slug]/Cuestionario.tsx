@@ -11,7 +11,6 @@ import {
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { PLACAS_GENERACIONES } from '@/lib/generaciones';
 import MatrizBenziger from '@/app/_components/MatrizBenziger';
-import MatrizPortada from '@/app/_components/MatrizPortada';
 
 type ResultadoServidor = {
   totales: Record<Perfil, number>;
@@ -487,8 +486,11 @@ export default function Cuestionario({
               ))}
             </div>
 
+            {/* Una sola matriz: ubica a la persona y recién acá explica los
+                cuatro cuadrantes. */}
             <div className="cq-resultado-matriz">
               <MatrizBenziger
+                conDescripciones
                 puntos={[
                   {
                     id: 'yo',
@@ -509,11 +511,6 @@ export default function Cuestionario({
                   : `Habías elegido ${INFO[autopercepcion].nombre}.`}
               </p>
             )}
-
-            {/* Recién acá se explican los cuatro cuadrantes. */}
-            <div className="cq-resultado-mapa">
-              <MatrizPortada />
-            </div>
 
             <p className="cq-cierre">
               Listo. Ya quedaste en la matriz del equipo, podés cerrar esta página.

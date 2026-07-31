@@ -71,6 +71,26 @@ const CHARS_POR_LINEA = 33;
 const ALTO_LINEA = 2.5;
 const ALTO_TITULO = 6.2; // separación entre las dos palabras del título
 
+/**
+ * Dónde se escriben las descripciones de los cuadrantes.
+ *
+ * `html` las pone por encima del lienzo, en texto normal, y es lo que se usa
+ * casi siempre: el texto dibujado dentro de un SVG escala con el ancho del
+ * gráfico, y en un celular termina en tres o cuatro píxeles.
+ *
+ * `svg` es la excepción de la matriz de toda la empresa. Ahí el texto en HTML
+ * necesita tanto espacio que la gente no entra, y esa pantalla se proyecta:
+ * el gráfico es grande y el texto dibujado se lee.
+ */
+type ModoTexto = 'no' | 'html-amplio' | 'html' | 'svg';
+
+function modoTexto(conDescripciones: boolean, cuantos: number): ModoTexto {
+  if (!conDescripciones) return 'no';
+  if (cuantos <= 3) return 'html-amplio'; // la placa de resultado
+  if (cuantos <= 20) return 'html'; // el equipo de un líder
+  return 'svg'; // la empresa entera, proyectada
+}
+
 /** Corta un texto en líneas, sin partir palabras. */
 function envolver(texto: string, maximo: number): string[] {
   const lineas: string[] = [];
@@ -94,14 +114,15 @@ type Bloque = {
   yTitulo: number;
   yDesc: number;
   lineas: string[];
-  caja: { x0: number; y0: number; x1: number; y1: number };
+  caja: Caja;
 };
 
 /**
- * Ubica el título y la descripción de cada cuadrante, y devuelve la caja que
- * ocupan para que ninguna persona quede dibujada encima.
+ * Ubica el título de cada cuadrante y, en el modo `svg`, su descripción.
+ * Devuelve además la caja que ocupan, para que ninguna persona quede dibujada
+ * encima.
  */
-function bloques(conDescripciones: boolean): Bloque[] {
+function bloques(modo: ModoTexto): Bloque[] {
   return PERFILES.map((perfil) => {
     const arriba = perfil === 'FI' || perfil === 'FD';
     const izquierda = perfil === 'FI' || perfil === 'BI';
@@ -110,9 +131,8 @@ function bloques(conDescripciones: boolean): Bloque[] {
     const x = izquierda ? MARGEN_TEXTO : ANCHO - MARGEN_TEXTO;
     const anclaje: 'start' | 'end' = izquierda ? 'start' : 'end';
 
-    const lineas = conDescripciones
-      ? envolver(INFO[perfil].descripcion, CHARS_POR_LINEA)
-      : [];
+    const lineas =
+      modo === 'svg' ? envolver(INFO[perfil].descripcion, CHARS_POR_LINEA) : [];
     // Alto que ocupa la descripción desde su primera línea base.
     const caida = Math.max(0, lineas.length - 1) * ALTO_LINEA;
 
@@ -126,14 +146,35 @@ function bloques(conDescripciones: boolean): Bloque[] {
       yTitulo = yDesc - 6.5 - ALTO_TITULO;
     }
 
-    // La caja arranca sobre la primera palabra del título (su altura de letra)
-    // y termina bajo la última línea de la descripción.
     const y0 = yTitulo - 5;
     const y1 = (lineas.length ? yDesc + caida : yTitulo + ALTO_TITULO) + 1.5;
     const x0 = izquierda ? x - 1 : x - ANCHO_TEXTO;
     const x1 = izquierda ? x + ANCHO_TEXTO : x + 1;
 
     return { perfil, x, anclaje, yTitulo, yDesc, lineas, caja: { x0, y0, x1, y1 } };
+  });
+}
+
+/**
+ * Espacio que se reserva para las descripciones en HTML, en unidades del
+ * lienzo. Es lo único que el SVG necesita saber de ellas. Va algo más grande
+ * que el bloque de texto: el CSS lo separa del borde y el punto se mide desde
+ * su centro, así que sin ese aire un círculo apoyado justo afuera igual pisa
+ * la última palabra.
+ */
+function cajasDescripcion(amplio: boolean): Caja[] {
+  const anchoCaja = amplio ? ANCHO * 0.5 : ANCHO * 0.38;
+  const altoCaja = amplio ? ALTO * 0.47 : ALTO * 0.46;
+
+  return PERFILES.map((perfil) => {
+    const arriba = perfil === 'FI' || perfil === 'FD';
+    const izquierda = perfil === 'FI' || perfil === 'BI';
+    return {
+      x0: izquierda ? 0 : ANCHO - anchoCaja,
+      x1: izquierda ? anchoCaja : ANCHO,
+      y0: arriba ? 0 : ALTO - altoCaja,
+      y1: arriba ? altoCaja : ALTO,
+    };
   });
 }
 
@@ -276,16 +317,44 @@ export default function MatrizBenziger({
   const m = metricas(puntos.length);
   const radio = m.radio;
   const nombres = conNombres && m.conNombres;
-  const cuadrantes = bloques(conDescripciones);
+  const modo = modoTexto(conDescripciones, puntos.length);
+  const enHtml = modo === 'html' || modo === 'html-amplio';
+  const amplio = modo === 'html-amplio';
+  const cuadrantes = bloques(modo);
   const pos = distribuir(
     puntos,
     radio,
     nombres,
-    conDescripciones ? cuadrantes.map((c) => c.caja) : []
+    enHtml ? cajasDescripcion(amplio) : modo === 'svg' ? cuadrantes.map((c) => c.caja) : []
+  );
+
+  /**
+   * Las descripciones se arman una vez y se usan en dos lugares: flotando
+   * sobre el gráfico en pantalla ancha, y debajo de él en el celular, donde
+   * adentro del lienzo no entraría texto legible. El CSS muestra una y esconde
+   * la otra.
+   */
+  const textos = (donde: 'flotante' | 'abajo') => (
+    <div
+      className={[
+        'mx-textos',
+        `mx-textos-${donde}`,
+        amplio ? 'mx-textos-amplio' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      {PERFILES.map((p) => (
+        <div className={`mx-texto mx-texto-${p}`} key={p}>
+          <h3>{INFO[p].nombre}</h3>
+          <p>{INFO[p].descripcion}</p>
+        </div>
+      ))}
+    </div>
   );
 
   return (
-    <div className="mx">
+    <div className={enHtml ? 'mx mx-con-desc' : 'mx'}>
       <div className="mx-eje mx-eje-top">
         <strong>{EJES.arriba.titulo}</strong>
         <span>{EJES.arriba.bajada}</span>
@@ -299,6 +368,7 @@ export default function MatrizBenziger({
           <span>{EJES.izquierda.bajada}</span>
         </div>
 
+        <div className="mx-lienzo">
       <svg
         viewBox={`0 0 ${ANCHO} ${ALTO}`}
         className={m.conIniciales ? 'mx-svg' : 'mx-svg mx-denso'}
@@ -321,7 +391,7 @@ export default function MatrizBenziger({
         <line x1={ANCHO / 2} y1="2" x2={ANCHO / 2} y2={ALTO - 2} className="mx-linea" />
         <line x1="2" y1={ALTO / 2} x2={ANCHO - 2} y2={ALTO / 2} className="mx-linea" />
 
-        {/* Cuadrantes: nombre y, si se pide, su descripción */}
+        {/* Nombre de cada cuadrante y, en el modo svg, su descripción */}
         {cuadrantes.map((c) => (
           <g key={c.perfil}>
             <text x={c.x} y={c.yTitulo} className="mx-cuadrante" textAnchor={c.anclaje}>
@@ -332,12 +402,7 @@ export default function MatrizBenziger({
               ))}
             </text>
             {c.lineas.length > 0 && (
-              <text
-                x={c.x}
-                y={c.yDesc}
-                className="mx-cuadrante-desc"
-                textAnchor={c.anclaje}
-              >
+              <text x={c.x} y={c.yDesc} className="mx-cuadrante-desc" textAnchor={c.anclaje}>
                 {c.lineas.map((linea, i) => (
                   <tspan key={i} x={c.x} dy={i === 0 ? 0 : ALTO_LINEA}>
                     {linea}
@@ -379,11 +444,18 @@ export default function MatrizBenziger({
         ))}
         </svg>
 
+          {enHtml && textos('flotante')}
+        </div>
+
         <div className="mx-eje mx-eje-der">
           <strong>{EJES.derecha.titulo}</strong>
           <span>{EJES.derecha.bajada}</span>
         </div>
       </div>
+
+      {/* Fuera del cuerpo, para que los ejes laterales sigan alineados con el
+          gráfico cuando los textos pasan abajo. */}
+      {enHtml && textos('abajo')}
 
       <div className="mx-eje mx-eje-bottom">
         <strong>{EJES.abajo.titulo}</strong>
