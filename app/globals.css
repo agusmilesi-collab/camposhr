@@ -235,7 +235,7 @@ body {
 .copiar.ok {
   color: var(--st-blue-2);
   border-color: var(--st-blue-2);
-  background: #eef3ee;
+  background: #eef2f8;
 }
 @media (max-width: 620px) {
   .acc-row {
@@ -2114,7 +2114,7 @@ body {
 .inf-link-ok {
   color: var(--st-blue-2);
   border-color: var(--st-blue-2);
-  background: #eef3ee;
+  background: #eef2f8;
 }
 .inf-sin-link {
   font-size: 0.74rem;
