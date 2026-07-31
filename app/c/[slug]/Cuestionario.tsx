@@ -195,11 +195,11 @@ export default function Cuestionario({
 
             <div className="cq-campos">
               <label className="cq-campo-doble">
-                <span>Apellido</span>
+                <span>Nombre</span>
                 <input
                   className="cq-input"
-                  value={apellido}
-                  onChange={(e) => setApellido(e.target.value)}
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && identidadCompleta) setPaso(2);
@@ -207,11 +207,11 @@ export default function Cuestionario({
                 />
               </label>
               <label className="cq-campo-doble">
-                <span>Nombre</span>
+                <span>Apellido</span>
                 <input
                   className="cq-input"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
+                  value={apellido}
+                  onChange={(e) => setApellido(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && identidadCompleta) setPaso(2);
                   }}
