@@ -751,56 +751,6 @@ body {
   margin-top: 22px;
 }
 
-/* ---------- Matriz explicativa de la portada ---------- */
-.mp {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 20px 18px 16px;
-}
-.mp-eje {
-  text-align: center;
-  line-height: 1.25;
-}
-.mp-eje strong {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1.05rem;
-  font-weight: 400;
-  display: block;
-}
-.mp-eje span {
-  font-size: 0.76rem;
-  color: var(--muted);
-}
-.mp-grilla {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin: 12px 0;
-}
-.mp-celda {
-  padding: 18px 16px;
-  text-align: center;
-}
-/* Las líneas interiores dibujan la cruz de la matriz. */
-.mp-celda:nth-child(odd) {
-  border-right: 1px dashed var(--line);
-}
-.mp-celda:nth-child(-n + 2) {
-  border-bottom: 1px dashed var(--line);
-}
-.mp-celda h3 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1.3rem;
-  font-weight: 400;
-  line-height: 1.15;
-  margin-bottom: 8px;
-}
-.mp-celda p {
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: var(--muted);
-}
-
 /* ---------- Matriz ---------- */
 .mx {
   background: var(--card);
@@ -846,9 +796,107 @@ body {
   font-size: 5.8px;
   fill: #b9b3a8;
 }
+/* Descripción dibujada dentro del lienzo. Sólo en la matriz de toda la
+   empresa, que se proyecta: ahí el gráfico es grande y este texto se lee. */
 .mx-cuadrante-desc {
   font-size: 2.2px;
   fill: #b9b3a8;
+}
+
+/* ---- Descripciones de cuadrante, en HTML sobre el lienzo ----
+   Van encima del gráfico y no dentro del SVG: el texto de un SVG escala con el
+   ancho, y en un celular quedaría en tres píxeles. */
+.mx-lienzo {
+  position: relative;
+  container-type: inline-size;
+}
+.mx-cuerpo .mx-lienzo {
+  flex: 1;
+  min-width: 0;
+}
+.mx-textos-flotante {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.mx-textos-abajo {
+  display: none;
+}
+.mx-texto {
+  position: absolute;
+  width: 32%;
+  color: #b9b3a8;
+}
+.mx-textos-amplio .mx-texto {
+  width: 43%;
+}
+.mx-texto h3 {
+  display: none;
+}
+.mx-texto p {
+  font-size: clamp(0.58rem, 1.75cqw, 0.82rem);
+  line-height: 1.4;
+}
+/* Con una sola persona el texto puede ocupar más y leerse más grande. */
+.mx-textos-amplio .mx-texto p {
+  font-size: clamp(0.62rem, 2.05cqw, 0.92rem);
+  line-height: 1.45;
+}
+/* Debajo del nombre del cuadrante, contra la esquina exterior. */
+.mx-texto-FI,
+.mx-texto-FD {
+  top: 21%;
+}
+.mx-texto-BI,
+.mx-texto-BD {
+  bottom: 23%;
+}
+.mx-texto-FI,
+.mx-texto-BI {
+  left: 3.2%;
+}
+.mx-texto-FD,
+.mx-texto-BD {
+  right: 3.2%;
+  text-align: right;
+}
+
+/* En pantalla angosta no entra texto legible adentro de un lienzo 16:9, así
+   que los cuatro bloques bajan debajo del gráfico, dentro del mismo marco. */
+@media (max-width: 660px) {
+  .mx-textos-flotante {
+    display: none;
+  }
+  /* Con las descripciones abajo, el nombre dibujado en el gráfico sobra. */
+  .mx-con-desc .mx-cuadrante {
+    display: none;
+  }
+  .mx-textos-abajo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 16px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .mx-textos-abajo .mx-texto {
+    position: static;
+    width: auto;
+    text-align: left;
+    color: var(--muted);
+  }
+  .mx-textos-abajo h3 {
+    display: block;
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    margin-bottom: 3px;
+  }
+  .mx-textos-abajo p {
+    font-size: 0.72rem;
+    line-height: 1.45;
+  }
 }
 .mx-sinfoto {
   fill: #ece9e2;
@@ -936,6 +984,10 @@ body {
 }
 .mx-caja:fullscreen .mx-full {
   opacity: 0.25;
+}
+/* Proyectada, las descripciones tienen que leerse desde el fondo de la sala. */
+.mx-caja:fullscreen .mx-texto p {
+  font-size: clamp(0.8rem, 1.9cqw, 1.25rem);
 }
 .mx-refresco {
   display: flex;
@@ -1458,22 +1510,6 @@ body {
   .cq-portada {
     grid-template-columns: 1fr;
     gap: 24px;
-  }
-  /* La matriz mantiene el 2x2 en el celular, con texto más compacto para que
-     las descripciones no queden en columnas de dos palabras. */
-  .mp {
-    padding: 16px 8px 12px;
-  }
-  .mp-celda {
-    padding: 14px 8px;
-  }
-  .mp-celda h3 {
-    font-size: 1.05rem;
-    margin-bottom: 6px;
-  }
-  .mp-celda p {
-    font-size: 0.72rem;
-    line-height: 1.45;
   }
   .cq-escala {
     gap: 7px;
@@ -2133,10 +2169,6 @@ body {
   align-items: center;
   gap: 10px;
 }
-.mx-cuerpo .mx-svg {
-  flex: 1;
-  min-width: 0;
-}
 /* Girados contra cada costado: no le roban ancho a la matriz. */
 .mx-eje-izq,
 .mx-eje-der {
@@ -2160,33 +2192,6 @@ body {
   .mx-eje-der span {
     font-size: 0.68rem;
   }
-}
-
-.mp-cuerpo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 12px 0;
-}
-.mp-cuerpo .mp-grilla {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-}
-.mp-eje-lado {
-  flex: none;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  line-height: 1.3;
-}
-.mp-eje-der {
-  transform: none;
-}
-.mp-eje-lado strong {
-  font-size: 0.95rem;
-}
-.mp-eje-lado span {
-  font-size: 0.7rem;
 }
 
 
@@ -2539,8 +2544,4 @@ body {
   .pb-dijo-grupo ul {
     columns: 1;
   }
-}
-
-.cq-resultado-mapa {
-  margin-top: 26px;
 }
