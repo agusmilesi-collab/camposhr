@@ -39,7 +39,7 @@ export default async function EquipoDelLider({
   // Dónde cae cada persona del equipo en la matriz.
   const puntos: Punto[] = equipo.map((r) => {
     const { x, y } = coordenadas(r.totales as unknown as Puntajes);
-    return { id: r.id, nombre: r.nombre, x, y };
+    return { id: r.id, nombre: nombreCompleto(r), x, y };
   });
 
   return (
