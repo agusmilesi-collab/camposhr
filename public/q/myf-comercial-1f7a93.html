@@ -2,7 +2,7 @@
 <!--
   Propuesta de trabajo · MyF Distribuciones
   Fuente de contenido: propuesta-myf.md (ese archivo manda; este es el formato de entrega).
-  Estética: camposhr.com (Instrument Serif + Inter, papel #f6f5f2, verde #40704f).
+  Estética: camposhr.com (Instrument Serif + Inter, papel #f6f5f2, verde #43648f).
 -->
 <html lang="es">
 <head>
@@ -17,7 +17,7 @@
   :root{
     --ink:#16202b; --ink-soft:#46505c; --muted:#7b7770;
     --paper:#f6f5f2; --card:#ffffff; --line:#e5e2db; --line-soft:#efede8;
-    --green:#40704f; --amber:#a97722; --blue:#43648f;
+    --azul:#43648f; --amber:#a97722; --blue:#43648f;
     --serif:'Instrument Serif',Georgia,serif;
     --sans:'Inter',system-ui,-apple-system,sans-serif;
   }
@@ -39,7 +39,7 @@
   .persona img{width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;margin-bottom:9px}
   .persona b{display:block;font-size:.95rem;font-weight:600;letter-spacing:-.01em}
   .persona .cred{display:block;font-size:.76rem;color:var(--muted);line-height:1.4;margin-top:2px}
-  .persona .rol{display:block;font-size:.78rem;color:var(--green);margin-top:2px}
+  .persona .rol{display:block;font-size:.78rem;color:var(--azul);margin-top:2px}
   .persona p{font-size:.83rem;line-height:1.5;margin:7px 0 0;color:var(--ink-soft)}
   .persona .li{display:inline-block;margin-top:7px;font-size:.78rem;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
   .persona .li:hover{color:var(--ink)}
@@ -48,7 +48,7 @@
   @media print{.equipo{grid-template-columns:repeat(3,1fr)}}
   .brand{font-family:var(--serif);font-size:1.4rem;letter-spacing:-.01em;
     color:var(--ink);text-decoration:none;display:inline-block}
-  .brand:hover span{color:var(--green)}
+  .brand:hover span{color:var(--azul)}
   .brand span{font-style:italic;color:var(--muted)}
   .top-meta{font-size:.78rem;color:var(--muted);letter-spacing:.02em}
 
@@ -69,8 +69,8 @@
 
   /* 1 · etiqueta de sección: sans, versalita, verde. Nunca compite con el serif */
   .kick{font-family:var(--sans);font-size:.72rem;font-weight:600;letter-spacing:.2em;
-    text-transform:uppercase;color:var(--green);margin:0;line-height:1}
-  .kick::after{content:"";display:block;width:28px;height:2px;background:var(--green);
+    text-transform:uppercase;color:var(--azul);margin:0;line-height:1}
+  .kick::after{content:"";display:block;width:28px;height:2px;background:var(--azul);
     opacity:.45;margin:12px 0 26px}
 
   /* 2 · tesis: único elemento de despliegue del documento */
@@ -104,7 +104,7 @@
   ol.preguntas{counter-reset:q;list-style:none;padding:0;margin:14px 0 0}
   ol.preguntas li{counter-increment:q;position:relative;padding-left:36px;margin-bottom:12px;color:var(--ink-soft)}
   ol.preguntas li::before{content:counter(q);position:absolute;left:0;top:2px;width:22px;height:22px;
-    border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--green);
+    border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--azul);
     font-size:.72rem;display:flex;align-items:center;justify-content:center;font-weight:600}
 
   .precio{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px 26px;
@@ -112,9 +112,9 @@
   .precio .n{font-family:var(--serif);font-size:2.4rem;line-height:1;color:var(--ink)}
   .precio .d{font-size:.86rem;color:var(--ink-soft)}
   .precio .d b{display:block;font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--green);font-weight:600;margin-bottom:4px}
+    color:var(--azul);font-weight:600;margin-bottom:4px}
   .nota{font-size:.84rem;color:var(--muted);margin-top:10px}
-  sup{font-size:.7em;color:var(--green)}
+  sup{font-size:.7em;color:var(--azul)}
   .nota-fila{display:block;margin-top:7px;font-size:.82rem;color:var(--muted);line-height:1.5}
 
   .cierre{background:var(--ink);color:#e7e9ec;border-radius:12px;padding:26px 30px;margin-top:24px}
@@ -123,8 +123,8 @@
   .cierre b{color:#fff;font-weight:500}
 
   .pie{padding:30px 0 60px;font-size:.78rem;color:var(--muted)}
-  .pie a{color:var(--green);text-decoration:none;border-bottom:1px solid rgba(64,112,79,.3);padding-bottom:1px}
-  .pie a:hover{border-bottom-color:var(--green)}
+  .pie a{color:var(--azul);text-decoration:none;border-bottom:1px solid rgba(64,112,79,.3);padding-bottom:1px}
+  .pie a:hover{border-bottom-color:var(--azul)}
 
   @media print{body{background:#fff} .top{border-bottom:1px solid var(--line)} section{page-break-inside:avoid}}
   @media (max-width:720px){.wrap{padding:0 22px} .top-inner{padding:20px 22px} .precio .n{font-size:1.9rem} td:first-child{width:auto}}
