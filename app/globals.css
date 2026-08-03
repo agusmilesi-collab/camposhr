@@ -2546,3 +2546,138 @@ body {
     columns: 1;
   }
 }
+
+/* ---------- Presentaciones ---------- */
+/* Comparte la lógica de grilla de las cotizaciones: cada fila es
+   `display: contents`, así el encabezado y los datos usan las mismas pistas. */
+
+.pres-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.presentaciones {
+  padding-bottom: 24px;
+}
+
+.pres-ciclo + .pres-ciclo {
+  margin-top: 30px;
+}
+.pres-ciclo-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.pres-ciclo-titulo h2 {
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.pres-ciclo-titulo em {
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.pres-tabla {
+  display: grid;
+  grid-template-columns:
+    max-content minmax(14rem, 1fr) max-content max-content max-content max-content;
+  align-items: center;
+  overflow: hidden;
+}
+.pres-row {
+  display: contents;
+}
+.pres-row > * {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 13px 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+/* El encuentro lleva título, bajada y a veces una nota: fluye desde arriba. */
+.pres-row > .pres-encuentro {
+  display: block;
+  padding-top: 12px;
+}
+.pres-encuentro b {
+  display: block;
+  font-weight: 500;
+  color: var(--ink);
+}
+.pres-encuentro em {
+  display: block;
+  margin-top: 2px;
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.pres-encuentro .pres-nota {
+  margin-top: 4px;
+  font-size: 0.73rem;
+}
+.pres-row > .pres-num {
+  justify-content: flex-end;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.pres-accion {
+  justify-content: flex-end;
+}
+.pres-accion .copiar {
+  background: var(--card);
+  font-size: 0.75rem;
+  padding: 5px 11px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+.pres-accion .copiar:hover {
+  border-color: var(--muted);
+}
+.pres-row > *:first-child {
+  padding-left: 20px;
+}
+.pres-row > *:last-child {
+  padding-right: 20px;
+}
+.pres-row:last-child > * {
+  border-bottom: none;
+}
+.pres-row.pres-th > * {
+  padding-top: 7px;
+  padding-bottom: 7px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: #ece9e2;
+}
+
+@media (max-width: 860px) {
+  .pres-resumen {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pres-tabla {
+    grid-template-columns: 1fr;
+  }
+  .pres-row > * {
+    padding-left: 20px;
+    padding-right: 20px;
+    border-bottom: none;
+  }
+  .pres-row {
+    display: block;
+    border-bottom: 1px solid var(--line-soft);
+    padding: 8px 0;
+  }
+  .pres-th {
+    display: none;
+  }
+}
