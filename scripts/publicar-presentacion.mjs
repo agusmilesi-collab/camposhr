@@ -13,6 +13,13 @@
  * lo que permite descargarlo y darlo en una planta con mala conexión.
  *
  * Es idempotente: publicar dos veces el mismo token pisa el archivo anterior.
+ *
+ * SOLO SE PUBLICA LA VERSIÓN FINAL, la que se va a dar. Cada archivo pesa más
+ * de 1 MB y git guarda todas las versiones para siempre, así que publicar cada
+ * corrección infla el repositorio con material que nadie va a volver a mirar.
+ * Las vueltas intermedias se trabajan fuera del repositorio y acá entra la
+ * definitiva. Si un día esto se vuelve recurrente, el paso siguiente es guardar
+ * los archivos en Supabase en vez de en el repositorio.
  */
 
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';

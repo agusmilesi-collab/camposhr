@@ -119,6 +119,8 @@ export default function Presentaciones() {
         </code>
         , sumar la fila en <code>data/presentaciones.json</code> y publicar. El
         script la deja sin rastro para los buscadores y sin tocar el contenido.
+        Se publica la versión final, la que se va a dar: cada archivo pesa más de
+        1 MB y el repositorio guarda todas las versiones para siempre.
       </p>
     </main>
   );
