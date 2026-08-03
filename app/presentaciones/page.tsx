@@ -12,7 +12,6 @@ const BASE = 'https://tools.camposhr.com/pres';
 export default function Presentaciones() {
   const todas = listarPresentaciones();
   const ciclos = porCiclo(todas);
-  const placas = todas.reduce((a, p) => a + p.placas, 0);
 
   return (
     <main className="wrap wrap-ancho">
@@ -32,21 +31,6 @@ export default function Presentaciones() {
           la tecla F la pone en pantalla completa y la N abre las notas del
           orador en una ventana aparte, para la pantalla de la notebook.
         </p>
-      </section>
-
-      <section className="pres-resumen">
-        <div className="cot-dato">
-          <b>{todas.length}</b>
-          <span>presentaciones</span>
-        </div>
-        <div className="cot-dato">
-          <b>{ciclos.length}</b>
-          <span>ciclos</span>
-        </div>
-        <div className="cot-dato">
-          <b>{placas}</b>
-          <span>placas en total</span>
-        </div>
       </section>
 
       <section className="presentaciones">

@@ -2551,12 +2551,6 @@ body {
 /* Comparte la lógica de grilla de las cotizaciones: cada fila es
    `display: contents`, así el encabezado y los datos usan las mismas pistas. */
 
-.pres-resumen {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 22px;
-}
 
 .presentaciones {
   padding-bottom: 24px;
@@ -2661,9 +2655,6 @@ body {
 }
 
 @media (max-width: 860px) {
-  .pres-resumen {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .pres-tabla {
     grid-template-columns: 1fr;
   }
