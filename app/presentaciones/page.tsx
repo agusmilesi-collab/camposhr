@@ -1,15 +1,11 @@
-import {
-  listarPresentaciones,
-  porCiclo,
-  formatoFecha,
-} from '@/lib/presentaciones';
+import { listarPresentaciones, formatoFecha } from '@/lib/presentaciones';
+
 export const dynamic = 'force-dynamic';
 
 const BASE = 'https://tools.camposhr.com/pres';
 
 export default function Presentaciones() {
   const todas = listarPresentaciones();
-  const ciclos = porCiclo(todas);
 
   return (
     <main className="wrap wrap-ancho">
@@ -35,59 +31,63 @@ export default function Presentaciones() {
         {todas.length === 0 ? (
           <p className="empty">Todavía no hay presentaciones cargadas.</p>
         ) : (
-          ciclos.map((g) => (
-            <div className="pres-ciclo" key={`${g.ciclo}-${g.cliente}`}>
-              <div className="pres-ciclo-titulo">
-                <h2>{g.ciclo}</h2>
-                <em>{g.cliente}</em>
-              </div>
-
-              <div className="card pres-tabla">
-                <div className="pres-row pres-th">
-                  <span>Fecha</span>
-                  <span>Encuentro</span>
-                  <span className="pres-num">Placas</span>
-                  <span />
-                  <span />
-                </div>
-
-                {g.encuentros.map((p) => {
-                  const url = `${BASE}/${p.token}`;
-                  return (
-                    <div className="pres-row" key={p.token}>
-                      <span className="cot-fecha">{formatoFecha(p.fecha)}</span>
-                      <span className="pres-encuentro">
-                        <b>
-                          {p.orden}. {p.titulo}
-                        </b>
-                        <em>{p.subtitulo}</em>
-                      </span>
-                      <span className="pres-num">{p.placas}</span>
-                      <span className="pres-accion">
-                        <a
-                          className="copiar pres-ver"
-                          href={url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Ver presentación
-                        </a>
-                      </span>
-                      <span className="pres-accion">
-                        <a
-                          className="copiar"
-                          href={`/pres/${p.archivo}`}
-                          download
-                        >
-                          Descargar
-                        </a>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+          <div className="card pres-tabla">
+            <div className="pres-row pres-th">
+              <span>Fecha</span>
+              <span>Cliente</span>
+              <span>Ciclo</span>
+              <span>Charla</span>
+              <span className="pres-num">Placas</span>
+              <span />
+              <span />
             </div>
-          ))
+
+            {todas.map((p) => (
+              <div className="pres-row" key={`${p.cliente}-${p.orden}`}>
+                <span className="cot-fecha">{formatoFecha(p.fecha)}</span>
+                <span>
+                  <em className="chip chip-cliente">{p.cliente}</em>
+                </span>
+                <span>
+                  <em className="chip chip-ciclo">{p.ciclo}</em>
+                </span>
+                <span className="pres-charla">
+                  <b>
+                    {p.orden}. {p.titulo}
+                  </b>
+                  <em>{p.subtitulo}</em>
+                </span>
+                <span className="pres-num">{p.placas}</span>
+
+                {p.token ? (
+                  <>
+                    <span className="pres-accion">
+                      <a
+                        className="copiar pres-ver"
+                        href={`${BASE}/${p.token}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Ver presentación
+                      </a>
+                    </span>
+                    <span className="pres-accion">
+                      <a className="copiar" href={`/pres/${p.archivo}`} download>
+                        Descargar
+                      </a>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="pres-accion">
+                      <em className="pres-pendiente">Sin publicar</em>
+                    </span>
+                    <span />
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </section>
 
@@ -96,7 +96,7 @@ export default function Presentaciones() {
         <code>
           node scripts/publicar-presentacion.mjs &lt;html&gt; &lt;token&gt;
         </code>
-        , sumar la fila en <code>data/presentaciones.json</code> y publicar. El
+        , cargar el token en <code>data/presentaciones.json</code> y publicar. El
         script la deja sin rastro para los buscadores y sin tocar el contenido.
         Se publica la versión final, la que se va a dar: cada archivo pesa más de
         1 MB y el repositorio guarda todas las versiones para siempre.

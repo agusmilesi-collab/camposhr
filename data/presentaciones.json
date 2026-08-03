@@ -1,13 +1,57 @@
 [
   {
     "token": "pla-mindfulness-a37f21",
+    "cliente": "Pla",
     "ciclo": "Liderazgos Humanos",
-    "cliente": "PLA / John Deere",
     "titulo": "Mindfulness",
     "subtitulo": "Tengo la cabeza a mil",
     "placas": 18,
     "fecha": "2026-08-07",
     "orden": 1,
     "archivo": "pla-mindfulness-a37f21.html"
+  },
+  {
+    "token": null,
+    "cliente": "Pla",
+    "ciclo": "Liderazgos Humanos",
+    "titulo": "Registro de Emociones",
+    "subtitulo": "Cuando algo me está afectando",
+    "placas": 14,
+    "fecha": "2026-08-07",
+    "orden": 2,
+    "archivo": null
+  },
+  {
+    "token": null,
+    "cliente": "Pla",
+    "ciclo": "Liderazgos Humanos",
+    "titulo": "Registro de Habilidades",
+    "subtitulo": "Quiero conocerme mejor",
+    "placas": 17,
+    "fecha": "2026-08-07",
+    "orden": 3,
+    "archivo": null
+  },
+  {
+    "token": null,
+    "cliente": "Pla",
+    "ciclo": "Liderazgos Humanos",
+    "titulo": "Comunicar Malas Noticias",
+    "subtitulo": "Mañana tengo una conversación difícil",
+    "placas": 12,
+    "fecha": "2026-08-11",
+    "orden": 4,
+    "archivo": null
+  },
+  {
+    "token": null,
+    "cliente": "Pla",
+    "ciclo": "Liderazgos Humanos",
+    "titulo": "Resolver Conflictos",
+    "subtitulo": "Hay tensión en mi equipo",
+    "placas": 20,
+    "fecha": "2026-08-11",
+    "orden": 5,
+    "archivo": null
   }
 ]

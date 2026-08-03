@@ -2556,31 +2556,11 @@ body {
   padding-bottom: 24px;
 }
 
-.pres-ciclo + .pres-ciclo {
-  margin-top: 30px;
-}
-.pres-ciclo-titulo {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.pres-ciclo-titulo h2 {
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-}
-.pres-ciclo-titulo em {
-  font-style: normal;
-  font-size: 0.78rem;
-  color: var(--muted);
-}
 
 .pres-tabla {
   display: grid;
   grid-template-columns:
-    max-content minmax(14rem, 1fr) max-content max-content max-content;
+    max-content max-content max-content minmax(16rem, 1fr) max-content max-content max-content;
   align-items: center;
   overflow: hidden;
 }
@@ -2594,22 +2574,47 @@ body {
   padding: 13px 8px;
   border-bottom: 1px solid var(--line-soft);
 }
-/* El encuentro lleva título, bajada y a veces una nota: fluye desde arriba. */
-.pres-row > .pres-encuentro {
-  display: block;
-  padding-top: 12px;
+/* Título y bajada de la charla, en el mismo renglón. */
+.pres-charla {
+  gap: 9px;
+  flex-wrap: wrap;
 }
-.pres-encuentro b {
-  display: block;
+.pres-charla b {
   font-weight: 500;
   color: var(--ink);
 }
-.pres-encuentro em {
-  display: block;
-  margin-top: 2px;
+.pres-charla em {
+  font-style: normal;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* Cada dato tiene su color, para leer la fila de un vistazo. */
+.chip {
   font-style: normal;
   font-size: 0.78rem;
+  line-height: 1;
+  padding: 5px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.chip-cliente {
+  color: #3c5a7d;
+  background: rgba(67, 100, 143, 0.13);
+}
+.chip-ciclo {
+  color: #7a5a2c;
+  background: rgba(176, 132, 66, 0.15);
+}
+
+.pres-pendiente {
+  font-style: normal;
+  font-size: 0.75rem;
   color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  padding: 5px 11px;
+  white-space: nowrap;
 }
 .pres-row > .pres-num {
   justify-content: flex-end;
