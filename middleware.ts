@@ -8,7 +8,9 @@ import type { NextRequest } from 'next/server';
  *     /<token>  se reescribe a /p/<token> (URL limpia); nada más existe acá.
  *
  *  tools.camposhr.com     -> hub interno (equipo): landing de herramientas,
- *     tests Rorschach/Zulliger e /informes (accesos de clientes).
+ *     tests Rorschach/Zulliger e /informes (accesos de clientes). Acá viven
+ *     también las presentaciones de los encuentros: /pres/<token> sirve el
+ *     archivo de la charla.
  *
  *  camposhr.com (y www)   -> site comercial.
  *     La raíz muestra la home; las herramientas viejas y los enlaces de portal
@@ -24,11 +26,16 @@ const TOOLS_V2_HOST = 'toolsversion2.camposhr.com';
 
 const TOKEN = /^\/([A-Za-z0-9_-]+)\/?$/;
 const TOKEN_EN_P = /^\/p\/([A-Za-z0-9_-]+)\/?$/;
-const RUTAS_TOOLS = /^\/(test-rorschach|test-zulliger|informes|cuestionario|cotizaciones)(\/|$)/;
+const RUTAS_TOOLS = /^\/(test-rorschach|test-zulliger|informes|cuestionario|cotizaciones|presentaciones|pres)(\/|$)/;
 
 // Cotización enviada a un cliente: /q/<token> -> el documento estático que vive
 // en public/q/<token>.html. El token es secreto y la página lleva noindex.
 const COTIZACION = /^\/q\/([A-Za-z0-9_-]{6,128})\/?$/;
+
+// Presentación de un encuentro: /pres/<token> -> el archivo estático que vive
+// en public/pres/<token>.html. Mismo criterio que las cotizaciones: el token es
+// secreto y la presentación lleva noindex.
+const PRESENTACION = /^\/pres\/([A-Za-z0-9_-]{6,128})\/?$/;
 
 // El cuestionario se responde desde el host principal: /c/<empresa>, más su
 // endpoint de guardado. Son las únicas rutas públicas de la app.
@@ -51,6 +58,12 @@ export function middleware(req: NextRequest) {
     if (q) {
       const dest = url.clone();
       dest.pathname = `/q/${q[1]}.html`;
+      return NextResponse.rewrite(dest);
+    }
+    const pr = pathname.match(PRESENTACION);
+    if (pr) {
+      const dest = url.clone();
+      dest.pathname = `/pres/${pr[1]}.html`;
       return NextResponse.rewrite(dest);
     }
     return NextResponse.next();
@@ -86,6 +99,12 @@ export function middleware(req: NextRequest) {
     if (pathname === '/') {
       const dest = url.clone();
       dest.pathname = '/index.html';
+      return NextResponse.rewrite(dest);
+    }
+    const pr = pathname.match(PRESENTACION);
+    if (pr) {
+      const dest = url.clone();
+      dest.pathname = `/pres/${pr[1]}.html`;
       return NextResponse.rewrite(dest);
     }
     return NextResponse.next();
