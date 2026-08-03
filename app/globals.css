@@ -2580,7 +2580,7 @@ body {
 .pres-tabla {
   display: grid;
   grid-template-columns:
-    max-content minmax(14rem, 1fr) max-content max-content max-content max-content;
+    max-content minmax(14rem, 1fr) max-content max-content max-content;
   align-items: center;
   overflow: hidden;
 }
@@ -2611,10 +2611,6 @@ body {
   font-size: 0.78rem;
   color: var(--muted);
 }
-.pres-encuentro .pres-nota {
-  margin-top: 4px;
-  font-size: 0.73rem;
-}
 .pres-row > .pres-num {
   justify-content: flex-end;
   font-variant-numeric: tabular-nums;
@@ -2633,6 +2629,16 @@ body {
 }
 .pres-accion .copiar:hover {
   border-color: var(--muted);
+}
+/* Ver es la acción principal de la fila: se distingue del resto. */
+.pres-accion .pres-ver {
+  background: var(--ink);
+  color: #f7f5f0;
+  border-color: var(--ink);
+}
+.pres-accion .pres-ver:hover {
+  background: #000;
+  border-color: #000;
 }
 .pres-row > *:first-child {
   padding-left: 20px;
