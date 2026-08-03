@@ -12,6 +12,10 @@
  * importa acá, porque los encuentros son presenciales y la conexión del lugar
  * no es nuestra.
  *
+ * Una charla puede figurar en el listado antes de estar publicada: se carga la
+ * fila con `token` en null y aparece sin botones. Sirve para ver el ciclo
+ * completo mientras las charlas todavía se están armando.
+ *
  * El enlace es secreto, igual que en cotizaciones: quien tiene el token ve la
  * presentación, así que el token lleva una parte al azar.
  */
@@ -20,7 +24,8 @@ import 'server-only';
 import indice from '@/data/presentaciones.json';
 
 export type Presentacion = {
-  token: string;
+  /** Null mientras la charla no está publicada. */
+  token: string | null;
   ciclo: string;
   cliente: string;
   titulo: string;
@@ -31,37 +36,21 @@ export type Presentacion = {
   fecha: string;
   /** Orden dentro del ciclo, empezando en 1. */
   orden: number;
-  archivo: string;
+  archivo: string | null;
 };
 
 const TOKEN_VALIDO = /^[A-Za-z0-9_-]{6,128}$/;
 
-/** Todas las presentaciones, agrupables por ciclo y ordenadas por fecha. */
+/** Todas las presentaciones, en el orden en que se dictan. */
 export function listarPresentaciones(): Presentacion[] {
   return (indice as Presentacion[])
-    .filter((p) => TOKEN_VALIDO.test(p.token))
+    .filter((p) => p.token === null || TOKEN_VALIDO.test(p.token))
     .slice()
     .sort((a, b) => {
       const porFecha = (a.fecha ?? '').localeCompare(b.fecha ?? '');
       if (porFecha !== 0) return porFecha;
       return a.orden - b.orden;
     });
-}
-
-/** Las presentaciones agrupadas por ciclo, respetando el orden de arriba. */
-export function porCiclo(
-  todas: Presentacion[]
-): { ciclo: string; cliente: string; encuentros: Presentacion[] }[] {
-  const grupos: Record<string, Presentacion[]> = {};
-  for (const p of todas) {
-    const clave = `${p.ciclo} · ${p.cliente}`;
-    (grupos[clave] ??= []).push(p);
-  }
-  return Object.values(grupos).map((encuentros) => ({
-    ciclo: encuentros[0].ciclo,
-    cliente: encuentros[0].cliente,
-    encuentros,
-  }));
 }
 
 /** Fecha ISO a formato corto local: "2026-08-07" -> "07/08/2026". */
