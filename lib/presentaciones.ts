@@ -32,7 +32,6 @@ export type Presentacion = {
   /** Orden dentro del ciclo, empezando en 1. */
   orden: number;
   archivo: string;
-  nota?: string | null;
 };
 
 const TOKEN_VALIDO = /^[A-Za-z0-9_-]{6,128}$/;

@@ -3,8 +3,6 @@ import {
   porCiclo,
   formatoFecha,
 } from '@/lib/presentaciones';
-import CopyLink from '../informes/CopyLink';
-
 export const dynamic = 'force-dynamic';
 
 const BASE = 'https://tools.camposhr.com/pres';
@@ -49,7 +47,6 @@ export default function Presentaciones() {
                   <span>Fecha</span>
                   <span>Encuentro</span>
                   <span className="pres-num">Placas</span>
-                  <span>Enlace</span>
                   <span />
                   <span />
                 </div>
@@ -64,17 +61,18 @@ export default function Presentaciones() {
                           {p.orden}. {p.titulo}
                         </b>
                         <em>{p.subtitulo}</em>
-                        {p.nota && <em className="pres-nota">{p.nota}</em>}
                       </span>
                       <span className="pres-num">{p.placas}</span>
-                      <a
-                        className="acc-url"
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        /pres/{p.token}
-                      </a>
+                      <span className="pres-accion">
+                        <a
+                          className="copiar pres-ver"
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Ver presentación
+                        </a>
+                      </span>
                       <span className="pres-accion">
                         <a
                           className="copiar"
@@ -83,9 +81,6 @@ export default function Presentaciones() {
                         >
                           Descargar
                         </a>
-                      </span>
-                      <span className="pres-accion">
-                        <CopyLink url={url} />
                       </span>
                     </div>
                   );
