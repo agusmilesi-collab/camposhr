@@ -47,8 +47,13 @@ const rutaDestino = resolve(process.cwd(), 'public', 'pres', `${tokenArg}.html`)
 let html = await readFile(rutaOrigen, 'utf8');
 
 // Aviso, no error: una presentación que depende de la red deja de servir en el
-// lugar donde más se necesita. Si aparece, hay que volver a empaquetarla.
-if (/<(?:link|script|img)[^>]+(?:src|href)=["']https?:\/\//i.test(html)) {
+// lugar donde más se necesita. Si aparece, hay que revisar que sea a propósito.
+// Se mira también data-src, que es como el deck difiere la carga de la matriz
+// del equipo: esa placa sale a buscar los datos en vivo y no puede viajar
+// adentro del archivo.
+if (
+  /<(?:link|script|img|iframe)[^>]+(?:data-src|src|href)=["']https?:\/\//i.test(html)
+) {
   console.warn(
     'AVISO: el archivo pide recursos por internet. Si la sala no tiene conexión, no va a verse completo.'
   );
