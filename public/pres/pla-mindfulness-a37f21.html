@@ -133,8 +133,10 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
    emociones. Sobre fondo oscuro esas imágenes pierden legibilidad. */
 .placa.clara{background:#f3f2eb}
 .placa.clara .folio{background:#111;color:#f3f2eb}
-/* El logo es amarillo sobre crema: sobre fondo claro no se lee, así que sale. */
-.placa.clara .logo{display:none}
+/* El logo es amarillo y sobre crema no se lee, así que en la placa clara va
+   sobre una pastilla oscura, el mismo recurso que usa el folio. */
+.placa.clara .logo{width:128px;padding:16px;background:#111;border-radius:16px;
+  filter:none;box-shadow:0 2px 9px rgba(0,0,0,.3)}
 .rueda{height:1000px;width:auto;display:block;margin:0 auto}
 .cerebros{width:1420px;display:block;margin:0 auto 30px}
 .cerebros-pie{display:flex;gap:60px;justify-content:center;width:1360px;margin:0 auto}
