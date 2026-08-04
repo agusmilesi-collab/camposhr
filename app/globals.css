@@ -990,6 +990,86 @@ body {
 .mx-caja:fullscreen .mx-texto p {
   font-size: clamp(0.8rem, 1.9cqw, 1.25rem);
 }
+/* ---------- Modo placa (embebida en la presentación del taller) ----------
+   La matriz viaja adentro de una diapositiva, sobre la foto de fondo del deck.
+   Fondo transparente y la misma paleta crema, para que no se note el marco. */
+.mx-placa {
+  --placa-tinta: #f3f2eb;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5vh 1.5vw;
+  background: transparent;
+  font-family: 'Raleway', 'Inter', system-ui, sans-serif;
+}
+/* El ancho lo manda el alto disponible: el lienzo es 16:9 y arriba y abajo van
+   los nombres de los ejes. Sin este tope, la matriz se sale del marco. */
+.mx-placa .mx {
+  width: 100%;
+  max-width: calc((97vh - 150px) * 1.78);
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+.mx-placa .mx-eje strong {
+  font-family: 'Calistoga', Georgia, serif;
+  font-size: clamp(1.2rem, 3.4vh, 2.4rem);
+  color: var(--placa-tinta);
+}
+.mx-placa .mx-eje span {
+  font-size: clamp(0.8rem, 2vh, 1.4rem);
+  color: rgba(243, 242, 235, 0.66);
+}
+/* Apenas un velo: separa el lienzo de la foto de fondo sin dibujar un recuadro. */
+.mx-placa .mx-fondo {
+  fill: rgba(0, 0, 0, 0.14);
+}
+.mx-placa .mx-linea {
+  stroke: rgba(243, 242, 235, 0.5);
+  stroke-width: 0.35;
+}
+.mx-placa .mx-cuadrante {
+  font-family: 'Calistoga', Georgia, serif;
+  fill: var(--placa-tinta);
+  opacity: 0.94;
+}
+.mx-placa .mx-cuadrante-desc {
+  fill: rgba(243, 242, 235, 0.72);
+}
+.mx-placa .mx-texto {
+  color: rgba(243, 242, 235, 0.75);
+}
+.mx-placa .mx-texto p {
+  font-size: clamp(0.72rem, 1.85cqw, 1.2rem);
+}
+/* El aro separa la cara del fondo oscuro, así que va en claro. */
+.mx-placa .mx-aro {
+  stroke: rgba(243, 242, 235, 0.85);
+}
+.mx-placa .mx-sinfoto {
+  fill: rgba(243, 242, 235, 0.9);
+}
+.mx-placa .mx-denso .mx-sinfoto {
+  fill: rgba(243, 242, 235, 0.62);
+}
+.mx-placa .mx-iniciales {
+  fill: #16202b;
+}
+.mx-placa .mx-nombre {
+  fill: var(--placa-tinta);
+}
+/* Cuánta gente respondió, para seguir el avance sin salir de la placa. Va
+   arriba a la izquierda: abajo a la derecha está el logo de la placa. */
+.mx-placa-pie {
+  position: fixed;
+  left: 1.6vw;
+  top: 0.8vh;
+  font-size: clamp(0.72rem, 1.6vh, 1.1rem);
+  letter-spacing: 0.03em;
+  color: rgba(243, 242, 235, 0.5);
+}
 .mx-refresco {
   display: flex;
   align-items: center;

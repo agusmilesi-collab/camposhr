@@ -25,11 +25,18 @@ export const metadata = {
 
 export default async function MatrizEmpresa({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { placa?: string };
 }) {
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
+
+  // Modo placa: la matriz va embebida dentro de una diapositiva del taller, así
+  // la expositora la ve armarse sin salir de la presentación. Se muestra sola,
+  // sobre fondo transparente y con los colores de la placa.
+  const enPlaca = searchParams?.placa === '1';
 
   // La matriz es la pantalla del taller: muestra el cuestionario de perfil.
   // Lo que responde el de liderazgo alimenta los informes, no esta vista.
@@ -59,6 +66,27 @@ export default async function MatrizEmpresa({
     if (principal && porCuadrante.has(principal)) {
       porCuadrante.get(principal)!.push(nombreCompleto(r));
     }
+  }
+
+  if (enPlaca) {
+    return (
+      <main className="mx-placa">
+        {/* El fondo de la placa se ve a través del marco. */}
+        <style dangerouslySetInnerHTML={{ __html: 'body{background:transparent}' }} />
+        {/* Sin las descripciones de cuadrante: para cuando se proyecta esta
+            placa el grupo ya recorrió los cuatro modos uno por uno, y el texto
+            le sacaría lugar a la gente, que es lo que se viene a mirar. */}
+        <MatrizBenziger puntos={puntos} />
+        <p className="mx-placa-pie">
+          {respuestas.length === 0
+            ? 'Se arma sola a medida que responden.'
+            : `${respuestas.length} ${
+                respuestas.length === 1 ? 'respuesta' : 'respuestas'
+              }`}
+        </p>
+        <AutoRefresco segundos={10} oculto />
+      </main>
+    );
   }
 
   return (

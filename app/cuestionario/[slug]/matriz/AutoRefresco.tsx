@@ -4,7 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 /** Refresca la matriz mientras el grupo va respondiendo. */
-export default function AutoRefresco({ segundos = 15 }: { segundos?: number }) {
+export default function AutoRefresco({
+  segundos = 15,
+  /** Refresca sin mostrar los controles: la matriz embebida en una placa. */
+  oculto = false,
+}: {
+  segundos?: number;
+  oculto?: boolean;
+}) {
   const router = useRouter();
   const [activo, setActivo] = useState(true);
 
@@ -13,6 +20,8 @@ export default function AutoRefresco({ segundos = 15 }: { segundos?: number }) {
     const id = setInterval(() => router.refresh(), segundos * 1000);
     return () => clearInterval(id);
   }, [activo, segundos, router]);
+
+  if (oculto) return null;
 
   return (
     <div className="mx-refresco no-print">

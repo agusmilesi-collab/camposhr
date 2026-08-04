@@ -5,24 +5,24 @@
     "ciclo": "Liderazgos Humanos",
     "titulo": "Mindfulness",
     "subtitulo": "Tengo la cabeza a mil",
-    "placas": 20,
+    "placas": 15,
     "fecha": "2026-08-07",
     "orden": 1,
     "archivo": "pla-mindfulness-a37f21.html"
   },
   {
-    "token": null,
+    "token": "pla-emociones-25442e",
     "cliente": "Pla",
     "ciclo": "Liderazgos Humanos",
     "titulo": "Registro de Emociones",
     "subtitulo": "Cuando algo me está afectando",
-    "placas": 15,
+    "placas": 21,
     "fecha": "2026-08-07",
     "orden": 2,
-    "archivo": null
+    "archivo": "pla-emociones-25442e.html"
   },
   {
-    "token": null,
+    "token": "pla-habilidades-cb8577",
     "cliente": "Pla",
     "ciclo": "Liderazgos Humanos",
     "titulo": "Registro de Habilidades",
@@ -30,10 +30,10 @@
     "placas": 19,
     "fecha": "2026-08-07",
     "orden": 3,
-    "archivo": null
+    "archivo": "pla-habilidades-cb8577.html"
   },
   {
-    "token": null,
+    "token": "pla-malas-noticias-ffa3d5",
     "cliente": "Pla",
     "ciclo": "Liderazgos Humanos",
     "titulo": "Comunicar Malas Noticias",
@@ -41,10 +41,10 @@
     "placas": 13,
     "fecha": "2026-08-11",
     "orden": 4,
-    "archivo": null
+    "archivo": "pla-malas-noticias-ffa3d5.html"
   },
   {
-    "token": null,
+    "token": "pla-conflictos-2f4e9a",
     "cliente": "Pla",
     "ciclo": "Liderazgos Humanos",
     "titulo": "Resolver Conflictos",
@@ -52,6 +52,6 @@
     "placas": 22,
     "fecha": "2026-08-11",
     "orden": 5,
-    "archivo": null
+    "archivo": "pla-conflictos-2f4e9a.html"
   }
 ]
