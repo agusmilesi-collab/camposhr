@@ -261,9 +261,8 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
   <section class="placa" data-notas="Primera charla del segundo día. Enganchar con lo del viernes: ¿se acuerdan de la rueda de emociones? Hoy la vamos a necesitar más que nunca. Avisar que la traigan.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <div class="kicker">Ciclo Liderazgos Humanos</div>
-      <div class="portada-nombre" style="font-size:92px">Comunicar Malas Noticias</div>
-      <div class="portada-sub">Mañana tengo una conversación difícil</div>
+      <div class="portada-nombre" style="font-size:128px">Mañana tengo una conversación difícil</div>
+      <div class="portada-sub">Comunicar Malas Noticias</div>
     </div>
   </section>
 
@@ -425,6 +424,8 @@ placas.forEach((p, i) => {
   if (p.classList.contains('sin-marca')) return;
   const img = document.createElement('img');
   img.className = 'logo'; img.src = logo; p.appendChild(img);
+  // La portada no lleva numero: abre la charla, no es una placa mas.
+  if (i === 0) return;
   const f = document.createElement('div');
   f.className = 'folio'; f.textContent = i + 1; p.appendChild(f);
 });

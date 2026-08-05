@@ -261,9 +261,8 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
   <section class="placa" data-notas="Última charla del ciclo. Enganchar con la anterior: recién hablamos de dar una noticia difícil, ahora vamos a algo más silencioso, lo que no se dice.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <div class="kicker">Ciclo Liderazgos Humanos</div>
-      <div class="portada-nombre" style="font-size:120px">Resolver Conflictos</div>
-      <div class="portada-sub">Hay tensión en mi equipo</div>
+      <div class="portada-nombre" style="font-size:128px">Hay tensión en mi equipo</div>
+      <div class="portada-sub">Resolver Conflictos</div>
     </div>
   </section>
 
@@ -515,6 +514,8 @@ placas.forEach((p, i) => {
   if (p.classList.contains('sin-marca')) return;
   const img = document.createElement('img');
   img.className = 'logo'; img.src = logo; p.appendChild(img);
+  // La portada no lleva numero: abre la charla, no es una placa mas.
+  if (i === 0) return;
   const f = document.createElement('div');
   f.className = 'folio'; f.textContent = i + 1; p.appendChild(f);
 });
