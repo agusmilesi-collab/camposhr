@@ -90,17 +90,6 @@ export default function Presentaciones() {
           </div>
         )}
       </section>
-
-      <p className="cot-pie">
-        Para dar de alta una presentación:{' '}
-        <code>
-          node scripts/publicar-presentacion.mjs &lt;html&gt; &lt;token&gt;
-        </code>
-        , cargar el token en <code>data/presentaciones.json</code> y publicar. El
-        script la deja sin rastro para los buscadores y sin tocar el contenido.
-        Se publica la versión final, la que se va a dar: cada archivo pesa más de
-        1 MB y el repositorio guarda todas las versiones para siempre.
-      </p>
     </main>
   );
 }
