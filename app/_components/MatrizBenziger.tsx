@@ -270,6 +270,7 @@ function distribuir(
 
   const salida: { cx: number; cy: number }[] = new Array(puntos.length);
   let todosUbicados = true;
+  let todosEnSuCuadrante = true;
 
   for (const i of orden) {
     const { cx, cy } = ideales[i];
@@ -278,30 +279,33 @@ function distribuir(
     let elegida = caja(cx, cy, w);
     let encontrada = false;
 
-    // Dos pasadas: primero sin salir del cuadrante, y recién si ahí no entra
-    // se admite cualquier hueco. Con el cuadrante lleno, quedar mal ubicada es
-    // mejor que quedar pisada, pero es el último recurso.
+    // Se barre el lienzo entero y se toma el lugar libre más cercano al
+    // ideal. Dos pasadas: primero sin salir del cuadrante, y recién si ahí no
+    // entra se admite cualquier hueco. Cruzar la línea es el último recurso, y
+    // cuando pasa conviene que sea por lo mínimo: buscar el más cercano y no
+    // el primero que aparezca evita que alguien termine en la esquina opuesta.
     for (const dentro of [true, false]) {
       // Espiral: primero el lugar exacto, después anillos cada vez más lejos.
-      for (let paso = 0; paso <= 40 && !encontrada; paso++) {
-        const r = paso * 1.6;
-        const vueltas = paso === 0 ? 1 : Math.min(48, 8 + paso * 4);
-        for (let k = 0; k < vueltas; k++) {
-          const ang = (k / vueltas) * Math.PI * 2;
-          const px = cx + Math.cos(ang) * r;
-          const py = cy + Math.sin(ang) * r * 0.75;
-          if (dentro && !enSuCuadrante(px, py, l)) continue;
-          const c = caja(px, py, w);
-          if (libre(c)) {
-            elegida = c;
-            encontrada = true;
-            break;
+      // Resuelve el caso común sin recorrer el lienzo entero.
+      if (dentro) {
+        for (let paso = 0; paso <= 40 && !encontrada; paso++) {
+          const r = paso * 1.6;
+          const vueltas = paso === 0 ? 1 : Math.min(48, 8 + paso * 4);
+          for (let k = 0; k < vueltas; k++) {
+            const ang = (k / vueltas) * Math.PI * 2;
+            const px = cx + Math.cos(ang) * r;
+            const py = cy + Math.sin(ang) * r * 0.75;
+            if (!enSuCuadrante(px, py, l)) continue;
+            const c = caja(px, py, w);
+            if (libre(c)) {
+              elegida = c;
+              encontrada = true;
+              break;
+            }
           }
         }
       }
 
-      // Si la espiral no dio con un hueco (pasa cuando el grupo se amontona),
-      // se barre el lienzo entero y se toma el lugar libre más cercano.
       if (!encontrada) {
         let mejor = Infinity;
         for (let x = w + 0.5; x <= ANCHO - w - 0.5; x += 1.5) {
@@ -319,7 +323,10 @@ function distribuir(
         }
       }
 
-      if (encontrada) break;
+      if (encontrada) {
+        if (!dentro) todosEnSuCuadrante = false;
+        break;
+      }
     }
 
     if (!encontrada) todosUbicados = false;
@@ -327,7 +334,7 @@ function distribuir(
     salida[i] = { cx: (elegida.x0 + elegida.x1) / 2, cy: elegida.y0 + arriba };
   }
 
-  return { salida, todosUbicados, altoNombre: ALTO_NOMBRE };
+  return { salida, todosUbicados, todosEnSuCuadrante, altoNombre: ALTO_NOMBRE };
 }
 
 /** Tamaño de la etiqueta cuando hay lugar de sobra. */
@@ -350,6 +357,11 @@ function anchoTexto(texto: string, escala: number): number {
  * hueco se quedaba en su posición ideal, encima de otra. Ahora se baja el
  * tamaño hasta que todas entran, así el gráfico nunca sale con nombres
  * pisados: con poca gente la letra queda grande y con mucha, más chica.
+ *
+ * Salirse del cuadrante cuenta como no entrar. Una etiqueta de quince letras
+ * ocupa un cuarto del ancho del cuadrante, y con el grupo apretado la persona
+ * terminaba cruzando la línea y quedando en un cuadrante que no es el suyo.
+ * Achicar la etiqueta libera el lugar que le faltaba.
  */
 function acomodar(
   puntos: Punto[],
@@ -357,12 +369,15 @@ function acomodar(
   conNombres: boolean,
   cajasTexto: Caja[]
 ) {
+  const entra = (r: ReturnType<typeof distribuir>) =>
+    r.todosUbicados && r.todosEnSuCuadrante;
+
   let ultimo = distribuir(puntos, radio, conNombres, cajasTexto, 1);
-  if (ultimo.todosUbicados || !conNombres) return { ...ultimo, escala: 1 };
+  if (entra(ultimo) || !conNombres) return { ...ultimo, escala: 1 };
 
   for (const escala of [0.94, 0.88, 0.82, 0.76, 0.7, 0.64, 0.58, 0.52, 0.46, 0.4]) {
     ultimo = distribuir(puntos, radio, conNombres, cajasTexto, escala);
-    if (ultimo.todosUbicados) return { ...ultimo, escala };
+    if (entra(ultimo)) return { ...ultimo, escala };
   }
   // Ni al mínimo entran: se devuelve el último intento, que es el que menos
   // superposiciones deja.
