@@ -105,25 +105,43 @@ export type Resultado = {
 /**
  * Ubicación de una persona en la matriz, a partir de sus cuatro totales.
  *
- * Se mide qué proporción de su propio puntaje va a cada lado, no la
- * diferencia en puntos: así quien marcó pocas frases y quien marcó muchas se
- * comparan igual. Después se expande con una raíz, porque las diferencias
- * reales son chicas y sin eso todo el grupo queda apelotonado en el centro.
- * El orden entre personas no cambia: solo se usa mejor el cuadro.
+ * Cada eje enfrenta el puntaje más alto de un lado contra el más alto del
+ * otro: izquierda es el mayor entre FI y BI, derecha el mayor entre FD y BD,
+ * y lo mismo arriba y abajo. Así el punto siempre cae en el cuadrante del
+ * perfil que encabeza el resultado, que es el nombre que la persona lee arriba
+ * de la matriz. Sumar los dos cuadrantes de cada lado no daba esa garantía:
+ * con FI 0, FD 11, BI 13 y BD 3 el titular decía Basal Izquierdo y el punto
+ * caía en Basal Derecho, porque el cero de FI le restaba peso al lado
+ * izquierdo aunque BI fuera el más alto de los cuatro.
+ *
+ * Se mide la proporción entre los dos lados y no la diferencia en puntos: así
+ * quien marcó pocas frases y quien marcó muchas se comparan igual. Después se
+ * expande con una raíz, porque las diferencias reales son chicas y sin eso
+ * todo el grupo queda apelotonado en el centro. El orden entre personas no
+ * cambia: solo se usa mejor el cuadro.
  */
 export function coordenadas(totales: Puntajes): { x: number; y: number } {
-  const suma = totales.FI + totales.FD + totales.BI + totales.BD;
-  if (suma === 0) return { x: 0, y: 0 };
+  const izquierda = Math.max(totales.FI, totales.BI);
+  const derecha = Math.max(totales.FD, totales.BD);
+  const arriba = Math.max(totales.FI, totales.FD);
+  const abajo = Math.max(totales.BI, totales.BD);
 
-  const horizontal = (totales.FD + totales.BD - totales.FI - totales.BI) / suma;
-  const vertical = (totales.FI + totales.FD - totales.BI - totales.BD) / suma;
+  return {
+    x: proporcion(derecha, izquierda),
+    y: proporcion(arriba, abajo),
+  };
+}
 
-  return { x: expandir(horizontal), y: expandir(vertical) };
+/** Cuánto se despega un lado del opuesto, de -1 a 1. */
+function proporcion(positivo: number, negativo: number): number {
+  const suma = positivo + negativo;
+  if (suma === 0) return 0;
+  return expandir((positivo - negativo) / suma);
 }
 
 /** Estira los valores cercanos a cero, conservando el signo y el orden. */
 function expandir(v: number): number {
-  return redondear(Math.sign(v) * Math.abs(v) ** 0.6);
+  return redondear(Math.sign(v) * Math.abs(v) ** 0.8);
 }
 
 export function totalizar(likert: Puntajes, checklist: Puntajes): Puntajes {

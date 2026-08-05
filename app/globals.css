@@ -12,6 +12,7 @@
   --st-blue: #43648f;
   --st-blue-2: #43648f;
   --st-violet: #6a5a8c;
+  --st-verde: #4a7856;
 }
 
 * {
@@ -870,6 +871,19 @@ body {
   /* Con las descripciones abajo, el nombre dibujado en el gráfico sobra. */
   .mx-con-desc .mx-cuadrante {
     display: none;
+  }
+  /* El eje inferior queda pegado al gráfico y las descripciones pasan al
+     final: con las cuatro descripciones en el medio, "Micro / Mundo del
+     detalle" caía tan lejos del lienzo que la matriz se leía sin su eje. */
+  .mx-con-desc {
+    display: flex;
+    flex-direction: column;
+  }
+  .mx-con-desc .mx-eje-bottom {
+    order: 1;
+  }
+  .mx-con-desc .mx-textos-abajo {
+    order: 2;
   }
   .mx-textos-abajo {
     display: grid;
@@ -2322,7 +2336,7 @@ body {
 .cot-tabla {
   display: grid;
   grid-template-columns:
-    max-content minmax(7rem, 1fr) minmax(10rem, 1.7fr) max-content max-content max-content max-content;
+    max-content minmax(7rem, 1fr) minmax(10rem, 1.7fr) max-content max-content max-content;
   align-items: center;
   /* El encabezado tiene fondo propio: sin esto se desborda de las esquinas
      redondeadas de la tarjeta. */
@@ -2353,6 +2367,7 @@ body {
    hijo directo del grid se estiraba a la altura entera de la fila. */
 .cot-accion {
   justify-content: flex-end;
+  gap: 8px;
 }
 .cot-accion .copiar {
   background: var(--card);
@@ -2362,6 +2377,16 @@ body {
 }
 .cot-accion .copiar:hover {
   border-color: var(--muted);
+}
+/* "Abrir" es un enlace y "Copiar" un boton: se igualan para que el par se lea
+   como dos acciones del mismo rango. */
+.cot-accion a.copiar {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  line-height: 1.2;
 }
 .cot-row > *:first-child {
   padding-left: 20px;
@@ -2426,6 +2451,9 @@ body {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+/* Todas las etiquetas de estado miden lo mismo: con el ancho pegado al texto,
+   una columna de "Enviada" y "Aprobada" se lee como un borde quebrado. El ancho
+   lo fija la palabra mas larga, que es "Rechazada". */
 .cot-estado {
   font-style: normal;
   font-size: 0.72rem;
@@ -2434,10 +2462,15 @@ body {
   border-radius: 999px;
   border: 1px solid currentColor;
   white-space: nowrap;
+  display: inline-flex;
+  justify-content: center;
+  min-width: 6.4rem;
 }
+/* El color separa lo cerrado de lo que sigue abierto: verde lo aprobado, azul
+   lo que espera respuesta. */
 .e-borrador { color: var(--st-gray); }
 .e-enviada { color: var(--st-blue); }
-.e-aprobada { color: var(--st-blue-2); }
+.e-aprobada { color: var(--st-verde); }
 .e-rechazada { color: var(--st-amber); }
 .e-cancelada { color: var(--st-gray); opacity: 0.75; }
 

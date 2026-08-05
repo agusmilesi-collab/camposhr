@@ -68,7 +68,6 @@ export default function Cotizaciones() {
               <span className="cot-num">Importe</span>
               <span>Estado</span>
               <span>Enlace</span>
-              <span />
             </div>
 
             {todas.map((c) => {
@@ -96,15 +95,17 @@ export default function Cotizaciones() {
                       {c.estado}
                     </em>
                   </span>
-                  <a
-                    className="acc-url"
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    /q/{c.token}
-                  </a>
+                  {/* El token no se muestra: lo que se hace con el enlace es
+                      abrirlo o copiarlo, y verlo escrito no aporta nada. */}
                   <span className="cot-accion">
+                    <a
+                      className="copiar"
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Abrir
+                    </a>
                     <CopyLink url={url} />
                   </span>
                 </div>
@@ -113,14 +114,6 @@ export default function Cotizaciones() {
           </div>
         )}
       </section>
-
-      <p className="cot-pie">
-        Para dar de alta una cotización:{' '}
-        <code>node scripts/publicar-cotizacion.mjs &lt;html&gt; &lt;token&gt;</code>,
-        sumar la fila en{' '}
-        <code>data/cotizaciones.json</code> y publicar. El script deja el
-        documento con su botón de descarga y sin rastro para los buscadores.
-      </p>
     </main>
   );
 }
