@@ -53,5 +53,16 @@
     "fecha": "2026-08-11",
     "orden": 5,
     "archivo": "pla-conflictos-2f4e9a.html"
+  },
+  {
+    "token": "pla-mindfulness-b-51356e",
+    "cliente": "Pla S.A.",
+    "ciclo": "Liderazgos Humanos · plan B",
+    "titulo": "Mindfulness",
+    "subtitulo": "Con las actividades en el teléfono",
+    "placas": 17,
+    "fecha": "2026-08-07",
+    "orden": 6,
+    "archivo": "pla-mindfulness-b-51356e.html"
   }
 ]
