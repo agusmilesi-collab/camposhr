@@ -252,6 +252,17 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
   letter-spacing:-.015em;margin:0 auto 46px;width:100%;max-width:1440px}
 .contenido.izq .lista.ancha{max-width:1440px;margin:0 auto}
 
+/* Dos definiciones enfrentadas, cada una en su tarjeta. Con viñetas los dos
+   términos se leían como pasos de una lista; en tarjetas se leen como lo que
+   son: dos cosas distintas, una al lado de la otra. */
+.tarjetas{display:flex;gap:56px;width:100%;max-width:1440px;margin:0 auto}
+.tarjetas>div{flex:1;background:rgba(0,0,0,.32);border:1px solid rgba(243,242,235,.26);
+  border-radius:22px;padding:52px 46px;text-align:left}
+.tarjetas h3{font-family:Calistoga,serif;font-size:60px;line-height:1;font-weight:400;
+  letter-spacing:-.01em;margin-bottom:26px}
+.tarjetas p{font-size:36px;line-height:1.4;opacity:.9}
+.contenido.izq .tarjetas ~ .consigna{width:100%;max-width:1440px;margin-left:auto;margin-right:auto}
+
 /* Mapa de los cuatro modos, con los ejes nombrados y el cerebro en el cruce.
    El eje vertical va de lo macro a lo micro y el horizontal de la razón a la
    emoción: es el mismo cuadro que ven en la matriz del equipo. */
@@ -347,12 +358,18 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
   <section class="placa" data-notas="La distinción que ordena todo lo que sigue. Cuando desarrollamos habilidades fuera de nuestro modo natural, nos estamos exigiendo. Agregar: en general la fortaleza y la dificultad se encuentran en cuadrantes opuestos en diagonal. Frontal Izquierdo con Basal Derecho, Frontal Derecho con Basal Izquierdo.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq">
-      <div class="titulo-placa">Preferencia y competencia</div>
-      <div class="lista ancha">
-        <li><b>Preferencia.</b> La eficiencia natural con la que nacés.</li>
-        <li><b>Competencia.</b> La habilidad que desarrollás con estudio, práctica y repetición.</li>
-        <li>Trabajar fuera de tu preferencia <b>te exige más y te cansa antes</b>.</li>
+      <div class="titulo-placa">Lo que te sale solo y lo que te cuesta</div>
+      <div class="tarjetas">
+        <div>
+          <h3>Preferencia</h3>
+          <p>La eficiencia natural con la que nacés.</p>
+        </div>
+        <div>
+          <h3>Competencia</h3>
+          <p>La habilidad que desarrollás con estudio, práctica y repetición.</p>
+        </div>
       </div>
+      <div class="consigna">Trabajar fuera de tu preferencia te exige más y te cansa antes.</div>
     </div>
   </section>
 
