@@ -17,6 +17,9 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
 .contenido{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:120px 200px;color:#f3f2eb;text-align:center}
 .contenido.izq{align-items:flex-start;text-align:left}
+.contenido{--ancho:1440px}
+.contenido.tres{--ancho:1560px}
+.contenido.cuatro{--ancho:1620px}
 .contenido.pleno{padding-left:70px;padding-right:70px}
 
 .frase{font-size:61px;line-height:1.3;letter-spacing:-.02em;font-weight:400;max-width:1420px}
@@ -255,9 +258,9 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
    ancho y margen con el bloque que encabeza, así los dos arrancan en la misma
    vertical. */
 .titulo-placa{font-family:Calistoga,serif;font-size:72px;line-height:1.06;
-  letter-spacing:-.015em;margin:0 auto 46px;width:100%;max-width:1440px}
+  letter-spacing:-.015em;margin:0 auto 46px;width:100%;max-width:var(--ancho)}
 .contenido.izq .lista.ancha{max-width:1440px;margin:0 auto}
-.contenido.izq .escala{max-width:1440px}
+.contenido.izq .escala{max-width:var(--ancho)}
 
 /* Escala de puntaje: tres tramos, cada uno en su tarjeta y con una barra que
    se llena. La barra hace visible de una que el modelo va de menos a más, que
@@ -300,13 +303,26 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
 /* Dos definiciones enfrentadas, cada una en su tarjeta. Con viñetas los dos
    términos se leían como pasos de una lista; en tarjetas se leen como lo que
    son: dos cosas distintas, una al lado de la otra. */
-.tarjetas{display:flex;gap:56px;width:100%;max-width:1440px;margin:0 auto}
+.tarjetas{display:flex;gap:56px;width:100%;max-width:var(--ancho);margin:0 auto}
 .tarjetas>div{flex:1;background:rgba(0,0,0,.32);border:1px solid rgba(243,242,235,.26);
   border-radius:22px;padding:52px 46px;text-align:left}
 .tarjetas h3{font-family:Calistoga,serif;font-size:60px;line-height:1;font-weight:400;
   letter-spacing:-.01em;margin-bottom:26px}
 .tarjetas p{font-size:36px;line-height:1.4;opacity:.9}
-.contenido.izq .tarjetas ~ .consigna{width:100%;max-width:1440px;margin-left:auto;margin-right:auto}
+/* El número va cuando el orden importa: son pasos, no opciones sueltas. */
+.tarjetas .num{display:block;font-family:Calistoga,serif;font-size:38px;color:#f0b64c;
+  margin-bottom:20px}
+/* Tres y cuatro tarjetas: mismo lenguaje, cuerpo más chico para que entren. */
+.tarjetas.tres{gap:40px}
+.tarjetas.tres>div{padding:44px 38px}
+.tarjetas.tres h3{font-size:48px;margin-bottom:22px}
+.tarjetas.tres p{font-size:32px}
+.tarjetas.cuatro{gap:30px}
+.tarjetas.cuatro>div{padding:38px 32px}
+.tarjetas.cuatro h3{font-size:42px;margin-bottom:18px}
+.tarjetas.cuatro p{font-size:29px;line-height:1.38}
+.tarjetas.cuatro .num{font-size:32px;margin-bottom:16px}
+.contenido.izq .tarjetas ~ .consigna{width:100%;max-width:var(--ancho);margin-left:auto;margin-right:auto}
 
 /* Mapa de los cuatro modos, con los ejes nombrados y el cerebro en el cruce.
    El eje vertical va de lo macro a lo micro y el horizontal de la razón a la
@@ -451,12 +467,12 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 10 -->
   <section class="placa" data-notas="La mayoría manejamos tres o cuatro palabras para todo lo que sentimos: bien, mal, cansado, tranquilo. Y con 'estoy mal' no podés hacer gran cosa, porque no sabés qué te pasa. Cada palabra fina viene con una pista de qué hacer. Esto tiene nombre y está estudiado: granularidad emocional. Cuantas más palabras precisas tenés, menos reaccionás en automático y más rápido se te pasa. Y se entrena teniendo más palabras a mano, por eso les damos la rueda. Consigna: que cada uno marque en su rueda dos o tres palabras que use poco o nunca, y preguntar a dos o tres cuáles marcaron. Suelen aparecer las que más incomodan: impotencia, vergüenza, celos.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
-      <p class="frase" style="margin-bottom:46px"><b>“Estoy mal”</b> no te dice qué hacer.</p>
-      <div class="lista">
-        <li><b>Decepcionado</b>: esperaba otra cosa de alguien.</li>
-        <li><b>Sobre-exigido</b>: agarré más cosas de las que podía.</li>
-        <li><b>Pasado por encima</b>: sentí que me faltaron el respeto.</li>
+    <div class="contenido izq tres">
+      <div class="titulo-placa">“Estoy mal” no te dice qué hacer</div>
+      <div class="tarjetas">
+        <div><h3>Decepcionado</h3><p>Esperaba otra cosa de alguien.</p></div>
+        <div><h3>Sobre-exigido</h3><p>Agarré más cosas de las que podía.</p></div>
+        <div><h3>Pasado por encima</h3><p>Sentí que me faltaron el respeto.</p></div>
       </div>
     </div>
   </section>
@@ -473,13 +489,13 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 12 -->
   <section class="placa" data-notas="EJERCICIO CENTRAL. Reparten la hoja con la tabla. Consigna, columna por columna. Situación: en pocas palabras, una situación de la semana en la que se dieron cuenta de que no les sirvió la manera en que reaccionaron, algo que hoy elegirían distinto. Reacción: qué reacción les generó. Emoción: cuál fue la emoción que los llevó a reaccionar así, y ahí entra la rueda. Hacer la primera fila todos juntos. Al cerrar, preguntar: ¿pueden ver cómo las emociones les afectan las decisiones? Si hubieras registrado la emoción, ¿elegirías reaccionar diferente?">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
-      <div class="ejercicio-frase" style="font-size:56px;margin-bottom:40px">Situación · Reacción · Emoción · Situación ideal</div>
-      <div class="lista" style="max-width:1400px">
-        <li><b>Situación.</b> Una de esta semana en la que no te sirvió cómo reaccionaste.</li>
-        <li><b>Reacción.</b> Qué hiciste.</li>
-        <li><b>Emoción.</b> Qué te llevó a reaccionar así.</li>
-        <li><b>Situación ideal.</b> Cómo lo resolverías hoy, mirándolo de otra manera.</li>
+    <div class="contenido izq cuatro">
+      <div class="titulo-placa">Las cuatro columnas de la hoja</div>
+      <div class="tarjetas">
+        <div><span class="num">01</span><h3>Situación</h3><p>Una de esta semana en la que no te sirvió cómo reaccionaste.</p></div>
+        <div><span class="num">02</span><h3>Reacción</h3><p>Qué hiciste.</p></div>
+        <div><span class="num">03</span><h3>Emoción</h3><p>Qué te llevó a reaccionar así.</p></div>
+        <div><span class="num">04</span><h3>Situación ideal</h3><p>Cómo lo resolverías hoy, mirándolo de otra manera.</p></div>
       </div>
       <div class="consigna">La primera fila la hacemos juntas.</div>
     </div>
@@ -490,7 +506,7 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq">
       <div class="duo-titulo">Dos formas de manejar una emoción</div>
-      <div class="duo">
+      <div class="tarjetas">
         <div>
           <h3>Reprimirla</h3>
           <p>Poner cara de que no pasa nada. Sigue adentro, se te nota en el tono, y te desgasta.</p>
@@ -525,7 +541,7 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq">
       <div class="duo-titulo">Llega un reporte con un error</div>
-      <div class="duo">
+      <div class="tarjetas">
         <div>
           <h3>Sin registrar</h3>
           <p>Contestás en caliente, el otro se cierra, y mañana te esconde el próximo error.</p>
@@ -549,12 +565,12 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 18 -->
   <section class="placa" data-notas="La tarea que se llevan, y es una sola: ¿qué estoy sintiendo ahora? Ni resolverlo, ni cambiarlo. Solo registrarlo. Treinta segundos antes de decidir. Queda proyectada durante el bloque de 1 a 1.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="ejercicio-frase" style="font-size:64px;margin-bottom:50px">30 segundos, antes de decidir</div>
-      <div class="pasos" style="max-width:1100px">
-        <div><i>1</i><div><b>Frená.</b><span>Antes de contestar o de decidir.</span></div></div>
-        <div><i>2</i><div><b>Nombralo.</b><span>La palabra más precisa que encuentres. La rueda ayuda.</span></div></div>
-        <div><i>3</i><div><b>Elegí desde ahí.</b><span>Con la emoción registrada, la respuesta la elegís vos.</span></div></div>
+    <div class="contenido izq tres">
+      <div class="titulo-placa">30 segundos, antes de decidir</div>
+      <div class="tarjetas">
+        <div><span class="num">01</span><h3>Frená</h3><p>Antes de contestar o de decidir.</p></div>
+        <div><span class="num">02</span><h3>Nombralo</h3><p>La palabra más precisa que encuentres. La rueda ayuda.</p></div>
+        <div><span class="num">03</span><h3>Elegí desde ahí</h3><p>Con la emoción registrada, la respuesta la elegís vos.</p></div>
       </div>
     </div>
   </section>
