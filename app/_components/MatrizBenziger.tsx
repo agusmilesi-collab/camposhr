@@ -251,46 +251,75 @@ function distribuir(
     .map((p, i) => i)
     .sort((a, b) => Math.hypot(puntos[b].x, puntos[b].y) - Math.hypot(puntos[a].x, puntos[a].y));
 
+  // De qué lado de cada eje le toca estar a cada persona.
+  const lados = puntos.map((p) => ({ x: Math.sign(p.x), y: Math.sign(p.y) }));
+
+  /**
+   * El círculo entero queda del lado que le corresponde. Correrse hasta cruzar
+   * una línea del medio deja a la persona dibujada en un cuadrante que no es
+   * el de su resultado, que es justo lo que la matriz tiene que mostrar.
+   */
+  const enSuCuadrante = (cx: number, cy: number, l: { x: number; y: number }) => {
+    if (l.x > 0 && cx - radio < ANCHO / 2) return false;
+    if (l.x < 0 && cx + radio > ANCHO / 2) return false;
+    // En el SVG la y crece hacia abajo: arriba es menor.
+    if (l.y > 0 && cy + radio > ALTO / 2) return false;
+    if (l.y < 0 && cy - radio < ALTO / 2) return false;
+    return true;
+  };
+
   const salida: { cx: number; cy: number }[] = new Array(puntos.length);
   let todosUbicados = true;
 
   for (const i of orden) {
     const { cx, cy } = ideales[i];
     const w = anchos[i];
+    const l = lados[i];
     let elegida = caja(cx, cy, w);
     let encontrada = false;
 
-    // Espiral: primero el lugar exacto, después anillos cada vez más lejos.
-    for (let paso = 0; paso <= 40 && !encontrada; paso++) {
-      const r = paso * 1.6;
-      const vueltas = paso === 0 ? 1 : Math.min(48, 8 + paso * 4);
-      for (let k = 0; k < vueltas; k++) {
-        const ang = (k / vueltas) * Math.PI * 2;
-        const c = caja(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r * 0.75, w);
-        if (libre(c)) {
-          elegida = c;
-          encontrada = true;
-          break;
-        }
-      }
-    }
-
-    // Si la espiral no dio con un hueco (pasa cuando el grupo se amontona),
-    // se barre el lienzo entero y se toma el lugar libre más cercano.
-    if (!encontrada) {
-      let mejor = Infinity;
-      for (let x = w + 0.5; x <= ANCHO - w - 0.5; x += 1.5) {
-        for (let y = arriba + 0.5; y <= ALTO - abajo - 0.5; y += 1.5) {
-          const dist = Math.hypot(x - cx, y - cy);
-          if (dist >= mejor) continue;
-          const c = caja(x, y, w);
+    // Dos pasadas: primero sin salir del cuadrante, y recién si ahí no entra
+    // se admite cualquier hueco. Con el cuadrante lleno, quedar mal ubicada es
+    // mejor que quedar pisada, pero es el último recurso.
+    for (const dentro of [true, false]) {
+      // Espiral: primero el lugar exacto, después anillos cada vez más lejos.
+      for (let paso = 0; paso <= 40 && !encontrada; paso++) {
+        const r = paso * 1.6;
+        const vueltas = paso === 0 ? 1 : Math.min(48, 8 + paso * 4);
+        for (let k = 0; k < vueltas; k++) {
+          const ang = (k / vueltas) * Math.PI * 2;
+          const px = cx + Math.cos(ang) * r;
+          const py = cy + Math.sin(ang) * r * 0.75;
+          if (dentro && !enSuCuadrante(px, py, l)) continue;
+          const c = caja(px, py, w);
           if (libre(c)) {
-            mejor = dist;
             elegida = c;
             encontrada = true;
+            break;
           }
         }
       }
+
+      // Si la espiral no dio con un hueco (pasa cuando el grupo se amontona),
+      // se barre el lienzo entero y se toma el lugar libre más cercano.
+      if (!encontrada) {
+        let mejor = Infinity;
+        for (let x = w + 0.5; x <= ANCHO - w - 0.5; x += 1.5) {
+          for (let y = arriba + 0.5; y <= ALTO - abajo - 0.5; y += 1.5) {
+            const dist = Math.hypot(x - cx, y - cy);
+            if (dist >= mejor) continue;
+            if (dentro && !enSuCuadrante(x, y, l)) continue;
+            const c = caja(x, y, w);
+            if (libre(c)) {
+              mejor = dist;
+              elegida = c;
+              encontrada = true;
+            }
+          }
+        }
+      }
+
+      if (encontrada) break;
     }
 
     if (!encontrada) todosUbicados = false;
