@@ -387,7 +387,9 @@ body {
 .dot.gray   { color: var(--st-gray); }
 .dot.amber  { color: var(--st-amber); }
 .dot.blue   { color: var(--st-blue); }
-.dot.green  { color: var(--st-blue-2); }
+/* El informe entregado es el único estado que cierra una búsqueda: va en verde
+   y no en el azul del resto, que lo dejaba igual que "En análisis". */
+.dot.green  { color: var(--st-verde); }
 .dot.violet { color: var(--st-violet); }
 
 .empty {
