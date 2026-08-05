@@ -309,6 +309,13 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
 .tarjetas h3{font-family:Calistoga,serif;font-size:60px;line-height:1;font-weight:400;
   letter-spacing:-.01em;margin-bottom:26px}
 .tarjetas p{font-size:36px;line-height:1.4;opacity:.9}
+/* La flecha baja del nombre de la emoción a lo que significa: son dos cosas
+   distintas, la palabra y su lectura, y la flecha dice cuál explica a cuál.
+   El título toma el alto de dos renglones, así la flecha cae a la misma altura
+   en las tres tarjetas aunque un nombre entre en una sola línea. */
+.tarjetas.flecha h3{min-height:2em;margin-bottom:0}
+.tarjetas.flecha p:before{content:"";display:block;width:34px;height:52px;margin:22px 0 16px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 40' fill='none' stroke='%23f0b64c' stroke-width='4.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v26'/%3E%3Cpath d='M5 24l7 8 7-8'/%3E%3C/svg%3E") no-repeat center/contain}
 /* El número va cuando el orden importa: son pasos, no opciones sueltas. */
 .tarjetas .num{display:block;font-family:Calistoga,serif;font-size:38px;color:#f0b64c;
   margin-bottom:20px}
@@ -469,7 +476,7 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq tres">
       <div class="titulo-placa">“Estoy mal” no te dice qué hacer</div>
-      <div class="tarjetas">
+      <div class="tarjetas flecha">
         <div><h3>Decepcionado</h3><p>Esperaba otra cosa de alguien.</p></div>
         <div><h3>Sobre-exigido</h3><p>Agarré más cosas de las que podía.</p></div>
         <div><h3>Pasado por encima</h3><p>Sentí que me faltaron el respeto.</p></div>
