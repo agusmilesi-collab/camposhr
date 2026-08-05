@@ -26,7 +26,7 @@ function headers(extra: Record<string, string> = {}) {
 }
 
 /** SELECT sobre una tabla. `query` son parámetros de PostgREST ya armados. */
-async function select<T>(tabla: string, query: string): Promise<T[]> {
+export async function select<T>(tabla: string, query: string): Promise<T[]> {
   const res = await fetch(`${URL_BASE()}/rest/v1/${tabla}?${query}`, {
     headers: headers(),
     cache: 'no-store',
@@ -36,7 +36,10 @@ async function select<T>(tabla: string, query: string): Promise<T[]> {
 }
 
 /** INSERT de una fila. Devuelve la fila creada. */
-async function insert<T>(tabla: string, fila: Record<string, unknown>): Promise<T> {
+export async function insert<T>(
+  tabla: string,
+  fila: Record<string, unknown>
+): Promise<T> {
   const res = await fetch(`${URL_BASE()}/rest/v1/${tabla}`, {
     method: 'POST',
     headers: headers({
@@ -46,6 +49,47 @@ async function insert<T>(tabla: string, fila: Record<string, unknown>): Promise<
     body: JSON.stringify(fila),
   });
   if (!res.ok) throw new Error(`Supabase insert ${tabla} ${res.status}: ${await res.text()}`);
+  const filas = await res.json();
+  return filas[0];
+}
+
+/** UPDATE sobre las filas que matchea `query`. */
+export async function patch(
+  tabla: string,
+  query: string,
+  cambios: Record<string, unknown>
+): Promise<void> {
+  const res = await fetch(`${URL_BASE()}/rest/v1/${tabla}?${query}`, {
+    method: 'PATCH',
+    headers: headers({ 'content-type': 'application/json' }),
+    body: JSON.stringify(cambios),
+  });
+  if (!res.ok) throw new Error(`Supabase patch ${tabla} ${res.status}: ${await res.text()}`);
+}
+
+/**
+ * INSERT que pisa la fila anterior cuando choca con una clave única.
+ *
+ * `conflicto` son las columnas de esa clave. Es lo que hace que responder dos
+ * veces la misma actividad corrija la respuesta en lugar de duplicarla.
+ */
+export async function upsert<T>(
+  tabla: string,
+  fila: Record<string, unknown>,
+  conflicto: string
+): Promise<T> {
+  const res = await fetch(
+    `${URL_BASE()}/rest/v1/${tabla}?on_conflict=${conflicto}`,
+    {
+      method: 'POST',
+      headers: headers({
+        'content-type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=representation',
+      }),
+      body: JSON.stringify(fila),
+    }
+  );
+  if (!res.ok) throw new Error(`Supabase upsert ${tabla} ${res.status}: ${await res.text()}`);
   const filas = await res.json();
   return filas[0];
 }
