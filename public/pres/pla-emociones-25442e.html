@@ -231,7 +231,7 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
    arma sola con las respuestas del cuestionario y se refresca mientras la
    proyectan, así la expositora no cambia de pantalla. */
 .matriz-viva{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  padding:34px 56px 22px}
+  padding:26px 48px 20px}
 .matriz-viva h2{font-family:Calistoga,serif;font-size:68px;line-height:1;color:#f3f2eb;
   letter-spacing:-.01em;margin-bottom:14px}
 .matriz-marco{position:relative;flex:1;width:100%}
@@ -252,26 +252,72 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
   letter-spacing:-.015em;margin:0 auto 46px;width:100%;max-width:1440px}
 .contenido.izq .lista.ancha{max-width:1440px;margin:0 auto}
 
+/* Cierre con QR: la frase de la izquierda y, a la derecha, el código para
+   llevarse la rueda al teléfono. La lee el grupo desde su asiento, así que el
+   código va grande y sobre fondo claro. */
+.cierre-qr{display:flex;align-items:center;gap:120px;width:100%;max-width:1560px;margin:0 auto}
+.cierre-qr .dicho{flex:1;text-align:left}
+.cierre-qr .dicho .frase{max-width:100%}
+.cierre-qr .baja{flex:none;text-align:center}
+.cierre-qr .baja .caja{background:#f3f2eb;padding:30px;border-radius:20px;display:inline-block}
+.cierre-qr .baja img{display:block;width:390px;height:390px}
+.cierre-qr .baja b{display:block;font-size:38px;font-weight:700;margin-top:30px}
+.cierre-qr .baja span{display:block;font-size:30px;opacity:.75;margin-top:10px;line-height:1.35}
+
+/* Dos definiciones enfrentadas, cada una en su tarjeta. Con viñetas los dos
+   términos se leían como pasos de una lista; en tarjetas se leen como lo que
+   son: dos cosas distintas, una al lado de la otra. */
+.tarjetas{display:flex;gap:56px;width:100%;max-width:1440px;margin:0 auto}
+.tarjetas>div{flex:1;background:rgba(0,0,0,.32);border:1px solid rgba(243,242,235,.26);
+  border-radius:22px;padding:52px 46px;text-align:left}
+.tarjetas h3{font-family:Calistoga,serif;font-size:60px;line-height:1;font-weight:400;
+  letter-spacing:-.01em;margin-bottom:26px}
+.tarjetas p{font-size:36px;line-height:1.4;opacity:.9}
+.contenido.izq .tarjetas ~ .consigna{width:100%;max-width:1440px;margin-left:auto;margin-right:auto}
+
 /* Mapa de los cuatro modos, con los ejes nombrados y el cerebro en el cruce.
    El eje vertical va de lo macro a lo micro y el horizontal de la razón a la
    emoción: es el mismo cuadro que ven en la matriz del equipo. */
-.modos{position:relative;width:100%;max-width:1780px;height:800px;margin:0 auto}
+.modos{position:relative;width:100%;max-width:1540px;height:790px;margin:0 auto}
 .modos:before,.modos:after{content:"";position:absolute;opacity:.55}
 .modos:before{left:50%;top:0;bottom:0;border-left:4px dotted rgba(243,242,235,.85)}
 .modos:after{top:50%;left:0;right:0;border-top:4px dotted rgba(243,242,235,.85)}
 .modos-cerebro{position:absolute;left:50%;top:50%;width:184px;
   transform:translate(-50%,-50%);opacity:.9}
-.modos-eje{position:absolute;left:0;right:0;text-align:center;line-height:1.15}
-.modos-eje.arriba{top:-118px}
-.modos-eje.abajo{bottom:-118px}
+.modos-eje{position:absolute;line-height:1.15}
+.modos-eje.arriba,.modos-eje.abajo{left:0;right:0;text-align:center}
+.modos-eje.arriba{top:-112px}
+.modos-eje.abajo{bottom:-112px}
+/* Los laterales van girados: de pie no le roban ancho a los cuadrantes. */
+.modos-eje.izq,.modos-eje.der{top:50%;writing-mode:vertical-rl;text-align:center}
+.modos-eje.izq{left:-104px;transform:translateY(-50%) rotate(180deg)}
+.modos-eje.der{right:-104px;transform:translateY(-50%)}
 .modos-eje b{display:block;font-family:Calistoga,serif;font-size:44px;font-weight:400}
 .modos-eje span{display:block;font-size:34px;opacity:.72;margin-top:4px}
 .modos-celda{position:absolute;width:50%;height:50%;display:flex;flex-direction:column;
-  justify-content:center;gap:20px;padding:26px 54px}
+  justify-content:center;gap:20px;padding:26px 34px}
 .modos-celda.fi{left:0;top:0;text-align:left}
 .modos-celda.fd{right:0;top:0;text-align:right}
 .modos-celda.bi{left:0;bottom:0;text-align:left}
 .modos-celda.bd{right:0;bottom:0;text-align:right}
+/* Cuando el texto de cada cuadrante es corto, los cuatro quedan pegados a los
+   bordes y el centro se vacía. Esta variante los empuja hacia el cruce: el
+   texto se corre hacia adentro y se apoya contra el eje horizontal. */
+.modos.junto .modos-celda{padding:20px 56px}
+.modos.junto .modos-celda.fi,.modos.junto .modos-celda.fd{justify-content:flex-end;padding-bottom:66px}
+.modos.junto .modos-celda.bi,.modos.junto .modos-celda.bd{justify-content:flex-start;padding-top:66px}
+.modos.junto .modos-celda.fi,.modos.junto .modos-celda.bi{padding-left:180px}
+.modos.junto .modos-celda.fd,.modos.junto .modos-celda.bd{padding-right:180px}
+
+/* Variante con una cara conocida por cuadrante: el retrato manda y el nombre
+   del modo queda debajo, en chico. */
+.modos.caras .modos-celda{flex-direction:row;align-items:center;gap:34px}
+.modos.caras .modos-celda.fd,.modos.caras .modos-celda.bd{flex-direction:row-reverse}
+.modos.caras .modos-celda img{flex:none;width:206px;height:206px;border-radius:50%;
+  object-fit:cover;border:5px solid rgba(243,242,235,.9)}
+.modos.caras .cara-texto b{display:block;font-size:52px}
+.modos.caras .cara-texto span{display:block;font-size:31px;opacity:.75;margin-top:10px}
+
 .modos-celda b{font-family:Calistoga,serif;font-size:62px;line-height:1.02;font-weight:400}
 .modos-celda span{font-size:33px;line-height:1.42;opacity:.88}
 
@@ -489,10 +535,19 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
   </section>
 
   <!-- 20 -->
-  <section class="placa" data-notas="Cierre de la charla, misma serie que la clave 1 de Mindfulness.">
+  <section class="placa" data-notas="Cierre de la charla, misma serie que la clave 1 de Mindfulness. Avisar que escaneen el código antes de irse: se llevan la rueda de emociones al teléfono, en PNG para imprimir y en JPG para mandarla por mensaje. NECESITA INTERNET del lado de ellos, no de la sala: si no tienen datos, la dirección camposhr.com/rueda queda escrita debajo del código.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <p class="frase">El registro emocional<br>es la <b>clave 2</b> del liderazgo humano.</p>
+      <div class="cierre-qr">
+        <div class="dicho">
+          <p class="frase">El registro emocional<br>es la <b>clave 2</b> del liderazgo humano.</p>
+        </div>
+        <div class="baja">
+          <div class="caja"><img src="data:image/png;base64,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" alt="Código para descargar la rueda de emociones"></div>
+          <b>Llevate la rueda</b>
+          <span>camposhr.com/rueda</span>
+        </div>
+      </div>
     </div>
   </section>
 

@@ -523,22 +523,33 @@ export default function Cuestionario({
 }
 
 /**
- * Achica la selfie antes de subirla: lado mayor 640px, JPEG.
- * Evita subir 5 MB desde el celular en una sala con wifi flojo.
+ * Recorta la selfie a un cuadrado y la achica antes de subirla: 640px de lado,
+ * JPEG. Evita subir 5 MB desde el celular en una sala con wifi flojo.
+ *
+ * El recorte se hace acá y no al mostrarla porque en la matriz la foto va dentro
+ * de un círculo: si se sube entera, el círculo la recorta después y en una foto
+ * vertical eso le come la frente o el mentón. Guardándola ya cuadrada, lo que la
+ * persona ve en la previsualización es exactamente lo que queda en la matriz.
+ *
+ * En una foto vertical el cuadrado no se toma del centro sino más arriba: en una
+ * selfie con el brazo estirado la cara queda en la mitad de arriba, y un recorte
+ * centrado la corta.
  */
 async function reducirImagen(archivo: File): Promise<Blob> {
   const bitmap = await createImageBitmap(archivo);
-  const lado = 640;
-  const escala = Math.min(1, lado / Math.max(bitmap.width, bitmap.height));
-  const ancho = Math.round(bitmap.width * escala);
-  const alto = Math.round(bitmap.height * escala);
+  const lado = Math.min(bitmap.width, bitmap.height);
+  const sobraX = bitmap.width - lado;
+  const sobraY = bitmap.height - lado;
+  const desdeX = sobraX / 2;
+  const desdeY = sobraY * 0.22;
 
+  const salida = Math.min(640, lado);
   const canvas = document.createElement('canvas');
-  canvas.width = ancho;
-  canvas.height = alto;
+  canvas.width = salida;
+  canvas.height = salida;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('sin canvas');
-  ctx.drawImage(bitmap, 0, 0, ancho, alto);
+  ctx.drawImage(bitmap, desdeX, desdeY, lado, lado, 0, 0, salida, salida);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
