@@ -2672,10 +2672,23 @@ body {
 }
 
 
+/* Nombre del ciclo, como encabezado del grupo: la columna Ciclo sale de la
+   tabla porque dentro de un grupo dice siempre lo mismo. */
+.pres-ciclo {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+.presentaciones + .presentaciones {
+  padding-top: 26px;
+}
 .pres-tabla {
   display: grid;
   grid-template-columns:
-    max-content max-content max-content minmax(16rem, 1fr) max-content max-content max-content;
+    max-content max-content minmax(16rem, 1fr) max-content max-content max-content;
   align-items: center;
   overflow: hidden;
 }

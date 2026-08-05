@@ -1,7 +1,7 @@
 [
   {
     "token": "pla-mindfulness-a37f21",
-    "cliente": "Pla",
+    "cliente": "Pla S.A.",
     "ciclo": "Liderazgos Humanos",
     "titulo": "Mindfulness",
     "subtitulo": "Tengo la cabeza a mil",
@@ -12,7 +12,7 @@
   },
   {
     "token": "pla-emociones-25442e",
-    "cliente": "Pla",
+    "cliente": "Pla S.A.",
     "ciclo": "Liderazgos Humanos",
     "titulo": "Registro de Emociones",
     "subtitulo": "Cuando algo me está afectando",
@@ -23,7 +23,7 @@
   },
   {
     "token": "pla-habilidades-cb8577",
-    "cliente": "Pla",
+    "cliente": "Pla S.A.",
     "ciclo": "Liderazgos Humanos",
     "titulo": "Registro de Habilidades",
     "subtitulo": "Quiero conocerme mejor",
@@ -34,7 +34,7 @@
   },
   {
     "token": "pla-malas-noticias-ffa3d5",
-    "cliente": "Pla",
+    "cliente": "Pla S.A.",
     "ciclo": "Liderazgos Humanos",
     "titulo": "Comunicar Malas Noticias",
     "subtitulo": "Mañana tengo una conversación difícil",
@@ -45,7 +45,7 @@
   },
   {
     "token": "pla-conflictos-2f4e9a",
-    "cliente": "Pla",
+    "cliente": "Pla S.A.",
     "ciclo": "Liderazgos Humanos",
     "titulo": "Resolver Conflictos",
     "subtitulo": "Hay tensión en mi equipo",
@@ -62,7 +62,7 @@
     "subtitulo": "Con las actividades en el teléfono",
     "placas": 17,
     "fecha": "2026-08-07",
-    "orden": 6,
+    "orden": 1,
     "archivo": "pla-mindfulness-b-51356e.html"
   }
 ]
