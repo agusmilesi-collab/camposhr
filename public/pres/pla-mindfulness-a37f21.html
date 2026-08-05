@@ -191,25 +191,24 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 /* Las cuatro fichas de modo ocupan la misma caja. Con la altura pegada a su
    texto, cada una tenia un largo distinto y, al centrarse, el titulo arrancaba
    mas abajo en cada placa: al pasar de una a otra el bloque saltaba. */
-.modo{width:1660px;margin:0 auto;text-align:left;height:830px;
+.modo{position:relative;width:1660px;margin:0 auto;text-align:left;height:830px;flex:none;
   display:flex;flex-direction:column}
 .modo-pie{margin-top:auto}
-.modo-cabeza{display:flex;align-items:center;gap:26px;margin-bottom:30px}
-.modo-grilla{flex:none;width:74px;height:74px;display:grid;grid-template-columns:1fr 1fr;
-  grid-template-rows:1fr 1fr;gap:5px}
-.modo-grilla i{background:rgba(243,242,235,.22);border-radius:4px}
-.modo-grilla i.on{background:#f0b64c}
+.modo-cabeza{display:flex;align-items:center;gap:34px;margin-bottom:28px}
 .modo-cabeza h2{font-size:88px;font-weight:400;line-height:1;letter-spacing:-.02em;flex:1}
 .modo-cabeza h2 b{font-weight:700}
-.modo-icono{flex:none;width:150px;height:150px;object-fit:contain}
+.modo-icono{flex:none;width:126px;height:126px;object-fit:contain}
 .modo-funcion{font-size:44px;font-weight:700;margin-bottom:18px}
-.modo-texto{font-size:33px;line-height:1.38;opacity:.94;margin-bottom:46px}
-.modo-frase{align-self:center}
-.modo-pie{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:56px;align-items:start}
+.modo-texto{font-size:33px;line-height:1.38;opacity:.94;height:290px}
+
+/* La frase se ancla a una altura fija de la ficha. Dejarla fluir después del
+   texto la corría de placa en placa, aunque los bloques de arriba midan lo
+   mismo: acá lo que importa es que las cuatro coincidan al pasar de una a otra. */
+.modo-pie{position:absolute;left:0;right:0;top:598px;display:flex;justify-content:center}
 .modo-pie h3{font-size:34px;font-weight:700;margin-bottom:16px}
 .modo-pie p{font-size:30px;line-height:1.34;opacity:.9}
 /* La frase es lo que más se recuerda de cada modo: va grande y sin rótulo. */
-.modo-frase{font-family:Calistoga,serif;font-size:66px;line-height:1.12;text-align:center;
+.modo-frase{font-family:Calistoga,serif;font-size:76px;line-height:1.1;text-align:center;max-width:1200px;
   align-self:center;padding-top:14px}
 
 /* El cepillo entra desde el borde de abajo, apenas girado, y sube hasta el
@@ -231,7 +230,7 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
    arma sola con las respuestas del cuestionario y se refresca mientras la
    proyectan, así la expositora no cambia de pantalla. */
 .matriz-viva{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  padding:34px 56px 22px}
+  padding:26px 48px 20px}
 .matriz-viva h2{font-family:Calistoga,serif;font-size:68px;line-height:1;color:#f3f2eb;
   letter-spacing:-.01em;margin-bottom:14px}
 .matriz-marco{position:relative;flex:1;width:100%}
@@ -251,27 +250,95 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 .titulo-placa{font-family:Calistoga,serif;font-size:72px;line-height:1.06;
   letter-spacing:-.015em;margin:0 auto 46px;width:100%;max-width:1440px}
 .contenido.izq .lista.ancha{max-width:1440px;margin:0 auto}
+.contenido.izq .escala{max-width:1440px}
+
+/* Escala de puntaje: tres tramos, cada uno en su tarjeta y con una barra que
+   se llena. La barra hace visible de una que el modelo va de menos a más, que
+   en una lista de rangos hay que deducir. */
+.escala{display:flex;gap:44px;width:100%;max-width:1500px;margin:0 auto;align-items:stretch}
+.escala>div{flex:1;background:rgba(0,0,0,.32);border:1px solid rgba(243,242,235,.26);
+  border-radius:22px;padding:44px 42px;text-align:left;display:flex;flex-direction:column}
+.escala .riel{height:16px;border-radius:999px;background:rgba(243,242,235,.18);
+  overflow:hidden;margin-bottom:34px}
+.escala .riel i{display:block;height:100%;background:#f0b64c;border-radius:999px}
+.escala>div:nth-child(1) .riel i{width:25%}
+.escala>div:nth-child(2) .riel i{width:60%}
+.escala>div:nth-child(3) .riel i{width:100%}
+.escala b{display:block;font-family:Calistoga,serif;font-size:76px;line-height:1;
+  font-weight:400;margin-bottom:22px}
+.escala span{display:block;font-size:33px;line-height:1.4;opacity:.88}
+
+/* Cierre con QR: la frase de la izquierda y, a la derecha, el código para
+   llevarse la rueda al teléfono. La lee el grupo desde su asiento, así que el
+   código va grande y sobre fondo claro. */
+.cierre-qr{display:flex;align-items:center;gap:120px;width:100%;max-width:1560px;margin:0 auto}
+.cierre-qr .dicho{flex:1;text-align:left}
+.cierre-qr .dicho .frase{max-width:100%}
+.cierre-qr .baja{flex:none;text-align:center}
+/* Caja del código. Cuando el QR todavía no existe queda el hueco marcado, para
+   que no pase inadvertido que falta producirlo. */
+.cierre-qr .baja .caja{background:#f3f2eb;padding:30px;border-radius:20px;display:inline-block}
+.cierre-qr .baja .caja.pendiente-qr{width:450px;height:450px;background:none;
+  border:5px dashed rgba(243,242,235,.45);display:flex;align-items:center;
+  justify-content:center;font-size:34px;opacity:.7}
+.cierre-qr .baja img{display:block;width:390px;height:390px}
+.cierre-qr .baja b{display:block;font-size:38px;font-weight:700;margin-top:30px}
+.cierre-qr .baja span{display:block;font-size:30px;opacity:.75;margin-top:10px;line-height:1.35}
+
+/* Dos definiciones enfrentadas, cada una en su tarjeta. Con viñetas los dos
+   términos se leían como pasos de una lista; en tarjetas se leen como lo que
+   son: dos cosas distintas, una al lado de la otra. */
+.tarjetas{display:flex;gap:56px;width:100%;max-width:1440px;margin:0 auto}
+.tarjetas>div{flex:1;background:rgba(0,0,0,.32);border:1px solid rgba(243,242,235,.26);
+  border-radius:22px;padding:52px 46px;text-align:left}
+.tarjetas h3{font-family:Calistoga,serif;font-size:60px;line-height:1;font-weight:400;
+  letter-spacing:-.01em;margin-bottom:26px}
+.tarjetas p{font-size:36px;line-height:1.4;opacity:.9}
+.contenido.izq .tarjetas ~ .consigna{width:100%;max-width:1440px;margin-left:auto;margin-right:auto}
 
 /* Mapa de los cuatro modos, con los ejes nombrados y el cerebro en el cruce.
    El eje vertical va de lo macro a lo micro y el horizontal de la razón a la
    emoción: es el mismo cuadro que ven en la matriz del equipo. */
-.modos{position:relative;width:100%;max-width:1780px;height:800px;margin:0 auto}
+.modos{position:relative;width:100%;max-width:1540px;height:790px;margin:0 auto}
 .modos:before,.modos:after{content:"";position:absolute;opacity:.55}
 .modos:before{left:50%;top:0;bottom:0;border-left:4px dotted rgba(243,242,235,.85)}
 .modos:after{top:50%;left:0;right:0;border-top:4px dotted rgba(243,242,235,.85)}
 .modos-cerebro{position:absolute;left:50%;top:50%;width:184px;
   transform:translate(-50%,-50%);opacity:.9}
-.modos-eje{position:absolute;left:0;right:0;text-align:center;line-height:1.15}
-.modos-eje.arriba{top:-118px}
-.modos-eje.abajo{bottom:-118px}
+.modos-eje{position:absolute;line-height:1.15}
+.modos-eje.arriba,.modos-eje.abajo{left:0;right:0;text-align:center}
+.modos-eje.arriba{top:-112px}
+.modos-eje.abajo{bottom:-112px}
+/* Los laterales van girados: de pie no le roban ancho a los cuadrantes. */
+.modos-eje.izq,.modos-eje.der{top:50%;writing-mode:vertical-rl;text-align:center}
+.modos-eje.izq{left:-104px;transform:translateY(-50%) rotate(180deg)}
+.modos-eje.der{right:-104px;transform:translateY(-50%)}
 .modos-eje b{display:block;font-family:Calistoga,serif;font-size:44px;font-weight:400}
 .modos-eje span{display:block;font-size:34px;opacity:.72;margin-top:4px}
 .modos-celda{position:absolute;width:50%;height:50%;display:flex;flex-direction:column;
-  justify-content:center;gap:20px;padding:26px 54px}
+  justify-content:center;gap:20px;padding:26px 34px}
 .modos-celda.fi{left:0;top:0;text-align:left}
 .modos-celda.fd{right:0;top:0;text-align:right}
 .modos-celda.bi{left:0;bottom:0;text-align:left}
 .modos-celda.bd{right:0;bottom:0;text-align:right}
+/* Cuando el texto de cada cuadrante es corto, los cuatro quedan pegados a los
+   bordes y el centro se vacía. Esta variante los empuja hacia el cruce: el
+   texto se corre hacia adentro y se apoya contra el eje horizontal. */
+.modos.junto .modos-celda{padding:20px 56px}
+.modos.junto .modos-celda.fi,.modos.junto .modos-celda.fd{justify-content:flex-end;padding-bottom:66px}
+.modos.junto .modos-celda.bi,.modos.junto .modos-celda.bd{justify-content:flex-start;padding-top:66px}
+.modos.junto .modos-celda.fi,.modos.junto .modos-celda.bi{padding-left:180px}
+.modos.junto .modos-celda.fd,.modos.junto .modos-celda.bd{padding-right:180px}
+
+/* Variante con una cara conocida por cuadrante: el retrato manda y el nombre
+   del modo queda debajo, en chico. */
+.modos.caras .modos-celda{flex-direction:row;align-items:center;gap:34px}
+.modos.caras .modos-celda.fd,.modos.caras .modos-celda.bd{flex-direction:row-reverse}
+.modos.caras .modos-celda img{flex:none;width:206px;height:206px;border-radius:50%;
+  object-fit:cover;border:5px solid rgba(243,242,235,.9)}
+.modos.caras .cara-texto b{display:block;font-size:52px}
+.modos.caras .cara-texto span{display:block;font-size:31px;opacity:.75;margin-top:10px}
+
 .modos-celda b{font-family:Calistoga,serif;font-size:62px;line-height:1.02;font-weight:400}
 .modos-celda span{font-size:33px;line-height:1.42;opacity:.88}
 

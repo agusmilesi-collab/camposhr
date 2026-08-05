@@ -191,25 +191,24 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 /* Las cuatro fichas de modo ocupan la misma caja. Con la altura pegada a su
    texto, cada una tenia un largo distinto y, al centrarse, el titulo arrancaba
    mas abajo en cada placa: al pasar de una a otra el bloque saltaba. */
-.modo{width:1660px;margin:0 auto;text-align:left;height:830px;
+.modo{position:relative;width:1660px;margin:0 auto;text-align:left;height:830px;flex:none;
   display:flex;flex-direction:column}
 .modo-pie{margin-top:auto}
-.modo-cabeza{display:flex;align-items:center;gap:26px;margin-bottom:30px}
-.modo-grilla{flex:none;width:74px;height:74px;display:grid;grid-template-columns:1fr 1fr;
-  grid-template-rows:1fr 1fr;gap:5px}
-.modo-grilla i{background:rgba(243,242,235,.22);border-radius:4px}
-.modo-grilla i.on{background:#f0b64c}
+.modo-cabeza{display:flex;align-items:center;gap:34px;margin-bottom:28px}
 .modo-cabeza h2{font-size:88px;font-weight:400;line-height:1;letter-spacing:-.02em;flex:1}
 .modo-cabeza h2 b{font-weight:700}
-.modo-icono{flex:none;width:150px;height:150px;object-fit:contain}
+.modo-icono{flex:none;width:126px;height:126px;object-fit:contain}
 .modo-funcion{font-size:44px;font-weight:700;margin-bottom:18px}
-.modo-texto{font-size:33px;line-height:1.38;opacity:.94;margin-bottom:46px}
-.modo-frase{align-self:center}
-.modo-pie{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:56px;align-items:start}
+.modo-texto{font-size:33px;line-height:1.38;opacity:.94;height:290px}
+
+/* La frase se ancla a una altura fija de la ficha. Dejarla fluir después del
+   texto la corría de placa en placa, aunque los bloques de arriba midan lo
+   mismo: acá lo que importa es que las cuatro coincidan al pasar de una a otra. */
+.modo-pie{position:absolute;left:0;right:0;top:598px;display:flex;justify-content:center}
 .modo-pie h3{font-size:34px;font-weight:700;margin-bottom:16px}
 .modo-pie p{font-size:30px;line-height:1.34;opacity:.9}
 /* La frase es lo que más se recuerda de cada modo: va grande y sin rótulo. */
-.modo-frase{font-family:Calistoga,serif;font-size:66px;line-height:1.12;text-align:center;
+.modo-frase{font-family:Calistoga,serif;font-size:76px;line-height:1.1;text-align:center;max-width:1200px;
   align-self:center;padding-top:14px}
 
 /* El cepillo entra desde el borde de abajo, apenas girado, y sube hasta el
@@ -251,6 +250,23 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 .titulo-placa{font-family:Calistoga,serif;font-size:72px;line-height:1.06;
   letter-spacing:-.015em;margin:0 auto 46px;width:100%;max-width:1440px}
 .contenido.izq .lista.ancha{max-width:1440px;margin:0 auto}
+.contenido.izq .escala{max-width:1440px}
+
+/* Escala de puntaje: tres tramos, cada uno en su tarjeta y con una barra que
+   se llena. La barra hace visible de una que el modelo va de menos a más, que
+   en una lista de rangos hay que deducir. */
+.escala{display:flex;gap:44px;width:100%;max-width:1500px;margin:0 auto;align-items:stretch}
+.escala>div{flex:1;background:rgba(0,0,0,.32);border:1px solid rgba(243,242,235,.26);
+  border-radius:22px;padding:44px 42px;text-align:left;display:flex;flex-direction:column}
+.escala .riel{height:16px;border-radius:999px;background:rgba(243,242,235,.18);
+  overflow:hidden;margin-bottom:34px}
+.escala .riel i{display:block;height:100%;background:#f0b64c;border-radius:999px}
+.escala>div:nth-child(1) .riel i{width:25%}
+.escala>div:nth-child(2) .riel i{width:60%}
+.escala>div:nth-child(3) .riel i{width:100%}
+.escala b{display:block;font-family:Calistoga,serif;font-size:76px;line-height:1;
+  font-weight:400;margin-bottom:22px}
+.escala span{display:block;font-size:33px;line-height:1.4;opacity:.88}
 
 /* Cierre con QR: la frase de la izquierda y, a la derecha, el código para
    llevarse la rueda al teléfono. La lee el grupo desde su asiento, así que el
@@ -259,7 +275,12 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 .cierre-qr .dicho{flex:1;text-align:left}
 .cierre-qr .dicho .frase{max-width:100%}
 .cierre-qr .baja{flex:none;text-align:center}
+/* Caja del código. Cuando el QR todavía no existe queda el hueco marcado, para
+   que no pase inadvertido que falta producirlo. */
 .cierre-qr .baja .caja{background:#f3f2eb;padding:30px;border-radius:20px;display:inline-block}
+.cierre-qr .baja .caja.pendiente-qr{width:450px;height:450px;background:none;
+  border:5px dashed rgba(243,242,235,.45);display:flex;align-items:center;
+  justify-content:center;font-size:34px;opacity:.7}
 .cierre-qr .baja img{display:block;width:390px;height:390px}
 .cierre-qr .baja b{display:block;font-size:38px;font-weight:700;margin-top:30px}
 .cierre-qr .baja span{display:block;font-size:30px;opacity:.75;margin-top:10px;line-height:1.35}
