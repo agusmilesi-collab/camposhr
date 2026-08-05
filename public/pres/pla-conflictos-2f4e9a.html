@@ -309,6 +309,13 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
 .tarjetas h3{font-family:Calistoga,serif;font-size:60px;line-height:1;font-weight:400;
   letter-spacing:-.01em;margin-bottom:26px}
 .tarjetas p{font-size:36px;line-height:1.4;opacity:.9}
+/* La flecha baja del nombre de la emoción a lo que significa: son dos cosas
+   distintas, la palabra y su lectura, y la flecha dice cuál explica a cuál.
+   El título toma el alto de dos renglones, así la flecha cae a la misma altura
+   en las tres tarjetas aunque un nombre entre en una sola línea. */
+.tarjetas.flecha h3{min-height:2em;margin-bottom:0}
+.tarjetas.flecha p:before{content:"";display:block;width:34px;height:52px;margin:22px 0 16px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 40' fill='none' stroke='%23f0b64c' stroke-width='4.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v26'/%3E%3Cpath d='M5 24l7 8 7-8'/%3E%3C/svg%3E") no-repeat center/contain}
 /* El número va cuando el orden importa: son pasos, no opciones sueltas. */
 .tarjetas .num{display:block;font-family:Calistoga,serif;font-size:38px;color:#f0b64c;
   margin-bottom:20px}
@@ -460,12 +467,12 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 7 -->
   <section class="placa" data-notas="Los filtros en acción, con ejemplos que dan risa porque todos los pensamos alguna vez. Después preguntar: ¿alguien tiene presente alguna situación de malentendido por tener miradas distintas del mismo hecho? ¿Podría dar un ejemplo? Lo ideal es registrar qué emoción te genera, qué filtros usaste vos, aceptar que el otro usa los suyos, y volver a mirar el hecho.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
-      <p class="frase" style="font-size:52px;margin-bottom:44px">El <b>20%</b> de la atención en la comunicación se afecta con los filtros.</p>
-      <div class="lista" style="max-width:1400px">
-        <li>“Con esa camisa no tiene autoridad para hablar.”</li>
-        <li>“Este me hace acordar a mi hermano.”</li>
-        <li>“Siempre habla de lo mismo, esto ya me lo dijo.”</li>
+    <div class="contenido izq tres">
+      <div class="titulo-placa">El 20% de la atención se va en los filtros</div>
+      <div class="tarjetas tres">
+        <div><p>“Con esa camisa no tiene autoridad para hablar.”</p></div>
+        <div><p>“Este me hace acordar a mi hermano.”</p></div>
+        <div><p>“Siempre habla de lo mismo, esto ya me lo dijo.”</p></div>
       </div>
     </div>
   </section>
@@ -513,11 +520,12 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 12 -->
   <section class="placa" data-notas="Sumado a los filtros, cuando el contexto presenta cambios aparecen estos tres mecanismos. Ninguno ayuda a adaptarse, a construir ni a seguir adelante. Preguntar: ¿no les parece lógico que las personas tengamos fallas en la comunicación, en el día a día y en las interacciones?">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
-      <div class="lista" style="max-width:1400px">
-        <li><b>Juzgo.</b> Critico o me quejo, sin construir.</li>
-        <li><b>Me resisto.</b> Me da miedo lo nuevo: mejor malo conocido.</li>
-        <li><b>Controlo.</b> Quiero controlar todo, no puedo, y me frustro.</li>
+    <div class="contenido izq tres">
+      <div class="titulo-placa">Frente a lo que cambia</div>
+      <div class="tarjetas tres flecha">
+        <div><h3>Juzgo</h3><p>Critico o me quejo, sin construir.</p></div>
+        <div><h3>Me resisto</h3><p>Me da miedo lo nuevo: mejor malo conocido.</p></div>
+        <div><h3>Controlo</h3><p>Quiero controlar todo, no puedo, y me frustro.</p></div>
       </div>
       <div class="consigna">Ninguno ayuda a adaptarse.</div>
     </div>
@@ -546,12 +554,12 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 15 -->
   <section class="placa" data-notas="LEER LA PLACA EN VOZ ALTA. Frente al próximo desacuerdo, ¿cómo podría ser más objetivo? Al ser objetivos eliminamos nuestros filtros, sesgos y mecanismos automáticos de interpretación.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
-      <p class="frase" style="font-size:52px;margin-bottom:44px">Al ser objetivos <b>eliminamos filtros, sesgos y automatismos</b>.</p>
-      <div class="lista" style="max-width:1400px">
-        <li>Reemplacen adjetivos con datos.</li>
-        <li>Eviten palabras imprecisas: siempre, mucho, casi.</li>
-        <li>Tengan paciencia, comunicarse es complejo.</li>
+    <div class="contenido izq tres">
+      <div class="titulo-placa">Al ser objetivos eliminamos filtros, sesgos y automatismos</div>
+      <div class="tarjetas tres">
+        <div><h3>Datos</h3><p>Reemplacen los adjetivos con datos.</p></div>
+        <div><h3>Precisión</h3><p>Eviten palabras imprecisas: siempre, mucho, casi.</p></div>
+        <div><h3>Paciencia</h3><p>Comunicarse es complejo.</p></div>
       </div>
     </div>
   </section>
@@ -595,12 +603,13 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 20 -->
   <section class="placa" data-notas="La herramienta para intervenir sin echar leña. Los cuatro juntos bajan la defensa del otro, porque no lo estás acusando: le mostrás el hecho y tu necesidad. Que ensayen los cuatro pasos sobre un caso cotidiano, o sobre el que pensaron en la apertura. Fuente por si preguntan: comunicación no violenta, Marshall Rosenberg. Queda proyectada durante el ensayo.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="pasos">
-        <div><i>1</i><div><b>Observación.</b><span>El hecho, sin adjetivos: “el informe llegó dos días tarde”.</span></div></div>
-        <div><i>2</i><div><b>Sentimiento.</b><span>Lo que a vos te genera: “me preocupa”.</span></div></div>
-        <div><i>3</i><div><b>Necesidad.</b><span>Lo que está en juego: “necesito llegar a la entrega”.</span></div></div>
-        <div><i>4</i><div><b>Pedido.</b><span>Concreto y en pregunta: “¿podemos ver cómo lo resolvemos?”.</span></div></div>
+    <div class="contenido izq cuatro">
+      <div class="titulo-placa">Cuatro pasos para intervenir</div>
+      <div class="tarjetas cuatro">
+        <div><span class="num">01</span><h3>Observación</h3><p>El hecho, sin adjetivos: “el informe llegó dos días tarde”.</p></div>
+        <div><span class="num">02</span><h3>Sentimiento</h3><p>Lo que a vos te genera: “me preocupa”.</p></div>
+        <div><span class="num">03</span><h3>Necesidad</h3><p>Lo que está en juego: “necesito llegar a la entrega”.</p></div>
+        <div><span class="num">04</span><h3>Pedido</h3><p>Concreto y en pregunta: “¿podemos ver cómo lo resolvemos?”.</p></div>
       </div>
     </div>
   </section>

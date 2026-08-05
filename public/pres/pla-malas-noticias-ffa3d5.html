@@ -309,6 +309,13 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
 .tarjetas h3{font-family:Calistoga,serif;font-size:60px;line-height:1;font-weight:400;
   letter-spacing:-.01em;margin-bottom:26px}
 .tarjetas p{font-size:36px;line-height:1.4;opacity:.9}
+/* La flecha baja del nombre de la emoción a lo que significa: son dos cosas
+   distintas, la palabra y su lectura, y la flecha dice cuál explica a cuál.
+   El título toma el alto de dos renglones, así la flecha cae a la misma altura
+   en las tres tarjetas aunque un nombre entre en una sola línea. */
+.tarjetas.flecha h3{min-height:2em;margin-bottom:0}
+.tarjetas.flecha p:before{content:"";display:block;width:34px;height:52px;margin:22px 0 16px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 40' fill='none' stroke='%23f0b64c' stroke-width='4.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v26'/%3E%3Cpath d='M5 24l7 8 7-8'/%3E%3C/svg%3E") no-repeat center/contain}
 /* El número va cuando el orden importa: son pasos, no opciones sueltas. */
 .tarjetas .num{display:block;font-family:Calistoga,serif;font-size:38px;color:#f0b64c;
   margin-bottom:20px}
@@ -459,7 +466,7 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq">
       <div class="duo-titulo">Dos cosas distintas</div>
-      <div class="duo">
+      <div class="tarjetas">
         <div>
           <h3>Cargar con la culpa</h3>
           <p>Como si la decisión fuera tuya y tuvieras que pedir perdón.</p>
@@ -484,12 +491,12 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 8 -->
   <section class="placa" data-notas="Antes de los pasos, entender por qué es difícil. La tercera capa es la que más se subestima: lo que el otro lee sobre sí mismo. Por eso no alcanza con decir la verdad, hay que cuidar cómo cae en la persona.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
-      <p class="frase" style="margin-bottom:46px">Toda mala noticia toca <b>tres cosas a la vez</b>.</p>
-      <div class="lista" style="max-width:1400px">
-        <li><b>El hecho.</b> Qué pasa.</li>
-        <li><b>La emoción.</b> Lo que se siente.</li>
-        <li><b>La interpretación.</b> Lo que el otro lee sobre sí mismo: “¿esto significa que no sirvo?”.</li>
+    <div class="contenido izq tres">
+      <div class="titulo-placa">Toda mala noticia toca tres cosas a la vez</div>
+      <div class="tarjetas tres flecha">
+        <div><h3>El hecho</h3><p>Qué pasa.</p></div>
+        <div><h3>La emoción</h3><p>Lo que se siente.</p></div>
+        <div><h3>La interpretación</h3><p>Lo que el otro lee sobre sí mismo: “¿esto significa que no sirvo?”.</p></div>
       </div>
     </div>
   </section>
@@ -497,12 +504,13 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 9 -->
   <section class="placa" data-notas="Los cuatro pasos, y queda proyectada durante todo el ensayo. El porqué de cada uno va en voz. Encuadrá: el otro necesita un segundo para pararse, no una emboscada. Decilo claro: dar vueltas parece más amable pero es más cruel, alarga la agonía y confunde. Dale lugar: la emoción necesita lugar, si la tapás se agranda. Cerrá con un paso: dejar a alguien sin un 'y ahora qué' lo deja en caída libre.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="pasos">
-        <div><i>1</i><div><b>Encuadrá.</b><span>Lugar privado, sin apuro, y un aviso corto: “necesito hablarte de algo difícil”.</span></div></div>
-        <div><i>2</i><div><b>Decilo claro.</b><span>La noticia directa, en una o dos frases, sin eufemismos ni vueltas.</span></div></div>
-        <div><i>3</i><div><b>Dale lugar.</b><span>Después de decirlo, silencio. Dejá que reaccione sin taparlo ni salir a justificarte.</span></div></div>
-        <div><i>4</i><div><b>Cerrá con un paso.</b><span>Qué pasa ahora, algo concreto: “el lunes vemos los próximos pasos”.</span></div></div>
+    <div class="contenido izq cuatro">
+      <div class="titulo-placa">Los cuatro pasos</div>
+      <div class="tarjetas cuatro">
+        <div><span class="num">01</span><h3>Encuadrá</h3><p>Lugar privado, sin apuro, y un aviso corto: “necesito hablarte de algo difícil”.</p></div>
+        <div><span class="num">02</span><h3>Decilo claro</h3><p>La noticia directa, en una o dos frases, sin eufemismos ni vueltas.</p></div>
+        <div><span class="num">03</span><h3>Dale lugar</h3><p>Después de decirlo, silencio. Dejá que reaccione sin taparlo ni salir a justificarte.</p></div>
+        <div><span class="num">04</span><h3>Cerrá con un paso</h3><p>Qué pasa ahora, algo concreto: “el lunes vemos los próximos pasos”.</p></div>
       </div>
     </div>
   </section>
@@ -519,12 +527,12 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Raleway,sys
   <!-- 11 -->
   <section class="placa" data-notas="ENSAYO. Armar tríos y repartir las tres situaciones, que son las que pidió el cliente. Rotan roles. Dos rondas, y que cambien de grupo, así todos la dan y la reciben. El que comunica usa los cuatro pasos. El que recibe reacciona como reaccionaría de verdad. El que observa mira una sola cosa.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
-      <div class="ejercicio-frase" style="font-size:60px;margin-bottom:40px">En tríos: uno comunica, uno recibe, uno observa</div>
-      <div class="lista" style="max-width:1450px">
-        <li>Comunicar una suspensión.</li>
-        <li>Dar una devolución por bajo desempeño.</li>
-        <li>Comunicar que no habrá recategorización.</li>
+    <div class="contenido izq tres">
+      <div class="titulo-placa">En tríos: uno comunica, uno recibe, uno observa</div>
+      <div class="tarjetas tres">
+        <div><h3>Una suspensión</h3></div>
+        <div><h3>Una devolución por bajo desempeño</h3></div>
+        <div><h3>Que no habrá recategorización</h3></div>
       </div>
       <div class="consigna">El que observa mira una sola cosa: ¿el vínculo se sostuvo o se rompió?</div>
     </div>
