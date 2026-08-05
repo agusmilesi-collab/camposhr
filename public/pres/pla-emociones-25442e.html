@@ -16,6 +16,7 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 .contenido{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:120px 200px;color:#f3f2eb;text-align:center}
 .contenido.izq{align-items:flex-start;text-align:left}
+.contenido.pleno{padding-left:70px;padding-right:70px}
 
 .frase{font-size:61px;line-height:1.3;letter-spacing:-.02em;font-weight:400;max-width:1420px}
 .frase b{font-weight:700}
@@ -187,7 +188,12 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
    descripción, y abajo tres columnas con la frase en el medio y grande.
    El indicador es una grilla de cuatro, no un cerebro: el modelo se presenta
    como mapa de formas de trabajar y no se afirma nada sobre el cerebro. */
-.modo{width:1660px;margin:0 auto;text-align:left}
+/* Las cuatro fichas de modo ocupan la misma caja. Con la altura pegada a su
+   texto, cada una tenia un largo distinto y, al centrarse, el titulo arrancaba
+   mas abajo en cada placa: al pasar de una a otra el bloque saltaba. */
+.modo{width:1660px;margin:0 auto;text-align:left;height:830px;
+  display:flex;flex-direction:column}
+.modo-pie{margin-top:auto}
 .modo-cabeza{display:flex;align-items:center;gap:26px;margin-bottom:30px}
 .modo-grilla{flex:none;width:74px;height:74px;display:grid;grid-template-columns:1fr 1fr;
   grid-template-rows:1fr 1fr;gap:5px}
@@ -198,6 +204,7 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 .modo-icono{flex:none;width:150px;height:150px;object-fit:contain}
 .modo-funcion{font-size:44px;font-weight:700;margin-bottom:18px}
 .modo-texto{font-size:33px;line-height:1.38;opacity:.94;margin-bottom:46px}
+.modo-frase{align-self:center}
 .modo-pie{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:56px;align-items:start}
 .modo-pie h3{font-size:34px;font-weight:700;margin-bottom:16px}
 .modo-pie p{font-size:30px;line-height:1.34;opacity:.9}
@@ -237,6 +244,36 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 .matriz-marco.sin-red .cargando{display:none}
 .matriz-marco.sin-red .offline{display:block}
 .matriz-marco.cargada .matriz-aviso{display:none}
+
+/* Título de placa, para las que llevan un rótulo arriba del contenido. Comparte
+   ancho y margen con el bloque que encabeza, así los dos arrancan en la misma
+   vertical. */
+.titulo-placa{font-family:Calistoga,serif;font-size:72px;line-height:1.06;
+  letter-spacing:-.015em;margin:0 auto 46px;width:100%;max-width:1440px}
+.contenido.izq .lista.ancha{max-width:1440px;margin:0 auto}
+
+/* Mapa de los cuatro modos, con los ejes nombrados y el cerebro en el cruce.
+   El eje vertical va de lo macro a lo micro y el horizontal de la razón a la
+   emoción: es el mismo cuadro que ven en la matriz del equipo. */
+.modos{position:relative;width:100%;max-width:1780px;height:800px;margin:0 auto}
+.modos:before,.modos:after{content:"";position:absolute;opacity:.55}
+.modos:before{left:50%;top:0;bottom:0;border-left:4px dotted rgba(243,242,235,.85)}
+.modos:after{top:50%;left:0;right:0;border-top:4px dotted rgba(243,242,235,.85)}
+.modos-cerebro{position:absolute;left:50%;top:50%;width:184px;
+  transform:translate(-50%,-50%);opacity:.9}
+.modos-eje{position:absolute;left:0;right:0;text-align:center;line-height:1.15}
+.modos-eje.arriba{top:-118px}
+.modos-eje.abajo{bottom:-118px}
+.modos-eje b{display:block;font-family:Calistoga,serif;font-size:44px;font-weight:400}
+.modos-eje span{display:block;font-size:34px;opacity:.72;margin-top:4px}
+.modos-celda{position:absolute;width:50%;height:50%;display:flex;flex-direction:column;
+  justify-content:center;gap:20px;padding:26px 54px}
+.modos-celda.fi{left:0;top:0;text-align:left}
+.modos-celda.fd{right:0;top:0;text-align:right}
+.modos-celda.bi{left:0;bottom:0;text-align:left}
+.modos-celda.bd{right:0;bottom:0;text-align:right}
+.modos-celda b{font-family:Calistoga,serif;font-size:62px;line-height:1.02;font-weight:400}
+.modos-celda span{font-size:33px;line-height:1.42;opacity:.88}
 
 /* Mapa de los cuatro modos con una cara conocida en cada uno. La cruz punteada
    arma el mapa; no lleva cerebro al medio porque el modelo se presenta como
