@@ -261,9 +261,8 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
   <section class="placa" data-notas="Tercera charla, después del almuerzo. Encuadre: todos somos distintos, hay cosas que nos salen naturales y otras que nos demandan más esfuerzo. Ninguna mejor que la otra. AVISO DE RIGOR, para preparar: el modelo de cuadrantes se presenta como mapa de estilos de trabajo y disparador de conversación. No se afirma nada sobre el cerebro, porque la lateralización creativo derecho y lógico izquierdo está desacreditada.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <div class="kicker">Ciclo Liderazgos Humanos</div>
-      <div class="portada-nombre" style="font-size:96px">Registro de Habilidades</div>
-      <div class="portada-sub">Quiero conocerme mejor</div>
+      <div class="portada-nombre" style="font-size:128px">Quiero conocerme mejor</div>
+      <div class="portada-sub">Registro de Habilidades</div>
     </div>
   </section>
 
@@ -580,6 +579,8 @@ placas.forEach((p, i) => {
   if (p.classList.contains('sin-marca')) return;
   const img = document.createElement('img');
   img.className = 'logo'; img.src = logo; p.appendChild(img);
+  // La portada no lleva numero: abre la charla, no es una placa mas.
+  if (i === 0) return;
   const f = document.createElement('div');
   f.className = 'folio'; f.textContent = i + 1; p.appendChild(f);
 });

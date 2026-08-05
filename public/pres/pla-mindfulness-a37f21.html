@@ -261,9 +261,8 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
   <section class="placa" data-notas="Presentación del ciclo. Bienvenida y encuadre: dos días, cinco encuentros. Avisar que para un ejercicio van a necesitar hoja y algo para escribir, así no se pierde tiempo después.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <div class="kicker">Ciclo Liderazgos Humanos</div>
-      <div class="portada-nombre">Mindfulness</div>
-      <div class="portada-sub">Tengo la cabeza a mil</div>
+      <div class="portada-nombre" style="font-size:128px">Tengo la cabeza a mil</div>
+      <div class="portada-sub">Mindfulness</div>
     </div>
   </section>
 
@@ -449,6 +448,8 @@ placas.forEach((p, i) => {
   if (p.classList.contains('sin-marca')) return;
   const img = document.createElement('img');
   img.className = 'logo'; img.src = logo; p.appendChild(img);
+  // La portada no lleva numero: abre la charla, no es una placa mas.
+  if (i === 0) return;
   const f = document.createElement('div');
   f.className = 'folio'; f.textContent = i + 1; p.appendChild(f);
 });
