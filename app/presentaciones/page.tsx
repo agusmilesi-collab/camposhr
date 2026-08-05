@@ -7,6 +7,14 @@ const BASE = 'https://tools.camposhr.com/pres';
 export default function Presentaciones() {
   const todas = listarPresentaciones();
 
+  // Un bloque por ciclo, en el orden en que aparecen en el índice.
+  const ciclos = todas.reduce<{ nombre: string; filas: typeof todas }[]>((acc, p) => {
+    const grupo = acc.find((g) => g.nombre === p.ciclo);
+    if (grupo) grupo.filas.push(p);
+    else acc.push({ nombre: p.ciclo, filas: [p] });
+    return acc;
+  }, []);
+
   return (
     <main className="wrap wrap-ancho">
       <section className="head">
@@ -27,29 +35,24 @@ export default function Presentaciones() {
         </p>
       </section>
 
-      <section className="presentaciones">
-        {todas.length === 0 ? (
-          <p className="empty">Todavía no hay presentaciones cargadas.</p>
-        ) : (
+      {ciclos.map((ciclo) => (
+        <section className="presentaciones" key={ciclo.nombre}>
+          <h2 className="pres-ciclo">{ciclo.nombre}</h2>
           <div className="card pres-tabla">
             <div className="pres-row pres-th">
               <span>Fecha</span>
               <span>Cliente</span>
-              <span>Ciclo</span>
               <span>Charla</span>
               <span className="pres-num">Placas</span>
               <span />
               <span />
             </div>
 
-            {todas.map((p) => (
+            {ciclo.filas.map((p) => (
               <div className="pres-row" key={`${p.cliente}-${p.orden}`}>
                 <span className="cot-fecha">{formatoFecha(p.fecha)}</span>
                 <span>
                   <em className="chip chip-cliente">{p.cliente}</em>
-                </span>
-                <span>
-                  <em className="chip chip-ciclo">{p.ciclo}</em>
                 </span>
                 <span className="pres-charla">
                   <b>
@@ -88,8 +91,8 @@ export default function Presentaciones() {
               </div>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      ))}
     </main>
   );
 }
