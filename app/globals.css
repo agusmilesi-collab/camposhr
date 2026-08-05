@@ -2871,3 +2871,16 @@ body {
   color: var(--muted);
   letter-spacing: 0.02em;
 }
+.rd-ayuda {
+  margin-top: 18px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.rd-ayuda strong {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.rd-btn[disabled] {
+  opacity: 0.6;
+}

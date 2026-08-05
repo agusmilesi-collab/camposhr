@@ -3,12 +3,13 @@
  *
  * Es el destino del código QR de la charla de emociones: el grupo la escanea al
  * cierre y se lleva la rueda al teléfono. Por eso la página es una sola pantalla
- * con la imagen y dos botones, sin nada más que leer.
+ * con la imagen y un botón, sin nada más que leer.
  *
- * Se ofrecen los dos formatos porque se usan para cosas distintas: el JPG para
- * mandarlo por mensaje y el PNG para imprimirlo, que es como queda a la vista en
- * el escritorio.
+ * Va en JPEG y no en PNG: la rueda se mira en el teléfono, la fototeca lo maneja
+ * sin vueltas y pesa la mitad. El PNG solo aportaría en una impresión grande.
  */
+
+import Guardar from './Guardar';
 
 export const metadata = {
   title: 'Rueda de emociones — Sentir Mindfulness',
@@ -29,26 +30,18 @@ export default function Rueda() {
 
         <img
           className="rd-img"
-          src="/rueda/rueda-de-emociones.png"
+          src="/rueda/rueda-de-emociones.jpg"
           alt="Rueda de emociones"
         />
 
         <div className="rd-botones">
-          <a
-            className="rd-btn"
-            href="/rueda/rueda-de-emociones.png"
-            download="rueda-de-emociones.png"
-          >
-            Descargar PNG
-          </a>
-          <a
-            className="rd-btn rd-btn-suave"
-            href="/rueda/rueda-de-emociones.jpg"
-            download="rueda-de-emociones.jpg"
-          >
-            Descargar JPG
-          </a>
+          <Guardar src="/rueda/rueda-de-emociones.jpg" />
         </div>
+
+        <p className="rd-ayuda">
+          Si el teléfono la guarda en Archivos y la querés en las fotos, mantené
+          apretada la imagen de arriba y elegí <strong>Guardar en Fotos</strong>.
+        </p>
 
         <p className="rd-pie">
           Sentir Mindfulness · Bienestar corporativo
