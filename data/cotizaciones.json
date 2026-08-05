@@ -1,5 +1,17 @@
 [
   {
+    "token": "pla-liderazgos-ffa832",
+    "fecha": "2026-07-21",
+    "cliente": "PLA / John Deere",
+    "concepto": "Liderazgos Humanos · ciclo de cinco encuentros",
+    "importe": 2625000,
+    "version": "1.0",
+    "estado": "Aprobada",
+    "archivo": "pla-liderazgos-ffa832.html",
+    "reemplazaA": null,
+    "nota": "Cinco encuentros presenciales a ARS 525.000. Se dictan el 7 y el 11 de agosto."
+  },
+  {
     "token": "myf-comercial-1f7a93",
     "fecha": "2026-07-30",
     "cliente": "MyF Distribuciones",

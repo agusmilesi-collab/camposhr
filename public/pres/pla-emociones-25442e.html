@@ -163,7 +163,7 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 .controles button:hover,.controles a:hover{background:#2a2a2a;border-color:#666}
 .controles .salir{margin-left:auto;border-color:#4a3a1a;color:#f0b64c}
 .tira{display:flex;gap:12px;padding:12px 16px 16px;overflow-x:auto;overflow-y:hidden;
-  scrollbar-width:thin;scrollbar-color:#444 transparent}
+  overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#444 transparent}
 .tira::-webkit-scrollbar{height:8px}
 .tira::-webkit-scrollbar-thumb{background:#444;border-radius:4px}
 .mini{position:relative;flex:none;width:176px;height:99px;border-radius:8px;overflow:hidden;
@@ -204,6 +204,12 @@ html,body{height:100%;background:#0b0b0b;overflow:hidden;font-family:Raleway,sys
 /* La frase es lo que más se recuerda de cada modo: va grande y sin rótulo. */
 .modo-frase{font-family:Calistoga,serif;font-size:66px;line-height:1.12;text-align:center;
   align-self:center;padding-top:14px}
+
+/* El cepillo entra desde el borde de abajo, apenas girado, y sube hasta el
+   texto. Va a 1,4 veces su tamaño de archivo: es una foto y aguanta el
+   agrandado, a diferencia del logo, que muestra los bordes duros enseguida. */
+.cepillo{position:absolute;left:50%;bottom:-40px;width:560px;
+  transform:translateX(-58%) rotate(-7deg);transform-origin:bottom center}
 
 /* Placa de cierre, igual en las cinco charlas. El fondo es propio y lleva el
    logo grande: acá la marca es el contenido, no una firma al pie. */
@@ -518,7 +524,10 @@ function mostrar(i) {
     sigue: placas[actual + 1] ? (placas[actual + 1].textContent.trim().slice(0, 90) || 'placa sin texto') : 'fin de la charla'
   };
   cargarMatriz();
-  if (typeof minis !== 'undefined') marcarMini();
+  if (typeof minis !== 'undefined') {
+    marcarMini();
+    if (panel.classList.contains('visible')) centrarMini();
+  }
   if (canal) canal.postMessage(carga);
   localStorage.setItem('placas-pla-2', JSON.stringify(carga));
 }
@@ -544,11 +553,28 @@ placas.forEach((p, i) => {
 });
 const minis = [...tira.children];
 
+// Cuando la expositora desliza la tira con la mano, manda ella: centrar la
+// placa actual en ese momento le arrebata el desplazamiento y la tira parece
+// volverse sola.
+let tocada = 0;
+tira.addEventListener('pointerdown', () => { tocada = performance.now(); }, { passive: true });
+tira.addEventListener('touchstart', () => { tocada = performance.now(); }, { passive: true });
+// La rueda vertical desplaza la tira a lo ancho: es lo que espera cualquiera
+// que use trackpad, y sin esto la rueda no hace nada sobre la tira.
+tira.addEventListener('wheel', e => {
+  tocada = performance.now();
+  if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+  e.preventDefault();
+  tira.scrollLeft += e.deltaY;
+}, { passive: false });
+
 function marcarMini() {
   minis.forEach((m, i) => m.classList.toggle('actual', i === actual));
-  if (panel.classList.contains('visible')) {
-    minis[actual].scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
-  }
+}
+
+function centrarMini() {
+  if (performance.now() - tocada < 1500) return;
+  minis[actual].scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
 }
 
 const panel = document.getElementById('panel');
@@ -570,9 +596,10 @@ panel.querySelector('.salir').addEventListener('click', e => e.stopPropagation()
 
 let ocultarTira;
 function verTira(si) {
+  const abria = si && !panel.classList.contains('visible');
   panel.classList.toggle('visible', si);
   document.getElementById('ayuda').classList.toggle('con-tira', si);
-  if (si) marcarMini();
+  if (abria) { marcarMini(); centrarMini(); }
 }
 panel.addEventListener('mouseenter', () => clearTimeout(ocultarTira));
 panel.addEventListener('mouseleave', () => {
