@@ -37,9 +37,10 @@ const COTIZACION = /^\/q\/([A-Za-z0-9_-]{6,128})\/?$/;
 // secreto y la presentación lleva noindex.
 const PRESENTACION = /^\/pres\/([A-Za-z0-9_-]{6,128})\/?$/;
 
-// El cuestionario se responde desde el host principal: /c/<empresa>, más su
-// endpoint de guardado. Son las únicas rutas públicas de la app.
-const RUTAS_PUBLICAS = /^\/(c|l|api\/cuestionario)\//;
+// Lo que se responde desde el teléfono vive en el host principal, porque es el
+// destino de los códigos QR: el cuestionario en /c/<empresa> y el ciclo de
+// encuentros en /ciclo/<empresa>, cada uno con su endpoint de guardado.
+const RUTAS_PUBLICAS = /^\/(c|l|ciclo|api\/cuestionario|api\/ciclo)\//;
 
 export function middleware(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase();
