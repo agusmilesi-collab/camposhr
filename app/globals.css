@@ -3589,8 +3589,8 @@ body {
 }
 .enc-fila {
   display: grid;
-  /* cliente · gente · estado · los tres enlaces */
-  grid-template-columns: 1fr auto auto auto auto auto;
+  /* cliente · gente · estado · control · código */
+  grid-template-columns: 1fr auto auto auto auto;
   gap: 16px;
   align-items: center;
   padding: 16px 20px;
