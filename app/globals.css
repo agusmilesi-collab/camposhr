@@ -3477,3 +3477,63 @@ body {
     gap: 8px;
   }
 }
+
+/* Contador de la placa de la consigna: cuántos respondieron sobre cuántos hay.
+   Va embebido en la diapositiva, así que se lee desde el fondo de la sala. */
+.cp-conteo {
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.cp-cifra {
+  display: flex;
+  align-items: baseline;
+  gap: 0.12em;
+  margin: 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  line-height: 1;
+  color: var(--ink);
+}
+.cp-cifra b {
+  font-size: 3.4em;
+  font-weight: 400;
+}
+.cp-cifra span {
+  font-size: 2em;
+  color: var(--muted);
+}
+.cp-cifra em {
+  font-size: 2em;
+  font-style: normal;
+  color: var(--muted);
+}
+.cp-cifra-lista b {
+  color: var(--st-amber);
+}
+.cp-cifra-pie {
+  margin: 0.5em 0 0;
+  font-size: 0.85em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Dentro de una placa el bloque va centrado: la diapositiva ya tiene su propio
+   margen y su título, así que el eje a la izquierda descoloca. */
+.cp-placa {
+  align-items: center;
+  text-align: center;
+  padding: 0;
+}
+.cp-placa .cp-nube {
+  justify-content: center;
+}
+.cp-placa .cp-barras,
+.cp-placa .cp-escala,
+.cp-placa .cp-textos {
+  width: 100%;
+  text-align: left;
+}
+.cp-placa .cp-pie {
+  text-align: center;
+}
