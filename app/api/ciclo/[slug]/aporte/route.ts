@@ -39,7 +39,18 @@ export async function POST(
   // Cerrada quiere decir cerrada: una vez que la expositora la cierra, lo que
   // llega tarde no entra. Si no, el conteo proyectado sigue moviéndose mientras
   // ella ya está hablando de otra cosa.
-  if (corrida.actividad_abierta_id !== actividad.id) {
+  //
+  // Las que se abren juntas cuentan como abiertas mientras lo esté cualquiera
+  // del grupo: la expositora abre una sola vez y cada uno recorre las cinco a
+  // su ritmo, así que sólo la primera figura como abierta en la corrida.
+  const abierta =
+    corrida.actividad_abierta_id === actividad.id ||
+    (actividad.grupo !== null &&
+      actividad.grupo ===
+        (await getActividad(corrida.ciclo_id, corrida.actividad_abierta_id ?? ''))
+          ?.grupo);
+
+  if (!abierta) {
     return new NextResponse('La actividad está cerrada', { status: 409 });
   }
 

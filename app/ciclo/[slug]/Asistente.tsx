@@ -52,11 +52,16 @@ type Cruce = {
   }[];
 };
 
+/** Una de las que se abrieron juntas, con lo que esta persona ya respondió. */
+type EnFila = ActividadPublica & { respondida: boolean; mio: Valor | null };
+
 type Estado = {
   actividad: ActividadPublica | null;
   respondida: boolean;
   mio: Valor | null;
   total: number;
+  /** Las que se abren de una sola vez y se responden seguidas. */
+  grupo: EnFila[] | null;
   cruce: Cruce | null;
 };
 
@@ -231,19 +236,12 @@ export default function Asistente({
             </p>
           </section>
         ) : (
-          <Formulario
+          <Fila
             key={estado.actividad.id}
             slug={slug}
             empresa={empresa}
             yo={yo}
-            asistenteId={yo.id}
-            actividad={estado.actividad}
-            respondida={estado.respondida}
-            mio={estado.mio}
-            cruce={estado.cruce}
-            onGuardado={(valor) =>
-              setEstado((e) => (e ? { ...e, respondida: true, mio: valor } : e))
-            }
+            estado={estado}
           />
         )}
       </main>
@@ -466,6 +464,76 @@ function Grilla({
 }
 
 // --------------------------------------------------------------- formularios
+
+/**
+ * Las actividades que se abrieron juntas, una atrás de la otra.
+ *
+ * La expositora abre una sola vez y cada uno avanza a su ritmo. Con cinco
+ * consignas seguidas, habilitarlas de a una obligaría a estar mirando el
+ * teléfono en vez de dictar, y el grupo esperaría a que todos terminen cada
+ * pregunta antes de pasar a la siguiente.
+ *
+ * Cada consigna guarda su respuesta por separado, así que las placas y los
+ * contadores siguen contando de a una.
+ */
+function Fila({
+  slug,
+  empresa,
+  yo,
+  estado,
+}: {
+  slug: string;
+  empresa: string;
+  yo: Yo;
+  estado: Estado;
+}) {
+  const sueltas: EnFila[] = estado.actividad
+    ? [
+        {
+          ...estado.actividad,
+          respondida: estado.respondida,
+          mio: estado.mio,
+        },
+      ]
+    : [];
+  const todas = estado.grupo?.length ? estado.grupo : sueltas;
+
+  /** Lo que va respondiendo en esta pantalla, sin esperar al sondeo. */
+  const [respondidas, setRespondidas] = useState<Record<string, Valor>>({});
+  const listo = (a: EnFila) => Boolean(respondidas[a.id]) || a.respondida;
+
+  // Retoma donde quedó: el que llega tarde o recarga la página no vuelve a
+  // empezar por la primera.
+  const pendiente = todas.find((a) => !listo(a));
+  const actual = pendiente ?? todas[todas.length - 1];
+  if (!actual) return null;
+
+  const numero = todas.indexOf(actual) + 1;
+
+  return (
+    <>
+      {todas.length > 1 && (
+        <p className="ci-paso">
+          {numero} de {todas.length}
+        </p>
+      )}
+      <Formulario
+        key={actual.id}
+        slug={slug}
+        empresa={empresa}
+        yo={yo}
+        asistenteId={yo.id}
+        actividad={actual}
+        respondida={listo(actual)}
+        mio={respondidas[actual.id] ?? actual.mio}
+        cruce={estado.cruce}
+        onGuardado={(valor) =>
+          setRespondidas((r) => ({ ...r, [actual.id]: valor }))
+        }
+      />
+    </>
+  );
+}
 
 function Formulario({
   slug,

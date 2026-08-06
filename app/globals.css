@@ -2995,6 +2995,14 @@ body {
 .ci-listo {
   text-align: center;
 }
+/* En qué consigna va, cuando la expositora abrió varias juntas. */
+.ci-paso {
+  margin: 0 0 10px;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 .ci-tilde {
   font-size: 2.2rem;
   color: var(--st-amber);
