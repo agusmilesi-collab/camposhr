@@ -32,12 +32,21 @@ export default async function CicloAsistente({
     asistentes.map((a) => a.foto_path).filter((p): p is string => Boolean(p))
   );
 
-  const caras: Cara[] = asistentes.map((a) => ({
-    id: a.id,
-    nombre: a.nombre,
-    apellido: a.apellido,
-    foto: a.foto_path ? fotos.get(a.foto_path) ?? null : null,
-  }));
+  // Por apellido, con las reglas del castellano: la base ordena por bytes y
+  // ahí "Álvarez" cae después de "Zabala", que es justo donde nadie la busca.
+  const orden = new Intl.Collator('es', { sensitivity: 'base' });
+
+  const caras: Cara[] = asistentes
+    .map((a) => ({
+      id: a.id,
+      nombre: a.nombre,
+      apellido: a.apellido,
+      foto: a.foto_path ? fotos.get(a.foto_path) ?? null : null,
+    }))
+    .sort(
+      (a, b) =>
+        orden.compare(a.apellido, b.apellido) || orden.compare(a.nombre, b.nombre)
+    );
 
   return <Asistente slug={empresa.slug} empresa={empresa.nombre} caras={caras} />;
 }
