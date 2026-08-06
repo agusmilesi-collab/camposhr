@@ -2299,6 +2299,12 @@ body {
 .wrap-ancho {
   max-width: 1180px;
 }
+/* En las páginas anchas la nota acompaña al ancho de la tabla que encabeza.
+   El tope de 52ch está pensado para la columna angosta y acá deja el bloque
+   cortado a media pantalla. */
+.wrap-ancho .head-nota {
+  max-width: none;
+}
 
 .cot-resumen {
   display: grid;
