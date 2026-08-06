@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import QRCode from 'qrcode';
-import { getEmpresaPorSlug } from '@/lib/supabase';
-import { listarAsistentes } from '@/lib/ciclo';
+import { listarAsistentes, resolverCiclo } from '@/lib/ciclo';
 
 /**
  * El código de entrada al ciclo, para proyectar.
@@ -30,8 +29,9 @@ export default async function QrDelCiclo({
   params: { slug: string };
   searchParams: { placa?: string };
 }) {
-  const empresa = await getEmpresaPorSlug(params.slug);
-  if (!empresa) notFound();
+  const ciclo = await resolverCiclo(params.slug);
+  if (!ciclo) notFound();
+  const { empresa, corrida } = ciclo;
 
   const url = `${BASE_PUBLICA}/ciclo/${empresa.slug}`;
   const svg = await QRCode.toString(url, {
@@ -41,7 +41,7 @@ export default async function QrDelCiclo({
     color: { dark: '#16202b', light: '#ffffff' },
   });
 
-  const asistentes = await listarAsistentes(empresa.id);
+  const asistentes = await listarAsistentes(corrida.id);
 
   // Dentro de una placa del deck: sin cabecera y sobre el fondo de la
   // diapositiva. Es la primera placa del encuentro, la que se proyecta

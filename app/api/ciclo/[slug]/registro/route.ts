@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getEmpresaPorSlug, subirSelfie } from '@/lib/supabase';
-import { crearAsistente } from '@/lib/ciclo';
+import { subirSelfie } from '@/lib/supabase';
+import { crearAsistente, resolverCiclo } from '@/lib/ciclo';
 
 /**
  * Alta de un asistente. Se hace una sola vez por ciclo, no por encuentro.
@@ -18,8 +18,9 @@ export async function POST(
   req: Request,
   { params }: { params: { slug: string } }
 ) {
-  const empresa = await getEmpresaPorSlug(params.slug);
-  if (!empresa) return new NextResponse('Ciclo no encontrado', { status: 404 });
+  const ciclo = await resolverCiclo(params.slug);
+  if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
+  const { empresa, corrida } = ciclo;
 
   let form: FormData;
   try {
@@ -51,7 +52,7 @@ export async function POST(
 
   try {
     const asistente = await crearAsistente({
-      empresa_id: empresa.id,
+      corrida_id: corrida.id,
       nombre,
       apellido,
       foto_path: fotoPath,

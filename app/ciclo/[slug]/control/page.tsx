@@ -1,6 +1,10 @@
 import { notFound } from 'next/navigation';
-import { getEmpresaPorSlug } from '@/lib/supabase';
-import { claveControlOk, listarActividades, listarAsistentes } from '@/lib/ciclo';
+import {
+  claveControlOk,
+  listarActividades,
+  listarAsistentes,
+  resolverCiclo,
+} from '@/lib/ciclo';
 import Control from './Control';
 
 /**
@@ -25,15 +29,16 @@ export default async function ControlDelCiclo({
   params: { slug: string };
   searchParams: { k?: string };
 }) {
-  const empresa = await getEmpresaPorSlug(params.slug);
-  if (!empresa) notFound();
+  const ciclo = await resolverCiclo(params.slug);
+  if (!ciclo) notFound();
+  const { empresa, corrida } = ciclo;
 
   const clave = searchParams?.k ?? '';
-  if (!claveControlOk(clave)) notFound();
+  if (!claveControlOk(corrida, clave)) notFound();
 
   const [actividades, asistentes] = await Promise.all([
-    listarActividades(empresa.id),
-    listarAsistentes(empresa.id),
+    listarActividades(corrida.ciclo_id),
+    listarAsistentes(corrida.id),
   ]);
 
   return (
@@ -48,7 +53,7 @@ export default async function ControlDelCiclo({
         charla: a.charla,
         tipo: a.tipo,
         titulo: a.titulo,
-        abierta: a.abierta,
+        abierta: corrida.actividad_abierta_id === a.id,
       }))}
     />
   );

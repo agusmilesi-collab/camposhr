@@ -68,7 +68,11 @@ export default function PanelEncuentro({
     <section className="enc">
       <div className="enc-cabeza">
         <div>
-          <h3>Durante el encuentro</h3>
+          {/* Con varios clientes corriendo el mismo ciclo, los tableros van uno
+              abajo del otro: el nombre tiene que estar en el título. */}
+          <h3>
+            Durante el encuentro <span className="enc-cliente">{empresa}</span>
+          </h3>
           <p>
             Las actividades que el grupo responde desde el teléfono. El deck no
             necesita conexión: esto va aparte.

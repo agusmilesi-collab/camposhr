@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getEmpresaPorSlug } from '@/lib/supabase';
 import {
   getActividadAbierta,
   getAporteDe,
   listarAportes,
+  resolverCiclo,
   type Actividad,
 } from '@/lib/ciclo';
 
@@ -36,10 +36,10 @@ export async function GET(
   req: Request,
   { params }: { params: { slug: string } }
 ) {
-  const empresa = await getEmpresaPorSlug(params.slug);
-  if (!empresa) return new NextResponse('Ciclo no encontrado', { status: 404 });
+  const ciclo = await resolverCiclo(params.slug);
+  if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
 
-  const actividad = await getActividadAbierta(empresa.id);
+  const actividad = await getActividadAbierta(ciclo.corrida);
   if (!actividad) {
     return NextResponse.json({ actividad: null, respondida: false, total: 0 });
   }
@@ -47,7 +47,7 @@ export async function GET(
   const asistenteId = new URL(req.url).searchParams.get('asistente') ?? '';
   const [mio, todos] = await Promise.all([
     asistenteId ? getAporteDe(actividad.id, asistenteId) : Promise.resolve(null),
-    listarAportes(actividad.id),
+    listarAportes(ciclo.corrida.id, actividad.id),
   ]);
 
   return NextResponse.json({

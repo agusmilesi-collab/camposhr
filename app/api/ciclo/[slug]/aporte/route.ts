@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getEmpresaPorSlug } from '@/lib/supabase';
 import {
   getActividad,
   getAsistente,
   guardarAporte,
   normalizarValor,
+  resolverCiclo,
 } from '@/lib/ciclo';
 
 /**
@@ -22,8 +22,9 @@ export async function POST(
   req: Request,
   { params }: { params: { slug: string } }
 ) {
-  const empresa = await getEmpresaPorSlug(params.slug);
-  if (!empresa) return new NextResponse('Ciclo no encontrado', { status: 404 });
+  const ciclo = await resolverCiclo(params.slug);
+  if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
+  const { corrida } = ciclo;
 
   let datos: { actividadId?: unknown; asistenteId?: unknown; valor?: unknown };
   try {
@@ -32,17 +33,17 @@ export async function POST(
     return new NextResponse('Datos ilegibles', { status: 400 });
   }
 
-  const actividad = await getActividad(empresa.id, String(datos.actividadId ?? ''));
+  const actividad = await getActividad(corrida.ciclo_id, String(datos.actividadId ?? ''));
   if (!actividad) return new NextResponse('Actividad no encontrada', { status: 404 });
 
   // Cerrada quiere decir cerrada: una vez que la expositora la cierra, lo que
   // llega tarde no entra. Si no, el conteo proyectado sigue moviéndose mientras
   // ella ya está hablando de otra cosa.
-  if (!actividad.abierta) {
+  if (corrida.actividad_abierta_id !== actividad.id) {
     return new NextResponse('La actividad está cerrada', { status: 409 });
   }
 
-  const asistente = await getAsistente(empresa.id, String(datos.asistenteId ?? ''));
+  const asistente = await getAsistente(corrida.id, String(datos.asistenteId ?? ''));
   if (!asistente) return new NextResponse('Asistente no encontrado', { status: 404 });
 
   let valor;
@@ -53,7 +54,7 @@ export async function POST(
   }
 
   try {
-    await guardarAporte(actividad.id, asistente.id, valor);
+    await guardarAporte(corrida.id, actividad.id, asistente.id, valor);
   } catch {
     return new NextResponse('No se pudo guardar', { status: 500 });
   }
