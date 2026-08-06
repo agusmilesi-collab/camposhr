@@ -18,3 +18,6 @@ export function partirOpcion(opcion: string): [string, string | null] {
   if (corte === -1) return [opcion, null];
   return [opcion.slice(0, corte), opcion.slice(corte + 3)];
 }
+
+/** Los días en que puede quedar el compromiso. Sábado y domingo no trabajan. */
+export const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];

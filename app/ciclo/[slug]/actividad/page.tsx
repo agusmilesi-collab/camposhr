@@ -255,6 +255,27 @@ function Vista({ actividad, resumen }: { actividad: Actividad; resumen: Resumen 
         </div>
       );
 
+    case 'plan': {
+      // Cuándo eligió el grupo. Lo que escribió cada uno queda en su teléfono:
+      // el compromiso se lee en voz alta, no se proyecta.
+      const tope = Math.max(1, ...resumen.porDia.map((d) => d.veces));
+      return (
+        <div className="cp-barras">
+          {resumen.porDia.map((d) => (
+            <div className="cp-barra" key={d.dia}>
+              <div className="cp-barra-fila">
+                <span className="cp-barra-texto">{d.dia}</span>
+                <span className="cp-barra-valor">{d.veces}</span>
+              </div>
+              <div className="cp-barra-riel">
+                <span style={{ width: `${(d.veces / tope) * 100}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
     case 'cruce':
       // Los nombres no se proyectan: cada teléfono ya tiene el suyo, y la lista
       // completa en pantalla manda a todo el grupo a leer el proyector en vez
