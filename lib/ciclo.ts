@@ -21,6 +21,8 @@
  */
 
 import 'server-only';
+
+import { DIAS } from '@/lib/opciones';
 import {
   getEmpresaPorSlug,
   insert,
@@ -49,6 +51,10 @@ export const TIPOS = [
    *  la persona ya está identificada por el ciclo y no vuelve a cargar nada.
    *  Sus respuestas van a su propia tabla, no a `aportes`. */
   'cuestionario',
+  /** El compromiso de la charla 1: día, hora y antes de qué. Con eso el
+   *  teléfono arma un evento que el calendario agenda con la alarma puesta, y
+   *  el informe puede contar cuándo eligió cada uno en vez de leer textos. */
+  'plan',
   /** No se responde: el teléfono recibe con quién juntarse. El reparto lo hace
    *  el servidor al abrirla, cruzando los cuadrantes del cuestionario. */
   'cruce',
@@ -121,6 +127,8 @@ export type Valor =
   | { tipo: 'escala'; escala: number }
   | { tipo: 'texto'; texto: string }
   | { tipo: 'marcas'; marcas: number[] }
+  /** Día de la semana (1 lunes a 5 viernes), hora en 24 horas y antes de qué. */
+  | { tipo: 'plan'; dia: number; hora: string; texto: string }
   /** Con quién le toca juntarse. Esto no lo responde la persona: lo escribe el
    *  servidor al abrir la actividad. Va en `aportes` igual que una respuesta
    *  porque necesita lo mismo: una fila por persona, que no cambie después. */
@@ -593,6 +601,18 @@ export function normalizarValor(actividad: Actividad, crudo: unknown): Valor {
       return { tipo: 'texto', texto };
     }
 
+    case 'plan': {
+      const dia = Number(dato.dia);
+      if (!Number.isInteger(dia) || dia < 1 || dia > 5) {
+        throw new Error('Elegí un día');
+      }
+      const hora = String(dato.hora ?? '');
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)) throw new Error('Elegí una hora');
+      const texto = String(dato.texto ?? '').trim().slice(0, 120);
+      if (texto.length < 3) throw new Error('Escribí antes de qué');
+      return { tipo: 'plan', dia, hora, texto };
+    }
+
     case 'enlace':
     case 'cuestionario':
       throw new Error('Esta actividad se responde en su propia pantalla');
@@ -630,6 +650,14 @@ export type Resumen =
     }
   | { tipo: 'texto'; total: number; textos: string[] }
   | { tipo: 'marcas'; total: number; conteo: { texto: string; veces: number }[] }
+  | {
+      tipo: 'plan';
+      total: number;
+      /** Cuántos eligieron cada día, de lunes a viernes. */
+      porDia: { dia: string; veces: number }[];
+      /** Las franjas horarias elegidas, de la más temprana a la más tarde. */
+      horas: string[];
+    }
   | { tipo: 'enlace'; total: number }
   | { tipo: 'cuestionario'; total: number }
   | { tipo: 'cruce'; total: number; grupos: number };
@@ -711,6 +739,20 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
         .map((a) => (a.valor?.tipo === 'texto' ? a.valor.texto : null))
         .filter((t): t is string => Boolean(t));
       return { tipo: 'texto', total, textos };
+    }
+
+    case 'plan': {
+      const planes = aportes
+        .map((a) => (a.valor?.tipo === 'plan' ? a.valor : null))
+        .filter((v): v is { tipo: 'plan'; dia: number; hora: string; texto: string } =>
+          Boolean(v)
+        );
+      const porDia = DIAS.map((dia, i) => ({
+        dia,
+        veces: planes.filter((p) => p.dia === i + 1).length,
+      }));
+      const horas = planes.map((p) => p.hora).sort();
+      return { tipo: 'plan', total, porDia, horas };
     }
 
     case 'enlace':

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Cuestionario from '@/app/c/[slug]/Cuestionario';
-import { partirOpcion } from '@/lib/opciones';
+import { DIAS, partirOpcion } from '@/lib/opciones';
 
 /**
  * El teléfono del asistente.
@@ -20,6 +20,7 @@ type TipoActividad =
   | 'marcas'
   | 'enlace'
   | 'cuestionario'
+  | 'plan'
   | 'cruce';
 
 /** Quién está respondiendo desde este teléfono. */
@@ -39,7 +40,8 @@ type Valor =
   | { tipo: 'opcion'; opcion: number }
   | { tipo: 'escala'; escala: number }
   | { tipo: 'texto'; texto: string }
-  | { tipo: 'marcas'; marcas: number[] };
+  | { tipo: 'marcas'; marcas: number[] }
+  | { tipo: 'plan'; dia: number; hora: string; texto: string };
 
 /** Con quién le toca juntarse, en la consigna de consultar una decisión. */
 type Cruce = {
@@ -563,6 +565,8 @@ function Formulario({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [corrigiendo, setCorrigiendo] = useState(false);
+  const [dia, setDia] = useState<number | null>(null);
+  const [hora, setHora] = useState('');
 
   const cerrado = respondida && !corrigiendo;
 
@@ -600,7 +604,27 @@ function Formulario({
           ✓
         </p>
         <h1 className="ci-titulo">Listo</h1>
-        {mio?.tipo === 'texto' && SE_LEEN_EN_VOZ_ALTA.has(actividad.clave) ? (
+        {mio?.tipo === 'plan' ? (
+          /* El compromiso queda escrito y con el botón que lo agenda: el papel
+             se pierde y la buena intención también, y el calendario aparece
+             solo el día y la hora que la persona eligió. */
+          <>
+            <blockquote className="ci-mio">
+              {DIAS[mio.dia - 1]} {mio.hora}, antes de {mio.texto}
+            </blockquote>
+            <div className="ci-acciones">
+              <a
+                className="cq-btn ci-enlace"
+                href={`/api/ciclo/${slug}/agenda?actividad=${actividad.id}&asistente=${asistenteId}`}
+              >
+                Agendar en mi calendario
+              </a>
+              <p className="ci-anonimo">
+                Se abre el calendario del teléfono con la alarma puesta.
+              </p>
+            </div>
+          </>
+        ) : mio?.tipo === 'texto' && SE_LEEN_EN_VOZ_ALTA.has(actividad.clave) ? (
           /* Lo escrito queda entero en pantalla mientras la consigna siga
              abierta: esta se lee en voz alta y de memoria se pierde la
              redacción exacta, que es lo que se trabaja. */
@@ -720,6 +744,55 @@ function Formulario({
             </button>
           ))}
         </div>
+      )}
+
+      {actividad.tipo === 'plan' && (
+        <>
+          <div className="ci-dias">
+            {DIAS.map((nombre, i) => (
+              <button
+                key={nombre}
+                className={`cq-opcion ci-dia ${dia === i + 1 ? 'ci-dia-on' : ''}`}
+                onClick={() => setDia(i + 1)}
+              >
+                {nombre}
+              </button>
+            ))}
+          </div>
+
+          <label className="ci-campo">
+            <span>A qué hora</span>
+            <input
+              className="cq-input ci-hora"
+              type="time"
+              value={hora}
+              onChange={(e) => setHora(e.target.value)}
+            />
+          </label>
+
+          <label className="ci-campo">
+            <span>Antes de qué</span>
+            <input
+              className="cq-input"
+              value={texto}
+              onChange={(e) => setTexto(e.target.value)}
+              maxLength={120}
+              placeholder="la reunión de arranque de turno"
+            />
+          </label>
+
+          <div className="ci-acciones">
+            <button
+              className="cq-btn"
+              disabled={!dia || !hora || texto.trim().length < 3 || enviando}
+              onClick={() =>
+                enviar({ tipo: 'plan', dia: dia!, hora, texto: texto.trim() })
+              }
+            >
+              Guardar
+            </button>
+          </div>
+        </>
       )}
 
       {actividad.tipo === 'texto' && (
@@ -887,6 +960,8 @@ function resumenPropio(mio: Valor | null, actividad: ActividadPublica): string {
       return `Elegiste ${mio.escala}.`;
     case 'texto':
       return 'Tu respuesta quedó guardada, sin tu nombre.';
+    case 'plan':
+      return `Quedó para el ${DIAS[mio.dia - 1].toLowerCase()} a las ${mio.hora}.`;
     case 'marcas':
       return `Marcaste ${mio.marcas.length} ${
         mio.marcas.length === 1 ? 'opción' : 'opciones'

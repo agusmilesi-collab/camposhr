@@ -2995,6 +2995,38 @@ body {
 .ci-listo {
   text-align: center;
 }
+/* El compromiso: el día en botones, la hora en el selector del teléfono. */
+.ci-dias {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 8px;
+  margin-top: 20px;
+}
+.ci-dia {
+  min-height: 48px;
+  font-size: 0.95rem;
+}
+.ci-dia-on {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.ci-campo {
+  display: block;
+  margin-top: 18px;
+}
+.ci-campo > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.ci-hora {
+  font-size: 1.2rem;
+}
+
 /* En qué consigna va, cuando la expositora abrió varias juntas. */
 .ci-paso {
   margin: 0 0 10px;
