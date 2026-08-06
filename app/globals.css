@@ -3035,9 +3035,16 @@ body {
 }
 .ci-cara-nombre {
   font-size: 0.78rem;
-  color: var(--ink-soft);
+  color: var(--muted);
   text-align: center;
   line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+/* El apellido manda: es el criterio de orden de la lista. */
+.ci-cara-nombre b {
+  display: block;
+  font-weight: 500;
+  color: var(--ink);
 }
 .ci-cara:active .ci-cara-foto {
   border-color: var(--st-amber);

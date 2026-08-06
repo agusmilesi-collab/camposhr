@@ -353,7 +353,12 @@ function Grilla({
                 </span>
               )}
             </span>
-            <span className="ci-cara-nombre">{c.nombre}</span>
+            {/* Apellido primero, que es por donde está ordenada la lista:
+                con treinta caras se busca recorriendo la inicial. */}
+            <span className="ci-cara-nombre">
+              <b>{c.apellido}</b>
+              {c.nombre}
+            </span>
           </button>
         ))}
       </div>
