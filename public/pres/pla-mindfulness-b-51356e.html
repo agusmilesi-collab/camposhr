@@ -492,6 +492,10 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 
 /* Bordes y cajas, con la línea del sitio. */
 .cuadro>div{border:1px solid var(--line);background:var(--card);border-radius:12px}
+/* Las tarjetas del deck oscuro se apoyaban en un negro al 32%, que sobre papel
+   se ve gris sucio. Van sin fondo y con el borde en la tinta del sistema. */
+.tarjetas>div,.escala>div{background:transparent;
+  border:1px solid rgba(22,32,43,.35)}
 /* Los dos caminos, cada uno en su tarjeta: se leen como dos opciones y no
    como un texto partido en dos columnas. */
 .duo{gap:40px}
@@ -728,7 +732,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="contenido">
       <p class="frase" style="margin-bottom:44px">Elegí desde el teléfono el momento de la semana que viene:<br><b>qué día, a qué hora y antes de qué</b>.</p>
       <p style="font-size:40px;opacity:.8">“Lunes 7:10, antes de la reunión de arranque de turno.”</p>
-      <div class="consigna" style="margin-top:52px">Antes te aparecen cuatro preguntas de un toque sobre tu equipo y tu día.</div>
+      <div class="consigna" style="margin-top:52px">Antes te aparecen 4 preguntas sobre tu equipo y tu día.</div>
     </div>
   </section>
 
