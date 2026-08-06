@@ -16,19 +16,19 @@ values
   ('c1-esfuerzo', 1, 2, 'opcion',
    '¿Qué parte de tu rol te demanda más esfuerzo?',
    'La parte del trabajo que te deja más cansado, aunque la hagas bien.',
-   '["La parte técnica","Coordinar con otras áreas","Conducir a las personas","Decidir sin tener toda la información"]'::jsonb,
+   '["La parte técnica","La carga administrativa","Coordinar con otras áreas","Conducir a las personas","Decidir sin tener toda la información"]'::jsonb,
    (select id from ciclos limit 1)),
 
   ('c1-ayuda', 1, 3, 'opcion',
    '¿Qué te ayudaría más a conducir mejor a tu equipo?',
    'Lo que más falta te hace hoy para conducir. Una sola.',
-   '["Más tiempo","Criterios más claros de arriba","Respaldo de mi jefe","Herramientas para conversar","Formación"]'::jsonb,
+   '["Más tiempo","Más gente","Criterios más claros de arriba","Respaldo de mi jefe","Formación para conducir"]'::jsonb,
    (select id from ciclos limit 1)),
 
   ('c1-foco', 1, 4, 'opcion',
    '¿Cuánto tiempo seguido lográs trabajar sin que te interrumpan?',
    'En un día común: cuánto durás sin que te corten.',
-   '["Menos de quince minutos","Hasta media hora","Cerca de una hora","Más de una hora"]'::jsonb,
+   '["Menos de quince minutos","Entre quince y treinta minutos","Entre media hora y una hora","Más de una hora"]'::jsonb,
    (select id from ciclos limit 1));
 
 select clave, orden, titulo from actividades where charla = 1 order by orden;
