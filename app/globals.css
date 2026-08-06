@@ -3671,6 +3671,19 @@ body {
   letter-spacing: 0.1em;
   color: var(--muted);
 }
+/* Los dos campos van a la misma altura. El input trae un margen de arriba y un
+   cuerpo más grande porque en el cuestionario va solo en la placa; acá convive
+   con el select y las dos bases tienen que coincidir. */
+.alta .cq-input,
+.alta .cq-select {
+  height: 48px;
+  font-size: 1rem;
+  margin-top: 0;
+}
+.alta .cq-input {
+  padding: 10px 2px;
+}
+
 .alta-vista {
   margin: 0 0 18px;
   font-size: 0.82rem;
