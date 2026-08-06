@@ -97,7 +97,7 @@ export default function Alta({
 
   return (
     <div className="card alta">
-      <h3>Nuevo cliente</h3>
+      <h3>Alta cliente</h3>
 
       <div className="alta-campos">
         <label>
@@ -127,6 +127,10 @@ export default function Alta({
             ))}
           </select>
         </label>
+
+        <button className="btn" disabled={!valido || enviando} onClick={crear}>
+          {enviando ? 'Creando…' : 'Crear'}
+        </button>
       </div>
 
       {slug && (
@@ -135,10 +139,6 @@ export default function Alta({
         </p>
       )}
       {error && <p className="cq-error">{error}</p>}
-
-      <button className="btn" disabled={!valido || enviando} onClick={crear}>
-        {enviando ? 'Creando…' : 'Crear el cliente'}
-      </button>
     </div>
   );
 }
