@@ -1188,6 +1188,26 @@ body {
 .cq-empresa {
   font-size: 0.78rem;
   color: var(--muted);
+  text-align: right;
+}
+/* Quién responde, después de la empresa. En teléfonos angostos cae al
+   renglón de abajo en vez de empujar la marca. */
+.cq-empresa b {
+  font-weight: 500;
+  color: var(--ink);
+}
+.cq-empresa b:before {
+  content: ' · ';
+  font-weight: 400;
+  color: var(--muted);
+}
+@media (max-width: 400px) {
+  .cq-empresa b {
+    display: block;
+  }
+  .cq-empresa b:before {
+    content: none;
+  }
 }
 .cq-progreso {
   height: 3px;

@@ -196,7 +196,13 @@ function Encabezado({ empresa, nombre }: { empresa: string; nombre?: string }) {
         <span className="brand">
           Campos HR <span>· encuentro</span>
         </span>
-        <span className="cq-empresa">{nombre ?? empresa}</span>
+        {/* La empresa siempre, y quién está respondiendo cuando ya entró: el
+            teléfono queda abierto toda la charla y de un vistazo se ve que es
+            el encuentro correcto y que la sesión es la propia. */}
+        <span className="cq-empresa">
+          {empresa}
+          {nombre && <b>{nombre}</b>}
+        </span>
       </div>
     </header>
   );
@@ -434,7 +440,11 @@ function Formulario({
         <div className="ci-acciones">
           <a
             className="cq-btn ci-enlace"
-            href={actividad.opciones[0] ?? '#'}
+            /* La actividad es la misma para todos los clientes, así que la
+               dirección lleva {cliente} y se completa con el de esta corrida.
+               Escrita con un cliente adentro, todos terminarían respondiendo
+               el cuestionario del primero. */
+            href={(actividad.opciones[0] ?? '#').replace('{cliente}', slug)}
             target="_blank"
             rel="noreferrer"
           >

@@ -1,4 +1,5 @@
 <!doctype html>
+<meta name="robots" content="noindex, nofollow" />
 <meta charset="utf-8">
 <title>Registro de Habilidades · Quiero conocerme mejor</title>
 <style>/* latin */
@@ -567,7 +568,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <section class="placa" data-notas="Queda proyectada mientras responden, unos 10 minutos. Cada uno necesita el celular con datos. El código lleva a camposhr.com/c/__CLIENTE__, que es el cuestionario propio de Campos HR, y las respuestas quedan cargadas para armar la matriz del equipo. Cuando terminan: ¿se reconocen? Que compartan el resultado con los de al lado, ¿reconocen al otro?">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <div class="qr-caja"><iframe class="qr-vivo" title="Código para entrar al ciclo" data-src="https://camposhr.com/ciclo/__CLIENTE__/qr?placa=1"></iframe></div>
+      <div class="qr-caja"><iframe class="qr-vivo" title="Código para entrar al cuestionario" data-src="https://tools.camposhr.com/cuestionario/__CLIENTE__/qr?placa=1"></iframe></div>
       <p class="frase" style="font-size:52px">Escaneá el código y respondé el cuestionario.</p>
     
       <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Cuántos completaron el cuestionario" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c3-cuestionario&placa=1&vista=conteo"></iframe></div>
@@ -893,8 +894,13 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     return;
   }
 
-  escenario.innerHTML = escenario.innerHTML.split('camposhr.com/ciclo/' + marcador)
-    .join('falta indicar el cliente');
+  // Cualquier dirección con el marcador adentro, no sólo la del ciclo: en la
+  // charla 3 también figuran la del cuestionario y la de la matriz, y
+  // proyectar el marcador crudo se lee como un error del sistema.
+  escenario.innerHTML = escenario.innerHTML.replace(
+    /[a-z.]*camposhr\.com\/[A-Za-z0-9/_-]*__CLIENTE__[A-Za-z0-9/_?=&-]*/g,
+    'falta indicar el cliente'
+  );
   escenario.querySelectorAll('[data-src]').forEach(function (f) {
     f.removeAttribute('data-src');
     var marco = f.closest('.matriz-marco');
