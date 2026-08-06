@@ -165,6 +165,61 @@ export async function listarCorridas(): Promise<
   );
 }
 
+export async function listarCiclos(): Promise<Ciclo[]> {
+  return select<Ciclo>('ciclos', 'select=id,nombre,activo&activo=is.true&order=nombre.asc');
+}
+
+/**
+ * La dirección del encuentro sale del nombre del cliente.
+ *
+ * "John Deere S.A." queda en john-deere-s-a. Se calcula acá y no lo escribe la
+ * persona: es lo que va en el código QR de la primera placa, y una errata ahí
+ * se descubre con treinta personas escaneando.
+ */
+export function slugDe(nombre: string): string {
+  return nombre
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+}
+
+/**
+ * Da de alta un encuentro: el cliente si no estaba, y su corrida del ciclo.
+ *
+ * La clave del control se genera acá. Que la elija una persona termina en
+ * claves cortas y repetidas, y esta es la única barrera entre el control y los
+ * asistentes, que conocen la dirección porque la escanearon.
+ */
+export async function crearEncuentro(
+  nombreEmpresa: string,
+  cicloId: string,
+  clave: string
+): Promise<{ slug: string; clave: string }> {
+  const nombre = nombreEmpresa.trim().slice(0, 80);
+  const slug = slugDe(nombre);
+  if (nombre.length < 2 || !slug) throw new Error('El nombre no sirve como dirección');
+  if (!UUID.test(cicloId)) throw new Error('Ciclo inválido');
+
+  let empresa = await getEmpresaPorSlug(slug);
+  if (!empresa) {
+    empresa = await insert<Empresa>('empresas', { nombre, slug });
+  }
+
+  const enCurso = await getCorridaActiva(empresa.id);
+  if (enCurso) throw new Error('Ese cliente ya tiene un encuentro en curso');
+
+  await insert<Corrida>('corridas', {
+    empresa_id: empresa.id,
+    ciclo_id: cicloId,
+    clave_control: clave,
+  });
+
+  return { slug, clave };
+}
+
 export async function getCiclo(cicloId: string): Promise<Ciclo | null> {
   if (!UUID.test(cicloId)) return null;
   const filas = await select<Ciclo>(
