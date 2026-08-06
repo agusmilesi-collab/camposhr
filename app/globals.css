@@ -3648,7 +3648,9 @@ body {
   font-family: 'Instrument Serif', Georgia, serif;
   font-size: 1.2rem;
   font-weight: 400;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
   color: var(--ink);
 }
 .alta-campos .btn {
@@ -3759,6 +3761,12 @@ body {
    Con el nombre y la dirección en el mismo renglón, alcanza con poco alto. */
 .enc .enc-fila {
   padding: 9px 0;
+}
+/* Del mismo tamaño que los de la tabla de arriba: es la misma pantalla. */
+.enc-fila .copiar {
+  min-width: 120px;
+  height: 30px;
+  justify-content: center;
 }
 .enc .enc-fila-quien em {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
