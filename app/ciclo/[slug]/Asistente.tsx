@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Cuestionario from '@/app/c/[slug]/Cuestionario';
+import { partirOpcion } from '@/lib/ciclo';
 
 /**
  * El teléfono del asistente.
@@ -686,16 +687,23 @@ function Formulario({
 
       {actividad.tipo === 'opcion' && (
         <div className="ci-opciones">
-          {actividad.opciones.map((o, i) => (
-            <button
-              key={i}
-              className="cq-opcion ci-opcion"
-              disabled={enviando}
-              onClick={() => enviar({ tipo: 'opcion', opcion: i })}
-            >
-              {o}
-            </button>
-          ))}
+          {actividad.opciones.map((o, i) => {
+            // "Título · qué quiere decir": la aclaración va con la opción y se
+            // muestra debajo, más chica. Una opción que hay que interpretar se
+            // responde distinto en cada cabeza y el dato deja de comparar.
+            const [titulo, aclara] = partirOpcion(o);
+            return (
+              <button
+                key={i}
+                className="cq-opcion ci-opcion"
+                disabled={enviando}
+                onClick={() => enviar({ tipo: 'opcion', opcion: i })}
+              >
+                {titulo}
+                {aclara && <em>{aclara}</em>}
+              </button>
+            );
+          })}
         </div>
       )}
 
