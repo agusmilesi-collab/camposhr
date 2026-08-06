@@ -4,6 +4,7 @@ import {
   getAporteDe,
   listarAportes,
   listarAsistentes,
+  listarGrupo,
   marcarIngreso,
   repartirCruce,
   resolverCiclo,
@@ -61,6 +62,28 @@ export async function GET(
     listarAportes(ciclo.corrida.id, actividad.id),
   ]);
 
+  /**
+   * Las que se abren juntas viajan todas.
+   *
+   * La expositora abre una sola vez y el teléfono las recorre en fila. Cada
+   * una guarda su respuesta por separado, así que los contadores y las placas
+   * proyectadas siguen funcionando de a una.
+   */
+  let grupo = null;
+  if (actividad.grupo) {
+    const enFila = await listarGrupo(ciclo.corrida.ciclo_id, actividad.grupo);
+    grupo = await Promise.all(
+      enFila.map(async (a: Actividad) => {
+        const propio = asistenteId ? await getAporteDe(a.id, asistenteId) : null;
+        return {
+          ...publica(a),
+          respondida: Boolean(propio),
+          mio: propio?.valor ?? null,
+        };
+      })
+    );
+  }
+
   return NextResponse.json({
     actividad: publica(actividad),
     // Si ya respondió, el teléfono le muestra su respuesta y la opción de
@@ -68,6 +91,7 @@ export async function GET(
     respondida: Boolean(mio),
     mio: mio?.valor ?? null,
     total: todos.length,
+    grupo,
     cruce:
       actividad.tipo === 'cruce' && asistenteId
         ? await cruceDe(ciclo.corrida, actividad, asistenteId)

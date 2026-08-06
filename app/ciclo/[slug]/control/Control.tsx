@@ -19,6 +19,8 @@ type ActividadControl = {
   charla: number;
   tipo: string;
   titulo: string;
+  /** Las del mismo grupo se abren juntas, con un solo toque. */
+  grupo: string | null;
   abierta: boolean;
 };
 
@@ -91,8 +93,28 @@ export default function Control({
   }
 
   const abierta = actividades.find((a) => a.id === abiertaId) ?? null;
-  const porCharla = new Map<number, ActividadControl[]>();
+
+  /**
+   * Las que se abren juntas ocupan un solo botón.
+   *
+   * Con cinco consignas seguidas en la misma charla, cinco botones son cinco
+   * oportunidades de tocar el que no era mientras se está dictando. Se abre la
+   * primera y el teléfono de cada uno recorre el resto.
+   */
+  const enLista: ActividadControl[] = [];
+  const cuantasEnGrupo = new Map<string, number>();
   for (const a of actividades) {
+    if (!a.grupo) {
+      enLista.push(a);
+      continue;
+    }
+    const vistas = cuantasEnGrupo.get(a.grupo) ?? 0;
+    cuantasEnGrupo.set(a.grupo, vistas + 1);
+    if (vistas === 0) enLista.push(a);
+  }
+
+  const porCharla = new Map<number, ActividadControl[]>();
+  for (const a of enLista) {
     porCharla.set(a.charla, [...(porCharla.get(a.charla) ?? []), a]);
   }
 
@@ -150,7 +172,11 @@ export default function Control({
                 }
               >
                 <span className="ct-item-titulo">{a.titulo}</span>
-                <span className="ct-item-tipo">{a.tipo}</span>
+                <span className="ct-item-tipo">
+                  {a.grupo
+                    ? `${cuantasEnGrupo.get(a.grupo)} seguidas`
+                    : a.tipo}
+                </span>
               </button>
             ))}
           </section>

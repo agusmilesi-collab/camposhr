@@ -53,6 +53,7 @@ export default async function ControlDelCiclo({
         charla: a.charla,
         tipo: a.tipo,
         titulo: a.titulo,
+        grupo: a.grupo,
         abierta: corrida.actividad_abierta_id === a.id,
       }))}
     />
