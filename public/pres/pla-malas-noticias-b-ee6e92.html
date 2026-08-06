@@ -492,6 +492,10 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 
 /* Bordes y cajas, con la línea del sitio. */
 .cuadro>div{border:1px solid var(--line);background:var(--card);border-radius:12px}
+/* Las tarjetas del deck oscuro se apoyaban en un negro al 32%, que sobre papel
+   se ve gris sucio. Van sin fondo y con el borde en la tinta del sistema. */
+.tarjetas>div,.escala>div{background:transparent;
+  border:1px solid rgba(22,32,43,.35)}
 /* Los dos caminos, cada uno en su tarjeta: se leen como dos opciones y no
    como un texto partido en dos columnas. */
 .duo{gap:40px}

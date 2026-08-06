@@ -492,6 +492,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 
 /* Bordes y cajas, con la línea del sitio. */
 .cuadro>div{border:1px solid var(--line);background:var(--card);border-radius:12px}
+/* Las tarjetas del deck oscuro se apoyaban en un negro al 32%, que sobre papel
+   se ve gris sucio. Van sin fondo y con el borde en la tinta del sistema. */
+.tarjetas>div,.escala>div{background:transparent;
+  border:1px solid rgba(22,32,43,.35)}
+/* Los dos caminos, cada uno en su tarjeta: se leen como dos opciones y no
+   como un texto partido en dos columnas. */
+.duo{gap:40px}
+.duo>div{border:1px solid var(--line);background:var(--card);border-radius:14px;
+  padding:40px 44px}
+.duo h3{margin-bottom:18px}
 .cuadro .marcado{background:#faf4e8;border-color:var(--amber)}
 .retrato{border:1px solid var(--line)}
 .perfil dt{color:var(--amber)}
@@ -537,6 +547,11 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 /* La caja de entrada es más alta que ancha: adentro van el nombre de la
    empresa, el código y la dirección. */
 .qr-vivo.qr-caja{width:560px;height:720px}
+/* Las dos marcas juntas, en la placa donde se presentan. */
+.marcas-juntas{display:flex;align-items:center;gap:34px}
+.marca-campos{font-family:'Instrument Serif',Georgia,serif;font-size:46px;
+  letter-spacing:-.01em;color:var(--ink);white-space:nowrap}
+.marca-sentir-chico{width:220px;height:auto;display:block}
 .cierre-qr .baja .caja .qr-vivo{width:340px;height:340px}
 .matriz-marco.sin-cliente .cargando{display:none}
 .matriz-marco.sin-cliente .offline{display:block}
