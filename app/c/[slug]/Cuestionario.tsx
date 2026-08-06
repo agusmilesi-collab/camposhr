@@ -27,17 +27,27 @@ export default function Cuestionario({
   empresa,
   variante = 'perfil',
   lideres = [],
+  yo,
 }: {
   slug: string;
   empresa: string;
   /** 'generaciones' suma placas y exige elegir líder. */
   variante?: 'perfil' | 'generaciones';
   lideres?: { id: string; nombre: string }[];
+  /**
+   * Quién responde, cuando el cuestionario va adentro del encuentro.
+   *
+   * El ciclo ya le pidió nombre, apellido y una foto al entrar. Volver a
+   * pedirlos acá es hacerle cargar dos veces lo mismo en la misma sala, así
+   * que con esto la placa de identidad no aparece y el encabezado tampoco:
+   * los pone la pantalla que lo contiene.
+   */
+  yo?: { id: string; nombre: string; apellido: string };
 }) {
   // 0 portada · 1 identidad · 2..9 placas · 10 autopercepción · 11 resultado
   const [paso, setPaso] = useState(0);
-  const [apellido, setApellido] = useState('');
-  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState(yo?.apellido ?? '');
+  const [nombre, setNombre] = useState(yo?.nombre ?? '');
   const [liderId, setLiderId] = useState('');
   const [foto, setFoto] = useState<{ blob: Blob; url: string } | null>(null);
   const [escalas, setEscalas] = useState<Record<number, number>>({});
@@ -64,6 +74,10 @@ export default function Cuestionario({
   const placaGen =
     indiceGen >= 0 && indiceGen < placasGen.length ? placasGen[indiceGen] : null;
   const ultimaGen = indiceGen === placasGen.length - 1;
+
+  /** Con la persona ya identificada, la primera placa es la 2. */
+  const primerPaso = yo ? 2 : 1;
+  const atras = () => setPaso((p) => (yo && p === 2 ? 0 : p - 1));
 
   const pideLider = lideres.length > 0;
   const identidadCompleta =
@@ -127,6 +141,7 @@ export default function Cuestionario({
           autopercepcion,
           variante,
           liderId: liderId || null,
+          asistenteId: yo?.id ?? null,
           generaciones: placasGen.map((_, i) =>
             generacionales[i] === undefined ? null : generacionales[i]
           ),
@@ -153,12 +168,14 @@ export default function Cuestionario({
   return (
     <div className="cq">
       <header className="cq-top">
-        <div className="cq-top-inner">
-          <span className="brand">
-            Campos HR <span>· cuestionario</span>
-          </span>
-          <span className="cq-empresa">{empresa}</span>
-        </div>
+        {!yo && (
+          <div className="cq-top-inner">
+            <span className="brand">
+              Campos HR <span>· cuestionario</span>
+            </span>
+            <span className="cq-empresa">{empresa}</span>
+          </div>
+        )}
         {paso > 0 && paso <= TOTAL_PASOS && (
           <div className="cq-progreso" aria-hidden="true">
             <span style={{ width: `${avance * 100}%` }} />
@@ -175,7 +192,7 @@ export default function Cuestionario({
             <div className="cq-portada-texto">
               <h1>{PORTADA.titulo}</h1>
               <p>{PORTADA.texto}</p>
-              <button className="cq-btn" onClick={() => setPaso(1)}>
+              <button className="cq-btn" onClick={() => setPaso(primerPaso)}>
                 {PORTADA.boton}
               </button>
               <p className="cq-duracion">{PORTADA.duracion}</p>
@@ -184,7 +201,7 @@ export default function Cuestionario({
         )}
 
         {/* --------------------------------------------------- identidad */}
-        {paso === 1 && (
+        {paso === 1 && !yo && (
           <section className="cq-placa">
             <p className="cq-numero">1</p>
             <h2 className="cq-pregunta">¿Cómo te llamás?</h2>
@@ -306,7 +323,7 @@ export default function Cuestionario({
             </p>
 
             <div className="cq-acciones">
-              <button className="cq-btn-ghost" onClick={() => setPaso(paso - 1)}>
+              <button className="cq-btn-ghost" onClick={atras}>
                 Atrás
               </button>
             </div>
@@ -343,7 +360,7 @@ export default function Cuestionario({
             </ul>
 
             <div className="cq-acciones">
-              <button className="cq-btn-ghost" onClick={() => setPaso(paso - 1)}>
+              <button className="cq-btn-ghost" onClick={atras}>
                 Atrás
               </button>
               <button className="cq-btn" onClick={() => setPaso(paso + 1)}>
@@ -385,7 +402,7 @@ export default function Cuestionario({
             <div className="cq-acciones">
               <button
                 className="cq-btn-ghost"
-                onClick={() => setPaso(paso - 1)}
+                onClick={atras}
                 disabled={enviando}
               >
                 Atrás
@@ -438,7 +455,7 @@ export default function Cuestionario({
             <div className="cq-acciones">
               <button
                 className="cq-btn-ghost"
-                onClick={() => setPaso(paso - 1)}
+                onClick={atras}
                 disabled={enviando}
               >
                 Atrás

@@ -32,9 +32,13 @@ export const TIPOS = [
   'escala',
   'texto',
   'marcas',
-  /** No se responde acá: lleva a una herramienta que ya existe aparte, como el
-   *  cuestionario de perfil de la charla 3. La dirección va en `opciones[0]`. */
+  /** No se responde acá: lleva a una herramienta que ya existe aparte. La
+   *  dirección va en `opciones[0]`. */
   'enlace',
+  /** El cuestionario de perfil de la charla 3, dentro de la misma pantalla:
+   *  la persona ya está identificada por el ciclo y no vuelve a cargar nada.
+   *  Sus respuestas van a su propia tabla, no a `aportes`. */
+  'cuestionario',
 ] as const;
 export type TipoActividad = (typeof TIPOS)[number];
 
@@ -474,6 +478,7 @@ export function normalizarValor(actividad: Actividad, crudo: unknown): Valor {
     }
 
     case 'enlace':
+    case 'cuestionario':
       throw new Error('Esta actividad se responde en su propia pantalla');
 
     case 'marcas': {
@@ -504,7 +509,8 @@ export type Resumen =
     }
   | { tipo: 'texto'; total: number; textos: string[] }
   | { tipo: 'marcas'; total: number; conteo: { texto: string; veces: number }[] }
-  | { tipo: 'enlace'; total: number };
+  | { tipo: 'enlace'; total: number }
+  | { tipo: 'cuestionario'; total: number };
 
 /** Para agrupar 'apurado' con 'Apurado' y con 'apurada' no, que es otra cosa. */
 function normalizar(texto: string): string {
@@ -589,6 +595,9 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
       // Lo que respondieron no está en `aportes`: está en la tabla de la
       // herramienta a la que lleva. La placa lo cuenta con su propia vista.
       return { tipo: 'enlace', total };
+
+    case 'cuestionario':
+      return { tipo: 'cuestionario', total };
 
     case 'marcas': {
       const veces = new Array(actividad.opciones.length).fill(0) as number[];

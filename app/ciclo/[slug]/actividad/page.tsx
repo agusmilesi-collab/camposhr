@@ -70,11 +70,10 @@ export default async function Proyeccion({
 
   if (soloConteo) {
     const inscriptos = (await listarAsistentes(corrida.id)).length;
-    // Una actividad de tipo 'enlace' se completa en otra pantalla, así que lo
-    // que hay que contar no son los aportes sino lo que quedó guardado allá.
-    // Hoy el único destino es el cuestionario de perfil.
+    // El cuestionario no deja aporte: sus respuestas viven en su propia tabla,
+    // se responda adentro del encuentro o desde su enlace.
     const hechas =
-      actividad.tipo === 'enlace'
+      actividad.tipo === 'enlace' || actividad.tipo === 'cuestionario'
         ? await contarRespuestas(empresa.id)
         : aportes.length;
     const completo = inscriptos > 0 && hechas >= inscriptos;

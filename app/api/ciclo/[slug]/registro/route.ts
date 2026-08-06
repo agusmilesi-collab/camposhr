@@ -59,7 +59,11 @@ export async function POST(
     });
     return NextResponse.json({
       ok: true,
-      asistente: { id: asistente.id, nombre: asistente.nombre },
+      asistente: {
+        id: asistente.id,
+        nombre: asistente.nombre,
+        apellido: asistente.apellido,
+      },
     });
   } catch {
     return new NextResponse('No se pudo registrar', { status: 500 });
