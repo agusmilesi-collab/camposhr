@@ -78,6 +78,8 @@ export default function Cuestionario({
   /** Con la persona ya identificada, la primera placa es la 2. */
   const primerPaso = yo ? 2 : 1;
   const atras = () => setPaso((p) => (yo && p === 2 ? 0 : p - 1));
+  /** Lo que ve la persona: sin la placa de identidad, la primera es la 1. */
+  const numero = yo ? paso - 1 : paso;
 
   const pideLider = lideres.length > 0;
   const identidadCompleta =
@@ -300,7 +302,7 @@ export default function Cuestionario({
         {/* ------------------------------------------------------ placas */}
         {placaActual?.tipo === 'descriptiva' && (
           <section className="cq-placa">
-            <p className="cq-numero">{paso}</p>
+            <p className="cq-numero">{numero}</p>
             <p className="cq-parrafo">{placaActual.texto}</p>
             <p className="cq-ayuda">{AYUDA_ESCALA}</p>
 
@@ -332,7 +334,7 @@ export default function Cuestionario({
 
         {placaActual?.tipo === 'frases' && (
           <section className="cq-placa">
-            <p className="cq-numero">{paso}</p>
+            <p className="cq-numero">{numero}</p>
             <h2 className="cq-pregunta">{CONSIGNA_FRASES}</h2>
             <p className="cq-ayuda">{AYUDA_FRASES}</p>
 
@@ -376,7 +378,7 @@ export default function Cuestionario({
         {/* ----------------------------------------------- autopercepción */}
         {paso === PASO_AUTOPERCEPCION && (
           <section className="cq-placa">
-            <p className="cq-numero">{paso}</p>
+            <p className="cq-numero">{numero}</p>
             <h2 className="cq-pregunta">¿Cuál creés que sos?</h2>
             <p className="cq-ayuda">
               Antes de ver el resultado, jugátela. Es opcional y no cambia tu puntaje.
@@ -423,7 +425,7 @@ export default function Cuestionario({
         {/* ---------------------------------------------- generaciones */}
         {placaGen && (
           <section className="cq-placa">
-            <p className="cq-numero">{paso}</p>
+            <p className="cq-numero">{numero}</p>
             <h2 className="cq-pregunta">{placaGen.pregunta}</h2>
             <p className="cq-ayuda">{placaGen.ayuda}</p>
 
@@ -530,7 +532,9 @@ export default function Cuestionario({
             )}
 
             <p className="cq-cierre">
-              Listo. Ya quedaste en la matriz del equipo, podés cerrar esta página.
+              {yo
+                ? 'Listo. Ya quedaste en la matriz del equipo; guardá el teléfono hasta la próxima consigna.'
+                : 'Listo. Ya quedaste en la matriz del equipo, podés cerrar esta página.'}
             </p>
           </section>
         )}
