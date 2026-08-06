@@ -1192,20 +1192,39 @@ body {
 }
 /* Quién responde, después de la empresa. En teléfonos angostos cae al
    renglón de abajo en vez de empujar la marca. */
-.cq-empresa b {
+.cq-empresa b,
+.cq-yo {
   font-weight: 500;
   color: var(--ink);
 }
-.cq-empresa b:before {
-  content: ' · ';
+.cq-empresa b:before,
+.cq-yo:before {
+  content: '·';
+  margin: 0 5px;
   font-weight: 400;
   color: var(--muted);
 }
+/* El nombre vuelve a la grilla de caras: el que entró con la cara del
+   compañero se corrige solo, sin pedirle nada a nadie. */
+.cq-yo {
+  font: inherit;
+  font-weight: 500;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line);
+}
 @media (max-width: 400px) {
-  .cq-empresa b {
+  .cq-empresa b,
+  .cq-yo {
     display: block;
   }
-  .cq-empresa b:before {
+  .cq-empresa b:before,
+  .cq-yo:before {
     content: none;
   }
 }

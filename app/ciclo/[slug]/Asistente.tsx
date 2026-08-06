@@ -82,6 +82,24 @@ export default function Asistente({
     [guardado]
   );
 
+  /**
+   * Volver a la grilla, para el que tocó la cara del compañero.
+   *
+   * No borra nada de lo que haya respondido: lo que ya se guardó quedó a
+   * nombre de quien figuraba, y se corrige desde el control. Acá lo único que
+   * cambia es con quién sigue este teléfono.
+   */
+  const salir = useCallback(() => {
+    try {
+      localStorage.removeItem(guardado);
+    } catch {
+      // Sin almacenamiento la sesión ya vivía solo en memoria.
+    }
+    setEstado(null);
+    setYo(null);
+    setPantalla(caras.length > 0 ? 'elegir' : 'inicio');
+  }, [guardado, caras.length]);
+
   // --- Sondeo de la actividad abierta ---
   useEffect(() => {
     if (!yo) return;
@@ -161,7 +179,7 @@ export default function Asistente({
   // ------------------------------------------------------------- en la sala
   return (
     <div className="ci">
-      <Encabezado empresa={empresa} nombre={yo.nombre} />
+      <Encabezado empresa={empresa} nombre={yo.nombre} onSalir={salir} />
       <main className="ci-main">
         {!estado?.actividad ? (
           <section className="cq-placa ci-espera">
@@ -170,6 +188,13 @@ export default function Asistente({
             <p className="cq-ayuda">
               Cuando haya algo para responder, aparece solo en esta pantalla.
             </p>
+            {/* Acá es donde mira el que tocó la cara del compañero: entre una
+                actividad y otra la pantalla está en reposo. */}
+            <div className="ci-acciones">
+              <button className="cq-btn-ghost" onClick={salir}>
+                No soy {yo.nombre}
+              </button>
+            </div>
           </section>
         ) : (
           <Formulario
@@ -189,7 +214,15 @@ export default function Asistente({
   );
 }
 
-function Encabezado({ empresa, nombre }: { empresa: string; nombre?: string }) {
+function Encabezado({
+  empresa,
+  nombre,
+  onSalir,
+}: {
+  empresa: string;
+  nombre?: string;
+  onSalir?: () => void;
+}) {
   return (
     <header className="cq-top">
       <div className="cq-top-inner">
@@ -198,10 +231,19 @@ function Encabezado({ empresa, nombre }: { empresa: string; nombre?: string }) {
         </span>
         {/* La empresa siempre, y quién está respondiendo cuando ya entró: el
             teléfono queda abierto toda la charla y de un vistazo se ve que es
-            el encuentro correcto y que la sesión es la propia. */}
+            el encuentro correcto y que la sesión es la propia. El nombre se
+            toca para volver a la grilla: es donde mira el que entró con la
+            cara equivocada. */}
         <span className="cq-empresa">
           {empresa}
-          {nombre && <b>{nombre}</b>}
+          {nombre &&
+            (onSalir ? (
+              <button className="cq-yo" onClick={onSalir} title="No soy yo">
+                {nombre}
+              </button>
+            ) : (
+              <b>{nombre}</b>
+            ))}
         </span>
       </div>
     </header>
