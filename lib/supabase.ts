@@ -131,6 +131,8 @@ export type Respuesta = {
   generacion: string | null;
   foto_path: string | null;
   created_at: string;
+  /** El dictado en el que se respondió. Null si fue desde el enlace suelto. */
+  corrida_id: string | null;
 };
 
 // ---------------------------------------------------------------- consultas
@@ -189,16 +191,26 @@ export async function listarEquipo(liderId: string): Promise<Respuesta[]> {
 
 const CAMPOS_RESPUESTA =
   'id,empresa_id,variante,lider_id,lider_nombre,apellido,nombre,totales,perfiles,' +
-  'resultado,eje_x,eje_y,generacion,foto_path,created_at';
+  'resultado,eje_x,eje_y,generacion,foto_path,created_at,corrida_id';
 
+/**
+ * Las respuestas de una empresa.
+ *
+ * `corridaId` acota a un dictado: la misma empresa puede recorrer el ciclo más
+ * de una vez, y la matriz que se proyecta en la sala tiene que mostrar al
+ * grupo que está ahí, no a todos los que alguna vez respondieron.
+ */
 export async function listarRespuestas(
   empresaId: string,
-  variante?: Variante
+  variante?: Variante,
+  corridaId?: string
 ): Promise<Respuesta[]> {
   const filtro = variante ? `&variante=eq.${variante}` : '';
+  const deLaCorrida = corridaId ? `&corrida_id=eq.${corridaId}` : '';
   return select<Respuesta>(
     'respuestas',
-    `select=${CAMPOS_RESPUESTA}&empresa_id=eq.${empresaId}${filtro}&order=created_at.asc`
+    `select=${CAMPOS_RESPUESTA}&empresa_id=eq.${empresaId}${filtro}${deLaCorrida}` +
+      `&order=created_at.asc`
   );
 }
 
@@ -212,9 +224,13 @@ export async function exportarRespuestas(
   );
 }
 
-export async function contarRespuestas(empresaId: string): Promise<number> {
+export async function contarRespuestas(
+  empresaId: string,
+  corridaId?: string
+): Promise<number> {
+  const deLaCorrida = corridaId ? `&corrida_id=eq.${corridaId}` : '';
   const res = await fetch(
-    `${URL_BASE()}/rest/v1/respuestas?select=id&empresa_id=eq.${empresaId}`,
+    `${URL_BASE()}/rest/v1/respuestas?select=id&empresa_id=eq.${empresaId}${deLaCorrida}`,
     {
       headers: headers({ Prefer: 'count=exact', Range: '0-0' }),
       cache: 'no-store',
@@ -244,6 +260,8 @@ export async function guardarRespuesta(fila: {
   extra: unknown;
   generacion: string | null;
   foto_path: string | null;
+  /** El dictado, cuando se responde adentro de un encuentro. */
+  corrida_id?: string | null;
 }): Promise<Respuesta> {
   return insert<Respuesta>('respuestas', fila);
 }

@@ -99,10 +99,12 @@ export async function POST(
    * pertenece a la corrida en curso, se sigue por el camino de siempre.
    */
   let asistente = null;
+  let corridaId: string | null = null;
   if (typeof datos.asistenteId === 'string' && datos.asistenteId) {
     const ciclo = await resolverCiclo(params.slug);
     if (ciclo) asistente = await getAsistente(ciclo.corrida.id, datos.asistenteId);
     if (!asistente) return new NextResponse('Asistente inválido', { status: 400 });
+    corridaId = asistente.corrida_id;
   }
 
   const nombre = (asistente?.nombre ?? String(datos.nombre ?? '')).trim().slice(0, 80);
@@ -211,6 +213,9 @@ export async function POST(
       extra,
       generacion,
       foto_path: fotoPath,
+      // Queda atada al dictado: la misma empresa puede recorrer el ciclo otra
+      // vez, y lo de un grupo no tiene por qué contarse en el del siguiente.
+      corrida_id: corridaId,
     });
   } catch {
     return new NextResponse('No se pudo guardar', { status: 500 });

@@ -530,6 +530,9 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 /* El código de entrada, generado con la dirección del cliente que corresponda.
    Una imagen fija llevaría grabado un solo cliente. */
 .qr-vivo{display:block;width:420px;height:420px;border:0;background:transparent}
+/* La caja de entrada es más alta que ancha: adentro van el nombre de la
+   empresa, el código y la dirección. */
+.qr-vivo.qr-caja{width:560px;height:720px}
 .cierre-qr .baja .caja .qr-vivo{width:340px;height:340px}
 .matriz-marco.sin-cliente .cargando{display:none}
 .matriz-marco.sin-cliente .offline{display:block}
@@ -565,10 +568,10 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 3 -->
-  <section class="placa" data-notas="Queda proyectada mientras responden, unos 10 minutos. Cada uno necesita el celular con datos. El código lleva a camposhr.com/c/__CLIENTE__, que es el cuestionario propio de Campos HR, y las respuestas quedan cargadas para armar la matriz del equipo. Cuando terminan: ¿se reconocen? Que compartan el resultado con los de al lado, ¿reconocen al otro?">
+  <section class="placa" data-notas="Queda proyectada mientras responden, unos 10 minutos. Cada uno necesita el celular con datos. El código lleva a camposhr.com/ciclo/__CLIENTE__, que es el cuestionario propio de Campos HR, y las respuestas quedan cargadas para armar la matriz del equipo. Cuando terminan: ¿se reconocen? Que compartan el resultado con los de al lado, ¿reconocen al otro?">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <div class="qr-caja"><iframe class="qr-vivo" title="Código para entrar al cuestionario" data-src="https://tools.camposhr.com/cuestionario/__CLIENTE__/qr?placa=1"></iframe></div>
+      <div class="qr-caja"><iframe class="qr-vivo" title="Código para entrar al ciclo" data-src="https://camposhr.com/ciclo/__CLIENTE__/qr?placa=1"></iframe></div>
       <p class="frase" style="font-size:52px">Escaneá el código y respondé el cuestionario.</p>
     
       <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Cuántos completaron el cuestionario" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c3-cuestionario&placa=1&vista=conteo"></iframe></div>
@@ -764,7 +767,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
           <p class="dir">tools.camposhr.com/cuestionario/__CLIENTE__/matriz</p>
         </div>
         <iframe title="Matriz del equipo"
-          data-src="https://tools.camposhr.com/cuestionario/__CLIENTE__/matriz?placa=1"></iframe>
+          data-src="https://tools.camposhr.com/cuestionario/__CLIENTE__/matriz?placa=1&solo=corrida"></iframe>
       </div>
     </div>
   </section>

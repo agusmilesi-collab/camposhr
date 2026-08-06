@@ -74,7 +74,7 @@ export default async function Proyeccion({
     // se responda adentro del encuentro o desde su enlace.
     const hechas =
       actividad.tipo === 'enlace' || actividad.tipo === 'cuestionario'
-        ? await contarRespuestas(empresa.id)
+        ? await contarRespuestas(empresa.id, corrida.id)
         : aportes.length;
     const completo = inscriptos > 0 && hechas >= inscriptos;
     return (
