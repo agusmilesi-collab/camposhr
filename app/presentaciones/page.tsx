@@ -1,10 +1,24 @@
 import { listarPresentaciones, formatoFecha } from '@/lib/presentaciones';
+import { getEmpresaPorSlug } from '@/lib/supabase';
+import { claveControlOk, listarAsistentes } from '@/lib/ciclo';
+import PanelEncuentro from './PanelEncuentro';
 
 export const dynamic = 'force-dynamic';
 
 const BASE = 'https://tools.camposhr.com/pres';
 
-export default function Presentaciones() {
+/**
+ * Qué ciclo tiene las actividades desde el teléfono, y con qué empresa.
+ *
+ * Se declara acá y no se deduce del nombre: un ciclo con el mismo título para
+ * otro cliente es otro grupo de asistentes, y mezclarlos sería peor que no
+ * tener el tablero.
+ */
+const CICLOS_EN_VIVO: Record<string, string> = {
+  'Liderazgos Humanos · plan B': 'pla-sa',
+};
+
+export default async function Presentaciones() {
   const todas = listarPresentaciones();
 
   // Un bloque por ciclo, en el orden en que aparecen en el índice.
@@ -14,6 +28,26 @@ export default function Presentaciones() {
     else acc.push({ nombre: p.ciclo, filas: [p] });
     return acc;
   }, []);
+
+  // El tablero se arma para el ciclo que tiene actividades desde el teléfono.
+  // Los asistentes se cuentan acá, así el día del encuentro se ve de un vistazo
+  // cuánta gente entró sin abrir otra pantalla.
+  const enVivo = new Map<string, { slug: string; empresa: string; registrados: number }>();
+  for (const [nombreCiclo, slug] of Object.entries(CICLOS_EN_VIVO)) {
+    if (!ciclos.some((c) => c.nombre === nombreCiclo)) continue;
+    const empresa = await getEmpresaPorSlug(slug);
+    if (!empresa) continue;
+    const asistentes = await listarAsistentes(empresa.id);
+    enVivo.set(nombreCiclo, {
+      slug,
+      empresa: empresa.nombre,
+      registrados: asistentes.length,
+    });
+  }
+
+  // Solo hace falta saber si está definida, nunca se muestra su valor de más:
+  // va adentro del enlace del control y en ningún otro lado.
+  const clave = process.env.CICLO_CONTROL_CLAVE ?? null;
 
   return (
     <main className="wrap wrap-ancho">
@@ -91,6 +125,15 @@ export default function Presentaciones() {
               </div>
             ))}
           </div>
+
+          {enVivo.has(ciclo.nombre) && (
+            <PanelEncuentro
+              slug={enVivo.get(ciclo.nombre)!.slug}
+              empresa={enVivo.get(ciclo.nombre)!.empresa}
+              registrados={enVivo.get(ciclo.nombre)!.registrados}
+              clave={clave}
+            />
+          )}
         </section>
       ))}
     </main>
