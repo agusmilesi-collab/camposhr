@@ -700,7 +700,7 @@ function Formulario({
                 onClick={() => enviar({ tipo: 'opcion', opcion: i })}
               >
                 {titulo}
-                {aclara && <em>{aclara}</em>}
+                {aclara && <em>({aclara})</em>}
               </button>
             );
           })}

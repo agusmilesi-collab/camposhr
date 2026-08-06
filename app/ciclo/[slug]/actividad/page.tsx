@@ -90,7 +90,7 @@ export default async function Proyeccion({
             return (
               <li key={o}>
                 {titulo}
-                {aclara && <em>{aclara}</em>}
+                {aclara && <em>({aclara})</em>}
               </li>
             );
           })}
