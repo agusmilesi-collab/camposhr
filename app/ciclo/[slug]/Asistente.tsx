@@ -265,25 +265,22 @@ function Encabezado({
   return (
     <header className="cq-top">
       <div className="cq-top-inner">
-        <span className="brand">
-          Campos HR <span>· encuentro</span>
-        </span>
-        {/* La empresa siempre, y quién está respondiendo cuando ya entró: el
-            teléfono queda abierto toda la charla y de un vistazo se ve que es
-            el encuentro correcto y que la sesión es la propia. El nombre se
-            toca para volver a la grilla: es donde mira el que entró con la
-            cara equivocada. */}
-        <span className="cq-empresa">
-          {nombre && onSalir && (
-            <button className="cq-nosoy" onClick={onSalir}>
-              No soy {nombre}
-            </button>
-          )}
-          <span className="cq-empresa-linea">
+        {/* La marca con el encuentro y quién está respondiendo, todo del mismo
+            lado: la salida queda sola a la derecha y se toca sin apuntar. */}
+        <span className="cq-quien">
+          <span className="brand">
+            Campos HR <span>· encuentro</span>
+          </span>
+          <span className="cq-empresa">
             {empresa}
             {nombre && <b>{nombre}</b>}
           </span>
         </span>
+        {nombre && onSalir && (
+          <button className="cq-nosoy" onClick={onSalir}>
+            No soy {nombre}
+          </button>
+        )}
       </div>
     </header>
   );
