@@ -1,6 +1,5 @@
 import { listarPresentaciones, formatoFecha } from '@/lib/presentaciones';
-import { getEmpresaPorSlug } from '@/lib/supabase';
-import { claveControlOk, listarAsistentes } from '@/lib/ciclo';
+import { listarAsistentes, listarCorridas } from '@/lib/ciclo';
 import PanelEncuentro from './PanelEncuentro';
 
 export const dynamic = 'force-dynamic';
@@ -8,14 +7,14 @@ export const dynamic = 'force-dynamic';
 const BASE = 'https://tools.camposhr.com/pres';
 
 /**
- * Qué ciclo tiene las actividades desde el teléfono, y con qué empresa.
+ * Qué material corresponde a qué ciclo de la base.
  *
- * Se declara acá y no se deduce del nombre: un ciclo con el mismo título para
- * otro cliente es otro grupo de asistentes, y mezclarlos sería peor que no
- * tener el tablero.
+ * El índice de presentaciones nombra al material y la base nombra al producto,
+ * y no tienen por qué escribirse igual. Los clientes no se declaran acá: salen
+ * de las corridas activas, así dar de alta uno nuevo lo hace aparecer solo.
  */
-const CICLOS_EN_VIVO: Record<string, string> = {
-  'Liderazgos Humanos · plan B': 'pla-sa',
+const MATERIAL_DEL_CICLO: Record<string, string> = {
+  'Liderazgos Humanos · plan B': 'Liderazgos Humanos',
 };
 
 export default async function Presentaciones() {
@@ -29,25 +28,30 @@ export default async function Presentaciones() {
     return acc;
   }, []);
 
-  // El tablero se arma para el ciclo que tiene actividades desde el teléfono.
-  // Los asistentes se cuentan acá, así el día del encuentro se ve de un vistazo
-  // cuánta gente entró sin abrir otra pantalla.
-  const enVivo = new Map<string, { slug: string; empresa: string; registrados: number }>();
-  for (const [nombreCiclo, slug] of Object.entries(CICLOS_EN_VIVO)) {
-    if (!ciclos.some((c) => c.nombre === nombreCiclo)) continue;
-    const empresa = await getEmpresaPorSlug(slug);
-    if (!empresa) continue;
-    const asistentes = await listarAsistentes(empresa.id);
-    enVivo.set(nombreCiclo, {
-      slug,
-      empresa: empresa.nombre,
-      registrados: asistentes.length,
-    });
-  }
+  // Un tablero por cliente que esté corriendo el ciclo. Los asistentes se
+  // cuentan acá, así el día del encuentro se ve de un vistazo cuánta gente
+  // entró sin abrir otra pantalla.
+  const corridas = await listarCorridas();
+  const enVivo = new Map<
+    string,
+    { slug: string; empresa: string; registrados: number; clave: string }[]
+  >();
 
-  // Solo hace falta saber si está definida, nunca se muestra su valor de más:
-  // va adentro del enlace del control y en ningún otro lado.
-  const clave = process.env.CICLO_CONTROL_CLAVE ?? null;
+  for (const [material, nombreCiclo] of Object.entries(MATERIAL_DEL_CICLO)) {
+    if (!ciclos.some((c) => c.nombre === material)) continue;
+    const suyas = corridas.filter((c) => c.ciclos?.nombre === nombreCiclo);
+    const tableros = [];
+    for (const corrida of suyas) {
+      const asistentes = await listarAsistentes(corrida.id);
+      tableros.push({
+        slug: corrida.empresas.slug,
+        empresa: corrida.empresas.nombre,
+        registrados: asistentes.length,
+        clave: corrida.clave_control,
+      });
+    }
+    if (tableros.length) enVivo.set(material, tableros);
+  }
 
   return (
     <main className="wrap wrap-ancho">
@@ -107,7 +111,7 @@ export default async function Presentaciones() {
                         className="copiar pres-ver"
                         href={
                           enVivo.has(ciclo.nombre)
-                            ? `${BASE}/${p.token}?c=${enVivo.get(ciclo.nombre)!.slug}`
+                            ? `${BASE}/${p.token}?c=${enVivo.get(ciclo.nombre)![0].slug}`
                             : `${BASE}/${p.token}`
                         }
                         target="_blank"
@@ -134,14 +138,15 @@ export default async function Presentaciones() {
             ))}
           </div>
 
-          {enVivo.has(ciclo.nombre) && (
+          {(enVivo.get(ciclo.nombre) ?? []).map((t) => (
             <PanelEncuentro
-              slug={enVivo.get(ciclo.nombre)!.slug}
-              empresa={enVivo.get(ciclo.nombre)!.empresa}
-              registrados={enVivo.get(ciclo.nombre)!.registrados}
-              clave={clave}
+              key={t.slug}
+              slug={t.slug}
+              empresa={t.empresa}
+              registrados={t.registrados}
+              clave={t.clave}
             />
-          )}
+          ))}
         </section>
       ))}
     </main>

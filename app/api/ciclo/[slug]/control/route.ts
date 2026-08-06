@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getEmpresaPorSlug } from '@/lib/supabase';
-import { abrirActividad, cerrarActividades, claveControlOk } from '@/lib/ciclo';
+import {
+  abrirActividad,
+  cerrarActividades,
+  claveControlOk,
+  resolverCiclo,
+} from '@/lib/ciclo';
 
 /**
  * Abrir y cerrar la actividad. Lo único que la expositora toca durante la charla.
@@ -15,8 +19,9 @@ export async function POST(
   req: Request,
   { params }: { params: { slug: string } }
 ) {
-  const empresa = await getEmpresaPorSlug(params.slug);
-  if (!empresa) return new NextResponse('Ciclo no encontrado', { status: 404 });
+  const ciclo = await resolverCiclo(params.slug);
+  if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
+  const { corrida } = ciclo;
 
   let datos: { accion?: unknown; actividadId?: unknown; clave?: unknown };
   try {
@@ -25,15 +30,15 @@ export async function POST(
     return new NextResponse('Datos ilegibles', { status: 400 });
   }
 
-  if (!claveControlOk(typeof datos.clave === 'string' ? datos.clave : null)) {
+  if (!claveControlOk(corrida, typeof datos.clave === 'string' ? datos.clave : null)) {
     return new NextResponse('No autorizado', { status: 403 });
   }
 
   try {
     if (datos.accion === 'cerrar') {
-      await cerrarActividades(empresa.id);
+      await cerrarActividades(corrida.id);
     } else if (datos.accion === 'abrir') {
-      await abrirActividad(empresa.id, String(datos.actividadId ?? ''));
+      await abrirActividad(corrida.id, String(datos.actividadId ?? ''));
     } else {
       return new NextResponse('Acción inválida', { status: 400 });
     }

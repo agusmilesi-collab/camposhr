@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation';
-import { contarRespuestas, getEmpresaPorSlug } from '@/lib/supabase';
+import { contarRespuestas } from '@/lib/supabase';
 import {
   getActividadAbierta,
   getActividadPorClave,
   listarAportes,
   listarAsistentes,
+  resolverCiclo,
   resumir,
   type Actividad,
   type Resumen,
@@ -45,14 +46,15 @@ export default async function Proyeccion({
   params: { slug: string };
   searchParams: { placa?: string; clave?: string; vista?: string };
 }) {
-  const empresa = await getEmpresaPorSlug(params.slug);
-  if (!empresa) notFound();
+  const ciclo = await resolverCiclo(params.slug);
+  if (!ciclo) notFound();
+  const { empresa, corrida } = ciclo;
 
   const enPlaca = searchParams?.placa === '1';
   const soloConteo = searchParams?.vista === 'conteo';
   const actividad = searchParams?.clave
-    ? await getActividadPorClave(empresa.id, searchParams.clave)
-    : await getActividadAbierta(empresa.id);
+    ? await getActividadPorClave(corrida.ciclo_id, searchParams.clave)
+    : await getActividadAbierta(corrida);
 
   if (!actividad) {
     return (
@@ -64,10 +66,10 @@ export default async function Proyeccion({
     );
   }
 
-  const aportes = await listarAportes(actividad.id);
+  const aportes = await listarAportes(corrida.id, actividad.id);
 
   if (soloConteo) {
-    const inscriptos = (await listarAsistentes(empresa.id)).length;
+    const inscriptos = (await listarAsistentes(corrida.id)).length;
     // Una actividad de tipo 'enlace' se completa en otra pantalla, así que lo
     // que hay que contar no son los aportes sino lo que quedó guardado allá.
     // Hoy el único destino es el cuestionario de perfil.

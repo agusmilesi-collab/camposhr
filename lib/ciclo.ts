@@ -1,16 +1,28 @@
 /**
- * Ciclo de encuentros — la capa de acceso a las tres tablas de `ciclo.sql`.
+ * Ciclo de encuentros — la capa de acceso.
  *
  * Mismo criterio que el resto: todo server-side con la service key, sin SDK.
  * Este módulo no puede importarse desde un componente de cliente.
  *
- * Las cinco formas de responder están fijadas en `TIPOS`. Una actividad nueva es
- * una fila en `actividades`, no código nuevo: por eso la validación y el resumen
- * se resuelven acá adentro con un switch sobre el tipo y no en cada pantalla.
+ * Hay dos cosas separadas y conviene no confundirlas:
+ *
+ *   el ciclo    el material. Liderazgos Humanos y sus actividades, escritas
+ *               una sola vez y las mismas para todos los clientes.
+ *
+ *   la corrida  el ciclo dictado a un cliente. Guarda su clave de control,
+ *               qué actividad tiene abierta y quiénes asistieron.
+ *
+ * Casi todo arranca en `getCorridaPorSlug`: la dirección del encuentro nombra a
+ * la empresa, y de ahí sale la corrida activa con su ciclo.
+ *
+ * Las formas de responder están fijadas en `TIPOS`. Una actividad nueva es una
+ * fila en `actividades`, no código nuevo: por eso la validación y el resumen se
+ * resuelven acá adentro con un switch sobre el tipo y no en cada pantalla.
  */
 
 import 'server-only';
-import { insert, patch, select, upsert } from '@/lib/supabase';
+import { getEmpresaPorSlug, insert, patch, select, upsert } from '@/lib/supabase';
+import type { Empresa } from '@/lib/supabase';
 
 // -------------------------------------------------------------------- tipos
 
@@ -26,9 +38,26 @@ export const TIPOS = [
 ] as const;
 export type TipoActividad = (typeof TIPOS)[number];
 
-export type Actividad = {
+export type Ciclo = {
+  id: string;
+  nombre: string;
+  activo: boolean;
+};
+
+/** Un ciclo dictado a un cliente. Es lo que se da de alta por cada encuentro. */
+export type Corrida = {
   id: string;
   empresa_id: string;
+  ciclo_id: string;
+  clave_control: string;
+  /** Qué se está respondiendo ahora, o null si los teléfonos están guardados. */
+  actividad_abierta_id: string | null;
+  activa: boolean;
+};
+
+export type Actividad = {
+  id: string;
+  ciclo_id: string;
   /** Identificador legible dentro de la empresa, por ejemplo 'c1-multitarea'. */
   clave: string;
   charla: number;
@@ -44,7 +73,7 @@ export type Actividad = {
 
 export type Asistente = {
   id: string;
-  empresa_id: string;
+  corrida_id: string;
   nombre: string;
   apellido: string;
   foto_path: string | null;
@@ -53,6 +82,7 @@ export type Asistente = {
 
 export type Aporte = {
   id: string;
+  corrida_id: string;
   actividad_id: string;
   asistente_id: string;
   valor: Valor;
@@ -74,9 +104,11 @@ export function destinoDe(actividad: Actividad): string | null {
 }
 
 const CAMPOS_ACTIVIDAD =
-  'id,empresa_id,clave,charla,orden,tipo,titulo,enunciado,opciones,abierta,created_at';
-const CAMPOS_ASISTENTE = 'id,empresa_id,nombre,apellido,foto_path,created_at';
-const CAMPOS_APORTE = 'id,actividad_id,asistente_id,valor,created_at';
+  'id,ciclo_id,clave,charla,orden,tipo,titulo,enunciado,opciones,created_at';
+const CAMPOS_ASISTENTE = 'id,corrida_id,nombre,apellido,foto_path,created_at';
+const CAMPOS_APORTE = 'id,corrida_id,actividad_id,asistente_id,valor,created_at';
+const CAMPOS_CORRIDA =
+  'id,empresa_id,ciclo_id,clave_control,actividad_abierta_id,activa';
 
 /**
  * Todo id que viaja a PostgREST se valida antes de entrar en la query.
@@ -85,121 +117,167 @@ const CAMPOS_APORTE = 'id,actividad_id,asistente_id,valor,created_at';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CLAVE = /^[a-z0-9-]{2,60}$/;
 
-// --------------------------------------------------------------- actividades
-
-export async function listarActividades(empresaId: string): Promise<Actividad[]> {
-  if (!UUID.test(empresaId)) return [];
-  return select<Actividad>(
-    'actividades',
-    `select=${CAMPOS_ACTIVIDAD}&empresa_id=eq.${empresaId}` +
-      `&order=charla.asc,orden.asc`
-  );
-}
+// ----------------------------------------------------------------- corridas
 
 /**
- * La actividad que está abierta en este momento, o null.
+ * De la dirección del encuentro al encuentro.
  *
- * El teléfono de cada persona muestra esto y nada más. Si por algún motivo
- * quedara más de una abierta, gana la última que se abrió.
+ * Todas las pantallas del ciclo entran por acá: la dirección nombra a la
+ * empresa y hace falta su corrida activa para saber de qué ciclo se trata y
+ * qué está abierto. Devuelve null si la empresa no existe o si no tiene una
+ * corrida en curso, que para el visitante es lo mismo.
  */
-export async function getActividadAbierta(
-  empresaId: string
-): Promise<Actividad | null> {
+export async function resolverCiclo(
+  slug: string
+): Promise<{ empresa: Empresa; corrida: Corrida } | null> {
+  const empresa = await getEmpresaPorSlug(slug);
+  if (!empresa) return null;
+  const corrida = await getCorridaActiva(empresa.id);
+  if (!corrida) return null;
+  return { empresa, corrida };
+}
+
+
+/**
+ * La corrida activa de una empresa, con su ciclo.
+ *
+ * Es el punto de entrada de casi todo: la dirección del encuentro nombra a la
+ * empresa (camposhr.com/ciclo/pla-sa) y de ahí sale para qué ciclo es y qué
+ * está abierto. Si el año que viene el mismo cliente repite, la corrida vieja
+ * se marca inactiva y la dirección pasa a resolver a la nueva.
+ */
+export async function getCorridaActiva(empresaId: string): Promise<Corrida | null> {
   if (!UUID.test(empresaId)) return null;
-  const filas = await select<Actividad>(
-    'actividades',
-    `select=${CAMPOS_ACTIVIDAD}&empresa_id=eq.${empresaId}&abierta=is.true` +
-      `&order=charla.desc,orden.desc&limit=1`
+  const filas = await select<Corrida>(
+    'corridas',
+    `select=${CAMPOS_CORRIDA}&empresa_id=eq.${empresaId}&activa=is.true&limit=1`
   );
   return filas[0] ?? null;
 }
 
+export async function listarCorridas(): Promise<
+  (Corrida & { empresas: { nombre: string; slug: string }; ciclos: { nombre: string } })[]
+> {
+  return select(
+    'corridas',
+    `select=${CAMPOS_CORRIDA},empresas(nombre,slug),ciclos(nombre)` +
+      `&activa=is.true&order=created_at.desc`
+  );
+}
+
+export async function getCiclo(cicloId: string): Promise<Ciclo | null> {
+  if (!UUID.test(cicloId)) return null;
+  const filas = await select<Ciclo>(
+    'ciclos',
+    `select=id,nombre,activo&id=eq.${cicloId}&limit=1`
+  );
+  return filas[0] ?? null;
+}
+
+// --------------------------------------------------------------- actividades
+
+/** Las actividades del ciclo. Las mismas para todos los clientes. */
+export async function listarActividades(cicloId: string): Promise<Actividad[]> {
+  if (!UUID.test(cicloId)) return [];
+  return select<Actividad>(
+    'actividades',
+    `select=${CAMPOS_ACTIVIDAD}&ciclo_id=eq.${cicloId}&order=charla.asc,orden.asc`
+  );
+}
+
+/**
+ * Lo que esta corrida tiene abierto en este momento, o null.
+ *
+ * El teléfono de cada persona muestra esto y nada más. Sale de la corrida y no
+ * de la actividad: la actividad es compartida, y un booleano ahí abriría la
+ * consigna en la sala de otro cliente.
+ */
+export async function getActividadAbierta(
+  corrida: Corrida
+): Promise<Actividad | null> {
+  if (!corrida.actividad_abierta_id) return null;
+  return getActividad(corrida.ciclo_id, corrida.actividad_abierta_id);
+}
+
 export async function getActividad(
-  empresaId: string,
+  cicloId: string,
   actividadId: string
 ): Promise<Actividad | null> {
-  if (!UUID.test(empresaId) || !UUID.test(actividadId)) return null;
+  if (!UUID.test(cicloId) || !UUID.test(actividadId)) return null;
   const filas = await select<Actividad>(
     'actividades',
-    `select=${CAMPOS_ACTIVIDAD}&empresa_id=eq.${empresaId}&id=eq.${actividadId}&limit=1`
+    `select=${CAMPOS_ACTIVIDAD}&ciclo_id=eq.${cicloId}&id=eq.${actividadId}&limit=1`
   );
   return filas[0] ?? null;
 }
 
 export async function getActividadPorClave(
-  empresaId: string,
+  cicloId: string,
   clave: string
 ): Promise<Actividad | null> {
-  if (!UUID.test(empresaId) || !CLAVE.test(clave)) return null;
+  if (!UUID.test(cicloId) || !CLAVE.test(clave)) return null;
   const filas = await select<Actividad>(
     'actividades',
-    `select=${CAMPOS_ACTIVIDAD}&empresa_id=eq.${empresaId}&clave=eq.${clave}&limit=1`
+    `select=${CAMPOS_ACTIVIDAD}&ciclo_id=eq.${cicloId}&clave=eq.${clave}&limit=1`
   );
   return filas[0] ?? null;
 }
 
 /**
- * Abre una actividad y cierra las demás de la empresa.
+ * Abre una actividad en esta corrida.
  *
- * Se cierra primero y se abre después: si el orden fuera al revés, entre las dos
- * llamadas habría un instante con dos actividades abiertas y un teléfono que
- * consulte justo ahí mostraría la que no es.
+ * Una sola escritura: el estado vive en la corrida, así que abrir una cierra la
+ * anterior por definición y no hay un instante intermedio donde el teléfono vea
+ * lo que no es.
  */
 export async function abrirActividad(
-  empresaId: string,
+  corridaId: string,
   actividadId: string
 ): Promise<void> {
-  if (!UUID.test(empresaId) || !UUID.test(actividadId)) {
+  if (!UUID.test(corridaId) || !UUID.test(actividadId)) {
     throw new Error('Actividad inválida');
   }
-  await cerrarActividades(empresaId);
-  await patch(
-    'actividades',
-    `empresa_id=eq.${empresaId}&id=eq.${actividadId}`,
-    { abierta: true }
-  );
+  await patch('corridas', `id=eq.${corridaId}`, {
+    actividad_abierta_id: actividadId,
+  });
 }
 
-export async function cerrarActividades(empresaId: string): Promise<void> {
-  if (!UUID.test(empresaId)) throw new Error('Empresa inválida');
-  await patch(
-    'actividades',
-    `empresa_id=eq.${empresaId}&abierta=is.true`,
-    { abierta: false }
-  );
+export async function cerrarActividades(corridaId: string): Promise<void> {
+  if (!UUID.test(corridaId)) throw new Error('Corrida inválida');
+  await patch('corridas', `id=eq.${corridaId}`, { actividad_abierta_id: null });
 }
 
 // ---------------------------------------------------------------- asistentes
 
 /**
- * Los asistentes del ciclo, por apellido.
+ * Los asistentes de la corrida, por apellido.
  *
  * Es la lista que arma la grilla de caras del segundo día: la persona que abre
  * desde otro teléfono se busca a sí misma en vez de escribir un código.
  */
-export async function listarAsistentes(empresaId: string): Promise<Asistente[]> {
-  if (!UUID.test(empresaId)) return [];
+export async function listarAsistentes(corridaId: string): Promise<Asistente[]> {
+  if (!UUID.test(corridaId)) return [];
   return select<Asistente>(
     'asistentes',
-    `select=${CAMPOS_ASISTENTE}&empresa_id=eq.${empresaId}` +
+    `select=${CAMPOS_ASISTENTE}&corrida_id=eq.${corridaId}` +
       `&order=apellido.asc,nombre.asc`
   );
 }
 
 export async function getAsistente(
-  empresaId: string,
+  corridaId: string,
   asistenteId: string
 ): Promise<Asistente | null> {
-  if (!UUID.test(empresaId) || !UUID.test(asistenteId)) return null;
+  if (!UUID.test(corridaId) || !UUID.test(asistenteId)) return null;
   const filas = await select<Asistente>(
     'asistentes',
-    `select=${CAMPOS_ASISTENTE}&empresa_id=eq.${empresaId}&id=eq.${asistenteId}&limit=1`
+    `select=${CAMPOS_ASISTENTE}&corrida_id=eq.${corridaId}&id=eq.${asistenteId}&limit=1`
   );
   return filas[0] ?? null;
 }
 
 export async function crearAsistente(fila: {
-  empresa_id: string;
+  corrida_id: string;
   nombre: string;
   apellido: string;
   foto_path: string | null;
@@ -209,11 +287,16 @@ export async function crearAsistente(fila: {
 
 // ------------------------------------------------------------------- aportes
 
-export async function listarAportes(actividadId: string): Promise<Aporte[]> {
-  if (!UUID.test(actividadId)) return [];
+/** Lo respondido en esta corrida. Filtra por corrida: la actividad es compartida. */
+export async function listarAportes(
+  corridaId: string,
+  actividadId: string
+): Promise<Aporte[]> {
+  if (!UUID.test(corridaId) || !UUID.test(actividadId)) return [];
   return select<Aporte>(
     'aportes',
-    `select=${CAMPOS_APORTE}&actividad_id=eq.${actividadId}&order=created_at.asc`
+    `select=${CAMPOS_APORTE}&corrida_id=eq.${corridaId}` +
+      `&actividad_id=eq.${actividadId}&order=created_at.asc`
   );
 }
 
@@ -232,16 +315,22 @@ export async function getAporteDe(
 
 /** Guarda la respuesta. Si la persona ya había respondido, la corrige. */
 export async function guardarAporte(
+  corridaId: string,
   actividadId: string,
   asistenteId: string,
   valor: Valor
 ): Promise<Aporte> {
-  if (!UUID.test(actividadId) || !UUID.test(asistenteId)) {
+  if (!UUID.test(corridaId) || !UUID.test(actividadId) || !UUID.test(asistenteId)) {
     throw new Error('Aporte inválido');
   }
   return upsert<Aporte>(
     'aportes',
-    { actividad_id: actividadId, asistente_id: asistenteId, valor },
+    {
+      corrida_id: corridaId,
+      actividad_id: actividadId,
+      asistente_id: asistenteId,
+      valor,
+    },
     'actividad_id,asistente_id'
   );
 }
@@ -255,13 +344,14 @@ export async function guardarAporte(
  * escanearon para entrar. Sin clave, cualquiera puede abrir la actividad de la
  * charla 5 mientras se está dando la 1.
  *
- * Sale de CICLO_CONTROL_CLAVE. Si la variable no está definida, el control
- * queda abierto, para poder probarlo en local sin configurar nada.
+ * Es por corrida: si fuera una sola para todo el sistema, quien controla un
+ * cliente podría abrir actividades en la sala de otro.
  */
-export function claveControlOk(recibida: string | null | undefined): boolean {
-  const esperada = process.env.CICLO_CONTROL_CLAVE;
-  if (!esperada) return true;
-  return recibida === esperada;
+export function claveControlOk(
+  corrida: Corrida,
+  recibida: string | null | undefined
+): boolean {
+  return Boolean(corrida.clave_control) && recibida === corrida.clave_control;
 }
 
 // ---------------------------------------------------------------- validación

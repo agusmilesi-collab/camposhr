@@ -3569,3 +3569,13 @@ body {
   color: var(--muted);
   letter-spacing: 0.02em;
 }
+
+.enc-cliente {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-left: 10px;
+  vertical-align: middle;
+}
