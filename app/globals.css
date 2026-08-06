@@ -2725,13 +2725,13 @@ body {
 .pres-tabla {
   display: grid;
   grid-template-columns:
-    max-content max-content minmax(16rem, 1fr) max-content max-content max-content;
+    max-content max-content minmax(16rem, 1fr) max-content max-content;
   align-items: center;
   overflow: hidden;
 }
-/* Sin fecha ni cliente: quedan la charla, las placas y los dos enlaces. */
+/* Sin fecha ni cliente: quedan la charla, las placas y el enlace. */
 .pres-tabla-sola {
-  grid-template-columns: minmax(16rem, 1fr) max-content max-content max-content;
+  grid-template-columns: minmax(16rem, 1fr) max-content max-content;
 }
 .pres-row {
   display: contents;
