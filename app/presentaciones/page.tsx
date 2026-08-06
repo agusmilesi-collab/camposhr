@@ -1,6 +1,7 @@
 import { listarPresentaciones, formatoFecha } from '@/lib/presentaciones';
 import { listarAsistentes, listarCiclos, listarCorridas } from '@/lib/ciclo';
 import Encuentros, { type EnCurso } from './Encuentros';
+import TablaCharlas from './TablaCharlas';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,67 +74,22 @@ export default async function Presentaciones() {
       {ciclos.map((ciclo) => (
         <section className="presentaciones" key={ciclo.nombre}>
           <h2 className="pres-ciclo">{ciclo.nombre}</h2>
-          <div className="card pres-tabla">
-            <div className="pres-row pres-th">
-              <span>Fecha</span>
-              <span>Cliente</span>
-              <span>Charla</span>
-              <span className="pres-num">Placas</span>
-              <span />
-              <span />
-            </div>
-
-            {ciclo.filas.map((p) => (
-              <div className="pres-row" key={`${p.ciclo}-${p.orden}`}>
-                <span className="cot-fecha">{formatoFecha(p.fecha)}</span>
-                <span>
-                  {p.cliente ? (
-                    <em className="chip chip-cliente">{p.cliente}</em>
-                  ) : (
-                    <em className="pres-todos">Cualquier cliente</em>
-                  )}
-                </span>
-                <span className="pres-charla">
-                  <b>
-                    {p.orden}. {p.titulo}
-                  </b>
-                  <em>{p.subtitulo}</em>
-                </span>
-                <span className="pres-num">{p.placas}</span>
-
-                {p.token ? (
-                  <>
-                    <span className="pres-accion">
-                      <a
-                        className="copiar pres-ver"
-                        href={
-                          enVivo.get(ciclo.nombre)?.[0]
-                            ? `${BASE}/${p.token}?c=${enVivo.get(ciclo.nombre)![0].slug}`
-                            : `${BASE}/${p.token}`
-                        }
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Ver presentación
-                      </a>
-                    </span>
-                    <span className="pres-accion">
-                      <a className="copiar" href={`/pres/${p.archivo}`} download>
-                        Descargar
-                      </a>
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span className="pres-accion">
-                      <em className="pres-pendiente">Sin publicar</em>
-                    </span>
-                    <span />
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
+          <TablaCharlas
+            clientes={(enVivo.get(ciclo.nombre) ?? []).map((e) => ({
+              slug: e.slug,
+              empresa: e.empresa,
+            }))}
+            charlas={ciclo.filas.map((p) => ({
+              token: p.token,
+              archivo: p.archivo,
+              titulo: p.titulo,
+              subtitulo: p.subtitulo,
+              orden: p.orden,
+              placas: p.placas,
+              fechaTexto: formatoFecha(p.fecha),
+              cliente: p.cliente,
+            }))}
+          />
 
           {enVivo.has(ciclo.nombre) && (
             <Encuentros

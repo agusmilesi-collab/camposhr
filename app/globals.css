@@ -3607,8 +3607,8 @@ body {
 }
 .enc-fila-quien {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: baseline;
+  gap: 12px;
   min-width: 0;
 }
 .enc-fila-quien b {
@@ -3754,4 +3754,38 @@ body {
 }
 .enc .alta-listo {
   border-top-color: var(--st-amber);
+}
+
+/* Para qué cliente se está proyectando. Va arriba de la tabla porque las cinco
+   charlas son las mismas para todos: sin esto, abrir una es abrir la de
+   cualquiera, y en la sala nadie nota que las respuestas son de otro grupo. */
+.pres-para {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 14px;
+}
+.pres-para label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.pres-para .cq-select {
+  width: auto;
+  min-width: 220px;
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+.pres-para-aviso {
+  font-size: 0.78rem;
+  color: var(--st-amber);
+}
+/* Sin cliente elegido el enlace no abre: mejor no proyectar que proyectar lo
+   que respondió otro grupo. */
+.pres-ver-frenado {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
