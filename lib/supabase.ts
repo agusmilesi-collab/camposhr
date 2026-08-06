@@ -94,6 +94,28 @@ export async function upsert<T>(
   return filas[0];
 }
 
+/** El mismo upsert, para varias filas de una. Devuelve las filas escritas. */
+export async function upsertVarias<T>(
+  tabla: string,
+  filas: Record<string, unknown>[],
+  conflicto: string
+): Promise<T[]> {
+  if (filas.length === 0) return [];
+  const res = await fetch(
+    `${URL_BASE()}/rest/v1/${tabla}?on_conflict=${conflicto}`,
+    {
+      method: 'POST',
+      headers: headers({
+        'content-type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=representation',
+      }),
+      body: JSON.stringify(filas),
+    }
+  );
+  if (!res.ok) throw new Error(`Supabase upsert ${tabla} ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
 // ------------------------------------------------------------------ tipos
 
 export type Empresa = {
@@ -133,7 +155,31 @@ export type Respuesta = {
   created_at: string;
   /** El dictado en el que se respondió. Null si fue desde el enlace suelto. */
   corrida_id: string | null;
+  /** Quién la respondió, cuando fue desde la pantalla del encuentro. */
+  asistente_id: string | null;
 };
+
+/**
+ * El cuadrante que encabeza el resultado de cada asistente de una corrida.
+ *
+ * Es lo que hace falta para cruzar a la gente en la charla 3, y sale de la
+ * respuesta al cuestionario que dieron un rato antes, en esa misma sala. Se
+ * queda con la última de cada uno: si alguien lo rehízo, vale la que corrigió.
+ */
+export async function perfilesDeCorrida(
+  corridaId: string
+): Promise<Map<string, string>> {
+  const filas = await select<{ asistente_id: string | null; perfiles: string[] }>(
+    'respuestas',
+    `select=asistente_id,perfiles&corrida_id=eq.${corridaId}` +
+      `&asistente_id=not.is.null&order=created_at.asc`
+  );
+  const out = new Map<string, string>();
+  for (const f of filas) {
+    if (f.asistente_id && f.perfiles?.[0]) out.set(f.asistente_id, f.perfiles[0]);
+  }
+  return out;
+}
 
 // ---------------------------------------------------------------- consultas
 
@@ -191,7 +237,7 @@ export async function listarEquipo(liderId: string): Promise<Respuesta[]> {
 
 const CAMPOS_RESPUESTA =
   'id,empresa_id,variante,lider_id,lider_nombre,apellido,nombre,totales,perfiles,' +
-  'resultado,eje_x,eje_y,generacion,foto_path,created_at,corrida_id';
+  'resultado,eje_x,eje_y,generacion,foto_path,created_at,corrida_id,asistente_id';
 
 /**
  * Las respuestas de una empresa.
@@ -262,6 +308,9 @@ export async function guardarRespuesta(fila: {
   foto_path: string | null;
   /** El dictado, cuando se responde adentro de un encuentro. */
   corrida_id?: string | null;
+  /** Quién respondió, cuando se responde adentro de un encuentro. Es lo que
+   *  permite cruzar a la gente por cuadrante en la misma charla. */
+  asistente_id?: string | null;
 }): Promise<Respuesta> {
   return insert<Respuesta>('respuestas', fila);
 }

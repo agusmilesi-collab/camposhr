@@ -3,10 +3,16 @@ import {
   getActividadAbierta,
   getAporteDe,
   listarAportes,
+  listarAsistentes,
   marcarIngreso,
+  repartirCruce,
   resolverCiclo,
   type Actividad,
+  type Corrida,
 } from '@/lib/ciclo';
+import { firmarSelfies, perfilesDeCorrida } from '@/lib/supabase';
+import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
+import { motivoEntre, type Motivo } from '@/lib/cruce';
 
 /**
  * Qué actividad está abierta en este momento.
@@ -62,5 +68,75 @@ export async function GET(
     respondida: Boolean(mio),
     mio: mio?.valor ?? null,
     total: todos.length,
+    cruce:
+      actividad.tipo === 'cruce' && asistenteId
+        ? await cruceDe(ciclo.corrida, actividad, asistenteId)
+        : null,
   });
+}
+
+/** Con quién le toca juntarse a esta persona, con lo que necesita para ubicarla. */
+type Cruce = {
+  /** El cuadrante propio, para que la pantalla lo diga sin que tenga que recordarlo. */
+  miPerfil: { corto: Perfil; nombre: string } | null;
+  con: {
+    nombre: string;
+    apellido: string;
+    foto: string | null;
+    perfil: { corto: Perfil; nombre: string; descripcion: string } | null;
+    motivo: Motivo;
+  }[];
+};
+
+async function cruceDe(
+  corrida: Corrida,
+  actividad: Actividad,
+  asistenteId: string
+): Promise<Cruce | null> {
+  let aporte = await getAporteDe(actividad.id, asistenteId);
+
+  // Se registró después de que la expositora abriera la consigna: se reparte
+  // ahora, sin tocar los grupos que ya están conversando.
+  if (!aporte) {
+    await repartirCruce(corrida, actividad);
+    aporte = await getAporteDe(actividad.id, asistenteId);
+  }
+  if (aporte?.valor?.tipo !== 'cruce') return null;
+
+  const [asistentes, perfiles] = await Promise.all([
+    listarAsistentes(corrida.id),
+    perfilesDeCorrida(corrida.id),
+  ]);
+  const porId = new Map(asistentes.map((a) => [a.id, a]));
+  const perfilDe = (id: string): Perfil | null => {
+    const p = perfiles.get(id);
+    return PERFILES.includes(p as Perfil) ? (p as Perfil) : null;
+  };
+
+  const mio = perfilDe(asistenteId);
+  const pares = aporte.valor.conIds
+    .map((id) => porId.get(id))
+    .filter((a): a is NonNullable<typeof a> => Boolean(a));
+
+  // La cara del compañero es lo que resuelve el problema real de la consigna:
+  // encontrar a alguien por su nombre entre treinta personas paradas.
+  const fotos = await firmarSelfies(
+    pares.map((p) => p.foto_path).filter((p): p is string => Boolean(p))
+  );
+
+  return {
+    miPerfil: mio ? { corto: mio, nombre: INFO[mio].nombre } : null,
+    con: pares.map((p) => {
+      const suyo = perfilDe(p.id);
+      return {
+        nombre: p.nombre,
+        apellido: p.apellido,
+        foto: p.foto_path ? fotos.get(p.foto_path) ?? null : null,
+        perfil: suyo
+          ? { corto: suyo, nombre: INFO[suyo].nombre, descripcion: INFO[suyo].descripcion }
+          : null,
+        motivo: motivoEntre(mio, suyo),
+      };
+    }),
+  };
 }

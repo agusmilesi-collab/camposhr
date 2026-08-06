@@ -18,7 +18,8 @@ type TipoActividad =
   | 'texto'
   | 'marcas'
   | 'enlace'
-  | 'cuestionario';
+  | 'cuestionario'
+  | 'cruce';
 
 /** Quién está respondiendo desde este teléfono. */
 type Yo = { id: string; nombre: string; apellido: string };
@@ -39,11 +40,24 @@ type Valor =
   | { tipo: 'texto'; texto: string }
   | { tipo: 'marcas'; marcas: number[] };
 
+/** Con quién le toca juntarse, en la consigna de consultar una decisión. */
+type Cruce = {
+  miPerfil: { corto: string; nombre: string } | null;
+  con: {
+    nombre: string;
+    apellido: string;
+    foto: string | null;
+    perfil: { corto: string; nombre: string; descripcion: string } | null;
+    motivo: 'diagonal' | 'distinto' | 'mismo' | 'sin-perfil';
+  }[];
+};
+
 type Estado = {
   actividad: ActividadPublica | null;
   respondida: boolean;
   mio: Valor | null;
   total: number;
+  cruce: Cruce | null;
 };
 
 export type Cara = {
@@ -226,6 +240,7 @@ export default function Asistente({
             actividad={estado.actividad}
             respondida={estado.respondida}
             mio={estado.mio}
+            cruce={estado.cruce}
             onGuardado={(valor) =>
               setEstado((e) => (e ? { ...e, respondida: true, mio: valor } : e))
             }
@@ -460,6 +475,7 @@ function Formulario({
   actividad,
   respondida,
   mio,
+  cruce,
   onGuardado,
 }: {
   slug: string;
@@ -469,6 +485,7 @@ function Formulario({
   actividad: ActividadPublica;
   respondida: boolean;
   mio: Valor | null;
+  cruce: Cruce | null;
   onGuardado: (valor: Valor) => void;
 }) {
   const [palabra, setPalabra] = useState('');
@@ -498,6 +515,13 @@ function Formulario({
     } finally {
       setEnviando(false);
     }
+  }
+
+  /* Va antes del bloque de "ya respondiste": el cruce deja su fila en aportes
+     igual que una respuesta, y sin esto la pantalla diría "Listo" en vez de
+     decir a quién buscar. */
+  if (actividad.tipo === 'cruce') {
+    return <Cruzado actividad={actividad} cruce={cruce} />;
   }
 
   if (cerrado) {
@@ -679,6 +703,100 @@ function Formulario({
       {error && <p className="cq-error">{error}</p>}
     </section>
   );
+}
+
+// --------------------------------------------------------------------- cruce
+
+/**
+ * A quién buscar para consultarle una decisión.
+ *
+ * Acá no se responde nada: el reparto lo hizo el servidor cruzando los
+ * cuadrantes del cuestionario. La pantalla tiene un solo trabajo, que es que la
+ * persona encuentre a la otra entre treinta paradas, y por eso la cara pesa más
+ * que el texto.
+ */
+function Cruzado({
+  actividad,
+  cruce,
+}: {
+  actividad: ActividadPublica;
+  cruce: Cruce | null;
+}) {
+  if (!cruce || cruce.con.length === 0) {
+    return (
+      <section className="cq-placa ci-espera">
+        <p className="ci-espera-punto" aria-hidden="true" />
+        <h1 className="ci-titulo">Un segundo</h1>
+        <p className="cq-ayuda">
+          Estamos buscando con quién te toca. Aparece solo en esta pantalla.
+        </p>
+      </section>
+    );
+  }
+
+  const nombres = cruce.con.map((p) => p.nombre);
+  const titulo =
+    nombres.length === 1
+      ? `Buscá a ${nombres[0]}`
+      : `Buscá a ${nombres.slice(0, -1).join(', ')} y a ${nombres[nombres.length - 1]}`;
+
+  return (
+    <section className="cq-placa ci-cruce">
+      {cruce.miPerfil && (
+        <p className="ci-cruce-yo">
+          Sos <b>{cruce.miPerfil.nombre}</b>
+        </p>
+      )}
+      <h1 className="ci-titulo">{titulo}</h1>
+
+      <div className="ci-cruce-gente">
+        {cruce.con.map((p) => (
+          <article className="ci-cruce-par" key={`${p.apellido}-${p.nombre}`}>
+            <span className="ci-cruce-foto">
+              {p.foto ? (
+                <img src={p.foto} alt="" />
+              ) : (
+                <span className="ci-cara-iniciales">
+                  {(p.nombre[0] ?? '') + (p.apellido[0] ?? '')}
+                </span>
+              )}
+            </span>
+            <div className="ci-cruce-quien">
+              <b>
+                {p.nombre} {p.apellido}
+              </b>
+              {p.perfil && <span className="ci-cruce-perfil">{p.perfil.nombre}</span>}
+              <p className="ci-cruce-porque">{porQue(p.motivo, p.nombre)}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <p className="ci-cruce-consigna">
+        {actividad.enunciado ?? 'Consultale una decisión que tenés que tomar.'}
+      </p>
+    </section>
+  );
+}
+
+/**
+ * Por qué le tocó esa persona.
+ *
+ * Cada caso dice lo que pasó y nada más. Anunciar un contraste que el reparto
+ * no consiguió es peor que no decir nada: la persona lo comprueba en treinta
+ * segundos de conversación.
+ */
+function porQue(motivo: Cruce['con'][number]['motivo'], nombre: string): string {
+  switch (motivo) {
+    case 'diagonal':
+      return `Es tu cuadrante opuesto: lo que a vos te demanda esfuerzo, ${nombre} lo hace sin pensarlo.`;
+    case 'distinto':
+      return `Trabaja en otro cuadrante que el tuyo.`;
+    case 'mismo':
+      return `Quedaron en el mismo cuadrante: no había nadie de otro sin pareja.`;
+    case 'sin-perfil':
+      return `Todavía no está su resultado del cuestionario.`;
+  }
 }
 
 /** Lo que la persona respondió, para que se reconozca sin tener que recordarlo. */

@@ -216,6 +216,10 @@ export async function POST(
       // Queda atada al dictado: la misma empresa puede recorrer el ciclo otra
       // vez, y lo de un grupo no tiene por qué contarse en el del siguiente.
       corrida_id: corridaId,
+      // Y a quién la respondió: sin esto, cruzar a la gente por cuadrante en la
+      // misma charla depende de que el nombre esté escrito igual en los dos
+      // lados, y "Agustín" contra "Agustin" deja a alguien sin pareja.
+      asistente_id: asistente?.id ?? null,
     });
   } catch {
     return new NextResponse('No se pudo guardar', { status: 500 });
