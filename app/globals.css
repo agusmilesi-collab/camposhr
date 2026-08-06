@@ -3772,6 +3772,7 @@ body {
   height: 30px;
   padding: 0 11px;
   background: var(--card);
+  text-decoration: none;
 }
 .enc .enc-fila-quien em {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
