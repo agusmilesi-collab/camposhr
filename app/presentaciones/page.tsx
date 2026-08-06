@@ -62,13 +62,6 @@ export default async function Presentaciones() {
           </a>
         </div>
         <h1>Presentaciones</h1>
-        <p className="head-nota">
-          Cada presentación es un archivo que funciona sin internet: las
-          tipografías y las imágenes viajan adentro. Para dar un encuentro,
-          descargala antes y abrila desde la máquina. Se avanza con las flechas,
-          la tecla F la pone en pantalla completa y la N abre las notas del
-          orador en una ventana aparte, para la pantalla de la notebook.
-        </p>
       </section>
 
       {ciclos.map((ciclo) => (
