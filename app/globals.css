@@ -3718,28 +3718,6 @@ body {
   }
 }
 
-/* La guía de los botones va una sola vez, debajo de las filas: lo que cambia
-   entre un cliente y otro es el nombre, no lo que hace cada enlace. */
-.enc-guia {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line-soft);
-}
-.enc-guia-item b {
-  display: block;
-  font-size: 0.9rem;
-  color: var(--ink);
-  margin-bottom: 2px;
-}
-.enc-guia-item p {
-  margin: 6px 0 0;
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: var(--ink-soft);
-}
 .enc-vacio {
   margin: 4px 0 0;
   font-size: 0.86rem;
