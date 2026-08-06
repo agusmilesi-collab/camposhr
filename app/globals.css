@@ -3095,6 +3095,18 @@ body {
   min-height: 56px;
   font-size: 1rem;
   text-align: left;
+  display: block;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  line-height: 1.25;
+}
+/* Qué quiere decir la opción, debajo y más chico. */
+.ci-opcion em {
+  display: block;
+  margin-top: 3px;
+  font-style: normal;
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 .ci-escala {
   display: grid;
@@ -3553,6 +3565,9 @@ body {
   overflow: hidden;
 }
 .cp-consigna .cp-consigna-que {
+  /* Centrado en columna, sin esto el párrafo toma su ancho natural y se sale
+     por el costado en vez de partirse en dos renglones. */
+  max-width: min(38em, 100%);
   margin: 0 0 min(1em, 3vh);
   font-size: min(1.2em, 5vh);
   color: var(--muted);
@@ -3571,8 +3586,16 @@ body {
   border: 1px solid var(--line);
   border-radius: 0.5em;
   background: var(--card);
-  font-size: min(1.35em, 5.5vh);
+  font-size: min(1.3em, 5vh);
+  line-height: 1.2;
   color: var(--ink);
+}
+.cp-consigna .cp-opciones em {
+  display: block;
+  margin-top: 0.15em;
+  font-style: normal;
+  font-size: 0.62em;
+  color: var(--muted);
 }
 .cp-consigna .cp-pie {
   margin-top: min(1.2em, 3vh);

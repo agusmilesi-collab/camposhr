@@ -5,6 +5,7 @@ import {
   getActividadPorClave,
   listarAportes,
   listarAsistentes,
+  partirOpcion,
   resolverCiclo,
   resumir,
   type Actividad,
@@ -84,9 +85,15 @@ export default async function Proyeccion({
         {enPlaca && <FondoTransparente />}
         {actividad.enunciado && <p className="cp-consigna-que">{actividad.enunciado}</p>}
         <ul className="cp-opciones">
-          {actividad.opciones.map((o) => (
-            <li key={o}>{o}</li>
-          ))}
+          {actividad.opciones.map((o) => {
+            const [titulo, aclara] = partirOpcion(o);
+            return (
+              <li key={o}>
+                {titulo}
+                {aclara && <em>{aclara}</em>}
+              </li>
+            );
+          })}
         </ul>
         <p className="cp-pie">
           {aportes.length === 0

@@ -250,6 +250,19 @@ export async function crearEncuentro(
   return { slug, clave };
 }
 
+/**
+ * Separa "Título · qué quiere decir".
+ *
+ * La aclaración viaja con la opción y se muestra debajo, más chica. Una opción
+ * que hay que interpretar se responde distinto en cada cabeza, y ahí el dato
+ * deja de servir para comparar.
+ */
+export function partirOpcion(opcion: string): [string, string | null] {
+  const corte = opcion.indexOf(' · ');
+  if (corte === -1) return [opcion, null];
+  return [opcion.slice(0, corte), opcion.slice(corte + 3)];
+}
+
 /** Las actividades de un grupo, en el orden en que se responden. */
 export async function listarGrupo(
   cicloId: string,
