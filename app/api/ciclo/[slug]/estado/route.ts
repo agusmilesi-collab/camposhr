@@ -3,6 +3,7 @@ import {
   getActividadAbierta,
   getAporteDe,
   listarAportes,
+  marcarIngreso,
   resolverCiclo,
   type Actividad,
 } from '@/lib/ciclo';
@@ -39,12 +40,16 @@ export async function GET(
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
 
+  // Este sondeo es la señal de que alguien está adentro con ese nombre: el
+  // teléfono lo repite mientras la pantalla esté abierta. Con eso alcanza para
+  // sacar su cara de la grilla de los demás, sin un endpoint aparte.
+  const asistenteId = new URL(req.url).searchParams.get('asistente') ?? '';
+  if (asistenteId) await marcarIngreso(asistenteId);
+
   const actividad = await getActividadAbierta(ciclo.corrida);
   if (!actividad) {
     return NextResponse.json({ actividad: null, respondida: false, total: 0 });
   }
-
-  const asistenteId = new URL(req.url).searchParams.get('asistente') ?? '';
   const [mio, todos] = await Promise.all([
     asistenteId ? getAporteDe(actividad.id, asistenteId) : Promise.resolve(null),
     listarAportes(ciclo.corrida.id, actividad.id),

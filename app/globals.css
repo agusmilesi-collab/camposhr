@@ -1189,44 +1189,36 @@ body {
   font-size: 0.78rem;
   color: var(--muted);
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
 }
-/* Quién responde, después de la empresa. En teléfonos angostos cae al
-   renglón de abajo en vez de empujar la marca. */
-.cq-empresa b,
-.cq-yo {
-  font-weight: 500;
-  color: var(--ink);
-}
-.cq-empresa b:before,
-.cq-yo:before {
-  content: '·';
-  margin: 0 5px;
-  font-weight: 400;
-  color: var(--muted);
-}
-/* El nombre vuelve a la grilla de caras: el que entró con la cara del
-   compañero se corrige solo, sin pedirle nada a nadie. */
-.cq-yo {
+/* La salida, arriba y chica: se busca sola cuando hace falta y no compite con
+   lo que la persona vino a hacer. */
+.cq-nosoy {
   font: inherit;
-  font-weight: 500;
+  font-size: 0.66rem;
+  color: var(--muted);
   background: none;
   border: 0;
   padding: 0;
   cursor: pointer;
   text-decoration: underline;
   text-decoration-style: dotted;
-  text-underline-offset: 3px;
+  text-underline-offset: 2px;
   text-decoration-color: var(--line);
 }
-@media (max-width: 400px) {
-  .cq-empresa b,
-  .cq-yo {
-    display: block;
-  }
-  .cq-empresa b:before,
-  .cq-yo:before {
-    content: none;
-  }
+/* Quién responde, después de la empresa. */
+.cq-empresa b {
+  font-weight: 500;
+  color: var(--ink);
+}
+.cq-empresa b:before {
+  content: '·';
+  margin: 0 5px;
+  font-weight: 400;
+  color: var(--muted);
 }
 .cq-progreso {
   height: 3px;
@@ -3615,6 +3607,30 @@ body {
   display: block;
   width: 100%;
   height: auto;
+}
+/* Proyectada, la caja se lee desde el fondo de la sala: todo más grande que en
+   la pantalla del que la abre en su computadora. */
+.qr-en-placa .qr-marco {
+  width: 100%;
+  max-width: none;
+  padding: 40px 40px 34px;
+  border-radius: 22px;
+}
+.qr-en-placa .qr-titulo {
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+}
+.qr-en-placa .qr-empresa {
+  font-size: 3.2rem;
+  margin: 10px 0 30px;
+}
+.qr-en-placa .qr-codigo svg {
+  max-width: none;
+}
+.qr-en-placa .qr-url {
+  margin-top: 26px;
+  font-size: 1.35rem;
+  word-break: normal;
 }
 
 /* El material del ciclo con actividades sirve para cualquier cliente: quién lo

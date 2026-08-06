@@ -35,7 +35,14 @@ type Estado = {
   total: number;
 };
 
-export type Cara = { id: string; nombre: string; apellido: string; foto: string | null };
+export type Cara = {
+  id: string;
+  nombre: string;
+  apellido: string;
+  foto: string | null;
+  /** Ya entró desde algún teléfono: su cara sale de la grilla. */
+  entro: boolean;
+};
 
 /** Cada cuánto el teléfono pregunta si hay algo abierto. */
 const SONDEO_MS = 4000;
@@ -188,13 +195,6 @@ export default function Asistente({
             <p className="cq-ayuda">
               Cuando haya algo para responder, aparece solo en esta pantalla.
             </p>
-            {/* Acá es donde mira el que tocó la cara del compañero: entre una
-                actividad y otra la pantalla está en reposo. */}
-            <div className="ci-acciones">
-              <button className="cq-btn-ghost" onClick={salir}>
-                No soy {yo.nombre}
-              </button>
-            </div>
           </section>
         ) : (
           <Formulario
@@ -235,15 +235,15 @@ function Encabezado({
             toca para volver a la grilla: es donde mira el que entró con la
             cara equivocada. */}
         <span className="cq-empresa">
-          {empresa}
-          {nombre &&
-            (onSalir ? (
-              <button className="cq-yo" onClick={onSalir} title="No soy yo">
-                {nombre}
-              </button>
-            ) : (
-              <b>{nombre}</b>
-            ))}
+          {nombre && onSalir && (
+            <button className="cq-nosoy" onClick={onSalir}>
+              No soy {nombre}
+            </button>
+          )}
+          <span className="cq-empresa-linea">
+            {empresa}
+            {nombre && <b>{nombre}</b>}
+          </span>
         </span>
       </div>
     </header>
@@ -378,13 +378,20 @@ function Grilla({
   onElegir: (c: Cara) => void;
   onVolver: () => void;
 }) {
+  // Los que ya entraron desde su teléfono salen de la lista: con treinta caras,
+  // las que no corresponden son ruido para el que todavía busca la suya.
+  const [todas, setTodas] = useState(false);
+  const pendientes = caras.filter((c) => !c.entro);
+  const visibles = todas || pendientes.length === 0 ? caras : pendientes;
+  const escondidas = caras.length - visibles.length;
+
   return (
     <section className="cq-placa">
       <h1 className="ci-titulo">Tocá tu foto</h1>
       <p className="cq-ayuda">Así entrás sin volver a cargar tus datos.</p>
 
       <div className="ci-caras">
-        {caras.map((c) => (
+        {visibles.map((c) => (
           <button key={c.id} className="ci-cara" onClick={() => onElegir(c)}>
             <span className="ci-cara-foto">
               {c.foto ? (
@@ -406,6 +413,13 @@ function Grilla({
       </div>
 
       <div className="ci-acciones">
+        {escondidas > 0 && (
+          /* El que cambió de teléfono o entró por error con otra cara: su
+             nombre ya figura como adentro y sin esto no tendría cómo volver. */
+          <button className="cq-btn-ghost" onClick={() => setTodas(true)}>
+            No veo mi foto
+          </button>
+        )}
         <button className="cq-btn-ghost" onClick={onVolver}>
           No estoy en la lista
         </button>

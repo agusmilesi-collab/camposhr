@@ -530,6 +530,9 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 /* El código de entrada, generado con la dirección del cliente que corresponda.
    Una imagen fija llevaría grabado un solo cliente. */
 .qr-vivo{display:block;width:420px;height:420px;border:0;background:transparent}
+/* La caja de entrada es más alta que ancha: adentro van el nombre de la
+   empresa, el código y la dirección. */
+.qr-vivo.qr-caja{width:560px;height:720px}
 .cierre-qr .baja .caja .qr-vivo{width:340px;height:340px}
 .matriz-marco.sin-cliente .cargando{display:none}
 .matriz-marco.sin-cliente .offline{display:block}
@@ -555,11 +558,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
           <p class="frase">Antes de empezar,<br><b>entrá al ciclo desde tu teléfono</b>.</p>
           <p style="font-size:38px;opacity:.75;margin-top:34px">Cargás tu nombre y una foto,<br>y quedás registrado para los dos días.</p>
         </div>
-        <div class="baja">
-          <div class="caja"><iframe class="qr-vivo" title="Código para entrar al ciclo" data-src="https://camposhr.com/ciclo/__CLIENTE__/qr?placa=1"></iframe></div>
-          <b>Escaneá el código</b>
-          <span>camposhr.com/ciclo/__CLIENTE__</span>
-        </div>
+        <div class="baja"><iframe class="qr-vivo qr-caja" title="Código para entrar al ciclo" data-src="https://camposhr.com/ciclo/__CLIENTE__/qr?placa=1"></iframe></div>
       </div>
     </div>
   </section>
