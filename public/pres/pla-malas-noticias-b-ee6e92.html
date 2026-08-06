@@ -511,6 +511,21 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   font-family:'Instrument Serif',Georgia,serif;font-size:30px;color:var(--muted);
   letter-spacing:-.01em}
 
+/* Marcos embebidos del ciclo. Se cargan al llegar a la placa y se refrescan
+   solos; sin conexión queda el aviso y la actividad se hace en papel. */
+.act-marco{position:relative;width:100%}
+.act-conteo{height:220px;flex:none;margin-top:40px}
+.act-nube{flex:1;min-height:520px;margin-top:30px}
+.act-marco iframe{position:absolute;inset:0;width:100%;height:100%;border:0;
+  background:transparent}
+.act-marco .matriz-aviso{color:var(--muted)}
+.act-marco .matriz-aviso p{font-size:30px;opacity:1}
+
+/* El título de la placa de nube repite la frase, para que se lea sin volver
+   atrás a la consigna. */
+.nube-titulo{font-family:'Instrument Serif',Georgia,serif;font-size:96px;
+  line-height:1.05;letter-spacing:-.02em;color:var(--ink)}
+
 /* La placa de cierre. En el deck oscuro la marca iba abajo a la derecha porque
    la foto de fondo dejaba ese hueco libre. Sin foto, ese rincón queda
    descolgado, así que la marca pasa al centro. */

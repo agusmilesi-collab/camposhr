@@ -4,6 +4,7 @@ import {
   getActividadAbierta,
   getActividadPorClave,
   listarAportes,
+  listarAsistentes,
   resumir,
   type Actividad,
   type Resumen,
@@ -17,8 +18,14 @@ import AutoRefresco from '@/app/cuestionario/[slug]/matriz/AutoRefresco';
  * matriz del equipo en la charla 3: un marco que se carga al llegar a esa placa
  * y se refresca solo.
  *
- *   ?placa=1        fondo transparente, para verse dentro de la diapositiva
+ *   ?placa=1         fondo transparente, para verse dentro de la diapositiva
  *   ?clave=c5-match  fija una actividad; sin esto, muestra la que esté abierta
+ *   ?vista=conteo    solo cuántos respondieron sobre cuántos hay inscriptos
+ *
+ * La vista de conteo va en la placa de la consigna: dice cuándo respondió todo
+ * el grupo, que es lo que la expositora necesita para saber si puede avanzar
+ * sin dejar a nadie a mitad de camino. La respuesta en sí no se muestra ahí:
+ * aparece recién en la placa siguiente, para que nadie copie del proyector.
  *
  * La pantalla abre la conversación, no la cierra: por eso se muestra el dato y
  * nunca una conclusión.
@@ -36,12 +43,13 @@ export default async function Proyeccion({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { placa?: string; clave?: string };
+  searchParams: { placa?: string; clave?: string; vista?: string };
 }) {
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 
   const enPlaca = searchParams?.placa === '1';
+  const soloConteo = searchParams?.vista === 'conteo';
   const actividad = searchParams?.clave
     ? await getActividadPorClave(empresa.id, searchParams.clave)
     : await getActividadAbierta(empresa.id);
@@ -57,6 +65,28 @@ export default async function Proyeccion({
   }
 
   const aportes = await listarAportes(actividad.id);
+
+  if (soloConteo) {
+    const inscriptos = (await listarAsistentes(empresa.id)).length;
+    const completo = inscriptos > 0 && aportes.length >= inscriptos;
+    return (
+      <main className={`cp cp-conteo ${enPlaca ? 'cp-placa' : ''}`}>
+        {enPlaca && <FondoTransparente />}
+        {/* Cuando llega al total cambia de color: la expositora lo ve de
+            reojo desde el otro lado de la sala y sigue sin preguntar. */}
+        <p className={`cp-cifra ${completo ? 'cp-cifra-lista' : ''}`}>
+          <b>{aportes.length}</b>
+          <span>/</span>
+          <em>{inscriptos}</em>
+        </p>
+        <p className="cp-cifra-pie">
+          {completo ? 'Respondieron todos' : 'respondieron'}
+        </p>
+        <AutoRefresco segundos={3} oculto />
+      </main>
+    );
+  }
+
   const resumen = resumir(actividad, aportes);
 
   return (

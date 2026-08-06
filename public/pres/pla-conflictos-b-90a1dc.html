@@ -511,6 +511,21 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   font-family:'Instrument Serif',Georgia,serif;font-size:30px;color:var(--muted);
   letter-spacing:-.01em}
 
+/* Marcos embebidos del ciclo. Se cargan al llegar a la placa y se refrescan
+   solos; sin conexión queda el aviso y la actividad se hace en papel. */
+.act-marco{position:relative;width:100%}
+.act-conteo{height:220px;flex:none;margin-top:40px}
+.act-nube{flex:1;min-height:520px;margin-top:30px}
+.act-marco iframe{position:absolute;inset:0;width:100%;height:100%;border:0;
+  background:transparent}
+.act-marco .matriz-aviso{color:var(--muted)}
+.act-marco .matriz-aviso p{font-size:30px;opacity:1}
+
+/* El título de la placa de nube repite la frase, para que se lea sin volver
+   atrás a la consigna. */
+.nube-titulo{font-family:'Instrument Serif',Georgia,serif;font-size:96px;
+  line-height:1.05;letter-spacing:-.02em;color:var(--ink)}
+
 /* La placa de cierre. En el deck oscuro la marca iba abajo a la derecha porque
    la foto de fondo dejaba ese hueco libre. Sin foto, ese rincón queda
    descolgado, así que la marca pasa al centro. */
@@ -571,6 +586,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="concepto" style="font-size:132px">Jugo de…</div>
+    
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Jugo de" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-1&placa=1&vista=conteo"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="La nube de «Jugo de…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo">Jugo de…</div>
+      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Jugo de" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-1&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -579,6 +604,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="concepto" style="font-size:132px">Prohibido…</div>
+    
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Prohibido" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-2&placa=1&vista=conteo"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="La nube de «Prohibido…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo">Prohibido…</div>
+      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Prohibido" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-2&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -587,6 +622,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="concepto" style="font-size:132px">Recursos…</div>
+    
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Recursos" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-3&placa=1&vista=conteo"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="La nube de «Recursos…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo">Recursos…</div>
+      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Recursos" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-3&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -595,6 +640,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="concepto" style="font-size:132px">Planta…</div>
+    
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Planta" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-4&placa=1&vista=conteo"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="La nube de «Planta…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo">Planta…</div>
+      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Planta" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-4&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -603,6 +658,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="concepto" style="font-size:132px">Hoja de…</div>
+    
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Hoja de" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-5&placa=1&vista=conteo"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="La nube de «Hoja de…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo">Hoja de…</div>
+      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Hoja de" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-5&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -611,6 +676,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="concepto" style="font-size:132px">En un bar siempre pido…</div>
+    
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de En un bar siempre pido" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-6&placa=1&vista=conteo"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="La nube de «En un bar siempre pido…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo">En un bar siempre pido…</div>
+      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de En un bar siempre pido" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-6&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -619,6 +694,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="concepto" style="font-size:132px">Grano de…</div>
+    
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Grano de" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-7&placa=1&vista=conteo"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="La nube de «Grano de…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo">Grano de…</div>
+      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Grano de" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-7&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -627,6 +712,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="concepto" style="font-size:132px">Venta de…</div>
+    
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Venta de" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-8&placa=1&vista=conteo"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="La nube de «Venta de…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo">Venta de…</div>
+      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Venta de" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-8&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -635,6 +730,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="concepto" style="font-size:132px">Sentir…</div>
+    
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Sentir" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-9&placa=1&vista=conteo"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="La nube de «Sentir…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo">Sentir…</div>
+      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Sentir" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c5-match-9&placa=1"></iframe></div>
     </div>
   </section>
 
