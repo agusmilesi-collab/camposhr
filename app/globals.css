@@ -3528,6 +3528,37 @@ body {
 
 /* Contador de la placa de la consigna: cuántos respondieron sobre cuántos hay.
    Va embebido en la diapositiva, así que se lee desde el fondo de la sala. */
+/* La consigna proyectada: lo que hace falta leer para responder desde el
+   teléfono. Sin números al lado de cada opción, para no arrastrar al que
+   todavía no eligió. */
+.cp-consigna {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.cp-consigna-que {
+  margin: 0 0 1.2em;
+  font-size: 1.35em;
+  color: var(--muted);
+}
+.cp-opciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55em;
+  width: 100%;
+  max-width: 26em;
+}
+.cp-opciones li {
+  padding: 0.5em 0.9em;
+  border: 1px solid var(--line);
+  border-radius: 0.5em;
+  background: var(--card);
+  font-size: 1.5em;
+  color: var(--ink);
+}
+
 .cp-conteo {
   align-items: center;
   justify-content: center;

@@ -22,6 +22,7 @@ import AutoRefresco from '@/app/cuestionario/[slug]/matriz/AutoRefresco';
  *   ?placa=1         fondo transparente, para verse dentro de la diapositiva
  *   ?clave=c5-match  fija una actividad; sin esto, muestra la que esté abierta
  *   ?vista=conteo    solo cuántos respondieron sobre cuántos hay inscriptos
+ *   ?vista=consigna  la pregunta con sus opciones, sin ninguna respuesta
  *
  * La vista de conteo va en la placa de la consigna: dice cuándo respondió todo
  * el grupo, que es lo que la expositora necesita para saber si puede avanzar
@@ -52,6 +53,7 @@ export default async function Proyeccion({
 
   const enPlaca = searchParams?.placa === '1';
   const soloConteo = searchParams?.vista === 'conteo';
+  const soloConsigna = searchParams?.vista === 'consigna';
   const actividad = searchParams?.clave
     ? await getActividadPorClave(corrida.ciclo_id, searchParams.clave)
     : await getActividadAbierta(corrida);
@@ -67,6 +69,34 @@ export default async function Proyeccion({
   }
 
   const aportes = await listarAportes(corrida.id, actividad.id);
+
+  /**
+   * La consigna proyectada: lo que hay que leer para poder responder desde el
+   * teléfono, y nada de lo respondido. Las preguntas de la encuesta de la
+   * charla 1 van así: lo que contesta cada uno alimenta el informe a Recursos
+   * Humanos, y proyectarlo mientras responden condiciona al que todavía no
+   * eligió.
+   */
+  if (soloConsigna) {
+    const inscriptos = (await listarAsistentes(corrida.id)).length;
+    return (
+      <main className={`cp cp-consigna ${enPlaca ? 'cp-placa' : ''}`}>
+        {enPlaca && <FondoTransparente />}
+        {actividad.enunciado && <p className="cp-consigna-que">{actividad.enunciado}</p>}
+        <ul className="cp-opciones">
+          {actividad.opciones.map((o) => (
+            <li key={o}>{o}</li>
+          ))}
+        </ul>
+        <p className="cp-pie">
+          {aportes.length === 0
+            ? 'Se responde desde el teléfono.'
+            : `Respondieron ${aportes.length} de ${inscriptos}`}
+        </p>
+        <AutoRefresco segundos={5} oculto />
+      </main>
+    );
+  }
 
   if (soloConteo) {
     const inscriptos = (await listarAsistentes(corrida.id)).length;
