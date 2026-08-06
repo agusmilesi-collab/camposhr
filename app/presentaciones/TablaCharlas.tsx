@@ -89,10 +89,14 @@ export default function TablaCharlas({
         </div>
       )}
 
-      <div className="card pres-tabla">
+      {/* En el ciclo con clientes, la fecha y el cliente de cada fila no dicen
+          nada: el material es el mismo para todos y quién lo va a proyectar se
+          elige arriba. Las fechas que trae el índice son las del primer cliente
+          que lo recorrió. */}
+      <div className={`card pres-tabla ${conClientes ? 'pres-tabla-sola' : ''}`}>
         <div className="pres-row pres-th">
-          <span>Fecha</span>
-          <span>Cliente</span>
+          {!conClientes && <span>Fecha</span>}
+          {!conClientes && <span>Cliente</span>}
           <span>Charla</span>
           <span className="pres-num">Placas</span>
           <span />
@@ -101,14 +105,12 @@ export default function TablaCharlas({
 
         {charlas.map((p) => (
           <div className="pres-row" key={`${p.orden}-${p.titulo}`}>
-            <span className="cot-fecha">{p.fechaTexto}</span>
-            <span>
-              {p.cliente ? (
-                <em className="chip chip-cliente">{p.cliente}</em>
-              ) : (
-                <em className="pres-todos">Cualquier cliente</em>
-              )}
-            </span>
+            {!conClientes && <span className="cot-fecha">{p.fechaTexto}</span>}
+            {!conClientes && (
+              <span>
+                {p.cliente && <em className="chip chip-cliente">{p.cliente}</em>}
+              </span>
+            )}
             <span className="pres-charla">
               <b>
                 {p.orden}. {p.titulo}

@@ -2698,6 +2698,10 @@ body {
   align-items: center;
   overflow: hidden;
 }
+/* Sin fecha ni cliente: quedan la charla, las placas y los dos enlaces. */
+.pres-tabla-sola {
+  grid-template-columns: minmax(16rem, 1fr) max-content max-content max-content;
+}
 .pres-row {
   display: contents;
 }
@@ -3736,9 +3740,10 @@ body {
   font-size: 0.86rem;
   color: var(--muted);
 }
-/* Dentro de Presentaciones las filas no llevan tarjeta propia: ya están en una. */
+/* Dentro de Presentaciones las filas no llevan tarjeta propia: ya están en una.
+   Con el nombre y la dirección en el mismo renglón, alcanza con poco alto. */
 .enc .enc-fila {
-  padding: 14px 0;
+  padding: 9px 0;
 }
 .enc .enc-fila-quien em {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
