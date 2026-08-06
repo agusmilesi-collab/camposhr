@@ -58,6 +58,15 @@ export type Cara = {
 /** Cada cuánto el teléfono pregunta si hay algo abierto. */
 const SONDEO_MS = 4000;
 
+/**
+ * Consignas que la persona lee en voz alta después de responder.
+ *
+ * Sólo en estas el teléfono deja lo escrito a la vista. En el resto la
+ * pantalla confirma y nada más: lo que se responde ahí se proyecta anónimo y
+ * dejarlo puesto invita a compararse con el de al lado.
+ */
+const SE_LEEN_EN_VOZ_ALTA = new Set(['c1-momento']);
+
 export default function Asistente({
   slug,
   empresa,
@@ -498,7 +507,17 @@ function Formulario({
           ✓
         </p>
         <h1 className="ci-titulo">Listo</h1>
-        <p className="cq-ayuda">{resumenPropio(mio, actividad)}</p>
+        {mio?.tipo === 'texto' && SE_LEEN_EN_VOZ_ALTA.has(actividad.clave) ? (
+          /* Lo escrito queda entero en pantalla mientras la consigna siga
+             abierta: esta se lee en voz alta y de memoria se pierde la
+             redacción exacta, que es lo que se trabaja. */
+          <>
+            <blockquote className="ci-mio">{mio.texto}</blockquote>
+            <p className="cq-ayuda">Se proyecta sin tu nombre.</p>
+          </>
+        ) : (
+          <p className="cq-ayuda">{resumenPropio(mio, actividad)}</p>
+        )}
         <div className="ci-acciones">
           <button className="cq-btn-ghost" onClick={() => setCorrigiendo(true)}>
             Cambiar mi respuesta
