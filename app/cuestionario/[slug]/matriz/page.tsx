@@ -40,19 +40,27 @@ export default async function MatrizEmpresa({
   const enPlaca = searchParams?.placa === '1';
 
   /**
-   * `solo=corrida` acota al encuentro que se está dictando.
+   * Proyectada, la matriz es la del grupo que está en la sala.
    *
-   * La empresa puede recorrer el ciclo más de una vez, y en la sala la matriz
-   * tiene que ser la del grupo que está ahí. Sin el parámetro se muestran
-   * todas, que es lo que sirve para el informe a Recursos Humanos y lo que
-   * espera la charla que no pasa por el ciclo.
+   * La empresa puede recorrer el ciclo más de una vez y por dos caminos, así
+   * que en placa nunca se muestran todas:
+   *
+   *   ?placa=1                 las que se respondieron por su enlace, fuera de
+   *                            un encuentro. Es lo que proyecta la charla que
+   *                            no pasa por el ciclo.
+   *   ?placa=1&solo=corrida    las de este dictado.
+   *
+   * Sin `placa` se muestran todas: esa es la vista del informe a Recursos
+   * Humanos, donde el equipo es el equipo entero.
    */
   const corrida =
     searchParams?.solo === 'corrida' ? await getCorridaActiva(empresa.id) : null;
 
   // La matriz es la pantalla del taller: muestra el cuestionario de perfil.
   // Lo que responde el de liderazgo alimenta los informes, no esta vista.
-  const respuestas = await listarRespuestas(empresa.id, 'perfil', corrida?.id);
+  const todas = await listarRespuestas(empresa.id, 'perfil', corrida?.id);
+  const respuestas =
+    enPlaca && !corrida ? todas.filter((r) => !r.corrida_id) : todas;
 
   const fotos = await firmarSelfies(
     respuestas.map((r) => r.foto_path).filter((p): p is string => Boolean(p))
