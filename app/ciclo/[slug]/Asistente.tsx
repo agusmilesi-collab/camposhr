@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * adelantarse, y "vayan a la 3" siempre termina con alguien en la 4.
  */
 
-type TipoActividad = 'palabra' | 'opcion' | 'escala' | 'texto' | 'marcas';
+type TipoActividad = 'palabra' | 'opcion' | 'escala' | 'texto' | 'marcas' | 'enlace';
 
 type ActividadPublica = {
   id: string;
@@ -430,6 +430,22 @@ function Formulario({
       <h1 className="ci-titulo">{actividad.titulo}</h1>
       {actividad.enunciado && <p className="cq-ayuda">{actividad.enunciado}</p>}
 
+      {actividad.tipo === 'enlace' && (
+        <div className="ci-acciones">
+          <a
+            className="cq-btn ci-enlace"
+            href={actividad.opciones[0] ?? '#'}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Abrir
+          </a>
+          <p className="ci-anonimo">
+            Se abre en otra pestaña. Cuando termines, volvé acá.
+          </p>
+        </div>
+      )}
+
       {actividad.tipo === 'palabra' && (
         <>
           <input
@@ -562,6 +578,8 @@ function resumenPropio(mio: Valor | null, actividad: ActividadPublica): string {
       return `Marcaste ${mio.marcas.length} ${
         mio.marcas.length === 1 ? 'opción' : 'opciones'
       }.`;
+    default:
+      return 'Tu respuesta quedó guardada.';
   }
 }
 

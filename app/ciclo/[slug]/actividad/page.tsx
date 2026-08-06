@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getEmpresaPorSlug } from '@/lib/supabase';
+import { contarRespuestas, getEmpresaPorSlug } from '@/lib/supabase';
 import {
   getActividadAbierta,
   getActividadPorClave,
@@ -68,14 +68,21 @@ export default async function Proyeccion({
 
   if (soloConteo) {
     const inscriptos = (await listarAsistentes(empresa.id)).length;
-    const completo = inscriptos > 0 && aportes.length >= inscriptos;
+    // Una actividad de tipo 'enlace' se completa en otra pantalla, así que lo
+    // que hay que contar no son los aportes sino lo que quedó guardado allá.
+    // Hoy el único destino es el cuestionario de perfil.
+    const hechas =
+      actividad.tipo === 'enlace'
+        ? await contarRespuestas(empresa.id)
+        : aportes.length;
+    const completo = inscriptos > 0 && hechas >= inscriptos;
     return (
       <main className={`cp cp-conteo ${enPlaca ? 'cp-placa' : ''}`}>
         {enPlaca && <FondoTransparente />}
         {/* Cuando llega al total cambia de color: la expositora lo ve de
             reojo desde el otro lado de la sala y sigue sin preguntar. */}
         <p className={`cp-cifra ${completo ? 'cp-cifra-lista' : ''}`}>
-          <b>{aportes.length}</b>
+          <b>{hechas}</b>
           <span>/</span>
           <em>{inscriptos}</em>
         </p>
