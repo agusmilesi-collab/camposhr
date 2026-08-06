@@ -17,7 +17,7 @@ export default async function QrEmpresa({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { v?: string };
+  searchParams: { v?: string; placa?: string };
 }) {
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
@@ -32,6 +32,17 @@ export default async function QrEmpresa({
     errorCorrectionLevel: 'M',
     color: { dark: '#16202b', light: '#ffffff' },
   });
+
+  // Dentro de una placa del deck: sin cabecera y sobre el fondo de la
+  // diapositiva. La dirección escrita ya está en la placa.
+  if (searchParams?.placa === '1') {
+    return (
+      <main className="qr-en-placa">
+        <style dangerouslySetInnerHTML={{ __html: 'body{background:transparent}' }} />
+        <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />
+      </main>
+    );
+  }
 
   return (
     <main className="wrap">

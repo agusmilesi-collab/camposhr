@@ -803,8 +803,13 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     return;
   }
 
-  escenario.innerHTML = escenario.innerHTML.split('camposhr.com/ciclo/' + marcador)
-    .join('falta indicar el cliente');
+  // Cualquier dirección con el marcador adentro, no sólo la del ciclo: en la
+  // charla 3 también figuran la del cuestionario y la de la matriz, y
+  // proyectar el marcador crudo se lee como un error del sistema.
+  escenario.innerHTML = escenario.innerHTML.replace(
+    /[a-z.]*camposhr\.com\/[A-Za-z0-9/_-]*__CLIENTE__[A-Za-z0-9/_?=&-]*/g,
+    'falta indicar el cliente'
+  );
   escenario.querySelectorAll('[data-src]').forEach(function (f) {
     f.removeAttribute('data-src');
     var marco = f.closest('.matriz-marco');
