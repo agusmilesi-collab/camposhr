@@ -26,7 +26,7 @@ const TOOLS_V2_HOST = 'toolsversion2.camposhr.com';
 
 const TOKEN = /^\/([A-Za-z0-9_-]+)\/?$/;
 const TOKEN_EN_P = /^\/p\/([A-Za-z0-9_-]+)\/?$/;
-const RUTAS_TOOLS = /^\/(test-rorschach|test-zulliger|informes|cuestionario|cotizaciones|presentaciones|pres|encuentros)(\/|$)/;
+const RUTAS_TOOLS = /^\/(test-rorschach|test-zulliger|informes|cuestionario|cotizaciones|presentaciones|pres)(\/|$)/;
 
 // Cotización enviada a un cliente: /q/<token> -> el documento estático que vive
 // en public/q/<token>.html. El token es secreto y la página lleva noindex.
