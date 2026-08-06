@@ -14,7 +14,16 @@ import { insert, patch, select, upsert } from '@/lib/supabase';
 
 // -------------------------------------------------------------------- tipos
 
-export const TIPOS = ['palabra', 'opcion', 'escala', 'texto', 'marcas'] as const;
+export const TIPOS = [
+  'palabra',
+  'opcion',
+  'escala',
+  'texto',
+  'marcas',
+  /** No se responde acá: lleva a una herramienta que ya existe aparte, como el
+   *  cuestionario de perfil de la charla 3. La dirección va en `opciones[0]`. */
+  'enlace',
+] as const;
 export type TipoActividad = (typeof TIPOS)[number];
 
 export type Actividad = {
@@ -57,6 +66,12 @@ export type Valor =
   | { tipo: 'escala'; escala: number }
   | { tipo: 'texto'; texto: string }
   | { tipo: 'marcas'; marcas: number[] };
+
+/** La dirección de una actividad de tipo 'enlace'. Sólo se acepta https. */
+export function destinoDe(actividad: Actividad): string | null {
+  const url = actividad.opciones?.[0];
+  return typeof url === 'string' && url.startsWith('https://') ? url : null;
+}
 
 const CAMPOS_ACTIVIDAD =
   'id,empresa_id,clave,charla,orden,tipo,titulo,enunciado,opciones,abierta,created_at';
@@ -295,6 +310,9 @@ export function normalizarValor(actividad: Actividad, crudo: unknown): Valor {
       return { tipo: 'texto', texto };
     }
 
+    case 'enlace':
+      throw new Error('Esta actividad se responde en su propia pantalla');
+
     case 'marcas': {
       const crudas = Array.isArray(dato.marcas) ? dato.marcas : [];
       const marcas = [
@@ -322,7 +340,8 @@ export type Resumen =
       distribucion: { valor: number; veces: number }[];
     }
   | { tipo: 'texto'; total: number; textos: string[] }
-  | { tipo: 'marcas'; total: number; conteo: { texto: string; veces: number }[] };
+  | { tipo: 'marcas'; total: number; conteo: { texto: string; veces: number }[] }
+  | { tipo: 'enlace'; total: number };
 
 /** Para agrupar 'apurado' con 'Apurado' y con 'apurada' no, que es otra cosa. */
 function normalizar(texto: string): string {
@@ -402,6 +421,11 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
         .filter((t): t is string => Boolean(t));
       return { tipo: 'texto', total, textos };
     }
+
+    case 'enlace':
+      // Lo que respondieron no está en `aportes`: está en la tabla de la
+      // herramienta a la que lleva. La placa lo cuenta con su propia vista.
+      return { tipo: 'enlace', total };
 
     case 'marcas': {
       const veces = new Array(actividad.opciones.length).fill(0) as number[];

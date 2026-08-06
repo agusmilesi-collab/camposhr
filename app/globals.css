@@ -3537,3 +3537,11 @@ body {
 .cp-placa .cp-pie {
   text-align: center;
 }
+
+/* Botón que lleva a una herramienta aparte, como el cuestionario de perfil.
+   Es un enlace y no un botón: tiene que poder abrirse en otra pestaña. */
+.ci-enlace {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
