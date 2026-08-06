@@ -4,6 +4,7 @@ import {
   getEmpresaPorSlug,
   listarRespuestas,
 } from '@/lib/supabase';
+import { getCorridaActiva } from '@/lib/ciclo';
 import {
   coordenadas,
   INFO,
@@ -28,7 +29,7 @@ export default async function MatrizEmpresa({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { placa?: string };
+  searchParams: { placa?: string; solo?: string };
 }) {
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
@@ -38,9 +39,20 @@ export default async function MatrizEmpresa({
   // sobre fondo transparente y con los colores de la placa.
   const enPlaca = searchParams?.placa === '1';
 
+  /**
+   * `solo=corrida` acota al encuentro que se está dictando.
+   *
+   * La empresa puede recorrer el ciclo más de una vez, y en la sala la matriz
+   * tiene que ser la del grupo que está ahí. Sin el parámetro se muestran
+   * todas, que es lo que sirve para el informe a Recursos Humanos y lo que
+   * espera la charla que no pasa por el ciclo.
+   */
+  const corrida =
+    searchParams?.solo === 'corrida' ? await getCorridaActiva(empresa.id) : null;
+
   // La matriz es la pantalla del taller: muestra el cuestionario de perfil.
   // Lo que responde el de liderazgo alimenta los informes, no esta vista.
-  const respuestas = await listarRespuestas(empresa.id, 'perfil');
+  const respuestas = await listarRespuestas(empresa.id, 'perfil', corrida?.id);
 
   const fotos = await firmarSelfies(
     respuestas.map((r) => r.foto_path).filter((p): p is string => Boolean(p))
