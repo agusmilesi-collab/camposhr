@@ -407,7 +407,10 @@ export default function MatrizBenziger({
     puntos,
     radio,
     nombres,
-    enHtml ? cajasDescripcion(amplio) : modo === 'svg' ? cuadrantes.map((c) => c.caja) : []
+    // El título de cada cuadrante se dibuja siempre, con descripción o sin
+    // ella, así que su caja se reserva siempre: sin esto, quien cae en una
+    // esquina queda con la cara y el nombre encima de "Basal Izquierdo".
+    enHtml ? cajasDescripcion(amplio) : cuadrantes.map((c) => c.caja)
   );
 
   /**
