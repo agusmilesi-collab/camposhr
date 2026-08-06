@@ -3653,6 +3653,8 @@ body {
 }
 .alta-campos .btn {
   height: 48px;
+  padding: 0 32px;
+  font-size: 0.95rem;
   white-space: nowrap;
 }
 .alta-nota {
@@ -3664,8 +3666,10 @@ body {
 }
 .alta-campos {
   display: grid;
-  /* nombre · ciclo · botón, todo en el mismo renglón */
-  grid-template-columns: minmax(200px, 1fr) minmax(180px, 0.7fr) max-content;
+  /* nombre · ciclo · botón, todo en el mismo renglón. Con anchos acotados:
+     estirados al ancho de la tarjeta, un nombre de empresa nada en el vacío. */
+  grid-template-columns: minmax(180px, 300px) minmax(190px, 260px) max-content;
+  justify-content: start;
   align-items: end;
   gap: 14px;
   margin-bottom: 10px;
@@ -3689,6 +3693,10 @@ body {
   height: 48px;
   font-size: 1rem;
   margin-top: 0;
+}
+/* Aire a la derecha para la flecha, que si no queda pegada al borde. */
+.alta .cq-select {
+  padding-right: 36px;
 }
 .alta .cq-input {
   padding: 10px 2px;
