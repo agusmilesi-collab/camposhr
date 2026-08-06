@@ -42,7 +42,7 @@ type Valor =
   | { tipo: 'escala'; escala: number }
   | { tipo: 'texto'; texto: string }
   | { tipo: 'marcas'; marcas: number[] }
-  | { tipo: 'plan'; dia: number; hora: string; texto: string };
+  | { tipo: 'plan'; dias: number[]; hora: string; texto: string };
 
 /** Con quién le toca juntarse, en la consigna de consultar una decisión. */
 type Cruce = {
@@ -568,7 +568,7 @@ function Formulario({
   const [corrigiendo, setCorrigiendo] = useState(false);
   /** La que se acaba de tocar, mientras el envío está en camino. */
   const [tocada, setTocada] = useState<number | null>(null);
-  const [dia, setDia] = useState<number | null>(null);
+  const [dias, setDias] = useState<number[]>([]);
   const [hora, setHora] = useState('');
 
   const cerrado = respondida && !corrigiendo;
@@ -613,7 +613,7 @@ function Formulario({
              solo el día y la hora que la persona eligió. */
           <>
             <blockquote className="ci-mio">
-              {DIAS[mio.dia - 1]} {mio.hora}, antes de {mio.texto}
+              {nombrarDias(mio.dias)} {mio.hora}, antes de {mio.texto}
             </blockquote>
             <div className="ci-acciones">
               <a
@@ -762,13 +762,24 @@ function Formulario({
             {DIAS.map((nombre, i) => (
               <button
                 key={nombre}
-                className={`cq-opcion ci-dia ${dia === i + 1 ? 'ci-dia-on' : ''}`}
-                onClick={() => setDia(i + 1)}
+                className={`cq-opcion ci-dia ${
+                  dias.includes(i + 1) ? 'ci-dia-on' : ''
+                }`}
+                onClick={() =>
+                  setDias((antes) =>
+                    antes.includes(i + 1)
+                      ? antes.filter((d) => d !== i + 1)
+                      : [...antes, i + 1].sort((a, b) => a - b)
+                  )
+                }
               >
                 {nombre}
               </button>
             ))}
           </div>
+          <p className="ci-anonimo">
+            Podés elegir más de un día. La pausa se sostiene mejor repetida.
+          </p>
 
           <label className="ci-campo">
             <span>A qué hora</span>
@@ -794,9 +805,11 @@ function Formulario({
           <div className="ci-acciones">
             <button
               className="cq-btn"
-              disabled={!dia || !hora || texto.trim().length < 3 || enviando}
+              disabled={
+                dias.length === 0 || !hora || texto.trim().length < 3 || enviando
+              }
               onClick={() =>
-                enviar({ tipo: 'plan', dia: dia!, hora, texto: texto.trim() })
+                enviar({ tipo: 'plan', dias, hora, texto: texto.trim() })
               }
             >
               Guardar
@@ -965,6 +978,13 @@ function porQue(
   }
 }
 
+/** "Lunes", "Lunes y miércoles", "Lunes, miércoles y viernes". */
+function nombrarDias(dias: number[]): string {
+  const nombres = dias.map((d) => DIAS[d - 1]).filter(Boolean);
+  if (nombres.length <= 1) return nombres[0] ?? '';
+  return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
+}
+
 /** Lo que la persona respondió, para que se reconozca sin tener que recordarlo. */
 function resumenPropio(mio: Valor | null, actividad: ActividadPublica): string {
   if (!mio) return 'Tu respuesta quedó guardada.';
@@ -978,7 +998,7 @@ function resumenPropio(mio: Valor | null, actividad: ActividadPublica): string {
     case 'texto':
       return 'Tu respuesta quedó guardada, sin tu nombre.';
     case 'plan':
-      return `Quedó para el ${DIAS[mio.dia - 1].toLowerCase()} a las ${mio.hora}.`;
+      return `Quedó para ${nombrarDias(mio.dias).toLowerCase()} a las ${mio.hora}.`;
     case 'marcas':
       return `Marcaste ${mio.marcas.length} ${
         mio.marcas.length === 1 ? 'opción' : 'opciones'

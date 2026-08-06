@@ -63,16 +63,37 @@ function sumarMinutos(hora: string, minutos: number): string {
  * el servidor que lo genera.
  */
 export function eventoDelPlan(opciones: {
-  dia: number;
+  dias: number[];
   hora: string;
   texto: string;
   empresa: string;
   desde: Date;
   id: string;
 }): string {
-  const { dia, hora, texto, empresa, desde, id } = opciones;
-  const fecha = proximoDia(dia, desde);
+  const { dias, hora, texto, empresa, desde, id } = opciones;
   const fin = sumarMinutos(hora, MINUTOS);
+
+  // Un evento por día elegido, todos en el mismo archivo: el calendario los
+  // agenda de una sola vez y cada uno lleva su alarma.
+  const eventos = dias.flatMap((dia) => {
+    const fecha = proximoDia(dia, desde);
+    return [
+      'BEGIN:VEVENT',
+      `UID:${id}-${dia}@camposhr.com`,
+      `DTSTAMP:${sello(desde, '00:00')}Z`,
+      `DTSTART:${sello(fecha, hora)}`,
+      `DTEND:${sello(fecha, fin)}`,
+      'SUMMARY:Pausa para meditar',
+      `DESCRIPTION:${escapar(texto)}`,
+      `LOCATION:${escapar(empresa)}`,
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Pausa para meditar',
+      'TRIGGER:PT0S',
+      'END:VALARM',
+      'END:VEVENT',
+    ];
+  });
 
   return [
     'BEGIN:VCALENDAR',
@@ -80,20 +101,7 @@ export function eventoDelPlan(opciones: {
     'PRODID:-//Campos HR//Liderazgos Humanos//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'BEGIN:VEVENT',
-    `UID:${id}@camposhr.com`,
-    `DTSTAMP:${sello(desde, '00:00')}Z`,
-    `DTSTART:${sello(fecha, hora)}`,
-    `DTEND:${sello(fecha, fin)}`,
-    'SUMMARY:Pausa para meditar',
-    `DESCRIPTION:${escapar(texto)}`,
-    `LOCATION:${escapar(empresa)}`,
-    'BEGIN:VALARM',
-    'ACTION:DISPLAY',
-    'DESCRIPTION:Pausa para meditar',
-    'TRIGGER:PT0S',
-    'END:VALARM',
-    'END:VEVENT',
+    ...eventos,
     'END:VCALENDAR',
   ].join('\r\n');
 }

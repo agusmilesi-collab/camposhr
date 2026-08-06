@@ -34,7 +34,7 @@ export async function GET(
   }
 
   const evento = eventoDelPlan({
-    dia: aporte.valor.dia,
+    dias: aporte.valor.dias,
     hora: aporte.valor.hora,
     texto: aporte.valor.texto,
     empresa: ciclo.empresa.nombre,
