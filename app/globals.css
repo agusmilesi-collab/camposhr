@@ -1222,29 +1222,29 @@ body {
   justify-content: space-between;
   gap: 14px;
 }
+/* Quién está adentro, debajo de la marca. */
+.cq-quien {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 .cq-empresa {
   font-size: 0.78rem;
   color: var(--muted);
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
 }
-/* La salida, arriba y chica: se busca sola cuando hace falta y no compite con
-   lo que la persona vino a hacer. */
+/* La salida, sola a la derecha. El área de toque es más grande que el texto:
+   se aprieta con el pulgar y en una pantalla angosta el texto solo se erra. */
 .cq-nosoy {
+  flex: none;
   font: inherit;
-  font-size: 0.66rem;
+  font-size: 0.7rem;
   color: var(--muted);
   background: none;
-  border: 0;
-  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
   cursor: pointer;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 2px;
-  text-decoration-color: var(--line);
 }
 /* Quién responde, después de la empresa. */
 .cq-empresa b {
@@ -3042,6 +3042,8 @@ body {
 .ci-dia {
   min-height: 48px;
   font-size: 0.95rem;
+  /* Sin esto, el teléfono le pone su azul de botón del sistema. */
+  color: var(--ink);
 }
 .ci-dia-on {
   background: var(--ink);
