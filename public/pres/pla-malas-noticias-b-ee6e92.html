@@ -530,6 +530,9 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 /* El código de entrada, generado con la dirección del cliente que corresponda.
    Una imagen fija llevaría grabado un solo cliente. */
 .qr-vivo{display:block;width:420px;height:420px;border:0;background:transparent}
+/* La caja de entrada es más alta que ancha: adentro van el nombre de la
+   empresa, el código y la dirección. */
+.qr-vivo.qr-caja{width:560px;height:720px}
 .cierre-qr .baja .caja .qr-vivo{width:340px;height:340px}
 .matriz-marco.sin-cliente .cargando{display:none}
 .matriz-marco.sin-cliente .offline{display:block}
@@ -547,6 +550,19 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 <div id="escenario">
 
   <!-- 1 -->
+  <section class="placa" data-notas="PRIMERA PLACA DEL SEGUNDO DÍA. Queda proyectada mientras entran. Al que ya entró el primer día el teléfono lo reconoce solo y no tiene que hacer nada: esta placa es para el que faltó, cambió de teléfono o cerró la página. Si alguien aparece con la pantalla en blanco, que escanee y toque su cara en la grilla. AVISO: esta placa necesita internet de la sala.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="cierre-qr">
+        <div class="dicho">
+          <p class="frase">Segundo día,<br><b>entrá al ciclo desde tu teléfono</b>.</p>
+          <p style="font-size:38px;opacity:.75;margin-top:34px">Si ya entraste el primer día, el teléfono te reconoce.<br>Si no, cargás tu nombre y una foto.</p>
+        </div>
+        <div class="baja"><iframe class="qr-vivo qr-caja" title="Código para entrar al ciclo" data-src="https://camposhr.com/ciclo/__CLIENTE__/qr?placa=1"></iframe></div>
+      </div>
+    </div>
+  </section>
+
   <section class="placa" data-notas="Primera charla del segundo día. Enganchar con lo del viernes: ¿se acuerdan de la rueda de emociones? Hoy la vamos a necesitar más que nunca. Avisar que la traigan.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">

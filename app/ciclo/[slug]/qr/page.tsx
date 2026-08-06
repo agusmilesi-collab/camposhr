@@ -46,13 +46,19 @@ export default async function QrDelCiclo({
   // Dentro de una placa del deck: sin cabecera y sobre el fondo de la
   // diapositiva. Es la primera placa del encuentro, la que se proyecta
   // mientras la gente entra.
+  //
+  // Va la caja entera, no sólo el código: con el nombre de la empresa adentro,
+  // el que escanea confirma que está entrando al encuentro que le toca.
   if (searchParams?.placa === '1') {
     return (
       <main className="qr-en-placa">
         <style dangerouslySetInnerHTML={{ __html: 'body{background:transparent}' }} />
-        {/* Solo el código: la dirección escrita ya está en la placa, y
-            repetirla acá adentro la muestra dos veces. */}
-        <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />
+        <div className="qr-marco">
+          <p className="qr-titulo">Entrá al ciclo desde tu teléfono</p>
+          <p className="qr-empresa">{empresa.nombre}</p>
+          <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />
+          <p className="qr-url">{url.replace(/^https:\/\//, '')}</p>
+        </div>
       </main>
     );
   }

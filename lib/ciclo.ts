@@ -78,6 +78,8 @@ export type Asistente = {
   apellido: string;
   foto_path: string | null;
   created_at: string;
+  /** Cuándo entró desde algún teléfono. Null si todavía no entró nadie por él. */
+  entro_en: string | null;
 };
 
 export type Aporte = {
@@ -105,7 +107,8 @@ export function destinoDe(actividad: Actividad): string | null {
 
 const CAMPOS_ACTIVIDAD =
   'id,ciclo_id,clave,charla,orden,tipo,titulo,enunciado,opciones,created_at';
-const CAMPOS_ASISTENTE = 'id,corrida_id,nombre,apellido,foto_path,created_at';
+const CAMPOS_ASISTENTE =
+  'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en';
 const CAMPOS_APORTE = 'id,corrida_id,actividad_id,asistente_id,valor,created_at';
 const CAMPOS_CORRIDA =
   'id,empresa_id,ciclo_id,clave_control,actividad_abierta_id,activa';
@@ -329,6 +332,21 @@ export async function getAsistente(
     `select=${CAMPOS_ASISTENTE}&corrida_id=eq.${corridaId}&id=eq.${asistenteId}&limit=1`
   );
   return filas[0] ?? null;
+}
+
+/**
+ * Deja anotado que este asistente ya entró desde un teléfono.
+ *
+ * Sirve para sacar su cara de la grilla: con treinta personas entrando a la
+ * vez, las caras de los que ya entraron son ruido para el que todavía busca la
+ * suya. Se escribe una sola vez, y el filtro lo garantiza aunque dos teléfonos
+ * lo intenten juntos.
+ */
+export async function marcarIngreso(asistenteId: string): Promise<void> {
+  if (!UUID.test(asistenteId)) return;
+  await patch('asistentes', `id=eq.${asistenteId}&entro_en=is.null`, {
+    entro_en: new Date().toISOString(),
+  });
 }
 
 export async function crearAsistente(fila: {

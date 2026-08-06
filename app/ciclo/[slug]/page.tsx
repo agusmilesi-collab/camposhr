@@ -42,6 +42,7 @@ export default async function CicloAsistente({
       nombre: a.nombre,
       apellido: a.apellido,
       foto: a.foto_path ? fotos.get(a.foto_path) ?? null : null,
+      entro: Boolean(a.entro_en),
     }))
     .sort(
       (a, b) =>
