@@ -56,7 +56,7 @@
   },
   {
     "token": "pla-mindfulness-b-51356e",
-    "cliente": "Pla S.A.",
+    "cliente": null,
     "ciclo": "Liderazgos Humanos · plan B",
     "titulo": "Mindfulness",
     "subtitulo": "Tengo la cabeza a mil",
@@ -67,7 +67,7 @@
   },
   {
     "token": "pla-emociones-b-65f32f",
-    "cliente": "Pla S.A.",
+    "cliente": null,
     "ciclo": "Liderazgos Humanos · plan B",
     "titulo": "Registro de Emociones",
     "subtitulo": "Cuando algo me está afectando",
@@ -78,7 +78,7 @@
   },
   {
     "token": "pla-habilidades-b-e32070",
-    "cliente": "Pla S.A.",
+    "cliente": null,
     "ciclo": "Liderazgos Humanos · plan B",
     "titulo": "Registro de Habilidades",
     "subtitulo": "Quiero conocerme mejor",
@@ -89,7 +89,7 @@
   },
   {
     "token": "pla-malas-noticias-b-ee6e92",
-    "cliente": "Pla S.A.",
+    "cliente": null,
     "ciclo": "Liderazgos Humanos · plan B",
     "titulo": "Comunicar Malas Noticias",
     "subtitulo": "Mañana tengo una conversación difícil",
@@ -100,7 +100,7 @@
   },
   {
     "token": "pla-conflictos-b-90a1dc",
-    "cliente": "Pla S.A.",
+    "cliente": null,
     "ciclo": "Liderazgos Humanos · plan B",
     "titulo": "Resolver Conflictos",
     "subtitulo": "Hay tensión en mi equipo",

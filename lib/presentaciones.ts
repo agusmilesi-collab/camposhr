@@ -27,7 +27,12 @@ export type Presentacion = {
   /** Null mientras la charla no está publicada. */
   token: string | null;
   ciclo: string;
-  cliente: string;
+  /**
+   * Null cuando la charla sirve para cualquier cliente. El material del ciclo
+   * con actividades es el mismo para todos: quién lo está dictando se resuelve
+   * al abrirlo, con lo que trae el enlace del tablero.
+   */
+  cliente: string | null;
   titulo: string;
   subtitulo: string;
   /** Cuántas placas tiene, para saber de un vistazo si está completa. */
