@@ -52,7 +52,11 @@ export default async function QrDelCiclo({
   if (searchParams?.placa === '1') {
     return (
       <main className="qr-en-placa">
-        <style dangerouslySetInnerHTML={{ __html: 'body{background:transparent}' }} />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: 'html,body{background:transparent;overflow:hidden}',
+          }}
+        />
         <div className="qr-marco">
           <p className="qr-titulo">Entrá al ciclo desde tu teléfono</p>
           <p className="qr-empresa">{empresa.nombre}</p>

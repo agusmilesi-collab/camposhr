@@ -3595,10 +3595,13 @@ body {
 }
 
 /* El código de entrada, embebido en la primera placa del encuentro. */
+/* Altura fija, no mínima: adentro de la placa el marco es el que manda, y lo
+   que no entre se achica. Con min-height el código crecía por su cuenta y
+   empujaba una barra de desplazamiento. */
 .qr-en-placa {
   display: grid;
   place-items: center;
-  min-height: 100dvh;
+  height: 100dvh;
   padding: 0;
 }
 /* Ocupa el marco entero: adentro de una placa el aire lo pone la diapositiva. */
@@ -3609,12 +3612,32 @@ body {
   height: auto;
 }
 /* Proyectada, la caja se lee desde el fondo de la sala: todo más grande que en
-   la pantalla del que la abre en su computadora. */
+   la pantalla del que la abre en su computadora.
+
+   La caja ocupa el marco exacto y el código se achica hasta entrar. Si algo
+   sobrara aparecería una barra de desplazamiento adentro de la placa, que
+   quedaría proyectada. */
+.qr-en-placa {
+  place-items: stretch;
+  overflow: hidden;
+}
 .qr-en-placa .qr-marco {
+  box-sizing: border-box;
   width: 100%;
   max-width: none;
+  height: 100dvh;
   padding: 40px 40px 34px;
   border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.qr-en-placa .qr-codigo {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  margin: 4px 0;
 }
 .qr-en-placa .qr-titulo {
   font-size: 1.05rem;
@@ -3625,7 +3648,9 @@ body {
   margin: 10px 0 30px;
 }
 .qr-en-placa .qr-codigo svg {
-  max-width: none;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
 }
 .qr-en-placa .qr-url {
   margin-top: 26px;
