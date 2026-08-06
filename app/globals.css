@@ -3348,3 +3348,132 @@ body {
   line-height: 1.45;
   color: var(--ink);
 }
+
+/* =========================================================================
+   Tablero del encuentro, dentro de Presentaciones. Lo que se abre el día que
+   se dicta: el control, la proyección y el código de entrada.
+   ========================================================================= */
+
+.enc {
+  margin: 18px 0 0;
+  padding: 22px 24px 20px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.enc-cabeza {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.enc-cabeza h3 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.enc-cabeza p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--muted);
+  max-width: 60ch;
+}
+.enc-conteo {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.2;
+}
+.enc-conteo b {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.9rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.enc-lista {
+  display: flex;
+  flex-direction: column;
+}
+.enc-item {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 22px;
+  align-items: start;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.enc-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 4px;
+}
+.enc-btn {
+  width: 100%;
+  text-align: center;
+}
+.enc-donde {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.enc-texto p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 66ch;
+}
+.enc-aviso {
+  margin-top: 8px !important;
+  font-size: 0.79rem !important;
+  color: var(--st-amber) !important;
+}
+.enc-aviso-suelto {
+  padding: 12px 14px;
+  margin-top: 14px;
+  background: #faf4e8;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+.enc-pie {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.enc-pie code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  background: var(--paper);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+@media (max-width: 720px) {
+  .enc-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .enc-cabeza {
+    flex-direction: column;
+  }
+  .enc-conteo {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+}
