@@ -4,8 +4,11 @@ import Alta from './Alta';
  * Los encuentros en curso, al pie de Presentaciones.
  *
  * Una fila por cliente y la explicación una sola vez. Antes cada cliente traía
- * su propio bloque con las tres explicaciones repetidas: con dos clientes ya
- * costaba encontrar el botón, y lo que cambia entre uno y otro es el nombre.
+ * su propio bloque con las explicaciones repetidas: con dos clientes ya costaba
+ * encontrar el botón, y lo que cambia entre uno y otro es el nombre.
+ *
+ * La proyección no tiene enlace acá: se ve dentro de la placa de cada
+ * actividad, que es donde hace falta.
  *
  * Está acá y no en una pantalla aparte porque el día del encuentro se entra a
  * Presentaciones. Acordarse de otra dirección, con una clave adentro, es lo que
@@ -33,14 +36,6 @@ const QUE_HACE = [
       'El enlace lleva la clave adentro, así que no va al grupo.',
   },
   {
-    nombre: 'Proyección',
-    donde: 'En la pantalla de la sala',
-    ayuda:
-      'Lo que respondió el grupo, actualizándose solo. Ya viene embebido en la ' +
-      'placa de cada actividad, así que abrirlo suelto sirve para probarlo antes ' +
-      'o para una segunda pantalla.',
-  },
-  {
     nombre: 'Código',
     donde: 'Para proyectar',
     ayuda:
@@ -62,9 +57,10 @@ export default function Encuentros({
         <div>
           <h3>Durante el encuentro</h3>
           <p>
-            Las actividades que el grupo responde desde el teléfono. Las charlas
-            son las mismas para todos los clientes: lo único que cambia es de
-            dónde salen las respuestas.
+            Las actividades que el grupo responde desde el teléfono. Lo que
+            responden se proyecta dentro de la placa de cada actividad, sin
+            abrir nada aparte. Las charlas son las mismas para todos los
+            clientes: lo único que cambia es de dónde salen las respuestas.
           </p>
         </div>
       </div>
@@ -97,14 +93,6 @@ export default function Encuentros({
                 rel="noreferrer"
               >
                 Control
-              </a>
-              <a
-                className="copiar"
-                href={`${BASE_PUBLICA}/ciclo/${e.slug}/actividad`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Proyección
               </a>
               <a
                 className="copiar"
