@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 import { contarRespuestas } from '@/lib/supabase';
+import { partirOpcion } from '@/lib/opciones';
 import {
   getActividadAbierta,
   getActividadPorClave,
   listarAportes,
   listarAsistentes,
-  partirOpcion,
   resolverCiclo,
   resumir,
   type Actividad,

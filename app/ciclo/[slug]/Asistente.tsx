@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Cuestionario from '@/app/c/[slug]/Cuestionario';
-import { partirOpcion } from '@/lib/ciclo';
+import { partirOpcion } from '@/lib/opciones';
 
 /**
  * El teléfono del asistente.
