@@ -3762,11 +3762,16 @@ body {
 .enc .enc-fila {
   padding: 9px 0;
 }
-/* Del mismo tamaño que los de la tabla de arriba: es la misma pantalla. */
+/* Del mismo tamaño que los de la tabla de arriba: es la misma pantalla. El
+   ancla es inline por defecto, así que el texto se centra con flex. */
 .enc-fila .copiar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 120px;
   height: 30px;
-  justify-content: center;
+  padding: 0 11px;
+  background: var(--card);
 }
 .enc .enc-fila-quien em {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -3812,8 +3817,8 @@ body {
   color: var(--st-amber);
 }
 /* Sin cliente elegido el enlace no abre: mejor no proyectar que proyectar lo
-   que respondió otro grupo. */
+   que respondió otro grupo. Conserva el negro de la tabla de arriba; quien
+   avisa es el texto ámbar del selector, y el clic lleva el foco ahí. */
 .pres-ver-frenado {
-  opacity: 0.45;
   cursor: not-allowed;
 }
