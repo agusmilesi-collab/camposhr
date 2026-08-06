@@ -3652,9 +3652,7 @@ body {
   color: var(--ink);
 }
 .alta-campos .btn {
-  height: 48px;
-  padding: 0 32px;
-  font-size: 0.95rem;
+  padding: 0 26px;
   white-space: nowrap;
 }
 .alta-nota {
@@ -3677,29 +3675,32 @@ body {
 .alta-campos label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 .alta-campos label span {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--muted);
 }
-/* Los dos campos van a la misma altura. El input trae un margen de arriba y un
-   cuerpo más grande porque en el cuestionario va solo en la placa; acá convive
-   con el select y las dos bases tienen que coincidir. */
+/* Los tres controles toman la altura de los botones de la tabla de arriba: es
+   la misma pantalla y el alta no es más importante que las charlas. El input
+   trae un margen y un cuerpo más grandes porque en el cuestionario va solo
+   dentro de la placa. */
 .alta .cq-input,
-.alta .cq-select {
-  height: 48px;
-  font-size: 1rem;
+.alta .cq-select,
+.alta-campos .btn {
+  height: 30px;
+  font-size: 0.82rem;
   margin-top: 0;
+}
+.alta .cq-input {
+  padding: 4px 2px;
 }
 /* Aire a la derecha para la flecha, que si no queda pegada al borde. */
 .alta .cq-select {
-  padding-right: 36px;
-}
-.alta .cq-input {
-  padding: 10px 2px;
+  padding: 4px 28px 4px 10px;
+  border-radius: 7px;
 }
 
 .alta-vista {
