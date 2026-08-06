@@ -3530,15 +3530,23 @@ body {
    Va embebido en la diapositiva, así que se lee desde el fondo de la sala. */
 /* La consigna proyectada: lo que hace falta leer para responder desde el
    teléfono. Sin números al lado de cada opción, para no arrastrar al que
-   todavía no eligió. */
+   todavía no eligió.
+
+   Las medidas se atan al alto disponible y no sólo al ancho: adentro de una
+   placa el marco es más bajo que la pantalla, y con cinco opciones el bloque
+   centrado se salía por arriba. */
 .cp-consigna {
   align-items: center;
   justify-content: center;
   text-align: center;
+  gap: 0;
+  padding: 2vh 4vw;
+  min-height: 0;
+  overflow: hidden;
 }
-.cp-consigna-que {
-  margin: 0 0 1.2em;
-  font-size: 1.35em;
+.cp-consigna .cp-consigna-que {
+  margin: 0 0 min(1em, 3vh);
+  font-size: min(1.2em, 5vh);
   color: var(--muted);
 }
 .cp-opciones {
@@ -3546,17 +3554,20 @@ body {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.55em;
+  gap: min(0.5em, 1.6vh);
   width: 100%;
-  max-width: 26em;
+  max-width: 24em;
 }
-.cp-opciones li {
-  padding: 0.5em 0.9em;
+.cp-consigna .cp-opciones li {
+  padding: min(0.45em, 1.4vh) 0.9em;
   border: 1px solid var(--line);
   border-radius: 0.5em;
   background: var(--card);
-  font-size: 1.5em;
+  font-size: min(1.35em, 5.5vh);
   color: var(--ink);
+}
+.cp-consigna .cp-pie {
+  margin-top: min(1.2em, 3vh);
 }
 
 .cp-conteo {
