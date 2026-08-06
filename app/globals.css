@@ -2762,11 +2762,11 @@ body {
 .pres-tabla {
   display: grid;
   grid-template-columns:
-    max-content max-content minmax(16rem, 1fr) max-content max-content;
+    max-content max-content minmax(16rem, 1fr) max-content max-content max-content;
   align-items: center;
   overflow: hidden;
 }
-/* Sin fecha ni cliente: quedan la charla, las placas y el enlace. */
+/* Sin fecha, cliente ni descarga: quedan la charla, las placas y el enlace. */
 .pres-tabla-sola {
   grid-template-columns: minmax(16rem, 1fr) max-content max-content;
 }
@@ -2871,22 +2871,66 @@ body {
   background: #ece9e2;
 }
 
+/* En el teléfono cada charla entra en una tarjeta de dos renglones: arriba la
+   fecha y el cliente, abajo el título con el botón al costado. Apilar las seis
+   celdas una debajo de otra daba bloques de media pantalla por charla. */
 @media (max-width: 860px) {
   .pres-tabla {
     grid-template-columns: 1fr;
   }
-  .pres-row > * {
-    padding-left: 20px;
-    padding-right: 20px;
-    border-bottom: none;
+  .pres-row.pres-th {
+    display: none;
   }
   .pres-row {
-    display: block;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 2px 12px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--line-soft);
-    padding: 8px 0;
   }
-  .pres-th {
+  .pres-row > * {
+    padding: 0;
+    border-bottom: none;
+  }
+  .pres-row > *:first-child,
+  .pres-row > *:last-child {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  /* La fecha y el cliente comparten el primer renglón. */
+  .pres-row .cot-fecha {
+    grid-row: 1;
+    grid-column: 1;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .pres-row .cot-fecha + span {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
+  }
+  .pres-charla {
+    grid-row: 2;
+    grid-column: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+  }
+  /* El número de placas queda en el índice de arriba y no en cada fila. */
+  .pres-num {
     display: none;
+  }
+  /* Los dos enlaces se apilan a la derecha del título: en 390 píxeles, uno al
+     lado del otro se pisan. */
+  .pres-accion {
+    grid-column: 2;
+    justify-self: end;
+  }
+  .pres-accion .copiar {
+    min-width: 8.5rem;
+    justify-content: center;
+    text-align: center;
   }
 }
 

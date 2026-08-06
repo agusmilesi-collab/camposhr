@@ -100,6 +100,7 @@ export default function TablaCharlas({
           <span>Charla</span>
           <span className="pres-num">Placas</span>
           <span />
+          {!conClientes && <span />}
         </div>
 
         {charlas.map((p) => (
@@ -118,35 +119,46 @@ export default function TablaCharlas({
             </span>
             <span className="pres-num">{p.placas}</span>
 
-            {/* Sin botón de descarga: la charla del ciclo se apoya en lo que
-                responde el grupo desde el teléfono, y el archivo bajado abre
-                marcos vacíos. La del plan A tampoco se descarga desde acá, que
-                es una pantalla para proyectar en el momento. */}
             {p.token ? (
-              <span className="pres-accion">
-                <a
-                  className={`copiar pres-ver ${
-                    conClientes && !elegido ? 'pres-ver-frenado' : ''
-                  }`}
-                  href={enlace(p.token)}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => {
-                    // Mejor no abrir que abrir para el cliente equivocado.
-                    if (conClientes && !elegido) {
-                      e.preventDefault();
-                      // El clic no queda en la nada: el foco va a lo que falta.
-                      document.getElementById('pres-cliente')?.focus();
-                    }
-                  }}
-                >
-                  Ver presentación
-                </a>
-              </span>
+              <>
+                <span className="pres-accion">
+                  <a
+                    className={`copiar pres-ver ${
+                      conClientes && !elegido ? 'pres-ver-frenado' : ''
+                    }`}
+                    href={enlace(p.token)}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => {
+                      // Mejor no abrir que abrir para el cliente equivocado.
+                      if (conClientes && !elegido) {
+                        e.preventDefault();
+                        // El clic no queda en la nada: el foco va a lo que falta.
+                        document.getElementById('pres-cliente')?.focus();
+                      }
+                    }}
+                  >
+                    Ver presentación
+                  </a>
+                </span>
+                {/* La descarga es el respaldo del plan A, que es autosuficiente
+                    y se dicta igual sin internet. En el plan B el archivo
+                    bajado abre marcos vacíos: ahí no se ofrece. */}
+                {!conClientes && (
+                  <span className="pres-accion">
+                    <a className="copiar" href={`/pres/${p.archivo}`} download>
+                      Descargar
+                    </a>
+                  </span>
+                )}
+              </>
             ) : (
-              <span className="pres-accion">
-                <em className="pres-pendiente">Sin publicar</em>
-              </span>
+              <>
+                <span className="pres-accion">
+                  <em className="pres-pendiente">Sin publicar</em>
+                </span>
+                {!conClientes && <span />}
+              </>
             )}
           </div>
         ))}
