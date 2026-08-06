@@ -25,8 +25,10 @@ const BASE_PUBLICA = 'https://camposhr.com';
 
 export default async function QrDelCiclo({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { placa?: string };
 }) {
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
@@ -40,6 +42,20 @@ export default async function QrDelCiclo({
   });
 
   const asistentes = await listarAsistentes(empresa.id);
+
+  // Dentro de una placa del deck: sin cabecera y sobre el fondo de la
+  // diapositiva. Es la primera placa del encuentro, la que se proyecta
+  // mientras la gente entra.
+  if (searchParams?.placa === '1') {
+    return (
+      <main className="qr-en-placa">
+        <style dangerouslySetInnerHTML={{ __html: 'body{background:transparent}' }} />
+        {/* Solo el código: la dirección escrita ya está en la placa, y
+            repetirla acá adentro la muestra dos veces. */}
+        <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />
+      </main>
+    );
+  }
 
   return (
     <main className="wrap">

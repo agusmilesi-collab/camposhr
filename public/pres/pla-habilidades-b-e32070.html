@@ -526,6 +526,13 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .nube-titulo{font-family:'Instrument Serif',Georgia,serif;font-size:96px;
   line-height:1.05;letter-spacing:-.02em;color:var(--ink)}
 
+/* El código de entrada, generado con la dirección del cliente que corresponda.
+   Una imagen fija llevaría grabado un solo cliente. */
+.qr-vivo{display:block;width:420px;height:420px;border:0;background:transparent}
+.cierre-qr .baja .caja .qr-vivo{width:340px;height:340px}
+.matriz-marco.sin-cliente .cargando{display:none}
+.matriz-marco.sin-cliente .offline{display:block}
+
 /* La placa de cierre. En el deck oscuro la marca iba abajo a la derecha porque
    la foto de fondo dejaba ese hueco libre. Sin foto, ese rincón queda
    descolgado, así que la marca pasa al centro. */
@@ -557,13 +564,13 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 3 -->
-  <section class="placa" data-notas="Queda proyectada mientras responden, unos 10 minutos. Cada uno necesita el celular con datos. El código lleva a camposhr.com/c/pla-sa, que es el cuestionario propio de Campos HR, y las respuestas quedan cargadas para armar la matriz del equipo. Cuando terminan: ¿se reconocen? Que compartan el resultado con los de al lado, ¿reconocen al otro?">
+  <section class="placa" data-notas="Queda proyectada mientras responden, unos 10 minutos. Cada uno necesita el celular con datos. El código lleva a camposhr.com/c/__CLIENTE__, que es el cuestionario propio de Campos HR, y las respuestas quedan cargadas para armar la matriz del equipo. Cuando terminan: ¿se reconocen? Que compartan el resultado con los de al lado, ¿reconocen al otro?">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <div class="qr-caja"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA4QAAAOECAYAAAD5Tv87AAAAAklEQVR4AewaftIAABg1SURBVO3BMbLgCoEkwKKizyF5uv955EkuHhyAtcYZh5joffrQlZl/++c//v6vAAAAMKcBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAm/cpf5DivAP/e+9xZcJxXvvY+d/hzHOeVr73PnQXHeYU/x/vc+dpxXgH+vfe587UGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATPqVIe9zB37HcV5ZcJxXvvY+dxYc5xV+xvvc4We8z52vHecV+B3vcwd+x3FeWdAAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASb/CjzrOK/yM97nDz3ifO/yM97nzteO88rX3ubPgOK987X3uLHifO187zivwO47zCj/jfe7wMxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAw6VcA/gMc55Wvvc+drx3nlQXHeeVr73Pna+9z52vHeeVr73Pna8d5ZcH73AH4KzUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABg0q8A/C/HeWXBcV752vvc+dpxXoH/Nu9z52vHeQVgTQMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAm/Qo/6n3uwH+b97nDzzjOK197nzsLjvMKP+M4r3ztfe4sOM4rX3ufO/yM97kD/20aAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMOlXhhznFeDfO84rX3ufO187zitfe587XzvOK197nzsL3ufO147zytfe587XjvPK197nzteO8wo/4zivAP9eAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACb97Z//+Pu/AgD8nx3nla+9z52vHeeVr73PnQXHeeVr73MH4H80AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYNKv/EWO88rX3ufO147zytfe587XjvPK197nzteO88rX3ufOguO8suB97nztOK987X3uLHifO187ziv8jOO8Ar/jOK987X3uLDjOK197nzsLGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADDpb//8x9//lRHHeeVr73Pna8d5hZ/xPne+dpxXFrzPnQXHeeVr73Pna8d55Wvvc+drx3llwfvc4c9xnFcWvM+dBcd55Wvvc2fBcV752vvc+VoDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJv3KkPe587XjvLLgfe4sOM4r8Dve586C97nzteO8Avxnep87C47zytfe587XjvMKf44GAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATPqVv8hxXvna+9xZ8D53Fhznla+9z52vHeeVr73PHf4cx3mFn/E+d752nFe+dpxXvvY+d752nFcWvM+drx3nlQXvc2fB+9z52nFe+dr73FnQAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEm/wo96nztfO84rC97nzteO88rX3ucOf47jvPK197mz4DivfO04r3ztfe587Tiv8Oc4ziv8OY7zytfe586C47zytfe587UGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATPoVftRxXvna+9xZcJxXvvY+d752nFcWvM+drx3nla+9zx3gP9P73PnacV752vvc+dpxXvna+9zhz/E+d752nFcWNAAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGDSr8D/B8d5ZcFxXvna+9z52nFe+dpxXvna+9xZcJxXFrzPHX7G+9z52nFe+dr73Pna+9zhZxznFf4cx3mFn9EAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASb/yF3mfO187zisLjvPK197nzteO88rX3ufO147zytfe5w4/4zivLHifOwuO88rX3ufO147zCj/jOK987X3uLHifO187ziv8Od7nzoIGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATPqVv8hxXoHf8T53vnacV772Pne+dpxXFrzPHfgd73Pna8d5hZ9xnFcWHOcVfsb73PnacV7hZxznla+9z52vNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGDSr/xF3ufO147zytfe586C47zytfe587X3ufO147zytfe5A7/jOK987X3ufO04ryx4nzv8jOO8Av9tjvPK197nzteO88qCBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAEz6lb/IcV752vvc+dpxXuFnHOeVBe9zB/7bvM+drx3nFfhv8z53+BnHeWXB+9xZcJxX+BkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmPQrf5H3ufO147zCz3ifO187zitfe587XzvOK197nztfO84r/DmO88qC97nzteO88rXjvLLgfe4sOM4rX3ufOwve587XjvPK197nzoL3ubOgAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJP+9s9//P1f+Qsc55Wvvc+dBcd5ZcH73PnacV7hz/E+d752nFe+9j53FhznlQXvc+drx3nla+9zZ8FxXoHf8T534Hc0AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYNKv/EXe5w4/433u8DPe586C47zytfe5A/A/jvMKP+N97vAzjvPKguO8ws94nztfawAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkX/mLHOcV4N97nztfe587C47zyoLjvLLgfe4A/5mO88rX3ufOguO88rX3ufO147zCz2gAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApF8Z8j534Hcc5xV+xnFe+dr73PnacV752vvc4Wcc55Wvvc8dfsb73PnacV5Z8D534He8zx1+RgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAm/Qo/6jiv8DPe5w4/4zivfO197nztOK987X3ufO04r3ztfe4seJ87XzvOKwve5w4/4ziv8Od4nzsLjvPK197nzoIGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATPoVgP/lfe587TivfO197ix4nztfO84rX3ufO187ziv8OY7zyoL3ubPgOK/wM47zytfe5w4/owEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTfgXgfznOK/w5jvMK/I73ufO147yy4H3ufO04r3ztfe7wM47zytfe586C47zytfe587UGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATPoVftT73IH/Nu9z52vHeeVrx3kFfsf73PnacV752nFe4Wcc5xV+xvvc+dpxXvna+9xZcJxXvvY+dxY0AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYNKvDDnOK8C/d5xXFrzPna8d5xV+xnFe4We8z52vHeeVr73Pna8d55Wvvc8d4N87zitfe587X2sAAACY1AAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApL/98x9//1cAAACY0wAAADCpAQAAYFIDAADApAYAAIBJDQAAAJMaAAAAJjUAAABMagAAAJjUAAAAMKkBAABgUgMAAMCkBgAAgEkNAAAAkxoAAAAmNQAAAExqAAAAmNQAAAAwqQEAAGBSAwAAwKQGAACASQ0AAACTGgAAACY1AAAATGoAAACY1AAAADCpAQAAYFIDAADApAYAAIBJ/w+jGUztJT8hlQAAAABJRU5ErkJggg==" alt="Código para entrar al cuestionario"></div>
+      <div class="qr-caja"><iframe class="qr-vivo" title="Código para entrar al ciclo" data-src="https://camposhr.com/ciclo/__CLIENTE__/qr?placa=1"></iframe></div>
       <p class="frase" style="font-size:52px">Escaneá el código y respondé el cuestionario.</p>
     
-      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Cuántos completaron el cuestionario" data-src="https://camposhr.com/ciclo/pla-sa/actividad?clave=c3-cuestionario&placa=1&vista=conteo"></iframe></div>
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Cuántos completaron el cuestionario" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c3-cuestionario&placa=1&vista=conteo"></iframe></div>
     </div>
   </section>
 
@@ -753,10 +760,10 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
         <div class="matriz-aviso">
           <p class="cargando">Armando la matriz…</p>
           <p class="offline">Sin conexión. Proyectar la captura impresa.</p>
-          <p class="dir">tools.camposhr.com/cuestionario/pla-sa/matriz</p>
+          <p class="dir">tools.camposhr.com/cuestionario/__CLIENTE__/matriz</p>
         </div>
         <iframe title="Matriz del equipo"
-          data-src="https://tools.camposhr.com/cuestionario/pla-sa/matriz?placa=1"></iframe>
+          data-src="https://tools.camposhr.com/cuestionario/__CLIENTE__/matriz?placa=1"></iframe>
       </div>
     </div>
   </section>
@@ -850,6 +857,51 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <div class="tira" id="tira"></div>
 </div>
 <div id="ayuda">← →  navegar · <b>F</b> pantalla completa · <b>N</b> ventana de notas · <b>T</b> tira de placas · <b>Inicio</b> volver al principio</div>
+
+<script>
+/**
+ * Para qué cliente se está dictando.
+ *
+ * Viene en la dirección (?c=john-deere) cuando la charla se abre desde el
+ * tablero del encuentro, y queda guardado en el navegador: el archivo
+ * descargado lo sigue sabiendo la próxima vez.
+ *
+ * Sin cliente los marcos no se cargan. Es preferible el aviso a una pantalla
+ * en blanco esperando una dirección que no existe.
+ */
+(function () {
+  var marcador = '__CLIENTE__';
+  var pedido = new URLSearchParams(location.search).get('c');
+  var guardado = null;
+  try { guardado = localStorage.getItem('ciclo-cliente'); } catch (e) {}
+
+  var cliente = (pedido || guardado || '').trim().toLowerCase();
+  if (!/^[a-z0-9-]{2,60}$/.test(cliente)) cliente = '';
+  if (cliente) { try { localStorage.setItem('ciclo-cliente', cliente); } catch (e) {} }
+  window.CICLO_CLIENTE = cliente;
+
+  var escenario = document.getElementById('escenario');
+  if (cliente) {
+    // De una sola vez: alcanza tanto las direcciones de los marcos como el
+    // texto de las placas donde figura.
+    escenario.innerHTML = escenario.innerHTML.split(marcador).join(cliente);
+    // El código de entrada se carga ya: es la primera placa del encuentro y
+    // pesa poco. El resto de los marcos espera a que se llegue a su placa.
+    escenario.querySelectorAll('iframe.qr-vivo[data-src]').forEach(function (f) {
+      f.src = f.dataset.src;
+    });
+    return;
+  }
+
+  escenario.innerHTML = escenario.innerHTML.split('camposhr.com/ciclo/' + marcador)
+    .join('falta indicar el cliente');
+  escenario.querySelectorAll('[data-src]').forEach(function (f) {
+    f.removeAttribute('data-src');
+    var marco = f.closest('.matriz-marco');
+    if (marco) marco.classList.add('sin-cliente');
+  });
+})();
+</script>
 
 <script>
 const placas = [...document.querySelectorAll('.placa')];

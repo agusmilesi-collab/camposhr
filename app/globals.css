@@ -3545,3 +3545,27 @@ body {
   text-align: center;
   text-decoration: none;
 }
+
+/* El código de entrada, embebido en la primera placa del encuentro. */
+.qr-en-placa {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 0;
+}
+/* Ocupa el marco entero: adentro de una placa el aire lo pone la diapositiva. */
+.qr-en-placa .qr-codigo,
+.qr-en-placa .qr-codigo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* El material del ciclo con actividades sirve para cualquier cliente: quién lo
+   dicta se resuelve al abrirlo. */
+.pres-todos {
+  font-size: 0.74rem;
+  font-style: normal;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}

@@ -83,10 +83,14 @@ export default async function Presentaciones() {
             </div>
 
             {ciclo.filas.map((p) => (
-              <div className="pres-row" key={`${p.cliente}-${p.orden}`}>
+              <div className="pres-row" key={`${p.ciclo}-${p.orden}`}>
                 <span className="cot-fecha">{formatoFecha(p.fecha)}</span>
                 <span>
-                  <em className="chip chip-cliente">{p.cliente}</em>
+                  {p.cliente ? (
+                    <em className="chip chip-cliente">{p.cliente}</em>
+                  ) : (
+                    <em className="pres-todos">Cualquier cliente</em>
+                  )}
                 </span>
                 <span className="pres-charla">
                   <b>
@@ -101,7 +105,11 @@ export default async function Presentaciones() {
                     <span className="pres-accion">
                       <a
                         className="copiar pres-ver"
-                        href={`${BASE}/${p.token}`}
+                        href={
+                          enVivo.has(ciclo.nombre)
+                            ? `${BASE}/${p.token}?c=${enVivo.get(ciclo.nombre)!.slug}`
+                            : `${BASE}/${p.token}`
+                        }
                         target="_blank"
                         rel="noreferrer"
                       >
