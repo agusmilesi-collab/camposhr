@@ -131,7 +131,11 @@ export default function TablaCharlas({
                     rel="noreferrer"
                     onClick={(e) => {
                       // Mejor no abrir que abrir para el cliente equivocado.
-                      if (conClientes && !elegido) e.preventDefault();
+                      if (conClientes && !elegido) {
+                        e.preventDefault();
+                        // El clic no queda en la nada: el foco va a lo que falta.
+                        document.getElementById('pres-cliente')?.focus();
+                      }
                     }}
                   >
                     Ver presentación
