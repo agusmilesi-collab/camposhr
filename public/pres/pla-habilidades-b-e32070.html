@@ -516,6 +516,8 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
    solos; sin conexión queda el aviso y la actividad se hace en papel. */
 .act-marco{position:relative;width:100%}
 .act-conteo{height:220px;flex:none;margin-top:40px}
+/* La consigna de la encuesta: explicación y opciones, sin ninguna respuesta. */
+.act-consigna{flex:1;min-height:480px;margin-top:24px}
 .act-nube{flex:1;min-height:520px;margin-top:30px}
 .act-marco iframe{position:absolute;inset:0;width:100%;height:100%;border:0;
   background:transparent}
@@ -526,6 +528,8 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
    atrás a la consigna. */
 .nube-titulo{font-family:'Instrument Serif',Georgia,serif;font-size:96px;
   line-height:1.05;letter-spacing:-.02em;color:var(--ink)}
+/* Las preguntas de la encuesta son largas: entran en dos renglones. */
+.encuesta-titulo{font-size:60px;line-height:1.12}
 
 /* El código de entrada, generado con la dirección del cliente que corresponda.
    Una imagen fija llevaría grabado un solo cliente. */
@@ -815,11 +819,12 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 17 -->
-  <section class="placa" data-notas="La tarea, y queda proyectada durante el bloque de 1 a 1. Una sola decisión, no un cambio de método. Preguntale cómo lo ve él, y escuchá lo que te diga. Que escriban ahí mismo el nombre de la persona y la decisión que le van a consultar.">
+  <section class="placa" data-notas="La tarea, y queda proyectada durante el bloque de 1 a 1. EL REPARTO LO HACE EL SISTEMA: abrí «¿A quién le consultás?» desde el control y cada teléfono muestra a quién buscar, con su foto y su cuadrante. El cruce va por la diagonal, que es el contraste más grande, y es recíproco: los dos se consultan. Al que llega tarde lo suma a un grupo sin desarmar los que ya están conversando. Una sola decisión, y la tarea se queda donde está. NECESITA INTERNET: si la sala no tiene conexión, que cada uno se junte con alguien de un rincón distinto al suyo.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <p class="frase" style="margin-bottom:40px">Elegí a un par con <b>un estilo distinto al tuyo</b><br>y consultale una decisión que tenés que tomar.</p>
-      <p style="font-size:40px;opacity:.82">Escribí ahora el nombre y la decisión.</p>
+      <p class="frase" style="margin-bottom:40px">Consultale <b>una decisión que tenés que tomar</b><br>a la persona que te muestra el teléfono.</p>
+      <p style="font-size:40px;opacity:.82">Ahí está su nombre, su foto y cómo trabaja.</p>
+      <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Cuántos tienen con quién" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c3-consulta&placa=1&vista=conteo"></iframe></div>
     </div>
   </section>
 
