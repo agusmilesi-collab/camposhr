@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 /**
- * Alta de un encuentro.
+ * Alta de un cliente que va a recorrer un ciclo.
  *
- * Se escribe el nombre del cliente y sale todo lo demás: la dirección, el
- * código de entrada y el enlace del control con su clave. El material no se
- * toca, porque las cinco charlas son las mismas para todos.
+ * Se escribe el nombre y sale todo lo demás: la dirección, el código de entrada
+ * y el enlace del control con su clave. El material no se toca, porque las
+ * cinco charlas son las mismas para todos.
  */
 
 /** Igual que en el servidor: sirve para mostrar la dirección antes de crearla. */
@@ -63,10 +63,10 @@ export default function Alta({
     const base = 'https://camposhr.com/ciclo/' + listo.slug;
     return (
       <div className="card alta alta-listo">
-        <h3>Encuentro creado</h3>
+        <h3>Cliente creado</h3>
         <p className="alta-nota">
           Guardá el enlace del control: la clave está adentro y no se vuelve a
-          mostrar. Si se pierde, se da de alta el encuentro otra vez.
+          mostrar. Si se pierde, se da de alta el cliente otra vez.
         </p>
 
         <dl className="alta-datos">
@@ -89,7 +89,7 @@ export default function Alta({
         </dl>
 
         <button className="btn" onClick={() => setListo(null)}>
-          Dar de alta otro
+          Dar de alta otro cliente
         </button>
       </div>
     );
@@ -97,11 +97,7 @@ export default function Alta({
 
   return (
     <div className="card alta">
-      <h3>Nuevo encuentro</h3>
-      <p className="alta-nota">
-        El material es el mismo para todos los clientes: no hay que preparar
-        presentaciones. Con esto queda la dirección, el código y el control.
-      </p>
+      <h3>Nuevo cliente</h3>
 
       <div className="alta-campos">
         <label>
@@ -141,7 +137,7 @@ export default function Alta({
       {error && <p className="cq-error">{error}</p>}
 
       <button className="btn" disabled={!valido || enviando} onClick={crear}>
-        {enviando ? 'Creando…' : 'Crear el encuentro'}
+        {enviando ? 'Creando…' : 'Crear el cliente'}
       </button>
     </div>
   );
