@@ -53,6 +53,21 @@ export const INFO: Record<
 };
 
 /**
+ * El cuadrante opuesto en diagonal.
+ *
+ * Lo dice el guion de la charla 3, en la nota de la placa de fortaleza y
+ * dificultad: donde una persona rinde sin esfuerzo, la de su diagonal se
+ * exige, y al revés. Por eso es el cruce que más le muestra a cada uno, y el
+ * que la charla usa para armar las consultas de a dos.
+ */
+export const DIAGONAL: Record<Perfil, Perfil> = {
+  FI: 'BD',
+  BD: 'FI',
+  FD: 'BI',
+  BI: 'FD',
+};
+
+/**
  * Lectura de un puntaje suelto, de 0 a 20.
  *
  * Un cuadrante puede estar por debajo del umbral y aun así ser el más alto de

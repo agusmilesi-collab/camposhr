@@ -3,6 +3,8 @@ import {
   abrirActividad,
   cerrarActividades,
   claveControlOk,
+  getActividad,
+  repartirCruce,
   resolverCiclo,
 } from '@/lib/ciclo';
 
@@ -38,7 +40,14 @@ export async function POST(
     if (datos.accion === 'cerrar') {
       await cerrarActividades(corrida.id);
     } else if (datos.accion === 'abrir') {
-      await abrirActividad(corrida.id, String(datos.actividadId ?? ''));
+      const actividadId = String(datos.actividadId ?? '');
+      await abrirActividad(corrida.id, actividadId);
+
+      // El cruce de la charla 3 no se responde: se reparte. Va acá, en el
+      // momento en que la expositora la abre, para que el primer teléfono que
+      // pregunte ya encuentre su pareja escrita en vez de armarla él.
+      const actividad = await getActividad(corrida.ciclo_id, actividadId);
+      if (actividad?.tipo === 'cruce') await repartirCruce(corrida, actividad);
     } else {
       return new NextResponse('Acción inválida', { status: 400 });
     }

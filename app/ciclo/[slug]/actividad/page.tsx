@@ -107,6 +107,9 @@ export default async function Proyeccion({
         ? await contarRespuestas(empresa.id, corrida.id)
         : aportes.length;
     const completo = inscriptos > 0 && hechas >= inscriptos;
+    // El cruce no se responde: se reparte. Contar "respuestas" ahí le haría
+    // creer a la expositora que falta gente por contestar algo.
+    const esCruce = actividad.tipo === 'cruce';
     return (
       <main className={`cp cp-conteo ${enPlaca ? 'cp-placa' : ''}`}>
         {enPlaca && <FondoTransparente />}
@@ -118,7 +121,13 @@ export default async function Proyeccion({
           <em>{inscriptos}</em>
         </p>
         <p className="cp-cifra-pie">
-          {completo ? 'Respondieron todos' : 'respondieron'}
+          {esCruce
+            ? completo
+              ? 'Todos tienen con quién'
+              : 'tienen con quién'
+            : completo
+              ? 'Respondieron todos'
+              : 'respondieron'}
         </p>
         <AutoRefresco segundos={3} oculto />
       </main>
@@ -134,15 +143,22 @@ export default async function Proyeccion({
 
       <Vista actividad={actividad} resumen={resumen} />
 
-      <p className="cp-pie">
-        {resumen.total === 0
-          ? 'Se arma sola a medida que responden.'
-          : `${resumen.total} ${resumen.total === 1 ? 'respuesta' : 'respuestas'}`}
-      </p>
+      <p className="cp-pie">{pie(resumen)}</p>
 
       <AutoRefresco segundos={5} oculto />
     </main>
   );
+}
+
+/** Cuánta gente entró en lo que se está proyectando. */
+function pie(resumen: Resumen): string {
+  if (resumen.tipo === 'cruce') {
+    return resumen.total === 0
+      ? 'Se reparte al abrir la consigna.'
+      : `${resumen.total} ${resumen.total === 1 ? 'persona' : 'personas'}`;
+  }
+  if (resumen.total === 0) return 'Se arma sola a medida que responden.';
+  return `${resumen.total} ${resumen.total === 1 ? 'respuesta' : 'respuestas'}`;
 }
 
 /** El fondo de la placa se ve a través del marco. */
@@ -230,6 +246,19 @@ function Vista({ actividad, resumen }: { actividad: Actividad; resumen: Resumen 
             <p className="cp-vacio">Todavía no escribió nadie.</p>
           )}
         </div>
+      );
+
+    case 'cruce':
+      // Los nombres no se proyectan: cada teléfono ya tiene el suyo, y la lista
+      // completa en pantalla manda a todo el grupo a leer el proyector en vez
+      // de buscarse entre ellos, que es lo que la consigna quiere que pase.
+      return (
+        <p className="cp-cifra">
+          <b>{resumen.grupos}</b>
+          <span className="cp-cifra-que">
+            {resumen.grupos === 1 ? 'grupo armado' : 'grupos armados'}
+          </span>
+        </p>
       );
   }
 

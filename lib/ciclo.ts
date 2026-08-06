@@ -21,8 +21,18 @@
  */
 
 import 'server-only';
-import { getEmpresaPorSlug, insert, patch, select, upsert } from '@/lib/supabase';
+import {
+  getEmpresaPorSlug,
+  insert,
+  patch,
+  perfilesDeCorrida,
+  select,
+  upsert,
+  upsertVarias,
+} from '@/lib/supabase';
 import type { Empresa } from '@/lib/supabase';
+import { armarGrupos, type Candidato, type Grupo } from '@/lib/cruce';
+import { PERFILES, type Perfil } from '@/lib/perfiles';
 
 // -------------------------------------------------------------------- tipos
 
@@ -39,6 +49,9 @@ export const TIPOS = [
    *  la persona ya está identificada por el ciclo y no vuelve a cargar nada.
    *  Sus respuestas van a su propia tabla, no a `aportes`. */
   'cuestionario',
+  /** No se responde: el teléfono recibe con quién juntarse. El reparto lo hace
+   *  el servidor al abrirla, cruzando los cuadrantes del cuestionario. */
+  'cruce',
 ] as const;
 export type TipoActividad = (typeof TIPOS)[number];
 
@@ -71,6 +84,12 @@ export type Actividad = {
   enunciado: string | null;
   /** Alternativas de 'opcion' y 'marcas', en orden. */
   opciones: string[];
+  /**
+   * Actividades que se abren juntas y se responden en fila desde el teléfono.
+   * La expositora abre una vez y cada uno recorre las suyas a su ritmo, sin
+   * que ella tenga que ir habilitando de a una mientras dicta.
+   */
+  grupo: string | null;
   abierta: boolean;
   created_at: string;
 };
@@ -101,7 +120,11 @@ export type Valor =
   | { tipo: 'opcion'; opcion: number }
   | { tipo: 'escala'; escala: number }
   | { tipo: 'texto'; texto: string }
-  | { tipo: 'marcas'; marcas: number[] };
+  | { tipo: 'marcas'; marcas: number[] }
+  /** Con quién le toca juntarse. Esto no lo responde la persona: lo escribe el
+   *  servidor al abrir la actividad. Va en `aportes` igual que una respuesta
+   *  porque necesita lo mismo: una fila por persona, que no cambie después. */
+  | { tipo: 'cruce'; conIds: string[] };
 
 /** La dirección de una actividad de tipo 'enlace'. Sólo se acepta https. */
 export function destinoDe(actividad: Actividad): string | null {
@@ -110,7 +133,7 @@ export function destinoDe(actividad: Actividad): string | null {
 }
 
 const CAMPOS_ACTIVIDAD =
-  'id,ciclo_id,clave,charla,orden,tipo,titulo,enunciado,opciones,created_at';
+  'id,ciclo_id,clave,charla,orden,tipo,titulo,enunciado,opciones,grupo,created_at';
 const CAMPOS_ASISTENTE =
   'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en';
 const CAMPOS_APORTE = 'id,corrida_id,actividad_id,asistente_id,valor,created_at';
@@ -225,6 +248,19 @@ export async function crearEncuentro(
   });
 
   return { slug, clave };
+}
+
+/** Las actividades de un grupo, en el orden en que se responden. */
+export async function listarGrupo(
+  cicloId: string,
+  grupo: string
+): Promise<Actividad[]> {
+  if (!UUID.test(cicloId) || !CLAVE.test(grupo)) return [];
+  return select<Actividad>(
+    'actividades',
+    `select=${CAMPOS_ACTIVIDAD}&ciclo_id=eq.${cicloId}&grupo=eq.${grupo}` +
+      `&order=orden.asc`
+  );
 }
 
 export async function getCiclo(cicloId: string): Promise<Ciclo | null> {
@@ -412,6 +448,86 @@ export async function guardarAporte(
   );
 }
 
+// -------------------------------------------------------------------- cruce
+
+/**
+ * Reparte quién consulta a quién, y lo deja escrito.
+ *
+ * Se guarda en `aportes` en vez de calcularse cada vez que el teléfono
+ * pregunta, y la razón es la sala: el sondeo llega cada cuatro segundos, y un
+ * reparto calculado al vuelo le cambiaría el nombre a la persona en cuanto
+ * entre alguien más, con medio grupo ya conversando.
+ *
+ * Es incremental. Se reparte sólo a quien todavía no tiene pareja, así que
+ * cerrar la actividad y volver a abrirla no rehace lo que ya está andando, y
+ * el que llega tarde entra sin desarmarle el grupo a nadie.
+ */
+export async function repartirCruce(
+  corrida: Corrida,
+  actividad: Actividad
+): Promise<void> {
+  if (actividad.tipo !== 'cruce') return;
+
+  const [asistentes, previos, perfiles] = await Promise.all([
+    listarAsistentes(corrida.id),
+    listarAportes(corrida.id, actividad.id),
+    perfilesDeCorrida(corrida.id),
+  ]);
+
+  const yaTienen = new Set(previos.map((p) => p.asistente_id));
+  const nuevos: Candidato[] = asistentes
+    .filter((a) => !yaTienen.has(a.id))
+    .map((a) => ({ id: a.id, perfil: perfilValido(perfiles.get(a.id)) }));
+  if (nuevos.length === 0) return;
+
+  const grupos = armarGrupos(nuevos);
+  const aEscribir: Grupo[] = [...grupos];
+
+  // Uno solo sin pareja: o es el primero del encuentro, o llegó tarde. Si ya
+  // hay grupos armados se suma al más chico, y los que estaban en él pasan a
+  // verlo. Si no hay ninguno, no hay nada que repartir todavía.
+  const repartidos = new Set(grupos.flat());
+  const solo = nuevos.find((n) => !repartidos.has(n.id));
+  if (solo) {
+    const destino = [...gruposDe(previos), ...grupos].sort(
+      (a, b) => a.length - b.length || a[0].localeCompare(b[0])
+    )[0];
+    if (!destino) return;
+    destino.push(solo.id);
+    if (!aEscribir.includes(destino)) aEscribir.push(destino);
+  }
+
+  await upsertVarias(
+    'aportes',
+    aEscribir.flatMap((g) =>
+      g.map((id) => ({
+        corrida_id: corrida.id,
+        actividad_id: actividad.id,
+        asistente_id: id,
+        valor: { tipo: 'cruce', conIds: g.filter((otro) => otro !== id) },
+      }))
+    ),
+    'actividad_id,asistente_id'
+  );
+}
+
+/** Los grupos ya repartidos, reconstruidos desde lo que guardó cada persona. */
+function gruposDe(aportes: Aporte[]): Grupo[] {
+  const vistos = new Map<string, Grupo>();
+  for (const a of aportes) {
+    if (a.valor?.tipo !== 'cruce') continue;
+    const integrantes = [a.asistente_id, ...a.valor.conIds];
+    const clave = [...integrantes].sort().join('|');
+    if (!vistos.has(clave)) vistos.set(clave, integrantes);
+  }
+  return [...vistos.values()];
+}
+
+/** Lo guardado en `respuestas` es texto suelto: no entra sin validarse. */
+function perfilValido(p: string | undefined): Perfil | null {
+  return PERFILES.includes(p as Perfil) ? (p as Perfil) : null;
+}
+
 // ------------------------------------------------------------------ control
 
 /**
@@ -481,6 +597,11 @@ export function normalizarValor(actividad: Actividad, crudo: unknown): Valor {
     case 'cuestionario':
       throw new Error('Esta actividad se responde en su propia pantalla');
 
+    case 'cruce':
+      // Llega repartida desde el servidor. Si un teléfono manda algo acá, es
+      // alguien tratando de elegirse la pareja.
+      throw new Error('Esta actividad no se responde');
+
     case 'marcas': {
       const crudas = Array.isArray(dato.marcas) ? dato.marcas : [];
       const marcas = [
@@ -510,7 +631,8 @@ export type Resumen =
   | { tipo: 'texto'; total: number; textos: string[] }
   | { tipo: 'marcas'; total: number; conteo: { texto: string; veces: number }[] }
   | { tipo: 'enlace'; total: number }
-  | { tipo: 'cuestionario'; total: number };
+  | { tipo: 'cuestionario'; total: number }
+  | { tipo: 'cruce'; total: number; grupos: number };
 
 /** Para agrupar 'apurado' con 'Apurado' y con 'apurada' no, que es otra cosa. */
 function normalizar(texto: string): string {
@@ -598,6 +720,17 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
 
     case 'cuestionario':
       return { tipo: 'cuestionario', total };
+
+    case 'cruce': {
+      // Cuántos grupos distintos se armaron. Cada persona guarda a los otros de
+      // su grupo, así que el grupo se identifica por sus integrantes ordenados.
+      const vistos = new Set<string>();
+      for (const a of aportes) {
+        if (a.valor?.tipo !== 'cruce') continue;
+        vistos.add([a.asistente_id, ...a.valor.conIds].sort().join('|'));
+      }
+      return { tipo: 'cruce', total, grupos: vistos.size };
+    }
 
     case 'marcas': {
       const veces = new Array(actividad.opciones.length).fill(0) as number[];

@@ -104,10 +104,12 @@ on conflict (empresa_id, clave) do nothing;
 --   Charla 2 · la tabla de cuatro columnas, y el chequeo de treinta segundos.
 --   Son varias respuestas encadenadas, no una.
 --
---   Charla 3 · a quién le voy a consultar una decisión.
---
 --   Charla 5 · transformar de objetivo a subjetivo (PLACA 16).
 --
--- Las cinco entran como 'texto' si se decide que van, pero conviene definirlas
+-- Las cuatro entran como 'texto' si se decide que van, pero conviene definirlas
 -- desde el informe: primero qué le vamos a entregar a Recursos Humanos y
 -- después qué actividad hace falta.
+--
+-- La de la charla 3, a quién le voy a consultar una decisión, está en
+-- ciclo-cruce-charla-3.sql: no se responde, la reparte el sistema cruzando los
+-- cuadrantes del cuestionario.
