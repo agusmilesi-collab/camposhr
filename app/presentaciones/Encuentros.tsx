@@ -64,7 +64,7 @@ export default function Encuentros({
                 target="_blank"
                 rel="noreferrer"
               >
-                Control
+                Admin
               </a>
               <a
                 className="copiar"
@@ -72,7 +72,7 @@ export default function Encuentros({
                 target="_blank"
                 rel="noreferrer"
               >
-                Código
+                Código QR
               </a>
             </div>
           ))}
