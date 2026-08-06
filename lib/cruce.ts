@@ -9,7 +9,7 @@
  *
  * El cruce es recíproco. Si a una persona le toca otra, a esa le toca la
  * primera: se sientan de a dos y se consultan en las dos direcciones. Con
- * número impar queda un grupo de tres.
+ * número impar queda un solo grupo de tres en toda la sala.
  *
  * Este módulo es puro y no toca la base: entra una lista de personas con su
  * cuadrante y salen los grupos. Así el reparto se puede probar sin encuentro.
@@ -106,17 +106,15 @@ export function armarGrupos(candidatos: Candidato[]): Grupo[] {
   const sueltos = [...PERFILES.flatMap((p) => pilas[p]), ...sinPerfil];
 
   // 4 · Lo que sobró es todo de un mismo cuadrante, así que ya no hay contraste
-  // que buscar. Mientras sobre más gente de la que entra de a uno por grupo, se
-  // emparejan entre sí: con ocho personas de un cuadrante y una de otro, la
-  // alternativa era un solo grupo de nueve parado en un rincón.
-  while (sueltos.length > grupos.length && sueltos.length >= 2) {
+  // que buscar: se emparejan entre sí. Todos quedan de a dos.
+  while (sueltos.length >= 2) {
     grupos.push([sueltos.shift()!, sueltos.shift()!]);
   }
 
-  // 5 · Los que todavía quedan se suman de a uno como tercero, primero a los
-  // grupos que no tengan ya su cuadrante y entre esos al más chico: así el trío
-  // conserva el contraste y nadie termina en un grupo de cuatro mientras otro
-  // es de dos.
+  // 5 · Con número impar sobra exactamente una persona, y va de tercera al
+  // grupo que no tenga su cuadrante, y entre esos al más chico. Un solo trío en
+  // toda la sala: tres personas ya cuesta que se escuchen, y cuatro es una
+  // reunión.
   for (const id of sueltos) {
     if (grupos.length === 0) break; // una sola persona: no hay con quién cruzar
     grupos.sort((a, b) => a.length - b.length || a[0].localeCompare(b[0]));

@@ -1076,6 +1076,43 @@ body {
 .mx-placa .mx-nombre {
   fill: var(--placa-tinta);
 }
+/* La misma matriz sobre papel.
+   El deck original es oscuro y por eso todo va en tinta clara. En el plan B la
+   placa es crema, y ahí lo claro sobre claro no se lee. */
+.mx-placa-clara {
+  --placa-tinta: #16202b;
+}
+.mx-placa-clara .mx-eje span {
+  color: rgba(22, 32, 43, 0.62);
+}
+.mx-placa-clara .mx-fondo {
+  fill: rgba(22, 32, 43, 0.05);
+}
+.mx-placa-clara .mx-linea {
+  stroke: rgba(22, 32, 43, 0.28);
+}
+.mx-placa-clara .mx-cuadrante-desc {
+  fill: rgba(22, 32, 43, 0.6);
+}
+.mx-placa-clara .mx-texto {
+  color: rgba(22, 32, 43, 0.7);
+}
+.mx-placa-clara .mx-aro {
+  stroke: rgba(22, 32, 43, 0.5);
+}
+.mx-placa-clara .mx-sinfoto {
+  fill: rgba(22, 32, 43, 0.12);
+}
+.mx-placa-clara .mx-denso .mx-sinfoto {
+  fill: rgba(22, 32, 43, 0.1);
+}
+.mx-placa-clara .mx-iniciales {
+  fill: #16202b;
+}
+.mx-placa-clara .mx-placa-pie {
+  color: rgba(22, 32, 43, 0.5);
+}
+
 /* Cuánta gente respondió, para seguir el avance sin salir de la placa. Va
    arriba a la izquierda: abajo a la derecha está el logo de la placa. */
 .mx-placa-pie {
@@ -3132,6 +3169,18 @@ body {
   padding-bottom: 12px;
   line-height: 1.25;
 }
+/* La que acaba de tocar, mientras el envío está en camino. */
+.ci-opcion-on,
+.ci-opcion-on:disabled {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  opacity: 1;
+}
+.ci-opcion-on em {
+  color: rgba(246, 245, 242, 0.75);
+}
+
 /* Qué quiere decir la opción, debajo y más chico. */
 .ci-opcion em {
   display: block;

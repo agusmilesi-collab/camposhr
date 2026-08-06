@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Cuestionario from '@/app/c/[slug]/Cuestionario';
 import { DIAS, partirOpcion } from '@/lib/opciones';
+import { APORTA, type Perfil } from '@/lib/perfiles';
 
 /**
  * El teléfono del asistente.
@@ -565,6 +566,8 @@ function Formulario({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [corrigiendo, setCorrigiendo] = useState(false);
+  /** La que se acaba de tocar, mientras el envío está en camino. */
+  const [tocada, setTocada] = useState<number | null>(null);
   const [dia, setDia] = useState<number | null>(null);
   const [hora, setHora] = useState('');
 
@@ -719,9 +722,16 @@ function Formulario({
             return (
               <button
                 key={i}
-                className="cq-opcion ci-opcion"
+                className={`cq-opcion ci-opcion ${
+                  tocada === i ? 'ci-opcion-on' : ''
+                }`}
                 disabled={enviando}
-                onClick={() => enviar({ tipo: 'opcion', opcion: i })}
+                onClick={() => {
+                  // Queda marcada hasta que aparece la consigna siguiente: sin
+                  // eso, tocar apaga los cinco botones y no se sabe cuál entró.
+                  setTocada(i);
+                  enviar({ tipo: 'opcion', opcion: i });
+                }}
               >
                 {titulo}
                 {aclara && <em>({aclara})</em>}
@@ -915,7 +925,9 @@ function Cruzado({
                 {p.nombre} {p.apellido}
               </b>
               {p.perfil && <span className="ci-cruce-perfil">{p.perfil.nombre}</span>}
-              <p className="ci-cruce-porque">{porQue(p.motivo, p.nombre)}</p>
+              <p className="ci-cruce-porque">
+                {porQue(p.motivo, p.nombre, p.perfil)}
+              </p>
             </div>
           </article>
         ))}
@@ -935,14 +947,19 @@ function Cruzado({
  * no consiguió es peor que no decir nada: la persona lo comprueba en treinta
  * segundos de conversación.
  */
-function porQue(motivo: Cruce['con'][number]['motivo'], nombre: string): string {
+function porQue(
+  motivo: Cruce['con'][number]['motivo'],
+  nombre: string,
+  perfil: { corto: string } | null
+): string {
+  const aporta = perfil ? APORTA[perfil.corto as Perfil] : null;
   switch (motivo) {
     case 'diagonal':
-      return `Es tu cuadrante opuesto: lo que a vos te demanda esfuerzo, ${nombre} lo hace sin pensarlo.`;
+      return `Es tu cuadrante opuesto: lo que a vos te demanda esfuerzo, ${nombre} lo hace sin pensarlo. Te puede aportar ${aporta}.`;
     case 'distinto':
-      return `Trabaja en otro cuadrante que el tuyo.`;
+      return `Trabaja en otro cuadrante que el tuyo. Te puede aportar ${aporta}.`;
     case 'mismo':
-      return `Quedaron en el mismo cuadrante: no había nadie de otro sin pareja.`;
+      return `Quedaron en el mismo cuadrante: no había nadie de otro sin pareja. Miren en qué se diferencian igual.`;
     case 'sin-perfil':
       return `Todavía no está su resultado del cuestionario.`;
   }

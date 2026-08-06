@@ -29,7 +29,7 @@ export default async function MatrizEmpresa({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { placa?: string; solo?: string };
+  searchParams: { placa?: string; solo?: string; tema?: string };
 }) {
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
@@ -90,7 +90,9 @@ export default async function MatrizEmpresa({
 
   if (enPlaca) {
     return (
-      <main className="mx-placa">
+      <main
+        className={`mx-placa ${searchParams?.tema === 'claro' ? 'mx-placa-clara' : ''}`}
+      >
         {/* El fondo de la placa se ve a través del marco. */}
         <style dangerouslySetInnerHTML={{ __html: 'body{background:transparent}' }} />
         {/* Sin las descripciones de cuadrante: para cuando se proyecta esta
