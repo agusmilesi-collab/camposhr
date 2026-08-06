@@ -3586,6 +3586,19 @@ body {
   text-align: center;
 }
 
+/* Lo que la persona escribió, para leerlo en voz alta cuando se lo pidan. */
+.ci-mio {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border-left: 3px solid var(--st-amber);
+  background: var(--card);
+  border-radius: 0 10px 10px 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.35;
+  color: var(--ink);
+  text-align: left;
+}
 /* Botón que lleva a una herramienta aparte. Es un enlace y no un botón: tiene
    que poder abrirse en otra pestaña. */
 .ci-enlace {
