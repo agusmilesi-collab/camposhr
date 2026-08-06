@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Cuestionario from '@/app/c/[slug]/Cuestionario';
 
 /**
  * El teléfono del asistente.
@@ -10,7 +11,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * adelantarse, y "vayan a la 3" siempre termina con alguien en la 4.
  */
 
-type TipoActividad = 'palabra' | 'opcion' | 'escala' | 'texto' | 'marcas' | 'enlace';
+type TipoActividad =
+  | 'palabra'
+  | 'opcion'
+  | 'escala'
+  | 'texto'
+  | 'marcas'
+  | 'enlace'
+  | 'cuestionario';
+
+/** Quién está respondiendo desde este teléfono. */
+type Yo = { id: string; nombre: string; apellido: string };
 
 type ActividadPublica = {
   id: string;
@@ -56,7 +67,7 @@ export default function Asistente({
   empresa: string;
   caras: Cara[];
 }) {
-  const [yo, setYo] = useState<{ id: string; nombre: string } | null>(null);
+  const [yo, setYo] = useState<Yo | null>(null);
   const [listo, setListo] = useState(false);
   const [pantalla, setPantalla] = useState<'inicio' | 'registro' | 'elegir'>('inicio');
   const [estado, setEstado] = useState<Estado | null>(null);
@@ -70,7 +81,7 @@ export default function Asistente({
       // Se valida contra la lista real: si la persona se borró de la base o la
       // marca quedó de otro ciclo, vuelve a la entrada en vez de romperse.
       const cara = id ? caras.find((c) => c.id === id) : null;
-      if (cara) setYo({ id: cara.id, nombre: cara.nombre });
+      if (cara) setYo({ id: cara.id, nombre: cara.nombre, apellido: cara.apellido });
     } catch {
       // Navegador sin almacenamiento: entra por la grilla de caras.
     }
@@ -78,13 +89,13 @@ export default function Asistente({
   }, [guardado, caras]);
 
   const entrar = useCallback(
-    (id: string, nombre: string) => {
+    (id: string, nombre: string, apellido: string) => {
       try {
         localStorage.setItem(guardado, id);
       } catch {
         // Si no se puede guardar, funciona igual mientras no cierre la pestaña.
       }
-      setYo({ id, nombre });
+      setYo({ id, nombre, apellido });
     },
     [guardado]
   );
@@ -174,7 +185,7 @@ export default function Asistente({
           {pantalla === 'elegir' && (
             <Grilla
               caras={caras}
-              onElegir={(c) => entrar(c.id, c.nombre)}
+              onElegir={(c) => entrar(c.id, c.nombre, c.apellido)}
               onVolver={() => setPantalla('inicio')}
             />
           )}
@@ -200,6 +211,8 @@ export default function Asistente({
           <Formulario
             key={estado.actividad.id}
             slug={slug}
+            empresa={empresa}
+            yo={yo}
             asistenteId={yo.id}
             actividad={estado.actividad}
             respondida={estado.respondida}
@@ -258,7 +271,7 @@ function Registro({
   onVolver,
 }: {
   slug: string;
-  onListo: (id: string, nombre: string) => void;
+  onListo: (id: string, nombre: string, apellido: string) => void;
   onVolver: () => void;
 }) {
   const [nombre, setNombre] = useState('');
@@ -296,7 +309,7 @@ function Registro({
       });
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
-      onListo(json.asistente.id, json.asistente.nombre);
+      onListo(json.asistente.id, json.asistente.nombre, json.asistente.apellido);
     } catch {
       setError('No pudimos registrarte. Probá de nuevo en unos segundos.');
     } finally {
@@ -432,6 +445,8 @@ function Grilla({
 
 function Formulario({
   slug,
+  empresa,
+  yo,
   asistenteId,
   actividad,
   respondida,
@@ -439,6 +454,8 @@ function Formulario({
   onGuardado,
 }: {
   slug: string;
+  empresa: string;
+  yo: Yo;
   asistenteId: string;
   actividad: ActividadPublica;
   respondida: boolean;
@@ -489,6 +506,18 @@ function Formulario({
         </div>
         <p className="ci-guardar">Ya podés guardar el teléfono.</p>
       </section>
+    );
+  }
+
+  if (actividad.tipo === 'cuestionario') {
+    /* Adentro del encuentro, no en otra pestaña: la persona ya cargó su nombre
+       y su foto al entrar, y mandarla afuera la obligaba a empezar de nuevo
+       por la identidad. Va sin el título de la actividad porque el propio
+       cuestionario abre con su portada. */
+    return (
+      <div className="ci-cuestionario">
+        <Cuestionario slug={slug} empresa={empresa} yo={yo} />
+      </div>
     );
   }
 

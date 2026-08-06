@@ -6,6 +6,7 @@ import {
   subirSelfie,
   type Variante,
 } from '@/lib/supabase';
+import { getAsistente, resolverCiclo } from '@/lib/ciclo';
 import { PLACAS } from '@/lib/cuestionario';
 import { calcular, PERFILES, type Perfil, type Puntajes } from '@/lib/perfiles';
 import { calcularGeneracion, PLACAS_GENERACIONES } from '@/lib/generaciones';
@@ -82,6 +83,7 @@ export async function POST(
     variante?: unknown;
     liderId?: unknown;
     generaciones?: unknown;
+    asistenteId?: unknown;
   };
   try {
     datos = JSON.parse(String(form.get('datos') ?? '{}'));
@@ -89,8 +91,24 @@ export async function POST(
     return new NextResponse('Datos ilegibles', { status: 400 });
   }
 
-  const nombre = String(datos.nombre ?? '').trim().slice(0, 80);
-  const apellido = String(datos.apellido ?? '').trim().slice(0, 80);
+  /**
+   * Respondido desde el encuentro, quién es no lo dice el navegador.
+   *
+   * El teléfono manda el id del asistente y de ahí salen el nombre, el
+   * apellido y la selfie que ya cargó al entrar al ciclo. Si el id no
+   * pertenece a la corrida en curso, se sigue por el camino de siempre.
+   */
+  let asistente = null;
+  if (typeof datos.asistenteId === 'string' && datos.asistenteId) {
+    const ciclo = await resolverCiclo(params.slug);
+    if (ciclo) asistente = await getAsistente(ciclo.corrida.id, datos.asistenteId);
+    if (!asistente) return new NextResponse('Asistente inválido', { status: 400 });
+  }
+
+  const nombre = (asistente?.nombre ?? String(datos.nombre ?? '')).trim().slice(0, 80);
+  const apellido = (asistente?.apellido ?? String(datos.apellido ?? ''))
+    .trim()
+    .slice(0, 80);
   if (nombre.length < 2) {
     return new NextResponse('Falta el nombre', { status: 400 });
   }
@@ -157,7 +175,9 @@ export async function POST(
   }
 
   // --- Selfie (opcional) ---
-  let fotoPath: string | null = null;
+  // La del ciclo alcanza: la persona se la sacó hace un rato, en esta misma
+  // sala, y pedírsela otra vez para la misma matriz no agrega nada.
+  let fotoPath: string | null = asistente?.foto_path ?? null;
   const foto = form.get('foto');
   if (foto instanceof File && foto.size > 0) {
     if (foto.size > MAX_FOTO || !foto.type.startsWith('image/')) {

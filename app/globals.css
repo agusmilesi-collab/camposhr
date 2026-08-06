@@ -3586,12 +3586,26 @@ body {
   text-align: center;
 }
 
-/* Botón que lleva a una herramienta aparte, como el cuestionario de perfil.
-   Es un enlace y no un botón: tiene que poder abrirse en otra pestaña. */
+/* Botón que lleva a una herramienta aparte. Es un enlace y no un botón: tiene
+   que poder abrirse en otra pestaña. */
 .ci-enlace {
   display: block;
   text-align: center;
   text-decoration: none;
+}
+
+/* El cuestionario de perfil, adentro del encuentro. Trae su propio marco, así
+   que acá sólo se le saca el aire que ya pone la pantalla que lo contiene. */
+.ci-cuestionario .cq {
+  min-height: 0;
+}
+.ci-cuestionario .cq-top {
+  position: static;
+  background: none;
+  border: 0;
+}
+.ci-cuestionario .cq-main {
+  padding-top: 0;
 }
 
 /* El código de entrada, embebido en la primera placa del encuentro. */
