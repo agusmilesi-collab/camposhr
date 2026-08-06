@@ -1,6 +1,6 @@
 import { listarPresentaciones, formatoFecha } from '@/lib/presentaciones';
-import { listarAsistentes, listarCorridas } from '@/lib/ciclo';
-import PanelEncuentro from './PanelEncuentro';
+import { listarAsistentes, listarCiclos, listarCorridas } from '@/lib/ciclo';
+import Encuentros, { type EnCurso } from './Encuentros';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,29 +28,26 @@ export default async function Presentaciones() {
     return acc;
   }, []);
 
-  // Un tablero por cliente que esté corriendo el ciclo. Los asistentes se
-  // cuentan acá, así el día del encuentro se ve de un vistazo cuánta gente
-  // entró sin abrir otra pantalla.
-  const corridas = await listarCorridas();
-  const enVivo = new Map<
-    string,
-    { slug: string; empresa: string; registrados: number; clave: string }[]
-  >();
+  // Los encuentros en curso, agrupados por el material que les corresponde.
+  // Los asistentes se cuentan acá, así el día del encuentro se ve de un vistazo
+  // cuánta gente entró sin abrir otra pantalla.
+  const [corridas, ciclosBase] = await Promise.all([listarCorridas(), listarCiclos()]);
+  const enVivo = new Map<string, EnCurso[]>();
 
   for (const [material, nombreCiclo] of Object.entries(MATERIAL_DEL_CICLO)) {
     if (!ciclos.some((c) => c.nombre === material)) continue;
-    const suyas = corridas.filter((c) => c.ciclos?.nombre === nombreCiclo);
-    const tableros = [];
-    for (const corrida of suyas) {
+    const filas: EnCurso[] = [];
+    for (const corrida of corridas.filter((c) => c.ciclos?.nombre === nombreCiclo)) {
       const asistentes = await listarAsistentes(corrida.id);
-      tableros.push({
+      filas.push({
         slug: corrida.empresas.slug,
         empresa: corrida.empresas.nombre,
         registrados: asistentes.length,
         clave: corrida.clave_control,
+        abierta: Boolean(corrida.actividad_abierta_id),
       });
     }
-    if (tableros.length) enVivo.set(material, tableros);
+    enVivo.set(material, filas);
   }
 
   return (
@@ -58,9 +55,9 @@ export default async function Presentaciones() {
       <section className="head">
         <div className="head-top">
           <div className="eyebrow">Material de los encuentros</div>
-          <a href="/encuentros" className="volver">
-            Encuentros
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M12 5l7 7-7 7" /></svg>
+          <a href="/" className="volver">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
+            Herramientas
           </a>
         </div>
         <h1>Presentaciones</h1>
@@ -110,7 +107,7 @@ export default async function Presentaciones() {
                       <a
                         className="copiar pres-ver"
                         href={
-                          enVivo.has(ciclo.nombre)
+                          enVivo.get(ciclo.nombre)?.[0]
                             ? `${BASE}/${p.token}?c=${enVivo.get(ciclo.nombre)![0].slug}`
                             : `${BASE}/${p.token}`
                         }
@@ -138,15 +135,12 @@ export default async function Presentaciones() {
             ))}
           </div>
 
-          {(enVivo.get(ciclo.nombre) ?? []).map((t) => (
-            <PanelEncuentro
-              key={t.slug}
-              slug={t.slug}
-              empresa={t.empresa}
-              registrados={t.registrados}
-              clave={t.clave}
+          {enVivo.has(ciclo.nombre) && (
+            <Encuentros
+              enCurso={enVivo.get(ciclo.nombre)!}
+              ciclos={ciclosBase.map((c) => ({ id: c.id, nombre: c.nombre }))}
             />
-          ))}
+          )}
         </section>
       ))}
     </main>
