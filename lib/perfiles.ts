@@ -53,6 +53,20 @@ export const INFO: Record<
 };
 
 /**
+ * Qué mirada aporta cada cuadrante en una consulta.
+ *
+ * Es lo que la otra persona ve y uno no: por eso se completa la frase "te
+ * puede aportar…". Sale de la descripción de cada modo, dicho como lo que hace
+ * cuando le acercás una decisión.
+ */
+export const APORTA: Record<Perfil, string> = {
+  FI: 'los números y las variables que la decisión toca, y en qué orden conviene resolverlas',
+  FD: 'una salida distinta a la que estás viendo, y el permiso para probar algo que todavía no existe',
+  BI: 'el detalle que falta, el paso que se saltea y lo que se rompe cuando eso se lleva a la práctica',
+  BD: 'cómo va a caer eso en las personas, y qué vínculo se resiente si sale mal',
+};
+
+/**
  * El cuadrante opuesto en diagonal.
  *
  * Lo dice el guion de la charla 3, en la nota de la placa de fortaleza y
