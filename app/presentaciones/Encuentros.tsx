@@ -1,7 +1,7 @@
 import Alta from './Alta';
 
 /**
- * Los encuentros en curso, al pie de Presentaciones.
+ * Los clientes que están recorriendo un ciclo, al pie de Presentaciones.
  *
  * Una fila por cliente, con lo que se toca el día del encuentro: abrir y cerrar
  * actividades, y el código de entrada.
@@ -34,15 +34,7 @@ export default function Encuentros({
   return (
     <section className="enc">
       <div className="enc-cabeza">
-        <div>
-          <h3>Durante el encuentro</h3>
-          <p>
-            Las actividades que el grupo responde desde el teléfono. Lo que
-            responden se proyecta dentro de la placa de cada actividad, sin
-            abrir nada aparte. Las charlas son las mismas para todos los
-            clientes: lo único que cambia es de dónde salen las respuestas.
-          </p>
-        </div>
+        <h3>Clientes</h3>
       </div>
 
       {enCurso.length === 0 ? (
