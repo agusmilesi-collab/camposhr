@@ -585,6 +585,11 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
    apoyadas contra él: el bloque de la izquierda lo ocupa una foto y ese alto
    las dejaba flotando en el medio. */
 .presenta-tope:has(.marcas-juntas){align-items:flex-end}
+/* Las dos columnas terminan a la misma altura: la izquierda lleva un título
+   más que la derecha, y sin esto el texto de la marca queda flotando arriba. */
+.presenta:has(.marcas-juntas){align-items:stretch}
+.presenta:has(.marcas-juntas)>div:last-child{display:flex;flex-direction:column}
+.presenta:has(.marcas-juntas)>div:last-child .marca-texto{margin-top:auto}
 .marcas-juntas{display:flex;align-items:center;gap:44px}
 .marca-campos{font-family:'Instrument Serif',Georgia,serif;font-size:70px;
   letter-spacing:-.01em;color:var(--ink);white-space:nowrap}
