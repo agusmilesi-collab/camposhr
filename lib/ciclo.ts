@@ -96,6 +96,18 @@ export type Actividad = {
    * que ella tenga que ir habilitando de a una mientras dicta.
    */
   grupo: string | null;
+  /**
+   * En qué placa del deck la expositora abre esta actividad. El mismo número
+   * que el deck le recuerda al pie, para que el panel y lo proyectado digan lo
+   * mismo mientras ella está dictando.
+   */
+  placa: number | null;
+  /**
+   * Cómo la nombra el panel de la expositora. El título es el que lee el
+   * asistente en su teléfono, y cuando varias se abren juntas ese título es el
+   * de la primera: no alcanza para reconocer el momento de la charla.
+   */
+  titulo_control: string | null;
   abierta: boolean;
   created_at: string;
 };
@@ -142,7 +154,8 @@ export function destinoDe(actividad: Actividad): string | null {
 }
 
 const CAMPOS_ACTIVIDAD =
-  'id,ciclo_id,clave,charla,orden,tipo,titulo,enunciado,opciones,grupo,created_at';
+  'id,ciclo_id,clave,charla,orden,tipo,titulo,enunciado,opciones,grupo,' +
+  'placa,titulo_control,created_at';
 const CAMPOS_ASISTENTE =
   'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en';
 const CAMPOS_APORTE = 'id,corrida_id,actividad_id,asistente_id,valor,created_at';

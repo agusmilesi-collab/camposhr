@@ -21,6 +21,8 @@ type ActividadControl = {
   titulo: string;
   /** Las del mismo grupo se abren juntas, con un solo toque. */
   grupo: string | null;
+  /** En qué placa del deck se abre. Es lo que la expositora está proyectando. */
+  placa: number | null;
   abierta: boolean;
 };
 
@@ -172,10 +174,15 @@ export default function Control({
                 }
               >
                 <span className="ct-item-titulo">{a.titulo}</span>
+                {/* La placa manda: mientras dicta, lo que la expositora tiene
+                    delante es el deck, y el número le dice si está parada donde
+                    corresponde. Cuando no está cargada queda el tipo. */}
                 <span className="ct-item-tipo">
-                  {a.grupo
-                    ? `${cuantasEnGrupo.get(a.grupo)} seguidas`
-                    : a.tipo}
+                  {a.placa
+                    ? `Placa ${a.placa}`
+                    : a.grupo
+                      ? `${cuantasEnGrupo.get(a.grupo)} seguidas`
+                      : a.tipo}
                 </span>
               </button>
             ))}
