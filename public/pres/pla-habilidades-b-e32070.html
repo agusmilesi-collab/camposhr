@@ -486,6 +486,34 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .ancla p,.duo p,.credenciales,.marca-texto,.pasos span,.lideres span,
 .escalones span,.sesgos span,.cuadro span{color:var(--ink-soft);opacity:1}
 
+/* Lo que el marco de la matriz dice mientras carga, y la dirección de abajo:
+   iban en crema para el fondo oscuro. */
+.matriz-aviso p,.matriz-marco .dir{color:var(--muted)}
+
+/* La escala de la placa de referencia. Los tres colores del deck oscuro son
+   pasteles: sobre papel se leen apenas, así que van en su versión de tinta. */
+.escala>div:nth-child(1) b,.escala>div:nth-child(1) .riel i{color:#b4574c}
+.escala>div:nth-child(2) b,.escala>div:nth-child(2) .riel i{color:#a97722}
+.escala>div:nth-child(3) b,.escala>div:nth-child(3) .riel i{color:#4e8449}
+.escala>div:nth-child(1) .riel i{background:#b4574c}
+.escala>div:nth-child(2) .riel i{background:#a97722}
+.escala>div:nth-child(3) .riel i{background:#4e8449}
+
+/* Las placas de cada modo. Inter ocupa más que la tipografía del deck oscuro,
+   y con el alto fijo el texto abría una tercera columna que quedaba fuera de
+   la placa. Entra con un cuerpo más chico y algo más de alto, que el pie
+   todavía permite. La línea de arriba se dibujaba en crema. */
+.modo-texto{font-size:29px;height:352px;border-top-color:var(--line)}
+
+/* La matriz de los cuatro modos. Los ejes punteados y el cerebro del medio
+   estaban dibujados en crema para el fondo oscuro, y sobre papel desaparecen.
+   El cerebro es un PNG: se pinta de tinta con un filtro, que conserva el
+   dibujo y le cambia el color. */
+.modos:before,.mapa:before{border-left-color:rgba(22,32,43,.55)}
+.modos:after,.mapa:after{border-top-color:rgba(22,32,43,.55)}
+.modos:before,.modos:after,.mapa:before,.mapa:after{opacity:.75}
+.modos-cerebro{filter:brightness(0) saturate(0);opacity:.14}
+
 /* Los círculos numerados se dan vuelta: tinta sobre papel. */
 .bolita,.pasos i{background:var(--ink);color:var(--paper)}
 .folio,.placa.clara .folio{background:var(--ink);color:var(--paper);font-weight:500}
