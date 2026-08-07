@@ -45,6 +45,10 @@ export default function Control({
     actividades.find((a) => a.abierta)?.id ?? null
   );
   const [total, setTotal] = useState(0);
+  /** Los que respondieron algo pero todavía no llegaron al final. */
+  const [empezaron, setEmpezaron] = useState(0);
+  /** Cuántas consignas se abrieron juntas, para saber si hay un final al que llegar. */
+  const [enFila, setEnFila] = useState(0);
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,12 +58,18 @@ export default function Control({
     let vivo = true;
     async function mirar() {
       try {
-        const res = await fetch(`/api/ciclo/${slug}/estado`, { cache: 'no-store' });
+        // El conteo se pide sólo desde acá: es el dato de la expositora y en el
+        // teléfono del asistente no se muestra en ninguna pantalla.
+        const res = await fetch(`/api/ciclo/${slug}/estado?total=1`, {
+          cache: 'no-store',
+        });
         if (!res.ok) return;
         const json = await res.json();
         if (!vivo) return;
         setAbiertaId(json.actividad?.id ?? null);
         setTotal(json.total ?? 0);
+        setEmpezaron(json.empezaron ?? 0);
+        setEnFila(json.enFila ?? 0);
       } catch {
         // Sin conexión: reintenta solo en el próximo tic.
       }
@@ -136,8 +146,26 @@ export default function Control({
           <>
             <div className="ct-estado-texto">
               <strong>{abierta.titulo}</strong>
+              {/* Con varias consignas seguidas el número que importa es cuántos
+                  llegaron al final: contar la primera hace creer que está hecho
+                  cuando la mayoría quedó por la mitad. */}
               <span>
-                {total} {total === 1 ? 'respuesta' : 'respuestas'} de {registrados}
+                {enFila > 1 ? (
+                  <>
+                    {total} de {registrados} terminaron
+                    {empezaron > total && (
+                      <b className="ct-a-medias">
+                        {' '}
+                        · {empezaron - total} van por la mitad
+                      </b>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {total} {total === 1 ? 'respuesta' : 'respuestas'} de{' '}
+                    {registrados}
+                  </>
+                )}
               </span>
             </div>
             <button

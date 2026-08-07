@@ -34,6 +34,7 @@ import {
 } from '@/lib/supabase';
 import type { Empresa } from '@/lib/supabase';
 import { armarGrupos, type Candidato, type Grupo } from '@/lib/cruce';
+import { recordar } from '@/lib/memoria';
 import { PERFILES, type Perfil } from '@/lib/perfiles';
 
 // -------------------------------------------------------------------- tipos
@@ -182,7 +183,12 @@ const CLAVE = /^[a-z0-9-]{2,60}$/;
 export async function resolverCiclo(
   slug: string
 ): Promise<{ empresa: Empresa; corrida: Corrida } | null> {
-  const empresa = await getEmpresaPorSlug(slug);
+  // La empresa se sirve de memoria: su nombre y su slug no cambian mientras se
+  // dicta. La corrida se pregunta siempre, porque ahí vive qué está abierto y
+  // ese dato viejo sería un teléfono mostrando la consigna equivocada.
+  const empresa = await recordar(`empresa:${slug}`, 60, () =>
+    getEmpresaPorSlug(slug)
+  );
   if (!empresa) return null;
   const corrida = await getCorridaActiva(empresa.id);
   if (!corrida) return null;
@@ -303,6 +309,19 @@ export async function listarActividades(cicloId: string): Promise<Actividad[]> {
     'actividades',
     `select=${CAMPOS_ACTIVIDAD}&ciclo_id=eq.${cicloId}&order=charla.asc,orden.asc`
   );
+}
+
+/**
+ * Las actividades del ciclo, servidas de memoria.
+ *
+ * Son las mismas veinte filas desde que el ciclo se dio de alta y no cambian
+ * mientras se dicta: preguntarlas de nuevo en cada sondeo de cada teléfono es
+ * la repetición que tumbó la base. Lo que sí cambia (cuál está abierta) sale
+ * de la corrida, que se lee siempre.
+ */
+export async function actividadesDelCiclo(cicloId: string): Promise<Actividad[]> {
+  if (!UUID.test(cicloId)) return [];
+  return recordar(`actividades:${cicloId}`, 60, () => listarActividades(cicloId));
 }
 
 /**
@@ -446,6 +465,37 @@ export async function getAporteDe(
       `&asistente_id=eq.${asistenteId}&limit=1`
   );
   return filas[0] ?? null;
+}
+
+/**
+ * Cuánta gente arrancó y cuánta terminó, para la pantalla de la expositora.
+ *
+ * Con varias consignas seguidas, contar la primera engaña: el 7 de agosto de
+ * 2026 el panel decía 22 de 32 mientras las otras cuatro preguntas estaban en
+ * 2, y la charla siguió creyendo que la encuesta estaba hecha.
+ */
+export async function contarAvance(
+  corridaId: string,
+  actividadIds: string[]
+): Promise<{ empezaron: number; terminaron: number }> {
+  const ids = actividadIds.filter((id) => UUID.test(id));
+  if (!UUID.test(corridaId) || ids.length === 0) {
+    return { empezaron: 0, terminaron: 0 };
+  }
+  const filas = await select<{ asistente_id: string; actividad_id: string }>(
+    'aportes',
+    `select=asistente_id,actividad_id&corrida_id=eq.${corridaId}` +
+      `&actividad_id=in.(${ids.join(',')})`
+  );
+  const cuantas = new Map<string, Set<string>>();
+  for (const f of filas) {
+    const suyas = cuantas.get(f.asistente_id) ?? new Set<string>();
+    suyas.add(f.actividad_id);
+    cuantas.set(f.asistente_id, suyas);
+  }
+  let terminaron = 0;
+  for (const suyas of cuantas.values()) if (suyas.size >= ids.length) terminaron++;
+  return { empezaron: cuantas.size, terminaron };
 }
 
 /**

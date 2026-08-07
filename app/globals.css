@@ -3307,6 +3307,12 @@ body {
   font-size: 0.8rem;
   color: var(--muted);
 }
+/* Los que quedaron por la mitad: es lo que decide si se puede avanzar o si
+   todavía hay gente respondiendo, así que se lee antes que el resto. */
+.ct-a-medias {
+  color: var(--amber, #a97722);
+  font-weight: 600;
+}
 .ct-cerrar {
   flex: none;
   padding: 12px 18px;
