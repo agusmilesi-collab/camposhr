@@ -66,6 +66,42 @@ export const APORTA: Record<Perfil, string> = {
   BD: 'cómo va a caer eso en las personas, y qué vínculo se resiente si sale mal',
 };
 
+
+/**
+ * Qué le puede aportar cada cuadrante a cada otro, en el trabajo.
+ *
+ * Se lee `ENTRE[mío][suyo]`. La frase dice hacia dónde va la mirada propia,
+ * qué ve el otro desde la suya y en qué momento conviene consultarle. Es la
+ * consigna de la charla 3 puesta en concreto: la diferencia sirve cuando cada
+ * uno sabe para qué le sirve la del otro.
+ */
+export const ENTRE: Record<Perfil, Record<Perfil, string>> = {
+  FI: {
+    FD: 'Vos evaluás las variables y elegís la opción que cierra. Él trae alternativas que no estaban sobre la mesa. Consultale antes de cerrar la decisión, cuando todavía se puede cambiar el planteo.',
+    BI: 'Vos definís qué conviene hacer. Él ve qué hace falta para que eso funcione: los pasos, los tiempos y quién hace cada cosa. Consultale cómo se implementa lo que decidiste.',
+    BD: 'Vos mirás el problema. Él mira a la gente que va a recibir la decisión. Preguntale cómo va a caer y con quién conviene hablar antes de comunicarla.',
+    FI: '',
+  },
+  FD: {
+    FI: 'Vos ves posibilidades. Él ve cuál se sostiene con los números y el tiempo que hay. Llevale tu idea para que te diga qué haría falta para que sea viable.',
+    BI: 'Vos abrís caminos nuevos. Él sabe cómo se sostiene eso en el día a día. Preguntale qué pasos hay que armar para que tu idea no se caiga en la ejecución.',
+    BD: 'Vos pensás en qué cambiar. Él piensa en cómo lo va a vivir el equipo. Consultale a quién le cambia el trabajo tu propuesta y de qué forma se lo dirías.',
+    FD: '',
+  },
+  BI: {
+    FI: 'Vos cuidás que el proceso se cumpla. Él mira si conviene hacerlo. Preguntale qué prioriza y qué se puede resignar cuando no entra todo.',
+    FD: 'Vos sostenés lo que ya funciona. Él propone hacerlo de otra manera. Escuchá su idea antes de medirla contra el procedimiento: puede ahorrarte pasos.',
+    BD: 'Vos seguís el plan. Él nota cuándo alguien del equipo quedó afuera. Consultale qué está pasando con la gente cuando algo se atrasa sin motivo visible.',
+    BI: '',
+  },
+  BD: {
+    FI: 'Vos leés al equipo. Él lee los números. Consultale qué dice el dato cuando tenés que sostener una decisión que sabés que no va a caer bien.',
+    FD: 'Vos cuidás el clima. Él propone cambios. Preguntale qué haría distinto: muchas veces lo que desgasta al equipo se arregla cambiando la forma de trabajar.',
+    BI: 'Vos ves cómo está cada uno. Él ve cómo está el trabajo. Consultale cómo repartir las tareas para que la carga deje de caer siempre sobre los mismos.',
+    BD: '',
+  },
+};
+
 /**
  * El cuadrante opuesto en diagonal.
  *

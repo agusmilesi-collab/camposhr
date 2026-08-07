@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Cuestionario from '@/app/c/[slug]/Cuestionario';
 import { DIAS, partirOpcion } from '@/lib/opciones';
-import { APORTA, type Perfil } from '@/lib/perfiles';
+import { APORTA, ENTRE, type Perfil } from '@/lib/perfiles';
 
 /**
  * El teléfono del asistente.
@@ -936,7 +936,7 @@ function Cruzado({
               </b>
               {p.perfil && <span className="ci-cruce-perfil">{p.perfil.nombre}</span>}
               <p className="ci-cruce-porque">
-                {porQue(p.motivo, p.nombre, p.perfil)}
+                {porQue(p.motivo, p.nombre, p.perfil, cruce.miPerfil)}
               </p>
             </div>
           </article>
@@ -960,19 +960,29 @@ function Cruzado({
 function porQue(
   motivo: Cruce['con'][number]['motivo'],
   nombre: string,
-  perfil: { corto: string } | null
+  perfil: { corto: string } | null,
+  mio: { corto: string } | null
 ): string {
-  const aporta = perfil ? APORTA[perfil.corto as Perfil] : null;
-  switch (motivo) {
-    case 'diagonal':
-      return `Es tu cuadrante opuesto: lo que a vos te demanda esfuerzo, ${nombre} lo hace sin pensarlo. Te puede aportar ${aporta}.`;
-    case 'distinto':
-      return `Trabaja en otro cuadrante que el tuyo. Te puede aportar ${aporta}.`;
-    case 'mismo':
-      return `Quedaron en el mismo cuadrante: no había nadie de otro sin pareja. Miren en qué se diferencian igual.`;
-    case 'sin-perfil':
-      return `Todavía no está su resultado del cuestionario.`;
+  if (motivo === 'mismo') {
+    return 'Quedaron en el mismo cuadrante: no había nadie de otro sin pareja. Miren en qué se diferencian igual.';
   }
+  if (motivo === 'sin-perfil' || !perfil) {
+    return 'Todavía no está su resultado del cuestionario.';
+  }
+
+  // Con los dos cuadrantes se dice en concreto en qué se complementan. Sin el
+  // propio, alcanza con lo que aporta el suyo.
+  const entre = mio ? ENTRE[mio.corto as Perfil][perfil.corto as Perfil] : '';
+  if (entre) {
+    return motivo === 'diagonal'
+      ? `Es tu cuadrante opuesto: lo que a vos te demanda esfuerzo, ${nombre} lo hace sin pensarlo. ${entre}`
+      : entre;
+  }
+
+  const aporta = APORTA[perfil.corto as Perfil];
+  return motivo === 'diagonal'
+    ? `Es tu cuadrante opuesto: lo que a vos te demanda esfuerzo, ${nombre} lo hace sin pensarlo. Te puede aportar ${aporta}.`
+    : `Trabaja en otro cuadrante que el tuyo. Te puede aportar ${aporta}.`;
 }
 
 /** "Lunes", "Lunes y miércoles", "Lunes, miércoles y viernes". */
