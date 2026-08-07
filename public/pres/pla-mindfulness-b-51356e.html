@@ -554,6 +554,9 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .placa[data-aviso]:before{content:attr(data-aviso);position:absolute;
   left:124px;bottom:44px;height:52px;display:flex;align-items:center;
   font-size:22px;letter-spacing:.02em;color:var(--muted)}
+/* Las portadas no numeran, y sin el círculo al lado el aviso queda colgado en
+   el medio: ahí arranca donde arranca todo lo demás de la placa. */
+.placa[data-aviso]:not(:has(.folio)):before{left:56px}
 
 /* Marcos embebidos del ciclo. Se cargan al llegar a la placa y se refrescan
    solos; sin conexión queda el aviso y la actividad se hace en papel. */
