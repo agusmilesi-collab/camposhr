@@ -70,34 +70,34 @@ export const APORTA: Record<Perfil, string> = {
 /**
  * Qué le puede aportar cada cuadrante a cada otro, en el trabajo.
  *
- * Se lee `ENTRE[mío][suyo]`. La frase dice hacia dónde va la mirada propia,
- * qué ve el otro desde la suya y en qué momento conviene consultarle. Es la
- * consigna de la charla 3 puesta en concreto: la diferencia sirve cuando cada
- * uno sabe para qué le sirve la del otro.
+ * Se lee `ENTRE[mío][suyo]`. Las tres partes son siempre las mismas: hacia
+ * dónde va la mirada propia, en qué piensa el otro y qué se saca de eso, y en
+ * qué momento conviene consultarle. Decir de dónde le viene esa mirada es lo
+ * que convierte la diferencia en algo que se puede usar.
  */
 export const ENTRE: Record<Perfil, Record<Perfil, string>> = {
   FI: {
-    FD: 'Vos evaluás las variables y elegís la mejor entre las opciones que tenés. Él propone opciones que no habías considerado. Consultale antes de decidir, cuando todavía se puede cambiar el planteo.',
-    BI: 'Vos definís qué conviene hacer. Él ve qué hace falta para que eso funcione: los pasos, los tiempos y quién hace cada cosa. Consultale cómo se implementa lo que decidiste.',
-    BD: 'Vos mirás el problema. Él mira a la gente que va a recibir la decisión. Preguntale cómo va a caer y con quién conviene hablar antes de comunicarla.',
+    FD: 'Vos comparás las opciones que tenés y elegís la que mejor cierra. Él piensa en lo que todavía no existe, así que va a traerte opciones que no estaban en tu lista. Consultale antes de decidir, cuando todavía se puede cambiar el planteo.',
+    BI: 'Vos definís qué conviene hacer. Él trabaja mirando el paso a paso, así que ve lo que falta para que eso se pueda ejecutar: tiempos, orden y quién hace cada cosa. Consultale cómo se implementa lo que decidiste.',
+    BD: 'Vos mirás el problema y sus variables. Él está atento a cómo está cada persona, así que ve cómo va a caer la decisión y quién se va a resistir. Preguntale con quién conviene hablar antes de comunicarla.',
     FI: '',
   },
   FD: {
-    FI: 'Vos pensás qué se podría hacer. Él calcula cuál de esas ideas entra en el presupuesto y en el tiempo que hay. Llevásela para que te diga qué haría falta para poder hacerla.',
-    BI: 'Vos proponés formas nuevas de hacer las cosas. Él sabe qué hay que cambiar en el trabajo de todos los días para que eso ocurra. Preguntale qué pasos hay que armar para que tu idea no quede en la nada.',
-    BD: 'Vos pensás en qué cambiar. Él piensa en cómo lo va a vivir el equipo. Consultale a quién le cambia el trabajo tu propuesta y de qué forma se lo dirías.',
+    FI: 'Vos pensás qué se podría hacer. Él razona con números y prioridades, así que te va a decir cuál de tus ideas entra en el presupuesto y en el tiempo que hay. Llevásela para que te diga qué haría falta para poder hacerla.',
+    BI: 'Vos proponés formas nuevas de trabajar. Él conoce el detalle de cómo se hace hoy, así que ve qué habría que cambiar para que tu idea funcione. Preguntale qué pasos hay que armar.',
+    BD: 'Vos pensás en qué cambiar. Él lee el ánimo del equipo, así que sabe a quién le cambia el trabajo tu propuesta y cuánto le va a costar. Consultale de qué forma conviene contarlo.',
     FD: '',
   },
   BI: {
-    FI: 'Vos cuidás que el proceso se cumpla. Él mira si conviene hacerlo. Preguntale qué prioriza y qué se puede resignar cuando no entra todo.',
-    FD: 'Vos sostenés lo que ya funciona. Él propone hacerlo de otra manera. Escuchá su idea antes de medirla contra el procedimiento: puede ahorrarte pasos.',
-    BD: 'Vos seguís el plan. Él se da cuenta cuándo alguien del equipo dejó de participar o está haciendo lo mínimo. Consultale qué está pasando con la gente cuando algo se atrasa sin motivo visible.',
+    FI: 'Vos cuidás que el procedimiento se cumpla. Él evalúa costo y beneficio antes que la forma, así que te va a decir qué prioriza y qué se puede resignar cuando no entra todo. Preguntale por dónde cortar.',
+    FD: 'Vos sostenés lo que ya funciona. Él imagina otras maneras de hacer lo mismo, así que puede mostrarte pasos que hoy no hacen falta. Escuchá su idea antes de medirla contra el procedimiento.',
+    BD: 'Vos seguís el plan. Él está atento a las personas, así que se da cuenta cuándo alguien dejó de participar o está haciendo lo mínimo. Consultale qué pasa con la gente cuando algo se atrasa sin motivo visible.',
     BI: '',
   },
   BD: {
-    FI: 'Vos leés al equipo. Él lee los números. Consultale qué dice el dato cuando tenés que sostener una decisión que sabés que no va a caer bien.',
-    FD: 'Vos cuidás el clima. Él propone cambios. Preguntale qué haría distinto: muchas veces lo que desgasta al equipo se arregla cambiando la forma de trabajar.',
-    BI: 'Vos ves cómo está cada uno. Él ve cómo está el trabajo. Consultale cómo repartir las tareas para que la carga deje de caer siempre sobre los mismos.',
+    FI: 'Vos leés cómo está el equipo. Él ordena todo con números y criterios, así que te da el argumento para sostener una decisión que sabés que no va a caer bien. Consultale qué dice el dato.',
+    FD: 'Vos cuidás el clima. Él piensa en cambiar la forma de trabajar, así que muchas veces lo que desgasta a tu equipo se arregla con una idea suya. Preguntale qué haría distinto.',
+    BI: 'Vos ves cómo está cada uno. Él ve cómo está distribuido el trabajo, así que puede mostrarte por qué la carga cae siempre sobre los mismos. Consultale cómo repartir las tareas.',
     BD: '',
   },
 };
