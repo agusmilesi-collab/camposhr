@@ -4,15 +4,15 @@ import {
   aportesDeEn,
   contarAvance,
   getAporteDe,
-  listarAsistentes,
   marcarIngreso,
   repartirCruce,
   resolverCiclo,
+  salaDelCruce,
   type Actividad,
   type Aporte,
   type Corrida,
 } from '@/lib/ciclo';
-import { firmarSelfies, perfilesDeCorrida } from '@/lib/supabase';
+import { firmarSelfies } from '@/lib/supabase';
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { motivoEntre, type Motivo } from '@/lib/cruce';
 
@@ -128,7 +128,7 @@ export async function GET(
     grupo,
     cruce:
       actividad.tipo === 'cruce' && asistenteId
-        ? await cruceDe(ciclo.corrida, actividad, asistenteId)
+        ? await cruceDe(ciclo.corrida, actividad, asistenteId, mio)
         : null,
   });
 }
@@ -149,9 +149,12 @@ type Cruce = {
 async function cruceDe(
   corrida: Corrida,
   actividad: Actividad,
-  asistenteId: string
+  asistenteId: string,
+  yaLeido: Aporte | null
 ): Promise<Cruce | null> {
-  let aporte = await getAporteDe(actividad.id, asistenteId);
+  // El reparto propio ya vino con el resto del sondeo: volver a pedirlo era
+  // una consulta más por teléfono cada vez.
+  let aporte = yaLeido;
 
   // Se registró después de que la expositora abriera la consigna: se reparte
   // ahora, sin tocar los grupos que ya están conversando.
@@ -161,10 +164,8 @@ async function cruceDe(
   }
   if (aporte?.valor?.tipo !== 'cruce') return null;
 
-  const [asistentes, perfiles] = await Promise.all([
-    listarAsistentes(corrida.id),
-    perfilesDeCorrida(corrida.id),
-  ]);
+  // La sala entera, de memoria: esto lo pide cada teléfono en cada sondeo.
+  const { asistentes, perfiles } = await salaDelCruce(corrida.id);
   const porId = new Map(asistentes.map((a) => [a.id, a]));
   const perfilDe = (id: string): Perfil | null => {
     const p = perfiles.get(id);
