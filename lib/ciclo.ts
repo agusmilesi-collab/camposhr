@@ -468,6 +468,30 @@ export async function getAporteDe(
 }
 
 /**
+ * La sala y sus cuadrantes, para la consigna de consultar una decisión.
+ *
+ * Esa pantalla necesita la lista entera: el nombre, la foto y el cuadrante de
+ * la persona que a cada uno le tocó. Preguntándolo en cada sondeo de cada
+ * teléfono son tres consultas por teléfono cada pocos segundos, que es la
+ * forma exacta en que se saturó la base el 7 de agosto de 2026.
+ *
+ * Quince segundos de memoria: lo único que puede cambiar en ese rato es que
+ * alguien termine su cuestionario, y su cuadrante aparece en la pantalla de
+ * los demás un momento después.
+ */
+export async function salaDelCruce(
+  corridaId: string
+): Promise<{ asistentes: Asistente[]; perfiles: Map<string, string> }> {
+  return recordar(`sala:${corridaId}`, 15, async () => {
+    const [asistentes, perfiles] = await Promise.all([
+      listarAsistentes(corridaId),
+      perfilesDeCorrida(corridaId),
+    ]);
+    return { asistentes, perfiles };
+  });
+}
+
+/**
  * Cuánta gente arrancó y cuánta terminó, para la pantalla de la expositora.
  *
  * Con varias consignas seguidas, contar la primera engaña: el 7 de agosto de
