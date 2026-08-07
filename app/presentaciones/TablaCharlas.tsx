@@ -47,7 +47,13 @@ export default function TablaCharlas({
     } catch {
       // Navegador sin almacenamiento: se elige a mano cada vez.
     }
-    setElegido(clientes.some((c) => c.slug === guardado) ? guardado : '');
+    if (clientes.some((c) => c.slug === guardado)) {
+      setElegido(guardado);
+      return;
+    }
+    // Con un solo cliente corriendo el ciclo no hay nada que elegir: el paso
+    // sobra y se hace en la sala, con la charla por empezar.
+    setElegido(clientes.length === 1 ? clientes[0].slug : '');
   }, [clientes]);
 
   function elegir(slug: string) {
