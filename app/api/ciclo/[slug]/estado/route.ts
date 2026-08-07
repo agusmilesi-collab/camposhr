@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import {
+  aportesDeEn,
   getActividadAbierta,
   getAporteDe,
   listarAportes,
@@ -50,8 +51,14 @@ export async function GET(
   // Este sondeo es la señal de que alguien está adentro con ese nombre: el
   // teléfono lo repite mientras la pantalla esté abierta. Con eso alcanza para
   // sacar su cara de la grilla de los demás, sin un endpoint aparte.
-  const asistenteId = new URL(req.url).searchParams.get('asistente') ?? '';
-  if (asistenteId) await marcarIngreso(asistenteId);
+  const parametros = new URL(req.url).searchParams;
+  const asistenteId = parametros.get('asistente') ?? '';
+  // Sólo en el primer sondeo de la sesión: escrito una vez queda escrito, y
+  // repetirlo cada pocos segundos por cada teléfono es carga pura contra la
+  // base en el momento en que toda la sala está mirando la pantalla.
+  if (asistenteId && parametros.get('entrando') === '1') {
+    await marcarIngreso(asistenteId);
+  }
 
   const actividad = await getActividadAbierta(ciclo.corrida);
   if (!actividad) {
@@ -72,16 +79,22 @@ export async function GET(
   let grupo = null;
   if (actividad.grupo) {
     const enFila = await listarGrupo(ciclo.corrida.ciclo_id, actividad.grupo);
-    grupo = await Promise.all(
-      enFila.map(async (a: Actividad) => {
-        const propio = asistenteId ? await getAporteDe(a.id, asistenteId) : null;
-        return {
-          ...publica(a),
-          respondida: Boolean(propio),
-          mio: propio?.valor ?? null,
-        };
-      })
-    );
+    // Las cinco de una sola consulta, no una por actividad: este bloque corre
+    // en cada sondeo de cada teléfono de la sala.
+    const propios = asistenteId
+      ? await aportesDeEn(
+          enFila.map((a: Actividad) => a.id),
+          asistenteId
+        )
+      : new Map();
+    grupo = enFila.map((a: Actividad) => {
+      const propio = propios.get(a.id) ?? null;
+      return {
+        ...publica(a),
+        respondida: Boolean(propio),
+        mio: propio?.valor ?? null,
+      };
+    });
   }
 
   return NextResponse.json({

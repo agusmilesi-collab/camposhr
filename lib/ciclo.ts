@@ -448,6 +448,28 @@ export async function getAporteDe(
   return filas[0] ?? null;
 }
 
+/**
+ * Lo que esta persona respondió en varias actividades, de una sola consulta.
+ *
+ * El sondeo lo hace cada teléfono cada pocos segundos. Preguntando de a una,
+ * las cinco de la encuesta son cinco consultas por teléfono y por sondeo: con
+ * treinta teléfonos en la sala eso es lo que tumbó la base el 7 de agosto de
+ * 2026 y dejó a la gente trabada en la primera pregunta.
+ */
+export async function aportesDeEn(
+  actividadIds: string[],
+  asistenteId: string
+): Promise<Map<string, Aporte>> {
+  const ids = actividadIds.filter((id) => UUID.test(id));
+  if (ids.length === 0 || !UUID.test(asistenteId)) return new Map();
+  const filas = await select<Aporte>(
+    'aportes',
+    `select=${CAMPOS_APORTE}&actividad_id=in.(${ids.join(',')})` +
+      `&asistente_id=eq.${asistenteId}`
+  );
+  return new Map(filas.map((f) => [f.actividad_id, f]));
+}
+
 /** Guarda la respuesta. Si la persona ya había respondido, la corrige. */
 export async function guardarAporte(
   corridaId: string,
