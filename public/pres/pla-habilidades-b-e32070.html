@@ -550,6 +550,11 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   font-family:'Instrument Serif',Georgia,serif;font-size:30px;color:var(--muted);
   letter-spacing:-.01em}
 
+/* El recordatorio de abrir la consigna, al lado del número de placa. */
+.placa[data-aviso]:before{content:attr(data-aviso);position:absolute;
+  left:124px;bottom:44px;height:52px;display:flex;align-items:center;
+  font-size:22px;letter-spacing:.02em;color:var(--muted)}
+
 /* Marcos embebidos del ciclo. Se cargan al llegar a la placa y se refrescan
    solos; sin conexión queda el aviso y la actividad se hace en papel. */
 .act-marco{position:relative;width:100%}
@@ -584,6 +589,21 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .matriz-marco.sin-cliente .cargando{display:none}
 .matriz-marco.sin-cliente .offline{display:block}
 
+/* El código de la rueda, en la placa de cierre. La marca de un lado y el
+   código del otro: uno debajo del otro, el conjunto se apretaba. */
+.placa.cierre .cierre-marca{flex-direction:row;gap:130px;align-items:center}
+.cierre-lado{display:flex;flex-direction:column;align-items:center;gap:30px}
+.cierre-lado img{width:230px;height:auto}
+.rueda-cierre{display:flex}
+.rueda-caja{display:flex;flex-direction:column;align-items:center;gap:14px}
+.rueda-caja .caja{background:var(--card);border:1px solid var(--line);
+  border-radius:24px;padding:28px;line-height:0}
+/* Se escanea desde el fondo de la sala, con la gente ya de pie. */
+.rueda-caja .caja img{width:340px;height:340px;display:block}
+.rueda-caja b{font-family:'Instrument Serif',Georgia,serif;font-weight:400;
+  font-size:40px;color:var(--ink)}
+.rueda-caja span{font-size:28px;color:var(--muted)}
+
 /* La placa de cierre. En el deck oscuro la marca iba abajo a la derecha porque
    la foto de fondo dejaba ese hueco libre. Sin foto, ese rincón queda
    descolgado, así que la marca pasa al centro. */
@@ -615,7 +635,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 3 -->
-  <section class="placa" data-notas="Queda proyectada mientras responden, unos 10 minutos. Cada uno necesita el celular con datos. El código lleva a camposhr.com/ciclo/__CLIENTE__, que es el cuestionario propio de Campos HR, y las respuestas quedan cargadas para armar la matriz del equipo. Cuando terminan: ¿se reconocen? Que compartan el resultado con los de al lado, ¿reconocen al otro?">
+  <section class="placa" data-aviso="Activar respuestas"  data-notas="Queda proyectada mientras responden, unos 10 minutos. Cada uno necesita el celular con datos. El código lleva a camposhr.com/ciclo/__CLIENTE__, que es el cuestionario propio de Campos HR, y las respuestas quedan cargadas para armar la matriz del equipo. Cuando terminan: ¿se reconocen? Que compartan el resultado con los de al lado, ¿reconocen al otro?">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase" style="font-size:52px">Respondé el cuestionario desde tu teléfono.</p>
@@ -861,7 +881,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 17 -->
-  <section class="placa" data-notas="La tarea, y queda proyectada durante el bloque de 1 a 1. EL REPARTO LO HACE EL SISTEMA: abrí «¿A quién le consultás?» desde el control y cada teléfono muestra a quién buscar, con su foto y su cuadrante. El cruce va por la diagonal, que es el contraste más grande, y es recíproco: los dos se consultan. Al que llega tarde lo suma a un grupo sin desarmar los que ya están conversando. Una sola decisión, y la tarea se queda donde está. NECESITA INTERNET: si la sala no tiene conexión, que cada uno se junte con alguien de un rincón distinto al suyo.">
+  <section class="placa" data-aviso="Activar respuestas"  data-notas="La tarea, y queda proyectada durante el bloque de 1 a 1. EL REPARTO LO HACE EL SISTEMA: abrí «¿A quién le consultás?» desde el control y cada teléfono muestra a quién buscar, con su foto y su cuadrante. El cruce va por la diagonal, que es el contraste más grande, y es recíproco: los dos se consultan. Al que llega tarde lo suma a un grupo sin desarmar los que ya están conversando. Una sola decisión, y la tarea se queda donde está. NECESITA INTERNET: si la sala no tiene conexión, que cada uno se junte con alguien de un rincón distinto al suyo.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase" style="margin-bottom:40px">Consultale <b>una decisión que tenés que tomar</b><br>a la persona que te muestra el teléfono.</p>

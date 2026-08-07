@@ -550,6 +550,11 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   font-family:'Instrument Serif',Georgia,serif;font-size:30px;color:var(--muted);
   letter-spacing:-.01em}
 
+/* El recordatorio de abrir la consigna, al lado del número de placa. */
+.placa[data-aviso]:before{content:attr(data-aviso);position:absolute;
+  left:124px;bottom:44px;height:52px;display:flex;align-items:center;
+  font-size:22px;letter-spacing:.02em;color:var(--muted)}
+
 /* Marcos embebidos del ciclo. Se cargan al llegar a la placa y se refrescan
    solos; sin conexión queda el aviso y la actividad se hace en papel. */
 .act-marco{position:relative;width:100%}
@@ -583,6 +588,21 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .cierre-qr .baja .caja .qr-vivo{width:340px;height:340px}
 .matriz-marco.sin-cliente .cargando{display:none}
 .matriz-marco.sin-cliente .offline{display:block}
+
+/* El código de la rueda, en la placa de cierre. La marca de un lado y el
+   código del otro: uno debajo del otro, el conjunto se apretaba. */
+.placa.cierre .cierre-marca{flex-direction:row;gap:130px;align-items:center}
+.cierre-lado{display:flex;flex-direction:column;align-items:center;gap:30px}
+.cierre-lado img{width:230px;height:auto}
+.rueda-cierre{display:flex}
+.rueda-caja{display:flex;flex-direction:column;align-items:center;gap:14px}
+.rueda-caja .caja{background:var(--card);border:1px solid var(--line);
+  border-radius:24px;padding:28px;line-height:0}
+/* Se escanea desde el fondo de la sala, con la gente ya de pie. */
+.rueda-caja .caja img{width:340px;height:340px;display:block}
+.rueda-caja b{font-family:'Instrument Serif',Georgia,serif;font-weight:400;
+  font-size:40px;color:var(--ink)}
+.rueda-caja span{font-size:28px;color:var(--muted)}
 
 /* La placa de cierre. En el deck oscuro la marca iba abajo a la derecha porque
    la foto de fondo dejaba ese hueco libre. Sin foto, ese rincón queda
@@ -755,7 +775,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
     <!-- 15 -->
-  <section class="placa" data-notas="BLOQUE 1 A 1, 25 MINUTOS. Pedir que cada uno escriba en una sola línea el momento exacto de mañana: cuándo, dónde y antes de qué. Cuanto más concreto, más probable que lo hagan: un plan con hora y lugar se cumple mucho más que una buena intención. Pedir que dos o tres lo digan en voz alta y validar. Después abrir con preguntas: ¿en qué momento del día se les dispersa más la cabeza? ¿Cuántas veces los interrumpen en una mañana? ¿Qué es lo primero que hacen cuando llegan y con qué cabeza? ¿Alguna vez contestaron en caliente y después se arrepintieron? Dinámica: que dibujen la línea de su día y marquen con una cruz los dos o tres momentos donde la cabeza se va a mil; que elijan la peor cruz y decidan qué ancla entra ahí. Casos de reserva si nadie trae nada: la reunión en la que mentalmente estás en otro problema; el mensaje que te calienta a las 8 y te dura todo el día; el que te frena en el pasillo y lo escuchás a medias.">
+  <section class="placa" data-aviso="Activar respuestas" data-notas="BLOQUE 1 A 1, 25 MINUTOS. Pedir que cada uno escriba en una sola línea el momento exacto de mañana: cuándo, dónde y antes de qué. Cuanto más concreto, más probable que lo hagan: un plan con hora y lugar se cumple mucho más que una buena intención. Pedir que dos o tres lo digan en voz alta y validar. Después abrir con preguntas: ¿en qué momento del día se les dispersa más la cabeza? ¿Cuántas veces los interrumpen en una mañana? ¿Qué es lo primero que hacen cuando llegan y con qué cabeza? ¿Alguna vez contestaron en caliente y después se arrepintieron? Dinámica: que dibujen la línea de su día y marquen con una cruz los dos o tres momentos donde la cabeza se va a mil; que elijan la peor cruz y decidan qué ancla entra ahí. Casos de reserva si nadie trae nada: la reunión en la que mentalmente estás en otro problema; el mensaje que te calienta a las 8 y te dura todo el día; el que te frena en el pasillo y lo escuchás a medias.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase" style="margin-bottom:44px">Elegí desde el teléfono el momento de la semana que viene:<br><b>qué día, a qué hora y antes de qué</b>.</p>
