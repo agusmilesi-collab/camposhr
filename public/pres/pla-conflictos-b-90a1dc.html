@@ -580,11 +580,23 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 /* La caja de entrada es más alta que ancha: adentro van el nombre de la
    empresa, el código y la dirección. */
 .qr-vivo.qr-caja{width:560px;height:720px}
-/* Las dos marcas juntas, en la placa donde se presentan. */
-.marcas-juntas{display:flex;align-items:center;gap:34px}
-.marca-campos{font-family:'Instrument Serif',Georgia,serif;font-size:46px;
+/* Las dos marcas juntas, en la placa donde se presentan. Se leen desde el
+   fondo de la sala, así que van del tamaño del texto que tienen debajo, y
+   apoyadas contra él: el bloque de la izquierda lo ocupa una foto y ese alto
+   las dejaba flotando en el medio. */
+/* Las marcas se apoyan contra el texto que presentan, y no en el medio del
+   alto que le corresponde a la foto de la otra columna. */
+.presenta-tope:has(.marcas-juntas){align-items:flex-end;height:auto;
+  margin-top:auto;margin-bottom:24px}
+/* Las dos columnas terminan a la misma altura: la izquierda lleva un título
+   más que la derecha, y sin esto el texto de la marca queda flotando arriba. */
+.presenta:has(.marcas-juntas){align-items:stretch}
+.presenta:has(.marcas-juntas)>div:last-child{display:flex;flex-direction:column}
+.presenta:has(.marcas-juntas)>div:last-child .marca-texto{margin-top:0}
+.marcas-juntas{display:flex;align-items:center;gap:44px}
+.marca-campos{font-family:'Instrument Serif',Georgia,serif;font-size:70px;
   letter-spacing:-.01em;color:var(--ink);white-space:nowrap}
-.marca-sentir-chico{width:220px;height:auto;display:block}
+.marca-sentir-chico{width:200px;height:auto;display:block}
 .cierre-qr .baja .caja .qr-vivo{width:340px;height:340px}
 .matriz-marco.sin-cliente .cargando{display:none}
 .matriz-marco.sin-cliente .offline{display:block}
