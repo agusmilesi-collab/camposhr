@@ -936,7 +936,7 @@ function Cruzado({
               </b>
               {p.perfil && <span className="ci-cruce-perfil">{p.perfil.nombre}</span>}
               <p className="ci-cruce-porque">
-                {porQue(p.motivo, p.nombre, p.perfil, cruce.miPerfil)}
+                {porQue(p.motivo, p.perfil, cruce.miPerfil)}
               </p>
             </div>
           </article>
@@ -959,7 +959,6 @@ function Cruzado({
  */
 function porQue(
   motivo: Cruce['con'][number]['motivo'],
-  nombre: string,
   perfil: { corto: string } | null,
   mio: { corto: string } | null
 ): string {
@@ -972,17 +971,13 @@ function porQue(
 
   // Con los dos cuadrantes se dice en concreto en qué se complementan. Sin el
   // propio, alcanza con lo que aporta el suyo.
+  //
+  // Que el opuesto hace sin esfuerzo lo que a uno le cuesta ya lo dijo la
+  // charla entera: repetirlo acá gasta la pantalla sin agregar nada.
   const entre = mio ? ENTRE[mio.corto as Perfil][perfil.corto as Perfil] : '';
-  if (entre) {
-    return motivo === 'diagonal'
-      ? `Es tu cuadrante opuesto: lo que a vos te demanda esfuerzo, ${nombre} lo hace sin pensarlo. ${entre}`
-      : entre;
-  }
+  if (entre) return entre;
 
-  const aporta = APORTA[perfil.corto as Perfil];
-  return motivo === 'diagonal'
-    ? `Es tu cuadrante opuesto: lo que a vos te demanda esfuerzo, ${nombre} lo hace sin pensarlo. Te puede aportar ${aporta}.`
-    : `Trabaja en otro cuadrante que el tuyo. Te puede aportar ${aporta}.`;
+  return `Te puede aportar ${APORTA[perfil.corto as Perfil]}.`;
 }
 
 /** "Lunes", "Lunes y miércoles", "Lunes, miércoles y viernes". */
