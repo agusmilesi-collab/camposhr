@@ -1141,7 +1141,11 @@ addEventListener('keydown', e => {
   else if (e.key === 't' || e.key === 'T') verTira(!panel.classList.contains('visible'));
   else if (e.key === 'Escape') verTira(false);
 });
-addEventListener('click', e => { if (!panel.contains(e.target)) mostrar(actual + 1); });
+addEventListener('click', e => {
+  if (panel.contains(e.target)) return;
+  if (e.target.closest('a, button, input, select, textarea, .controles')) return;
+  mostrar(e.clientX < innerWidth / 2 ? actual - 1 : actual + 1);
+});
 
 function abrirNotas() {
   const v = open('', 'notas-pla', 'width=900,height=760');
