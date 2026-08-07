@@ -77,21 +77,21 @@ export const APORTA: Record<Perfil, string> = {
  */
 export const ENTRE: Record<Perfil, Record<Perfil, string>> = {
   FI: {
-    FD: 'Vos evaluás las variables y elegís la opción que cierra. Él trae alternativas que no estaban sobre la mesa. Consultale antes de cerrar la decisión, cuando todavía se puede cambiar el planteo.',
+    FD: 'Vos evaluás las variables y elegís la mejor entre las opciones que tenés. Él propone opciones que no habías considerado. Consultale antes de decidir, cuando todavía se puede cambiar el planteo.',
     BI: 'Vos definís qué conviene hacer. Él ve qué hace falta para que eso funcione: los pasos, los tiempos y quién hace cada cosa. Consultale cómo se implementa lo que decidiste.',
     BD: 'Vos mirás el problema. Él mira a la gente que va a recibir la decisión. Preguntale cómo va a caer y con quién conviene hablar antes de comunicarla.',
     FI: '',
   },
   FD: {
-    FI: 'Vos ves posibilidades. Él ve cuál se sostiene con los números y el tiempo que hay. Llevale tu idea para que te diga qué haría falta para que sea viable.',
-    BI: 'Vos abrís caminos nuevos. Él sabe cómo se sostiene eso en el día a día. Preguntale qué pasos hay que armar para que tu idea no se caiga en la ejecución.',
+    FI: 'Vos pensás qué se podría hacer. Él calcula cuál de esas ideas entra en el presupuesto y en el tiempo que hay. Llevásela para que te diga qué haría falta para poder hacerla.',
+    BI: 'Vos proponés formas nuevas de hacer las cosas. Él sabe qué hay que cambiar en el trabajo de todos los días para que eso ocurra. Preguntale qué pasos hay que armar para que tu idea no quede en la nada.',
     BD: 'Vos pensás en qué cambiar. Él piensa en cómo lo va a vivir el equipo. Consultale a quién le cambia el trabajo tu propuesta y de qué forma se lo dirías.',
     FD: '',
   },
   BI: {
     FI: 'Vos cuidás que el proceso se cumpla. Él mira si conviene hacerlo. Preguntale qué prioriza y qué se puede resignar cuando no entra todo.',
     FD: 'Vos sostenés lo que ya funciona. Él propone hacerlo de otra manera. Escuchá su idea antes de medirla contra el procedimiento: puede ahorrarte pasos.',
-    BD: 'Vos seguís el plan. Él nota cuándo alguien del equipo quedó afuera. Consultale qué está pasando con la gente cuando algo se atrasa sin motivo visible.',
+    BD: 'Vos seguís el plan. Él se da cuenta cuándo alguien del equipo dejó de participar o está haciendo lo mínimo. Consultale qué está pasando con la gente cuando algo se atrasa sin motivo visible.',
     BI: '',
   },
   BD: {
