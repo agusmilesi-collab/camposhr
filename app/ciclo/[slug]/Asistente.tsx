@@ -78,8 +78,15 @@ export type Cara = {
   entro: boolean;
 };
 
-/** Cada cuánto el teléfono pregunta si hay algo abierto. */
-const SONDEO_MS = 4000;
+/**
+ * Cada cuánto el teléfono pregunta si hay algo abierto.
+ *
+ * Son treinta teléfonos preguntando a la vez, así que cada segundo que se le
+ * saca al intervalo se multiplica por treinta contra la base. Doce segundos es
+ * lo que tarda la expositora en terminar de decir la consigna: para la persona
+ * la pantalla igual aparece sola.
+ */
+const SONDEO_MS = 12000;
 
 /**
  * Consignas que la persona lee en voz alta después de responder.
@@ -154,15 +161,20 @@ export default function Asistente({
   useEffect(() => {
     if (!yo) return;
     let vivo = true;
+    let primero = true;
 
     async function mirar() {
       try {
+        // La marca de que entró se escribe sólo en el primer sondeo: después
+        // ya está escrita y repetirla es una escritura por teléfono cada vez.
         const res = await fetch(
-          `/api/ciclo/${slug}/estado?asistente=${encodeURIComponent(yo!.id)}`,
+          `/api/ciclo/${slug}/estado?asistente=${encodeURIComponent(yo!.id)}` +
+            (primero ? '&entrando=1' : ''),
           { cache: 'no-store' }
         );
         if (!res.ok) return;
         const json = (await res.json()) as Estado;
+        primero = false;
         if (vivo) setEstado(json);
       } catch {
         // Sin conexión: se queda con lo último que vio y reintenta solo.
@@ -573,21 +585,42 @@ function Formulario({
   async function enviar(valor: Valor) {
     setEnviando(true);
     setError(null);
-    try {
-      const res = await fetch(`/api/ciclo/${slug}/aporte`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ actividadId: actividad.id, asistenteId, valor }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      setCorrigiendo(false);
-      onGuardado(valor);
-    } catch (e) {
-      const msg = (e as Error).message;
-      setError(msg && msg.length < 80 ? msg : 'No pudimos guardarlo. Probá de nuevo.');
-    } finally {
-      setEnviando(false);
+    // Treinta teléfonos respondiendo en el mismo minuto hacen que alguno se
+    // tope con la base ocupada. Con un solo intento eso deja a esa persona
+    // parada en la consigna mientras la charla sigue, así que reintenta.
+    const ESPERAS = [0, 1200, 3000];
+    let ultimo = 'No pudimos guardarlo. Probá de nuevo.';
+    for (const espera of ESPERAS) {
+      if (espera) await new Promise((r) => setTimeout(r, espera));
+      try {
+        const res = await fetch(`/api/ciclo/${slug}/aporte`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ actividadId: actividad.id, asistenteId, valor }),
+        });
+        if (res.ok) {
+          setCorrigiendo(false);
+          setEnviando(false);
+          onGuardado(valor);
+          return;
+        }
+        // Lo que responde el servidor con criterio (cerrada, valor inválido)
+        // no mejora reintentando: sólo se reintenta cuando se cayó.
+        const texto = await res.text();
+        if (res.status < 500) {
+          setError(texto && texto.length < 80 ? texto : ultimo);
+          setEnviando(false);
+          return;
+        }
+        ultimo = 'La conexión está lenta. Estamos reintentando.';
+        setError(ultimo);
+      } catch {
+        ultimo = 'La conexión está lenta. Estamos reintentando.';
+        setError(ultimo);
+      }
     }
+    setError('No pudimos guardarlo. Tocá de nuevo la opción.');
+    setEnviando(false);
   }
 
   /* Va antes del bloque de "ya respondiste": el cruce deja su fila en aportes
