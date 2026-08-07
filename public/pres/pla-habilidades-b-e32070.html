@@ -554,6 +554,9 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .placa[data-aviso]:before{content:attr(data-aviso);position:absolute;
   left:124px;bottom:44px;height:52px;display:flex;align-items:center;
   font-size:22px;letter-spacing:.02em;color:var(--muted)}
+/* Las portadas no numeran, y sin el círculo al lado el aviso queda colgado en
+   el medio: ahí arranca donde arranca todo lo demás de la placa. */
+.placa[data-aviso]:not(:has(.folio)):before{left:56px}
 
 /* Marcos embebidos del ciclo. Se cargan al llegar a la placa y se refrescan
    solos; sin conexión queda el aviso y la actividad se hace en papel. */
@@ -629,7 +632,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 <div id="escenario">
 
   <!-- 1 -->
-  <section class="placa" data-notas="Tercera charla, después del almuerzo. Encuadre: todos somos distintos, hay cosas que nos salen naturales y otras que nos demandan más esfuerzo. Ninguna mejor que la otra. AVISO DE RIGOR, para preparar: el modelo de cuadrantes se presenta como mapa de estilos de trabajo y disparador de conversación. No se afirma nada sobre el cerebro, porque la lateralización creativo derecho y lógico izquierdo está desacreditada.">
+  <section class="placa" data-aviso="Activar respuestas"  data-notas="Tercera charla, después del almuerzo. Encuadre: todos somos distintos, hay cosas que nos salen naturales y otras que nos demandan más esfuerzo. Ninguna mejor que la otra. AVISO DE RIGOR, para preparar: el modelo de cuadrantes se presenta como mapa de estilos de trabajo y disparador de conversación. No se afirma nada sobre el cerebro, porque la lateralización creativo derecho y lógico izquierdo está desacreditada.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="portada-nombre" style="font-size:128px">Quiero conocerme mejor</div>
@@ -638,7 +641,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 2 -->
-  <section class="placa" data-notas="Anuncia la autoevaluación. Avisar que necesitan el celular con datos y que el resultado es de cada uno, no se comparte con la empresa.">
+  <section class="placa" data-aviso="Respuestas activadas"  data-notas="Anuncia la autoevaluación. Avisar que necesitan el celular con datos y que el resultado es de cada uno, no se comparte con la empresa.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="anuncio">Ejercicio 1</div>
@@ -647,7 +650,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 3 -->
-  <section class="placa" data-aviso="Activar respuestas"  data-notas="Queda proyectada mientras responden, unos 10 minutos. Cada uno necesita el celular con datos. El código lleva a camposhr.com/ciclo/__CLIENTE__, que es el cuestionario propio de Campos HR, y las respuestas quedan cargadas para armar la matriz del equipo. Cuando terminan: ¿se reconocen? Que compartan el resultado con los de al lado, ¿reconocen al otro?">
+  <section class="placa" data-aviso="Respuestas activadas"  data-notas="Queda proyectada mientras responden, unos 10 minutos. Cada uno necesita el celular con datos. El código lleva a camposhr.com/ciclo/__CLIENTE__, que es el cuestionario propio de Campos HR, y las respuestas quedan cargadas para armar la matriz del equipo. Cuando terminan: ¿se reconocen? Que compartan el resultado con los de al lado, ¿reconocen al otro?">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase" style="font-size:52px">Respondé el cuestionario desde tu teléfono.</p>
@@ -657,7 +660,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 4 -->
-  <section class="placa" data-notas="Dales 5 minutos para que absorban en qué cuadrante quedaron. Conozcamos primero los cuatro estilos de pensamiento. Nacemos con uno preferido, donde somos rápidos, y tres que nos cuestan más. Ninguno es mejor, cada uno rinde en cosas distintas. Se detecta para aumentar la productividad y encontrar el mejor campo de acción de una persona sin exigirla de más.">
+  <section class="placa" data-aviso="Respuestas activadas"  data-notas="Dales 5 minutos para que absorban en qué cuadrante quedaron. Conozcamos primero los cuatro estilos de pensamiento. Nacemos con uno preferido, donde somos rápidos, y tres que nos cuestan más. Ninguno es mejor, cada uno rinde en cosas distintas. Se detecta para aumentar la productividad y encontrar el mejor campo de acción de una persona sin exigirla de más.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido pleno">
       <div class="modos">
@@ -675,7 +678,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 5 -->
-  <section class="placa" data-notas="La distinción que ordena todo lo que sigue. Cuando desarrollamos habilidades fuera de nuestro modo natural, nos estamos exigiendo. Agregar: en general la fortaleza y la dificultad se encuentran en cuadrantes opuestos en diagonal. Frontal Izquierdo con Basal Derecho, Frontal Derecho con Basal Izquierdo.">
+  <section class="placa" data-aviso="Desactivar respuestas"  data-notas="La distinción que ordena todo lo que sigue. Cuando desarrollamos habilidades fuera de nuestro modo natural, nos estamos exigiendo. Agregar: en general la fortaleza y la dificultad se encuentran en cuadrantes opuestos en diagonal. Frontal Izquierdo con Basal Derecho, Frontal Derecho con Basal Izquierdo.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq">
       <div class="titulo-placa">Lo que te sale solo y lo que te cuesta</div>
