@@ -483,6 +483,7 @@ export async function repartirCruce(
     perfilesDeCorrida(corrida.id),
   ]);
 
+  const vigentes = new Set(asistentes.map((a) => a.id));
   const yaTienen = new Set(previos.map((p) => p.asistente_id));
   const nuevos: Candidato[] = asistentes
     .filter((a) => !yaTienen.has(a.id))
@@ -498,7 +499,7 @@ export async function repartirCruce(
   const repartidos = new Set(grupos.flat());
   const solo = nuevos.find((n) => !repartidos.has(n.id));
   if (solo) {
-    const destino = [...gruposDe(previos), ...grupos].sort(
+    const destino = [...gruposDe(previos, vigentes), ...grupos].sort(
       (a, b) => a.length - b.length || a[0].localeCompare(b[0])
     )[0];
     if (!destino) return;
@@ -520,12 +521,22 @@ export async function repartirCruce(
   );
 }
 
-/** Los grupos ya repartidos, reconstruidos desde lo que guardó cada persona. */
-function gruposDe(aportes: Aporte[]): Grupo[] {
+/**
+ * Los grupos ya repartidos, reconstruidos desde lo que guardó cada persona.
+ *
+ * Se descarta a quien ya no está en la corrida. Alguien puede haberse borrado
+ * después del reparto, y su id sigue nombrado en el grupo de los demás:
+ * escribirlo de nuevo lo rechaza la base y el teléfono del que llega tarde se
+ * queda sin pantalla.
+ */
+function gruposDe(aportes: Aporte[], vigentes: Set<string>): Grupo[] {
   const vistos = new Map<string, Grupo>();
   for (const a of aportes) {
     if (a.valor?.tipo !== 'cruce') continue;
-    const integrantes = [a.asistente_id, ...a.valor.conIds];
+    const integrantes = [a.asistente_id, ...a.valor.conIds].filter((id) =>
+      vigentes.has(id)
+    );
+    if (integrantes.length === 0) continue;
     const clave = [...integrantes].sort().join('|');
     if (!vistos.has(clave)) vistos.set(clave, integrantes);
   }
