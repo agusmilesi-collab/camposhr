@@ -550,6 +550,11 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   font-family:'Instrument Serif',Georgia,serif;font-size:30px;color:var(--muted);
   letter-spacing:-.01em}
 
+/* El recordatorio de abrir la consigna, al lado del número de placa. */
+.placa[data-aviso]:before{content:attr(data-aviso);position:absolute;
+  left:124px;bottom:44px;height:52px;display:flex;align-items:center;
+  font-size:22px;letter-spacing:.02em;color:var(--muted)}
+
 /* Marcos embebidos del ciclo. Se cargan al llegar a la placa y se refrescan
    solos; sin conexión queda el aviso y la actividad se hace en papel. */
 .act-marco{position:relative;width:100%}
@@ -1039,7 +1044,11 @@ addEventListener('keydown', e => {
   else if (e.key === 't' || e.key === 'T') verTira(!panel.classList.contains('visible'));
   else if (e.key === 'Escape') verTira(false);
 });
-addEventListener('click', e => { if (!panel.contains(e.target)) mostrar(actual + 1); });
+addEventListener('click', e => {
+  if (panel.contains(e.target)) return;
+  if (e.target.closest('a, button, input, select, textarea, .controles')) return;
+  mostrar(e.clientX < innerWidth / 2 ? actual - 1 : actual + 1);
+});
 
 function abrirNotas() {
   const v = open('', 'notas-pla', 'width=900,height=760');
