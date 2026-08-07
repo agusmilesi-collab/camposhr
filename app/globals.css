@@ -2898,20 +2898,19 @@ body {
     padding-left: 0;
     padding-right: 0;
   }
-  /* La fecha y el cliente comparten el primer renglón. */
+  /* Sin filas fijas: cada celda elige su columna y el orden del documento
+     hace el resto. Así la tabla del plan B, que no tiene fecha ni cliente,
+     arranca por el título en lugar de dejar el enlace arriba solo. */
   .pres-row .cot-fecha {
-    grid-row: 1;
     grid-column: 1;
     font-size: 0.72rem;
     color: var(--muted);
   }
   .pres-row .cot-fecha + span {
-    grid-row: 1;
     grid-column: 2;
     justify-self: end;
   }
   .pres-charla {
-    grid-row: 2;
     grid-column: 1;
     flex-direction: column;
     align-items: flex-start;
@@ -4189,6 +4188,46 @@ body {
 }
 .enc .alta-listo {
   border-top-color: var(--st-amber);
+}
+
+/* En el teléfono la fila del cliente se arma en tres renglones. Con las cinco
+   celdas en línea, el nombre se parte en dos, la dirección se corta y Admin
+   queda fuera de la pantalla, que es el enlace que la expositora necesita
+   tener a mano durante la charla. */
+@media (max-width: 700px) {
+  .enc .enc-fila {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+    padding: 14px 0;
+  }
+  .enc-fila-quien {
+    grid-column: 1 / -1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .enc-fila-dato {
+    grid-column: 1;
+  }
+  .enc-fila-estado {
+    grid-column: 2;
+    justify-self: end;
+  }
+  /* Los dos enlaces comparten el último renglón, uno en cada mitad. Sin
+     separarlos por columna caen en la misma celda y Admin queda tapado, que
+     es el que la expositora necesita durante la charla. */
+  .enc-fila a.copiar {
+    grid-row: 3;
+    width: 100%;
+    min-width: 0;
+    margin-top: 6px;
+  }
+  .enc-fila a.copiar:first-of-type {
+    grid-column: 1;
+  }
+  .enc-fila a.copiar:last-of-type {
+    grid-column: 2;
+  }
 }
 
 /* Para qué cliente se está proyectando. Va arriba de la tabla porque las cinco
