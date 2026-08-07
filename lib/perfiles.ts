@@ -77,27 +77,27 @@ export const APORTA: Record<Perfil, string> = {
  */
 export const ENTRE: Record<Perfil, Record<Perfil, string>> = {
   FI: {
-    FD: 'Vos comparás las opciones que tenés y elegís la que mejor cierra. Él piensa en lo que todavía no existe, así que va a traerte opciones que no estaban en tu lista. Consultale antes de decidir, cuando todavía se puede cambiar el planteo.',
-    BI: 'Vos definís qué conviene hacer. Él trabaja mirando el paso a paso, así que ve lo que falta para que eso se pueda ejecutar: tiempos, orden y quién hace cada cosa. Consultale cómo se implementa lo que decidiste.',
-    BD: 'Vos mirás el problema y sus variables. Él está atento a cómo está cada persona, así que ve cómo va a caer la decisión y quién se va a resistir. Preguntale con quién conviene hablar antes de comunicarla.',
+    FD: 'Vos comparás las opciones que tenés y elegís la que mejor cierra. Esta persona piensa en lo que todavía no existe, así que va a traerte opciones que no estaban en tu lista. Consultale antes de decidir, cuando todavía se puede cambiar el planteo.',
+    BI: 'Vos definís qué conviene hacer. Esta persona trabaja mirando el paso a paso, así que ve lo que falta para que eso se pueda ejecutar: tiempos, orden y quién hace cada cosa. Consultale cómo se implementa lo que decidiste.',
+    BD: 'Vos mirás el problema y sus variables. Esta persona está atenta a cómo está cada uno, así que ve cómo va a caer la decisión y quién se va a resistir. Preguntale con quién conviene hablar antes de comunicarla.',
     FI: '',
   },
   FD: {
-    FI: 'Vos pensás qué se podría hacer. Él razona con números y prioridades, así que te va a decir cuál de tus ideas entra en el presupuesto y en el tiempo que hay. Llevásela para que te diga qué haría falta para poder hacerla.',
-    BI: 'Vos proponés formas nuevas de trabajar. Él conoce el detalle de cómo se hace hoy, así que ve qué habría que cambiar para que tu idea funcione. Preguntale qué pasos hay que armar.',
-    BD: 'Vos pensás en qué cambiar. Él lee el ánimo del equipo, así que sabe a quién le cambia el trabajo tu propuesta y cuánto le va a costar. Consultale de qué forma conviene contarlo.',
+    FI: 'Vos pensás qué se podría hacer. Esta persona razona con números y prioridades, así que te va a decir cuál de tus ideas entra en el presupuesto y en el tiempo que hay. Llevásela para que te diga qué haría falta para poder hacerla.',
+    BI: 'Vos proponés formas nuevas de trabajar. Esta persona conoce el detalle de cómo se hace hoy, así que ve qué habría que cambiar para que tu idea funcione. Preguntale qué pasos hay que armar.',
+    BD: 'Vos pensás en qué cambiar. Esta persona lee el ánimo del equipo, así que sabe a quién le cambia el trabajo tu propuesta y cuánto le va a costar. Consultale de qué forma conviene contarlo.',
     FD: '',
   },
   BI: {
-    FI: 'Vos cuidás que el procedimiento se cumpla. Él evalúa costo y beneficio antes que la forma, así que te va a decir qué prioriza y qué se puede resignar cuando no entra todo. Preguntale por dónde cortar.',
-    FD: 'Vos sostenés lo que ya funciona. Él imagina otras maneras de hacer lo mismo, así que puede mostrarte pasos que hoy no hacen falta. Escuchá su idea antes de medirla contra el procedimiento.',
-    BD: 'Vos seguís el plan. Él está atento a las personas, así que se da cuenta cuándo alguien dejó de participar o está haciendo lo mínimo. Consultale qué pasa con la gente cuando algo se atrasa sin motivo visible.',
+    FI: 'Vos cuidás que el procedimiento se cumpla. Esta persona evalúa costo y beneficio antes que la forma, así que te va a decir qué prioriza y qué se puede resignar cuando no entra todo. Preguntale por dónde cortar.',
+    FD: 'Vos sostenés lo que ya funciona. Esta persona imagina otras maneras de hacer lo mismo, así que puede mostrarte pasos que hoy no hacen falta. Escuchá su idea antes de medirla contra el procedimiento.',
+    BD: 'Vos seguís el plan. Esta persona está atenta a la gente, así que se da cuenta cuándo alguien dejó de participar o está haciendo lo mínimo. Consultale qué pasa con el equipo cuando algo se atrasa sin motivo visible.',
     BI: '',
   },
   BD: {
-    FI: 'Vos leés cómo está el equipo. Él ordena todo con números y criterios, así que te da el argumento para sostener una decisión que sabés que no va a caer bien. Consultale qué dice el dato.',
-    FD: 'Vos cuidás el clima. Él piensa en cambiar la forma de trabajar, así que muchas veces lo que desgasta a tu equipo se arregla con una idea suya. Preguntale qué haría distinto.',
-    BI: 'Vos ves cómo está cada uno. Él ve cómo está distribuido el trabajo, así que puede mostrarte por qué la carga cae siempre sobre los mismos. Consultale cómo repartir las tareas.',
+    FI: 'Vos leés cómo está el equipo. Esta persona ordena todo con números y criterios, así que te da el argumento para sostener una decisión que sabés que no va a caer bien. Consultale qué dice el dato.',
+    FD: 'Vos cuidás el clima. Esta persona piensa en cambiar la forma de trabajar, así que muchas veces lo que desgasta a tu equipo se arregla con una idea suya. Preguntale qué haría distinto.',
+    BI: 'Vos ves cómo está cada uno. Esta persona ve cómo está distribuido el trabajo, así que puede mostrarte por qué la carga cae siempre sobre los mismos. Consultale cómo repartir las tareas.',
     BD: '',
   },
 };
