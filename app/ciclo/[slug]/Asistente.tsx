@@ -1246,7 +1246,7 @@ function Ensayando({
             texto="Cuando el otro reaccionó, ¿qué hizo el que comunicó?"
             opciones={[
               { valor: 'escucho', etiqueta: 'Se quedó escuchando' },
-              { valor: 'explico', etiqueta: 'Se puso a explicar' },
+              { valor: 'explico', etiqueta: 'Siguió hablando' },
             ]}
           />
           <Pregunta
@@ -1268,7 +1268,7 @@ function Ensayando({
           </p>
           <Pregunta
             campo="porque"
-            texto="¿Te dijo por qué?"
+            texto="¿Te dijo el motivo, o sea qué pasó para que tomaran esta decisión?"
             opciones={[
               { valor: true, etiqueta: 'Sí' },
               { valor: false, etiqueta: 'No' },
@@ -1276,7 +1276,7 @@ function Ensayando({
           />
           <Pregunta
             campo="cuando"
-            texto="¿Te dijo cuándo vuelven a hablar?"
+            texto="¿Te dijo el día y la hora en que vuelven a hablar del tema?"
             opciones={[
               { valor: true, etiqueta: 'Sí' },
               { valor: false, etiqueta: 'No' },
