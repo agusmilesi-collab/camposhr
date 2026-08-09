@@ -62,7 +62,7 @@ type Ensayo = {
   ronda: number;
   grupo: number;
   rol: 'comunica' | 'recibe' | 'observa';
-  caso: { titulo: string; situacion: string };
+  caso: { titulo: string; ficha: [string, string][]; situacion: string | null };
   /** Sólo llega al que recibe la noticia: los otros dos no tienen que verla. */
   reaccion: { nombre: string; instruccion: string; guion: string[] } | null;
   con: {
@@ -1205,7 +1205,21 @@ function Ensayando({
 
       <div className="ci-ensayo-caso">
         <h2>{ensayo.caso.titulo}</h2>
-        <p>{ensayo.caso.situacion}</p>
+        {/* Quien comunica y quien observa ven la ficha con los datos. Quien
+            recibe ve sólo quién es y que lo llamaron: la decisión la escucha
+            en la conversación, como en la oficina. */}
+        {ensayo.caso.situacion ? (
+          <p>{ensayo.caso.situacion}</p>
+        ) : (
+          <dl className="ci-ensayo-ficha">
+            {ensayo.caso.ficha.map(([que, dato]) => (
+              <div key={que}>
+                <dt>{que}</dt>
+                <dd>{dato}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </div>
 
       {ensayo.rol === 'comunica' && (

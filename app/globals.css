@@ -4516,3 +4516,24 @@ body {
   line-height: 1.45;
   color: var(--muted);
 }
+
+/* La ficha del caso: los datos sueltos, para que quien comunica arme él cómo
+   decirlo en vez de leer una frase ya hecha. */
+.ci-ensayo-ficha {
+  margin: 0;
+}
+.ci-ensayo-ficha > div + div {
+  margin-top: 10px;
+}
+.ci-ensayo-ficha dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ci-ensayo-ficha dd {
+  margin: 2px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
