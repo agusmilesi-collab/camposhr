@@ -504,6 +504,26 @@ export async function listarAportes(
   );
 }
 
+/**
+ * Los aportes de varias actividades de una sola consulta.
+ *
+ * Para la placa de cierre del ensayo, que suma las tres rondas. Una consulta
+ * por ronda dentro de un bucle es exactamente el error que tumbó la base el 7
+ * de agosto, y esa placa se refresca sola mientras está proyectada.
+ */
+export async function listarAportesDeVarias(
+  corridaId: string,
+  actividadIds: string[]
+): Promise<Aporte[]> {
+  const validas = actividadIds.filter((id) => UUID.test(id));
+  if (!UUID.test(corridaId) || validas.length === 0) return [];
+  return select<Aporte>(
+    'aportes',
+    `select=${CAMPOS_APORTE}&corrida_id=eq.${corridaId}` +
+      `&actividad_id=in.(${validas.join(',')})&order=created_at.asc`
+  );
+}
+
 export async function getAporteDe(
   actividadId: string,
   asistenteId: string

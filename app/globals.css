@@ -4467,3 +4467,52 @@ body {
   line-height: 1.45;
   color: var(--muted);
 }
+
+/* La placa de cierre del ensayo: las tres rondas sumadas. Los cuatro números
+   caen solos y esa caída es el remate, así que van grandes y en columna. */
+.cp-cierre-total {
+  margin: 0 0 28px;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--st-amber);
+}
+.cp-cierre ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.cp-cierre li {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  text-align: left;
+}
+.cp-cierre b {
+  flex: none;
+  min-width: 2.2em;
+  text-align: right;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ink);
+}
+.cp-cierre span {
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+
+/* El ensayo mental antes de entrar, en la pantalla de quien da la noticia. */
+.ci-ensayo-pensar {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
