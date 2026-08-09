@@ -56,17 +56,25 @@ export const CASOS = [
  * se entera cuando pasa, que es lo que hace que el ensayo sirva de algo.
  *
  * Están escritas como acciones y no como estados. A alguien a quien le piden
- * que actúe delante de dos compañeros, "te cerrás" o "te quebrás" no le dicen
- * qué hacer con el cuerpo ni qué decir. Cada línea es un momento, una frase
- * textual y un movimiento.
+ * que actúe delante de dos compañeros, "te cerrás" no le dice qué hacer con el
+ * cuerpo ni qué decir. Cada línea es un momento, una frase textual y un
+ * movimiento.
+ *
+ * **Van apareadas con los casos, en el mismo orden.** El reparto le da a cada
+ * ronda su caso y su reacción, y los dos salen del número de ronda, así que la
+ * primera reacción cae siempre con el primer caso. Por eso las frases pueden
+ * nombrar la situación: el enojo es siempre por la suspensión.
+ *
+ * El disparador es que le hayan dicho la decisión, no que el otro haya dejado
+ * de hablar. Si da vueltas y nunca la dice, no hay noticia a la que reaccionar.
  */
 export const REACCIONES = [
   {
     nombre: 'Te enojás',
-    instruccion: 'Estás enojado y no aceptás la decisión.',
+    instruccion: 'Estás enojado y te parece injusto que te suspendan a vos.',
     guion: [
-      'Apenas termina de decirlo, subí la voz: “¿Por qué yo? A otros no les ' +
-        'pasó nada”.',
+      'Cuando te dice los cinco días, subí la voz: “¿Por qué yo? A otros los ' +
+        'vi trabajando igual y nadie les dijo nada”.',
       'Cruzá los brazos, dá un paso atrás y mirá para otro lado.',
       'Cada vez que te dé una razón, interrumpilo: “Eso ya lo veníamos ' +
         'hablando y nadie hizo nada”.',
@@ -76,17 +84,20 @@ export const REACCIONES = [
     nombre: 'Llorás',
     instruccion: 'Se te llenan los ojos de lágrimas y te cuesta hablar.',
     guion: [
-      'Cuando termina, quedate callado y mirá para abajo tres o cuatro segundos.',
+      'Cuando te dice que tu trabajo no está bien, quedate callado y mirá ' +
+        'para abajo tres o cuatro segundos.',
       'Después hablá en voz baja y cortada: “Perdón… dame un segundo”.',
       'Si te apura o te sigue dando explicaciones, tapate la cara con una ' +
-        'mano y decí: “No sé qué le digo en mi casa”.',
+        'mano y decí: “Hace tres meses que vengo pidiendo que me expliquen ' +
+        'bien el sistema”.',
     ],
   },
   {
     nombre: 'No decís nada',
     instruccion: 'Contestás lo mínimo y querés terminar la conversación.',
     guion: [
-      'Cuando termina, quedate callado, aunque el silencio se haga largo.',
+      'Cuando te dice que quedaste afuera del ajuste, quedate callado, ' +
+        'aunque el silencio se haga largo.',
       'Si te pregunta algo, contestá “ajá” o “está bien”, y nada más.',
       'Quedate quieto, con las manos a los costados, mirando la puerta. Si ' +
         'insiste, decí: “¿Puedo irme?”.',

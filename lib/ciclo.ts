@@ -191,7 +191,7 @@ export type Valor =
       /** Si el motivo fue un hecho verificable o un juicio sobre la persona.
        *  También lo anota quien observa: el que recibe no lo puede juzgar,
        *  porque desde su silla "sos un irresponsable" también es un motivo. */
-      motivo?: 'hecho' | 'juicio';
+      motivo?: 'hecho' | 'juicio' | 'ninguno';
       /** Si le dijeron por qué. Lo anota quien recibe. Mide el paso 2. */
       porque?: boolean;
       /** Si le dijeron cuándo vuelven a hablar. También quien recibe, paso 4. */
@@ -896,7 +896,7 @@ export async function repartirEnsayo(
  */
 export type RespuestaEnsayo = {
   sostuvo?: 'escucho' | 'explico';
-  motivo?: 'hecho' | 'juicio';
+  motivo?: 'hecho' | 'juicio' | 'ninguno';
   porque?: boolean;
   cuando?: boolean;
 };
@@ -1088,7 +1088,7 @@ export type Resumen =
       observan: number;
       contestaron: number;
       sostuvo: { escucho: number; explico: number };
-      motivo: { hecho: number; juicio: number };
+      motivo: { hecho: number; juicio: number; ninguno: number };
       reciben: number;
       contestaronReciben: number;
       dijoPorque: number;
@@ -1219,7 +1219,7 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
       let dijoPorque = 0;
       let dijoCuando = 0;
       const sostuvo = { escucho: 0, explico: 0 };
-      const motivo = { hecho: 0, juicio: 0 };
+      const motivo = { hecho: 0, juicio: 0, ninguno: 0 };
       for (const a of aportes) {
         if (a.valor?.tipo !== 'ensayo') continue;
         grupos.add(a.valor.grupo);
