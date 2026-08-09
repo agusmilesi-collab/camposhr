@@ -4537,3 +4537,108 @@ body {
   line-height: 1.45;
   color: var(--ink-soft);
 }
+
+/* --------------------------------------------------- los cuatro pasos ------
+   Lo que el grupo se lleva de la charla de malas noticias, igual que la rueda
+   en la de emociones. Se mira diez minutos antes de una conversación difícil,
+   así que va en una sola pantalla y sin nada más que leer.                    */
+.ps {
+  min-height: 100dvh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 28px 20px 48px;
+}
+.ps-caja {
+  width: 100%;
+  max-width: 560px;
+}
+.ps h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(1.9rem, 7vw, 2.5rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.ps .eyebrow {
+  margin-bottom: 10px;
+}
+.ps-nota {
+  margin: 0 0 28px;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.ps-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.ps-lista li {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.ps-num {
+  flex: none;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.1rem;
+  color: var(--st-amber);
+  line-height: 1.5;
+}
+.ps-lista h2 {
+  margin: 0 0 6px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.ps-lista p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.ps-porque {
+  margin-top: 10px !important;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 0.87rem !important;
+  color: var(--muted) !important;
+}
+.ps-antes,
+.ps-despues {
+  margin: 20px 0 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.ps-antes b,
+.ps-despues b {
+  color: var(--ink);
+}
+.ps-fuente {
+  margin: 28px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* La lectura de los números. Es el disparador de la puesta en común, así que
+   termina en pregunta: la placa abre la conversación, no la cierra. */
+.cp-cierre-lectura {
+  margin: 34px 0 0;
+  max-width: 30ch;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  color: var(--st-amber);
+}
