@@ -1047,7 +1047,11 @@ const ROL_TITULO = {
 const PASOS = [
   ['Encuadrá', 'Lugar privado y un aviso corto antes de empezar.'],
   ['Decilo claro', 'El motivo y la decisión juntos, en las primeras dos frases.'],
-  ['En silencio, sostené', 'Cuando lo dijiste, callate y esperá.'],
+  [
+    'En silencio, sostené',
+    'Callate mientras descarga. Cuando pare, decile una vez: “la decisión ya ' +
+      'está tomada”.',
+  ],
   ['Cerrá con una fecha', 'Qué pasa ahora, con día y hora.'],
 ] as const;
 
