@@ -691,6 +691,22 @@ function perfilValido(p: string | undefined): Perfil | null {
 
 // ------------------------------------------------------------------- ensayo
 
+/**
+ * Sólo quiénes están en la sala, de memoria.
+ *
+ * El ensayo no necesita los cuadrantes del cuestionario, que es la mitad cara
+ * de `salaDelCruce`: esa lee además la tabla de respuestas. Con treinta y tres
+ * teléfonos preguntando cada doce segundos, esa consulta de más se notó en la
+ * prueba de carga, donde el sondeo del ensayo tardaba casi el doble que el de
+ * una consigna común.
+ *
+ * Treinta segundos: lo único que puede cambiar en ese rato es que alguien se
+ * registre tarde, y su propia pantalla no depende de esto.
+ */
+export async function asistentesDeLaSala(corridaId: string): Promise<Asistente[]> {
+  return recordar(`asistentes:${corridaId}`, 30, () => listarAsistentes(corridaId));
+}
+
 /** Las tres rondas del ensayo, en orden. La primera es la que se reparte. */
 export function rondasDelEnsayo(catalogo: Actividad[]): Actividad[] {
   return catalogo
