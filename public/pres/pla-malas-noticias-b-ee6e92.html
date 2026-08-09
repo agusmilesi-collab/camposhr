@@ -486,10 +486,22 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .ancla p,.duo p,.credenciales,.marca-texto,.pasos span,.lideres span,
 .escalones span,.sesgos span,.cuadro span{color:var(--ink-soft);opacity:1}
 
+/* El porqué de cada paso, debajo de la instrucción. Va más chico y en gris
+   para que la tarjeta se siga leyendo de un vistazo: la instrucción es lo que
+   se hace y esta línea es la que da criterio cuando el caso no encaja. */
+.porque{font-size:25px;line-height:1.35;color:var(--muted);margin-top:14px;
+  padding-top:14px;border-top:1px solid var(--line)}
+
+/* El criterio del motivo, debajo de los cuatro pasos. Va en tinta suave y no
+   en gris: esto se lee durante el ensayo, la cita de abajo no. */
+.criterio{font-size:27px;line-height:1.4;color:var(--ink-soft);margin-top:26px}
+.contenido.izq .tarjetas ~ .criterio{width:100%;max-width:var(--ancho);
+  margin-left:auto;margin-right:auto}
+
 /* La cita al pie de una placa. Va chica y en gris: quien está en la sala lee
    el contenido, y la fuente está para que se pueda verificar y para que la
    expositora la nombre si alguien pregunta de dónde sale. */
-.fuente{font-size:24px;line-height:1.45;color:var(--muted);margin-top:44px}
+.fuente{font-size:24px;line-height:1.45;color:var(--muted);margin-top:26px}
 .contenido.izq .tarjetas ~ .fuente{width:100%;max-width:var(--ancho);
   margin-left:auto;margin-right:auto}
 
@@ -744,7 +756,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="contenido izq tres">
       <div class="titulo-placa">Toda mala noticia toca el hecho, la emoción<br>y la interpretación al mismo tiempo</div>
       <div class="tarjetas tres flecha">
-        <div><h3>El hecho</h3><p>Es la información que le das: “quedás suspendido tres días”.</p></div>
+        <div><h3>El hecho</h3><p>Es la información que le das: “faltaste tres veces sin avisar y son tres días de suspensión”.</p></div>
         <div><h3>La emoción</h3><p>Es lo que la persona siente cuando lo escucha: bronca, vergüenza o miedo.</p></div>
         <div><h3>La interpretación</h3><p>Es la conclusión que la persona saca sobre sí misma: “no sirvo para esto”.</p></div>
       </div>
@@ -752,16 +764,17 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 9 -->
-  <section class="placa" data-notas="Los cuatro pasos, y queda proyectada durante todo el ensayo. El porqué de cada uno va en voz. Encuadrá: el otro necesita un segundo para pararse, no una emboscada. Decilo claro: dar vueltas parece más amable pero es más cruel, alarga la agonía y confunde. Callate y sostené: la emoción necesita lugar, si la tapás se agranda. Cerrá con una fecha: dejar a alguien sin un 'y ahora qué' lo deja en caída libre.">
+  <section class="placa" data-notas="Los cuatro pasos, y queda proyectada durante todo el ensayo. El porqué de cada uno va en voz. Encuadrá: el otro necesita un segundo para pararse, no una emboscada. Decilo claro: dar vueltas parece más amable pero es más cruel, alarga la agonía y confunde. Callate y sostené: la emoción necesita lugar, si la tapás se agranda. Cerrá con una fecha: dejar a alguien sin un 'y ahora qué' lo deja en caída libre. Del encuadre conviene contar el costo que no se ve: si la charla empieza como una cualquiera y termina con la noticia, la persona la repasa entera y la lee como una trampa, y desde entonces «vení que quiero hablar con vos» significa otra cosa.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq cuatro">
       <div class="titulo-placa">Los cuatro pasos</div>
       <div class="tarjetas cuatro">
-        <div><span class="num">01</span><h3>Encuadrá</h3><p>Buscá un lugar privado y sin apuro, y avisale antes: “necesito hablarte de algo difícil”.</p></div>
-        <div><span class="num">02</span><h3>Decilo claro</h3><p>Decí la noticia completa en las primeras dos frases: “quedás suspendido tres días, desde el lunes”.</p></div>
-        <div><span class="num">03</span><h3>Callate y sostené</h3><p>Cuando terminaste de decirlo quedate en silencio y esperá, aunque llore o levante la voz, sin justificar la decisión.</p></div>
-        <div><span class="num">04</span><h3>Cerrá con una fecha</h3><p>Terminá diciendo qué pasa ahora, con día y hora: “el lunes a las 9 nos juntamos y vemos cómo seguimos”.</p></div>
+        <div><span class="num">01</span><h3>Encuadrá</h3><p>Buscá un lugar privado y sin apuro, y avisale antes: “necesito hablarte de algo difícil”.</p><p class="porque">El aviso le da un momento para acomodarse. Sin eso, las primeras frases no las registra.</p></div>
+        <div><span class="num">02</span><h3>Decilo claro</h3><p>Decí el motivo y la decisión juntos: “faltaste tres veces sin avisar en el último mes; son tres días de suspensión, desde el lunes”.</p><p class="porque">Ya se dio cuenta de que algo pasa, y mientras das vueltas imagina algo peor.</p></div>
+        <div><span class="num">03</span><h3>Callate y sostené</h3><p>Cuando terminaste de decirlo quedate en silencio y esperá, aunque llore o levante la voz, sin agregar razones nuevas.</p><p class="porque">Con la emoción alta no entra información. Nada de lo que digas ahí lo va a escuchar.</p></div>
+        <div><span class="num">04</span><h3>Cerrá con una fecha</h3><p>Terminá diciendo qué pasa ahora, con día y hora: “el lunes a las 9 nos juntamos y vemos cómo seguimos”.</p><p class="porque">Un plan concreto es lo que baja la incertidumbre de qué va a pasar ahora.</p></div>
       </div>
+      <div class="criterio">El motivo tiene que ser algo que la otra persona pueda verificar. “Faltaste tres veces” se puede verificar; “sos un irresponsable” no.</div>
       <div class="fuente">Adaptado del protocolo SPIKES (Baile y otros, 2000), usado en medicina para comunicar diagnósticos graves.</div>
     </div>
   </section>
