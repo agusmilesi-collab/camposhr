@@ -579,6 +579,8 @@ function Formulario({
   const [tocada, setTocada] = useState<number | null>(null);
   const [dias, setDias] = useState<number[]>([]);
   const [hora, setHora] = useState('');
+  /** Si ya tocó el botón que baja el evento al calendario. */
+  const [agendado, setAgendado] = useState(false);
 
   const cerrado = respondida && !corrigiendo;
 
@@ -600,6 +602,9 @@ function Formulario({
         });
         if (res.ok) {
           setCorrigiendo(false);
+          // Si cambió el compromiso, el evento que bajó antes ya no dice lo
+          // mismo: la pantalla vuelve a pedir que lo agende.
+          setAgendado(false);
           setEnviando(false);
           onGuardado(valor);
           return;
@@ -630,6 +635,80 @@ function Formulario({
     return <Cruzado actividad={actividad} cruce={cruce} />;
   }
 
+  /* El compromiso tiene pantalla propia, y va antes del bloque de "ya
+     respondiste". El 7 de agosto de 2026 los 32 compromisos quedaron escritos y
+     ninguno agendado: el tilde, la palabra "Listo" y "Ya podés guardar el
+     teléfono" cerraban el recorrido antes del botón que abre el calendario.
+     Acá la pantalla dice que falta un paso hasta que la persona lo toca. */
+  if (cerrado && mio?.tipo === 'plan') {
+    return (
+      <section className="cq-placa ci-listo">
+        {agendado ? (
+          <>
+            <p className="ci-tilde" aria-hidden="true">
+              ✓
+            </p>
+            <h1 className="ci-titulo">Agendado</h1>
+          </>
+        ) : (
+          <>
+            <p className="ci-paso">Falta un paso</p>
+            <h1 className="ci-titulo">Ponelo en el calendario</h1>
+          </>
+        )}
+        <blockquote className="ci-mio">
+          {nombrarDias(mio.dias)} {mio.hora}, antes de {mio.texto}
+        </blockquote>
+        {agendado ? (
+          <>
+            <p className="cq-ayuda">
+              Si el calendario no lo guardó, tocá de nuevo el botón.
+            </p>
+            <div className="ci-acciones">
+              <a
+                className="cq-btn-ghost ci-enlace"
+                href={`/api/ciclo/${slug}/agenda?actividad=${actividad.id}&asistente=${asistenteId}`}
+              >
+                Agendar de nuevo
+              </a>
+              <button
+                className="cq-btn-ghost"
+                onClick={() => setCorrigiendo(true)}
+              >
+                Cambiar mi respuesta
+              </button>
+            </div>
+            <p className="ci-guardar">Ya podés guardar el teléfono.</p>
+          </>
+        ) : (
+          <>
+            <div className="ci-acciones">
+              <a
+                className="cq-btn ci-enlace"
+                href={`/api/ciclo/${slug}/agenda?actividad=${actividad.id}&asistente=${asistenteId}`}
+                onClick={() => setAgendado(true)}
+              >
+                Agendar en mi calendario
+              </a>
+              <p className="ci-anonimo">
+                Se abre el calendario del teléfono con la alarma puesta el día y
+                la hora que elegiste.
+              </p>
+            </div>
+            <div className="ci-acciones">
+              <button
+                className="cq-btn-ghost"
+                onClick={() => setCorrigiendo(true)}
+              >
+                Cambiar mi respuesta
+              </button>
+            </div>
+          </>
+        )}
+      </section>
+    );
+  }
+
   if (cerrado) {
     return (
       <section className="cq-placa ci-listo">
@@ -637,27 +716,7 @@ function Formulario({
           ✓
         </p>
         <h1 className="ci-titulo">Listo</h1>
-        {mio?.tipo === 'plan' ? (
-          /* El compromiso queda escrito y con el botón que lo agenda: el papel
-             se pierde y la buena intención también, y el calendario aparece
-             solo el día y la hora que la persona eligió. */
-          <>
-            <blockquote className="ci-mio">
-              {nombrarDias(mio.dias)} {mio.hora}, antes de {mio.texto}
-            </blockquote>
-            <div className="ci-acciones">
-              <a
-                className="cq-btn ci-enlace"
-                href={`/api/ciclo/${slug}/agenda?actividad=${actividad.id}&asistente=${asistenteId}`}
-              >
-                Agendar en mi calendario
-              </a>
-              <p className="ci-anonimo">
-                Se abre el calendario del teléfono con la alarma puesta.
-              </p>
-            </div>
-          </>
-        ) : mio?.tipo === 'texto' && SE_LEEN_EN_VOZ_ALTA.has(actividad.clave) ? (
+        {mio?.tipo === 'texto' && SE_LEEN_EN_VOZ_ALTA.has(actividad.clave) ? (
           /* Lo escrito queda entero en pantalla mientras la consigna siga
              abierta: esta se lee en voz alta y de memoria se pierde la
              redacción exacta, que es lo que se trabaja. */
