@@ -72,7 +72,7 @@ type Ensayo = {
     rol: 'comunica' | 'recibe' | 'observa';
   }[];
   anotado: {
-    hablo: 'comunica' | 'recibe' | null;
+    sostuvo: 'escucho' | 'explico' | null;
     motivo: 'hecho' | 'juicio' | null;
     porque: boolean | null;
     cuando: boolean | null;
@@ -1242,11 +1242,11 @@ function Ensayando({
             Contestá cuando la conversación haya terminado, no mientras hablan.
           </p>
           <Pregunta
-            campo="hablo"
-            texto="¿Quién habló primero después de la noticia?"
+            campo="sostuvo"
+            texto="Cuando el otro reaccionó, ¿qué hizo el que comunicó?"
             opciones={[
-              { valor: 'comunica', etiqueta: 'El que comunicó' },
-              { valor: 'recibe', etiqueta: 'El que recibió' },
+              { valor: 'escucho', etiqueta: 'Se quedó escuchando' },
+              { valor: 'explico', etiqueta: 'Se puso a explicar' },
             ]}
           />
           <Pregunta

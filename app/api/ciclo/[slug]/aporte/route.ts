@@ -69,8 +69,8 @@ export async function POST(
   if (actividad.tipo === 'ensayo') {
     const crudo = (datos.valor ?? {}) as Record<string, unknown>;
     const respuesta: RespuestaEnsayo = {};
-    if (crudo.hablo === 'comunica' || crudo.hablo === 'recibe') {
-      respuesta.hablo = crudo.hablo;
+    if (crudo.sostuvo === 'escucho' || crudo.sostuvo === 'explico') {
+      respuesta.sostuvo = crudo.sostuvo;
     }
     if (crudo.motivo === 'hecho' || crudo.motivo === 'juicio') {
       respuesta.motivo = crudo.motivo;

@@ -177,8 +177,17 @@ export type Valor =
        * un grupo de cuatro hay dos observadores y no habría forma de deducirlo.
        */
       con: { id: string; rol: Rol }[];
-      /** Quién habló primero después de la noticia. Lo anota quien observa. */
-      hablo?: 'comunica' | 'recibe';
+      /**
+       * Qué hizo el que comunicó cuando el otro reaccionó. Lo anota quien
+       * observa, y mide el paso 3.
+       *
+       * Antes preguntaba quién habló primero, y el guion de la reacción la
+       * respondía sola: al que recibe se le pide que interrumpa en una ronda y
+       * que no diga nada en otra, así que en dos de las tres el resultado
+       * estaba decidido de antemano. Esto en cambio depende solo de lo que
+       * hace quien da la noticia.
+       */
+      sostuvo?: 'escucho' | 'explico';
       /** Si el motivo fue un hecho verificable o un juicio sobre la persona.
        *  También lo anota quien observa: el que recibe no lo puede juzgar,
        *  porque desde su silla "sos un irresponsable" también es un motivo. */
@@ -866,14 +875,14 @@ export async function repartirEnsayo(
  * tocar el botón dos veces deja lo mismo que tocarlo una.
  */
 export type RespuestaEnsayo = {
-  hablo?: 'comunica' | 'recibe';
+  sostuvo?: 'escucho' | 'explico';
   motivo?: 'hecho' | 'juicio';
   porque?: boolean;
   cuando?: boolean;
 };
 
 const DE_QUIEN: Record<keyof RespuestaEnsayo, Rol> = {
-  hablo: 'observa',
+  sostuvo: 'observa',
   motivo: 'observa',
   porque: 'recibe',
   cuando: 'recibe',
@@ -1058,7 +1067,7 @@ export type Resumen =
       grupos: number;
       observan: number;
       contestaron: number;
-      hablo: { comunica: number; recibe: number };
+      sostuvo: { escucho: number; explico: number };
       motivo: { hecho: number; juicio: number };
       reciben: number;
       contestaronReciben: number;
@@ -1189,16 +1198,16 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
       let contestaronReciben = 0;
       let dijoPorque = 0;
       let dijoCuando = 0;
-      const hablo = { comunica: 0, recibe: 0 };
+      const sostuvo = { escucho: 0, explico: 0 };
       const motivo = { hecho: 0, juicio: 0 };
       for (const a of aportes) {
         if (a.valor?.tipo !== 'ensayo') continue;
         grupos.add(a.valor.grupo);
         if (a.valor.rol === 'observa') {
           observan += 1;
-          if (a.valor.hablo) {
+          if (a.valor.sostuvo) {
             contestaron += 1;
-            hablo[a.valor.hablo] += 1;
+            sostuvo[a.valor.sostuvo] += 1;
           }
           if (a.valor.motivo) motivo[a.valor.motivo] += 1;
         }
@@ -1217,7 +1226,7 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
         grupos: grupos.size,
         observan,
         contestaron,
-        hablo,
+        sostuvo,
         motivo,
         reciben,
         contestaronReciben,

@@ -31,7 +31,7 @@ type ConteoEnsayo = {
   grupos: number;
   observan: number;
   contestaron: number;
-  hablo: { comunica: number; recibe: number };
+  sostuvo: { escucho: number; explico: number };
   motivo: { hecho: number; juicio: number };
   reciben: number;
   contestaronReciben: number;
@@ -217,9 +217,9 @@ export default function Control({
                     {ensayo.reciben} que recibieron
                     {ensayo.contestaron > 0 && (
                       <b className="ct-a-medias">
-                        {' '}· habló primero el que comunicó en{' '}
-                        {ensayo.hablo.comunica} de {ensayo.contestaron} · motivo
-                        con un hecho en {ensayo.motivo.hecho}
+                        {' '}· se quedaron escuchando {ensayo.sostuvo.escucho} de{' '}
+                        {ensayo.contestaron} · motivo con un hecho en{' '}
+                        {ensayo.motivo.hecho}
                       </b>
                     )}
                     {ensayo.contestaronReciben > 0 && (

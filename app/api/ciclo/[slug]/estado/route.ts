@@ -169,7 +169,7 @@ type Ensayo = {
   con: { nombre: string; apellido: string; foto: string | null; rol: Rol }[];
   /** Lo que ya anotó, para que la pantalla no vuelva a preguntarlo. */
   anotado: {
-    hablo: 'comunica' | 'recibe' | null;
+    sostuvo: 'escucho' | 'explico' | null;
     motivo: 'hecho' | 'juicio' | null;
     porque: boolean | null;
     cuando: boolean | null;
@@ -232,7 +232,7 @@ async function ensayoDe(
       rol: c.rol,
     })),
     anotado: {
-      hablo: puesto.hablo ?? null,
+      sostuvo: puesto.sostuvo ?? null,
       motivo: puesto.motivo ?? null,
       porque: puesto.porque ?? null,
       cuando: puesto.cuando ?? null,
