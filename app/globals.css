@@ -4269,3 +4269,131 @@ body {
 .pres-ver-frenado {
   cursor: not-allowed;
 }
+
+/* --------------------------------------------------------------- ensayo ---
+   Una ronda del ensayo de la charla 4, en el teléfono. Cada uno ve sólo lo
+   suyo: el caso y su rol, y la reacción únicamente quien recibe la noticia.
+   Por eso el bloque de la reacción se distingue del resto, para que quien lo
+   tiene entienda de un vistazo que eso no se muestra.                        */
+.ci-ensayo-ronda {
+  margin: 0 0 4px;
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--st-amber);
+}
+.ci-ensayo-gente {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+.ci-ensayo-par {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.ci-ensayo-quien b {
+  display: block;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.ci-ensayo-rol {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ci-ensayo-caso {
+  margin-top: 22px;
+  padding: 16px 18px;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.ci-ensayo-caso h2 {
+  margin: 0 0 8px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.ci-ensayo-caso p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.ci-ensayo-consigna {
+  margin: 18px 0 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+/* Lo único que no puede ver nadie más: va sobre ámbar y con el aviso al pie. */
+.ci-ensayo-reaccion {
+  margin-top: 20px;
+  padding: 16px 18px;
+  text-align: left;
+  background: #faf4e8;
+  border: 1px solid var(--st-amber);
+  border-radius: 12px;
+}
+.ci-ensayo-reaccion h2 {
+  margin: 0 0 8px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+.ci-ensayo-reaccion p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.ci-ensayo-secreto {
+  margin-top: 10px !important;
+  font-size: 0.82rem !important;
+  color: var(--st-amber) !important;
+}
+.ci-ensayo-observa {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.ci-ensayo-observa h2 {
+  margin: 0 0 14px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.ci-ensayo-contestado {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+/* Los relojes del ensayo, en el panel de la expositora. Van al lado del conteo
+   y no en grande: la decisión de cerrar la ronda la toma el número de
+   observadores que contestaron, y el reloj es el respaldo por si dos tríos
+   nunca tocan el botón. */
+.ct-reloj {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}

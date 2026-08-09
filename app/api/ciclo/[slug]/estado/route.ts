@@ -4,9 +4,13 @@ import {
   aportesDeEn,
   contarAvance,
   getAporteDe,
+  listarAportes,
   marcarIngreso,
   repartirCruce,
+  repartirEnsayo,
   resolverCiclo,
+  resumir,
+  rondasDelEnsayo,
   salaDelCruce,
   type Actividad,
   type Aporte,
@@ -15,6 +19,7 @@ import {
 import { firmarSelfies } from '@/lib/supabase';
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { motivoEntre, type Motivo } from '@/lib/cruce';
+import { CASOS, REACCIONES, type Rol } from '@/lib/ensayo';
 
 /**
  * Qué actividad está abierta en este momento.
@@ -115,8 +120,23 @@ export async function GET(
         )
       : null;
 
+  /*
+   * Durante el ensayo la expositora mira otra cosa: cuántos observadores ya
+   * contestaron, que es cuándo cerrar la ronda, y qué contestaron, que es con
+   * lo que arranca la puesta en común. Los tríos no terminan todos juntos, así
+   * que el reloj no sirve para decidir y este número sí.
+   *
+   * Va sólo con `total=1`, igual que el resto de los conteos: es de ella y en
+   * el teléfono del asistente no se muestra en ninguna pantalla.
+   */
+  const ensayoConteo =
+    parametros.get('total') === '1' && actividad.tipo === 'ensayo'
+      ? resumir(actividad, await listarAportes(ciclo.corrida.id, actividad.id))
+      : null;
+
   return NextResponse.json({
     actividad: publica(actividad),
+    ensayoConteo: ensayoConteo?.tipo === 'ensayo' ? ensayoConteo : null,
     // Si ya respondió, el teléfono le muestra su respuesta y la opción de
     // corregirla, en vez de un formulario vacío que invita a responder dos veces.
     respondida: Boolean(mio),
@@ -130,7 +150,79 @@ export async function GET(
       actividad.tipo === 'cruce' && asistenteId
         ? await cruceDe(ciclo.corrida, actividad, asistenteId, mio)
         : null,
+    ensayo:
+      actividad.tipo === 'ensayo' && asistenteId
+        ? await ensayoDe(ciclo.corrida, catalogo, actividad, asistenteId, mio)
+        : null,
   });
+}
+
+/** El puesto de esta persona en esta ronda, listo para la pantalla. */
+type Ensayo = {
+  ronda: number;
+  grupo: number;
+  rol: Rol;
+  caso: { titulo: string; situacion: string };
+  /** Sólo para quien recibe la noticia. Los otros dos no tienen que verla. */
+  reaccion: { nombre: string; instruccion: string } | null;
+  con: { nombre: string; apellido: string; foto: string | null; rol: Rol }[];
+  /** Lo que ya contestó, si observó y ya tocó el botón. */
+  hablo: 'comunica' | 'recibe' | null;
+};
+
+async function ensayoDe(
+  corrida: Corrida,
+  catalogo: Actividad[],
+  actividad: Actividad,
+  asistenteId: string,
+  yaLeido: Aporte | null
+): Promise<Ensayo | null> {
+  // El puesto propio ya vino con el resto del sondeo, igual que en el cruce.
+  let aporte = yaLeido;
+
+  // Se registró después de que la expositora abriera la ronda: entra ahora,
+  // como segundo observador, sin tocar los tríos que ya están conversando.
+  if (!aporte) {
+    await repartirEnsayo(corrida, rondasDelEnsayo(catalogo));
+    aporte = await getAporteDe(actividad.id, asistenteId);
+  }
+  if (aporte?.valor?.tipo !== 'ensayo') return null;
+  const puesto = aporte.valor;
+
+  const ronda = rondasDelEnsayo(catalogo).findIndex((r) => r.id === actividad.id);
+
+  // La sala entera, de memoria: esto lo pide cada teléfono en cada sondeo.
+  const { asistentes } = await salaDelCruce(corrida.id);
+  const porId = new Map(asistentes.map((a) => [a.id, a]));
+  const rolDe = new Map<string, Rol>();
+  const companeros = puesto.conIds
+    .map((id) => porId.get(id))
+    .filter((a): a is NonNullable<typeof a> => Boolean(a));
+
+  // Quién hace qué dentro del trío sale del propio rol y de la vuelta de los
+  // roles, que es siempre la misma: comunica, recibe, observa.
+  const orden: Rol[] = ['comunica', 'recibe', 'observa'];
+  const mio = orden.indexOf(puesto.rol);
+  companeros.forEach((c, i) => rolDe.set(c.id, orden[(mio + 1 + i) % 3]));
+
+  const fotos = await firmarSelfies(
+    companeros.map((c) => c.foto_path).filter((p): p is string => Boolean(p))
+  );
+
+  return {
+    ronda: ronda < 0 ? 0 : ronda,
+    grupo: puesto.grupo,
+    rol: puesto.rol,
+    caso: CASOS[puesto.caso] ?? CASOS[0],
+    reaccion: puesto.rol === 'recibe' ? REACCIONES[puesto.reaccion] ?? null : null,
+    con: companeros.map((c) => ({
+      nombre: c.nombre,
+      apellido: c.apellido,
+      foto: c.foto_path ? fotos.get(c.foto_path) ?? null : null,
+      rol: rolDe.get(c.id) ?? 'observa',
+    })),
+    hablo: puesto.hablo ?? null,
+  };
 }
 
 /** Con quién le toca juntarse a esta persona, con lo que necesita para ubicarla. */

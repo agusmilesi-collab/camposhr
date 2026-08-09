@@ -26,6 +26,20 @@ type ActividadControl = {
   abierta: boolean;
 };
 
+/** Lo que la expositora mira mientras corre una ronda del ensayo. */
+type ConteoEnsayo = {
+  grupos: number;
+  observan: number;
+  contestaron: number;
+  hablo: { comunica: number; recibe: number };
+};
+
+/** Minutos y segundos, para los dos relojes del ensayo. */
+function reloj(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
 const SONDEO_MS = 4000;
 
 export default function Control({
@@ -51,6 +65,21 @@ export default function Control({
   const [enFila, setEnFila] = useState(0);
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Durante el ensayo: cuántos observadores contestaron y qué contestaron. */
+  const [ensayo, setEnsayo] = useState<ConteoEnsayo | null>(null);
+  /*
+   * Los dos relojes del ensayo. No son para apurar a nadie: en el teléfono y
+   * en lo proyectado un cronómetro haría que nadie sostenga el silencio, que es
+   * el paso que el ejercicio entrena. Acá sirven para otra cosa, que es saber
+   * si la ronda se está estirando y cuánto lleva el bloque entero contra lo
+   * previsto.
+   *
+   * Corren en el navegador y no consultan nada. Si ella recarga el panel, el de
+   * la ronda arranca de nuevo.
+   */
+  const [desdeRonda, setDesdeRonda] = useState<number | null>(null);
+  const [desdeEnsayo, setDesdeEnsayo] = useState<number | null>(null);
+  const [ahora, setAhora] = useState(() => Date.now());
 
   // El conteo en vivo: es lo que le dice a la expositora si puede seguir o si
   // todavía falta gente. Sale del mismo endpoint que mira el teléfono.
@@ -70,6 +99,7 @@ export default function Control({
         setTotal(json.total ?? 0);
         setEmpezaron(json.empezaron ?? 0);
         setEnFila(json.enFila ?? 0);
+        setEnsayo(json.ensayoConteo ?? null);
       } catch {
         // Sin conexión: reintenta solo en el próximo tic.
       }
@@ -105,6 +135,28 @@ export default function Control({
   }
 
   const abierta = actividades.find((a) => a.id === abiertaId) ?? null;
+  const enEnsayo = abierta?.tipo === 'ensayo';
+
+  /*
+   * Los relojes arrancan solos: el de la ronda cada vez que cambia la consigna
+   * abierta, y el del ensayo la primera vez que se abre una ronda. El del
+   * ensayo no se reinicia entre rondas a propósito, porque lo que ella necesita
+   * saber es cuánto lleva el bloque entero.
+   */
+  useEffect(() => {
+    if (!enEnsayo) {
+      setDesdeRonda(null);
+      return;
+    }
+    setDesdeRonda(Date.now());
+    setDesdeEnsayo((previo) => previo ?? Date.now());
+  }, [enEnsayo, abiertaId]);
+
+  useEffect(() => {
+    if (!enEnsayo) return;
+    const id = setInterval(() => setAhora(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [enEnsayo]);
 
   /**
    * Las que se abren juntas ocupan un solo botón.
@@ -150,7 +202,27 @@ export default function Control({
                   llegaron al final: contar la primera hace creer que está hecho
                   cuando la mayoría quedó por la mitad. */}
               <span>
-                {enFila > 1 ? (
+                {enEnsayo && ensayo ? (
+                  /* Los tríos no terminan todos juntos, así que el reloj no
+                     dice cuándo cerrar y este número sí: cuando contestaron
+                     casi todos los observadores, la ronda terminó. */
+                  <>
+                    Contestaron {ensayo.contestaron} de {ensayo.observan}
+                    {ensayo.contestaron > 0 && (
+                      <b className="ct-a-medias">
+                        {' '}· habló primero: el que comunicó {ensayo.hablo.comunica},
+                        el que recibió {ensayo.hablo.recibe}
+                      </b>
+                    )}
+                    {desdeRonda !== null && (
+                      <b className="ct-reloj">
+                        {' '}· ronda {reloj(ahora - desdeRonda)}
+                        {desdeEnsayo !== null &&
+                          ` · ensayo ${reloj(ahora - desdeEnsayo)}`}
+                      </b>
+                    )}
+                  </>
+                ) : enFila > 1 ? (
                   <>
                     {total} de {registrados} terminaron
                     {empezaron > total && (

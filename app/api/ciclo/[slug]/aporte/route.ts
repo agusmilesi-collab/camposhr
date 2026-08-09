@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import {
+  anotarObservacion,
   getActividad,
   getAsistente,
   guardarAporte,
@@ -56,6 +57,31 @@ export async function POST(
 
   const asistente = await getAsistente(corrida.id, String(datos.asistenteId ?? ''));
   if (!asistente) return new NextResponse('Asistente no encontrado', { status: 404 });
+
+  /*
+   * El ensayo no se responde como el resto. El puesto ya está escrito por el
+   * servidor y lo único que llega del teléfono es lo que vio quien observó, que
+   * se guarda adentro de ese mismo puesto. Por eso pasa por su propio camino:
+   * necesita leer el puesto antes, tanto para completarlo como para saber si
+   * quien contesta era el que observaba.
+   */
+  if (actividad.tipo === 'ensayo') {
+    const hablo = (datos.valor as { hablo?: unknown } | undefined)?.hablo;
+    if (hablo !== 'comunica' && hablo !== 'recibe') {
+      return new NextResponse('Respuesta inválida', { status: 400 });
+    }
+    try {
+      const guardado = await anotarObservacion(
+        corrida.id,
+        actividad.id,
+        asistente.id,
+        hablo
+      );
+      return NextResponse.json({ ok: true, valor: guardado.valor });
+    } catch (e) {
+      return new NextResponse((e as Error).message, { status: 409 });
+    }
+  }
 
   let valor;
   try {

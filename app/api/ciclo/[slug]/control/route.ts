@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import {
   abrirActividad,
+  actividadesDelCiclo,
   cerrarActividades,
   claveControlOk,
   getActividad,
   repartirCruce,
+  repartirEnsayo,
   resolverCiclo,
+  rondasDelEnsayo,
 } from '@/lib/ciclo';
 
 /**
@@ -48,6 +51,19 @@ export async function POST(
       // pregunte ya encuentre su pareja escrita en vez de armarla él.
       const actividad = await getActividad(corrida.ciclo_id, actividadId);
       if (actividad?.tipo === 'cruce') await repartirCruce(corrida, actividad);
+
+      /*
+       * El ensayo de la charla 4 se reparte igual, y las tres rondas de una
+       * vez: quien empieza comunicando en la primera tiene que recibir en la
+       * segunda con otra gente, y eso se decide todo junto o no cierra.
+       *
+       * Va acá y no en el sondeo por lo que pasó el 7 de agosto: si lo dispara
+       * el teléfono, los treinta y tres entran casi juntos y los primeros leen
+       * la sala entera antes de que la primera escritura llegue.
+       */
+      if (actividad?.tipo === 'ensayo') {
+        await repartirEnsayo(corrida, rondasDelEnsayo(await actividadesDelCiclo(corrida.ciclo_id)));
+      }
     } else {
       return new NextResponse('Acción inválida', { status: 400 });
     }

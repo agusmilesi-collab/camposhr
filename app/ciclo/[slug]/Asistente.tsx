@@ -22,7 +22,8 @@ type TipoActividad =
   | 'enlace'
   | 'cuestionario'
   | 'plan'
-  | 'cruce';
+  | 'cruce'
+  | 'ensayo';
 
 /** Quién está respondiendo desde este teléfono. */
 type Yo = { id: string; nombre: string; apellido: string };
@@ -56,6 +57,23 @@ type Cruce = {
   }[];
 };
 
+/** El puesto de esta persona en una ronda del ensayo de la charla 4. */
+type Ensayo = {
+  ronda: number;
+  grupo: number;
+  rol: 'comunica' | 'recibe' | 'observa';
+  caso: { titulo: string; situacion: string };
+  /** Sólo llega al que recibe la noticia: los otros dos no tienen que verla. */
+  reaccion: { nombre: string; instruccion: string } | null;
+  con: {
+    nombre: string;
+    apellido: string;
+    foto: string | null;
+    rol: 'comunica' | 'recibe' | 'observa';
+  }[];
+  hablo: 'comunica' | 'recibe' | null;
+};
+
 /** Una de las que se abrieron juntas, con lo que esta persona ya respondió. */
 type EnFila = ActividadPublica & { respondida: boolean; mio: Valor | null };
 
@@ -67,6 +85,7 @@ type Estado = {
   /** Las que se abren de una sola vez y se responden seguidas. */
   grupo: EnFila[] | null;
   cruce: Cruce | null;
+  ensayo: Ensayo | null;
 };
 
 export type Cara = {
@@ -540,6 +559,7 @@ function Fila({
         respondida={listo(actual)}
         mio={respondidas[actual.id] ?? actual.mio}
         cruce={estado.cruce}
+        ensayo={estado.ensayo}
         onGuardado={(valor) =>
           setRespondidas((r) => ({ ...r, [actual.id]: valor }))
         }
@@ -557,6 +577,7 @@ function Formulario({
   respondida,
   mio,
   cruce,
+  ensayo,
   onGuardado,
 }: {
   slug: string;
@@ -567,6 +588,7 @@ function Formulario({
   respondida: boolean;
   mio: Valor | null;
   cruce: Cruce | null;
+  ensayo: Ensayo | null;
   onGuardado: (valor: Valor) => void;
 }) {
   const [palabra, setPalabra] = useState('');
@@ -631,6 +653,17 @@ function Formulario({
   /* Va antes del bloque de "ya respondiste": el cruce deja su fila en aportes
      igual que una respuesta, y sin esto la pantalla diría "Listo" en vez de
      decir a quién buscar. */
+  if (actividad.tipo === 'ensayo') {
+    return (
+      <Ensayando
+        slug={slug}
+        actividadId={actividad.id}
+        asistenteId={asistenteId}
+        ensayo={ensayo}
+      />
+    );
+  }
+
   if (actividad.tipo === 'cruce') {
     return <Cruzado actividad={actividad} cruce={cruce} />;
   }
@@ -976,6 +1009,175 @@ function Formulario({
  * persona encuentre a la otra entre treinta paradas, y por eso la cara pesa más
  * que el texto.
  */
+/** Cómo se nombra cada rol en la pantalla de quien lo tiene. */
+const ROL_TITULO = {
+  comunica: 'Vos comunicás',
+  recibe: 'Vos recibís',
+  observa: 'Vos observás',
+} as const;
+
+/** Y cómo se nombra el de los otros dos, para ubicarlos en el trío. */
+const ROL_AJENO = {
+  comunica: 'comunica',
+  recibe: 'recibe',
+  observa: 'observa',
+} as const;
+
+/**
+ * Una ronda del ensayo de la charla 4.
+ *
+ * Cada uno ve sólo lo suyo. La reacción que le toca a quien recibe la noticia
+ * no viaja a los otros dos teléfonos: si el que comunica supiera de antemano
+ * que el otro va a llorar, se prepararía, y el ensayo dejaría de parecerse a lo
+ * que pasa en la oficina.
+ */
+function Ensayando({
+  slug,
+  actividadId,
+  asistenteId,
+  ensayo,
+}: {
+  slug: string;
+  actividadId: string;
+  asistenteId: string;
+  ensayo: Ensayo | null;
+}) {
+  const [hablo, setHablo] = useState<'comunica' | 'recibe' | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!ensayo) {
+    return (
+      <section className="cq-placa ci-espera">
+        <p className="ci-espera-punto" aria-hidden="true" />
+        <h1 className="ci-titulo">Un segundo</h1>
+        <p className="cq-ayuda">
+          Estamos armando los tríos. Tu lugar aparece solo en esta pantalla.
+        </p>
+      </section>
+    );
+  }
+
+  const contestado = hablo ?? ensayo.hablo;
+
+  async function anotar(quien: 'comunica' | 'recibe') {
+    setEnviando(true);
+    setError(null);
+    // Mismo criterio que el resto de las escrituras: si la base está ocupada
+    // se reintenta, porque un solo intento deja a esa persona parada mientras
+    // la charla sigue.
+    const ESPERAS = [0, 1200, 3000];
+    for (const espera of ESPERAS) {
+      if (espera) await new Promise((r) => setTimeout(r, espera));
+      try {
+        const res = await fetch(`/api/ciclo/${slug}/aporte`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            actividadId,
+            asistenteId,
+            valor: { hablo: quien },
+          }),
+        });
+        if (res.ok) {
+          setHablo(quien);
+          setEnviando(false);
+          return;
+        }
+        // Lo que el servidor rechaza con criterio no se reintenta.
+        if (res.status !== 500) {
+          setError(await res.text());
+          setEnviando(false);
+          return;
+        }
+      } catch {
+        /* sin señal: lo intenta de nuevo */
+      }
+    }
+    setError('No pudimos guardarlo. Probá de nuevo.');
+    setEnviando(false);
+  }
+
+  return (
+    <section className="cq-placa ci-ensayo">
+      <p className="ci-ensayo-ronda">
+        Ronda {ensayo.ronda + 1} de 3 · Grupo {ensayo.grupo}
+      </p>
+      <h1 className="ci-titulo">{ROL_TITULO[ensayo.rol]}</h1>
+
+      <div className="ci-ensayo-gente">
+        {ensayo.con.map((p) => (
+          <article className="ci-ensayo-par" key={`${p.apellido}-${p.nombre}`}>
+            <span className="ci-cruce-foto">
+              {p.foto ? (
+                <img src={p.foto} alt="" />
+              ) : (
+                <span className="ci-cara-iniciales">
+                  {(p.nombre[0] ?? '') + (p.apellido[0] ?? '')}
+                </span>
+              )}
+            </span>
+            <div className="ci-ensayo-quien">
+              <b>
+                {p.nombre} {p.apellido}
+              </b>
+              <span className="ci-ensayo-rol">{ROL_AJENO[p.rol]}</span>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="ci-ensayo-caso">
+        <h2>{ensayo.caso.titulo}</h2>
+        <p>{ensayo.caso.situacion}</p>
+      </div>
+
+      {ensayo.rol === 'comunica' && (
+        <p className="ci-ensayo-consigna">Usá los cuatro pasos de la placa.</p>
+      )}
+
+      {ensayo.reaccion && (
+        <div className="ci-ensayo-reaccion">
+          <h2>{ensayo.reaccion.nombre}</h2>
+          <p>{ensayo.reaccion.instruccion}</p>
+          <p className="ci-ensayo-secreto">
+            Esto lo ves solo vos. No se lo muestres a quien te va a comunicar.
+          </p>
+        </div>
+      )}
+
+      {ensayo.rol === 'observa' && (
+        <div className="ci-ensayo-observa">
+          <h2>¿Quién habló primero después de la noticia?</h2>
+          {contestado ? (
+            <p className="ci-ensayo-contestado">
+              Anotaste: <b>{contestado === 'comunica' ? 'el que comunicó' : 'el que recibió'}</b>.
+            </p>
+          ) : (
+            <div className="ci-acciones">
+              <button
+                className="cq-btn"
+                disabled={enviando}
+                onClick={() => anotar('comunica')}
+              >
+                El que comunicó
+              </button>
+              <button
+                className="cq-btn"
+                disabled={enviando}
+                onClick={() => anotar('recibe')}
+              >
+                El que recibió
+              </button>
+            </div>
+          )}
+          {error && <p className="cq-error">{error}</p>}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function Cruzado({
   actividad,
   cruce,

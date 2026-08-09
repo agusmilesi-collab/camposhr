@@ -34,6 +34,7 @@ import {
 } from '@/lib/supabase';
 import type { Empresa } from '@/lib/supabase';
 import { armarGrupos, type Candidato, type Grupo } from '@/lib/cruce';
+import { repartoEnsayo, type Rol } from '@/lib/ensayo';
 import { recordar } from '@/lib/memoria';
 import { PERFILES, type Perfil } from '@/lib/perfiles';
 
@@ -59,6 +60,12 @@ export const TIPOS = [
   /** No se responde: el teléfono recibe con quién juntarse. El reparto lo hace
    *  el servidor al abrirla, cruzando los cuadrantes del cuestionario. */
   'cruce',
+  /** Una ronda del ensayo de la charla 4. El teléfono recibe su grupo, su rol,
+   *  su caso y, sólo quien recibe la noticia, la reacción que le toca hacer.
+   *  Las tres rondas son tres actividades sueltas, nunca del mismo grupo: si
+   *  viajaran juntas, el teléfono tendría desde la primera las reacciones de
+   *  las tres, y la sorpresa es lo que hace que el ensayo sirva. */
+  'ensayo',
 ] as const;
 export type TipoActividad = (typeof TIPOS)[number];
 
@@ -146,7 +153,25 @@ export type Valor =
   /** Con quién le toca juntarse. Esto no lo responde la persona: lo escribe el
    *  servidor al abrir la actividad. Va en `aportes` igual que una respuesta
    *  porque necesita lo mismo: una fila por persona, que no cambie después. */
-  | { tipo: 'cruce'; conIds: string[] };
+  | { tipo: 'cruce'; conIds: string[] }
+  /**
+   * El puesto de una persona en una ronda del ensayo. Tampoco lo responde ella:
+   * lo escribe el servidor al abrir la primera ronda, para las tres de una vez.
+   *
+   * `hablo` es lo único que se agrega después, y sólo lo escribe quien observa
+   * al terminar la conversación de su trío. Va en la misma fila y no en otra
+   * porque es la respuesta de esa persona a esa ronda, y así el sondeo la sigue
+   * trayendo en la única consulta que ya hace.
+   */
+  | {
+      tipo: 'ensayo';
+      grupo: number;
+      rol: Rol;
+      caso: number;
+      reaccion: number;
+      conIds: string[];
+      hablo?: 'comunica' | 'recibe';
+    };
 
 /** La dirección de una actividad de tipo 'enlace'. Sólo se acepta https. */
 export function destinoDe(actividad: Actividad): string | null {
@@ -657,6 +682,164 @@ function perfilValido(p: string | undefined): Perfil | null {
   return PERFILES.includes(p as Perfil) ? (p as Perfil) : null;
 }
 
+// ------------------------------------------------------------------- ensayo
+
+/** Las tres rondas del ensayo, en orden. La primera es la que se reparte. */
+export function rondasDelEnsayo(catalogo: Actividad[]): Actividad[] {
+  return catalogo
+    .filter((a) => a.tipo === 'ensayo')
+    .sort((a, b) => a.orden - b.orden);
+}
+
+/**
+ * Reparte las tres rondas del ensayo de una sola vez.
+ *
+ * Lo dispara el panel al abrir la primera ronda, y no el sondeo. Si lo hiciera
+ * el sondeo, los treinta y tres teléfonos entrarían casi juntos y los primeros
+ * leerían la sala entera antes de que la primera escritura llegue. El camino
+ * desde el sondeo queda sólo para quien se registra tarde, que es de a uno.
+ *
+ * Se calcula una vez y no se recalcula: quien ya tiene su puesto lo conserva.
+ * Once tríos enterándose a mitad del ejercicio de que ahora tienen otros
+ * compañeros sería peor que cualquier error de la base.
+ */
+export async function repartirEnsayo(
+  corrida: Corrida,
+  rondas: Actividad[]
+): Promise<void> {
+  if (rondas.length !== 3 || rondas.some((r) => r.tipo !== 'ensayo')) return;
+
+  const [asistentes, ...previos] = await Promise.all([
+    listarAsistentes(corrida.id),
+    ...rondas.map((r) => listarAportes(corrida.id, r.id)),
+  ]);
+
+  // El orden manda: define la grilla y, con ella, el reparto entero. Por fecha
+  // de registro es estable, así que recalcular da siempre lo mismo.
+  const enOrden = [...asistentes].sort((a, b) =>
+    a.created_at.localeCompare(b.created_at)
+  );
+  const vigentes = new Set(enOrden.map((a) => a.id));
+  const yaTienen = new Set(previos[0].map((p) => p.asistente_id));
+  const nuevos = enOrden.filter((a) => !yaTienen.has(a.id));
+  if (nuevos.length === 0) return;
+
+  const filas: Record<string, unknown>[] = [];
+
+  if (yaTienen.size === 0) {
+    // Nadie tiene puesto todavía: se reparte la sala entera.
+    if (enOrden.length < 9) return;
+    const reparto = repartoEnsayo(enOrden.map((a) => a.id));
+    reparto.forEach((grupos, ronda) => {
+      for (const g of grupos) {
+        for (const puesto of g.puestos) {
+          filas.push({
+            corrida_id: corrida.id,
+            actividad_id: rondas[ronda].id,
+            asistente_id: puesto.asistenteId,
+            valor: {
+              tipo: 'ensayo',
+              grupo: g.grupo,
+              rol: puesto.rol,
+              caso: g.caso,
+              reaccion: g.reaccion,
+              conIds: g.puestos
+                .filter((o) => o.asistenteId !== puesto.asistenteId)
+                .map((o) => o.asistenteId),
+            },
+          });
+        }
+      }
+    });
+  } else {
+    /*
+     * Llegó alguien después del reparto. No se rearma nada: entra como segundo
+     * observador del grupo más chico de cada ronda, y los que ya estaban en ese
+     * grupo pasan a verlo. Es el mismo criterio que usa el cruce.
+     */
+    for (let ronda = 0; ronda < 3; ronda++) {
+      const porGrupo = new Map<number, Aporte[]>();
+      for (const a of previos[ronda]) {
+        if (a.valor?.tipo !== 'ensayo' || !vigentes.has(a.asistente_id)) continue;
+        const lista = porGrupo.get(a.valor.grupo) ?? [];
+        lista.push(a);
+        porGrupo.set(a.valor.grupo, lista);
+      }
+      for (const nuevo of nuevos) {
+        const destino = [...porGrupo.entries()].sort(
+          ([ga, a], [gb, b]) => a.length - b.length || ga - gb
+        )[0];
+        if (!destino) break;
+        const [numero, integrantes] = destino;
+        const ids = [...integrantes.map((a) => a.asistente_id), nuevo.id];
+        const caso = (integrantes[0].valor as { caso: number }).caso;
+        const reaccion = (integrantes[0].valor as { reaccion: number }).reaccion;
+        for (const a of integrantes) {
+          filas.push({
+            corrida_id: corrida.id,
+            actividad_id: rondas[ronda].id,
+            asistente_id: a.asistente_id,
+            valor: {
+              ...a.valor,
+              conIds: ids.filter((id) => id !== a.asistente_id),
+            },
+          });
+        }
+        filas.push({
+          corrida_id: corrida.id,
+          actividad_id: rondas[ronda].id,
+          asistente_id: nuevo.id,
+          valor: {
+            tipo: 'ensayo',
+            grupo: numero,
+            rol: 'observa',
+            caso,
+            reaccion,
+            conIds: ids.filter((id) => id !== nuevo.id),
+          },
+        });
+        // El que acaba de entrar cuenta para el próximo que llegue.
+        porGrupo.set(numero, [
+          ...integrantes,
+          { asistente_id: nuevo.id } as Aporte,
+        ]);
+      }
+    }
+  }
+
+  await upsertVarias('aportes', filas, 'actividad_id,asistente_id');
+}
+
+/**
+ * Lo que vio quien observó el trío: quién habló primero después de la noticia.
+ *
+ * Es la única escritura del ensayo desde un teléfono. Se guarda dentro del
+ * puesto que ya tiene esa persona, así que hace falta leerlo antes: además de
+ * dar el valor a completar, es lo que dice si esa persona era la que observaba.
+ * Sin eso, el que comunica podría contestar por su propio trío.
+ *
+ * Es idempotente por construcción, porque escribe el mismo campo con el mismo
+ * criterio: tocar el botón dos veces deja lo mismo que tocarlo una.
+ */
+export async function anotarObservacion(
+  corridaId: string,
+  actividadId: string,
+  asistenteId: string,
+  hablo: 'comunica' | 'recibe'
+): Promise<Aporte> {
+  const puesto = await getAporteDe(actividadId, asistenteId);
+  if (puesto?.valor?.tipo !== 'ensayo') {
+    throw new Error('Todavía no tenés puesto en esta ronda');
+  }
+  if (puesto.valor.rol !== 'observa') {
+    throw new Error('Esto lo contesta quien observa');
+  }
+  return guardarAporte(corridaId, actividadId, asistenteId, {
+    ...puesto.valor,
+    hablo,
+  });
+}
+
 // ------------------------------------------------------------------ control
 
 /**
@@ -748,6 +931,12 @@ export function normalizarValor(actividad: Actividad, crudo: unknown): Valor {
       // alguien tratando de elegirse la pareja.
       throw new Error('Esta actividad no se responde');
 
+    case 'ensayo':
+      // El puesto lo escribe el servidor. Lo único que manda el teléfono es lo
+      // que vio quien observa, y eso pasa por `anotarObservacion`, que necesita
+      // el puesto ya guardado para saber si esa persona era la que observaba.
+      throw new Error('Esta actividad no se responde');
+
     case 'marcas': {
       const crudas = Array.isArray(dato.marcas) ? dato.marcas : [];
       const marcas = [
@@ -786,7 +975,23 @@ export type Resumen =
     }
   | { tipo: 'enlace'; total: number }
   | { tipo: 'cuestionario'; total: number }
-  | { tipo: 'cruce'; total: number; grupos: number };
+  | { tipo: 'cruce'; total: number; grupos: number }
+  /**
+   * Lo que mira la expositora durante el ensayo. `contestaron` sobre `observan`
+   * es la señal de cuándo cerrar la ronda, y es un hecho y no una estimación:
+   * los tríos no terminan todos juntos y el reloj no sabe cuáles siguen.
+   *
+   * El reparto de quién habló primero es el dato con el que arranca la puesta
+   * en común. Si habló primero el que comunicó, ese trío no sostuvo el silencio.
+   */
+  | {
+      tipo: 'ensayo';
+      total: number;
+      grupos: number;
+      observan: number;
+      contestaron: number;
+      hablo: { comunica: number; recibe: number };
+    };
 
 /** Para agrupar 'apurado' con 'Apurado' y con 'apurada' no, que es otra cosa. */
 function normalizar(texto: string): string {
@@ -901,6 +1106,24 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
         vistos.add([a.asistente_id, ...a.valor.conIds].sort().join('|'));
       }
       return { tipo: 'cruce', total, grupos: vistos.size };
+    }
+
+    case 'ensayo': {
+      const grupos = new Set<number>();
+      let observan = 0;
+      let contestaron = 0;
+      const hablo = { comunica: 0, recibe: 0 };
+      for (const a of aportes) {
+        if (a.valor?.tipo !== 'ensayo') continue;
+        grupos.add(a.valor.grupo);
+        if (a.valor.rol !== 'observa') continue;
+        observan += 1;
+        if (a.valor.hablo) {
+          contestaron += 1;
+          hablo[a.valor.hablo] += 1;
+        }
+      }
+      return { tipo: 'ensayo', total, grupos: grupos.size, observan, contestaron, hablo };
     }
 
     case 'marcas': {
