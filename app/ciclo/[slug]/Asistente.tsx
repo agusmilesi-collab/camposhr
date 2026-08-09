@@ -140,11 +140,26 @@ export default function Asistente({
   // --- Sesión: la marca del navegador, y la grilla de caras como respaldo ---
   useEffect(() => {
     try {
-      const id = localStorage.getItem(guardado);
+      /*
+       * Una pestaña puede fijar su propia identidad con `?como=<id>`.
+       *
+       * Es para probar: las tres pantallas del ensayo se miran a la vez en la
+       * misma computadora, una por pestaña. La marca va en `sessionStorage`,
+       * que es de esa pestaña y no del navegador, así que no le cambia la
+       * sesión a las otras ni a quien esté usando el teléfono de verdad.
+       *
+       * No abre nada nuevo: la grilla de caras ya deja entrar como cualquiera.
+       */
+      const dePestana = sessionStorage.getItem(guardado);
+      const pedido = new URLSearchParams(window.location.search).get('como');
+      const id = pedido ?? dePestana ?? localStorage.getItem(guardado);
       // Se valida contra la lista real: si la persona se borró de la base o la
       // marca quedó de otro ciclo, vuelve a la entrada en vez de romperse.
       const cara = id ? caras.find((c) => c.id === id) : null;
-      if (cara) setYo({ id: cara.id, nombre: cara.nombre, apellido: cara.apellido });
+      if (cara) {
+        if (pedido || dePestana) sessionStorage.setItem(guardado, cara.id);
+        setYo({ id: cara.id, nombre: cara.nombre, apellido: cara.apellido });
+      }
     } catch {
       // Navegador sin almacenamiento: entra por la grilla de caras.
     }
@@ -173,6 +188,7 @@ export default function Asistente({
   const salir = useCallback(() => {
     try {
       localStorage.removeItem(guardado);
+      sessionStorage.removeItem(guardado);
     } catch {
       // Sin almacenamiento la sesión ya vivía solo en memoria.
     }
