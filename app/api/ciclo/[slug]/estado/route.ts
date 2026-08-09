@@ -167,8 +167,13 @@ type Ensayo = {
   /** Sólo para quien recibe la noticia. Los otros dos no tienen que verla. */
   reaccion: { nombre: string; instruccion: string } | null;
   con: { nombre: string; apellido: string; foto: string | null; rol: Rol }[];
-  /** Lo que ya contestó, si observó y ya tocó el botón. */
-  hablo: 'comunica' | 'recibe' | null;
+  /** Lo que ya anotó, para que la pantalla no vuelva a preguntarlo. */
+  anotado: {
+    hablo: 'comunica' | 'recibe' | null;
+    motivo: 'hecho' | 'juicio' | null;
+    porque: boolean | null;
+    cuando: boolean | null;
+  };
 };
 
 async function ensayoDe(
@@ -219,7 +224,12 @@ async function ensayoDe(
       foto: c.quien.foto_path ? fotos.get(c.quien.foto_path) ?? null : null,
       rol: c.rol,
     })),
-    hablo: puesto.hablo ?? null,
+    anotado: {
+      hablo: puesto.hablo ?? null,
+      motivo: puesto.motivo ?? null,
+      porque: puesto.porque ?? null,
+      cuando: puesto.cuando ?? null,
+    },
   };
 }
 

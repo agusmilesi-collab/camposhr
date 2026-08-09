@@ -18,6 +18,8 @@ type Fila = {
   'con los 3 roles': string;
   'con los 3 casos': string;
   'con las 3 reacciones': string;
+  'sin comunicar': number;
+  'sin recibir': number;
 };
 
 function verificar(n: number): Fila {
@@ -77,6 +79,8 @@ function verificar(n: number): Fila {
     'con los 3 roles': `${conTres(roles)}/${n}`,
     'con los 3 casos': `${conTres(casos)}/${n}`,
     'con las 3 reacciones': `${conTres(reacciones)}/${n}`,
+    'sin comunicar': ids.filter((id) => !roles.get(id)?.has('comunica')).length,
+    'sin recibir': ids.filter((id) => !roles.get(id)?.has('recibe')).length,
   };
 }
 

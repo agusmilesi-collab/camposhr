@@ -154,16 +154,35 @@ export function repartoEnsayo(ids: string[]): GrupoEnsayo[][] {
     }
 
     /*
-     * Cuando la cantidad no es múltiplo de tres, el que sobra entra como
-     * segundo observador, en un grupo distinto en cada ronda.
+     * Cuando la cantidad no es múltiplo de tres, hay un límite que no depende
+     * del reparto: con 3m+1 personas hay 3m turnos de comunicar y 3m de
+     * recibir, así que alguien no comunica nunca y alguien no recibe nunca.
      *
-     * Probamos intercambiarlo con alguien de la grilla para que hiciera los
-     * tres roles y sale peor: gana los tres pero se los saca a tres personas y
-     * multiplica las parejas repetidas. La salida buena no es de algoritmo, es
-     * de sala: que se sume quien dicta hasta completar el múltiplo de tres.
+     * Lo que sí se elige es quién lo paga. La que sobra se suma a un trío y le
+     * toma el rol, y la desplazada pasa a ser el segundo observador de su
+     * propio grupo. Así la que sobra hace los tres roles, y el costo lo pagan
+     * dos personas distintas que pierden uno cada una, en vez de una sola que
+     * observa tres veces seguidas.
+     *
+     * En las dos primeras rondas toma los roles que no se pueden repetir, y en
+     * la tercera observa. El grupo queda con las mismas cuatro personas que si
+     * simplemente se hubiera sumado, así que no aparecen parejas nuevas.
      */
+    const TOMA: (Rol | null)[] = ['comunica', 'recibe', null];
     sobran.forEach((asistenteId, i) => {
-      grupos[(ronda * 2 + i * 3) % m].puestos.push({ asistenteId, rol: 'observa' });
+      const grupo = grupos[(ronda * 2 + i * 3) % m];
+      const rolQueToma = TOMA[ronda];
+      if (!rolQueToma) {
+        grupo.puestos.push({ asistenteId, rol: 'observa' });
+        return;
+      }
+      const desplazada = grupo.puestos.find((p) => p.rol === rolQueToma);
+      if (!desplazada) {
+        grupo.puestos.push({ asistenteId, rol: 'observa' });
+        return;
+      }
+      desplazada.rol = 'observa';
+      grupo.puestos.push({ asistenteId, rol: rolQueToma });
     });
     return grupos;
   });

@@ -32,6 +32,11 @@ type ConteoEnsayo = {
   observan: number;
   contestaron: number;
   hablo: { comunica: number; recibe: number };
+  motivo: { hecho: number; juicio: number };
+  reciben: number;
+  contestaronReciben: number;
+  dijoPorque: number;
+  dijoCuando: number;
 };
 
 /** Minutos y segundos, para los dos relojes del ensayo. */
@@ -207,11 +212,20 @@ export default function Control({
                      dice cuándo cerrar y este número sí: cuando contestaron
                      casi todos los observadores, la ronda terminó. */
                   <>
-                    Contestaron {ensayo.contestaron} de {ensayo.observan}
+                    Anotaron {ensayo.contestaron} de {ensayo.observan}{' '}
+                    observadores y {ensayo.contestaronReciben} de{' '}
+                    {ensayo.reciben} que recibieron
                     {ensayo.contestaron > 0 && (
                       <b className="ct-a-medias">
-                        {' '}· habló primero: el que comunicó {ensayo.hablo.comunica},
-                        el que recibió {ensayo.hablo.recibe}
+                        {' '}· habló primero el que comunicó en{' '}
+                        {ensayo.hablo.comunica} de {ensayo.contestaron} · motivo
+                        con un hecho en {ensayo.motivo.hecho}
+                      </b>
+                    )}
+                    {ensayo.contestaronReciben > 0 && (
+                      <b className="ct-a-medias">
+                        {' '}· dijeron por qué {ensayo.dijoPorque}, dijeron cuándo{' '}
+                        {ensayo.dijoCuando}
                       </b>
                     )}
                     {desdeRonda !== null && (
