@@ -501,6 +501,13 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .rueda-chica .caja img{width:200px;height:200px;display:block}
 .rueda-chica span{font-size:30px;line-height:1.35;color:var(--muted)}
 
+/* Los tres roles del ensayo, en viñetas: entra de un vistazo mejor que en una
+   oración, que es lo que hace falta cuando treinta y tres personas se están
+   levantando para armar los tríos. */
+.roles{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:8px}
+.roles li{font-size:29px;line-height:1.35;color:var(--ink-soft)}
+.roles li::marker{color:var(--amber)}
+
 /* Una línea de criterio al pie de una placa, en tinta suave: dice menos que el
    titular de arriba y más que la cita de la fuente. */
 .criterio{font-size:30px;line-height:1.4;color:var(--ink-soft);margin-top:44px}
@@ -805,7 +812,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="contenido izq tres">
       <div class="titulo-placa">El ensayo</div>
       <div class="tarjetas tres">
-        <div><h3>Tres roles</h3><p>Uno comunica, uno recibe y uno observa.</p></div>
+        <div><h3>Tres roles</h3><ul class="roles"><li>Uno comunica la noticia</li><li>Uno la recibe</li><li>Uno observa la conversación</li></ul></div>
         <div><h3>Tres rondas</h3><p>En cada una cambiás de rol, de caso y de compañeros: todos pasan por todo.</p></div>
         <div><h3>El teléfono</h3><p>Te dice qué te toca y qué anotar cuando terminen.</p></div>
       </div>
