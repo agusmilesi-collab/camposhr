@@ -54,36 +54,42 @@ export const CASOS = [
 /**
  * Lo que hace quien recibe la noticia. Va sólo en su teléfono: el que comunica
  * se entera cuando pasa, que es lo que hace que el ensayo sirva de algo.
+ *
+ * Están escritas como acciones y no como estados. A alguien a quien le piden
+ * que actúe delante de dos compañeros, "te cerrás" o "te quebrás" no le dicen
+ * qué hacer con el cuerpo ni qué decir. Cada línea es un momento, una frase
+ * textual y un movimiento.
  */
 export const REACCIONES = [
   {
-    nombre: 'Reaccionás con enojo',
-    instruccion: 'No aceptás la decisión. Te parece injusta.',
+    nombre: 'Te enojás',
+    instruccion: 'Estás enojado y no aceptás la decisión.',
     guion: [
       'Apenas termina de decirlo, subí la voz: “¿Por qué yo? A otros no les ' +
         'pasó nada”.',
-      'Cruzá los brazos, dá un paso atrás y dejá de mirarlo.',
-      'Cada vez que te dé una razón, cortalo: “Eso ya lo veníamos hablando y ' +
-        'nadie hizo nada”.',
+      'Cruzá los brazos, dá un paso atrás y mirá para otro lado.',
+      'Cada vez que te dé una razón, interrumpilo: “Eso ya lo veníamos ' +
+        'hablando y nadie hizo nada”.',
     ],
   },
   {
-    nombre: 'Te quebrás',
-    instruccion: 'No lo esperabas y no lo podés sostener.',
+    nombre: 'Llorás',
+    instruccion: 'Se te llenan los ojos de lágrimas y te cuesta hablar.',
     guion: [
-      'Cuando termina, quedate callado. Mirá para abajo tres o cuatro segundos.',
-      'Después decí bajito y cortado: “Perdón… dame un segundo”.',
-      'Si te apura o te llena de razones, tapate la cara y decí: “No sé qué ' +
-        'le digo en mi casa”.',
+      'Cuando termina, quedate callado y mirá para abajo tres o cuatro segundos.',
+      'Después hablá en voz baja y cortada: “Perdón… dame un segundo”.',
+      'Si te apura o te sigue dando explicaciones, tapate la cara con una ' +
+        'mano y decí: “No sé qué le digo en mi casa”.',
     ],
   },
   {
-    nombre: 'Te cerrás',
-    instruccion: 'Te lo guardás todo. Por afuera no pasa nada.',
+    nombre: 'No decís nada',
+    instruccion: 'Contestás lo mínimo y querés terminar la conversación.',
     guion: [
-      'Cuando termina, no digas nada. Dejá el silencio ahí, sin ayudarlo.',
-      'Si te pregunta algo, contestá “ajá” o “está bien”. Nada más largo.',
-      'Quedate duro mirando la puerta. Si insiste, decí: “¿Puedo irme?”.',
+      'Cuando termina, quedate callado, aunque el silencio se haga largo.',
+      'Si te pregunta algo, contestá “ajá” o “está bien”, y nada más.',
+      'Quedate quieto, con las manos a los costados, mirando la puerta. Si ' +
+        'insiste, decí: “¿Puedo irme?”.',
     ],
   },
 ] as const;
