@@ -64,7 +64,7 @@ type Ensayo = {
   rol: 'comunica' | 'recibe' | 'observa';
   caso: { titulo: string; situacion: string };
   /** Sólo llega al que recibe la noticia: los otros dos no tienen que verla. */
-  reaccion: { nombre: string; instruccion: string } | null;
+  reaccion: { nombre: string; instruccion: string; guion: string[] } | null;
   con: {
     nombre: string;
     apellido: string;
@@ -1032,10 +1032,24 @@ function Formulario({
  */
 /** Cómo se nombra cada rol en la pantalla de quien lo tiene. */
 const ROL_TITULO = {
-  comunica: 'Vos comunicás',
-  recibe: 'Vos recibís',
-  observa: 'Vos observás',
+  comunica: 'Vos comunicás la mala noticia',
+  recibe: 'Vos recibís la mala noticia',
+  observa: 'Vos observás la conversación',
 } as const;
+
+/**
+ * Los cuatro pasos, para quien tiene que darla.
+ *
+ * Sin el ejemplo: el ejemplo está en la placa proyectada y nombra la
+ * suspensión, que es uno de los tres casos. Acá cada uno tiene el suyo, así
+ * que el recordatorio dice el paso y no la frase.
+ */
+const PASOS = [
+  ['Encuadrá', 'Lugar privado y un aviso corto antes de empezar.'],
+  ['Decilo claro', 'El motivo y la decisión juntos, en las primeras dos frases.'],
+  ['En silencio, sostené', 'Cuando lo dijiste, callate y esperá.'],
+  ['Cerrá con una fecha', 'Qué pasa ahora, con día y hora.'],
+] as const;
 
 /** Y cómo se nombra el de los otros dos, para ubicarlos en el trío. */
 const ROL_AJENO = {
@@ -1195,13 +1209,27 @@ function Ensayando({
       </div>
 
       {ensayo.rol === 'comunica' && (
-        <p className="ci-ensayo-consigna">Usá los cuatro pasos de la placa.</p>
+        <div className="ci-ensayo-pasos">
+          <h2>Los cuatro pasos</h2>
+          <ol>
+            {PASOS.map(([nombre, como]) => (
+              <li key={nombre}>
+                <b>{nombre}.</b> {como}
+              </li>
+            ))}
+          </ol>
+        </div>
       )}
 
       {ensayo.reaccion && (
         <div className="ci-ensayo-reaccion">
           <h2>{ensayo.reaccion.nombre}</h2>
           <p>{ensayo.reaccion.instruccion}</p>
+          <ul className="ci-ensayo-guion">
+            {ensayo.reaccion.guion.map((linea) => (
+              <li key={linea}>{linea}</li>
+            ))}
+          </ul>
           <p className="ci-ensayo-secreto">
             Esto lo ves solo vos. No se lo muestres a quien te va a comunicar.
           </p>
@@ -1210,6 +1238,9 @@ function Ensayando({
 
       {ensayo.rol === 'observa' && (
         <div className="ci-ensayo-observa">
+          <p className="ci-ensayo-cuando">
+            Contestá cuando la conversación haya terminado, no mientras hablan.
+          </p>
           <Pregunta
             campo="hablo"
             texto="¿Quién habló primero después de la noticia?"
@@ -1232,6 +1263,9 @@ function Ensayando({
 
       {ensayo.rol === 'recibe' && (
         <div className="ci-ensayo-observa">
+          <p className="ci-ensayo-cuando">
+            Contestá cuando la conversación haya terminado, no mientras hablan.
+          </p>
           <Pregunta
             campo="porque"
             texto="¿Te dijo por qué?"

@@ -165,7 +165,7 @@ type Ensayo = {
   rol: Rol;
   caso: { titulo: string; situacion: string };
   /** Sólo para quien recibe la noticia. Los otros dos no tienen que verla. */
-  reaccion: { nombre: string; instruccion: string } | null;
+  reaccion: { nombre: string; instruccion: string; guion: string[] } | null;
   con: { nombre: string; apellido: string; foto: string | null; rol: Rol }[];
   /** Lo que ya anotó, para que la pantalla no vuelva a preguntarlo. */
   anotado: {
@@ -217,7 +217,14 @@ async function ensayoDe(
     grupo: puesto.grupo,
     rol: puesto.rol,
     caso: CASOS[puesto.caso] ?? CASOS[0],
-    reaccion: puesto.rol === 'recibe' ? REACCIONES[puesto.reaccion] ?? null : null,
+    reaccion:
+      puesto.rol === 'recibe' && REACCIONES[puesto.reaccion]
+        ? {
+            nombre: REACCIONES[puesto.reaccion].nombre,
+            instruccion: REACCIONES[puesto.reaccion].instruccion,
+            guion: [...REACCIONES[puesto.reaccion].guion],
+          }
+        : null,
     con: companeros.map((c) => ({
       nombre: c.quien.nombre,
       apellido: c.quien.apellido,
