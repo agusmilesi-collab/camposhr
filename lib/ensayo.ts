@@ -59,20 +59,42 @@ export const REACCIONES = [
   {
     nombre: 'Reaccionás con enojo',
     instruccion:
-      'Discutís la decisión. Decís que es injusto y que a otros no les pasó ' +
-      'nada.',
+      'No aceptás la decisión. Te parece injusta y querés que alguien se ' +
+      'haga responsable.',
+    guion: [
+      'Interrumpilo apenas termina de decirlo, sin dejarlo seguir.',
+      'Decile: "¿por qué yo?", "a otros no les pasó nada", "esto ya lo ' +
+        'veníamos hablando y nadie hizo nada".',
+      'Echate para atrás en la silla, cruzá los brazos, subí la voz un poco.',
+      'Si te da explicaciones, discutí cada una. Si se queda callado, ' +
+        'insistí una vez más y después bajá el tono, pero no aflojes.',
+    ],
   },
   {
     nombre: 'Te quebrás',
     instruccion:
-      'Se te llenan los ojos de lágrimas y no podés seguir hablando por un ' +
-      'rato.',
+      'No esperabas esto y no lo podés sostener. No estás enojado, estás ' +
+      'desbordado.',
+    guion: [
+      'Quedate en silencio unos segundos mirando para abajo antes de decir nada.',
+      'Hablá entrecortado: "perdón", "dame un segundo", "no sé qué le digo ' +
+        'en mi casa".',
+      'Tapate la cara con una mano, respirá corto, no lo mires.',
+      'Si te apura o te llena de explicaciones, quebrate más. Si te da ' +
+        'lugar y espera, empezá a acomodarte de a poco.',
+    ],
   },
   {
-    nombre: 'Te quedás callado',
+    nombre: 'Te cerrás',
     instruccion:
-      'Contestás con monosílabos, mirás para abajo y querés irte lo antes ' +
-      'posible.',
+      'Te lo guardás todo. Por afuera no pasa nada y por dentro ya te fuiste.',
+    guion: [
+      'No digas nada cuando termine. Dejá el silencio ahí, sin ayudarlo.',
+      'Contestá con "ajá", "bueno", "está bien". Nada más largo que eso.',
+      'Mirá la puerta o el celular. Quedate quieto, sin gestos.',
+      'Si te pregunta cómo estás, decí "todo bien" y preguntá si podés irte.',
+      'Es el más difícil de sostener para el otro: no le des nada.',
+    ],
   },
 ] as const;
 

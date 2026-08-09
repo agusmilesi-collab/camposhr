@@ -4413,3 +4413,57 @@ body {
   line-height: 1.25;
   color: var(--ink);
 }
+
+/* El ayuda memoria de los cuatro pasos, para quien tiene que dar la noticia. */
+.ci-ensayo-pasos {
+  margin-top: 20px;
+  padding: 16px 18px;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.ci-ensayo-pasos h2 {
+  margin: 0 0 10px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+.ci-ensayo-pasos ol {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.ci-ensayo-pasos li {
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+.ci-ensayo-pasos b {
+  color: var(--ink);
+  font-weight: 600;
+}
+/* El guion de la reacción: qué decir y qué hacer con el cuerpo. */
+.ci-ensayo-guion {
+  margin: 12px 0 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.ci-ensayo-guion li {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+/* Cuándo contestar. Va antes de los botones para que nadie los toque mientras
+   el otro le está hablando. */
+.ci-ensayo-cuando {
+  margin: 0 0 18px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
