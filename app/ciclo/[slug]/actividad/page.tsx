@@ -372,6 +372,60 @@ function CierreDelEnsayo({ aportes }: { aportes: Aporte[] }) {
           </li>
         ))}
       </ul>
+      <p className="cp-cierre-lectura">
+        {lectura({
+          conversaciones,
+          dijeronMotivo,
+          motivoFueHecho,
+          seQuedaronEscuchando,
+          cerraronConFecha,
+        })}
+      </p>
     </div>
+  );
+}
+
+/**
+ * La conclusión, elegida según cómo salieron los números.
+ *
+ * Cuatro números sueltos son datos. Lo que abre la conversación es la lectura,
+ * y la lectura depende de dónde estuvo la caída: no es lo mismo una sala que
+ * dijo el motivo como un juicio que una que no cerró con fecha.
+ *
+ * Se elige la primera que se cumple, en orden de qué duele más. Y todas
+ * terminan abriendo, porque esta placa es el disparador de la puesta en común
+ * y no su conclusión.
+ */
+function lectura(n: {
+  conversaciones: number;
+  dijeronMotivo: number;
+  motivoFueHecho: number;
+  seQuedaronEscuchando: number;
+  cerraronConFecha: number;
+}): string {
+  const mitad = n.conversaciones / 2;
+
+  if (n.cerraronConFecha < mitad) {
+    return (
+      'Casi todos dijeron lo difícil y casi nadie dijo qué pasa después. ' +
+      'La conversación termina, la situación sigue. ¿Qué les pasó ahí?'
+    );
+  }
+  if (n.motivoFueHecho < n.dijeronMotivo / 2) {
+    return (
+      'La mitad de los motivos fueron un juicio sobre la persona y no un ' +
+      'hecho. Con un hecho se puede conversar. ¿Se dieron cuenta en el momento?'
+    );
+  }
+  if (n.seQuedaronEscuchando < mitad) {
+    return (
+      'La mayoría se puso a hablar apenas el otro reaccionó. Es lo que sale ' +
+      'solo cuando incomoda. ¿Qué se les hizo más largo, el silencio o la ' +
+      'reacción?'
+    );
+  }
+  return (
+    'Los cuatro pasos aparecieron en la mayoría de las conversaciones. ' +
+    '¿Cuál les costó más sostener?'
   );
 }
