@@ -1218,6 +1218,14 @@ function Ensayando({
               </li>
             ))}
           </ol>
+          {/* El ensayo mental antes de entrar. Es parte del primer paso de
+              SPIKES y en la charla no está en ningún lado: quien va a dar la
+              noticia entra en frío y de ahí sale la mitad de lo que después
+              se le complica. */}
+          <p className="ci-ensayo-pensar">
+            Si querés, tomate unos segundos antes de empezar para pensar cómo
+            lo vas a decir.
+          </p>
         </div>
       )}
 

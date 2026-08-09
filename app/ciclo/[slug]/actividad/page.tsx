@@ -2,6 +2,10 @@ import { notFound } from 'next/navigation';
 import { contarRespuestas } from '@/lib/supabase';
 import { partirOpcion } from '@/lib/opciones';
 import {
+  actividadesDelCiclo,
+  listarAportesDeVarias,
+  rondasDelEnsayo,
+  type Aporte,
   getActividadAbierta,
   getActividadPorClave,
   listarAportes,
@@ -55,6 +59,28 @@ export default async function Proyeccion({
   const enPlaca = searchParams?.placa === '1';
   const soloConteo = searchParams?.vista === 'conteo';
   const soloConsigna = searchParams?.vista === 'consigna';
+  const cierreDelEnsayo = searchParams?.vista === 'cierre';
+  /*
+   * El cierre del ensayo suma las tres rondas: son 33 conversaciones y lo que
+   * importa es la foto de la sala entera, no la de una ronda. Va después del
+   * ensayo y no durante: con los números a la vista mientras practican, los
+   * últimos tríos juegan para el marcador.
+   */
+  if (cierreDelEnsayo) {
+    const rondas = rondasDelEnsayo(await actividadesDelCiclo(corrida.ciclo_id));
+    const aportes = await listarAportesDeVarias(
+      corrida.id,
+      rondas.map((r: { id: string }) => r.id)
+    );
+    return (
+      <main className={enPlaca ? 'cp cp-placa' : 'cp'}>
+        {enPlaca && <FondoTransparente />}
+        <CierreDelEnsayo aportes={aportes} />
+        <AutoRefresco segundos={15} oculto />
+      </main>
+    );
+  }
+
   const actividad = searchParams?.clave
     ? await getActividadPorClave(corrida.ciclo_id, searchParams.clave)
     : await getActividadAbierta(corrida);
@@ -292,4 +318,60 @@ function Vista({ actividad, resumen }: { actividad: Actividad; resumen: Resumen 
 
   // Tipo desconocido: no debería llegar acá, pero la proyección no se cae.
   return <p className="cp-vacio">{actividad.titulo}</p>;
+}
+
+/**
+ * Lo que hizo la sala en las tres rondas del ensayo.
+ *
+ * Cuatro números que caen solos: casi todos dicen el motivo, la mitad lo dice
+ * como un juicio sobre la persona, pocos aguantan el silencio y casi nadie
+ * cierra con una fecha. Esa caída es el remate del bloque, y el último número
+ * es el mismo paso que dejó los treinta y dos compromisos de la charla 1 sin
+ * agendar.
+ */
+function CierreDelEnsayo({ aportes }: { aportes: Aporte[] }) {
+  let conversaciones = 0;
+  let dijeronMotivo = 0;
+  let motivoFueHecho = 0;
+  let seQuedaronEscuchando = 0;
+  let cerraronConFecha = 0;
+
+  for (const a of aportes) {
+    if (a.valor?.tipo !== 'ensayo') continue;
+    // Una conversación por grupo y por ronda, y en cada una comunica uno solo.
+    if (a.valor.rol === 'comunica') conversaciones += 1;
+    if (a.valor.rol === 'recibe') {
+      if (a.valor.porque) dijeronMotivo += 1;
+      if (a.valor.cuando) cerraronConFecha += 1;
+    }
+    if (a.valor.rol === 'observa') {
+      if (a.valor.motivo === 'hecho') motivoFueHecho += 1;
+      if (a.valor.sostuvo === 'escucho') seQuedaronEscuchando += 1;
+    }
+  }
+
+  const filas = [
+    ['dijeron el motivo', dijeronMotivo],
+    ['ese motivo fue un hecho y no un juicio', motivoFueHecho],
+    ['se quedaron escuchando cuando el otro reaccionó', seQuedaronEscuchando],
+    ['cerraron con día y hora', cerraronConFecha],
+  ] as const;
+
+  if (conversaciones === 0) {
+    return <p className="cp-vacio">Se arma sola cuando terminan las rondas.</p>;
+  }
+
+  return (
+    <div className="cp-cierre">
+      <p className="cp-cierre-total">{conversaciones} conversaciones</p>
+      <ul>
+        {filas.map(([texto, cuantos]) => (
+          <li key={texto}>
+            <b>{cuantos}</b>
+            <span>{texto}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
