@@ -486,6 +486,13 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .ancla p,.duo p,.credenciales,.marca-texto,.pasos span,.lideres span,
 .escalones span,.sesgos span,.cuadro span{color:var(--ink-soft);opacity:1}
 
+/* La cita al pie de una placa. Va chica y en gris: quien está en la sala lee
+   el contenido, y la fuente está para que se pueda verificar y para que la
+   expositora la nombre si alguien pregunta de dónde sale. */
+.fuente{font-size:24px;line-height:1.45;color:var(--muted);margin-top:44px}
+.contenido.izq .tarjetas ~ .fuente{width:100%;max-width:var(--ancho);
+  margin-left:auto;margin-right:auto}
+
 /* Lo que el marco de la matriz dice mientras carga, y la dirección de abajo:
    iban en crema para el fondo oscuro. */
 .matriz-aviso p,.matriz-marco .dir{color:var(--muted)}
@@ -737,24 +744,25 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="contenido izq tres">
       <div class="titulo-placa">Toda mala noticia toca tres cosas a la vez</div>
       <div class="tarjetas tres flecha">
-        <div><h3>El hecho</h3><p>Qué pasa.</p></div>
-        <div><h3>La emoción</h3><p>Lo que se siente.</p></div>
-        <div><h3>La interpretación</h3><p>Lo que el otro lee sobre sí mismo: “¿esto significa que no sirvo?”.</p></div>
+        <div><h3>El hecho</h3><p>Es la información que le das: “quedás suspendido tres días”.</p></div>
+        <div><h3>La emoción</h3><p>Es lo que la persona siente cuando lo escucha: bronca, vergüenza o miedo.</p></div>
+        <div><h3>La interpretación</h3><p>Es la conclusión que la persona saca sobre sí misma: “no sirvo para esto”.</p></div>
       </div>
     </div>
   </section>
 
   <!-- 9 -->
-  <section class="placa" data-notas="Los cuatro pasos, y queda proyectada durante todo el ensayo. El porqué de cada uno va en voz. Encuadrá: el otro necesita un segundo para pararse, no una emboscada. Decilo claro: dar vueltas parece más amable pero es más cruel, alarga la agonía y confunde. Dale lugar: la emoción necesita lugar, si la tapás se agranda. Cerrá con un paso: dejar a alguien sin un 'y ahora qué' lo deja en caída libre.">
+  <section class="placa" data-notas="Los cuatro pasos, y queda proyectada durante todo el ensayo. El porqué de cada uno va en voz. Encuadrá: el otro necesita un segundo para pararse, no una emboscada. Decilo claro: dar vueltas parece más amable pero es más cruel, alarga la agonía y confunde. Callate y sostené: la emoción necesita lugar, si la tapás se agranda. Cerrá con un paso: dejar a alguien sin un 'y ahora qué' lo deja en caída libre.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq cuatro">
       <div class="titulo-placa">Los cuatro pasos</div>
       <div class="tarjetas cuatro">
-        <div><span class="num">01</span><h3>Encuadrá</h3><p>Lugar privado, sin apuro, y un aviso corto: “necesito hablarte de algo difícil”.</p></div>
-        <div><span class="num">02</span><h3>Decilo claro</h3><p>La noticia directa, en una o dos frases, sin eufemismos ni vueltas.</p></div>
-        <div><span class="num">03</span><h3>Dale lugar</h3><p>Después de decirlo, silencio. Dejá que reaccione sin taparlo ni salir a justificarte.</p></div>
-        <div><span class="num">04</span><h3>Cerrá con un paso</h3><p>Qué pasa ahora, algo concreto: “el lunes vemos los próximos pasos”.</p></div>
+        <div><span class="num">01</span><h3>Encuadrá</h3><p>Buscá un lugar privado y sin apuro, y avisale antes: “necesito hablarte de algo difícil”.</p></div>
+        <div><span class="num">02</span><h3>Decilo claro</h3><p>Decí la noticia completa en las primeras dos frases: “quedás suspendido tres días, desde el lunes”.</p></div>
+        <div><span class="num">03</span><h3>Callate y sostené</h3><p>Cuando terminaste de decirlo quedate en silencio y esperá, aunque llore o levante la voz, sin justificar la decisión.</p></div>
+        <div><span class="num">04</span><h3>Cerrá con un paso</h3><p>Terminá diciendo qué pasa ahora, con día y hora: “el lunes a las 9 nos juntamos y vemos cómo seguimos”.</p></div>
       </div>
+      <div class="fuente">Adaptado del protocolo SPIKES (Baile y otros, 2000), usado en medicina para comunicar diagnósticos graves.</div>
     </div>
   </section>
 
