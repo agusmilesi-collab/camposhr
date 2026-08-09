@@ -61,7 +61,7 @@ export const REACCIONES = [
     instruccion: 'No aceptás la decisión. Te parece injusta.',
     guion: [
       'Decí: "¿por qué yo?" y "a otros no les pasó nada".',
-      'Cruzá los brazos, echate para atrás, subí la voz.',
+      'Cruzá los brazos, dá un paso atrás, subí la voz.',
       'Si te explica, discutí cada explicación.',
     ],
   },
@@ -69,7 +69,7 @@ export const REACCIONES = [
     nombre: 'Te quebrás',
     instruccion: 'No lo esperabas y no lo podés sostener.',
     guion: [
-      'Quedate callado unos segundos y mirá para abajo.',
+      'Quedate callado unos segundos, mirá para abajo, tapate la cara.',
       'Decí entrecortado: "perdón, dame un segundo".',
       'Si te apura, quebrate más. Si te espera, acomodate de a poco.',
     ],
@@ -79,7 +79,7 @@ export const REACCIONES = [
     instruccion: 'Te lo guardás todo. Por afuera no pasa nada.',
     guion: [
       'Contestá "ajá", "bueno", "está bien". Nada más largo.',
-      'Mirá la puerta, quedate quieto, sin gestos.',
+      'Mirá la puerta, quedate duro, con los brazos colgando.',
       'Si te pregunta cómo estás, decí "todo bien" y pedí irte.',
     ],
   },
