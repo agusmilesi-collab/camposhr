@@ -58,42 +58,29 @@ export const CASOS = [
 export const REACCIONES = [
   {
     nombre: 'Reaccionás con enojo',
-    instruccion:
-      'No aceptás la decisión. Te parece injusta y querés que alguien se ' +
-      'haga responsable.',
+    instruccion: 'No aceptás la decisión. Te parece injusta.',
     guion: [
-      'Interrumpilo apenas termina de decirlo, sin dejarlo seguir.',
-      'Decile: "¿por qué yo?", "a otros no les pasó nada", "esto ya lo ' +
-        'veníamos hablando y nadie hizo nada".',
-      'Echate para atrás en la silla, cruzá los brazos, subí la voz un poco.',
-      'Si te da explicaciones, discutí cada una. Si se queda callado, ' +
-        'insistí una vez más y después bajá el tono, pero no aflojes.',
+      'Decí: "¿por qué yo?" y "a otros no les pasó nada".',
+      'Cruzá los brazos, echate para atrás, subí la voz.',
+      'Si te explica, discutí cada explicación.',
     ],
   },
   {
     nombre: 'Te quebrás',
-    instruccion:
-      'No esperabas esto y no lo podés sostener. No estás enojado, estás ' +
-      'desbordado.',
+    instruccion: 'No lo esperabas y no lo podés sostener.',
     guion: [
-      'Quedate en silencio unos segundos mirando para abajo antes de decir nada.',
-      'Hablá entrecortado: "perdón", "dame un segundo", "no sé qué le digo ' +
-        'en mi casa".',
-      'Tapate la cara con una mano, respirá corto, no lo mires.',
-      'Si te apura o te llena de explicaciones, quebrate más. Si te da ' +
-        'lugar y espera, empezá a acomodarte de a poco.',
+      'Quedate callado unos segundos y mirá para abajo.',
+      'Decí entrecortado: "perdón, dame un segundo".',
+      'Si te apura, quebrate más. Si te espera, acomodate de a poco.',
     ],
   },
   {
     nombre: 'Te cerrás',
-    instruccion:
-      'Te lo guardás todo. Por afuera no pasa nada y por dentro ya te fuiste.',
+    instruccion: 'Te lo guardás todo. Por afuera no pasa nada.',
     guion: [
-      'No digas nada cuando termine. Dejá el silencio ahí, sin ayudarlo.',
-      'Contestá con "ajá", "bueno", "está bien". Nada más largo que eso.',
-      'Mirá la puerta o el celular. Quedate quieto, sin gestos.',
-      'Si te pregunta cómo estás, decí "todo bien" y preguntá si podés irte.',
-      'Es el más difícil de sostener para el otro: no le des nada.',
+      'Contestá "ajá", "bueno", "está bien". Nada más largo.',
+      'Mirá la puerta, quedate quieto, sin gestos.',
+      'Si te pregunta cómo estás, decí "todo bien" y pedí irte.',
     ],
   },
 ] as const;
