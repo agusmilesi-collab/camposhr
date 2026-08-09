@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import {
-  anotarObservacion,
+  anotarEnsayo,
+  type RespuestaEnsayo,
   getActividad,
   getAsistente,
   guardarAporte,
@@ -66,16 +67,25 @@ export async function POST(
    * quien contesta era el que observaba.
    */
   if (actividad.tipo === 'ensayo') {
-    const hablo = (datos.valor as { hablo?: unknown } | undefined)?.hablo;
-    if (hablo !== 'comunica' && hablo !== 'recibe') {
+    const crudo = (datos.valor ?? {}) as Record<string, unknown>;
+    const respuesta: RespuestaEnsayo = {};
+    if (crudo.hablo === 'comunica' || crudo.hablo === 'recibe') {
+      respuesta.hablo = crudo.hablo;
+    }
+    if (crudo.motivo === 'hecho' || crudo.motivo === 'juicio') {
+      respuesta.motivo = crudo.motivo;
+    }
+    if (typeof crudo.porque === 'boolean') respuesta.porque = crudo.porque;
+    if (typeof crudo.cuando === 'boolean') respuesta.cuando = crudo.cuando;
+    if (Object.keys(respuesta).length === 0) {
       return new NextResponse('Respuesta inválida', { status: 400 });
     }
     try {
-      const guardado = await anotarObservacion(
+      const guardado = await anotarEnsayo(
         corrida.id,
         actividad.id,
         asistente.id,
-        hablo
+        respuesta
       );
       return NextResponse.json({ ok: true, valor: guardado.valor });
     } catch (e) {

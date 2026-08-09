@@ -4397,3 +4397,19 @@ body {
   font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
+
+/* Cada pregunta del ensayo, con sus dos respuestas. Se contestan por separado
+   y quedan a la vista una vez tocadas, para que nadie dude de si se guardó. */
+.ci-ensayo-pregunta + .ci-ensayo-pregunta {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.ci-ensayo-pregunta h3 {
+  margin: 0 0 14px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--ink);
+}

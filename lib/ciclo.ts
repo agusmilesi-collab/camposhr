@@ -177,7 +177,16 @@ export type Valor =
        * un grupo de cuatro hay dos observadores y no habría forma de deducirlo.
        */
       con: { id: string; rol: Rol }[];
+      /** Quién habló primero después de la noticia. Lo anota quien observa. */
       hablo?: 'comunica' | 'recibe';
+      /** Si el motivo fue un hecho verificable o un juicio sobre la persona.
+       *  También lo anota quien observa: el que recibe no lo puede juzgar,
+       *  porque desde su silla "sos un irresponsable" también es un motivo. */
+      motivo?: 'hecho' | 'juicio';
+      /** Si le dijeron por qué. Lo anota quien recibe. Mide el paso 2. */
+      porque?: boolean;
+      /** Si le dijeron cuándo vuelven a hablar. También quien recibe, paso 4. */
+      cuando?: boolean;
     };
 
 /** La dirección de una actividad de tipo 'enlace'. Sólo se acepta https. */
@@ -842,32 +851,60 @@ export async function repartirEnsayo(
 }
 
 /**
- * Lo que vio quien observó el trío: quién habló primero después de la noticia.
+ * Lo que anota cada uno al terminar la conversación de su trío.
  *
- * Es la única escritura del ensayo desde un teléfono. Se guarda dentro del
- * puesto que ya tiene esa persona, así que hace falta leerlo antes: además de
- * dar el valor a completar, es lo que dice si esa persona era la que observaba.
- * Sin eso, el que comunica podría contestar por su propio trío.
+ * Son preguntas ácidas: cada una tiene una respuesta que puede ser la
+ * equivocada y ninguna depende de una opinión. Quien observa mira la técnica y
+ * la calidad del motivo; quien recibe contesta dos hechos que sólo él sabe.
  *
- * Es idempotente por construcción, porque escribe el mismo campo con el mismo
- * criterio: tocar el botón dos veces deja lo mismo que tocarlo una.
+ * Se guarda dentro del puesto que ya tiene esa persona, así que hace falta
+ * leerlo antes: además de dar el valor a completar, es lo que dice qué rol
+ * tenía y por lo tanto qué puede contestar. Sin eso, el que comunica podría
+ * anotar por su propio trío.
+ *
+ * Es idempotente: escribe los mismos campos con el mismo criterio, así que
+ * tocar el botón dos veces deja lo mismo que tocarlo una.
  */
-export async function anotarObservacion(
+export type RespuestaEnsayo = {
+  hablo?: 'comunica' | 'recibe';
+  motivo?: 'hecho' | 'juicio';
+  porque?: boolean;
+  cuando?: boolean;
+};
+
+const DE_QUIEN: Record<keyof RespuestaEnsayo, Rol> = {
+  hablo: 'observa',
+  motivo: 'observa',
+  porque: 'recibe',
+  cuando: 'recibe',
+};
+
+export async function anotarEnsayo(
   corridaId: string,
   actividadId: string,
   asistenteId: string,
-  hablo: 'comunica' | 'recibe'
+  respuesta: RespuestaEnsayo
 ): Promise<Aporte> {
+  const campos = Object.keys(respuesta) as (keyof RespuestaEnsayo)[];
+  if (campos.length === 0) throw new Error('No hay nada para anotar');
+
   const puesto = await getAporteDe(actividadId, asistenteId);
   if (puesto?.valor?.tipo !== 'ensayo') {
     throw new Error('Todavía no tenés puesto en esta ronda');
   }
-  if (puesto.valor.rol !== 'observa') {
-    throw new Error('Esto lo contesta quien observa');
+  for (const campo of campos) {
+    if (DE_QUIEN[campo] !== puesto.valor.rol) {
+      throw new Error(
+        DE_QUIEN[campo] === 'observa'
+          ? 'Esto lo contesta quien observa'
+          : 'Esto lo contesta quien recibe la noticia'
+      );
+    }
   }
+
   return guardarAporte(corridaId, actividadId, asistenteId, {
     ...puesto.valor,
-    hablo,
+    ...respuesta,
   });
 }
 
@@ -1022,6 +1059,11 @@ export type Resumen =
       observan: number;
       contestaron: number;
       hablo: { comunica: number; recibe: number };
+      motivo: { hecho: number; juicio: number };
+      reciben: number;
+      contestaronReciben: number;
+      dijoPorque: number;
+      dijoCuando: number;
     };
 
 /** Para agrupar 'apurado' con 'Apurado' y con 'apurada' no, que es otra cosa. */
@@ -1143,18 +1185,45 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
       const grupos = new Set<number>();
       let observan = 0;
       let contestaron = 0;
+      let reciben = 0;
+      let contestaronReciben = 0;
+      let dijoPorque = 0;
+      let dijoCuando = 0;
       const hablo = { comunica: 0, recibe: 0 };
+      const motivo = { hecho: 0, juicio: 0 };
       for (const a of aportes) {
         if (a.valor?.tipo !== 'ensayo') continue;
         grupos.add(a.valor.grupo);
-        if (a.valor.rol !== 'observa') continue;
-        observan += 1;
-        if (a.valor.hablo) {
-          contestaron += 1;
-          hablo[a.valor.hablo] += 1;
+        if (a.valor.rol === 'observa') {
+          observan += 1;
+          if (a.valor.hablo) {
+            contestaron += 1;
+            hablo[a.valor.hablo] += 1;
+          }
+          if (a.valor.motivo) motivo[a.valor.motivo] += 1;
+        }
+        if (a.valor.rol === 'recibe') {
+          reciben += 1;
+          if (a.valor.porque !== undefined || a.valor.cuando !== undefined) {
+            contestaronReciben += 1;
+          }
+          if (a.valor.porque) dijoPorque += 1;
+          if (a.valor.cuando) dijoCuando += 1;
         }
       }
-      return { tipo: 'ensayo', total, grupos: grupos.size, observan, contestaron, hablo };
+      return {
+        tipo: 'ensayo',
+        total,
+        grupos: grupos.size,
+        observan,
+        contestaron,
+        hablo,
+        motivo,
+        reciben,
+        contestaronReciben,
+        dijoPorque,
+        dijoCuando,
+      };
     }
 
     case 'marcas': {

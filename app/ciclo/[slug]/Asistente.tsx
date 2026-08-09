@@ -71,7 +71,12 @@ type Ensayo = {
     foto: string | null;
     rol: 'comunica' | 'recibe' | 'observa';
   }[];
-  hablo: 'comunica' | 'recibe' | null;
+  anotado: {
+    hablo: 'comunica' | 'recibe' | null;
+    motivo: 'hecho' | 'juicio' | null;
+    porque: boolean | null;
+    cuando: boolean | null;
+  };
 };
 
 /** Una de las que se abrieron juntas, con lo que esta persona ya respondió. */
@@ -1042,8 +1047,9 @@ function Ensayando({
   asistenteId: string;
   ensayo: Ensayo | null;
 }) {
-  const [hablo, setHablo] = useState<'comunica' | 'recibe' | null>(null);
-  const [enviando, setEnviando] = useState(false);
+  /** Lo que se acaba de tocar, mientras el envío está en camino. */
+  const [recien, setRecien] = useState<Record<string, string | boolean>>({});
+  const [enviando, setEnviando] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!ensayo) {
@@ -1058,10 +1064,13 @@ function Ensayando({
     );
   }
 
-  const contestado = hablo ?? ensayo.hablo;
+  const anotado: Record<string, string | boolean | null> = {
+    ...ensayo.anotado,
+    ...recien,
+  };
 
-  async function anotar(quien: 'comunica' | 'recibe') {
-    setEnviando(true);
+  async function anotar(campo: string, valor: string | boolean) {
+    setEnviando(campo);
     setError(null);
     // Mismo criterio que el resto de las escrituras: si la base está ocupada
     // se reintenta, porque un solo intento deja a esa persona parada mientras
@@ -1076,18 +1085,18 @@ function Ensayando({
           body: JSON.stringify({
             actividadId,
             asistenteId,
-            valor: { hablo: quien },
+            valor: { [campo]: valor },
           }),
         });
         if (res.ok) {
-          setHablo(quien);
-          setEnviando(false);
+          setRecien((previo) => ({ ...previo, [campo]: valor }));
+          setEnviando(null);
           return;
         }
         // Lo que el servidor rechaza con criterio no se reintenta.
         if (res.status !== 500) {
           setError(await res.text());
-          setEnviando(false);
+          setEnviando(null);
           return;
         }
       } catch {
@@ -1095,7 +1104,44 @@ function Ensayando({
       }
     }
     setError('No pudimos guardarlo. Probá de nuevo.');
-    setEnviando(false);
+    setEnviando(null);
+  }
+
+  /** Una pregunta con dos respuestas, que queda contestada al primer toque. */
+  function Pregunta({
+    campo,
+    texto,
+    opciones,
+  }: {
+    campo: string;
+    texto: string;
+    opciones: { valor: string | boolean; etiqueta: string }[];
+  }) {
+    const elegido = anotado[campo];
+    return (
+      <div className="ci-ensayo-pregunta">
+        <h3>{texto}</h3>
+        {elegido !== null && elegido !== undefined ? (
+          <p className="ci-ensayo-contestado">
+            Anotaste:{' '}
+            <b>{opciones.find((o) => o.valor === elegido)?.etiqueta}</b>
+          </p>
+        ) : (
+          <div className="ci-acciones">
+            {opciones.map((o) => (
+              <button
+                key={String(o.valor)}
+                className="cq-btn"
+                disabled={enviando !== null}
+                onClick={() => anotar(campo, o.valor)}
+              >
+                {o.etiqueta}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -1148,32 +1194,48 @@ function Ensayando({
 
       {ensayo.rol === 'observa' && (
         <div className="ci-ensayo-observa">
-          <h2>¿Quién habló primero después de la noticia?</h2>
-          {contestado ? (
-            <p className="ci-ensayo-contestado">
-              Anotaste: <b>{contestado === 'comunica' ? 'el que comunicó' : 'el que recibió'}</b>.
-            </p>
-          ) : (
-            <div className="ci-acciones">
-              <button
-                className="cq-btn"
-                disabled={enviando}
-                onClick={() => anotar('comunica')}
-              >
-                El que comunicó
-              </button>
-              <button
-                className="cq-btn"
-                disabled={enviando}
-                onClick={() => anotar('recibe')}
-              >
-                El que recibió
-              </button>
-            </div>
-          )}
+          <Pregunta
+            campo="hablo"
+            texto="¿Quién habló primero después de la noticia?"
+            opciones={[
+              { valor: 'comunica', etiqueta: 'El que comunicó' },
+              { valor: 'recibe', etiqueta: 'El que recibió' },
+            ]}
+          />
+          <Pregunta
+            campo="motivo"
+            texto="El motivo que dio, ¿fue un hecho o un juicio sobre la persona?"
+            opciones={[
+              { valor: 'hecho', etiqueta: 'Un hecho' },
+              { valor: 'juicio', etiqueta: 'Un juicio' },
+            ]}
+          />
           {error && <p className="cq-error">{error}</p>}
         </div>
       )}
+
+      {ensayo.rol === 'recibe' && (
+        <div className="ci-ensayo-observa">
+          <Pregunta
+            campo="porque"
+            texto="¿Te dijo por qué?"
+            opciones={[
+              { valor: true, etiqueta: 'Sí' },
+              { valor: false, etiqueta: 'No' },
+            ]}
+          />
+          <Pregunta
+            campo="cuando"
+            texto="¿Te dijo cuándo vuelven a hablar?"
+            opciones={[
+              { valor: true, etiqueta: 'Sí' },
+              { valor: false, etiqueta: 'No' },
+            ]}
+          />
+          {error && <p className="cq-error">{error}</p>}
+        </div>
+      )}
+
     </section>
   );
 }
