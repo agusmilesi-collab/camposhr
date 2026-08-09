@@ -27,27 +27,70 @@
 export const ROLES = ['comunica', 'recibe', 'observa'] as const;
 export type Rol = (typeof ROLES)[number];
 
-/** Los tres casos que pidió el cliente, en el mismo orden que la placa 4. */
+/**
+ * Los tres casos que pidió el cliente, en el mismo orden que la placa 4.
+ *
+ * Cada uno se cuenta distinto según el rol, y eso es lo que el teléfono puede
+ * hacer y una tarjeta de papel no.
+ *
+ * A quien comunica le llegan los datos sueltos y no una oración: con la frase
+ * ya armada la lee en voz alta, y armar cómo decirlo es justamente lo que el
+ * ejercicio entrena.
+ *
+ * A quien recibe no le llega la decisión. Si la sabe de antemano, la escena
+ * deja de parecerse a la de la oficina, donde nadie entra sabiendo.
+ *
+ * A quien observa le llega todo, porque su trabajo es ver si el motivo que se
+ * dijo coincide con lo que pasó.
+ */
 export const CASOS = [
   {
     titulo: 'Comunicar una suspensión',
-    situacion:
-      'Un mecánico del taller trabajó dos veces sin los elementos de ' +
-      'seguridad, después de que se lo advirtieran. Son cinco días, a partir ' +
-      'del miércoles.',
+    /** Los datos, para que arme él la manera de decirlo. */
+    ficha: [
+      ['Quién', 'Un mecánico del taller.'],
+      [
+        'Qué pasó',
+        'Lo vieron trabajando sin los elementos de seguridad, dos veces, ' +
+          'después de que se lo advirtieran.',
+      ],
+      ['Decisión', 'Cinco días de suspensión, desde el miércoles.'],
+    ],
+    /** Sin la decisión: se entera cuando se la dicen, como en la oficina. */
+    paraQuienRecibe: 'Sos mecánico del taller. Tu jefe te pidió cinco minutos.',
   },
   {
     titulo: 'Dar una devolución por un desempeño que no alcanza',
-    situacion:
-      'Alguien de repuestos viene entregando pedidos con el código ' +
-      'equivocado desde hace tres meses. Ya se lo dijiste una vez y siguió ' +
-      'igual.',
+    ficha: [
+      ['Quién', 'Alguien de repuestos.'],
+      [
+        'Qué pasó',
+        'Entrega pedidos con el código equivocado desde hace tres meses. Ya ' +
+          'se lo dijeron una vez, sin formalidad, y siguió igual.',
+      ],
+      [
+        'Decisión',
+        'Queda registrado como una devolución formal, y en un mes se revisa.',
+      ],
+    ],
+    paraQuienRecibe:
+      'Trabajás en repuestos. Tu jefe te pidió cinco minutos.',
   },
   {
     titulo: 'Avisar que no hubo recategorización',
-    situacion:
-      'Una persona de administración la pidió hace ocho meses y vos la ' +
-      'apoyaste. Quedó afuera del último ajuste y hoy te pregunta.',
+    ficha: [
+      ['Quién', 'Alguien de administración.'],
+      [
+        'Qué pasó',
+        'Pidió la recategorización hace ocho meses y vos la apoyaste. Quedó ' +
+          'afuera del último ajuste porque el presupuesto alcanzó para dos ' +
+          'personas de todo el sector.',
+      ],
+      ['Decisión', 'Este año no hay recategorización para esa persona.'],
+    ],
+    paraQuienRecibe:
+      'Trabajás en administración. Hace ocho meses pediste la ' +
+      'recategorización. Tu jefe te pidió cinco minutos.',
   },
 ] as const;
 
@@ -73,7 +116,7 @@ export const REACCIONES = [
     nombre: 'Te enojás',
     instruccion: 'Estás enojado y te parece injusto que te suspendan a vos.',
     guion: [
-      'Cuando te dice los cinco días, subí la voz: “¿Por qué yo? A otros los ' +
+      'Cuando te dice la sanción, subí la voz: “¿Por qué yo? A otros los ' +
         'vi trabajando igual y nadie les dijo nada”.',
       'Cruzá los brazos, dá un paso atrás y mirá para otro lado.',
       'Cada vez que te dé una razón, interrumpilo: “Eso ya lo veníamos ' +
@@ -96,7 +139,7 @@ export const REACCIONES = [
     nombre: 'No decís nada',
     instruccion: 'Contestás lo mínimo y querés terminar la conversación.',
     guion: [
-      'Cuando te dice que quedaste afuera del ajuste, quedate callado, ' +
+      'Cuando te dice que este año no hay, quedate callado, ' +
         'aunque el silencio se haga largo.',
       'Si te pregunta algo, contestá “ajá” o “está bien”, y nada más.',
       'Quedate quieto, con las manos a los costados, mirando la puerta. Si ' +

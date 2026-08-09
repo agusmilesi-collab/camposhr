@@ -163,7 +163,12 @@ type Ensayo = {
   ronda: number;
   grupo: number;
   rol: Rol;
-  caso: { titulo: string; situacion: string };
+  /**
+   * El caso, contado como le sirve a este rol. A quien comunica le llegan los
+   * datos sueltos para que arme él cómo decirlo; a quien recibe, sólo quién es
+   * y que lo llamaron, sin la decisión; a quien observa, todo.
+   */
+  caso: { titulo: string; ficha: [string, string][]; situacion: string | null };
   /** Sólo para quien recibe la noticia. Los otros dos no tienen que verla. */
   reaccion: { nombre: string; instruccion: string; guion: string[] } | null;
   con: { nombre: string; apellido: string; foto: string | null; rol: Rol }[];
@@ -216,7 +221,17 @@ async function ensayoDe(
     ronda: ronda < 0 ? 0 : ronda,
     grupo: puesto.grupo,
     rol: puesto.rol,
-    caso: CASOS[puesto.caso] ?? CASOS[0],
+    caso: (() => {
+      const c = CASOS[puesto.caso] ?? CASOS[0];
+      if (puesto.rol === 'recibe') {
+        return { titulo: c.titulo, ficha: [], situacion: c.paraQuienRecibe };
+      }
+      return {
+        titulo: c.titulo,
+        ficha: c.ficha.map(([q, r]) => [q, r] as [string, string]),
+        situacion: null,
+      };
+    })(),
     reaccion:
       puesto.rol === 'recibe' && REACCIONES[puesto.reaccion]
         ? {
