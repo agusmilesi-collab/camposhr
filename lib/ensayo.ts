@@ -48,7 +48,7 @@ export const CASOS = [
     titulo: 'Comunicar una suspensión',
     /** Los datos, para que arme él la manera de decirlo. */
     ficha: [
-      ['Quién', 'Un mecánico del taller.'],
+      ['A quién', 'Un mecánico del taller.'],
       [
         'Qué pasó',
         'Lo vieron trabajando sin los elementos de seguridad, dos veces, ' +
@@ -62,7 +62,7 @@ export const CASOS = [
   {
     titulo: 'Dar una devolución por un desempeño que no alcanza',
     ficha: [
-      ['Quién', 'Alguien de repuestos.'],
+      ['A quién', 'Alguien de repuestos.'],
       [
         'Qué pasó',
         'Entrega pedidos con el código equivocado desde hace tres meses. Ya ' +
@@ -79,7 +79,7 @@ export const CASOS = [
   {
     titulo: 'Avisar que no hubo recategorización',
     ficha: [
-      ['Quién', 'Alguien de administración.'],
+      ['A quién', 'Alguien de administración.'],
       [
         'Qué pasó',
         'Pidió la recategorización hace ocho meses y vos la apoyaste. Quedó ' +
