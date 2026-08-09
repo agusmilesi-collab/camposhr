@@ -10,6 +10,10 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Los scripts de `scripts/` corren con `node --experimental-strip-types`,
+    // que exige la extensión en el import. Con `noEmit` no cambia nada de lo
+    // que se compila: sólo deja que el chequeo de tipos también los alcance.
+    "allowImportingTsExtensions": true,
     "jsx": "preserve",
     "incremental": true,
     "target": "es2017",
