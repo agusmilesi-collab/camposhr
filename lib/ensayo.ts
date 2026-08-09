@@ -60,27 +60,30 @@ export const REACCIONES = [
     nombre: 'Reaccionás con enojo',
     instruccion: 'No aceptás la decisión. Te parece injusta.',
     guion: [
-      'Decí: "¿por qué yo?" y "a otros no les pasó nada".',
-      'Cruzá los brazos, dá un paso atrás, subí la voz.',
-      'Si te explica, discutí cada explicación.',
+      'Apenas termina de decirlo, subí la voz: “¿Por qué yo? A otros no les ' +
+        'pasó nada”.',
+      'Cruzá los brazos, dá un paso atrás y dejá de mirarlo.',
+      'Cada vez que te dé una razón, cortalo: “Eso ya lo veníamos hablando y ' +
+        'nadie hizo nada”.',
     ],
   },
   {
     nombre: 'Te quebrás',
     instruccion: 'No lo esperabas y no lo podés sostener.',
     guion: [
-      'Quedate callado unos segundos, mirá para abajo, tapate la cara.',
-      'Decí entrecortado: "perdón, dame un segundo".',
-      'Si te apura, quebrate más. Si te espera, acomodate de a poco.',
+      'Cuando termina, quedate callado. Mirá para abajo tres o cuatro segundos.',
+      'Después decí bajito y cortado: “Perdón… dame un segundo”.',
+      'Si te apura o te llena de razones, tapate la cara y decí: “No sé qué ' +
+        'le digo en mi casa”.',
     ],
   },
   {
     nombre: 'Te cerrás',
     instruccion: 'Te lo guardás todo. Por afuera no pasa nada.',
     guion: [
-      'Contestá "ajá", "bueno", "está bien". Nada más largo.',
-      'Mirá la puerta, quedate duro, con los brazos colgando.',
-      'Si te pregunta cómo estás, decí "todo bien" y pedí irte.',
+      'Cuando termina, no digas nada. Dejá el silencio ahí, sin ayudarlo.',
+      'Si te pregunta algo, contestá “ajá” o “está bien”. Nada más largo.',
+      'Quedate duro mirando la puerta. Si insiste, decí: “¿Puedo irme?”.',
     ],
   },
 ] as const;
