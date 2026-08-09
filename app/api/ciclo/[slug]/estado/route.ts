@@ -170,7 +170,7 @@ type Ensayo = {
   /** Lo que ya anotó, para que la pantalla no vuelva a preguntarlo. */
   anotado: {
     sostuvo: 'escucho' | 'explico' | null;
-    motivo: 'hecho' | 'juicio' | null;
+    motivo: 'hecho' | 'juicio' | 'ninguno' | null;
     porque: boolean | null;
     cuando: boolean | null;
   };

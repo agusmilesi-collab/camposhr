@@ -73,7 +73,7 @@ type Ensayo = {
   }[];
   anotado: {
     sostuvo: 'escucho' | 'explico' | null;
-    motivo: 'hecho' | 'juicio' | null;
+    motivo: 'hecho' | 'juicio' | 'ninguno' | null;
     porque: boolean | null;
     cuando: boolean | null;
   };
@@ -1263,6 +1263,7 @@ function Ensayando({
             opciones={[
               { valor: 'hecho', etiqueta: 'Un hecho' },
               { valor: 'juicio', etiqueta: 'Un juicio' },
+              { valor: 'ninguno', etiqueta: 'No dijo el motivo' },
             ]}
           />
           {error && <p className="cq-error">{error}</p>}

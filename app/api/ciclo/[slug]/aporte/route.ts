@@ -72,7 +72,11 @@ export async function POST(
     if (crudo.sostuvo === 'escucho' || crudo.sostuvo === 'explico') {
       respuesta.sostuvo = crudo.sostuvo;
     }
-    if (crudo.motivo === 'hecho' || crudo.motivo === 'juicio') {
+    if (
+      crudo.motivo === 'hecho' ||
+      crudo.motivo === 'juicio' ||
+      crudo.motivo === 'ninguno'
+    ) {
       respuesta.motivo = crudo.motivo;
     }
     if (typeof crudo.porque === 'boolean') respuesta.porque = crudo.porque;
