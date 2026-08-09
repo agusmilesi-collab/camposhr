@@ -194,19 +194,14 @@ async function ensayoDe(
   // La sala entera, de memoria: esto lo pide cada teléfono en cada sondeo.
   const { asistentes } = await salaDelCruce(corrida.id);
   const porId = new Map(asistentes.map((a) => [a.id, a]));
-  const rolDe = new Map<string, Rol>();
-  const companeros = puesto.conIds
-    .map((id) => porId.get(id))
-    .filter((a): a is NonNullable<typeof a> => Boolean(a));
-
-  // Quién hace qué dentro del trío sale del propio rol y de la vuelta de los
-  // roles, que es siempre la misma: comunica, recibe, observa.
-  const orden: Rol[] = ['comunica', 'recibe', 'observa'];
-  const mio = orden.indexOf(puesto.rol);
-  companeros.forEach((c, i) => rolDe.set(c.id, orden[(mio + 1 + i) % 3]));
+  const companeros = puesto.con
+    .map((o) => ({ quien: porId.get(o.id), rol: o.rol }))
+    .filter((c): c is { quien: NonNullable<typeof c.quien>; rol: Rol } =>
+      Boolean(c.quien)
+    );
 
   const fotos = await firmarSelfies(
-    companeros.map((c) => c.foto_path).filter((p): p is string => Boolean(p))
+    companeros.map((c) => c.quien.foto_path).filter((p): p is string => Boolean(p))
   );
 
   return {
@@ -216,10 +211,10 @@ async function ensayoDe(
     caso: CASOS[puesto.caso] ?? CASOS[0],
     reaccion: puesto.rol === 'recibe' ? REACCIONES[puesto.reaccion] ?? null : null,
     con: companeros.map((c) => ({
-      nombre: c.nombre,
-      apellido: c.apellido,
-      foto: c.foto_path ? fotos.get(c.foto_path) ?? null : null,
-      rol: rolDe.get(c.id) ?? 'observa',
+      nombre: c.quien.nombre,
+      apellido: c.quien.apellido,
+      foto: c.quien.foto_path ? fotos.get(c.quien.foto_path) ?? null : null,
+      rol: c.rol,
     })),
     hablo: puesto.hablo ?? null,
   };

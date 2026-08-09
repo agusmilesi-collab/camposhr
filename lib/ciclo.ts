@@ -169,7 +169,14 @@ export type Valor =
       rol: Rol;
       caso: number;
       reaccion: number;
-      conIds: string[];
+      /**
+       * Los otros dos del trío con el rol de cada uno. El rol va guardado y no
+       * deducido de la posición: la deducción funcionaba para dos de las tres
+       * filas de la grilla y le daba vuelta los roles a la del medio, que es
+       * justo la persona que recibe la noticia en la primera ronda. Además, en
+       * un grupo de cuatro hay dos observadores y no habría forma de deducirlo.
+       */
+      con: { id: string; rol: Rol }[];
       hablo?: 'comunica' | 'recibe';
     };
 
@@ -743,9 +750,9 @@ export async function repartirEnsayo(
               rol: puesto.rol,
               caso: g.caso,
               reaccion: g.reaccion,
-              conIds: g.puestos
+              con: g.puestos
                 .filter((o) => o.asistenteId !== puesto.asistenteId)
-                .map((o) => o.asistenteId),
+                .map((o) => ({ id: o.asistenteId, rol: o.rol })),
             },
           });
         }
@@ -771,9 +778,17 @@ export async function repartirEnsayo(
         )[0];
         if (!destino) break;
         const [numero, integrantes] = destino;
-        const ids = [...integrantes.map((a) => a.asistente_id), nuevo.id];
-        const caso = (integrantes[0].valor as { caso: number }).caso;
-        const reaccion = (integrantes[0].valor as { reaccion: number }).reaccion;
+        const primero = integrantes[0].valor as {
+          caso: number;
+          reaccion: number;
+        };
+        const puestos = [
+          ...integrantes.map((a) => ({
+            id: a.asistente_id,
+            rol: (a.valor as { rol: Rol }).rol,
+          })),
+          { id: nuevo.id, rol: 'observa' as Rol },
+        ];
         for (const a of integrantes) {
           filas.push({
             corrida_id: corrida.id,
@@ -781,7 +796,7 @@ export async function repartirEnsayo(
             asistente_id: a.asistente_id,
             valor: {
               ...a.valor,
-              conIds: ids.filter((id) => id !== a.asistente_id),
+              con: puestos.filter((o) => o.id !== a.asistente_id),
             },
           });
         }
@@ -793,9 +808,9 @@ export async function repartirEnsayo(
             tipo: 'ensayo',
             grupo: numero,
             rol: 'observa',
-            caso,
-            reaccion,
-            conIds: ids.filter((id) => id !== nuevo.id),
+            caso: primero.caso,
+            reaccion: primero.reaccion,
+            con: puestos.filter((o) => o.id !== nuevo.id),
           },
         });
         // El que acaba de entrar cuenta para el próximo que llegue.
