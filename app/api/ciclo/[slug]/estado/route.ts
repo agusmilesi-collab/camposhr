@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import {
   actividadesDelCiclo,
   aportesDeEn,
+  asistentesDeLaSala,
   contarAvance,
   getAporteDe,
   listarAportes,
@@ -191,9 +192,11 @@ async function ensayoDe(
 
   const ronda = rondasDelEnsayo(catalogo).findIndex((r) => r.id === actividad.id);
 
-  // La sala entera, de memoria: esto lo pide cada teléfono en cada sondeo.
-  const { asistentes } = await salaDelCruce(corrida.id);
-  const porId = new Map(asistentes.map((a) => [a.id, a]));
+  // Quiénes están, de memoria: esto lo pide cada teléfono en cada sondeo. Va
+  // por la lista liviana y no por la del cruce, que además lee los perfiles.
+  const porId = new Map(
+    (await asistentesDeLaSala(corrida.id)).map((a) => [a.id, a])
+  );
   const companeros = puesto.con
     .map((o) => ({ quien: porId.get(o.id), rol: o.rol }))
     .filter((c): c is { quien: NonNullable<typeof c.quien>; rol: Rol } =>
