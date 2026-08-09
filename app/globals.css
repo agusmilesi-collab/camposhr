@@ -3430,9 +3430,14 @@ body {
 .cp-nube {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
-  gap: 4px 22px;
+  /* Apretado a propósito: con aire entre las palabras se lee como una lista y
+     no como un bloque. El renglón corto es lo que le da la forma. */
+  gap: 2px 18px;
+  max-width: 22ch;
+  margin: 0 auto;
+  line-height: 1.05;
 }
 .cp-palabra {
   font-family: 'Instrument Serif', Georgia, serif;

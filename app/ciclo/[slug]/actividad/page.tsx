@@ -204,22 +204,48 @@ function FondoTransparente() {
 function Vista({ actividad, resumen }: { actividad: Actividad; resumen: Resumen }) {
   switch (resumen.tipo) {
     case 'palabra': {
-      // El tamaño sale de la raíz cuadrada y no de la proporción directa: con
-      // proporción directa, una palabra repetida cinco veces tapa la pantalla y
-      // las demás quedan ilegibles.
+      /*
+       * El tamaño sale de la raíz cuadrada y no de la proporción directa: con
+       * proporción directa, una palabra repetida cinco veces tapa la pantalla
+       * y las demás quedan ilegibles.
+       *
+       * Y el orden no es de mayor a menor. Ordenadas así, la nube se lee como
+       * renglones de texto que van bajando de cuerpo. Se acomodan del centro
+       * hacia afuera, que es lo que la vuelve un bloque: las más dichas
+       * quedan en el medio y las de una sola vez arman el borde.
+       */
       const tope = Math.max(1, ...resumen.nube.map((n) => n.veces));
+      const desdeElCentro: typeof resumen.nube = [];
+      resumen.nube.forEach((n, i) => {
+        if (i % 2 === 0) desdeElCentro.push(n);
+        else desdeElCentro.unshift(n);
+      });
       return (
         <div className="cp-nube">
-          {resumen.nube.map((n) => (
-            <span
-              key={n.texto}
-              className="cp-palabra"
-              style={{ fontSize: `${1 + Math.sqrt(n.veces / tope) * 2.4}rem` }}
-            >
-              {n.texto}
-              {n.veces > 1 && <sup className="cp-veces">{n.veces}</sup>}
-            </span>
-          ))}
+          {desdeElCentro.map((n) => {
+            const peso = Math.sqrt(n.veces / tope);
+            return (
+              <span
+                key={n.texto}
+                className="cp-palabra"
+                style={{
+                  fontSize: `${1.3 + peso * 3.4}rem`,
+                  // Las que se repiten van en tinta plena y las de una sola vez
+                  // más claras: el bloque se lee de adentro hacia afuera aunque
+                  // los cuerpos sean parecidos.
+                  color:
+                    n.veces === tope && tope > 1
+                      ? 'var(--st-amber)'
+                      : n.veces > 1
+                        ? 'var(--ink)'
+                        : 'var(--ink-soft)',
+                }}
+              >
+                {n.texto}
+                {n.veces > 1 && <sup className="cp-veces">{n.veces}</sup>}
+              </span>
+            );
+          })}
         </div>
       );
     }
