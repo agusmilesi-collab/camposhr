@@ -1143,6 +1143,14 @@ function Ejercicio({
   const [error, setError] = useState<string | null>(null);
   /** Lo enviado desde este teléfono, para no esperar al sondeo. */
   const [recien, setRecien] = useState<string[] | null>(null);
+  /**
+   * Si volvió al formulario para corregir.
+   *
+   * Hace falta un estado propio: lo que se guardó sigue llegando en cada
+   * sondeo, así que limpiar lo recién enviado devolvía la pantalla de "listo"
+   * en menos de un segundo y el botón no hacía nada visible.
+   */
+  const [corrigiendo, setCorrigiendo] = useState(false);
 
   if (!frases) {
     return (
@@ -1192,6 +1200,7 @@ function Ejercicio({
         });
         if (res.ok) {
           setRecien(borrador);
+          setCorrigiendo(false);
           setEnviando(false);
           return;
         }
@@ -1218,7 +1227,7 @@ function Ejercicio({
         Equipo <b>{frases.color}</b> · {frases.nombreDeMitad}
       </p>
 
-      {listas ? (
+      {listas && !corrigiendo ? (
         /* Las dos mitades escribieron: la lectura cruzada. */
         <>
           <h1 className="ci-titulo">Ahora léanse</h1>
@@ -1342,7 +1351,7 @@ function Ejercicio({
             no, es interpretación.
           </p>
         </>
-      ) : mias ? (
+      ) : mias && !corrigiendo ? (
         /* Esta mitad ya escribió y espera a la de enfrente. */
         <>
           <p className="ci-tilde" aria-hidden="true">
@@ -1358,8 +1367,8 @@ function Ejercicio({
               <button
                 className="cq-btn-ghost"
                 onClick={() => {
-                  setBorrador(mias);
-                  setRecien(null);
+                  setBorrador(mias ?? []);
+                  setCorrigiendo(true);
                 }}
               >
                 Corregir lo que escribimos
@@ -1407,9 +1416,8 @@ function Ejercicio({
 
           <h1 className="ci-titulo">Ejercicio</h1>
           <p className="cq-ayuda">
-            Son cuatro frases y <b>van en las dos direcciones</b>: dos hay que
-            pasarlas a objetivas y dos a subjetivas. Cada bloque dice cuál es
-            cuál.
+            Hay <b>2 frases que deben pasar de objetivo a subjetivo</b> y{' '}
+            <b>2 frases que deben pasar de subjetivo a objetivo</b>.
           </p>
 
           {frases.escribe ? (
