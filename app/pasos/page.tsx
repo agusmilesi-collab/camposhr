@@ -11,17 +11,21 @@
  * pasa siempre.
  */
 
+import Guardar, { type Paso } from './Guardar';
+
 export const metadata = {
   title: 'Cuatro pasos para una conversación difícil — Campos HR',
   description:
     'Los cuatro pasos para comunicar una mala noticia, para tenerlos a mano.',
 };
 
-const PASOS = [
+const TITULO = 'Mañana tengo una conversación difícil';
+
+const PASOS: Paso[] = [
   {
     nombre: 'Encuadrá',
     que: 'Buscá un lugar privado y sin apuro, y avisale antes: “necesito hablarte de algo difícil”.',
-    porque: 'El aviso le da un momento para acomodarse. Sin eso, las primeras frases no las registra.',
+    porque: 'El aviso le da un momento para acomodarse.',
   },
   {
     nombre: 'Decilo claro',
@@ -30,7 +34,7 @@ const PASOS = [
   },
   {
     nombre: 'En silencio, sostené',
-    que: 'Callate mientras descarga, aunque llore o levante la voz. Cuando pare, decile una vez: “la decisión ya está tomada”.',
+    que: 'Hacé silencio mientras descarga, aunque llore o levante la voz. Cuando pare, decile una vez: “la decisión ya está tomada”.',
     porque: 'Con la emoción alta no entra información. Nada de lo que digas ahí lo va a escuchar.',
   },
   {
@@ -45,7 +49,7 @@ export default function Pasos() {
     <main className="ps">
       <div className="ps-caja">
         <div className="eyebrow">Ciclo Liderazgos Humanos</div>
-        <h1>Mañana tengo una conversación difícil</h1>
+        <h1>{TITULO}</h1>
         <p className="ps-nota">
           Cuatro pasos para comunicar una mala noticia. Miralos diez minutos
           antes de entrar.
@@ -72,9 +76,11 @@ export default function Pasos() {
         </p>
 
         <p className="ps-despues">
-          <b>Después de darla:</b> date un minuto. Un café, una caminata, tres
-          respiraciones. No sigas como si nada.
+          <b>Después de darla:</b> hacé la Respiración de 1 minuto. No sigas
+          como si nada.
         </p>
+
+        <Guardar pasos={PASOS} titulo={TITULO} />
 
         <p className="ps-fuente">
           Adaptado del protocolo SPIKES (Baile y otros, 2000), usado en medicina
