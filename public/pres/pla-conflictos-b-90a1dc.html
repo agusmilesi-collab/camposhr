@@ -599,6 +599,28 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   border-left:6px solid var(--amber)}
 .escalones .e2{border-left-color:#c08a3a}
 .escalones .e3{border-left-color:#a4503f}
+/* La escalada, dibujada: cada etapa entra más adentro que la anterior y entre
+   medio va la señal de que el conflicto acaba de subir un escalón. Alineadas y
+   del mismo ancho se leían como tres casillas sueltas.
+
+   Las tres etapas más los dos saltos son cinco bloques donde antes había tres,
+   así que todo baja de cuerpo para que la placa entre sin recortarse. */
+.escalones.escala{gap:0;max-width:1420px}
+.escalones.escala>div{padding:18px 26px}
+.escalones.escala>div:nth-of-type(2){margin-left:80px}
+.escalones.escala>div:nth-of-type(3){margin-left:160px}
+.escalones.escala b{font-size:34px;margin-bottom:4px}
+.escalones.escala span{font-size:26px;line-height:1.28}
+.escalones .salto{margin:12px 0 12px 34px;font-size:26px;line-height:1.25;
+  color:var(--amber);display:flex;align-items:baseline;gap:14px}
+.escalones .salto:nth-of-type(2){margin-left:114px}
+.escalones .salto:before{content:"";align-self:center;flex:none;width:20px;
+  height:30px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 40' fill='none' stroke='%23a97722' stroke-width='4.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v26'/%3E%3Cpath d='M5 24l7 8 7-8'/%3E%3C/svg%3E") no-repeat center/contain}
+/* La negrita del salto es énfasis dentro del renglón, no un título: sin esto
+   hereda el display en bloque y el cuerpo de los nombres de etapa. */
+.escalones .salto b{display:inline;font-family:'Inter',system-ui,sans-serif;
+  font-size:inherit;font-weight:600;letter-spacing:0;color:var(--ink)}
 .pendiente{border:2px dashed var(--amber)}
 .pendiente b{color:var(--amber)}
 .qr-caja{background:var(--card);border:1px solid var(--line)}
@@ -966,10 +988,12 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq">
       <div class="titulo-placa">Las tres etapas de un conflicto</div>
-      <div class="escalones">
-        <div><b>Etapa 1 · ganar-ganar</b><span>Hay tensión, y las dos partes quieren resolver el problema. Se puede hablar. Acá se interviene barato.</span></div>
-        <div class="e2"><b>Etapa 2 · ganar-perder</b><span>“Yo tengo razón y vos no.” Se buscan aliados y se enfría el trato. Acá cuesta, hace falta cuidado.</span></div>
-        <div class="e3"><b>Etapa 3 · perder-perder</b><span>Ya no importa ganar, importa que el otro pierda. Acá solo se resuelve si entra un tercero.</span></div>
+      <div class="escalones escala">
+        <div><b>Etapa 1 · ganar-ganar</b><span>Hay tensión y las dos partes quieren resolver. Se interviene barato: una conversación de diez minutos.</span></div>
+        <p class="salto">Dejan de hablarse y <b>empiezan a hablar con terceros</b></p>
+        <div class="e2"><b>Etapa 2 · ganar-perder</b><span>“Yo tengo razón y vos no.” Se buscan aliados y se enfría el trato. Acá cuesta y hace falta cuidado.</span></div>
+        <p class="salto">Alguien <b>acepta perder con tal de que el otro pierda más</b></p>
+        <div class="e3"><b>Etapa 3 · perder-perder</b><span>Ya no importa ganar, importa que el otro pierda. Sólo se resuelve si entra un tercero.</span></div>
       </div>
       <p class="fuente">Modelo de escalada de conflictos de Friedrich Glasl.</p>
     </div>
@@ -980,6 +1004,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase">Detectar temprano e intervenir en la <b>etapa 1</b>.<br>Cuanto más esperás, más caro.</p>
+      <p class="criterio">La clave para detectar: <b>cuando alguien de tu equipo te viene a contar algo de otro</b><br>en vez de decírselo a él, ese conflicto ya está en la etapa 2.</p>
     </div>
   </section>
 
@@ -998,6 +1023,20 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 30 -->
+  <section class="placa" data-notas="El otro pedido concreto del cliente: la pregunta que dicen que les hacen siempre. Leé la placa y rematá: «en todo lo demás es de ustedes, y cuanto antes lo agarren más barato sale». Si preguntan qué pasa cuando el conflicto es con el propio jefe, es el caso dos y se pide ayuda; lo que no se hace es armar equipo con el equipo contra el jefe. Si preguntan cómo se pasa sin que parezca una denuncia: se avisa a las dos partes que se va a pedir ayuda y se dice por qué, porque lo que rompe la confianza es enterarse después.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido izq tres">
+      <div class="titulo-placa">¿Esto lo resuelvo yo<br>o lo llevo a Recursos Humanos?</div>
+      <p class="criterio" style="margin:0 0 44px 40px">El conflicto entre dos personas de tu equipo <b>es tuyo</b>: es parte de conducir.<br>Recursos Humanos ayuda, y la responsabilidad sigue siendo tuya.</p>
+      <div class="kicker" style="margin-left:40px">Salvo en tres casos, que se pasan sin dudar</div>
+      <div class="tarjetas tres">
+        <div><h3>Algo que no se deja pasar</h3><p>Maltrato, discriminación, algo que pone en riesgo la seguridad. Ahí no se conversa: se informa.</p></div>
+        <div><h3>Sos parte</h3><p>No podés ser juez y parte del mismo conflicto.</p></div>
+        <div><h3>Ya está en etapa 3</h3><p>Hace falta un tercero, y ese tercero no sos vos.</p></div>
+      </div>
+    </div>
+  </section>
+
   <section class="placa" data-aviso="Activar respuestas"  data-notas="Se cierra el círculo con la consigna de apertura. No para resolver todo, para empezar a hablarlo antes de que escale. Que cada uno escriba con quién es esa conversación, solo el nombre. Queda proyectada durante el bloque de 1 a 1, donde se trabajan los conflictos reales que traigan.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
