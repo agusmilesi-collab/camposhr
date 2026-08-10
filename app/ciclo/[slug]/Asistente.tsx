@@ -184,6 +184,21 @@ const NO_SE_PROYECTAN = new Set(['c5-gracias']);
  */
 const FIN_DEL_CICLO = 'c5-gracias';
 
+/**
+ * Consignas que confirman y no dejan volver.
+ *
+ * Son las cuatro del arranque de la charla 5: se contestan mientras vuelven del
+ * corte, van al informe de Recursos Humanos y ninguna se comenta en la sala.
+ * Ofrecer corregir invita a mirar el teléfono en vez de la charla, y lo que se
+ * corrige ahí no es un error de tipeo: es la respuesta pensada dos veces.
+ */
+const SIN_CORREGIR = new Set([
+  'c5-solo',
+  'c5-heredado',
+  'c5-quedarse',
+  'c5-decision',
+]);
+
 export default function Asistente({
   slug,
   empresa,
@@ -874,6 +889,18 @@ function Formulario({
   if (cerrado && mio?.tipo === 'palabra' && SE_MUESTRAN.test(actividad.clave)) {
     return (
       <Cartel palabra={mio.palabra} onCambiar={() => setCorrigiendo(true)} />
+    );
+  }
+
+  if (cerrado && SIN_CORREGIR.has(actividad.clave)) {
+    return (
+      <section className="cq-placa ci-listo">
+        <p className="ci-tilde" aria-hidden="true">
+          ✓
+        </p>
+        <h1 className="ci-titulo">Listo</h1>
+        <p className="ci-guardar">Ya podés guardar el teléfono.</p>
+      </section>
     );
   }
 
