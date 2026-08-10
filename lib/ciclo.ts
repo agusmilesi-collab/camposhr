@@ -34,7 +34,7 @@ import {
 } from '@/lib/supabase';
 import type { Empresa } from '@/lib/supabase';
 import { armarGrupos, type Candidato, type Grupo } from '@/lib/cruce';
-import { repartoEnsayo, type Rol } from '@/lib/ensayo';
+import { conSuplentes, repartoEnsayo, type Rol } from '@/lib/ensayo';
 import { DEL_EJERCICIO, repartoFrases, type Lado } from '@/lib/frases';
 import { recordar } from '@/lib/memoria';
 import { PERFILES, type Perfil } from '@/lib/perfiles';
@@ -134,6 +134,15 @@ export type Asistente = {
   created_at: string;
   /** Cuándo entró desde algún teléfono. Null si todavía no entró nadie por él. */
   entro_en: string | null;
+  /**
+   * Quien dicta, registrada como una más para poder entrar al ensayo.
+   *
+   * No es parte del grupo que se mide: queda afuera de los contadores de
+   * inscriptos, así que el panel llega a "34 de 34" con el taller entero y no
+   * se queda esperando a dos personas que están dictando. Al ensayo entra sólo
+   * cuando hace falta para completar el múltiplo de tres.
+   */
+  expositora: boolean;
 };
 
 export type Aporte = {
@@ -234,7 +243,7 @@ const CAMPOS_ACTIVIDAD =
   'id,ciclo_id,clave,charla,orden,tipo,titulo,enunciado,opciones,grupo,' +
   'placa,titulo_control,created_at';
 const CAMPOS_ASISTENTE =
-  'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en';
+  'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en,expositora';
 const CAMPOS_APORTE = 'id,corrida_id,actividad_id,asistente_id,valor,created_at';
 const CAMPOS_CORRIDA =
   'id,empresa_id,ciclo_id,clave_control,actividad_abierta_id,activa';
@@ -477,6 +486,18 @@ export async function listarAsistentes(corridaId: string): Promise<Asistente[]> 
     `select=${CAMPOS_ASISTENTE}&corrida_id=eq.${corridaId}` +
       `&order=apellido.asc,nombre.asc`
   );
+}
+
+/**
+ * Los del taller, sin quien dicta.
+ *
+ * Es lo que miden todos los contadores de "cuántos de cuántos": con las
+ * expositoras adentro, el panel diría "32 de 34" mientras las dos que faltan
+ * están dictando, y quien lee ese número no puede saber si espera a alguien o
+ * si ya puede avanzar. Un contador tiene que poder llegar a su total.
+ */
+export function delTaller(asistentes: Asistente[]): Asistente[] {
+  return asistentes.filter((a) => !a.expositora);
 }
 
 export async function getAsistente(
@@ -803,11 +824,12 @@ export async function repartirEnsayo(
 
   // El orden manda: define la grilla y, con ella, el reparto entero. Por fecha
   // de registro es estable, así que recalcular da siempre lo mismo.
-  const enOrden = [...asistentes].sort((a, b) =>
+  const porRegistro = [...asistentes].sort((a, b) =>
     a.created_at.localeCompare(b.created_at)
   );
-  const vigentes = new Set(enOrden.map((a) => a.id));
   const yaTienen = new Set(previos[0].map((p) => p.asistente_id));
+  const enOrden = conSuplentes(porRegistro, yaTienen);
+  const vigentes = new Set(enOrden.map((a) => a.id));
   const nuevos = enOrden.filter((a) => !yaTienen.has(a.id));
   if (nuevos.length === 0) return;
 
@@ -1302,6 +1324,9 @@ export type Resumen =
       tipo: 'ensayo';
       total: number;
       grupos: number;
+      /** Tríos donde el observador y quien recibe contestaron todo lo suyo.
+       *  Es lo que dice que la ronda terminó. */
+      cerrados: number;
       observan: number;
       contestaron: number;
       sostuvo: { escucho: number; explico: number };
@@ -1443,6 +1468,15 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
 
     case 'ensayo': {
       const grupos = new Set<number>();
+      /*
+       * Cuántos tríos ya terminaron: los dos que contestan, contestaron todo.
+       *
+       * Es el dato que dice que la ronda se puede cerrar. El reloj no alcanza,
+       * porque los tríos no terminan juntos, y los otros dos números tampoco:
+       * el observador y quien recibe pueden ir uno adelante del otro, así que
+       * "10 de 12 observadores" no dice cuántas conversaciones se cerraron.
+       */
+      const porGrupo = new Map<number, { deben: number; listos: number }>();
       let observan = 0;
       let contestaron = 0;
       let reciben = 0;
@@ -1454,27 +1488,43 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
       for (const a of aportes) {
         if (a.valor?.tipo !== 'ensayo') continue;
         grupos.add(a.valor.grupo);
+        const cuenta = porGrupo.get(a.valor.grupo) ?? { deben: 0, listos: 0 };
         if (a.valor.rol === 'observa') {
           observan += 1;
-          if (a.valor.sostuvo) {
-            contestaron += 1;
-            sostuvo[a.valor.sostuvo] += 1;
-          }
+          // Las dos, no una: quien observa contesta qué hizo el que comunicó y
+          // qué clase de motivo dio. Con una sola contestada esa conversación
+          // sigue abierta.
+          const listo = Boolean(a.valor.sostuvo && a.valor.motivo);
+          if (listo) contestaron += 1;
+          if (a.valor.sostuvo) sostuvo[a.valor.sostuvo] += 1;
           if (a.valor.motivo) motivo[a.valor.motivo] += 1;
+          cuenta.deben += 1;
+          if (listo) cuenta.listos += 1;
         }
         if (a.valor.rol === 'recibe') {
           reciben += 1;
-          if (a.valor.porque !== undefined || a.valor.cuando !== undefined) {
-            contestaronReciben += 1;
-          }
+          const listo =
+            a.valor.porque !== undefined && a.valor.cuando !== undefined;
+          if (listo) contestaronReciben += 1;
           if (a.valor.porque) dijoPorque += 1;
           if (a.valor.cuando) dijoCuando += 1;
+          cuenta.deben += 1;
+          if (listo) cuenta.listos += 1;
         }
+        porGrupo.set(a.valor.grupo, cuenta);
+      }
+      // Un trío cerrado es el que tiene contestado todo lo que le toca. En un
+      // grupo de cuatro son dos observadores, y también tienen que estar los
+      // dos: la puesta en común usa lo que anotaron.
+      let cerrados = 0;
+      for (const c of porGrupo.values()) {
+        if (c.deben > 0 && c.listos === c.deben) cerrados += 1;
       }
       return {
         tipo: 'ensayo',
         total,
         grupos: grupos.size,
+        cerrados,
         observan,
         contestaron,
         sostuvo,

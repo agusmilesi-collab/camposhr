@@ -3307,6 +3307,12 @@ body {
   font-size: 0.8rem;
   color: var(--muted);
 }
+/* Los tríos que ya terminaron su conversación y contestaron todo. Es lo
+   primero que se lee durante el ensayo, y cambia de color al llegar al total:
+   ella lo ve de reojo mientras camina entre los grupos. */
+.ct-listo {
+  color: var(--st-amber);
+}
 /* Los que quedaron por la mitad: es lo que decide si se puede avanzar o si
    todavía hay gente respondiendo, así que se lee antes que el resto. */
 .ct-a-medias {
@@ -4607,9 +4613,8 @@ body {
 }
 
 /* Los relojes del ensayo, en el panel de la expositora. Van al lado del conteo
-   y no en grande: la decisión de cerrar la ronda la toma el número de
-   observadores que contestaron, y el reloj es el respaldo por si dos tríos
-   nunca tocan el botón. */
+   y no en grande: la decisión de cerrar la ronda la toma el número de tríos
+   terminados, y el reloj es el respaldo por si dos nunca tocan el botón. */
 .ct-reloj {
   color: var(--muted);
   font-variant-numeric: tabular-nums;

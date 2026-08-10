@@ -40,6 +40,7 @@ type ConteoFrases = {
 /** Lo que la expositora mira mientras corre una ronda del ensayo. */
 type ConteoEnsayo = {
   grupos: number;
+  cerrados: number;
   observan: number;
   contestaron: number;
   sostuvo: { escucho: number; explico: number };
@@ -224,10 +225,22 @@ export default function Control({
               <span>
                 {enEnsayo && ensayo ? (
                   /* Los tríos no terminan todos juntos, así que el reloj no
-                     dice cuándo cerrar y este número sí: cuando contestaron
-                     casi todos los observadores, la ronda terminó. */
+                     dice cuándo cerrar y este número sí: un trío cerrado es el
+                     que tiene al observador y a quien recibió con todas sus
+                     preguntas contestadas. Cuando llega al total, la ronda
+                     terminó y se puede pasar a la puesta en común. */
                   <>
-                    Anotaron {ensayo.contestaron} de {ensayo.observan}{' '}
+                    <b
+                      className={
+                        ensayo.grupos > 0 && ensayo.cerrados >= ensayo.grupos
+                          ? 'ct-listo'
+                          : undefined
+                      }
+                    >
+                      Terminaron {ensayo.cerrados} de {ensayo.grupos} tríos
+                    </b>
+                    {' · '}
+                    anotaron {ensayo.contestaron} de {ensayo.observan}{' '}
                     observadores y {ensayo.contestaronReciben} de{' '}
                     {ensayo.reciben} que recibieron
                     {ensayo.contestaron > 0 && (
