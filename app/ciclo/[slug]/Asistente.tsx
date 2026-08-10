@@ -1196,7 +1196,7 @@ function Ejercicio({
           <h1 className="ci-titulo">Ahora léanse</h1>
           <p className="cq-ayuda">
             Las dos mitades trabajaron <b>las mismas cuatro filas</b>, cada una
-            desde una punta: lo que a ustedes les tocó es a donde tenían que
+            desde una punta: lo que nos tocó a nosotros es a donde tenían que
             llegar {lista(frases.enfrente.map((p) => p.nombre))}, y al revés.
           </p>
           <p className="ci-frases-quehacer">
@@ -1228,19 +1228,19 @@ function Ejercicio({
               /** El turno que se compara contra el dato: el del Team Objetivo. */
               const turnoObjetivo = soyObjetivo ? (
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
-                  <h3>Turno de ustedes</h3>
+                  <h3>Nuestro turno</h3>
                   <p className="ci-frases-linea">
-                    <span>Les tocó</span> {partida}
+                    <span>Nos tocó</span> {partida}
                   </p>
                   <p className="ci-frases-linea">
-                    <span>Leé lo que pusieron</span>
+                    <span>Leé lo que pusimos</span>
                     <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-pregunta">
                     Preguntales a {nombresEnfrente}: ¿qué decía la de ustedes?
                   </p>
                   <p className="ci-frases-dato">{frases.partieron[i]}</p>
-                  <p className="ci-frases-cierre">¿Coincide con lo que pusieron?</p>
+                  <p className="ci-frases-cierre">¿Coincide con lo que pusimos?</p>
                 </div>
               ) : (
                 <div className="ci-frases-turno">
@@ -1253,7 +1253,7 @@ function Ejercicio({
                     <b>{frases.suyas?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-pregunta">
-                    Ustedes tienen el dato. Léanselo:
+                    Nosotros tenemos el dato. Léanselo:
                   </p>
                   <p className="ci-frases-dato">{partida}</p>
                   <p className="ci-frases-cierre">¿Coincide con lo que pusieron?</p>
@@ -1280,12 +1280,12 @@ function Ejercicio({
                 </div>
               ) : (
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
-                  <h3>Turno de ustedes</h3>
+                  <h3>Nuestro turno</h3>
                   <p className="ci-frases-linea">
-                    <span>Partieron de</span> {partida}
+                    <span>Partimos de</span> {partida}
                   </p>
                   <p className="ci-frases-linea">
-                    <span>Y pusieron</span>
+                    <span>Y pusimos</span>
                     <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-pregunta">
@@ -1294,7 +1294,7 @@ function Ejercicio({
                     otra.
                   </p>
                   <p className="ci-frases-cierre">
-                    Lo que agregaron, <b>¿lo puede verificar alguien que no
+                    Lo que agregamos, <b>¿lo puede verificar alguien que no
                     estaba?</b> Si no se puede, es interpretación y está bien.
                   </p>
                 </div>
