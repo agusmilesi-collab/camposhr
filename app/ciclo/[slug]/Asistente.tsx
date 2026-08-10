@@ -29,7 +29,8 @@ type TipoActividad =
   | 'cuestionario'
   | 'plan'
   | 'cruce'
-  | 'ensayo';
+  | 'ensayo'
+  | 'frases';
 
 /** Quién está respondiendo desde este teléfono. */
 type Yo = { id: string; nombre: string; apellido: string };
@@ -85,6 +86,21 @@ type Ensayo = {
   };
 };
 
+/** El equipo de esta persona en el ejercicio de las frases de la charla 5. */
+type Frases = {
+  color: string;
+  lado: 'objetivo' | 'subjetivo';
+  nombreDeLado: string;
+  consigna: { de: string; a: string; como: string };
+  escribe: boolean;
+  parten: string[];
+  con: { nombre: string; apellido: string; foto: string | null; escribe: boolean }[];
+  enfrente: { nombre: string; apellido: string; foto: string | null; escribe: boolean }[];
+  mias: string[] | null;
+  suyas: string[] | null;
+  partieron: string[];
+};
+
 /** Una de las que se abrieron juntas, con lo que esta persona ya respondió. */
 type EnFila = ActividadPublica & { respondida: boolean; mio: Valor | null };
 
@@ -97,6 +113,7 @@ type Estado = {
   grupo: EnFila[] | null;
   cruce: Cruce | null;
   ensayo: Ensayo | null;
+  frases: Frases | null;
 };
 
 export type Cara = {
@@ -611,6 +628,7 @@ function Fila({
         mio={respondidas[actual.id] ?? actual.mio}
         cruce={estado.cruce}
         ensayo={estado.ensayo}
+        frases={estado.frases}
         onGuardado={(valor) =>
           setRespondidas((r) => ({ ...r, [actual.id]: valor }))
         }
@@ -629,6 +647,7 @@ function Formulario({
   mio,
   cruce,
   ensayo,
+  frases,
   onGuardado,
 }: {
   slug: string;
@@ -640,6 +659,7 @@ function Formulario({
   mio: Valor | null;
   cruce: Cruce | null;
   ensayo: Ensayo | null;
+  frases: Frases | null;
   onGuardado: (valor: Valor) => void;
 }) {
   const [palabra, setPalabra] = useState('');
@@ -717,6 +737,19 @@ function Formulario({
 
   if (actividad.tipo === 'cruce') {
     return <Cruzado actividad={actividad} cruce={cruce} />;
+  }
+
+  /* El ejercicio de las frases tampoco se responde de a uno: el equipo lo armó
+     el servidor y de cada mitad escribe una sola persona. */
+  if (actividad.tipo === 'frases') {
+    return (
+      <Ejercicio
+        slug={slug}
+        actividadId={actividad.id}
+        asistenteId={asistenteId}
+        frases={frases}
+      />
+    );
   }
 
   /* El compromiso tiene pantalla propia, y va antes del bloque de "ya
@@ -1060,6 +1093,229 @@ function Formulario({
       )}
 
       {error && <p className="cq-error">{error}</p>}
+    </section>
+  );
+}
+
+// ----------------------------------------------------------------- ejercicio
+
+/**
+ * El ejercicio de las frases de la charla 5.
+ *
+ * Tiene dos momentos y la pantalla pasa sola del primero al segundo. Mientras
+ * las dos mitades escriben, cada una ve sólo lo suyo. Cuando las dos
+ * guardaron, aparece la lectura cruzada, que es donde el ejercicio se entiende:
+ * al lado de lo que escribió cada mitad está la frase de la que partió la otra,
+ * y esa frase es la respuesta.
+ *
+ * En cada mitad escribe una sola persona. Los otros dos ven las mismas frases
+ * en su teléfono para poder discutirlas, y no un formulario: si cada uno
+ * completa el suyo, nadie habla con nadie y el ejercicio se convierte en tres
+ * tareas individuales hechas al lado.
+ */
+function Ejercicio({
+  slug,
+  actividadId,
+  asistenteId,
+  frases,
+}: {
+  slug: string;
+  actividadId: string;
+  asistenteId: string;
+  frases: Frases | null;
+}) {
+  const [borrador, setBorrador] = useState<string[]>([]);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  /** Lo enviado desde este teléfono, para no esperar al sondeo. */
+  const [recien, setRecien] = useState<string[] | null>(null);
+
+  if (!frases) {
+    return (
+      <section className="cq-placa ci-espera">
+        <p className="ci-espera-punto" aria-hidden="true" />
+        <h1 className="ci-titulo">Un segundo</h1>
+        <p className="cq-ayuda">
+          Estamos armando los equipos. El tuyo aparece solo en esta pantalla.
+        </p>
+      </section>
+    );
+  }
+
+  const mias = recien ?? frases.mias;
+  const listas = Boolean(mias) && Boolean(frases.suyas);
+
+  async function enviar() {
+    setEnviando(true);
+    setError(null);
+    // Mismo criterio que el resto de las escrituras del ciclo.
+    const ESPERAS = [0, 1200, 3000];
+    for (const espera of ESPERAS) {
+      if (espera) await new Promise((r) => setTimeout(r, espera));
+      try {
+        const res = await fetch(`/api/ciclo/${slug}/aporte`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            actividadId,
+            asistenteId,
+            valor: { respuestas: borrador },
+          }),
+        });
+        if (res.ok) {
+          setRecien(borrador);
+          setEnviando(false);
+          return;
+        }
+        if (res.status < 500) {
+          setError(await res.text());
+          setEnviando(false);
+          return;
+        }
+      } catch {
+        /* sin señal: lo intenta de nuevo */
+      }
+    }
+    setError('No pudimos guardarlo. Probá de nuevo.');
+    setEnviando(false);
+  }
+
+  const quienEscribe = frases.escribe
+    ? null
+    : frases.con.find((p) => p.escribe) ?? null;
+
+  return (
+    <section className="cq-placa ci-frases">
+      <p className="ci-frases-equipo">
+        Equipo <b>{frases.color}</b> · {frases.nombreDeLado}
+      </p>
+
+      {listas ? (
+        /* Las dos mitades escribieron: la lectura cruzada. */
+        <>
+          <h1 className="ci-titulo">Ahora léanse</h1>
+          <p className="cq-ayuda">
+            Al lado de lo que escribieron está la frase de la que partieron los
+            de enfrente. Esa frase es la respuesta.
+          </p>
+          <div className="ci-frases-cruce">
+            {frases.parten.map((partida, i) => (
+              <article key={i}>
+                <p className="ci-frases-num">{i + 1}</p>
+                <dl>
+                  <dt>Les tocó</dt>
+                  <dd>{partida}</dd>
+                  <dt>Escribieron</dt>
+                  <dd className="ci-frases-mia">{mias?.[i] || '—'}</dd>
+                  <dt>Enfrente partieron de</dt>
+                  <dd className="ci-frases-suya">{frases.partieron[i]}</dd>
+                  <dt>Y escribieron</dt>
+                  <dd>{frases.suyas?.[i] || '—'}</dd>
+                </dl>
+              </article>
+            ))}
+          </div>
+          <p className="ci-frases-regla">
+            ¿Esto lo puede verificar alguien que no estaba? Si es sí, es un
+            hecho. Si es no, es interpretación.
+          </p>
+        </>
+      ) : mias ? (
+        /* Esta mitad ya escribió y espera a la de enfrente. */
+        <>
+          <p className="ci-tilde" aria-hidden="true">
+            ✓
+          </p>
+          <h1 className="ci-titulo">Listo</h1>
+          <p className="cq-ayuda">
+            Falta que termine la otra mitad de tu equipo. Cuando terminen,
+            aparece acá lo que escribieron.
+          </p>
+          {frases.escribe && (
+            <div className="ci-acciones">
+              <button
+                className="cq-btn-ghost"
+                onClick={() => {
+                  setBorrador(mias);
+                  setRecien(null);
+                }}
+              >
+                Corregir lo que escribimos
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        /* Todavía escribiendo. */
+        <>
+          <h1 className="ci-titulo">{frases.consigna.a}</h1>
+          <p className="cq-ayuda">{frases.consigna.como}</p>
+
+          <div className="ci-frases-gente">
+            {frases.con.map((p) => (
+              <span className="ci-frases-quien" key={`${p.apellido}-${p.nombre}`}>
+                {p.foto ? (
+                  <img src={p.foto} alt="" />
+                ) : (
+                  <i>{(p.nombre[0] ?? '') + (p.apellido[0] ?? '')}</i>
+                )}
+                <b>{p.nombre}</b>
+                {p.escribe && <em>escribe</em>}
+              </span>
+            ))}
+          </div>
+
+          {frases.escribe ? (
+            <>
+              <p className="ci-frases-rol">
+                Escribís vos, por los tres. Pónganse de acuerdo primero.
+              </p>
+              {frases.parten.map((partida, i) => (
+                <label className="ci-frases-campo" key={i}>
+                  <span>{partida}</span>
+                  <textarea
+                    className="cq-input ci-textarea"
+                    rows={2}
+                    maxLength={400}
+                    value={borrador[i] ?? ''}
+                    onChange={(e) =>
+                      setBorrador((b) => {
+                        const otro = [...b];
+                        otro[i] = e.target.value;
+                        return otro;
+                      })
+                    }
+                  />
+                </label>
+              ))}
+              <div className="ci-acciones">
+                <button
+                  className="cq-btn"
+                  disabled={enviando || !borrador.some((t) => t?.trim())}
+                  onClick={enviar}
+                >
+                  {enviando ? 'Un segundo…' : 'Listo, ya está'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="ci-frases-rol">
+                {quienEscribe
+                  ? `Escribe ${quienEscribe.nombre}. Díganle qué poner.`
+                  : 'Escribe otra persona de tu mitad. Díganle qué poner.'}
+              </p>
+              <ol className="ci-frases-lista">
+                {frases.parten.map((partida, i) => (
+                  <li key={i}>{partida}</li>
+                ))}
+              </ol>
+            </>
+          )}
+
+          {error && <p className="cq-error">{error}</p>}
+        </>
+      )}
     </section>
   );
 }

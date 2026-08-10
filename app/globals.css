@@ -3803,6 +3803,132 @@ body {
   text-align: center;
 }
 
+/* El ejercicio de las frases de la charla 5. El equipo y el lado van arriba de
+   todo y en ámbar: es lo primero que la persona necesita para saber a qué mesa
+   se sienta, y lo lee de pie mientras la sala se está armando. */
+.ci-frases-equipo {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--st-amber);
+}
+.ci-frases-equipo b {
+  font-weight: 600;
+}
+/* Quién es quién en la propia mitad, con la marca de quien escribe. */
+.ci-frases-gente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 18px;
+}
+.ci-frases-quien {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+}
+.ci-frases-quien img,
+.ci-frases-quien i {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  background: var(--line);
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.ci-frases-quien em {
+  font-style: normal;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--st-amber);
+}
+.ci-frases-rol {
+  margin: 18px 0 4px;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+/* Cada frase de la que se parte, con su campo debajo. La frase pesa más que el
+   campo: es lo que hay que leer y discutir antes de escribir nada. */
+.ci-frases-campo {
+  display: block;
+  margin-top: 20px;
+}
+.ci-frases-campo > span {
+  display: block;
+  margin-bottom: 8px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  color: var(--ink);
+}
+/* Para los que no escriben: las mismas frases, para poder discutirlas. */
+.ci-frases-lista {
+  margin: 12px 0 0;
+  padding-left: 1.2em;
+}
+.ci-frases-lista li {
+  margin-bottom: 12px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+/* La lectura cruzada, que es donde el ejercicio se entiende. */
+.ci-frases-cruce {
+  margin-top: 18px;
+}
+.ci-frases-cruce article {
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.ci-frases-num {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.ci-frases-cruce dl {
+  margin: 0;
+}
+.ci-frases-cruce dt {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 10px;
+}
+.ci-frases-cruce dd {
+  margin: 2px 0 0;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+/* Lo escrito por cada mitad, marcado para poder compararlo de un vistazo con
+   la frase de la que partió la otra, que es la respuesta. */
+.ci-frases-cruce dd.ci-frases-mia {
+  color: var(--st-amber);
+}
+.ci-frases-cruce dd.ci-frases-suya {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.1rem;
+}
+.ci-frases-regla {
+  margin-top: 22px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--st-amber);
+  background: var(--card);
+  border-radius: 0 10px 10px 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
 /* El cartel del Match: la palabra que cada uno levanta para que la vea la
    sala. Blanco pleno y tinta negra, que es lo que más contrasta a cuatro metros
    con la luz de una sala encendida, y ocupa la pantalla entera. */

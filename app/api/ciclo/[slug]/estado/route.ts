@@ -12,6 +12,8 @@ import {
   resolverCiclo,
   resumir,
   rondasDelEnsayo,
+  frasesDeLaSala,
+  repartirFrases,
   salaDelCruce,
   type Actividad,
   type Aporte,
@@ -21,6 +23,14 @@ import { firmarSelfies } from '@/lib/supabase';
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { motivoEntre, type Motivo } from '@/lib/cruce';
 import { CASOS, REACCIONES, type Rol } from '@/lib/ensayo';
+import {
+  COLORES,
+  CONSIGNA,
+  DEL_EJERCICIO,
+  FILAS,
+  NOMBRE_DE_LADO,
+  type Lado,
+} from '@/lib/frases';
 
 /**
  * Qué actividad está abierta en este momento.
@@ -135,9 +145,23 @@ export async function GET(
       ? resumir(actividad, await listarAportes(ciclo.corrida.id, actividad.id))
       : null;
 
+  /*
+   * En el ejercicio de las frases mira otra cosa: cuántos equipos tienen las
+   * dos mitades listas, que es cuándo pedir que se lean. Sale de la lectura
+   * que ya está en memoria para todos, así que no cuesta una consulta más.
+   */
+  const frasesConteo =
+    parametros.get('total') === '1' && actividad.tipo === 'frases'
+      ? resumir(
+          actividad,
+          await frasesDeLaSala(ciclo.corrida.id, actividad.id)
+        )
+      : null;
+
   return NextResponse.json({
     actividad: publica(actividad),
     ensayoConteo: ensayoConteo?.tipo === 'ensayo' ? ensayoConteo : null,
+    frasesConteo: frasesConteo?.tipo === 'frases' ? frasesConteo : null,
     // Si ya respondió, el teléfono le muestra su respuesta y la opción de
     // corregirla, en vez de un formulario vacío que invita a responder dos veces.
     respondida: Boolean(mio),
@@ -155,7 +179,114 @@ export async function GET(
       actividad.tipo === 'ensayo' && asistenteId
         ? await ensayoDe(ciclo.corrida, catalogo, actividad, asistenteId, mio)
         : null,
+    frases:
+      actividad.tipo === 'frases' && asistenteId
+        ? await frasesDe(ciclo.corrida, actividad, asistenteId, mio)
+        : null,
   });
+}
+
+/** El equipo de esta persona en el ejercicio de las frases, listo para la pantalla. */
+type Frases = {
+  /** Cómo se llama el equipo en voz alta: "Equipo Rojo". */
+  color: string;
+  lado: Lado;
+  nombreDeLado: string;
+  consigna: { de: string; a: string; como: string };
+  escribe: boolean;
+  /** Las frases de las que parte esta mitad, en el orden del ejercicio. */
+  parten: string[];
+  con: { nombre: string; apellido: string; foto: string | null; escribe: boolean }[];
+  enfrente: { nombre: string; apellido: string; foto: string | null; escribe: boolean }[];
+  /** Lo que ya escribió su mitad, y lo que escribió la de enfrente. */
+  mias: string[] | null;
+  suyas: string[] | null;
+  /** De qué partió la mitad de enfrente. Es la respuesta a lo que escribió ésta. */
+  partieron: string[];
+};
+
+async function frasesDe(
+  corrida: Corrida,
+  actividad: Actividad,
+  asistenteId: string,
+  yaLeido: Aporte | null
+): Promise<Frases | null> {
+  // El puesto propio ya vino con el resto del sondeo, igual que en el ensayo.
+  let aporte = yaLeido;
+
+  // Se registró después de que la expositora abriera el ejercicio: entra ahora,
+  // en el equipo más chico, sin tocar a los que ya están trabajando.
+  if (!aporte) {
+    await repartirFrases(corrida, actividad);
+    aporte = await getAporteDe(actividad.id, asistenteId);
+  }
+  if (aporte?.valor?.tipo !== 'frases') return null;
+  const puesto = aporte.valor;
+
+  // Quiénes están, de memoria, y los puestos del ejercicio también: sin esto
+  // la lectura cruzada costaría dos consultas por teléfono y por sondeo.
+  const [porId, todos] = await Promise.all([
+    asistentesDeLaSala(corrida.id).then((as) => new Map(as.map((a) => [a.id, a]))),
+    frasesDeLaSala(corrida.id, actividad.id),
+  ]);
+
+  const escribeDe = (lado: Lado) =>
+    todos.find(
+      (a) =>
+        a.valor?.tipo === 'frases' &&
+        a.valor.color === puesto.color &&
+        a.valor.lado === lado &&
+        a.valor.escribe
+    );
+  const otroLado: Lado = puesto.lado === 'objetivo' ? 'subjetivo' : 'objetivo';
+  const respuestasDe = (lado: Lado) => {
+    const quien = escribeDe(lado);
+    const v = quien?.valor?.tipo === 'frases' ? quien.valor.respuestas : undefined;
+    return v && v.some((t) => t.length > 0) ? v : null;
+  };
+
+  const gente = (lista: { id: string; escribe: boolean }[]) => {
+    const con = lista
+      .map((o) => ({ quien: porId.get(o.id), escribe: o.escribe }))
+      .filter((c): c is { quien: NonNullable<typeof c.quien>; escribe: boolean } =>
+        Boolean(c.quien)
+      );
+    return con;
+  };
+  const suyos = gente(puesto.con);
+  const otros = gente(puesto.enfrente);
+  const fotos = await firmarSelfies(
+    [...suyos, ...otros]
+      .map((c) => c.quien.foto_path)
+      .filter((p): p is string => Boolean(p))
+  );
+  const conFoto = (lista: ReturnType<typeof gente>) =>
+    lista.map((c) => ({
+      nombre: c.quien.nombre,
+      apellido: c.quien.apellido,
+      foto: c.quien.foto_path ? fotos.get(c.quien.foto_path) ?? null : null,
+      escribe: c.escribe,
+    }));
+
+  // De qué parte cada mitad: la que llega al hecho parte de la interpretación.
+  const columna = (lado: Lado) =>
+    DEL_EJERCICIO.map((i) =>
+      lado === 'objetivo' ? FILAS[i].interpretacion : FILAS[i].hecho
+    );
+
+  return {
+    color: COLORES[puesto.color] ?? COLORES[0],
+    lado: puesto.lado,
+    nombreDeLado: NOMBRE_DE_LADO[puesto.lado],
+    consigna: CONSIGNA[puesto.lado],
+    escribe: puesto.escribe,
+    parten: columna(puesto.lado),
+    con: conFoto(suyos),
+    enfrente: conFoto(otros),
+    mias: respuestasDe(puesto.lado),
+    suyas: respuestasDe(otroLado),
+    partieron: columna(otroLado),
+  };
 }
 
 /** El puesto de esta persona en esta ronda, listo para la pantalla. */

@@ -26,6 +26,17 @@ type ActividadControl = {
   abierta: boolean;
 };
 
+/**
+ * Lo que mira mientras corre el ejercicio de las frases. Los equipos completos
+ * son los que ya pueden leerse, y es la señal de cuándo pedirlo en voz alta.
+ */
+type ConteoFrases = {
+  equipos: number;
+  mitades: number;
+  escribieron: number;
+  completos: number;
+};
+
 /** Lo que la expositora mira mientras corre una ronda del ensayo. */
 type ConteoEnsayo = {
   grupos: number;
@@ -72,6 +83,8 @@ export default function Control({
   const [error, setError] = useState<string | null>(null);
   /** Durante el ensayo: cuántos observadores contestaron y qué contestaron. */
   const [ensayo, setEnsayo] = useState<ConteoEnsayo | null>(null);
+  /** Durante el ejercicio de las frases: cuántas mitades y equipos terminaron. */
+  const [frases, setFrases] = useState<ConteoFrases | null>(null);
   /*
    * Los dos relojes del ensayo. No son para apurar a nadie: en el teléfono y
    * en lo proyectado un cronómetro haría que nadie sostenga el silencio, que es
@@ -105,6 +118,7 @@ export default function Control({
         setEmpezaron(json.empezaron ?? 0);
         setEnFila(json.enFila ?? 0);
         setEnsayo(json.ensayoConteo ?? null);
+        setFrases(json.frasesConteo ?? null);
       } catch {
         // Sin conexión: reintenta solo en el próximo tic.
       }
@@ -141,6 +155,7 @@ export default function Control({
 
   const abierta = actividades.find((a) => a.id === abiertaId) ?? null;
   const enEnsayo = abierta?.tipo === 'ensayo';
+  const enFrases = abierta?.tipo === 'frases';
 
   /*
    * Los relojes arrancan solos: el de la ronda cada vez que cambia la consigna
@@ -149,19 +164,19 @@ export default function Control({
    * saber es cuánto lleva el bloque entero.
    */
   useEffect(() => {
-    if (!enEnsayo) {
+    if (!enEnsayo && !enFrases) {
       setDesdeRonda(null);
       return;
     }
     setDesdeRonda(Date.now());
-    setDesdeEnsayo((previo) => previo ?? Date.now());
-  }, [enEnsayo, abiertaId]);
+    if (enEnsayo) setDesdeEnsayo((previo) => previo ?? Date.now());
+  }, [enEnsayo, enFrases, abiertaId]);
 
   useEffect(() => {
-    if (!enEnsayo) return;
+    if (!enEnsayo && !enFrases) return;
     const id = setInterval(() => setAhora(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [enEnsayo]);
+  }, [enEnsayo, enFrases]);
 
   /**
    * Las que se abren juntas ocupan un solo botón.
@@ -234,6 +249,20 @@ export default function Control({
                         {desdeEnsayo !== null &&
                           ` · ensayo ${reloj(ahora - desdeEnsayo)}`}
                       </b>
+                    )}
+                  </>
+                ) : enFrases && frases ? (
+                  /* Los equipos no terminan todos juntos: cuando la mayoría
+                     tiene las dos mitades escritas, se pide que se lean. */
+                  <>
+                    Escribieron {frases.escribieron} de {frases.mitades}{' '}
+                    mitades
+                    <b className="ct-a-medias">
+                      {' '}· {frases.completos} de {frases.equipos} equipos ya
+                      pueden leerse
+                    </b>
+                    {desdeRonda !== null && (
+                      <b className="ct-reloj"> · {reloj(ahora - desdeRonda)}</b>
                     )}
                   </>
                 ) : enFila > 1 ? (

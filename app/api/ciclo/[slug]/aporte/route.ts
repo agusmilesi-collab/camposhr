@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import {
   anotarEnsayo,
+  anotarFrases,
   type RespuestaEnsayo,
   getActividad,
   getAsistente,
@@ -90,6 +91,31 @@ export async function POST(
         actividad.id,
         asistente.id,
         respuesta
+      );
+      return NextResponse.json({ ok: true, valor: guardado.valor });
+    } catch (e) {
+      return new NextResponse((e as Error).message, { status: 409 });
+    }
+  }
+
+  /*
+   * El ejercicio de las frases, por el mismo camino que el ensayo: el equipo ya
+   * está escrito y lo único que llega del teléfono es lo que escribió quien
+   * escribe por su mitad. Necesita leer el puesto antes para saber si esta
+   * persona era ésa.
+   */
+  if (actividad.tipo === 'frases') {
+    const crudo = (datos.valor ?? {}) as Record<string, unknown>;
+    const respuestas = Array.isArray(crudo.respuestas)
+      ? crudo.respuestas.map((t) => String(t ?? ''))
+      : null;
+    if (!respuestas) return new NextResponse('Respuesta inválida', { status: 400 });
+    try {
+      const guardado = await anotarFrases(
+        corrida.id,
+        actividad.id,
+        asistente.id,
+        respuestas
       );
       return NextResponse.json({ ok: true, valor: guardado.valor });
     } catch (e) {
