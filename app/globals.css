@@ -3988,7 +3988,6 @@ body {
 .ci-frases-bloque {
   margin: 22px 0 14px;
   padding: 13px 15px;
-  background: rgba(169, 119, 34, 0.09);
   border-radius: 11px;
 }
 .ci-frases-bloque h2 {
@@ -3997,6 +3996,21 @@ body {
   font-size: 1.28rem;
   font-weight: 400;
   line-height: 1.15;
+}
+/* Un color por dirección. Las cuatro frases van para los dos lados y el cambio
+   pasa a la mitad: con los dos bloques del mismo color hay que leer el título
+   para darse cuenta, y ahí es donde la mesa sigue de largo con la consigna de
+   las dos primeras. */
+.ci-hacia-objetivo {
+  background: rgba(22, 104, 220, 0.09);
+}
+.ci-hacia-objetivo h2 {
+  color: #1554b0;
+}
+.ci-hacia-subjetivo {
+  background: rgba(169, 119, 34, 0.09);
+}
+.ci-hacia-subjetivo h2 {
   color: var(--st-amber);
 }
 .ci-frases-bloque p {
