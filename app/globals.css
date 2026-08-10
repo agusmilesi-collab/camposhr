@@ -4161,21 +4161,17 @@ body {
 .ci-frases-nuestro-turno h3 {
   color: var(--st-amber);
 }
-/* El rótulo arriba y el texto abajo: en un teléfono, lado a lado deja los dos
-   en dos palabras por renglón. */
+/* Cada una en una oración seguida, y no con el rótulo arriba en versalitas:
+   son dos frases que se leen en voz alta, y el rótulo suelto arriba las
+   partía en cuatro renglones donde alcanzan dos. */
 .ci-frases-linea {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 0.97rem;
-  line-height: 1.35;
+  line-height: 1.4;
   color: var(--ink);
 }
 .ci-frases-linea span {
-  display: block;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 1px;
 }
 .ci-frases-linea b {
   font-weight: 600;
