@@ -1231,16 +1231,20 @@ function Ejercicio({
         /* Las dos mitades escribieron: la lectura cruzada. */
         <>
           <h1 className="ci-titulo">Ahora léanse</h1>
+          {/*
+            Tres frases cortas y una idea por frase. Antes eran dos párrafos
+            que explicaban también por qué arranca uno u otro, que es una razón
+            de diseño y no algo que la mesa necesite para hacer el ejercicio.
+          */}
           <p className="cq-ayuda">
-            Las dos mitades trabajaron <b>los mismos cuatro casos</b>, cada una
-            desde una punta: la frase que nos tocó a nosotros es a donde tenían
-            que llegar {lista(frases.enfrente.map((p) => p.nombre))}, y al revés.
+            Los dos subgrupos trabajaron <b>las mismas cuatro frases</b>, cada
+            uno desde un lado.
           </p>
           <p className="ci-frases-quehacer">
-            Van de a una y por turnos. <b>En cada frase arranca el que fue
-            hacia el hecho</b>, que es el único que tiene una respuesta contra
-            la cual compararse. Cambia a la mitad, y cada frase dice a quién le
-            toca.
+            <b>Lo que ustedes tenían que escribir, ellos ya lo tenían en la
+            mano.</b> Y al revés.
+            <br />
+            Vayan de a una: en cada frase <b>la pantalla dice quién arranca</b>.
           </p>
 
           <div className="ci-frases-cruce">
