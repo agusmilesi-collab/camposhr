@@ -1377,40 +1377,33 @@ function Ejercicio({
             nombres mezclados desde el arranque, la mitad busca a la persona
             equivocada y el ejercicio empieza cinco minutos tarde.
           */}
-          <ol className="ci-frases-armado">
-            <li>
-              <b>Juntate con el equipo {frases.color}.</b> Son{' '}
-              {1 + frases.con.length + frases.enfrente.length} contando el otro
-              subgrupo. Además de vos:{' '}
-              {lista([...frases.con, ...frases.enfrente].map((p) => p.nombre))}.
-            </li>
-            <li>
-              <b>Ya reunidos, sepárense en dos subgrupos.</b> Vos vas al{' '}
-              {frases.nombreDeMitad}
-              {frases.con.length > 0 ? (
-                <>
-                  , con estas caras:
-                  {/* Las fotos y no sólo los nombres: el subgrupo se arma de
-                      parado y en medio del ruido, y a esta altura del ciclo
-                      todavía no se saben todos los nombres. */}
-                  <span className="ci-frases-caras">
-                    {frases.con.map((p) => (
-                      <span key={`${p.apellido}-${p.nombre}`}>
-                        {p.foto ? (
-                          <img src={p.foto} alt="" />
-                        ) : (
-                          <i>{(p.nombre[0] ?? '') + (p.apellido[0] ?? '')}</i>
-                        )}
-                        <b>{p.nombre}</b>
-                      </span>
-                    ))}
+          {/*
+            Un solo movimiento, no dos. Juntarse por color ya pasó: fue la
+            pantalla anterior, y quien llega acá lo tiene hecho. Repetirlo
+            manda a media sala a rearmar un grupo que ya está armado.
+          */}
+          <div className="ci-frases-armado">
+            <p>
+              <b>Ya reunido el equipo {frases.color}, sepárense en dos
+              subgrupos.</b>{' '}
+              Vos vas al {frases.nombreDeMitad}
+              {frases.con.length > 0 ? ', con estas caras:' : ', solo.'}
+            </p>
+            {frases.con.length > 0 && (
+              <span className="ci-frases-caras">
+                {frases.con.map((p) => (
+                  <span key={`${p.apellido}-${p.nombre}`}>
+                    {p.foto ? (
+                      <img src={p.foto} alt="" />
+                    ) : (
+                      <i>{(p.nombre[0] ?? '') + (p.apellido[0] ?? '')}</i>
+                    )}
+                    <b>{p.nombre}</b>
                   </span>
-                </>
-              ) : (
-                <>, solo.</>
-              )}
-            </li>
-          </ol>
+                ))}
+              </span>
+            )}
+          </div>
 
           <h1 className="ci-titulo">Ejercicio</h1>
           <p className="cq-ayuda">

@@ -3922,7 +3922,7 @@ body {
    persona equivocada y el ejercicio arranca cinco minutos tarde. */
 .ci-frases-armado {
   margin: 14px 0 22px;
-  padding: 14px 16px 14px 34px;
+  padding: 14px 16px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -3930,8 +3930,8 @@ body {
   line-height: 1.5;
   color: var(--ink-soft);
 }
-.ci-frases-armado li + li {
-  margin-top: 10px;
+.ci-frases-armado p {
+  margin: 0;
 }
 .ci-frases-armado b {
   color: var(--ink);
