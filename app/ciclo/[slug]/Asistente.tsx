@@ -637,7 +637,7 @@ function Fila({
         </p>
         <h1 className="ci-titulo">Gracias</h1>
         <p className="cq-ayuda">
-          Por los cinco encuentros y por bancarte los ejercicios.
+          Por los cinco encuentros y por tu atención plena.
         </p>
         <p className="ci-firma">Lorena y Lucila</p>
         <p className="ci-guardar">Ya podés guardar el teléfono.</p>
