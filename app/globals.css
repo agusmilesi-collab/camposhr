@@ -4093,22 +4093,40 @@ body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
-  text-align: center;
 }
-/* Quién empieza pesa más que el número de frase: es lo que la mesa mira en el
-   corte para saber a quién le toca. */
+/* Quién empieza: es lo que la mesa mira en el corte para saber a quién le
+   toca. */
 .ci-frases-num b {
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--st-amber);
 }
-.ci-frases-num::before,
+/* La línea cierra el corte hasta el borde y deja la letra al principio, que es
+   donde se la busca. */
 .ci-frases-num::after {
   content: '';
   flex: 1;
   height: 1px;
   background: var(--st-amber);
   opacity: 0.35;
+}
+/* La letra de la frase, para cantarla en voz alta entre los dos subgrupos:
+   «¿en cuál estamos?», «en la A». Va grande y en su círculo porque es lo que
+   se busca de un vistazo cuando la mesa se desincroniza. */
+.ci-frases-letra {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--st-amber);
+  color: var(--paper);
+  display: grid;
+  place-items: center;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 /* Cada turno en su caja. El propio va marcado, para saber de un vistazo
    cuándo habla uno y cuándo escucha. */

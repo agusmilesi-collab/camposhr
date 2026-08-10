@@ -1268,7 +1268,10 @@ function Ejercicio({
               const nuestro = vamosAlHecho ? (
                 <>
                   <p className="ci-frases-num">
-                    <b>Empezamos nosotros</b> · Frase {i + 1} de 4
+                    <span className="ci-frases-letra">
+                      {LETRAS[i]}
+                    </span>
+                    <b>Empezamos nosotros</b>
                   </p>
                   <div className="ci-frases-turno ci-frases-nuestro-turno">
                     <h3>Leé en voz alta</h3>
@@ -1289,7 +1292,10 @@ function Ejercicio({
               ) : (
                 <>
                   <p className="ci-frases-num">
-                    <b>Seguimos nosotros</b> · Frase {i + 1} de 4
+                    <span className="ci-frases-letra">
+                      {LETRAS[i]}
+                    </span>
+                    <b>Seguimos nosotros</b>
                   </p>
                   <div className="ci-frases-turno ci-frases-nuestro-turno">
                     <h3>Leé en voz alta</h3>
@@ -1320,7 +1326,10 @@ function Ejercicio({
               const deEnfrente = vamosAlHecho ? (
                 <>
                   <p className="ci-frases-num">
-                    <b>Siguen ellos</b> · Frase {i + 1} de 4
+                    <span className="ci-frases-letra">
+                      {LETRAS[i]}
+                    </span>
+                    <b>Siguen ellos</b>
                   </p>
                   <div className="ci-frases-turno">
                     <h3>Turno de {nombresEnfrente}</h3>
@@ -1342,7 +1351,10 @@ function Ejercicio({
               ) : (
                 <>
                   <p className="ci-frases-num">
-                    <b>Empiezan ellos</b> · Frase {i + 1} de 4
+                    <span className="ci-frases-letra">
+                      {LETRAS[i]}
+                    </span>
+                    <b>Empiezan ellos</b>
                   </p>
                   <div className="ci-frases-turno">
                     <h3>Turno de {nombresEnfrente}</h3>
@@ -1637,6 +1649,15 @@ function lista(nombres: string[]): string {
   if (nombres.length <= 1) return nombres[0] ?? '';
   return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
 }
+
+/**
+ * Cómo se llama cada frase del ejercicio.
+ *
+ * Letras y no números: los dos subgrupos las tienen que cantar en voz alta
+ * para sincronizarse, y "estamos en la A" no se confunde con la cantidad de
+ * frases ni con el número de equipo.
+ */
+const LETRAS = ['A', 'B', 'C', 'D'];
 
 /** El cuerpo con el que se mide antes de escalar. Cualquiera sirve. */
 const MEDIDA = 100;
