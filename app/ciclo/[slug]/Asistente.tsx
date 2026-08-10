@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 import Cuestionario from '@/app/c/[slug]/Cuestionario';
-import { DIAS, partirOpcion } from '@/lib/opciones';
+import { DIAS, partirOpcion, tramo } from '@/lib/opciones';
 import { APORTA, ENTRE, type Perfil } from '@/lib/perfiles';
 
 /**
@@ -976,7 +976,7 @@ function Formulario({
           {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
             <button
               key={n}
-              className="ci-escala-boton"
+              className={`ci-escala-boton ${tramo(n)}`}
               disabled={enviando}
               onClick={() => enviar({ tipo: 'escala', escala: n })}
             >
@@ -1389,11 +1389,6 @@ function Ejercicio({
               );
             })}
           </div>
-          <p className="ci-frases-regla">
-            La pregunta que resuelve cualquier duda: <b>¿esto lo puede
-            verificar alguien que no estaba?</b> Si es sí, es un hecho. Si es
-            no, es interpretación.
-          </p>
         </>
       ) : mias && !corrigiendo ? (
         /* Esta mitad ya escribió y espera a la de enfrente. */

@@ -13,6 +13,7 @@
   --st-blue-2: #43648f;
   --st-violet: #6a5a8c;
   --st-verde: #4a7856;
+  --st-rojo: #8c3b3b;
 }
 
 * {
@@ -3254,6 +3255,36 @@ body {
   color: #fff;
   border-color: var(--st-amber);
 }
+/* Los tres tramos de la recomendación: 9 y 10 verde, 7 y 8 ámbar, 6 para abajo
+   rojo. El color se ve antes de tocar, así que la persona elige sabiendo qué
+   está diciendo. El botón queda pintado del mismo color al apretarse. */
+.ci-escala-boton.es-verde {
+  color: var(--st-verde);
+  border-color: color-mix(in srgb, var(--st-verde) 45%, var(--line));
+}
+.ci-escala-boton.es-ambar {
+  color: var(--st-amber);
+  border-color: color-mix(in srgb, var(--st-amber) 45%, var(--line));
+}
+.ci-escala-boton.es-rojo {
+  color: var(--st-rojo);
+  border-color: color-mix(in srgb, var(--st-rojo) 45%, var(--line));
+}
+.ci-escala-boton.es-verde:active {
+  background: var(--st-verde);
+  border-color: var(--st-verde);
+  color: #fff;
+}
+.ci-escala-boton.es-ambar:active {
+  background: var(--st-amber);
+  border-color: var(--st-amber);
+  color: #fff;
+}
+.ci-escala-boton.es-rojo:active {
+  background: var(--st-rojo);
+  border-color: var(--st-rojo);
+  color: #fff;
+}
 
 /* --------------------------------------------------------------- control */
 
@@ -3598,6 +3629,14 @@ body {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+/* Los mismos tres tramos que en el teléfono. La expositora ve de un vistazo
+   cuánto hay a cada lado sin leer los números. */
+.cp-columna.es-verde .cp-columna-barra { background: var(--st-verde); }
+.cp-columna.es-ambar .cp-columna-barra { background: var(--st-amber); }
+.cp-columna.es-rojo .cp-columna-barra { background: var(--st-rojo); }
+.cp-columna.es-verde .cp-columna-num { color: var(--st-verde); }
+.cp-columna.es-ambar .cp-columna-num { color: var(--st-amber); }
+.cp-columna.es-rojo .cp-columna-num { color: var(--st-rojo); }
 
 .cp-textos {
   display: grid;
@@ -4290,17 +4329,6 @@ body {
 .ci-frases-cierre b {
   font-weight: 600;
 }
-.ci-frases-regla {
-  margin-top: 22px;
-  padding: 14px 16px;
-  border-left: 3px solid var(--st-amber);
-  background: var(--card);
-  border-radius: 0 10px 10px 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  color: var(--ink);
-}
-
 /* El cartel del Match: la palabra que cada uno levanta para que la vea la
    sala. Blanco pleno y tinta negra, que es lo que más contrasta a cuatro metros
    con la luz de una sala encendida, y ocupa la pantalla entera. */
