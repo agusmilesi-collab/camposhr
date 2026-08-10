@@ -286,12 +286,10 @@ export default function Control({
                   </>
                 ) : enFrases && fase < 1 ? (
                   <>
-                    Cada teléfono muestra su color, para que se junten.{' '}
+                    Se están juntando por color.{' '}
                     <b className="ct-a-medias">
-                      {frases ? `${frases.equipos} equipos repartidos` : 'repartiendo…'}
+                      {frases ? `${frases.equipos} equipos` : 'repartiendo…'}
                     </b>
-                    {' · '}cuando estén armados, tocá el botón para que pasen a
-                    la consigna
                     {desdeRonda !== null && (
                       <b className="ct-reloj"> · {reloj(ahora - desdeRonda)}</b>
                     )}
@@ -338,7 +336,7 @@ export default function Control({
                 disabled={ocupado}
                 onClick={() => mandar({ accion: 'fase', fase: 1 })}
               >
-                Ya están juntos · pasar a los Teams
+                Pasar a los Teams
               </button>
             )}
             <button
