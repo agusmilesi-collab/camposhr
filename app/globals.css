@@ -3275,11 +3275,15 @@ body {
   font-size: 0.78rem;
   color: var(--muted);
 }
+/* Con dos botones el renglón no entra en un teléfono: el texto se parte en
+   ocho líneas y el bloque tapa media pantalla. Los botones bajan y quedan del
+   ancho de la caja, que además los hace más fáciles de tocar. */
 .ct-estado {
   position: sticky;
   top: 0;
   z-index: 5;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -3294,6 +3298,7 @@ body {
   background: #faf4e8;
 }
 .ct-estado-texto {
+  flex: 1 1 12rem;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -3329,7 +3334,7 @@ body {
   color: var(--st-amber);
 }
 .ct-pasar {
-  flex: none;
+  flex: 1 1 auto;
   padding: 12px 18px;
   border: 0;
   border-radius: 10px;
