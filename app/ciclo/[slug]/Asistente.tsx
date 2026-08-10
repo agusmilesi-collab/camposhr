@@ -89,16 +89,22 @@ type Ensayo = {
 /** El equipo de esta persona en el ejercicio de las frases de la charla 5. */
 type Frases = {
   color: string;
-  lado: 'objetivo' | 'subjetivo';
-  nombreDeLado: string;
-  consigna: { de: string; a: string; como: string };
+  mitad: 'a' | 'b';
+  nombreDeMitad: string;
+  nombreDeEnfrente: string;
+  /** Una por frase: la dirección cambia a mitad de camino, así que cada mitad
+   *  hace dos hacia el hecho y dos hacia la interpretación. */
+  frases: {
+    direccion: 'objetivo' | 'subjetivo';
+    consigna: { de: string; a: string; como: string };
+    parte: string;
+    partioEnfrente: string;
+  }[];
   escribe: boolean;
-  parten: string[];
   con: { nombre: string; apellido: string; foto: string | null; escribe: boolean }[];
   enfrente: { nombre: string; apellido: string; foto: string | null; escribe: boolean }[];
   mias: string[] | null;
   suyas: string[] | null;
-  partieron: string[];
 };
 
 /** Una de las que se abrieron juntas, con lo que esta persona ya respondió. */
@@ -114,6 +120,8 @@ type Estado = {
   cruce: Cruce | null;
   ensayo: Ensayo | null;
   frases: Frases | null;
+  /** En qué momento de la actividad está la sala. Lo mueve el panel. */
+  fase: number;
 };
 
 export type Cara = {
@@ -629,6 +637,7 @@ function Fila({
         cruce={estado.cruce}
         ensayo={estado.ensayo}
         frases={estado.frases}
+        fase={estado.fase}
         onGuardado={(valor) =>
           setRespondidas((r) => ({ ...r, [actual.id]: valor }))
         }
@@ -648,6 +657,7 @@ function Formulario({
   cruce,
   ensayo,
   frases,
+  fase,
   onGuardado,
 }: {
   slug: string;
@@ -660,6 +670,7 @@ function Formulario({
   cruce: Cruce | null;
   ensayo: Ensayo | null;
   frases: Frases | null;
+  fase: number;
   onGuardado: (valor: Valor) => void;
 }) {
   const [palabra, setPalabra] = useState('');
@@ -748,6 +759,7 @@ function Formulario({
         actividadId={actividad.id}
         asistenteId={asistenteId}
         frases={frases}
+        fase={fase}
       />
     );
   }
@@ -1118,11 +1130,13 @@ function Ejercicio({
   actividadId,
   asistenteId,
   frases,
+  fase,
 }: {
   slug: string;
   actividadId: string;
   asistenteId: string;
   frases: Frases | null;
+  fase: number;
 }) {
   const [borrador, setBorrador] = useState<string[]>([]);
   const [enviando, setEnviando] = useState(false);
@@ -1140,6 +1154,20 @@ function Ejercicio({
         </p>
       </section>
     );
+  }
+
+  /*
+   * Primero el color, a pantalla completa y para levantar.
+   *
+   * Juntar seis grupos de seis en una sala de treinta y dos es el momento que
+   * más tiempo come, y con la consigna ya en pantalla cada uno la lee mientras
+   * camina y nadie mira a quién tiene al lado. Acá no hay nada más que el
+   * color, así que el teléfono sirve para encontrarse y no para leer.
+   *
+   * El pase lo manda quien dicta cuando ve la sala armada.
+   */
+  if (fase < 1) {
+    return <Color color={frases.color} cuantos={1 + frases.con.length + frases.enfrente.length} />;
   }
 
   const mias = recien ?? frases.mias;
@@ -1187,7 +1215,7 @@ function Ejercicio({
   return (
     <section className="cq-placa ci-frases">
       <p className="ci-frases-equipo">
-        Equipo <b>{frases.color}</b> · {frases.nombreDeLado}
+        Equipo <b>{frases.color}</b> · {frases.nombreDeMitad}
       </p>
 
       {listas ? (
@@ -1200,44 +1228,36 @@ function Ejercicio({
             que llegar {lista(frases.enfrente.map((p) => p.nombre))}, y al revés.
           </p>
           <p className="ci-frases-quehacer">
-            Van de a una y por turnos. <b>Arranca siempre el Team Objetivo</b>,
-            que es el que tiene una respuesta para comparar.
+            Van de a una y por turnos. <b>En cada frase arranca el que fue
+            hacia el hecho</b>, que es el único que tiene una respuesta contra
+            la cual compararse. Cambia a la mitad, y cada frase dice a quién le
+            toca.
           </p>
 
           <div className="ci-frases-cruce">
-            {frases.parten.map((partida, i) => {
-              /*
-               * Las dos direcciones no se corrigen igual, y tratarlas como
-               * simétricas es lo que hacía que la pantalla no se entendiera.
-               *
-               * De interpretación a hecho hay una sola respuesta razonable, y
-               * la tiene la mitad de enfrente en la mano: se compara y se ve.
-               *
-               * De hecho a interpretación hay infinitas. "El que maneja el
-               * aire es un inútil" es tan válida como la de la hoja, así que
-               * compararla contra una referencia le diría "te equivocaste" a
-               * alguien que hizo bien el ejercicio. Ahí la pregunta es la
-               * contracara: lo que agregaron, ¿se puede verificar? Si se
-               * puede, no agregaron interpretación sino otro hecho.
-               */
-              const soyObjetivo = frases.lado === 'objetivo';
+            {frases.frases.map((f, i) => {
               const nombresEnfrente = lista(
                 frases.enfrente.map((p) => p.nombre)
               );
-
               /*
-               * Cada pantalla muestra sólo lo suyo. Lo de la otra mitad llega
-               * hablado y no escrito: si la respuesta ya está en el teléfono,
-               * no hay nada que preguntarle a nadie y el ejercicio se vuelve
-               * lectura en silencio. El punto es que se lo digan.
+               * En cada frase arranca la mitad que fue hacia el hecho, porque
+               * es la única que tiene una respuesta contra la cual comparar, y
+               * la tiene enfrente. La otra dirección no se corrige: hay muchas
+               * interpretaciones posibles del mismo hecho, así que lo evaluable
+               * es si lo que agregaron se puede verificar.
+               *
+               * Como la dirección se invierte a mitad del ejercicio, quién
+               * arranca cambia de frase en frase. Por eso lo dice cada una.
                */
+              const vamosAlHecho = f.direccion === 'objetivo';
 
-              /** El turno que se compara contra el dato: el del Team Objetivo. */
-              const turnoObjetivo = soyObjetivo ? (
+              /* Cada pantalla muestra sólo lo suyo: si la respuesta estuviera
+                 acá, no habría nada que preguntarle a nadie. */
+              const nuestro = vamosAlHecho ? (
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
-                  <h3>Nuestro turno</h3>
+                  <h3>Nuestro turno · arrancamos</h3>
                   <p className="ci-frases-linea">
-                    <span>Nos tocó la frase</span> {partida}
+                    <span>Nos tocó la frase</span> {f.parte}
                   </p>
                   <p className="ci-frases-linea">
                     <span>Respondimos (leelo en voz alta)</span>
@@ -1250,38 +1270,10 @@ function Ejercicio({
                   </p>
                 </div>
               ) : (
-                <div className="ci-frases-turno">
-                  <h3>Turno de {nombresEnfrente}</h3>
-                  <p className="ci-frases-pregunta">
-                    Escuchá qué frase les tocó y qué respondieron. Después
-                    leeles nuestra frase, que es la respuesta que buscaban:
-                  </p>
-                  <p className="ci-frases-dato">{partida}</p>
-                  <p className="ci-frases-cierre">
-                    ¿Coincide con lo que respondieron?
-                  </p>
-                </div>
-              );
-
-              /** El turno que no se compara: el del Team Subjetivo. */
-              const turnoSubjetivo = soyObjetivo ? (
-                <div className="ci-frases-turno">
-                  <h3>Turno de {nombresEnfrente}</h3>
-                  <p className="ci-frases-pregunta">
-                    Escuchá qué respondieron. Acá no hay una sola respuesta
-                    buena: hay muchas interpretaciones posibles del mismo hecho,
-                    así que no lo compares con nada. La pregunta es otra.
-                  </p>
-                  <p className="ci-frases-cierre">
-                    Lo que agregaron, <b>¿lo puede verificar alguien que no
-                    estaba?</b> Si no se puede, es interpretación y está bien.
-                  </p>
-                </div>
-              ) : (
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
-                  <h3>Nuestro turno</h3>
+                  <h3>Nuestro turno · después</h3>
                   <p className="ci-frases-linea">
-                    <span>Nos tocó la frase</span> {partida}
+                    <span>Nos tocó la frase</span> {f.parte}
                   </p>
                   <p className="ci-frases-linea">
                     <span>Respondimos (leelo en voz alta)</span>
@@ -1299,11 +1291,47 @@ function Ejercicio({
                 </div>
               );
 
+              const deEnfrente = vamosAlHecho ? (
+                <div className="ci-frases-turno">
+                  <h3>Turno de {nombresEnfrente}</h3>
+                  <p className="ci-frases-pregunta">
+                    Escuchá qué respondieron. Ellos fueron para el otro lado, y
+                    ahí no hay una sola respuesta buena: no lo compares con
+                    nada.
+                  </p>
+                  <p className="ci-frases-cierre">
+                    Lo que agregaron, <b>¿lo puede verificar alguien que no
+                    estaba?</b> Si no se puede, es interpretación y está bien.
+                  </p>
+                </div>
+              ) : (
+                <div className="ci-frases-turno">
+                  <h3>Turno de {nombresEnfrente} · arrancan ellos</h3>
+                  <p className="ci-frases-pregunta">
+                    Escuchá qué frase les tocó y qué respondieron. Después
+                    leeles nuestra frase, que es la respuesta que buscaban:
+                  </p>
+                  <p className="ci-frases-dato">{f.parte}</p>
+                  <p className="ci-frases-cierre">
+                    ¿Coincide con lo que respondieron?
+                  </p>
+                </div>
+              );
+
               return (
                 <article key={i}>
                   <p className="ci-frases-num">Frase {i + 1} de 4</p>
-                  {turnoObjetivo}
-                  {turnoSubjetivo}
+                  {vamosAlHecho ? (
+                    <>
+                      {nuestro}
+                      {deEnfrente}
+                    </>
+                  ) : (
+                    <>
+                      {deEnfrente}
+                      {nuestro}
+                    </>
+                  )}
                 </article>
               );
             })}
@@ -1358,16 +1386,21 @@ function Ejercicio({
             </li>
             <li>
               <b>Ya juntos, sepárense en dos y siéntense enfrentados.</b> Vos
-              vas al {frases.nombreDeLado}
+              vas al {frases.nombreDeMitad}
               {frases.con.length > 0 && (
                 <> con {lista(frases.con.map((p) => p.nombre))}</>
               )}
-              . Enfrente quedan {lista(frases.enfrente.map((p) => p.nombre))}.
+              . Enfrente queda el {frases.nombreDeEnfrente}:{' '}
+              {lista(frases.enfrente.map((p) => p.nombre))}.
             </li>
           </ol>
 
-          <h1 className="ci-titulo">{frases.consigna.a}</h1>
-          <p className="cq-ayuda">{frases.consigna.como}</p>
+          <h1 className="ci-titulo">Objetivo y subjetivo</h1>
+          <p className="cq-ayuda">
+            Son cuatro frases y <b>van en las dos direcciones</b>: dos hay que
+            pasarlas a objetivas y dos a subjetivas. Cada bloque dice cuál es
+            cuál.
+          </p>
 
           <div className="ci-frases-gente">
             {frases.con.map((p) => (
@@ -1388,27 +1421,41 @@ function Ejercicio({
               <p className="ci-frases-rol">
                 Escribís vos, por los tres. Pónganse de acuerdo primero.
               </p>
-              {/* Quien mira el teléfono a mitad del ejercicio ya no tiene el
-                  título a la vista: el renglón le dice qué está leyendo. */}
-              <p className="ci-frases-tocaron">{frases.consigna.de}:</p>
-              {frases.parten.map((partida, i) => (
-                <label className="ci-frases-campo" key={i}>
-                  <span>{partida}</span>
-                  <textarea
-                    className="cq-input ci-textarea"
-                    rows={2}
-                    maxLength={400}
-                    value={borrador[i] ?? ''}
-                    onChange={(e) =>
-                      setBorrador((b) => {
-                        const otro = [...b];
-                        otro[i] = e.target.value;
-                        return otro;
-                      })
-                    }
-                  />
-                </label>
-              ))}
+              {/*
+                Las frases van agrupadas por dirección y no de a una: las dos
+                primeras van para un lado y las dos siguientes para el otro, y
+                repetir la consigna cuatro veces esconde justamente el cambio.
+                El título de cada bloque es el corte.
+              */}
+              {frases.frases.map((f, i) => {
+                const abre = i === 0 || f.direccion !== frases.frases[i - 1].direccion;
+                return (
+                  <div key={i}>
+                    {abre && (
+                      <div className="ci-frases-bloque">
+                        <h2>{f.consigna.a}</h2>
+                        <p>{f.consigna.como}</p>
+                      </div>
+                    )}
+                    <label className="ci-frases-campo">
+                      <span>{f.parte}</span>
+                      <textarea
+                        className="cq-input ci-textarea"
+                        rows={2}
+                        maxLength={400}
+                        value={borrador[i] ?? ''}
+                        onChange={(e) =>
+                          setBorrador((b) => {
+                            const otro = [...b];
+                            otro[i] = e.target.value;
+                            return otro;
+                          })
+                        }
+                      />
+                    </label>
+                  </div>
+                );
+              })}
               <div className="ci-acciones">
                 <button
                   className="cq-btn"
@@ -1426,17 +1473,48 @@ function Ejercicio({
                   ? `Escribe ${quienEscribe.nombre}. Díganle qué poner.`
                   : 'Escribe otra persona de tu mitad. Díganle qué poner.'}
               </p>
-              <ol className="ci-frases-lista">
-                {frases.parten.map((partida, i) => (
-                  <li key={i}>{partida}</li>
-                ))}
-              </ol>
+              {/* También agrupadas, para que quien dicta la respuesta vea el
+                  cambio de dirección igual que quien escribe. */}
+              {frases.frases.map((f, i) => {
+                const abre = i === 0 || f.direccion !== frases.frases[i - 1].direccion;
+                return (
+                  <div key={i}>
+                    {abre && (
+                      <div className="ci-frases-bloque">
+                        <h2>{f.consigna.a}</h2>
+                        <p>{f.consigna.como}</p>
+                      </div>
+                    )}
+                    <p className="ci-frases-suelta">{f.parte}</p>
+                  </div>
+                );
+              })}
             </>
           )}
 
           {error && <p className="cq-error">{error}</p>}
         </>
       )}
+    </section>
+  );
+}
+
+/**
+ * El color del equipo, a pantalla completa.
+ *
+ * Mismo criterio que el cartel del Match: lo único que hay en la pantalla es
+ * lo que hay que mostrarle a la sala. Acá el trabajo es encontrarse, así que
+ * el color va del tamaño que se lee desde el otro lado del salón y el resto
+ * es una línea.
+ */
+function Color({ color, cuantos }: { color: string; cuantos: number }) {
+  return (
+    <section className={`ci-color ci-color-${color.toLowerCase()}`}>
+      <p className="ci-color-arriba">Tu equipo es el</p>
+      <h1 className="ci-color-nombre">{color}</h1>
+      <p className="ci-color-abajo">
+        Levantá el teléfono y buscá a los otros {cuantos - 1}.
+      </p>
     </section>
   );
 }

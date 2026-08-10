@@ -76,6 +76,8 @@ export default function Control({
     actividades.find((a) => a.abierta)?.id ?? null
   );
   const [total, setTotal] = useState(0);
+  /** En qué momento de la actividad abierta está la sala. */
+  const [fase, setFase] = useState(0);
   /** Los que respondieron algo pero todavía no llegaron al final. */
   const [empezaron, setEmpezaron] = useState(0);
   /** Cuántas consignas se abrieron juntas, para saber si hay un final al que llegar. */
@@ -116,6 +118,7 @@ export default function Control({
         if (!vivo) return;
         setAbiertaId(json.actividad?.id ?? null);
         setTotal(json.total ?? 0);
+        setFase(json.fase ?? 0);
         setEmpezaron(json.empezaron ?? 0);
         setEnFila(json.enFila ?? 0);
         setEnsayo(json.ensayoConteo ?? null);
@@ -144,8 +147,14 @@ export default function Control({
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
       if (json.ok) {
-        setAbiertaId(cuerpo.accion === 'abrir' ? String(cuerpo.actividadId) : null);
-        setTotal(0);
+        // Mover la fase no cambia qué está abierto.
+        if (cuerpo.accion === 'fase') {
+          setFase(Number(cuerpo.fase) || 0);
+        } else {
+          setAbiertaId(cuerpo.accion === 'abrir' ? String(cuerpo.actividadId) : null);
+          setTotal(0);
+          setFase(0);
+        }
       }
     } catch {
       setError('No se pudo. Fijate la conexión y probá otra vez.');
@@ -264,6 +273,16 @@ export default function Control({
                       </b>
                     )}
                   </>
+                ) : enFrases && fase < 1 ? (
+                  <>
+                    Cada teléfono muestra su color.{' '}
+                    <b className="ct-a-medias">
+                      {frases ? `${frases.equipos} equipos repartidos` : 'repartiendo…'}
+                    </b>
+                    {desdeRonda !== null && (
+                      <b className="ct-reloj"> · {reloj(ahora - desdeRonda)}</b>
+                    )}
+                  </>
                 ) : enFrases && frases ? (
                   /* Los equipos no terminan todos juntos: cuando la mayoría
                      tiene las dos mitades escritas, se pide que se lean. */
@@ -296,6 +315,19 @@ export default function Control({
                 )}
               </span>
             </div>
+            {/* El ejercicio de las frases abre mostrando el color, para que
+                la sala se junte. El pase a la consigna lo manda ella cuando ve
+                los grupos armados: si cada teléfono tuviera su botón, la mesa
+                que se apura empieza a leer mientras las otras se buscan. */}
+            {enFrases && fase < 1 && (
+              <button
+                className="ct-pasar"
+                disabled={ocupado}
+                onClick={() => mandar({ accion: 'fase', fase: 1 })}
+              >
+                Ya están juntos
+              </button>
+            )}
             <button
               className="ct-cerrar"
               disabled={ocupado}

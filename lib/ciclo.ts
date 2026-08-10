@@ -35,7 +35,7 @@ import {
 import type { Empresa } from '@/lib/supabase';
 import { armarGrupos, type Candidato, type Grupo } from '@/lib/cruce';
 import { conSuplentes, repartoEnsayo, type Rol } from '@/lib/ensayo';
-import { DEL_EJERCICIO, repartoFrases, type Lado } from '@/lib/frases';
+import { DEL_EJERCICIO, repartoFrases, type Mitad } from '@/lib/frases';
 import { recordar } from '@/lib/memoria';
 import { PERFILES, type Perfil } from '@/lib/perfiles';
 
@@ -88,6 +88,18 @@ export type Corrida = {
   clave_control: string;
   /** Qué se está respondiendo ahora, o null si los teléfonos están guardados. */
   actividad_abierta_id: string | null;
+  /**
+   * En qué momento de la actividad abierta está la sala.
+   *
+   * Existe por el ejercicio de las frases, que tiene dos: primero el color a
+   * pantalla completa para juntarse, y después la consigna. El pase lo manda
+   * quien dicta desde el panel, y no cada teléfono con un botón, porque si
+   * cada mesa avanza cuando quiere la que se apura empieza a leer mientras las
+   * otras todavía se buscan.
+   *
+   * Vuelve a cero al abrir cualquier actividad.
+   */
+  fase: number;
   activa: boolean;
 };
 
@@ -224,7 +236,7 @@ export type Valor =
       tipo: 'frases';
       /** Índice del color del equipo. Es lo que se dice en voz alta. */
       color: number;
-      lado: Lado;
+      mitad: Mitad;
       escribe: boolean;
       /** Los otros de su mitad, y la mitad de enfrente, con quién escribe. */
       con: { id: string; escribe: boolean }[];
@@ -246,7 +258,7 @@ const CAMPOS_ASISTENTE =
   'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en,expositora';
 const CAMPOS_APORTE = 'id,corrida_id,actividad_id,asistente_id,valor,created_at';
 const CAMPOS_CORRIDA =
-  'id,empresa_id,ciclo_id,clave_control,actividad_abierta_id,activa';
+  'id,empresa_id,ciclo_id,clave_control,actividad_abierta_id,fase,activa';
 
 /**
  * Todo id que viaja a PostgREST se valida antes de entrar en la query.
@@ -461,14 +473,32 @@ export async function abrirActividad(
   if (!UUID.test(corridaId) || !UUID.test(actividadId)) {
     throw new Error('Actividad inválida');
   }
+  // La fase vuelve a cero en la misma escritura: si quedara la de la actividad
+  // anterior, el ejercicio de las frases abriría directo en la consigna y la
+  // sala nunca vería su color.
   await patch('corridas', `id=eq.${corridaId}`, {
     actividad_abierta_id: actividadId,
+    fase: 0,
   });
+}
+
+/** Avanza el momento de la actividad abierta. Lo toca sólo quien dicta. */
+export async function pasarFase(
+  corridaId: string,
+  fase: number
+): Promise<void> {
+  if (!UUID.test(corridaId)) throw new Error('Corrida inválida');
+  const n = Math.trunc(fase);
+  if (!Number.isFinite(n) || n < 0 || n > 9) throw new Error('Fase inválida');
+  await patch('corridas', `id=eq.${corridaId}`, { fase: n });
 }
 
 export async function cerrarActividades(corridaId: string): Promise<void> {
   if (!UUID.test(corridaId)) throw new Error('Corrida inválida');
-  await patch('corridas', `id=eq.${corridaId}`, { actividad_abierta_id: null });
+  await patch('corridas', `id=eq.${corridaId}`, {
+    actividad_abierta_id: null,
+    fase: 0,
+  });
 }
 
 // ---------------------------------------------------------------- asistentes
@@ -1032,13 +1062,13 @@ export async function repartirFrases(
           valor: {
             tipo: 'frases',
             color: equipo.color,
-            lado: puesto.lado,
+            mitad: puesto.mitad,
             escribe: puesto.escribe,
             con: equipo.puestos
-              .filter((o) => o.lado === puesto.lado && o.asistenteId !== puesto.asistenteId)
+              .filter((o) => o.mitad === puesto.mitad && o.asistenteId !== puesto.asistenteId)
               .map((o) => ({ id: o.asistenteId, escribe: o.escribe })),
             enfrente: equipo.puestos
-              .filter((o) => o.lado !== puesto.lado)
+              .filter((o) => o.mitad !== puesto.mitad)
               .map((o) => ({ id: o.asistenteId, escribe: o.escribe })),
           },
         });
@@ -1065,9 +1095,9 @@ export async function repartirFrases(
       )[0];
       if (!destino) break;
       const [color, integrantes] = destino;
-      const cuantos = (lado: Lado) =>
-        integrantes.filter((a) => (a.valor as { lado: Lado }).lado === lado).length;
-      const lado: Lado = cuantos('objetivo') <= cuantos('subjetivo') ? 'objetivo' : 'subjetivo';
+      const cuantos = (m: Mitad) =>
+        integrantes.filter((a) => (a.valor as { mitad: Mitad }).mitad === m).length;
+      const mitad: Mitad = cuantos('a') <= cuantos('b') ? 'a' : 'b';
 
       const como = (a: Aporte) => ({
         id: a.asistente_id,
@@ -1075,14 +1105,14 @@ export async function repartirFrases(
       });
       // Los que ya estaban suman al recién llegado en la lista que corresponda.
       for (const a of integrantes) {
-        const suyo = a.valor as { lado: Lado; con: unknown[]; enfrente: unknown[] };
+        const suyo = a.valor as { mitad: Mitad; con: unknown[]; enfrente: unknown[] };
         const nueva = { id: nuevo.id, escribe: false };
         filas.push({
           corrida_id: corrida.id,
           actividad_id: actividad.id,
           asistente_id: a.asistente_id,
           valor:
-            suyo.lado === lado
+            suyo.mitad === mitad
               ? { ...suyo, con: [...suyo.con, nueva] }
               : { ...suyo, enfrente: [...suyo.enfrente, nueva] },
         });
@@ -1094,15 +1124,15 @@ export async function repartirFrases(
         valor: {
           tipo: 'frases',
           color,
-          lado,
+          mitad,
           // Nunca escribe: su mitad ya arrancó y cambiar de mano a mitad del
           // ejercicio pierde lo que ya venía escrito.
           escribe: false,
           con: integrantes
-            .filter((a) => (a.valor as { lado: Lado }).lado === lado)
+            .filter((a) => (a.valor as { mitad: Mitad }).mitad === mitad)
             .map(como),
           enfrente: integrantes
-            .filter((a) => (a.valor as { lado: Lado }).lado !== lado)
+            .filter((a) => (a.valor as { mitad: Mitad }).mitad !== mitad)
             .map(como),
         },
       });
@@ -1538,16 +1568,16 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
 
     case 'frases': {
       const equipos = new Set<number>();
-      // Una mitad se identifica por su equipo y su lado, y está lista cuando
+      // Una mitad se identifica por su equipo y su letra, y está lista cuando
       // quien escribe en ella guardó algo.
       const mitades = new Set<string>();
       const listas = new Set<string>();
       for (const a of aportes) {
         if (a.valor?.tipo !== 'frases') continue;
         equipos.add(a.valor.color);
-        mitades.add(`${a.valor.color}|${a.valor.lado}`);
+        mitades.add(`${a.valor.color}|${a.valor.mitad}`);
         if (a.valor.escribe && a.valor.respuestas?.some((t) => t.length > 0)) {
-          listas.add(`${a.valor.color}|${a.valor.lado}`);
+          listas.add(`${a.valor.color}|${a.valor.mitad}`);
         }
       }
       let completos = 0;

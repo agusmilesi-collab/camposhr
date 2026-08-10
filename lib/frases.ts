@@ -3,12 +3,15 @@
  * uno se cuenta sobre el hecho.
  *
  * La sala se parte en equipos con nombre de color, y cada equipo en dos mitades
- * que se sientan enfrentadas. Una mitad recibe hechos y tiene que agregarles la
- * interpretación; la otra recibe interpretaciones y tiene que dejar el hecho
- * solo. Las dos trabajan **las mismas filas**, y ahí está todo el ejercicio: lo
- * que una mitad tiene que escribir es exactamente el punto de partida de la
- * otra, así que cuando se leen, la respuesta la tiene el de enfrente y no quien
- * dicta.
+ * que se sientan enfrentadas, el Team A y el Team B. En cada frase una recibe
+ * el hecho y tiene que agregarle la interpretación, y la otra recibe la
+ * interpretación y tiene que dejar el hecho solo. Las dos trabajan **los
+ * mismos cuatro casos**, y ahí está todo el ejercicio: lo que una mitad tiene
+ * que escribir es exactamente el punto de partida de la otra, así que cuando
+ * se leen, la respuesta la tiene el de enfrente y no quien dicta.
+ *
+ * Y a mitad de camino las direcciones se invierten, así que las dos mitades
+ * pasan por las dos: dos frases sacando la interpretación y dos agregándola.
  *
  * Dentro de cada mitad escribe una sola persona. No es una limitación técnica:
  * es lo que obliga a que los tres discutan si una palabra es un hecho o una
@@ -19,38 +22,58 @@
  * personas a un reparto, y por eso se puede verificar sola.
  */
 
-/** Los dos lados. El nombre dice a dónde hay que llegar, no de dónde se sale. */
-export const LADOS = ['objetivo', 'subjetivo'] as const;
-export type Lado = (typeof LADOS)[number];
+/**
+ * Las dos mitades de cada equipo.
+ *
+ * Se llaman A y B y no por la dirección que hacen, porque **cada una hace las
+ * dos**: dos frases sacando la interpretación y dos agregándola. Antes cada
+ * mitad hacía una sola dirección, así que la mitad de la sala nunca practicaba
+ * ir de subjetivo a objetivo, que es la que cuesta y la única que se usa
+ * después, cuando en la charla de malas noticias hay que decir un motivo que
+ * el otro pueda verificar.
+ */
+export const MITADES = ['a', 'b'] as const;
+export type Mitad = (typeof MITADES)[number];
 
-export const NOMBRE_DE_LADO: Record<Lado, string> = {
-  objetivo: 'Team Objetivo',
-  subjetivo: 'Team Subjetivo',
+export const NOMBRE_DE_MITAD: Record<Mitad, string> = {
+  a: 'Team A',
+  b: 'Team B',
 };
 
+/** A dónde hay que llegar en una frase. */
+export type Direccion = 'objetivo' | 'subjetivo';
+
 /**
- * Qué le toca hacer a cada lado, en las palabras que va a leer en el teléfono.
+ * Qué dirección le toca a cada mitad en cada una de las cuatro frases.
  *
- * El título nombra la transformación entera y no sólo el destino. Con
- * "escriban solo el hecho" hay que deducir que lo que tienen enfrente es una
- * interpretación; acá lo dice, y con las mismas palabras que la hoja impresa
- * de respaldo, que se titula "De Subjetivo a → Objetivo".
- *
- * `de` nombra lo que les tocó, para el renglón que lo repite antes de las
- * frases: quien agarra el teléfono a mitad del ejercicio no vio el título.
+ * Cruzadas: en cada frase una mitad va hacia el hecho y la otra hacia la
+ * interpretación. Eso es lo que sostiene el ejercicio, porque el punto de
+ * partida de una es la llegada de la otra, y por eso al leerse la respuesta la
+ * tiene el de enfrente. Que además se inviertan a mitad de camino es lo que
+ * hace que todos pasen por las dos.
  */
-export const CONSIGNA: Record<Lado, { de: string; a: string; como: string }> = {
+export function direccionDe(mitad: Mitad, frase: number): Direccion {
+  const primeras = frase < 2;
+  if (mitad === 'a') return primeras ? 'objetivo' : 'subjetivo';
+  return primeras ? 'subjetivo' : 'objetivo';
+}
+
+/**
+ * Qué hay que hacer en cada dirección, en las palabras que se leen en el
+ * teléfono, y con las mismas de la hoja impresa de respaldo.
+ */
+export const CONSIGNA: Record<Direccion, { de: string; a: string; como: string }> = {
   objetivo: {
     de: 'Les tocaron frases subjetivas',
     a: 'De subjetivo a objetivo',
-    como: 'Transformá cada una en objetiva: sacá todo lo que no se pueda ' +
-      'verificar y dejá solo lo que vio cualquiera que estuviera ahí.',
+    como: 'Saquen todo lo que no se pueda verificar y dejen solo lo que vio ' +
+      'cualquiera que estuviera ahí.',
   },
   subjetivo: {
     de: 'Les tocaron frases objetivas',
     a: 'De objetivo a subjetivo',
-    como: 'Transformá cada una en subjetiva: agregale lo que uno se cuenta ' +
-      'cuando pasa eso, eso que pensás sin darte cuenta.',
+    como: 'Agréguenle lo que uno se cuenta cuando pasa eso, eso que pensás ' +
+      'sin darte cuenta.',
   },
 };
 
@@ -132,7 +155,7 @@ export const DEL_EJERCICIO = [5, 6, 7, 9];
 
 export type PuestoFrases = {
   asistenteId: string;
-  lado: Lado;
+  mitad: Mitad;
   /** Quien escribe por los tres. El resto discute y le dicta. */
   escribe: boolean;
 };
@@ -151,12 +174,9 @@ export type EquipoFrases = {
  * recalcularlo tiene que dar lo mismo.
  *
  * Apunta a equipos de seis, que es donde el ejercicio funciona mejor: tres de
- * cada lado, discusión real adentro de cada mitad y una sola conversación
- * cruzada al final. Cuando la cantidad no da, los equipos quedan de cinco o de
- * siete antes que dejar a alguien afuera, y cada equipo se parte lo más parejo
- * que se pueda. Con un equipo impar, el lado que llega al hecho es el que suma
- * la persona de más: es la dirección que cuesta y la que más gana con una
- * cabeza extra.
+ * cada mitad, discusión real adentro y una sola conversación cruzada al final.
+ * Cuando la cantidad no da, los equipos quedan de cinco o de siete antes que
+ * dejar a alguien afuera, y cada equipo se parte lo más parejo que se pueda.
  */
 export function repartoFrases(ids: string[]): EquipoFrases[] {
   if (ids.length < 4) throw new Error('el ejercicio necesita al menos cuatro personas');
@@ -172,15 +192,16 @@ export function repartoFrases(ids: string[]): EquipoFrases[] {
     const gente = ids.slice(desde, desde + tamaño);
     desde += tamaño;
 
-    // La mitad que llega a la interpretación se queda con la parte entera, así
-    // que el sobrante cae del lado que tiene que llegar al hecho.
-    const cuantosSubjetivo = Math.floor(gente.length / 2);
+    // Con un equipo impar la persona de más cae en la mitad B. Las dos hacen
+    // las dos direcciones, así que ya no hay una que gane con una cabeza extra
+    // y alcanza con partir parejo.
+    const cuantosA = Math.ceil(gente.length / 2);
     const puestos: PuestoFrases[] = gente.map((asistenteId, i) => {
-      const lado: Lado = i < cuantosSubjetivo ? 'subjetivo' : 'objetivo';
+      const mitad: Mitad = i < cuantosA ? 'a' : 'b';
       // El primero de cada mitad escribe. Se define por posición y no al azar
       // para que el reparto sea el mismo cada vez que se calcule.
-      const primeroDeSuLado = i === 0 || i === cuantosSubjetivo;
-      return { asistenteId, lado, escribe: primeroDeSuLado };
+      const primeroDeSuMitad = i === 0 || i === cuantosA;
+      return { asistenteId, mitad, escribe: primeroDeSuMitad };
     });
 
     equipos.push({ color: e % COLORES.length, puestos });
