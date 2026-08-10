@@ -4184,11 +4184,9 @@ body {
    que ya tiene borde, otra línea la parte en dos cajas. */
 .ci-frases-puntos {
   margin: 12px 0;
-  text-align: center;
   font-size: 0.95rem;
   letter-spacing: 0.35em;
-  color: var(--st-amber);
-  opacity: 0.55;
+  color: #1554b0;
 }
 .ci-frases-pregunta {
   margin: 10px 0 0;
