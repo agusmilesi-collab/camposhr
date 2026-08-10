@@ -1242,10 +1242,8 @@ function Ejercicio({
           <p className="cq-ayuda">
             Ellos ya tenían las respuestas de lo que ustedes tuvieron que
             completar. Y ustedes tienen las respuestas de lo que tuvieron que
-            completar ellos. Así que ahora van a leer lo que escribieron
-            ustedes y <b>el {frases.nombreDeEnfrente} los va a corregir</b>. Y
-            ustedes los van a corregir a ellos. Vayan de a una: en cada frase{' '}
-            <b>la pantalla dice quién arranca</b>.
+            completar ellos. <b>Ahora se van a corregir entre ustedes.</b> Vayan
+            de a una frase. La pantalla dice quién empieza.
           </p>
 
           <div className="ci-frases-cruce">
@@ -1269,7 +1267,7 @@ function Ejercicio({
                  acá, no habría nada que preguntarle a nadie. */
               const nuestro = vamosAlHecho ? (
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
-                  <h3>Nuestro turno · arrancamos</h3>
+                  <h3>Nuestro turno · empezamos</h3>
                   <p className="ci-frases-linea">
                     <span>Nos tocó la frase</span> {f.parte}
                   </p>
@@ -1328,7 +1326,7 @@ function Ejercicio({
                 </div>
               ) : (
                 <div className="ci-frases-turno">
-                  <h3>Turno de {nombresEnfrente} · arrancan ellos</h3>
+                  <h3>Turno de {nombresEnfrente} · empiezan ellos</h3>
                   <p className="ci-frases-pregunta">
                     Escuchá qué frase les tocó y qué respondieron. Después
                     leeles nuestra frase, que es la respuesta que buscaban:
