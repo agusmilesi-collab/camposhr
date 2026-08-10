@@ -28,8 +28,10 @@ import {
   CONSIGNA,
   DEL_EJERCICIO,
   FILAS,
-  NOMBRE_DE_LADO,
-  type Lado,
+  NOMBRE_DE_MITAD,
+  direccionDe,
+  type Direccion,
+  type Mitad,
 } from '@/lib/frases';
 
 /**
@@ -160,6 +162,8 @@ export async function GET(
 
   return NextResponse.json({
     actividad: publica(actividad),
+    // En qué momento de la actividad está la sala. Lo mueve el panel.
+    fase: ciclo.corrida.fase ?? 0,
     ensayoConteo: ensayoConteo?.tipo === 'ensayo' ? ensayoConteo : null,
     frasesConteo: frasesConteo?.tipo === 'frases' ? frasesConteo : null,
     // Si ya respondió, el teléfono le muestra su respuesta y la opción de
@@ -190,19 +194,27 @@ export async function GET(
 type Frases = {
   /** Cómo se llama el equipo en voz alta: "Equipo Rojo". */
   color: string;
-  lado: Lado;
-  nombreDeLado: string;
-  consigna: { de: string; a: string; como: string };
+  mitad: Mitad;
+  nombreDeMitad: string;
+  nombreDeEnfrente: string;
+  /**
+   * Una por frase: a dónde hay que llegar, qué frase les tocó y de qué partió
+   * la mitad de enfrente. Va por frase y no por mitad porque cada una hace las
+   * dos direcciones, dos frases de cada una.
+   */
+  frases: {
+    direccion: Direccion;
+    consigna: { de: string; a: string; como: string };
+    parte: string;
+    /** De dónde partió la mitad de enfrente. Es la respuesta que buscaban. */
+    partioEnfrente: string;
+  }[];
   escribe: boolean;
-  /** Las frases de las que parte esta mitad, en el orden del ejercicio. */
-  parten: string[];
   con: { nombre: string; apellido: string; foto: string | null; escribe: boolean }[];
   enfrente: { nombre: string; apellido: string; foto: string | null; escribe: boolean }[];
   /** Lo que ya escribió su mitad, y lo que escribió la de enfrente. */
   mias: string[] | null;
   suyas: string[] | null;
-  /** De qué partió la mitad de enfrente. Es la respuesta a lo que escribió ésta. */
-  partieron: string[];
 };
 
 async function frasesDe(
@@ -230,17 +242,17 @@ async function frasesDe(
     frasesDeLaSala(corrida.id, actividad.id),
   ]);
 
-  const escribeDe = (lado: Lado) =>
+  const otraMitad: Mitad = puesto.mitad === 'a' ? 'b' : 'a';
+  const escribeDe = (m: Mitad) =>
     todos.find(
       (a) =>
         a.valor?.tipo === 'frases' &&
         a.valor.color === puesto.color &&
-        a.valor.lado === lado &&
+        a.valor.mitad === m &&
         a.valor.escribe
     );
-  const otroLado: Lado = puesto.lado === 'objetivo' ? 'subjetivo' : 'objetivo';
-  const respuestasDe = (lado: Lado) => {
-    const quien = escribeDe(lado);
+  const respuestasDe = (m: Mitad) => {
+    const quien = escribeDe(m);
     const v = quien?.valor?.tipo === 'frases' ? quien.valor.respuestas : undefined;
     return v && v.some((t) => t.length > 0) ? v : null;
   };
@@ -268,24 +280,34 @@ async function frasesDe(
       escribe: c.escribe,
     }));
 
-  // De qué parte cada mitad: la que llega al hecho parte de la interpretación.
-  const columna = (lado: Lado) =>
-    DEL_EJERCICIO.map((i) =>
-      lado === 'objetivo' ? FILAS[i].interpretacion : FILAS[i].hecho
-    );
+  /*
+   * Frase por frase, porque la dirección cambia a mitad de camino: cada mitad
+   * hace dos hacia el hecho y dos hacia la interpretación. Quien va hacia el
+   * hecho parte de la interpretación, y al revés.
+   */
+  const desde = (d: Direccion, i: number) =>
+    d === 'objetivo' ? FILAS[i].interpretacion : FILAS[i].hecho;
 
   return {
     color: COLORES[puesto.color] ?? COLORES[0],
-    lado: puesto.lado,
-    nombreDeLado: NOMBRE_DE_LADO[puesto.lado],
-    consigna: CONSIGNA[puesto.lado],
+    mitad: puesto.mitad,
+    nombreDeMitad: NOMBRE_DE_MITAD[puesto.mitad],
+    nombreDeEnfrente: NOMBRE_DE_MITAD[otraMitad],
+    frases: DEL_EJERCICIO.map((fila, i) => {
+      const direccion = direccionDe(puesto.mitad, i);
+      const deEnfrente = direccionDe(otraMitad, i);
+      return {
+        direccion,
+        consigna: CONSIGNA[direccion],
+        parte: desde(direccion, fila),
+        partioEnfrente: desde(deEnfrente, fila),
+      };
+    }),
     escribe: puesto.escribe,
-    parten: columna(puesto.lado),
     con: conFoto(suyos),
     enfrente: conFoto(otros),
-    mias: respuestasDe(puesto.lado),
-    suyas: respuestasDe(otroLado),
-    partieron: columna(otroLado),
+    mias: respuestasDe(puesto.mitad),
+    suyas: respuestasDe(otraMitad),
   };
 }
 

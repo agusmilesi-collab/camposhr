@@ -3,6 +3,7 @@ import {
   abrirActividad,
   actividadesDelCiclo,
   cerrarActividades,
+  pasarFase,
   claveControlOk,
   getActividad,
   repartirCruce,
@@ -29,7 +30,12 @@ export async function POST(
   if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
   const { corrida } = ciclo;
 
-  let datos: { accion?: unknown; actividadId?: unknown; clave?: unknown };
+  let datos: {
+    accion?: unknown;
+    actividadId?: unknown;
+    fase?: unknown;
+    clave?: unknown;
+  };
   try {
     datos = await req.json();
   } catch {
@@ -43,6 +49,11 @@ export async function POST(
   try {
     if (datos.accion === 'cerrar') {
       await cerrarActividades(corrida.id);
+    } else if (datos.accion === 'fase') {
+      // Sólo mueve el momento de lo que ya está abierto. El ejercicio de las
+      // frases lo usa para pasar del color a la consigna con la sala entera a
+      // la vez.
+      await pasarFase(corrida.id, Number(datos.fase));
     } else if (datos.accion === 'abrir') {
       const actividadId = String(datos.actividadId ?? '');
       await abrirActividad(corrida.id, actividadId);
