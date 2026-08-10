@@ -1338,9 +1338,27 @@ function Ejercicio({
                 </div>
               );
 
+              /*
+               * Quién empieza, en el corte y no adentro de la caja. La mesa
+               * mira el separador para saber que cambió de frase, y ahí mismo
+               * necesita saber a quién le toca: si está más abajo, los dos
+               * subgrupos se miran esperando al otro.
+               *
+               * "Ahora" en la tercera porque es donde se invierte la
+               * dirección, y con él la mitad que empieza.
+               */
+              const quien = [
+                vamosAlHecho ? 'Empezamos nosotros' : 'Empiezan ellos',
+                vamosAlHecho ? 'Seguimos nosotros' : 'Siguen ellos',
+                vamosAlHecho ? 'Ahora seguimos nosotros' : 'Ahora siguen ellos',
+                vamosAlHecho ? 'Seguimos nosotros' : 'Siguen ellos',
+              ][i];
+
               return (
                 <article key={i}>
-                  <p className="ci-frases-num">Frase {i + 1} de 4</p>
+                  <p className="ci-frases-num">
+                    <b>{quien}</b> · Frase {i + 1} de 4
+                  </p>
                   {vamosAlHecho ? (
                     <>
                       {nuestro}

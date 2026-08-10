@@ -4088,10 +4088,18 @@ body {
   align-items: center;
   gap: 12px;
   margin: 0 0 14px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+/* Quién empieza pesa más que el número de frase: es lo que la mesa mira en el
+   corte para saber a quién le toca. */
+.ci-frases-num b {
+  font-weight: 700;
+  letter-spacing: 0.12em;
   color: var(--st-amber);
 }
 .ci-frases-num::before,
