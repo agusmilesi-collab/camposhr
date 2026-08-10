@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { contarRespuestas } from '@/lib/supabase';
-import { partirOpcion } from '@/lib/opciones';
+import { partirOpcion, tramo } from '@/lib/opciones';
 import {
   actividadesDelCiclo,
   listarAportesDeVarias,
@@ -272,7 +272,7 @@ function Vista({ actividad, resumen }: { actividad: Actividad; resumen: Resumen 
           </p>
           <div className="cp-columnas">
             {resumen.distribucion.map((d) => (
-              <div className="cp-columna" key={d.valor}>
+              <div className={`cp-columna ${tramo(d.valor)}`} key={d.valor}>
                 <span
                   className="cp-columna-barra"
                   style={{ height: `${(d.veces / tope) * 100}%` }}
