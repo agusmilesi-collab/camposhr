@@ -595,22 +595,33 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .retrato{border:1px solid var(--line)}
 .perfil dt{color:var(--amber)}
 .lideres em{color:var(--amber)}
+/* Semáforo: la etapa 1 se resuelve barato, la 2 cuesta y la 3 ya no se resuelve
+   sola. El color lo dice antes de que se lea una palabra, que es lo que hace
+   que alguien ubique su propio conflicto mientras todavía estás hablando. */
 .escalones>div{background:var(--card);border-radius:0 12px 12px 0;
-  border-left:6px solid var(--amber)}
-.escalones .e2{border-left-color:#c08a3a}
-.escalones .e3{border-left-color:#a4503f}
-/* La escalada, dibujada: cada etapa entra más adentro que la anterior y entre
+  border-left:8px solid #1f8a4c}
+.escalones>div b{color:#1f8a4c}
+.escalones .e2{border-left-color:#c98a12}
+.escalones .e2 b{color:#c98a12}
+.escalones .e3{border-left-color:#c0392b}
+.escalones .e3 b{color:#c0392b}
+/* La escalada, dibujada. La clase se llama `escalera` y no `escala` porque el
+   deck original ya usa `.escala` para otra cosa, con colores propios por
+   posición: compartiendo el nombre, esos colores pisaban los del semáforo en
+   las dos primeras etapas.
+
+   Cada etapa entra más adentro que la anterior y entre
    medio va la señal de que el conflicto acaba de subir un escalón. Alineadas y
    del mismo ancho se leían como tres casillas sueltas.
 
    Las tres etapas más los dos saltos son cinco bloques donde antes había tres,
    así que todo baja de cuerpo para que la placa entre sin recortarse. */
-.escalones.escala{gap:0;max-width:1420px}
-.escalones.escala>div{padding:18px 26px}
-.escalones.escala>div:nth-of-type(2){margin-left:80px}
-.escalones.escala>div:nth-of-type(3){margin-left:160px}
-.escalones.escala b{font-size:34px;margin-bottom:4px}
-.escalones.escala span{font-size:26px;line-height:1.28}
+.escalones.escalera{gap:0;max-width:1420px}
+.escalones.escalera>div{padding:18px 26px}
+.escalones.escalera>div:nth-of-type(2){margin-left:80px}
+.escalones.escalera>div:nth-of-type(3){margin-left:160px}
+.escalones.escalera b{font-size:34px;margin-bottom:4px}
+.escalones.escalera span{font-size:26px;line-height:1.28}
 .escalones .salto{margin:12px 0 12px 34px;font-size:26px;line-height:1.25;
   color:var(--amber);display:flex;align-items:baseline;gap:14px}
 .escalones .salto:nth-of-type(2){margin-left:114px}
@@ -956,7 +967,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <section class="placa" data-aviso="Activar el ejercicio"  data-notas="ABRÍ EL EJERCICIO ACÁ, desde el panel. Va en dos pasos: primero cada teléfono se pinta del color de su equipo y nada más, para que se junten de parado; cuando veas los grupos armados, tocá «Pasar a los Teams» y los treinta y dos pasan juntos a la consigna. Ojo que «Cerrar» no avanza, apaga los teléfonos. Los dos subgrupos trabajan los mismos cuatro casos desde los dos extremos, así que lo que uno escribe es de donde partió el otro: la pantalla se lo dice al llegar a la lectura, no hace falta que lo adelantes ni que lo expliques. El panel te dice cuántos equipos ya pueden leerse.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq tres">
-      <div class="titulo-placa">Juntate con los de tu color</div>
+      <div class="titulo-placa">Buscá a los de tu mismo color</div>
       <p class="criterio" style="margin:0 0 34px 40px">Ya reunidos, <b>sepárense en dos subgrupos</b>. El teléfono te dice cuál te tocó y con quiénes.</p>
       <div class="kicker" style="margin-left:40px">Consigna</div>
       <div class="tarjetas tres">
@@ -964,7 +975,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
         <div><span class="num">02</span><p>Traducir <b>2 oraciones de subjetivo a objetivo</b>.</p></div>
         <div><span class="num">03</span><p>Se corrigen <b>dentro de su mismo grupo</b>.</p></div>
       </div>
-      <p class="criterio">En cada subgrupo <b>escribe una sola persona</b>:<br>pónganse de acuerdo entre los tres antes de que escriba.</p>
     </div>
   </section>
 
@@ -1003,7 +1013,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq">
       <div class="titulo-placa">Las tres etapas de un conflicto</div>
-      <div class="escalones escala">
+      <div class="escalones escalera">
         <div><b>Etapa 1 · ganar-ganar</b><span>Hay tensión y las dos partes quieren resolver. Se interviene barato: una conversación de diez minutos.</span></div>
         <p class="salto">Dejan de hablarse y <b>empiezan a hablar con terceros</b></p>
         <div class="e2"><b>Etapa 2 · ganar-perder</b><span>“Yo tengo razón y vos no.” Se buscan aliados y se enfría el trato. Acá cuesta y hace falta cuidado.</span></div>
