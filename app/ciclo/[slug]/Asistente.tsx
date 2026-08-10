@@ -1274,7 +1274,8 @@ function Ejercicio({
                   <div className="ci-frases-turno ci-frases-nuestro-turno">
                     <h3>Leé en voz alta</h3>
                     <p className="ci-frases-linea">
-                      <span>Nos tocó la frase:</span> {f.parte}
+                      <span>Nos tocó convertir en objetiva la frase:</span>{' '}
+                      {f.parte}
                     </p>
                     <p className="ci-frases-linea">
                       <span>Y nuestra respuesta fue:</span>{' '}
@@ -1299,7 +1300,8 @@ function Ejercicio({
                   <div className="ci-frases-turno ci-frases-nuestro-turno">
                     <h3>Leé en voz alta</h3>
                     <p className="ci-frases-linea">
-                      <span>Nos tocó la frase:</span> {f.parte}
+                      <span>Nos tocó convertir en subjetiva la frase:</span>{' '}
+                      {f.parte}
                     </p>
                     <p className="ci-frases-linea">
                       <span>Y nuestra respuesta fue:</span>{' '}
@@ -1309,8 +1311,8 @@ function Ejercicio({
                       · · ·
                     </p>
                     <p className="ci-frases-pregunta">
-                      Nos tocó al revés: agregarle interpretación a un hecho. No
-                      hay una sola respuesta buena.
+                      Acá no hay una sola respuesta buena: hay muchas
+                      interpretaciones posibles del mismo hecho.
                     </p>
                     <p className="ci-frases-cierre">
                       Lo que agregamos, <b>¿alguien que no estaba lo puede
