@@ -3427,26 +3427,51 @@ body {
   font-size: 0.95rem;
 }
 
+/* La pantalla entera del marco, no la que pide el contenido. Adentro de la
+   placa el bloque se adapta a lo que hay, y la nube se mide contra el alto de
+   su caja: sin un alto que venga de afuera, la medición no tiene referencia y
+   el bloque queda con el tamaño que tenía antes de medir. */
+.cp-lleno {
+  height: 100dvh;
+}
+/* La caja toma el alto que sobra, y es contra ese alto que `Nube` mide el
+   cuerpo. Sin un alto propio no hay contra qué medir y el bloque se desborda
+   hacia abajo hasta cortarse. */
+.cp-nube-caja {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
 .cp-nube {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
   /* Apretado a propósito: con aire entre las palabras se lee como una lista y
-     no como un bloque. El renglón corto es lo que le da la forma. */
-  gap: 2px 18px;
-  max-width: 22ch;
+     no como un bloque. Los espacios crecen con el cuerpo, así el bloque se ve
+     igual de compacto con seis palabras que con treinta y tres. */
+  gap: 0.06em 0.34em;
+  width: 100%;
   margin: 0 auto;
-  line-height: 1.05;
+  /* Con menos, los trazos que suben y los que bajan quedan afuera de su
+     renglón y el primero se corta contra el borde del marco. */
+  line-height: 1.14;
+  /* El cuerpo lo escribe `Nube` después de medir. */
 }
 .cp-palabra {
   font-family: 'Instrument Serif', Georgia, serif;
-  line-height: 1.1;
+  line-height: 1.14;
   color: var(--ink);
 }
 .cp-veces {
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.7rem;
+  /* Relativo a la palabra, no a la raíz: la cifra tiene que achicarse junto
+     con ella cuando el grupo trae muchas. */
+  font-size: 0.26em;
+  vertical-align: super;
   color: var(--muted);
   margin-left: 3px;
   vertical-align: super;
@@ -3801,6 +3826,12 @@ body {
 }
 .cp-placa .cp-pie {
   text-align: center;
+}
+/* La nube llena el marco entero, así que el pie necesita su propio renglón:
+   sin esto la última palabra le queda encima. */
+.cp-lleno .cp-pie {
+  flex: none;
+  margin-top: 12px;
 }
 
 /* El ejercicio de las frases de la charla 5. El equipo y el lado van arriba de
