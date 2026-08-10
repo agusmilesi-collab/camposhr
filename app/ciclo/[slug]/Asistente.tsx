@@ -1357,8 +1357,8 @@ function Ejercicio({
                   <div className="ci-frases-turno">
                     <h3>Turno de {nombresEnfrente}</h3>
                     <p className="ci-frases-pregunta">
-                      Escuchá lo que dicen ellos. <b>Luego compará lo que
-                      dijeron con esta frase:</b>
+                      Escuchá lo que dicen ellos. <b>Luego compará su
+                      respuesta con esta frase:</b>
                     </p>
                     <p className="ci-frases-dato">{f.parte}</p>
                   </div>
