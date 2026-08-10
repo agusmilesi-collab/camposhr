@@ -1276,9 +1276,9 @@ function Ejercicio({
                     <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-cierre">
-                    Ahora preguntales a {nombresEnfrente}:{' '}
-                    <b>¿qué decía la frase de ustedes?</b> Esa es la respuesta,
-                    y la tienen ellos. ¿Coincide con lo que pusimos?
+                    Ahora {frases.enfrente.length === 1 ? 'preguntale' : 'preguntales'}{' '}
+                    a {nombresEnfrente}:{' '}
+                    <b>¿qué decía la frase de ustedes?</b>
                   </p>
                 </div>
               ) : (
