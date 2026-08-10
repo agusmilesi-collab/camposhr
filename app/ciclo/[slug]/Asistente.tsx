@@ -637,8 +637,7 @@ function Fila({
         </p>
         <h1 className="ci-titulo">Gracias</h1>
         <p className="cq-ayuda">
-          Por los cinco encuentros y por bancarte los ejercicios. Lo que
-          respondiste decide qué se queda y qué cambia para el próximo grupo.
+          Por los cinco encuentros y por bancarte los ejercicios.
         </p>
         <p className="ci-firma">Lorena y Lucila</p>
         <p className="ci-guardar">Ya podés guardar el teléfono.</p>
