@@ -16,6 +16,8 @@ import {
   type Resumen,
 } from '@/lib/ciclo';
 import AutoRefresco from '@/app/cuestionario/[slug]/matriz/AutoRefresco';
+import { aportesDePrueba } from '@/lib/palabras-prueba';
+import Nube from './Nube';
 
 /**
  * Lo que se proyecta.
@@ -50,7 +52,13 @@ export default async function Proyeccion({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { placa?: string; clave?: string; vista?: string };
+  searchParams: {
+    placa?: string;
+    clave?: string;
+    vista?: string;
+    prueba?: string;
+    repite?: string;
+  };
 }) {
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) notFound();
@@ -95,7 +103,22 @@ export default async function Proyeccion({
     );
   }
 
-  const aportes = await listarAportes(corrida.id, actividad.id);
+  /*
+   * `?prueba=33` llena la pantalla con respuestas inventadas para ver cómo se
+   * acomoda antes de tener el grupo. Sólo corre en desarrollo y no escribe
+   * nada, igual que la matriz de prueba de la charla 3.
+   * `&repite=4` hace que las primeras se repitan, para comparar con el caso de
+   * todas distintas, que es el que fuerza el cuerpo más grande.
+   */
+  const pedidas = Number(searchParams?.prueba);
+  const aportes =
+    process.env.NODE_ENV !== 'production' && Number.isFinite(pedidas)
+      ? aportesDePrueba(
+          actividad.id,
+          Math.trunc(pedidas),
+          Math.trunc(Number(searchParams?.repite)) || 0
+        )
+      : await listarAportes(corrida.id, actividad.id);
 
   /**
    * La consigna proyectada: lo que hay que leer para poder responder desde el
@@ -169,8 +192,15 @@ export default async function Proyeccion({
 
   const resumen = resumir(actividad, aportes);
 
+  /*
+   * La nube necesita el alto del marco para poder medirse: adentro de la placa
+   * el bloque se adapta a su contenido, y contra eso no hay nada que medir. Los
+   * demás resúmenes se siguen acomodando solos.
+   */
+  const lleno = resumen.tipo === 'palabra' ? ' cp-lleno' : '';
+
   return (
-    <main className={enPlaca ? 'cp cp-placa' : 'cp'}>
+    <main className={(enPlaca ? 'cp cp-placa' : 'cp') + lleno}>
       {enPlaca && <FondoTransparente />}
       {!enPlaca && <h1 className="cp-titulo">{actividad.titulo}</h1>}
 
@@ -203,52 +233,13 @@ function FondoTransparente() {
 
 function Vista({ actividad, resumen }: { actividad: Actividad; resumen: Resumen }) {
   switch (resumen.tipo) {
-    case 'palabra': {
+    case 'palabra':
       /*
-       * El tamaño sale de la raíz cuadrada y no de la proporción directa: con
-       * proporción directa, una palabra repetida cinco veces tapa la pantalla
-       * y las demás quedan ilegibles.
-       *
-       * Y el orden no es de mayor a menor. Ordenadas así, la nube se lee como
-       * renglones de texto que van bajando de cuerpo. Se acomodan del centro
-       * hacia afuera, que es lo que la vuelve un bloque: las más dichas
-       * quedan en el medio y las de una sola vez arman el borde.
+       * El cuerpo no se puede decidir acá: depende de cuántas palabras son y
+       * de cuánto mide el marco, y el marco lo conoce el navegador. Se mide
+       * del lado del cliente, en `Nube`.
        */
-      const tope = Math.max(1, ...resumen.nube.map((n) => n.veces));
-      const desdeElCentro: typeof resumen.nube = [];
-      resumen.nube.forEach((n, i) => {
-        if (i % 2 === 0) desdeElCentro.push(n);
-        else desdeElCentro.unshift(n);
-      });
-      return (
-        <div className="cp-nube">
-          {desdeElCentro.map((n) => {
-            const peso = Math.sqrt(n.veces / tope);
-            return (
-              <span
-                key={n.texto}
-                className="cp-palabra"
-                style={{
-                  fontSize: `${1.3 + peso * 3.4}rem`,
-                  // Las que se repiten van en tinta plena y las de una sola vez
-                  // más claras: el bloque se lee de adentro hacia afuera aunque
-                  // los cuerpos sean parecidos.
-                  color:
-                    n.veces === tope && tope > 1
-                      ? 'var(--st-amber)'
-                      : n.veces > 1
-                        ? 'var(--ink)'
-                        : 'var(--ink-soft)',
-                }}
-              >
-                {n.texto}
-                {n.veces > 1 && <sup className="cp-veces">{n.veces}</sup>}
-              </span>
-            );
-          })}
-        </div>
-      );
-    }
+      return <Nube palabras={resumen.nube} />;
 
     case 'opcion':
     case 'marcas': {

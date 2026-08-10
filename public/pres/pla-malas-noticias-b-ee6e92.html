@@ -508,6 +508,29 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .roles li{font-size:29px;line-height:1.35;color:var(--ink-soft)}
 .roles li::marker{color:var(--amber)}
 
+/* Los cinco sesgos, cada uno con la pregunta que lo desarma. En el original
+   cada fila es su propia grilla, así que la pregunta arranca donde termina el
+   nombre y las cinco empiezan en cinco lugares distintos: proyectado se lee
+   como un párrafo desordenado. Con la primera columna fija, los nombres quedan
+   en una columna y las preguntas en otra, y la placa se recorre de arriba abajo
+   sin volver a buscar dónde empieza cada cosa. */
+/* El título de una placa vive dentro de un ancho de 1440 con 40 de margen, y
+   estas dos listas son más anchas: con el título recién puesto, arrancaba
+   corrido respecto de lo que titula. Las dos son de la charla 5 y de ningún
+   otro lado. */
+.contenido.izq .sesgos,
+.contenido.izq .escalones{max-width:var(--ancho);margin-left:40px;
+  margin-right:40px}
+
+.sesgos{gap:0}
+.sesgos>div{grid-template-columns:460px 1fr;gap:0;padding:26px 0;
+  border-top:1px solid var(--line)}
+.sesgos>div:first-child{border-top:0;padding-top:0}
+.sesgos b{font-size:46px}
+/* La pregunta es la herramienta, y por eso pesa lo mismo que el nombre del
+   sesgo en lugar de quedar como su aclaración. */
+.sesgos span{font-size:36px;color:var(--ink)}
+
 /* Una línea de criterio al pie de una placa, en tinta suave: dice menos que el
    titular de arriba y más que la cita de la fuente. */
 .criterio{font-size:30px;line-height:1.4;color:var(--ink-soft);margin-top:44px}
@@ -520,6 +543,9 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .fuente{font-size:24px;line-height:1.45;color:var(--muted);margin-top:26px}
 .contenido.izq .tarjetas ~ .fuente{width:100%;max-width:var(--ancho);
   margin-left:auto;margin-right:auto}
+/* Contra el mismo borde que el título y las tarjetas de esa placa. */
+.contenido.izq .escalones ~ .fuente{width:100%;max-width:var(--ancho);
+  margin-left:40px;margin-right:40px}
 
 /* Lo que el marco de la matriz dice mientras carga, y la dirección de abajo:
    iban en crema para el fondo oscuro. */
@@ -745,7 +771,12 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <section class="placa" data-aviso="Desactivar respuestas" data-notas="Leé la nube en voz alta antes de pasar a esta. Casi todo lo que pusieron es sobre ellos y no sobre el otro, y ese es el diagnóstico: nadie se traba por no saber qué decir, se traba por lo que la situación le mueve.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <p class="frase">Eso que acaban de escribir es <b>la emoción que hace<br>que postergues la conversación, la suavices o la apures</b>.</p>
+      <p class="frase">Eso que acaban de escribir es <b>la emoción que hace<br>que suavices la conversación, la postergues o la apures</b>.</p>
+      <div class="tarjetas tres" style="margin-top:64px">
+        <div><h3>Suavizar</h3><p>Le bajás el tono hasta que sale de la reunión sin saber que la decisión ya está tomada.</p></div>
+        <div><h3>Postergar</h3><p>La dejás para la semana que viene, y para entonces ya se enteró por otro lado.</p></div>
+        <div><h3>Apurar</h3><p>La decís en dos minutos y te vas antes de que llegue a preguntar nada.</p></div>
+      </div>
     </div>
   </section>
 
@@ -788,7 +819,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="contenido izq cuatro">
       <div class="titulo-placa">Los cuatro pasos para comunicar malas noticias</div>
       <div class="tarjetas cuatro">
-        <div><span class="num">01</span><h3>Encuadrá</h3><p>Buscá un lugar privado y sin apuro, y avisale antes: “necesito hablarte de algo difícil”.</p><p class="porque">El aviso le da un momento para acomodarse. Sin eso, las primeras frases no las registra.</p></div>
+        <div><span class="num">01</span><h3>Encuadrá</h3><p>Buscá un lugar privado y sin apuro, y avisale antes: “necesito hablarte de algo difícil”.</p><p class="porque">El aviso le da un momento para acomodarse.</p></div>
         <div><span class="num">02</span><h3>Decilo claro</h3><p>Decí el motivo y la decisión juntos: “faltaste tres veces sin avisar en el último mes; son tres días de suspensión, desde el lunes”.</p><p class="porque">Ya se dio cuenta de que algo pasa, y mientras das vueltas imagina algo peor.</p></div>
         <div><span class="num">03</span><h3>En silencio, sostené</h3><p>Callate mientras descarga, aunque llore o levante la voz. Cuando pare, decile una vez: “la decisión ya está tomada”.</p><p class="porque">Con la emoción alta no entra información. Nada de lo que digas ahí lo va a escuchar.</p></div>
         <div><span class="num">04</span><h3>Cerrá con una fecha</h3><p>Terminá diciendo qué pasa ahora, con día y hora: “el lunes a las 9 nos juntamos y vemos cómo seguimos”.</p><p class="porque">Un plan concreto es lo que baja la incertidumbre de qué va a pasar ahora.</p></div>
