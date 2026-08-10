@@ -176,6 +176,14 @@ const SE_MUESTRAN = /^c5-match-\d+$/;
  */
 const NO_SE_PROYECTAN = new Set(['c5-gracias']);
 
+/**
+ * La última consigna de todo el ciclo.
+ *
+ * Al terminarla no queda nada más que responder en ninguna de las cinco
+ * charlas, así que la pantalla se despide en lugar de ofrecer corregir.
+ */
+const FIN_DEL_CICLO = 'c5-gracias';
+
 export default function Asistente({
   slug,
   empresa,
@@ -615,6 +623,28 @@ function Fila({
   const pendiente = todas.find((a) => !listo(a));
   const actual = pendiente ?? todas[todas.length - 1];
   if (!actual) return null;
+
+  /* La encuesta del final es lo último que se contesta en todo el ciclo, así
+     que cuando termina no queda nada atrás a lo que volver: la pantalla se
+     despide en vez de ofrecer corregir la última respuesta. En cualquier otro
+     grupo el botón sigue, porque la charla continúa y alguien se puede haber
+     equivocado de opción. */
+  if (!pendiente && todas[todas.length - 1]?.clave === FIN_DEL_CICLO) {
+    return (
+      <section className="cq-placa ci-listo">
+        <p className="ci-tilde" aria-hidden="true">
+          ✓
+        </p>
+        <h1 className="ci-titulo">Gracias</h1>
+        <p className="cq-ayuda">
+          Por los cinco encuentros y por bancarte los ejercicios. Lo que
+          respondiste decide qué se queda y qué cambia para el próximo grupo.
+        </p>
+        <p className="ci-firma">Lorena y Lucila</p>
+        <p className="ci-guardar">Ya podés guardar el teléfono.</p>
+      </section>
+    );
+  }
 
   const numero = todas.indexOf(actual) + 1;
 
