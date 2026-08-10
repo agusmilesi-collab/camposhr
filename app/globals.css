@@ -3128,6 +3128,14 @@ body {
   font-size: 0.82rem;
   color: var(--muted);
 }
+/* La firma del agradecimiento del final. Va con la serif del ciclo para que se
+   lea como escrito por ellas dos y no como otra línea del sistema. */
+.ci-firma {
+  margin-top: 18px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.25rem;
+  color: var(--ink);
+}
 
 /* Grilla de caras: el respaldo del segundo día. */
 .ci-caras {
