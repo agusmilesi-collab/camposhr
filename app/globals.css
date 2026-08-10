@@ -3257,18 +3257,28 @@ body {
 }
 /* Los tres tramos de la recomendación: 9 y 10 verde, 7 y 8 ámbar, 6 para abajo
    rojo. El color se ve antes de tocar, así que la persona elige sabiendo qué
-   está diciendo. El botón queda pintado del mismo color al apretarse. */
+   está diciendo. El botón queda pintado del mismo color al apretarse.
+   El fondo va tintado y no sólo el número: a plena luz, en un teléfono, un
+   dígito teñido en un tono apagado se lee como gris. Y el color se arma con
+   rgba en vez de color-mix, que Safari no aplica antes de iOS 16.2 y ahí el
+   borde volvía al gris de la línea. */
 .ci-escala-boton.es-verde {
-  color: var(--st-verde);
-  border-color: color-mix(in srgb, var(--st-verde) 45%, var(--line));
+  color: #3c6446;
+  background: rgba(74, 120, 86, 0.12);
+  border-color: rgba(74, 120, 86, 0.5);
+  font-weight: 600;
 }
 .ci-escala-boton.es-ambar {
-  color: var(--st-amber);
-  border-color: color-mix(in srgb, var(--st-amber) 45%, var(--line));
+  color: #8f6317;
+  background: rgba(169, 119, 34, 0.12);
+  border-color: rgba(169, 119, 34, 0.5);
+  font-weight: 600;
 }
 .ci-escala-boton.es-rojo {
-  color: var(--st-rojo);
-  border-color: color-mix(in srgb, var(--st-rojo) 45%, var(--line));
+  color: #8c3b3b;
+  background: rgba(140, 59, 59, 0.12);
+  border-color: rgba(140, 59, 59, 0.5);
+  font-weight: 600;
 }
 .ci-escala-boton.es-verde:active {
   background: var(--st-verde);
