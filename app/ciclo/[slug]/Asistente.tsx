@@ -1287,7 +1287,7 @@ function Ejercicio({
                     <p className="ci-frases-cierre">
                       Ahora {frases.enfrente.length === 1 ? 'preguntale' : 'preguntales'}{' '}
                       a {nombresEnfrente}:{' '}
-                      <b>¿qué decía la frase de ustedes?</b>
+                      <b>¿qué decía la frase objetiva de ustedes?</b>
                     </p>
                   </div>
                 </>
@@ -1307,21 +1307,6 @@ function Ejercicio({
                       <span>Y nuestra respuesta fue:</span>{' '}
                       <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                     </p>
-                    <p className="ci-frases-puntos" aria-hidden="true">
-                      · · ·
-                    </p>
-                    <p className="ci-frases-pregunta">
-                      En este caso <b>no hay una sola respuesta correcta</b>.
-                    </p>
-                    <p className="ci-frases-cierre">
-                      En estos casos, preguntamos si <b>alguien que no estaba
-                      podría verificar lo que se dice</b>.
-                    </p>
-                    <ul className="ci-frases-veredicto">
-                      <li>
-                        <b>No</b> · es interpretación, está bien
-                      </li>
-                    </ul>
                   </div>
                 </>
               );
@@ -1333,18 +1318,21 @@ function Ejercicio({
                     <b>Siguen ellos</b>
                   </p>
                   <div className="ci-frases-turno">
-                    <h3>Turno de {nombresEnfrente}</h3>
                     <p className="ci-frases-pregunta">
-                      A ellos les tocó convertir la frase en subjetiva. En este
-                      caso <b>no hay una sola respuesta correcta</b>.
+                      A ellos les tocó agregarle una interpretación al hecho
+                      (De objetiva a subjetiva) y{' '}
+                      <b>no hay una sola respuesta correcta</b>.
                     </p>
                     <p className="ci-frases-cierre">
-                      En estos casos, preguntamos si <b>alguien que no estaba
-                      podría verificar lo que se dice</b>.
+                      Luego de su respuesta preguntales si <b>otra persona, con
+                      el mismo hecho, podría haber dicho otra cosa</b>.
                     </p>
                     <ul className="ci-frases-veredicto">
                       <li>
-                        <b>No</b> · es interpretación, está bien
+                        <span>
+                          <b>Sí, podría haber dicho otra cosa.</b>{' '}
+                          Entonces la respuesta es correcta.
+                        </span>
                       </li>
                     </ul>
                   </div>
@@ -1356,15 +1344,30 @@ function Ejercicio({
                     <b>Empiezan ellos</b>
                   </p>
                   <div className="ci-frases-turno">
-                    <h3>Turno de {nombresEnfrente}</h3>
                     <p className="ci-frases-pregunta">
-                      Escuchá lo que dicen ellos. <b>Luego compará su
-                      respuesta con esta frase:</b>
+                      Escuchá lo que dicen ellos y cuando les pregunten{' '}
+                      <b>¿qué decía la frase objetiva de ustedes?</b>, responden con:
                     </p>
                     <p className="ci-frases-dato">{f.parte}</p>
                     <p className="ci-frases-cierre">
                       Evaluá: <b>¿convirtieron la oración en objetiva?</b>
                     </p>
+                    {/* La traducción que hicieron ellos, de dónde partieron
+                        y adónde llegaron. Sin el punto de partida, lo que
+                        escribieron no se puede evaluar. */}
+                    <div className="ci-frases-cotejo">
+                      <div>
+                        <span>De</span>
+                        <b>{f.partioEnfrente}</b>
+                      </div>
+                      <span className="ci-frases-flecha" aria-hidden="true">
+                        →
+                      </span>
+                      <div>
+                        <span>A</span>
+                        <b>{frases.suyas?.[i] || '(en blanco)'}</b>
+                      </div>
+                    </div>
                   </div>
                 </>
               );
