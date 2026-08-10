@@ -1,6 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import Cuestionario from '@/app/c/[slug]/Cuestionario';
 import { DIAS, partirOpcion } from '@/lib/opciones';
 import { APORTA, ENTRE, type Perfil } from '@/lib/perfiles';
@@ -120,6 +126,30 @@ const SONDEO_MS = 12000;
  * dejarlo puesto invita a compararse con el de al lado.
  */
 const SE_LEEN_EN_VOZ_ALTA = new Set(['c1-momento']);
+
+/**
+ * Consignas que se muestran, no se proyectan.
+ *
+ * En el juego del Match cada uno escribe con qué completa la frase y después
+ * lo levanta para que lo vean los demás, todos al mismo tiempo. El ejercicio
+ * es ver la respuesta del otro y descubrir que ante la misma frase cada uno
+ * puso lo suyo: una nube proyectada ya viene agrupada y contada, y ahí se
+ * pierde de quién es cada palabra, que es lo único que el juego mira.
+ *
+ * Por eso el teléfono deja de ser un formulario y pasa a ser el cartel: negro,
+ * la palabra en blanco y del tamaño que entre.
+ */
+const SE_MUESTRAN = /^c5-match-\d+$/;
+
+/**
+ * Consignas de texto que no se proyectan.
+ *
+ * El resto de los textos libres del ciclo se leen en la pantalla grande sin
+ * nombre, y la pantalla lo avisa antes de que escriban. El comentario del
+ * cierre va sólo a Lorena y a Lucila, así que decir ahí que se proyecta sería
+ * falso y además cambiaría lo que la persona escribe.
+ */
+const NO_SE_PROYECTAN = new Set(['c5-gracias']);
 
 export default function Asistente({
   slug,
@@ -763,6 +793,16 @@ function Formulario({
     );
   }
 
+  /* El Match: la respuesta se muestra, así que la pantalla pasa a ser el
+     cartel apenas la escribe. Va antes del bloque de "ya respondiste", que
+     confirma y esconde lo escrito, que es justo lo contrario de lo que este
+     ejercicio necesita. */
+  if (cerrado && mio?.tipo === 'palabra' && SE_MUESTRAN.test(actividad.clave)) {
+    return (
+      <Cartel palabra={mio.palabra} onCambiar={() => setCorrigiendo(true)} />
+    );
+  }
+
   if (cerrado) {
     return (
       <section className="cq-placa ci-listo">
@@ -849,7 +889,9 @@ function Formulario({
               disabled={palabra.trim().length < 2 || enviando}
               onClick={() => enviar({ tipo: 'palabra', palabra: palabra.trim() })}
             >
-              Enviar
+              {/* En el Match el mismo toque guarda y da vuelta la pantalla:
+                  el botón nombra lo que va a pasar, que es mostrarla. */}
+              {SE_MUESTRAN.test(actividad.clave) ? 'Mostrar' : 'Enviar'}
             </button>
           </div>
         </>
@@ -972,7 +1014,9 @@ function Formulario({
             autoFocus
           />
           <p className="ci-anonimo">
-            Se proyecta sin tu nombre. Nadie va a saber cuál escribiste vos.
+            {NO_SE_PROYECTAN.has(actividad.clave)
+              ? 'Lo leen Lorena y Lucila. No se proyecta.'
+              : 'Se proyecta sin tu nombre. Nadie va a saber cuál escribiste vos.'}
           </p>
           <div className="ci-acciones">
             <button
@@ -1019,6 +1063,79 @@ function Formulario({
     </section>
   );
 }
+
+// -------------------------------------------------------------------- cartel
+
+/**
+ * La palabra del Match, para levantar y que la lea la sala.
+ *
+ * Tapa la pantalla entera, encabezado incluido: lo que se levanta tiene que
+ * leerse de un vistazo desde otra mesa, y una barra con el nombre de la
+ * empresa arriba le come el alto a la palabra y le saca contraste.
+ *
+ * El cuerpo se mide, no se estima. Con un tamaño fijo "sal" desperdicia media
+ * pantalla y "responsabilidad" se sale por los costados, y en las dos puntas
+ * el cartel deja de cumplir su trabajo. Contar caracteres tampoco alcanza,
+ * porque "mm" ocupa el doble que "il": se dibuja la palabra a un cuerpo
+ * conocido, se mide lo que ocupó y se escala. Una sola medición, sin bucle.
+ */
+function Cartel({
+  palabra,
+  onCambiar,
+}: {
+  palabra: string;
+  onCambiar: () => void;
+}) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const [cuerpo, setCuerpo] = useState<number | null>(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    function ajustar() {
+      if (!el) return;
+      el.style.fontSize = `${MEDIDA}px`;
+      const ancho = el.scrollWidth;
+      if (!ancho) return;
+      setCuerpo(
+        Math.min(
+          (window.innerWidth * 0.92 * MEDIDA) / ancho,
+          // Tope de alto, para que una palabra de dos letras no se coma la
+          // pantalla entera y se corte por arriba y por abajo.
+          window.innerHeight * 0.3
+        )
+      );
+    }
+    ajustar();
+    // Girar el teléfono cambia cuál es el lado largo, y es lo que hace la
+    // mitad de la sala apenas ve que la palabra entra más grande de costado.
+    window.addEventListener('resize', ajustar);
+    return () => window.removeEventListener('resize', ajustar);
+  }, [palabra]);
+
+  return (
+    <div className="ci-cartel">
+      <p
+        ref={ref}
+        className="ci-cartel-palabra"
+        /* Hasta que está medida no se muestra: sin esto se ve un salto desde
+           el cuerpo de medición al definitivo. */
+        style={{
+          fontSize: `${cuerpo ?? MEDIDA}px`,
+          visibility: cuerpo ? 'visible' : 'hidden',
+        }}
+      >
+        {palabra}
+      </p>
+      <button className="ci-cartel-volver" onClick={onCambiar}>
+        Cambiar mi palabra
+      </button>
+    </div>
+  );
+}
+
+/** El cuerpo con el que se mide antes de escalar. Cualquiera sirve. */
+const MEDIDA = 100;
 
 // --------------------------------------------------------------------- cruce
 
