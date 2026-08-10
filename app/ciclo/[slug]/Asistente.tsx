@@ -1328,13 +1328,10 @@ function Ejercicio({
                 <div className="ci-frases-turno">
                   <h3>Turno de {nombresEnfrente} · empiezan ellos</h3>
                   <p className="ci-frases-pregunta">
-                    Escuchá qué frase les tocó y qué respondieron. Después
-                    leeles nuestra frase, que es la respuesta que buscaban:
+                    Escuchá la frase. <b>Esta es la frase que hay que
+                    comparar:</b>
                   </p>
                   <p className="ci-frases-dato">{f.parte}</p>
-                  <p className="ci-frases-cierre">
-                    ¿Coincide con lo que respondieron?
-                  </p>
                 </div>
               );
 
