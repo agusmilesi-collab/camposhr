@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import {
   claveControlOk,
   listarActividades,
+  delTaller,
   listarAsistentes,
   resolverCiclo,
 } from '@/lib/ciclo';
@@ -46,7 +47,8 @@ export default async function ControlDelCiclo({
       slug={empresa.slug}
       empresa={empresa.nombre}
       clave={clave}
-      registrados={asistentes.length}
+      /* Sin las expositoras: el contador tiene que poder llegar a su total. */
+      registrados={delTaller(asistentes).length}
       actividades={actividades.map((a) => ({
         id: a.id,
         clave: a.clave,

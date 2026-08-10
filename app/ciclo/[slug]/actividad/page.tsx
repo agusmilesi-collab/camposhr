@@ -9,6 +9,7 @@ import {
   getActividadAbierta,
   getActividadPorClave,
   listarAportes,
+  delTaller,
   listarAsistentes,
   resolverCiclo,
   resumir,
@@ -128,7 +129,7 @@ export default async function Proyeccion({
    * eligió.
    */
   if (soloConsigna) {
-    const inscriptos = (await listarAsistentes(corrida.id)).length;
+    const inscriptos = delTaller(await listarAsistentes(corrida.id)).length;
     return (
       <main className={`cp cp-consigna ${enPlaca ? 'cp-placa' : ''}`}>
         {enPlaca && <FondoTransparente />}
@@ -155,7 +156,7 @@ export default async function Proyeccion({
   }
 
   if (soloConteo) {
-    const inscriptos = (await listarAsistentes(corrida.id)).length;
+    const inscriptos = delTaller(await listarAsistentes(corrida.id)).length;
     // El cuestionario no deja aporte: sus respuestas viven en su propia tabla,
     // se responda adentro del encuentro o desde su enlace.
     const hechas =

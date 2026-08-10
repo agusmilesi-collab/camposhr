@@ -259,3 +259,34 @@ export function repartoEnsayo(ids: string[]): GrupoEnsayo[][] {
     return grupos;
   });
 }
+
+/**
+ * El taller, más las expositoras que hagan falta para llegar a múltiplo de tres.
+ *
+ * El ensayo se arma en tríos, y con una persona de más alguien no comunica
+ * nunca: con 3m+1 hay 3m turnos de comunicar. La salida es de sala, y por eso
+ * quien dicta y quien acompaña se registran como dos más.
+ *
+ * Entran sólo las que faltan y en orden de registro. Con 34 del taller sobra
+ * una, así que juegan las dos y son 36. Con 32 falta una sola y la segunda se
+ * queda mirando. Con 33 no juega ninguna: sumarlas de todos modos las metería
+ * en un ejercicio que ya está completo, y son las que tienen que estar
+ * caminando entre los tríos.
+ *
+ * La que ya tiene puesto se queda con él aunque después llegue alguien y la
+ * cuenta cierre sin ella. Sacarla a mitad del ejercicio dejaría a su trío de a
+ * dos, y el ensayo no se rearma nunca una vez repartido.
+ *
+ * Sin base de datos, igual que el resto de este módulo, así que se verifica
+ * sola: `node --experimental-strip-types scripts/verificar-ensayo.ts`.
+ */
+export function conSuplentes<T extends { id: string; expositora: boolean }>(
+  porRegistro: T[],
+  yaTienen: Set<string> = new Set()
+): T[] {
+  const taller = porRegistro.filter((a) => !a.expositora);
+  const suplentes = porRegistro.filter((a) => a.expositora);
+  const faltan = (3 - (taller.length % 3)) % 3;
+  const juegan = suplentes.filter((a, i) => i < faltan || yaTienen.has(a.id));
+  return [...taller, ...juegan];
+}
