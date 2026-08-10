@@ -1230,23 +1230,22 @@ function Ejercicio({
       {listas && !corrigiendo ? (
         /* Las dos mitades escribieron: la lectura cruzada. */
         <>
-          <h1 className="ci-titulo">Ahora léanse</h1>
+          <h1 className="ci-titulo">Compartan con el otro grupo</h1>
           {/*
             Tres frases cortas y una idea por frase. Antes eran dos párrafos
             que explicaban también por qué arranca uno u otro, que es una razón
             de diseño y no algo que la mesa necesite para hacer el ejercicio.
           */}
+          {/* Todo en un párrafo: la caja aparte partía en dos una sola idea
+              y sumaba un borde más a una pantalla que ya tiene una caja por
+              turno. */}
           <p className="cq-ayuda">
             Ellos ya tenían las respuestas de lo que ustedes tuvieron que
             completar. Y ustedes tienen las respuestas de lo que tuvieron que
-            completar ellos.
-          </p>
-          <p className="ci-frases-quehacer">
-            Así que ahora van a leer lo que escribieron ustedes y{' '}
-            <b>el {frases.nombreDeEnfrente} los va a corregir</b>. Y ustedes los
-            van a corregir a ellos.
-            <br />
-            Vayan de a una: en cada frase <b>la pantalla dice quién arranca</b>.
+            completar ellos. Así que ahora van a leer lo que escribieron
+            ustedes y <b>el {frases.nombreDeEnfrente} los va a corregir</b>. Y
+            ustedes los van a corregir a ellos. Vayan de a una: en cada frase{' '}
+            <b>la pantalla dice quién arranca</b>.
           </p>
 
           <div className="ci-frases-cruce">

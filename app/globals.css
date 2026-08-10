@@ -4071,19 +4071,6 @@ body {
    respuesta y la tiene enfrente en la mano, y de hecho a interpretación hay
    muchas y lo único evaluable es si lo agregado se puede verificar. Puestas en
    cuatro celdas parejas parecen la misma tarea, y no lo son. */
-.ci-frases-quehacer {
-  margin: 14px 0 0;
-  padding: 12px 14px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  font-size: 0.95rem;
-  line-height: 1.45;
-  color: var(--ink-soft);
-}
-.ci-frases-quehacer b {
-  color: var(--ink);
-}
 .ci-frases-cruce {
   margin-top: 20px;
 }
