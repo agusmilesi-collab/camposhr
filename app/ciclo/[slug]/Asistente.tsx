@@ -1230,10 +1230,10 @@ function Ejercicio({
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
                   <h3>Nuestro turno</h3>
                   <p className="ci-frases-linea">
-                    <span>Nos tocó</span> {partida}
+                    <span>Nos tocó la frase</span> {partida}
                   </p>
                   <p className="ci-frases-linea">
-                    <span>Leé lo que pusimos</span>
+                    <span>Respondimos (leelo en voz alta)</span>
                     <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-pregunta">
@@ -1246,10 +1246,10 @@ function Ejercicio({
                 <div className="ci-frases-turno">
                   <h3>Turno de {nombresEnfrente}</h3>
                   <p className="ci-frases-linea">
-                    <span>A ellos les tocó</span> {frases.partieron[i]}
+                    <span>A ellos les tocó la frase</span> {frases.partieron[i]}
                   </p>
                   <p className="ci-frases-linea">
-                    <span>Y pusieron</span>
+                    <span>Respondieron</span>
                     <b>{frases.suyas?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-pregunta">
@@ -1265,7 +1265,10 @@ function Ejercicio({
                 <div className="ci-frases-turno">
                   <h3>Turno de {nombresEnfrente}</h3>
                   <p className="ci-frases-linea">
-                    <span>Partieron del dato y pusieron</span>
+                    <span>A ellos les tocó la frase</span> {frases.partieron[i]}
+                  </p>
+                  <p className="ci-frases-linea">
+                    <span>Respondieron</span>
                     <b>{frases.suyas?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-pregunta">
@@ -1282,10 +1285,10 @@ function Ejercicio({
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
                   <h3>Nuestro turno</h3>
                   <p className="ci-frases-linea">
-                    <span>Partimos de</span> {partida}
+                    <span>Nos tocó la frase</span> {partida}
                   </p>
                   <p className="ci-frases-linea">
-                    <span>Y pusimos</span>
+                    <span>Respondimos (leelo en voz alta)</span>
                     <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-pregunta">
