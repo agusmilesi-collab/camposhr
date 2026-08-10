@@ -1241,8 +1241,11 @@ function Ejercicio({
             uno desde un lado.
           </p>
           <p className="ci-frases-quehacer">
-            <b>Lo que ustedes tenían que escribir, ellos ya lo tenían en la
-            mano.</b> Y al revés.
+            <b>La frase que ustedes tenían que escribir es la que a ellos les
+            tocó.</b>
+            <br />
+            <b>Y la frase que ellos tenían que escribir es la que les tocó a
+            ustedes.</b>
             <br />
             Vayan de a una: en cada frase <b>la pantalla dice quién arranca</b>.
           </p>
