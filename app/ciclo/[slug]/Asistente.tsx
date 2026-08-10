@@ -1225,6 +1225,13 @@ function Ejercicio({
                 frases.enfrente.map((p) => p.nombre)
               );
 
+              /*
+               * Cada pantalla muestra sólo lo suyo. Lo de la otra mitad llega
+               * hablado y no escrito: si la respuesta ya está en el teléfono,
+               * no hay nada que preguntarle a nadie y el ejercicio se vuelve
+               * lectura en silencio. El punto es que se lo digan.
+               */
+
               /** El turno que se compara contra el dato: el del Team Objetivo. */
               const turnoObjetivo = soyObjetivo ? (
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
@@ -1236,27 +1243,23 @@ function Ejercicio({
                     <span>Respondimos (leelo en voz alta)</span>
                     <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                   </p>
-                  <p className="ci-frases-pregunta">
-                    Preguntales a {nombresEnfrente}: ¿qué decía la de ustedes?
+                  <p className="ci-frases-cierre">
+                    Ahora preguntales a {nombresEnfrente}:{' '}
+                    <b>¿qué decía la frase de ustedes?</b> Esa es la respuesta,
+                    y la tienen ellos. ¿Coincide con lo que pusimos?
                   </p>
-                  <p className="ci-frases-dato">{frases.partieron[i]}</p>
-                  <p className="ci-frases-cierre">¿Coincide con lo que pusimos?</p>
                 </div>
               ) : (
                 <div className="ci-frases-turno">
                   <h3>Turno de {nombresEnfrente}</h3>
-                  <p className="ci-frases-linea">
-                    <span>A ellos les tocó la frase</span> {frases.partieron[i]}
-                  </p>
-                  <p className="ci-frases-linea">
-                    <span>Respondieron</span>
-                    <b>{frases.suyas?.[i] || '(en blanco)'}</b>
-                  </p>
                   <p className="ci-frases-pregunta">
-                    Nosotros tenemos el dato. Léanselo:
+                    Escuchá qué frase les tocó y qué respondieron. Después
+                    leeles nuestra frase, que es la respuesta que buscaban:
                   </p>
                   <p className="ci-frases-dato">{partida}</p>
-                  <p className="ci-frases-cierre">¿Coincide con lo que pusieron?</p>
+                  <p className="ci-frases-cierre">
+                    ¿Coincide con lo que respondieron?
+                  </p>
                 </div>
               );
 
@@ -1264,17 +1267,10 @@ function Ejercicio({
               const turnoSubjetivo = soyObjetivo ? (
                 <div className="ci-frases-turno">
                   <h3>Turno de {nombresEnfrente}</h3>
-                  <p className="ci-frases-linea">
-                    <span>A ellos les tocó la frase</span> {frases.partieron[i]}
-                  </p>
-                  <p className="ci-frases-linea">
-                    <span>Respondieron</span>
-                    <b>{frases.suyas?.[i] || '(en blanco)'}</b>
-                  </p>
                   <p className="ci-frases-pregunta">
-                    Acá no hay una sola respuesta buena: hay muchas
-                    interpretaciones posibles del mismo hecho. La pregunta es
-                    otra.
+                    Escuchá qué respondieron. Acá no hay una sola respuesta
+                    buena: hay muchas interpretaciones posibles del mismo hecho,
+                    así que no lo compares con nada. La pregunta es otra.
                   </p>
                   <p className="ci-frases-cierre">
                     Lo que agregaron, <b>¿lo puede verificar alguien que no
