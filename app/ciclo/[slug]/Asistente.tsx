@@ -1280,6 +1280,9 @@ function Ejercicio({
                       <span>Y nuestra respuesta fue:</span>{' '}
                       <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                     </p>
+                    <p className="ci-frases-puntos" aria-hidden="true">
+                      · · ·
+                    </p>
                     <p className="ci-frases-cierre">
                       Ahora {frases.enfrente.length === 1 ? 'preguntale' : 'preguntales'}{' '}
                       a {nombresEnfrente}:{' '}
@@ -1301,6 +1304,9 @@ function Ejercicio({
                     <p className="ci-frases-linea">
                       <span>Y nuestra respuesta fue:</span>{' '}
                       <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
+                    </p>
+                    <p className="ci-frases-puntos" aria-hidden="true">
+                      · · ·
                     </p>
                     <p className="ci-frases-pregunta">
                       Nos tocó al revés: agregarle interpretación a un hecho. No

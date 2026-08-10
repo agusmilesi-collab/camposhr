@@ -4179,6 +4179,17 @@ body {
 .ci-frases-linea b.ci-frases-mia {
   color: var(--st-amber);
 }
+/* Corta lo que se lee en voz alta de lo que sigue, que es instrucción para la
+   mesa y no texto para decir. Tres puntos y no una línea: dentro de una caja
+   que ya tiene borde, otra línea la parte en dos cajas. */
+.ci-frases-puntos {
+  margin: 12px 0;
+  text-align: center;
+  font-size: 0.95rem;
+  letter-spacing: 0.35em;
+  color: var(--st-amber);
+  opacity: 0.55;
+}
 .ci-frases-pregunta {
   margin: 10px 0 0;
   font-size: 0.9rem;
