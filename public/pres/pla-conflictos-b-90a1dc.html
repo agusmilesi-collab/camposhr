@@ -621,12 +621,19 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
    hereda el display en bloque y el cuerpo de los nombres de etapa. */
 .escalones .salto b{display:inline;font-family:'Inter',system-ui,sans-serif;
   font-size:inherit;font-weight:600;letter-spacing:0;color:var(--ink)}
-/* Cinco tarjetas, una por encuentro del ciclo. Con el mismo cuerpo que las de
-   tres no entran a lo ancho, así que bajan y el título de cada una manda. */
-.tarjetas.cinco{gap:22px}
-.tarjetas.cinco>div{padding:34px 26px}
-.tarjetas.cinco h3{font-size:40px;margin-bottom:16px}
-.tarjetas.cinco p{font-size:26px;line-height:1.35}
+/* Los diez temas del ciclo, en dos filas de cinco. Es la última placa con
+   contenido, así que lo que no entra acá no se nombra nunca más: por eso van
+   los diez y no un resumen. */
+.tarjetas.diez{flex-wrap:wrap;gap:14px}
+.tarjetas.diez>div{flex:0 0 calc(20% - 12px);padding:20px 18px;
+  display:flex;flex-direction:column}
+.tarjetas.diez h3{font-size:29px;line-height:1.1;margin-bottom:10px}
+.tarjetas.diez p{font-size:20px;line-height:1.3}
+/* La herramienta, separada de la explicación: una dice por qué importa y la
+   otra qué se hace, y de un vistazo tienen que distinguirse. */
+.tarjetas.diez .herramienta{margin-top:auto;padding-top:10px;
+  border-top:1px solid var(--line);color:var(--amber);font-weight:500}
+.contenido.diez .tarjetas{max-width:var(--ancho);margin-left:40px}
 .pendiente{border:2px dashed var(--amber)}
 .pendiente b{color:var(--amber)}
 .qr-caja{background:var(--card);border:1px solid var(--line)}
@@ -1055,14 +1062,19 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <!-- 31 -->
   <section class="placa" data-notas="Última placa de los dos días. Repasar el recorrido completo y cerrar agradeciendo.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq cinco">
+    <div class="contenido izq diez">
       <div class="titulo-placa">El recorrido de los dos días</div>
-      <div class="tarjetas cinco">
-        <div><h3>Registrar</h3><p>Nombrar lo que sentís antes de responder. Para eso es la rueda de emociones.</p></div>
-        <div><h3>Respirar</h3><p>La Respiración de 1 minuto, para llegar despejado a lo que sigue.</p></div>
-        <div><h3>Conocerse</h3><p>Los cuatro modos de pensar, y a quién consultarle según el suyo.</p></div>
-        <div><h3>Comunicar</h3><p>Encuadrá, decilo claro, en silencio sostené, cerrá con una fecha.</p></div>
-        <div><h3>Resolver</h3><p>Separar el hecho de la interpretación, e intervenir en la etapa 1.</p></div>
+      <div class="tarjetas diez">
+        <div><h3>Reaccionar o responder</h3><p>Entre lo que pasa y lo que hacés hay un espacio.</p><p class="herramienta">Frená antes de contestar.</p></div>
+        <div><h3>Una cosa a la vez</h3><p>En multitarea tardás más y errás más. Lo probaron con las letras y los números.</p><p class="herramienta">Cerrá lo que estás haciendo antes de abrir lo que sigue.</p></div>
+        <div><h3>Respirar</h3><p>De cualquier conversación difícil salís acelerado.</p><p class="herramienta">La Respiración de 1 minuto.</p></div>
+        <div><h3>Registrar lo que sentís</h3><p>“Estoy mal” no te dice qué hacer. Nombrarlo con precisión baja la intensidad.</p><p class="herramienta">La rueda de emociones.</p></div>
+        <div><h3>Treinta segundos</h3><p>La emoción tapada sigue actuando, y el equipo te lee la cara.</p><p class="herramienta">Frená, nombralo, elegí.</p></div>
+        <div><h3>Cómo pensás vos</h3><p>Está lo que te sale solo y lo que te cuesta, y no son lo mismo.</p><p class="herramienta">Los cuatro modos, y tu cuadrante.</p></div>
+        <div><h3>A quién consultarle</h3><p>El del cuadrante opuesto ve lo que vos no ves.</p><p class="herramienta">Consultar y complementarse.</p></div>
+        <div><h3>Comunicar lo difícil</h3><p>Lo que traba no es la falta de palabras: es lo que la situación te genera.</p><p class="herramienta">Encuadrá, decilo claro, en silencio sostené, cerrá con una fecha.</p></div>
+        <div><h3>Lo bueno también se posterga</h3><p>Al otro le importa mucho más de lo que creés.</p><p class="herramienta">Decilo cuando pasa, no lo guardes.</p></div>
+        <div><h3>Resolver antes de que crezca</h3><p>En la etapa 1 sale barato. Después hace falta un tercero.</p><p class="herramienta">Separá el hecho de la interpretación.</p></div>
       </div>
     </div>
   </section>
