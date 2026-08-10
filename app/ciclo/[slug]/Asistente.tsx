@@ -1237,15 +1237,14 @@ function Ejercicio({
             de diseño y no algo que la mesa necesite para hacer el ejercicio.
           */}
           <p className="cq-ayuda">
-            Los dos subgrupos trabajaron <b>las mismas cuatro frases</b>, cada
-            uno desde un lado.
+            Ellos ya tenían las respuestas de lo que ustedes tenían que
+            completar. Y ustedes tienen las respuestas de lo que tuvieron que
+            completar ellos.
           </p>
           <p className="ci-frases-quehacer">
-            <b>La frase que ustedes tenían que escribir es la que a ellos les
-            tocó.</b>
-            <br />
-            <b>Y la frase que ellos tenían que escribir es la que les tocó a
-            ustedes.</b>
+            Así que ahora van a leer lo que escribieron y{' '}
+            <b>el {frases.nombreDeEnfrente} los va a corregir</b>. Y ustedes los
+            van a corregir a ellos.
             <br />
             Vayan de a una: en cada frase <b>la pantalla dice quién arranca</b>.
           </p>
