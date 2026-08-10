@@ -1073,6 +1073,12 @@ function Formulario({
  * leerse de un vistazo desde otra mesa, y una barra con el nombre de la
  * empresa arriba le come el alto a la palabra y le saca contraste.
  *
+ * La palabra corre siempre a lo largo del lado largo del teléfono, que es
+ * donde entra al doble de tamaño. Con la pantalla en vertical va girada, así
+ * que la persona gira el aparato y la lee derecha; si tiene la rotación
+ * suelta, la pantalla pasa a apaisada sola y entonces va sin girar. En los dos
+ * casos termina igual: horizontal para quien la mira.
+ *
  * El cuerpo se mide, no se estima. Con un tamaño fijo "sal" desperdicia media
  * pantalla y "responsabilidad" se sale por los costados, y en las dos puntas
  * el cartel deja de cumplir su trabajo. Contar caracteres tampoco alcanza,
@@ -1097,12 +1103,18 @@ function Cartel({
       el.style.fontSize = `${MEDIDA}px`;
       const ancho = el.scrollWidth;
       if (!ancho) return;
+      // La palabra va a lo largo del lado largo, esté la pantalla como esté:
+      // en vertical porque la gira el CSS, y en apaisada porque ya lo está.
+      const largo = Math.max(window.innerWidth, window.innerHeight);
+      const corto = Math.min(window.innerWidth, window.innerHeight);
       setCuerpo(
         Math.min(
-          (window.innerWidth * 0.92 * MEDIDA) / ancho,
+          (largo * 0.92 * MEDIDA) / ancho,
           // Tope de alto, para que una palabra de dos letras no se coma la
-          // pantalla entera y se corte por arriba y por abajo.
-          window.innerHeight * 0.3
+          // pantalla entera y se corte por arriba y por abajo. Casi la mitad
+          // del lado corto: es el que manda en casi todas las palabras del
+          // juego, así que bajarlo las achica a todas.
+          corto * 0.46
         )
       );
     }

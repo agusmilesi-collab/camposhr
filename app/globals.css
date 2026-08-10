@@ -3804,49 +3804,59 @@ body {
 }
 
 /* El cartel del Match: la palabra que cada uno levanta para que la vea la
-   sala. Negro sobre toda la pantalla porque se mira de lejos y de costado, y
-   el papel del resto del sitio a esa distancia se lava con la luz de la sala. */
+   sala. Blanco pleno y tinta negra, que es lo que más contrasta a cuatro metros
+   con la luz de una sala encendida, y ocupa la pantalla entera. */
 .ci-cartel {
   position: fixed;
   inset: 0;
   z-index: 50;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  background: #000;
+  background: #fff;
   /* El teléfono se levanta y se sostiene: sin esto, un roce en la pantalla
      selecciona la palabra y aparece el menú de copiar encima del cartel. */
   user-select: none;
   -webkit-user-select: none;
 }
+/* Sale del flujo para poder girar sin que su ancho empuje nada, y queda
+   centrada en los dos ejes esté como esté el teléfono. */
 .ci-cartel-palabra {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   margin: 0;
   padding: 0;
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: #000;
   text-align: center;
   /* Nunca en dos renglones: si no entra, lo que se achica es el cuerpo. Es
      además lo que permite medirla, porque con el texto partido el ancho que
      devuelve el navegador es el de la caja y no el de la palabra. */
   white-space: nowrap;
 }
+/* Con la pantalla en vertical la palabra va girada, y quien la muestra gira el
+   teléfono. Así corre a lo largo del lado largo, que es donde entra al doble de
+   tamaño. Con la rotación del aparato suelta, girarlo pone la pantalla en
+   apaisada y esta regla deja de aplicar: la palabra queda derecha igual. */
+@media (orientation: portrait) {
+  .ci-cartel-palabra {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+}
 /* La salida queda al pie y en gris: está para el que se equivocó de palabra,
    y no tiene que competir con lo que la sala está mirando. */
 .ci-cartel-volver {
   position: absolute;
   left: 50%;
-  bottom: 18px;
+  bottom: 14px;
   transform: translateX(-50%);
   padding: 10px 18px;
   border: 0;
   background: transparent;
   font: inherit;
   font-size: 0.78rem;
-  color: #666;
+  color: #b0aca5;
 }
 
 /* Lo que la persona escribió, para leerlo en voz alta cuando se lo pidan. */
