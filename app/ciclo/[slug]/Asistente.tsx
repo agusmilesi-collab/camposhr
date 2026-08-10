@@ -1380,41 +1380,44 @@ function Ejercicio({
           <ol className="ci-frases-armado">
             <li>
               <b>Juntate con el equipo {frases.color}.</b> Son{' '}
-              {1 + frases.con.length + frases.enfrente.length} contando los de
-              enfrente. Además de vos:{' '}
+              {1 + frases.con.length + frases.enfrente.length} contando el otro
+              subgrupo. Además de vos:{' '}
               {lista([...frases.con, ...frases.enfrente].map((p) => p.nombre))}.
             </li>
             <li>
-              <b>Ya juntos, sepárense en dos y siéntense enfrentados.</b> Vos
-              vas al {frases.nombreDeMitad}
-              {frases.con.length > 0 && (
-                <> con {lista(frases.con.map((p) => p.nombre))}</>
+              <b>Ya reunidos, sepárense en dos subgrupos.</b> Vos vas al{' '}
+              {frases.nombreDeMitad}
+              {frases.con.length > 0 ? (
+                <>
+                  , con estas caras:
+                  {/* Las fotos y no sólo los nombres: el subgrupo se arma de
+                      parado y en medio del ruido, y a esta altura del ciclo
+                      todavía no se saben todos los nombres. */}
+                  <span className="ci-frases-caras">
+                    {frases.con.map((p) => (
+                      <span key={`${p.apellido}-${p.nombre}`}>
+                        {p.foto ? (
+                          <img src={p.foto} alt="" />
+                        ) : (
+                          <i>{(p.nombre[0] ?? '') + (p.apellido[0] ?? '')}</i>
+                        )}
+                        <b>{p.nombre}</b>
+                      </span>
+                    ))}
+                  </span>
+                </>
+              ) : (
+                <>, solo.</>
               )}
-              . Enfrente queda el {frases.nombreDeEnfrente}:{' '}
-              {lista(frases.enfrente.map((p) => p.nombre))}.
             </li>
           </ol>
 
-          <h1 className="ci-titulo">Objetivo y subjetivo</h1>
+          <h1 className="ci-titulo">Ejercicio</h1>
           <p className="cq-ayuda">
             Son cuatro frases y <b>van en las dos direcciones</b>: dos hay que
             pasarlas a objetivas y dos a subjetivas. Cada bloque dice cuál es
             cuál.
           </p>
-
-          <div className="ci-frases-gente">
-            {frases.con.map((p) => (
-              <span className="ci-frases-quien" key={`${p.apellido}-${p.nombre}`}>
-                {p.foto ? (
-                  <img src={p.foto} alt="" />
-                ) : (
-                  <i>{(p.nombre[0] ?? '') + (p.apellido[0] ?? '')}</i>
-                )}
-                <b>{p.nombre}</b>
-                {p.escribe && <em>escribe</em>}
-              </span>
-            ))}
-          </div>
 
           {frases.escribe ? (
             <>

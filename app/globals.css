@@ -3936,6 +3936,46 @@ body {
 .ci-frases-armado b {
   color: var(--ink);
 }
+/* Las caras del subgrupo, adentro del paso que las nombra. El ejercicio se
+   arma de parado y en medio del ruido: a esta altura del ciclo todavía no se
+   saben todos los nombres, y una foto se reconoce de lejos. */
+.ci-frases-caras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+}
+.ci-frases-caras > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.ci-frases-caras img,
+.ci-frases-caras i {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+}
+.ci-frases-caras i {
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.ci-frases-caras b {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
 .ci-frases-rol {
   margin: 18px 0 4px;
   font-size: 0.92rem;
