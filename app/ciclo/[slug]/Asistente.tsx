@@ -1311,12 +1311,11 @@ function Ejercicio({
                       · · ·
                     </p>
                     <p className="ci-frases-pregunta">
-                      Acá no hay una sola respuesta buena: hay muchas
-                      interpretaciones posibles del mismo hecho.
+                      En este caso <b>no hay una sola respuesta correcta</b>.
                     </p>
                     <p className="ci-frases-cierre">
-                      Lo que agregamos, <b>¿alguien que no estaba lo puede
-                      verificar?</b>
+                      En estos casos, preguntamos si <b>alguien que no estaba
+                      podría verificar lo que se dice</b>.
                     </p>
                     <ul className="ci-frases-veredicto">
                       <li>
@@ -1336,12 +1335,12 @@ function Ejercicio({
                   <div className="ci-frases-turno">
                     <h3>Turno de {nombresEnfrente}</h3>
                     <p className="ci-frases-pregunta">
-                      A ellos les tocó al revés: agregarle interpretación a un
-                      hecho. No hay una sola respuesta buena.
+                      A ellos les tocó convertir la frase en subjetiva. En este
+                      caso <b>no hay una sola respuesta correcta</b>.
                     </p>
                     <p className="ci-frases-cierre">
-                      Preguntales: lo que agregaron, <b>¿alguien que no estaba
-                      lo puede verificar?</b>
+                      En estos casos, preguntamos si <b>alguien que no estaba
+                      podría verificar lo que se dice</b>.
                     </p>
                     <ul className="ci-frases-veredicto">
                       <li>
