@@ -1436,7 +1436,7 @@ function Ejercicio({
                 return (
                   <div key={i}>
                     {abre && (
-                      <div className="ci-frases-bloque">
+                      <div className={`ci-frases-bloque ci-hacia-${f.direccion}`}>
                         <h2>{f.consigna.a}</h2>
                         <p>{f.consigna.como}</p>
                       </div>
@@ -1484,7 +1484,7 @@ function Ejercicio({
                 return (
                   <div key={i}>
                     {abre && (
-                      <div className="ci-frases-bloque">
+                      <div className={`ci-frases-bloque ci-hacia-${f.direccion}`}>
                         <h2>{f.consigna.a}</h2>
                         <p>{f.consigna.como}</p>
                       </div>
