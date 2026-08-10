@@ -35,6 +35,7 @@ import {
 import type { Empresa } from '@/lib/supabase';
 import { armarGrupos, type Candidato, type Grupo } from '@/lib/cruce';
 import { repartoEnsayo, type Rol } from '@/lib/ensayo';
+import { DEL_EJERCICIO, repartoFrases, type Lado } from '@/lib/frases';
 import { recordar } from '@/lib/memoria';
 import { PERFILES, type Perfil } from '@/lib/perfiles';
 
@@ -66,6 +67,10 @@ export const TIPOS = [
    *  viajaran juntas, el teléfono tendría desde la primera las reacciones de
    *  las tres, y la sorpresa es lo que hace que el ensayo sirva. */
   'ensayo',
+  /** El ejercicio de las frases de la charla 5. Tampoco se responde de a uno:
+   *  el servidor arma los equipos de color y las dos mitades al abrirla, y de
+   *  cada mitad escribe una sola persona por las tres. */
+  'frases',
 ] as const;
 export type TipoActividad = (typeof TIPOS)[number];
 
@@ -196,6 +201,27 @@ export type Valor =
       porque?: boolean;
       /** Si le dijeron cuándo vuelven a hablar. También quien recibe, paso 4. */
       cuando?: boolean;
+    }
+  /**
+   * El puesto de una persona en el ejercicio de las frases. Como el del ensayo,
+   * lo escribe el servidor al abrir la actividad.
+   *
+   * `respuestas` sólo lo completa quien escribe por su mitad, y va en la misma
+   * fila y no en otra por la misma razón que en el ensayo: es lo que esa
+   * persona respondió en esa actividad, y así el sondeo la sigue trayendo en la
+   * consulta que ya hace.
+   */
+  | {
+      tipo: 'frases';
+      /** Índice del color del equipo. Es lo que se dice en voz alta. */
+      color: number;
+      lado: Lado;
+      escribe: boolean;
+      /** Los otros de su mitad, y la mitad de enfrente, con quién escribe. */
+      con: { id: string; escribe: boolean }[];
+      enfrente: { id: string; escribe: boolean }[];
+      /** Una por fila del ejercicio, en el orden de `DEL_EJERCICIO`. */
+      respuestas?: string[];
     };
 
 /** La dirección de una actividad de tipo 'enlace'. Sólo se acepta https. */
@@ -937,6 +963,191 @@ export async function anotarEnsayo(
   });
 }
 
+// ------------------------------------------------------------------- frases
+
+/**
+ * Arma los equipos del ejercicio de las frases y los deja escritos.
+ *
+ * Mismo criterio que el ensayo: lo dispara el panel al abrir la actividad y no
+ * el sondeo, porque treinta y tres teléfonos entrando casi juntos leerían la
+ * sala entera antes de que la primera escritura llegue. Y se calcula una sola
+ * vez: quien ya tiene equipo lo conserva, porque seis equipos enterándose a
+ * mitad del ejercicio de que ahora son otros sería peor que cualquier error.
+ *
+ * Quien llega tarde entra por el mismo camino, de a uno, desde su propio
+ * sondeo: se suma al equipo más chico, del lado que tenga menos gente, y nunca
+ * como quien escribe.
+ */
+export async function repartirFrases(
+  corrida: Corrida,
+  actividad: Actividad
+): Promise<void> {
+  if (actividad.tipo !== 'frases') return;
+
+  const [asistentes, previos] = await Promise.all([
+    listarAsistentes(corrida.id),
+    listarAportes(corrida.id, actividad.id),
+  ]);
+
+  // Por fecha de registro, que es estable: recalcular da siempre lo mismo.
+  const enOrden = [...asistentes].sort((a, b) =>
+    a.created_at.localeCompare(b.created_at)
+  );
+  const yaTienen = new Set(previos.map((p) => p.asistente_id));
+  const nuevos = enOrden.filter((a) => !yaTienen.has(a.id));
+  if (nuevos.length === 0) return;
+
+  const filas: Record<string, unknown>[] = [];
+
+  if (yaTienen.size === 0) {
+    if (enOrden.length < 4) return;
+    for (const equipo of repartoFrases(enOrden.map((a) => a.id))) {
+      for (const puesto of equipo.puestos) {
+        filas.push({
+          corrida_id: corrida.id,
+          actividad_id: actividad.id,
+          asistente_id: puesto.asistenteId,
+          valor: {
+            tipo: 'frases',
+            color: equipo.color,
+            lado: puesto.lado,
+            escribe: puesto.escribe,
+            con: equipo.puestos
+              .filter((o) => o.lado === puesto.lado && o.asistenteId !== puesto.asistenteId)
+              .map((o) => ({ id: o.asistenteId, escribe: o.escribe })),
+            enfrente: equipo.puestos
+              .filter((o) => o.lado !== puesto.lado)
+              .map((o) => ({ id: o.asistenteId, escribe: o.escribe })),
+          },
+        });
+      }
+    }
+  } else {
+    /*
+     * Llegó alguien después del reparto. Entra en el equipo más chico y del
+     * lado que tenga menos gente, sin tocar a nadie más: los que ya están sólo
+     * se enteran de que ahora son uno más.
+     */
+    const porColor = new Map<number, Aporte[]>();
+    const vigentes = new Set(enOrden.map((a) => a.id));
+    for (const a of previos) {
+      if (a.valor?.tipo !== 'frases' || !vigentes.has(a.asistente_id)) continue;
+      const lista = porColor.get(a.valor.color) ?? [];
+      lista.push(a);
+      porColor.set(a.valor.color, lista);
+    }
+
+    for (const nuevo of nuevos) {
+      const destino = [...porColor.entries()].sort(
+        ([ca, a], [cb, b]) => a.length - b.length || ca - cb
+      )[0];
+      if (!destino) break;
+      const [color, integrantes] = destino;
+      const cuantos = (lado: Lado) =>
+        integrantes.filter((a) => (a.valor as { lado: Lado }).lado === lado).length;
+      const lado: Lado = cuantos('objetivo') <= cuantos('subjetivo') ? 'objetivo' : 'subjetivo';
+
+      const como = (a: Aporte) => ({
+        id: a.asistente_id,
+        escribe: (a.valor as { escribe: boolean }).escribe,
+      });
+      // Los que ya estaban suman al recién llegado en la lista que corresponda.
+      for (const a of integrantes) {
+        const suyo = a.valor as { lado: Lado; con: unknown[]; enfrente: unknown[] };
+        const nueva = { id: nuevo.id, escribe: false };
+        filas.push({
+          corrida_id: corrida.id,
+          actividad_id: actividad.id,
+          asistente_id: a.asistente_id,
+          valor:
+            suyo.lado === lado
+              ? { ...suyo, con: [...suyo.con, nueva] }
+              : { ...suyo, enfrente: [...suyo.enfrente, nueva] },
+        });
+      }
+      filas.push({
+        corrida_id: corrida.id,
+        actividad_id: actividad.id,
+        asistente_id: nuevo.id,
+        valor: {
+          tipo: 'frases',
+          color,
+          lado,
+          // Nunca escribe: su mitad ya arrancó y cambiar de mano a mitad del
+          // ejercicio pierde lo que ya venía escrito.
+          escribe: false,
+          con: integrantes
+            .filter((a) => (a.valor as { lado: Lado }).lado === lado)
+            .map(como),
+          enfrente: integrantes
+            .filter((a) => (a.valor as { lado: Lado }).lado !== lado)
+            .map(como),
+        },
+      });
+      porColor.set(color, [...integrantes, { asistente_id: nuevo.id } as Aporte]);
+    }
+  }
+
+  await upsertVarias('aportes', filas, 'actividad_id,asistente_id');
+}
+
+/**
+ * Lo que escribió quien escribe por su mitad.
+ *
+ * Se guarda dentro del puesto que esa persona ya tiene, así que hace falta
+ * leerlo antes: además de dar el valor a completar, es lo que dice si esta
+ * persona era la que escribía. Sin eso, cualquiera del equipo podría contestar
+ * por su mitad y la de enfrente leería algo que su compañero no dijo.
+ *
+ * Es idempotente: escribe el mismo campo con el mismo criterio, así que
+ * guardar dos veces deja lo mismo que guardar una.
+ */
+export async function anotarFrases(
+  corridaId: string,
+  actividadId: string,
+  asistenteId: string,
+  respuestas: string[]
+): Promise<Aporte> {
+  const puesto = await getAporteDe(actividadId, asistenteId);
+  if (puesto?.valor?.tipo !== 'frases') {
+    throw new Error('Todavía no tenés equipo en este ejercicio');
+  }
+  if (!puesto.valor.escribe) {
+    throw new Error('En tu mitad escribe otra persona');
+  }
+  const limpias = DEL_EJERCICIO.map((_, i) =>
+    String(respuestas[i] ?? '').trim().slice(0, MAX_TEXTO)
+  );
+  if (limpias.every((t) => t.length === 0)) throw new Error('Escribí al menos una');
+
+  return guardarAporte(corridaId, actividadId, asistenteId, {
+    ...puesto.valor,
+    respuestas: limpias,
+  });
+}
+
+/**
+ * Los puestos de este ejercicio, servidos de memoria.
+ *
+ * Cada teléfono necesita, además del suyo, lo que escribió quien escribe en su
+ * mitad y en la de enfrente: sin eso no hay lectura cruzada, que es el momento
+ * en que el ejercicio se entiende. Pedirlo en cada sondeo de cada teléfono es
+ * una consulta más por teléfono cada doce segundos, que es exactamente la forma
+ * en que se saturó la base el 7 de agosto de 2026.
+ *
+ * Ocho segundos: lo único que puede cambiar en ese rato es que una mitad
+ * termine de escribir, y eso aparece en la pantalla de los demás un momento
+ * después. La sala entera se sirve de una sola consulta compartida.
+ */
+export async function frasesDeLaSala(
+  corridaId: string,
+  actividadId: string
+): Promise<Aporte[]> {
+  return recordar(`frases:${corridaId}:${actividadId}`, 8, () =>
+    listarAportes(corridaId, actividadId)
+  );
+}
+
 // ------------------------------------------------------------------ control
 
 /**
@@ -1034,6 +1245,12 @@ export function normalizarValor(actividad: Actividad, crudo: unknown): Valor {
       // el puesto ya guardado para saber si esa persona era la que observaba.
       throw new Error('Esta actividad no se responde');
 
+    case 'frases':
+      // Ídem: el equipo lo arma el servidor y lo que escribe una mitad pasa por
+      // `anotarFrases`, que necesita el puesto para saber si esa persona era la
+      // que escribía.
+      throw new Error('Esta actividad no se responde');
+
     case 'marcas': {
       const crudas = Array.isArray(dato.marcas) ? dato.marcas : [];
       const marcas = [
@@ -1093,6 +1310,20 @@ export type Resumen =
       contestaronReciben: number;
       dijoPorque: number;
       dijoCuando: number;
+    }
+  /**
+   * Lo que mira la expositora durante el ejercicio de las frases. Las mitades
+   * que ya escribieron sobre las que hay es la señal de cuándo pedir que se
+   * lean, y no el reloj: los equipos no terminan todos juntos.
+   */
+  | {
+      tipo: 'frases';
+      total: number;
+      equipos: number;
+      mitades: number;
+      escribieron: number;
+      /** Equipos con las dos mitades listas, o sea los que ya pueden leerse. */
+      completos: number;
     };
 
 /** Para agrupar 'apurado' con 'Apurado' y con 'apurada' no, que es otra cosa. */
@@ -1252,6 +1483,37 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
         contestaronReciben,
         dijoPorque,
         dijoCuando,
+      };
+    }
+
+    case 'frases': {
+      const equipos = new Set<number>();
+      // Una mitad se identifica por su equipo y su lado, y está lista cuando
+      // quien escribe en ella guardó algo.
+      const mitades = new Set<string>();
+      const listas = new Set<string>();
+      for (const a of aportes) {
+        if (a.valor?.tipo !== 'frases') continue;
+        equipos.add(a.valor.color);
+        mitades.add(`${a.valor.color}|${a.valor.lado}`);
+        if (a.valor.escribe && a.valor.respuestas?.some((t) => t.length > 0)) {
+          listas.add(`${a.valor.color}|${a.valor.lado}`);
+        }
+      }
+      let completos = 0;
+      for (const color of equipos) {
+        const dos = ['objetivo', 'subjetivo'].filter((l) =>
+          listas.has(`${color}|${l}`)
+        );
+        if (dos.length === 2) completos += 1;
+      }
+      return {
+        tipo: 'frases',
+        total,
+        equipos: equipos.size,
+        mitades: mitades.size,
+        escribieron: listas.size,
+        completos,
       };
     }
 

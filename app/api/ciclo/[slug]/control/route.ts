@@ -7,6 +7,7 @@ import {
   getActividad,
   repartirCruce,
   repartirEnsayo,
+  repartirFrases,
   resolverCiclo,
   rondasDelEnsayo,
 } from '@/lib/ciclo';
@@ -64,6 +65,11 @@ export async function POST(
       if (actividad?.tipo === 'ensayo') {
         await repartirEnsayo(corrida, rondasDelEnsayo(await actividadesDelCiclo(corrida.ciclo_id)));
       }
+
+      // Y el ejercicio de las frases de la charla 5, por la misma razón: los
+      // equipos de color tienen que estar escritos antes de que el primer
+      // teléfono pregunte de cuál es.
+      if (actividad?.tipo === 'frases') await repartirFrases(corrida, actividad);
     } else {
       return new NextResponse('Acción inválida', { status: 400 });
     }
