@@ -3322,6 +3322,12 @@ body {
 /* El pase del color a la consigna. Va al lado de Cerrar y en ámbar, porque es
    lo único que hay que tocar en ese momento y no puede confundirse con el que
    termina la actividad. */
+/* En qué momento de la actividad está. Sólo aparece donde hay más de uno. */
+.ct-paso {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--st-amber);
+}
 .ct-pasar {
   flex: none;
   padding: 12px 18px;

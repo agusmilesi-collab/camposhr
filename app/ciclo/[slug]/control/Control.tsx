@@ -227,7 +227,18 @@ export default function Control({
         {abierta ? (
           <>
             <div className="ct-estado-texto">
-              <strong>{abierta.titulo}</strong>
+              <strong>
+                {abierta.titulo}
+                {/* El ejercicio de las frases tiene dos momentos y hay que
+                    verlo: sin esto, lo único que se ofrece después del color
+                    parece ser Cerrar, y cerrar apaga los teléfonos en vez de
+                    avanzar. */}
+                {enFrases && (
+                  <em className="ct-paso">
+                    {fase < 1 ? ' · paso 1 de 2' : ' · paso 2 de 2'}
+                  </em>
+                )}
+              </strong>
               {/* Con varias consignas seguidas el número que importa es cuántos
                   llegaron al final: contar la primera hace creer que está hecho
                   cuando la mayoría quedó por la mitad. */}
@@ -275,10 +286,12 @@ export default function Control({
                   </>
                 ) : enFrases && fase < 1 ? (
                   <>
-                    Cada teléfono muestra su color.{' '}
+                    Cada teléfono muestra su color, para que se junten.{' '}
                     <b className="ct-a-medias">
                       {frases ? `${frases.equipos} equipos repartidos` : 'repartiendo…'}
                     </b>
+                    {' · '}cuando estén armados, tocá el botón para que pasen a
+                    la consigna
                     {desdeRonda !== null && (
                       <b className="ct-reloj"> · {reloj(ahora - desdeRonda)}</b>
                     )}
@@ -325,7 +338,7 @@ export default function Control({
                 disabled={ocupado}
                 onClick={() => mandar({ accion: 'fase', fase: 1 })}
               >
-                Ya están juntos
+                Ya están juntos · pasar a los Teams
               </button>
             )}
             <button
