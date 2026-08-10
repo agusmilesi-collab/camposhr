@@ -1195,29 +1195,46 @@ function Ejercicio({
         <>
           <h1 className="ci-titulo">Ahora léanse</h1>
           <p className="cq-ayuda">
-            Al lado de lo que escribieron está la frase de la que partieron los
-            de enfrente. Esa frase es la respuesta.
+            Las dos mitades trabajaron <b>las mismas cuatro frases</b>, cada una
+            desde una punta. Así que lo que ustedes tenían que escribir estaba
+            todo este tiempo en la hoja de{' '}
+            {lista(frases.enfrente.map((p) => p.nombre))}.
+          </p>
+          <p className="ci-frases-quehacer">
+            De a una: lean en voz alta lo que pusieron ustedes y al lado lo que
+            ellos tenían. <b>¿Coincide?</b>
           </p>
           <div className="ci-frases-cruce">
             {frases.parten.map((partida, i) => (
               <article key={i}>
-                <p className="ci-frases-num">{i + 1}</p>
-                <dl>
-                  <dt>Les tocó</dt>
-                  <dd>{partida}</dd>
-                  <dt>Escribieron</dt>
-                  <dd className="ci-frases-mia">{mias?.[i] || '—'}</dd>
-                  <dt>Enfrente partieron de</dt>
-                  <dd className="ci-frases-suya">{frases.partieron[i]}</dd>
-                  <dt>Y escribieron</dt>
-                  <dd>{frases.suyas?.[i] || '—'}</dd>
-                </dl>
+                <p className="ci-frases-num">Frase {i + 1}</p>
+                <p className="ci-frases-partida">{partida}</p>
+
+                <div className="ci-frases-par">
+                  <div className="ci-frases-lado ci-frases-nuestro">
+                    <h3>Ustedes pusieron</h3>
+                    <p className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</p>
+                  </div>
+                  <div className="ci-frases-lado ci-frases-deellos">
+                    <h3>Enfrente ya lo tenía</h3>
+                    <p className="ci-frases-suya">{frases.partieron[i]}</p>
+                  </div>
+                </div>
+
+                {/* Lo que ellos escribieron es el espejo: partieron del hecho
+                    y llegaron a la frase que a esta mitad le tocó. Va abajo y
+                    en chico porque es la comprobación, no la comparación. */}
+                <p className="ci-frases-espejo">
+                  Ellos, partiendo de eso, escribieron:{' '}
+                  <b>{frases.suyas?.[i] || '(en blanco)'}</b>
+                </p>
               </article>
             ))}
           </div>
           <p className="ci-frases-regla">
-            ¿Esto lo puede verificar alguien que no estaba? Si es sí, es un
-            hecho. Si es no, es interpretación.
+            La pregunta que resuelve cualquier duda: <b>¿esto lo puede
+            verificar alguien que no estaba?</b> Si es sí, es un hecho. Si es
+            no, es interpretación.
           </p>
         </>
       ) : mias ? (
@@ -1248,6 +1265,30 @@ function Ejercicio({
       ) : (
         /* Todavía escribiendo. */
         <>
+          {/*
+            Primero armar la mesa y recién después la consigna. La sala tiene
+            que hacer dos movimientos en orden y sin que nadie los diga en voz
+            alta: juntarse por color, y ya juntos partirse en dos. Con los seis
+            nombres mezclados desde el arranque, la mitad busca a la persona
+            equivocada y el ejercicio empieza cinco minutos tarde.
+          */}
+          <ol className="ci-frases-armado">
+            <li>
+              <b>Juntate con el equipo {frases.color}.</b> Son{' '}
+              {1 + frases.con.length + frases.enfrente.length} contando los de
+              enfrente. Además de vos:{' '}
+              {lista([...frases.con, ...frases.enfrente].map((p) => p.nombre))}.
+            </li>
+            <li>
+              <b>Ya juntos, sepárense en dos y siéntense enfrentados.</b> Vos
+              vas al {frases.nombreDeLado}
+              {frases.con.length > 0 && (
+                <> con {lista(frases.con.map((p) => p.nombre))}</>
+              )}
+              . Enfrente quedan {lista(frases.enfrente.map((p) => p.nombre))}.
+            </li>
+          </ol>
+
           <h1 className="ci-titulo">{frases.consigna.a}</h1>
           <p className="cq-ayuda">{frases.consigna.como}</p>
 
@@ -1270,6 +1311,9 @@ function Ejercicio({
               <p className="ci-frases-rol">
                 Escribís vos, por los tres. Pónganse de acuerdo primero.
               </p>
+              {/* Quien mira el teléfono a mitad del ejercicio ya no tiene el
+                  título a la vista: el renglón le dice qué está leyendo. */}
+              <p className="ci-frases-tocaron">{frases.consigna.de}:</p>
               {frases.parten.map((partida, i) => (
                 <label className="ci-frases-campo" key={i}>
                   <span>{partida}</span>
@@ -1400,6 +1444,12 @@ function Cartel({
       </button>
     </div>
   );
+}
+
+/** Nombres separados por coma, y el último con «y». Se lee en voz alta. */
+function lista(nombres: string[]): string {
+  if (nombres.length <= 1) return nombres[0] ?? '';
+  return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
 }
 
 /** El cuerpo con el que se mide antes de escalar. Cualquiera sirve. */

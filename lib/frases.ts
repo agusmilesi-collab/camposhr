@@ -31,21 +31,26 @@ export const NOMBRE_DE_LADO: Record<Lado, string> = {
 /**
  * Qué le toca hacer a cada lado, en las palabras que va a leer en el teléfono.
  *
- * Team Objetivo llega al hecho, así que parte de la interpretación. Team
- * Subjetivo llega a la interpretación, así que parte del hecho.
+ * El título nombra la transformación entera y no sólo el destino. Con
+ * "escriban solo el hecho" hay que deducir que lo que tienen enfrente es una
+ * interpretación; acá lo dice, y con las mismas palabras que la hoja impresa
+ * de respaldo, que se titula "De Subjetivo a → Objetivo".
+ *
+ * `de` nombra lo que les tocó, para el renglón que lo repite antes de las
+ * frases: quien agarra el teléfono a mitad del ejercicio no vio el título.
  */
 export const CONSIGNA: Record<Lado, { de: string; a: string; como: string }> = {
   objetivo: {
-    de: 'Les tocó una interpretación',
-    a: 'Escriban solo el hecho',
-    como: 'Sacá todo lo que no se pueda verificar. Que quede lo que vio ' +
-      'cualquiera que estuviera ahí.',
+    de: 'Les tocaron frases subjetivas',
+    a: 'De subjetivo a objetivo',
+    como: 'Transformá cada una en objetiva: sacá todo lo que no se pueda ' +
+      'verificar y dejá solo lo que vio cualquiera que estuviera ahí.',
   },
   subjetivo: {
-    de: 'Les tocó un hecho',
-    a: 'Escriban la interpretación',
-    como: 'Agregale lo que uno se cuenta cuando pasa eso. Lo que pensarías ' +
-      'sin darte cuenta.',
+    de: 'Les tocaron frases objetivas',
+    a: 'De objetivo a subjetivo',
+    como: 'Transformá cada una en subjetiva: agregale lo que uno se cuenta ' +
+      'cuando pasa eso, eso que pensás sin darte cuenta.',
   },
 };
 

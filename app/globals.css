@@ -3886,10 +3886,39 @@ body {
   text-transform: uppercase;
   color: var(--st-amber);
 }
+/* Los dos movimientos de sala, antes de la consigna. Van numerados y en una
+   caja propia porque son un orden y no una explicación: primero el color,
+   después la mitad. Con los seis nombres sueltos, media sala busca a la
+   persona equivocada y el ejercicio arranca cinco minutos tarde. */
+.ci-frases-armado {
+  margin: 14px 0 22px;
+  padding: 14px 16px 14px 34px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.ci-frases-armado li + li {
+  margin-top: 10px;
+}
+.ci-frases-armado b {
+  color: var(--ink);
+}
 .ci-frases-rol {
   margin: 18px 0 4px;
   font-size: 0.92rem;
   color: var(--ink-soft);
+}
+/* Qué les tocó, repetido arriba de las frases: quien mira el teléfono a mitad
+   del ejercicio ya no tiene el título a la vista. */
+.ci-frases-tocaron {
+  margin: 16px 0 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--st-amber);
 }
 /* Cada frase de la que se parte, con su campo debajo. La frase pesa más que el
    campo: es lo que hay que leer y discutir antes de escribir nada. */
@@ -3917,43 +3946,102 @@ body {
   line-height: 1.3;
 }
 /* La lectura cruzada, que es donde el ejercicio se entiende. */
+/* La lectura cruzada. Lo que importa no es leer cuatro renglones sueltos sino
+   comparar dos: lo que escribió esta mitad contra la frase de la que partió la
+   de enfrente. Por eso van uno al lado del otro y con el mismo ancho, y el
+   resto queda alrededor. */
+.ci-frases-quehacer {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.ci-frases-quehacer b {
+  color: var(--ink);
+}
 .ci-frases-cruce {
   margin-top: 18px;
 }
 .ci-frases-cruce article {
-  padding: 16px 0;
+  padding: 18px 0;
   border-top: 1px solid var(--line);
 }
 .ci-frases-num {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 0.72rem;
   letter-spacing: 0.12em;
-  color: var(--muted);
-}
-.ci-frases-cruce dl {
-  margin: 0;
-}
-.ci-frases-cruce dt {
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-top: 10px;
 }
-.ci-frases-cruce dd {
-  margin: 2px 0 0;
-  font-size: 1rem;
-  line-height: 1.35;
+/* La frase de la que partió esta mitad. Es el encabezado de la fila y no una
+   de las dos cosas que se comparan. */
+.ci-frases-partida {
+  margin: 0 0 12px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.15rem;
+  line-height: 1.25;
   color: var(--ink);
 }
-/* Lo escrito por cada mitad, marcado para poder compararlo de un vistazo con
-   la frase de la que partió la otra, que es la respuesta. */
-.ci-frases-cruce dd.ci-frases-mia {
+.ci-frases-par {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.ci-frases-lado {
+  padding: 12px 13px;
+  border-radius: 10px;
+  min-width: 0;
+}
+.ci-frases-lado h3 {
+  margin: 0 0 6px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ci-frases-lado p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+/* Lo propio en ámbar y lo de enfrente en tinta: el contraste es lo que hace
+   que se lean como dos versiones de lo mismo y no como dos renglones más. */
+.ci-frases-nuestro {
+  background: rgba(169, 119, 34, 0.09);
+}
+.ci-frases-nuestro h3 {
   color: var(--st-amber);
 }
-.ci-frases-cruce dd.ci-frases-suya {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1.1rem;
+.ci-frases-nuestro p {
+  color: var(--st-amber);
+}
+.ci-frases-deellos {
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.ci-frases-deellos h3 {
+  color: var(--muted);
+}
+.ci-frases-deellos p {
+  color: var(--ink);
+}
+/* La comprobación: ellos partieron de esa frase y llegaron a la que a esta
+   mitad le tocó. Va abajo y en chico porque cierra, no compara. */
+.ci-frases-espejo {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.ci-frases-espejo b {
+  color: var(--ink-soft);
+  font-weight: 500;
 }
 .ci-frases-regla {
   margin-top: 22px;
