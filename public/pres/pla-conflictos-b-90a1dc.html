@@ -492,9 +492,27 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .porque{font-size:25px;line-height:1.35;color:var(--muted);margin-top:14px;
   padding-top:14px;border-top:1px solid var(--line)}
 
+/* El código de la rueda en la placa de la emoción propia. Va chico y al
+   costado: la consigna es poner una palabra, y la rueda es la ayuda para el
+   que se queda en blanco. */
+.rueda-chica{display:flex;align-items:center;gap:28px;margin-top:44px}
+.rueda-chica .caja{background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:16px;line-height:0}
+.rueda-chica .caja img{width:200px;height:200px;display:block}
+.rueda-chica span{font-size:30px;line-height:1.35;color:var(--muted)}
+
+/* Los tres roles del ensayo, en viñetas: entra de un vistazo mejor que en una
+   oración, que es lo que hace falta cuando treinta y tres personas se están
+   levantando para armar los tríos. */
+.roles{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:8px}
+.roles li{font-size:29px;line-height:1.35;color:var(--ink-soft)}
+.roles li::marker{color:var(--amber)}
+
 /* Una línea de criterio al pie de una placa, en tinta suave: dice menos que el
    titular de arriba y más que la cita de la fuente. */
 .criterio{font-size:30px;line-height:1.4;color:var(--ink-soft);margin-top:44px}
+.contenido.izq .tarjetas ~ .criterio{width:100%;max-width:var(--ancho);
+  margin-left:auto;margin-right:auto;margin-top:36px}
 
 /* La cita al pie de una placa. Va chica y en gris: quien está en la sala lee
    el contenido, y la fuente está para que se pueda verificar y para que la
@@ -649,7 +667,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 <div id="escenario">
 
   <!-- 1 -->
-  <section class="placa" data-notas="Última charla del ciclo. Enganchar con la anterior: recién hablamos de dar una noticia difícil, ahora vamos a algo más silencioso, lo que no se dice.">
+  <section class="placa" data-aviso="Activar las 3 preguntas"  data-notas="Última charla del ciclo. Enganchar con la anterior: recién hablamos de dar una noticia difícil, ahora vamos a algo más silencioso, lo que no se dice.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="portada-nombre" style="font-size:128px">Hay tensión en mi equipo</div>
@@ -658,7 +676,31 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 2 -->
-  <section class="placa" data-notas="Consigna de apertura. Que la piensen y se la guarden, sin decirla en voz alta todavía. Esa incomodidad que todos notan y nadie nombra. Se retoma al final de la charla, así que no la pierdas.">
+  <section class="placa" data-notas="Es la misma pregunta del primer día, con las mismas opciones. Decilo: «esta ya la contestaron el viernes, contéstenla otra vez con lo que ven hoy». Lo que el informe mira es quién cambió de respuesta después de cuatro encuentros.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo encuesta-titulo">¿Qué venís notando más seguido en tu equipo?</div>
+      <div class="matriz-marco act-marco act-consigna"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="¿Qué venís notando más seguido en tu equipo?" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-equipo&placa=1&vista=consigna"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="También repetida del primer día. Si sube «formación para conducir», el ciclo les movió el pedido, y eso es lo que se le lleva a Recursos Humanos.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo encuesta-titulo">¿Qué te ayudaría más a conducir mejor a tu equipo?</div>
+      <div class="matriz-marco act-marco act-consigna"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="¿Qué te ayudaría más a conducir mejor a tu equipo?" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-ayuda&placa=1&vista=consigna"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="Cerrá el círculo de la charla 1: cada uno eligió día y hora para una pausa de un minuto. Se contesta sin nombre. Entre el viernes y hoy hubo un solo día hábil, así que si el número da bajo no lo uses para retar: preguntá qué se interpuso.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo encuesta-titulo">El compromiso que agendaste el viernes, ¿lo hiciste?</div>
+      <div class="matriz-marco act-marco act-consigna"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="El compromiso que agendaste el viernes, ¿lo hiciste?" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-pausa&placa=1&vista=consigna"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-aviso="Activar respuestas"  data-notas="Consigna de apertura. Que la piensen y se la guarden, sin decirla en voz alta todavía. Esa incomodidad que todos notan y nadie nombra. Se retoma al final de la charla, así que no la pierdas.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase">Pensá una tensión de tu equipo<br>de la que <b>nadie habla</b>.<br>No la digas todavía.</p>
@@ -701,14 +743,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     </div>
   </section>
 
-  <section class="placa" data-notas="La nube de «Jugo de…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="nube-titulo">Jugo de…</div>
-      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Jugo de" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-1&placa=1"></iframe></div>
-    </div>
-  </section>
-
   <!-- 7 -->
   <section class="placa" data-notas="Frase 2 de 9 del juego. Dejala unos segundos, lo justo para que escriban sin pensarlo.">
     <div class="fondo"></div><div class="velo"></div>
@@ -716,14 +750,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
       <div class="concepto" style="font-size:132px">Prohibido…</div>
     
       <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Prohibido" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-2&placa=1&vista=conteo"></iframe></div>
-    </div>
-  </section>
-
-  <section class="placa" data-notas="La nube de «Prohibido…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="nube-titulo">Prohibido…</div>
-      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Prohibido" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-2&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -737,14 +763,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     </div>
   </section>
 
-  <section class="placa" data-notas="La nube de «Recursos…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="nube-titulo">Recursos…</div>
-      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Recursos" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-3&placa=1"></iframe></div>
-    </div>
-  </section>
-
   <!-- 9 -->
   <section class="placa" data-notas="Frase 4 de 9 del juego. Dejala unos segundos, lo justo para que escriban sin pensarlo.">
     <div class="fondo"></div><div class="velo"></div>
@@ -752,14 +770,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
       <div class="concepto" style="font-size:132px">Planta…</div>
     
       <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Planta" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-4&placa=1&vista=conteo"></iframe></div>
-    </div>
-  </section>
-
-  <section class="placa" data-notas="La nube de «Planta…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="nube-titulo">Planta…</div>
-      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Planta" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-4&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -773,14 +783,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     </div>
   </section>
 
-  <section class="placa" data-notas="La nube de «Hoja de…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="nube-titulo">Hoja de…</div>
-      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Hoja de" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-5&placa=1"></iframe></div>
-    </div>
-  </section>
-
   <!-- 11 -->
   <section class="placa" data-notas="Frase 6 de 9 del juego. Dejala unos segundos, lo justo para que escriban sin pensarlo.">
     <div class="fondo"></div><div class="velo"></div>
@@ -788,14 +790,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
       <div class="concepto" style="font-size:132px">En un bar siempre pido…</div>
     
       <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de En un bar siempre pido" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-6&placa=1&vista=conteo"></iframe></div>
-    </div>
-  </section>
-
-  <section class="placa" data-notas="La nube de «En un bar siempre pido…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="nube-titulo">En un bar siempre pido…</div>
-      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de En un bar siempre pido" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-6&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -809,14 +803,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     </div>
   </section>
 
-  <section class="placa" data-notas="La nube de «Grano de…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="nube-titulo">Grano de…</div>
-      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Grano de" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-7&placa=1"></iframe></div>
-    </div>
-  </section>
-
   <!-- 13 -->
   <section class="placa" data-notas="Frase 8 de 9 del juego. Dejala unos segundos, lo justo para que escriban sin pensarlo.">
     <div class="fondo"></div><div class="velo"></div>
@@ -827,14 +813,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     </div>
   </section>
 
-  <section class="placa" data-notas="La nube de «Venta de…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="nube-titulo">Venta de…</div>
-      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Venta de" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-8&placa=1"></iframe></div>
-    </div>
-  </section>
-
   <!-- 14 -->
   <section class="placa" data-notas="Frase 9 de 9 del juego. Dejala unos segundos, lo justo para que escriban sin pensarlo. Es la última: cuando terminen, todos muestran sus respuestas juntos y se compara lo que puso cada uno.">
     <div class="fondo"></div><div class="velo"></div>
@@ -842,14 +820,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
       <div class="concepto" style="font-size:132px">Sentir…</div>
     
       <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respondieron, de Sentir" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-9&placa=1&vista=conteo"></iframe></div>
-    </div>
-  </section>
-
-  <section class="placa" data-notas="La nube de «Sentir…». Preguntá quién puso cada una: el dato abre la conversación, no la cierra. Si nadie habla, la actividad falló.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="nube-titulo">Sentir…</div>
-      <div class="matriz-marco act-marco act-nube"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Respuestas de Sentir" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-match-9&placa=1"></iframe></div>
     </div>
   </section>
 
@@ -962,7 +932,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 25 -->
-  <section class="placa" data-notas="La frase más citable de la charla. Miren cuánto de lo que los enoja viene de la historia que se armaron sobre el hecho, más que del hecho en sí.">
+  <section class="placa" data-aviso="Activar respuestas"  data-notas="La frase más citable de la charla. Miren cuánto de lo que los enoja viene de la historia que se armaron sobre el hecho, más que del hecho en sí.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase">“Llegó tarde” es <b>un hecho</b>.<br>“No le importa nada” es <b>una interpretación</b>.</p>
@@ -979,7 +949,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 27 -->
-  <section class="placa" data-notas="Las tres etapas, y se puede leer en cuál está cada conflicto. Etapa 1: hay tensión pero las dos partes quieren resolver, se puede hablar y se interviene barato. Etapa 2: la discusión pasó a ser yo tengo razón y vos no, se buscan aliados y se enfría el trato, acá cuesta más. Etapa 3: ya no importa ganar, importa que el otro pierda, aunque yo también pierda, y solo se resuelve si entra un tercero. Fuente por si preguntan: modelo de escalada de Friedrich Glasl.">
+  <section class="placa" data-aviso="Activar las 3 del conflicto"  data-notas="Las tres etapas, y se puede leer en cuál está cada conflicto. Etapa 1: hay tensión pero las dos partes quieren resolver, se puede hablar y se interviene barato. Etapa 2: la discusión pasó a ser yo tengo razón y vos no, se buscan aliados y se enfría el trato, acá cuesta más. Etapa 3: ya no importa ganar, importa que el otro pierda, aunque yo también pierda, y solo se resuelve si entra un tercero. Fuente por si preguntan: modelo de escalada de Friedrich Glasl.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="escalones">
@@ -987,6 +957,22 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
         <div class="e2"><b>Etapa 2 · ganar-perder</b><span>“Yo tengo razón y vos no.” Se buscan aliados y se enfría el trato. Acá cuesta, hace falta cuidado.</span></div>
         <div class="e3"><b>Etapa 3 · perder-perder</b><span>Ya no importa ganar, importa que el otro pierda. Acá solo se resuelve si entra un tercero.</span></div>
       </div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="Cruzada con la etapa da el dato que Recursos Humanos no tiene por ninguna otra vía: cuántos conflictos vienen de hace más de seis meses y en qué etapa están hoy.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo encuesta-titulo">¿Hace cuánto está abierta esa tensión?</div>
+      <div class="matriz-marco act-marco act-consigna"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="¿Hace cuánto está abierta esa tensión?" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-antiguedad&placa=1&vista=consigna"></iframe></div>
+    </div>
+  </section>
+
+  <section class="placa" data-notas="Ninguna opción culpa al que responde: todas son razones que se pueden decir en voz alta. Es la que dice si lo que falta es método, mandato o respaldo, y se cruza con lo que pidieron el primer día.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido">
+      <div class="nube-titulo encuesta-titulo">¿Qué te frenó para hablarlo?</div>
+      <div class="matriz-marco act-marco act-consigna"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="¿Qué te frenó para hablarlo?" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-freno&placa=1&vista=consigna"></iframe></div>
     </div>
   </section>
 
@@ -1013,7 +999,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 30 -->
-  <section class="placa" data-notas="Se cierra el círculo con la consigna de apertura. No para resolver todo, para empezar a hablarlo antes de que escale. Que cada uno escriba con quién es esa conversación, solo el nombre. Queda proyectada durante el bloque de 1 a 1, donde se trabajan los conflictos reales que traigan.">
+  <section class="placa" data-aviso="Activar respuestas"  data-notas="Se cierra el círculo con la consigna de apertura. No para resolver todo, para empezar a hablarlo antes de que escale. Que cada uno escriba con quién es esa conversación, solo el nombre. Queda proyectada durante el bloque de 1 a 1, donde se trabajan los conflictos reales que traigan.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase" style="margin-bottom:40px">Esa tensión que pensaste al principio:<br><b>esta semana, nombrala</b>.<br>Una conversación, temprana, en calma.</p>
@@ -1030,7 +1016,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
     <!-- 32 -->
-  <section class="placa" data-notas="Última consigna antes del cierre. Pedir que escaneen el código ahí mismo, con el grupo todavía sentado: la encuesta respondida en la sala llega, la que se manda por mail después no. PENDIENTE DE PRODUCCIÓN: el cuestionario y su código todavía no existen, se diseñan aparte.">
+  <section class="placa" data-aviso="Activar la encuesta"  data-notas="Última consigna antes del cierre. Pedir que escaneen el código ahí mismo, con el grupo todavía sentado: la encuesta respondida en la sala llega, la que se manda por mail después no. PENDIENTE DE PRODUCCIÓN: el cuestionario y su código todavía no existen, se diseñan aparte.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="cierre-qr">
@@ -1038,9 +1024,9 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
           <p class="frase">Contanos cómo te fue<br>en <b>estos cinco encuentros</b>.</p>
         </div>
         <div class="baja">
-          <div class="caja pendiente-qr">Código pendiente</div>
+          <div class="matriz-marco act-marco act-conteo"><div class="matriz-aviso"><p class="cargando">…</p><p class="offline">Sin conexión. Se cuenta a mano.</p></div><iframe title="Cuántos contestaron la encuesta" data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?clave=c5-recomienda&placa=1&vista=conteo"></iframe></div>
           <b>Dos minutos, ahora</b>
-          <span>Nos sirve para la próxima</span>
+          <span>Aparece en tu teléfono</span>
         </div>
       </div>
     </div>

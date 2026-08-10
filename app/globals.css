@@ -3803,6 +3803,52 @@ body {
   text-align: center;
 }
 
+/* El cartel del Match: la palabra que cada uno levanta para que la vea la
+   sala. Negro sobre toda la pantalla porque se mira de lejos y de costado, y
+   el papel del resto del sitio a esa distancia se lava con la luz de la sala. */
+.ci-cartel {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: #000;
+  /* El teléfono se levanta y se sostiene: sin esto, un roce en la pantalla
+     selecciona la palabra y aparece el menú de copiar encima del cartel. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ci-cartel-palabra {
+  margin: 0;
+  padding: 0;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-align: center;
+  /* Nunca en dos renglones: si no entra, lo que se achica es el cuerpo. Es
+     además lo que permite medirla, porque con el texto partido el ancho que
+     devuelve el navegador es el de la caja y no el de la palabra. */
+  white-space: nowrap;
+}
+/* La salida queda al pie y en gris: está para el que se equivocó de palabra,
+   y no tiene que competir con lo que la sala está mirando. */
+.ci-cartel-volver {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.78rem;
+  color: #666;
+}
+
 /* Lo que la persona escribió, para leerlo en voz alta cuando se lo pidan. */
 .ci-mio {
   margin: 18px 0 0;
