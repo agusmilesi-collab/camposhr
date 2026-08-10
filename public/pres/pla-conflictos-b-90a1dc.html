@@ -634,13 +634,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .tarjetas.diez .herramienta{margin-top:auto;padding-top:10px;
   border-top:1px solid var(--line);color:var(--amber);font-weight:500}
 .contenido.diez .tarjetas{max-width:var(--ancho);margin-left:40px}
-/* La consigna del ejercicio, en su propia caja. Es lo único que la sala tiene
-   que leer mientras está de parada armando los grupos. */
-.consigna-caja{max-width:var(--ancho);margin:0 0 40px 40px;padding:34px 40px;
-  background:var(--card);border:1px solid var(--line);border-radius:16px}
-.consigna-caja .kicker{margin:0 0 14px}
-.consigna-caja p{margin:0;font-size:38px;line-height:1.4;color:var(--ink)}
-.consigna-caja b{font-weight:600}
 .pendiente{border:2px dashed var(--amber)}
 .pendiente b{color:var(--amber)}
 .qr-caja{background:var(--card);border:1px solid var(--line)}
@@ -962,14 +955,16 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <!-- 23 -->
   <section class="placa" data-aviso="Activar el ejercicio"  data-notas="ABRÍ EL EJERCICIO ACÁ, desde el panel. Va en dos pasos: primero cada teléfono se pinta del color de su equipo y nada más, para que se junten de parado; cuando veas los grupos armados, tocá «Pasar a los Teams» y los treinta y dos pasan juntos a la consigna. Ojo que «Cerrar» no avanza, apaga los teléfonos. Los dos subgrupos trabajan los mismos cuatro casos desde los dos extremos, así que lo que uno escribe es de donde partió el otro: la pantalla se lo dice al llegar a la lectura, no hace falta que lo adelantes ni que lo expliques. El panel te dice cuántos equipos ya pueden leerse.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
+    <div class="contenido izq tres">
       <div class="titulo-placa">Juntate con los de tu color</div>
       <p class="criterio" style="margin:0 0 34px 40px">Ya reunidos, <b>sepárense en dos subgrupos</b>. El teléfono te dice cuál te tocó y con quiénes.</p>
-      <div class="consigna-caja">
-        <div class="kicker">Consigna</div>
-        <p>Traducir <b>2 oraciones de objetivo a subjetivo</b>.<br>Y traducir <b>2 oraciones de subjetivo a objetivo</b>.<br>Luego se corrigen dentro de su mismo grupo.</p>
+      <div class="kicker" style="margin-left:40px">Consigna</div>
+      <div class="tarjetas tres">
+        <div><span class="num">01</span><p>Traducir <b>2 oraciones de objetivo a subjetivo</b>.</p></div>
+        <div><span class="num">02</span><p>Traducir <b>2 oraciones de subjetivo a objetivo</b>.</p></div>
+        <div><span class="num">03</span><p>Se corrigen <b>dentro de su mismo grupo</b>.</p></div>
       </div>
-      <p class="criterio">Seis minutos. En cada subgrupo <b>escribe una sola persona</b>:<br>pónganse de acuerdo entre los tres antes de que escriba.</p>
+      <p class="criterio">En cada subgrupo <b>escribe una sola persona</b>:<br>pónganse de acuerdo entre los tres antes de que escriba.</p>
     </div>
   </section>
 
