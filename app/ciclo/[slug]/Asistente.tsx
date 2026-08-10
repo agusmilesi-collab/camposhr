@@ -1195,41 +1195,119 @@ function Ejercicio({
         <>
           <h1 className="ci-titulo">Ahora léanse</h1>
           <p className="cq-ayuda">
-            Las dos mitades trabajaron <b>las mismas cuatro frases</b>, cada una
-            desde una punta. Así que lo que ustedes tenían que escribir estaba
-            todo este tiempo en la hoja de{' '}
-            {lista(frases.enfrente.map((p) => p.nombre))}.
+            Las dos mitades trabajaron <b>las mismas cuatro filas</b>, cada una
+            desde una punta: lo que a ustedes les tocó es a donde tenían que
+            llegar {lista(frases.enfrente.map((p) => p.nombre))}, y al revés.
           </p>
           <p className="ci-frases-quehacer">
-            De a una: lean en voz alta lo que pusieron ustedes y al lado lo que
-            ellos tenían. <b>¿Coincide?</b>
+            Van de a una y por turnos. <b>Arranca siempre el Team Objetivo</b>,
+            que es el que tiene una respuesta para comparar.
           </p>
+
           <div className="ci-frases-cruce">
-            {frases.parten.map((partida, i) => (
-              <article key={i}>
-                <p className="ci-frases-num">Frase {i + 1}</p>
-                <p className="ci-frases-partida">{partida}</p>
+            {frases.parten.map((partida, i) => {
+              /*
+               * Las dos direcciones no se corrigen igual, y tratarlas como
+               * simétricas es lo que hacía que la pantalla no se entendiera.
+               *
+               * De interpretación a hecho hay una sola respuesta razonable, y
+               * la tiene la mitad de enfrente en la mano: se compara y se ve.
+               *
+               * De hecho a interpretación hay infinitas. "El que maneja el
+               * aire es un inútil" es tan válida como la de la hoja, así que
+               * compararla contra una referencia le diría "te equivocaste" a
+               * alguien que hizo bien el ejercicio. Ahí la pregunta es la
+               * contracara: lo que agregaron, ¿se puede verificar? Si se
+               * puede, no agregaron interpretación sino otro hecho.
+               */
+              const soyObjetivo = frases.lado === 'objetivo';
+              const nombresEnfrente = lista(
+                frases.enfrente.map((p) => p.nombre)
+              );
 
-                <div className="ci-frases-par">
-                  <div className="ci-frases-lado ci-frases-nuestro">
-                    <h3>Ustedes pusieron</h3>
-                    <p className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</p>
-                  </div>
-                  <div className="ci-frases-lado ci-frases-deellos">
-                    <h3>Enfrente ya lo tenía</h3>
-                    <p className="ci-frases-suya">{frases.partieron[i]}</p>
-                  </div>
+              /** El turno que se compara contra el dato: el del Team Objetivo. */
+              const turnoObjetivo = soyObjetivo ? (
+                <div className="ci-frases-turno ci-frases-nuestro-turno">
+                  <h3>Turno de ustedes</h3>
+                  <p className="ci-frases-linea">
+                    <span>Les tocó</span> {partida}
+                  </p>
+                  <p className="ci-frases-linea">
+                    <span>Leé lo que pusieron</span>
+                    <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
+                  </p>
+                  <p className="ci-frases-pregunta">
+                    Preguntales a {nombresEnfrente}: ¿qué decía la de ustedes?
+                  </p>
+                  <p className="ci-frases-dato">{frases.partieron[i]}</p>
+                  <p className="ci-frases-cierre">¿Coincide con lo que pusieron?</p>
                 </div>
+              ) : (
+                <div className="ci-frases-turno">
+                  <h3>Turno de {nombresEnfrente}</h3>
+                  <p className="ci-frases-linea">
+                    <span>A ellos les tocó</span> {frases.partieron[i]}
+                  </p>
+                  <p className="ci-frases-linea">
+                    <span>Y pusieron</span>
+                    <b>{frases.suyas?.[i] || '(en blanco)'}</b>
+                  </p>
+                  <p className="ci-frases-pregunta">
+                    Ustedes tienen el dato. Léanselo:
+                  </p>
+                  <p className="ci-frases-dato">{partida}</p>
+                  <p className="ci-frases-cierre">¿Coincide con lo que pusieron?</p>
+                </div>
+              );
 
-                {/* Lo que ellos escribieron es el espejo: partieron del hecho
-                    y llegaron a la frase que a esta mitad le tocó. Va abajo y
-                    en chico porque es la comprobación, no la comparación. */}
-                <p className="ci-frases-espejo">
-                  Ellos, partiendo de eso, escribieron:{' '}
-                  <b>{frases.suyas?.[i] || '(en blanco)'}</b>
-                </p>
-              </article>
-            ))}
+              /** El turno que no se compara: el del Team Subjetivo. */
+              const turnoSubjetivo = soyObjetivo ? (
+                <div className="ci-frases-turno">
+                  <h3>Turno de {nombresEnfrente}</h3>
+                  <p className="ci-frases-linea">
+                    <span>Partieron del dato y pusieron</span>
+                    <b>{frases.suyas?.[i] || '(en blanco)'}</b>
+                  </p>
+                  <p className="ci-frases-pregunta">
+                    Acá no hay una sola respuesta buena: hay muchas
+                    interpretaciones posibles del mismo hecho. La pregunta es
+                    otra.
+                  </p>
+                  <p className="ci-frases-cierre">
+                    Lo que agregaron, <b>¿lo puede verificar alguien que no
+                    estaba?</b> Si no se puede, es interpretación y está bien.
+                  </p>
+                </div>
+              ) : (
+                <div className="ci-frases-turno ci-frases-nuestro-turno">
+                  <h3>Turno de ustedes</h3>
+                  <p className="ci-frases-linea">
+                    <span>Partieron de</span> {partida}
+                  </p>
+                  <p className="ci-frases-linea">
+                    <span>Y pusieron</span>
+                    <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
+                  </p>
+                  <p className="ci-frases-pregunta">
+                    Acá no hay una sola respuesta buena: hay muchas
+                    interpretaciones posibles del mismo hecho. La pregunta es
+                    otra.
+                  </p>
+                  <p className="ci-frases-cierre">
+                    Lo que agregaron, <b>¿lo puede verificar alguien que no
+                    estaba?</b> Si no se puede, es interpretación y está bien.
+                  </p>
+                </div>
+              );
+
+              return (
+                <article key={i}>
+                  <p className="ci-frases-num">Fila {i + 1} de 4</p>
+                  {turnoObjetivo}
+                  {turnoSubjetivo}
+                </article>
+              );
+            })}
           </div>
           <p className="ci-frases-regla">
             La pregunta que resuelve cualquier duda: <b>¿esto lo puede
