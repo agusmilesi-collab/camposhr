@@ -1266,96 +1266,97 @@ function Ejercicio({
               /* Cada pantalla muestra sólo lo suyo: si la respuesta estuviera
                  acá, no habría nada que preguntarle a nadie. */
               const nuestro = vamosAlHecho ? (
-                <div className="ci-frases-turno ci-frases-nuestro-turno">
-                  <h3>Leé en voz alta</h3>
-                  <p className="ci-frases-linea">
-                    <span>Nos tocó la frase</span> {f.parte}
+                <>
+                  <p className="ci-frases-num">
+                    <b>Empezamos nosotros</b> · Frase {i + 1} de 4
                   </p>
-                  <p className="ci-frases-linea">
-                    <span>Respondimos</span>
-                    <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
-                  </p>
-                  <p className="ci-frases-cierre">
-                    Ahora {frases.enfrente.length === 1 ? 'preguntale' : 'preguntales'}{' '}
-                    a {nombresEnfrente}:{' '}
-                    <b>¿qué decía la frase de ustedes?</b>
-                  </p>
-                </div>
+                  <div className="ci-frases-turno ci-frases-nuestro-turno">
+                    <h3>Leé en voz alta</h3>
+                    <p className="ci-frases-linea">
+                      <span>Nos tocó la frase</span> {f.parte}
+                    </p>
+                    <p className="ci-frases-linea">
+                      <span>Respondimos</span>
+                      <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
+                    </p>
+                    <p className="ci-frases-cierre">
+                      Ahora {frases.enfrente.length === 1 ? 'preguntale' : 'preguntales'}{' '}
+                      a {nombresEnfrente}:{' '}
+                      <b>¿qué decía la frase de ustedes?</b>
+                    </p>
+                  </div>
+                </>
               ) : (
-                <div className="ci-frases-turno ci-frases-nuestro-turno">
-                  <h3>Leé en voz alta</h3>
-                  <p className="ci-frases-linea">
-                    <span>Nos tocó la frase</span> {f.parte}
+                <>
+                  <p className="ci-frases-num">
+                    <b>Seguimos nosotros</b> · Frase {i + 1} de 4
                   </p>
-                  <p className="ci-frases-linea">
-                    <span>Respondimos</span>
-                    <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
-                  </p>
-                  <p className="ci-frases-pregunta">
-                    Nos tocó al revés: agregarle interpretación a un hecho. No
-                    hay una sola respuesta buena.
-                  </p>
-                  <p className="ci-frases-cierre">
-                    Lo que agregamos, <b>¿alguien que no estaba lo puede
-                    verificar?</b>
-                  </p>
-                  <ul className="ci-frases-veredicto">
-                    <li>
-                      <b>No</b> · es interpretación, está bien
-                    </li>
-                  </ul>
-                </div>
+                  <div className="ci-frases-turno ci-frases-nuestro-turno">
+                    <h3>Leé en voz alta</h3>
+                    <p className="ci-frases-linea">
+                      <span>Nos tocó la frase</span> {f.parte}
+                    </p>
+                    <p className="ci-frases-linea">
+                      <span>Respondimos</span>
+                      <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
+                    </p>
+                    <p className="ci-frases-pregunta">
+                      Nos tocó al revés: agregarle interpretación a un hecho. No
+                      hay una sola respuesta buena.
+                    </p>
+                    <p className="ci-frases-cierre">
+                      Lo que agregamos, <b>¿alguien que no estaba lo puede
+                      verificar?</b>
+                    </p>
+                    <ul className="ci-frases-veredicto">
+                      <li>
+                        <b>No</b> · es interpretación, está bien
+                      </li>
+                    </ul>
+                  </div>
+                </>
               );
 
               const deEnfrente = vamosAlHecho ? (
-                <div className="ci-frases-turno">
-                  <h3>Turno de {nombresEnfrente}</h3>
-                  <p className="ci-frases-pregunta">
-                    A ellos les tocó al revés: agregarle interpretación a un
-                    hecho. No hay una sola respuesta buena.
+                <>
+                  <p className="ci-frases-num">
+                    <b>Siguen ellos</b> · Frase {i + 1} de 4
                   </p>
-                  <p className="ci-frases-cierre">
-                    Preguntales: lo que agregaron, <b>¿alguien que no estaba lo
-                    puede verificar?</b>
-                  </p>
-                  <ul className="ci-frases-veredicto">
-                    <li>
-                      <b>No</b> · es interpretación, está bien
-                    </li>
-                  </ul>
-                </div>
+                  <div className="ci-frases-turno">
+                    <h3>Turno de {nombresEnfrente}</h3>
+                    <p className="ci-frases-pregunta">
+                      A ellos les tocó al revés: agregarle interpretación a un
+                      hecho. No hay una sola respuesta buena.
+                    </p>
+                    <p className="ci-frases-cierre">
+                      Preguntales: lo que agregaron, <b>¿alguien que no estaba
+                      lo puede verificar?</b>
+                    </p>
+                    <ul className="ci-frases-veredicto">
+                      <li>
+                        <b>No</b> · es interpretación, está bien
+                      </li>
+                    </ul>
+                  </div>
+                </>
               ) : (
-                <div className="ci-frases-turno">
-                  <h3>Turno de {nombresEnfrente} · empiezan ellos</h3>
-                  <p className="ci-frases-pregunta">
-                    Escuchá lo que dicen ellos. <b>Luego compará lo que
-                    dijeron con esta frase:</b>
+                <>
+                  <p className="ci-frases-num">
+                    <b>Empiezan ellos</b> · Frase {i + 1} de 4
                   </p>
-                  <p className="ci-frases-dato">{f.parte}</p>
-                </div>
+                  <div className="ci-frases-turno">
+                    <h3>Turno de {nombresEnfrente}</h3>
+                    <p className="ci-frases-pregunta">
+                      Escuchá lo que dicen ellos. <b>Luego compará lo que
+                      dijeron con esta frase:</b>
+                    </p>
+                    <p className="ci-frases-dato">{f.parte}</p>
+                  </div>
+                </>
               );
-
-              /*
-               * Quién empieza, en el corte y no adentro de la caja. La mesa
-               * mira el separador para saber que cambió de frase, y ahí mismo
-               * necesita saber a quién le toca: si está más abajo, los dos
-               * subgrupos se miran esperando al otro.
-               *
-               * "Ahora" en la tercera porque es donde se invierte la
-               * dirección, y con él la mitad que empieza.
-               */
-              const quien = [
-                vamosAlHecho ? 'Empezamos nosotros' : 'Empiezan ellos',
-                vamosAlHecho ? 'Seguimos nosotros' : 'Siguen ellos',
-                vamosAlHecho ? 'Ahora seguimos nosotros' : 'Ahora siguen ellos',
-                vamosAlHecho ? 'Seguimos nosotros' : 'Siguen ellos',
-              ][i];
 
               return (
                 <article key={i}>
-                  <p className="ci-frases-num">
-                    <b>{quien}</b> · Frase {i + 1} de 4
-                  </p>
                   {vamosAlHecho ? (
                     <>
                       {nuestro}
