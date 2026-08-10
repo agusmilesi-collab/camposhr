@@ -1295,14 +1295,21 @@ function Ejercicio({
                     <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-pregunta">
-                    Acá no hay una sola respuesta buena: hay muchas
-                    interpretaciones posibles del mismo hecho. La pregunta es
-                    otra.
+                    Nos tocó al revés: agregarle interpretación a un hecho. No
+                    hay una sola respuesta buena.
                   </p>
                   <p className="ci-frases-cierre">
-                    Lo que agregamos, <b>¿lo puede verificar alguien que no
-                    estaba?</b> Si no se puede, es interpretación y está bien.
+                    Lo que agregamos, <b>¿alguien que no estaba lo puede
+                    verificar?</b>
                   </p>
+                  <ul className="ci-frases-veredicto">
+                    <li>
+                      <b>No</b> · es interpretación, está bien
+                    </li>
+                    <li className="mal">
+                      <b>Sí</b> · agregamos otro hecho, no una interpretación
+                    </li>
+                  </ul>
                 </div>
               );
 
@@ -1310,14 +1317,21 @@ function Ejercicio({
                 <div className="ci-frases-turno">
                   <h3>Turno de {nombresEnfrente}</h3>
                   <p className="ci-frases-pregunta">
-                    Escuchá qué respondieron. Ellos fueron para el otro lado, y
-                    ahí no hay una sola respuesta buena: no lo compares con
-                    nada.
+                    A ellos les tocó al revés: agregarle interpretación a un
+                    hecho. No hay una sola respuesta buena.
                   </p>
                   <p className="ci-frases-cierre">
-                    Lo que agregaron, <b>¿lo puede verificar alguien que no
-                    estaba?</b> Si no se puede, es interpretación y está bien.
+                    Preguntales: lo que agregaron, <b>¿alguien que no estaba lo
+                    puede verificar?</b>
                   </p>
+                  <ul className="ci-frases-veredicto">
+                    <li>
+                      <b>No</b> · es interpretación, está bien
+                    </li>
+                    <li className="mal">
+                      <b>Sí</b> · agregaron otro hecho, no una interpretación
+                    </li>
+                  </ul>
                 </div>
               ) : (
                 <div className="ci-frases-turno">
