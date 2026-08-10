@@ -1267,12 +1267,12 @@ function Ejercicio({
                  acá, no habría nada que preguntarle a nadie. */
               const nuestro = vamosAlHecho ? (
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
-                  <h3>Nuestro turno · empezamos</h3>
+                  <h3>Leé en voz alta</h3>
                   <p className="ci-frases-linea">
                     <span>Nos tocó la frase</span> {f.parte}
                   </p>
                   <p className="ci-frases-linea">
-                    <span>Respondimos (leelo en voz alta)</span>
+                    <span>Respondimos</span>
                     <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-cierre">
@@ -1283,12 +1283,12 @@ function Ejercicio({
                 </div>
               ) : (
                 <div className="ci-frases-turno ci-frases-nuestro-turno">
-                  <h3>Nuestro turno · después</h3>
+                  <h3>Leé en voz alta</h3>
                   <p className="ci-frases-linea">
                     <span>Nos tocó la frase</span> {f.parte}
                   </p>
                   <p className="ci-frases-linea">
-                    <span>Respondimos (leelo en voz alta)</span>
+                    <span>Respondimos</span>
                     <b className="ci-frases-mia">{mias?.[i] || '(en blanco)'}</b>
                   </p>
                   <p className="ci-frases-pregunta">
