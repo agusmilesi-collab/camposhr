@@ -1237,12 +1237,12 @@ function Ejercicio({
             de diseño y no algo que la mesa necesite para hacer el ejercicio.
           */}
           <p className="cq-ayuda">
-            Ellos ya tenían las respuestas de lo que ustedes tenían que
+            Ellos ya tenían las respuestas de lo que ustedes tuvieron que
             completar. Y ustedes tienen las respuestas de lo que tuvieron que
             completar ellos.
           </p>
           <p className="ci-frases-quehacer">
-            Así que ahora van a leer lo que escribieron y{' '}
+            Así que ahora van a leer lo que escribieron ustedes y{' '}
             <b>el {frases.nombreDeEnfrente} los va a corregir</b>. Y ustedes los
             van a corregir a ellos.
             <br />
