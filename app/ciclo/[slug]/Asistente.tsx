@@ -1306,9 +1306,6 @@ function Ejercicio({
                     <li>
                       <b>No</b> · es interpretación, está bien
                     </li>
-                    <li className="mal">
-                      <b>Sí</b> · agregamos otro hecho, no una interpretación
-                    </li>
                   </ul>
                 </div>
               );
@@ -1327,9 +1324,6 @@ function Ejercicio({
                   <ul className="ci-frases-veredicto">
                     <li>
                       <b>No</b> · es interpretación, está bien
-                    </li>
-                    <li className="mal">
-                      <b>Sí</b> · agregaron otro hecho, no una interpretación
                     </li>
                   </ul>
                 </div>
