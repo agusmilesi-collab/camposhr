@@ -621,6 +621,12 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
    hereda el display en bloque y el cuerpo de los nombres de etapa. */
 .escalones .salto b{display:inline;font-family:'Inter',system-ui,sans-serif;
   font-size:inherit;font-weight:600;letter-spacing:0;color:var(--ink)}
+/* Cinco tarjetas, una por encuentro del ciclo. Con el mismo cuerpo que las de
+   tres no entran a lo ancho, así que bajan y el título de cada una manda. */
+.tarjetas.cinco{gap:22px}
+.tarjetas.cinco>div{padding:34px 26px}
+.tarjetas.cinco h3{font-size:40px;margin-bottom:16px}
+.tarjetas.cinco p{font-size:26px;line-height:1.35}
 .pendiente{border:2px dashed var(--amber)}
 .pendiente b{color:var(--amber)}
 .qr-caja{background:var(--card);border:1px solid var(--line)}
@@ -1023,11 +1029,12 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 30 -->
-  <section class="placa" data-notas="El otro pedido concreto del cliente: la pregunta que dicen que les hacen siempre. Leé la placa y rematá: «en todo lo demás es de ustedes, y cuanto antes lo agarren más barato sale». Si preguntan qué pasa cuando el conflicto es con el propio jefe, es el caso dos y se pide ayuda; lo que no se hace es armar equipo con el equipo contra el jefe. Si preguntan cómo se pasa sin que parezca una denuncia: se avisa a las dos partes que se va a pedir ayuda y se dice por qué, porque lo que rompe la confianza es enterarse después.">
+  <section class="placa" data-notas="El otro pedido concreto del cliente: la pregunta que dicen que les hacen siempre. Leé la placa y rematá: «en todo lo demás es de ustedes, y cuanto antes lo agarren más barato sale». La distinción de arriba importa: el conflicto propio no se escala, se conversa, y para eso son los cuatro pasos de la placa anterior. El caso dos es cuando te piden arbitrar entre dos y vos también estás metido. Si preguntan qué pasa cuando el conflicto es con el propio jefe, es el caso dos y se pide ayuda; lo que no se hace es armar equipo con el equipo contra el jefe. Si preguntan cómo se pasa sin que parezca una denuncia: se avisa a las dos partes que se va a pedir ayuda y se dice por qué, porque lo que rompe la confianza es enterarse después.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq tres">
       <div class="titulo-placa">¿Esto lo resuelvo yo<br>o lo llevo a Recursos Humanos?</div>
-      <p class="criterio" style="margin:0 0 44px 40px">El conflicto entre dos personas de tu equipo <b>es tuyo</b>: es parte de conducir.<br>Recursos Humanos ayuda, y la responsabilidad sigue siendo tuya.</p>
+      <p class="criterio" style="margin:0 0 30px 40px">Si el conflicto es <b>tuyo</b>, la conversación es tuya: son los cuatro pasos de recién.</p>
+      <p class="criterio" style="margin:0 0 40px 40px">Si es <b>entre dos de tu equipo</b>, entrás como tercero, y ahí también es tuyo:<br>es parte de conducir. Recursos Humanos ayuda, y la responsabilidad sigue siendo tuya.</p>
       <div class="kicker" style="margin-left:40px">Salvo en tres casos, que se pasan sin dudar</div>
       <div class="tarjetas tres">
         <div><h3>Algo que no se deja pasar</h3><p>Maltrato, discriminación, algo que pone en riesgo la seguridad. Ahí no se conversa: se informa.</p></div>
@@ -1048,8 +1055,15 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <!-- 31 -->
   <section class="placa" data-notas="Última placa de los dos días. Repasar el recorrido completo y cerrar agradeciendo.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="concepto" style="font-size:96px">Registrar · Respirar<br>Conocerse · Comunicar<br>Resolver</div>
+    <div class="contenido izq cinco">
+      <div class="titulo-placa">El recorrido de los dos días</div>
+      <div class="tarjetas cinco">
+        <div><h3>Registrar</h3><p>Nombrar lo que sentís antes de responder. Para eso es la rueda de emociones.</p></div>
+        <div><h3>Respirar</h3><p>La Respiración de 1 minuto, para llegar despejado a lo que sigue.</p></div>
+        <div><h3>Conocerse</h3><p>Los cuatro modos de pensar, y a quién consultarle según el suyo.</p></div>
+        <div><h3>Comunicar</h3><p>Encuadrá, decilo claro, en silencio sostené, cerrá con una fecha.</p></div>
+        <div><h3>Resolver</h3><p>Separar el hecho de la interpretación, e intervenir en la etapa 1.</p></div>
+      </div>
     </div>
   </section>
 
