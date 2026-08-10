@@ -4848,6 +4848,38 @@ body {
 .ps-despues b {
   color: var(--ink);
 }
+/* Guardarlo en el teléfono. Va después de lo que hay que hacer antes y
+   después, porque hasta ahí llegó lo que se lee: recién cuando terminó de
+   leerlo tiene sentido ofrecerle llevárselo. */
+.ps-guardar {
+  margin: 34px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+.ps-btn {
+  width: 100%;
+  padding: 15px 20px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+.ps-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ps-guardar-nota {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+}
 .ps-fuente {
   margin: 28px 0 0;
   font-size: 0.8rem;
