@@ -1361,6 +1361,9 @@ function Ejercicio({
                       respuesta con esta frase:</b>
                     </p>
                     <p className="ci-frases-dato">{f.parte}</p>
+                    <p className="ci-frases-cierre">
+                      Evaluá: <b>¿convirtieron la oración en objetiva?</b>
+                    </p>
                   </div>
                 </>
               );
