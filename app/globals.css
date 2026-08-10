@@ -3968,15 +3968,32 @@ body {
   margin-top: 20px;
 }
 .ci-frases-cruce article {
-  padding: 20px 0 4px;
-  border-top: 1px solid var(--line);
+  padding: 6px 0 4px;
 }
+.ci-frases-cruce article + article {
+  padding-top: 30px;
+}
+/* El corte entre una fila y la siguiente. Son cuatro frases distintas y los
+   turnos de todas se parecen, así que sin una marca fuerte la mesa sigue
+   discutiendo la anterior. La línea a los lados hace de capítulo. */
 .ci-frases-num {
-  margin: 0 0 12px;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--st-amber);
+}
+.ci-frases-num::before,
+.ci-frases-num::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--st-amber);
+  opacity: 0.35;
 }
 /* Cada turno en su caja. El propio va marcado, para saber de un vistazo
    cuándo habla uno y cuándo escucha. */
