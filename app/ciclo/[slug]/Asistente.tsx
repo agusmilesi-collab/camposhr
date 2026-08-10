@@ -1195,9 +1195,9 @@ function Ejercicio({
         <>
           <h1 className="ci-titulo">Ahora léanse</h1>
           <p className="cq-ayuda">
-            Las dos mitades trabajaron <b>las mismas cuatro filas</b>, cada una
-            desde una punta: lo que nos tocó a nosotros es a donde tenían que
-            llegar {lista(frases.enfrente.map((p) => p.nombre))}, y al revés.
+            Las dos mitades trabajaron <b>los mismos cuatro casos</b>, cada una
+            desde una punta: la frase que nos tocó a nosotros es a donde tenían
+            que llegar {lista(frases.enfrente.map((p) => p.nombre))}, y al revés.
           </p>
           <p className="ci-frases-quehacer">
             Van de a una y por turnos. <b>Arranca siempre el Team Objetivo</b>,
@@ -1301,7 +1301,7 @@ function Ejercicio({
 
               return (
                 <article key={i}>
-                  <p className="ci-frases-num">Fila {i + 1} de 4</p>
+                  <p className="ci-frases-num">Frase {i + 1} de 4</p>
                   {turnoObjetivo}
                   {turnoSubjetivo}
                 </article>
