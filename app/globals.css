@@ -5083,7 +5083,9 @@ body {
   padding: 24px;
   text-align: center;
   background: var(--tinta-equipo, var(--ink));
-  color: #fff;
+  /* Los claros llevan letra oscura: el nombre ocupa media pantalla y tiene que
+     leerse desde el fondo del salón, no apenas distinguirse. */
+  color: var(--letra-equipo, #fff);
 }
 .ci-color-arriba,
 .ci-color-abajo {
@@ -5104,13 +5106,15 @@ body {
   line-height: 1;
   letter-spacing: -0.02em;
 }
-/* Cada equipo con su color de verdad. Un nombre escrito en negro obliga a
-   leerlo; pintado se reconoce de lejos, que es para lo que sirve. */
-.ci-color-rojo { --tinta-equipo: #a32b23; }
-.ci-color-azul { --tinta-equipo: #1f4e8c; }
-.ci-color-verde { --tinta-equipo: #256b47; }
-.ci-color-amarillo { --tinta-equipo: #b8890f; }
-.ci-color-violeta { --tinta-equipo: #5b3a86; }
-.ci-color-naranja { --tinta-equipo: #b4551b; }
-.ci-color-celeste { --tinta-equipo: #2b7fa8; }
-.ci-color-marrón { --tinta-equipo: #6b4a2f; }
+/* Cada equipo con su color de verdad, y saturado: apagados se confunden entre
+   sí a cinco metros, que es la distancia a la que hay que reconocerlos. El
+   amarillo bajado a oro para que el blanco contraste no era amarillo, así que
+   va vivo y con la letra oscura. Lo mismo el naranja y el celeste. */
+.ci-color-rojo { --tinta-equipo: #e02b20; }
+.ci-color-azul { --tinta-equipo: #1668dc; }
+.ci-color-verde { --tinta-equipo: #0f9d58; }
+.ci-color-amarillo { --tinta-equipo: #ffc933; --letra-equipo: #1a1208; }
+.ci-color-violeta { --tinta-equipo: #7c3aed; }
+.ci-color-naranja { --tinta-equipo: #ff7318; --letra-equipo: #1a1208; }
+.ci-color-celeste { --tinta-equipo: #2ab7ea; --letra-equipo: #06232e; }
+.ci-color-marrón { --tinta-equipo: #8b5e34; }
