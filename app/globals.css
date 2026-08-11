@@ -4404,6 +4404,21 @@ body {
 }
 
 /* Lo que la persona escribió, para leerlo en voz alta cuando se lo pidan. */
+/* Lo que la persona escribió al abrir la charla, arriba de las preguntas que
+   son sobre eso. Va antes del título de la consigna, así que necesita su propio
+   respiro abajo. */
+.ci-antes {
+  margin-bottom: 26px;
+}
+.ci-antes-que {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ci-antes .ci-mio {
+  margin-top: 8px;
+}
 .ci-mio {
   margin: 18px 0 0;
   padding: 14px 16px;

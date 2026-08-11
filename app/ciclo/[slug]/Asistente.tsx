@@ -122,6 +122,8 @@ type Estado = {
   frases: Frases | null;
   /** En qué momento de la actividad está la sala. Lo mueve el panel. */
   fase: number;
+  /** Lo que escribió al abrir la charla, cuando la consigna pregunta por eso. */
+  antes?: string | null;
 };
 
 export type Cara = {
@@ -690,6 +692,14 @@ function Fila({
         <p className="ci-paso">
           {numero} de {todas.length}
         </p>
+      )}
+      {/* Lo que escribió al abrir la charla, arriba de las tres preguntas que
+          son sobre eso mismo. Entre una placa y la otra pasa más de una hora. */}
+      {estado.antes && (
+        <div className="ci-antes">
+          <p className="ci-antes-que">Tu tensión</p>
+          <blockquote className="ci-mio">{estado.antes}</blockquote>
+        </div>
       )}
       <Formulario
         key={actual.id}
