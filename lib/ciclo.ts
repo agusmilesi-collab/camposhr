@@ -35,7 +35,7 @@ import {
 import type { Empresa } from '@/lib/supabase';
 import { armarGrupos, type Candidato, type Grupo } from '@/lib/cruce';
 import { conSuplentes, repartoEnsayo, type Rol } from '@/lib/ensayo';
-import { DEL_EJERCICIO, repartoFrases, type Mitad } from '@/lib/frases';
+import { DEL_EJERCICIO, MITADES, repartoFrases, type Mitad } from '@/lib/frases';
 import { recordar } from '@/lib/memoria';
 import { PERFILES, type Perfil } from '@/lib/perfiles';
 
@@ -1580,12 +1580,19 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
           listas.add(`${a.valor.color}|${a.valor.mitad}`);
         }
       }
+      /*
+       * Un equipo está completo cuando sus dos mitades guardaron: recién ahí la
+       * pantalla puede armar la lectura cruzada.
+       *
+       * Las mitades se llaman `a` y `b`, que es lo que escribe el reparto. Acá
+       * decía `objetivo` y `subjetivo`, que son las direcciones que le tocan a
+       * cada mitad en cada frase y van cambiando: nunca coincidían con nada, así
+       * que el número quedaba clavado en cero con el ejercicio entero resuelto.
+       */
       let completos = 0;
       for (const color of equipos) {
-        const dos = ['objetivo', 'subjetivo'].filter((l) =>
-          listas.has(`${color}|${l}`)
-        );
-        if (dos.length === 2) completos += 1;
+        const guardadas = MITADES.filter((m) => listas.has(`${color}|${m}`));
+        if (guardadas.length === MITADES.length) completos += 1;
       }
       return {
         tipo: 'frases',
