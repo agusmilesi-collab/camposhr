@@ -197,6 +197,10 @@ const AVISO_TEXTO: Record<string, string> = {
     'Es confidencial: no aparece tu nombre ni se comparte con nadie. Si te ' +
     'sentís más cómodo podés inventar una situación, aunque si es real quizás ' +
     'te ayude. La vamos a volver a trabajar más adelante.',
+  'c5-compromiso':
+    'Es confidencial: no se proyecta, no aparece en ningún lado y no se ' +
+    'comparte con nadie. Es sólo para que lo que no se habla empiece a ' +
+    'hablarse.',
 };
 
 /**
