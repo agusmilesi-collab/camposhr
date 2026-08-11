@@ -192,6 +192,21 @@ const FIN_DEL_CICLO = 'c5-gracias';
  * Ofrecer corregir invita a mirar el teléfono en vez de la charla, y lo que se
  * corrige ahí no es un error de tipeo: es la respuesta pensada dos veces.
  */
+/**
+ * El aviso al pie del campo de texto, cuando la consigna necesita el suyo.
+ *
+ * La apertura de la charla 5 pide nombrar una tensión del propio equipo, que es
+ * lo más incómodo que se escribe en todo el ciclo. Sin decir qué pasa con eso,
+ * la mitad de la sala escribe algo genérico; y el permiso de inventar una
+ * situación saca del paso al que no quiere escribir la suya.
+ */
+const AVISO_TEXTO: Record<string, string> = {
+  'c5-tension':
+    'Es confidencial: no aparece tu nombre ni se comparte con nadie. Si te ' +
+    'sentís más cómodo podés inventar una situación, aunque si es real quizás ' +
+    'te ayude. La vamos a volver a trabajar más adelante.',
+};
+
 const SIN_CORREGIR = new Set([
   'c5-solo',
   'c5-heredado',
@@ -1115,9 +1130,10 @@ function Formulario({
             autoFocus
           />
           <p className="ci-anonimo">
-            {NO_SE_PROYECTAN.has(actividad.clave)
-              ? 'Lo leen Lorena y Lucila. No se proyecta.'
-              : 'Se proyecta sin tu nombre. Nadie va a saber cuál escribiste vos.'}
+            {AVISO_TEXTO[actividad.clave] ??
+              (NO_SE_PROYECTAN.has(actividad.clave)
+                ? 'Lo leen Lorena y Lucila. No se proyecta.'
+                : 'Se proyecta sin tu nombre. Nadie va a saber cuál escribiste vos.')}
           </p>
           <div className="ci-acciones">
             <button
