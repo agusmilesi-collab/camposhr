@@ -48,6 +48,20 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/**
+ * Grupos que necesitan a la vista algo que la persona escribió antes.
+ *
+ * Las tres del conflicto preguntan por "el que pensaste al principio", y entre
+ * la placa 2 y la 27 pasa más de una hora: sin tenerlo delante, la mitad de la
+ * sala contesta sobre otra cosa.
+ *
+ * La clave apuntada tiene que ser de tipo texto y de la misma charla, para que
+ * su id ya esté en el catálogo que se sirve de memoria.
+ */
+const RECUERDAN: Record<string, string> = {
+  'c5-conflicto': 'c5-tension',
+};
+
 function publica(a: Actividad) {
   return {
     id: a.id,
@@ -99,15 +113,30 @@ export async function GET(
     ? catalogo.filter((a) => a.grupo === actividad.grupo)
     : [];
 
+  /*
+   * Lo que esa persona escribió antes, cuando la consigna abierta lo necesita a
+   * la vista. Las tres del conflicto preguntan por "el que pensaste al
+   * principio" y a esa altura pasó más de una hora de charla.
+   *
+   * Viaja con su id sumado al mismo in.(...) que ya trae los aportes del grupo,
+   * así que el sondeo sigue costando dos consultas.
+   */
+  const deAntes = RECUERDAN[actividad.grupo ?? '']
+    ? catalogo.find((a) => a.clave === RECUERDAN[actividad.grupo ?? ''])
+    : undefined;
+
   // Todo lo que respondió esta persona en la consigna abierta, de una sola
   // consulta: es lo único que el sondeo de un teléfono necesita preguntar.
+  const pedidos = enFila.length ? enFila.map((a) => a.id) : [actividad.id];
   const propios = asistenteId
     ? await aportesDeEn(
-        enFila.length ? enFila.map((a) => a.id) : [actividad.id],
+        deAntes ? [...pedidos, deAntes.id] : pedidos,
         asistenteId
       )
     : new Map<string, Aporte>();
   const mio = propios.get(actividad.id) ?? null;
+
+  const antes = deAntes ? propios.get(deAntes.id)?.valor : undefined;
 
   const grupo = enFila.length
     ? enFila.map((a) => {
@@ -175,6 +204,9 @@ export async function GET(
     empezaron: avance?.empezaron ?? 0,
     enFila: enFila.length,
     grupo,
+    // Lo que escribió al abrir la charla, para tenerlo a la vista mientras
+    // contesta sobre eso mismo.
+    antes: antes?.tipo === 'texto' ? antes.texto : null,
     cruce:
       actividad.tipo === 'cruce' && asistenteId
         ? await cruceDe(ciclo.corrida, actividad, asistenteId, mio)
