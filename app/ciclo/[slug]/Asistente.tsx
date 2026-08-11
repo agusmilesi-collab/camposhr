@@ -185,14 +185,6 @@ const NO_SE_PROYECTAN = new Set(['c5-gracias']);
 const FIN_DEL_CICLO = 'c5-gracias';
 
 /**
- * Consignas que confirman y no dejan volver.
- *
- * Son las cuatro del arranque de la charla 5: se contestan mientras vuelven del
- * corte, van al informe de Recursos Humanos y ninguna se comenta en la sala.
- * Ofrecer corregir invita a mirar el teléfono en vez de la charla, y lo que se
- * corrige ahí no es un error de tipeo: es la respuesta pensada dos veces.
- */
-/**
  * El aviso al pie del campo de texto, cuando la consigna necesita el suyo.
  *
  * La apertura de la charla 5 pide nombrar una tensión del propio equipo, que es
@@ -207,11 +199,22 @@ const AVISO_TEXTO: Record<string, string> = {
     'te ayude. La vamos a volver a trabajar más adelante.',
 };
 
+/**
+ * Consignas que confirman y no dejan volver.
+ *
+ * Las cuatro del arranque de la charla 5 y las tres del conflicto: van al
+ * informe de Recursos Humanos, no se proyectan y no se comentan en la sala.
+ * Ofrecer corregir invita a mirar el teléfono en vez de la charla, y lo que se
+ * corrige ahí no es un error de tipeo: es la respuesta pensada dos veces.
+ */
 const SIN_CORREGIR = new Set([
   'c5-solo',
   'c5-heredado',
   'c5-quedarse',
   'c5-decision',
+  'c5-etapa',
+  'c5-antiguedad',
+  'c5-freno',
 ]);
 
 export default function Asistente({
