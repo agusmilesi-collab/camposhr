@@ -61,7 +61,7 @@ export const dynamic = 'force-dynamic';
  */
 const RECUERDAN: Record<string, string> = {
   'c5-conflicto': 'c5-tension',
-  'c5-compromiso': 'c5-tension',
+  'c5-desarmar': 'c5-tension',
 };
 
 function publica(a: Actividad) {
