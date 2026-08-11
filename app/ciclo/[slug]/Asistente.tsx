@@ -210,10 +210,10 @@ const AVISO_TEXTO: Record<string, string> = {
 /**
  * Consignas que confirman y no dejan volver.
  *
- * Las cuatro del arranque de la charla 5 y las tres del conflicto: van al
- * informe de Recursos Humanos, no se proyectan y no se comentan en la sala.
- * Ofrecer corregir invita a mirar el teléfono en vez de la charla, y lo que se
- * corrige ahí no es un error de tipeo: es la respuesta pensada dos veces.
+ * Las del arranque de la charla 5, las tres del conflicto y las dos del cierre:
+ * ninguna se proyecta ni se comenta en la sala. Ofrecer corregir invita a mirar
+ * el teléfono en vez de la charla, y lo que se corrige ahí no es un error de
+ * tipeo: es la respuesta pensada dos veces.
  */
 const SIN_CORREGIR = new Set([
   'c5-solo',
@@ -223,6 +223,8 @@ const SIN_CORREGIR = new Set([
   'c5-etapa',
   'c5-antiguedad',
   'c5-freno',
+  'c5-compromiso',
+  'c5-pedido',
 ]);
 
 export default function Asistente({
