@@ -427,7 +427,10 @@ body {
    y el enlace al informe al final. */
 .tabla.entregados .tr {
   grid-template-columns:
-    62px minmax(0, 1.45fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr) 130px;
+    58px minmax(0, 1.85fr) minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1.25fr) 126px;
+  /* Un punto menos que el resto: los puestos y los nombres completos de los
+     clientes son largos y con el tamaño de las tarjetas se cortaban. */
+  font-size: 0.78rem;
   gap: 10px;
   padding-top: 8.5px;
   padding-bottom: 8.5px;
@@ -442,6 +445,13 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Los títulos de esta tabla van más chicos y más juntos: "Recomendación" con
+   el espaciado del resto se comía el ancho de su propia columna. */
+.tabla.entregados .tr.th {
+  font-size: 0.62rem;
+  letter-spacing: 0.07em;
+}
+
 /* Encabezado que ordena la tabla: se aprieta y la flecha muestra por dónde va.
    La columna del botón no ordena, así que queda como texto suelto. */
 .th-orden {
