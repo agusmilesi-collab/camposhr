@@ -48,6 +48,12 @@ const F_INDIVIDUO = {
   modalidad: 'fldsKnmbEoilCde7P',
   pedido: 'fldbaPMlvmaIcAwHX',
   evaluadoras: 'fldsBC99zh44BSgBN',
+  recomendacion: 'fldIWX9RcrBUCpTE6',
+  // "Informe PDF": el documento que el cliente ya recibió por el canal
+  // acordado. Es la única excepción a la regla de arriba, y va acotada: al
+  // portal solo llega si el candidato está en estado Entregado, y nunca la URL
+  // del adjunto, que se resuelve al momento del clic (ver getUrlInforme).
+  informe: 'fldE7x9euo0ElSLqI',
 };
 
 // Tabla Evaluadoras: sólo el nombre (campo primario). Se usa para resolver
@@ -86,6 +92,11 @@ export type Candidato = {
   fechaEntrevista: string | null;
   fechaEntrega: string | null;
   modalidad: string | null;
+  /** Conclusión del informe: Apto, Apto con observaciones, Apto con alertas,
+   *  No apto. Solo se muestra en los candidatos ya entregados. */
+  recomendacion: string | null;
+  /** Hay un PDF de informe cargado y el candidato está entregado. */
+  tieneInforme: boolean;
 };
 
 export type Busqueda = {
@@ -215,14 +226,22 @@ export async function getDatosCliente(
       );
       candEvalIds.set(r.id, eIds);
       eIds.forEach((id) => evalIds.add(id));
+      const estado = f[F_INDIVIDUO.estado] ?? 'Sin asignar';
       candMap.set(r.id, {
         id: r.id,
         nombre: f[F_INDIVIDUO.nombre] ?? 'Sin nombre',
-        estado: f[F_INDIVIDUO.estado] ?? 'Sin asignar',
+        estado,
         evaluadora: null,
         fechaEntrevista: f[F_INDIVIDUO.fechaEntrevista] ?? null,
         fechaEntrega: f[F_INDIVIDUO.fechaEntrega] ?? null,
         modalidad: f[F_INDIVIDUO.modalidad] ?? null,
+        // La recomendación es la conclusión del informe: no se muestra antes de
+        // entregarlo, así que ni siquiera se carga en los demás estados.
+        recomendacion:
+          estado === 'Entregado' ? f[F_INDIVIDUO.recomendacion] ?? null : null,
+        tieneInforme:
+          estado === 'Entregado' &&
+          (f[F_INDIVIDUO.informe] ?? []).length > 0,
       });
     }
   }
@@ -274,4 +293,45 @@ export async function getDatosCliente(
     .sort((a: Busqueda, b: Busqueda) => (b.fecha ?? '').localeCompare(a.fecha ?? ''));
 
   return { empresa, busquedas };
+}
+
+/**
+ * URL del PDF del informe de un candidato, para el enlace "Ver informe".
+ *
+ * Se resuelve recién al momento del clic y con doble control: el candidato
+ * tiene que pertenecer a una búsqueda de la empresa dueña del token y estar en
+ * estado Entregado. Los enlaces de adjuntos de Airtable caducan a las pocas
+ * horas, así que nunca se guardan ni se mandan al navegador dentro del HTML:
+ * se piden de nuevo cada vez.
+ *
+ * Devuelve null si el token no existe, si el candidato no es de ese cliente o
+ * si todavía no hay PDF cargado.
+ */
+export async function getUrlInforme(
+  portalToken: string,
+  candidatoId: string
+): Promise<string | null> {
+  if (!/^rec[A-Za-z0-9]{14}$/.test(candidatoId)) return null;
+
+  const datos = await getDatosCliente(portalToken);
+  if (!datos) return null;
+
+  const permitido = datos.busquedas.some((b) =>
+    b.candidatos.some((c) => c.id === candidatoId && c.tieneInforme)
+  );
+  if (!permitido) return null;
+
+  const params = new URLSearchParams({ returnFieldsByFieldId: 'true' });
+  params.append('fields[]', F_INDIVIDUO.informe);
+
+  let res;
+  try {
+    res = await get(`${T_INDIVIDUO}/${candidatoId}`, params);
+  } catch {
+    return null;
+  }
+
+  const adjuntos = res?.fields?.[F_INDIVIDUO.informe] ?? [];
+  const url = adjuntos[adjuntos.length - 1]?.url;
+  return typeof url === 'string' ? url : null;
 }

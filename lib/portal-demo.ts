@@ -1,0 +1,183 @@
+/**
+ * Cliente de prueba del portal, con datos inventados.
+ *
+ * Sirve para ver las pantallas sin tocar Airtable ni exponer candidatos reales.
+ * Solo responde fuera de producción (`NODE_ENV !== 'production'`), así que el
+ * token no da acceso a nada en clientes.camposhr.com.
+ *
+ * Se abre en http://localhost:3000/p/demo-cliente-prueba
+ */
+import type { DatosCliente } from './airtable';
+
+export const TOKEN_DEMO = 'demo-cliente-prueba';
+
+export function esDemo(token: string): boolean {
+  return token === TOKEN_DEMO && process.env.NODE_ENV !== 'production';
+}
+
+export function datosDemo(): DatosCliente {
+  return {
+    empresa: 'Distribuidora Andes (prueba)',
+    busquedas: [
+      {
+        id: 'demo-p1',
+        puesto: 'Jefe de Depósito',
+        estado: 'En curso',
+        area: 'Operaciones',
+        seniority: 'Jefatura',
+        fecha: '2026-07-28',
+        candidatos: [
+          {
+            id: 'demo-c1',
+            nombre: 'Martín Aguirre',
+            estado: 'Por entrevistar',
+            evaluadora: 'Laura Benítez',
+            fechaEntrevista: '2026-08-14T17:00:00.000Z',
+            fechaEntrega: '2026-08-20',
+            modalidad: 'Online',
+            recomendacion: null,
+            tieneInforme: false,
+          },
+          {
+            id: 'demo-c2',
+            nombre: 'Carolina Ferreyra',
+            estado: 'Por citar',
+            evaluadora: null,
+            fechaEntrevista: null,
+            fechaEntrega: null,
+            modalidad: null,
+            recomendacion: null,
+            tieneInforme: false,
+          },
+          {
+            id: 'demo-c3',
+            nombre: 'Nicolás Paz',
+            estado: 'Por analizar',
+            evaluadora: 'Laura Benítez',
+            fechaEntrevista: '2026-08-05T14:30:00.000Z',
+            fechaEntrega: '2026-08-13',
+            modalidad: 'Presencial',
+            recomendacion: null,
+            tieneInforme: false,
+          },
+        ],
+      },
+      {
+        id: 'demo-p2',
+        puesto: 'Analista de Compras',
+        estado: 'En curso',
+        area: 'Administración',
+        seniority: 'Semi Senior',
+        fecha: '2026-07-15',
+        candidatos: [
+          {
+            id: 'demo-c4',
+            nombre: 'Sofía Maidana',
+            estado: 'Entregado',
+            evaluadora: 'Verónica Cardozo',
+            fechaEntrevista: '2026-07-22T13:00:00.000Z',
+            fechaEntrega: '2026-07-29',
+            modalidad: 'Online',
+            recomendacion: 'Apto',
+            tieneInforme: true,
+          },
+          {
+            id: 'demo-c5',
+            nombre: 'Ezequiel Godoy',
+            estado: 'Seguimiento',
+            evaluadora: 'Verónica Cardozo',
+            fechaEntrevista: '2026-07-23T16:00:00.000Z',
+            fechaEntrega: '2026-07-30',
+            modalidad: 'Presencial',
+            recomendacion: null,
+            tieneInforme: false,
+          },
+        ],
+      },
+      {
+        id: 'demo-p3',
+        puesto: 'Encargado de Turno',
+        estado: 'Cerrado',
+        area: 'Operaciones',
+        seniority: 'Supervisión',
+        fecha: '2026-06-19',
+        candidatos: [
+          {
+            id: 'demo-c6',
+            nombre: 'Julieta Escobar',
+            estado: 'Entregado',
+            evaluadora: 'Laura Benítez',
+            fechaEntrevista: '2026-06-26T15:00:00.000Z',
+            fechaEntrega: '2026-07-02',
+            modalidad: 'Presencial',
+            recomendacion: 'Apto con observaciones',
+            tieneInforme: true,
+          },
+          {
+            id: 'demo-c7',
+            nombre: 'Facundo Ledesma',
+            estado: 'Entregado',
+            evaluadora: 'Verónica Cardozo',
+            fechaEntrevista: '2026-06-27T18:30:00.000Z',
+            fechaEntrega: '2026-07-03',
+            modalidad: 'Online',
+            recomendacion: 'No apto',
+            tieneInforme: true,
+          },
+        ],
+      },
+      {
+        id: 'demo-p4',
+        puesto: 'Responsable de Calidad',
+        estado: 'Cerrado',
+        area: 'Calidad',
+        seniority: 'Jefatura',
+        fecha: '2026-05-30',
+        candidatos: [
+          {
+            id: 'demo-c8',
+            nombre: 'Agustina Molina',
+            estado: 'Entregado',
+            evaluadora: 'Laura Benítez',
+            fechaEntrevista: '2026-06-06T14:00:00.000Z',
+            fechaEntrega: '2026-06-12',
+            modalidad: 'Online',
+            recomendacion: 'Apto con alertas',
+            tieneInforme: true,
+          },
+        ],
+      },
+      {
+        id: 'demo-p5',
+        puesto: 'Coordinador de Logística',
+        estado: 'En curso',
+        area: 'Operaciones',
+        seniority: 'Jefatura',
+        fecha: '2026-08-06',
+        candidatos: [],
+      },
+    ],
+  };
+}
+
+/** Página de muestra que reemplaza al PDF cuando se mira el cliente de prueba. */
+export function informeDemo(nombre: string): string {
+  return `<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Informe de prueba</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f6f5f2; color: #16202b;
+         display: flex; align-items: center; justify-content: center;
+         min-height: 100vh; margin: 0; padding: 24px; }
+  div { max-width: 420px; text-align: center; }
+  h1 { font-weight: 400; font-size: 1.5rem; margin: 0 0 10px; }
+  p { color: #7b7770; font-size: 0.9rem; line-height: 1.6; }
+</style></head>
+<body><div>
+  <h1>Informe de ${nombre}</h1>
+  <p>Este es el cliente de prueba: acá se abre el PDF del informe que está
+  cargado en Airtable, en el campo "Informe PDF" del candidato.</p>
+</div></body></html>`;
+}
