@@ -486,6 +486,67 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .ancla p,.duo p,.credenciales,.marca-texto,.pasos span,.lideres span,
 .escalones span,.sesgos span,.cuadro span{color:var(--ink-soft);opacity:1}
 
+/* El porqué de cada paso, debajo de la instrucción. Va más chico y en gris
+   para que la tarjeta se siga leyendo de un vistazo: la instrucción es lo que
+   se hace y esta línea es la que da criterio cuando el caso no encaja. */
+.porque{font-size:25px;line-height:1.35;color:var(--muted);margin-top:14px;
+  padding-top:14px;border-top:1px solid var(--line)}
+
+/* El código de la rueda en la placa de la emoción propia. Va chico y al
+   costado: la consigna es poner una palabra, y la rueda es la ayuda para el
+   que se queda en blanco. */
+.rueda-chica{display:flex;align-items:center;gap:28px;margin-top:44px}
+.rueda-chica .caja{background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:16px;line-height:0}
+.rueda-chica .caja img{width:200px;height:200px;display:block}
+.rueda-chica span{font-size:30px;line-height:1.35;color:var(--muted)}
+
+/* Los tres roles del ensayo, en viñetas: entra de un vistazo mejor que en una
+   oración, que es lo que hace falta cuando treinta y tres personas se están
+   levantando para armar los tríos. */
+.roles{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:8px}
+.roles li{font-size:29px;line-height:1.35;color:var(--ink-soft)}
+.roles li::marker{color:var(--amber)}
+
+/* Los cinco sesgos, cada uno con la pregunta que lo desarma. En el original
+   cada fila es su propia grilla, así que la pregunta arranca donde termina el
+   nombre y las cinco empiezan en cinco lugares distintos: proyectado se lee
+   como un párrafo desordenado. Con la primera columna fija, los nombres quedan
+   en una columna y las preguntas en otra, y la placa se recorre de arriba abajo
+   sin volver a buscar dónde empieza cada cosa. */
+/* El título de una placa vive dentro de un ancho de 1440 con 40 de margen, y
+   estas dos listas son más anchas: con el título recién puesto, arrancaba
+   corrido respecto de lo que titula. Las dos son de la charla 5 y de ningún
+   otro lado. */
+.contenido.izq .sesgos,
+.contenido.izq .escalones{max-width:var(--ancho);margin-left:40px;
+  margin-right:40px}
+
+.sesgos{gap:0}
+.sesgos>div{grid-template-columns:460px 1fr;gap:0;padding:26px 0;
+  border-top:1px solid var(--line)}
+.sesgos>div:first-child{border-top:0;padding-top:0}
+.sesgos b{font-size:46px}
+/* La pregunta es la herramienta, y por eso pesa lo mismo que el nombre del
+   sesgo en lugar de quedar como su aclaración. */
+.sesgos span{font-size:36px;color:var(--ink)}
+
+/* Una línea de criterio al pie de una placa, en tinta suave: dice menos que el
+   titular de arriba y más que la cita de la fuente. */
+.criterio{font-size:30px;line-height:1.4;color:var(--ink-soft);margin-top:44px}
+.contenido.izq .tarjetas ~ .criterio{width:100%;max-width:var(--ancho);
+  margin-left:auto;margin-right:auto;margin-top:36px}
+
+/* La cita al pie de una placa. Va chica y en gris: quien está en la sala lee
+   el contenido, y la fuente está para que se pueda verificar y para que la
+   expositora la nombre si alguien pregunta de dónde sale. */
+.fuente{font-size:24px;line-height:1.45;color:var(--muted);margin-top:26px}
+.contenido.izq .tarjetas ~ .fuente{width:100%;max-width:var(--ancho);
+  margin-left:auto;margin-right:auto}
+/* Contra el mismo borde que el título y las tarjetas de esa placa. */
+.contenido.izq .escalones ~ .fuente{width:100%;max-width:var(--ancho);
+  margin-left:40px;margin-right:40px}
+
 /* Lo que el marco de la matriz dice mientras carga, y la dirección de abajo:
    iban en crema para el fondo oscuro. */
 .matriz-aviso p,.matriz-marco .dir{color:var(--muted)}
@@ -534,10 +595,56 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .retrato{border:1px solid var(--line)}
 .perfil dt{color:var(--amber)}
 .lideres em{color:var(--amber)}
+/* Semáforo: la etapa 1 se resuelve barato, la 2 cuesta y la 3 ya no se resuelve
+   sola. El color lo dice antes de que se lea una palabra, que es lo que hace
+   que alguien ubique su propio conflicto mientras todavía estás hablando. */
 .escalones>div{background:var(--card);border-radius:0 12px 12px 0;
-  border-left:6px solid var(--amber)}
-.escalones .e2{border-left-color:#c08a3a}
-.escalones .e3{border-left-color:#a4503f}
+  border-left:8px solid #1f8a4c}
+.escalones>div b{color:#1f8a4c}
+.escalones .e2{border-left-color:#c98a12}
+.escalones .e2 b{color:#c98a12}
+.escalones .e3{border-left-color:#c0392b}
+.escalones .e3 b{color:#c0392b}
+/* La escalada, dibujada. La clase se llama `escalera` y no `escala` porque el
+   deck original ya usa `.escala` para otra cosa, con colores propios por
+   posición: compartiendo el nombre, esos colores pisaban los del semáforo en
+   las dos primeras etapas.
+
+   Cada etapa entra más adentro que la anterior y entre
+   medio va la señal de que el conflicto acaba de subir un escalón. Alineadas y
+   del mismo ancho se leían como tres casillas sueltas.
+
+   Las tres etapas más los dos saltos son cinco bloques donde antes había tres,
+   así que todo baja de cuerpo para que la placa entre sin recortarse. */
+.escalones.escalera{gap:0;max-width:1420px}
+.escalones.escalera>div{padding:18px 26px}
+.escalones.escalera>div:nth-of-type(2){margin-left:80px}
+.escalones.escalera>div:nth-of-type(3){margin-left:160px}
+.escalones.escalera b{font-size:34px;margin-bottom:4px}
+.escalones.escalera span{font-size:26px;line-height:1.28}
+.escalones .salto{margin:12px 0 12px 34px;font-size:26px;line-height:1.25;
+  color:var(--amber);display:flex;align-items:baseline;gap:14px}
+.escalones .salto:nth-of-type(2){margin-left:114px}
+.escalones .salto:before{content:"";align-self:center;flex:none;width:20px;
+  height:30px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 40' fill='none' stroke='%23a97722' stroke-width='4.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v26'/%3E%3Cpath d='M5 24l7 8 7-8'/%3E%3C/svg%3E") no-repeat center/contain}
+/* La negrita del salto es énfasis dentro del renglón, no un título: sin esto
+   hereda el display en bloque y el cuerpo de los nombres de etapa. */
+.escalones .salto b{display:inline;font-family:'Inter',system-ui,sans-serif;
+  font-size:inherit;font-weight:600;letter-spacing:0;color:var(--ink)}
+/* Los diez temas del ciclo, en dos filas de cinco. Es la última placa con
+   contenido, así que lo que no entra acá no se nombra nunca más: por eso van
+   los diez y no un resumen. */
+.tarjetas.diez{flex-wrap:wrap;gap:14px}
+.tarjetas.diez>div{flex:0 0 calc(20% - 12px);padding:20px 18px;
+  display:flex;flex-direction:column}
+.tarjetas.diez h3{font-size:29px;line-height:1.1;margin-bottom:10px}
+.tarjetas.diez p{font-size:20px;line-height:1.3}
+/* La herramienta, separada de la explicación: una dice por qué importa y la
+   otra qué se hace, y de un vistazo tienen que distinguirse. */
+.tarjetas.diez .herramienta{margin-top:auto;padding-top:10px;
+  border-top:1px solid var(--line);color:var(--amber);font-weight:500}
+.contenido.diez .tarjetas{max-width:var(--ancho);margin-left:40px}
 .pendiente{border:2px dashed var(--amber)}
 .pendiente b{color:var(--amber)}
 .qr-caja{background:var(--card);border:1px solid var(--line)}
