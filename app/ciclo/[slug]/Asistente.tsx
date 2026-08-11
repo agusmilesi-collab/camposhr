@@ -201,8 +201,7 @@ const AVISO_TEXTO: Record<string, string> = {
     'te ayude. La vamos a volver a trabajar más adelante.',
   'c5-compromiso':
     'Es confidencial: no se proyecta, no aparece en ningún lado y no se ' +
-    'comparte con nadie. Es sólo para que lo que no se habla empiece a ' +
-    'hablarse.',
+    'comparte con nadie. Es para vos, para tener por dónde empezar.',
 };
 
 /**

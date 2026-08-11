@@ -49,17 +49,19 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * Grupos que necesitan a la vista algo que la persona escribió antes.
+ * Consignas que necesitan a la vista algo que la persona escribió antes.
  *
- * Las tres del conflicto preguntan por "el que pensaste al principio", y entre
- * la placa 2 y la 27 pasa más de una hora: sin tenerlo delante, la mitad de la
- * sala contesta sobre otra cosa.
+ * Se indexa por grupo o por clave suelta. Las tres del conflicto preguntan por
+ * "el que pensaste al principio" y el cierre pide desarmar esa misma tensión;
+ * entre la placa 2 y la 27 pasa más de una hora, así que sin tenerlo delante
+ * media sala contesta sobre otra cosa.
  *
  * La clave apuntada tiene que ser de tipo texto y de la misma charla, para que
  * su id ya esté en el catálogo que se sirve de memoria.
  */
 const RECUERDAN: Record<string, string> = {
   'c5-conflicto': 'c5-tension',
+  'c5-compromiso': 'c5-tension',
 };
 
 function publica(a: Actividad) {
@@ -121,9 +123,11 @@ export async function GET(
    * Viaja con su id sumado al mismo in.(...) que ya trae los aportes del grupo,
    * así que el sondeo sigue costando dos consultas.
    */
-  const deAntes = RECUERDAN[actividad.grupo ?? '']
-    ? catalogo.find((a) => a.clave === RECUERDAN[actividad.grupo ?? ''])
-    : undefined;
+  const recuerda = RECUERDAN[actividad.grupo ?? ''] ?? RECUERDAN[actividad.clave];
+  const deAntes =
+    recuerda && recuerda !== actividad.clave
+      ? catalogo.find((a) => a.clave === recuerda)
+      : undefined;
 
   // Todo lo que respondió esta persona en la consigna abierta, de una sola
   // consulta: es lo único que el sondeo de un teléfono necesita preguntar.
