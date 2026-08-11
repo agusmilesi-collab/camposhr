@@ -129,18 +129,16 @@ export default function TablaEntregados({ filas }: { filas: FilaEntregada[] }) {
               <span className="dash">—</span>
             )}
           </span>
-          {/* El botón todavía no abre el PDF: al pasar el cursor avisa que la
-              descarga viene después. El enlace real vive en f.informe y se
-              enchufa cambiando este span por un <a href={f.informe}>. */}
+          {/* El botón está en todas las filas, tenga o no el PDF cargado:
+              todavía no abre nada y al pasar el cursor avisa que la descarga
+              viene después. El día que se abra hay que volver a mirar
+              f.informe, que trae el enlace sólo de los que tienen archivo, y
+              dejar el aviso en los demás. */}
           <span className="c-informe" data-label="Informe">
-            {f.informe ? (
-              <span className="btn-informe btn-informe-pronto">
-                <span className="bi-texto">Ver informe</span>
-                <span className="bi-pronto">Próximamente</span>
-              </span>
-            ) : (
-              <span className="dash">—</span>
-            )}
+            <span className="btn-informe btn-informe-pronto">
+              <span className="bi-texto">Ver informe</span>
+              <span className="bi-pronto">Próximamente</span>
+            </span>
           </span>
         </div>
       ))}
