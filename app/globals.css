@@ -13,6 +13,7 @@
   --st-blue-2: #43648f;
   --st-violet: #6a5a8c;
   --st-verde: #4a7856;
+  --st-naranja: #c1591a;
   --st-rojo: #8c3b3b;
 }
 
@@ -299,19 +300,27 @@ body {
   font-weight: 500;
   color: var(--ink-soft);
 }
+/* Cuántos candidatos tiene la búsqueda y desde cuándo, en una sola línea a la
+   derecha del puesto. El dato duro va en tono fuerte y la palabra que lo
+   nombra en gris, separados por un punto. */
 .card-head-count {
-  font-size: 0.71rem;
+  font-size: 0.74rem;
   color: var(--muted);
-  letter-spacing: 0.03em;
   white-space: nowrap;
   flex: none;
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 9px;
 }
-.card-head-count .req-date b {
-  font-weight: 500;
+.card-head-count > span + span::before {
+  content: '·';
+  margin-right: 9px;
+  color: var(--line);
+}
+.card-head-count b {
+  font-weight: 600;
   color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- Tabla de candidatos ---------- */
@@ -320,9 +329,12 @@ body {
 }
 .tr {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(140px, 1.25fr) minmax(0, 1fr) minmax(0, 1.2fr) 84px;
+  /* Anchos calculados para que los textos más largos ("Pendiente de
+     coordinación", "14-ago, 14:00") entren en un renglón. */
+  grid-template-columns:
+    minmax(0, 1.3fr) minmax(0, 1.9fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.85fr) 78px;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--line-soft);
   font-size: 0.84rem;
@@ -359,6 +371,9 @@ body {
   gap: 8px;
   color: var(--ink-soft);
   min-width: 0;
+  /* Ningún dato de la fila baja de línea: todos en un renglón. */
+  white-space: nowrap;
+  overflow: hidden;
 }
 .c-evaluadora {
   color: var(--ink-soft);
@@ -369,11 +384,21 @@ body {
 .c-fecha {
   color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .c-fecha em {
   font-style: normal;
   color: var(--muted);
   margin-left: 4px;
+}
+/* Presencial u online, en su propia columna. */
+.c-modalidad {
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .dash {
   color: var(--line);
@@ -392,6 +417,119 @@ body {
    y no en el azul del resto, que lo dejaba igual que "En análisis". */
 .dot.green  { color: var(--st-verde); }
 .dot.violet { color: var(--st-violet); }
+/* Recomendación del informe: naranja para las alertas y rojo para el no apto. */
+.dot.orange { color: var(--st-naranja); }
+.dot.red    { color: var(--st-rojo); }
+
+/* ---------- Tabla de informes entregados ----------
+   Los entregados no se leen búsqueda por búsqueda sino como una lista de
+   entregas, así que van todos juntos en una tabla con el pedido como columna
+   y el enlace al informe al final. */
+.tabla.entregados .tr {
+  grid-template-columns:
+    62px minmax(0, 1.45fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr) 130px;
+  gap: 10px;
+  padding-top: 8.5px;
+  padding-bottom: 8.5px;
+}
+/* Cada dato entra en un renglón: si no entra, se corta. Con seis columnas, dejar
+   que bajen de línea desparejaba la altura de las filas. */
+.tabla.entregados .c-pedido,
+.tabla.entregados .c-name,
+.tabla.entregados .c-evaluadora,
+.tabla.entregados .reco-txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Encabezado que ordena la tabla: se aprieta y la flecha muestra por dónde va.
+   La columna del botón no ordena, así que queda como texto suelto. */
+.th-orden {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.th-orden:hover {
+  color: var(--ink-soft);
+}
+.th-flecha {
+  font-size: 0.9em;
+  opacity: 0.35;
+}
+.th-orden-activa {
+  color: var(--ink);
+}
+.th-orden-activa .th-flecha {
+  opacity: 1;
+}
+
+/* La conclusión del informe, con el mismo punto de color que los estados. */
+.c-reco {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-soft);
+  min-width: 0;
+}
+/* El nombre del puesto se lee entero: si no entra, baja de línea (cortarlo con
+   puntos suspensivos dejaba "Responsable de C..."). */
+.c-pedido {
+  color: var(--ink-soft);
+  min-width: 0;
+}
+/* Mismo botón que "Ver presentación" en el hub interno: .btn, sin cortar el
+   texto en dos líneas dentro de la celda. */
+/* El mismo botón que "Ver presentación" en tools: fondo oscuro, borde propio y
+   negro pleno al pasar el cursor. */
+.btn-informe {
+  display: inline-flex;
+  align-items: center;
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  color: #f7f5f0;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 7px;
+  height: 28px;
+  padding: 0 14px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.btn-informe:hover {
+  background: #000;
+  border-color: #000;
+}
+/* Mientras la descarga no está abierta, el botón no lleva a ningún lado y al
+   pasar el cursor cambia el texto por "Próximamente". Los dos textos se apilan
+   en la misma celda: el ancho lo manda el más largo y el botón no salta. */
+.btn-informe-pronto {
+  display: inline-grid;
+  cursor: default;
+}
+.btn-informe-pronto > span {
+  grid-area: 1 / 1;
+  justify-self: center;
+}
+.btn-informe-pronto .bi-pronto {
+  visibility: hidden;
+}
+.btn-informe-pronto:hover .bi-texto {
+  visibility: hidden;
+}
+.btn-informe-pronto:hover .bi-pronto {
+  visibility: visible;
+}
 
 .empty {
   padding: 18px 20px;
@@ -451,6 +589,10 @@ body {
     grid-row: 1;
     justify-self: end;
     font-size: 0.78rem;
+    white-space: normal;
+  }
+  .c-fecha {
+    white-space: normal;
   }
   .c-evaluadora {
     grid-column: 1 / -1;
@@ -484,6 +626,19 @@ body {
   .c-evaluadora:has(.dash) {
     display: none;
   }
+  .c-modalidad {
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+    color: var(--muted);
+    white-space: normal;
+  }
+  .c-modalidad[data-label]::before {
+    content: attr(data-label) ': ';
+    color: var(--muted);
+  }
+  .c-modalidad:has(.dash) {
+    display: none;
+  }
   /* Encabezado de búsqueda: en mobile el puesto va completo arriba y la
      fecha/candidatos debajo, para que no se corte el título. */
   .card-head {
@@ -494,6 +649,36 @@ body {
   .card-head h2 {
     white-space: normal;
     overflow: visible;
+  }
+  /* Entregados en pantalla angosta: arriba el nombre con su enlace al informe,
+     debajo el pedido y el resto de los datos, uno por línea. */
+  .tabla.entregados .tr {
+    grid-template-columns: 1fr auto;
+  }
+  .tabla.entregados .c-name {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .tabla.entregados .c-informe {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    font-size: 0.78rem;
+  }
+  .tabla.entregados .c-pedido {
+    order: -1;
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+    color: var(--muted);
+    white-space: normal;
+  }
+  .tabla.entregados .c-pedido[data-label]::before {
+    content: attr(data-label) ': ';
+    color: var(--muted);
+  }
+  .c-reco {
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
   }
 }
 

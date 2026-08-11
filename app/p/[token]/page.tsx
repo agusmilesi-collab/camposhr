@@ -1,5 +1,6 @@
-import { Fragment } from 'react';
-import { getDatosCliente, type Busqueda } from '@/lib/airtable';
+import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
+import { datosDemo, esDemo } from '@/lib/portal-demo';
+import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,20 @@ const ORDEN: Record<string, number> = {
   'Por analizar': 3,
   'Entregado': 4,
   'Seguimiento': 5,
+};
+
+/** Conclusión del informe: color del punto, texto que se muestra y lugar que
+ *  ocupa al ordenar (del apto al no apto). Las claves son las opciones del
+ *  campo Recomendación de Airtable; si mañana se agrega una opción nueva, la
+ *  fila la escribe tal cual, en gris y al final del orden hasta sumarla acá. */
+const RECOMENDACIONES: Record<
+  string,
+  { texto: string; clase: string; orden: number }
+> = {
+  'Apto':                   { texto: 'Apto',             clase: 'green',  orden: 0 },
+  'Apto con observaciones': { texto: 'Apto con obs.',    clase: 'amber',  orden: 1 },
+  'Apto con alertas':       { texto: 'Apto con alertas', clase: 'orange', orden: 2 },
+  'No apto':                { texto: 'No apto',          clase: 'red',    orden: 3 },
 };
 
 const TZ = 'America/Argentina/Buenos_Aires';
@@ -69,21 +84,69 @@ function Acceso() {
   );
 }
 
+/** Una fila de la tabla de entregados: el candidato con los datos del pedido. */
+type Entregado = { cand: Candidato; puesto: string; fechaPedido: string | null };
+
 export default async function Portal({ params }: { params: { token: string } }) {
-  const datos = await getDatosCliente(params.token);
+  const datos = esDemo(params.token)
+    ? datosDemo()
+    : await getDatosCliente(params.token);
   if (!datos) return <Acceso />;
 
   const { empresa, busquedas } = datos;
 
-  // Una búsqueda está "completa" cuando tiene candidatos y todos tienen el
-  // informe entregado. Las completas se agrupan al final, separadas del resto.
-  const esCompleta = (b: Busqueda) =>
-    b.candidatos.length > 0 &&
-    b.candidatos.every((c) => c.estado === 'Entregado');
+  // Los informes ya entregados salen de la tarjeta de su búsqueda y se juntan
+  // en una sola tabla al final, ordenada por fecha de pedido: el cliente los
+  // lee como una lista de entregas, no búsqueda por búsqueda.
+  const entregados: Entregado[] = busquedas
+    .flatMap((b) =>
+      b.candidatos
+        .filter((c) => c.estado === 'Entregado')
+        .map((c) => ({ cand: c, puesto: b.puesto, fechaPedido: b.fecha }))
+    )
+    .sort(
+      (a, b) =>
+        (b.fechaPedido ?? '').localeCompare(a.fechaPedido ?? '') ||
+        a.cand.nombre.localeCompare(b.cand.nombre)
+    );
 
-  const ordenadas = [...busquedas].sort(
-    (a, b) => Number(esCompleta(a)) - Number(esCompleta(b))
+  // La tabla de entregados se ordena en el navegador, apretando cualquiera de
+  // sus encabezados: acá se le pasa cada fila ya resuelta.
+  const filasEntregadas: FilaEntregada[] = entregados.map(
+    ({ cand: c, puesto, fechaPedido }) => {
+      const r = c.recomendacion
+        ? RECOMENDACIONES[c.recomendacion] ?? {
+            texto: c.recomendacion,
+            clase: 'gray',
+            orden: 9,
+          }
+        : null;
+      return {
+        id: c.id,
+        fechaOrden: fechaPedido ?? '',
+        fechaTexto: fecha(fechaPedido),
+        puesto,
+        nombre: c.nombre,
+        evaluadora: c.evaluadora,
+        recoTexto: r?.texto ?? null,
+        recoCompleta: c.recomendacion,
+        recoClase: r?.clase ?? 'gray',
+        recoOrden: r?.orden ?? 9,
+        informe: c.tieneInforme
+          ? `/p/${params.token}/informe/${c.id}`
+          : null,
+      };
+    }
   );
+
+  // En curso: las búsquedas que todavía tienen algún candidato sin entregar,
+  // más las que aún no tienen ningún candidato asignado.
+  const enCurso = busquedas
+    .map((b) => ({
+      ...b,
+      candidatos: b.candidatos.filter((c) => c.estado !== 'Entregado'),
+    }))
+    .filter((b, i) => b.candidatos.length > 0 || busquedas[i].candidatos.length === 0);
 
   return (
     <>
@@ -111,36 +174,30 @@ export default async function Portal({ params }: { params: { token: string } }) 
             </div>
           )}
 
-          {ordenadas.map((b: Busqueda, i: number) => {
+          {enCurso.map((b: Busqueda) => {
             const cands = [...b.candidatos].sort(
               (x, y) =>
                 (ORDEN[x.estado] ?? 9) - (ORDEN[y.estado] ?? 9) ||
                 x.nombre.localeCompare(y.nombre)
             );
-            const n = b.candidatos.length;
-            // El separador aparece antes de la primera búsqueda completa,
-            // siempre que antes hubiera al menos una búsqueda en curso.
-            const mostrarSep =
-              i > 0 && esCompleta(b) && !esCompleta(ordenadas[i - 1]);
+            const n = cands.length;
             return (
-              <Fragment key={b.id}>
-                {mostrarSep && (
-                  <div className="group-sep">
-                    <span>Con informes entregados</span>
-                  </div>
-                )}
-              <article className="card">
+              <article className="card" key={b.id}>
                 <div className="card-head">
                   <div className="card-head-main">
                     <h2>{b.puesto}</h2>
                   </div>
                   <div className="card-head-count">
-                    {b.fecha && (
-                      <span className="req-date">
-                        solicitada el <b>{fecha(b.fecha)}</b>
+                    {n > 0 && (
+                      <span>
+                        <b>{n}</b> {n === 1 ? 'candidato' : 'candidatos'}
                       </span>
                     )}
-                    <span>{n} {n === 1 ? 'candidato' : 'candidatos'}</span>
+                    {b.fecha && (
+                      <span className="req-date">
+                        solicitud <b>{fecha(b.fecha)}</b>
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -153,6 +210,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
                       <span>Estado</span>
                       <span>Evaluadora</span>
                       <span>Entrevista</span>
+                      <span>Modalidad</span>
                       <span>Entrega est.</span>
                     </div>
                     {cands.map((c) => {
@@ -170,21 +228,13 @@ export default async function Portal({ params }: { params: { token: string } }) 
                             {c.evaluadora ?? <span className="dash">—</span>}
                           </span>
                           <span className="c-fecha" data-label="Entrevista">
-                            {fe ? (
-                              <>
-                                {fe}
-                                {c.modalidad ? <em>· {c.modalidad}</em> : null}
-                              </>
-                            ) : (
-                              <span className="dash">—</span>
-                            )}
+                            {fe ?? <span className="dash">—</span>}
+                          </span>
+                          <span className="c-modalidad" data-label="Modalidad">
+                            {c.modalidad ?? <span className="dash">—</span>}
                           </span>
                           <span className="c-fecha" data-label="Entrega est.">
-                            {fen && c.estado !== 'Entregado' ? (
-                              fen
-                            ) : (
-                              <span className="dash">—</span>
-                            )}
+                            {fen ? fen : <span className="dash">—</span>}
                           </span>
                         </div>
                       );
@@ -192,16 +242,26 @@ export default async function Portal({ params }: { params: { token: string } }) 
                   </div>
                 )}
               </article>
-              </Fragment>
             );
           })}
+
+          {entregados.length > 0 && (
+            <>
+              <div className="group-sep">
+                <span>Informes entregados</span>
+              </div>
+              <article className="card">
+                <TablaEntregados filas={filasEntregadas} />
+              </article>
+            </>
+          )}
         </section>
       </main>
 
       <footer className="foot">
         <div className="wrap">
-          Los informes psicotécnicos se entregan directamente por los canales
-          acordados. Esta vista muestra únicamente el estado de avance.
+          Los informes quedan disponibles en esta pantalla y se envían también
+          por los canales acordados.
         </div>
       </footer>
     </>
