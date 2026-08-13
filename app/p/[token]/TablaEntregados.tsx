@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { COBROS, ORDEN_COBRO, type EstadoCobro } from '@/lib/cobro';
 
 /** Una fila ya resuelta por el servidor: acá solo se ordena y se dibuja. */
 export type FilaEntregada = {
@@ -19,20 +20,8 @@ export type FilaEntregada = {
   recoOrden: number;
   /** Enlace al PDF, o null si todavía no está cargado. */
   informe: string | null;
-  /** Cobro de esa evaluación, resuelto a un solo estado. */
-  cobro: 'pagado' | 'impago' | 'sin-facturar' | 'sin-dato';
-};
-
-/** Los dos campos de Airtable (facturado y pagado) se leen como un solo estado:
- *  encadenados, lo que importa es hasta dónde llegó el cobro. */
-export const COBROS: Record<
-  FilaEntregada['cobro'],
-  { texto: string; clase: string; detalle: string }
-> = {
-  pagado:         { texto: 'Pagado',        clase: 'green', detalle: 'Facturado y cobrado' },
-  impago:         { texto: 'Impago',        clase: 'amber', detalle: 'Facturado, sin cobrar' },
-  'sin-facturar': { texto: 'Sin facturar',  clase: 'gray',  detalle: 'Todavía sin facturar' },
-  'sin-dato':     { texto: '—',             clase: 'gray',  detalle: 'Sin cargar' },
+  /** Cobro de esa evaluación, resuelto a un solo estado (ver lib/cobro.ts). */
+  cobro: EstadoCobro;
 };
 
 type Clave = 'fecha' | 'pedido' | 'candidato' | 'evaluadora' | 'reco' | 'cobro';
@@ -57,13 +46,6 @@ const ARRANCA_ASC: Record<Clave, boolean> = {
   cobro: true,
 };
 
-/** Del cobro pendiente al cobrado: lo que falta plata primero. */
-const ORDEN_COBRO: Record<FilaEntregada['cobro'], number> = {
-  'sin-facturar': 0,
-  impago: 1,
-  pagado: 2,
-  'sin-dato': 3,
-};
 
 function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
   const texto = (x: string | null) => x ?? '';
