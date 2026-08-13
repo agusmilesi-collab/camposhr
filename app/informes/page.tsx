@@ -6,14 +6,6 @@ export const dynamic = 'force-dynamic';
 
 const BASE_PORTAL = 'https://clientes.camposhr.com';
 
-/**
- * El cliente de prueba (`lib/portal-demo.ts`) se lista junto a los reales, acá y
- * en el sitio desplegado: es donde se mira cómo quedó una pantalla antes de
- * mostrársela a un cliente. Va último y marcado, para que nadie lo confunda con
- * una empresa.
- */
-const BASE_LOCAL = 'http://localhost:3000';
-
 export default async function Informes() {
   const clientes = await listarClientesConToken();
 
@@ -26,6 +18,10 @@ export default async function Informes() {
     }))
     .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
+  // El cliente de prueba se lista junto a los reales, acá y en el sitio
+  // desplegado: es donde se mira cómo quedó una pantalla antes de mostrársela a
+  // un cliente. Va último y con su sello, que alcanza para no confundirlo con
+  // una empresa.
   filas.push({
     nombre: NOMBRE_DEMO,
     token: TOKEN_DEMO,
@@ -83,13 +79,6 @@ export default async function Informes() {
         )}
       </section>
 
-      <p className="head-nota nota-demo">
-        Distribuidora Andina es una empresa inventada, con candidatos inventados,
-        y sus datos viven en <code>lib/portal-demo.ts</code>. Es sobre la que se
-        prueba, para no tocar ninguna empresa real: ahí están el alta de pedidos
-        y el informe de ejemplo, que en los clientes de verdad todavía no se
-        muestran. En local se abre en <code>{BASE_LOCAL}</code>.
-      </p>
     </main>
   );
 }

@@ -268,15 +268,6 @@ body {
   vertical-align: 1px;
   white-space: nowrap;
 }
-.nota-demo {
-  margin-top: 0;
-  padding-bottom: 72px;
-  max-width: 62ch;
-  font-size: 0.82rem;
-}
-.nota-demo code {
-  font-size: 0.95em;
-}
 .copiar {
   flex: none;
   font: inherit;
