@@ -131,6 +131,11 @@ body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+/* El primer separador ya tiene el aire del encabezado del cliente encima. */
+.group-sep.primera {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
 .group-sep::before,
 .group-sep::after {
   content: '';
