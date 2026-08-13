@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { COBROS, ORDEN_COBRO, type EstadoCobro } from '@/lib/cobro';
 
 /** Una fila ya resuelta por el servidor: acá solo se ordena y se dibuja. */
 export type FilaEntregada = {
@@ -19,9 +20,11 @@ export type FilaEntregada = {
   recoOrden: number;
   /** Enlace al PDF, o null si todavía no está cargado. */
   informe: string | null;
+  /** Cobro de esa evaluación, resuelto a un solo estado (ver lib/cobro.ts). */
+  cobro: EstadoCobro;
 };
 
-type Clave = 'fecha' | 'pedido' | 'candidato' | 'evaluadora' | 'reco';
+type Clave = 'fecha' | 'pedido' | 'candidato' | 'evaluadora' | 'reco' | 'cobro';
 
 const COLUMNAS: { clave: Clave; titulo: string }[] = [
   { clave: 'fecha', titulo: 'Fecha' },
@@ -29,6 +32,7 @@ const COLUMNAS: { clave: Clave; titulo: string }[] = [
   { clave: 'candidato', titulo: 'Candidato' },
   { clave: 'evaluadora', titulo: 'Evaluadora' },
   { clave: 'reco', titulo: 'Recomendación' },
+  { clave: 'cobro', titulo: 'Facturación' },
 ];
 
 /** Las columnas de texto arrancan de la A a la Z; fecha y recomendación
@@ -39,7 +43,9 @@ const ARRANCA_ASC: Record<Clave, boolean> = {
   candidato: true,
   evaluadora: true,
   reco: true,
+  cobro: true,
 };
+
 
 function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
   const texto = (x: string | null) => x ?? '';
@@ -54,16 +60,21 @@ function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
       return texto(a.evaluadora).localeCompare(texto(b.evaluadora), 'es');
     case 'reco':
       return a.recoOrden - b.recoOrden;
+    case 'cobro':
+      return ORDEN_COBRO[a.cobro] - ORDEN_COBRO[b.cobro];
   }
 }
 
 export default function TablaEntregados({
   filas,
   descargaAbierta = false,
+  conCobro = false,
 }: {
   filas: FilaEntregada[];
   /** Solo el cliente de prueba lo recibe en true, y solo fuera de producción. */
   descargaAbierta?: boolean;
+  /** La columna de facturación, mientras no se publique (ver lib/cobro.ts). */
+  conCobro?: boolean;
 }) {
   const [orden, setOrden] = useState<{ col: Clave; asc: boolean }>({
     col: 'fecha',
@@ -86,8 +97,8 @@ export default function TablaEntregados({
 
   return (
     <div className="tabla entregados">
-      <div className="tr th">
-        {COLUMNAS.map(({ clave, titulo }) => {
+      <div className={`tr th${conCobro ? '' : ' sin-cobro'}`}>
+        {COLUMNAS.filter((c) => conCobro || c.clave !== 'cobro').map(({ clave, titulo }) => {
           const activa = orden.col === clave;
           return (
             <span
@@ -113,7 +124,7 @@ export default function TablaEntregados({
       </div>
 
       {ordenadas.map((f) => (
-        <div className="tr" key={f.id}>
+        <div className={`tr${conCobro ? '' : ' sin-cobro'}`} key={f.id}>
           <span className="c-fecha" data-label="Fecha">
             {f.fechaTexto ?? <span className="dash">—</span>}
           </span>
@@ -136,6 +147,14 @@ export default function TablaEntregados({
               <span className="dash">—</span>
             )}
           </span>
+          {conCobro && (
+            <span className="c-cobro" data-label="Facturación">
+              <i className={`dot ${COBROS[f.cobro].clase}`} />
+              <span className="cobro-txt" title={COBROS[f.cobro].detalle}>
+                {COBROS[f.cobro].texto}
+              </span>
+            </span>
+          )}
           {/* El botón está en todas las filas, tenga o no el PDF cargado:
               para los clientes de verdad todavía no abre nada y al pasar el
               cursor avisa que la descarga viene después. En el cliente de

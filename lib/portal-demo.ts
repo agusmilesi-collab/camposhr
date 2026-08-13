@@ -10,13 +10,29 @@
  * http://localhost:3000/informes marcada como prueba.
  *
  * Los cinco pedidos cubren a propósito los estados que el portal sabe mostrar:
- * candidato por citar, por entrevistar, por analizar, en seguimiento, entregado
- * con informe y entregado sin informe cargado, más una búsqueda todavía sin
- * candidatos y otra ya cerrada.
+ * candidato por citar, por entrevistar, por analizar, en seguimiento y entregado
+ * con informe, más una búsqueda todavía sin candidatos.
  */
-import type { DatosCliente } from './airtable';
+import { getDatosClientePorEmpresa, type DatosCliente } from './airtable';
 
 export const TOKEN_DEMO = 'demo-cliente-prueba';
+
+/** La empresa gemela en Airtable, cargada el 13/8/2026. No tiene "Token portal"
+ *  a propósito: sin token no figura en el listado de accesos ni se abre desde
+ *  clientes.camposhr.com. Es donde caen los pedidos que se cargan probando. */
+export const EMPRESA_DEMO = 'recX2DYWlVzjLoAXT';
+
+/**
+ * Informes escritos a mano para los candidatos de prueba de Airtable.
+ *
+ * El circuito de verdad va a traer el PDF que la psicóloga sube al campo
+ * "Informe PDF" del candidato. Mientras eso no está abierto, este mapa deja ver
+ * cómo se lee un informe entero desde el portal: la clave es el ID del registro
+ * en `Individuo` y el valor, el archivo servido desde `public/`.
+ */
+export const INFORMES_PRUEBA: Record<string, string> = {
+  recJpClFogV09rZsX: '/informes-prueba/bruno-alsina.html',
+};
 
 export const NOMBRE_DEMO = 'Distribuidora Andina';
 
@@ -31,6 +47,7 @@ export function esDemo(token: string): boolean {
 export function datosDemo(): DatosCliente {
   return {
     empresa: NOMBRE_DEMO_PORTAL,
+    empresaId: EMPRESA_DEMO,
     busquedas: [
       {
         id: 'demo-p1',
@@ -49,6 +66,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-08-20',
             modalidad: 'Online',
             recomendacion: null,
+            facturado: false,
+            pagado: false,
             tieneInforme: false,
           },
           {
@@ -60,6 +79,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: null,
             modalidad: null,
             recomendacion: null,
+            facturado: false,
+            pagado: false,
             tieneInforme: false,
           },
           {
@@ -71,6 +92,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-08-13',
             modalidad: 'Presencial',
             recomendacion: null,
+            facturado: true,
+            pagado: false,
             tieneInforme: false,
           },
         ],
@@ -92,6 +115,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-07-29',
             modalidad: 'Online',
             recomendacion: 'Apto',
+            facturado: true,
+            pagado: true,
             tieneInforme: true,
           },
           {
@@ -103,6 +128,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-07-30',
             modalidad: 'Presencial',
             recomendacion: null,
+            facturado: true,
+            pagado: false,
             tieneInforme: false,
           },
         ],
@@ -124,6 +151,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-07-02',
             modalidad: 'Presencial',
             recomendacion: 'Apto con observaciones',
+            facturado: true,
+            pagado: true,
             tieneInforme: true,
           },
           {
@@ -135,28 +164,9 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-07-03',
             modalidad: 'Online',
             recomendacion: 'No apto',
+            facturado: true,
+            pagado: false,
             tieneInforme: true,
-          },
-        ],
-      },
-      {
-        id: 'demo-p4',
-        puesto: 'Responsable de Calidad',
-        estado: 'Cerrado',
-        area: 'Calidad',
-        seniority: 'Jefatura',
-        fecha: '2026-05-30',
-        candidatos: [
-          {
-            id: 'demo-c8',
-            nombre: 'Agustina Molina',
-            estado: 'Entregado',
-            evaluadora: 'Lorena Campos',
-            fechaEntrevista: '2026-06-06T14:00:00.000Z',
-            fechaEntrega: '2026-06-12',
-            modalidad: 'Online',
-            recomendacion: 'Apto con alertas',
-            tieneInforme: false,
           },
         ],
       },
@@ -171,6 +181,29 @@ export function datosDemo(): DatosCliente {
       },
     ],
   };
+}
+
+/**
+ * Lo inventado más lo que haya cargado en Airtable para la empresa de prueba.
+ *
+ * Los pedidos que entran por el formulario van a Airtable, así que sin esto se
+ * cargarían y no se verían. Van primero, que es donde el que está probando los
+ * busca. Si Airtable no responde, quedan los inventados y la pantalla no se
+ * cae por una prueba.
+ */
+export async function datosDemoConAirtable(): Promise<DatosCliente> {
+  const base = datosDemo();
+  try {
+    const real = await getDatosClientePorEmpresa(EMPRESA_DEMO);
+    if (!real) return base;
+    return {
+      empresa: base.empresa,
+      empresaId: EMPRESA_DEMO,
+      busquedas: [...real.busquedas, ...base.busquedas],
+    };
+  } catch {
+    return base;
+  }
 }
 
 /** Página de muestra que reemplaza al PDF cuando se mira el cliente de prueba. */

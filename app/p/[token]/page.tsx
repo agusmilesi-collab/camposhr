@@ -1,17 +1,20 @@
 import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
-import { datosDemo, esDemo } from '@/lib/portal-demo';
+import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
+import NuevoPedido from './NuevoPedido';
+import { COBROS, COBRO_PUBLICADO, cobro } from '@/lib/cobro';
+import { serviciosDe } from '@/lib/servicios';
 
 export const dynamic = 'force-dynamic';
 
 /** Traducción de los estados internos a lenguaje de cliente. */
 const ESTADOS: Record<string, { texto: string; clase: string }> = {
-  'Sin asignar':     { texto: 'Pendiente de asignación',  clase: 'gray' },
-  'Por citar':       { texto: 'Pendiente de coordinación', clase: 'gray' },
-  'Por entrevistar': { texto: 'Entrevista agendada',       clase: 'amber' },
-  'Por analizar':    { texto: 'En análisis',               clase: 'blue' },
-  'Entregado':       { texto: 'Informe entregado',         clase: 'green' },
-  'Seguimiento':     { texto: 'En seguimiento',            clase: 'violet' },
+  'Sin asignar':     { texto: 'A asignar',         clase: 'gray' },
+  'Por citar':       { texto: 'A coordinar',       clase: 'gray' },
+  'Por entrevistar': { texto: 'Agendada',          clase: 'green' },
+  'Por analizar':    { texto: 'En análisis',       clase: 'blue' },
+  'Entregado':       { texto: 'Informe entregado', clase: 'green' },
+  'Seguimiento':     { texto: 'En seguimiento',    clase: 'violet' },
 };
 
 /** Orden del pipeline: agrupa los candidatos por etapa al mostrarlos. */
@@ -84,15 +87,87 @@ function Acceso() {
   );
 }
 
+/** Los candidatos de una búsqueda, agrupados por etapa del pipeline. */
+function ordenar(cands: Candidato[]): Candidato[] {
+  return [...cands].sort(
+    (x, y) =>
+      (ORDEN[x.estado] ?? 9) - (ORDEN[y.estado] ?? 9) ||
+      x.nombre.localeCompare(y.nombre)
+  );
+}
+
+/** Encabezado de las columnas de una tabla de candidatos en curso. */
+function Encabezado({ conCobro }: { conCobro: boolean }) {
+  return (
+    <div className={`tr th${conCobro ? '' : ' sin-cobro'}`}>
+      <span>Candidato</span>
+      <span>Estado</span>
+      <span>Evaluadora</span>
+      <span>Entrevista</span>
+      <span>Modalidad</span>
+      <span>Entrega</span>
+      {conCobro && <span>Facturación</span>}
+    </div>
+  );
+}
+
+/** Una fila de candidato en curso. */
+function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
+  const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
+  const fe = fecha(c.fechaEntrevista, true);
+  const fen = fecha(c.fechaEntrega);
+  return (
+    <div className={`tr${conCobro ? '' : ' sin-cobro'}`}>
+      <span className="c-name">{c.nombre}</span>
+      <span className="c-estado" data-label="Estado">
+        <i className={`dot ${e.clase}`} />
+        {e.texto}
+      </span>
+      <span className="c-evaluadora" data-label="Evaluadora">
+        {c.evaluadora ?? <span className="dash">—</span>}
+      </span>
+      <span className="c-fecha" data-label="Entrevista">
+        {fe ?? <span className="dash">—</span>}
+      </span>
+      <span className="c-modalidad" data-label="Modalidad">
+        {c.modalidad ?? <span className="dash">—</span>}
+      </span>
+      <span className="c-fecha" data-label="Entrega">
+        {fen ? fen : <span className="dash">—</span>}
+      </span>
+      {/* El cobro también en curso: una evaluación se puede facturar antes de
+          entregar el informe, así que el estado corre desde que el candidato
+          entra. */}
+      {conCobro && (
+        <span className="c-cobro" data-label="Facturación">
+          <i className={`dot ${COBROS[cobro(c)].clase}`} />
+          <span className="cobro-txt" title={COBROS[cobro(c)].detalle}>
+            {COBROS[cobro(c)].texto}
+          </span>
+        </span>
+      )}
+    </div>
+  );
+}
+
 /** Una fila de la tabla de entregados: el candidato con los datos del pedido. */
 type Entregado = { cand: Candidato; puesto: string; fechaPedido: string | null };
 
 export default async function Portal({ params }: { params: { token: string } }) {
   const demo = esDemo(params.token);
-  const datos = demo ? datosDemo() : await getDatosCliente(params.token);
+  const datos = demo
+    ? await datosDemoConAirtable()
+    : await getDatosCliente(params.token);
   if (!datos) return <Acceso />;
 
-  const { empresa, busquedas } = datos;
+  const { empresa, empresaId, busquedas } = datos;
+
+  // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
+  const servicios = serviciosDe(empresaId);
+
+  // La facturación se ve en el cliente de prueba mientras las tildes no se
+  // carguen en Airtable. Ver la nota en lib/cobro.ts.
+  const conCobro = COBRO_PUBLICADO || demo;
 
   // Los informes ya entregados salen de la tarjeta de su búsqueda y se juntan
   // en una sola tabla al final, ordenada por fecha de pedido: el cliente los
@@ -134,6 +209,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
         informe: c.tieneInforme
           ? `/p/${params.token}/informe/${c.id}`
           : null,
+        cobro: cobro(c),
       };
     }
   );
@@ -161,10 +237,50 @@ export default async function Portal({ params }: { params: { token: string } }) 
       </header>
 
       <main className="wrap">
-        <section className="head">
-          <div className="eyebrow">Estado de evaluaciones</div>
-          <h1>{empresa}</h1>
+        <section className="head head-cliente">
+          <div>
+            <div className="eyebrow">Estado de evaluaciones</div>
+            <h1>{empresa}</h1>
+          </div>
+          {/* El alta de pedidos se está probando con el cliente de prueba: hasta
+              que el formulario escriba en Airtable, el portal real no lo
+              muestra. */}
+          {demo && <NuevoPedido empresa={empresa} />}
         </section>
+
+        {/* El trabajo de fondo va arriba: las evaluaciones son una parte de él,
+            no al revés. */}
+        {servicios.map((sv) => (
+          <section className="servicio" key={sv.titulo}>
+            <div className="group-sep primera">
+              <span>{sv.titulo}</span>
+            </div>
+            <article className="card servicio-card">
+              <p className="servicio-bajada">{sv.bajada}</p>
+              <div className="docs">
+                {sv.documentos.map((d) =>
+                  d.disponible ? (
+                    <a className="doc" href={d.href} target="_blank" rel="noreferrer" key={d.nombre}>
+                      <span className="doc-n">
+                        {d.nombre}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M7 7h10v10" /></svg>
+                      </span>
+                      <span className="doc-d">{d.detalle}</span>
+                    </a>
+                  ) : (
+                    <div className="doc doc-pronto" key={d.nombre}>
+                      <span className="doc-n">
+                        {d.nombre}
+                        <span className="doc-tag">En breve</span>
+                      </span>
+                      <span className="doc-d">{d.detalle}</span>
+                    </div>
+                  )
+                )}
+              </div>
+            </article>
+          </section>
+        ))}
 
         <section className="busquedas">
           {busquedas.length === 0 && (
@@ -173,71 +289,33 @@ export default async function Portal({ params }: { params: { token: string } }) 
             </div>
           )}
 
+          {/* Las dos mitades de la pantalla se anuncian igual: lo que está
+              corriendo arriba y lo que ya se entregó abajo. */}
+          {enCurso.length > 0 && (
+            <div className="group-sep primera">
+              <span>Pedidos en curso</span>
+            </div>
+          )}
+
           {enCurso.map((b: Busqueda) => {
-            const cands = [...b.candidatos].sort(
-              (x, y) =>
-                (ORDEN[x.estado] ?? 9) - (ORDEN[y.estado] ?? 9) ||
-                x.nombre.localeCompare(y.nombre)
-            );
-            const n = cands.length;
+            const cands = ordenar(b.candidatos);
             return (
               <article className="card" key={b.id}>
                 <div className="card-head">
-                  <div className="card-head-main">
-                    <h2>{b.puesto}</h2>
-                  </div>
-                  <div className="card-head-count">
-                    {n > 0 && (
-                      <span>
-                        <b>{n}</b> {n === 1 ? 'candidato' : 'candidatos'}
-                      </span>
-                    )}
-                    {b.fecha && (
-                      <span className="req-date">
-                        solicitud <b>{fecha(b.fecha)}</b>
-                      </span>
-                    )}
-                  </div>
+                  <h2>{b.puesto}</h2>
+                  {/* La fecha de solicitud, entre paréntesis y sin rótulo: en
+                      una lista de búsquedas, una fecha ahí sólo puede ser esa. */}
+                  {b.fecha && <span className="card-fecha">({fecha(b.fecha)})</span>}
                 </div>
 
                 {cands.length === 0 ? (
                   <p className="empty">Sin candidatos asignados todavía.</p>
                 ) : (
                   <div className="tabla">
-                    <div className="tr th">
-                      <span>Candidato</span>
-                      <span>Estado</span>
-                      <span>Evaluadora</span>
-                      <span>Entrevista</span>
-                      <span>Modalidad</span>
-                      <span>Entrega est.</span>
-                    </div>
-                    {cands.map((c) => {
-                      const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
-                      const fe = fecha(c.fechaEntrevista, true);
-                      const fen = fecha(c.fechaEntrega);
-                      return (
-                        <div className="tr" key={c.id}>
-                          <span className="c-name">{c.nombre}</span>
-                          <span className="c-estado" data-label="Estado">
-                            <i className={`dot ${e.clase}`} />
-                            {e.texto}
-                          </span>
-                          <span className="c-evaluadora" data-label="Evaluadora">
-                            {c.evaluadora ?? <span className="dash">—</span>}
-                          </span>
-                          <span className="c-fecha" data-label="Entrevista">
-                            {fe ?? <span className="dash">—</span>}
-                          </span>
-                          <span className="c-modalidad" data-label="Modalidad">
-                            {c.modalidad ?? <span className="dash">—</span>}
-                          </span>
-                          <span className="c-fecha" data-label="Entrega est.">
-                            {fen ? fen : <span className="dash">—</span>}
-                          </span>
-                        </div>
-                      );
-                    })}
+                    <Encabezado conCobro={conCobro} />
+                    {cands.map((c) => (
+                      <FilaCandidato c={c} conCobro={conCobro} key={c.id} />
+                    ))}
                   </div>
                 )}
               </article>
@@ -250,7 +328,11 @@ export default async function Portal({ params }: { params: { token: string } }) 
                 <span>Informes entregados</span>
               </div>
               <article className="card">
-                <TablaEntregados filas={filasEntregadas} descargaAbierta={demo} />
+                <TablaEntregados
+                  filas={filasEntregadas}
+                  descargaAbierta={demo}
+                  conCobro={conCobro}
+                />
               </article>
             </>
           )}
