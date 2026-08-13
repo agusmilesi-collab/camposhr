@@ -245,7 +245,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
           {/* El alta de pedidos se está probando con el cliente de prueba: hasta
               que el formulario escriba en Airtable, el portal real no lo
               muestra. */}
-          {demo && <NuevoPedido empresa={empresa} />}
+          {demo && <NuevoPedido empresa={empresa} token={params.token} />}
         </section>
 
         {/* El trabajo de fondo va arriba: las evaluaciones son una parte de él,

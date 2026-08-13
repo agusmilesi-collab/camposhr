@@ -7,13 +7,12 @@ export const dynamic = 'force-dynamic';
 const BASE_PORTAL = 'https://clientes.camposhr.com';
 
 /**
- * Fuera de producción se agrega el cliente de prueba (`lib/portal-demo.ts`),
- * con su link apuntando al portal local. Es la fila sobre la que se prueba el
- * armado de informes sin tocar ninguna empresa real. En el sitio desplegado
- * esta condición es falsa, así que la lista sigue siendo solo lo que devuelve
- * Airtable.
+ * El cliente de prueba (`lib/portal-demo.ts`) se lista junto a los reales, acá y
+ * en el sitio desplegado: es donde se mira cómo quedó una pantalla antes de
+ * mostrársela a un cliente. Va último y marcado, para que nadie lo confunda con
+ * una empresa.
  */
-const MOSTRAR_DEMO = process.env.NODE_ENV !== 'production';
+const BASE_LOCAL = 'http://localhost:3000';
 
 export default async function Informes() {
   const clientes = await listarClientesConToken();
@@ -27,14 +26,12 @@ export default async function Informes() {
     }))
     .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-  if (MOSTRAR_DEMO) {
-    filas.push({
-      nombre: NOMBRE_DEMO,
-      token: TOKEN_DEMO,
-      url: `http://localhost:3000/p/${TOKEN_DEMO}`,
-      prueba: true,
-    });
-  }
+  filas.push({
+    nombre: NOMBRE_DEMO,
+    token: TOKEN_DEMO,
+    url: `${BASE_PORTAL}/${TOKEN_DEMO}`,
+    prueba: true,
+  });
 
   return (
     <main className="wrap">
@@ -67,7 +64,7 @@ export default async function Informes() {
               <div className="acc-row" key={f.token}>
                 <span className="acc-name">
                   <span className="acc-name-txt">{f.nombre}</span>
-                  {f.prueba && <span className="acc-tag">solo local</span>}
+                  {f.prueba && <span className="acc-tag">prueba</span>}
                 </span>
                 <span className="acc-acciones">
                   <a
@@ -86,16 +83,13 @@ export default async function Informes() {
         )}
       </section>
 
-      {MOSTRAR_DEMO && (
-        <p className="head-nota nota-demo">
-          Distribuidora Andina es una empresa inventada, con candidatos
-          inventados, y sus datos viven en <code>lib/portal-demo.ts</code>. Es
-          sobre la que se prueba, para no tocar ninguna empresa real. Solo
-          existe en localhost: el token no resuelve en{' '}
-          <code>clientes.camposhr.com</code> y la fila no aparece en el sitio
-          desplegado.
-        </p>
-      )}
+      <p className="head-nota nota-demo">
+        Distribuidora Andina es una empresa inventada, con candidatos inventados,
+        y sus datos viven en <code>lib/portal-demo.ts</code>. Es sobre la que se
+        prueba, para no tocar ninguna empresa real: ahí están el alta de pedidos
+        y el informe de ejemplo, que en los clientes de verdad todavía no se
+        muestran. En local se abre en <code>{BASE_LOCAL}</code>.
+      </p>
     </main>
   );
 }

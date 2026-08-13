@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { CODIGOS_BATERIA } from '@/lib/baterias';
 import { crearPedido, puedeEscribir } from '@/lib/airtable-alta';
-import { EMPRESA_DEMO } from '@/lib/portal-demo';
+import { EMPRESA_DEMO, esDemo } from '@/lib/portal-demo';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,18 +14,15 @@ export const dynamic = 'force-dynamic';
  * resumen sin guardar, que es lo que permite mirar el formulario sin darle
  * permiso de escritura a nadie.
  *
- * Responde solo fuera de producción, así el portal real no tiene esta vía
- * abierta mientras el circuito se prueba.
+ * **Solo responde al token del cliente de prueba.** Es la única empresa donde
+ * el alta está abierta, y sin esta comprobación cualquiera que conozca la
+ * dirección podría escribir en la base. El día que se abra para los clientes de
+ * verdad, acá va la resolución del token a su empresa, y el pedido se cuelga de
+ * esa y no de una constante.
  */
-const ABIERTO = process.env.NODE_ENV !== 'production';
-
 const MAX_CV = 10 * 1024 * 1024;
 
 export async function POST(req: Request) {
-  if (!ABIERTO) {
-    return NextResponse.json({ error: 'No disponible.' }, { status: 404 });
-  }
-
   let form: FormData;
   try {
     form = await req.formData();
@@ -34,6 +31,10 @@ export async function POST(req: Request) {
   }
 
   const texto = (k: string) => (form.get(k) ?? '').toString().trim();
+
+  if (!esDemo(texto('token'))) {
+    return NextResponse.json({ error: 'No disponible.' }, { status: 404 });
+  }
 
   const puesto = texto('puesto');
   const candidato = texto('candidato');
