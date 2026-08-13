@@ -245,6 +245,14 @@ export default async function Portal({ params }: { params: { token: string } }) 
             </div>
           )}
 
+          {/* Las dos mitades de la pantalla se anuncian igual: lo que está
+              corriendo arriba y lo que ya se entregó abajo. */}
+          {enCurso.length > 0 && (
+            <div className="group-sep primera">
+              <span>Pedidos en curso</span>
+            </div>
+          )}
+
           {enCurso.map((b: Busqueda) => {
             const cands = ordenar(b.candidatos);
             return (
