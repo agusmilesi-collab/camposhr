@@ -1,15 +1,28 @@
 /**
- * Cliente de prueba del portal, con datos inventados.
+ * Cliente de prueba del portal y del armado de informes, con datos inventados.
  *
- * Sirve para ver las pantallas sin tocar Airtable ni exponer candidatos reales.
- * Solo responde fuera de producción (`NODE_ENV !== 'production'`), así que el
- * token no da acceso a nada en clientes.camposhr.com.
+ * Es la única empresa sobre la que se puede probar sin tocar Airtable ni
+ * exponer candidatos reales. Solo responde fuera de producción
+ * (`NODE_ENV !== 'production'`), así que el token no da acceso a nada en
+ * clientes.camposhr.com y la fila tampoco aparece en el /informes desplegado.
  *
- * Se abre en http://localhost:3000/p/demo-cliente-prueba
+ * Se abre en http://localhost:3000/p/demo-cliente-prueba, y figura en
+ * http://localhost:3000/informes marcada como prueba.
+ *
+ * Los cinco pedidos cubren a propósito los estados que el portal sabe mostrar:
+ * candidato por citar, por entrevistar, por analizar, en seguimiento, entregado
+ * con informe y entregado sin informe cargado, más una búsqueda todavía sin
+ * candidatos y otra ya cerrada.
  */
 import type { DatosCliente } from './airtable';
 
 export const TOKEN_DEMO = 'demo-cliente-prueba';
+
+export const NOMBRE_DEMO = 'Distribuidora Andina';
+
+/** En el portal el nombre lleva la aclaración; en /informes la lleva el sello
+ *  de la fila, así que ahí alcanza con el nombre solo. */
+export const NOMBRE_DEMO_PORTAL = `${NOMBRE_DEMO} (prueba)`;
 
 export function esDemo(token: string): boolean {
   return token === TOKEN_DEMO && process.env.NODE_ENV !== 'production';
@@ -17,7 +30,7 @@ export function esDemo(token: string): boolean {
 
 export function datosDemo(): DatosCliente {
   return {
-    empresa: 'Distribuidora Andes (prueba)',
+    empresa: NOMBRE_DEMO_PORTAL,
     busquedas: [
       {
         id: 'demo-p1',

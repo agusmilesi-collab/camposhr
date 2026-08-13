@@ -24,8 +24,10 @@ export async function GET(
   _req: Request,
   { params }: { params: { token: string; id: string } }
 ) {
-  if (!DESCARGA_ABIERTA) return noEncontrado();
-
+  // El cliente de prueba va antes del interruptor a propósito: `esDemo` ya es
+  // false en producción, así que abrirle la descarga no abre nada real. Es lo
+  // que permite recorrer el circuito completo en localhost mientras el botón
+  // de los clientes de verdad sigue diciendo "Próximamente".
   if (esDemo(params.token)) {
     const cand = datosDemo()
       .busquedas.flatMap((b) => b.candidatos)
@@ -38,6 +40,8 @@ export async function GET(
       },
     });
   }
+
+  if (!DESCARGA_ABIERTA) return noEncontrado();
 
   const url = await getUrlInforme(params.token, params.id);
   if (!url) return noEncontrado();

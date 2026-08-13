@@ -1,9 +1,19 @@
 import { listarClientesConToken } from '@/lib/airtable';
+import { NOMBRE_DEMO, TOKEN_DEMO } from '@/lib/portal-demo';
 import CopyLink from './CopyLink';
 
 export const dynamic = 'force-dynamic';
 
 const BASE_PORTAL = 'https://clientes.camposhr.com';
+
+/**
+ * Fuera de producción se agrega el cliente de prueba (`lib/portal-demo.ts`),
+ * con su link apuntando al portal local. Es la fila sobre la que se prueba el
+ * armado de informes sin tocar ninguna empresa real. En el sitio desplegado
+ * esta condición es falsa, así que la lista sigue siendo solo lo que devuelve
+ * Airtable.
+ */
+const MOSTRAR_DEMO = process.env.NODE_ENV !== 'production';
 
 export default async function Informes() {
   const clientes = await listarClientesConToken();
@@ -13,8 +23,18 @@ export default async function Informes() {
       nombre: c.nombre,
       token: c.token,
       url: `${BASE_PORTAL}/${c.token}`,
+      prueba: false,
     }))
     .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+  if (MOSTRAR_DEMO) {
+    filas.push({
+      nombre: NOMBRE_DEMO,
+      token: TOKEN_DEMO,
+      url: `http://localhost:3000/p/${TOKEN_DEMO}`,
+      prueba: true,
+    });
+  }
 
   return (
     <main className="wrap">
@@ -28,8 +48,9 @@ export default async function Informes() {
         </div>
         <h1>Links de portal</h1>
         <p className="head-nota">
-          El link de cada cliente para seguir el estado de sus evaluaciones.
-          Copialo y envialo por el canal acordado.
+          Cada cliente entra por su propio link al estado de sus evaluaciones.
+          Ingresar lo abre acá; Copiar link lo deja listo para mandarlo por el
+          canal acordado.
         </p>
       </section>
 
@@ -40,26 +61,41 @@ export default async function Informes() {
           <div className="card">
             <div className="acc-row acc-th">
               <span>Cliente</span>
-              <span>Link de acceso</span>
               <span />
             </div>
             {filas.map((f) => (
               <div className="acc-row" key={f.token}>
-                <span className="acc-name">{f.nombre}</span>
-                <a
-                  className="acc-url"
-                  href={f.url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {f.url.replace(/^https:\/\//, '')}
-                </a>
-                <CopyLink url={f.url} />
+                <span className="acc-name">
+                  <span className="acc-name-txt">{f.nombre}</span>
+                  {f.prueba && <span className="acc-tag">solo local</span>}
+                </span>
+                <span className="acc-acciones">
+                  <a
+                    className="acc-entrar"
+                    href={f.url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Ingresar
+                  </a>
+                  <CopyLink url={f.url} />
+                </span>
               </div>
             ))}
           </div>
         )}
       </section>
+
+      {MOSTRAR_DEMO && (
+        <p className="head-nota nota-demo">
+          Distribuidora Andina es una empresa inventada, con candidatos
+          inventados, y sus datos viven en <code>lib/portal-demo.ts</code>. Es
+          sobre la que se prueba, para no tocar ninguna empresa real. Solo
+          existe en localhost: el token no resuelve en{' '}
+          <code>clientes.camposhr.com</code> y la fila no aparece en el sitio
+          desplegado.
+        </p>
+      )}
     </main>
   );
 }

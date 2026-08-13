@@ -57,7 +57,14 @@ function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
   }
 }
 
-export default function TablaEntregados({ filas }: { filas: FilaEntregada[] }) {
+export default function TablaEntregados({
+  filas,
+  descargaAbierta = false,
+}: {
+  filas: FilaEntregada[];
+  /** Solo el cliente de prueba lo recibe en true, y solo fuera de producción. */
+  descargaAbierta?: boolean;
+}) {
   const [orden, setOrden] = useState<{ col: Clave; asc: boolean }>({
     col: 'fecha',
     asc: false,
@@ -130,15 +137,28 @@ export default function TablaEntregados({ filas }: { filas: FilaEntregada[] }) {
             )}
           </span>
           {/* El botón está en todas las filas, tenga o no el PDF cargado:
-              todavía no abre nada y al pasar el cursor avisa que la descarga
-              viene después. El día que se abra hay que volver a mirar
-              f.informe, que trae el enlace sólo de los que tienen archivo, y
-              dejar el aviso en los demás. */}
+              para los clientes de verdad todavía no abre nada y al pasar el
+              cursor avisa que la descarga viene después. En el cliente de
+              prueba sí abre, que es donde se recorre el circuito completo. El
+              día que se abra para todos, alcanza con dejar de mirar
+              `descargaAbierta` y quedarse con f.informe, que trae el enlace
+              sólo de los que tienen archivo. */}
           <span className="c-informe" data-label="Informe">
-            <span className="btn-informe btn-informe-pronto">
-              <span className="bi-texto">Ver informe</span>
-              <span className="bi-pronto">Próximamente</span>
-            </span>
+            {descargaAbierta && f.informe ? (
+              <a
+                className="btn-informe"
+                href={f.informe}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="bi-texto">Ver informe</span>
+              </a>
+            ) : (
+              <span className="btn-informe btn-informe-pronto">
+                <span className="bi-texto">Ver informe</span>
+                <span className="bi-pronto">Próximamente</span>
+              </span>
+            )}
           </span>
         </div>
       ))}
