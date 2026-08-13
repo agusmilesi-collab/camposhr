@@ -21,7 +21,7 @@
  * las dos cosas van juntas.
  */
 export type Documento = {
-  /** Texto del botón. Corto: van de a dos por renglón. */
+  /** Texto del botón. Corto: son tres en una línea. */
   nombre: string;
   /** Qué abre, en una línea, para quien no sabe cuál quiere. */
   detalle: string;
