@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getUrlInforme } from '@/lib/airtable';
-import { datosDemo, esDemo, informeDemo } from '@/lib/portal-demo';
+import {
+  datosDemo,
+  esDemo,
+  informeDemo,
+  INFORMES_PRUEBA,
+} from '@/lib/portal-demo';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +34,16 @@ export async function GET(
   // que permite recorrer el circuito completo en localhost mientras el botón
   // de los clientes de verdad sigue diciendo "Próximamente".
   if (esDemo(params.token)) {
+    // Los candidatos que viven en Airtable tienen su informe escrito como
+    // archivo; los inventados en código siguen con la página de muestra.
+    const archivo = INFORMES_PRUEBA[params.id];
+    if (archivo) {
+      return NextResponse.redirect(new URL(archivo, _req.url), {
+        status: 307,
+        headers: { 'x-robots-tag': 'noindex, nofollow' },
+      });
+    }
+
     const cand = datosDemo()
       .busquedas.flatMap((b) => b.candidatos)
       .find((c) => c.id === params.id && c.tieneInforme);

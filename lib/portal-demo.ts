@@ -23,6 +23,18 @@ export const TOKEN_DEMO = 'demo-cliente-prueba';
  *  clientes.camposhr.com. Es donde caen los pedidos que se cargan probando. */
 export const EMPRESA_DEMO = 'recX2DYWlVzjLoAXT';
 
+/**
+ * Informes escritos a mano para los candidatos de prueba de Airtable.
+ *
+ * El circuito de verdad va a traer el PDF que la psicóloga sube al campo
+ * "Informe PDF" del candidato. Mientras eso no está abierto, este mapa deja ver
+ * cómo se lee un informe entero desde el portal: la clave es el ID del registro
+ * en `Individuo` y el valor, el archivo servido desde `public/`.
+ */
+export const INFORMES_PRUEBA: Record<string, string> = {
+  recJpClFogV09rZsX: '/informes-prueba/bruno-alsina.html',
+};
+
 export const NOMBRE_DEMO = 'Distribuidora Andina';
 
 /** En el portal el nombre lleva la aclaración; en /informes la lleva el sello
