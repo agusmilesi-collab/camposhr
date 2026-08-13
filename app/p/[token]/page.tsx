@@ -3,6 +3,7 @@ import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 import NuevoPedido from './NuevoPedido';
 import { COBROS, cobro } from '@/lib/cobro';
+import { serviciosDe } from '@/lib/servicios';
 
 export const dynamic = 'force-dynamic';
 
@@ -157,7 +158,10 @@ export default async function Portal({ params }: { params: { token: string } }) 
     : await getDatosCliente(params.token);
   if (!datos) return <Acceso />;
 
-  const { empresa, busquedas } = datos;
+  const { empresa, empresaId, busquedas } = datos;
+
+  // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
+  const servicios = serviciosDe(empresaId);
 
   // Los informes ya entregados salen de la tarjeta de su búsqueda y se juntan
   // en una sola tabla al final, ordenada por fecha de pedido: el cliente los
@@ -237,6 +241,30 @@ export default async function Portal({ params }: { params: { token: string } }) 
               muestra. */}
           {demo && <NuevoPedido empresa={empresa} />}
         </section>
+
+        {/* El trabajo de fondo va arriba: las evaluaciones son una parte de él,
+            no al revés. */}
+        {servicios.map((sv) => (
+          <section className="servicio" key={sv.titulo}>
+            <div className="group-sep primera">
+              <span>{sv.titulo}</span>
+            </div>
+            <article className="card servicio-card">
+              <p className="servicio-bajada">{sv.bajada}</p>
+              <div className="docs">
+                {sv.documentos.map((d) => (
+                  <a className="doc" href={d.href} target="_blank" rel="noreferrer" key={d.nombre}>
+                    <span className="doc-n">
+                      {d.nombre}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M7 7h10v10" /></svg>
+                    </span>
+                    <span className="doc-d">{d.detalle}</span>
+                  </a>
+                ))}
+              </div>
+            </article>
+          </section>
+        ))}
 
         <section className="busquedas">
           {busquedas.length === 0 && (

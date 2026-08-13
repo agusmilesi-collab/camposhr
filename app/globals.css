@@ -5957,3 +5957,70 @@ body {
   color: var(--muted) !important;
   font-size: 0.8rem !important;
 }
+
+
+/* ---------- Servicios del cliente (documentos del trabajo de estructura) ----------
+   Van arriba de los pedidos: las evaluaciones son una parte de ese trabajo. Los
+   documentos se abren en pestaña nueva, así el cliente no pierde el seguimiento
+   al que vino. */
+.servicio {
+  margin-bottom: 26px;
+}
+.servicio-card {
+  padding: 16px 20px 18px;
+}
+.servicio-bajada {
+  font-size: 0.86rem;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 62ch;
+  margin-bottom: 14px;
+}
+.docs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+@media (max-width: 620px) {
+  .docs {
+    grid-template-columns: 1fr;
+  }
+}
+.doc {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--paper);
+  transition: border-color 0.12s, background 0.12s;
+}
+.doc:hover {
+  border-color: var(--ink);
+  background: var(--card);
+}
+.doc-n {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.doc-n svg {
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+  flex: none;
+}
+.doc:hover .doc-n svg {
+  color: var(--ink);
+}
+.doc-d {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 4px;
+}
