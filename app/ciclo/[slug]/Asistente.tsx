@@ -772,12 +772,7 @@ function Formulario({
 
   const cerrado = respondida && !corrigiendo;
 
-  /** El enlace que baja el evento al calendario, con el compromiso ya guardado. */
-  const enlaceAgenda = `/api/ciclo/${slug}/agenda?actividad=${actividad.id}&asistente=${asistenteId}`;
-
-  /** Devuelve si quedó guardado, que es lo que el compromiso necesita saber
-      para seguir de largo hasta el calendario sin pedir otro toque. */
-  async function enviar(valor: Valor): Promise<boolean> {
+  async function enviar(valor: Valor) {
     setEnviando(true);
     setError(null);
     // Treinta teléfonos respondiendo en el mismo minuto hacen que alguno se
@@ -800,7 +795,7 @@ function Formulario({
           setAgendado(false);
           setEnviando(false);
           onGuardado(valor);
-          return true;
+          return;
         }
         // Lo que responde el servidor con criterio (cerrada, valor inválido)
         // no mejora reintentando: sólo se reintenta cuando se cayó.
@@ -808,7 +803,7 @@ function Formulario({
         if (res.status < 500) {
           setError(texto && texto.length < 80 ? texto : ultimo);
           setEnviando(false);
-          return false;
+          return;
         }
         ultimo = 'La conexión está lenta. Estamos reintentando.';
         setError(ultimo);
@@ -819,7 +814,6 @@ function Formulario({
     }
     setError('No pudimos guardarlo. Tocá de nuevo la opción.');
     setEnviando(false);
-    return false;
   }
 
   /* Va antes del bloque de "ya respondiste": el cruce deja su fila en aportes
@@ -857,14 +851,8 @@ function Formulario({
   /* El compromiso tiene pantalla propia, y va antes del bloque de "ya
      respondiste". El 7 de agosto de 2026 los 32 compromisos quedaron escritos y
      ninguno agendado: el tilde, la palabra "Listo" y "Ya podés guardar el
-     teléfono" cerraban el recorrido antes de que nadie tocara el calendario.
-
-     Ahora el botón de guardar dispara el calendario en el mismo toque y se
-     llega acá con el evento ya bajado. Quedan las dos caras igual: la de
-     "Agendado", que es la que se ve al guardar, y la de "Falta un paso", que
-     aparece cuando se vuelve a entrar en otra sesión y el navegador ya no
-     recuerda si el evento se guardó. Ante la duda pide repetirlo, que es barato
-     y no puede terminar en un compromiso sin alarma. */
+     teléfono" cerraban el recorrido antes del botón que abre el calendario.
+     Acá la pantalla dice que falta un paso hasta que la persona lo toca. */
   if (cerrado && mio?.tipo === 'plan') {
     return (
       <section className="cq-placa ci-listo">
@@ -890,7 +878,10 @@ function Formulario({
               Si el calendario no lo guardó, tocá de nuevo el botón.
             </p>
             <div className="ci-acciones">
-              <a className="cq-btn-ghost ci-enlace" href={enlaceAgenda}>
+              <a
+                className="cq-btn-ghost ci-enlace"
+                href={`/api/ciclo/${slug}/agenda?actividad=${actividad.id}&asistente=${asistenteId}`}
+              >
                 Agendar de nuevo
               </a>
               <button
@@ -907,7 +898,7 @@ function Formulario({
             <div className="ci-acciones">
               <a
                 className="cq-btn ci-enlace"
-                href={enlaceAgenda}
+                href={`/api/ciclo/${slug}/agenda?actividad=${actividad.id}&asistente=${asistenteId}`}
                 onClick={() => setAgendado(true)}
               >
                 Agendar en mi calendario
@@ -1138,35 +1129,17 @@ function Formulario({
           </label>
 
           <div className="ci-acciones">
-            {/* Un solo toque. El calendario necesita el compromiso ya escrito
-                en la base, porque el evento lo arma el servidor con lo que la
-                persona guardó, así que la navegación va después del envío y no
-                en paralelo. El toque del botón sigue contando como gesto del
-                usuario mientras el envío no se demore, y si no llegó a
-                dispararse la pantalla de después deja el botón para repetirlo. */}
             <button
               className="cq-btn"
               disabled={
                 dias.length === 0 || !hora || texto.trim().length < 3 || enviando
               }
-              onClick={async () => {
-                const guardado = await enviar({
-                  tipo: 'plan',
-                  dias,
-                  hora,
-                  texto: texto.trim(),
-                });
-                if (!guardado) return;
-                setAgendado(true);
-                window.location.href = enlaceAgenda;
-              }}
+              onClick={() =>
+                enviar({ tipo: 'plan', dias, hora, texto: texto.trim() })
+              }
             >
-              {enviando ? 'Un segundo…' : 'Guardar y agendar'}
+              Guardar
             </button>
-            <p className="ci-anonimo">
-              Se abre el calendario del teléfono con la alarma puesta el día y la
-              hora que elegiste.
-            </p>
           </div>
         </>
       )}
