@@ -2,12 +2,14 @@
  * Cliente de prueba del portal y del armado de informes, con datos inventados.
  *
  * Es la única empresa sobre la que se puede probar sin tocar Airtable ni
- * exponer candidatos reales. Solo responde fuera de producción
- * (`NODE_ENV !== 'production'`), así que el token no da acceso a nada en
- * clientes.camposhr.com y la fila tampoco aparece en el /informes desplegado.
+ * exponer candidatos reales. Funciona igual en local y en el sitio desplegado,
+ * porque es donde se mira cómo quedó una pantalla antes de mostrársela a un
+ * cliente de verdad.
  *
- * Se abre en http://localhost:3000/p/demo-cliente-prueba, y figura en
- * http://localhost:3000/informes marcada como prueba.
+ * El token es aleatorio como el de cualquier cliente, y no un nombre adivinable:
+ * lo que hay del otro lado son datos inventados, pero el formulario de alta
+ * escribe en Airtable y una dirección que se puede tipear a mano es una puerta
+ * abierta a que alguien cargue basura.
  *
  * Los cinco pedidos cubren a propósito los estados que el portal sabe mostrar:
  * candidato por citar, por entrevistar, por analizar, en seguimiento y entregado
@@ -15,7 +17,7 @@
  */
 import { getDatosClientePorEmpresa, type DatosCliente } from './airtable';
 
-export const TOKEN_DEMO = 'demo-cliente-prueba';
+export const TOKEN_DEMO = 'v_1n30O2pkFt0ZiGdclgp0dx12fSiq0v';
 
 /** La empresa gemela en Airtable, cargada el 13/8/2026. No tiene "Token portal"
  *  a propósito: sin token no figura en el listado de accesos ni se abre desde
@@ -41,7 +43,7 @@ export const NOMBRE_DEMO = 'Distribuidora Andina';
 export const NOMBRE_DEMO_PORTAL = `${NOMBRE_DEMO} (prueba)`;
 
 export function esDemo(token: string): boolean {
-  return token === TOKEN_DEMO && process.env.NODE_ENV !== 'production';
+  return token === TOKEN_DEMO;
 }
 
 export function datosDemo(): DatosCliente {

@@ -17,7 +17,14 @@ import { BATERIAS } from '@/lib/baterias';
  * El scroll del cuerpo se bloquea mientras está abierto, así el fondo no se
  * mueve detrás del cajón.
  */
-export default function NuevoPedido({ empresa }: { empresa: string }) {
+export default function NuevoPedido({
+  empresa,
+  token,
+}: {
+  empresa: string;
+  /** Viaja con el formulario: el endpoint sólo acepta el del cliente de prueba. */
+  token: string;
+}) {
   const router = useRouter();
   const ref = useRef<HTMLDialogElement>(null);
   const [abierto, setAbierto] = useState(false);
@@ -131,6 +138,7 @@ export default function NuevoPedido({ empresa }: { empresa: string }) {
           </div>
         ) : (
           <form className="cajon-body" onSubmit={enviar}>
+            <input type="hidden" name="token" value={token} />
             <div className="campo">
               <label htmlFor="puesto">Pedido</label>
               <input
