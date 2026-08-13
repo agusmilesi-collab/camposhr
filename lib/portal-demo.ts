@@ -10,9 +10,8 @@
  * http://localhost:3000/informes marcada como prueba.
  *
  * Los cinco pedidos cubren a propósito los estados que el portal sabe mostrar:
- * candidato por citar, por entrevistar, por analizar, en seguimiento, entregado
- * con informe y entregado sin informe cargado, más una búsqueda todavía sin
- * candidatos y otra ya cerrada.
+ * candidato por citar, por entrevistar, por analizar, en seguimiento y entregado
+ * con informe, más una búsqueda todavía sin candidatos.
  */
 import { getDatosClientePorEmpresa, type DatosCliente } from './airtable';
 
@@ -167,29 +166,6 @@ export function datosDemo(): DatosCliente {
             facturado: true,
             pagado: false,
             tieneInforme: true,
-          },
-        ],
-      },
-      {
-        id: 'demo-p4',
-        puesto: 'Responsable de Calidad',
-        estado: 'Cerrado',
-        area: 'Calidad',
-        seniority: 'Jefatura',
-        fecha: '2026-05-30',
-        candidatos: [
-          {
-            id: 'demo-c8',
-            nombre: 'Agustina Molina',
-            estado: 'Entregado',
-            evaluadora: 'Lorena Campos',
-            fechaEntrevista: '2026-06-06T14:00:00.000Z',
-            fechaEntrega: '2026-06-12',
-            modalidad: 'Online',
-            recomendacion: 'Apto con alertas',
-            facturado: false,
-            pagado: false,
-            tieneInforme: false,
           },
         ],
       },

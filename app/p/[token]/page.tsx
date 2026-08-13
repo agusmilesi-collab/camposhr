@@ -2,6 +2,7 @@ import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
 import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 import NuevoPedido from './NuevoPedido';
+import { COBROS, cobro } from '@/lib/cobro';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,14 +84,6 @@ function Acceso() {
       </div>
     </div>
   );
-}
-
-/** Los dos campos de cobro se leen encadenados: sin factura no hay pago que
- *  mirar, y sin dato cargado no se afirma nada. */
-function cobro(c: Candidato): FilaEntregada['cobro'] {
-  if (c.facturado == null) return 'sin-dato';
-  if (!c.facturado) return 'sin-facturar';
-  return c.pagado ? 'pagado' : 'impago';
 }
 
 /** Una fila de la tabla de entregados: el candidato con los datos del pedido. */
@@ -228,7 +221,8 @@ export default async function Portal({ params }: { params: { token: string } }) 
                       <span>Evaluadora</span>
                       <span>Entrevista</span>
                       <span>Modalidad</span>
-                      <span>Entrega est.</span>
+                      <span>Entrega</span>
+                      <span>Facturación</span>
                     </div>
                     {cands.map((c) => {
                       const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
@@ -250,8 +244,17 @@ export default async function Portal({ params }: { params: { token: string } }) 
                           <span className="c-modalidad" data-label="Modalidad">
                             {c.modalidad ?? <span className="dash">—</span>}
                           </span>
-                          <span className="c-fecha" data-label="Entrega est.">
+                          <span className="c-fecha" data-label="Entrega">
                             {fen ? fen : <span className="dash">—</span>}
+                          </span>
+                          {/* El cobro también en curso: una evaluación se puede
+                              facturar antes de entregar el informe, así que el
+                              estado corre desde que el candidato entra. */}
+                          <span className="c-cobro" data-label="Facturación">
+                            <i className={`dot ${COBROS[cobro(c)].clase}`} />
+                            <span className="cobro-txt" title={COBROS[cobro(c)].detalle}>
+                              {COBROS[cobro(c)].texto}
+                            </span>
                           </span>
                         </div>
                       );

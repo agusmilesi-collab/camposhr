@@ -379,12 +379,14 @@ body {
   /* Anchos calculados para que los textos más largos ("Pendiente de
      coordinación", "14-ago, 14:00") entren en un renglón. */
   grid-template-columns:
-    minmax(0, 1.3fr) minmax(0, 1.9fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.85fr) 78px;
+    minmax(0, 1.12fr) minmax(0, 1.85fr) minmax(0, 1.03fr) minmax(0, 1fr) minmax(0, 0.78fr) 70px 94px;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 10px 20px;
-  border-bottom: 1px solid var(--line-soft);
-  font-size: 0.84rem;
+  /* Con la columna de facturación son siete datos por fila: un punto menos de
+     cuerpo es lo que permite que "Pendiente de coordinación" siga entrando en
+     un renglón. */
+  font-size: 0.8rem;
 }
 .tr:last-child {
   border-bottom: none;
