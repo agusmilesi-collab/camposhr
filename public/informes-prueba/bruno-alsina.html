@@ -12,122 +12,191 @@
   :root{
     --ink:#16202b; --ink-soft:#46505c; --muted:#7b7770;
     --paper:#f6f5f2; --card:#ffffff; --line:#e5e2db; --line-soft:#efede8;
-    --azul:#43648f;
-    --verde:#4a7856; --ambar:#a97722; --naranja:#c1591a; --rojo:#8c3b3b;
+    --verde:#4a7856; --ambar:#a97722; --naranja:#c1591a; --rojo:#8c3b3b; --azul:#43648f;
     --max:820px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--ink);
        line-height:1.55;font-size:15px;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:var(--max);margin:0 auto;padding:0 24px;}
-  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
 
-  /* ---------- Encabezado ----------
-     Misma barra y mismo encabezado que el portal: barra blanca con la marca,
-     y abajo el nombre en serif sobre el papel. */
+  /* ---------- Barra y cabecera ---------- */
   .top{background:var(--card);border-bottom:1px solid var(--line);}
-  .top-inner{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;flex-wrap:wrap;}
+  .top-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;flex-wrap:wrap;}
   .marca{font-family:'Instrument Serif',Georgia,serif;font-size:1.4rem;letter-spacing:-.01em;}
   .marca span{font-style:italic;color:var(--muted);}
+  .top-der{display:flex;align-items:center;gap:14px;}
   .top-meta{font-size:.78rem;color:var(--muted);}
-  .cabecera{padding:44px 0 28px;}
+  .cabecera{padding:40px 0 24px;}
   .cabecera .eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
   .cabecera h1{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(2rem,5vw,2.8rem);font-weight:400;line-height:1.08;letter-spacing:-.015em;}
   .cabecera .tipo{font-size:.9rem;color:var(--ink-soft);margin-top:6px;}
 
+  /* ---------- Botones ---------- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font:inherit;font-size:.8rem;
+       line-height:1;white-space:nowrap;text-decoration:none;color:#f7f5f0;background:var(--ink);
+       border:1px solid var(--ink);border-radius:8px;height:36px;padding:0 15px;cursor:pointer;
+       transition:background .12s,border-color .12s;}
+  .btn:hover{background:#000;border-color:#000;}
+  .btn-sec{color:var(--ink-soft);background:var(--card);border-color:var(--line);}
+  .btn-sec:hover{background:#efece5;color:var(--ink);border-color:var(--line);}
+  .btn svg{width:15px;height:15px;}
+  .pie-acciones{display:flex;justify-content:center;gap:10px;padding:34px 0 44px;flex-wrap:wrap;}
+
   /* ---------- Aviso de prueba ---------- */
-  .falso{background:#fbf4f2;border-bottom:1px solid #e2cfc9;color:var(--rojo);
-         padding:12px 0;font-size:.85rem;line-height:1.5;}
+  .falso{background:#fbf4f2;border-bottom:1px solid #e2cfc9;color:var(--rojo);padding:12px 0;font-size:.85rem;line-height:1.5;}
   .falso b{font-weight:600;}
 
+  /* ---------- Ficha de datos ---------- */
+  .datos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px;}
+  @media (max-width:640px){ .datos{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:420px){ .datos{grid-template-columns:1fr;} }
+  .dato{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:11px 14px;}
+  .dato .k{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .dato .v{font-size:.92rem;font-weight:500;line-height:1.35;margin-top:3px;}
+
+  /* ---------- Veredicto ---------- */
+  .veredicto{margin-top:24px;border:1px solid #e2d3ae;border-left:5px solid var(--ambar);background:#fdf9f0;
+             border-radius:10px;padding:20px 24px;}
+  .veredicto .r{font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+  .veredicto h2{font-size:1.5rem;font-weight:600;line-height:1.15;margin-top:5px;color:var(--ambar);letter-spacing:-.01em;}
+  .veredicto p{font-size:1rem;line-height:1.55;margin-top:8px;max-width:64ch;}
+  .veredicto .firma-linea{margin-top:14px;padding-top:12px;border-top:1px solid #e8dcc2;font-size:.82rem;color:var(--ink-soft);}
+  .veredicto .firma-linea b{font-weight:600;}
+
   /* ---------- Estructura ---------- */
-  .bloque-h{margin:56px 0 0;padding:14px 0;border-top:2px solid var(--ink);border-bottom:1px solid var(--line);
+  .bloque-h{margin:52px 0 0;padding:14px 0;border-top:2px solid var(--ink);border-bottom:1px solid var(--line);
             display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;}
   .bloque-h .n{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
   .bloque-h h2{font-family:'Instrument Serif',Georgia,serif;font-size:1.9rem;font-weight:400;line-height:1.1;}
-  .bloque-h p{font-size:.85rem;color:var(--muted);max-width:46ch;line-height:1.5;}
+  .bloque-h p{font-size:.85rem;color:var(--muted);max-width:44ch;line-height:1.5;}
 
-  section.cap{margin-top:40px;}
-  .cap-h{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;}
+  section.cap{margin-top:38px;}
+  .cap-h{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;}
   .cap-h .num{font-family:'Instrument Serif',Georgia,serif;font-size:2rem;line-height:1;color:var(--muted);}
   .cap-h .tit{border-left:1px solid var(--line);padding-left:14px;}
   .cap-h h3{font-size:1.05rem;font-weight:600;line-height:1.3;}
   .cap-h .sub{font-size:.85rem;color:var(--muted);}
 
-  h4{font-size:1rem;font-weight:600;margin:24px 0 10px;}
+  h4{font-size:.98rem;font-weight:600;margin:22px 0 9px;}
   p{max-width:70ch;}
   p + p{margin-top:10px;}
-  ul.puntos{list-style:none;margin:8px 0 0;}
-  ul.puntos li{position:relative;padding-left:18px;margin-bottom:10px;font-size:.94rem;line-height:1.55;max-width:70ch;}
-  ul.puntos li::before{content:'';position:absolute;left:2px;top:.6em;width:5px;height:5px;border-radius:50%;background:#cfcbc2;}
+  ul.puntos{list-style:none;margin:6px 0 0;}
+  ul.puntos li{position:relative;padding-left:18px;margin-bottom:9px;font-size:.94rem;line-height:1.55;max-width:70ch;}
+  ul.puntos li::before{content:'';position:absolute;left:2px;top:.62em;width:5px;height:5px;border-radius:50%;background:#cfcbc2;}
 
-  /* ---------- Ficha de la persona ---------- */
-  .ficha{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 24px;margin-top:28px;}
-  .ficha dl{display:grid;grid-template-columns:auto 1fr;gap:5px 16px;font-size:.9rem;}
-  .ficha dt{color:var(--muted);}
-  .ficha dd{color:var(--ink);}
+  /* ---------- A favor / a mirar ---------- */
+  .balanza{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:700px){ .balanza{grid-template-columns:1fr;} }
+  .col-b{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:16px 18px;}
+  .col-b.favor{border-color:#c5ded0;background:#f4f8f5;}
+  .col-b.mirar{border-color:#e2d3ae;background:#fdf9f0;}
+  .col-b .ch{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;
+             font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid currentColor;}
+  .col-b.favor .ch{color:var(--verde);} .col-b.mirar .ch{color:var(--ambar);}
+  .col-b li{font-size:.9rem;line-height:1.5;}
+  .col-b .fuente{display:block;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);margin-top:2px;}
 
-  /* ---------- Niveles de ajuste ---------- */
-  .ajustes{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
-  .aj{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);opacity:.45;}
-  .aj .ico{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-           font-size:.8rem;font-weight:600;color:#fff;}
-  .aj .t{font-size:.92rem;font-weight:600;margin-bottom:3px;}
-  .aj .d{font-size:.86rem;color:var(--ink-soft);line-height:1.5;max-width:60ch;}
-  .aj .tick{flex:none;margin-left:auto;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);}
-  .aj-alto .ico{background:#7fb894;} .aj-desarrollo .ico{background:#e0b464;}
-  .aj-alertas .ico{background:#d9a441;} .aj-bajo .ico{background:#d99a92;}
-  .aj.elegido{opacity:1;border-width:2px;}
-  .aj.elegido.aj-desarrollo{border-color:var(--ambar);background:#fdf9f0;}
-  .aj.elegido .tick{border-color:var(--ambar);background:var(--ambar);position:relative;}
-  .aj.elegido .tick::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem;font-weight:700;}
-  .nota-pie{font-size:.78rem;color:var(--muted);font-style:italic;line-height:1.5;margin-top:12px;max-width:66ch;}
+  /* ---------- Mapa de riesgo ---------- */
+  .riesgos{border:1px solid var(--line);border-radius:10px;background:var(--card);overflow:hidden;}
+  .riesgo{display:grid;grid-template-columns:minmax(0,1.15fr) 68px 120px minmax(0,1.5fr);align-items:center;gap:14px;
+          padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:.88rem;}
+  .riesgo:last-child{border-bottom:none;}
+  .riesgo.th{background:#f1efea;font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.1em;
+             text-transform:uppercase;color:var(--muted);padding-top:7px;padding-bottom:7px;}
+  @media (max-width:700px){
+    .riesgo{grid-template-columns:1fr auto;gap:4px 10px;}
+    .riesgo.th{display:none;}
+    .riesgo .nivel{grid-column:2;grid-row:1;justify-self:end;}
+    .riesgo .escala-r{grid-column:1/-1;}
+    .riesgo .mit{grid-column:1/-1;}
+  }
+  .riesgo .nivel{font-size:.82rem;font-weight:600;}
+  .riesgo .nivel.bajo{color:var(--verde);} .riesgo .nivel.medio{color:var(--ambar);} .riesgo .nivel.alto{color:var(--rojo);}
+  .escala-r{display:flex;gap:3px;}
+  .escala-r i{flex:1;height:6px;border-radius:3px;background:var(--line-soft);}
+  .escala-r i.on-bajo{background:var(--verde);} .escala-r i.on-medio{background:var(--ambar);} .escala-r i.on-alto{background:var(--rojo);}
+  .riesgo .mit{font-size:.82rem;color:var(--ink-soft);line-height:1.45;}
+
+  /* ---------- Nivel de ajuste ---------- */
+  .escalera{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px;}
+  @media (max-width:700px){ .escalera{grid-template-columns:1fr 1fr;} }
+  .paso{border:1px solid var(--line);border-radius:9px;padding:11px 13px;background:var(--card);opacity:.5;}
+  .paso .t{font-size:.82rem;font-weight:600;line-height:1.25;}
+  .paso .d{font-size:.74rem;color:var(--muted);line-height:1.4;margin-top:4px;}
+  .paso.elegido{opacity:1;border-color:var(--ambar);border-width:2px;background:#fdf9f0;}
+  .paso.elegido .t{color:var(--ambar);}
+  .paso.elegido .t::before{content:'✓ ';}
 
   /* ---------- Competencias ---------- */
-  .comps{display:grid;grid-template-columns:repeat(3,1fr);gap:26px 18px;margin-top:8px;}
+  .comps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 18px;margin-top:6px;}
   @media (max-width:720px){ .comps{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:460px){ .comps{grid-template-columns:1fr;} }
   .comp{text-align:center;}
-  .comp .medidor{display:block;margin:0 auto 8px;}
-  .comp .nom{display:inline-block;background:#ece9e2;color:var(--ink);border-radius:5px;
-             padding:3px 12px;font-size:.82rem;font-weight:600;}
-  .comp .det{font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:7px;}
-  .escala{background:#ece9e2;color:var(--ink-soft);border-radius:6px;padding:9px 14px;margin-top:26px;text-align:center;
-          font-size:.78rem;line-height:1.5;}
+  /* El medidor va en su propio renglón: como SVG en línea, la etiqueta de abajo
+     se le acomoda al lado cuando sobra ancho. */
+  .comp svg{display:block;margin:0 auto 7px;}
+  .comp .nom{display:inline-block;background:#ece9e2;border-radius:5px;padding:3px 12px;font-size:.8rem;font-weight:600;}
+  .comp .lec{font-size:.8rem;color:var(--ink-soft);line-height:1.45;margin-top:7px;}
+  .escala{background:#ece9e2;color:var(--ink-soft);border-radius:6px;padding:9px 14px;margin-top:22px;text-align:center;font-size:.78rem;line-height:1.5;}
   .escala b{display:block;font-weight:600;color:var(--ink);margin-bottom:2px;}
 
+  /* ---------- Momentos ---------- */
+  .momento{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:15px 18px;margin-bottom:10px;}
+  .momento > .t{font-size:.88rem;font-weight:600;margin-bottom:7px;}
+  .momento.m1{border-left:4px solid var(--verde);}
+  .momento.m2{border-left:4px solid var(--ambar);}
+  .momento.m3{border-left:4px solid var(--azul);}
+  .momento.m4{border-left:4px solid var(--muted);}
+  .momento ul.puntos li{margin-bottom:7px;font-size:.9rem;}
+
+  /* ---------- Voz del candidato ---------- */
+  .voz{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:18px 20px;}
+  .voz .k{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .voz .frase{font-family:'Instrument Serif',Georgia,serif;font-size:1.6rem;line-height:1.25;margin:6px 0 10px;}
+  .voz .frase em{font-style:italic;}
+
   /* ---------- Benziger ---------- */
-  .cuadrantes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px;}
+  .cuadrantes{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px;}
   @media (max-width:560px){ .cuadrantes{grid-template-columns:1fr;} }
-  .cuad{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);}
+  .cuad{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:var(--card);}
   .cuad.dom{border-color:var(--ink);background:var(--paper);}
-  .cuad .k{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
-  .cuad .n{font-size:1rem;font-weight:600;margin-top:2px;}
-  .cuad .v{font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:600;color:var(--ink);line-height:1.2;}
-  .cuad .d{font-size:.8rem;color:var(--ink-soft);line-height:1.45;margin-top:4px;}
-  .barra{height:5px;background:var(--line-soft);border-radius:3px;margin-top:8px;overflow:hidden;}
+  .cuad .k{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);}
+  .cuad .n{font-size:.95rem;font-weight:600;margin-top:2px;}
+  .cuad .v{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:600;line-height:1.2;}
+  .cuad .d{font-size:.79rem;color:var(--ink-soft);line-height:1.45;margin-top:4px;}
+  .barra{height:5px;background:var(--line-soft);border-radius:3px;margin-top:7px;overflow:hidden;}
   .barra i{display:block;height:100%;background:#cfcbc2;}
   .cuad.dom .barra i{background:var(--ink);}
 
+  /* ---------- Marcos y cierre ---------- */
+  .marco{border:1px solid var(--line);border-left:3px solid var(--ink);background:var(--card);
+         padding:13px 16px;margin-top:16px;font-size:.87rem;line-height:1.55;border-radius:0 8px 8px 0;}
+  .marco.rojo{border-left-color:var(--rojo);background:#fbf4f2;border-color:#e2cfc9;}
+  .marco b{font-weight:600;}
+  .firma{border-top:1px solid var(--line);margin-top:28px;padding-top:20px;text-align:center;}
+  .firma .n{font-family:'Instrument Serif',Georgia,serif;font-size:1.5rem;}
+  .firma .d{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.08em;color:var(--muted);line-height:1.8;margin-top:4px;}
+  .legal{font-size:.78rem;color:var(--muted);font-style:italic;line-height:1.6;max-width:64ch;margin:0 auto;text-align:left;}
+  footer.pie{border-top:1px solid var(--line);padding:20px 0 0;font-size:.76rem;color:var(--muted);line-height:1.6;text-align:center;}
+
   /* ---------- Anexo ---------- */
-  .anexo{background:#eeece7;margin-top:64px;padding-bottom:56px;border-top:2px solid var(--ink);}
-  .anexo .bloque-h{border-top:0;margin-top:0;padding-top:40px;}
-  .cols{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);background:var(--card);border-radius:10px;overflow:hidden;margin-top:8px;}
+  .anexo{background:#eeece7;margin-top:56px;padding-bottom:20px;border-top:2px solid var(--ink);}
+  .anexo .bloque-h{border-top:0;margin-top:0;padding-top:36px;}
+  .cols{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);background:var(--card);border-radius:10px;overflow:hidden;margin-top:6px;}
   @media (max-width:640px){ .cols{grid-template-columns:repeat(2,1fr);} }
-  .col{padding:14px 12px 16px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);min-width:0;}
+  .col{padding:13px 12px 15px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);min-width:0;}
   .col h5{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;text-align:center;font-weight:600;}
   .col .sub{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.35;margin-top:3px;min-height:2.7em;}
   .gauge{display:block;margin:4px auto 6px;}
   .gauge text{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:26px;text-anchor:middle;}
-  .fila{margin-top:8px;}
   .fila .r{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:.79rem;line-height:1.25;}
   .fila .r .n{color:var(--ink-soft);min-width:0;}
   .fila .r .v{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.76rem;flex:none;}
   .fila .raw{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:1px;}
   .fila .track{height:3px;background:var(--line-soft);margin:3px 0 7px;}
   .fila .track i{display:block;height:100%;}
-
-  table.raw{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px;background:var(--card);
+  table.raw{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px;background:var(--card);
             border:1px solid var(--line);border-radius:10px;overflow:hidden;font-variant-numeric:tabular-nums;}
   table.raw th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
                color:var(--muted);background:#f1efea;padding:8px 12px;border-bottom:1px solid var(--line);}
@@ -135,18 +204,24 @@
   table.raw tr:last-child td{border-bottom:0;}
   table.raw td.k{font-family:'IBM Plex Mono',monospace;font-size:.76rem;white-space:nowrap;width:1%;}
   table.raw td.d{color:var(--ink-soft);}
+  .nota-pie{font-size:.78rem;color:var(--muted);font-style:italic;line-height:1.5;margin-top:10px;max-width:66ch;}
 
-  .marco{border:1px solid var(--line);border-left:3px solid var(--ink);background:var(--card);
-         padding:14px 16px;margin-top:18px;font-size:.88rem;line-height:1.55;border-radius:0 8px 8px 0;}
-  .marco.rojo{border-left-color:var(--rojo);background:#fbf4f2;border-color:#e2cfc9;}
-  .marco b{font-weight:600;}
-
-  /* ---------- Cierre ---------- */
-  .firma{border-top:1px solid var(--line);margin-top:32px;padding-top:22px;text-align:center;}
-  .firma .n{font-family:'Instrument Serif',Georgia,serif;font-size:1.5rem;}
-  .firma .d{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.08em;color:var(--muted);line-height:1.8;margin-top:4px;}
-  .legal{font-size:.78rem;color:var(--muted);font-style:italic;line-height:1.6;max-width:64ch;margin:0 auto;text-align:left;}
-  footer.pie{border-top:1px solid var(--line);padding:22px 0 40px;font-size:.76rem;color:var(--muted);line-height:1.6;}
+  /* ---------- Impresión ----------
+     El botón "Descargar PDF" abre el diálogo de impresión del navegador, así que
+     lo que se guarda es exactamente lo que define esta hoja. */
+  @page{ size:A4; margin:14mm 13mm; }
+  @media print{
+    body{background:#fff;font-size:10.5pt;}
+    .wrap{max-width:none;padding:0;}
+    .no-imprime{display:none !important;}
+    .cabecera{padding:18px 0 12px;}
+    .anexo{background:#fff;margin-top:0;border-top:0;}
+    /* El anexo arranca en hoja nueva y nada se parte al medio. */
+    .anexo .bloque-h{break-before:page;}
+    section.cap, .veredicto, .riesgos, .momento, .voz, .cols, table.raw,
+    .comp, .cuad, .col-b, .paso, .datos{ break-inside:avoid; }
+    a{color:inherit;text-decoration:none;}
+  }
 </style>
 </head>
 <body>
@@ -159,10 +234,16 @@
   </div>
 </div>
 
-<header class="top">
+<header class="top" id="arriba">
   <div class="wrap top-inner">
     <div class="marca">Campos HR <span>· Portal Clientes</span></div>
-    <div class="top-meta">Agosto 2026</div>
+    <div class="top-der">
+      <span class="top-meta">Agosto 2026</span>
+      <button type="button" class="btn no-imprime" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+        Descargar PDF
+      </button>
+    </div>
   </div>
 </header>
 
@@ -170,190 +251,172 @@
   <section class="cabecera">
     <div class="eyebrow">Distribuidora Andina (prueba)</div>
     <h1>Bruno Alsina</h1>
-    <div class="tipo">Evaluación de potencial</div>
+    <div class="tipo">Evaluación de potencial · Repositor de Sucursal</div>
   </section>
 
-  <!-- ============================ BLOQUE 1 ============================ -->
-  <div class="bloque-h" style="margin-top:8px">
-    <div>
-      <div class="n">Bloque 1</div>
-      <h2>El informe</h2>
-    </div>
-    <p>Qué se puede esperar de Bruno en el puesto, y qué necesita de su jefe para rendir. Escrito
-      para leerse sin saber de pruebas psicológicas.</p>
+  <div class="datos">
+    <div class="dato"><div class="k">Edad</div><div class="v">26 años</div></div>
+    <div class="dato"><div class="k">Estudios</div><div class="v">Secundario completo</div></div>
+    <div class="dato"><div class="k">Puesto evaluado</div><div class="v">Repositor de Sucursal</div></div>
+    <div class="dato"><div class="k">Batería</div><div class="v">Batería 1 · básica</div></div>
+    <div class="dato"><div class="k">Fecha de evaluación</div><div class="v">13 de agosto de 2026</div></div>
+    <div class="dato"><div class="k">Evaluadora</div><div class="v">Lic. Lorena Campos · Mat. 5217</div></div>
   </div>
 
-  <div class="ficha">
-    <dl>
-      <dt>Edad</dt><dd>26 años</dd>
-      <dt>Estudios</dt><dd>Secundario completo. Curso de manejo de autoelevador.</dd>
-      <dt>Puesto evaluado</dt><dd>Repositor de Sucursal</dd>
-      <dt>Batería</dt><dd>Batería 1 · básica</dd>
-      <dt>Fecha de evaluación</dt><dd>13 de agosto de 2026</dd>
-    </dl>
+  <!-- ===================== LA DECISIÓN ===================== -->
+  <div class="veredicto">
+    <div class="r">Recomendación</div>
+    <h2>Apto con observaciones</h2>
+    <p>Se recomienda incorporarlo, con dos condiciones: que reciba por escrito el procedimiento de
+      su tarea, y que tenga a quién consultar cuando aparece algo fuera de lo previsto. Sin eso, el
+      riesgo no es que no haga el trabajo: es que decida solo y rápido cuando no le corresponde.</p>
+    <div class="firma-linea">
+      Evaluación administrada y firmada por <b>Lic. Lorena Campos</b>, Mat. 5217. Válida por un año
+      desde la fecha de evaluación.
+    </div>
   </div>
 
   <section class="cap">
     <div class="cap-h">
       <div class="num">01</div>
-      <div class="tit"><h3>Conclusión</h3><div class="sub">Nivel de ajuste al puesto</div></div>
+      <div class="tit"><h3>La decisión, en treinta segundos</h3>
+        <div class="sub">Lo que sostiene la recomendación y lo que la condiciona</div></div>
     </div>
-
-    <div class="ajustes">
-      <div class="aj aj-alto">
-        <div class="ico">✓</div>
-        <div><div class="t">Alto ajuste</div>
-          <div class="d">Se desempeñaría de manera sólida en el rol, con un nivel de adecuación alto
-            a las exigencias del puesto y, aparentemente, sin riesgos relevantes para su desempeño.</div></div>
-        <div class="tick"></div>
+    <div class="balanza">
+      <div class="col-b favor">
+        <div class="ch">A favor</div>
+        <ul class="puntos">
+          <li>La rutina no lo cansa: reponer, controlar y ordenar todos los días le sale sin gasto
+            extra.<span class="fuente">Benziger · basal izquierdo 104, el dominante</span></li>
+          <li>El trato con público y con compañeros no da señales de conflictividad.
+            <span class="fuente">Zulliger · GHR:PHR 4:1, COP 1</span></li>
+          <li>Sostiene la exigencia del puesto sin quedarse sin resto.
+            <span class="fuente">Zulliger · D 0 y AdjD 0</span></li>
+        </ul>
       </div>
-      <div class="aj aj-desarrollo elegido">
-        <div class="ico">!</div>
-        <div><div class="t">Ajuste con aspectos a desarrollar</div>
-          <div class="d">Puede desempeñarse adecuadamente en el rol, aunque presenta algunos
-            aspectos a desarrollar que, con acompañamiento, aparentemente no deberían impactar de
-            manera significativa en su desempeño.</div></div>
-        <div class="tick"></div>
-      </div>
-      <div class="aj aj-alertas">
-        <div class="ico">⚠</div>
-        <div><div class="t">Ajuste con alertas</div>
-          <div class="d">Podría desempeñarse en el rol, aunque presenta aspectos que podrían impactar
-            su rendimiento, especialmente en contextos de presión o alta exigencia, requiriendo
-            seguimiento cercano.</div></div>
-        <div class="tick"></div>
-      </div>
-      <div class="aj aj-bajo">
-        <div class="ico">✕</div>
-        <div><div class="t">Bajo ajuste</div>
-          <div class="d">Presenta un nivel de adecuación bajo a las exigencias del rol, lo que podría
-            dificultar su desempeño y requerir un nivel de acompañamiento elevado para sostenerlo.</div></div>
-        <div class="tick"></div>
+      <div class="col-b mirar">
+        <div class="ch">A mirar</div>
+        <ul class="puntos">
+          <li>Concluye con menos información de la disponible. Se nota cuando algo se sale del
+            procedimiento.<span class="fuente">Zulliger · Zd −2.0</span></li>
+          <li>La reacción le sale de golpe más de lo que le sale medida.
+            <span class="fuente">Zulliger · FC:CF+C 1:2 con C pura 1</span></li>
+          <li>Aprende haciendo. Una capacitación teórica le rinde poco.
+            <span class="fuente">Raven 22 · rango III, término medio</span></li>
+        </ul>
       </div>
     </div>
-    <p class="nota-pie">El nivel de ajuste considera las competencias evaluadas y el estilo de
-      trabajo en relación al rol, pudiendo verse influido por el contexto organizacional, el estilo
-      de liderazgo y la dinámica del equipo.</p>
-
-    <h4>Resumen</h4>
-    <p>Bruno trabaja cómodo donde hay una rutina y un procedimiento: repone, controla y ordena sin
-      que la repetición lo canse, y sostiene el ritmo del día sin quedarse sin resto. En el trato es
-      cordial y no aparece conflictividad, lo que en una sucursal con público y con compañeros de
-      turno es una ventaja concreta.</p>
-    <p>Lo que hay que trabajar son dos cosas. Cuando algo se sale del procedimiento, tiende a
-      resolver rápido y con lo que tiene a mano, sin frenar a mirar el resto de la información. Y
-      cuando algo lo incomoda, la reacción le sale de golpe más de lo que le sale medida. Ninguna de
-      las dos lo inhabilita para el puesto: las dos se manejan con instrucciones claras y con un
-      jefe que le marque qué hacer cuando aparece lo que no estaba previsto.</p>
   </section>
 
   <section class="cap">
     <div class="cap-h">
       <div class="num">02</div>
-      <div class="tit"><h3>Recomendaciones para su jefe directo</h3></div>
+      <div class="tit"><h3>Mapa de riesgo</h3>
+        <div class="sub">Qué puede fallar, cuánto pesa y con qué se contiene</div></div>
     </div>
-    <ul class="puntos">
-      <li>Darle el procedimiento escrito de la reposición y de la recepción de mercadería. Con la
-        secuencia a la vista rinde solo; sin ella, improvisa.</li>
-      <li>Decirle explícitamente qué hacer cuando algo no cierra (faltante, producto vencido,
-        remito que no coincide): a quién avisa, en qué momento y qué no decide solo. Es la
-        situación en la que más se le nota el apuro por resolver.</li>
-      <li>Pedirle que antes de descartar o devolver algo lo chequee con una segunda mirada. No es
-        desconfianza: tiende a concluir con menos información de la que hay disponible.</li>
-      <li>Cuando haya un roce con un compañero o con un cliente, conviene conversarlo el mismo día
-        y en privado. Reacciona de entrada y se le pasa rápido; lo que no conviene es dejarlo
-        correr.</li>
-      <li>Los cambios de método avisarlos antes y explicarle el porqué. Los toma bien, pero
-        necesita saber qué reemplaza a qué.</li>
-      <li>Es más fácil enseñarle haciendo que explicándole. Una jornada acompañado rinde más que
-        una capacitación teórica.</li>
-      <li>Reconocerle el trabajo bien hecho cuando ocurre. Es de los que sostienen el esfuerzo si
-        ven que se nota.</li>
-    </ul>
+    <div class="riesgos" id="riesgos"></div>
   </section>
 
   <section class="cap">
     <div class="cap-h">
       <div class="num">03</div>
-      <div class="tit"><h3>Competencias evaluadas</h3></div>
+      <div class="tit"><h3>Nivel de ajuste al puesto</h3></div>
     </div>
-    <div class="comps" id="comps"></div>
-    <div class="escala">
-      <b>Referencia</b>
-      Sobresaliente (80–100%) · Alto (79–65%) · Adecuado (64–50%) · Bajo (menos de 50%)<br>
-      Valores promedio de las competencias evaluadas.
-    </div>
+    <div class="escalera" id="escalera"></div>
+    <p class="nota-pie">El nivel de ajuste considera las competencias evaluadas y el estilo de
+      trabajo en relación al rol, pudiendo verse influido por el contexto organizacional, el estilo
+      de liderazgo y la dinámica del equipo.</p>
   </section>
 
   <section class="cap">
     <div class="cap-h">
       <div class="num">04</div>
-      <div class="tit"><h3>Análisis cualitativo</h3></div>
+      <div class="tit"><h3>Competencias evaluadas</h3></div>
     </div>
-
-    <h4>Con desarrollo destacado</h4>
-    <ul class="puntos">
-      <li>Su fortaleza está en el cuadrante Basal Izquierdo: ordenar, controlar y repetir una tarea
-        con la misma prolijidad todos los días le sale sin gastar energía extra. Es exactamente el
-        núcleo del puesto.</li>
-      <li>Se maneja bien con la gente. En el trato aparece más ajuste que desajuste, sin señales de
-        conflictividad, y no le pesa el contacto con público.</li>
-      <li>Sostiene el día a día sin quedarse sin resto: la exigencia habitual del puesto no lo
-        supera.</li>
-    </ul>
-
-    <h4>Con desarrollo esperado</h4>
-    <ul class="puntos">
-      <li>Percibe las situaciones parecido a como las percibe la mayoría, así que entiende una
-        consigna sin que haya que dársela dos veces.</li>
-      <li>Toma una posición activa: propone y hace, no espera a que le resuelvan.</li>
-      <li>La calidad de sus ideas es correcta para lo que el puesto pide.</li>
-    </ul>
-
-    <h4>Con necesidad de desarrollo</h4>
-    <ul class="puntos">
-      <li>Revisa menos información de la disponible antes de concluir. En la rutina no se nota; se
-        nota cuando aparece algo fuera de lo previsto y decide con lo primero que ve.</li>
-      <li>Expresa lo que siente con poco filtro, más de golpe que graduado. No implica un problema
-        de control, pero en un mostrador se ve.</li>
-      <li>Tiende a simplificar. Frente a una situación con varias cosas mezcladas se queda con la
-        parte más evidente.</li>
-      <li>El razonamiento abstracto está en el promedio, con estilo de aprendizaje práctico:
-        aprende haciendo, no leyendo.</li>
-      <li>La visión de conjunto es su cuadrante más flojo. Conviene no pedirle que anticipe cómo
-        una decisión suya afecta al resto de la operación; eso todavía se lo tienen que marcar.</li>
-    </ul>
+    <div class="comps" id="comps"></div>
+    <div class="escala">
+      <b>Referencia</b>
+      Sobresaliente (80–100%) · Alto (79–65%) · Adecuado (64–50%) · Bajo (menos de 50%)
+    </div>
   </section>
 
   <section class="cap">
     <div class="cap-h">
       <div class="num">05</div>
-      <div class="tit"><h3>Estilos de pensamiento</h3>
-        <div class="sub">Según BTSA (Benziger Thinking Styles Assessment)</div></div>
+      <div class="tit"><h3>Qué hacer, y cuándo</h3>
+        <div class="sub">Recomendaciones para su jefe directo, por momento</div></div>
     </div>
-    <div class="cuadrantes" id="cuadrantes"></div>
-
-    <h4>Basal izquierdo</h4>
-    <p>Es el cuadrante con mayor desarrollo natural. Las tareas de ese modo (controlar, ordenar,
-      seguir un procedimiento, repetir con precisión) le salen sin gasto de energía adicional y sin
-      agotarlo. El pensamiento basal izquierdo es ordenado, cumplidor y confiable, y prefiere
-      resolver paso a paso.</p>
-    <p>Las tareas que más pueden cansarlo son las del cuadrante Frontal Derecho: improvisar una
-      solución nueva, arriesgar, cambiar el plan sobre la marcha.</p>
-
-    <h4>Nivel de alerta y concentración</h4>
-    <p>Logra buena calidad de concentración en un ambiente con ruido y movimiento alrededor, que es
-      el ambiente de una sucursal.</p>
-
-    <h4>Nivel de estrés: controlado</h4>
-    <p>Tiene herramientas suficientes para la exigencia habitual del puesto. Solo ante situaciones
-      inesperadas o de tensión sostenida en el tiempo conviene acompañarlo para que sus recursos
-      sigan alcanzando.</p>
+    <div class="momento m1">
+      <div class="t">Desde el día 1</div>
+      <ul class="puntos">
+        <li>Darle el procedimiento escrito de la reposición y de la recepción de mercadería. Con la
+          secuencia a la vista rinde solo; sin ella, improvisa.</li>
+        <li>Dejarle claro qué decide él y qué no. En especial: qué hacer cuando un remito no
+          coincide, cuando falta mercadería o cuando un producto está vencido.</li>
+        <li>Enseñarle haciendo. Una jornada acompañado rinde más que una capacitación teórica.</li>
+      </ul>
+    </div>
+    <div class="momento m2">
+      <div class="t">Primeros 30 a 60 días</div>
+      <ul class="puntos">
+        <li>Pedirle que antes de descartar o devolver algo lo chequee con una segunda mirada. No es
+          desconfianza: tiende a concluir con poca información.</li>
+        <li>Si hay un roce con un compañero o con un cliente, conversarlo el mismo día y en
+          privado. Reacciona de entrada y se le pasa rápido.</li>
+        <li>Avisarle los cambios de método antes, y explicarle qué reemplaza a qué.</li>
+      </ul>
+    </div>
+    <div class="momento m3">
+      <div class="t">Días 60 a 90</div>
+      <ul class="puntos">
+        <li>Revisar si ya resuelve solo las situaciones fuera del procedimiento o si sigue
+          necesitando consultar.</li>
+        <li>Chequear si aparecieron roces y cómo se resolvieron.</li>
+        <li>Reconocerle el trabajo bien hecho cuando ocurre: sostiene el esfuerzo si ve que se
+          nota.</li>
+      </ul>
+    </div>
+    <div class="momento m4">
+      <div class="t">Permanente</div>
+      <ul class="puntos">
+        <li>No pedirle que anticipe cómo una decisión suya afecta al resto de la operación. Eso
+          todavía se le marca.</li>
+        <li>Mantener la rutina previsible. Es donde rinde, y es lo que el puesto pide.</li>
+      </ul>
+    </div>
   </section>
 
   <section class="cap">
     <div class="cap-h">
       <div class="num">06</div>
+      <div class="tit"><h3>La voz del candidato</h3></div>
+    </div>
+    <div class="voz">
+      <div class="k">Cómo se describe él</div>
+      <div class="frase"><em>“Determinado”</em> y <em>“Constante”</em></div>
+      <p>Los dos adjetivos que eligió en el cuestionario coinciden con lo que muestran las pruebas:
+        alguien que sostiene una tarea repetida sin aflojar. No aparece ninguna palabra sobre
+        cambio, iniciativa ni desafío, que es coherente con lo que le cuesta.</p>
+    </div>
+  </section>
+
+  <section class="cap">
+    <div class="cap-h">
+      <div class="num">07</div>
+      <div class="tit"><h3>Estilo de pensamiento</h3>
+        <div class="sub">Según BTSA (Benziger Thinking Styles Assessment)</div></div>
+    </div>
+    <div class="cuadrantes" id="cuadrantes"></div>
+    <div class="marco">
+      <b>Nivel de estrés: controlado.</b> Tiene herramientas suficientes para la exigencia habitual
+      del puesto. Solo ante situaciones inesperadas o de tensión sostenida conviene acompañarlo.
+      Logra buena concentración en un ambiente con ruido y movimiento, que es el de una sucursal.
+    </div>
+  </section>
+
+  <section class="cap">
+    <div class="cap-h">
+      <div class="num">08</div>
       <div class="tit"><h3>Técnicas utilizadas y profesional a cargo</h3></div>
     </div>
     <ul class="puntos">
@@ -376,28 +439,28 @@
         siendo la única persona autorizada para dar feedback. La información se infiere al objetivo
         específico determinado con el cliente y puede contar con validez de hasta 1 año calendario a
         partir de la fecha de evaluación.</p>
-      <div class="n" style="margin-top:20px">Lorena Campos</div>
+      <div class="n" style="margin-top:18px">Lorena Campos</div>
       <div class="d">Lic. en Psicología · Mat. 5217<br>lorecamposhr@gmail.com</div>
     </div>
   </section>
 </main>
 
-<!-- ============================ BLOQUE 2 ============================ -->
+<!-- ===================== ANEXO ===================== -->
 <div class="anexo">
   <div class="wrap">
     <div class="bloque-h">
       <div>
-        <div class="n">Bloque 2 · Anexo</div>
+        <div class="n">Anexo</div>
         <h2>Los números detrás</h2>
       </div>
-      <p>El respaldo técnico de lo que dice el bloque 1. No hace falta leerlo para tomar la
-        decisión: está para que cada afirmación se pueda rastrear hasta el dato que la sostiene.</p>
+      <p>El respaldo técnico de lo que dice el informe. No hace falta leerlo para decidir: está para
+        que cada afirmación se pueda rastrear hasta el dato que la sostiene.</p>
     </div>
 
     <div class="marco rojo">
-      <b>Cómo se lee esto.</b> Ningún puntaje de acá es una sentencia. Son indicadores que se
-      cruzan entre sí y con la entrevista, y el veredicto lo firma la psicóloga que administró las
-      pruebas. Un valor suelto, leído solo, dice poco y se presta a error.
+      <b>Cómo se lee esto.</b> Ningún puntaje de acá es una sentencia. Son indicadores que se cruzan
+      entre sí y con la entrevista, y el veredicto lo firma la psicóloga que administró las pruebas.
+      Un valor suelto, leído solo, dice poco y se presta a error.
     </div>
 
     <h4>Las seis dimensiones, con lo que las compone</h4>
@@ -475,31 +538,81 @@
     </table>
     <p class="nota-pie">Los valores llevados a escala 0–99 son una conversión para poder comparar
       dimensiones entre sí; el valor original va debajo de cada renglón y es el que vale.</p>
+
+    <div class="pie-acciones no-imprime">
+      <button type="button" class="btn" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+        Descargar PDF
+      </button>
+      <a class="btn btn-sec" href="#arriba">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V8"/><path d="m17 13-5-5-5 5"/></svg>
+        Volver arriba
+      </a>
+    </div>
+
+    <footer class="pie">
+      Campos HR · Consulting Services. Este informe es confidencial y se entrega para el objetivo
+      acordado con el cliente.
+    </footer>
   </div>
 </div>
 
-<footer class="pie">
-  <div class="wrap">
-    Campos HR · Consulting Services. Este informe es confidencial y se entrega
-    para el objetivo acordado con el cliente.
-  </div>
-</footer>
-
 <script>
-/* ---------------- Competencias del bloque 1 ---------------- */
-const COMPETENCIAS = [
-  { n:'Habilidad Cognitiva', v:50, d:'Estilo de aprendizaje: capacidad de lógica abstracta vs. pensamiento concreto y práctico.' },
-  { n:'Autogestión',         v:65, d:'Coordinación de tareas en función del tiempo. Identificar prioridades. Gestión del cambio.' },
-  { n:'Control Emocional',   v:50, d:'Tolerancia a la presión. Modulación de las emociones en la resolución de conflictos.' },
-  { n:'Habilidad Interpersonal', v:65, d:'Negociación. Orientación al cliente. Capacidad de comunicación. Empatía.' },
-  { n:'Proactividad',        v:55, d:'Orientación al resultado. Iniciativa. Rol activo en los grupos. Gestión de la innovación.' },
-  { n:'Liderazgo',           v:40, d:'Visión global vs. foco en el detalle. Gestión de personas. Capacidad de decisión.' },
+/* ---------------- Mapa de riesgo ----------------
+   Tres niveles y nada más: con cinco escalones el que lee tiene que interpretar
+   la escala en vez de leer el riesgo. Cada uno va con lo que lo contiene, que es
+   lo que convierte un riesgo en una decisión que se puede tomar. */
+const RIESGOS = [
+  { n:'Error por decidir rápido', nivel:'medio',
+    mit:'Se contiene con el procedimiento escrito y con a quién consultar.' },
+  { n:'Roce con público o compañeros', nivel:'medio',
+    mit:'Conversarlo el mismo día. Reacciona de entrada y se le pasa.' },
+  { n:'Sobrecarga o desgaste', nivel:'bajo',
+    mit:'Sostiene la exigencia del puesto sin quedarse sin resto.' },
+  { n:'Rotación temprana', nivel:'bajo',
+    mit:'Perfil de rutina, en un puesto de rutina.' },
+  { n:'Desempeño en la tarea de todos los días', nivel:'bajo',
+    mit:'Es donde el perfil rinde sin esfuerzo extra.' },
 ];
+const NIVELES = { bajo:1, medio:2, alto:3 };
+document.getElementById('riesgos').innerHTML =
+  '<div class="riesgo th"><span>Indicador</span><span>Nivel</span><span></span><span>Con qué se contiene</span></div>' +
+  RIESGOS.map(r => `
+    <div class="riesgo">
+      <span>${r.n}</span>
+      <span class="nivel ${r.nivel}">${r.nivel[0].toUpperCase() + r.nivel.slice(1)}</span>
+      <span class="escala-r">${[1,2,3].map(i =>
+        `<i class="${i <= NIVELES[r.nivel] ? 'on-' + r.nivel : ''}"></i>`).join('')}</span>
+      <span class="mit">${r.mit}</span>
+    </div>`).join('');
 
-/* Medidor de la portada del modelo: media luna, tramo lleno en azul oscuro. */
+/* ---------------- Nivel de ajuste ---------------- */
+const AJUSTES = [
+  { t:'Alto ajuste', d:'Se desempeñaría de manera sólida, sin riesgos relevantes.' },
+  { t:'Con aspectos a desarrollar', d:'Se desempeña bien, con aspectos que se resuelven acompañando.', elegido:true },
+  { t:'Con alertas', d:'Podría desempeñarse, con seguimiento cercano en contextos de presión.' },
+  { t:'Bajo ajuste', d:'Adecuación baja a las exigencias del rol.' },
+];
+document.getElementById('escalera').innerHTML = AJUSTES.map(a => `
+  <div class="paso${a.elegido ? ' elegido' : ''}">
+    <div class="t">${a.t}</div>
+    <div class="d">${a.d}</div>
+  </div>`).join('');
+
+/* ---------------- Competencias ----------------
+   Debajo de cada medidor va la lectura de esta persona, no la definición de la
+   competencia: la definición es igual para todos y no ayuda a decidir. */
+const COMPETENCIAS = [
+  { n:'Habilidad cognitiva',     v:50, lec:'Razonamiento en el promedio. Aprende haciendo, no leyendo.' },
+  { n:'Autogestión',             v:65, lec:'Sostiene una rutina sin que se le caiga nada.' },
+  { n:'Control emocional',       v:50, lec:'Aguanta el día. La reacción le sale de golpe.' },
+  { n:'Habilidad interpersonal', v:65, lec:'Trato cordial con público y con compañeros.' },
+  { n:'Proactividad',            v:55, lec:'Hace sin que lo empujen, dentro de lo pautado.' },
+  { n:'Liderazgo',               v:40, lec:'No conduce gente. El puesto tampoco lo pide.' },
+];
 function medidor(v){
-  const largo = Math.PI * 42, lleno = largo * (v / 100);
-  return `<svg class="medidor" width="128" height="76" viewBox="0 0 100 60" role="img" aria-label="${v} por ciento">
+  const lleno = Math.PI * 42 * (v / 100);
+  return `<svg width="118" height="70" viewBox="0 0 100 60" role="img" aria-label="${v} por ciento">
     <path d="M 8 52 A 42 42 0 0 1 92 52" fill="none" stroke="#e5e2db" stroke-width="11" stroke-linecap="round"/>
     <path d="M 8 52 A 42 42 0 0 1 92 52" fill="none" stroke="#16202b" stroke-width="11" stroke-linecap="round"
           stroke-dasharray="${lleno.toFixed(1)} 999"/>
@@ -510,28 +623,26 @@ document.getElementById('comps').innerHTML = COMPETENCIAS.map(c => `
   <div class="comp">
     ${medidor(c.v)}
     <div class="nom">${c.n}</div>
-    <div class="det">${c.d}</div>
+    <div class="lec">${c.lec}</div>
   </div>`).join('');
 
 /* ---------------- Cuadrantes Benziger ---------------- */
 const BZ = [
-  { k:'Cuadrante', n:'Frontal izquierdo',  v:78,  d:'Analista, decisiones, metas y dirección.' },
-  { k:'Cuadrante', n:'Frontal derecho',    v:52,  d:'Creatividad e innovación. Solucionar problemas. Arriesgar.' },
-  { k:'Cuadrante', n:'Basal izquierdo',    v:104, d:'Organizador, productividad. Monitoreo y control.', dom:true },
-  { k:'Cuadrante', n:'Basal derecho',      v:88,  d:'Buena voluntad. Armonizador. Empatía.' },
+  { n:'Basal izquierdo',   v:104, d:'Orden, procedimiento, control. Le sale sin gastar energía: es el núcleo del puesto.', dom:true },
+  { n:'Basal derecho',     v:88,  d:'Vínculo y trato. Sostiene el contacto con público sin que le pese.' },
+  { n:'Frontal izquierdo', v:78,  d:'Análisis y números. Presente, sin ser su fuerte.' },
+  { n:'Frontal derecho',   v:52,  d:'Improvisar, arriesgar, ver el conjunto. Es lo que más lo cansa.' },
 ];
 document.getElementById('cuadrantes').innerHTML = BZ.map(c => `
   <div class="cuad${c.dom ? ' dom' : ''}">
-    <div class="k">${c.k}${c.dom ? ' · dominante' : ''}</div>
+    <div class="k">Cuadrante${c.dom ? ' · dominante' : ''}</div>
     <div class="n">${c.n}</div>
     <div class="v">${c.v}</div>
     <div class="barra"><i style="width:${Math.min(100, c.v / 120 * 100)}%"></i></div>
     <div class="d">${c.d}</div>
   </div>`).join('');
 
-/* ---------------- Las seis dimensiones del anexo ----------------
-   Mismo criterio que las fichas de talento: cada renglón muestra el valor
-   original y su conversión a 0–99, y la dimensión es el promedio. */
+/* ---------------- Las seis dimensiones del anexo ---------------- */
 const DIMENSIONES = [
   { k:'ANÁLISIS', s:'cómo razona y cuánto revisa', filas:[
       { n:'Benziger FI', v:78, raw:'78' },
@@ -565,7 +676,6 @@ const DIMENSIONES = [
       { n:'FC:CF+C · impulso', v:33, raw:'1:2 · C pura 1' },
   ]},
 ];
-
 function color(v){
   if (v >= 75) return '#4a7856';
   if (v >= 60) return '#43648f';
