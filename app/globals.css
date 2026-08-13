@@ -183,12 +183,24 @@ body {
   padding: 14px 20px;
   border-bottom: 1px solid var(--line-soft);
 }
-/* Los dos botones de la fila: entrar al portal y copiar el link para mandarlo. */
+/* Los dos botones de la fila: entrar al portal y copiar el link para mandarlo.
+   Van del mismo ancho, y el ancho lo fija el más largo de los textos posibles
+   ("Copiar link"), así el par no cambia de tamaño al pasar a "Copiado". */
 .acc-acciones {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+}
+.acc-acciones > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 112px;
+  height: 34px;
+  padding: 0 14px;
+  text-align: center;
 }
 .acc-entrar {
   display: inline-flex;
