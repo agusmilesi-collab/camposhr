@@ -160,10 +160,10 @@ export default async function Portal({ params }: { params: { token: string } }) 
     : await getDatosCliente(params.token);
   if (!datos) return <Acceso />;
 
-  const { empresa, empresaId, busquedas } = datos;
+  const { empresa, empresaId, documentos, busquedas } = datos;
 
   // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
-  const servicios = serviciosDe(empresaId);
+  const servicios = serviciosDe(empresaId, params.token, documentos);
 
   // La facturación se ve en el cliente de prueba mientras las tildes no se
   // carguen en Airtable. Ver la nota en lib/cobro.ts.

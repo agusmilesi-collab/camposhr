@@ -10,6 +10,7 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 .env*
 
-# Documentos de clientes servidos en local. No entran al repositorio: son de
-# clientes reales y este repo es público. Ver lib/servicios.ts.
+# Los documentos de clientes no viven en el repositorio: son de clientes reales
+# y este repo es público. Van como adjuntos de la empresa en Airtable, campo
+# "Documentos del portal". Ver lib/servicios.ts.
 public/doc/
