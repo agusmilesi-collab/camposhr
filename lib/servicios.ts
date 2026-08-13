@@ -46,7 +46,7 @@ const SERVICIOS: Record<string, Servicio[]> = {
     {
       titulo: 'Diseño Organizacional',
       bajada:
-        'Los documentos del trabajo de estructura. Se actualizan a medida que avanzan las decisiones.',
+        'Los documentos del trabajo de estructura y el alcance del tramo que sigue. Se actualizan a medida que avanzan las decisiones.',
       documentos: [
         {
           nombre: 'Casos',
@@ -59,6 +59,12 @@ const SERVICIOS: Record<string, Servicio[]> = {
           detalle: 'El encaje de las once personas, con una ficha por cada una.',
           slug: 'evaluaciones',
           archivo: 'Laruso - Evaluaciones.html',
+        },
+        {
+          nombre: 'Propuesta',
+          detalle: 'Las tres correcciones de método y el trabajo que se propone.',
+          slug: 'propuesta',
+          archivo: 'Laruso - Propuesta.html',
         },
         {
           nombre: 'Rediseño',
