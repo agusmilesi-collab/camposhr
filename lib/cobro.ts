@@ -10,6 +10,20 @@ import type { Candidato } from './airtable';
  * Vive acá y no adentro de una tabla porque lo usan las dos: la de búsquedas en
  * curso y la de informes entregados.
  */
+/**
+ * La columna de facturación todavía no se publica.
+ *
+ * Los dos campos de Airtable existen y están sin tildar en todos los candidatos,
+ * y Airtable devuelve un campo sin tildar igual que uno sin cargar. Publicada
+ * hoy, la columna le diría "Sin facturar" a cada informe entregado de cada
+ * cliente, que es una afirmación sobre su cuenta corriente y puede ser falsa.
+ *
+ * Se prende cambiando esto por `true`, el día que las tildes se empiecen a
+ * cargar. Mientras tanto se ve en el cliente de prueba, que es donde el dato
+ * está puesto a mano.
+ */
+export const COBRO_PUBLICADO = false;
+
 export type EstadoCobro = 'pagado' | 'impago' | 'sin-facturar' | 'sin-dato';
 
 export const COBROS: Record<

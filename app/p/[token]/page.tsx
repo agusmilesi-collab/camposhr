@@ -2,7 +2,7 @@ import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
 import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 import NuevoPedido from './NuevoPedido';
-import { COBROS, cobro } from '@/lib/cobro';
+import { COBROS, COBRO_PUBLICADO, cobro } from '@/lib/cobro';
 import { serviciosDe } from '@/lib/servicios';
 
 export const dynamic = 'force-dynamic';
@@ -97,27 +97,27 @@ function ordenar(cands: Candidato[]): Candidato[] {
 }
 
 /** Encabezado de las columnas de una tabla de candidatos en curso. */
-function Encabezado() {
+function Encabezado({ conCobro }: { conCobro: boolean }) {
   return (
-    <div className="tr th">
+    <div className={`tr th${conCobro ? '' : ' sin-cobro'}`}>
       <span>Candidato</span>
       <span>Estado</span>
       <span>Evaluadora</span>
       <span>Entrevista</span>
       <span>Modalidad</span>
       <span>Entrega</span>
-      <span>Facturación</span>
+      {conCobro && <span>Facturación</span>}
     </div>
   );
 }
 
 /** Una fila de candidato en curso. */
-function FilaCandidato({ c }: { c: Candidato }) {
+function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
   const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
   const fe = fecha(c.fechaEntrevista, true);
   const fen = fecha(c.fechaEntrega);
   return (
-    <div className="tr">
+    <div className={`tr${conCobro ? '' : ' sin-cobro'}`}>
       <span className="c-name">{c.nombre}</span>
       <span className="c-estado" data-label="Estado">
         <i className={`dot ${e.clase}`} />
@@ -138,12 +138,14 @@ function FilaCandidato({ c }: { c: Candidato }) {
       {/* El cobro también en curso: una evaluación se puede facturar antes de
           entregar el informe, así que el estado corre desde que el candidato
           entra. */}
-      <span className="c-cobro" data-label="Facturación">
-        <i className={`dot ${COBROS[cobro(c)].clase}`} />
-        <span className="cobro-txt" title={COBROS[cobro(c)].detalle}>
-          {COBROS[cobro(c)].texto}
+      {conCobro && (
+        <span className="c-cobro" data-label="Facturación">
+          <i className={`dot ${COBROS[cobro(c)].clase}`} />
+          <span className="cobro-txt" title={COBROS[cobro(c)].detalle}>
+            {COBROS[cobro(c)].texto}
+          </span>
         </span>
-      </span>
+      )}
     </div>
   );
 }
@@ -162,6 +164,10 @@ export default async function Portal({ params }: { params: { token: string } }) 
 
   // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
   const servicios = serviciosDe(empresaId);
+
+  // La facturación se ve en el cliente de prueba mientras las tildes no se
+  // carguen en Airtable. Ver la nota en lib/cobro.ts.
+  const conCobro = COBRO_PUBLICADO || demo;
 
   // Los informes ya entregados salen de la tarjeta de su búsqueda y se juntan
   // en una sola tabla al final, ordenada por fecha de pedido: el cliente los
@@ -252,15 +258,25 @@ export default async function Portal({ params }: { params: { token: string } }) 
             <article className="card servicio-card">
               <p className="servicio-bajada">{sv.bajada}</p>
               <div className="docs">
-                {sv.documentos.map((d) => (
-                  <a className="doc" href={d.href} target="_blank" rel="noreferrer" key={d.nombre}>
-                    <span className="doc-n">
-                      {d.nombre}
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M7 7h10v10" /></svg>
-                    </span>
-                    <span className="doc-d">{d.detalle}</span>
-                  </a>
-                ))}
+                {sv.documentos.map((d) =>
+                  d.disponible ? (
+                    <a className="doc" href={d.href} target="_blank" rel="noreferrer" key={d.nombre}>
+                      <span className="doc-n">
+                        {d.nombre}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M7 7h10v10" /></svg>
+                      </span>
+                      <span className="doc-d">{d.detalle}</span>
+                    </a>
+                  ) : (
+                    <div className="doc doc-pronto" key={d.nombre}>
+                      <span className="doc-n">
+                        {d.nombre}
+                        <span className="doc-tag">En breve</span>
+                      </span>
+                      <span className="doc-d">{d.detalle}</span>
+                    </div>
+                  )
+                )}
               </div>
             </article>
           </section>
@@ -296,9 +312,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
                   <p className="empty">Sin candidatos asignados todavía.</p>
                 ) : (
                   <div className="tabla">
-                    <Encabezado />
+                    <Encabezado conCobro={conCobro} />
                     {cands.map((c) => (
-                      <FilaCandidato c={c} key={c.id} />
+                      <FilaCandidato c={c} conCobro={conCobro} key={c.id} />
                     ))}
                   </div>
                 )}
@@ -312,7 +328,11 @@ export default async function Portal({ params }: { params: { token: string } }) 
                 <span>Informes entregados</span>
               </div>
               <article className="card">
-                <TablaEntregados filas={filasEntregadas} descargaAbierta={demo} />
+                <TablaEntregados
+                  filas={filasEntregadas}
+                  descargaAbierta={demo}
+                  conCobro={conCobro}
+                />
               </article>
             </>
           )}
