@@ -41,27 +41,7 @@ export default async function QrDelCiclo({
     color: { dark: '#16202b', light: '#ffffff' },
   });
 
-  /*
-   * El código solo, para el rincón de una portada.
-   *
-   * A partir de la segunda charla el código no abre el encuentro: está para el
-   * que cerró el navegador y perdió la pantalla del ciclo. Ahí no hace falta
-   * repetir el nombre de la empresa ni la dirección, porque la placa ya los
-   * dice con la tipografía del deck, y a este tamaño esas dos líneas dejarían
-   * el código demasiado chico para escanearlo desde una silla del fondo.
-   */
-  if (searchParams?.placa === 'rincon') {
-    return (
-      <main className="qr-en-rincon">
-        <style
-          dangerouslySetInnerHTML={{
-            __html: 'html,body{background:transparent;overflow:hidden}',
-          }}
-        />
-        <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />
-      </main>
-    );
-  }
+  const asistentes = await listarAsistentes(corrida.id);
 
   // Dentro de una placa del deck: sin cabecera y sobre el fondo de la
   // diapositiva. Es la primera placa del encuentro, la que se proyecta
@@ -86,11 +66,6 @@ export default async function QrDelCiclo({
       </main>
     );
   }
-
-  // Sólo la pantalla completa cuenta cuántos se registraron. Las dos versiones
-  // de arriba viven adentro de una placa proyectada, y preguntarlo ahí era una
-  // consulta contra la base en el momento en que la sala entera se registra.
-  const asistentes = await listarAsistentes(corrida.id);
 
   return (
     <main className="wrap">
