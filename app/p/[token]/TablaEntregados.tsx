@@ -19,9 +19,23 @@ export type FilaEntregada = {
   recoOrden: number;
   /** Enlace al PDF, o null si todavía no está cargado. */
   informe: string | null;
+  /** Cobro de esa evaluación, resuelto a un solo estado. */
+  cobro: 'pagado' | 'impago' | 'sin-facturar' | 'sin-dato';
 };
 
-type Clave = 'fecha' | 'pedido' | 'candidato' | 'evaluadora' | 'reco';
+/** Los dos campos de Airtable (facturado y pagado) se leen como un solo estado:
+ *  encadenados, lo que importa es hasta dónde llegó el cobro. */
+export const COBROS: Record<
+  FilaEntregada['cobro'],
+  { texto: string; clase: string; detalle: string }
+> = {
+  pagado:         { texto: 'Pagado',        clase: 'green', detalle: 'Facturado y cobrado' },
+  impago:         { texto: 'Impago',        clase: 'amber', detalle: 'Facturado, sin cobrar' },
+  'sin-facturar': { texto: 'Sin facturar',  clase: 'gray',  detalle: 'Todavía sin facturar' },
+  'sin-dato':     { texto: '—',             clase: 'gray',  detalle: 'Sin cargar' },
+};
+
+type Clave = 'fecha' | 'pedido' | 'candidato' | 'evaluadora' | 'reco' | 'cobro';
 
 const COLUMNAS: { clave: Clave; titulo: string }[] = [
   { clave: 'fecha', titulo: 'Fecha' },
@@ -29,6 +43,7 @@ const COLUMNAS: { clave: Clave; titulo: string }[] = [
   { clave: 'candidato', titulo: 'Candidato' },
   { clave: 'evaluadora', titulo: 'Evaluadora' },
   { clave: 'reco', titulo: 'Recomendación' },
+  { clave: 'cobro', titulo: 'Facturación' },
 ];
 
 /** Las columnas de texto arrancan de la A a la Z; fecha y recomendación
@@ -39,6 +54,15 @@ const ARRANCA_ASC: Record<Clave, boolean> = {
   candidato: true,
   evaluadora: true,
   reco: true,
+  cobro: true,
+};
+
+/** Del cobro pendiente al cobrado: lo que falta plata primero. */
+const ORDEN_COBRO: Record<FilaEntregada['cobro'], number> = {
+  'sin-facturar': 0,
+  impago: 1,
+  pagado: 2,
+  'sin-dato': 3,
 };
 
 function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
@@ -54,6 +78,8 @@ function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
       return texto(a.evaluadora).localeCompare(texto(b.evaluadora), 'es');
     case 'reco':
       return a.recoOrden - b.recoOrden;
+    case 'cobro':
+      return ORDEN_COBRO[a.cobro] - ORDEN_COBRO[b.cobro];
   }
 }
 
@@ -135,6 +161,12 @@ export default function TablaEntregados({
             ) : (
               <span className="dash">—</span>
             )}
+          </span>
+          <span className="c-cobro" data-label="Facturación">
+            <i className={`dot ${COBROS[f.cobro].clase}`} />
+            <span className="cobro-txt" title={COBROS[f.cobro].detalle}>
+              {COBROS[f.cobro].texto}
+            </span>
           </span>
           {/* El botón está en todas las filas, tenga o no el PDF cargado:
               para los clientes de verdad todavía no abre nada y al pasar el

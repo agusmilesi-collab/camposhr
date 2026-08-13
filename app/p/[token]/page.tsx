@@ -1,6 +1,7 @@
 import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
-import { datosDemo, esDemo } from '@/lib/portal-demo';
+import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
+import NuevoPedido from './NuevoPedido';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,12 +85,22 @@ function Acceso() {
   );
 }
 
+/** Los dos campos de cobro se leen encadenados: sin factura no hay pago que
+ *  mirar, y sin dato cargado no se afirma nada. */
+function cobro(c: Candidato): FilaEntregada['cobro'] {
+  if (c.facturado == null) return 'sin-dato';
+  if (!c.facturado) return 'sin-facturar';
+  return c.pagado ? 'pagado' : 'impago';
+}
+
 /** Una fila de la tabla de entregados: el candidato con los datos del pedido. */
 type Entregado = { cand: Candidato; puesto: string; fechaPedido: string | null };
 
 export default async function Portal({ params }: { params: { token: string } }) {
   const demo = esDemo(params.token);
-  const datos = demo ? datosDemo() : await getDatosCliente(params.token);
+  const datos = demo
+    ? await datosDemoConAirtable()
+    : await getDatosCliente(params.token);
   if (!datos) return <Acceso />;
 
   const { empresa, busquedas } = datos;
@@ -134,6 +145,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
         informe: c.tieneInforme
           ? `/p/${params.token}/informe/${c.id}`
           : null,
+        cobro: cobro(c),
       };
     }
   );
@@ -161,9 +173,15 @@ export default async function Portal({ params }: { params: { token: string } }) 
       </header>
 
       <main className="wrap">
-        <section className="head">
-          <div className="eyebrow">Estado de evaluaciones</div>
-          <h1>{empresa}</h1>
+        <section className="head head-cliente">
+          <div>
+            <div className="eyebrow">Estado de evaluaciones</div>
+            <h1>{empresa}</h1>
+          </div>
+          {/* El alta de pedidos se está probando con el cliente de prueba: hasta
+              que el formulario escriba en Airtable, el portal real no lo
+              muestra. */}
+          {demo && <NuevoPedido empresa={empresa} />}
         </section>
 
         <section className="busquedas">
