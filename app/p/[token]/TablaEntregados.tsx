@@ -68,10 +68,13 @@ function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
 export default function TablaEntregados({
   filas,
   descargaAbierta = false,
+  conCobro = false,
 }: {
   filas: FilaEntregada[];
   /** Solo el cliente de prueba lo recibe en true, y solo fuera de producción. */
   descargaAbierta?: boolean;
+  /** La columna de facturación, mientras no se publique (ver lib/cobro.ts). */
+  conCobro?: boolean;
 }) {
   const [orden, setOrden] = useState<{ col: Clave; asc: boolean }>({
     col: 'fecha',
@@ -94,8 +97,8 @@ export default function TablaEntregados({
 
   return (
     <div className="tabla entregados">
-      <div className="tr th">
-        {COLUMNAS.map(({ clave, titulo }) => {
+      <div className={`tr th${conCobro ? '' : ' sin-cobro'}`}>
+        {COLUMNAS.filter((c) => conCobro || c.clave !== 'cobro').map(({ clave, titulo }) => {
           const activa = orden.col === clave;
           return (
             <span
@@ -121,7 +124,7 @@ export default function TablaEntregados({
       </div>
 
       {ordenadas.map((f) => (
-        <div className="tr" key={f.id}>
+        <div className={`tr${conCobro ? '' : ' sin-cobro'}`} key={f.id}>
           <span className="c-fecha" data-label="Fecha">
             {f.fechaTexto ?? <span className="dash">—</span>}
           </span>
@@ -144,12 +147,14 @@ export default function TablaEntregados({
               <span className="dash">—</span>
             )}
           </span>
-          <span className="c-cobro" data-label="Facturación">
-            <i className={`dot ${COBROS[f.cobro].clase}`} />
-            <span className="cobro-txt" title={COBROS[f.cobro].detalle}>
-              {COBROS[f.cobro].texto}
+          {conCobro && (
+            <span className="c-cobro" data-label="Facturación">
+              <i className={`dot ${COBROS[f.cobro].clase}`} />
+              <span className="cobro-txt" title={COBROS[f.cobro].detalle}>
+                {COBROS[f.cobro].texto}
+              </span>
             </span>
-          </span>
+          )}
           {/* El botón está en todas las filas, tenga o no el PDF cargado:
               para los clientes de verdad todavía no abre nada y al pasar el
               cursor avisa que la descarga viene después. En el cliente de

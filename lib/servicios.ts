@@ -15,12 +15,18 @@
  * esta sección hay que decidir de dónde se sirven: enlace secreto al estilo de
  * las cotizaciones, almacenamiento privado, o adjunto en Airtable.
  */
+import fs from 'node:fs';
+import path from 'node:path';
+
 export type Documento = {
   /** Texto del botón. Corto: son tres en una línea. */
   nombre: string;
   /** Qué abre, en una línea, para quien no sabe cuál de los tres quiere. */
   detalle: string;
   href: string;
+  /** Lo resuelve `serviciosDe` mirando si el archivo está: sin archivo la
+   *  tarjeta se muestra sin enlace, en vez de llevar al cliente a un 404. */
+  disponible?: boolean;
 };
 
 export type Servicio = {
@@ -57,7 +63,33 @@ const SERVICIOS: Record<string, Servicio[]> = {
   ],
 };
 
+/**
+ * Los servicios de esa empresa, con cada documento marcado según esté o no el
+ * archivo servido.
+ *
+ * Se mira el archivo en cada pedido y no una lista escrita a mano: el día que
+ * los documentos se suban, los enlaces se encienden solos, y mientras tanto
+ * ningún cliente se encuentra con un enlace roto.
+ */
 export function serviciosDe(empresaId: string | null): Servicio[] {
   if (!empresaId) return [];
-  return SERVICIOS[empresaId] ?? [];
+  const servicios = SERVICIOS[empresaId];
+  if (!servicios) return [];
+
+  return servicios.map((sv) => ({
+    ...sv,
+    documentos: sv.documentos.map((d) => ({
+      ...d,
+      disponible: existe(d.href),
+    })),
+  }));
+}
+
+function existe(href: string): boolean {
+  if (!href.startsWith('/')) return false;
+  try {
+    return fs.existsSync(path.join(process.cwd(), 'public', href.slice(1)));
+  } catch {
+    return false;
+  }
 }
