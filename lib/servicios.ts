@@ -9,24 +9,29 @@
  * La clave es el ID de la empresa en Airtable y no el token del portal: el token
  * es el secreto que da acceso y este repositorio es público.
  *
- * **Los documentos todavía no tienen dónde vivir.** Hoy se sirven desde
- * `public/doc/`, que está fuera del control de versiones justamente porque son
- * documentos de un cliente real y el repositorio es público. Antes de publicar
- * esta sección hay que decidir de dónde se sirven: enlace secreto al estilo de
- * las cotizaciones, almacenamiento privado, o adjunto en Airtable.
+ * **Dónde viven los documentos.** Como adjuntos de la empresa en Airtable, en el
+ * campo "Documentos del portal", y no como archivos de este repositorio, que es
+ * público y donde cualquiera podría leer lo que dice el documento sobre las
+ * personas del cliente. El portal los busca por nombre de archivo y resuelve la
+ * dirección al momento del clic (ver `app/p/[token]/doc/[archivo]/route.ts`).
+ *
+ * Un documento declarado acá y sin subir a Airtable no rompe nada: la tarjeta se
+ * muestra sin enlace y avisando, hasta que el archivo esté.
  */
-import fs from 'node:fs';
-import path from 'node:path';
-
 export type Documento = {
   /** Texto del botón. Corto: son tres en una línea. */
   nombre: string;
   /** Qué abre, en una línea, para quien no sabe cuál de los tres quiere. */
   detalle: string;
-  href: string;
-  /** Lo resuelve `serviciosDe` mirando si el archivo está: sin archivo la
-   *  tarjeta se muestra sin enlace, en vez de llevar al cliente a un 404. */
+  /** Parte final de la dirección: /p/<token>/doc/<slug>. */
+  slug: string;
+  /** Nombre exacto del adjunto en Airtable. */
+  archivo: string;
+  /** Lo resuelve `serviciosDe` mirando si el adjunto está cargado: sin archivo
+   *  la tarjeta se muestra sin enlace, en vez de llevar al cliente a un 404. */
   disponible?: boolean;
+  /** La dirección ya armada, que necesita el token del portal. */
+  href?: string;
 };
 
 export type Servicio = {
@@ -46,17 +51,20 @@ const SERVICIOS: Record<string, Servicio[]> = {
         {
           nombre: 'Casos',
           detalle: 'Los dos casos, con recomendación y plan de treinta días.',
-          href: '/doc/laruso-casos.html',
+          slug: 'casos',
+          archivo: 'Laruso - Casos.html',
         },
         {
-          nombre: 'Psicotécnicos',
+          nombre: 'Evaluaciones',
           detalle: 'El encaje de las once personas, con una ficha por cada una.',
-          href: '/doc/laruso-evaluaciones.html',
+          slug: 'evaluaciones',
+          archivo: 'Laruso - Evaluaciones.html',
         },
         {
           nombre: 'Rediseño',
           detalle: 'El organigrama objetivo y las decisiones de estructura.',
-          href: '/doc/laruso-rediseno.html',
+          slug: 'rediseno',
+          archivo: 'Laruso - Rediseño.html',
         },
       ],
     },
@@ -64,14 +72,17 @@ const SERVICIOS: Record<string, Servicio[]> = {
 };
 
 /**
- * Los servicios de esa empresa, con cada documento marcado según esté o no el
- * archivo servido.
+ * Los servicios de esa empresa, con cada documento resuelto contra los adjuntos
+ * que la empresa tiene cargados.
  *
- * Se mira el archivo en cada pedido y no una lista escrita a mano: el día que
- * los documentos se suban, los enlaces se encienden solos, y mientras tanto
- * ningún cliente se encuentra con un enlace roto.
+ * El día que un documento se sube a Airtable, su enlace se enciende solo, y
+ * mientras tanto ningún cliente se encuentra con un enlace roto.
  */
-export function serviciosDe(empresaId: string | null): Servicio[] {
+export function serviciosDe(
+  empresaId: string | null,
+  token: string,
+  adjuntos: string[]
+): Servicio[] {
   if (!empresaId) return [];
   const servicios = SERVICIOS[empresaId];
   if (!servicios) return [];
@@ -80,16 +91,20 @@ export function serviciosDe(empresaId: string | null): Servicio[] {
     ...sv,
     documentos: sv.documentos.map((d) => ({
       ...d,
-      disponible: existe(d.href),
+      disponible: adjuntos.includes(d.archivo),
+      href: `/p/${token}/doc/${d.slug}`,
     })),
   }));
 }
 
-function existe(href: string): boolean {
-  if (!href.startsWith('/')) return false;
-  try {
-    return fs.existsSync(path.join(process.cwd(), 'public', href.slice(1)));
-  } catch {
-    return false;
+/** El nombre de archivo que le corresponde a un slug, mirando todos los
+ *  clientes: la ruta ya valida que ese cliente lo tenga cargado. */
+export function archivoDe(slug: string): string | null {
+  for (const servicios of Object.values(SERVICIOS)) {
+    for (const sv of servicios) {
+      const d = sv.documentos.find((x) => x.slug === slug);
+      if (d) return d.archivo;
+    }
   }
+  return null;
 }
