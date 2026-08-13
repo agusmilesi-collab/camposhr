@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propuesta de servicios · Laruso · Campos HR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1c1a;--ink-soft:#3d3d38;--muted:#84847a;--bg:#ffffff;--rule:#1c1c1a;--rule-soft:#c9c7be;--wash:#fafaf8;
+    --azul:#33507a;--ocre:#9a6b1a;--rojo:#a03d2e;--verde:#3c6b4d;
+    --max:800px; --medida:var(--max);
+    --t0:0.68rem; --t1:0.85rem; --t2:1.0625rem; --t3:1.33rem; --t4:1.66rem; --t5:2.07rem; --t6:2.59rem;
+    --v1:0.5rem; --v2:1rem; --v3:1.5rem; --v4:2.5rem; --v5:4rem;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:'EB Garamond',Georgia,serif;font-size:17px;line-height:1.72;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;padding:3.5rem 1.5rem 3rem;}
+  .paper{max-width:var(--max);margin:0 auto;}
+  .paper-header{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:0;margin-bottom:1.8rem;}
+  .paper-brand{font-weight:600;font-size:1.05rem;letter-spacing:0.38em;text-transform:uppercase;}
+  .paper-brand .pipe{color:var(--muted);margin:0 0.4em;font-weight:400;}
+  .paper-id{font-size:0.74rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);text-align:right;}
+  h1{font-weight:700;font-size:var(--t6);line-height:1.1;letter-spacing:-0.015em;margin-bottom:var(--v3);text-wrap:balance;max-width:var(--medida);}
+  .paper-body p.apertura{font-size:var(--t3);line-height:1.45;font-weight:500;margin-bottom:var(--v2);max-width:var(--medida);text-wrap:pretty;}
+  .moves{list-style:none;margin:var(--v3) 0;padding:0;counter-reset:m;}
+  .moves li{padding-left:2rem;position:relative;margin-bottom:var(--v3);line-height:1.5;}
+.moves li:last-child{margin-bottom:0;}
+  .moves ul{list-style:none;margin:.7rem 0 0;padding:0;counter-reset:sm;}
+  .moves ul li{padding-left:1.75rem;margin-bottom:.6rem;line-height:1.5;}
+  .moves ul li:last-child{margin-bottom:0;}
+  .moves ul li::before{counter-increment:sm;content:counter(sm,lower-alpha);position:absolute;left:0;top:0.08rem;width:1.2rem;height:1.2rem;border:1.5px solid var(--muted);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);}
+
+  .moves li::before{counter-increment:m;content:counter(m);position:absolute;left:0;top:0.05rem;width:1.4rem;height:1.4rem;border:1.5px solid var(--rule);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+  .paper-body > .cap-div:first-child{margin-top:0;}
+  .cap-div{margin:var(--v5) 0 var(--v3);padding-bottom:var(--v1);border-bottom:2px solid var(--rule);}
+  .cap-div .cn,.cap-div .ct{display:inline;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:0.16em;text-transform:uppercase;font-weight:600;line-height:1.5;}
+  .cap-div .cn{color:var(--azul);}
+  .cap-div .cn::after{content:' · ';color:var(--muted);font-weight:400;}
+  .cap-div .ct{color:var(--ink);}
+  h2{font-weight:700;font-size:var(--t3);line-height:1.26;margin:var(--v4) 0 var(--v2);text-wrap:balance;max-width:var(--medida);}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--azul);line-height:1.35;}
+  .paper-body p.kicker{margin:3.4rem 0 0.15rem;}
+  .paper-body p.kicker.sub{margin:1.9rem 0 0.25rem;color:var(--ocre);}
+  .paper-body .cap-div + p.kicker{margin-top:var(--v4);}
+  .kicker + h2{margin-top:0;}
+  /* Los dos casos: título de mayor jerarquía que una sección */
+  .kicker.caso{font-size:0.72rem;letter-spacing:0.2em;color:var(--rojo);margin-top:var(--v5);}
+  /* Título de bloque: misma tipografía y peso que el título de un caso */
+  h2.bt{font-size:var(--t5);line-height:1.12;letter-spacing:-0.012em;font-weight:700;margin:0 0 var(--v3);text-wrap:balance;max-width:var(--medida);}
+  /* Separador entre los dos casos */
+  .sep-caso{border:0;border-top:4px solid var(--azul);margin:var(--v5) 0 0;}
+  .sep-caso + p.kicker.caso{margin-top:var(--v4);}
+  .kicker.caso + h2{font-size:var(--t5);line-height:1.12;letter-spacing:-0.01em;margin-bottom:var(--v3);}
+  h3{font-weight:700;font-size:var(--t2);margin:var(--v3) 0 var(--v1);text-wrap:balance;max-width:var(--medida);}
+  /* Las tres partes de cada caso: diagnóstico, recomendación y cierre */
+  h3.sub{font-size:var(--t4);line-height:1.2;letter-spacing:-0.008em;margin:var(--v5) 0 var(--v2);padding-top:var(--v2);border-top:1px solid var(--rule-soft);}
+  .paper-body{font-size:var(--t2);line-height:1.74;}
+  .paper-body > p, .paper-body > ol.moves{max-width:var(--medida);}
+  .paper-body p+p{margin-top:0.9rem;}
+  .paper-body strong{font-weight:700;} .paper-body em{font-style:italic;}
+  .note{font-size:var(--t1);color:var(--ink-soft);line-height:1.55;}
+  .tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;padding:0.05rem 0.4rem;border-radius:2px;border:1px solid currentColor;vertical-align:middle;}
+  .tag-ok{color:var(--azul);} .tag-val{color:var(--ocre);} .tag-falta{color:var(--rojo);}
+  table{width:100%;border-collapse:collapse;margin:var(--v2) 0;font-size:var(--t1);line-height:1.5;font-variant-numeric:tabular-nums;}
+  th{text-align:left;font-size:var(--t0);letter-spacing:0.09em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);border-bottom:2px solid var(--rule);padding:0.45rem 0.55rem;}
+  td{border-bottom:1px solid var(--rule-soft);padding:0.5rem 0.55rem;vertical-align:top;}
+  .cierre{margin:4.5rem 0 4.5rem;padding:2rem 1rem;border-top:4px solid var(--azul);border-bottom:4px solid var(--azul);text-align:center;}
+  .cierre p{font-size:var(--t3);line-height:1.45;font-weight:500;max-width:36rem;margin:0 auto;}
+  .marco{border:1px solid var(--rule-soft);background:var(--wash);padding:0.9rem 1.1rem;margin:1.3rem 0;font-size:0.98rem;line-height:1.55;}
+  .marco strong{color:var(--ink);}
+  .costo{margin:1.1rem 0 1.6rem;padding:.7rem .95rem;background:#fbf4f2;border-left:3px solid var(--rojo);font-size:.97rem;line-height:1.55;}
+  .costo b{color:var(--rojo);}
+  .bien{margin:1.3rem 0 1.6rem;padding:.9rem 1.1rem;background:#f4f8f5;border:1px solid #c5ded0;border-left:3px solid var(--verde);font-size:.98rem;line-height:1.55;}
+  .bien strong{color:var(--verde);}
+  .comp{display:grid;grid-template-columns:1fr;gap:1rem;margin:1.3rem 0 1rem;align-items:start;}
+  .comp + .moves, .comp-pie + .moves{margin-top:2rem;}
+  .comp-col{border:1px solid var(--rule-soft);padding:1.7rem 1.9rem;}
+  .comp-col.hoy{background:#fbf4f2;border-color:#e2cfc9;}
+  .comp-col.prop{background:#f4f8f5;border-color:#c5ded0;}
+  .comp-h{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;margin-bottom:.65rem;padding-bottom:.32rem;border-bottom:1px solid currentColor;}
+  .comp-col.hoy .comp-h{color:var(--rojo);}
+  .comp-col.prop .comp-h{color:var(--verde);}
+  .comp .it{margin-bottom:var(--v2);line-height:1.5;}
+  .comp .it b{display:inline;font-size:var(--t2);}
+  .comp .it small{display:inline;color:var(--ink-soft);font-size:var(--t2);}
+  .comp .it small::before{content:'  ·  ';color:var(--muted);}.comp .it small::before{content:' ';}
+  .comp .sub{margin-left:.35rem;padding-left:.7rem;border-left:2px solid rgba(28,28,26,.16);margin-top:.4rem;}
+  .comp .tot{margin-top:.9rem;padding-top:.5rem;border-top:1px dotted rgba(28,28,26,.28);font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;line-height:1.85;}
+  .comp-col.hoy .tot{color:var(--rojo);}
+  .comp-col.prop .tot{color:var(--verde);}
+  .comp-pie{font-size:.8rem;color:var(--muted);line-height:1.45;margin:0 0 1.4rem;text-align:center;}
+  .nivel{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.05em;text-transform:uppercase;font-weight:600;padding:0.08rem 0.4rem;border:1px solid currentColor;border-radius:2px;white-space:nowrap;}
+  .n-ok{color:var(--verde);} .n-des{color:var(--ocre);} .n-no{color:var(--rojo);} .n-sd{color:var(--muted);}
+  .plan th:first-child{width:5.6rem;} .plan th:last-child{width:9rem;}
+  .plan td:first-child{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;letter-spacing:0.03em;text-transform:uppercase;color:var(--azul);font-weight:500;padding-top:0.62rem;}
+  .plan td:last-child{font-size:0.86rem;color:var(--ink-soft);line-height:1.4;}
+  .plan .hito td{background:var(--wash);}
+  .plan ul{list-style:none;margin:0;padding:0;}
+  .plan ul li{padding-left:0.95rem;position:relative;margin-bottom:0.35rem;}
+  .plan ul li:last-child{margin-bottom:0;}
+  .plan ul li::before{content:'';position:absolute;left:0;top:0.62em;width:0.42rem;height:0;border-top:1px solid var(--muted);}
+  .matriz th:nth-child(3){width:6.6rem;}
+  .matriz td:nth-child(1){font-weight:600;white-space:nowrap;}
+  .matriz td:nth-child(2){font-size:0.86rem;color:var(--ink-soft);}
+  .pedido{border:2px solid var(--rule);padding:1.1rem 1.3rem;margin:1.4rem 0 0;}
+  .pedido h3{margin-top:0;}
+  .pedido .p-item{display:grid;grid-template-columns:1fr 8.5rem;gap:1rem;padding:0.7rem 0;border-top:1px solid var(--rule-soft);align-items:baseline;}
+  .pedido .p-item:first-of-type{border-top:none;padding-top:0.3rem;}
+  .pedido .p-cuando{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--ocre);text-align:right;font-weight:500;}
+  @media(max-width:640px){.pedido .p-item{grid-template-columns:1fr;gap:0.15rem;}.pedido .p-cuando{text-align:left;}}
+  /* Árbol de decisiones por caso */
+  .dec{border:1.5px solid var(--rule);margin:1.6rem 0 1.2rem;}
+  .dec-h{background:var(--wash);border-bottom:1.5px solid var(--rule);padding:.75rem 1.1rem;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;color:var(--azul);}
+  .dec-main{padding:1rem 1.1rem;border-bottom:1px dotted var(--rule-soft);font-size:1.02rem;line-height:1.5;}
+  .dec-main b{display:block;font-size:.6rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;font-weight:600;}
+  .dec-sub{padding:.85rem 1.1rem 1rem;}
+  .dec-sub > b{display:block;font-size:.6rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;font-weight:600;}
+  .dec-row{display:grid;grid-template-columns:1.15fr 1fr 7.5rem;gap:.9rem;padding:.55rem 0;border-top:1px solid #eceae2;align-items:baseline;font-size:.92rem;line-height:1.42;}
+  .dec-row:first-of-type{border-top:none;}
+  .dec-row .q{font-weight:600;}
+  .dec-row .a{color:var(--ink-soft);}
+  .dec-row .w{font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ocre);text-align:right;font-weight:500;}
+  .dec-row.abierta .a{color:var(--rojo);}
+  @media(max-width:680px){.dec-row{grid-template-columns:1fr;gap:.1rem}.dec-row .w{text-align:left}}
+  /* Gantt */
+  .gantt{border:1.5px solid var(--rule);margin:1.4rem 0 .6rem;overflow-x:auto;}
+  .gantt table{margin:0;font-size:.86rem;border-collapse:collapse;min-width:39rem;}
+  .gantt th{padding:.4rem .3rem;font-size:.6rem;text-align:center;border-bottom:1.5px solid var(--rule);}
+  .gantt th:first-child{text-align:left;padding-left:.9rem;width:15rem;}
+  .gantt td{border-bottom:1px solid #eceae2;padding:.3rem;vertical-align:middle;}
+  .gantt td:first-child{padding-left:.9rem;line-height:1.32;font-size:.88rem;}
+  .gantt td.c{padding:.3rem .18rem;}
+  .gantt .bar{height:.95rem;border-radius:2px;display:block;}
+  .gantt .b1{background:#c9d6e6;} .gantt .b2{background:#d9c9ae;} .gantt .b3{background:#c5ded0;} .gantt .b4{background:#e2cfc9;}
+  .gantt .hito{background:var(--ink);height:.95rem;width:.95rem;border-radius:50%;display:block;margin:0 auto;}
+  .gantt .who{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:block;margin-top:.1rem;}
+  .gantt tr.sep td{border-top:1.5px solid var(--rule-soft);}
+  .gantt-leyenda{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;padding:.6rem .9rem;border-top:1px solid var(--rule-soft);font-size:.72rem;color:var(--ink-soft);}
+  .gantt-leyenda span{display:inline-flex;align-items:center;gap:.35rem;}
+  .gantt-leyenda i{width:1.1rem;height:.6rem;border-radius:2px;display:inline-block;}
+  /* Organigramas */
+  .orgfig{border:1.5px solid var(--rule);padding:1.4rem .7rem 1.1rem;margin:1.4rem 0 .5rem;background:#fff;overflow-x:auto;}
+  .orgfig-titulo{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;margin-bottom:1.3rem;text-align:center;}
+  .orgfig.hoy .orgfig-titulo{color:var(--rojo);} .orgfig.prop .orgfig-titulo{color:var(--verde);}
+  .arbol,.arbol ul{display:flex;justify-content:center;list-style:none;margin:0;padding:0;}
+  .arbol{width:max-content;margin:0 auto;}
+  .arbol ul{position:relative;padding-top:16px;}
+  .arbol ul::before{content:'';position:absolute;top:0;left:50%;border-left:1.5px solid #999;height:16px;width:0;}
+  .arbol li{display:flex;flex-direction:column;align-items:center;position:relative;padding:16px 3px 0;}
+  .arbol li::before,.arbol li::after{content:'';position:absolute;top:0;right:50%;border-top:1.5px solid #999;width:50%;height:16px;}
+  .arbol li::after{right:auto;left:50%;border-left:1.5px solid #999;}
+  .arbol li:first-child::before,.arbol li:last-child::after{border-top:0;}
+  .arbol li:only-child::before,.arbol li:only-child::after{display:none;}
+  .arbol li:only-child{padding-top:0;}
+  .arbol>li{padding-top:0;}.arbol>li::before,.arbol>li::after{display:none;}
+  .nodo{border:1.5px solid var(--ink);padding:.32rem .45rem;background:#fff;font-size:.66rem;text-align:center;line-height:1.3;max-width:108px;}
+  .nodo b{display:block;letter-spacing:.01em;}
+  .nodo small{display:block;color:var(--ink-soft);font-size:.59rem;margin-top:.1rem;}
+  .nodo .et{display:block;font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.05em;text-transform:uppercase;margin-top:.22rem;padding-top:.18rem;border-top:1px dotted currentColor;font-weight:600;}
+  .nodo.dir{border-width:2px;}
+  .nodo.carga{border-color:var(--rojo);background:#fbf4f2;} .nodo.carga .et{color:var(--rojo);}
+  .nodo.c1{border-color:var(--azul);background:#f2f5fa;} .nodo.c1 .et{color:var(--azul);}
+  .nodo.c2{border-color:var(--verde);background:#f4f8f5;} .nodo.c2 .et{color:var(--verde);}
+  .nodo.c12{border-color:var(--ocre);background:#fdf9f2;} .nodo.c12 .et{color:var(--ocre);}
+  .nodo.sd{border-style:dashed;border-color:#b6b4a9;} .nodo.sd .et{color:var(--muted);}
+  .orgleyenda{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;margin-top:1.1rem;padding-top:.7rem;border-top:1px dotted var(--rule-soft);font-size:.7rem;line-height:1.3;color:var(--ink-soft);justify-content:center;}
+  .orgleyenda span{display:inline-flex;align-items:center;gap:.3rem;}
+  .orgleyenda i{width:.6rem;height:.6rem;border:1.5px solid;display:inline-block;flex-shrink:0;}
+  @media(max-width:760px){.orgfig .arbol{transform:scale(.8);transform-origin:top center;}}
+  /* Fórmula de rentabilidad */
+  .drv{border:1.5px solid var(--rule);background:var(--wash);padding:1rem 1.2rem;margin:1.3rem 0;font-family:'IBM Plex Mono',monospace;font-size:.82rem;line-height:2;letter-spacing:.01em;}
+  .drv .r{font-weight:500;color:var(--azul);}
+  /* Cadena de valor */
+  .cfrow{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;margin:1.3rem 0 .5rem;}
+  @media(max-width:700px){.cfrow{grid-template-columns:repeat(2,1fr);}}
+  .cf-box{border:1.5px solid var(--rule);padding:.55rem .5rem .6rem;text-align:center;line-height:1.25;}
+  .cf-box .sn{display:block;font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.1em;color:var(--muted);font-weight:600;margin-bottom:.2rem;}
+  .cf-box b{display:block;font-size:.82rem;line-height:1.2;}
+  .cf-box small{display:block;font-size:.7rem;color:var(--ink-soft);margin-top:.15rem;line-height:1.3;}
+  .cf-soporte{border:1px dotted var(--rule-soft);background:var(--wash);padding:.55rem .8rem;font-size:.82rem;line-height:1.5;color:var(--ink-soft);margin-bottom:1.3rem;}
+  /* Rótulo dentro de un nodo del organigrama */
+  .nodo .crit{display:block;font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.05em;text-transform:uppercase;margin-top:.22rem;padding-top:.18rem;border-top:1px dotted currentColor;font-weight:600;}
+  /* Cita de entrevista */
+  .cita{border-left:3px solid var(--azul);padding:.15rem 0 .15rem .95rem;margin:1.1rem 0;font-style:italic;font-size:1rem;line-height:1.5;color:var(--ink-soft);}
+  .cita .who{display:block;font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.3rem;}
+  .corte{margin:3rem 0 2.4rem;padding:1.05rem 0;border-top:3px double var(--rule);border-bottom:3px double var(--rule);text-align:center;}
+  .corte span{display:block;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;font-weight:600;color:var(--verde);line-height:1.5;}
+  .corte small{display:block;margin:.45rem auto 0;max-width:33rem;font-size:.9rem;color:var(--ink-soft);line-height:1.5;}
+  footer{margin-top:3rem;padding-top:1.1rem;border-top:2px solid var(--rule);font-size:0.82rem;color:var(--muted);line-height:1.5;}
+  @page{size:A4;margin:2.2cm 2.5cm 2cm;}
+  @media print{
+    :root{--medida:100%;}
+    body{padding:0;font-size:10.5pt;}
+    .paper{max-width:none;}
+    p,li,td{orphans:3;widows:3;}
+    h1,h2,h3,.cap-div,.dec-h,.orgfig-titulo{break-after:avoid;page-break-after:avoid;}
+    .cap-div{break-before:page;page-break-before:always;margin-top:0;}
+    table,.comp,.comp-col,.pedido,.marco,.costo,.dec,.gantt,.orgfig,.corte,.cierre,.bien,.drv,.cfrow,.cf-soporte,.cita{break-inside:avoid;page-break-inside:avoid;}
+    tr,.dec-row,.p-item{break-inside:avoid;page-break-inside:avoid;}
+    thead{display:table-header-group;}
+    a{color:inherit;text-decoration:none;}
+    .orgfig .arbol{transform:none;}
+  }
+  @media(max-width:640px){body{padding:2rem 1rem;}.paper-header{flex-direction:column;gap:0.5rem;}.paper-id{text-align:left;}}
+</style>
+</head>
+<body>
+<div class="paper">
+
+  <header class="paper-header">
+    <div class="paper-brand">Campos HR <span class="pipe">·</span> Laruso</div>
+    <div class="paper-id">Propuesta de servicios<br>Agosto 2026</div>
+  </header>
+
+  <main class="paper-body">
+
+    <div class="cap-div">
+      <span class="cn">Punto de partida</span>
+      <span class="ct">Lo que muestran las descripciones de puesto</span>
+    </div>
+
+    <h2 class="bt">Leídas de a ocho, las descripciones dibujan la empresa entera.</h2>
+
+    <p>Darío nos pasó las ocho fichas formalizadas para la certificación de inocuidad. Cada una declara a quién reporta, y ese campo, cruzado entre todas, arma una línea de mando completa que ninguna ficha por separado deja ver.</p>
+
+    <div class="orgfig">
+      <div class="orgfig-titulo">La estructura que arman las ocho descripciones</div>
+      <ul class="arbol">
+        <li>
+          <div class="nodo dir sd"><b>DIRECTORIO / GERENCIA GRAL.</b><small>dos nombres</small><span class="et">sin ficha</span></div>
+          <ul>
+            <li><div class="nodo"><b>RESP. COMERCIAL</b><small>Funes</small><span class="et">sin gente a cargo</span></div></li>
+            <li>
+              <div class="nodo"><b>JEFE DE PLANTA</b><small>Cañada Rosquín</small><span class="et">un solo reporte</span></div>
+              <ul>
+                <li>
+                  <div class="nodo"><b>RESP. ADMINISTRACIÓN</b><small>sectorizada en planta</small></div>
+                  <ul>
+                    <li><div class="nodo"><b>COMPRAS Y ADMISIÓN</b><small>insumos e ingresos</small></div></li>
+                  </ul>
+                </li>
+                <li>
+                  <div class="nodo carga"><b>RESP. TÉCNICO Y LOGÍSTICA</b><small>laboratorio y tanques</small><span class="et">todo el reporte de planta</span></div>
+                  <ul>
+                    <li>
+                      <div class="nodo"><b>RESP. DE TURNO</b><small>los cuatro turnos</small></div>
+                      <ul>
+                        <li><div class="nodo"><b>OPERARIO</b><small>refinación</small></div></li>
+                        <li><div class="nodo"><b>TÉC. MANTENIMIENTO</b><small>preventivo y correctivo</small></div></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <div class="orgleyenda">
+        <span><i style="border-color:#b6b4a9;border-style:dashed"></i> puesto nombrado como superior, sin descripción propia</span>
+        <span><i style="border-color:var(--rojo);background:#fbf4f2"></i> punto donde se concentra el reporte</span>
+      </div>
+    </div>
+
+    <div class="bien"><strong>El trabajo está bien encaminado.</strong> Ocho puestos escritos, formalizados y sosteniendo una certificación de inocuidad es más de lo que tiene la mayoría de las empresas de este tamaño, y es la base sobre la cual se corrige. La empresa ya viene ordenándose por dentro, y nuestro trabajo se apoya en ese impulso.</div>
+
+    <p class="kicker">Las tres correcciones de método</p>
+    <h2>Corregidas estas tres, las mismas fichas sirven para conducir.</h2>
+
+    <p>Cada una está en un punto distinto del recorrido. De dónde salen los puestos. Cómo se define cada uno. Cómo se ordenan entre sí.</p>
+
+    <ol class="moves">
+      <li><strong>Los puestos no se derivaron del negocio.</strong> Se listaron los que la norma exige y las tareas que hoy hace cada persona. Eso tiene dos consecuencias.
+        <ul>
+          <li>Lo que el negocio necesita y la norma no mira quedó sin puesto. Nadie convierte lo que se vende en un programa que la planta pueda cumplir. Nadie responde por conducir a la gente de planta.</li>
+          <li>Las capacidades quedaron mezcladas. Un mismo puesto controla el laboratorio y mueve los tanques. La jefatura de planta acumula producción, calidad, compras y planificación. La documentación de los camiones que entran la verifican tres puestos a la vez.</li>
+        </ul>
+      </li>
+      <li><strong>Cada puesto se define por lo que hace y no por el resultado del que responde.</strong> Las ocho fichas listan las tareas de cada uno, con detalle y en orden. Ninguna dice de qué resultado responde esa persona. Sin un resultado escrito, lo único que queda para controlar son las tareas. Controlar tareas significa revisar todos los días cómo trabaja cada uno, que es lo contrario de delegar. Con el resultado escrito, la dirección pide el resultado y deja de revisar el cómo. Eso es delegar.</li>
+      <li><strong>La línea de mando no se derivó de quién necesita el resultado de quién.</strong> Un puesto tiene que depender de quien necesita lo que ese puesto produce. Acá esa regla no se aplicó. Toda la planta operativa cuelga del puesto que hace los análisis de laboratorio. Y hay tres líneas escritas que no coinciden con quien conduce de verdad.</li>
+    </ol>
+
+    <div class="cap-div">
+      <span class="cn">Lo que haríamos</span>
+      <span class="ct">El organigrama que el negocio pide</span>
+    </div>
+
+    <h2 class="bt">Los mismos puestos, ordenados por el resultado del que responde cada uno.</h2>
+
+    <p>Con esas tres correcciones, las ocho fichas describen bien los puestos que hoy existen. La pregunta que sigue es otra: si esos son los puestos que el negocio necesita. Ahí el dibujo cambia. El que sigue tiene dos puestos que hoy no existen y uno que la propia descripción del Responsable Técnico ya viene pidiendo, porque le manda comunicar los desvíos analíticos a un Responsable de Calidad que no está en ningún organigrama.</p>
+
+    <div class="orgfig prop">
+      <div class="orgfig-titulo">El organigrama que proponemos · puestos, no personas</div>
+      <ul class="arbol">
+        <li>
+          <div class="nodo dir"><b>DIRECCIÓN GENERAL</b><small>la rentabilidad</small></div>
+          <ul>
+            <li><div class="nodo"><b>COMERCIAL</b><small>la utilización</small></div></li>
+            <li><div class="nodo c2"><b>PLANIFICACIÓN</b><small>el programa</small><span class="crit">puesto nuevo</span></div></li>
+            <li><div class="nodo c2"><b>CALIDAD</b><small>en especificación</small><span class="crit">separada de producción</span></div></li>
+            <li>
+              <div class="nodo"><b>JEFATURA DE PLANTA</b><small>volumen, especificación y costo</small></div>
+              <ul>
+                <li><div class="nodo c2"><b>TURNOS</b><small>la gente de planta</small><span class="crit">puesto nuevo</span></div></li>
+                <li><div class="nodo"><b>TÉC. Y LOGÍST.</b><small>logística interna</small></div></li>
+                <li><div class="nodo"><b>MANTEN.</b><small>disponibilidad</small></div></li>
+              </ul>
+            </li>
+            <li><div class="nodo"><b>ADMIN. Y FINANZAS</b><small>el flujo de fondos</small></div></li>
+          </ul>
+        </li>
+      </ul>
+      <div class="orgleyenda">
+        <span><i style="border-color:var(--verde);background:#f4f8f5"></i> puesto que hoy no existe o cambia de lugar</span>
+      </div>
+    </div>
+
+    <p>El dibujo corrige tres cosas.</p>
+    <ol class="moves">
+      <li><strong>Lo que está huérfano encuentra dueño.</strong> Planificación aparece como puesto propio. Cuelga de la dirección porque sirve a comercial y a operaciones a la vez. Calidad se separa de producción y tiene responsable propio, porque quien libera un lote no puede depender de quien responde por producirlo. La conducción de los turnos se separa de la jefatura de planta.</li>
+      <li><strong>Lo que cargaba una sola persona se reparte.</strong> La jefatura de planta deja de acumular calidad, compras y planificación. Comercial queda enfocado en llenar la planta, sin logística ni programación encima.</li>
+      <li><strong>Lo que estaba cruzado se endereza.</strong> Operaciones pasa a tener una sola línea de mando. La administración de planta deja de responder al Jefe de Planta.</li>
+    </ol>
+
+    <p class="kicker">Por qué son dos puestos</p>
+    <h2>La conducción de la planta son dos puestos y no uno.</h2>
+
+    <p>Eso sale de las reglas con las que se arma cualquier puesto, sin mirar a quién lo ocupa hoy. Hay dos razones, y cada una alcanza por sí sola.</p>
+    <ol class="moves">
+      <li><strong>Piden perfiles opuestos.</strong> Conducir el proceso pide análisis, detalle y parámetros. Conducir gente en régimen de turnos pide vínculo, corregir sin romper y sostener la rutina todos los días. Las capacidades que piden perfiles opuestos van en puestos separados.</li>
+      <li><strong>Son dos resultados que compiten.</strong> Se puede cumplir el volumen del mes y perder tres operarios en el camino. Eso ya pasó.</li>
+    </ol>
+
+    <div class="cap-div">
+      <span class="cn">Qué ofrecemos</span>
+      <span class="ct">Cómo seguimos</span>
+    </div>
+
+    <h2 class="bt">Esto se lee con tiempo, y lo que sigue lo deciden ustedes.</h2>
+
+    <p>Lo que dejamos hoy es mucho material junto: los dos casos con su plan de treinta días, el encaje de las once personas, y esta lectura de la estructura. Conviene leerlo sin apuro y volver sobre él.</p>
+
+    <p>El documento de los casos está escrito para circular. Pueden trabajarlo con Darío y con Guillermo, que son quienes vienen ordenando la empresa por dentro y quienes van a sostener buena parte de lo que se decida. El de las evaluaciones queda entre ustedes, porque lleva la lectura individual de cada persona.</p>
+
+    <p>El alcance de lo que sigue depende de esa conversación, y en particular de la de Darío sobre si quiere seguir y en qué términos, porque de ahí sale quién conduce el cambio desde adentro. Cuando la tengan, nos avisan. <strong>Si los cuatro quieren que participemos del rediseño, les armamos una propuesta con alcance, plazos y precio.</strong></p>
+
+    <p>Queremos entrar como parte del mismo equipo, poniendo método y una mirada de afuera sobre lo que ustedes ya empezaron.</p>
+
+    <div class="cierre">
+      <p>Muchas gracias por el tiempo, y por la apertura de todo el equipo durante las entrevistas.</p>
+    </div>
+
+    <div class="cap-div">
+      <span class="cn">El detalle</span>
+      <span class="ct">Puesto por puesto, el ajuste que le haríamos a cada ficha</span>
+    </div>
+
+    <table>
+      <thead><tr><th>Puesto</th><th>El ajuste que le haríamos</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Jefe de Planta</strong></td><td>Definirle el resultado único y medible del que responde, y mover a calidad, compras y planificación las tareas que hoy absorbe. Como está, concentra producción, laboratorio, compras de planta, planificación de ingresos y el rol de Director Técnico ante SENASA.</td></tr>
+        <tr><td><strong>Resp. Técnico y Logística</strong></td><td>Separar el control de laboratorio de la logística interna de tanques y movimientos. Son dos capacidades distintas y hoy comparten un puesto.</td></tr>
+        <tr><td><strong>Responsable de Turno</strong></td><td>Alinear la línea escrita con quien lo conduce. En el papel reporta al Responsable Técnico, y en la práctica y en el organigrama dibujado depende del Jefe de Planta.</td></tr>
+        <tr><td><strong>Técnico de Mantenimiento</strong></td><td>Colgarlo del Responsable de Mantenimiento, que es quien lo conduce. Hoy la ficha lo cuelga del Responsable de Turno.</td></tr>
+        <tr><td><strong>Compras y Admisión</strong></td><td>Dejar la verificación documental de los ingresos en un solo puesto. Hoy aparece también en el turno y en la administración de planta, y un control que responden tres puestos es un control que se cae.</td></tr>
+        <tr><td><strong>Administración</strong></td><td>Distinguir el puesto de planta del de Funes. La única ficha está sectorizada en planta, lista tareas de finanzas que en los hechos se llevan en Funes o las hace un estudio externo, y omite lo que de verdad se hace en planta.</td></tr>
+        <tr><td><strong>Comercial</strong></td><td>Definir a quién reporta, y dejarle solo lo comercial. Hoy reporta a un &ldquo;Gerente General&rdquo; que no existe en la empresa, y suma logística, planificación de ingresos, control de stock de crudo y facturación.</td></tr>
+        <tr><td><strong>Resp. de Mantenimiento</strong></td><td>Escribir la ficha que falta. Es el único puesto de conducción de planta sin descripción, y de él depende la disponibilidad de la etapa que limita la producción. <span class="tag tag-falta">[falta dato]</span></td></tr>
+      </tbody>
+    </table>
+
+    <p>Dos definiciones más quedan por cerrar. <strong>Cuál es la instancia de arriba:</strong> el Jefe de Planta reporta a &ldquo;Directorio&rdquo; y el Comercial a &ldquo;Gerente General&rdquo;, y ninguna de las dos tiene ficha propia. Y <strong>la línea que queda abierta cuando Calidad se separe:</strong> el puesto que se mueve es el mismo del que hoy cuelga toda la planta, así que ese día los cuatro responsables de turno, los operarios y los técnicos de mantenimiento quedan sin línea de reporte escrita. Conviene corregirlo en la misma semana en que se ejecute.</p>
+
+    <div class="marco"><strong>Lo que esto significa para lo que ya nos pidieron.</strong> Las ocho fichas cubren la planta y las de Funes están pendientes, como Darío ya avisó al pasárnoslas: <em>&ldquo;faltan los puestos de Valentina y Leandro, los cuales no fueron detallados aún&rdquo;</em>. Para medir el encaje, eso deja a cuatro personas con su ficha (Jairo, Ismael, Franco y Antonella) y una discutible, porque la de Administración podría describir el puesto de planta o el de Funes. Mauro, Natalia, Valentina, Guillermo, Leandro y Darío no tienen contra qué medirse, así que su encaje se mide contra el puesto que el negocio necesita.</div>
+
+    <div class="cap-div">
+      <span class="cn">El fundamento</span>
+      <span class="ct">De dónde sale ese organigrama</span>
+    </div>
+
+    <h2 class="bt">Una estructura se deriva del negocio, y no de las tareas que hoy hace cada uno.</h2>
+
+    <p>El dibujo de arriba es la última consecuencia de un recorrido de cinco pasos. <strong>Qué hace ganar plata a este negocio</strong>, <strong>qué actividades exige esa forma de ganar plata</strong>, <strong>qué tiene que saber hacer la empresa</strong> para sostener cada actividad, <strong>qué puestos</strong> se hacen cargo de eso con un resultado propio, y recién al final <strong>quién reporta a quién</strong>. Los cuatro primeros son los que sostienen el quinto, y son los que van acá. Una estructura que se arma sin ellos ordena las tareas que hoy hace cada uno, que es una foto del presente.</p>
+
+    <p class="kicker">Paso 1 · De qué depende la plata</p>
+    <h2>El negocio se gana o se pierde en dos lugares: cuánto se usa la planta y qué tan confiable es lo que sale.</h2>
+
+    <p>Laruso refina a fasón: el cliente entrega su crudo y lo recupera en especificación. <strong>El activo central es la capacidad instalada</strong>, y de ahí salen las dos palancas, la utilización y la confiabilidad de la salida.</p>
+
+    <div class="drv">
+      <span class="r">Ingresos</span> = Tarifa ($/tn) × Toneladas procesadas<br>
+      &nbsp;&nbsp;↳ <span class="r">Toneladas</span> = Capacidad instalada × % de utilización<br>
+      <span class="r">Margen</span> = Ingresos − Costos variables (energía, vapor, insumos)<br>
+      <span class="r">EBITDA</span> = Margen − Costos fijos (personal, mantenimiento, administración)
+    </div>
+
+    <p>La facturación depende de llenar la planta, y el techo lo pone la etapa más lenta de la refinación: cada hora perdida ahí es facturación que no vuelve. Cuál de las fases (neutralizado, blanqueo, desodorizado) limita de verdad, y cuánto margen deja, es lo que falta precisar. <span class="tag tag-val">[a validar]</span></p>
+
+    <p><strong>Cuál de las dos palancas manda depende de cuánta capacidad libre quede</strong>, y eso cambia el objetivo del área comercial. El relevamiento sugiere que Laruso ya está cerca del techo, con una sola voz como fuente: <em>&ldquo;hoy están trabajando al límite, a su capacidad máxima&rdquo;</em> y las 2000 toneladas nombradas como cifra anual (Guillermo). Medirlo es la primera pregunta de la reunión. <span class="tag tag-val">[a validar]</span></p>
+
+    <table>
+      <thead><tr><th>Lo que muestre la medición</th><th>La palanca</th><th>El objetivo de Comercial</th></tr></thead>
+      <tbody>
+        <tr><td>Hay capacidad ociosa</td><td>Llenar la planta</td><td>Toneladas bajo contrato y ocupación, con techo cerca del 85 o 90%</td></tr>
+        <tr><td>La planta está al techo</td><td>Lo que deja cada tonelada</td><td>Margen por tonelada, o clientes cuyo crudo consuma menos horas de proceso</td></tr>
+        <tr><td>Al techo y con cola de pedidos</td><td>La confiabilidad de la fecha</td><td>Fechas comprometidas cumplidas y crudo que entre en especificación sin reproceso</td></tr>
+      </tbody>
+    </table>
+
+    <p class="kicker">Paso 2 · De la plata a las actividades que la producen</p>
+    <h2>De las actividades que el negocio exige, las que más pesan no tienen dueño.</h2>
+
+    <p>Ganar plata de esa manera exige cinco actividades encadenadas, con seis funciones de soporte. La cadena lista lo que el negocio <em>exige</em>, y no lo que la empresa tiene hoy organizado.</p>
+
+    <div class="cfrow">
+      <div class="cf-box"><span class="sn">01</span><b>Desarrollo comercial</b><small>captar y cerrar contratos</small></div>
+      <div class="cf-box"><span class="sn">02</span><b>Planificación</b><small>programar la capacidad</small></div>
+      <div class="cf-box"><span class="sn">03</span><b>Operaciones</b><small>recepción y refinación</small></div>
+      <div class="cf-box"><span class="sn">04</span><b>Control de calidad</b><small>trazabilidad, lab, liberación</small></div>
+      <div class="cf-box"><span class="sn">05</span><b>Gestión del cliente</b><small>facturar, renovar</small></div>
+    </div>
+    <div class="cf-soporte"><strong>Soporte:</strong> compras y abastecimiento · mantenimiento · recursos humanos · finanzas y administración · sistema de gestión de calidad, seguridad y ambiente · tecnología y sistemas.</div>
+
+    <p>Para cada actividad identificamos quién responde hoy por su resultado. Esa columna ordena el diagnóstico y marca cuatro estados, de los cuales uno solo es sano: <em>definida</em>, <em>concentrada en el dueño</em>, <em>huérfana</em> y <em>repartida sin dueño</em>.</p>
+
+    <table>
+      <thead><tr><th>Actividad</th><th>Quién responde hoy por el resultado, y en qué estado</th></tr></thead>
+      <tbody>
+        <tr><td><strong>01 · Desarrollo comercial</strong></td><td>Mauro. <em>Concentrada en el dueño:</em> sigue fijando y evaluando el objetivo comercial. <span class="tag tag-val">[a validar]</span></td></tr>
+        <tr><td><strong>02 · Planificación</strong></td><td>Sin dueño. <em>Huérfana:</em> es la bisagra entre vender y producir. <em>&ldquo;No se planifica, entonces siempre se demoraban en tomar alguien nuevo para ayudar&rdquo;</em> (Ismael). <span class="tag tag-ok">[confirmado]</span></td></tr>
+        <tr><td><strong>03 · Operaciones</strong></td><td>Jairo. <em>Definida:</em> su conducción aparece en todas las voces de Cañada Rosquín. <span class="tag tag-ok">[confirmado]</span></td></tr>
+        <tr><td><strong>04 · Control de calidad del lote</strong></td><td>Repartido sin dueño único: el laboratorio en Franco, la liberación y el rol de Director Técnico en Jairo, la trazabilidad en los responsables de turno. Toca la certificación que la empresa necesita para vender. <span class="tag tag-val">[a validar]</span></td></tr>
+        <tr><td><strong>05 · Gestión del cliente</strong></td><td>Mauro y Natalia. <em>Concentrada en el dueño.</em> <span class="tag tag-val">[a validar]</span></td></tr>
+        <tr><td>Mantenimiento</td><td>Alejandro. <em>Definida.</em> <span class="tag tag-ok">[confirmado]</span></td></tr>
+        <tr><td>Finanzas y administración</td><td>Natalia. <em>Definida hoy y atada a una persona:</em> conduce el área, dice que se quiere retirar y no hay reemplazo preparado. <span class="tag tag-ok">[confirmado]</span></td></tr>
+        <tr><td>Recursos humanos</td><td>Sin responsable. <em>Huérfana.</em> <span class="tag tag-val">[a validar]</span></td></tr>
+        <tr><td>Tecnología y sistemas</td><td>Sin responsable. <em>Huérfana.</em> <span class="tag tag-falta">[falta dato]</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="marco"><strong>Por qué &ldquo;quién responde&rdquo; es el dato que más pesa.</strong> Un resultado que hoy responde una persona, y no un puesto de la estructura, se va por la puerta el día que esa persona se va. Ahí se traba la delegación, porque no se delega lo que no está definido. Y ahí baja el precio de la empresa, porque quien la compra está pagando por personas que se pueden ir. Las nueve filas de arriba son la lista de lo que hay que trasladar.</div>
+
+    <p class="kicker">Paso 3 · De las actividades a lo que hay que saber hacer</p>
+    <h2>Cada actividad exige un saber que hoy vive en una cabeza.</h2>
+
+    <p>Una capacidad es lo que la organización tiene que <strong>saber hacer</strong> como sistema. Es de la empresa, y no de la persona, solo cuando está sostenida en cuatro soportes: método escrito, más de uno que lo sabe, herramientas e información registrada. Contar personas no alcanza. Leídas así, casi ninguna capacidad crítica de Laruso está instalada de forma robusta.</p>
+
+    <table>
+      <thead><tr><th>Lo que la empresa tiene que saber hacer</th><th>Estado</th><th>Qué soportes la sostienen</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Captar clientes y llenar la planta</strong></td><td><span class="tag tag-val">atada al dueño</span></td><td>Sin método escrito y sin herramienta, con el saber en una sola cabeza.</td></tr>
+        <tr><td><strong>Convertir la demanda en un programa que la planta cumpla</strong></td><td><span class="tag tag-falta">no instalada</span></td><td>No tiene ninguno de los cuatro soportes.</td></tr>
+        <tr><td><strong>Refinar a especificación, 24/7</strong></td><td><span class="tag tag-val">frágil en gente</span></td><td>Método, herramienta e información son sólidos. Falla la gente: el saber vive en una sola persona.</td></tr>
+        <tr><td><strong>Sostener la disponibilidad de la etapa que limita</strong></td><td><span class="tag tag-falta">falta dato</span></td><td>Falta relevar con qué método e información se sostiene.</td></tr>
+        <tr><td><strong>Garantizar y probar la especificación de cada lote</strong></td><td><span class="tag tag-val">sin puesto propio</span></td><td>La mejor instalada: método, laboratorio, información y varios que la saben. Le falta un puesto que responda por ella.</td></tr>
+        <tr><td><strong>Sostener el circuito administrativo y el flujo de fondos</strong></td><td><span class="tag tag-val">en transición</span></td><td>Método, herramienta e información están. El soporte débil es la gente: concentrada en dos personas y sin reemplazo preparado.</td></tr>
+      </tbody>
+    </table>
+
+    <p class="note">El estado de las capacidades se apoya en un marco de referencia del rubro, y no en un relevamiento técnico de planta. Sirve para ordenar la conversación y se corrige con lo que la dirección observe.</p>
+
+    <p class="kicker">Paso 4 · De lo que hay que saber hacer a los puestos</p>
+    <h2>El negocio necesita estos puestos, cada uno con un resultado del que responde.</h2>
+
+    <p>Cada capacidad pide puestos que la sostengan, y cada puesto se define por su <strong>rendición de cuentas</strong>: el resultado único y medible del que responde. Esta es la columna que le falta a las ocho fichas, y la que convierte un organigrama en una herramienta para conducir.</p>
+
+    <table>
+      <thead><tr><th>Puesto</th><th>Responde por (medido por)</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Dirección General</strong></td><td>La rentabilidad y la continuidad sin depender de los dueños · EBITDA</td></tr>
+        <tr><td><strong>Comercial</strong></td><td>La planta llena · ocupación y toneladas bajo contrato</td></tr>
+        <tr><td><strong>Planificación</strong></td><td>El programa de producción cumplido · cumplimiento y ocupación de la etapa que limita</td></tr>
+        <tr><td><strong>Jefatura de Planta</strong></td><td>El volumen comprometido, producido en especificación y al costo objetivo · toneladas en especificación, costo por tonelada y rendimiento de la etapa que limita</td></tr>
+        <tr><td><strong>Jefatura de Turnos</strong></td><td>Los cuatro turnos cumpliendo lo programado, con la dotación completa · cobertura de turno y desvíos de procedimiento</td></tr>
+        <tr><td><strong>Calidad y Laboratorio</strong></td><td>El producto liberado siempre en especificación y la trazabilidad íntegra · rechazos y certificación vigente</td></tr>
+        <tr><td><strong>Administración y Finanzas</strong></td><td>La posición de fondos clara y el circuito al día · cierre de mes en fecha</td></tr>
+      </tbody>
+    </table>
+
+    <div class="cap-div">
+      <span class="cn">Lo que sostiene el cambio</span>
+      <span class="ct">Las decisiones de fondo necesitan quien las conduzca</span>
+    </div>
+
+    <h2 class="bt">El plan de treinta días arranca solo. Lo que viene después no.</h2>
+
+<p>Detrás de los dos casos hay cinco decisiones que sostienen la estructura, y que si no se toman devuelven la empresa al punto de partida en unos meses. Acá va cada una con lo que pasa si no se toma. Los caminos posibles de cada una, lo que cuesta cada camino y el orden en que conviene tomarlas son parte del trabajo que proponemos.</p>
+
+    <table>
+      <thead><tr><th>Decisión</th><th>Qué pasa si no se toma</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1.</strong> Crear el puesto de Planificación de Producción.</td><td>La producción se sigue programando a los tironeos entre comercial y planta, y Mauro sigue decidiendo qué se produce cada semana.</td></tr>
+        <tr><td><strong>2.</strong> Darle puesto y vínculo formal a Darío.</td><td>Es quien ordena la empresa por dentro, figura como externo y ya dijo que dejó de encontrarle el desafío. El día que se va, el orden se va con él.</td></tr>
+        <tr><td><strong>3.</strong> Que el control de calidad responda a la dirección y tenga un dueño.</td><td>Es lo que el cliente paga, hoy nadie responde por él, y toca las certificaciones que la empresa necesita para vender.</td></tr>
+        <tr><td><strong>4.</strong> Preparar el reemplazo de la conducción de planta y de la administración.</td><td>Es la decisión del caso 2 mirada a largo plazo, más su equivalente en administración: Natalia declaró que quiere retirarse y no hay reemplazo preparado. Prepararlo lleva meses.</td></tr>
+        <tr><td><strong>5.</strong> Unificar las dos administraciones y definir a quién responde la de planta.</td><td>Hoy está partida entre Funes y Cañada, la de planta responde a la conducción de planta, y nadie tiene el mando único del circuito de dinero.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Las cinco caen sobre la misma persona, y ahí está el problema: <strong>hoy no hay en Laruso quién conduzca estos cambios todos los días.</strong> Mauro tiene toda la autoridad y ninguna hora disponible, y es justamente el cuello que estas decisiones vienen a destrabar. Darío sería el candidato natural, y figura como externo, sin puesto ni autoridad formal sobre nadie, y ya dijo que dejó de encontrarle el desafío. Su evaluación agrega un criterio para diseñarle el puesto: le rinde entrar, diagnosticar y montar, y le cuesta sostener día a día lo que montó, así que conducir el cambio le encaja mientras alguien sostenga después lo que él deje armado. Jairo tiene autoridad sobre la planta y a la vez está negociando soltar parte de su propio puesto. Natalia se está retirando. Guillermo es quien más cerca está del trabajo nuevo, y su autoridad no alcanza para pedirle a la planta que trabaje distinto.</p>
+
+    <p><strong>Por eso la decisión 2 se resuelve primero en el calendario.</strong> Además de retener a quien ordena la empresa, define quién va a poder conducir todo lo demás. Es la conversación que recomendamos abrir dentro de las próximas dos semanas, en paralelo con el plan de treinta días.</p>
+
+  </main>
+
+  <footer>
+    Campos HR · Laruso SRL · Agosto 2026<br>
+    Lo que este documento enuncia queda desarrollado en el trabajo que propone: la descripción completa de cada puesto nuevo (misión, resultado del que responde, indicadores con meta, autoridad y perfil), el encaje de cada persona contra la silla que le tocaría en la estructura nueva, y las cinco decisiones con sus caminos posibles, sus costos y su secuencia.
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluaciones · Laruso · Campos HR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1c1a;--ink-soft:#3d3d38;--muted:#84847a;--bg:#ffffff;--rule:#1c1c1a;--rule-soft:#c9c7be;--wash:#fafaf8;
+    --azul:#33507a;--ocre:#9a6b1a;--rojo:#a03d2e;--verde:#3c6b4d;
+    --max:800px; --medida:var(--max);   /* la mancha de texto usa el ancho completo */
+    /* escala modular · razón 1.25 sobre 17px */
+    --t0:0.68rem; --t1:0.85rem; --t2:1.0625rem; --t3:1.33rem; --t4:1.66rem; --t5:2.07rem; --t6:2.59rem;
+    /* ritmo vertical · múltiplos de 0.5rem */
+    --v1:0.5rem; --v2:1rem; --v3:1.5rem; --v4:2.5rem; --v5:4rem;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:'EB Garamond',Georgia,serif;font-size:17px;text-rendering:optimizeLegibility;line-height:1.72;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;padding:3.5rem 1.5rem 3rem;}
+  .paper{max-width:var(--max);margin:0 auto;}
+  .paper-header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--rule);padding-bottom:0.9rem;margin-bottom:2rem;}
+  .paper-brand{font-weight:600;font-size:1.05rem;letter-spacing:0.38em;text-transform:uppercase;}
+  .paper-brand .pipe{color:var(--muted);margin:0 0.4em;font-weight:400;}
+  .paper-id{font-size:0.74rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);text-align:right;}
+  h1{font-weight:700;font-size:var(--t6);line-height:1.1;letter-spacing:-0.015em;margin-bottom:var(--v3);text-wrap:balance;max-width:var(--medida);}
+  .tesis{border:2px solid var(--rule);background:var(--wash);padding:1.2rem 1.4rem;margin:0 0 2rem;}
+  .tesis p{font-size:1.18rem;line-height:1.5;font-weight:500;}
+  .scqa{margin:1.2rem 0;}
+  .scqa .row{display:grid;grid-template-columns:8.5rem 1fr;gap:1rem;padding:0.7rem 0;border-bottom:1px solid var(--rule-soft);align-items:baseline;}
+  .scqa .row:last-child{border-bottom:none;}
+  .scqa .k{font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:var(--ocre);}
+  .scqa .k.resp{color:var(--azul);}
+  .scqa .v{font-size:1.04rem;line-height:1.55;}
+  .moves{list-style:none;margin:var(--v3) 0;padding:0;counter-reset:m;}
+  .moves li{padding-left:2rem;position:relative;margin-bottom:var(--v3);line-height:1.5;}
+.moves li:last-child{margin-bottom:0;}
+  .moves li::before{counter-increment:m;content:counter(m);position:absolute;left:0;top:0.05rem;width:1.4rem;height:1.4rem;border:1.5px solid var(--rule);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+  .cap-div{margin:4.6rem 0 1.2rem;padding-bottom:0.85rem;border-bottom:3px solid var(--rule);}
+  .cap-div .cn{display:block;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:0.2em;text-transform:uppercase;color:var(--azul);margin-bottom:0.4rem;font-weight:600;}
+  .cap-div .ct{display:block;font-size:var(--t5);font-weight:700;line-height:1.12;letter-spacing:-0.012em;text-wrap:balance;}
+  .cap-div .cb{display:block;font-size:var(--t2);line-height:1.45;color:var(--ink-soft);margin-top:var(--v1);font-weight:400;max-width:var(--medida);}
+  h2{font-weight:700;font-size:var(--t3);line-height:1.26;margin:var(--v4) 0 var(--v2);text-wrap:balance;max-width:var(--medida);}
+  h2 .sn{font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:var(--muted);margin-right:0.5em;font-weight:500;}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--azul);line-height:1.35;}
+  .paper-body p.kicker{margin:3.6rem 0 0.15rem;}
+  /* Rótulo de paso de la cascada: el kicker con jerarquía de sección */
+  .paper-body p.kicker.paso{margin:3.4rem 0 0.7rem;padding:.2rem 0 .25rem 1rem;border-left:5px solid var(--azul);font-family:'EB Garamond',Georgia,serif;font-size:var(--t4);letter-spacing:-0.008em;text-transform:none;font-weight:700;color:var(--ink);line-height:1.18;text-wrap:balance;max-width:var(--medida);}
+  .paper-body p.kicker.paso .pn{display:block;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:0.16em;text-transform:uppercase;color:var(--azul);font-weight:600;margin-bottom:.22rem;}
+  .paper-body p.kicker.paso.rel{border-left-color:var(--muted);}
+  .paper-body p.kicker.paso.rel .pn{color:var(--muted);}
+  .paper-body .cap-div + p.kicker.paso{margin-top:2.1rem;}
+  .paper-body p.kicker.paso + h2{margin-top:0;font-size:var(--t3);font-weight:600;color:var(--ink-soft);}
+  .paper-body .cap-div + p.kicker{margin-top:var(--v4);}
+  .kicker + h2{margin-top:0;}
+  /* Los dos casos: título de mayor jerarquía que una sección */
+  .kicker.caso{font-size:0.72rem;letter-spacing:0.2em;color:var(--rojo);margin-top:var(--v5);}
+  .kicker.caso + h2{font-size:var(--t5);line-height:1.12;letter-spacing:-0.012em;margin-bottom:var(--v3);color:var(--ink);}
+  h3{font-weight:700;font-size:var(--t2);margin:var(--v3) 0 var(--v1);text-wrap:balance;max-width:var(--medida);}
+  /* Las tres partes de cada caso: diagnóstico, recomendación y cierre */
+  h3.sub{font-size:var(--t4);line-height:1.2;letter-spacing:-0.008em;margin:var(--v5) 0 var(--v2);padding-top:var(--v2);border-top:1px solid var(--rule-soft);}
+  .paper-body{font-size:var(--t2);line-height:1.74;}
+  .paper-body > p, .paper-body > ol.moves, .paper-body > .paper-list{max-width:var(--medida);}
+  .paper-body > p.note{max-width:var(--medida);}
+  .paper-body p+p{margin-top:0.9rem;}
+  .paper-body strong{font-weight:700;} .paper-body em{font-style:italic;}
+  .note{font-size:var(--t1);color:var(--ink-soft);line-height:1.55;}
+  .tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;padding:0.05rem 0.4rem;border-radius:2px;border:1px solid currentColor;vertical-align:middle;}
+  .tag-ok{color:var(--azul);} .tag-val{color:var(--ocre);} .tag-falta{color:var(--rojo);}
+  .cfrow{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:0.7rem;align-items:stretch;margin:1rem 0 0.2rem;}
+  .cf-box{position:relative;border:1px solid var(--ink);background:#fff;padding:0.5rem 0.6rem;font-size:0.78rem;line-height:1.3;min-width:0;}
+  .cf-box b{display:block;font-size:0.8rem;} .cf-box small{color:var(--ink-soft);font-size:0.71rem;display:block;margin-top:0.12rem;}
+  .cf-box .sn{font-family:'IBM Plex Mono',monospace;font-size:0.64rem;color:var(--muted);display:block;margin-bottom:0.15rem;}
+  .cf-box:not(:last-child)::after{content:'→';position:absolute;right:-0.5rem;top:50%;transform:translate(50%,-50%);color:var(--muted);font-size:0.8rem;}
+  .cf-valor{border-color:var(--azul);border-width:1.5px;background:#f4f8f5;}
+  .cf-soporte{margin-top:0.6rem;padding-top:0.55rem;border-top:1px dotted var(--rule-soft);font-size:0.82rem;color:var(--ink-soft);}
+  @media(max-width:680px){.cfrow{grid-auto-flow:row;grid-template-columns:repeat(2,1fr);}.cf-box:not(:last-child)::after{display:none;}}
+  .drv{font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.9;background:var(--wash);border:1px solid var(--rule-soft);padding:0.8rem 1rem;margin:0.9rem 0;}
+  .drv .r{color:var(--azul);font-weight:600;}
+  table{width:100%;border-collapse:collapse;margin:var(--v2) 0;font-size:var(--t1);line-height:1.5;font-variant-numeric:tabular-nums;}
+  th{text-align:left;font-size:var(--t0);letter-spacing:0.09em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);border-bottom:2px solid var(--rule);padding:0.45rem 0.55rem;}
+  td{border-bottom:1px solid var(--rule-soft);padding:0.5rem 0.55rem;vertical-align:top;}
+  .orgfig{border:1.5px solid #1a1a1a;padding:1.3rem 0.7rem 1rem;margin:1.4rem 0;background:#fff;overflow-x:auto;}
+  .orgfig-titulo{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-bottom:1.2rem;text-align:center;}
+  .arbol,.arbol ul{display:flex;justify-content:center;list-style:none;margin:0;padding:0;}
+  .arbol{width:max-content;margin:0 auto;}
+  .arbol ul{position:relative;padding-top:16px;}
+  .arbol ul::before{content:'';position:absolute;top:0;left:50%;border-left:1.5px solid #888;height:16px;width:0;}
+  .arbol li{display:flex;flex-direction:column;align-items:center;position:relative;padding:16px 2px 0;}
+  .arbol li::before,.arbol li::after{content:'';position:absolute;top:0;right:50%;border-top:1.5px solid #888;width:50%;height:16px;}
+  .arbol li::after{right:auto;left:50%;border-left:1.5px solid #888;}
+  .arbol li:first-child::before,.arbol li:last-child::after{border-top:0;}
+  .arbol li:only-child::before,.arbol li:only-child::after{display:none;}
+  .arbol li:only-child{padding-top:0;}
+  .arbol>li{padding-top:0;}.arbol>li::before,.arbol>li::after{display:none;}
+  .arbol-nodo{border:1.5px solid #1a1a1a;padding:.28rem .42rem;background:#fff;font-size:.64rem;text-align:center;line-height:1.28;max-width:104px;}
+  .arbol-nodo b{letter-spacing:.02em;} .arbol-nodo small{display:block;color:#666;font-size:.58rem;font-weight:400;margin-top:.08rem;}
+  .arbol-nodo .crit{display:block;font-size:.56rem;color:var(--ocre);margin-top:.12rem;}
+  .arbol-nodo.dir{border-width:2px;}
+  .arbol-nodo .fitm{display:block;font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.04em;text-transform:uppercase;margin-top:.2rem;padding-top:.16rem;border-top:1px dotted currentColor;font-weight:600;}
+  .arbol-nodo.f-ok{border-color:var(--verde);background:#f4f8f5;} .arbol-nodo.f-ok .fitm{color:var(--verde);}
+  .arbol-nodo.f-des{border-color:var(--ocre);background:#fdf9f2;} .arbol-nodo.f-des .fitm{color:var(--ocre);}
+  .arbol-nodo.f-no{border-color:var(--rojo);background:#fbf4f2;} .arbol-nodo.f-no .fitm{color:var(--rojo);}
+  .arbol-nodo.f-sd{border-style:dashed;border-color:#b6b4a9;} .arbol-nodo.f-sd .fitm{color:var(--muted);}
+  .arbol-nodo.f-vac{border-style:dashed;border-color:var(--rojo);background:#fbf4f2;} .arbol-nodo.f-vac .fitm{color:var(--rojo);}
+  .orgleyenda{display:flex;flex-wrap:wrap;gap:.5rem 1.1rem;margin-top:1rem;padding-top:.7rem;border-top:1px dotted var(--rule-soft);font-size:.72rem;line-height:1.3;color:var(--ink-soft);justify-content:center;}
+  .orgleyenda span{display:inline-flex;align-items:center;gap:.35rem;}
+  .orgleyenda i{width:.62rem;height:.62rem;border:1.5px solid;display:inline-block;flex-shrink:0;}
+  .orgfuera{margin:1rem auto 0;max-width:22rem;border:1.5px dashed var(--rojo);background:#fbf4f2;padding:.5rem .7rem;font-size:.72rem;line-height:1.35;text-align:center;}
+  .orgfuera b{font-size:.78rem;}
+  @media(max-width:760px){.orgfig .arbol{transform:scale(0.78);transform-origin:top center;}}
+  .marco{border:1px solid var(--rule-soft);background:var(--wash);padding:0.9rem 1.1rem;margin:1.3rem 0;font-size:0.98rem;line-height:1.55;}
+  .marco strong{color:var(--ink);}
+  .cita{border-left:3px solid var(--azul);padding:0.5rem 0 0.5rem 1rem;margin:0.9rem 0;font-style:italic;font-size:1.02rem;line-height:1.5;color:var(--ink-soft);}
+  .cita .who{display:block;font-style:normal;font-size:0.82rem;color:var(--muted);margin-top:0.3rem;letter-spacing:0.02em;}
+  .costo{margin:1.1rem 0 1.6rem;padding:.7rem .95rem;background:#fbf4f2;border-left:3px solid var(--rojo);font-size:.97rem;line-height:1.55;}
+  .costo b{color:var(--rojo);}
+  .comp{display:grid;grid-template-columns:1fr;gap:1rem;margin:1.3rem 0 1rem;align-items:start;}
+  .comp + .moves, .comp-pie + .moves{margin-top:2rem;}
+  .comp-col{border:1px solid var(--rule-soft);padding:1.7rem 1.9rem;}
+  .comp-col.hoy{background:#fbf4f2;border-color:#e2cfc9;}
+  .comp-col.prop{background:#f4f8f5;border-color:#c5ded0;}
+  .comp-h{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;margin-bottom:.65rem;padding-bottom:.32rem;border-bottom:1px solid currentColor;}
+  .comp-col.hoy .comp-h{color:var(--rojo);}
+  .comp-col.prop .comp-h{color:var(--verde);}
+  .comp .it{margin-bottom:var(--v2);line-height:1.5;}
+  .comp .it b{display:inline;font-size:var(--t2);}
+  .comp .it small{display:inline;color:var(--ink-soft);font-size:var(--t2);}
+  .comp .it small::before{content:'  ·  ';color:var(--muted);}.comp .it small::before{content:' ';}
+  .comp .sub{margin-left:.35rem;padding-left:.7rem;border-left:2px solid rgba(28,28,26,.16);margin-top:.4rem;}
+  .comp .tot{margin-top:.9rem;padding-top:.5rem;border-top:1px dotted rgba(28,28,26,.28);font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;line-height:1.85;}
+  .comp-col.hoy .tot{color:var(--rojo);}
+  .comp-col.prop .tot{color:var(--verde);}
+  .comp-pie{font-size:.8rem;color:var(--muted);line-height:1.45;margin:0 0 1.4rem;text-align:center;}
+  
+  /* Árbol de decisiones por caso */
+  .dec{border:1.5px solid var(--rule);margin:1.6rem 0 1.2rem;}
+  .dec-h{background:var(--wash);border-bottom:1.5px solid var(--rule);padding:.75rem 1.1rem;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;color:var(--azul);}
+  .dec-main{padding:1rem 1.1rem;border-bottom:1px dotted var(--rule-soft);font-size:1.02rem;line-height:1.5;}
+  .dec-main b{display:block;font-size:.6rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;font-weight:600;}
+  .dec-sub{padding:.85rem 1.1rem 1rem;}
+  .dec-sub > b{display:block;font-size:.6rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;font-weight:600;}
+  .dec-row{display:grid;grid-template-columns:1.15fr 1fr 7.5rem;gap:.9rem;padding:.55rem 0;border-top:1px solid #eceae2;align-items:baseline;font-size:.92rem;line-height:1.42;}
+  .dec-row:first-of-type{border-top:none;}
+  .dec-row .q{font-weight:600;}
+  .dec-row .a{color:var(--ink-soft);}
+  .dec-row .w{font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ocre);text-align:right;font-weight:500;}
+  .dec-row.abierta .a{color:var(--rojo);}
+  @media(max-width:680px){.dec-row{grid-template-columns:1fr;gap:.1rem}.dec-row .w{text-align:left}}
+  /* Gantt */
+  .gantt{border:1.5px solid var(--rule);margin:1.4rem 0 .6rem;overflow-x:auto;}
+  .gantt table{margin:0;font-size:.86rem;border-collapse:collapse;min-width:39rem;}
+  .gantt th{padding:.4rem .3rem;font-size:.6rem;text-align:center;border-bottom:1.5px solid var(--rule);}
+  .gantt th:first-child{text-align:left;padding-left:.9rem;width:15rem;}
+  .gantt td{border-bottom:1px solid #eceae2;padding:.3rem;vertical-align:middle;}
+  .gantt td:first-child{padding-left:.9rem;line-height:1.32;font-size:.88rem;}
+  .gantt td.c{padding:.3rem .18rem;}
+  .gantt .bar{height:.95rem;border-radius:2px;display:block;}
+  .gantt .b1{background:#c9d6e6;} .gantt .b2{background:#d9c9ae;} .gantt .b3{background:#c5ded0;} .gantt .b4{background:#e2cfc9;}
+  .gantt .hito{background:var(--ink);height:.95rem;width:.95rem;border-radius:50%;display:block;margin:0 auto;}
+  .gantt .who{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:block;margin-top:.1rem;}
+  .gantt tr.sep td{border-top:1.5px solid var(--rule-soft);}
+  .gantt-leyenda{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;padding:.6rem .9rem;border-top:1px solid var(--rule-soft);font-size:.72rem;color:var(--ink-soft);}
+  .gantt-leyenda span{display:inline-flex;align-items:center;gap:.35rem;}
+  .gantt-leyenda i{width:1.1rem;height:.6rem;border-radius:2px;display:inline-block;}
+  .pedido{border:2px solid var(--rule);padding:1.1rem 1.3rem;margin:1.4rem 0 0;}
+  .pedido h3{margin-top:0;}
+  .pedido .p-item{display:grid;grid-template-columns:1fr 8.5rem;gap:1rem;padding:0.7rem 0;border-top:1px solid var(--rule-soft);align-items:baseline;}
+  .pedido .p-item:first-of-type{border-top:none;padding-top:0.3rem;}
+  .pedido .p-cuando{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--ocre);text-align:right;font-weight:500;}
+  @media(max-width:640px){.pedido .p-item{grid-template-columns:1fr;gap:0.15rem;}.pedido .p-cuando{text-align:left;}}
+  .corte{margin:3.2rem 0 2.6rem;padding:1.05rem 0;border-top:3px double var(--rule);border-bottom:3px double var(--rule);text-align:center;}
+  .corte span{display:block;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;font-weight:600;color:var(--verde);line-height:1.5;}
+  .corte small{display:block;margin:.45rem auto 0;max-width:33rem;font-size:.9rem;color:var(--ink-soft);line-height:1.5;}
+  .ficha{border:1px solid var(--rule-soft);background:#fff;padding:1rem 1.15rem;margin:1.1rem 0;}
+  .ficha h3{margin:0 0 0.1rem;font-size:1.08rem;}
+  .ficha .rolact{font-size:0.8rem;color:var(--muted);letter-spacing:0.02em;margin-bottom:0.6rem;}
+  .ficha .fila{display:grid;grid-template-columns:9.5rem 1fr;gap:0.9rem;padding:0.42rem 0;border-top:1px solid #eceae2;align-items:baseline;font-size:0.97rem;line-height:1.5;}
+  .ficha .fila .fk{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;color:var(--muted);}
+  .nivel{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.62rem;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;padding:0.1rem 0.45rem;border:1px solid currentColor;border-radius:2px;}
+  .n-ok{color:var(--azul);} .n-des{color:var(--ocre);} .n-no{color:var(--rojo);} .n-sd{color:var(--muted);}
+  @media(max-width:640px){.ficha .fila{grid-template-columns:1fr;gap:0.15rem;}}
+  .paper-list{margin:1rem 0;}
+  .paper-item{display:flex;gap:1rem;margin-bottom:0.7rem;line-height:1.6;}
+  .paper-item .m{flex-shrink:0;width:1.6rem;text-align:right;font-style:italic;color:var(--muted);}
+  .toc{border-top:2px solid var(--rule);border-bottom:2px solid var(--rule);padding:1.2rem 0;margin:2rem 0 0;}
+  .toc-h{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);margin-bottom:1rem;}
+  .toc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .toc-col .cap{display:block;font-family:'IBM Plex Mono',monospace;font-size:0.64rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--azul);margin-bottom:0.55rem;text-decoration:none;}
+  .toc-col a{display:block;text-decoration:none;color:var(--ink);font-size:0.9rem;line-height:1.38;padding:0.14rem 0;}
+  .toc-col a .n{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted);margin-right:0.45em;}
+  .toc-col a:hover{color:var(--azul);}
+  .toc-col .pp{display:block;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.11em;text-transform:uppercase;color:var(--muted);margin-top:.06rem;}
+  .toc-resumen{display:block;margin-bottom:1rem;padding-bottom:0.85rem;border-bottom:1px solid var(--rule-soft);text-decoration:none;color:var(--ink);font-size:0.92rem;}
+  .toc-resumen:hover{color:var(--azul);}
+  .volver-idx{display:block;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:0.64rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;margin-top:1.8rem;}
+  .volver-idx:hover{color:var(--azul);}
+  @media(max-width:640px){.toc-grid{grid-template-columns:1fr;gap:1.1rem;}}
+  footer{margin-top:3rem;padding-top:1.1rem;border-top:2px solid var(--rule);font-size:0.82rem;color:var(--muted);line-height:1.5;}
+  @media(max-width:640px){body{padding:2rem 1rem;}.paper-header{flex-direction:column;gap:0.5rem;}.paper-id{text-align:left;}.scqa .row{grid-template-columns:1fr;gap:0.2rem;}}
+  /* ── Impresión · A4 anillado ── */
+  @page{size:A4;margin:2.2cm 2.5cm 2cm;}
+  @media print{
+    :root{--medida:100%;}
+    body{padding:0;font-size:10.5pt;}
+    .paper{max-width:none;}
+    p,li,td{orphans:3;widows:3;}
+    h1,h2,h3,.cap-div,p.kicker.paso,.dec-h,.orgfig-titulo{break-after:avoid;page-break-after:avoid;}
+    .cap-div{break-before:page;page-break-before:always;margin-top:0;}
+    table,.ficha,.orgfig,.comp,.comp-col,.dec,.gantt,.marco,.costo,.pedido,.cita,.drv,.corte{break-inside:avoid;page-break-inside:avoid;}
+    tr,.dec-row,.fila,.paper-item,.p-item{break-inside:avoid;page-break-inside:avoid;}
+    thead{display:table-header-group;}
+    a{color:inherit;text-decoration:none;}
+    .volver-idx{display:none;}
+    .orgfig .arbol{transform:none;}
+    .paper-header{position:running(cabecera);}
+  }
+
+  .idx-personas{display:grid;grid-template-columns:1fr 1fr;column-gap:2.4rem;border-top:1px solid var(--rule);margin:var(--v3) 0 0;}
+  .idx-personas a{display:block;padding:.7rem .2rem .62rem;border-bottom:1px solid var(--rule-soft);text-decoration:none;color:inherit;}
+  .idx-personas a b{display:block;font-weight:600;line-height:1.25;}
+  .idx-personas a span{display:block;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);color:var(--muted);letter-spacing:.04em;margin-top:.12rem;}
+  @media(max-width:560px){.idx-personas{grid-template-columns:1fr;}}
+  .f-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;border-bottom:2px solid var(--rule);padding-bottom:.4rem;margin-bottom:var(--v2);}
+  .f-head h3{margin:0;border:0;padding:0;font-size:var(--t4);line-height:1.15;}
+  .f-head .f-rol{display:block;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.11em;text-transform:uppercase;color:var(--azul);font-weight:600;margin-bottom:.22rem;}
+  .f-head .f-top{font-family:'IBM Plex Mono',monospace;font-size:var(--t0);color:var(--muted);text-decoration:none;white-space:nowrap;}
+  .f-resumen{font-size:var(--t3);line-height:1.4;font-weight:500;margin:0 0 var(--v3);text-wrap:pretty;}
+  .persona{margin:var(--v5) 0 0;}
+  .persona .fila{display:grid;grid-template-columns:11.5rem 1fr;gap:1.1rem;padding:.78rem 0;border-top:1px solid var(--rule-soft);align-items:start;}
+  .persona .fila .fk{font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;line-height:1.5;padding-top:.12rem;}
+  .contra{margin:var(--v3) 0 0;padding:1.05rem 1.25rem;background:var(--wash);border-left:3px solid var(--azul);}
+  .contra .ct-h{font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.11em;text-transform:uppercase;color:var(--azul);font-weight:600;margin-bottom:.5rem;}
+  .contra .fila{grid-template-columns:11.5rem 1fr;border-top-color:rgba(28,28,26,.1);}
+  .contra.sin{border-left-color:var(--muted);}
+  .contra.sin .ct-h{color:var(--muted);}
+  table.mov{margin:var(--v3) 0 0;}
+  table.mov th:first-child,table.mov td:first-child{width:9.5rem;}
+  table.mov td:first-child{font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  @media(max-width:680px){.persona .fila,.contra .fila{grid-template-columns:1fr;gap:.2rem;}}
+  .mapa{width:100%;border-collapse:collapse;margin:var(--v3) 0 0;}
+  .mapa th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:.4rem .6rem .4rem 0;border-bottom:1px solid var(--rule);}
+  .mapa td{padding:.46rem .6rem .46rem 0;border-bottom:1px solid var(--rule-soft);vertical-align:top;font-size:0.94rem;}
+  .mapa tr.grupo td{border-bottom:0;padding-top:1.15rem;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.11em;text-transform:uppercase;color:var(--azul);font-weight:600;}
+  .mapa td.ev{font-family:'IBM Plex Mono',monospace;font-size:var(--t0);color:var(--muted);white-space:nowrap;}
+  .mapa tr.sin td{color:var(--muted);}
+  .cuad{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:var(--v3) 0 0;border:1px solid var(--rule);}
+  .cuad .q{padding:1.15rem 1.25rem;border-right:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft);}
+  .cuad .q:nth-child(2n){border-right:0;}
+  .cuad .q:nth-child(n+3){border-bottom:0;}
+  .cuad .q-h{font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.11em;text-transform:uppercase;color:var(--azul);font-weight:600;margin-bottom:.3rem;}
+  .cuad .q-n{font-family:'IBM Plex Mono',monospace;font-size:var(--t0);color:var(--muted);float:right;font-weight:400;}
+  .cuad .q-d{font-size:0.92rem;color:var(--ink-soft);line-height:1.5;margin-bottom:.7rem;}
+  .cuad .q-p{line-height:1.65;}
+  .cuad .q-p b{font-weight:600;}
+  .cuad .q.vacio .q-p{color:var(--muted);font-style:italic;}
+  .arbol-nodo a{text-decoration:none;color:inherit;}
+  .arbol-nodo .disp{display:block;font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.03em;text-transform:uppercase;margin-top:.14rem;color:#666;font-weight:600;}
+  .orgfuera a{text-decoration:none;color:inherit;border-bottom:1px solid var(--rule-soft);}
+  .orgfig .note{margin:0.9rem 0 0;font-size:0.82rem;line-height:1.5;color:var(--ink-soft);text-align:left;}
+  .note a{text-decoration:none;color:inherit;border-bottom:1px solid var(--azul);}
+  .orgfuera a{text-decoration:none;color:inherit;border-bottom:1px solid var(--rule-soft);}
+  .cuad .q-p a,.mapa a{text-decoration:none;color:inherit;border-bottom:1px solid var(--rule-soft);}
+  @media(max-width:640px){.cuad{grid-template-columns:1fr;}.cuad .q{border-right:0;border-bottom:1px solid var(--rule-soft);}}
+  @media print{.f-head .f-top{display:none;}.persona{break-inside:auto;}.f-head,.f-resumen{break-after:avoid;}.contra,table.mov{break-inside:avoid;}}
+  </style>
+</head>
+<body>
+<div class="paper">
+
+  <header class="paper-header">
+    <div class="paper-brand">Campos HR <span class="pipe">·</span> Laruso</div>
+    <div class="paper-id">Evaluaciones del equipo<br>Agosto 2026</div>
+  </header>
+
+  <h1>Las evaluaciones del equipo de Laruso.</h1>
+
+  <div class="tesis">
+    <p>Once personas evaluadas con las tres pruebas completas. Una ficha por persona con lo que sabe hacer, dónde le cuesta y qué hacer con eso, y el cruce contra la descripción de su puesto donde esa descripción existe.</p>
+  </div>
+
+  <div class="paper-body">
+
+    <div class="cap-div" id="indice"><span class="cn">Índice</span><span class="ct">Las once personas evaluadas</span><span class="cb">Las once tienen las tres pruebas completas. Hay una ficha por cada una: qué la mueve, qué hace bien, dónde le cuesta, en qué coinciden las fuentes y qué hacer con eso. Cada ficha cierra con el cruce contra la descripción de su puesto, donde esa descripción existe, y con dónde la mueve el plan de los primeros treinta días. Quedan fuera del alcance el área de mantenimiento, los cuatro responsables de turno y los operarios.</span></div>
+    <div class="idx-personas">
+      <a href="#mauro"><b>Mauro Lerda</b><span>Dirección General</span></a>
+      <a href="#jairo"><b>Jairo Galetto</b><span>Jefe de Planta</span></a>
+      <a href="#ismael"><b>Ismael Greco</b><span>Comercial y logística</span></a>
+      <a href="#franco"><b>Franco Ribba</b><span>Responsable Técnico y Logística</span></a>
+      <a href="#dario"><b>Darío Criscenti</b><span>Sin puesto declarado ni vínculo formal</span></a>
+      <a href="#natalia"><b>Natalia Tognon</b><span>Administración y Finanzas</span></a>
+      <a href="#valeria"><b>Valeria Gabrich</b><span>Administración de planta</span></a>
+      <a href="#antonella"><b>Antonella Pignatta</b><span>Compras y admisión a planta</span></a>
+      <a href="#guillermo"><b>Guillermo Schalbetter</b><span>Procesos y normas</span></a>
+      <a href="#leandro"><b>Leandro Greco</b><span>Administrativo (cobranzas)</span></a>
+      <a href="#valentina"><b>Valentina Mammarella</b><span>Administración: facturación y cobranzas</span></a>
+    </div>
+    <p class="note" style="margin-top:var(--v2)"><a href="#matriz"><strong>Ver la matriz de los cuatro cuadrantes</strong></a>, con el modo de pensar preferente de cada una de las once personas.</p>
+
+    <div class="cap-div"><span class="cn">El mapa</span><span class="ct">El encaje de cada persona, sobre la estructura</span><span class="cb">Las once evaluadas en el lugar que ocupan hoy, con su encaje en ese puesto y su disposición al cambio. Las casillas punteadas quedaron fuera del alcance de esta evaluación. Cada casilla evaluada lleva a su ficha.</span></div>
+    <div class="orgfig">
+      <div class="orgfig-titulo">Dirección y Funes · cómo encaja cada persona en el puesto que ocupa hoy</div>
+      <ul class="arbol">
+        <li>
+          <div class="arbol-nodo dir"><b>DIRECTORIO</b><small>Mauro + Natalia</small></div>
+          <ul>
+            <li>
+              <div class="arbol-nodo f-des"><a href="#mauro"><b>Mauro</b></a><small>dirección general</small><span class="fitm">encaja con desarrollo</span><span class="disp">no puede todavía</span></div>
+              <ul>
+                <li><div class="arbol-nodo f-des"><a href="#jairo"><b>Jairo</b></a><small>jefe de planta</small><span class="crit">ver planta</span><span class="fitm">encaja con desarrollo</span><span class="disp">no quiere seguir así</span></div></li>
+                <li><div class="arbol-nodo f-no"><a href="#ismael"><b>Ismael</b></a><small>comercial y logística</small><span class="fitm">no encaja</span><span class="disp">no quiere</span></div></li>
+                <li><div class="arbol-nodo f-ok"><a href="#guillermo"><b>Guillermo</b></a><small>procesos y normas</small><span class="fitm">encaja</span><span class="disp">quiere y sabe</span></div></li>
+              </ul>
+            </li>
+            <li>
+              <div class="arbol-nodo f-ok"><a href="#natalia"><b>Natalia</b></a><small>adm-financiera</small><span class="fitm">encaja</span><span class="disp">quiere y sabe</span></div>
+              <ul>
+                <li><div class="arbol-nodo f-ok"><a href="#valentina"><b>Valentina</b></a><small>facturación y cobranzas</small><span class="fitm">encaja</span><span class="disp">quiere y sabe</span></div></li>
+                <li><div class="arbol-nodo f-ok"><a href="#leandro"><b>Leandro</b></a><small>administrativo</small><span class="fitm">encaja</span><span class="disp">no sabe cómo</span></div></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <div class="orgfuera"><b><a href="#dario">Darío · organización y control</a></b><br>Ordena la empresa por dentro y no figura en ningún organigrama: sin puesto ni vínculo formal. Es el único del equipo sin un puesto contra el cual medir su encaje, y hoy declara que no quiere seguir en estos términos.</div>
+    </div>
+
+    <div class="orgfig">
+      <div class="orgfig-titulo">La planta, en Cañada Rosquín · cómo encaja cada persona en el puesto que ocupa hoy</div>
+      <ul class="arbol">
+        <li>
+          <div class="arbol-nodo f-des"><a href="#jairo"><b>Jairo</b></a><small>jefe de planta</small><span class="fitm">encaja con desarrollo</span><span class="disp">no quiere seguir así</span></div>
+          <ul>
+            <li>
+              <div class="arbol-nodo f-sd"><b>Resp. de turno (4)</b><small>Puntonet, Mauna, García y Ojeda</small><span class="fitm">sin evaluar</span></div>
+              <ul><li><div class="arbol-nodo f-sd"><b>Los operarios</b><small>producción</small><span class="fitm">sin evaluar</span></div></li></ul>
+            </li>
+            <li><div class="arbol-nodo f-ok"><a href="#franco"><b>Franco</b></a><small>técnica y logística</small><span class="fitm">encaja</span><span class="disp">quiere y sabe</span></div></li>
+            <li><div class="arbol-nodo f-sd"><b>Alejandro</b><small>mantenimiento, con 3 técnicos</small><span class="fitm">sin evaluar</span></div></li>
+            <li><div class="arbol-nodo f-ok"><a href="#valeria"><b>Valeria</b></a><small>adm. de planta</small><span class="fitm">encaja</span><span class="disp">quiere y sabe</span></div></li>
+            <li><div class="arbol-nodo f-ok"><a href="#antonella"><b>Antonella</b></a><small>compras y admisión</small><span class="fitm">encaja</span><span class="disp">no sabe cómo</span></div></li>
+          </ul>
+        </li>
+      </ul>
+      <div class="orgleyenda">
+        <span><i style="border-color:var(--verde);background:#f4f8f5"></i>Encaja en su puesto</span>
+        <span><i style="border-color:var(--ocre);background:#fdf9f2"></i>Encaja con desarrollo</span>
+        <span><i style="border-color:var(--rojo);background:#fbf4f2"></i>No encaja en ese puesto</span>
+        <span><i style="border-color:#b6b4a9;border-style:dashed"></i>Fuera del alcance de esta evaluación</span>
+      </div>
+      <p class="note"><strong>Cada casilla dice dos cosas distintas.</strong> El color y la primera línea son el encaje: si la persona da para el puesto que ocupa hoy. La segunda línea es la disposición al cambio: si va a moverse, y con qué se destraba. Son preguntas independientes, y el cruce de las dos es lo que define qué hacer con cada una.</p>
+    </div>
+
+    <div class="persona" id="mauro">
+      <div class="f-head">
+        <h3><span class="f-rol">Dirección General</span>Mauro Lerda</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Piensa como director y recibe por día más decisiones de las que una persona puede procesar, así que lo que hay que cambiar es la cantidad de trabajo que le entra.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Basal Izquierdo y Frontal Izquierdo.</strong> El primero es el procedimiento: repetir una acción de la misma manera todas las veces, atender el detalle y construir cimientos ordenados. Trabaja paso a paso y valora lo probado. El segundo, el análisis: diagnosticar, priorizar y calcular costo contra beneficio. Prefiere el dato escrito y entender por qué el tema vale la discusión.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>Resuelve combinando el análisis con la mirada de conjunto: mira el problema entero y a la vez lo desarma en partes, y las dos cosas le salen naturales. Lo que le cuesta es registrar lo que le pasa al otro, que es su modo menos desarrollado por amplio margen.
+ <br><br>Frente a un tema nuevo tiende a esperar a que se lo traigan en lugar de ir a buscarlo, y se apoya bastante en la evaluación de los demás antes de moverse. En el trato mantiene el control: no descarga lo que siente de manera abrupta, y eso le permite sostener conversaciones tensas sin romper el vínculo. A la vez participa poco de las situaciones cargadas de emoción, tiende a esquivarlas, y espera poca cooperación espontánea del entorno.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div>Quiere delegar y lo dice sin vueltas: <em>&ldquo;yo no quiero que nada pase por mí&rdquo;</em> y <em>&ldquo;yo siempre delegué todo&rdquo;</em>. Lo que describe cuando habla de la empresa es una organización que funcione sin que él arbitre todos los días.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>Piensa el conjunto y decide con criterio propio. Sostiene el control en el trato, que es lo que el puesto pide todos los días con once personas que le consultan. Y lee la realidad como la lee la mayoría, sin distorsión, que es la base para que sus decisiones sean comprensibles para el resto.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>La demanda que registra está muy por encima de los recursos que tiene disponibles para responderla, y esa distancia se mantiene aun descontando el estrés del momento. No es una racha: está instalada en su funcionamiento. Con esa carga, la respuesta a cada tema llega más tarde y peor de lo que él mismo querría.
+ <br><br>Y el modo que menos le sale es el que más le pide el día de hoy: once personas que le consultan y esperan de él una respuesta que registre lo que a cada una le está pasando.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Él dice que delega. Darío dice lo contrario: <em>&ldquo;Mauro es demasiado amigable, no bajaba línea&rdquo;</em>. Guillermo, con veinte días en la empresa, describe <em>&ldquo;demasiadas voces, todo el mundo opina y todo el mundo tiene capacidad de dirigir&rdquo;</em>. La evaluación acompaña a las otras voces: su posición es más receptiva que iniciadora.
+ <br><br>Las ganas de delegar están y son reales. Lo que no aparece en ninguna fuente es el acto concreto de soltar <span class="tag tag-val">[a validar]</span>.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>La distancia entre lo que le entra y lo que puede procesar no se corrige con un trimestre más tranquilo ni con capacitación. Se corrige sacándole trabajo de encima, que es exactamente lo que hacen los dos casos.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Sacarle trabajo antes de pedirle nada nuevo. Las decisiones que sostienen la estructura caen todas sobre él, y sumarle además la conducción del cambio es pedirle justo lo que la evaluación muestra que ya no entra.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>Quiere y no puede todavía.</strong> No se destraba capacitándolo: se destraba con las dos decisiones que le sacan cosas de encima.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, sus dos entrevistas, y lo que dicen Darío, Natalia y Guillermo.</div></div>
+      <div class="contra sin">
+        <div class="ct-h">No hay descripción de puesto para cruzar</div>
+        <div>La Dirección General no tiene descripción de puesto entre las ocho que la empresa formalizó. No hay documento contra el cual medir el encaje, así que lo de arriba se lee contra lo que el negocio necesita del puesto y no contra un estándar escrito.</div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Dirección general, y de hecho también comercial, programación y arbitraje diario entre planta y comercial.</td></tr>
+          <tr><td>Con los dos casos</td><td>Deja de arbitrar dos preguntas que hoy le llegan todos los días: si la planta puede producir algo, y si un crudo entra. Las contesta la capacidad medida y el estándar escrito.</td></tr>
+          <tr><td>Más adelante</td><td>Su carga sigue dependiendo de decisiones de estructura que exceden estos dos casos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="jairo">
+      <div class="f-head">
+        <h3><span class="f-rol">Jefe de Planta</span>Jairo Galetto</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Sabe de la planta como nadie, y hoy trabaja muy por encima de lo que puede sostener, con un costo que ya se ve en el trato con la gente.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Frontal Izquierdo.</strong> Es el análisis: diagnosticar, priorizar y calcular costo contra beneficio. Prefiere el dato escrito y entender por qué el tema vale la discusión.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>Antes de concluir barre el campo entero: revisa mucha información, con mucho detalle, y recién ahí decide. Para un proceso continuo eso es una virtud, y explica por qué la planta funciona. Tiene un costo: bajo presión, esa misma exhaustividad hace que la decisión se demore.
+ <br><br>Resuelve por el análisis y por el detalle, y su modo menos desarrollado es el del vínculo. Lee la realidad con precisión, pero lee poco lo convencional: capta mucho menos que la mayoría lo que a otros les resulta obvio en una situación con personas. En el trato eso se traduce en malentendidos que él no ve venir.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div>Lo dice él: <em>&ldquo;me veo más asesorándolos algunos días y no la esclavitud de la guardia, eso no lo quiero más&rdquo;</em>. Y en la misma conversación: <em>&ldquo;la planta la hice yo, no puedo dejarla&rdquo;</em>. Quiere quedarse, en otros términos.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>El proceso, la técnica y el rendimiento. Montó la planta nueva y es la referencia técnica de la empresa, algo que confirman varias voces. Su forma de decidir, revisando todo antes de avanzar, es la que un proceso continuo necesita, y su control de la descarga emocional está presente.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>La conducción de personas. Su conducta interpersonal aparece desajustada tres veces por cada vez que aparece ajustada, no espera cooperación del entorno y trabaja bastante aislado del intercambio con otros. Eso no es un rasgo de carácter que se corrija pidiéndole que sea más amable: es el modo con el que funciona, y por eso la salida es de diseño y no de actitud.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Cuatro personas describen lo mismo por separado, y la evaluación llega a lo mismo por otra vía. Antonella: <em>&ldquo;a las máquinas las entiende, a las personas no&rdquo;</em>. Valeria: <em>&ldquo;es controlador, cero emotivo, quiere todo ya&rdquo;</em>. Natalia: <em>&ldquo;es complicado, no quiere recibir órdenes&rdquo;</em>. Mauro: <em>&ldquo;hacía pero resiste a lo estructurado de procesos&rdquo;</em>.
+ <br><br>Es la coincidencia más contundente de todo el equipo evaluado <span class="tag tag-ok">[confirmado]</span>.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>La distancia entre lo que su puesto le exige y los recursos con los que cuenta es la más grande de todo el equipo, y se sostiene aun descontando el estrés del momento. Su pedido de dejar la guardia deja de ser una preferencia personal y pasa a ser un dato operativo: la planta depende de alguien que está trabajando por encima de lo que puede sostener.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Sacarle la conducción de personas y la guardia de primera línea, y dejarlo con el proceso y la técnica, que es donde rinde. Capacitarlo en liderazgo es la opción que no funciona: el modo de vincularse no se corrige con un curso, y él ya viene pidiendo lo contrario de lo que un curso supone.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>No quiere seguir en el puesto tal como está.</strong> Lo declaró sin ambigüedad. Se destraba con una conversación sobre alcance y guardia, no con formación.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, su entrevista, y lo que dicen Antonella, Valeria, Natalia, Mauro y Franco.</div></div>
+      <div class="contra">
+        <div class="ct-h">Contra su descripción de puesto · jefe-de-planta.md</div>
+        <div class="fila"><div class="fk">Lo que el papel le pide</div><div>Liderazgo y supervisión figuran como <strong>esenciales</strong>, con el nivel más alto de exigencia: conocimiento profundo, y capaz de instruir a otros. Toma de decisiones, también esencial.</div></div>
+        <div class="fila"><div class="fk">Lo que la evaluación dice</div><div>En liderazgo y trato interpersonal está su brecha medida, y coincide con cuatro voces. En toma de decisiones y análisis, cumple con margen.</div></div>
+        <div class="fila"><div class="fk">Lo que sale de cruzarlos</div><div>El puesto escrito le pide como esencial justo aquello en lo que la evaluación lo encuentra más flojo, y le pide como importante aquello en lo que es el mejor de la empresa. El desencaje es entre la persona y el puesto tal como está escrito, y por eso se resuelve moviendo el puesto.</div></div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Jefe de Planta con siete reportes directos, la guardia, el proceso, la técnica, la calidad y las compras de planta.</td></tr>
+          <tr><td>Con los dos casos</td><td>Sigue a cargo de la planta y deja de conducir a la gente de los turnos: eso pasa a un puesto nuevo que se crea debajo suyo. La guardia deja de caer siempre en él y se reparte por niveles, según qué tan grave sea lo que pasó. Queda respondiendo por que la planta produzca lo comprometido, con la calidad y al costo acordados. Quién ocupa la jefatura después de ese cambio es una decisión abierta, con tres caminos posibles.</td></tr>
+          <tr><td>Más adelante</td><td>Lo que él describe querer, asesorar algunos días sin guardia, es un puesto que hoy no existe y que requiere decidir antes qué pasa con la jefatura.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="ismael">
+      <div class="f-head">
+        <h3><span class="f-rol">Comercial y logística</span>Ismael Greco</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">No ocupa un puesto comercial: ocupa cuatro trabajos a la vez, y contra eso ningún resultado prueba nada.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Frontal Izquierdo.</strong> Es el análisis: diagnosticar, priorizar y calcular costo contra beneficio. Prefiere el dato escrito y entender por qué el tema vale la discusión.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>Se involucra en casi todo lo que aparece, sin filtrar qué le toca y qué no. Se propone abarcar bastante más de lo que después alcanza a ordenar, y bajo esa carga la precisión de lo que hace cae: empieza a leer las situaciones de un modo más personal y menos parecido a como las lee el resto.
+ <br><br>Decide mezclando lo que siente con lo que piensa, y ahí está su punto más delicado: la descarga emocional le sale con muy poca modulación, bastante más intensa que la del adulto promedio. Sostiene bien la presión, tiene recursos amplios, y su modo menos desarrollado es el del vínculo.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div>Lo que lo mueve es el lugar que perdió: <em>&ldquo;perdí a Mauro, que era con quien tenía nexo&rdquo;</em>, <em>&ldquo;me siento un costo&rdquo;</em>, <em>&ldquo;me molesta que me pregunten, porque no me hicieron parte desde el principio&rdquo;</em>. Y sobre el trabajo: <em>&ldquo;me gusta ordenar el caos, soy detallista&rdquo;</em>.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>Tolera la presión mejor que la mayoría del equipo y tiene recursos amplios para responder a la demanda. Su estilo de resolver, mezclando el contacto con la gente y el ensayo, es el que un puesto comercial pide.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>Interpretar las situaciones como las interpreta la mayoría, y la distancia es grande. Eso se ve todos los días en los problemas de comunicación con los demás. Se le suma poca flexibilidad para cambiar de idea, y vínculos que no llegan a la calidad que el trabajo pide.
+ <br><br>También le cuesta filtrar: se mete en todo lo que aparece, que es a la vez causa y consecuencia de tener cuatro trabajos encima. Y el control de la descarga, porque cuando algo lo tensa sale con poca modulación, que es lo que el equipo lee como negatividad.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Tres voces independientes describen el mismo patrón. Mauro: <em>&ldquo;falta de foco, se hace todo al vuelo, es muy desordenado&rdquo;</em> y <em>&ldquo;se pone a resolver cosas que no le piden&rdquo;</em>. Natalia: <em>&ldquo;no está organizado, se pierde en pequeñas cosas que no son importantes&rdquo;</em>. Él mismo: <em>&ldquo;tuve lagunas cuando era mucho volumen&rdquo;</em> <span class="tag tag-ok">[confirmado]</span>.
+ <br><br>Cuando dice <em>&ldquo;tres roles, no disfruté ninguno, estoy roto&rdquo;</em>, la evaluación lo respalda: su nivel de autocrítica rumiante está muy por encima de lo esperable. Al lado convive <em>&ldquo;yo no me quejo, yo no cometo errores&rdquo;</em>, que con ese fondo se lee como defensa <span class="tag tag-val">[a validar]</span>.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>El objetivo comercial que no cumple nunca tuvo una programación de producción detrás, y él mismo carga la función de negociar con la planta qué se produce y cuándo, sin un número de cuánto puede producir. Evaluar a la persona antes de corregir eso es evaluar contra un puesto que nadie podría cumplir.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Acotar el puesto a lo comercial, ponerle un objetivo con un número y una programación detrás, y recién después de noventa días medidos decidir sobre la persona. La conversación que abre eso no se delega.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>No quiere.</strong> Y es el estado que no se resuelve capacitando: mandarlo a capacitarse devuelve la misma persona, ahora entrenada, haciendo lo mismo. Se destraba con una conversación de quien tiene autoridad sobre él, sobre qué gana con el cambio y qué consecuencia tiene si no.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, su entrevista, y lo que dicen Mauro, Natalia y su propio hermano.</div></div>
+      <div class="contra">
+        <div class="ct-h">Contra su descripción de puesto · responsable-comercial.md</div>
+        <div class="fila"><div class="fk">Lo que el papel le pide</div><div>Generar y articular las operaciones entre plantas proveedoras, clientes finales y Laruso, e informar al resto de la organización el detalle de cada operación hasta su cierre. Declara <strong>personal a cargo: No</strong>.</div></div>
+        <div class="fila"><div class="fk">Lo que la evaluación dice</div><div>Su estilo encaja con la parte comercial del puesto. Lo que no encaja es la carga: la descripción no menciona ni la coordinación de camiones, ni el despacho, ni la programación de producción, que son tres de los cuatro trabajos que hoy hace.</div></div>
+        <div class="fila"><div class="fk">Lo que sale de cruzarlos</div><div>El descriptivo describe el puesto acotado que el caso 1 propone. La empresa ya escribió el puesto correcto y la práctica se le fue encima.</div></div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Un puesto con cuatro trabajos: vender, despachar, programar la producción y resolver lo que aparece.</td></tr>
+          <tr><td>Con los dos casos</td><td>Comercial, con un solo resultado del que responde y una reunión semanal de programación detrás. Los otros tres trabajos van a otros puestos. Noventa días medidos y recién ahí la decisión sobre la persona.</td></tr>
+          <tr><td>Más adelante</td><td>Si el resultado no aparece con el puesto ya corregido, la búsqueda es afuera: ninguno de los evaluados encaja en ese puesto.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="franco">
+      <div class="f-head">
+        <h3><span class="f-rol">Responsable Técnico y Logística</span>Franco Ribba</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Es quien mejor razona de todo el equipo y tiene la forma de pensar exacta que un puesto de calidad pide, con una dificultad que es de diseño y no de capacidad.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Frontal Izquierdo.</strong> Es el análisis: diagnosticar, priorizar y calcular costo contra beneficio. Prefiere el dato escrito y entender por qué el tema vale la discusión.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>Analiza, ordena y trabaja con números y procedimientos mejor que el resto del equipo. Su capacidad de razonamiento es la más alta de la empresa medida.
+ <br><br>A la vez decide con poca deliberación interna y se apoya en una autoridad externa para sostener lo que afirma: cuando algo lo cuestiona, tiende a respaldarse en alguien más que en su propio criterio. Su valoración de sí mismo es baja, necesita bastante apoyo del entorno, y los recursos disponibles para responder a la demanda son los más bajos del equipo.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div><em>&ldquo;Me siento muy bien con números e indicadores mensuales, me gusta el control de stock&rdquo;</em> y <em>&ldquo;la rutina es importante, hacer todos los días lo mismo para que salga mecánicamente&rdquo;</em>. También dice <em>&ldquo;no sé si veo un futuro en Cañada Rosquín&rdquo;</em>, junto con <em>&ldquo;el trabajo me gusta&rdquo;</em>. Le resta una materia para recibirse de ingeniero.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>El laboratorio, las certificaciones y las auditorías, que ya lleva. El análisis y el procedimiento son sus dos modos más desarrollados, y esa combinación es la que un control de calidad necesita.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>Sostener la tensión de la discusión que viene después de frenar algo. Él lo dice: <em>&ldquo;cuando se rompe algo, estar ahí me gusta, las situaciones son medio tensas y a veces opto por no estar&rdquo;</em>, y se describe <em>&ldquo;socialmente soy moldeable&rdquo;</em>.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Lo que él declara y lo que la evaluación mide dicen exactamente lo mismo, por vías independientes <span class="tag tag-ok">[confirmado]</span>: decide sin apoyarse en su propio criterio, se respalda en la autoridad de otro, se valora poco y cuenta con pocos recursos disponibles. Y a favor, también coincidente: Natalia lo describe <em>&ldquo;muy prolijo&rdquo;</em> y le atribuye las habilitaciones conseguidas.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>Un puesto de control existe para frenar un lote y sostener la discusión posterior. Ponerlo ahí sin arreglar de quién depende y sin el criterio escrito de cuándo se frena es ponerlo en el lugar exacto donde su dificultad se activa todos los días.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Tres condiciones, y las tres son de diseño. El criterio de cuándo se frena un lote va escrito, para que la decisión dependa de una regla y no de que él se plante. El puesto responde a la dirección y no a la planta, porque hoy su jefe directo es la persona con la que tendría que discutir cada vez que frene producción. Y la dirección lo respalda en público la primera vez.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>Quiere y sabe cómo.</strong> Lo que falta no está en él.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, su entrevista, y lo que dicen Natalia y Jairo.</div></div>
+      <div class="contra">
+        <div class="ct-h">Contra su descripción de puesto · responsable-tecnico-logistica.md</div>
+        <div class="fila"><div class="fk">Lo que el papel le pide</div><div>Controlar por laboratorio la calidad del crudo que entra y del refinado que sale, y además gestionar la logística interna del predio. Liderazgo figura como <strong>útil</strong>, el nivel más bajo de las tres categorías.</div></div>
+        <div class="fila"><div class="fk">Lo que la evaluación dice</div><div>En la parte de laboratorio y control, encaja. En la parte de conducción, el propio papel casi no le pide nada, y la evaluación coincide en que no es su fuerte.</div></div>
+        <div class="fila"><div class="fk">Lo que sale de cruzarlos</div><div>El puesto junta dos trabajos que piden cosas distintas: controlar la calidad y mover el producto dentro del predio. Es el mismo puesto del que hoy cuelgan, en el papel, los turnos y los operarios, con liderazgo declarado como apenas útil.</div></div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Responsable Técnico y Logística: laboratorio, calidad y logística de adentro en el mismo puesto, reportando al Jefe de Planta.</td></tr>
+          <tr><td>Con los dos casos</td><td>No lo mueve ninguno de los dos casos.</td></tr>
+          <tr><td>Más adelante</td><td>Separar el control de calidad del resto del puesto es una decisión de fondo, y él es el candidato evaluado para ese control.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="dario">
+      <div class="f-head">
+        <h3><span class="f-rol">Sin puesto declarado ni vínculo formal</span>Darío Criscenti</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Ordena la empresa por dentro sin figurar en ningún organigrama, y es el único del equipo sin un puesto contra el cual medir su encaje.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Frontal Izquierdo.</strong> Es el análisis: diagnosticar, priorizar y calcular costo contra beneficio. Prefiere el dato escrito y entender por qué el tema vale la discusión.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>Su capacidad de razonamiento es la segunda más alta del equipo, y el análisis es su modo dominante con margen amplio sobre los otros tres.
+ <br><br>Decide rápido y con poca información revisada: es el que menos rastrea antes de concluir de todo el grupo. Se propone bastante más de lo que después traduce en respuestas terminadas, y procesa la información de manera poco elaborada. Resuelve mezclando lo que siente con lo que piensa, con un estilo marcado.
+ <br><br>Puede tener miradas diferentes sobre los temas, y en esos casos encontrarse con problemas de comunicación con algunas personas.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div><em>&ldquo;Siempre me interesó el resultado, ahora ya estoy, no me siento atraído, no hay desafío&rdquo;</em>. Veinticinco años armando y ordenando empresas, y una descripción de sí mismo que se repite: entra, diagnostica y monta.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>Entrar, diagnosticar y montar. Es lo que hizo acá y lo que hace hace veinticinco años. Cinco voces distintas se lo reconocen: Natalia dice <em>&ldquo;nos vino a enseñar un montón, unió la planta con nosotros&rdquo;</em> y <em>&ldquo;nos hizo pensar como empresa grande&rdquo;</em>; Valeria, <em>&ldquo;con Darío empezó a unir esas dos partes&rdquo;</em>; Mauro lo llama su mano derecha.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>Sostener día a día lo que montó, con rutina y demanda continua. La evaluación anticipa fricción si se le pidiera, por ejemplo, llevar una programación diaria.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Cinco voces coinciden en lo que aporta, y él coincide con todas <span class="tag tag-ok">[confirmado]</span>. La evaluación agrega el matiz que ninguna entrevista da: su fuerte es la etapa de montar, no la de sostener.
+ <br><br>Una cautela de método: es la fuente que más estructura el relato de la empresa, la más articulada y a la vez parte interesada, así que lo que dice de terceros se contrasta con las otras voces y no se adopta por ser el más convincente.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>Está atravesando una sobrecarga severa que no es del momento, con la mayor distancia entre exigencia y recursos después de la de Jairo, y con indicadores de estado anímico que dan por debajo de lo esperado.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Preguntarle si quiere seguir y en qué términos, antes de diseñarle ningún puesto. Recién con esa respuesta se define el alcance, y conviene que ese alcance pese más en armar que en sostener.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>No quiere, hoy.</strong> Y no tiene puesto ni vínculo formal, así que no hay nada que sostener la conversación salvo la conversación misma. Se destraba con una definición de alcance, dedicación y forma de contratación, y con nada más.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, su entrevista, y lo que dicen Natalia, Valeria, Mauro y Antonella.</div></div>
+      <div class="contra sin">
+        <div class="ct-h">No hay descripción de puesto para cruzar</div>
+        <div>No tiene puesto declarado ni descripción de puesto, y es el único del equipo en esa situación. No hay estándar contra el cual medir su encaje, así que su evaluación no da un veredicto: da material para diseñar el puesto que habría que crearle.</div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Ordena la empresa por dentro (procesos, indicadores, orden administrativo) figurando como externo, sin puesto ni contrato.</td></tr>
+          <tr><td>Con los dos casos</td><td>No lo mueve ninguno de los dos casos. Sí lo toca el pedido de abrir la conversación sobre puesto y vínculo, que recomendamos en las próximas dos semanas.</td></tr>
+          <tr><td>Más adelante</td><td>De su respuesta depende quién puede conducir los cambios que exceden estos dos casos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="natalia">
+      <div class="f-head">
+        <h3><span class="f-rol">Administración y Finanzas</span>Natalia Tognon</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Es el encaje mejor verificado de la empresa, y a la vez la sucesión menos preparada.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Basal Izquierdo.</strong> Es el procedimiento: repetir una acción de la misma manera todas las veces, atender el detalle y construir cimientos ordenados. Trabaja paso a paso y valora lo probado.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>Analiza, ordena y revisa con un equilibrio poco común: dedica al rastreo de información un esfuerzo levemente por encima del promedio, sin caer en la minuciosidad que traba, que es exactamente lo que un rol de control financiero necesita.
+ <br><br>Lee la realidad con la mayor precisión de todo el equipo evaluado. Resuelve por la reflexión antes que por la emoción, controla la descarga sin hipercontrolarla, y es quien mejor disposición a la cooperación muestra del grupo. Sostiene la demanda de su puesto sin sobrecarga.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div><em>&ldquo;A mí me gustan los números&rdquo;</em>, <em>&ldquo;me gusta la auditoría&rdquo;</em>, y los balances le relajan. También: <em>&ldquo;hoy muchos riesgos con planta, yo ya me retiro&rdquo;</em> y el proyecto declarado de vender a largo plazo.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>El control, el número y la auditoría. Cumple el perfil de su puesto casi punto por punto, y sostiene la carga sin desbordarse.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>Nada que afecte a su puesto actual. Lo que hay que resolver no es de ella: sus controles viven en una planilla propia y en papel, así que hoy se irían con ella.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Lo que declara y lo que mide la evaluación coinciden sin fisuras <span class="tag tag-ok">[confirmado]</span>. Hay una diferencia que conviene nombrar: ella dice <em>&ldquo;si yo no estoy no trabo, sí controlo&rdquo;</em>, y es cierto que la operación diaria no se traba. Lo que sí depende de ella es la conducción del área y esos controles que no están en ningún sistema compartido <span class="tag tag-val">[a validar]</span>.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>Declaró que quiere retirarse, sin fecha, y no hay reemplazo preparado ni candidato interno con encaje verificado. Preparar una sucesión lleva meses, y lo que hay que reemplazar quedó medido más alto que cualquier alternativa interna de hoy.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Un paso concreto y barato ya: sacar sus controles de la planilla personal y del papel, y ponerlos donde otro los pueda tomar. La sucesión es una decisión aparte y no de estos treinta días.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>Quiere y sabe cómo.</strong> Con un horizonte declarado de salida que conviene tomar en serio.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, su entrevista, y lo que dicen Mauro, Valeria y Leandro.</div></div>
+      <div class="contra sin">
+        <div class="ct-h">No hay descripción de puesto para cruzar</div>
+        <div>Administración y Finanzas no tiene descripción de puesto entre las ocho formalizadas. La descripción de Responsable de Administración que existe corresponde al puesto de planta y no al suyo <span class="tag tag-val">[a validar]</span>. No hay documento contra el cual medir el encaje.</div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Gerencia administrativo-financiera, en Funes, con la administración de Funes bajo su línea y la de planta respondiendo de hecho a la jefatura de planta.</td></tr>
+          <tr><td>Con los dos casos</td><td>No la mueve ninguno de los dos casos.</td></tr>
+          <tr><td>Más adelante</td><td>Su sucesión y la unificación de las dos administraciones son decisiones de fondo, y las dos requieren tiempo de preparación.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="valeria">
+      <div class="f-head">
+        <h3><span class="f-rol">Administración de planta</span>Valeria Gabrich</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Es la mejor del equipo en el trato, sin un solo indicador en contra, y puede bastante más de lo que hoy le dejan hacer.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Basal Derecho.</strong> Es el vínculo: percibir las emociones y lo que no se dice, conectar con las personas y sostener la armonía del grupo. Prefiere la palabra hablada y le importa quién es el otro.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>Sus dos modos dominantes son el vínculo y el procedimiento: se conecta con las personas y a la vez sostiene la rutina y el orden. El análisis numérico es su modo más bajo.
+ <br><br>Tiene iniciativa y posición activa: propone y se mueve, en vez de esperar a que le traigan. Es la única del equipo cuyos recursos disponibles superan a la demanda que registra, o sea que tiene margen. Tiende a quedarse con lo evidente y a simplificar, y su descarga emocional sale con poco filtro, algo que ella misma describe.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div><em>&ldquo;Me gustaría hacer más de lo que hago&rdquo;</em> y <em>&ldquo;es lo único que dejan hacer&rdquo;</em>. Pide más alcance con todas las letras.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>El trato, mejor que nadie del equipo evaluado. Sostiene la rutina administrativa de la planta con orden, tiene iniciativa y margen de energía disponible.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>El análisis numérico y el control de la reacción, que son sus dos puntos más bajos. Conducir un área financiera le pediría las dos cosas.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Es la coincidencia más limpia del cliente <span class="tag tag-ok">[confirmado]</span>. Ella se describe <em>&ldquo;soy muy emocional, soy sensible, todo me lo tomo muy a pecho&rdquo;</em>, y la evaluación mide exactamente eso. Antonella la describe desde afuera y coincide.
+ <br><br>La subutilización también está confirmada por las dos vías: lo que declara y lo que la evaluación muestra que tiene disponible.
+ <br><br>Antonella compara las dos cargas y dice <em>&ldquo;continuamente tengo trabajo, y ella no&rdquo;</em>. La evaluación mide que ninguna de las dos está desbordada, y que Valeria además tiene recursos por encima de la demanda que registra. El desparejo está en cómo se repartió el trabajo, y una de las dos lo nota desde adentro.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>La traba está en la línea: reporta de hecho a la jefatura de planta y no a la conducción administrativa. Cualquier pedido que le llegue desde administración, hoy, llega sin autoridad detrás.
+ <br><br>Y hay una función que puede quedar en el aire: la recepción y la verificación documental de los ingresos figuran en el descriptivo de compras, y quien ocupa ese puesto las ubica acá. Conviene definir de quién son antes de que las dos supongan que las hace la otra.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Darle más alcance dentro de la administración de planta, que es lo que pide y lo que puede. En los primeros treinta días eso ya ocurre: toma la coordinación del despacho, o sea los camiones que salen con producto y su seguimiento hasta el cliente.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>Quiere y sabe cómo.</strong> Es el caso más claro de revisar el diseño antes de anotar a la persona.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, su entrevista, y lo que dicen Antonella y Natalia.</div></div>
+      <div class="contra">
+        <div class="ct-h">Contra su descripción de puesto · responsable-administracion.md</div>
+        <div class="fila"><div class="fk">Lo que el papel le pide</div><div>Coordinar compras, registraciones contables, liquidación de haberes y sistema administrativo, y controlar el circuito de ventas y la tesorería. Supervisión figura como <strong>esencial</strong>, y liderazgo como importante.</div></div>
+        <div class="fila"><div class="fk">Lo que la evaluación dice</div><div>En orden, procedimiento y trato, cumple con holgura. En la parte de análisis numérico está su punto más bajo.</div></div>
+        <div class="fila"><div class="fk">Lo que sale de cruzarlos</div><div>El descriptivo describe un puesto bastante más amplio que el que ella ocupa en la práctica, y no coincide con la línea de reporte real. Queda por definir si ese documento describe el puesto de planta o el de Funes <span class="tag tag-val">[a validar]</span>.</div></div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Administración de planta: controla e imputa en el sistema las compras que hace Antonella, lleva los movimientos de lo que entra y sale de la planta en el único archivo que existe, y las horas del personal. Los sueldos los liquida el estudio. Reporta de hecho a la jefatura de planta y no a la conducción administrativa.</td></tr>
+          <tr><td>Con los dos casos</td><td>Suma la coordinación del despacho, los camiones que salen con producto y su seguimiento hasta el cliente, que hoy hace el puesto comercial. Se lo asigna la jefatura de planta, que es de quien depende.</td></tr>
+          <tr><td>Más adelante</td><td>De quién depende la administración de planta es una decisión de fondo, y hasta que se resuelva el pedido le llega por la línea que existe hoy.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="antonella">
+      <div class="f-head">
+        <h3><span class="f-rol">Compras y admisión a planta</span>Antonella Pignatta</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Compra insumos y repuestos con el orden que su puesto pide, y hay una parte de ese puesto, escrita en su descriptivo, que ella entiende que le corresponde a otra persona.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Basal Izquierdo.</strong> Es el procedimiento: repetir una acción de la misma manera todas las veces, atender el detalle y construir cimientos ordenados. Trabaja paso a paso y valora lo probado.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>Trabaja con orden y procedimiento mejor que nadie del grupo evaluado, con una diferencia clara sobre el resto. Ve las cosas como son, sin distorsionar, que es justo lo que una compra bien hecha necesita.
+ <br><br>Su límite está en el rastreo: hace un barrido corto del campo antes de concluir y tiende a quedarse con lo evidente. En una orden de compra, eso significa que verifica que los datos coinciden y se le puede pasar que una condición cambió o que falta una firma donde no miró. Da por cerrada la revisión antes de barrer todo el campo.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div><em>&ldquo;Mi trabajo me gusta, disfruto hacerlo&rdquo;</em>. Y pide una cosa concreta: <em>&ldquo;más conexión con Funes, el botón rojo para ellos es naranja&rdquo;</em>.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>El orden, el procedimiento y la lectura precisa de lo que tiene delante. Lleva las dos compras: los insumos para producir, que reporta con Franco porque es quien tiene el stock, y los repuestos y lo que se implementa nuevo para producción, que reporta con Jairo. Toma el contacto con el proveedor, recibe la orden de compra y coordina con Valentina la autorización del pago según la forma que dé cada proveedor. Sostiene todo eso con estabilidad y sin sobrecarga.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>Salir a buscar lo que falta. Revisa lo que está a la vista, así que en cualquier verificación que se le asigne va a detectar lo que salta y se le puede pasar lo que exige ir a buscarlo.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Lo que declara, lo que la evaluación mide y lo que describe Valeria apuntan al mismo lugar <span class="tag tag-ok">[confirmado]</span>.
+ <br><br>Cuando dice <em>&ldquo;continuamente tengo trabajo, y ella no&rdquo;</em> está comparando su carga con la de la administración de planta. La evaluación mide que a ella el volumen no la desborda, y que Valeria además tiene recursos disponibles por encima de la demanda que registra. Las dos tienen margen, y el trabajo está repartido de manera despareja.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>Los puntos 3 a 6 de su descriptivo le asignan coordinar la recepción y la admisión de camiones, insumos y materiales al predio, verificar la documentación de ingreso (remitos, certificados de análisis, cartas de porte), registrar los ingresos y vincularlos a la trazabilidad de lote, y coordinar con producción la programación de ingresos. Ella entiende que todo eso le corresponde a la administración de planta.
+ <br><br>Hoy esa parte del puesto no tiene a nadie que la ejecute con dueño declarado, y el papel la da por cubierta. Antes de pedirle cualquier cosa sobre la recepción, hay que decirle que es suya.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Tres cosas, y ninguna es sobre ella. Decirle cuál es la parte de la recepción y de la verificación documental que su puesto le asigna, porque hoy entiende que es de otro. Que esa verificación tenga una sola responsable, ya que aparece repartida entre el turno, compras y la administración de planta. Y que exista una lista escrita de qué se mira en cada ingreso. Con la asignación conversada y la lista, el puesto cierra.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>Quiere y no sabe cómo.</strong> Es el único de los estados que se resuelve capacitando, y acá corresponde: falta que le digan qué parte del puesto es suya y el criterio escrito de qué se verifica y qué se aprueba.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, su entrevista, y lo que dice Valeria.</div></div>
+      <div class="contra">
+        <div class="ct-h">Contra su descripción de puesto · compras-y-admision.md</div>
+        <div class="fila"><div class="fk">Lo que el papel le pide</div><div>Requisitos de recepción y admisión a planta, y selección y evaluación de proveedores, los dos como <strong>esenciales</strong>. Aptitudes analíticas y toma de decisiones figuran en el nivel más bajo de exigencia.</div></div>
+        <div class="fila"><div class="fk">Lo que la evaluación dice</div><div>Encaja con lo esencial del puesto: orden, procedimiento y lectura precisa. Y el nivel bajo de exigencia analítica coincide con lo que la evaluación encuentra.</div></div>
+        <div class="fila"><div class="fk">Lo que sale de cruzarlos</div><div>El descriptivo pide como esencial la admisión a planta, no define contra qué se verifica cada ingreso, y esa parte ella la entiende asignada a otro puesto. Faltan las dos cosas para que cierre: que se le diga que es suya, y el criterio escrito de qué se mira.</div></div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Compra de insumos de producción y de repuestos, resolviendo sola dentro de un flujo semanal y escalando a Darío lo que se pasa de ahí. La recepción y la verificación documental figuran en su descriptivo y ella las ubica en la administración de planta.</td></tr>
+          <tr><td>Con los dos casos</td><td>Aplica el estándar de admisión de crudo en la recepción, con la lista escrita que hoy no existe. Antes de asignarlo hay que decirle que esa función es suya y revisar la carga con ella.</td></tr>
+          <tr><td>Más adelante</td><td>Su instancia de escalamiento depende de una definición de vínculo que excede estos dos casos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="guillermo">
+      <div class="f-head">
+        <h3><span class="f-rol">Procesos y normas</span>Guillermo Schalbetter</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Encaja bien en documentar y formalizar, que es lo que hace hoy, y para un control de calidad conviene descartarlo por dos motivos independientes entre sí.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Frontal Izquierdo.</strong> Es el análisis: diagnosticar, priorizar y calcular costo contra beneficio. Prefiere el dato escrito y entender por qué el tema vale la discusión.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>El análisis es su modo dominante, el más marcado del equipo evaluado, incluso algo por encima del de Franco. En forma de pensar, los dos candidatos a un control de calidad dan bien.
+ <br><br>Su diferencia está en cuánta información revisa antes de concluir: es de los que menos rastrea del grupo, y decide con poca información revisada. Lee lo convencional mejor que nadie del equipo, que es justo lo que el trabajo con normas y documentación necesita. Cuando se siente cuestionado tiende a defenderse justificándose, y su posición es más receptiva que iniciadora.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div><em>&ldquo;Quiero darle formalidad a la empresa&rdquo;</em>, y como dueño por un día, <em>&ldquo;formalizar&rdquo;</em>. Preguntado dónde se ve, responde <em>&ldquo;empresa propia; dentro de Laruso podría ser corretaje&rdquo;</em>.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>Documentar, formalizar y trabajar con normas. Es el más ajustado a lo convencional de todo el equipo, y eso en su puesto es una virtud directa.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>Revisar a fondo antes de concluir, que es lo contrario de lo que hace un control de calidad al liberar un lote. Y sostener una posición cuando lo cuestionan sin pasar a la justificación.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Lo que observamos en la entrevista y lo que medimos coinciden <span class="tag tag-ok">[confirmado]</span>: registramos que tiene mucha valoración de sí mismo y mucha confianza, y la evaluación lo mide. Lo vimos honesto, estricto y capaz de decir <em>&ldquo;esto no lo sé pero puedo aprenderlo&rdquo;</em>.
+ <br><br>Una precaución de lectura vigente: llevaba veinte días en la empresa cuando se lo entrevistó, así que sus opiniones sobre el equipo valen como mirada externa reciente y no como conocimiento de la organización.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>Su descarte para calidad no se apoya en la capacidad de razonamiento, donde cumple el mínimo igual que Franco. Se apoya en dos cosas independientes: cuánta información revisa antes de decidir, y que calidad no aparece en lo que él quiere hacer.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Sostenerlo donde está y usarlo para lo que rinde. En los primeros treinta días convoca y registra la reunión semanal de programación, que es exactamente documentar y formalizar.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>Quiere y sabe cómo</strong>, en el terreno de formalizar. Con un horizonte declarado que apunta afuera del puesto de calidad.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas que administramos <span class="tag tag-ok">[confirmado]</span>, su entrevista y lo que observamos en ella.</div></div>
+      <div class="contra sin">
+        <div class="ct-h">No hay descripción de puesto para cruzar</div>
+        <div>Procesos y normas no tiene descripción de puesto entre las ocho formalizadas. No hay documento contra el cual medir el encaje.</div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Procesos y normas ISO, con veinte días en la empresa al momento de la evaluación.</td></tr>
+          <tr><td>Con los dos casos</td><td>Convoca y registra la reunión semanal de programación, y deja escritas las tres líneas que salen de ahí.</td></tr>
+          <tr><td>Más adelante</td><td>El puesto de control de calidad, para el que fue evaluado, corresponde a una decisión de fondo, y la recomendación es que lo ocupe otro.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="leandro">
+      <div class="f-head">
+        <h3><span class="f-rol">Administrativo (cobranzas)</span>Leandro Greco</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Es el perfil del equipo que mejor controla sus impulsos y que más revisa antes de decidir, y le falta experiencia para un puesto de coordinación.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Basal Izquierdo.</strong> Es el procedimiento: repetir una acción de la misma manera todas las veces, atender el detalle y construir cimientos ordenados. Trabaja paso a paso y valora lo probado.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>Es el que mejor controla sus impulsos de todo el equipo evaluado, con margen: cuando algo lo tensa, no descarga. Y antes de concluir hace un barrido exhaustivo, revisa a fondo. Esas dos cosas juntas son las que pide cualquier trabajo de coordinar entre áreas.
+ <br><br>Sostiene la demanda sin sobrecarga y es la única batería del grupo sin ninguna alerta. Su límite: lee las situaciones de un modo bastante más personal que la mayoría, apartado de lo convencional.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div>Describe ejecución ordenada: conciliaciones, bancos, impuestos, planilla de stock. Sobre su lugar en la estructura dice <em>&ldquo;respondo a todos, Nati y Mauro&rdquo;</em> y que prioriza según <em>&ldquo;la prioridad del otro&rdquo;</em>.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>El orden y el procedimiento, con la parte analítica presente. Natalia lo describe junto con Valentina como <em>&ldquo;muy prolijos y para mí son perfectos&rdquo;</em>.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>Leer las situaciones como las lee el resto, que en cualquier trabajo de coordinar entre dos áreas es la mitad de la tarea. Y le falta lo que ninguna prueba mide: experiencia de conducción y de programación.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Lo que declara y lo que dice su jefa coinciden con lo medido <span class="tag tag-ok">[confirmado]</span>. Y su descripción de a quién responde es la decisión de fondo sobre la administración vista desde adentro: un puesto sin línea de reporte única.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>Un trabajo de coordinación lo pondría a tratar con su hermano, que trabaja al lado suyo y a quien él mismo nombra: <em>&ldquo;raro es trabajar con su hermano&rdquo;</em>. Y su desarrollo depende de que alguien lo forme, que es justo lo que hoy la empresa no tiene.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Sentarlo en la reunión semanal de programación desde la primera semana, para que conozca ese trabajo sin nombramiento y sin costo. Ahí se ve si el interés aparece, que hoy no está.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>Quiere y no sabe cómo</strong>, sobre un trabajo que todavía no conoce. Sentarse en la reunión es lo que puede despertar el interés.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, su entrevista, y lo que dice Natalia.</div></div>
+      <div class="contra sin">
+        <div class="ct-h">No hay descripción de puesto para cruzar</div>
+        <div>Su puesto no tiene descripción entre las ocho formalizadas, y él mismo describe que responde a dos personas a la vez. No hay documento contra el cual medir el encaje.</div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Administrativo en Funes: conciliaciones, bancos, impuestos, cobranzas y planilla de stock, respondiendo a dos personas.</td></tr>
+          <tr><td>Con los dos casos</td><td>Se sienta en la reunión semanal de programación desde la semana 1, para conocer el trabajo.</td></tr>
+          <tr><td>Más adelante</td><td>Si la dirección decide crear un puesto que programe la producción, él es el perfil interno más cercano y necesitaría acompañamiento y plazo. Esa decisión todavía no está tomada.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="persona" id="valentina">
+      <div class="f-head">
+        <h3><span class="f-rol">Administración: facturación y cobranzas</span>Valentina Mammarella</h3>
+        <a class="f-top" href="#indice">↑ Índice</a>
+      </div>
+      <p class="f-resumen">Hace bien su trabajo y carga un malestar que desde afuera no se ve.</p>
+      <div class="fila"><div class="fk">Cuadrante preferente</div><div><strong>Basal Izquierdo.</strong> Es el procedimiento: repetir una acción de la misma manera todas las veces, atender el detalle y construir cimientos ordenados. Trabaja paso a paso y valora lo probado.</div></div>
+      <div class="fila"><div class="fk">Cómo funciona</div><div>El procedimiento y el orden son su modo dominante, con el análisis presente, que es lo que facturación y cobranzas necesitan. Sostiene el día a día con estabilidad y percibe con precisión.
+ <br><br>Por debajo hay tres cosas que van juntas: la oposición interna más alta del equipo, o sea mucho desacuerdo que no se expresa de manera directa; una tendencia marcada a evitar las situaciones cargadas de emoción; y la costumbre de guardarse lo que siente. Su valoración de sí misma es la más baja del grupo por amplio margen, y no espera nada del vínculo con los demás.</div></div>
+      <div class="fila"><div class="fk">Qué lo mueve</div><div>Declara preferencia por el <em>&ldquo;trabajo individual&rdquo;</em>, y la evaluación coincide.</div></div>
+      <div class="fila"><div class="fk">Lo que hace bien</div><div>Facturación y cobranzas, con orden y precisión. Su jefa la describe junto con Leandro como <em>&ldquo;muy prolijos y para mí son perfectos&rdquo;</em>.</div></div>
+      <div class="fila"><div class="fk">Dónde le cuesta</div><div>Decir en el momento lo que le molesta. Lo canaliza por escrito, y el escrito genera más roce del que resuelve.</div></div>
+      <div class="fila"><div class="fk">En qué coinciden las fuentes</div><div>Ella misma cuenta el circuito completo, con un ejemplo operativo concreto <span class="tag tag-ok">[confirmado]</span>: la compañera de planta hace los remitos que ella factura, <em>&ldquo;si está mal se lo corrijo, un día ella me contestó mal y yo me lo tomé mal, escribo para que quede todo escrito, Natalia me dijo que al leerlo se podía entender mal&rdquo;</em>. Se incomoda, no lo dice en el momento, lo pasa por escrito, y el escrito escala.
+ <br><br>Y a la vez su jefa la ve perfecta. Las dos cosas conviven: hace bien el trabajo, y el malestar no es visible desde afuera.</div></div>
+      <div class="fila"><div class="fk">Un dato para tomarse en serio</div><div>Ese circuito de corrección de remitos une dos sedes que casi no se ven, y hoy se resuelve por mensajes entre dos personas. Es barato de ordenar y caro de dejar así, porque un roce operativo escala al conflicto entre sedes que ya está identificado.</div></div>
+      <div class="fila"><div class="fk">Qué hacer</div><div>Nada sobre su puesto. Sí darle forma acordada al circuito de corrección de remitos entre facturación y planta, para que deje de depender del intercambio entre dos personas.</div></div>
+      <div class="fila"><div class="fk">Disposición al cambio</div><div><strong>Quiere y sabe cómo</strong> en su trabajo. Lo que no está resuelto es el canal por donde se corrige lo que no sale bien.</div></div>
+      <div class="fila"><div class="fk">Sobre qué se apoya</div><div>Las tres pruebas administradas <span class="tag tag-ok">[confirmado]</span>, su entrevista, y lo que dice Natalia.</div></div>
+      <div class="contra sin">
+        <div class="ct-h">No hay descripción de puesto para cruzar</div>
+        <div>Facturación y cobranzas no tiene descripción de puesto entre las ocho formalizadas. No hay documento contra el cual medir el encaje.</div>
+      </div>
+      <table class="mov">
+        <thead><tr><th>Cuándo</th><th>Dónde queda</th></tr></thead>
+        <tbody>
+          <tr><td>Hoy</td><td>Facturación y cobranzas en Funes, con un circuito de corrección de remitos con planta que no está acordado.</td></tr>
+          <tr><td>Con los dos casos</td><td>No la mueve ninguno de los dos casos.</td></tr>
+          <tr><td>Más adelante</td><td>El circuito entre las dos sedes forma parte de lo que queda por ordenar más allá de estos dos casos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cap-div" id="matriz"><span class="cn">La matriz</span><span class="ct">Dónde se ubica cada persona</span><span class="cb">El cuadrante preferente es el modo de pensar con el que cada persona se siente más cómoda y al que vuelve cuando la situación aprieta. No mide capacidad: dice con qué herramienta trabaja mejor, no cuánto rinde.</span></div>
+    <div class="cuad">
+      <div class="q">
+        <div class="q-h">Frontal Izquierdo<span class="q-n">6 de 11</span></div>
+        <div class="q-d">el análisis: diagnosticar, priorizar y calcular costo contra beneficio. Prefiere el dato escrito y entender por qué el tema vale la discusión.</div>
+        <div class="q-p"><a href="#mauro"><b>Mauro Lerda</b></a> · <a href="#jairo"><b>Jairo Galetto</b></a> · <a href="#ismael"><b>Ismael Greco</b></a> · <a href="#franco"><b>Franco Ribba</b></a> · <a href="#dario"><b>Darío Criscenti</b></a> · <a href="#guillermo"><b>Guillermo Schalbetter</b></a></div>
+      </div>
+      <div class="q vacio">
+        <div class="q-h">Frontal Derecho<span class="q-n">0 de 11</span></div>
+        <div class="q-d">la visión: el concepto, la posibilidad y lo que todavía no existe. Prefiere la conversación informal, la autonomía y los temas nuevos por encima de las tareas repetidas.</div>
+        <div class="q-p">Ninguna de las once personas evaluadas lo tiene como preferente.</div>
+      </div>
+      <div class="q">
+        <div class="q-h">Basal Izquierdo<span class="q-n">5 de 11</span></div>
+        <div class="q-d">el procedimiento: repetir una acción de la misma manera todas las veces, atender el detalle y construir cimientos ordenados. Trabaja paso a paso y valora lo probado.</div>
+        <div class="q-p"><a href="#mauro"><b>Mauro Lerda</b></a> · <a href="#natalia"><b>Natalia Tognon</b></a> · <a href="#antonella"><b>Antonella Pignatta</b></a> · <a href="#leandro"><b>Leandro Greco</b></a> · <a href="#valentina"><b>Valentina Mammarella</b></a></div>
+      </div>
+      <div class="q">
+        <div class="q-h">Basal Derecho<span class="q-n">1 de 11</span></div>
+        <div class="q-d">el vínculo: percibir las emociones y lo que no se dice, conectar con las personas y sostener la armonía del grupo. Prefiere la palabra hablada y le importa quién es el otro.</div>
+        <div class="q-p"><a href="#valeria"><b>Valeria Gabrich</b></a></div>
+      </div>
+    </div>
+
+    <div class="marco"><strong>Lo que la matriz muestra del conjunto.</strong> Dos cuadrantes concentran a las once: seis prefieren el análisis y cinco el procedimiento. Una sola persona prefiere el vínculo, y es la que hoy ocupa el puesto con menos gente a cargo. Y <strong>nadie prefiere la visión</strong>: el modo que trabaja con lo que todavía no existe, el concepto y la posibilidad, no aparece como preferente en ninguna de las once.<br><br>Para una empresa de refinación a fasón, el peso puesto en análisis y procedimiento es coherente con lo que el negocio pide todos los días. Lo que conviene mirar es lo otro. Cuando la empresa necesite a alguien que empuje lo que todavía no está armado, ese trabajo no tiene hoy quién lo prefiera. Y el único cuadrante del vínculo está en un puesto sin gente a cargo, en una empresa donde la conducción de personas es justamente uno de los dos problemas que nos trajeron acá.</div>
+
+  </div>
+
+  <footer>
+    <strong>Campos HR · Laruso</strong> · Evaluaciones del equipo · Agosto 2026. Reservado a la dirección: contiene lecturas individuales de personas identificables.
+  </footer>
+
+</div>
+</body>
+</html>

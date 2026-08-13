@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Los dos casos · Laruso · Campos HR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1c1a;--ink-soft:#3d3d38;--muted:#84847a;--bg:#ffffff;--rule:#1c1c1a;--rule-soft:#c9c7be;--wash:#fafaf8;
+    --azul:#33507a;--ocre:#9a6b1a;--rojo:#a03d2e;--verde:#3c6b4d;
+    --max:800px; --medida:var(--max);
+    --t0:0.68rem; --t1:0.85rem; --t2:1.0625rem; --t3:1.33rem; --t4:1.66rem; --t5:2.07rem; --t6:2.59rem;
+    --v1:0.5rem; --v2:1rem; --v3:1.5rem; --v4:2.5rem; --v5:4rem;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:'EB Garamond',Georgia,serif;font-size:17px;line-height:1.72;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;padding:3.5rem 1.5rem 3rem;}
+  .paper{max-width:var(--max);margin:0 auto;}
+  .paper-header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--rule);padding-bottom:0.9rem;margin-bottom:2rem;}
+  .paper-brand{font-weight:600;font-size:1.05rem;letter-spacing:0.38em;text-transform:uppercase;}
+  .paper-brand .pipe{color:var(--muted);margin:0 0.4em;font-weight:400;}
+  .paper-id{font-size:0.74rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);text-align:right;}
+  h1{font-weight:700;font-size:var(--t6);line-height:1.1;letter-spacing:-0.015em;margin-bottom:var(--v3);text-wrap:balance;max-width:var(--medida);}
+  .paper-body p.apertura{font-size:var(--t5);line-height:1.15;letter-spacing:-0.012em;font-weight:700;margin-bottom:var(--v3);max-width:var(--medida);text-wrap:pretty;}
+  .moves{list-style:none;margin:var(--v3) 0;padding:0;counter-reset:m;}
+  .moves li{padding-left:2rem;position:relative;margin-bottom:var(--v3);line-height:1.5;}
+.moves li:last-child{margin-bottom:0;}
+  .moves li::before{counter-increment:m;content:counter(m);position:absolute;left:0;top:0.05rem;width:1.4rem;height:1.4rem;border:1.5px solid var(--rule);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+  .cap-div{margin:var(--v5) 0 var(--v3);padding-bottom:var(--v1);border-bottom:2px solid var(--rule);}
+  .cap-div .cn,.cap-div .ct{display:inline;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:0.16em;text-transform:uppercase;font-weight:600;line-height:1.5;}
+  .cap-div .cn{color:var(--azul);}
+  .cap-div .cn::after{content:' · ';color:var(--muted);font-weight:400;}
+  .cap-div .ct{color:var(--ink);}
+  h2{font-weight:700;font-size:var(--t3);line-height:1.26;margin:var(--v4) 0 var(--v2);text-wrap:balance;max-width:var(--medida);}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--azul);line-height:1.35;}
+  .paper-body p.kicker{margin:3.4rem 0 0.15rem;}
+  .paper-body p.kicker.sub{margin:1.9rem 0 0.25rem;color:var(--ocre);}
+  .paper-body .cap-div + p.kicker{margin-top:var(--v4);}
+  .kicker + h2{margin-top:0;}
+  /* Los dos casos: título de mayor jerarquía que una sección */
+  .kicker.caso{font-size:0.72rem;letter-spacing:0.2em;color:var(--rojo);margin-top:var(--v5);}
+  /* Título de bloque: misma tipografía y peso que el título de un caso */
+  h2.bt{font-size:var(--t5);line-height:1.12;letter-spacing:-0.012em;font-weight:700;margin:0 0 var(--v3);text-wrap:balance;max-width:var(--medida);}
+  /* Separador entre los dos casos */
+  .sep-caso{border:0;border-top:4px solid var(--azul);margin:var(--v5) 0 0;}
+  .sep-caso + p.kicker.caso{margin-top:var(--v4);}
+  .kicker.caso + h2{font-size:var(--t5);line-height:1.12;letter-spacing:-0.01em;margin-bottom:var(--v3);}
+  h3{font-weight:700;font-size:var(--t2);margin:var(--v3) 0 var(--v1);text-wrap:balance;max-width:var(--medida);}
+  /* Las tres partes de cada caso: diagnóstico, recomendación y cierre */
+  h3.sub{font-size:var(--t4);line-height:1.2;letter-spacing:-0.008em;margin:var(--v5) 0 var(--v2);padding-top:var(--v2);border-top:1px solid var(--rule-soft);}
+  .paper-body{font-size:var(--t2);line-height:1.74;}
+  .paper-body > p, .paper-body > ol.moves{max-width:var(--medida);}
+  .paper-body p+p{margin-top:0.9rem;}
+  .paper-body strong{font-weight:700;} .paper-body em{font-style:italic;}
+  .note{font-size:var(--t1);color:var(--ink-soft);line-height:1.55;}
+  .tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;padding:0.05rem 0.4rem;border-radius:2px;border:1px solid currentColor;vertical-align:middle;}
+  .tag-ok{color:var(--azul);} .tag-val{color:var(--ocre);} .tag-falta{color:var(--rojo);}
+  table{width:100%;border-collapse:collapse;margin:var(--v2) 0;font-size:var(--t1);line-height:1.5;font-variant-numeric:tabular-nums;}
+  th{text-align:left;font-size:var(--t0);letter-spacing:0.09em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);border-bottom:2px solid var(--rule);padding:0.45rem 0.55rem;}
+  td{border-bottom:1px solid var(--rule-soft);padding:0.5rem 0.55rem;vertical-align:top;}
+  .marco{border:1px solid var(--rule-soft);background:var(--wash);padding:0.9rem 1.1rem;margin:1.3rem 0;font-size:0.98rem;line-height:1.55;}
+  .marco strong{color:var(--ink);}
+  .costo{margin:1.1rem 0 1.6rem;padding:.7rem .95rem;background:#fbf4f2;border-left:3px solid var(--rojo);font-size:.97rem;line-height:1.55;}
+  .costo b{color:var(--rojo);}
+  .comp{display:grid;grid-template-columns:1fr;gap:1rem;margin:1.3rem 0 1rem;align-items:start;}
+  .comp + .moves, .comp-pie + .moves{margin-top:2rem;}
+  .comp-col{border:1px solid var(--rule-soft);padding:1.7rem 1.9rem;}
+  .comp-col.hoy{background:#fbf4f2;border-color:#e2cfc9;}
+  .comp-col.prop{background:#f4f8f5;border-color:#c5ded0;}
+  .comp-h{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;margin-bottom:.65rem;padding-bottom:.32rem;border-bottom:1px solid currentColor;}
+  .comp-col.hoy .comp-h{color:var(--rojo);}
+  .comp-col.prop .comp-h{color:var(--verde);}
+  .comp .it{margin-bottom:var(--v2);line-height:1.5;}
+  .comp .it b{display:inline;font-size:var(--t2);}
+  .comp .it small{display:inline;color:var(--ink-soft);font-size:var(--t2);}
+  .comp .it small::before{content:'  ·  ';color:var(--muted);}.comp .it small::before{content:' ';}
+  .comp .sub{margin-left:.35rem;padding-left:.7rem;border-left:2px solid rgba(28,28,26,.16);margin-top:.4rem;}
+  .comp .tot{margin-top:.9rem;padding-top:.5rem;border-top:1px dotted rgba(28,28,26,.28);font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;line-height:1.85;}
+  .comp-col.hoy .tot{color:var(--rojo);}
+  .comp-col.prop .tot{color:var(--verde);}
+  .comp-pie{font-size:.8rem;color:var(--muted);line-height:1.45;margin:0 0 1.4rem;text-align:center;}
+  .nivel{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.05em;text-transform:uppercase;font-weight:600;padding:0.08rem 0.4rem;border:1px solid currentColor;border-radius:2px;white-space:nowrap;}
+  .n-ok{color:var(--verde);} .n-des{color:var(--ocre);} .n-no{color:var(--rojo);} .n-sd{color:var(--muted);}
+  .plan th:first-child{width:5.6rem;} .plan th:last-child{width:9rem;}
+  .plan td:first-child{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;letter-spacing:0.03em;text-transform:uppercase;color:var(--azul);font-weight:500;padding-top:0.62rem;}
+  .plan td:last-child{font-size:0.86rem;color:var(--ink-soft);line-height:1.4;}
+  .plan .hito td{background:var(--wash);}
+  .plan ul{list-style:none;margin:0;padding:0;}
+  .plan ul li{padding-left:0.95rem;position:relative;margin-bottom:0.35rem;}
+  .plan ul li:last-child{margin-bottom:0;}
+  .plan ul li::before{content:'';position:absolute;left:0;top:0.62em;width:0.42rem;height:0;border-top:1px solid var(--muted);}
+  .matriz th:nth-child(3){width:6.6rem;}
+  .matriz td:nth-child(1){font-weight:600;white-space:nowrap;}
+  .matriz td:nth-child(2){font-size:0.86rem;color:var(--ink-soft);}
+  .pedido{border:2px solid var(--rule);padding:1.1rem 1.3rem;margin:1.4rem 0 0;}
+  .pedido h3{margin-top:0;}
+  .pedido .p-item{display:grid;grid-template-columns:1fr 8.5rem;gap:1rem;padding:0.7rem 0;border-top:1px solid var(--rule-soft);align-items:baseline;}
+  .pedido .p-item:first-of-type{border-top:none;padding-top:0.3rem;}
+  .pedido .p-cuando{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--ocre);text-align:right;font-weight:500;}
+  @media(max-width:640px){.pedido .p-item{grid-template-columns:1fr;gap:0.15rem;}.pedido .p-cuando{text-align:left;}}
+  /* Árbol de decisiones por caso */
+  .dec{border:1.5px solid var(--rule);margin:1.6rem 0 1.2rem;}
+  .dec-h{background:var(--wash);border-bottom:1.5px solid var(--rule);padding:.75rem 1.1rem;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;color:var(--azul);}
+  .dec-main{padding:1rem 1.1rem;border-bottom:1px dotted var(--rule-soft);font-size:1.02rem;line-height:1.5;}
+  .dec-main b{display:block;font-size:.6rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;font-weight:600;}
+  .dec-sub{padding:.85rem 1.1rem 1rem;}
+  .dec-sub > b{display:block;font-size:.6rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;font-weight:600;}
+  .dec-row{display:grid;grid-template-columns:1.15fr 1fr 7.5rem;gap:.9rem;padding:.55rem 0;border-top:1px solid #eceae2;align-items:baseline;font-size:.92rem;line-height:1.42;}
+  .dec-row:first-of-type{border-top:none;}
+  .dec-row .q{font-weight:600;}
+  .dec-row .a{color:var(--ink-soft);}
+  .dec-row .w{font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ocre);text-align:right;font-weight:500;}
+  .dec-row.abierta .a{color:var(--rojo);}
+  @media(max-width:680px){.dec-row{grid-template-columns:1fr;gap:.1rem}.dec-row .w{text-align:left}}
+  /* Gantt */
+  .gantt{border:1.5px solid var(--rule);margin:1.4rem 0 .6rem;overflow-x:auto;}
+  .gantt table{margin:0;font-size:.86rem;border-collapse:collapse;min-width:39rem;}
+  .gantt th{padding:.4rem .3rem;font-size:.6rem;text-align:center;border-bottom:1.5px solid var(--rule);}
+  .gantt th:first-child{text-align:left;padding-left:.9rem;width:15rem;}
+  .gantt td{border-bottom:1px solid #eceae2;padding:.3rem;vertical-align:middle;}
+  .gantt td:first-child{padding-left:.9rem;line-height:1.32;font-size:.88rem;}
+  .gantt td.c{padding:.3rem .18rem;}
+  .gantt .bar{height:.95rem;border-radius:2px;display:block;}
+  .gantt .b1{background:#c9d6e6;} .gantt .b2{background:#d9c9ae;} .gantt .b3{background:#c5ded0;} .gantt .b4{background:#e2cfc9;}
+  .gantt .hito{background:var(--ink);height:.95rem;width:.95rem;border-radius:50%;display:block;margin:0 auto;}
+  .gantt .who{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:block;margin-top:.1rem;}
+  .gantt tr.sep td{border-top:1.5px solid var(--rule-soft);}
+  .gantt-leyenda{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;padding:.6rem .9rem;border-top:1px solid var(--rule-soft);font-size:.72rem;color:var(--ink-soft);}
+  .gantt-leyenda span{display:inline-flex;align-items:center;gap:.35rem;}
+  .gantt-leyenda i{width:1.1rem;height:.6rem;border-radius:2px;display:inline-block;}
+  /* Organigramas */
+  .orgfig{border:1.5px solid var(--rule);padding:1.4rem .7rem 1.1rem;margin:1.4rem 0 .5rem;background:#fff;overflow-x:auto;}
+  .orgfig-titulo{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;margin-bottom:1.3rem;text-align:center;}
+  .orgfig.hoy .orgfig-titulo{color:var(--rojo);} .orgfig.prop .orgfig-titulo{color:var(--verde);}
+  .arbol,.arbol ul{display:flex;justify-content:center;list-style:none;margin:0;padding:0;}
+  .arbol{width:max-content;margin:0 auto;}
+  .arbol ul{position:relative;padding-top:16px;}
+  .arbol ul::before{content:'';position:absolute;top:0;left:50%;border-left:1.5px solid #999;height:16px;width:0;}
+  .arbol li{display:flex;flex-direction:column;align-items:center;position:relative;padding:16px 3px 0;}
+  .arbol li::before,.arbol li::after{content:'';position:absolute;top:0;right:50%;border-top:1.5px solid #999;width:50%;height:16px;}
+  .arbol li::after{right:auto;left:50%;border-left:1.5px solid #999;}
+  .arbol li:first-child::before,.arbol li:last-child::after{border-top:0;}
+  .arbol li:only-child::before,.arbol li:only-child::after{display:none;}
+  .arbol li:only-child{padding-top:0;}
+  .arbol>li{padding-top:0;}.arbol>li::before,.arbol>li::after{display:none;}
+  .nodo{border:1.5px solid var(--ink);padding:.32rem .45rem;background:#fff;font-size:.66rem;text-align:center;line-height:1.3;max-width:108px;}
+  .nodo b{display:block;letter-spacing:.01em;}
+  .nodo small{display:block;color:var(--ink-soft);font-size:.59rem;margin-top:.1rem;}
+  .nodo .et{display:block;font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.05em;text-transform:uppercase;margin-top:.22rem;padding-top:.18rem;border-top:1px dotted currentColor;font-weight:600;}
+  .nodo.dir{border-width:2px;}
+  .nodo.carga{border-color:var(--rojo);background:#fbf4f2;} .nodo.carga .et{color:var(--rojo);}
+  .nodo.c1{border-color:var(--azul);background:#f2f5fa;} .nodo.c1 .et{color:var(--azul);}
+  .nodo.c2{border-color:var(--verde);background:#f4f8f5;} .nodo.c2 .et{color:var(--verde);}
+  .nodo.c12{border-color:var(--ocre);background:#fdf9f2;} .nodo.c12 .et{color:var(--ocre);}
+  .nodo.sd{border-style:dashed;border-color:#b6b4a9;} .nodo.sd .et{color:var(--muted);}
+  .orgleyenda{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;margin-top:1.1rem;padding-top:.7rem;border-top:1px dotted var(--rule-soft);font-size:.7rem;line-height:1.3;color:var(--ink-soft);justify-content:center;}
+  .orgleyenda span{display:inline-flex;align-items:center;gap:.3rem;}
+  .orgleyenda i{width:.6rem;height:.6rem;border:1.5px solid;display:inline-block;flex-shrink:0;}
+  @media(max-width:760px){.orgfig .arbol{transform:scale(.8);transform-origin:top center;}}
+  .corte{margin:3rem 0 2.4rem;padding:1.05rem 0;border-top:3px double var(--rule);border-bottom:3px double var(--rule);text-align:center;}
+  .corte span{display:block;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;font-weight:600;color:var(--verde);line-height:1.5;}
+  .corte small{display:block;margin:.45rem auto 0;max-width:33rem;font-size:.9rem;color:var(--ink-soft);line-height:1.5;}
+  footer{margin-top:3rem;padding-top:1.1rem;border-top:2px solid var(--rule);font-size:0.82rem;color:var(--muted);line-height:1.5;}
+  @page{size:A4;margin:2.2cm 2.5cm 2cm;}
+  @media print{
+    :root{--medida:100%;}
+    body{padding:0;font-size:10.5pt;}
+    .paper{max-width:none;}
+    p,li,td{orphans:3;widows:3;}
+    h1,h2,h3,.cap-div,.dec-h,.orgfig-titulo{break-after:avoid;page-break-after:avoid;}
+    .cap-div{break-before:page;page-break-before:always;margin-top:0;}
+    table,.comp,.comp-col,.pedido,.marco,.costo,.dec,.gantt,.orgfig,.corte{break-inside:avoid;page-break-inside:avoid;}
+    tr,.dec-row,.p-item{break-inside:avoid;page-break-inside:avoid;}
+    thead{display:table-header-group;}
+    a{color:inherit;text-decoration:none;}
+    .orgfig .arbol{transform:none;}
+  }
+  @media(max-width:640px){body{padding:2rem 1rem;}.paper-header{flex-direction:column;gap:0.5rem;}.paper-id{text-align:left;}}
+
+  .marcas{font-size:0.82rem;line-height:1.55;color:var(--muted);max-width:var(--medida);margin:var(--v3) 0 0;}
+  .marcas strong{font-weight:600;color:var(--ink-soft);}
+  .marcas .tag{opacity:.85;}
+
+  /* INI_CSS_BAJADA */
+  /* INI_CSS_BAJADA */
+  /* INI_CSS_BAJADA */
+  /* INI_CSS_BAJADA */
+  /* INI_CSS_BAJADA */
+  /* INI_CSS_BAJADA */
+  .bajada{margin:var(--v5) 0 0;}
+  .bajada .b-t{font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.16em;text-transform:uppercase;color:var(--azul);font-weight:600;margin-bottom:1.6rem;padding-bottom:.42rem;border-bottom:1px solid var(--rule);}
+  .bajada .b-t2{font-family:'EB Garamond',Georgia,serif;font-size:var(--t2);letter-spacing:0;text-transform:none;color:var(--ink);font-weight:600;margin-left:.9rem;}
+  .b-eje-sup{margin-left:11rem;}
+  .b-caja{max-width:30rem;margin:0 auto;border:1.5px solid var(--rule);padding:.95rem 1.2rem;text-align:center;}
+  .b-caja .b-k{display:block;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.16em;text-transform:uppercase;color:var(--azul);font-weight:600;margin-bottom:.4rem;}
+  .b-caja p{margin:0;line-height:1.5;}
+  .b-caja p + p{margin-top:.2rem;}
+  .b-flecha{width:0;height:2rem;margin:0 auto;border-left:1.5px solid #888;position:relative;}
+  .b-flecha::after{content:'';position:absolute;bottom:-1px;left:-4.5px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #888;}
+  .b-nucleo{max-width:34rem;margin:0 auto;text-align:center;}
+  .b-nucleo b{display:block;font-size:var(--t3);line-height:1.2;letter-spacing:-.006em;}
+  .b-nucleo small{display:block;font-size:0.9rem;color:var(--ink-soft);line-height:1.5;margin-top:.35rem;}
+  .b-doble{display:grid;grid-template-columns:11rem 1fr 1fr;margin:2.1rem 0 0;height:2.4rem;position:relative;}
+  .b-doble .b-eje{grid-column:2 / span 2;position:relative;}
+  .b-doble .b-eje::before{content:'';position:absolute;top:0;left:25%;right:25%;border-top:1.5px solid #888;}
+  .b-doble .b-bajada{position:absolute;top:0;height:100%;border-left:1.5px solid #888;}
+  .b-doble .b-bajada.izq{left:25%;}
+  .b-doble .b-bajada.der{left:75%;}
+  .b-doble .b-bajada::after{content:'';position:absolute;bottom:0;left:-4.5px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #888;}
+  .b-doble .b-sube{position:absolute;top:-1.1rem;left:50%;height:1.1rem;border-left:1.5px solid #888;}
+  .b-tabla{width:100%;border-collapse:collapse;margin:1.35rem 0 0;}
+  .b-tabla th{padding:.5rem .7rem;border-bottom:2px solid var(--rule);text-align:center;font-size:var(--t2);font-weight:600;}
+  .b-tabla th:first-child{text-align:left;width:11rem;border-bottom-color:transparent;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;line-height:1.5;}
+  .b-tabla td{padding:.85rem .7rem;border-bottom:1px solid var(--rule-soft);text-align:center;line-height:1.45;}
+  .b-tabla td:first-child{text-align:left;background:transparent;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .b-tabla tr.pers td:not(:first-child){color:var(--rojo);}
+  .b-tabla tr.pues td:not(:first-child){color:var(--verde);font-weight:600;}
+  .b-tabla .b-dec{display:block;font-family:'IBM Plex Mono',monospace;font-style:normal;font-size:var(--t0);letter-spacing:.09em;text-transform:uppercase;font-weight:600;margin-bottom:.2rem;opacity:.9;}
+  .bajada .b-cat{margin:1.15rem 0 0;font-size:0.85rem;line-height:1.55;color:var(--muted);}
+  .bajada .b-cat strong{color:var(--ink-soft);font-weight:600;}
+  .b-tabla .b-sub{display:block;font-size:0.82rem;color:var(--ink-soft);font-weight:400;margin-top:.18rem;}
+  .bajada .b-cierre{margin:var(--v4) 0 0;}
+  .bajada .b-cierre .b-ktesis{display:block;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:.16em;text-transform:uppercase;color:var(--azul);font-weight:600;margin-bottom:.5rem;}
+  .bajada .b-cierre .b-tesis{display:block;font-size:var(--t4);line-height:1.2;font-weight:700;letter-spacing:-.008em;margin-bottom:.7rem;text-wrap:pretty;}
+  .bajada .b-cierre p{margin:0;line-height:1.62;}
+  .bajada .b-cierre .b-orden{margin-top:var(--v2);}
+  @media(max-width:640px){.b-tabla th:first-child,.b-tabla td:first-child{width:auto;}.bajada{padding:1.3rem 1rem;}.b-eje-sup{margin-left:0;}.b-doble{grid-template-columns:1fr;}.b-doble .b-eje{grid-column:1;}}
+  @media print{.bajada{break-inside:avoid;}}
+  /* FIN_CSS_BAJADA */
+  </style>
+</head>
+<body>
+<div class="paper">
+
+  <header class="paper-header">
+    <div class="paper-brand">Campos HR <span class="pipe">·</span> Laruso</div>
+    <div class="paper-id">Los dos casos<br>Agosto 2026</div>
+  </header>
+
+  <main class="paper-body">
+
+    <p class="apertura">Nos convocaron por dos problemas concretos: Ismael, que no cumple objetivos y frena lo que se le propone, y el trato de Jairo en la planta, que ya costó la salida de un responsable de turno.</p>
+
+    <p class="marcas"><strong>Tres marcas que aparecen en el texto.</strong> <span class="tag tag-ok">[confirmado]</span> es un dato que sostienen dos o más fuentes independientes, por ejemplo dos personas que lo dicen por separado, o alguien que lo dice y una prueba que lo respalda. <span class="tag tag-val">[a validar]</span> es una lectura nuestra que todavía no tiene respaldo suficiente y que conviene chequear con la dirección. <span class="tag tag-falta">[falta dato]</span> es información que no tenemos y que hace falta para cerrar ese punto. Todo lo que no lleva marca está sostenido por los inputs del relevamiento.</p>
+
+    <div class="bajada">
+      <div class="b-t">El encuadre</div>
+
+      <div class="b-eje-sup">
+      <div class="b-caja">
+        <span class="b-k">La visión</span>
+        <p><strong>Mauro</strong> quiere delegar.</p>
+        <p><strong>Natalia</strong> quiere vender y retirarse.</p>
+      </div>
+
+      <div class="b-flecha"></div>
+
+      <div class="b-nucleo">
+        <b>Profesionalizar</b>
+        <small>Trasladar las capacidades de las personas a la organización.</small>
+      </div>
+
+      </div>
+
+      <div class="b-doble"><div></div><div class="b-eje"><span class="b-sube"></span><span class="b-bajada izq"></span><span class="b-bajada der"></span></div></div>
+
+      <table class="b-tabla">
+        <thead>
+          <tr><th>La decisión,<br>tomada sobre</th><th>Caso 1 · Ismael</th><th>Caso 2 · Jairo</th></tr>
+        </thead>
+        <tbody>
+          <tr class="pers">
+            <td>La persona</td>
+            <td><em class="b-dec">Desvincular</em>Alcanza la evidencia<span class="b-sub">Lo que dicen sus compañeros y lo que miden las pruebas apuntan a lo mismo, por separado</span></td>
+            <td><em class="b-dec">Desvincular</em>Alcanza la evidencia<span class="b-sub">Cuatro voces describen el trato, las pruebas llegan a lo mismo, y ya costó la salida de un responsable de turno</span></td>
+          </tr>
+          <tr class="pues">
+            <td>El puesto</td>
+            <td><em class="b-dec">Redefinir</em>Hay que hacerlo igual<span class="b-sub">Cuatro trabajos en un puesto, tres declarados y uno que nadie nombra. El método lo llama dividir un puesto armado de pedazos</span></td>
+            <td><em class="b-dec">Crear · redefinir · recolgar</em>Hay que hacerlo igual<span class="b-sub">Se crea la Jefatura de Turnos, se redefine la de Planta, y los turnos pasan a colgar del puesto nuevo</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="b-cat"><strong>No hay una tercera opción.</strong> Toda decisión de este trabajo cambia el puesto o cambia la persona que lo ocupa, y cada lado tiene cinco movimientos que lo agotan. Sobre el puesto: crear, redefinir, recolgar de otra línea, eliminar, tercerizar o internalizar. Sobre la persona: confirmar, desarrollar, reubicar, incorporar de afuera, desvincular. Lo que está en el cuadro es qué movimiento habilita hoy cada vía en cada caso.</p>
+
+      <div class="b-cierre">
+        <span class="b-ktesis">La tesis</span>
+        <p>Sobre las personas sobran argumentos: en los dos casos la evidencia alcanza para decidir la continuidad, y esa decisión está disponible desde hoy. Sobre los puestos hay que actuar igual, incluso si los dos se fueran mañana, porque los dos puestos siguen siendo imposibles de cumplir y el que llegue hereda el mismo problema.</p>
+        <p class="b-orden"><strong>Por eso el orden que proponemos es primero el puesto y después la persona: corregido el puesto, la decisión sobre la persona se toma con algo contra qué medirla, y ya no hay manera de discutirla.</strong></p>
+      </div>
+    </div>
+
+    <div class="cap-div">
+      <span class="cn">Los dos casos</span>
+      <span class="ct">Los dos temas de la convocatoria</span>
+    </div>
+
+
+    <p class="kicker caso">Caso 1</p>
+    <h2>Ismael: el puesto que hoy ocupa no permite evaluarlo. Primero se corrige el puesto, después se decide sobre la persona.</h2>
+
+    <h3 class="sub">Lo que encontramos</h3>
+    <p>La negatividad que se le señala aparece en el relevamiento, y tiene un origen que se puede nombrar. Ismael era el referente de todos los que entraban a la empresa, y ese lugar se le fue: hoy hay gente pensando la estrategia en una mesa de la que él no participa. Sus palabras son claras: <em>&ldquo;perdí a Mauro, que era con quien tenía nexo&rdquo;</em>, <em>&ldquo;me siento un costo&rdquo;</em>, <em>&ldquo;me molesta que me pregunten, porque no me hicieron parte desde el principio&rdquo;</em>. En la evaluación vemos lo mismo: se mete en casi todo lo que aparece sin filtrar qué le toca, se propone más de lo que alcanza a ordenar, y cuando la carga sube empieza a leer mal las situaciones.</p>
+
+    <p><strong>Ismael no ocupa el puesto comercial: ocupa tres a la vez.</strong> Él los nombra así: <em>&ldquo;tres roles, logística, comercial y solucionar el problema a todos&rdquo;</em>. A eso se le suma una cuarta función que nadie declara y que él termina haciendo: negociar con la planta qué se produce y cuándo. <span class="tag tag-val">[a validar]</span> El objetivo comercial que no cumple nunca tuvo detrás un plan de producción que lo hiciera posible, así que pedirle resultados en esas condiciones no prueba nada sobre él, ni a favor ni en contra.</p>
+
+    <p>Esa negociación con la planta es la que produce el roce, y no tiene sobre qué apoyarse por dos huecos concretos.</p>
+    <ol class="moves">
+      <li><strong>La capacidad de la planta no está medida.</strong> <span class="tag tag-val">[a validar]</span> No aparece un dato de dónde está el cuello de botella ni de cuántas toneladas por semana da. Cuando Jairo responde que no se puede producir, esa respuesta es un criterio técnico y no un número que se pueda verificar, así que Ismael no tiene con qué discutirla ni con qué acordar.</li>
+      <li><strong>No hay estándar escrito de qué crudo entra y qué crudo no.</strong> <span class="tag tag-val">[a validar]</span> Cuando Ismael trae un cliente con crudo de calidad dudosa y Jairo responde que ese crudo no entra a su planta, tampoco hay contra qué contrastarlo.</li>
+    </ol>
+    <p>Las dos discusiones terminan igual: <strong>llaman a Mauro para que decida, caso por caso.</strong> Y aparecen seguido, porque la planta trabaja cerca de su capacidad máxima <span class="tag tag-val">[a validar]</span>: con lugar de sobra nadie discute si entra un pedido más. Es una de las vías concretas por las que las decisiones vuelven a la dirección, y deja a Mauro arbitrando una diferencia que se resolvería con un número medido y una hoja de estándares.</p>
+
+    <h3 class="sub">Qué recomendamos hacer</h3>
+
+    <div class="comp">
+      <div class="comp-col hoy">
+        <div class="comp-h">Hoy · un puesto con cuatro trabajos, tres declarados</div>
+        <div class="it"><b>Ismael.</b><small>Declarado responsable comercial y de logística.</small></div>
+        <div class="sub">
+          <div class="it"><b>Vender.</b><small>Captar clientes y cerrar operaciones.</small></div>
+          <div class="it"><b>Despachar.</b><small>Coordinar los camiones y seguir cada envío hasta que llega.</small></div>
+          <div class="it"><b>Programar.</b><small>Negociar con la planta qué se produce y cuándo, sin un número de cuánto puede producir. Es el trabajo que nadie declara <span class="tag tag-val">[a validar]</span>.</small></div>
+          <div class="it"><b>Resolver.</b><small>Cualquier tema que aparece y no tiene dueño.</small></div>
+        </div>
+        <div class="tot">Cómo termina · el objetivo comercial depende de un número que nadie mide. Cuando Ismael y Jairo no acuerdan, decide Mauro.</div>
+      </div>
+      <div class="comp-col prop">
+        <div class="comp-h">Propuesto · un puesto, un resultado</div>
+        <div class="it"><b>Ismael · Comercial.</b><small>Responde por un solo resultado, que se define en la semana 3 con la capacidad ya medida.</small></div>
+        <div class="sub">
+          <div class="it"><b>Vender.</b><small>Queda, y es lo único de lo que responde.</small></div>
+          <div class="it"><b>Despachar.</b><small>Pasa al Jefe de Turnos, el puesto nuevo del caso 2. Los papeles, a la administración de planta.</small></div>
+          <div class="it"><b>Programar.</b><small>Pasa a la reunión semanal de comercial y planta. Más adelante, al puesto de Planificación que propondríamos crear.</small></div>
+          <div class="it"><b>Resolver.</b><small>Se disuelve. Cada tema va a quien responde por ese resultado.</small></div>
+        </div>
+        <div class="tot">Cómo termina · el objetivo sale de la medición de la planta. Mauro deja de arbitrar.</div>
+      </div>
+    </div>
+
+    <ol class="moves">
+      <li><strong>Montar la reunión semanal de programación.</strong> Convertir lo que se vende en un programa que la planta pueda cumplir es un puesto en sí mismo, que Laruso no tiene y que va a llevar meses cubrir. Media hora por semana alcanza mientras tanto, y no hay que inventarla de cero: los de Funes ya viajan a la planta una vez por semana, y Franco y comercial ya coordinan entre ellos la materia prima y las entregas a clientes. Lo que la reunión agrega es día y hora fijos, la planta sentada en esa mesa, y un registro escrito. De ahí salen tres líneas: qué produce la planta esta semana, cuánta capacidad queda libre en las semanas siguientes, y con qué plazo de entrega puede cerrar comercial. El plazo es una división, el trabajo en cola sobre lo que la planta procesa por semana, la ley de Little, y es el dato con el que Ismael hoy no cuenta cuando se sienta con un cliente. La primera reunión define además cuántas semanas hacia adelante se programa.</li>
+      <li><strong>Producir los dos datos con los que esa reunión trabaja.</strong> La capacidad de la planta son tres números: qué etapa limita el proceso, cuántas toneladas por hora procesa esa etapa, y cuántas horas por semana está disponible una vez descontadas las paradas de mantenimiento y las limpiezas entre lotes. El estándar de admisión de crudo dice qué entra, qué no, y cuántas horas de proceso cuesta cada calidad, porque un crudo con más acidez ocupa la planta más tiempo y deja menos rendimiento por tonelada. Si ya existen se ponen sobre esa mesa, y si no se producen en la semana 1.</li>
+      <li><strong>Acotarle el puesto a lo comercial,</strong> con cada función yendo a donde muestra el cuadro. Resolver lo que aparece no se le pasa a nadie: cada tema va a quien responde por ese resultado. Una rotura va a mantenimiento, un problema de calidad a quien controla calidad, un tema de cobranza a administración. Hoy todo eso llega a Ismael porque no hay una regla que diga otra cosa.</li>
+      <li><strong>Ponerle un número al objetivo, con quién y cuándo.</strong> Mauro lo fija junto con él en la semana 3, cuando la medición ya dijo cuánta capacidad libre queda, porque de eso depende qué se le puede pedir. Si la planta tiene lugar, el objetivo es de volumen: toneladas bajo contrato y porcentaje de ocupación, con techo cerca del 85 o 90%, porque más arriba cualquier variación de crudo o cualquier rotura se traslada a las fechas comprometidas y los plazos se vuelven impredecibles. Si la planta ya trabaja al máximo, y en el relevamiento vemos que es el caso <span class="tag tag-val">[a validar]</span>, pedirle más volumen sería pedirle otra vez algo que no depende de él, así que el objetivo pasa a ser lo que deja cada tonelada: margen, o una cartera de clientes cuyo crudo consuma menos horas de proceso. El número queda escrito en la segunda conversación del punto siguiente.</li>
+      <li><strong>Que las dos conversaciones las tenga Mauro: la que acota el puesto en la semana 1 y la que fija el número en la semana 3.</strong> Son el punto que más decide y lo único que no se puede delegar. Ismael está en el lugar de quien ve lo que perdió, y de ahí no se sale con capacitación ni con presión: se sale con una conversación de la persona que tiene autoridad sobre él, sobre qué gana con el cambio y qué consecuencia tiene si no. A alguien en esta posición, mandarlo a capacitarse devuelve la misma persona, ahora entrenada, haciendo lo mismo.</li>
+    </ol>
+
+    <h3 class="sub">El plazo, y en qué termina</h3>
+    <p>Con los cinco movimientos hechos y la reunión semanal funcionando, <strong>noventa días de medición</strong>. El plazo empieza a contar cuando el puesto queda acotado y el objetivo escrito, no hoy. Si al cabo de ese plazo, con un puesto que se puede cumplir y un objetivo que tiene un plan semanal detrás, sigue sin cumplir, entonces corresponde decidir su salida. <strong>Y esa decisión va a ser limpia</strong>, porque nadie va a poder decir que no tuvo las condiciones, empezando por él.</p>
+
+    <div class="dec">
+      <div class="dec-h">Caso 1 · qué queda decidido y qué queda por decidir</div>
+      <div class="dec-main"><b>La decisión principal</b>Acotar el puesto de Ismael a un solo resultado comercial, medir noventa días, y recién entonces decidir sobre la persona.</div>
+      <div class="dec-sub">
+        <b>Lo que esa decisión abre</b>
+        <div class="dec-row"><div class="q">¿Quién toma el despacho, o sea los camiones que salen con producto y su seguimiento?</div><div class="a">El Jefe de Turnos cuando exista. Hasta entonces, Valeria: tiene el mejor trato del equipo evaluado, ya se ocupa de los movimientos de lo que sale de la planta, y pide más alcance. Se lo asigna Jairo.</div><div class="w">Semana 1</div></div>
+        <div class="dec-row abierta"><div class="q">¿Quién recibe el camión que entra y verifica sus papeles?</div><div class="a">Sin definir, y hay que preguntarlo antes de asignar el estándar. El descriptivo de Compras y Admisión se lo asigna a Antonella, con la recepción, los remitos, los certificados de análisis, las cartas de porte y la trazabilidad de lote. Cuando ella describe su trabajo enumera comprar insumos y repuestos, y ubica la recepción en administración de planta. Valeria, del otro lado, declara que lleva los movimientos de lo que entra y sale. Ninguna de las dos nombra mirar los papeles del camión.</div><div class="w">Semana 1</div></div>
+        <div class="dec-row"><div class="q">¿Quién programa la producción mientras no exista el puesto?</div><div class="a">La reunión semanal de comercial y planta. Guillermo convoca y registra, Leandro se sienta a conocer el trabajo.</div><div class="w">Semana 1</div></div>
+        <div class="dec-row"><div class="q">¿Quién produce la capacidad medida?</div><div class="a">Jairo y Franco los dos primeros números, mantenimiento el tercero.</div><div class="w">Semana 1</div></div>
+        <div class="dec-row"><div class="q">¿Quién escribe el estándar de admisión de crudo?</div><div class="a">Franco, con los parámetros técnicos de Jairo, desde su puesto actual.</div><div class="w">Semana 1</div></div>
+        <div class="dec-row abierta"><div class="q">¿El objetivo es de volumen, de rentabilidad o de calidad de cartera?</div><div class="a">Depende de cuánta capacidad libre muestre la medición. Sin ese dato no se puede fijar.</div><div class="w">Semana 3</div></div>
+        <div class="dec-row abierta"><div class="q">¿Sigue Ismael en el puesto?</div><div class="a">Con noventa días medidos contra un objetivo escrito. Si hubiera que reemplazarlo, la búsqueda es afuera: ninguno de los evaluados encaja.</div><div class="w">Semana 16</div></div>
+      </div>
+    </div>
+
+    <div class="costo"><b>Si se decide hoy, sin corregir el puesto:</b> la decisión queda tomada sobre una persona que nunca ocupó el puesto que se le está evaluando. Si se va, el problema de fondo sigue, porque el próximo comercial va a heredar las mismas cuatro funciones, la misma falta de capacidad medida y la misma discusión semanal con la planta. Y si se queda sin que nada cambie, la negatividad se profundiza, porque la lectura que él hace de su lugar se le confirma.</div>
+
+
+
+    <hr class="sep-caso">
+<p class="kicker caso">Caso 2</p>
+    <h2>Jairo: el trato y la sobrecarga son el mismo problema, y la planta necesita dos conducciones donde hoy hay una.</h2>
+
+    <h3 class="sub">Lo que encontramos</h3>
+    <p>El problema de trato está confirmado desde todos lados. Cuatro personas lo describen igual, por separado: <em>&ldquo;a las máquinas las entiende, a las personas no&rdquo;</em>, <em>&ldquo;es controlador, cero emotivo, quiere todo ya&rdquo;</em>, <em>&ldquo;es complicado, no quiere recibir órdenes&rdquo;</em>. Lo medimos por otra vía y da lo mismo: por cada vez que su forma de decir las cosas funciona, hay tres en las que genera roce. Es la coincidencia más fuerte de todo el equipo entre lo que dicen los demás y lo que mide una prueba. <span class="tag tag-ok">[confirmado]</span></p>
+
+    <p><strong>Jairo es, de las once personas evaluadas, la que más lejos está de poder con lo que se le pide</strong>, y no por una semana difícil: se mantiene igual descontando el momento. Coincide con lo que él dice, <em>&ldquo;presión continua, agotamiento&rdquo;</em>, y con que pidió dejar la guardia. Alguien que trabaja por encima de lo que puede sostener se pone peor con la gente, así que el trato y la sobrecarga son el mismo problema y por eso se atacan juntos.</p>
+
+    <p><strong>Y ya está armando su salida.</strong> Asesora a otras empresas por su cuenta y lo describe así: <em>&ldquo;aparte hago consultoría a otras empresas y lo hago tranquilo sin estrés&rdquo;</em>. Sobre Laruso se proyecta <em>&ldquo;más asesorándolos algunos días y no la esclavitud de la guardia, eso no lo quiero más&rdquo;</em>. No anunció una salida, y ya está describiendo el vínculo con el que se quedaría, que es el de asesor externo. Eso acorta el plazo que la empresa tiene para preparar quién conduce la planta.</p>
+
+    <p><strong>Una parte del roce viene de la estructura, y esa parte se corrige sin tocar a la persona.</strong> Jairo es hoy el único que puede decir si la planta puede producir algo y si un crudo entra o no, y lo hace sin un número de producción medido ni un estándar escrito de admisión que respalden la respuesta. <span class="tag tag-val">[a validar]</span> Eso lo deja discutiendo con comercial todas las semanas desde el único lugar disponible, que es su criterio personal, y con Mauro arbitrando cuando no se ponen de acuerdo. Con la capacidad medida y el estándar escrito, esas dos discusiones dejan de existir y él deja de ser quien las sostiene. Lo que las cuatro descripciones coincidentes señalan sobre su trato no queda explicado por esto y sigue en pie: se resuelve con el movimiento 1.</p>
+
+    <h3 class="sub">Qué recomendamos hacer</h3>
+
+    <div class="comp">
+      <div class="comp-col hoy">
+        <div class="comp-h">Hoy · todo cuelga de la misma persona</div>
+        <div class="it"><b>Jairo · jefe de planta.</b><small>Proceso, técnica, rendimiento y toda la gente.</small></div>
+        <div class="sub">
+          <div class="it"><b>La gente de planta.</b><small>Los cuatro responsables de turno y, a través de ellos, los operarios.</small></div>
+          <div class="it"><b>La técnica.</b><small>Franco, con la calidad y la logística de adentro en el mismo puesto.</small></div>
+          <div class="it"><b>El mantenimiento.</b><small>Alejandro.</small></div>
+          <div class="it"><b>La administración.</b><small>Valeria.</small></div>
+          <div class="it"><b>La guardia.</b><small>Lo llaman a él por lo que pase fuera de su horario.</small></div>
+        </div>
+        <div class="tot">Cómo termina · siete reportes directos y ningún horario propio.</div>
+      </div>
+      <div class="comp-col prop">
+        <div class="comp-h">El diseño · dos conducciones separadas, una debajo de la otra</div>
+        <div class="it"><b>La Jefatura de Planta.</b><small>Responde por las toneladas comprometidas, en calidad y al costo previsto. Hoy la ocupa Jairo, y si sigue él es una decisión abierta.</small></div>
+        <div class="sub">
+          <div class="it"><b>La gente de planta.</b><small>Pasa a la Jefatura de Turnos, un puesto nuevo debajo de la jefatura, que sale de uno de los cuatro responsables actuales.</small></div>
+          <div class="it"><b>El mantenimiento.</b><small>Alejandro sigue reportando a la jefatura, y hay que corregir la línea de sus tres técnicos, que en el papel cuelgan del turno.</small></div>
+          <div class="it"><b>La guardia.</b><small>Primero llaman al responsable de turno. Las roturas, a mantenimiento. A Jairo, solo por decisiones de proceso.</small></div>
+        </div>
+        <div class="tot">Cómo termina · de siete reportes directos a cuatro al cierre del mes, y a tres cuando se separe la calidad y se corrija la línea de la administración. El trato cotidiano con la gente de planta deja de ser suyo.</div>
+      </div>
+    </div>
+    <p class="comp-pie">Son dos puestos por diseño y no por quién los ocupa hoy: conducir el proceso y conducir personas en turnos piden perfiles opuestos y responden por resultados que compiten. Se llama Jefe de Turnos porque conduce a los cuatro Responsables de Turno que ya existen: el nombre tiene que decir que manda y quedar por encima del que ellos ocupan, o el ascenso se lee como castigo.</p>
+
+    <ol class="moves">
+      <li><strong>Crear la Jefatura de Turnos, debajo de la Jefatura de Planta.</strong> Es el puesto que separa las dos conducciones que hoy están en una sola, y con él la jefatura cierra el mes con cuatro reportes directos en lugar de siete, y con tres cuando se separe la calidad y se corrija la línea de la administración. Sale de uno de los cuatro responsables actuales, y quién lo ocupa lo define el movimiento 3; ascenderlo deja su turno sin responsable, así que en la misma semana 3 se abre la búsqueda del reemplazo y hasta que llegue la coordinación arranca parcial. <strong>Y la regla que hace que esto ocurra:</strong> las indicaciones a los turnos y a los operarios pasan por el Jefe de Turnos. Se escribe, se comunica en la semana 4 y la sostiene la dirección.</li>
+      <li><strong>Sacarle la guardia, y decir quién la toma.</strong> Es lo que él mismo viene pidiendo y lo que respaldamos con la evaluación, así que deja de ser una concesión personal y pasa a ser una medida de continuidad: la planta depende hoy de alguien que trabaja por encima de su límite. La cobertura fuera de horario se reparte hoy entre él y Franco, que queda a cargo de la planta fines de semana por medio, y de los dos este plan mueve a Jairo: la cobertura de Franco sigue como está. La guardia se reparte en niveles, y el punto de partida es que en la planta siempre hay un responsable de turno trabajando: la guardia existe para lo que ese responsable no puede resolver solo. El primer teléfono rota entre los cuatro responsables de turno con el esquema que arma el Jefe de Turnos, y atiende los problemas de gente. Las roturas van a mantenimiento, que ya tiene un técnico asignado a cada turno. Y Jairo queda como última instancia, para las decisiones de proceso que ninguno de los anteriores puede tomar. Decir que no atiende más nada sería irreal mientras sea el único con ese criterio: lo van a llamar igual. Lo realizable es que deje de ser el primer teléfono y pase a ser el último, y se mide contando cuántas veces lo llaman por mes. Para repartirlo bien alcanza con revisar para qué lo llamaron las últimas diez veces. <span class="tag tag-val">[a validar]</span></li>
+      <li><strong>Evaluar a los cuatro responsables de turno, en las próximas dos semanas.</strong> Acá está el paso que destraba todo lo anterior, y es el más urgente. Para sacarle la conducción de la gente a Jairo hay que dársela a alguien, y esas cuatro personas son las únicas de las que puede salir hoy: no hay ningún dato sobre ninguna de ellas. <span class="tag tag-falta">[falta dato]</span> Evaluándolos sabemos cuál de los cuatro está en condiciones de conducir a los otros tres, o si hay que buscar a esa persona afuera. Dos semanas alcanzan, con las mismas pruebas que se usaron en el resto del equipo.</li>
+    </ol>
+
+    <h3 class="sub">Por qué son dos puestos, y por qué no son tres</h3>
+    <p><strong>Dos y no uno.</strong> Conducir el proceso pide análisis, detalle y parámetros. Conducir gente en régimen de turnos pide vínculo, corregir sin romper y sostener la rutina con personas. Son formas de pensar opuestas, y las capacidades que piden perfiles opuestos van en puestos separados. Se llega a lo mismo por el lado del resultado: "el volumen producido según el programa" no cubre la conducción de personas, porque se puede cumplir el volumen del mes y perder tres operarios en el camino, que es exactamente lo que ocurrió. Son dos resultados que compiten, así que son dos puestos.</p>
+    <p><strong>Dos y no tres.</strong> La carga que un puesto aguanta se mueve con el tamaño de la empresa: en una chica, un puesto junta más. Al tamaño de Laruso, el rendimiento del proceso y el volumen comprometido al costo previsto caben en el mismo puesto, son afines y se escriben como un resultado solo. Por eso no hace falta una capa de operaciones entre la dirección y la planta: la Jefatura de Planta ya rinde cuentas por las dos cosas. Esa capa se revisa el día que haya una segunda planta o el volumen la pida.</p>
+    <p><strong>Por qué cuelga de la Jefatura de Planta y no de la dirección.</strong> Un puesto depende de quien necesita su resultado, y los cuatro turnos cumpliendo con la dotación completa los necesita quien responde por el volumen. Colgar la Jefatura de Turnos de la dirección rompería esa rendición de cuentas: no se le puede pedir el volumen a un puesto que no conduce a quienes lo producen. Que la línea se respete en la práctica es otro problema, y se resuelve con tres condiciones: el encargo dicho en público, el tiempo asignado para ejercerlo, y que quien está arriba no resuelva por afuera lo que delegó.</p>
+    <p><strong>Nada de esto sale de las personas que hoy ocupan los puestos.</strong> El diseño se derivó del negocio y de la cadena de valor, y recién después se miró quién puede ocupar cada puesto. Por eso la decisión que sigue es sobre el puesto primero y sobre la persona después.</p>
+
+    <h3 class="sub">La decisión que le queda a la dirección</h3>
+    <p>El diseño que proponemos hace de la Jefatura de Planta un puesto de conducción: responde por el volumen y conduce a cuatro. En la evaluación vemos que quien hoy lo ocupa tiene ahí su límite, con cuatro descripciones coincidentes, la prueba que llega a lo mismo por otra vía, y un hecho ya ocurrido. <strong>Esa tensión entre el puesto que el negocio necesita y la persona que lo ocupa es una decisión de empresa.</strong> Son tres caminos:</p>
+    <table>
+      <tr><th>Camino</th><th>Qué resuelve</th><th>Qué cuesta</th></tr>
+      <tr><td><strong>Sostener a Jairo con el puesto acotado</strong>, con cuatro reportes directos en lugar de siete</td><td>Baja el trato cotidiano a cuatro relaciones, que es donde el roce se vuelve manejable, y no toca su lugar en la empresa</td><td>El trato con esas personas sigue siendo el que es, y depende por completo de que la regla de funcionamiento se sostenga</td></tr>
+      <tr><td><strong>Cambiar el ocupante</strong> y crear para él un puesto técnico sin gente, donde responda por el rendimiento del proceso y por dejar instalado su saber</td><td>El puesto queda con alguien que puede conducirlo, el saber se documenta, y es lo más cerca de lo que él describe querer: asesorar algunos días, sin la guardia</td><td>Pierde el título de Jefe de Planta. Hay que resolver el ingreso y decirlo en público, o se lee como degradación y acelera la salida que se quiere evitar</td></tr>
+      <tr><td><strong>Dejar el puesto como está</strong></td><td>Nada. Es la opción de no decidir</td><td>Ya costó un responsable de turno, y reponer gente con oficio en la zona lleva meses</td></tr>
+    </table>
+    <p>Los tres comparten el mismo primer paso, así que se puede empezar antes de decidir: <strong>evaluar a los cuatro responsables de turno.</strong> De ahí sale el Jefe de Turnos en el primer camino, o el candidato a la Jefatura en el segundo.</p>
+
+    <div class="dec">
+      <div class="dec-h">Caso 2 · qué queda decidido y qué queda por decidir</div>
+      <div class="dec-main"><b>La decisión principal</b>Separar la conducción de las personas de la conducción del proceso, creando la Jefatura de Turnos debajo de la Jefatura de Planta.</div>
+      <div class="dec-sub">
+        <b>Lo que esa decisión abre</b>
+        <div class="dec-row"><div class="q">¿Qué hace el Jefe de Turnos?</div><div class="a">Responde por los cuatro turnos con la dotación completa, el mismo criterio y la gente que se queda: arma coberturas y guardia, define el formato del pase de turno y audita que se cumpla, es la primera instancia ante un problema de trato, y lleva la conversación con el gremio.</div><div class="w">Ya definido</div></div>
+        <div class="dec-row abierta"><div class="q">¿Quién lo ocupa?</div><div class="a">Uno de los cuatro responsables de turno, con el trato como criterio de selección. Si ninguno alcanza, se busca afuera.</div><div class="w">Semana 3</div></div>
+        <div class="dec-row abierta"><div class="q">¿Quién reemplaza al que asciende en su turno?</div><div class="a">Si asciende un operario, hay que reponer un operario, y la planta ya declara faltante. Si se busca afuera, reponer gente con oficio en la zona lleva meses. Recomendamos abrir la búsqueda externa y, en paralelo, evaluar a los operarios con la misma batería que el resto del equipo.</div><div class="w">Semana 3</div></div>
+        <div class="dec-row abierta"><div class="q">¿Qué régimen y qué ingreso tiene el puesto nuevo?</div><div class="a">Si deja el régimen de turno, los adicionales pesan en el recibo. Un ascenso que baja el ingreso no lo acepta nadie. Recomendamos horario administrativo con el ingreso resuelto de antemano, porque un jefe de turnos que solo ve su propio turno no conduce a los otros tres. El número tiene que estar antes de ofrecer el puesto.</div><div class="w">Semana 3</div></div>
+        <div class="dec-row abierta"><div class="q">¿Quién cubre cada nivel de la guardia?</div><div class="a">Se reparte revisando para qué llamaron a Jairo las últimas diez veces.</div><div class="w">Semana 3</div></div>
+        <div class="dec-row abierta"><div class="q">¿Qué camino toma la Jefatura de Planta?</div><div class="a">Los tres que están arriba. Es la decisión de fondo del caso, y le corresponde a la dirección.</div><div class="w">Semana 3</div></div>
+        <div class="dec-row"><div class="q">¿Dónde cuelga mantenimiento?</div><div class="a">De la Jefatura de Planta, por la misma regla: su resultado, la disponibilidad del cuello de botella, lo necesita quien responde por el volumen. Con eso la jefatura cierra el mes con cuatro reportes. Hay que corregir además la línea de los tres técnicos, que el papel cuelga del turno.</div><div class="w">Semana 4</div></div>
+      </div>
+    </div>
+
+    <div class="costo"><b>Si no se hace nada:</b> ya se fue un responsable de turno. Los que quedan trabajan en el mismo esquema, y reponer gente con oficio en Cañada de Rosquín, para una planta que opera las veinticuatro horas, lleva meses y cuesta producción mientras tanto. Además, quien conduce esa planta está al límite, así que al riesgo de perder más gente se suma el de perderlo a él.</div>
+
+    <div class="marco"><strong>Los dos casos tienen la misma causa.</strong> Ismael carga cuatro funciones que no van juntas, Jairo carga la técnica, la producción, la calidad, las compras y la conducción de toda la gente de planta, y los dos ocupan puestos que ninguna persona podría cumplir bien, con el mismo efecto sobre el trato. Donde sus puestos se tocan, la programación semanal y el crudo que entra, no hay ni un dato ni un estándar que resuelva la diferencia, así que discuten entre ellos y la decisión sube a Mauro. <strong>Que los dos temas de la convocatoria sean personas con puestos sobrecargados que terminan devolviéndole decisiones al dueño es el síntoma de lo que este trabajo vino a resolver.</strong></div>
+
+    <div class="cap-div"><span class="cn">La estructura</span><span class="ct">Los dos casos en una imagen</span></div>
+    <h2 class="bt">El caso 1 cambia lo que hace cada puesto. El caso 2 cambia quién le reporta a quién.</h2>
+
+    <p>La primera figura es cómo funciona hoy. La segunda es dónde termina el plan de treinta días, con cada cambio marcado según el caso que lo produce, para poder leer qué pasa si se hace uno solo de los dos. Nada de lo que está acá excede los dos casos: las decisiones de fondo, que cambian el resto del organigrama, van en la propuesta de servicios.</p>
+
+    <div class="orgfig hoy">
+      <div class="orgfig-titulo">Hoy · siete reportes directos y cuatro funciones sobre la jefatura de planta</div>
+      <ul class="arbol">
+        <li>
+          <div class="nodo dir"><b>Mauro</b><small>dirección general</small><span class="et">arbitra a diario</span></div>
+          <ul>
+            <li><div class="nodo carga"><b>Ismael</b><small>comercial y logística</small><span class="et">4 trabajos</span></div></li>
+            <li>
+              <div class="nodo carga"><b>Jairo</b><small>jefe de planta</small><span class="et">7 directos + guardia</span></div>
+              <ul>
+                <li>
+                  <div class="nodo sd"><b>4 resp. de turno</b><small>Puntonet, Mauna, García y Ojeda</small><span class="et">sin evaluar</span></div>
+                  <ul><li><div class="nodo sd"><b>Los operarios</b></div></li></ul>
+                </li>
+                <li><div class="nodo"><b>Franco</b><small>técnica, laboratorio y logística</small></div></li>
+                <li><div class="nodo sd"><b>Alejandro</b><small>mantenimiento, con 3 técnicos</small><span class="et">sin evaluar</span></div></li>
+                <li>
+                  <div class="nodo"><b>Valeria</b><small>administración de planta</small></div>
+                  <ul><li><div class="nodo"><b>Antonella</b><small>compras y admisión</small></div></li></ul>
+                </li>
+              </ul>
+            </li>
+            <li><div class="nodo"><b>Guillermo</b><small>procesos y normas</small></div></li>
+          </ul>
+        </li>
+      </ul>
+      <div class="orgleyenda">
+        <span><i style="border-color:var(--rojo);background:#fbf4f2"></i>Puesto sobrecargado</span>
+        <span><i style="border-color:#b6b4a9;border-style:dashed"></i>Sin evaluar</span>
+        <span>La programación de la producción no tiene puesto: se resuelve entre Ismael y Jairo, y Mauro decide cuando no acuerdan.</span>
+      </div>
+    </div>
+
+    <div class="orgfig prop">
+      <div class="orgfig-titulo">Al final del mes · qué cambia por cada caso</div>
+      <ul class="arbol">
+        <li>
+          <div class="nodo dir c12"><b>Mauro</b><small>dirección general</small><span class="et">deja de arbitrar · 1 y 2</span></div>
+          <ul>
+            <li><div class="nodo c1"><b>Ismael</b><small>comercial</small><span class="et">1 resultado · caso 1</span></div></li>
+            <li>
+              <div class="nodo c2"><b>Jairo</b><small>jefatura de planta: volumen, especificación y costo</small><span class="et">4 reportes al cierre del mes · decisión abierta</span></div>
+              <ul>
+                <li>
+                  <div class="nodo c2"><b>Jefe de Turnos</b><small>uno de los cuatro, tras la evaluación</small><span class="et">puesto nuevo · caso 2</span></div>
+                  <ul>
+                    <li>
+                      <div class="nodo"><b>3 resp. de turno</b><small>más el reemplazo del que asciende</small></div>
+                      <ul><li><div class="nodo sd"><b>Los operarios</b></div></li></ul>
+                    </li>
+                  </ul>
+                </li>
+                <li><div class="nodo"><b>Franco</b><small>técnica y logística</small></div></li>
+                <li><div class="nodo sd"><b>Alejandro</b><small>mantenimiento, con 3 técnicos</small></div></li>
+              </ul>
+            </li>
+            <li>
+              <div class="nodo c1"><b>Valeria</b><small>administración de planta</small><span class="et">+ despacho · caso 1</span></div>
+              <ul><li><div class="nodo"><b>Antonella</b><small>compras y admisión</small></div></li></ul>
+            </li>
+            <li><div class="nodo c1"><b>Guillermo</b><small>procesos y normas</small><span class="et">convoca · caso 1</span></div></li>
+          </ul>
+        </li>
+      </ul>
+      <div class="orgleyenda">
+        <span><i style="border-color:var(--azul);background:#f2f5fa"></i>Lo cambia el caso 1</span>
+        <span><i style="border-color:var(--verde);background:#f4f8f5"></i>Lo cambia el caso 2</span>
+        <span><i style="border-color:var(--ocre);background:#fdf9f2"></i>Lo cambian los dos</span>
+        <span><i style="border-color:#b6b4a9;border-style:dashed"></i>Sin evaluar</span>
+      </div>
+    </div>
+    <p class="comp-pie"><strong>El caso 1 no mueve ninguna línea de reporte:</strong> cambia el contenido de cuatro puestos, y por eso su antes y después está en el cuadro de funciones y no acá. <strong>El caso 2 es el único que cambia la estructura</strong>, con el puesto nuevo entre la jefatura y los turnos. La jefatura queda con Jairo, que es quien la ocupa hoy, salvo que la dirección tome el segundo de los tres caminos: por eso figura como decisión abierta. Franco pasa a Calidad por la decisión 3, que no es de estos treinta días, y por eso queda sin marcar. Y la administración de planta sigue colgando de la jefatura: corregir esa línea también es decisión de fondo.</p>
+
+
+    <div class="cap-div">
+      <span class="cn">El plan</span>
+      <span class="ct">Los primeros treinta días</span>
+    </div>
+    <h2 class="bt">El plan arranca el lunes sin depender de ninguna decisión previa, y las tres conversaciones de Mauro caen juntas en la semana 3.</h2>
+
+    <p>Los dos casos se ejecutan juntos, porque comparten la misma semana de conversaciones y los mismos requisitos de arranque. El orden importa: la conducción de la planta no se puede separar antes de saber a quién dársela, y el objetivo comercial no se puede escribir antes de tener medida la capacidad de la planta y dos semanas de compromisos registrados.</p>
+
+    <div class="gantt">
+      <table>
+        <tr><th>Qué</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>S5-15</th><th>S16</th></tr>
+        <tr>
+          <td>Evaluación de los cuatro responsables de turno<span class="who">nosotros</span></td>
+          <td class="c"><span class="bar b1"></span></td><td class="c"><span class="bar b1"></span></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Medición de la capacidad de la planta<span class="who">Jairo, Franco y mantenimiento</span></td>
+          <td class="c"><span class="bar b2"></span></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Estándar de admisión de crudo<span class="who">Franco, con parámetros de Jairo</span></td>
+          <td class="c"><span class="bar b2"></span></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>El estándar en uso en la recepción<span class="who">quien reciba, a definir en la semana 1</span></td>
+          <td class="c"></td><td class="c"><span class="bar b2"></span></td><td class="c"><span class="bar b2"></span></td><td class="c"><span class="bar b2"></span></td><td class="c"><span class="bar b2"></span></td><td class="c"><span class="bar b2"></span></td>
+        </tr>
+        <tr class="sep">
+          <td>Reunión semanal de programación<span class="who">Guillermo convoca · Leandro presente</span></td>
+          <td class="c"><span class="bar b3"></span></td><td class="c"><span class="bar b3"></span></td><td class="c"><span class="bar b3"></span></td><td class="c"><span class="bar b3"></span></td><td class="c"><span class="bar b3"></span></td><td class="c"><span class="bar b3"></span></td>
+        </tr>
+        <tr>
+          <td>Puesto de Ismael acotado, por escrito<span class="who">Mauro · indelegable</span></td>
+          <td class="c"><span class="bar b4"></span></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Despacho y seguimiento de salida a Valeria<span class="who">se lo asigna Jairo</span></td>
+          <td class="c"><span class="bar b4"></span></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr class="sep">
+          <td>Régimen e ingreso del puesto nuevo, con el número cerrado<span class="who">Mauro, con la administración de planta</span></td>
+          <td class="c"></td><td class="c"><span class="bar b1"></span></td><td class="c"><span class="bar b1"></span></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Se define el Jefe de Turnos y se abre la búsqueda del reemplazo<span class="who">Mauro, con la evaluación</span></td>
+          <td class="c"></td><td class="c"></td><td class="c"><span class="bar b1"></span></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Mauro decide el camino sobre la Jefatura de Planta<span class="who">Mauro</span></td>
+          <td class="c"></td><td class="c"></td><td class="c"><span class="bar b1"></span></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Esquema de guardia por niveles<span class="who">Mauro, con Jairo</span></td>
+          <td class="c"></td><td class="c"></td><td class="c"><span class="bar b1"></span></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Conversación con Jairo: alcance nuevo y guardia<span class="who">Mauro · indelegable</span></td>
+          <td class="c"></td><td class="c"></td><td class="c"><span class="bar b4"></span></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Conversación con Ismael: el número queda escrito<span class="who">Mauro · indelegable</span></td>
+          <td class="c"></td><td class="c"></td><td class="c"><span class="bar b4"></span></td><td class="c"></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr class="sep">
+          <td>Comunicación a la planta de la línea nueva<span class="who">Mauro</span></td>
+          <td class="c"></td><td class="c"></td><td class="c"></td><td class="c"><span class="bar b4"></span></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Mantenimiento colgado de la jefatura, y corregida la línea de sus tres técnicos<span class="who">Mauro, con Jairo</span></td>
+          <td class="c"></td><td class="c"></td><td class="c"></td><td class="c"><span class="bar b1"></span></td><td class="c"></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td>Noventa días de medición del objetivo de Ismael<span class="who">revisión cada quince días</span></td>
+          <td class="c"></td><td class="c"></td><td class="c"></td><td class="c"><span class="bar b3"></span></td><td class="c"><span class="bar b3"></span></td><td class="c"></td>
+        </tr>
+        <tr>
+          <td><strong>Decisión sobre Ismael</strong><span class="who">Mauro, con los datos a la vista</span></td>
+          <td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"><span class="hito"></span></td>
+        </tr>
+      </table>
+      <div class="gantt-leyenda">
+        <span><i class="b1" style="background:#c9d6e6"></i>Evaluación y definiciones</span>
+        <span><i class="b2" style="background:#d9c9ae"></i>Los dos datos que faltan</span>
+        <span><i class="b3" style="background:#c5ded0"></i>Rutina que queda instalada</span>
+        <span><i class="b4" style="background:#e2cfc9"></i>Actos de Mauro</span>
+        <span><i style="background:var(--ink);border-radius:50%;width:.6rem;height:.6rem"></i>Decisión con fecha</span>
+      </div>
+    </div>
+    <p class="comp-pie">La semana 1 arranca sin depender de ninguna decisión previa. Las tres conversaciones de Mauro caen juntas en la semana 3, cuando ya están la evaluación y la medición sobre la mesa.</p>
+
+    <h3 class="sub">Por qué sugerimos a cada uno</h3>
+    <p><strong>Guillermo convoca la reunión.</strong> El fundamento sale de su propia evaluación: encaja bien en documentar y formalizar, que es exactamente lo que la reunión necesita. No decide nada en esa mesa, porque las decisiones las toman comercial y planta; su trabajo es que ocurra siempre, el mismo día y a la misma hora, y que las tres líneas queden escritas. Trabaja en Funes, así que convoca desde el mismo lado que comercial y viaja con el grupo el día de la visita semanal a la planta. La autoridad la aporta Mauro, porque la reunión se instituye como encargo de la dirección. <strong>Leandro se sienta desde la primera</strong>, porque hoy lleva la planilla de stock y las conciliaciones, así que es quien más cerca está del dato que la reunión necesita. Sumarlo no tiene costo y deja el registro en manos de alguien que ya trabaja con esos números.</p>
+    <p><strong>Valeria toma el despacho, los camiones que salen con producto y su seguimiento.</strong> Coordinar es hablar con el transportista, con la planta y con el cliente, y ella tiene el mejor resultado de todo el equipo evaluado en el trato, sin un solo indicador en contra. Ya se ocupa de los movimientos de lo que sale de la planta, y pide más alcance con todas las letras. <strong>Quién aplica el estándar en la recepción queda para la semana 1</strong>, cuando sepamos quién recibe hoy el camión. El perfil de Antonella encaja con la parte de verificar, y su límite medido es revisar lo que está a la vista sin salir a buscar lo que falta, así que la lista escrita deja de ser una mejora y pasa a ser condición de que funcione. Valeria depende de la línea de Jairo, así que él le asigna el despacho: un pedido que cruza la línea de mando llega sin nadie que lo respalde.</p>
+    <p><strong>Y la capacidad la miden Jairo, Franco y mantenimiento entre los tres</strong>, porque el dato está repartido entre la experiencia de esas tres personas y nadie lo escribió. No requiere estudio externo ni inversión. <span class="tag tag-val">[a validar]</span></p>
+
+    <div class="costo"><b>Un hallazgo, y por eso el estándar todavía no tiene quién lo aplique.</b> (Con estándar nos referimos al estándar de admisión de crudo: la hoja que Franco escribe en la semana 1 con los parámetros técnicos de Jairo, y que fija contra qué se compara cada crudo que llega para decidir si entra o no.) El descriptivo de Compras y Admisión asigna cuatro responsabilidades sobre lo que entra al predio: coordinar la recepción y la admisión de camiones, verificar la documentación de ingreso, registrar los ingresos con su trazabilidad de lote, y coordinar con producción la programación. Al describir su trabajo, ninguna de las dos personas del circuito administrativo nombra esas tareas como propias: una enumera compras de insumos y repuestos, la otra el registro de movimientos y el control de esas compras. Puede haber entonces una función escrita que no ejecuta nadie, con el papel dándola por cubierta. La pregunta de la semana 1 es concreta: cuando entra un camión con crudo, quién mira los papeles y quién dice que sí. De esa respuesta depende a quién se le asigna el estándar, y con qué carga se le asigna.</div>
+
+    <div class="marco"><strong>Lo que esto pide de la dirección.</strong> Dos cosas, y las dos son de Mauro. Que deje de programar en paralelo: si sigue corrigiendo el programa por afuera, el equipo le pide las prioridades directamente a él y la reunión queda sin uso. Y que deje de arbitrar si un crudo entra o no: a partir de la semana 2 esa pregunta tiene una hoja que la contesta, y cada vez que se la responda él, el estándar deja de valer. Es lo que más veces hace caer un cambio como este: el dueño encarga una rutina nueva y sigue contestando las consultas que le llegan directo, con lo cual el equipo comprueba que preguntarle a él sigue dando respuesta antes, y deja de usar la rutina nueva.</div>
+
+
+    <!-- ===================== BLOQUE 4 · QUIÉN IMPULSA ===================== -->
+
+    <div class="cap-div">
+      <span class="cn">La ejecución</span>
+      <span class="ct">Quién lleva adelante cada cosa</span>
+    </div>
+    <h2 class="bt">Los dos casos se ejecutan sin contratar a nadie y sin esperar ninguna decisión previa.</h2>
+
+    <h3 class="sub">Los dos casos se ejecutan con Mauro y con nosotros</h3>
+    <p>No hace falta contratar a nadie ni esperar a que exista un conductor del cambio: todo lo que el Gantt muestra lo hacen Mauro, la planta y nosotros, y el único puesto que se crea se cubre con alguien que ya trabaja ahí. Con eso alcanza para empezar el lunes.</p>
+    <p><strong>A partir de la semana 2, dos preguntas que hoy llegan a Mauro dejan de llegarle.</strong> Si la planta puede producir algo se contesta con el número medido, y si un crudo entra se contesta con el estándar. Es el primer resultado medible de delegar, y ocurre dentro del mes.</p>
+
+
+    <!-- ===================== CIERRE ===================== -->
+
+    <div class="corte">
+      <span>Lo que necesitamos de la dirección para arrancar</span>
+      <small>Tres decisiones, y las tres se toman esta semana.</small>
+    </div>
+
+    <div class="pedido">
+      <div class="p-item">
+        <div><strong>1. Autorizar la evaluación de los cuatro responsables de turno.</strong> Es el paso más urgente del caso 2: sin saber a quién darle la conducción de la gente, no se le puede sacar a Jairo.</div>
+        <div class="p-cuando">Esta semana</div>
+      </div>
+      <div class="p-item">
+        <div><strong>2. Confirmar si existen la capacidad medida y el estándar de admisión, y ponerles fecha.</strong> Son las dos preguntas que hoy decide Mauro caso por caso, y una hoja cada una las contesta.</div>
+        <div class="p-cuando">Esta semana</div>
+      </div>
+      <div class="p-item">
+        <div><strong>3. Instituir la reunión semanal de programación, con Guillermo convocando y con día y hora fijos.</strong> Lo que hace falta de la dirección es el encargo dicho en público: sin eso la reunión es una invitación que la planta puede no atender, y sin la reunión el objetivo de Ismael queda sin base.</div>
+        <div class="p-cuando">Esta semana</div>
+      </div>
+    </div>
+
+
+  </main>
+
+  <footer>
+    Campos HR · Laruso SRL · Agosto 2026<br>
+    Este documento responde los dos casos por los que nos convocaron. La ficha individual de cada persona evaluada, con la trazabilidad de cada lectura, va en el documento de Evaluaciones. Las cinco decisiones que sostienen la estructura, y quién puede conducirlas, van en la propuesta de servicios.
+  </footer>
+
+</div>
+</body>
+</html>

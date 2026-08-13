@@ -6,30 +6,29 @@
  * documentos se listan acá, arriba de los pedidos, porque son el trabajo de
  * fondo y las evaluaciones son una parte de él.
  *
- * La clave es el ID de la empresa en Airtable y no el token del portal: el token
- * es el secreto que da acceso y este repositorio es público.
+ * La clave es el ID de la empresa en Airtable y no el token del portal: el
+ * token es el secreto que da acceso, y esto se lee en el listado de accesos.
  *
- * **Dónde viven los documentos.** Como adjuntos de la empresa en Airtable, en el
- * campo "Documentos del portal", y no como archivos de este repositorio, que es
- * público y donde cualquiera podría leer lo que dice el documento sobre las
- * personas del cliente. El portal los busca por nombre de archivo y resuelve la
- * dirección al momento del clic (ver `app/p/[token]/doc/[archivo]/route.ts`).
+ * **Dónde viven los documentos.** Como archivos de este repositorio, en
+ * `documentos/<cliente>/`, y a propósito fuera de `public/`: lo que está en
+ * `public/` lo sirve Next a cualquiera que tenga la dirección, sin pasar por
+ * el token. La ruta `app/p/[token]/doc/[archivo]/route.ts` los lee del disco y
+ * los entrega recién después de comprobar que el token pertenece a la empresa
+ * dueña del documento.
  *
- * Un documento declarado acá y sin subir a Airtable no rompe nada: la tarjeta se
- * muestra sin enlace y avisando, hasta que el archivo esté.
+ * Documento nuevo = copiar el HTML a `documentos/<cliente>/`, sumar su entrada
+ * acá y desplegar. Un documento declarado sin su archivo devuelve 404, así que
+ * las dos cosas van juntas.
  */
 export type Documento = {
   /** Texto del botón. Corto: van de a dos por renglón. */
   nombre: string;
-  /** Qué abre, en una línea, para quien no sabe cuál de los tres quiere. */
+  /** Qué abre, en una línea, para quien no sabe cuál quiere. */
   detalle: string;
   /** Parte final de la dirección: /p/<token>/doc/<slug>. */
   slug: string;
-  /** Nombre exacto del adjunto en Airtable. */
+  /** Ruta del archivo dentro de `documentos/`. */
   archivo: string;
-  /** Lo resuelve `serviciosDe` mirando si el adjunto está cargado: sin archivo
-   *  la tarjeta se muestra sin enlace, en vez de llevar al cliente a un 404. */
-  disponible?: boolean;
   /** La dirección ya armada, que necesita el token del portal. */
   href?: string;
 };
@@ -49,42 +48,30 @@ const SERVICIOS: Record<string, Servicio[]> = {
           nombre: 'Casos',
           detalle: 'Los dos casos, con recomendación y plan de treinta días.',
           slug: 'casos',
-          archivo: 'Laruso - Casos.html',
+          archivo: 'laruso/casos.html',
         },
         {
           nombre: 'Evaluaciones',
           detalle: 'El encaje de las once personas, con una ficha por cada una.',
           slug: 'evaluaciones',
-          archivo: 'Laruso - Evaluaciones.html',
+          archivo: 'laruso/evaluaciones.html',
         },
         {
           nombre: 'Propuesta',
           detalle: 'Las tres correcciones de método y el trabajo que se propone.',
           slug: 'propuesta',
-          archivo: 'Laruso - Propuesta.html',
-        },
-        {
-          nombre: 'Rediseño',
-          detalle: 'El organigrama objetivo y las decisiones de estructura.',
-          slug: 'rediseno',
-          archivo: 'Laruso - Rediseño.html',
+          archivo: 'laruso/propuesta.html',
         },
       ],
     },
   ],
 };
 
-/**
- * Los servicios de esa empresa, con cada documento resuelto contra los adjuntos
- * que la empresa tiene cargados.
- *
- * El día que un documento se sube a Airtable, su enlace se enciende solo, y
- * mientras tanto ningún cliente se encuentra con un enlace roto.
- */
+/** Los servicios de esa empresa, con la dirección de cada documento resuelta
+ *  contra el token del portal. */
 export function serviciosDe(
   empresaId: string | null,
-  token: string,
-  adjuntos: string[]
+  token: string
 ): Servicio[] {
   if (!empresaId) return [];
   const servicios = SERVICIOS[empresaId];
@@ -94,20 +81,23 @@ export function serviciosDe(
     ...sv,
     documentos: sv.documentos.map((d) => ({
       ...d,
-      disponible: adjuntos.includes(d.archivo),
       href: `/p/${token}/doc/${d.slug}`,
     })),
   }));
 }
 
-/** El nombre de archivo que le corresponde a un slug, mirando todos los
- *  clientes: la ruta ya valida que ese cliente lo tenga cargado. */
-export function archivoDe(slug: string): string | null {
-  for (const servicios of Object.values(SERVICIOS)) {
-    for (const sv of servicios) {
-      const d = sv.documentos.find((x) => x.slug === slug);
-      if (d) return d.archivo;
-    }
+/**
+ * El archivo que le corresponde a un slug, dentro de los documentos de esa
+ * empresa y de ninguna otra.
+ *
+ * Acá está el control de acceso: la empresa sale del token y los slugs se
+ * buscan sólo entre los suyos, así que el token de un cliente no alcanza para
+ * abrir el documento de otro aunque adivine el slug.
+ */
+export function archivoDe(empresaId: string, slug: string): string | null {
+  for (const sv of SERVICIOS[empresaId] ?? []) {
+    const d = sv.documentos.find((x) => x.slug === slug);
+    if (d) return d.archivo;
   }
   return null;
 }

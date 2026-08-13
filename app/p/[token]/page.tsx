@@ -160,10 +160,10 @@ export default async function Portal({ params }: { params: { token: string } }) 
     : await getDatosCliente(params.token);
   if (!datos) return <Acceso />;
 
-  const { empresa, empresaId, documentos, busquedas } = datos;
+  const { empresa, empresaId, busquedas } = datos;
 
   // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
-  const servicios = serviciosDe(empresaId, params.token, documentos);
+  const servicios = serviciosDe(empresaId, params.token);
 
   // La facturación se ve en el cliente de prueba mientras las tildes no se
   // carguen en Airtable. Ver la nota en lib/cobro.ts.
@@ -257,25 +257,15 @@ export default async function Portal({ params }: { params: { token: string } }) 
             </div>
             <article className="card servicio-card">
               <div className="docs">
-                {sv.documentos.map((d) =>
-                  d.disponible ? (
-                    <a className="doc" href={d.href} target="_blank" rel="noreferrer" key={d.nombre}>
-                      <span className="doc-n">
-                        {d.nombre}
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M7 7h10v10" /></svg>
-                      </span>
-                      <span className="doc-d">{d.detalle}</span>
-                    </a>
-                  ) : (
-                    <div className="doc doc-pronto" key={d.nombre}>
-                      <span className="doc-n">
-                        {d.nombre}
-                        <span className="doc-tag">En breve</span>
-                      </span>
-                      <span className="doc-d">{d.detalle}</span>
-                    </div>
-                  )
-                )}
+                {sv.documentos.map((d) => (
+                  <a className="doc" href={d.href} target="_blank" rel="noreferrer" key={d.nombre}>
+                    <span className="doc-n">
+                      {d.nombre}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M7 7h10v10" /></svg>
+                    </span>
+                    <span className="doc-d">{d.detalle}</span>
+                  </a>
+                ))}
               </div>
             </article>
           </section>

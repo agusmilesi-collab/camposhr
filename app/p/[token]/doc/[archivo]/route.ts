@@ -1,35 +1,53 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { NextResponse } from 'next/server';
-import { getUrlDocumento } from '@/lib/airtable';
+import { listarClientesConToken } from '@/lib/airtable';
 import { archivoDe } from '@/lib/servicios';
 
 export const dynamic = 'force-dynamic';
 
+/** La carpeta de los documentos, fuera de `public/` para que la única puerta
+ *  sea esta ruta. Next la incluye en el paquete que sube a Vercel por el
+ *  `outputFileTracingIncludes` de `next.config.mjs`. */
+const CARPETA = path.join(process.cwd(), 'documentos');
+
 /**
  * Documento del portal: clientes.camposhr.com/<token>/doc/<slug>.
  *
- * Los documentos del trabajo de estructura nombran a las personas del cliente,
- * así que no viven en el repositorio, que es público. Viven como adjuntos de la
- * empresa en Airtable, y esta ruta resuelve el slug a su archivo y le pregunta
- * a Airtable la dirección en el momento del clic. Las direcciones de Airtable
- * caducan, que es justamente lo que se quiere: no queda una dirección eterna
- * dando vueltas en el historial del navegador de nadie.
+ * Resuelve el token a su empresa, busca el slug entre los documentos de esa
+ * empresa y recién ahí lee el archivo y lo devuelve. El token de un cliente no
+ * abre el documento de otro, y sin token no hay dirección que sirva: los
+ * archivos no están publicados en ningún lado.
  *
- * Si el token no corresponde, o la empresa no tiene ese archivo, responde 404
+ * Si el token no corresponde, o la empresa no tiene ese documento, responde 404
  * sin decir cuál de las dos cosas pasó.
  */
 export async function GET(
   _req: Request,
   { params }: { params: { token: string; archivo: string } }
 ) {
-  const archivo = archivoDe(params.archivo);
+  const clientes = await listarClientesConToken();
+  const empresaId = clientes.find((c) => c.token === params.token)?.empresaId;
+  if (!empresaId) return noEncontrado();
+
+  const archivo = archivoDe(empresaId, params.archivo);
   if (!archivo) return noEncontrado();
 
-  const url = await getUrlDocumento(params.token, archivo);
-  if (!url) return noEncontrado();
+  let html: string;
+  try {
+    html = await readFile(path.join(CARPETA, archivo), 'utf8');
+  } catch {
+    return noEncontrado();
+  }
 
-  return NextResponse.redirect(url, {
-    status: 307,
-    headers: { 'x-robots-tag': 'noindex, nofollow' },
+  return new NextResponse(html, {
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'x-robots-tag': 'noindex, nofollow',
+      // Es el documento de un cliente: no queda en la caché de ningún
+      // intermediario, sólo en el navegador de quien lo abre.
+      'cache-control': 'private, no-store',
+    },
   });
 }
 
