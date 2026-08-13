@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 const ESTADOS: Record<string, { texto: string; clase: string }> = {
   'Sin asignar':     { texto: 'A asignar',   clase: 'gray' },
   'Por citar':       { texto: 'A coordinar', clase: 'gray' },
-  'Por entrevistar': { texto: 'Entrevista agendada',       clase: 'amber' },
+  'Por entrevistar': { texto: 'Agendada',      clase: 'amber' },
   'Por analizar':    { texto: 'En análisis',               clase: 'blue' },
   'Entregado':       { texto: 'Informe entregado',         clase: 'green' },
   'Seguimiento':     { texto: 'En seguimiento',            clase: 'violet' },
@@ -86,10 +86,78 @@ function Acceso() {
   );
 }
 
+/** Los candidatos de una búsqueda, agrupados por etapa del pipeline. */
+function ordenar(cands: Candidato[]): Candidato[] {
+  return [...cands].sort(
+    (x, y) =>
+      (ORDEN[x.estado] ?? 9) - (ORDEN[y.estado] ?? 9) ||
+      x.nombre.localeCompare(y.nombre)
+  );
+}
+
+/** Encabezado de las columnas de una tabla de candidatos en curso. */
+function Encabezado() {
+  return (
+    <div className="tr th">
+      <span>Candidato</span>
+      <span>Estado</span>
+      <span>Evaluadora</span>
+      <span>Entrevista</span>
+      <span>Modalidad</span>
+      <span>Entrega</span>
+      <span>Facturación</span>
+    </div>
+  );
+}
+
+/** Una fila de candidato en curso. Es la misma en las dos vistas: lo único que
+ *  cambia entre A y B es cuántas veces se repite el encabezado de arriba. */
+function FilaCandidato({ c }: { c: Candidato }) {
+  const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
+  const fe = fecha(c.fechaEntrevista, true);
+  const fen = fecha(c.fechaEntrega);
+  return (
+    <div className="tr">
+      <span className="c-name">{c.nombre}</span>
+      <span className="c-estado" data-label="Estado">
+        <i className={`dot ${e.clase}`} />
+        {e.texto}
+      </span>
+      <span className="c-evaluadora" data-label="Evaluadora">
+        {c.evaluadora ?? <span className="dash">—</span>}
+      </span>
+      <span className="c-fecha" data-label="Entrevista">
+        {fe ?? <span className="dash">—</span>}
+      </span>
+      <span className="c-modalidad" data-label="Modalidad">
+        {c.modalidad ?? <span className="dash">—</span>}
+      </span>
+      <span className="c-fecha" data-label="Entrega">
+        {fen ? fen : <span className="dash">—</span>}
+      </span>
+      {/* El cobro también en curso: una evaluación se puede facturar antes de
+          entregar el informe, así que el estado corre desde que el candidato
+          entra. */}
+      <span className="c-cobro" data-label="Facturación">
+        <i className={`dot ${COBROS[cobro(c)].clase}`} />
+        <span className="cobro-txt" title={COBROS[cobro(c)].detalle}>
+          {COBROS[cobro(c)].texto}
+        </span>
+      </span>
+    </div>
+  );
+}
+
 /** Una fila de la tabla de entregados: el candidato con los datos del pedido. */
 type Entregado = { cand: Candidato; puesto: string; fechaPedido: string | null };
 
-export default async function Portal({ params }: { params: { token: string } }) {
+export default async function Portal({
+  params,
+  searchParams,
+}: {
+  params: { token: string };
+  searchParams?: { vista?: string };
+}) {
   const demo = esDemo(params.token);
   const datos = demo
     ? await datosDemoConAirtable()
@@ -97,6 +165,10 @@ export default async function Portal({ params }: { params: { token: string } }) 
   if (!datos) return <Acceso />;
 
   const { empresa, busquedas } = datos;
+
+  // Prueba de maquetación: la vista B junta todas las búsquedas en una sola
+  // tabla. Sólo se ofrece en el cliente de prueba, para poder compararlas.
+  const vistaB = demo && searchParams?.vista === 'b';
 
   // Los informes ya entregados salen de la tarjeta de su búsqueda y se juntan
   // en una sola tabla al final, ordenada por fecha de pedido: el cliente los
@@ -174,7 +246,15 @@ export default async function Portal({ params }: { params: { token: string } }) 
           {/* El alta de pedidos se está probando con el cliente de prueba: hasta
               que el formulario escriba en Airtable, el portal real no lo
               muestra. */}
-          {demo && <NuevoPedido empresa={empresa} />}
+          <div className="head-acciones">
+            {demo && (
+              <div className="vistas" role="group" aria-label="Maquetación">
+                <a className={vistaB ? '' : 'activa'} href={`/p/${params.token}`}>Vista A</a>
+                <a className={vistaB ? 'activa' : ''} href={`/p/${params.token}?vista=b`}>Vista B</a>
+              </div>
+            )}
+            {demo && <NuevoPedido empresa={empresa} />}
+          </div>
         </section>
 
         <section className="busquedas">
@@ -184,86 +264,81 @@ export default async function Portal({ params }: { params: { token: string } }) 
             </div>
           )}
 
-          {enCurso.map((b: Busqueda) => {
-            const cands = [...b.candidatos].sort(
-              (x, y) =>
-                (ORDEN[x.estado] ?? 9) - (ORDEN[y.estado] ?? 9) ||
-                x.nombre.localeCompare(y.nombre)
-            );
-            const n = cands.length;
-            return (
-              <article className="card" key={b.id}>
-                <div className="card-head">
-                  <div className="card-head-main">
-                    <h2>{b.puesto}</h2>
-                  </div>
-                  <div className="card-head-count">
-                    {n > 0 && (
-                      <span>
-                        <b>{n}</b> {n === 1 ? 'candidato' : 'candidatos'}
+          {/* Vista A: una tarjeta por pedido, con su propio encabezado de
+              columnas. Vista B: una sola tarjeta, un solo encabezado, y cada
+              pedido como una banda que separa sus candidatos. Se compara con
+              ?vista=b y por ahora sólo en el cliente de prueba. */}
+          {vistaB ? (
+            <article className="card">
+              <div className="tabla tabla-unica">
+                <Encabezado />
+                {enCurso.map((b: Busqueda) => (
+                  <div className="grupo" key={b.id}>
+                    <div className="grupo-h">
+                      <span className="grupo-t">{b.puesto}</span>
+                      <span className="grupo-m">
+                        {b.candidatos.length > 0 && (
+                          <>
+                            <b>{b.candidatos.length}</b>{' '}
+                            {b.candidatos.length === 1 ? 'candidato' : 'candidatos'}
+                          </>
+                        )}
+                        {b.fecha && (
+                          <span className="req-date">
+                            solicitud <b>{fecha(b.fecha)}</b>
+                          </span>
+                        )}
                       </span>
-                    )}
-                    {b.fecha && (
-                      <span className="req-date">
-                        solicitud <b>{fecha(b.fecha)}</b>
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {cands.length === 0 ? (
-                  <p className="empty">Sin candidatos asignados todavía.</p>
-                ) : (
-                  <div className="tabla">
-                    <div className="tr th">
-                      <span>Candidato</span>
-                      <span>Estado</span>
-                      <span>Evaluadora</span>
-                      <span>Entrevista</span>
-                      <span>Modalidad</span>
-                      <span>Entrega</span>
-                      <span>Facturación</span>
                     </div>
-                    {cands.map((c) => {
-                      const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
-                      const fe = fecha(c.fechaEntrevista, true);
-                      const fen = fecha(c.fechaEntrega);
-                      return (
-                        <div className="tr" key={c.id}>
-                          <span className="c-name">{c.nombre}</span>
-                          <span className="c-estado" data-label="Estado">
-                            <i className={`dot ${e.clase}`} />
-                            {e.texto}
-                          </span>
-                          <span className="c-evaluadora" data-label="Evaluadora">
-                            {c.evaluadora ?? <span className="dash">—</span>}
-                          </span>
-                          <span className="c-fecha" data-label="Entrevista">
-                            {fe ?? <span className="dash">—</span>}
-                          </span>
-                          <span className="c-modalidad" data-label="Modalidad">
-                            {c.modalidad ?? <span className="dash">—</span>}
-                          </span>
-                          <span className="c-fecha" data-label="Entrega">
-                            {fen ? fen : <span className="dash">—</span>}
-                          </span>
-                          {/* El cobro también en curso: una evaluación se puede
-                              facturar antes de entregar el informe, así que el
-                              estado corre desde que el candidato entra. */}
-                          <span className="c-cobro" data-label="Facturación">
-                            <i className={`dot ${COBROS[cobro(c)].clase}`} />
-                            <span className="cobro-txt" title={COBROS[cobro(c)].detalle}>
-                              {COBROS[cobro(c)].texto}
-                            </span>
-                          </span>
-                        </div>
-                      );
-                    })}
+                    {b.candidatos.length === 0 ? (
+                      <p className="empty">Sin candidatos asignados todavía.</p>
+                    ) : (
+                      ordenar(b.candidatos).map((c) => (
+                        <FilaCandidato c={c} key={c.id} />
+                      ))
+                    )}
                   </div>
-                )}
-              </article>
-            );
-          })}
+                ))}
+              </div>
+            </article>
+          ) : (
+            enCurso.map((b: Busqueda) => {
+              const cands = ordenar(b.candidatos);
+              const n = cands.length;
+              return (
+                <article className="card" key={b.id}>
+                  <div className="card-head">
+                    <div className="card-head-main">
+                      <h2>{b.puesto}</h2>
+                    </div>
+                    <div className="card-head-count">
+                      {n > 0 && (
+                        <span>
+                          <b>{n}</b> {n === 1 ? 'candidato' : 'candidatos'}
+                        </span>
+                      )}
+                      {b.fecha && (
+                        <span className="req-date">
+                          solicitud <b>{fecha(b.fecha)}</b>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {cands.length === 0 ? (
+                    <p className="empty">Sin candidatos asignados todavía.</p>
+                  ) : (
+                    <div className="tabla">
+                      <Encabezado />
+                      {cands.map((c) => (
+                        <FilaCandidato c={c} key={c.id} />
+                      ))}
+                    </div>
+                  )}
+                </article>
+              );
+            })
+          )}
 
           {entregados.length > 0 && (
             <>

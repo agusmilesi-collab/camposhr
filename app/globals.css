@@ -5972,3 +5972,77 @@ body {
   color: var(--muted) !important;
   font-size: 0.8rem !important;
 }
+
+
+/* ---------- Vista B: una sola tabla para todas las búsquedas ----------
+   El encabezado de columnas aparece una vez y cada pedido entra como una banda
+   que separa sus candidatos. Se prueba en el cliente de prueba con ?vista=b. */
+.tabla-unica .grupo + .grupo .grupo-h {
+  border-top: 1px solid var(--line);
+}
+.grupo-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 13px 20px 9px;
+  background: #faf9f6;
+}
+.grupo-t {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.grupo-m {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.grupo-m b {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.tabla-unica .grupo .empty {
+  padding: 10px 20px 14px;
+}
+/* La última fila de cada grupo sí lleva línea: es lo que separa un pedido del
+   título del siguiente. La del último grupo de la tabla no. */
+.tabla-unica .grupo:last-child .tr:last-child {
+  border-bottom: none;
+}
+
+/* Encabezado del cliente: el selector de maquetación y el alta van juntos. */
+.head-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.vistas {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.vistas a {
+  font-size: 0.78rem;
+  line-height: 1;
+  padding: 11px 12px;
+  color: var(--muted);
+  text-decoration: none;
+  background: var(--card);
+}
+.vistas a + a {
+  border-left: 1px solid var(--line);
+}
+.vistas a:hover {
+  color: var(--ink);
+}
+.vistas a.activa {
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 500;
+}
