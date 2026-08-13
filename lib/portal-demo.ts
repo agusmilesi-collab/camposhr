@@ -14,9 +14,14 @@
  * con informe y entregado sin informe cargado, más una búsqueda todavía sin
  * candidatos y otra ya cerrada.
  */
-import type { DatosCliente } from './airtable';
+import { getDatosClientePorEmpresa, type DatosCliente } from './airtable';
 
 export const TOKEN_DEMO = 'demo-cliente-prueba';
+
+/** La empresa gemela en Airtable, cargada el 13/8/2026. No tiene "Token portal"
+ *  a propósito: sin token no figura en el listado de accesos ni se abre desde
+ *  clientes.camposhr.com. Es donde caen los pedidos que se cargan probando. */
+export const EMPRESA_DEMO = 'recX2DYWlVzjLoAXT';
 
 export const NOMBRE_DEMO = 'Distribuidora Andina';
 
@@ -49,6 +54,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-08-20',
             modalidad: 'Online',
             recomendacion: null,
+            facturado: false,
+            pagado: false,
             tieneInforme: false,
           },
           {
@@ -60,6 +67,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: null,
             modalidad: null,
             recomendacion: null,
+            facturado: false,
+            pagado: false,
             tieneInforme: false,
           },
           {
@@ -71,6 +80,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-08-13',
             modalidad: 'Presencial',
             recomendacion: null,
+            facturado: true,
+            pagado: false,
             tieneInforme: false,
           },
         ],
@@ -92,6 +103,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-07-29',
             modalidad: 'Online',
             recomendacion: 'Apto',
+            facturado: true,
+            pagado: true,
             tieneInforme: true,
           },
           {
@@ -103,6 +116,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-07-30',
             modalidad: 'Presencial',
             recomendacion: null,
+            facturado: true,
+            pagado: false,
             tieneInforme: false,
           },
         ],
@@ -124,6 +139,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-07-02',
             modalidad: 'Presencial',
             recomendacion: 'Apto con observaciones',
+            facturado: true,
+            pagado: true,
             tieneInforme: true,
           },
           {
@@ -135,6 +152,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-07-03',
             modalidad: 'Online',
             recomendacion: 'No apto',
+            facturado: true,
+            pagado: false,
             tieneInforme: true,
           },
         ],
@@ -156,6 +175,8 @@ export function datosDemo(): DatosCliente {
             fechaEntrega: '2026-06-12',
             modalidad: 'Online',
             recomendacion: 'Apto con alertas',
+            facturado: false,
+            pagado: false,
             tieneInforme: false,
           },
         ],
@@ -171,6 +192,25 @@ export function datosDemo(): DatosCliente {
       },
     ],
   };
+}
+
+/**
+ * Lo inventado más lo que haya cargado en Airtable para la empresa de prueba.
+ *
+ * Los pedidos que entran por el formulario van a Airtable, así que sin esto se
+ * cargarían y no se verían. Van primero, que es donde el que está probando los
+ * busca. Si Airtable no responde, quedan los inventados y la pantalla no se
+ * cae por una prueba.
+ */
+export async function datosDemoConAirtable(): Promise<DatosCliente> {
+  const base = datosDemo();
+  try {
+    const real = await getDatosClientePorEmpresa(EMPRESA_DEMO);
+    if (!real) return base;
+    return { empresa: base.empresa, busquedas: [...real.busquedas, ...base.busquedas] };
+  } catch {
+    return base;
+  }
 }
 
 /** Página de muestra que reemplaza al PDF cuando se mira el cliente de prueba. */
