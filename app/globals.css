@@ -5969,16 +5969,9 @@ body {
 .servicio-card {
   padding: 16px 20px 18px;
 }
-.servicio-bajada {
-  font-size: 0.86rem;
-  color: var(--muted);
-  line-height: 1.5;
-  max-width: 62ch;
-  margin-bottom: 14px;
-}
 .docs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 @media (max-width: 620px) {
