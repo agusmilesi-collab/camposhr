@@ -129,6 +129,9 @@ export type Busqueda = {
 
 export type DatosCliente = {
   empresa: string;
+  /** ID del registro en Airtable. Lo usa lib/servicios.ts para saber qué
+   *  documentos tiene este cliente además de las evaluaciones. */
+  empresaId: string | null;
   busquedas: Busqueda[];
 };
 
@@ -206,7 +209,7 @@ export async function getDatosCliente(
     (e) => e.token === portalToken
   );
   if (!emp) return null;
-  return armarDatos(emp.nombre, emp.pedidoIds);
+  return armarDatos(emp.nombre, emp.id, emp.pedidoIds);
 }
 
 /**
@@ -241,16 +244,17 @@ export async function getDatosClientePorEmpresa(
   const pedidoIds: string[] = (f[F_EMPRESA.pedidos] ?? []).map((p: any) =>
     typeof p === 'string' ? p : p.id
   );
-  return armarDatos(f[F_EMPRESA.nombre] ?? 'Cliente', pedidoIds, true);
+  return armarDatos(f[F_EMPRESA.nombre] ?? 'Cliente', empresaId, pedidoIds, true);
 }
 
 async function armarDatos(
   empresa: string,
+  empresaId: string | null,
   pedidoIds: string[],
   sinCache = false
 ): Promise<DatosCliente> {
 
-  if (pedidoIds.length === 0) return { empresa, busquedas: [] };
+  if (pedidoIds.length === 0) return { empresa, empresaId, busquedas: [] };
 
   // 2) Los pedidos
   const pp = new URLSearchParams({
@@ -359,7 +363,7 @@ async function armarDatos(
     })
     .sort((a: Busqueda, b: Busqueda) => (b.fecha ?? '').localeCompare(a.fecha ?? ''));
 
-  return { empresa, busquedas };
+  return { empresa, empresaId, busquedas };
 }
 
 /**

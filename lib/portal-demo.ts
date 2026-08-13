@@ -47,6 +47,7 @@ export function esDemo(token: string): boolean {
 export function datosDemo(): DatosCliente {
   return {
     empresa: NOMBRE_DEMO_PORTAL,
+    empresaId: EMPRESA_DEMO,
     busquedas: [
       {
         id: 'demo-p1',
@@ -195,7 +196,11 @@ export async function datosDemoConAirtable(): Promise<DatosCliente> {
   try {
     const real = await getDatosClientePorEmpresa(EMPRESA_DEMO);
     if (!real) return base;
-    return { empresa: base.empresa, busquedas: [...real.busquedas, ...base.busquedas] };
+    return {
+      empresa: base.empresa,
+      empresaId: EMPRESA_DEMO,
+      busquedas: [...real.busquedas, ...base.busquedas],
+    };
   } catch {
     return base;
   }
