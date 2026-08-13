@@ -319,9 +319,18 @@ body {
   padding: 9px 20px;
   border-bottom: 1px solid var(--line);
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
-  gap: 14px;
+  gap: 12px;
+}
+/* Fecha de la solicitud, delante del puesto y sin rótulo. Va en el mismo lugar
+   y con el mismo cuerpo en todas las tarjetas, así la columna de fechas se lee
+   de arriba abajo aunque cada puesto tenga otro largo. */
+.card-fecha {
+  flex: none;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
 }
 .card-head-main {
   min-width: 0;
@@ -346,28 +355,6 @@ body {
 .card-head .sub b {
   font-weight: 500;
   color: var(--ink-soft);
-}
-/* Cuántos candidatos tiene la búsqueda y desde cuándo, en una sola línea a la
-   derecha del puesto. El dato duro va en tono fuerte y la palabra que lo
-   nombra en gris, separados por un punto. */
-.card-head-count {
-  font-size: 0.74rem;
-  color: var(--muted);
-  white-space: nowrap;
-  flex: none;
-  display: flex;
-  align-items: baseline;
-  gap: 9px;
-}
-.card-head-count > span + span::before {
-  content: '·';
-  margin-right: 9px;
-  color: var(--line);
-}
-.card-head-count b {
-  font-weight: 600;
-  color: var(--ink-soft);
-  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- Tabla de candidatos ---------- */
@@ -699,13 +686,8 @@ body {
   .c-modalidad:has(.dash) {
     display: none;
   }
-  /* Encabezado de búsqueda: en mobile el puesto va completo arriba y la
-     fecha/candidatos debajo, para que no se corte el título. */
-  .card-head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
+  /* Encabezado de búsqueda: en mobile el puesto puede ocupar dos renglones sin
+     cortarse, con la fecha al lado. */
   .card-head h2 {
     white-space: normal;
     overflow: visible;
@@ -5971,78 +5953,4 @@ body {
 .cajon-ok-n {
   color: var(--muted) !important;
   font-size: 0.8rem !important;
-}
-
-
-/* ---------- Vista B: una sola tabla para todas las búsquedas ----------
-   El encabezado de columnas aparece una vez y cada pedido entra como una banda
-   que separa sus candidatos. Se prueba en el cliente de prueba con ?vista=b. */
-.tabla-unica .grupo + .grupo .grupo-h {
-  border-top: 1px solid var(--line);
-}
-.grupo-h {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 13px 20px 9px;
-  background: #faf9f6;
-}
-.grupo-t {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-.grupo-m {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  font-size: 0.76rem;
-  color: var(--muted);
-}
-.grupo-m b {
-  color: var(--ink-soft);
-  font-weight: 600;
-}
-.tabla-unica .grupo .empty {
-  padding: 10px 20px 14px;
-}
-/* La última fila de cada grupo sí lleva línea: es lo que separa un pedido del
-   título del siguiente. La del último grupo de la tabla no. */
-.tabla-unica .grupo:last-child .tr:last-child {
-  border-bottom: none;
-}
-
-/* Encabezado del cliente: el selector de maquetación y el alta van juntos. */
-.head-acciones {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.vistas {
-  display: inline-flex;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  overflow: hidden;
-}
-.vistas a {
-  font-size: 0.78rem;
-  line-height: 1;
-  padding: 11px 12px;
-  color: var(--muted);
-  text-decoration: none;
-  background: var(--card);
-}
-.vistas a + a {
-  border-left: 1px solid var(--line);
-}
-.vistas a:hover {
-  color: var(--ink);
-}
-.vistas a.activa {
-  background: var(--paper);
-  color: var(--ink);
-  font-weight: 500;
 }

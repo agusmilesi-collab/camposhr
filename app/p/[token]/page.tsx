@@ -110,8 +110,7 @@ function Encabezado() {
   );
 }
 
-/** Una fila de candidato en curso. Es la misma en las dos vistas: lo único que
- *  cambia entre A y B es cuántas veces se repite el encabezado de arriba. */
+/** Una fila de candidato en curso. */
 function FilaCandidato({ c }: { c: Candidato }) {
   const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
   const fe = fecha(c.fechaEntrevista, true);
@@ -151,13 +150,7 @@ function FilaCandidato({ c }: { c: Candidato }) {
 /** Una fila de la tabla de entregados: el candidato con los datos del pedido. */
 type Entregado = { cand: Candidato; puesto: string; fechaPedido: string | null };
 
-export default async function Portal({
-  params,
-  searchParams,
-}: {
-  params: { token: string };
-  searchParams?: { vista?: string };
-}) {
+export default async function Portal({ params }: { params: { token: string } }) {
   const demo = esDemo(params.token);
   const datos = demo
     ? await datosDemoConAirtable()
@@ -165,10 +158,6 @@ export default async function Portal({
   if (!datos) return <Acceso />;
 
   const { empresa, busquedas } = datos;
-
-  // Prueba de maquetación: la vista B junta todas las búsquedas en una sola
-  // tabla. Sólo se ofrece en el cliente de prueba, para poder compararlas.
-  const vistaB = demo && searchParams?.vista === 'b';
 
   // Los informes ya entregados salen de la tarjeta de su búsqueda y se juntan
   // en una sola tabla al final, ordenada por fecha de pedido: el cliente los
@@ -246,15 +235,7 @@ export default async function Portal({
           {/* El alta de pedidos se está probando con el cliente de prueba: hasta
               que el formulario escriba en Airtable, el portal real no lo
               muestra. */}
-          <div className="head-acciones">
-            {demo && (
-              <div className="vistas" role="group" aria-label="Maquetación">
-                <a className={vistaB ? '' : 'activa'} href={`/p/${params.token}`}>Vista A</a>
-                <a className={vistaB ? 'activa' : ''} href={`/p/${params.token}?vista=b`}>Vista B</a>
-              </div>
-            )}
-            {demo && <NuevoPedido empresa={empresa} />}
-          </div>
+          {demo && <NuevoPedido empresa={empresa} />}
         </section>
 
         <section className="busquedas">
@@ -264,81 +245,31 @@ export default async function Portal({
             </div>
           )}
 
-          {/* Vista A: una tarjeta por pedido, con su propio encabezado de
-              columnas. Vista B: una sola tarjeta, un solo encabezado, y cada
-              pedido como una banda que separa sus candidatos. Se compara con
-              ?vista=b y por ahora sólo en el cliente de prueba. */}
-          {vistaB ? (
-            <article className="card">
-              <div className="tabla tabla-unica">
-                <Encabezado />
-                {enCurso.map((b: Busqueda) => (
-                  <div className="grupo" key={b.id}>
-                    <div className="grupo-h">
-                      <span className="grupo-t">{b.puesto}</span>
-                      <span className="grupo-m">
-                        {b.candidatos.length > 0 && (
-                          <>
-                            <b>{b.candidatos.length}</b>{' '}
-                            {b.candidatos.length === 1 ? 'candidato' : 'candidatos'}
-                          </>
-                        )}
-                        {b.fecha && (
-                          <span className="req-date">
-                            solicitud <b>{fecha(b.fecha)}</b>
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                    {b.candidatos.length === 0 ? (
-                      <p className="empty">Sin candidatos asignados todavía.</p>
-                    ) : (
-                      ordenar(b.candidatos).map((c) => (
-                        <FilaCandidato c={c} key={c.id} />
-                      ))
-                    )}
-                  </div>
-                ))}
-              </div>
-            </article>
-          ) : (
-            enCurso.map((b: Busqueda) => {
-              const cands = ordenar(b.candidatos);
-              const n = cands.length;
-              return (
-                <article className="card" key={b.id}>
-                  <div className="card-head">
-                    <div className="card-head-main">
-                      <h2>{b.puesto}</h2>
-                    </div>
-                    <div className="card-head-count">
-                      {n > 0 && (
-                        <span>
-                          <b>{n}</b> {n === 1 ? 'candidato' : 'candidatos'}
-                        </span>
-                      )}
-                      {b.fecha && (
-                        <span className="req-date">
-                          solicitud <b>{fecha(b.fecha)}</b>
-                        </span>
-                      )}
-                    </div>
-                  </div>
+          {enCurso.map((b: Busqueda) => {
+            const cands = ordenar(b.candidatos);
+            return (
+              <article className="card" key={b.id}>
+                <div className="card-head">
+                  {/* La fecha va delante del puesto y sin rótulo: en una lista
+                      de búsquedas, una fecha suelta ahí sólo puede ser la de la
+                      solicitud. */}
+                  {b.fecha && <span className="card-fecha">{fecha(b.fecha)}</span>}
+                  <h2>{b.puesto}</h2>
+                </div>
 
-                  {cands.length === 0 ? (
-                    <p className="empty">Sin candidatos asignados todavía.</p>
-                  ) : (
-                    <div className="tabla">
-                      <Encabezado />
-                      {cands.map((c) => (
-                        <FilaCandidato c={c} key={c.id} />
-                      ))}
-                    </div>
-                  )}
-                </article>
-              );
-            })
-          )}
+                {cands.length === 0 ? (
+                  <p className="empty">Sin candidatos asignados todavía.</p>
+                ) : (
+                  <div className="tabla">
+                    <Encabezado />
+                    {cands.map((c) => (
+                      <FilaCandidato c={c} key={c.id} />
+                    ))}
+                  </div>
+                )}
+              </article>
+            );
+          })}
 
           {entregados.length > 0 && (
             <>
