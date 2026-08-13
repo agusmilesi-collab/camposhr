@@ -19,7 +19,7 @@
  * muestra sin enlace y avisando, hasta que el archivo esté.
  */
 export type Documento = {
-  /** Texto del botón. Corto: son tres en una línea. */
+  /** Texto del botón. Corto: van de a dos por renglón. */
   nombre: string;
   /** Qué abre, en una línea, para quien no sabe cuál de los tres quiere. */
   detalle: string;
@@ -36,7 +36,6 @@ export type Documento = {
 
 export type Servicio = {
   titulo: string;
-  bajada: string;
   documentos: Documento[];
 };
 
@@ -45,8 +44,6 @@ const SERVICIOS: Record<string, Servicio[]> = {
   recW8hxy0qYGOEOt3: [
     {
       titulo: 'Diseño Organizacional',
-      bajada:
-        'Los documentos del trabajo de estructura y el alcance del tramo que sigue. Se actualizan a medida que avanzan las decisiones.',
       documentos: [
         {
           nombre: 'Casos',

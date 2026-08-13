@@ -256,7 +256,6 @@ export default async function Portal({ params }: { params: { token: string } }) 
               <span>{sv.titulo}</span>
             </div>
             <article className="card servicio-card">
-              <p className="servicio-bajada">{sv.bajada}</p>
               <div className="docs">
                 {sv.documentos.map((d) =>
                   d.disponible ? (
