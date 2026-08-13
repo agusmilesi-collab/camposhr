@@ -8,12 +8,12 @@ export const dynamic = 'force-dynamic';
 
 /** Traducción de los estados internos a lenguaje de cliente. */
 const ESTADOS: Record<string, { texto: string; clase: string }> = {
-  'Sin asignar':     { texto: 'A asignar',   clase: 'gray' },
-  'Por citar':       { texto: 'A coordinar', clase: 'gray' },
-  'Por entrevistar': { texto: 'Agendada',      clase: 'amber' },
-  'Por analizar':    { texto: 'En análisis',               clase: 'blue' },
-  'Entregado':       { texto: 'Informe entregado',         clase: 'green' },
-  'Seguimiento':     { texto: 'En seguimiento',            clase: 'violet' },
+  'Sin asignar':     { texto: 'A asignar',         clase: 'gray' },
+  'Por citar':       { texto: 'A coordinar',       clase: 'gray' },
+  'Por entrevistar': { texto: 'Agendada',          clase: 'green' },
+  'Por analizar':    { texto: 'En análisis',       clase: 'blue' },
+  'Entregado':       { texto: 'Informe entregado', clase: 'green' },
+  'Seguimiento':     { texto: 'En seguimiento',    clase: 'violet' },
 };
 
 /** Orden del pipeline: agrupa los candidatos por etapa al mostrarlos. */
