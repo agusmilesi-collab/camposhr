@@ -78,10 +78,14 @@ function token(): string {
   return t;
 }
 
-async function get(path: string, params: URLSearchParams) {
+async function get(path: string, params: URLSearchParams, sinCache = false) {
   const res = await fetch(`${API}/${BASE}/${path}?${params}`, {
     headers: { Authorization: `Bearer ${token()}` },
-    next: { revalidate: 60 }, // cachea 1 minuto
+    // Un minuto de caché alcanza para el portal, donde los datos los mueve el
+    // equipo desde Airtable. La empresa de prueba lee sin caché: ahí el pedido
+    // lo acaba de cargar quien está mirando la pantalla, y esperar el minuto se
+    // lee como que no se guardó.
+    ...(sinCache ? { cache: 'no-store' as const } : { next: { revalidate: 60 } }),
   });
   if (!res.ok) {
     throw new Error(`Airtable ${res.status}`);
@@ -228,7 +232,7 @@ export async function getDatosClientePorEmpresa(
 
   let res;
   try {
-    res = await get(T_EMPRESAS, params);
+    res = await get(T_EMPRESAS, params, true);
   } catch {
     return null;
   }
@@ -237,12 +241,13 @@ export async function getDatosClientePorEmpresa(
   const pedidoIds: string[] = (f[F_EMPRESA.pedidos] ?? []).map((p: any) =>
     typeof p === 'string' ? p : p.id
   );
-  return armarDatos(f[F_EMPRESA.nombre] ?? 'Cliente', pedidoIds);
+  return armarDatos(f[F_EMPRESA.nombre] ?? 'Cliente', pedidoIds, true);
 }
 
 async function armarDatos(
   empresa: string,
-  pedidoIds: string[]
+  pedidoIds: string[],
+  sinCache = false
 ): Promise<DatosCliente> {
 
   if (pedidoIds.length === 0) return { empresa, busquedas: [] };
@@ -254,7 +259,7 @@ async function armarDatos(
     pageSize: '100',
   });
   Object.values(F_PEDIDO).forEach((f) => pp.append('fields[]', f));
-  const pedidosRes = await get(T_PEDIDOS, pp);
+  const pedidosRes = await get(T_PEDIDOS, pp, sinCache);
 
   // 3) Los candidatos de esos pedidos
   const candIds = new Set<string>();
@@ -275,7 +280,7 @@ async function armarDatos(
       pageSize: '100',
     });
     Object.values(F_INDIVIDUO).forEach((f) => pc.append('fields[]', f));
-    const candRes = await get(T_INDIVIDUO, pc);
+    const candRes = await get(T_INDIVIDUO, pc, sinCache);
 
     for (const r of candRes.records ?? []) {
       const f = r.fields ?? {};
