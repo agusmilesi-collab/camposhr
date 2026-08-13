@@ -177,11 +177,38 @@ body {
 }
 .acc-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 18px;
   padding: 14px 20px;
   border-bottom: 1px solid var(--line-soft);
+}
+/* Los dos botones de la fila: entrar al portal y copiar el link para mandarlo. */
+.acc-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.acc-entrar {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  color: #f7f5f0;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 7px;
+  padding: 6px 14px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.acc-entrar:hover {
+  background: #000;
+  border-color: #000;
 }
 .acc-row:last-child {
   border-bottom: none;
@@ -197,27 +224,41 @@ body {
   background: #ece9e2;
 }
 .acc-name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
   font-weight: 500;
   color: var(--ink);
+}
+.acc-name-txt {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.acc-url {
-  color: var(--ink-soft);
-  text-decoration: none;
+/* Marca del cliente de prueba en /informes. Solo se ve en desarrollo: la fila
+   que la lleva no se arma en producción. */
+.acc-tag {
+  flex: none;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+.nota-demo {
+  margin-top: 0;
+  padding-bottom: 72px;
+  max-width: 62ch;
   font-size: 0.82rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 1px;
-  width: fit-content;
-  max-width: 100%;
 }
-.acc-url:hover {
-  color: var(--ink);
-  border-bottom-color: var(--muted);
+.nota-demo code {
+  font-size: 0.95em;
 }
 .copiar {
   flex: none;
@@ -242,24 +283,18 @@ body {
 }
 @media (max-width: 620px) {
   .acc-row {
-    grid-template-columns: 1fr auto;
-    gap: 6px 12px;
+    gap: 8px 12px;
   }
   .acc-th {
     display: none;
   }
-  .acc-name {
-    grid-column: 1;
-    grid-row: 1;
+}
+@media (max-width: 440px) {
+  .acc-row {
+    grid-template-columns: 1fr;
   }
-  .copiar {
-    grid-column: 2;
-    grid-row: 1;
-  }
-  .acc-url {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    font-size: 0.78rem;
+  .acc-acciones {
+    justify-content: flex-start;
   }
 }
 .card {
@@ -4790,6 +4825,20 @@ body {
   margin-top: 26px;
   font-size: 1.35rem;
   word-break: normal;
+}
+/* El código solo, para el rincón de una portada. Ocupa el marco entero: el
+   aire, el fondo blanco y el texto los pone la placa que lo contiene. */
+.qr-en-rincon {
+  display: block;
+  height: 100dvh;
+  padding: 0;
+  overflow: hidden;
+}
+.qr-en-rincon .qr-codigo,
+.qr-en-rincon .qr-codigo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* El material del ciclo con actividades sirve para cualquier cliente: quién lo

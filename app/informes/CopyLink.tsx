@@ -30,9 +30,9 @@ export default function CopyLink({ url }: { url: string }) {
       type="button"
       className={`copiar${copiado ? ' ok' : ''}`}
       onClick={copiar}
-      aria-label="Copiar link del cliente"
+      aria-label="Copiar el link del cliente"
     >
-      {copiado ? 'Copiado' : 'Copiar'}
+      {copiado ? 'Copiado' : 'Copiar link'}
     </button>
   );
 }

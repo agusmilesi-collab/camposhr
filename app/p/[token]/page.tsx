@@ -88,9 +88,8 @@ function Acceso() {
 type Entregado = { cand: Candidato; puesto: string; fechaPedido: string | null };
 
 export default async function Portal({ params }: { params: { token: string } }) {
-  const datos = esDemo(params.token)
-    ? datosDemo()
-    : await getDatosCliente(params.token);
+  const demo = esDemo(params.token);
+  const datos = demo ? datosDemo() : await getDatosCliente(params.token);
   if (!datos) return <Acceso />;
 
   const { empresa, busquedas } = datos;
@@ -251,7 +250,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
                 <span>Informes entregados</span>
               </div>
               <article className="card">
-                <TablaEntregados filas={filasEntregadas} />
+                <TablaEntregados filas={filasEntregadas} descargaAbierta={demo} />
               </article>
             </>
           )}
