@@ -322,15 +322,13 @@ body {
   align-items: baseline;
   gap: 12px;
 }
-/* Fecha de la solicitud, delante del puesto y sin rótulo. Va en el mismo lugar
-   y con el mismo cuerpo en todas las tarjetas, así la columna de fechas se lee
-   de arriba abajo aunque cada puesto tenga otro largo. */
+/* Fecha de la solicitud, entre paréntesis al lado del puesto. Es un dato de
+   contexto, así que va en gris y un punto más chica que el título. */
 .card-fecha {
   flex: none;
   font-size: 0.78rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
-  min-width: 52px;
 }
 .card-head-main {
   min-width: 0;

@@ -250,11 +250,10 @@ export default async function Portal({ params }: { params: { token: string } }) 
             return (
               <article className="card" key={b.id}>
                 <div className="card-head">
-                  {/* La fecha va delante del puesto y sin rótulo: en una lista
-                      de búsquedas, una fecha suelta ahí sólo puede ser la de la
-                      solicitud. */}
-                  {b.fecha && <span className="card-fecha">{fecha(b.fecha)}</span>}
                   <h2>{b.puesto}</h2>
+                  {/* La fecha de solicitud, entre paréntesis y sin rótulo: en
+                      una lista de búsquedas, una fecha ahí sólo puede ser esa. */}
+                  {b.fecha && <span className="card-fecha">({fecha(b.fecha)})</span>}
                 </div>
 
                 {cands.length === 0 ? (
