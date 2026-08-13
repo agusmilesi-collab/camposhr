@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Los documentos de los clientes se leen del disco en tiempo de pedido y no
+  // están en /public, así que hay que decirle a Next que los suba: lo que no
+  // se importa desde el código no viaja al paquete de la función.
+  outputFileTracingIncludes: {
+    '/p/[token]/doc/[archivo]': ['./documentos/**/*'],
+  },
   // El sitio de herramientas vive en /public con URLs limpias.
   // Estos rewrites mapean esas rutas al archivo estatico correspondiente.
   rewrites: async () => [
