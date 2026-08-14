@@ -5,6 +5,7 @@ const nextConfig = {
   // se importa desde el código no viaja al paquete de la función.
   outputFileTracingIncludes: {
     '/p/[token]/doc/[archivo]': ['./documentos/**/*'],
+    '/p/[token]/informe/[id]': ['./documentos/**/*'],
   },
   // El sitio de herramientas vive en /public con URLs limpias.
   // Estos rewrites mapean esas rutas al archivo estatico correspondiente.

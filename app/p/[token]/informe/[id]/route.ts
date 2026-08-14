@@ -1,41 +1,36 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { NextResponse } from 'next/server';
-import { getUrlInforme } from '@/lib/airtable';
+import { getDatosCliente } from '@/lib/airtable';
 import {
   datosDemo,
   esDemo,
   informeDemo,
   INFORMES_PRUEBA,
 } from '@/lib/portal-demo';
+import { informeDe } from '@/lib/servicios';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Interruptor de la descarga. En false la ruta responde 404 aunque el token y
- * el candidato sean correctos: la pantalla todavía dice "Próximamente" y no
- * tiene sentido dejar una vía abierta que entregue informes. Se pone en true
- * el día que el botón lleve al PDF.
- */
-const DESCARGA_ABIERTA = false;
+/** Los informes viven al lado de los documentos del portal, fuera de `public/`.
+ *  Ver la nota en lib/servicios.ts. */
+const CARPETA = path.join(process.cwd(), 'documentos');
 
 /**
  * Enlace "Ver informe" del portal: clientes.camposhr.com/<token>/informe/<id>.
  *
- * No sirve el archivo ni guarda su dirección: pregunta a Airtable en el momento
- * si ese candidato es del cliente del token y ya tiene el informe entregado, y
- * recién ahí redirige al PDF. Si el token no corresponde o el candidato es de
- * otro cliente, responde 404 sin decir por qué.
+ * Tres controles antes de entregar el archivo: el token tiene que resolver a
+ * una empresa, el candidato tiene que pertenecer a un pedido de esa empresa y
+ * estar en estado Entregado, y su informe tiene que estar escrito. Si falla
+ * cualquiera responde 404, sin decir cuál.
  */
 export async function GET(
   _req: Request,
   { params }: { params: { token: string; id: string } }
 ) {
-  // El cliente de prueba va antes del interruptor a propósito: `esDemo` ya es
-  // false en producción, así que abrirle la descarga no abre nada real. Es lo
-  // que permite recorrer el circuito completo en localhost mientras el botón
-  // de los clientes de verdad sigue diciendo "Próximamente".
+  // El cliente de prueba tiene sus propios informes, escritos como archivos
+  // estáticos o generados en el momento. Ver lib/portal-demo.ts.
   if (esDemo(params.token)) {
-    // Los candidatos que viven en Airtable tienen su informe escrito como
-    // archivo; los inventados en código siguen con la página de muestra.
     const archivo = INFORMES_PRUEBA[params.id];
     if (archivo) {
       return NextResponse.redirect(new URL(archivo, _req.url), {
@@ -46,7 +41,7 @@ export async function GET(
 
     const cand = datosDemo()
       .busquedas.flatMap((b) => b.candidatos)
-      .find((c) => c.id === params.id && c.tieneInforme);
+      .find((c) => c.id === params.id);
     if (!cand) return noEncontrado();
     return new NextResponse(informeDemo(cand.nombre), {
       headers: {
@@ -56,14 +51,32 @@ export async function GET(
     });
   }
 
-  if (!DESCARGA_ABIERTA) return noEncontrado();
+  const datos = await getDatosCliente(params.token);
+  if (!datos) return noEncontrado();
 
-  const url = await getUrlInforme(params.token, params.id);
-  if (!url) return noEncontrado();
+  const cand = datos.busquedas
+    .flatMap((b) => b.candidatos)
+    .find((c) => c.id === params.id && c.estado === 'Entregado');
+  if (!cand) return noEncontrado();
 
-  return NextResponse.redirect(url, {
-    status: 307,
-    headers: { 'x-robots-tag': 'noindex, nofollow' },
+  const archivo = informeDe(datos.empresaId, cand.nombre);
+  if (!archivo) return noEncontrado();
+
+  let html: string;
+  try {
+    html = await readFile(path.join(CARPETA, archivo), 'utf8');
+  } catch {
+    return noEncontrado();
+  }
+
+  return new NextResponse(html, {
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'x-robots-tag': 'noindex, nofollow',
+      // Es la evaluación de una persona: no queda en la caché de ningún
+      // intermediario, sólo en el navegador de quien la abre.
+      'cache-control': 'private, no-store',
+    },
   });
 }
 

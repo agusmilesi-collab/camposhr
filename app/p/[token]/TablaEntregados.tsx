@@ -67,12 +67,9 @@ function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
 
 export default function TablaEntregados({
   filas,
-  descargaAbierta = false,
   conCobro = false,
 }: {
   filas: FilaEntregada[];
-  /** Solo el cliente de prueba lo recibe en true, y solo fuera de producción. */
-  descargaAbierta?: boolean;
   /** La columna de facturación, mientras no se publique (ver lib/cobro.ts). */
   conCobro?: boolean;
 }) {
@@ -155,15 +152,14 @@ export default function TablaEntregados({
               </span>
             </span>
           )}
-          {/* El botón está en todas las filas, tenga o no el PDF cargado:
-              para los clientes de verdad todavía no abre nada y al pasar el
-              cursor avisa que la descarga viene después. En el cliente de
-              prueba sí abre, que es donde se recorre el circuito completo. El
-              día que se abra para todos, alcanza con dejar de mirar
-              `descargaAbierta` y quedarse con f.informe, que trae el enlace
-              sólo de los que tienen archivo. */}
+          {/* El botón está en todas las filas, tenga o no el archivo cargado.
+              Abre en las que lo tienen, y en el resto avisa al pasar el cursor
+              que la descarga viene después. `f.informe` ya trae el enlace sólo
+              de quienes tienen archivo entregado, así que no hace falta otro
+              interruptor: cargar el adjunto en Airtable alcanza para que la
+              fila pase de "Próximamente" a abrir. */}
           <span className="c-informe" data-label="Informe">
-            {descargaAbierta && f.informe ? (
+            {f.informe ? (
               <a
                 className="btn-informe"
                 href={f.informe}
