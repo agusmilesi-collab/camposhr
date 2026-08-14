@@ -50,7 +50,6 @@ export function datosDemo(): DatosCliente {
   return {
     empresa: NOMBRE_DEMO_PORTAL,
     empresaId: EMPRESA_DEMO,
-    documentos: [],
     busquedas: [
       {
         id: 'demo-p1',
@@ -202,7 +201,6 @@ export async function datosDemoConAirtable(): Promise<DatosCliente> {
     return {
       empresa: base.empresa,
       empresaId: EMPRESA_DEMO,
-      documentos: real.documentos,
       busquedas: [...real.busquedas, ...base.busquedas],
     };
   } catch {

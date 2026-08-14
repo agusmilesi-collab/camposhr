@@ -67,6 +67,66 @@ const SERVICIOS: Record<string, Servicio[]> = {
   ],
 };
 
+/**
+ * Informes individuales escritos, por empresa.
+ *
+ * Viven al lado de los otros documentos, en `documentos/<carpeta>/`, y se
+ * sirven por la misma puerta: `/p/<token>/informe/<id>`, con el candidato
+ * resuelto contra los pedidos de la empresa dueña del token.
+ *
+ * El vínculo con la persona es su nombre en Airtable, convertido a nombre de
+ * archivo por `slug`. Escribir un informe nuevo = copiar el HTML con ese
+ * nombre y sumar la línea acá.
+ */
+const INFORMES: Record<string, { carpeta: string; personas: string[] }> = {
+  // Laruso SRL
+  recW8hxy0qYGOEOt3: {
+    carpeta: 'laruso/informes',
+    personas: [
+      'antonella-pignatta',
+      'dario-criscenti',
+      'franco-ribba',
+      'guillermo-schalbetter',
+      'ismael-greco',
+      'jairo-galetto',
+      'leandro-greco',
+      'mauro-lerda',
+      'natalia-tognon',
+      'valentina-mammarella',
+      'valeria-gabrich',
+    ],
+  },
+};
+
+/** El nombre de una persona como nombre de archivo: "Darío Criscenti" pasa a
+ *  "dario-criscenti". Sin tildes, porque el archivo lo escribe una persona. */
+function slug(nombre: string): string {
+  return nombre
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/**
+ * El archivo del informe de esa persona, si está escrito.
+ *
+ * Devuelve null cuando todavía no hay informe, y con eso el portal muestra la
+ * fila sin enlace: la lista de acá es la única que decide qué se puede abrir.
+ */
+export function informeDe(
+  empresaId: string | null,
+  nombre: string
+): string | null {
+  if (!empresaId) return null;
+  const cliente = INFORMES[empresaId];
+  if (!cliente) return null;
+  const s = slug(nombre);
+  return cliente.personas.includes(s) ? `${cliente.carpeta}/${s}.html` : null;
+}
+
 /** Los servicios de esa empresa, con la dirección de cada documento resuelta
  *  contra el token del portal. */
 export function serviciosDe(

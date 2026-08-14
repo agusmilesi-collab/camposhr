@@ -3,7 +3,7 @@ import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 import NuevoPedido from './NuevoPedido';
 import { COBROS, COBRO_PUBLICADO, cobro } from '@/lib/cobro';
-import { serviciosDe } from '@/lib/servicios';
+import { informeDe, serviciosDe } from '@/lib/servicios';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,9 +28,17 @@ const ORDEN: Record<string, number> = {
 };
 
 /** Conclusión del informe: color del punto, texto que se muestra y lugar que
- *  ocupa al ordenar (del apto al no apto). Las claves son las opciones del
- *  campo Recomendación de Airtable; si mañana se agrega una opción nueva, la
- *  fila la escribe tal cual, en gris y al final del orden hasta sumarla acá. */
+ *  ocupa al ordenar. Las claves son las opciones del campo Recomendación de
+ *  Airtable; si mañana se agrega una opción nueva, la fila la escribe tal cual,
+ *  en gris y al final del orden hasta sumarla acá.
+ *
+ *  Son dos juegos que nunca conviven en un mismo cliente. Las de arriba son de
+ *  Selección, sobre un candidato externo. Las de abajo son de Mapeo, donde la
+ *  persona ya trabaja en la empresa y lo que se mide es su encaje con el puesto
+ *  que ocupa hoy: ahí "no apto" sería una sentencia sobre alguien que ya está
+ *  adentro, y en varios casos el desencaje es del puesto y no de la persona.
+ *  El texto va corto porque la columna es angosta; el largo aparece al pasar
+ *  el cursor. */
 const RECOMENDACIONES: Record<
   string,
   { texto: string; clase: string; orden: number }
@@ -39,6 +47,11 @@ const RECOMENDACIONES: Record<
   'Apto con observaciones': { texto: 'Apto con obs.',    clase: 'amber',  orden: 1 },
   'Apto con alertas':       { texto: 'Apto con alertas', clase: 'orange', orden: 2 },
   'No apto':                { texto: 'No apto',          clase: 'red',    orden: 3 },
+
+  'Encaja con el puesto':            { texto: 'Encaja',           clase: 'green',  orden: 0 },
+  'Encaja, con desarrollo':          { texto: 'Con desarrollo',   clase: 'amber',  orden: 1 },
+  'Encaja si cambia el puesto':      { texto: 'Cambia el puesto', clase: 'orange', orden: 2 },
+  'Sin puesto contra el cual medir': { texto: 'Sin puesto',       clase: 'gray',   orden: 4 },
 };
 
 const TZ = 'America/Argentina/Buenos_Aires';
@@ -206,9 +219,13 @@ export default async function Portal({ params }: { params: { token: string } }) 
         recoCompleta: c.recomendacion,
         recoClase: r?.clase ?? 'gray',
         recoOrden: r?.orden ?? 9,
-        informe: c.tieneInforme
-          ? `/p/${params.token}/informe/${c.id}`
-          : null,
+        // El enlace existe si el informe está escrito. En el cliente de prueba
+        // los informes son de mentira y viven en su propio archivo, así que
+        // ahí manda la tilde que trae Airtable.
+        informe:
+          (demo ? c.tieneInforme : informeDe(empresaId, c.nombre))
+            ? `/p/${params.token}/informe/${c.id}`
+            : null,
         cobro: cobro(c),
       };
     }
@@ -319,7 +336,6 @@ export default async function Portal({ params }: { params: { token: string } }) 
               <article className="card">
                 <TablaEntregados
                   filas={filasEntregadas}
-                  descargaAbierta={demo}
                   conCobro={conCobro}
                 />
               </article>

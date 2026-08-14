@@ -24,10 +24,6 @@ const T_EVALUADORAS = 'tblBhmxk02yBccL8d';
 const F_EMPRESA = {
   nombre: 'fldxtqa4czxTXkLav',
   pedidos: 'fldsBK2W9rVdL4GEV',
-  // Documentos que el cliente abre desde la sección de servicios de su portal.
-  // Viven como adjuntos de la empresa y no como archivos del repositorio,
-  // porque el repositorio es público y los documentos nombran personas.
-  documentos: 'fldMB6Hlo1xrF3SnM',
 };
 
 // Campo del token del portal en la tabla Empresas. Llenarlo da de alta el
@@ -136,9 +132,6 @@ export type DatosCliente = {
   /** ID del registro en Airtable. Lo usa lib/servicios.ts para saber qué
    *  documentos tiene este cliente además de las evaluaciones. */
   empresaId: string | null;
-  /** Nombres de los archivos adjuntos en la empresa, para saber cuáles de los
-   *  documentos declarados están efectivamente cargados. */
-  documentos: string[];
   busquedas: Busqueda[];
 };
 
@@ -147,19 +140,7 @@ type EmpresaPortal = {
   nombre: string;
   token: string;
   pedidoIds: string[];
-  documentos: Adjunto[];
 };
-
-/** Un adjunto de Airtable, con la dirección que se resuelve al momento del
- *  clic: las de Airtable caducan, así que no se guardan en ningún lado. */
-type Adjunto = { filename: string; url: string };
-
-function adjuntos(v: any): Adjunto[] {
-  if (!Array.isArray(v)) return [];
-  return v
-    .filter((a) => a && typeof a.filename === 'string' && typeof a.url === 'string')
-    .map((a) => ({ filename: a.filename, url: a.url }));
-}
 
 /**
  * Empresas que tienen portal (campo Token portal cargado). Se piden sólo los
@@ -173,7 +154,6 @@ async function getEmpresasConToken(): Promise<EmpresaPortal[]> {
   });
   params.append('fields[]', F_EMPRESA.nombre);
   params.append('fields[]', F_EMPRESA.pedidos);
-  params.append('fields[]', F_EMPRESA.documentos);
   params.append('fields[]', F_EMPRESA_TOKEN);
 
   let res;
@@ -200,7 +180,6 @@ async function getEmpresasConToken(): Promise<EmpresaPortal[]> {
       pedidoIds: (f[F_EMPRESA.pedidos] ?? []).map((p: any) =>
         typeof p === 'string' ? p : p.id
       ),
-      documentos: adjuntos(f[F_EMPRESA.documentos]),
     });
   }
   return out;
@@ -230,12 +209,7 @@ export async function getDatosCliente(
     (e) => e.token === portalToken
   );
   if (!emp) return null;
-  return armarDatos(
-    emp.nombre,
-    emp.id,
-    emp.pedidoIds,
-    emp.documentos.map((d) => d.filename)
-  );
+  return armarDatos(emp.nombre, emp.id, emp.pedidoIds);
 }
 
 /**
@@ -258,7 +232,6 @@ export async function getDatosClientePorEmpresa(
   });
   params.append('fields[]', F_EMPRESA.nombre);
   params.append('fields[]', F_EMPRESA.pedidos);
-  params.append('fields[]', F_EMPRESA.documentos);
 
   let res;
   try {
@@ -271,25 +244,17 @@ export async function getDatosClientePorEmpresa(
   const pedidoIds: string[] = (f[F_EMPRESA.pedidos] ?? []).map((p: any) =>
     typeof p === 'string' ? p : p.id
   );
-  return armarDatos(
-    f[F_EMPRESA.nombre] ?? 'Cliente',
-    empresaId,
-    pedidoIds,
-    adjuntos(f[F_EMPRESA.documentos]).map((d) => d.filename),
-    true
-  );
+  return armarDatos(f[F_EMPRESA.nombre] ?? 'Cliente', empresaId, pedidoIds, true);
 }
 
 async function armarDatos(
   empresa: string,
   empresaId: string | null,
   pedidoIds: string[],
-  documentos: string[],
   sinCache = false
 ): Promise<DatosCliente> {
 
-  if (pedidoIds.length === 0)
-    return { empresa, empresaId, documentos, busquedas: [] };
+  if (pedidoIds.length === 0) return { empresa, empresaId, busquedas: [] };
 
   // 2) Los pedidos
   const pp = new URLSearchParams({
@@ -398,64 +363,5 @@ async function armarDatos(
     })
     .sort((a: Busqueda, b: Busqueda) => (b.fecha ?? '').localeCompare(a.fecha ?? ''));
 
-  return { empresa, empresaId, documentos, busquedas };
-}
-
-/**
- * URL del PDF del informe de un candidato, para el enlace "Ver informe".
- *
- * Se resuelve recién al momento del clic y con doble control: el candidato
- * tiene que pertenecer a una búsqueda de la empresa dueña del token y estar en
- * estado Entregado. Los enlaces de adjuntos de Airtable caducan a las pocas
- * horas, así que nunca se guardan ni se mandan al navegador dentro del HTML:
- * se piden de nuevo cada vez.
- *
- * Devuelve null si el token no existe, si el candidato no es de ese cliente o
- * si todavía no hay PDF cargado.
- */
-export async function getUrlInforme(
-  portalToken: string,
-  candidatoId: string
-): Promise<string | null> {
-  if (!/^rec[A-Za-z0-9]{14}$/.test(candidatoId)) return null;
-
-  const datos = await getDatosCliente(portalToken);
-  if (!datos) return null;
-
-  const permitido = datos.busquedas.some((b) =>
-    b.candidatos.some((c) => c.id === candidatoId && c.tieneInforme)
-  );
-  if (!permitido) return null;
-
-  const params = new URLSearchParams({ returnFieldsByFieldId: 'true' });
-  params.append('fields[]', F_INDIVIDUO.informe);
-
-  let res;
-  try {
-    res = await get(`${T_INDIVIDUO}/${candidatoId}`, params);
-  } catch {
-    return null;
-  }
-
-  const adjuntos = res?.fields?.[F_INDIVIDUO.informe] ?? [];
-  const url = adjuntos[adjuntos.length - 1]?.url;
-  return typeof url === 'string' ? url : null;
-}
-
-
-/**
- * Dirección del documento que el cliente abre desde su portal.
- *
- * Mismo criterio que el informe de un candidato: no se guarda la dirección del
- * adjunto en ningún lado, se le pregunta a Airtable en el momento si esa
- * empresa tiene ese archivo. Si el token no corresponde, no hay respuesta.
- */
-export async function getUrlDocumento(
-  portalToken: string,
-  archivo: string
-): Promise<string | null> {
-  if (!TOKEN_VALIDO.test(portalToken)) return null;
-  const emp = (await getEmpresasConToken()).find((e) => e.token === portalToken);
-  if (!emp) return null;
-  return emp.documentos.find((d) => d.filename === archivo)?.url ?? null;
+  return { empresa, empresaId, busquedas };
 }
