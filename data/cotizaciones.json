@@ -22,5 +22,17 @@
     "archivo": "myf-comercial-1f7a93.html",
     "reemplazaA": null,
     "nota": "50% al iniciar, 50% en la reunión de decisiones."
+  },
+  {
+    "token": "laruso-rediseno-b99381",
+    "fecha": "2026-08-18",
+    "cliente": "Laruso SRL",
+    "concepto": "Rediseño organizacional · cinco fases en once semanas",
+    "importe": 3200000,
+    "version": "1.0",
+    "estado": "Enviada",
+    "archivo": "laruso-rediseno-b99381.html",
+    "reemplazaA": null,
+    "nota": "Tres pagos: 1.280.000 al iniciar, 960.000 al cierre de la fase 2 y 960.000 al cierre. Factura C, validez hasta el 17/09/2026. Evaluaciones y formación se cotizan aparte."
   }
 ]

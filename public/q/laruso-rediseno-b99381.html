@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta name="robots" content="noindex, nofollow" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propuesta · Laruso SRL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1c1a;--ink-soft:#3d3d38;--muted:#84847a;--bg:#ffffff;--rule:#1c1c1a;--rule-soft:#c9c7be;--wash:#fafaf8;
+    --azul:#33507a;--ocre:#9a6b1a;--rojo:#a03d2e;--verde:#3c6b4d;
+    --max:800px; --medida:var(--max);
+    --t0:0.68rem; --t1:0.85rem; --t2:1.0625rem; --t3:1.33rem; --t4:1.66rem; --t5:2.07rem; --t6:2.59rem;
+    --v1:0.5rem; --v2:1rem; --v3:1.5rem; --v4:2.5rem; --v5:4rem;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:'EB Garamond',Georgia,serif;font-size:17px;line-height:1.72;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;padding:3.5rem 1.5rem 3rem;}
+  .paper{max-width:var(--max);margin:0 auto;}
+  .paper-header{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:0;margin-bottom:1.8rem;}
+  .paper-brand{font-weight:600;font-size:1.05rem;letter-spacing:0.38em;text-transform:uppercase;}
+  .paper-brand .pipe{color:var(--muted);margin:0 0.4em;font-weight:400;}
+  .paper-id{font-size:0.74rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);text-align:right;}
+  h1{font-weight:700;font-size:var(--t6);line-height:1.1;letter-spacing:-0.015em;margin-bottom:var(--v3);text-wrap:balance;max-width:var(--medida);}
+  .paper-body{font-size:var(--t2);line-height:1.74;}
+  .paper-body p.apertura{font-size:var(--t3);line-height:1.45;font-weight:500;margin-bottom:var(--v2);max-width:var(--medida);text-wrap:pretty;}
+  .paper-body > p, .paper-body > ol.moves, .paper-body > ul.lista{max-width:var(--medida);}
+  .paper-body p+p{margin-top:0.9rem;}
+  .paper-body strong{font-weight:700;} .paper-body em{font-style:italic;}
+  .cap-div{margin:var(--v5) 0 var(--v3);padding-bottom:var(--v1);border-bottom:2px solid var(--rule);}
+  .cap-div .cn,.cap-div .ct{display:inline;font-family:'IBM Plex Mono',monospace;font-size:var(--t0);letter-spacing:0.16em;text-transform:uppercase;font-weight:600;line-height:1.5;}
+  .cap-div .cn{color:var(--azul);}
+  .cap-div .cn::after{content:' · ';color:var(--muted);font-weight:400;}
+  .cap-div .ct{color:var(--ink);}
+  h2{font-weight:700;font-size:var(--t3);line-height:1.26;margin:var(--v4) 0 var(--v2);text-wrap:balance;max-width:var(--medida);}
+  h2.bt{font-size:var(--t5);line-height:1.12;letter-spacing:-0.012em;margin:0 0 var(--v3);}
+  h3{font-weight:700;font-size:var(--t2);margin:var(--v3) 0 var(--v1);text-wrap:balance;max-width:var(--medida);}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--azul);line-height:1.35;}
+  .paper-body p.kicker{margin:3.4rem 0 0.15rem;}
+  .kicker + h2{margin-top:0;}
+  .note{font-size:var(--t1);color:var(--ink-soft);line-height:1.55;}
+  table{width:100%;border-collapse:collapse;margin:var(--v2) 0;font-size:var(--t1);line-height:1.5;font-variant-numeric:tabular-nums;}
+  th{text-align:left;font-size:var(--t0);letter-spacing:0.09em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);border-bottom:2px solid var(--rule);padding:0.45rem 0.55rem;}
+  td{border-bottom:1px solid var(--rule-soft);padding:0.5rem 0.55rem;vertical-align:top;}
+  .marco{border:1px solid var(--rule-soft);background:var(--wash);padding:0.9rem 1.1rem;margin:1.3rem 0;font-size:0.98rem;line-height:1.55;}
+  .marco strong{color:var(--ink);}
+  .aviso{margin:1.3rem 0;padding:.9rem 1.1rem;background:#fbf4f2;border-left:3px solid var(--rojo);font-size:.98rem;line-height:1.55;}
+  .aviso strong{color:var(--rojo);}
+  .lista{list-style:none;margin:var(--v2) 0;padding:0;}
+  .lista li{padding-left:1.1rem;position:relative;margin-bottom:0.55rem;line-height:1.55;}
+  .lista li:last-child{margin-bottom:0;}
+  .lista li::before{content:'·';position:absolute;left:0.15rem;top:-0.02rem;color:var(--muted);font-weight:700;}
+  .moves{list-style:none;margin:var(--v3) 0;padding:0;counter-reset:m;}
+  .moves > li{padding-left:2rem;position:relative;margin-bottom:var(--v3);line-height:1.5;}
+  .moves > li:last-child{margin-bottom:0;}
+  .moves > li::before{counter-increment:m;content:counter(m);position:absolute;left:0;top:0.05rem;width:1.4rem;height:1.4rem;border:1.5px solid var(--rule);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+  /* Los entregables de cada bloque: viñeta simple, sin numerar. El círculo es
+     del bloque, y numerar adentro haría competir dos series en la misma lista. */
+  .moves ul{list-style:none;margin:.6rem 0 0;padding:0;counter-reset:sm;}
+  .moves ul li{position:relative;padding-left:1.85rem;margin-bottom:.55rem;line-height:1.5;}
+  .moves ul li:last-child{margin-bottom:0;}
+  .moves ul li::before{counter-increment:sm;content:counter(sm,lower-alpha);position:absolute;left:0;top:.14rem;width:1.15rem;height:1.15rem;border:1.2px solid var(--muted);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);}
+  /* Por qué se hace y para qué sirve: van antes de los entregables del bloque,
+     con menos peso que el título y más que la lista. */
+  .pq{margin:.55rem 0 0;font-size:.95rem;line-height:1.55;color:var(--ink-soft);}
+  .pq b{color:var(--ink);}
+  .comp{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.3rem 0;align-items:start;}
+  .comp.tres{grid-template-columns:1fr 1fr 1fr;gap:.8rem;}
+  .comp.tres .comp-col{padding:1.1rem 1.2rem;}
+  .comp.tres li{font-size:.93rem;}
+  /* Qué hace falta y quién: la persona propuesta va destacada a la derecha. */
+  /* Lo que hace falta, agrupado por quien puede hacerlo. */
+  .pers{margin:1.25rem 0;padding-left:.9rem;border-left:2px solid var(--rule-soft);}
+  .pers-h{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;margin-bottom:.35rem;}
+  .pers-h b{font-size:1.12rem;letter-spacing:-0.005em;}
+  .pers-h span{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);}
+  .pers .lista{margin:0;}
+  .cn-nota{margin-top:.9rem;padding-top:.6rem;border-top:1px dotted var(--rule-soft);font-size:.82rem;line-height:1.45;color:var(--ink-soft);}
+  .comp-col{border:1px solid var(--rule-soft);padding:1.4rem 1.5rem;}
+  .comp-col.nos{background:#f4f8f5;border-color:#c5ded0;}
+  .comp-col.ellos{background:var(--wash);}
+  .comp-col.no{background:#fbf4f2;border-color:#e2cfc9;}
+  .comp-col.no .comp-h{color:var(--rojo);}
+  .fase{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:var(--azul);font-weight:600;}
+  .comp-h{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;margin-bottom:.65rem;padding-bottom:.32rem;border-bottom:1px solid currentColor;}
+  .comp-col.nos .comp-h{color:var(--verde);}
+  .comp-col.ellos .comp-h{color:var(--ink-soft);}
+  .comp ul{list-style:none;margin:0;padding:0;}
+  .comp li{margin-bottom:.6rem;line-height:1.5;font-size:0.99rem;}
+  .comp li:last-child{margin-bottom:0;}
+  .precio{margin:var(--v3) 0;border:2px solid var(--rule);}
+  .precio-top{padding:1.4rem 1.5rem 1.1rem;border-bottom:1px solid var(--rule-soft);display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;}
+  .precio-lbl{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);}
+  .precio-n{font-size:var(--t5);font-weight:700;line-height:1;letter-spacing:-0.01em;font-variant-numeric:tabular-nums;}
+  .precio-n small{font-size:var(--t2);font-weight:500;color:var(--ink-soft);letter-spacing:0;}
+  .precio table{margin:0;font-size:0.9rem;}
+  .precio th{padding:0.5rem 1.5rem;border-bottom:1px solid var(--rule-soft);}
+  .precio td{padding:0.6rem 1.5rem;}
+  .precio tr:last-child td{border-bottom:0;}
+  .precio td:first-child{font-family:'IBM Plex Mono',monospace;font-size:0.8rem;color:var(--azul);font-weight:500;white-space:nowrap;}
+  .precio td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600;}
+  .plan td:first-child{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;letter-spacing:0.03em;text-transform:uppercase;color:var(--azul);font-weight:500;white-space:nowrap;}
+  .plan td:last-child{font-size:0.86rem;color:var(--ink-soft);line-height:1.4;}
+  .firma{margin:var(--v5) 0 var(--v4);padding:1.6rem 1.5rem;border:1px solid var(--rule-soft);background:var(--wash);}
+  .firma-l{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:2.5rem;}
+  .firma-l div{border-top:1px solid var(--rule);padding-top:.45rem;font-size:.8rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;}
+  .pie{margin-top:var(--v5);padding-top:var(--v2);border-top:1px solid var(--rule-soft);font-size:.8rem;color:var(--muted);line-height:1.5;}
+  @media (max-width:620px){
+    body{padding:2rem 1.1rem;font-size:16px;}
+    .comp,.firma-l{grid-template-columns:1fr;}
+    .paper-header{flex-direction:column;gap:.5rem;}
+    .paper-id{text-align:left;}
+  }
+  @media print{
+    body{padding:0;font-size:11pt;}
+    @page{size:A4;margin:20mm;}
+    .cap-div{break-after:avoid;} h2,h3{break-after:avoid;}
+    /* Entero sólo lo que es chico. Un bloque grande con `break-inside:avoid`
+       que no entra en lo que queda de página salta completo y deja media
+       carilla en blanco: por eso las dos columnas se parten por columna, y no
+       de a dos. El precio y la firma sí viajan enteros, que es donde una
+       partición confunde. */
+    .marco,.precio,.firma,.aviso,.comp-col{break-inside:avoid;}
+    /* En papel las dos columnas van apiladas: Chrome no parte un grid entre
+       páginas, así que el bloque entero saltaba y dejaba media carilla vacía. */
+    .comp{display:block;}
+    .comp-col{margin-bottom:.9rem;}
+    /* Las tablas largas se parten entre filas, que es como se parte una tabla:
+       enteras, saltaban de página y dejaban un tercio de carilla en blanco. La
+       del precio va entera igual, porque su contenedor sí lo pide. */
+    table{break-inside:auto;}
+    tr{break-inside:avoid;}
+    thead{display:table-header-group;}
+    p{orphans:3;widows:3;}
+    /* El aire entre capítulos, pensado para pantalla, cuesta media carilla por
+       corte cuando el documento se imprime. */
+    .cap-div{margin-top:1.6rem;}
+    /* Los dos bloques que viajan enteros se ajustan para entrar en lo que queda
+       de página en vez de saltar a la siguiente. */
+    .precio-top{padding:1rem 1.2rem .8rem;}
+    .precio td{padding:.45rem 1.2rem;} .precio th{padding:.4rem 1.2rem;}
+    .firma{padding:1.2rem 1.3rem;}
+    .firma-l{margin-top:1.8rem;gap:2rem;}
+    .lista li{margin-bottom:.4rem;}
+    h2.bt{margin-bottom:1rem;}
+    .firma{margin:2rem 0 1.5rem;}
+    .pie{margin-top:2rem;}
+    .moves li{margin-bottom:1rem;}
+  }
+</style>
+</head>
+<body>
+<div class="paper">
+
+  <div class="paper-header">
+    <div class="paper-brand">Campos HR<span class="pipe">·</span>Laruso</div>
+    <div class="paper-id">Propuesta de trabajo<br>18 de agosto de 2026</div>
+  </div>
+
+  <h1>Rediseño organizacional</h1>
+
+  <div class="paper-body">
+
+    <p class="apertura">Un rediseño organizacional define qué puestos necesita la empresa para
+    hacer lo que vende, de qué resultado responde cada uno, quién decide qué, y quién ocupa cada
+    puesto. Cada puesto se deriva de lo que la empresa tiene que saber hacer para sostener su
+    negocio. El orden no cambia: primero el negocio, después los puestos, y al final las
+    personas.</p>
+
+    <div class="cap-div"><span class="cn">01</span><span class="ct">El alcance</span></div>
+    <h2 class="bt">Cuatro bloques de trabajo</h2>
+
+    <p>El trabajo responde cuatro preguntas. Qué puestos necesita el negocio. Cómo funciona esa
+    estructura cuando el trabajo cruza de un puesto a otro. Quién ocupa cada puesto. Y qué decide la
+    dirección con todo eso. Cada entregable pertenece a un solo bloque.</p>
+
+    <ol class="moves">
+      <li><strong>La estructura.</strong> Qué puestos necesita el negocio y cómo se ordenan entre sí.
+        <p class="pq"><b>Por qué.</b> Los puestos suelen escribirse desde las tareas de cada persona.
+        O desde lo que una norma exige documentar. Así quedan dos huecos: funciones que el negocio
+        necesita y nadie tiene a cargo, y puestos que acumulan responsabilidades que no van
+        juntas.</p>
+        <p class="pq"><b>Para qué sirve.</b> Para que cada resultado tenga un dueño. La dirección
+        pide entonces el resultado, en lugar de revisar todos los días cómo trabaja cada uno. Eso es
+        lo que hace posible delegar.</p>
+        <ul>
+          <li><b>Organigrama objetivo.</b> Las áreas y los niveles, con el criterio con el que se dibuja
+          cada línea de reporte. Ese criterio es lo que permite discutir una línea sin que sea una opinión contra otra.</li>
+          <li><b>Descripciones de puesto.</b> Llevan la misión, el resultado del que rinde cuentas con su
+          indicador y su meta, la autoridad propia y el perfil esperado. La autoridad dice qué firma,
+          qué frena y qué aprueba sin consultar. Va una por cada puesto del organigrama nuevo: los
+          que se mantienen con su contenido corregido y los que haya que crear.</li>
+        </ul>
+      </li>
+
+      <li><strong>El funcionamiento.</strong> Cómo opera esa estructura cuando el trabajo cruza a más
+      de un puesto.
+        <p class="pq"><b>Por qué.</b> El trabajo rara vez se pierde adentro de un puesto, donde
+        alguien lo tiene a cargo. Se pierde cuando cambia de manos. El que entrega cree que terminó y
+        el que recibe cree que no empezó. Y cuando nadie tiene escrito hasta dónde puede decidir, la
+        consulta sube a la dirección todos los días.</p>
+        <p class="pq"><b>Para qué sirve.</b> Para que el trabajo no se caiga en las fronteras. Y para
+        que la dirección deje de resolver lo repetitivo.</p>
+        <ul>
+          <li><b>Matriz de traspasos (RACI).</b> Cubre los traspasos de la cadena que producen valor: el programa que baja a planta, la admisión de lo que entra, la liberación del lote,
+          el cambio de turno y la parada de un equipo. Cada traspaso dice quién ejecuta, quién
+          responde por el resultado, a quién se consulta antes y a quién se informa después. Y con
+          qué criterio se acepta la entrega. Responde uno solo. Entran los traspasos que mueven la
+          utilización de la planta o la especificación de lo que sale.</li>
+          <li><b>Mapa de decisiones.</b> Las que hoy suben a la dirección sin necesidad: qué se produce
+          esta semana, cuándo se frena un lote, qué compra se aprueba sola. Cada decisión dice quién
+          decide, quién recomienda y quién desempata. Y el límite hasta el que se decide solo.</li>
+          <li><b>Gobierno.</b> Los tres espacios que sostienen la estructura. La conducción semanal, la
+          programación de la producción y la revisión mensual de gente y avance. Cada uno con día
+          fijo, quiénes van, qué se mira y qué se decide. Se arman sobre las instancias que ya
+          funcionen.</li>
+        </ul>
+      </li>
+
+      <li><strong>Las personas.</strong> Quién ocupa cada puesto después del cambio.
+        <p class="pq"><b>Por qué.</b> Cada movimiento de estructura deja un puesto que alguien tiene
+        que ocupar. Sin nada con qué medir a la persona contra ese puesto, la asignación se resuelve
+        por antigüedad, por confianza o por quién está disponible.</p>
+        <p class="pq"><b>Para qué sirve.</b> Para que cada movimiento de gente se decida con
+        evidencia. Y para que la dirección pueda sostener esa decisión delante de la persona.</p>
+        <ul>
+          <li><b>Encaje persona y puesto.</b> Cada persona alcanzada por un cambio, medida contra el
+          puesto nuevo: entra, entra con desarrollo, o no encaja ahí.</li>
+          <li><b>Plan de desarrollo.</b> Para quien entra con brecha. Dice qué tiene que desarrollar, con
+          qué apoyo y en qué plazo se vuelve a mirar.</li>
+          <li><b>Perfil de búsqueda.</b> Para los puestos que ningún candidato interno cubre.</li>
+        </ul>
+        <p class="pq">Qué se hace con quien no encaje en ningún puesto es una decisión de la
+        dirección, y sale en el bloque que sigue.</p>
+      </li>
+
+      <li><strong>Las decisiones.</strong> Qué hace la dirección con todo lo anterior.
+        <p class="pq"><b>Por qué.</b> Un diseño sin decisiones tomadas es un documento. Tomarlas
+        sueltas sale más caro. Algunas se financian con lo que libera la anterior. Otras no se pueden
+        ejecutar hasta que una previa esté resuelta.</p>
+        <p class="pq"><b>Para qué sirve.</b> Para decidir con el costo de cada camino a la vista.
+        Y para que la primera decisión quede en marcha antes de que cerremos el trabajo.</p>
+        <ul>
+          <li><b>Las decisiones, una por una.</b> Los caminos posibles, lo que cuesta cada camino, nuestra
+          recomendación y lo que cuesta no decidir.</li>
+          <li><b>La secuencia.</b> En qué orden conviene tomarlas, y cuál libera el costo que paga a la que
+          sigue.</li>
+          <li><b>El plan de transición.</b> En qué orden se ejecutan los movimientos, qué se le comunica a
+          cada persona y en qué momento.</li>
+        </ul>
+      </li>
+    </ol>
+
+    <h3>Dónde vive esto después</h3>
+
+    <ul class="lista">
+      <li>Las descripciones viven en el sistema de gestión, con su versión, su aprobación y su
+      distribución. Es el circuito que la empresa ya usa para la certificación.</li>
+      <li>El resultado de cada puesto se revisa en la conducción semanal, con su indicador y con día
+      fijo.</li>
+      <li>La exigencia baja por la línea. Quien pide el resultado es el jefe de cada puesto, con la
+      dirección detrás. Un área de apoyo que le pide a la línea que trabaje distinto no tiene con qué
+      sostener el pedido, así que cuando una rutina queda a cargo de un puesto de apoyo, el encargo lo
+      da la dirección delante del equipo y la autoridad queda prestada y a la vista.</li>
+      <li>Cuando alguien entra, asciende o se evalúa, la descripción es el documento contra el que se
+      lo mide.</li>
+    </ul>
+
+    <p class="note">Nada de esto pide un área de recursos humanos. Pide que la línea de reporte sea
+    la correcta y que cada jefe tenga escrito de qué responde su gente.</p>
+
+    <div class="cap-div"><span class="cn">02</span><span class="ct">Del lado de Laruso</span></div>
+    <h2 class="bt">Qué hace falta de su lado, y quién puede hacerlo</h2>
+
+    <p>El alcance de arriba es lo que hacemos nosotros. Lo que hace falta de su lado ya tiene a
+    quién asignarlo, y <strong>la condición que abre el trabajo es la primera: alguien con horas
+    asignadas y con autoridad para pedirle a la gente que trabaje distinto.</strong></p>
+
+    <div class="pers">
+      <div class="pers-h"><b>Darío</b><span>conduce el cambio, y tiene la autoridad para pedirlo</span></div>
+      <ul class="lista">
+        <li>Conducir el cambio adentro, todos los días.</li>
+        <li>Comunicar cada movimiento de estructura y ejecutarlo con los plazos que fije la
+        dirección.</li>
+        <li>Ser el interlocutor del trabajo y responder en cuarenta y ocho horas.</li>
+      </ul>
+    </div>
+
+    <div class="pers">
+      <div class="pers-h"><b>Guillermo</b><span>procesos y normas</span></div>
+      <ul class="lista">
+        <li>Los procedimientos que bajan al detalle lo que definimos: nosotros escribimos quién
+        responde por cada traspaso y con qué criterio se acepta una entrega, y el cómo se hace lo
+        escribe él.</li>
+        <li>Dar de alta las descripciones corregidas y sostener su vigencia cada vez que un cambio de
+        estructura las mueva, que es lo que evita que el papel y los hechos se separen otra vez. El
+        trámite documental corre por la certificación.</li>
+      </ul>
+    </div>
+
+    <div class="pers">
+      <div class="pers-h"><b>Franco</b><span>técnica y laboratorio</span></div>
+      <ul class="lista">
+        <li>El contenido técnico de la cadena: con qué parámetros se acepta o se rechaza en cada
+        punto donde el trabajo cambia de manos.</li>
+      </ul>
+    </div>
+
+    <div class="pers">
+      <div class="pers-h"><b>La dirección</b><span>lo que no se delega</span></div>
+      <ul class="lista">
+        <li>Tomar las decisiones y fijar la meta de cada indicador.</li>
+        <li>Validar cada tramo del trabajo en los plazos previstos.</li>
+        <li>Cerrar las definiciones que el trabajo vaya necesitando, con quien tenga el dato. Las
+        que ya tenemos identificadas son la ocupación real de la planta, la dotación de planta,
+        quién verifica los papeles del camión que entra, y de quién dependen el Jefe de Planta y el
+        Comercial. Este trabajo mira la empresa entera, así que van a aparecer otras.</li>
+        <li>Resolver con su contador y su abogado lo que tenga efecto laboral.</li>
+      </ul>
+    </div>
+
+    <div class="aviso">
+      <strong>Queda una definición previa: el vínculo de Darío.</strong> Hoy figura como externo, y
+      de eso depende con qué autoridad pide. Definirlo antes de arrancar evita que cada pedido suyo
+      se discuta, y es además una de esas decisiones de fondo. Si se resuelve por la negativa, lo
+      hablamos antes de firmar: sin alguien que conduzca, el trabajo necesita otra figura, y esa
+      figura se cotiza aparte.
+    </div>
+
+    <p class="note"><strong>Dos cosas más las hacemos nosotros, y se cotizan aparte:</strong> las
+    evaluaciones de los cuatro responsables de turno y de quienes se presenten a los puestos nuevos,
+    con el mismo valor por evaluación que ya conocen, y la formación de quien ascienda a conducir
+    gente, que es un programa con propuesta propia.</p>
+
+    <div class="cap-div"><span class="cn">03</span><span class="ct">Cómo trabajamos</span></div>
+    <h2 class="bt">Cinco fases, cada una con su entregable y su validación</h2>
+
+    <table class="plan">
+      <thead><tr><th>Fase</th><th>Qué hacemos</th><th>Qué queda</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="fase">0 · Puesta en marcha</span><br>semana 0</td>
+          <td>Se define quién conduce el cambio del lado de Laruso, se designa el interlocutor y se
+          acuerda qué definiciones hay que cerrar para arrancar.</td>
+          <td>El plan de trabajo con las fechas de validación</td>
+        </tr>
+        <tr>
+          <td><span class="fase">1 · Estructura y puestos</span><br>semanas 1 a 4</td>
+          <td>Áreas, niveles y líneas de reporte. Una descripción por puesto con su resultado, su
+          autoridad y su perfil.</td>
+          <td>El organigrama objetivo y las descripciones de puesto</td>
+        </tr>
+        <tr>
+          <td><span class="fase">2 · Funcionamiento y gobierno</span><br>semanas 5 y 6</td>
+          <td>Matriz de responsabilidades sobre los traspasos críticos, mapa de decisiones y los
+          espacios formales donde se decide y se sigue.</td>
+          <td>La matriz RACI, el mapa de decisiones y el esquema de reuniones</td>
+        </tr>
+        <tr>
+          <td><span class="fase">3 · Personas</span><br>semanas 7 y 8</td>
+          <td>Medimos a quienes el rediseño mueve de puesto, contra el puesto nuevo, y
+          resolvemos qué hacer con cada caso.</td>
+          <td>El encaje de cada movimiento, con su evidencia</td>
+        </tr>
+        <tr>
+          <td><span class="fase">4 · Decisiones y cierre</span><br>semanas 9 a 11</td>
+          <td>Las decisiones de fondo con sus caminos y sus costos, la reunión de decisiones con la
+          dirección y la puesta en marcha de la primera.</td>
+          <td>El memo de decisiones y el plan de transición</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="note"><strong>Este plan supone</strong> que el relevamiento y las evaluaciones
+    existentes siguen vigentes y no se rehacen, que las definiciones abiertas se cierran en la
+    semana 0, y que la conducción del cambio queda a cargo de alguien de Laruso. Si alguna no se
+    cumple, lo conversamos antes de seguir. Trabaja el mismo equipo que hizo el relevamiento y las
+    evaluaciones.</p>
+
+    <div class="cap-div"><span class="cn">04</span><span class="ct">Precio y condiciones de pago</span></div>
+
+    <div class="precio">
+      <div class="precio-top">
+        <div>
+          <div class="precio-lbl">Honorarios del proyecto</div>
+          <div class="precio-n">$ 3.200.000 <small>finales</small></div>
+        </div>
+        <div class="note" style="text-align:right;max-width:15rem;">
+          Precio final, en pesos. Tres pagos contra los hitos de abajo.
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Cuándo se factura</th><th>Contra qué</th><th style="text-align:right">Importe</th></tr></thead>
+        <tbody>
+          <tr><td>Al iniciar</td><td>Aceptación de esta propuesta</td><td>$ 1.280.000</td></tr>
+          <tr><td>Fin de fase 2</td><td>Estructura, descripciones de puesto y matriz de funcionamiento entregadas</td><td>$ 960.000</td></tr>
+          <tr><td>Al cierre</td><td>Reunión de decisiones hecha y primera decisión en marcha</td><td>$ 960.000</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ul class="lista">
+      <li><strong>Validez de esta propuesta:</strong> hasta el 17 de septiembre de 2026.</li>
+      <li><strong>Inicio:</strong> dentro de los diez días de acreditado el anticipo.</li>
+      <li><strong>Plazo de pago:</strong> cada factura, a siete días de emitida. Se emite factura
+      C, así que los importes de arriba son los que se pagan, sin impuestos por encima.</li>
+      <li><strong>Si el trabajo se frena por falta de disponibilidad de la dirección</strong> por más
+      de treinta días corridos, se factura lo entregado hasta ese punto y el saldo queda a acordar
+      cuando se retome.</li>
+      <li><strong>Confidencialidad:</strong> todo lo que vemos adentro de Laruso es reservado, y las
+      lecturas individuales de cada persona quedan restringidas a la dirección.</li>
+      <li><strong>El material es de ustedes.</strong> Las descripciones, la matriz, el mapa de decisiones y
+      el memo quedan en poder de Laruso para usarlos como quiera. El método con el que se producen es
+      de Campos HR.</li>
+    </ul>
+
+    <div class="firma">
+      <p style="font-size:1.02rem;line-height:1.55;margin:0;"><strong>Para aceptar</strong>, alcanza
+      con la respuesta por escrito de la dirección a esta propuesta, o la firma de este documento.
+      Con la aceptación emitimos la primera factura y coordinamos la fecha de inicio.</p>
+      <div class="firma-l">
+        <div>Por Laruso SRL · aclaración y fecha</div>
+        <div>Por Campos HR · Agustín Milesi</div>
+      </div>
+    </div>
+
+    <p class="pie">Campos HR · Laruso SRL · Propuesta de trabajo · 18 de agosto de 2026. Los
+    honorarios están expresados en pesos argentinos y son finales. Se emite factura C.</p>
+
+  </div>
+</div>
+</body>
+</html>
