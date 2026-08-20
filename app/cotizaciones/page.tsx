@@ -1,21 +1,14 @@
-import {
-  listarCotizaciones,
-  formatoImporte,
-  formatoFecha,
-  versionAnterior,
-} from '@/lib/cotizaciones';
+import { listarCotizaciones, formatoImporte, formatoFecha, ABIERTOS } from '@/lib/cotizaciones';
 import CopyLink from '../informes/CopyLink';
 
 export const dynamic = 'force-dynamic';
 
 const BASE = 'https://camposhr.com/q';
 
-export default function Cotizaciones() {
-  const todas = listarCotizaciones();
+export default async function Cotizaciones() {
+  const todas = await listarCotizaciones();
 
-  const abiertas = todas.filter(
-    (c) => c.estado === 'Enviada' || c.estado === 'Borrador'
-  ).length;
+  const abiertas = todas.filter((c) => ABIERTOS.includes(c.estado)).length;
   const aprobadas = todas.filter((c) => c.estado === 'Aprobada');
   const montoAprobado = aprobadas.reduce((a, c) => a + c.importe, 0);
 
@@ -31,9 +24,8 @@ export default function Cotizaciones() {
         </div>
         <h1>Cotizaciones</h1>
         <p className="head-nota">
-          Cada cotización tiene su enlace para mandarle al cliente. Cuando piden
-          un retoque de precio se carga una versión nueva, que queda enlazada a
-          la anterior y estrena su propio enlace.
+          Cada cotización tiene su enlace para mandarle al cliente. El estado se
+          sigue desde el OS, en Comercial.
         </p>
       </section>
 
@@ -71,22 +63,17 @@ export default function Cotizaciones() {
             </div>
 
             {todas.map((c) => {
-              const url = `${BASE}/${c.token}`;
-              const previa = versionAnterior(c, todas);
+              // Una oportunidad puede existir sin propuesta escrita: es un Lead
+              // que todavía no tiene documento que mandar.
+              const url = c.token ? `${BASE}/${c.token}` : null;
               return (
-                <div className="cot-row" key={c.token}>
+                <div className="cot-row" key={c.id}>
                   <span className="cot-fecha">{formatoFecha(c.fecha)}</span>
                   <span className="cot-cliente">{c.cliente}</span>
                   <span className="cot-concepto">
                     {c.concepto}
                     <em className="cot-version">v{c.version}</em>
-                    {previa && (
-                      <em className="cot-previa">
-                        reemplaza la v{previa.version} de{' '}
-                        {formatoImporte(previa.importe)}
-                      </em>
-                    )}
-                  </span>
+                                      </span>
                   <span className="cot-num cot-importe">
                     {formatoImporte(c.importe)}
                   </span>
@@ -98,15 +85,16 @@ export default function Cotizaciones() {
                   {/* El token no se muestra: lo que se hace con el enlace es
                       abrirlo o copiarlo, y verlo escrito no aporta nada. */}
                   <span className="cot-accion">
-                    <a
-                      className="copiar"
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Abrir
-                    </a>
-                    <CopyLink url={url} />
+                    {url ? (
+                      <>
+                        <a className="cot-abrir" href={url} target="_blank" rel="noreferrer">
+                          Abrir
+                        </a>
+                        <CopyLink url={url} />
+                      </>
+                    ) : (
+                      <em className="cot-version">sin propuesta escrita</em>
+                    )}
                   </span>
                 </div>
               );

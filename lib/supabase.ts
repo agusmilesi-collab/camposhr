@@ -25,11 +25,24 @@ function headers(extra: Record<string, string> = {}) {
   return { apikey: k, Authorization: `Bearer ${k}`, ...extra };
 }
 
-/** SELECT sobre una tabla. `query` son parámetros de PostgREST ya armados. */
-export async function select<T>(tabla: string, query: string): Promise<T[]> {
+/**
+ * SELECT sobre una tabla. `query` son parámetros de PostgREST ya armados.
+ *
+ * Por defecto no cachea: la mayoría de las pantallas que leen de acá son de
+ * sala, donde un dato de hace un minuto ya no sirve. `etiqueta` la vuelve
+ * cacheable y le pone un nombre para poder invalidarla cuando algo se escribe,
+ * que es lo que hace que moverse entre pantallas no vuelva a pedir todo.
+ */
+export async function select<T>(
+  tabla: string,
+  query: string,
+  etiqueta?: string
+): Promise<T[]> {
   const res = await fetch(`${URL_BASE()}/rest/v1/${tabla}?${query}`, {
     headers: headers(),
-    cache: 'no-store',
+    ...(etiqueta
+      ? { next: { revalidate: 300, tags: [etiqueta] } }
+      : { cache: 'no-store' as const }),
   });
   if (!res.ok) throw new Error(`Supabase ${tabla} ${res.status}: ${await res.text()}`);
   return res.json();

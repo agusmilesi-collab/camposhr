@@ -1,0 +1,2855 @@
+/**
+ * Piel del OS. Todo cuelga de .os, así que no toca ninguna otra pantalla del
+ * sitio, que sigue leyendo app/globals.css.
+ *
+ * Los dos temas se eligen con un atributo en <html> que escribe un script
+ * antes de pintar (ver app/os/layout.tsx). Sin eso, entrar de noche muestra un
+ * destello blanco antes de aplicar el tema guardado.
+ */
+
+.os {
+  /* Papel: la paleta del sitio comercial. */
+  --os-fondo: #f2f0ec;
+  --os-panel: #ffffff;
+  --os-panel-2: #faf9f6;
+  --os-linea: #e2ded6;
+  --os-linea-suave: #eeebe4;
+  --os-tinta: #16202b;
+  --os-tinta-media: #46505c;
+  --os-suave: #7b7770;
+  --os-hover: #eae7e0;
+  --os-activo: #16202b;
+  --os-activo-tinta: #f6f5f2;
+  --os-sombra: 0 1px 2px rgba(22, 32, 43, 0.04);
+  --os-sombra-panel: 0 1px 3px rgba(22, 32, 43, 0.05);
+
+  --os-gris: #8a8580;
+  --os-ambar: #a97722;
+  --os-azul: #43648f;
+  --os-violeta: #6a5a8c;
+  --os-verde: #4a7856;
+  --os-rojo: #8c3b3b;
+
+  --lateral: 252px;
+
+  display: grid;
+  grid-template-columns: var(--lateral) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--os-fondo);
+  color: var(--os-tinta);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: -0.004em;
+}
+
+/* Tinta: el mismo azul de la marca bajado a fondo. */
+html[data-os-tema='oscuro'] .os {
+  --os-fondo: #10151b;
+  --os-panel: #171d25;
+  --os-panel-2: #1c232c;
+  --os-linea: #28313c;
+  --os-linea-suave: #202832;
+  --os-tinta: #eceae5;
+  --os-tinta-media: #b4bac2;
+  --os-suave: #848b95;
+  --os-hover: #212a34;
+  --os-activo: #eceae5;
+  --os-activo-tinta: #10151b;
+  --os-sombra: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --os-sombra-panel: 0 1px 3px rgba(0, 0, 0, 0.25);
+
+  --os-gris: #9aa1aa;
+  --os-ambar: #d3a24e;
+  --os-azul: #86a8d4;
+  --os-violeta: #a394c4;
+  --os-verde: #7bab88;
+  --os-rojo: #cd7d7d;
+}
+
+html[data-os-lateral='compacta'] .os {
+  --lateral: 68px;
+}
+
+body:has(.os) {
+  background: var(--os-fondo, #f2f0ec);
+}
+
+.os *,
+.os *::before,
+.os *::after {
+  box-sizing: border-box;
+}
+
+.os a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------- Barra lateral ---------- */
+
+.os-lateral {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--os-panel);
+  border-right: 1px solid var(--os-linea);
+  overflow: hidden;
+}
+
+/**
+ * Pantalla baja: la barra crece y hace scroll la página entera.
+ *
+ * Sin esto, en una pantalla de poca altura las últimas secciones quedarían
+ * cortadas contra el borde, que es peor que perder el anclado.
+ */
+@media (max-height: 700px) {
+  .os-lateral {
+    position: static;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+}
+
+.os-marca {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 18px 18px 16px;
+  min-height: 66px;
+}
+
+.os-sello {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--os-activo);
+  color: var(--os-activo-tinta);
+  display: grid;
+  place-items: center;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+.os-marca-texto {
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.os-marca-nombre {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.12rem;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+.os-marca-bajada {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+  white-space: nowrap;
+}
+
+/**
+ * La navegación, sin scroll propio.
+ *
+ * Antes tenía `overflow-y: auto` y aparecía una barra de desplazamiento
+ * adentro de la lateral: las dos últimas secciones quedaban tapadas por el pie
+ * y había que arrastrar para verlas. Ahora entra todo de una y el pie va
+ * pegado abajo, en el mismo bloque.
+ */
+.os-nav {
+  flex: 1;
+  padding: 4px 12px 6px;
+}
+
+.os-grupo {
+  font-size: 0.67rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+  padding: 11px 10px 5px;
+}
+
+.os-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  color: var(--os-tinta-media);
+  font-size: 0.895rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.os-item + .os-item {
+  margin-top: 1px;
+}
+
+.os-item svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.7;
+}
+
+.os-item:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os-item[aria-current='page'] {
+  background: var(--os-activo);
+  color: var(--os-activo-tinta);
+}
+
+/**
+ * El número de una sección.
+ *
+ * Va en una caja del tamaño del círculo aunque no lo dibuje, así el número
+ * suelto y el del aviso caen en la misma posición y la columna de números
+ * queda derecha.
+ */
+.os-item-cuenta {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-suave);
+}
+
+.os-item[aria-current='page'] .os-item-cuenta {
+  color: var(--os-activo-tinta);
+  opacity: 0.72;
+}
+
+/**
+ * Lo que entró y no tomó nadie, en un círculo.
+ *
+ * El número suelto se lee igual esté en cero o en diez; el círculo se ve desde
+ * cualquier pantalla del OS y es lo que hace que una evaluadora sepa que hay
+ * psicotécnicos nuevos esperando sin tener que entrar a fijarse.
+ *
+ * El texto va del color del panel, que es claro en el tema claro y oscuro en el
+ * oscuro, así contrasta contra el azul en los dos.
+ */
+.os-item-cuenta.os-item-aviso {
+  border-radius: 999px;
+  background: var(--os-azul);
+  color: var(--os-panel);
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.os-item[aria-current='page'] .os-item-cuenta.os-item-aviso {
+  color: var(--os-panel);
+  opacity: 1;
+}
+
+/* Parte de la misma barra, no un cajón aparte: sin borde ni fondo propio. */
+.os-pie {
+  padding: 4px 12px 12px;
+}
+
+.os-boton-pie {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--os-tinta-media);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.os-boton-pie:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os-boton-pie svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.7;
+}
+
+.os-switch {
+  margin-left: auto;
+  width: 34px;
+  height: 19px;
+  border-radius: 999px;
+  background: var(--os-linea);
+  position: relative;
+  flex: none;
+}
+
+.os-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--os-panel);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.16s ease;
+}
+
+html[data-os-tema='oscuro'] .os-switch {
+  background: var(--os-activo);
+}
+
+html[data-os-tema='oscuro'] .os-switch::after {
+  transform: translateX(15px);
+  background: var(--os-panel);
+}
+
+/* Compacta: quedan los iconos. */
+html[data-os-lateral='compacta'] .os-marca-texto,
+html[data-os-lateral='compacta'] .os-item span,
+html[data-os-lateral='compacta'] .os-item-cuenta,
+html[data-os-lateral='compacta'] .os-boton-pie span,
+html[data-os-lateral='compacta'] .os-switch {
+  display: none;
+}
+
+html[data-os-lateral='compacta'] .os-grupo {
+  height: 1px;
+  padding: 0;
+  margin: 14px 10px;
+  overflow: hidden;
+  background: var(--os-linea-suave);
+  color: transparent;
+}
+
+html[data-os-lateral='compacta'] .os-marca,
+html[data-os-lateral='compacta'] .os-item,
+html[data-os-lateral='compacta'] .os-boton-pie {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* ---------- Cuerpo ---------- */
+
+.os-cuerpo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.os-barra {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  min-height: 66px;
+  padding: 0 26px;
+  background: color-mix(in srgb, var(--os-fondo) 88%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid var(--os-linea);
+}
+
+/**
+ * El interior de la barra, con el mismo ancho que el contenido.
+ *
+ * El fondo y la línea de abajo cruzan la pantalla entera, pero el título y el
+ * reloj se alinean con las cajas: sin esto el reloj quedaba pegado al borde
+ * derecho, a noventa píxeles de donde termina la última caja.
+ */
+.os-barra-interior {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 1128px;
+}
+
+/* Las pantallas de tabla usan todo el ancho, y la barra las acompaña. */
+.os-barra-interior-ancho {
+  max-width: none;
+}
+
+.os-plegar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel);
+  color: var(--os-tinta-media);
+  cursor: pointer;
+}
+
+.os-plegar:hover {
+  color: var(--os-tinta);
+  border-color: var(--os-suave);
+}
+
+.os-plegar svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.8;
+}
+
+.os-barra-titulo {
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Lo que va contra el borde derecho de la barra de arriba. */
+.os-barra-lado {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.os-barra-nota {
+  font-size: 0.78rem;
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.os-reloj {
+  font-size: 0.78rem;
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.os-reloj::first-letter {
+  text-transform: uppercase;
+}
+
+.os-quien {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.os-quien-foto {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--os-linea);
+}
+
+/* Mientras no haya foto subida, las iniciales ocupan el mismo lugar. */
+.os-quien-iniciales {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--os-panel-2);
+  color: var(--os-tinta-media);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.os-quien-nombre {
+  font-size: 0.82rem;
+  font-weight: 550;
+  letter-spacing: -0.008em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* En el teléfono la barra se queda con lo imprescindible. */
+@media (max-width: 700px) {
+  .os-barra-lado {
+    gap: 10px;
+  }
+
+  .os-reloj,
+  .os-quien-nombre {
+    display: none;
+  }
+}
+
+.os-contenido {
+  padding: 30px 26px 72px;
+  max-width: 1180px;
+  width: 100%;
+}
+
+/* Una tabla con once columnas no entra en el ancho de lectura. */
+.os-contenido-ancho {
+  max-width: none;
+}
+
+.os-encabezado {
+  margin-bottom: 26px;
+}
+
+.os-encabezado h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.75rem, 3.4vw, 2.3rem);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+}
+
+.os-encabezado p {
+  margin-top: 10px;
+  max-width: 62ch;
+  color: var(--os-tinta-media);
+  font-size: 0.94rem;
+}
+
+/* ---------- Piezas ---------- */
+
+.os-cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 26px;
+}
+
+.os-cifra {
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 13px;
+  padding: 17px 18px;
+  box-shadow: var(--os-sombra-panel);
+}
+
+.os-cifra-rotulo {
+  font-size: 0.72rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-cifra-valor {
+  margin-top: 9px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 2.05rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-cifra-pie {
+  margin-top: 7px;
+  font-size: 0.8rem;
+  color: var(--os-tinta-media);
+}
+
+.os-rejilla {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .os-rejilla {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.os-panel {
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 13px;
+  box-shadow: var(--os-sombra-panel);
+  overflow: hidden;
+}
+
+.os-panel + .os-panel {
+  margin-top: 18px;
+}
+
+.os-panel-top {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 16px 18px 13px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-panel-top h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.os-panel-top .os-enlace {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--os-suave);
+}
+
+.os-panel-top .os-enlace:hover {
+  color: var(--os-tinta);
+}
+
+.os-panel-nota {
+  padding: 16px 18px;
+  color: var(--os-suave);
+  font-size: 0.88rem;
+}
+
+.os-fila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-fila:last-child {
+  border-bottom: 0;
+}
+
+a.os-fila:hover {
+  background: var(--os-panel-2);
+}
+
+.os-fila-cuerpo {
+  min-width: 0;
+  flex: 1;
+}
+
+.os-fila-titulo {
+  font-size: 0.905rem;
+  font-weight: 550;
+  letter-spacing: -0.008em;
+}
+
+.os-fila-detalle {
+  margin-top: 3px;
+  font-size: 0.81rem;
+  color: var(--os-suave);
+}
+
+.os-fila-lado {
+  flex: none;
+  text-align: right;
+  font-size: 0.81rem;
+  color: var(--os-tinta-media);
+  font-variant-numeric: tabular-nums;
+}
+
+.os-avatar {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--os-panel-2);
+  border: 1px solid var(--os-linea);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--os-tinta-media);
+  letter-spacing: 0.02em;
+}
+
+.os-sello-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--os-tinta-media);
+  white-space: nowrap;
+}
+
+.os-sello-estado::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--punto, var(--os-gris));
+}
+
+.os-gris { --punto: var(--os-gris); }
+.os-ambar { --punto: var(--os-ambar); }
+.os-azul { --punto: var(--os-azul); }
+.os-violeta { --punto: var(--os-violeta); }
+.os-verde { --punto: var(--os-verde); }
+.os-rojo { --punto: var(--os-rojo); }
+
+.os-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.os-etiqueta {
+  font-size: 0.74rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--os-linea);
+  background: var(--os-panel-2);
+  color: var(--os-tinta-media);
+}
+
+.os-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.os-tarjeta {
+  display: block;
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 13px;
+  padding: 18px;
+  box-shadow: var(--os-sombra-panel);
+  transition: border-color 0.14s ease, transform 0.14s ease;
+}
+
+a.os-tarjeta:hover {
+  border-color: var(--os-suave);
+  transform: translateY(-1px);
+}
+
+.os-tarjeta h3 {
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+
+.os-tarjeta p {
+  margin-top: 7px;
+  font-size: 0.85rem;
+  color: var(--os-tinta-media);
+  line-height: 1.5;
+}
+
+.os-tarjeta-rotulo {
+  font-size: 0.7rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+  margin-bottom: 8px;
+}
+
+.os-vacio {
+  padding: 26px 18px;
+  text-align: center;
+  color: var(--os-suave);
+  font-size: 0.88rem;
+}
+
+/* ---------- Teléfono ---------- */
+/* La lateral pasa a cajón: el plegado de escritorio no aplica y el botón de
+   la barra la abre y la cierra. */
+
+@media (max-width: 760px) {
+  .os {
+    grid-template-columns: minmax(0, 1fr);
+    --lateral: 252px;
+  }
+
+  .os-lateral {
+    position: fixed;
+    z-index: 20;
+    width: 252px;
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+  }
+
+  html[data-os-menu='abierta'] .os-lateral {
+    transform: none;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  }
+
+  html[data-os-lateral='compacta'] .os-marca-texto,
+  html[data-os-lateral='compacta'] .os-item span,
+  html[data-os-lateral='compacta'] .os-item-cuenta,
+  html[data-os-lateral='compacta'] .os-boton-pie span,
+  html[data-os-lateral='compacta'] .os-switch {
+    display: revert;
+  }
+
+  html[data-os-lateral='compacta'] .os-marca,
+  html[data-os-lateral='compacta'] .os-item,
+  html[data-os-lateral='compacta'] .os-boton-pie {
+    justify-content: flex-start;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  html[data-os-lateral='compacta'] .os-grupo {
+    height: auto;
+    padding: 16px 10px 7px;
+    margin: 0;
+    background: none;
+    color: var(--os-suave);
+  }
+
+  .os-velo {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    background: rgba(16, 21, 27, 0.42);
+    border: 0;
+    display: none;
+  }
+
+  html[data-os-menu='abierta'] .os-velo {
+    display: block;
+  }
+
+  .os-contenido {
+    padding: 22px 16px 60px;
+  }
+
+  .os-barra {
+    padding: 0 16px;
+  }
+}
+
+@media (min-width: 761px) {
+  .os-velo {
+    display: none;
+  }
+}
+
+/* ---------- Entrada ---------- */
+
+.os-entrar {
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
+  padding: 24px;
+}
+
+.os-entrar-caja {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 28px;
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 15px;
+  box-shadow: var(--os-sombra-panel);
+  text-align: center;
+}
+
+.os-entrar-nota {
+  font-size: 0.85rem;
+  color: var(--os-tinta-media);
+  line-height: 1.5;
+}
+
+.os-entrar-campo {
+  width: 100%;
+  height: 40px;
+  padding: 0 13px;
+  border: 1px solid var(--os-linea);
+  border-radius: 9px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  font: inherit;
+  font-size: 0.92rem;
+}
+
+.os-entrar-campo:focus {
+  outline: 2px solid var(--os-tinta);
+  outline-offset: 1px;
+}
+
+.os-entrar-error {
+  font-size: 0.82rem;
+  color: var(--os-rojo);
+}
+
+.os-entrar-boton {
+  width: 100%;
+  height: 40px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--os-activo);
+  color: var(--os-activo-tinta);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.os-entrar-boton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ---------- Sub-navegación de una sección ---------- */
+
+.os-solapas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-solapa {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--os-tinta-media);
+}
+
+.os-solapa:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os-solapa[aria-current='page'] {
+  background: var(--os-activo);
+  color: var(--os-activo-tinta);
+}
+
+.os-solapa-cuenta {
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+/* ---------- Ficha de trabajo ---------- */
+/* Una fila por persona con solo lo que esa etapa necesita. */
+
+.os-trabajo {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-trabajo:last-child {
+  border-bottom: 0;
+}
+
+.os-trabajo-cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+
+.os-trabajo-nombre {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.os-trabajo-donde {
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--os-suave);
+}
+
+.os-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 10px;
+}
+
+.os-dato {
+  min-width: 0;
+}
+
+.os-dato-rotulo {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-dato-valor {
+  font-size: 0.86rem;
+  color: var(--os-tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+.os-dato-valor a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.os-dato-falta {
+  color: var(--os-ambar);
+}
+
+.os-acciones {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+}
+
+.os-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 13px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  font: inherit;
+  font-size: 0.81rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.os-boton:hover:not(:disabled) {
+  border-color: var(--os-suave);
+  background: var(--os-hover);
+}
+
+.os-boton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.os-boton-firme {
+  background: var(--os-activo);
+  color: var(--os-activo-tinta);
+  border-color: var(--os-activo);
+}
+
+.os-boton-firme:hover:not(:disabled) {
+  background: var(--os-activo);
+  color: var(--os-activo-tinta);
+  opacity: 0.88;
+}
+
+.os-tilde {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.83rem;
+  color: var(--os-tinta-media);
+  cursor: pointer;
+}
+
+.os-tilde input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--os-tinta);
+}
+
+.os-campo {
+  height: 32px;
+  padding: 0 9px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  font: inherit;
+  font-size: 0.83rem;
+}
+
+/* La flecha del desplegable necesita aire: pegada al borde parece cortada. */
+select.os-campo {
+  padding-right: 5px;
+}
+
+.os-aviso {
+  display: flex;
+  gap: 11px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border: 1px solid var(--os-linea);
+  border-left: 3px solid var(--os-ambar);
+  border-radius: 10px;
+  background: var(--os-panel);
+  font-size: 0.86rem;
+  color: var(--os-tinta-media);
+  line-height: 1.5;
+}
+
+/* ---------- Identidad ---------- */
+
+/* La foto de quien mira y su selector, juntos en el pie. */
+.os-pie-quien {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 10px;
+}
+
+.os-identidad {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.os-identidad-rotulo {
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-identidad-selector {
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
+html[data-os-lateral='compacta'] .os-identidad {
+  display: none;
+}
+
+/* Plegada, queda la foto sola: sigue diciendo con quién se trabaja. */
+html[data-os-lateral='compacta'] .os-pie-quien {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@media (max-width: 760px) {
+  html[data-os-lateral='compacta'] .os-identidad {
+    display: flex;
+  }
+
+  html[data-os-lateral='compacta'] .os-pie-quien {
+    justify-content: flex-start;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+/* Rótulo que separa dos bloques de una misma pantalla. */
+.os-rotulo-bloque {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+  margin: 4px 0 12px;
+}
+
+.os-rejilla + .os-rotulo-bloque,
+.os-cifras + .os-rotulo-bloque {
+  margin-top: 10px;
+}
+
+/* El bloque suelto de arriba no tiene encabezado que lo separe de la marca. */
+.os-nav > div:first-child {
+  padding-top: 8px;
+}
+
+/* ---------- Formularios ---------- */
+/* Todo cae sobre una grilla de dos columnas: un campo ocupa una o las dos, y
+   nunca un ancho propio. Sin esto, tres campos con flex:1 al lado de uno
+   suelto dan tres anchos distintos en la misma pantalla. */
+
+.os-panel-cuerpo {
+  padding: 18px;
+}
+
+.os-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+/* Un formulario que entra en una fila: los campos se acomodan solos y el
+   botón queda a la derecha, alineado con la base de los campos. */
+.os-form-linea {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.os-campo-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+/* De borde a borde de la grilla. */
+.os-campo-entero {
+  grid-column: 1 / -1;
+}
+
+.os-etiqueta-campo {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-campo-ancho {
+  width: 100%;
+}
+
+.os-form .os-campo {
+  width: 100%;
+}
+
+textarea.os-campo {
+  height: auto;
+  padding: 9px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.os-campo[type='file'] {
+  height: auto;
+  padding: 7px 9px;
+}
+
+.os-enlace-boton {
+  align-self: flex-start;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.79rem;
+  color: var(--os-suave);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.os-enlace-boton:hover {
+  color: var(--os-tinta);
+}
+
+.os-form-nota,
+.os-form-error,
+.os-form-ok {
+  grid-column: 1 / -1;
+  font-size: 0.83rem;
+  line-height: 1.5;
+}
+
+.os-form-nota { color: var(--os-suave); }
+.os-form-error { color: var(--os-rojo); }
+.os-form-ok { color: var(--os-verde); }
+
+.os-form-pie {
+  display: flex;
+  gap: 10px;
+}
+
+.os-form .os-boton {
+  height: 36px;
+  padding: 0 16px;
+}
+
+/* En el teléfono la grilla se vuelve una sola columna. */
+@media (max-width: 760px) {
+  .os-form,
+  .os-form-linea {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- Embudo y resultado ---------- */
+
+.os-embudo-acciones {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  min-width: 150px;
+}
+
+.os-embudo-motivo {
+  display: flex;
+  gap: 7px;
+}
+
+.os-resultado {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--os-linea-suave);
+  background: var(--os-panel-2);
+}
+
+.os-resultado-valor {
+  margin-top: 3px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.32rem;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-resultado-rojo {
+  color: var(--os-rojo);
+}
+
+/* La rejilla pareja: dos paneles del mismo ancho y la misma altura. */
+.os-rejilla-pareja {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+/* El margen que separa paneles apilados no corresponde adentro de una grilla:
+   ahí los separa el gap, y el margen deja al segundo panel catorce píxeles más
+   abajo que el primero. */
+.os-rejilla-pareja > .os-panel + .os-panel {
+  margin-top: 0;
+}
+
+.os-rejilla-pareja > .os-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.os-rejilla-pareja > .os-panel > .os-panel-cuerpo {
+  flex: 1;
+}
+
+@media (max-width: 1000px) {
+  .os-rejilla-pareja {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Una acción al final de una fila necesita aire: pegada al importe se lee
+   como parte del número y se hace clic sin querer. */
+.os-fila-accion {
+  flex: none;
+  margin-left: 18px;
+  padding-left: 18px;
+  border-left: 1px solid var(--os-linea-suave);
+  display: flex;
+  align-items: center;
+}
+
+/* ---------- Cajón ---------- */
+/* Entra desde la derecha y no empuja nada: se carga un cliente sin perder de
+   vista la tabla que se estaba mirando. */
+
+.os-cajon-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(16, 21, 27, 0.42);
+  border: 0;
+  padding: 0;
+}
+
+.os-cajon {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 31;
+  width: min(460px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--os-panel);
+  border-left: 1px solid var(--os-linea);
+  box-shadow: -18px 0 50px rgba(0, 0, 0, 0.18);
+  overflow-y: auto;
+}
+
+.os-cajon-top {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px 14px;
+  background: var(--os-panel);
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-cajon-top h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: 1.32rem;
+  letter-spacing: -0.02em;
+}
+
+.os-cajon-cerrar {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta-media);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.os-cajon-cerrar:hover {
+  color: var(--os-tinta);
+  border-color: var(--os-suave);
+}
+
+.os-cajon-cuerpo {
+  padding: 18px 20px 28px;
+}
+
+/* ---------- Tabla ---------- */
+
+.os-tabla-marco {
+  overflow-x: auto;
+}
+
+.os-panel:has(> .os-tabla-marco > .os-tabla-trabajo) {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.os-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.os-tabla th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--os-linea);
+  white-space: nowrap;
+}
+
+.os-tabla td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--os-linea-suave);
+  vertical-align: top;
+}
+
+.os-tabla tr:last-child td {
+  border-bottom: 0;
+}
+
+.os-tabla tbody tr:hover {
+  background: var(--os-panel-2);
+}
+
+/* El número entero en un renglón: partido al medio no se lee ni se marca. */
+.os-tabla-telefono {
+  white-space: nowrap;
+}
+
+/**
+ * Un botón que muestra un estado ya marcado y lo desmarca al tocarlo.
+ *
+ * Se ve distinto del que propone la acción para que no parezca que falta
+ * hacerla, y sigue siendo un botón porque el estado se toca sin querer y hay
+ * que poder volver.
+ */
+.os-boton-marcado {
+  background: transparent;
+  border-color: transparent;
+  color: var(--os-tinta-media);
+}
+
+.os-boton-marcado:hover:not(:disabled) {
+  border-color: var(--os-linea);
+  background: var(--os-panel-2);
+}
+
+.os-tabla-nombre {
+  font-weight: 600;
+  letter-spacing: -0.008em;
+}
+
+.os-tabla-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.os-tabla-flojo {
+  color: var(--os-suave);
+}
+
+/* ---------- Kanban ---------- */
+
+.os-kanban {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .os-kanban {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .os-kanban {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.os-columna {
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+  background: var(--os-panel-2);
+  border: 1px solid var(--os-linea);
+  border-radius: 13px;
+  padding: 12px;
+  gap: 10px;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.os-columna.encima {
+  border-color: var(--os-tinta-media);
+  background: var(--os-hover);
+}
+
+.os-columna-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.os-columna-titulo {
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.os-columna-monto {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.os-columna-nota {
+  font-size: 0.74rem;
+  color: var(--os-suave);
+  line-height: 1.45;
+}
+
+.os-tarjeta-op {
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: var(--os-sombra-panel);
+  cursor: grab;
+}
+
+.os-tarjeta-op:active {
+  cursor: grabbing;
+}
+
+.os-tarjeta-op.arrastrando {
+  opacity: 0.45;
+}
+
+/**
+ * El recorrido de la tarjeta cuando cambia de columna.
+ *
+ * Sin la primera regla el navegador funde la pantalla entera y se ve un
+ * parpadeo; con ella se mueven solamente las tarjetas, que son las que tienen
+ * nombre propio (`viewTransitionName` en `Reparto.tsx`). Es la misma tarjeta
+ * yendo de una columna a la otra.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(*) {
+  animation-duration: 200ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*) {
+    animation-duration: 1ms;
+  }
+}
+
+.os-tarjeta-cliente {
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.os-tarjeta-concepto {
+  margin-top: 3px;
+  font-size: 0.79rem;
+  color: var(--os-suave);
+  line-height: 1.45;
+}
+
+/* El importe manda y no se parte; lo demás baja de línea si no entra. */
+.os-tarjeta-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 11px;
+  padding-top: 10px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-tarjeta-importe {
+  font-size: 0.88rem;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.os-tarjeta-mover {
+  margin-left: auto;
+  max-width: 100%;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--os-linea);
+  border-radius: 7px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta-media);
+  font: inherit;
+  font-size: 0.74rem;
+}
+
+.os-columna-vacia {
+  padding: 14px 4px;
+  font-size: 0.78rem;
+  color: var(--os-suave);
+  text-align: center;
+}
+
+/* Una fila de acciones arriba de un bloque. */
+.os-barra-acciones {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* La fila del filtro: el selector y el aviso de lo que queda afuera. */
+.os-barra-filtro {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* ---------- Tabla de trabajo ---------- */
+/* La tabla de una etapa: se edita adentro de la celda, así que los controles
+   van al tamaño de la fila y no al de un formulario. */
+
+.os-tabla-trabajo td {
+  vertical-align: middle;
+}
+
+.os-tabla-trabajo .os-campo {
+  height: 30px;
+  font-size: 0.82rem;
+  max-width: 190px;
+}
+
+.os-tabla-trabajo .os-boton {
+  height: 30px;
+  padding: 0 11px;
+  font-size: 0.79rem;
+}
+
+.os-tabla-trabajo input[type='checkbox'] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--os-tinta);
+}
+
+.os-tabla-trabajo .os-etiquetas {
+  margin-top: 4px;
+}
+
+/**
+ * Las columnas de trabajo ocupan lo que necesitan y nada más.
+ *
+ * Repartir el ancho en partes iguales deja los campos separados por espacio
+ * vacío y obliga a recorrer la fila de punta a punta para leerla. Con esto los
+ * datos quedan juntos a la izquierda y el sobrante se lo lleva la columna de la
+ * acción, que es la que empuja el botón contra el borde derecho.
+ */
+.os-tabla-trabajo th,
+.os-tabla-trabajo td {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/**
+ * La tabla de trabajo mide lo que necesita, no lo que hay disponible.
+ *
+ * Estirada a todo el ancho quedaba el botón contra el borde derecho y los
+ * datos a diez centímetros de distancia, con la fila entera vacía en el medio.
+ * Con `width: auto` colapsa al contenido y el botón queda al lado de lo que
+ * decide apretarlo. El tope es para que no se desarme en una pantalla ancha.
+ */
+.os-tabla-trabajo {
+  width: auto;
+  max-width: 100%;
+}
+
+/* Ajustadas al contenido quedan pegadas una a otra: esto las separa. */
+.os-tabla-trabajo th,
+.os-tabla-trabajo td {
+  padding-right: 26px;
+}
+
+/* El nombre es por donde se busca la fila: entra entero y con aire. */
+.os-tabla-trabajo th:first-child,
+.os-tabla-trabajo td:first-child {
+  min-width: 190px;
+}
+
+.os-tabla-trabajo th.os-tabla-accion,
+.os-tabla-trabajo td.os-tabla-accion {
+  padding-right: 14px;
+}
+
+/**
+ * El contacto no cambia de ancho al alternar.
+ *
+ * "Sin contactar" y "Esperando" no miden lo mismo, así que sin un piso la
+ * columna se corría a cada clic y con ella todas las de al lado.
+ */
+.os-tabla-contacto {
+  min-width: 162px;
+}
+
+/**
+ * El botón de volver a la etapa anterior.
+ *
+ * Retroceder es la excepción, así que va después de la acción principal y
+ * separado por una línea.
+ *
+ * Las reglas van con la clase repetida (`.os-boton.os-boton-volver`) porque
+ * `.os-tabla-trabajo .os-boton` pesa más que una clase sola: sin eso le imponía
+ * su alto y su relleno lateral, y el círculo salía ovalado. El color en estado
+ * activo se declara por lo mismo, si no `.os-boton:hover` le pisaba el azul y
+ * la flecha, que es clara, quedaba invisible sobre fondo claro.
+ */
+.os-volver-caja {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--os-linea);
+}
+
+.os-boton.os-boton-volver {
+  flex: none;
+  width: 23px;
+  min-width: 23px;
+  height: 23px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--os-azul);
+  color: var(--os-panel);
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.os-boton.os-boton-volver:hover:not(:disabled) {
+  background: var(--os-azul);
+  color: var(--os-panel);
+  border-color: transparent;
+  filter: brightness(1.15);
+}
+
+.os-tabla-accion {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.os-tabla-error {
+  color: var(--os-rojo);
+  font-size: 0.82rem;
+  padding-top: 0;
+}
+
+.os-tabla-trabajo a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+
+/* ---------- Ficha del candidato ---------- */
+
+/**
+ * El enlace de vuelta y las pestañas de la ficha.
+ *
+ * Las pestañas son enlaces y no botones porque cada una es una dirección: se
+ * puede compartir, recargar y volver con el botón del navegador.
+ */
+.os-volver-enlace {
+  display: inline-block;
+  margin-bottom: 18px;
+  font-size: 0.82rem;
+  color: var(--os-suave);
+}
+
+.os-volver-enlace:hover {
+  color: var(--os-tinta);
+}
+
+.os-pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 22px;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-pestana {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--os-tinta-media);
+  font-size: 0.84rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.os-pestana:hover {
+  color: var(--os-tinta);
+}
+
+.os-pestana.activa {
+  border-bottom-color: var(--os-tinta);
+  color: var(--os-tinta);
+  font-weight: 600;
+}
+
+/* Cuántas filas hay cargadas detrás de esa pestaña. */
+.os-pestana-cuenta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--os-panel-2);
+  color: var(--os-suave);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.os-pestana.activa .os-pestana-cuenta {
+  background: var(--os-azul);
+  color: var(--os-panel);
+}
+
+/**
+ * Los datos de la ficha, en dos columnas.
+ *
+ * Antes era una tira de catorce renglones a lo ancho del panel, con el rótulo
+ * pegado al borde: la fila no tenía relleno lateral propio y el panel tampoco.
+ * En dos columnas entra todo de una y cada dato ocupa el ancho que necesita.
+ *
+ * El rótulo va arriba del valor y no al costado: un rótulo al costado obliga a
+ * fijarle un ancho, y ese ancho sobra en "Puesto" y falta en "Administrado".
+ */
+/* Rótulo a la izquierda, valor a la derecha, un dato por renglón. */
+.os-ficha-datos {
+  display: grid;
+}
+
+/**
+ * El bloque largo, en dos columnas de pares.
+ *
+ * Doce campos en una sola columna son una tira que no entra en pantalla. La
+ * línea vertical del medio separa los dos pares; la sombra de la derecha se
+ * sale del panel y la corta su recorte.
+ */
+.os-ficha-datos-dos {
+  grid-template-columns: 1fr 1fr;
+}
+
+.os-ficha-datos-dos .os-ficha-dato {
+  grid-template-columns: 132px 1fr;
+  box-shadow: 1px 0 0 var(--os-linea-suave);
+}
+
+.os-ficha-datos-dos .os-ficha-dato:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .os-ficha-datos-dos {
+    grid-template-columns: 1fr;
+  }
+
+  .os-ficha-datos-dos .os-ficha-dato {
+    box-shadow: none;
+  }
+}
+
+/**
+ * Las líneas las dibuja cada celda, no el espacio entre ellas.
+ *
+ * Con `gap` sobre un fondo de color, la última fila incompleta dejaba el hueco
+ * pintado de gris. Como sombra, la línea de la última columna y la de la
+ * última fila se salen del panel y las corta su `overflow: hidden`.
+ */
+.os-ficha-dato {
+  display: grid;
+  grid-template-columns: 168px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-ficha-dato:last-child {
+  border-bottom: 0;
+}
+
+.os-ficha-rotulo {
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-ficha-valor {
+  font-size: 0.88rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* El bloque de datos llena el panel: el borde del panel ya lo enmarca. */
+.os-panel > .os-ficha-datos {
+  border-radius: 0;
+}
+
+.os-ficha-titulo {
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+
+/* Los índices del sumario entran de a muchos y son todos cortos. */
+.os-ficha-indices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 14px;
+}
+
+.os-ficha-indice {
+  padding: 11px 13px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel-2);
+}
+
+.os-ficha-numero {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  margin-top: 3px;
+}
+
+.os-ficha-competencias {
+  display: grid;
+  gap: 16px;
+}
+
+.os-ficha-competencia-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* El nombre lleva a la ficha: que se note que se puede apretar. */
+.os-tabla-ficha {
+  color: inherit;
+  text-decoration: none;
+}
+
+.os-tabla-ficha:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .os-ficha-dato {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+
+/* ---------- Codificación Rorschach ---------- */
+
+/**
+ * La grilla de manchas.
+ *
+ * Es una tabla de carga, no de lectura: entran doce columnas por fila y hasta
+ * treinta filas por protocolo, así que todo va compacto y el marco desplaza en
+ * horizontal cuando no entra.
+ */
+.os-tabla-manchas {
+  width: auto;
+  font-size: 0.82rem;
+}
+
+.os-tabla-manchas th,
+.os-tabla-manchas td {
+  padding: 6px 10px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.os-tabla-manchas th {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+/* El código, con el color que tiene en Airtable. */
+.os-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--os-panel-2);
+  color: #1c1c1c;
+  font-size: 0.76rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.os-chip-quitar {
+  border: 0;
+  background: none;
+  padding: 0 0 0 1px;
+  color: #1c1c1c;
+  opacity: 0.45;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.os-chip-quitar:hover {
+  opacity: 1;
+}
+
+/**
+ * El desplegable va encima de la etiqueta y transparente.
+ *
+ * Así se ve el código con su color y al mismo tiempo se puede elegir otro con
+ * un solo clic, que es como se comporta la celda en Airtable.
+ */
+.os-celda-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+}
+
+.os-select-encima {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.os-celda-select:hover {
+  outline: 1px solid var(--os-linea);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.os-celda-multiple {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 26px;
+}
+
+/* Suma un código más a la celda. */
+.os-chip-agregar {
+  width: 26px;
+  height: 22px;
+  padding: 0;
+  border: 1px dashed var(--os-linea);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--os-suave);
+  font: inherit;
+  font-size: 0.76rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.os-chip-agregar:hover {
+  border-style: solid;
+  color: var(--os-tinta);
+}
+
+/**
+ * Sí o no, del tamaño de un dedo y sin ocupar una columna entera.
+ *
+ * Se llama `os-check` y no `os-tilde` porque esa clase ya existe para la
+ * etiqueta con casilla del filtro de empresa, y su `display` y su `gap` se le
+ * metían encima al botón: el signo quedaba corrido dentro del círculo.
+ */
+.os-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  gap: 0;
+  border: 1px solid var(--os-linea);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--os-suave);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.os-check.puesto {
+  border-color: var(--os-verde);
+  background: var(--os-verde);
+  color: var(--os-panel);
+}
+
+.os-campo-numero {
+  width: 66px;
+}
+
+.os-campo-corto {
+  width: 62px;
+}
+
+.os-tabla-manchas .os-campo {
+  height: 26px;
+  padding: 0 7px;
+  font-size: 0.8rem;
+}
+
+.os-boton.os-boton-borrar {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--os-suave);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.os-boton.os-boton-borrar:hover:not(:disabled) {
+  border-color: var(--os-rojo);
+  background: transparent;
+  color: var(--os-rojo);
+}
+
+
+/**
+ * El sumario que devuelve el motor.
+ *
+ * El rótulo va en texto normal y el valor en monoespaciado con fondo: así una
+ * columna de números se lee de arriba abajo sin que las letras la desalineen,
+ * que es para lo que sirve esta hoja.
+ */
+.os-sumario {
+  margin-bottom: 22px;
+  padding: 20px 22px;
+  border: 1px solid var(--os-linea);
+  border-radius: 12px;
+  background: var(--os-panel);
+}
+
+.os-sumario-titulo {
+  margin: 20px 0 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-sumario-titulo:first-child {
+  margin-top: 0;
+}
+
+.os-sumario-linea {
+  font-size: 0.84rem;
+  line-height: 2;
+}
+
+.os-sumario-rotulo {
+  color: var(--os-tinta-media);
+}
+
+.os-sumario-valor {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: var(--os-panel-2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* La grilla de localización y calidad formal viene alineada con espacios. */
+.os-sumario-grilla {
+  margin: 6px 0 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--os-panel-2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.76rem;
+  line-height: 1.7;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.os-sumario-aviso {
+  border-left: 3px solid var(--os-ambar);
+  padding-left: 12px;
+}
+
+.os-sumario-item {
+  padding-left: 14px;
+}
+
+.os-calcular {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.os-lista-avisos {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+
+/* ---------- Pendientes del equipo ---------- */
+
+/**
+ * Las dos listas de la home: los temas de la reunión y las tareas.
+ *
+ * Una línea por anotación, con el tilde a la izquierda y las acciones a la
+ * derecha. Las acciones se ven al pasar el mouse: son cuatro por línea y en una
+ * lista de quince distraerían más de lo que sirven.
+ */
+.os-pendiente {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-pendiente:last-of-type {
+  border-bottom: 0;
+}
+
+.os-pendiente:hover {
+  background: var(--os-panel-2);
+}
+
+.os-pendiente-texto {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+/* Lo hecho se sigue viendo, apagado: se puede destildar y sirve en la reunión. */
+.os-pendiente.hecha .os-pendiente-texto {
+  color: var(--os-suave);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.os-pendiente-quien {
+  flex: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta-media);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.os-pendiente:hover .os-pendiente-quien {
+  background: var(--os-hover);
+}
+
+.os-pendiente-accion {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--os-suave);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.os-pendiente:hover .os-pendiente-accion,
+.os-pendiente-accion:focus-visible {
+  opacity: 1;
+}
+
+.os-pendiente-accion:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os-pendiente-alta {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-pendiente-alta .os-campo {
+  flex: 1;
+  min-width: 0;
+}
+
+/**
+ * Las cuatro cajas de la home, en dos columnas.
+ *
+ * Una grilla y no dos filas de paneles sueltos: apilados, cada caja terminaba
+ * donde le daba su contenido y los bordes no coincidían. Acá cada fila arranca
+ * a la misma altura y las columnas miden lo mismo.
+ */
+.os-tablero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+/* Dentro de la grilla cada caja se separa por el gap, no por su margen. */
+.os-tablero .os-panel + .os-panel {
+  margin-top: 0;
+}
+
+@media (max-width: 900px) {
+  .os-tablero {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ---------- Costos por trabajo ---------- */
+
+/**
+ * El resultado del trabajo, en un renglón.
+ *
+ * Antes eran cuatro cifras grandes apiladas sobre los gastos: ocupaban más que
+ * la lista que hay que mirar y empujaban los gastos fuera de la pantalla.
+ */
+.os-resumen-linea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--os-linea-suave);
+  background: var(--os-panel-2);
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-resumen-linea .os-dato-rotulo {
+  margin-right: 7px;
+}
+
+/**
+ * Un gasto es un renglón.
+ *
+ * Concepto a la izquierda, importe a la derecha y tipo y fecha en el medio,
+ * en columnas fijas para que los números queden alineados de arriba abajo:
+ * una columna de importes que no se alinea no se puede leer de un vistazo.
+ */
+.os-gasto {
+  display: grid;
+  grid-template-columns: 1fr 92px 132px 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 18px;
+  border-bottom: 1px solid var(--os-linea-suave);
+  font-size: 0.85rem;
+}
+
+.os-gasto:hover {
+  background: var(--os-panel-2);
+}
+
+.os-gasto-concepto {
+  font-weight: 550;
+  letter-spacing: -0.008em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-gasto-fecha {
+  color: var(--os-suave);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.os-gasto-importe {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.os-gasto-baja {
+  text-align: right;
+}
+
+/* La baja aparece al pasar por el renglón: hay una por gasto y siempre visibles
+   compiten con el importe, que es lo que se viene a mirar. */
+.os-gasto-baja button {
+  opacity: 0;
+}
+
+.os-gasto:hover .os-gasto-baja button,
+.os-gasto-baja button:focus-visible {
+  opacity: 1;
+}
+
+@media (max-width: 700px) {
+  .os-gasto {
+    grid-template-columns: 1fr auto 40px;
+  }
+
+  .os-gasto-fecha {
+    display: none;
+  }
+}
+
+
+/* Si la persona entró a trabajar: sí, no, o todavía sin respuesta. */
+.os-ingreso {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+
+/* Grilla y no flex: así todas las opciones miden lo mismo. */
+.os-ingreso-opciones {
+  display: inline-grid;
+  border: 1px solid var(--os-linea);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.os-ingreso-opcion {
+  padding: 4px 14px;
+  min-width: 104px;
+  white-space: nowrap;
+  border: 0;
+  background: transparent;
+  color: var(--os-suave);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.os-ingreso-opcion + .os-ingreso-opcion {
+  border-left: 1px solid var(--os-linea);
+}
+
+.os-ingreso-opcion:hover:not(.puesta):not(:disabled) {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os-ingreso-opcion:disabled {
+  cursor: default;
+}
+
+.os-ingreso-opcion.puesta {
+  background: var(--os-tinta);
+  color: var(--os-panel);
+  font-weight: 550;
+}
+
+.os-ingreso-desde {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.os-ingreso-desde .os-campo {
+  height: 28px;
+  font-size: 0.8rem;
+}
+
+
+/* El número de factura, al lado del tilde. */
+.os-factura {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.os-factura-tilde {
+  border: 1px solid var(--os-linea);
+  border-radius: 999px;
+}
+
+.os-factura-numero {
+  height: 28px;
+  width: 150px;
+  font-size: 0.8rem;
+}
+
+/* El seguimiento a los noventa días, debajo de si entró. */
+.os-seguimiento {
+  display: grid;
+  gap: 10px;
+}
+
+.os-seguimiento-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.os-seguimiento-fila .os-dato-rotulo {
+  min-width: 92px;
+}
+
+.os-seguimiento-cuando {
+  margin-left: 8px;
+  font-size: 0.78rem;
+}
+
+/* Lo que ya venció se marca: es lo que hay que salir a preguntar. */
+.os-seguimiento-cuando.os-vence {
+  color: var(--os-ambar);
+}
+
+.os-seguimiento-cuando.os-suave {
+  color: var(--os-suave);
+}
+
+.os-seguimiento-notas {
+  flex: 1;
+  min-width: 260px;
+  height: auto;
+  padding: 7px 9px;
+  font-size: 0.82rem;
+  resize: vertical;
+}
+
+
+/* El seguimiento ocupa el ancho del bloque: trae sus propias filas adentro. */
+.os-ficha-dato-ancho {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/**
+ * Lo que todavía no corresponde queda apagado, no escondido.
+ *
+ * Antes las filas aparecían recién al contestar que sí, y hasta entonces no se
+ * sabía qué campos tenía la ficha.
+ */
+.os-seguimiento-fila.apagada {
+  opacity: 0.42;
+}
+
+.os-ingreso-fecha {
+  height: 28px;
+  width: 150px;
+  font-size: 0.8rem;
+}
+
+
+/* ---------- Baterías ---------- */
+
+/**
+ * Las tres baterías, con las secciones alineadas entre columnas.
+ *
+ * Antes cada tarjeta medía lo que le daba su descripción, y "Incluye" empezaba
+ * a distinta altura en cada columna: para comparar dos baterías había que
+ * buscar el rótulo en cada una en vez de leer de izquierda a derecha.
+ *
+ * Se resuelve fijando la altura de la descripción, que es lo único que varía
+ * de largo. Probé con `subgrid` anidada y las dos últimas secciones caían en la
+ * misma fila: no vale la pena para tres tarjetas de estructura fija.
+ */
+.os-baterias {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.os-baterias .os-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.os-baterias .os-panel + .os-panel {
+  margin-top: 0;
+}
+
+.os-bateria-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 15px 18px 18px;
+  /* Ocupa todo el panel: sin esto no hay sobrante que repartir y la lista de
+     tests no puede empujar "Entrega" hacia abajo. */
+  flex: 1;
+}
+
+/* Cinco líneas exactas: lo que ocupa la descripción más larga de las tres. */
+.os-baterias .os-fila-detalle {
+  min-height: 7.75em;
+}
+
+/**
+ * La lista de tests absorbe el sobrante, así "Entrega" queda a la misma altura
+ * en las tres aunque una batería tenga un test más que las otras.
+ */
+.os-bateria-cuerpo > .os-bateria-dato:nth-last-child(2) {
+  flex: 1;
+}
+
+.os-bateria-nombre {
+  font-size: 0.9rem;
+  font-weight: 550;
+  letter-spacing: -0.008em;
+}
+
+
+
+.os-bateria-dato {
+  display: grid;
+  gap: 5px;
+}
+
+.os-bateria-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/**
+ * Una lista, no etiquetas sueltas.
+ *
+ * Los tests de una batería son una enumeración con orden, y como etiquetas
+ * quedaban repartidas en dos renglones sin decir cuál sigue a cuál.
+ */
+.os-lista {
+  display: grid;
+  gap: 4px;
+  padding-left: 17px;
+  margin: 0;
+  font-size: 0.84rem;
+  list-style: disc;
+}
+
+.os-lista li::marker {
+  color: var(--os-linea);
+}
+
+/* Lo que no viene incluido de fábrica. */
+.os-lista-opcional {
+  color: var(--os-suave);
+}
+
+/* Lo que sale la batería con el adicional sumado. */
+.os-precio-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--os-linea);
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-precio-total .os-dato-rotulo {
+  margin-right: 0;
+}
+
+/* De dónde sale el equivalente en dólares. */
+.os-precio-cotizacion {
+  font-size: 0.76rem;
+  color: var(--os-suave);
+}
+
+.os-precio-cambio {
+  margin-left: 9px;
+  font-family: var(--os-fuente, inherit);
+  font-size: 0.76rem;
+  color: var(--os-suave);
+  letter-spacing: 0;
+}
+
+
+/* ---------- Precio de la batería ---------- */
+
+.os-precio {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel-2);
+}
+
+.os-precio-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.os-precio-valor {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.3rem;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-precio-cambiar {
+  height: 28px;
+  padding: 0 11px;
+  font-size: 0.77rem;
+}
+
+/* Un aumento ya cargado que todavía no rige. */
+.os-precio-proximo {
+  font-size: 0.79rem;
+  color: var(--os-ambar);
+}
+
+.os-precio-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-precio-form .os-boton {
+  grid-column: 1 / -1;
+}
+
+.os-precio-nota {
+  grid-column: 1 / -1;
+  font-size: 0.74rem;
+  color: var(--os-suave);
+}
+
+.os-precio-historia summary {
+  font-size: 0.77rem;
+  color: var(--os-suave);
+  cursor: pointer;
+}
+
+.os-precio-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 0.79rem;
+  font-variant-numeric: tabular-nums;
+}
