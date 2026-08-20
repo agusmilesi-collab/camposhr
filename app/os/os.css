@@ -593,6 +593,13 @@ html[data-os-lateral='compacta'] .os-boton-pie {
   margin-top: 18px;
 }
 
+/* Por citar y Agendadas son dos trabajos distintos, no dos partes de la misma
+   lista: llamar y recibir. La separación mayor es lo que evita leerlas de
+   corrido. */
+.os-bloque-entrevistas + .os-bloque-entrevistas {
+  margin-top: 50px;
+}
+
 .os-panel-top {
   display: flex;
   align-items: baseline;
@@ -1335,34 +1342,6 @@ textarea.os-campo {
   color: var(--os-rojo);
 }
 
-/* La rejilla pareja: dos paneles del mismo ancho y la misma altura. */
-.os-rejilla-pareja {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
-}
-
-/* El margen que separa paneles apilados no corresponde adentro de una grilla:
-   ahí los separa el gap, y el margen deja al segundo panel catorce píxeles más
-   abajo que el primero. */
-.os-rejilla-pareja > .os-panel + .os-panel {
-  margin-top: 0;
-}
-
-.os-rejilla-pareja > .os-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.os-rejilla-pareja > .os-panel > .os-panel-cuerpo {
-  flex: 1;
-}
-
-@media (max-width: 1000px) {
-  .os-rejilla-pareja {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 /* Una acción al final de una fila necesita aire: pegada al importe se lee
    como parte del número y se hace clic sin querer. */
 .os-fila-accion {
@@ -1442,6 +1421,64 @@ textarea.os-campo {
 
 .os-cajon-cuerpo {
   padding: 18px 20px 28px;
+}
+
+/* La etapa y el cliente arriba del formulario: dicen dónde está parada la
+   persona antes de tocarle un campo. */
+.os-cajon-sello {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  color: var(--os-suave);
+  font-size: 0.82rem;
+}
+
+/**
+ * Lo que no se deshace, separado del resto.
+ *
+ * Va al final y detrás de una confirmación escrita, no de un botón más: entre
+ * guardar un teléfono y borrar a una persona tiene que haber una frontera que
+ * se vea.
+ */
+.os-cajon-riesgo {
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-cajon-riesgo p {
+  margin: 0 0 12px;
+  color: var(--os-tinta-media);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.os-enlace-peligro {
+  color: var(--os-rojo);
+}
+
+.os-enlace-peligro:hover {
+  color: var(--os-rojo);
+}
+
+.os-boton-peligro {
+  border-color: var(--os-rojo);
+  background: var(--os-rojo);
+  color: #fff;
+}
+
+.os-boton-peligro:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+/* El fieldset agrupa los campos para poder apagarlos todos juntos y no dibuja
+   nada: siguen cayendo en la grilla del formulario que los contiene. */
+.os-form-campos {
+  display: contents;
+  border: 0;
+  margin: 0;
+  padding: 0;
 }
 
 /* ---------- Tabla ---------- */
@@ -1529,7 +1566,9 @@ textarea.os-campo {
 
 .os-kanban {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Una columna por evaluadora más la de sin dueño: el número lo pone
+     `Reparto.tsx` en `--os-columnas`. */
+  grid-template-columns: repeat(var(--os-columnas, 4), minmax(0, 1fr));
   gap: 14px;
   align-items: start;
 }
@@ -1685,6 +1724,58 @@ textarea.os-campo {
   display: flex;
   gap: 10px;
   margin-bottom: 16px;
+}
+
+/* El botón del enlace del Raven y lo que dice después de copiarlo. */
+.os-link-raven {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.os-link-raven .os-boton {
+  height: 28px;
+  padding: 0 11px;
+  font-size: 0.78rem;
+}
+
+/**
+ * La grilla de codificación y su pie, del mismo ancho.
+ *
+ * La tabla mide lo que miden sus columnas y no todo el espacio disponible.
+ * Sin esto el pie se estiraba de más y el botón quedaba cien píxeles a la
+ * derecha del borde de la tabla.
+ */
+.os-manchas {
+  width: fit-content;
+  max-width: 100%;
+}
+
+/**
+ * El pie de la grilla.
+ *
+ * Pegado a la última fila se leía como parte de la tabla, así que se separa.
+ * El botón que cierra el protocolo va contra el borde derecho, debajo de la
+ * columna de la cruz de borrar: es el final del trabajo, no una acción más de
+ * la fila.
+ */
+.os-manchas-pie {
+  align-items: flex-start;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.os-manchas-pie .os-columna-monto {
+  align-self: center;
+}
+
+.os-manchas-pie .os-calcular {
+  margin-left: auto;
+  margin-top: 0;
+  align-items: flex-end;
+  text-align: right;
+  max-width: 520px;
 }
 
 /* La fila del filtro: el selector y el aviso de lo que queda afuera. */
@@ -1855,6 +1946,39 @@ textarea.os-campo {
   color: var(--os-tinta);
 }
 
+/**
+ * Las preguntas del pedido y el cierre, adentro de su panel.
+ *
+ * `.os-ficha-datos` no tiene relleno: se lo ponen las filas de rótulo y valor,
+ * que llevan el suyo. Lo que va suelto en un bloque, como las nueve preguntas
+ * o el botón de cerrar, necesita el relleno propio o queda pegado al borde.
+ */
+.os-panel > .os-ficha-datos > .os-pedido-suelto {
+  grid-column: 1 / -1;
+  padding: 16px 18px 18px;
+}
+
+/* Cerrar un pedido es el único cambio de esa ficha que se ve en otra pantalla,
+   así que pide y explica antes de hacerlo. */
+.os-pedido-cierre {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.os-pedido-aviso,
+.os-pedido-cerrado {
+  margin: 0;
+  color: var(--os-suave);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.os-pedido-cierre .os-agregar-pie {
+  align-self: stretch;
+}
+
 .os-pestanas {
   display: flex;
   flex-wrap: wrap;
@@ -1989,6 +2113,565 @@ textarea.os-campo {
   border-radius: 0;
 }
 
+/**
+ * Por analizar, en tarjetas.
+ *
+ * Cada una es una persona a la que hay que entrar. La grilla se acomoda sola
+ * al ancho, con un mínimo que alcanza para el nombre completo y el puesto sin
+ * cortar.
+ */
+.os-analizar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 14px;
+}
+
+/* La tarjeta entera lleva a la ficha: el trabajo de esta etapa es entrar. */
+.os-analizar-card {
+  display: grid;
+  gap: 4px;
+  padding: 15px 16px 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 12px;
+  background: var(--os-panel);
+  box-shadow: var(--os-sombra-panel);
+  color: inherit;
+  text-decoration: none;
+}
+
+.os-analizar-card:hover {
+  border-color: var(--os-tinta-media);
+}
+
+.os-analizar-nombre {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--os-tinta);
+}
+
+.os-analizar-card:hover .os-analizar-nombre {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.os-analizar-puesto {
+  color: var(--os-suave);
+  font-size: 0.83rem;
+}
+
+/* La batería y la espera, que es con lo que se elige por cuál seguir. */
+.os-analizar-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--os-linea-suave);
+  font-size: 0.84rem;
+}
+
+.os-analizar-dato {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.os-analizar-rotulo {
+  color: var(--os-suave);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.os-analizar-dato.demorada {
+  color: var(--os-rojo);
+  font-weight: 600;
+}
+
+.os-analizar-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/**
+ * Con qué cierra la evaluación.
+ *
+ * La tarjeta tiene ancho de lectura y no el de la pantalla: adentro hay un
+ * selector y un texto que se escribe en párrafos, y estirada hasta el borde
+ * deja el contenido apretado contra la izquierda con medio metro de nada al
+ * lado.
+ */
+.os-cierre {
+  max-width: 820px;
+}
+
+.os-conclusion {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+}
+
+.os-conclusion-elegida {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.os-conclusion select.os-campo {
+  width: 240px;
+  height: 32px;
+  font-size: 0.85rem;
+}
+
+.os-conclusion-notas {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+
+.os-conclusion-notas .os-campo {
+  width: 100%;
+  padding: 11px 13px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+/**
+ * La hoja del Benziger.
+ *
+ * La tabla del perfil con el más alto y el más bajo marcados, y las cruces
+ * dibujadas en cruz: Frontal arriba, Basal abajo, que es la disposición del
+ * modelo. La diagonal se ve de un vistazo y en una lista de números no.
+ */
+/* Lo que escribió pide más ancho que la lista de acontecimientos: son
+   párrafos contra renglones sueltos. */
+.os-bz-cierre {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
+
+/* Pasado cierto ancho las tarjetas quedan medio vacías y la lectura se
+   dispersa: la hoja del Benziger tiene tope. */
+.os-bz-hoja {
+  max-width: 1120px;
+}
+
+.os-bz-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.os-bz-tabla th {
+  padding: 4px 6px;
+  color: var(--os-suave);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.os-bz-tabla tbody th {
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.79rem;
+  font-weight: 500;
+  color: var(--os-tinta-media);
+  white-space: nowrap;
+}
+
+.os-bz-tabla td {
+  padding: 4px 6px;
+  text-align: center;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-bz-total td,
+.os-bz-total th {
+  border-top: 2px solid var(--os-linea);
+}
+
+/* El total joven es otra medición: se despega del bloque adulto. */
+.os-bz-aparte td,
+.os-bz-aparte th {
+  padding-top: 12px;
+}
+
+.os-bz-celda {
+  white-space: nowrap;
+}
+
+.os-bz-valor {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/**
+ * El punto que marca el cuadrante: azul el más alto, rojo el más bajo.
+ *
+ * Va al lado del número y no como color del número: un número teñido se
+ * confunde con un dato en alerta, y acá lo que dice es en qué extremo de la
+ * fila está.
+ */
+.os-bz-punto {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 4px;
+  border-radius: 50%;
+  vertical-align: 1px;
+  flex: none;
+}
+
+.os-bz-punto.alto {
+  background: var(--os-azul);
+}
+
+.os-bz-punto.bajo {
+  background: var(--os-rojo);
+}
+
+/* La escala de alerta, de 12 a 0, con el valor marcado y sus tres zonas. */
+.os-bz-alerta {
+  margin-bottom: 16px;
+}
+
+.os-bz-escala {
+  margin-top: 6px;
+}
+
+.os-bz-pasos,
+.os-bz-zonas {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  gap: 2px;
+}
+
+/* Las zonas siguen el mismo corte que los casilleros de arriba. */
+.os-bz-zona:not(:last-child) {
+  margin-right: 7px;
+}
+
+.os-bz-paso {
+  padding: 3px 0;
+  border-radius: 4px;
+  background: var(--os-panel-2);
+  color: var(--os-suave);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+  text-align: center;
+}
+
+/* Dónde termina una categoría y empieza la otra: el hueco es más ancho y una
+   línea lo cierra. */
+.os-bz-paso.corte {
+  position: relative;
+  margin-right: 7px;
+}
+
+/* La línea va en el hueco, derecha y del alto del casillero: pegada al
+   casillero tomaba su redondeo y se curvaba. */
+.os-bz-paso.corte::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -4px;
+  border-right: 1px solid var(--os-tinta-media);
+}
+
+.os-bz-paso.aca {
+  background: var(--os-azul);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* El nombre de cada zona, debajo de los casilleros que abarca. */
+.os-bz-zonas {
+  margin-top: 3px;
+}
+
+.os-bz-zona {
+  color: var(--os-suave);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-bz-zona.aca {
+  color: var(--os-tinta-media);
+  font-weight: 600;
+}
+
+/* Las cruces van todas en un renglón: se leen comparándolas entre sí, y
+   partidas en dos filas esa comparación se pierde. Se reparten el ancho, sean
+   tres o cuatro. */
+.os-bz-cruces {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.os-bz-cruz {
+  min-width: 0;
+}
+
+/**
+ * La cruz: Frontal arriba, Basal abajo, partida por dos líneas.
+ *
+ * Las líneas son la cruz del modelo y no una decoración: separan izquierda de
+ * derecha y frontal de basal, que son los dos ejes que se leen. Los cuadrantes
+ * van cuadrados porque así están dibujados en el material del test.
+ */
+.os-bz-cuadrantes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  max-width: 106px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.os-bz-cuadrante {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1px;
+  aspect-ratio: 1;
+  padding: 3px;
+  background: var(--os-panel-2);
+}
+
+/**
+ * El cuadrante entero pintado, y no un punto al lado del número.
+ *
+ * A este tamaño un punto de siete píxeles no se distingue; el color del
+ * cuadrante se ve de lejos y deja leer la diagonal sin mirar los números.
+ */
+.os-bz-cuadrante.alto {
+  background: var(--os-azul);
+  color: var(--os-panel);
+}
+
+.os-bz-cuadrante.bajo {
+  background: var(--os-rojo);
+  color: var(--os-panel);
+}
+
+.os-bz-cuadrante.alto .os-bz-sigla,
+.os-bz-cuadrante.bajo .os-bz-sigla {
+  color: inherit;
+  opacity: 0.75;
+}
+
+/* Las dos líneas de la cruz, puestas con los bordes de las celdas. */
+.os-bz-cuadrante:nth-child(1),
+.os-bz-cuadrante:nth-child(3) {
+  border-right: 1px solid var(--os-linea);
+}
+
+.os-bz-cuadrante:nth-child(1),
+.os-bz-cuadrante:nth-child(2) {
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-bz-sigla {
+  color: var(--os-suave);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.os-bz-numero {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.os-bz-lectura {
+  margin: 7px 0 0;
+  color: var(--os-suave);
+  font-size: 0.7rem;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+/* La diagonal es el caso que cierra: se marca. */
+.os-bz-lectura.diagonal {
+  color: var(--os-tinta-media);
+  font-weight: 500;
+}
+
+.os-bz-texto {
+  margin: 0;
+  color: var(--os-tinta-media);
+  font-size: 0.81rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.os-hoja-nota-tl {
+  margin: 9px 0 0;
+  color: var(--os-suave);
+  font-size: 0.73rem;
+  line-height: 1.4;
+}
+
+/* El selector del navegador, escondido: dice "Ningún archivo seleccionado"
+   aunque ya haya un informe subido, así que lo abre un botón propio. */
+.os-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Adentro de una grilla, los paneles no se separan con margen: los separa el
+   gap, y el margen deja al segundo más abajo que al primero. */
+.os-hoja-fila > .os-panel + .os-panel {
+  margin-top: 0;
+}
+
+/* La cruz para elegir el cuadrante: la misma disposición que las cruces de
+   lectura, Frontal arriba y Basal abajo. */
+.os-benziger-cruz {
+  display: grid;
+  grid-template-columns: repeat(2, 46px);
+  width: max-content;
+  flex: none;
+  border: 1px solid var(--os-linea);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.os-benziger-cuadrante {
+  aspect-ratio: 1;
+  border: 0;
+  background: var(--os-panel-2);
+  color: var(--os-tinta-media);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.os-benziger-cuadrante:nth-child(1),
+.os-benziger-cuadrante:nth-child(3) {
+  border-right: 1px solid var(--os-linea);
+}
+
+.os-benziger-cuadrante:nth-child(1),
+.os-benziger-cuadrante:nth-child(2) {
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-benziger-cuadrante:hover {
+  color: var(--os-tinta);
+  background: var(--os-linea-suave);
+}
+
+.os-benziger-cuadrante.elegido {
+  background: var(--os-azul);
+  color: var(--os-panel);
+}
+
+.os-benziger-elegido {
+  margin: 0;
+  color: var(--os-tinta);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* La cruz a la izquierda y lo que hay que hacer con ella a la derecha: puesto
+   debajo, la tarjeta crecía sin necesidad. */
+.os-benziger-eleccion {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Qué va a pasar al subir el informe, o qué pasó. */
+.os-benziger-aviso {
+  margin: 10px 0 0;
+  color: var(--os-suave);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+/* El botón que sube el informe, contra el borde de su cabecera. */
+.os-panel-top .os-boton {
+  margin-left: auto;
+  align-self: center;
+  height: 28px;
+  padding: 0 12px;
+  font-size: 0.78rem;
+}
+
+/* El informe que está puesto: su nombre, con qué hacer al lado. */
+.os-benziger-archivo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 11px;
+  border: 1px solid var(--os-linea);
+  border-radius: 9px;
+  background: var(--os-panel-2);
+  font-size: 0.82rem;
+}
+
+.os-benziger-nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+}
+
+/* El archivo elegido y todavía no subido: se dice, no se supone. */
+.os-benziger-pendiente {
+  color: var(--os-ambar);
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.os-benziger-archivo a {
+  color: var(--os-tinta-media);
+  font-size: 0.79rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+/* El botón que sube lo escrito, con el aviso al lado de si quedó algo sin
+   cargar. */
+.os-conclusion-pie {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
 .os-ficha-titulo {
   font-size: 0.92rem;
   font-weight: 600;
@@ -1996,20 +2679,7 @@ textarea.os-campo {
   margin-bottom: 12px;
 }
 
-/* Los índices del sumario entran de a muchos y son todos cortos. */
-.os-ficha-indices {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 14px;
-}
-
-.os-ficha-indice {
-  padding: 11px 13px;
-  border: 1px solid var(--os-linea);
-  border-radius: 10px;
-  background: var(--os-panel-2);
-}
-
+/* El puntaje de una competencia del informe. */
 .os-ficha-numero {
   font-size: 1.05rem;
   font-variant-numeric: tabular-nums;
@@ -2292,6 +2962,257 @@ textarea.os-campo {
   padding-left: 14px;
 }
 
+/**
+ * La hoja de cálculos numéricos.
+ *
+ * Los bloques caen donde están en el papel: tres arriba, cuatro abajo y las
+ * constelaciones en fila al pie. Buscar un dato es mirar el mismo lugar en la
+ * pantalla y en la hoja.
+ *
+ * Los bloques de una misma fila miden lo mismo: tres arriba del mismo alto y
+ * cuatro abajo del mismo alto, para que la hoja se lea como una grilla y no
+ * como recortes de distinto tamaño.
+ *
+ * Adentro de cada bloque los campos van en celdas de igual ancho y el valor va
+ * pegado a su rótulo, que es como se lee: primero qué es, después cuánto dio.
+ */
+.os-hoja {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 22px;
+}
+
+.os-hoja-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--os-panel-2);
+}
+
+.os-hoja-fila {
+  display: grid;
+  grid-template-columns: repeat(var(--os-hoja-columnas, 3), minmax(0, 1fr));
+  gap: 12px;
+}
+
+.os-hoja-bloque {
+  padding: 13px 15px 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 12px;
+  background: var(--os-panel);
+  min-width: 0;
+}
+
+.os-hoja-titulo {
+  margin: 0 0 9px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--os-linea);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--os-tinta-media);
+}
+
+/* Dos campos por renglón mientras entren; uno solo cuando el bloque se
+   angosta. El ancho mínimo es el de un rótulo corto más su valor. */
+.os-hoja-campos {
+  display: grid;
+  /* Dos columnas fijas, como la hoja. Con un ancho mínimo por celda los
+     bloques angostos de la fila de abajo caían en una sola columna y los de
+     arriba en dos, y la hoja dejaba de leerse pareja. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+  align-content: start;
+}
+
+/* El desglose de eb va en tres columnas y se llena hacia abajo: FM sobre m,
+   C' sobre V, T sobre Y, como está impreso en la hoja. */
+.os-hoja-tercios {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, auto);
+  grid-auto-flow: column;
+  gap: 0 12px;
+}
+
+/* La línea punteada de la hoja, del ancho del bloque. */
+.os-hoja-corte {
+  grid-column: 1 / -1;
+  margin: 7px 0;
+  border: 0;
+  border-top: 1px dashed var(--os-linea);
+}
+
+.os-hoja-par {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 4px 0;
+  font-size: 0.88rem;
+  min-width: 0;
+}
+
+/* El rótulo largo y la cuenta a la vista no se parten: toman el renglón. */
+.os-hoja-par-ancho {
+  grid-column: 1 / -1;
+}
+
+.os-hoja-par-ancho .os-hoja-rotulo {
+  min-width: 0;
+}
+
+/* Cada línea del motor empieza a la izquierda: los campos que van juntos no
+   se mezclan con los de la línea de arriba para llenar un hueco. */
+.os-hoja-par-inicio {
+  grid-column-start: 1;
+}
+
+.os-hoja-rotulo {
+  color: var(--os-tinta-media);
+  font-weight: 500;
+}
+
+.os-hoja-valor {
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.os-hoja-nota {
+  color: var(--os-suave);
+  font-size: 0.78rem;
+}
+
+.os-hoja-sueltas {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  color: var(--os-tinta-media);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+/* Las seis constelaciones, del ancho de la hoja y con la positiva marcada:
+   es lo primero que se busca al abrir el sumario. */
+.os-hoja-constelaciones {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.os-hoja-indice {
+  padding: 11px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--os-panel-2);
+  text-align: center;
+}
+
+.os-hoja-indice .os-hoja-rotulo {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.os-hoja-numero {
+  margin: 5px 0 3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.12rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-tinta);
+}
+
+.os-hoja-indice .os-hoja-nota {
+  font-size: 0.74rem;
+}
+
+.os-hoja-indice.positiva {
+  border-color: var(--os-ambar);
+}
+
+.os-hoja-indice.positiva .os-hoja-nota {
+  color: var(--os-ambar);
+  font-weight: 600;
+}
+
+/* El cierre de la hoja: dos tarjetas del mismo ancho y del mismo alto, las
+   constelaciones y los códigos especiales. */
+.os-hoja-cierre {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* A media hoja las seis entran de a tres. */
+.os-hoja-cierre .os-hoja-constelaciones {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* El detalle de una constelación positiva, en la misma tarjeta y detrás de
+   una línea: es la cuenta de ese puntaje, no otro tema. */
+.os-hoja-detalle {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--os-linea);
+}
+
+.os-hoja-subtitulo {
+  margin: 0 0 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--os-tinta-media);
+}
+
+.os-hoja-detalle .os-hoja-sueltas {
+  margin-top: 0;
+}
+
+/* En pantallas angostas la hoja se apila: dos bloques de siete campos al lado
+   del otro no entran, y partidos se leen peor que uno abajo del otro. */
+@media (max-width: 1200px) {
+  .os-hoja-fila {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .os-hoja-cierre {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-hoja-constelaciones {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .os-hoja-fila {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-hoja-campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-hoja-constelaciones {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .os-calcular {
   display: flex;
   flex-direction: column;
@@ -2525,6 +3446,74 @@ textarea.os-campo {
 }
 
 /* Grilla y no flex: así todas las opciones miden lo mismo. */
+/* El Raven: el puntaje que se carga y lo que sale de él. */
+.os-raven {
+  display: grid;
+  gap: 12px;
+}
+
+.os-raven-carga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 26px;
+}
+
+.os-raven-campo {
+  display: grid;
+  gap: 6px;
+}
+
+.os-raven-entrada {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.os-raven-entrada .os-campo {
+  width: 84px;
+  height: 34px;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-raven-sobre {
+  color: var(--os-suave);
+  font-size: 0.8rem;
+}
+
+/* Lo derivado, al lado y no debajo: se lee junto al puntaje que lo produce. */
+.os-raven-derivados {
+  display: flex;
+  gap: 22px;
+  padding-bottom: 7px;
+}
+
+.os-raven-rango {
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-linea-suave);
+  color: var(--os-tinta);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+/* Lo que se administró: cada test con su sí o no. */
+.os-administrados {
+  display: grid;
+  gap: 12px;
+}
+
+.os-administrado {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.os-administrado .os-dato-rotulo {
+  min-width: 150px;
+}
+
 .os-ingreso-opciones {
   display: inline-grid;
   border: 1px solid var(--os-linea);
@@ -2930,6 +3919,22 @@ textarea.os-campo {
   font-size: 0.82rem;
 }
 
+/* El archivo del CV no entra en el renglón de 30 px que sirve para el resto
+   de los campos: su botón es más alto. */
+.os-agregar-abierto .os-agregar-archivo {
+  height: auto;
+  padding: 6px 8px;
+}
+
+/* El rótulo arriba del campo, para el que no se explica con un texto adentro:
+   el archivo muestra su botón y nada más. */
+.os-agregar-rotulo {
+  display: grid;
+  gap: 4px;
+  color: var(--os-suave);
+  font-size: 0.74rem;
+}
+
 /* Lo que casi nunca se toca, a un clic de distancia y sin ocupar lugar. */
 .os-agregar-mas-datos {
   justify-self: start;
@@ -2959,14 +3964,24 @@ textarea.os-campo {
   font-size: 0.8rem;
 }
 
+/* El adicional del pedido: una casilla con su texto al lado, en el renglón. */
+.os-agregar-opcion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--os-tinta);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.os-agregar-opcion input {
+  margin: 0;
+}
+
 
 /* El día de la semana va con la fecha, en la misma letra: es parte del dato. */
 .os-tabla-cuando {
   white-space: nowrap;
-}
-
-.os-tabla-cuando::first-letter {
-  text-transform: uppercase;
 }
 
 /**
@@ -2988,6 +4003,7 @@ textarea.os-campo {
  * `overflow-x`.
  */
 .os-tabla-fija {
+  width: var(--os-tabla-ancho);
   max-width: none;
   table-layout: fixed;
 }
@@ -3050,4 +4066,129 @@ textarea.os-campo {
 .os-tabla-fija input[type='datetime-local'],
 .os-tabla-fija select.os-campo {
   width: 100%;
+}
+
+
+/* ---------- La tabla en el teléfono ---------- */
+/**
+ * Abajo de 760 px la tabla se desarma: cada fila pasa a ser una ficha y cada
+ * celda un renglón de "campo: valor", con el nombre del campo sacado de
+ * `data-campo`.
+ *
+ * La alternativa era dejarla desplazándose de costado, y ahí un dato cualquiera
+ * obliga a arrastrar la pantalla y a perder de vista de quién es la fila. En el
+ * teléfono lo que se hace es mirar y llamar, no recorrer una grilla.
+ *
+ * El encabezado se oculta porque el rótulo viaja en cada celda. La columna de
+ * acción no lleva rótulo y queda al pie de la ficha, que es donde se toca.
+ */
+
+@media (max-width: 760px) {
+  .os-tabla-marco {
+    overflow-x: visible;
+  }
+
+  .os-panel:has(> .os-tabla-marco > .os-tabla-trabajo) {
+    width: auto;
+  }
+
+  .os-tabla-fija {
+    width: 100%;
+    display: block;
+    table-layout: auto;
+  }
+
+  .os-tabla-fija colgroup,
+  .os-tabla-fija thead {
+    display: none;
+  }
+
+  .os-tabla-fija tbody {
+    display: block;
+  }
+
+  /* La ficha es flexible en columna para poder subir el nombre: en Agendadas
+     la tabla arranca por la fecha, y en una ficha el título es de quién es. */
+  .os-tabla-fija tr {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+  }
+
+  .os-tabla-fija td[data-campo='Candidato'] {
+    order: -1;
+  }
+
+  .os-tabla-fija tbody tr + tr {
+    border-top: 1px solid var(--os-linea-suave);
+  }
+
+  .os-tabla-fija td {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    width: auto;
+    min-height: 0;
+    padding: 5px 16px;
+    border: 0;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .os-tabla-fija td[data-campo]::before {
+    content: attr(data-campo);
+    flex: 0 0 92px;
+    /* Los rótulos arrancan todos en el mismo borde: las celdas de número van
+       alineadas a la derecha y sin esto el rótulo se les iba con el valor. */
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--os-suave);
+  }
+
+  /* El nombre abre la ficha, así que va solo y más grande: es el título. */
+  .os-tabla-fija td[data-campo='Candidato'] {
+    padding-bottom: 9px;
+  }
+
+  .os-tabla-fija td[data-campo='Candidato']::before {
+    display: none;
+  }
+
+  .os-tabla-fija .os-tabla-nombre {
+    font-size: 1rem;
+    white-space: normal;
+  }
+
+  /* Los campos que se editan ocupan el ancho que les queda: un selector de
+     fecha apretado en 92 px no se puede usar con el dedo. */
+  .os-tabla-fija td > .os-campo,
+  .os-tabla-fija td > input[type='datetime-local'],
+  .os-tabla-fija td > select.os-campo {
+    flex: 1;
+    min-height: 40px;
+  }
+
+  .os-tabla-fija td.os-tabla-accion {
+    justify-content: flex-start;
+    padding-top: 10px;
+  }
+
+  .os-tabla-fija td.os-tabla-accion .os-boton {
+    min-height: 40px;
+  }
+
+  .os-tabla-fija .os-tabla-num {
+    justify-content: flex-start;
+  }
+
+  .os-tabla-fija .os-tabla-pedido {
+    flex: 1;
+  }
+
+  /* Dos fichas seguidas necesitan menos aire entre bloques que dos tablas. */
+  .os-bloque-entrevistas + .os-bloque-entrevistas {
+    margin-top: 26px;
+  }
 }

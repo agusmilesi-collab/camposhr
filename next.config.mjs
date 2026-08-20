@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // El lector de PDF corre en Node y trae su propio worker en un archivo
+  // aparte. Empaquetado por Next, ese archivo no queda donde la librería lo
+  // busca y la lectura falla; declarado como externo se carga desde
+  // node_modules, que es donde está.
+  experimental: {
+    serverComponentsExternalPackages: ['pdfjs-dist'],
+  },
   // Los documentos de los clientes se leen del disco en tiempo de pedido y no
   // están en /public, así que hay que decirle a Next que los suba: lo que no
   // se importa desde el código no viaja al paquete de la función.

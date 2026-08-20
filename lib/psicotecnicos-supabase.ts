@@ -42,6 +42,7 @@ const COLUMNA: Record<string, string> = {
   benderAdministrado: 'bender_administrado',
   graficoAdministrado: 'grafico_2_personas_administrado',
   recomendacion: 'recomendacion',
+  recomendacionNotas: 'recomendacion_notas',
   ingreso: 'ingreso',
   fechaIngresoEmpresa: 'fecha_ingreso_empresa',
   numeroFactura: 'numero_factura',
@@ -64,8 +65,14 @@ type Fila = {
   grafico_2_personas_administrado: boolean;
   recomendacion: string | null;
   informe_path: string | null;
-  personas: { nombre: string; email: string | null; telefono: string | null } | null;
+  personas: {
+    nombre: string;
+    email: string | null;
+    telefono: string | null;
+    cv_path: string | null;
+  } | null;
   evaluadoras: { nombre: string } | null;
+  pedido_id: string | null;
   pedidos: {
     puesto: string;
     empresas: { nombre: string } | null;
@@ -76,7 +83,7 @@ type Fila = {
 const CAMPOS =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'bender_administrado,grafico_2_personas_administrado,recomendacion,informe_path,' +
-  'personas(nombre,email,telefono),evaluadoras(nombre),' +
+  'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
   'pedidos(puesto,empresas(nombre),baterias(codigo))';
 
 export async function listar(): Promise<Evaluacion[]> {
@@ -93,6 +100,7 @@ export async function listar(): Promise<Evaluacion[]> {
     nombre: f.personas?.nombre ?? 'Sin nombre',
     empresa: f.pedidos?.empresas?.nombre ?? 'Sin empresa',
     puesto: f.pedidos?.puesto ?? 'Sin puesto',
+    pedidoId: f.pedido_id,
     bateria: f.pedidos?.baterias?.codigo ?? null,
     email: f.personas?.email ?? null,
     telefono: f.personas?.telefono ?? null,
@@ -108,9 +116,11 @@ export async function listar(): Promise<Evaluacion[]> {
     linkRaven: null,
     recomendacion: f.recomendacion,
     tieneInforme: Boolean(f.informe_path),
+    tieneCv: Boolean(f.personas?.cv_path),
     servicio: null,
     dias: diasDesde(f.fecha_entrevista, hoy),
     diasEsperando: f.fecha_entrevista ? null : diasDesde(f.fecha_ingreso, hoy),
+    diasSolicitud: diasDesde(f.fecha_ingreso, hoy),
     prueba: /^distribuidora andina/i.test(f.pedidos?.empresas?.nombre ?? ''),
   }));
 }

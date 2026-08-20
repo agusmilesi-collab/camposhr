@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import FiltroEmpresa from '../FiltroEmpresa';
 import Shell from '../../Shell';
 import TablaEtapa from '../Tabla';
+import PorAnalizar from '../PorAnalizar';
 import Reparto from '../Reparto';
 import Agregar from '../Agregar';
 import { cargar, porEspera, visiblesEn } from '../datos';
@@ -44,6 +45,8 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
     evaluadoras,
     pedidos,
     evaluadorasAlta,
+    empresasAlta,
+    bateriasAlta,
   } = await cargar();
   const filas = porEspera(visiblesEn(todas, seccion, yo));
 
@@ -84,8 +87,14 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
           sinAsignar={filas}
           asignadas={asignadas}
           evaluadoras={evaluadoras}
+          pedidos={pedidos}
           alta={
-            <Agregar pedidos={pedidos} evaluadoras={evaluadorasAlta} yo={yo.evaluadora} />
+            <Agregar
+              pedidos={pedidos}
+              empresas={empresasAlta}
+              baterias={bateriasAlta}
+              evaluadoras={evaluadorasAlta}
+            />
           }
         />
       )}
@@ -100,7 +109,7 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
         ].map((b) => {
           const suyas = filas.filter((f) => f.etapa === b.etapa);
           return (
-            <section className="os-panel" key={b.etapa}>
+            <section className="os-panel os-bloque-entrevistas" key={b.etapa}>
               <div className="os-panel-top">
                 <h2>{b.titulo}</h2>
                 <span className="os-columna-monto">
@@ -116,7 +125,22 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
           );
         })}
 
-      {!esReparto && seccion.ruta !== 'entrevistas' && (
+      {/* Por analizar va en tarjetas: en esa etapa el trabajo es entrar a cada
+          persona a leer lo suyo, no recorrer una lista de filas. */}
+      {seccion.ruta === 'por-analizar' &&
+        (filas.length === 0 ? (
+          <section className="os-panel">
+            <p className="os-vacio">
+              {yo.alcance === 'todo'
+                ? 'No hay nadie esperando análisis.'
+                : `${yo.nombre} no tiene nada para analizar.`}
+            </p>
+          </section>
+        ) : (
+          <PorAnalizar filas={filas} />
+        ))}
+
+      {!esReparto && seccion.ruta !== 'entrevistas' && seccion.ruta !== 'por-analizar' && (
         <section className="os-panel">
           {filas.length === 0 ? (
             <p className="os-vacio">

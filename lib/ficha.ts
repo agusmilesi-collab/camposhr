@@ -26,6 +26,8 @@ export type Cabecera = {
   bender_administrado: boolean;
   grafico_2_personas_administrado: boolean;
   recomendacion: string | null;
+  /** Por qué cierra así, escrito por la evaluadora. */
+  recomendacion_notas: string | null;
   informe_path: string | null;
   facturado: boolean;
   pagado: boolean;
@@ -42,7 +44,13 @@ export type Cabecera = {
   pedidos: {
     puesto: string;
     empresas: { nombre: string } | null;
-    baterias: { id: string; codigo: string; nombre: string | null } | null;
+    baterias: {
+      id: string;
+      codigo: string;
+      nombre: string | null;
+      /** Qué se le administra al candidato en esta batería. */
+      tests: string[] | null;
+    } | null;
   } | null;
 };
 
@@ -68,6 +76,13 @@ export type Benziger = {
   cuadrante_preferente: string[] | null;
   resumen: string | null;
   pdf_path: string | null;
+  /** Cómo se llamaba el archivo que se subió. */
+  pdf_nombre: string | null;
+  /** Lo extraído del PDF, tal como vino: no se recalcula nada de esto. */
+  cuadrantes: Record<string, unknown> | null;
+  adjetivos: Record<string, unknown> | null;
+  abiertas: Record<string, unknown> | null;
+  estres: Record<string, unknown> | null;
 };
 export type Raven = {
   raw: number | null;
@@ -92,6 +107,50 @@ export type Competencia = {
   texto: string | null;
 };
 
+/** Los dos tests de manchas que puede llevar una batería. */
+export const PROYECTIVOS = ['Rorschach', 'Zulliger'] as const;
+export type Proyectivo = (typeof PROYECTIVOS)[number];
+
+/** El test de manchas que declara la batería que se le vendió al cliente. */
+export function proyectivoDeLaBateria(f: Ficha): Proyectivo | null {
+  const tests = f.cabecera.pedidos?.baterias?.tests ?? [];
+  return PROYECTIVOS.find((t) => tests.includes(t)) ?? null;
+}
+
+/** El test de manchas que tiene cargado el protocolo. */
+export function proyectivoCargado(f: Ficha): Proyectivo | null {
+  const cargado = f.manchas.find((m) => m.test)?.test;
+  return PROYECTIVOS.find((t) => t === cargado) ?? null;
+}
+
+/**
+ * Qué test de manchas es el de esta ficha.
+ *
+ * Con respuestas cargadas manda lo cargado, que es lo que efectivamente se le
+ * tomó; con el protocolo vacío manda la batería, que es lo que se le va a
+ * tomar. Cuando los dos existen y no coinciden, uno de los dos está mal y hay
+ * que decirlo: ver `desajusteDeProyectivo`.
+ */
+export function proyectivoDe(f: Ficha): Proyectivo | null {
+  return proyectivoCargado(f) ?? proyectivoDeLaBateria(f);
+}
+
+/**
+ * La batería dice un test y el protocolo tiene cargado el otro.
+ *
+ * Pasa cuando se codifica sobre la ficha equivocada o cuando el pedido entró
+ * con la batería que no era. Los dos casos se arreglan a mano y ninguno se
+ * arregla solo, así que el aviso queda a la vista de quien codifica.
+ */
+export function desajusteDeProyectivo(
+  f: Ficha
+): { bateria: Proyectivo; cargado: Proyectivo } | null {
+  const bateria = proyectivoDeLaBateria(f);
+  const cargado = proyectivoCargado(f);
+  if (!bateria || !cargado || bateria === cargado) return null;
+  return { bateria, cargado };
+}
+
 export type Ficha = {
   cabecera: Cabecera;
   /** El precio que regía el día del pedido, no el de hoy. */
@@ -108,11 +167,11 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CAMPOS_CABECERA =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
-  'bender_administrado,grafico_2_personas_administrado,recomendacion,informe_path,' +
+  'bender_administrado,grafico_2_personas_administrado,recomendacion,recomendacion_notas,informe_path,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
-  'pedidos(puesto,empresas(nombre),baterias(id,codigo,nombre))';
+  'pedidos(puesto,empresas(nombre),baterias(id,codigo,nombre,tests))';
 
 /** Null si no existe, para que la pantalla conteste 404 en vez de romperse. */
 export async function fichaDe(id: string): Promise<Ficha | null> {
@@ -129,7 +188,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       select<Sumario>('sumario_exner', `select=*&evaluacion_id=eq.${id}`, CACHE_PSICOTECNICOS),
       select<Benziger>(
         'benziger',
-        `select=cuadrante_preferente,resumen,pdf_path&evaluacion_id=eq.${id}`,
+        `select=cuadrante_preferente,resumen,pdf_path,pdf_nombre,cuadrantes,adjetivos,abiertas,estres&evaluacion_id=eq.${id}`,
         CACHE_PSICOTECNICOS
       ),
       select<Raven>(

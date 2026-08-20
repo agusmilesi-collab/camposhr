@@ -28,6 +28,7 @@ import {
   type Opcion,
 } from '@/lib/rorschach';
 import type { Mancha } from '@/lib/ficha';
+import Calcular from './Calcular';
 
 /** Una etiqueta con el color que le toca a ese código. */
 function Chip({ valor, opciones }: { valor: string; opciones: Opcion[] }) {
@@ -50,12 +51,14 @@ function Simple({
   ancho?: number;
 }) {
   return (
-    <span className="os-celda-select">
+    // El ancho lo reserva la celda y no el desplegable: el desplegable está
+    // encima y en posición absoluta, y con un ancho propio se sale de su celda
+    // y se queda con los clics de la de al lado.
+    <span className="os-celda-select" style={ancho ? { minWidth: ancho } : undefined}>
       {valor && <Chip valor={valor} opciones={opciones} />}
       <select
         className="os-select-encima"
         value={valor ?? ''}
-        style={ancho ? { width: ancho } : undefined}
         onChange={(e) => onCambio(e.target.value || null)}
         aria-label="Opción"
       >
@@ -232,6 +235,9 @@ export default function Manchas({
     <>
       {error && <p className="os-form-error">{error}</p>}
 
+      {/* La grilla y su pie miden lo mismo: así el botón que cierra el
+          protocolo cae debajo de la columna de la cruz de borrar. */}
+      <div className="os-manchas">
       <div className="os-tabla-marco">
         <table className="os-tabla os-tabla-manchas">
           <thead>
@@ -340,13 +346,17 @@ export default function Manchas({
         </table>
       </div>
 
-      <div className="os-barra-acciones">
+      {/* Cargar una respuesta más y cerrar el protocolo son los dos finales
+          posibles de esta grilla: van en el mismo renglón, uno en cada punta. */}
+      <div className="os-barra-acciones os-manchas-pie">
         <button className="os-boton" disabled={ocupado} onClick={agregar}>
           Agregar respuesta
         </button>
         <span className="os-columna-monto">
           {vista.length === 1 ? '1 respuesta' : `${vista.length} respuestas`}
         </span>
+        {vista.length > 0 && <Calcular evaluacionId={evaluacionId} />}
+      </div>
       </div>
     </>
   );

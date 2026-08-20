@@ -17,7 +17,7 @@
 import 'server-only';
 
 export type Acceso = {
-  accion: 'lectura' | 'escritura' | 'descarga';
+  accion: 'lectura' | 'escritura' | 'descarga' | 'borrado';
   recurso: string;
   recursoId?: string | null;
   detalle?: Record<string, unknown>;

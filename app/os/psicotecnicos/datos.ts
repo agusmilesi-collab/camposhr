@@ -3,7 +3,12 @@ import { cookies } from 'next/headers';
 import { listarEvaluaciones, type Evaluacion } from '@/lib/psicotecnicos';
 import { SECCIONES, type Seccion } from '@/lib/psicotecnicos-tipos';
 import { anotarAcceso } from '@/lib/accesos';
-import { evaluadoras as listarEvaluadoras, pedidosAbiertos } from '@/lib/altas';
+import {
+  baterias as listarBaterias,
+  empresas as listarEmpresas,
+  evaluadoras as listarEvaluadoras,
+  pedidosAbiertos,
+} from '@/lib/altas';
 import { equipo, esMia, quienSoy, type Miembro } from '@/lib/identidad';
 import { CLIENTE_POR_DEFECTO, COOKIE_EMPRESA, TODAS } from '@/lib/filtro-empresa';
 
@@ -41,9 +46,13 @@ export async function cargar() {
 
   // Lo que necesita la tarjeta de alta del tablero. Va con el resto de la
   // lectura para no sumarle un viaje a la pantalla.
-  const [pedidos, evaluadorasAlta] = await Promise.all([
+  const [pedidos, evaluadorasAlta, empresasAlta, bateriasAlta] = await Promise.all([
     pedidosAbiertos().catch(() => []),
     listarEvaluadoras().catch(() => []),
+    // Los clientes y las baterías son para el pedido que se carga desde la
+    // misma tarjeta cuando el candidato llega antes que su búsqueda.
+    listarEmpresas().catch(() => []),
+    listarBaterias().catch(() => []),
   ]);
 
   // Con qué nombre figura cada una en las evaluaciones: es el nombre por el
@@ -91,6 +100,8 @@ export async function cargar() {
     evaluadoras,
     pedidos,
     evaluadorasAlta,
+    empresasAlta,
+    bateriasAlta,
   };
 }
 

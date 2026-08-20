@@ -62,14 +62,9 @@ export function proximo(precios: Precio[]): Precio | null {
   );
 }
 
-/**
- * El Benziger es opcional en todas las baterías y se cotiza en dólares.
- *
- * Cuarenta dólares, pesificados al dólar tarjeta del día: es lo que cuesta la
- * licencia por aplicación, y se paga afuera. Por eso no está en la historia de
- * precios: no se actualiza por decisión nuestra sino con el tipo de cambio.
- */
-export const BENZIGER_USD = 40;
+/** El adicional del Benziger. Se define en `lib/benziger.ts`, que también lo
+ *  leen las pantallas del navegador. */
+export { BENZIGER_USD } from '@/lib/benziger';
 
 export type Cambio = { valor: number; fecha: string } | null;
 
