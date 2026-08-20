@@ -105,10 +105,13 @@ export default function Reparto({
   sinAsignar,
   asignadas,
   evaluadoras,
+  alta,
 }: {
   sinAsignar: Evaluacion[];
   asignadas: Evaluacion[];
   evaluadoras: string[];
+  /** La tarjeta para cargar, al pie de la columna sin dueño. */
+  alta?: React.ReactNode;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -194,7 +197,7 @@ export default function Reparto({
     }
   }
 
-  function columna(clave: string, titulo: string, filas: Evaluacion[]) {
+  function columna(clave: string, titulo: string, filas: Evaluacion[], pie?: React.ReactNode) {
     return (
       <div
         key={clave}
@@ -234,6 +237,8 @@ export default function Reparto({
             {clave === SIN_DUENO ? 'Nada esperando' : 'Sin trabajo abierto'}
           </p>
         )}
+
+        {pie}
       </div>
     );
   }
@@ -249,7 +254,8 @@ export default function Reparto({
         {columna(
           SIN_DUENO,
           'Sin asignar',
-          porEspera(todas.filter((e) => !e.evaluadora))
+          porEspera(todas.filter((e) => !e.evaluadora)),
+          alta
         )}
 
         {evaluadoras.map((nombre) =>

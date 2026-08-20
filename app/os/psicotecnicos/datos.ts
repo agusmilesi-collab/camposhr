@@ -1,12 +1,14 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { ETAPAS, RUTA, listarEvaluaciones, type Evaluacion } from '@/lib/psicotecnicos';
+import { listarEvaluaciones, type Evaluacion } from '@/lib/psicotecnicos';
+import { SECCIONES, type Seccion } from '@/lib/psicotecnicos-tipos';
 import { anotarAcceso } from '@/lib/accesos';
+import { evaluadoras as listarEvaluadoras, pedidosAbiertos } from '@/lib/altas';
 import { equipo, esMia, quienSoy, type Miembro } from '@/lib/identidad';
 import { CLIENTE_POR_DEFECTO, COOKIE_EMPRESA, TODAS } from '@/lib/filtro-empresa';
 
 /**
- * Qué ve cada quien, por etapa.
+ * Qué ve cada quien, por sección.
  *
  * **"Sin asignar" es todo lo que no tiene evaluadora**, esté en la etapa que
  * esté. La pantalla la ve el equipo entero porque el trabajo ahí es repartir, y
@@ -14,17 +16,21 @@ import { CLIENTE_POR_DEFECTO, COOKIE_EMPRESA, TODAS } from '@/lib/filtro-empresa
  * una recién cargada: si se mostrara en su etapa, aparecería en la pantalla de
  * todas las evaluadoras y no sería trabajo de ninguna.
  *
- * **Las demás etapas muestran lo que ya tiene dueño**, y de eso lo de quien
- * mira. Lo entregado no se reparte, así que sale por su etapa como siempre.
+ * **Las demás muestran lo que ya tiene dueño**, y de eso lo de quien mira. Una
+ * sección puede juntar varias etapas: Entrevistas trae las de citar y las ya
+ * agendadas. Lo entregado no se reparte, así que sale por su etapa como
+ * siempre.
  */
 const CERRADAS = new Set(['Entregado', 'Seguimiento']);
 
-export function visiblesEn(filas: Evaluacion[], etapa: string, yo: Miembro): Evaluacion[] {
-  if (etapa === 'Sin asignar') {
+export function visiblesEn(filas: Evaluacion[], seccion: Seccion, yo: Miembro): Evaluacion[] {
+  if (seccion.ruta === 'sin-asignar') {
     return filas.filter((f) => !f.evaluadora && !CERRADAS.has(f.etapa));
   }
+  const etapas = new Set<string>(seccion.etapas);
+  const cerrada = seccion.etapas.every((e) => CERRADAS.has(e));
   return filas.filter(
-    (f) => f.etapa === etapa && (CERRADAS.has(etapa) || f.evaluadora) && esMia(f.evaluadora, yo)
+    (f) => etapas.has(f.etapa) && (cerrada || f.evaluadora) && esMia(f.evaluadora, yo)
   );
 }
 
@@ -32,6 +38,13 @@ export function visiblesEn(filas: Evaluacion[], etapa: string, yo: Miembro): Eva
 export async function cargar() {
   const yo = await quienSoy();
   const { filas: crudas, fallaron } = await listarEvaluaciones();
+
+  // Lo que necesita la tarjeta de alta del tablero. Va con el resto de la
+  // lectura para no sumarle un viaje a la pantalla.
+  const [pedidos, evaluadorasAlta] = await Promise.all([
+    pedidosAbiertos().catch(() => []),
+    listarEvaluadoras().catch(() => []),
+  ]);
 
   // Con qué nombre figura cada una en las evaluaciones: es el nombre por el
   // que se arma su columna en el reparto, y no siempre es el del equipo.
@@ -61,14 +74,24 @@ export async function cargar() {
 
   // Las cuentas de la barra dicen cuántas se van a ver al entrar, no cuántas
   // existen: un número que no coincide con la pantalla no sirve para nada.
-  const cuentas = ETAPAS.filter((e) => e !== 'Seguimiento').map((etapa) => ({
-    etapa,
-    ruta: RUTA[etapa],
-    texto: etapa,
-    n: visiblesEn(todas, etapa, yo).length,
+  const cuentas = SECCIONES.map((s) => ({
+    ruta: s.ruta,
+    texto: s.texto,
+    n: visiblesEn(todas, s, yo).length,
   }));
 
-  return { todas, yo, cuentas, fallaron, empresas, empresa, ocultas, evaluadoras };
+  return {
+    todas,
+    yo,
+    cuentas,
+    fallaron,
+    empresas,
+    empresa,
+    ocultas,
+    evaluadoras,
+    pedidos,
+    evaluadorasAlta,
+  };
 }
 
 /** Lo más viejo arriba: es lo que hay que mirar primero. */

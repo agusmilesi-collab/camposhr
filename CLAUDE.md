@@ -57,6 +57,35 @@ vuelve a generar; no se edita a mano. Leer ese esquema necesita el permiso
 `schema.bases:read`, que hoy tiene `AIRTABLE_TOKEN_ESCRITURA` y no
 `AIRTABLE_TOKEN`.
 
+## Las tablas del pipeline tienen anchos fijos, por campo
+
+`ANCHO` en `app/os/psicotecnicos/Tabla.tsx` declara cuánto mide cada columna por
+el **nombre del campo**, no por su posición: así "Candidato" mide lo mismo en
+las cuatro secciones y pasar de una a otra no mueve nada de lugar.
+
+Dos reglas al tocarlo:
+
+- **Ninguna tabla pasa de 1200 px.** La más ancha ("Por citar", ocho columnas)
+  da exactamente eso, así que sumar una columna obliga a recortar otra.
+- **Una fila es un renglón.** Lo que no entra se recorta con puntos
+  suspensivos. El pedido es la única excepción, con dos: empresa arriba, puesto
+  abajo.
+
+Tres cosas pelean contra esto y ya están resueltas en `os.css`: el `width: 1%`
+de `.os-tabla-trabajo`, que pisaba el `colgroup`; el ancho de la tabla, que si
+es `auto` toma el del contenido y reparte el sobrante; y el ancho mínimo propio
+de los campos de fecha y los selectores.
+
+## Las etapas y las secciones no son lo mismo
+
+`ETAPAS` son los estados del pipeline, los que viven en la base. `SECCIONES`
+(en `lib/psicotecnicos-tipos.ts`) son las entradas de la barra lateral, y una
+sección puede juntar varias etapas: **Entrevistas** trae "Por citar" y "Por
+entrevistar" juntas.
+
+Agrupar en la navegación no cambia el pipeline. Al sumar una sección hay que
+tocar `SECCIONES`, las columnas de `Tabla.tsx` y las celdas de esa sección.
+
 ## Los datos de personas van a Supabase, no al repositorio
 
 Un repositorio de git no sirve para guardar una evaluación psicológica: no

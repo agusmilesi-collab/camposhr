@@ -107,20 +107,33 @@ desarrollo empezó a devolver 500 sin que hubiera un error de código.
 **Qué hace el OS hoy.**
 
 - *Inicio.* El espacio de trabajo de las tres: temas de la próxima reunión,
-  pendientes con responsable, y lo que cada una tiene en curso. Todo se anota,
-  se tilda y se reasigna sin salir de ahí.
-- *Psicotécnicos.* Reparto por arrastre en "Sin asignar", que significa todo lo
-  que no tiene evaluadora, esté en la etapa que esté. Cada fila puede volver a
-  la etapa anterior. El nombre abre la ficha del candidato.
+  pendientes con responsable, y lo que cada una tiene en curso.
+- *Psicotécnicos, en cuatro secciones:* Sin asignar, Entrevistas, Por analizar,
+  Entregados.
+  - **Sin asignar** es el tablero de reparto por arrastre, y significa todo lo
+    que no tiene evaluadora, esté en la etapa que esté. Su columna sin dueño
+    cierra con la tarjeta **Agregar candidato**, que carga sin salir de ahí.
+  - **Entrevistas** junta las etapas "Por citar" y "Por entrevistar", que en la
+    base siguen separadas. Son dos bloques: arriba a quién hay que citar, con
+    la fecha y la modalidad editables; abajo lo ya agendado, de solo lectura,
+    porque eso se decide al citar y editarlo en dos lugares es tener dos
+    verdades del mismo dato.
+  - Cada fila puede volver a la etapa anterior con la flecha azul.
 - *Ficha del candidato.* Seis pestañas. Datos en tres bloques (la persona, la
   evaluación con lo económico, el ingreso). Manchas es la grilla de codificación
-  Rorschach, con las mismas opciones y colores que Airtable. El botón "Calcular
-  sumario" corre el motor Exner y escribe `sumario_exner`.
+  Rorschach. El botón "Calcular sumario" corre el motor Exner.
 - *El ingreso.* Si la persona entró a trabajar, desde cuándo, y a los noventa
   días cómo le fue. Es lo que después permite calcular el acierto de cada
   evaluadora y modelar qué perfil funciona en cada familia de puesto.
 - *Comercial.* Clientes, cotizaciones como embudo, costos por trabajo, accesos.
 - *Sistema.* Baterías con su precio, actualizable por cualquiera de las tres.
+
+**Las tablas del pipeline tienen anchos fijos por campo.** Están en `ANCHO`, en
+`app/os/psicotecnicos/Tabla.tsx`, y se declaran por nombre de columna y no por
+posición: así "Candidato" mide lo mismo en las cuatro secciones y cambiar de
+pantalla no mueve nada de lugar. Ninguna tabla pasa de 1200 px, y la más ancha
+("Por citar", ocho columnas) da exactamente eso. Una fila es un renglón: lo que
+no entra se recorta. El pedido es la única excepción, con dos.
 
 **Las reglas que hay que conocer antes de tocar nada.** Están en `CLAUDE.md`, en
 la raíz del repositorio:

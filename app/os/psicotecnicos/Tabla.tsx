@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * Una etapa como tabla.
+ * Una sección del pipeline, como tabla.
  *
- * Cada etapa tiene sus columnas: las que hacen falta para hacer ese tramo del
+ * Cada sección tiene sus columnas: las que hacen falta para hacer ese tramo del
  * trabajo y ninguna más. Es la diferencia con la interfaz de Airtable, donde
  * cada fila abre las mismas veinticinco columnas esté donde esté.
  *
@@ -15,20 +15,71 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import type { Evaluacion } from '@/lib/psicotecnicos';
-import { desdeInput, enDias, fechaHora, haceCuanto, paraInput } from '@/lib/hora';
-import { RUTA } from '@/lib/psicotecnicos-tipos';
+import { desdeInput, diaDeLaSemana, enDias, fechaHora, haceCuanto, paraInput } from '@/lib/hora';
 
 const RECOMENDACIONES = ['Apto', 'Apto con observaciones', 'Apto con alertas', 'No apto'];
 
 
-/** Las columnas de cada etapa, en orden. La última siempre es la acción. */
+/**
+ * Las columnas de cada sección, en orden. La última siempre es la acción.
+ *
+ * Entrevistas junta citar y entrevistar en una sola tabla: son el mismo
+ * trabajo de la misma persona, y separarlas obligaba a saltar de una lista a
+ * la otra para seguir a un candidato. Cada fila muestra su estado y su propia
+ * acción según la etapa en la que está.
+ */
 const COLUMNAS: Record<string, string[]> = {
-  'Sin asignar': ['Candidato', 'Pedido', 'Batería', 'Ingresó', 'Esperando', ''],
-  'Por citar': ['Candidato', 'Pedido', 'Teléfono', 'Contacto', 'Modalidad', 'Entrevista', ''],
-  'Por entrevistar': ['Candidato', 'Pedido', 'Entrevista', 'Modalidad', 'Teléfono', 'Raven', 'Bender', 'Gráfico', ''],
-  'Por analizar': ['Candidato', 'Pedido', 'Entrevista', 'Espera', 'Administrado', 'Informe', 'Conclusión', ''],
-  Entregado: ['Candidato', 'Pedido', 'Entregado', 'Conclusión', 'Informe', ''],
-  Seguimiento: ['Candidato', 'Pedido', 'Entregado', 'Conclusión', 'Informe', ''],
+  'sin-asignar': ['Candidato', 'Pedido', 'Batería', 'Ingresó', 'Esperando', ''],
+  // Entrevistas va en dos tablas, una por etapa: citar necesita el teléfono y
+  // el estado del contacto; una entrevista ya agendada necesita saber qué se
+  // administró. Juntas, las ocho columnas no entraban en la pantalla.
+  'entrevistas:Por citar': ['Candidato', 'Pedido', 'Batería', 'Teléfono', 'Contacto', 'Entrevista', 'Modalidad', ''],
+  /**
+   * Agendadas arranca por la entrevista y no por el candidato: acá lo que se
+   * mira es qué viene y cuándo, no a quién hay que buscar. El pedido queda al
+   * final, que es el dato que menos se consulta con la fecha ya puesta.
+   *
+   * No repite lo que se decidió al citar: la fecha, la modalidad y el estado
+   * del contacto se editan arriba y acá solo se leen. Editarlos en dos lugares
+   * es tener dos verdades del mismo dato.
+   */
+  'entrevistas:Por entrevistar': ['Entrevista', 'Modalidad', 'Candidato', 'Batería', 'Teléfono', 'Pedido', ''],
+  'por-analizar': ['Candidato', 'Pedido', 'Entrevista', 'Espera', 'Administrado', 'Informe', 'Conclusión', ''],
+  entregados: ['Candidato', 'Pedido', 'Entregado', 'Conclusión', 'Informe', ''],
+};
+
+/**
+ * Cuánto mide cada columna, por el nombre del campo.
+ *
+ * Fijo y por campo, no por posición: así "Candidato" mide lo mismo en las
+ * cuatro tablas y pasar de una sección a otra no mueve nada de lugar. Sin
+ * esto, cada tabla repartía el ancho según su contenido y las mismas columnas
+ * quedaban de distinto tamaño en cada pantalla.
+ *
+ * El pedido es el único que puede ocupar dos renglones, porque trae la empresa
+ * arriba y el puesto abajo. El resto se recorta con puntos suspensivos: una
+ * fila de dos renglones desalinea toda la tabla.
+ *
+ * Los valores están calibrados para que ninguna tabla pase de 1200 px, que es
+ * lo que entra sin desplazar en una pantalla de trabajo. La más ancha es "Por
+ * citar", con ocho columnas, y da exactamente 1200.
+ */
+const ANCHO: Record<string, number> = {
+  Candidato: 160,
+  Pedido: 190,
+  Batería: 92,
+  Teléfono: 158,
+  Contacto: 124,
+  Entrevista: 174,
+  Modalidad: 122,
+  Ingresó: 96,
+  Esperando: 110,
+  Espera: 96,
+  Administrado: 128,
+  Informe: 118,
+  Conclusión: 150,
+  Entregado: 124,
+  '': 180,
 };
 
 function soloDigitos(t: string): string {
@@ -39,12 +90,12 @@ function Falta({ texto = 'falta' }: { texto?: string }) {
   return <span className="os-dato-falta">{texto}</span>;
 }
 
-function Persona({ e, etapa }: { e: Evaluacion; etapa: string }) {
+function Persona({ e, seccion }: { e: Evaluacion; seccion: string }) {
   if (e.origen !== 'supabase') return <div className="os-tabla-nombre">{e.nombre}</div>;
   return (
     <Link
       className="os-tabla-nombre os-tabla-ficha"
-      href={`/os/psicotecnicos/ficha/${e.id}?desde=${RUTA[etapa] ?? ''}`}
+      href={`/os/psicotecnicos/ficha/${e.id}?desde=${seccion}`}
     >
       {e.nombre}
     </Link>
@@ -82,14 +133,16 @@ function Busqueda({ e, conEvaluadora }: { e: Evaluacion; conEvaluadora: boolean 
   );
 }
 
-function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
+function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
   const router = useRouter();
   const [pendiente, empezar] = useTransition();
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function retroceder() {
-    const destino = ANTERIOR[etapa];
+    // Vuelve desde donde está esa fila, no desde la sección: en Entrevistas
+    // conviven las dos etapas y cada una retrocede a la suya.
+    const destino = ANTERIOR[e.etapa];
     if (!destino) return;
     // "Sin asignar" es lo que no tiene dueño: volver ahí sin soltar la
     // evaluadora dejaría la ficha sin aparecer en ninguna pantalla.
@@ -130,7 +183,7 @@ function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
 
   const trabajando = guardando || pendiente;
 
-  const volver = ANTERIOR[etapa] ? (
+  const volver = ANTERIOR[e.etapa] ? (
     // La caja es la que trae la línea que lo separa de la acción principal: el
     // botón es redondo y un borde propio le rompería el círculo.
     <span className="os-volver-caja">
@@ -138,26 +191,34 @@ function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
         className="os-boton os-boton-volver"
         disabled={trabajando}
         onClick={retroceder}
-        title={`Volver a ${ANTERIOR[etapa]}`}
-        aria-label={`Volver a ${ANTERIOR[etapa]}`}
+        title={`Volver a ${ANTERIOR[e.etapa]}`}
+        aria-label={`Volver a ${ANTERIOR[e.etapa]}`}
       >
         ←
       </button>
     </span>
   ) : null;
-  const columnas = COLUMNAS[etapa] ?? COLUMNAS['Sin asignar'];
+  const columnas = COLUMNAS[`${seccion}:${e.etapa}`] ?? COLUMNAS[seccion] ?? COLUMNAS['sin-asignar'];
+
+  // Agendadas arma sus propias celdas, en su orden. Las demás secciones
+  // arrancan siempre por candidato y pedido.
+  const agendada = seccion === 'entrevistas' && e.etapa === 'Por entrevistar';
 
   return (
     <>
       <tr>
-        <td>
-          <Persona e={e} etapa={etapa} />
-        </td>
-        <td>
-          <Busqueda e={e} conEvaluadora={CERRADAS.has(etapa)} />
-        </td>
+        {!agendada && (
+          <>
+            <td>
+              <Persona e={e} seccion={seccion} />
+            </td>
+            <td>
+              <Busqueda e={e} conEvaluadora={CERRADAS.has(e.etapa)} />
+            </td>
+          </>
+        )}
 
-        {etapa === 'Sin asignar' && (
+        {seccion === 'sin-asignar' && (
           <>
             <td>{e.bateria ?? <Falta texto="a definir" />}</td>
             <td>{fechaHora(e.fechaIngreso) ?? <Falta texto="sin fecha" />}</td>
@@ -175,8 +236,9 @@ function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
           </>
         )}
 
-        {etapa === 'Por citar' && (
+        {seccion === 'entrevistas' && e.etapa === 'Por citar' && (
           <>
+            <td>{e.bateria ?? <Falta texto="a definir" />}</td>
             <td className="os-tabla-telefono">
               {e.telefono ? (
                 <a
@@ -213,19 +275,6 @@ function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
               )}
             </td>
             <td>
-              <select
-                className="os-campo"
-                defaultValue={e.modalidad ?? ''}
-                disabled={trabajando}
-                onChange={(ev) => guardar('modalidad', ev.target.value || null)}
-                aria-label="Modalidad"
-              >
-                <option value="">Sin definir</option>
-                <option value="Presencial">Presencial</option>
-                <option value="Online">Online</option>
-              </select>
-            </td>
-            <td>
               <input
                 className="os-campo"
                 type="datetime-local"
@@ -237,6 +286,19 @@ function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
                 }}
                 aria-label="Fecha de la entrevista"
               />
+            </td>
+            <td className="os-tabla-modalidad">
+              <select
+                className="os-campo"
+                defaultValue={e.modalidad ?? ''}
+                disabled={trabajando}
+                onChange={(ev) => guardar('modalidad', ev.target.value || null)}
+                aria-label="Modalidad"
+              >
+                <option value="">Sin definir</option>
+                <option value="Presencial">Presencial</option>
+                <option value="Online">Online</option>
+              </select>
             </td>
             <td className="os-tabla-accion">
               <button
@@ -252,39 +314,31 @@ function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
           </>
         )}
 
-        {etapa === 'Por entrevistar' && (
+        {agendada && (
           <>
-            <td>{fechaHora(e.fechaEntrevista) ?? <Falta texto="sin fecha" />}</td>
-            <td>{e.modalidad ?? <Falta texto="sin definir" />}</td>
-            <td>
-              {e.telefono ? <a href={`tel:${soloDigitos(e.telefono)}`}>{e.telefono}</a> : <Falta />}
-            </td>
-            <td>
-              {e.linkRaven ? (
-                <a href={e.linkRaven} target="_blank" rel="noreferrer">
-                  Abrir
-                </a>
+            {/* El día adelante: al mirar la agenda se busca primero qué día
+                cae, y recién después la hora. */}
+            <td className="os-tabla-cuando">
+              {e.fechaEntrevista ? (
+                `${diaDeLaSemana(e.fechaEntrevista)} ${fechaHora(e.fechaEntrevista)}`
               ) : (
-                <span className="os-tabla-flojo">—</span>
+                <Falta texto="sin fecha" />
               )}
             </td>
-            <td className="os-tabla-num">
-              <input
-                type="checkbox"
-                checked={e.benderAdministrado}
-                disabled={trabajando}
-                onChange={(ev) => guardar('benderAdministrado', ev.target.checked)}
-                aria-label="Bender administrado"
-              />
+            <td>{e.modalidad ?? <Falta texto="sin definir" />}</td>
+            <td>
+              <Persona e={e} seccion={seccion} />
             </td>
-            <td className="os-tabla-num">
-              <input
-                type="checkbox"
-                checked={e.graficoAdministrado}
-                disabled={trabajando}
-                onChange={(ev) => guardar('graficoAdministrado', ev.target.checked)}
-                aria-label="Gráfico administrado"
-              />
+            <td>{e.bateria ?? <Falta texto="a definir" />}</td>
+            <td className="os-tabla-telefono">
+              {e.telefono ? (
+                <a href={`tel:${soloDigitos(e.telefono)}`}>{e.telefono}</a>
+              ) : (
+                <Falta />
+              )}
+            </td>
+            <td>
+              <Busqueda e={e} conEvaluadora={false} />
             </td>
             <td className="os-tabla-accion">
               <button
@@ -299,7 +353,7 @@ function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
           </>
         )}
 
-        {etapa === 'Por analizar' && (
+        {seccion === 'por-analizar' && (
           <>
             <td>{fechaHora(e.fechaEntrevista) ?? <Falta texto="sin fecha" />}</td>
             <td className={`os-tabla-num${(e.dias ?? 0) > 7 ? ' os-dato-falta' : ''}`}>
@@ -341,19 +395,19 @@ function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
           </>
         )}
 
-        {(etapa === 'Entregado' || etapa === 'Seguimiento') && (
+        {seccion === 'entregados' && (
           <>
             <td>{fechaHora(e.fechaEntrega) ?? <Falta texto="sin fecha" />}</td>
             <td>{e.recomendacion ?? <Falta texto="sin cargar" />}</td>
             <td>{e.tieneInforme ? 'cargado' : <Falta texto="sin cargar" />}</td>
             <td className="os-tabla-accion">
-              {etapa === 'Entregado' && (
+              {seccion === 'entregados' && (
                 <button
                   className="os-boton"
                   disabled={trabajando}
                   onClick={() => guardar('etapa', 'Seguimiento')}
                 >
-                  Pasar a seguimiento
+                  Seguimiento
                 </button>
               )}
               {volver}
@@ -375,16 +429,33 @@ function Fila({ e, etapa }: { e: Evaluacion; etapa: string }) {
 
 export default function TablaEtapa({
   filas,
-  etapa,
+  seccion,
 }: {
   filas: Evaluacion[];
-  etapa: string;
+  seccion: string;
 }) {
-  const columnas = COLUMNAS[etapa] ?? COLUMNAS['Sin asignar'];
+  // Cada bloque de Entrevistas trae filas de una sola etapa, así que la
+  // primera alcanza para saber qué columnas van.
+  const clave = filas[0] ? `${seccion}:${filas[0].etapa}` : seccion;
+  const columnas = COLUMNAS[clave] ?? COLUMNAS[seccion] ?? COLUMNAS['sin-asignar'];
 
   return (
     <div className="os-tabla-marco">
-      <table className="os-tabla os-tabla-trabajo">
+      {/* El ancho total es la suma de las columnas, puesto a mano: con `auto`
+          o `max-content` la tabla toma el ancho de su contenido (el campo de
+          fecha, los botones) y reparte el sobrante, y los anchos declarados
+          dejan de cumplirse. */}
+      <table
+        className="os-tabla os-tabla-trabajo os-tabla-fija"
+        style={{ width: columnas.reduce((n, c) => n + (ANCHO[c] ?? 140), 0) }}
+      >
+        {/* El ancho lo fija la columna, no su contenido: una tabla que se
+            reacomoda al escribir es una tabla que no se puede recorrer. */}
+        <colgroup>
+          {columnas.map((c, i) => (
+            <col key={c || `accion-${i}`} style={{ width: ANCHO[c] ?? 140 }} />
+          ))}
+        </colgroup>
         <thead>
           <tr>
             {columnas.map((c, i) => (
@@ -396,7 +467,7 @@ export default function TablaEtapa({
         </thead>
         <tbody>
           {filas.map((e) => (
-            <Fila key={e.id} e={e} etapa={etapa} />
+            <Fila key={e.id} e={e} seccion={seccion} />
           ))}
         </tbody>
       </table>
