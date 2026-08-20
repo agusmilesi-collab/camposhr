@@ -1,78 +1,130 @@
 /**
- * Cotizaciones enviadas a clientes.
+ * Oportunidades comerciales y sus costos.
  *
- * El índice vive en `data/cotizaciones.json` y el documento de cada una en
- * `public/q/<archivo>`, que es lo que ve el cliente al abrir su enlace. No hay
- * base de datos detrás: alta de una cotización = copiar el HTML de la propuesta
- * a public/q/ y sumar una fila al JSON. Queda versionado en git y se publica
- * con el deploy.
+ * Es un embudo de cuatro estados y no un archivo de propuestas: Lead cuando hay
+ * interés y todavía no se mandó nada, Enviada cuando la propuesta está del lado
+ * del cliente, Aprobada cuando se cerró y Perdida cuando no.
  *
- * El enlace es secreto: quien tiene el token ve el documento, así que el token
- * se genera al azar y nunca se deriva del nombre del cliente solo.
+ * **El índice vive en Supabase; el documento sigue siendo un archivo.** La
+ * propuesta que abre el cliente es un HTML estático en `public/q/<token>.html`,
+ * servido por una dirección secreta. Lo que se mudó a la base es el seguimiento:
+ * cambiar "enviada" por "aprobada" no puede costar un despliegue.
+ *
+ * El índice viejo quedó en `data/cotizaciones.json`, ya migrado y sin uso. Ver
+ * `supabase/comercial.sql` y `supabase/comercial-semilla.sql`.
  */
 
 import 'server-only';
-import indice from '@/data/cotizaciones.json';
+import { select } from '@/lib/supabase';
+import { CACHE_COMERCIAL } from '@/lib/etiquetas';
+import type { Estado } from '@/lib/comercial-tipos';
 
-export const ESTADOS = [
-  'Borrador',
-  'Enviada',
-  'Aprobada',
-  'Rechazada',
-  'Cancelada',
-] as const;
-
-export type Estado = (typeof ESTADOS)[number];
+export {
+  ABIERTOS,
+  ESTADOS,
+  TIPOS_COSTO,
+  formatoFecha,
+  formatoImporte,
+  resultadoDe,
+  type Estado,
+  type Resultado,
+  type TipoCosto,
+} from '@/lib/comercial-tipos';
 
 export type Cotizacion = {
-  token: string;
-  fecha: string;
+  id: string;
+  empresaId: string | null;
   cliente: string;
   concepto: string;
   importe: number;
+  moneda: string;
   version: string;
   estado: Estado;
-  archivo: string;
-  /** Token de la versión anterior, cuando esta cotización la reemplaza. */
-  reemplazaA: string | null;
-  nota?: string | null;
+  fecha: string;
+  /** El enlace secreto del documento, cuando ya hay uno escrito. */
+  token: string | null;
+  archivo: string | null;
+  nota: string | null;
+  motivo: string | null;
 };
 
-const TOKEN_VALIDO = /^[A-Za-z0-9_-]{6,128}$/;
+type Fila = Omit<Cotizacion, 'importe' | 'empresaId'> & {
+  importe: string | number;
+  empresa_id: string | null;
+};
 
-/** Todas las cotizaciones, de la más reciente a la más vieja. */
-export function listarCotizaciones(): Cotizacion[] {
-  return (indice as Cotizacion[])
-    .filter((c) => TOKEN_VALIDO.test(c.token))
-    .slice()
-    .sort((a, b) => {
-      const porFecha = (b.fecha ?? '').localeCompare(a.fecha ?? '');
-      if (porFecha !== 0) return porFecha;
-      // Misma fecha: la versión más alta primero.
-      return b.version.localeCompare(a.version, undefined, { numeric: true });
-    });
+const CAMPOS =
+  'id,empresa_id,cliente,concepto,importe,moneda,version,estado,fecha,token,archivo,nota,motivo';
+
+function armar(f: Fila): Cotizacion {
+  return {
+    id: f.id,
+    empresaId: f.empresa_id,
+    cliente: f.cliente,
+    concepto: f.concepto,
+    importe: Number(f.importe),
+    moneda: f.moneda,
+    version: f.version,
+    estado: f.estado,
+    fecha: f.fecha,
+    token: f.token,
+    archivo: f.archivo,
+    nota: f.nota,
+    motivo: f.motivo,
+  };
 }
 
-/** Importe en pesos, sin decimales: 8800000 -> "ARS 8.800.000". */
-export function formatoImporte(n: number): string {
-  return `ARS ${n.toLocaleString('es-AR', { maximumFractionDigits: 0 })}`;
+/** Todas, de la más reciente a la más vieja. */
+export async function listarCotizaciones(): Promise<Cotizacion[]> {
+  try {
+    const filas = await select<Fila>(
+      'cotizaciones',
+      `select=${CAMPOS}&order=fecha.desc,created_at.desc`,
+      CACHE_COMERCIAL
+    );
+    return filas.map(armar);
+  } catch {
+    return [];
+  }
 }
 
-/** Fecha ISO a formato corto local: "2026-07-30" -> "30/07/2026". */
-export function formatoFecha(iso: string): string {
-  const [a, m, d] = iso.split('-');
-  if (!a || !m || !d) return iso;
-  return `${d}/${m}/${a}`;
+export type Costo = {
+  id: string;
+  cotizacionId: string;
+  concepto: string;
+  importe: number;
+  tipo: string;
+  fecha: string;
+  nota: string | null;
+};
+
+/** Los costos de todas las oportunidades, para cruzarlos con sus ingresos. */
+export async function listarCostos(): Promise<Costo[]> {
+  try {
+    const filas = await select<{
+      id: string;
+      cotizacion_id: string;
+      concepto: string;
+      importe: string | number;
+      tipo: string;
+      fecha: string;
+      nota: string | null;
+    }>(
+      'costos',
+      'select=id,cotizacion_id,concepto,importe,tipo,fecha,nota&order=fecha.desc',
+      CACHE_COMERCIAL
+    );
+    return filas.map((f) => ({
+      id: f.id,
+      cotizacionId: f.cotizacion_id,
+      concepto: f.concepto,
+      importe: Number(f.importe),
+      tipo: f.tipo,
+      fecha: f.fecha,
+      nota: f.nota,
+    }));
+  } catch {
+    return [];
+  }
 }
 
-/**
- * Versiones anteriores de una cotización, siguiendo la cadena de reemplazos.
- * Sirve para mostrar "reemplaza a la v1.0" en el listado.
- */
-export function versionAnterior(
-  c: Cotizacion,
-  todas: Cotizacion[]
-): Cotizacion | null {
-  if (!c.reemplazaA) return null;
-  return todas.find((o) => o.token === c.reemplazaA) ?? null;
-}

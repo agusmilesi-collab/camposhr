@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function CopyLink({ url }: { url: string }) {
+export default function CopyLink({ url, texto = 'Copiar link' }: { url: string; texto?: string }) {
   const [copiado, setCopiado] = useState(false);
 
   async function copiar() {
@@ -32,7 +32,7 @@ export default function CopyLink({ url }: { url: string }) {
       onClick={copiar}
       aria-label="Copiar el link del cliente"
     >
-      {copiado ? 'Copiado' : 'Copiar link'}
+      {copiado ? 'Copiado' : texto}
     </button>
   );
 }

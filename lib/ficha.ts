@@ -1,0 +1,179 @@
+import 'server-only';
+import { select } from '@/lib/supabase';
+import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
+
+/**
+ * Todo lo de una evaluación, para la ficha del candidato.
+ *
+ * Cada pestaña de la ficha sale de una tabla distinta, y todas cuelgan de
+ * `evaluacion_id`. Se leen juntas y en paralelo: son consultas por clave y la
+ * pantalla las necesita a todas para saber qué pestaña tiene contenido.
+ *
+ * **Lo clínico está vacío hasta que se migre.** Las tablas existen desde
+ * `supabase/psicotecnicos.sql` pero hoy no tienen filas: los datos de Rorschach,
+ * Benziger, Raven y competencias siguen en Airtable. La ficha las lee igual, así
+ * que el día que entren los datos las pestañas se llenan sin tocar código.
+ */
+
+export type Cabecera = {
+  id: string;
+  estado: string;
+  mensaje: string | null;
+  modalidad: string | null;
+  fecha_ingreso: string | null;
+  fecha_entrevista: string | null;
+  fecha_entrega: string | null;
+  bender_administrado: boolean;
+  grafico_2_personas_administrado: boolean;
+  recomendacion: string | null;
+  informe_path: string | null;
+  facturado: boolean;
+  pagado: boolean;
+  /** Si entró a trabajar en la empresa. Null es "todavía no se sabe". */
+  ingreso: boolean | null;
+  fecha_ingreso_empresa: string | null;
+  numero_factura: string | null;
+  /** Cuándo toca preguntar cómo le fue: noventa días desde que entró. */
+  seguimiento_al: string | null;
+  seguimiento_resultado: string | null;
+  seguimiento_notas: string | null;
+  personas: { nombre: string; email: string | null; telefono: string | null } | null;
+  evaluadoras: { nombre: string } | null;
+  pedidos: {
+    puesto: string;
+    empresas: { nombre: string } | null;
+    baterias: { id: string; codigo: string; nombre: string | null } | null;
+  } | null;
+};
+
+export type Mancha = {
+  id: string;
+  test: string | null;
+  lamina: string | null;
+  n_respuesta: number | null;
+  localizacion: string | null;
+  n_localizacion: string | null;
+  determinantes: string[] | null;
+  fq: string | null;
+  par: boolean | null;
+  contenidos: string[] | null;
+  popular: boolean | null;
+  z: number | null;
+  cc_ee: string[] | null;
+  agc: boolean | null;
+};
+
+export type Sumario = Record<string, unknown> & { evaluacion_id: string };
+export type Benziger = {
+  cuadrante_preferente: string[] | null;
+  resumen: string | null;
+  pdf_path: string | null;
+};
+export type Raven = {
+  raw: number | null;
+  percentil: number | null;
+  desvios: number | null;
+  resultado: string | null;
+};
+export type Cualitativo = {
+  id: string;
+  test: string | null;
+  fecha: string | null;
+  observaciones: string | null;
+  interpretacion: string | null;
+  hallazgos: string | null;
+};
+export type Competencia = {
+  id: string;
+  competencia: string | null;
+  puntaje: number | null;
+  indicadores: string[] | null;
+  justificacion: string | null;
+  texto: string | null;
+};
+
+export type Ficha = {
+  cabecera: Cabecera;
+  /** El precio que regía el día del pedido, no el de hoy. */
+  precio: number | null;
+  manchas: Mancha[];
+  sumario: Sumario | null;
+  benziger: Benziger | null;
+  raven: Raven | null;
+  cualitativos: Cualitativo[];
+  competencias: Competencia[];
+};
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const CAMPOS_CABECERA =
+  'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
+  'bender_administrado,grafico_2_personas_administrado,recomendacion,informe_path,' +
+  'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,' +
+  'seguimiento_al,seguimiento_resultado,seguimiento_notas,' +
+  'personas(nombre,email,telefono),evaluadoras(nombre),' +
+  'pedidos(puesto,empresas(nombre),baterias(id,codigo,nombre))';
+
+/** Null si no existe, para que la pantalla conteste 404 en vez de romperse. */
+export async function fichaDe(id: string): Promise<Ficha | null> {
+  if (!UUID.test(id)) return null;
+
+  const [cabeceras, manchas, sumarios, benzigers, ravens, cualitativos, competencias] =
+    await Promise.all([
+      select<Cabecera>('evaluaciones', `select=${CAMPOS_CABECERA}&id=eq.${id}`),
+      select<Mancha>(
+        'rorschach_respuestas',
+        `select=*&evaluacion_id=eq.${id}&order=n_respuesta.asc`,
+        CACHE_PSICOTECNICOS
+      ),
+      select<Sumario>('sumario_exner', `select=*&evaluacion_id=eq.${id}`, CACHE_PSICOTECNICOS),
+      select<Benziger>(
+        'benziger',
+        `select=cuadrante_preferente,resumen,pdf_path&evaluacion_id=eq.${id}`,
+        CACHE_PSICOTECNICOS
+      ),
+      select<Raven>(
+        'raven',
+        `select=raw,percentil,desvios,resultado&evaluacion_id=eq.${id}`,
+        CACHE_PSICOTECNICOS
+      ),
+      select<Cualitativo>(
+        'tests_cualitativos',
+        `select=id,test,fecha,observaciones,interpretacion,hallazgos&evaluacion_id=eq.${id}&order=test.asc`,
+        CACHE_PSICOTECNICOS
+      ),
+      select<Competencia>(
+        'informe_competencias',
+        `select=id,competencia,puntaje,indicadores,justificacion,texto&evaluacion_id=eq.${id}&order=competencia.asc`,
+        CACHE_PSICOTECNICOS
+      ),
+    ]);
+
+  const cabecera = cabeceras[0];
+  if (!cabecera) return null;
+
+  // El precio no sale de la batería sino de su historia, a la fecha del pedido:
+  // un aumento de hoy no cambia lo que valió una evaluación de marzo.
+  const bateriaId = cabecera.pedidos?.baterias?.id;
+  let precio: number | null = null;
+  if (bateriaId) {
+    const historia = await select<{ precio: number; desde: string }>(
+      'bateria_precios',
+      `select=precio,desde&bateria_id=eq.${bateriaId}&order=desde.desc`
+    ).catch(() => []);
+    const dia = (cabecera.fecha_ingreso ?? new Date().toISOString()).slice(0, 10);
+    const vigente = historia.find((h) => h.desde <= dia);
+    precio = vigente ? Number(vigente.precio) : null;
+  }
+
+  return {
+    cabecera,
+    precio,
+    manchas,
+    sumario: sumarios[0] ?? null,
+    benziger: benzigers[0] ?? null,
+    raven: ravens[0] ?? null,
+    cualitativos,
+    competencias,
+  };
+}

@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 
 /**
- * Ruteo por host. Tres zonas:
+ * Ruteo por host. Cuatro zonas:
+ *
+ *  os.camposhr.com        -> Campos OS, el sistema interno del equipo. La raíz
+ *     muestra la home del OS y el resto de la app sigue disponible acá, porque
+ *     las secciones enlazan pantallas que todavía viven en sus rutas viejas.
  *
  *  clientes.camposhr.com  -> portal de clientes (exclusivo).
  *     /<token>  se reescribe a /p/<token> (URL limpia); nada más existe acá.
@@ -20,6 +25,7 @@ import type { NextRequest } from 'next/server';
 
 const CLIENT_HOST = 'clientes.camposhr.com';
 const TOOLS_HOST = 'tools.camposhr.com';
+const OS_HOST = 'os.camposhr.com';
 // Prototipo de interfaz del hub. Vive en public/v2/ y se ve en su propio
 // subdominio o en <host>/v2. No tiene datos reales ni acciones conectadas.
 const TOOLS_V2_HOST = 'toolsversion2.camposhr.com';
@@ -42,7 +48,7 @@ const PRESENTACION = /^\/pres\/([A-Za-z0-9_-]{6,128})\/?$/;
 // encuentros en /ciclo/<empresa>, cada uno con su endpoint de guardado.
 const RUTAS_PUBLICAS = /^\/(c|l|ciclo|api\/cuestionario|api\/ciclo)\//;
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase();
   const url = req.nextUrl;
   const { pathname } = url;
@@ -83,6 +89,29 @@ export function middleware(req: NextRequest) {
       status: 404,
       headers: { 'content-type': 'text/plain; charset=utf-8' },
     });
+  }
+
+  // --- Campos OS: el sistema interno ---
+  // Pasa todo: la barra lateral enlaza pantallas que todavía viven en sus
+  // rutas viejas (/cuestionario, /presentaciones, /ciclo) y tienen que abrir
+  // sin salir del subdominio.
+  if (host === OS_HOST) {
+    // La puerta va antes del ruteo y no adentro de cada pantalla. Existe solo
+    // si `OS_CLAVE` está cargada: mientras se prueba el sistema, no lo está.
+    const entrando =
+      pathname === '/os/entrar' || pathname === '/api/os/entrar' || pathname === '/entrar';
+    if (hayPuerta() && !entrando && !(await sesionValida(req))) {
+      const dest = url.clone();
+      dest.pathname = '/os/entrar';
+      dest.searchParams.set('destino', pathname === '/' ? '/os' : pathname);
+      return NextResponse.rewrite(dest);
+    }
+    if (pathname === '/' || pathname === '/entrar') {
+      const dest = url.clone();
+      dest.pathname = pathname === '/entrar' ? '/os/entrar' : '/os';
+      return NextResponse.rewrite(dest);
+    }
+    return NextResponse.next();
   }
 
   // --- Prototipo del hub (solo para mirar la interfaz) ---
@@ -129,6 +158,10 @@ export function middleware(req: NextRequest) {
     dest.pathname = '/home.html';
     return NextResponse.rewrite(dest);
   }
+  // El OS tiene su propio subdominio.
+  if (pathname === '/os' || pathname.startsWith('/os/')) {
+    return NextResponse.redirect(`https://${OS_HOST}${pathname}`, 307);
+  }
   // Herramientas viejas -> se mudaron a tools.camposhr.com.
   if (RUTAS_TOOLS.test(pathname) || pathname === '/index.html') {
     return NextResponse.redirect(`https://${TOOLS_HOST}${pathname}`, 307);
@@ -140,6 +173,15 @@ export function middleware(req: NextRequest) {
   }
 
   return NextResponse.next();
+}
+
+/** Hay sesión si la cookie trae la huella de la clave del servidor. */
+async function sesionValida(req: NextRequest): Promise<boolean> {
+  const clave = process.env.OS_CLAVE;
+  if (!clave) return false;
+  const cookie = req.cookies.get(COOKIE)?.value;
+  if (!cookie) return false;
+  return igual(cookie, await huella(clave));
 }
 
 export const config = {

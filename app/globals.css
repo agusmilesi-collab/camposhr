@@ -2684,30 +2684,48 @@ body {
 .cot-row > .cot-num {
   justify-content: flex-end;
 }
-/* El botón de copiar va centrado en su celda, con su tamaño natural: como
-   hijo directo del grid se estiraba a la altura entera de la fila. */
+/* Los dos botones van centrados en su celda y con su tamaño natural: como
+   hijos directos del grid se estiraban a la altura entera de la fila.
+   Miden lo mismo, y el ancho lo fija el más largo de los textos posibles
+   ("Copiar link"), así el par no se mueve cuando pasa a "Copiado". */
 .cot-accion {
   justify-content: flex-end;
   gap: 8px;
 }
+.cot-accion > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex: none;
+  min-width: 104px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  border-radius: 6px;
+  text-align: center;
+  white-space: nowrap;
+}
 .cot-accion .copiar {
   background: var(--card);
-  font-size: 0.75rem;
-  padding: 5px 11px;
-  border-radius: 6px;
 }
 .cot-accion .copiar:hover {
   border-color: var(--muted);
 }
-/* "Abrir" es un enlace y "Copiar" un boton: se igualan para que el par se lea
-   como dos acciones del mismo rango. */
-.cot-accion a.copiar {
-  display: inline-flex;
-  align-items: center;
+/* Abrir la cotización es la acción principal de la fila, y va en azul. */
+.cot-abrir {
+  font: inherit;
+  font-size: 0.75rem;
   text-decoration: none;
-  color: var(--ink-soft);
-  border: 1px solid var(--line);
-  line-height: 1.2;
+  color: #fff;
+  background: var(--st-blue-2);
+  border: 1px solid var(--st-blue-2);
+  transition: background 0.12s, border-color 0.12s;
+}
+.cot-abrir:hover {
+  background: #375275;
+  border-color: #375275;
 }
 .cot-row > *:first-child {
   padding-left: 20px;
