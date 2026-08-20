@@ -1,0 +1,277 @@
+/**
+ * El test de Raven, en la pantalla de quien lo rinde.
+ *
+ * Pantalla propia y no la del OS: la persona evaluada no ve el sistema, ve un
+ * test. Todo lo que no sea la lámina y sus ocho opciones está de más, así que
+ * la página no tiene barra lateral, ni logo, ni nada que distraiga.
+ */
+
+.rv {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  color: #1a1d21;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.rv-centrado {
+  max-width: 560px;
+  padding-top: 64px;
+}
+
+.rv h1 {
+  margin: 0 0 14px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.rv p {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.rv-suave {
+  color: #6b7076;
+  font-size: 0.86rem;
+}
+
+/* La consigna del test: lo único que hay que entender para empezar. */
+.rv-consigna {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+/* Las tres cosas que hay que saber, numeradas: son pasos de una explicación y
+   no una lista de opciones sueltas. */
+.rv-instrucciones {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 26px;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.rv-instrucciones li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  counter-increment: paso;
+}
+
+.rv-instrucciones li::before {
+  content: counter(paso);
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #1a1d21;
+  border-radius: 50%;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.rv-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e4e2de;
+}
+
+.rv-cuenta {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.rv-reloj {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.rv-tiempo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+/* Los últimos minutos se marcan, sin gritar. */
+.rv-tiempo.urge {
+  color: #a5451f;
+}
+
+.rv-aviso {
+  margin: 14px 0 0;
+  padding: 11px 14px;
+  border-left: 3px solid #a5451f;
+  background: #fbf6f2;
+  font-size: 0.9rem;
+}
+
+/* La lámina manda: es lo único que hay que mirar. */
+.rv-lamina {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid #e4e2de;
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+}
+
+/* La lámina trae la matriz y sus ocho opciones en la misma imagen, así que es
+   alta y vertical: se limita al alto de la pantalla para que se vea entera sin
+   scrollear hasta los botones. */
+.rv-lamina img {
+  max-width: 100%;
+  max-height: 62vh;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Las ocho opciones, todas del mismo tamaño: ninguna pesa más que otra. */
+.rv-opciones {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rv-opcion {
+  aspect-ratio: 1;
+  border: 1px solid #d8d5d0;
+  border-radius: 10px;
+  background: #fff;
+  color: #1a1d21;
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rv-opcion:hover {
+  border-color: #9a948c;
+}
+
+.rv-opcion.elegida {
+  border-color: #1a1d21;
+  background: #1a1d21;
+  color: #fff;
+}
+
+.rv-pasos {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.rv-boton {
+  padding: 9px 18px;
+  border: 1px solid #d8d5d0;
+  border-radius: 9px;
+  background: #fff;
+  color: #1a1d21;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.rv-boton:disabled {
+  color: #b3aea7;
+  cursor: default;
+}
+
+.rv-firme {
+  border-color: #1a1d21;
+  background: #1a1d21;
+  color: #fff;
+}
+
+/* La tira de las treinta y seis: dónde está y qué le falta. */
+.rv-tira {
+  display: grid;
+  grid-template-columns: repeat(18, minmax(0, 1fr));
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid #e4e2de;
+}
+
+.rv-paso {
+  aspect-ratio: 1;
+  border: 1px solid #e4e2de;
+  border-radius: 6px;
+  background: #f6f4f1;
+  color: #8b867f;
+  font: inherit;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+/* Respondida: se llena. Sin responder queda hueca, que es lo que se busca al
+   final del test. */
+.rv-paso.hecha {
+  background: #d9d5cf;
+  color: #1a1d21;
+}
+
+.rv-paso.aca {
+  border-color: #1a1d21;
+  border-width: 2px;
+  font-weight: 700;
+}
+
+.rv-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.rv-enlace {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #6b7076;
+  font: inherit;
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* La vista de prueba se avisa: una pantalla igual a la real que no guarda es
+   la forma más fácil de perder el trabajo de alguien. */
+.rv-prueba {
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  border: 1px dashed #b3aea7;
+  border-radius: 9px;
+  background: #f6f4f1;
+  color: #6b7076;
+  font-size: 0.85rem;
+}
+
+.rv-error {
+  color: #8c3b3b;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 560px) {
+  .rv-opciones {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .rv-tira {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+  }
+}

@@ -108,6 +108,8 @@ export type Evaluacion = {
   nombre: string;
   empresa: string;
   puesto: string;
+  /** A qué pedido entra. Solo lo traen las filas de Supabase. */
+  pedidoId: string | null;
   bateria: string | null;
   email: string | null;
   telefono: string | null;
@@ -123,10 +125,20 @@ export type Evaluacion = {
   linkRaven: string | null;
   recomendacion: string | null;
   tieneInforme: boolean;
+  /** Si la persona tiene el CV guardado. Solo lo saben las filas de Supabase. */
+  tieneCv: boolean;
   servicio: string | null;
   /** Días desde la entrevista, cuando ya se tomó. */
   dias: number | null;
   /** Días esperando desde que entró, cuando todavía no hay entrevista. */
   diasEsperando: number | null;
+  /**
+   * Días desde la solicitud, siempre.
+   *
+   * Se cuenta en el servidor y viaja como número: hecha en el navegador, la
+   * cuenta cambia con el huso de quien mira y la primera pintura no coincide
+   * con la que llega del servidor.
+   */
+  diasSolicitud: number | null;
   prueba: boolean;
 };

@@ -9,55 +9,75 @@
  *
  * Las decisiones que la hacen rápida, en orden de cuánto ahorran:
  *
- * 1. **No cierra al guardar.** Guarda, se limpia y vuelve el foco al nombre.
+ * 1. **El pedido va primero**, como en el formulario del portal: lo primero
+ *    que se define es para qué búsqueda entra, y recién después quién es.
+ * 2. **No cierra al guardar.** Guarda, se limpia y vuelve el foco al nombre.
  *    Cargar cinco candidatos es escribir cinco nombres, no abrir el formulario
  *    cinco veces.
- * 2. **El pedido queda elegido** entre una carga y la siguiente, porque los
- *    candidatos vienen de a tandas del mismo pedido.
- * 3. **Tres campos a la vista**, que son los que la fila necesita para existir:
- *    nombre, pedido y un contacto. Evaluadora y correo están detrás de "más
- *    datos", cerrado por defecto.
- * 4. **Enter guarda, Escape cierra.** Sin llevar la mano al mouse.
- * 5. **Va en la columna, no en una ventana encima.** Lo que se está cargando se
- *    ve contra la lista a la que se va a sumar.
+ * 3. **El pedido queda elegido** entre una carga y la siguiente, incluso el
+ *    que se acaba de abrir, porque los candidatos vienen de a tandas del mismo
+ *    pedido.
+ * 4. **Tres campos a la vista**, que son los que la fila necesita para
+ *    existir: pedido, nombre y un contacto. El correo, la evaluadora y el CV
+ *    están detrás de un clic, cerrados por defecto.
+ * 5. **Enter guarda, Escape cierra.** Sin llevar la mano al mouse.
+ * 6. **Va en la columna, no en una ventana encima.** Lo que se está cargando
+ *    se ve contra la lista a la que se va a sumar.
  *
- * Lo que no hace: crear el pedido. Eso es otro formulario, con otros campos, y
- * meterlo acá haría largo el caso frecuente para servir al raro. El enlace de
- * abajo lleva a la pantalla que lo carga.
+ * Cuando el pedido todavía no existe, "+ Pedido nuevo" abre el cajón de la
+ * derecha con sus ocho campos, y al guardarlo la tarjeta lo deja elegido. Los
+ * dos trabajos tienen tamaños distintos y cada uno ocupa el lugar que necesita:
+ * tres campos en la columna, ocho en el cajón.
  */
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
+import PedidoNuevo from './PedidoNuevo';
 
 export type PedidoOpcion = { id: string; puesto: string; empresa: string };
 export type Opcion = { id: string; nombre: string };
+export type BateriaOpcion = { id: string; codigo: string; nombre: string };
+
+/** El valor del selector de pedido que abre el cajón. */
+const NUEVO = 'nuevo';
 
 export default function Agregar({
   pedidos,
+  empresas,
+  baterias,
   evaluadoras,
-  yo,
 }: {
   pedidos: PedidoOpcion[];
+  empresas: Opcion[];
+  baterias: BateriaOpcion[];
   evaluadoras: Opcion[];
-  /** Con qué evaluadora se entra: si es una de ellas, se propone a sí misma. */
-  yo: string | null;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
   const [abierto, setAbierto] = useState(false);
   const [masDatos, setMasDatos] = useState(false);
+  const [cajon, setCajon] = useState(false);
+  // Los pedidos que se abrieron desde el cajón. El servidor todavía no los
+  // devolvió cuando se carga el primer candidato, y sin esto el selector
+  // quedaría apuntando a un pedido que no está en la lista.
+  const [nuevos, setNuevos] = useState<PedidoOpcion[]>([]);
   const [pedido, setPedido] = useState(pedidos[0]?.id ?? '');
-  // Si quien mira es evaluadora, el candidato arranca a su nombre: es lo que
-  // pasa casi siempre, y así entra directo en su cola en vez de a repartir.
-  const [evaluadora, setEvaluadora] = useState(
-    evaluadoras.find((v) => v.nombre === yo)?.id ?? ''
-  );
+  /**
+   * El candidato entra sin evaluadora, que es donde está la tarjeta.
+   *
+   * Antes se proponía a sí misma quien estuviera cargando, y el candidato
+   * saltaba a su columna apenas se guardaba: se agregaba en "Sin asignar" y
+   * aparecía en otro lado. Repartir es lo que se hace en esta pantalla,
+   * arrastrando. Quien quiera quedárselo lo elige en "Correo, evaluadora y
+   * CV".
+   */
+  const [evaluadora, setEvaluadora] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
   const nombre = useRef<HTMLInputElement>(null);
-  const caja = useRef<HTMLFormElement>(null);
+
+  const opciones = [...pedidos, ...nuevos.filter((n) => !pedidos.some((p) => p.id === n.id))];
 
   useEffect(() => {
     if (abierto) nombre.current?.focus();
@@ -70,6 +90,17 @@ export default function Agregar({
     setMasDatos(false);
   }
 
+  /** El pedido recién abierto queda elegido: los candidatos son de ese. */
+  function tomarPedido(nuevo: PedidoOpcion) {
+    setNuevos((v) => [...v, nuevo]);
+    setPedido(nuevo.id);
+    setCajon(false);
+    setError(null);
+    setHecho(`${nuevo.puesto} quedó abierto.`);
+    nombre.current?.focus();
+    empezar(() => router.refresh());
+  }
+
   async function guardar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -80,6 +111,10 @@ export default function Agregar({
     setError(null);
     setHecho(null);
 
+    if (!pedido) {
+      setError('Abrí primero el pedido al que entra.');
+      return;
+    }
     if (!telefono && !email) {
       setError('Hace falta el teléfono o el correo para poder citarla.');
       return;
@@ -119,95 +154,107 @@ export default function Agregar({
     );
   }
 
-  if (pedidos.length === 0) {
-    return (
-      <div className="os-agregar-abierto">
-        <p className="os-vacio">
-          No hay ningún pedido abierto. <Link href="/os/psicotecnicos/cargar">Cargá el pedido</Link>{' '}
-          y después sus candidatos.
-        </p>
-        <button type="button" className="os-boton" onClick={cerrar}>
-          Cerrar
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <form
-      ref={caja}
-      className="os-agregar-abierto"
-      onSubmit={guardar}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') cerrar();
-      }}
-    >
-      <input
-        ref={nombre}
-        className="os-campo"
-        name="nombre"
-        required
-        maxLength={120}
-        placeholder="Nombre y apellido"
-        aria-label="Nombre y apellido"
-      />
-
-      <select
-        className="os-campo"
-        value={pedido}
-        onChange={(e) => setPedido(e.target.value)}
-        aria-label="Para qué pedido"
+    <>
+      <form
+        className="os-agregar-abierto"
+        onSubmit={guardar}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') cerrar();
+        }}
       >
-        {pedidos.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.empresa} · {p.puesto}
-          </option>
-        ))}
-      </select>
+        <select
+          className="os-campo"
+          value={pedido}
+          onChange={(e) => {
+            // El cajón se abre y el selector no se mueve: si se cancela, sigue
+            // elegido el pedido que estaba.
+            if (e.target.value === NUEVO) setCajon(true);
+            else setPedido(e.target.value);
+          }}
+          aria-label="Para qué pedido"
+        >
+          {opciones.length === 0 && <option value="">Ningún pedido abierto</option>}
+          {opciones.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.empresa} · {p.puesto}
+            </option>
+          ))}
+          <option value={NUEVO}>+ Pedido nuevo</option>
+        </select>
 
-      <input
-        className="os-campo"
-        name="telefono"
-        placeholder="Teléfono"
-        aria-label="Teléfono"
-      />
+        <input
+          ref={nombre}
+          className="os-campo"
+          name="nombre"
+          required
+          maxLength={120}
+          placeholder="Nombre y apellido"
+          aria-label="Nombre y apellido"
+        />
 
-      {masDatos && (
-        <>
-          <input className="os-campo" name="email" placeholder="Correo" aria-label="Correo" />
-          <select
-            className="os-campo"
-            value={evaluadora}
-            onChange={(e) => setEvaluadora(e.target.value)}
-            aria-label="Evaluadora"
-          >
-            <option value="">Sin asignar</option>
-            {evaluadoras.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.nombre}
-              </option>
-            ))}
-          </select>
-        </>
+        <input
+          className="os-campo"
+          name="telefono"
+          placeholder="Teléfono"
+          aria-label="Teléfono"
+        />
+
+        {masDatos && (
+          <>
+            <input className="os-campo" name="email" placeholder="Correo" aria-label="Correo" />
+            <select
+              className="os-campo"
+              value={evaluadora}
+              onChange={(e) => setEvaluadora(e.target.value)}
+              aria-label="Evaluadora"
+            >
+              <option value="">Sin asignar</option>
+              {evaluadoras.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.nombre}
+                </option>
+              ))}
+            </select>
+            <label className="os-agregar-rotulo">
+              CV
+              <input
+                className="os-campo os-agregar-archivo"
+                name="cv"
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf"
+              />
+            </label>
+          </>
+        )}
+
+        {!masDatos && (
+          <button type="button" className="os-agregar-mas-datos" onClick={() => setMasDatos(true)}>
+            Correo, evaluadora y CV
+          </button>
+        )}
+
+        {error && <p className="os-form-error">{error}</p>}
+        {hecho && <p className="os-form-ok">{hecho}</p>}
+
+        <div className="os-agregar-pie">
+          <button className="os-boton os-boton-firme" type="submit" disabled={enviando}>
+            {enviando ? 'Guardando…' : 'Agregar'}
+          </button>
+          <button type="button" className="os-boton" onClick={cerrar}>
+            Listo
+          </button>
+        </div>
+      </form>
+
+      {cajon && (
+        <PedidoNuevo
+          empresas={empresas}
+          baterias={baterias}
+          onCreado={tomarPedido}
+          onCerrar={() => setCajon(false)}
+        />
       )}
-
-      {!masDatos && (
-        <button type="button" className="os-agregar-mas-datos" onClick={() => setMasDatos(true)}>
-          Correo y evaluadora
-        </button>
-      )}
-
-      {error && <p className="os-form-error">{error}</p>}
-      {hecho && <p className="os-form-ok">{hecho}</p>}
-
-      <div className="os-agregar-pie">
-        <button className="os-boton os-boton-firme" type="submit" disabled={enviando}>
-          {enviando ? 'Guardando…' : 'Agregar'}
-        </button>
-        <button type="button" className="os-boton" onClick={cerrar}>
-          Listo
-        </button>
-      </div>
-    </form>
+    </>
   );
 }

@@ -42,6 +42,7 @@ const NAV: Grupo[] = [
     grupo: 'Comercial',
     items: [
       { href: '/os/clientes', texto: 'Clientes', icono: 'clientes' },
+      { href: '/os/pedidos', texto: 'Pedidos', icono: 'cotizaciones' },
       { href: '/os/cotizaciones', texto: 'Cotizaciones', icono: 'cotizaciones' },
       { href: '/os/costos', texto: 'Costos', icono: 'costos' },
       { href: '/os/accesos', texto: 'Accesos', icono: 'accesos' },

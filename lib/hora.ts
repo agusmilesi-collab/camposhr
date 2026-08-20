@@ -13,10 +13,23 @@
 export const ZONA = 'America/Argentina/Cordoba';
 const DESFASE = '-03:00';
 
+/**
+ * Una fecha sin hora, leída al mediodía de Argentina.
+ *
+ * "2026-08-03" a secas es medianoche UTC, que en Córdoba todavía es el 2: sin
+ * esto, toda fecha sin hora se muestra un día antes. Al mediodía no hay huso
+ * que la corra.
+ */
+function comoFecha(iso: string): Date {
+  return /^\d{4}-\d{2}-\d{2}$/.test(iso)
+    ? new Date(`${iso}T12:00:00${DESFASE}`)
+    : new Date(iso);
+}
+
 /** "18/08, 09:55" para una fecha con hora; "18/08" para una sin hora. */
 export function fechaHora(iso: string | null): string | null {
   if (!iso) return null;
-  const d = new Date(iso);
+  const d = comoFecha(iso);
   if (Number.isNaN(d.getTime())) return null;
   const conHora = iso.includes('T');
   return new Intl.DateTimeFormat('es-AR', {
@@ -30,7 +43,7 @@ export function fechaHora(iso: string | null): string | null {
 /** "18/08/2026", sin hora. */
 export function fecha(iso: string | null): string | null {
   if (!iso) return null;
-  const d = new Date(iso);
+  const d = comoFecha(iso);
   if (Number.isNaN(d.getTime())) return null;
   return new Intl.DateTimeFormat('es-AR', {
     timeZone: ZONA,
@@ -54,6 +67,17 @@ function partes(d: Date): Record<string, string> {
   return Object.fromEntries(
     fmt.formatToParts(d).filter((p) => p.type !== 'literal').map((p) => [p.type, p.value])
   );
+}
+
+/**
+ * Hoy en la zona del trabajo, como "2026-08-20".
+ *
+ * El servidor corre en UTC: pasadas las nueve de la noche de Argentina ya está
+ * en el día siguiente, y un pedido cargado a esa hora quedaría fechado mañana.
+ */
+export function hoy(): string {
+  const p = partes(new Date());
+  return `${p.year}-${p.month}-${p.day}`;
 }
 
 /** El valor que espera un input datetime-local, en hora de Argentina. */
@@ -117,7 +141,11 @@ export function haceCuanto(n: number | null): string {
  */
 export function diaDeLaSemana(iso: string | null): string | null {
   if (!iso) return null;
-  const d = new Date(iso);
+  const d = comoFecha(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return new Intl.DateTimeFormat('es-AR', { timeZone: ZONA, weekday: 'long' }).format(d);
+  // Con mayúscula acá y no en la hoja de estilos: `::first-letter` no se
+  // aplica cuando la celda es un contenedor flexible, que es como queda la
+  // tabla en el teléfono.
+  const dia = new Intl.DateTimeFormat('es-AR', { timeZone: ZONA, weekday: 'long' }).format(d);
+  return dia.charAt(0).toUpperCase() + dia.slice(1);
 }

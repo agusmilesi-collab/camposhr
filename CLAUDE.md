@@ -76,6 +76,34 @@ de `.os-tabla-trabajo`, que pisaba el `colgroup`; el ancho de la tabla, que si
 es `auto` toma el del contenido y reparte el sobrante; y el ancho mínimo propio
 de los campos de fecha y los selectores.
 
+**En el teléfono la tabla se desarma en fichas.** Abajo de 760 px cada fila
+pasa a ser un bloque de "campo: valor", y el nombre del campo sale del atributo
+`data-campo` de cada celda: una celda sin ese atributo queda sin rótulo. El
+ancho de la tabla y la cantidad de columnas del tablero viajan como variables
+(`--os-tabla-ancho`, `--os-columnas`) y no como estilo en línea, porque un
+estilo en línea le gana a la consulta de medios y deja la pantalla ancha
+adentro del teléfono.
+
+## El test de Raven: la clave no llega al navegador
+
+`lib/raven-test.ts` lleva `server-only` y ahí vive `CLAVE`, las 36 respuestas
+correctas. El candidato abre `/raven/<token>` en su casa, así que todo lo que se
+mande al navegador lo puede leer: la corrección corre en el servidor y la
+pantalla del test nunca recibe la clave ni el puntaje. Lo que se puede importar
+desde el componente es `lib/raven.ts`, que solo tiene el baremo y las
+constantes.
+
+El reloj también es del servidor. `iniciado_at` se sella cuando se pide la
+primera lámina y `segundosRestantes()` mide contra eso: si el tiempo lo llevara
+el navegador, recargar la página lo reiniciaría.
+
+**Las láminas van a `public/raven/laminas/`, numeradas de 1 a 36.** Este
+repositorio es público, y `public/` se entrega a cualquiera que sepa la
+dirección. Las láminas del APM son material con derechos y difundirlas invalida
+el test para quien las haya visto: antes de subir los escaneos hay que decidir
+si el repositorio se cierra o si las láminas se sirven desde Storage privado con
+URL firmada, como el CV.
+
 ## Las etapas y las secciones no son lo mismo
 
 `ETAPAS` son los estados del pipeline, los que viven en la base. `SECCIONES`

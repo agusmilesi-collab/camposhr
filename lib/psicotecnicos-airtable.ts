@@ -241,6 +241,11 @@ export async function listar(): Promise<Evaluacion[]> {
       nombre: f[F.nombre] ?? 'Sin nombre',
       empresa,
       puesto: pedido?.puesto ?? 'Sin puesto',
+      // El pedido de una fila de Airtable no se elige desde el OS: esa fila se
+      // sigue trabajando allá hasta que se mude. El CV, por lo mismo, se mira
+      // del lado de Airtable.
+      pedidoId: null,
+      tieneCv: false,
       bateria: (pedido?.bateriaId ? mapaBaterias.get(pedido.bateriaId) : null) || null,
       email: f[F.email] ?? null,
       telefono: f[F.telefono] ?? null,
@@ -259,6 +264,7 @@ export async function listar(): Promise<Evaluacion[]> {
       servicio: f[F.servicio] ?? null,
       dias: diasDesde(fechaEntrevista, hoy),
       diasEsperando: fechaEntrevista ? null : diasDesde(f[F.fechaIngreso] ?? null, hoy),
+      diasSolicitud: diasDesde(f[F.fechaIngreso] ?? null, hoy),
       prueba: EMPRESA_PRUEBA.test(empresa),
     };
   });

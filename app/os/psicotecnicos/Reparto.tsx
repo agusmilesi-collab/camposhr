@@ -15,6 +15,10 @@
  * Se guarda en un solo pedido con los dos campos juntos. Si viajaran por
  * separado, un corte en el medio dejaría a alguien con evaluadora y todavía en
  * la columna de sin asignar.
+ *
+ * Tocar una tarjeta abre sus datos en el cajón de la derecha, donde se
+ * corrigen y donde se la puede borrar. Arrastrar y tocar conviven: el
+ * navegador no dispara el clic cuando lo que hubo fue un arrastre.
  */
 
 import { flushSync } from 'react-dom';
@@ -22,7 +26,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import type { Evaluacion } from '@/lib/psicotecnicos';
 import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
-import { enDias } from '@/lib/hora';
+import { fechaHora, haceCuanto } from '@/lib/hora';
+import Candidato from './Candidato';
+import type { PedidoOpcion } from './Agregar';
 
 /** Lo que cuenta como carga de trabajo abierta de una evaluadora. */
 const ABIERTAS = new Set(['Por citar', 'Por entrevistar', 'Por analizar']);
@@ -63,11 +69,13 @@ function Tarjeta({
   e,
   onDragStart,
   onDragEnd,
+  onAbrir,
   arrastrando,
 }: {
   e: Evaluacion;
   onDragStart: (ev: React.DragEvent) => void;
   onDragEnd: () => void;
+  onAbrir: () => void;
   arrastrando: boolean;
 }) {
   return (
@@ -79,22 +87,31 @@ function Tarjeta({
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
+      role="button"
+      tabIndex={0}
+      onClick={onAbrir}
+      onKeyDown={(ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          onAbrir();
+        }
+      }}
     >
       <div className="os-tarjeta-cliente">{e.empresa}</div>
       <div className="os-tarjeta-concepto">
         {e.nombre} · {e.puesto}
         {e.bateria ? ` · ${e.bateria}` : ''}
       </div>
+      {/* Cuándo entró la solicitud y cuánto hace: la fecha ubica el caso en el
+          mes y el "hace" dice sin contar si ya esperó demasiado. */}
       <div className="os-tarjeta-pie">
         <span className={`os-sello-estado ${COLOR_ETAPA[e.etapa] ?? 'os-gris'}`}>
           {e.etapa}
         </span>
         <span className="os-columna-monto">
-          {e.dias !== null
-            ? enDias(e.dias)
-            : e.diasEsperando !== null
-              ? `esperando ${enDias(e.diasEsperando)}`
-              : ''}
+          {e.fechaIngreso
+            ? `${fechaHora(e.fechaIngreso)} · ${haceCuanto(e.diasSolicitud)}`
+            : 'sin fecha'}
         </span>
       </div>
     </article>
@@ -105,11 +122,14 @@ export default function Reparto({
   sinAsignar,
   asignadas,
   evaluadoras,
+  pedidos,
   alta,
 }: {
   sinAsignar: Evaluacion[];
   asignadas: Evaluacion[];
   evaluadoras: string[];
+  /** Los pedidos abiertos, para poder cambiar de búsqueda desde el cajón. */
+  pedidos: PedidoOpcion[];
   /** La tarjeta para cargar, al pie de la columna sin dueño. */
   alta?: React.ReactNode;
 }) {
@@ -118,6 +138,7 @@ export default function Reparto({
   const [arrastrando, setArrastrando] = useState<string | null>(null);
   const [encima, setEncima] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [mirando, setMirando] = useState<string | null>(null);
 
   /**
    * Lo que ya se movió en pantalla y todavía no confirmó el servidor.
@@ -229,6 +250,7 @@ export default function Reparto({
               setArrastrando(e.id);
             }}
             onDragEnd={() => setArrastrando(null)}
+            onAbrir={() => setMirando(e.id)}
           />
         ))}
 
@@ -243,13 +265,18 @@ export default function Reparto({
     );
   }
 
+  const abierta = mirando ? todas.find((x) => x.id === mirando) : null;
+
   return (
     <>
       {error && <p className="os-form-error">{error}</p>}
 
+      {/* La cantidad de columnas viaja como variable y no como
+          `gridTemplateColumns`: un estilo en línea le gana a la hoja, y con él
+          puesto el tablero seguía en varias columnas en el teléfono. */}
       <div
         className="os-kanban"
-        style={{ gridTemplateColumns: `repeat(${evaluadoras.length + 1}, minmax(0, 1fr))` }}
+        style={{ '--os-columnas': evaluadoras.length + 1 } as React.CSSProperties}
       >
         {columna(
           SIN_DUENO,
@@ -270,6 +297,15 @@ export default function Reparto({
           )
         )}
       </div>
+
+      {abierta && (
+        <Candidato
+          e={abierta}
+          pedidos={pedidos}
+          evaluadoras={evaluadoras}
+          onCerrar={() => setMirando(null)}
+        />
+      )}
     </>
   );
 }

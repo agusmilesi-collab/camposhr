@@ -43,10 +43,11 @@ const COTIZACION = /^\/q\/([A-Za-z0-9_-]{6,128})\/?$/;
 // secreto y la presentación lleva noindex.
 const PRESENTACION = /^\/pres\/([A-Za-z0-9_-]{6,128})\/?$/;
 
-// Lo que se responde desde el teléfono vive en el host principal, porque es el
-// destino de los códigos QR: el cuestionario en /c/<empresa> y el ciclo de
-// encuentros en /ciclo/<empresa>, cada uno con su endpoint de guardado.
-const RUTAS_PUBLICAS = /^\/(c|l|ciclo|api\/cuestionario|api\/ciclo)\//;
+// Lo que responde la persona evaluada vive en el host principal, porque es el
+// destino de los códigos QR y de los enlaces que se le mandan: el cuestionario
+// en /c/<empresa>, el ciclo de encuentros en /ciclo/<empresa> y el test de
+// Raven en /raven/<token>, cada uno con su endpoint de guardado.
+const RUTAS_PUBLICAS = /^\/(c|l|ciclo|api\/cuestionario|api\/ciclo|api\/raven)\/|^\/raven(\/|$)/;
 
 export async function middleware(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase();

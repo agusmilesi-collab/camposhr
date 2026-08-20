@@ -17,6 +17,7 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
+import { ABIERTO } from '@/lib/pedido-campos';
 
 const BUCKET = 'psicotecnicos';
 
@@ -87,7 +88,9 @@ export async function pedidosAbiertos(): Promise<PedidoOpcion[]> {
     evaluaciones: { id: string }[];
   }>(
     'pedidos',
-    'select=id,puesto,empresas(nombre),evaluaciones(id)&estado=eq.Abierto&order=fecha_pedido.desc',
+    `select=id,puesto,empresas(nombre),evaluaciones(id)&estado=eq.${encodeURIComponent(
+      ABIERTO
+    )}&order=fecha_pedido.desc`,
     CACHE_PSICOTECNICOS
   );
   return filas.map((f) => ({
@@ -130,6 +133,9 @@ export type PedidoNuevo = {
   empresaId: string;
   puesto: string;
   bateriaId: string | null;
+  /** Si la búsqueda lleva el Benziger, que es un adicional por evaluación. */
+  conBenziger: boolean;
+  familia: string | null;
   seniority: string | null;
   fechaPedido: string | null;
   notas: string | null;
@@ -141,10 +147,12 @@ export async function crearPedido(p: PedidoNuevo): Promise<{ id: string }> {
     empresa_id: p.empresaId,
     puesto: p.puesto,
     bateria_id: p.bateriaId,
+    con_benziger: p.conBenziger,
+    familia: p.familia,
     seniority: p.seniority,
     fecha_pedido: p.fechaPedido,
     notas: p.notas,
-    estado: 'Abierto',
+    estado: ABIERTO,
     origen: p.origen,
   });
 }

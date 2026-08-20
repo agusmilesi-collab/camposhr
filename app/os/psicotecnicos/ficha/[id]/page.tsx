@@ -1,17 +1,23 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Shell from '../../../Shell';
-import { fichaDe, type Ficha } from '@/lib/ficha';
+import { desajusteDeProyectivo, fichaDe, proyectivoDe, type Ficha } from '@/lib/ficha';
 import { quienSoy } from '@/lib/identidad';
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { RUTA } from '@/lib/psicotecnicos';
 import { fechaHora } from '@/lib/hora';
 import { formatoImporte } from '@/lib/cotizaciones';
 import Manchas from './Manchas';
-import Calcular from './Calcular';
 import SumarioTexto from './SumarioTexto';
 import Ingreso from './Ingreso';
 import Factura from './Factura';
+import Conclusion from './Conclusion';
+import Entregar from './Entregar';
+import Benziger from './Benziger';
+import Administrados from './Administrados';
+import Raven from './Raven';
+import BenzigerHoja from './BenzigerHoja';
+import { leerBenziger } from '@/lib/benziger-lectura';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,12 +34,29 @@ export const dynamic = 'force-dynamic';
 
 type Pestana = { clave: string; texto: string; cuantos: (f: Ficha) => number };
 
+/**
+ * Las pestañas de la ficha.
+ *
+ * La de manchas lleva el nombre del test que se le administró, Rorschach o
+ * Zulliger: son dos pruebas distintas, con distintas láminas y distintas
+ * normas, y la evaluadora trabaja sabiendo cuál tiene delante. La dirección
+ * sigue siendo `?ver=manchas` en las dos, así que los enlaces guardados no se
+ * rompen.
+ *
+ * El sumario vive en esa misma pestaña, debajo de la codificación de la que
+ * sale: se codifica, se calcula y se lee sin cambiar de pantalla, igual que el
+ * Benziger.
+ */
 const PESTANAS: Pestana[] = [
   { clave: 'datos', texto: 'Datos', cuantos: () => 0 },
   { clave: 'manchas', texto: 'Manchas', cuantos: (f) => f.manchas.length },
-  { clave: 'sumario', texto: 'Sumario estructural', cuantos: (f) => (f.sumario ? 1 : 0) },
   { clave: 'benziger', texto: 'Benziger', cuantos: (f) => (f.benziger ? 1 : 0) },
   { clave: 'tests', texto: 'Tests', cuantos: (f) => f.cualitativos.length + (f.raven ? 1 : 0) },
+  {
+    clave: 'recomendacion',
+    texto: 'Recomendación',
+    cuantos: (f) => (f.cabecera.recomendacion ? 1 : 0),
+  },
   { clave: 'informe', texto: 'Informe', cuantos: (f) => f.competencias.length },
 ];
 
@@ -143,14 +166,6 @@ function Datos({ f }: { f: Ficha }) {
           {fechaHora(c.fecha_entrevista) ?? <Falta texto="sin agendar" />}
         </Dato>
         <Dato rotulo="Modalidad">{c.modalidad ?? <Falta texto="sin definir" />}</Dato>
-        <Dato rotulo="Administrado">
-          {[
-            c.bender_administrado ? 'Bender' : null,
-            c.grafico_2_personas_administrado ? 'Gráfico 2 personas' : null,
-          ]
-            .filter(Boolean)
-            .join(' · ') || <Falta texto="nada marcado" />}
-        </Dato>
         <Dato rotulo="Entrega">{fechaHora(c.fecha_entrega) ?? <Falta texto="sin entregar" />}</Dato>
         <Dato rotulo="Recomendación">
           {c.recomendacion ? (
@@ -184,30 +199,27 @@ function Datos({ f }: { f: Ficha }) {
           />
         </Dato>
       </Bloque>
+
     </>
   );
 }
 
-/** Los índices del sumario, con el nombre que usa Exner. */
-const INDICES: [string, string][] = [
-  ['r', 'R'], ['lambda', 'Lambda'], ['ea', 'EA'], ['es', 'es'], ['d', 'D'],
-  ['adj_d', 'AdjD'], ['eb', 'EB'], ['estilo', 'Estilo'], ['wsumc', 'WSumC'],
-  ['afr', 'Afr'], ['xa_pct', 'XA%'], ['x_mas_pct', 'X+%'], ['xu_pct', 'Xu%'],
-  ['x_menos_pct', 'X-%'], ['zd', 'Zd'], ['ego', 'Ego'], ['scon', 'SCON'],
-  ['depi', 'DEPI'], ['cdi', 'CDI'], ['pti', 'PTI'],
-];
-
-function SumarioEstructural({ f, id }: { f: Ficha; id: string }) {
+/**
+ * El sumario, debajo de la codificación de la que sale.
+ *
+ * El botón que lo calcula vive en el pie de la grilla, junto a "Agregar
+ * respuesta": son los dos finales posibles de esa tabla, cargar una respuesta
+ * más o cerrar el protocolo.
+ */
+function SumarioEstructural({ f }: { f: Ficha }) {
   const s = f.sumario;
   if (!s) {
     return (
-      <>
-        <p className="os-vacio">
-          Todavía no se calculó el sumario de esta persona. Se arma con el motor Exner
-          a partir de la codificación cargada en Manchas.
-        </p>
-        {f.manchas.length > 0 && <Calcular evaluacionId={id} />}
-      </>
+      <p className="os-vacio">
+        {f.manchas.length > 0
+          ? 'Todavía no se calculó el sumario. Se arma con el motor Exner sobre la codificación de arriba.'
+          : 'El sumario se arma con el motor Exner sobre la codificación, que todavía está vacía.'}
+      </p>
     );
   }
 
@@ -215,55 +227,98 @@ function SumarioEstructural({ f, id }: { f: Ficha; id: string }) {
   // hoja de sumario: se muestra tal cual en vez de rearmarlo acá.
   const texto = (s.crudo as { texto?: string } | null)?.texto;
 
+  return texto ? <SumarioTexto texto={texto} /> : null;
+}
+
+/**
+ * Con qué cierra la evaluación, y la entrega.
+ *
+ * Tiene pestaña propia porque es una decisión, no un dato más de la ficha: se
+ * toma después de leer el sumario y el informe, que están al lado, y es lo
+ * único que el cliente recibe como respuesta.
+ */
+function Recomendacion({ f }: { f: Ficha }) {
+  const c = f.cabecera;
+  return (
+    <section className="os-panel os-cierre">
+      <div className="os-panel-top">
+        <h2>Con qué cierra</h2>
+      </div>
+      <div className="os-panel-cuerpo">
+        <Conclusion
+          id={c.id}
+          recomendacion={c.recomendacion}
+          notas={c.recomendacion_notas}
+        />
+      </div>
+    </section>
+  );
+}
+
+/**
+ * El Benziger: su carga y lo que ya se leyó del informe.
+ *
+ * La carga está siempre, aunque no haya nada todavía: es la puerta por donde
+ * entra el informe, y sin ella la pestaña no serviría para nada hasta que
+ * alguien cargara el dato desde otro lado.
+ */
+function BenzigerVista({ f, id }: { f: Ficha; id: string }) {
+  const b = f.benziger;
   return (
     <>
-      {texto && <SumarioTexto texto={texto} />}
+      <Benziger
+        id={id}
+        cuadrantes={b?.cuadrante_preferente ?? []}
+        informe={b?.pdf_path ? (b.pdf_nombre ?? 'Informe cargado') : null}
+      />
 
-      <div className="os-ficha-indices">
-        {INDICES.map(([clave, rotulo]) => (
-          <div key={clave} className="os-ficha-indice">
-            <div className="os-ficha-rotulo">{rotulo}</div>
-            <div className="os-ficha-numero">{String(s[clave] ?? '—')}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="os-barra-acciones">
-        <Calcular evaluacionId={id} />
-        <span className="os-columna-monto">
-          Recalcular pisa el sumario anterior.
-        </span>
-      </div>
+      {b?.cuadrantes && Object.keys(b.cuadrantes).length > 0 && (
+        <BenzigerHoja
+          l={leerBenziger(b.cuadrantes, b.adjetivos ?? {}, b.abiertas ?? {}, b.estres ?? {})}
+        />
+      )}
     </>
   );
 }
 
-function BenzigerVista({ f }: { f: Ficha }) {
-  const b = f.benziger;
-  if (!b) return <SinDatos que="Benziger" />;
-  return (
-    <div className="os-ficha-datos">
-      <Dato rotulo="Cuadrante">{b.cuadrante_preferente?.join(' · ') || <Falta />}</Dato>
-      <Dato rotulo="Resumen">{b.resumen ?? <Falta />}</Dato>
-    </div>
-  );
-}
-
-function Tests({ f }: { f: Ficha }) {
-  if (!f.raven && f.cualitativos.length === 0) return <SinDatos que="ningún test" />;
+/**
+ * Los tests que no son de manchas.
+ *
+ * Arriba lo que se administró, que se marca acá y no en Datos: es parte del
+ * trabajo de esta pestaña. Después el Raven con su puntaje, y por último los
+ * cualitativos.
+ */
+function Tests({ f, id }: { f: Ficha; id: string }) {
+  const c = f.cabecera;
   return (
     <>
-      {f.raven && (
-        <section className="os-panel">
-          <h2 className="os-ficha-titulo">Raven</h2>
-          <div className="os-ficha-datos">
-            <Dato rotulo="Puntaje">{f.raven.raw ?? <Falta />}</Dato>
-            <Dato rotulo="Percentil">{f.raven.percentil ?? <Falta />}</Dato>
-            <Dato rotulo="Desvíos">{f.raven.desvios ?? <Falta />}</Dato>
-            <Dato rotulo="Resultado">{f.raven.resultado ?? <Falta />}</Dato>
-          </div>
-        </section>
-      )}
+      <section className="os-panel os-cierre">
+        <div className="os-panel-top">
+          <h2>Administrados</h2>
+        </div>
+        <div className="os-panel-cuerpo">
+          <Administrados
+            id={id}
+            bender={c.bender_administrado}
+            grafico={c.grafico_2_personas_administrado}
+          />
+        </div>
+      </section>
+
+      <section className="os-panel os-cierre">
+        <div className="os-panel-top">
+          <h2>Raven</h2>
+        </div>
+        <div className="os-panel-cuerpo">
+          <Raven
+            id={id}
+            raw={f.raven?.raw ?? null}
+            percentil={f.raven?.percentil ?? null}
+            desvios={f.raven?.desvios ?? null}
+            resultado={f.raven?.resultado ?? null}
+          />
+        </div>
+      </section>
       {f.cualitativos.map((t) => (
         <section key={t.id} className="os-panel">
           <h2 className="os-ficha-titulo">{t.test ?? 'Test'}</h2>
@@ -278,21 +333,43 @@ function Tests({ f }: { f: Ficha }) {
   );
 }
 
+/**
+ * El informe de competencias y, al pie, la entrega.
+ *
+ * Entregar cierra esta pantalla porque el informe es lo que se entrega: el
+ * botón queda al final de lo que el cliente va a recibir, no en otra pestaña.
+ */
 function Informe({ f }: { f: Ficha }) {
-  if (f.competencias.length === 0) return <SinDatos que="informe de competencias" />;
+  const c = f.cabecera;
+  const entrega = c.estado === 'Por analizar' && (
+    <Entregar id={c.id} recomendacion={c.recomendacion} />
+  );
+
+  if (f.competencias.length === 0) {
+    return (
+      <>
+        <SinDatos que="informe de competencias" />
+        {entrega}
+      </>
+    );
+  }
+
   return (
-    <div className="os-ficha-competencias">
-      {f.competencias.map((c) => (
-        <article key={c.id} className="os-ficha-competencia">
-          <div className="os-ficha-competencia-top">
-            <span className="os-fila-titulo">{c.competencia}</span>
-            <span className="os-ficha-numero">{c.puntaje ?? '—'}</span>
-          </div>
-          {c.justificacion && <p className="os-fila-detalle">{c.justificacion}</p>}
-          {c.texto && <p className="os-fila-detalle">{c.texto}</p>}
-        </article>
-      ))}
-    </div>
+    <>
+      <div className="os-ficha-competencias">
+        {f.competencias.map((x) => (
+          <article key={x.id} className="os-ficha-competencia">
+            <div className="os-ficha-competencia-top">
+              <span className="os-fila-titulo">{x.competencia}</span>
+              <span className="os-ficha-numero">{x.puntaje ?? '—'}</span>
+            </div>
+            {x.justificacion && <p className="os-fila-detalle">{x.justificacion}</p>}
+            {x.texto && <p className="os-fila-detalle">{x.texto}</p>}
+          </article>
+        ))}
+      </div>
+      {entrega}
+    </>
   );
 }
 
@@ -306,14 +383,17 @@ export default async function FichaPagina({
   const [yo, ficha] = await Promise.all([quienSoy(), fichaDe(params.id)]);
   if (!ficha) notFound();
 
-  const ver = PESTANAS.some((p) => p.clave === searchParams.ver)
-    ? (searchParams.ver as string)
-    : 'datos';
+  // `sumario` ya no es una pestaña, pero las direcciones guardadas siguen
+  // llevando ahí: caen donde ahora vive, que es la codificación.
+  const pedida = searchParams.ver === 'sumario' ? 'manchas' : searchParams.ver;
+  const ver = PESTANAS.some((p) => p.clave === pedida) ? (pedida as string) : 'datos';
 
   const c = ficha.cabecera;
   const nombre = c.personas?.nombre ?? 'Sin nombre';
   // De dónde se vino, para poder volver a la misma cola.
   const volverA = searchParams.desde ?? RUTA[c.estado] ?? RUTA['Sin asignar'];
+  const proyectivo = proyectivoDe(ficha);
+  const desajuste = desajusteDeProyectivo(ficha);
 
   return (
     <Shell titulo={`Psicotécnicos · ${nombre}`} identidad={yo.nombre} ancho>
@@ -331,6 +411,7 @@ export default async function FichaPagina({
       <nav className="os-pestanas">
         {PESTANAS.map((p) => {
           const n = p.cuantos(ficha);
+          const texto = p.clave === 'manchas' ? (proyectivo ?? p.texto) : p.texto;
           return (
             <Link
               key={p.clave}
@@ -338,7 +419,7 @@ export default async function FichaPagina({
               className={`os-pestana${ver === p.clave ? ' activa' : ''}`}
               aria-current={ver === p.clave ? 'page' : undefined}
             >
-              {p.texto}
+              {texto}
               {n > 0 && <span className="os-pestana-cuenta">{n}</span>}
             </Link>
           );
@@ -348,21 +429,24 @@ export default async function FichaPagina({
       {ver === 'datos' && <Datos f={ficha} />}
       {ver === 'manchas' && (
         <>
+          {desajuste && (
+            <div className="os-aviso">
+              La batería dice {desajuste.bateria} y lo cargado es un{' '}
+              {desajuste.cargado}. Uno de los dos está mal: o el protocolo se
+              codificó en la ficha equivocada, o el pedido entró con otra
+              batería.
+            </div>
+          )}
           <Manchas evaluacionId={params.id} filas={ficha.manchas} />
-          {ficha.manchas.length > 0 && <Calcular evaluacionId={params.id} />}
+          {/* El sumario sale de esta misma codificación, así que va debajo y
+              sin panel alrededor: sus bloques ya son tarjetas con su borde. */}
+          <SumarioEstructural f={ficha} />
         </>
       )}
-      {ver === 'sumario' && (
-        <section className="os-panel">
-          <SumarioEstructural f={ficha} id={params.id} />
-        </section>
-      )}
-      {ver === 'benziger' && (
-        <section className="os-panel">
-          <BenzigerVista f={ficha} />
-        </section>
-      )}
-      {ver === 'tests' && <Tests f={ficha} />}
+      {/* Sin panel alrededor: la vista trae sus propias tarjetas. */}
+      {ver === 'benziger' && <BenzigerVista f={ficha} id={params.id} />}
+      {ver === 'tests' && <Tests f={ficha} id={params.id} />}
+      {ver === 'recomendacion' && <Recomendacion f={ficha} />}
       {ver === 'informe' && (
         <section className="os-panel">
           <Informe f={ficha} />

@@ -408,6 +408,9 @@ export function calcularSumario(respuestas: Respuesta[], perfil: Perfil): any {
   for (const key in pesos_lvl1) { Sum6_lvl1 += cget(cc, key); WSum6 += cget(cc, key) * pesos_lvl1[key]; }
   for (const key in pesos_lvl2) { Sum6_lvl2 += cget(cc, key); WSum6 += cget(cc, key) * pesos_lvl2[key]; }
   const Sum6 = Sum6_lvl1 + Sum6_lvl2;
+  const criticos = Object.fromEntries(
+    [...Object.keys(pesos_lvl1), ...Object.keys(pesos_lvl2)].map((k) => [k, cget(cc, k)])
+  ) as Record<string, number>;
 
   const COP = cget(cc, 'COP'), AG = cget(cc, 'AG'), GHR = cget(cc, 'GHR'), PHR = cget(cc, 'PHR');
   const PER = cget(cc, 'PER'), PSV = cget(cc, 'PSV'), MOR = cget(cc, 'MOR');
@@ -423,11 +426,13 @@ export function calcularSumario(respuestas: Respuesta[], perfil: Perfil): any {
   // ---- Aislamiento ----
   const Bt = cget(cont, 'Bt'), Cl = cget(cont, 'Cl'), Ge = cget(cont, 'Ge'),
         Ls = cget(cont, 'Ls'), Na = cget(cont, 'Na');
-  const Aislamiento = R > 0 ? trunc2((Bt + 2 * Cl + Ge + Ls + 2 * Na) / R) : null;
+  const Aislamiento_num = Bt + 2 * Cl + Ge + Ls + 2 * Na;
+  const Aislamiento = R > 0 ? trunc2(Aislamiento_num / R) : null;
 
   // ---- Ego ----
   const Pares = respuestas.filter((r) => r.par).length;
-  const Ego = R > 0 ? trunc2((3 * (Fr + rF) + Pares) / R) : null;
+  const Ego_num = 3 * (Fr + rF) + Pares;
+  const Ego = R > 0 ? trunc2(Ego_num / R) : null;
 
   // ---- H y derivados ----
   const H_pura = cget(cont, 'H');
@@ -617,12 +622,24 @@ export function calcularSumario(respuestas: Respuesta[], perfil: Perfil): any {
     interpersonal: {
       COP, AG, AgC, GHR, PHR, a: a_total, p: p_total, Fd: Fd_count, SumT,
       contenidos_humanos: H_pura + H_paren + Hd + Hd_paren + Hx,
-      H_pura, PER, Aislamiento,
+      H_pura, PER, Aislamiento, Aislamiento_num,
     },
     autopercepcion: {
-      Ego, Pares, Fr, rF, Fr_plus_rF: Fr + rF, SumV, FD,
+      Ego, Ego_num, Pares, Fr, rF, Fr_plus_rF: Fr + rF, SumV, FD,
       An_plus_Xy: An_count + Xy_count, MOR,
       H_pura, H_paren, Hd, Hd_paren,
+    },
+    /**
+     * Los códigos especiales, uno por uno.
+     *
+     * Los seis críticos van con su peso porque de ahí sale SumaPond6, y el
+     * peso impreso al lado del código es lo que deja revisar la cuenta sin
+     * recordar la tabla.
+     */
+    codigos_especiales: {
+      criticos, pesos: { ...pesos_lvl1, ...pesos_lvl2 },
+      Sum6, Sum6_lvl1, Sum6_lvl2, WSum6,
+      AB, AG, COP, CP, MOR, PER, PSV, GHR, PHR,
     },
     marcadores: { AgC, SL },
     constelaciones: {
@@ -644,12 +661,69 @@ function t2(x: any) {
   return t.toFixed(2);
 }
 function n0(x: any) { return (x === null || x === undefined) ? '—' : String(x); }
+/**
+ * Un porcentaje con la cuenta que lo produce: "1 / 3 = 0.33".
+ *
+ * X−% y Xu% se revisan contra las respuestas que los formaron, y con el
+ * resultado solo hay que ir a contarlas a mano en la tabla de manchas.
+ */
+function pct(num: any, den: any, x: any) {
+  if (x === null || x === undefined) return '—';
+  return `${n0(num)} / ${n0(den)} = ${t2(x)}`;
+}
 function sg(x: any) {
   if (x === null || x === undefined) return '—';
   return (Number(x) >= 0 ? '+' : '') + x;
 }
 function chk(b: boolean) { return b ? '☑' : '☐'; }
 const SEP = ' | ';
+/**
+ * La línea punteada de la hoja.
+ *
+ * Separa el desglose de eb del resto de Controles, que es como está impreso:
+ * FM, m, C', V, T e Y son las seis piezas que arman ese valor y se leen como
+ * un bloque aparte.
+ */
+const CORTE = '---';
+
+/**
+ * Los seis críticos, con el nombre corto de la hoja y sus dos niveles.
+ *
+ * La base los guarda como INCOM, FABCOM y CONTAM; la hoja los imprime INC,
+ * FAB y CONT, y es la hoja la que la evaluadora tiene delante.
+ */
+const CRITICOS: { rotulo: string; lvl1: string; lvl2: string | null }[] = [
+  { rotulo: 'DV', lvl1: 'DV', lvl2: 'DV2' },
+  { rotulo: 'INC', lvl1: 'INCOM', lvl2: 'INCOM2' },
+  { rotulo: 'DR', lvl1: 'DR', lvl2: 'DR2' },
+  { rotulo: 'FAB', lvl1: 'FABCOM', lvl2: 'FABCOM2' },
+  { rotulo: 'ALOG', lvl1: 'ALOG', lvl2: null },
+  { rotulo: 'CONT', lvl1: 'CONTAM', lvl2: null },
+];
+
+/** Un código crítico con su peso al lado, como está impreso en la hoja. */
+function kvCC(ccee: any, rotulo: string, clave: string) {
+  return kv(`${rotulo} ×${ccee.pesos[clave]}`, ccee.criticos[clave]);
+}
+
+/**
+ * El cuadro de códigos especiales, igual en los dos tests.
+ *
+ * Nivel 1 a la izquierda y Nivel 2 a la derecha, con el peso al lado de cada
+ * código, y abajo las dos sumas. Los otros códigos (COP, AG, MOR, PER, PSV,
+ * GHR, PHR) ya están en el bloque donde se los interpreta, y repetirlos acá
+ * sería el mismo dato en dos lugares.
+ */
+function bloqueCodigos(L: string[], ccee: any) {
+  L.push(`### Códigos especiales`);
+  for (const c of CRITICOS) {
+    L.push(
+      [kvCC(ccee, c.rotulo, c.lvl1), ...(c.lvl2 ? [kvCC(ccee, c.rotulo, c.lvl2)] : [])].join(SEP)
+    );
+  }
+  L.push(CORTE);
+  L.push([kv('SumaBruta 6', ccee.Sum6), kv('SumaPond 6', ccee.WSum6)].join(SEP));
+}
 function v(x: any) { return '`' + x + '`'; }
 function kv(label: string, val: any) { return '**' + label + '** ' + v(val); }
 function pad(x: any, n: number) { return String(x).padEnd(n, ' '); }
@@ -699,6 +773,7 @@ function formatearZdunic(s: any) {
   const meta = s.meta, cab = s.cabecera, ce = s.control_estres, det = s.determinantes;
   const cf = s.calidad_formal, proc = s.procesamiento, ide = s.ideacion;
   const af = s.afectos, inter = s.interpersonal, aut = s.autopercepcion, mk = s.marcadores;
+  const ccee = s.codigos_especiales;
   const G = meta.global_tag;
   const L: string[] = [];
 
@@ -715,8 +790,12 @@ function formatearZdunic(s: any) {
   L.push([kv('EB', ce.EB), kv('EA', t2(ce.EA))].join(SEP));
   L.push([kv('eb', ce.eb), kv('es', ce.es)].join(SEP));
   L.push([kv('EA − es', sg(t2(ce.dif_EA_es))), kv('Estilo', ce.estilo)].join(SEP));
-  L.push([kv('FM', det.FM), kv("C'", det.SumC_prima), kv('T', det.SumT)].join(SEP));
-  L.push([kv('m', det.m), kv('V', det.SumV), kv('Y', det.SumY)].join(SEP));
+  L.push(CORTE);
+  L.push([
+    kv('FM', det.FM), kv('m', det.m),
+    kv("C'", det.SumC_prima), kv('V', det.SumV),
+    kv('T', det.SumT), kv('Y', det.SumY),
+  ].join(SEP));
 
   L.push(`### Afectos`);
   L.push([kv('FC:CF+C', `${af.FC}:${af.CF + af.C_puro}`), kv('C pura', af.C_puro), kv('Cn', af.Cn)].join(SEP));
@@ -725,11 +804,17 @@ function formatearZdunic(s: any) {
   L.push([kv('Complej:R', `${af.Blends}:${cab.R}`)].join(SEP));
 
   L.push(`### Interpersonal`);
-  L.push([kv('COP', inter.COP), kv('AG', inter.AG), kv('AgC', inter.AgC)].join(SEP));
+  L.push([
+    kv('COP', inter.COP), kv('AG', inter.AG),
+    kv('AgC', inter.AgC), kv('SL', mk.SL),
+  ].join(SEP));
   L.push([kv('GHR:PHR', `${inter.GHR}:${inter.PHR}`), kv('a:p', `${inter.a}:${inter.p}`)].join(SEP));
   L.push([kv('Fd', inter.Fd), kv('SumT', inter.SumT)].join(SEP));
   L.push([kv('SumCont.Humanos', inter.contenidos_humanos), kv('Hpura', inter.H_pura)].join(SEP));
-  L.push([kv('PER', inter.PER), kv('Bt+2Cl+Ge+Ls+2Na/R', t2(inter.Aislamiento))].join(SEP));
+  L.push([
+    kv('PER', inter.PER),
+    kv('Bt+2Cl+Ge+Ls+2Na/R', pct(inter.Aislamiento_num, cab.R, inter.Aislamiento)),
+  ].join(SEP));
 
   L.push(`### Ideación`);
   L.push([kv('a:p', `${ide.a}:${ide.p}`), kv('Ma:Mp', `${ide.Ma}:${ide.Mp}`)].join(SEP));
@@ -739,8 +824,15 @@ function formatearZdunic(s: any) {
 
   L.push(`### Mediación`);
   L.push([kv('XA%', t2(cf.XA_pct)), kv('WDA%', t2(cf.WDA_pct))].join(SEP));
-  L.push([kv('X−%', t2(cf.X_menos_pct)), kv('S−', cf.S_menos), kv('P', cf.P)].join(SEP));
-  L.push([kv('X+%', t2(cf.X_mas_pct)), kv('Xu%', t2(cf.Xu_pct))].join(SEP));
+  L.push([
+    kv('X−%', pct(cf.FQx.menos, cab.R, cf.X_menos_pct)),
+    kv('S−', cf.S_menos),
+    kv('P', cf.P),
+  ].join(SEP));
+  L.push([
+    kv('X+%', t2(cf.X_mas_pct)),
+    kv('Xu%', pct(cf.FQx.u, cab.R, cf.Xu_pct)),
+  ].join(SEP));
 
   L.push(`### Procesamiento`);
   L.push([kv(`${G}:D:Dd`, `${proc.global}:${proc.D}:${proc.Dd}`), kv(`${G}:M`, `${proc.global}:${det.M}`)].join(SEP));
@@ -748,14 +840,21 @@ function formatearZdunic(s: any) {
   L.push([kv('DQ+', proc.DQ_mas), kv('DQv', proc.DQv), kv('DQv/+', proc.DQ_v_mas)].join(SEP));
 
   L.push(`### Autopercepción`);
-  L.push([kv('3r+(2)/R', t2(aut.Ego)), kv('(2)', aut.Pares), kv('Fr', aut.Fr), kv('FD', aut.FD)].join(SEP));
+  L.push([
+    kv('3r+(2)/R', pct(aut.Ego_num, cab.R, aut.Ego)),
+    kv('(2)', aut.Pares),
+    kv('Fr', aut.Fr),
+    kv('FD', aut.FD),
+  ].join(SEP));
   L.push([kv('SumV', aut.SumV), kv('An+Xy', aut.An_plus_Xy), kv('MOR', aut.MOR)].join(SEP));
   L.push([kv('H:(H)+Hd+(Hd)', `${aut.H_pura}:${aut.H_paren + aut.Hd + aut.Hd_paren}`)].join(SEP));
 
-  L.push(`### Marcadores`);
-  L.push([kv('AgC', `${mk.AgC} rta`), kv('SL', `${mk.SL} rta`)].join(SEP));
+  bloqueCodigos(L, ccee);
 
   if (meta.no_calculado.length > 0) {
+    // La pantalla no lo dibuja: la evaluadora ya sabe qué no tiene su test.
+    // Queda en el texto porque también lo lee el agente que redacta el
+    // informe, y sin esta lista puede inventar un dato que no existe.
     L.push(`### No aplica en ${meta.test}`);
     for (const n of meta.no_calculado) L.push(`- ${n}`);
   }
@@ -768,6 +867,7 @@ function formatearExner(s: any) {
   const meta = s.meta, cab = s.cabecera, ce = s.control_estres, det = s.determinantes;
   const cf = s.calidad_formal, proc = s.procesamiento, ide = s.ideacion;
   const af = s.afectos, inter = s.interpersonal, aut = s.autopercepcion;
+  const ccee = s.codigos_especiales;
   const k = s.constelaciones, mk = s.marcadores, G = meta.global_tag;
   const L: string[] = [];
 
@@ -782,7 +882,12 @@ function formatearExner(s: any) {
   L.push([kv('EB', ce.EB), kv('EA', t2(ce.EA)), kv('EBPer', ce.EBPer === null ? 'n/a' : t2(ce.EBPer))].join(SEP));
   L.push([kv('eb', ce.eb), kv('es', ce.es), kv('EA−es', sg(t2(ce.dif_EA_es))), kv('D', sg(ce.D))].join(SEP));
   L.push([kv('Adj es', n0(ce.Adj_es)), kv('EA−Adj es', sg(t2(ce.dif_EA_Adjes))), kv('Adj D', sg(ce.AdjD))].join(SEP));
-  L.push([kv('FM', det.FM), kv('m', det.m), kv("C'", det.SumC_prima), kv('T', det.SumT), kv('V', det.SumV), kv('Y', det.SumY)].join(SEP));
+  L.push(CORTE);
+  L.push([
+    kv('FM', det.FM), kv('m', det.m),
+    kv("C'", det.SumC_prima), kv('V', det.SumV),
+    kv('T', det.SumT), kv('Y', det.SumY),
+  ].join(SEP));
 
   L.push(`### Afectos`);
   L.push([kv('FC:CF+C', `${af.FC}:${af.CF + af.C_puro}`), kv('C pura', af.C_puro), kv('Cn', af.Cn)].join(SEP));
@@ -791,10 +896,16 @@ function formatearExner(s: any) {
   L.push([kv('Complej:R', `${af.Blends}:${cab.R}`), kv('Mezclas col-somb', af.CS_Blends)].join(SEP));
 
   L.push(`### Interpersonal`);
-  L.push([kv('COP', inter.COP), kv('AG', inter.AG), kv('AgC', inter.AgC), kv('GHR:PHR', `${inter.GHR}:${inter.PHR}`)].join(SEP));
+  L.push([
+    kv('COP', inter.COP), kv('AG', inter.AG), kv('AgC', inter.AgC),
+    ...(mk.SL > 0 ? [kv('SL', mk.SL)] : []),
+    kv('GHR:PHR', `${inter.GHR}:${inter.PHR}`),
+  ].join(SEP));
   L.push([kv('a:p', `${inter.a}:${inter.p}`), kv('Fd', inter.Fd), kv('SumT', inter.SumT)].join(SEP));
   L.push([kv('Contenidos Humanos', inter.contenidos_humanos), kv('H Pura', inter.H_pura), kv('PER', inter.PER)].join(SEP));
-  L.push([kv('Aislamiento (Bt+2Cl+Ge+Ls+2Na/R)', t2(inter.Aislamiento))].join(SEP));
+  L.push([
+    kv('Aislamiento (Bt+2Cl+Ge+Ls+2Na/R)', pct(inter.Aislamiento_num, cab.R, inter.Aislamiento)),
+  ].join(SEP));
 
   L.push(`### Ideación`);
   L.push([kv('a:p', `${ide.a}:${ide.p}`), kv('Ma:Mp', `${ide.Ma}:${ide.Mp}`)].join(SEP));
@@ -804,7 +915,11 @@ function formatearExner(s: any) {
 
   L.push(`### Mediación`);
   L.push([kv('XA%', t2(cf.XA_pct)), kv('WDA%', t2(cf.WDA_pct))].join(SEP));
-  L.push([kv('X+%', t2(cf.X_mas_pct)), kv('Xu%', t2(cf.Xu_pct)), kv('X−%', t2(cf.X_menos_pct))].join(SEP));
+  L.push([
+    kv('X+%', t2(cf.X_mas_pct)),
+    kv('Xu%', pct(cf.FQx.u, cab.R, cf.Xu_pct)),
+    kv('X−%', pct(cf.FQx.menos, cab.R, cf.X_menos_pct)),
+  ].join(SEP));
   L.push([kv('S−', cf.S_menos), kv('P', cf.P)].join(SEP));
 
   L.push(`### Procesamiento`);
@@ -813,14 +928,17 @@ function formatearExner(s: any) {
   L.push([kv('DQ+', proc.DQ_mas), kv('DQv/+', proc.DQ_v_mas), kv('DQv', proc.DQv), kv('PSV', proc.PSV)].join(SEP));
 
   L.push(`### Autopercepción`);
-  L.push([kv('3r+(2)/R', t2(aut.Ego)), kv('(2)', aut.Pares), kv('Fr+rF', aut.Fr_plus_rF)].join(SEP));
+  L.push([
+    kv('3r+(2)/R', pct(aut.Ego_num, cab.R, aut.Ego)),
+    kv('(2)', aut.Pares),
+    kv('Fr+rF', aut.Fr_plus_rF),
+  ].join(SEP));
   L.push([kv('SumV', aut.SumV), kv('FD', aut.FD), kv('An+Xy', aut.An_plus_Xy), kv('MOR', aut.MOR)].join(SEP));
   L.push([kv('H:(H)+Hd+(Hd)', `${aut.H_pura}:${aut.H_paren + aut.Hd + aut.Hd_paren}`)].join(SEP));
 
-  if (mk.SL > 0) {
-    L.push(`### Marcadores`);
-    L.push([kv('SL', `${mk.SL} rta`)].join(SEP));
-  }
+
+
+  bloqueCodigos(L, ccee);
 
   L.push(`### Constelaciones`);
   const filaC = (n: string, c: any, t: number) => c === null

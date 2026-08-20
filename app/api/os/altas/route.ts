@@ -73,6 +73,8 @@ async function altaPedido(
     empresaId,
     puesto,
     bateriaId: UUID.test(bateriaId) ? bateriaId : null,
+    conBenziger: texto('conBenziger') === 'si',
+    familia: texto('familia') || null,
     seniority: texto('seniority') || null,
     fechaPedido: texto('fechaPedido') || new Date().toISOString().slice(0, 10),
     notas: texto('notas') || null,
