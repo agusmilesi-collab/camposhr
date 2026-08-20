@@ -95,56 +95,71 @@ El camino elegido es una tabla `Líneas`. Ver `SPECS-organigrama.md`, sección 4
 
 ---
 
-## Estado del sistema al 19/8/2026
+## Estado del sistema al 20/8/2026
+
+**Campos OS está desplegado.** Vive en `os.camposhr.com` y lo usan las tres. Todo
+lo que sigue ya está en producción, commiteado en `main`.
 
 **Dónde vive el repositorio.** `~/Documents/camposhr-site`. Se mudó del Escritorio
 el 19/8 porque macOS bloqueó el acceso a esa carpeta entera y el servidor de
 desarrollo empezó a devolver 500 sin que hubiera un error de código.
 
-**Lo que funciona sin intervención.** Las psicólogas trabajan en sus interfaces de
-Airtable. El portal de clientes sirve los once informes de Laruso y los dos
-documentos, contra token válido.
+**Qué hace el OS hoy.**
 
-**Lo que se construyó el 19/8, en Campos OS.**
+- *Inicio.* El espacio de trabajo de las tres: temas de la próxima reunión,
+  pendientes con responsable, y lo que cada una tiene en curso. Todo se anota,
+  se tilda y se reasigna sin salir de ahí.
+- *Psicotécnicos.* Reparto por arrastre en "Sin asignar", que significa todo lo
+  que no tiene evaluadora, esté en la etapa que esté. Cada fila puede volver a
+  la etapa anterior. El nombre abre la ficha del candidato.
+- *Ficha del candidato.* Seis pestañas. Datos en tres bloques (la persona, la
+  evaluación con lo económico, el ingreso). Manchas es la grilla de codificación
+  Rorschach, con las mismas opciones y colores que Airtable. El botón "Calcular
+  sumario" corre el motor Exner y escribe `sumario_exner`.
+- *El ingreso.* Si la persona entró a trabajar, desde cuándo, y a los noventa
+  días cómo le fue. Es lo que después permite calcular el acierto de cada
+  evaluadora y modelar qué perfil funciona en cada familia de puesto.
+- *Comercial.* Clientes, cotizaciones como embudo, costos por trabajo, accesos.
+- *Sistema.* Baterías con su precio, actualizable por cualquiera de las tres.
 
-- *Reparto por arrastre.* "Sin asignar" es un tablero: una columna con lo que no
-  tiene dueño y una por evaluadora, mostrando su carga abierta. La tarjeta se
-  mueve al soltar, sin esperar al servidor. **"Sin asignar" pasó a significar
-  todo lo que no tiene evaluadora**, esté en la etapa que esté; una ficha que
-  quedó huérfana en Por citar aparece ahí y conserva su etapa.
-- *Volver atrás.* Cada fila tiene una flecha que devuelve a la etapa anterior.
-  Volver a "Sin asignar" también suelta la evaluadora, si no la ficha quedaría
-  fuera de toda pantalla.
-- *Ficha del candidato.* `/os/psicotecnicos/ficha/<id>`, se entra por el nombre
-  desde cualquier etapa. Seis pestañas: Datos, Manchas, Sumario estructural,
-  Benziger, Tests, Informe. La pestaña viaja en la dirección, así se comparte y
-  se recarga.
-- *Codificación Rorschach editable.* La grilla de Manchas, con los mismos campos,
-  desplegables y colores que la tabla "Tests Proyectivos" de Airtable. Guarda en
-  `rorschach_respuestas` celda por celda y valida contra las mismas listas.
-- *Motor Exner adentro.* `lib/exner.ts` es el motor v7 traído sin tocarle el
-  cálculo. El botón "Calcular sumario" corre `POST /api/os/sumario`, que lee la
-  codificación y escribe `sumario_exner` con el JSON completo en `crudo`. El
-  perfil (Rorschach o Zulliger) se deduce de las láminas, porque acá no existe
-  el campo "Test aplicado" que usaba el wrapper de Airtable.
-- *El OS dejó de escribir en Airtable*, y dejó de mostrar lo que vive allá. Ver
-  la regla al principio de este archivo y `CLAUDE.md`.
+**Las reglas que hay que conocer antes de tocar nada.** Están en `CLAUDE.md`, en
+la raíz del repositorio:
+
+1. El OS no escribe en Airtable, y desde el 19/8 tampoco muestra lo que vive
+   allá. Todo lo que guarda va a Supabase.
+2. Las columnas de Supabase se llaman como los campos de Airtable.
+3. Los cambios de esquema van en un archivo de `supabase/` y se corren con
+   `bash scripts/supabase-sql.sh supabase/<archivo>.sql`.
+4. `lib/rorschach.ts` se genera desde el esquema de Airtable, no se edita.
+
+**Los precios tienen historia.** El precio de una evaluación es el que regía el
+día de su pedido, no el de hoy: actualizar agrega una fila a
+`bateria_precios`, no pisa la anterior. El Benziger es opcional en todas las
+baterías, cuesta USD 40 y se pesifica al dólar tarjeta del día, que se lee de
+dolarapi.com.
 
 **Lo que sigue.**
 
 1. **Migrar los datos clínicos de Airtable.** Es lo que falta para que la ficha
    deje de estar vacía: `rorschach_respuestas`, `sumario_exner`, `benziger`,
    `raven`, `tests_cualitativos` e `informe_competencias` existen y tienen cero
-   filas. Las tablas de origen en Airtable son "Tests Proyectivos", "Benziger",
-   "Tests cualitativos" e "Informe".
+   filas. Las tablas de origen son "Tests Proyectivos" (`tblhq78e1RSmvztC5`),
+   "Benziger" (`tbl5Oi3FXtS5SPFoH`), "Tests cualitativos" (`tbls1lgzHFJ2T5KPY`)
+   e "Informe" (`tblxBnYV7OZlscuxu`).
 2. **Migrar las evaluaciones de Airtable**, que hoy el OS no muestra.
-3. **El alta de pedidos todavía escribe en Airtable** (`lib/airtable-alta.ts`,
+3. **La pantalla de acierto**, que cruza recomendación contra resultado a los
+   noventa días, por evaluadora y por familia de puesto. Los datos ya se
+   capturan; falta mostrarlos. Y una lista de seguimientos vencidos, porque sin
+   eso nadie los va a preguntar.
+4. **El alta de pedidos todavía escribe en Airtable** (`lib/airtable-alta.ts`
    desde `app/api/pedidos/route.ts`). Es la única escritura viva que queda.
-4. **Cuentas por psicóloga**, para que `accesos.quien` deje de ser un nombre
+5. **Cuentas por psicóloga**, para que `accesos.quien` deje de ser un nombre
    elegido de un selector y lo clínico pueda mostrarse con registro real.
-5. **Desplegar.** Nada del OS está commiteado ni en producción.
 
-**Dónde vive cada cosa hoy.** Airtable: psicotécnicos, el motor y lo clínico.
+**Lo que hay que decidir.** El OS está desplegado **sin puerta**: `OS_CLAVE` no
+está cargada en Vercel, así que quien conozca la dirección ve nombres, teléfonos
+y correos de candidatos. Cargar esa variable lo cierra, sin tocar código.
+
+**Dónde vive cada cosa hoy.** Airtable: lo clínico y las evaluaciones sin migrar.
 Supabase: el OS entero, el ciclo y el cuestionario. Google: el formulario del
 Raven y el calendario. El repositorio: la app y los entregables.
-
