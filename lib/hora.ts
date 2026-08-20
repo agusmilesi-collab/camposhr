@@ -108,3 +108,16 @@ export function haceCuanto(n: number | null): string {
   if (n < 0) return n === -1 ? 'mañana' : `en ${enDias(n)}`;
   return `hace ${enDias(n)}`;
 }
+
+/**
+ * Qué día de la semana cae una fecha: "martes".
+ *
+ * Va debajo de la fecha en la agenda. Al mirar lo que viene, lo primero que se
+ * busca es el día, no el número.
+ */
+export function diaDeLaSemana(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return new Intl.DateTimeFormat('es-AR', { timeZone: ZONA, weekday: 'long' }).format(d);
+}

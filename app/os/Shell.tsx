@@ -29,11 +29,9 @@ const NAV: Grupo[] = [
     grupo: 'Psicotécnicos',
     items: [
       { href: '/os/psicotecnicos/sin-asignar', texto: 'Sin asignar', icono: 'sinAsignar' },
-      { href: '/os/psicotecnicos/por-citar', texto: 'Por citar', icono: 'telefono' },
-      { href: '/os/psicotecnicos/por-entrevistar', texto: 'Por entrevistar', icono: 'agenda' },
+      { href: '/os/psicotecnicos/entrevistas', texto: 'Entrevistas', icono: 'agenda' },
       { href: '/os/psicotecnicos/por-analizar', texto: 'Por analizar', icono: 'escribir' },
       { href: '/os/psicotecnicos/entregados', texto: 'Entregados', icono: 'listo' },
-      { href: '/os/psicotecnicos/cargar', texto: 'Cargar', icono: 'cargar' },
     ],
   },
   {

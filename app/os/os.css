@@ -2853,3 +2853,201 @@ textarea.os-campo {
   font-size: 0.79rem;
   font-variant-numeric: tabular-nums;
 }
+
+
+/* En qué etapa está la fila, sin gastar una columna. */
+.os-punto-etapa {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--punto, var(--os-gris));
+  vertical-align: middle;
+}
+
+/* La modalidad son dos opciones: no necesita el ancho de un campo de texto. */
+.os-tabla-modalidad .os-campo {
+  width: 108px;
+}
+
+/* El campo de fecha y hora es el más ancho de la fila y no lo necesita. */
+.os-tabla-trabajo input[type='datetime-local'] {
+  width: 172px;
+  font-size: 0.78rem;
+}
+
+
+/* ---------- Agregar candidato desde el tablero ---------- */
+
+/**
+ * La tarjeta que cierra la columna sin dueño.
+ *
+ * Cerrada es del alto de un renglón y con borde punteado: se lee como un hueco
+ * que se puede llenar, no como una tarjeta más de la lista.
+ */
+.os-agregar-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px dashed var(--os-linea);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--os-suave);
+  font: inherit;
+  font-size: 0.83rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-agregar-card:hover {
+  border-style: solid;
+  border-color: var(--os-tinta-media);
+  color: var(--os-tinta);
+}
+
+.os-agregar-mas {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Abierta ocupa el lugar de una tarjeta, en la misma columna. */
+.os-agregar-abierto {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--os-tinta-media);
+  border-radius: 10px;
+  background: var(--os-panel);
+  box-shadow: var(--os-sombra-panel);
+}
+
+.os-agregar-abierto .os-campo {
+  width: 100%;
+  height: 30px;
+  font-size: 0.82rem;
+}
+
+/* Lo que casi nunca se toca, a un clic de distancia y sin ocupar lugar. */
+.os-agregar-mas-datos {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--os-suave);
+  font: inherit;
+  font-size: 0.78rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.os-agregar-mas-datos:hover {
+  color: var(--os-tinta);
+}
+
+.os-agregar-pie {
+  display: flex;
+  gap: 8px;
+}
+
+.os-agregar-pie .os-boton {
+  flex: 1;
+  height: 30px;
+  font-size: 0.8rem;
+}
+
+
+/* El día de la semana va con la fecha, en la misma letra: es parte del dato. */
+.os-tabla-cuando {
+  white-space: nowrap;
+}
+
+.os-tabla-cuando::first-letter {
+  text-transform: uppercase;
+}
+
+/**
+ * Las tablas del pipeline, con las columnas de ancho fijo.
+ *
+ * El ancho lo declara cada tabla con `colgroup` (ver `ANCHO` en Tabla.tsx) y
+ * `fixed` hace que el navegador lo respete en vez de repartir según contenido.
+ *
+ * Una fila es un renglón: lo que no entra se recorta con puntos suspensivos.
+ * El único que puede ocupar dos es el pedido, que trae la empresa arriba y el
+ * puesto abajo, y por eso lleva su propia regla.
+ */
+/**
+ * La tabla mide exactamente la suma de sus columnas.
+ *
+ * Ni `100%` ni `min-width: 100%`: con cualquiera de los dos el navegador
+ * estira o comprime las columnas para que la tabla llene el contenedor, y el
+ * ancho fijo deja de serlo. Si no entra, desplaza el marco, que para eso tiene
+ * `overflow-x`.
+ */
+.os-tabla-fija {
+  max-width: none;
+  table-layout: fixed;
+}
+
+/**
+ * El ancho lo pone la columna, no la celda.
+ *
+ * `.os-tabla-trabajo` le da `width: 1%` a cada celda para que se ajusten al
+ * contenido, y eso pisaba al `colgroup`: hay que devolverlas a `auto` para que
+ * el ancho declarado mande.
+ */
+.os-tabla-fija th,
+.os-tabla-fija td {
+  width: auto;
+  padding-right: 14px;
+}
+
+.os-tabla-fija th.os-tabla-accion,
+.os-tabla-fija td.os-tabla-accion {
+  padding-right: 14px;
+}
+
+.os-tabla-fija th,
+.os-tabla-fija td {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.os-tabla-fija .os-tabla-nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/**
+ * El pedido es la excepción: dos renglones, empresa arriba y puesto abajo.
+ *
+ * Dos y no más: cuando el segundo trae también la evaluadora se pasaba a tres
+ * y la fila crecía. Se recorta con puntos suspensivos como el resto.
+ */
+.os-tabla-fija .os-tabla-flojo {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/**
+ * Los campos se ajustan a la celda, no al revés.
+ *
+ * `min-width: 0` es lo que lo hace posible: sin eso, un campo de fecha o un
+ * selector traen un ancho mínimo propio que empuja la columna y desalinea la
+ * tabla entera.
+ */
+.os-tabla-fija .os-campo,
+.os-tabla-fija .os-boton {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.os-tabla-fija input[type='datetime-local'],
+.os-tabla-fija select.os-campo {
+  width: 100%;
+}

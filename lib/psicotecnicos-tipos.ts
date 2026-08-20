@@ -34,6 +34,35 @@ export const ETAPA_DE_RUTA: Record<string, Etapa> = Object.fromEntries(
   Object.entries(RUTA).map(([etapa, ruta]) => [ruta, etapa as Etapa])
 ) as Record<string, Etapa>;
 
+/**
+ * Las secciones de la barra lateral.
+ *
+ * Una sección puede juntar más de una etapa: citar y entrevistar son dos
+ * estados distintos en la base, pero un solo trabajo en la pantalla. Quien cita
+ * es la misma que entrevista, y separarlas obligaba a saltar de una lista a la
+ * otra para ver a la misma persona.
+ *
+ * Las etapas siguen siendo las de `ETAPAS`: esto agrupa la navegación, no
+ * cambia el pipeline.
+ */
+export type Seccion = { ruta: string; texto: string; etapas: Etapa[] };
+
+export const SECCIONES: Seccion[] = [
+  { ruta: 'sin-asignar', texto: 'Sin asignar', etapas: ['Sin asignar'] },
+  { ruta: 'entrevistas', texto: 'Entrevistas', etapas: ['Por citar', 'Por entrevistar'] },
+  { ruta: 'por-analizar', texto: 'Por analizar', etapas: ['Por analizar'] },
+  { ruta: 'entregados', texto: 'Entregados', etapas: ['Entregado'] },
+];
+
+export const SECCION_DE_RUTA: Record<string, Seccion> = Object.fromEntries(
+  SECCIONES.map((s) => [s.ruta, s])
+);
+
+/** Dónde vive cada etapa dentro de la barra. */
+export const SECCION_DE_ETAPA: Record<string, Seccion> = Object.fromEntries(
+  SECCIONES.flatMap((s) => s.etapas.map((e) => [e, s]))
+);
+
 
 /**
  * El color del punto de cada etapa.
