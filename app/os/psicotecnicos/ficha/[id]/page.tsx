@@ -129,9 +129,32 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
 
   return (
     <>
-      <Bloque titulo="La persona">
+      {/* Dos columnas que se leen distinto: a la izquierda con quién hablar, a
+          la derecha lo que se sacó de la evaluación. Van alternadas porque el
+          bloque acomoda sus datos de a pares. */}
+      <Bloque titulo="La persona" dos>
         <Dato rotulo="Empresa">{c.pedidos?.empresas?.nombre ?? <Falta texto="sin empresa" />}</Dato>
+        <Dato rotulo="Recomendación">
+          {c.recomendacion ? (
+            <span
+              className={`os-sello-estado ${COLOR_RECOMENDACION[c.recomendacion] ?? 'os-gris'}`}
+            >
+              {c.recomendacion}
+            </span>
+          ) : (
+            <Falta texto="sin cerrar" />
+          )}
+        </Dato>
         <Dato rotulo="Puesto">{c.pedidos?.puesto ?? <Falta texto="sin puesto" />}</Dato>
+        <Dato rotulo="Perfil Benziger">
+          {cuadrante ? (
+            <span className="os-sello-estado os-violeta">
+              {INFO[cuadrante as Perfil]?.nombre ?? cuadrante}
+            </span>
+          ) : (
+            <Falta texto="sin definir" />
+          )}
+        </Dato>
         <Dato rotulo="Teléfono">
           {c.personas?.telefono ? (
             <a
@@ -145,36 +168,6 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
             <Falta />
           )}
         </Dato>
-        <Dato rotulo="Correo">
-          {c.personas?.email ? (
-            <a href={`mailto:${c.personas.email}`}>{c.personas.email}</a>
-          ) : (
-            <Falta />
-          )}
-        </Dato>
-        {/* Lo que se sacó de ella: con qué se cierra, cómo piensa y cuánto
-            rindió. Se lee cien veces más que las fechas de la evaluación, y
-            estaba repartido entre tres pestañas. */}
-        <Dato rotulo="Recomendación">
-          {c.recomendacion ? (
-            <span
-              className={`os-sello-estado ${COLOR_RECOMENDACION[c.recomendacion] ?? 'os-gris'}`}
-            >
-              {c.recomendacion}
-            </span>
-          ) : (
-            <Falta texto="sin cerrar" />
-          )}
-        </Dato>
-        <Dato rotulo="Perfil Benziger">
-          {cuadrante ? (
-            <span className="os-sello-estado os-violeta">
-              {INFO[cuadrante as Perfil]?.nombre ?? cuadrante}
-            </span>
-          ) : (
-            <Falta texto="sin definir" />
-          )}
-        </Dato>
         <Dato rotulo="Raven">
           {f.raven?.raw !== null && f.raven?.raw !== undefined ? (
             <>
@@ -185,6 +178,13 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
             </>
           ) : (
             <Falta texto="sin puntaje" />
+          )}
+        </Dato>
+        <Dato rotulo="Correo">
+          {c.personas?.email ? (
+            <a href={`mailto:${c.personas.email}`}>{c.personas.email}</a>
+          ) : (
+            <Falta />
           )}
         </Dato>
       </Bloque>
