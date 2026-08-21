@@ -133,8 +133,8 @@ desarrollo empezó a devolver 500 sin que hubiera un error de código.
     al terminar pasa a decir cuánto tardó; el gráfico de dos personas y el Bender, que se
     toman en papel: ahí se marca si se administraron y se escribe lo que la
     evaluadora vio mientras la persona dibujaba, y del gráfico se sube además
-    la foto o el escaneo. El botón del Bender queda a la vista y apagado hasta
-    que sus láminas estén construidas. Cuando la
+    la foto o el escaneo. El Bender abre sus nueve láminas en la misma
+    pantalla de administración que las manchas. Cuando la
     entrevista es online, arriba se guarda el enlace de la videollamada, que
     hasta ahora vivía en el calendario o en el chat donde se acordó. Al pie
     cierra la entrevista y la manda a Por analizar. No muestra nada de lo
@@ -303,9 +303,8 @@ leyó mal.
    "Tests Proyectivos" (`tblhq78e1RSmvztC5`), "Benziger" (`tbl5Oi3FXtS5SPFoH`),
    "Tests cualitativos" (`tbls1lgzHFJ2T5KPY`) e "Informe" (`tblxBnYV7OZlscuxu`).
 2. **Migrar las evaluaciones de Airtable**, que hoy el OS no muestra.
-3. **Las láminas del Raven**, para que el test se pueda tomar de verdad, y las
-   del Bender, que todavía no están: su botón en la hoja de la entrevista está
-   puesto y apagado, esperándolas.
+3. **Las láminas del Raven**, para que el test se pueda tomar de verdad. Las
+   del Bender ya están, dibujadas en SVG a partir de medir las tarjetas.
 4. **La pantalla de acierto**, que cruza recomendación contra resultado a los
    noventa días, por evaluadora y por familia de puesto. Los datos ya se
    capturan y la sección Seguimiento ya los muestra por persona; falta el

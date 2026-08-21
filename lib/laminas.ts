@@ -1,7 +1,7 @@
 import 'server-only';
 
 /**
- * Las láminas de los tests de manchas, servidas por el OS.
+ * Las láminas de los tests que se administran con lámina a la vista.
  *
  * Viven en el bucket privado y no en `public/`: son material con derechos, y
  * una lámina que circula deja de servir para quien ya la vio. Antes estaban en
@@ -16,28 +16,36 @@ import 'server-only';
 const BUCKET = 'psicotecnicos';
 
 export const TESTS = {
-  rorschach: { nombre: 'Rorschach', laminas: 10 },
-  zulliger: { nombre: 'Zulliger', laminas: 3 },
+  rorschach: { nombre: 'Rorschach', laminas: 10, formato: 'png' },
+  zulliger: { nombre: 'Zulliger', laminas: 3, formato: 'png' },
+  // Las del Bender son dibujos nuestros y no un escaneo: son figuras
+  // geométricas, así que se trazan en SVG con las proporciones medidas sobre
+  // las tarjetas. Se ven nítidas en cualquier pantalla y pesan mil veces menos.
+  bender: { nombre: 'Bender', laminas: 9, formato: 'svg' },
 } as const;
 
-export type TestDeManchas = keyof typeof TESTS;
+export type TestConLaminas = keyof typeof TESTS;
 
-export function esTestDeManchas(x: string): x is TestDeManchas {
+export function esTestConLaminas(x: string): x is TestConLaminas {
   return Object.prototype.hasOwnProperty.call(TESTS, x);
 }
 
-/** El PNG de una lámina, con la marca que permite revalidarla. */
+/** Con qué se responde cada formato. */
+export const TIPO = { png: 'image/png', svg: 'image/svg+xml' } as const;
+
+/** La imagen de una lámina, con la marca que permite revalidarla. */
 export async function leerLamina(
-  test: TestDeManchas,
+  test: TestConLaminas,
   n: number
-): Promise<{ png: ArrayBuffer; etag: string | null } | null> {
+): Promise<{ imagen: ArrayBuffer; tipo: string; etag: string | null } | null> {
   if (!Number.isInteger(n) || n < 1 || n > TESTS[test].laminas) return null;
 
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY;
   if (!url || !key) throw new Error('Falta la configuración de Supabase.');
 
-  const res = await fetch(`${url}/storage/v1/object/${BUCKET}/laminas/${test}/${n}.png`, {
+  const formato = TESTS[test].formato;
+  const res = await fetch(`${url}/storage/v1/object/${BUCKET}/laminas/${test}/${n}.${formato}`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
     cache: 'no-store',
   });
@@ -45,5 +53,5 @@ export async function leerLamina(
     console.error('laminas:', test, n, res.status, await res.text());
     return null;
   }
-  return { png: await res.arrayBuffer(), etag: res.headers.get('etag') };
+  return { imagen: await res.arrayBuffer(), tipo: TIPO[formato], etag: res.headers.get('etag') };
 }

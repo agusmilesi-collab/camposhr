@@ -103,14 +103,22 @@ el navegador, recargar la página lo reiniciaría.
 
 ## Las láminas de los tests no van al repositorio
 
-Las de Rorschach y Zulliger viven en el bucket privado, en
-`psicotecnicos/laminas/<test>/<n>.png`, y las sirve `/api/os/lamina/<test>/<n>`
-contra la sesión del OS. Estuvieron en `public/` hasta el 20/8/2026, servidas
-por el hub de herramientas a cualquiera que supiera la dirección.
+Viven en el bucket privado, en `psicotecnicos/laminas/<test>/<n>.<formato>`, y
+las sirve `/api/os/lamina/<test>/<n>` contra la sesión del OS. Estuvieron en
+`public/` hasta el 20/8/2026, servidas por el hub de herramientas a cualquiera
+que supiera la dirección.
 
 Este repositorio es público y `public/` se entrega sin credencial. Las láminas
 son material con derechos, y una que circula deja de servir para quien ya la
 vio.
+
+**Las del Bender son SVG y las dibujamos nosotros.** Son figuras geométricas,
+así que en vez de escanear las tarjetas se midieron sobre ellas (cantidades,
+separaciones, ángulos, radios) y se trazaron con esa geometría regularizada: las
+tarjetas están hechas a mano y sus irregularidades pasarían al estímulo, donde
+se leerían como error de quien copia. El programa que las genera está al lado de
+ellas, en `laminas/bender/generar.py` del mismo bucket, y no en el repositorio:
+en código, las figuras se leen igual que en la imagen.
 
 **Las del Raven todavía no están.** Cuando se escaneen, van al mismo lugar y por
 el mismo camino, no a `public/raven/laminas/`, que es donde hoy quedan las dos

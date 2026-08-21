@@ -13,7 +13,7 @@
 
 import { useState } from 'react';
 
-export default function LinkLaminas({ href, apagado }: { href: string; apagado?: boolean }) {
+export default function LinkLaminas({ href }: { href: string }) {
   const [copiado, setCopiado] = useState(false);
 
   async function copiar() {
@@ -28,7 +28,7 @@ export default function LinkLaminas({ href, apagado }: { href: string; apagado?:
 
   return (
     <>
-      <button className="os-boton" type="button" onClick={copiar} disabled={apagado}>
+      <button className="os-boton" type="button" onClick={copiar}>
         Copiar link
       </button>
       {copiado && <span className="os-form-ok">Copiado</span>}
