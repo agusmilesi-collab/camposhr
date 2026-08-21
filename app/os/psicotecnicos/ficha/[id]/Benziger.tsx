@@ -123,28 +123,34 @@ export default function Benziger({
           />
 
           {archivo || informe ? (
-            <div className="os-benziger-archivo">
-              <span className="os-benziger-nombre" title={archivo?.name ?? informe ?? ''}>
-                {archivo?.name ?? informe}
-              </span>
-              <span className="os-benziger-pendiente">
-                {archivo ? 'sin cargar' : 'leído'}
-              </span>
-              <button
-                type="button"
-                className="os-enlace-boton"
-                onClick={() => {
-                  if (archivo) {
-                    // Vuelve al que estaba guardado, que sigue siendo el bueno.
-                    setArchivo(null);
-                    if (pdf.current) pdf.current.value = '';
-                  } else {
-                    pdf.current?.click();
-                  }
-                }}
-              >
-                {archivo ? 'Quitar' : 'Reemplazar'}
-              </button>
+            <div className="os-benziger-carga">
+              {/* La caja lleva el nombre y nada más: el estado y la acción son
+                  de la carga y no del archivo, así que van afuera. */}
+              <div className="os-benziger-archivo">
+                <span className="os-benziger-nombre" title={archivo?.name ?? informe ?? ''}>
+                  {archivo?.name ?? informe}
+                </span>
+              </div>
+              <div className="os-benziger-acciones">
+                <span className={`os-sello-estado ${archivo ? 'os-ambar' : 'os-verde'}`}>
+                  {archivo ? 'Sin calcular' : 'Leído'}
+                </span>
+                <button
+                  type="button"
+                  className="os-boton"
+                  onClick={() => {
+                    if (archivo) {
+                      // Vuelve al que estaba guardado, que sigue siendo el bueno.
+                      setArchivo(null);
+                      if (pdf.current) pdf.current.value = '';
+                    } else {
+                      pdf.current?.click();
+                    }
+                  }}
+                >
+                  {archivo ? 'Quitar' : 'Reemplazar'}
+                </button>
+              </div>
             </div>
           ) : (
             <button type="button" className="os-boton" onClick={() => pdf.current?.click()}>
