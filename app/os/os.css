@@ -4911,9 +4911,11 @@ th.os-tabla-contacto {
 }
 
 /* Entre herramientas la separación es menor que entre paneles: son renglones
-   de una misma lista y no bloques distintos de la pantalla. */
+   de una misma lista y no bloques distintos de la pantalla. Ocho píxeles las
+   dejaban pegadas: las que tienen campo de observaciones ocupan tres renglones
+   y se leían como una sola caja larga. */
 .os-panel + .os-herramienta {
-  margin-top: 8px;
+  margin-top: 20px;
 }
 
 /* El texto cede ancho antes de empujar los botones al renglón de abajo: un
