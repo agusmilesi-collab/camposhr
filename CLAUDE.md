@@ -155,9 +155,24 @@ se leerían como error de quien copia. El programa que las genera está al lado 
 ellas, en `laminas/bender/generar.py` del mismo bucket, y no en el repositorio:
 en código, las figuras se leen igual que en la imagen.
 
-**Las del Raven todavía no están.** Cuando se escaneen, van al mismo lugar y por
-el mismo camino, no a `public/raven/laminas/`, que es donde hoy quedan las dos
-de prueba.
+**Las del Raven se trazaron, no se redibujaron.** Están en el bucket, partidas
+en la matriz y las ocho opciones: `laminas/raven/<nn>-matriz.svg` y
+`<nn>-opcion-<k>.svg`. Las sirve `/api/raven/lamina`, que abre con el token de
+quien rinde o con la sesión del OS, para la vista de prueba.
+
+Los contornos salen del propio escaneo con marching squares
+(`laminas/raven/vectorizar.py` en el mismo bucket), así que la geometría es la
+del original: nadie interpreta nada. **Un detalle mal en una lámina del Raven
+cambia cuál es la respuesta correcta**, y ese puntaje termina en un informe
+sobre una persona.
+
+Cada pieza se comprueba contra su origen: se rellena lo trazado y se mira dónde
+difiere. Lo que importa no es cuántos píxeles difieren, que castiga a la figura
+con más perímetro, sino a qué distancia del borde están. En las 324 piezas, la
+mancha de error más grande es de un píxel. El resultado de esa comprobación está
+al lado, en `verificacion.json`.
+
+Al tocar el trazado hay que volver a correrlo entero y mirar ese informe.
 
 ## El informe lo arma un solo molde, y lo interno va apagado
 
