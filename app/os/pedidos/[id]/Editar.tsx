@@ -101,9 +101,12 @@ export function Largo({
     <div className="os-ficha-dato os-ficha-dato-ancho">
       <div className="os-ficha-rotulo">{rotulo}</div>
       <div className="os-ficha-valor">
+        {/* Ocupa todo el ancho de su celda: es donde se copia lo que dijo el
+            cliente, el campo más largo del pedido, y entraba en 181 px de los
+            385 que tenía al lado. */}
         <textarea
-          className="os-campo"
-          rows={3}
+          className="os-campo os-campo-parrafo"
+          rows={4}
           maxLength={4000}
           defaultValue={valor ?? ''}
           placeholder={ayuda}
@@ -372,6 +375,88 @@ export function Estado({
       ) : (
         <button type="button" className="os-boton" onClick={() => setConfirmar(true)}>
           Cerrar el pedido
+        </button>
+      )}
+      {error && <p className="os-form-error">{error}</p>}
+    </div>
+  );
+}
+
+/**
+ * Borrar el pedido, para lo que nunca debió existir.
+ *
+ * Va separado del cierre y con su propio paso de confirmación, porque las dos
+ * cosas se parecen y hacen lo contrario: cerrar guarda todo y lo saca del
+ * selector, borrar no deja nada. El que tiene candidatos ni siquiera muestra el
+ * botón: ahí la respuesta correcta es cerrarlo, y ofrecer un borrado que el
+ * servidor va a rechazar es hacer perder un clic para leer un error.
+ */
+export function Borrar({
+  id,
+  puesto,
+  candidatos,
+}: {
+  id: string;
+  puesto: string;
+  candidatos: number;
+}) {
+  const router = useRouter();
+  const [confirmar, setConfirmar] = useState(false);
+  const [borrando, setBorrando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (candidatos > 0) {
+    return (
+      <p className="os-pedido-cerrado">
+        Con candidatos cargados no se borra: quedarían sin saber a qué búsqueda entraron. Cerralo
+        y sale de la lista de alta.
+      </p>
+    );
+  }
+
+  async function borrar() {
+    setError(null);
+    setBorrando(true);
+    try {
+      const res = await fetch(`/api/os/pedidos?id=${id}`, { method: 'DELETE' });
+      const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
+      if (!r.ok) {
+        setError(r.motivo ?? 'No se pudo borrar.');
+        setBorrando(false);
+        return;
+      }
+      router.push('/os/pedidos');
+      router.refresh();
+    } catch {
+      setError('No se pudo borrar.');
+      setBorrando(false);
+    }
+  }
+
+  return (
+    <div className="os-pedido-borrar os-cajon-riesgo">
+      {confirmar ? (
+        <>
+          <p className="os-pedido-aviso">
+            Se borra «{puesto}» y no se puede deshacer.
+          </p>
+          <div className="os-pedido-borrar-pie">
+            <button
+              type="button"
+              className="os-boton os-boton-peligro"
+              disabled={borrando}
+              onClick={borrar}
+            >
+              {borrando ? 'Borrando…' : 'Borrarlo'}
+            </button>
+            <button type="button" className="os-boton" onClick={() => setConfirmar(false)}>
+              Mejor no
+            </button>
+          </div>
+        </>
+      ) : (
+        <button type="button" className="os-boton" onClick={() => setConfirmar(true)}>
+          Borrar el pedido
         </button>
       )}
       {error && <p className="os-form-error">{error}</p>}

@@ -531,6 +531,92 @@ html[data-os-lateral='compacta'] .os-boton-pie {
   font-size: 0.94rem;
 }
 
+/* El título con su acción al lado: el botón que abre lo que la pantalla lista
+   va arriba, donde se lo busca, y no al pie de la tabla. */
+.os-encabezado-con-accion {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Dos paneles apilados en la misma pantalla, con aire entre ellos. */
+.os-panel-separado {
+  margin-top: 26px;
+}
+
+/**
+ * Cómo viene una búsqueda: el texto y una barra que dice lo mismo sin leer.
+ *
+ * La barra es fina a propósito. Es un dato de apoyo para recorrer la columna de
+ * un golpe, y una barra gruesa competiría con el nombre del pedido, que es lo
+ * que se está buscando en esa tabla.
+ */
+.os-avance {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 76px;
+}
+
+.os-avance-texto {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.os-avance-barra {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--os-linea);
+  overflow: hidden;
+}
+
+.os-avance-parte {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--os-azul);
+}
+
+/* Entregadas todas: el pedido ya se puede cerrar, y ese es el trabajo de esta
+   pantalla. */
+.os-avance-parte.completa {
+  background: var(--os-verde);
+}
+
+/* Los candidatos de un pedido: nombre y etapa, uno por renglón. Es una lista
+   corta (tres o cuatro personas por búsqueda), así que no necesita tabla. */
+.os-pedido-gente {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-pedido-gente li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-pedido-gente li:last-child {
+  border-bottom: 0;
+}
+
+/* Un campo de párrafo usa todo el ancho que tiene: lo que se escribe adentro
+   son frases, no un dato corto. */
+.os-campo-parrafo {
+  width: 100%;
+  min-height: 82px;
+}
+
 /* ---------- Piezas ---------- */
 
 .os-cifras {
@@ -1708,6 +1794,19 @@ textarea.os-campo {
   max-width: 100%;
 }
 
+/**
+ * Las dos tablas de pedidos miden lo mismo, aunque su contenido no.
+ *
+ * Sin esto cada una se ajusta a lo suyo: "Falta batería, el perfil del puesto"
+ * estira la de En curso y "Finalizado" encoge la de Cerrados, y dos tablas
+ * apiladas de distinto ancho se leen como si no tuvieran que ver entre sí. Los
+ * mil píxeles son lo que piden sus seis columnas sin apretarse.
+ */
+.os-tabla.os-tabla-pedidos {
+  width: 1000px;
+  max-width: 100%;
+}
+
 .os-tabla {
   width: 100%;
   border-collapse: collapse;
@@ -2232,6 +2331,24 @@ th.os-tabla-contacto {
 
 .os-pedido-cierre .os-agregar-pie {
   align-self: stretch;
+}
+
+/**
+ * Borrar, detrás de su línea y con los botones del ancho de su texto.
+ *
+ * El pie del cajón estira sus botones para llenar la columna angosta donde
+ * vive; acá el panel es ancho y un "Borrarlo" rojo de media pantalla pesa
+ * mucho más de lo que el acto merece.
+ */
+.os-pedido-borrar {
+  margin-top: 18px;
+  padding-top: 16px;
+}
+
+.os-pedido-borrar-pie {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .os-pestanas {

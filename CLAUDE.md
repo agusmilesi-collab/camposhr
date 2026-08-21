@@ -254,6 +254,18 @@ entrevistar" juntas.
 Agrupar en la navegación no cambia el pipeline. Al sumar una sección hay que
 tocar `SECCIONES`, las columnas de `Tabla.tsx` y las celdas de esa sección.
 
+## Cerrar no es borrar
+
+Un pedido y un cliente se **cierran** cuando terminaron: siguen enteros y dejan
+de ofrecerse al cargar candidatos. Se **borran** solo si nunca debieron existir,
+y únicamente cuando no tienen nada colgando: un pedido con evaluaciones dejaría
+personas reales sin saber a qué búsqueda entraron, que es lo único que explica
+qué se les tomó y por qué.
+
+Las rutas lo hacen cumplir del lado del servidor (`app/api/os/pedidos`,
+`app/api/os/clientes`, ambas con su `DELETE`) y la pantalla ni siquiera ofrece
+el botón cuando sabe que va a ser rechazado: en su lugar dice qué hacer.
+
 ## Los datos de personas van a Supabase, no al repositorio
 
 Un repositorio de git no sirve para guardar una evaluación psicológica: no
