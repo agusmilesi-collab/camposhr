@@ -49,10 +49,6 @@ export default function Lista({ clientes }: { clientes: Cliente[] }) {
                 <th>CUIT</th>
                 <th>IVA</th>
                 <th>Contacto</th>
-                <th>Rubro</th>
-                <th className="os-tabla-num">Pedidos</th>
-                <th className="os-tabla-num">Evaluaciones</th>
-                <th className="os-tabla-num">Cotizaciones</th>
                 <th>Portal</th>
               </tr>
             </thead>
@@ -86,18 +82,6 @@ export default function Lista({ clientes }: { clientes: Cliente[] }) {
                   </td>
                   <td>
                     <Dato valor={c.contacto ?? c.emailFacturacion} />
-                  </td>
-                  <td>
-                    <Dato valor={c.rubro} />
-                  </td>
-                  <td className="os-tabla-num">
-                    {c.pedidos || <span className="os-tabla-flojo">—</span>}
-                  </td>
-                  <td className="os-tabla-num">
-                    {c.evaluaciones || <span className="os-tabla-flojo">—</span>}
-                  </td>
-                  <td className="os-tabla-num">
-                    {c.cotizaciones || <span className="os-tabla-flojo">—</span>}
                   </td>
                   {/* El enlace del portal vive acá y no en una pantalla aparte,
                       que era la misma lista de clientes con una sola columna. */}
