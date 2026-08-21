@@ -1,6 +1,10 @@
 /**
  * Qué se le administró además de las manchas, tal como quedó en la entrevista.
  *
+ * Las manchas no se listan acá: lo que se hizo con ellas está en su propia
+ * pestaña, codificado respuesta por respuesta, y repetir que se tomaron no
+ * agregaba nada.
+ *
  * El Bender y el gráfico de dos personas no producen puntajes en el OS: lo que
  * queda de ellos es si se tomaron y lo que la evaluadora anotó mientras la
  * persona dibujaba.
@@ -13,30 +17,22 @@
  */
 
 export default function Administrados({
-  proyectivo,
-  proyectivoNombre,
   bender,
   benderNotas,
   grafico,
   graficoNotas,
 }: {
-  proyectivo: boolean;
-  /** Rorschach o Zulliger, el que declare su batería. */
-  proyectivoNombre: string | null;
   bender: boolean;
   benderNotas: string | null;
   grafico: boolean;
   graficoNotas: string | null;
 }) {
-  // En el orden en que se administran. Las manchas no llevan observaciones:
-  // lo que se ve en ellas entra en la codificación.
+  // En el orden en que se administran.
   const TESTS = [
-    { texto: proyectivoNombre ?? 'Test de manchas', marca: 'proyectivo' as const },
     { texto: 'Bender', marca: 'bender' as const },
     { texto: 'Gráfico 2 personas', marca: 'grafico' as const },
   ];
   const valores = {
-    proyectivo: { puesto: proyectivo, notas: null as string | null },
     bender: { puesto: bender, notas: benderNotas },
     grafico: { puesto: grafico, notas: graficoNotas },
   };
@@ -52,7 +48,7 @@ export default function Administrados({
               {v.puesto ? 'Tomado' : 'No se tomó'}
             </span>
             <span className={v.notas ? 'os-administrado-notas' : 'os-administrado-sin'}>
-              {t.marca === 'proyectivo' ? '' : v.notas || 'Sin observaciones'}
+              {v.notas || 'Sin observaciones'}
             </span>
           </div>
         );

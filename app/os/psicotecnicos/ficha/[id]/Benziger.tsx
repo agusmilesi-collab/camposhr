@@ -44,15 +44,17 @@ export default function Benziger({
   const [cuadrante, setCuadrante] = useState(cuadrantes[0] ?? '');
   const [archivo, setArchivo] = useState<File | null>(null);
   const pdf = useRef<HTMLInputElement>(null);
-  const [guardando, setGuardando] = useState(false);
+  // Dos estados y no uno: son dos tarjetas con su propio botón, y compartir
+  // el "guardando" hacía que elegir un cuadrante pusiera a Calcular en
+  // "Calculando…" sin que hubiera nada que calcular.
+  const [subiendo, setSubiendo] = useState(false);
+  const [eligiendo, setEligiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
+  const [errorCuadrante, setErrorCuadrante] = useState<string | null>(null);
 
   /** Manda las dos cosas juntas: el guardado es uno solo. */
-  async function guardar(quad: string, arch: File | null, aviso: string) {
-    setError(null);
-    setHecho(null);
-    setGuardando(true);
+  async function guardar(quad: string, arch: File | null) {
     try {
       const cuerpo = new FormData();
       cuerpo.set('evaluacionId', id);
@@ -61,24 +63,24 @@ export default function Benziger({
 
       const res = await fetch('/api/os/benziger', { method: 'POST', body: cuerpo });
       const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
-      if (!r.ok) {
-        setError(r.motivo ?? 'No se pudo cargar.');
-        return false;
-      }
-      setHecho(r.aviso ?? aviso);
+      if (!r.ok) return { ok: false as const, motivo: r.motivo ?? 'No se pudo cargar.' };
       empezar(() => router.refresh());
-      return true;
+      return { ok: true as const };
     } catch {
-      setError('No se pudo cargar.');
-      return false;
-    } finally {
-      setGuardando(false);
+      return { ok: false as const, motivo: 'No se pudo cargar.' };
     }
   }
 
   async function subir() {
-    const ok = await guardar(cuadrante, archivo, 'Informe leído y sumario calculado.');
-    if (!ok) return;
+    setError(null);
+    setHecho(null);
+    setSubiendo(true);
+    const r = await guardar(cuadrante, archivo).finally(() => setSubiendo(false));
+    if (!r.ok) {
+      setError(r.motivo);
+      return;
+    }
+    setHecho('Informe leído y sumario calculado.');
     setArchivo(null);
     if (pdf.current) pdf.current.value = '';
   }
@@ -87,8 +89,16 @@ export default function Benziger({
     const antes = cuadrante;
     const nuevo = cuadrante === p ? '' : p;
     setCuadrante(nuevo);
-    // Sin archivo: acá solo cambia el cuadrante.
-    if (!(await guardar(nuevo, null, 'Cuadrante guardado.'))) setCuadrante(antes);
+    setErrorCuadrante(null);
+    setEligiendo(true);
+    // Sin archivo: acá solo cambia el cuadrante. Que salió bien se ve en el
+    // estado del título, que pasa a nombrarlo, así que no hace falta decirlo
+    // además con un texto que además crecería la tarjeta de al lado.
+    const r = await guardar(nuevo, null).finally(() => setEligiendo(false));
+    if (!r.ok) {
+      setCuadrante(antes);
+      setErrorCuadrante(r.motivo);
+    }
   }
 
   return (
@@ -134,9 +144,9 @@ export default function Benziger({
                   className="os-boton os-boton-firme"
                   type="button"
                   onClick={subir}
-                  disabled={guardando || !archivo}
+                  disabled={subiendo || !archivo}
                 >
-                  {guardando ? 'Calculando…' : 'Calcular'}
+                  {subiendo ? 'Calculando…' : 'Calcular'}
                 </button>
               </div>
               <div className="os-benziger-acciones">
@@ -179,6 +189,9 @@ export default function Benziger({
       <section className="os-panel">
         <div className="os-panel-top">
           <h2>Cuadrante preferente</h2>
+          <span className={`os-sello-estado ${cuadrante ? 'os-verde' : 'os-ambar'}`}>
+            {cuadrante ? INFO[cuadrante as Perfil].nombre : 'Sin definir'}
+          </span>
         </div>
         <div className="os-panel-cuerpo os-benziger-eleccion">
           {/* Frontal arriba y Basal abajo, como el modelo. Tocar el que ya está
@@ -191,22 +204,20 @@ export default function Benziger({
                 className={`os-benziger-cuadrante${cuadrante === p ? ' elegido' : ''}`}
                 aria-pressed={cuadrante === p}
                 title={INFO[p].nombre}
-                disabled={guardando}
+                disabled={eligiendo}
                 onClick={() => elegir(p)}
               >
                 {p}
               </button>
             ))}
           </div>
-          <div>
-            <p className="os-benziger-elegido">
-              {cuadrante ? INFO[cuadrante as Perfil].nombre : 'Sin definir'}
-            </p>
-            <p className="os-benziger-aviso">
-              Lo determina la evaluadora leyendo el informe: es una lectura, no un
-              dato que el PDF traiga tabulado.
-            </p>
-          </div>
+          <p className="os-benziger-aviso">
+            {errorCuadrante ? (
+              <span className="os-form-error">{errorCuadrante}</span>
+            ) : (
+              'Lo determina la evaluadora leyendo el informe: es una lectura, no un dato que el PDF traiga tabulado.'
+            )}
+          </p>
         </div>
       </section>
     </div>

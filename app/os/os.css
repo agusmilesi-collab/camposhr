@@ -2777,19 +2777,16 @@ textarea.os-campo {
   color: var(--os-panel);
 }
 
-.os-benziger-elegido {
-  margin: 0;
-  color: var(--os-tinta);
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-
 /* La cruz a la izquierda y lo que hay que hacer con ella a la derecha: puesto
    debajo, la tarjeta crecía sin necesidad. */
 .os-benziger-eleccion {
   display: flex;
   align-items: center;
   gap: 18px;
+}
+
+.os-benziger-eleccion .os-benziger-aviso {
+  margin: 0;
 }
 
 /* Qué va a pasar al subir el informe, o qué pasó. */
@@ -3722,7 +3719,9 @@ textarea.os-campo {
 /* Lo que se administró: cada test con su sí o no. */
 .os-administrados {
   display: grid;
-  gap: 12px;
+  /* Sin separación propia: cada fila trae su padding y su línea, y el hueco
+     extra solo aparecía entre filas, nunca arriba de la primera. */
+  gap: 0;
 }
 
 .os-administrado {
