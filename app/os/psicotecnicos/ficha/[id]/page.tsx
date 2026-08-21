@@ -16,6 +16,7 @@ import Conclusion from './Conclusion';
 import Entregar from './Entregar';
 import Benziger from './Benziger';
 import Administrados from './Administrados';
+import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
 import { desdeFicha } from '@/lib/informe';
 import Raven from './Raven';
@@ -120,7 +121,7 @@ function Bloque({
   );
 }
 
-function Datos({ f }: { f: Ficha }) {
+function Datos({ f, id }: { f: Ficha; id: string }) {
   const c = f.cabecera;
   const precio = f.precio;
 
@@ -154,9 +155,7 @@ function Datos({ f }: { f: Ficha }) {
       <Bloque titulo="La evaluación" dos>
         <Dato rotulo="Solicitud">{fechaHora(c.fecha_ingreso) ?? <Falta texto="sin fecha" />}</Dato>
         <Dato rotulo="Estado">
-          <span className={`os-sello-estado ${COLOR_ETAPA[c.estado] ?? 'os-gris'}`}>
-            {c.estado}
-          </span>
+          <Etapa id={id} etapa={c.estado} />
         </Dato>
         <Dato rotulo="Evaluadora">{c.evaluadoras?.nombre ?? <Falta texto="sin asignar" />}</Dato>
         <Dato rotulo="Batería">{c.pedidos?.baterias?.codigo ?? <Falta texto="a definir" />}</Dato>
@@ -503,7 +502,7 @@ export default async function FichaPagina({
         })}
       </nav>
 
-      {ver === 'datos' && <Datos f={ficha} />}
+      {ver === 'datos' && <Datos f={ficha} id={params.id} />}
       {ver === 'manchas' && (
         <>
           {desajuste && (

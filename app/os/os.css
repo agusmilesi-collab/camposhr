@@ -4738,6 +4738,59 @@ textarea.os-campo {
 /* Lo que la persona dejó dibujado va en su propio renglón, debajo de las
    observaciones, y con las mismas columnas que el de arriba: ver cae bajo la
    herramienta y reemplazar bajo cargar. */
+/* La etapa en la ficha: el sello se toca y despliega los otros, cada uno con su
+   punto de color. Un desplegable del navegador no deja pintarlo. */
+.os-etapa-editable {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.os-etapa-editable > .os-boton {
+  width: auto;
+  justify-content: flex-start;
+  height: 28px;
+  padding: 0 11px;
+}
+
+.os-etapa-lista {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: 5px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel);
+  box-shadow: 0 10px 28px rgba(22, 32, 43, 0.14);
+}
+
+.os-etapa-opcion {
+  justify-content: flex-start;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--os-tinta);
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-etapa-opcion:hover {
+  background: var(--os-hover);
+}
+
+.os-etapa-opcion.elegida {
+  font-weight: 600;
+}
+
 .os-papel-dibujos {
   flex-basis: 100%;
   display: grid;
