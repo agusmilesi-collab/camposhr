@@ -345,9 +345,12 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
 
 
       <section className="os-panel os-entrevista-cierre">
+        {/* Dónde está parada, para el caso de haber avanzado ya: desde acá el
+            botón de cerrarla no existe, y sin decirlo la pantalla parece rota. */}
         <p>
-          Al quedar tomado el último test, la evaluación pasa sola a Por
-          analizar. El botón la cierra antes.
+          {e.estado === 'Por entrevistar'
+            ? 'Al quedar tomado el último test, la evaluación pasa sola a Por analizar. El botón la cierra antes.'
+            : `Esta evaluación ya está en ${e.estado}. Su etapa se corrige en la ficha.`}
         </p>
         <div className="os-entrevista-botones">
           <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?desde=entrevistas`}>
