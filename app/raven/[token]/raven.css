@@ -186,15 +186,6 @@
   border-color: #9a958e;
 }
 
-/* Lo que se pide de antemano no se ve. */
-.rv-oculta {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
 
 .rv-opcion:hover {
   border-color: #9a948c;

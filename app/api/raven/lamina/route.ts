@@ -68,9 +68,12 @@ export async function GET(req: Request) {
   const svg = await res.arrayBuffer();
   const cabeceras: Record<string, string> = {
     'Content-Type': 'image/png',
-    // Se va a volver a ella: durante el test se navega adelante y atrás todo el
-    // tiempo. Con ETag el navegador pregunta antes de usar lo que guardó.
-    'Cache-Control': 'private, no-cache',
+    // Se guarda en el navegador por una hora. Durante el test se va y se vuelve
+    // a las láminas todo el tiempo, y preguntar antes de usar lo guardado son
+    // nueve idas y vueltas por lámina: las figuras aparecían de a una. Una
+    // lámina no cambia en mitad de un test, y el ETag sigue estando para cuando
+    // caduque.
+    'Cache-Control': 'private, max-age=3600',
   };
   const etag = res.headers.get('etag');
   if (etag) {
