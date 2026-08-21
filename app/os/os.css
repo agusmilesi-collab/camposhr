@@ -4932,8 +4932,10 @@ textarea.os-campo {
 /* En la ficha los mismos datos van fijos: rótulo, si se tomó y lo anotado. */
 .os-administrado-fijo {
   display: grid;
-  /* Rótulo, estado, lo que dibujó y las observaciones. */
-  grid-template-columns: 150px 92px 62px minmax(0, 1fr);
+  /* Rótulo, estado, lo que dibujó y las observaciones. La del medio se ajusta
+     a lo que tiene: sin dibujo es un guion, y reservarle el ancho del botón le
+     robaba renglón a las observaciones. */
+  grid-template-columns: 150px 92px auto minmax(0, 1fr);
   align-items: center;
   gap: 14px;
   padding: 9px 0;
@@ -4954,9 +4956,13 @@ textarea.os-campo {
   color: var(--os-tinta);
 }
 
+/* "Sin observaciones" y el guion son textos fijos y cortos: partidos en dos
+   renglones estiran la fila para no decir nada. Lo que sí puede envolver es la
+   observación de verdad. */
 .os-administrado-sin {
   font-size: 0.84rem;
   color: var(--os-suave);
+  white-space: nowrap;
 }
 
 @media (max-width: 620px) {
