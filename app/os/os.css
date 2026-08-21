@@ -1473,6 +1473,83 @@ textarea.os-campo {
   padding: 18px 20px 28px;
 }
 
+/* El nombre en la tabla abre la ficha del cliente: es un botón, pero tiene que
+   leerse como el nombre que ya estaba. */
+.os-tabla-enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  color: var(--os-tinta);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--os-linea);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.os-tabla-enlace:hover {
+  text-decoration-color: var(--os-azul-fuerte);
+}
+
+/* Lo que se mira de un cliente además de sus datos: sus búsquedas y el
+   borrado. Van debajo del formulario, separados por su línea. */
+.os-cajon-bloque {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-cajon-subtitulo {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-cajon-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-cajon-item {
+  display: block;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--os-linea-suave);
+  color: inherit;
+  text-decoration: none;
+}
+
+.os-cajon-item:hover .os-cajon-item-titulo {
+  color: var(--os-azul-fuerte);
+}
+
+.os-cajon-item-titulo {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 550;
+}
+
+.os-cajon-item-detalle {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: var(--os-suave);
+}
+
+.os-cajon-borrar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.84rem;
+}
+
 /* La etapa y el cliente arriba del formulario: dicen dónde está parada la
    persona antes de tocarle un campo. */
 .os-cajon-sello {
