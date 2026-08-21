@@ -8,9 +8,9 @@
  * lo que hace falta saber es a cuál volver, y contarlas de memoria es tiempo
  * perdido.
  *
- * Las ocho opciones vienen dibujadas y numeradas dentro de la propia lámina,
- * así que acá solo se elige el número. Por eso los botones son números y no
- * figuras: la figura ya está arriba.
+ * La matriz va arriba y las ocho opciones abajo, cada una en su botón: se toca
+ * la figura, no un número que hay que emparejar con ella. La lámina llega en
+ * piezas por eso, y no como un solo dibujo.
  *
  * Se puede cambiar cualquier respuesta mientras quede tiempo. Vale lo que esté
  * cargado cuando el reloj llega a cero.
@@ -255,9 +255,11 @@ export default function Test({
       )}
 
       <figure className="rv-lamina">
-        {/* Las láminas se sirven por número. Mientras no estén escaneadas,
-            todas muestran la misma de muestra. */}
-        <img src="/raven/laminas/muestra.svg" alt={`Lámina ${lamina}`} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/api/raven/lamina?token=${token}&n=${lamina}&parte=matriz`}
+          alt={`Lámina ${lamina}`}
+        />
       </figure>
 
       <div className="rv-opciones">
@@ -266,12 +268,28 @@ export default function Test({
             key={o}
             className={`rv-opcion${respuestas[String(lamina)] === o ? ' elegida' : ''}`}
             aria-pressed={respuestas[String(lamina)] === o}
+            aria-label={`Opción ${o}`}
             onClick={() => responder(o)}
           >
-            {o}
+            <span className="rv-opcion-numero">{o}</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/raven/lamina?token=${token}&n=${lamina}&parte=${o}`}
+              alt=""
+              aria-hidden
+            />
           </button>
         ))}
       </div>
+
+      {/* La siguiente se pide mientras se piensa esta: son nueve archivos por
+          lámina y el hueco en blanco al pasar se nota. */}
+      {lamina < RAVEN_MAXIMO && (
+        <div className="rv-oculta" aria-hidden>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/api/raven/lamina?token=${token}&n=${lamina + 1}&parte=matriz`} alt="" />
+        </div>
+      )}
 
       <nav className="rv-pasos">
         <button
