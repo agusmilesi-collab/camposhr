@@ -187,6 +187,9 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
             <Falta />
           )}
         </Dato>
+        {/* La evaluadora cierra el bloque: de todo lo que quedaba del otro
+            lado, es lo único que responde "quién" y no "cuándo". */}
+        <Dato rotulo="Evaluadora">{c.evaluadoras?.nombre ?? <Falta texto="sin asignar" />}</Dato>
       </Bloque>
 
       <Bloque titulo="La evaluación" dos>
@@ -194,13 +197,17 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
         <Dato rotulo="Estado">
           <Etapa id={id} etapa={c.estado} />
         </Dato>
-        <Dato rotulo="Evaluadora">{c.evaluadoras?.nombre ?? <Falta texto="sin asignar" />}</Dato>
         <Dato rotulo="Batería">{c.pedidos?.baterias?.codigo ?? <Falta texto="a definir" />}</Dato>
         <Dato rotulo="Entrevista">
           {fechaHora(c.fecha_entrevista) ?? <Falta texto="sin agendar" />}
         </Dato>
         <Dato rotulo="Modalidad">{c.modalidad ?? <Falta texto="sin definir" />}</Dato>
-        <Dato rotulo="Entrega">{fechaHora(c.fecha_entrega) ?? <Falta texto="sin entregar" />}</Dato>
+        {/* Es la fecha en que se subió al portal: la sella el paso a Entregado,
+            que es lo que hace ese botón. Se llamaba "Entrega" y no se sabía si
+            era cuándo se prometió o cuándo salió. */}
+        <Dato rotulo="Subido al portal">
+          {fechaHora(c.fecha_entrega) ?? <Falta texto="todavía no" />}
+        </Dato>
       </Bloque>
 
       {/* La plata va aparte: se mira en otro momento y por otra persona que lo
