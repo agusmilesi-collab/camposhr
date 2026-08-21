@@ -753,6 +753,31 @@ a.os-fila:hover {
   background: var(--punto, var(--os-gris));
 }
 
+/**
+ * El sello de la batería: "B1", y "+ bzg" cuando el pedido lleva Benziger.
+ *
+ * El código va en versalita fuerte porque es lo que se busca de un vistazo, y
+ * el agregado del Benziger en un tono más suave: es una condición del pedido y
+ * no otra batería.
+ */
+.os-bateria {
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  color: var(--os-tinta);
+}
+
+/* En azul y en negrita: en gris suave, que es como se marca un dato de segundo
+   orden, no se leía. Y el Benziger no es un dato de segundo orden: cambia lo
+   que hay que administrar en la entrevista. */
+.os-bateria-mas {
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--os-azul-fuerte);
+  letter-spacing: 0;
+}
+
 .os-gris { --punto: var(--os-gris); }
 .os-ambar { --punto: var(--os-ambar); }
 .os-azul { --punto: var(--os-azul); }
@@ -1753,6 +1778,30 @@ textarea.os-campo {
   color: var(--os-suave);
 }
 
+/* La empresa y su batería en un renglón: la empresa se recorta si hace falta y
+   el sello nunca, que es el dato corto y el que se busca. */
+.os-tabla-empresa {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.os-tabla-recorta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-tabla-punto {
+  color: var(--os-linea-fuerte, var(--os-suave));
+  flex: none;
+}
+
+.os-tabla-empresa .os-sello-estado {
+  flex: none;
+}
+
 /* ---------- Kanban ---------- */
 
 .os-kanban {
@@ -2052,17 +2101,27 @@ textarea.os-campo {
  * "Sin contactar" y "Esperando" no miden lo mismo, así que sin un piso la
  * columna se corría a cada clic y con ella todas las de al lado.
  */
-.os-tabla-contacto {
-  min-width: 162px;
+/* Menos aire a los costados que el resto de las celdas: acá el contenido es un
+   botón que ya trae su propio padding, y contarlo dos veces le sacaba ancho al
+   texto. */
+.os-tabla-contacto,
+th.os-tabla-contacto {
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 /* Este botón lleva el punto del sello adentro, así que centrar su contenido
    corre el texto a la derecha: se alinea a la izquierda y el punto queda de
-   ancla, igual que en un sello suelto. */
+   ancla, igual que en un sello suelto.
+
+   Y mide lo que su texto necesita, no el ancho de la celda. Con `width: 100%`
+   se estiraba hasta el borde de una columna que no le alcanzaba: el padding
+   derecho se perdía, el texto quedaba corrido contra el borde y el recuadro
+   que aparece al pasar por encima abrazaba aire. */
 .os-tabla-contacto .os-boton {
   justify-content: flex-start;
-  width: 100%;
-  padding: 0 11px;
+  max-width: 100%;
+  padding: 0 10px;
 }
 
 /**
@@ -4853,14 +4912,15 @@ textarea.os-campo {
   transform: rotate(180deg);
 }
 
+/* Cuelga del `body` y se ubica a mano: adentro la recortaban la celda, el marco
+   de la tabla y el panel, los tres con `overflow: hidden`, y en la última fila
+   no se veía ninguna opción. Por eso `fixed` y no `absolute`, y por eso el
+   z-index alto: acá compite con toda la página, no con su celda. */
 .os-desplegable-lista {
-  position: absolute;
-  z-index: 30;
-  top: calc(100% + 4px);
-  left: 0;
+  position: fixed;
+  z-index: 300;
   display: flex;
   flex-direction: column;
-  min-width: max(100%, 190px);
   max-height: 320px;
   overflow-y: auto;
   padding: 5px;

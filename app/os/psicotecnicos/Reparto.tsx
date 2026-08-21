@@ -29,6 +29,7 @@ import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
 import { fechaHora, haceCuanto } from '@/lib/hora';
 import Candidato from './Candidato';
 import type { PedidoOpcion } from './Agregar';
+import Bateria from './Bateria';
 
 /** Lo que cuenta como carga de trabajo abierta de una evaluadora. */
 const ABIERTAS = new Set(['Por citar', 'Por entrevistar', 'Por analizar']);
@@ -97,10 +98,16 @@ function Tarjeta({
         }
       }}
     >
-      <div className="os-tarjeta-cliente">{e.empresa}</div>
+      {/* La batería al lado de la empresa y no al final del renglón de abajo:
+          arriba se lee de un vistazo qué trabajo es, y colgada de "Cajera de
+          sucursal" quedaba escondida detrás del dato más largo de la tarjeta. */}
+      <div className="os-tarjeta-cliente os-tabla-empresa">
+        <span className="os-tabla-recorta">{e.empresa}</span>
+        <span className="os-tabla-punto">·</span>
+        <Bateria codigo={e.bateria} conBenziger={e.conBenziger} />
+      </div>
       <div className="os-tarjeta-concepto">
         {e.nombre} · {e.puesto}
-        {e.bateria ? ` · ${e.bateria}` : ''}
       </div>
       {/* Cuándo entró la solicitud y cuánto hace: la fecha ubica el caso en el
           mes y el "hace" dice sin contar si ya esperó demasiado. */}

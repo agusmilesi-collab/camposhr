@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import Desplegable from '@/app/os/Desplegable';
+import Bateria from './Bateria';
 import type { Evaluacion } from '@/lib/psicotecnicos';
 import { nivelDeConclusion } from '@/lib/informe-textos';
 import {
@@ -38,7 +39,8 @@ import {
  * acción según la etapa en la que está.
  */
 const COLUMNAS: Record<string, string[]> = {
-  'sin-asignar': ['Candidato', 'Pedido', 'Batería', 'Ingresó', 'Esperando', ''],
+  // Sin la columna Batería: va pegada a la empresa, en la celda del pedido.
+  'sin-asignar': ['Candidato', 'Pedido', 'Ingresó', 'Esperando', ''],
   // Entrevistas va en dos tablas, una por etapa: citar necesita el teléfono y
   // el estado del contacto; una entrevista ya agendada necesita saber qué se
   // administró. Juntas, las ocho columnas no entraban en la pantalla.
@@ -83,11 +85,16 @@ const COLUMNAS: Record<string, string[]> = {
  * citar", con ocho columnas, y da exactamente 1200.
  */
 const ANCHO: Record<string, number> = {
-  Candidato: 160,
+  Candidato: 154,
   Pedido: 190,
+  /* Lo que mide "B1 + bzg", que es el sello más largo. */
   Batería: 92,
   Teléfono: 158,
-  Contacto: 124,
+  /* Lo que mide el botón "Sin contactar", que es el estado de texto más largo.
+     Con 124 el botón no entraba: perdía su padding derecho y el texto quedaba
+     contra el borde, que es lo que se veía como descentrado. Los veinte píxeles
+     salieron de la columna de acciones y de Candidato, que sobraban. */
+  Contacto: 144,
   Entrevista: 174,
   Modalidad: 122,
   /* El botón que copia el enlace del test, con lugar para el aviso de que se
@@ -101,7 +108,8 @@ const ANCHO: Record<string, number> = {
   Evaluadora: 140,
   Ingresó: 118,
   Seguimiento: 150,
-  '': 180,
+  /* El botón más ancho ("Informe listo") con la flecha de volver al lado. */
+  '': 166,
 };
 
 /**
@@ -198,10 +206,30 @@ const ANTERIOR: Record<string, string> = {
  * el teléfono la celda es flexible y ahí, sin caja, empresa y puesto se
  * acomodan uno al lado del otro y el puesto se recorta.
  */
-function Busqueda({ e, conEvaluadora }: { e: Evaluacion; conEvaluadora: boolean }) {
+function Busqueda({
+  e,
+  conEvaluadora,
+  conBateria = false,
+}: {
+  e: Evaluacion;
+  conEvaluadora: boolean;
+  conBateria?: boolean;
+}) {
   return (
     <div className="os-tabla-pedido">
-      <div>{e.empresa}</div>
+      <div className="os-tabla-empresa">
+        <span className="os-tabla-recorta">{e.empresa}</span>
+        {/* Al lado de la empresa y no en columna propia: en Sin asignar la
+            batería se mira junto con el pedido, para saber qué se va a tomar,
+            y una columna entera para decir "B1" es ancho que le hace falta al
+            resto de la tabla. */}
+        {conBateria && (
+          <>
+            <span className="os-tabla-punto">·</span>
+            <Bateria codigo={e.bateria} conBenziger={e.conBenziger} />
+          </>
+        )}
+      </div>
       <div className="os-tabla-flojo">
         {e.puesto}
         {conEvaluadora && (e.evaluadora ? ` · ${e.evaluadora}` : ' · sin evaluadora')}
@@ -290,14 +318,13 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
               <Persona e={e} seccion={seccion} />
             </td>
             <td data-campo="Pedido">
-              <Busqueda e={e} conEvaluadora={false} />
+              <Busqueda e={e} conEvaluadora={false} conBateria={seccion === 'sin-asignar'} />
             </td>
           </>
         )}
 
         {seccion === 'sin-asignar' && (
           <>
-            <td data-campo="Batería">{e.bateria ?? <Falta texto="a definir" />}</td>
             <td data-campo="Ingresó">{fechaHora(e.fechaIngreso) ?? <Falta texto="sin fecha" />}</td>
             <td data-campo="Esperando" className="os-tabla-num">{enDias(e.diasEsperando)}</td>
             <td className="os-tabla-accion">
@@ -315,7 +342,9 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
 
         {seccion === 'entrevistas' && e.etapa === 'Por citar' && (
           <>
-            <td data-campo="Batería">{e.bateria ?? <Falta texto="a definir" />}</td>
+            <td data-campo="Batería">
+              <Bateria codigo={e.bateria} conBenziger={e.conBenziger} />
+            </td>
             <td data-campo="Teléfono" className="os-tabla-telefono">
               {e.telefono ? (
                 <a
@@ -406,7 +435,9 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
             <td data-campo="Candidato">
               <Persona e={e} seccion={seccion} />
             </td>
-            <td data-campo="Batería">{e.bateria ?? <Falta texto="a definir" />}</td>
+            <td data-campo="Batería">
+              <Bateria codigo={e.bateria} conBenziger={e.conBenziger} />
+            </td>
             <td data-campo="Teléfono" className="os-tabla-telefono">
               {e.telefono ? (
                 <a href={`tel:${soloDigitos(e.telefono)}`}>{e.telefono}</a>
@@ -432,7 +463,9 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
 
         {seccion === 'por-analizar' && (
           <>
-            <td data-campo="Batería">{e.bateria ?? <Falta texto="a definir" />}</td>
+            <td data-campo="Batería">
+              <Bateria codigo={e.bateria} conBenziger={e.conBenziger} />
+            </td>
             {/* Los días desde la entrevista: el reloj del análisis. En rojo
                 pasada la semana, que es cuando el informe se está demorando. */}
             <td data-campo="Espera" className={`os-tabla-num${(e.dias ?? 0) > 7 ? ' os-dato-falta' : ''}`}>
@@ -574,7 +607,17 @@ export default function TablaEtapa({
         <thead>
           <tr>
             {columnas.map((c, i) => (
-              <th key={c || `accion-${i}`} className={c === '' ? 'os-tabla-accion' : undefined}>
+              <th
+                key={c || `accion-${i}`}
+                className={
+                  c === ''
+                    ? 'os-tabla-accion'
+                    : // El rótulo lleva el mismo aire que su celda, o queda corrido.
+                      c === 'Contacto'
+                      ? 'os-tabla-contacto'
+                      : undefined
+                }
+              >
                 {c}
               </th>
             ))}

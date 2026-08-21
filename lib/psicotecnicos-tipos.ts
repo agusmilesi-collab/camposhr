@@ -126,6 +126,8 @@ export type Evaluacion = {
   /** A qué pedido entra. Solo lo traen las filas de Supabase. */
   pedidoId: string | null;
   bateria: string | null;
+  /** Si el pedido lleva Benziger, que no está en ninguna batería. */
+  conBenziger: boolean;
   email: string | null;
   telefono: string | null;
   evaluadora: string | null;

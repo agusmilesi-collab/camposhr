@@ -4,6 +4,7 @@ import { listarPedidos, type Pedido } from '@/lib/pedidos';
 import { quienSoy } from '@/lib/identidad';
 import { ABIERTO } from '@/lib/pedido-campos';
 import { fecha } from '@/lib/hora';
+import Bateria from '../psicotecnicos/Bateria';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,8 +44,7 @@ function Filas({ pedidos }: { pedidos: Pedido[] }) {
                 <div className="os-tabla-flojo">{p.empresa}</div>
               </td>
               <td>
-                {p.bateria ?? <span className="os-dato-falta">a definir</span>}
-                {p.conBenziger && <div className="os-tabla-flojo">con Benziger</div>}
+                <Bateria codigo={p.bateria} conBenziger={p.conBenziger} />
               </td>
               <td>{p.seniority ?? <span className="os-dato-falta">sin definir</span>}</td>
               <td>{fecha(p.fechaPedido) ?? <span className="os-dato-falta">sin fecha</span>}</td>
