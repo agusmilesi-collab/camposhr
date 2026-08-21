@@ -285,8 +285,6 @@ function Tests({ f, id }: { f: Ficha; id: string }) {
         </div>
         <div className="os-panel-cuerpo">
           <Administrados
-            proyectivo={c.proyectivo_administrado}
-            proyectivoNombre={proyectivoDe(f)}
             bender={c.bender_administrado}
             benderNotas={c.bender_observaciones}
             grafico={c.grafico_2_personas_administrado}
