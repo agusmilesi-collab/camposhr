@@ -17,15 +17,22 @@
  */
 
 export default function Administrados({
+  id,
   bender,
   benderNotas,
+  benderHoja,
   grafico,
   graficoNotas,
+  graficoDibujo,
 }: {
+  id: string;
   bender: boolean;
   benderNotas: string | null;
+  /** El nombre de lo que se subió, o null si todavía no hay nada que ver. */
+  benderHoja: string | null;
   grafico: boolean;
   graficoNotas: string | null;
+  graficoDibujo: string | null;
 }) {
   // En el orden en que se administran.
   const TESTS = [
@@ -33,8 +40,8 @@ export default function Administrados({
     { texto: 'Gráfico 2 personas', marca: 'grafico' as const },
   ];
   const valores = {
-    bender: { puesto: bender, notas: benderNotas },
-    grafico: { puesto: grafico, notas: graficoNotas },
+    bender: { puesto: bender, notas: benderNotas, archivo: benderHoja, ruta: 'bender' },
+    grafico: { puesto: grafico, notas: graficoNotas, archivo: graficoDibujo, ruta: 'grafico' },
   };
 
   return (
@@ -47,6 +54,21 @@ export default function Administrados({
             <span className={`os-sello-estado ${v.puesto ? 'os-verde' : 'os-gris'}`}>
               {v.puesto ? 'Tomado' : 'No se tomó'}
             </span>
+            {/* Lo que dibujó, al lado del estado: se mira mientras se escribe
+                el informe, que es lo que se hace en esta pestaña. */}
+            {v.archivo ? (
+              <a
+                className="os-boton"
+                href={`/api/os/${v.ruta}?id=${id}`}
+                target="_blank"
+                rel="noreferrer"
+                title={v.archivo}
+              >
+                Ver
+              </a>
+            ) : (
+              <span className="os-administrado-sin">—</span>
+            )}
             <span className={v.notas ? 'os-administrado-notas' : 'os-administrado-sin'}>
               {v.notas || 'Sin observaciones'}
             </span>
