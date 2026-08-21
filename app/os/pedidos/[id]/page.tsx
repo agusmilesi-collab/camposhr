@@ -189,7 +189,7 @@ export default async function FichaPedido({ params }: { params: { id: string } }
       </Bloque>
 
       <Bloque titulo="Cómo es el puesto" nota={sinContestar(DEL_PUESTO)}>
-        <div className="os-seguimiento os-pedido-suelto">
+        <div className="os-seguimiento os-pedido-suelto os-pedido-preguntas">
           {DEL_PUESTO.map((p) => (
             <Pregunta
               key={p.campo}
@@ -204,7 +204,7 @@ export default async function FichaPedido({ params }: { params: { id: string } }
       </Bloque>
 
       <Bloque titulo="Cómo es el jefe" nota={sinContestar(DEL_JEFE)}>
-        <div className="os-seguimiento os-pedido-suelto">
+        <div className="os-seguimiento os-pedido-suelto os-pedido-preguntas">
           {DEL_JEFE.map((p) => (
             <Pregunta
               key={p.campo}

@@ -21,6 +21,7 @@ import { nivelDeConclusion } from '@/lib/informe-textos';
 import {
   desdeInput,
   diaDeLaSemana,
+  diasDesde,
   enDias,
   fechaCorta,
   fechaHora,
@@ -65,7 +66,12 @@ const COLUMNAS: Record<string, string[]> = {
   ],
   'por-analizar': ['Candidato', 'Pedido', 'Batería', 'Espera', ''],
   entregados: ['Candidato', 'Pedido', 'Evaluadora', 'Entregado', 'Conclusión', 'Informe', ''],
-  seguimiento: ['Candidato', 'Pedido', 'Evaluadora', 'Entregado', 'Ingresó', 'Seguimiento', ''],
+  /**
+   * Seguimiento arranca por el pedido y no por el candidato: la pantalla va
+   * separada por empresa, y adentro de una empresa lo que agrupa es la búsqueda.
+   * La empresa no repite en cada fila porque es el título de su tabla.
+   */
+  seguimiento: ['Pedido', 'Candidato', 'Evaluadora', 'Entregado', 'Faltan', 'Cómo le fue', ''],
 };
 
 /**
@@ -108,6 +114,9 @@ const ANCHO: Record<string, number> = {
   Evaluadora: 140,
   Ingresó: 118,
   Seguimiento: 150,
+  /* Cuánto queda para los noventa días: "faltan 12 días", "venció hace 3". */
+  Faltan: 150,
+  'Cómo le fue': 150,
   /* El botón más ancho ("Informe listo") con la flecha de volver al lado. */
   '': 166,
 };
@@ -122,6 +131,11 @@ const ANCHO: Record<string, number> = {
  */
 const ANCHO_PAREJO: Record<string, number> = {
   entrevistas: 1200,
+  // Seguimiento son varias tablas apiladas, una por empresa: sin esto cada una
+  // mediría lo que pide su contenido y la pantalla se leería como una pila de
+  // listas sueltas. Con los mil doscientos, el sobrante se reparte y el puesto
+  // y la cuenta de días dejan de cortarse.
+  seguimiento: 1200,
 };
 
 /**
@@ -151,6 +165,36 @@ function anchos(columnas: string[], seccion: string): number[] {
 
 function soloDigitos(t: string): string {
   return t.replace(/[^0-9]/g, '');
+}
+
+/**
+ * Cuánto queda para los noventa días.
+ *
+ * El seguimiento se hace a los noventa días de que la persona entró a trabajar,
+ * así que la cuenta solo existe si entró: sin ingreso no hay reloj, y sin fecha
+ * de ingreso hay uno que nadie puso a andar. Vencido va en ámbar, que es cuando
+ * hay que salir a preguntar.
+ */
+function Cuenta({ al, ingreso }: { al: string | null; ingreso: boolean | null }) {
+  if (ingreso === false) return <span className="os-tabla-flojo">no ingresó</span>;
+  if (ingreso === null) return <Falta texto="sin saber" />;
+  if (!al) return <Falta texto="sin fecha" />;
+  const dias = diasDesde(al);
+  if (dias === null) return <Falta texto="sin fecha" />;
+  if (dias > 0) {
+    return (
+      <span className="os-sello-estado os-ambar">
+        {dias === 1 ? 'venció ayer' : `venció hace ${dias} días`}
+      </span>
+    );
+  }
+  if (dias === 0) return <span className="os-sello-estado os-ambar">es hoy</span>;
+  const faltan = Math.abs(dias);
+  return (
+    <span className="os-tabla-num" title={`Toca el ${fechaCorta(al)}`}>
+      {faltan === 1 ? 'falta 1 día' : `faltan ${faltan} días`}
+    </span>
+  );
 }
 
 function Falta({ texto = 'falta' }: { texto?: string }) {
@@ -305,14 +349,15 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
   ) : null;
   const columnas = COLUMNAS[`${seccion}:${e.etapa}`] ?? COLUMNAS[seccion] ?? COLUMNAS['sin-asignar'];
 
-  // Agendadas arma sus propias celdas, en su orden. Las demás secciones
-  // arrancan siempre por candidato y pedido.
+  // Agendadas y Seguimiento arman sus propias celdas, en su orden. Las demás
+  // secciones arrancan siempre por candidato y pedido.
   const agendada = seccion === 'entrevistas' && e.etapa === 'Por entrevistar';
+  const enSeguimiento = seccion === 'seguimiento';
 
   return (
     <>
       <tr>
-        {!agendada && (
+        {!agendada && !enSeguimiento && (
           <>
             <td data-campo="Candidato">
               <Persona e={e} seccion={seccion} />
@@ -485,23 +530,40 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
           </>
         )}
 
-        {seccion === 'seguimiento' && (
+        {enSeguimiento && (
           <>
+            {/* Solo el puesto: la empresa es el título de la tabla. */}
+            <td data-campo="Pedido">
+              <span className="os-tabla-recorta">{e.puesto}</span>
+            </td>
+            <td data-campo="Candidato">
+              <Persona e={e} seccion={seccion} />
+            </td>
             <td data-campo="Evaluadora">{e.evaluadora ?? <Falta texto="sin asignar" />}</td>
             <td data-campo="Entregado">{fechaCorta(e.fechaEntrega) ?? <Falta texto="sin fecha" />}</td>
-            {/* Si entró a trabajar. Es lo que después permite medir el acierto
-                de cada evaluación contra lo que pasó de verdad. */}
-            <td data-campo="Ingresó">
-              {e.ingreso === null ? (
-                <Falta texto="sin saber" />
-              ) : (
-                <span className={`os-sello-estado ${e.ingreso ? 'os-verde' : 'os-gris'}`}>
-                  {e.ingreso ? 'Sí' : 'No'}
-                </span>
-              )}
+            {/* Cuánto queda para los noventa días desde que entró a trabajar,
+                que es cuando toca preguntar cómo le fue. La fecha sola obligaba
+                a contar contra hoy en la cabeza. No hay columna de ingreso
+                porque acá solo están los que entraron. */}
+            <td data-campo="Faltan">
+              <Cuenta al={e.seguimientoAl} ingreso={e.ingreso} />
             </td>
-            <td data-campo="Seguimiento">
-              {fechaCorta(e.seguimientoAl) ?? <Falta texto="sin fecha" />}
+            {/* Lo que se anota en el momento, mientras se habla con la empresa:
+                es el final del circuito y lo único que dice si la evaluación
+                acertó. Vivía solo adentro de la ficha. */}
+            <td data-campo="Cómo le fue" className="os-tabla-modalidad">
+              <Desplegable
+                valor={e.seguimientoResultado ?? ''}
+                opciones={[
+                  { valor: '', texto: 'Sin preguntar' },
+                  { valor: 'Bien', texto: 'Bien', color: 'os-verde' },
+                  { valor: 'Regular', texto: 'Regular', color: 'os-ambar' },
+                  { valor: 'Mal', texto: 'Mal', color: 'os-rojo' },
+                ]}
+                alElegir={(v) => guardar('seguimientoResultado', v || null)}
+                deshabilitado={trabajando}
+                etiqueta="Cómo le fue en la empresa"
+              />
             </td>
             <td className="os-tabla-accion">{volver}</td>
           </>

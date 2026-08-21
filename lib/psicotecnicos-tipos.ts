@@ -145,6 +145,8 @@ export type Evaluacion = {
   ingreso: boolean | null;
   /** Cuándo toca preguntar cómo le fue: noventa días desde que entró. */
   seguimientoAl: string | null;
+  /** Cómo le fue en la empresa: Bien, Regular o Mal. Null es "sin preguntar". */
+  seguimientoResultado: string | null;
   tieneInforme: boolean;
   /** Si la persona tiene el CV guardado. Solo lo saben las filas de Supabase. */
   tieneCv: boolean;
