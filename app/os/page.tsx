@@ -6,7 +6,8 @@ import { panorama } from '@/lib/os';
 import { equipo, quienSoy } from '@/lib/identidad';
 import { pendientes } from '@/lib/pendientes';
 import { ABIERTOS, formatoFecha, formatoImporte } from '@/lib/cotizaciones';
-import { haceCuanto } from '@/lib/hora';
+import { diaDe, haceCuanto, hoy as diaDeHoy, soloHora } from '@/lib/hora';
+import { listarEvaluaciones } from '@/lib/psicotecnicos';
 import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
 
 export const dynamic = 'force-dynamic';
@@ -30,11 +31,12 @@ const COLOR_COTIZACION: Record<string, string> = {
 };
 
 export default async function Inicio() {
-  const [yo, miembros, { enCurso, cotizaciones }, lista] = await Promise.all([
+  const [yo, miembros, { enCurso, cotizaciones }, lista, evaluaciones] = await Promise.all([
     quienSoy(),
     equipo(),
     panorama(),
     pendientes(),
+    listarEvaluaciones(),
   ]);
 
   const abiertas = cotizaciones.filter((c) => ABIERTOS.includes(c.estado));
@@ -56,11 +58,54 @@ export default async function Inicio() {
       ? enCurso
       : enCurso.filter((p) => (yo.evaluadora ? (p.evaluadora ?? '').includes(yo.evaluadora) : false));
 
+  /**
+   * Las entrevistas de hoy, con la hora y el enlace a su hoja.
+   *
+   * Es lo primero que se mira al abrir el OS y era lo único que había que ir a
+   * buscar a otra pantalla. Aparece solo si hay alguna: un panel que casi
+   * siempre dice "ninguna" empuja hacia abajo lo que sí hay que hacer.
+   */
+  const dia = diaDeHoy();
+  const deHoy = evaluaciones.filas
+    .filter((e) => diaDe(e.fechaEntrevista) === dia)
+    .filter((e) =>
+      yo.alcance === 'todo' ? true : yo.evaluadora ? (e.evaluadora ?? '').includes(yo.evaluadora) : false
+    )
+    .sort((a, b) => (a.fechaEntrevista ?? '').localeCompare(b.fechaEntrevista ?? ''));
+
   return (
     <Shell titulo="Inicio" identidad={yo.nombre} cuentas={{ '/os/cotizaciones': abiertas.length }}>
       <div className="os-encabezado">
         <Saludo nombre={yo.nombre} />
       </div>
+
+      {deHoy.length > 0 && (
+        <section className="os-panel os-hoy">
+          <div className="os-panel-top">
+            <h2>Entrevistas de hoy</h2>
+            <Link href="/os/psicotecnicos/entrevistas" className="os-enlace">
+              Ver las entrevistas
+            </Link>
+          </div>
+          {deHoy.map((e) => (
+            <Link className="os-fila os-fila-enlace" key={e.id} href={`/os/psicotecnicos/entrevista/${e.id}`}>
+              <span className="os-hoy-hora">{soloHora(e.fechaEntrevista) ?? 'sin hora'}</span>
+              <div className="os-fila-cuerpo">
+                <div className="os-fila-titulo">{e.nombre}</div>
+                <div className="os-fila-detalle">
+                  {e.empresa} · {e.puesto}
+                  {yo.alcance === 'todo' && e.evaluadora ? ` · ${e.evaluadora}` : ''}
+                </div>
+              </div>
+              <div className="os-fila-lado">
+                <span className={`os-sello-estado ${COLOR_ETAPA[e.etapa] ?? 'os-gris'}`}>
+                  {e.modalidad ?? e.etapa}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </section>
+      )}
 
       <div className="os-tablero">
         <Pendientes
