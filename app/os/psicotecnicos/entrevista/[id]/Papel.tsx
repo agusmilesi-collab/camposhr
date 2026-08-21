@@ -27,6 +27,7 @@ export default function Papel({
   administrado,
   observaciones,
   children,
+  debajo,
 }: {
   id: string;
   /** El nombre del campo de administrado, como lo espera la API. */
@@ -37,6 +38,9 @@ export default function Papel({
   observaciones?: string | null;
   /** Lo que se agrega a la derecha del sí/no, si el test tiene algo más. */
   children?: React.ReactNode;
+  /** Lo que va en su propio renglón, debajo de las observaciones: lo que la
+      persona dejó dibujado, que se mira y se reemplaza aparte de tomarlo. */
+  debajo?: React.ReactNode;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -140,6 +144,8 @@ export default function Papel({
           {error && <span className="os-form-error">{error}</span>}
         </div>
       )}
+
+      {debajo && <div className="os-papel-dibujos">{debajo}</div>}
     </>
   );
 }

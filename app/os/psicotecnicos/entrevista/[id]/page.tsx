@@ -290,6 +290,7 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                 campoNotas="benderObservaciones"
                 administrado={e.benderAdministrado}
                 observaciones={e.benderObservaciones}
+                debajo={<HojaBender id={e.id} hoja={e.benderHoja} />}
               >
                 <a
                   className="os-boton os-boton-firme"
@@ -300,7 +301,6 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                   Abrir las láminas
                 </a>
                 <LinkLaminas href="/os/laminas/bender" />
-                <HojaBender id={e.id} hoja={e.benderHoja} />
               </Papel>
             </Tarjeta>
           );
@@ -315,9 +315,8 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                 campoNotas="graficoObservaciones"
                 administrado={e.graficoAdministrado}
                 observaciones={e.graficoObservaciones}
-              >
-                <Grafico id={e.id} nombre={e.graficoNombre} />
-              </Papel>
+                debajo={<Grafico id={e.id} nombre={e.graficoNombre} />}
+              />
             </Tarjeta>
           );
         }
