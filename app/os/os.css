@@ -2846,7 +2846,12 @@ textarea.os-campo {
   font-size: 0.82rem;
 }
 
-/* El estado y el cambio de archivo, debajo: son sobre lo ya cargado. */
+.os-panel-top .os-sello-estado {
+  margin-left: auto;
+  align-self: center;
+}
+
+/* El cambio de archivo, debajo: es sobre lo que ya está cargado. */
 .os-benziger-acciones {
   display: flex;
   align-items: center;
