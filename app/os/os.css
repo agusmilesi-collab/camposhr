@@ -2814,7 +2814,9 @@ textarea.os-campo {
    acción, que son de la carga y no del archivo. */
 .os-benziger-carga {
   display: flex;
-  align-items: center;
+  /* Al pie, para que el borde de abajo del botón caiga sobre el mismo
+     renglón que el de la caja aunque el estado se apile encima. */
+  align-items: flex-end;
   gap: 12px;
 }
 

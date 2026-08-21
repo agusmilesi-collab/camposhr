@@ -158,15 +158,16 @@ export default function Benziger({
             </button>
           )}
 
-          <p className="os-benziger-aviso">
-            {error ? (
-              <span className="os-form-error">{error}</span>
-            ) : hecho ? (
-              <span className="os-form-ok">{hecho}</span>
-            ) : (
-              'Al calcular se leen sus números y se arma la hoja de abajo.'
-            )}
-          </p>
+          {/* El aviso aparece solo cuando hay algo que avisar. */}
+          {(error || hecho) && (
+            <p className="os-benziger-aviso">
+              {error ? (
+                <span className="os-form-error">{error}</span>
+              ) : (
+                <span className="os-form-ok">{hecho}</span>
+              )}
+            </p>
+          )}
         </div>
       </section>
 
