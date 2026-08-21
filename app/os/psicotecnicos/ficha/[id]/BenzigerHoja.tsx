@@ -245,9 +245,13 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
         <section className="os-hoja-bloque">
           <h3 className="os-hoja-titulo">Autoimagen</h3>
           <div className="os-hoja-campos">
-            <div className="os-hoja-par os-hoja-par-ancho">
-              <span className="os-hoja-rotulo">Imagen</span>
-              <span className="os-hoja-valor">{l.autoimagen.imagen ?? '—'}</span>
+            <div className="os-hoja-par">
+              <span className="os-hoja-rotulo">Imagen M</span>
+              <span className="os-hoja-valor">{l.autoimagen.imagenM ?? '—'}</span>
+            </div>
+            <div className="os-hoja-par">
+              <span className="os-hoja-rotulo">Imagen N</span>
+              <span className="os-hoja-valor">{l.autoimagen.imagenN ?? '—'}</span>
             </div>
           </div>
           {l.autoimagen.adjetivo && (

@@ -50,7 +50,7 @@ export type Lectura = {
   cruces: Cruz[];
   tiempoLibre: { cuenta: boolean; respuesta: string | null };
   alerta: { adulto: number | null; joven: number | null; estiloAdulto: Estilo | null; estiloJoven: Estilo | null };
-  autoimagen: { imagen: string | null; adjetivo: string | null };
+  autoimagen: { imagenM: string | null; imagenN: string | null; adjetivo: string | null };
   emocional: {
     /** Los tres recuentos de un período, o del total. */
     total: Conteo;
@@ -105,7 +105,9 @@ export function leerBenziger(
       estiloJoven: estiloDeAlerta(alertaJoven),
     },
     autoimagen: {
-      imagen: texto(adjetivos, 'imagen_elegida'),
+      // Cada casilla cae en un cuadrante, y son dos: no hay una elegida.
+      imagenM: texto(adjetivos, 'imagen_m'),
+      imagenN: texto(adjetivos, 'imagen_n'),
       adjetivo: texto(adjetivos, 'adjetivo_elegido'),
     },
     emocional: {

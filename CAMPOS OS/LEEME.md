@@ -165,11 +165,15 @@ desarrollo empezó a devolver 500 sin que hubiera un error de código.
     su detalle, y con los códigos especiales. X−%, Xu%, el Aislamiento y el
     índice de egocentrismo muestran la cuenta completa, del tipo `1 / 20 = 0.05`.
   - **Benziger.** Se sube el informe en PDF y al calcular se lee solo: el
-    parseo es determinístico, por posiciones, sin modelo. De ahí sale la hoja
-    con el perfil, las cruces con su lectura de diagonal, la escala de alerta,
-    el estado emocional, la autoimagen, lo que la persona escribió y los
-    acontecimientos del último año. El cuadrante preferente lo elige la
-    evaluadora en una cruz de cuatro botones.
+    parseo es determinístico, por posiciones, sin modelo. De ahí salen sus 69
+    datos y con ellos la hoja con el perfil, las cruces con su lectura de
+    diagonal, la escala de alerta, el estado emocional, la autoimagen, lo que
+    la persona escribió y los acontecimientos del último año. El cuadrante
+    preferente lo elige la evaluadora en una cruz de cuatro botones.
+    El archivo no se guarda: se leen sus datos y queda el nombre. El original
+    está en la plataforma Benziger, y si hace falta releerlo se baja de ahí y se
+    vuelve a subir. Una lectura incompleta o con las cuentas que no cierran se
+    rechaza en el momento, con el detalle de qué no se encontró.
   - **Tests.** Bender y Gráfico 2 personas se muestran acá tal como quedaron en
     la entrevista, sin poder editarse: si se tomaron, lo que la evaluadora
     anotó, y el dibujo para abrirlo. Una observación de administración se
@@ -286,7 +290,9 @@ sumario de Rorschach y Zulliger; `lib/benziger-pdf.ts` lee el informe y
 `lib/benziger-lectura.ts` lo interpreta; `lib/raven.ts` tiene el baremo. Lo que
 sale del informe Benziger se guarda tal como viene y no se recalcula: el PDF ya
 trae los totales, y rehacerlos sería una segunda fuente que puede no coincidir
-con la licencia.
+con la licencia. Esos totales sí se usan para controlar la lectura: el informe
+trae tres cuentas hechas que tienen que cerrar, y si no cierran el archivo se
+leyó mal.
 
 **Lo que sigue.**
 
