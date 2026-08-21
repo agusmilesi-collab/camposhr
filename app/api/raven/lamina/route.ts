@@ -48,7 +48,9 @@ export async function GET(req: Request) {
         : null;
   if (!archivo) return new NextResponse('No existe esa parte.', { status: 404 });
 
-  const entra = token ? Boolean(await sesionPorToken(token)) : await conSesionDelOs();
+  const entra = token
+    ? Boolean(await sesionPorToken(token))
+    : await conSesionDelOs(req);
   if (!entra) return new NextResponse('Sin sesión.', { status: 401 });
 
   const base = process.env.SUPABASE_URL;
@@ -85,10 +87,18 @@ export async function GET(req: Request) {
   return new NextResponse(svg, { headers: cabeceras });
 }
 
-/** Si quien pide es alguien del equipo, con el OS abierto. */
-async function conSesionDelOs(): Promise<boolean> {
-  if (!hayPuerta()) return true;
+/**
+ * Si quien pide es alguien del equipo.
+ *
+ * Con la puerta puesta, su cookie. Sin puerta, que venga del subdominio del OS,
+ * que ya es interno: sin esta segunda condición, un pedido sin token desde el
+ * sitio público bajaba las láminas, que es material con derechos.
+ */
+async function conSesionDelOs(req: Request): Promise<boolean> {
+  const host = (req.headers.get('host') ?? '').toLowerCase();
+  const interno = host.startsWith('os.') || host.startsWith('localhost') || host.startsWith('127.0.0.1');
+  if (!hayPuerta()) return interno;
   const clave = process.env.OS_CLAVE as string;
   const cookie = cookies().get(COOKIE)?.value;
-  return Boolean(cookie) && igual(cookie as string, await huella(clave));
+  return interno && Boolean(cookie) && igual(cookie as string, await huella(clave));
 }
