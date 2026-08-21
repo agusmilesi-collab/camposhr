@@ -142,6 +142,27 @@ export default function Test({
     setArrancado(true);
   }
 
+  /**
+   * Las láminas vecinas, pedidas mientras se piensa la actual.
+   *
+   * Son nueve archivos por lámina: sin esto, al pasar aparecían de a una y se
+   * veía el barrido. Se trae la siguiente y la anterior, que es por donde se
+   * mueve alguien resolviendo, y ya quedan guardadas en el navegador.
+   */
+  useEffect(() => {
+    const partes = ['matriz', '1', '2', '3', '4', '5', '6', '7', '8'];
+    const vecinas = [lamina + 1, lamina - 1].filter((n) => n >= 1 && n <= RAVEN_MAXIMO);
+    const pedidas: HTMLImageElement[] = [];
+    for (const n of vecinas) {
+      for (const parte of partes) {
+        const img = new Image();
+        img.src = `/api/raven/lamina?token=${token}&n=${n}&parte=${parte}`;
+        pedidas.push(img);
+      }
+    }
+    return () => pedidas.forEach((i) => (i.src = ''));
+  }, [lamina, token]);
+
   async function responder(opcion: number) {
     // Tocar la que ya estaba elegida la borra.
     const elegida = respuestas[String(lamina)] === opcion ? null : opcion;
@@ -281,15 +302,6 @@ export default function Test({
           </button>
         ))}
       </div>
-
-      {/* La siguiente se pide mientras se piensa esta: son nueve archivos por
-          lámina y el hueco en blanco al pasar se nota. */}
-      {lamina < RAVEN_MAXIMO && (
-        <div className="rv-oculta" aria-hidden>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/api/raven/lamina?token=${token}&n=${lamina + 1}&parte=matriz`} alt="" />
-        </div>
-      )}
 
       <nav className="rv-pasos">
         <button
