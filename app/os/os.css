@@ -2810,15 +2810,41 @@ textarea.os-campo {
 }
 
 /* El informe que está puesto: su nombre, con qué hacer al lado. */
+/* Tres cuartos para el nombre y el cuarto restante para el estado y la
+   acción, que son de la carga y no del archivo. */
+.os-benziger-carga {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .os-benziger-archivo {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 11px;
+  flex: 3;
+  min-width: 0;
+  padding: 9px 12px;
   border: 1px solid var(--os-linea);
   border-radius: 9px;
   background: var(--os-panel-2);
   font-size: 0.82rem;
+}
+
+.os-benziger-acciones {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px 10px;
+}
+
+.os-benziger-acciones .os-boton {
+  height: 28px;
+  padding: 0 11px;
+  font-size: 0.78rem;
 }
 
 .os-benziger-nombre {
@@ -2832,12 +2858,6 @@ textarea.os-campo {
 }
 
 /* El archivo elegido y todavía no subido: se dice, no se supone. */
-.os-benziger-pendiente {
-  color: var(--os-ambar);
-  font-size: 0.74rem;
-  white-space: nowrap;
-}
-
 .os-benziger-archivo a {
   color: var(--os-tinta-media);
   font-size: 0.79rem;
