@@ -4,7 +4,7 @@ import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { enlaceDelInforme, guardarBenziger } from '@/lib/benziger-datos';
-import { extraerBenziger } from '@/lib/benziger-pdf';
+import { extraerBenziger, faltantesDe, descuadresDe } from '@/lib/benziger-pdf';
 import { PERFILES } from '@/lib/perfiles';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
@@ -52,16 +52,36 @@ export async function POST(req: Request) {
   try {
     // El informe se lee al subirlo: es un formulario fijo y se puede leer con
     // reglas, así que no hace falta que nadie transcriba nada a mano.
+    // Lo que se lee es todo lo que queda: el archivo no se guarda. Por eso una
+    // lectura incompleta se rechaza en vez de entrar a medias, que es lo que
+    // pasaba antes, cuando el lector seguía de largo si no encontraba un
+    // rótulo y el problema recién aparecía en el informe terminado.
     let leido = null;
-    let avisoLectura: string | null = null;
     if (pdf) {
       try {
         leido = await extraerBenziger(new Uint8Array(await pdf.arrayBuffer()));
       } catch (e) {
         console.error('benziger: no se pudo leer el PDF', e);
-        // El archivo se guarda igual: perder el adjunto por un problema de
-        // lectura sería peor que quedarse sin los números.
-        avisoLectura = 'El informe se guardó pero no se pudo leer.';
+        return NextResponse.json(
+          { ok: false, motivo: 'No se pudo leer el informe, así que no se cargó nada.' },
+          { status: 400 }
+        );
+      }
+
+      const faltan = faltantesDe(leido);
+      const descuadres = descuadresDe(leido);
+      if (faltan.length || descuadres.length) {
+        console.error('benziger: lectura incompleta', { faltan, descuadres });
+        const detalle = faltan.length
+          ? `No se encontraron ${faltan.length} datos (${faltan.slice(0, 6).join(', ')}${faltan.length > 6 ? '…' : ''}).`
+          : `Las cuentas del informe no cierran: ${descuadres.join('; ')}.`;
+        return NextResponse.json(
+          {
+            ok: false,
+            motivo: `El informe se leyó mal y no se cargó. ${detalle} Probá con el PDF original de la plataforma Benziger.`,
+          },
+          { status: 400 }
+        );
       }
     }
 
@@ -78,7 +98,7 @@ export async function POST(req: Request) {
     });
 
     revalidateTag(CACHE_PSICOTECNICOS);
-    return NextResponse.json({ ok: true, leido: Boolean(leido), aviso: avisoLectura });
+    return NextResponse.json({ ok: true, leido: Boolean(leido) });
   } catch (e) {
     console.error('benziger:', e);
     return NextResponse.json({ ok: false, motivo: 'No se pudo cargar.' }, { status: 500 });

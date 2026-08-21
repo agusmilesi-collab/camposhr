@@ -134,6 +134,27 @@ le pida lo contrario, y acá el fondo es el dato: la barra de cada competencia y
 el nivel de ajuste elegido. Los elementos que lo necesitan llevan
 `print-color-adjust: exact`.
 
+## El informe del Benziger se lee y no se guarda
+
+El PDF que devuelve la licencia entra, se le sacan sus 69 datos y el archivo no
+se sube a ningún lado: de él quedan el nombre y la fecha. El original vive en la
+plataforma Benziger, así que guardarlo acá no agregaba respaldo y sí sumaba una
+copia del perfil completo de una persona identificable. Si algún día hay que
+volver a leerlo, se baja de la plataforma y se sube de nuevo por el mismo botón.
+
+**Por eso una lectura incompleta se rechaza.** Antes el lector seguía de largo
+cuando no encontraba un rótulo y la fila entraba con campos vacíos: el problema
+recién aparecía en el informe terminado. Ahora `faltantesDe` exige los datos que
+tienen que estar y `descuadresDe` comprueba las tres cuentas que el informe trae
+hechas (los tres bloques del adulto dan el total del adulto, las cuatro filas de
+estado emocional dan su TOT, y los puntos de estrés de la página 3 son la suma
+de los acontecimientos de la página 5). Un campo vacío se ve; un número
+equivocado no, y ese cruce es lo único que lo delata.
+
+Al tocar el lector hay que correrlo contra los informes de prueba antes de
+subir: doce informes reales pasan sin faltantes ni descuadres, con perfiles
+preferentes FI, BI y BD.
+
 ## Una etapa sin pantalla es una evaluación perdida
 
 `ETAPAS` y `SECCIONES` tienen que cubrir lo mismo. "Seguimiento" existió como

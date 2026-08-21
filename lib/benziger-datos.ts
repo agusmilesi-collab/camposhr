@@ -24,27 +24,19 @@ function config(): { url: string; key: string } {
 }
 
 /**
- * Sube el informe y devuelve su ruta.
+ * Borra el informe que hubiera quedado de antes.
  *
- * Se pisa el anterior a propósito: hay un solo informe Benziger por
- * evaluación, y dejar los dos obliga a decidir después cuál era el bueno.
+ * El PDF ya no se guarda, pero las evaluaciones cargadas hasta el 21/8/2026
+ * tienen el suyo en el bucket. Al volver a cargar una de esas, el archivo se
+ * va: la fila queda con los datos leídos y sin adjunto, igual que las nuevas.
  */
-async function subirPdf(evaluacionId: string, pdf: File): Promise<string> {
+async function borrarPdf(ruta: string): Promise<void> {
   const { url, key } = config();
-  const ruta = `benziger/${evaluacionId}.pdf`;
-  const res = await fetch(`${url}/storage/v1/object/${BUCKET}/${ruta}`, {
-    method: 'POST',
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      'Content-Type': pdf.type || 'application/pdf',
-      'x-upsert': 'true',
-    },
-    body: new Uint8Array(await pdf.arrayBuffer()),
+  await fetch(`${url}/storage/v1/object/${BUCKET}/${ruta}`, {
+    method: 'DELETE',
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
     cache: 'no-store',
-  });
-  if (!res.ok) throw new Error(`No se pudo subir el PDF: ${res.status} ${await res.text()}`);
-  return ruta;
+  }).catch(() => {});
 }
 
 export type BenzigerCarga = {
@@ -72,11 +64,18 @@ export async function guardarBenziger(
     actualizado_at: new Date().toISOString(),
   };
   if (c.pdf) {
-    fila.pdf_path = await subirPdf(evaluacionId, c.pdf);
-    // El archivo se guarda con el identificador de la evaluación, que sirve
-    // para encontrarlo y no para reconocerlo: el nombre original es lo que
-    // deja ver si el que está cargado es el que corresponde.
+    // El PDF no se guarda. Ya se le sacaron los 69 datos que trae, y el
+    // original queda en la plataforma Benziger, que es de donde salió: tenerlo
+    // acá además no agrega nada y suma una copia del perfil completo de una
+    // persona identificable. Del archivo queda el nombre y la fecha, para que
+    // la ficha muestre cuál fue el informe que se leyó.
+    fila.pdf_path = null;
     fila.pdf_nombre = c.pdf.name;
+    const previas = await select<{ pdf_path: string | null }>(
+      'benziger',
+      `select=pdf_path&evaluacion_id=eq.${evaluacionId}&limit=1`
+    );
+    if (previas[0]?.pdf_path) await borrarPdf(previas[0].pdf_path);
   }
   if (c.leido) {
     fila.cuadrantes = c.leido.cuadrantes;

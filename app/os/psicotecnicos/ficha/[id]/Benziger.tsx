@@ -33,11 +33,14 @@ export default function Benziger({
   id,
   cuadrantes,
   informe,
+  guardado = false,
 }: {
   id: string;
   cuadrantes: string[];
   /** El nombre del informe ya cargado, o null si todavía no hay ninguno. */
   informe: string | null;
+  /** Si además del nombre quedó el archivo, que es el caso de los viejos. */
+  guardado?: boolean;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -129,10 +132,12 @@ export default function Benziger({
               </span>
               {archivo ? (
                 <span className="os-benziger-pendiente">sin cargar</span>
-              ) : (
+              ) : guardado ? (
                 <a href={`/api/os/benziger?id=${id}`} target="_blank" rel="noreferrer">
                   Ver
                 </a>
+              ) : (
+                <span className="os-benziger-pendiente">leído</span>
               )}
               <button
                 type="button"
