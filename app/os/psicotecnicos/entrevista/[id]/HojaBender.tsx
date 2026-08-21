@@ -75,9 +75,11 @@ export default function HojaBender({ id, hoja }: { id: string; hoja: string | nu
           if (xs.length) subir(xs);
         }}
       />
+      {/* Debajo de los botones de la lámina: arriba lo que se le muestra a la
+          persona, abajo lo que dejó dibujado. */}
       {hoja ? (
         <a
-          className="os-enlace-suave"
+          className="os-boton os-bender-ver"
           href={`/api/os/bender?id=${id}`}
           target="_blank"
           rel="noreferrer"
@@ -86,10 +88,10 @@ export default function HojaBender({ id, hoja }: { id: string; hoja: string | nu
           Ver lo que dibujó
         </a>
       ) : (
-        <span className="os-enlace-apagado">Sin dibujos</span>
+        <span className="os-enlace-apagado os-bender-ver">Sin dibujos</span>
       )}
       <button
-        className={`os-boton${hoja ? '' : ' os-boton-firme'}`}
+        className={`os-boton os-bender-subir${hoja ? '' : ' os-boton-firme'}`}
         type="button"
         disabled={Boolean(trabajando)}
         onClick={() => campo.current?.click()}
