@@ -1,5 +1,6 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
+import { siEstaTodoTomado } from '@/lib/entrevista-completa';
 
 /**
  * El dibujo de dos personas, guardado.
@@ -70,6 +71,9 @@ export async function guardarGrafico(
     cache: 'no-store',
   });
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
+
+  // Si con esto quedó tomado todo lo de su batería, la evaluación avanza sola.
+  await siEstaTodoTomado(evaluacionId);
   return { ok: true };
 }
 
@@ -151,6 +155,9 @@ export async function guardarBender(
     cache: 'no-store',
   });
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
+
+  // Si con esto quedó tomado todo lo de su batería, la evaluación avanza sola.
+  await siEstaTodoTomado(evaluacionId);
   return { ok: true };
 }
 

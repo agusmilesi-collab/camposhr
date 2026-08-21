@@ -15,6 +15,7 @@ import { select } from '@/lib/supabase';
 import { diasDesde } from '@/lib/hora';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { yaEntregada, type Evaluacion } from '@/lib/psicotecnicos-tipos';
+import { siEstaTodoTomado } from '@/lib/entrevista-completa';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -43,6 +44,7 @@ const COLUMNA: Record<string, string> = {
   benderAdministrado: 'bender_administrado',
   graficoAdministrado: 'grafico_2_personas_administrado',
   proyectivoAdministrado: 'proyectivo_administrado',
+  benzigerAdministrado: 'benziger_administrado',
   benderObservaciones: 'bender_observaciones',
   graficoObservaciones: 'grafico_2_personas_observaciones',
   recomendacion: 'recomendacion',
@@ -209,5 +211,9 @@ export async function guardarCampos(
   if (!res.ok) {
     return { ok: false, motivo: `Supabase respondió ${res.status}: ${await res.text()}` };
   }
+
+  // Marcar el último test como administrado cierra la entrevista sola. No pasa
+  // si el cambio fue de etapa: mover a mano ya dice a dónde va.
+  if (!('estado' in fila)) await siEstaTodoTomado(id);
   return { ok: true };
 }

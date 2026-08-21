@@ -204,6 +204,24 @@ Al tocar el lector hay que correrlo contra los informes de prueba antes de
 subir: doce informes reales pasan sin faltantes ni descuadres, con perfiles
 preferentes FI, BI y BD.
 
+## La entrevista se cierra sola cuando ya se tomó todo
+
+`lib/entrevista-completa.ts` mira, después de cada cambio, si quedan tests de la
+batería sin administrar. Si no queda ninguno, la evaluación pasa de Por
+entrevistar a Por analizar. El botón "Entrevista tomada" sigue estando para
+cerrarla antes; lo que deja de pasar es que olvidarse lo deje todo en el limbo.
+
+**Solo cuentan los tests que dejan marca.** La entrevista por competencias y el
+análisis discursivo no la dejan, así que exigirlos sería exigir algo que nadie
+puede tildar. El Benziger sí cuenta, y no está en la batería: lo agrega el
+pedido cuando lo lleva (`pedidos.con_benziger`), y su marca vive en la
+evaluación como la del Bender.
+
+**El chequeo nunca tumba lo que se estaba guardando.** Va detrás de un try, y si
+falla se registra y se sigue: es un paso de más, y que rompa no puede hacer
+perder la marca que la evaluadora acaba de poner. Ya pasó una vez, con la
+relación del Raven leída como lista cuando PostgREST la devuelve como objeto.
+
 ## Una etapa sin pantalla es una evaluación perdida
 
 `ETAPAS` y `SECCIONES` tienen que cubrir lo mismo. "Seguimiento" existió como

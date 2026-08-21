@@ -12,6 +12,7 @@
 
 import 'server-only';
 import { select } from '@/lib/supabase';
+import { siEstaTodoTomado } from '@/lib/entrevista-completa';
 
 const BUCKET = 'psicotecnicos';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -84,6 +85,23 @@ export async function guardarBenziger(
     fila.estres = c.leido.estres;
   }
 
+  // Cargar el informe es haberlo tomado: la marca vive en la evaluación porque
+  // el Benziger no está en la batería, lo agrega el pedido cuando lo lleva.
+  if (c.leido) {
+    const { url: u, key: k } = config();
+    await fetch(`${u}/rest/v1/evaluaciones?id=eq.${evaluacionId}`, {
+      method: 'PATCH',
+      headers: {
+        apikey: k,
+        Authorization: `Bearer ${k}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ benziger_administrado: true }),
+      cache: 'no-store',
+    });
+  }
+
   const { url, key } = config();
   const res = await fetch(`${url}/rest/v1/benziger`, {
     method: 'POST',
@@ -100,5 +118,6 @@ export async function guardarBenziger(
   if (!res.ok) {
     return { ok: false, motivo: `Supabase respondió ${res.status}: ${await res.text()}` };
   }
+  await siEstaTodoTomado(evaluacionId);
   return { ok: true, conInforme: Boolean(c.pdf) };
 }
