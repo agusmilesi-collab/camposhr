@@ -101,6 +101,12 @@ export default function Benziger({
       <section className="os-panel">
         <div className="os-panel-top">
           <h2>El informe</h2>
+          {/* El estado va con el título: es de todo el informe, no del paso. */}
+          {(archivo || informe) && (
+            <span className={`os-sello-estado ${archivo ? 'os-ambar' : 'os-verde'}`}>
+              {archivo ? 'Sin calcular' : 'Leído'}
+            </span>
+          )}
         </div>
         <div className="os-panel-cuerpo">
           <input
@@ -134,9 +140,6 @@ export default function Benziger({
                 </button>
               </div>
               <div className="os-benziger-acciones">
-                <span className={`os-sello-estado ${archivo ? 'os-ambar' : 'os-verde'}`}>
-                  {archivo ? 'Sin calcular' : 'Leído'}
-                </span>
                 <button
                   type="button"
                   className="os-boton"
