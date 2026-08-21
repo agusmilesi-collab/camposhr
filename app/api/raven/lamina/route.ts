@@ -20,6 +20,12 @@ export const dynamic = 'force-dynamic';
  *
  * La otra puerta es la sesión del OS, para la vista de prueba: el equipo mira
  * el test como lo ve el candidato sin que exista ninguna sesión de Raven.
+ *
+ * Son recortes del escaneo y no dibujos. Vectorizarlas se probó y se descartó:
+ * el trazo copia también los defectos del papel, y el escaneo es de 124 DPI, o
+ * sea que el óvalo de una opción mide 51 píxeles y su contorno cuatro. Con ese
+ * material, la copia más exacta es el recorte. Para verlas más nítidas hay que
+ * volver a escanear, no redibujar.
  */
 
 const BUCKET = 'psicotecnicos';
@@ -49,7 +55,7 @@ export async function GET(req: Request) {
   const key = process.env.SUPABASE_SERVICE_KEY;
   if (!base || !key) return new NextResponse('Sin configuración.', { status: 500 });
 
-  const ruta = `laminas/raven/${String(n).padStart(2, '0')}-${archivo}.svg`;
+  const ruta = `laminas/raven/${String(n).padStart(2, '0')}-${archivo}.png`;
   const res = await fetch(`${base}/storage/v1/object/${BUCKET}/${ruta}`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
     cache: 'no-store',
@@ -61,7 +67,7 @@ export async function GET(req: Request) {
 
   const svg = await res.arrayBuffer();
   const cabeceras: Record<string, string> = {
-    'Content-Type': 'image/svg+xml',
+    'Content-Type': 'image/png',
     // Se va a volver a ella: durante el test se navega adelante y atrás todo el
     // tiempo. Con ETag el navegador pregunta antes de usar lo que guardó.
     'Cache-Control': 'private, no-cache',

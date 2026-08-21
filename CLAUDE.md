@@ -155,68 +155,24 @@ se leerían como error de quien copia. El programa que las genera está al lado 
 ellas, en `laminas/bender/generar.py` del mismo bucket, y no en el repositorio:
 en código, las figuras se leen igual que en la imagen.
 
-**Las del Raven se trazaron, no se redibujaron.** Están en el bucket, partidas
-en la matriz y las ocho opciones: `laminas/raven/<nn>-matriz.svg` y
-`<nn>-opcion-<k>.svg`. Las sirve `/api/raven/lamina`, que abre con el token de
-quien rinde o con la sesión del OS, para la vista de prueba.
+**Las del Raven son recortes del escaneo, no dibujos.** Están en el bucket,
+partidas en la matriz y las ocho opciones: `laminas/raven/<nn>-matriz.png` y
+`<nn>-opcion-<k>.png`. Los recuadros se detectan solos (`recortar.py`, al lado
+de ellas). Las sirve `/api/raven/lamina`, que abre con el token de quien rinde o
+con la sesión del OS, para la vista de prueba.
 
-Los contornos salen del propio escaneo con marching squares
-(`laminas/raven/vectorizar.py` en el mismo bucket), así que la geometría es la
-del original: nadie interpreta nada. **Un detalle mal en una lámina del Raven
-cambia cuál es la respuesta correcta**, y ese puntaje termina en un informe
-sobre una persona.
+**Vectorizarlas se probó dos veces y se descartó.** Trazar el contorno copia
+también los defectos del papel: el óvalo sale mordido y los guiones desparejos.
+Alisar el trazo mejora el escalón pero no eso. Y redibujarlas midiendo cada
+elemento tampoco cierra: las líneas punteadas pasan por debajo de las figuras,
+así que el reconocedor las lee partidas, y cada caso que se arregla destapa otro
+en un vocabulario que cambia en las treinta y seis.
 
-**El contorno se alisa después de trazarlo, nunca antes.** El trazo sigue el
-borde del bitmap, o sea que copia el escalón de cada píxel y en pantalla se ve
-dentado. Promediar cada punto con sus vecinos lo endereza sin mover la forma.
-Desenfocar la imagen antes de trazar parece lo mismo y no lo es: cambia lo que
-se traza, y pasado 1 de sigma empieza a comerse las rayas finas.
-
-**Cómo se comprueba cada pieza.** Se rellena lo trazado y se mide el GROSOR de
-lo que difiere. Contar píxeles distintos castiga a la figura con más detalle,
-porque más perímetro es más borde; medir la distancia al borde tampoco sirve,
-porque alisar lo corre un píxel a propósito. Lo que separa un borde corrido de
-una figura cambiada es el cuerpo: una tira de uno o dos píxeles es el alisado,
-un bloque más grueso es otra forma. En las 324 piezas el grosor máximo es de
-2,83 px. El resultado está al lado, en `verificacion.json`.
-
-Al tocar el trazado hay que volver a correrlo entero y mirar ese informe.
-
-## El informe lo arma un solo molde, y lo interno va apagado
-
-`app/os/psicotecnicos/informe/_doc/Documento.tsx` dibuja el informe en los tres
-lugares donde aparece: la pestaña de la ficha, su página aparte y el portal del
-cliente. Un solo molde, para que lo que la evaluadora revisa sea exactamente lo
-que el cliente lee.
-
-**Lo que solo mira el equipo va detrás de `interno` y apagado por defecto**: qué
-falta cargar y de dónde sale cada porcentaje. La primera versión lo mostraba
-siempre, y el portal le decía al cliente "falta el sumario, en la pestaña de
-codificación". Con el valor por defecto en falso, una pantalla nueva que use el
-documento no filtra por olvido.
-
-**Los colores del informe se imprimen.** Chrome descarta los fondos salvo que se
-le pida lo contrario, y acá el fondo es el dato: la barra de cada competencia y
-el nivel de ajuste elegido. Los elementos que lo necesitan llevan
-`print-color-adjust: exact`.
-
-## El portal de un cliente nace con el cliente
-
-`token_portal` tiene como valor por defecto `token_portal_nuevo()`
-(`supabase/portal-token-automatico.sql`), así que toda empresa que se inserte
-sale con su enlace. Va en la base y no en el código porque hay dos caminos de
-alta, la pantalla de Clientes y el alta rápida al cargar un pedido de un cliente
-que todavía no existe, y cualquiera que se agregue después lo hereda igual.
-
-**El token no se manda nunca en un alta.** La pantalla de Clientes inserta con
-`resolution=merge-duplicates`, así que un cliente que ya existe se actualiza con
-lo que se envía: mandar un token nuevo le cambiaría el enlace al que ya lo tiene
-en la mano y lo dejaría afuera.
-
-**En Clientes, el de Airtable gana.** Las empresas sin migrar tienen su token
-allá y es el que el cliente está usando; el de Supabase cubre a las que nunca
-tuvieron uno. Los dos abren igual: la resolución prueba Supabase y después
-Airtable.
+**El límite es el escaneo, no el formato: 1024 x 1536 para una hoja A4 son 124
+DPI.** El óvalo de una opción mide 51 píxeles de ancho y su contorno cuatro. Al
+tamaño en que se muestran se ven bien; ampliados, no hay técnica que recupere
+detalle que no está en el archivo. Para verlas más nítidas hay que volver a
+escanear a 300 DPI y correr el mismo recorte, que da piezas de 440 px.
 
 ## El informe del Benziger se lee y no se guarda
 
