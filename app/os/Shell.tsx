@@ -32,6 +32,7 @@ const NAV: Grupo[] = [
       { href: '/os/psicotecnicos/entrevistas', texto: 'Entrevistas', icono: 'agenda' },
       { href: '/os/psicotecnicos/por-analizar', texto: 'Por analizar', icono: 'escribir' },
       { href: '/os/psicotecnicos/entregados', texto: 'Entregados', icono: 'listo' },
+      { href: '/os/psicotecnicos/seguimiento', texto: 'Seguimiento', icono: 'seguimiento' },
     ],
   },
   {
@@ -45,7 +46,6 @@ const NAV: Grupo[] = [
       { href: '/os/pedidos', texto: 'Pedidos', icono: 'cotizaciones' },
       { href: '/os/cotizaciones', texto: 'Cotizaciones', icono: 'cotizaciones' },
       { href: '/os/costos', texto: 'Costos', icono: 'costos' },
-      { href: '/os/accesos', texto: 'Accesos', icono: 'accesos' },
     ],
   },
   {
@@ -71,6 +71,7 @@ const ICONOS = {
   listo: <><circle cx="12" cy="12" r="8.5" /><path d="M8.4 12.2l2.6 2.6 4.7-5" /></>,
   encuentros: <><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M16 5.2a3 3 0 0 1 0 5.6" /><path d="M18 20c0-2.4-1-4.5-2.6-5.6" /></>,
   cotizaciones: <><path d="M6 3h9l4 4v14H6z" /><path d="M15 3v4h4" /><path d="M9 13h6" /><path d="M9 17h6" /></>,
+  seguimiento: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>,
   accesos: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
   herramientas: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
   specs: <><path d="M5 4h11l3 3v13H5z" /><path d="M9 9h6" /><path d="M9 13h6" /><path d="M9 17h3" /></>,

@@ -7,13 +7,99 @@
  * seis, y el percentil, los desvíos y el rango se calculan solos. Los tres son
  * derivados: cargarlos a mano sería tres formas de equivocarse.
  *
+ * El puntaje entra por dos caminos y los dos son válidos: lo escribe el test
+ * cuando la persona lo termina por su enlace, o lo carga la evaluadora cuando
+ * el Raven se tomó en papel. Arriba se dice cuál de los dos fue, porque un
+ * número sin origen no se puede discutir, y un test cortado por el reloj con
+ * láminas en blanco no se lee igual que uno entregado.
+ *
+ * Los cinco rangos se muestran enteros y con el suyo marcado. Un rango suelto
+ * dice en qué cajón cayó la persona; la escala completa dice además qué tan
+ * lejos quedó de los otros, que es lo que se necesita cuando hay que comparar
+ * dos candidatos o explicarle el resultado a alguien.
+ *
  * Guarda al soltar el campo. Vaciarlo borra la medición, que no es lo mismo
  * que un cero: un cero es haber rendido y no acertar nada.
  */
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { calcularRaven, RAVEN_MAXIMO, SIN_MEDICION } from '@/lib/raven';
+import {
+  calcularRaven,
+  duracion,
+  puntajesPorRango,
+  RANGOS,
+  RAVEN_MAXIMO,
+  SIN_MEDICION,
+} from '@/lib/raven';
+import { fechaHora } from '@/lib/hora';
+
+export type Sesion = {
+  iniciado_at: string | null;
+  terminado_at: string | null;
+  cierre: string | null;
+  respuestas: Record<string, number> | null;
+};
+
+const TRAMOS = puntajesPorRango();
+
+/** Un decimal, escrito como se escribe en castellano. */
+const coma = (n: number) => n.toFixed(1).replace('.', ',');
+
+/**
+ * De dónde salió el número que está cargado.
+ *
+ * El origen viene declarado por quien escribió, no deducido de si hay una
+ * sesión: una evaluadora puede cargar a mano el puntaje de alguien que además
+ * rindió por su enlace, y ahí la sesión existe pero el número no salió de ella.
+ *
+ * Cuando el puntaje es de la evaluadora y encima hay un test rendido, se dicen
+ * los dos. Son dos mediciones de la misma persona y si no coinciden, eso es
+ * justo lo que hay que ver.
+ */
+function Origen({
+  origen,
+  sesion,
+  raw,
+  tardo,
+}: {
+  origen: 'test' | 'manual' | null;
+  sesion: Sesion | null;
+  raw: number | null;
+  tardo: number | null;
+}) {
+  if (raw === null) return null;
+  const cuanto = duracion(tardo);
+
+  const rindio = Boolean(sesion?.terminado_at);
+  const respondidas = Object.keys(sesion?.respuestas ?? {}).length;
+  const porTiempo = sesion?.cierre === 'tiempo';
+  const comoCerro = `${porTiempo ? 'se le acabó el tiempo' : 'lo entregó'} el ${fechaHora(
+    sesion?.terminado_at ?? null
+  )}, con ${respondidas} de ${RAVEN_MAXIMO} láminas respondidas`;
+
+  if (origen === 'test') {
+    return (
+      <span className={`os-raven-origen${porTiempo ? ' os-ambar' : ''}`}>
+        Lo respondió por su enlace: {comoCerro}
+        {cuanto && `, en ${cuanto}`}
+      </span>
+    );
+  }
+
+  if (origen === 'manual') {
+    return (
+      <span className="os-raven-origen">
+        Cargado a mano
+        {rindio && ` · además rindió por su enlace: ${comoCerro}`}
+      </span>
+    );
+  }
+
+  // Filas anteriores a que se guardara el origen: no se sabe, y decir cualquiera
+  // de los dos sería inventarlo.
+  return <span className="os-raven-origen">Sin registro de cómo se cargó</span>;
+}
 
 export default function Raven({
   id,
@@ -21,12 +107,19 @@ export default function Raven({
   percentil,
   desvios,
   resultado,
+  origen,
+  sesion,
+  tardo,
 }: {
   id: string;
   raw: number | null;
   percentil: number | null;
   desvios: number | null;
   resultado: string | null;
+  origen: 'test' | 'manual' | null;
+  sesion: Sesion | null;
+  /** Segundos que tardó en responderlo. */
+  tardo: number | null;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -37,16 +130,21 @@ export default function Raven({
   // Lo que se ve mientras se escribe sale del mismo cálculo que el servidor va
   // a guardar: así el número no aparece un segundo después de escribirlo.
   const enPantalla = calcularRaven(valor === '' ? null : Number(valor));
+  const p = enPantalla?.percentil ?? percentil;
+  const d = enPantalla?.desvios ?? desvios;
+  const texto = enPantalla?.resultado ?? resultado ?? SIN_MEDICION;
+  // Cuál de los cinco es el suyo, para marcarlo en la escala.
+  const suyo = RANGOS.find((r) => texto.startsWith(`Rango ${r.numeral} ·`))?.numeral ?? null;
 
-  async function guardar(texto: string) {
-    if (texto === (raw === null ? '' : String(raw))) return;
+  async function guardar(t: string) {
+    if (t === (raw === null ? '' : String(raw))) return;
     setError(null);
     setGuardando(true);
     try {
       const res = await fetch('/api/os/raven', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ evaluacionId: id, raw: texto === '' ? null : Number(texto) }),
+        body: JSON.stringify({ evaluacionId: id, raw: t === '' ? null : Number(t) }),
       });
       const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
       if (!r.ok) {
@@ -84,29 +182,70 @@ export default function Raven({
         <div className="os-raven-derivados">
           <span className="os-hoja-par">
             <span className="os-hoja-rotulo">Percentil</span>
-            <span className="os-hoja-valor">{enPantalla?.percentil ?? percentil ?? '—'}</span>
+            <span className="os-hoja-valor">{p ?? '—'}</span>
           </span>
           <span className="os-hoja-par">
             <span className="os-hoja-rotulo">Desvíos</span>
-            <span className="os-hoja-valor">
-              {(enPantalla?.desvios ?? desvios) === null
-                ? '—'
-                : (enPantalla?.desvios ?? desvios)!.toFixed(1)}
-            </span>
+            <span className="os-hoja-valor">{d === null ? '—' : d.toFixed(1)}</span>
           </span>
         </div>
+
+        <Origen origen={origen} sesion={sesion} raw={raw} tardo={tardo} />
       </div>
 
-      <p className="os-raven-rango">{enPantalla?.resultado ?? resultado ?? SIN_MEDICION}</p>
+      <ol className="os-raven-escala">
+        {RANGOS.map((r) => {
+          const t = TRAMOS.get(r.numeral);
+          return (
+            <li key={r.numeral} className={`os-raven-nivel${suyo === r.numeral ? ' suyo' : ''}`}>
+              <span className="os-raven-numeral">{r.numeral}</span>
+              <span className="os-raven-nombre">{r.nombre}</span>
+              <span className="os-raven-tramo">
+                {t ? `${t.desde} a ${t.hasta} aciertos` : '—'}
+              </span>
+              <span className="os-raven-frecuencia">{r.frecuencia}</span>
+            </li>
+          );
+        })}
+      </ol>
 
-      {error ? (
-        <p className="os-form-error">{error}</p>
-      ) : (
+      {!suyo && <p className="os-raven-rango">{texto}</p>}
+
+      {error && <p className="os-form-error">{error}</p>}
+
+      <div className="os-raven-glosario">
+        {p !== null && d !== null ? (
+          <>
+            <p>
+              <strong>Percentil {p}.</strong> De cada cien personas que rindieron el test,{' '}
+              {Math.round(p)} sacaron menos puntos y {100 - Math.round(p)} sacaron más. Es una
+              posición dentro del grupo. Las respuestas acertadas se cuentan aparte: son{' '}
+              {valor || 0} de {RAVEN_MAXIMO}.
+            </p>
+            <p>
+              <strong>
+                Desvíos {d > 0 ? '+' : ''}
+                {coma(d)}.
+              </strong>{' '}
+              Quedó {coma(Math.abs(d))} {d < 0 ? 'por debajo' : 'por encima'} del promedio,
+              que son 18,19 aciertos. Cada desvío equivale a 6,32 aciertos. Cuando dos candidatos
+              caen en el mismo rango, este número los separa.
+            </p>
+          </>
+        ) : (
+          <p>
+            El <strong>percentil</strong> dice cuántas personas de cada cien sacaron menos puntos.
+            Los <strong>desvíos</strong> dicen a qué distancia del promedio quedó, en unidades de
+            6,32 aciertos.
+          </p>
+        )}
         <p className="os-benziger-aviso">
-          El percentil sale del baremo del manual y los desvíos de la media 18,19 con
-          desvío 6,32. Por encima de 28 aciertos el percentil es extrapolación.
+          El percentil sale del baremo del manual y arriba de 28 aciertos es una proyección. Los
+          rangos cortan por puntaje directo, con la frecuencia de los candidatos de Campos HR, que
+          promedian 21,11 aciertos.
         </p>
-      )}
+      </div>
     </div>
   );
 }
+

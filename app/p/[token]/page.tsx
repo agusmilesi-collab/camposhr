@@ -1,5 +1,6 @@
 import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
 import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
+import { datosClienteDeSupabase } from '@/lib/portal-supabase';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 import NuevoPedido from './NuevoPedido';
 import { COBROS, COBRO_PUBLICADO, cobro } from '@/lib/cobro';
@@ -168,9 +169,13 @@ type Entregado = { cand: Candidato; puesto: string; fechaPedido: string | null }
 
 export default async function Portal({ params }: { params: { token: string } }) {
   const demo = esDemo(params.token);
+  // El enlace se resuelve primero contra Supabase, que es donde viven las
+  // empresas ya migradas, y después contra Airtable, que es donde siguen las
+  // demás. Un token existe en uno de los dos, nunca en los dos.
+  const deSupabase = demo ? null : await datosClienteDeSupabase(params.token);
   const datos = demo
     ? await datosDemoConAirtable()
-    : await getDatosCliente(params.token);
+    : (deSupabase ?? (await getDatosCliente(params.token)));
   if (!datos) return <Acceso />;
 
   const { empresa, empresaId, busquedas } = datos;
@@ -219,11 +224,15 @@ export default async function Portal({ params }: { params: { token: string } }) 
         recoCompleta: c.recomendacion,
         recoClase: r?.clase ?? 'gray',
         recoOrden: r?.orden ?? 9,
-        // El enlace existe si el informe está escrito. En el cliente de prueba
-        // los informes son de mentira y viven en su propio archivo, así que
-        // ahí manda la tilde que trae Airtable.
-        informe:
-          (demo ? c.tieneInforme : informeDe(empresaId, c.nombre))
+        // De dónde sale el informe depende de dónde vive la evaluación. En
+        // Supabase se arma con los datos cargados y se muestra en su página; en
+        // Airtable es un archivo escrito a mano, y en el cliente de prueba
+        // manda la tilde que trae la tabla.
+        informe: deSupabase
+          ? c.tieneInforme
+            ? `/p/${params.token}/evaluacion/${c.id}`
+            : null
+          : (demo ? c.tieneInforme : informeDe(empresaId, c.nombre))
             ? `/p/${params.token}/informe/${c.id}`
             : null,
         cobro: cobro(c),

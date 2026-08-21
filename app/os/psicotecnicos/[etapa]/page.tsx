@@ -24,7 +24,7 @@ const QUE_SE_HACE: Record<string, string> = {
  * Se explican solas: la lista dice lo que hay que hacer y el filtro estorba
  * más de lo que ordena cuando se está trabajando la propia cola.
  */
-const DESNUDAS = new Set(['sin-asignar', 'entrevistas', 'por-analizar']);
+const DESNUDAS = new Set(['sin-asignar', 'entrevistas', 'por-analizar', 'entregados']);
 
 export function generateStaticParams() {
   return SECCIONES.map((s) => ({ etapa: s.ruta }));

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Con qué cierra la evaluación y por qué.
+ * La recomendación con la que cierra la evaluación, y por qué.
  *
  * Vive acá y no en la lista de "Por analizar" porque se decide leyendo el
  * sumario y el informe, que están a una pestaña de distancia. Elegirla desde
@@ -12,26 +12,27 @@
  * escribe, se relee y recién entonces se sube. Guardar a mitad de una frase
  * dejaría en la base media decisión.
  *
- * El fundamento es lo que permite releer una decisión meses después y lo que
- * el seguimiento contrasta cuando la persona ya entró a trabajar: "Apto" solo
- * no dice nada de por qué.
+ * El fundamento es el resumen del informe. Escrito, sale tal cual en el
+ * documento que lee el cliente; vacío, lo arma el motor con las lecturas del
+ * sumario. El motor redacta correcto pero genérico, así que quien tenga algo
+ * que decir del caso lo escribe acá y reemplaza al automático.
  */
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
-
-/** Con qué puede cerrar una evaluación. */
-const RECOMENDACIONES = ['Apto', 'Apto con observaciones', 'Apto con alertas', 'No apto'];
+import { CONCLUSIONES } from '@/lib/informe-textos';
 
 export default function Conclusion({
   id,
   recomendacion,
   notas,
+  children,
 }: {
   id: string;
   recomendacion: string | null;
   notas: string | null;
+  /** Qué se le administró, para saber si el informe puede salir. */
+  children?: React.ReactNode;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -73,39 +74,44 @@ export default function Conclusion({
 
   return (
     <div className="os-conclusion">
-      {/* El selector y el sello en el mismo renglón: se elige y se ve puesta. */}
-      <div className="os-conclusion-elegida">
-        <select
-          className="os-campo"
-          value={valor}
-          onChange={(e) => {
-            setValor(e.target.value);
-            setHecho(false);
-          }}
-          aria-label="Conclusión"
-        >
-          <option value="">Sin cerrar</option>
-          {RECOMENDACIONES.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
-        {recomendacion && (
-          <span className={`os-sello-estado ${COLOR_RECOMENDACION[recomendacion] ?? 'os-gris'}`}>
-            {recomendacion}
-          </span>
-        )}
+      {/* Los cuatro niveles a la vista y con su color, en vez de un desplegable:
+          se elige apretando el que corresponde y dice exactamente lo que el
+          informe va a decir. Lo que se guarda sigue siendo el valor del
+          pipeline, que es lo que ya está cargado y lo que lee el portal. */}
+      <div className="os-conclusion-niveles">
+        {CONCLUSIONES.map(({ valor: v, nivel }) => {
+          const puesto = valor === v;
+          return (
+            <button
+              key={v}
+              type="button"
+              className={`os-nivel-opcion ${nivel.color}${puesto ? ' puesta' : ''}`}
+              aria-pressed={puesto}
+              onClick={() => {
+                // Volver a apretar el que ya está puesto lo saca: una
+                // evaluación puede volver a quedar sin cerrar.
+                setValor(puesto ? '' : v);
+                setHecho(false);
+              }}
+            >
+              {/* Solo el título: el texto de cada nivel está abajo, en el
+                  informe, y repetirlo acá alargaba la columna sin agregar. */}
+              <span className="os-nivel-titulo">{nivel.titulo}</span>
+            </button>
+          );
+        })}
       </div>
 
       <label className="os-conclusion-notas">
-        <span className="os-dato-rotulo">Fundamento</span>
+        <span className="os-dato-rotulo">
+          Fundamento <em>· es el resumen del informe</em>
+        </span>
         <textarea
           className="os-campo"
           value={texto}
           rows={6}
           maxLength={4000}
-          placeholder="Qué sostiene esta conclusión: lo que se vio en la entrevista, en el sumario y en los tests."
+          placeholder="Lo que escribas acá sale como resumen en el informe que lee el cliente. Vacío, lo escribe el sistema con lo que dio la evaluación."
           onChange={(e) => {
             setTexto(e.target.value);
             setHecho(false);
@@ -114,18 +120,26 @@ export default function Conclusion({
       </label>
 
       <div className="os-conclusion-pie">
+        {/* Lo que se le tomó, a la izquierda del botón: antes de generar el
+            informe hay que poder ver si falta administrar algo. */}
+        {children && (
+          <div className="os-conclusion-tests">
+            <span className="os-dato-rotulo">Tests administrados</span>
+            {children}
+          </div>
+        )}
         <button
           className="os-boton os-boton-firme"
           type="button"
           onClick={cargar}
           disabled={guardando || sinCambios}
         >
-          {guardando ? 'Cargando…' : 'Cargar'}
+          {guardando ? 'Generando…' : 'Generar informe'}
         </button>
         {error ? (
           <span className="os-form-error">{error}</span>
         ) : hecho ? (
-          <span className="os-form-ok">Cargado.</span>
+          <span className="os-form-ok">Informe generado.</span>
         ) : (
           !sinCambios && <span className="os-columna-monto">Hay cambios sin cargar.</span>
         )}

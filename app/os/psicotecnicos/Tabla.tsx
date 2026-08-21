@@ -15,8 +15,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import type { Evaluacion } from '@/lib/psicotecnicos';
-import { desdeInput, diaDeLaSemana, enDias, fechaHora, haceCuanto, paraInput } from '@/lib/hora';
-import LinkRaven from './LinkRaven';
+import { nivelDeConclusion } from '@/lib/informe-textos';
+import {
+  desdeInput,
+  diaDeLaSemana,
+  enDias,
+  fechaCorta,
+  fechaHora,
+  haceCuanto,
+  paraInput,
+} from '@/lib/hora';
 
 
 
@@ -50,11 +58,11 @@ const COLUMNAS: Record<string, string[]> = {
     'Batería',
     'Teléfono',
     'Pedido',
-    'Raven',
     '',
   ],
   'por-analizar': ['Candidato', 'Pedido', 'Batería', 'Espera', ''],
-  entregados: ['Candidato', 'Pedido', 'Entregado', 'Conclusión', 'Informe', ''],
+  entregados: ['Candidato', 'Pedido', 'Evaluadora', 'Entregado', 'Conclusión', 'Informe', ''],
+  seguimiento: ['Candidato', 'Pedido', 'Evaluadora', 'Entregado', 'Ingresó', 'Seguimiento', ''],
 };
 
 /**
@@ -84,13 +92,14 @@ const ANCHO: Record<string, number> = {
   /* El botón que copia el enlace del test, con lugar para el aviso de que se
      copió. Va en su columna y no con las acciones: apretado ahí, la tabla se
      pasaba de los 1200 px que miden todas. */
-  Raven: 124,
-  Ingresó: 96,
   Esperando: 110,
   Espera: 120,
   Informe: 118,
-  Conclusión: 150,
-  Entregado: 124,
+  Conclusión: 222,
+  Entregado: 110,
+  Evaluadora: 140,
+  Ingresó: 118,
+  Seguimiento: 150,
   '': 180,
 };
 
@@ -139,19 +148,30 @@ function Falta({ texto = 'falta' }: { texto?: string }) {
   return <span className="os-dato-falta">{texto}</span>;
 }
 
+/**
+ * El nombre lleva a donde se va a trabajar con esa persona.
+ *
+ * Con la entrevista agendada eso es la hoja de la entrevista, que tiene la
+ * herramienta de cada test a un clic. En el resto de las etapas es la ficha,
+ * que es donde se carga y se lee lo suyo.
+ */
 function Persona({ e, seccion }: { e: Evaluacion; seccion: string }) {
   if (e.origen !== 'supabase') return <div className="os-tabla-nombre">{e.nombre}</div>;
+  const agendada = seccion === 'entrevistas' && e.etapa === 'Por entrevistar';
   return (
     <Link
       className="os-tabla-nombre os-tabla-ficha"
-      href={`/os/psicotecnicos/ficha/${e.id}?desde=${seccion}`}
+      href={
+        agendada
+          ? `/os/psicotecnicos/entrevista/${e.id}`
+          : `/os/psicotecnicos/ficha/${e.id}?desde=${seccion}`
+      }
     >
       {e.nombre}
     </Link>
   );
 }
 
-const CERRADAS = new Set(['Entregado', 'Seguimiento']);
 
 /**
  * A qué etapa vuelve cada una cuando se retrocede.
@@ -269,7 +289,7 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
               <Persona e={e} seccion={seccion} />
             </td>
             <td data-campo="Pedido">
-              <Busqueda e={e} conEvaluadora={CERRADAS.has(e.etapa)} />
+              <Busqueda e={e} conEvaluadora={false} />
             </td>
           </>
         )}
@@ -396,15 +416,6 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
             <td data-campo="Pedido">
               <Busqueda e={e} conEvaluadora={false} />
             </td>
-            {/* El enlace del test se copia acá porque acá se está teniendo la
-                entrevista: se pega en el chat sin salir de la lista. */}
-            <td data-campo="Raven">
-              {e.origen === 'supabase' ? (
-                <LinkRaven evaluacionId={e.id} />
-              ) : (
-                <Falta texto="en Airtable" />
-              )}
-            </td>
             <td className="os-tabla-accion">
               <button
                 className="os-boton os-boton-firme"
@@ -440,11 +451,53 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
           </>
         )}
 
+        {seccion === 'seguimiento' && (
+          <>
+            <td data-campo="Evaluadora">{e.evaluadora ?? <Falta texto="sin asignar" />}</td>
+            <td data-campo="Entregado">{fechaCorta(e.fechaEntrega) ?? <Falta texto="sin fecha" />}</td>
+            {/* Si entró a trabajar. Es lo que después permite medir el acierto
+                de cada evaluación contra lo que pasó de verdad. */}
+            <td data-campo="Ingresó">
+              {e.ingreso === null ? (
+                <Falta texto="sin saber" />
+              ) : (
+                <span className={`os-sello-estado ${e.ingreso ? 'os-verde' : 'os-gris'}`}>
+                  {e.ingreso ? 'Sí' : 'No'}
+                </span>
+              )}
+            </td>
+            <td data-campo="Seguimiento">
+              {fechaCorta(e.seguimientoAl) ?? <Falta texto="sin fecha" />}
+            </td>
+            <td className="os-tabla-accion">{volver}</td>
+          </>
+        )}
+
         {seccion === 'entregados' && (
           <>
-            <td data-campo="Entregado">{fechaHora(e.fechaEntrega) ?? <Falta texto="sin fecha" />}</td>
-            <td data-campo="Conclusión">{e.recomendacion ?? <Falta texto="sin cargar" />}</td>
-            <td data-campo="Informe">{e.tieneInforme ? 'cargado' : <Falta texto="sin cargar" />}</td>
+            <td data-campo="Evaluadora">{e.evaluadora ?? <Falta texto="sin asignar" />}</td>
+            <td data-campo="Entregado">{fechaCorta(e.fechaEntrega) ?? <Falta texto="sin fecha" />}</td>
+            <td data-campo="Conclusión">
+              {nivelDeConclusion(e.recomendacion)?.titulo ??
+                e.recomendacion ?? <Falta texto="sin cargar" />}
+            </td>
+            {/* El informe se arma con los datos, así que se abre en vez de
+                decir si está cargado. */}
+            <td data-campo="Informe">
+              {e.origen === 'supabase' ? (
+                <Link
+                  className="os-boton os-boton-firme"
+                  href={`/os/psicotecnicos/informe/${e.id}`}
+                  target="_blank"
+                >
+                  Ver informe
+                </Link>
+              ) : e.tieneInforme ? (
+                'cargado'
+              ) : (
+                <Falta texto="sin cargar" />
+              )}
+            </td>
             <td className="os-tabla-accion">
               {seccion === 'entregados' && (
                 <button
@@ -502,10 +555,19 @@ export default function TablaEtapa({
         }
       >
         {/* El ancho lo fija la columna, no su contenido: una tabla que se
-            reacomoda al escribir es una tabla que no se puede recorrer. */}
+            reacomoda al escribir es una tabla que no se puede recorrer.
+
+            Va en proporción y no en píxeles: mientras la ventana da el ancho
+            declarado, cada columna mide exactamente lo suyo, y cuando no lo da
+            se reparten lo que hay sin cambiar el orden ni las proporciones. Con
+            píxeles la tabla no podía achicarse y el panel terminaba
+            desplazándose de costado, que esconde columnas enteras sin avisar. */}
         <colgroup>
           {columnas.map((c, i) => (
-            <col key={c || `accion-${i}`} style={{ width: medidas[i] }} />
+            <col
+              key={c || `accion-${i}`}
+              style={{ width: `${(medidas[i] / medidas.reduce((n, x) => n + x, 0)) * 100}%` }}
+            />
           ))}
         </colgroup>
         <thead>

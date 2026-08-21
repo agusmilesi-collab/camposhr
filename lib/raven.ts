@@ -43,22 +43,65 @@ const MEDIA = 18.19;
 const DESVIO = 6.32;
 
 /**
- * Los cinco rangos, con su frecuencia entre paréntesis.
+ * Los cinco rangos, por puntaje directo.
  *
- * El "1 de cada N" dice qué tan raro es el nivel sin exponer el percentil, que
- * un cliente puede leer como nota de colegio. El numeral romano los ordena de
- * mayor a menor.
+ * Cortan por aciertos y no por percentil: es el corte que usa el equipo, y el
+ * puntaje directo es lo que se carga y lo que se compara entre candidatos de
+ * una misma búsqueda.
+ *
+ * La frecuencia entre paréntesis dice qué tan raro es cada nivel, y está
+ * calculada contra la población que evalúa Campos HR (media 21,11 aciertos,
+ * desvío 7,10 sobre los primeros 35 candidatos), no contra el baremo español
+ * del manual, que rinde casi tres puntos menos. Se recalcula cuando haya
+ * suficientes casos: hasta entonces es una estimación de una muestra chica.
+ *
+ * El numeral romano los ordena de mayor a menor.
  */
-const RANGOS: { desde: number; texto: string }[] = [
-  { desde: 95, texto: 'Rango I · Superioridad intelectual (1 de cada 20 candidatos)' },
-  { desde: 75, texto: 'Rango II · Superior al término medio (1 de cada 5 candidatos)' },
-  { desde: 25.0001, texto: 'Rango III · Término medio (1 de cada 2 candidatos)' },
-  { desde: 5.0001, texto: 'Rango IV · Inferior al término medio (1 de cada 5 candidatos)' },
-  { desde: -Infinity, texto: 'Rango V · Deficiencia intelectual (1 de cada 20 candidatos)' },
+export type Rango = {
+  numeral: string;
+  nombre: string;
+  frecuencia: string;
+  /** Desde cuántos aciertos empieza. */
+  desde: number;
+};
+
+export const RANGOS: Rango[] = [
+  { numeral: 'I', nombre: 'Superioridad intelectual', frecuencia: '1 de cada 69 candidatos', desde: 35 },
+  { numeral: 'II', nombre: 'Superior al término medio', frecuencia: '1 de cada 16 candidatos', desde: 31 },
+  { numeral: 'III', nombre: 'Término medio', frecuencia: '1 de cada 2 candidatos', desde: 21 },
+  { numeral: 'IV', nombre: 'Inferior al término medio', frecuencia: '1 de cada 3 candidatos', desde: 11 },
+  { numeral: 'V', nombre: 'Deficiencia intelectual', frecuencia: '1 de cada 15 candidatos', desde: 0 },
 ];
+
+/** Cómo se escribe un rango. Es lo que queda guardado, así que no cambia. */
+export function textoDelRango(r: Rango): string {
+  return `Rango ${r.numeral} · ${r.nombre} (${r.frecuencia})`;
+}
+
+/** El rango de un puntaje directo. */
+export function rangoDe(aciertos: number): Rango | null {
+  return RANGOS.find((r) => aciertos >= r.desde) ?? null;
+}
+
+/** Entre qué puntajes cae cada rango, para dibujar la escala. */
+export function puntajesPorRango(): Map<string, { desde: number; hasta: number }> {
+  const tramos = new Map<string, { desde: number; hasta: number }>();
+  RANGOS.forEach((r, i) => {
+    tramos.set(r.numeral, { desde: r.desde, hasta: i === 0 ? RAVEN_MAXIMO : RANGOS[i - 1].desde - 1 });
+  });
+  return tramos;
+}
 
 /** Lo que no se rindió no se interpreta: no se declara nada sobre alguien sin puntaje. */
 export const SIN_MEDICION = 'Sin medición';
+
+/** Cuánto tardó, escrito como el reloj del test: minutos y segundos. */
+export function duracion(segundos: number | null): string | null {
+  if (segundos === null || !Number.isFinite(segundos)) return null;
+  const m = Math.floor(segundos / 60);
+  const s = Math.round(segundos % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
 
 export type Raven = {
   raw: number;
@@ -77,10 +120,8 @@ export function calcularRaven(raw: number | null): Raven | null {
   // desempatar dos candidatos que caen en el mismo rango, donde el percentil
   // se comprime.
   const desvios = Math.round(((aciertos - MEDIA) / DESVIO) * 10) / 10;
-  const resultado =
-    percentil === null
-      ? SIN_MEDICION
-      : (RANGOS.find((r) => percentil >= r.desde)?.texto ?? SIN_MEDICION);
+  const rango = rangoDe(aciertos);
+  const resultado = rango ? textoDelRango(rango) : SIN_MEDICION;
 
   return { raw: aciertos, percentil, desvios, resultado };
 }

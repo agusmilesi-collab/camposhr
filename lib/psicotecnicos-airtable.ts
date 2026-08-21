@@ -261,6 +261,9 @@ export async function listar(): Promise<Evaluacion[]> {
       linkRaven: f[F.linkRaven] || null,
       recomendacion: f[F.recomendacion] ?? null,
       tieneInforme: Array.isArray(f[F.informe]) && f[F.informe].length > 0,
+      // El seguimiento se lleva del lado de Supabase: lo de Airtable no lo trae.
+      ingreso: null,
+      seguimientoAl: null,
       servicio: f[F.servicio] ?? null,
       dias: diasDesde(fechaEntrevista, hoy),
       diasEsperando: fechaEntrevista ? null : diasDesde(f[F.fechaIngreso] ?? null, hoy),

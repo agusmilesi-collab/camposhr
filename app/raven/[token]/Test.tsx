@@ -56,6 +56,19 @@ export default function Test({
   const [entregado, setEntregado] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cerrando = useRef(false);
+  // El instante en que se acaba, medido con el reloj de pared de esta máquina.
+  // El cronómetro se calcula contra esta marca y no restando un segundo por
+  // vuelta: el navegador frena los temporizadores de las pestañas que quedan en
+  // segundo plano, así que una cuenta por vueltas se atrasa todo lo que haya
+  // durado el cambio de pestaña. Es `Date.now` y no `performance.now` porque el
+  // tiempo del test corre también mientras la computadora está suspendida.
+  const fin = useRef<number | null>(null);
+
+  /** Fija en cuánto se acaba, con los segundos que dio el servidor. */
+  const anclar = useCallback((segundos: number) => {
+    fin.current = Date.now() + segundos * 1000;
+    setRestan(segundos);
+  }, []);
 
   const pedir = useCallback(
     async (cuerpo: Record<string, unknown>) => {
@@ -80,20 +93,44 @@ export default function Test({
   }, [pedir]);
 
   // El reloj de pantalla: la cuenta que vale es la del servidor, que se
-  // consulta en cada respuesta. Este solo la muestra.
+  // consulta al empezar, en cada respuesta y al volver a la pestaña. Este solo
+  // la muestra, y la lee de la marca: aunque el navegador no lo despierte
+  // durante minutos, el primer latido de vuelta ya da el número correcto.
   useEffect(() => {
     if (!arrancado || entregado) return;
-    const t = setInterval(() => {
-      setRestan((s) => {
-        if (s <= 1) {
-          terminar();
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
+    if (fin.current === null) fin.current = Date.now() + restanInicial * 1000;
+    const leer = () => {
+      if (fin.current === null) return;
+      const queda = Math.max(0, Math.round((fin.current - Date.now()) / 1000));
+      setRestan(queda);
+      if (queda === 0) terminar();
+    };
+    leer();
+    const t = setInterval(leer, 1000);
     return () => clearInterval(t);
-  }, [arrancado, entregado, terminar]);
+  }, [arrancado, entregado, terminar, restanInicial]);
+
+  // Al volver a la pestaña se vuelve a preguntar cuánto queda. La marca de
+  // arriba alcanza para que la cuenta no se atrase, pero el reloj de esta
+  // máquina puede estar corrido o haber cambiado de hora mientras tanto, y el
+  // único que decide si el test sigue abierto es el servidor.
+  useEffect(() => {
+    if (!arrancado || entregado || prueba) return;
+    const alVolver = async () => {
+      if (document.visibilityState !== 'visible') return;
+      const r = await pedir({ accion: 'reloj' });
+      if (r.ok) {
+        anclar(r.restan);
+        return;
+      }
+      if (r.motivo === 'Se terminó el tiempo.') {
+        anclar(0);
+        setEntregado(true);
+      }
+    };
+    document.addEventListener('visibilitychange', alVolver);
+    return () => document.removeEventListener('visibilitychange', alVolver);
+  }, [arrancado, entregado, prueba, pedir, anclar]);
 
   async function empezar() {
     const r = await pedir({ accion: 'empezar' });
@@ -101,7 +138,7 @@ export default function Test({
       setError(r.motivo ?? 'No se pudo empezar.');
       return;
     }
-    if (!prueba) setRestan(r.restan);
+    anclar(prueba ? restanInicial : r.restan);
     setArrancado(true);
   }
 
@@ -120,14 +157,14 @@ export default function Test({
     if (!r.ok) {
       setRespuestas(antes);
       if (r.motivo === 'Se terminó el tiempo.') {
-        setRestan(0);
+        anclar(0);
         setEntregado(true);
         return;
       }
       setError(r.motivo ?? 'No se pudo guardar.');
       return;
     }
-    setRestan(r.restan);
+    anclar(r.restan);
     setError(null);
   }
 

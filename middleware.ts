@@ -32,7 +32,20 @@ const TOOLS_V2_HOST = 'toolsversion2.camposhr.com';
 
 const TOKEN = /^\/([A-Za-z0-9_-]+)\/?$/;
 const TOKEN_EN_P = /^\/p\/([A-Za-z0-9_-]+)\/?$/;
-const RUTAS_TOOLS = /^\/(test-rorschach|test-zulliger|informes|cuestionario|cotizaciones|presentaciones|pres)(\/|$)/;
+const RUTAS_TOOLS = /^\/(informes|cuestionario|cotizaciones|presentaciones|pres)(\/|$)/;
+
+// Los tests de manchas se mudaron adentro del OS, con las láminas en el bucket
+// privado. Las direcciones viejas siguen andando y llevan a la nueva: están
+// guardadas en los favoritos de las evaluadoras.
+const TESTS_MUDADOS: Record<string, string> = {
+  '/test-rorschach': '/os/laminas/rorschach',
+  '/test-zulliger': '/os/laminas/zulliger',
+};
+
+function testMudado(pathname: string): string | null {
+  const limpio = pathname.replace(/\/$/, '');
+  return TESTS_MUDADOS[limpio] ?? null;
+}
 
 // Cotización enviada a un cliente: /q/<token> -> el documento estático que vive
 // en public/q/<token>.html. El token es secreto y la página lleva noindex.
@@ -127,6 +140,8 @@ export async function middleware(req: NextRequest) {
 
   // --- Hub interno de herramientas ---
   if (host === TOOLS_HOST) {
+    const mudado = testMudado(pathname);
+    if (mudado) return NextResponse.redirect(`https://${OS_HOST}${mudado}`, 307);
     if (pathname === '/') {
       const dest = url.clone();
       dest.pathname = '/index.html';
@@ -163,6 +178,8 @@ export async function middleware(req: NextRequest) {
   if (pathname === '/os' || pathname.startsWith('/os/')) {
     return NextResponse.redirect(`https://${OS_HOST}${pathname}`, 307);
   }
+  const mudado = testMudado(pathname);
+  if (mudado) return NextResponse.redirect(`https://${OS_HOST}${mudado}`, 307);
   // Herramientas viejas -> se mudaron a tools.camposhr.com.
   if (RUTAS_TOOLS.test(pathname) || pathname === '/index.html') {
     return NextResponse.redirect(`https://${TOOLS_HOST}${pathname}`, 307);

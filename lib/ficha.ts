@@ -23,8 +23,15 @@ export type Cabecera = {
   fecha_ingreso: string | null;
   fecha_entrevista: string | null;
   fecha_entrega: string | null;
+  /** Si se administró el test de manchas de su batería. */
+  proyectivo_administrado: boolean;
   bender_administrado: boolean;
+  /** Lo que la evaluadora anotó en la entrevista. Acá no se edita. */
+  bender_observaciones: string | null;
   grafico_2_personas_administrado: boolean;
+  grafico_2_personas_observaciones: string | null;
+  /** El dibujo que se subió en la entrevista, si hay uno. */
+  grafico_2_personas_nombre: string | null;
   recomendacion: string | null;
   /** Por qué cierra así, escrito por la evaluadora. */
   recomendacion_notas: string | null;
@@ -43,7 +50,8 @@ export type Cabecera = {
   evaluadoras: { nombre: string } | null;
   pedidos: {
     puesto: string;
-    empresas: { nombre: string } | null;
+    /** El token es el enlace del portal de esa empresa, si lo tiene. */
+    empresas: { nombre: string; token_portal: string | null } | null;
     baterias: {
       id: string;
       codigo: string;
@@ -89,6 +97,27 @@ export type Raven = {
   percentil: number | null;
   desvios: number | null;
   resultado: string | null;
+  /** 'test' si lo escribió el test por el enlace, 'manual' si lo cargó la evaluadora. */
+  origen: 'test' | 'manual' | null;
+  /** Cuánto tardó en responderlo. Null si el puntaje se cargó a mano. */
+  duracion_segundos: number | null;
+};
+
+/**
+ * El test que la persona rindió por su enlace, si lo rindió.
+ *
+ * El puntaje puede haber entrado por dos caminos: lo escribe el test al
+ * cerrarse, o lo carga la evaluadora a mano cuando el Raven se tomó en papel.
+ * Los dos guardan en la misma fila, así que sin esto la ficha muestra un
+ * número sin decir de dónde salió, y son cosas distintas de leer: un test
+ * cortado por el reloj con diez láminas en blanco no se interpreta como uno
+ * entregado.
+ */
+export type SesionRaven = {
+  iniciado_at: string | null;
+  terminado_at: string | null;
+  cierre: string | null;
+  respuestas: Record<string, number> | null;
 };
 export type Cualitativo = {
   id: string;
@@ -159,6 +188,7 @@ export type Ficha = {
   sumario: Sumario | null;
   benziger: Benziger | null;
   raven: Raven | null;
+  sesionRaven: SesionRaven | null;
   cualitativos: Cualitativo[];
   competencias: Competencia[];
 };
@@ -167,18 +197,29 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CAMPOS_CABECERA =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
-  'bender_administrado,grafico_2_personas_administrado,recomendacion,recomendacion_notas,informe_path,' +
+  'proyectivo_administrado,bender_administrado,bender_observaciones,' +
+  'grafico_2_personas_administrado,' +
+  'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
+  'recomendacion,recomendacion_notas,informe_path,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
-  'pedidos(puesto,empresas(nombre),baterias(id,codigo,nombre,tests))';
+  'pedidos(puesto,empresas(nombre,token_portal),baterias(id,codigo,nombre,tests))';
 
 /** Null si no existe, para que la pantalla conteste 404 en vez de romperse. */
 export async function fichaDe(id: string): Promise<Ficha | null> {
   if (!UUID.test(id)) return null;
 
-  const [cabeceras, manchas, sumarios, benzigers, ravens, cualitativos, competencias] =
-    await Promise.all([
+  const [
+    cabeceras,
+    manchas,
+    sumarios,
+    benzigers,
+    ravens,
+    sesiones,
+    cualitativos,
+    competencias,
+  ] = await Promise.all([
       select<Cabecera>('evaluaciones', `select=${CAMPOS_CABECERA}&id=eq.${id}`),
       select<Mancha>(
         'rorschach_respuestas',
@@ -193,7 +234,13 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       ),
       select<Raven>(
         'raven',
-        `select=raw,percentil,desvios,resultado&evaluacion_id=eq.${id}`,
+        `select=raw,percentil,desvios,resultado,origen,duracion_segundos&evaluacion_id=eq.${id}`,
+        CACHE_PSICOTECNICOS
+      ),
+      select<SesionRaven>(
+        'raven_sesiones',
+        `select=iniciado_at,terminado_at,cierre,respuestas&evaluacion_id=eq.${id}` +
+          '&order=creado_at.desc&limit=1',
         CACHE_PSICOTECNICOS
       ),
       select<Cualitativo>(
@@ -232,6 +279,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
     sumario: sumarios[0] ?? null,
     benziger: benzigers[0] ?? null,
     raven: ravens[0] ?? null,
+    sesionRaven: sesiones[0] ?? null,
     cualitativos,
     competencias,
   };

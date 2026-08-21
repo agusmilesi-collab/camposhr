@@ -1,0 +1,776 @@
+/**
+ * El informe de selección.
+ *
+ * Hereda la paleta del OS, que es la misma que usa el informe que se entrega
+ * hoy. La hoja mide 820 px, que es el ancho con el que el texto se lee en
+ * pantalla y entra en A4 al imprimir.
+ *
+ * Cada capítulo empieza en página nueva al imprimir, y ni un título ni una
+ * tarjeta se parten entre dos hojas.
+ */
+
+.inf {
+  --tinta: #16202b;
+  --tinta-media: #46505c;
+  --suave: #7b7770;
+  --papel: #f6f5f2;
+  --hoja: #ffffff;
+  --linea: #e5e2db;
+  --linea-suave: #efede8;
+  --verde: #37804a;
+  --ambar: #a97722;
+  --naranja: #c1591a;
+  --rojo: #8c3b3b;
+  --azul: #43648f;
+
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 32px 65px 80px;
+  background: var(--hoja);
+  color: var(--tinta);
+  font-family: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.62;
+}
+
+.inf p {
+  margin: 0 0 10px;
+}
+
+/* Lo que falta cargar: para la evaluadora, no para el cliente. */
+.inf-pendientes {
+  border: 1px solid var(--ambar);
+  border-left-width: 3px;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 28px;
+  font-size: 0.86rem;
+  color: var(--tinta-media);
+  background: #fdf8ef;
+}
+
+.inf-pendientes ul {
+  margin: 6px 0 4px;
+  padding-left: 18px;
+}
+
+.inf-pendientes-nota {
+  color: var(--suave);
+  font-size: 0.8rem;
+}
+
+/* ── Portada ──────────────────────────────────────────────────────────── */
+.inf-portada {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--linea);
+  margin-bottom: 40px;
+}
+
+.inf-marca {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.inf-marca em {
+  font-style: normal;
+}
+
+.inf-marca span {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.inf-portada-cuerpo h1 {
+  margin: 6px 0 4px;
+  font-size: 2.4rem;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.inf-portada-fecha,
+.inf-portada-empresa {
+  color: var(--suave);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.inf-portada-empresa {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+}
+
+.inf-portada-tipo {
+  margin-top: 18px;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--tinta-media);
+}
+
+/* ── La marca ─────────────────────────────────────────────────────────── */
+.inf-marca {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.inf-marca > div {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.inf-marca em {
+  font-style: normal;
+}
+
+.inf-marca span {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.inf-sitio {
+  font-size: 0.78rem;
+  color: var(--suave);
+  white-space: nowrap;
+}
+
+/* ── Encabezado ───────────────────────────────────────────────────────── */
+.inf-encabezado {
+  margin-bottom: 44px;
+}
+
+.inf-encabezado h1 {
+  margin: 0 0 10px;
+  font-size: 1.9rem;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+}
+
+/* ── Capítulos ────────────────────────────────────────────────────────── */
+/* Cada capítulo respira: en el PDF empieza en su hoja, y en pantalla el aire
+   es lo que separa un tema del siguiente cuando se lee de corrido. */
+.inf-capitulo {
+  margin-bottom: 64px;
+}
+
+.inf-capitulo-top {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 12px;
+  margin-bottom: 26px;
+  /* La línea del título en azul y gruesa: separa el capítulo de su contenido y
+     marca dónde empieza cada uno al pasar las hojas. */
+  border-bottom: 2px solid var(--tinta);
+}
+
+.inf-numero {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--linea);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.inf-capitulo-top h2 {
+  margin: 0;
+  font-size: 1.42rem;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.inf-sub {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--suave);
+}
+
+.inf-subtitulo {
+  margin: 30px 0 10px;
+  font-size: 1.04rem;
+  font-weight: 600;
+}
+
+.inf-nota {
+  font-size: 0.78rem;
+  color: var(--suave);
+  font-style: italic;
+  margin-top: 12px;
+}
+
+.inf-vacio {
+  color: var(--suave);
+  font-size: 0.88rem;
+}
+
+.inf-lista {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.inf-lista li {
+  margin-bottom: 9px;
+}
+
+.inf-bloque + .inf-bloque {
+  margin-top: 26px;
+}
+
+.inf-datos p {
+  margin: 0 0 2px;
+  font-size: 0.92rem;
+}
+
+.inf-datos span {
+  color: var(--suave);
+}
+
+/* ── El semáforo ──────────────────────────────────────────────────────── */
+.inf-semaforo {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 4px;
+}
+
+/**
+ * Los cuatro niveles se imprimen siempre y cada uno lleva su color.
+ *
+ * Quien lee ve la escala entera y dónde cae la persona dentro de ella. Los que
+ * no son el suyo van en el mismo color pero apenas insinuado; el que le tocó va
+ * con el borde entero y el texto firme. Sin color, la escala no se lee de un
+ * vistazo; con los cuatro a pleno, no se distingue cuál es.
+ */
+.inf-nivel {
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.inf-nivel h3 {
+  margin: 0 0 3px;
+  font-size: 0.92rem;
+}
+
+.inf-nivel p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.inf-nivel.verde {
+  border-color: rgba(55, 128, 74, 0.3);
+  background: rgba(55, 128, 74, 0.05);
+}
+.inf-nivel.ambar {
+  border-color: rgba(169, 119, 34, 0.3);
+  background: rgba(169, 119, 34, 0.05);
+}
+.inf-nivel.naranja {
+  border-color: rgba(193, 89, 26, 0.3);
+  background: rgba(193, 89, 26, 0.05);
+}
+.inf-nivel.rojo {
+  border-color: rgba(140, 59, 59, 0.3);
+  background: rgba(140, 59, 59, 0.05);
+}
+
+/* El texto es lo que se apaga, no el color: así el borde sigue diciendo de qué
+   nivel se trata. */
+.inf-nivel:not(.elegido) h3,
+.inf-nivel:not(.elegido) p {
+  color: var(--suave);
+  opacity: 0.75;
+}
+
+.inf-nivel.elegido {
+  border-width: 2px;
+  box-shadow: 0 1px 3px rgba(22, 32, 43, 0.06);
+}
+
+.inf-nivel.elegido h3 {
+  color: var(--tinta);
+}
+
+.inf-nivel.elegido p {
+  color: var(--tinta-media);
+}
+
+.inf-nivel.elegido.verde {
+  border-color: var(--verde);
+  background: rgba(55, 128, 74, 0.11);
+}
+.inf-nivel.elegido.ambar {
+  border-color: var(--ambar);
+  background: rgba(169, 119, 34, 0.11);
+}
+.inf-nivel.elegido.naranja {
+  border-color: var(--naranja);
+  background: rgba(193, 89, 26, 0.11);
+}
+.inf-nivel.elegido.rojo {
+  border-color: var(--rojo);
+  background: rgba(140, 59, 59, 0.11);
+}
+
+/* Al imprimir, los fondos de color se descartan salvo que el navegador tenga
+   los gráficos activados: el borde grueso del elegido lo distingue igual. */
+@media print {
+  .inf-nivel {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* ── Competencias ─────────────────────────────────────────────────────── */
+.inf-competencias {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px 26px;
+}
+
+.inf-competencia-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.inf-competencia h3 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.inf-porcentaje {
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-barra {
+  height: 7px;
+  border-radius: 99px;
+  background: var(--linea-suave);
+  margin: 6px 0;
+  overflow: hidden;
+}
+
+.inf-barra span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--azul);
+}
+
+.inf-barra span[data-banda='Sobresaliente'] {
+  background: var(--verde);
+}
+.inf-barra span[data-banda='Bajo'] {
+  background: var(--rojo);
+}
+.inf-barra span[data-banda='Adecuado'] {
+  background: var(--ambar);
+}
+
+.inf-mide {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--suave);
+}
+
+/* ── Recomendaciones ──────────────────────────────────────────────────── */
+.inf-recomendaciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.inf-recomendaciones li {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--linea-suave);
+}
+
+.inf-recomendaciones li:last-child {
+  border-bottom: 0;
+}
+
+.inf-orden {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--linea);
+}
+
+.inf-recomendaciones p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ── Benziger ─────────────────────────────────────────────────────────── */
+.inf-referencia-perfil {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  font-size: 0.78rem;
+  color: var(--suave);
+  margin-bottom: 6px;
+}
+
+.inf-ref::before {
+  content: '';
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-top: 3px solid var(--azul);
+}
+
+.inf-ref.joven::before {
+  border-top-style: dashed;
+  border-top-color: var(--suave);
+}
+
+/* El cerebro al medio y un cuadrante en cada esquina, como en el impreso. */
+.inf-benziger {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 10px 14px;
+  align-items: center;
+  margin: 6px 0 10px;
+}
+
+/* La guía horizontal cruza de margen a margen, como en el impreso: separa los
+   dos cuadrantes de arriba de los dos de abajo, y no solo dentro del dibujo. */
+.inf-benziger::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1.4px dashed var(--suave);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.inf-cuadrante {
+  font-size: 0.78rem;
+  color: var(--tinta-media);
+}
+
+.inf-cuadrante h3 {
+  margin: 2px 0;
+  font-size: 0.9rem;
+  color: var(--tinta);
+}
+
+.inf-cuadrante p {
+  margin: 0;
+  color: var(--suave);
+}
+
+.inf-cuadrante-rotulo {
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.inf-cuadrante.FI {
+  grid-area: 1 / 1;
+}
+.inf-cuadrante.FD {
+  grid-area: 1 / 3;
+  text-align: right;
+}
+.inf-cuadrante.BI {
+  grid-area: 2 / 1;
+}
+.inf-cuadrante.BD {
+  grid-area: 2 / 3;
+  text-align: right;
+}
+
+.inf-cerebro {
+  grid-area: 1 / 2 / 3 / 3;
+  width: 320px;
+  height: 320px;
+}
+
+.inf-eje,
+.inf-eje-guia {
+  stroke: var(--tinta);
+  stroke-width: 1.2;
+}
+
+/* La guía vertical, que separa izquierdo de derecho. La horizontal la dibuja
+   el contenedor, porque cruza más allá del gráfico. */
+.inf-eje-guia {
+  stroke: var(--suave);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 4;
+  opacity: 0.7;
+}
+
+.inf-marca {
+  fill: var(--tinta);
+}
+
+/* Los números de la escala se leen sobre el cerebro, así que van con cuerpo
+   suficiente para no perderse contra el dibujo. */
+.inf-marca-texto {
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--tinta);
+}
+
+.inf-perfil-adulto {
+  fill: rgba(67, 100, 143, 0.12);
+  stroke: var(--azul);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.inf-perfil-joven {
+  fill: none;
+  stroke: var(--suave);
+  stroke-width: 3;
+  stroke-dasharray: 9 7;
+  stroke-linejoin: round;
+}
+
+/* El rótulo de lo que sigue: el cuadrante que resultó predominante. */
+.inf-rotulo-preferente {
+  margin: 26px 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.inf-rotulo-preferente + .inf-bloque .inf-subtitulo {
+  margin-top: 4px;
+}
+
+/* ── Cierre ───────────────────────────────────────────────────────────── */
+.inf-confidencial {
+  font-size: 0.84rem;
+  color: var(--tinta-media);
+}
+
+.inf-firma {
+  margin-top: 26px;
+  padding-top: 12px;
+  border-top: 1px solid var(--linea);
+  display: flex;
+  flex-direction: column;
+  font-size: 0.84rem;
+  color: var(--suave);
+}
+
+.inf-firma strong {
+  color: var(--tinta);
+  font-size: 0.94rem;
+}
+
+/* ── Impresión ────────────────────────────────────────────────────────── */
+/* Márgenes de la hoja. El documento no pone padding al imprimir: el aire lo da
+   la página, que es lo que respeta cualquier impresora. */
+@page {
+  size: A4;
+  margin: 20mm 18mm;
+}
+
+@media print {
+  .inf-pendientes {
+    display: none;
+  }
+
+  /**
+   * Los fondos se imprimen.
+   *
+   * Chrome descarta colores de fondo salvo que se le pida lo contrario, y acá
+   * el fondo no es decoración: la barra de cada competencia ES el dato, y el
+   * nivel de ajuste elegido se distingue por el suyo. Sin esto el informe sale
+   * con las barras vacías y los cuatro niveles iguales.
+   */
+  .inf-barra,
+  .inf-barra span,
+  .inf-nivel,
+  .inf-perfil-adulto,
+  .inf-marca-texto {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .inf {
+    max-width: none;
+    padding: 0;
+    font-size: 10.5pt;
+  }
+
+  .inf-portada {
+    min-height: auto;
+    height: 90vh;
+    border-bottom: 0;
+  }
+
+  /* La primera hoja tiene que llegar hasta el resumen: la marca, quién es, los
+     cuatro niveles y las dos oraciones. Para que entre, ese tramo va más
+     compacto que en pantalla. */
+  .inf {
+    line-height: 1.5;
+  }
+
+  .inf-marca {
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+
+  .inf-encabezado {
+    margin-bottom: 20px;
+  }
+
+  .inf-nivel {
+    padding: 7px 12px;
+  }
+
+  .inf-nivel.elegido {
+    padding: 6px 11px;
+  }
+
+  .inf-semaforo {
+    gap: 5px;
+    margin: 12px 0 2px;
+  }
+
+  .inf-nota {
+    margin-top: 8px;
+  }
+
+  .inf-subtitulo {
+    margin: 16px 0 6px;
+  }
+
+  /* Cada capítulo arranca en hoja nueva, salvo el primero: antes de él solo
+     está el encabezado, y romper ahí dejaba la primera hoja con el nombre y el
+     resto en blanco.
+
+     Sin `break-inside`: el análisis cualitativo no entra en una página y
+     pedirle que no se parta lo empujaba entero a la siguiente. */
+  .inf-capitulo + .inf-capitulo {
+    break-before: page;
+  }
+
+  .inf-nivel,
+  .inf-competencia,
+  .inf-benziger,
+  .inf-recomendaciones li {
+    break-inside: avoid;
+  }
+
+  .inf-capitulo-top h2,
+  .inf-subtitulo {
+    break-after: avoid;
+  }
+}
+
+/* El desglose del cálculo, al pie: es para revisar los cortes contra casos
+   reales, no para leer antes del informe. */
+.inf-desglose {
+  margin-top: 40px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  color: var(--tinta-media);
+  background: var(--papel);
+}
+
+.inf-desglose summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.inf-desglose > div {
+  margin-top: 10px;
+}
+
+.inf-desglose ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.inf-desglose li {
+  margin-bottom: 2px;
+}
+
+@media print {
+  .inf-desglose {
+    display: none;
+  }
+}
+
+/**
+ * Adentro de la ficha.
+ *
+ * El documento se ve tal cual, con su hoja blanca dentro del panel. Lo único
+ * que cambia es que no ocupa la ventana entera: el ancho lo pone el panel.
+ */
+.os-informe-marco {
+  padding: 0;
+  overflow: hidden;
+}
+
+.os-informe-marco .inf {
+  max-width: none;
+  padding: 24px 65px 40px;
+}
+
+/* La portada reserva media hoja porque en el PDF ocupa una página entera.
+   Adentro de la ficha eso es un hueco, así que acá mide lo que mide. */
+.os-informe-marco .inf-portada {
+  min-height: auto;
+  padding-bottom: 24px;
+  margin-bottom: 28px;
+}
+
+.os-informe-marco .inf-portada-cuerpo {
+  margin-top: 18px;
+}
+
+/* La página suelta centra la hoja sobre el fondo del papel. */
+.inf-suelto {
+  min-height: 100vh;
+  background: var(--os-fondo, #f6f5f2);
+}
+
+/* Imprimir desde la ficha saldría con la barra lateral y las pestañas encima,
+   así que ahí no se imprime: para eso está el botón que abre la página sola. */
+@media print {
+  .os-informe-marco {
+    display: none;
+  }
+}

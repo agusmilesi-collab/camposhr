@@ -20,9 +20,9 @@ export const dynamic = 'force-dynamic';
  * Sin sesión del OS: quien entra es la persona evaluada, con su enlace. El
  * token es la credencial y no hay ninguna otra.
  *
- * Tres cosas: empezar, que arranca el reloj; responder una lámina; y terminar,
- * que corrige y cierra. Las tres validan el tiempo contra el momento en que se
- * abrió la primera lámina, que lo fijó el servidor.
+ * Cuatro cosas: empezar, que arranca el reloj; responder una lámina; preguntar
+ * cuánto queda; y terminar, que corrige y cierra. Las cuatro miden el tiempo
+ * contra el momento en que se abrió la primera lámina, que lo fijó el servidor.
  */
 
 function config(): { url: string; key: string } {
@@ -51,7 +51,14 @@ async function patch(id: string, campos: Record<string, unknown>) {
 /** Corrige, guarda el puntaje y cierra la sesión. */
 async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
   const aciertos = corregir(s.respuestas);
-  await patch(s.id, { terminado_at: new Date().toISOString(), cierre });
+  const terminado = new Date();
+  await patch(s.id, { terminado_at: terminado.toISOString(), cierre });
+
+  // Cuánto tardó, contado desde que abrió la primera lámina. Con el tiempo
+  // agotado son los 45 minutos enteros; entregando antes, lo que haya usado.
+  const duracion = s.iniciado_at
+    ? Math.max(0, Math.round((terminado.getTime() - new Date(s.iniciado_at).getTime()) / 1000))
+    : null;
 
   // Sin la clave cargada no se corrige: dejar un cero sería un resultado, y lo
   // que hay es una corrección pendiente.
@@ -72,6 +79,8 @@ async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
         percentil: r?.percentil ?? null,
         desvios: r?.desvios ?? null,
         resultado: r?.resultado ?? null,
+        origen: 'test',
+        duracion_segundos: duracion,
         actualizado_at: new Date().toISOString(),
       }),
       cache: 'no-store',
@@ -130,6 +139,17 @@ export async function POST(req: Request) {
       else respuestas[String(lamina)] = opcion;
 
       await patch(s.id, { respuestas });
+      return NextResponse.json({ ok: true, restan: segundosRestantes(s.iniciado_at) });
+    }
+
+    if (accion === 'reloj') {
+      // La pantalla vuelve a preguntar cada vez que la pestaña se pone al
+      // frente: mientras estuvo atrás su reloj pudo quedarse quieto, y el que
+      // decide si el test sigue abierto es este.
+      if (seAcabo(s)) {
+        await cerrar(s, 'tiempo');
+        return NextResponse.json({ ok: false, motivo: 'Se terminó el tiempo.' }, { status: 409 });
+      }
       return NextResponse.json({ ok: true, restan: segundosRestantes(s.iniciado_at) });
     }
 

@@ -57,6 +57,11 @@ export async function POST(req: Request) {
     percentil: r?.percentil ?? null,
     desvios: r?.desvios ?? null,
     resultado: r?.resultado ?? null,
+    // Quien escribe por acá es la evaluadora, con el puntaje de un Raven que se
+    // tomó en papel. Queda declarado para que la ficha no tenga que deducirlo
+    // de si existe una sesión, que es una deducción que se equivoca cuando la
+    // persona además rindió por su enlace.
+    origen: 'manual',
     actualizado_at: new Date().toISOString(),
   };
 

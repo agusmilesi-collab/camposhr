@@ -1,0 +1,121 @@
+/**
+ * La pantalla de las láminas.
+ *
+ * Fondo oscuro y nada más: lo que se ve del otro lado de la videollamada es la
+ * mancha, y cualquier cosa alrededor compite con ella. El cursor del sistema se
+ * apaga porque lo reemplaza la flecha grande.
+ */
+.pl {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #1a1a1a;
+  cursor: none;
+}
+
+.pl-escena {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pl-placa {
+  max-width: 90vw;
+  max-height: min(84vh, calc(100vh - 140px));
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* La siguiente, pedida y guardada sin mostrarse. */
+.pl-oculta {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pl-lienzo {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.pl-barra {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(20, 20, 20, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 20;
+  color: #f2f2f2;
+  font-size: 13px;
+  user-select: none;
+}
+
+.pl-paso {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2f2f2;
+  font: inherit;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: none;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.pl-paso:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.pl-paso:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.pl-paso:disabled {
+  opacity: 0.3;
+}
+
+.pl-cuenta {
+  min-width: 52px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.pl-total {
+  opacity: 0.5;
+}
+
+.pl-puntero {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  pointer-events: none;
+  z-index: 30;
+  will-change: transform;
+  transition: opacity 0.15s ease;
+}

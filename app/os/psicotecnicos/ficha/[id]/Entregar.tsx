@@ -1,13 +1,14 @@
 'use client';
 
 /**
- * Dar la evaluación por entregada.
+ * Subir el informe al portal del cliente.
  *
- * Va al pie del informe porque el informe es lo que se entrega: el botón
- * queda al final de lo que el cliente va a recibir.
+ * Es la misma acción que antes se llamaba entregar: la evaluación pasa a
+ * Entregados y con eso el informe aparece en el portal de la empresa. El nombre
+ * dice lo que ocurre, que es que el cliente pasa a verlo.
  *
- * Necesita la conclusión puesta: una evaluación sin conclusión no está
- * terminada, aunque el informe esté cargado.
+ * Necesita la conclusión puesta: sin conclusión el informe sale sin nivel de
+ * ajuste, que es lo primero que el cliente busca.
  */
 
 import { useRouter } from 'next/navigation';
@@ -25,7 +26,7 @@ export default function Entregar({
   const [trabajando, setTrabajando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function entregar() {
+  async function subir() {
     setError(null);
     setTrabajando(true);
     try {
@@ -47,21 +48,20 @@ export default function Entregar({
     }
   }
 
+  // Sin contenedor propio: el botón se acomoda en la fila de acciones de la
+  // pantalla que lo use. Por qué está apagado se dice al apoyar el mouse, que
+  // es donde se busca cuando un botón no responde.
   return (
-    <div className="os-barra-acciones">
+    <>
       <button
         className="os-boton os-boton-firme"
         disabled={trabajando || !recomendacion}
-        onClick={entregar}
+        onClick={subir}
+        title={recomendacion ? '' : 'Primero cargá la conclusión, en Recomendación.'}
       >
-        {trabajando ? 'Entregando…' : 'Entregar'}
+        {trabajando ? 'Subiendo…' : 'Subir al portal'}
       </button>
-      <span className="os-columna-monto">
-        {recomendacion
-          ? 'La evaluación pasa a Entregados.'
-          : 'Primero cargá la conclusión, en Recomendación.'}
-      </span>
-      {error && <p className="os-form-error">{error}</p>}
-    </div>
+      {error && <span className="os-form-error">{error}</span>}
+    </>
   );
 }
