@@ -87,6 +87,15 @@ export default function Etapa({ id, etapa }: { id: string; etapa: string }) {
         title="Mover la evaluación a otra etapa"
       >
         {valor}
+        {/* La flecha es lo que dice que se abre: sin ella el sello se lee como
+            un estado y nadie prueba tocarlo. */}
+        <svg
+          className={`os-etapa-flecha${abierta ? ' abierta' : ''}`}
+          viewBox="0 0 10 6"
+          aria-hidden="true"
+        >
+          <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        </svg>
       </button>
 
       {abierta && (

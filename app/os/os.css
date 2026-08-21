@@ -4755,6 +4755,25 @@ textarea.os-campo {
   padding: 0 11px;
 }
 
+.os-etapa-flecha {
+  width: 10px;
+  height: 6px;
+  flex: none;
+  margin-left: 2px;
+  color: var(--os-suave);
+  transition: transform 0.14s ease;
+}
+
+.os-etapa-flecha.abierta {
+  transform: rotate(180deg);
+}
+
+/* El sello se ve tocable: con borde, como cualquier control. */
+.os-etapa-editable > .os-boton {
+  border-color: var(--os-linea);
+  background: var(--os-panel-2);
+}
+
 .os-etapa-lista {
   position: absolute;
   z-index: 30;
