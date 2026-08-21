@@ -617,6 +617,17 @@ html[data-os-lateral='compacta'] .os-boton-pie {
   min-height: 82px;
 }
 
+/* Una línea de contexto arriba de una tabla: dice qué hacer con lo que sigue.
+   No usa `os-vacio` porque eso centra, y centrado se lee como un aviso de que
+   no hay nada. */
+.os-nota-bloque {
+  margin: 0 0 4px;
+  padding: 0 18px 12px;
+  color: var(--os-tinta-media);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
 /* ---------- Piezas ---------- */
 
 .os-cifras {
@@ -4216,6 +4227,53 @@ th.os-tabla-contacto {
  */
 .os-seguimiento-fila.apagada {
   opacity: 0.42;
+}
+
+/**
+ * Las preguntas del pedido, en una grilla de cuatro columnas.
+ *
+ * Cada fila es un rótulo y tres opciones, y cada rótulo mide distinto: sueltas,
+ * las nueve botoneras arrancaban donde terminaba su palabra, en siete puntos
+ * distintos, y terminaban en nueve. Nueve preguntas que se contestan seguidas
+ * mientras el cliente habla por teléfono tienen que leerse como una sola tabla,
+ * no como nueve renglones sin relación.
+ *
+ * Las columnas las declara el bloque y cada fila las hereda con `subgrid`, así
+ * el ancho de cada columna sale de la opción más larga de las nueve y la píldora
+ * sigue siendo una sola pieza con su borde. Donde no haya subgrid, cada fila
+ * cae al reparto en tercios de siempre: se desalinea, que es exactamente como
+ * estaba.
+ */
+@supports (grid-template-columns: subgrid) {
+  .os-pedido-preguntas {
+    display: grid;
+    /* La columna del rótulo va en píxeles y no en `max-content`: los dos
+       bloques son dos grillas distintas, y el rótulo más largo de cada uno
+       ("Contacto con el jefe" arriba, "Paciencia para el arranque" abajo) los
+       hacía arrancar en puntos distintos. Doscientos entran los nueve. */
+    grid-template-columns: 200px repeat(3, max-content);
+    gap: 10px 14px;
+    align-items: center;
+  }
+
+  .os-pedido-preguntas .os-seguimiento-fila {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: center;
+    gap: 0 14px;
+  }
+
+  .os-pedido-preguntas .os-ingreso-opciones {
+    grid-column: 2 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+  }
+
+  /* El ancho ya lo pone la columna: acá solo hace falta que el texto entre. */
+  .os-pedido-preguntas .os-ingreso-opcion {
+    min-width: 0;
+  }
 }
 
 .os-ingreso-fecha {

@@ -13,3 +13,10 @@ tsconfig.tsbuildinfo
 # Los documentos de clientes viven en `documentos/`, versionados con el resto
 # del repositorio y servidos sólo contra el token del portal. Nunca en
 # `public/`, que Next entrega a cualquiera. Ver lib/servicios.ts.
+
+
+# Las migraciones con datos de personas reales no van al repositorio, que es
+# público: nombre, empresa y evaluación psicológica de alguien identificable.
+# Viven en ~/Documents/camposhr-privado y se corren con scripts/supabase-sql.sh
+# desde ahí.
+supabase/migrar-*.sql

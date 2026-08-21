@@ -6,7 +6,7 @@ import PorAnalizar from '../PorAnalizar';
 import Reparto from '../Reparto';
 import Agregar from '../Agregar';
 import { cargar, porEspera, visiblesEn } from '../datos';
-import { SECCIONES, SECCION_DE_RUTA } from '@/lib/psicotecnicos-tipos';
+import { SECCIONES, SECCION_DE_RUTA, type Evaluacion } from '@/lib/psicotecnicos-tipos';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +24,32 @@ const QUE_SE_HACE: Record<string, string> = {
  * Se explican solas: la lista dice lo que hay que hacer y el filtro estorba
  * más de lo que ordena cuando se está trabajando la propia cola.
  */
-const DESNUDAS = new Set(['sin-asignar', 'entrevistas', 'por-analizar', 'entregados']);
+const DESNUDAS = new Set([
+  'sin-asignar',
+  'entrevistas',
+  'por-analizar',
+  'entregados',
+  // Seguimiento va separado por empresa, y una tabla por cliente hace lo que
+  // hacía el filtro sin obligar a elegir de a uno: la llamada de seguimiento se
+  // prepara mirando todo lo de esa empresa junto.
+  'seguimiento',
+]);
+
+/**
+ * Las evaluaciones agrupadas por empresa, cada grupo con las suyas en el orden
+ * en que venían. Las empresas salen ordenadas alfabéticamente, que es como se
+ * las busca cuando hay varias.
+ */
+function porEmpresa(filas: Evaluacion[]): [string, Evaluacion[]][] {
+  const grupos = new Map<string, Evaluacion[]>();
+  for (const f of filas) {
+    const nombre = f.empresa || 'Sin empresa';
+    const suyas = grupos.get(nombre);
+    if (suyas) suyas.push(f);
+    else grupos.set(nombre, [f]);
+  }
+  return [...grupos.entries()].sort((a, b) => a[0].localeCompare(b[0], 'es'));
+}
 
 export function generateStaticParams() {
   return SECCIONES.map((s) => ({ etapa: s.ruta }));
@@ -53,6 +78,10 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
   // El reparto necesita las dos mitades: lo que no tiene dueño y lo que ya está
   // repartido, porque la carga de cada evaluadora es la mitad de la decisión.
   const esReparto = seccion.ruta === 'sin-asignar';
+  // Seguimiento parte en dos: los que entraron, que es lo que se llama a los
+  // noventa días, y los que todavía no se sabe, que es la llamada anterior.
+  const entraron = filas.filter((f) => f.ingreso === true);
+  const porPreguntar = filas.filter((f) => f.ingreso !== true);
   const desnuda = DESNUDAS.has(seccion.ruta);
   const asignadas = esReparto ? todas.filter((f) => f.evaluadora) : [];
 
@@ -140,7 +169,57 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
           <PorAnalizar filas={filas} />
         ))}
 
-      {!esReparto && seccion.ruta !== 'entrevistas' && seccion.ruta !== 'por-analizar' && (
+      {/* Seguimiento, una tabla por empresa. A los noventa días de que alguien
+          entró se llama al cliente, y esa llamada es por empresa y no por
+          persona: en una sola lista había que ir salteando filas de otras.
+
+          Arriba, solo los que entraron a trabajar, que son los únicos que
+          tienen seguimiento que hacer; por eso ninguna tabla trae columna de
+          ingreso. Los que todavía no se sabe van al final y no se esconden: es
+          la otra llamada pendiente, y una evaluación que no aparece en ninguna
+          pantalla está perdida. */}
+      {seccion.ruta === 'seguimiento' && (
+        <>
+          {entraron.length === 0 && porPreguntar.length === 0 && (
+            <section className="os-panel">
+              <p className="os-vacio">No hay nadie esperando seguimiento.</p>
+            </section>
+          )}
+
+          {porEmpresa(entraron).map(([nombre, suyas]) => (
+            <section className="os-panel os-bloque-entrevistas" key={nombre}>
+              <div className="os-panel-top">
+                <h2>{nombre}</h2>
+                <span className="os-columna-monto">
+                  {suyas.length === 1 ? '1 persona' : `${suyas.length} personas`}
+                </span>
+              </div>
+              <TablaEtapa filas={suyas} seccion={seccion.ruta} />
+            </section>
+          ))}
+
+          {porPreguntar.length > 0 && (
+            <section className="os-panel os-bloque-entrevistas">
+              <div className="os-panel-top">
+                <h2>Sin saber si entró</h2>
+                <span className="os-columna-monto">
+                  {porPreguntar.length === 1 ? '1 persona' : `${porPreguntar.length} personas`}
+                </span>
+              </div>
+              <p className="os-nota-bloque">
+                Hay que preguntarle a la empresa si la persona entró. Se carga en su ficha, y
+                recién ahí arranca la cuenta de los noventa días.
+              </p>
+              <TablaEtapa filas={porPreguntar} seccion={seccion.ruta} />
+            </section>
+          )}
+        </>
+      )}
+
+      {!esReparto &&
+        seccion.ruta !== 'entrevistas' &&
+        seccion.ruta !== 'por-analizar' &&
+        seccion.ruta !== 'seguimiento' && (
         <section className="os-panel">
           {filas.length === 0 ? (
             <p className="os-vacio">
