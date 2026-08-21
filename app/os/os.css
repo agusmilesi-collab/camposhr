@@ -4936,11 +4936,22 @@ th.os-tabla-contacto {
   color: var(--os-tinta);
 }
 
-.os-herramienta-icono {
+/**
+ * El número de orden del test: 01, 02, 03.
+ *
+ * Reemplazó a un ícono por test. Seis dibujitos distintos decoraban la lista
+ * sin decir nada que el nombre no dijera, y lo que hace falta mientras se toma
+ * una entrevista es saber por dónde se va. Va con cero adelante y en cifras
+ * tabulares para que los números queden en la misma columna, y en tono suave
+ * porque acompaña al nombre del test, no compite con él.
+ */
+.os-herramienta-numero {
   flex: none;
-  width: 19px;
-  height: 19px;
-  stroke-width: 1.6;
+  min-width: 22px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
   color: var(--os-suave);
 }
 

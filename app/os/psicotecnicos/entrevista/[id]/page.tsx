@@ -36,90 +36,10 @@ export const dynamic = 'force-dynamic';
  * lo de papel, que es lo que después no deja rastro en el sistema.
  */
 
-/**
- * Un ícono por test, para reconocerlo antes de leer.
- *
- * Trazo fino y 24 de caja, como los de la barra lateral. Las manchas llevan la
- * suya partida al medio, el Bender sus figuras para copiar, el gráfico dos
- * personas, el Raven la matriz con la pieza que falta, y la entrevista una
- * conversación.
- */
-const ICONO: Record<string, React.ReactNode> = {
-  manchas: (
-    <>
-      <path d="M12 3.5c2.6 0 3.4 2.2 4.6 3.6 1.2 1.4 3 2 3 4.2 0 2.6-2.2 3.5-3.4 5.1-.9 1.2-1.2 3.1-4.2 3.1" />
-      <path d="M12 3.5c-2.6 0-3.4 2.2-4.6 3.6-1.2 1.4-3 2-3 4.2 0 2.6 2.2 3.5 3.4 5.1.9 1.2 1.2 3.1 4.2 3.1" />
-      <path d="M12 3.5v16" strokeDasharray="2 2" />
-    </>
-  ),
-  bender: (
-    <>
-      <circle cx="8" cy="8" r="3.2" />
-      <rect x="13" y="13" width="7" height="7" rx="1" />
-      <path d="M4 20h5" />
-    </>
-  ),
-  grafico: (
-    <>
-      <circle cx="8.5" cy="7" r="2.6" />
-      <path d="M4.5 20v-3a4 4 0 0 1 8 0v3" />
-      <circle cx="17" cy="8.5" r="2.2" />
-      <path d="M14 20v-2.5a3.2 3.2 0 0 1 6.4 0V20" />
-    </>
-  ),
-  raven: (
-    <>
-      <rect x="3.5" y="3.5" width="17" height="17" rx="1.5" />
-      <path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17" />
-      <path d="M14.8 14.8h5.7v5.7h-5.7z" fill="currentColor" opacity="0.18" stroke="none" />
-    </>
-  ),
-  entrevista: (
-    <>
-      <path d="M20 13.5a2.5 2.5 0 0 1-2.5 2.5H9l-4 3.5v-3.5H6a2.5 2.5 0 0 1-2.5-2.5v-6A2.5 2.5 0 0 1 6 5h11.5A2.5 2.5 0 0 1 20 7.5z" />
-    </>
-  ),
-  informe: (
-    <>
-      <path d="M6.5 3.5h7l4.5 4.5v12a1 1 0 0 1-1 1h-10.5a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" />
-      <path d="M13.5 3.5V8H18" />
-      <path d="M9 13h6M9 16.5h4" />
-    </>
-  ),
-};
-
-function Icono({ nombre }: { nombre: string }) {
-  return (
-    <svg
-      className="os-herramienta-icono"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {ICONO[nombre] ?? ICONO.informe}
-    </svg>
-  );
-}
-
 /** Con qué se toma cada test, por su nombre en la batería. */
 const HERRAMIENTA: Record<string, { href: string; boton: string }> = {
   Rorschach: { href: '/os/laminas/rorschach', boton: 'Abrir las láminas' },
   Zulliger: { href: '/os/laminas/zulliger', boton: 'Abrir las láminas' },
-};
-
-/** Qué ícono le toca a cada test. */
-const QUE_ICONO: Record<string, string> = {
-  Rorschach: 'manchas',
-  Zulliger: 'manchas',
-  Bender: 'bender',
-  'Gráfico 2 personas': 'grafico',
-  Raven: 'raven',
-  'Entrevista por competencias': 'entrevista',
-  'Análisis discursivo (Elliot Jaques)': 'entrevista',
-  Benziger: 'informe',
 };
 
 const RAVEN: Record<EstadoRaven, { texto: string; detalle: string; color: string }> = {
@@ -137,11 +57,29 @@ const RAVEN: Record<EstadoRaven, { texto: string; detalle: string; color: string
   terminado: { texto: 'Terminado', detalle: 'Lo terminó y el puntaje está en la ficha.', color: 'os-verde' },
 };
 
-function Tarjeta({ test, children }: { test: string; children?: React.ReactNode }) {
+/**
+ * Un test de la batería, con el número que le toca en la entrevista.
+ *
+ * El número reemplaza al ícono: seis dibujitos distintos decoraban la lista
+ * pero no decían nada que el nombre del test no dijera, y lo que hace falta
+ * mientras se toma es saber por dónde se va. El orden es el de la batería, que
+ * es el orden en que se administra.
+ */
+function Tarjeta({
+  test,
+  n,
+  children,
+}: {
+  test: string;
+  n: number;
+  children?: React.ReactNode;
+}) {
   return (
     <section className="os-panel os-herramienta">
       <h3 className="os-herramienta-texto">
-        <Icono nombre={QUE_ICONO[test] ?? 'informe'} />
+        <span className="os-herramienta-numero" aria-hidden="true">
+          {String(n).padStart(2, '0')}
+        </span>
         {test}
       </h3>
       {children}
@@ -232,11 +170,11 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
         </section>
       )}
 
-      {tests.map((t) => {
+      {tests.map((t, i) => {
         const h = HERRAMIENTA[t];
         if (h) {
           return (
-            <Tarjeta key={t} test={t}>
+            <Tarjeta key={t} test={t} n={i + 1}>
               {/* Sin campo de observaciones: lo que se ve en las manchas entra
                   en la codificación, que es donde después se lee. */}
               <Papel
@@ -260,7 +198,7 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
 
         if (t === 'Raven') {
           return (
-            <Tarjeta key={t} test="Raven">
+            <Tarjeta key={t} test="Raven" n={i + 1}>
               <div className="os-herramienta-accion">
                 <span className={`os-sello-estado ${raven.color}`} title={raven.detalle}>
                   {raven.texto}
@@ -286,7 +224,7 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
 
         if (t === 'Bender') {
           return (
-            <Tarjeta key={t} test={t}>
+            <Tarjeta key={t} test={t} n={i + 1}>
               <Papel
                 id={e.id}
                 campoMarca="benderAdministrado"
@@ -311,7 +249,7 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
 
         if (t === 'Gráfico 2 personas') {
           return (
-            <Tarjeta key={t} test={t}>
+            <Tarjeta key={t} test={t} n={i + 1}>
               <Papel
                 id={e.id}
                 campoMarca="graficoAdministrado"
@@ -326,7 +264,7 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
 
         if (t === 'Benziger') {
           return (
-            <Tarjeta key={t} test="Benziger">
+            <Tarjeta key={t} test="Benziger" n={i + 1}>
               {/* Se responde en la plataforma de la licencia y el informe se
                   carga después, en la ficha; acá queda la marca de si ya se le
                   tomó, que es lo que la entrevista tiene que saber. */}
@@ -343,7 +281,7 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
           );
         }
 
-        return <Tarjeta key={t} test={t} />;
+        return <Tarjeta key={t} test={t} n={i + 1} />;
       })}
 
 

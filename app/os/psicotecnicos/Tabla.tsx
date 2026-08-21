@@ -493,14 +493,16 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
             <td data-campo="Pedido">
               <Busqueda e={e} conEvaluadora={false} />
             </td>
+            {/* Lleva a la hoja de la entrevista en vez de dar la entrevista por
+                tomada. Marcarla acá era decir que pasó algo que todavía no
+                había pasado: la evaluación avanza sola cuando queda administrado
+                el último test, y en la hoja está el botón para cerrarla antes.
+                Lo que hace falta al lado de una entrevista agendada es la
+                puerta para entrar a tomarla. */}
             <td className="os-tabla-accion">
-              <button
-                className="os-boton os-boton-firme"
-                disabled={trabajando}
-                onClick={() => guardar('etapa', 'Por analizar')}
-              >
-                Tomada
-              </button>
+              <Link className="os-boton os-boton-firme" href={`/os/psicotecnicos/entrevista/${e.id}`}>
+                Entrevistar
+              </Link>
               {volver}
             </td>
           </>
