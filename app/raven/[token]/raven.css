@@ -110,12 +110,23 @@
   color: #a5451f;
 }
 
+/* El aviso de los últimos minutos tiene su lugar reservado desde el principio,
+   aunque esté vacío. Apareciendo de la nada empujaba la lámina y las opciones
+   hacia abajo y dejaba los botones fuera de la pantalla, justo en el tramo en
+   que la persona está apurada y revisando lo que le faltó. Son treinta
+   píxeles que el reparto de más abajo ya tiene descontados. */
 .rv-aviso {
-  margin: 14px 0 0;
-  padding: 11px 14px;
+  min-height: 30px;
+  margin: 10px 0 0;
+}
+
+.rv-aviso p {
+  margin: 0;
+  padding: 5px 12px;
   border-left: 3px solid #a5451f;
   background: #fbf6f2;
-  font-size: 0.9rem;
+  font-size: 0.86rem;
+  line-height: 1.4;
 }
 
 /* La lámina manda: es lo único que hay que mirar, y aun así entra completa con
@@ -131,12 +142,22 @@
   text-align: center;
 }
 
-/* La matriz ya viene sola, sin las opciones, así que es apaisada. Se limita al
-   alto de la pantalla para que las opciones y los botones entren sin scrollear:
-   en una de trece pulgadas, cada lámina costaba bajar y volver a subir. */
+/* La matriz ya viene sola, sin las opciones, así que es apaisada. Su alto sale
+   de repartir el de la ventana y no de un porcentaje fijo: el encabezado, el
+   aviso, los botones y los márgenes suman unos 293 px que no cambian con la
+   pantalla, y lo que sobra se parte entre la matriz y las dos filas de opciones,
+   que miden un 30% de ella. De ahí los dos `calc`. En una ventana útil de 623
+   px, que es lo que deja una pantalla de trece pulgadas, la matriz sale 203 px
+   de alto; en una de quince, 301; en una de veintiuna, 406. Con un porcentaje
+   fijo, la de veintiuna dejaba media pantalla vacía.
+
+   Arriba de unos 1040 px de ventana deja de crecer, y ahí manda el archivo: el
+   recorte mide 591 x 461 y estirarlo sería agrandar un escaneo de 124 DPI, que
+   se ve peor cuanto más grande. Para llenar una pantalla de veintisiete hay que
+   volver a escanear a 300 DPI, no tocar esta hoja. */
 .rv-lamina img {
   max-width: 100%;
-  max-height: 36vh;
+  max-height: calc(62vh - 185px);
   height: auto;
   object-fit: contain;
 }
@@ -167,7 +188,7 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 11vh;
+  max-height: calc(19vh - 57px);
   object-fit: contain;
 }
 

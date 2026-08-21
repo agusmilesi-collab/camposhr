@@ -268,12 +268,16 @@ export default function Test({
         <Cronometro restan={restan} avisando={avisando} />
       </header>
 
-      {avisando && (
-        <p className="rv-aviso">
-          Quedan {Math.ceil(restan / 60)} minutos. Es buen momento para revisar las láminas
-          que dejaste sin responder.
-        </p>
-      )}
+      {/* Con su lugar tomado desde el principio: si apareciera de la nada,
+          empujaría los botones fuera de la pantalla en el peor momento. */}
+      <div className="rv-aviso" role="status">
+        {avisando && (
+          <p>
+            Quedan {Math.ceil(restan / 60)} minutos. Buen momento para revisar las láminas
+            que dejaste sin responder.
+          </p>
+        )}
+      </div>
 
       <figure className="rv-lamina">
         {/* eslint-disable-next-line @next/next/no-img-element */}
