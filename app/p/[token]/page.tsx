@@ -110,6 +110,18 @@ function ordenar(cands: Candidato[]): Candidato[] {
   );
 }
 
+/**
+ * En qué punto del pipeline está una búsqueda.
+ *
+ * La del candidato menos avanzado, que es lo que todavía falta de esa
+ * búsqueda: con uno agendado y otro en análisis, lo que queda por delante es
+ * la entrevista. Una búsqueda sin candidatos va primero, porque no arrancó.
+ */
+function etapaDe(b: Busqueda): number {
+  const etapas = b.candidatos.map((c) => ORDEN[c.estado] ?? 9);
+  return etapas.length ? Math.min(...etapas) : -1;
+}
+
 /** Encabezado de las columnas de una tabla de candidatos en curso. */
 function Encabezado({ conCobro }: { conCobro: boolean }) {
   return (
@@ -242,12 +254,18 @@ export default async function Portal({ params }: { params: { token: string } }) 
 
   // En curso: las búsquedas que todavía tienen algún candidato sin entregar,
   // más las que aún no tienen ningún candidato asignado.
+  // Las búsquedas se leen como el pipeline: arriba lo que falta empezar y abajo
+  // lo que está por salir, que es el orden en que se pregunta por ellas. Antes
+  // salían por fecha de pedido y las etapas quedaban intercaladas.
   const enCurso = busquedas
     .map((b) => ({
       ...b,
       candidatos: b.candidatos.filter((c) => c.estado !== 'Entregado'),
     }))
-    .filter((b, i) => b.candidatos.length > 0 || busquedas[i].candidatos.length === 0);
+    .filter((b, i) => b.candidatos.length > 0 || busquedas[i].candidatos.length === 0)
+    .sort(
+      (a, b) => etapaDe(a) - etapaDe(b) || (b.fecha ?? '').localeCompare(a.fecha ?? '')
+    );
 
   return (
     <>
