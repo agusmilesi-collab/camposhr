@@ -709,6 +709,7 @@ a.os-fila:hover {
 .os-violeta { --punto: var(--os-violeta); }
 .os-verde { --punto: var(--os-verde); }
 .os-rojo { --punto: var(--os-rojo); }
+.os-rojo { --punto: var(--os-rojo); }
 
 .os-etiquetas {
   display: flex;
@@ -1069,6 +1070,17 @@ a.os-tarjeta:hover {
   background: var(--os-activo);
   color: var(--os-activo-tinta);
   opacity: 0.88;
+}
+
+/* Un enlace con forma de botón lleva el color del botón. Hace falta decirlo
+   porque `.os a { color: inherit }` es más específico que la clase sola, así
+   que sin esto un enlace firme queda con el texto del color de su fondo. */
+.os a.os-boton {
+  color: var(--os-tinta);
+}
+
+.os a.os-boton-firme {
+  color: var(--os-activo-tinta);
 }
 
 .os-tilde {
@@ -1483,10 +1495,12 @@ textarea.os-campo {
 
 /* ---------- Tabla ---------- */
 
+/* Sin desplazamiento lateral: la tabla se comprime hasta donde haya lugar. */
 .os-tabla-marco {
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
+/* El panel mide lo que la tabla, y nunca más que su contenedor. */
 .os-panel:has(> .os-tabla-marco > .os-tabla-trabajo) {
   width: fit-content;
   max-width: 100%;
@@ -2208,16 +2222,185 @@ textarea.os-campo {
   max-width: 820px;
 }
 
-.os-conclusion {
-  display: grid;
-  gap: 14px;
-  justify-items: start;
+/* En la pestaña del informe el cierre encabeza la columna, así que mide lo
+   mismo que el documento que tiene debajo. */
+.os-informe-cierre {
+  max-width: none;
 }
 
-.os-conclusion-elegida {
+/**
+ * Con qué cierra: los cuatro niveles a la izquierda y el fundamento a la
+ * derecha.
+ *
+ * Los niveles se muestran enteros y con su color, como en el informe, así lo
+ * que se elige es exactamente lo que el cliente va a leer. El fundamento va al
+ * lado y no debajo porque se escribe mirando cuál se eligió.
+ */
+.os-conclusion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px 22px;
+  align-items: start;
+}
+
+.os-conclusion-niveles {
+  display: grid;
+  gap: 7px;
+}
+
+/* Cada nivel con su punto en color pleno: el color del borde queda tenue para
+   no gritar, y el punto es el que dice de qué nivel se trata de un vistazo. */
+.os-nivel-opcion {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid;
+  border-radius: 9px;
+  padding: 8px 13px;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.os-nivel-opcion::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--punto-nivel);
+}
+
+.os-nivel-opcion.verde {
+  --punto-nivel: #37804a;
+}
+.os-nivel-opcion.ambar {
+  --punto-nivel: #a97722;
+}
+.os-nivel-opcion.naranja {
+  --punto-nivel: #c1591a;
+}
+.os-nivel-opcion.rojo {
+  --punto-nivel: #8c3b3b;
+}
+
+.os-nivel-titulo {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--os-tinta-media);
+}
+
+.os-nivel-texto {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.77rem;
+  line-height: 1.45;
+  color: var(--os-suave);
+  opacity: 0.8;
+}
+
+.os-nivel-opcion.verde {
+  border-color: rgba(55, 128, 74, 0.32);
+  background: rgba(55, 128, 74, 0.05);
+}
+.os-nivel-opcion.ambar {
+  border-color: rgba(169, 119, 34, 0.3);
+  background: rgba(169, 119, 34, 0.04);
+}
+.os-nivel-opcion.naranja {
+  border-color: rgba(193, 89, 26, 0.3);
+  background: rgba(193, 89, 26, 0.04);
+}
+.os-nivel-opcion.rojo {
+  border-color: rgba(140, 59, 59, 0.3);
+  background: rgba(140, 59, 59, 0.04);
+}
+
+.os-nivel-opcion:hover {
+  border-color: var(--os-suave);
+}
+
+/* El elegido: borde entero y texto firme, igual que en el informe. */
+.os-nivel-opcion.puesta {
+  border-width: 2px;
+  padding: 7px 12px;
+}
+
+.os-nivel-opcion.puesta .os-nivel-titulo {
+  color: var(--os-tinta);
+  font-weight: 600;
+}
+
+.os-nivel-opcion.puesta .os-nivel-texto {
+  color: var(--os-tinta-media);
+  opacity: 1;
+}
+
+.os-nivel-opcion.puesta.verde {
+  border-color: #37804a;
+  background: rgba(55, 128, 74, 0.11);
+}
+.os-nivel-opcion.puesta.ambar {
+  border-color: var(--os-ambar);
+  background: rgba(169, 119, 34, 0.1);
+}
+.os-nivel-opcion.puesta.naranja {
+  border-color: #c1591a;
+  background: rgba(193, 89, 26, 0.1);
+}
+.os-nivel-opcion.puesta.rojo {
+  border-color: var(--os-rojo);
+  background: rgba(140, 59, 59, 0.1);
+}
+
+/* El fundamento ocupa el alto de la columna de niveles. */
+.os-conclusion-notas textarea.os-campo {
+  min-height: 150px;
+}
+
+.os-conclusion-notas .os-dato-rotulo em {
+  font-style: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.75;
+}
+
+/* Lo administrado a la izquierda y el botón contra el margen derecho: se mira
+   la lista y recién entonces se genera. */
+.os-conclusion-pie {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.os-conclusion-tests {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-right: auto;
+}
+
+/* El rótulo se queda con el renglón entero: los tests van debajo, todos
+   alineados, y no colgando del final de una frase. Los sellos van sangrados,
+   así se leen como la lista de lo que encabeza el rótulo. */
+.os-conclusion-tests {
+  padding-left: 15px;
+}
+
+.os-conclusion-tests .os-dato-rotulo {
+  flex-basis: 100%;
+  margin-left: -15px;
+}
+
+@media (max-width: 900px) {
+  .os-conclusion {
+    grid-template-columns: 1fr;
+  }
 }
 
 .os-conclusion select.os-campo {
@@ -3995,16 +4178,20 @@ textarea.os-campo {
  * puesto abajo, y por eso lleva su propia regla.
  */
 /**
- * La tabla mide exactamente la suma de sus columnas.
+ * La tabla mide la suma de sus columnas, y menos si no hay lugar.
  *
- * Ni `100%` ni `min-width: 100%`: con cualquiera de los dos el navegador
- * estira o comprime las columnas para que la tabla llene el contenedor, y el
- * ancho fijo deja de serlo. Si no entra, desplaza el marco, que para eso tiene
- * `overflow-x`.
+ * `max-width` en vez de `width`: cuando la ventana da el ancho declarado, cada
+ * columna mide exactamente lo suyo y las secciones se ven iguales entre sí.
+ * Cuando no lo da, `table-layout: fixed` reparte lo que hay respetando las
+ * proporciones y el texto se recorta, que es como ya se comporta cada celda.
+ *
+ * Antes desbordaba y el marco se desplazaba de costado. Una barra horizontal
+ * esconde columnas enteras sin avisar: quien mira la tabla no sabe que le
+ * falta la mitad hasta que arrastra.
  */
 .os-tabla-fija {
   width: var(--os-tabla-ancho);
-  max-width: none;
+  max-width: 100%;
   table-layout: fixed;
 }
 
@@ -4191,4 +4378,458 @@ textarea.os-campo {
   .os-bloque-entrevistas + .os-bloque-entrevistas {
     margin-top: 26px;
   }
+}
+
+/**
+ * La hoja de la entrevista.
+ *
+ * Se abre con la persona enfrente, así que todo lo que importa entra sin
+ * scroll: arriba los datos del encuentro, y debajo un renglón por test con su
+ * herramienta contra el margen derecho, siempre en el mismo lugar. La lista es
+ * corta y de altura pareja a propósito: se recorre con la vista mientras se
+ * habla, y una tarjeta más alta que las otras se lee como más importante.
+ */
+.os-entrevista-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px 20px;
+  padding: 16px 18px;
+}
+
+.os-entrevista-datos > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* El valor se lee entero: un correo cortado obliga a abrir la ficha para
+   saber a qué dirección se le escribe. */
+.os-entrevista-datos .os-dato-valor {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* El correo es el dato más largo y se queda con dos columnas. */
+.os-entrevista-correo {
+  grid-column: span 2;
+}
+
+/* La videollamada lleva un campo o un botón, así que pide más lugar que un
+   dato de una línea: se queda con dos columnas de la grilla. */
+.os-entrevista-videollamada {
+  grid-column: span 2;
+}
+
+.os-entrevista-enlace {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 1px;
+}
+
+.os-entrevista-enlace .os-campo {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  font-size: 0.81rem;
+}
+
+.os-subtitulo {
+  margin: 22px 0 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--os-tinta);
+}
+
+.os-herramienta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 11px 18px;
+}
+
+/* Con campo de observaciones la tarjeta crece hacia abajo, así que el relleno
+   inferior se recorta: el aire de más se lee como separación entre tests. */
+.os-herramienta:has(.os-papel-notas) {
+  padding-bottom: 9px;
+}
+
+/* Entre herramientas la separación es menor que entre paneles: son renglones
+   de una misma lista y no bloques distintos de la pantalla. */
+.os-panel + .os-herramienta {
+  margin-top: 8px;
+}
+
+/* El texto cede ancho antes de empujar los botones al renglón de abajo: un
+   detalle largo partido en dos líneas se lee igual, y una fila de botones
+   fuera de su columna rompe la alineación de toda la lista. */
+.os-herramienta-texto {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+/* El nombre con su ícono, en un renglón: quien administra sabe qué es cada
+   test, así que lo único que hace falta es reconocerlo de un vistazo. */
+.os-herramienta-texto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--os-tinta);
+}
+
+.os-herramienta-icono {
+  flex: none;
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.6;
+  color: var(--os-suave);
+}
+
+/**
+ * Las acciones de cada test, en columnas fijas.
+ *
+ * No es una tabla, pero se lee como una: el estado, el botón principal y el
+ * secundario caen siempre en el mismo lugar, así la vista baja por la columna
+ * en vez de buscar cada botón donde el ancho del texto lo haya dejado. Un test
+ * sin estado deja su celda vacía en lugar de correr los otros dos.
+ */
+.os-herramienta-accion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px 148px;
+  align-items: center;
+  gap: 10px;
+  width: 464px;
+  flex-shrink: 0;
+  justify-items: stretch;
+  /* Si igual tuviera que bajar, baja contra el margen derecho. */
+  margin-left: auto;
+}
+
+.os-herramienta-accion > .os-enlace-suave,
+.os-herramienta-accion > .os-enlace-apagado {
+  justify-self: start;
+  text-align: left;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/**
+ * El estado, sea botón o texto suelto, arranca siempre en el mismo punto.
+ *
+ * Los que se pueden tocar son botones y traen dos cosas que corren el
+ * circulito: el relleno lateral y el centrado de su contenido. Estirados al
+ * ancho de la columna, además, el punto queda a una distancia distinta según
+ * cuánto mida el texto, así que "Administrado" y "No administrado" no
+ * coincidían ni entre ellos. Acá el ancho lo da el contenido, el relleno es el
+ * mismo para los dos y todo se alinea a la izquierda.
+ */
+.os-herramienta-accion > .os-sello-estado {
+  justify-self: start;
+  justify-content: flex-start;
+  width: auto;
+  padding: 0 13px;
+  text-align: left;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* Los botones de acción sí ocupan su columna entera; el del estado no. */
+.os-herramienta-accion > .os-boton.os-sello-estado {
+  width: auto;
+}
+
+.os-herramienta-accion > .os-boton,
+.os-herramienta-accion > .os-link-raven > .os-boton {
+  width: 100%;
+}
+
+.os-herramienta-accion > .os-link-raven {
+  min-width: 0;
+  justify-self: stretch;
+}
+
+.os-enlace-apagado {
+  font-size: 0.8rem;
+  color: var(--os-suave);
+  opacity: 0.6;
+}
+
+.os-enlace-suave {
+  font-size: 0.8rem;
+  color: var(--os-suave);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.os-entrevista-cierre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 18px;
+  margin-top: 18px;
+}
+
+.os-entrevista-cierre p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--os-suave);
+}
+
+.os-entrevista-botones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* En el teléfono la herramienta se apila: el botón contra el margen derecho de
+   una pantalla angosta deja el nombre del test partido en tres renglones. */
+@media (max-width: 620px) {
+  .os-herramienta,
+  .os-entrevista-cierre {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .os-herramienta-accion,
+  .os-entrevista-botones {
+    justify-content: flex-start;
+  }
+}
+
+/**
+ * El Raven: el puntaje, la escala de los cinco rangos y qué significa cada
+ * número.
+ *
+ * La escala se muestra entera y con el rango de la persona marcado. Un rango
+ * suelto dice en qué cajón cayó; los cinco a la vista dicen además qué tan
+ * lejos quedó del de al lado, que es lo que hace falta para comparar dos
+ * candidatos o para explicarle el resultado a quien no lee percentiles.
+ *
+ * Van de mayor a menor, como en el manual, y en columnas fijas: los tramos de
+ * aciertos se leen de arriba abajo y una columna que se mueve obliga a buscar
+ * el número en cada renglón.
+ */
+.os-raven-origen {
+  font-size: 0.78rem;
+  color: var(--os-suave);
+}
+
+.os-raven-origen.os-ambar {
+  color: var(--amber, #a97722);
+}
+
+.os-raven-escala {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  border: 1px solid var(--os-linea-suave);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.os-raven-nivel {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 116px 148px;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--os-suave);
+}
+
+.os-raven-nivel + .os-raven-nivel {
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+/* El suyo: fondo, texto firme y una barra al costado. El color solo no alcanza
+   para señalar una fila dentro de una lista de cinco. */
+.os-raven-nivel.suyo {
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--os-activo);
+}
+
+.os-raven-numeral {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.os-raven-tramo {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.os-raven-frecuencia {
+  text-align: right;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.os-raven-glosario {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-raven-glosario p {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--os-suave);
+}
+
+.os-raven-glosario p:last-child {
+  margin-bottom: 0;
+}
+
+.os-raven-glosario strong {
+  color: var(--os-tinta);
+  font-weight: 600;
+}
+
+@media (max-width: 620px) {
+  .os-raven-nivel {
+    grid-template-columns: 22px minmax(0, 1fr);
+  }
+  .os-raven-tramo,
+  .os-raven-frecuencia {
+    grid-column: 2;
+    text-align: left;
+  }
+}
+
+/* Un test de papel en la hoja de la entrevista: el sí/no y el botón en la
+   fila, y las observaciones abajo a lo ancho, que es donde se escribe una
+   frase entera sin que el renglón se parta. */
+.os-herramienta {
+  flex-wrap: wrap;
+}
+
+/* Las observaciones van en su propio renglón, debajo del nombre y a lo ancho
+   de la tarjeta, con su botón en la misma columna que el resto de las
+   acciones. */
+.os-papel-notas {
+  flex-basis: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 148px;
+  align-items: center;
+  gap: 10px;
+  /* Pegado al renglón de arriba: lo que separa las dos filas es el alto de los
+     botones, y todo lo que se agregue encima se lee como aire. */
+  margin-top: 0;
+}
+
+.os-papel-notas .os-campo {
+  min-width: 0;
+  height: 32px;
+  font-size: 0.81rem;
+}
+
+.os-papel-notas .os-form-error {
+  grid-column: 1 / -1;
+}
+
+/* En la ficha los mismos datos van fijos: rótulo, si se tomó y lo anotado. */
+.os-administrado-fijo {
+  display: grid;
+  grid-template-columns: 150px 92px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 14px;
+  padding: 9px 0;
+}
+
+.os-administrado-fijo + .os-administrado-fijo {
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-administrado-notas {
+  font-size: 0.84rem;
+  color: var(--os-tinta);
+}
+
+.os-administrado-sin {
+  font-size: 0.84rem;
+  color: var(--os-suave);
+}
+
+@media (max-width: 620px) {
+  .os-administrado-fijo {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+/* El tiempo que le queda al candidato en el Raven, en la columna donde los
+   otros tests muestran lo que se abre. */
+.os-raven-reloj {
+  justify-self: center;
+  font-size: 0.81rem;
+  color: var(--os-tinta-media);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.os-raven-reloj.urge {
+  color: var(--os-ambar);
+  font-weight: 600;
+}
+
+/* El portal del cliente: abrir y copiar, en la fila del cliente. */
+.os-portal-acciones {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* El botón que arma el informe, con lo que hace falta saber al lado. */
+.os-generar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 18px;
+}
+
+.os-generar h2 {
+  margin: 0 0 2px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.os-generar p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--os-suave);
+  max-width: 60ch;
+}
+
+.os-generar .os-boton {
+  flex-shrink: 0;
+}
+
+.os-generar-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Un botón que no se puede apretar porque falta un dato, no porque esté
+   trabajando: se ve apagado y dice por qué al apoyar el mouse. */
+.os-boton-apagado {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Un enlace con forma de botón no se subraya: se lee como botón. */
+.os a.os-boton {
+  text-decoration: none;
 }

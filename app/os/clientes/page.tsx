@@ -1,5 +1,6 @@
 import Shell from '../Shell';
 import NuevoCliente from './NuevoCliente';
+import CopyLink from '@/app/informes/CopyLink';
 import { listarClientes } from '@/lib/clientes';
 import { quienSoy } from '@/lib/identidad';
 
@@ -98,11 +99,23 @@ export default async function Clientes() {
                   <td className="os-tabla-num">
                     {c.cotizaciones || <span className="os-tabla-flojo">—</span>}
                   </td>
+                  {/* El enlace del portal es el secreto que da acceso: se
+                      manda por el canal acordado y no se publica. Vive acá y no
+                      en una pantalla aparte, que era la misma lista de clientes
+                      con una sola columna. */}
                   <td>
                     {c.token ? (
-                      <a href={`${PORTAL}/${c.token}`} target="_blank" rel="noreferrer">
-                        Abrir
-                      </a>
+                      <span className="os-portal-acciones">
+                        <a
+                          className="os-boton"
+                          href={`${PORTAL}/${c.token}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Abrir
+                        </a>
+                        <CopyLink url={`${PORTAL}/${c.token}`} texto="Copiar enlace" />
+                      </span>
                     ) : (
                       <span className="os-tabla-flojo">sin portal</span>
                     )}

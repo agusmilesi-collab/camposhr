@@ -66,7 +66,11 @@ las cuatro secciones y pasar de una a otra no mueve nada de lugar.
 Dos reglas al tocarlo:
 
 - **Ninguna tabla pasa de 1200 px.** La más ancha ("Por citar", ocho columnas)
-  da exactamente eso, así que sumar una columna obliga a recortar otra.
+  da exactamente eso, así que sumar una columna obliga a recortar otra. Los
+  anchos declarados viajan al `colgroup` en proporción y no en píxeles: cuando
+  la ventana da los 1200, cada columna mide lo suyo; cuando no los da, se
+  reparten lo que hay. **Nada de desplazamiento horizontal**, que esconde
+  columnas enteras sin avisar.
 - **Una fila es un renglón.** Lo que no entra se recorta con puntos
   suspensivos. El pedido es la única excepción, con dos: empresa arriba, puesto
   abajo.
@@ -97,12 +101,49 @@ El reloj también es del servidor. `iniciado_at` se sella cuando se pide la
 primera lámina y `segundosRestantes()` mide contra eso: si el tiempo lo llevara
 el navegador, recargar la página lo reiniciaría.
 
-**Las láminas van a `public/raven/laminas/`, numeradas de 1 a 36.** Este
-repositorio es público, y `public/` se entrega a cualquiera que sepa la
-dirección. Las láminas del APM son material con derechos y difundirlas invalida
-el test para quien las haya visto: antes de subir los escaneos hay que decidir
-si el repositorio se cierra o si las láminas se sirven desde Storage privado con
-URL firmada, como el CV.
+## Las láminas de los tests no van al repositorio
+
+Las de Rorschach y Zulliger viven en el bucket privado, en
+`psicotecnicos/laminas/<test>/<n>.png`, y las sirve `/api/os/lamina/<test>/<n>`
+contra la sesión del OS. Estuvieron en `public/` hasta el 20/8/2026, servidas
+por el hub de herramientas a cualquiera que supiera la dirección.
+
+Este repositorio es público y `public/` se entrega sin credencial. Las láminas
+son material con derechos, y una que circula deja de servir para quien ya la
+vio.
+
+**Las del Raven todavía no están.** Cuando se escaneen, van al mismo lugar y por
+el mismo camino, no a `public/raven/laminas/`, que es donde hoy quedan las dos
+de prueba.
+
+## El informe lo arma un solo molde, y lo interno va apagado
+
+`app/os/psicotecnicos/informe/_doc/Documento.tsx` dibuja el informe en los tres
+lugares donde aparece: la pestaña de la ficha, su página aparte y el portal del
+cliente. Un solo molde, para que lo que la evaluadora revisa sea exactamente lo
+que el cliente lee.
+
+**Lo que solo mira el equipo va detrás de `interno` y apagado por defecto**: qué
+falta cargar y de dónde sale cada porcentaje. La primera versión lo mostraba
+siempre, y el portal le decía al cliente "falta el sumario, en la pestaña de
+codificación". Con el valor por defecto en falso, una pantalla nueva que use el
+documento no filtra por olvido.
+
+**Los colores del informe se imprimen.** Chrome descarta los fondos salvo que se
+le pida lo contrario, y acá el fondo es el dato: la barra de cada competencia y
+el nivel de ajuste elegido. Los elementos que lo necesitan llevan
+`print-color-adjust: exact`.
+
+## Una etapa sin pantalla es una evaluación perdida
+
+`ETAPAS` y `SECCIONES` tienen que cubrir lo mismo. "Seguimiento" existió como
+etapa y como botón sin tener sección: apretarlo sacaba la evaluación de todas
+las listas, `/os/psicotecnicos/seguimiento` respondía 404 y no había forma de
+volver desde la interfaz. Cuando se le hizo su pantalla, el 21/8/2026, había
+tres personas atrapadas ahí.
+
+Al sumar una etapa hay que sumar su sección, su entrada en la barra lateral
+(`app/os/Shell.tsx`, que tiene su propia lista) y sus columnas en `Tabla.tsx`.
 
 ## Las etapas y las secciones no son lo mismo
 

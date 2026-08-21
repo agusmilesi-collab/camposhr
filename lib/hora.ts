@@ -53,6 +53,24 @@ export function fecha(iso: string | null): string | null {
   }).format(d);
 }
 
+/**
+ * "21/8/26", con el año en dos dígitos.
+ *
+ * Para las columnas donde la fecha puede ser de otro año y el día suelto no
+ * alcanza: una entrega dice tanto por cuándo fue como por hace cuánto.
+ */
+export function fechaCorta(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = comoFecha(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return new Intl.DateTimeFormat('es-AR', {
+    timeZone: ZONA,
+    day: 'numeric',
+    month: 'numeric',
+    year: '2-digit',
+  }).format(d);
+}
+
 /** Las partes de una fecha en la zona del trabajo. */
 function partes(d: Date): Record<string, string> {
   const fmt = new Intl.DateTimeFormat('en-CA', {

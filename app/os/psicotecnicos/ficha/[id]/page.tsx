@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Shell from '../../../Shell';
 import { desajusteDeProyectivo, fichaDe, proyectivoDe, type Ficha } from '@/lib/ficha';
@@ -15,6 +16,8 @@ import Conclusion from './Conclusion';
 import Entregar from './Entregar';
 import Benziger from './Benziger';
 import Administrados from './Administrados';
+import Documento from '../../informe/_doc/Documento';
+import { desdeFicha } from '@/lib/informe';
 import Raven from './Raven';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
@@ -52,12 +55,7 @@ const PESTANAS: Pestana[] = [
   { clave: 'manchas', texto: 'Manchas', cuantos: (f) => f.manchas.length },
   { clave: 'benziger', texto: 'Benziger', cuantos: (f) => (f.benziger ? 1 : 0) },
   { clave: 'tests', texto: 'Tests', cuantos: (f) => f.cualitativos.length + (f.raven ? 1 : 0) },
-  {
-    clave: 'recomendacion',
-    texto: 'Recomendación',
-    cuantos: (f) => (f.cabecera.recomendacion ? 1 : 0),
-  },
-  { clave: 'informe', texto: 'Informe', cuantos: (f) => f.competencias.length },
+  { clave: 'informe', texto: 'Informe', cuantos: (f) => (f.cabecera.recomendacion ? 1 : 0) },
 ];
 
 function Dato({
@@ -231,31 +229,6 @@ function SumarioEstructural({ f }: { f: Ficha }) {
 }
 
 /**
- * Con qué cierra la evaluación, y la entrega.
- *
- * Tiene pestaña propia porque es una decisión, no un dato más de la ficha: se
- * toma después de leer el sumario y el informe, que están al lado, y es lo
- * único que el cliente recibe como respuesta.
- */
-function Recomendacion({ f }: { f: Ficha }) {
-  const c = f.cabecera;
-  return (
-    <section className="os-panel os-cierre">
-      <div className="os-panel-top">
-        <h2>Con qué cierra</h2>
-      </div>
-      <div className="os-panel-cuerpo">
-        <Conclusion
-          id={c.id}
-          recomendacion={c.recomendacion}
-          notas={c.recomendacion_notas}
-        />
-      </div>
-    </section>
-  );
-}
-
-/**
  * El Benziger: su carga y lo que ya se leyó del informe.
  *
  * La carga está siempre, aunque no haya nada todavía: es la puerta por donde
@@ -295,12 +268,29 @@ function Tests({ f, id }: { f: Ficha; id: string }) {
       <section className="os-panel os-cierre">
         <div className="os-panel-top">
           <h2>Administrados</h2>
+          {/* Se cargan en la hoja de la entrevista y acá se leen. El dibujo se
+              sube allá y se mira acá, que es donde se escribe el informe que
+              habla de él. */}
+          {c.grafico_2_personas_nombre && (
+            <a
+              className="os-enlace"
+              href={`/api/os/grafico?id=${id}`}
+              target="_blank"
+              rel="noreferrer"
+              title={c.grafico_2_personas_nombre}
+            >
+              Ver el gráfico de dos personas
+            </a>
+          )}
         </div>
         <div className="os-panel-cuerpo">
           <Administrados
-            id={id}
+            proyectivo={c.proyectivo_administrado}
+            proyectivoNombre={proyectivoDe(f)}
             bender={c.bender_administrado}
+            benderNotas={c.bender_observaciones}
             grafico={c.grafico_2_personas_administrado}
+            graficoNotas={c.grafico_2_personas_observaciones}
           />
         </div>
       </section>
@@ -316,6 +306,9 @@ function Tests({ f, id }: { f: Ficha; id: string }) {
             percentil={f.raven?.percentil ?? null}
             desvios={f.raven?.desvios ?? null}
             resultado={f.raven?.resultado ?? null}
+            origen={f.raven?.origen ?? null}
+            tardo={f.raven?.duracion_segundos ?? null}
+            sesion={f.sesionRaven}
           />
         </div>
       </section>
@@ -339,36 +332,127 @@ function Tests({ f, id }: { f: Ficha; id: string }) {
  * Entregar cierra esta pantalla porque el informe es lo que se entrega: el
  * botón queda al final de lo que el cliente va a recibir, no en otra pestaña.
  */
+/**
+ * La pestaña del informe: el documento armado, tal como va a salir impreso.
+ *
+ * Se muestra acá y no solo en su página aparte porque es donde se lo revisa
+ * mientras se termina de cargar: ver qué le falta y qué dice cada capítulo es
+ * parte de cargar, no un paso posterior.
+ *
+ * Se arma con la ficha que esta página ya leyó, así que no cuesta ninguna
+ * consulta más. Para imprimir está el botón, que abre la misma vista sin el
+ * marco del OS: dentro de la ficha, el PDF saldría con la barra lateral y las
+ * pestañas encima.
+ */
+/**
+ * A dónde lleva "Ver portal".
+ *
+ * El portal vive en su propio subdominio, pero en desarrollo eso apuntaría a
+ * producción y el botón no serviría para probar: ahí se queda en la misma
+ * máquina, que es donde está el portal de prueba.
+ */
+function portalDe(token: string | null): string | null {
+  if (!token) return null;
+  const host = (headers().get('host') ?? '').toLowerCase();
+  const local = host.startsWith('localhost') || host.startsWith('127.0.0.1');
+  return local ? `/p/${token}` : `https://clientes.camposhr.com/${token}`;
+}
+
+/**
+ * Qué se le administró de lo que pide su batería.
+ *
+ * Se mira antes de generar el informe: un informe al que le falta una prueba
+ * sale igual, con esa parte vacía, y esto es lo que avisa antes de que eso
+ * pase. Sale de la batería del pedido, así que lista exactamente lo que se le
+ * vendió al cliente.
+ */
+function TestsDeLaBateria({ f }: { f: Ficha }) {
+  const c = f.cabecera;
+  const proyectivo = proyectivoDe(f);
+  const estados: { test: string; puesto: boolean }[] = [];
+
+  for (const t of c.pedidos?.baterias?.tests ?? []) {
+    if (t === 'Rorschach' || t === 'Zulliger') {
+      estados.push({ test: proyectivo ?? t, puesto: c.proyectivo_administrado });
+    } else if (t === 'Bender') {
+      estados.push({ test: t, puesto: c.bender_administrado });
+    } else if (t === 'Gráfico 2 personas') {
+      estados.push({ test: t, puesto: c.grafico_2_personas_administrado });
+    } else if (t === 'Raven') {
+      estados.push({ test: t, puesto: f.raven?.raw !== null && f.raven?.raw !== undefined });
+    }
+    // La entrevista por competencias y el análisis discursivo no dejan marca:
+    // no se listan para no mostrar un estado que nadie carga.
+  }
+  if (f.benziger) estados.push({ test: 'Benziger', puesto: Boolean(f.benziger.cuadrantes) });
+
+  if (estados.length === 0) return null;
+  return (
+    <>
+      {estados.map((e) => (
+        <span key={e.test} className={`os-sello-estado ${e.puesto ? 'os-verde' : 'os-rojo'}`}>
+          {e.test}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function Informe({ f }: { f: Ficha }) {
   const c = f.cabecera;
-  const entrega = c.estado === 'Por analizar' && (
-    <Entregar id={c.id} recomendacion={c.recomendacion} />
-  );
-
-  if (f.competencias.length === 0) {
-    return (
-      <>
-        <SinDatos que="informe de competencias" />
-        {entrega}
-      </>
-    );
-  }
+  const informe = desdeFicha(f);
+  const portal = portalDe(c.pedidos?.empresas?.token_portal ?? null);
 
   return (
     <>
-      <div className="os-ficha-competencias">
-        {f.competencias.map((x) => (
-          <article key={x.id} className="os-ficha-competencia">
-            <div className="os-ficha-competencia-top">
-              <span className="os-fila-titulo">{x.competencia}</span>
-              <span className="os-ficha-numero">{x.puntaje ?? '—'}</span>
-            </div>
-            {x.justificacion && <p className="os-fila-detalle">{x.justificacion}</p>}
-            {x.texto && <p className="os-fila-detalle">{x.texto}</p>}
-          </article>
-        ))}
-      </div>
-      {entrega}
+      <section className="os-panel os-cierre os-informe-cierre">
+        <div className="os-panel-top">
+          <h2>Recomendación</h2>
+        </div>
+        <div className="os-panel-cuerpo">
+          {/* La conclusión se carga acá y no en una pestaña aparte: es lo que
+              marca el nivel de ajuste del informe que está abajo y lo que
+              habilita subirlo, así que se elige viendo el documento. */}
+          <Conclusion id={c.id} recomendacion={c.recomendacion} notas={c.recomendacion_notas}>
+            <TestsDeLaBateria f={f} />
+          </Conclusion>
+        </div>
+      </section>
+
+      <section className="os-panel os-generar">
+        <h2>El informe</h2>
+        <div className="os-generar-acciones">
+          <Link
+            className="os-boton"
+            href={`/os/psicotecnicos/informe/${c.id}?descargar=1`}
+            target="_blank"
+          >
+            Descargar PDF
+          </Link>
+          {/* Entregar va con el resto de las acciones y no al pie: al final de
+              un documento largo hay que bajar hasta el fondo para apretarlo, y
+              es la acción que cierra la evaluación. */}
+          {c.estado === 'Por analizar' && (
+            <Entregar id={c.id} recomendacion={c.recomendacion} />
+          )}
+          {/* El portal del cliente, para ver ahí mismo cómo le queda. Sin
+              token no hay portal: se carga en la ficha de la empresa. */}
+          {portal ? (
+            <Link className="os-boton" href={portal} target="_blank">
+              Ver portal
+            </Link>
+          ) : (
+            <span className="os-boton os-boton-apagado" title="Esta empresa todavía no tiene portal.">
+              Ver portal
+            </span>
+          )}
+        </div>
+      </section>
+
+      <section className="os-panel os-informe-marco">
+        <Documento inf={informe} interno />
+      </section>
+
     </>
   );
 }
@@ -383,9 +467,11 @@ export default async function FichaPagina({
   const [yo, ficha] = await Promise.all([quienSoy(), fichaDe(params.id)]);
   if (!ficha) notFound();
 
-  // `sumario` ya no es una pestaña, pero las direcciones guardadas siguen
-  // llevando ahí: caen donde ahora vive, que es la codificación.
-  const pedida = searchParams.ver === 'sumario' ? 'manchas' : searchParams.ver;
+  // Las pestañas que se fueron siguen apareciendo en direcciones guardadas:
+  // caen donde ahora vive lo suyo. `sumario` en la codificación y
+  // `recomendacion` en el informe, que es donde se carga la conclusión.
+  const MUDADAS: Record<string, string> = { sumario: 'manchas', recomendacion: 'informe' };
+  const pedida = MUDADAS[searchParams.ver ?? ''] ?? searchParams.ver;
   const ver = PESTANAS.some((p) => p.clave === pedida) ? (pedida as string) : 'datos';
 
   const c = ficha.cabecera;
@@ -446,7 +532,6 @@ export default async function FichaPagina({
       {/* Sin panel alrededor: la vista trae sus propias tarjetas. */}
       {ver === 'benziger' && <BenzigerVista f={ficha} id={params.id} />}
       {ver === 'tests' && <Tests f={ficha} id={params.id} />}
-      {ver === 'recomendacion' && <Recomendacion f={ficha} />}
       {ver === 'informe' && (
         <section className="os-panel">
           <Informe f={ficha} />

@@ -39,8 +39,12 @@ const COLUMNA: Record<string, string> = {
   mensaje: 'mensaje',
   modalidad: 'modalidad',
   fechaEntrevista: 'fecha_entrevista',
+  enlaceEntrevista: 'enlace_entrevista',
   benderAdministrado: 'bender_administrado',
   graficoAdministrado: 'grafico_2_personas_administrado',
+  proyectivoAdministrado: 'proyectivo_administrado',
+  benderObservaciones: 'bender_observaciones',
+  graficoObservaciones: 'grafico_2_personas_observaciones',
   recomendacion: 'recomendacion',
   recomendacionNotas: 'recomendacion_notas',
   ingreso: 'ingreso',
@@ -65,6 +69,8 @@ type Fila = {
   grafico_2_personas_administrado: boolean;
   recomendacion: string | null;
   informe_path: string | null;
+  ingreso: boolean | null;
+  seguimiento_al: string | null;
   personas: {
     nombre: string;
     email: string | null;
@@ -83,6 +89,7 @@ type Fila = {
 const CAMPOS =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'bender_administrado,grafico_2_personas_administrado,recomendacion,informe_path,' +
+  'ingreso,seguimiento_al,' +
   'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
   'pedidos(puesto,empresas(nombre),baterias(codigo))';
 
@@ -115,7 +122,11 @@ export async function listar(): Promise<Evaluacion[]> {
     graficoAdministrado: f.grafico_2_personas_administrado,
     linkRaven: null,
     recomendacion: f.recomendacion,
-    tieneInforme: Boolean(f.informe_path),
+    // El informe no es un archivo subido: se arma con los datos cargados, así
+    // que existe desde que la evaluación se entrega.
+    tieneInforme: f.estado === 'Entregado' || Boolean(f.informe_path),
+    ingreso: f.ingreso,
+    seguimientoAl: f.seguimiento_al,
     tieneCv: Boolean(f.personas?.cv_path),
     servicio: null,
     dias: diasDesde(f.fecha_entrevista, hoy),
@@ -164,6 +175,21 @@ export async function guardarCampos(
     const columna = COLUMNA[campo];
     if (!columna) return { ok: false, motivo: 'Campo no editable.' };
     fila[columna] = valor === '' ? null : valor;
+  }
+
+  /**
+   * Entregar sella la fecha.
+   *
+   * Antes venía del archivo que se subía a mano; ahora el informe se genera y
+   * nadie sube nada, así que la fecha la pone el paso de etapa. Solo si no
+   * estaba: volver a entregar algo ya entregado no cambia cuándo se entregó.
+   */
+  if (fila.estado === 'Entregado' && !('fecha_entrega' in fila)) {
+    const previas = await select<{ fecha_entrega: string | null }>(
+      'evaluaciones',
+      `select=fecha_entrega&id=eq.${id}&limit=1`
+    );
+    if (!previas[0]?.fecha_entrega) fila.fecha_entrega = new Date().toISOString();
   }
 
   if (Object.keys(fila).length === 0) return { ok: true };

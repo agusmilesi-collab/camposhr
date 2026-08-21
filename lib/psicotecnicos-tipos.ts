@@ -52,6 +52,9 @@ export const SECCIONES: Seccion[] = [
   { ruta: 'entrevistas', texto: 'Entrevistas', etapas: ['Por citar', 'Por entrevistar'] },
   { ruta: 'por-analizar', texto: 'Por analizar', etapas: ['Por analizar'] },
   { ruta: 'entregados', texto: 'Entregados', etapas: ['Entregado'] },
+  // Seguimiento tiene su sección porque tiene su botón: sin pantalla, apretarlo
+  // sacaba la evaluación de todas las listas y no había forma de volver.
+  { ruta: 'seguimiento', texto: 'Seguimiento', etapas: ['Seguimiento'] },
 ];
 
 export const SECCION_DE_RUTA: Record<string, Seccion> = Object.fromEntries(
@@ -124,6 +127,10 @@ export type Evaluacion = {
   graficoAdministrado: boolean;
   linkRaven: string | null;
   recomendacion: string | null;
+  /** Si entró a trabajar. Null es "todavía no se sabe". */
+  ingreso: boolean | null;
+  /** Cuándo toca preguntar cómo le fue: noventa días desde que entró. */
+  seguimientoAl: string | null;
   tieneInforme: boolean;
   /** Si la persona tiene el CV guardado. Solo lo saben las filas de Supabase. */
   tieneCv: boolean;
