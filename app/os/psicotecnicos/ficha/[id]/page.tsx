@@ -5,6 +5,7 @@ import Shell from '../../../Shell';
 import { desajusteDeProyectivo, fichaDe, proyectivoDe, type Ficha } from '@/lib/ficha';
 import { quienSoy } from '@/lib/identidad';
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
+import { INFO, type Perfil } from '@/lib/perfiles';
 import { RUTA } from '@/lib/psicotecnicos';
 import { fechaHora } from '@/lib/hora';
 import { formatoImporte } from '@/lib/cotizaciones';
@@ -124,6 +125,7 @@ function Bloque({
 function Datos({ f, id }: { f: Ficha; id: string }) {
   const c = f.cabecera;
   const precio = f.precio;
+  const cuadrante = f.benziger?.cuadrante_preferente?.[0] ?? null;
 
   return (
     <>
@@ -150,6 +152,41 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
             <Falta />
           )}
         </Dato>
+        {/* Lo que se sacó de ella: con qué se cierra, cómo piensa y cuánto
+            rindió. Se lee cien veces más que las fechas de la evaluación, y
+            estaba repartido entre tres pestañas. */}
+        <Dato rotulo="Recomendación">
+          {c.recomendacion ? (
+            <span
+              className={`os-sello-estado ${COLOR_RECOMENDACION[c.recomendacion] ?? 'os-gris'}`}
+            >
+              {c.recomendacion}
+            </span>
+          ) : (
+            <Falta texto="sin cerrar" />
+          )}
+        </Dato>
+        <Dato rotulo="Perfil Benziger">
+          {cuadrante ? (
+            <span className="os-sello-estado os-violeta">
+              {INFO[cuadrante as Perfil]?.nombre ?? cuadrante}
+            </span>
+          ) : (
+            <Falta texto="sin definir" />
+          )}
+        </Dato>
+        <Dato rotulo="Raven">
+          {f.raven?.raw !== null && f.raven?.raw !== undefined ? (
+            <>
+              {f.raven.raw} de 36
+              {f.raven.resultado && (
+                <span className="os-dato-al-lado">{f.raven.resultado}</span>
+              )}
+            </>
+          ) : (
+            <Falta texto="sin puntaje" />
+          )}
+        </Dato>
       </Bloque>
 
       <Bloque titulo="La evaluación" dos>
@@ -164,17 +201,11 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
         </Dato>
         <Dato rotulo="Modalidad">{c.modalidad ?? <Falta texto="sin definir" />}</Dato>
         <Dato rotulo="Entrega">{fechaHora(c.fecha_entrega) ?? <Falta texto="sin entregar" />}</Dato>
-        <Dato rotulo="Recomendación">
-          {c.recomendacion ? (
-            <span
-              className={`os-sello-estado ${COLOR_RECOMENDACION[c.recomendacion] ?? 'os-gris'}`}
-            >
-              {c.recomendacion}
-            </span>
-          ) : (
-            <Falta texto="sin cerrar" />
-          )}
-        </Dato>
+      </Bloque>
+
+      {/* La plata va aparte: se mira en otro momento y por otra persona que lo
+          que se hizo con el candidato. */}
+      <Bloque titulo="La factura" dos>
         <Dato rotulo="Precio">
           {precio ? formatoImporte(precio) : <Falta texto="la batería no tiene precio" />}
         </Dato>
