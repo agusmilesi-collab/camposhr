@@ -166,11 +166,19 @@ del original: nadie interpreta nada. **Un detalle mal en una lámina del Raven
 cambia cuál es la respuesta correcta**, y ese puntaje termina en un informe
 sobre una persona.
 
-Cada pieza se comprueba contra su origen: se rellena lo trazado y se mira dónde
-difiere. Lo que importa no es cuántos píxeles difieren, que castiga a la figura
-con más perímetro, sino a qué distancia del borde están. En las 324 piezas, la
-mancha de error más grande es de un píxel. El resultado de esa comprobación está
-al lado, en `verificacion.json`.
+**El contorno se alisa después de trazarlo, nunca antes.** El trazo sigue el
+borde del bitmap, o sea que copia el escalón de cada píxel y en pantalla se ve
+dentado. Promediar cada punto con sus vecinos lo endereza sin mover la forma.
+Desenfocar la imagen antes de trazar parece lo mismo y no lo es: cambia lo que
+se traza, y pasado 1 de sigma empieza a comerse las rayas finas.
+
+**Cómo se comprueba cada pieza.** Se rellena lo trazado y se mide el GROSOR de
+lo que difiere. Contar píxeles distintos castiga a la figura con más detalle,
+porque más perímetro es más borde; medir la distancia al borde tampoco sirve,
+porque alisar lo corre un píxel a propósito. Lo que separa un borde corrido de
+una figura cambiada es el cuerpo: una tira de uno o dos píxeles es el alisado,
+un bloque más grueso es otra forma. En las 324 piezas el grosor máximo es de
+2,83 px. El resultado está al lado, en `verificacion.json`.
 
 Al tocar el trazado hay que volver a correrlo entero y mirar ese informe.
 
