@@ -18,10 +18,14 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import {
   ESTADOS,
+  SERVICIOS,
   formatoFecha,
   formatoImporte,
   type Estado,
 } from '@/lib/comercial-tipos';
+
+/** El valor del desplegable que pide escribir un cliente que no está. */
+const OTRO = '__otro__';
 
 export type Oportunidad = {
   id: string;
@@ -226,11 +230,12 @@ export function Tablero({ oportunidades }: { oportunidades: Oportunidad[] }) {
   );
 }
 
-export function NuevaOportunidad() {
+export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [otroCliente, setOtroCliente] = useState(false);
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -241,6 +246,7 @@ export function NuevaOportunidad() {
     try {
       await mandar({ accion: 'nueva', ...datos });
       form.reset();
+      setOtroCliente(false);
       setAbierto(false);
       router.refresh();
     } catch (err) {
@@ -272,18 +278,71 @@ export function NuevaOportunidad() {
             </div>
             <div className="os-cajon-cuerpo">
               <form className="os-form" onSubmit={enviar}>
+                {/* Casi siempre se cotiza a un cliente que ya está cargado:
+                    la lista va primero y escribir queda para el que todavía no
+                    existe. Escrito a mano, el mismo cliente entraba con tres
+                    grafías distintas y el embudo no se podía leer por cliente. */}
                 <div className="os-campo-bloque os-campo-entero">
                   <label className="os-etiqueta-campo" htmlFor="cliente">
                     Cliente
                   </label>
-                  <input className="os-campo" id="cliente" name="cliente" required maxLength={120} autoFocus />
+                  {otroCliente ? (
+                    <input
+                      className="os-campo"
+                      id="cliente"
+                      name="cliente"
+                      required
+                      maxLength={120}
+                      autoFocus
+                      placeholder="Nombre del cliente nuevo"
+                    />
+                  ) : (
+                    <select
+                      className="os-campo"
+                      id="cliente"
+                      name="cliente"
+                      required
+                      defaultValue=""
+                      onChange={(e) => {
+                        if (e.target.value === OTRO) setOtroCliente(true);
+                      }}
+                    >
+                      <option value="" disabled>
+                        Elegí el cliente
+                      </option>
+                      {clientes.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                      <option value={OTRO}>Otro, lo escribo…</option>
+                    </select>
+                  )}
+                  {otroCliente && (
+                    <button
+                      className="os-enlace-boton"
+                      type="button"
+                      onClick={() => setOtroCliente(false)}
+                    >
+                      Elegir uno de la lista
+                    </button>
+                  )}
                 </div>
 
                 <div className="os-campo-bloque os-campo-entero">
                   <label className="os-etiqueta-campo" htmlFor="concepto">
                     Qué se le vende
                   </label>
-                  <input className="os-campo" id="concepto" name="concepto" required maxLength={200} />
+                  <select className="os-campo" id="concepto" name="concepto" required defaultValue="">
+                    <option value="" disabled>
+                      Elegí el servicio
+                    </option>
+                    {SERVICIOS.map((x) => (
+                      <option key={x} value={x}>
+                        {x}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="os-campo-bloque">

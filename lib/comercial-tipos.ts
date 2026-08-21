@@ -7,6 +7,16 @@
  */
 
 export const ESTADOS = ['Lead', 'Enviada', 'Aprobada', 'Perdida'] as const;
+
+/**
+ * Lo que se vende, para que el embudo se pueda leer por servicio.
+ *
+ * Escrito a mano, cada oportunidad nombraba lo mismo de cuatro maneras y no
+ * había forma de sumar cuánto se cotizó de cada cosa. El detalle de la
+ * propuesta va en la nota.
+ */
+export const SERVICIOS = ['Psicotécnicos', 'Mapeos', 'Liderazgo', 'Mindfulness'] as const;
+export type Servicio = (typeof SERVICIOS)[number];
 export type Estado = (typeof ESTADOS)[number];
 
 /** Las que todavía se pueden ganar. */
