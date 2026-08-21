@@ -27,7 +27,7 @@ export type Cliente = {
   rubro: string | null;
   tamano: number | null;
   notas: string | null;
-  /** El token del portal, cuando lo tiene cargado en Airtable. */
+  /** El enlace secreto del portal. Todo cliente tiene el suyo desde el alta. */
   token: string | null;
   /** Qué hay cargado de este cliente en Supabase. */
   pedidos: number;
@@ -49,13 +49,15 @@ type FilaEmpresa = {
   rubro: string | null;
   tamano: number | null;
   notas: string | null;
+  token_portal: string | null;
   pedidos: { id: string; evaluaciones: { id: string }[] }[];
   cotizaciones: { id: string }[];
 };
 
 const CAMPOS =
   'id,nombre,razon_social,cuit,condicion_iva,email_facturacion,contacto,' +
-  'direccion_fiscal,rubro,tamano,notas,pedidos(id,evaluaciones(id)),cotizaciones(id)';
+  'direccion_fiscal,rubro,tamano,notas,token_portal,' +
+  'pedidos(id,evaluaciones(id)),cotizaciones(id)';
 
 export async function listarClientes(): Promise<Cliente[]> {
   const [enSupabase, conToken] = await Promise.all([
@@ -82,7 +84,10 @@ export async function listarClientes(): Promise<Cliente[]> {
     rubro: e.rubro,
     tamano: e.tamano,
     notas: e.notas,
-    token: tokensPorClave.get(claveEmpresa(e.nombre)) ?? null,
+    // El de Airtable primero: es el que el cliente ya tiene en la mano. El de
+    // Supabase nace con la empresa, así que cubre a las que nunca tuvieron uno
+    // y a las que se dan de alta desde acá.
+    token: tokensPorClave.get(claveEmpresa(e.nombre)) ?? e.token_portal ?? null,
     pedidos: e.pedidos?.length ?? 0,
     evaluaciones: (e.pedidos ?? []).reduce((n, p) => n + (p.evaluaciones?.length ?? 0), 0),
     cotizaciones: e.cotizaciones?.length ?? 0,
