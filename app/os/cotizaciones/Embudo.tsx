@@ -16,6 +16,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import Desplegable from '@/app/os/Desplegable';
 import {
   ESTADOS,
   SERVICIOS,
@@ -26,6 +27,14 @@ import {
 
 /** El valor del desplegable que pide escribir un cliente que no está. */
 const OTRO = '__otro__';
+
+/** El color de cada estado, el mismo que en el Inicio. */
+const COLOR_ESTADO: Record<string, string> = {
+  Lead: 'os-gris',
+  Enviada: 'os-ambar',
+  Aprobada: 'os-verde',
+  Perdida: 'os-rojo',
+};
 
 export type Oportunidad = {
   id: string;
@@ -149,18 +158,16 @@ export function Tablero({ oportunidades }: { oportunidades: Oportunidad[] }) {
                         Propuesta
                       </a>
                     )}
-                    <select
-                      className="os-tarjeta-mover"
-                      value={o.estado}
-                      aria-label={`Mover ${o.cliente}`}
-                      onChange={(e) => pedirMover(o, e.target.value as Estado)}
-                    >
-                      {ESTADOS.map((e) => (
-                        <option key={e} value={e}>
-                          {e}
-                        </option>
-                      ))}
-                    </select>
+                    <Desplegable
+                      valor={o.estado}
+                      opciones={ESTADOS.map((e) => ({
+                        valor: e,
+                        texto: e,
+                        color: COLOR_ESTADO[e],
+                      }))}
+                      alElegir={(v) => pedirMover(o, v as Estado)}
+                      etiqueta={`Mover ${o.cliente}`}
+                    />
                   </div>
                 </article>
               ))}

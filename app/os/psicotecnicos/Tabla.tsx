@@ -14,6 +14,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import Desplegable from '@/app/os/Desplegable';
 import type { Evaluacion } from '@/lib/psicotecnicos';
 import { nivelDeConclusion } from '@/lib/informe-textos';
 import {
@@ -364,17 +365,17 @@ function Fila({ e, seccion }: { e: Evaluacion; seccion: string }) {
               />
             </td>
             <td data-campo="Modalidad" className="os-tabla-modalidad">
-              <select
-                className="os-campo"
-                defaultValue={e.modalidad ?? ''}
-                disabled={trabajando}
-                onChange={(ev) => guardar('modalidad', ev.target.value || null)}
-                aria-label="Modalidad"
-              >
-                <option value="">Sin definir</option>
-                <option value="Presencial">Presencial</option>
-                <option value="Online">Online</option>
-              </select>
+              <Desplegable
+                valor={e.modalidad ?? ''}
+                opciones={[
+                  { valor: '', texto: 'Sin definir' },
+                  { valor: 'Presencial', texto: 'Presencial' },
+                  { valor: 'Online', texto: 'Online' },
+                ]}
+                alElegir={(v) => guardar('modalidad', v || null)}
+                deshabilitado={trabajando}
+                etiqueta="Modalidad"
+              />
             </td>
             <td className="os-tabla-accion">
               <button

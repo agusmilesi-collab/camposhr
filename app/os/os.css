@@ -1110,6 +1110,37 @@ a.os-tarjeta:hover {
   cursor: default;
 }
 
+/* El botón de copiar viene de la hoja del hub, con su propio alto y su propio
+   padding. Adentro del OS se ve como los demás: son el mismo botón. */
+.os .copiar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 13px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  font: inherit;
+  font-size: 0.81rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.os .copiar:hover {
+  border-color: var(--os-suave);
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os .copiar.ok {
+  border-color: var(--os-verde);
+  background: var(--os-panel-2);
+  color: var(--os-verde);
+}
+
 .os-boton-firme {
   background: var(--os-activo);
   color: var(--os-activo-tinta);
@@ -1160,8 +1191,27 @@ a.os-tarjeta:hover {
 }
 
 /* La flecha del desplegable necesita aire: pegada al borde parece cortada. */
+/* Los desplegables de formulario siguen siendo del navegador, porque se envían
+   con el formulario, pero se ven como el nuestro: misma flecha y mismo alto.
+   Sin esto convivían cinco apariencias distintas de la misma cosa. */
 select.os-campo {
-  padding-right: 5px;
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%237b7770' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px 6px;
+  cursor: pointer;
+}
+
+select.os-campo:hover:not(:disabled) {
+  border-color: var(--os-suave);
+}
+
+/* La flecha va dibujada en el fondo, así que su color no puede salir de una
+   variable: en tinta se cambia el dibujo entero. */
+html[data-os-tema='oscuro'] select.os-campo {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23848b95' stroke-width='1.6'/%3E%3C/svg%3E");
 }
 
 .os-aviso {
@@ -1840,18 +1890,6 @@ textarea.os-campo {
   white-space: nowrap;
 }
 
-.os-tarjeta-mover {
-  margin-left: auto;
-  max-width: 100%;
-  height: 26px;
-  padding: 0 6px;
-  border: 1px solid var(--os-linea);
-  border-radius: 7px;
-  background: var(--os-panel-2);
-  color: var(--os-tinta-media);
-  font: inherit;
-  font-size: 0.74rem;
-}
 
 .os-columna-vacia {
   padding: 14px 4px;
@@ -4738,50 +4776,85 @@ textarea.os-campo {
 /* Lo que la persona dejó dibujado va en su propio renglón, debajo de las
    observaciones, y con las mismas columnas que el de arriba: ver cae bajo la
    herramienta y reemplazar bajo cargar. */
-/* La etapa en la ficha: el sello se toca y despliega los otros, cada uno con su
-   punto de color. Un desplegable del navegador no deja pintarlo. */
-.os-etapa-editable {
+/* El desplegable del OS: el sello se toca y despliega los otros, cada uno con
+   su punto de color. Uno solo para todas las pantallas. */
+.os-desplegable {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  max-width: 100%;
 }
 
-.os-etapa-editable > .os-boton {
-  width: auto;
-  justify-content: flex-start;
-  height: 28px;
-  padding: 0 11px;
+.os-desplegable-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: var(--os-desplegable-ancho, auto);
+  max-width: 100%;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  font: inherit;
+  font-size: 0.81rem;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.os-etapa-flecha {
+.os-desplegable-boton:hover:not(:disabled) {
+  border-color: var(--os-suave);
+  background: var(--os-hover);
+}
+
+.os-desplegable-boton:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Un dato sin color no lleva punto, pero la fila no se corre por eso. */
+.os-desplegable-boton.os-sin-punto::before,
+.os-desplegable-opcion.os-sin-punto::before {
+  display: none;
+}
+
+.os-desplegable-texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* La flecha es lo que dice que se abre: sin ella el sello se lee como un dato
+   y nadie prueba tocarlo. */
+.os-desplegable-flecha {
   width: 10px;
   height: 6px;
   flex: none;
-  margin-left: 2px;
+  margin-left: auto;
+  padding-left: 4px;
+  box-sizing: content-box;
   color: var(--os-suave);
   transition: transform 0.14s ease;
 }
 
-.os-etapa-flecha.abierta {
+.os-desplegable-flecha.abierta {
   transform: rotate(180deg);
 }
 
-/* El sello se ve tocable: con borde, como cualquier control. */
-.os-etapa-editable > .os-boton {
-  border-color: var(--os-linea);
-  background: var(--os-panel-2);
-}
-
-.os-etapa-lista {
+.os-desplegable-lista {
   position: absolute;
   z-index: 30;
   top: calc(100% + 4px);
   left: 0;
   display: flex;
   flex-direction: column;
-  min-width: 190px;
+  min-width: max(100%, 190px);
+  max-height: 320px;
+  overflow-y: auto;
   padding: 5px;
   border: 1px solid var(--os-linea);
   border-radius: 10px;
@@ -4789,7 +4862,7 @@ textarea.os-campo {
   box-shadow: 0 10px 28px rgba(22, 32, 43, 0.14);
 }
 
-.os-etapa-opcion {
+.os-desplegable-opcion {
   justify-content: flex-start;
   padding: 7px 9px;
   border: 0;
@@ -4799,14 +4872,15 @@ textarea.os-campo {
   font-size: 0.82rem;
   color: var(--os-tinta);
   text-align: left;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.os-etapa-opcion:hover {
+.os-desplegable-opcion:hover {
   background: var(--os-hover);
 }
 
-.os-etapa-opcion.elegida {
+.os-desplegable-opcion.elegida {
   font-weight: 600;
 }
 

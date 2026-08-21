@@ -101,6 +101,23 @@ El reloj también es del servidor. `iniciado_at` se sella cuando se pide la
 primera lámina y `segundosRestantes()` mide contra eso: si el tiempo lo llevara
 el navegador, recargar la página lo reiniciaría.
 
+## Un solo desplegable para todo el OS
+
+`app/os/Desplegable.tsx`. El del navegador no deja pintar sus opciones, y en
+este sistema media docena de cosas se reconocen por su punto de color: la etapa
+de una evaluación, el estado de una cotización, la conclusión de un informe. Con
+un `select` había que elegir entre el color y poder cambiarlo.
+
+**Cuál va en cada lado.** El componente para lo que se elige y actúa en el acto
+(la etapa, el estado, un filtro). El `select` del navegador sigue para lo que
+viaja dentro de un formulario, porque el componente no manda un valor con el
+`submit`; esos llevan `os-campo` y se ven igual, con la misma flecha y el mismo
+alto.
+
+Todo lo que sea un botón usa `os-boton`, con `os-boton-firme` para el principal.
+El de copiar viene de la hoja del hub con su propio alto: adentro del OS se le
+iguala, porque es el mismo botón.
+
 ## Las fotos se achican en el navegador, no en el servidor
 
 Lo que dibuja la persona llega como fotos de teléfono por WhatsApp: cuatro megas
