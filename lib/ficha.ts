@@ -51,6 +51,8 @@ export type Cabecera = {
   evaluadoras: { nombre: string } | null;
   pedidos: {
     puesto: string;
+    /** Si el pedido lleva Benziger, que no está en ninguna batería. */
+    con_benziger: boolean | null;
     /** El token es el enlace del portal de esa empresa, si lo tiene. */
     empresas: { nombre: string; token_portal: string | null } | null;
     baterias: {
@@ -205,7 +207,7 @@ const CAMPOS_CABECERA =
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
-  'pedidos(puesto,empresas(nombre,token_portal),baterias(id,codigo,nombre,tests))';
+  'pedidos(puesto,con_benziger,empresas(nombre,token_portal),baterias(id,codigo,nombre,tests))';
 
 /** Null si no existe, para que la pantalla conteste 404 en vez de romperse. */
 export async function fichaDe(id: string): Promise<Ficha | null> {

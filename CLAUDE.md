@@ -74,6 +74,12 @@ Dos reglas al tocarlo:
 - **Una fila es un renglón.** Lo que no entra se recorta con puntos
   suspensivos. El pedido es la única excepción, con dos: empresa arriba, puesto
   abajo.
+- **Cada ancho está medido, no estimado.** Los valores salen de lo que pide el
+  contenido más largo de esa columna más los 28 px de padding de la celda. Con
+  124 px, el botón "Sin contactar" perdía su padding derecho y el texto quedaba
+  contra el borde: se veía como si estuviera descentrado. Antes de mover un
+  ancho conviene medir en pantalla qué pide cada columna, que es una línea de
+  consola, en vez de calcularlo de memoria.
 
 Tres cosas pelean contra esto y ya están resueltas en `os.css`: el `width: 1%`
 de `.os-tabla-trabajo`, que pisaba el `colgroup`; el ancho de la tabla, que si
@@ -113,6 +119,15 @@ un `select` había que elegir entre el color y poder cambiarlo.
 viaja dentro de un formulario, porque el componente no manda un valor con el
 `submit`; esos llevan `os-campo` y se ven igual, con la misma flecha y el mismo
 alto.
+
+**Su lista se dibuja colgada de `.os`, no donde está el botón.** Adentro la
+recortaban tres cajas con `overflow: hidden` (la celda, el marco de la tabla y
+el panel) y en la última fila de una tabla no se veía ninguna opción. De `.os` y
+no del `body` porque ahí viven las variables de color: colgada del body salía
+sin fondo y se leía la tarjeta de atrás a través de las opciones. Ya afuera se
+ubica con las medidas del botón y lo sigue mientras está abierta, por evento de
+`scroll` en fase de captura y por un bucle de cuadro, porque el evento no llega
+cuando lo que se desplaza es un contenedor de adentro.
 
 Todo lo que sea un botón usa `os-boton`, con `os-boton-firme` para el principal.
 El de copiar viene de la hoja del hub con su propio alto: adentro del OS se le

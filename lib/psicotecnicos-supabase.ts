@@ -83,6 +83,7 @@ type Fila = {
   pedido_id: string | null;
   pedidos: {
     puesto: string;
+    con_benziger: boolean | null;
     empresas: { nombre: string } | null;
     baterias: { codigo: string } | null;
   } | null;
@@ -93,7 +94,7 @@ const CAMPOS =
   'bender_administrado,grafico_2_personas_administrado,recomendacion,informe_path,' +
   'ingreso,seguimiento_al,' +
   'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
-  'pedidos(puesto,empresas(nombre),baterias(codigo))';
+  'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo))';
 
 export async function listar(): Promise<Evaluacion[]> {
   const filas = await select<Fila>(
@@ -111,6 +112,7 @@ export async function listar(): Promise<Evaluacion[]> {
     puesto: f.pedidos?.puesto ?? 'Sin puesto',
     pedidoId: f.pedido_id,
     bateria: f.pedidos?.baterias?.codigo ?? null,
+    conBenziger: f.pedidos?.con_benziger === true,
     email: f.personas?.email ?? null,
     telefono: f.personas?.telefono ?? null,
     evaluadora: f.evaluadoras?.nombre ?? null,

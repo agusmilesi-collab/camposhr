@@ -247,6 +247,8 @@ export async function listar(): Promise<Evaluacion[]> {
       pedidoId: null,
       tieneCv: false,
       bateria: (pedido?.bateriaId ? mapaBaterias.get(pedido.bateriaId) : null) || null,
+      // El Benziger se pide en Supabase: lo que quedó en Airtable es anterior.
+      conBenziger: false,
       email: f[F.email] ?? null,
       telefono: f[F.telefono] ?? null,
       evaluadora: evals.filter(Boolean).join(', ') || null,

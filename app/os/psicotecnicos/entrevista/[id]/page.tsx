@@ -13,6 +13,7 @@ import Papel from './Papel';
 import LinkLaminas from './LinkLaminas';
 import HojaBender from './HojaBender';
 import RelojRaven from './RelojRaven';
+import Bateria from '../../Bateria';
 
 export const dynamic = 'force-dynamic';
 
@@ -191,7 +192,9 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
         )}
         <div>
           <span className="os-dato-rotulo">Batería</span>
-          <span className="os-dato-valor">{e.bateria ?? 'A definir'}</span>
+          <span className="os-dato-valor">
+            <Bateria codigo={e.bateria} conBenziger={e.conBenziger} />
+          </span>
         </div>
         <div>
           <span className="os-dato-rotulo">Teléfono</span>

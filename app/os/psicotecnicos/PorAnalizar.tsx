@@ -15,6 +15,7 @@ import Link from 'next/link';
 import type { Evaluacion } from '@/lib/psicotecnicos';
 import { COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { haceCuanto } from '@/lib/hora';
+import Bateria from './Bateria';
 
 function Tarjeta({ e }: { e: Evaluacion }) {
   // Pasada la semana la espera se marca: el informe se está demorando.
@@ -32,7 +33,7 @@ function Tarjeta({ e }: { e: Evaluacion }) {
       <span className="os-analizar-datos">
         <span className="os-analizar-dato">
           <span className="os-analizar-rotulo">Batería</span>
-          {e.bateria ?? 'a definir'}
+          <Bateria codigo={e.bateria} conBenziger={e.conBenziger} />
         </span>
         <span className={`os-analizar-dato${demorada ? ' demorada' : ''}`}>
           <span className="os-analizar-rotulo">Espera</span>

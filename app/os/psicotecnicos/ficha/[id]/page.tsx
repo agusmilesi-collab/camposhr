@@ -23,6 +23,7 @@ import { desdeFicha } from '@/lib/informe';
 import Raven from './Raven';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
+import Bateria from '../../Bateria';
 
 export const dynamic = 'force-dynamic';
 
@@ -197,7 +198,12 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
         <Dato rotulo="Estado">
           <Etapa id={id} etapa={c.estado} />
         </Dato>
-        <Dato rotulo="Batería">{c.pedidos?.baterias?.codigo ?? <Falta texto="a definir" />}</Dato>
+        <Dato rotulo="Batería">
+          <Bateria
+            codigo={c.pedidos?.baterias?.codigo ?? null}
+            conBenziger={c.pedidos?.con_benziger === true}
+          />
+        </Dato>
         <Dato rotulo="Entrevista">
           {fechaHora(c.fecha_entrevista) ?? <Falta texto="sin agendar" />}
         </Dato>
