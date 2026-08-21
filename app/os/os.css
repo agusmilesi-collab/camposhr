@@ -4921,10 +4921,17 @@ textarea.os-campo {
 /* En la ficha los mismos datos van fijos: rótulo, si se tomó y lo anotado. */
 .os-administrado-fijo {
   display: grid;
-  grid-template-columns: 150px 92px minmax(0, 1fr);
-  align-items: baseline;
+  /* Rótulo, estado, lo que dibujó y las observaciones. */
+  grid-template-columns: 150px 92px 62px minmax(0, 1fr);
+  align-items: center;
   gap: 14px;
   padding: 9px 0;
+}
+
+.os-administrado-fijo .os-boton {
+  height: 26px;
+  padding: 0 12px;
+  font-size: 0.78rem;
 }
 
 .os-administrado-fijo + .os-administrado-fijo {
