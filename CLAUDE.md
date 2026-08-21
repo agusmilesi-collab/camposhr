@@ -142,6 +142,11 @@ plataforma Benziger, así que guardarlo acá no agregaba respaldo y sí sumaba u
 copia del perfil completo de una persona identificable. Si algún día hay que
 volver a leerlo, se baja de la plataforma y se sube de nuevo por el mismo botón.
 
+Como no queda ningún archivo, tampoco hay nada que abrir: el bucket no tiene
+carpeta `benziger/`, la ficha muestra el nombre del informe con la marca de
+leído, y la ruta que firmaba una dirección para verlo se borró junto con
+`enlaceDelInforme`.
+
 **Por eso una lectura incompleta se rechaza.** Antes el lector seguía de largo
 cuando no encontraba un rótulo y la fila entraba con campos vacíos: el problema
 recién aparecía en el informe terminado. Ahora `faltantesDe` exige los datos que

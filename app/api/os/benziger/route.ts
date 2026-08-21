@@ -3,7 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
-import { enlaceDelInforme, guardarBenziger } from '@/lib/benziger-datos';
+import { guardarBenziger } from '@/lib/benziger-datos';
 import { extraerBenziger, faltantesDe, descuadresDe } from '@/lib/benziger-pdf';
 import { PERFILES } from '@/lib/perfiles';
 import { anotarAcceso } from '@/lib/accesos';
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
       accion: 'escritura',
       recurso: 'benziger',
       recursoId: id,
-      detalle: { cuadrantes, con_pdf: r.conPdf, leido: Boolean(leido) },
+      detalle: { cuadrantes, con_informe: r.conInforme, leido: Boolean(leido) },
     });
 
     revalidateTag(CACHE_PSICOTECNICOS);
@@ -103,33 +103,4 @@ export async function POST(req: Request) {
     console.error('benziger:', e);
     return NextResponse.json({ ok: false, motivo: 'No se pudo cargar.' }, { status: 500 });
   }
-}
-
-/**
- * Abre el informe.
- *
- * El bucket es privado, así que se firma una dirección de vida corta y se
- * redirige. Queda anotado quién lo abrió: es un informe con el nombre y el
- * perfil de una persona identificable.
- */
-export async function GET(req: Request) {
-  if (await sinSesion()) {
-    return NextResponse.json({ ok: false, motivo: 'Sin sesión.' }, { status: 401 });
-  }
-
-  const id = new URL(req.url).searchParams.get('id') ?? '';
-  const enlace = await enlaceDelInforme(id);
-  if (!enlace) {
-    return NextResponse.json({ ok: false, motivo: 'No hay informe cargado.' }, { status: 404 });
-  }
-
-  const yo = await quienSoy();
-  await anotarAcceso({
-    quien: yo.nombre,
-    accion: 'descarga',
-    recurso: 'benziger',
-    recursoId: id,
-  });
-
-  return NextResponse.redirect(enlace);
 }
