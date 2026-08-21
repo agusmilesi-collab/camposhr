@@ -13,6 +13,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
+import Desplegable from '@/app/os/Desplegable';
 import { COOKIE_EMPRESA, TODAS } from '@/lib/filtro-empresa';
 
 function guardar(valor: string) {
@@ -42,19 +43,16 @@ export default function FiltroEmpresa({
     <div className="os-barra-acciones os-barra-filtro">
       <label className="os-tilde" style={{ gap: 10 }}>
         <span className="os-dato-rotulo">Cliente</span>
-        <select
-          className="os-campo"
-          value={actual}
-          disabled={pendiente}
-          onChange={(e) => cambiar(e.target.value)}
-        >
-          <option value={TODAS}>Todos</option>
-          {empresas.map((e) => (
-            <option key={e} value={e}>
-              {e}
-            </option>
-          ))}
-        </select>
+        <Desplegable
+          valor={actual}
+          opciones={[
+            { valor: TODAS, texto: 'Todos' },
+            ...empresas.map((e) => ({ valor: e, texto: e })),
+          ]}
+          alElegir={cambiar}
+          deshabilitado={pendiente}
+          etiqueta="Filtrar por cliente"
+        />
       </label>
 
       {ocultas > 0 && (
