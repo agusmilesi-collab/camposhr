@@ -1,0 +1,276 @@
+<title>Factura C · muestra</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0; padding: 0 0 64px;
+    background: #f2f0ec; color: #16202b;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .aviso {
+    background: #8c3b3b; color: #fff; padding: 10px 20px;
+    font-size: 13px; letter-spacing: .01em; text-align: center;
+  }
+  .aviso b { font-weight: 600; }
+  .marco { max-width: 860px; margin: 0 auto; padding: 32px 20px 0; }
+  .rotulo {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+    color: #7b7770; margin: 28px 0 10px;
+  }
+
+  /* --- La hoja --- */
+  .hoja {
+    background: #fff; border: 1px solid #e2ded6; border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(22,32,43,.05);
+    padding: 0; position: relative; overflow: hidden;
+  }
+  .hoja::after {
+    content: 'MUESTRA'; position: absolute; top: 42%; left: 50%;
+    transform: translate(-50%,-50%) rotate(-24deg);
+    font-size: 130px; font-weight: 600; letter-spacing: .04em;
+    color: rgba(140,59,59,.055); pointer-events: none; white-space: nowrap;
+  }
+  .cabeza { display: grid; grid-template-columns: 1fr 78px 1fr; border-bottom: 2px solid #16202b; }
+  .cabeza > div { padding: 22px 24px; }
+  .letra {
+    border-left: 1px solid #16202b; border-right: 1px solid #16202b;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding: 14px 0 8px !important;
+  }
+  .letra b { font-size: 40px; line-height: 1; font-weight: 600; }
+  .letra span { font-size: 10px; letter-spacing: .06em; color: #46505c; margin-top: 4px; }
+  .fantasia { font-family: Georgia, 'Instrument Serif', serif; font-size: 25px; letter-spacing: .02em; }
+  .titulo { font-family: Georgia, 'Instrument Serif', serif; font-size: 25px; }
+  .linea { font-size: 12.5px; color: #46505c; }
+  .linea b { color: #16202b; font-weight: 500; }
+  .der { text-align: right; }
+
+  .bloque { padding: 18px 24px; border-bottom: 1px solid #e2ded6; }
+  .par { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 28px; font-size: 12.5px; }
+  .par div { color: #46505c; }
+  .par b { color: #16202b; font-weight: 500; }
+  .oc { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2ded6; font-size: 12.5px; }
+  .oc b { font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: #7b7770;
+    font-weight: 500; text-align: left; padding: 12px 24px; border-bottom: 1px solid #e2ded6;
+    background: #faf9f6;
+  }
+  thead th.num, td.num { text-align: right; }
+  tbody td { padding: 13px 24px; border-bottom: 1px solid #eeebe4; vertical-align: top; font-size: 13.5px; }
+  td .d { font-weight: 500; }
+  td .s { font-size: 12px; color: #7b7770; margin-top: 2px; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .totales { display: flex; justify-content: flex-end; padding: 16px 24px; }
+  .totales table { width: auto; min-width: 300px; }
+  .totales td { border: 0; padding: 5px 0; font-size: 13.5px; }
+  .totales td:last-child { text-align: right; padding-left: 40px; }
+  .totales tr.grande td { font-size: 19px; font-weight: 600; padding-top: 12px; border-top: 2px solid #16202b; }
+
+  .pie { display: grid; grid-template-columns: 128px 1fr auto; gap: 22px; align-items: center;
+         padding: 20px 24px; border-top: 1px solid #e2ded6; background: #faf9f6; }
+  .pie img { width: 128px; height: 128px; display: block; }
+  .pie .arca { font-size: 12px; color: #46505c; }
+  .pie .arca b { display: block; font-size: 13px; color: #16202b; font-weight: 600; margin-bottom: 2px; }
+  .cae { text-align: right; font-size: 13px; }
+  .cae .n { font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+  .cae .v { color: #46505c; font-size: 12.5px; }
+
+  /* --- Lo que viaja a ARCA --- */
+  .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .panel { background: #fff; border: 1px solid #e2ded6; border-radius: 3px; padding: 16px 18px; }
+  .panel h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
+  pre { margin: 0; font-size: 11.5px; line-height: 1.5; overflow-x: auto;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #46505c; }
+  .nota { font-size: 13px; color: #46505c; background: #fff; border: 1px solid #e2ded6;
+          border-left: 3px solid #a97722; border-radius: 3px; padding: 14px 18px; margin-top: 16px; }
+  .nota b { color: #16202b; }
+  @media (max-width: 720px) { .dos, .par, .cabeza { grid-template-columns: 1fr; } .pie { grid-template-columns: 1fr; } }
+</style>
+
+<div class="aviso">
+  <b>Muestra de diseño.</b> Documento generado para ver cómo quedaría el comprobante. El CAE, el número, los dos CUIT y la orden de compra son inventados: no es una factura válida ni fue emitida ante ARCA. Los CUIT reales no van acá, porque este repositorio es público.
+</div>
+
+<div class="marco">
+  <div class="rotulo">Así se vería el PDF que el OS guarda y manda al cliente</div>
+
+  <div class="hoja">
+    <div class="cabeza">
+      <div>
+        <div class="fantasia">CAMPOS HR</div>
+        <div class="linea" style="margin-top:10px">Lorena Virginia Campos</div>
+        <div class="linea">Córdoba, Argentina</div>
+        <div class="linea">Responsable Monotributo</div>
+      </div>
+      <div class="letra">
+        <b>C</b>
+        <span>CÓD. 11</span>
+      </div>
+      <div class="der">
+        <div class="titulo">Factura</div>
+        <div class="linea" style="margin-top:10px">Punto de venta <b>00003</b> &nbsp; Comp. Nº <b>00000012</b></div>
+        <div class="linea">Fecha de emisión <b>21/08/2026</b></div>
+        <div class="linea">CUIT <b>27-11111111-1</b></div>
+        <div class="linea">Ingresos Brutos <b>Régimen Simplificado</b></div>
+        <div class="linea">Inicio de actividades <b>01/03/2019</b></div>
+      </div>
+    </div>
+
+    <div class="bloque">
+      <div class="par">
+        <div>Razón social <b>Andina Servicio SAS</b></div>
+        <div>CUIT <b>27-81897645-3</b></div>
+        <div>Domicilio <b>Ubeda 5648</b></div>
+        <div>Condición frente al IVA <b>IVA Responsable Inscripto</b></div>
+        <div>Condición de venta <b>Cuenta corriente, 30 días</b></div>
+        <div>Período facturado <b>01/07/2026 al 21/08/2026</b></div>
+      </div>
+      <div class="oc">Orden de compra <b>4500219877</b> &nbsp;·&nbsp; Vencimiento de pago <b>20/09/2026</b></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th class="num" style="width:88px">Cantidad</th>
+          <th class="num" style="width:132px">Precio unit.</th>
+          <th class="num" style="width:132px">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="d">Evaluación psicotécnica · Lucía Barrientos · Cajera de sucursal</div>
+            <div class="s">Batería 1 · Rorschach y Raven · informe entregado el 04/08/2026</div>
+          </td>
+          <td class="num">1,00</td>
+          <td class="num">$ 90.000,00</td>
+          <td class="num">$ 90.000,00</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="d">Evaluación psicotécnica · Victoria Alcaraz · Jefe de depósito</div>
+            <div class="s">Batería 3 · Rorschach, Raven, Benziger, Bender y gráfico · informe entregado el 23/06/2026</div>
+          </td>
+          <td class="num">1,00</td>
+          <td class="num">$ 150.000,00</td>
+          <td class="num">$ 150.000,00</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="d">Adicional Benziger · Victoria Alcaraz</div>
+            <div class="s">USD 40 al dólar tarjeta del 21/08/2026 ($ 1.969,50)</div>
+          </td>
+          <td class="num">1,00</td>
+          <td class="num">$ 78.780,00</td>
+          <td class="num">$ 78.780,00</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="totales">
+      <table>
+        <tr><td>Subtotal</td><td class="num">$ 318.780,00</td></tr>
+        <tr><td>Otros tributos</td><td class="num">$ 0,00</td></tr>
+        <tr class="grande"><td>Total</td><td class="num">$ 318.780,00</td></tr>
+      </table>
+    </div>
+
+    <div class="pie">
+      <img src="data:image/png;base64,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" alt="Código QR del comprobante">
+      <div class="arca">
+        <b>Comprobante autorizado</b>
+        Esta Administración Federal no se responsabiliza por los datos ingresados en el detalle de la operación.
+      </div>
+      <div class="cae">
+        CAE Nº<div class="n">76281934520117</div>
+        <div class="v">Vencimiento del CAE 31/08/2026</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rotulo">Lo que viaja a ARCA, y lo que no</div>
+  <div class="dos">
+    <div class="panel">
+      <h3>FECAESolicitar</h3>
+      <pre>{
+  "Auth": {
+    "Token": "…",
+    "Sign": "…",
+    "Cuit": "27111111111"
+  },
+  "FeCAEReq": {
+    "FeCabReq": {
+      "CantReg": 1,
+      "PtoVta": 3,
+      "CbteTipo": 11
+    },
+    "FeDetReq": [
+      {
+        "Concepto": 2,
+        "DocTipo": 80,
+        "DocNro": "27818976453",
+        "CbteDesde": 12,
+        "CbteHasta": 12,
+        "CbteFch": "20260821",
+        "ImpTotal": 318780,
+        "ImpTotConc": 0,
+        "ImpNeto": 318780,
+        "ImpOpEx": 0,
+        "ImpIVA": 0,
+        "ImpTrib": 0,
+        "FchServDesde": "20260701",
+        "FchServHasta": "20260821",
+        "FchVtoPago": "20260920",
+        "MonId": "PES",
+        "MonCotiz": 1,
+        "CondicionIVAReceptorId": 1
+      }
+    ]
+  }
+}</pre>
+    </div>
+    <div class="panel">
+      <h3>Respuesta</h3>
+      <pre>{
+  "FeCabResp": {
+    "Cuit": "27111111111",
+    "PtoVta": 3,
+    "CbteTipo": 11,
+    "Resultado": "A",
+    "CantReg": 1
+  },
+  "FeDetResp": [
+    {
+      "CbteDesde": 12,
+      "CbteHasta": 12,
+      "Resultado": "A",
+      "CAE": "76281934520117",
+      "CAEFchVto": "20260831"
+    }
+  ]
+}</pre>
+    </div>
+  </div>
+
+  <div class="nota">
+    <b>El detalle no viaja.</b> ARCA autoriza un total, no las líneas: los nombres de los
+    candidatos, los puestos, la batería, la cotización del dólar y el número de orden de
+    compra existen solo en este PDF y en la base del OS. Por eso el comprobante lo tiene que
+    armar el sistema, y por eso un cliente que exige la orden de compra impresa depende de
+    este archivo y no del CAE.
+  </div>
+
+  <div class="nota">
+    <b>De dónde salió cada número.</b> Los precios son los de las baterías cargadas en
+    Supabase ($ 90.000 la 1 y $ 150.000 la 3); el adicional Benziger son los USD 40 de
+    <code>lib/benziger.ts</code> al dólar tarjeta de dolarapi del 21/08/2026
+    ($ 1.969,50), que queda congelado en la
+    factura. Las dos evaluaciones son las de Lorena en Distribuidora Andina, y los datos
+    fiscales del cliente son los que están cargados en la base de prueba.
+  </div>
+</div>
