@@ -56,19 +56,14 @@ export default function Lista({ clientes }: { clientes: Cliente[] }) {
               {clientes.map((c) => (
                 <tr key={c.id ?? c.nombre}>
                   <td>
-                    {/* Los de Airtable no se editan acá: su ficha vive allá
-                        hasta que se migren. */}
+                    {/* Los de Airtable no abren ficha: no se editan desde acá
+                        hasta que se migren, así que su nombre no es un botón. */}
                     {c.id ? (
                       <button className="os-tabla-enlace" type="button" onClick={() => setAbierto(c)}>
                         {c.nombre}
                       </button>
                     ) : (
                       <div className="os-tabla-nombre">{c.nombre}</div>
-                    )}
-                    {c.origen === 'airtable' && (
-                      <div className="os-etiquetas">
-                        <span className="os-etiqueta">Airtable</span>
-                      </div>
                     )}
                   </td>
                   <td>
