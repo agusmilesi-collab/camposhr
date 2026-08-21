@@ -4735,15 +4735,33 @@ textarea.os-campo {
   justify-self: stretch;
 }
 
-/* La segunda fila del Bender cae bajo la primera: lo que dibujó debajo de las
-   láminas, y reemplazar debajo de copiar el enlace. */
-.os-herramienta-accion > .os-bender-ver {
+/* Lo que la persona dejó dibujado va en su propio renglón, debajo de las
+   observaciones, y con las mismas columnas que el de arriba: ver cae bajo la
+   herramienta y reemplazar bajo cargar. */
+.os-papel-dibujos {
+  flex-basis: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px 148px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.os-papel-dibujos > .os-bender-ver {
   grid-column: 2;
   text-align: center;
 }
 
-.os-herramienta-accion > .os-bender-subir {
+.os-papel-dibujos > .os-bender-subir {
   grid-column: 3;
+}
+
+.os-papel-dibujos > .os-enlace-apagado {
+  justify-self: center;
+}
+
+.os-papel-dibujos .os-form-error {
+  grid-column: 1 / -1;
 }
 
 .os-enlace-apagado {

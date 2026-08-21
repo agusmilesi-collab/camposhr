@@ -66,7 +66,7 @@ export default function Grafico({ id, nombre }: { id: string; nombre: string | n
       />
       {nombre ? (
         <a
-          className="os-enlace-suave"
+          className="os-boton os-bender-ver"
           href={`/api/os/grafico?id=${id}`}
           target="_blank"
           rel="noreferrer"
@@ -75,10 +75,10 @@ export default function Grafico({ id, nombre }: { id: string; nombre: string | n
           Ver el dibujo
         </a>
       ) : (
-        <span className="os-enlace-apagado">Sin dibujo</span>
+        <span className="os-enlace-apagado os-bender-ver">Sin dibujo</span>
       )}
       <button
-        className={`os-boton${nombre ? '' : ' os-boton-firme'}`}
+        className={`os-boton os-bender-subir${nombre ? '' : ' os-boton-firme'}`}
         type="button"
         disabled={subiendo}
         onClick={() => campo.current?.click()}
