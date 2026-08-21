@@ -11,6 +11,7 @@ import Enlace from './Enlace';
 import Grafico from './Grafico';
 import Papel from './Papel';
 import LinkLaminas from './LinkLaminas';
+import HojaBender from './HojaBender';
 import RelojRaven from './RelojRaven';
 
 export const dynamic = 'force-dynamic';
@@ -299,6 +300,7 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                   Abrir las láminas
                 </a>
                 <LinkLaminas href="/os/laminas/bender" />
+                <HojaBender id={e.id} hoja={e.benderHoja} />
               </Papel>
             </Tarjeta>
           );

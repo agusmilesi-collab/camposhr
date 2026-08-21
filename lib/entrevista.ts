@@ -26,6 +26,7 @@ type Fila = {
   proyectivo_administrado: boolean;
   bender_administrado: boolean;
   bender_observaciones: string | null;
+  bender_nombre: string | null;
   grafico_2_personas_administrado: boolean;
   grafico_2_personas_nombre: string | null;
   grafico_2_personas_observaciones: string | null;
@@ -64,6 +65,8 @@ export type Entrevista = {
   proyectivoAdministrado: boolean;
   benderAdministrado: boolean;
   benderObservaciones: string | null;
+  /** Qué dice la hoja del Bender ya subida, o null si todavía no hay. */
+  benderHoja: string | null;
   graficoAdministrado: boolean;
   graficoObservaciones: string | null;
   /** Cómo se llama el dibujo cargado, si hay uno. */
@@ -77,7 +80,7 @@ export type Entrevista = {
 
 const CAMPOS =
   'id,estado,modalidad,fecha_entrevista,enlace_entrevista,' +
-  'proyectivo_administrado,bender_administrado,bender_observaciones,' +
+  'proyectivo_administrado,bender_administrado,bender_observaciones,bender_nombre,' +
   'grafico_2_personas_administrado,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
@@ -125,6 +128,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     proyectivoAdministrado: f.proyectivo_administrado,
     benderAdministrado: f.bender_administrado,
     benderObservaciones: f.bender_observaciones,
+    benderHoja: f.bender_nombre,
     graficoAdministrado: f.grafico_2_personas_administrado,
     graficoObservaciones: f.grafico_2_personas_observaciones,
     graficoNombre: f.grafico_2_personas_nombre,

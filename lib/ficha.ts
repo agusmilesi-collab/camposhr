@@ -29,6 +29,7 @@ export type Cabecera = {
   /** Lo que la evaluadora anotó en la entrevista. Acá no se edita. */
   bender_observaciones: string | null;
   grafico_2_personas_administrado: boolean;
+  bender_nombre: string | null;
   grafico_2_personas_observaciones: string | null;
   /** El dibujo que se subió en la entrevista, si hay uno. */
   grafico_2_personas_nombre: string | null;
@@ -198,7 +199,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CAMPOS_CABECERA =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'proyectivo_administrado,bender_administrado,bender_observaciones,' +
-  'grafico_2_personas_administrado,' +
+  'grafico_2_personas_administrado,bender_nombre,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'recomendacion,recomendacion_notas,informe_path,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,' +
