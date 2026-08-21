@@ -4959,6 +4959,19 @@ textarea.os-campo {
   white-space: nowrap;
 }
 
+/* Los dos del mismo tamaño. El de copiar viene de otra hoja, con su propio
+   alto y su propio padding, y además cambia a "Copiado" al tocarlo: sin un
+   ancho mínimo, la fila se movía sola. */
+.os-portal-acciones > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 92px;
+  height: 32px;
+  padding: 0 12px;
+}
+
 /* El botón que arma el informe, con lo que hace falta saber al lado. */
 .os-generar {
   display: flex;
