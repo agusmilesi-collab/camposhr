@@ -142,6 +142,24 @@ le pida lo contrario, y acá el fondo es el dato: la barra de cada competencia y
 el nivel de ajuste elegido. Los elementos que lo necesitan llevan
 `print-color-adjust: exact`.
 
+## El portal de un cliente nace con el cliente
+
+`token_portal` tiene como valor por defecto `token_portal_nuevo()`
+(`supabase/portal-token-automatico.sql`), así que toda empresa que se inserte
+sale con su enlace. Va en la base y no en el código porque hay dos caminos de
+alta, la pantalla de Clientes y el alta rápida al cargar un pedido de un cliente
+que todavía no existe, y cualquiera que se agregue después lo hereda igual.
+
+**El token no se manda nunca en un alta.** La pantalla de Clientes inserta con
+`resolution=merge-duplicates`, así que un cliente que ya existe se actualiza con
+lo que se envía: mandar un token nuevo le cambiaría el enlace al que ya lo tiene
+en la mano y lo dejaría afuera.
+
+**En Clientes, el de Airtable gana.** Las empresas sin migrar tienen su token
+allá y es el que el cliente está usando; el de Supabase cubre a las que nunca
+tuvieron uno. Los dos abren igual: la resolución prueba Supabase y después
+Airtable.
+
 ## El informe del Benziger se lee y no se guarda
 
 El PDF que devuelve la licencia entra, se le sacan sus 69 datos y el archivo no
