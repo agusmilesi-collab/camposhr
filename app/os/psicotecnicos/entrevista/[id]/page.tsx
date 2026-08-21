@@ -290,18 +290,15 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                 administrado={e.benderAdministrado}
                 observaciones={e.benderObservaciones}
               >
-                {/* El botón queda a la vista y apagado: las láminas se van a
-                    construir acá, y esconderlo hasta entonces haría que el día
-                    que aparezcan nadie sepa que existen. */}
-                <button
-                  className="os-boton"
-                  type="button"
-                  disabled
-                  title="Todavía no está construido"
+                <a
+                  className="os-boton os-boton-firme"
+                  href="/os/laminas/bender"
+                  target="_blank"
+                  rel="noreferrer"
                 >
                   Abrir las láminas
-                </button>
-                <LinkLaminas href="/os/laminas/bender" apagado />
+                </a>
+                <LinkLaminas href="/os/laminas/bender" />
               </Papel>
             </Tarjeta>
           );

@@ -5,7 +5,7 @@
  *
  * La pantalla se comparte por videollamada o se gira el monitor, así que todo
  * lo que hay es la lámina: fondo oscuro, sin barra del OS, sin nada alrededor
- * que compita con la mancha.
+ * que compita con la figura.
  *
  * El puntero del sistema se reemplaza por una flecha grande y negra con borde
  * blanco. Un cursor de tamaño normal, ya comprimido por el video, no se ve del
@@ -14,7 +14,7 @@
  *
  * El trazo se desvanece solo a los cinco segundos. Es para señalar un contorno
  * mientras se habla de él, y lo que queda dibujado encima de la lámina en la
- * respuesta siguiente ensucia la mancha.
+ * respuesta siguiente ensucia la figura.
  *
  * Cambiar de lámina borra los trazos: pertenecen a la respuesta que se estaba
  * dando, no a la sesión.

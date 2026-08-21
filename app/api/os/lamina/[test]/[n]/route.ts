@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
-import { esTestDeManchas, leerLamina } from '@/lib/laminas';
+import { esTestConLaminas, leerLamina } from '@/lib/laminas';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,7 +22,7 @@ export async function GET(req: Request, { params }: { params: { test: string; n:
     }
   }
 
-  if (!esTestDeManchas(params.test)) {
+  if (!esTestConLaminas(params.test)) {
     return new NextResponse('No existe ese test.', { status: 404 });
   }
 
@@ -34,7 +34,7 @@ export async function GET(req: Request, { params }: { params: { test: string; n:
   // de una lámina puede pasar a ser otra imagen: sin revalidar, una pantalla
   // vieja sigue mostrando la que ya no está.
   const cabeceras: Record<string, string> = {
-    'Content-Type': 'image/png',
+    'Content-Type': lamina.tipo,
     'Cache-Control': 'private, no-cache',
   };
   if (lamina.etag) {
@@ -43,5 +43,5 @@ export async function GET(req: Request, { params }: { params: { test: string; n:
       return new NextResponse(null, { status: 304, headers: cabeceras });
     }
   }
-  return new NextResponse(lamina.png, { headers: cabeceras });
+  return new NextResponse(lamina.imagen, { headers: cabeceras });
 }
