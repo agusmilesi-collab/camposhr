@@ -4897,6 +4897,12 @@ th.os-tabla-contacto {
 }
 
 .os-herramienta {
+  /* Lo que ocupan el número y su separación: el ancho de "01" más el gap del
+     título. Todo lo que cuelga de un test (las observaciones, los botones del
+     dibujo) arranca a esta altura, o sea debajo de la B de Bender y no debajo
+     de su número. Va como variable para que las tres medidas no se
+     desacoplen. */
+  --os-herramienta-sangria: 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4949,6 +4955,7 @@ th.os-tabla-contacto {
  */
 .os-herramienta-numero {
   flex: none;
+  /* 22 más los 10 del gap dan la sangría de arriba. */
   min-width: 22px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -5142,6 +5149,7 @@ th.os-tabla-contacto {
 
 .os-papel-dibujos {
   flex-basis: 100%;
+  padding-left: var(--os-herramienta-sangria, 0);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 132px 148px;
   align-items: center;
@@ -5330,6 +5338,7 @@ th.os-tabla-contacto {
    acciones. */
 .os-papel-notas {
   flex-basis: 100%;
+  padding-left: var(--os-herramienta-sangria, 0);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 148px;
   align-items: center;
