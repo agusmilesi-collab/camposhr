@@ -118,40 +118,43 @@
   font-size: 0.9rem;
 }
 
-/* La lámina manda: es lo único que hay que mirar. */
+/* La lámina manda: es lo único que hay que mirar, y aun así entra completa con
+   sus opciones y sus botones. La lámina y las ocho opciones se miden contra el
+   alto de la ventana: en una pantalla de trece pulgadas, pasar de lámina
+   costaba bajar hasta los botones y volver a subir, treinta y seis veces. */
 .rv-lamina {
-  margin: 20px 0 16px;
-  padding: 16px;
+  margin: 14px 0 12px;
+  padding: 12px;
   border: 1px solid #e4e2de;
   border-radius: 12px;
   background: #fff;
   text-align: center;
 }
 
-/* La lámina trae la matriz y sus ocho opciones en la misma imagen, así que es
-   alta y vertical: se limita al alto de la pantalla para que se vea entera sin
-   scrollear hasta los botones. */
+/* La matriz ya viene sola, sin las opciones, así que es apaisada. Se limita al
+   alto de la pantalla para que las opciones y los botones entren sin scrollear:
+   en una de trece pulgadas, cada lámina costaba bajar y volver a subir. */
 .rv-lamina img {
   max-width: 100%;
-  max-height: 62vh;
+  max-height: 36vh;
   height: auto;
   object-fit: contain;
 }
 
-/* Las ocho opciones, todas del mismo tamaño: ninguna pesa más que otra. */
-/* Las ocho, en dos filas de cuatro como en la lámina impresa: en una tira de
-   ocho cada figura queda demasiado chica para compararla con la matriz. */
+/* Las ocho, todas del mismo tamaño y en dos filas de cuatro como en la lámina
+   impresa: ninguna pesa más que otra, y en una sola tira de ocho cada figura
+   queda demasiado chica para compararla con la matriz. */
 .rv-opciones {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 /* La figura es el botón: se toca lo que se está comparando, no un número que
    hay que emparejar con ella. */
 .rv-opcion {
   display: block;
-  padding: 4px 8px 8px;
+  padding: 2px 6px 6px;
   border: 1px solid #d8d5d0;
   border-radius: 10px;
   background: #fff;
@@ -164,6 +167,8 @@
   display: block;
   width: 100%;
   height: auto;
+  max-height: 11vh;
+  object-fit: contain;
 }
 
 /* El número va arriba y centrado, como en la lámina impresa: es lo que la
@@ -203,7 +208,7 @@
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  margin: 18px 0;
+  margin: 12px 0;
 }
 
 .rv-boton {
