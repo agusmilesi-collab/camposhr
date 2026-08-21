@@ -30,6 +30,12 @@ const OS_HOST = 'os.camposhr.com';
 // subdominio o en <host>/v2. No tiene datos reales ni acciones conectadas.
 const TOOLS_V2_HOST = 'toolsversion2.camposhr.com';
 
+// Lo que el portal necesita de `public/` para pintarse: hoy, el dibujo del
+// cerebro del gráfico Benziger. Es una lista y no un permiso general porque en
+// `public/` también viven las cotizaciones, las presentaciones y los informes
+// del hub, que no tienen por qué servirse desde el host del cliente.
+const ESTATICOS_DEL_PORTAL = /^\/informe\//;
+
 const TOKEN = /^\/([A-Za-z0-9_-]+)\/?$/;
 const TOKEN_EN_P = /^\/p\/([A-Za-z0-9_-]+)\/?$/;
 const RUTAS_TOOLS = /^\/(informes|cuestionario|cotizaciones|presentaciones|pres)(\/|$)/;
@@ -93,6 +99,7 @@ export async function middleware(req: NextRequest) {
   // --- Portal de clientes: subdominio exclusivo ---
   if (host === CLIENT_HOST) {
     if (pathname.startsWith('/p/')) return NextResponse.next();
+    if (ESTATICOS_DEL_PORTAL.test(pathname)) return NextResponse.next();
     const m = pathname.match(TOKEN);
     if (m) {
       const dest = url.clone();
