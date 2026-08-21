@@ -11,6 +11,10 @@
  *
  * Las observaciones guardan al salir del campo, y el sí/no al elegir, como el
  * resto del pipeline. Vacío significa sin observaciones, que es lo habitual.
+ *
+ * La marca también se pone sola al subir lo que la persona dibujó: si están los
+ * dibujos, el test se tomó. Se puede corregir a mano igual, que es el caso de
+ * haberlo administrado sin llegar a subir las fotos.
  */
 
 import { useRouter } from 'next/navigation';
@@ -38,6 +42,15 @@ export default function Papel({
   const [, empezar] = useTransition();
   const [marca, setMarca] = useState(administrado);
   const [notas, setNotas] = useState(observaciones ?? '');
+  // Subir lo que la persona dibujó marca el test como administrado del lado del
+  // servidor. Sin esto, el botón seguía diciendo "No administrado" hasta
+  // recargar la página entera: el estado de acá se quedaba con el valor de
+  // cuando se abrió la pantalla.
+  const [ultimo, setUltimo] = useState(administrado);
+  if (administrado !== ultimo) {
+    setUltimo(administrado);
+    setMarca(administrado);
+  }
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
