@@ -236,16 +236,13 @@ function SumarioEstructural({ f }: { f: Ficha }) {
  * alguien cargara el dato desde otro lado.
  */
 function BenzigerVista({ f, id }: { f: Ficha; id: string }) {
-  // El PDF ya no se guarda, así que solo los informes cargados hasta el
-  // 21/8/2026 conservan el archivo y se pueden volver a abrir desde la ficha.
   const b = f.benziger;
   return (
     <>
       <Benziger
         id={id}
         cuadrantes={b?.cuadrante_preferente ?? []}
-        informe={b?.pdf_nombre ?? (b?.pdf_path ? 'Informe cargado' : null)}
-        guardado={Boolean(b?.pdf_path)}
+        informe={b?.pdf_nombre ?? null}
       />
 
       {b?.cuadrantes && Object.keys(b.cuadrantes).length > 0 && (

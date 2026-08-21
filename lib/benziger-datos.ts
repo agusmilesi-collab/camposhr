@@ -55,7 +55,7 @@ export type BenzigerCarga = {
 export async function guardarBenziger(
   evaluacionId: string,
   c: BenzigerCarga
-): Promise<{ ok: true; conPdf: boolean } | { ok: false; motivo: string }> {
+): Promise<{ ok: true; conInforme: boolean } | { ok: false; motivo: string }> {
   if (!UUID.test(evaluacionId)) return { ok: false, motivo: 'Evaluación inválida.' };
 
   const fila: Record<string, unknown> = {
@@ -100,41 +100,5 @@ export async function guardarBenziger(
   if (!res.ok) {
     return { ok: false, motivo: `Supabase respondió ${res.status}: ${await res.text()}` };
   }
-  return { ok: true, conPdf: Boolean(c.pdf) };
-}
-
-/**
- * Una dirección firmada y de vida corta para abrir el informe.
- *
- * El bucket es privado. Sin esto el PDF no se puede mirar, y un informe que no
- * se puede abrir no sirve para revisar si se subió el que era.
- */
-export async function enlaceDelInforme(evaluacionId: string): Promise<string | null> {
-  if (!UUID.test(evaluacionId)) return null;
-
-  const filas = await select<{ pdf_path: string | null }>(
-    'benziger',
-    `select=pdf_path&evaluacion_id=eq.${evaluacionId}&limit=1`
-  );
-  const ruta = filas[0]?.pdf_path;
-  if (!ruta) return null;
-
-  const { url, key } = config();
-  const res = await fetch(`${url}/storage/v1/object/sign/${BUCKET}/${ruta}`, {
-    method: 'POST',
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-    },
-    // Cinco minutos: lo que tarda en abrirse, no lo que tarda en circular.
-    body: JSON.stringify({ expiresIn: 300 }),
-    cache: 'no-store',
-  });
-  if (!res.ok) {
-    console.error('benziger: no se pudo firmar el enlace', res.status, await res.text());
-    return null;
-  }
-  const r = (await res.json()) as { signedURL?: string };
-  return r.signedURL ? `${url}/storage/v1${r.signedURL}` : null;
+  return { ok: true, conInforme: Boolean(c.pdf) };
 }
