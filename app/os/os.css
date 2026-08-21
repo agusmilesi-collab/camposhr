@@ -4778,6 +4778,14 @@ textarea.os-campo {
    herramienta y reemplazar bajo cargar. */
 /* El desplegable del OS: el sello se toca y despliega los otros, cada uno con
    su punto de color. Uno solo para todas las pantallas. */
+/* Un dato que acompaña a otro en la misma línea: el rango del Raven al lado
+   de su puntaje. */
+.os-dato-al-lado {
+  margin-left: 8px;
+  font-size: 0.8rem;
+  color: var(--os-suave);
+}
+
 .os-desplegable {
   position: relative;
   display: inline-flex;
