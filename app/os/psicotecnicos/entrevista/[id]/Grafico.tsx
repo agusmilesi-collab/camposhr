@@ -72,7 +72,7 @@ export default function Grafico({ id, nombre }: { id: string; nombre: string | n
           rel="noreferrer"
           title={nombre}
         >
-          Ver el dibujo
+          Ver dibujo
         </a>
       ) : (
         <span className="os-enlace-apagado os-bender-ver">Sin dibujo</span>

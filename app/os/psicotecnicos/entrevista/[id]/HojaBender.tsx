@@ -85,7 +85,7 @@ export default function HojaBender({ id, hoja }: { id: string; hoja: string | nu
           rel="noreferrer"
           title={hoja}
         >
-          Ver lo que dibujó
+          Ver dibujo
         </a>
       ) : (
         <span className="os-enlace-apagado os-bender-ver">Sin dibujos</span>
