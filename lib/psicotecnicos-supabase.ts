@@ -14,7 +14,7 @@ import 'server-only';
 import { select } from '@/lib/supabase';
 import { diasDesde } from '@/lib/hora';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import type { Evaluacion } from '@/lib/psicotecnicos-tipos';
+import { yaEntregada, type Evaluacion } from '@/lib/psicotecnicos-tipos';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -124,7 +124,7 @@ export async function listar(): Promise<Evaluacion[]> {
     recomendacion: f.recomendacion,
     // El informe no es un archivo subido: se arma con los datos cargados, así
     // que existe desde que la evaluación se entrega.
-    tieneInforme: f.estado === 'Entregado' || Boolean(f.informe_path),
+    tieneInforme: yaEntregada(f.estado) || Boolean(f.informe_path),
     ingreso: f.ingreso,
     seguimientoAl: f.seguimiento_al,
     tieneCv: Boolean(f.personas?.cv_path),

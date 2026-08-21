@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { armarInforme } from '@/lib/informe';
 import { datosClienteDeSupabase } from '@/lib/portal-supabase';
+import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import Documento from '@/app/os/psicotecnicos/informe/_doc/Documento';
 import Descargar from './Descargar';
 import './portal-informe.css';
@@ -32,7 +33,7 @@ export default async function InformeDelPortal({
   // La evaluación tiene que ser de esta empresa y estar entregada.
   const suyo = datos.busquedas
     .flatMap((b) => b.candidatos)
-    .some((c) => c.id === params.id && c.estado === 'Entregado');
+    .some((c) => c.id === params.id && yaEntregada(c.estado));
   if (!suyo) notFound();
 
   const inf = await armarInforme(params.id);
