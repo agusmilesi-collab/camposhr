@@ -14,6 +14,14 @@ import { listarClientesConToken } from '@/lib/airtable';
 import { claveEmpresa } from '@/lib/os';
 import { CACHE_CLIENTES } from '@/lib/etiquetas';
 
+export type PedidoDelCliente = {
+  id: string;
+  puesto: string;
+  estado: string | null;
+  fecha: string | null;
+  evaluaciones: number;
+};
+
 export type Cliente = {
   id: string | null;
   origen: 'supabase' | 'airtable';
@@ -31,6 +39,8 @@ export type Cliente = {
   token: string | null;
   /** Qué hay cargado de este cliente en Supabase. */
   pedidos: number;
+  /** Sus búsquedas, para verlas sin salir de la ficha del cliente. */
+  susPedidos: PedidoDelCliente[];
   evaluaciones: number;
   cotizaciones: number;
 };
@@ -50,14 +60,14 @@ type FilaEmpresa = {
   tamano: number | null;
   notas: string | null;
   token_portal: string | null;
-  pedidos: { id: string; evaluaciones: { id: string }[] }[];
+  pedidos: { id: string; puesto: string; estado: string | null; fecha_pedido: string | null; evaluaciones: { id: string }[] }[];
   cotizaciones: { id: string }[];
 };
 
 const CAMPOS =
   'id,nombre,razon_social,cuit,condicion_iva,email_facturacion,contacto,' +
   'direccion_fiscal,rubro,tamano,notas,token_portal,' +
-  'pedidos(id,evaluaciones(id)),cotizaciones(id)';
+  'pedidos(id,puesto,estado,fecha_pedido,evaluaciones(id)),cotizaciones(id)';
 
 export async function listarClientes(): Promise<Cliente[]> {
   const [enSupabase, conToken] = await Promise.all([
@@ -89,6 +99,15 @@ export async function listarClientes(): Promise<Cliente[]> {
     // y a las que se dan de alta desde acá.
     token: tokensPorClave.get(claveEmpresa(e.nombre)) ?? e.token_portal ?? null,
     pedidos: e.pedidos?.length ?? 0,
+    susPedidos: (e.pedidos ?? [])
+      .map((p) => ({
+        id: p.id,
+        puesto: p.puesto,
+        estado: p.estado,
+        fecha: p.fecha_pedido,
+        evaluaciones: p.evaluaciones?.length ?? 0,
+      }))
+      .sort((a, b) => (b.fecha ?? '').localeCompare(a.fecha ?? '')),
     evaluaciones: (e.pedidos ?? []).reduce((n, p) => n + (p.evaluaciones?.length ?? 0), 0),
     cotizaciones: e.cotizaciones?.length ?? 0,
   }));
@@ -112,6 +131,7 @@ export async function listarClientes(): Promise<Cliente[]> {
       notas: null,
       token: c.token,
       pedidos: 0,
+      susPedidos: [],
       evaluaciones: 0,
       cotizaciones: 0,
     });
