@@ -98,6 +98,30 @@ export function hoy(): string {
   return `${p.year}-${p.month}-${p.day}`;
 }
 
+/**
+ * Qué día cae una fecha, en la zona del trabajo: "2026-08-21".
+ *
+ * Sirve para comparar contra `hoy()`. Una entrevista de las nueve de la noche
+ * está guardada en UTC como del día siguiente, y compararla por el texto de su
+ * ISO la correría de día.
+ */
+export function diaDe(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = comoFecha(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const p = partes(d);
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+/** Solo la hora, "09:30", para cuando el día ya se sabe. */
+export function soloHora(iso: string | null): string | null {
+  if (!iso || !iso.includes('T')) return null;
+  const d = comoFecha(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const p = partes(d);
+  return `${p.hour}:${p.minute}`;
+}
+
 /** El valor que espera un input datetime-local, en hora de Argentina. */
 export function paraInput(iso: string | null): string {
   if (!iso) return '';

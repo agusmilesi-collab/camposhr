@@ -26,6 +26,7 @@
   --os-gris: #8a8580;
   --os-ambar: #a97722;
   --os-azul: #43648f;
+  --os-azul-fuerte: #2b4468;
   --os-violeta: #6a5a8c;
   --os-verde: #4a7856;
   --os-rojo: #8c3b3b;
@@ -62,6 +63,7 @@ html[data-os-tema='oscuro'] .os {
   --os-gris: #9aa1aa;
   --os-ambar: #d3a24e;
   --os-azul: #86a8d4;
+  --os-azul-fuerte: #6f97cb;
   --os-violeta: #a394c4;
   --os-verde: #7bab88;
   --os-rojo: #cd7d7d;
@@ -646,6 +648,38 @@ a.os-fila:hover {
   background: var(--os-panel-2);
 }
 
+/* Las entrevistas de hoy: el panel va arriba de todo y con la línea de color
+   al costado, para que se vea antes que el resto sin gritar. */
+.os-hoy {
+  margin-bottom: 18px;
+  border-left: 3px solid var(--os-azul-fuerte);
+}
+
+.os-hoy .os-fila:last-child {
+  border-bottom: 0;
+}
+
+/* La hora va primero y con ancho fijo: leídas en columna dicen el orden del
+   día de un vistazo. */
+.os-hoy-hora {
+  flex: none;
+  width: 46px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-azul-fuerte);
+}
+
+/* Una fila que se toca entera lleva a su hoja de entrevista. */
+.os-fila-enlace {
+  color: inherit;
+  text-decoration: none;
+}
+
+.os-fila-enlace:hover {
+  background: var(--os-hover);
+}
+
 .os-fila-cuerpo {
   min-width: 0;
   flex: 1;
@@ -697,6 +731,10 @@ a.os-fila:hover {
 
 .os-sello-estado::before {
   content: '';
+  /* Sin esto el punto es un elemento flexible que se encoge a cero cuando el
+     sello está apretado, y el hueco del gap queda igual: el texto se corre a
+     la derecha por un círculo que no se ve. */
+  flex: none;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -1803,6 +1841,14 @@ textarea.os-campo {
 /* La tabla de una etapa: se edita adentro de la celda, así que los controles
    van al tamaño de la fila y no al de un formulario. */
 
+/* La primera columna arranca más adentro que el resto: pegada al borde del
+   panel, el nombre se lee como si estuviera fuera de la tarjeta. Solo la
+   primera, para no ensanchar la tabla por ocho columnas. */
+.os-tabla th:first-child,
+.os-tabla td:first-child {
+  padding-left: 30px;
+}
+
 .os-tabla-trabajo td {
   vertical-align: middle;
 }
@@ -1883,6 +1929,15 @@ textarea.os-campo {
   min-width: 162px;
 }
 
+/* Este botón lleva el punto del sello adentro, así que centrar su contenido
+   corre el texto a la derecha: se alinea a la izquierda y el punto queda de
+   ancla, igual que en un sello suelto. */
+.os-tabla-contacto .os-boton {
+  justify-content: flex-start;
+  width: 100%;
+  padding: 0 11px;
+}
+
 /**
  * El botón de volver a la etapa anterior.
  *
@@ -1911,14 +1966,14 @@ textarea.os-campo {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--os-azul);
+  background: var(--os-azul-fuerte);
   color: var(--os-panel);
   font-size: 0.78rem;
   line-height: 1;
 }
 
 .os-boton.os-boton-volver:hover:not(:disabled) {
-  background: var(--os-azul);
+  background: var(--os-azul-fuerte);
   color: var(--os-panel);
   border-color: transparent;
   filter: brightness(1.15);
@@ -4101,20 +4156,21 @@ textarea.os-campo {
   gap: 8px;
   width: 100%;
   padding: 10px 12px;
-  border: 1px dashed var(--os-linea);
+  border: 1px dashed var(--os-azul);
   border-radius: 10px;
   background: transparent;
-  color: var(--os-suave);
+  color: var(--os-azul);
   font: inherit;
   font-size: 0.83rem;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
 }
 
 .os-agregar-card:hover {
   border-style: solid;
-  border-color: var(--os-tinta-media);
-  color: var(--os-tinta);
+  border-color: var(--os-azul-fuerte);
+  color: var(--os-azul-fuerte);
 }
 
 .os-agregar-mas {
