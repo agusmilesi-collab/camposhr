@@ -616,6 +616,18 @@ html[data-os-lateral='compacta'] .os-boton-pie {
   letter-spacing: -0.01em;
 }
 
+/* Dos enlaces a la derecha del título, uno al lado del otro. */
+.os-panel-enlaces {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.os-panel-enlaces .os-enlace {
+  margin-left: 0;
+}
+
 .os-panel-top .os-enlace {
   margin-left: auto;
   font-size: 0.8rem;

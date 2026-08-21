@@ -9,10 +9,15 @@
  *
  * Se sube apenas se elige el archivo: es un paso solo y un botón de confirmar
  * en el medio es un paso donde quedarse.
+ *
+ * La foto se achica antes de salir del navegador. Una del celular pesa cuatro
+ * megas y lo que hay que ver es el trazo, no el grano del papel. Un PDF va tal
+ * cual: puede ser un escaneo de varias hojas.
  */
 
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
+import { achicar } from '@/lib/imagen-cliente';
 
 export default function Grafico({ id, nombre }: { id: string; nombre: string | null }) {
   const router = useRouter();
@@ -25,9 +30,13 @@ export default function Grafico({ id, nombre }: { id: string; nombre: string | n
     setError(null);
     setSubiendo(true);
     try {
+      const liviano =
+        archivo.type === 'application/pdf'
+          ? archivo
+          : new File([await achicar(archivo)], archivo.name, { type: 'image/jpeg' });
       const cuerpo = new FormData();
       cuerpo.append('evaluacionId', id);
-      cuerpo.append('archivo', archivo);
+      cuerpo.append('archivo', liviano);
       const res = await fetch('/api/os/grafico', { method: 'POST', body: cuerpo });
       const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
       if (!r.ok) {

@@ -101,6 +101,24 @@ El reloj también es del servidor. `iniciado_at` se sella cuando se pide la
 primera lámina y `segundosRestantes()` mide contra eso: si el tiempo lo llevara
 el navegador, recargar la página lo reiniciaría.
 
+## Las fotos se achican en el navegador, no en el servidor
+
+Lo que dibuja la persona llega como fotos de teléfono por WhatsApp: cuatro megas
+cada una, y del Bender son nueve. Comprimirlas del lado del servidor sería subir
+treinta megas para tirar veintiocho, así que `lib/imagen-cliente.ts` las achica y
+las une antes de que salgan del navegador de la evaluadora. Del Bender sube una
+sola imagen con las nueve láminas, rotuladas A y 1 a 8.
+
+Un PDF va tal cual: puede ser un escaneo de varias hojas y el lienzo solo sabe
+de imágenes. Y si el navegador no puede decodificar el formato (un iPhone puede
+mandar HEIC, que Chrome no lee), se sube el archivo original: es preferible
+guardar cinco megas que perder el dibujo.
+
+**Lo que hay que poder ver es el trazo, no el grano del papel.** Con el lado
+largo en 860 píxeles una hoja A4 queda a unos cien puntos por pulgada, que
+alcanza para leer un Bender; bajar más la calidad empieza a borrar el lápiz
+claro.
+
 ## Las láminas de los tests no van al repositorio
 
 Viven en el bucket privado, en `psicotecnicos/laminas/<test>/<n>.<formato>`, y

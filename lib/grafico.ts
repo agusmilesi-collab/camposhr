@@ -99,3 +99,83 @@ export async function enlaceDelGrafico(evaluacionId: string): Promise<string | n
   const { signedURL } = (await res.json()) as { signedURL: string };
   return `${url}/storage/v1${signedURL}`;
 }
+
+/**
+ * La hoja del Bender: las nueve láminas dibujadas, en una imagen.
+ *
+ * Llega ya armada y comprimida desde el navegador de la evaluadora, que es
+ * donde están las nueve fotos originales. Acá solo se guarda.
+ *
+ * Igual que el gráfico, subirla marca el test como administrado: si están los
+ * dibujos, se tomó.
+ */
+export async function guardarBender(
+  evaluacionId: string,
+  archivo: File,
+  cuantas: number
+): Promise<{ ok: true } | { ok: false; motivo: string }> {
+  if (!UUID.test(evaluacionId)) return { ok: false, motivo: 'Evaluación inválida.' };
+
+  const { url, key } = config();
+  const ruta = `bender/${evaluacionId}.jpg`;
+  const subida = await fetch(`${url}/storage/v1/object/${BUCKET}/${ruta}`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'image/jpeg',
+      'x-upsert': 'true',
+    },
+    body: new Uint8Array(await archivo.arrayBuffer()),
+    cache: 'no-store',
+  });
+  if (!subida.ok) {
+    throw new Error(`No se pudo subir la hoja: ${subida.status} ${await subida.text()}`);
+  }
+
+  const res = await fetch(`${url}/rest/v1/evaluaciones?id=eq.${evaluacionId}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({
+      bender_path: ruta,
+      // Cuántas se unieron: con menos de nueve, la hoja está incompleta y hay
+      // que poder verlo sin abrir la imagen.
+      bender_nombre: `${cuantas} de 9 láminas`,
+      bender_administrado: true,
+    }),
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
+  return { ok: true };
+}
+
+/** El enlace para mirar la hoja del Bender, firmado y corto. */
+export async function enlaceDelBender(evaluacionId: string): Promise<string | null> {
+  if (!UUID.test(evaluacionId)) return null;
+
+  const filas = await select<{ bender_path: string | null }>(
+    'evaluaciones',
+    `select=bender_path&id=eq.${evaluacionId}&limit=1`
+  );
+  const ruta = filas[0]?.bender_path;
+  if (!ruta) return null;
+
+  const { url, key } = config();
+  const res = await fetch(`${url}/storage/v1/object/sign/${BUCKET}/${ruta}`, {
+    method: 'POST',
+    headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ expiresIn: 300 }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    console.error('bender: no se pudo firmar el enlace', res.status, await res.text());
+    return null;
+  }
+  const { signedURL } = (await res.json()) as { signedURL: string };
+  return `${url}/storage/v1${signedURL}`;
+}

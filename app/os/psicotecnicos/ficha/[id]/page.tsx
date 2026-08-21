@@ -271,17 +271,30 @@ function Tests({ f, id }: { f: Ficha; id: string }) {
           {/* Se cargan en la hoja de la entrevista y acá se leen. El dibujo se
               sube allá y se mira acá, que es donde se escribe el informe que
               habla de él. */}
-          {c.grafico_2_personas_nombre && (
-            <a
-              className="os-enlace"
-              href={`/api/os/grafico?id=${id}`}
-              target="_blank"
-              rel="noreferrer"
-              title={c.grafico_2_personas_nombre}
-            >
-              Ver el gráfico de dos personas
-            </a>
-          )}
+          <span className="os-panel-enlaces">
+            {c.bender_nombre && (
+              <a
+                className="os-enlace"
+                href={`/api/os/bender?id=${id}`}
+                target="_blank"
+                rel="noreferrer"
+                title={c.bender_nombre}
+              >
+                Ver el Bender
+              </a>
+            )}
+            {c.grafico_2_personas_nombre && (
+              <a
+                className="os-enlace"
+                href={`/api/os/grafico?id=${id}`}
+                target="_blank"
+                rel="noreferrer"
+                title={c.grafico_2_personas_nombre}
+              >
+                Ver el gráfico de dos personas
+              </a>
+            )}
+          </span>
         </div>
         <div className="os-panel-cuerpo">
           <Administrados
