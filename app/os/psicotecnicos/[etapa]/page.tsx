@@ -6,6 +6,7 @@ import PorAnalizar from '../PorAnalizar';
 import Reparto from '../Reparto';
 import Agregar from '../Agregar';
 import { cargar, porEspera, visiblesEn } from '../datos';
+import { TODAS } from '@/lib/filtro-empresa';
 import { SECCIONES, SECCION_DE_RUTA, type Evaluacion } from '@/lib/psicotecnicos-tipos';
 
 export const dynamic = 'force-dynamic';
@@ -101,7 +102,10 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
         {!desnuda && <p>{QUE_SE_HACE[seccion.ruta]}</p>}
       </div>
 
-      {!desnuda && (
+      {/* En las pantallas desnudas el filtro no se muestra, salvo que esté
+          filtrando: escondido y activo a la vez, deja filas afuera sin decirlo
+          y sin nada que tocar para entender por qué falta alguien. */}
+      {(!desnuda || empresa !== TODAS) && (
         <FiltroEmpresa empresas={empresas} actual={empresa} ocultas={ocultas} />
       )}
 

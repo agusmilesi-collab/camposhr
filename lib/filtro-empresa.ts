@@ -17,10 +17,14 @@ export const COOKIE_EMPRESA = 'os_empresa';
 export const TODAS = '__todas';
 
 /**
- * Con qué cliente se arranca cuando nadie eligió todavía.
+ * Con qué cliente se arranca cuando nadie eligió todavía: con todos.
  *
- * Es el cliente inventado. Mientras se construye el sistema, abrir la sección
- * y encontrarse con setenta y cinco evaluaciones de clientes reales estorba más
- * de lo que sirve; el filtro está a la vista y se saca con un clic.
+ * Arrancaba con el cliente inventado, para que mientras se construía el sistema
+ * la sección no se llenara de evaluaciones reales. Eso se dio vuelta en cuanto
+ * entró el primer cliente de verdad: migrarlo y no encontrarlo en ninguna
+ * pantalla se lee como que la migración falló, y en Sin asignar el filtro ni
+ * siquiera se muestra, así que no hay nada que tocar para descubrir por qué.
+ *
+ * Un dato que existe y no aparece es peor que una lista larga.
  */
-export const CLIENTE_POR_DEFECTO = 'Distribuidora Andina';
+export const CLIENTE_POR_DEFECTO = TODAS;
