@@ -2,6 +2,7 @@ import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
 import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
 import { datosClienteDeSupabase } from '@/lib/portal-supabase';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
+import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import NuevoPedido from './NuevoPedido';
 import { COBROS, COBRO_PUBLICADO, cobro } from '@/lib/cobro';
 import { informeDe, serviciosDe } from '@/lib/servicios';
@@ -205,7 +206,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
   const entregados: Entregado[] = busquedas
     .flatMap((b) =>
       b.candidatos
-        .filter((c) => c.estado === 'Entregado')
+        .filter((c) => yaEntregada(c.estado))
         .map((c) => ({ cand: c, puesto: b.puesto, fechaPedido: b.fecha }))
     )
     .sort(
@@ -260,7 +261,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
   const enCurso = busquedas
     .map((b) => ({
       ...b,
-      candidatos: b.candidatos.filter((c) => c.estado !== 'Entregado'),
+      candidatos: b.candidatos.filter((c) => !yaEntregada(c.estado)),
     }))
     .filter((b, i) => b.candidatos.length > 0 || busquedas[i].candidatos.length === 0)
     .sort(

@@ -1,5 +1,6 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
+import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import type { Busqueda, Candidato, DatosCliente } from '@/lib/airtable';
 
 /**
@@ -79,10 +80,10 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
         modalidad: e.modalidad,
         // La conclusión solo viaja cuando la evaluación está entregada: antes
         // es trabajo en curso y el cliente no la tiene que ver.
-        recomendacion: e.estado === 'Entregado' ? e.recomendacion : null,
+        recomendacion: yaEntregada(e.estado) ? e.recomendacion : null,
         // El informe se genera desde los datos, así que existe cuando la
         // evaluación está entregada, sin depender de un archivo subido.
-        tieneInforme: e.estado === 'Entregado',
+        tieneInforme: yaEntregada(e.estado),
         facturado: e.facturado,
         pagado: e.pagado,
       })

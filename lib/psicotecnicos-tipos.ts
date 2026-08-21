@@ -20,6 +20,18 @@ export const ETAPAS = [
 
 export type Etapa = (typeof ETAPAS)[number];
 
+/**
+ * Si el informe de esa evaluación ya se entregó.
+ *
+ * Seguimiento viene después de entregar: la persona ingresó a la empresa y a
+ * los noventa días se mira cómo le fue. El informe que se entregó sigue siendo
+ * suyo, así que mover la evaluación a seguimiento no puede sacárselo al cliente
+ * de su portal.
+ */
+export function yaEntregada(estado: string): boolean {
+  return estado === 'Entregado' || estado === 'Seguimiento';
+}
+
 /** La dirección de cada etapa dentro del OS. */
 export const RUTA: Record<string, string> = {
   'Sin asignar': 'sin-asignar',
