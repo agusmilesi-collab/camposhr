@@ -28,6 +28,13 @@ const FICHAS: Ficha[] = [
     href: '/os/laminas/zulliger',
   },
   {
+    rotulo: 'Test visomotor',
+    titulo: 'Bender',
+    detalle:
+      'Las 9 figuras para copiar, en la misma pantalla de señalización. La persona las dibuja en papel: acá solo se le muestran, una por vez.',
+    href: '/os/laminas/bender',
+  },
+  {
     rotulo: 'Test de razonamiento',
     titulo: 'Raven',
     detalle:
