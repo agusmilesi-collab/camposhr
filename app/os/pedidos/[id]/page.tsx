@@ -7,7 +7,8 @@ import { baterias as listarBaterias } from '@/lib/altas';
 import { dolarTarjeta } from '@/lib/baterias-precios';
 import { BENZIGER_USD } from '@/lib/benziger';
 import { ABIERTO, DEL_JEFE, DEL_PUESTO, FAMILIAS, SENIORITY } from '@/lib/pedido-campos';
-import { Benziger, Estado, Fecha, Largo, Lista, Pregunta, Texto } from './Editar';
+import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
+import { Benziger, Borrar, Estado, Fecha, Largo, Lista, Pregunta, Texto } from './Editar';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,6 +64,22 @@ export default async function FichaPedido({ params }: { params: { id: string } }
   if (!pedido) notFound();
 
   const pendientes = pedido.candidatos - pedido.entregados;
+  const campos = pedido as unknown as Record<string, string | null>;
+
+  /**
+   * Cuántas preguntas del bloque quedan sin contestar.
+   *
+   * Se contestan con el cliente por teléfono, así que quedan a medias sin que
+   * nadie se entere: nueve botoneras vacías se ven igual que nueve contestadas
+   * si no se las mira una por una.
+   */
+  function sinContestar(preguntas: typeof DEL_PUESTO): string {
+    const faltan = preguntas.filter((p) => !campos[p.campo]).length;
+    if (faltan === 0) return 'contestado';
+    return faltan === preguntas.length
+      ? 'sin contestar'
+      : `faltan ${faltan} de ${preguntas.length}`;
+  }
 
   return (
     <Shell titulo={`Pedido · ${pedido.puesto}`} identidad={yo.nombre}>
@@ -138,7 +155,40 @@ export default async function FichaPedido({ params }: { params: { id: string } }
         />
       </Bloque>
 
-      <Bloque titulo="Cómo es el puesto">
+      {/* Quiénes entraron por este pedido, con su etapa y un salto a la ficha.
+          Lo que el pedido produce estaba solo como número: para ver a quién se
+          le tomó había que ir al pipeline y buscar por empresa. */}
+      <Bloque
+        titulo="Los candidatos"
+        nota={
+          pedido.candidatos === 0
+            ? 'todavía ninguno'
+            : `${pedido.entregados} de ${pedido.candidatos} entregados`
+        }
+      >
+        <div className="os-pedido-suelto">
+          {pedido.gente.length === 0 ? (
+            <p className="os-vacio">
+              Nadie cargado todavía. Se agregan desde Sin asignar, eligiendo este pedido.
+            </p>
+          ) : (
+            <ul className="os-pedido-gente">
+              {pedido.gente.map((g) => (
+                <li key={g.id}>
+                  <Link className="os-tabla-nombre os-tabla-ficha" href={`/os/psicotecnicos/ficha/${g.id}`}>
+                    {g.nombre}
+                  </Link>
+                  <span className={`os-sello-estado ${COLOR_ETAPA[g.estado] ?? 'os-gris'}`}>
+                    {g.estado}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </Bloque>
+
+      <Bloque titulo="Cómo es el puesto" nota={sinContestar(DEL_PUESTO)}>
         <div className="os-seguimiento os-pedido-suelto">
           {DEL_PUESTO.map((p) => (
             <Pregunta
@@ -153,7 +203,7 @@ export default async function FichaPedido({ params }: { params: { id: string } }
         </div>
       </Bloque>
 
-      <Bloque titulo="Cómo es el jefe">
+      <Bloque titulo="Cómo es el jefe" nota={sinContestar(DEL_JEFE)}>
         <div className="os-seguimiento os-pedido-suelto">
           {DEL_JEFE.map((p) => (
             <Pregunta
@@ -168,6 +218,9 @@ export default async function FichaPedido({ params }: { params: { id: string } }
         </div>
       </Bloque>
 
+      {/* Cerrar y borrar juntos, con una línea entre medio: se parecen y hacen
+          lo contrario. Cerrar guarda todo y lo saca del selector de alta;
+          borrar no deja nada, y solo se ofrece si no hay nadie cargado. */}
       <Bloque titulo="Estado">
         <div className="os-pedido-suelto">
           <Estado
@@ -176,6 +229,7 @@ export default async function FichaPedido({ params }: { params: { id: string } }
             abierto={ABIERTO}
             pendientes={pendientes}
           />
+          <Borrar id={pedido.id} puesto={pedido.puesto} candidatos={pedido.candidatos} />
         </div>
       </Bloque>
     </Shell>
