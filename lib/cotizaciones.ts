@@ -22,12 +22,14 @@ import type { Estado } from '@/lib/comercial-tipos';
 export {
   ABIERTOS,
   ESTADOS,
+  SERVICIOS,
   TIPOS_COSTO,
   formatoFecha,
   formatoImporte,
   resultadoDe,
   type Estado,
   type Resultado,
+  type Servicio,
   type TipoCosto,
 } from '@/lib/comercial-tipos';
 

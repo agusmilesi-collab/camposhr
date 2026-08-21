@@ -2,11 +2,16 @@ import Shell from '../Shell';
 import { NuevaOportunidad, Tablero } from './Embudo';
 import { ABIERTOS, formatoImporte, listarCotizaciones } from '@/lib/cotizaciones';
 import { quienSoy } from '@/lib/identidad';
+import { listarClientes } from '@/lib/clientes';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Cotizaciones() {
-  const [yo, todas] = await Promise.all([quienSoy(), listarCotizaciones()]);
+  const [yo, todas, clientes] = await Promise.all([
+    quienSoy(),
+    listarCotizaciones(),
+    listarClientes(),
+  ]);
 
   const abiertas = todas.filter((c) => ABIERTOS.includes(c.estado));
   const ganadas = todas.filter((c) => c.estado === 'Aprobada');
@@ -62,7 +67,7 @@ export default async function Cotizaciones() {
       </div>
 
       <div className="os-barra-acciones">
-        <NuevaOportunidad />
+        <NuevaOportunidad clientes={clientes.map((c) => c.nombre)} />
       </div>
 
       <Tablero
