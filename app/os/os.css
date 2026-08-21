@@ -2810,14 +2810,27 @@ textarea.os-campo {
 }
 
 /* El informe que está puesto: su nombre, con qué hacer al lado. */
-/* Tres cuartos para el nombre y el cuarto restante para el estado y la
-   acción, que son de la carga y no del archivo. */
 .os-benziger-carga {
   display: flex;
-  /* Al pie, para que el borde de abajo del botón caiga sobre el mismo
-     renglón que el de la caja aunque el estado se apile encima. */
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* Tres cuartos para el nombre y el cuarto restante para Calcular, que es lo
+   que sigue después de elegir el archivo. */
+.os-benziger-fila {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
   gap: 12px;
+}
+
+.os-benziger-fila > .os-boton {
+  flex: 1;
+  /* A la altura de la caja, que la marca la línea del nombre. */
+  align-self: stretch;
+  height: auto;
 }
 
 .os-benziger-archivo {
@@ -2833,14 +2846,12 @@ textarea.os-campo {
   font-size: 0.82rem;
 }
 
+/* El estado y el cambio de archivo, debajo: son sobre lo ya cargado. */
 .os-benziger-acciones {
   display: flex;
-  flex: 1;
-  min-width: 0;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
-  gap: 7px 10px;
+  flex-wrap: wrap;
+  gap: 7px 12px;
 }
 
 .os-benziger-acciones .os-boton {

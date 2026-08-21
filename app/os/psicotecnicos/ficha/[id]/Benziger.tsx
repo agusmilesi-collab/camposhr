@@ -101,14 +101,6 @@ export default function Benziger({
       <section className="os-panel">
         <div className="os-panel-top">
           <h2>El informe</h2>
-          <button
-            className="os-boton os-boton-firme"
-            type="button"
-            onClick={subir}
-            disabled={guardando || !archivo}
-          >
-            {guardando ? 'Calculando…' : 'Calcular'}
-          </button>
         </div>
         <div className="os-panel-cuerpo">
           <input
@@ -124,12 +116,22 @@ export default function Benziger({
 
           {archivo || informe ? (
             <div className="os-benziger-carga">
-              {/* La caja lleva el nombre y nada más: el estado y la acción son
-                  de la carga y no del archivo, así que van afuera. */}
-              <div className="os-benziger-archivo">
-                <span className="os-benziger-nombre" title={archivo?.name ?? informe ?? ''}>
-                  {archivo?.name ?? informe}
-                </span>
+              {/* El archivo y el paso siguiente, uno al lado del otro: elegir
+                  y calcular es el camino, y todo lo demás va abajo. */}
+              <div className="os-benziger-fila">
+                <div className="os-benziger-archivo">
+                  <span className="os-benziger-nombre" title={archivo?.name ?? informe ?? ''}>
+                    {archivo?.name ?? informe}
+                  </span>
+                </div>
+                <button
+                  className="os-boton os-boton-firme"
+                  type="button"
+                  onClick={subir}
+                  disabled={guardando || !archivo}
+                >
+                  {guardando ? 'Calculando…' : 'Calcular'}
+                </button>
               </div>
               <div className="os-benziger-acciones">
                 <span className={`os-sello-estado ${archivo ? 'os-ambar' : 'os-verde'}`}>
