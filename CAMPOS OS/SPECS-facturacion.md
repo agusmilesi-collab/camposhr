@@ -3,6 +3,12 @@
 Informe de factibilidad. Investigación sobre `camposhr-site` en modo lectura, sin
 tocar nada del repositorio.
 
+**Estado al 21/08/2026: investigado, nada construido.** No hay una línea de
+código de esto en el repositorio, ni certificados pedidos, ni tablas creadas.
+Por dónde se empieza está en la sección 7, y la primera etapa no es ARCA: son
+las cuentas, porque sin ellas las dos evaluadoras no quedan separadas de verdad.
+Lo que hace falta decidir antes de construir está en la sección 8.
+
 ---
 
 ## 1. Conclusión
@@ -420,6 +426,11 @@ de proveedores donde hay que subir la factura a mano. El OS deja el PDF listo,
 la subida es de ellos.
 
 ### 5.9 El PDF, y el envío al cliente
+
+Cómo se vería, con datos de la base de prueba y un CAE inventado:
+`SPECS-facturacion-muestra.html`, al lado de este archivo. Abajo de la hoja
+están los dos JSON, el que sale y el que vuelve, para ver de un vistazo qué
+autoriza ARCA y qué vive solo acá.
 
 **ARCA no devuelve ningún PDF.** El web service devuelve número, CAE y
 vencimiento del CAE. La representación impresa la arma quien emite. Comprobantes
