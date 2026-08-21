@@ -324,17 +324,31 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
 
         if (t === 'Benziger') {
           return (
-            <Tarjeta key={t} test="Benziger" />
+            <Tarjeta key={t} test="Benziger">
+              {/* Se responde en la plataforma de la licencia y el informe se
+                  carga después, en la ficha; acá queda la marca de si ya se le
+                  tomó, que es lo que la entrevista tiene que saber. */}
+              <Papel
+                id={e.id}
+                campoMarca="benzigerAdministrado"
+                administrado={e.benzigerAdministrado}
+              >
+                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=benziger`}>
+                  Cargar el informe
+                </Link>
+              </Papel>
+            </Tarjeta>
           );
         }
 
         return <Tarjeta key={t} test={t} />;
       })}
 
+
       <section className="os-panel os-entrevista-cierre">
         <p>
-          Cuando termines, la evaluación pasa a Por analizar y ahí se codifica
-          todo lo que tomaste.
+          Al quedar tomado el último test, la evaluación pasa sola a Por
+          analizar. El botón la cierra antes.
         </p>
         <div className="os-entrevista-botones">
           <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?desde=entrevistas`}>

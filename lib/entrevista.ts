@@ -27,6 +27,7 @@ type Fila = {
   bender_administrado: boolean;
   bender_observaciones: string | null;
   bender_nombre: string | null;
+  benziger_administrado: boolean;
   grafico_2_personas_administrado: boolean;
   grafico_2_personas_nombre: string | null;
   grafico_2_personas_observaciones: string | null;
@@ -61,6 +62,8 @@ export type Entrevista = {
   /** Los tests de la batería, en el orden en que están declarados. */
   tests: string[];
   conBenziger: boolean;
+  /** Si ya se le tomó el Benziger, que va aparte de la batería. */
+  benzigerAdministrado: boolean;
   /** Si ya se le tomó el test de manchas de su batería. */
   proyectivoAdministrado: boolean;
   benderAdministrado: boolean;
@@ -81,6 +84,7 @@ export type Entrevista = {
 const CAMPOS =
   'id,estado,modalidad,fecha_entrevista,enlace_entrevista,' +
   'proyectivo_administrado,bender_administrado,bender_observaciones,bender_nombre,' +
+  'benziger_administrado,' +
   'grafico_2_personas_administrado,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
@@ -125,6 +129,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     bateriaNombre: f.pedidos?.baterias?.nombre ?? null,
     tests: f.pedidos?.baterias?.tests ?? [],
     conBenziger: f.pedidos?.con_benziger ?? false,
+    benzigerAdministrado: f.benziger_administrado,
     proyectivoAdministrado: f.proyectivo_administrado,
     benderAdministrado: f.bender_administrado,
     benderObservaciones: f.bender_observaciones,
