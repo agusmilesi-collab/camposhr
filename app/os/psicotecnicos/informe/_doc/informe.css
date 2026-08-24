@@ -397,6 +397,100 @@
   height: 100%;
 }
 
+/* Los tres grupos del análisis cualitativo.
+
+   Eran tres listas seguidas, con tres títulos que empezaban con las mismas dos
+   palabras: al pasar la vista no se veía dónde terminaba uno y empezaba el
+   otro. Cada uno lleva ahora el color con el que se lee su nivel, el mismo de
+   los velocímetros: verde lo que está por encima, azul lo que responde, naranja
+   lo que hay que acompañar. */
+.inf-grupo {
+  --color: var(--azul);
+
+  margin: 0 0 14px;
+  padding: 12px 16px 14px 15px;
+  border: 1px solid var(--linea);
+  border-left: 4px solid var(--color);
+  border-radius: 8px;
+  background: var(--hoja);
+}
+
+.inf-grupo.destacado { --color: var(--verde); }
+.inf-grupo.esperado { --color: var(--azul); }
+.inf-grupo.desarrollar { --color: var(--naranja); }
+
+.inf-grupo header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 9px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--linea-suave);
+}
+
+.inf-grupo h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color);
+}
+
+.inf-grupo-sub {
+  margin: 1px 0 0;
+  font-size: 0.74rem;
+  color: var(--suave);
+}
+
+/* Cuántas lecturas trae el grupo: dice de un vistazo para qué lado carga el
+   perfil, que es lo que el lector saca antes de leer las oraciones. */
+.inf-grupo-cuantas {
+  flex: none;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--color) 14%, var(--hoja));
+  color: var(--color);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-grupo ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inf-grupo li {
+  position: relative;
+  margin: 0 0 7px;
+  padding-left: 15px;
+  line-height: 1.5;
+}
+
+.inf-grupo li:last-child {
+  margin-bottom: 0;
+}
+
+.inf-grupo li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color);
+}
+
+.inf-grupo .inf-vacio {
+  margin: 0;
+}
+
 /* La escala de las nueve competencias, al pie del tablero: la barra con los
    colores de las bandas y, debajo, cada nombre sobre el tramo que ocupa. */
 .inf-escala-bandas {
@@ -766,6 +860,9 @@
   .inf-perfil-joven,
   .inf-escala-bandas,
   .inf-escala-barra,
+  .inf-grupo,
+  .inf-grupo-cuantas,
+  .inf-grupo li::before,
   .inf-ref::before,
   .inf-vertice,
   .inf-escala {
@@ -835,6 +932,7 @@
   .inf-nivel,
   .inf-competencia,
   .inf-benziger,
+  .inf-grupo,
   .inf-recomendaciones li {
     break-inside: avoid;
   }
