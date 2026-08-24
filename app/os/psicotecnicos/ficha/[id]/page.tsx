@@ -5,7 +5,7 @@ import Shell from '../../../Shell';
 import { desajusteDeProyectivo, fichaDe, proyectivoDe, type Ficha } from '@/lib/ficha';
 import { quienSoy } from '@/lib/identidad';
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
-import { INFO, type Perfil } from '@/lib/perfiles';
+import { nombrePerfil } from '@/lib/perfiles';
 import { RUTA } from '@/lib/psicotecnicos';
 import { fechaHora } from '@/lib/hora';
 import { formatoImporte } from '@/lib/cotizaciones';
@@ -126,7 +126,11 @@ function Bloque({
 function Datos({ f, id }: { f: Ficha; id: string }) {
   const c = f.cabecera;
   const precio = f.precio;
-  const cuadrante = f.benziger?.cuadrante_preferente?.[0] ?? null;
+  // El perfil puede ser de dos cuadrantes, con uno que manda o los dos parejos.
+  const perfil = nombrePerfil(
+    f.benziger?.cuadrante_preferente ?? [],
+    f.benziger?.cuadrantes_parejos === true
+  );
 
   return (
     <>
@@ -148,10 +152,8 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
         </Dato>
         <Dato rotulo="Puesto">{c.pedidos?.puesto ?? <Falta texto="sin puesto" />}</Dato>
         <Dato rotulo="Perfil Benziger">
-          {cuadrante ? (
-            <span className="os-sello-estado os-violeta">
-              {INFO[cuadrante as Perfil]?.nombre ?? cuadrante}
-            </span>
+          {perfil ? (
+            <span className="os-sello-estado os-violeta">{perfil}</span>
           ) : (
             <Falta texto="sin definir" />
           )}
@@ -285,6 +287,7 @@ function BenzigerVista({ f, id }: { f: Ficha; id: string }) {
       <Benziger
         id={id}
         cuadrantes={b?.cuadrante_preferente ?? []}
+        parejos={b?.cuadrantes_parejos === true}
         informe={b?.pdf_nombre ?? null}
       />
 

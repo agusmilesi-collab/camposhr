@@ -85,6 +85,8 @@ export type Mancha = {
 export type Sumario = Record<string, unknown> & { evaluacion_id: string };
 export type Benziger = {
   cuadrante_preferente: string[] | null;
+  /** Si los dos cuadrantes pesan lo mismo. Con false, manda el primero. */
+  cuadrantes_parejos: boolean | null;
   resumen: string | null;
   pdf_path: string | null;
   /** Cómo se llamaba el archivo que se subió. */
@@ -232,7 +234,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       select<Sumario>('sumario_exner', `select=*&evaluacion_id=eq.${id}`, CACHE_PSICOTECNICOS),
       select<Benziger>(
         'benziger',
-        `select=cuadrante_preferente,resumen,pdf_path,pdf_nombre,cuadrantes,adjetivos,abiertas,estres&evaluacion_id=eq.${id}`,
+        `select=cuadrante_preferente,cuadrantes_parejos,resumen,pdf_path,pdf_nombre,cuadrantes,adjetivos,abiertas,estres&evaluacion_id=eq.${id}`,
         CACHE_PSICOTECNICOS
       ),
       select<Raven>(
