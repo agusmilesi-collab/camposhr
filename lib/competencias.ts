@@ -620,17 +620,34 @@ export type Competencia = {
  * del equipo y salían Rango II por el del percentil.
  *
  * **La cuenta no es una regla de tres, en ninguno de sus dos pasos.** El rango
- * decide la banda: III es Adecuado, II es Alto, I es Sobresaliente, IV y V
- * reparten Bajo. Y adentro del rango se interpola por percentil y no por
- * aciertos, que es la corrección que hay que hacer porque las láminas no valen
- * lo mismo: las últimas son mucho más difíciles que las primeras.
+ * decide qué tramo de la escala le toca, y adentro del tramo se interpola por
+ * percentil y no por aciertos: esa es la corrección que hay que hacer porque
+ * las láminas no valen lo mismo, y las últimas son mucho más difíciles que las
+ * primeras.
  */
 
-/** Qué banda del informe le toca a cada rango del Raven. */
+/**
+ * Qué tramo de la escala le toca a cada rango del Raven.
+ *
+ * **El rango normal llega hasta 72 y no hasta 64, así que su mitad de arriba
+ * cae en la banda Alto.** Es decisión de Agustín, del 24/8/2026, y el motivo es
+ * que el rango normal abarca diez de los treinta y seis aciertos posibles y la
+ * mitad de los candidatos: resolver treinta láminas y resolver veintiuna caen
+ * las dos ahí, y no son el mismo desempeño. Con el tope en 64, para que la
+ * habilidad cognitiva saliera Alto había que sacar treinta y uno, que es uno de
+ * cada dieciséis candidatos.
+ *
+ * Por eso el desglose puede mostrar Rango III al lado de la banda Alto, y no es
+ * una contradicción: el rango es lo que dice el test y la banda es dónde cae la
+ * persona en la escala del informe.
+ *
+ * Los tramos se tocan sin huecos ni saltos: el último acierto de un rango da el
+ * número justo anterior al primero del siguiente.
+ */
 const BANDA_POR_RANGO: Record<string, [number, number]> = {
-  I: [80, 100],
-  II: [65, 79],
-  III: [35, 64],
+  I: [86, 100],
+  II: [73, 85],
+  III: [35, 72],
   IV: [18, 34],
   V: [0, 17],
 };
