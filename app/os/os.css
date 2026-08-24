@@ -5524,3 +5524,157 @@ th.os-tabla-contacto {
 .os a.os-boton {
   text-decoration: none;
 }
+
+/* ---------- Data hub ---------- */
+
+/**
+ * Los números del negocio. Cada cifra lleva debajo sobre cuántos casos se
+ * calcula: con quince evaluaciones una mediana es una anécdota, y un número sin
+ * su `n` al lado invita a decidir sobre nada.
+ */
+.os-hub-cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 20px 26px;
+}
+
+.os-hub-cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.os-hub-rotulo {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-hub-valor {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-tinta);
+}
+
+.os-hub-valor em {
+  font-style: normal;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--os-tinta-media);
+}
+
+.os-hub-n {
+  font-size: 0.76rem;
+  color: var(--os-suave);
+  line-height: 1.45;
+}
+
+/* Dos columnas de paneles: son repartos cortos y uno debajo del otro deja la
+   pantalla llena de aire a la derecha. */
+.os-hub-dos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.os-hub-dos .os-panel-separado {
+  margin-top: 0;
+}
+
+.os-hub-barras,
+.os-hub-ranking,
+.os-hub-pendientes {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-hub-barras li,
+.os-hub-ranking li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 34px;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+}
+
+.os-hub-ranking li {
+  grid-template-columns: 22px minmax(0, 1fr) 120px 34px;
+}
+
+.os-hub-puesto {
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-suave);
+}
+
+.os-hub-barra-nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-hub-barra {
+  display: block;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--os-linea);
+  overflow: hidden;
+}
+
+.os-hub-barra > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--os-azul);
+}
+
+.os-hub-barra > span.completa {
+  background: var(--os-verde);
+}
+
+.os-hub-barra-n {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+/* Lo que falta para poder medir: la barra dice cuánto se avanzó hacia el piso
+   desde el cual el número deja de ser una anécdota. */
+.os-hub-pendientes li {
+  display: grid;
+  gap: 6px;
+  /* Con el ancho entero de la pantalla, una barra de progreso de mil trescientos
+     píxeles se lee como una regla y no como una medida. */
+  max-width: 720px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-hub-pendientes li:last-child {
+  border-bottom: 0;
+}
+
+.os-hub-pend-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.os-hub-pend-nombre {
+  font-weight: 600;
+  font-size: 0.88rem;
+}

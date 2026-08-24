@@ -46,6 +46,7 @@ const NAV: Grupo[] = [
       { href: '/os/pedidos', texto: 'Pedidos', icono: 'cotizaciones' },
       { href: '/os/cotizaciones', texto: 'Cotizaciones', icono: 'cotizaciones' },
       { href: '/os/costos', texto: 'Costos', icono: 'costos' },
+      { href: '/os/data-hub', texto: 'Data hub', icono: 'costos' },
     ],
   },
   {
