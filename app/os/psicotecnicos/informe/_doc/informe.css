@@ -395,11 +395,16 @@
   height: 100%;
 }
 
-/* Dónde empieza cada banda, marcado sobre el degradado. Del color de la hoja,
-   así el anillo se ve cortado y no pintado encima. */
+/* La escala entera, por debajo del arco del puntaje. */
+.inf-gauge-fondo {
+  stroke: var(--linea-suave);
+}
+
+/* Dónde empieza cada banda: una raya corta por fuera del anillo. */
 .inf-gauge-corte {
-  stroke: var(--hoja);
+  stroke: var(--linea);
   stroke-width: 1.6;
+  stroke-linecap: round;
 }
 
 /* El número, en el centro del anillo. */
@@ -531,8 +536,8 @@
   margin: 6px 0 14px;
 }
 
-/* Cada cuadrante tiene su color y lo usan su número y su barra: son cuatro
-   maneras de pensar, no cuatro tramos de una misma escala. */
+/* Cada cuadrante tiene su color, que es el mismo del punto que lo marca en el
+   gráfico: son cuatro maneras de pensar, no cuatro tramos de una escala. */
 .inf-cuadrante {
   --color: var(--tinta-media);
 
@@ -565,6 +570,17 @@
   color: var(--suave);
 }
 
+.inf-cuadrante-rotulo::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--color);
+  vertical-align: baseline;
+}
+
 .inf-cuadrante-rotulo {
   font-size: 0.6rem;
   letter-spacing: 0.16em;
@@ -575,44 +591,6 @@
 .inf-cuadrante.manda .inf-cuadrante-rotulo {
   color: var(--color);
   font-weight: 700;
-}
-
-.inf-cuadrante-valor {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin: 0 0 6px !important;
-  font-size: 1.6rem;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--color) !important;
-  font-variant-numeric: tabular-nums;
-}
-
-.inf-cuadrante-valor em {
-  font-style: normal;
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--suave);
-}
-
-.inf-cuadrante-barra {
-  display: block;
-  height: 6px;
-  margin-bottom: 9px;
-  border-radius: 99px;
-  background: color-mix(in srgb, var(--color) 13%, var(--hoja));
-  overflow: hidden;
-}
-
-.inf-cuadrante-barra i {
-  display: block;
-  height: 100%;
-  border-radius: 99px;
-  background: var(--color);
 }
 
 .inf-cuadrante.FI {
@@ -635,8 +613,8 @@
 .inf-cerebro {
   grid-area: 1 / 2 / 3 / 3;
   align-self: center;
-  width: 288px;
-  height: 288px;
+  width: 310px;
+  height: 310px;
 }
 
 /* El dibujo del cerebro es la referencia de dónde queda cada cuadrante, no el
@@ -769,9 +747,7 @@
   .inf-nivel,
   .inf-perfil-adulto,
   .inf-cuadrante,
-  .inf-cuadrante-barra,
-  .inf-cuadrante-barra i,
-  .inf-cuadrante-valor,
+  .inf-cuadrante-rotulo::before,
   .inf-vertice,
   .inf-vertice.v-FI,
   .inf-vertice.v-FD,

@@ -11,51 +11,40 @@ import Cerebro from './Cerebro';
 import './informe.css';
 
 /**
- * El color del anillo en cada punto de la escala.
- *
- * Las cuatro bandas tienen su color y el anillo pasa de uno al otro sin corte:
- * cada banda ancla el suyo en su punto medio y entre dos anclas el color se
- * interpola. El puntaje queda entonces del color de su banda, y los bordes se
- * ven como lo que son, un límite trazado sobre algo continuo, y no como cuatro
- * bloques pegados.
+ * El color de cada banda, para dibujar su arco.
  *
  * **Los valores están escritos y no salen de las variables de la hoja**: para
- * mezclar dos colores hay que tener sus números, y `color-mix` no los devuelve.
- * Si cambia la paleta de `informe.css` hay que cambiarlos acá.
+ * aclarar un color contra el fondo hay que tener sus números, y `color-mix` no
+ * los devuelve. Si cambia la paleta de `informe.css` hay que cambiarlos acá.
  */
-const ANCLAS: { en: number; rgb: [number, number, number] }[] = [
-  { en: 0, rgb: [140, 59, 59] }, // --rojo, Bajo
-  { en: 17, rgb: [140, 59, 59] },
-  { en: 50, rgb: [70, 80, 92] }, // --tinta-media, Adecuado
-  { en: 72, rgb: [67, 100, 143] }, // --azul, Alto
-  { en: 90, rgb: [55, 128, 74] }, // --verde, Sobresaliente
-  { en: 100, rgb: [55, 128, 74] },
-];
+const COLOR_BANDA: Record<string, [number, number, number]> = {
+  Sobresaliente: [55, 128, 74], // --verde
+  Alto: [67, 100, 143], // --azul
+  Adecuado: [70, 80, 92], // --tinta-media
+  Bajo: [140, 59, 59], // --rojo
+};
 
-/** El color de la escala en `v`, aclarado contra la hoja según `fuerza`. */
-function colorEn(v: number, fuerza = 1): string {
-  const x = Math.min(100, Math.max(0, v));
-  const i = Math.max(1, ANCLAS.findIndex((a) => x <= a.en));
-  const a = ANCLAS[i - 1];
-  const b = ANCLAS[i];
-  const t = b.en === a.en ? 0 : (x - a.en) / (b.en - a.en);
-  const c = a.rgb.map((n, k) => {
-    const puro = n + (b.rgb[k] - n) * t;
-    return Math.round(puro + (255 - puro) * (1 - fuerza));
-  });
+/** El color de la banda, aclarado contra la hoja: 1 es pleno, 0 es blanco. */
+function tono(banda: string | null, fuerza: number): string {
+  const base = COLOR_BANDA[banda ?? ''] ?? COLOR_BANDA.Adecuado;
+  const c = base.map((n) => Math.round(n + (255 - n) * (1 - fuerza)));
   return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 }
 
 /**
  * El velocímetro de una competencia: un anillo con el puntaje adentro.
  *
- * Tres cosas a la vez, sin que ninguna tape a la otra. El anillo de fondo es la
- * escala entera, en su degradado apagado. El arco de color encima llega hasta
- * el puntaje, con el color pleno. Y el número va en el centro, que es donde lo
- * busca el ojo.
+ * Tres cosas a la vez, sin que ninguna tape a la otra. El anillo de fondo, gris,
+ * es la escala entera. El arco encima llega hasta el puntaje y va del color de
+ * su banda: aclarado donde arranca y pleno donde termina, así el final del arco
+ * es lo que más pesa. Y el número va en el centro, que es donde lo busca el ojo.
  *
- * Los tres cortes de banda quedan marcados con una línea del color de la hoja:
- * el degradado no muestra dónde empieza Alto y esa marca sí.
+ * **Un solo color por velocímetro, el de su banda.** Antes el arco recorría las
+ * cuatro bandas y empezaba siempre en rojo, así que una competencia
+ * sobresaliente mostraba un cuarto de anillo en rojo antes de llegar al verde.
+ *
+ * Dónde empieza cada banda se marca por fuera del anillo, con una raya corta:
+ * adentro tapaba el arco justo en el tramo que la persona alcanzó.
  *
  * Abre 270 grados y no 360: el hueco de abajo es el que convierte un anillo en
  * un instrumento con principio y fin, y deja lugar para la banda.
@@ -89,19 +78,19 @@ function Velocimetro({ puntaje, banda }: { puntaje: number | null; banda: string
     return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largo} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
   };
 
-  /** El arco de `desde` a `hasta`, partido en tramos de un color cada uno. */
-  const degradado = (desde: number, hasta: number, fuerza: number, cabo: boolean) => {
+  /** El arco del puntaje, en tramos que van aclarados a plenos. */
+  const lleno = (hasta: number) => {
     const tramos = [];
-    for (let v = desde; v < hasta; v += PASO) {
+    for (let v = 0; v < hasta; v += PASO) {
       const fin = Math.min(hasta, v + PASO);
       tramos.push(
         <path
           key={v}
           d={arco(v, fin + (fin < hasta ? 0.6 : 0))}
-          stroke={colorEn((v + fin) / 2, fuerza)}
+          stroke={tono(banda, 0.42 + 0.58 * (((v + fin) / 2 / hasta) ** 0.7))}
           fill="none"
           strokeWidth="9"
-          strokeLinecap={cabo && (v === desde || fin === hasta) ? 'round' : 'butt'}
+          strokeLinecap={v === 0 || fin === hasta ? 'round' : 'butt'}
         />
       );
     }
@@ -111,14 +100,12 @@ function Velocimetro({ puntaje, banda }: { puntaje: number | null; banda: string
   return (
     <div className="inf-gauge-caja">
       <svg className="inf-gauge" viewBox={`0 0 ${CAJA} ${CAJA}`} aria-hidden="true">
-        {/* La escala entera, apagada. */}
-        {degradado(0, 100, 0.28, false)}
-        {/* El puntaje, encima, en color pleno. */}
-        {puntaje !== null && puntaje > 0 && degradado(0, puntaje, 1, true)}
-        {/* Dónde empieza cada banda: un corte del ancho del anillo. */}
+        {/* La escala entera. */}
+        <path d={arco(0, 100)} className="inf-gauge-fondo" fill="none" strokeWidth="9" />
+        {/* Dónde empieza cada banda, por fuera del anillo. */}
         {BANDAS.filter((b) => b.desde > 0).map((b) => {
-          const [x1, y1] = punto(b.desde, R - 5);
-          const [x2, y2] = punto(b.desde, R + 5);
+          const [x1, y1] = punto(b.desde, R + 6.5);
+          const [x2, y2] = punto(b.desde, R + 10);
           return (
             <line
               key={b.nombre}
@@ -130,6 +117,7 @@ function Velocimetro({ puntaje, banda }: { puntaje: number | null; banda: string
             />
           );
         })}
+        {puntaje !== null && puntaje > 0 && lleno(puntaje)}
       </svg>
       <div className="inf-gauge-centro">
         {puntaje === null ? (
@@ -365,7 +353,6 @@ export default function Documento({
 
           <div className="inf-benziger">
             {CUADRANTES.map((q) => {
-              const valor = inf.benziger?.adulto?.[q.clave] ?? null;
               const manda = inf.benziger!.preferentes.some((p) => p.clave === q.clave);
               return (
                 <div
@@ -376,19 +363,6 @@ export default function Documento({
                     {manda ? 'Predominante' : 'Cuadrante'}
                   </span>
                   <h3>{q.nombre}</h3>
-                  {valor !== null && (
-                    <>
-                      <p className="inf-cuadrante-valor">
-                        {valor}
-                        <em>de 120</em>
-                      </p>
-                      {/* La barra compara los cuatro de un vistazo: el gráfico
-                          dice la forma del perfil y esto dice el tamaño. */}
-                      <span className="inf-cuadrante-barra">
-                        <i style={{ width: `${Math.min(100, (valor / 120) * 100)}%` }} />
-                      </span>
-                    </>
-                  )}
                   <p>{q.resumen}</p>
                 </div>
               );
