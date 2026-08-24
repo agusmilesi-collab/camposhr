@@ -11,78 +11,91 @@ import Cerebro from './Cerebro';
 import './informe.css';
 
 /**
- * El velocímetro de una competencia: media luna, cuatro zonas y una aguja.
+ * El velocímetro de una competencia: un anillo con el puntaje adentro.
  *
- * El arco va de 180 a 360 grados, o sea de izquierda a derecha por arriba. Cada
- * zona ocupa el ángulo que le toca por su ancho en la escala, así que mirar
- * dónde cayó la aguja es leer la banda sin leer el número.
+ * Tres cosas a la vez, sin que ninguna tape a la otra. El anillo de fondo, en
+ * tramos, es la escala: cada zona ocupa el ángulo que le toca por su ancho, así
+ * que se ve dónde empieza Alto sin leer un número. El arco de color encima
+ * llega hasta el puntaje. Y el número va en el centro, que es donde lo busca el
+ * ojo.
  *
- * La habilidad cognitiva no lleva zonas: su número es un percentil del baremo
- * del Raven y no un puntaje de competencia, así que compararlo contra estas
- * bandas sería mezclar dos escalas que solo comparten el ir de 0 a 100.
+ * Abre 270 grados y no 360: el hueco de abajo es el que convierte un anillo en
+ * un instrumento con principio y fin, y deja lugar para la banda.
+ *
+ * En SVG y no en canvas: es un dibujo de pocos trazos y tiene que sobrevivir a
+ * la impresión del PDF.
  */
 function Velocimetro({
   puntaje,
   escala,
+  banda,
 }: {
   puntaje: number | null;
   escala: 'promedio' | 'percentil';
+  banda: string | null;
 }) {
-  const R = 34;
-  const ancho = 82;
-  const alto = 48;
-  const cx = ancho / 2;
-  const cy = 40;
+  const CAJA = 116;
+  const R = 44;
+  const c = CAJA / 2;
+  /** Arranca abajo a la izquierda y cierra abajo a la derecha: 270 grados. */
+  const INICIO = 135;
+  const BARRIDO = 270;
 
-  /** Un punto del arco, para un valor de 0 a 100. */
   const punto = (v: number, r: number) => {
-    const a = Math.PI + (Math.min(100, Math.max(0, v)) / 100) * Math.PI;
-    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+    const a = ((INICIO + (Math.min(100, Math.max(0, v)) / 100) * BARRIDO) * Math.PI) / 180;
+    return [c + r * Math.cos(a), c + r * Math.sin(a)];
   };
 
-  const tramo = (desde: number, hasta: number) => {
-    const [x1, y1] = punto(desde, R);
-    const [x2, y2] = punto(hasta, R);
-    return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R} ${R} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+  const arco = (desde: number, hasta: number, r = R) => {
+    const [x1, y1] = punto(desde, r);
+    const [x2, y2] = punto(hasta, r);
+    const largo = ((hasta - desde) / 100) * BARRIDO > 180 ? 1 : 0;
+    return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largo} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
   };
 
-  // El Raven trae su propio baremo: sus cinco rangos son las zonas del arco.
   const zonas = escala === 'percentil' ? RANGOS_RAVEN : ZONAS;
 
   return (
-    <svg
-      className="inf-gauge"
-      viewBox={`0 0 ${ancho} ${alto}`}
-      role="img"
-      aria-label={puntaje === null ? 'sin puntaje' : `${puntaje} de 100`}
-    >
-      {zonas.map((z) => (
-        <path
-          key={z.nombre}
-          d={tramo(z.desde, z.hasta)}
-          data-banda={z.nombre}
-          fill="none"
-          strokeWidth="7"
-          strokeLinecap="butt"
-        />
-      ))}
-      {puntaje !== null &&
-        (() => {
-          const [x1, y1] = punto(puntaje, R - 10.5);
-          const [x2, y2] = punto(puntaje, R + 4.5);
-          return (
-            <line
-              className="inf-gauge-aguja"
-              x1={x1.toFixed(2)}
-              y1={y1.toFixed(2)}
-              x2={x2.toFixed(2)}
-              y2={y2.toFixed(2)}
-              strokeWidth="2.6"
-              strokeLinecap="round"
-            />
-          );
-        })()}
-    </svg>
+    <div className="inf-gauge-caja">
+      <svg className="inf-gauge" viewBox={`0 0 ${CAJA} ${CAJA}`} aria-hidden="true">
+        {/* La escala, en tramos: dice dónde cae el puntaje sin leerlo. */}
+        {zonas.map((z) => (
+          <path
+            key={z.nombre}
+            d={arco(z.desde, z.hasta)}
+            data-banda={z.nombre}
+            className="inf-gauge-zona"
+            fill="none"
+            strokeWidth="9"
+          />
+        ))}
+        {/* El puntaje, encima, del color de su banda. */}
+        {puntaje !== null && puntaje > 0 && (
+          <path
+            d={arco(0, puntaje)}
+            data-banda={banda ?? ''}
+            className="inf-gauge-lleno"
+            fill="none"
+            strokeWidth="9"
+            strokeLinecap="round"
+          />
+        )}
+      </svg>
+      <div className="inf-gauge-centro">
+        {puntaje === null ? (
+          <span className="inf-gauge-vacio">sin datos</span>
+        ) : (
+          <>
+            <span className="inf-gauge-numero" data-banda={banda ?? ''}>
+              {puntaje}
+            </span>
+            <span className="inf-gauge-escala">
+              {escala === 'percentil' ? 'percentil' : 'de 100'}
+            </span>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -222,51 +235,25 @@ export default function Documento({
           </p>
         ) : (
           <>
+            {/* Tablero: una tarjeta por competencia, el anillo primero y el
+                texto después. El número es lo que el cliente busca, así que va
+                donde cae el ojo y no al final de un renglón. */}
             <div className="inf-competencias">
-              {inf.competencias.map((c) => (
-                <article key={c.nombre} className="inf-competencia">
-                  <div className="inf-competencia-top">
+              {inf.competencias.map((c) => {
+                const banda = c.escala === 'percentil' ? 'Percentil' : bandaDe(c.puntaje);
+                return (
+                  <article key={c.nombre} className="inf-competencia">
+                    <Velocimetro puntaje={c.puntaje} escala={c.escala} banda={banda} />
                     <h3>{c.nombre}</h3>
-                    {/* Sin el signo de porcentaje: es un puntaje sobre cien y
-                        no una proporción de aciertos. Con `%`, un sesenta se
-                        lee como nota de examen. */}
-                    {/* El percentil no se lee con las bandas de competencia:
-                        los dos números van de 0 a 100 y significan cosas
-                        distintas. El del Raven dice qué parte de la población
-                        queda por debajo, y su referencia es el baremo del test. */}
-                    <span className="inf-porcentaje">
-                      {c.puntaje === null ? (
-                        'sin datos'
-                      ) : c.escala === 'percentil' ? (
-                        <>
-                          <em className="inf-de-cien">percentil</em>
-                          {c.puntaje}
-                          <em className="inf-banda-texto" data-banda="Percentil">
-                            {c.referencia}
-                          </em>
-                        </>
-                      ) : (
-                        <>
-                          {c.puntaje}
-                          <em className="inf-de-cien">/100</em>
-                          <em className="inf-banda-texto" data-banda={bandaDe(c.puntaje) ?? ''}>
-                            {bandaDe(c.puntaje)}
-                          </em>
-                        </>
-                      )}
-                    </span>
-                  </div>
-                  {/* El velocímetro: media luna con las cuatro zonas y una
-                      aguja donde cae la persona. Una barra recta obligaba a
-                      medir con la vista dónde caía el número; el arco lo dice
-                      con la posición de la aguja, que es como se lee un
-                      instrumento. En SVG y no en canvas: es un dibujo de cinco
-                      trazos y tiene que sobrevivir a la impresión del PDF. */}
-                  <Velocimetro puntaje={c.puntaje} escala={c.escala} />
-
-                  <p className="inf-mide">{c.mide}</p>
-                </article>
-              ))}
+                    {c.puntaje !== null && (
+                      <span className="inf-banda-texto" data-banda={banda ?? ''}>
+                        {c.escala === 'percentil' ? c.referencia : banda}
+                      </span>
+                    )}
+                    <p className="inf-mide">{c.mide}</p>
+                  </article>
+                );
+              })}
             </div>
             <p className="inf-nota">
               {REFERENCIA_BANDAS}

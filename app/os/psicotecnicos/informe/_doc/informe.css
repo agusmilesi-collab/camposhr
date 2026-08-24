@@ -340,113 +340,136 @@
 }
 
 /* ── Competencias ─────────────────────────────────────────────────────── */
+/**
+ * El capítulo de competencias, como tablero.
+ *
+ * Una tarjeta por competencia, todas del mismo alto, con el anillo arriba y el
+ * texto abajo. El número es lo que el cliente busca primero, así que va donde
+ * cae el ojo y no al final de un renglón de texto.
+ */
 .inf-competencias {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 18px 26px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
 }
 
-.inf-competencia-top {
+.inf-competencia {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 16px 14px 18px;
+  border: 1px solid var(--linea-suave);
+  border-radius: 14px;
+  background: var(--hoja);
+  text-align: center;
+  /* Una tarjeta partida al medio por un salto de página deja un anillo sin su
+     nombre en la hoja siguiente. */
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 .inf-competencia h3 {
-  margin: 0;
-  font-size: 0.92rem;
+  margin: 10px 0 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 /**
- * El puntaje: el número manda y la banda lo acompaña.
+ * El anillo con el puntaje adentro.
  *
- * Iba del mismo tamaño que el nombre de la competencia y se perdía en el
- * renglón. Es el dato que el cliente busca, así que va grande, con la escala en
- * chico al lado para que se lea "sobre cien" y no como porcentaje de aciertos.
+ * El fondo en tramos es la escala y el arco de color llega hasta el puntaje.
+ * Abre 270 grados: el hueco de abajo es lo que convierte un anillo en un
+ * instrumento con principio y fin.
  */
-.inf-porcentaje {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.05;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
+.inf-gauge-caja {
+  position: relative;
+  width: 116px;
+  height: 116px;
 }
 
-.inf-de-cien {
-  font-style: normal;
-  font-size: 0.68rem;
-  font-weight: 500;
+.inf-gauge {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.inf-gauge-zona {
+  stroke: var(--linea-suave);
+  opacity: 0.9;
+}
+
+.inf-gauge-zona[data-banda='Bajo'] { stroke: color-mix(in srgb, var(--rojo) 20%, var(--hoja)); }
+.inf-gauge-zona[data-banda='Adecuado'] { stroke: color-mix(in srgb, var(--azul) 14%, var(--hoja)); }
+.inf-gauge-zona[data-banda='Alto'] { stroke: color-mix(in srgb, var(--azul) 26%, var(--hoja)); }
+.inf-gauge-zona[data-banda='Sobresaliente'] { stroke: color-mix(in srgb, var(--verde) 28%, var(--hoja)); }
+
+/* El baremo del Raven tiene sus propios cinco tramos. */
+.inf-gauge-zona[data-banda='Rango V'] { stroke: color-mix(in srgb, var(--rojo) 22%, var(--hoja)); }
+.inf-gauge-zona[data-banda='Rango IV'] { stroke: color-mix(in srgb, var(--rojo) 12%, var(--hoja)); }
+.inf-gauge-zona[data-banda='Rango III'] { stroke: color-mix(in srgb, var(--azul) 14%, var(--hoja)); }
+.inf-gauge-zona[data-banda='Rango II'] { stroke: color-mix(in srgb, var(--azul) 26%, var(--hoja)); }
+.inf-gauge-zona[data-banda='Rango I'] { stroke: color-mix(in srgb, var(--verde) 28%, var(--hoja)); }
+
+.inf-gauge-lleno[data-banda='Sobresaliente'] { stroke: var(--verde); }
+.inf-gauge-lleno[data-banda='Alto'] { stroke: var(--azul); }
+.inf-gauge-lleno[data-banda='Adecuado'] { stroke: var(--tinta-media); }
+.inf-gauge-lleno[data-banda='Bajo'] { stroke: var(--rojo); }
+.inf-gauge-lleno[data-banda='Percentil'] { stroke: var(--azul); }
+
+/* El número, en el centro del anillo. */
+.inf-gauge-centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.inf-gauge-numero {
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-gauge-numero[data-banda='Sobresaliente'] { color: var(--verde); }
+.inf-gauge-numero[data-banda='Alto'] { color: var(--azul); }
+.inf-gauge-numero[data-banda='Adecuado'] { color: var(--tinta); }
+.inf-gauge-numero[data-banda='Bajo'] { color: var(--rojo); }
+.inf-gauge-numero[data-banda='Percentil'] { color: var(--tinta); }
+
+.inf-gauge-escala {
+  margin-top: 2px;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--suave);
 }
 
-/* La banda, del color de su zona: dice en una palabra lo que el número dice en
-   dos cifras, y es lo que queda si alguien lee el informe en diagonal. */
+.inf-gauge-vacio { font-size: 0.72rem; color: var(--suave); }
+
 .inf-banda-texto {
   font-style: normal;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  margin-left: 3px;
 }
 
 .inf-banda-texto[data-banda='Sobresaliente'] { color: var(--verde); }
 .inf-banda-texto[data-banda='Alto'] { color: var(--azul); }
 .inf-banda-texto[data-banda='Adecuado'] { color: var(--tinta-media); }
 .inf-banda-texto[data-banda='Bajo'] { color: var(--rojo); }
-
-/**
- * El velocímetro de cada competencia: media luna con sus cuatro zonas.
- *
- * Era una barra recta, y antes de eso una que se llenaba. El problema de las dos
- * era el mismo: el número quedaba sin referencia y un sesenta se leía como nota
- * de examen. En el arco, la aguja dice la banda por su posición, que es como se
- * lee un instrumento.
- */
-.inf-gauge {
-  display: block;
-  width: 82px;
-  height: 48px;
-  margin: 4px 0 2px;
-  overflow: visible;
-}
-
-.inf-gauge path[data-banda='Bajo'] {
-  stroke: color-mix(in srgb, var(--rojo) 34%, var(--hoja));
-}
-
-.inf-gauge path[data-banda='Adecuado'] {
-  stroke: color-mix(in srgb, var(--azul) 24%, var(--hoja));
-}
-
-.inf-gauge path[data-banda='Alto'] {
-  stroke: color-mix(in srgb, var(--azul) 52%, var(--hoja));
-}
-
-.inf-gauge path[data-banda='Sobresaliente'] {
-  stroke: color-mix(in srgb, var(--verde) 60%, var(--hoja));
-}
-
-/* La habilidad cognitiva no tiene bandas de competencia: su número es un
-   percentil, y sus zonas son los cinco rangos del baremo del Raven. */
-.inf-gauge path[data-banda='Rango V'] { stroke: color-mix(in srgb, var(--rojo) 34%, var(--hoja)); }
-.inf-gauge path[data-banda='Rango IV'] { stroke: color-mix(in srgb, var(--rojo) 18%, var(--hoja)); }
-.inf-gauge path[data-banda='Rango III'] { stroke: color-mix(in srgb, var(--azul) 24%, var(--hoja)); }
-.inf-gauge path[data-banda='Rango II'] { stroke: color-mix(in srgb, var(--azul) 52%, var(--hoja)); }
-.inf-gauge path[data-banda='Rango I'] { stroke: color-mix(in srgb, var(--verde) 60%, var(--hoja)); }
-
 .inf-banda-texto[data-banda='Percentil'] { color: var(--tinta-media); }
 
-.inf-gauge-aguja {
-  stroke: var(--tinta);
-}
-
 .inf-mide {
-  margin: 0;
-  font-size: 0.8rem;
+  margin: 8px 0 0;
+  font-size: 0.74rem;
+  line-height: 1.45;
   color: var(--suave);
 }
 
@@ -672,6 +695,7 @@
    */
   .inf-gauge,
   .inf-gauge path,
+  .inf-competencia,
   .inf-nivel,
   .inf-perfil-adulto,
   .inf-marca-texto {
