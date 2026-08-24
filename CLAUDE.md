@@ -129,6 +129,17 @@ ubica con las medidas del botón y lo sigue mientras está abierta, por evento d
 `scroll` en fase de captura y por un bucle de cuadro, porque el evento no llega
 cuando lo que se desplaza es un contenedor de adentro.
 
+## Una sola botonera de opciones
+
+`app/os/Opciones.tsx`. Dos o tres opciones que se excluyen y se eligen de un
+toque, en una píldora donde todas miden lo mismo: cómo es el puesto, si la
+persona ingresó, cómo se leen los dos cuadrantes del Benziger. Estaba escrito
+tres veces con el mismo markup y ya empezaba a tener tres tamaños.
+
+**Cuál va en cada lado.** La botonera cuando las opciones son pocas y se
+comparan entre sí, porque están todas a la vista. El desplegable cuando son
+muchas o se reconocen por su punto de color.
+
 Todo lo que sea un botón usa `os-boton`, con `os-boton-firme` para el principal.
 El de copiar viene de la hoja del hub con su propio alto: adentro del OS se le
 iguala, porque es el mismo botón.

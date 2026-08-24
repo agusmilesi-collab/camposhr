@@ -28,6 +28,7 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { INFO, PERFILES, nombrePerfil, type Perfil } from '@/lib/perfiles';
+import Opciones from '@/app/os/Opciones';
 
 export default function Benziger({
   id,
@@ -242,29 +243,16 @@ export default function Benziger({
             {/* Con dos elegidos falta decir cómo se relacionan: el segundo puede
                 acompañar al primero o pesar lo mismo. */}
             {elegidos.length === 2 && (
-              <div
-                className="os-ingreso-opciones os-benziger-relacion"
-                style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}
-              >
-                <button
-                  type="button"
-                  className={`os-ingreso-opcion${parejos ? '' : ' puesta'}`}
-                  disabled={eligiendo}
-                  aria-pressed={!parejos}
-                  onClick={() => aplicar(elegidos, false)}
-                >
-                  {elegidos[1]} secundario
-                </button>
-                <button
-                  type="button"
-                  className={`os-ingreso-opcion${parejos ? ' puesta' : ''}`}
-                  disabled={eligiendo}
-                  aria-pressed={parejos}
-                  onClick={() => aplicar(elegidos, true)}
-                >
-                  Los dos por igual
-                </button>
-              </div>
+              <Opciones
+                valor={parejos}
+                opciones={[
+                  { v: false, texto: `${elegidos[1]} secundario` },
+                  { v: true, texto: 'Los dos por igual' },
+                ]}
+                alElegir={(v) => aplicar(elegidos, v)}
+                desactivado={eligiendo}
+                etiqueta="Cómo se relacionan los dos cuadrantes"
+              />
             )}
 
             <p className="os-benziger-aviso">
