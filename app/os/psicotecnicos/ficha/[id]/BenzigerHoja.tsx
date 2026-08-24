@@ -3,8 +3,8 @@
  *
  * El perfil arriba, como la tabla del informe: cada fila con sus cuatro
  * cuadrantes, con el más alto pintado de azul y el más bajo de rojo, como en
- * las cruces de abajo: el color es de la celda y no un punto al lado, así la
- * fila se lee de un vistazo sin buscar cuatro puntitos.
+ * las cruces de abajo: el color va en el número y no en un punto al lado, así
+ * la fila se lee de un vistazo sin buscar cuatro puntitos.
  * Debajo las cruces, dibujadas en cruz de verdad, con Frontal arriba y Basal
  * abajo, y el cuadrante entero pintado: en una cruz chica el color se ve de
  * lejos y la diagonal salta sin leer un solo número.

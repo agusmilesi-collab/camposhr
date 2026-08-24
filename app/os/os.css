@@ -2873,14 +2873,21 @@ th.os-tabla-contacto {
  * mismo color con el que se pintan los cuadrantes de las cruces de abajo, así
  * que las dos mitades de la hoja se leen igual.
  */
-.os-bz-celda.alto {
-  background: var(--os-azul);
+/* El color va en el número y no en la celda entera: pintado el ancho completo
+   de la columna, el bloque de color pesaba más que la cifra que marca. */
+.os-bz-celda.alto .os-bz-valor,
+.os-bz-celda.bajo .os-bz-valor {
+  padding: 2px 7px;
+  border-radius: 6px;
   color: var(--os-panel);
 }
 
-.os-bz-celda.bajo {
+.os-bz-celda.alto .os-bz-valor {
+  background: var(--os-azul);
+}
+
+.os-bz-celda.bajo .os-bz-valor {
   background: var(--os-rojo);
-  color: var(--os-panel);
 }
 
 /* La escala de alerta, de 12 a 0, con el valor marcado y sus tres zonas. */
