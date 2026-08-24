@@ -106,13 +106,12 @@ export default function Cerebro({ adulto, joven }: { adulto: Cuatro | null; jove
       {trazoJoven && <polygon points={trazoJoven} className="inf-perfil-joven" />}
       {trazoAdulto && <polygon points={trazoAdulto} className="inf-perfil-adulto" />}
 
-      {/* Los cuatro valores del adulto, marcados con el color de su ficha: es
-          donde cae el número que después se lee al costado. */}
+      {/* Los cuatro valores del adulto, marcados sobre la línea del perfil. */}
       {trazoAdulto &&
         adulto &&
         ORDEN.map((k) => {
           const p = punto(k, adulto[k] as number);
-          return <circle key={k} cx={p.x} cy={p.y} r="5.5" className={`inf-vertice v-${k}`} />;
+          return <circle key={k} cx={p.x} cy={p.y} r="5.5" className="inf-vertice" />;
         })}
     </svg>
   );

@@ -11,23 +11,30 @@ import Cerebro from './Cerebro';
 import './informe.css';
 
 /**
- * El color de cada banda, para dibujar su arco.
+ * El color de un puntaje.
+ *
+ * Cinco tramos y no cuatro: las bandas son cuatro, pero Bajo va de 0 a 34 y no
+ * es lo mismo estar rozando lo adecuado que estar abajo de todo, así que ese
+ * tramo se parte en naranja y rojo. Los otros tres van uno por banda.
+ *
+ * De arriba abajo: verde, verde claro, azul, naranja, rojo.
  *
  * **Los valores están escritos y no salen de las variables de la hoja**: para
  * aclarar un color contra el fondo hay que tener sus números, y `color-mix` no
  * los devuelve. Si cambia la paleta de `informe.css` hay que cambiarlos acá.
  */
-const COLOR_BANDA: Record<string, [number, number, number]> = {
-  Sobresaliente: [55, 128, 74], // --verde
-  Alto: [67, 100, 143], // --azul
-  Adecuado: [70, 80, 92], // --tinta-media
-  Bajo: [140, 59, 59], // --rojo
-};
+const ESCALA_COLOR: { desde: number; rgb: [number, number, number] }[] = [
+  { desde: 80, rgb: [55, 128, 74] }, // --verde, Sobresaliente
+  { desde: 65, rgb: [104, 158, 106] }, // verde claro, Alto
+  { desde: 35, rgb: [67, 100, 143] }, // --azul, Adecuado
+  { desde: 18, rgb: [193, 89, 26] }, // --naranja, la mitad de arriba de Bajo
+  { desde: 0, rgb: [140, 59, 59] }, // --rojo, el piso
+];
 
-/** El color de la banda, aclarado contra la hoja: 1 es pleno, 0 es blanco. */
-function tono(banda: string | null, fuerza: number): string {
-  const base = COLOR_BANDA[banda ?? ''] ?? COLOR_BANDA.Adecuado;
-  const c = base.map((n) => Math.round(n + (255 - n) * (1 - fuerza)));
+/** El color del puntaje, aclarado contra la hoja: 1 es pleno, 0 es blanco. */
+function tono(puntaje: number | null, fuerza: number): string {
+  const base = ESCALA_COLOR.find((t) => (puntaje ?? 0) >= t.desde) ?? ESCALA_COLOR[4];
+  const c = base.rgb.map((n) => Math.round(n + (255 - n) * (1 - fuerza)));
   return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 }
 
@@ -35,13 +42,14 @@ function tono(banda: string | null, fuerza: number): string {
  * El velocímetro de una competencia: un anillo con el puntaje adentro.
  *
  * Tres cosas a la vez, sin que ninguna tape a la otra. El anillo de fondo, gris,
- * es la escala entera. El arco encima llega hasta el puntaje y va del color de
- * su banda: aclarado donde arranca y pleno donde termina, así el final del arco
- * es lo que más pesa. Y el número va en el centro, que es donde lo busca el ojo.
+ * es la escala entera. El arco encima llega hasta el puntaje y va del color que
+ * le toca a ese puntaje: aclarado donde arranca y pleno donde termina, así el
+ * final del arco es lo que más pesa. Y el número va en el centro, que es donde
+ * lo busca el ojo.
  *
- * **Un solo color por velocímetro, el de su banda.** Antes el arco recorría las
- * cuatro bandas y empezaba siempre en rojo, así que una competencia
- * sobresaliente mostraba un cuarto de anillo en rojo antes de llegar al verde.
+ * **Un solo color por velocímetro.** Antes el arco recorría las cuatro bandas y
+ * empezaba siempre en rojo, así que una competencia sobresaliente mostraba un
+ * cuarto de anillo en rojo antes de llegar al verde.
  *
  * Dónde empieza cada banda se marca por fuera del anillo, con una raya corta:
  * adentro tapaba el arco justo en el tramo que la persona alcanzó.
@@ -57,7 +65,7 @@ function tono(banda: string | null, fuerza: number): string {
  * En SVG y no en canvas: es un dibujo de pocos trazos y tiene que sobrevivir a
  * la impresión del PDF.
  */
-function Velocimetro({ puntaje, banda }: { puntaje: number | null; banda: string | null }) {
+function Velocimetro({ puntaje }: { puntaje: number | null }) {
   const CAJA = 116;
   const R = 44;
   const c = CAJA / 2;
@@ -87,7 +95,7 @@ function Velocimetro({ puntaje, banda }: { puntaje: number | null; banda: string
         <path
           key={v}
           d={arco(v, fin + (fin < hasta ? 0.6 : 0))}
-          stroke={tono(banda, 0.42 + 0.58 * (((v + fin) / 2 / hasta) ** 0.7))}
+          stroke={tono(puntaje, 0.42 + 0.58 * (((v + fin) / 2 / hasta) ** 0.7))}
           fill="none"
           strokeWidth="9"
           strokeLinecap={v === 0 || fin === hasta ? 'round' : 'butt'}
@@ -124,7 +132,7 @@ function Velocimetro({ puntaje, banda }: { puntaje: number | null; banda: string
           <span className="inf-gauge-vacio">sin datos</span>
         ) : (
           <>
-            <span className="inf-gauge-numero" data-banda={banda ?? ''}>
+            <span className="inf-gauge-numero" style={{ color: tono(puntaje, 1) }}>
               {puntaje}
             </span>
             <span className="inf-gauge-escala">de 100</span>
@@ -270,10 +278,10 @@ export default function Documento({
                 const banda = bandaDe(c.puntaje);
                 return (
                   <article key={c.nombre} className="inf-competencia">
-                    <Velocimetro puntaje={c.puntaje} banda={banda} />
+                    <Velocimetro puntaje={c.puntaje} />
                     <h3>{c.nombre}</h3>
                     {c.puntaje !== null && (
-                      <span className="inf-banda-texto" data-banda={banda ?? ''}>
+                      <span className="inf-banda-texto" style={{ color: tono(c.puntaje, 1) }}>
                         {banda}
                       </span>
                     )}
