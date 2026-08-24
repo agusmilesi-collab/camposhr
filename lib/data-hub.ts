@@ -80,6 +80,36 @@ export type PorEvaluadora = {
 
 export type Competencia = { nombre: string; mediana: number | null; n: number };
 
+/**
+ * Qué tan seguido el informe dice algo distinto de "sí".
+ *
+ * Es el KPI que nadie mide y el que dice si el servicio sirve para decidir. Un
+ * informe que siempre cierra en apto no le ahorra un error al cliente: le
+ * confirma lo que ya pensaba. No hay un número bueno universal, pero si el
+ * ciento por ciento sale apto sin observaciones, el instrumento no está
+ * separando a nadie de nadie.
+ */
+export type Discriminacion = {
+  cerrados: number;
+  /** Cuántos cierran con alguna reserva: observaciones, alertas o ajuste bajo. */
+  conReserva: number;
+  /** Cuántos cierran sin ninguna: el "sí" liso. */
+  sinReserva: number;
+};
+
+/** Cuánto del trabajo depende de un solo cliente. */
+export type Concentracion = {
+  clientes: number;
+  /** Qué parte del total se lleva el más grande, de 0 a 100. */
+  delMayor: number | null;
+  nombreMayor: string | null;
+  /** Clientes que pidieron más de una búsqueda: es la mejor señal de que volvieron. */
+  repiten: number;
+};
+
+/** Cuántas evaluaciones tienen cada pieza del protocolo cargada. */
+export type Completitud = { pieza: string; hechas: number; de: number }[];
+
 export type Pendiente = {
   medida: string;
   hoy: number;
@@ -90,6 +120,9 @@ export type Pendiente = {
 export type DataHub = {
   total: number;
   entregadas: number;
+  discriminacion: Discriminacion;
+  concentracion: Concentracion;
+  completitud: Completitud;
   evaluadoras: PorEvaluadora[];
   pedido: {
     porFamilia: Reparto;
@@ -202,9 +235,59 @@ export async function datosDelHub(): Promise<DataHub> {
     }
   }
 
+  // ── Los tres KPIs de arriba ─────────────────────────────────────────────
+  const cerrados = filas.filter((f) => f.recomendacion);
+  // Cierra sin reserva el que sale apto liso o encaja con el puesto: todo lo
+  // demás le pone una condición al cliente, que es donde el informe sirve.
+  const sinReserva = cerrados.filter((f) =>
+    ['Apto', 'Encaja con el puesto'].includes(f.recomendacion as string)
+  ).length;
+
+  const porEmpresa = contar(filas, (f) => f.pedidos?.empresas?.nombre);
+  const pedidosPorEmpresa = new Map<string, Set<string>>();
+  for (const f of filas) {
+    const e = f.pedidos?.empresas?.nombre;
+    if (!e || !f.pedidos?.puesto) continue;
+    if (!pedidosPorEmpresa.has(e)) pedidosPorEmpresa.set(e, new Set());
+    pedidosPorEmpresa.get(e)?.add(f.pedidos.puesto);
+  }
+
+  const conSumario = new Set(sumarios.map((s) => s.evaluacion_id));
+
   return {
     total: filas.length,
     entregadas: entregadas.length,
+    discriminacion: {
+      cerrados: cerrados.length,
+      conReserva: cerrados.length - sinReserva,
+      sinReserva,
+    },
+    concentracion: {
+      clientes: porEmpresa.length,
+      delMayor: porEmpresa.length
+        ? Math.round((porEmpresa[0].n / filas.length) * 100)
+        : null,
+      nombreMayor: porEmpresa[0]?.nombre ?? null,
+      repiten: [...pedidosPorEmpresa.values()].filter((p) => p.size > 1).length,
+    },
+    completitud: [
+      { pieza: 'Manchas codificadas', hechas: conSumario.size, de: filas.length },
+      {
+        pieza: 'Raven puntuado',
+        hechas: filas.filter((f) => typeof f.raven?.percentil === 'number').length,
+        de: filas.length,
+      },
+      {
+        pieza: 'Benziger leído',
+        hechas: filas.filter((f) => (f.benziger?.cuadrante_preferente ?? []).length > 0).length,
+        de: filas.filter((f) => f.pedidos?.con_benziger).length,
+      },
+      {
+        pieza: 'Informe cerrado',
+        hechas: cerrados.length,
+        de: entregadas.length,
+      },
+    ],
     evaluadoras,
     pedido: {
       porFamilia: contar(filas, (f) => f.pedidos?.familia),

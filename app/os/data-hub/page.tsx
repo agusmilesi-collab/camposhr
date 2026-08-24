@@ -152,6 +152,57 @@ export default async function DataHub() {
         </p>
       </div>
 
+      {/* Los cuatro que contestan cómo va el negocio. Van arriba y solos: si hay
+          que bajar para encontrarlos, el resto del tablero los tapa. */}
+      <div className="os-hub-tapa">
+        <div className="os-hub-kpi">
+          <span className="os-hub-rotulo">Entregadas</span>
+          <span className="os-hub-valor">{d.entregadas}</span>
+          <span className="os-hub-n">de {d.total} evaluaciones cargadas</span>
+        </div>
+        <div className="os-hub-kpi">
+          <span className="os-hub-rotulo">El informe pone condiciones</span>
+          <span className="os-hub-valor">
+            {d.discriminacion.cerrados === 0 ? (
+              <span className="os-dato-falta">sin cerrar</span>
+            ) : (
+              <>
+                {Math.round((d.discriminacion.conReserva / d.discriminacion.cerrados) * 100)}
+                <em> %</em>
+              </>
+            )}
+          </span>
+          <span className="os-hub-n">
+            {d.discriminacion.cerrados === 0
+              ? 'todavía no hay informes cerrados'
+              : `${d.discriminacion.conReserva} de ${d.discriminacion.cerrados} · el resto cierra en un sí liso`}
+          </span>
+        </div>
+        <div className="os-hub-kpi">
+          <span className="os-hub-rotulo">Del cliente más grande</span>
+          <span className="os-hub-valor">
+            {d.concentracion.delMayor === null ? (
+              <span className="os-dato-falta">sin datos</span>
+            ) : (
+              <>
+                {d.concentracion.delMayor}
+                <em> %</em>
+              </>
+            )}
+          </span>
+          <span className="os-hub-n">
+            {d.concentracion.nombreMayor
+              ? `${d.concentracion.nombreMayor} · ${d.concentracion.clientes} clientes en total`
+              : 'sin clientes cargados'}
+          </span>
+        </div>
+        <div className="os-hub-kpi">
+          <span className="os-hub-rotulo">Clientes que repiten</span>
+          <span className="os-hub-valor">{d.concentracion.repiten}</span>
+          <span className="os-hub-n">pidieron más de una búsqueda</span>
+        </div>
+      </div>
+
       <Eje
         titulo="Cada evaluadora"
         bajada="Volumen, tiempos y criterio de cierre. Los tiempos son medianas: una evaluación que se atrasó por el cliente no le mueve el número."
@@ -167,6 +218,35 @@ export default async function DataHub() {
             ))}
           </div>
         )}
+      </Eje>
+
+      <Eje
+        titulo="Qué tan completo está el protocolo"
+        bajada="Cuántas evaluaciones tienen cada pieza cargada. Lo que falta acá es lo que después no se puede medir en ningún lado."
+      >
+        <div className="os-hub-dos">
+          {d.completitud.map((c) => (
+            <Panel key={c.pieza} titulo={c.pieza} nota={c.de === 0 ? 'no corresponde' : `${c.hechas} de ${c.de}`}>
+              {c.de === 0 ? (
+                <p className="os-vacio">Ningún pedido lo pide.</p>
+              ) : (
+                <>
+                  <span className="os-hub-barra">
+                    <span
+                      className={c.hechas >= c.de ? 'completa' : undefined}
+                      style={{ width: `${Math.min(100, (c.hechas / c.de) * 100)}%` }}
+                    />
+                  </span>
+                  <span className="os-hub-n">
+                    {c.hechas >= c.de
+                      ? 'completo'
+                      : `faltan ${c.de - c.hechas}`}
+                  </span>
+                </>
+              )}
+            </Panel>
+          ))}
+        </div>
       </Eje>
 
       <Eje
