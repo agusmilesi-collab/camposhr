@@ -407,7 +407,7 @@
 .inf-grupo {
   --color: var(--azul);
 
-  margin: 0 0 14px;
+  margin: 0 0 22px;
   padding: 12px 16px 14px;
   border: 1px solid var(--linea);
   border-radius: 8px;
@@ -599,9 +599,10 @@
 
 .inf-recomendaciones li {
   display: grid;
-  grid-template-columns: 34px 1fr;
-  gap: 10px;
-  padding: 9px 0;
+  grid-template-columns: 27px 1fr;
+  align-items: start;
+  gap: 12px;
+  padding: 11px 0;
   border-bottom: 1px solid var(--linea-suave);
 }
 
@@ -610,9 +611,16 @@
 }
 
 .inf-orden {
-  font-size: 0.86rem;
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--azul) 12%, var(--hoja));
+  color: var(--azul);
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--linea);
+  font-variant-numeric: tabular-nums;
 }
 
 .inf-recomendaciones p {
@@ -862,6 +870,7 @@
   .inf-grupo,
   .inf-grupo-cuantas,
   .inf-grupo li::before,
+  .inf-orden,
   .inf-ref::before,
   .inf-vertice,
   .inf-escala {
