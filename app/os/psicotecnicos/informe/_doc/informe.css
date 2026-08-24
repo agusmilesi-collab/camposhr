@@ -973,13 +973,94 @@
   margin-top: 10px;
 }
 
-.inf-desglose ul {
-  margin: 4px 0 0;
-  padding-left: 18px;
+.inf-desglose-comp {
+  margin-top: 16px;
 }
 
-.inf-desglose li {
-  margin-bottom: 2px;
+.inf-desglose-comp h4 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 5px;
+  font-size: 0.86rem;
+  color: var(--tinta);
+}
+
+.inf-desglose-comp h4 span {
+  font-weight: 600;
+  color: var(--azul);
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-desglose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  table-layout: fixed;
+}
+
+.inf-desglose th {
+  padding: 0 8px 5px;
+  text-align: left;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+  border-bottom: 1px solid var(--linea);
+}
+
+.inf-desglose th:nth-child(1) { width: 24%; }
+.inf-desglose th:nth-child(2) { width: 21%; }
+.inf-desglose th:nth-child(3) { width: 11%; }
+.inf-desglose th:nth-child(4) { width: 7%; }
+
+.inf-desglose td {
+  padding: 6px 8px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--linea-suave);
+  color: var(--tinta-media);
+}
+
+.inf-desglose td b {
+  display: block;
+  color: var(--tinta);
+  font-size: 0.76rem;
+}
+
+.inf-desglose td em {
+  font-style: normal;
+  color: var(--suave);
+}
+
+/* Los índices del protocolo: es lo que se busca con el dedo cuando el cliente
+   pregunta, así que van en su columna y con los dígitos alineados. */
+.inf-desglose-datos {
+  font-weight: 600;
+  color: var(--tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-desglose-nivel {
+  font-weight: 700;
+}
+
+.inf-desglose-nivel[data-nivel='3'] { color: var(--verde); }
+.inf-desglose-nivel[data-nivel='2'] { color: var(--azul); }
+.inf-desglose-nivel[data-nivel='1'] { color: var(--naranja); }
+.inf-desglose-nivel[data-nivel='falta'] { color: var(--suave); }
+
+.inf-desglose-peso {
+  font-weight: 700;
+  color: var(--tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-desglose-corte {
+  font-size: 0.68rem;
+  line-height: 1.4;
+  color: var(--suave);
 }
 
 @media print {
