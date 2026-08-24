@@ -498,27 +498,17 @@ export type Competencia = {
   nombre: string;
   mide: string;
   /**
-   * En qué escala está el puntaje.
+   * De dónde sale el puntaje cuando el instrumento tiene su propio baremo.
    *
-   * `promedio` es el de las competencias: 0 a 100, donde 50 es todo en el medio.
-   * `percentil` es el del Raven: qué parte de la población queda por debajo. Los
-   * dos van de 0 a 100 y se leen distinto, así que el informe los rotula y los
-   * compara contra referencias distintas.
-   */
-  escala: 'promedio' | 'percentil';
-  /**
-   * Con qué se lee el puntaje cuando no son las bandas de competencia.
-   *
-   * El Raven trae su propio baremo, con rangos I a V. Aplicarle "Sobresaliente"
-   * o "Adecuado" sería leerlo con una regla que no es la suya.
+   * Hoy solo la habilidad cognitiva: el rango del Raven en el que cayó, que es
+   * el que se tradujo a la banda.
    */
   referencia?: string;
   /**
    * Qué dice el número, en palabras.
    *
-   * Un percentil no se entiende solo: 92 se lee como "92 de 100 de desempeño"
-   * cuando significa "mejor que el 92% de la gente". Acá va dicho de frente,
-   * para el que lee el informe sin saber qué es un percentil.
+   * La habilidad cognitiva lo usa para decir contra qué se comparó a la
+   * persona, que es lo que un puntaje solo no cuenta.
    */
   detalle?: string;
   /** 0 a 100. Null cuando falta más de un indicador. */
@@ -533,7 +523,7 @@ export type Competencia = {
     /**
      * Lo que aportó, cuando no es un nivel de bajo a alto.
      *
-     * El Raven entra con su percentil y no escalonado, así que su renglón no
+     * El Raven entra por su baremo y no escalonado, así que su renglón no
      * tiene nivel: sin esto decía "sin dato" al lado de un puntaje calculado
      * con el dato, que es la peor forma de que alguien desconfíe de un número
      * que está bien.
@@ -543,76 +533,99 @@ export type Competencia = {
 };
 
 /**
- * La habilidad cognitiva es el Raven, y su número no es de la misma clase.
+ * La habilidad cognitiva es el Raven, y hay que traerla a la misma escala.
  *
  * No la miden las manchas, así que no está en ninguna de las dos hojas: entra
- * con el percentil del instrumento que sí la mide.
+ * con lo que resolvió del Raven. El informe muestra nueve competencias con un
+ * número de 0 a 100 cada una, y si esta trajera el percentil crudo serían ocho
+ * números de una clase y uno de otra, con la misma cara.
  *
- * **Un percentil y un puntaje de competencia van los dos de 0 a 100 y no son lo
- * mismo.** El percentil dice qué parte de la población normativa queda por
- * debajo: 92 es "supera al 92% de la gente". El puntaje de una competencia es
- * el promedio de sus indicadores, donde 50 es "todo en el medio", y **no está
- * calibrado contra ninguna población**: hoy no existe el baremo propio. Leer
- * los dos con la misma regla hace creer que son comparables.
+ * **El puntaje se calcula en dos pasos, y ninguno de los dos es una regla de
+ * tres.** Primero el baremo convierte los aciertos en percentil, que es la
+ * corrección que hay que hacer porque las láminas no valen lo mismo: acertar
+ * veintitrés de treinta y seis no es el 64% que da la división, es el percentil
+ * 78, porque entre esas veintitrés hay difíciles; y acertar nueve, que son las
+ * fáciles, no es el 25% sino el percentil 7. Después ese percentil se lleva a
+ * la escala del informe con `PUNTAJE_RAVEN`.
  *
- * Por eso esta competencia se marca aparte (`escala: 'percentil'`) y se informa
- * con los rangos del baremo del Raven, que es la referencia que le corresponde,
- * y no con las bandas de las otras cinco.
+ * **El segundo paso tampoco es lineal, y por eso el percentil 92 no da 92.**
+ * Los cinco rangos del baremo del Raven se apoyan sobre las cuatro bandas de
+ * competencia, tramo con tramo: quien cae en Rango III, que es el término medio
+ * del test y agarra la mitad de la población (percentiles 25 a 75), sale
+ * Adecuado (35 a 64); Rango II sale Alto; Rango I, Sobresaliente. Adentro del
+ * tramo se interpola. Un percentil 92 es Rango II, sobre el término medio pero
+ * sin llegar al superior, y da 78: Alto.
  *
- * **Y por eso el número no es la cuenta de aciertos sobre treinta y seis.** Esa
- * cuenta trata igual a todas las láminas, y las últimas son mucho más difíciles
- * que las primeras: acertar veintitrés no vale el 64% que da la división, vale
- * el percentil 78, porque entre esas veintitrés hay difíciles. Del otro lado
- * pasa lo mismo al revés: acertar nueve, que son las fáciles, no vale el 25%
- * sino el percentil 7. El baremo ya trae esa corrección hecha; la división
- * lineal la borraría.
+ * Así el número dice lo mismo que los otros ocho, se compara con ellos, y sigue
+ * apoyado en el baremo del test y no en una división de aciertos.
  */
-/** En qué rango del baremo del Raven cae un percentil. */
-function rangoRaven(p: number): string {
-  if (p >= 95) return 'Rango I · superior';
-  if (p >= 75) return 'Rango II · sobre el término medio';
-  if (p >= 25) return 'Rango III · término medio';
-  if (p >= 5) return 'Rango IV · bajo el término medio';
-  return 'Rango V · muy por debajo';
-}
 
-/** Los tramos del baremo, para dibujar el arco de esta competencia. */
-export const RANGOS_RAVEN = [
-  { nombre: 'Rango V', desde: 0, hasta: 5 },
-  { nombre: 'Rango IV', desde: 5, hasta: 25 },
-  { nombre: 'Rango III', desde: 25, hasta: 75 },
-  { nombre: 'Rango II', desde: 75, hasta: 95 },
-  { nombre: 'Rango I', desde: 95, hasta: 100 },
+/**
+ * Los tramos que traducen percentil del Raven a puntaje del informe.
+ *
+ * Cada corte del baremo cae sobre un corte de `BANDAS`, que es lo que hace que
+ * el rango del test y la banda del informe digan lo mismo. Si se mueve una
+ * banda hay que mover su par acá.
+ */
+const PUNTAJE_RAVEN = [
+  { rango: 'Rango V', percentil: [0, 5], puntaje: [0, 18] },
+  { rango: 'Rango IV', percentil: [5, 25], puntaje: [18, 35] },
+  { rango: 'Rango III', percentil: [25, 75], puntaje: [35, 65] },
+  { rango: 'Rango II', percentil: [75, 95], puntaje: [65, 80] },
+  { rango: 'Rango I', percentil: [95, 100], puntaje: [80, 100] },
 ];
 
+/** En qué rango del baremo del Raven cae un percentil. */
+function rangoRaven(p: number): string {
+  const t = PUNTAJE_RAVEN.find((x) => p < x.percentil[1]) ?? PUNTAJE_RAVEN[PUNTAJE_RAVEN.length - 1];
+  return `${t.rango} · ${NOMBRE_RANGO[t.rango]}`;
+}
+
+const NOMBRE_RANGO: Record<string, string> = {
+  'Rango I': 'superior',
+  'Rango II': 'sobre el término medio',
+  'Rango III': 'término medio',
+  'Rango IV': 'bajo el término medio',
+  'Rango V': 'muy por debajo',
+};
+
+/** El percentil del baremo, llevado a la escala de 0 a 100 del informe. */
+export function puntajeDeRaven(percentil: number): number {
+  const p = Math.min(100, Math.max(0, percentil));
+  const t = PUNTAJE_RAVEN.find((x) => p < x.percentil[1]) ?? PUNTAJE_RAVEN[PUNTAJE_RAVEN.length - 1];
+  const [pa, pb] = t.percentil;
+  const [va, vb] = t.puntaje;
+  return Math.round(va + ((p - pa) / (pb - pa)) * (vb - va));
+}
+
 function cognitiva(ctx: Contexto): Competencia {
+  const p = ctx.ravenPercentil;
+  const laminas =
+    ctx.ravenRaw === null || ctx.ravenRaw === undefined ? '' : `, resolviendo ${ctx.ravenRaw} de las 36 láminas`;
+
   return {
     nombre: 'Habilidad cognitiva',
-    escala: 'percentil' as const,
-    referencia: ctx.ravenPercentil === null ? undefined : rangoRaven(ctx.ravenPercentil),
+    referencia: p === null ? undefined : rangoRaven(p),
     detalle:
-      ctx.ravenPercentil === null
+      p === null
         ? undefined
-        : `Supera al ${Math.round(ctx.ravenPercentil)}% de la población de referencia` +
-          (ctx.ravenRaw === null || ctx.ravenRaw === undefined
-            ? '.'
-            : `, con ${ctx.ravenRaw} de 36 láminas resueltas.`),
+        : `Rinde por encima del ${Math.round(p)}% de la población de referencia${laminas}.`,
     mide: 'Estilo de aprendizaje: capacidad de lógica abstracta frente a pensamiento concreto y práctico.',
-    puntaje: ctx.ravenPercentil === null ? null : Math.round(ctx.ravenPercentil),
+    puntaje: p === null ? null : puntajeDeRaven(p),
     renglones: [
       {
         indicador: 'Raven',
         mide: 'Razonamiento abstracto',
         nivel: null,
-        corte: 'percentil del baremo',
+        corte: 'baremo del test, llevado a la escala del informe',
         peso: 1,
         valor:
-          ctx.ravenPercentil === null
+          p === null
             ? undefined
-            : `percentil ${Math.round(ctx.ravenPercentil * 10) / 10}` +
+            : `percentil ${Math.round(p * 10) / 10}` +
               (ctx.ravenRaw === null || ctx.ravenRaw === undefined
                 ? ''
-                : ` · ${ctx.ravenRaw} de ${36} láminas`),
+                : ` · ${ctx.ravenRaw} de 36 láminas`),
       },
     ],
   };
@@ -640,7 +653,6 @@ export function calcularCompetencias(
     if (renglones.length - puntuados.length > 1) {
       return {
         nombre: c.competencia,
-        escala: 'promedio' as const,
         mide: c.mide,
         puntaje: null,
         renglones,
@@ -659,7 +671,6 @@ export function calcularCompetencias(
 
     return {
       nombre: c.competencia,
-      escala: 'promedio' as const,
       mide: c.mide,
       puntaje,
       renglones,
