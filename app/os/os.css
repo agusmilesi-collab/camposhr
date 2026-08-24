@@ -3168,26 +3168,16 @@ th.os-tabla-contacto {
 }
 
 /**
- * El botón que dice cómo se relacionan los dos cuadrantes: al lado de la cruz
- * y en cuerpo chico.
+ * El botón que dice cómo se relacionan los dos cuadrantes, al lado de la cruz.
  *
- * Diecisiete píxeles de alto, contra los veintiocho de un botón del OS: no es
- * una acción de la pantalla sino una nota sobre lo que se acaba de elegir, y
- * al tamaño de siempre le disputaba la mirada a la cruz, que es lo que ahí hay
- * que leer.
+ * Del alto de Calcular, que es el botón de la tarjeta de al lado: las dos
+ * tarjetas son la misma fila y sus botones tienen que medir lo mismo.
  */
 .os-benziger-relacion {
-  height: 17px;
-  padding: 0 7px;
-  gap: 5px;
-  border-radius: 5px;
-  font-size: 0.66rem;
+  height: 39px;
+  padding: 0 13px;
+  border-radius: 8px;
   justify-self: start;
-}
-
-.os-benziger-relacion::before {
-  width: 5px;
-  height: 5px;
 }
 
 
