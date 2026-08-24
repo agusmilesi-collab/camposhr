@@ -513,7 +513,7 @@
 
 .inf-ref.joven::before {
   border-top-style: dashed;
-  border-top-color: var(--suave);
+  border-top-color: var(--naranja);
 }
 
 /* El cerebro al medio y un cuadrante en cada esquina, como en el impreso. */
@@ -655,9 +655,11 @@
   stroke-linejoin: round;
 }
 
+/* En naranja y no en gris: contra el azul del adulto se distingue de una, y
+   así el punteado no se confunde con las guías del gráfico, que sí son grises. */
 .inf-perfil-joven {
   fill: none;
-  stroke: var(--suave);
+  stroke: var(--naranja);
   stroke-width: 3;
   stroke-dasharray: 9 7;
   stroke-linejoin: round;
@@ -723,6 +725,8 @@
   .inf-competencia,
   .inf-nivel,
   .inf-perfil-adulto,
+  .inf-perfil-joven,
+  .inf-ref::before,
   .inf-vertice,
   .inf-escala {
     print-color-adjust: exact;
