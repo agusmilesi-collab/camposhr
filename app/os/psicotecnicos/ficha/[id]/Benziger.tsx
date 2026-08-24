@@ -252,6 +252,7 @@ export default function Benziger({
                 alElegir={(v) => aplicar(elegidos, v)}
                 desactivado={eligiendo}
                 etiqueta="Cómo se relacionan los dos cuadrantes"
+                apilada
               />
             )}
 

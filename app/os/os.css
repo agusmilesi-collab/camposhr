@@ -2865,28 +2865,22 @@ th.os-tabla-contacto {
 }
 
 /**
- * El punto que marca el cuadrante: azul el más alto, rojo el más bajo.
+ * El extremo de cada fila, pintado: azul el más alto, rojo el más bajo.
  *
- * Va al lado del número y no como color del número: un número teñido se
- * confunde con un dato en alerta, y acá lo que dice es en qué extremo de la
- * fila está.
+ * Era un punto de siete píxeles al lado del número. Con cuatro columnas y seis
+ * filas eso son veinticuatro números y doce puntitos que hay que ir buscando;
+ * pintada la celda, la fila dice dónde están sus extremos sin leerla. Es el
+ * mismo color con el que se pintan los cuadrantes de las cruces de abajo, así
+ * que las dos mitades de la hoja se leen igual.
  */
-.os-bz-punto {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-left: 4px;
-  border-radius: 50%;
-  vertical-align: 1px;
-  flex: none;
-}
-
-.os-bz-punto.alto {
+.os-bz-celda.alto {
   background: var(--os-azul);
+  color: var(--os-panel);
 }
 
-.os-bz-punto.bajo {
+.os-bz-celda.bajo {
   background: var(--os-rojo);
+  color: var(--os-panel);
 }
 
 /* La escala de alerta, de 12 a 0, con el valor marcado y sus tres zonas. */
@@ -4117,6 +4111,26 @@ th.os-tabla-contacto {
   border: 1px solid var(--os-linea);
   border-radius: 999px;
   overflow: hidden;
+}
+
+/* Apilada: una opción por renglón y en cuerpo chico, para cuando la botonera
+   acompaña a otra cosa en vez de ser la pregunta. Sin el borde redondeado de la
+   píldora horizontal, que a este tamaño no cierra. */
+.os-ingreso-opciones.apilada {
+  grid-template-columns: minmax(0, 1fr);
+  width: max-content;
+  border-radius: 8px;
+}
+
+.os-ingreso-opciones.apilada .os-ingreso-opcion {
+  min-width: 0;
+  padding: 3px 12px;
+  font-size: 0.73rem;
+  text-align: left;
+}
+
+.os-ingreso-opciones.apilada .os-ingreso-opcion + .os-ingreso-opcion {
+  border-top: 1px solid var(--os-linea);
 }
 
 .os-ingreso-opcion {

@@ -2,7 +2,9 @@
  * El Benziger leído, con la disposición de su hoja.
  *
  * El perfil arriba, como la tabla del informe: cada fila con sus cuatro
- * cuadrantes, con un punto azul en el más alto y uno rojo en el más bajo.
+ * cuadrantes, con el más alto pintado de azul y el más bajo de rojo, como en
+ * las cruces de abajo: el color es de la celda y no un punto al lado, así la
+ * fila se lee de un vistazo sin buscar cuatro puntitos.
  * Debajo las cruces, dibujadas en cruz de verdad, con Frontal arriba y Basal
  * abajo, y el cuadrante entero pintado: en una cruz chica el color se ve de
  * lejos y la diagonal salta sin leer un solo número.
@@ -24,16 +26,6 @@ function marca(valores: Cuatro, p: Perfil): '' | 'alto' | 'bajo' {
   return '';
 }
 
-/** El punto que marca el cuadrante: azul el más alto, rojo el más bajo. */
-function Punto({ m }: { m: '' | 'alto' | 'bajo' }) {
-  if (!m) return null;
-  return (
-    <span
-      className={`os-bz-punto ${m}`}
-      aria-label={m === 'alto' ? 'el más alto' : 'el más bajo'}
-    />
-  );
-}
 
 /** La tabla del perfil: una fila por medición, cuatro cuadrantes cada una. */
 function Perfil({ filas }: { filas: Lectura['filas'] }) {
@@ -65,9 +57,12 @@ function Perfil({ filas }: { filas: Lectura['filas'] }) {
             {PERFILES.map((p) => {
               const m = marca(f.valores, p);
               return (
-                <td key={p} className="os-bz-celda">
+                <td
+                  key={p}
+                  className={`os-bz-celda${m ? ` ${m}` : ''}`}
+                  title={m === 'alto' ? 'El más alto de la fila' : m === 'bajo' ? 'El más bajo de la fila' : undefined}
+                >
                   <span className="os-bz-valor">{f.valores[p] ?? '—'}</span>
-                  <Punto m={m} />
                 </td>
               );
             })}

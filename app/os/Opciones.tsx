@@ -23,6 +23,7 @@ export default function Opciones<T extends string | boolean | null>({
   alElegir,
   desactivado,
   etiqueta,
+  apilada = false,
 }: {
   valor: T;
   opciones: { v: T; texto: string }[];
@@ -30,13 +31,21 @@ export default function Opciones<T extends string | boolean | null>({
   desactivado?: boolean;
   /** Qué pregunta contesta, para el lector de pantalla. */
   etiqueta?: string;
+  /**
+   * Una opción por renglón, en cuerpo chico.
+   *
+   * Para cuando la botonera acompaña a otra cosa en vez de ser la pregunta: al
+   * lado de la cruz del Benziger, dos opciones en fila competían con los
+   * cuadrantes, que son lo que ahí hay que mirar.
+   */
+  apilada?: boolean;
 }) {
   return (
     <div
-      className="os-ingreso-opciones"
+      className={`os-ingreso-opciones${apilada ? ' apilada' : ''}`}
       role="group"
       aria-label={etiqueta}
-      style={{ gridTemplateColumns: `repeat(${opciones.length}, 1fr)` }}
+      style={apilada ? undefined : { gridTemplateColumns: `repeat(${opciones.length}, 1fr)` }}
     >
       {opciones.map((o) => (
         <button
