@@ -1,4 +1,4 @@
-import { BANDAS, REFERENCIA_BANDAS, bandaDe } from '@/lib/competencias';
+import { BANDAS, bandaDe } from '@/lib/competencias';
 import type { Informe } from '@/lib/informe';
 import {
   CONFIDENCIALIDAD,
@@ -36,6 +36,58 @@ function tono(puntaje: number | null, fuerza: number): string {
   const base = ESCALA_COLOR.find((t) => (puntaje ?? 0) >= t.desde) ?? ESCALA_COLOR[4];
   const c = base.rgb.map((n) => Math.round(n + (255 - n) * (1 - fuerza)));
   return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+}
+
+/**
+ * La escala de las nueve competencias, dibujada.
+ *
+ * Era una línea de texto con los cuatro nombres y sus números. Dibujada dice
+ * dos cosas más que ahí no estaban: de qué color es cada banda, que es lo que
+ * después se ve en cada velocímetro, y cuánto ocupa cada una, porque el ancho
+ * de cada tramo es el ancho real de la banda. Adecuado es el más ancho: agarra
+ * treinta de los cien puntos.
+ *
+ * La barra tiene los cinco colores de `ESCALA_COLOR` y los rótulos las cuatro
+ * bandas, porque Bajo se dibuja partido en naranja y rojo pero se informa como
+ * una sola banda.
+ */
+function EscalaBandas() {
+  const tramos = ESCALA_COLOR.slice()
+    .reverse()
+    .map((t, i, todos) => {
+      const hasta = i === todos.length - 1 ? 100 : todos[i + 1].desde;
+      return `${tono(t.desde, 1)} ${t.desde}% ${hasta}%`;
+    });
+
+  const bandas = BANDAS.slice()
+    .reverse()
+    .map((b, i, todas) => ({
+      nombre: b.nombre,
+      desde: b.desde,
+      hasta: i === todas.length - 1 ? 100 : todas[i + 1].desde - 1,
+    }));
+
+  return (
+    <div className="inf-escala-bandas">
+      <span
+        className="inf-escala-barra"
+        style={{ backgroundImage: `linear-gradient(90deg, ${tramos.join(', ')})` }}
+      />
+      <div
+        className="inf-escala-rotulos"
+        style={{
+          gridTemplateColumns: bandas.map((b) => `${b.hasta + 1 - b.desde}fr`).join(' '),
+        }}
+      >
+        {bandas.map((b) => (
+          <span key={b.nombre}>
+            <em style={{ color: tono(b.desde === 0 ? 20 : b.desde, 1) }}>{b.nombre}</em>
+            {b.desde === 0 ? 'menos de 35' : `${b.desde} a ${b.hasta}`}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -299,9 +351,8 @@ export default function Documento({
                 );
               })}
             </div>
+            <EscalaBandas />
             <p className="inf-nota">
-              {REFERENCIA_BANDAS}
-              <br />
               La habilidad cognitiva sale del baremo del Raven y no de una cuenta de aciertos: el
               baremo dice qué parte de la población queda por debajo, y ese lugar se lleva a esta
               misma escala tramo por tramo.

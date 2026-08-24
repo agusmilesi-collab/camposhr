@@ -709,12 +709,11 @@ export function bandaDe(puntaje: number | null): Banda | null {
 }
 
 /**
- * El pie de la escala, para el informe.
+ * Por qué el puntaje no lleva el signo de porcentaje.
  *
- * Sin el signo de porcentaje a propósito: un número con `%` se lee como nota de
- * examen, donde sesenta es raspando, y acá sesenta es un desempeño adecuado. Es
- * un puntaje sobre cien, no un porcentaje de aciertos, y el gráfico muestra la
- * zona en la que cae para que el número no quede solo.
+ * Un número con `%` se lee como nota de examen, donde sesenta es raspando, y
+ * acá sesenta es un desempeño adecuado. Es un puntaje sobre cien, no un
+ * porcentaje de aciertos. El informe lo dibuja sobre la escala de las cuatro
+ * bandas (`EscalaBandas`, en `Documento.tsx`), para que el número no quede
+ * solo.
  */
-export const REFERENCIA_BANDAS =
-  'Sobresaliente (80 a 100) · Alto (65 a 79) · Adecuado (35 a 64) · Bajo (menos de 35)';
