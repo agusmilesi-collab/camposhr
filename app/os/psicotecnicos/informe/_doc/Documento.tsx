@@ -1,4 +1,4 @@
-import { BANDAS, RANGOS_RAVEN, REFERENCIA_BANDAS, bandaDe } from '@/lib/competencias';
+import { BANDAS, REFERENCIA_BANDAS, bandaDe } from '@/lib/competencias';
 import type { Informe } from '@/lib/informe';
 import {
   CONFIDENCIALIDAD,
@@ -11,35 +11,71 @@ import Cerebro from './Cerebro';
 import './informe.css';
 
 /**
+ * El color del anillo en cada punto de la escala.
+ *
+ * Las cuatro bandas tienen su color y el anillo pasa de uno al otro sin corte:
+ * cada banda ancla el suyo en su punto medio y entre dos anclas el color se
+ * interpola. El puntaje queda entonces del color de su banda, y los bordes se
+ * ven como lo que son, un límite trazado sobre algo continuo, y no como cuatro
+ * bloques pegados.
+ *
+ * **Los valores están escritos y no salen de las variables de la hoja**: para
+ * mezclar dos colores hay que tener sus números, y `color-mix` no los devuelve.
+ * Si cambia la paleta de `informe.css` hay que cambiarlos acá.
+ */
+const ANCLAS: { en: number; rgb: [number, number, number] }[] = [
+  { en: 0, rgb: [140, 59, 59] }, // --rojo, Bajo
+  { en: 17, rgb: [140, 59, 59] },
+  { en: 50, rgb: [70, 80, 92] }, // --tinta-media, Adecuado
+  { en: 72, rgb: [67, 100, 143] }, // --azul, Alto
+  { en: 90, rgb: [55, 128, 74] }, // --verde, Sobresaliente
+  { en: 100, rgb: [55, 128, 74] },
+];
+
+/** El color de la escala en `v`, aclarado contra la hoja según `fuerza`. */
+function colorEn(v: number, fuerza = 1): string {
+  const x = Math.min(100, Math.max(0, v));
+  const i = Math.max(1, ANCLAS.findIndex((a) => x <= a.en));
+  const a = ANCLAS[i - 1];
+  const b = ANCLAS[i];
+  const t = b.en === a.en ? 0 : (x - a.en) / (b.en - a.en);
+  const c = a.rgb.map((n, k) => {
+    const puro = n + (b.rgb[k] - n) * t;
+    return Math.round(puro + (255 - puro) * (1 - fuerza));
+  });
+  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+}
+
+/**
  * El velocímetro de una competencia: un anillo con el puntaje adentro.
  *
- * Tres cosas a la vez, sin que ninguna tape a la otra. El anillo de fondo, en
- * tramos, es la escala: cada zona ocupa el ángulo que le toca por su ancho, así
- * que se ve dónde empieza Alto sin leer un número. El arco de color encima
- * llega hasta el puntaje. Y el número va en el centro, que es donde lo busca el
- * ojo.
+ * Tres cosas a la vez, sin que ninguna tape a la otra. El anillo de fondo es la
+ * escala entera, en su degradado apagado. El arco de color encima llega hasta
+ * el puntaje, con el color pleno. Y el número va en el centro, que es donde lo
+ * busca el ojo.
+ *
+ * Los tres cortes de banda quedan marcados con una línea del color de la hoja:
+ * el degradado no muestra dónde empieza Alto y esa marca sí.
  *
  * Abre 270 grados y no 360: el hueco de abajo es el que convierte un anillo en
  * un instrumento con principio y fin, y deja lugar para la banda.
  *
+ * El degradado va en segmentos y no en un `linearGradient`: un gradiente lineal
+ * cruza el dibujo en línea recta y el anillo es un arco, así que los colores
+ * caerían donde no va ninguno. Cada segmento es un tramo de dos puntos con el
+ * color de su lugar, y con el solape no se ven las juntas.
+ *
  * En SVG y no en canvas: es un dibujo de pocos trazos y tiene que sobrevivir a
  * la impresión del PDF.
  */
-function Velocimetro({
-  puntaje,
-  escala,
-  banda,
-}: {
-  puntaje: number | null;
-  escala: 'promedio' | 'percentil';
-  banda: string | null;
-}) {
+function Velocimetro({ puntaje, banda }: { puntaje: number | null; banda: string | null }) {
   const CAJA = 116;
   const R = 44;
   const c = CAJA / 2;
   /** Arranca abajo a la izquierda y cierra abajo a la derecha: 270 grados. */
   const INICIO = 135;
   const BARRIDO = 270;
+  const PASO = 2;
 
   const punto = (v: number, r: number) => {
     const a = ((INICIO + (Math.min(100, Math.max(0, v)) / 100) * BARRIDO) * Math.PI) / 180;
@@ -53,33 +89,47 @@ function Velocimetro({
     return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largo} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
   };
 
-  const zonas = escala === 'percentil' ? RANGOS_RAVEN : ZONAS;
+  /** El arco de `desde` a `hasta`, partido en tramos de un color cada uno. */
+  const degradado = (desde: number, hasta: number, fuerza: number, cabo: boolean) => {
+    const tramos = [];
+    for (let v = desde; v < hasta; v += PASO) {
+      const fin = Math.min(hasta, v + PASO);
+      tramos.push(
+        <path
+          key={v}
+          d={arco(v, fin + (fin < hasta ? 0.6 : 0))}
+          stroke={colorEn((v + fin) / 2, fuerza)}
+          fill="none"
+          strokeWidth="9"
+          strokeLinecap={cabo && (v === desde || fin === hasta) ? 'round' : 'butt'}
+        />
+      );
+    }
+    return tramos;
+  };
 
   return (
     <div className="inf-gauge-caja">
       <svg className="inf-gauge" viewBox={`0 0 ${CAJA} ${CAJA}`} aria-hidden="true">
-        {/* La escala, en tramos: dice dónde cae el puntaje sin leerlo. */}
-        {zonas.map((z) => (
-          <path
-            key={z.nombre}
-            d={arco(z.desde, z.hasta)}
-            data-banda={z.nombre}
-            className="inf-gauge-zona"
-            fill="none"
-            strokeWidth="9"
-          />
-        ))}
-        {/* El puntaje, encima, del color de su banda. */}
-        {puntaje !== null && puntaje > 0 && (
-          <path
-            d={arco(0, puntaje)}
-            data-banda={banda ?? ''}
-            className="inf-gauge-lleno"
-            fill="none"
-            strokeWidth="9"
-            strokeLinecap="round"
-          />
-        )}
+        {/* La escala entera, apagada. */}
+        {degradado(0, 100, 0.28, false)}
+        {/* El puntaje, encima, en color pleno. */}
+        {puntaje !== null && puntaje > 0 && degradado(0, puntaje, 1, true)}
+        {/* Dónde empieza cada banda: un corte del ancho del anillo. */}
+        {BANDAS.filter((b) => b.desde > 0).map((b) => {
+          const [x1, y1] = punto(b.desde, R - 5);
+          const [x2, y2] = punto(b.desde, R + 5);
+          return (
+            <line
+              key={b.nombre}
+              x1={x1.toFixed(2)}
+              y1={y1.toFixed(2)}
+              x2={x2.toFixed(2)}
+              y2={y2.toFixed(2)}
+              className="inf-gauge-corte"
+            />
+          );
+        })}
       </svg>
       <div className="inf-gauge-centro">
         {puntaje === null ? (
@@ -89,24 +139,13 @@ function Velocimetro({
             <span className="inf-gauge-numero" data-banda={banda ?? ''}>
               {puntaje}
             </span>
-            <span className="inf-gauge-escala">
-              {escala === 'percentil' ? 'percentil' : 'de 100'}
-            </span>
+            <span className="inf-gauge-escala">de 100</span>
           </>
         )}
       </div>
     </div>
   );
 }
-
-/** Las cuatro zonas de la escala, con el ancho que le toca a cada una. */
-const ZONAS = BANDAS.slice()
-  .reverse()
-  .map((b, i, todas) => ({
-    nombre: b.nombre,
-    desde: b.desde,
-    hasta: i === todas.length - 1 ? 100 : todas[i + 1].desde,
-  }));
 
 function Capitulo({
   numero,
@@ -240,18 +279,18 @@ export default function Documento({
                 donde cae el ojo y no al final de un renglón. */}
             <div className="inf-competencias">
               {inf.competencias.map((c) => {
-                const banda = c.escala === 'percentil' ? 'Percentil' : bandaDe(c.puntaje);
+                const banda = bandaDe(c.puntaje);
                 return (
                   <article key={c.nombre} className="inf-competencia">
-                    <Velocimetro puntaje={c.puntaje} escala={c.escala} banda={banda} />
+                    <Velocimetro puntaje={c.puntaje} banda={banda} />
                     <h3>{c.nombre}</h3>
                     {c.puntaje !== null && (
                       <span className="inf-banda-texto" data-banda={banda ?? ''}>
-                        {c.escala === 'percentil' ? c.referencia : banda}
+                        {banda}
                       </span>
                     )}
-                    {/* Qué dice el número, para el que no sabe qué es un
-                        percentil: "supera al 92% de la población". */}
+                    {/* Contra qué se comparó a la persona, cuando el
+                        instrumento tiene su propio baremo. */}
                     {c.detalle && <p className="inf-detalle">{c.detalle}</p>}
                     <p className="inf-mide">{c.mide}</p>
                   </article>
@@ -261,9 +300,9 @@ export default function Documento({
             <p className="inf-nota">
               {REFERENCIA_BANDAS}
               <br />
-              La habilidad cognitiva va en percentil del baremo del Raven: dice qué parte de la
-              población de referencia queda por debajo, y por eso se lee con los rangos del test y
-              no con estas bandas.
+              La habilidad cognitiva sale del baremo del Raven y no de una cuenta de aciertos: el
+              baremo dice qué parte de la población queda por debajo, y ese lugar se lleva a esta
+              misma escala tramo por tramo.
             </p>
           </>
         )}
@@ -329,18 +368,27 @@ export default function Documento({
               const valor = inf.benziger?.adulto?.[q.clave] ?? null;
               const manda = inf.benziger!.preferentes.some((p) => p.clave === q.clave);
               return (
-                <div key={q.clave} className={`inf-cuadrante ${q.clave}`}>
-                  <div className="inf-cuadrante-top">
-                    {valor !== null && (
-                      <span className={manda ? 'inf-cuadrante-valor manda' : 'inf-cuadrante-valor'}>
+                <div
+                  key={q.clave}
+                  className={manda ? `inf-cuadrante ${q.clave} manda` : `inf-cuadrante ${q.clave}`}
+                >
+                  <span className="inf-cuadrante-rotulo">
+                    {manda ? 'Predominante' : 'Cuadrante'}
+                  </span>
+                  <h3>{q.nombre}</h3>
+                  {valor !== null && (
+                    <>
+                      <p className="inf-cuadrante-valor">
                         {valor}
+                        <em>de 120</em>
+                      </p>
+                      {/* La barra compara los cuatro de un vistazo: el gráfico
+                          dice la forma del perfil y esto dice el tamaño. */}
+                      <span className="inf-cuadrante-barra">
+                        <i style={{ width: `${Math.min(100, (valor / 120) * 100)}%` }} />
                       </span>
-                    )}
-                    <div>
-                      <span className="inf-cuadrante-rotulo">Cuadrante</span>
-                      <h3>{q.nombre}</h3>
-                    </div>
-                  </div>
+                    </>
+                  )}
                   <p>{q.resumen}</p>
                 </div>
               );
