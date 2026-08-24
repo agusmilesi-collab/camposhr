@@ -165,7 +165,9 @@ export default function Documento({
                         <>
                           {c.puntaje}
                           <em className="inf-de-cien">/100</em>
-                          <em className="inf-banda-texto">{bandaDe(c.puntaje)}</em>
+                          <em className="inf-banda-texto" data-banda={bandaDe(c.puntaje) ?? ''}>
+                            {bandaDe(c.puntaje)}
+                          </em>
                         </>
                       )}
                     </span>
