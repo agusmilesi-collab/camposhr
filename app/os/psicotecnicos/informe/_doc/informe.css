@@ -22,7 +22,7 @@
   --naranja: #c1591a;
   --rojo: #8c3b3b;
   --azul: #43648f;
-  --violeta: #6b5f96;
+  --turquesa: #1d8a84;
 
   max-width: 820px;
   margin: 0 auto;
@@ -558,7 +558,7 @@
 
 .inf-ref.joven::before {
   border-top-style: dashed;
-  border-top-color: var(--violeta);
+  border-top-color: var(--turquesa);
 }
 
 /* El cerebro al medio y un cuadrante en cada esquina, como en el impreso. */
@@ -700,13 +700,13 @@
   stroke-linejoin: round;
 }
 
-/* En violeta: contra el azul del adulto se distingue de una, no se confunde
+/* En turquesa: contra el azul del adulto se distingue de una, no se confunde
    con las guías grises del gráfico, y no toma prestado ninguno de los colores
    con los que se leen las competencias, que sí dicen si algo está bien o mal.
    El perfil adolescente es de cuándo, no de cuánto. */
 .inf-perfil-joven {
   fill: none;
-  stroke: var(--violeta);
+  stroke: var(--turquesa);
   stroke-width: 3;
   stroke-dasharray: 9 7;
   stroke-linejoin: round;
