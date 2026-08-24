@@ -43,6 +43,8 @@ const VALOR: Record<1 | 2 | 3, number> = { 1: 0, 2: 50, 3: 100 };
 export type Contexto = {
   /** Percentil del Raven, de 0 a 100. Null si no rindió. */
   ravenPercentil: number | null;
+  /** Aciertos sobre las treinta y seis láminas. Null si no rindió. */
+  ravenRaw?: number | null;
 };
 
 function num(s: SumarioCrudo, seccion: string, clave: string): number | null {
@@ -511,6 +513,14 @@ export type Competencia = {
    * o "Adecuado" sería leerlo con una regla que no es la suya.
    */
   referencia?: string;
+  /**
+   * Qué dice el número, en palabras.
+   *
+   * Un percentil no se entiende solo: 92 se lee como "92 de 100 de desempeño"
+   * cuando significa "mejor que el 92% de la gente". Acá va dicho de frente,
+   * para el que lee el informe sin saber qué es un percentil.
+   */
+  detalle?: string;
   /** 0 a 100. Null cuando falta más de un indicador. */
   puntaje: number | null;
   /** Cada indicador con su nivel y su peso, para revisar de dónde sale el número. */
@@ -548,6 +558,14 @@ export type Competencia = {
  * Por eso esta competencia se marca aparte (`escala: 'percentil'`) y se informa
  * con los rangos del baremo del Raven, que es la referencia que le corresponde,
  * y no con las bandas de las otras cinco.
+ *
+ * **Y por eso el número no es la cuenta de aciertos sobre treinta y seis.** Esa
+ * cuenta trata igual a todas las láminas, y las últimas son mucho más difíciles
+ * que las primeras: acertar veintitrés no vale el 64% que da la división, vale
+ * el percentil 78, porque entre esas veintitrés hay difíciles. Del otro lado
+ * pasa lo mismo al revés: acertar nueve, que son las fáciles, no vale el 25%
+ * sino el percentil 7. El baremo ya trae esa corrección hecha; la división
+ * lineal la borraría.
  */
 /** En qué rango del baremo del Raven cae un percentil. */
 function rangoRaven(p: number): string {
@@ -572,6 +590,13 @@ function cognitiva(ctx: Contexto): Competencia {
     nombre: 'Habilidad cognitiva',
     escala: 'percentil' as const,
     referencia: ctx.ravenPercentil === null ? undefined : rangoRaven(ctx.ravenPercentil),
+    detalle:
+      ctx.ravenPercentil === null
+        ? undefined
+        : `Supera al ${Math.round(ctx.ravenPercentil)}% de la población de referencia` +
+          (ctx.ravenRaw === null || ctx.ravenRaw === undefined
+            ? '.'
+            : `, con ${ctx.ravenRaw} de 36 láminas resueltas.`),
     mide: 'Estilo de aprendizaje: capacidad de lógica abstracta frente a pensamiento concreto y práctico.',
     puntaje: ctx.ravenPercentil === null ? null : Math.round(ctx.ravenPercentil),
     renglones: [
@@ -584,7 +609,10 @@ function cognitiva(ctx: Contexto): Competencia {
         valor:
           ctx.ravenPercentil === null
             ? undefined
-            : `percentil ${Math.round(ctx.ravenPercentil * 10) / 10}`,
+            : `percentil ${Math.round(ctx.ravenPercentil * 10) / 10}` +
+              (ctx.ravenRaw === null || ctx.ravenRaw === undefined
+                ? ''
+                : ` · ${ctx.ravenRaw} de ${36} láminas`),
       },
     ],
   };

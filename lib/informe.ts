@@ -206,7 +206,7 @@ export function desdeFicha(f: Ficha): Informe {
   const competencias = sumario
     ? calcularCompetencias(
         sumario,
-        { ravenPercentil: f.raven?.percentil ?? null },
+        { ravenPercentil: f.raven?.percentil ?? null, ravenRaw: f.raven?.raw ?? null },
         proyectivoDe(f)
       )
     : [];
