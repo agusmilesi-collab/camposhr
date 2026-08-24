@@ -1,4 +1,17 @@
-import { bandaDe } from '@/lib/competencias';
+import { BANDAS, REFERENCIA_BANDAS, bandaDe } from '@/lib/competencias';
+
+/** Las cuatro zonas de la escala, con el ancho que le toca a cada una. */
+const ZONAS = BANDAS.slice()
+  .reverse()
+  .map((b, i, todas) => ({
+    nombre: b.nombre,
+    ancho: (i === todas.length - 1 ? 100 : todas[i + 1].desde) - b.desde,
+  }));
+
+/** Dónde cambia de zona la escala: es la referencia que se imprime debajo. */
+const CORTES = BANDAS.map((b) => b.desde)
+  .filter((n) => n > 0)
+  .sort((a, b) => a - b);
 import type { Informe } from '@/lib/informe';
 import {
   CONFIDENCIALIDAD,
@@ -142,20 +155,57 @@ export default function Documento({
                 <article key={c.nombre} className="inf-competencia">
                   <div className="inf-competencia-top">
                     <h3>{c.nombre}</h3>
+                    {/* Sin el signo de porcentaje: es un puntaje sobre cien y
+                        no una proporción de aciertos. Con `%`, un sesenta se
+                        lee como nota de examen. */}
                     <span className="inf-porcentaje">
-                      {c.puntaje === null ? 'sin datos' : `${c.puntaje} %`}
+                      {c.puntaje === null ? (
+                        'sin datos'
+                      ) : (
+                        <>
+                          {c.puntaje}
+                          <em className="inf-de-cien">/100</em>
+                          <em className="inf-banda-texto">{bandaDe(c.puntaje)}</em>
+                        </>
+                      )}
                     </span>
                   </div>
-                  <div className="inf-barra">
-                    <span style={{ width: `${c.puntaje ?? 0}%` }} data-banda={bandaDe(c.puntaje) ?? ''} />
+                  {/* La escala con sus cuatro zonas dibujadas y la marca del
+                      candidato encima. Una barra sola deja el número sin
+                      referencia: sesenta se lee como nota raspando cuando en
+                      realidad cae en el centro de Adecuado. Con las zonas a la
+                      vista, el número dice dónde está parado. */}
+                  <div className="inf-escala" aria-hidden="true">
+                    <div className="inf-zonas">
+                      {ZONAS.map((z) => (
+                        <span
+                          key={z.nombre}
+                          className="inf-zona"
+                          data-banda={z.nombre}
+                          style={{ width: `${z.ancho}%` }}
+                        />
+                      ))}
+                      {c.puntaje !== null && (
+                        <span className="inf-aguja" style={{ left: `${c.puntaje}%` }} />
+                      )}
+                    </div>
+                    {/* Los cortes, y no el nombre de cada zona: en una columna
+                        de trescientos píxeles "Sobresaliente" no entra en el
+                        veinte por ciento que le toca. El nombre ya está escrito
+                        al lado del número. */}
+                    <div className="inf-cortes">
+                      {CORTES.map((n) => (
+                        <span key={n} style={{ left: `${n}%` }}>
+                          {n}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <p className="inf-mide">{c.mide}</p>
                 </article>
               ))}
             </div>
-            <p className="inf-nota">
-              Sobresaliente (80–100%) · Alto (65–79%) · Adecuado (50–64%) · Bajo (menos de 50%)
-            </p>
+            <p className="inf-nota">{REFERENCIA_BANDAS}</p>
           </>
         )}
       </Capitulo>
@@ -271,23 +321,24 @@ export default function Documento({
         </div>
       </Capitulo>
 
-      {/* De dónde sale cada porcentaje. Está para revisar los cortes contra
-          casos reales: qué indicador alimenta cada competencia lo fijan las
-          hojas de la psicóloga, y dónde corta cada uno entre bajo, medio y alto
-          se decidió acá y hay que confirmarlo. */}
+      {/* De dónde sale cada puntaje. Está para revisar contra casos reales las
+          dos cosas que se decidieron acá y no salen de las hojas de la
+          psicóloga: dónde corta cada indicador entre bajo, medio y alto, y
+          cuánto pesa dentro de su competencia. */}
       {interno && inf.competencias.some((c) => c.renglones.length > 1) && (
         <details className="inf-desglose">
           <summary>Cómo se calculó cada competencia</summary>
           {inf.competencias.map((c) => (
             <div key={c.nombre}>
               <strong>
-                {c.nombre} · {c.puntaje === null ? 'sin puntaje' : `${c.puntaje} %`}
+                {c.nombre} · {c.puntaje === null ? 'sin puntaje' : `${c.puntaje} de 100`}
               </strong>
               <ul>
                 {c.renglones.map((r) => (
                   <li key={r.indicador}>
                     {r.indicador} · {r.mide} ·{' '}
                     {r.nivel === null ? 'sin dato' : ['bajo', 'medio', 'alto'][r.nivel - 1]} ({r.corte})
+                    {r.peso !== 1 && <b> · pesa ×{r.peso}</b>}
                   </li>
                 ))}
               </ul>

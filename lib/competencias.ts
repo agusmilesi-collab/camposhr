@@ -25,32 +25,20 @@ import type { SumarioCrudo } from '@/lib/redacciones';
 /** Bajo, medio o alto. Null cuando el dato no está cargado. */
 type Nivel = 1 | 2 | 3 | null;
 
-/** Cómo se convierte el total en porcentaje, por cantidad de indicadores. */
-const TABLA_5: Record<number, number> = {
-  5: 30,
-  6: 40,
-  7: 45,
-  8: 50,
-  9: 60,
-  10: 70,
-  11: 75,
-  12: 80,
-  13: 85,
-  14: 90,
-  15: 100,
-};
-
-const TABLA_4: Record<number, number> = {
-  4: 30,
-  5: 40,
-  6: 50,
-  7: 60,
-  8: 70,
-  9: 75,
-  10: 80,
-  11: 90,
-  12: 100,
-};
+/**
+ * Cuánto vale cada nivel en la escala de salida.
+ *
+ * Bajo cero, medio cincuenta, alto cien. El puntaje de la competencia es el
+ * promedio de sus indicadores, cada uno por su peso.
+ *
+ * **Antes había dos tablas de conversión copiadas de las hojas de cálculo** y
+ * hacían tres cosas raras, las tres medidas: quien tenía todos los indicadores
+ * en medio sacaba 70, que se informa como Alto; quien los tenía todos en bajo
+ * sacaba 30, así que el piso no era cero; y solo existían once resultados
+ * posibles, en saltos de cinco y diez puntos. Con el promedio, todo en medio da
+ * cincuenta y todo en bajo da cero.
+ */
+const VALOR: Record<1 | 2 | 3, number> = { 1: 0, 2: 50, 3: 100 };
 
 export type Contexto = {
   /** Percentil del Raven, de 0 a 100. Null si no rindió. */
@@ -79,6 +67,16 @@ type Indicador = {
   mide: string;
   /** Dónde corta entre bajo, medio y alto. Es lo que hay que revisar. */
   corte: string;
+  /**
+   * Cuánto pesa dentro de su competencia. Uno si no dice nada.
+   *
+   * Dos para el indicador que mide de frente lo que la competencia define, uno
+   * para el que aporta de costado. Antes todos pesaban igual, y eso hacía que en
+   * Habilidad interpersonal el índice de egocentrismo valiera lo mismo que la
+   * calidad del vínculo. **Los pesos son criterio nuestro y están a la espera de
+   * que la psicóloga los revise**, igual que los cortes.
+   */
+  peso?: number;
   nivel: (s: SumarioCrudo) => Nivel;
 };
 
@@ -191,6 +189,8 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       {
         nombre: 'M : W',
         mide: 'Organización mental',
+        // El núcleo: organizar la tarea es lo que la competencia define.
+        peso: 2,
         corte: 'W hasta una vez y media M alto; hasta dos veces y media medio; por encima bajo',
         nivel: (s) => {
           const m = num(s, 'determinantes', 'M');
@@ -211,6 +211,8 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       {
         nombre: 'D vs Dd',
         mide: 'Priorización',
+        // Identificar prioridades está en la definición, con esas palabras.
+        peso: 2,
         corte: 'Dd hasta el 10% alto; hasta el 15% medio; por encima bajo',
         nivel: (s) => {
           const w = global(s) ?? 0;
@@ -241,12 +243,16 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       {
         nombre: 'EA',
         mide: 'Recursos disponibles para afrontar demandas',
+        // Con qué cuenta la persona para sostener la presión.
+        peso: 2,
         corte: 'nueve o más alto; siete a nueve medio; menos bajo',
         nivel: (s) => escalonar(num(s, 'control_estres', 'EA'), 9, 7),
       },
       {
         nombre: 'D / AdjD',
         mide: 'Tolerancia al estrés, inmediata y sostenida',
+        // Mide la tolerancia a la presión, que es la competencia entera.
+        peso: 2,
         corte: 'los dos en cero o más alto; solo AdjD en cero o más medio; AdjD negativo bajo',
         nivel: (s) => {
           const d = num(s, 'control_estres', 'D');
@@ -272,11 +278,13 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     competencia: 'Habilidad interpersonal',
     mide: 'Negociación. Orientación al cliente externo o interno. Capacidad de comunicación. Empatía.',
     indicadores: [
-      GHR_PHR,
+      { ...GHR_PHR, peso: 2 },
       COP_AG,
       {
         nombre: 'CDI',
         mide: 'Inhabilidad social',
+        // Índice compuesto y del propio Exner: mide la competencia completa.
+        peso: 2,
         corte: 'hasta 3 alto; 4 medio; 5 bajo',
         nivel: (s) => escalonar(num(s, 'constelaciones', 'CDI'), 3, 4, false),
       },
@@ -298,6 +306,8 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       {
         nombre: 'Ma',
         mide: 'Dinamismo y tendencia a la acción',
+        // Iniciativa y rol activo: el centro de la competencia.
+        peso: 2,
         corte: 'dos o más alto; uno medio; ninguno bajo',
         nivel: (s) => escalonar(num(s, 'ideacion', 'Ma'), 2, 1),
       },
@@ -311,6 +321,8 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       {
         nombre: 'W : D',
         mide: 'Visión global frente al foco en el detalle',
+        // Es la primera frase de la definición de Liderazgo.
+        peso: 2,
         corte: 'W desde el 45% alto; desde el 30% medio; menos bajo',
         nivel: (s) => {
           const w = global(s);
@@ -342,6 +354,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       {
         nombre: 'XA%',
         mide: 'Ajuste perceptual y lectura de la realidad',
+        // Sin lectura ajustada de la realidad no hay tarea bien coordinada.
+        peso: 2,
         corte: 'desde 0,80 alto; desde 0,70 medio; menos bajo',
         nivel: (s) => escalonar(num(s, 'calidad_formal', 'XA_pct'), 0.8, 0.7),
       },
@@ -369,6 +383,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       {
         nombre: 'SumC',
         mide: 'Intensidad y modulación emocional',
+        // Modular la emoción es lo que la competencia pide.
+        peso: 2,
         corte: 'entre 2,5 y 5 alto; hasta 7 medio; fuera bajo',
         nivel: (s) => {
           const c = num(s, 'afectos', 'WSumC');
@@ -391,7 +407,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
     competencia: 'Habilidad interpersonal',
     mide: 'Negociación. Orientación al cliente externo o interno. Capacidad de comunicación. Empatía.',
     indicadores: [
-      GHR_PHR,
+      { ...GHR_PHR, peso: 2 },
       COP_AG,
       {
         nombre: 'H',
@@ -411,6 +427,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       {
         nombre: 'Ma : Mp',
         mide: 'Tendencia activa frente a pasiva',
+        // Activo frente a pasivo es la definición de Proactividad.
+        peso: 2,
         corte: 'más Ma que Mp alto; iguales medio; más Mp bajo',
         nivel: (s) => {
           const ma = num(s, 'ideacion', 'Ma');
@@ -447,8 +465,8 @@ export type Competencia = {
   mide: string;
   /** 0 a 100. Null cuando falta más de un indicador. */
   puntaje: number | null;
-  /** Cada indicador con su nivel, para poder revisar de dónde sale el número. */
-  renglones: { indicador: string; mide: string; nivel: Nivel; corte: string }[];
+  /** Cada indicador con su nivel y su peso, para revisar de dónde sale el número. */
+  renglones: { indicador: string; mide: string; nivel: Nivel; corte: string; peso: number }[];
 };
 
 /**
@@ -468,6 +486,7 @@ function cognitiva(ctx: Contexto): Competencia {
         mide: 'Razonamiento abstracto',
         nivel: null,
         corte: 'percentil del baremo',
+        peso: 1,
       },
     ],
   };
@@ -486,20 +505,25 @@ export function calcularCompetencias(
       mide: i.mide,
       nivel: i.nivel(s),
       corte: i.corte,
+      peso: i.peso ?? 1,
     }));
 
     const puntuados = renglones.filter((r) => r.nivel !== null);
-    // Con dos o más indicadores sin dato el total no llega a la tabla: se dice
-    // que falta en lugar de completar con un promedio.
-    const faltan = renglones.length - puntuados.length;
-    if (faltan > 1) return { nombre: c.competencia, mide: c.mide, puntaje: null, renglones };
+    // Con dos o más indicadores sin dato se dice que falta, en vez de informar
+    // un número que se apoya en la mitad del protocolo.
+    if (renglones.length - puntuados.length > 1) {
+      return { nombre: c.competencia, mide: c.mide, puntaje: null, renglones };
+    }
 
-    // El que falta se cuenta como medio, que es lo que no mueve el total hacia
-    // ningún lado.
-    const total = puntuados.reduce((n, r) => n + (r.nivel as number), 0) + faltan * 2;
-    const tabla = renglones.length === 4 ? TABLA_4 : TABLA_5;
-    const tope = renglones.length * 3;
-    const puntaje = tabla[Math.min(total, tope)] ?? null;
+    // El que falta queda afuera del promedio: no suma ni divide. Antes contaba
+    // como medio, que es inventarle un valor al dato que no está.
+    const pesos = puntuados.reduce((n, r) => n + r.peso, 0);
+    const puntaje =
+      pesos === 0
+        ? null
+        : Math.round(
+            puntuados.reduce((n, r) => n + r.peso * VALOR[r.nivel as 1 | 2 | 3], 0) / pesos
+          );
 
     return { nombre: c.competencia, mide: c.mide, puntaje, renglones };
   });
@@ -510,19 +534,38 @@ export function calcularCompetencias(
 /**
  * Cómo se nombra cada puntaje en el informe.
  *
- * Las bandas salen del informe que la psicóloga entrega hoy, donde están
- * impresas al pie del capítulo de competencias.
+ * Las bandas salen del informe que la psicóloga entrega hoy. Los dos cortes de
+ * arriba son los suyos y no se tocaron: 80 y 65.
+ *
+ * **El de abajo bajó de 50 a 35**, que es donde corta la referencia de la
+ * industria: en Hogan, el estándar de evaluación laboral, bajo es hasta el 35 y
+ * alto desde el 65, con todo el medio como promedio. Con el corte en 50, la
+ * mitad exacta de la escala caía en el borde de Adecuado y cualquier ruido la
+ * empujaba a Bajo. Ahora quien está en la mitad de todo queda en la mitad de
+ * Adecuado, que es lo que se quiere decir de él.
  */
 export type Banda = 'Sobresaliente' | 'Alto' | 'Adecuado' | 'Bajo';
 
+/** Dónde arranca cada banda. En orden, de la más alta a la más baja. */
+export const BANDAS: { nombre: Banda; desde: number }[] = [
+  { nombre: 'Sobresaliente', desde: 80 },
+  { nombre: 'Alto', desde: 65 },
+  { nombre: 'Adecuado', desde: 35 },
+  { nombre: 'Bajo', desde: 0 },
+];
+
 export function bandaDe(puntaje: number | null): Banda | null {
   if (puntaje === null) return null;
-  if (puntaje >= 80) return 'Sobresaliente';
-  if (puntaje >= 65) return 'Alto';
-  if (puntaje >= 50) return 'Adecuado';
-  return 'Bajo';
+  return (BANDAS.find((b) => puntaje >= b.desde) as { nombre: Banda }).nombre;
 }
 
-/** El pie de la escala, tal como está impreso en el informe. */
+/**
+ * El pie de la escala, para el informe.
+ *
+ * Sin el signo de porcentaje a propósito: un número con `%` se lee como nota de
+ * examen, donde sesenta es raspando, y acá sesenta es un desempeño adecuado. Es
+ * un puntaje sobre cien, no un porcentaje de aciertos, y el gráfico muestra la
+ * zona en la que cae para que el número no quede solo.
+ */
 export const REFERENCIA_BANDAS =
-  'Sobresaliente (80–100%) · Alto (65–79%) · Adecuado (50–64%) · Bajo (menos de 50%)';
+  'Sobresaliente (80 a 100) · Alto (65 a 79) · Adecuado (35 a 64) · Bajo (menos de 35)';
