@@ -5579,15 +5579,59 @@ th.os-tabla-contacto {
 
 /* Dos columnas de paneles: son repartos cortos y uno debajo del otro deja la
    pantalla llena de aire a la derecha. */
+/**
+ * La grilla del data hub, pareja.
+ *
+ * Las columnas miden lo mismo y las filas también: `1fr` en las filas hace que
+ * los paneles de un mismo renglón terminen a la misma altura aunque uno tenga
+ * dos barras y el otro seis. Con `start`, cada panel quedaba del alto de su
+ * contenido y el tablero se leía como recortes pegados.
+ */
 .os-hub-dos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
 }
 
-.os-hub-dos .os-panel-separado {
+.os-hub-dos > .os-panel {
+  display: flex;
+  flex-direction: column;
   margin-top: 0;
+}
+
+/* El cuerpo se estira y empuja el contenido arriba: las barras arrancan a la
+   misma altura en todos los paneles del renglón. */
+.os-hub-dos > .os-panel > .os-panel-cuerpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+/* Los cuatro números que contestan cómo va el negocio, arriba de todo. */
+.os-hub-tapa {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  margin-bottom: 8px;
+  border: 1px solid var(--os-linea);
+  border-radius: 14px;
+  background: var(--os-linea);
+  overflow: hidden;
+}
+
+.os-hub-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 22px;
+  background: var(--os-panel);
+}
+
+.os-hub-kpi .os-hub-valor {
+  font-size: 2.2rem;
 }
 
 .os-hub-barras,
@@ -5707,9 +5751,27 @@ th.os-tabla-contacto {
 /* Una ficha por evaluadora, con sus propios números. */
 .os-hub-personas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.os-hub-personas > .os-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.os-hub-personas > .os-panel > .os-panel-cuerpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Lo de abajo pegado al pie: con dos evaluadoras que cierran distinta cantidad
+   de informes, las dos listas arrancan igual y la ficha no se desfasa. */
+.os-hub-personas .os-hub-conclusiones {
+  margin-top: auto;
 }
 
 .os-hub-persona h3 {
@@ -5720,11 +5782,21 @@ th.os-tabla-contacto {
 
 .os-hub-kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 18px 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px 16px;
   padding-bottom: 16px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-hub-kpis .os-hub-valor {
+  font-size: 1.6rem;
+}
+
+@media (max-width: 900px) {
+  .os-hub-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .os-hub-conclusiones {
