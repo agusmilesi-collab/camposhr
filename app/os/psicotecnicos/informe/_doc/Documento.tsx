@@ -240,14 +240,6 @@ export default function Documento({
   interno?: boolean;
 }) {
   const firma = inf.evaluadora ? FIRMAS[inf.evaluadora] : undefined;
-  /**
-   * Lo que hay que aclarar de una competencia sola, para el pie del tablero.
-   * Lleva el nombre adelante: abajo de las nueve, un dato suelto no dice de
-   * cuál habla.
-   */
-  const detalles = inf.competencias
-    .filter((c) => c.detalle)
-    .map((c) => `${c.nombre}: ${c.detalle![0].toLowerCase()}${c.detalle!.slice(1)}`);
 
   return (
     <article className="inf">
@@ -352,17 +344,6 @@ export default function Documento({
               })}
             </div>
             <EscalaBandas />
-            <p className="inf-nota">
-              La habilidad cognitiva sale del baremo del Raven y no de una cuenta de aciertos: el
-              baremo dice qué parte de la población queda por debajo, y ese lugar se lleva a esta
-              misma escala tramo por tramo.
-              {detalles.map((d) => (
-                <span key={d}>
-                  <br />
-                  {d}
-                </span>
-              ))}
-            </p>
           </>
         )}
       </Capitulo>
@@ -497,6 +478,7 @@ export default function Documento({
             <div key={c.nombre}>
               <strong>
                 {c.nombre} · {c.puntaje === null ? 'sin puntaje' : `${c.puntaje} de 100`}
+                {c.referencia && ` · ${c.referencia}`}
               </strong>
               <ul>
                 {c.renglones.map((r) => (
