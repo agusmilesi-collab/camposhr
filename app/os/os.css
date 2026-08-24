@@ -3166,12 +3166,6 @@ th.os-tabla-contacto {
   min-width: 0;
 }
 
-.os-benziger-relacion .os-ingreso-opcion {
-  min-width: 0;
-  padding: 4px 10px;
-  font-size: 0.76rem;
-  white-space: nowrap;
-}
 
 /* Qué va a pasar al subir el informe, o qué pasó. */
 .os-benziger-aviso {

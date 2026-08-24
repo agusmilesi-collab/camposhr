@@ -14,6 +14,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import Opciones from '@/app/os/Opciones';
 
 export function useGuardar(id: string) {
   const router = useRouter();
@@ -269,22 +270,12 @@ export function Pregunta({
   return (
     <div className="os-seguimiento-fila">
       <span className="os-dato-rotulo">{rotulo}</span>
-      <div
-        className="os-ingreso-opciones"
-        style={{ gridTemplateColumns: `repeat(${opciones.length}, 1fr)` }}
-      >
-        {opciones.map((o) => (
-          <button
-            key={o}
-            type="button"
-            className={`os-ingreso-opcion${puesto === o ? ' puesta' : ''}`}
-            onClick={() => elegir(o)}
-            aria-pressed={puesto === o}
-          >
-            {o}
-          </button>
-        ))}
-      </div>
+      <Opciones
+        valor={puesto}
+        opciones={opciones.map((o) => ({ v: o as string | null, texto: o }))}
+        alElegir={(v) => elegir(v as string)}
+        etiqueta={rotulo}
+      />
       {error && <p className="os-form-error">{error}</p>}
     </div>
   );

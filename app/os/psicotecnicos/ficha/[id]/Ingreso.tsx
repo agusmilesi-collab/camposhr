@@ -15,6 +15,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import Opciones from '@/app/os/Opciones';
 
 /** El seguimiento se hace a los noventa días de que empezó. */
 function noventaDias(desde: string): string {
@@ -42,37 +43,6 @@ function comoQueda(fecha: string | null): { texto: string; clase: string } | nul
  * "Sí" y el grupo se leía como si una opción pesara más que las otras. La
  * grilla les da a todas la misma medida.
  */
-function Opciones<T extends string | boolean | null>({
-  valor,
-  opciones,
-  onElegir,
-  desactivado,
-}: {
-  valor: T;
-  opciones: { v: T; texto: string }[];
-  onElegir: (v: T) => void;
-  desactivado?: boolean;
-}) {
-  return (
-    <div
-      className="os-ingreso-opciones"
-      style={{ gridTemplateColumns: `repeat(${opciones.length}, 1fr)` }}
-    >
-      {opciones.map((o) => (
-        <button
-          key={String(o.v)}
-          type="button"
-          className={`os-ingreso-opcion${valor === o.v ? ' puesta' : ''}`}
-          disabled={desactivado}
-          onClick={() => onElegir(o.v)}
-          aria-pressed={valor === o.v}
-        >
-          {o.texto}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 export default function Ingreso({
   id,
@@ -164,7 +134,7 @@ export default function Ingreso({
             { v: false, texto: 'No' },
             { v: null, texto: 'Sin respuesta' },
           ]}
-          onElegir={responder}
+          alElegir={responder}
         />
       </div>
 
@@ -205,7 +175,7 @@ export default function Ingreso({
             { v: 'Mal', texto: 'Mal' },
             { v: null, texto: 'Sin preguntar' },
           ]}
-          onElegir={(v) => {
+          alElegir={(v) => {
             setComoFue(v);
             guardar({ seguimientoResultado: v });
           }}
