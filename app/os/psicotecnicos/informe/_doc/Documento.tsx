@@ -352,23 +352,34 @@ export default function Documento({
       <Capitulo numero="03" titulo="Análisis cualitativo de las competencias">
         {(
           [
-            ['Competencias con desarrollo destacado', inf.analisis.destacadas],
-            ['Competencias con desarrollo esperado', inf.analisis.esperadas],
-            ['Competencias con necesidad de desarrollo', inf.analisis.desarrollar],
+            ['destacado', 'Desarrollo destacado', 'Por encima del rango esperado', inf.analisis.destacadas],
+            ['esperado', 'Desarrollo esperado', 'Dentro del rango esperado', inf.analisis.esperadas],
+            [
+              'desarrollar',
+              'Necesidad de desarrollo',
+              'Fuera del rango esperado: conviene acompañar',
+              inf.analisis.desarrollar,
+            ],
           ] as const
-        ).map(([titulo, lecturas]) => (
-          <div key={titulo} className="inf-bloque">
-            <h3 className="inf-subtitulo">{titulo}</h3>
+        ).map(([clave, titulo, sub, lecturas]) => (
+          <section key={clave} className={`inf-grupo ${clave}`}>
+            <header>
+              <div>
+                <h3>{titulo}</h3>
+                <p className="inf-grupo-sub">{sub}</p>
+              </div>
+              <span className="inf-grupo-cuantas">{lecturas.length}</span>
+            </header>
             {lecturas.length === 0 ? (
               <p className="inf-vacio">Sin registros en este grupo.</p>
             ) : (
-              <ul className="inf-lista">
+              <ul>
                 {lecturas.map((l, i) => (
                   <li key={`${l.indice}-${i}`}>{l.dice}</li>
                 ))}
               </ul>
             )}
-          </div>
+          </section>
         ))}
       </Capitulo>
 
