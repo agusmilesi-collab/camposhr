@@ -188,6 +188,14 @@ export default function Documento({
   interno?: boolean;
 }) {
   const firma = inf.evaluadora ? FIRMAS[inf.evaluadora] : undefined;
+  /**
+   * Lo que hay que aclarar de una competencia sola, para el pie del tablero.
+   * Lleva el nombre adelante: abajo de las nueve, un dato suelto no dice de
+   * cuál habla.
+   */
+  const detalles = inf.competencias
+    .filter((c) => c.detalle)
+    .map((c) => `${c.nombre}: ${c.detalle![0].toLowerCase()}${c.detalle!.slice(1)}`);
 
   return (
     <article className="inf">
@@ -272,7 +280,8 @@ export default function Documento({
           <>
             {/* Tablero: una tarjeta por competencia, el anillo primero y el
                 texto después. El número es lo que el cliente busca, así que va
-                donde cae el ojo y no al final de un renglón. */}
+                donde cae el ojo y no al final de un renglón. Las nueve miden lo
+                mismo: lo que solo vale para una va al pie. */}
             <div className="inf-competencias">
               {inf.competencias.map((c) => {
                 const banda = bandaDe(c.puntaje);
@@ -285,9 +294,6 @@ export default function Documento({
                         {banda}
                       </span>
                     )}
-                    {/* Contra qué se comparó a la persona, cuando el
-                        instrumento tiene su propio baremo. */}
-                    {c.detalle && <p className="inf-detalle">{c.detalle}</p>}
                     <p className="inf-mide">{c.mide}</p>
                   </article>
                 );
@@ -299,6 +305,12 @@ export default function Documento({
               La habilidad cognitiva sale del baremo del Raven y no de una cuenta de aciertos: el
               baremo dice qué parte de la población queda por debajo, y ese lugar se lleva a esta
               misma escala tramo por tramo.
+              {detalles.map((d) => (
+                <span key={d}>
+                  <br />
+                  {d}
+                </span>
+              ))}
             </p>
           </>
         )}
