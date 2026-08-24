@@ -28,7 +28,6 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { INFO, PERFILES, nombrePerfil, type Perfil } from '@/lib/perfiles';
-import Opciones from '@/app/os/Opciones';
 
 export default function Benziger({
   id,
@@ -242,18 +241,27 @@ export default function Benziger({
           <div className="os-benziger-lectura">
             {/* Con dos elegidos falta decir cómo se relacionan: el segundo puede
                 acompañar al primero o pesar lo mismo. */}
+            {/* Un solo botón que alterna, como el de contacto en la lista de
+                entrevistas: los dos estados son la misma pregunta contestada de
+                las dos formas posibles, así que se dicen con el punto y el
+                texto, y se cambian tocando. */}
             {elegidos.length === 2 && (
-              <Opciones
-                valor={parejos}
-                opciones={[
-                  { v: false, texto: `${elegidos[1]} secundario` },
-                  { v: true, texto: 'Los dos por igual' },
-                ]}
-                alElegir={(v) => aplicar(elegidos, v)}
-                desactivado={eligiendo}
-                etiqueta="Cómo se relacionan los dos cuadrantes"
-                apilada
-              />
+              <button
+                type="button"
+                className={`os-boton os-boton-marcado os-sello-estado ${
+                  parejos ? 'os-violeta' : 'os-azul'
+                }`}
+                disabled={eligiendo}
+                aria-pressed={parejos}
+                title={
+                  parejos
+                    ? 'Los dos pesan lo mismo. Tocar para que mande el primero.'
+                    : `Manda ${elegidos[0]}. Tocar para que pesen lo mismo.`
+                }
+                onClick={() => aplicar(elegidos, !parejos)}
+              >
+                {parejos ? 'Los dos por igual' : `${elegidos[1]} secundario`}
+              </button>
             )}
 
             <p className="os-benziger-aviso">
