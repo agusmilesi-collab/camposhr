@@ -52,6 +52,21 @@ function num(s: SumarioCrudo, seccion: string, clave: string): number | null {
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
+/**
+ * El puntaje de una constelación.
+ *
+ * En el sumario una constelación no es un número: es la constelación entera,
+ * con su valor, su umbral, si dio positiva y los criterios que la arman. Leerla
+ * con `num` devuelve null siempre, y el indicador que la usa queda sin puntuar
+ * sin que nadie se entere, porque el promedio tolera que falte uno.
+ */
+function constelacion(s: SumarioCrudo, nombre: string): number | null {
+  const c = s.constelaciones?.[nombre];
+  if (c === null || typeof c !== 'object') return null;
+  const v = (c as { valor?: unknown }).valor;
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
 /** W vive en localización en el motor del OS. */
 function global(s: SumarioCrudo): number | null {
   return num(s, 'localizacion', 'global') ?? num(s, 'procesamiento', 'W');
@@ -62,6 +77,55 @@ function escalonar(v: number | null, alto: number, medio: number, mayorEsMejor =
   if (v === null) return null;
   if (mayorEsMejor) return v >= alto ? 3 : v >= medio ? 2 : 1;
   return v <= alto ? 3 : v <= medio ? 2 : 1;
+}
+
+/**
+ * Qué índices leyó un indicador del sumario, con el valor que tenían.
+ *
+ * No está declarado al lado de cada indicador: se mira mientras la cuenta
+ * corre, envolviendo el sumario. Una lista escrita a mano al lado de cada uno
+ * se desincroniza el día que un corte cambia de índice, y el desglose sigue
+ * mostrando el índice viejo con cara de dato bueno.
+ *
+ * Es para el desglose que mira la evaluadora: cuando el cliente pregunta de
+ * dónde sale un puntaje, tiene los números del protocolo ahí mismo y no tiene
+ * que ir a buscarlos a la ficha.
+ */
+function leidoPor(s: SumarioCrudo, nivel: (s: SumarioCrudo) => Nivel): string | undefined {
+  const visto = new Map<string, unknown>();
+
+  const espia = new Proxy(s, {
+    get(sumario, seccion) {
+      const bloque = sumario[seccion as string];
+      if (typeof seccion !== 'string' || bloque === null || typeof bloque !== 'object') {
+        return bloque;
+      }
+      return new Proxy(bloque, {
+        get(datos, clave) {
+          const v = datos[clave as string];
+          if (typeof clave === 'string' && !visto.has(clave)) visto.set(clave, v);
+          return v;
+        },
+      });
+    },
+  });
+
+  try {
+    nivel(espia);
+  } catch {
+    return undefined;
+  }
+
+  const partes = [...visto]
+    .map(([clave, v]) => {
+      // Una constelación llega entera: de todo el objeto se muestra su valor.
+      const dato = v !== null && typeof v === 'object' ? (v as { valor?: unknown }).valor : v;
+      if (dato === null || dato === undefined || dato === '' || typeof dato === 'object') return null;
+      return `${clave} ${typeof dato === 'number' ? Math.round(dato * 100) / 100 : dato}`;
+    })
+    .filter(Boolean);
+
+  return partes.length > 0 ? partes.join(' · ') : undefined;
 }
 
 type Indicador = {
@@ -288,7 +352,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         // Índice compuesto y del propio Exner: mide la competencia completa.
         peso: 2,
         corte: 'hasta 3 alto; 4 medio; 5 bajo',
-        nivel: (s) => escalonar(num(s, 'constelaciones', 'CDI'), 3, 4, false),
+        nivel: (s) => escalonar(constelacion(s, 'CDI'), 3, 4, false),
       },
       AISLAMIENTO,
       EGOCENTRISMO,
@@ -514,6 +578,11 @@ export type Competencia = {
     corte: string;
     peso: number;
     /**
+     * Los índices del protocolo que miró, con su valor. Para tenerlos a mano
+     * cuando hay que explicar de dónde sale el puntaje.
+     */
+    datos?: string;
+    /**
      * Lo que aportó, cuando no es un nivel de bajo a alto.
      *
      * El Raven entra por su baremo y no escalonado, así que su renglón no
@@ -632,6 +701,7 @@ export function calcularCompetencias(
       nivel: i.nivel(s),
       corte: i.corte,
       peso: i.peso ?? 1,
+      datos: leidoPor(s, i.nivel),
     }));
 
     const puntuados = renglones.filter((r) => r.nivel !== null);

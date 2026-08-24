@@ -485,22 +485,55 @@ export default function Documento({
       {interno && inf.competencias.some((c) => c.renglones.length > 1) && (
         <details className="inf-desglose">
           <summary>Cómo se calculó cada competencia</summary>
+          {/* En tabla y no en lista: es lo que la evaluadora mira cuando el
+              cliente pregunta de dónde sale un puntaje, así que los índices del
+              protocolo tienen que caer siempre en el mismo lugar del renglón. */}
           {inf.competencias.map((c) => (
-            <div key={c.nombre}>
-              <strong>
-                {c.nombre} · {c.puntaje === null ? 'sin puntaje' : `${c.puntaje} de 100`}
-                {c.referencia && ` · ${c.referencia}`}
-              </strong>
-              <ul>
-                {c.renglones.map((r) => (
-                  <li key={r.indicador}>
-                    {r.indicador} · {r.mide} ·{' '}
-                    {r.valor ?? (r.nivel === null ? 'sin dato' : ['bajo', 'medio', 'alto'][r.nivel - 1])}{' '}
-                    ({r.corte})
-                    {r.peso !== 1 && <b> · pesa ×{r.peso}</b>}
-                  </li>
-                ))}
-              </ul>
+            <div key={c.nombre} className="inf-desglose-comp">
+              <h4>
+                {c.nombre}
+                <span>
+                  {c.puntaje === null ? 'sin puntaje' : `${c.puntaje} de 100`}
+                  {c.referencia && ` · ${c.referencia}`}
+                </span>
+              </h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Indicador</th>
+                    <th>Del protocolo</th>
+                    <th>Nivel</th>
+                    <th>Peso</th>
+                    <th>Dónde corta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {c.renglones.map((r) => {
+                    // El Raven no escalona: lo que trae del protocolo es su
+                    // percentil, y esa es la columna donde hay que buscarlo.
+                    const nivel =
+                      r.nivel === null
+                        ? r.valor
+                          ? '—'
+                          : 'sin dato'
+                        : ['bajo', 'medio', 'alto'][r.nivel - 1];
+                    return (
+                      <tr key={r.indicador}>
+                        <td>
+                          <b>{r.indicador}</b>
+                          <em>{r.mide}</em>
+                        </td>
+                        <td className="inf-desglose-datos">{r.datos ?? r.valor ?? '—'}</td>
+                        <td className="inf-desglose-nivel" data-nivel={r.nivel ?? 'falta'}>
+                          {nivel}
+                        </td>
+                        <td className="inf-desglose-peso">{r.peso === 1 ? '' : `×${r.peso}`}</td>
+                        <td className="inf-desglose-corte">{r.corte}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           ))}
           <span className="inf-pendientes-nota">Tampoco se imprime.</span>
