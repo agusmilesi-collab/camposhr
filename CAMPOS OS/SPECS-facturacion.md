@@ -3,11 +3,13 @@
 Informe de factibilidad. Investigación sobre `camposhr-site` en modo lectura, sin
 tocar nada del repositorio.
 
-**Estado al 21/08/2026: investigado, nada construido.** No hay una línea de
+**Estado al 24/08/2026: investigado, nada construido.** No hay una línea de
 código de esto en el repositorio, ni certificados pedidos, ni tablas creadas.
 Por dónde se empieza está en la sección 7, y la primera etapa no es ARCA: son
 las cuentas, porque sin ellas las dos evaluadoras no quedan separadas de verdad.
-Lo que hace falta decidir antes de construir está en la sección 8.
+Lo que hace falta decidir antes de construir está en la sección 8. La sección
+5.10 suma lo del correo, que arranca antes que el código: hoy el dominio no
+recibe ni firma nada.
 
 ---
 
@@ -383,6 +385,12 @@ Es la tabla que hoy no existe y que la revisión previa necesita:
 
 - Trae las evaluaciones entregadas y sin facturar **de quien entró**, agrupadas
   por cliente. Cada grupo es un borrador de factura.
+- **La agrupación la decide la evaluadora, caso por caso.** A veces tres
+  candidatos van en una factura y a veces cada uno va por separado, y eso
+  depende de cómo lo pidió el cliente. La pantalla propone el agrupado por
+  cliente y deja armar la factura tildando qué entra: no impone ninguna regla.
+  Las restricciones son tres y salen solas: mismo cliente, mismo emisor y
+  **misma orden de compra**, porque el comprobante imprime una sola.
 - Cada borrador muestra qué evaluaciones entran (candidato y puesto), el
   concepto, el período, la orden de compra y el importe desglosado: precio de la
   batería a la fecha del pedido más el Benziger pesificado al dólar de hoy.
@@ -469,6 +477,106 @@ Con envío por correo en el plan, el primero es el que corresponde.
 El respaldo formal del comprobante siempre está en ARCA, en Mis Comprobantes. El
 PDF propio es para el cliente.
 
+### 5.10 El correo: qué hace falta antes de poder mandar nada
+
+**El dominio hoy no tiene correo.** Consultado el 21/08/2026, `camposhr.com` no
+tiene registros MX ni TXT: no recibe correo y no tiene SPF ni DKIM. Un
+comprobante que sale de un dominio sin firmar tiene muchas chances de caer en
+correo no deseado, y una factura que no se ve es una factura que no se paga.
+
+**Vercel no da casillas.** Registra el dominio y administra los registros, nada
+más. Las casillas salen de otro lado y se conectan apuntando los MX desde el
+mismo panel:
+
+- **Redirección** (ImprovMX, Forward Email): `facturacion@camposhr.com` cae en
+  la casilla que ya usan. Gratis y sin cambiar hábitos.
+- **Zoho Mail**: hasta cinco casillas propias, gratis, pero solo por navegador
+  (sin IMAP). Con IMAP, un dólar por casilla por mes.
+- **Google Workspace**: siete dólares por casilla por mes con compromiso anual.
+  Se paga por seguir adentro de Gmail y Drive, que es donde ya trabajan.
+
+**Para enviar desde el sistema: Resend.** Se usa con `fetch` contra su API, sin
+SDK, igual que Supabase y Airtable. El plan gratuito da 3.000 correos por mes y
+100 por día.
+
+**Cómo se configura la recepción.** El dominio usa los nameservers de Vercel
+(`ns1/ns2.vercel-dns.com`), así que se hace todo desde su panel y no hay ningún
+MX cargado que se pueda pisar. El camino elegido es la redirección, que es
+gratuita y no obliga a cambiar de programa:
+
+1. Dar de alta `camposhr.com` en ImprovMX, con los alias que se van a usar
+   (`facturacion@`, `hola@`, y uno por evaluadora si conviene) apuntando a las
+   casillas de Gmail actuales. **Alias explícitos y no comodín**: un
+   `*@camposhr.com` recibe todo el correo basura dirigido a direcciones
+   inventadas.
+2. En Vercel, `Domains -> camposhr.com -> DNS -> Add DNS Preset -> ImprovMX
+   [MX]`. Deja los dos registros:
+
+       MX   @   mx1.improvmx.com   prioridad 10
+       MX   @   mx2.improvmx.com   prioridad 20
+
+3. Esperar a que ImprovMX marque el dominio como activo y probar mandando un
+   correo desde otra cuenta.
+4. En Gmail, `Configuración -> Cuentas e importación -> Enviar como`, agregar
+   `facturacion@camposhr.com` como alias. El código de verificación llega por la
+   misma redirección. Desde ahí se puede responder con el remitente del dominio.
+
+**El SPF no se toca en este paso.** Para recibir no hace falta, y agregarlo ahora
+obliga a rehacerlo cuando se conecte el envío. Va uno solo, con todos los
+servicios adentro, el día que el sistema empiece a mandar.
+
+**Si el envío sale por Gmail.** Se puede, y sin pagar: con verificación en dos
+pasos activada se genera una contraseña de aplicación y el sistema manda por
+SMTP desde la casilla de siempre, que además deja el envío en Enviados. Tres
+cosas a tener presentes:
+
+- El límite de una cuenta gratuita es de 500 destinatarios por día, y cuenta por
+  destinatario: un mensaje con copia consume dos. Para cien mensajes por mes
+  sobra.
+- Google desaconseja el correo automatizado desde cuentas personales y puede
+  cortar el envío por 24 horas si detecta algo raro. Desde una función en
+  Brasil, con las credenciales de una cuenta personal, el bloqueo por acceso
+  inusual es un riesgo real.
+- El remitente va a ser la dirección de Gmail, salvo que se agregue
+  `facturacion@camposhr.com` como alias verificado, lo que necesita que esa
+  dirección reciba correo (o sea, la redirección gratuita).
+
+**Nota sobre el costo.** Resend gratuito tampoco cuesta nada, y sale firmado con
+el dominio. Lo que se paga en Google es la casilla (Workspace), no el envío. La
+combinación de cero pesos más sólida es redirección gratuita para recibir y
+Resend para mandar, con "responder a" apuntando a la casilla de cada una.
+
+**Cuidado con el SPF.** Recibir y enviar son dos servicios distintos sobre el
+mismo dominio, y el registro SPF tiene que ser **uno solo** con los dos adentro.
+Dos registros SPF separados rompen la autenticación del dominio entero, y no
+avisa nada: el correo simplemente empieza a caer en spam.
+
+**Cuánto correo es.** En los treinta días previos al 21/08/2026 se entrevistaron
+24 candidatos (13 de Lucila, 11 de Lorena; 13 de Federada Salud, 5 de Cofco, 3
+de Macro Agro y tres clientes con uno cada uno). Con un correo por candidato más
+uno de facturación con copia, son unos 48 mensajes a 72 direcciones por mes.
+Redondeando con reenvíos y recordatorios, cien por mes: el 3% del plan gratuito.
+
+El único número que puede apretar es el tope de 100 por día, si se factura el mes
+entero de una sola vez. Facturar por tandas lo resuelve, y agrupar por cliente
+todavía más: seis facturas en vez de veinticuatro.
+
+**Lo que el sistema tiene que hacer, más allá de mandar:**
+
+- Registrar cada envío: a quién, cuándo y con qué identificador del proveedor.
+  En `facturas` están `enviada_at` y `enviada_a`.
+- **Escuchar el webhook de rebote.** Un correo de facturación mal escrito da un
+  envío aparentemente exitoso que nadie recibe. Con el rebote registrado, la
+  factura queda marcada como no entregada y aparece en la pantalla.
+- Un botón de reenviar, y control para que un doble clic no mande dos veces.
+- Copia normal para la factura, porque destinatario y copia son de la misma
+  empresa. Copia oculta si alguna vez un mismo mensaje sale a varias.
+
+Una vez que el correo funciona, hay tres cosas del OS que hoy se hacen a mano y
+pasan a salir solas: el enlace del test de Raven al candidato, el aviso de
+informe entregado con el enlace del portal, y el recordatorio del seguimiento a
+los noventa días, que ya tiene su fecha en la base.
+
 ---
 
 ## 6. Riesgos, y qué hacer con cada uno
@@ -525,7 +633,7 @@ se migran antes, o el botón no aparece para ellos.
 | 4. Emisión de prueba | Tablas, ruta y pantalla "Por facturar" con los borradores agrupados, emisión de a una, todo con Distribuidora Andina | La regla del repositorio: se prueba con la empresa inventada |
 | 5. El comprobante | PDF con QR y orden de compra, guardado en el bucket, descargable | Sin esto hay CAE pero nada para mandar |
 | 6. Producción | Certificados reales, primera factura real comparada contra Comprobantes en Línea | |
-| 7. Envío | Correo a `emails_facturacion` con el PDF adjunto, y registro del envío | Depende del proveedor que integres |
+| 7. Envío | Casilla del dominio, dominio firmado, Resend, correo a `emails_facturacion` con el PDF adjunto y webhook de rebote | Detallado en 5.10. Hoy el dominio no tiene ni MX ni SPF |
 | 8. Lo que sigue | Nota de crédito, pantalla de emitidas, acumulado del monotributo | |
 
 Las etapas 3 y 4 son el grueso del código y no dependen de nada externo una vez
@@ -538,9 +646,9 @@ todas las pantallas y es más barata ahora que después.
 
 1. **¿Vos podés emitir a nombre de las dos, o solo mirar?** Ver las dos colas es
    razonable; emitir con el certificado de otra persona es una decisión aparte.
-2. **¿Una factura por cliente y tanda, o una por pedido?** Un cliente con dos
-   búsquedas abiertas puede querer una factura por cada una, sobre todo si cada
-   búsqueda tiene su propia orden de compra. Esto último probablemente lo decide.
+2. ~~¿Una factura por cliente o una por candidato?~~ **Decidido: lo eligen ellas
+   en el momento.** Hay clientes a los que tiene sentido facturarles tres
+   candidatos juntos y otros no. La pantalla propone y no impone (ver 5.7).
 3. **¿Las órdenes de compra tienen monto y saldo, o son solo un número que el
    cliente exige ver impreso?** Lo primero pide una tabla propia.
 4. **¿Cuándo se factura?** Al entregar cada informe, al cerrar el pedido, o una
