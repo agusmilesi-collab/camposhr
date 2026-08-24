@@ -358,31 +358,45 @@
   font-size: 0.92rem;
 }
 
+/**
+ * El puntaje: el número manda y la banda lo acompaña.
+ *
+ * Iba del mismo tamaño que el nombre de la competencia y se perdía en el
+ * renglón. Es el dato que el cliente busca, así que va grande, con la escala en
+ * chico al lado para que se lea "sobre cien" y no como porcentaje de aciertos.
+ */
 .inf-porcentaje {
   display: inline-flex;
   align-items: baseline;
-  gap: 5px;
-  font-size: 1.05rem;
+  gap: 4px;
+  font-size: 1.5rem;
   font-weight: 700;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
-/* Sobre cien, chiquito: dice la escala sin convertir el número en porcentaje. */
 .inf-de-cien {
   font-style: normal;
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   font-weight: 500;
   color: var(--suave);
 }
 
+/* La banda, del color de su zona: dice en una palabra lo que el número dice en
+   dos cifras, y es lo que queda si alguien lee el informe en diagonal. */
 .inf-banda-texto {
   font-style: normal;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--tinta-media);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-left: 3px;
 }
+
+.inf-banda-texto[data-banda='Sobresaliente'] { color: var(--verde); }
+.inf-banda-texto[data-banda='Alto'] { color: var(--azul); }
+.inf-banda-texto[data-banda='Adecuado'] { color: var(--tinta-media); }
+.inf-banda-texto[data-banda='Bajo'] { color: var(--rojo); }
 
 /**
  * La escala de la competencia: las cuatro zonas dibujadas y la marca encima.
