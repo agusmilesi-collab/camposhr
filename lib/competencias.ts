@@ -331,14 +331,39 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
           return escalonar(w / (w + d), 0.45, 0.3);
         },
       },
-      M,
       {
-        nombre: 'COP / AG',
-        mide: 'Gestión cooperativa y manejo de la imposición',
-        corte: 'hasta una AG alto; dos medio; más bajo',
-        nivel: (s) => escalonar(num(s, 'interpersonal', 'AG'), 1, 2, false),
+        nombre: 'EB',
+        mide: 'Estilo de decisión',
+        /**
+         * El indicador que le faltaba a esta competencia.
+         *
+         * Liderazgo define tres cosas y medía dos: visión global (W : D) y
+         * gestión de personas (prestada de Habilidad interpersonal). **Capacidad
+         * de decisión no tenía ningún indicador**, y por eso la competencia se
+         * apoyaba en los de vínculo hasta compartir la mitad de su puntaje.
+         *
+         * El EB es, en Exner, cómo decide la persona. Con un estilo definido,
+         * introversivo o extratensivo, decide con un criterio parejo. El
+         * ambigual no lo tiene: a veces resuelve pensando y a veces con el
+         * afecto, tarda más y es menos previsible. El informe ya lo dice con
+         * esas palabras en "Cómo decide y cómo piensa"; lo que faltaba era que
+         * alimentara la competencia que lleva la decisión en su definición.
+         */
+        peso: 2,
+        corte: 'estilo definido alto; ambigual bajo',
+        nivel: (s) => {
+          const estilo = s.control_estres?.estilo;
+          if (typeof estilo !== 'string' || !estilo) return null;
+          if (estilo === 'Ambigual') return 1;
+          return estilo === 'Introversivo' || estilo === 'Extratensivo' ? 3 : null;
+        },
       },
-      GHR_PHR,
+      M,
+      // Gestión de personas, prestado de Habilidad interpersonal: acá va de
+      // apoyo y no de núcleo. Con peso doble en las dos, la mitad del puntaje de
+      // Liderazgo era el de la otra competencia. COP / AG salió por lo mismo:
+      // su casa es Habilidad interpersonal.
+      { ...GHR_PHR, peso: 1 },
     ],
   },
 ];
@@ -362,15 +387,18 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       {
         nombre: 'M',
         mide: 'Planificación y organización mental',
+        /**
+         * Acá pesa doble y en Proactividad ya no está.
+         *
+         * Las dos competencias compartían M, Fd y R: tres de cinco cada una, la
+         * mitad del puntaje, así que daban casi siempre el mismo número. Se
+         * repartieron por lo que dice cada definición. Planificar es el núcleo
+         * de coordinar tareas, así que M se queda acá. Fd (autonomía para
+         * arrancar) y R (orientación al resultado) se fueron a Proactividad.
+         */
+        peso: 2,
         corte: 'tres o más alto; dos medio; menos bajo',
         nivel: (s) => escalonar(num(s, 'determinantes', 'M'), 3, 2),
-      },
-      FD,
-      {
-        nombre: 'R',
-        mide: 'Nivel de productividad e involucramiento',
-        corte: 'doce o más alto; ocho a once medio; menos bajo',
-        nivel: (s) => escalonar(num(s, 'cabecera', 'R'), 12, 8),
       },
     ],
   },
@@ -390,7 +418,10 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
           const c = num(s, 'afectos', 'WSumC');
           if (c === null) return null;
           if (c >= 2.5 && c <= 5) return 3;
-          if (c < 2.5 || c <= 7) return 2;
+          // Igual que en Lambda: el `c < 2.5` mandaba a medio el extremo de
+          // abajo, y un SumC de cero es alguien sin ninguna respuesta de color,
+          // con el afecto constreñido. Eso es bajo, no promedio.
+          if (c > 5 && c <= 7) return 2;
           return 1;
         },
       },
@@ -423,7 +454,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
     competencia: 'Proactividad',
     mide: 'Orientación al resultado. Iniciativa. Rol activo en los grupos. Gestión de la innovación.',
     indicadores: [
-      { ...M, mide: 'Iniciativa intencional y dirigida' },
+      // Sin M: es el núcleo de Autogestión, y tenerlo en las dos hacía que las
+      // dos competencias de tarea se movieran juntas.
       {
         nombre: 'Ma : Mp',
         mide: 'Tendencia activa frente a pasiva',
@@ -463,6 +495,22 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
 export type Competencia = {
   nombre: string;
   mide: string;
+  /**
+   * En qué escala está el puntaje.
+   *
+   * `promedio` es el de las competencias: 0 a 100, donde 50 es todo en el medio.
+   * `percentil` es el del Raven: qué parte de la población queda por debajo. Los
+   * dos van de 0 a 100 y se leen distinto, así que el informe los rotula y los
+   * compara contra referencias distintas.
+   */
+  escala: 'promedio' | 'percentil';
+  /**
+   * Con qué se lee el puntaje cuando no son las bandas de competencia.
+   *
+   * El Raven trae su propio baremo, con rangos I a V. Aplicarle "Sobresaliente"
+   * o "Adecuado" sería leerlo con una regla que no es la suya.
+   */
+  referencia?: string;
   /** 0 a 100. Null cuando falta más de un indicador. */
   puntaje: number | null;
   /** Cada indicador con su nivel y su peso, para revisar de dónde sale el número. */
@@ -485,14 +533,45 @@ export type Competencia = {
 };
 
 /**
- * La habilidad cognitiva es el Raven.
+ * La habilidad cognitiva es el Raven, y su número no es de la misma clase.
  *
  * No la miden las manchas, así que no está en ninguna de las dos hojas: entra
  * con el percentil del instrumento que sí la mide.
+ *
+ * **Un percentil y un puntaje de competencia van los dos de 0 a 100 y no son lo
+ * mismo.** El percentil dice qué parte de la población normativa queda por
+ * debajo: 92 es "supera al 92% de la gente". El puntaje de una competencia es
+ * el promedio de sus indicadores, donde 50 es "todo en el medio", y **no está
+ * calibrado contra ninguna población**: hoy no existe el baremo propio. Leer
+ * los dos con la misma regla hace creer que son comparables.
+ *
+ * Por eso esta competencia se marca aparte (`escala: 'percentil'`) y se informa
+ * con los rangos del baremo del Raven, que es la referencia que le corresponde,
+ * y no con las bandas de las otras cinco.
  */
+/** En qué rango del baremo del Raven cae un percentil. */
+function rangoRaven(p: number): string {
+  if (p >= 95) return 'Rango I · superior';
+  if (p >= 75) return 'Rango II · sobre el término medio';
+  if (p >= 25) return 'Rango III · término medio';
+  if (p >= 5) return 'Rango IV · bajo el término medio';
+  return 'Rango V · muy por debajo';
+}
+
+/** Los tramos del baremo, para dibujar el arco de esta competencia. */
+export const RANGOS_RAVEN = [
+  { nombre: 'Rango V', desde: 0, hasta: 5 },
+  { nombre: 'Rango IV', desde: 5, hasta: 25 },
+  { nombre: 'Rango III', desde: 25, hasta: 75 },
+  { nombre: 'Rango II', desde: 75, hasta: 95 },
+  { nombre: 'Rango I', desde: 95, hasta: 100 },
+];
+
 function cognitiva(ctx: Contexto): Competencia {
   return {
     nombre: 'Habilidad cognitiva',
+    escala: 'percentil' as const,
+    referencia: ctx.ravenPercentil === null ? undefined : rangoRaven(ctx.ravenPercentil),
     mide: 'Estilo de aprendizaje: capacidad de lógica abstracta frente a pensamiento concreto y práctico.',
     puntaje: ctx.ravenPercentil === null ? null : Math.round(ctx.ravenPercentil),
     renglones: [
@@ -531,7 +610,13 @@ export function calcularCompetencias(
     // Con dos o más indicadores sin dato se dice que falta, en vez de informar
     // un número que se apoya en la mitad del protocolo.
     if (renglones.length - puntuados.length > 1) {
-      return { nombre: c.competencia, mide: c.mide, puntaje: null, renglones };
+      return {
+        nombre: c.competencia,
+        escala: 'promedio' as const,
+        mide: c.mide,
+        puntaje: null,
+        renglones,
+      };
     }
 
     // El que falta queda afuera del promedio: no suma ni divide. Antes contaba
@@ -544,7 +629,13 @@ export function calcularCompetencias(
             puntuados.reduce((n, r) => n + r.peso * VALOR[r.nivel as 1 | 2 | 3], 0) / pesos
           );
 
-    return { nombre: c.competencia, mide: c.mide, puntaje, renglones };
+    return {
+      nombre: c.competencia,
+      escala: 'promedio' as const,
+      mide: c.mide,
+      puntaje,
+      renglones,
+    };
   });
 
   return [cognitiva(ctx), ...medidas];

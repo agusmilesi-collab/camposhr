@@ -1,17 +1,4 @@
-import { BANDAS, REFERENCIA_BANDAS, bandaDe } from '@/lib/competencias';
-
-/** Las cuatro zonas de la escala, con el ancho que le toca a cada una. */
-const ZONAS = BANDAS.slice()
-  .reverse()
-  .map((b, i, todas) => ({
-    nombre: b.nombre,
-    ancho: (i === todas.length - 1 ? 100 : todas[i + 1].desde) - b.desde,
-  }));
-
-/** Dónde cambia de zona la escala: es la referencia que se imprime debajo. */
-const CORTES = BANDAS.map((b) => b.desde)
-  .filter((n) => n > 0)
-  .sort((a, b) => a - b);
+import { BANDAS, RANGOS_RAVEN, REFERENCIA_BANDAS, bandaDe } from '@/lib/competencias';
 import type { Informe } from '@/lib/informe';
 import {
   CONFIDENCIALIDAD,
@@ -22,6 +9,91 @@ import {
 } from '@/lib/informe-textos';
 import Cerebro from './Cerebro';
 import './informe.css';
+
+/**
+ * El velocímetro de una competencia: media luna, cuatro zonas y una aguja.
+ *
+ * El arco va de 180 a 360 grados, o sea de izquierda a derecha por arriba. Cada
+ * zona ocupa el ángulo que le toca por su ancho en la escala, así que mirar
+ * dónde cayó la aguja es leer la banda sin leer el número.
+ *
+ * La habilidad cognitiva no lleva zonas: su número es un percentil del baremo
+ * del Raven y no un puntaje de competencia, así que compararlo contra estas
+ * bandas sería mezclar dos escalas que solo comparten el ir de 0 a 100.
+ */
+function Velocimetro({
+  puntaje,
+  escala,
+}: {
+  puntaje: number | null;
+  escala: 'promedio' | 'percentil';
+}) {
+  const R = 34;
+  const ancho = 82;
+  const alto = 48;
+  const cx = ancho / 2;
+  const cy = 40;
+
+  /** Un punto del arco, para un valor de 0 a 100. */
+  const punto = (v: number, r: number) => {
+    const a = Math.PI + (Math.min(100, Math.max(0, v)) / 100) * Math.PI;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  };
+
+  const tramo = (desde: number, hasta: number) => {
+    const [x1, y1] = punto(desde, R);
+    const [x2, y2] = punto(hasta, R);
+    return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R} ${R} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+  };
+
+  // El Raven trae su propio baremo: sus cinco rangos son las zonas del arco.
+  const zonas = escala === 'percentil' ? RANGOS_RAVEN : ZONAS;
+
+  return (
+    <svg
+      className="inf-gauge"
+      viewBox={`0 0 ${ancho} ${alto}`}
+      role="img"
+      aria-label={puntaje === null ? 'sin puntaje' : `${puntaje} de 100`}
+    >
+      {zonas.map((z) => (
+        <path
+          key={z.nombre}
+          d={tramo(z.desde, z.hasta)}
+          data-banda={z.nombre}
+          fill="none"
+          strokeWidth="7"
+          strokeLinecap="butt"
+        />
+      ))}
+      {puntaje !== null &&
+        (() => {
+          const [x1, y1] = punto(puntaje, R - 10.5);
+          const [x2, y2] = punto(puntaje, R + 4.5);
+          return (
+            <line
+              className="inf-gauge-aguja"
+              x1={x1.toFixed(2)}
+              y1={y1.toFixed(2)}
+              x2={x2.toFixed(2)}
+              y2={y2.toFixed(2)}
+              strokeWidth="2.6"
+              strokeLinecap="round"
+            />
+          );
+        })()}
+    </svg>
+  );
+}
+
+/** Las cuatro zonas de la escala, con el ancho que le toca a cada una. */
+const ZONAS = BANDAS.slice()
+  .reverse()
+  .map((b, i, todas) => ({
+    nombre: b.nombre,
+    desde: b.desde,
+    hasta: i === todas.length - 1 ? 100 : todas[i + 1].desde,
+  }));
 
 function Capitulo({
   numero,
@@ -158,9 +230,21 @@ export default function Documento({
                     {/* Sin el signo de porcentaje: es un puntaje sobre cien y
                         no una proporción de aciertos. Con `%`, un sesenta se
                         lee como nota de examen. */}
+                    {/* El percentil no se lee con las bandas de competencia:
+                        los dos números van de 0 a 100 y significan cosas
+                        distintas. El del Raven dice qué parte de la población
+                        queda por debajo, y su referencia es el baremo del test. */}
                     <span className="inf-porcentaje">
                       {c.puntaje === null ? (
                         'sin datos'
+                      ) : c.escala === 'percentil' ? (
+                        <>
+                          <em className="inf-de-cien">percentil</em>
+                          {c.puntaje}
+                          <em className="inf-banda-texto" data-banda="Percentil">
+                            {c.referencia}
+                          </em>
+                        </>
                       ) : (
                         <>
                           {c.puntaje}
@@ -172,42 +256,25 @@ export default function Documento({
                       )}
                     </span>
                   </div>
-                  {/* La escala con sus cuatro zonas dibujadas y la marca del
-                      candidato encima. Una barra sola deja el número sin
-                      referencia: sesenta se lee como nota raspando cuando en
-                      realidad cae en el centro de Adecuado. Con las zonas a la
-                      vista, el número dice dónde está parado. */}
-                  <div className="inf-escala" aria-hidden="true">
-                    <div className="inf-zonas">
-                      {ZONAS.map((z) => (
-                        <span
-                          key={z.nombre}
-                          className="inf-zona"
-                          data-banda={z.nombre}
-                          style={{ width: `${z.ancho}%` }}
-                        />
-                      ))}
-                      {c.puntaje !== null && (
-                        <span className="inf-aguja" style={{ left: `${c.puntaje}%` }} />
-                      )}
-                    </div>
-                    {/* Los cortes, y no el nombre de cada zona: en una columna
-                        de trescientos píxeles "Sobresaliente" no entra en el
-                        veinte por ciento que le toca. El nombre ya está escrito
-                        al lado del número. */}
-                    <div className="inf-cortes">
-                      {CORTES.map((n) => (
-                        <span key={n} style={{ left: `${n}%` }}>
-                          {n}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  {/* El velocímetro: media luna con las cuatro zonas y una
+                      aguja donde cae la persona. Una barra recta obligaba a
+                      medir con la vista dónde caía el número; el arco lo dice
+                      con la posición de la aguja, que es como se lee un
+                      instrumento. En SVG y no en canvas: es un dibujo de cinco
+                      trazos y tiene que sobrevivir a la impresión del PDF. */}
+                  <Velocimetro puntaje={c.puntaje} escala={c.escala} />
+
                   <p className="inf-mide">{c.mide}</p>
                 </article>
               ))}
             </div>
-            <p className="inf-nota">{REFERENCIA_BANDAS}</p>
+            <p className="inf-nota">
+              {REFERENCIA_BANDAS}
+              <br />
+              La habilidad cognitiva va en percentil del baremo del Raven: dice qué parte de la
+              población de referencia queda por debajo, y por eso se lee con los rangos del test y
+              no con estas bandas.
+            </p>
           </>
         )}
       </Capitulo>

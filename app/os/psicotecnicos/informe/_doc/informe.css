@@ -399,93 +399,49 @@
 .inf-banda-texto[data-banda='Bajo'] { color: var(--rojo); }
 
 /**
- * La escala de la competencia: las cuatro zonas dibujadas y la marca encima.
+ * El velocímetro de cada competencia: media luna con sus cuatro zonas.
  *
- * Era una barra que se llenaba hasta el puntaje. El problema no era la barra
- * sino que el número quedaba sin referencia: un sesenta se lee como nota de
- * examen, y acá sesenta cae en el centro de Adecuado. Con las zonas a la vista
- * el número dice dónde está parado, que es como lo muestran los informes de
- * evaluación laboral.
+ * Era una barra recta, y antes de eso una que se llenaba. El problema de las dos
+ * era el mismo: el número quedaba sin referencia y un sesenta se leía como nota
+ * de examen. En el arco, la aguja dice la banda por su posición, que es como se
+ * lee un instrumento.
  */
-/**
- * La escala de la competencia: las cuatro zonas dibujadas y la marca encima.
- *
- * Era una barra que se llenaba hasta el puntaje. El problema no era la barra
- * sino que el número quedaba sin referencia: un sesenta se lee como nota de
- * examen, y acá sesenta cae en el medio de Adecuado. Con las zonas a la vista
- * el número dice dónde está parado, que es como lo muestran los informes de
- * evaluación laboral.
- */
-.inf-escala {
-  margin: 9px 0 6px;
+.inf-gauge {
+  display: block;
+  width: 82px;
+  height: 48px;
+  margin: 4px 0 2px;
+  overflow: visible;
 }
 
-.inf-zonas {
-  position: relative;
-  display: flex;
-  height: 10px;
-  border-radius: 3px;
-  overflow: hidden;
+.inf-gauge path[data-banda='Bajo'] {
+  stroke: color-mix(in srgb, var(--rojo) 34%, var(--hoja));
 }
 
-.inf-zona {
-  min-width: 0;
-  border-right: 1px solid var(--hoja);
+.inf-gauge path[data-banda='Adecuado'] {
+  stroke: color-mix(in srgb, var(--azul) 24%, var(--hoja));
 }
 
-.inf-zona:last-child {
-  border-right: 0;
+.inf-gauge path[data-banda='Alto'] {
+  stroke: color-mix(in srgb, var(--azul) 52%, var(--hoja));
 }
 
-/* De más flojo a más fuerte, sobre el eje del informe. El fondo dice de qué
-   zona se trata; lo que tiene que saltar es la marca. Se mezcla contra --hoja,
-   que es el blanco de la página: --panel no existe en esta hoja y con una
-   variable vacía el color-mix se descarta entero y la zona sale transparente. */
-.inf-zona[data-banda='Bajo'] {
-  background: color-mix(in srgb, var(--rojo) 30%, var(--hoja));
+.inf-gauge path[data-banda='Sobresaliente'] {
+  stroke: color-mix(in srgb, var(--verde) 60%, var(--hoja));
 }
 
-.inf-zona[data-banda='Adecuado'] {
-  background: color-mix(in srgb, var(--azul) 22%, var(--hoja));
-}
+/* La habilidad cognitiva no tiene bandas de competencia: su número es un
+   percentil, y sus zonas son los cinco rangos del baremo del Raven. */
+.inf-gauge path[data-banda='Rango V'] { stroke: color-mix(in srgb, var(--rojo) 34%, var(--hoja)); }
+.inf-gauge path[data-banda='Rango IV'] { stroke: color-mix(in srgb, var(--rojo) 18%, var(--hoja)); }
+.inf-gauge path[data-banda='Rango III'] { stroke: color-mix(in srgb, var(--azul) 24%, var(--hoja)); }
+.inf-gauge path[data-banda='Rango II'] { stroke: color-mix(in srgb, var(--azul) 52%, var(--hoja)); }
+.inf-gauge path[data-banda='Rango I'] { stroke: color-mix(in srgb, var(--verde) 60%, var(--hoja)); }
 
-.inf-zona[data-banda='Alto'] {
-  background: color-mix(in srgb, var(--azul) 48%, var(--hoja));
-}
+.inf-banda-texto[data-banda='Percentil'] { color: var(--tinta-media); }
 
-.inf-zona[data-banda='Sobresaliente'] {
-  background: color-mix(in srgb, var(--verde) 58%, var(--hoja));
-}
-
-/* Dónde cae la persona: una línea vertical que cruza la barra entera y se
-   despega con un halo del color de la hoja, para que se lea sobre cualquier
-   zona. Es la comparación que importa, así que es lo más oscuro del dibujo.
-   Se llama aguja y no marca porque `inf-marca` ya es el encabezado del informe
-   y el punto del gráfico del cerebro: la clase repetida le rompía el header. */
-.inf-aguja {
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
-  width: 3px;
-  margin-left: -1.5px;
-  border-radius: 2px;
-  background: var(--tinta);
-  box-shadow: 0 0 0 1.5px var(--hoja);
-}
-
-/* Los cortes, debajo y alineados con su línea. */
-.inf-cortes {
-  position: relative;
-  height: 11px;
-  margin-top: 3px;
-}
-
-.inf-cortes span {
-  position: absolute;
-  transform: translateX(-50%);
-  font-size: 0.55rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--suave);
+.inf-gauge-aguja {
+  stroke: var(--tinta);
 }
 
 .inf-mide {
@@ -714,9 +670,8 @@
    * nivel de ajuste elegido se distingue por el suyo. Sin esto el informe sale
    * con las escalas en blanco y los cuatro niveles iguales.
    */
-  .inf-zonas,
-  .inf-zona,
-  .inf-aguja,
+  .inf-gauge,
+  .inf-gauge path,
   .inf-nivel,
   .inf-perfil-adulto,
   .inf-marca-texto {
