@@ -2,10 +2,9 @@
  * Las competencias del informe, con el método que usa la psicóloga.
  *
  * Sale de las dos hojas de cálculo que venía usando, una para Rorschach y otra
- * para Zulliger: cada indicador puntúa 1, 2 o 3 según caiga bajo, medio o alto;
- * los puntajes se suman; y una tabla convierte el total en porcentaje. La tabla
- * no es lineal (con cinco indicadores, 9 puntos dan 60% y 10 dan 70%), así que
- * se copia tal cual en lugar de calcularse.
+ * para Zulliger: cada indicador puntúa 1, 2 o 3 según caiga bajo, medio o alto.
+ * El puntaje de la competencia es el promedio ponderado de sus indicadores, de
+ * 0 a 100.
  *
  * **Qué indicador alimenta cada competencia es de las hojas y no se toca.** Lo
  * que sí es criterio propio, y está a la espera de que la psicóloga lo revise,
@@ -21,6 +20,7 @@
  */
 
 import type { SumarioCrudo } from '@/lib/redacciones';
+import { percentilDe, puntajesPorRango, rangoDe } from '@/lib/raven';
 
 /** Bajo, medio o alto. Null cuando el dato no está cargado. */
 type Nivel = 1 | 2 | 3 | null;
@@ -240,7 +240,10 @@ const LAMBDA: Indicador = {
     const l = num(s, 'cabecera', 'Lambda');
     if (l === null) return null;
     if (l >= 0.3 && l <= 0.99) return 3;
-    if (l < 0.3 || l <= 1.5) return 2;
+    // Solo la banda de arriba es medio. Con `l < 0.3 || l <= 1.5` el extremo de
+    // abajo caía en medio: un Lambda de 0,1 es alguien que no consigue
+    // simplificar, se implica con todo lo que ve, y se informaba como promedio.
+    if (l > 0.99 && l <= 1.5) return 2;
     return 1;
   },
 };
@@ -261,8 +264,10 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         nivel: (s) => {
           const m = num(s, 'determinantes', 'M');
           const w = global(s);
-          if (m === null || w === null || m === 0) return m === 0 ? 1 : null;
-          return escalonar(w / m, 1.5, 2.5, false);
+          // Sin W no hay razón que calcular, ni siquiera con M en cero: antes
+          // ese caso salía bajo sin tener el dato con el que se compara.
+          if (m === null || w === null) return null;
+          return m === 0 ? 1 : escalonar(w / m, 1.5, 2.5, false);
         },
       },
       {
@@ -281,10 +286,13 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         peso: 2,
         corte: 'Dd hasta el 10% alto; hasta el 15% medio; por encima bajo',
         nivel: (s) => {
-          const w = global(s) ?? 0;
-          const d = num(s, 'procesamiento', 'D') ?? 0;
+          const w = global(s);
+          const d = num(s, 'procesamiento', 'D');
           const dd = num(s, 'procesamiento', 'Dd');
-          if (dd === null || w + d + dd === 0) return null;
+          // Los tres tienen que estar: es una proporción sobre el total de
+          // localizaciones, y con una parte ausente el porcentaje sale inflado.
+          // El motor escribe los ceros, así que faltar es faltar de verdad.
+          if (w === null || d === null || dd === null || w + d + dd === 0) return null;
           return escalonar(dd / (w + d + dd), 0.1, 0.15, false);
         },
       },
@@ -311,7 +319,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         mide: 'Recursos disponibles para afrontar demandas',
         // Con qué cuenta la persona para sostener la presión.
         peso: 2,
-        corte: 'nueve o más alto; siete a nueve medio; menos bajo',
+        corte: 'nueve o más alto; siete u ocho medio; menos bajo',
         nivel: (s) => escalonar(num(s, 'control_estres', 'EA'), 9, 7),
       },
       {
@@ -392,8 +400,10 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         corte: 'W desde el 45% alto; desde el 30% medio; menos bajo',
         nivel: (s) => {
           const w = global(s);
-          const d = num(s, 'procesamiento', 'D') ?? 0;
-          if (w === null || w + d === 0) return null;
+          const d = num(s, 'procesamiento', 'D');
+          // Sin D, W sobre el total daba 1 y la visión global salía alta por no
+          // tener con qué compararla.
+          if (w === null || d === null || w + d === 0) return null;
           return escalonar(w / (w + d), 0.45, 0.3);
         },
       },
@@ -602,78 +612,68 @@ export type Competencia = {
  * número de 0 a 100 cada una, y si esta trajera el percentil crudo serían ocho
  * números de una clase y uno de otra, con la misma cara.
  *
- * **El puntaje se calcula en dos pasos, y ninguno de los dos es una regla de
- * tres.** Primero el baremo convierte los aciertos en percentil, que es la
- * corrección que hay que hacer porque las láminas no valen lo mismo: acertar
- * veintitrés de treinta y seis no es el 64% que da la división, es el percentil
- * 78, porque entre esas veintitrés hay difíciles; y acertar nueve, que son las
- * fáciles, no es el 25% sino el percentil 7. Después ese percentil se lleva a
- * la escala del informe con `PUNTAJE_RAVEN`.
+ * **El rango sale de `lib/raven.ts` y no se decide acá.** Ahí están los cinco
+ * rangos del equipo, que cortan por aciertos, y son los que la ficha ya muestra
+ * y los que quedan guardados en el resultado. Este archivo llegó a tener sus
+ * propios cortes, por percentil, y con eso el mismo informe le daba dos rangos
+ * distintos a la misma persona: veintisiete aciertos son Rango III por el corte
+ * del equipo y salían Rango II por el del percentil.
  *
- * **El segundo paso tampoco es lineal, y por eso el percentil 92 no da 92.**
- * Los cinco rangos del baremo del Raven se apoyan sobre las cuatro bandas de
- * competencia, tramo con tramo: quien cae en Rango III, que es el término medio
- * del test y agarra la mitad de la población (percentiles 25 a 75), sale
- * Adecuado (35 a 64); Rango II sale Alto; Rango I, Sobresaliente. Adentro del
- * tramo se interpola. Un percentil 92 es Rango II, sobre el término medio pero
- * sin llegar al superior, y da 78: Alto.
- *
- * Así el número dice lo mismo que los otros ocho, se compara con ellos, y sigue
- * apoyado en el baremo del test y no en una división de aciertos.
+ * **La cuenta no es una regla de tres, en ninguno de sus dos pasos.** El rango
+ * decide la banda: III es Adecuado, II es Alto, I es Sobresaliente, IV y V
+ * reparten Bajo. Y adentro del rango se interpola por percentil y no por
+ * aciertos, que es la corrección que hay que hacer porque las láminas no valen
+ * lo mismo: las últimas son mucho más difíciles que las primeras.
  */
 
-/**
- * Los tramos que traducen percentil del Raven a puntaje del informe.
- *
- * Cada corte del baremo cae sobre un corte de `BANDAS`, que es lo que hace que
- * el rango del test y la banda del informe digan lo mismo. Si se mueve una
- * banda hay que mover su par acá.
- */
-const PUNTAJE_RAVEN = [
-  { rango: 'Rango V', percentil: [0, 5], puntaje: [0, 18] },
-  { rango: 'Rango IV', percentil: [5, 25], puntaje: [18, 35] },
-  { rango: 'Rango III', percentil: [25, 75], puntaje: [35, 65] },
-  { rango: 'Rango II', percentil: [75, 95], puntaje: [65, 80] },
-  { rango: 'Rango I', percentil: [95, 100], puntaje: [80, 100] },
-];
-
-/** En qué rango del baremo del Raven cae un percentil. */
-function rangoRaven(p: number): string {
-  const t = PUNTAJE_RAVEN.find((x) => p < x.percentil[1]) ?? PUNTAJE_RAVEN[PUNTAJE_RAVEN.length - 1];
-  return `${t.rango} · ${NOMBRE_RANGO[t.rango]}`;
-}
-
-const NOMBRE_RANGO: Record<string, string> = {
-  'Rango I': 'superior',
-  'Rango II': 'sobre el término medio',
-  'Rango III': 'término medio',
-  'Rango IV': 'bajo el término medio',
-  'Rango V': 'muy por debajo',
+/** Qué banda del informe le toca a cada rango del Raven. */
+const BANDA_POR_RANGO: Record<string, [number, number]> = {
+  I: [80, 100],
+  II: [65, 79],
+  III: [35, 64],
+  IV: [18, 34],
+  V: [0, 17],
 };
 
-/** El percentil del baremo, llevado a la escala de 0 a 100 del informe. */
-export function puntajeDeRaven(percentil: number): number {
-  const p = Math.min(100, Math.max(0, percentil));
-  const t = PUNTAJE_RAVEN.find((x) => p < x.percentil[1]) ?? PUNTAJE_RAVEN[PUNTAJE_RAVEN.length - 1];
-  const [pa, pb] = t.percentil;
-  const [va, vb] = t.puntaje;
-  return Math.round(va + ((p - pa) / (pb - pa)) * (vb - va));
+/** Los aciertos del Raven, llevados a la escala de 0 a 100 del informe. */
+export function puntajeDeRaven(raw: number): number | null {
+  const rango = rangoDe(raw);
+  if (!rango) return null;
+
+  const banda = BANDA_POR_RANGO[rango.numeral];
+  const tramo = puntajesPorRango().get(rango.numeral);
+  if (!banda || !tramo) return null;
+
+  const piso = percentilDe(tramo.desde);
+  const techo = percentilDe(tramo.hasta);
+  const suyo = percentilDe(raw);
+  if (piso === null || techo === null || suyo === null) return null;
+
+  const dentro = techo > piso ? (suyo - piso) / (techo - piso) : 0;
+  return Math.round(banda[0] + dentro * (banda[1] - banda[0]));
+}
+
+/** Cómo se nombra el rango en el que cayó. */
+function rangoRaven(raw: number): string | undefined {
+  const r = rangoDe(raw);
+  return r ? `Rango ${r.numeral} · ${r.nombre.toLowerCase()}` : undefined;
 }
 
 function cognitiva(ctx: Contexto): Competencia {
   const p = ctx.ravenPercentil;
+  const raw = ctx.ravenRaw ?? null;
 
   return {
     nombre: 'Habilidad cognitiva',
-    referencia: p === null ? undefined : rangoRaven(p),
+    referencia: raw === null ? undefined : rangoRaven(raw),
     mide: 'Estilo de aprendizaje: capacidad de lógica abstracta frente a pensamiento concreto y práctico.',
-    puntaje: p === null ? null : puntajeDeRaven(p),
+    puntaje: raw === null ? null : puntajeDeRaven(raw),
     renglones: [
       {
         indicador: 'Raven',
         mide: 'Razonamiento abstracto',
         nivel: null,
-        corte: 'baremo del test, llevado a la escala del informe',
+        corte: 'el rango del test, y adentro del rango el percentil del baremo',
         peso: 1,
         valor:
           p === null
