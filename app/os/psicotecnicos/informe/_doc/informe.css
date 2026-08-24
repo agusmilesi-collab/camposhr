@@ -359,34 +359,119 @@
 }
 
 .inf-porcentaje {
-  font-size: 0.92rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 1.05rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
-.inf-barra {
-  height: 7px;
-  border-radius: 99px;
-  background: var(--linea-suave);
-  margin: 6px 0;
+/* Sobre cien, chiquito: dice la escala sin convertir el número en porcentaje. */
+.inf-de-cien {
+  font-style: normal;
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--suave);
+}
+
+.inf-banda-texto {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--tinta-media);
+}
+
+/**
+ * La escala de la competencia: las cuatro zonas dibujadas y la marca encima.
+ *
+ * Era una barra que se llenaba hasta el puntaje. El problema no era la barra
+ * sino que el número quedaba sin referencia: un sesenta se lee como nota de
+ * examen, y acá sesenta cae en el centro de Adecuado. Con las zonas a la vista
+ * el número dice dónde está parado, que es como lo muestran los informes de
+ * evaluación laboral.
+ */
+/**
+ * La escala de la competencia: las cuatro zonas dibujadas y la marca encima.
+ *
+ * Era una barra que se llenaba hasta el puntaje. El problema no era la barra
+ * sino que el número quedaba sin referencia: un sesenta se lee como nota de
+ * examen, y acá sesenta cae en el medio de Adecuado. Con las zonas a la vista
+ * el número dice dónde está parado, que es como lo muestran los informes de
+ * evaluación laboral.
+ */
+.inf-escala {
+  margin: 9px 0 6px;
+}
+
+.inf-zonas {
+  position: relative;
+  display: flex;
+  height: 10px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
-.inf-barra span {
-  display: block;
-  height: 100%;
-  border-radius: 99px;
-  background: var(--azul);
+.inf-zona {
+  min-width: 0;
+  border-right: 1px solid var(--hoja);
 }
 
-.inf-barra span[data-banda='Sobresaliente'] {
-  background: var(--verde);
+.inf-zona:last-child {
+  border-right: 0;
 }
-.inf-barra span[data-banda='Bajo'] {
-  background: var(--rojo);
+
+/* De más flojo a más fuerte, sobre el eje del informe. El fondo dice de qué
+   zona se trata; lo que tiene que saltar es la marca. Se mezcla contra --hoja,
+   que es el blanco de la página: --panel no existe en esta hoja y con una
+   variable vacía el color-mix se descarta entero y la zona sale transparente. */
+.inf-zona[data-banda='Bajo'] {
+  background: color-mix(in srgb, var(--rojo) 30%, var(--hoja));
 }
-.inf-barra span[data-banda='Adecuado'] {
-  background: var(--ambar);
+
+.inf-zona[data-banda='Adecuado'] {
+  background: color-mix(in srgb, var(--azul) 22%, var(--hoja));
+}
+
+.inf-zona[data-banda='Alto'] {
+  background: color-mix(in srgb, var(--azul) 48%, var(--hoja));
+}
+
+.inf-zona[data-banda='Sobresaliente'] {
+  background: color-mix(in srgb, var(--verde) 58%, var(--hoja));
+}
+
+/* Dónde cae la persona: una línea vertical que cruza la barra entera y se
+   despega con un halo del color de la hoja, para que se lea sobre cualquier
+   zona. Es la comparación que importa, así que es lo más oscuro del dibujo.
+   Se llama aguja y no marca porque `inf-marca` ya es el encabezado del informe
+   y el punto del gráfico del cerebro: la clase repetida le rompía el header. */
+.inf-aguja {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--tinta);
+  box-shadow: 0 0 0 1.5px var(--hoja);
+}
+
+/* Los cortes, debajo y alineados con su línea. */
+.inf-cortes {
+  position: relative;
+  height: 11px;
+  margin-top: 3px;
+}
+
+.inf-cortes span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.55rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--suave);
 }
 
 .inf-mide {
@@ -611,12 +696,13 @@
    * Los fondos se imprimen.
    *
    * Chrome descarta colores de fondo salvo que se le pida lo contrario, y acá
-   * el fondo no es decoración: la barra de cada competencia ES el dato, y el
+   * el fondo no es decoración: las zonas de cada competencia SON el dato, y el
    * nivel de ajuste elegido se distingue por el suyo. Sin esto el informe sale
-   * con las barras vacías y los cuatro niveles iguales.
+   * con las escalas en blanco y los cuatro niveles iguales.
    */
-  .inf-barra,
-  .inf-barra span,
+  .inf-zonas,
+  .inf-zona,
+  .inf-aguja,
   .inf-nivel,
   .inf-perfil-adulto,
   .inf-marca-texto {
