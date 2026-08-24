@@ -248,7 +248,7 @@ export default function Benziger({
             {elegidos.length === 2 && (
               <button
                 type="button"
-                className={`os-boton os-boton-marcado os-sello-estado ${
+                className={`os-boton os-boton-marcado os-sello-estado os-benziger-relacion ${
                   parejos ? 'os-violeta' : 'os-azul'
                 }`}
                 disabled={eligiendo}

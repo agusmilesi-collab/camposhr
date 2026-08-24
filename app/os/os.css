@@ -3163,8 +3163,31 @@ th.os-tabla-contacto {
    debajo el aviso de siempre. Con uno solo queda el aviso, en el mismo lugar. */
 .os-benziger-lectura {
   display: grid;
-  gap: 9px;
+  gap: 8px;
   min-width: 0;
+}
+
+/**
+ * El botón que dice cómo se relacionan los dos cuadrantes: al lado de la cruz
+ * y en cuerpo chico.
+ *
+ * Diecisiete píxeles de alto, contra los veintiocho de un botón del OS: no es
+ * una acción de la pantalla sino una nota sobre lo que se acaba de elegir, y
+ * al tamaño de siempre le disputaba la mirada a la cruz, que es lo que ahí hay
+ * que leer.
+ */
+.os-benziger-relacion {
+  height: 17px;
+  padding: 0 7px;
+  gap: 5px;
+  border-radius: 5px;
+  font-size: 0.66rem;
+  justify-self: start;
+}
+
+.os-benziger-relacion::before {
+  width: 5px;
+  height: 5px;
 }
 
 
