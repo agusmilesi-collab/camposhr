@@ -250,6 +250,9 @@ export default function Documento({
                         {c.escala === 'percentil' ? c.referencia : banda}
                       </span>
                     )}
+                    {/* Qué dice el número, para el que no sabe qué es un
+                        percentil: "supera al 92% de la población". */}
+                    {c.detalle && <p className="inf-detalle">{c.detalle}</p>}
                     <p className="inf-mide">{c.mide}</p>
                   </article>
                 );
@@ -322,13 +325,26 @@ export default function Documento({
           </div>
 
           <div className="inf-benziger">
-            {CUADRANTES.map((q) => (
-              <div key={q.clave} className={`inf-cuadrante ${q.clave}`}>
-                <span className="inf-cuadrante-rotulo">Cuadrante</span>
-                <h3>{q.nombre}</h3>
-                <p>{q.resumen}</p>
-              </div>
-            ))}
+            {CUADRANTES.map((q) => {
+              const valor = inf.benziger?.adulto?.[q.clave] ?? null;
+              const manda = inf.benziger!.preferentes.some((p) => p.clave === q.clave);
+              return (
+                <div key={q.clave} className={`inf-cuadrante ${q.clave}`}>
+                  <div className="inf-cuadrante-top">
+                    {valor !== null && (
+                      <span className={manda ? 'inf-cuadrante-valor manda' : 'inf-cuadrante-valor'}>
+                        {valor}
+                      </span>
+                    )}
+                    <div>
+                      <span className="inf-cuadrante-rotulo">Cuadrante</span>
+                      <h3>{q.nombre}</h3>
+                    </div>
+                  </div>
+                  <p>{q.resumen}</p>
+                </div>
+              );
+            })}
             <Cerebro adulto={inf.benziger.adulto} joven={inf.benziger.joven} />
           </div>
 

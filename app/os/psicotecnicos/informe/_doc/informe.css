@@ -466,6 +466,14 @@
 .inf-banda-texto[data-banda='Bajo'] { color: var(--rojo); }
 .inf-banda-texto[data-banda='Percentil'] { color: var(--tinta-media); }
 
+/* La traducción del número a palabras, cuando hace falta. */
+.inf-detalle {
+  margin: 7px 0 0;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--tinta-media);
+}
+
 .inf-mide {
   margin: 8px 0 0;
   font-size: 0.74rem;
@@ -561,11 +569,46 @@
   margin: 2px 0;
   font-size: 0.9rem;
   color: var(--tinta);
+  white-space: nowrap;
 }
 
 .inf-cuadrante p {
   margin: 0;
   color: var(--suave);
+}
+
+/* El puntaje del cuadrante, al lado de su nombre: hasta acá había que
+   estimarlo mirando dónde cae el vértice entre dos marcas. Lleno el del
+   cuadrante que predomina. */
+.inf-cuadrante-top {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.inf-cuadrante.FD .inf-cuadrante-top,
+.inf-cuadrante.BD .inf-cuadrante-top {
+  flex-direction: row-reverse;
+}
+
+.inf-cuadrante-valor {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--linea);
+  border-radius: 50%;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--tinta-media);
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-cuadrante-valor.manda {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: var(--hoja);
 }
 
 .inf-cuadrante-rotulo {
@@ -592,14 +635,19 @@
 
 .inf-cerebro {
   grid-area: 1 / 2 / 3 / 3;
-  width: 320px;
-  height: 320px;
+  width: 300px;
+  height: 300px;
 }
 
-.inf-eje,
-.inf-eje-guia {
-  stroke: var(--tinta);
-  stroke-width: 1.2;
+/* El dibujo del cerebro es la referencia de dónde queda cada cuadrante, no el
+   dato: va más claro que las líneas del perfil. */
+.inf-cerebro-fondo {
+  opacity: 0.3;
+}
+
+.inf-eje {
+  stroke: var(--linea);
+  stroke-width: 1;
 }
 
 /* La guía vertical, que separa izquierdo de derecho. La horizontal la dibuja
@@ -611,16 +659,39 @@
   opacity: 0.7;
 }
 
-.inf-marca {
-  fill: var(--tinta);
+/* Los rombos de referencia, uno cada treinta puntos. El de ciento veinte
+   cierra el gráfico y va lleno. */
+.inf-anillo {
+  fill: none;
+  stroke: var(--suave);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+  opacity: 0.3;
 }
 
-/* Los números de la escala se leen sobre el cerebro, así que van con cuerpo
-   suficiente para no perderse contra el dibujo. */
-.inf-marca-texto {
-  font-size: 15px;
+.inf-anillo.borde {
+  stroke: var(--suave);
+  stroke-dasharray: none;
+  opacity: 0.4;
+}
+
+/* La escala va sobre el eje y el perfil puede cruzarla, así que el número se
+   dibuja con un halo del color de la hoja. */
+.inf-escala {
+  font-size: 13px;
   font-weight: 600;
-  fill: var(--tinta);
+  fill: var(--suave);
+  paint-order: stroke;
+  stroke: var(--hoja);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+/* Dónde cae cada uno de los cuatro valores del adulto. */
+.inf-vertice {
+  fill: var(--azul);
+  stroke: var(--hoja);
+  stroke-width: 2;
 }
 
 .inf-perfil-adulto {
@@ -698,7 +769,9 @@
   .inf-competencia,
   .inf-nivel,
   .inf-perfil-adulto,
-  .inf-marca-texto {
+  .inf-cuadrante-valor,
+  .inf-vertice,
+  .inf-escala {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
