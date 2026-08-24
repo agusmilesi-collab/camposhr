@@ -38,6 +38,11 @@ const PERCENTIL: Record<number, number> = {
   31: 97.9, 32: 98.6, 33: 99.0, 34: 99.4, 35: 99.6, 36: 99.8,
 };
 
+/** El percentil de un puntaje directo, para quien necesite el baremo suelto. */
+export function percentilDe(aciertos: number): number | null {
+  return PERCENTIL[aciertos] ?? null;
+}
+
 /** La media y el desvío del baremo, en aciertos. Si cambia el baremo, cambian. */
 const MEDIA = 18.19;
 const DESVIO = 6.32;
