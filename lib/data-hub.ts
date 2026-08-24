@@ -1,20 +1,26 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import { diasDesde } from '@/lib/hora';
+import { calcularCompetencias } from '@/lib/competencias';
+import type { SumarioCrudo } from '@/lib/redacciones';
 
 /**
  * Los números del negocio, sacados de lo que el sistema ya guarda.
  *
- * **Cada medida dice sobre cuántos casos se calcula.** Con quince evaluaciones,
- * una mediana es una anécdota y hay que poder verlo: un número sin su `n` al
- * lado invita a decidir sobre nada.
+ * **Tres ejes, y los tres son de cosas que no cambian mañana**: cómo trabaja
+ * cada evaluadora, qué piden los clientes y cómo es la gente que se evalúa. En
+ * qué etapa está cada ficha no entra: eso es la foto de hoy, se contesta
+ * mirando el pipeline y no deja aprender nada.
  *
- * **Y lo que todavía no alcanza no se muestra igual con menos casos.** Se dice
- * cuántos faltan. El acierto de una evaluación se mide cruzando lo que se
- * recomendó contra cómo le fue a la persona a los noventa días, y ese segundo
- * dato recién se empezó a capturar: hoy hay cero. Mostrar un porcentaje de
- * acierto sobre cero casos sería inventar el número más importante del negocio.
+ * **Cada medida dice sobre cuántos casos se calcula.** Con quince evaluaciones
+ * una mediana es una anécdota, y un número sin su `n` al lado invita a decidir
+ * sobre nada.
+ *
+ * **Lo que todavía no alcanza no se muestra igual con menos casos**: se dice
+ * cuántos faltan. El acierto se mide cruzando lo que se recomendó contra cómo
+ * le fue a la persona a los noventa días, y ese segundo dato recién se empezó a
+ * capturar. Un porcentaje de acierto sobre cero casos sería inventar el número
+ * más importante del negocio.
  *
  * Todo sale de Supabase. El histórico que queda en Airtable no entra: su fecha
  * de entrega es una fórmula (`WORKDAY(fecha de entrevista, 3)`), no la fecha en
@@ -23,17 +29,17 @@ import { diasDesde } from '@/lib/hora';
  */
 
 const CAMPOS =
-  'id,estado,recomendacion,ingreso,seguimiento_al,seguimiento_resultado,' +
+  'id,estado,recomendacion,ingreso,seguimiento_resultado,' +
   'fecha_ingreso,fecha_entrevista,fecha_entrega,evaluadoras(nombre),' +
   'raven(raw,percentil),personas(nombre),' +
-  'pedidos(puesto,familia,seniority,empresas(nombre),baterias(codigo))';
+  'benziger(cuadrante_preferente,cuadrantes_parejos),' +
+  'pedidos(puesto,familia,seniority,con_benziger,empresas(nombre),baterias(codigo,tests))';
 
 type Fila = {
   id: string;
   estado: string;
   recomendacion: string | null;
   ingreso: boolean | null;
-  seguimiento_al: string | null;
   seguimiento_resultado: string | null;
   fecha_ingreso: string | null;
   fecha_entrevista: string | null;
@@ -41,31 +47,38 @@ type Fila = {
   evaluadoras: { nombre: string } | null;
   raven: { raw: number | null; percentil: number | null } | null;
   personas: { nombre: string } | null;
+  benziger: { cuadrante_preferente: string[] | null; cuadrantes_parejos: boolean | null } | null;
   pedidos: {
     puesto: string;
     familia: string | null;
     seniority: string | null;
+    con_benziger: boolean | null;
     empresas: { nombre: string } | null;
-    baterias: { codigo: string } | null;
+    baterias: { codigo: string; tests: string[] | null } | null;
   } | null;
 };
 
-/** Una medida con la cantidad de casos sobre la que se calculó. */
-export type Medida = {
-  valor: number | null;
-  n: number;
-};
+type SumarioFila = { evaluacion_id: string; crudo: SumarioCrudo | null };
+type ManchaFila = { evaluacion_id: string; test: string | null };
 
 export type Reparto = { nombre: string; n: number }[];
 
-export type Tiempos = {
-  /** Días de la solicitud a la entrega, para lo que ya se entregó. */
-  solicitudAEntrega: Medida & { mediana: number | null; peor: number | null };
-  /** Días de la entrevista a la entrega: es el trabajo de análisis. */
-  entrevistaAEntrega: Medida & { mediana: number | null; peor: number | null };
-  /** Días que lleva esperando lo que todavía no se entregó. */
-  enCurso: { n: number; masViejo: number | null };
+/** Lo que se puede decir de cómo trabaja una evaluadora. */
+export type PorEvaluadora = {
+  nombre: string;
+  entregadas: number;
+  enCurso: number;
+  /** Días de la entrevista a la entrega: su tiempo de análisis. */
+  analisis: { mediana: number | null; n: number };
+  /** Días de la solicitud a la entrega: lo que ve el cliente. */
+  total: { mediana: number | null; n: number };
+  /** Cómo cierra: el reparto de sus conclusiones. */
+  conclusiones: Reparto;
+  /** Cuántas de las suyas tienen el seguimiento hecho. */
+  seguimientos: number;
 };
+
+export type Competencia = { nombre: string; mediana: number | null; n: number };
 
 export type Pendiente = {
   medida: string;
@@ -77,14 +90,21 @@ export type Pendiente = {
 export type DataHub = {
   total: number;
   entregadas: number;
-  porEtapa: Reparto;
-  porEvaluadora: Reparto;
-  porFamilia: Reparto;
-  porBateria: Reparto;
-  porRecomendacion: Reparto;
-  entregasPorMes: { mes: string; n: number }[];
-  tiempos: Tiempos;
-  raven: { n: number; mediana: number | null; ranking: { nombre: string; percentil: number }[] };
+  evaluadoras: PorEvaluadora[];
+  pedido: {
+    porFamilia: Reparto;
+    porNivel: Reparto;
+    porBateria: Reparto;
+    porEmpresa: Reparto;
+    conBenziger: { con: number; sin: number };
+    entregasPorMes: { mes: string; n: number }[];
+  };
+  candidatos: {
+    raven: { n: number; mediana: number | null; reparto: Reparto; mejores: { nombre: string; percentil: number }[] };
+    conclusiones: Reparto;
+    cuadrantes: Reparto;
+    competencias: Competencia[];
+  };
   pendientes: Pendiente[];
 };
 
@@ -93,7 +113,8 @@ function mediana(xs: number[]): number | null {
   if (xs.length === 0) return null;
   const o = [...xs].sort((a, b) => a - b);
   const m = Math.floor(o.length / 2);
-  return o.length % 2 ? o[m] : Math.round(((o[m - 1] + o[m]) / 2) * 10) / 10;
+  const v = o.length % 2 ? o[m] : (o[m - 1] + o[m]) / 2;
+  return Math.round(v * 10) / 10;
 }
 
 function contar(filas: Fila[], de: (f: Fila) => string | null | undefined): Reparto {
@@ -108,7 +129,6 @@ function contar(filas: Fila[], de: (f: Fila) => string | null | undefined): Repa
     .sort((a, b) => b.n - a.n);
 }
 
-/** Días entre dos fechas, o null si falta alguna o el orden no cierra. */
 function dias(desde: string | null, hasta: string | null): number | null {
   if (!desde || !hasta) return null;
   const a = new Date(desde).getTime();
@@ -117,29 +137,56 @@ function dias(desde: string | null, hasta: string | null): number | null {
   return Math.round(((b - a) / 86400000) * 10) / 10;
 }
 
+/** En qué tramo del baremo cae un percentil del Raven. */
+function rangoRaven(p: number): string {
+  if (p >= 95) return 'Rango I · superior';
+  if (p >= 75) return 'Rango II · sobre la media';
+  if (p >= 25) return 'Rango III · término medio';
+  if (p >= 5) return 'Rango IV · bajo la media';
+  return 'Rango V · muy bajo';
+}
+
 export async function datosDelHub(): Promise<DataHub> {
-  const filas = await select<Fila>(
-    'evaluaciones',
-    `select=${CAMPOS}&order=fecha_ingreso.desc`,
-    CACHE_PSICOTECNICOS
-  );
+  const [filas, sumarios, manchas] = await Promise.all([
+    select<Fila>('evaluaciones', `select=${CAMPOS}&order=fecha_ingreso.desc`, CACHE_PSICOTECNICOS),
+    select<SumarioFila>('sumario_exner', 'select=evaluacion_id,crudo', CACHE_PSICOTECNICOS),
+    select<ManchaFila>('rorschach_respuestas', 'select=evaluacion_id,test', CACHE_PSICOTECNICOS),
+  ]);
 
   const entregadas = filas.filter((f) => f.fecha_entrega);
 
-  const solicitud = entregadas
-    .map((f) => dias(f.fecha_ingreso, f.fecha_entrega))
-    .filter((n): n is number => n !== null);
-  const analisis = entregadas
-    .map((f) => dias(f.fecha_entrevista, f.fecha_entrega))
-    .filter((n): n is number => n !== null);
+  // ── Por evaluadora ──────────────────────────────────────────────────────
+  const nombres = [...new Set(filas.map((f) => f.evaluadoras?.nombre).filter(Boolean))] as string[];
+  const evaluadoras: PorEvaluadora[] = nombres
+    .map((nombre) => {
+      const suyas = filas.filter((f) => f.evaluadoras?.nombre === nombre);
+      const cerradas = suyas.filter((f) => f.fecha_entrega);
+      const analisis = cerradas
+        .map((f) => dias(f.fecha_entrevista, f.fecha_entrega))
+        .filter((n): n is number => n !== null);
+      const total = cerradas
+        .map((f) => dias(f.fecha_ingreso, f.fecha_entrega))
+        .filter((n): n is number => n !== null);
+      return {
+        nombre,
+        entregadas: cerradas.length,
+        enCurso: suyas.length - cerradas.length,
+        analisis: { mediana: mediana(analisis), n: analisis.length },
+        total: { mediana: mediana(total), n: total.length },
+        conclusiones: contar(suyas, (f) => f.recomendacion),
+        seguimientos: suyas.filter((f) => f.seguimiento_resultado).length,
+      };
+    })
+    .sort((a, b) => b.entregadas - a.entregadas);
 
-  // Lo que entró y todavía no se entregó, con lo que lleva esperando el más
-  // viejo: es la cola real, y el número que dice si hay que reforzar.
-  const enCurso = filas.filter((f) => !f.fecha_entrega && f.fecha_ingreso);
-  const esperas = enCurso
-    .map((f) => diasDesde(f.fecha_ingreso))
-    .filter((n): n is number => n !== null);
+  // ── Lo que se pide ──────────────────────────────────────────────────────
+  const meses = new Map<string, number>();
+  for (const f of entregadas) {
+    const m = (f.fecha_entrega as string).slice(0, 7);
+    meses.set(m, (meses.get(m) ?? 0) + 1);
+  }
 
+  // ── Los candidatos ──────────────────────────────────────────────────────
   const conPercentil = filas
     .filter((f) => typeof f.raven?.percentil === 'number')
     .map((f) => ({
@@ -148,45 +195,91 @@ export async function datosDelHub(): Promise<DataHub> {
     }))
     .sort((a, b) => b.percentil - a.percentil);
 
-  const meses = new Map<string, number>();
-  for (const f of entregadas) {
-    const m = (f.fecha_entrega as string).slice(0, 7);
-    meses.set(m, (meses.get(m) ?? 0) + 1);
+  const cuadrantes = new Map<string, number>();
+  for (const f of filas) {
+    for (const q of f.benziger?.cuadrante_preferente ?? []) {
+      cuadrantes.set(q, (cuadrantes.get(q) ?? 0) + 1);
+    }
   }
 
   return {
     total: filas.length,
     entregadas: entregadas.length,
-    porEtapa: contar(filas, (f) => f.estado),
-    porEvaluadora: contar(filas, (f) => f.evaluadoras?.nombre ?? 'Sin asignar'),
-    porFamilia: contar(filas, (f) => f.pedidos?.familia ?? 'Sin definir'),
-    porBateria: contar(filas, (f) => f.pedidos?.baterias?.codigo ?? 'Sin definir'),
-    porRecomendacion: contar(filas, (f) => f.recomendacion),
-    entregasPorMes: [...meses.entries()]
-      .map(([mes, n]) => ({ mes, n }))
-      .sort((a, b) => a.mes.localeCompare(b.mes)),
-    tiempos: {
-      solicitudAEntrega: {
-        valor: mediana(solicitud),
-        mediana: mediana(solicitud),
-        peor: solicitud.length ? Math.max(...solicitud) : null,
-        n: solicitud.length,
+    evaluadoras,
+    pedido: {
+      porFamilia: contar(filas, (f) => f.pedidos?.familia),
+      porNivel: contar(filas, (f) => f.pedidos?.seniority),
+      porBateria: contar(filas, (f) => f.pedidos?.baterias?.codigo),
+      porEmpresa: contar(filas, (f) => f.pedidos?.empresas?.nombre),
+      conBenziger: {
+        con: filas.filter((f) => f.pedidos?.con_benziger).length,
+        sin: filas.filter((f) => f.pedidos && !f.pedidos.con_benziger).length,
       },
-      entrevistaAEntrega: {
-        valor: mediana(analisis),
-        mediana: mediana(analisis),
-        peor: analisis.length ? Math.max(...analisis) : null,
-        n: analisis.length,
-      },
-      enCurso: { n: enCurso.length, masViejo: esperas.length ? Math.max(...esperas) : null },
+      entregasPorMes: [...meses.entries()]
+        .map(([mes, n]) => ({ mes, n }))
+        .sort((a, b) => a.mes.localeCompare(b.mes)),
     },
-    raven: {
-      n: conPercentil.length,
-      mediana: mediana(conPercentil.map((r) => r.percentil)),
-      ranking: conPercentil,
+    candidatos: {
+      raven: {
+        n: conPercentil.length,
+        mediana: mediana(conPercentil.map((r) => r.percentil)),
+        reparto: (() => {
+          const c = new Map<string, number>();
+          for (const r of conPercentil) {
+            const k = rangoRaven(r.percentil);
+            c.set(k, (c.get(k) ?? 0) + 1);
+          }
+          return [...c.entries()].map(([nombre, n]) => ({ nombre, n })).sort((a, b) => b.n - a.n);
+        })(),
+        mejores: conPercentil.slice(0, 8),
+      },
+      conclusiones: contar(filas, (f) => f.recomendacion),
+      cuadrantes: [...cuadrantes.entries()]
+        .map(([nombre, n]) => ({ nombre, n }))
+        .sort((a, b) => b.n - a.n),
+      competencias: medianasDeCompetencias(filas, sumarios, manchas),
     },
     pendientes: pendientesDe(filas),
   };
+}
+
+/**
+ * La mediana de cada competencia sobre todos los evaluados.
+ *
+ * Es la norma propia, y es lo que hoy no existe: el puntaje de una persona se
+ * lee contra las bandas, que salen de la literatura, y no contra cómo puntúa la
+ * gente que se presenta a estos puestos. Con casos suficientes esto pasa a ser
+ * el baremo de la casa, y ahí un 60 deja de discutirse.
+ */
+function medianasDeCompetencias(
+  filas: Fila[],
+  sumarios: SumarioFila[],
+  manchas: ManchaFila[]
+): Competencia[] {
+  const porEvaluacion = new Map(sumarios.map((s) => [s.evaluacion_id, s.crudo]));
+  const testDe = new Map<string, string>();
+  for (const m of manchas) {
+    if (m.test && !testDe.has(m.evaluacion_id)) testDe.set(m.evaluacion_id, m.test);
+  }
+
+  const juntadas = new Map<string, number[]>();
+  for (const f of filas) {
+    const crudo = porEvaluacion.get(f.id);
+    if (!crudo) continue;
+    // El test es el que tiene cargado el protocolo y, si no, el de la batería.
+    const proyectivo =
+      testDe.get(f.id) ??
+      (f.pedidos?.baterias?.tests ?? []).find((t) => t === 'Rorschach' || t === 'Zulliger') ??
+      null;
+    for (const c of calcularCompetencias(crudo, { ravenPercentil: f.raven?.percentil ?? null }, proyectivo)) {
+      if (c.puntaje === null) continue;
+      juntadas.set(c.nombre, [...(juntadas.get(c.nombre) ?? []), c.puntaje]);
+    }
+  }
+
+  return [...juntadas.entries()]
+    .map(([nombre, xs]) => ({ nombre, mediana: mediana(xs), n: xs.length }))
+    .sort((a, b) => (b.mediana ?? 0) - (a.mediana ?? 0));
 }
 
 /**
@@ -201,41 +294,33 @@ export async function datosDelHub(): Promise<DataHub> {
  * Para predecir de verdad hacen falta órdenes de magnitud más.
  */
 function pendientesDe(filas: Fila[]): Pendiente[] {
-  const conSeguimiento = filas.filter((f) => f.seguimiento_resultado).length;
-  const conIngreso = filas.filter((f) => f.ingreso !== null).length;
-  const conRecomendacionYResultado = filas.filter(
-    (f) => f.recomendacion && f.seguimiento_resultado
-  ).length;
-  const conFamiliaYRecomendacion = filas.filter(
-    (f) => f.pedidos?.familia && f.recomendacion
-  ).length;
-
   return [
     {
       medida: 'Acierto por evaluadora',
-      hoy: conRecomendacionYResultado,
+      hoy: filas.filter((f) => f.recomendacion && f.seguimiento_resultado).length,
       hacenFalta: 20,
       porque:
-        'Se mide cruzando lo que se recomendó contra cómo le fue a la persona a los noventa días. Hace falta el seguimiento hecho.',
+        'Se mide cruzando lo que se recomendó contra cómo le fue a la persona a los noventa días.',
     },
     {
       medida: 'Cuántos de los recomendados entran',
-      hoy: conIngreso,
+      hoy: filas.filter((f) => f.ingreso !== null).length,
       hacenFalta: 15,
       porque: 'Se carga en la ficha, al saber si la empresa la tomó.',
     },
     {
+      medida: 'Baremo propio de competencias',
+      hoy: filas.filter((f) => f.recomendacion).length,
+      hacenFalta: 30,
+      porque:
+        'La mediana de cada competencia sobre los evaluados de la casa, para leer un puntaje contra quienes se presentan a estos puestos y no solo contra la literatura.',
+    },
+    {
       medida: 'Qué indicadores predicen el desempeño, por familia de puesto',
-      hoy: conFamiliaYRecomendacion,
+      hoy: filas.filter((f) => f.pedidos?.familia && f.seguimiento_resultado).length,
       hacenFalta: 100,
       porque:
         'Es lo que haría falta para un modelo. Con cinco indicadores por competencia, cien casos con resultado conocido es el piso para que no sea ruido.',
-    },
-    {
-      medida: 'Seguimientos hechos',
-      hoy: conSeguimiento,
-      hacenFalta: 10,
-      porque: 'Cada uno vence a los noventa días del ingreso y se contesta por teléfono.',
     },
   ];
 }

@@ -5678,3 +5678,61 @@ th.os-tabla-contacto {
   font-weight: 600;
   font-size: 0.88rem;
 }
+
+/* Los tres ejes del data hub: cada uno con su título y su bajada, para que se
+   lean como tres preguntas distintas y no como una pila de paneles. */
+.os-hub-eje {
+  margin-top: 34px;
+}
+
+.os-hub-eje-top {
+  margin-bottom: 14px;
+}
+
+.os-hub-eje-top h2 {
+  margin: 0 0 5px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: 1.45rem;
+  letter-spacing: -0.015em;
+}
+
+.os-hub-eje-top p {
+  margin: 0;
+  max-width: 78ch;
+  font-size: 0.86rem;
+  color: var(--os-tinta-media);
+}
+
+/* Una ficha por evaluadora, con sus propios números. */
+.os-hub-personas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.os-hub-persona h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.os-hub-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 18px 20px;
+  padding-bottom: 16px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-hub-conclusiones {
+  display: grid;
+  gap: 9px;
+}
+
+.os-hub-sub {
+  display: block;
+  margin-top: 16px;
+}
