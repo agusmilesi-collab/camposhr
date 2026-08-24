@@ -490,15 +490,6 @@
   letter-spacing: 0.01em;
 }
 
-
-/* La traducción del número a palabras, cuando hace falta. */
-.inf-detalle {
-  margin: 7px 0 0;
-  font-size: 0.74rem;
-  line-height: 1.45;
-  color: var(--tinta-media);
-}
-
 .inf-mide {
   margin: 8px 0 0;
   font-size: 0.74rem;

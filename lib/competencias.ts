@@ -504,13 +504,6 @@ export type Competencia = {
    * el que se tradujo a la banda.
    */
   referencia?: string;
-  /**
-   * Qué dice el número, en palabras.
-   *
-   * La habilidad cognitiva lo usa para decir contra qué se comparó a la
-   * persona, que es lo que un puntaje solo no cuenta.
-   */
-  detalle?: string;
   /** 0 a 100. Null cuando falta más de un indicador. */
   puntaje: number | null;
   /** Cada indicador con su nivel y su peso, para revisar de dónde sale el número. */
@@ -600,16 +593,10 @@ export function puntajeDeRaven(percentil: number): number {
 
 function cognitiva(ctx: Contexto): Competencia {
   const p = ctx.ravenPercentil;
-  const laminas =
-    ctx.ravenRaw === null || ctx.ravenRaw === undefined ? '' : `, resolviendo ${ctx.ravenRaw} de las 36 láminas`;
 
   return {
     nombre: 'Habilidad cognitiva',
     referencia: p === null ? undefined : rangoRaven(p),
-    detalle:
-      p === null
-        ? undefined
-        : `Rinde por encima del ${Math.round(p)}% de la población de referencia${laminas}.`,
     mide: 'Estilo de aprendizaje: capacidad de lógica abstracta frente a pensamiento concreto y práctico.',
     puntaje: p === null ? null : puntajeDeRaven(p),
     renglones: [
