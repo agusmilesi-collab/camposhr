@@ -254,3 +254,28 @@ export function etiqueta(r: Pick<Resultado, 'perfiles' | 'tipo'>): string {
   if (r.tipo === 'doble') return `${nombres[0]} y ${nombres[1]}`;
   return nombres[0];
 }
+
+/**
+ * Cómo se nombra el perfil que la evaluadora leyó del informe Benziger.
+ *
+ * Uno solo, o dos. Con dos hay dos lecturas distintas del mismo par: una
+ * persona puede ser Frontal Izquierdo con algo de Basal Izquierdo, o las dos
+ * cosas con la misma fuerza. El separador lo dice sin explicarlo: "y" cuando
+ * pesan igual, "con" cuando el primero manda.
+ *
+ * `corto` da la versión de tabla ("FI y BI"), que es donde no entra el nombre
+ * largo.
+ */
+export function nombrePerfil(
+  cuadrantes: string[],
+  parejos = false,
+  corto = false
+): string | null {
+  const validos = cuadrantes.filter((c): c is Perfil =>
+    PERFILES.includes(c as Perfil)
+  );
+  if (validos.length === 0) return null;
+  const como = (p: Perfil) => (corto ? INFO[p].corto : INFO[p].nombre);
+  if (validos.length === 1) return como(validos[0]);
+  return `${como(validos[0])} ${parejos ? 'y' : 'con'} ${como(validos[1])}`;
+}

@@ -3158,6 +3158,21 @@ th.os-tabla-contacto {
   margin: 0;
 }
 
+/* A la derecha de la cruz: cómo se leen los dos cuadrantes cuando hay dos, y
+   debajo el aviso de siempre. Con uno solo queda el aviso, en el mismo lugar. */
+.os-benziger-lectura {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.os-benziger-relacion .os-ingreso-opcion {
+  min-width: 0;
+  padding: 4px 10px;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
 /* Qué va a pasar al subir el informe, o qué pasó. */
 .os-benziger-aviso {
   margin: 10px 0 0;

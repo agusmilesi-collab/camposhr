@@ -38,10 +38,17 @@ export async function POST(req: Request) {
   }
 
   const id = (form.get('evaluacionId') ?? '').toString().trim();
-  const cuadrantes = form
-    .getAll('cuadrante')
-    .map((c) => c.toString())
-    .filter((c) => PERFILES.includes(c as (typeof PERFILES)[number]));
+  // Hasta dos, sin repetir y en el orden en que llegan: ese orden es la
+  // jerarquía del perfil, así que no se ordena ni se deduplica al azar.
+  const cuadrantes = [
+    ...new Set(
+      form
+        .getAll('cuadrante')
+        .map((c) => c.toString())
+        .filter((c) => PERFILES.includes(c as (typeof PERFILES)[number]))
+    ),
+  ].slice(0, 2);
+  const parejos = form.get('parejos') === '1';
 
   const adjunto = form.get('pdf');
   const pdf = adjunto instanceof File && adjunto.size > 0 ? adjunto : null;
@@ -85,7 +92,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const r = await guardarBenziger(id, { cuadrantes, pdf, leido });
+    const r = await guardarBenziger(id, { cuadrantes, parejos, pdf, leido });
     if (!r.ok) return NextResponse.json(r, { status: 400 });
 
     const yo = await quienSoy();
@@ -94,7 +101,7 @@ export async function POST(req: Request) {
       accion: 'escritura',
       recurso: 'benziger',
       recursoId: id,
-      detalle: { cuadrantes, con_informe: r.conInforme, leido: Boolean(leido) },
+      detalle: { cuadrantes, parejos, con_informe: r.conInforme, leido: Boolean(leido) },
     });
 
     revalidateTag(CACHE_PSICOTECNICOS);

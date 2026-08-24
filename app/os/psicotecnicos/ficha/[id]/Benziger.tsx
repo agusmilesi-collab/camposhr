@@ -27,21 +27,30 @@
 
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
-import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
+import { INFO, PERFILES, nombrePerfil, type Perfil } from '@/lib/perfiles';
 
 export default function Benziger({
   id,
   cuadrantes,
+  parejos: parejosGuardados = false,
   informe,
 }: {
   id: string;
+  /** Uno o dos códigos. El primero es el preferente. */
   cuadrantes: string[];
+  /** Si el segundo pesa lo mismo que el primero. */
+  parejos?: boolean;
   /** El nombre del informe ya leído, o null si todavía no hay ninguno. */
   informe: string | null;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
-  const [cuadrante, setCuadrante] = useState(cuadrantes[0] ?? '');
+  // Hasta dos: el primero que se toca es el preferente y el segundo el que lo
+  // acompaña. `parejos` dice si ese segundo pesa lo mismo.
+  const [elegidos, setElegidos] = useState<Perfil[]>(
+    cuadrantes.filter((c): c is Perfil => PERFILES.includes(c as Perfil)).slice(0, 2)
+  );
+  const [parejos, setParejos] = useState(parejosGuardados);
   const [archivo, setArchivo] = useState<File | null>(null);
   const pdf = useRef<HTMLInputElement>(null);
   // Dos estados y no uno: son dos tarjetas con su propio botón, y compartir
@@ -54,11 +63,13 @@ export default function Benziger({
   const [errorCuadrante, setErrorCuadrante] = useState<string | null>(null);
 
   /** Manda las dos cosas juntas: el guardado es uno solo. */
-  async function guardar(quad: string, arch: File | null) {
+  async function guardar(quads: Perfil[], pares: boolean, arch: File | null) {
     try {
       const cuerpo = new FormData();
       cuerpo.set('evaluacionId', id);
-      if (quad) cuerpo.set('cuadrante', quad);
+      // Uno por cuadrante y en orden: del otro lado se leen con getAll.
+      for (const q of quads) cuerpo.append('cuadrante', q);
+      cuerpo.set('parejos', pares ? '1' : '0');
       if (arch) cuerpo.set('pdf', arch);
 
       const res = await fetch('/api/os/benziger', { method: 'POST', body: cuerpo });
@@ -75,7 +86,7 @@ export default function Benziger({
     setError(null);
     setHecho(null);
     setSubiendo(true);
-    const r = await guardar(cuadrante, archivo).finally(() => setSubiendo(false));
+    const r = await guardar(elegidos, parejos, archivo).finally(() => setSubiendo(false));
     if (!r.ok) {
       setError(r.motivo);
       return;
@@ -85,18 +96,34 @@ export default function Benziger({
     if (pdf.current) pdf.current.value = '';
   }
 
-  async function elegir(p: Perfil) {
-    const antes = cuadrante;
-    const nuevo = cuadrante === p ? '' : p;
-    setCuadrante(nuevo);
+  /**
+   * Toca un cuadrante: el primero es el preferente, el segundo lo acompaña.
+   * Tocar uno ya elegido lo saca. Con dos puestos, el que se toque después
+   * ocupa el lugar del segundo, así corregirlo no obliga a desmarcar antes.
+   */
+  function elegir(p: Perfil) {
+    const nuevos = elegidos.includes(p)
+      ? elegidos.filter((q) => q !== p)
+      : elegidos.length < 2
+        ? [...elegidos, p]
+        : [elegidos[0], p];
+    return aplicar(nuevos, nuevos.length === 2 ? parejos : false);
+  }
+
+  async function aplicar(nuevos: Perfil[], pares: boolean) {
+    const antes = elegidos;
+    const antesPares = parejos;
+    setElegidos(nuevos);
+    setParejos(pares);
     setErrorCuadrante(null);
     setEligiendo(true);
     // Sin archivo: acá solo cambia el cuadrante. Que salió bien se ve en el
     // estado del título, que pasa a nombrarlo, así que no hace falta decirlo
     // además con un texto que además crecería la tarjeta de al lado.
-    const r = await guardar(nuevo, null).finally(() => setEligiendo(false));
+    const r = await guardar(nuevos, pares, null).finally(() => setEligiendo(false));
     if (!r.ok) {
-      setCuadrante(antes);
+      setElegidos(antes);
+      setParejos(antesPares);
       setErrorCuadrante(r.motivo);
     }
   }
@@ -189,8 +216,8 @@ export default function Benziger({
       <section className="os-panel">
         <div className="os-panel-top">
           <h2>Cuadrante preferente</h2>
-          <span className={`os-sello-estado ${cuadrante ? 'os-verde' : 'os-ambar'}`}>
-            {cuadrante ? INFO[cuadrante as Perfil].nombre : 'Sin definir'}
+          <span className={`os-sello-estado ${elegidos.length ? 'os-verde' : 'os-ambar'}`}>
+            {nombrePerfil(elegidos, parejos) ?? 'Sin definir'}
           </span>
         </div>
         <div className="os-panel-cuerpo os-benziger-eleccion">
@@ -201,8 +228,8 @@ export default function Benziger({
               <button
                 key={p}
                 type="button"
-                className={`os-benziger-cuadrante${cuadrante === p ? ' elegido' : ''}`}
-                aria-pressed={cuadrante === p}
+                className={`os-benziger-cuadrante${elegidos.includes(p) ? ' elegido' : ''}`}
+                aria-pressed={elegidos.includes(p)}
                 title={INFO[p].nombre}
                 disabled={eligiendo}
                 onClick={() => elegir(p)}
@@ -211,13 +238,43 @@ export default function Benziger({
               </button>
             ))}
           </div>
-          <p className="os-benziger-aviso">
-            {errorCuadrante ? (
-              <span className="os-form-error">{errorCuadrante}</span>
-            ) : (
-              'Lo determina la evaluadora leyendo el informe: es una lectura, no un dato que el PDF traiga tabulado.'
+          <div className="os-benziger-lectura">
+            {/* Con dos elegidos falta decir cómo se relacionan: el segundo puede
+                acompañar al primero o pesar lo mismo. */}
+            {elegidos.length === 2 && (
+              <div
+                className="os-ingreso-opciones os-benziger-relacion"
+                style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}
+              >
+                <button
+                  type="button"
+                  className={`os-ingreso-opcion${parejos ? '' : ' puesta'}`}
+                  disabled={eligiendo}
+                  aria-pressed={!parejos}
+                  onClick={() => aplicar(elegidos, false)}
+                >
+                  {elegidos[1]} secundario
+                </button>
+                <button
+                  type="button"
+                  className={`os-ingreso-opcion${parejos ? ' puesta' : ''}`}
+                  disabled={eligiendo}
+                  aria-pressed={parejos}
+                  onClick={() => aplicar(elegidos, true)}
+                >
+                  Los dos por igual
+                </button>
+              </div>
             )}
-          </p>
+
+            <p className="os-benziger-aviso">
+              {errorCuadrante ? (
+                <span className="os-form-error">{errorCuadrante}</span>
+              ) : (
+                'Lo determina la evaluadora leyendo el informe: es una lectura, no un dato que el PDF traiga tabulado.'
+              )}
+            </p>
+          </div>
         </div>
       </section>
     </div>

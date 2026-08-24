@@ -41,8 +41,14 @@ async function borrarPdf(ruta: string): Promise<void> {
 }
 
 export type BenzigerCarga = {
-  /** Los códigos de los cuadrantes preferentes: FI, FD, BI, BD. */
+  /**
+   * Los códigos de los cuadrantes preferentes: FI, FD, BI, BD.
+   *
+   * Uno o dos, y el orden lleva la jerarquía: el primero es el que manda.
+   */
   cuadrantes: string[];
+  /** Si los dos pesan lo mismo. Con `false`, manda el primero de la lista. */
+  parejos?: boolean;
   pdf?: File | null;
   /** Lo que se leyó del informe, si se pudo leer. */
   leido?: {
@@ -62,6 +68,9 @@ export async function guardarBenziger(
   const fila: Record<string, unknown> = {
     evaluacion_id: evaluacionId,
     cuadrante_preferente: c.cuadrantes,
+    // Con menos de dos no hay nada que emparejar: guardarlo en true dejaría el
+    // dato listo para mentir en cuanto alguien agregue el segundo.
+    cuadrantes_parejos: c.cuadrantes.length === 2 ? Boolean(c.parejos) : false,
     actualizado_at: new Date().toISOString(),
   };
   if (c.pdf) {
