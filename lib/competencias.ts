@@ -466,7 +466,22 @@ export type Competencia = {
   /** 0 a 100. Null cuando falta más de un indicador. */
   puntaje: number | null;
   /** Cada indicador con su nivel y su peso, para revisar de dónde sale el número. */
-  renglones: { indicador: string; mide: string; nivel: Nivel; corte: string; peso: number }[];
+  renglones: {
+    indicador: string;
+    mide: string;
+    nivel: Nivel;
+    corte: string;
+    peso: number;
+    /**
+     * Lo que aportó, cuando no es un nivel de bajo a alto.
+     *
+     * El Raven entra con su percentil y no escalonado, así que su renglón no
+     * tiene nivel: sin esto decía "sin dato" al lado de un puntaje calculado
+     * con el dato, que es la peor forma de que alguien desconfíe de un número
+     * que está bien.
+     */
+    valor?: string;
+  }[];
 };
 
 /**
@@ -487,6 +502,10 @@ function cognitiva(ctx: Contexto): Competencia {
         nivel: null,
         corte: 'percentil del baremo',
         peso: 1,
+        valor:
+          ctx.ravenPercentil === null
+            ? undefined
+            : `percentil ${Math.round(ctx.ravenPercentil * 10) / 10}`,
       },
     ],
   };

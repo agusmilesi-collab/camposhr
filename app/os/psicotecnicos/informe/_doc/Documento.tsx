@@ -337,7 +337,8 @@ export default function Documento({
                 {c.renglones.map((r) => (
                   <li key={r.indicador}>
                     {r.indicador} · {r.mide} ·{' '}
-                    {r.nivel === null ? 'sin dato' : ['bajo', 'medio', 'alto'][r.nivel - 1]} ({r.corte})
+                    {r.valor ?? (r.nivel === null ? 'sin dato' : ['bajo', 'medio', 'alto'][r.nivel - 1])}{' '}
+                    ({r.corte})
                     {r.peso !== 1 && <b> · pesa ×{r.peso}</b>}
                   </li>
                 ))}
