@@ -318,6 +318,12 @@ que además trae el seguimiento como una columna. `Tabla.tsx`, que servía a tod
 las secciones a la vez, se borró el 24/8/2026; lo que compartía quedó en
 `piezas.tsx`.
 
+**En una tabla de consulta no se edita.** Entregados muestra el seguimiento y
+lo que contestó la empresa como dato, no como control: lo que se carga junto se
+carga desde la ficha de la persona, que es donde están la fecha de ingreso que
+agenda los noventa días y lo que dijeron. Con un botón por columna se cambiaba
+de a un campo y quedaba la mitad del seguimiento sin cargar.
+
 **Una tarjeta de tablero se define fuera de su componente.** Definida adentro,
 React la trata como un tipo nuevo en cada dibujo y desmonta el subárbol entero:
 se borra lo escrito en un campo y se pierde el clic en un botón, porque el

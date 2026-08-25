@@ -14,16 +14,25 @@
  * vivía donde nadie entra salvo que se acuerde. Acá se ve en la misma fila que
  * el informe que se entregó, que es contra lo que se compara la respuesta.
  *
- * La etapa sigue existiendo en la base: la columna la prende y la apaga.
+ * **Acá no se edita nada.** Todo lo que la fila muestra es dato: el
+ * seguimiento se prende y se contesta desde la ficha de la persona, que es
+ * donde están la fecha de ingreso que lo agenda y lo que contó la empresa. Una
+ * tabla de consulta con controles adentro invita a cambiar de a un campo lo que
+ * se carga junto, y deja la mitad del seguimiento sin cargar.
  */
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import type { Evaluacion } from '@/lib/psicotecnicos';
 import { fechaCorta } from '@/lib/hora';
-import Desplegable from '@/app/os/Desplegable';
 import { Cuenta, Falta, columnas } from './piezas';
+
+/** El color con el que se reconoce cada respuesta sin leerla. */
+const COLOR_RESULTADO: Record<string, string> = {
+  Bien: 'os-verde',
+  Regular: 'os-ambar',
+  Mal: 'os-rojo',
+};
 
 /**
  * Las columnas, con los anchos que declara `piezas.tsx`.
@@ -86,15 +95,7 @@ function llano(t: string): string {
     .toLocaleLowerCase('es');
 }
 
-function Fila({
-  e,
-  ocupada,
-  onGuardar,
-}: {
-  e: Evaluacion;
-  ocupada: boolean;
-  onGuardar: (campo: string, valor: unknown) => void;
-}) {
+function Fila({ e }: { e: Evaluacion }) {
   const enSeguimiento = e.etapa === 'Seguimiento';
 
   return (
@@ -148,48 +149,28 @@ function Fila({
           <span className="os-sello-estado os-rojo">No</span>
         )}
       </td>
-      {/* La columna que reemplazó a la sección: prende el seguimiento y después
-          muestra cuánto queda para los noventa días. */}
+      {/* Cuánto queda para los noventa días, o que todavía no hay reloj. Se
+          lee y no se toca: el seguimiento se prende desde la ficha, donde
+          están la fecha de ingreso que lo agenda y lo que contó la empresa. */}
       <td data-campo="Seguimiento">
         {enSeguimiento ? (
-          <button
-            className="os-boton os-boton-marcado"
-            disabled={ocupada}
-            onClick={() => onGuardar('etapa', 'Entregado')}
-            title="En seguimiento. Tocar para sacarlo."
-          >
-            <Cuenta al={e.seguimientoAl} ingreso={e.ingreso} />
-          </button>
+          <Cuenta al={e.seguimientoAl} ingreso={e.ingreso} />
         ) : (
-          <button
-            className="os-boton os-boton-marcado os-sello-estado os-gris"
-            disabled={ocupada}
-            onClick={() => onGuardar('etapa', 'Seguimiento')}
-            title="Marcar que esta persona entró a trabajar y hay que seguirla a los noventa días."
-          >
-            Sin seguir
-          </button>
+          <span className="os-sello-estado os-gris">Sin seguir</span>
         )}
       </td>
-      {/* Lo que se anota mientras se habla con la empresa: es el final del
-          circuito y lo único que dice si la evaluación acertó. Sin seguimiento
-          prendido no hay nada que preguntar todavía. */}
-      <td data-campo="Cómo le fue" className="os-tabla-modalidad">
-        {enSeguimiento ? (
-          <Desplegable
-            valor={e.seguimientoResultado ?? ''}
-            opciones={[
-              { valor: '', texto: 'Sin preguntar' },
-              { valor: 'Bien', texto: 'Bien', color: 'os-verde' },
-              { valor: 'Regular', texto: 'Regular', color: 'os-ambar' },
-              { valor: 'Mal', texto: 'Mal', color: 'os-rojo' },
-            ]}
-            alElegir={(v) => onGuardar('seguimientoResultado', v || null)}
-            deshabilitado={ocupada}
-            etiqueta="Cómo le fue en la empresa"
-          />
-        ) : (
+      {/* Lo que contestó la empresa: es el final del circuito y lo único que
+          dice si la evaluación acertó. Sin seguimiento prendido no hay nada
+          que preguntar todavía. */}
+      <td data-campo="Cómo le fue">
+        {!enSeguimiento ? (
           <span className="os-tabla-flojo">—</span>
+        ) : e.seguimientoResultado ? (
+          <span className={`os-sello-estado ${COLOR_RESULTADO[e.seguimientoResultado] ?? 'os-gris'}`}>
+            {e.seguimientoResultado}
+          </span>
+        ) : (
+          <span className="os-sello-estado os-gris">Sin preguntar</span>
         )}
       </td>
     </tr>
@@ -197,10 +178,6 @@ function Fila({
 }
 
 export default function Entregados({ filas }: { filas: Evaluacion[] }) {
-  const router = useRouter();
-  const [, empezar] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const [trabajando, setTrabajando] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
   // Arranca por fecha y de lo último a lo primero, que es como se consulta un
   // registro cuando uno no busca a nadie en particular.
@@ -212,25 +189,6 @@ export default function Entregados({ filas }: { filas: Evaluacion[] }) {
   /** Un clic ordena por esa columna; el siguiente da vuelta la dirección. */
   function ordenarPor(campo: string) {
     setOrden((o) => (o.campo === campo ? { campo, desc: !o.desc } : { campo, desc: false }));
-  }
-
-  async function guardar(id: string, campo: string, valor: unknown) {
-    setError(null);
-    setTrabajando(id);
-    try {
-      const res = await fetch('/api/os/psicotecnicos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, cambios: { [campo]: valor } }),
-      });
-      const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
-      if (!r.ok) setError(r.motivo ?? 'No se pudo guardar.');
-      else empezar(() => router.refresh());
-    } catch {
-      setError('No se pudo guardar.');
-    } finally {
-      setTrabajando(null);
-    }
   }
 
   const buscado = llano(busca.trim());
@@ -263,8 +221,6 @@ export default function Entregados({ filas }: { filas: Evaluacion[] }) {
 
   return (
     <>
-      {error && <p className="os-form-error">{error}</p>}
-
       {vencidos > 0 && (
         <div className="os-aviso">
           {vencidos === 1
@@ -329,12 +285,7 @@ export default function Entregados({ filas }: { filas: Evaluacion[] }) {
                 </tr>
               )}
               {ordenadas.map((e) => (
-                <Fila
-                  key={e.id}
-                  e={e}
-                  ocupada={trabajando === e.id}
-                  onGuardar={(campo, valor) => guardar(e.id, campo, valor)}
-                />
+                <Fila key={e.id} e={e} />
               ))}
             </tbody>
           </table>

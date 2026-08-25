@@ -59,7 +59,7 @@ export const ANCHO: Record<string, number> = {
   /* "Ver ficha" con su padding: 55 el texto y 22 el del botón, más los 28 de
      la celda. Con 88 el botón perdía su padding y el texto quedaba contra los
      dos bordes. */
-  Ficha: 106,
+  Ficha: 110,
   /* Los rótulos son "Factura" y "Cobro", que es lo que entra arriba de un
      sello de dos letras. */
   Factura: 96,
@@ -77,12 +77,11 @@ export const ANCHO: Record<string, number> = {
      rótulo "EVALUADORA" y no el valor. */
   Evaluadora: 120,
   Ingresó: 118,
-  Seguimiento: 124,
+  Seguimiento: 120,
   /* Cuánto queda para los noventa días: "faltan 12 días", "venció hace 3". */
   Faltan: 150,
-  /* "Sin preguntar" es la opción más larga del selector, y con 150 se cortaba
-     en el botón. */
-  'Cómo le fue': 124,
+  /* "Sin preguntar" es lo más largo que dice, y el rótulo mide casi igual. */
+  'Cómo le fue': 118,
   /* La columna de la acción, con el botón más ancho. */
   '': 166,
 };
