@@ -1448,16 +1448,22 @@
 
 
 
+/* El tilde es la marca de qué dice el capítulo, así que pesa: relleno, no
+   contorno, y del tamaño de un botón. Hueco y chico competía con el texto de al
+   lado en vez de encabezarlo. */
 .inf-piramide-tilde {
   flex: none;
   display: grid;
   place-items: center;
-  width: 21px;
-  height: 21px;
-  border: 1.5px solid var(--azul, #43648f);
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  color: var(--azul, #43648f);
-  font-size: 11px;
+  background: var(--azul, #43648f);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul, #43648f) 15%, transparent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 /* En la ficha el escalón es un botón; en el informe es texto. */
