@@ -1912,6 +1912,19 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   font-size: 0.88rem;
 }
 
+/* Un sello al lado del título de un panel, para lo que le pasa al conjunto. */
+.os-titulo-sello {
+  margin-left: 10px;
+  font-weight: 400;
+}
+
+/* Una ficha de cliente inactivo: se ve, pero no compite con las de todos los
+   días. */
+.os-cliente.inactiva {
+  background: none;
+  box-shadow: none;
+}
+
 /* El estado de una búsqueda terminada, con lo que se puede hacer al lado. */
 .os-cerrado-fila {
   display: inline-flex;

@@ -37,6 +37,8 @@ export type Cliente = {
   notas: string | null;
   /** El enlace secreto del portal. Todo cliente tiene el suyo desde el alta. */
   token: string | null;
+  /** Si se está trabajando con él. Los de Airtable se listan como activos. */
+  activa: boolean;
   /** Qué hay cargado de este cliente en Supabase. */
   pedidos: number;
   /** Sus búsquedas, para verlas sin salir de la ficha del cliente. */
@@ -60,20 +62,23 @@ type FilaEmpresa = {
   tamano: number | null;
   notas: string | null;
   token_portal: string | null;
+  activa: boolean | null;
   pedidos: { id: string; puesto: string; estado: string | null; fecha_pedido: string | null; evaluaciones: { id: string }[] }[];
   cotizaciones: { id: string }[];
 };
 
 const CAMPOS =
   'id,nombre,razon_social,cuit,condicion_iva,email_facturacion,contacto,' +
-  'direccion_fiscal,rubro,tamano,notas,token_portal,' +
+  'direccion_fiscal,rubro,tamano,notas,token_portal,activa,' +
   'pedidos(id,puesto,estado,fecha_pedido,evaluaciones(id)),cotizaciones(id)';
 
 export async function listarClientes(): Promise<Cliente[]> {
   const [enSupabase, conToken] = await Promise.all([
     select<FilaEmpresa>(
       'empresas',
-      `select=${CAMPOS}&activa=is.true&order=nombre.asc`,
+      // Vienen los dos: los inactivos se muestran aparte, no se esconden. Un
+      // cliente que no aparece en ningún lado no se puede volver a activar.
+      `select=${CAMPOS}&order=nombre.asc`,
       CACHE_CLIENTES
     ).catch(() => [] as FilaEmpresa[]),
     listarClientesConToken().catch(() => []),
@@ -98,6 +103,7 @@ export async function listarClientes(): Promise<Cliente[]> {
     // Supabase nace con la empresa, así que cubre a las que nunca tuvieron uno
     // y a las que se dan de alta desde acá.
     token: tokensPorClave.get(claveEmpresa(e.nombre)) ?? e.token_portal ?? null,
+    activa: e.activa !== false,
     pedidos: e.pedidos?.length ?? 0,
     susPedidos: (e.pedidos ?? [])
       .map((p) => ({
@@ -130,6 +136,9 @@ export async function listarClientes(): Promise<Cliente[]> {
       tamano: null,
       notas: null,
       token: c.token,
+      // Los de Airtable no tienen dónde marcarlo: se listan como activos hasta
+      // que se migren.
+      activa: true,
       pedidos: 0,
       susPedidos: [],
       evaluaciones: 0,

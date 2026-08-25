@@ -54,10 +54,20 @@ export async function POST(req: Request) {
   };
   const tamano = Number(datos.tamano);
 
+  /**
+   * Activo o inactivo.
+   *
+   * Un cliente inactivo es uno con el que no se está trabajando: sigue entero,
+   * con sus pedidos y sus informes, y deja de estar entre los de todos los
+   * días. Al dar de alta nace activo; al editar, se respeta lo que venga y solo
+   * si no viene nada se lo deja como estaba.
+   */
+  const id = String(datos.id ?? '').trim();
+
   const fila = {
     nombre,
     slug: slug(nombre),
-    activa: true,
+    ...(datos.activa === undefined ? (id ? {} : { activa: true }) : { activa: Boolean(datos.activa) }),
     razon_social: texto('razonSocial'),
     cuit: texto('cuit'),
     condicion_iva: texto('condicionIva'),
@@ -73,7 +83,6 @@ export async function POST(req: Request) {
   // los dos casos `token_portal` queda afuera del cuerpo: lo pone la base al
   // insertar, y mandarlo en una edición le cambiaría el enlace a quien ya lo
   // tiene en la mano.
-  const id = String(datos.id ?? '').trim();
   const res = id
     ? await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(id)}`, {
         method: 'PATCH',
