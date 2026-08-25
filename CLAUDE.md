@@ -251,14 +251,17 @@ tamaño en que se muestran se ven bien; ampliados, no hay técnica que recupere
 detalle que no está en el archivo. Para verlas más nítidas hay que volver a
 escanear a 300 DPI y correr el mismo recorte, que da piezas de 440 px.
 
-## Lo que es criterio clínico se edita desde Sistema
+## Lo que es criterio clínico se edita desde Configuración
 
 Hay decisiones del motor que no son técnicas: dónde corta cada rango del Raven,
 cuánto pesa cada indicador dentro de su competencia, qué dice cada lectura.
 Escritas en el código, cambiarlas pedía una entrega, y el criterio de quien firma
 el informe quedaba esperando a que alguien tuviera tiempo.
 
-Van en la tabla `ajustes` (clave → jsonb) y se editan en Sistema. **El código
+Van en la tabla `ajustes` (clave → jsonb) y se editan en Sistema →
+**Configuración**, en pestañas (`?ver=baremos`): eran cuatro entradas de la
+barra lateral para la misma pregunta. Las direcciones viejas (`/os/baterias`,
+`/os/baremos`, `/os/ponderaciones`, `/os/redacciones`) redirigen a su pestaña. **El código
 sigue trayendo el valor de fábrica y la tabla guarda la diferencia**: una clave
 que no está significa "usá lo de fábrica", que no es lo mismo que un valor vacío,
 y volver atrás es borrar la clave, no copiar los valores del día que se apretó el
@@ -276,10 +279,11 @@ dejaba la tabla mostrando los valores recién borrados. Se compara por valor y n
 por identidad, porque cada dibujo manda un objeto nuevo y compararlo por
 identidad borraría lo que se está escribiendo.
 
-Hoy son tres pantallas en Sistema: el baremo del Raven (`/os/baremos`), que
-mueve el rango que se nombra en el informe y el puntaje de habilidad cognitiva;
-los pesos de los indicadores (`/os/ponderaciones`); y los textos del diccionario
-(`/os/redacciones`).
+Son cuatro pestañas: qué toma y qué entrega cada batería, el baremo del Raven
+(que mueve el rango que se nombra en el informe y el puntaje de habilidad
+cognitiva), los pesos de los indicadores y los textos del diccionario. La de
+baterías guarda en su propia tabla y no en `ajustes`, porque una batería es una
+fila con su historia de precios y no un ajuste del motor.
 
 **Un peso se guarda por nombre, no por posición.** `claveDePeso` arma
 `test·competencia·indicador`: sumar un indicador arriba en el arreglo no puede
@@ -314,6 +318,44 @@ van así.
 Al tocar `leer()` hay que comprobar que los informes no se muevan: se vuelcan
 los de las 42 fichas con sumario antes y después y se comparan. La separación de
 condiciones y textos se hizo con ese control, y dio los 42 idénticos.
+
+**Qué toma y qué entrega una batería se tilda, no se escribe.** El vocabulario
+está en `lib/baterias-contenido.ts` y es cerrado, porque el nombre no es
+decorativo: la entrevista se cierra sola cuando están administrados los tests de
+la batería (`lib/entrevista-completa.ts`) y ahí se los busca por su nombre
+exacto. Escrito a mano, cada batería llegaba a nombrar lo mismo de otra manera y
+el cierre dejaba de encontrarlos.
+
+Dos combinaciones las rechaza la ruta, porque no fallan al guardarse sino meses
+después en la ficha de alguien: los dos tests de manchas juntos, donde
+`proyectivoDeLaBateria` toma el primero del arreglo y la evaluadora ve el que
+nadie eligió, y el sumario estructural sin ningún proyectivo que lo sostenga.
+Se guarda en el orden del catálogo y no en el que se tildó, así dos baterías con
+lo mismo se leen igual en la cotización y en el portal.
+
+**Vale para adelante**, como el precio: una evaluación ya tomada conserva lo que
+se le tomó, que son sus marcas de administrado.
+
+## El baremo propio del Raven se cuenta solo
+
+`lib/raven-propio.ts`. Qué tan raro es cada rango sale hoy de `RANGOS`, en
+`lib/raven.ts`, calculado sobre los primeros 35 candidatos. Al lado, en
+Configuración, se cuenta la frecuencia de todos los Raven cargados, con cuántos
+casos lleva: **esa todavía no rige**. Reemplaza a la escrita el día que se
+llegue a los 200 casos y se cambien esos números a mano.
+
+Son dos columnas al lado, y no una que pise a la otra, para poder ver cuánto se
+separan antes de decidir. El contador está porque "1 de cada 2" sobre catorce
+personas se lee con la misma confianza que sobre doscientas.
+
+Se cuenta contra los cortes que rigen y no contra los de fábrica: mover un corte
+cambia cuánta gente cae de cada lado, que es justo lo que se está decidiendo.
+
+**La frecuencia no va adentro del texto que se guarda.** `textoDelRango` deja
+"Rango III · Término medio" y nada más: metida ahí quedaría congelada la del día
+que se cargó la medición, y el día que cambie habría que reescribir todas las
+mediciones viejas para que no convivan dos. Las 39 que ya la tenían adentro se
+normalizaron el 25/8/2026.
 
 ## Un protocolo que no alcanza no da puntaje
 

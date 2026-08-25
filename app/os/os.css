@@ -2918,6 +2918,49 @@ th.os-tabla-contacto {
   margin-top: 10px;
 }
 
+/* El baremo propio: cuántos casos van y cuántos faltan para la meta. La barra
+   es la que dice de un vistazo si la frecuencia de al lado ya se puede creer.
+   `os-dato-flojo` es la cuenta de casos al lado de cada rango. */
+.os-baremo-propio {
+  margin-bottom: 16px;
+}
+
+.os-baremo-cuenta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.os-baremo-numero {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.os-baremo-barra {
+  height: 6px;
+  margin: 8px 0 10px;
+  border-radius: 3px;
+  background: var(--os-linea);
+  overflow: hidden;
+}
+
+.os-baremo-barra span {
+  display: block;
+  height: 100%;
+  background: var(--os-tinta);
+}
+
+.os-dato-flojo {
+  color: var(--os-suave);
+}
+
+/* Qué hace la pestaña que se está mirando. Con cuatro pantallas distintas
+   detrás de una sola entrada, el nombre solo no alcanza para saber qué se
+   toca. */
+.os-configuracion-que {
+  margin: -6px 0 16px;
+}
+
 .os-pestanas {
   display: flex;
   flex-wrap: wrap;
@@ -5052,6 +5095,54 @@ th.os-tabla-contacto {
   margin: 0;
   font-size: 0.84rem;
   list-style: disc;
+}
+
+/* Un renglón que entra o no entra en la batería. Todo el renglón es el botón:
+   con solo el punto había que apuntarle a siete píxeles. Apagado se atenúa el
+   texto además del color, porque verde y rojo no se distinguen en todos los
+   ojos y el punto solo no puede ser la única diferencia. */
+.os-entra {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-entra:not(.puesto) {
+  color: var(--os-suave);
+}
+
+.os-entra .os-punto-etapa {
+  flex: none;
+  /* Un poco más grande que el de las tablas: acá el punto es el control y no
+     un adorno al lado del dato. */
+  width: 9px;
+  height: 9px;
+}
+
+.os-entra:hover .os-punto-etapa {
+  box-shadow: 0 0 0 3px var(--os-linea-suave);
+}
+
+/* La misma lista, pero con tildes: sin viñeta y sin la sangría que la deja,
+   porque el cuadradito ya marca dónde empieza cada renglón. */
+.os-tildes {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  font-size: 0.84rem;
+  list-style: none;
+}
+
+.os-tildes .os-lista-opcional {
+  padding-left: 27px;
 }
 
 .os-lista li::marker {

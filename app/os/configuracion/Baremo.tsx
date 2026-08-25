@@ -23,6 +23,11 @@ export default function Baremo({
   rangos,
   fabrica,
   tocado,
+  casos,
+  meta,
+  media,
+  frecuencia,
+  enCadaRango,
 }: {
   /** Los que rigen ahora. */
   rangos: Rango[];
@@ -30,6 +35,16 @@ export default function Baremo({
   fabrica: Rango[];
   /** Si alguien los movió: con eso se ofrece volver. */
   tocado: boolean;
+  /** Cuántos Raven propios hay contados. */
+  casos: number;
+  /** Cuántos hacen falta para dejar de estimar. */
+  meta: number;
+  /** Aciertos promedio de los nuestros, contra los 18,19 del manual. */
+  media: number | null;
+  /** Qué tan raro es cada rango entre los nuestros, por numeral. */
+  frecuencia: Record<string, string>;
+  /** Cuántos cayeron en cada uno, por numeral. */
+  enCadaRango: Record<string, number>;
 }) {
   const router = useRouter();
   const [cortes, setCortes] = useState<Record<string, number>>(
@@ -97,6 +112,7 @@ export default function Baremo({
               <th>Hasta</th>
               <th>De fábrica</th>
               <th>Qué tan raro es</th>
+              <th>Entre los nuestros</th>
             </tr>
           </thead>
           <tbody>
@@ -128,6 +144,12 @@ export default function Baremo({
                     )}
                   </td>
                   <td className="os-tabla-flojo">{r.frecuencia}</td>
+                  <td className="os-tabla-flojo">
+                    {frecuencia[r.numeral]}
+                    {casos > 0 && (
+                      <span className="os-dato-flojo"> · {enCadaRango[r.numeral] ?? 0} casos</span>
+                    )}
+                  </td>
                 </tr>
               );
             })}
@@ -136,6 +158,31 @@ export default function Baremo({
       </div>
 
       <div className="os-panel-cuerpo">
+        <div className="os-baremo-propio">
+          <div className="os-baremo-cuenta">
+            <span className="os-baremo-numero">{casos}</span>
+            <span className="os-dato-rotulo">de {meta} casos propios</span>
+          </div>
+          <div
+            className="os-baremo-barra"
+            role="progressbar"
+            aria-valuenow={Math.min(casos, meta)}
+            aria-valuemin={0}
+            aria-valuemax={meta}
+          >
+            <span style={{ width: `${Math.min(100, (casos / meta) * 100)}%` }} />
+          </div>
+          <p className="os-form-nota">
+            La columna de la izquierda es la que rige y la de la derecha se cuenta sola: cada
+            Raven que se carga entra en ella y la corrige. Nuestra población promedia{' '}
+            {media === null ? 'todavía sin datos' : `${String(media).replace('.', ',')} aciertos`}{' '}
+            contra los 18,19 del manual, que está hecho sobre población española.
+            {casos < meta
+              ? ` Al llegar a ${meta} casos la contada reemplaza a la que rige, cambiando estos números a mano en lib/raven.ts.`
+              : ` Ya hay ${meta} casos: la contada se puede pasar a la que rige, cambiando estos números a mano en lib/raven.ts.`}
+          </p>
+        </div>
+
         <p className="os-form-nota">
           Los aciertos son sobre {RAVEN_MAXIMO} láminas. Subir un corte vuelve ese rango más
           exigente. Cambia el rango que se nombra en el informe y el puntaje de habilidad

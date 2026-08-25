@@ -52,10 +52,9 @@ const NAV: Grupo[] = [
   {
     grupo: 'Sistema',
     items: [
-      { href: '/os/baterias', texto: 'Baterías', icono: 'costos' },
-      { href: '/os/baremos', texto: 'Baremos', icono: 'costos' },
-      { href: '/os/ponderaciones', texto: 'Ponderaciones', icono: 'costos' },
-      { href: '/os/redacciones', texto: 'Redacciones', icono: 'escribir' },
+      // Las cuatro cosas que se pueden mover del motor viven juntas: eran
+      // cuatro entradas para la misma pregunta.
+      { href: '/os/configuracion', texto: 'Configuración', icono: 'rueda' },
       { href: '/os/herramientas', texto: 'Herramientas', icono: 'herramientas' },
       { href: '/os/especificaciones', texto: 'Especificaciones', icono: 'specs' },
     ],
@@ -80,6 +79,7 @@ const ICONOS = {
   accesos: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
   herramientas: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
   specs: <><path d="M5 4h11l3 3v13H5z" /><path d="M9 9h6" /><path d="M9 13h6" /><path d="M9 17h3" /></>,
+  rueda: <><circle cx="12" cy="12" r="3.2" /><path d="M12 2.8v2.6M12 18.6v2.6M4.5 4.5l1.9 1.9M17.6 17.6l1.9 1.9M2.8 12h2.6M18.6 12h2.6M4.5 19.5l1.9-1.9M17.6 6.4l1.9-1.9" /></>,
 };
 
 function Icono({ nombre }: { nombre: keyof typeof ICONOS }) {

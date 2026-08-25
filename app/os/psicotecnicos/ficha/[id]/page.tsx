@@ -335,7 +335,7 @@ function BenzigerVista({ f, id }: { f: Ficha; id: string }) {
  * trabajo de esta pestaña. Después el Raven con su puntaje, y por último los
  * cualitativos.
  */
-function Tests({ f, id }: { f: Ficha; id: string }) {
+function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
   const c = f.cabecera;
   return (
     <>
@@ -374,6 +374,7 @@ function Tests({ f, id }: { f: Ficha; id: string }) {
             origen={f.raven?.origen ?? null}
             tardo={f.raven?.duracion_segundos ?? null}
             sesion={f.sesionRaven}
+            rangos={rige.rangos}
           />
         </div>
       </section>
@@ -543,6 +544,7 @@ export default async function FichaPagina({
   ]);
   if (!ficha) notFound();
 
+
   // Las pestañas que se fueron siguen apareciendo en direcciones guardadas:
   // caen donde ahora vive lo suyo. `sumario` en la codificación y
   // `recomendacion` en el informe, que es donde se carga la conclusión.
@@ -625,7 +627,7 @@ export default async function FichaPagina({
       )}
       {/* Sin panel alrededor: la vista trae sus propias tarjetas. */}
       {ver === 'benziger' && <BenzigerVista f={ficha} id={params.id} />}
-      {ver === 'tests' && <Tests f={ficha} id={params.id} />}
+      {ver === 'tests' && <Tests f={ficha} id={params.id} rige={rige} />}
       {/* Sin panel alrededor: trae sus propias tarjetas, igual que Benziger y
           Tests. Envuelto, los dos paneles de adentro quedaban sobre un tercer
           fondo blanco y el conjunto se leía como una sola mancha. */}
