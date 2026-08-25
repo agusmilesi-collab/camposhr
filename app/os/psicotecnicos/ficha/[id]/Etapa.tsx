@@ -15,7 +15,7 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import Desplegable from '@/app/os/Desplegable';
 import { COLOR_ETAPA, ETAPAS } from '@/lib/psicotecnicos-tipos';
 
@@ -23,6 +23,12 @@ export default function Etapa({ id, etapa }: { id: string; etapa: string }) {
   const router = useRouter();
   const [, empezar] = useTransition();
   const [valor, setValor] = useState(etapa);
+
+  // La etapa también cambia sola: marcar que la persona entró a trabajar mueve
+  // la evaluación a Seguimiento. Sin esto, el desplegable seguía mostrando la
+  // anterior hasta recargar la página, porque el estado del componente no se
+  // reinicia cuando el servidor vuelve a dibujar la ficha.
+  useEffect(() => setValor(etapa), [etapa]);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

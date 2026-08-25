@@ -7,6 +7,7 @@ import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { listarAFacturar } from '@/lib/facturas';
 import { ESTADOS_FACTURA, totalDe } from '@/lib/facturas-tipos';
+import { CATEGORIAS_SERVICIOS } from '@/lib/monotributo';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -271,6 +272,35 @@ export async function POST(req: Request) {
           recurso: 'factura',
           recursoId: id,
           detalle: { cobrada_at: cobradaAt },
+        });
+        refrescar();
+        return NextResponse.json({ ok: true });
+      }
+
+      /**
+       * La categoría del monotributo de una emisora.
+       *
+       * La elige cada una y la usa la pantalla para decirle cuánto le queda
+       * antes de pasarse del tope. De la I a la K son solo para venta de cosas
+       * muebles, así que un prestador de servicios no puede estar ahí: se
+       * rechazan acá y no solo en el desplegable.
+       */
+      case 'categoria': {
+        const { emisorId, categoria } = datos;
+        if (!UUID.test(emisorId ?? '')) {
+          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        }
+        const letra = categoria === null || categoria === '' ? null : String(categoria).toUpperCase();
+        if (letra !== null && !CATEGORIAS_SERVICIOS.some((c) => c.letra === letra)) {
+          return NextResponse.json({ error: 'Esa categoría no existe.' }, { status: 400 });
+        }
+        await escribir(`emisores?id=eq.${emisorId}`, 'PATCH', { categoria: letra });
+        await anotarAcceso({
+          quien: yo.nombre,
+          accion: 'escritura',
+          recurso: 'emisor',
+          recursoId: emisorId,
+          detalle: { categoria: letra },
         });
         refrescar();
         return NextResponse.json({ ok: true });
