@@ -281,12 +281,22 @@ export async function marchaMonotributo(hoy = new Date()): Promise<Marcha[]> {
       anio: suma(anio),
       doce: suma(doce),
       enDolares: emitidas.filter((f) => f.emisorId === e.id && f.moneda === 'DOL').length,
-      meses: meses.map((m) => ({
-        ...m,
-        total: suyas
-          .filter((f) => f.fecha.slice(0, 7) === m.clave)
-          .reduce((n, f) => n + (f.importe ?? 0), 0),
-      })),
+      meses: meses.map((m) => {
+        const delMes = suyas.filter((f) => f.fecha.slice(0, 7) === m.clave);
+        // Una factura es de psicotécnicos si cubre alguna evaluación. Se mira
+        // la factura entera y no el renglón: el adicional Benziger va sin
+        // evaluación pero es de un candidato que sí está en el comprobante.
+        const suma = (cuales: Factura[]) =>
+          cuales.reduce((n, f) => n + (f.importe ?? 0), 0);
+        const psico = delMes.filter((f) => f.renglones.some((r) => r.evaluacionId !== null));
+        const servicios = delMes.filter((f) => f.renglones.every((r) => r.evaluacionId === null));
+        return {
+          ...m,
+          psico: suma(psico),
+          servicios: suma(servicios),
+          total: suma(delMes),
+        };
+      }),
     };
   });
 }

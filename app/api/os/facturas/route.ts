@@ -278,6 +278,98 @@ export async function POST(req: Request) {
       }
 
       /**
+       * Una factura que no sale del pipeline.
+       *
+       * Las evaluadoras no facturan solo psicotécnicos: los servicios de Campos
+       * HR (un ciclo de encuentros, un trabajo de estructura) los emite una de
+       * las dos con su propio CUIT, y ese ingreso va contra su monotributo
+       * igual que los psicotécnicos. Sin poder cargarlas, la cuenta del tope
+       * mentía por abajo, que es la forma peligrosa de mentir.
+       *
+       * **Acá el importe sí viene del formulario.** En las del pipeline se
+       * recalcula desde las evaluaciones tildadas, porque hay de dónde; en
+       * estas no hay nada que calcular: lo que se factura es lo que se acordó.
+       */
+      case 'suelta': {
+        const { emisorId, empresaId } = datos;
+        if (!UUID.test(emisorId ?? '') || !UUID.test(empresaId ?? '')) {
+          return NextResponse.json(
+            { error: 'Falta quién factura o a quién.' },
+            { status: 400 }
+          );
+        }
+        const fecha = String(datos.fecha ?? '');
+        if (!FECHA.test(fecha)) {
+          return NextResponse.json({ error: 'La fecha no es válida.' }, { status: 400 });
+        }
+        const concepto = String(datos.concepto ?? '').trim();
+        if (concepto.length < 3) {
+          return NextResponse.json(
+            { error: 'Escribí qué se está facturando.' },
+            { status: 400 }
+          );
+        }
+        const importe = Number(datos.importe);
+        if (!Number.isFinite(importe) || importe <= 0) {
+          return NextResponse.json({ error: 'El importe no es válido.' }, { status: 400 });
+        }
+        const numero =
+          datos.numero === '' || datos.numero === null || datos.numero === undefined
+            ? null
+            : Number(datos.numero);
+        if (numero !== null && (!Number.isInteger(numero) || numero < 1)) {
+          return NextResponse.json(
+            { error: 'El número de comprobante tiene que ser entero.' },
+            { status: 400 }
+          );
+        }
+        const puntoVenta =
+          datos.puntoVenta === '' || datos.puntoVenta === null || datos.puntoVenta === undefined
+            ? null
+            : Number(datos.puntoVenta);
+
+        const factura = await escribir('facturas', 'POST', {
+          origen: 'os',
+          emisor_id: emisorId,
+          empresa_id: empresaId,
+          numero,
+          punto_venta: puntoVenta,
+          fecha,
+          imp_total: importe,
+          moneda: 'PES',
+          concepto,
+          orden_compra: String(datos.ordenCompra ?? '').trim() || null,
+          notas: String(datos.notas ?? '').trim() || null,
+          estado: 'emitida',
+          quien: yo.nombre,
+        });
+
+        // Un renglón, con lo mismo que el concepto: el comprobante necesita
+        // decir qué se cobra, y sin renglones sale en blanco.
+        await escribir('factura_items', 'POST', [
+          {
+            factura_id: factura.id,
+            evaluacion_id: null,
+            descripcion: concepto,
+            detalle: String(datos.detalle ?? '').trim() || null,
+            cantidad: 1,
+            precio_unitario: importe,
+            importe,
+          },
+        ]);
+
+        await anotarAcceso({
+          quien: yo.nombre,
+          accion: 'escritura',
+          recurso: 'factura',
+          recursoId: factura.id,
+          detalle: { suelta: true, concepto, importe },
+        });
+        refrescar();
+        return NextResponse.json({ ok: true, id: factura.id });
+      }
+
+      /**
        * La categoría del monotributo de una emisora.
        *
        * La elige cada una y la usa la pantalla para decirle cuánto le queda

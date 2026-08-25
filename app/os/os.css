@@ -1552,19 +1552,59 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 
 /* Más angosta que su columna: doce barras pegadas se leen como un bloque, y lo
    que se compara es el alto de cada una. */
-.os-mes-lleno {
+.os-mes-pila {
   width: 58%;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  overflow: hidden;
   border-radius: 3px 3px 0 0;
-  background: var(--os-azul);
+}
+
+.os-mes-lleno {
+  width: 100%;
   min-height: 2px;
 }
 
-/* El mes que corre todavía se está llenando: no se compara con los cerrados. */
-.os-mes-lleno.en-curso {
-  background: color-mix(in srgb, var(--os-azul) 45%, var(--os-panel));
-  border: 1px solid var(--os-azul);
-  border-bottom: 0;
+/* Los dos trabajos, cada uno con su color: el azul es el del pipeline, que es
+   con el que se ven las etapas y las baterías; el violeta, lo demás. */
+.os-mes-lleno.psico {
+  background: var(--os-azul);
+}
+
+.os-mes-lleno.servicios {
+  background: var(--os-violeta);
+}
+
+/* Qué es cada color. Sin esto la barra partida no dice nada. */
+.os-referencias {
+  display: flex;
+  gap: 16px;
+  margin: 8px 0 0;
+  font-size: 0.74rem;
+  color: var(--os-suave);
+}
+
+.os-referencia {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.os-referencia-color {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.os-referencia-color.psico {
+  background: var(--os-azul);
+}
+
+.os-referencia-color.servicios {
+  background: var(--os-violeta);
 }
 
 .os-mes-rotulo {
@@ -2236,8 +2276,14 @@ textarea.os-campo {
 /* Una fila de acciones arriba de un bloque. */
 .os-barra-acciones {
   display: flex;
+  align-items: center;
   gap: 10px;
   margin-bottom: 16px;
+}
+
+/* Después de un panel abre lo que sigue, no cierra lo de arriba. */
+.os-panel + .os-barra-acciones {
+  margin-top: 18px;
 }
 
 /* El botón del enlace del Raven y lo que dice después de copiarlo. */

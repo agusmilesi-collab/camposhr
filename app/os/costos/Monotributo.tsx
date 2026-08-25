@@ -154,25 +154,11 @@ function Escala({ e }: { e: Marcha }) {
 }
 
 /**
- * Lo facturado mes a mes, en barras, de enero a diciembre.
- *
- * Los tres números de arriba dicen cuánto, y esto dice cuándo: si el trabajo
- * viene parejo, si hubo un mes que se llevó medio año o si hace tres que no
- * entra nada. Va por año comercial, así dos años se comparan mes contra mes;
- * la cuenta del tope va por los doce meses corridos, que es otra pregunta.
- *
- * **Todas se miden contra el mes más alto**, no contra el tope de la categoría:
- * la escala del tope aplasta un año de trabajo en una línea de nada. El mes que
- * corre va marcado porque todavía se está llenando y no se compara con los
- * cerrados; los que no llegaron van apagados, para no leerlos como meses sin
- * trabajo.
- */
-/**
  * El monto de un mes, corto.
  *
  * En una columna de treinta píxeles no entra "ARS 814.120", y cortado con
  * puntos suspensivos no dice nada. Abreviado se lee de un vistazo, y el monto
- * exacto está en el título de la barra.
+ * exacto está en el título de la barra, con sus dos mitades.
  */
 function corto(n: number): string {
   if (n === 0) return '';
@@ -180,35 +166,76 @@ function corto(n: number): string {
   return `${Math.round(n / 1000)} k`;
 }
 
+/**
+ * Lo facturado mes a mes, en barras, de enero a diciembre.
+ *
+ * Los tres números de arriba dicen cuánto, y esto dice cuándo y de qué: cada
+ * barra se parte en lo que salió de los psicotécnicos y lo que salió de los
+ * servicios de Campos HR, que es lo que cada una necesita para saber de dónde
+ * le vino el mes. Va por año comercial, así dos años se comparan mes contra
+ * mes; la cuenta del tope va por los doce meses corridos, que es otra pregunta.
+ *
+ * **Todas se miden contra el mes más alto**, no contra el tope de la categoría:
+ * la escala del tope aplasta un año de trabajo en una línea de nada. Los meses
+ * que no llegaron van apagados, para no leerlos como meses sin trabajo.
+ */
 function Barras({ meses }: { meses: Marcha['meses'] }) {
   const techo = Math.max(...meses.map((m) => m.total), 0);
-  // El último que ya empezó: es el que se está llenando.
-  const ahora = meses.filter((m) => !m.futuro).length - 1;
   if (techo === 0) {
     return <p className="os-escala-pie">Sin facturas emitidas este año.</p>;
   }
+
+  /** Un tramo de la barra: lo mínimo que se ve es dos píxeles. */
+  const alto = (n: number) => (n === 0 ? '0' : `${Math.max((n / techo) * 100, 2)}%`);
+
   return (
-    <div className="os-meses" role="img" aria-label="Facturado por mes, de enero a diciembre">
-      {meses.map((m, i) => (
-        <div
-          className={`os-mes${m.futuro ? ' futuro' : ''}`}
-          key={m.clave}
-          title={m.futuro ? m.etiqueta : `${m.etiqueta}: ${formatoImporte(m.total)}`}
-        >
-          <span className="os-mes-monto">{corto(m.total)}</span>
-          <div className="os-mes-caja">
-            {/* Un mes sin facturas no dibuja nada: con una barra mínima, doce
-                meses vacíos se leían como doce meses con algo. */}
-            {m.total > 0 && (
-              <div
-                className={`os-mes-lleno${i === ahora ? ' en-curso' : ''}`}
-                style={{ height: `${Math.max((m.total / techo) * 100, 3)}%` }}
-              />
-            )}
+    <>
+      <div className="os-meses" role="img" aria-label="Facturado por mes, de enero a diciembre">
+        {meses.map((m) => (
+          <div
+            className={`os-mes${m.futuro ? ' futuro' : ''}`}
+            key={m.clave}
+            title={
+              m.futuro
+                ? m.etiqueta
+                : `${m.etiqueta}: ${formatoImporte(m.total)}` +
+                  (m.servicios > 0
+                    ? ` (psicotécnicos ${formatoImporte(m.psico)}, Campos HR ${formatoImporte(
+                        m.servicios
+                      )})`
+                    : '')
+            }
+          >
+            <span className="os-mes-monto">{corto(m.total)}</span>
+            <div className="os-mes-caja">
+              {/* Un mes sin facturas no dibuja nada: con una barra mínima, doce
+                  meses vacíos se leían como doce meses con algo. Los dos tramos
+                  van apilados, con los servicios arriba porque son la
+                  excepción y así se los ve aunque sean pocos. */}
+              {m.total > 0 && (
+                <div className="os-mes-pila">
+                  {m.servicios > 0 && (
+                    <div className="os-mes-lleno servicios" style={{ height: alto(m.servicios) }} />
+                  )}
+                  {m.psico > 0 && (
+                    <div className="os-mes-lleno psico" style={{ height: alto(m.psico) }} />
+                  )}
+                </div>
+              )}
+            </div>
+            <span className="os-mes-rotulo">{m.etiqueta}</span>
           </div>
-          <span className="os-mes-rotulo">{m.etiqueta}</span>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      <p className="os-referencias">
+        <span className="os-referencia">
+          <i className="os-referencia-color psico" /> Psicotécnicos
+        </span>
+        <span className="os-referencia">
+          <i className="os-referencia-color servicios" /> Campos HR
+        </span>
+      </p>
+    </>
   );
 }

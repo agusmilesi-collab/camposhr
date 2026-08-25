@@ -402,6 +402,23 @@ reparte entre los tres, así que **Costos no tiene dueño: todos ven todo**, y l
 dos categorías de monotributo se ven juntas, porque una cerca del tope cambia
 con cuál de las dos conviene facturar lo que sigue.
 
+**Los servicios también se facturan, y desde Costos.** Un ciclo de encuentros o
+un trabajo de estructura lo emite una de las dos con su CUIT, así que ese
+ingreso va contra su monotributo igual que un psicotécnico: sin poder cargarlo,
+la cuenta del tope mentía por abajo, que es la forma peligrosa de mentir. Se
+carga y se cobra en Costos; Facturación es la cola de los psicotécnicos y nada
+más.
+
+**Las dos clases de factura se distinguen por sus renglones, no por una marca.**
+Un comprobante de psicotécnicos siempre lleva sus candidatos adentro
+(`factura_items.evaluacion_id`) y uno de servicios no lleva ninguno. Cada
+pantalla filtra por eso.
+
+**En una factura de servicios el importe se escribe.** En las del pipeline se
+recalcula del lado del servidor desde las evaluaciones tildadas, porque hay de
+dónde; en un servicio no hay nada que calcular: lo que se factura es lo que se
+acordó.
+
 La pantalla va en ese orden: primero los psicotécnicos, que es de donde sale el
 trabajo de todas las semanas, y después los servicios de Campos HR con sus
 cuatro cifras y sus oportunidades.
@@ -413,11 +430,14 @@ diciembre, y la cuenta del tope por los doce meses corridos**: son dos preguntas
 distintas y cada una tiene su ventana. Contra sí mismo el año se compara mes a
 mes; una ventana que se corre cada mes no deja comparar dos veces lo mismo.
 
+**Cada barra va partida en dos**: lo que salió de los psicotécnicos y lo que
+salió de los servicios de Campos HR. Es lo que cada una necesita para saber de
+dónde le vino el mes, y las dos mitades suman lo que va contra su tope.
+
 Las barras se miden contra el mes más alto y no contra el tope, que aplastaría
-un año en una línea de nada. El mes que corre va marcado porque todavía se está
-llenando; los que no llegaron van apagados, para no leerlos como meses sin
-trabajo; y un mes sin facturas no dibuja barra, porque con una barra mínima doce
-meses vacíos se leían como doce meses con algo.
+un año en una línea de nada. Los meses que no llegaron van apagados, para no
+leerlos como meses sin trabajo, y un mes sin facturas no dibuja barra, porque
+con una barra mínima doce meses vacíos se leían como doce meses con algo.
 
 Las dos facturan como monotributistas y pasarse del tope no es una multa: es
 quedar fuera del régimen y tener que inscribirse en el general. Por eso la
