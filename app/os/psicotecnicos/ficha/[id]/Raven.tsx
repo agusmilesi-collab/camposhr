@@ -30,7 +30,9 @@ import {
   puntajesPorRango,
   RANGOS,
   RAVEN_MAXIMO,
+  rangoDe,
   SIN_MEDICION,
+  type Rango,
 } from '@/lib/raven';
 import { fechaHora } from '@/lib/hora';
 
@@ -40,8 +42,6 @@ export type Sesion = {
   cierre: string | null;
   respuestas: Record<string, number> | null;
 };
-
-const TRAMOS = puntajesPorRango();
 
 /** Un decimal, escrito como se escribe en castellano. */
 const coma = (n: number) => n.toFixed(1).replace('.', ',');
@@ -110,6 +110,7 @@ export default function Raven({
   origen,
   sesion,
   tardo,
+  rangos = RANGOS,
 }: {
   id: string;
   raw: number | null;
@@ -120,6 +121,8 @@ export default function Raven({
   sesion: Sesion | null;
   /** Segundos que tardó en responderlo. */
   tardo: number | null;
+  /** Los cortes que rigen, que se pueden mover desde Configuración. */
+  rangos?: Rango[];
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -133,8 +136,13 @@ export default function Raven({
   const p = enPantalla?.percentil ?? percentil;
   const d = enPantalla?.desvios ?? desvios;
   const texto = enPantalla?.resultado ?? resultado ?? SIN_MEDICION;
-  // Cuál de los cinco es el suyo, para marcarlo en la escala.
-  const suyo = RANGOS.find((r) => texto.startsWith(`Rango ${r.numeral} ·`))?.numeral ?? null;
+  // Cuál de los cinco es el suyo, para marcarlo en la escala. Se busca por el
+  // puntaje que hay en pantalla y no por el texto guardado: los cortes se
+  // pueden mover, y el texto de una medición vieja nombra el rango de entonces.
+  const enEscala = valor === '' ? null : rangoDe(Number(valor), rangos);
+  const suyo =
+    enEscala?.numeral ?? rangos.find((r) => texto.startsWith(`Rango ${r.numeral} ·`))?.numeral ?? null;
+  const tramos = puntajesPorRango(rangos);
 
   async function guardar(t: string) {
     if (t === (raw === null ? '' : String(raw))) return;
@@ -194,8 +202,8 @@ export default function Raven({
       </div>
 
       <ol className="os-raven-escala">
-        {RANGOS.map((r) => {
-          const t = TRAMOS.get(r.numeral);
+        {rangos.map((r) => {
+          const t = tramos.get(r.numeral);
           return (
             <li key={r.numeral} className={`os-raven-nivel${suyo === r.numeral ? ' suyo' : ''}`}>
               <span className="os-raven-numeral">{r.numeral}</span>
@@ -242,7 +250,8 @@ export default function Raven({
         <p className="os-benziger-aviso">
           El percentil sale del baremo del manual y arriba de 28 aciertos es una proyección. Los
           rangos cortan por puntaje directo, con la frecuencia de los candidatos de Campos HR, que
-          promedian 21,11 aciertos.
+          promedian 21,11 aciertos. En Configuración se ve, al lado, la que van dando los casos
+          propios a medida que se cargan.
         </p>
       </div>
     </div>

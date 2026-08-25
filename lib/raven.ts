@@ -54,17 +54,23 @@ const DESVIO = 6.32;
  * puntaje directo es lo que se carga y lo que se compara entre candidatos de
  * una misma búsqueda.
  *
- * La frecuencia entre paréntesis dice qué tan raro es cada nivel, y está
- * calculada contra la población que evalúa Campos HR (media 21,11 aciertos,
- * desvío 7,10 sobre los primeros 35 candidatos), no contra el baremo español
- * del manual, que rinde casi tres puntos menos. Se recalcula cuando haya
- * suficientes casos: hasta entonces es una estimación de una muestra chica.
+ * **La frecuencia es la que rige y se escribe acá.** Está calculada contra la
+ * población que evalúa Campos HR (media 21,11 aciertos, desvío 7,10 sobre los
+ * primeros 35 candidatos), no contra el baremo español del manual, que rinde
+ * casi tres puntos menos.
+ *
+ * Al lado se cuenta la de los casos propios, que se va corrigiendo con cada
+ * Raven que entra (`lib/raven-propio.ts`), y se muestra en Configuración con
+ * cuántos casos lleva. **Esa todavía no rige**: reemplaza a la de acá el día
+ * que se llegue a los 200 casos y se cambien estos números a mano. Hasta
+ * entonces son dos columnas al lado, para poder ver cuánto se separan.
  *
  * El numeral romano los ordena de mayor a menor.
  */
 export type Rango = {
   numeral: string;
   nombre: string;
+  /** Qué tan raro es. La que rige hoy; la propia se cuenta aparte. */
   frecuencia: string;
   /** Desde cuántos aciertos empieza. */
   desde: number;
@@ -85,9 +91,16 @@ export const RANGOS: Rango[] = [
   { numeral: 'V', nombre: 'Deficiencia intelectual', frecuencia: '1 de cada 15 candidatos', desde: 0 },
 ];
 
-/** Cómo se escribe un rango. Es lo que queda guardado, así que no cambia. */
+/**
+ * Cómo se escribe un rango. Es lo que queda guardado.
+ *
+ * Sin la frecuencia, que se muestra al lado y sale de {@link RANGOS}: adentro
+ * del texto guardado quedaría congelada la del día que se cargó la medición, y
+ * el día que se cambie por la de los casos propios habría que reescribir todas
+ * las mediciones viejas para que no convivan dos.
+ */
 export function textoDelRango(r: Rango): string {
-  return `Rango ${r.numeral} · ${r.nombre} (${r.frecuencia})`;
+  return `Rango ${r.numeral} · ${r.nombre}`;
 }
 
 /** El rango de un puntaje directo. */
