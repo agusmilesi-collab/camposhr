@@ -63,11 +63,6 @@ export default async function Costos() {
     <Shell titulo="Costos" identidad={yo.nombre} nota={`${ganadas.length} aprobadas`}>
       <div className="os-encabezado">
         <h1>Costos</h1>
-        <p>
-          Lo que se cotiza y se gana es del estudio y se reparte entre los tres, así que
-          acá no hay dueño: todos ven todo. Los psicotécnicos van aparte, en Facturación,
-          porque cada evaluadora emite y cobra los suyos.
-        </p>
       </div>
 
       {/* Los psicotécnicos primero: es de donde sale el trabajo de todas las
@@ -75,7 +70,7 @@ export default async function Costos() {
           facturar de lo demás. */}
       <Monotributo emisoras={marcha} />
 
-      <div className="os-rotulo-bloque">Servicios Campos HR</div>
+      <div className="os-rotulo-seccion">Servicios Campos HR</div>
 
       <div className="os-cifras">
         <div className="os-cifra">

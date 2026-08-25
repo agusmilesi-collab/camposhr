@@ -41,7 +41,7 @@ export default function Monotributo({ emisoras }: { emisoras: Marcha[] }) {
     <>
       {/* "Psicotécnicos" y no "Monotributo": lo que se ve es lo que factura
           cada una, y el monotributo es contra qué se lo mide. */}
-      <div className="os-rotulo-bloque">Psicotécnicos</div>
+      <div className="os-rotulo-seccion">Psicotécnicos</div>
       <div className="os-monotributo">
         {emisoras.map((e) => (
           <Escala key={e.emisorId} e={e} />
@@ -196,6 +196,13 @@ function Barras({ meses }: { meses: Marcha['meses'] }) {
             className={`os-mes${m.futuro ? ' futuro' : ''}`}
             key={m.clave}
             title={m.futuro ? m.etiqueta : `${m.etiqueta}: ${formatoImporte(m.total)} en total`}
+            aria-label={
+              m.futuro
+                ? undefined
+                : `${m.etiqueta}: psicotécnicos ${formatoImporte(
+                    m.psico
+                  )}, Campos HR ${formatoImporte(m.servicios)}`
+            }
           >
             <span className="os-mes-monto">{corto(m.total)}</span>
             <div className="os-mes-caja">
@@ -207,20 +214,21 @@ function Barras({ meses }: { meses: Marcha['meses'] }) {
                 <div className="os-mes-pila">
                   {/* Cada tramo dice lo suyo: parándose encima de un color se
                       lee cuánto salió de ese trabajo, sin tener que restar. El
-                      título del tramo le gana al de la columna, que sigue
-                      diciendo el total del mes. */}
+                      cartel es propio y no el `title` del navegador, que tarda
+                      un segundo en salir y no se cambia al pasar de un tramo al
+                      otro sin salir de la barra. */}
                   {m.servicios > 0 && (
                     <div
                       className="os-mes-lleno servicios"
                       style={{ height: alto(m.servicios) }}
-                      title={`${m.etiqueta} · Campos HR: ${formatoImporte(m.servicios)}`}
+                      data-detalle={`Campos HR · ${formatoImporte(m.servicios)}`}
                     />
                   )}
                   {m.psico > 0 && (
                     <div
                       className="os-mes-lleno psico"
                       style={{ height: alto(m.psico) }}
-                      title={`${m.etiqueta} · Psicotécnicos: ${formatoImporte(m.psico)}`}
+                      data-detalle={`Psicotécnicos · ${formatoImporte(m.psico)}`}
                     />
                   )}
                 </div>

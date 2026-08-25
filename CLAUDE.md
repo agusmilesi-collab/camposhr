@@ -430,6 +430,10 @@ diciembre, y la cuenta del tope por los doce meses corridos**: son dos preguntas
 distintas y cada una tiene su ventana. Contra sí mismo el año se compara mes a
 mes; una ventana que se corre cada mes no deja comparar dos veces lo mismo.
 
+**Cada mitad de Costos abre con su línea** (`os-rotulo-seccion`): son dos
+dineros que no se mezclan, y un rótulo gris chico no alcanzaba para decir que
+ahí empieza otra cosa.
+
 **Cada barra va partida en dos**: lo que salió de los psicotécnicos y lo que
 salió de los servicios de Campos HR. Es lo que cada una necesita para saber de
 dónde le vino el mes, y las dos mitades suman lo que va contra su tope.

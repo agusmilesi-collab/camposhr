@@ -1439,6 +1439,37 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   margin-top: 30px;
 }
 
+/**
+ * El rótulo que parte la pantalla en dos.
+ *
+ * En Costos conviven dos dineros que no se mezclan: los psicotécnicos, que
+ * factura cada evaluadora, y los servicios de Campos HR, que son del estudio.
+ * Un rótulo gris chico no alcanzaba para decir que ahí empieza otra cosa: lleva
+ * su línea y el nombre en tinta plena.
+ */
+.os-rotulo-seccion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 14px;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-tinta);
+}
+
+.os-rotulo-seccion::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--os-linea);
+}
+
+.os-panel + .os-rotulo-seccion,
+.os-cifras + .os-rotulo-seccion {
+  margin-top: 34px;
+}
+
 /* El bloque suelto de arriba no tiene encabezado que lo separe de la marca. */
 .os-nav > div:first-child {
   padding-top: 8px;
@@ -1559,13 +1590,61 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   flex-direction: column;
   justify-content: flex-end;
   height: 100%;
-  overflow: hidden;
+}
+
+/* El radio va en el tramo de arriba y no en la pila: la pila no puede recortar,
+   porque el cartel del importe sale por encima de la barra. */
+.os-mes-pila > :first-child {
   border-radius: 3px 3px 0 0;
 }
 
 .os-mes-lleno {
+  position: relative;
   width: 100%;
   min-height: 2px;
+}
+
+/**
+ * Cuánto salió de ese color, al pasar por encima.
+ *
+ * Es un cartel propio y no el `title` del navegador: ese tarda un segundo en
+ * salir y no se cambia al pasar de un tramo al otro sin salir de la barra, que
+ * es justo lo que se hace para comparar los dos.
+ */
+.os-mes-lleno::after {
+  content: attr(data-detalle);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 7px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: var(--os-activo);
+  color: var(--os-activo-tinta);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 90ms ease;
+  z-index: 3;
+}
+
+.os-mes-lleno:hover::after {
+  opacity: 1;
+}
+
+/* En los meses de las puntas el cartel se saldría del panel: se apoya en el
+   borde de la barra en vez de centrarse. */
+.os-mes:nth-child(-n + 3) .os-mes-lleno::after {
+  left: 0;
+  transform: none;
+}
+
+.os-mes:nth-child(n + 10) .os-mes-lleno::after {
+  left: auto;
+  right: 0;
+  transform: none;
 }
 
 /* Los dos trabajos, cada uno con su color: el azul es el del pipeline, que es
@@ -1576,6 +1655,12 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 
 .os-mes-lleno.servicios {
   background: var(--os-violeta);
+}
+
+/* Una línea del color del panel entre los dos tramos: pegados, el corte se
+   pierde cuando la barra es chica. */
+.os-mes-lleno.servicios + .os-mes-lleno.psico {
+  border-top: 2px solid var(--os-panel);
 }
 
 /* Qué es cada color. Sin esto la barra partida no dice nada. */
