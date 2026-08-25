@@ -53,18 +53,15 @@ const TABLAS = {
 const NO_MIGRAR = ['Distribuidora Andina (prueba)'];
 
 /**
- * Los candidatos de Laruso que no cuelgan de ningún pedido.
+ * Los expedientes sin pedido se quedan en Airtable.
  *
- * Son diecisiete y todos de Laruso: el trabajo ahí no fue una selección sino un
- * mapeo de la gente que ya está adentro, y por eso nadie abrió un pedido por
- * persona. Se les arma uno solo, porque sin pedido una persona queda sin saber
- * a qué entró, que es lo único que explica qué se le tomó y por qué.
+ * Son diecisiete y todos de Laruso: ese trabajo no fue una selección sino un
+ * mapeo de la gente que ya está adentro, y se sigue llevando allá. Se les había
+ * armado un pedido para poder traerlos, y en el OS quedaban como diecisiete
+ * personas sin asignar que nadie iba a trabajar desde acá. Sin pedido no hay
+ * expediente: una persona sin saber a qué entró no explica qué se le tomó.
  */
-const PEDIDO_HUERFANOS = {
-  empresa: 'Laruso',
-  puesto: 'Mapeo organizacional',
-  familia: 'RRHH / Capital Humano',
-};
+const SIN_PEDIDO_NO_SE_TRAEN = true;
 
 const deVerdad = process.argv.includes('--de-verdad');
 const OS = env.OS_URL ?? 'http://localhost:3000';
@@ -213,56 +210,18 @@ async function main() {
     sumo(nuevo ? 'nuevos' : 'saltados', 'pedidos');
   }
 
-  // El pedido de los huérfanos, uno solo para todos.
-  let pedidoMapeo = null;
-  const huerfanos = aIndividuo.filter((i) => !primero(i.fields['Pedido']));
-  if (huerfanos.length > 0) {
-    const idEmpresa = Object.entries(empresaDe).find(
-      ([recId]) => aEmpresas.find((e) => e.id === recId)?.fields['Name'] === PEDIDO_HUERFANOS.empresa
-    )?.[1];
-    if (!idEmpresa) {
-      cuenta.avisos.push(`No encontré la empresa ${PEDIDO_HUERFANOS.empresa} para los huérfanos.`);
-    } else if (idEmpresa === '(ensayo)') {
-      // En ensayo la empresa todavía no existe, así que no hay contra qué
-      // buscar el pedido. Se cuenta, y los huérfanos lo toman como destino para
-      // que el parte no los liste a los diecisiete como si se fueran a perder.
-      pedidoMapeo = '(ensayo)';
-      sumo('nuevos', `pedido "${PEDIDO_HUERFANOS.puesto}" para los ${huerfanos.length} sin pedido`);
-    } else {
-      const previas = await supa(
-        `pedidos?select=id&empresa_id=eq.${idEmpresa}&puesto=eq.${encodeURIComponent(PEDIDO_HUERFANOS.puesto)}&limit=1`
-      );
-      pedidoMapeo = previas[0]?.id ?? null;
-      if (!pedidoMapeo && deVerdad) {
-        pedidoMapeo = (
-          await supa('pedidos', {
-            method: 'POST',
-            body: JSON.stringify({
-              empresa_id: idEmpresa,
-              puesto: PEDIDO_HUERFANOS.puesto,
-              estado: 'En curso',
-              familia: PEDIDO_HUERFANOS.familia,
-              origen: 'interno',
-            }),
-          })
-        )[0].id;
-      }
-      if (!previas[0]) sumo('nuevos', `pedido "${PEDIDO_HUERFANOS.puesto}" para los ${huerfanos.length} sin pedido`);
-    }
-  }
-
   // ── 3. Personas y evaluaciones ─────────────────────────────────────────────
   const evaluacionDe = {};
   for (const i of aIndividuo) {
     const f = i.fields;
     const recPedido = primero(f['Pedido']);
-    const pedido = recPedido ? pedidoDe[recPedido] : pedidoMapeo;
-    if (recPedido && !pedido) {
-      sumo('saltados', 'expedientes de la empresa de prueba');
+    if (!recPedido && SIN_PEDIDO_NO_SE_TRAEN) {
+      sumo('saltados', 'expedientes sin pedido, que se quedan en Airtable');
       continue;
     }
+    const pedido = pedidoDe[recPedido];
     if (!pedido) {
-      cuenta.avisos.push(`${f['Nombre']}: sin pedido y sin dónde colgarlo.`);
+      sumo('saltados', 'expedientes de la empresa de prueba');
       continue;
     }
 
