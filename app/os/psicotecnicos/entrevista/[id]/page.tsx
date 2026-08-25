@@ -181,6 +181,23 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                 id={e.id}
                 campoMarca="proyectivoAdministrado"
                 administrado={e.proyectivoAdministrado}
+                /* Codificar va en su propio renglón y no en la fila de las
+                   láminas: abre otra pantalla, la de la evaluadora, y en la
+                   misma fila se leía como una tercera forma de abrir la
+                   mancha. Solo Rorschach por ahora; el Zulliger usa la misma
+                   pantalla cuando tenga su tabla. */
+                debajo={
+                  t === 'Rorschach' ? (
+                    <a
+                      className="os-boton os-herramienta-codificar"
+                      href={`/os/psicotecnicos/entrevista/${e.id}/rorschach`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Codificar lámina I
+                    </a>
+                  ) : undefined
+                }
               >
                 <a
                   className="os-boton os-boton-firme"
@@ -191,20 +208,6 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                   {h.boton}
                 </a>
                 <LinkLaminas href={h.href} />
-                {/* Codificar va al lado de las láminas porque se usa con ellas
-                    abiertas: una pantalla muestra la mancha y la otra dice
-                    dónde vio la persona lo que vio. Solo Rorschach por ahora;
-                    el Zulliger usa la misma pantalla cuando tenga su tabla. */}
-                {t === 'Rorschach' && (
-                  <a
-                    className="os-boton"
-                    href={`/os/psicotecnicos/entrevista/${e.id}/rorschach`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Codificar lámina I
-                  </a>
-                )}
               </Papel>
             </Tarjeta>
           );

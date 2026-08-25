@@ -5820,6 +5820,14 @@ th.os-tabla-contacto {
   margin-top: 8px;
 }
 
+/* Codificar el Rorschach cuelga del renglón de abajo como los botones del
+   Bender, pero es un botón solo: sin esto la grilla de tres columnas se lo
+   lleva entero y queda un botón del ancho de la tarjeta. */
+.os-papel-dibujos > .os-herramienta-codificar {
+  grid-column: 1;
+  justify-self: start;
+}
+
 .os-papel-dibujos > .os-bender-ver {
   grid-column: 2;
   text-align: center;
