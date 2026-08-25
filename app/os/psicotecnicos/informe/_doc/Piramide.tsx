@@ -33,7 +33,7 @@ import { NIVELES, type NivelDiscursivo } from '@/lib/discursivo';
 /** Alto de cada escalón. Entran dos renglones de descripción. */
 const ALTO = 56;
 /** Cuánto se separan dos escalones. Marca el escalón sin partir la figura. */
-const SEPARACION = 5;
+const SEPARACION = 10;
 /** Ancho de la base de los escalones. */
 const ANCHO = 300;
 /**
