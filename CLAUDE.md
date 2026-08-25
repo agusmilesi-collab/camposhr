@@ -558,6 +558,14 @@ cuando la consulta filtraba por activa y los inactivos desaparecían de la
 pantalla. Los que siguen en Airtable no tienen dónde marcarlo y se listan como
 activos hasta que se migren.
 
+**Activo son dos cosas a la vez y las dos tienen que darse**: la marca de la
+base, que es la decisión de alguien, y que haya trabajo cargado (un pedido, o
+una cotización que salió). La marca nace en verdadero y nadie la toca, así que
+sola decía que estaba activo un cliente al que nunca se le hizo nada. Un lead
+sin mandar no cuenta: es una idea, no trabajo con ese cliente. Por eso a uno sin
+nada cargado la ficha no le ofrece el botón de activar: lo que lo activa es que
+entre trabajo.
+
 **Un pedido se cierra solo cuando se entregaron todos sus informes**
 (`lib/pedido-completo.ts`), que es lo que significa que la búsqueda terminó, y
 se reabre solo si vuelve a haber trabajo: se le suma un candidato o una
