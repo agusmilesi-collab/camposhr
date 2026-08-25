@@ -1364,6 +1364,18 @@
   background: color-mix(in srgb, var(--azul, #43648f) 5%, transparent);
 }
 
+/* Los que no le corresponden se atenúan, y solo cuando hay uno ubicado: sin
+   ninguno los cuatro pesan igual, que es lo que hay que ver para elegir. */
+.con-elegido .inf-escalon:not(.suyo) {
+  opacity: 0.45;
+}
+
+/* En la ficha vuelven enteros al pasar por encima: atenuados y clickeables a la
+   vez se leen como apagados. */
+.con-elegido .inf-escalon:not(.suyo):hover {
+  opacity: 1;
+}
+
 .inf-piramide-forma {
   display: grid;
   place-items: center;

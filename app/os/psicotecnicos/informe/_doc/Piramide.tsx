@@ -67,8 +67,11 @@ export default function Piramide({
   /** Si viene, cada escalón es un botón. En el informe no viene. */
   elegir?: (n: NivelDiscursivo) => void;
 }) {
+  // Con uno ubicado, los otros tres se atenúan: el que importa es a dónde puede
+  // llegar, y los demás quedan como referencia de dónde cae eso. Sin ninguno
+  // ubicado los cuatro pesan igual, que es lo que hay que ver para elegir.
   return (
-    <div className="inf-piramide">
+    <div className={nivel ? 'inf-piramide con-elegido' : 'inf-piramide'}>
       <ol style={{ gap: `${SEPARACION}px 14px`, gridAutoRows: `${ALTO}px` }}>
         {NIVELES.map((n, i) => {
           const suyo = n.nombre === nivel;
