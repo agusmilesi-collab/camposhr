@@ -383,6 +383,35 @@ frenarlo, soltar sobre un campo lo escribe adentro. Y frenarlo es además lo que
 le dice al navegador que el destino era válido, así el renglón se queda donde lo
 dejaron en vez de volar de vuelta al lugar del que salió.
 
+## El cobro se ve del lado del cliente
+
+El portal muestra una columna de facturación por candidato: pagado, impago o
+sin facturar. **Se publica solo donde el dato es cierto**, que hoy son las
+empresas ya migradas: ahí el estado sale de las facturas emitidas en el OS
+(`factura_items` cruzado con `facturas.cobrada_at`), y no de las dos tildes que
+vinieron de Airtable. Para las empresas que siguen en Airtable la columna no
+aparece: las tildes están sin cargar y publicarlas le diría "sin facturar" a un
+informe ya cobrado.
+
+**La factura manda sobre la tilde vieja**, y las anuladas no cuentan: una
+factura anulada es una que no existió, y dejarla contando le diría al cliente
+que ya se le facturó algo que hay que volver a facturarle.
+
+**Antes de la entrevista no se dice nada.** La cola de facturación arranca
+cuando la entrevista se tomó, así que en un candidato que recién entró la
+columna va vacía: "sin facturar" ahí se lee como algo pendiente y no lo es.
+
+## Los números de la barra los calcula cualquier pantalla
+
+`cuentasDeLaBarra()` en `app/os/psicotecnicos/datos.ts`. Cada pantalla armaba
+los suyos y pasaba solo el de su sección, así que entrar a una ficha o a
+Facturación apagaba todos los demás: la barra dejaba de decir cuánto hay en cada
+sección y lo decía nada más que en la que uno ya está mirando.
+
+Dicen cuántas se van a ver al entrar, no cuántas existen: respetan el filtro por
+cliente y el alcance de quien mira. Un número que no coincide con la pantalla no
+sirve para nada.
+
 ## Cerrar no es borrar
 
 Un pedido y un cliente se **cierran** cuando terminaron: siguen enteros y dejan

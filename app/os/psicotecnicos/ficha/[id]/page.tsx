@@ -24,6 +24,7 @@ import Raven from './Raven';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
 import Bateria from '../../Bateria';
+import { cuentasDeLaBarra } from '../../datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -534,7 +535,11 @@ export default async function FichaPagina({
   params: { id: string };
   searchParams: { ver?: string; desde?: string };
 }) {
-  const [yo, ficha] = await Promise.all([quienSoy(), fichaDe(params.id)]);
+  const [yo, ficha, cuentas] = await Promise.all([
+    quienSoy(),
+    fichaDe(params.id),
+    cuentasDeLaBarra(),
+  ]);
   if (!ficha) notFound();
 
   // Las pestañas que se fueron siguen apareciendo en direcciones guardadas:
@@ -552,7 +557,7 @@ export default async function FichaPagina({
   const desajuste = desajusteDeProyectivo(ficha);
 
   return (
-    <Shell titulo={`Psicotécnicos · ${nombre}`} identidad={yo.nombre} ancho>
+    <Shell titulo={`Psicotécnicos · ${nombre}`} identidad={yo.nombre} cuentas={cuentas} ancho>
       <Link className="os-volver-enlace" href={`/os/psicotecnicos/${volverA}`}>
         ← Volver a la lista
       </Link>
