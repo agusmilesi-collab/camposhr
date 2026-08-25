@@ -7,7 +7,7 @@ import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { rangosValidos } from '@/lib/raven';
 import { pesosValidos } from '@/lib/competencias';
-import { textosValidos } from '@/lib/redacciones';
+import { cortesValidos, textosValidos } from '@/lib/redacciones';
 
 export const runtime = 'nodejs';
 
@@ -19,6 +19,8 @@ const MOTIVO = {
     'Los pesos tienen que ser números enteros de 0 a 5, y ninguna competencia puede quedar con todos sus indicadores en cero.',
   redacciones_textos:
     'Cada texto tiene que ser de una lectura que exista y de hasta 1200 caracteres, y ninguna lectura puede quedarse sin lo que dice.',
+  redacciones_cortes:
+    'Cada corte tiene que ser un número de una lectura que entre contra un número fijo. Las que dependen del estilo o de la cantidad de respuestas no se mueven desde acá.',
 };
 export const dynamic = 'force-dynamic';
 
@@ -53,7 +55,7 @@ export async function POST(req: Request) {
   const clave = datos?.clave;
   const valor = datos?.valor;
 
-  const CLAVES = ['raven_rangos', 'competencias_pesos', 'redacciones_textos'];
+  const CLAVES = ['raven_rangos', 'competencias_pesos', 'redacciones_textos', 'redacciones_cortes'];
   if (!CLAVES.includes(clave)) {
     return NextResponse.json({ ok: false, motivo: 'Ajuste desconocido.' }, { status: 400 });
   }
@@ -88,7 +90,9 @@ export async function POST(req: Request) {
       ? rangosValidos(valor)
       : clave === 'competencias_pesos'
         ? pesosValidos(valor)
-        : textosValidos(valor);
+        : clave === 'redacciones_cortes'
+          ? cortesValidos(valor)
+          : textosValidos(valor);
   if (!limpios) {
     return NextResponse.json(
       {

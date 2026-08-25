@@ -1,10 +1,12 @@
 import 'server-only';
 import { fichaDe, proyectivoDe, type Ficha } from '@/lib/ficha';
 import {
+  cortesValidos,
   leer,
   porArea,
   senalDe,
   textosValidos,
+  type Cortes,
   type Lectura,
   type SumarioCrudo,
   type Textos,
@@ -224,20 +226,27 @@ export async function armarInforme(id: string): Promise<Informe | null> {
  * puede leer, o que no pasa su validación, se ignora y queda lo de fábrica: el
  * informe se arma igual.
  */
-export type Regulacion = { rangos: Rango[]; pesos: Record<string, number>; textos: Textos };
+export type Regulacion = {
+  rangos: Rango[];
+  pesos: Record<string, number>;
+  textos: Textos;
+  cortes: Cortes;
+};
 
-const DE_FABRICA: Regulacion = { rangos: RANGOS, pesos: {}, textos: {} };
+const DE_FABRICA: Regulacion = { rangos: RANGOS, pesos: {}, textos: {}, cortes: {} };
 
 export async function loQueRige(): Promise<Regulacion> {
-  const [r, p, t] = await Promise.all([
+  const [r, p, t, c] = await Promise.all([
     ajuste('raven_rangos'),
     ajuste('competencias_pesos'),
     ajuste('redacciones_textos'),
+    ajuste('redacciones_cortes'),
   ]);
   return {
     rangos: rangosValidos(r) ?? RANGOS,
     pesos: pesosValidos(p) ?? {},
     textos: textosValidos(t) ?? {},
+    cortes: cortesValidos(c) ?? {},
   };
 }
 
@@ -263,7 +272,7 @@ function tieneAlgo(c: Cuatro | null): boolean {
 }
 
 export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
-  const { rangos, pesos, textos } = rige;
+  const { rangos, pesos, textos, cortes } = rige;
   const c = f.cabecera;
   const faltantes: Faltante[] = [];
 
@@ -327,7 +336,7 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     return Array.isArray(suya) ? suya.filter((t) => typeof t === 'string') : calculada;
   };
 
-  const lecturas = sumario ? leer(sumario, ravenResultado, textos) : [];
+  const lecturas = sumario ? leer(sumario, ravenResultado, textos, cortes) : [];
   const destacadas = lecturas.filter((l) => senalDe(l) === 'destacada');
   const esperadas = lecturas.filter((l) => senalDe(l) === 'esperada');
   const desarrollar = lecturas.filter((l) => senalDe(l) === 'desarrollar');

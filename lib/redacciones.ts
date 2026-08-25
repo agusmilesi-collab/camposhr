@@ -10,6 +10,12 @@
  * Es el port a TypeScript de `redacciones.py`, que venía generando los informes
  * de mapeo. Se portó tal cual: los textos son los que validó la psicóloga.
  *
+ * Lo que cada lectura escribe y, en las que se disparan contra un número fijo,
+ * ese número, se mueven desde Sistema → Configuración → Redacciones. El
+ * algoritmo queda igual: elige las mismas lecturas, contra el corte que rija.
+ * El sumario estructural pinta sus indicadores con esos mismos cortes
+ * (`bandasDeLaHoja`), así que la hoja y el informe no pueden discrepar.
+ *
  * Tres cosas que el diccionario pide expresamente y se respetan:
  *
  *   · Zf bajo no se informa cuando el Raven también dio bajo, porque entonces
@@ -38,8 +44,13 @@ export type SumarioCrudo = Record<string, Record<string, unknown>>;
 
 // Bandas del diccionario. Donde el instrumento y el baremo difieren, manda el
 // instrumento, porque es el que sostiene la redacción.
-const LAMBDA_BANDA: [number, number] = [0.3, 0.8];
-const ZD_BANDA = 3.0;
+//
+// Los cortes contra un número fijo viven en `TEXTOS`, con la lectura que
+// disparan, porque se editan desde Sistema. Acá quedan los que no son un
+// número fijo por lectura: la banda de Afr, que depende del estilo, y el piso
+// de WDA%, que no dispara una lectura propia sino que parte en dos la de XA%
+// bajo.
+const WDA_ACEPTABLE = 0.8;
 const AFR_BANDA: Record<string, [number, number]> = {
   Introversivo: [0.53, 0.78],
   Ambigual: [0.53, 0.83],
@@ -99,27 +110,55 @@ function hEsperado(r: number, estilo: string): [number, number] {
  * lectura entra igual, porque describe cómo trabaja la persona.
  */
 /**
- * Qué dice cada lectura, separado de cuándo se dispara.
+ * Qué dice cada lectura, y contra qué número entra.
  *
- * Arriba, en `leer`, están las condiciones: qué índice, contra qué corte. Acá
- * está lo que se escribe cuando esa condición se cumple. Vivían juntos, y eso
- * hacía que corregir una palabra de un texto obligara a entrar al algoritmo.
+ * `leer` recorre el sumario y decide qué lecturas aplican. Acá está lo que se
+ * escribe cuando cada una se cumple y, en las que se disparan contra un número
+ * fijo, ese número. Todo vivía adentro del algoritmo, y eso hacía que corregir
+ * una palabra, o mover un corte medio punto, obligara a tocar el código.
  *
  * **La clave es el nombre de la rama y no su posición.** Sumar una rama en el
  * medio no puede correr los textos que alguien ya editó de una lectura a otra.
  *
- * `cuando` es la condición dicha en castellano, para que la pantalla pueda
- * mostrar de qué lectura se trata sin obligar a leer el código.
+ * Una lectura dice cuándo entra de una de dos formas:
+ *
+ *   · `corte`, cuando se dispara contra un número fijo ("menos de 0,30"). Ese
+ *     número se edita desde Sistema y el castellano se escribe con él, así que
+ *     mover el corte no puede dejar en pantalla una condición que ya no rige.
+ *   · `cuando`, el castellano escrito a mano, para las que se disparan contra
+ *     algo que no es un número fijo: una banda que depende del estilo (Afr),
+ *     de la cantidad de respuestas (Zf, P, contenidos humanos) o una relación
+ *     entre dos índices (a:p, COP y AG, GHR:PHR). Esas no se editan.
  */
 export type ClaveDeTexto = keyof typeof TEXTOS;
 
 /** Lo que alguien reescribió, por clave. Solo lo que cambió de fábrica. */
 export type Textos = Partial<Record<string, { dice?: string; recomienda?: string }>>;
 
+/**
+ * El número contra el que entra una lectura.
+ *
+ * `menor` entra por debajo y `mayor` por encima, los dos estrictos: el número
+ * es el último valor que **no** dispara la lectura. `decimales` es con cuántos
+ * se escribe y se edita, y `ademas` es lo que la condición pide aparte del
+ * número, cuando pide algo.
+ */
+export type Corte = {
+  op: 'menor' | 'mayor';
+  valor: number;
+  decimales: number;
+  ademas?: string;
+};
+
+/** Los cortes movidos desde Sistema, por clave. Solo los que cambiaron. */
+export type Cortes = Partial<Record<string, number>>;
+
 export type Redaccion = {
   area: string;
   indice: string;
-  cuando: string;
+  /** El castellano escrito a mano, en las lecturas que no tienen corte. */
+  cuando?: string;
+  corte?: Corte;
   dice: string;
   recomienda: string;
 };
@@ -128,28 +167,28 @@ export const TEXTOS = {
   'lambda-bajo': {
     area: 'Cómo procesa la información',
     indice: 'Lambda',
-    cuando: 'menos de 0,30',
+    corte: { op: 'menor', valor: 0.3, decimales: 2 },
     dice: 'Intenta captar todo, sin discriminar entre información relevante y accesoria. No se le escapa nada, y corre el riesgo de llenarse de datos que no sirven para resolver el problema, lo que puede hacer caer su eficacia.',
     recomienda: 'Ayudarlo a separar la información relevante de la accesoria, para que cuando tenga que resolver algo rápido pueda hacerlo sin impulsividad.',
   },
   'lambda-alto': {
     area: 'Cómo procesa la información',
     indice: 'Lambda',
-    cuando: 'más de 0,80',
+    corte: { op: 'mayor', valor: 0.8, decimales: 2 },
     dice: 'Simplifica sus percepciones más de lo esperado. Con eso evita procesar emociones y que los afectos lo invadan, y puede perder algún dato importante para la tarea.',
     recomienda: 'En situaciones con carga emocional, darle seguimiento para que no pierda datos o información importante.',
   },
   'zd-alto': {
     area: 'Cómo procesa la información',
     indice: 'Zd',
-    cuando: 'más de +3,0',
+    corte: { op: 'mayor', valor: 3, decimales: 1 },
     dice: 'Muy meticuloso en el análisis de la información: dedica más esfuerzo y energía que la mayoría a rastrear y explorar datos, por temor a equivocarse. Bajo presión externa, eso puede hacer fallar la toma de decisiones.',
     recomienda: 'Dar indicaciones claras y concretas para ayudarlo a enfocar en lo importante, y mostrarse abierto a consultas para calmar su temor a cometer errores, sobre todo al decidir.',
   },
   'zd-bajo': {
     area: 'Cómo procesa la información',
     indice: 'Zd',
-    cuando: 'menos de −3,0',
+    corte: { op: 'menor', valor: -3, decimales: 1 },
     dice: 'Examina el entorno de manera poco cuidadosa: hace un rastreo apresurado, no llega a recoger datos suficientes y decide antes de que aparezcan todos los puntos clave. Puede cometer más errores por responder antes de procesar toda la información disponible.',
     recomienda: 'Establecer instancias de chequeo o procedimientos que incluyan revisar determinados puntos antes de avanzar o decidir, para que no le falten datos en esas decisiones.',
   },
@@ -177,14 +216,14 @@ export const TEXTOS = {
   'dqv-alto': {
     area: 'Cómo procesa la información',
     indice: 'DQv',
-    cuando: 'más de 2',
+    corte: { op: 'mayor', valor: 2, decimales: 0 },
     dice: 'Aparece un modo de resolver poco reflexivo: puede avanzar sin detenerse a elaborar.',
     recomienda: 'Pedirle que comparta su razonamiento antes de avanzar con una decisión, para chequear criterios sobre todo al principio.',
   },
   'psv-alto': {
     area: 'Cómo procesa la información',
     indice: 'PSV',
-    cuando: 'más de 2',
+    corte: { op: 'mayor', valor: 2, decimales: 0 },
     dice: 'Las preocupaciones pueden interferir en su proceso cognitivo, y eso se nota en el día a día como cierta rigidez para flexibilizarse.',
     recomienda: 'Acompañarlo en los cambios, no dejarlo solo, y darle información y datos concretos para que logre flexibilizar.',
   },
@@ -219,21 +258,21 @@ export const TEXTOS = {
   'xa-bajo': {
     area: 'Cómo interpreta lo que ve',
     indice: 'XA%',
-    cuando: 'XA% menos de 0,80',
+    corte: { op: 'menor', valor: 0.8, decimales: 2 },
     dice: 'Es poco convencional en sus percepciones: en buena parte de las ocasiones no va a ver las cosas como las ve la mayoría, sino de un modo más personal.',
     recomienda: 'Chequear que el mensaje que se le quiere transmitir se entienda, por ejemplo preguntándole qué entendió de lo que se le pidió.',
   },
   'x-menos-alto': {
     area: 'Cómo interpreta lo que ve',
     indice: 'X−%',
-    cuando: 'más de 0,25',
+    corte: { op: 'mayor', valor: 0.25, decimales: 2 },
     dice: 'Aparece un apartamiento de lo convencional que puede aumentar el comportamiento desajustado frente a lo que la situación exige, y con eso las dificultades de comunicación con el entorno.',
     recomienda: 'Conviene considerar si lo que el puesto necesita se sostiene con este nivel de interpretación de los datos, porque puede traer roce con otros y caída de productividad.',
   },
   'xu-alto': {
     area: 'Cómo interpreta lo que ve',
     indice: 'Xu%',
-    cuando: 'más de 0,20',
+    corte: { op: 'mayor', valor: 0.2, decimales: 2 },
     dice: 'Marcada tendencia a ver las cosas desde su propio punto de vista, con reticencia a sumarse a visiones más convencionales. Si el entorno no lo presiona a ajustarse, no es relevante; si hay exigencia fuerte de ajustarse a lo ya definido, el riesgo de conflicto sube.',
     recomienda: 'Marcarle qué cosas se hacen de una manera establecida y sin modificaciones por más que las vea distinto, y dónde sí puede poner su impronta.',
   },
@@ -310,35 +349,35 @@ export const TEXTOS = {
   'intelectualizacion-alta': {
     area: 'Cómo decide y cómo piensa',
     indice: 'Intelectualización',
-    cuando: 'más de 5',
+    corte: { op: 'mayor', valor: 5, decimales: 0 },
     dice: 'Procesa las emociones como si fueran pensamientos. Con eso neutraliza su efecto, y a la vez tiende a distorsionar las situaciones, con lo cual las soluciones pierden eficacia. Se vuelve más vulnerable cuando la situación sube de intensidad.',
     recomienda: 'Ayudarlo con el registro de sus emociones, y darle lugar para procesarlas y encontrar respuestas más eficientes.',
   },
   'm-menos-alto': {
     area: 'Cómo decide y cómo piensa',
     indice: 'M−',
-    cuando: 'más de 1',
+    corte: { op: 'mayor', valor: 1, decimales: 0 },
     dice: 'Aparece cierta probabilidad de dificultades en la calidad de sus ideas.',
     recomienda: '',
   },
   'fm-cero': {
     area: 'Cómo decide y cómo piensa',
     indice: 'FM',
-    cuando: 'FM en cero',
+    corte: { op: 'menor', valor: 1, decimales: 0 },
     dice: 'Se le dificulta tomar registro de sus propias necesidades.',
     recomienda: 'Puede necesitar ayuda externa para empezar a registrarlas. Un entorno donde se le permita darse prioridad ayuda.',
   },
   'fm-alto': {
     area: 'Cómo decide y cómo piensa',
     indice: 'FM',
-    cuando: 'más de 5',
+    corte: { op: 'mayor', valor: 5, decimales: 0 },
     dice: 'Está con el malestar interno elevado por sus propias necesidades, y eso se manifiesta como tensión: puede afectar la atención, la concentración y el sueño.',
     recomienda: 'Ayudarlo a ordenar prioridades cuando se incrementa la carga de trabajo.',
   },
   'm-alto': {
     area: 'Cómo decide y cómo piensa',
     indice: 'm',
-    cuando: 'más de 2',
+    corte: { op: 'mayor', valor: 2, decimales: 0 },
     dice: 'Hay circunstancias externas que le están causando molestias importantes: está atravesando una situación estresante.',
     recomienda: 'Generar un espacio de charla para consultarle si necesita algo de la empresa o de su jefe para trabajar más tranquilo.',
   },
@@ -366,7 +405,7 @@ export const TEXTOS = {
   'c-pura-alta': {
     area: 'Cómo maneja lo que siente',
     indice: 'C pura',
-    cuando: 'más de 1',
+    corte: { op: 'mayor', valor: 1, decimales: 0 },
     dice: 'Disfruta de las situaciones vertiginosas, y en ellas es más propenso a desplegar conductas poco reflexivas.',
     recomienda: 'Mostrarle los límites que se esperan incluso en las situaciones más caóticas.',
   },
@@ -387,77 +426,77 @@ export const TEXTOS = {
   's-muy-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'S',
-    cuando: 'más de 4',
+    corte: { op: 'mayor', valor: 4, decimales: 0 },
     dice: 'Actitud de oposición hacia el entorno, difícil de modificar.',
     recomienda: 'Para que pueda flexibilizarla, evitar la confrontación directa y marcar límites claros y consistentes.',
   },
   's-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'S',
-    cuando: 'más de 2',
+    corte: { op: 'mayor', valor: 2, decimales: 0 },
     dice: 'Le cuesta cambiar de opinión.',
     recomienda: 'Ayudarlo a ver los otros puntos de vista mostrándole información concreta.',
   },
   'c-prima-alta': {
     area: 'Cómo maneja lo que siente',
     indice: "C'",
-    cuando: 'más de 4',
+    corte: { op: 'mayor', valor: 4, decimales: 0 },
     dice: 'Está conteniendo una irritación interna fuerte, que puede tardar bastante en bajar.',
     recomienda: 'Generar un espacio de conversación donde se le consulte si necesita algo de la empresa o de su jefe para trabajar más tranquilo.',
   },
   'sumt-cero': {
     area: 'Cómo maneja lo que siente',
     indice: 'SumT',
-    cuando: 'SumT en cero',
+    corte: { op: 'menor', valor: 1, decimales: 0 },
     dice: 'Es distante en el contacto con los demás: no se siente cómodo en las situaciones de cercanía emocional y tiende a evitarlas. Cuida mantener una distancia de seguridad.',
     recomienda: 'Ver cuánta cercanía emocional pide el puesto. Conviene no forzarla y respetar la distancia que prefiere, dejando una vía por la cual pueda pedir apoyo cuando lo necesite.',
   },
   'sumt-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'SumT',
-    cuando: 'más de 1',
+    corte: { op: 'mayor', valor: 1, decimales: 0 },
     dice: 'Necesita más cercanía y contacto que lo habitual: tiende a sentirse más solo y a depender de la presencia afectiva de otros.',
     recomienda: 'Adoptar un estilo de conducción cercano, que le dé contención.',
   },
   'v-presente': {
     area: 'Cómo maneja lo que siente',
     indice: 'V',
-    cuando: 'uno o más',
+    corte: { op: 'mayor', valor: 0, decimales: 0 },
     dice: 'Cuando se autoevalúa lo hace de manera severa: pocas veces está conforme con su propio desempeño, y se exige mucho.',
     recomienda: 'Evitar sumarle exigencia externa, porque ya se exige por dentro.',
   },
   'y-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'Y',
-    cuando: 'más de 1',
+    corte: { op: 'mayor', valor: 1, decimales: 0 },
     dice: 'Está atravesando una situación que le genera tensión y frente a la cual se siente inundado. Buena parte de ese malestar es reactivo y va a ceder si se resuelven las circunstancias que lo provocan.',
     recomienda: '',
   },
   'ego-bajo': {
     area: 'Cómo se ve a sí mismo',
     indice: 'Ego',
-    cuando: 'menos de 0,33',
+    corte: { op: 'menor', valor: 0.33, decimales: 2 },
     dice: 'No se toma a sí mismo como foco de atención en el grado suficiente: tiene una imagen desvalorizada de sí y no confía en sus recursos, con lo cual se puede dejar influenciar por los demás.',
     recomienda: 'Alentar y reconocer su desempeño, para fomentar su autoestima.',
   },
   'ego-alto': {
     area: 'Cómo se ve a sí mismo',
     indice: 'Ego',
-    cuando: 'más de 0,55',
+    corte: { op: 'mayor', valor: 0.55, decimales: 2 },
     dice: 'Tiende a centrarse en sí mismo más de lo habitual, dando prioridad a su punto de vista, con dificultad para mirar las cosas desde otra óptica y ponerse en el lugar del otro.',
     recomienda: 'En instancias de negociación puede necesitar asistencia: mostrarle datos que lo ayuden a considerar una visión distinta de la suya.',
   },
   'reflejos-presentes': {
     area: 'Cómo se ve a sí mismo',
     indice: 'Fr+rF',
-    cuando: 'uno o más',
+    corte: { op: 'mayor', valor: 0, decimales: 0 },
     dice: 'Necesita confirmación continua de su valor.',
     recomienda: 'El reconocimiento de él y de sus resultados funciona como motor de motivación.',
   },
   'an-xy-alto': {
     area: 'Cómo se ve a sí mismo',
     indice: 'An+Xy',
-    cuando: 'más de 3',
+    corte: { op: 'mayor', valor: 3, decimales: 0 },
     dice: 'Está más preocupado de lo habitual por su funcionamiento corporal.',
     recomienda: '',
   },
@@ -499,28 +538,28 @@ export const TEXTOS = {
   'aislamiento-muy-alto': {
     area: 'Cómo se relaciona',
     indice: 'Índice de aislamiento',
-    cuando: 'más de 0,33',
+    corte: { op: 'mayor', valor: 0.33, decimales: 2 },
     dice: 'Logra apenas contactos significativos.',
     recomienda: 'Al asignarle tareas nuevas, tener presente su preferencia por resolver de manera independiente.',
   },
   'aislamiento-alto': {
     area: 'Cómo se relaciona',
     indice: 'Índice de aislamiento',
-    cuando: 'más de 0,25',
+    corte: { op: 'mayor', valor: 0.25, decimales: 2 },
     dice: 'Está menos implicado de lo habitual en las interacciones, y puede preferir trabajar de manera independiente.',
     recomienda: 'Conviene que la mayoría de sus tareas sean asignaciones individuales.',
   },
   'per-alto': {
     area: 'Cómo se relaciona',
     indice: 'PER',
-    cuando: 'más de 2',
+    corte: { op: 'mayor', valor: 2, decimales: 0 },
     dice: 'Cuando se siente cuestionado puede reaccionar a la defensiva para justificarse.',
     recomienda: 'Hacerle las consultas y los pedidos de forma concreta, para que no los reciba como un cuestionamiento.',
   },
   'fd-presente': {
     area: 'Cómo se relaciona',
     indice: 'Fd',
-    cuando: 'uno o más',
+    corte: { op: 'mayor', valor: 0, decimales: 0 },
     dice: 'Presenta más conductas de dependencia de lo esperable: espera que los demás busquen la solución a los problemas.',
     recomienda: 'Alentar su autonomía paso a paso. Al principio necesita un referente con quien validar sus acciones o ideas.',
   },
@@ -576,21 +615,21 @@ export const TEXTOS = {
   'ea-bajo': {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
-    cuando: 'menos de 7',
+    corte: { op: 'menor', valor: 7, decimales: 0 },
     dice: 'Sus recursos de afrontamiento son limitados.',
     recomienda: '',
   },
   'ea-alto': {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
-    cuando: 'más de 11, con AdjD positivo',
+    corte: { op: 'mayor', valor: 11, decimales: 0, ademas: 'con AdjD positivo' },
     dice: 'Confirma un nivel de control elevado.',
     recomienda: '',
   },
   'ea-adecuado': {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
-    cuando: 'entre 7 y 11, con AdjD en cero',
+    cuando: 'entre los dos cortes de EA, con AdjD en cero',
     dice: 'Confirma una capacidad de control adecuada.',
     recomienda: '',
   },
@@ -616,6 +655,146 @@ function redaccion(clave: ClaveDeTexto, textos: Textos): Redaccion {
     dice: suyo.dice ?? base.dice,
     recomienda: suyo.recomienda ?? base.recomienda,
   };
+}
+
+/**
+ * Con qué rótulo aparece cada índice en la hoja del sumario estructural.
+ *
+ * La hoja está escrita en la nomenclatura de Exner y el diccionario nombra los
+ * índices con la suya, así que hacen falta las dos: Lambda es "L" en la hoja,
+ * y hay índices que la hoja repite en dos bloques (V y T salen en Controles y
+ * vuelven en Autopercepción e Interpersonal). Los que no están acá no se
+ * pintan, que es lo que corresponde a los que no tienen banda fija.
+ */
+const ROTULOS_DE_HOJA: Record<string, string[]> = {
+  Lambda: ['L'],
+  Zd: ['Zd'],
+  DQv: ['DQv'],
+  PSV: ['PSV'],
+  'XA%': ['XA%'],
+  'X−%': ['X−%'],
+  'Xu%': ['Xu%'],
+  Intelectualización: ['2AB+(Art+Ay)'],
+  'M−': ['M−'],
+  FM: ['FM'],
+  m: ['m'],
+  'C pura': ['C pura'],
+  S: ['S'],
+  "C'": ["C'"],
+  SumT: ['T', 'SumT'],
+  V: ['V', 'SumV'],
+  Y: ['Y'],
+  Ego: ['3r+(2)/R'],
+  // Solo el rótulo que trae los dos: la hoja del Zulliger muestra Fr a secas, y
+  // la lectura del diccionario es sobre Fr+rF, así que ahí no hay banda.
+  'Fr+rF': ['Fr+rF'],
+  'An+Xy': ['An+Xy'],
+  'Índice de aislamiento': [
+    'Aislamiento (Bt+2Cl+Ge+Ls+2Na/R)',
+    'Bt+2Cl+Ge+Ls+2Na/R',
+  ],
+  PER: ['PER'],
+  Fd: ['Fd'],
+  EA: ['EA'],
+};
+
+/** Hasta dónde puede moverse un corte. Fuera de esto no es un criterio. */
+const CORTE_MAXIMO = 1000;
+
+/** El corte que rige para esa lectura: el movido si lo hay, y si no el de fábrica. */
+export function corteDe(clave: ClaveDeTexto, cortes: Cortes = {}): number {
+  const base = (TEXTOS[clave] as Redaccion).corte;
+  if (!base) return NaN;
+  const suyo = cortes[clave];
+  return typeof suyo === 'number' && Number.isFinite(suyo) ? suyo : base.valor;
+}
+
+/** El número de un corte escrito como se lee en castellano. */
+export function numeroDeCorte(c: Corte, valor: number): string {
+  const escrito = Math.abs(valor).toFixed(c.decimales).replace('.', ',');
+  return valor < 0 ? `−${escrito}` : c.op === 'mayor' && c.decimales > 0 ? `+${escrito}` : escrito;
+}
+
+/**
+ * Cuándo entra esa lectura, dicho en castellano.
+ *
+ * Con corte se escribe con el número que rige hoy, no con el de fábrica: si
+ * alguien movió Lambda a 0,35, la pantalla dice "menos de 0,35". Sin corte se
+ * devuelve el castellano escrito a mano.
+ */
+export function cuandoDe(clave: ClaveDeTexto, cortes: Cortes = {}): string {
+  const t = TEXTOS[clave] as Redaccion;
+  if (!t.corte) return t.cuando ?? '';
+  const lado = t.corte.op === 'menor' ? 'menos de' : 'más de';
+  const cola = t.corte.ademas ? `, ${t.corte.ademas}` : '';
+  return `${lado} ${numeroDeCorte(t.corte, corteDe(clave, cortes))}${cola}`;
+}
+
+/**
+ * La banda esperada de cada índice de la hoja, con los cortes que rigen.
+ *
+ * Se arma con las mismas lecturas que escribe el informe, así que la pantalla
+ * no puede pintar una cosa y el informe decir otra: el mínimo es el corte de
+ * "menos de" más exigente y el máximo, el de "más de" más exigente. Un índice
+ * con dos cortes por arriba (S entra a los 2 y vuelve a entrar a los 4) se
+ * queda con el primero, que es donde deja de estar dentro de lo esperado.
+ *
+ * Devuelve la banda por rótulo de la hoja, que es con lo que la pantalla la
+ * busca. Los índices que no tienen banda fija no están: un corte que depende
+ * del estilo o de la cantidad de respuestas no se puede decidir mirando el
+ * rótulo, así que ese indicador queda sin pintar.
+ */
+export type Banda = {
+  indice: string;
+  minimo: number | null;
+  maximo: number | null;
+  /** Con cuántos decimales se escribe, para decir la banda como el corte. */
+  decimales: number;
+};
+
+export function bandasDeLaHoja(cortes: Cortes = {}): Record<string, Banda> {
+  const porIndice = new Map<string, Banda>();
+  for (const [clave, t] of Object.entries(TEXTOS as Record<string, Redaccion>)) {
+    if (!t.corte || !ROTULOS_DE_HOJA[t.indice]) continue;
+    const v = corteDe(clave as ClaveDeTexto, cortes);
+    const b =
+      porIndice.get(t.indice) ??
+      ({ indice: t.indice, minimo: null, maximo: null, decimales: 0 } as Banda);
+    b.decimales = Math.max(b.decimales, t.corte.decimales);
+    if (t.corte.op === 'menor') b.minimo = b.minimo === null ? v : Math.max(b.minimo, v);
+    else b.maximo = b.maximo === null ? v : Math.min(b.maximo, v);
+    porIndice.set(t.indice, b);
+  }
+
+  const porRotulo: Record<string, Banda> = {};
+  for (const [indice, banda] of porIndice) {
+    for (const rotulo of ROTULOS_DE_HOJA[indice]) porRotulo[rotulo] = banda;
+  }
+  return porRotulo;
+}
+
+/**
+ * Los cortes guardados, si sirven; null si no.
+ *
+ * Un corte tiene que ser de una lectura que exista y que tenga corte: mover el
+ * de una lectura que se dispara contra una banda del estilo o contra otra
+ * lectura no querría decir nada, y quedaría guardado sin efecto.
+ */
+export function cortesValidos(guardados: unknown): Cortes | null {
+  if (!guardados || typeof guardados !== 'object' || Array.isArray(guardados)) return null;
+  const limpios: Cortes = {};
+  for (const [clave, valor] of Object.entries(guardados as Record<string, unknown>)) {
+    const t = (TEXTOS as Record<string, Redaccion>)[clave];
+    if (!t?.corte) return null;
+    if (typeof valor !== 'number' || !Number.isFinite(valor)) return null;
+    if (Math.abs(valor) > CORTE_MAXIMO) return null;
+    // Se guarda con los decimales con los que se escribe: un corte con más
+    // cifras que las que la pantalla muestra se dispararía contra un número
+    // que nadie puede leer.
+    const redondeado = Number(valor.toFixed(t.corte.decimales));
+    if (redondeado !== t.corte.valor) limpios[clave] = redondeado;
+  }
+  return limpios;
 }
 
 /**
@@ -647,8 +826,15 @@ export function textosValidos(guardados: unknown): Textos | null {
   return limpios;
 }
 
-export function leer(s: SumarioCrudo, ravenRango: string, textos: Textos = {}): Lectura[] {
+export function leer(
+  s: SumarioCrudo,
+  ravenRango: string,
+  textos: Textos = {},
+  cortes: Cortes = {}
+): Lectura[] {
   const salida: Lectura[] = [];
+  /** El corte que rige para esa lectura. Ver `corteDe`. */
+  const c = (clave: ClaveDeTexto) => corteDe(clave, cortes);
   const sumar = (clave: ClaveDeTexto, valor: string, sigue: ClaveDeTexto | null = null) => {
     const t = redaccion(clave, textos);
     const cola = sigue ? redaccion(sigue, textos).dice : '';
@@ -668,16 +854,16 @@ export function leer(s: SumarioCrudo, ravenRango: string, textos: Textos = {}): 
 
   // ── Cómo procesa la información ────────────────────────────────────────────
   const lam = n(s, 'cabecera', 'Lambda');
-  if (lam < LAMBDA_BANDA[0]) {
+  if (lam < c('lambda-bajo')) {
     sumar('lambda-bajo', dec(lam));
-  } else if (lam > LAMBDA_BANDA[1]) {
+  } else if (lam > c('lambda-alto')) {
     sumar('lambda-alto', dec(lam));
   }
 
   const zd = n(s, 'procesamiento', 'Zd');
-  if (zd > ZD_BANDA) {
+  if (zd > c('zd-alto')) {
     sumar('zd-alto', conSigno(zd, 1));
-  } else if (zd < -ZD_BANDA) {
+  } else if (zd < c('zd-bajo')) {
     sumar('zd-bajo', conSigno(zd, 1));
   }
 
@@ -700,14 +886,14 @@ export function leer(s: SumarioCrudo, ravenRango: string, textos: Textos = {}): 
   }
 
   const dqv = n(s, 'procesamiento', 'DQv', n(s, 'localizacion', 'DQv'));
-  if (dqv > 2) {
+  if (dqv > c('dqv-alto')) {
     // El diccionario marca la atribución causal como no publicable: acá va la
     // conducta observable y la recomendación, sin el porqué.
     sumar('dqv-alto', `DQv ${dqv}`);
   }
 
   const psv = n(s, 'procesamiento', 'PSV');
-  if (psv > 2) {
+  if (psv > c('psv-alto')) {
     sumar('psv-alto', `PSV ${psv}`);
   }
 
@@ -727,19 +913,19 @@ export function leer(s: SumarioCrudo, ravenRango: string, textos: Textos = {}): 
   // ── Cómo interpreta lo que ve ──────────────────────────────────────────────
   const xa = n(s, 'calidad_formal', 'XA_pct');
   const wda = n(s, 'calidad_formal', 'WDA_pct');
-  if (xa < 0.8 && wda >= 0.8) {
+  if (xa < c('xa-bajo') && wda >= WDA_ACEPTABLE) {
     sumar('xa-bajo-wda-alto', `XA ${dec(xa)} · WDA ${dec(wda)}`);
-  } else if (xa < 0.8) {
+  } else if (xa < c('xa-bajo')) {
     sumar('xa-bajo', `XA ${dec(xa)}`);
   }
 
   const xMenos = n(s, 'calidad_formal', 'X_menos_pct');
-  if (xMenos > 0.25) {
+  if (xMenos > c('x-menos-alto')) {
     sumar('x-menos-alto', `X− ${dec(xMenos)}`);
   }
 
   const xu = n(s, 'calidad_formal', 'Xu_pct');
-  if (xu > 0.2) {
+  if (xu > c('xu-alto')) {
     sumar('xu-alto', `Xu ${dec(xu)}`);
   }
 
@@ -780,24 +966,24 @@ export function leer(s: SumarioCrudo, ravenRango: string, textos: Textos = {}): 
   }
 
   const intel = n(s, 'ideacion', 'Intelectualizacion');
-  if (intel > 5) {
+  if (intel > c('intelectualizacion-alta')) {
     sumar('intelectualizacion-alta', `2AB+(Art+Ay) ${intel}`);
   }
 
   const mMenos = n(s, 'ideacion', 'M_menos');
-  if (mMenos > 1) {
+  if (mMenos > c('m-menos-alto')) {
     sumar('m-menos-alto', `M− ${mMenos}`);
   }
 
   const fm = n(s, 'determinantes', 'FM');
-  if (fm === 0) {
+  if (fm < c('fm-cero')) {
     sumar('fm-cero', 'FM 0');
-  } else if (fm > 5) {
+  } else if (fm > c('fm-alto')) {
     sumar('fm-alto', `FM ${fm}`);
   }
 
   const m = n(s, 'determinantes', 'm');
-  if (m > 2) {
+  if (m > c('m-alto')) {
     sumar('m-alto', `m ${m}`);
   }
 
@@ -816,7 +1002,7 @@ export function leer(s: SumarioCrudo, ravenRango: string, textos: Textos = {}): 
     }
   }
 
-  if (cpuro > 1) {
+  if (cpuro > c('c-pura-alta')) {
     sumar('c-pura-alta', `C pura ${cpuro}`);
   }
 
@@ -829,49 +1015,49 @@ export function leer(s: SumarioCrudo, ravenRango: string, textos: Textos = {}): 
   }
 
   const sBlanco = n(s, 'afectos', 'S', n(s, 'localizacion', 'S'));
-  if (sBlanco > 4) {
+  if (sBlanco > c('s-muy-alto')) {
     sumar('s-muy-alto', `S ${sBlanco}`);
-  } else if (sBlanco > 2) {
+  } else if (sBlanco > c('s-alto')) {
     sumar('s-alto', `S ${sBlanco}`);
   }
 
   const cPrima = n(s, 'afectos', 'SumC_prima', n(s, 'determinantes', 'SumC_prima'));
-  if (cPrima > 4) {
+  if (cPrima > c('c-prima-alta')) {
     sumar('c-prima-alta', `C' ${cPrima}`);
   }
 
   const sumt = n(s, 'interpersonal', 'SumT', n(s, 'determinantes', 'T'));
-  if (sumt === 0) {
+  if (sumt < c('sumt-cero')) {
     sumar('sumt-cero', 'SumT 0');
-  } else if (sumt > 1) {
+  } else if (sumt > c('sumt-alto')) {
     sumar('sumt-alto', `SumT ${sumt}`);
   }
 
   const sumv = n(s, 'autopercepcion', 'SumV', n(s, 'determinantes', 'V'));
-  if (sumv > 0) {
+  if (sumv > c('v-presente')) {
     sumar('v-presente', `V ${sumv}`);
   }
 
   const sumy = n(s, 'determinantes', 'SumY', n(s, 'determinantes', 'Y'));
-  if (sumy > 1) {
+  if (sumy > c('y-alto')) {
     sumar('y-alto', `Y ${sumy}`);
   }
 
   // ── Cómo se ve a sí mismo ──────────────────────────────────────────────────
   const ego = n(s, 'autopercepcion', 'Ego');
-  if (ego < 0.33) {
+  if (ego < c('ego-bajo')) {
     sumar('ego-bajo', dec(ego));
-  } else if (ego > 0.55) {
+  } else if (ego > c('ego-alto')) {
     sumar('ego-alto', dec(ego));
   }
 
   const reflejos = n(s, 'autopercepcion', 'Fr') + n(s, 'autopercepcion', 'rF');
-  if (reflejos > 0) {
+  if (reflejos > c('reflejos-presentes')) {
     sumar('reflejos-presentes', `Fr+rF ${reflejos}`);
   }
 
   const anXy = n(s, 'autopercepcion', 'An_plus_Xy');
-  if (anXy > 3) {
+  if (anXy > c('an-xy-alto')) {
     sumar('an-xy-alto', `An+Xy ${anXy}`);
   }
 
@@ -895,19 +1081,19 @@ export function leer(s: SumarioCrudo, ravenRango: string, textos: Textos = {}): 
   }
 
   const ais = n(s, 'interpersonal', 'Aislamiento');
-  if (ais > 0.33) {
+  if (ais > c('aislamiento-muy-alto')) {
     sumar('aislamiento-muy-alto', dec(ais));
-  } else if (ais > 0.25) {
+  } else if (ais > c('aislamiento-alto')) {
     sumar('aislamiento-alto', dec(ais));
   }
 
   const per = n(s, 'interpersonal', 'PER');
-  if (per > 2) {
+  if (per > c('per-alto')) {
     sumar('per-alto', `PER ${per}`);
   }
 
   const fd = n(s, 'interpersonal', 'Fd');
-  if (fd > 0) {
+  if (fd > c('fd-presente')) {
     sumar('fd-presente', `Fd ${fd}`);
   }
 
@@ -940,11 +1126,11 @@ export function leer(s: SumarioCrudo, ravenRango: string, textos: Textos = {}): 
   }
 
   const ea = n(s, 'control_estres', 'EA');
-  if (ea < 7) {
+  if (ea < c('ea-bajo')) {
     sumar('ea-bajo', `EA ${dec(ea)}`);
-  } else if (ea > 11 && adjd > 0) {
+  } else if (ea > c('ea-alto') && adjd > 0) {
     sumar('ea-alto', `EA ${dec(ea)}`);
-  } else if (ea >= 7 && ea <= 11 && adjd === 0) {
+  } else if (ea >= c('ea-bajo') && ea <= c('ea-alto') && adjd === 0) {
     sumar('ea-adecuado', `EA ${dec(ea)}`);
   }
 

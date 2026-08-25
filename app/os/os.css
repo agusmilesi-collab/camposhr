@@ -713,6 +713,14 @@ html[data-os-lateral='compacta'] .os-boton-pie {
   letter-spacing: -0.01em;
 }
 
+/* Las lecturas del diccionario cuelgan del área, que es un h2: su título es un
+   h3 y se lee igual que el de cualquier otro panel. */
+.os-panel-top h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
 /* Dos enlaces a la derecha del título, uno al lado del otro. */
 .os-panel-enlaces {
   display: inline-flex;
@@ -1974,6 +1982,95 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 .os-redaccion-buscar {
   width: 100%;
   max-width: 420px;
+}
+
+/* ---------- Diccionario de lecturas ----------
+   Son sesenta y ocho repartidas en siete áreas: sin un índice arriba, llegar a
+   la última es bajar a ciegas. Los nombres van en fila y se acomodan solos. */
+.os-indice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.os-indice-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  font-size: 0.76rem;
+  color: var(--os-tinta);
+  text-decoration: none;
+  background: var(--os-panel-2);
+  border: 1px solid var(--os-linea-suave);
+  border-radius: 5px;
+}
+
+.os-indice-item:hover {
+  border-color: var(--os-linea);
+}
+
+.os-indice-cuenta {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7rem;
+  color: var(--os-suave);
+}
+
+/* El rótulo del área también es el destino del índice: se despega del panel
+   anterior para que al bajar quede a la vista y no pegado al borde. */
+.os-rotulo-ancla {
+  scroll-margin-top: 18px;
+}
+
+.os-rotulo-cuenta {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--os-suave);
+}
+
+/* El título de una lectura: el índice, y al lado contra qué entra. El corte se
+   edita ahí mismo, así que el campo es del ancho del número y no del renglón. */
+.os-lectura-titulo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.os-lectura-indice::after {
+  content: ' ·';
+  color: var(--os-suave);
+}
+
+.os-lectura-corte {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 400;
+}
+
+/* El campo del corte de una lectura: entra un número con signo y dos decimales
+   ("−3,0", "0,30"), y va pegado al "menos de" que lo precede, no centrado en
+   una celda como el del baremo. */
+.os-campo-umbral {
+  width: 5.5em;
+  padding: 4px 8px;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.os-lectura-marcas {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 /* Un formulario que entra en una fila: los campos se acomodan solos y el
@@ -4347,6 +4444,23 @@ th.os-tabla-contacto {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* El indicador contra su banda: verde mientras cae dentro de lo esperado, rojo
+   cuando la cruza. El fondo es tenue y la tinta la que cambia de verdad: un
+   sumario entero de bloques de color saturado no se puede leer, y lo que hay
+   que encontrar de un vistazo son los pocos que se salieron.
+
+   Los que no tienen banda fija quedan con el fondo neutro: no es "está bien",
+   es "acá no hay un número contra el cual medirlo". */
+.os-hoja-valor.os-hoja-dentro {
+  background: color-mix(in srgb, var(--os-verde) 12%, transparent);
+  color: var(--os-verde);
+}
+
+.os-hoja-valor.os-hoja-fuera {
+  background: color-mix(in srgb, var(--os-rojo) 14%, transparent);
+  color: var(--os-rojo);
 }
 
 .os-hoja-nota {

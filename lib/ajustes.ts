@@ -5,10 +5,11 @@ import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 /**
  * Lo que se puede mover desde Sistema, sin tocar el código.
  *
- * Tres cosas del motor son criterio clínico y no decisión técnica: dónde cortan
- * los rangos del Raven, cuánto pesa cada indicador dentro de su competencia y
- * qué dice cada lectura. El código trae el valor de fábrica y acá se lee la
- * diferencia, si alguien la guardó.
+ * Cuatro cosas del motor son criterio clínico y no decisión técnica: dónde
+ * cortan los rangos del Raven, cuánto pesa cada indicador dentro de su
+ * competencia, qué dice cada lectura del diccionario y contra qué número entra.
+ * El código trae el valor de fábrica y acá se lee la diferencia, si alguien la
+ * guardó.
  *
  * **Una clave que no está significa "usá lo de fábrica"**, que no es lo mismo
  * que un valor vacío: volver atrás es borrar la clave, no dejarla en cero. Es la
@@ -18,7 +19,11 @@ import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
  * cada tanto y la lee cada informe que se abre.
  */
 
-export type ClaveDeAjuste = 'raven_rangos' | 'competencias_pesos' | 'redacciones_textos';
+export type ClaveDeAjuste =
+  | 'raven_rangos'
+  | 'competencias_pesos'
+  | 'redacciones_textos'
+  | 'redacciones_cortes';
 
 type Fila = { clave: string; valor: unknown };
 
