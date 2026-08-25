@@ -1517,6 +1517,70 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   color: var(--os-rojo);
 }
 
+/**
+ * Lo facturado mes a mes, en barras.
+ *
+ * Doce columnas iguales que crecen desde abajo. El monto va arriba de cada una
+ * y en chico: se lee el que interesa sin tener que pasar el cursor, y en los
+ * meses vacíos no hay nada que leer.
+ */
+.os-meses {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 5px;
+  margin: 18px 0 4px;
+}
+
+/* Se llaman "mes" y no "barra" porque `.os-barra` ya es la barra de arriba del
+   OS: con ese nombre, cada columna del gráfico heredaba sus estilos y quedaba
+   de ancho cero. */
+.os-mes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.os-mes-caja {
+  width: 100%;
+  height: 76px;
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-mes-lleno {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  background: var(--os-azul);
+  min-height: 2px;
+}
+
+/* El mes que corre todavía se está llenando: no se compara con los cerrados. */
+.os-mes-lleno.en-curso {
+  background: color-mix(in srgb, var(--os-azul) 45%, var(--os-panel));
+  border: 1px solid var(--os-azul);
+  border-bottom: 0;
+}
+
+.os-mes-rotulo {
+  font-size: 0.68rem;
+  color: var(--os-suave);
+  letter-spacing: 0.04em;
+}
+
+.os-mes-monto {
+  font-size: 0.63rem;
+  color: var(--os-tinta-media);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  min-height: 1em;
+}
+
 /* ---------- Formularios ---------- */
 /* Todo cae sobre una grilla de dos columnas: un campo ocupa una o las dos, y
    nunca un ancho propio. Sin esto, tres campos con flex:1 al lado de uno

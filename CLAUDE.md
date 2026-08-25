@@ -395,6 +395,19 @@ dejaron en vez de volar de vuelta al lugar del que salió.
 salud del año. Facturación resuelve qué se emite y qué se cobra; en Costos se
 mira qué deja el trabajo y hasta dónde se puede facturar sin cambiar de régimen.
 
+**Son dos dineros distintos y por eso están en dos pantallas.** Los
+psicotécnicos los factura y los cobra cada evaluadora por su cuenta, así que esa
+pantalla muestra lo de cada una. Lo que se cotiza y se gana es del estudio y se
+reparte entre los tres, así que **Costos no tiene dueño: todos ven todo**, y las
+dos categorías de monotributo se ven juntas, porque una cerca del tope cambia
+con cuál de las dos conviene facturar lo que sigue.
+
+Además de los tres números, cada panel trae el gráfico de lo facturado mes a mes
+en esos doce meses: dice si el trabajo viene parejo, si hubo un mes que se llevó
+medio año o si hace tres que no entra nada. Las barras se miden contra el mes más
+alto y no contra el tope, que aplastaría doce meses en una línea de nada, y el
+mes que corre va marcado porque todavía se está llenando.
+
 Las dos facturan como monotributistas y pasarse del tope no es una multa: es
 quedar fuera del régimen y tener que inscribirse en el general. Por eso la
 pantalla muestra, para cada una, lo del mes, lo del año y **lo de los últimos

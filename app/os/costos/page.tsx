@@ -7,7 +7,7 @@ import {
   listarCotizaciones,
   resultadoDe,
 } from '@/lib/cotizaciones';
-import { esMia, quienSoy } from '@/lib/identidad';
+import { quienSoy } from '@/lib/identidad';
 import { marchaMonotributo } from '@/lib/facturas';
 import Monotributo from './Monotributo';
 
@@ -18,6 +18,12 @@ export const dynamic = 'force-dynamic';
  *
  * Solo entran las oportunidades aprobadas: lo que todavía no se cerró no es un
  * ingreso, y mezclarlo daría un resultado que no existe.
+ *
+ * **Acá no hay dueño: todos ven todo.** Es la otra mitad del dinero del
+ * estudio. Lo de psicotécnicos lo factura y lo cobra cada evaluadora por
+ * separado, y por eso esa pantalla muestra lo de cada una; lo que se cotiza y
+ * se gana es del estudio y se reparte entre los tres, así que mirarlo por
+ * persona no querría decir nada.
  */
 export default async function Costos() {
   const [yo, cotizaciones, costos, marcha] = await Promise.all([
@@ -27,9 +33,7 @@ export default async function Costos() {
     marchaMonotributo(),
   ]);
 
-  // Cada una ve lo suyo. Quien tiene alcance de todo ve las dos, porque las dos
-  // categorías son una sola decisión: qué le conviene facturar a cada una.
-  const mias = marcha.filter((m) => esMia(m.nombre, yo));
+
 
   const ganadas = cotizaciones.filter((c) => c.estado === 'Aprobada');
   const deLa = (id: string) => costos.filter((x) => x.cotizacionId === id);
@@ -43,6 +47,11 @@ export default async function Costos() {
     <Shell titulo="Costos" identidad={yo.nombre} nota={`${ganadas.length} aprobadas`}>
       <div className="os-encabezado">
         <h1>Costos</h1>
+        <p>
+          Lo que se cotiza y se gana es del estudio y se reparte entre los tres, así que
+          acá no hay dueño: todos ven todo. Los psicotécnicos van aparte, en Facturación,
+          porque cada evaluadora emite y cobra los suyos.
+        </p>
       </div>
 
       <div className="os-cifras">
@@ -70,7 +79,10 @@ export default async function Costos() {
         </div>
       </div>
 
-      <Monotributo emisoras={mias} />
+      {/* Las dos, siempre: Costos no reparte por persona. Lo que se mira acá es
+          el conjunto, y una categoría cerca del tope cambia con cuál de las dos
+          conviene facturar lo que sigue. */}
+      <Monotributo emisoras={marcha} />
 
       {ganadas.length === 0 && (
         <div className="os-panel">
