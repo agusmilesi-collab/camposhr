@@ -37,7 +37,14 @@ export type Cliente = {
   notas: string | null;
   /** El enlace secreto del portal. Todo cliente tiene el suyo desde el alta. */
   token: string | null;
-  /** Si se está trabajando con él. Los de Airtable se listan como activos. */
+  /**
+   * Si se está trabajando con él.
+   *
+   * Son dos cosas a la vez y las dos tienen que darse: la marca de la base, que
+   * es la decisión de alguien, y que haya trabajo cargado. Un cliente sin un
+   * solo pedido ni una cotización enviada no es un cliente activo por más que
+   * nadie lo haya desactivado: la marca nace en verdadero y nadie la toca.
+   */
   activa: boolean;
   /** Qué hay cargado de este cliente en Supabase. */
   pedidos: number;
@@ -64,13 +71,13 @@ type FilaEmpresa = {
   token_portal: string | null;
   activa: boolean | null;
   pedidos: { id: string; puesto: string; estado: string | null; fecha_pedido: string | null; evaluaciones: { id: string }[] }[];
-  cotizaciones: { id: string }[];
+  cotizaciones: { id: string; estado: string | null }[];
 };
 
 const CAMPOS =
   'id,nombre,razon_social,cuit,condicion_iva,email_facturacion,contacto,' +
   'direccion_fiscal,rubro,tamano,notas,token_portal,activa,' +
-  'pedidos(id,puesto,estado,fecha_pedido,evaluaciones(id)),cotizaciones(id)';
+  'pedidos(id,puesto,estado,fecha_pedido,evaluaciones(id)),cotizaciones(id,estado)';
 
 export async function listarClientes(): Promise<Cliente[]> {
   const [enSupabase, conToken] = await Promise.all([
@@ -103,7 +110,10 @@ export async function listarClientes(): Promise<Cliente[]> {
     // Supabase nace con la empresa, así que cubre a las que nunca tuvieron uno
     // y a las que se dan de alta desde acá.
     token: tokensPorClave.get(claveEmpresa(e.nombre)) ?? e.token_portal ?? null,
-    activa: e.activa !== false,
+    activa:
+      e.activa !== false &&
+      ((e.pedidos?.length ?? 0) > 0 ||
+        (e.cotizaciones ?? []).some((c) => c.estado && c.estado !== 'Lead')),
     pedidos: e.pedidos?.length ?? 0,
     susPedidos: (e.pedidos ?? [])
       .map((p) => ({
@@ -115,7 +125,9 @@ export async function listarClientes(): Promise<Cliente[]> {
       }))
       .sort((a, b) => (b.fecha ?? '').localeCompare(a.fecha ?? '')),
     evaluaciones: (e.pedidos ?? []).reduce((n, p) => n + (p.evaluaciones?.length ?? 0), 0),
-    cotizaciones: e.cotizaciones?.length ?? 0,
+    // Las que salieron: un lead sin mandar es una idea, no trabajo con este
+    // cliente, y es lo que decide si está activo.
+    cotizaciones: (e.cotizaciones ?? []).filter((c) => c.estado && c.estado !== 'Lead').length,
   }));
 
   // Los de Airtable que todavía no existen de este lado.

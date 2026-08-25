@@ -59,7 +59,11 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
           <h2>
             Datos
             {!cliente.activa && (
-              <span className="os-sello-estado os-gris os-titulo-sello">Inactivo</span>
+              <span className="os-sello-estado os-gris os-titulo-sello">
+                {cliente.pedidos === 0 && cliente.cotizaciones === 0
+                  ? 'Inactivo · sin trabajo cargado'
+                  : 'Inactivo'}
+              </span>
             )}
           </h2>
           <div className="os-portal-acciones">
@@ -83,9 +87,13 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
             <button className="os-boton" onClick={() => setEditando(true)}>
               Editar
             </button>
-            <button className="os-boton" disabled={tocando} onClick={cambiarEstado}>
-              {tocando ? '…' : cliente.activa ? 'Desactivar' : 'Activar'}
-            </button>
+            {/* Un cliente sin un solo pedido ni una cotización enviada no se
+                puede activar a mano: lo que lo activa es que entre trabajo. */}
+            {(cliente.activa || cliente.pedidos > 0 || cliente.cotizaciones > 0) && (
+              <button className="os-boton" disabled={tocando} onClick={cambiarEstado}>
+                {tocando ? '…' : cliente.activa ? 'Desactivar' : 'Activar'}
+              </button>
+            )}
           </div>
         </div>
 

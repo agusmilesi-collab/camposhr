@@ -97,21 +97,22 @@ function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
                 <i className={`os-punto-etapa ${c.activa ? 'os-verde' : 'os-gris'}`} />
                 {c.nombre}
               </h2>
-              {abiertos > 0 && (
-                <span className="os-sello-estado os-azul">
-                  {abiertos === 1 ? '1 búsqueda' : `${abiertos} búsquedas`}
-                </span>
-              )}
             </div>
+            {/* Cuántas búsquedas y cuánta gente, en una línea. El sello con el
+                número que había arriba decía lo mismo dos veces. */}
             <p className="os-cliente-linea">
               {abiertos === 0 ? (
                 <span className="os-tabla-flojo">Sin búsquedas abiertas</span>
-              ) : gente === 0 ? (
-                'todavía sin candidatos'
-              ) : gente === 1 ? (
-                '1 candidato en curso'
               ) : (
-                `${gente} candidatos en curso`
+                <>
+                  {abiertos === 1 ? '1 búsqueda' : `${abiertos} búsquedas`}
+                  {' · '}
+                  {gente === 0
+                    ? 'todavía sin candidatos'
+                    : gente === 1
+                      ? '1 candidato'
+                      : `${gente} candidatos`}
+                </>
               )}
             </p>
             <p className="os-cliente-pie">
