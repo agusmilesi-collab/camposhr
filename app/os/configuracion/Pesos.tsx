@@ -22,6 +22,36 @@ import { columnas } from '../psicotecnicos/piezas';
 
 const MAXIMO = 5;
 
+/**
+ * Qué parte del puntaje se lleva cada indicador, en enteros que suman 100.
+ *
+ * Redondear cada uno por su cuenta no cierra: tres indicadores del mismo peso
+ * dan 33, 33 y 33, y la columna suma 99 sin que nada esté mal. Se reparte por
+ * resto mayor, así que ningún aporte se corre más de un punto del que le toca y
+ * el total dice lo que tiene que decir. Con todos los pesos en cero no hay nada
+ * que repartir y la competencia queda sin puntaje: eso se devuelve como null y
+ * la tabla lo dice.
+ */
+function aportes(pesos: number[]): number[] | null {
+  const total = pesos.reduce((n, p) => n + p, 0);
+  if (total === 0) return null;
+  const exactos = pesos.map((p) => (p / total) * 100);
+  const enteros = exactos.map(Math.floor);
+  let sobran = 100 - enteros.reduce((n, x) => n + x, 0);
+  const orden = exactos
+    .map((x, i) => ({ i, resto: x - Math.floor(x) }))
+    .sort((a, b) => b.resto - a.resto);
+  for (const { i } of orden) {
+    if (sobran <= 0) break;
+    // Un indicador en cero no se lleva el redondeo de otro: sale del promedio y
+    // tiene que verse en cero.
+    if (pesos[i] === 0) continue;
+    enteros[i] += 1;
+    sobran -= 1;
+  }
+  return enteros;
+}
+
 const COLUMNAS = ['Indicador', 'Qué mide', 'Dónde corta', 'Peso', 'Aporte'];
 
 /* Medidos en pantalla contra el contenido más largo de cada columna, más los 28
@@ -29,15 +59,19 @@ const COLUMNAS = ['Indicador', 'Qué mide', 'Dónde corta', 'Peso', 'Aporte'];
    los suyos según lo que le tocó y la misma columna caía en otro lugar en cada
    panel: nueve tablas de lo mismo y ninguna alineada con la anterior.
 
-   Las dos últimas las manda el rótulo y no el contenido: "Aporte" con 72 px
-   salía cortado en "APO…" arriba de un número de cuatro caracteres. Lo que se
-   recorta es "Qué mide", que repite lo que el nombre del indicador ya dice. */
+   `columnas` los pasa a porcentajes, así que lo que se declara es el reparto y
+   no el ancho: en una ventana angosta todas se achican juntas. Peso y Aporte se
+   llevan una parte que no les corresponde por lo que muestran, sino porque son
+   las dos que se miran y las únicas que no se pueden recortar: un campo de dos
+   dígitos apretado a cincuenta píxeles deja el número cortado. Lo que cede el
+   ancho es "Dónde corta", que es texto de referencia y se lee entero en el
+   informe. */
 const MEDIDAS = columnas(COLUMNAS, {
   Indicador: 190,
-  'Qué mide': 340,
-  'Dónde corta': 555,
-  Peso: 78,
-  Aporte: 86,
+  'Qué mide': 300,
+  'Dónde corta': 415,
+  Peso: 120,
+  Aporte: 135,
 });
 
 export type Hoja = {
@@ -129,7 +163,9 @@ export default function Pesos({ hojas, tocado }: { hojas: Hoja[]; tocado: boolea
           <p className="os-rotulo-seccion">{h.test}</p>
 
           {h.competencias.map((c) => {
-            const total = c.indicadores.reduce((n, i) => n + (pesos[i.clave] ?? 0), 0);
+            const suyos = c.indicadores.map((i) => pesos[i.clave] ?? 0);
+            const total = suyos.reduce((n, p) => n + p, 0);
+            const parte = aportes(suyos);
             return (
               <section className="os-panel" key={`${h.test}-${c.nombre}`}>
                 <div className="os-panel-top">
@@ -154,8 +190,8 @@ export default function Pesos({ hojas, tocado }: { hojas: Hoja[]; tocado: boolea
                       </tr>
                     </thead>
                     <tbody>
-                      {c.indicadores.map((i) => {
-                        const peso = pesos[i.clave] ?? 0;
+                      {c.indicadores.map((i, n) => {
+                        const peso = suyos[n];
                         return (
                           <tr key={i.clave}>
                             <td className="os-tabla-nombre" data-campo="Indicador">
@@ -168,28 +204,49 @@ export default function Pesos({ hojas, tocado }: { hojas: Hoja[]; tocado: boolea
                               {i.corte}
                             </td>
                             <td className="os-tabla-num" data-campo="Peso">
-                              <input
-                                className="os-campo os-campo-corte"
-                                type="number"
-                                min={0}
-                                max={MAXIMO}
-                                value={peso}
-                                aria-label={`Cuánto pesa ${i.nombre} en ${c.nombre}`}
-                                onChange={(e) =>
-                                  setPesos((p) => ({ ...p, [i.clave]: Number(e.target.value) }))
-                                }
-                              />
-                              {peso !== i.fabrica && (
-                                <span className="os-dato-falta"> de {i.fabrica}</span>
-                              )}
+                              <div className="os-peso-celda">
+                                <input
+                                  className="os-campo"
+                                  type="number"
+                                  min={0}
+                                  max={MAXIMO}
+                                  value={peso}
+                                  aria-label={`Cuánto pesa ${i.nombre} en ${c.nombre}`}
+                                  onChange={(e) =>
+                                    setPesos((p) => ({ ...p, [i.clave]: Number(e.target.value) }))
+                                  }
+                                />
+                                {peso !== i.fabrica && (
+                                  <span className="os-dato-falta">de {i.fabrica}</span>
+                                )}
+                              </div>
                             </td>
                             <td className="os-tabla-num os-tabla-flojo" data-campo="Aporte">
-                              {total === 0 ? '—' : `${Math.round((peso / total) * 100)} %`}
+                              {parte ? `${parte[n]} %` : '—'}
                             </td>
                           </tr>
                         );
                       })}
                     </tbody>
+                    {/* La comprobación de la columna: los aportes de una
+                        competencia reparten su puntaje entero, así que tienen
+                        que sumar cien. Con todos los pesos en cero no suman
+                        nada y la competencia sale sin puntaje, que es lo que la
+                        ruta rechaza al guardar. */}
+                    <tfoot>
+                      <tr>
+                        <td colSpan={3}>Suma de la competencia</td>
+                        <td className="os-tabla-num" data-campo="Peso">
+                          {total}
+                        </td>
+                        <td
+                          className={`os-tabla-num${parte ? '' : ' os-suma-vacia'}`}
+                          data-campo="Aporte"
+                        >
+                          {parte ? '100 %' : 'sin puntaje'}
+                        </td>
+                      </tr>
+                    </tfoot>
                   </table>
                 </div>
               </section>
@@ -201,10 +258,11 @@ export default function Pesos({ hojas, tocado }: { hojas: Hoja[]; tocado: boolea
       <section className="os-panel">
         <div className="os-panel-cuerpo">
           <p className="os-form-nota">
-            El aporte es la parte del puntaje de la competencia que se lleva cada indicador. Un
-            indicador en cero sigue apareciendo en el detalle del informe y no entra al
-            promedio; una competencia entera en cero se rechaza, porque saldría sin puntaje en
-            todos los informes.
+            El aporte es la parte del puntaje de la competencia que se lleva cada indicador, y
+            los de una competencia suman cien: el pie de cada tabla lo muestra. Un indicador en
+            cero sigue apareciendo en el detalle del informe y no entra al promedio; una
+            competencia entera en cero se rechaza, porque saldría sin puntaje en todos los
+            informes.
           </p>
 
           <div className="os-barra-acciones">

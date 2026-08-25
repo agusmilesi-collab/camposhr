@@ -5615,6 +5615,40 @@ th.os-tabla-contacto {
   max-width: 100%;
 }
 
+/* El pie de la tabla es la comprobación de la columna, no una fila más: va
+   sobre una línea plena y con el número en tinta, para leerse de un vistazo. */
+.os-tabla-fija tfoot td {
+  padding-top: 9px;
+  padding-bottom: 9px;
+  border-top: 1px solid var(--os-linea);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--os-tinta);
+}
+
+.os-tabla-fija tfoot .os-suma-vacia {
+  font-weight: 400;
+  color: var(--os-rojo);
+}
+
+/* El peso y la marca de cuánto era antes. En una ventana angosta la columna se
+   queda sin ancho para los dos en un renglón, y sin esto la marca empujaba el
+   campo hasta cortarle el número: acá baja debajo del campo y el número se
+   sigue leyendo entero. */
+.os-peso-celda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 3px 6px;
+}
+
+.os-peso-celda .os-campo {
+  width: 100%;
+  max-width: 72px;
+  text-align: center;
+}
+
 .os-tabla-fija input[type='datetime-local'],
 .os-tabla-fija select.os-campo {
   width: 100%;
