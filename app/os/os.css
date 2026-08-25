@@ -1451,7 +1451,7 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 6px 0 14px;
+  margin: 6px 0 16px;
   font-size: 0.78rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1465,9 +1465,12 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   background: var(--os-linea);
 }
 
+/* Lo que sigue es otro dinero, no el capítulo siguiente del mismo: el aire es
+   lo que lo dice antes de que se lea el rótulo. */
 .os-panel + .os-rotulo-seccion,
-.os-cifras + .os-rotulo-seccion {
-  margin-top: 34px;
+.os-cifras + .os-rotulo-seccion,
+.os-monotributo + .os-rotulo-seccion {
+  margin-top: 58px;
 }
 
 /* El bloque suelto de arriba no tiene encabezado que lo separe de la marca. */
@@ -1720,6 +1723,110 @@ html[data-os-lateral='compacta'] .os-pie-quien {
      su barra unos píxeles abajo y el rótulo del mes quedaba desalineado. */
   height: 15px;
   line-height: 15px;
+}
+
+/* ---------- El cajón de un trabajo ---------- */
+/**
+ * El costo de la fila abre sus gastos.
+ *
+ * Un trabajo junta media docena de gastos chicos, y todos a la vista hacían de
+ * la pantalla una lista de gastos con el resultado escondido en el medio. En la
+ * fila va la suma, y el detalle está a un clic.
+ */
+.os-costo-abre {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-tinta);
+  cursor: pointer;
+  border-bottom: 1px dashed var(--os-linea);
+}
+
+.os-costo-abre:hover,
+.os-costo-abre.abierto {
+  border-bottom-color: var(--os-azul);
+  color: var(--os-azul);
+}
+
+.os-costo-abre span {
+  font-size: 0.7rem;
+  color: var(--os-suave);
+}
+
+/**
+ * La fila que se abre debajo de un trabajo.
+ *
+ * Se llama "abierta" y no "cajón" porque `.os-cajon` ya es el cajón lateral que
+ * se abre desde los tableros: con ese nombre, la fila heredaba su `position:
+ * fixed` y su `display: flex` y aparecía flotando en el borde derecho de la
+ * pantalla, fuera de la tabla.
+ *
+ * La celda no es una celda de datos: no se recorta ni va en un renglón. Sin
+ * decirlo hereda el `nowrap` y el `overflow: hidden` de la tabla, y lo que
+ * lleva adentro se sale por el costado.
+ */
+.os-fila-abierta > td {
+  background: var(--os-fondo);
+  padding: 0 30px 18px;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.os-abierta-cuerpo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px 34px;
+  padding-top: 12px;
+}
+
+.os-abierta-mitad {
+  min-width: 0;
+}
+
+.os-abierta-mitad > .os-dato-rotulo {
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* Los dos controles del renglón de una factura, uno al lado del otro. */
+.os-gasto-factura .os-gasto-baja {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* En un gasto la baja se esconde hasta pasar por encima, porque compite con el
+   importe. Acá no es solo una baja: el estado del cobro es lo que se viene a
+   mirar y a tocar, así que está siempre. */
+.os-gasto-factura .os-gasto-baja button {
+  opacity: 1;
+}
+
+/* El renglón de una factura lleva un control más que el de un gasto y vive en
+   media pantalla: en una grilla de anchos fijos, el importe y los botones se
+   pisaban. Se acomoda y, si no entra, pasa de renglón. */
+/* Con la clase sola pierde contra `.os-gasto`, que está más abajo en la hoja y
+   pesa lo mismo: hay que nombrar las dos. */
+.os-gasto.os-gasto-factura {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+}
+
+.os-gasto-factura .os-gasto-concepto {
+  flex: 1 1 auto;
+}
+
+.os-gasto-factura .os-gasto-importe {
+  margin-left: auto;
 }
 
 /* ---------- Formularios ---------- */

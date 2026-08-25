@@ -55,6 +55,8 @@ export type Factura = {
   empresaId: string;
   concepto: string | null;
   ordenCompra: string | null;
+  /** El trabajo que esta factura cobra, cuando salió de una cotización. */
+  cotizacionId: string | null;
   importe: number | null;
   moneda: string;
   estado: EstadoFactura;

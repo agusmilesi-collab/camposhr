@@ -71,6 +71,7 @@ type FilaFactura = {
   empresa_id: string;
   concepto: string | null;
   orden_compra: string | null;
+  cotizacion_id: string | null;
   imp_total: string | number | null;
   moneda: string;
   estado: Factura['estado'];
@@ -117,7 +118,7 @@ export async function listarEmisoras(): Promise<Emisora[]> {
 export async function listarFacturas(): Promise<Factura[]> {
   const filas = await select<FilaFactura>(
     'facturas',
-    'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,concepto,orden_compra,' +
+    'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,' +
       'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe)' +
@@ -131,7 +132,7 @@ export async function listarFacturas(): Promise<Factura[]> {
 export async function verFactura(id: string): Promise<Factura | null> {
   const filas = await select<FilaFactura>(
     'facturas',
-    'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,concepto,orden_compra,' +
+    'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,' +
       'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe)' +
@@ -152,6 +153,7 @@ function armarFactura(f: FilaFactura): Factura {
     cliente: f.empresas?.nombre ?? 'sin cliente',
     concepto: f.concepto,
     ordenCompra: f.orden_compra,
+    cotizacionId: f.cotizacion_id,
     importe: numeroOno(f.imp_total),
     moneda: f.moneda,
     estado: f.estado,

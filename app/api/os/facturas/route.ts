@@ -338,6 +338,9 @@ export async function POST(req: Request) {
           imp_total: importe,
           moneda: 'PES',
           concepto,
+          // De qué trabajo es: es lo que deja cruzar lo cobrado con lo que ese
+          // trabajo costó. Sin cotización la factura entra igual.
+          cotizacion_id: UUID.test(datos.cotizacionId ?? '') ? datos.cotizacionId : null,
           orden_compra: String(datos.ordenCompra ?? '').trim() || null,
           notas: String(datos.notas ?? '').trim() || null,
           estado: 'emitida',
