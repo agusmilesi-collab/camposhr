@@ -1,0 +1,179 @@
+'use client';
+
+/**
+ * Los tests de la entrevista, en el orden que elige quien la toma.
+ *
+ * La batería dice qué se le toma, no en qué orden: si la persona llega tensa
+ * conviene empezar por el gráfico, y si hay poco tiempo se manda el Raven
+ * primero para que corra mientras se hace otra cosa. Hasta ahora salían siempre
+ * en el orden en que están declarados en la batería, que es el mismo para
+ * todos.
+ *
+ * **Se guarda al soltar y por evaluación**, porque la decisión es sobre esta
+ * entrevista y no una preferencia general.
+ *
+ * **El marco de la tarjeta lo dibuja este componente y no el servidor.** El
+ * número es la posición, así que moviendo tarjetas ya numeradas el 01 viajaba
+ * con su test y la lista quedaba 02, 01, 03.
+ *
+ * El arrastre es el mismo de las listas del informe (`_doc/Listas.tsx`): se
+ * toma del agarre, el lugar se cede al pasar la mitad del vecino, y el
+ * reacomodo se anima midiendo antes y después.
+ */
+
+import { useLayoutEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+/** Cuánto dura el reacomodo. */
+const ANIMACION = 190;
+
+export default function Orden({
+  id,
+  tests,
+  tarjetas,
+}: {
+  id: string;
+  /** Los nombres, en el orden que rige. */
+  tests: string[];
+  /** El contenido de cada uno, en el mismo orden que `tests`. */
+  tarjetas: React.ReactNode[];
+}) {
+  const router = useRouter();
+  const [orden, setOrden] = useState(() => tests.map((_, i) => i));
+  const [movido, setMovido] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const caja = useRef<HTMLDivElement>(null);
+  const antes = useRef(new Map<string, number>());
+  const tomado = useRef<number | null>(null);
+  const desdeAgarre = useRef(false);
+
+  // Lo que manda el servidor vuelve a mandar: guardar redibuja, y el estado de
+  // un componente de cliente no se reinicia solo.
+  const firma = tests.join('|');
+  const [ultima, setUltima] = useState(firma);
+  if (ultima !== firma) {
+    setUltima(firma);
+    setOrden(tests.map((_, i) => i));
+  }
+
+  function medir() {
+    const filas = caja.current?.children;
+    if (!filas) return;
+    antes.current.clear();
+    for (const fila of Array.from(filas) as HTMLElement[]) {
+      antes.current.set(fila.dataset.test ?? '', fila.getBoundingClientRect().top);
+    }
+  }
+
+  useLayoutEffect(() => {
+    const marco = caja.current;
+    if (!marco) return;
+    const filas = Array.from(marco.children) as HTMLElement[];
+    filas.forEach((f) => f.getAnimations().forEach((a) => a.cancel()));
+
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    filas.forEach((f) => {
+      if (quieto) return;
+      const desde = antes.current.get(f.dataset.test ?? '');
+      if (desde === undefined) return;
+      const hasta = f.getBoundingClientRect().top;
+      if (Math.abs(desde - hasta) < 0.5) return;
+      f.animate(
+        [{ transform: `translateY(${desde - hasta}px)` }, { transform: 'translateY(0)' }],
+        { duration: ANIMACION, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' }
+      );
+    });
+    antes.current.clear();
+  }, [orden]);
+
+  function reordenar(desde: number, hasta: number) {
+    if (desde === hasta) return;
+    medir();
+    setOrden((o) => {
+      const copia = [...o];
+      const [fuera] = copia.splice(desde, 1);
+      copia.splice(hasta, 0, fuera);
+      return copia;
+    });
+    tomado.current = hasta;
+    setMovido(hasta);
+  }
+
+  async function guardar(o: number[]) {
+    setError(null);
+    try {
+      const res = await fetch('/api/os/entrevista-orden', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ evaluacionId: id, orden: o.map((i) => tests[i]) }),
+      });
+      const r = await res.json();
+      if (!r.ok) throw new Error(r.motivo ?? 'No se pudo guardar el orden.');
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo guardar el orden.');
+    }
+  }
+
+  return (
+    <>
+      <div ref={caja}>
+        {orden.map((indice, i) => (
+          <section
+            key={tests[indice]}
+            data-test={tests[indice]}
+            className={`os-panel os-herramienta${movido === i ? ' movido' : ''}`}
+            draggable
+            onPointerDown={(ev) => {
+              desdeAgarre.current = Boolean(
+                (ev.target as HTMLElement).closest('.os-herramienta-agarre')
+              );
+            }}
+            onDragStart={(ev) => {
+              if (!desdeAgarre.current) {
+                ev.preventDefault();
+                return;
+              }
+              tomado.current = i;
+              setMovido(i);
+              ev.dataTransfer.effectAllowed = 'move';
+              ev.dataTransfer.setData('text/plain', String(i));
+            }}
+            onDragOver={(ev) => {
+              ev.preventDefault();
+              const desde = tomado.current;
+              if (desde === null || desde === i) return;
+              const r = ev.currentTarget.getBoundingClientRect();
+              const mitad = r.top + r.height / 2;
+              if (desde > i ? ev.clientY > mitad : ev.clientY < mitad) return;
+              reordenar(desde, i);
+            }}
+            onDrop={(ev) => ev.preventDefault()}
+            onDragEnd={() => {
+              desdeAgarre.current = false;
+              tomado.current = null;
+              setMovido(null);
+              guardar(orden);
+            }}
+          >
+            <h3 className="os-herramienta-texto">
+              <span
+                className="os-herramienta-agarre"
+                title="Arrastrar para cambiar el orden"
+                aria-hidden="true"
+              >
+                ⠿
+              </span>
+              <span className="os-herramienta-numero" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              {tests[indice]}
+            </h3>
+            {tarjetas[indice]}
+          </section>
+        ))}
+      </div>
+      {error && <p className="os-form-error">{error}</p>}
+    </>
+  );
+}

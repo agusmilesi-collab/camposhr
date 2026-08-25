@@ -15,6 +15,7 @@ import LinkLaminas from './LinkLaminas';
 import HojaBender from './HojaBender';
 import RelojRaven from './RelojRaven';
 import Bateria from '../../Bateria';
+import Orden from './Orden';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,28 +67,6 @@ const RAVEN: Record<EstadoRaven, { texto: string; detalle: string; color: string
  * mientras se toma es saber por dónde se va. El orden es el de la batería, que
  * es el orden en que se administra.
  */
-function Tarjeta({
-  test,
-  n,
-  children,
-}: {
-  test: string;
-  n: number;
-  children?: React.ReactNode;
-}) {
-  return (
-    <section className="os-panel os-herramienta">
-      <h3 className="os-herramienta-texto">
-        <span className="os-herramienta-numero" aria-hidden="true">
-          {String(n).padStart(2, '0')}
-        </span>
-        {test}
-      </h3>
-      {children}
-    </section>
-  );
-}
-
 export default async function HojaDeEntrevista({ params }: { params: { id: string } }) {
   const yo = await quienSoy();
   const e: Entrevista | null = await entrevistaDe(params.id);
@@ -97,6 +76,162 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
   const raven = RAVEN[e.raven];
   // El Benziger no lo declara la batería: lo agrega el pedido.
   const tests = [...e.tests, ...(e.conBenziger ? ['Benziger'] : [])];
+
+  /**
+   * Con qué se toma cada test.
+   *
+   * Devuelve solo el contenido: el marco de la tarjeta, con su número y su
+   * agarre, lo dibuja `Orden`, que es quien sabe en qué posición quedó.
+   */
+  const contenidoDe = (t: string): React.ReactNode => {
+        const h = HERRAMIENTA[t];
+        if (h) {
+          return (
+            <>
+              {/* Sin campo de observaciones: lo que se ve en las manchas entra
+                  en la codificación, que es donde después se lee. */}
+              <Papel
+                id={e.id}
+                campoMarca="proyectivoAdministrado"
+                administrado={e.proyectivoAdministrado}
+                /* Codificar va en su propio renglón y no en la fila de las
+                   láminas: abre otra pantalla, la de la evaluadora, y en la
+                   misma fila se leía como una tercera forma de abrir la
+                   mancha. Solo Rorschach por ahora; el Zulliger usa la misma
+                   pantalla cuando tenga su tabla. */
+                debajo={
+                  t === 'Rorschach' ? (
+                    <a
+                      className="os-boton os-herramienta-codificar"
+                      href={`/os/psicotecnicos/entrevista/${e.id}/rorschach`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Codificar lámina I
+                    </a>
+                  ) : undefined
+                }
+              >
+                <a
+                  className="os-boton os-boton-firme"
+                  href={h.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {h.boton}
+                </a>
+                <LinkLaminas href={h.href} />
+              </Papel>
+            </>
+          );
+        }
+
+        if (t === 'Raven') {
+          return (
+            <>
+              <div className="os-herramienta-accion">
+                <span className={`os-sello-estado ${raven.color}`} title={raven.detalle}>
+                  {raven.texto}
+                </span>
+                {/* El orden de las columnas es el mismo en todos los tests:
+                    estado, lo que se mira, y la acción. Acá lo que se mira es
+                    cuánto le queda, que es el dato que se consulta mientras
+                    está respondiendo. */}
+                {e.raven === 'sin abrir' || e.raven === 'empezado' ? (
+                  <RelojRaven iniciado={e.ravenIniciado} />
+                ) : e.ravenDuracion !== null ? (
+                  <span className="os-raven-reloj" title="Lo que tardó en responderlo">
+                    Tardó {duracion(e.ravenDuracion)}
+                  </span>
+                ) : (
+                  <span />
+                )}
+                <LinkRaven evaluacionId={e.id} />
+              </div>
+            </>
+          );
+        }
+
+        if (t === 'Bender') {
+          return (
+            <>
+              <Papel
+                id={e.id}
+                campoMarca="benderAdministrado"
+                campoNotas="benderObservaciones"
+                administrado={e.benderAdministrado}
+                observaciones={e.benderObservaciones}
+                debajo={<HojaBender id={e.id} hoja={e.benderHoja} />}
+              >
+                <a
+                  className="os-boton os-boton-firme"
+                  href="/os/laminas/bender"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Abrir las láminas
+                </a>
+                <LinkLaminas href="/os/laminas/bender" />
+              </Papel>
+            </>
+          );
+        }
+
+        if (t === 'Gráfico 2 personas') {
+          return (
+            <>
+              <Papel
+                id={e.id}
+                campoMarca="graficoAdministrado"
+                campoNotas="graficoObservaciones"
+                administrado={e.graficoAdministrado}
+                observaciones={e.graficoObservaciones}
+                debajo={<Grafico id={e.id} nombre={e.graficoNombre} />}
+              />
+            </>
+          );
+        }
+
+        if (t === 'Benziger') {
+          return (
+            <>
+              {/* Se responde en la plataforma de la licencia y el informe se
+                  carga después, en la ficha; acá queda la marca de si ya se le
+                  tomó, que es lo que la entrevista tiene que saber. */}
+              <Papel
+                id={e.id}
+                campoMarca="benzigerAdministrado"
+                administrado={e.benzigerAdministrado}
+              >
+                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=benziger`}>
+                  Cargar el informe
+                </Link>
+              </Papel>
+            </>
+          );
+        }
+
+        if (t === TEST_DISCURSIVO) {
+          return (
+            <>
+              {/* Se toma hablando, sobre unos cinco minutos de discurso, así
+                  que acá no hay lámina ni enlace que abrir: lo que hace falta
+                  es dónde dejar en qué nivel quedó, que se carga en la ficha. */}
+              <div className="os-herramienta-accion">
+                <span className={`os-sello-estado ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
+                  {e.discursivo ?? 'sin ubicar'}
+                </span>
+                <span />
+                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=tests`}>
+                  Ubicar en la pirámide
+                </Link>
+              </div>
+            </>
+          );
+        }
+
+        return null;
+  };
 
   return (
     <Shell titulo={`Entrevista · ${e.nombre}`} identidad={yo.nombre}>
@@ -171,155 +306,7 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
         </section>
       )}
 
-      {tests.map((t, i) => {
-        const h = HERRAMIENTA[t];
-        if (h) {
-          return (
-            <Tarjeta key={t} test={t} n={i + 1}>
-              {/* Sin campo de observaciones: lo que se ve en las manchas entra
-                  en la codificación, que es donde después se lee. */}
-              <Papel
-                id={e.id}
-                campoMarca="proyectivoAdministrado"
-                administrado={e.proyectivoAdministrado}
-                /* Codificar va en su propio renglón y no en la fila de las
-                   láminas: abre otra pantalla, la de la evaluadora, y en la
-                   misma fila se leía como una tercera forma de abrir la
-                   mancha. Solo Rorschach por ahora; el Zulliger usa la misma
-                   pantalla cuando tenga su tabla. */
-                debajo={
-                  t === 'Rorschach' ? (
-                    <a
-                      className="os-boton os-herramienta-codificar"
-                      href={`/os/psicotecnicos/entrevista/${e.id}/rorschach`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Codificar lámina I
-                    </a>
-                  ) : undefined
-                }
-              >
-                <a
-                  className="os-boton os-boton-firme"
-                  href={h.href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {h.boton}
-                </a>
-                <LinkLaminas href={h.href} />
-              </Papel>
-            </Tarjeta>
-          );
-        }
-
-        if (t === 'Raven') {
-          return (
-            <Tarjeta key={t} test="Raven" n={i + 1}>
-              <div className="os-herramienta-accion">
-                <span className={`os-sello-estado ${raven.color}`} title={raven.detalle}>
-                  {raven.texto}
-                </span>
-                {/* El orden de las columnas es el mismo en todos los tests:
-                    estado, lo que se mira, y la acción. Acá lo que se mira es
-                    cuánto le queda, que es el dato que se consulta mientras
-                    está respondiendo. */}
-                {e.raven === 'sin abrir' || e.raven === 'empezado' ? (
-                  <RelojRaven iniciado={e.ravenIniciado} />
-                ) : e.ravenDuracion !== null ? (
-                  <span className="os-raven-reloj" title="Lo que tardó en responderlo">
-                    Tardó {duracion(e.ravenDuracion)}
-                  </span>
-                ) : (
-                  <span />
-                )}
-                <LinkRaven evaluacionId={e.id} />
-              </div>
-            </Tarjeta>
-          );
-        }
-
-        if (t === 'Bender') {
-          return (
-            <Tarjeta key={t} test={t} n={i + 1}>
-              <Papel
-                id={e.id}
-                campoMarca="benderAdministrado"
-                campoNotas="benderObservaciones"
-                administrado={e.benderAdministrado}
-                observaciones={e.benderObservaciones}
-                debajo={<HojaBender id={e.id} hoja={e.benderHoja} />}
-              >
-                <a
-                  className="os-boton os-boton-firme"
-                  href="/os/laminas/bender"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Abrir las láminas
-                </a>
-                <LinkLaminas href="/os/laminas/bender" />
-              </Papel>
-            </Tarjeta>
-          );
-        }
-
-        if (t === 'Gráfico 2 personas') {
-          return (
-            <Tarjeta key={t} test={t} n={i + 1}>
-              <Papel
-                id={e.id}
-                campoMarca="graficoAdministrado"
-                campoNotas="graficoObservaciones"
-                administrado={e.graficoAdministrado}
-                observaciones={e.graficoObservaciones}
-                debajo={<Grafico id={e.id} nombre={e.graficoNombre} />}
-              />
-            </Tarjeta>
-          );
-        }
-
-        if (t === 'Benziger') {
-          return (
-            <Tarjeta key={t} test="Benziger" n={i + 1}>
-              {/* Se responde en la plataforma de la licencia y el informe se
-                  carga después, en la ficha; acá queda la marca de si ya se le
-                  tomó, que es lo que la entrevista tiene que saber. */}
-              <Papel
-                id={e.id}
-                campoMarca="benzigerAdministrado"
-                administrado={e.benzigerAdministrado}
-              >
-                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=benziger`}>
-                  Cargar el informe
-                </Link>
-              </Papel>
-            </Tarjeta>
-          );
-        }
-
-        if (t === TEST_DISCURSIVO) {
-          return (
-            <Tarjeta key={t} test={t} n={i + 1}>
-              {/* Se toma hablando, sobre unos cinco minutos de discurso, así
-                  que acá no hay lámina ni enlace que abrir: lo que hace falta
-                  es dónde dejar en qué nivel quedó, que se carga en la ficha. */}
-              <div className="os-herramienta-accion">
-                <span className={`os-sello-estado ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
-                  {e.discursivo ?? 'sin ubicar'}
-                </span>
-                <span />
-                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=tests`}>
-                  Ubicar en la pirámide
-                </Link>
-              </div>
-            </Tarjeta>
-          );
-        }
-
-        return <Tarjeta key={t} test={t} n={i + 1} />;
-      })}
+      <Orden id={e.id} tests={tests} tarjetas={tests.map(contenidoDe)} />
 
 
       <section className="os-panel os-entrevista-cierre">

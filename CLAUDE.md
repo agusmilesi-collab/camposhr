@@ -533,6 +533,27 @@ Al tocar el lector hay que correrlo contra los informes de prueba antes de
 subir: doce informes reales pasan sin faltantes ni descuadres, con perfiles
 preferentes FI, BI y BD.
 
+## El orden de los tests lo decide quien toma la entrevista
+
+`evaluaciones.orden_tests`, arrastrando las tarjetas en la hoja de entrevista.
+La batería dice qué se le toma, no en qué orden: si la persona llega tensa
+conviene empezar por el gráfico, y si hay poco tiempo se manda el Raven primero
+para que corra mientras se hace otra cosa.
+
+**Se guarda por evaluación y no por evaluadora**, porque la decisión es sobre
+esa entrevista. **Lo que no está en el orden guardado va al final**, en el de la
+batería: sumarle un test a la batería no puede esconderlo de las entrevistas que
+ya tenían su orden elegido, y un nombre guardado que ya no está en la batería se
+descarta.
+
+**El marco de la tarjeta lo dibuja el componente de cliente y no el servidor.**
+El número es la posición, así que moviendo tarjetas ya numeradas el 01 viajaba
+con su test y la lista quedaba 02, 01, 03.
+
+El arrastre es el mismo de las listas del informe, con sus mismos cuidados: se
+toma del agarre (la tarjeta tiene botones y campos adentro), el lugar se cede al
+pasar la mitad del vecino y el reacomodo se anima midiendo antes y después.
+
 ## La entrevista se cierra sola cuando ya se tomó todo
 
 `lib/entrevista-completa.ts` mira, después de cada cambio, si quedan tests de la
