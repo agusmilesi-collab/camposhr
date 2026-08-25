@@ -1417,6 +1417,27 @@
   text-align: left;
 }
 
+/* El escalón que le corresponde va un tono más fuerte que el que le tocaría por
+   su altura, así se distingue de los otros tres sin salirse de la escala: la
+   pirámide sigue aclarando hacia arriba. El de más abajo ya está en el azul
+   pleno, así que el suyo se oscurece con tinta. */
+.inf-escalon.suyo:nth-child(1) .inf-piramide-forma {
+  background: color-mix(in srgb, var(--azul, #43648f) 75%, #fff);
+  color: #fff;
+}
+
+.inf-escalon.suyo:nth-child(2) .inf-piramide-forma {
+  background: color-mix(in srgb, var(--azul, #43648f) 90%, #fff);
+}
+
+.inf-escalon.suyo:nth-child(3) .inf-piramide-forma {
+  background: var(--azul, #43648f);
+}
+
+.inf-escalon.suyo:nth-child(4) .inf-piramide-forma {
+  background: color-mix(in srgb, var(--azul, #43648f) 82%, var(--tinta, #16202b));
+}
+
 /* El elegido se lee sin depender del color: su nombre y su descripción van en
    negrita, y el recuadro y el tilde acompañan. */
 .inf-escalon.suyo .inf-piramide-que {
