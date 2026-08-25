@@ -70,6 +70,13 @@ export type Rango = {
   desde: number;
 };
 
+/**
+ * Los cinco cortes de fábrica.
+ *
+ * Se pueden mover desde Sistema → Baremo del Raven, que es donde se decide si
+ * el sistema pide más o menos para cada rango. Lo que se guarda ahí pisa esto;
+ * mientras nadie lo toque, rige lo de acá.
+ */
 export const RANGOS: Rango[] = [
   { numeral: 'I', nombre: 'Superioridad intelectual', frecuencia: '1 de cada 69 candidatos', desde: 35 },
   { numeral: 'II', nombre: 'Superior al término medio', frecuencia: '1 de cada 16 candidatos', desde: 31 },
@@ -84,15 +91,16 @@ export function textoDelRango(r: Rango): string {
 }
 
 /** El rango de un puntaje directo. */
-export function rangoDe(aciertos: number): Rango | null {
-  return RANGOS.find((r) => aciertos >= r.desde) ?? null;
+export function rangoDe(aciertos: number, rangos: Rango[] = RANGOS): Rango | null {
+  return [...rangos].sort((a, b) => b.desde - a.desde).find((r) => aciertos >= r.desde) ?? null;
 }
 
 /** Entre qué puntajes cae cada rango, para dibujar la escala. */
-export function puntajesPorRango(): Map<string, { desde: number; hasta: number }> {
+export function puntajesPorRango(rangos: Rango[] = RANGOS): Map<string, { desde: number; hasta: number }> {
+  const orden = [...rangos].sort((a, b) => b.desde - a.desde);
   const tramos = new Map<string, { desde: number; hasta: number }>();
-  RANGOS.forEach((r, i) => {
-    tramos.set(r.numeral, { desde: r.desde, hasta: i === 0 ? RAVEN_MAXIMO : RANGOS[i - 1].desde - 1 });
+  orden.forEach((r, i) => {
+    tramos.set(r.numeral, { desde: r.desde, hasta: i === 0 ? RAVEN_MAXIMO : orden[i - 1].desde - 1 });
   });
   return tramos;
 }
@@ -129,4 +137,33 @@ export function calcularRaven(raw: number | null): Raven | null {
   const resultado = rango ? textoDelRango(rango) : SIN_MEDICION;
 
   return { raw: aciertos, percentil, desvios, resultado };
+}
+
+/**
+ * Los rangos que rigen: los guardados si alguien los movió, y si no los de
+ * fábrica.
+ *
+ * Se valida acá y no en la pantalla: un baremo mal guardado dejaría a cada
+ * informe sin rango, y eso hay que atajarlo del lado que lo usa. Tienen que ser
+ * cinco, con los cinco numerales, y ningún corte fuera de la escala.
+ */
+export function rangosValidos(guardados: unknown): Rango[] | null {
+  if (!Array.isArray(guardados) || guardados.length !== RANGOS.length) return null;
+  const salida: Rango[] = [];
+  for (const base of RANGOS) {
+    const suyo = guardados.find(
+      (g) => g && typeof g === 'object' && (g as Rango).numeral === base.numeral
+    ) as Rango | undefined;
+    if (!suyo) return null;
+    const desde = Number(suyo.desde);
+    if (!Number.isInteger(desde) || desde < 0 || desde > RAVEN_MAXIMO) return null;
+    salida.push({ ...base, desde, nombre: String(suyo.nombre ?? base.nombre) });
+  }
+  // Cada rango tiene que empezar más arriba que el de abajo: si dos se cruzan,
+  // hay puntajes que caen en dos rangos y otros que no caen en ninguno.
+  const orden = [...salida].sort((a, b) => b.desde - a.desde);
+  for (let i = 1; i < orden.length; i++) {
+    if (orden[i].desde >= orden[i - 1].desde) return null;
+  }
+  return salida;
 }

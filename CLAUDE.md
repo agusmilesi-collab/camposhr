@@ -251,6 +251,28 @@ tamaño en que se muestran se ven bien; ampliados, no hay técnica que recupere
 detalle que no está en el archivo. Para verlas más nítidas hay que volver a
 escanear a 300 DPI y correr el mismo recorte, que da piezas de 440 px.
 
+## Lo que es criterio clínico se edita desde Sistema
+
+Hay decisiones del motor que no son técnicas: dónde corta cada rango del Raven,
+cuánto pesa cada indicador dentro de su competencia, qué dice cada lectura.
+Escritas en el código, cambiarlas pedía una entrega, y el criterio de quien firma
+el informe quedaba esperando a que alguien tuviera tiempo.
+
+Van en la tabla `ajustes` (clave → jsonb) y se editan en Sistema. **El código
+sigue trayendo el valor de fábrica y la tabla guarda la diferencia**: una clave
+que no está significa "usá lo de fábrica", que no es lo mismo que un valor vacío,
+y volver atrás es borrar la clave, no copiar los valores del día que se apretó el
+botón. Si mañana cambian en el código, quien no tocó nada los recibe. Es la misma
+forma que `evaluaciones.informe_listas`.
+
+**Lo que llega se valida en la ruta, no en la pantalla.** Un baremo con dos
+rangos que se cruzan deja puntajes que caen en dos rangos y otros que no caen en
+ninguno, y eso rompe todos los informes a la vez.
+
+Hecho: el baremo del Raven (`/os/baremos`), que mueve el rango que se nombra en
+el informe y el puntaje de habilidad cognitiva. Falta: los pesos de los
+indicadores y los textos de las lecturas.
+
 ## Un protocolo que no alcanza no da puntaje
 
 `protocoloAlcanza()` en `lib/competencias.ts`. Las competencias que salen del
