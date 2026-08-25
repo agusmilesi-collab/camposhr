@@ -406,6 +406,43 @@ corte.
 olvidaron de cargar algo; lo que pasa es que lo cargado no permite afirmar nada,
 y eso es una información distinta.
 
+## El perfil joven del Benziger va en la escala del adulto
+
+`Cerebro.tsx` lo multiplica por cuatro, que es lo que hace la plataforma de
+Benziger con el mismo dato: se dedujo midiendo los vértices de veinte gráficos
+suyos contra los valores del PDF, y el cociente entre las dos escalas dio 4,000
+en todos con error menor al 0,1 %. El cuestionario joven se responde sobre menos
+ítems, así que sin el factor su polígono queda hundido contra el centro y las
+dos figuras no se pueden comparar, que es lo único que el gráfico quiere
+mostrar.
+
+Un valor que se pasa de la escala tampoco se aplasta contra el anillo exterior:
+la plataforma no recorta, y con el corte en 120 todo joven de 30 para arriba,
+que es corriente, daba la misma figura. Se corta recién en el borde del lienzo.
+
+**Es un solo gráfico para todos lados.** `Cerebro` vive dentro de `Documento`, y
+`Documento` es el que se ve en la ficha, en la vista para imprimir y en el
+portal del cliente: no hay una segunda versión del informe que pueda quedar con
+otra escala.
+
+## Una sección del informe sale si tiene algo que decir
+
+El Benziger se dibujaba por existir su fila, no por tener datos. Una fila
+cargada a medias, con los cuatro cuadrantes en null, sacaba la sección entera:
+el cerebro sin una sola figura adentro, los cuatro títulos alrededor y el
+renglón "Cuestionario Benziger" en las técnicas usadas. El cliente leía
+"estilos de pensamiento predominantes" sobre un gráfico vacío.
+
+**Preguntar si el objeto está no alcanza**: `fila('Total adulto')` devuelve los
+cuatro cuadrantes igual cuando los cuatro son null, y eso es verdadero. Hay que
+preguntar si alguno trae un número (`tieneAlgo` en `lib/informe.ts`).
+
+La técnica va con la misma condición: una que no dejó un solo resultado no se
+puede declarar como usada. Lo que falta lo sigue diciendo el aviso de faltantes,
+que es de quien codifica y no del cliente.
+
+De los 41 informes con protocolo, uno solo cambió por esto (25/8/2026).
+
 ## El informe del Benziger se lee y no se guarda
 
 El PDF que devuelve la licencia entra, se le sacan sus 69 datos y el archivo no
