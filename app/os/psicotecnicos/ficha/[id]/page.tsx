@@ -19,8 +19,7 @@ import Benziger from './Benziger';
 import Administrados from './Administrados';
 import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
-import { desdeFicha, rangosQueRigen } from '@/lib/informe';
-import type { Rango } from '@/lib/raven';
+import { desdeFicha, loQueRige, type Regulacion } from '@/lib/informe';
 import Raven from './Raven';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
@@ -464,9 +463,9 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
   );
 }
 
-function Informe({ f, rangos }: { f: Ficha; rangos: Rango[] }) {
+function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
   const c = f.cabecera;
-  const informe = desdeFicha(f, rangos);
+  const informe = desdeFicha(f, rige);
   const portal = portalDe(c.pedidos?.empresas?.token_portal ?? null);
 
   return (
@@ -536,11 +535,11 @@ export default async function FichaPagina({
   params: { id: string };
   searchParams: { ver?: string; desde?: string };
 }) {
-  const [yo, ficha, cuentas, rangos] = await Promise.all([
+  const [yo, ficha, cuentas, rige] = await Promise.all([
     quienSoy(),
     fichaDe(params.id),
     cuentasDeLaBarra(),
-    rangosQueRigen(),
+    loQueRige(),
   ]);
   if (!ficha) notFound();
 
@@ -630,7 +629,7 @@ export default async function FichaPagina({
       {/* Sin panel alrededor: trae sus propias tarjetas, igual que Benziger y
           Tests. Envuelto, los dos paneles de adentro quedaban sobre un tercer
           fondo blanco y el conjunto se leía como una sola mancha. */}
-      {ver === 'informe' && <Informe f={ficha} rangos={rangos} />}
+      {ver === 'informe' && <Informe f={ficha} rige={rige} />}
     </Shell>
   );
 }

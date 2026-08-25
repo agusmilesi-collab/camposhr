@@ -6,6 +6,7 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { rangosValidos } from '@/lib/raven';
+import { pesosValidos } from '@/lib/competencias';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
   const clave = datos?.clave;
   const valor = datos?.valor;
 
-  if (clave !== 'raven_rangos') {
+  if (clave !== 'raven_rangos' && clave !== 'competencias_pesos') {
     return NextResponse.json({ ok: false, motivo: 'Ajuste desconocido.' }, { status: 400 });
   }
 
@@ -70,13 +71,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const limpios = rangosValidos(valor);
+  const limpios =
+    clave === 'raven_rangos' ? rangosValidos(valor) : pesosValidos(valor);
   if (!limpios) {
     return NextResponse.json(
       {
         ok: false,
         motivo:
-          'Los cortes tienen que ser cinco números enteros de 0 a 36, y cada rango tiene que empezar más arriba que el de abajo.',
+          clave === 'raven_rangos'
+            ? 'Los cortes tienen que ser cinco números enteros de 0 a 36, y cada rango tiene que empezar más arriba que el de abajo.'
+            : 'Los pesos tienen que ser números enteros de 0 a 5, y ninguna competencia puede quedar con todos sus indicadores en cero.',
       },
       { status: 400 }
     );
@@ -100,7 +104,9 @@ export async function POST(req: Request) {
     accion: 'escritura',
     recurso: 'ajuste',
     recursoId: clave,
-    detalle: { cortes: limpios.map((r) => `${r.numeral}:${r.desde}`).join(' ') },
+    detalle: Array.isArray(limpios)
+      ? { cortes: limpios.map((r) => `${r.numeral}:${r.desde}`).join(' ') }
+      : { pesos: Object.entries(limpios).map(([k, v]) => `${k}:${v}`).join(' ') },
   });
   revalidateTag(CACHE_PSICOTECNICOS);
   return NextResponse.json({ ok: true });

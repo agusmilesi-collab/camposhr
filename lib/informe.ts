@@ -4,6 +4,7 @@ import { leer, porArea, senalDe, type Lectura, type SumarioCrudo } from '@/lib/r
 import {
   bandaDe,
   calcularCompetencias,
+  pesosValidos,
   protocoloAlcanza,
   type Competencia,
 } from '@/lib/competencias';
@@ -192,20 +193,25 @@ function armarResumen(
 export async function armarInforme(id: string): Promise<Informe | null> {
   const ficha = await fichaDe(id);
   if (!ficha) return null;
-  return desdeFicha(ficha, await rangosQueRigen());
+  return desdeFicha(ficha, await loQueRige());
 }
 
 /**
- * Los rangos del Raven que rigen ahora.
+ * El criterio que rige ahora: lo movido desde Sistema, y si no lo de fábrica.
  *
- * Los guardados desde Sistema si alguien los movió y son válidos, y si no los
- * de fábrica. Se resuelve del lado del servidor, una vez por informe.
+ * Se resuelve del lado del servidor, una vez por informe. Un ajuste que no se
+ * puede leer, o que no pasa su validación, se ignora y queda lo de fábrica: el
+ * informe se arma igual.
  */
-export async function rangosQueRigen(): Promise<Rango[]> {
-  return rangosValidos(await ajuste('raven_rangos')) ?? RANGOS;
+export type Regulacion = { rangos: Rango[]; pesos: Record<string, number> };
+
+export async function loQueRige(): Promise<Regulacion> {
+  const [r, p] = await Promise.all([ajuste('raven_rangos'), ajuste('competencias_pesos')]);
+  return { rangos: rangosValidos(r) ?? RANGOS, pesos: pesosValidos(p) ?? {} };
 }
 
-export function desdeFicha(f: Ficha, rangos: Rango[] = RANGOS): Informe {
+export function desdeFicha(f: Ficha, rige: Regulacion = { rangos: RANGOS, pesos: {} }): Informe {
+  const { rangos, pesos } = rige;
   const c = f.cabecera;
   const faltantes: Faltante[] = [];
 
@@ -272,7 +278,7 @@ export function desdeFicha(f: Ficha, rangos: Rango[] = RANGOS): Informe {
   const competencias = sumario
     ? calcularCompetencias(
         sumario,
-        { ravenPercentil: f.raven?.percentil ?? null, ravenRaw: f.raven?.raw ?? null, rangos },
+        { ravenPercentil: f.raven?.percentil ?? null, ravenRaw: f.raven?.raw ?? null, rangos, pesos },
         proyectivoDe(f)
       )
     : [];

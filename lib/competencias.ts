@@ -52,6 +52,13 @@ export type Contexto = {
    * mover un corte cambia esa competencia: es justamente para lo que está.
    */
   rangos?: Rango[];
+  /**
+   * Lo que pesa cada indicador, si se movió desde Sistema.
+   *
+   * Solo las diferencias, por `claveDePeso`. Lo que no está acá pesa lo de
+   * fábrica.
+   */
+  pesos?: Record<string, number>;
 };
 
 function num(s: SumarioCrudo, seccion: string, clave: string): number | null {
@@ -575,6 +582,72 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
   },
 ];
 
+/**
+ * Las dos hojas, para la pantalla que deja mover los pesos.
+ *
+ * Se exportan las mismas constantes que usa el cálculo, así que la pantalla no
+ * puede quedar mostrando indicadores que ya no existen ni perderse uno nuevo.
+ */
+export const HOJAS: Record<string, { competencia: string; mide: string; indicadores: Indicador[] }[]> =
+  { Rorschach: RORSCHACH, Zulliger: ZULLIGER };
+
+/**
+ * Cómo se nombra un peso para poder guardarlo.
+ *
+ * Por nombre y no por posición: mover un indicador de lugar en el arreglo, o
+ * sumar otro arriba, no puede hacer que el peso que alguien puso en la calidad
+ * del vínculo termine aplicado al índice de egocentrismo.
+ */
+export function claveDePeso(test: string, competencia: string, indicador: string): string {
+  return `${test}·${competencia}·${indicador}`;
+}
+
+/** Lo que pesa cada indicador en el código. */
+export const PESOS_DE_FABRICA: Record<string, number> = Object.fromEntries(
+  Object.entries(HOJAS).flatMap(([test, hoja]) =>
+    hoja.flatMap((c) =>
+      c.indicadores.map((i) => [claveDePeso(test, c.competencia, i.nombre), i.peso ?? 1])
+    )
+  )
+);
+
+/** Hasta cuánto puede pesar un indicador. */
+export const PESO_MAXIMO = 5;
+
+/**
+ * Lo guardado, si sirve para calcular; null si no.
+ *
+ * Tres cosas se rechazan. Una clave que no existe en las hojas, porque sería un
+ * peso que no se aplica a nada y que nadie va a ver para corregir. Un peso que
+ * no es un entero de 0 a {@link PESO_MAXIMO}. Y dejar una competencia entera en
+ * cero: el promedio se queda sin divisor y esa competencia sale sin puntaje en
+ * todos los informes, que no es lo que quiso hacer quien movió un número.
+ *
+ * **Cero sí vale para un indicador**: es sacarlo del promedio dejándolo a la
+ * vista en el detalle, que es lo que se quiere cuando se desconfía de uno.
+ */
+export function pesosValidos(guardados: unknown): Record<string, number> | null {
+  if (!guardados || typeof guardados !== 'object' || Array.isArray(guardados)) return null;
+  const entradas = Object.entries(guardados as Record<string, unknown>);
+  const limpios: Record<string, number> = {};
+  for (const [clave, valor] of entradas) {
+    if (!(clave in PESOS_DE_FABRICA)) return null;
+    if (typeof valor !== 'number' || !Number.isInteger(valor)) return null;
+    if (valor < 0 || valor > PESO_MAXIMO) return null;
+    limpios[clave] = valor;
+  }
+  for (const [test, hoja] of Object.entries(HOJAS)) {
+    for (const c of hoja) {
+      const suma = c.indicadores.reduce(
+        (n, i) => n + (limpios[claveDePeso(test, c.competencia, i.nombre)] ?? i.peso ?? 1),
+        0
+      );
+      if (suma === 0) return null;
+    }
+  }
+  return limpios;
+}
+
 export type Competencia = {
   nombre: string;
   mide: string;
@@ -781,7 +854,8 @@ export function calcularCompetencias(
   ctx: Contexto,
   proyectivo: string | null
 ): Competencia[] {
-  const juego = proyectivo === 'Zulliger' ? ZULLIGER : RORSCHACH;
+  const test = proyectivo === 'Zulliger' ? 'Zulliger' : 'Rorschach';
+  const juego = HOJAS[test];
   const base = protocoloAlcanza(s, proyectivo);
 
   const medidas = juego.map((c) => {
@@ -790,7 +864,7 @@ export function calcularCompetencias(
       mide: i.mide,
       nivel: i.nivel(s),
       corte: i.corte,
-      peso: i.peso ?? 1,
+      peso: ctx.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ?? i.peso ?? 1,
       datos: leidoPor(s, i.nivel),
     }));
 
@@ -807,10 +881,13 @@ export function calcularCompetencias(
       };
     }
 
-    const puntuados = renglones.filter((r) => r.nivel !== null);
+    // Un indicador en cero está apagado a propósito: no entra al promedio y
+    // tampoco cuenta como dato que falta, porque nadie lo está esperando.
+    const cuentan = renglones.filter((r) => r.peso > 0);
+    const puntuados = cuentan.filter((r) => r.nivel !== null);
     // Con dos o más indicadores sin dato se dice que falta, en vez de informar
     // un número que se apoya en la mitad del protocolo.
-    if (renglones.length - puntuados.length > 1) {
+    if (cuentan.length - puntuados.length > 1) {
       return {
         nombre: c.competencia,
         mide: c.mide,
