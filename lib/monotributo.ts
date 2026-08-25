@@ -118,3 +118,23 @@ export function cortes(hoy: Date): { mes: string; anio: string; doce: string } {
     doce: iso(doce),
   };
 }
+
+/**
+ * Los últimos doce meses, del más viejo al más nuevo.
+ *
+ * Incluye el que corre, que es el que se está llenando: son las mismas doce
+ * casillas que suma la cuenta de los doce meses, así el gráfico y el número
+ * hablan de lo mismo.
+ */
+export function ultimosMeses(hoy: Date): { clave: string; etiqueta: string }[] {
+  const nombres = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const salida: { clave: string; etiqueta: string }[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+    salida.push({
+      clave: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      etiqueta: nombres[d.getMonth()],
+    });
+  }
+  return salida;
+}
