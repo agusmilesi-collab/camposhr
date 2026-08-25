@@ -330,11 +330,29 @@ portal del cliente no lo pasan.
 **El renglón se arrastra desde su agarre y no desde el texto.** El `li` es
 arrastrable siempre (hace falta para que el navegador empiece el arrastre), y el
 `dragstart` se cancela cuando el gesto no arrancó en el agarre; sin eso,
-arrastrar sobre las palabras para seleccionarlas movía el ítem de lugar.
+arrastrar sobre las palabras para seleccionarlas movía el ítem de lugar. Qué
+tocó el gesto se anota en el `pointerdown`, que llega antes que el `dragstart`.
 
 **Los renglones se vuelven a medir después de cada cambio.** Arrastrar no crea
 ni destruye cajas de texto: les cambia el contenido. Midiendo solo al montarse,
 el ítem largo que subía aparecía cortado a la mitad.
+
+**El reacomodo se anima midiendo, no con una transición de CSS.** Los renglones
+cambian de lugar porque cambia el orden del arreglo, y eso el CSS no lo puede
+interpolar. Antes de tocar el estado se anota dónde está cada uno; después del
+dibujo se mide dónde quedó y se recorre la diferencia con `animate`. Dos
+cuidados: la animación anterior se cancela antes de medir, porque mientras corre
+el navegador devuelve la posición a mitad de camino; y cada ítem lleva un número
+propio, porque comparar por posición sería comparar cada renglón contra otro.
+
+**El lugar se cede al pasar la mitad del renglón vecino, y no al tocarlo.**
+Cediéndolo al tocarlo, los dos ítems se intercambian, el de abajo vuelve a
+quedar bajo el puntero y se intercambian de nuevo: la lista tiembla sin avanzar.
+
+**Soltar se frena con `preventDefault`.** El arrastre lleva un texto: sin
+frenarlo, soltar sobre un campo lo escribe adentro. Y frenarlo es además lo que
+le dice al navegador que el destino era válido, así el renglón se queda donde lo
+dejaron en vez de volar de vuelta al lugar del que salió.
 
 ## Cerrar no es borrar
 
