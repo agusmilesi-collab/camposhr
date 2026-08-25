@@ -6,7 +6,7 @@ import {
   proximo,
 } from '@/lib/baterias-precios';
 import Precio from './Precio';
-import Contenido from './Contenido';
+import Bateria from './Bateria';
 
 /**
  * Las baterías: qué incluye cada una, cuánto dura y cuánto sale.
@@ -23,13 +23,6 @@ import Contenido from './Contenido';
  * `supabase/precios-de-baterias.sql`.
  */
 
-function duracion(min: number | null): string {
-  if (!min) return '—';
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  if (h === 0) return `${m} min`;
-  return m === 0 ? `${h} h` : `${h} h ${m} min`;
-}
 
 export default async function Baterias() {
   const [baterias, cambio] = await Promise.all([leerBaterias(), dolarTarjeta()]);
@@ -57,9 +50,6 @@ export default async function Baterias() {
             </div>
 
             <div className="os-bateria-cuerpo">
-              <p className="os-bateria-nombre">{b.nombre ?? b.codigo}</p>
-              {b.descripcion && <p className="os-fila-detalle">{b.descripcion}</p>}
-
               <Precio
                 bateriaId={b.id}
                 vigente={precioA(b.precios)}
@@ -70,15 +60,16 @@ export default async function Baterias() {
                 benzigerUsd={BENZIGER_USD}
               />
 
-              <div className="os-bateria-dato">
-                <span className="os-dato-rotulo">Duración</span>
-                <span>{duracion(b.duracion_min)}</span>
-              </div>
-
-              <Contenido
+              <Bateria
                 bateriaId={b.id}
-                tests={b.tests}
-                outputs={b.outputs}
+                puesta={{
+                  nombre: b.nombre ?? '',
+                  descripcion: b.descripcion ?? '',
+                  paraQuien: b.para_quien ?? '',
+                  duracion: b.duracion_min,
+                  tests: b.tests,
+                  outputs: b.outputs,
+                }}
                 benziger={`Benziger, opcional · USD ${BENZIGER_USD}${
                   cambio ? ` · ${pesos(BENZIGER_USD * cambio.valor)}` : ''
                 } · lo agrega el pedido, no la batería`}

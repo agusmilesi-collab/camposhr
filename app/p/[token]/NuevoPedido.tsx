@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BATERIAS } from '@/lib/baterias';
+import type { BateriaDelPortal } from '@/lib/baterias';
 
 /**
  * Alta de pedido desde el portal del cliente.
@@ -20,10 +20,13 @@ import { BATERIAS } from '@/lib/baterias';
 export default function NuevoPedido({
   empresa,
   token,
+  baterias,
 }: {
   empresa: string;
   /** Viaja con el formulario: el endpoint sólo acepta el del cliente de prueba. */
   token: string;
+  /** Como están cargadas hoy: se editan en el OS y se leen del servidor. */
+  baterias: BateriaDelPortal[];
 }) {
   const router = useRouter();
   const ref = useRef<HTMLDialogElement>(null);
@@ -205,7 +208,7 @@ export default function NuevoPedido({
 
             <fieldset className="campo campo-fs">
               <legend>Batería</legend>
-              {BATERIAS.map((b, i) => (
+              {baterias.map((b, i) => (
                 <label className="opcion" key={b.codigo}>
                   <input
                     type="radio"
@@ -216,11 +219,11 @@ export default function NuevoPedido({
                   />
                   <span className="opcion-cuerpo">
                     <span className="opcion-t">
-                      {b.codigo} · {b.nombre}
-                      <span className="opcion-min">{b.minutos} min</span>
+                      {b.codigo}
+                      {b.minutos && <span className="opcion-min">{b.minutos} min</span>}
                     </span>
                     <span className="opcion-d">{b.paraQuien}</span>
-                    <span className="opcion-x">{b.proyectivo}</span>
+                    <span className="opcion-x">{b.queIncluye}</span>
                   </span>
                 </label>
               ))}

@@ -4,6 +4,7 @@ import { datosClienteDeSupabase } from '@/lib/portal-supabase';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import NuevoPedido from './NuevoPedido';
+import { bateriasDelPortal } from '@/lib/baterias-portal';
 import { COBROS, COBRO_PUBLICADO, cobro } from '@/lib/cobro';
 import { informeDe, serviciosDe } from '@/lib/servicios';
 
@@ -193,6 +194,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
 
   const { empresa, empresaId, busquedas } = datos;
 
+  // Lo que el cliente lee al elegir sale de donde se edita, no de una copia.
+  const baterias = demo ? await bateriasDelPortal() : [];
+
   // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
   const servicios = serviciosDe(empresaId, params.token);
 
@@ -292,7 +296,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
           {/* El alta de pedidos se está probando con el cliente de prueba: hasta
               que el formulario escriba en Airtable, el portal real no lo
               muestra. */}
-          {demo && <NuevoPedido empresa={empresa} token={params.token} />}
+          {demo && <NuevoPedido empresa={empresa} token={params.token} baterias={baterias} />}
         </section>
 
         {/* El trabajo de fondo va arriba: las evaluaciones son una parte de él,

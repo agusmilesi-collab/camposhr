@@ -1,44 +1,55 @@
 /**
- * Las tres baterías que el cliente puede pedir.
+ * Las tres baterías que el cliente puede pedir, como se le muestran.
  *
- * Copiadas de la tabla `Baterías` de Airtable (base Psicotécnicos): el código,
- * el nombre y a quién se recomienda salen de ahí. El precio no viaja al portal
- * a propósito: lo que el cliente elige es el alcance de la evaluación, y el
- * importe se acuerda por otro lado.
+ * Lo que ve en el portal sale de la tabla `baterias` de Supabase, que es la
+ * misma que se edita en el OS (Sistema → Configuración → Baterías). Hasta el
+ * 25/8/2026 esto era una copia fija con sus propios textos: corregir la
+ * duración o para quién se recomienda había que hacerlo en dos lados, y solo
+ * uno de los dos se podía tocar sin una entrega.
  *
- * La frase de "para quién" es una sola línea, porque va debajo de cada opción
- * en el formulario y ahí compite con el resto del cajón.
+ * El precio no viaja al portal a propósito: lo que el cliente elige es el
+ * alcance de la evaluación, y el importe se acuerda por otro lado.
  */
-export type Bateria = {
+
+export type BateriaDelPortal = {
   codigo: string;
-  nombre: string;
+  /** Qué incluye. */
+  queIncluye: string;
+  /** A qué puestos se recomienda. Una línea, que abajo de cada opción compite
+   *  con el resto del cajón. */
   paraQuien: string;
-  proyectivo: string;
-  minutos: number;
+  minutos: number | null;
 };
 
-export const BATERIAS: Bateria[] = [
+/**
+ * Lo que se muestra si la base no contesta.
+ *
+ * Un formulario de pedido sin baterías no se puede completar, así que acá va
+ * lo que había cargado el 25/8/2026. Queda viejo el día que alguien edite y
+ * justo falle la lectura, que es preferible a un cajón vacío.
+ */
+export const RESPALDO: BateriaDelPortal[] = [
   {
     codigo: 'Batería 1',
-    nombre: 'Básica',
+    queIncluye:
+      'Evaluación psicotécnica con test proyectivo abreviado (Zulliger) más tests cognitivos y de estilo de pensamiento.',
     paraQuien: 'Puestos operativos y mandos medios.',
-    proyectivo: 'Zulliger, Bender, gráfico, Raven y entrevista por competencias',
     minutos: 135,
   },
   {
     codigo: 'Batería 2',
-    nombre: 'Estándar',
+    queIncluye:
+      'Evaluación psicotécnica con test proyectivo completo (Rorschach, Sistema Comprehensivo de Exner) más tests cognitivos y de estilo de pensamiento.',
     paraQuien: 'Perfiles profesionales y mandos medios calificados.',
-    proyectivo: 'Rorschach completo, Bender, gráfico, Raven y entrevista por competencias',
     minutos: 180,
   },
   {
     codigo: 'Batería 3',
-    nombre: 'Ejecutiva',
+    queIncluye:
+      'Todo lo de la estándar más análisis discursivo según el modelo de Elliot Jaques, sobre cinco minutos de discurso del candidato.',
     paraQuien: 'Jefaturas, gerencias y puestos de decisión.',
-    proyectivo: 'Todo lo de la estándar más análisis discursivo (Elliot Jaques)',
     minutos: 210,
   },
 ];
 
-export const CODIGOS_BATERIA = BATERIAS.map((b) => b.codigo);
+export const CODIGOS_BATERIA = RESPALDO.map((b) => b.codigo);

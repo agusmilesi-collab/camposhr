@@ -30,6 +30,8 @@ export type Bateria = {
   codigo: string;
   nombre: string | null;
   descripcion: string | null;
+  /** A qué puestos se recomienda. Va en el portal, debajo de su nombre. */
+  para_quien: string | null;
   duracion_min: number | null;
   tests: string[];
   outputs: string[];
@@ -37,7 +39,7 @@ export type Bateria = {
   precios: Precio[];
 };
 
-const CAMPOS = 'id,codigo,nombre,descripcion,duracion_min,tests,outputs';
+const CAMPOS = 'id,codigo,nombre,descripcion,para_quien,duracion_min,tests,outputs';
 
 /**
  * El precio que regía en una fecha.

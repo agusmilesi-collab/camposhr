@@ -319,6 +319,19 @@ Al tocar `leer()` hay que comprobar que los informes no se muevan: se vuelcan
 los de las 42 fichas con sumario antes y después y se comparan. La separación de
 condiciones y textos se hizo con ese control, y dio los 42 idénticos.
 
+**Lo que entrega una batería son las secciones del informe**, con el nombre que
+llevan ahí: la recomendación de incorporación (el nivel de ajuste, que es el go
+o no go y se entregaba sin estar declarado), el mapa de competencias con su
+análisis cualitativo, las recomendaciones para su líder, y el informe de
+potencial, que sale del análisis discursivo y por eso lo pide.
+
+El documento entero no está en la lista porque es el continente: lo que se
+elige es qué trae adentro. El sumario estructural tampoco, porque no se
+entrega: son los índices crudos del protocolo, que se leen en la ficha y nunca
+estuvieron en el documento del cliente. Y el perfil Benziger tampoco, porque no
+lo decide la batería sino el pedido (`pedidos.con_benziger`), igual que su
+administración.
+
 **Qué toma y qué entrega una batería se tilda, no se escribe.** El vocabulario
 está en `lib/baterias-contenido.ts` y es cerrado, porque el nombre no es
 decorativo: la entrevista se cierra sola cuando están administrados los tests de
@@ -335,6 +348,17 @@ lo mismo se leen igual en la cotización y en el portal.
 
 **Vale para adelante**, como el precio: una evaluación ya tomada conserva lo que
 se le tomó, que son sus marcas de administrado.
+
+**El portal lee las baterías de donde se editan.** El nombre, qué incluye, para
+quién se recomienda y cuánto dura salen de la tabla `baterias`
+(`lib/baterias-portal.ts`), que es la que se edita en Configuración. Hasta el
+25/8/2026 `lib/baterias.ts` era una copia fija con sus propios textos: corregir
+la duración había que hacerlo en dos lados y solo uno se podía tocar sin una
+entrega. De esa copia queda el respaldo, para que un formulario de pedido no
+quede sin baterías si la lectura falla.
+
+Los tres textos son obligatorios porque son lo que el cliente lee al elegir; la
+duración puede faltar, que es distinto de valer cero.
 
 ## El baremo propio del Raven se cuenta solo
 
