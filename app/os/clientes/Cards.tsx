@@ -54,10 +54,13 @@ export default function Cards({ clientes }: { clientes: Cliente[] }) {
         {sinDatos > 0 && <span className="os-columna-nota">{sinDatos} sin CUIT cargado.</span>}
       </div>
 
+      {/* Los dos bloques con su rótulo, también el de arriba: sin nombrarlo, el
+          de abajo parecía una excepción colgada de una lista sin título. */}
+      <div className="os-rotulo-seccion">Activos</div>
       <Grilla clientes={activos} vacio="Todavía no hay clientes activos." />
 
-      {/* Los inactivos siguen enteros y a la vista, en su propio bloque: son
-          con los que no se está trabajando, no los que se borraron. */}
+      {/* Los inactivos siguen enteros y a la vista: son con los que no se está
+          trabajando, no los que se borraron. */}
       {inactivos.length > 0 && (
         <>
           <div className="os-rotulo-seccion">Inactivos</div>
@@ -88,7 +91,12 @@ function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
         const cuerpo = (
           <>
             <div className="os-cliente-top">
-              <h2>{c.nombre}</h2>
+              {/* Verde el que está activo, gris el que no: el estado se
+                  reconoce sin leerlo, como en el resto del sistema. */}
+              <h2>
+                <i className={`os-punto-etapa ${c.activa ? 'os-verde' : 'os-gris'}`} />
+                {c.nombre}
+              </h2>
               {abiertos > 0 && (
                 <span className="os-sello-estado os-azul">
                   {abiertos === 1 ? '1 búsqueda' : `${abiertos} búsquedas`}
