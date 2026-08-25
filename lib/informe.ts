@@ -228,6 +228,16 @@ export async function loQueRige(): Promise<Regulacion> {
   };
 }
 
+/**
+ * Si una fila de cuatro cuadrantes trae algún número.
+ *
+ * El objeto existe igual con los cuatro en null, así que preguntar si está no
+ * alcanza: eso es lo que dejaba pasar un Benziger cargado a medias.
+ */
+function tieneAlgo(c: Cuatro | null): boolean {
+  return Boolean(c && Object.values(c).some((v) => v !== null && v !== undefined));
+}
+
 export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
   const { rangos, pesos, textos } = rige;
   const c = f.cabecera;
@@ -293,6 +303,10 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
   }
 
   const adulto = fila('Total adulto');
+  const joven = fila('Total joven');
+  const hayBenziger = Boolean(
+    f.benziger && (tieneAlgo(adulto) || tieneAlgo(joven) || f.benziger.cuadrante_preferente?.length)
+  );
   const competencias = sumario
     ? calcularCompetencias(
         sumario,
@@ -329,12 +343,18 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
       desarrollar: elegir('desarrollar', desarrollar.map((l) => l.dice)),
     },
     intervenidas: LISTAS_DEL_INFORME.filter((k) => Array.isArray(guardadas[k])),
-    benziger: f.benziger ? { preferentes, adulto, joven: fila('Total joven') } : null,
+    // La sección sale si hay algo que mostrar, y no por existir la fila. Un
+    // Benziger cargado a medias, sin ningún cuadrante, dibujaba el cerebro sin
+    // una sola figura adentro y con los cuatro títulos alrededor: el cliente
+    // leía "estilos de pensamiento predominantes" sobre un gráfico vacío.
+    benziger: hayBenziger ? { preferentes, adulto, joven } : null,
     raven:
       f.raven?.raw !== null && f.raven?.raw !== undefined
         ? { raw: f.raven.raw, resultado: f.raven.resultado ?? '' }
         : null,
-    tecnicas: tecnicas(c.pedidos?.baterias?.codigo ?? null, Boolean(f.benziger)),
+    // La misma condición que la sección: una técnica sin un solo resultado no
+    // se puede declarar como usada.
+    tecnicas: tecnicas(c.pedidos?.baterias?.codigo ?? null, hayBenziger),
     faltantes,
   };
 }
