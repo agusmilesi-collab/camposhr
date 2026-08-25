@@ -195,7 +195,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
   const { empresa, empresaId, busquedas } = datos;
 
   // Lo que el cliente lee al elegir sale de donde se edita, no de una copia.
-  const baterias = demo ? await bateriasDelPortal() : [];
+  const baterias = await bateriasDelPortal();
 
   // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
   const servicios = serviciosDe(empresaId, params.token);
@@ -293,10 +293,10 @@ export default async function Portal({ params }: { params: { token: string } }) 
             <div className="eyebrow">Estado de evaluaciones</div>
             <h1>{empresa}</h1>
           </div>
-          {/* El alta de pedidos se está probando con el cliente de prueba: hasta
-              que el formulario escriba en Airtable, el portal real no lo
-              muestra. */}
-          {demo && <NuevoPedido empresa={empresa} token={params.token} baterias={baterias} />}
+          {/* El alta va en todos los portales: el pedido se cuelga de la
+              empresa del token y entra sin evaluadora, así que cae en Sin
+              asignar, que es la pantalla donde el equipo reparte. */}
+          <NuevoPedido empresa={empresa} token={params.token} baterias={baterias} />
         </section>
 
         {/* El trabajo de fondo va arriba: las evaluaciones son una parte de él,
