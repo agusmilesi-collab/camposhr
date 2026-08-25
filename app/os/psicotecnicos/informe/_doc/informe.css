@@ -691,14 +691,36 @@
 }
 
 /* El que se está arrastrando se atenúa: los demás se corren en el acto, así
-   que sin esto no se ve cuál es el que va en la mano. */
+   que sin esto no se ve cuál es el que va en la mano. El color y el fondo
+   acompañan con una transición; el desplazamiento lo anima el componente, que
+   mide dónde estaba cada renglón y recorre la diferencia. */
 .inf-edita-lista li.movido {
-  opacity: 0.5;
+  opacity: 0.45;
   border-style: dashed;
+  background: color-mix(in srgb, var(--color, var(--azul)) 6%, var(--hoja));
+}
+
+.inf-edita-lista li {
+  transition:
+    opacity 120ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+/* Nada de animar el reacomodo para quien pidió que no se mueva la pantalla. */
+@media (prefers-reduced-motion: reduce) {
+  .inf-edita-lista li {
+    transition: none;
+  }
+}
+
+.inf-edita-agarre:active {
+  cursor: grabbing;
 }
 
 .inf-edita-agarre {
   cursor: grab;
+  border-radius: 4px;
   color: var(--suave);
   font-size: 0.9rem;
   line-height: 1.9;
