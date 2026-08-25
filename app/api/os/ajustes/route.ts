@@ -7,8 +7,19 @@ import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { rangosValidos } from '@/lib/raven';
 import { pesosValidos } from '@/lib/competencias';
+import { textosValidos } from '@/lib/redacciones';
 
 export const runtime = 'nodejs';
+
+/** Por qué se rechazó, dicho en los términos de la pantalla que lo mandó. */
+const MOTIVO = {
+  raven_rangos:
+    'Los cortes tienen que ser cinco números enteros de 0 a 36, y cada rango tiene que empezar más arriba que el de abajo.',
+  competencias_pesos:
+    'Los pesos tienen que ser números enteros de 0 a 5, y ninguna competencia puede quedar con todos sus indicadores en cero.',
+  redacciones_textos:
+    'Cada texto tiene que ser de una lectura que exista y de hasta 1200 caracteres, y ninguna lectura puede quedarse sin lo que dice.',
+};
 export const dynamic = 'force-dynamic';
 
 /**
@@ -42,7 +53,8 @@ export async function POST(req: Request) {
   const clave = datos?.clave;
   const valor = datos?.valor;
 
-  if (clave !== 'raven_rangos' && clave !== 'competencias_pesos') {
+  const CLAVES = ['raven_rangos', 'competencias_pesos', 'redacciones_textos'];
+  if (!CLAVES.includes(clave)) {
     return NextResponse.json({ ok: false, motivo: 'Ajuste desconocido.' }, { status: 400 });
   }
 
@@ -72,15 +84,16 @@ export async function POST(req: Request) {
   }
 
   const limpios =
-    clave === 'raven_rangos' ? rangosValidos(valor) : pesosValidos(valor);
+    clave === 'raven_rangos'
+      ? rangosValidos(valor)
+      : clave === 'competencias_pesos'
+        ? pesosValidos(valor)
+        : textosValidos(valor);
   if (!limpios) {
     return NextResponse.json(
       {
         ok: false,
-        motivo:
-          clave === 'raven_rangos'
-            ? 'Los cortes tienen que ser cinco números enteros de 0 a 36, y cada rango tiene que empezar más arriba que el de abajo.'
-            : 'Los pesos tienen que ser números enteros de 0 a 5, y ninguna competencia puede quedar con todos sus indicadores en cero.',
+        motivo: MOTIVO[clave as keyof typeof MOTIVO],
       },
       { status: 400 }
     );
@@ -106,7 +119,7 @@ export async function POST(req: Request) {
     recursoId: clave,
     detalle: Array.isArray(limpios)
       ? { cortes: limpios.map((r) => `${r.numeral}:${r.desde}`).join(' ') }
-      : { pesos: Object.entries(limpios).map(([k, v]) => `${k}:${v}`).join(' ') },
+      : { cambiadas: Object.keys(limpios).join(' ') },
   });
   revalidateTag(CACHE_PSICOTECNICOS);
   return NextResponse.json({ ok: true });

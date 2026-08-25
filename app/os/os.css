@@ -1954,6 +1954,28 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   align-items: end;
 }
 
+/* Los textos del diccionario: el rótulo arriba y el campo entero abajo. En la
+   grilla de dos columnas de `.os-form` el rótulo quedaba solo a la izquierda,
+   con media pantalla en blanco al lado de un texto de cinco renglones. */
+.os-redaccion {
+  display: grid;
+  gap: 4px;
+}
+
+.os-redaccion .os-etiqueta-campo {
+  display: block;
+}
+
+.os-redaccion .os-etiqueta-campo + textarea.os-campo {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.os-redaccion-buscar {
+  width: 100%;
+  max-width: 420px;
+}
+
 /* Un formulario que entra en una fila: los campos se acomodan solos y el
    botón queda a la derecha, alineado con la base de los campos. */
 .os-form-linea {

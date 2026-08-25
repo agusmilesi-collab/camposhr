@@ -276,9 +276,10 @@ dejaba la tabla mostrando los valores recién borrados. Se compara por valor y n
 por identidad, porque cada dibujo manda un objeto nuevo y compararlo por
 identidad borraría lo que se está escribiendo.
 
-Hecho: el baremo del Raven (`/os/baremos`), que mueve el rango que se nombra en
-el informe y el puntaje de habilidad cognitiva, y los pesos de los indicadores
-(`/os/ponderaciones`). Falta: los textos de las lecturas.
+Hoy son tres pantallas en Sistema: el baremo del Raven (`/os/baremos`), que
+mueve el rango que se nombra en el informe y el puntaje de habilidad cognitiva;
+los pesos de los indicadores (`/os/ponderaciones`); y los textos del diccionario
+(`/os/redacciones`).
 
 **Un peso se guarda por nombre, no por posición.** `claveDePeso` arma
 `test·competencia·indicador`: sumar un indicador arriba en el arreglo no puede
@@ -295,6 +296,24 @@ su nivel y no entra al promedio, que es lo que se quiere cuando se desconfía de
 uno. Tampoco cuenta como dato faltante, porque nadie lo está esperando. Una
 competencia entera en cero se rechaza: el promedio se queda sin divisor y esa
 competencia sale sin puntaje en todos los informes.
+
+**En las redacciones, la condición y el texto viven separados.** `leer()` tiene
+las condiciones (qué índice, contra qué corte) y `TEXTOS` tiene lo que se
+escribe cuando cada una se cumple. Estaban juntos, y corregir una palabra
+obligaba a entrar al algoritmo. La clave es el nombre de la rama
+(`lambda-bajo`, `adjd-sobrecarga`), así que sumar una rama en el medio no corre
+los textos que alguien ya editó de una lectura a otra, y cada una lleva su
+`cuando` escrito en castellano: corregir un texto sin ver a partir de qué valor
+entra es escribir algo que no se va a cumplir nunca.
+
+**Un texto vacío en "qué dice" se rechaza**: la lectura entra igual en el
+informe, así que quedaría el índice con su valor y sin nada que explique qué
+significa. Vaciar la recomendación sí vale, y hay lecturas del diccionario que
+van así.
+
+Al tocar `leer()` hay que comprobar que los informes no se muevan: se vuelcan
+los de las 42 fichas con sumario antes y después y se comparan. La separación de
+condiciones y textos se hizo con ese control, y dio los 42 idénticos.
 
 ## Un protocolo que no alcanza no da puntaje
 

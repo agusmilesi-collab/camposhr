@@ -18,7 +18,7 @@ import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
  * cada tanto y la lee cada informe que se abre.
  */
 
-export type ClaveDeAjuste = 'raven_rangos' | 'competencias_pesos';
+export type ClaveDeAjuste = 'raven_rangos' | 'competencias_pesos' | 'redacciones_textos';
 
 type Fila = { clave: string; valor: unknown };
 
