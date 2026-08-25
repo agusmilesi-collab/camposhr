@@ -26,13 +26,15 @@ export type FilaEntregada = {
 
 type Clave = 'fecha' | 'pedido' | 'candidato' | 'evaluadora' | 'reco' | 'cobro';
 
+/** Las que se dibujan antes del informe. La facturación va después, al final
+ *  de la fila: es un dato administrativo y no tiene que meterse entre lo que el
+ *  cliente lee del candidato. */
 const COLUMNAS: { clave: Clave; titulo: string }[] = [
   { clave: 'fecha', titulo: 'Fecha' },
   { clave: 'pedido', titulo: 'Pedido' },
   { clave: 'candidato', titulo: 'Candidato' },
   { clave: 'evaluadora', titulo: 'Evaluadora' },
   { clave: 'reco', titulo: 'Recomendación' },
-  { clave: 'cobro', titulo: 'Facturación' },
 ];
 
 /** Las columnas de texto arrancan de la A a la Z; fecha y recomendación
@@ -92,32 +94,33 @@ export default function TablaEntregados({
         : { col, asc: ARRANCA_ASC[col] }
     );
 
+  const cabecera = (clave: Clave, titulo: string) => {
+    const activa = orden.col === clave;
+    return (
+      <span
+        key={clave}
+        aria-sort={activa ? (orden.asc ? 'ascending' : 'descending') : 'none'}
+      >
+        <button
+          type="button"
+          className={`th-orden${activa ? ' th-orden-activa' : ''}`}
+          onClick={() => alClic(clave)}
+        >
+          {titulo}
+          <span className="th-flecha" aria-hidden="true">
+            {activa ? (orden.asc ? '↑' : '↓') : '↕'}
+          </span>
+        </button>
+      </span>
+    );
+  };
+
   return (
     <div className="tabla entregados">
       <div className={`tr th${conCobro ? '' : ' sin-cobro'}`}>
-        {COLUMNAS.filter((c) => conCobro || c.clave !== 'cobro').map(({ clave, titulo }) => {
-          const activa = orden.col === clave;
-          return (
-            <span
-              key={clave}
-              aria-sort={
-                activa ? (orden.asc ? 'ascending' : 'descending') : 'none'
-              }
-            >
-              <button
-                type="button"
-                className={`th-orden${activa ? ' th-orden-activa' : ''}`}
-                onClick={() => alClic(clave)}
-              >
-                {titulo}
-                <span className="th-flecha" aria-hidden="true">
-                  {activa ? (orden.asc ? '↑' : '↓') : '↕'}
-                </span>
-              </button>
-            </span>
-          );
-        })}
+        {COLUMNAS.map(({ clave, titulo }) => cabecera(clave, titulo))}
         <span>Informe</span>
+        {conCobro && cabecera('cobro', 'Facturación')}
       </div>
 
       {ordenadas.map((f) => (
@@ -144,14 +147,6 @@ export default function TablaEntregados({
               <span className="dash">—</span>
             )}
           </span>
-          {conCobro && (
-            <span className="c-cobro" data-label="Facturación">
-              <i className={`dot ${COBROS[f.cobro].clase}`} />
-              <span className="cobro-txt" title={COBROS[f.cobro].detalle}>
-                {COBROS[f.cobro].texto}
-              </span>
-            </span>
-          )}
           {/* El botón está en todas las filas, tenga o no el archivo cargado.
               Abre en las que lo tienen, y en el resto avisa al pasar el cursor
               que la descarga viene después. `f.informe` ya trae el enlace sólo
@@ -175,6 +170,14 @@ export default function TablaEntregados({
               </span>
             )}
           </span>
+          {conCobro && (
+            <span className="c-cobro" data-label="Facturación">
+              <i className={`dot ${COBROS[f.cobro].clase}`} />
+              <span className="cobro-txt" title={COBROS[f.cobro].detalle}>
+                {COBROS[f.cobro].texto}
+              </span>
+            </span>
+          )}
         </div>
       ))}
     </div>
