@@ -8,6 +8,7 @@
  * del tiempo lo que importa está abajo, en sus búsquedas.
  */
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import CopyLink from '@/app/informes/CopyLink';
 import Cajon from '../Cajon';
@@ -26,13 +27,41 @@ function Dato({ rotulo, valor }: { rotulo: string; valor: string | null }) {
 }
 
 export default function Ficha({ cliente }: { cliente: Cliente }) {
+  const router = useRouter();
   const [editando, setEditando] = useState(false);
+  const [tocando, setTocando] = useState(false);
+
+  /**
+   * Activar o desactivar.
+   *
+   * Un cliente inactivo es uno con el que no se está trabajando: sigue entero,
+   * con sus pedidos y sus informes, y deja de estar entre los de todos los
+   * días. No es borrarlo, que solo se hace cuando nunca debió existir.
+   */
+  async function cambiarEstado() {
+    setTocando(true);
+    try {
+      await fetch('/api/os/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: cliente.id, nombre: cliente.nombre, activa: !cliente.activa }),
+      });
+      router.refresh();
+    } finally {
+      setTocando(false);
+    }
+  }
 
   return (
     <>
       <section className="os-panel">
         <div className="os-panel-top">
-          <h2>Datos</h2>
+          <h2>
+            Datos
+            {!cliente.activa && (
+              <span className="os-sello-estado os-gris os-titulo-sello">Inactivo</span>
+            )}
+          </h2>
           <div className="os-portal-acciones">
             {/* El enlace del portal vive con el cliente: es suyo y es lo que se
                 le manda cuando pregunta cómo viene. */}
@@ -53,6 +82,9 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
             )}
             <button className="os-boton" onClick={() => setEditando(true)}>
               Editar
+            </button>
+            <button className="os-boton" disabled={tocando} onClick={cambiarEstado}>
+              {tocando ? '…' : cliente.activa ? 'Desactivar' : 'Activar'}
             </button>
           </div>
         </div>

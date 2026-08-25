@@ -549,6 +549,15 @@ búsquedas. Los datos de facturación están en su ficha, que es el día que se 
 necesita. `/os/pedidos` redirige, y la ficha de un pedido sigue en
 `/os/pedidos/<id>`, con el botón de volver apuntando a su cliente.
 
+**Los clientes están activos o inactivos**, y los inactivos van en su propio
+bloque, abajo. Uno inactivo es uno con el que no se está trabajando: sigue
+entero, con sus pedidos y sus informes, y deja de estar entre los de todos los
+días. La lectura los trae a los dos (`empresas.activa`): un cliente que no
+aparece en ningún lado no se puede volver a activar, que es lo que pasaba antes,
+cuando la consulta filtraba por activa y los inactivos desaparecían de la
+pantalla. Los que siguen en Airtable no tienen dónde marcarlo y se listan como
+activos hasta que se migren.
+
 **Un pedido se cierra solo cuando se entregaron todos sus informes**
 (`lib/pedido-completo.ts`), que es lo que significa que la búsqueda terminó, y
 se reabre solo si vuelve a haber trabajo: se le suma un candidato o una
