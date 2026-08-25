@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Shell from '../../../../Shell';
 import { entrevistaDe } from '@/lib/entrevista';
 import { quienSoy } from '@/lib/identidad';
+import { select } from '@/lib/supabase';
 import Capturador from './Capturador';
 import './capturador.css';
 
@@ -21,6 +22,17 @@ export default async function CodificarRorschach({ params }: { params: { id: str
   const e = await entrevistaDe(params.id);
   if (!e) notFound();
 
+  // El número de respuesta es correlativo de todo el protocolo, no de la
+  // lámina, así que hay que mirar lo que ya está cargado antes de numerar. Sin
+  // esto, capturar sobre una evaluación que ya tenía respuestas escribía otra
+  // con el mismo número.
+  const yaEstan = await select<{ n_respuesta: number | null; lamina: string | null }>(
+    'rorschach_respuestas',
+    `select=n_respuesta,lamina&evaluacion_id=eq.${params.id}`
+  );
+  const desde = Math.max(0, ...yaEstan.map((r) => r.n_respuesta ?? 0)) + 1;
+  const repetidas = yaEstan.filter((r) => r.lamina === 'I').length;
+
   return (
     <Shell titulo={`Rorschach · ${e.nombre}`} identidad={yo.nombre}>
       <Link className="os-volver-enlace" href={`/os/psicotecnicos/entrevista/${params.id}`}>
@@ -34,7 +46,12 @@ export default async function CodificarRorschach({ params }: { params: { id: str
         </p>
       </div>
 
-      <Capturador evaluacionId={params.id} nombre={e.nombre} />
+      <Capturador
+        evaluacionId={params.id}
+        nombre={e.nombre}
+        desde={desde}
+        repetidas={repetidas}
+      />
     </Shell>
   );
 }

@@ -296,3 +296,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* La nota va en la misma línea que las confirmaciones del puntaje Z: es lo que
+   se escribe mientras la persona habla, no algo que se abre aparte. */
+.os-ror-observacion {
+  flex: 1 1 220px;
+  min-width: 160px;
+  font-size: 12px;
+}

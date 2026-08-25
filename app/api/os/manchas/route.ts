@@ -92,11 +92,22 @@ function limpiar(campos: Record<string, unknown>): Record<string, unknown> | Fal
         fila[campo] = n;
         break;
       }
-      case 'n_localizacion': {
+      case 'n_localizacion':
+      case 'observacion': {
         if (valor !== null && typeof valor !== 'string') {
-          return { ok: false, motivo: 'El número de localización es texto.' };
+          return { ok: false, motivo: `${campo} es texto.` };
         }
         fila[campo] = valor === '' ? null : valor;
+        break;
+      }
+      case 'origen': {
+        // Dice de dónde vino la fila. Una capturada llega con campos vacíos a
+        // propósito (los que la pantalla no puede saber) y sin esto no se
+        // distingue de una que se empezó a cargar a mano y quedó por la mitad.
+        if (valor !== 'captura' && valor !== 'manual') {
+          return { ok: false, motivo: `Origen no válido: ${String(valor)}` };
+        }
+        fila[campo] = valor;
         break;
       }
       default:

@@ -57,7 +57,15 @@ type Respuesta = {
   integradas: boolean;
   /** Lo confirma ella: el blanco entra junto con la tinta. */
   blancoIntegrado: boolean;
+  /** Nota libre de la evaluadora sobre esta respuesta. */
+  observacion: string;
 };
+
+/** '4' para D4, '26' para DdS26, '4+7' cuando integra dos. W va sin número. */
+function numeroDe(areas: string[]): string | null {
+  const ns = areas.map((a) => a.replace(/^D?d?S?/, '')).filter(Boolean);
+  return ns.length ? ns.join('+') : null;
+}
 
 function camino(parte: Parte): string {
   return parte.map(([x, y], i) => `${i ? 'L' : 'M'}${(x * 100).toFixed(2)} ${(y * 100).toFixed(2)}`).join(' ') + 'Z';
@@ -66,9 +74,15 @@ function camino(parte: Parte): string {
 export default function Capturador({
   evaluacionId,
   nombre,
+  desde,
+  repetidas,
 }: {
   evaluacionId: string;
   nombre: string;
+  /** Desde qué número seguir: el protocolo se numera corrido, no por lámina. */
+  desde: number;
+  /** Cuántas respuestas de la lámina I ya están cargadas en la ficha. */
+  repetidas: number;
 }) {
   const [capa, setCapa] = useState<Capa>('D');
   const [puestas, setPuestas] = useState<string[]>([]);
@@ -104,7 +118,7 @@ export default function Capturador({
     setRespuestas((rs) => [
       ...rs,
       {
-        n: rs.length + 1,
+        n: desde + rs.length,
         dijo: dijo.trim() || respuesta,
         areas,
         extrapolada: !h,
@@ -116,6 +130,7 @@ export default function Capturador({
         popular: esPopular(LAMINA, areas[0], respuesta),
         integradas: false,
         blancoIntegrado: false,
+        observacion: '',
       },
     ]);
     setTexto('');
@@ -158,12 +173,20 @@ export default function Capturador({
           campos: {
             lamina: LAMINA,
             n_respuesta: r.n,
-            n_localizacion: r.areas.join('+'),
+            // La ficha guarda el número del área y la letra va en la
+            // localización: D1 es localizacion 'Do' con n_localizacion '1'. W
+            // no tiene número.
+            n_localizacion: numeroDe(r.areas),
             localizacion: r.localizacion,
             fq: r.fq,
             contenidos: r.contenidos,
             popular: r.popular,
             z: zDe(r).z?.valor ?? null,
+            // Lo que dijo va como observación y no como verbalización guardada:
+            // el protocolo escrito sigue siendo la fuente, y esto es lo que le
+            // permite completar en la ficha los cinco campos que faltan.
+            observacion: [r.dijo, r.observacion].filter(Boolean).join(' · ') || null,
+            origen: 'captura',
             determinantes: [],
             cc_ee: [],
             par: false,
@@ -187,6 +210,14 @@ export default function Capturador({
 
   return (
     <div className="os-ror">
+      {repetidas > 0 && (
+        <p className="os-ror-duda">
+          Esta evaluación ya tiene {repetidas} respuesta{repetidas === 1 ? '' : 's'} de la
+          lámina I cargada{repetidas === 1 ? '' : 's'}. Lo que captures acá se suma, no las
+          reemplaza: mirá la ficha antes de pasarlas.
+        </p>
+      )}
+
       <div className="os-ror-arriba">
         {/* ---------------------------------------------------------- el mapa */}
         <section className="os-panel os-ror-mapa">
@@ -385,6 +416,12 @@ export default function Capturador({
                     {a}
                   </span>
                 ))}
+                <input
+                  className="os-campo os-ror-observacion"
+                  value={r.observacion}
+                  onChange={(e) => cambiar(r.n, { observacion: e.target.value })}
+                  placeholder="Observación"
+                />
                 <span className="os-ror-falta">Falta a mano: {faltan(r).join(' · ')}</span>
               </div>
             </article>
