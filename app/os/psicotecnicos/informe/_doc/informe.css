@@ -1321,6 +1321,9 @@
    la ficha, fuera del `.inf` donde se definen las variables: ahí la evaluadora
    elige el escalón y lo ve como va a salir impreso.
 
+   El azul oscuro es el del recuadro del elegido: el azul del informe al lado
+   del trapecio, que ya es azul, no se veía como un borde sino como más relleno.
+
    Las medidas están en el componente y no acá: los trapecios salen de una sola
    cuenta, y separarlas es lo que hacía que los escalones se salieran de la
    silueta. */
@@ -1337,6 +1340,8 @@
 }
 
 .inf-piramide {
+  --azul-oscuro: color-mix(in srgb, var(--azul, #43648f) 62%, var(--tinta, #16202b));
+
   margin: 0;
 }
 
@@ -1359,7 +1364,7 @@
    y no con borde, que le sumaría dos píxeles a la fila y ese escalón dejaría de
    encajar en la pirámide. */
 .inf-escalon.suyo {
-  outline: 1.5px solid var(--azul, #43648f);
+  outline: 2px solid var(--azul-oscuro);
   outline-offset: 2px;
   background: color-mix(in srgb, var(--azul, #43648f) 5%, transparent);
 }
@@ -1442,7 +1447,7 @@
    negrita, y el recuadro y el tilde acompañan. */
 .inf-escalon.suyo .inf-piramide-que {
   background: var(--hoja, #fff);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--azul, #43648f) 35%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--azul-oscuro) 35%, transparent);
   font-weight: 600;
 }
 
