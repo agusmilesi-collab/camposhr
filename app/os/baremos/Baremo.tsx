@@ -38,6 +38,18 @@ export default function Baremo({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Guardar vuelve a dibujar del servidor, pero eso no reinicia el estado de un
+  // componente de cliente: sin esto, volver a los de fábrica dejaba la tabla
+  // mostrando los cortes que se acababan de borrar. Se compara por valor y no
+  // por identidad porque cada dibujo del servidor manda un arreglo nuevo, y
+  // compararlo por identidad borraría lo que se está escribiendo.
+  const firma = rangos.map((r) => `${r.numeral}:${r.desde}`).join(' ');
+  const [ultima, setUltima] = useState(firma);
+  if (ultima !== firma) {
+    setUltima(firma);
+    setCortes(Object.fromEntries(rangos.map((r) => [r.numeral, r.desde])));
+  }
+
   const orden = [...rangos].sort((a, b) => b.desde - a.desde);
   const cambiado = orden.some((r) => cortes[r.numeral] !== r.desde);
 

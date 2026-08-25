@@ -2,7 +2,7 @@ import Shell from '../Shell';
 import Baremo from './Baremo';
 import { quienSoy } from '@/lib/identidad';
 import { RANGOS } from '@/lib/raven';
-import { rangosQueRigen } from '@/lib/informe';
+import { loQueRige } from '@/lib/informe';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,8 @@ export const dynamic = 'force-dynamic';
  * para cada rango.
  */
 export default async function Baremos() {
-  const [yo, rangos] = await Promise.all([quienSoy(), rangosQueRigen()]);
+  const [yo, rige] = await Promise.all([quienSoy(), loQueRige()]);
+  const rangos = rige.rangos;
   const tocado = rangos.some((r) => RANGOS.find((f) => f.numeral === r.numeral)?.desde !== r.desde);
 
   return (

@@ -269,9 +269,32 @@ forma que `evaluaciones.informe_listas`.
 rangos que se cruzan deja puntajes que caen en dos rangos y otros que no caen en
 ninguno, y eso rompe todos los informes a la vez.
 
+**Y el estado de la pantalla vuelve a leer lo que manda el servidor.** Guardar
+dibuja de nuevo del lado del servidor, pero eso no reinicia el estado de un
+componente de cliente: sin eso, "volver a los de fábrica" borraba la fila y
+dejaba la tabla mostrando los valores recién borrados. Se compara por valor y no
+por identidad, porque cada dibujo manda un objeto nuevo y compararlo por
+identidad borraría lo que se está escribiendo.
+
 Hecho: el baremo del Raven (`/os/baremos`), que mueve el rango que se nombra en
-el informe y el puntaje de habilidad cognitiva. Falta: los pesos de los
-indicadores y los textos de las lecturas.
+el informe y el puntaje de habilidad cognitiva, y los pesos de los indicadores
+(`/os/ponderaciones`). Falta: los textos de las lecturas.
+
+**Un peso se guarda por nombre, no por posición.** `claveDePeso` arma
+`test·competencia·indicador`: sumar un indicador arriba en el arreglo no puede
+hacer que el peso que alguien le puso a la calidad del vínculo termine aplicado
+al índice de egocentrismo.
+
+**Lo que se decide es el aporte y no el peso.** Un peso de 2 no dice nada solo:
+lo que importa es qué parte del puntaje de la competencia se lleva ese
+indicador, y eso depende de los otros. La pantalla muestra el porcentaje y lo
+recalcula mientras se escribe.
+
+**Cero apaga un indicador y no lo esconde**: sigue en el detalle del informe con
+su nivel y no entra al promedio, que es lo que se quiere cuando se desconfía de
+uno. Tampoco cuenta como dato faltante, porque nadie lo está esperando. Una
+competencia entera en cero se rechaza: el promedio se queda sin divisor y esa
+competencia sale sin puntaje en todos los informes.
 
 ## Un protocolo que no alcanza no da puntaje
 
