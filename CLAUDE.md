@@ -83,6 +83,11 @@ Dos reglas al tocarlo:
   viajan al `colgroup` en porcentajes: en píxeles, o sobraba un tercio del
   panel en blanco a la derecha, o faltaba y aparecía **desplazamiento
   horizontal**, que esconde columnas enteras sin avisar.
+- **El rótulo de una columna de números va del mismo lado que los números.**
+  Alineado a la izquierda, con la columna ancha el rótulo y sus valores quedan
+  en puntas opuestas y no se lee cuál encabeza cuál. Se marca el `th` con
+  `os-tabla-num`, que hay que nombrar con la tabla delante porque `.os-tabla th`
+  alinea a la izquierda y pesa más que una clase sola.
 - **Una fila es un renglón.** Lo que no entra se recorta con puntos
   suspensivos. El pedido es la única excepción, con dos: empresa arriba, puesto
   abajo.

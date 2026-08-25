@@ -1884,6 +1884,15 @@ textarea.os-campo {
   white-space: nowrap;
 }
 
+/* El rótulo de una columna de números va del mismo lado que los números.
+   Alineado a la izquierda, con la columna ancha el rótulo y sus valores
+   quedaban en puntas opuestas y no se leía cuál encabezaba cuál. Hace falta
+   nombrar el `th` porque `.os-tabla th` alinea a la izquierda y pesa más que
+   una clase sola. */
+.os-tabla th.os-tabla-num {
+  text-align: right;
+}
+
 .os-tabla-flojo {
   color: var(--os-suave);
 }

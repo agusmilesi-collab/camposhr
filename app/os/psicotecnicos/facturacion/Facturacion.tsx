@@ -214,10 +214,13 @@ function GrupoCliente({
           </colgroup>
           <thead>
             <tr>
-              {/* El rótulo va a la izquierda aunque el número vaya a la
-                  derecha, como en las tablas del pipeline. */}
+              {/* El rótulo de una columna de números va del mismo lado que
+                  los números. A la izquierda, el rótulo y su columna quedaban
+                  en puntas opuestas y no se leía cuál encabezaba cuál. */}
               {COLUMNAS.map((c) => (
-                <th key={c}>{c}</th>
+                <th key={c} className={c === 'Importe' ? 'os-tabla-num' : undefined}>
+                  {c}
+                </th>
               ))}
             </tr>
           </thead>
@@ -397,7 +400,12 @@ export function Emitidas({ facturas }: { facturas: Factura[] }) {
               <thead>
                 <tr>
                   {COLUMNAS_EMITIDAS.map((c) => (
-                    <th key={c} className={c === '' ? 'os-tabla-accion' : undefined}>
+                    <th
+                      key={c}
+                      className={
+                        c === '' ? 'os-tabla-accion' : c === 'Importe' ? 'os-tabla-num' : undefined
+                      }
+                    >
                       {c || ' '}
                     </th>
                   ))}
