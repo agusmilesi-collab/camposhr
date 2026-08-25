@@ -460,21 +460,31 @@ Tres cosas del dibujo que costaron y conviene no deshacer:
   salían de la recta. Por eso los cuatro miden lo mismo y esa medida está en el
   componente: si un texto dejara de entrar en dos renglones hay que subir
   `ALTO`, no dejar que la fila crezca sola.
-- **Son dos figuras y no una, como en el informe que se entrega hoy.** La
-  pirámide de fondo es más empinada que los escalones: los de arriba sobresalen
-  de ella, y por eso su nombre entra, y hacia abajo se van metiendo hasta
-  terminar las dos en la misma base. Con una sola silueta, el escalón más alto
-  mide treinta y siete píxeles y "Liderazgo 2" sale cortado; con las dos sin
-  coincidir abajo, el fondo asoma por los costados del último escalón y se leen
-  como dos dibujos superpuestos. Por eso el ancho de la base del fondo se
-  calcula desde el de los escalones y no se elige aparte.
+- **Es una pirámide truncada, sin punta de fondo.** El informe que se entrega
+  hoy la dibuja con dos figuras de pendientes distintas, una punta empinada
+  detrás de los escalones, y se probó de las dos maneras: con una sola silueta,
+  el escalón más alto mide treinta y siete píxeles y "Liderazgo 2" sale cortado;
+  con la punta detrás, aun haciendo coincidir las dos bases, se ven dos dibujos
+  superpuestos y no uno. La figura es una sola y sus cuatro lados caen sobre una
+  recta. Lo que define cuánto se abre es `CORONA`, el ancho de arriba, y lo manda
+  el nombre más largo del escalón más alto.
 - **El recuadro del elegido es `outline` y no borde.** Un borde le suma dos
   píxeles a la fila y ese escalón deja de encajar en la pirámide.
 
-Va solo donde la batería lo incluye, en las tres pantallas: la hoja de
-entrevista lo lista con su estado, la pestaña Tests lo carga y el informe lo
-publica. Volver a apretar el escalón que ya estaba lo desmarca, que es cómo se
-corrige sin tener que elegir otro que no corresponde.
+Va solo donde la batería lo incluye, en cuatro lugares: la hoja de entrevista lo
+lista con su estado, la pestaña Tests lo carga, la pestaña Informe lo muestra
+con su punto de color entre los tests de la batería, y el informe lo publica.
+Volver a apretar el escalón que ya estaba lo desmarca, que es cómo se corrige
+sin tener que elegir otro que no corresponde.
+
+**Deja marca en el informe pero no cierra la entrevista.** El escalón se ubica
+después, al analizar, así que esperarlo dejaría la entrevista abierta con la
+persona ya saludando.
+
+**Los dos párrafos van siempre, con o sin texto.** El capítulo tiene tres partes
+y una que falta se ve como una parte que falta, no como una que no existe: sin
+cargar dicen "Sin contenido" y los tres faltantes salen en el aviso de quien
+codifica.
 
 **Los capítulos del informe se numeran solos.** Escritos a mano, un informe sin
 Benziger saltaba de 04 a 06, y ahora hay dos capítulos que pueden faltar.
