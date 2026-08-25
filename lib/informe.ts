@@ -7,6 +7,8 @@ import {
   protocoloAlcanza,
   type Competencia,
 } from '@/lib/competencias';
+import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
+import { ajuste } from '@/lib/ajustes';
 import {
   CUADRANTES,
   nivelDeConclusion,
@@ -190,10 +192,20 @@ function armarResumen(
 export async function armarInforme(id: string): Promise<Informe | null> {
   const ficha = await fichaDe(id);
   if (!ficha) return null;
-  return desdeFicha(ficha);
+  return desdeFicha(ficha, await rangosQueRigen());
 }
 
-export function desdeFicha(f: Ficha): Informe {
+/**
+ * Los rangos del Raven que rigen ahora.
+ *
+ * Los guardados desde Sistema si alguien los movió y son válidos, y si no los
+ * de fábrica. Se resuelve del lado del servidor, una vez por informe.
+ */
+export async function rangosQueRigen(): Promise<Rango[]> {
+  return rangosValidos(await ajuste('raven_rangos')) ?? RANGOS;
+}
+
+export function desdeFicha(f: Ficha, rangos: Rango[] = RANGOS): Informe {
   const c = f.cabecera;
   const faltantes: Faltante[] = [];
 
@@ -260,7 +272,7 @@ export function desdeFicha(f: Ficha): Informe {
   const competencias = sumario
     ? calcularCompetencias(
         sumario,
-        { ravenPercentil: f.raven?.percentil ?? null, ravenRaw: f.raven?.raw ?? null },
+        { ravenPercentil: f.raven?.percentil ?? null, ravenRaw: f.raven?.raw ?? null, rangos },
         proyectivoDe(f)
       )
     : [];

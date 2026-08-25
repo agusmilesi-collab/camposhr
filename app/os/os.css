@@ -1932,6 +1932,12 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   gap: 10px;
 }
 
+/* El campo de un corte: son dos dígitos, no hace falta más ancho. */
+.os-campo-corte {
+  width: 72px;
+  text-align: center;
+}
+
 /* ---------- Formularios ---------- */
 /* Todo cae sobre una grilla de dos columnas: un campo ocupa una o las dos, y
    nunca un ancho propio. Sin esto, tres campos con flex:1 al lado de uno

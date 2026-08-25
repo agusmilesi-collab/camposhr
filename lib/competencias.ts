@@ -20,7 +20,7 @@
  */
 
 import type { SumarioCrudo } from '@/lib/redacciones';
-import { percentilDe, puntajesPorRango, rangoDe } from '@/lib/raven';
+import { percentilDe, puntajesPorRango, rangoDe, type Rango } from '@/lib/raven';
 
 /** Bajo, medio o alto. Null cuando el dato no está cargado. */
 type Nivel = 1 | 2 | 3 | null;
@@ -45,6 +45,13 @@ export type Contexto = {
   ravenPercentil: number | null;
   /** Aciertos sobre las treinta y seis láminas. Null si no rindió. */
   ravenRaw?: number | null;
+  /**
+   * Los cortes del Raven que rigen, si se movieron desde Sistema.
+   *
+   * La habilidad cognitiva sale del rango en el que cae el puntaje, así que
+   * mover un corte cambia esa competencia: es justamente para lo que está.
+   */
+  rangos?: Rango[];
 };
 
 function num(s: SumarioCrudo, seccion: string, clave: string): number | null {
@@ -661,12 +668,12 @@ const BANDA_POR_RANGO: Record<string, [number, number]> = {
 };
 
 /** Los aciertos del Raven, llevados a la escala de 0 a 100 del informe. */
-export function puntajeDeRaven(raw: number): number | null {
-  const rango = rangoDe(raw);
+export function puntajeDeRaven(raw: number, rangos?: Rango[]): number | null {
+  const rango = rangoDe(raw, rangos);
   if (!rango) return null;
 
   const banda = BANDA_POR_RANGO[rango.numeral];
-  const tramo = puntajesPorRango().get(rango.numeral);
+  const tramo = puntajesPorRango(rangos).get(rango.numeral);
   if (!banda || !tramo) return null;
 
   const piso = percentilDe(tramo.desde);
@@ -679,8 +686,8 @@ export function puntajeDeRaven(raw: number): number | null {
 }
 
 /** Cómo se nombra el rango en el que cayó. */
-function rangoRaven(raw: number): string | undefined {
-  const r = rangoDe(raw);
+function rangoRaven(raw: number, rangos?: Rango[]): string | undefined {
+  const r = rangoDe(raw, rangos);
   return r ? `Rango ${r.numeral} · ${r.nombre.toLowerCase()}` : undefined;
 }
 
@@ -690,9 +697,9 @@ function cognitiva(ctx: Contexto): Competencia {
 
   return {
     nombre: 'Habilidad cognitiva',
-    referencia: raw === null ? undefined : rangoRaven(raw),
+    referencia: raw === null ? undefined : rangoRaven(raw, ctx.rangos),
     mide: 'Estilo de aprendizaje: capacidad de lógica abstracta frente a pensamiento concreto y práctico.',
-    puntaje: raw === null ? null : puntajeDeRaven(raw),
+    puntaje: raw === null ? null : puntajeDeRaven(raw, ctx.rangos),
     renglones: [
       {
         indicador: 'Raven',
