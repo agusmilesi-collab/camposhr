@@ -536,6 +536,31 @@ Dicen cuántas se van a ver al entrar, no cuántas existen: respetan el filtro p
 cliente y el alcance de quien mira. Un número que no coincide con la pantalla no
 sirve para nada.
 
+## Los pedidos viven adentro de su cliente
+
+Dejaron de ser una sección el 25/8/2026. Una búsqueda no existe sin quien la
+pidió, y en dos pantallas había que cruzar de memoria qué pedido era de quién:
+la lista de pedidos gastaba media tabla en repetir el nombre del cliente y la de
+clientes no decía si el cliente tenía trabajo abierto.
+
+Clientes es una grilla de fichas con lo que se busca al entrar (cuántas
+búsquedas abiertas, cuánta gente adentro), y entrar a una es entrar a sus
+búsquedas. Los datos de facturación están en su ficha, que es el día que se los
+necesita. `/os/pedidos` redirige, y la ficha de un pedido sigue en
+`/os/pedidos/<id>`, con el botón de volver apuntando a su cliente.
+
+**Un pedido se cierra solo cuando se entregaron todos sus informes**
+(`lib/pedido-completo.ts`), que es lo que significa que la búsqueda terminó, y
+se reabre solo si vuelve a haber trabajo: se le suma un candidato o una
+evaluación entregada vuelve atrás. Un pedido cerrado no admite candidatos
+nuevos, así que dejarlo cerrado con trabajo adentro esconde ese trabajo.
+
+**Cancelado no se toca.** Es una decisión y no un estado que se deduzca del
+trabajo: que se entregue un informe no revive un pedido que alguien canceló.
+
+El botón de reabrir está para lo que el cierre automático no puede saber: el
+cliente pide sumar a alguien a una búsqueda que ya se había dado por terminada.
+
 ## Cerrar no es borrar
 
 Un pedido y un cliente se **cierran** cuando terminaron: siguen enteros y dejan

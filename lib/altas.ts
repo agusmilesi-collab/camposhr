@@ -15,6 +15,7 @@
  */
 
 import 'server-only';
+import { ajustarPedidoDe } from '@/lib/pedido-completo';
 import { select } from '@/lib/supabase';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { ABIERTO } from '@/lib/pedido-campos';
@@ -200,7 +201,7 @@ export async function crearCandidato(c: CandidatoNuevo): Promise<{ id: string }>
     if (ruta) await actualizarPersona(persona.id, { cv_path: ruta });
   }
 
-  return insertar<{ id: string }>('evaluaciones', {
+  const evaluacion = await insertar<{ id: string }>('evaluaciones', {
     persona_id: persona.id,
     pedido_id: c.pedidoId,
     evaluadora_id: c.evaluadoraId,
@@ -208,6 +209,12 @@ export async function crearCandidato(c: CandidatoNuevo): Promise<{ id: string }>
     mensaje: c.evaluadoraId ? 'Sin contactar' : null,
     fecha_ingreso: new Date().toISOString().slice(0, 10),
   });
+
+  // Un candidato nuevo en un pedido que se había cerrado lo vuelve a abrir: un
+  // pedido cerrado no admite candidatos, así que dejarlo cerrado con alguien
+  // adentro esconde ese trabajo.
+  await ajustarPedidoDe(evaluacion.id);
+  return evaluacion;
 }
 
 async function actualizarPersona(id: string, campos: Record<string, unknown>) {

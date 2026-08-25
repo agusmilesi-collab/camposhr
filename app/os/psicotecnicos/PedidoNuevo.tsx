@@ -25,11 +25,19 @@ import type { BateriaOpcion, Opcion, PedidoOpcion } from './Agregar';
 export default function PedidoNuevo({
   empresas,
   baterias,
+  empresaFija,
   onCreado,
   onCerrar,
 }: {
   empresas: Opcion[];
   baterias: BateriaOpcion[];
+  /**
+   * El cliente ya elegido, cuando el pedido se abre desde su ficha.
+   *
+   * Ahí no hay nada que elegir: el pedido es de ese cliente y ofrecer la lista
+   * entera es ofrecer equivocarse.
+   */
+  empresaFija?: string;
   /** El pedido recién abierto, para que la tarjeta lo elija. */
   onCreado: (pedido: PedidoOpcion) => void;
   onCerrar: () => void;
@@ -96,7 +104,14 @@ export default function PedidoNuevo({
               <label className="os-etiqueta-campo" htmlFor="empresaId">
                 Cliente
               </label>
-              {clienteNuevo ? (
+              {empresaFija ? (
+                <>
+                  <input type="hidden" name="empresaId" value={empresaFija} />
+                  <p className="os-form-nota">
+                    {empresas.find((x) => x.id === empresaFija)?.nombre ?? 'Este cliente'}
+                  </p>
+                </>
+              ) : clienteNuevo ? (
                 <input
                   className="os-campo"
                   name="empresaNueva"
@@ -125,6 +140,7 @@ export default function PedidoNuevo({
               <button
                 type="button"
                 className="os-enlace-boton"
+                hidden={Boolean(empresaFija)}
                 onClick={() => setClienteNuevo((v) => !v)}
               >
                 {clienteNuevo ? 'Elegir uno de la lista' : 'Es un cliente nuevo'}

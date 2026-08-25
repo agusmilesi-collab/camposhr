@@ -83,8 +83,10 @@ export default async function FichaPedido({ params }: { params: { id: string } }
 
   return (
     <Shell titulo={`Pedido · ${pedido.puesto}`} identidad={yo.nombre}>
-      <Link className="os-volver-enlace" href="/os/pedidos">
-        ← Volver a los pedidos
+      {/* Se vuelve al cliente, que es donde vive ahora la lista de sus
+          búsquedas. */}
+      <Link className="os-volver-enlace" href={`/os/clientes/${pedido.empresaId}`}>
+        ← Volver a {pedido.empresa}
       </Link>
 
       <div className="os-encabezado">

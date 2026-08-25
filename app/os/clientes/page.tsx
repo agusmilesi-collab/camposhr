@@ -1,5 +1,5 @@
 import Shell from '../Shell';
-import Lista from './Lista';
+import Cards from './Cards';
 import { listarClientes } from '@/lib/clientes';
 import { quienSoy } from '@/lib/identidad';
 
@@ -20,7 +20,7 @@ export default async function Clientes() {
         <h1>Clientes</h1>
       </div>
 
-      <Lista clientes={clientes} />
+      <Cards clientes={clientes} />
     </Shell>
   );
 }
