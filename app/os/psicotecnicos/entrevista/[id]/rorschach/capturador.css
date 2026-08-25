@@ -1,0 +1,235 @@
+/**
+ * La pantalla de codificación del Rorschach.
+ *
+ * Dos columnas arriba (el mapa y la elección) y lo capturado abajo, porque
+ * mientras se toma hay que ver las tres cosas sin desplazar la pantalla.
+ *
+ * Las clases van con prefijo `os-ror-`: la hoja del OS es una sola y global, y
+ * ya pasó dos veces que un nombre nuevo se comiera los estilos de otro.
+ */
+
+.os-ror {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.os-ror-arriba {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* ------------------------------------------------------------------ el mapa */
+
+.os-ror-capas {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.os-ror-lienzo {
+  position: relative;
+  line-height: 0;
+}
+
+.os-ror-lienzo img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+.os-ror-lienzo svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.os-ror-area {
+  /* Transparente y no `none`: con `none` el área deja de recibir el puntero y
+     no se puede apretar adentro del contorno, solo sobre la línea. */
+  fill: transparent;
+  stroke: rgba(220, 40, 40, 0.6);
+  /* El grosor va en píxeles de pantalla y no en unidades del dibujo: el viewBox
+     es cuadrado y la lámina no, así que sin esto el trazo sale más fino de un
+     lado que del otro. Y va en píxeles enteros, porque con el grosor medido en
+     unidades del viewBox (que mide 100) el contorno quedaba en un cuarto de
+     píxel y no se veía ninguna área. */
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1;
+  cursor: pointer;
+  transition: fill 120ms ease;
+}
+
+.os-ror-area-encima {
+  fill: rgba(220, 40, 40, 0.35);
+  stroke-width: 2;
+}
+
+.os-ror-area-puesta {
+  fill: rgba(220, 40, 40, 0.5);
+  stroke-width: 2.5;
+}
+
+.os-ror-lista-areas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-ror-chip {
+  border: 1px solid var(--os-borde, #d8d8d8);
+  background: transparent;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.os-ror-chip-puesto {
+  background: rgba(220, 40, 40, 0.15);
+  border-color: rgba(220, 40, 40, 0.6);
+}
+
+/* -------------------------------------------------------------- la elección */
+
+.os-ror-eleccion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.os-ror-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.os-ror-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.os-ror-vacio {
+  margin: 0;
+  padding: 24px 4px;
+  font-size: 13px;
+  opacity: 0.65;
+}
+
+.os-ror-opcion {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  border-radius: 4px;
+  padding: 5px 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.os-ror-opcion:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.os-ror-opcion-area {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+/* La calidad formal se reconoce por su color, como las etapas del pipeline. */
+.os-ror-fq {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.os-ror-fq-o {
+  background: #d1f7c4;
+}
+
+.os-ror-fq-u {
+  background: #ffeab6;
+}
+
+.os-ror-fq-menos {
+  background: #ffdce5;
+}
+
+.os-ror-fq-\+ {
+  background: #cfdfff;
+}
+
+/* ----------------------------------------------------------- lo capturado */
+
+.os-ror-encabezado {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.os-ror-encabezado h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.os-ror-cuenta {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.os-ror-tabla {
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.os-ror-tabla select {
+  min-width: 88px;
+}
+
+.os-ror-extrapolada td {
+  background: rgba(255, 234, 182, 0.35);
+}
+
+.os-ror-falta {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.os-ror-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.os-ror-aclaracion {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+@media (max-width: 980px) {
+  .os-ror-arriba {
+    grid-template-columns: 1fr;
+  }
+}
