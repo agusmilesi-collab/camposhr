@@ -1324,8 +1324,19 @@
    Las medidas están en el componente y no acá: los trapecios y la pirámide de
    fondo salen de la misma cuenta, y separarlas es lo que hacía que los
    escalones se salieran de la silueta. */
+/* La pirámide va en su propio recuadro. Con clase propia y no con `.inf-grupo`:
+   ese le pone un punto de color a cada renglón de sus listas, y acá los
+   renglones son los escalones. */
+.inf-piramide-caja {
+  margin: 12px 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--linea, #e5e2db);
+  border-radius: 8px;
+  background: var(--hoja, #fff);
+}
+
 .inf-piramide {
-  margin: 16px 0 10px;
+  margin: 0;
 }
 
 .inf-piramide ol {
@@ -1417,6 +1428,33 @@
 
 .inf-escalon:hover .inf-piramide-que {
   background: var(--linea-suave, #efede8);
+}
+
+/* Las tres condiciones, con su número en un círculo como las recomendaciones.
+   Hueco y no relleno: son las condiciones y no los hallazgos, y el relleno los
+   ponía al mismo peso que las recomendaciones al líder. */
+.inf-condiciones {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+}
+
+.inf-condiciones li {
+  display: grid;
+  grid-template-columns: 27px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.inf-condiciones p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.inf-orden-hueco {
+  background: none;
+  border: 1.5px solid var(--azul, #43648f);
 }
 
 /* Los dos párrafos de capacidad potencial. */

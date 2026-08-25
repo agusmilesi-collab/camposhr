@@ -490,13 +490,18 @@ export default function Documento({
         >
           <div className="inf-potencial">
             <p>El nivel jerárquico al que puede llegar si se dan las tres condiciones:</p>
-            <ol className="inf-potencial-condiciones">
-              {CONDICIONES.map((c) => (
-                <li key={c}>{c}</li>
+            <ol className="inf-condiciones">
+              {CONDICIONES.map((c, i) => (
+                <li key={c}>
+                  <span className="inf-orden inf-orden-hueco">{i + 1}</span>
+                  <p>{c}</p>
+                </li>
               ))}
             </ol>
 
-            <Piramide nivel={inf.discursivo.nivel} />
+            <div className="inf-piramide-caja">
+              <Piramide nivel={inf.discursivo.nivel} />
+            </div>
 
             {/* Los dos van siempre, con o sin texto: el capítulo tiene tres
                 partes y una que falta se ve como una parte que falta, no como
