@@ -1325,14 +1325,35 @@
    cada nivel al lado. Los recortes se calculan en el componente para que los
    lados queden en una sola recta: acá va lo que no depende del escalón. */
 .inf-piramide {
+  position: relative;
   display: grid;
   gap: 3px;
-  margin: 18px 0 22px;
+  margin: 18px 0 30px;
   padding: 0;
   list-style: none;
 }
 
+/* La pirámide entera, detrás de los cuatro escalones.
+   Sin ella se veían cuatro bandas apiladas y no una pirámide: la punta y la
+   base son las que dicen que arriba hay menos lugar que abajo, que es lo que el
+   dibujo quiere decir. Sobresale de los escalones a los cuatro lados, así se ve
+   que ellos están apoyados sobre la figura y no al revés. */
+.inf-piramide::before {
+  content: '';
+  position: absolute;
+  /* Centrado contra la columna de los escalones y no contra el borde de la
+     lista: la columna arranca 8 px adentro (el padding y el borde del renglón),
+     y sin descontarlos la punta caía corrida a la izquierda. */
+  top: -18px;
+  left: -2px;
+  width: 280px;
+  height: calc(100% + 34px);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: color-mix(in srgb, var(--turquesa, #1d8a84) 22%, #fff);
+}
+
 .inf-escalon {
+  position: relative;
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr) 24px;
   align-items: center;
