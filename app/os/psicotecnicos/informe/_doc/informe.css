@@ -1360,13 +1360,24 @@
 }
 
 /* El que le corresponde: recuadrado y con la fila entera apenas teñida, así el
-   espacio que el trapecio no llena deja de leerse como un hueco. Con `outline`
-   y no con borde, que le sumaría dos píxeles a la fila y ese escalón dejaría de
-   encajar en la pirámide. */
+   espacio que el trapecio no llena deja de leerse como un hueco.
+
+   El recuadro lo dibuja un pseudo-elemento y no un borde ni un `outline`. Un
+   borde le sumaría dos píxeles a la fila y ese escalón dejaría de encajar en la
+   pirámide; un `outline` crece parejo por los cuatro lados, y acá se lo quiere
+   más alto que ancho, que es donde los diez píxeles de separación dejan lugar. */
 .inf-escalon.suyo {
-  outline: 2px solid var(--azul-oscuro);
-  outline-offset: 2px;
+  position: relative;
   background: color-mix(in srgb, var(--azul, #43648f) 5%, transparent);
+}
+
+.inf-escalon.suyo::after {
+  content: '';
+  position: absolute;
+  inset: -6px -3px;
+  border: 2px solid var(--azul-oscuro);
+  border-radius: 10px;
+  pointer-events: none;
 }
 
 /* Los que no le corresponden se atenúan, y solo cuando hay uno ubicado: sin
