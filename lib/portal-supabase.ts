@@ -80,7 +80,16 @@ async function cobrosDe(ids: string[]): Promise<Map<string, boolean>> {
 }
 
 /** La empresa a la que corresponde ese enlace, si es de una migrada. */
-async function empresaDelToken(token: string): Promise<{ id: string; nombre: string } | null> {
+/**
+ * Qué empresa abre ese enlace.
+ *
+ * También la usa el alta de pedido: el pedido se cuelga de la empresa del
+ * token y no de una constante, así que quien carga solo puede cargar en la
+ * suya.
+ */
+export async function empresaDelToken(
+  token: string
+): Promise<{ id: string; nombre: string } | null> {
   if (!TOKEN_VALIDO.test(token)) return null;
   const filas = await select<{ id: string; nombre: string }>(
     'empresas',
