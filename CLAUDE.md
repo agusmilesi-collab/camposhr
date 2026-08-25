@@ -453,6 +453,20 @@ una imagen queda pixelada al ampliarla y sin texto que se pueda buscar ni leer
 en voz alta. Es el mismo componente en la ficha y en el informe, y en la ficha
 cada escalón es un botón: se elige mirando lo que el cliente va a ver.
 
+Tres cosas del dibujo que costaron y conviene no deshacer:
+
+- **El ancho de cada trapecio sale de su altura, no de su número de orden.** Por
+  orden, el escalón que necesitaba dos renglones de texto crecía y sus lados se
+  salían de la recta. Por eso los cuatro miden lo mismo y esa medida está en el
+  componente: si un texto dejara de entrar en dos renglones hay que subir
+  `ALTO`, no dejar que la fila crezca sola.
+- **Los escalones son una pirámide truncada y el fondo una entera.** Siguiendo
+  los dos la misma silueta, el escalón de arriba quedaba de treinta y siete
+  píxeles y su nombre salía cortado. Son las dos figuras del informe que se
+  entrega hoy.
+- **El recuadro del elegido es `outline` y no borde.** Un borde le suma dos
+  píxeles a la fila y ese escalón deja de encajar en la pirámide.
+
 Va solo donde la batería lo incluye, en las tres pantallas: la hoja de
 entrevista lo lista con su estado, la pestaña Tests lo carga y el informe lo
 publica. Volver a apretar el escalón que ya estaba lo desmarca, que es cómo se
