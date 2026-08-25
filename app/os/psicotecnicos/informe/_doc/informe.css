@@ -1325,7 +1325,18 @@
    fondo salen de la misma cuenta, y separarlas es lo que hacía que los
    escalones se salieran de la silueta. */
 .inf-piramide {
-  margin: 16px 0 10px;
+  position: relative;
+  margin: 12px 0 8px;
+}
+
+/* La pirámide entera, detrás de los escalones: la punta asoma arriba, la base
+   abajo, y por las separaciones se la ve entre escalón y escalón. */
+.inf-piramide-fondo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: color-mix(in srgb, var(--turquesa, #1d8a84) 22%, #fff);
 }
 
 .inf-piramide ol {
