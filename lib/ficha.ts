@@ -39,6 +39,8 @@ export type Cabecera = {
   informe_path: string | null;
   facturado: boolean;
   pagado: boolean;
+  /** Las listas del informe que tocó la evaluadora. Clave ausente = calculada. */
+  informe_listas: Record<string, unknown> | null;
   /** Si entró a trabajar en la empresa. Null es "todavía no se sabe". */
   ingreso: boolean | null;
   fecha_ingreso_empresa: string | null;
@@ -222,7 +224,7 @@ const CAMPOS_CABECERA =
   'grafico_2_personas_administrado,bender_nombre,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'recomendacion,recomendacion_notas,informe_path,' +
-  'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,' +
+  'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
   'pedidos(puesto,con_benziger,empresas(nombre,token_portal),baterias(id,codigo,nombre,tests))';

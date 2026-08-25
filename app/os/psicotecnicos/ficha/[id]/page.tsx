@@ -519,7 +519,7 @@ function Informe({ f }: { f: Ficha }) {
       </div>
 
       <div className="os-informe-marco">
-        <Documento inf={informe} interno />
+        <Documento inf={informe} interno editar={c.id} />
       </div>
       </section>
 
