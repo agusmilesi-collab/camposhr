@@ -81,13 +81,14 @@ export type Marcha = {
   /** Cuántas facturas suyas quedaron afuera por estar en otra moneda. */
   enDolares: number;
   /**
-   * Lo facturado mes a mes, del más viejo al más nuevo.
+   * Lo facturado mes a mes, de enero a diciembre del año en curso.
    *
-   * Son los últimos doce, incluido el que corre: la misma ventana que decide la
-   * categoría, así el gráfico y el número de arriba hablan de lo mismo. Un mes
-   * sin facturas va en cero y no se saltea, porque el hueco también es el dato.
+   * Va por año comercial y no por los doce meses corridos que decide la
+   * categoría: son dos preguntas distintas. Un mes sin facturas va en cero y no
+   * se saltea, porque el hueco también es el dato, y los que todavía no
+   * llegaron vienen marcados para no leerlos como meses sin trabajo.
    */
-  meses: { clave: string; etiqueta: string; total: number }[];
+  meses: { clave: string; etiqueta: string; total: number; futuro: boolean }[];
 };
 
 /** Una evaluación con la entrevista tomada y sin comprobante. */
