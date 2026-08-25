@@ -14,6 +14,16 @@
   gap: 16px;
 }
 
+/* `.os-panel` trae fondo, borde y sombra, y nada más: el relleno lo pone cada
+   pantalla, como `.os-herramienta` con sus 11px por 18px. Sin esto el contenido
+   toca los bordes, y como el panel recorta lo que se sale, el botón del pie
+   quedaba cortado contra el borde. */
+.os-ror-mapa,
+.os-ror-eleccion,
+.os-ror-capturadas {
+  padding: 14px 18px 16px;
+}
+
 .os-ror-arriba {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
@@ -282,13 +292,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 16px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-linea);
 }
 
 .os-ror-aclaracion {
   margin: 0;
   font-size: 12px;
   opacity: 0.75;
+}
+
+.os-ror-mapa .os-ror-aclaracion {
+  margin-top: 10px;
 }
 
 @media (max-width: 980px) {

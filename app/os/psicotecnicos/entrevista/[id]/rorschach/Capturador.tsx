@@ -347,7 +347,9 @@ export default function Capturador({
           </h2>
           <p className="os-ror-cuenta">
             {pendientes > 0
-              ? `${pendientes} campos quedan para completar a mano en la ficha`
+              ? `${pendientes} campo${pendientes === 1 ? '' : 's'} queda${
+                  pendientes === 1 ? '' : 'n'
+                } para completar a mano en la ficha`
               : 'Sin campos obligatorios pendientes acá'}
             {dudas > 0 ? ` · ${dudas} sobre el puntaje Z` : ''}
           </p>
