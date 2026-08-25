@@ -4,6 +4,14 @@
  * El cerebro de fondo, cuatro ejes que salen de su centro hacia las esquinas,
  * el perfil adulto en línea llena y el joven punteado.
  *
+ * El perfil joven se dibuja multiplicado por cuatro, que es lo que hace la
+ * plataforma de Benziger con el mismo dato. Se dedujo midiendo los vértices de
+ * veinte gráficos suyos contra los valores del PDF: el cociente entre la escala
+ * del joven y la del adulto dio 4,000 en todos, con error menor al 0,1 %.
+ * Sin ese factor las dos figuras no son comparables, porque el cuestionario
+ * joven se responde sobre menos ítems y su polígono queda hundido contra el
+ * centro.
+ *
  * Los cuatro ejes llevan su escala, cada cuarenta puntos, y dos rombos
  * concéntricos marcan los mismos tramos. Cada cuarenta y no cada veinte porque
  * son cuatro ejes: con seis marcas por eje eran veinticuatro números encima del
@@ -18,6 +26,19 @@ import type { Cuatro } from '@/lib/benziger-perfil';
 
 const MAXIMO = 120;
 const ANILLOS = [40, 80, 120];
+
+/** Lo que la plataforma de Benziger le hace al perfil joven antes de dibujarlo. */
+const ESCALA_JOVEN = 4;
+
+/**
+ * Hasta dónde se dibuja un valor que se pasa de la escala.
+ *
+ * La plataforma no recorta: con 126 en el adulto el vértice queda más afuera de
+ * la punta del eje. Acá se corta recién en el borde del lienzo, porque recortar
+ * en 120 aplastaría contra el anillo exterior a todo joven de 30 para arriba,
+ * que es corriente, y dos personas distintas dibujarían la misma figura.
+ */
+const TOPE = 145;
 /** Medio lienzo: el centro queda en (0,0) y los ejes salen a las esquinas. */
 const R = 190;
 
@@ -33,7 +54,7 @@ const ORDEN: (keyof Cuatro)[] = ['FI', 'FD', 'BD', 'BI'];
 
 function punto(clave: keyof Cuatro, valor: number) {
   const d = DIRECCION[clave];
-  const largo = (Math.min(valor, MAXIMO) / MAXIMO) * R;
+  const largo = (Math.min(valor, TOPE) / MAXIMO) * R;
   return { x: d.x * largo, y: d.y * largo };
 }
 
@@ -44,14 +65,14 @@ function trazar(valores: (clave: keyof Cuatro) => number): string {
   }).join(' ');
 }
 
-function poligono(v: Cuatro): string | null {
+function poligono(v: Cuatro, factor = 1): string | null {
   if (ORDEN.some((k) => v[k] === null || v[k] === undefined)) return null;
-  return trazar((k) => v[k] as number);
+  return trazar((k) => (v[k] as number) * factor);
 }
 
 export default function Cerebro({ adulto, joven }: { adulto: Cuatro | null; joven: Cuatro | null }) {
   const trazoAdulto = adulto ? poligono(adulto) : null;
-  const trazoJoven = joven ? poligono(joven) : null;
+  const trazoJoven = joven ? poligono(joven, ESCALA_JOVEN) : null;
 
   return (
     <svg className="inf-cerebro" viewBox="-230 -230 460 460" role="img" aria-label="Perfil Benziger">
