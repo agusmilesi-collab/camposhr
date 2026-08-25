@@ -48,13 +48,29 @@ export default function Listas({
   intervenida,
   numerada = false,
   vacio,
+  grupo,
 }: {
-  id: string;
+  /**
+   * La evaluación, cuando la lista se puede editar.
+   *
+   * Sin esto la lista sale igual pero sin un solo control: es lo que reciben la
+   * vista para imprimir y el portal del cliente.
+   */
+  id?: string;
   lista: ListaDelInforme;
   items: string[];
   intervenida: boolean;
+  /** Las recomendaciones van numeradas; los tres grupos del análisis, no. */
   numerada?: boolean;
   vacio: string;
+  /**
+   * Cuando la lista es uno de los tres grupos del análisis, su recuadro.
+   *
+   * El grupo lo dibuja este componente y no el documento porque el botón de
+   * editar va arriba, en el encabezado, y el encabezado tiene que salir del
+   * mismo lado que el estado que ese botón abre.
+   */
+  grupo?: { clave: string; titulo: string; sub: string };
 }) {
   const router = useRouter();
   const [editando, setEditando] = useState(false);
@@ -169,42 +185,82 @@ export default function Listas({
     }
   }
 
-  if (!editando) {
+  /**
+   * El botón para entrar a editar, y el aviso de que la sección ya se tocó.
+   *
+   * Va arriba: es lo primero que se busca al llegar a la sección, y al pie de
+   * una lista de seis oraciones hay que leerlas todas para encontrarlo.
+   */
+  const barra = id && !editando ? (
+    <span className="inf-edita-barra">
+      {intervenida && (
+        <span className="inf-edita-marca" title="Esta sección no se recalcula">
+          Editada a mano
+        </span>
+      )}
+      <button type="button" className="os-boton" onClick={abrir}>
+        Editar la lista
+      </button>
+    </span>
+  ) : null;
+
+  /** El grupo del análisis, con su encabezado; las recomendaciones van sueltas. */
+  function envuelto(dentro: React.ReactNode) {
+    // Las recomendaciones van en el mismo recuadro que los grupos, sin título
+    // propio porque ya lo trae el capítulo. La cuenta sí: dice de un vistazo
+    // con cuántas cosas se va el líder, igual que en los tres grupos.
+    if (!grupo) {
+      return (
+        <section className="inf-grupo inf-grupo-liso">
+          <div className="inf-grupo-top-der inf-grupo-solo-der">
+            {barra}
+            <span className="inf-grupo-cuantas">{items.length}</span>
+          </div>
+          {dentro}
+        </section>
+      );
+    }
     return (
-      <>
-        {items.length === 0 ? (
-          <p className="inf-vacio">{vacio}</p>
-        ) : numerada ? (
-          <ol className="inf-recomendaciones">
-            {items.map((t, i) => (
-              <li key={i}>
-                <span className="inf-orden">{String(i + 1).padStart(2, '0')}</span>
-                <p>{t}</p>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <ul>
-            {items.map((t, i) => (
-              <li key={i}>{t}</li>
-            ))}
-          </ul>
-        )}
-        <p className="inf-edita-barra">
-          {intervenida && (
-            <span className="inf-edita-marca" title="Esta sección no se recalcula">
-              Editada a mano
-            </span>
-          )}
-          <button type="button" className="os-boton" onClick={abrir}>
-            Editar la lista
-          </button>
-        </p>
-      </>
+      <section className={`inf-grupo ${grupo.clave}`}>
+        <header>
+          <div>
+            <h3>{grupo.titulo}</h3>
+            <p className="inf-grupo-sub">{grupo.sub}</p>
+          </div>
+          <div className="inf-grupo-top-der">
+            {barra}
+            <span className="inf-grupo-cuantas">{items.length}</span>
+          </div>
+        </header>
+        {dentro}
+      </section>
     );
   }
 
-  return (
+  if (!editando) {
+    return envuelto(
+      items.length === 0 ? (
+        <p className="inf-vacio">{vacio}</p>
+      ) : numerada ? (
+        <ol className="inf-recomendaciones">
+          {items.map((t, i) => (
+            <li key={i}>
+              <span className="inf-orden">{String(i + 1).padStart(2, '0')}</span>
+              <p>{t}</p>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <ul>
+          {items.map((t, i) => (
+            <li key={i}>{t}</li>
+          ))}
+        </ul>
+      )
+    );
+  }
+
+  return envuelto(
     <div className="inf-edita">
       <ul className="inf-edita-lista" ref={caja}>
         {borrador.map((item, i) => (

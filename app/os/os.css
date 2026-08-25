@@ -4772,9 +4772,15 @@ th.os-tabla-contacto {
  * esconde columnas enteras sin avisar: quien mira la tabla no sabe que le
  * falta la mitad hasta que arrastra.
  */
+/**
+ * La tabla con anchos declarados: llena el panel y reparte por `colgroup`.
+ *
+ * `table-layout: fixed` es lo que hace que el ancho declarado mande sobre el
+ * contenido. La tabla mide todo el panel y las columnas van en píxeles, salvo
+ * la última, que no declara ninguno y se queda con lo que sobra.
+ */
 .os-tabla-fija {
-  width: var(--os-tabla-ancho);
-  max-width: 100%;
+  width: 100%;
   table-layout: fixed;
 }
 

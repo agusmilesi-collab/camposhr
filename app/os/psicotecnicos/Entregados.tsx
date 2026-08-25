@@ -23,7 +23,7 @@ import { useState, useTransition } from 'react';
 import type { Evaluacion } from '@/lib/psicotecnicos';
 import { fechaCorta } from '@/lib/hora';
 import Desplegable from '@/app/os/Desplegable';
-import { Cuenta, Falta, anchos } from './piezas';
+import { Cuenta, Falta, columnas } from './piezas';
 
 /**
  * Las columnas, con los anchos que declara `piezas.tsx`.
@@ -44,8 +44,16 @@ const COLUMNAS = [
   'Seguimiento',
   'Cómo le fue',
 ];
-const MEDIDAS = anchos(COLUMNAS, 'entregados');
-const TOTAL_ANCHO = MEDIDAS.reduce((n, x) => n + x, 0);
+/**
+ * Las tres que se llevan el sobrante del panel.
+ *
+ * Diez columnas no entran holgadas en ningún monitor, y estas tres son texto
+ * libre: son las que se recortan con puntos suspensivos cuando falta lugar y
+ * las únicas que mejoran con lo que sobra. El resto son fechas, sellos y
+ * botones, que con más ancho solo suman aire.
+ */
+const ELASTICAS = ['Candidato', 'Empresa', 'Puesto'];
+const MEDIDAS = columnas(COLUMNAS, {}, ELASTICAS);
 
 /**
  * Con qué se ordena cada columna.
@@ -292,13 +300,10 @@ export default function Entregados({ filas }: { filas: Evaluacion[] }) {
 
       <div className="os-panel">
         <div className="os-tabla-marco">
-          <table
-            className="os-tabla os-tabla-trabajo os-tabla-fija"
-            style={{ '--os-tabla-ancho': `${TOTAL_ANCHO}px` } as React.CSSProperties}
-          >
+          <table className="os-tabla os-tabla-trabajo os-tabla-fija">
             <colgroup>
               {COLUMNAS.map((c, i) => (
-                <col key={c} style={{ width: `${(MEDIDAS[i] / TOTAL_ANCHO) * 100}%` }} />
+                <col key={c} style={{ width: MEDIDAS[i] }} />
               ))}
             </colgroup>
             <thead>

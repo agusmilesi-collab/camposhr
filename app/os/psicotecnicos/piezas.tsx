@@ -30,6 +30,12 @@ import { diasDesde, fechaCorta } from '@/lib/hora';
  */
 export const ANCHO: Record<string, number> = {
   Candidato: 108,
+  /* Las cuatro de lo ya facturado. El cliente y "cubre" se recortan; los otros
+     dos miden lo que piden "0001-00000123" y "Lorena Campos" enteros. */
+  'Número': 132,
+  Emisora: 134,
+  Cliente: 150,
+  Cubre: 131,
   Pedido: 190,
   /* Empresa y puesto van en columnas separadas en Entregados: juntas en una
      celda de dos renglones, la fila era la única del sistema que medía doble.
@@ -40,7 +46,7 @@ export const ANCHO: Record<string, number> = {
   Puesto: 100,
   Etapa: 132,
   Importe: 130,
-  /* Lo que mide "B1 + bzg", que es el sello más largo. */
+  /* Lo que mide "B1 + bzg", que es el sello más largo, medido en pantalla. */
   Batería: 92,
   Teléfono: 158,
   Contacto: 144,
@@ -49,8 +55,10 @@ export const ANCHO: Record<string, number> = {
   Esperando: 110,
   Espera: 120,
   Informe: 118,
-  /* "Ver ficha" con su padding. */
-  Ficha: 88,
+  /* "Ver ficha" con su padding: 55 el texto y 22 el del botón, más los 28 de
+     la celda. Con 88 el botón perdía su padding y el texto quedaba contra los
+     dos bordes. */
+  Ficha: 106,
   /* Los rótulos son "Factura" y "Cobro", que es lo que entra arriba de un
      sello de dos letras. */
   Factura: 96,
@@ -79,39 +87,37 @@ export const ANCHO: Record<string, number> = {
 };
 
 /**
- * Secciones donde todas las tablas miden lo mismo.
+ * El `colgroup` de una tabla: cada columna con lo que pide, salvo la última.
  *
- * Son las que apilan varias tablas, una por cliente: sin un ancho parejo cada
- * una mediría lo que pide su contenido y la pantalla se leería como una pila de
- * listas sueltas.
- */
-const ANCHO_PAREJO: Record<string, number> = {
-  facturacion: 1200,
-};
-
-/**
- * El ancho de cada columna, ya repartido el sobrante de la sección.
+ * **Los anchos van en píxeles y una columna no lleva ninguno.** Con
+ * `table-layout: fixed`, las que no declaran ancho se reparten lo que sobra del
+ * panel: así cada campo mide lo suyo en cualquier pantalla y el aire va a parar
+ * donde sirve. Por defecto es la última, que en Facturación es el importe o el
+ * botón y los dos van pegados al borde derecho; una tabla que se queda corta,
+ * como Entregados, nombra en `elasticas` las columnas de texto que se recortan,
+ * y ahí el sobrante es lo que deja de cortarse.
  *
- * La diferencia se reparte en partes iguales entre las columnas de datos, así
- * la tabla más corta queda con los campos espaciados igual que la larga. La
- * columna de la acción no participa: su botón mide lo que mide y el aire de más
- * lo alejaría de la fila.
+ * Repartir el sobrante entre todas, que es lo que se hacía antes, dejaba a cada
+ * columna con la mitad de su ancho en blanco: la de la fecha de entrevista
+ * medía 236 px para mostrar "28/8/26" mientras el puesto se recortaba. Y
+ * repartirlo en porcentajes achicaba todo cuando la ventana no daba el total,
+ * con lo que se recortaba lo que sí entraba.
+ *
+ * **`propios` es la excepción medida de una tabla.** El ancho de referencia
+ * vale mientras el campo muestre lo mismo en las dos; cuando no, forzarlo
+ * rompe a las dos a la vez. El puesto se recorta en Entregados, que lo lleva
+ * al lado de la empresa, y va entero en Facturación, donde el panel es de un
+ * solo cliente. Cada excepción se declara donde se usa y con el porqué.
  */
-export function anchos(columnas: string[], seccion: string): number[] {
-  const base = columnas.map((c) => ANCHO[c] ?? 140);
-  const total = ANCHO_PAREJO[seccion];
-  if (!total) return base;
-
-  const sobra = total - base.reduce((n, x) => n + x, 0);
-  const datos = columnas.map((c, i) => (c === '' ? -1 : i)).filter((i) => i >= 0);
-  if (sobra <= 0 || datos.length === 0) return base;
-
-  const salida = [...base];
-  const parte = Math.floor(sobra / datos.length);
-  datos.forEach((i) => (salida[i] += parte));
-  // Lo que no entra en la división va a la primera, que es la que se lee.
-  salida[datos[0]] += sobra - parte * datos.length;
-  return salida;
+export function columnas(
+  nombres: string[],
+  propios: Record<string, number> = {},
+  elasticas?: string[]
+) {
+  const sueltas = elasticas ?? [nombres[nombres.length - 1]];
+  return nombres.map((c) =>
+    sueltas.includes(c) ? undefined : `${propios[c] ?? ANCHO[c] ?? 140}px`
+  );
 }
 
 /** Un dato que falta, dicho y no escondido. */
