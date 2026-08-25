@@ -18,6 +18,7 @@ import {
 } from '@/lib/competencias';
 import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
+import { llevaDiscursivo } from '@/lib/discursivo';
 import {
   CUADRANTES,
   nivelDeConclusion,
@@ -131,6 +132,18 @@ export type Informe = {
     joven: Cuatro | null;
   } | null;
   raven: { raw: number; resultado: string } | null;
+  /**
+   * Hasta qué nivel de rol puede llegar, si se cargó.
+   *
+   * Va solo en las baterías que incluyen el análisis discursivo, y solo cuando
+   * la evaluadora lo ubicó: el nivel es su lectura y el sistema no lo deduce.
+   */
+  discursivo: {
+    nivel: string;
+    /** Los dos párrafos, si los escribió. */
+    actual: string | null;
+    futura: string | null;
+  } | null;
   tecnicas: string[];
   /** Lo que no estaba cargado y por eso no salió en el informe. */
   faltantes: Faltante[];
@@ -229,6 +242,17 @@ export async function loQueRige(): Promise<Regulacion> {
 }
 
 /**
+ * Si a esta persona le corresponde el Benziger.
+ *
+ * Lo agrega el pedido y no la batería (`pedidos.con_benziger`). Una fila
+ * cargada también cuenta: si alguien lo tomó, se ve, aunque el pedido no lo
+ * llevara.
+ */
+export function llevaBenziger(f: Ficha): boolean {
+  return Boolean(f.cabecera.pedidos?.con_benziger || f.benziger?.cuadrantes);
+}
+
+/**
  * Si una fila de cuatro cuadrantes trae algún número.
  *
  * El objeto existe igual con los cuatro en null, así que preguntar si está no
@@ -251,6 +275,13 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     faltantes.push({ que: 'El puntaje del Raven', donde: 'la pestaña Tests' });
   }
 
+  if (llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests) && !f.discursivo?.nivel) {
+    faltantes.push({
+      que: 'El nivel del análisis discursivo',
+      donde: 'la pestaña Tests',
+    });
+  }
+
   const bz =
     f.benziger?.cuadrantes
       ? leerBenziger(
@@ -262,7 +293,9 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
       : null;
   const fila = (titulo: string): Cuatro | null =>
     bz?.filas.find((x) => x.titulo === titulo)?.valores ?? null;
-  if (!f.benziger?.cuadrante_preferente?.length) {
+  // Solo se reclama en los pedidos que lo llevan: en los demás no falta nada,
+  // simplemente no se pidió.
+  if (llevaBenziger(f) && !f.benziger?.cuadrante_preferente?.length) {
     faltantes.push({ que: 'El cuadrante preferente del Benziger', donde: 'la pestaña Benziger' });
   }
   if (!c.recomendacion) {
@@ -348,6 +381,15 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     // una sola figura adentro y con los cuatro títulos alrededor: el cliente
     // leía "estilos de pensamiento predominantes" sobre un gráfico vacío.
     benziger: hayBenziger ? { preferentes, adulto, joven } : null,
+    // Solo si la evaluadora lo ubicó: la pirámide sin un escalón marcado no
+    // dice nada, y el capítulo entero es esa marca.
+    discursivo: f.discursivo?.nivel
+      ? {
+          nivel: f.discursivo.nivel,
+          actual: f.discursivo.actual,
+          futura: f.discursivo.futura,
+        }
+      : null,
     raven:
       f.raven?.raw !== null && f.raven?.raw !== undefined
         ? { raw: f.raven.raw, resultado: f.raven.resultado ?? '' }

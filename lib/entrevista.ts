@@ -79,6 +79,8 @@ export type Entrevista = {
   ravenIniciado: string | null;
   /** Cuánto tardó, si ya lo terminó. */
   ravenDuracion: number | null;
+  /** En qué escalón de la pirámide quedó, si ya se lo ubicó. */
+  discursivo: string | null;
 };
 
 const CAMPOS =
@@ -93,12 +95,16 @@ const CAMPOS =
 export async function entrevistaDe(id: string): Promise<Entrevista | null> {
   if (!UUID.test(id)) return null;
 
-  const [filas, sesiones] = await Promise.all([
+  const [filas, sesiones, discursivos] = await Promise.all([
     select<Fila>('evaluaciones', `select=${CAMPOS}&id=eq.${id}`),
     select<{ iniciado_at: string | null; terminado_at: string | null }>(
       'raven_sesiones',
       `select=iniciado_at,terminado_at&evaluacion_id=eq.${id}&order=creado_at.desc&limit=1`
     ),
+    select<{ nivel: string | null }>(
+      'analisis_discursivo',
+      `select=nivel&evaluacion_id=eq.${id}`
+    ).catch(() => []),
   ]);
 
   const f = filas[0];
@@ -138,6 +144,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     graficoObservaciones: f.grafico_2_personas_observaciones,
     graficoNombre: f.grafico_2_personas_nombre,
     raven,
+    discursivo: discursivos[0]?.nivel ?? null,
     ravenIniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
     ravenDuracion:
       s?.terminado_at && s.iniciado_at

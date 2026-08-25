@@ -134,6 +134,18 @@ export type Cualitativo = {
   interpretacion: string | null;
   hallazgos: string | null;
 };
+/**
+ * El análisis discursivo, si se cargó.
+ *
+ * El nivel lo ubica la evaluadora sobre la pirámide de Jaques y los dos textos
+ * los escribe ella: el sistema no deduce nada de acá.
+ */
+export type Discursivo = {
+  nivel: string | null;
+  actual: string | null;
+  futura: string | null;
+};
+
 export type Competencia = {
   id: string;
   competencia: string | null;
@@ -213,6 +225,7 @@ export type Ficha = {
   raven: Raven | null;
   sesionRaven: SesionRaven | null;
   cualitativos: Cualitativo[];
+  discursivo: Discursivo | null;
   competencias: Competencia[];
 };
 
@@ -242,6 +255,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
     sesiones,
     cualitativos,
     competencias,
+    discursivos,
   ] = await Promise.all([
       select<Cabecera>('evaluaciones', `select=${CAMPOS_CABECERA}&id=eq.${id}`),
       select<Mancha>(
@@ -274,6 +288,11 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       select<Competencia>(
         'informe_competencias',
         `select=id,competencia,puntaje,indicadores,justificacion,texto&evaluacion_id=eq.${id}&order=competencia.asc`,
+        CACHE_PSICOTECNICOS
+      ),
+      select<Discursivo>(
+        'analisis_discursivo',
+        `select=nivel,actual,futura&evaluacion_id=eq.${id}`,
         CACHE_PSICOTECNICOS
       ),
     ]);
@@ -313,5 +332,6 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
     sesionRaven: sesiones[0] ?? null,
     cualitativos,
     competencias,
+    discursivo: discursivos[0] ?? null,
   };
 }
