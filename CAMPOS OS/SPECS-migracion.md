@@ -75,10 +75,10 @@ lleva su `airtable_id` y el script busca por ese id antes de insertar, así que
 correrlo dos veces no duplica: completa lo que falta. Eso lo vuelve retomable, que
 es lo que hace falta cuando algo se corta en el medio de setenta expedientes.
 
-El ensayo del 25/8/2026 da: 7 empresas, 39 pedidos más el de "Mapeo
-organizacional", 67 expedientes, 677 respuestas de manchas, 36 Benziger y 24
-facturas. Lo que no entra son las tres cosas de Distribuidora Andina y lo que ya
-está migrado, y las cuentas cierran contra el total de cada tabla.
+Corrida el 25/8/2026: entraron 41 pedidos, 52 expedientes, 703 respuestas de
+manchas, 38 Benziger, 43 Raven y 24 facturas. **Los 39 sumarios se recalcularon
+y los 39 dan idénticos a los de Airtable**, que es la prueba de que la
+codificación entró bien.
 
 **El servidor tiene que estar levantado** cuando se corre de verdad: los sumarios
 los calcula el OS por su propia ruta, y el script se autentica solo con la clave
@@ -86,13 +86,17 @@ del entorno.
 
 ## Lo que hay que decidir
 
-1. **Los 17 candidatos de Laruso sin pedido** entran en un pedido nuevo,
-   "Mapeo organizacional". Ahí el trabajo no fue una selección sino un mapeo de
-   la gente que ya está adentro, y por eso nadie abrió un pedido por persona.
-   Los otros 8 pedidos de Laruso tienen su puesto propio y quedan como están.
-2. **De Distribuidora Andina no se trae nada**: es la empresa de prueba. Sus 3
-   pedidos y sus expedientes se saltean, y los 14 candidatos inventados que hay
-   en Supabase quedan, que son con los que se prueba.
+1. **Los 17 candidatos de Laruso sin pedido se quedan en Airtable.** Ese trabajo
+   no fue una selección sino un mapeo de la gente que ya está adentro, y se sigue
+   llevando allá. Se probó traerlos con un pedido armado para ellos, "Mapeo
+   organizacional", y en el OS quedaban como diecisiete personas sin asignar que
+   nadie iba a trabajar desde acá. Los otros 8 pedidos de Laruso tienen su puesto
+   propio y sí se migran.
+2. **De Distribuidora Andina no se trae nada**: es la empresa de prueba. Y de lo
+   que ya había en Supabase quedan dos pedidos con una persona cada uno, los dos
+   con el expediente completo (Lucía Barrientos y Nahuel Ibarra): catorce
+   candidatos inventados es más de lo que hace falta para probar y ensucia todas
+   las pantallas.
 3. **Los informes PDF viejos no se traen.** El informe se arma desde los datos y
    después se contrastan los dos, para ver cuánto varía respecto de lo que
    escribieron las psicólogas.
