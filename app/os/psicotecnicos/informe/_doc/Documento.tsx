@@ -385,61 +385,31 @@ export default function Documento({
             ],
           ] as const
         ).map(([clave, lista, titulo, sub, dichos]) => (
-          <section key={clave} className={`inf-grupo ${clave}`}>
-            <header>
-              <div>
-                <h3>{titulo}</h3>
-                <p className="inf-grupo-sub">{sub}</p>
-              </div>
-              <span className="inf-grupo-cuantas">{dichos.length}</span>
-            </header>
-            {editar ? (
-              <Listas
-                id={editar}
-                lista={lista}
-                items={dichos}
-                intervenida={inf.intervenidas.includes(lista)}
-                vacio="Sin registros en este grupo."
-              />
-            ) : dichos.length === 0 ? (
-              <p className="inf-vacio">Sin registros en este grupo.</p>
-            ) : (
-              <ul>
-                {dichos.map((d, i) => (
-                  <li key={i}>{d}</li>
-                ))}
-              </ul>
-            )}
-          </section>
+          /* El grupo entero lo dibuja `Listas`, con encabezado y todo: el botón
+             de editar va arriba, al lado de la cuenta, y desde acá no se puede
+             meter nada adentro de un encabezado que se dibuja allá. */
+          <Listas
+            key={clave}
+            id={editar}
+            lista={lista}
+            items={dichos}
+            intervenida={inf.intervenidas.includes(lista)}
+            vacio="Sin registros en este grupo."
+            grupo={{ clave, titulo, sub }}
+          />
         ))}
       </Capitulo>
 
       {/* ── 04 · Recomendaciones ────────────────────────────────────────── */}
       <Capitulo numero="04" titulo="Recomendaciones para su líder directo">
-        {editar ? (
-          <Listas
-            id={editar}
-            lista="recomendaciones"
-            items={inf.recomendaciones}
-            intervenida={inf.intervenidas.includes('recomendaciones')}
-            numerada
-            vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
-          />
-        ) : inf.recomendaciones.length === 0 ? (
-          <p className="inf-vacio">
-            No surgen indicadores fuera de los rangos esperados que requieran una
-            gestión particular.
-          </p>
-        ) : (
-          <ol className="inf-recomendaciones">
-            {inf.recomendaciones.map((r, i) => (
-              <li key={i}>
-                <span className="inf-orden">{String(i + 1).padStart(2, '0')}</span>
-                <p>{r}</p>
-              </li>
-            ))}
-          </ol>
-        )}
+        <Listas
+          id={editar}
+          lista="recomendaciones"
+          items={inf.recomendaciones}
+          intervenida={inf.intervenidas.includes('recomendaciones')}
+          numerada
+          vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
+        />
       </Capitulo>
 
       {/* ── 05 · Benziger ───────────────────────────────────────────────── */}

@@ -63,8 +63,14 @@ vuelve a generar; no se edita a mano. Leer ese esquema necesita el permiso
 por el **nombre del campo**, no por su posición: así "Candidato" mide lo mismo
 en cualquier tabla y pasar de una pantalla a otra no mueve nada de lugar.
 
-Quedan dos tablas: Entregados y Facturación. Las dos declaran sus anchos con
-`anchos()` y los pasan al `colgroup`.
+Quedan tres tablas: Entregados y las dos de Facturación. Todas declaran sus
+anchos con `columnas()` y los pasan al `colgroup`.
+
+**El ancho de referencia vale mientras el campo muestre lo mismo.** Cuando no,
+forzarlo rompe a las dos tablas a la vez: el puesto se recorta en Entregados,
+que lo lleva al lado de la empresa, y va entero en Facturación, donde el panel
+es de un solo cliente. Esas diferencias se declaran donde se usan, en el
+segundo argumento de `columnas()`, medidas y con el porqué escrito.
 
 **Con anchos declarados, el mínimo de la primera columna no aplica.**
 `.os-tabla-trabajo` le da 190 px de mínimo para que el nombre entre entero;
@@ -73,12 +79,11 @@ las demás. Lo anula `.os-tabla-fija th:first-child`.
 
 Dos reglas al tocarlo:
 
-- **Ninguna tabla pasa de 1200 px.** La más ancha ("Por citar", ocho columnas)
-  da exactamente eso, así que sumar una columna obliga a recortar otra. Los
-  anchos declarados viajan al `colgroup` en proporción y no en píxeles: cuando
-  la ventana da los 1200, cada columna mide lo suyo; cuando no los da, se
-  reparten lo que hay. **Nada de desplazamiento horizontal**, que esconde
-  columnas enteras sin avisar.
+- **La tabla ocupa el panel y ninguna columna se pasa de lo que pide.** Los
+  anchos viajan al `colgroup` en píxeles, no en proporción: en proporción, una
+  ventana más angosta que el total achicaba todas a la vez y recortaba lo que
+  sí entraba. **Nada de desplazamiento horizontal**, que esconde columnas
+  enteras sin avisar.
 - **Una fila es un renglón.** Lo que no entra se recorta con puntos
   suspensivos. El pedido es la única excepción, con dos: empresa arriba, puesto
   abajo.
@@ -93,6 +98,15 @@ Tres cosas pelean contra esto y ya están resueltas en `os.css`: el `width: 1%`
 de `.os-tabla-trabajo`, que pisaba el `colgroup`; el ancho de la tabla, que si
 es `auto` toma el del contenido y reparte el sobrante; y el ancho mínimo propio
 de los campos de fecha y los selectores.
+
+**El sobrante del panel lo absorbe la columna que no declara ancho.**
+Repartido en partes iguales entre todas, cada una terminaba con la mitad de su
+ancho en blanco: la fecha de entrevista medía 236 px para mostrar "28/8/26"
+mientras el puesto se recortaba. Por defecto lo absorbe la última, que en
+Facturación es el importe o el botón y los dos van pegados al borde derecho.
+Una tabla que se queda corta, como Entregados con sus diez columnas, nombra en
+`elasticas` las de texto libre: ahí el sobrante es lo que deja de cortarse, y
+en una fecha o un sello sería aire.
 
 **En el teléfono la tabla se desarma en fichas.** Abajo de 760 px cada fila
 pasa a ser un bloque de "campo: valor", y el nombre del campo sale del atributo
@@ -326,6 +340,11 @@ marca, la evaluadora recodifica y no entiende por qué el informe no cambia.
 Los controles solo salen en la ficha, que es donde se trabaja el informe:
 `<Documento>` los dibuja cuando recibe `editar`, y la vista para imprimir y el
 portal del cliente no lo pasan.
+
+**El botón de editar va arriba**, en el encabezado del grupo al lado de la
+cuenta. Al pie de la lista había que leer las seis oraciones enteras para
+encontrarlo. Por eso el recuadro del grupo lo dibuja `Listas` y no `Documento`:
+el encabezado tiene que salir del mismo lado que el estado que ese botón abre.
 
 **El renglón se arrastra desde su agarre y no desde el texto.** El `li` es
 arrastrable siempre (hace falta para que el navegador empiece el arrastre), y el

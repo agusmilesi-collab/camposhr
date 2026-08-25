@@ -425,6 +425,20 @@
   background: var(--hoja);
 }
 
+/* Dentro del recuadro, las recomendaciones siguen numeradas: el punto de color
+   que el grupo le pone a cada renglón acá sobra, porque ya está el número. */
+.inf-grupo .inf-recomendaciones li::before {
+  content: none;
+}
+
+/* El recuadro sin encabezado: las recomendaciones, que ya traen el título del
+   capítulo arriba. Los renglones tienen su propio aire, así que el recuadro
+   pone menos. */
+.inf-grupo-liso {
+  padding: 4px 16px 6px;
+}
+
+
 .inf-grupo.destacado { --color: var(--verde); }
 .inf-grupo.esperado { --color: var(--azul); }
 .inf-grupo.desarrollar { --color: var(--naranja); }
@@ -647,12 +661,33 @@
  * sale impreso ni lo ve el cliente, que recibe el documento por el portal, sin
  * el marco del OS.
  */
+/**
+ * El botón de editar, arriba.
+ *
+ * En los tres grupos del análisis va en el encabezado, al lado de la cuenta;
+ * en las recomendaciones, que no tienen encabezado propio, va solo contra el
+ * borde derecho, arriba de la lista. Al pie había que leer las seis oraciones
+ * enteras para encontrarlo.
+ */
 .inf-edita-barra {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* El renglón de arriba del recuadro sin encabezado: el botón y la cuenta,
+   contra el borde derecho. */
+.inf-grupo-solo-der {
+  justify-content: flex-end;
+  margin: 10px 0 4px;
+}
+
+/* La cuenta se queda contra el borde y el botón entra a su izquierda. */
+.inf-grupo-top-der {
+  flex: none;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  margin: 12px 0 0;
+  gap: 12px;
 }
 
 /* Que la sección quedó escrita a mano se dice, porque a partir de ahí deja de

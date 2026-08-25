@@ -15,7 +15,7 @@
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import Bateria from '../Bateria';
-import { anchos } from '../piezas';
+import { columnas } from '../piezas';
 import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
 import { fechaCorta } from '@/lib/hora';
 import {
@@ -37,8 +37,53 @@ import {
  * además es lo que se está tildando.
  */
 const COLUMNAS = ['Candidato', 'Puesto', 'Batería', 'Entrevista', 'Etapa', 'Importe'];
-const MEDIDAS = anchos(COLUMNAS, 'facturacion');
-const TOTAL_ANCHO = MEDIDAS.reduce((n, x) => n + x, 0);
+
+/**
+ * Lo que pide cada columna acá, medido en pantalla sobre el contenido y el
+ * rótulo, con unos píxeles de margen para el nombre que sea más largo.
+ *
+ * Ninguna coincide con su ancho de referencia. El candidato lleva la tilde
+ * adelante, que se come el nombre. El puesto va solo, sin la empresa arriba,
+ * así que entra entero. La batería lleva el adicional al lado, "B1 + bzg". Y la
+ * entrevista es solo la fecha, sin la hora que llevaba en el pipeline.
+ */
+const PROPIOS = {
+  Candidato: 176,
+  Puesto: 156,
+  'Batería': 96,
+  Entrevista: 108,
+  Etapa: 112,
+};
+const MEDIDAS = columnas(COLUMNAS, PROPIOS);
+
+/** Las de lo ya facturado, que miden lo mismo: las dos tablas se apilan. */
+const COLUMNAS_EMITIDAS = [
+  'Fecha',
+  'Número',
+  'Emisora',
+  'Cliente',
+  'Cubre',
+  'Importe',
+  'Cobro',
+  '',
+];
+/**
+ * Lo mismo para la tabla de lo facturado.
+ *
+ * La fecha va larga, "25/08/2026", y no corta como en Entregados. El cobro no
+ * es un sello de dos letras sino el botón que lo marca, con "Cobrada el
+ * 24/8/26" adentro. Y el cliente entra entero, que acá es el dato por el que se
+ * busca la fila.
+ */
+const PROPIOS_EMITIDAS = {
+  Fecha: 116,
+  'Número': 120,
+  Emisora: 136,
+  Cliente: 160,
+  Cubre: 112,
+  Cobro: 136,
+};
+const MEDIDAS_EMITIDAS = columnas(COLUMNAS_EMITIDAS, PROPIOS_EMITIDAS);
 
 async function mandar(cuerpo: unknown) {
   const res = await fetch('/api/os/facturas', {
@@ -157,13 +202,10 @@ function GrupoCliente({
       </div>
 
       <div className="os-tabla-marco">
-        <table
-          className="os-tabla os-tabla-trabajo os-tabla-fija"
-          style={{ '--os-tabla-ancho': `${TOTAL_ANCHO}px` } as React.CSSProperties}
-        >
+        <table className="os-tabla os-tabla-trabajo os-tabla-fija">
           <colgroup>
             {COLUMNAS.map((c, i) => (
-              <col key={c} style={{ width: `${(MEDIDAS[i] / TOTAL_ANCHO) * 100}%` }} />
+              <col key={c} style={{ width: MEDIDAS[i] }} />
             ))}
           </colgroup>
           <thead>
@@ -342,17 +384,19 @@ export function Emitidas({ facturas }: { facturas: Factura[] }) {
       ) : (
         <div className="os-panel">
           <div className="os-tabla-marco">
-            <table className="os-tabla">
+            <table className="os-tabla os-tabla-trabajo os-tabla-fija">
+              <colgroup>
+                {COLUMNAS_EMITIDAS.map((c, i) => (
+                  <col key={c} style={{ width: MEDIDAS_EMITIDAS[i] }} />
+                ))}
+              </colgroup>
               <thead>
                 <tr>
-                  <th>Fecha</th>
-                  <th>Número</th>
-                  <th>Emisora</th>
-                  <th>Cliente</th>
-                  <th>Cubre</th>
-                  <th>Importe</th>
-                  <th>Cobro</th>
-                  <th className="os-tabla-accion"> </th>
+                  {COLUMNAS_EMITIDAS.map((c) => (
+                    <th key={c} className={c === '' ? 'os-tabla-accion' : undefined}>
+                      {c || ' '}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
