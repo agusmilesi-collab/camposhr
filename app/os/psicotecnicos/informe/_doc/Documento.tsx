@@ -8,6 +8,8 @@ import {
   NOTA_AJUSTE,
 } from '@/lib/informe-textos';
 import Cerebro from './Cerebro';
+import Piramide from './Piramide';
+import { CONDICIONES } from '@/lib/discursivo';
 import Listas from './Listas';
 import './informe.css';
 
@@ -251,6 +253,11 @@ export default function Documento({
 }) {
   const firma = inf.evaluadora ? FIRMAS[inf.evaluadora] : undefined;
 
+  // Los capítulos se numeran solos. Escritos a mano, un informe sin Benziger
+  // saltaba de 04 a 06, y ahora hay dos capítulos que pueden faltar.
+  let ultimo = 0;
+  const num = () => String(++ultimo).padStart(2, '0');
+
   return (
     <article className="inf">
       {interno && inf.faltantes.length > 0 && (
@@ -300,7 +307,7 @@ export default function Documento({
         </div>
       </header>
 
-      <Capitulo numero="01" titulo="Conclusiones">
+      <Capitulo numero={num()} titulo="Conclusiones">
         <div className="inf-semaforo">
           {NIVELES.map((nv) => {
             const elegido = inf.nivel?.clave === nv.clave;
@@ -325,7 +332,7 @@ export default function Documento({
       </Capitulo>
 
       {/* ── 02 · Competencias ───────────────────────────────────────────── */}
-      <Capitulo numero="02" titulo="Competencias evaluadas">
+      <Capitulo numero={num()} titulo="Competencias evaluadas">
         {inf.competencias.length === 0 ? (
           <p className="inf-vacio">
             Sin sumario cargado no se pueden calcular las competencias.
@@ -370,7 +377,7 @@ export default function Documento({
       </Capitulo>
 
       {/* ── 03 · Análisis cualitativo ───────────────────────────────────── */}
-      <Capitulo numero="03" titulo="Análisis cualitativo de las competencias">
+      <Capitulo numero={num()} titulo="Análisis cualitativo de las competencias">
         {(
           [
             [
@@ -412,7 +419,7 @@ export default function Documento({
       </Capitulo>
 
       {/* ── 04 · Recomendaciones ────────────────────────────────────────── */}
-      <Capitulo numero="04" titulo="Recomendaciones para su líder directo">
+      <Capitulo numero={num()} titulo="Recomendaciones para su líder directo">
         <Listas
           id={editar}
           lista="recomendaciones"
@@ -426,7 +433,7 @@ export default function Documento({
       {/* ── 05 · Benziger ───────────────────────────────────────────────── */}
       {inf.benziger && (
         <Capitulo
-          numero="05"
+          numero={num()}
           titulo="Estilos de pensamiento predominantes"
           sub="Según BTSA (Benziger Thinking Styles Assessment)"
         >
@@ -474,8 +481,41 @@ export default function Documento({
         </Capitulo>
       )}
 
+      {/* ── Potencial de desarrollo ─────────────────────────────────────── */}
+      {inf.discursivo && (
+        <Capitulo
+          numero={num()}
+          titulo="Potencial de desarrollo"
+          sub="Según análisis discursivo (modelo de Elliot Jaques)"
+        >
+          <div className="inf-potencial">
+            <p>El nivel jerárquico al que puede llegar si se dan las tres condiciones:</p>
+            <ol className="inf-potencial-condiciones">
+              {CONDICIONES.map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ol>
+
+            <Piramide nivel={inf.discursivo.nivel} />
+
+            {inf.discursivo.actual && (
+              <>
+                <h3>Capacidad potencial actual</h3>
+                <p>{inf.discursivo.actual}</p>
+              </>
+            )}
+            {inf.discursivo.futura && (
+              <>
+                <h3>Capacidad potencial futura</h3>
+                <p>{inf.discursivo.futura}</p>
+              </>
+            )}
+          </div>
+        </Capitulo>
+      )}
+
       {/* ── 06 · Técnicas ───────────────────────────────────────────────── */}
-      <Capitulo numero="06" titulo="Técnicas de evaluación utilizadas">
+      <Capitulo numero={num()} titulo="Técnicas de evaluación utilizadas">
         <ul className="inf-lista">
           {inf.tecnicas.map((t) => (
             <li key={t}>{t}</li>
@@ -484,7 +524,7 @@ export default function Documento({
       </Capitulo>
 
       {/* ── 07 · Profesional a cargo ────────────────────────────────────── */}
-      <Capitulo numero="07" titulo="Profesional a cargo">
+      <Capitulo numero={num()} titulo="Profesional a cargo">
         <p className="inf-confidencial">{CONFIDENCIALIDAD}</p>
         <div className="inf-firma">
           <strong>{inf.evaluadora ?? 'Sin evaluadora asignada'}</strong>

@@ -425,6 +425,42 @@ que es corriente, daba la misma figura. Se corta recién en el borde del lienzo.
 portal del cliente: no hay una segunda versión del informe que pueda quedar con
 otra escala.
 
+## El Benziger existe solo donde se pidió
+
+Lo agrega el pedido (`pedidos.con_benziger`) y no la batería. En las
+evaluaciones que no lo llevan, la pestaña de la ficha salía igual y vacía, el
+aviso de faltantes reclamaba el cuadrante preferente, y las dos cosas se leían
+como trabajo pendiente de algo que nadie pidió. Ahora la pestaña no está
+(`llevaBenziger` en `lib/informe.ts`) y el faltante tampoco.
+
+**Una pestaña que no le corresponde a la ficha cae en Datos**, igual que una que
+no existe: la dirección puede venir guardada de otra persona.
+
+## El análisis discursivo lo ubica la evaluadora
+
+Está en la batería 3 desde siempre y salía en el informe escrito a mano: la
+pirámide de cuatro niveles del modelo de Elliot Jaques con el escalón marcado, y
+los dos párrafos de capacidad potencial. En el OS no había dónde cargarlo, así
+que la batería más cara era la única que no se podía terminar desde acá.
+
+**El nivel no se calcula.** Se toma sobre unos cinco minutos de discurso y lo
+ubica quien lo escuchó: el sistema guarda su lectura (`analisis_discursivo`) y
+la dibuja. Los dos párrafos también los escribe ella, y salen solo si están.
+
+**La pirámide es un dibujo y no una imagen** (`Piramide.tsx`, trapecios
+recortados con `clip-path`): el informe se imprime a PDF y se lee en pantalla, y
+una imagen queda pixelada al ampliarla y sin texto que se pueda buscar ni leer
+en voz alta. Es el mismo componente en la ficha y en el informe, y en la ficha
+cada escalón es un botón: se elige mirando lo que el cliente va a ver.
+
+Va solo donde la batería lo incluye, en las tres pantallas: la hoja de
+entrevista lo lista con su estado, la pestaña Tests lo carga y el informe lo
+publica. Volver a apretar el escalón que ya estaba lo desmarca, que es cómo se
+corrige sin tener que elegir otro que no corresponde.
+
+**Los capítulos del informe se numeran solos.** Escritos a mano, un informe sin
+Benziger saltaba de 04 a 06, y ahora hay dos capítulos que pueden faltar.
+
 ## Una sección del informe sale si tiene algo que decir
 
 El Benziger se dibujaba por existir su fila, no por tener datos. Una fila

@@ -7,6 +7,7 @@ import { diaDeLaSemana, fechaHora } from '@/lib/hora';
 import { duracion } from '@/lib/raven';
 import LinkRaven from '../../LinkRaven';
 import Tomada from './Tomada';
+import { TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import Enlace from './Enlace';
 import Grafico from './Grafico';
 import Papel from './Papel';
@@ -294,6 +295,25 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                   Cargar el informe
                 </Link>
               </Papel>
+            </Tarjeta>
+          );
+        }
+
+        if (t === TEST_DISCURSIVO) {
+          return (
+            <Tarjeta key={t} test={t} n={i + 1}>
+              {/* Se toma hablando, sobre unos cinco minutos de discurso, así
+                  que acá no hay lámina ni enlace que abrir: lo que hace falta
+                  es dónde dejar en qué nivel quedó, que se carga en la ficha. */}
+              <div className="os-herramienta-accion">
+                <span className={`os-sello-estado ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
+                  {e.discursivo ?? 'sin ubicar'}
+                </span>
+                <span />
+                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=tests`}>
+                  Ubicar en la pirámide
+                </Link>
+              </div>
             </Tarjeta>
           );
         }

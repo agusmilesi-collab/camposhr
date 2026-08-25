@@ -19,8 +19,10 @@ import Benziger from './Benziger';
 import Administrados from './Administrados';
 import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
-import { desdeFicha, loQueRige, type Regulacion } from '@/lib/informe';
+import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
 import Raven from './Raven';
+import Discursivo from './Discursivo';
+import { llevaDiscursivo } from '@/lib/discursivo';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
 import Bateria from '../../Bateria';
@@ -39,7 +41,13 @@ export const dynamic = 'force-dynamic';
  * qué hay cargado sin entrar a mirar una por una.
  */
 
-type Pestana = { clave: string; texto: string; cuantos: (f: Ficha) => number };
+type Pestana = {
+  clave: string;
+  texto: string;
+  cuantos: (f: Ficha) => number;
+  /** Si no está, la pestaña va siempre. */
+  va?: (f: Ficha) => boolean;
+};
 
 /**
  * Las pestañas de la ficha.
@@ -57,10 +65,22 @@ type Pestana = { clave: string; texto: string; cuantos: (f: Ficha) => number };
 const PESTANAS: Pestana[] = [
   { clave: 'datos', texto: 'Datos', cuantos: () => 0 },
   { clave: 'manchas', texto: 'Manchas', cuantos: (f) => f.manchas.length },
-  { clave: 'benziger', texto: 'Benziger', cuantos: (f) => (f.benziger ? 1 : 0) },
-  { clave: 'tests', texto: 'Tests', cuantos: (f) => f.cualitativos.length + (f.raven ? 1 : 0) },
+  // El Benziger no es de todos: lo agrega el pedido. En los que no lo llevan la
+  // pestaña salía igual, vacía, y una pestaña vacía se lee como trabajo
+  // pendiente.
+  { clave: 'benziger', texto: 'Benziger', cuantos: (f) => (f.benziger ? 1 : 0), va: llevaBenziger },
+  {
+    clave: 'tests',
+    texto: 'Tests',
+    cuantos: (f) => f.cualitativos.length + (f.raven ? 1 : 0) + (f.discursivo?.nivel ? 1 : 0),
+  },
   { clave: 'informe', texto: 'Informe', cuantos: (f) => (f.cabecera.recomendacion ? 1 : 0) },
 ];
+
+/** Las que le corresponden a esta ficha. */
+function pestanasDe(f: Ficha): Pestana[] {
+  return PESTANAS.filter((p) => !p.va || p.va(f));
+}
 
 function Dato({
   rotulo,
@@ -378,6 +398,23 @@ function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
           />
         </div>
       </section>
+      {llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests) && (
+        <section className="os-panel os-cierre">
+          <div className="os-panel-top">
+            <h2>Análisis discursivo</h2>
+            <span className="os-columna-monto">Modelo de Elliot Jaques</span>
+          </div>
+          <div className="os-panel-cuerpo">
+            <Discursivo
+              id={id}
+              nivel={f.discursivo?.nivel ?? null}
+              actual={f.discursivo?.actual ?? null}
+              futura={f.discursivo?.futura ?? null}
+            />
+          </div>
+        </section>
+      )}
+
       {f.cualitativos.map((t) => (
         <section key={t.id} className="os-panel">
           <h2 className="os-ficha-titulo">{t.test ?? 'Test'}</h2>
@@ -550,7 +587,10 @@ export default async function FichaPagina({
   // `recomendacion` en el informe, que es donde se carga la conclusión.
   const MUDADAS: Record<string, string> = { sumario: 'manchas', recomendacion: 'informe' };
   const pedida = MUDADAS[searchParams.ver ?? ''] ?? searchParams.ver;
-  const ver = PESTANAS.some((p) => p.clave === pedida) ? (pedida as string) : 'datos';
+  const pestanas = pestanasDe(ficha);
+  // Una pestaña que no le corresponde a esta ficha cae en Datos, igual que una
+  // que no existe: la dirección puede venir guardada de otra persona.
+  const ver = pestanas.some((p) => p.clave === pedida) ? (pedida as string) : 'datos';
 
   const c = ficha.cabecera;
   const nombre = c.personas?.nombre ?? 'Sin nombre';
@@ -579,7 +619,7 @@ export default async function FichaPagina({
           vuelta ya existía y este es el de ida. */}
       <div className="os-pestanas-fila">
       <nav className="os-pestanas">
-        {PESTANAS.map((p) => {
+        {pestanas.map((p) => {
           const n = p.cuantos(ficha);
           const texto = p.clave === 'manchas' ? (proyectivo ?? p.texto) : p.texto;
           return (
