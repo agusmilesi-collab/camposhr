@@ -29,7 +29,7 @@ import { diasDesde, fechaCorta } from '@/lib/hora';
  * valores. Lo que sobra va a empresa y puesto, que son los que se recortan. Sumar una columna obliga a sacar otra.
  */
 export const ANCHO: Record<string, number> = {
-  Candidato: 108,
+  Candidato: 134,
   /* Las cuatro de lo ya facturado. El cliente y "cubre" se recortan; los otros
      dos miden lo que piden "0001-00000123" y "Lorena Campos" enteros. */
   'Número': 132,
@@ -39,11 +39,12 @@ export const ANCHO: Record<string, number> = {
   Pedido: 190,
   /* Empresa y puesto van en columnas separadas en Entregados: juntas en una
      celda de dos renglones, la fila era la única del sistema que medía doble.
-     "Fideicomiso Financiero UPR" es el nombre de cliente más largo. */
-  Empresa: 112,
+     Miden lo que pide un nombre de cliente corriente; los largos, como
+     "Fideicomiso Financiero UPR", se recortan con puntos suspensivos. */
+  Empresa: 158,
   /* Facturación es la única tabla donde el puesto va solo, sin la empresa
      arriba: el panel entero es de un cliente. */
-  Puesto: 100,
+  Puesto: 150,
   Etapa: 132,
   Importe: 130,
   /* Lo que mide "B1 + bzg", que es el sello más largo, medido en pantalla. */
@@ -73,8 +74,8 @@ export const ANCHO: Record<string, number> = {
      primera. */
   Fecha: 100,
   /* En Entregados va solo el nombre de pila, así que el ancho lo pide el
-     rótulo y no el valor. */
-  Evaluadora: 130,
+     rótulo "EVALUADORA" y no el valor. */
+  Evaluadora: 120,
   Ingresó: 118,
   Seguimiento: 124,
   /* Cuánto queda para los noventa días: "faltan 12 días", "venció hace 3". */
@@ -87,37 +88,30 @@ export const ANCHO: Record<string, number> = {
 };
 
 /**
- * El `colgroup` de una tabla: cada columna con lo que pide, salvo la última.
+ * El `colgroup` de una tabla: cada columna en proporción a lo que pide.
  *
- * **Los anchos van en píxeles y una columna no lleva ninguno.** Con
- * `table-layout: fixed`, las que no declaran ancho se reparten lo que sobra del
- * panel: así cada campo mide lo suyo en cualquier pantalla y el aire va a parar
- * donde sirve. Por defecto es la última, que en Facturación es el importe o el
- * botón y los dos van pegados al borde derecho; una tabla que se queda corta,
- * como Entregados, nombra en `elasticas` las columnas de texto que se recortan,
- * y ahí el sobrante es lo que deja de cortarse.
+ * La tabla ocupa el panel entero y cada columna se lleva su parte, medida sobre
+ * el contenido y el rótulo más largos. Va en porcentajes y no en píxeles porque
+ * la tabla tiene que llenar el panel en cualquier pantalla: en píxeles, o
+ * sobraba un tercio del panel en blanco a la derecha, o faltaba y aparecía
+ * desplazamiento horizontal.
  *
- * Repartir el sobrante entre todas, que es lo que se hacía antes, dejaba a cada
- * columna con la mitad de su ancho en blanco: la de la fecha de entrevista
- * medía 236 px para mostrar "28/8/26" mientras el puesto se recortaba. Y
- * repartirlo en porcentajes achicaba todo cuando la ventana no daba el total,
- * con lo que se recortaba lo que sí entraba.
+ * **En proporción y no en partes iguales.** Repartir el sobrante por igual
+ * entre todas dejaba a cada una con la mitad de su ancho en blanco: la fecha de
+ * entrevista medía 236 px para mostrar "28/8/26" mientras el puesto se
+ * recortaba. Así, la que pide más crece más, y ninguna queda con el rótulo en
+ * una punta y el dato en la otra.
  *
  * **`propios` es la excepción medida de una tabla.** El ancho de referencia
- * vale mientras el campo muestre lo mismo en las dos; cuando no, forzarlo
- * rompe a las dos a la vez. El puesto se recorta en Entregados, que lo lleva
- * al lado de la empresa, y va entero en Facturación, donde el panel es de un
- * solo cliente. Cada excepción se declara donde se usa y con el porqué.
+ * vale mientras el campo muestre lo mismo en las dos; cuando no, forzarlo rompe
+ * a las dos a la vez. El puesto se recorta en Entregados, que lo lleva al lado
+ * de la empresa, y va entero en Facturación, donde el panel es de un solo
+ * cliente. Cada excepción se declara donde se usa y con el porqué.
  */
-export function columnas(
-  nombres: string[],
-  propios: Record<string, number> = {},
-  elasticas?: string[]
-) {
-  const sueltas = elasticas ?? [nombres[nombres.length - 1]];
-  return nombres.map((c) =>
-    sueltas.includes(c) ? undefined : `${propios[c] ?? ANCHO[c] ?? 140}px`
-  );
+export function columnas(nombres: string[], propios: Record<string, number> = {}) {
+  const base = nombres.map((c) => propios[c] ?? ANCHO[c] ?? 140);
+  const total = base.reduce((n, x) => n + x, 0);
+  return base.map((n) => `${((n / total) * 100).toFixed(3)}%`);
 }
 
 /** Un dato que falta, dicho y no escondido. */

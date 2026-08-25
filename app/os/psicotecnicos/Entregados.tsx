@@ -44,16 +44,7 @@ const COLUMNAS = [
   'Seguimiento',
   'Cómo le fue',
 ];
-/**
- * Las tres que se llevan el sobrante del panel.
- *
- * Diez columnas no entran holgadas en ningún monitor, y estas tres son texto
- * libre: son las que se recortan con puntos suspensivos cuando falta lugar y
- * las únicas que mejoran con lo que sobra. El resto son fechas, sellos y
- * botones, que con más ancho solo suman aire.
- */
-const ELASTICAS = ['Candidato', 'Empresa', 'Puesto'];
-const MEDIDAS = columnas(COLUMNAS, {}, ELASTICAS);
+const MEDIDAS = columnas(COLUMNAS);
 
 /**
  * Con qué se ordena cada columna.

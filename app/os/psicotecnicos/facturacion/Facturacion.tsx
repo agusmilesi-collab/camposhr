@@ -36,16 +36,7 @@ import {
  * mueve nada de lugar. La tilde no tiene columna propia: va con el nombre, que
  * además es lo que se está tildando.
  */
-/*
- * La última columna no tiene rótulo ni contenido: es el aire.
- *
- * Seis columnas cortas no llenan el panel, y el sobrante lo absorbe la que no
- * declara ancho. Dándoselo al importe, el rótulo quedaba pegado a la etapa y el
- * número contra el borde derecho, a un palmo de distancia, y la fila se partía
- * en dos. Con una columna vacía al final los datos quedan juntos, cada número
- * debajo de su rótulo, y el aire va donde no separa nada.
- */
-const COLUMNAS = ['Candidato', 'Puesto', 'Batería', 'Entrevista', 'Etapa', 'Importe', ''];
+const COLUMNAS = ['Candidato', 'Puesto', 'Batería', 'Entrevista', 'Etapa', 'Importe'];
 
 /**
  * Lo que pide cada columna acá, medido en pantalla sobre el contenido y el
@@ -92,6 +83,9 @@ const PROPIOS_EMITIDAS = {
   Cliente: 160,
   Cubre: 112,
   Cobro: 136,
+  /* La columna de la acción mide lo que mide "Quitar", y no los 166 de las
+     tablas del pipeline, que llevaban botones de dos palabras. */
+  '': 96,
 };
 const MEDIDAS_EMITIDAS = columnas(COLUMNAS_EMITIDAS, PROPIOS_EMITIDAS);
 
@@ -223,7 +217,7 @@ function GrupoCliente({
               {/* El rótulo va a la izquierda aunque el número vaya a la
                   derecha, como en las tablas del pipeline. */}
               {COLUMNAS.map((c) => (
-                <th key={c}>{c || ' '}</th>
+                <th key={c}>{c}</th>
               ))}
             </tr>
           </thead>
@@ -269,7 +263,6 @@ function GrupoCliente({
                     formatoImporte(totalDe(p))
                   )}
                 </td>
-                <td data-campo=" " />
               </tr>
             ))}
           </tbody>

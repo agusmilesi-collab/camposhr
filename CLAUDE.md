@@ -79,11 +79,10 @@ las demás. Lo anula `.os-tabla-fija th:first-child`.
 
 Dos reglas al tocarlo:
 
-- **La tabla ocupa el panel y ninguna columna se pasa de lo que pide.** Los
-  anchos viajan al `colgroup` en píxeles, no en proporción: en proporción, una
-  ventana más angosta que el total achicaba todas a la vez y recortaba lo que
-  sí entraba. **Nada de desplazamiento horizontal**, que esconde columnas
-  enteras sin avisar.
+- **La tabla ocupa el panel y cada columna se lleva su parte.** Los anchos
+  viajan al `colgroup` en porcentajes: en píxeles, o sobraba un tercio del
+  panel en blanco a la derecha, o faltaba y aparecía **desplazamiento
+  horizontal**, que esconde columnas enteras sin avisar.
 - **Una fila es un renglón.** Lo que no entra se recorta con puntos
   suspensivos. El pedido es la única excepción, con dos: empresa arriba, puesto
   abajo.
@@ -99,14 +98,14 @@ de `.os-tabla-trabajo`, que pisaba el `colgroup`; el ancho de la tabla, que si
 es `auto` toma el del contenido y reparte el sobrante; y el ancho mínimo propio
 de los campos de fecha y los selectores.
 
-**El sobrante del panel lo absorbe la columna que no declara ancho.**
-Repartido en partes iguales entre todas, cada una terminaba con la mitad de su
+**El sobrante se reparte en proporción a lo que pide cada columna, no en
+partes iguales.** En partes iguales, cada una terminaba con la mitad de su
 ancho en blanco: la fecha de entrevista medía 236 px para mostrar "28/8/26"
-mientras el puesto se recortaba. Por defecto lo absorbe la última, que en
-Facturación es el importe o el botón y los dos van pegados al borde derecho.
-Una tabla que se queda corta, como Entregados con sus diez columnas, nombra en
-`elasticas` las de texto libre: ahí el sobrante es lo que deja de cortarse, y
-en una fecha o un sello sería aire.
+mientras el puesto se recortaba. Dárselo entero a una tampoco sirve: en la
+columna del importe el rótulo quedaba pegado a la etapa y el número contra el
+borde derecho, con la fila partida en dos, y en una columna vacía al final
+dejaba un tercio del panel en blanco. En proporción, la que pide más crece más
+y todas quedan con el mismo aire relativo.
 
 **En el teléfono la tabla se desarma en fichas.** Abajo de 760 px cada fila
 pasa a ser un bloque de "campo: valor", y el nombre del campo sale del atributo
