@@ -46,7 +46,8 @@ export {
  * No se importa de `facturas-tipos` para tenerla al lado de la consulta que la
  * usa; la constante vive allá porque también la lee el navegador.
  */
-import { ETAPAS_ENTREVISTADO } from '@/lib/facturas-tipos';
+import { ETAPAS_ENTREVISTADO, type Marcha } from '@/lib/facturas-tipos';
+import { cortes } from '@/lib/monotributo';
 
 type FilaEmisor = {
   id: string;
@@ -249,4 +250,36 @@ export async function listarAFacturar(): Promise<Facturable[]> {
         dolar: cambio?.valor ?? null,
       };
     });
+}
+
+/**
+ * Lo que lleva facturado cada emisora, para su monotributo.
+ *
+ * **Solo lo emitido y en pesos.** Un borrador o una factura rechazada no son un
+ * ingreso, y una en dólares no se puede sumar a un tope que está en pesos: se
+ * cuenta aparte para que la pantalla lo avise en vez de mezclarla.
+ *
+ * La cuenta es sobre lo que se emitió en el OS. Lo facturado antes entra cuando
+ * esas facturas se carguen, así que mientras dure la migración el número es un
+ * piso y no el total.
+ */
+export async function marchaMonotributo(hoy = new Date()): Promise<Marcha[]> {
+  const [emisoras, facturas] = await Promise.all([listarEmisoras(), listarFacturas()]);
+  const emitidas = facturas.filter((f) => f.estado === 'emitida');
+  const { mes, anio, doce } = cortes(hoy);
+
+  return emisoras.map((e) => {
+    const suyas = emitidas.filter((f) => f.emisorId === e.id && f.moneda !== 'DOL');
+    const suma = (desde: string) =>
+      suyas.filter((f) => f.fecha >= desde).reduce((n, f) => n + (f.importe ?? 0), 0);
+    return {
+      emisorId: e.id,
+      nombre: e.nombre,
+      categoria: e.categoria,
+      mes: suma(mes),
+      anio: suma(anio),
+      doce: suma(doce),
+      enDolares: emitidas.filter((f) => f.emisorId === e.id && f.moneda === 'DOL').length,
+    };
+  });
 }

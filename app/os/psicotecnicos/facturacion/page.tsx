@@ -1,5 +1,5 @@
 import Shell from '../../Shell';
-import { AFacturar, Emitidas, Monotributo } from './Facturacion';
+import { AFacturar, Emitidas } from './Facturacion';
 import {
   formatoImporte,
   listarAFacturar,
@@ -8,7 +8,6 @@ import {
 } from '@/lib/facturas';
 import { totalDe } from '@/lib/facturas-tipos';
 import { esMia, quienSoy } from '@/lib/identidad';
-import { cortes } from '@/lib/monotributo';
 import { cuentasDeLaBarra } from '../datos';
 
 export const dynamic = 'force-dynamic';
@@ -48,37 +47,6 @@ export default async function Facturacion() {
   const cobrado = vivas
     .filter((f) => f.cobradaAt !== null)
     .reduce((n, f) => n + (f.importe ?? 0), 0);
-
-  /**
-   * Lo que lleva facturado cada una, para su monotributo.
-   *
-   * Solo lo emitido en pesos: el tope de ARCA es en pesos y una factura en
-   * dólares no se puede sumar sin convertirla, así que se cuenta aparte y la
-   * pantalla lo avisa en vez de mezclarla.
-   *
-   * Cada una ve lo suyo. Quien tiene alcance de todo ve las dos, porque las dos
-   * categorías son una sola decisión: qué le conviene facturar a cada una.
-   */
-  const emitidas = facturas.filter((f) => f.estado === 'emitida');
-  const { mes, anio, doce } = cortes(new Date());
-  const monotributo = emisoras
-    .filter((e) => esMia(e.nombre, yo))
-    .map((e) => {
-      // Solo las emitidas: un borrador o una rechazada no son un ingreso, y
-      // sumarlas adelantaría el tope contra plata que nunca se facturó.
-      const suyas = emitidas.filter((f) => f.emisorId === e.id && f.moneda !== 'DOL');
-      const suma = (desde: string) =>
-        suyas.filter((f) => f.fecha >= desde).reduce((n, f) => n + (f.importe ?? 0), 0);
-      return {
-        emisorId: e.id,
-        nombre: e.nombre,
-        categoria: e.categoria,
-        mes: suma(mes),
-        anio: suma(anio),
-        doce: suma(doce),
-        enDolares: emitidas.filter((f) => f.emisorId === e.id && f.moneda === 'DOL').length,
-      };
-    });
 
   return (
     <Shell
@@ -120,8 +88,6 @@ export default async function Facturacion() {
           <div className="os-cifra-pie">Sin contar las anuladas.</div>
         </div>
       </div>
-
-      <Monotributo emisoras={monotributo} />
 
       <AFacturar pendientes={mias} emisoras={emisoras} quien={yo.nombre} />
       <Emitidas facturas={facturas} />

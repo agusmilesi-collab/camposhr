@@ -65,6 +65,23 @@ export type Factura = {
   renglones: Renglon[];
 };
 
+/**
+ * Lo que lleva facturado una emisora, en los tres cortes que importan.
+ *
+ * El mes y el año dicen cómo viene el trabajo; los doce meses corridos son los
+ * que deciden la categoría del monotributo, que es lo que mira ARCA.
+ */
+export type Marcha = {
+  emisorId: string;
+  nombre: string;
+  categoria: string | null;
+  mes: number;
+  anio: number;
+  doce: number;
+  /** Cuántas facturas suyas quedaron afuera por estar en otra moneda. */
+  enDolares: number;
+};
+
 /** Una evaluación con la entrevista tomada y sin comprobante. */
 export type Facturable = {
   evaluacionId: string;
