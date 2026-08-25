@@ -15,7 +15,16 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import Opciones from '@/app/os/Opciones';
+import Desplegable from '@/app/os/Desplegable';
+
+/**
+ * Los dos desplegables miden lo mismo.
+ *
+ * Sin esto cada uno tomaba el ancho de su opción más larga y quedaban
+ * escalonados en la misma columna, uno arriba del otro. Es el ancho de "Sin
+ * respuesta", que es la más larga de las dos listas.
+ */
+const ANCHO_RESPUESTA = 168;
 
 /** El seguimiento se hace a los noventa días de que empezó. */
 function noventaDias(desde: string): string {
@@ -123,30 +132,26 @@ export default function Ingreso({
   // Lo que no corresponde queda apagado, no escondido.
   const trabaja = valor === true;
 
+  // Dos columnas: a la izquierda si entró y cuándo, a la derecha cómo le fue y
+  // qué contaron. En una sola tira, el bloque medía lo mismo que los otros dos
+  // juntos por cinco datos que se contestan en un minuto.
   return (
     <div className="os-seguimiento">
       <div className="os-seguimiento-fila">
         <span className="os-dato-rotulo">Entró a trabajar</span>
-        <Opciones
-          valor={valor}
+        {/* Tres estados y no un tilde: "sin respuesta" no es lo mismo que
+            "no". Viaja como texto porque el desplegable maneja texto, y se
+            traduce acá: es el único lugar donde esa pregunta se contesta. */}
+        <Desplegable
+          valor={valor === true ? 'si' : valor === false ? 'no' : ''}
           opciones={[
-            { v: true, texto: 'Sí' },
-            { v: false, texto: 'No' },
-            { v: null, texto: 'Sin respuesta' },
+            { valor: '', texto: 'Sin respuesta', color: 'os-gris' },
+            { valor: 'si', texto: 'Sí', color: 'os-verde' },
+            { valor: 'no', texto: 'No', color: 'os-rojo' },
           ]}
-          alElegir={responder}
-        />
-      </div>
-
-      <div className={`os-seguimiento-fila${trabaja ? '' : ' apagada'}`}>
-        <span className="os-dato-rotulo">Desde</span>
-        <input
-          className="os-campo os-ingreso-fecha"
-          type="date"
-          value={desde ?? ''}
-          disabled={!trabaja}
-          onChange={(e) => ponerDesde(e.target.value)}
-          aria-label="Desde cuándo trabaja"
+          alElegir={(v) => responder(v === 'si' ? true : v === 'no' ? false : null)}
+          etiqueta="Entró a trabajar"
+          ancho={ANCHO_RESPUESTA}
         />
       </div>
 
@@ -165,24 +170,22 @@ export default function Ingreso({
       </div>
 
       <div className={`os-seguimiento-fila${trabaja ? '' : ' apagada'}`}>
-        <span className="os-dato-rotulo">Cómo le fue</span>
-        <Opciones
-          valor={comoFue}
-          desactivado={!trabaja}
-          opciones={[
-            { v: 'Bien', texto: 'Bien' },
-            { v: 'Regular', texto: 'Regular' },
-            { v: 'Mal', texto: 'Mal' },
-            { v: null, texto: 'Sin preguntar' },
-          ]}
-          alElegir={(v) => {
-            setComoFue(v);
-            guardar({ seguimientoResultado: v });
-          }}
+        <span className="os-dato-rotulo">Desde</span>
+        <input
+          className="os-campo os-ingreso-fecha"
+          type="date"
+          value={desde ?? ''}
+          disabled={!trabaja}
+          onChange={(e) => ponerDesde(e.target.value)}
+          aria-label="Desde cuándo trabaja"
         />
       </div>
 
-      <div className={`os-seguimiento-fila${trabaja && comoFue ? '' : ' apagada'}`}>
+      <div
+        className={`os-seguimiento-fila os-seguimiento-notas-fila${
+          trabaja && comoFue ? '' : ' apagada'
+        }`}
+      >
         <span className="os-dato-rotulo">Qué dijeron</span>
         <textarea
           className="os-campo os-seguimiento-notas"
@@ -192,6 +195,30 @@ export default function Ingreso({
           placeholder="Lo que contó la empresa: qué anduvo y qué no."
           onBlur={(e) => guardar({ seguimientoNotas: e.target.value || null })}
           aria-label="Qué dijeron"
+        />
+      </div>
+
+      <div className={`os-seguimiento-fila${trabaja ? '' : ' apagada'}`}>
+        <span className="os-dato-rotulo">Cómo le fue</span>
+        {/* Desplegable y no botonera: es el mismo control que la columna de
+            Entregados, así el dato se carga igual desde los dos lados. Con su
+            punto de color, que es lo que hace que "Bien" y "Mal" se reconozcan
+            sin leerlos. */}
+        <Desplegable
+          valor={comoFue ?? ''}
+          deshabilitado={!trabaja}
+          opciones={[
+            { valor: '', texto: 'Sin preguntar', color: 'os-gris' },
+            { valor: 'Bien', texto: 'Bien', color: 'os-verde' },
+            { valor: 'Regular', texto: 'Regular', color: 'os-ambar' },
+            { valor: 'Mal', texto: 'Mal', color: 'os-rojo' },
+          ]}
+          alElegir={(v) => {
+            setComoFue(v || null);
+            guardar({ seguimientoResultado: v || null });
+          }}
+          etiqueta="Cómo le fue en la empresa"
+          ancho={ANCHO_RESPUESTA}
         />
       </div>
 

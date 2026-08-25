@@ -7,12 +7,12 @@ import { quienSoy } from '@/lib/identidad';
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { nombrePerfil } from '@/lib/perfiles';
 import { RUTA } from '@/lib/psicotecnicos';
-import { fechaHora } from '@/lib/hora';
+import { fechaCorta, fechaHora } from '@/lib/hora';
 import { formatoImporte } from '@/lib/cotizaciones';
+import { numeroDe } from '@/lib/facturas-tipos';
 import Manchas from './Manchas';
 import SumarioTexto from './SumarioTexto';
 import Ingreso from './Ingreso';
-import Factura from './Factura';
 import Conclusion from './Conclusion';
 import Entregar from './Entregar';
 import Benziger from './Benziger';
@@ -195,40 +195,67 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
         <Dato rotulo="Evaluadora">{c.evaluadoras?.nombre ?? <Falta texto="sin asignar" />}</Dato>
       </Bloque>
 
-      <Bloque titulo="La evaluación" dos>
-        <Dato rotulo="Solicitud">{fechaHora(c.fecha_ingreso) ?? <Falta texto="sin fecha" />}</Dato>
-        <Dato rotulo="Estado">
-          <Etapa id={id} etapa={c.estado} />
-        </Dato>
-        <Dato rotulo="Batería">
-          <Bateria
-            codigo={c.pedidos?.baterias?.codigo ?? null}
-            conBenziger={c.pedidos?.con_benziger === true}
-          />
-        </Dato>
-        <Dato rotulo="Entrevista">
-          {fechaHora(c.fecha_entrevista) ?? <Falta texto="sin agendar" />}
-        </Dato>
-        <Dato rotulo="Modalidad">{c.modalidad ?? <Falta texto="sin definir" />}</Dato>
-        {/* Es la fecha en que se subió al portal: la sella el paso a Entregado,
-            que es lo que hace ese botón. Se llamaba "Entrega" y no se sabía si
-            era cuándo se prometió o cuándo salió. */}
-        <Dato rotulo="Subido al portal">
-          {fechaHora(c.fecha_entrega) ?? <Falta texto="todavía no" />}
-        </Dato>
-      </Bloque>
+      {/* La evaluación y la factura, una al lado de la otra: la primera es lo
+          que pasó con el trabajo y la segunda lo que se cobra por él. Puestas
+          una debajo de la otra, la factura quedaba a media pantalla de
+          distancia de los datos que la explican. */}
+      <div className="os-ficha-par">
+        {/* El bloque acomoda sus datos de a pares, así que el orden de acá es
+            el intercalado de las dos columnas: a la izquierda qué se le tomó y
+            cuándo entró y salió el trabajo, a la derecha en qué anda y cómo se
+            la vio. */}
+        <Bloque titulo="La evaluación" dos>
+          <Dato rotulo="Batería">
+            <Bateria
+              codigo={c.pedidos?.baterias?.codigo ?? null}
+              conBenziger={c.pedidos?.con_benziger === true}
+            />
+          </Dato>
+          <Dato rotulo="Estado">
+            <Etapa id={id} etapa={c.estado} />
+          </Dato>
+          <Dato rotulo="Solicitud">{fechaHora(c.fecha_ingreso) ?? <Falta texto="sin fecha" />}</Dato>
+          <Dato rotulo="Entrevista">
+            {fechaHora(c.fecha_entrevista) ?? <Falta texto="sin agendar" />}
+          </Dato>
+          {/* Es la fecha en que se subió al portal: la sella el paso a Entregado,
+              que es lo que hace ese botón. Se llamaba "Entrega" y no se sabía si
+              era cuándo se prometió o cuándo salió. */}
+          <Dato rotulo="Subido al portal">
+            {fechaHora(c.fecha_entrega) ?? <Falta texto="todavía no" />}
+          </Dato>
+          <Dato rotulo="Modalidad">{c.modalidad ?? <Falta texto="sin definir" />}</Dato>
+        </Bloque>
 
-      {/* La plata va aparte: se mira en otro momento y por otra persona que lo
-          que se hizo con el candidato. */}
-      <Bloque titulo="La factura" dos>
-        <Dato rotulo="Precio">
-          {precio ? formatoImporte(precio) : <Falta texto="la batería no tiene precio" />}
-        </Dato>
-        <Dato rotulo="Facturado">
-          <Factura id={c.id} facturado={c.facturado} numero={c.numero_factura} />
-        </Dato>
-        <Dato rotulo="Cobrado">{c.pagado ? 'Sí' : <Falta texto="todavía no" />}</Dato>
-      </Bloque>
+        {/* La plata se lee acá y se opera en Facturación: el comprobante junta
+            varios candidatos de un cliente, así que la decisión de qué entra en
+            cuál no se puede tomar desde la ficha de uno solo. */}
+        <Bloque titulo="La factura">
+          <Dato rotulo="Importe">
+            {precio ? formatoImporte(precio) : <Falta texto="la batería no tiene precio" />}
+          </Dato>
+          <Dato rotulo="Facturado">
+            {f.factura ? (
+              <Link className="os-ficha-enlace" href="/os/psicotecnicos/facturacion">
+                {numeroDe({ numero: f.factura.numero, puntoVenta: f.factura.punto_venta })}
+                <span className="os-dato-al-lado">{fechaCorta(f.factura.fecha)}</span>
+              </Link>
+            ) : (
+              // Un sello y no un "falta": no es un dato que alguien se olvidó
+              // de cargar, es que todavía no se facturó. La respuesta a la
+              // pregunta es no, y se lee de un vistazo con el punto.
+              <span className="os-sello-estado os-rojo">No</span>
+            )}
+          </Dato>
+          <Dato rotulo="Cobrado">
+            {f.factura?.cobrada_at ? (
+              <span className="os-sello-estado os-verde">{fechaCorta(f.factura.cobrada_at)}</span>
+            ) : (
+              <span className="os-sello-estado os-rojo">No</span>
+            )}
+          </Dato>
+        </Bloque>
+      </div>
 
       <Bloque titulo="El ingreso">
         <Dato rotulo="Seguimiento" ancho>
@@ -456,7 +483,12 @@ function Informe({ f }: { f: Ficha }) {
         </div>
       </section>
 
-      <section className="os-panel os-generar">
+      {/* Un solo panel con su cabecera y el documento adentro: la barra de
+          acciones y la hoja son la misma cosa. En dos paneles apilados se leían
+          como bloques sueltos, y el de arriba tenía un título y tres botones y
+          nada más. */}
+      <section className="os-panel">
+      <div className="os-generar">
         <h2>El informe</h2>
         <div className="os-generar-acciones">
           <Link
@@ -484,10 +516,11 @@ function Informe({ f }: { f: Ficha }) {
             </span>
           )}
         </div>
-      </section>
+      </div>
 
-      <section className="os-panel os-informe-marco">
+      <div className="os-informe-marco">
         <Documento inf={informe} interno />
+      </div>
       </section>
 
     </>
@@ -531,6 +564,12 @@ export default async function FichaPagina({
         </p>
       </div>
 
+      {/* El botón va en la línea de las pestañas y no arriba con el título: es
+          otra vista de la misma persona, igual que las pestañas, y ahí queda a
+          la altura de lo que hace. La hoja de la entrevista es para tenerla
+          enfrente, con la herramienta de cada test a un clic; el camino de
+          vuelta ya existía y este es el de ida. */}
+      <div className="os-pestanas-fila">
       <nav className="os-pestanas">
         {PESTANAS.map((p) => {
           const n = p.cuantos(ficha);
@@ -548,6 +587,10 @@ export default async function FichaPagina({
           );
         })}
       </nav>
+        <Link className="os-boton os-boton-firme" href={`/os/psicotecnicos/entrevista/${params.id}`}>
+          Ver entrevista
+        </Link>
+      </div>
 
       {ver === 'datos' && <Datos f={ficha} id={params.id} />}
       {ver === 'manchas' && (
@@ -560,20 +603,27 @@ export default async function FichaPagina({
               batería.
             </div>
           )}
+          {/* El sumario calculado va arriba de la codificación: es lo que la
+              evaluadora viene a leer cuando entra a esta pestaña, y abajo de
+              una grilla de veinte respuestas obligaba a bajar hasta el fondo
+              cada vez. Va sin panel alrededor: sus bloques ya son tarjetas con
+              su borde.
+
+              Mientras no esté calculado, el aviso queda al pie, al lado del
+              botón que lo calcula: ahí sí lo que hay que mirar es la
+              codificación. */}
+          {ficha.sumario && <SumarioEstructural f={ficha} />}
           <Manchas evaluacionId={params.id} filas={ficha.manchas} />
-          {/* El sumario sale de esta misma codificación, así que va debajo y
-              sin panel alrededor: sus bloques ya son tarjetas con su borde. */}
-          <SumarioEstructural f={ficha} />
+          {!ficha.sumario && <SumarioEstructural f={ficha} />}
         </>
       )}
       {/* Sin panel alrededor: la vista trae sus propias tarjetas. */}
       {ver === 'benziger' && <BenzigerVista f={ficha} id={params.id} />}
       {ver === 'tests' && <Tests f={ficha} id={params.id} />}
-      {ver === 'informe' && (
-        <section className="os-panel">
-          <Informe f={ficha} />
-        </section>
-      )}
+      {/* Sin panel alrededor: trae sus propias tarjetas, igual que Benziger y
+          Tests. Envuelto, los dos paneles de adentro quedaban sobre un tercer
+          fondo blanco y el conjunto se leía como una sola mancha. */}
+      {ver === 'informe' && <Informe f={ficha} />}
     </Shell>
   );
 }

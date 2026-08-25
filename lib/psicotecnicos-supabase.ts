@@ -74,6 +74,8 @@ type Fila = {
   ingreso: boolean | null;
   seguimiento_al: string | null;
   seguimiento_resultado: string | null;
+  facturado: boolean | null;
+  pagado: boolean | null;
   personas: {
     nombre: string;
     email: string | null;
@@ -93,7 +95,7 @@ type Fila = {
 const CAMPOS =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'bender_administrado,grafico_2_personas_administrado,recomendacion,informe_path,' +
-  'ingreso,seguimiento_al,seguimiento_resultado,' +
+  'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,' +
   'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
   'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo))';
 
@@ -133,6 +135,8 @@ export async function listar(): Promise<Evaluacion[]> {
     ingreso: f.ingreso,
     seguimientoAl: f.seguimiento_al,
     seguimientoResultado: f.seguimiento_resultado,
+    facturado: f.facturado === true,
+    pagado: f.pagado === true,
     tieneCv: Boolean(f.personas?.cv_path),
     servicio: null,
     dias: diasDesde(f.fecha_entrevista, hoy),

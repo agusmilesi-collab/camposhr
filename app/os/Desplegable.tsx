@@ -101,9 +101,15 @@ export default function Desplegable({
       const alto = Math.min(lista.current?.scrollHeight || ALTO_MAXIMO, ALTO_MAXIMO);
       const abajo = window.innerHeight - b.bottom - AIRE;
       const haciaArriba = abajo < alto && b.top - AIRE > abajo;
+      // La lista puede ser más ancha que su botón, y un botón cerca del borde
+      // derecho la mandaba a la mitad afuera de la ventana: con el selector en
+      // la última columna de un tablero, las opciones quedaban cortadas. Se
+      // corre lo justo para que entre, sin despegarla del botón cuando no hace
+      // falta.
+      const ancho = Math.max(lista.current?.scrollWidth ?? 0, b.width);
       const sitio = {
         top: haciaArriba ? Math.max(AIRE, b.top - alto - AIRE) : b.bottom + AIRE,
-        left: b.left,
+        left: Math.max(AIRE, Math.min(b.left, window.innerWidth - ancho - AIRE)),
         ancho: b.width,
       };
       // Solo se avisa cuando algo cambió: si no, es un render por cuadro.

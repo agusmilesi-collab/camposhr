@@ -3586,17 +3586,30 @@ th.os-tabla-contacto {
  * Adentro de cada bloque los campos van en celdas de igual ancho y el valor va
  * pegado a su rótulo, que es como se lee: primero qué es, después cuánto dio.
  */
+/**
+ * El sumario entero entra en una pantalla.
+ *
+ * Es la hoja que la evaluadora mira mientras escribe el informe: si hay que
+ * desplazarse para ver la mitad de abajo, deja de servir como golpe de vista y
+ * se vuelve una lista más. Los 800 px son lo que entra en una pantalla de
+ * trabajo debajo de las pestañas, y de ahí salen los tamaños de este bloque:
+ * cada renglón está apretado a propósito.
+ */
 .os-hoja {
   display: grid;
-  gap: 12px;
-  margin: 4px 0 22px;
+  gap: 7px;
+  margin: 4px 0 16px;
+  max-height: 800px;
+  /* Red por si un protocolo trae más de lo previsto: se desplaza adentro en
+     vez de perderse el final. Con el sumario completo no aparece. */
+  overflow-y: auto;
 }
 
 .os-hoja-encabezado {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 20px;
-  padding: 10px 14px;
+  padding: 6px 13px;
   border-radius: 10px;
   background: var(--os-panel-2);
 }
@@ -3608,7 +3621,7 @@ th.os-tabla-contacto {
 }
 
 .os-hoja-bloque {
-  padding: 13px 15px 14px;
+  padding: 8px 13px 6px;
   border: 1px solid var(--os-linea);
   border-radius: 12px;
   background: var(--os-panel);
@@ -3616,8 +3629,8 @@ th.os-tabla-contacto {
 }
 
 .os-hoja-titulo {
-  margin: 0 0 9px;
-  padding-bottom: 8px;
+  margin: 0 0 3px;
+  padding-bottom: 4px;
   border-bottom: 1px solid var(--os-linea);
   font-size: 0.74rem;
   font-weight: 600;
@@ -3634,7 +3647,11 @@ th.os-tabla-contacto {
      bloques angostos de la fila de abajo caían en una sola columna y los de
      arriba en dos, y la hoja dejaba de leerse pareja. */
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 12px;
+  /* Aire entre columnas: con la guía punteada terminando en el número, el
+     valor de la izquierda quedaba pegado al rótulo de la derecha y se leían
+     como un solo dato. La separación es la que despega las dos mitades del
+     bloque, así que va generosa. */
+  gap: 0 52px;
   align-content: start;
 }
 
@@ -3646,23 +3663,33 @@ th.os-tabla-contacto {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(2, auto);
   grid-auto-flow: column;
-  gap: 0 12px;
+  gap: 0 44px;
 }
 
 /* La línea punteada de la hoja, del ancho del bloque. */
 .os-hoja-corte {
   grid-column: 1 / -1;
-  margin: 7px 0;
+  margin: 5px 0;
   border: 0;
   border-top: 1px dashed var(--os-linea);
 }
 
+/**
+ * Un renglón por indicador: el rótulo a la izquierda, el valor a la derecha y
+ * una línea de puntos que los une.
+ *
+ * Los valores quedan alineados en una columna en vez de arrancar cada uno
+ * donde termina su rótulo. Con los rótulos de largo desigual (R al lado de
+ * SumC':SumPondC), los números dibujaban un zigzag y había que ir buscándolos.
+ * Es la guía de un índice: se sigue la línea y se cae en el número.
+ */
 .os-hoja-par {
   display: flex;
   align-items: baseline;
-  gap: 9px;
-  padding: 4px 0;
-  font-size: 0.88rem;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
   min-width: 0;
 }
 
@@ -3682,17 +3709,42 @@ th.os-tabla-contacto {
 }
 
 .os-hoja-rotulo {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
   color: var(--os-tinta-media);
   font-weight: 500;
 }
 
+/* La guía que lleva del rótulo a su número. */
+.os-hoja-rotulo::after {
+  content: '';
+  flex: 1;
+  min-width: 10px;
+  border-bottom: 1px dotted var(--os-linea);
+  transform: translateY(-0.2em);
+}
+
+/* En las constelaciones el rótulo es un título centrado, sin guía. */
+.os-hoja-indice .os-hoja-rotulo {
+  display: block;
+  flex: none;
+}
+
+.os-hoja-indice .os-hoja-rotulo::after {
+  content: none;
+}
+
 .os-hoja-valor {
-  padding: 1px 8px;
+  flex: none;
+  padding: 1px 7px;
   border-radius: 6px;
   background: var(--os-panel-2);
   color: var(--os-tinta);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -3704,7 +3756,7 @@ th.os-tabla-contacto {
 }
 
 .os-hoja-sueltas {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   padding: 0;
   list-style: none;
   display: grid;
@@ -3716,14 +3768,16 @@ th.os-tabla-contacto {
 
 /* Las seis constelaciones, del ancho de la hoja y con la positiva marcada:
    es lo primero que se busca al abrir el sumario. */
+/* Seis tarjetas apretadas: es el bloque más aireado de la hoja y el que hacía
+   que el sumario del Rorschach se pasara de la pantalla. */
 .os-hoja-constelaciones {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .os-hoja-indice {
-  padding: 11px 10px;
+  padding: 7px 9px;
   border: 1px solid transparent;
   border-radius: 10px;
   background: var(--os-panel-2);
@@ -3738,9 +3792,9 @@ th.os-tabla-contacto {
 }
 
 .os-hoja-numero {
-  margin: 5px 0 3px;
+  margin: 3px 0 2px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 1.12rem;
+  font-size: 1.05rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--os-tinta);
@@ -4216,14 +4270,46 @@ th.os-tabla-contacto {
 }
 
 /* El seguimiento a los noventa días, debajo de si entró. */
+/**
+ * El seguimiento, en dos columnas.
+ *
+ * A la izquierda si entró y cuándo, a la derecha cómo le fue y qué contaron.
+ * En una sola tira el bloque medía lo mismo que la evaluación y la factura
+ * juntas, por cinco datos que se contestan en un minuto.
+ */
 .os-seguimiento {
   display: grid;
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 28px;
+  align-items: start;
 }
 
+/* Lo que contó la empresa ocupa el alto de las dos filas que tiene al lado. */
+.os-seguimiento-notas-fila {
+  grid-row: span 2;
+  align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+  .os-seguimiento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-seguimiento-notas-fila {
+    grid-row: auto;
+  }
+}
+
+/**
+ * Rótulo y control, con el rótulo en columna fija.
+ *
+ * Con flex, cada rótulo empujaba su control hasta donde terminaba el texto:
+ * "Entró a trabajar" arrancaba su desplegable veinte píxeles más a la derecha
+ * que "Desde" el suyo, y los tres campos de la columna quedaban escalonados.
+ */
 .os-seguimiento-fila {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr);
   align-items: center;
   gap: 8px 12px;
 }
@@ -5481,12 +5567,25 @@ th.os-tabla-contacto {
 }
 
 /* El botón que arma el informe, con lo que hace falta saber al lado. */
+/**
+ * La cabecera del panel del informe: el título y sus acciones.
+ *
+ * Va adentro del mismo panel que el documento y no en uno propio: son la misma
+ * cosa, y en dos paneles apilados se leían como bloques sueltos. La línea de
+ * abajo los separa sin partirlos.
+ */
 .os-generar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   padding: 14px 18px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+/* El documento respira adentro del panel, como la hoja que es. */
+.os-informe-marco {
+  padding: 18px;
 }
 
 .os-generar h2 {
@@ -5807,4 +5906,339 @@ th.os-tabla-contacto {
 .os-hub-sub {
   display: block;
   margin-top: 16px;
+}
+
+/* ---------- Facturación ---------- */
+
+/**
+ * La tilde va adentro de la celda del candidato, no en su propia columna.
+ *
+ * Una columna para un cuadradito de 17 px se lleva el mínimo de 190 px que
+ * `.os-tabla-trabajo` le da a la primera, y el ancho sale del puesto. Pegada al
+ * nombre además dice qué se está tildando, que es a esa persona.
+ */
+.os-tilde-fila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.os-tilde-fila input {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--os-tinta);
+}
+
+.os-tilde-fila .os-tabla-nombre {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Tablero de entrevistas ---------- */
+
+/**
+ * La tarjeta del tablero de entrevistas trabaja, no solo se mueve.
+ *
+ * En el reparto la tarjeta es una ficha que se arrastra y nada más. Acá arriba
+ * pasa lo mismo, pero abajo lleva lo que se hace en esa etapa: escribir por
+ * WhatsApp y poner la fecha al citar, entrar a la hoja cuando está agendada,
+ * abrir la ficha cuando toca escribir el informe. Por eso la mitad de arriba es
+ * la que abre los datos y la de abajo tiene sus propios controles.
+ */
+.os-tarjeta-cuerpo {
+  cursor: pointer;
+}
+
+.os-tarjeta-trabajo {
+  display: grid;
+  gap: 8px;
+  margin-top: 11px;
+  padding-top: 10px;
+  border-top: 1px solid var(--os-linea-suave);
+  /* El arrastre arranca en la tarjeta entera; sobre un campo o un botón, el
+     navegador tiene que dejar escribir y hacer clic. */
+  cursor: default;
+}
+
+.os-tarjeta-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.79rem;
+}
+
+.os-tarjeta-linea .os-campo {
+  height: 30px;
+  font-size: 0.78rem;
+  min-width: 0;
+  flex: 1 1 150px;
+}
+
+.os-tarjeta-linea .os-boton {
+  height: 27px;
+  padding: 0 10px;
+  font-size: 0.75rem;
+}
+
+.os-tarjeta-telefono {
+  font-variant-numeric: tabular-nums;
+  color: var(--os-tinta-media);
+  text-decoration: none;
+}
+
+.os-tarjeta-telefono:hover {
+  text-decoration: underline;
+}
+
+.os-tarjeta-cuando {
+  font-weight: 550;
+  color: var(--os-tinta);
+}
+
+/* La acción de la etapa ocupa el ancho: es lo que se viene a hacer acá. */
+.os-tarjeta-accion {
+  width: 100%;
+  justify-content: center;
+}
+
+.os-columna-titulo.os-sello-estado {
+  font-size: 0.78rem;
+}
+
+/**
+ * En una tabla de anchos declarados manda el `colgroup`, también en la primera.
+ *
+ * `.os-tabla-trabajo` le da 190 px de mínimo a la primera columna para que el
+ * nombre entre entero. Cuando la primera es una fecha, ese mínimo la infla y le
+ * saca ancho a las demás: en Entregados la fecha abría la fila y quedaba con
+ * medio renglón vacío al lado.
+ *
+ * El sangrado también baja: los 30 px que despegan el nombre del borde del
+ * panel son la mitad de una fecha corta, y con ellos "21/8/26" salía cortado en
+ * la columna que ordena la tabla.
+ */
+.os-tabla-fija th:first-child,
+.os-tabla-fija td:first-child {
+  min-width: 0;
+  padding-left: 18px;
+}
+
+/**
+ * El formulario de la factura, con cada campo del ancho de lo que se escribe.
+ *
+ * Con las dos columnas parejas de `.os-form`, un punto de venta de dos dígitos
+ * medía lo mismo que el concepto de la factura: media pantalla vacía al lado de
+ * un número, y el texto largo cortado. Acá la grilla es de seis tramos y cada
+ * campo declara cuántos ocupa.
+ */
+.os-form-factura {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.os-tramo-1 { grid-column: span 1; }
+.os-tramo-2 { grid-column: span 2; }
+.os-tramo-3 { grid-column: span 3; }
+.os-tramo-4 { grid-column: span 4; }
+
+/* En el teléfono la grilla se vuelve una sola columna y los tramos sobran. */
+@media (max-width: 760px) {
+  .os-form-factura {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-tramo-1,
+  .os-tramo-2,
+  .os-tramo-3,
+  .os-tramo-4 {
+    grid-column: span 1;
+  }
+}
+
+/**
+ * La fila de pestañas, con el botón que lleva a la otra vista de la persona.
+ *
+ * La línea de abajo pasa a ser de la fila entera y no de las pestañas: si la
+ * dibujaran ellas, el botón quedaría flotando arriba de una línea que no lo
+ * alcanza.
+ */
+.os-pestanas-fila {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 4px 0 22px;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-pestanas-fila .os-pestanas {
+  margin: 0;
+  border-bottom: 0;
+}
+
+.os-pestanas-fila .os-boton {
+  margin-bottom: 8px;
+}
+
+/**
+ * La evaluación y la factura, una al lado de la otra en la ficha.
+ *
+ * La evaluación lleva el doble de ancho porque adentro va en dos columnas de
+ * pares; la factura son tres datos y con una alcanza.
+ *
+ * **Los dos cierran a la misma altura.** Cada uno tiene tres filas, pero la del
+ * estado es más alta porque lleva un desplegable, y con cada panel midiendo lo
+ * suyo uno terminaba dos centímetros más abajo que el otro. Las filas se
+ * reparten el alto de la más alta, así las líneas de los dos paneles quedan
+ * enfrentadas.
+ */
+.os-ficha-par {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.os-ficha-par > .os-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* El cuerpo se queda con el alto que sobra y sus filas se lo reparten. */
+.os-ficha-par > .os-panel > .os-ficha-datos {
+  flex: 1;
+  align-content: stretch;
+}
+
+/* Adentro del par, los paneles ya están separados por el gap. */
+.os-ficha-par > .os-panel + .os-panel {
+  margin-top: 0;
+}
+
+/**
+ * El par se separa de lo de arriba y de lo de abajo como un panel más.
+ *
+ * `.os-panel + .os-panel` no lo alcanza porque el par es un contenedor y no un
+ * panel: sin estas dos reglas quedaba pegado al bloque anterior, como si los
+ * tres fueran una sola tarjeta partida.
+ */
+.os-panel + .os-ficha-par,
+.os-ficha-par + .os-panel,
+.os-ficha-par + .os-ficha-par {
+  margin-top: 18px;
+}
+
+/**
+ * Cada panel del par se mide a sí mismo, no a la ventana.
+ *
+ * Adentro del par, la factura ocupa un tercio del ancho: con las consultas de
+ * medios corrientes, que miran la ventana, sus dos columnas seguían puestas
+ * hasta los 900 px de pantalla y el importe se partía letra por letra en
+ * vertical. Con `container-type` el bloque decide por el ancho que realmente
+ * tiene.
+ */
+.os-ficha-par > .os-panel {
+  container-type: inline-size;
+}
+
+/* Un panel angosto pierde sus dos columnas de pares. */
+@container (max-width: 560px) {
+  .os-ficha-datos-dos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-ficha-datos-dos .os-ficha-dato {
+    box-shadow: none;
+  }
+}
+
+/**
+ * En un panel angosto se achica la columna de rótulos, no se parte la fila.
+ *
+ * Los 168 px del rótulo son la mitad de un panel de trescientos, y con eso al
+ * importe no le quedaba lugar. Achicarla alcanza: "SUBIDO AL PORTAL" es el
+ * rótulo más largo y entra en dos renglones sin empujar nada. Partir la fila en
+ * dos deja el panel del doble de alto, que es lo que se veía como tres filas de
+ * factura ocupando media pantalla.
+ */
+@container (max-width: 440px) {
+  .os-ficha-par .os-ficha-dato {
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 10px;
+    padding: 9px 14px;
+  }
+}
+
+/* Recién cuando ni eso entra, el rótulo se va arriba. */
+@container (max-width: 250px) {
+  .os-ficha-par .os-ficha-dato {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+}
+
+@media (max-width: 1250px) {
+  .os-ficha-par {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Un dato de la ficha que lleva a donde se opera. */
+.os-ficha-enlace {
+  color: var(--os-tinta);
+  text-decoration: none;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-ficha-enlace:hover {
+  border-bottom-color: var(--os-tinta-media);
+}
+
+/**
+ * Un encabezado de tabla que ordena.
+ *
+ * Es un botón con la forma del rótulo, no un botón con caja: lo que se toca es
+ * el nombre de la columna, y una caja alrededor lo separaría de la fila de
+ * encabezados. La flecha aparece solo en la columna por la que se está
+ * ordenando, así se sabe cuál manda sin abrir nada.
+ */
+.os-tabla-orden {
+  display: inline-flex;
+  align-items: center;
+  /* Poco: la flecha le come ancho al rótulo, y estas columnas están medidas al
+     píxel. */
+  gap: 3px;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.os-tabla-orden span {
+  font-size: 0.9em;
+}
+
+.os-tabla-orden:hover {
+  color: var(--os-tinta);
+}
+
+.os-tabla-orden.puesto {
+  color: var(--os-tinta);
+  font-weight: 600;
+}
+
+/* El buscador de una tabla: ancho para escribir un nombre entero. */
+.os-buscador {
+  width: 100%;
+  max-width: 420px;
 }

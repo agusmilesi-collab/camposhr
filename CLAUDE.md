@@ -57,11 +57,19 @@ vuelve a generar; no se edita a mano. Leer ese esquema necesita el permiso
 `schema.bases:read`, que hoy tiene `AIRTABLE_TOKEN_ESCRITURA` y no
 `AIRTABLE_TOKEN`.
 
-## Las tablas del pipeline tienen anchos fijos, por campo
+## Las tablas tienen anchos fijos, por campo
 
-`ANCHO` en `app/os/psicotecnicos/Tabla.tsx` declara cuánto mide cada columna por
-el **nombre del campo**, no por su posición: así "Candidato" mide lo mismo en
-las cuatro secciones y pasar de una a otra no mueve nada de lugar.
+`ANCHO` en `app/os/psicotecnicos/piezas.tsx` declara cuánto mide cada columna
+por el **nombre del campo**, no por su posición: así "Candidato" mide lo mismo
+en cualquier tabla y pasar de una pantalla a otra no mueve nada de lugar.
+
+Quedan dos tablas: Entregados y Facturación. Las dos declaran sus anchos con
+`anchos()` y los pasan al `colgroup`.
+
+**Con anchos declarados, el mínimo de la primera columna no aplica.**
+`.os-tabla-trabajo` le da 190 px de mínimo para que el nombre entre entero;
+cuando la primera columna es una fecha, ese mínimo la infla y le saca ancho a
+las demás. Lo anula `.os-tabla-fija th:first-child`.
 
 Dos reglas al tocarlo:
 
@@ -140,7 +148,20 @@ tres veces con el mismo markup y ya empezaba a tener tres tamaños.
 comparan entre sí, porque están todas a la vista. El desplegable cuando son
 muchas o se reconocen por su punto de color.
 
-Todo lo que sea un botón usa `os-boton`, con `os-boton-firme` para el principal.
+**Todo lo que sea un botón usa `os-boton`**, y encima va la variante según qué
+hace:
+
+| Clase | Cuándo |
+| --- | --- |
+| `os-boton` | Lo secundario: cancelar, quitar, volver atrás |
+| `os-boton-firme` | La acción principal de la pantalla: entregar, facturar, agendar |
+| `os-boton-peligro` | Confirmar un borrado |
+| `os-boton-marcado` | Un estado que alterna: "Sin contactar", "Sin cobrar", "Sin seguir" |
+
+**Un enlace subrayado no es un botón.** `os-enlace-boton` existe, pero al lado
+de un botón queda de otro alto y de otra forma, y el control se lee como otra
+cosa según su estado. Si está en una fila de botones, es un botón.
+
 El de copiar viene de la hoja del hub con su propio alto: adentro del OS se le
 iguala, porque es el mismo botón.
 
@@ -252,18 +273,37 @@ las listas, `/os/psicotecnicos/seguimiento` respondía 404 y no había forma de
 volver desde la interfaz. Cuando se le hizo su pantalla, el 21/8/2026, había
 tres personas atrapadas ahí.
 
-Al sumar una etapa hay que sumar su sección, su entrada en la barra lateral
-(`app/os/Shell.tsx`, que tiene su propia lista) y sus columnas en `Tabla.tsx`.
+Al sumar una etapa hay que sumar su columna en el tablero de su sección y, si
+la sección es nueva, su entrada en la barra lateral (`app/os/Shell.tsx`, que
+tiene su propia lista).
+
+**Al sacar una sección de la barra hay que dejarle su redirección.** Hoy
+`/por-citar`, `/por-entrevistar`, `/por-analizar` y `/seguimiento` redirigen a
+la sección que las absorbió: la ficha vuelve por esas direcciones cuando se
+abrió desde esa etapa, y sin ellas el botón de volver da 404.
 
 ## Las etapas y las secciones no son lo mismo
 
 `ETAPAS` son los estados del pipeline, los que viven en la base. `SECCIONES`
 (en `lib/psicotecnicos-tipos.ts`) son las entradas de la barra lateral, y una
-sección puede juntar varias etapas: **Entrevistas** trae "Por citar" y "Por
-entrevistar" juntas.
+sección puede juntar varias etapas: **Entrevistas** trae "Por citar", "Por
+entrevistar" y "Por analizar" juntas, una por columna de su tablero.
 
-Agrupar en la navegación no cambia el pipeline. Al sumar una sección hay que
-tocar `SECCIONES`, las columnas de `Tabla.tsx` y las celdas de esa sección.
+Agrupar en la navegación no cambia el pipeline: las seis etapas siguen enteras
+en la base. Hoy son tres secciones, con dos, tres y dos etapas cada una.
+
+**Tablero o tabla según qué se hace ahí.** Tablero donde el trabajo es mover
+una ficha de columna: Sin asignar (`Reparto.tsx`) y Entrevistas
+(`Entrevistas.tsx`), y en los dos la etapa se cambia arrastrando. Tabla donde el
+trabajo terminó y lo que se hace es consultar: Entregados (`Entregados.tsx`),
+que además trae el seguimiento como una columna. `Tabla.tsx`, que servía a todas
+las secciones a la vez, se borró el 24/8/2026; lo que compartía quedó en
+`piezas.tsx`.
+
+**Una tarjeta de tablero se define fuera de su componente.** Definida adentro,
+React la trata como un tipo nuevo en cada dibujo y desmonta el subárbol entero:
+se borra lo escrito en un campo y se pierde el clic en un botón, porque el
+elemento que recibió el `mousedown` ya no existe al soltar. Costó una tarde.
 
 ## Cerrar no es borrar
 

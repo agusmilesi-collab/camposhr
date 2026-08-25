@@ -61,12 +61,20 @@ export type Seccion = { ruta: string; texto: string; etapas: Etapa[] };
 
 export const SECCIONES: Seccion[] = [
   { ruta: 'sin-asignar', texto: 'Sin asignar', etapas: ['Sin asignar'] },
-  { ruta: 'entrevistas', texto: 'Entrevistas', etapas: ['Por citar', 'Por entrevistar'] },
-  { ruta: 'por-analizar', texto: 'Por analizar', etapas: ['Por analizar'] },
-  { ruta: 'entregados', texto: 'Entregados', etapas: ['Entregado'] },
-  // Seguimiento tiene su sección porque tiene su botón: sin pantalla, apretarlo
-  // sacaba la evaluación de todas las listas y no había forma de volver.
-  { ruta: 'seguimiento', texto: 'Seguimiento', etapas: ['Seguimiento'] },
+  // Las tres etapas de una entrevista, en un tablero de tres columnas: citar,
+  // agendar y analizar. Son el trabajo de la misma persona sobre el mismo
+  // caso, y tenerlas en pantallas distintas obligaba a saltar de una a otra
+  // para seguir a alguien. La etapa se cambia arrastrando la tarjeta.
+  {
+    ruta: 'entrevistas',
+    texto: 'Entrevistas',
+    etapas: ['Por citar', 'Por entrevistar', 'Por analizar'],
+  },
+  // El cierre: el informe salió, y a los noventa días de que la persona entró
+  // se llama al cliente para preguntar cómo le fue. Es el mismo tramo, y con
+  // Seguimiento en su propia pantalla la segunda mitad del circuito quedaba
+  // donde nadie entra salvo que se acuerde.
+  { ruta: 'entregados', texto: 'Entregados', etapas: ['Entregado', 'Seguimiento'] },
 ];
 
 export const SECCION_DE_RUTA: Record<string, Seccion> = Object.fromEntries(
@@ -113,6 +121,9 @@ export const COLOR_ETAPA: Record<string, string> = {
   'Por citar': 'os-ambar',
   'Por entrevistar': 'os-verde',
   'Por analizar': 'os-azul',
+  // Verde: el trabajo salió. Caía en gris, que es el color de lo que no pide
+  // nada, y el informe entregado es justamente el final que se busca.
+  Entregado: 'os-verde',
   Seguimiento: 'os-violeta',
 };
 
@@ -147,6 +158,10 @@ export type Evaluacion = {
   seguimientoAl: string | null;
   /** Cómo le fue en la empresa: Bien, Regular o Mal. Null es "sin preguntar". */
   seguimientoResultado: string | null;
+  /** Si entró en alguna factura. Lo mantiene la sección Facturación. */
+  facturado: boolean;
+  /** Si esa factura se cobró. */
+  pagado: boolean;
   tieneInforme: boolean;
   /** Si la persona tiene el CV guardado. Solo lo saben las filas de Supabase. */
   tieneCv: boolean;

@@ -185,8 +185,24 @@ export function desajusteDeProyectivo(
   return { bateria, cargado };
 }
 
+/**
+ * La factura que cubre esta evaluación, si ya se emitió.
+ *
+ * La ficha la muestra y no la deja tocar: se factura desde Facturación, que es
+ * donde se elige qué entra en cada comprobante. Acá es el resultado de eso.
+ */
+export type FacturaDe = {
+  id: string;
+  numero: number | null;
+  punto_venta: number | null;
+  fecha: string;
+  cobrada_at: string | null;
+};
+
 export type Ficha = {
   cabecera: Cabecera;
+  /** Null si todavía no entró en ninguna factura. */
+  factura: FacturaDe | null;
   /** El precio que regía el día del pedido, no el de hoy. */
   precio: number | null;
   manchas: Mancha[];
@@ -277,8 +293,16 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
     precio = vigente ? Number(vigente.precio) : null;
   }
 
+  // La factura se busca por el renglón: es lo que dice en qué comprobante
+  // entró esta persona, y no la tilde de la evaluación, que es un espejo.
+  const renglones = await select<{ facturas: FacturaDe | null }>(
+    'factura_items',
+    `select=facturas(id,numero,punto_venta,fecha,cobrada_at)&evaluacion_id=eq.${id}&limit=1`
+  ).catch(() => []);
+
   return {
     cabecera,
+    factura: renglones[0]?.facturas ?? null,
     precio,
     manchas,
     sumario: sumarios[0] ?? null,
