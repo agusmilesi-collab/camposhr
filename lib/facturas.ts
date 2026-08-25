@@ -57,6 +57,7 @@ type FilaEmisor = {
   domicilio: string | null;
   inicio_actividades: string | null;
   condicion_iva: string;
+  categoria: string | null;
   evaluadoras: { nombre: string } | null;
 };
 
@@ -94,7 +95,7 @@ export async function listarEmisoras(): Promise<Emisora[]> {
   const filas = await select<FilaEmisor>(
     'emisores',
     'select=id,cuit,razon_social,nombre_fantasia,punto_venta,domicilio,inicio_actividades,' +
-      'condicion_iva,evaluadoras(nombre)&activo=eq.true&order=razon_social',
+      'condicion_iva,categoria,evaluadoras(nombre)&activo=eq.true&order=razon_social',
     CACHE_COMERCIAL
   );
   return filas.map((f) => ({
@@ -107,6 +108,7 @@ export async function listarEmisoras(): Promise<Emisora[]> {
     domicilio: f.domicilio,
     inicioActividades: f.inicio_actividades,
     condicionIva: f.condicion_iva,
+    categoria: f.categoria,
   }));
 }
 

@@ -389,6 +389,46 @@ frenarlo, soltar sobre un campo lo escribe adentro. Y frenarlo es además lo que
 le dice al navegador que el destino era válido, así el renglón se queda donde lo
 dejaron en vez de volar de vuelta al lugar del que salió.
 
+## El monotributo se mira contra los últimos doce meses
+
+`lib/monotributo.ts`. Las dos facturan como monotributistas y pasarse del tope
+no es una multa: es quedar fuera del régimen y tener que inscribirse en el
+general. Por eso la pantalla de Facturación muestra, para cada una, lo del mes,
+lo del año y **lo de los últimos doce meses corridos**, que es lo que mira ARCA
+para recategorizar (enero y julio), y cuánto le queda hasta el tope de su
+categoría.
+
+**Los topes son números escritos y hay que actualizarlos.** ARCA los mueve dos
+veces al año con la inflación del semestre anterior. Los cargados rigen desde el
+1/8/2026; `VIGENTE_HASTA` dice hasta cuándo sirven.
+
+**De la I a la K son solo para venta de cosas muebles.** Quien presta servicios
+no puede categorizarse más arriba de la H, así que el desplegable ofrece hasta
+ahí y la ruta rechaza el resto: pasada la H no hay categoría que lo aguante.
+
+**Solo cuenta lo emitido y en pesos.** Un borrador o una factura rechazada no
+son un ingreso, y una en dólares no se puede sumar sin convertirla. Y la cuenta
+es sobre lo que se emitió en el OS: lo facturado antes suma recién cuando esas
+facturas se carguen, así que mientras dure la migración el número es un piso.
+La pantalla lo dice.
+
+## El seguimiento se prende solo
+
+Marcar que la persona entró a trabajar y desde cuándo mueve la evaluación de
+Entregado a Seguimiento (`lib/psicotecnicos-supabase.ts`), igual que administrar
+el último test la mueve a Por analizar. Antes había que acordarse de prenderlo
+desde un botón que vivía en la tabla de Entregados, y sin eso quedaba el reloj
+de los noventa días puesto y la etapa sin mover: la columna decía "sin seguir",
+el aviso de vencidos no la contaba y el cliente no veía "en seguimiento".
+
+Y al revés: si se corrige que no entró, o se borra la fecha, vuelve a Entregado.
+Un seguimiento sin reloj no vence nunca y quedaría en la lista para siempre.
+
+**Un componente que copia una prop a estado tiene que volver a leerla.** El
+desplegable de etapa de la ficha seguía mostrando la anterior después de que la
+etapa cambiara sola, porque `router.refresh()` vuelve a dibujar del servidor
+pero no reinicia el estado de un componente de cliente.
+
 ## El cobro se ve del lado del cliente
 
 El portal muestra una columna de facturación por candidato: pagado, impago o

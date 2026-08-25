@@ -1444,6 +1444,79 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   padding-top: 8px;
 }
 
+/* ---------- Monotributo ---------- */
+/**
+ * Cómo viene cada una contra el tope de su categoría.
+ *
+ * Dos paneles al lado del otro cuando la pantalla da, uno debajo del otro
+ * cuando no: son dos cuentas independientes que se comparan de un vistazo.
+ */
+.os-monotributo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.os-monotributo .os-panel {
+  margin-top: 0;
+}
+
+/* Los tres cortes, en una línea: mes, año y los doce meses que deciden. */
+.os-marcha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  margin-bottom: 14px;
+}
+
+.os-marcha > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.os-marcha strong {
+  font-size: 1.02rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* La barra de lo usado del tope. */
+.os-escala {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--os-hover);
+  overflow: hidden;
+}
+
+.os-escala-lleno {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--os-azul);
+  transition: width 200ms ease;
+}
+
+/* Pasado el 85% del tope el color avisa: es el momento de mirar qué se factura
+   y con cuál de las dos, no cuando ya se pasó. */
+.os-escala-lleno.al-limite {
+  background: var(--os-ambar);
+}
+
+.os-escala-pie {
+  margin: 9px 0 0;
+  font-size: 0.83rem;
+  color: var(--os-tinta-media);
+}
+
+.os-escala-pie strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.os-escala-pie.pasada {
+  color: var(--os-rojo);
+}
+
 /* ---------- Formularios ---------- */
 /* Todo cae sobre una grilla de dos columnas: un campo ocupa una o las dos, y
    nunca un ancho propio. Sin esto, tres campos con flex:1 al lado de uno

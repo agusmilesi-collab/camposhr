@@ -202,6 +202,44 @@ export async function guardarCampos(
     if (!previas[0]?.fecha_entrega) fila.fecha_entrega = new Date().toISOString();
   }
 
+  /**
+   * El seguimiento se prende solo cuando la persona entró a trabajar.
+   *
+   * A los noventa días del ingreso se llama al cliente para preguntar cómo le
+   * fue, y esa fecha la agenda la ficha al cargar desde cuándo trabaja. Lo que
+   * faltaba era mover la etapa: quedaba en Entregado con el reloj puesto, así
+   * que la columna de seguimiento decía "sin seguir", el aviso de vencidos no
+   * la contaba y el cliente no veía "en seguimiento" en su portal. Era la mitad
+   * del circuito prendida.
+   *
+   * Y al revés: si después se corrige que no entró, o se borra la fecha, la
+   * evaluación vuelve a Entregado. Un seguimiento sin reloj no vence nunca y
+   * quedaría en la lista para siempre.
+   *
+   * No pisa un cambio de etapa hecho a mano: mover la etapa ya dice a dónde va.
+   */
+  if (!('estado' in fila) && ('ingreso' in fila || 'fecha_ingreso_empresa' in fila)) {
+    const previas = await select<{
+      estado: string;
+      ingreso: boolean | null;
+      fecha_ingreso_empresa: string | null;
+    }>(
+      'evaluaciones',
+      `select=estado,ingreso,fecha_ingreso_empresa&id=eq.${id}&limit=1`
+    );
+    const antes = previas[0];
+    if (antes) {
+      const ingreso = 'ingreso' in fila ? fila.ingreso : antes.ingreso;
+      const desde =
+        'fecha_ingreso_empresa' in fila
+          ? fila.fecha_ingreso_empresa
+          : antes.fecha_ingreso_empresa;
+      const sigue = ingreso === true && Boolean(desde);
+      if (sigue && antes.estado === 'Entregado') fila.estado = 'Seguimiento';
+      if (!sigue && antes.estado === 'Seguimiento') fila.estado = 'Entregado';
+    }
+  }
+
   if (Object.keys(fila).length === 0) return { ok: true };
 
   const res = await fetch(`${url}/rest/v1/evaluaciones?id=eq.${id}`, {

@@ -32,6 +32,8 @@ export type Emisora = {
   domicilio: string | null;
   inicioActividades: string | null;
   condicionIva: string;
+  /** La del monotributo, para saber cuánto falta para pasarse del tope. */
+  categoria: string | null;
 };
 
 export type Renglon = {
