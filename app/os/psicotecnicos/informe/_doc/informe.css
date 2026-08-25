@@ -1319,57 +1319,52 @@
 
 /* Los colores llevan su valor de respaldo porque este dibujo también se usa en
    la ficha, fuera del `.inf` donde se definen las variables: ahí la evaluadora
-   elige el escalón y lo ve como va a salir impreso. */
+   elige el escalón y lo ve como va a salir impreso.
 
-/* Cuatro trapecios apilados que juntos arman la pirámide, con la descripción de
-   cada nivel al lado. Los recortes se calculan en el componente para que los
-   lados queden en una sola recta: acá va lo que no depende del escalón. */
+   Las medidas están en el componente y no acá: los trapecios y la pirámide de
+   fondo salen de la misma cuenta, y separarlas es lo que hacía que los
+   escalones se salieran de la silueta. */
 .inf-piramide {
   position: relative;
-  display: grid;
-  gap: 3px;
-  margin: 18px 0 30px;
-  padding: 0;
-  list-style: none;
+  margin: 14px 0 8px;
 }
 
-/* La pirámide entera, detrás de los cuatro escalones.
-   Sin ella se veían cuatro bandas apiladas y no una pirámide: la punta y la
-   base son las que dicen que arriba hay menos lugar que abajo, que es lo que el
-   dibujo quiere decir. Sobresale de los escalones a los cuatro lados, así se ve
-   que ellos están apoyados sobre la figura y no al revés. */
-.inf-piramide::before {
-  content: '';
+/* La pirámide entera, detrás de los escalones. Sin ella se veían cuatro bandas
+   apiladas: la punta y la base son las que dicen que arriba hay menos lugar que
+   abajo, que es lo que el dibujo quiere decir. */
+.inf-piramide-fondo {
   position: absolute;
-  /* Centrado contra la columna de los escalones y no contra el borde de la
-     lista: la columna arranca 8 px adentro (el padding y el borde del renglón),
-     y sin descontarlos la punta caía corrida a la izquierda. */
-  top: -18px;
-  left: -2px;
-  width: 280px;
-  height: calc(100% + 34px);
+  top: 0;
+  left: 0;
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
   background: color-mix(in srgb, var(--turquesa, #1d8a84) 22%, #fff);
 }
 
-.inf-escalon {
+.inf-piramide ol {
   position: relative;
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr) 24px;
-  align-items: center;
-  gap: 14px;
-  padding: 3px 6px;
-  border: 2px solid transparent;
-  border-radius: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* El que le corresponde: recuadrado, como en el informe que se entrega hoy. */
+.inf-escalon {
+  display: grid;
+  align-items: stretch;
+}
+
+/* El que le corresponde, recuadrado como en el informe que se entrega hoy. Con
+   `outline` y no con borde: un borde le suma dos píxeles a la fila y ese
+   escalón deja de encajar en la pirámide. */
 .inf-escalon.suyo {
-  border-color: var(--azul, #43648f);
+  outline: 2px solid var(--azul, #43648f);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .inf-piramide-forma {
-  padding: 13px 0;
+  display: grid;
+  place-items: center;
   background: var(--azul, #43648f);
   color: #fff;
   font-size: 11.5px;
@@ -1395,23 +1390,31 @@
 }
 
 .inf-piramide-que {
-  padding: 10px 12px;
-  text-align: left;
+  display: grid;
+  align-content: center;
+  padding: 0 12px;
   background: var(--papel, #f6f5f2);
   color: var(--tinta, #16202b);
   border-radius: 4px;
   font-size: 13.5px;
   line-height: 1.45;
+  text-align: left;
 }
 
 .inf-piramide-tilde {
   display: grid;
   place-items: center;
+  align-self: center;
   width: 22px;
   height: 22px;
+  font-size: 12px;
+}
+
+/* El círculo solo alrededor del que está marcado: vacío en los demás, el
+   dibujo quedaba con cuatro círculos y ninguno decía nada. */
+.inf-escalon.suyo .inf-piramide-tilde {
   border: 1.5px solid var(--tinta, #16202b);
   border-radius: 50%;
-  font-size: 12px;
 }
 
 /* En la ficha el escalón es un botón; en el informe es texto. */
