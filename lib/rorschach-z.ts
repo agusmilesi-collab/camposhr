@@ -3,7 +3,8 @@
  *
  * Las cuatro situaciones, como las dictó la evaluadora:
  *
- *   ZW  respuesta W con DQ+ o DQo. Las W con DQv no reciben Z.
+ *   ZW  respuesta W con DQ+ o DQo. Las W con vaga adentro (DQv y DQv/+) no
+ *       reciben Z: una respuesta vaga no organiza nada.
  *   ZA  se integran dos o más áreas **adyacentes** de la mancha en una sola
  *       respuesta, con una relación significativa entre ellas.
  *   ZD  se integran dos o más áreas **distantes**.
@@ -29,8 +30,8 @@
  * son ZW 1.0, ZA 4.0, ZD 6.0, ZS 3.5.
  */
 
-import { ADYACENTES, CONTENIDAS } from './rorschach-areas';
-import { LAMINAS } from './rorschach-tabla-a';
+import { ADYACENTES, CONTENIDAS } from './rorschach-areas.ts';
+import { LAMINAS } from './rorschach-tabla-a.ts';
 
 export type TipoZ = 'ZW' | 'ZA' | 'ZD' | 'ZS';
 
@@ -106,12 +107,9 @@ export function puntajeZ(lamina: string, s: Situacion): Veredicto {
     const dq = dqDe(loc);
     if (dq === 'o' || dq === '+') {
       candidatos.push({ tipo: 'ZW', valor: valores.ZW, porque: `${loc}: W con DQ${dq}` });
-    } else if (dq === 'v/+') {
-      // La regla dictada dice "+ o o", y nombra solo DQv como la que no puntúa.
-      // v/+ no cae de ningún lado, así que no se decide sola.
-      aConfirmar.push(`${loc}: una W con DQv/+, ¿recibe ZW? La regla nombra DQ+ y DQo, y deja afuera DQv.`);
     }
-    // Wv no puntúa y no hace falta avisar: está dicho en la regla.
+    // Wv y Wv/+ no puntúan: las dos llevan vaga adentro, y una respuesta vaga
+    // no organiza nada. Por eso el corte es "tiene v" y no "es exactamente v".
   }
 
   // -- ZA y ZD: integrar áreas.

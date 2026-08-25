@@ -99,8 +99,11 @@ async function supa(camino, opciones = {}) {
     },
     cache: 'no-store',
   });
-  if (!r.ok) throw new Error(`Supabase ${camino}: ${r.status} ${await r.text()}`);
-  return r.status === 204 ? null : r.json();
+  const cuerpo = await r.text();
+  if (!r.ok) throw new Error(`Supabase ${camino}: ${r.status} ${cuerpo}`);
+  // Con `return=minimal` la respuesta viene vacía aunque el código sea 201:
+  // parsearla a ciegas cortaba la migración a mitad de camino.
+  return cuerpo ? JSON.parse(cuerpo) : null;
 }
 
 /** Inserta y devuelve la fila, o devuelve la que ya estaba por su `airtable_id`. */
@@ -182,7 +185,6 @@ async function main() {
       email_facturacion: e.fields['Email facturación'] ?? null,
       direccion_fiscal: e.fields['Dirección fiscal'] ?? null,
       rubro: e.fields['Rubro'] ?? null,
-      origen: 'airtable',
     };
     empresaDe[e.id] = deVerdad ? (await supa('empresas', { method: 'POST', body: JSON.stringify(fila) }))[0].id : '(ensayo)';
     sumo('nuevos', 'empresas');
@@ -424,23 +426,31 @@ async function main() {
   }
 
   // ── 6. Sumarios: se recalculan y se comparan ───────────────────────────────
-  const paraSumario = Object.keys(respuestasPorEvaluacion);
-  if (paraSumario.length > 0 && deVerdad) {
+  //
+  // Se calculan los que faltan, no los de esta corrida: si algo se cortó antes,
+  // volver a correr el script tiene que terminar el trabajo, y las respuestas ya
+  // están cargadas aunque su sumario no.
+  if (deVerdad) {
+    const conRespuestas = new Set(
+      (await supa('rorschach_respuestas?select=evaluacion_id')).map((r) => r.evaluacion_id)
+    );
+    const conSumario = new Set(
+      (await supa('sumario_exner?select=evaluacion_id')).map((r) => r.evaluacion_id)
+    );
+    const faltan = [...conRespuestas].filter((id) => !conSumario.has(id));
     const cookie = env.OS_CLAVE
       ? `os_sesion=${createHash('sha256').update(`campos-os:${env.OS_CLAVE}`).digest('hex')}`
       : '';
-    for (const id of paraSumario) {
+    for (const id of faltan) {
       const r = await fetch(`${OS}/api/os/sumario`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ evaluacionId: id }),
       });
-      if (!r.ok) cuenta.avisos.push(`Sumario de ${id}: ${r.status}`);
+      if (!r.ok) cuenta.avisos.push(`Sumario de ${id}: ${r.status} ${await r.text()}`);
       else sumo('nuevos', 'sumarios calculados');
     }
   } else if (respuestasNuevas > 0) {
-    // En ensayo no hay evaluaciones de verdad contra las que agrupar, así que
-    // se cuentan las respuestas y no los sumarios.
     sumo('nuevos', 'sumarios, uno por expediente con respuestas');
   }
 
@@ -470,19 +480,33 @@ async function main() {
     });
     sumo(nuevo ? 'nuevos' : 'saltados', 'facturas');
     if (nuevo && deVerdad && cubiertas.length > 0) {
-      await supa('factura_items', {
-        method: 'POST',
-        headers: { Prefer: 'return=minimal' },
-        body: JSON.stringify(
-          cubiertas.map((evaluacionId) => ({
-            factura_id: id,
-            evaluacion_id: evaluacionId,
-            descripcion: 'Evaluación psicotécnica',
-            cantidad: 1,
-            importe: null,
-          }))
-        ),
-      });
+      // Una evaluación entra en una sola factura, y eso la base lo hace
+      // cumplir: si alguna ya está en otra, el renglón se saltea en vez de
+      // tumbar la migración entera por un comprobante repetido.
+      const yaEn = new Set(
+        (
+          await supa(
+            `factura_items?select=evaluacion_id&evaluacion_id=in.(${cubiertas.join(',')})`
+          )
+        ).map((x) => x.evaluacion_id)
+      );
+      const entran = cubiertas.filter((x) => !yaEn.has(x));
+      for (const x of cubiertas) if (yaEn.has(x)) cuenta.avisos.push(`Ya estaba facturada: ${x}`);
+      if (entran.length > 0) {
+        await supa('factura_items', {
+          method: 'POST',
+          headers: { Prefer: 'return=minimal' },
+          body: JSON.stringify(
+            entran.map((evaluacionId) => ({
+              factura_id: id,
+              evaluacion_id: evaluacionId,
+              descripcion: 'Evaluación psicotécnica',
+              cantidad: 1,
+              importe: null,
+            }))
+          ),
+        });
+      }
     }
   }
 

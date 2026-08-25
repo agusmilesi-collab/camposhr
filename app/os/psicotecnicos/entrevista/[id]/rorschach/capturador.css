@@ -196,17 +196,80 @@
   opacity: 0.75;
 }
 
-.os-ror-tabla {
-  margin-top: 12px;
+/* Cada respuesta es una ficha y no una fila de tabla: abajo de los códigos
+   lleva las dos confirmaciones del puntaje Z y lo que quedó por decidir, y eso
+   no entra en un renglón. */
+.os-ror-fila {
+  border-top: 1px solid var(--os-borde, #e4e4e4);
+  padding: 10px 0;
+}
+
+.os-ror-fila-datos {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 2fr) 110px 96px 28px minmax(0, 1fr) 24px 70px;
+  gap: 10px;
+  align-items: center;
   font-size: 13px;
 }
 
-.os-ror-tabla select {
-  min-width: 88px;
+.os-ror-n {
+  opacity: 0.6;
 }
 
-.os-ror-extrapolada td {
-  background: rgba(255, 234, 182, 0.35);
+.os-ror-dijo {
+  font-weight: 500;
+}
+
+.os-ror-areas {
+  font-variant-numeric: tabular-nums;
+}
+
+.os-ror-dato {
+  opacity: 0.85;
+}
+
+.os-ror-z {
+  font-weight: 600;
+}
+
+.os-ror-fila-z {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 6px;
+  padding-left: 34px;
+}
+
+.os-ror-tilde {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.os-ror-porque {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.os-ror-descartado {
+  text-decoration: line-through;
+  opacity: 0.45;
+}
+
+/* Lo que el sistema no puede decidir se ve distinto de lo que ya resolvió: es
+   una pregunta para la evaluadora, no un dato. */
+.os-ror-duda {
+  font-size: 11px;
+  background: #ffeab6;
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+
+.os-ror-extrapolada {
+  background: rgba(255, 234, 182, 0.28);
 }
 
 .os-ror-falta {

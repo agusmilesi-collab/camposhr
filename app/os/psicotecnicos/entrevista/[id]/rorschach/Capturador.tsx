@@ -12,23 +12,26 @@
  *
  *   · Apretando el área en la lámina, que deja la lista de esa área a la vista.
  *   · Buscando la palabra en toda la lámina, que devuelve en qué áreas existe
- *     esa respuesta y con qué calidad en cada una. "Cara humana" está en seis
+ *     esa respuesta y con qué calidad en cada una. "Cara humana" está en cuatro
  *     áreas de la lámina I y no vale lo mismo en ninguna: esa es la decisión
  *     que hoy se toma hojeando el librito.
  *
- * Lo que se captura acá llega a la ficha como borrador, con los cinco campos
- * que el sistema no puede saber marcados como pendientes. Si no se usa esta
- * pantalla, la ficha queda vacía y se carga a mano, como siempre.
+ * Se pueden marcar varias áreas para una misma respuesta, que es lo que hace
+ * falta para el puntaje Z: integrar dos áreas adyacentes puntúa distinto que
+ * integrar dos distantes, y el blanco integrado con la tinta distinto de las
+ * dos. La regla vive en `lib/rorschach-z.ts`; acá se muestra qué salió y qué
+ * queda por confirmar.
  *
- * Las respuestas que no están en la tabla se guardan igual, marcadas como
- * extrapoladas: pasa seguido, y forzarlas a la palabra más parecida del índice
- * sería codificar sobre el índice en vez de sobre lo que dijo la persona.
+ * Lo que se captura llega a la ficha como borrador, con los campos que el
+ * sistema no puede saber marcados como pendientes. Si no se usa esta pantalla,
+ * la ficha queda vacía y se carga a mano, como siempre.
  */
 
 import { useMemo, useState } from 'react';
 import { AREAS, type Parte } from '@/lib/rorschach-areas';
-import { LAMINAS, areasDe, buscar, entradasDe, esPopular, type Hallazgo } from '@/lib/rorschach-tabla-a';
+import { areasDe, buscar, entradasDe, esPopular, type Hallazgo } from '@/lib/rorschach-tabla-a';
 import { PENDIENTES, contenidoSugerido, fqDeLaFicha, localizacionesDe } from '@/lib/rorschach-sugerencias';
+import { esEspacio, puntajeZ } from '@/lib/rorschach-z';
 
 const LAMINA = 'I';
 
@@ -43,16 +46,17 @@ type Capa = keyof typeof CAPAS;
 type Respuesta = {
   n: number;
   dijo: string;
-  area: string;
-  entrada: Hallazgo | null;
+  areas: string[];
   /** Sin entrada en la tabla: la calidad la pone la evaluadora. */
   extrapolada: boolean;
   fq: string | null;
   localizacion: string | null;
   contenidos: string[];
   popular: boolean;
-  z: number | null;
-  observacion: string;
+  /** Lo confirma ella: las áreas están integradas con relación significativa. */
+  integradas: boolean;
+  /** Lo confirma ella: el blanco entra junto con la tinta. */
+  blancoIntegrado: boolean;
 };
 
 function camino(parte: Parte): string {
@@ -67,7 +71,7 @@ export default function Capturador({
   nombre: string;
 }) {
   const [capa, setCapa] = useState<Capa>('D');
-  const [area, setArea] = useState<string | null>(null);
+  const [puestas, setPuestas] = useState<string[]>([]);
   const [encima, setEncima] = useState<string | null>(null);
   const [texto, setTexto] = useState('');
   const [dijo, setDijo] = useState('');
@@ -75,49 +79,61 @@ export default function Capturador({
   const [guardando, setGuardando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
-  const visibles = useMemo(
-    () => areasDe(LAMINA).filter((a) => CAPAS[capa].de(a)),
-    [capa]
-  );
+  const visibles = useMemo(() => areasDe(LAMINA).filter((a) => CAPAS[capa].de(a)), [capa]);
 
-  /** Lo que se ofrece elegir: la lista del área, o la búsqueda en toda la lámina. */
+  /** El área de la que se ofrece la lista: la última marcada. */
+  const principal = puestas.length > 0 ? puestas[puestas.length - 1] : null;
+
   const opciones: Hallazgo[] = useMemo(() => {
     if (texto.trim().length >= 2) return buscar(LAMINA, texto).slice(0, 40);
-    if (area) return entradasDe(LAMINA, area);
+    if (principal) return entradasDe(LAMINA, principal);
     return [];
-  }, [texto, area]);
+  }, [texto, principal]);
+
+  function alternar(a: string) {
+    setPuestas((p) => (p.includes(a) ? p.filter((x) => x !== a) : [...p, a]));
+    setTexto('');
+  }
 
   function tomar(h: Hallazgo | null) {
-    const n = respuestas.length + 1;
-    const suArea = h?.area ?? area;
-    if (!suArea) return;
-    const respuesta = h?.respuesta ?? dijo.trim() ?? '';
-    const locs = localizacionesDe(suArea);
+    // Si se eligió del buscador un área que no estaba marcada, esa manda.
+    const areas = h && !puestas.includes(h.area) ? [...puestas, h.area] : puestas;
+    if (areas.length === 0) return;
+    const respuesta = h?.respuesta ?? dijo.trim();
+    const locs = localizacionesDe(areas[0]);
     setRespuestas((rs) => [
       ...rs,
       {
-        n,
+        n: rs.length + 1,
         dijo: dijo.trim() || respuesta,
-        area: suArea,
-        entrada: h,
+        areas,
         extrapolada: !h,
         fq: h ? fqDeLaFicha(h.calidad) : null,
         // Si el área admite una sola localización no hay nada que elegir; si
         // admite varias, la calidad evolutiva la pone la evaluadora.
         localizacion: locs.length === 1 ? locs[0] : null,
         contenidos: contenidoSugerido(respuesta),
-        popular: esPopular(LAMINA, suArea, respuesta),
-        z: suArea === 'W' ? LAMINAS[LAMINA].z.ZW : null,
-        observacion: '',
+        popular: esPopular(LAMINA, areas[0], respuesta),
+        integradas: false,
+        blancoIntegrado: false,
       },
     ]);
     setTexto('');
     setDijo('');
-    setArea(null);
+    setPuestas([]);
   }
 
   function cambiar(n: number, campos: Partial<Respuesta>) {
     setRespuestas((rs) => rs.map((r) => (r.n === n ? { ...r, ...campos } : r)));
+  }
+
+  function zDe(r: Respuesta) {
+    return puntajeZ(LAMINA, {
+      areas: r.areas,
+      localizacion: r.localizacion,
+      integradas: r.integradas,
+      blancoIntegrado: r.blancoIntegrado,
+    });
   }
 
   function faltan(r: Respuesta): string[] {
@@ -142,12 +158,12 @@ export default function Capturador({
           campos: {
             lamina: LAMINA,
             n_respuesta: r.n,
-            n_localizacion: r.area,
+            n_localizacion: r.areas.join('+'),
             localizacion: r.localizacion,
             fq: r.fq,
             contenidos: r.contenidos,
             popular: r.popular,
-            z: r.z,
+            z: zDe(r).z?.valor ?? null,
             determinantes: [],
             cc_ee: [],
             par: false,
@@ -167,6 +183,7 @@ export default function Capturador({
   }
 
   const pendientes = respuestas.reduce((s, r) => s + faltan(r).length, 0);
+  const dudas = respuestas.reduce((s, r) => s + zDe(r).aConfirmar.length, 0);
 
   return (
     <div className="os-ror">
@@ -184,10 +201,15 @@ export default function Capturador({
                 {CAPAS[c].rotulo}
               </button>
             ))}
+            {puestas.length > 0 && (
+              <button type="button" className="os-boton" onClick={() => setPuestas([])}>
+                Soltar {puestas.join(' + ')}
+              </button>
+            )}
           </div>
 
           <div className="os-ror-lienzo">
-            <img src={`/api/os/lamina/rorschach/1`} alt="Lámina I" />
+            <img src="/api/os/lamina/rorschach/1" alt="Lámina I" />
             <svg viewBox="0 0 100 100" preserveAspectRatio="none">
               {visibles.map((a) =>
                 (AREAS[a] ?? []).map((parte, i) => (
@@ -196,15 +218,12 @@ export default function Capturador({
                     d={camino(parte)}
                     className={
                       'os-ror-area' +
-                      (area === a ? ' os-ror-area-puesta' : '') +
+                      (puestas.includes(a) ? ' os-ror-area-puesta' : '') +
                       (encima === a ? ' os-ror-area-encima' : '')
                     }
                     onMouseEnter={() => setEncima(a)}
                     onMouseLeave={() => setEncima(null)}
-                    onClick={() => {
-                      setArea(a);
-                      setTexto('');
-                    }}
+                    onClick={() => alternar(a)}
                   />
                 ))
               )}
@@ -216,19 +235,20 @@ export default function Capturador({
               <li key={a}>
                 <button
                   type="button"
-                  className={`os-ror-chip${area === a ? ' os-ror-chip-puesto' : ''}`}
+                  className={`os-ror-chip${puestas.includes(a) ? ' os-ror-chip-puesto' : ''}`}
                   onMouseEnter={() => setEncima(a)}
                   onMouseLeave={() => setEncima(null)}
-                  onClick={() => {
-                    setArea(a);
-                    setTexto('');
-                  }}
+                  onClick={() => alternar(a)}
                 >
                   {a}
                 </button>
               </li>
             ))}
           </ul>
+          <p className="os-ror-aclaracion">
+            Marcá más de un área cuando la respuesta las integre: de ahí sale si el
+            puntaje Z es ZA, ZD o ZS.
+          </p>
         </section>
 
         {/* ------------------------------------------------------ la respuesta */}
@@ -245,7 +265,7 @@ export default function Capturador({
 
           <label className="os-ror-campo">
             <span className="os-dato-rotulo">
-              Buscar en toda la lámina{area ? ` · o elegir de ${area}` : ''}
+              Buscar en toda la lámina{principal ? ` · o elegir de ${principal}` : ''}
             </span>
             <input
               className="os-campo"
@@ -258,7 +278,7 @@ export default function Capturador({
           <div className="os-ror-opciones">
             {opciones.length === 0 && (
               <p className="os-ror-vacio">
-                {area
+                {principal
                   ? 'Esa área no tiene entradas para la lámina derecha.'
                   : 'Apretá un área en la lámina, o buscá lo que dijo.'}
               </p>
@@ -279,9 +299,10 @@ export default function Capturador({
             ))}
           </div>
 
-          {(area || dijo.trim()) && (
+          {(puestas.length > 0 || dijo.trim()) && (
             <button type="button" className="os-boton" onClick={() => tomar(null)}>
-              No está en la tabla: cargar igual{area ? ` en ${area}` : ''}
+              No está en la tabla: cargar igual
+              {puestas.length > 0 ? ` en ${puestas.join(' + ')}` : ''}
             </button>
           )}
         </section>
@@ -297,59 +318,83 @@ export default function Capturador({
             {pendientes > 0
               ? `${pendientes} campos quedan para completar a mano en la ficha`
               : 'Sin campos obligatorios pendientes acá'}
+            {dudas > 0 ? ` · ${dudas} sobre el puntaje Z` : ''}
           </p>
         </div>
 
-        {respuestas.length > 0 && (
-          <table className="os-tabla os-ror-tabla">
-            <thead>
-              <tr>
-                <th>Nº</th>
-                <th>Qué dijo</th>
-                <th>Área</th>
-                <th>Loc. + DQ</th>
-                <th>FQ</th>
-                <th>Contenidos</th>
-                <th>P</th>
-                <th>Z</th>
-                <th>Falta</th>
-              </tr>
-            </thead>
-            <tbody>
-              {respuestas.map((r) => (
-                <tr key={r.n} className={r.extrapolada ? 'os-ror-extrapolada' : undefined}>
-                  <td>{r.n}</td>
-                  <td>{r.dijo}</td>
-                  <td>{r.area}</td>
-                  <td>
-                    <select
-                      className="os-campo"
-                      value={r.localizacion ?? ''}
-                      onChange={(e) => cambiar(r.n, { localizacion: e.target.value || null })}
-                    >
-                      <option value="">a mano</option>
-                      {localizacionesDe(r.area).map((l) => (
-                        <option key={l} value={l}>
-                          {l}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>{r.fq ?? <span className="os-ror-falta">a mano</span>}</td>
-                  <td>{r.contenidos.join(', ') || <span className="os-ror-falta">a mano</span>}</td>
-                  <td>{r.popular ? 'P' : ''}</td>
-                  <td>{r.z ?? ''}</td>
-                  <td className="os-ror-falta">{faltan(r).join(' · ')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        {respuestas.map((r) => {
+          const v = zDe(r);
+          const tieneEspacio = r.areas.some(esEspacio);
+          const tieneTinta = r.areas.some((a) => !esEspacio(a));
+          return (
+            <article key={r.n} className={`os-ror-fila${r.extrapolada ? ' os-ror-extrapolada' : ''}`}>
+              <div className="os-ror-fila-datos">
+                <span className="os-ror-n">{r.n}</span>
+                <span className="os-ror-dijo">{r.dijo}</span>
+                <span className="os-ror-areas">{r.areas.join(' + ')}</span>
+                <select
+                  className="os-campo"
+                  value={r.localizacion ?? ''}
+                  onChange={(e) => cambiar(r.n, { localizacion: e.target.value || null })}
+                >
+                  <option value="">Loc. + DQ</option>
+                  {localizacionesDe(r.areas[0]).map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+                <span className="os-ror-dato">{r.fq ?? '—'}</span>
+                <span className="os-ror-dato">{r.contenidos.join(', ') || '—'}</span>
+                <span className="os-ror-dato">{r.popular ? 'P' : ''}</span>
+                <span className="os-ror-dato os-ror-z">
+                  {v.z ? `${v.z.tipo} ${v.z.valor}` : '—'}
+                </span>
+              </div>
+
+              <div className="os-ror-fila-z">
+                {r.areas.length >= 2 && (
+                  <label className="os-ror-tilde">
+                    <input
+                      type="checkbox"
+                      checked={r.integradas}
+                      onChange={(e) => cambiar(r.n, { integradas: e.target.checked })}
+                    />
+                    Integra las áreas con una relación significativa
+                  </label>
+                )}
+                {(tieneEspacio || (r.localizacion?.includes('S') ?? false)) && (
+                  <label className="os-ror-tilde">
+                    <input
+                      type="checkbox"
+                      checked={r.blancoIntegrado}
+                      onChange={(e) => cambiar(r.n, { blancoIntegrado: e.target.checked })}
+                      disabled={!tieneTinta && !r.localizacion?.match(/^(W|D)S/)}
+                    />
+                    El blanco se integra con la mancha
+                  </label>
+                )}
+                {v.z && <span className="os-ror-porque">{v.z.tipo}: {v.z.porque}</span>}
+                {v.otros.map((o) => (
+                  <span key={o.tipo} className="os-ror-porque os-ror-descartado">
+                    {o.tipo} {o.valor} también daba, gana el más alto
+                  </span>
+                ))}
+                {v.aConfirmar.map((a, i) => (
+                  <span key={i} className="os-ror-duda">
+                    {a}
+                  </span>
+                ))}
+                <span className="os-ror-falta">Falta a mano: {faltan(r).join(' · ')}</span>
+              </div>
+            </article>
+          );
+        })}
 
         <div className="os-ror-pie">
           <p className="os-ror-aclaracion">
             Lo que esta pantalla no puede saber, y se completa en la ficha:{' '}
-            {PENDIENTES.filter((p) => p.campo !== 'localizacion')
+            {PENDIENTES.filter((p) => !['localizacion', 'z'].includes(p.campo))
               .map((p) => p.rotulo)
               .join(', ')}
             .

@@ -85,14 +85,14 @@ ZONA_DdS32 = (30, 6, 70, 20)
 # Dd23 son las salpicaduras: los pedazos de tinta separados de la mancha.
 AREA_SALPICADURA = 'Dd23'
 
-# Cómo se reparten los cuatro huecos cerrados. Los dos de arriba son altos y
-# angostos (el libro lista "pulmones", "árboles", "figura humana"); los dos de
-# abajo son triangulares ("pirámides", "tiendas de campaña", "triángulos").
-# En el diagrama las dos líneas guía se cruzan y no se puede leer cuál es cuál,
-# así que esta asignación sale de las listas de respuestas.
+# Cómo se reparten los cuatro huecos cerrados.
 #
-#   PENDIENTE DE CONFIRMAR CON LAS EVALUADORAS.
-#
+# En el diagrama del cuadernillo las dos líneas guía se cruzan y no se puede
+# leer cuál es cuál, así que el reparto se dedujo de las listas de respuestas:
+# los dos de arriba son altos y angostos, y el libro lista ahí "pulmones",
+# "árboles", "figura humana"; los dos de abajo son triangulares, y lista
+# "pirámides", "tiendas de campaña", "triángulos". Confirmado por la evaluadora
+# el 25/8/2026.
 HUECOS = {
     'DdS30': 'arriba',      # los dos espacios altos, a los lados del centro
     'DdS29': 'abajo',       # los dos espacios triangulares de abajo
