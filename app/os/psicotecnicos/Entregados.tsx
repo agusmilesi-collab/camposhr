@@ -14,6 +14,11 @@
  * vivía donde nadie entra salvo que se acuerde. Acá se ve en la misma fila que
  * el informe que se entregó, que es contra lo que se compara la respuesta.
  *
+ * **La facturación no está acá.** Vive entera en su sección, que es donde se
+ * emite el comprobante y se marca el cobro: un comprobante junta a varios
+ * candidatos de un cliente, así que dos columnas de Sí y No por persona no
+ * dicen a cuál de todos hay que ir a reclamarle.
+ *
  * **Acá no se edita nada.** Todo lo que la fila muestra es dato: el
  * seguimiento se prende y se contesta desde la ficha de la persona, que es
  * donde están la fecha de ingreso que lo agenda y lo que contó la empresa. Una
@@ -48,8 +53,6 @@ const COLUMNAS = [
   'Puesto',
   'Evaluadora',
   'Ficha',
-  'Factura',
-  'Cobro',
   'Seguimiento',
   'Cómo le fue',
 ];
@@ -68,8 +71,6 @@ const CLAVE: Record<string, (e: Evaluacion) => string | number> = {
   Empresa: (e) => e.empresa.toLocaleLowerCase('es'),
   Puesto: (e) => e.puesto.toLocaleLowerCase('es'),
   Evaluadora: (e) => (e.evaluadora ?? '').toLocaleLowerCase('es'),
-  Factura: (e) => (e.facturado ? 1 : 0),
-  Cobro: (e) => (e.pagado ? 1 : 0),
   // Primero lo que vence antes, y lo que no está en seguimiento al final.
   Seguimiento: (e) => (e.etapa === 'Seguimiento' ? e.seguimientoAl ?? '9998' : '9999'),
   'Cómo le fue': (e) => e.seguimientoResultado ?? '',
@@ -130,23 +131,6 @@ function Fila({ e }: { e: Evaluacion }) {
           </Link>
         ) : (
           <Falta texto="fuera del sistema" />
-        )}
-      </td>
-      {/* Lo cobrado sale de la sección Facturación y acá solo se lee: el
-          comprobante junta varios candidatos de un cliente, así que desde una
-          fila sola no se puede decidir qué entra en cuál. */}
-      <td data-campo="Factura">
-        {e.facturado ? (
-          <span className="os-sello-estado os-verde">Sí</span>
-        ) : (
-          <span className="os-sello-estado os-rojo">No</span>
-        )}
-      </td>
-      <td data-campo="Cobro">
-        {e.pagado ? (
-          <span className="os-sello-estado os-verde">Sí</span>
-        ) : (
-          <span className="os-sello-estado os-rojo">No</span>
         )}
       </td>
       {/* Cuánto queda para los noventa días, o que todavía no hay reloj. Se
