@@ -1829,6 +1829,96 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   margin-left: auto;
 }
 
+/* ---------- Clientes ---------- */
+/**
+ * Los clientes, en fichas.
+ *
+ * Lo que se busca al entrar es el cliente, no su CUIT: cuántas búsquedas tiene
+ * abiertas y cuánta gente hay adentro. Los datos de facturación están en su
+ * ficha, que es el día que se los necesita.
+ */
+.os-clientes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 14px;
+}
+
+.os-cliente {
+  display: block;
+  padding: 16px 18px 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 13px;
+  background: var(--os-panel);
+  box-shadow: var(--os-sombra-panel);
+  color: var(--os-tinta);
+  text-decoration: none;
+  transition:
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+.os-cliente:hover {
+  border-color: var(--os-azul);
+  transform: translateY(-1px);
+}
+
+/* Los que siguen en Airtable no abren ficha: se ven, para que la lista esté
+   entera, pero no invitan a un clic que no lleva a ninguna parte. */
+.os-cliente.apagada {
+  background: none;
+  box-shadow: none;
+  border-style: dashed;
+}
+
+.os-cliente-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.os-cliente-top h2 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: -0.012em;
+}
+
+.os-cliente-linea {
+  margin: 8px 0 0;
+  font-size: 0.86rem;
+  color: var(--os-tinta-media);
+}
+
+.os-cliente-pie {
+  margin: 3px 0 0;
+  font-size: 0.76rem;
+  color: var(--os-suave);
+}
+
+/* Los datos de facturación del cliente, en su ficha. Se llaman "cliente" y no
+   "ficha" porque `.os-ficha-dato` ya es el renglón de la ficha del candidato,
+   que va en dos columnas y con línea. */
+.os-cliente-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 28px;
+}
+
+.os-cliente-dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 0.88rem;
+}
+
+/* El estado de una búsqueda terminada, con lo que se puede hacer al lado. */
+.os-cerrado-fila {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* ---------- Formularios ---------- */
 /* Todo cae sobre una grilla de dos columnas: un campo ocupa una o las dos, y
    nunca un ancho propio. Sin esto, tres campos con flex:1 al lado de uno
@@ -2212,9 +2302,20 @@ textarea.os-campo {
  * apiladas de distinto ancho se leen como si no tuvieran que ver entre sí. Los
  * mil píxeles son lo que piden sus seis columnas sin apretarse.
  */
+/**
+ * La tabla de pedidos llena el panel.
+ *
+ * Desde que las búsquedas viven adentro de su cliente no tienen la columna del
+ * cliente, que era la mitad del ancho, y el panel de una tabla de trabajo mide
+ * lo que mide su contenido: quedaba dos tercios más angosto que el panel de
+ * datos de arriba, como si fueran de dos pantallas distintas.
+ */
 .os-tabla.os-tabla-pedidos {
-  width: 1000px;
-  max-width: 100%;
+  width: 100%;
+}
+
+.os-panel:has(> .os-tabla-marco > .os-tabla-pedidos) {
+  width: auto;
 }
 
 .os-tabla {

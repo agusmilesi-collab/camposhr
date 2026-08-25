@@ -20,9 +20,12 @@ import type { BateriaOpcion, Opcion } from '../psicotecnicos/Agregar';
 export default function Abrir({
   empresas,
   baterias,
+  empresaFija,
 }: {
   empresas: Opcion[];
   baterias: BateriaOpcion[];
+  /** Cuando se abre desde la ficha de un cliente, el pedido ya es suyo. */
+  empresaFija?: string;
 }) {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
@@ -42,6 +45,7 @@ export default function Abrir({
         <PedidoNuevo
           empresas={empresas}
           baterias={baterias}
+          empresaFija={empresaFija}
           onCreado={() => {
             setAbierto(false);
             empezar(() => router.refresh());

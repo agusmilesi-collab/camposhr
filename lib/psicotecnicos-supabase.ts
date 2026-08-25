@@ -16,6 +16,7 @@ import { diasDesde } from '@/lib/hora';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { yaEntregada, type Evaluacion } from '@/lib/psicotecnicos-tipos';
 import { siEstaTodoTomado } from '@/lib/entrevista-completa';
+import { ajustarPedidoDe } from '@/lib/pedido-completo';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -261,5 +262,10 @@ export async function guardarCampos(
   // Marcar el último test como administrado cierra la entrevista sola. No pasa
   // si el cambio fue de etapa: mover a mano ya dice a dónde va.
   if (!('estado' in fila)) await siEstaTodoTomado(id);
+
+  // Y entregar el último informe cierra el pedido, que es lo que significa que
+  // la búsqueda terminó. Va después de escribir: mira cómo quedó, no cómo
+  // estaba.
+  if ('estado' in fila) await ajustarPedidoDe(id);
   return { ok: true };
 }
