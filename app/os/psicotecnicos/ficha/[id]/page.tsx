@@ -20,6 +20,7 @@ import Administrados from './Administrados';
 import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
+import { bandasDeLaHoja } from '@/lib/redacciones';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
 import { llevaDiscursivo, TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
@@ -302,7 +303,7 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
  * respuesta": son los dos finales posibles de esa tabla, cargar una respuesta
  * más o cerrar el protocolo.
  */
-function SumarioEstructural({ f }: { f: Ficha }) {
+function SumarioEstructural({ f, rige }: { f: Ficha; rige: Regulacion }) {
   const s = f.sumario;
   if (!s) {
     return (
@@ -318,7 +319,10 @@ function SumarioEstructural({ f }: { f: Ficha }) {
   // hoja de sumario: se muestra tal cual en vez de rearmarlo acá.
   const texto = (s.crudo as { texto?: string } | null)?.texto;
 
-  return texto ? <SumarioTexto texto={texto} /> : null;
+  // La banda de cada indicador sale de los mismos cortes con los que el motor
+  // elige las lecturas del informe, así que la hoja no puede pintar de verde un
+  // valor sobre el que el informe escribe una recomendación.
+  return texto ? <SumarioTexto texto={texto} bandas={bandasDeLaHoja(rige.cortes)} /> : null;
 }
 
 /**
@@ -664,9 +668,9 @@ export default async function FichaPagina({
               Mientras no esté calculado, el aviso queda al pie, al lado del
               botón que lo calcula: ahí sí lo que hay que mirar es la
               codificación. */}
-          {ficha.sumario && <SumarioEstructural f={ficha} />}
+          {ficha.sumario && <SumarioEstructural f={ficha} rige={rige} />}
           <Manchas evaluacionId={params.id} filas={ficha.manchas} />
-          {!ficha.sumario && <SumarioEstructural f={ficha} />}
+          {!ficha.sumario && <SumarioEstructural f={ficha} rige={rige} />}
         </>
       )}
       {/* Sin panel alrededor: la vista trae sus propias tarjetas. */}

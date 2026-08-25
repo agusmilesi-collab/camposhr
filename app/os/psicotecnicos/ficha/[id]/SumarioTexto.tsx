@@ -35,7 +35,18 @@
  * Se arma con elementos, no con HTML crudo: el texto sale de un cálculo
  * propio, pero incluye nombres de códigos y avisos, y no hay motivo para
  * abrirle la puerta a que algo de ahí se interprete como marcado.
+ *
+ * Los indicadores con banda fija van con el fondo pintado: verde mientras el
+ * valor cae dentro de lo esperado y rojo cuando lo cruza. La banda sale de los
+ * mismos cortes con los que el motor elige las lecturas del informe
+ * (`bandasDeLaHoja`), así que la hoja y el informe no pueden decir cosas
+ * distintas, y moverla se hace desde Sistema → Redacciones. Los indicadores que
+ * entran contra una banda que depende del estilo o de la cantidad de respuestas
+ * (Afr, Zf, P) quedan sin pintar: ahí el rótulo solo no alcanza para saber qué
+ * se espera.
  */
+
+import type { Banda } from '@/lib/redacciones';
 
 /** Dónde cae cada bloque de la hoja, por fila. */
 const HOJA = [
@@ -56,6 +67,52 @@ const CODIGOS = 'Códigos especiales';
 const OCULTOS = (titulo: string) => titulo.startsWith('No aplica');
 
 type Par = { rotulo: string; valor: string; nota: string };
+
+/** Si el valor de ese par cae dentro de su banda, la cruza, o no tiene banda. */
+type Estado = { clase: string; title: string } | null;
+
+/**
+ * El número de un valor de la hoja.
+ *
+ * Los porcentajes vienen con la cuenta que los produce ("3 / 20 = 0.15") y lo
+ * que se compara es el resultado, así que de esos se toma lo que sigue al
+ * igual. Lo que no es un número (una razón como "5:3", un "—") no se compara.
+ */
+function numeroDe(valor: string): number | null {
+  const crudo = valor.includes('=') ? valor.slice(valor.lastIndexOf('=') + 1) : valor;
+  const limpio = crudo.replace('−', '-').replace(',', '.').trim();
+  if (!/^[+-]?\d+(\.\d+)?$/.test(limpio)) return null;
+  const n = Number(limpio);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Cómo se escribe un extremo de la banda: con los decimales de su corte. */
+function extremo(v: number, decimales: number): string {
+  return v.toFixed(decimales).replace('.', ',');
+}
+
+function estadoDe(p: Par, bandas: Record<string, Banda>): Estado {
+  const b = bandas[p.rotulo];
+  if (!b) return null;
+  const v = numeroDe(p.valor);
+  if (v === null) return null;
+  const dentro = (b.minimo === null || v >= b.minimo) && (b.maximo === null || v <= b.maximo);
+  const n = (x: number) => extremo(x, b.decimales);
+  const esperado =
+    b.minimo !== null && b.maximo !== null
+      ? b.minimo === b.maximo
+        ? `exactamente ${n(b.minimo)}`
+        : `de ${n(b.minimo)} a ${n(b.maximo)}`
+      : b.minimo !== null
+        ? `${n(b.minimo)} o más`
+        : b.maximo === 0
+          ? 'en cero'
+          : `hasta ${n(b.maximo as number)}`;
+  return {
+    clase: dentro ? 'os-hoja-dentro' : 'os-hoja-fuera',
+    title: `${b.indice} esperado: ${esperado}`,
+  };
+}
 /** Una línea del bloque: sus campos, o el corte punteado de la hoja. */
 type Linea = { pares: Par[]; corte?: true; tercios?: true };
 type Bloque = { titulo: string; lineas: Linea[]; sueltas: string[] };
@@ -79,7 +136,17 @@ function esAncho(p: Par): boolean {
   return p.rotulo.length > 9 || p.valor.includes('=') || Boolean(p.nota);
 }
 
-function Bloque({ b }: { b: Bloque }) {
+/** El valor de un par, con el fondo pintado si su índice tiene banda. */
+function Valor({ p, bandas }: { p: Par; bandas: Record<string, Banda> }) {
+  const e = estadoDe(p, bandas);
+  return (
+    <span className={`os-hoja-valor${e ? ` ${e.clase}` : ''}`} title={e?.title}>
+      {p.valor || '—'}
+    </span>
+  );
+}
+
+function Bloque({ b, bandas }: { b: Bloque; bandas: Record<string, Banda> }) {
   return (
     <section className="os-hoja-bloque">
       <h3 className="os-hoja-titulo">{b.titulo}</h3>
@@ -92,7 +159,7 @@ function Bloque({ b }: { b: Bloque }) {
                 {linea.pares.map((p, j) => (
                   <div key={j} className="os-hoja-par">
                     <span className="os-hoja-rotulo">{p.rotulo}</span>
-                    <span className="os-hoja-valor">{p.valor || '—'}</span>
+                    <Valor p={p} bandas={bandas} />
                   </div>
                 ))}
               </div>
@@ -110,7 +177,7 @@ function Bloque({ b }: { b: Bloque }) {
                 .join(' ')}
             >
               <span className="os-hoja-rotulo">{p.rotulo}</span>
-              <span className="os-hoja-valor">{p.valor || '—'}</span>
+              <Valor p={p} bandas={bandas} />
               {p.nota && <span className="os-hoja-nota">{p.nota}</span>}
             </div>
           ));
@@ -165,7 +232,14 @@ function Constelaciones({ b, detalles }: { b: Bloque; detalles: Bloque[] }) {
   );
 }
 
-export default function SumarioTexto({ texto }: { texto: string }) {
+export default function SumarioTexto({
+  texto,
+  bandas,
+}: {
+  texto: string;
+  /** La banda esperada de cada índice, por rótulo de la hoja. Ver `bandasDeLaHoja`. */
+  bandas: Record<string, Banda>;
+}) {
   const bloques: Bloque[] = [];
   const encabezado: Par[][] = [];
 
@@ -228,7 +302,7 @@ export default function SumarioTexto({ texto }: { texto: string }) {
         >
           {fila.map((titulo) => {
             const b = porTitulo.get(titulo);
-            return b ? <Bloque key={titulo} b={b} /> : null;
+            return b ? <Bloque key={titulo} b={b} bandas={bandas} /> : null;
           })}
         </div>
       ))}
@@ -239,9 +313,9 @@ export default function SumarioTexto({ texto }: { texto: string }) {
             <Constelaciones b={constelaciones} detalles={detalles} />
           ) : (
             // Sin constelaciones, un bloque suelto se sostiene por su cuenta.
-            detalles.map((b) => <Bloque key={b.titulo} b={b} />)
+            detalles.map((b) => <Bloque key={b.titulo} b={b} bandas={bandas} />)
           )}
-          {codigos && <Bloque b={codigos} />}
+          {codigos && <Bloque b={codigos} bandas={bandas} />}
         </div>
       )}
     </div>
