@@ -155,6 +155,18 @@ ubica con las medidas del botón y lo sigue mientras está abierta, por evento d
 `scroll` en fase de captura y por un bucle de cuadro, porque el evento no llega
 cuando lo que se desplaza es un contenedor de adentro.
 
+## Antes de nombrar una clase, buscala en `os.css`
+
+La hoja es una sola y las clases son globales. Dos veces el mismo día una clase
+nueva se comió los estilos de otra que ya existía: las columnas del gráfico se
+llamaron `os-barra`, que es la barra de arriba del OS, y quedaron de ancho cero;
+la fila que se abre en una tabla se llamó `os-cajon`, que es el cajón lateral de
+los tableros, y apareció flotando contra el borde derecho de la pantalla.
+
+**Y cuando dos clases pesan lo mismo, gana la que está más abajo.** Una variante
+que se escribe antes que la clase base no pisa nada: hay que nombrar las dos
+(`.os-gasto.os-gasto-factura`) o escribirla después.
+
 ## Una sola botonera de opciones
 
 `app/os/Opciones.tsx`. Dos o tres opciones que se excluyen y se eligen de un
@@ -401,6 +413,21 @@ pantalla muestra lo de cada una. Lo que se cotiza y se gana es del estudio y se
 reparte entre los tres, así que **Costos no tiene dueño: todos ven todo**, y las
 dos categorías de monotributo se ven juntas, porque una cerca del tope cambia
 con cuál de las dos conviene facturar lo que sigue.
+
+**Un trabajo por fila, con lo cotizado, lo facturado y lo que costó.** Esas
+tres cosas vivían en tres lugares y ninguna pantalla las tenía juntas, que es lo
+único que contesta qué quedó. El costo de la fila se abre y muestra los gastos,
+con su alta y su baja, y las facturas de ese trabajo: media docena de gastos
+chicos a la vista hacían de la pantalla una lista de gastos con el resultado
+escondido en el medio.
+
+**La fila es el trabajo y no la factura.** Un trabajo se factura en varios
+comprobantes, porque el ciclo se reparte entre los tres y cada uno emite el
+suyo; con una fila por factura, el costo aparecería tres veces y el resultado
+sería tres veces mentira. El vínculo lo pone `facturas.cotizacion_id`
+(`supabase/factura-cotizacion.sql`), que va en la factura porque al revés no
+entraría, y admite null: una factura de un servicio que nunca se cotizó
+formalmente sigue siendo una factura.
 
 **Los servicios también se facturan, y desde Costos.** Un ciclo de encuentros o
 un trabajo de estructura lo emite una de las dos con su CUIT, así que ese

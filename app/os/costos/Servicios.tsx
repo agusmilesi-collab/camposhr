@@ -139,10 +139,13 @@ export function Facturado({ facturas }: { facturas: Factura[] }) {
 export function OtraFactura({
   emisoras,
   empresas,
+  trabajos,
   quien,
 }: {
   emisoras: Emisora[];
   empresas: { id: string; nombre: string }[];
+  /** Las oportunidades ganadas: la factura se cuelga de una. */
+  trabajos: { id: string; cliente: string; concepto: string }[];
   quien: string;
 }) {
   const router = useRouter();
@@ -199,6 +202,20 @@ export function OtraFactura({
               {emisoras.map((e) => (
                 <option key={e.id} value={e.id}>
                   {e.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* De qué trabajo es: es lo que deja cruzar lo cobrado con lo que
+              ese trabajo costó. Una factura que no salga de una cotización
+              entra igual, y se lista aparte. */}
+          <div className="os-campo-bloque os-tramo-4">
+            <label className="os-etiqueta-campo">De qué trabajo</label>
+            <select className="os-campo" name="cotizacionId" defaultValue="">
+              <option value="">Ninguno en particular</option>
+              {trabajos.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.cliente} · {t.concepto}
                 </option>
               ))}
             </select>

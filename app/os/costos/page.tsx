@@ -12,6 +12,7 @@ import { listarEmisoras, listarFacturas, marchaMonotributo } from '@/lib/factura
 import { empresas as listarEmpresas } from '@/lib/altas';
 import Monotributo from './Monotributo';
 import { Facturado, OtraFactura } from './Servicios';
+import Trabajos, { type Trabajo } from './Trabajos';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +39,9 @@ export default async function Costos() {
     listarEmpresas().catch(() => []),
   ]);
 
+  const ganadas = cotizaciones.filter((c) => c.estado === 'Aprobada');
+  const deLa = (id: string) => costos.filter((x) => x.cotizacionId === id);
+
   /**
    * Las facturas de servicios: las que no cubren ninguna evaluación.
    *
@@ -49,10 +53,38 @@ export default async function Costos() {
     (f) => f.estado !== 'anulada' && f.renglones.every((r) => r.evaluacionId === null)
   );
 
+  /**
+   * Cada trabajo con lo suyo: lo cotizado, lo facturado contra eso y lo que
+   * costó hacerlo. Las tres cosas juntas son la única forma de saber qué quedó.
+   */
+  const trabajos: Trabajo[] = ganadas.map((c) => {
+    const suyas = servicios.filter((f) => f.cotizacionId === c.id);
+    const gastos = deLa(c.id);
+    return {
+      id: c.id,
+      cliente: c.cliente,
+      concepto: c.concepto,
+      fecha: c.fecha,
+      moneda: c.moneda,
+      cotizado: c.importe,
+      facturado: suyas.reduce((n, f) => n + (f.importe ?? 0), 0),
+      cobrado: suyas.filter((f) => f.cobradaAt).reduce((n, f) => n + (f.importe ?? 0), 0),
+      costo: gastos.reduce((n, x) => n + x.importe, 0),
+      gastos: gastos.map((x) => ({
+        id: x.id,
+        concepto: x.concepto,
+        fecha: x.fecha,
+        importe: x.importe,
+      })),
+      facturas: suyas,
+    };
+  });
+
+  /** Las que no salieron de ninguna cotización: se listan aparte. */
+  const sueltas = servicios.filter((f) => f.cotizacionId === null);
 
 
-  const ganadas = cotizaciones.filter((c) => c.estado === 'Aprobada');
-  const deLa = (id: string) => costos.filter((x) => x.cotizacionId === id);
+
 
   const total = resultadoDe(
     ganadas.reduce((n, c) => n + c.importe, 0),
@@ -97,72 +129,16 @@ export default async function Costos() {
         </div>
       </div>
 
-      <Facturado facturas={servicios} />
+      <Trabajos trabajos={trabajos} />
 
-      <OtraFactura emisoras={emisoras} empresas={empresas} quien={yo.nombre} />
+      <OtraFactura
+        emisoras={emisoras}
+        empresas={empresas}
+        trabajos={ganadas.map((c) => ({ id: c.id, cliente: c.cliente, concepto: c.concepto }))}
+        quien={yo.nombre}
+      />
 
-      {ganadas.length === 0 && (
-        <div className="os-panel">
-          <p className="os-vacio">
-            Todavía no hay ninguna oportunidad aprobada. Se aprueban en Cotizaciones.
-          </p>
-        </div>
-      )}
-
-      {ganadas.map((c) => {
-        const suyos = deLa(c.id);
-        const r = resultadoDe(c.importe, suyos.reduce((n, x) => n + x.importe, 0));
-        return (
-          <section className="os-panel" key={c.id}>
-            <div className="os-panel-top">
-              <h2>{c.cliente}</h2>
-              <span className="os-enlace">
-                {c.concepto} · {formatoFecha(c.fecha)}
-              </span>
-            </div>
-
-            <div className="os-resumen-linea">
-              <span>
-                <span className="os-dato-rotulo">Ingreso</span>
-                {formatoImporte(r.ingreso, c.moneda)}
-              </span>
-              <span>
-                <span className="os-dato-rotulo">Costos</span>
-                {formatoImporte(r.costo, c.moneda)}
-              </span>
-              <span className={r.resultado < 0 ? 'os-resultado-rojo' : undefined}>
-                <span className="os-dato-rotulo">Resultado</span>
-                {formatoImporte(r.resultado, c.moneda)}
-              </span>
-              <span
-                className={r.margen !== null && r.margen < 0 ? 'os-resultado-rojo' : undefined}
-              >
-                <span className="os-dato-rotulo">Margen</span>
-                {r.margen === null ? '—' : `${Math.round(r.margen)}%`}
-              </span>
-            </div>
-
-            {suyos.map((x) => (
-              <div className="os-gasto" key={x.id}>
-                <span className="os-gasto-concepto">{x.concepto}</span>
-                <span className="os-gasto-fecha">{formatoFecha(x.fecha)}</span>
-                <span className="os-gasto-importe">{formatoImporte(x.importe, c.moneda)}</span>
-                <span className="os-gasto-baja">
-                  <BorrarCosto id={x.id} />
-                </span>
-              </div>
-            ))}
-
-            {suyos.length === 0 && (
-              <p className="os-panel-nota">Sin costos cargados: el resultado es el ingreso entero.</p>
-            )}
-
-            <div className="os-panel-cuerpo">
-              <NuevoCosto cotizacionId={c.id} />
-            </div>
-          </section>
-        );
-      })}
+      {sueltas.length > 0 && <Facturado facturas={sueltas} />}
     </Shell>
   );
 }
