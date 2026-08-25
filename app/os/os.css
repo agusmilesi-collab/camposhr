@@ -5742,6 +5742,36 @@ th.os-tabla-contacto {
 }
 
 /**
+ * El agarre para cambiar el orden de los tests.
+ *
+ * El orden lo decide quien toma la entrevista, y arrastrar la tarjeta entera
+ * desde cualquier lado chocaba con sus botones y sus campos: el gesto cuenta
+ * solo si empieza acá. En tono suave hasta que el puntero pasa por la tarjeta,
+ * porque es un control de acomodar y no una acción del test.
+ */
+.os-herramienta-agarre {
+  flex: none;
+  margin-left: -6px;
+  color: var(--os-linea);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: grab;
+  user-select: none;
+}
+
+.os-herramienta:hover .os-herramienta-agarre {
+  color: var(--os-suave);
+}
+
+/* Mientras se arrastra: la tarjeta se aclara y se levanta apenas, así se
+   distingue de las que están quietas y se ve dónde va a caer. */
+.os-herramienta.movido {
+  opacity: 0.75;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.09);
+  cursor: grabbing;
+}
+
+/**
  * El número de orden del test: 01, 02, 03.
  *
  * Reemplazó a un ícono por test. Seis dibujitos distintos decoraban la lista

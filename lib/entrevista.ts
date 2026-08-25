@@ -28,6 +28,8 @@ type Fila = {
   bender_observaciones: string | null;
   bender_nombre: string | null;
   benziger_administrado: boolean;
+  /** El orden elegido para esta entrevista. Null: el de la batería. */
+  orden_tests: string[] | null;
   grafico_2_personas_administrado: boolean;
   grafico_2_personas_nombre: string | null;
   grafico_2_personas_observaciones: string | null;
@@ -86,11 +88,25 @@ export type Entrevista = {
 const CAMPOS =
   'id,estado,modalidad,fecha_entrevista,enlace_entrevista,' +
   'proyectivo_administrado,bender_administrado,bender_observaciones,bender_nombre,' +
-  'benziger_administrado,' +
+  'benziger_administrado,orden_tests,' +
   'grafico_2_personas_administrado,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
   'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo,nombre,tests))';
+
+/**
+ * Los tests en el orden que eligió quien toma la entrevista.
+ *
+ * Lo que no está en el orden guardado va al final, en el de la batería: sumarle
+ * un test a la batería no puede esconderlo de las entrevistas que ya tenían su
+ * orden elegido. Y un nombre guardado que ya no está en la batería se descarta,
+ * porque ese test dejó de tomarse.
+ */
+function ordenar(tests: string[], guardado: string[] | null | undefined): string[] {
+  if (!guardado?.length) return tests;
+  const elegidos = guardado.filter((t) => tests.includes(t));
+  return [...elegidos, ...tests.filter((t) => !elegidos.includes(t))];
+}
 
 export async function entrevistaDe(id: string): Promise<Entrevista | null> {
   if (!UUID.test(id)) return null;
@@ -133,7 +149,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     enlace: f.enlace_entrevista,
     bateria: f.pedidos?.baterias?.codigo ?? null,
     bateriaNombre: f.pedidos?.baterias?.nombre ?? null,
-    tests: f.pedidos?.baterias?.tests ?? [],
+    tests: ordenar(f.pedidos?.baterias?.tests ?? [], f.orden_tests),
     conBenziger: f.pedidos?.con_benziger ?? false,
     benzigerAdministrado: f.benziger_administrado,
     proyectivoAdministrado: f.proyectivo_administrado,
