@@ -508,7 +508,7 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
 }
 
 /** Marcar el cobro, o deshacerlo si se marcó de más. */
-function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null }) {
+export function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null }) {
   const router = useRouter();
   const [tocando, setTocando] = useState(false);
 
@@ -550,7 +550,7 @@ function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null }) {
   );
 }
 
-function BorrarFactura({ id, numero }: { id: string; numero: string }) {
+export function BorrarFactura({ id, numero }: { id: string; numero: string }) {
   const router = useRouter();
   const [borrando, setBorrando] = useState(false);
   const [seguro, setSeguro] = useState(false);
@@ -581,4 +581,5 @@ function BorrarFactura({ id, numero }: { id: string; numero: string }) {
     </button>
   );
 }
+
 

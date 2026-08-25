@@ -88,7 +88,16 @@ export type Marcha = {
    * se saltea, porque el hueco también es el dato, y los que todavía no
    * llegaron vienen marcados para no leerlos como meses sin trabajo.
    */
-  meses: { clave: string; etiqueta: string; total: number; futuro: boolean }[];
+  meses: {
+    clave: string;
+    etiqueta: string;
+    futuro: boolean;
+    /** Lo facturado por evaluaciones, que es la cola del pipeline. */
+    psico: number;
+    /** Lo facturado por servicios de Campos HR: un ciclo, una estructura. */
+    servicios: number;
+    total: number;
+  }[];
 };
 
 /** Una evaluación con la entrevista tomada y sin comprobante. */

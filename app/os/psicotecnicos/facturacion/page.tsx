@@ -39,7 +39,16 @@ export default async function Facturacion() {
 
   // Arriba, lo de quien mira. Agustín tiene alcance 'todo' y ve las dos colas.
   const mias = pendientes.filter((p) => esMia(p.evaluadora, yo));
-  const vivas = facturas.filter((f) => f.estado !== 'anulada');
+  /**
+   * Las de psicotécnicos: las que cubren alguna evaluación.
+   *
+   * Las de servicios se emiten y se cobran en Costos, que es donde vive ese
+   * trabajo. Se reconocen por los renglones y no por una marca: un comprobante
+   * de psicotécnicos siempre lleva sus candidatos adentro.
+   */
+  const vivas = facturas.filter(
+    (f) => f.estado !== 'anulada' && f.renglones.some((r) => r.evaluacionId !== null)
+  );
   const sinCobrar = vivas.filter((f) => f.cobradaAt === null);
 
   const aFacturar = mias.reduce((n, p) => n + totalDe(p), 0);
@@ -90,7 +99,7 @@ export default async function Facturacion() {
       </div>
 
       <AFacturar pendientes={mias} emisoras={emisoras} quien={yo.nombre} />
-      <Emitidas facturas={facturas} />
+      <Emitidas facturas={vivas} />
     </Shell>
   );
 }

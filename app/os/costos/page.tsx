@@ -8,8 +8,10 @@ import {
   resultadoDe,
 } from '@/lib/cotizaciones';
 import { quienSoy } from '@/lib/identidad';
-import { marchaMonotributo } from '@/lib/facturas';
+import { listarEmisoras, listarFacturas, marchaMonotributo } from '@/lib/facturas';
+import { empresas as listarEmpresas } from '@/lib/altas';
 import Monotributo from './Monotributo';
+import { Facturado, OtraFactura } from './Servicios';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,12 +28,26 @@ export const dynamic = 'force-dynamic';
  * persona no querría decir nada.
  */
 export default async function Costos() {
-  const [yo, cotizaciones, costos, marcha] = await Promise.all([
+  const [yo, cotizaciones, costos, marcha, facturas, emisoras, empresas] = await Promise.all([
     quienSoy(),
     listarCotizaciones(),
     listarCostos(),
     marchaMonotributo(),
+    listarFacturas(),
+    listarEmisoras(),
+    listarEmpresas().catch(() => []),
   ]);
+
+  /**
+   * Las facturas de servicios: las que no cubren ninguna evaluación.
+   *
+   * No hace falta una marca: un comprobante de psicotécnicos siempre lleva sus
+   * candidatos en los renglones, y uno de servicios no lleva ninguno. Se
+   * reconocen por eso, que además es lo que ya distingue a los dos trabajos.
+   */
+  const servicios = facturas.filter(
+    (f) => f.estado !== 'anulada' && f.renglones.every((r) => r.evaluacionId === null)
+  );
 
 
 
@@ -85,6 +101,10 @@ export default async function Costos() {
           <div className="os-cifra-pie">Del ingreso.</div>
         </div>
       </div>
+
+      <Facturado facturas={servicios} />
+
+      <OtraFactura emisoras={emisoras} empresas={empresas} quien={yo.nombre} />
 
       {ganadas.length === 0 && (
         <div className="os-panel">
