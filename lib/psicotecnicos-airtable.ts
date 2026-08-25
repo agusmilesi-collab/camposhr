@@ -267,6 +267,10 @@ export async function listar(): Promise<Evaluacion[]> {
       ingreso: null,
       seguimientoAl: null,
       seguimientoResultado: null,
+      // Del lado viejo no se leen: la facturación vive entera en Supabase y
+      // estas filas ya no se muestran en el OS.
+      facturado: false,
+      pagado: false,
       servicio: f[F.servicio] ?? null,
       dias: diasDesde(fechaEntrevista, hoy),
       diasEsperando: fechaEntrevista ? null : diasDesde(f[F.fechaIngreso] ?? null, hoy),

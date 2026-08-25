@@ -1,0 +1,194 @@
+/*
+ * El comprobante, con el diseño de `CAMPOS OS/SPECS-facturacion-muestra.html`.
+ *
+ * Va con colores propios y no con las variables del OS: es un documento que se
+ * imprime y que ve el cliente, así que tiene que salir igual en papel y con el
+ * tema oscuro puesto. Todo cuelga de `.cbte` para no pisar nada del sistema.
+ */
+
+.cbte {
+  background: #f2f0ec;
+  color: #16202b;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-bottom: 64px;
+}
+
+.cbte .aviso {
+  background: #8c3b3b;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+.cbte .aviso b { font-weight: 600; }
+
+.cbte .marco { max-width: 860px; margin: 0 auto; padding: 32px 20px 0; }
+
+.cbte .hoja {
+  background: #fff;
+  border: 1px solid #e2ded6;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(22, 32, 43, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+/* La marca de agua solo cuando no hay CAE: es lo que separa un documento
+   informativo de una factura. */
+.cbte .hoja.muestra::after {
+  content: 'SIN CAE';
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-24deg);
+  font-size: 130px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(140, 59, 59, 0.055);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.cbte .cabeza {
+  display: grid;
+  grid-template-columns: 1fr 78px 1fr;
+  border-bottom: 2px solid #16202b;
+}
+.cbte .cabeza > div { padding: 22px 24px; }
+.cbte .letra {
+  border-left: 1px solid #16202b;
+  border-right: 1px solid #16202b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 14px 0 8px !important;
+}
+.cbte .letra b { font-size: 40px; line-height: 1; font-weight: 600; }
+.cbte .letra span { font-size: 10px; letter-spacing: 0.06em; color: #46505c; margin-top: 4px; }
+.cbte .fantasia {
+  font-family: Georgia, 'Instrument Serif', serif;
+  font-size: 25px;
+  letter-spacing: 0.02em;
+}
+.cbte .titulo { font-family: Georgia, 'Instrument Serif', serif; font-size: 25px; }
+.cbte .linea { font-size: 12.5px; color: #46505c; }
+.cbte .linea b { color: #16202b; font-weight: 500; }
+.cbte .der { text-align: right; }
+
+.cbte .bloque { padding: 18px 24px; border-bottom: 1px solid #e2ded6; }
+.cbte .par {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 28px;
+  font-size: 12.5px;
+}
+.cbte .par div { color: #46505c; }
+.cbte .par b { color: #16202b; font-weight: 500; }
+.cbte .oc {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2ded6;
+  font-size: 12.5px;
+}
+.cbte .oc b { font-weight: 600; }
+
+.cbte table { width: 100%; border-collapse: collapse; }
+.cbte thead th {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #7b7770;
+  font-weight: 500;
+  text-align: left;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e2ded6;
+  background: #faf9f6;
+}
+.cbte thead th.num,
+.cbte td.num { text-align: right; }
+.cbte tbody td {
+  padding: 13px 24px;
+  border-bottom: 1px solid #eeebe4;
+  vertical-align: top;
+  font-size: 13.5px;
+}
+.cbte td .d { font-weight: 500; }
+.cbte td .s { font-size: 12px; color: #7b7770; margin-top: 2px; }
+.cbte .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.cbte .totales { display: flex; justify-content: flex-end; padding: 16px 24px; }
+.cbte .totales table { width: auto; min-width: 300px; }
+.cbte .totales td { border: 0; padding: 5px 0; font-size: 13.5px; }
+.cbte .totales td:last-child { text-align: right; padding-left: 40px; }
+.cbte .totales tr.grande td {
+  font-size: 19px;
+  font-weight: 600;
+  padding-top: 12px;
+  border-top: 2px solid #16202b;
+}
+
+.cbte .pie {
+  display: grid;
+  grid-template-columns: 128px 1fr auto;
+  gap: 22px;
+  align-items: center;
+  padding: 20px 24px;
+  border-top: 1px solid #e2ded6;
+  background: #faf9f6;
+}
+.cbte .qr-hueco {
+  width: 128px;
+  height: 128px;
+  border: 1px dashed #d5d0c6;
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 12px;
+  color: #a9a49a;
+  letter-spacing: 0.08em;
+}
+.cbte .qr-hueco span { font-size: 10.5px; letter-spacing: 0; }
+.cbte .pie .arca { font-size: 12px; color: #46505c; }
+.cbte .pie .arca b {
+  display: block;
+  font-size: 13px;
+  color: #16202b;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.cbte .cae { text-align: right; font-size: 13px; }
+.cbte .cae .n {
+  font-size: 21px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.cbte .cae .v { color: #46505c; font-size: 12.5px; }
+
+.cbte .volver { font-size: 13px; color: #7b7770; margin-top: 16px; text-align: center; }
+.cbte .volver a { color: #46505c; }
+.cbte .imprimir { color: #a9a49a; }
+
+@media (max-width: 720px) {
+  .cbte .par,
+  .cbte .cabeza,
+  .cbte .pie { grid-template-columns: 1fr; }
+}
+
+/* Al imprimir se va todo lo que no es la hoja. */
+@media print {
+  .cbte { background: #fff; padding: 0; }
+  .cbte .aviso,
+  .cbte .volver { display: none; }
+  .cbte .marco { max-width: none; padding: 0; }
+  .cbte .hoja { border: 0; box-shadow: none; }
+}

@@ -109,8 +109,10 @@ desarrollo empezó a devolver 500 sin que hubiera un error de código.
 
 - *Inicio.* El espacio de trabajo de las tres: temas de la próxima reunión,
   pendientes con responsable, y lo que cada una tiene en curso.
-- *Psicotécnicos, en cinco secciones:* Sin asignar, Entrevistas, Por analizar,
-  Entregados y Seguimiento.
+- *Psicotécnicos, en cuatro secciones:* Sin asignar, Entrevistas, Entregados y
+  Facturación. **Sin asignar y Entrevistas son tableros**, y en los dos la etapa
+  se cambia arrastrando la tarjeta. Entregados es una tabla, porque ahí el
+  trabajo terminó y lo que se hace es consultar.
   - **Sin asignar** es el tablero de reparto por arrastre, y significa todo lo
     que no tiene evaluadora, esté en la etapa que esté. Cada tarjeta muestra la
     fecha de la solicitud y hace cuánto entró. Tocarla abre el cajón de la
@@ -123,11 +125,27 @@ desarrollo empezó a devolver 500 sin que hubiera un error de código.
     no existe todavía, "+ Pedido nuevo" abre un cajón con sus ocho campos
     (cliente, puesto, área, nivel, batería, Benziger, fecha y qué pidió), y al
     guardarlo queda elegido para seguir cargando candidatos.
-  - **Entrevistas** junta las etapas "Por citar" y "Por entrevistar", que en la
-    base siguen separadas. Son dos bloques: arriba a quién hay que citar, con
-    la fecha y la modalidad editables; abajo lo ya agendado, de solo lectura.
-  - En Agendadas el nombre abre la **hoja de la entrevista**, que es otra cosa
-    que la ficha: se abre con la persona enfrente y tiene un renglón por test
+  - **Entrevistas es un tablero de tres columnas** desde el 24/8/2026: Por
+    citar, Agendadas y Por analizar. Las tres etapas siguen separadas en la
+    base; lo que se juntó es la pantalla, porque son el trabajo de la misma
+    persona sobre el mismo caso y repartidas en dos lugares había que saltar de
+    una a otra para seguir a alguien. Antes eran dos bloques de tabla y "Por
+    analizar" tenía su propia entrada en la barra.
+    - **La etapa se cambia arrastrando**, igual que en el reparto. Con una regla
+      que no es de la pantalla sino del trabajo: **a Agendadas no se entra sin
+      fecha**. Una entrevista agendada sin día es lo mismo que una sin agendar.
+    - **Cada columna tiene su tarjeta y su puerta**, porque en cada una se mira
+      otra cosa: al citar, el teléfono para escribir por WhatsApp, si ya se la
+      contactó, y la fecha y la modalidad editables; agendada, cuándo cae y el
+      botón para entrar a la hoja de la entrevista; al analizar, cuánto hace que
+      espera el informe y el botón a su ficha.
+    - Tocar el cuerpo de la tarjeta abre los datos en el cajón de la derecha,
+      como en Sin asignar. Los controles de abajo no lo abren: cada uno hace lo
+      suyo.
+    - `/os/psicotecnicos/por-analizar` redirige acá, igual que `/por-citar` y
+      `/por-entrevistar`.
+  - En Agendadas el botón "Entrevistar" abre la **hoja de la entrevista**, que
+    es otra cosa que la ficha: se abre con la persona enfrente y tiene un renglón por test
     de la batería con su herramienta a un clic. Las láminas de Rorschach o
     Zulliger según corresponda; el enlace del Raven con en qué anda (mandado,
     empezado, terminado) y el reloj de lo que le queda mientras responde, que
@@ -140,17 +158,51 @@ desarrollo empezó a devolver 500 sin que hubiera un error de código.
     hasta ahora vivía en el calendario o en el chat donde se acordó. Al pie
     cierra la entrevista y la manda a Por analizar. No muestra nada de lo
     cargado: codificar es el trabajo de después, y en la sala sería ruido.
-  - **Por analizar** son tarjetas y no una tabla: en esa etapa el trabajo es
-    entrar a cada persona. Cada tarjeta entera lleva a su ficha y muestra la
-    batería, hace cuánto espera (en rojo pasada la semana) y con qué cerró.
-  - **Entregados** muestra lo que ya salió, de todas las evaluadoras, con la
-    fecha, la conclusión con el nombre que lleva en el informe y el enlace para
-    abrirlo.
-  - **Seguimiento** es la etapa de los noventa días: si la persona entró a
-    trabajar y cuándo toca preguntar cómo le fue. Tiene su sección desde el
-    21/8/2026, porque el botón que lleva ahí existía desde antes y la etapa no
-    tenía pantalla: apretarlo sacaba la evaluación de todas las listas sin
-    forma de volver, y había tres personas atrapadas ahí.
+  - **Entregados es el registro**, en una tabla con todo junto y lo último
+    arriba: fecha, candidato, empresa, puesto, evaluadora, ficha, seguimiento y
+    cómo le fue. Empresa y puesto van en columnas propias, así se lee por
+    cliente y la fila entra en un renglón. Desde el 24/8/2026 **el seguimiento es una
+    columna y no una sección**: con esa etapa en su propia pantalla, la segunda
+    mitad del circuito vivía donde nadie entra salvo que se acuerde, y acá se ve
+    en la misma fila que el informe contra el que se compara la respuesta.
+    - **La fecha abre la fila.** Un registro se recorre por cuándo pasó cada
+      cosa, no por a quién le pasó.
+    - **La columna Seguimiento es un botón que alterna.** "Sin seguir" lo prende
+      y pasa la evaluación a esa etapa; prendido muestra la cuenta de los
+      noventa días y tocarlo lo saca. La etapa sigue existiendo en la base.
+    - **"Cómo le fue" solo se puede tocar con el seguimiento prendido**: sin
+      eso no hay nada que preguntar todavía.
+    - Arriba avisa cuántos seguimientos están vencidos, que es la única acción
+      pendiente de esta pantalla: entraron, pasaron los noventa días y falta
+      preguntar.
+    - El botón de la fila es **"Ver ficha"** y no el informe: desde la ficha se
+      llega al informe con un clic y además a todo lo que lo sostiene.
+    - `/os/psicotecnicos/seguimiento` redirige acá.
+  - **Facturación (24/8/2026)** es la sexta entrada y no es una etapa del
+    pipeline: una evaluación entra en la cola sola, en cuanto la entrevista se
+    tomó, sin esperar al informe. Se factura el trabajo hecho. Cuatro cosas que
+    esta pantalla decidió y conviene no deshacer:
+    - **Arriba cada una ve lo suyo y abajo las dos ven todo.** Lo que está para
+      facturar es trabajo pendiente de alguien, y mezclarlo obliga a buscar lo
+      propio entre lo ajeno; lo ya facturado es la caja del estudio, y ahí las
+      dos necesitan ver el conjunto.
+    - **"Para facturar" se deduce, no se marca.** Sale de cruzar las etapas con
+      entrevista tomada contra los renglones de las facturas. Una tilde más
+      sería una tilde más que alguien se olvida de poner.
+    - **Los importes los calcula el servidor**, no el navegador: precio de la
+      batería a la fecha del pedido más el Benziger al dólar tarjeta del día,
+      que queda congelado en la factura. La pantalla muestra el número y no lo
+      decide.
+    - **La emisión y el cobro son dos ejes.** `estado` dice qué pasó con el
+      comprobante y `cobrada_at` si entró la plata: emitida y sin cobrar es lo
+      normal. Y una evaluación no entra en dos facturas, por el índice único de
+      `factura_items.evaluacion_id`.
+
+    El botón arma el comprobante en
+    `/os/psicotecnicos/facturacion/comprobante/<id>`, con el diseño de
+    `SPECS-facturacion-muestra.html` y los datos reales. **Sale con la banda de
+    "sin CAE"** hasta que se conecte ARCA, que según el spec va después de
+    tener cuentas por persona. Para el PDF, imprimir y guardar como PDF.
   - Cada fila puede volver a la etapa anterior con la flecha azul.
 - *Ficha del candidato.* Seis pestañas: Datos, el test de manchas, Benziger,
   Tests, Recomendación e Informe.
@@ -308,8 +360,8 @@ leyó mal.
    del Bender ya están, dibujadas en SVG a partir de medir las tarjetas.
 4. **La pantalla de acierto**, que cruza recomendación contra resultado a los
    noventa días, por evaluadora y por familia de puesto. Los datos ya se
-   capturan y la sección Seguimiento ya los muestra por persona; falta el
-   cruce, y marcar los que están vencidos.
+   capturan y la columna de seguimiento ya los muestra por persona, con los
+   vencidos marcados; falta el cruce.
 5. **Los cortes de las competencias**, que los revise la psicóloga contra casos
    reales. Cada informe trae el desglose al pie, así que revisarlos es abrir un
    informe y leer de dónde salió cada porcentaje.

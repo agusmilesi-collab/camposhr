@@ -39,15 +39,26 @@
 }
 
 /* Lo que falta cargar: para la evaluadora, no para el cliente. */
+/**
+ * Lo que falta cargar, en rojo.
+ *
+ * Estaba en ámbar, que en el informe es el color de lo que se lee con reparos.
+ * Esto no se lee: es un informe al que le faltan datos, y el ámbar lo hacía
+ * pasar por una advertencia más de las que el documento ya tiene.
+ */
 .inf-pendientes {
-  border: 1px solid var(--ambar);
+  border: 1px solid var(--rojo);
   border-left-width: 3px;
   border-radius: 8px;
   padding: 12px 16px;
   margin-bottom: 28px;
   font-size: 0.86rem;
   color: var(--tinta-media);
-  background: #fdf8ef;
+  background: #fcf2f2;
+}
+
+.inf-pendientes strong {
+  color: var(--rojo);
 }
 
 .inf-pendientes ul {
