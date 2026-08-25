@@ -54,6 +54,13 @@ export default async function Costos() {
         </p>
       </div>
 
+      {/* Los psicotécnicos primero: es de donde sale el trabajo de todas las
+          semanas, y la categoría de cada una condiciona lo que se puede
+          facturar de lo demás. */}
+      <Monotributo emisoras={marcha} />
+
+      <div className="os-rotulo-bloque">Servicios Campos HR</div>
+
       <div className="os-cifras">
         <div className="os-cifra">
           <div className="os-cifra-rotulo">Ingreso</div>
@@ -78,11 +85,6 @@ export default async function Costos() {
           <div className="os-cifra-pie">Del ingreso.</div>
         </div>
       </div>
-
-      {/* Las dos, siempre: Costos no reparte por persona. Lo que se mira acá es
-          el conjunto, y una categoría cerca del tope cambia con cuál de las dos
-          conviene facturar lo que sigue. */}
-      <Monotributo emisoras={marcha} />
 
       {ganadas.length === 0 && (
         <div className="os-panel">

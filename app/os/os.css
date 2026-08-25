@@ -1550,8 +1550,11 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   border-bottom: 1px solid var(--os-linea);
 }
 
+/* Más angosta que su columna: doce barras pegadas se leen como un bloque, y lo
+   que se compara es el alto de cada una. */
 .os-mes-lleno {
-  width: 100%;
+  width: 58%;
+  margin: 0 auto;
   border-radius: 3px 3px 0 0;
   background: var(--os-azul);
   min-height: 2px;
@@ -1570,6 +1573,16 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   letter-spacing: 0.04em;
 }
 
+/* Los meses que todavía no llegaron: se ven, para que el año se lea entero,
+   pero apagados, así no se leen como meses sin trabajo. */
+.os-mes.futuro .os-mes-rotulo {
+  opacity: 0.45;
+}
+
+.os-mes.futuro .os-mes-caja {
+  border-bottom-style: dotted;
+}
+
 .os-mes-monto {
   font-size: 0.63rem;
   color: var(--os-tinta-media);
@@ -1578,7 +1591,10 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  min-height: 1em;
+  /* Alto fijo y no mínimo: con el mínimo, la columna que tiene monto empujaba
+     su barra unos píxeles abajo y el rótulo del mes quedaba desalineado. */
+  height: 15px;
+  line-height: 15px;
 }
 
 /* ---------- Formularios ---------- */

@@ -47,7 +47,7 @@ export {
  * usa; la constante vive allá porque también la lee el navegador.
  */
 import { ETAPAS_ENTREVISTADO, type Marcha } from '@/lib/facturas-tipos';
-import { cortes, ultimosMeses } from '@/lib/monotributo';
+import { cortes, mesesDelAnio } from '@/lib/monotributo';
 
 type FilaEmisor = {
   id: string;
@@ -267,7 +267,7 @@ export async function marchaMonotributo(hoy = new Date()): Promise<Marcha[]> {
   const [emisoras, facturas] = await Promise.all([listarEmisoras(), listarFacturas()]);
   const emitidas = facturas.filter((f) => f.estado === 'emitida');
   const { mes, anio, doce } = cortes(hoy);
-  const meses = ultimosMeses(hoy);
+  const meses = mesesDelAnio(hoy);
 
   return emisoras.map((e) => {
     const suyas = emitidas.filter((f) => f.emisorId === e.id && f.moneda !== 'DOL');

@@ -402,11 +402,22 @@ reparte entre los tres, así que **Costos no tiene dueño: todos ven todo**, y l
 dos categorías de monotributo se ven juntas, porque una cerca del tope cambia
 con cuál de las dos conviene facturar lo que sigue.
 
-Además de los tres números, cada panel trae el gráfico de lo facturado mes a mes
-en esos doce meses: dice si el trabajo viene parejo, si hubo un mes que se llevó
-medio año o si hace tres que no entra nada. Las barras se miden contra el mes más
-alto y no contra el tope, que aplastaría doce meses en una línea de nada, y el
-mes que corre va marcado porque todavía se está llenando.
+La pantalla va en ese orden: primero los psicotécnicos, que es de donde sale el
+trabajo de todas las semanas, y después los servicios de Campos HR con sus
+cuatro cifras y sus oportunidades.
+
+Además de los tres números, cada panel trae el gráfico de lo facturado mes a
+mes: dice si el trabajo viene parejo, si hubo un mes que se llevó medio año o si
+hace tres que no entra nada. **El gráfico va por año comercial, de enero a
+diciembre, y la cuenta del tope por los doce meses corridos**: son dos preguntas
+distintas y cada una tiene su ventana. Contra sí mismo el año se compara mes a
+mes; una ventana que se corre cada mes no deja comparar dos veces lo mismo.
+
+Las barras se miden contra el mes más alto y no contra el tope, que aplastaría
+un año en una línea de nada. El mes que corre va marcado porque todavía se está
+llenando; los que no llegaron van apagados, para no leerlos como meses sin
+trabajo; y un mes sin facturas no dibuja barra, porque con una barra mínima doce
+meses vacíos se leían como doce meses con algo.
 
 Las dos facturan como monotributistas y pasarse del tope no es una multa: es
 quedar fuera del régimen y tener que inscribirse en el general. Por eso la

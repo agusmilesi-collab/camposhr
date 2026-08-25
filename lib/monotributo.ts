@@ -120,21 +120,23 @@ export function cortes(hoy: Date): { mes: string; anio: string; doce: string } {
 }
 
 /**
- * Los últimos doce meses, del más viejo al más nuevo.
+ * Los doce meses del año en curso, de enero a diciembre.
  *
- * Incluye el que corre, que es el que se está llenando: son las mismas doce
- * casillas que suma la cuenta de los doce meses, así el gráfico y el número
- * hablan de lo mismo.
+ * El gráfico va por año comercial y no por los últimos doce meses corridos: lo
+ * que se compara es cómo viene este año contra sí mismo, y una ventana que se
+ * corre cada mes no deja comparar dos veces lo mismo. La cuenta del tope sí va
+ * por los doce corridos, que es como la mira ARCA: son dos preguntas distintas
+ * y cada una tiene su ventana.
+ *
+ * Los meses que todavía no llegaron vienen igual, en cero: el año se lee entero
+ * desde enero, y el hueco de lo que falta es parte de lo que se mira.
  */
-export function ultimosMeses(hoy: Date): { clave: string; etiqueta: string }[] {
-  const nombres = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-  const salida: { clave: string; etiqueta: string }[] = [];
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-    salida.push({
-      clave: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
-      etiqueta: nombres[d.getMonth()],
-    });
-  }
-  return salida;
+const NOMBRES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+export function mesesDelAnio(hoy: Date): { clave: string; etiqueta: string; futuro: boolean }[] {
+  return NOMBRES.map((etiqueta, i) => ({
+    clave: `${hoy.getFullYear()}-${String(i + 1).padStart(2, '0')}`,
+    etiqueta,
+    futuro: i > hoy.getMonth(),
+  }));
 }

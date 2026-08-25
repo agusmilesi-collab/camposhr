@@ -39,7 +39,9 @@ export default function Monotributo({ emisoras }: { emisoras: Marcha[] }) {
   if (emisoras.length === 0) return null;
   return (
     <>
-      <div className="os-rotulo-bloque">Monotributo</div>
+      {/* "Psicotécnicos" y no "Monotributo": lo que se ve es lo que factura
+          cada una, y el monotributo es contra qué se lo mide. */}
+      <div className="os-rotulo-bloque">Psicotécnicos</div>
       <div className="os-monotributo">
         {emisoras.map((e) => (
           <Escala key={e.emisorId} e={e} />
@@ -152,16 +154,18 @@ function Escala({ e }: { e: Marcha }) {
 }
 
 /**
- * Lo facturado mes a mes, en barras.
+ * Lo facturado mes a mes, en barras, de enero a diciembre.
  *
  * Los tres números de arriba dicen cuánto, y esto dice cuándo: si el trabajo
  * viene parejo, si hubo un mes que se llevó medio año o si hace tres que no
- * entra nada. Doce barras, una por mes, del más viejo al que corre.
+ * entra nada. Va por año comercial, así dos años se comparan mes contra mes;
+ * la cuenta del tope va por los doce meses corridos, que es otra pregunta.
  *
  * **Todas se miden contra el mes más alto**, no contra el tope de la categoría:
- * la escala del tope aplasta doce meses de trabajo en una línea de nada. La
- * barra del último va marcada porque es el mes que todavía se está llenando y
- * no se compara con los cerrados.
+ * la escala del tope aplasta un año de trabajo en una línea de nada. El mes que
+ * corre va marcado porque todavía se está llenando y no se compara con los
+ * cerrados; los que no llegaron van apagados, para no leerlos como meses sin
+ * trabajo.
  */
 /**
  * El monto de un mes, corto.
@@ -178,22 +182,26 @@ function corto(n: number): string {
 
 function Barras({ meses }: { meses: Marcha['meses'] }) {
   const techo = Math.max(...meses.map((m) => m.total), 0);
+  // El último que ya empezó: es el que se está llenando.
+  const ahora = meses.filter((m) => !m.futuro).length - 1;
   if (techo === 0) {
-    return (
-      <p className="os-escala-pie">Sin facturas emitidas en los últimos doce meses.</p>
-    );
+    return <p className="os-escala-pie">Sin facturas emitidas este año.</p>;
   }
   return (
-    <div className="os-meses" role="img" aria-label="Facturado por mes, últimos doce meses">
+    <div className="os-meses" role="img" aria-label="Facturado por mes, de enero a diciembre">
       {meses.map((m, i) => (
-        <div className="os-mes" key={m.clave} title={`${m.etiqueta}: ${formatoImporte(m.total)}`}>
+        <div
+          className={`os-mes${m.futuro ? ' futuro' : ''}`}
+          key={m.clave}
+          title={m.futuro ? m.etiqueta : `${m.etiqueta}: ${formatoImporte(m.total)}`}
+        >
           <span className="os-mes-monto">{corto(m.total)}</span>
           <div className="os-mes-caja">
             {/* Un mes sin facturas no dibuja nada: con una barra mínima, doce
                 meses vacíos se leían como doce meses con algo. */}
             {m.total > 0 && (
               <div
-                className={`os-mes-lleno${i === meses.length - 1 ? ' en-curso' : ''}`}
+                className={`os-mes-lleno${i === ahora ? ' en-curso' : ''}`}
                 style={{ height: `${Math.max((m.total / techo) * 100, 3)}%` }}
               />
             )}
