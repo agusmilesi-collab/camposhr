@@ -578,8 +578,16 @@ export type Competencia = {
    * el que se tradujo a la banda.
    */
   referencia?: string;
-  /** 0 a 100. Null cuando falta más de un indicador. */
+  /** 0 a 100. Null cuando falta más de un indicador o el protocolo no alcanza. */
   puntaje: number | null;
+  /**
+   * Por qué no hay puntaje, cuando el motivo es el protocolo y no el indicador.
+   *
+   * Se muestra en vez del número: "sin datos" a secas invita a pensar que se
+   * olvidaron de cargar algo, y acá lo que pasa es que lo cargado no alcanza
+   * para afirmar nada.
+   */
+  motivo?: string;
   /** Cada indicador con su nivel y su peso, para revisar de dónde sale el número. */
   renglones: {
     indicador: string;
@@ -704,12 +712,70 @@ function cognitiva(ctx: Contexto): Competencia {
   };
 }
 
+/**
+ * Cuántas respuestas hacen falta para que el protocolo diga algo.
+ *
+ * En Rorschach son catorce, que es la regla de Exner: por debajo el protocolo
+ * no se interpreta y se vuelve a tomar. En Zulliger son tres láminas y lo
+ * esperable son seis a doce respuestas, así que el piso es seis.
+ */
+const R_MINIMO: Record<string, number> = { Rorschach: 14, Zulliger: 6 };
+
+/**
+ * Desde qué Lambda el protocolo deja de poder afirmar lo que no aparece.
+ *
+ * Lambda es la proporción de respuestas de forma pura. Pasado uno, el estilo es
+ * evitativo: la persona simplifica lo que ve y los indicadores de emoción y de
+ * vínculo quedan vacíos **porque el protocolo no los muestra**, no porque el
+ * rasgo no esté.
+ *
+ * Sin este corte, la ausencia de indicadores negativos se leía como un buen
+ * resultado. Se vio comparando contra los informes escritos a mano: en un
+ * protocolo con Lambda 1,4 el motor daba 67 en habilidad interpersonal y 100 en
+ * proactividad, mientras la psicóloga escribía que las habilidades
+ * interpersonales estaban por debajo de lo esperado. El mismo motor, contra un
+ * protocolo de veintiuna respuestas y Lambda normal, coincidió con ella en las
+ * cinco competencias.
+ */
+const LAMBDA_MAXIMO = 1;
+
+/**
+ * Si el protocolo alcanza para puntuar competencias, y si no, por qué no.
+ *
+ * Es lo primero que hay que mirar: un protocolo que no alcanza no da un puntaje
+ * malo, da un puntaje que no significa nada, y esos son los que se leen como si
+ * significaran algo.
+ */
+export function protocoloAlcanza(
+  s: SumarioCrudo,
+  proyectivo: string | null
+): { alcanza: true } | { alcanza: false; motivo: string } {
+  const test = proyectivo === 'Zulliger' ? 'Zulliger' : 'Rorschach';
+  const r = num(s, 'cabecera', 'R');
+  const minimo = R_MINIMO[test];
+  if (r !== null && r < minimo) {
+    return {
+      alcanza: false,
+      motivo: `el protocolo tiene ${r} respuestas y el mínimo para ${test} es ${minimo}`,
+    };
+  }
+  const lambda = num(s, 'cabecera', 'Lambda');
+  if (lambda !== null && lambda > LAMBDA_MAXIMO) {
+    return {
+      alcanza: false,
+      motivo: `Lambda ${String(lambda).replace('.', ',')}: el protocolo es evitativo y lo que no aparece no se puede leer como ausente`,
+    };
+  }
+  return { alcanza: true };
+}
+
 export function calcularCompetencias(
   s: SumarioCrudo,
   ctx: Contexto,
   proyectivo: string | null
 ): Competencia[] {
   const juego = proyectivo === 'Zulliger' ? ZULLIGER : RORSCHACH;
+  const base = protocoloAlcanza(s, proyectivo);
 
   const medidas = juego.map((c) => {
     const renglones = c.indicadores.map((i) => ({
@@ -720,6 +786,19 @@ export function calcularCompetencias(
       peso: i.peso ?? 1,
       datos: leidoPor(s, i.nivel),
     }));
+
+    // Con el protocolo corto o evitativo no se puntúa ninguna: el número
+    // saldría de indicadores que están en cero porque el protocolo no los
+    // muestra, y eso se lee al revés de lo que pasa.
+    if (!base.alcanza) {
+      return {
+        nombre: c.competencia,
+        mide: c.mide,
+        puntaje: null,
+        motivo: base.motivo,
+        renglones,
+      };
+    }
 
     const puntuados = renglones.filter((r) => r.nivel !== null);
     // Con dos o más indicadores sin dato se dice que falta, en vez de informar

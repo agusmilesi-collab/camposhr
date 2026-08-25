@@ -351,6 +351,17 @@
   }
 }
 
+/* Por qué las competencias del proyectivo van sin puntaje. Va arriba de las
+   nueve, una sola vez: repetirlo en cada una lo volvería ruido. */
+.inf-nota-protocolo {
+  margin: 0 0 16px;
+  padding: 9px 13px;
+  border-left: 3px solid var(--naranja);
+  background: color-mix(in srgb, var(--naranja) 6%, var(--hoja));
+  font-size: 0.84rem;
+  color: var(--tinta-media);
+}
+
 /* ── Competencias ─────────────────────────────────────────────────────── */
 /**
  * El capítulo de competencias, como tablero.
