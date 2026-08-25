@@ -1979,6 +1979,15 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   margin-bottom: 10px;
 }
 
+/* La entrevista por competencias reemplaza un documento entero, así que el
+   campo arranca con la altura de una página corta y crece con lo que se
+   escribe: una caja de dos renglones para un texto de mil palabras obliga a
+   redactar mirando por una ranura. */
+.os-campo-largo {
+  min-height: 220px;
+  line-height: 1.55;
+}
+
 .os-redaccion-buscar {
   width: 100%;
   max-width: 420px;
