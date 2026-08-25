@@ -23,7 +23,12 @@ import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/inf
 import { bandasDeLaHoja } from '@/lib/redacciones';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
+import EntrevistaCompetencias from './EntrevistaCompetencias';
 import { llevaDiscursivo, TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
+import {
+  llevaEntrevistaPorCompetencias,
+  TEST_COMPETENCIAS,
+} from '@/lib/entrevista-competencias';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
 import Bateria from '../../Bateria';
@@ -402,6 +407,21 @@ function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
           />
         </div>
       </section>
+      {/* La entrevista por competencias es de la batería, pero se escribe acá:
+          es una redacción larga y se hace sentada, con la grabación o las notas
+          de la sala delante, no con la persona enfrente. */}
+      {llevaEntrevistaPorCompetencias(f.cabecera.pedidos?.baterias?.tests) && (
+        <section className="os-panel os-cierre">
+          <div className="os-panel-top">
+            <h2>Entrevista por competencias</h2>
+            <span className="os-columna-monto">Lo escribe la evaluadora</span>
+          </div>
+          <div className="os-panel-cuerpo">
+            <EntrevistaCompetencias id={id} texto={c.entrevista_competencias} />
+          </div>
+        </section>
+      )}
+
       {llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests) && (
         <section className="os-panel os-cierre">
           <div className="os-panel-top">
@@ -492,8 +512,11 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
       // potencial no sale y el informe está incompleto sin decirlo acá.
       estados.push({ test: 'Análisis discursivo', puesto: Boolean(f.discursivo?.nivel) });
     }
-    // La entrevista por competencias no deja marca: no se lista para no mostrar
-    // un estado que nadie carga.
+    else if (t === TEST_COMPETENCIAS) {
+      // Su marca es lo escrito: sin eso, el capítulo cualitativo del informe se
+      // arma sin lo único que aporta la entrevista.
+      estados.push({ test: t, puesto: Boolean(c.entrevista_competencias) });
+    }
   }
   if (f.benziger) estados.push({ test: 'Benziger', puesto: Boolean(f.benziger.cuadrantes) });
 

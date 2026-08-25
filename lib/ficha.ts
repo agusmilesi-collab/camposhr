@@ -37,6 +37,13 @@ export type Cabecera = {
   /** Por qué cierra así, escrito por la evaluadora. */
   recomendacion_notas: string | null;
   informe_path: string | null;
+  /**
+   * La entrevista por competencias, escrita por la evaluadora.
+   *
+   * Es el único test de la batería que no deja más rastro que su redacción, y
+   * hasta ahora vivía en un Google Docs por candidato, fuera del sistema.
+   */
+  entrevista_competencias: string | null;
   facturado: boolean;
   pagado: boolean;
   /** Las listas del informe que tocó la evaluadora. Clave ausente = calculada. */
@@ -236,7 +243,7 @@ const CAMPOS_CABECERA =
   'proyectivo_administrado,bender_administrado,bender_observaciones,' +
   'grafico_2_personas_administrado,bender_nombre,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
-  'recomendacion,recomendacion_notas,informe_path,' +
+  'recomendacion,recomendacion_notas,informe_path,entrevista_competencias,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
