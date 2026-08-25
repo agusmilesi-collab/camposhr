@@ -318,6 +318,12 @@ que además trae el seguimiento como una columna. `Tabla.tsx`, que servía a tod
 las secciones a la vez, se borró el 24/8/2026; lo que compartía quedó en
 `piezas.tsx`.
 
+**La facturación vive entera en su sección.** Entregados no lleva columnas de
+factura ni de cobro: un comprobante junta a varios candidatos de un cliente, así
+que dos columnas de Sí y No por persona no dicen a cuál de todos hay que ir a
+reclamarle. Lo que falta facturar y lo que falta cobrar se mira en Facturación,
+donde está separado por bloques y con su total.
+
 **En una tabla de consulta no se edita.** Entregados muestra el seguimiento y
 lo que contestó la empresa como dato, no como control: lo que se carga junto se
 carga desde la ficha de la persona, que es donde están la fecha de ingreso que
