@@ -16,29 +16,34 @@
  * y esa medida está acá: si el texto de un nivel dejara de entrar en dos
  * renglones, hay que subir {@link ALTO} y no dejar que la fila crezca sola.
  *
- * **Los escalones son una pirámide truncada y el fondo una entera.** Siguiendo
- * los dos la misma silueta, el escalón de arriba quedaba de treinta y siete
- * píxeles y su nombre salía cortado. Son las dos figuras del informe que se
- * entrega hoy: la punta asoma por encima del primer escalón y la base por
- * debajo del último.
+ * **Es una pirámide truncada y una sola figura.** La punta se probó de dos
+ * maneras y las dos quedaron mal. Con la misma silueta para todo, el escalón de
+ * arriba mide treinta y siete píxeles y su nombre sale cortado. Con una punta de
+ * fondo aparte, que es como está dibujado el informe que se entrega hoy, las dos
+ * figuras tienen pendientes distintas y se cruzan: arriba los escalones se salen
+ * del triángulo y abajo el triángulo se sale de los escalones.
+ *
+ * Para que entren las dos cosas, un nombre adentro del escalón más alto y una
+ * punta con la misma pendiente, la punta tiene que medir ciento cuarenta píxeles
+ * sobre doscientos cincuenta de escalones, y ahí la figura es más punta que
+ * pirámide. Truncada se lee igual y no tiene bordes que no cierran.
  */
 
 import { NIVELES, type NivelDiscursivo } from '@/lib/discursivo';
 
 /** Alto de cada escalón. Entran dos renglones de descripción. */
 const ALTO = 58;
-/** Lo que se ve de la pirámide entre un escalón y el siguiente. */
-const SEPARACION = 6;
-/** Lo que la punta asoma por encima del primer escalón. */
-const PUNTA = 38;
-/** Lo que la base asoma por debajo del último. */
-const PIE = 30;
-/** Ancho de la base de los escalones, que es la columna del dibujo. */
+/** Cuánto se separan dos escalones. Marca el escalón sin partir la figura. */
+const SEPARACION = 4;
+/** Ancho de la base, que es la columna del dibujo. */
 const ANCHO = 280;
-/** Ancho del borde de arriba del primer escalón: lo que pide su nombre. */
-const CORONA = 120;
-/** Cuánto sobresale la base de la pirámide de fondo, de cada lado. */
-const VUELO = 22;
+/**
+ * Ancho del borde de arriba.
+ *
+ * Lo manda el nombre más largo del escalón más alto: con menos, "Liderazgo 2"
+ * sale cortado. Es lo que define cuánto se abre la pirámide.
+ */
+const CORONA = 104;
 
 /** Alto del bloque de escalones. */
 const ESCALONES = NIVELES.length * ALTO + (NIVELES.length - 1) * SEPARACION;
@@ -62,17 +67,8 @@ export default function Piramide({
   /** Si viene, cada escalón es un botón. En el informe no viene. */
   elegir?: (n: NivelDiscursivo) => void;
 }) {
-  const alturaFondo = PUNTA + ESCALONES + PIE;
-  const baseFondo = ANCHO + 2 * VUELO;
-
   return (
-    <div className="inf-piramide" style={{ paddingTop: PUNTA, paddingBottom: PIE }}>
-      <span
-        className="inf-piramide-fondo"
-        aria-hidden="true"
-        style={{ width: baseFondo, height: alturaFondo, marginLeft: (ANCHO - baseFondo) / 2 }}
-      />
-
+    <div className="inf-piramide">
       <ol style={{ gap: `${SEPARACION}px 14px`, gridAutoRows: `${ALTO}px` }}>
         {NIVELES.map((n, i) => {
           const suyo = n.nombre === nivel;

@@ -460,10 +460,17 @@ Tres cosas del dibujo que costaron y conviene no deshacer:
   salían de la recta. Por eso los cuatro miden lo mismo y esa medida está en el
   componente: si un texto dejara de entrar en dos renglones hay que subir
   `ALTO`, no dejar que la fila crezca sola.
-- **Los escalones son una pirámide truncada y el fondo una entera.** Siguiendo
-  los dos la misma silueta, el escalón de arriba quedaba de treinta y siete
-  píxeles y su nombre salía cortado. Son las dos figuras del informe que se
-  entrega hoy.
+- **Es una pirámide truncada y una sola figura.** La punta se probó de dos
+  maneras y las dos quedaron mal: con la misma silueta para todo, el escalón de
+  arriba mide treinta y siete píxeles y su nombre sale cortado; con una punta de
+  fondo aparte, que es como está dibujado el informe que se entrega hoy, las dos
+  figuras tienen pendientes distintas y se cruzan, arriba los escalones se salen
+  del triángulo y abajo el triángulo se sale de los escalones. Para que entren
+  las dos cosas, un nombre adentro del escalón más alto y una punta con la misma
+  pendiente, la punta tendría que medir ciento cuarenta píxeles sobre doscientos
+  cincuenta de escalones, y ahí la figura es más punta que pirámide. Lo que
+  define cuánto se abre es `CORONA`, el ancho de arriba, y lo manda el nombre
+  más largo del escalón más alto.
 - **El recuadro del elegido es `outline` y no borde.** Un borde le suma dos
   píxeles a la fila y ese escalón deja de encajar en la pirámide.
 
