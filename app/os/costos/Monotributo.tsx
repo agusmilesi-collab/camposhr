@@ -195,16 +195,7 @@ function Barras({ meses }: { meses: Marcha['meses'] }) {
           <div
             className={`os-mes${m.futuro ? ' futuro' : ''}`}
             key={m.clave}
-            title={
-              m.futuro
-                ? m.etiqueta
-                : `${m.etiqueta}: ${formatoImporte(m.total)}` +
-                  (m.servicios > 0
-                    ? ` (psicotécnicos ${formatoImporte(m.psico)}, Campos HR ${formatoImporte(
-                        m.servicios
-                      )})`
-                    : '')
-            }
+            title={m.futuro ? m.etiqueta : `${m.etiqueta}: ${formatoImporte(m.total)} en total`}
           >
             <span className="os-mes-monto">{corto(m.total)}</span>
             <div className="os-mes-caja">
@@ -214,11 +205,23 @@ function Barras({ meses }: { meses: Marcha['meses'] }) {
                   excepción y así se los ve aunque sean pocos. */}
               {m.total > 0 && (
                 <div className="os-mes-pila">
+                  {/* Cada tramo dice lo suyo: parándose encima de un color se
+                      lee cuánto salió de ese trabajo, sin tener que restar. El
+                      título del tramo le gana al de la columna, que sigue
+                      diciendo el total del mes. */}
                   {m.servicios > 0 && (
-                    <div className="os-mes-lleno servicios" style={{ height: alto(m.servicios) }} />
+                    <div
+                      className="os-mes-lleno servicios"
+                      style={{ height: alto(m.servicios) }}
+                      title={`${m.etiqueta} · Campos HR: ${formatoImporte(m.servicios)}`}
+                    />
                   )}
                   {m.psico > 0 && (
-                    <div className="os-mes-lleno psico" style={{ height: alto(m.psico) }} />
+                    <div
+                      className="os-mes-lleno psico"
+                      style={{ height: alto(m.psico) }}
+                      title={`${m.etiqueta} · Psicotécnicos: ${formatoImporte(m.psico)}`}
+                    />
                   )}
                 </div>
               )}
