@@ -865,6 +865,13 @@ a.os-fila:hover {
   color: var(--os-tinta);
 }
 
+/* Un punto más grande que el de los estados: acá el color es lo que distingue
+   una batería de otra, y en siete píxeles el tono se pierde. */
+.os-bateria::before {
+  width: 9px;
+  height: 9px;
+}
+
 /* En azul y en negrita: en gris suave, que es como se marca un dato de segundo
    orden, no se leía. Y el Benziger no es un dato de segundo orden: cambia lo
    que hay que administrar en la entrevista. */

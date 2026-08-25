@@ -4,7 +4,12 @@
  * "Batería 1" ocupaba una columna entera para decir un número, y en una tabla
  * donde todas las filas dicen lo mismo el ojo no distingue una de otra. El
  * código corto con su punto de color se reconoce sin leerlo: azul la básica,
- * violeta la estándar, verde la ejecutiva, que es el orden en que crecen.
+ * ámbar la estándar, verde la ejecutiva.
+ *
+ * **Los tres puntos tienen que separarse de un vistazo, y por eso no son una
+ * escala.** La estándar iba en violeta, que al lado del azul y en siete
+ * píxeles es el mismo punto oscuro: dos filas seguidas se leían iguales.
+ * Azul, ámbar y verde son tres tonos que no se confunden ni de reojo.
  *
  * El Benziger va pegado al mismo sello y no en columna aparte: no está en
  * ninguna batería, lo agrega el pedido, y saberlo cambia lo que hay que
@@ -20,7 +25,7 @@ const CORTO: Record<string, string> = {
 
 const COLOR: Record<string, string> = {
   'Batería 1': 'os-azul',
-  'Batería 2': 'os-violeta',
+  'Batería 2': 'os-ambar',
   'Batería 3': 'os-verde',
 };
 
