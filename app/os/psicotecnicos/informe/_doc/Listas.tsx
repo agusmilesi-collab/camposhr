@@ -21,6 +21,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ListaDelInforme } from '@/lib/informe';
+import { estirar } from '../../piezas';
 
 /**
  * Un ítem del borrador.
@@ -35,12 +36,6 @@ type Item = { id: number; texto: string };
 const ANIMACION = 190;
 
 /** El renglón crece con lo que se escribe: un ítem puede ser un párrafo. */
-function estirar(caja: HTMLTextAreaElement | null): void {
-  if (!caja) return;
-  caja.style.height = 'auto';
-  caja.style.height = `${caja.scrollHeight}px`;
-}
-
 export default function Listas({
   id,
   lista,

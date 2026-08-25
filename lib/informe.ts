@@ -1,6 +1,14 @@
 import 'server-only';
 import { fichaDe, proyectivoDe, type Ficha } from '@/lib/ficha';
-import { leer, porArea, senalDe, type Lectura, type SumarioCrudo } from '@/lib/redacciones';
+import {
+  leer,
+  porArea,
+  senalDe,
+  textosValidos,
+  type Lectura,
+  type SumarioCrudo,
+  type Textos,
+} from '@/lib/redacciones';
 import {
   bandaDe,
   calcularCompetencias,
@@ -203,15 +211,25 @@ export async function armarInforme(id: string): Promise<Informe | null> {
  * puede leer, o que no pasa su validación, se ignora y queda lo de fábrica: el
  * informe se arma igual.
  */
-export type Regulacion = { rangos: Rango[]; pesos: Record<string, number> };
+export type Regulacion = { rangos: Rango[]; pesos: Record<string, number>; textos: Textos };
+
+const DE_FABRICA: Regulacion = { rangos: RANGOS, pesos: {}, textos: {} };
 
 export async function loQueRige(): Promise<Regulacion> {
-  const [r, p] = await Promise.all([ajuste('raven_rangos'), ajuste('competencias_pesos')]);
-  return { rangos: rangosValidos(r) ?? RANGOS, pesos: pesosValidos(p) ?? {} };
+  const [r, p, t] = await Promise.all([
+    ajuste('raven_rangos'),
+    ajuste('competencias_pesos'),
+    ajuste('redacciones_textos'),
+  ]);
+  return {
+    rangos: rangosValidos(r) ?? RANGOS,
+    pesos: pesosValidos(p) ?? {},
+    textos: textosValidos(t) ?? {},
+  };
 }
 
-export function desdeFicha(f: Ficha, rige: Regulacion = { rangos: RANGOS, pesos: {} }): Informe {
-  const { rangos, pesos } = rige;
+export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
+  const { rangos, pesos, textos } = rige;
   const c = f.cabecera;
   const faltantes: Faltante[] = [];
 
@@ -259,7 +277,7 @@ export function desdeFicha(f: Ficha, rige: Regulacion = { rangos: RANGOS, pesos:
     return Array.isArray(suya) ? suya.filter((t) => typeof t === 'string') : calculada;
   };
 
-  const lecturas = sumario ? leer(sumario, ravenResultado) : [];
+  const lecturas = sumario ? leer(sumario, ravenResultado, textos) : [];
   const destacadas = lecturas.filter((l) => senalDe(l) === 'destacada');
   const esperadas = lecturas.filter((l) => senalDe(l) === 'esperada');
   const desarrollar = lecturas.filter((l) => senalDe(l) === 'desarrollar');

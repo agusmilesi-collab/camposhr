@@ -113,6 +113,19 @@ export function columnas(nombres: string[], propios: Record<string, number> = {}
   return base.map((n) => `${((n / total) * 100).toFixed(3)}%`);
 }
 
+/**
+ * Un campo de texto que crece con lo que se escribe.
+ *
+ * Se suma el borde: con `box-sizing: border-box` la altura declarada lo
+ * incluye, así que poner `scrollHeight` a secas deja el contenido dos píxeles
+ * corto y el último renglón se recorta por abajo.
+ */
+export function estirar(caja: HTMLTextAreaElement | null): void {
+  if (!caja) return;
+  caja.style.height = 'auto';
+  caja.style.height = `${caja.scrollHeight + (caja.offsetHeight - caja.clientHeight)}px`;
+}
+
 /** Un dato que falta, dicho y no escondido. */
 export function Falta({ texto = 'falta' }: { texto?: string }) {
   return <span className="os-dato-falta">{texto}</span>;

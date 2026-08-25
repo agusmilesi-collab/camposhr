@@ -55,6 +55,7 @@ const NAV: Grupo[] = [
       { href: '/os/baterias', texto: 'Baterías', icono: 'costos' },
       { href: '/os/baremos', texto: 'Baremos', icono: 'costos' },
       { href: '/os/ponderaciones', texto: 'Ponderaciones', icono: 'costos' },
+      { href: '/os/redacciones', texto: 'Redacciones', icono: 'escribir' },
       { href: '/os/herramientas', texto: 'Herramientas', icono: 'herramientas' },
       { href: '/os/especificaciones', texto: 'Especificaciones', icono: 'specs' },
     ],
