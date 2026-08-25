@@ -8,6 +8,7 @@ import {
   NOTA_AJUSTE,
 } from '@/lib/informe-textos';
 import Cerebro from './Cerebro';
+import Listas from './Listas';
 import './informe.css';
 
 /**
@@ -230,6 +231,7 @@ function Capitulo({
 export default function Documento({
   inf,
   interno = false,
+  editar,
 }: {
   inf: Informe;
   /**
@@ -238,6 +240,14 @@ export default function Documento({
    * informe no filtra por olvido: para que el cliente lo vea hay que pedirlo.
    */
   interno?: boolean;
+  /**
+   * El id de la evaluación, cuando las cuatro listas se pueden editar.
+   *
+   * Va solo en la ficha, que es donde se trabaja el informe. La vista para
+   * imprimir no lo pasa: ahí el documento ya está cerrado y un botón de editar
+   * saldría en el papel.
+   */
+  editar?: string;
 }) {
   const firma = inf.evaluadora ? FIRMAS[inf.evaluadora] : undefined;
 
@@ -352,30 +362,51 @@ export default function Documento({
       <Capitulo numero="03" titulo="Análisis cualitativo de las competencias">
         {(
           [
-            ['destacado', 'Desarrollo destacado', 'Por encima del rango esperado', inf.analisis.destacadas],
-            ['esperado', 'Desarrollo esperado', 'Dentro del rango esperado', inf.analisis.esperadas],
             [
+              'destacado',
+              'destacadas',
+              'Desarrollo destacado',
+              'Por encima del rango esperado',
+              inf.analisis.destacadas,
+            ],
+            [
+              'esperado',
+              'esperadas',
+              'Desarrollo esperado',
+              'Dentro del rango esperado',
+              inf.analisis.esperadas,
+            ],
+            [
+              'desarrollar',
               'desarrollar',
               'Necesidad de desarrollo',
               'Fuera del rango esperado: conviene acompañar',
               inf.analisis.desarrollar,
             ],
           ] as const
-        ).map(([clave, titulo, sub, lecturas]) => (
+        ).map(([clave, lista, titulo, sub, dichos]) => (
           <section key={clave} className={`inf-grupo ${clave}`}>
             <header>
               <div>
                 <h3>{titulo}</h3>
                 <p className="inf-grupo-sub">{sub}</p>
               </div>
-              <span className="inf-grupo-cuantas">{lecturas.length}</span>
+              <span className="inf-grupo-cuantas">{dichos.length}</span>
             </header>
-            {lecturas.length === 0 ? (
+            {editar ? (
+              <Listas
+                id={editar}
+                lista={lista}
+                items={dichos}
+                intervenida={inf.intervenidas.includes(lista)}
+                vacio="Sin registros en este grupo."
+              />
+            ) : dichos.length === 0 ? (
               <p className="inf-vacio">Sin registros en este grupo.</p>
             ) : (
               <ul>
-                {lecturas.map((l, i) => (
-                  <li key={`${l.indice}-${i}`}>{l.dice}</li>
+                {dichos.map((d, i) => (
+                  <li key={i}>{d}</li>
                 ))}
               </ul>
             )}
@@ -385,7 +416,16 @@ export default function Documento({
 
       {/* ── 04 · Recomendaciones ────────────────────────────────────────── */}
       <Capitulo numero="04" titulo="Recomendaciones para su líder directo">
-        {inf.recomendaciones.length === 0 ? (
+        {editar ? (
+          <Listas
+            id={editar}
+            lista="recomendaciones"
+            items={inf.recomendaciones}
+            intervenida={inf.intervenidas.includes('recomendaciones')}
+            numerada
+            vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
+          />
+        ) : inf.recomendaciones.length === 0 ? (
           <p className="inf-vacio">
             No surgen indicadores fuera de los rangos esperados que requieran una
             gestión particular.

@@ -57,6 +57,16 @@ function sinRepetir(textos: string[]): string[] {
   return salida;
 }
 
+/** Las cuatro listas del informe que la evaluadora puede tocar. */
+export const LISTAS_DEL_INFORME = [
+  'recomendaciones',
+  'destacadas',
+  'esperadas',
+  'desarrollar',
+] as const;
+
+export type ListaDelInforme = (typeof LISTAS_DEL_INFORME)[number];
+
 export type Informe = {
   nombre: string;
   empresa: string | null;
@@ -77,10 +87,18 @@ export type Informe = {
   };
   recomendaciones: string[];
   analisis: {
-    destacadas: Lectura[];
-    esperadas: Lectura[];
-    desarrollar: Lectura[];
+    destacadas: string[];
+    esperadas: string[];
+    desarrollar: string[];
   };
+  /**
+   * Cuáles de esas cuatro listas dejó escritas la evaluadora.
+   *
+   * Lo que está acá no lo armó el motor: es lo que ella ordenó, corrigió o
+   * agregó, y no se recalcula aunque cambie la codificación. La pantalla lo usa
+   * para avisar que esa sección está intervenida y para ofrecer volver atrás.
+   */
+  intervenidas: ListaDelInforme[];
   benziger: {
     preferentes: Cuadrante[];
     /** Los cuatro totales del perfil adulto, que es el que se grafica. */
@@ -197,6 +215,19 @@ export function desdeFicha(f: Ficha): Informe {
     });
   }
 
+  /**
+   * Lo que la evaluadora dejó escrito para alguna de las cuatro listas.
+   *
+   * Una clave ausente significa "usá lo calculado"; una lista vacía significa
+   * "esta sección va sin ítems", que no es lo mismo. Por eso se pregunta si es
+   * un arreglo y no si tiene largo.
+   */
+  const guardadas = (c.informe_listas ?? {}) as Partial<Record<ListaDelInforme, string[]>>;
+  const elegir = (clave: ListaDelInforme, calculada: string[]): string[] => {
+    const suya = guardadas[clave];
+    return Array.isArray(suya) ? suya.filter((t) => typeof t === 'string') : calculada;
+  };
+
   const lecturas = sumario ? leer(sumario, ravenResultado) : [];
   const destacadas = lecturas.filter((l) => senalDe(l) === 'destacada');
   const esperadas = lecturas.filter((l) => senalDe(l) === 'esperada');
@@ -228,8 +259,16 @@ export function desdeFicha(f: Ficha): Informe {
     resumen: armarResumen(lecturas, destacadas, esperadas, c.recomendacion_notas),
     // El líder recibe cada recomendación una sola vez, aunque dos índices
     // distintos lleven a lo mismo.
-    recomendaciones: sinRepetir(lecturas.map((l) => l.recomienda).filter(Boolean)),
-    analisis: { destacadas, esperadas, desarrollar },
+    recomendaciones: elegir(
+      'recomendaciones',
+      sinRepetir(lecturas.map((l) => l.recomienda).filter(Boolean))
+    ),
+    analisis: {
+      destacadas: elegir('destacadas', destacadas.map((l) => l.dice)),
+      esperadas: elegir('esperadas', esperadas.map((l) => l.dice)),
+      desarrollar: elegir('desarrollar', desarrollar.map((l) => l.dice)),
+    },
+    intervenidas: LISTAS_DEL_INFORME.filter((k) => Array.isArray(guardadas[k])),
     benziger: f.benziger ? { preferentes, adulto, joven: fila('Total joven') } : null,
     raven:
       f.raven?.raw !== null && f.raven?.raw !== undefined

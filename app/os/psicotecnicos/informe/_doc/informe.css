@@ -639,6 +639,131 @@
   font-size: 0.9rem;
 }
 
+/* ── Listas editables ─────────────────────────────────────────────────── */
+/**
+ * Los controles con los que la evaluadora toca las cuatro listas.
+ *
+ * Todo lo que empieza con `inf-edita` es de la pantalla y no del informe: no
+ * sale impreso ni lo ve el cliente, que recibe el documento por el portal, sin
+ * el marco del OS.
+ */
+.inf-edita-barra {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 12px 0 0;
+}
+
+/* Que la sección quedó escrita a mano se dice, porque a partir de ahí deja de
+   seguir a la codificación: cambiar un determinante ya no la mueve. */
+.inf-edita-marca {
+  font-size: 0.74rem;
+  color: var(--naranja);
+  border: 1px solid color-mix(in srgb, var(--naranja) 40%, var(--hoja));
+  background: color-mix(in srgb, var(--naranja) 8%, var(--hoja));
+  border-radius: 99px;
+  padding: 3px 10px;
+}
+
+.inf-edita-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* El punto de color lo pone `.inf-grupo li::before`, que acá sobra: el renglón
+   de edición ya tiene su recuadro y su agarre. */
+.inf-edita-lista li::before {
+  content: none;
+}
+
+.inf-edita-lista li {
+  display: grid;
+  grid-template-columns: 20px 1fr 26px;
+  align-items: start;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 6px;
+  border: 1px solid var(--linea);
+  border-radius: 7px;
+  background: var(--hoja);
+}
+
+/* El que se está arrastrando se atenúa: los demás se corren en el acto, así
+   que sin esto no se ve cuál es el que va en la mano. */
+.inf-edita-lista li.movido {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.inf-edita-agarre {
+  cursor: grab;
+  color: var(--suave);
+  font-size: 0.9rem;
+  line-height: 1.9;
+  text-align: center;
+  user-select: none;
+}
+
+.inf-edita-texto {
+  width: 100%;
+  border: 0;
+  padding: 4px 2px;
+  margin: 0;
+  resize: none;
+  overflow: hidden;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--tinta);
+  background: transparent;
+}
+
+.inf-edita-texto:focus {
+  outline: 0;
+  box-shadow: inset 0 -1px 0 var(--azul);
+}
+
+.inf-edita-quitar {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  background: var(--hoja);
+  color: var(--suave);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.inf-edita-quitar:hover {
+  border-color: var(--rojo);
+  color: var(--rojo);
+}
+
+.inf-edita-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.inf-edita-acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media print {
+  .inf-edita,
+  .inf-edita-barra {
+    display: none;
+  }
+}
+
 /* ── Benziger ─────────────────────────────────────────────────────────── */
 .inf-referencia-perfil {
   display: flex;

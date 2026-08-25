@@ -305,6 +305,37 @@ React la trata como un tipo nuevo en cada dibujo y desmonta el subárbol entero:
 se borra lo escrito en un campo y se pierde el clic en un botón, porque el
 elemento que recibió el `mousedown` ya no existe al soltar. Costó una tarde.
 
+## Las cuatro listas del informe las puede escribir la evaluadora
+
+Recomendaciones al líder, Desarrollo destacado, Desarrollo esperado y Necesidad
+de desarrollo salen de la codificación, y desde el 24/8/2026 se pueden ordenar,
+corregir y ampliar desde la ficha. Lo que ella deja escrito se guarda en
+`evaluaciones.informe_listas` (`supabase/informe-listas.sql`) y pisa lo
+calculado.
+
+**Una clave ausente no es lo mismo que una lista vacía.** Ausente significa
+"usá lo calculado"; vacía significa "esta sección va sin ítems", que es una
+decisión. Por eso `lib/informe.ts` pregunta si es un arreglo y no si tiene
+largo, y por eso volver atrás es borrar la clave (el botón "Volver a lo
+calculado", que manda `null`) y no dejarla en cero.
+
+**Una lista escrita a mano deja de seguir a la codificación.** Cambiar un
+determinante ya no la mueve, así que el documento la marca como editada: sin esa
+marca, la evaluadora recodifica y no entiende por qué el informe no cambia.
+
+Los controles solo salen en la ficha, que es donde se trabaja el informe:
+`<Documento>` los dibuja cuando recibe `editar`, y la vista para imprimir y el
+portal del cliente no lo pasan.
+
+**El renglón se arrastra desde su agarre y no desde el texto.** El `li` es
+arrastrable siempre (hace falta para que el navegador empiece el arrastre), y el
+`dragstart` se cancela cuando el gesto no arrancó en el agarre; sin eso,
+arrastrar sobre las palabras para seleccionarlas movía el ítem de lugar.
+
+**Los renglones se vuelven a medir después de cada cambio.** Arrastrar no crea
+ni destruye cajas de texto: les cambia el contenido. Midiendo solo al montarse,
+el ítem largo que subía aparecía cortado a la mitad.
+
 ## Cerrar no es borrar
 
 Un pedido y un cliente se **cierran** cuando terminaron: siguen enteros y dejan
