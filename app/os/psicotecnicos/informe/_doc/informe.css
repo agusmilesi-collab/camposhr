@@ -1321,17 +1321,18 @@
    la ficha, fuera del `.inf` donde se definen las variables: ahí la evaluadora
    elige el escalón y lo ve como va a salir impreso.
 
-   Las medidas están en el componente y no acá: los trapecios y la pirámide de
-   fondo salen de la misma cuenta, y separarlas es lo que hacía que los
-   escalones se salieran de la silueta. */
+   Las medidas están en el componente y no acá: los trapecios salen de una sola
+   cuenta, y separarlas es lo que hacía que los escalones se salieran de la
+   silueta. */
+
 /* La pirámide va en su propio recuadro. Con clase propia y no con `.inf-grupo`:
    ese le pone un punto de color a cada renglón de sus listas, y acá los
    renglones son los escalones. */
 .inf-piramide-caja {
   margin: 12px 0 18px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   border: 1px solid var(--linea, #e5e2db);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--hoja, #fff);
 }
 
@@ -1350,15 +1351,17 @@
 .inf-escalon {
   display: grid;
   align-items: stretch;
+  border-radius: 8px;
 }
 
-/* El que le corresponde, recuadrado como en el informe que se entrega hoy. Con
-   `outline` y no con borde: un borde le suma dos píxeles a la fila y ese
-   escalón deja de encajar en la pirámide. */
+/* El que le corresponde: recuadrado y con la fila entera apenas teñida, así el
+   espacio que el trapecio no llena deja de leerse como un hueco. Con `outline`
+   y no con borde, que le sumaría dos píxeles a la fila y ese escalón dejaría de
+   encajar en la pirámide. */
 .inf-escalon.suyo {
-  outline: 2px solid var(--azul, #43648f);
-  outline-offset: 3px;
-  border-radius: 4px;
+  outline: 1.5px solid var(--azul, #43648f);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--azul, #43648f) 5%, transparent);
 }
 
 .inf-piramide-forma {
@@ -1366,9 +1369,9 @@
   place-items: center;
   background: var(--azul, #43648f);
   color: #fff;
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.09em;
   text-align: center;
   text-transform: uppercase;
 }
@@ -1389,31 +1392,39 @@
 }
 
 .inf-piramide-que {
-  display: grid;
-  align-content: center;
-  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
   background: var(--papel, #f6f5f2);
   color: var(--tinta, #16202b);
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 13.5px;
   line-height: 1.45;
   text-align: left;
 }
 
-.inf-piramide-tilde {
-  display: grid;
-  place-items: center;
-  align-self: center;
-  width: 22px;
-  height: 22px;
-  font-size: 12px;
+/* El elegido se lee sin depender del color: su nombre y su descripción van en
+   negrita, y el recuadro y el tilde acompañan. */
+.inf-escalon.suyo .inf-piramide-que {
+  background: var(--hoja, #fff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--azul, #43648f) 35%, transparent);
+  font-weight: 600;
 }
 
-/* El círculo solo alrededor del que está marcado: vacío en los demás, el
-   dibujo quedaba con cuatro círculos y ninguno decía nada. */
-.inf-escalon.suyo .inf-piramide-tilde {
-  border: 1.5px solid var(--tinta, #16202b);
+
+
+.inf-piramide-tilde {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border: 1.5px solid var(--azul, #43648f);
   border-radius: 50%;
+  color: var(--azul, #43648f);
+  font-size: 11px;
 }
 
 /* En la ficha el escalón es un botón; en el informe es texto. */
@@ -1428,6 +1439,10 @@
 
 .inf-escalon:hover .inf-piramide-que {
   background: var(--linea-suave, #efede8);
+}
+
+.inf-escalon.suyo:hover .inf-piramide-que {
+  background: var(--hoja, #fff);
 }
 
 /* Las tres condiciones, con su número en un círculo como las recomendaciones.

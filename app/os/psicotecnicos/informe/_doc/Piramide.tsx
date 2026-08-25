@@ -39,10 +39,11 @@ const ANCHO = 300;
 /**
  * Ancho del borde de arriba del primer escalón.
  *
- * Lo manda el nombre más largo del escalón más alto: con menos, "Liderazgo 2"
- * sale cortado. Es lo que define cuánto se abre la figura.
+ * Es lo que define cuánto se abre la figura: cuanto más chico, más puntuda. El
+ * piso lo pone el nombre más largo del escalón más alto, que tiene que entrar
+ * en el ancho que el trapecio tiene a media altura, no en el de arriba.
  */
-const CORONA = 130;
+const CORONA = 84;
 
 /** Alto del bloque de escalones. */
 const ESCALONES = NIVELES.length * ALTO + (NIVELES.length - 1) * SEPARACION;
@@ -83,9 +84,15 @@ export default function Piramide({
               <span className="inf-piramide-forma" style={forma}>
                 {n.nombre}
               </span>
-              <span className="inf-piramide-que">{n.que}</span>
-              <span className="inf-piramide-tilde" aria-hidden="true">
-                {suyo ? '✓' : ''}
+              {/* El tilde va adentro del recuadro y no en una columna aparte:
+                  suelto al costado quedaba flotando fuera de la figura. */}
+              <span className="inf-piramide-que">
+                {n.que}
+                {suyo && (
+                  <span className="inf-piramide-tilde" aria-hidden="true">
+                    ✓
+                  </span>
+                )}
               </span>
             </>
           );
@@ -94,7 +101,7 @@ export default function Piramide({
             <li
               key={n.nombre}
               className={suyo ? 'inf-escalon suyo' : 'inf-escalon'}
-              style={{ gridTemplateColumns: `${ANCHO}px minmax(0, 1fr) 24px` }}
+              style={{ gridTemplateColumns: `${ANCHO}px minmax(0, 1fr)` }}
             >
               {elegir ? (
                 <button

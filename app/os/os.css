@@ -5097,6 +5097,13 @@ th.os-tabla-contacto {
   list-style: disc;
 }
 
+/* La pirámide en la ficha, que va sin el recuadro que le pone el informe: le
+   hace falta su propio aire para no quedar pegada al texto de arriba y al
+   rótulo del campo de abajo. */
+.os-discursivo .inf-piramide {
+  margin: 14px 0 18px;
+}
+
 /* Los minutos y cómo se leen, en la misma línea. */
 .os-bateria-duracion {
   display: flex;
