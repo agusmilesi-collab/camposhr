@@ -377,87 +377,133 @@ function GrupoCliente({
   );
 }
 
-/** Lo ya facturado, que ven las dos. */
+/**
+ * Lo ya facturado, que ven las dos, partido por si entró la plata.
+ *
+ * En una sola lista, lo que falta cobrar quedaba mezclado entre comprobantes
+ * viejos ya cobrados y había que recorrer la columna del cobro fila por fila
+ * para saber qué reclamar. Arriba lo que está sin cobrar, con su total, que es
+ * lo único que pide una acción; abajo lo cobrado, que se consulta.
+ */
 export function Emitidas({ facturas }: { facturas: Factura[] }) {
-  return (
-    <>
-      <div className="os-rotulo-bloque">Facturado</div>
-      {facturas.length === 0 ? (
+  const sinCobrar = facturas.filter((f) => !f.cobradaAt);
+  const cobradas = facturas.filter((f) => f.cobradaAt);
+  const pendiente = sinCobrar.reduce((n, f) => n + (f.importe ?? 0), 0);
+
+  if (facturas.length === 0) {
+    return (
+      <>
+        <div className="os-rotulo-bloque">Facturado</div>
         <div className="os-panel">
           <p className="os-vacio">
             Todavía no hay ninguna factura. Las 24 de Airtable entran con la migración.
           </p>
         </div>
-      ) : (
-        <div className="os-panel">
-          <div className="os-tabla-marco">
-            <table className="os-tabla os-tabla-trabajo os-tabla-fija">
-              <colgroup>
-                {COLUMNAS_EMITIDAS.map((c, i) => (
-                  <col key={c} style={{ width: MEDIDAS_EMITIDAS[i] }} />
-                ))}
-              </colgroup>
-              <thead>
-                <tr>
-                  {COLUMNAS_EMITIDAS.map((c) => (
-                    <th
-                      key={c}
-                      className={
-                        c === '' ? 'os-tabla-accion' : c === 'Importe' ? 'os-tabla-num' : undefined
-                      }
-                    >
-                      {c || ' '}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {facturas.map((f) => (
-                  <tr key={f.id}>
-                    <td data-campo="Fecha">{formatoFecha(f.fecha)}</td>
-                    <td className="os-tabla-nombre" data-campo="Número">
-                      <a
-                        className="os-tabla-enlace"
-                        href={`/os/psicotecnicos/facturacion/comprobante/${f.id}`}
-                        target="_blank"
-                      >
-                        {numeroDe(f)}
-                      </a>
-                    </td>
-                    <td className="os-tabla-recorta" data-campo="Emisora">
-                      {f.emisora}
-                    </td>
-                    <td className="os-tabla-recorta" data-campo="Cliente">
-                      {f.cliente}
-                    </td>
-                    <td className="os-tabla-recorta" data-campo="Cubre">
-                      {/* Se cuentan personas y no renglones: el adicional
-                          Benziger es un renglón más de alguien que ya está. */}
-                      {cubre(f) === 0
-                        ? f.concepto ?? 'sin detalle'
-                        : `${cubre(f)} ${cubre(f) === 1 ? 'evaluación' : 'evaluaciones'}`}
-                    </td>
-                    <td className="os-tabla-num" data-campo="Importe">
-                      {f.importe === null ? (
-                        <span className="os-dato-falta">falta</span>
-                      ) : (
-                        formatoImporte(f.importe, f.moneda === 'DOL' ? 'USD' : 'ARS')
-                      )}
-                    </td>
-                    <td data-campo="Cobro">
-                      <Cobro id={f.id} cobradaAt={f.cobradaAt} />
-                    </td>
-                    <td className="os-tabla-accion" data-campo=" ">
-                      <BorrarFactura id={f.id} numero={numeroDe(f)} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {sinCobrar.length > 0 && (
+        <>
+          <div className="os-rotulo-bloque">Facturado y sin cobrar</div>
+          <div className="os-panel">
+            <TablaEmitidas facturas={sinCobrar} />
+            <div className="os-resumen-linea">
+              <span>
+                <span className="os-dato-rotulo">Sin cobrar</span>
+                {sinCobrar.length === 1 ? '1 factura' : `${sinCobrar.length} facturas`}
+              </span>
+              <span>
+                <span className="os-dato-rotulo">Suma</span>
+                {formatoImporte(pendiente)}
+              </span>
+            </div>
           </div>
-        </div>
+        </>
+      )}
+
+      {cobradas.length > 0 && (
+        <>
+          <div className="os-rotulo-bloque">Cobrado</div>
+          <div className="os-panel">
+            <TablaEmitidas facturas={cobradas} />
+          </div>
+        </>
       )}
     </>
+  );
+}
+
+/** La tabla de comprobantes, que es la misma para los dos bloques. */
+function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
+  return (
+    <div className="os-tabla-marco">
+      <table className="os-tabla os-tabla-trabajo os-tabla-fija">
+        <colgroup>
+          {COLUMNAS_EMITIDAS.map((c, i) => (
+            <col key={c} style={{ width: MEDIDAS_EMITIDAS[i] }} />
+          ))}
+        </colgroup>
+        <thead>
+          <tr>
+            {COLUMNAS_EMITIDAS.map((c) => (
+              <th
+                key={c}
+                className={
+                  c === '' ? 'os-tabla-accion' : c === 'Importe' ? 'os-tabla-num' : undefined
+                }
+              >
+                {c || ' '}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {facturas.map((f) => (
+            <tr key={f.id}>
+              <td data-campo="Fecha">{formatoFecha(f.fecha)}</td>
+              <td className="os-tabla-nombre" data-campo="Número">
+                <a
+                  className="os-tabla-enlace"
+                  href={`/os/psicotecnicos/facturacion/comprobante/${f.id}`}
+                  target="_blank"
+                >
+                  {numeroDe(f)}
+                </a>
+              </td>
+              <td className="os-tabla-recorta" data-campo="Emisora">
+                {f.emisora}
+              </td>
+              <td className="os-tabla-recorta" data-campo="Cliente">
+                {f.cliente}
+              </td>
+              <td className="os-tabla-recorta" data-campo="Cubre">
+                {/* Se cuentan personas y no renglones: el adicional Benziger es
+                    un renglón más de alguien que ya está. */}
+                {cubre(f) === 0
+                  ? f.concepto ?? 'sin detalle'
+                  : `${cubre(f)} ${cubre(f) === 1 ? 'evaluación' : 'evaluaciones'}`}
+              </td>
+              <td className="os-tabla-num" data-campo="Importe">
+                {f.importe === null ? (
+                  <span className="os-dato-falta">falta</span>
+                ) : (
+                  formatoImporte(f.importe, f.moneda === 'DOL' ? 'USD' : 'ARS')
+                )}
+              </td>
+              <td data-campo="Cobro">
+                <Cobro id={f.id} cobradaAt={f.cobradaAt} />
+              </td>
+              <td className="os-tabla-accion" data-campo=" ">
+                <BorrarFactura id={f.id} numero={numeroDe(f)} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

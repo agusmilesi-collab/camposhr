@@ -8,6 +8,7 @@ import {
 } from '@/lib/facturas';
 import { totalDe } from '@/lib/facturas-tipos';
 import { esMia, quienSoy } from '@/lib/identidad';
+import { cuentasDeLaBarra } from '../datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,11 +29,12 @@ export const dynamic = 'force-dynamic';
  * factura el trabajo hecho.
  */
 export default async function Facturacion() {
-  const [yo, pendientes, facturas, emisoras] = await Promise.all([
+  const [yo, pendientes, facturas, emisoras, cuentas] = await Promise.all([
     quienSoy(),
     listarAFacturar(),
     listarFacturas(),
     listarEmisoras(),
+    cuentasDeLaBarra(),
   ]);
 
   // Arriba, lo de quien mira. Agustín tiene alcance 'todo' y ve las dos colas.
@@ -51,7 +53,7 @@ export default async function Facturacion() {
       titulo="Facturación"
       identidad={yo.nombre}
       nota={`${mias.length} para facturar`}
-      cuentas={{ '/os/psicotecnicos/facturacion': mias.length }}
+      cuentas={cuentas}
     >
       <div className="os-encabezado">
         <h1>Facturación</h1>

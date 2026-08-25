@@ -10,6 +10,7 @@ import {
   pedidosAbiertos,
 } from '@/lib/altas';
 import { equipo, esMia, quienSoy, type Miembro } from '@/lib/identidad';
+import { listarAFacturar } from '@/lib/facturas';
 import { CLIENTE_POR_DEFECTO, COOKIE_EMPRESA, TODAS } from '@/lib/filtro-empresa';
 
 /**
@@ -39,6 +40,54 @@ export function visiblesEn(filas: Evaluacion[], seccion: Seccion, yo: Miembro): 
   );
 }
 
+/**
+ * Qué cliente está filtrando, según la cookie.
+ *
+ * Uno que ya no aparece en los datos no puede dejar la pantalla vacía para
+ * siempre: se cae a mostrar todo.
+ */
+function empresaElegida(empresas: string[]): string {
+  const guardada = cookies().get(COOKIE_EMPRESA)?.value;
+  const elegida = guardada ? decodeURIComponent(guardada) : CLIENTE_POR_DEFECTO;
+  return elegida === TODAS || !empresas.includes(elegida) ? TODAS : elegida;
+}
+
+/**
+ * Los números de la barra lateral.
+ *
+ * Los calcula cualquier pantalla del OS y no solo las del pipeline: entrar a
+ * una ficha o a Facturación apagaba todos los demás, y la barra pasaba de decir
+ * cuánto hay en cada sección a decirlo solo en la que uno ya está mirando.
+ *
+ * Dicen cuántas se van a ver al entrar, no cuántas existen: por eso respetan el
+ * filtro por cliente y el alcance de quien mira. Un número que no coincide con
+ * la pantalla no sirve para nada.
+ */
+export async function cuentasDeLaBarra(): Promise<Record<string, number>> {
+  const yo = await quienSoy();
+  const [{ filas }, aFacturar] = await Promise.all([
+    listarEvaluaciones(),
+    listarAFacturar().catch(() => []),
+  ]);
+  return cuentasDe(filas, yo, aFacturar.filter((p) => esMia(p.evaluadora, yo)).length);
+}
+
+/** El mismo cálculo, para quien ya tiene las filas leídas. */
+function cuentasDe(filas: Evaluacion[], yo: Miembro, aFacturar: number): Record<string, number> {
+  const empresas = [...new Set(filas.map((f) => f.empresa))];
+  const empresa = empresaElegida(empresas);
+  const suyas = empresa === TODAS ? filas : filas.filter((f) => f.empresa === empresa);
+
+  const cuentas: Record<string, number> = {};
+  for (const s of SECCIONES) {
+    cuentas[`/os/psicotecnicos/${s.ruta}`] = visiblesEn(suyas, s, yo).length;
+  }
+  // La facturación no filtra por cliente: la cola es de quien factura y se
+  // arma con todo lo que entrevistó, sea de la empresa que sea.
+  cuentas['/os/psicotecnicos/facturacion'] = aFacturar;
+  return cuentas;
+}
+
 /** Lo que necesitan todas las pantallas de la sección, con una sola lectura. */
 export async function cargar() {
   const yo = await quienSoy();
@@ -65,11 +114,7 @@ export async function cargar() {
     a.localeCompare(b)
   );
 
-  const guardada = cookies().get(COOKIE_EMPRESA)?.value;
-  const elegida = guardada ? decodeURIComponent(guardada) : CLIENTE_POR_DEFECTO;
-  // Un cliente que ya no aparece en los datos no puede dejar la pantalla vacía
-  // para siempre: se cae a mostrar todo.
-  const empresa = elegida === TODAS || !empresas.includes(elegida) ? TODAS : elegida;
+  const empresa = empresaElegida(empresas);
 
   const todas = empresa === TODAS ? crudas : crudas.filter((f) => f.empresa === empresa);
   const ocultas = crudas.length - todas.length;
@@ -81,13 +126,11 @@ export async function cargar() {
     detalle: { filas: todas.length, alcance: yo.alcance, empresa, fallaron },
   });
 
-  // Las cuentas de la barra dicen cuántas se van a ver al entrar, no cuántas
-  // existen: un número que no coincide con la pantalla no sirve para nada.
-  const cuentas = SECCIONES.map((s) => ({
-    ruta: s.ruta,
-    texto: s.texto,
-    n: visiblesEn(todas, s, yo).length,
-  }));
+  // Las de la barra salen de las filas ya leídas, sin volver a pedirlas.
+  const aFacturar = (await listarAFacturar().catch(() => [])).filter((p) =>
+    esMia(p.evaluadora, yo)
+  ).length;
+  const cuentas = cuentasDe(crudas, yo, aFacturar);
 
   return {
     todas,

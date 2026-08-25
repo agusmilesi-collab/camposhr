@@ -196,9 +196,11 @@ export default async function Portal({ params }: { params: { token: string } }) 
   // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
   const servicios = serviciosDe(empresaId, params.token);
 
-  // La facturación se ve en el cliente de prueba mientras las tildes no se
-  // carguen en Airtable. Ver la nota en lib/cobro.ts.
-  const conCobro = COBRO_PUBLICADO || demo;
+  // La facturación se publica donde el dato es cierto: en las empresas ya
+  // migradas sale de las facturas emitidas en el OS. En las que siguen en
+  // Airtable son dos tildes que nadie carga, y publicarlas le diría "sin
+  // facturar" a informes ya cobrados. Ver la nota en lib/cobro.ts.
+  const conCobro = COBRO_PUBLICADO || demo || Boolean(deSupabase);
 
   // Los informes ya entregados salen de la tarjeta de su búsqueda y se juntan
   // en una sola tabla al final, ordenada por fecha de pedido: el cliente los

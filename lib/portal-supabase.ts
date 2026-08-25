@@ -43,6 +43,42 @@ const CAMPOS =
   'evaluaciones(id,estado,fecha_entrevista,fecha_entrega,modalidad,recomendacion,' +
   'informe_path,facturado,pagado,personas(nombre),evaluadoras(nombre))';
 
+/**
+ * Hasta dónde llegó el cobro de cada evaluación, leído de las facturas.
+ *
+ * `evaluaciones.facturado` y `evaluaciones.pagado` son las dos tildes que
+ * vinieron de Airtable, escritas a mano. Desde que la facturación se emite en
+ * el OS, la verdad está en el comprobante: una evaluación está facturada si
+ * aparece en el renglón de alguna factura viva, y cobrada si esa factura tiene
+ * fecha de cobro. Las tildes viejas siguen valiendo para lo que se facturó
+ * antes del OS y todavía no tiene comprobante cargado.
+ *
+ * Las anuladas no cuentan: una factura anulada es una que no existió, y dejarla
+ * contando le diría al cliente que ya se le facturó algo que hay que volver a
+ * facturarle.
+ */
+type Renglon = {
+  evaluacion_id: string;
+  facturas: { cobrada_at: string | null; estado: string } | null;
+};
+
+async function cobrosDe(ids: string[]): Promise<Map<string, boolean>> {
+  const cobro = new Map<string, boolean>();
+  if (ids.length === 0) return cobro;
+
+  const renglones = await select<Renglon>(
+    'factura_items',
+    `select=evaluacion_id,facturas(cobrada_at,estado)&evaluacion_id=in.(${ids.join(',')})`
+  );
+  for (const r of renglones) {
+    if (!r.evaluacion_id || !r.facturas || r.facturas.estado === 'anulada') continue;
+    // Una evaluación entra en una sola factura, pero si alguna vez entrara en
+    // dos alcanza con que una esté cobrada.
+    cobro.set(r.evaluacion_id, cobro.get(r.evaluacion_id) || r.facturas.cobrada_at !== null);
+  }
+  return cobro;
+}
+
 /** La empresa a la que corresponde ese enlace, si es de una migrada. */
 async function empresaDelToken(token: string): Promise<{ id: string; nombre: string } | null> {
   if (!TOKEN_VALIDO.test(token)) return null;
@@ -60,6 +96,10 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
   const pedidos = await select<FilaPedido>(
     'pedidos',
     `select=${CAMPOS}&empresa_id=eq.${empresa.id}&order=fecha_pedido.desc`
+  );
+
+  const cobros = await cobrosDe(
+    pedidos.flatMap((p) => (p.evaluaciones ?? []).map((e) => e.id))
   );
 
   const busquedas: Busqueda[] = pedidos.map((p) => ({
@@ -84,8 +124,13 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
         // El informe se genera desde los datos, así que existe cuando la
         // evaluación está entregada, sin depender de un archivo subido.
         tieneInforme: yaEntregada(e.estado),
-        facturado: e.facturado,
-        pagado: e.pagado,
+        // La factura manda sobre la tilde vieja: si hay comprobante, el estado
+        // sale de ahí; si no, del campo que vino de Airtable. Sin ninguno de
+        // los dos es que no se facturó: en una empresa ya migrada la
+        // facturación se emite acá, así que la ausencia de comprobante es un
+        // dato y no una laguna.
+        facturado: cobros.has(e.id) ? true : e.facturado ?? false,
+        pagado: cobros.has(e.id) ? cobros.get(e.id)! : e.pagado ?? false,
       })
     ),
   }));

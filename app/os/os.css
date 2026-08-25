@@ -1432,6 +1432,13 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   margin-top: 10px;
 }
 
+/* Un rótulo que viene después de un panel abre un bloque nuevo, y con cuatro
+   píxeles quedaba pegado al panel de arriba: se leía como su pie y no como el
+   título de lo que sigue. */
+.os-panel + .os-rotulo-bloque {
+  margin-top: 30px;
+}
+
 /* El bloque suelto de arriba no tiene encabezado que lo separe de la marca. */
 .os-nav > div:first-child {
   padding-top: 8px;

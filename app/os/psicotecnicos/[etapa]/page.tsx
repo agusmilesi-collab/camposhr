@@ -47,9 +47,7 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
       identidad={yo.nombre}
       ancho
       avisos={['/os/psicotecnicos/sin-asignar']}
-      cuentas={Object.fromEntries(
-        cuentas.map((c) => [`/os/psicotecnicos/${c.ruta}`, c.n])
-      )}
+      cuentas={cuentas}
     >
       <div className="os-encabezado">
         <h1>{seccion.texto}</h1>
