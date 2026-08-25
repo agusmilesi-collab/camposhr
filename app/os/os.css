@@ -5097,6 +5097,14 @@ th.os-tabla-contacto {
   list-style: disc;
 }
 
+/* Los minutos y cómo se leen, en la misma línea. */
+.os-bateria-duracion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
 /* Un renglón que entra o no entra en la batería. Todo el renglón es el botón:
    con solo el punto había que apuntarle a siete píxeles. Apagado se atenúa el
    texto además del color, porque verde y rojo no se distinguen en todos los

@@ -1,10 +1,11 @@
 'use client';
 
 /**
- * Qué se toma y qué se entrega en una batería, con tildes.
+ * Todo lo que se puede cambiar de una batería, menos el precio.
  *
- * Estaba escrito en la base y se cambiaba a mano contra Supabase. El nombre no
- * es decorativo: la entrevista se cierra sola cuando están administrados los
+ * Estaba escrito en la base y se cambiaba a mano contra Supabase. Qué se toma y
+ * qué se entrega se tilda de una lista y no se escribe, porque el nombre no es
+ * decorativo: la entrevista se cierra sola cuando están administrados los
  * tests de la batería, y ahí se los busca por su nombre exacto. Por eso se
  * tilda de una lista y no se escribe.
  *
@@ -23,6 +24,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ENTREGABLES, TESTS } from '@/lib/baterias-contenido';
+import { estirar } from '../psicotecnicos/piezas';
 
 /**
  * Entra o no entra, con el punto de color del resto del OS.
@@ -58,28 +60,46 @@ function Punto({
   );
 }
 
-export default function Contenido({
+export type Editable = {
+  nombre: string;
+  descripcion: string;
+  paraQuien: string;
+  /** En minutos, que es como se carga y como se compara. */
+  duracion: number | null;
+  tests: string[];
+  outputs: string[];
+};
+
+/** Cuánto dura, escrito como se dice. */
+function duracion(min: number | null): string {
+  if (!min) return 'sin cargar';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h} h` : `${h} h ${m} min`;
+}
+
+export default function Bateria({
   bateriaId,
-  tests,
-  outputs,
+  puesta,
   benziger,
 }: {
   bateriaId: string;
-  tests: string[];
-  outputs: string[];
+  /** Lo que está guardado hoy. */
+  puesta: Editable;
   /** El renglón del Benziger, que no es de la batería sino del pedido. */
   benziger: string;
 }) {
   const router = useRouter();
-  const [puestos, setPuestos] = useState({ tests, outputs });
+  const [puestos, setPuestos] = useState(puesta);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const firma = JSON.stringify({ tests, outputs });
+  const firma = JSON.stringify(puesta);
   const [ultima, setUltima] = useState(firma);
   if (ultima !== firma) {
     setUltima(firma);
-    setPuestos({ tests, outputs });
+    setPuestos(puesta);
   }
 
   const cambiado = JSON.stringify(puestos) !== firma;
@@ -101,7 +121,7 @@ export default function Contenido({
       const res = await fetch('/api/os/baterias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bateriaId, tests: puestos.tests, outputs: puestos.outputs }),
+        body: JSON.stringify({ bateriaId, ...puestos }),
       });
       const r = await res.json();
       if (!r.ok) throw new Error(r.motivo ?? 'No se pudo guardar.');
@@ -113,8 +133,75 @@ export default function Contenido({
     }
   }
 
+  function escribir(campo: 'nombre' | 'descripcion' | 'paraQuien', valor: string) {
+    setPuestos((p) => ({ ...p, [campo]: valor }));
+  }
+
   return (
     <>
+      <div className="os-bateria-dato os-redaccion">
+        <label className="os-etiqueta-campo" htmlFor={`nombre-${bateriaId}`}>
+          Nombre
+        </label>
+        <input
+          id={`nombre-${bateriaId}`}
+          className="os-campo"
+          value={puestos.nombre}
+          onChange={(e) => escribir('nombre', e.target.value)}
+        />
+
+        <label className="os-etiqueta-campo" htmlFor={`incluye-${bateriaId}`}>
+          Qué incluye
+        </label>
+        <textarea
+          id={`incluye-${bateriaId}`}
+          className="os-campo"
+          rows={1}
+          ref={estirar}
+          value={puestos.descripcion}
+          onChange={(e) => {
+            estirar(e.target);
+            escribir('descripcion', e.target.value);
+          }}
+        />
+
+        <label className="os-etiqueta-campo" htmlFor={`quien-${bateriaId}`}>
+          Para quién se recomienda
+        </label>
+        <textarea
+          id={`quien-${bateriaId}`}
+          className="os-campo"
+          rows={1}
+          ref={estirar}
+          value={puestos.paraQuien}
+          onChange={(e) => {
+            estirar(e.target);
+            escribir('paraQuien', e.target.value);
+          }}
+        />
+
+        <label className="os-etiqueta-campo" htmlFor={`dura-${bateriaId}`}>
+          Duración
+        </label>
+        <span className="os-bateria-duracion">
+          <input
+            id={`dura-${bateriaId}`}
+            className="os-campo os-campo-corte"
+            type="number"
+            min={0}
+            max={600}
+            value={puestos.duracion ?? ''}
+            onChange={(e) =>
+              setPuestos((p) => ({
+                ...p,
+                duracion: e.target.value === '' ? null : Number(e.target.value),
+              }))
+            }
+          />
+          <span className="os-dato-flojo">minutos · {duracion(puestos.duracion)}</span>
+        </span>
+      </div>
+
       <div className="os-bateria-dato">
         <span className="os-dato-rotulo">Se le toma</span>
         <ul className="os-tildes">
@@ -163,11 +250,7 @@ export default function Contenido({
           <button className="os-boton os-boton-firme" disabled={guardando} onClick={guardar}>
             {guardando ? 'Guardando…' : 'Guardar'}
           </button>
-          <button
-            className="os-boton"
-            disabled={guardando}
-            onClick={() => setPuestos({ tests, outputs })}
-          >
+          <button className="os-boton" disabled={guardando} onClick={() => setPuestos(puesta)}>
             Deshacer
           </button>
         </div>

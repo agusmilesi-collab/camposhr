@@ -29,6 +29,9 @@ export type TestDeBateria = {
 /** El test de manchas: va uno de los dos, nunca los dos. */
 export const PROYECTIVOS = ['Rorschach', 'Zulliger'];
 
+/** El que sostiene el informe de potencial. */
+export const ANALISIS_DISCURSIVO = 'Análisis discursivo (Elliot Jaques)';
+
 export const TESTS: TestDeBateria[] = [
   { nombre: 'Rorschach', marca: true, que: 'Manchas, diez láminas. Sostiene el sumario Exner completo.' },
   { nombre: 'Zulliger', marca: true, que: 'Manchas, tres láminas. Más corto, para baterías básicas.' },
@@ -41,18 +44,41 @@ export const TESTS: TestDeBateria[] = [
     que: 'La entrevista misma. No deja marca: no hay dónde tildarla.',
   },
   {
-    nombre: 'Análisis discursivo (Elliot Jaques)',
+    nombre: ANALISIS_DISCURSIVO,
     marca: false,
-    que: 'Nivel de complejidad del discurso. No deja marca.',
+    que: 'Nivel de complejidad del discurso, sobre cinco minutos de habla. No deja marca.',
   },
 ];
 
-/** Lo que recibe el cliente. */
+/**
+ * Lo que recibe el cliente.
+ *
+ * Son las secciones del informe, con el nombre que llevan ahí. El documento
+ * entero no está en la lista porque es el continente: lo que se elige es qué
+ * trae adentro.
+ *
+ * El sumario estructural no se entrega y por eso no está: son los índices
+ * crudos del protocolo, que se leen en la ficha y no se publican. El perfil
+ * Benziger tampoco, porque no lo decide la batería sino el pedido
+ * (`pedidos.con_benziger`), igual que su administración.
+ */
 export const ENTREGABLES: { nombre: string; que: string }[] = [
-  { nombre: 'Informe psicotécnico ejecutivo', que: 'El documento que se entrega.' },
-  { nombre: 'Sumario estructural Exner', que: 'Los índices del protocolo. Pide Rorschach o Zulliger.' },
-  { nombre: 'Mapa de competencias', que: 'Las nueve competencias con su puntaje.' },
-  { nombre: 'Recomendaciones de incorporación', que: 'Qué hacer con la persona si entra.' },
+  {
+    nombre: 'Recomendación de incorporación',
+    que: 'Si conviene incorporarlo: ajuste alto, con aspectos a desarrollar, con alertas o bajo.',
+  },
+  {
+    nombre: 'Mapa de competencias',
+    que: 'Las nueve competencias con su puntaje, y el análisis cualitativo de cada una.',
+  },
+  {
+    nombre: 'Recomendaciones para su líder',
+    que: 'Qué hacer con la persona si entra, punto por punto.',
+  },
+  {
+    nombre: 'Informe de potencial',
+    que: 'Hasta dónde puede crecer. Sale del análisis discursivo, así que pide tomarlo.',
+  },
 ];
 
 /**
@@ -85,10 +111,10 @@ export function contenidoValido(
       motivo: 'Va un solo test de manchas: con los dos, la ficha muestra el que no se eligió.',
     };
   }
-  if (entregables.includes('Sumario estructural Exner') && proyectivos.length === 0) {
+  if (entregables.includes('Informe de potencial') && !tests.includes(ANALISIS_DISCURSIVO)) {
     return {
       ok: false,
-      motivo: 'El sumario estructural sale del test de manchas, así que hay que tomar uno.',
+      motivo: `El informe de potencial sale del ${ANALISIS_DISCURSIVO}, así que hay que tomarlo.`,
     };
   }
   // Se guarda en el orden del catálogo y no en el que se tildó: dos baterías
