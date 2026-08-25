@@ -38,12 +38,15 @@ export type Cliente = {
   /** El enlace secreto del portal. Todo cliente tiene el suyo desde el alta. */
   token: string | null;
   /**
-   * Si se está trabajando con él.
+   * Si se está trabajando con él **ahora**.
    *
    * Son dos cosas a la vez y las dos tienen que darse: la marca de la base, que
-   * es la decisión de alguien, y que haya trabajo cargado. Un cliente sin un
-   * solo pedido ni una cotización enviada no es un cliente activo por más que
-   * nadie lo haya desactivado: la marca nace en verdadero y nadie la toca.
+   * es la decisión de alguien, y que haya trabajo en curso. Trabajo en curso es
+   * un pedido abierto o una cotización que salió y todavía no se perdió: lo que
+   * ya se entregó y lo que se perdió son historia, y un cliente cuyo único
+   * pedido se cerró hace tres meses no es un cliente activo.
+   *
+   * La marca sola no alcanza porque nace en verdadero y nadie la toca.
    */
   activa: boolean;
   /** Qué hay cargado de este cliente en Supabase. */
@@ -112,8 +115,8 @@ export async function listarClientes(): Promise<Cliente[]> {
     token: tokensPorClave.get(claveEmpresa(e.nombre)) ?? e.token_portal ?? null,
     activa:
       e.activa !== false &&
-      ((e.pedidos?.length ?? 0) > 0 ||
-        (e.cotizaciones ?? []).some((c) => c.estado && c.estado !== 'Lead')),
+      ((e.pedidos ?? []).some((p) => p.estado === 'En curso') ||
+        (e.cotizaciones ?? []).some((c) => c.estado === 'Enviada' || c.estado === 'Aprobada')),
     pedidos: e.pedidos?.length ?? 0,
     susPedidos: (e.pedidos ?? [])
       .map((p) => ({
@@ -126,7 +129,7 @@ export async function listarClientes(): Promise<Cliente[]> {
       .sort((a, b) => (b.fecha ?? '').localeCompare(a.fecha ?? '')),
     evaluaciones: (e.pedidos ?? []).reduce((n, p) => n + (p.evaluaciones?.length ?? 0), 0),
     // Las que salieron: un lead sin mandar es una idea, no trabajo con este
-    // cliente, y es lo que decide si está activo.
+    // cliente.
     cotizaciones: (e.cotizaciones ?? []).filter((c) => c.estado && c.estado !== 'Lead').length,
   }));
 
@@ -148,9 +151,10 @@ export async function listarClientes(): Promise<Cliente[]> {
       tamano: null,
       notas: null,
       token: c.token,
-      // Los de Airtable no tienen dónde marcarlo: se listan como activos hasta
-      // que se migren.
-      activa: true,
+      // De los de Airtable el OS no ve un solo pedido, así que por la misma
+      // regla que los demás no tienen trabajo en curso. Aparecen entre los
+      // inactivos hasta que se migren, que es lo que son para este sistema.
+      activa: false,
       pedidos: 0,
       susPedidos: [],
       evaluaciones: 0,

@@ -5,13 +5,13 @@
  *
  * Antes era una tabla de datos de facturación: razón social, CUIT, IVA. Eso es
  * lo que se necesita el día que se factura, y no lo que se busca al entrar, que
- * es el cliente: cuántas búsquedas tiene abiertas y cómo vienen. La ficha
+ * es el cliente: cuántos pedidos tiene abiertos y cómo vienen. La ficha
  * muestra eso y el resto está adentro.
  *
  * **Entrar a un cliente es entrar a sus pedidos.** Los pedidos dejaron de ser
- * una sección aparte el 25/8/2026: una búsqueda no existe sin el cliente que la
- * pidió, y tenerlas en dos pantallas obligaba a cruzar de memoria qué pedido era
- * de quién.
+ * una sección aparte el 25/8/2026: un pedido no existe sin el cliente que lo
+ * pidió, y tenerlos en dos pantallas obligaba a cruzar de memoria qué pedido
+ * era de quién.
  */
 
 import Link from 'next/link';
@@ -19,7 +19,7 @@ import { useState } from 'react';
 import Cajon from './Cajon';
 import type { Cliente } from '@/lib/clientes';
 
-/** Cuántas búsquedas tiene abiertas y cuánta gente hay adentro. */
+/** Cuántos pedidos tiene abiertos y cuánta gente hay adentro. */
 function enCurso(c: Cliente) {
   const abiertos = c.susPedidos.filter((p) => p.estado === 'En curso');
   return {
@@ -98,14 +98,14 @@ function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
                 {c.nombre}
               </h2>
             </div>
-            {/* Cuántas búsquedas y cuánta gente, en una línea. El sello con el
+            {/* Cuántos pedidos y cuánta gente, en una línea. El sello con el
                 número que había arriba decía lo mismo dos veces. */}
             <p className="os-cliente-linea">
               {abiertos === 0 ? (
-                <span className="os-tabla-flojo">Sin búsquedas abiertas</span>
+                <span className="os-tabla-flojo">Sin pedidos abiertos</span>
               ) : (
                 <>
-                  {abiertos === 1 ? '1 búsqueda' : `${abiertos} búsquedas`}
+                  {abiertos === 1 ? '1 pedido abierto' : `${abiertos} pedidos abiertos`}
                   {' · '}
                   {gente === 0
                     ? 'todavía sin candidatos'
