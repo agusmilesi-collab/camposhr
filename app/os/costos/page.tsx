@@ -7,7 +7,9 @@ import {
   listarCotizaciones,
   resultadoDe,
 } from '@/lib/cotizaciones';
-import { quienSoy } from '@/lib/identidad';
+import { esMia, quienSoy } from '@/lib/identidad';
+import { marchaMonotributo } from '@/lib/facturas';
+import Monotributo from './Monotributo';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,11 +20,16 @@ export const dynamic = 'force-dynamic';
  * ingreso, y mezclarlo daría un resultado que no existe.
  */
 export default async function Costos() {
-  const [yo, cotizaciones, costos] = await Promise.all([
+  const [yo, cotizaciones, costos, marcha] = await Promise.all([
     quienSoy(),
     listarCotizaciones(),
     listarCostos(),
+    marchaMonotributo(),
   ]);
+
+  // Cada una ve lo suyo. Quien tiene alcance de todo ve las dos, porque las dos
+  // categorías son una sola decisión: qué le conviene facturar a cada una.
+  const mias = marcha.filter((m) => esMia(m.nombre, yo));
 
   const ganadas = cotizaciones.filter((c) => c.estado === 'Aprobada');
   const deLa = (id: string) => costos.filter((x) => x.cotizacionId === id);
@@ -62,6 +69,8 @@ export default async function Costos() {
           <div className="os-cifra-pie">Del ingreso.</div>
         </div>
       </div>
+
+      <Monotributo emisoras={mias} />
 
       {ganadas.length === 0 && (
         <div className="os-panel">

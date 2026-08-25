@@ -391,12 +391,15 @@ dejaron en vez de volar de vuelta al lugar del que salió.
 
 ## El monotributo se mira contra los últimos doce meses
 
-`lib/monotributo.ts`. Las dos facturan como monotributistas y pasarse del tope
-no es una multa: es quedar fuera del régimen y tener que inscribirse en el
-general. Por eso la pantalla de Facturación muestra, para cada una, lo del mes,
-lo del año y **lo de los últimos doce meses corridos**, que es lo que mira ARCA
-para recategorizar (enero y julio), y cuánto le queda hasta el tope de su
-categoría.
+`lib/monotributo.ts`, y se ve en **Costos**: no es una tarea del día sino la
+salud del año. Facturación resuelve qué se emite y qué se cobra; en Costos se
+mira qué deja el trabajo y hasta dónde se puede facturar sin cambiar de régimen.
+
+Las dos facturan como monotributistas y pasarse del tope no es una multa: es
+quedar fuera del régimen y tener que inscribirse en el general. Por eso la
+pantalla muestra, para cada una, lo del mes, lo del año y **lo de los últimos
+doce meses corridos**, que es lo que mira ARCA para recategorizar (enero y
+julio), y cuánto le queda hasta el tope de su categoría.
 
 **Los topes son números escritos y hay que actualizarlos.** ARCA los mueve dos
 veces al año con la inflación del semestre anterior. Los cargados rigen desde el
