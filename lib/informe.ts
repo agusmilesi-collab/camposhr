@@ -1,7 +1,12 @@
 import 'server-only';
 import { fichaDe, proyectivoDe, type Ficha } from '@/lib/ficha';
 import { leer, porArea, senalDe, type Lectura, type SumarioCrudo } from '@/lib/redacciones';
-import { bandaDe, calcularCompetencias, type Competencia } from '@/lib/competencias';
+import {
+  bandaDe,
+  calcularCompetencias,
+  protocoloAlcanza,
+  type Competencia,
+} from '@/lib/competencias';
 import {
   CUADRANTES,
   nivelDeConclusion,
@@ -91,6 +96,14 @@ export type Informe = {
     esperadas: string[];
     desarrollar: string[];
   };
+  /**
+   * Por qué las competencias del proyectivo van sin puntaje, si es el caso.
+   *
+   * Vacío cuando el protocolo alcanza. Lo dice el informe una vez, arriba de
+   * las competencias, en vez de repetirlo en cada una.
+   */
+  protocoloCorto: string | null;
+
   /**
    * Cuáles de esas cuatro listas dejó escritas la evaluadora.
    *
@@ -233,6 +246,16 @@ export function desdeFicha(f: Ficha): Informe {
   const esperadas = lecturas.filter((l) => senalDe(l) === 'esperada');
   const desarrollar = lecturas.filter((l) => senalDe(l) === 'desarrollar');
 
+  // Si el protocolo no alcanza para puntuar, el informe lo dice una vez.
+  const revision = sumario ? protocoloAlcanza(sumario, proyectivoDe(f)) : null;
+  const corto = revision && !revision.alcanza ? revision.motivo : null;
+  if (corto) {
+    faltantes.push({
+      que: 'Las competencias van sin puntaje',
+      donde: corto,
+    });
+  }
+
   const adulto = fila('Total adulto');
   const competencias = sumario
     ? calcularCompetencias(
@@ -256,6 +279,7 @@ export function desdeFicha(f: Ficha): Informe {
     proyectivo: proyectivoDe(f),
     nivel: nivelDeConclusion(c.recomendacion),
     competencias,
+    protocoloCorto: corto,
     resumen: armarResumen(lecturas, destacadas, esperadas, c.recomendacion_notas),
     // El líder recibe cada recomendación una sola vez, aunque dos índices
     // distintos lleven a lo mismo.

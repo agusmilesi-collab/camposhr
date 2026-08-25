@@ -336,6 +336,17 @@ export default function Documento({
                 texto después. El número es lo que el cliente busca, así que va
                 donde cae el ojo y no al final de un renglón. Las nueve miden lo
                 mismo: lo que solo vale para una va al pie. */}
+            {/* Cuando el protocolo no alcanza no se puntúa ninguna de las que
+                salen de él, y hay que decir por qué: "sin datos" a secas
+                invita a pensar que falta cargar algo, y lo que pasa es que lo
+                cargado no permite afirmar nada. */}
+            {inf.protocoloCorto && (
+              <p className="inf-nota-protocolo">
+                Las competencias que salen del test de manchas van sin puntaje:{' '}
+                {inf.protocoloCorto}.
+              </p>
+            )}
+
             <div className="inf-competencias">
               {inf.competencias.map((c) => {
                 const banda = bandaDe(c.puntaje);

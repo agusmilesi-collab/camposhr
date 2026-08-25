@@ -251,6 +251,31 @@ tamaño en que se muestran se ven bien; ampliados, no hay técnica que recupere
 detalle que no está en el archivo. Para verlas más nítidas hay que volver a
 escanear a 300 DPI y correr el mismo recorte, que da piezas de 440 px.
 
+## Un protocolo que no alcanza no da puntaje
+
+`protocoloAlcanza()` en `lib/competencias.ts`. Las competencias que salen del
+test de manchas se calculan solo si el protocolo puede sostenerlas: menos de
+catorce respuestas en Rorschach (la regla de Exner, por debajo no se interpreta
+y se vuelve a tomar), menos de seis en Zulliger, o Lambda por encima de uno.
+
+**Lambda alto es el corte que importa y el que faltaba.** Pasado uno el estilo
+es evitativo: la persona simplifica lo que ve, y los indicadores de emoción y de
+vínculo quedan vacíos porque el protocolo no los muestra, no porque el rasgo no
+esté. Sin ese corte, la ausencia de indicadores negativos se leía como un buen
+resultado.
+
+Se vio comparando contra los informes escritos a mano: en un protocolo con
+Lambda 1,4 el motor daba 67 en habilidad interpersonal y 100 en proactividad,
+mientras la psicóloga escribía que las habilidades interpersonales estaban por
+debajo de lo esperado. El mismo motor, contra un protocolo de veintiuna
+respuestas y Lambda normal, coincidió con ella en las cinco competencias, todas
+en la misma banda. De cuarenta y dos protocolos migrados, cinco caen bajo el
+corte.
+
+**Y el informe dice por qué.** "Sin datos" a secas invita a pensar que se
+olvidaron de cargar algo; lo que pasa es que lo cargado no permite afirmar nada,
+y eso es una información distinta.
+
 ## El informe del Benziger se lee y no se guarda
 
 El PDF que devuelve la licencia entra, se le sacan sus 69 datos y el archivo no
