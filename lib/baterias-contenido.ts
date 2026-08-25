@@ -13,13 +13,14 @@
 export type TestDeBateria = {
   nombre: string;
   /**
-   * Si deja marca de administrado.
+   * Si cierra la entrevista al quedar administrado.
    *
-   * Los que la dejan son los que cierran la entrevista sola. La entrevista por
-   * competencias y el análisis discursivo no tienen dónde tildarse, así que una
-   * batería hecha solo con ellos nunca se cierra sola. **Tiene que coincidir
-   * con `MARCA` de `lib/entrevista-completa.ts`**, que es donde está la marca
-   * que mira cada uno.
+   * La entrevista por competencias no tiene dónde tildarse, y el nivel del
+   * análisis discursivo se ubica después, al analizar, así que esperarlo dejaría
+   * la entrevista abierta con la persona ya saludando. Una batería hecha solo
+   * con esos dos nunca se cierra sola. **Tiene que coincidir con `MARCA` de
+   * `lib/entrevista-completa.ts`**, que es donde está la marca que mira cada
+   * uno.
    */
   marca: boolean;
   /** Qué es, para quien arma la batería y no toma los tests. */
@@ -41,12 +42,12 @@ export const TESTS: TestDeBateria[] = [
   {
     nombre: 'Entrevista por competencias',
     marca: false,
-    que: 'La entrevista misma. No deja marca: no hay dónde tildarla.',
+    que: 'La entrevista misma. No hay dónde tildarla, así que no cierra la entrevista.',
   },
   {
     nombre: ANALISIS_DISCURSIVO,
     marca: false,
-    que: 'Nivel de complejidad del discurso, sobre cinco minutos de habla. No deja marca.',
+    que: 'Nivel de complejidad del discurso, sobre cinco minutos de habla. El escalón se ubica al analizar, así que no cierra la entrevista.',
   },
 ];
 

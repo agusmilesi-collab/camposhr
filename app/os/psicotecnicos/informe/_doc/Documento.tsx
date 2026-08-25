@@ -498,17 +498,21 @@ export default function Documento({
 
             <Piramide nivel={inf.discursivo.nivel} />
 
-            {inf.discursivo.actual && (
-              <>
-                <h3>Capacidad potencial actual</h3>
-                <p>{inf.discursivo.actual}</p>
-              </>
+            {/* Los dos van siempre, con o sin texto: el capítulo tiene tres
+                partes y una que falta se ve como una parte que falta, no como
+                una que no existe. */}
+            <h3>Capacidad potencial actual</h3>
+            {inf.discursivo.actual ? (
+              <p>{inf.discursivo.actual}</p>
+            ) : (
+              <p className="inf-vacio">Sin contenido.</p>
             )}
-            {inf.discursivo.futura && (
-              <>
-                <h3>Capacidad potencial futura</h3>
-                <p>{inf.discursivo.futura}</p>
-              </>
+
+            <h3>Capacidad potencial futura</h3>
+            {inf.discursivo.futura ? (
+              <p>{inf.discursivo.futura}</p>
+            ) : (
+              <p className="inf-vacio">Sin contenido.</p>
             )}
           </div>
         </Capitulo>

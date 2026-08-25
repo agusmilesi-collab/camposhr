@@ -22,7 +22,7 @@ import Documento from '../../informe/_doc/Documento';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
-import { llevaDiscursivo } from '@/lib/discursivo';
+import { llevaDiscursivo, TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
 import Bateria from '../../Bateria';
@@ -483,9 +483,13 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
       estados.push({ test: t, puesto: c.grafico_2_personas_administrado });
     } else if (t === 'Raven') {
       estados.push({ test: t, puesto: f.raven?.raw !== null && f.raven?.raw !== undefined });
+    } else if (t === TEST_DISCURSIVO) {
+      // Su marca es el escalón: mientras no esté ubicado, el capítulo de
+      // potencial no sale y el informe está incompleto sin decirlo acá.
+      estados.push({ test: 'Análisis discursivo', puesto: Boolean(f.discursivo?.nivel) });
     }
-    // La entrevista por competencias y el análisis discursivo no dejan marca:
-    // no se listan para no mostrar un estado que nadie carga.
+    // La entrevista por competencias no deja marca: no se lista para no mostrar
+    // un estado que nadie carga.
   }
   if (f.benziger) estados.push({ test: 'Benziger', puesto: Boolean(f.benziger.cuadrantes) });
 

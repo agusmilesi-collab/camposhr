@@ -275,11 +275,18 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     faltantes.push({ que: 'El puntaje del Raven', donde: 'la pestaña Tests' });
   }
 
-  if (llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests) && !f.discursivo?.nivel) {
-    faltantes.push({
-      que: 'El nivel del análisis discursivo',
-      donde: 'la pestaña Tests',
-    });
+  if (llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests)) {
+    if (!f.discursivo?.nivel) {
+      faltantes.push({ que: 'El nivel del análisis discursivo', donde: 'la pestaña Tests' });
+    }
+    // Los dos párrafos salen igual con su título, así que un capítulo sin ellos
+    // se entrega diciendo "sin contenido" dos veces.
+    if (!f.discursivo?.actual) {
+      faltantes.push({ que: 'La capacidad potencial actual', donde: 'la pestaña Tests' });
+    }
+    if (!f.discursivo?.futura) {
+      faltantes.push({ que: 'La capacidad potencial futura', donde: 'la pestaña Tests' });
+    }
   }
 
   const bz =
