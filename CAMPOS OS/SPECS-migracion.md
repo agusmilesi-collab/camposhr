@@ -67,24 +67,37 @@ Cada paso necesita el anterior, así que no se puede paralelizar:
 
 ## Cómo se corre
 
-En ensayo primero: lee Airtable, arma todo, informa qué haría y no escribe nada.
-Recién después, de verdad. Cada fila lleva su `airtable_id`, así que correrlo dos
-veces no duplica: completa lo que falta.
+    node scripts/migrar-airtable.mjs              # ensayo: no escribe nada
+    node scripts/migrar-airtable.mjs --de-verdad  # escribe
+
+En ensayo lee Airtable, arma todo, informa qué haría y no escribe nada. Cada fila
+lleva su `airtable_id` y el script busca por ese id antes de insertar, así que
+correrlo dos veces no duplica: completa lo que falta. Eso lo vuelve retomable, que
+es lo que hace falta cuando algo se corta en el medio de setenta expedientes.
+
+El ensayo del 25/8/2026 da: 7 empresas, 39 pedidos más el de "Mapeo
+organizacional", 67 expedientes, 677 respuestas de manchas, 36 Benziger y 24
+facturas. Lo que no entra son las tres cosas de Distribuidora Andina y lo que ya
+está migrado, y las cuentas cierran contra el total de cada tabla.
+
+**El servidor tiene que estar levantado** cuando se corre de verdad: los sumarios
+los calcula el OS por su propia ruta, y el script se autentica solo con la clave
+del entorno.
 
 ## Lo que hay que decidir
 
-1. **Los 17 candidatos de Laruso sin pedido.** Son todos de Laruso, todos en
-   "Sin asignar" (Andrés Farías, Rubén Cantarutti, Javier Unrein, Matías Ojeda,
-   Alexis Mauna, Maricel Gaitán, Sergio Schar, Ignacio Keller, Cristian Bogado,
-   Gabriel Hernández, Sergio Márquez, "Directorio", Emiliano García, Francisco
-   Cortazzo, Alejandro Gerster, Laura Sclosa, Sebastián Puntonet). Laruso tiene
-   8 pedidos. Sin pedido, una persona queda sin saber a qué búsqueda entró, que
-   es lo único que explica qué se le tomó y por qué.
-2. **Distribuidora Andina.** Es la empresa de prueba: tiene 3 pedidos en Airtable
-   y 14 candidatos inventados en Supabase. Lo de Airtable no se migra; lo de
-   Supabase sirve para probar y conviene que quede.
-3. **Los 12 informes PDF viejos.** El OS arma el informe desde los datos, así que
-   el PDF viejo no hace falta. Si alguno tiene algo que no está en los datos, hay
-   que sacarlo antes.
-4. **Qué pasa después.** Con esto adentro, el OS deja de leer Airtable y las
-   pantallas dejan de tener la mitad de sus filas marcadas "sin migrar".
+1. **Los 17 candidatos de Laruso sin pedido** entran en un pedido nuevo,
+   "Mapeo organizacional". Ahí el trabajo no fue una selección sino un mapeo de
+   la gente que ya está adentro, y por eso nadie abrió un pedido por persona.
+   Los otros 8 pedidos de Laruso tienen su puesto propio y quedan como están.
+2. **De Distribuidora Andina no se trae nada**: es la empresa de prueba. Sus 3
+   pedidos y sus expedientes se saltean, y los 14 candidatos inventados que hay
+   en Supabase quedan, que son con los que se prueba.
+3. **Los informes PDF viejos no se traen.** El informe se arma desde los datos y
+   después se contrastan los dos, para ver cuánto varía respecto de lo que
+   escribieron las psicólogas.
+
+## Qué pasa después
+
+Con esto adentro, el OS deja de leer Airtable y las pantallas dejan de tener
+filas marcadas "sin migrar". Recién ahí se apaga la base.

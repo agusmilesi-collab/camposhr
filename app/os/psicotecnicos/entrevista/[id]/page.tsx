@@ -191,6 +191,20 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                   {h.boton}
                 </a>
                 <LinkLaminas href={h.href} />
+                {/* Codificar va al lado de las láminas porque se usa con ellas
+                    abiertas: una pantalla muestra la mancha y la otra dice
+                    dónde vio la persona lo que vio. Solo Rorschach por ahora;
+                    el Zulliger usa la misma pantalla cuando tenga su tabla. */}
+                {t === 'Rorschach' && (
+                  <a
+                    className="os-boton"
+                    href={`/os/psicotecnicos/entrevista/${e.id}/rorschach`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Codificar lámina I
+                  </a>
+                )}
               </Papel>
             </Tarjeta>
           );
