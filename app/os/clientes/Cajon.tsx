@@ -11,7 +11,7 @@
  * Pide los datos de facturación además del nombre, porque si el alta no puede
  * cargar el CUIT hay que ir igual a Airtable y el alta no sirvió de nada.
  *
- * Al editar muestra además sus búsquedas, que es lo que se va a mirar cuando
+ * Al editar muestra además sus pedidos, que es lo que se va a mirar cuando
  * alguien pregunte por un cliente, y el borrado.
  */
 
@@ -257,7 +257,7 @@ export default function Cajon({
           {editando && (
             <>
               <section className="os-cajon-bloque">
-                <h3 className="os-cajon-subtitulo">Sus búsquedas</h3>
+                <h3 className="os-cajon-subtitulo">Sus pedidos</h3>
                 {cliente!.susPedidos.length === 0 ? (
                   <p className="os-vacio">Todavía no tiene pedidos cargados.</p>
                 ) : (

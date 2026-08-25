@@ -559,11 +559,15 @@ pantalla. Los que siguen en Airtable no tienen dónde marcarlo y se listan como
 activos hasta que se migren.
 
 **Activo son dos cosas a la vez y las dos tienen que darse**: la marca de la
-base, que es la decisión de alguien, y que haya trabajo cargado (un pedido, o
-una cotización que salió). La marca nace en verdadero y nadie la toca, así que
-sola decía que estaba activo un cliente al que nunca se le hizo nada. Un lead
-sin mandar no cuenta: es una idea, no trabajo con ese cliente. Por eso a uno sin
-nada cargado la ficha no le ofrece el botón de activar: lo que lo activa es que
+base, que es la decisión de alguien, y que haya trabajo **en curso**, o sea un
+pedido abierto o una cotización que salió y todavía no se perdió. La marca nace
+en verdadero y nadie la toca, así que sola decía que estaba activo un cliente al
+que nunca se le hizo nada.
+
+Lo que ya se entregó y lo que se perdió son historia: un cliente cuyo único
+pedido se cerró hace tres meses no es un cliente activo. Y un lead sin mandar
+tampoco cuenta, que es una idea y no trabajo con ese cliente. Por eso a uno sin
+nada en curso la ficha no le ofrece el botón de activar: lo que lo activa es que
 entre trabajo.
 
 **Un pedido se cierra solo cuando se entregaron todos sus informes**

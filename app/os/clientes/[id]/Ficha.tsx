@@ -5,7 +5,7 @@
  *
  * Lo que antes eran cinco columnas de una tabla. Acá no compiten con nada: se
  * miran el día que hay que emitir un comprobante o llamar a alguien, y el resto
- * del tiempo lo que importa está abajo, en sus búsquedas.
+ * del tiempo lo que importa está abajo, en sus pedidos.
  */
 
 import { useRouter } from 'next/navigation';

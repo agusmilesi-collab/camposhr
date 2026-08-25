@@ -12,14 +12,14 @@ import Pedidos from './Pedidos';
 export const dynamic = 'force-dynamic';
 
 /**
- * Un cliente y sus búsquedas.
+ * Un cliente y sus pedidos.
  *
  * Las dos cosas juntas porque son la misma: un pedido no existe sin el cliente
  * que lo pidió, y hasta el 25/8/2026 vivían en dos secciones distintas, así que
  * saber cómo venía un cliente obligaba a cruzar de memoria qué pedido era de
  * quién.
  *
- * Arriba, quién es y con qué se le factura; abajo, lo que pidió, en curso y
+ * Arriba, quién es y con qué se le factura; abajo, lo que pidió, abierto y
  * cerrado.
  */
 export default async function ClientePagina({ params }: { params: { id: string } }) {
@@ -42,7 +42,7 @@ export default async function ClientePagina({ params }: { params: { id: string }
       titulo={`Clientes · ${cliente.nombre}`}
       identidad={yo.nombre}
       ancho
-      nota={abiertos.length === 1 ? '1 búsqueda abierta' : `${abiertos.length} búsquedas abiertas`}
+      nota={abiertos.length === 1 ? '1 pedido abierto' : `${abiertos.length} pedidos abiertos`}
       cuentas={{ '/os/clientes': clientes.length }}
     >
       <Link className="os-volver-enlace" href="/os/clientes">

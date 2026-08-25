@@ -1,17 +1,17 @@
 'use client';
 
 /**
- * Las búsquedas de un cliente, en curso arriba y cerradas abajo.
+ * Los pedidos de un cliente, abiertos arriba y cerrados abajo.
  *
  * Es la pantalla de Pedidos, ya filtrada por quien las pidió: acá no hace falta
  * la columna del cliente, que era la mitad del ancho de aquella tabla, y el
  * pedido nuevo nace con el cliente puesto.
  *
  * **Un pedido se cierra solo cuando se entregaron todos sus informes**, que es
- * lo que significa que la búsqueda terminó (`lib/pedido-completo.ts`). El botón
+ * lo que significa que terminó (`lib/pedido-completo.ts`). El botón
  * de reabrir está para el caso que el cierre automático no puede saber: el
- * cliente pide sumar a alguien más a una búsqueda que ya se había dado por
- * terminada.
+ * cliente pide sumar a alguien más a un pedido que ya se había dado por
+ * terminado.
  */
 
 import Link from 'next/link';
@@ -25,7 +25,7 @@ import { diasDesde, fecha, haceCuanto } from '@/lib/hora';
 import type { Pedido } from '@/lib/pedidos-tipos';
 import { loQueFalta } from '@/lib/pedidos-tipos';
 
-/** Cómo viene la búsqueda: cuántos informes salieron de los que tiene. */
+/** Cómo viene el pedido: cuántos informes salieron de los que tiene. */
 function Avance({ p }: { p: Pedido }) {
   if (p.candidatos === 0) {
     return <span className="os-dato-falta">sin candidatos</span>;
@@ -60,7 +60,7 @@ function Falta({ p }: { p: Pedido }) {
   );
 }
 
-/** Vuelve a poner en curso una búsqueda que se había dado por terminada. */
+/** Vuelve a poner en curso un pedido que se había dado por terminado. */
 function Reabrir({ id }: { id: string }) {
   const router = useRouter();
   const [tocando, setTocando] = useState(false);
@@ -168,7 +168,7 @@ export default function Pedidos({
     <>
       <section className="os-panel os-panel-separado">
         <div className="os-panel-top">
-          <h2>Búsquedas en curso</h2>
+          <h2>Pedidos abiertos</h2>
           <span className="os-columna-monto">
             {abiertos.length === 0
               ? 'ninguna'
@@ -178,7 +178,7 @@ export default function Pedidos({
           </span>
         </div>
         {abiertos.length === 0 ? (
-          <p className="os-vacio">Sin búsquedas abiertas para este cliente.</p>
+          <p className="os-vacio">Este cliente no tiene pedidos abiertos.</p>
         ) : (
           <Filas pedidos={abiertos} />
         )}
@@ -190,7 +190,7 @@ export default function Pedidos({
       {cerrados.length > 0 && (
         <section className="os-panel os-panel-separado">
           <div className="os-panel-top">
-            <h2>Terminadas</h2>
+            <h2>Cerrados</h2>
             <span className="os-columna-monto">
               {cerrados.length === 1 ? '1 pedido' : `${cerrados.length} pedidos`}
             </span>
