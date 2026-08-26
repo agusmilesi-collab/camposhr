@@ -24,7 +24,6 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ENTREGABLES, TESTS } from '@/lib/baterias-contenido';
-import { estirar } from '../psicotecnicos/piezas';
 
 /**
  * Entra o no entra, con el punto de color del resto del OS.
@@ -153,16 +152,15 @@ export default function Bateria({
         <label className="os-etiqueta-campo" htmlFor={`incluye-${bateriaId}`}>
           Qué incluye
         </label>
+        {/* Alto fijo y no atado al contenido: con tres baterías una al lado de
+            la otra, un renglón de más en la del medio corría hacia abajo todo
+            lo que sigue y las tres columnas dejaban de compararse. */}
         <textarea
           id={`incluye-${bateriaId}`}
-          className="os-campo"
-          rows={1}
-          ref={estirar}
+          className="os-campo os-campo-bateria"
+          rows={3}
           value={puestos.descripcion}
-          onChange={(e) => {
-            estirar(e.target);
-            escribir('descripcion', e.target.value);
-          }}
+          onChange={(e) => escribir('descripcion', e.target.value)}
         />
 
         <label className="os-etiqueta-campo" htmlFor={`quien-${bateriaId}`}>
@@ -170,14 +168,10 @@ export default function Bateria({
         </label>
         <textarea
           id={`quien-${bateriaId}`}
-          className="os-campo"
-          rows={1}
-          ref={estirar}
+          className="os-campo os-campo-bateria"
+          rows={2}
           value={puestos.paraQuien}
-          onChange={(e) => {
-            estirar(e.target);
-            escribir('paraQuien', e.target.value);
-          }}
+          onChange={(e) => escribir('paraQuien', e.target.value)}
         />
 
         <label className="os-etiqueta-campo" htmlFor={`dura-${bateriaId}`}>
@@ -203,7 +197,7 @@ export default function Bateria({
       </div>
 
       <div className="os-bateria-dato">
-        <span className="os-dato-rotulo">Se le toma</span>
+        <span className="os-bateria-titulo">Se le toma</span>
         <ul className="os-tildes">
           {TESTS.map((t) => (
             <li key={t.nombre}>
@@ -222,7 +216,7 @@ export default function Bateria({
       </div>
 
       <div className="os-bateria-dato">
-        <span className="os-dato-rotulo">Se le entrega al cliente</span>
+        <span className="os-bateria-titulo">Se le entrega al cliente</span>
         <ul className="os-tildes">
           {ENTREGABLES.map((e) => (
             <li key={e.nombre}>
