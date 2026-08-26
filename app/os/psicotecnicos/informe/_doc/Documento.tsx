@@ -1,4 +1,4 @@
-import { bandaDe, bandasDe, type Exigencia } from '@/lib/exigencia';
+import { bandaDe, bandasDe, colorDe, tramosDe, type Exigencia } from '@/lib/exigencia';
 import type { Informe } from '@/lib/informe';
 import {
   CONFIDENCIALIDAD,
@@ -14,30 +14,17 @@ import Listas from './Listas';
 import './informe.css';
 
 /**
- * El color de un puntaje.
+ * El color de un puntaje, aclarado contra la hoja: 1 es pleno, 0 es blanco.
  *
- * Cinco tramos y no cuatro: las bandas son cuatro, pero Bajo va de 0 a 34 y no
- * es lo mismo estar rozando lo adecuado que estar abajo de todo, así que ese
- * tramo se parte en naranja y rojo. Los otros tres van uno por banda.
- *
- * De arriba abajo: verde, verde claro, azul, naranja, rojo.
- *
- * **Los valores están escritos y no salen de las variables de la hoja**: para
- * aclarar un color contra el fondo hay que tener sus números, y `color-mix` no
- * los devuelve. Si cambia la paleta de `informe.css` hay que cambiarlos acá.
+ * El color sale de la banda en la que cae con la exigencia de este informe, no
+ * de una tabla de tramos fija: si el pedido se lee con una exigencia más baja,
+ * el 30 pasa a ser Adecuado y se pinta de azul. Con los tramos escritos a mano,
+ * ese mismo 30 salía naranja al lado de la palabra Adecuado.
  */
-const ESCALA_COLOR: { desde: number; rgb: [number, number, number] }[] = [
-  { desde: 80, rgb: [55, 128, 74] }, // --verde, Sobresaliente
-  { desde: 65, rgb: [104, 158, 106] }, // verde claro, Alto
-  { desde: 35, rgb: [67, 100, 143] }, // --azul, Adecuado
-  { desde: 18, rgb: [193, 89, 26] }, // --naranja, la mitad de arriba de Bajo
-  { desde: 0, rgb: [140, 59, 59] }, // --rojo, el piso
-];
-
-/** El color del puntaje, aclarado contra la hoja: 1 es pleno, 0 es blanco. */
-function tono(puntaje: number | null, fuerza: number): string {
-  const base = ESCALA_COLOR.find((t) => (puntaje ?? 0) >= t.desde) ?? ESCALA_COLOR[4];
-  const c = base.rgb.map((n) => Math.round(n + (255 - n) * (1 - fuerza)));
+function tono(puntaje: number | null, fuerza: number, exigencia: Exigencia): string {
+  const c = colorDe(puntaje ?? 0, exigencia).map((n) =>
+    Math.round(n + (255 - n) * (1 - fuerza))
+  );
   return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 }
 
@@ -50,21 +37,19 @@ function tono(puntaje: number | null, fuerza: number): string {
  * de cada tramo es el ancho real de la banda. Adecuado es el más ancho: agarra
  * treinta de los cien puntos.
  *
- * La barra tiene los cinco colores de `ESCALA_COLOR` y los rótulos las cuatro
- * bandas, porque Bajo se dibuja partido en naranja y rojo pero se informa como
- * una sola banda.
+ * La barra lleva cinco colores y los rótulos cuatro bandas, porque Bajo se
+ * dibuja partido en naranja y rojo pero se informa como una sola banda: un 5 y
+ * un 30 no se leen igual y el color lo dice sin nombrarlo.
  *
  * Los cortes salen de la exigencia con la que se lee este informe, así que los
  * anchos se mueven con ella: con una exigencia más baja, Adecuado empieza antes
  * y se ve más ancho.
  */
 function EscalaBandas({ exigencia }: { exigencia: Exigencia }) {
-  const tramos = ESCALA_COLOR.slice()
-    .reverse()
-    .map((t, i, todos) => {
-      const hasta = i === todos.length - 1 ? 100 : todos[i + 1].desde;
-      return `${tono(t.desde, 1)} ${t.desde}% ${hasta}%`;
-    });
+  const tramos = tramosDe(exigencia).map((t, i, todos) => {
+    const hasta = i === todos.length - 1 ? 100 : todos[i + 1].desde;
+    return `rgb(${t.rgb.join(', ')}) ${t.desde}% ${hasta}%`;
+  });
 
   const bandas = bandasDe(exigencia).slice().reverse();
 
@@ -82,7 +67,7 @@ function EscalaBandas({ exigencia }: { exigencia: Exigencia }) {
       >
         {bandas.map((b) => (
           <span key={b.nombre}>
-            <em style={{ color: tono(b.desde === 0 ? 20 : b.desde, 1) }}>{b.nombre}</em>
+            <em style={{ color: tono(b.hasta, 1, exigencia) }}>{b.nombre}</em>
             {b.desde === 0 ? `menos de ${exigencia.adecuado}` : `${b.desde} a ${b.hasta}`}
           </span>
         ))}
@@ -155,7 +140,7 @@ function Velocimetro({
         <path
           key={v}
           d={arco(v, fin + (fin < hasta ? 0.6 : 0))}
-          stroke={tono(puntaje, 0.42 + 0.58 * (((v + fin) / 2 / hasta) ** 0.7))}
+          stroke={tono(puntaje, 0.42 + 0.58 * (((v + fin) / 2 / hasta) ** 0.7), exigencia)}
           fill="none"
           strokeWidth="9"
           strokeLinecap={v === 0 || fin === hasta ? 'round' : 'butt'}
@@ -195,7 +180,7 @@ function Velocimetro({
           <span className="inf-gauge-vacio">sin datos</span>
         ) : (
           <>
-            <span className="inf-gauge-numero" style={{ color: tono(puntaje, 1) }}>
+            <span className="inf-gauge-numero" style={{ color: tono(puntaje, 1, exigencia) }}>
               {puntaje}
             </span>
             <span className="inf-gauge-escala">de 100</span>
@@ -370,7 +355,10 @@ export default function Documento({
                     <Velocimetro puntaje={c.puntaje} exigencia={inf.exigencia} />
                     <h3>{c.nombre}</h3>
                     {c.puntaje !== null && (
-                      <span className="inf-banda-texto" style={{ color: tono(c.puntaje, 1) }}>
+                      <span
+                        className="inf-banda-texto"
+                        style={{ color: tono(c.puntaje, 1, inf.exigencia) }}
+                      >
                         {banda}
                       </span>
                     )}
