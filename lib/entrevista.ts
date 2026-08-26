@@ -1,5 +1,6 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
+import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 
 /**
  * Lo que hace falta para tener la entrevista, y nada más.
@@ -37,7 +38,12 @@ type Fila = {
   grafico_2_personas_administrado: boolean;
   grafico_2_personas_nombre: string | null;
   grafico_2_personas_observaciones: string | null;
-  personas: { nombre: string; email: string | null; telefono: string | null } | null;
+  personas: {
+    nombre: string;
+    email: string | null;
+    telefono: string | null;
+    fecha_nacimiento: string | null;
+  } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
     puesto: string;
@@ -56,6 +62,8 @@ export type Entrevista = {
   nombre: string;
   email: string | null;
   telefono: string | null;
+  /** La primera pregunta de la entrevista por competencias. */
+  nacimiento: string | null;
   puesto: string | null;
   empresa: string | null;
   evaluadora: string | null;
@@ -103,7 +111,7 @@ const CAMPOS =
   'benziger_administrado,orden_tests,entrevista_competencias,' +
   'grafico_2_personas_administrado,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
-  'personas(nombre,email,telefono),evaluadoras(nombre),' +
+  'personas(nombre,email,telefono,fecha_nacimiento),evaluadoras(nombre),' +
   'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo,nombre,tests))';
 
 /**
@@ -115,9 +123,13 @@ const CAMPOS =
  * porque ese test dejó de tomarse.
  */
 function ordenar(tests: string[], guardado: string[] | null | undefined): string[] {
-  if (!guardado?.length) return tests;
-  const elegidos = guardado.filter((t) => tests.includes(t));
-  return [...elegidos, ...tests.filter((t) => !elegidos.includes(t))];
+  // Sin orden propio, la entrevista por competencias va primera: es con lo que
+  // se abre la conversación, y su primera pregunta, la fecha de nacimiento, es
+  // lo primero que se carga. Quien prefiera otro orden lo arrastra y ese queda.
+  const propio = guardado?.length
+    ? guardado.filter((t) => tests.includes(t))
+    : tests.filter((t) => t === TEST_COMPETENCIAS);
+  return [...propio, ...tests.filter((t) => !propio.includes(t))];
 }
 
 export async function entrevistaDe(id: string): Promise<Entrevista | null> {
@@ -153,6 +165,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     nombre: f.personas?.nombre ?? 'Sin nombre',
     email: f.personas?.email ?? null,
     telefono: f.personas?.telefono ?? null,
+    nacimiento: f.personas?.fecha_nacimiento ?? null,
     puesto: f.pedidos?.puesto ?? null,
     empresa: f.pedidos?.empresas?.nombre ?? null,
     evaluadora: f.evaluadoras?.nombre ?? null,

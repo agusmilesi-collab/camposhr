@@ -58,6 +58,13 @@ export type Cabecera = {
   seguimiento_al: string | null;
   seguimiento_resultado: string | null;
   seguimiento_notas: string | null;
+  /**
+   * Qué edad tenía el día de la entrevista, congelada.
+   *
+   * Se calcula al cargar la fecha de nacimiento y no se recalcula: el informe
+   * dice la edad que tenía cuando se la evaluó.
+   */
+  edad: number | null;
   personas: {
     nombre: string;
     email: string | null;
@@ -263,7 +270,7 @@ const CAMPOS_CABECERA =
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'recomendacion,recomendacion_notas,informe_path,entrevista_competencias,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
-  'seguimiento_al,seguimiento_resultado,seguimiento_notas,' +
+  'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,' +
   'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),' +
   'pedidos(puesto,con_benziger,exigencia_id,empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';

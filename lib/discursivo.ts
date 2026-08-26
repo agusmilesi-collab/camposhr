@@ -94,7 +94,7 @@ export type TextoDeNivel = {
   actual: string;
   /** Dónde suele verse ese nivel, uno por renglón. */
   ejemplos: string;
-  /** Qué exige el nivel siguiente. */
+  /** Qué exige el nivel siguiente: la capacidad potencial futura. */
   proyeccion: string;
 };
 
@@ -205,20 +205,6 @@ export const NOTA_EJEMPLOS =
   'especialista sin gente a cargo puede hacer trabajo de alta complejidad, y la cantidad de ' +
   'personas que reportan a una posición no determina por sí sola el nivel: lo determinan la ' +
   'complejidad del trabajo y el horizonte de tiempo de su responsabilidad.';
-
-/**
- * Por qué el capítulo dice "Proyección de desarrollo" y no capacidad futura.
- *
- * En Jaques, la capacidad potencial futura no es el estrato siguiente: es qué
- * nivel podría alcanzar la persona en un momento dado, estimando su trayectoria
- * de maduración. Eso exige un horizonte explícito y una metodología para
- * proyectar esa curva, que este instrumento no tiene. Lo que sí puede decir es
- * qué exige el nivel siguiente, y eso es lo que se informa.
- */
-export const NOTA_PROYECCION =
-  'Describe el siguiente nivel de complejidad. No es una capacidad potencial futura: ' +
-  'afirmar eso exigiría estimar la trayectoria de maduración de la persona y un horizonte ' +
-  'de tiempo explícito, que este instrumento no mide.';
 
 /** El test, como se llama en la batería. */
 export const TEST = 'Análisis discursivo (Elliot Jaques)';

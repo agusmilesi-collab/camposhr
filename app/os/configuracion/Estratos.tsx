@@ -43,7 +43,7 @@ const CAMPOS = [
     filas: 6,
     ayuda: 'Uno por renglón. Salen como lista en el informe',
   },
-  { clave: 'proyeccion', rotulo: 'Proyección de desarrollo', filas: 6, ayuda: '' },
+  { clave: 'proyeccion', rotulo: 'Capacidad potencial futura', filas: 6, ayuda: '' },
 ] as const;
 
 export default function Estratos({

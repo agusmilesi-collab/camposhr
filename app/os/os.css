@@ -8337,3 +8337,65 @@ textarea.os-exigencia-notas {
 .os-panel-accion {
   margin-left: auto;
 }
+
+/* La primera pregunta de la entrevista: la fecha y la edad que sale de ella,
+   en la misma línea. La edad se ve mientras se escribe la fecha, para poder
+   confirmarla en voz alta antes de que quede guardada.
+
+   Ocupa la fila entera y va arriba del campo donde se escribe el resto: es la
+   primera pregunta de la entrevista, no un estado que se lee al lado del
+   título. El encabezado necesita permitir el salto de línea para que no se le
+   acomode al costado. */
+.os-herramienta:has(.os-nacimiento) {
+  flex-wrap: wrap;
+}
+
+/* El estado del test se queda arriba, al lado del título, que es donde está en
+   todas las demás tarjetas, y el campo donde se escribe va al final. Sin esto,
+   el salto de línea que necesita la fecha empujaba el estado a una línea propia
+   en el medio. */
+.os-herramienta:has(.os-nacimiento) > .os-herramienta-accion {
+  order: 0;
+}
+
+.os-herramienta:has(.os-nacimiento) > .os-competencias,
+.os-herramienta:has(.os-nacimiento) > .os-competencias-pie {
+  order: 2;
+}
+
+.os-nacimiento {
+  flex-basis: 100%;
+  order: 1;
+  padding-left: var(--os-herramienta-sangria);
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: 14px;
+}
+
+.os-nacimiento-campo {
+  display: grid;
+  gap: 3px;
+}
+
+.os-nacimiento-campo .os-campo {
+  width: 170px;
+}
+
+.os-nacimiento-edad {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding-bottom: 7px;
+}
+
+.os-nacimiento-edad strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.os-nacimiento-edad small {
+  font-size: 0.76rem;
+  color: var(--os-suave);
+}

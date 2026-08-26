@@ -18,6 +18,7 @@ import Whatsapp from '../../Whatsapp';
 import { enlaceDelCv } from '@/lib/cv';
 import Orden from './Orden';
 import Competencias from './Competencias';
+import Nacimiento from './Nacimiento';
 
 /**
  * La hoja de la entrevista: con qué se le toma cada test.
@@ -228,7 +229,14 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
           // Se toma hablando y no deja más rastro que lo que se escribe, así
           // que el campo es el test: va acá y no en la ficha, que se abre
           // después con la entrevista terminada.
-          return <Competencias id={e.id} texto={e.competencias} />;
+          return (
+            <>
+              {/* La primera pregunta, arriba del campo donde se escribe el
+                  resto: la fecha de nacimiento, con la edad que sale de ella. */}
+              <Nacimiento id={e.id} nacimiento={e.nacimiento} entrevista={e.cuando} />
+              <Competencias id={e.id} texto={e.competencias} />
+            </>
+          );
         }
 
         if (t === TEST_DISCURSIVO) {

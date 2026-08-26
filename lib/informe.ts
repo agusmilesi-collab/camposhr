@@ -105,6 +105,14 @@ export type Informe = {
   /** El test de manchas que se administró, para las técnicas. */
   proyectivo: string | null;
   nivel: NivelAjuste | null;
+  /**
+   * Qué edad tenía el día de la entrevista.
+   *
+   * Sale del número guardado en la evaluación y no de la fecha de nacimiento:
+   * un informe de hace dos años que se vuelve a abrir tiene que decir la misma
+   * edad que decía el día que salió.
+   */
+  edad: number | null;
   competencias: Competencia[];
   /**
    * Con qué exigencia se nombran esos puntajes.
@@ -451,6 +459,7 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     puesto: c.pedidos?.puesto ?? null,
     evaluadora: c.evaluadoras?.nombre ?? null,
     cuando: mesYAnio(c.fecha_entrevista ?? c.fecha_ingreso),
+    edad: c.edad,
     bateria: c.pedidos?.baterias?.codigo ?? null,
     proyectivo: proyectivoDe(f),
     nivel: nivelDeConclusion(c.recomendacion),
