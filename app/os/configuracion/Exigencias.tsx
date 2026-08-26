@@ -193,12 +193,19 @@ export default function Exigencias({
           return (
             <section className="os-panel os-indice-panel" key={e.id}>
               <div className="os-panel-top">
-                <h3 className="os-indice-nombre-titulo">{e.nombre}</h3>
-                {e.predeterminada && (
-                  <span className="os-sello-estado os-verde" title="Es la que rige cuando el pedido no pide otra">
-                    Predeterminada
-                  </span>
-                )}
+                {/* El sello pegado al nombre y no suelto en la fila: dice algo
+                    de este perfil y no de la pantalla. */}
+                <h3 className="os-indice-nombre-titulo os-exigencia-nombre">
+                  {e.nombre}
+                  {e.predeterminada && (
+                    <span
+                      className="os-sello-estado os-verde"
+                      title="Es la que rige cuando el pedido no pide otra"
+                    >
+                      Default
+                    </span>
+                  )}
+                </h3>
                 <span className="os-columna-monto">
                   {e.pedidos === 0 && e.candidatos === 0
                     ? 'sin usar'
@@ -210,6 +217,45 @@ export default function Exigencias({
                         .filter(Boolean)
                         .join(' · ')}
                 </span>
+
+                {/* Las acciones del perfil van en su encabezado y no debajo de
+                    la barra: ahí quedaban a la misma altura que el texto de la
+                    nota, como si fueran parte de ella. */}
+                {!abierta && (
+                  <span className="os-exigencia-acciones">
+                    <button
+                      className="os-boton"
+                      disabled={!hayTabla || guardando}
+                      onClick={() => abrir(e)}
+                      title={hayTabla ? undefined : 'Todavía no hay ninguna guardada'}
+                    >
+                      Mover los cortes
+                    </button>
+                    {!e.predeterminada && hayTabla && (
+                      <>
+                        <button
+                          className="os-boton"
+                          disabled={guardando}
+                          onClick={() => mandar({ id: e.id, predeterminar: true })}
+                        >
+                          Poner de default
+                        </button>
+                        <button
+                          className="os-enlace-boton"
+                          disabled={guardando || e.pedidos > 0 || e.candidatos > 0}
+                          title={
+                            e.pedidos > 0 || e.candidatos > 0
+                              ? 'La están usando. Cambiásela a esos pedidos antes de borrarla.'
+                              : undefined
+                          }
+                          onClick={() => mandar({ id: e.id, borrar: true })}
+                        >
+                          Borrar
+                        </button>
+                      </>
+                    )}
+                  </span>
+                )}
               </div>
 
               <div className="os-panel-cuerpo">
@@ -281,42 +327,7 @@ export default function Exigencias({
                     </div>
                   </div>
                 ) : (
-                  <>
-                    {e.notas && <p className="os-form-nota">{e.notas}</p>}
-                    <div className="os-barra-acciones">
-                      <button
-                        className="os-boton"
-                        disabled={!hayTabla || guardando}
-                        onClick={() => abrir(e)}
-                        title={hayTabla ? undefined : 'Todavía no hay ninguna guardada'}
-                      >
-                        Mover los cortes
-                      </button>
-                      {!e.predeterminada && hayTabla && (
-                        <>
-                          <button
-                            className="os-boton"
-                            disabled={guardando}
-                            onClick={() => mandar({ id: e.id, predeterminar: true })}
-                          >
-                            Poner de predeterminada
-                          </button>
-                          <button
-                            className="os-boton"
-                            disabled={guardando || e.pedidos > 0 || e.candidatos > 0}
-                            title={
-                              e.pedidos > 0 || e.candidatos > 0
-                                ? 'La están usando. Cambiásela a esos pedidos antes de borrarla.'
-                                : undefined
-                            }
-                            onClick={() => mandar({ id: e.id, borrar: true })}
-                          >
-                            Borrar
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </>
+                  e.notas && <p className="os-form-nota os-exigencia-nota">{e.notas}</p>
                 )}
               </div>
             </section>
@@ -324,20 +335,16 @@ export default function Exigencias({
         })}
       </div>
 
-      <section className="os-panel">
-        <div className="os-panel-cuerpo">
-          {error && !editando && <p className="os-form-error">{error}</p>}
-          <div className="os-barra-acciones">
-            <button
-              className="os-boton os-boton-azul"
-              disabled={guardando || editando === 'nueva'}
-              onClick={() => abrir(null)}
-            >
-              Nueva exigencia
-            </button>
-          </div>
-        </div>
-      </section>
+      <div className="os-exigencia-pie">
+        {error && !editando && <p className="os-form-error">{error}</p>}
+        <button
+          className="os-boton os-boton-azul"
+          disabled={guardando || editando === 'nueva'}
+          onClick={() => abrir(null)}
+        >
+          Nueva exigencia
+        </button>
+      </div>
 
       {/* La nueva se edita en su propio panel, al pie: arriba están las
           guardadas y esta todavía no lo está. */}
