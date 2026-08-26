@@ -6,7 +6,7 @@ import {
   listarEmisoras,
   listarFacturas,
 } from '@/lib/facturas';
-import { totalDe } from '@/lib/facturas-tipos';
+import { esDePsicotecnicos, totalDe } from '@/lib/facturas-tipos';
 import { esMia, quienSoy } from '@/lib/identidad';
 import { cuentasDeLaBarra } from '../datos';
 
@@ -40,15 +40,14 @@ export default async function Facturacion() {
   // Arriba, lo de quien mira. Agustín tiene alcance 'todo' y ve las dos colas.
   const mias = pendientes.filter((p) => esMia(p.evaluadora, yo));
   /**
-   * Las de psicotécnicos: las que cubren alguna evaluación.
+   * Las de psicotécnicos: las que cubren evaluaciones, más las que llegaron sin
+   * renglones y hay que completar.
    *
    * Las de servicios se emiten y se cobran en Costos, que es donde vive ese
    * trabajo. Se reconocen por los renglones y no por una marca: un comprobante
    * de psicotécnicos siempre lleva sus candidatos adentro.
    */
-  const vivas = facturas.filter(
-    (f) => f.estado !== 'anulada' && f.renglones.some((r) => r.evaluacionId !== null)
-  );
+  const vivas = facturas.filter((f) => f.estado !== 'anulada' && esDePsicotecnicos(f));
   const sinCobrar = vivas.filter((f) => f.cobradaAt === null);
 
   const aFacturar = mias.reduce((n, p) => n + totalDe(p), 0);

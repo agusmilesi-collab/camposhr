@@ -177,7 +177,7 @@ export async function POST(req: Request) {
   const base =
     `${gente.length === 1 ? gente[0].nombre : `${gente.length} candidatos`} para ` +
     `${suyo ? suyo.puesto : puesto}, con ${suyo?.baterias?.codigo ?? elegida?.codigo}` +
-    (conBenziger && !suyo ? ' y el cuestionario de perfil' : '') +
+    (conBenziger && !suyo ? ' y la evaluación de perfil' : '') +
     (conCv ? ` y ${conCv === 1 ? 'el CV adjunto' : `${conCv} CV adjuntos`}` : '') +
     '.';
 

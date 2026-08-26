@@ -521,7 +521,9 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
                 {/* Se cuentan personas y no renglones: el adicional Benziger es
                     un renglón más de alguien que ya está. */}
                 {cuantas === 0 ? (
-                  f.concepto ?? 'sin detalle'
+                  /* Sin renglones no se sabe a quién cubre: son las que llegaron
+                     incompletas de Airtable, y el ámbar dice que falta cargarlo. */
+                  f.concepto ?? <span className="os-dato-falta">sin detalle</span>
                 ) : (
                   <button
                     type="button"

@@ -207,7 +207,7 @@ export default function NuevoPedido({
               <span className="ayuda">
                 {elegida
                   ? `Se evalúan con ${elegida.bateria ?? 'la batería de esa búsqueda'}${
-                      elegida.conBenziger ? ' más el cuestionario de perfil' : ''
+                      elegida.conBenziger ? ' más la evaluación de perfil' : ''
                     }, que es lo acordado para ese puesto.`
                   : 'Si el puesto es nuevo, se carga acá abajo.'}
               </span>
@@ -254,13 +254,13 @@ export default function NuevoPedido({
                   ))}
                 </fieldset>
 
-                {/* El cuestionario de perfil va marcado: es lo que se recomienda
+                {/* La evaluación de perfil va marcada: es lo que se recomienda
                     para todo puesto que conduce gente, y quien no lo quiera lo
                     destilda. Se dice qué agrega, no que "está disponible". */}
                 <label className="opcion opcion-suma">
                   <input type="checkbox" name="benziger" value="si" defaultChecked />
                   <span className="opcion-cuerpo">
-                    <span className="opcion-t">Sumar el cuestionario de perfil</span>
+                    <span className="opcion-t">Sumar evaluación de perfil</span>
                     <span className="opcion-d">
                       Cómo piensa y cómo decide la persona, y qué le cuesta sostener.
                     </span>
