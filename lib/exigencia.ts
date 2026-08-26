@@ -30,9 +30,12 @@ export type Banda = 'Sobresaliente' | 'Alto' | 'Adecuado' | 'Bajo';
 /**
  * La que rige cuando no hay ninguna guardada.
  *
- * Es la que venía en el código: los dos cortes de arriba son de la psicóloga y
- * el de abajo corta donde corta Hogan, el estándar de evaluación laboral, con
- * bajo hasta el 35 y alto desde el 65.
+ * Es la que venía en el código. Los dos cortes de arriba los puso la psicóloga.
+ * El de abajo sigue a Hogan Assessments, el estándar de evaluación de
+ * personalidad para selección: llama bajo a lo que cae debajo del percentil 35
+ * y alto a lo que pasa el 65, con todo el medio como promedio. Antes cortaba en
+ * 50, y ahí la mitad exacta de la escala caía en el borde de Adecuado y
+ * cualquier ruido la empujaba a Bajo.
  */
 export const DE_FABRICA: Exigencia = {
   id: 'fabrica',

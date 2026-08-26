@@ -318,12 +318,12 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
   /**
    * Con qué exigencia se leen los puntajes de este informe.
    *
-   * La del candidato pisa la del pedido, y si ninguno tiene, la predeterminada.
-   * Es un rótulo y no una cuenta: los puntajes son los mismos, lo que cambia es
-   * cómo se los nombra.
+   * La del pedido, y si no tiene, la predeterminada. Se elige por pedido y en
+   * ningún otro lado: apartarse de la default es una decisión del puesto, no de
+   * un candidato suelto. Es un rótulo y no una cuenta: los puntajes son los
+   * mismos, lo que cambia es cómo se los nombra.
    */
   const exigencia =
-    exigencias.find((e) => e.id === c.exigencia_id) ??
     exigencias.find((e) => e.id === c.pedidos?.exigencia_id) ??
     exigencias.find((e) => e.predeterminada) ??
     EXIGENCIA_DE_FABRICA;

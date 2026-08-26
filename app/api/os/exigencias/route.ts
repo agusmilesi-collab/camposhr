@@ -17,8 +17,10 @@ export const runtime = 'nodejs';
  * mover con informes ya emitidos sin que nada se recalcule solo; los que están
  * abiertos se releen con la exigencia que tengan asignada.
  *
- * La predeterminada no se puede borrar ni dejar en cero: es la que rige cuando
- * el pedido no pide otra, así que siempre tiene que haber una.
+ * La predeterminada no se puede borrar ni cambiar por otra: es la que rige en
+ * todo el sistema, y apartarse de ella se decide pedido por pedido, desde la
+ * pantalla del pedido. Coronar otra desde acá cambiaría de una vez cómo se lee
+ * todo lo que ya está abierto.
  */
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -103,22 +105,15 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    for (const tabla of ['pedidos', 'evaluaciones']) {
-      const uso = await fetch(
-        `${url}/rest/v1/${tabla}?exigencia_id=eq.${id}&select=id&limit=1`,
-        { headers: cabeceras, cache: 'no-store' }
+    const uso = await fetch(`${url}/rest/v1/pedidos?exigencia_id=eq.${id}&select=id&limit=1`, {
+      headers: cabeceras,
+      cache: 'no-store',
+    });
+    if (((await uso.json().catch(() => [])) as unknown[]).length > 0) {
+      return NextResponse.json(
+        { error: 'Hay pedidos que la usan. Cambiásela a esos pedidos antes de borrarla.' },
+        { status: 400 }
       );
-      if (((await uso.json().catch(() => [])) as unknown[]).length > 0) {
-        return NextResponse.json(
-          {
-            error:
-              tabla === 'pedidos'
-                ? 'Hay pedidos que la usan. Cambiáselas antes de borrarla.'
-                : 'Hay candidatos que la usan. Cambiáselas antes de borrarla.',
-          },
-          { status: 400 }
-        );
-      }
     }
     const res = await fetch(`${url}/rest/v1/exigencias?id=eq.${id}`, {
       method: 'DELETE',

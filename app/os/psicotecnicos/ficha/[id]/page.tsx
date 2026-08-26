@@ -21,9 +21,9 @@ import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
 import { bandasDeLaHoja } from '@/lib/redacciones';
+import { bandasDe } from '@/lib/exigencia';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
-import Exigencia from './Exigencia';
 import {
   llevaDiscursivo,
   nivelesQueRigen,
@@ -530,27 +530,26 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
 
   return (
     <>
-      {/* Con qué vara se leen los puntajes de este informe. Va arriba de la
-          recomendación porque es lo primero que hay que fijar: la conclusión se
-          escribe mirando competencias ya nombradas. */}
-      <section className="os-panel os-cierre">
-        <div className="os-panel-top">
-          <h2>Exigencia</h2>
-          <span className="os-columna-monto">
-            A partir de qué puntaje una competencia se llama Adecuada, Alta o Sobresaliente
-          </span>
-        </div>
-        <div className="os-panel-cuerpo">
-          <Exigencia
-            evaluacionId={c.id}
-            pedidoId={c.pedido_id}
-            deLaEvaluacion={c.exigencia_id}
-            delPedido={c.pedidos?.exigencia_id ?? null}
-            perfiles={rige.exigencias}
-            rige={informe.exigencia}
-          />
-        </div>
-      </section>
+      {/* Con qué vara se leen los puntajes, dicho y no editable: la exigencia
+          se elige por pedido, en Clientes, porque apartarse de la default es
+          una decisión del puesto y no de un candidato suelto. */}
+      <p className="os-form-nota os-exigencia-aviso">
+        Los puntajes se leen con la exigencia <strong>{informe.exigencia.nombre}</strong>:{' '}
+        {bandasDe(informe.exigencia)
+          .slice()
+          .reverse()
+          .map(
+            (b) =>
+              `${b.nombre} ${
+                b.desde === 0 ? `menos de ${informe.exigencia.adecuado}` : `${b.desde} a ${b.hasta}`
+              }`
+          )
+          .join(' · ')}
+        .{' '}
+        {c.pedido_id && (
+          <Link href={`/os/pedidos/${c.pedido_id}`}>Cambiarla para todo el pedido</Link>
+        )}
+      </p>
 
       <section className="os-panel os-cierre os-informe-cierre">
         <div className="os-panel-top">

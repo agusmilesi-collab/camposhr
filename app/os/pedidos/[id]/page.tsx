@@ -8,6 +8,7 @@ import { dolarTarjeta } from '@/lib/baterias-precios';
 import { BENZIGER_USD } from '@/lib/benziger';
 import { ABIERTO, DEL_JEFE, DEL_PUESTO, FAMILIAS, SENIORITY } from '@/lib/pedido-campos';
 import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
+import { exigenciasGuardadas } from '@/lib/exigencias-datos';
 import { Benziger, Borrar, Estado, Fecha, Largo, Lista, Pregunta, Texto } from './Editar';
 
 export const dynamic = 'force-dynamic';
@@ -55,13 +56,16 @@ function Bloque({
 }
 
 export default async function FichaPedido({ params }: { params: { id: string } }) {
-  const [yo, pedido, baterias, cambio] = await Promise.all([
+  const [yo, pedido, baterias, cambio, exigencias] = await Promise.all([
     quienSoy(),
     leerPedido(params.id),
     listarBaterias(),
     dolarTarjeta(),
+    exigenciasGuardadas(),
   ]);
   if (!pedido) notFound();
+
+  const porDefecto = exigencias.find((e) => e.predeterminada) ?? null;
 
   const pendientes = pedido.candidatos - pedido.entregados;
   const campos = pedido as unknown as Record<string, string | null>;
@@ -140,6 +144,23 @@ export default async function FichaPedido({ params }: { params: { id: string } }
           puesto={pedido.conBenziger}
           usd={BENZIGER_USD}
           enPesos={cambio ? pesos(BENZIGER_USD * cambio.valor) : null}
+        />
+        {/* Con qué vara se leen los puntajes de los informes de este pedido.
+            Va acá y en ningún otro lado: el resto del sistema usa la default,
+            y apartarse de ella es una decisión del puesto. Cambiarla no
+            recalcula nada, cambia el nombre que le toca a cada puntaje. */}
+        <Lista
+          id={pedido.id}
+          campo="exigencia_id"
+          valor={pedido.exigenciaId}
+          rotulo="Exigencia"
+          vacio={`La default${porDefecto ? ` (${porDefecto.nombre})` : ''}`}
+          opciones={exigencias
+            .filter((e) => !e.predeterminada)
+            .map((e) => ({
+              valor: e.id,
+              texto: `${e.nombre} · ${e.adecuado} / ${e.alto} / ${e.sobresaliente}`,
+            }))}
         />
         <Largo
           id={pedido.id}

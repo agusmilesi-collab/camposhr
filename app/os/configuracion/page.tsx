@@ -48,8 +48,6 @@ const QUE_HACE: Record<string, string> = {
     'Lo que el informe escribe cuando una lectura se dispara. Cuándo entra cada una lo decide su índice y su corte.',
   potencial:
     'Los cuatro estratos del análisis discursivo: qué rol abarca cada uno, qué lapso proyecta y qué lo caracteriza. Es lo que se lee al ubicar a la persona en la pirámide.',
-  exigencia:
-    'A partir de qué puntaje una competencia se llama Adecuada, Alta o Sobresaliente. Se guardan varios perfiles y el pedido elige con cuál se lee.',
 };
 
 export default async function Configuracion({
@@ -84,7 +82,9 @@ export default async function Configuracion({
         ))}
       </nav>
 
-      <p className="os-form-nota os-configuracion-que">{QUE_HACE[ver]}</p>
+      {/* Las pestañas que se explican solas van sin bajada, en vez de con un
+          párrafo que repite lo que ya dice la pantalla. */}
+      {QUE_HACE[ver] && <p className="os-form-nota os-configuracion-que">{QUE_HACE[ver]}</p>}
 
       {ver === 'baterias' && <Baterias />}
       {ver === 'baremos' && <Baremos />}

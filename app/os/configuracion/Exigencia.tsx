@@ -12,9 +12,9 @@ import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
  * Sobresaliente, que es una decisión del puesto: el mismo 62 puede alcanzar
  * para un rol operativo y quedarse corto para una gerencia.
  *
- * Se cuenta cuántos pedidos y cuántos candidatos usa cada perfil, porque es lo
- * que hay que mirar antes de mover un corte: mover el de un perfil que están
- * usando diez pedidos cambia cómo se leen esos diez.
+ * Se cuenta cuántos pedidos usa cada perfil, porque es lo que hay que mirar
+ * antes de mover un corte: mover el de un perfil que están usando diez pedidos
+ * cambia cómo se leen esos diez.
  */
 export default async function Exigencia() {
   const guardadas = await exigenciasGuardadas();
@@ -36,14 +36,13 @@ export default async function Exigencia() {
     }
   };
 
-  const [pedidos, candidatos] = await Promise.all([cuantos('pedidos'), cuantos('evaluaciones')]);
+  const pedidos = await cuantos('pedidos');
 
   return (
     <Exigencias
       exigencias={(guardadas.length > 0 ? guardadas : [DE_FABRICA]).map((e) => ({
         ...e,
         pedidos: pedidos.get(e.id) ?? 0,
-        candidatos: candidatos.get(e.id) ?? 0,
       }))}
       hayTabla={guardadas.length > 0}
     />
