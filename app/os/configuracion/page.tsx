@@ -26,12 +26,14 @@ export const dynamic = 'force-dynamic';
  * La de los pesos se llama Velocímetro desde el 26/8/2026, que es como se la
  * nombra: de ahí sale el puntaje que marca la aguja de cada competencia en el
  * informe. La clave de la dirección sigue siendo `ponderaciones`, porque está
- * guardada en marcadores y en el redirector de la ruta vieja.
+ * guardada en marcadores y en el redirector de la ruta vieja. Lo mismo con
+ * `baremos`, que se muestra como Raven: lo que ahí se mueve son los cortes de
+ * ese test y de ningún otro.
  */
 
 const PESTANAS = [
   { clave: 'baterias', texto: 'Baterías' },
-  { clave: 'baremos', texto: 'Baremos' },
+  { clave: 'baremos', texto: 'Raven' },
   { clave: 'ponderaciones', texto: 'Velocímetro' },
   { clave: 'redacciones', texto: 'Redacciones' },
   { clave: 'potencial', texto: 'Potencial' },

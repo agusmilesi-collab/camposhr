@@ -298,7 +298,7 @@ export default function Pesos({
         />
         {e.porcentaje && <span className="os-corte-unidad">%</span>}
         {movido && !roto && (
-          <span className="os-dato-falta" title={`De fábrica: ${enCaja(i.cortesFabrica[n], e)}`}>
+          <span className="os-dato-falta" title={`Original: ${enCaja(i.cortesFabrica[n], e)}`}>
             de {enCaja(i.cortesFabrica[n], e)}
           </span>
         )}
@@ -563,9 +563,9 @@ export default function Pesos({
                 className="os-boton"
                 disabled={guardando}
                 onClick={() => guardar(null, null)}
-                title="Borra lo guardado y vuelve a los cortes y a los pesos del código"
+                title="Borra lo que se movió y deja los cortes y los pesos originales"
               >
-                Volver a los de fábrica
+                Volver a los originales
               </button>
             </div>
           )}

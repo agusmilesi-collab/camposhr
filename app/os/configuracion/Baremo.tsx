@@ -99,7 +99,7 @@ export default function Baremo({
       <div className="os-panel-top">
         <h2>Baremo del Raven</h2>
         <span className="os-columna-monto">
-          {tocado ? 'Modificado' : 'Los valores de fábrica'}
+          {tocado ? 'Modificado' : 'Sin cambios'}
         </span>
       </div>
 
@@ -110,7 +110,7 @@ export default function Baremo({
               <th>Rango</th>
               <th>Desde</th>
               <th>Hasta</th>
-              <th>De fábrica</th>
+              <th>Original</th>
               <th>Qué tan raro es</th>
               <th>Entre los nuestros</th>
             </tr>
@@ -188,6 +188,12 @@ export default function Baremo({
           exigente. Cambia el rango que se nombra en el informe y el puntaje de habilidad
           cognitiva, que sale de en qué parte de su rango cayó cada persona.
         </p>
+        <p className="os-form-nota">
+          La columna <strong>Original</strong> es el corte con el que vino el sistema, el del
+          manual del test. Queda a la vista para ver cuánto se corrió cada uno y para poder
+          volver: el botón de abajo no copia los números de hoy, borra lo que se movió, así que
+          si mañana se corrige un original, ese corregido es el que pasa a regir.
+        </p>
 
         <div className="os-barra-acciones">
           <button
@@ -213,9 +219,9 @@ export default function Baremo({
               className="os-boton"
               disabled={guardando}
               onClick={() => mandar(null)}
-              title="Borra lo guardado y vuelve a los valores del código"
+              title="Borra lo que se movió y deja los cortes del manual"
             >
-              Volver a los de fábrica
+              Volver a los originales
             </button>
           )}
         </div>
