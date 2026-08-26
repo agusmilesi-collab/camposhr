@@ -9,12 +9,7 @@ import {
 } from '@/lib/informe-textos';
 import Cerebro from './Cerebro';
 import Piramide from './Piramide';
-import {
-  CONDICIONES,
-  NOTA_ADAPTACION,
-  NOTA_EJEMPLOS,
-  NOTA_PROYECCION,
-} from '@/lib/discursivo';
+import { CONDICIONES, NOTA_PROYECCION } from '@/lib/discursivo';
 import Listas from './Listas';
 import './informe.css';
 
@@ -549,13 +544,12 @@ export default function Documento({
             )}
             {inf.discursivo.futura && <p>{inf.discursivo.futura}</p>}
 
-            {/* Las tres cosas que hay que decir para que el capítulo no se lea
-                mal: qué es del modelo y qué es nuestro, que los puestos del
-                ejemplo son orientativos, y por qué la proyección no es una
-                capacidad potencial futura. */}
+            {/* Lo único que se aclara acá es por qué la proyección no se llama
+                capacidad potencial futura, que es lo que el lector podría dar
+                por sentado. De dónde sale el modelo y cuánto pesa cada ejemplo
+                de puesto se leen en Configuración → Potencial: son notas para
+                quien escribe el informe, no para quien lo recibe. */}
             <div className="inf-estrato-nota">
-              <p>{NOTA_ADAPTACION}</p>
-              <p>{NOTA_EJEMPLOS}</p>
               <p>{NOTA_PROYECCION}</p>
             </div>
           </div>

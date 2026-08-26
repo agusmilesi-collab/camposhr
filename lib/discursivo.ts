@@ -184,6 +184,9 @@ export const CONDICIONES = [
  * del modelo. Las descripciones no: están escritas en lenguaje laboral para que
  * se entienda cómo se expresa cada nivel en el trabajo concreto, y decirlo es
  * lo que separa el marco teórico de nuestra adaptación.
+ *
+ * Va en Configuración y no en el informe: es para quien escribe, que necesita
+ * saber qué puede corregir y qué no, y no para el cliente que lo recibe.
  */
 export const NOTA_ADAPTACION =
   'Los estratos, el horizonte temporal del rol y las formas de procesamiento son del modelo ' +
@@ -191,7 +194,12 @@ export const NOTA_ADAPTACION =
   'son una adaptación al lenguaje laboral, para hacer más comprensible cómo se expresa cada ' +
   'nivel de complejidad en el trabajo concreto.';
 
-/** Por qué los ejemplos de puestos no atan un estrato a un cargo. */
+/**
+ * Por qué los ejemplos de puestos no atan un estrato a un cargo.
+ *
+ * Como la anterior, va en Configuración: es el criterio con el que se elige el
+ * escalón, y quien lo elige es la evaluadora.
+ */
 export const NOTA_EJEMPLOS =
   'Son referencias orientativas y no una asociación rígida entre estrato y cargo. Un ' +
   'especialista sin gente a cargo puede hacer trabajo de alta complejidad, y la cantidad de ' +
