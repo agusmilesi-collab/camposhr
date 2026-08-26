@@ -32,7 +32,7 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 export type Corte = {
   op: 'menor' | 'mayor';
@@ -80,16 +80,6 @@ export type Renglon = Campos & {
  * columna. Acá lo medido va a `min-height`, así que la fila la define el
  * texto más largo y el otro se estira hasta igualarlo.
  */
-function estirarCampo(caja: HTMLTextAreaElement | null): void {
-  if (!caja) return;
-  const antes = caja.style.minHeight;
-  caja.style.minHeight = '0';
-  caja.style.height = 'auto';
-  const alto = caja.scrollHeight + (caja.offsetHeight - caja.clientHeight);
-  caja.style.height = '';
-  caja.style.minHeight = alto > 0 ? `${alto}px` : antes;
-}
-
 /** Dónde vuelve "Volver arriba": el panel del buscador, con el índice. */
 const ARRIBA = 'redacciones-indice';
 
@@ -228,24 +218,6 @@ export default function Textos({
   }
 
   const rotos = renglones.filter((r) => r.corte && numero(r.clave) === null);
-
-  // Los campos crecen con lo que tienen escrito, y esa altura se calcula una
-  // vez, al dibujarlos. Al angostar la ventana el mismo texto pasa a ocupar más
-  // renglones y la altura vieja lo cortaba: acá se vuelve a medir.
-  useEffect(() => {
-    const alRedimensionar = () => {
-      caja.current?.querySelectorAll('textarea').forEach((t) => estirarCampo(t));
-    };
-    window.addEventListener('resize', alRedimensionar);
-    return () => window.removeEventListener('resize', alRedimensionar);
-  }, []);
-
-  // Al cambiar de diccionario React reusa las mismas cajas y solo les cambia el
-  // texto, con lo cual la altura queda medida sobre el texto anterior. Por eso
-  // se vuelven a medir todas cuando cambia el test.
-  useEffect(() => {
-    caja.current?.querySelectorAll('textarea').forEach((t) => estirarCampo(t));
-  }, [test]);
 
   const busca = filtro.trim().toLowerCase();
   const visibles = renglones.filter(
@@ -386,11 +358,7 @@ export default function Textos({
               rows={1}
               value={valores[n] ?? ''}
               placeholder="Lo mismo, dicho de otra forma"
-              ref={estirarCampo}
-              onChange={(e) => {
-                estirarCampo(e.target);
-                escribirTexto(r.clave, cual, n, e.target.value);
-              }}
+              onChange={(e) => escribirTexto(r.clave, cual, n, e.target.value)}
             />
           </div>
         ))}
