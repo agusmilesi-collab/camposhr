@@ -138,99 +138,105 @@ export default function Bateria({
 
   return (
     <>
-      <div className="os-bateria-dato os-redaccion">
-        <label className="os-etiqueta-campo" htmlFor={`nombre-${bateriaId}`}>
-          Nombre
-        </label>
-        <input
-          id={`nombre-${bateriaId}`}
-          className="os-campo"
-          value={puestos.nombre}
-          onChange={(e) => escribir('nombre', e.target.value)}
-        />
-
-        <label className="os-etiqueta-campo" htmlFor={`incluye-${bateriaId}`}>
-          Qué incluye
-        </label>
-        {/* Alto fijo y no atado al contenido: con tres baterías una al lado de
-            la otra, un renglón de más en la del medio corría hacia abajo todo
-            lo que sigue y las tres columnas dejaban de compararse. */}
-        <textarea
-          id={`incluye-${bateriaId}`}
-          className="os-campo os-campo-bateria"
-          rows={3}
-          value={puestos.descripcion}
-          onChange={(e) => escribir('descripcion', e.target.value)}
-        />
-
-        <label className="os-etiqueta-campo" htmlFor={`quien-${bateriaId}`}>
-          Para quién se recomienda
-        </label>
-        <textarea
-          id={`quien-${bateriaId}`}
-          className="os-campo os-campo-bateria"
-          rows={2}
-          value={puestos.paraQuien}
-          onChange={(e) => escribir('paraQuien', e.target.value)}
-        />
-
-        <label className="os-etiqueta-campo" htmlFor={`dura-${bateriaId}`}>
-          Duración
-        </label>
-        <span className="os-bateria-duracion">
+      <section className="os-bateria-seccion">
+        <span className="os-bateria-seccion-titulo">Descripción</span>
+        <div className="os-bateria-dato os-redaccion">
+          <label className="os-etiqueta-campo" htmlFor={`nombre-${bateriaId}`}>
+            Nombre
+          </label>
           <input
-            id={`dura-${bateriaId}`}
-            className="os-campo os-campo-corte"
-            type="number"
-            min={0}
-            max={600}
-            value={puestos.duracion ?? ''}
-            onChange={(e) =>
-              setPuestos((p) => ({
-                ...p,
-                duracion: e.target.value === '' ? null : Number(e.target.value),
-              }))
-            }
+            id={`nombre-${bateriaId}`}
+            className="os-campo"
+            value={puestos.nombre}
+            onChange={(e) => escribir('nombre', e.target.value)}
           />
-          <span className="os-dato-flojo">minutos · {duracion(puestos.duracion)}</span>
-        </span>
-      </div>
 
-      <div className="os-bateria-dato">
-        <span className="os-bateria-titulo">Se le toma</span>
-        <ul className="os-tildes">
-          {TESTS.map((t) => (
-            <li key={t.nombre}>
-              <Punto
-                puesto={puestos.tests.includes(t.nombre)}
-                que={`${t.nombre} en esta batería`}
-                alternar={() => alternar('tests', t.nombre)}
-              >
-                {t.nombre}
-                {!t.marca && <span className="os-dato-flojo"> · sin marca</span>}
-              </Punto>
-            </li>
-          ))}
-          <li className="os-lista-opcional">{benziger}</li>
-        </ul>
-      </div>
+          <label className="os-etiqueta-campo" htmlFor={`incluye-${bateriaId}`}>
+            Qué incluye
+          </label>
+          {/* Alto fijo y no atado al contenido: con tres baterías una al lado de
+              la otra, un renglón de más en la del medio corría hacia abajo todo
+              lo que sigue y las tres columnas dejaban de compararse. */}
+          <textarea
+            id={`incluye-${bateriaId}`}
+            className="os-campo os-campo-bateria"
+            rows={3}
+            value={puestos.descripcion}
+            onChange={(e) => escribir('descripcion', e.target.value)}
+          />
 
-      <div className="os-bateria-dato">
-        <span className="os-bateria-titulo">Se le entrega al cliente</span>
-        <ul className="os-tildes">
-          {ENTREGABLES.map((e) => (
-            <li key={e.nombre}>
-              <Punto
-                puesto={puestos.outputs.includes(e.nombre)}
-                que={`${e.nombre} en esta batería`}
-                alternar={() => alternar('outputs', e.nombre)}
-              >
-                {e.nombre}
-              </Punto>
-            </li>
-          ))}
-        </ul>
-      </div>
+          <label className="os-etiqueta-campo" htmlFor={`quien-${bateriaId}`}>
+            Para quién se recomienda
+          </label>
+          <textarea
+            id={`quien-${bateriaId}`}
+            className="os-campo os-campo-bateria"
+            rows={2}
+            value={puestos.paraQuien}
+            onChange={(e) => escribir('paraQuien', e.target.value)}
+          />
+
+          <label className="os-etiqueta-campo" htmlFor={`dura-${bateriaId}`}>
+            Duración
+          </label>
+          <span className="os-bateria-duracion">
+            <input
+              id={`dura-${bateriaId}`}
+              className="os-campo os-campo-corte"
+              type="number"
+              min={0}
+              max={600}
+              value={puestos.duracion ?? ''}
+              onChange={(e) =>
+                setPuestos((p) => ({
+                  ...p,
+                  duracion: e.target.value === '' ? null : Number(e.target.value),
+                }))
+              }
+            />
+            <span className="os-dato-flojo">minutos · {duracion(puestos.duracion)}</span>
+          </span>
+        </div>
+      </section>
+
+      <section className="os-bateria-seccion os-bateria-alcance">
+        <span className="os-bateria-seccion-titulo">Alcance</span>
+        <div className="os-bateria-dato">
+          <span className="os-bateria-titulo">Se le toma</span>
+          <ul className="os-tildes">
+            {TESTS.map((t) => (
+              <li key={t.nombre}>
+                <Punto
+                  puesto={puestos.tests.includes(t.nombre)}
+                  que={`${t.nombre} en esta batería`}
+                  alternar={() => alternar('tests', t.nombre)}
+                >
+                  {t.nombre}
+                  {!t.marca && <span className="os-dato-flojo"> · sin marca</span>}
+                </Punto>
+              </li>
+            ))}
+            <li className="os-lista-opcional">{benziger}</li>
+          </ul>
+        </div>
+
+        <div className="os-bateria-dato">
+          <span className="os-bateria-titulo">Se le entrega al cliente</span>
+          <ul className="os-tildes">
+            {ENTREGABLES.map((e) => (
+              <li key={e.nombre}>
+                <Punto
+                  puesto={puestos.outputs.includes(e.nombre)}
+                  que={`${e.nombre} en esta batería`}
+                  alternar={() => alternar('outputs', e.nombre)}
+                >
+                  {e.nombre}
+                </Punto>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       {sinMarca && (
         <p className="os-form-nota">
