@@ -2004,6 +2004,36 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   margin-bottom: 10px;
 }
 
+/* Qué dice y qué se recomienda, en dos columnas: son las dos mitades de la
+   misma lectura y se corrigen mirando una contra la otra. Debajo de los seis
+   centímetros de ancho que necesita un párrafo para leerse, bajan a una sola
+   columna en vez de partirse en dos ranuras. */
+.os-redaccion-doble {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  column-gap: 20px;
+  align-items: stretch;
+}
+
+/* El rótulo arriba y el campo con todo lo que queda: así el campo llega hasta
+   el borde de su fila, que la define el texto más largo de las dos columnas. */
+.os-redaccion-campo {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Los dos campos de una lectura terminan a la misma altura, aunque uno lleve
+   tres renglones y el otro uno: dos cajas de distinto alto lado a lado se leen
+   como dos cosas sin relación, y son las dos mitades de lo mismo. Lo que mide
+   el texto va en `min-height` (ver `estirarCampo`), así que la altura propia no
+   le impide estirarse hasta la del vecino. */
+.os-redaccion-campo > textarea.os-campo {
+  width: 100%;
+  height: 100%;
+  margin-bottom: 0;
+}
+
 /* La entrevista por competencias reemplaza un documento entero, así que el
    campo arranca con la altura de una página corta y crece con lo que se
    escribe: una caja de dos renglones para un texto de mil palabras obliga a
@@ -2075,14 +2105,25 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin: 6px 0 18px;
-  padding-bottom: 10px;
+  margin: 0 0 22px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--os-linea);
   scroll-margin-top: 18px;
 }
 
-.os-panel + div > .os-area {
-  margin-top: 54px;
+/* Entre un área y la siguiente, aire de capítulo. El área es un `div` que
+   envuelve su título y sus tarjetas, así que la separación va entre esos
+   bloques y no contra la última tarjeta de arriba: contra la tarjeta, el
+   título quedaba pegado a lo que ya se había terminado de leer.
+
+   El primero se despega del índice por lo mismo: el buscador y el índice son
+   la cabecera de la pantalla, y la primera área empieza otra cosa. */
+.os-redacciones {
+  margin-top: 44px;
+}
+
+.os-redacciones > div + div {
+  margin-top: 56px;
 }
 
 .os-area-titulo {
