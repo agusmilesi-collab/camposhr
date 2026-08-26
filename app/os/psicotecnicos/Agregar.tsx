@@ -41,22 +41,28 @@ export type BateriaOpcion = { id: string; codigo: string; nombre: string };
 /** El valor del selector de pedido que abre el cajón. */
 const NUEVO = 'nuevo';
 
+/**
+ * El valor que lleva a reabrir un pedido.
+ *
+ * Los entregados enteros no se eligen desde acá: reabrir uno es una decisión
+ * sobre el trabajo con ese cliente y se toma en su ficha, donde están sus
+ * cerrados con lo que se le entregó a cada uno.
+ */
+const REABRIR = 'reabrir';
+
 export default function Agregar({
   pedidos,
-  cerrados = [],
   empresas,
   baterias,
   evaluadoras,
 }: {
-  pedidos: PedidoOpcion[];
   /**
-   * Los que ya se entregaron enteros.
+   * Los pedidos abiertos, y solo esos.
    *
-   * Van aparte al final del selector porque elegir uno reabre el pedido: es lo
-   * que pasa cuando el cliente pide más evaluaciones para la misma búsqueda, y
-   * el pedido vuelve a estar en curso con la fecha del día en que se reabrió.
+   * Un pedido entregado entero no se elige desde acá: reabrirlo es una decisión
+   * sobre el trabajo con ese cliente y se toma en su ficha, en Clientes.
    */
-  cerrados?: PedidoOpcion[];
+  pedidos: PedidoOpcion[];
   empresas: Opcion[];
   baterias: BateriaOpcion[];
   evaluadoras: Opcion[];
@@ -179,6 +185,7 @@ export default function Agregar({
             // El cajón se abre y el selector no se mueve: si se cancela, sigue
             // elegido el pedido que estaba.
             if (e.target.value === NUEVO) setCajon(true);
+            else if (e.target.value === REABRIR) router.push('/os/clientes');
             else setPedido(e.target.value);
           }}
           aria-label="Para qué pedido"
@@ -190,16 +197,7 @@ export default function Agregar({
             </option>
           ))}
           <option value={NUEVO}>+ Pedido nuevo</option>
-          {/* Los entregados enteros, al final y dichos: elegir uno lo reabre. */}
-          {cerrados.length > 0 && (
-            <optgroup label="Entregados · elegir uno reabre el pedido">
-              {cerrados.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.empresa} · {p.puesto}
-                </option>
-              ))}
-            </optgroup>
-          )}
+          <option value={REABRIR}>↗ Reabrir un pedido entregado</option>
         </select>
 
         <input

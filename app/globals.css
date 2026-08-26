@@ -5902,6 +5902,87 @@ body {
   accent-color: var(--ink);
   flex: none;
 }
+
+/* El cuestionario de perfil no es una batería más: se suma a la que se eligió,
+   así que va suelto y con aire arriba, para que no se lea como una cuarta
+   opción de la lista de la que viene. */
+.opcion-suma {
+  margin-top: 4px;
+}
+
+/* ---------- Los candidatos del pedido ----------
+   Vienen de a tandas para el mismo puesto: se agregan filas en vez de abrir el
+   formulario una vez por persona. */
+.gente-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.gente-t {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.btn-chico {
+  height: 30px;
+  padding: 0 11px;
+  font-size: 0.78rem;
+}
+
+/* Cada candidato en su caja: con tres o cuatro seguidos, sin un borde que los
+   separe no se sabe de quién es cada teléfono. */
+.gente-fila {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+}
+
+.gente-fila + .gente-fila {
+  margin-top: 8px;
+}
+
+.gente-fila-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gente-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.gente-sacar {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.76rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.gente-sacar:hover {
+  color: var(--ink);
+}
 .opcion-cuerpo {
   display: flex;
   flex-direction: column;

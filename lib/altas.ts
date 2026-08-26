@@ -18,7 +18,7 @@ import 'server-only';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
 import { select } from '@/lib/supabase';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import { ABIERTO, CERRADO } from '@/lib/pedido-campos';
+import { ABIERTO } from '@/lib/pedido-campos';
 
 const BUCKET = 'psicotecnicos';
 
@@ -83,21 +83,17 @@ export async function evaluadoras(): Promise<EmpresaOpcion[]> {
 /**
  * Los pedidos a los que se le puede colgar un candidato.
  *
- * Abiertos son los que tienen trabajo por hacer: el estado lo mantiene la base
- * sola, y un pedido se cierra cuando todos sus candidatos quedaron entregados.
+ * Son los que tienen trabajo por hacer, y solo esos: el estado lo mantiene la
+ * base sola, y un pedido se cierra cuando todos sus candidatos quedaron
+ * entregados. Reabrir uno es una decisión sobre el trabajo con ese cliente y se
+ * toma en su ficha, en Clientes.
  *
- * Los cerrados vienen aparte y no mezclados: cargarle un candidato a uno de
- * ellos es reabrirlo, que es lo que pasa cuando el cliente pide más
- * evaluaciones para la misma búsqueda. La lista de todos los días son los
- * abiertos; los otros están para ese caso.
+ * **Ordenados por empresa y después por puesto**, y no por fecha: el que carga
+ * viene leyendo un mail de un cliente y busca su nombre en la lista, no el
+ * pedido más reciente de cualquiera.
  */
 export async function pedidosAbiertos(): Promise<PedidoOpcion[]> {
   return pedidosDeEstado(ABIERTO);
-}
-
-/** Los que ya se entregaron enteros. Elegir uno lo reabre. */
-export async function pedidosCerrados(): Promise<PedidoOpcion[]> {
-  return pedidosDeEstado(CERRADO);
 }
 
 async function pedidosDeEstado(estado: string): Promise<PedidoOpcion[]> {
@@ -113,12 +109,17 @@ async function pedidosDeEstado(estado: string): Promise<PedidoOpcion[]> {
     )}&order=fecha_pedido.desc`,
     CACHE_PSICOTECNICOS
   );
-  return filas.map((f) => ({
-    id: f.id,
-    puesto: f.puesto,
-    empresa: f.empresas?.nombre ?? 'Sin empresa',
-    candidatos: f.evaluaciones?.length ?? 0,
-  }));
+  return filas
+    .map((f) => ({
+      id: f.id,
+      puesto: f.puesto,
+      empresa: f.empresas?.nombre ?? 'Sin empresa',
+      candidatos: f.evaluaciones?.length ?? 0,
+    }))
+    .sort(
+      (a, b) =>
+        a.empresa.localeCompare(b.empresa, 'es') || a.puesto.localeCompare(b.puesto, 'es')
+    );
 }
 
 /** El nombre de una empresa como parte de una dirección. */
