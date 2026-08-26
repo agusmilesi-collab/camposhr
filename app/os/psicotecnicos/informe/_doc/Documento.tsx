@@ -1,4 +1,4 @@
-import { BANDAS, bandaDe } from '@/lib/competencias';
+import { bandaDe, bandasDe, type Exigencia } from '@/lib/exigencia';
 import type { Informe } from '@/lib/informe';
 import {
   CONFIDENCIALIDAD,
@@ -53,8 +53,12 @@ function tono(puntaje: number | null, fuerza: number): string {
  * La barra tiene los cinco colores de `ESCALA_COLOR` y los rótulos las cuatro
  * bandas, porque Bajo se dibuja partido en naranja y rojo pero se informa como
  * una sola banda.
+ *
+ * Los cortes salen de la exigencia con la que se lee este informe, así que los
+ * anchos se mueven con ella: con una exigencia más baja, Adecuado empieza antes
+ * y se ve más ancho.
  */
-function EscalaBandas() {
+function EscalaBandas({ exigencia }: { exigencia: Exigencia }) {
   const tramos = ESCALA_COLOR.slice()
     .reverse()
     .map((t, i, todos) => {
@@ -62,13 +66,7 @@ function EscalaBandas() {
       return `${tono(t.desde, 1)} ${t.desde}% ${hasta}%`;
     });
 
-  const bandas = BANDAS.slice()
-    .reverse()
-    .map((b, i, todas) => ({
-      nombre: b.nombre,
-      desde: b.desde,
-      hasta: i === todas.length - 1 ? 100 : todas[i + 1].desde - 1,
-    }));
+  const bandas = bandasDe(exigencia).slice().reverse();
 
   return (
     <div className="inf-escala-bandas">
@@ -85,7 +83,7 @@ function EscalaBandas() {
         {bandas.map((b) => (
           <span key={b.nombre}>
             <em style={{ color: tono(b.desde === 0 ? 20 : b.desde, 1) }}>{b.nombre}</em>
-            {b.desde === 0 ? 'menos de 35' : `${b.desde} a ${b.hasta}`}
+            {b.desde === 0 ? `menos de ${exigencia.adecuado}` : `${b.desde} a ${b.hasta}`}
           </span>
         ))}
       </div>
@@ -120,7 +118,14 @@ function EscalaBandas() {
  * En SVG y no en canvas: es un dibujo de pocos trazos y tiene que sobrevivir a
  * la impresión del PDF.
  */
-function Velocimetro({ puntaje }: { puntaje: number | null }) {
+function Velocimetro({
+  puntaje,
+  exigencia,
+}: {
+  puntaje: number | null;
+  /** De dónde salen las marcas de corte que van por fuera del anillo. */
+  exigencia: Exigencia;
+}) {
   const CAJA = 116;
   const R = 44;
   const c = CAJA / 2;
@@ -160,13 +165,16 @@ function Velocimetro({ puntaje }: { puntaje: number | null }) {
     return tramos;
   };
 
+  /** Dónde arranca cada banda menos la de abajo, que arranca en cero. */
+  const cortes = bandasDe(exigencia).filter((b) => b.desde > 0);
+
   return (
     <div className="inf-gauge-caja">
       <svg className="inf-gauge" viewBox={`0 0 ${CAJA} ${CAJA}`} aria-hidden="true">
         {/* La escala entera. */}
         <path d={arco(0, 100)} className="inf-gauge-fondo" fill="none" strokeWidth="9" />
         {/* Dónde empieza cada banda, por fuera del anillo. */}
-        {BANDAS.filter((b) => b.desde > 0).map((b) => {
+        {cortes.map((b) => {
           const [x1, y1] = punto(b.desde, R + 6.5);
           const [x2, y2] = punto(b.desde, R + 10);
           return (
@@ -356,10 +364,10 @@ export default function Documento({
 
             <div className="inf-competencias">
               {inf.competencias.map((c) => {
-                const banda = bandaDe(c.puntaje);
+                const banda = bandaDe(c.puntaje, inf.exigencia);
                 return (
                   <article key={c.nombre} className="inf-competencia">
-                    <Velocimetro puntaje={c.puntaje} />
+                    <Velocimetro puntaje={c.puntaje} exigencia={inf.exigencia} />
                     <h3>{c.nombre}</h3>
                     {c.puntaje !== null && (
                       <span className="inf-banda-texto" style={{ color: tono(c.puntaje, 1) }}>
@@ -371,7 +379,7 @@ export default function Documento({
                 );
               })}
             </div>
-            <EscalaBandas />
+            <EscalaBandas exigencia={inf.exigencia} />
           </>
         )}
       </Capitulo>
@@ -502,6 +510,20 @@ export default function Documento({
             <div className="inf-piramide-caja">
               <Piramide nivel={inf.discursivo.nivel} textos={inf.discursivo.escalones} />
             </div>
+
+            {/* Qué es el escalón en el que quedó, con el lapso que abarca y lo
+                que lo define. Sin esto la pirámide dejaba al lector con el
+                nombre del nivel y sin saber qué implica. Se edita en
+                Configuración → Potencial. */}
+            {inf.discursivo.detalle && (
+              <div className="inf-estrato">
+                <h3>{inf.discursivo.nivel}</h3>
+                <p className="inf-estrato-lapso">
+                  Lapso del rol: {inf.discursivo.detalle.lapso}
+                </p>
+                <p>{inf.discursivo.detalle.caracteristicas}</p>
+              </div>
+            )}
 
             {/* Los dos van siempre, con o sin texto: el capítulo tiene tres
                 partes y una que falta se ve como una parte que falta, no como

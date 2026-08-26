@@ -1030,30 +1030,13 @@ export function calcularCompetencias(
 /**
  * Cómo se nombra cada puntaje en el informe.
  *
- * Las bandas salen del informe que la psicóloga entrega hoy. Los dos cortes de
- * arriba son los suyos y no se tocaron: 80 y 65.
- *
- * **El de abajo bajó de 50 a 35**, que es donde corta la referencia de la
- * industria: en Hogan, el estándar de evaluación laboral, bajo es hasta el 35 y
- * alto desde el 65, con todo el medio como promedio. Con el corte en 50, la
- * mitad exacta de la escala caía en el borde de Adecuado y cualquier ruido la
- * empujaba a Bajo. Ahora quien está en la mitad de todo queda en la mitad de
- * Adecuado, que es lo que se quiere decir de él.
+ * **Ya no vive acá.** Dónde corta cada banda es una decisión de negocio y no
+ * una propiedad del test, así que son perfiles guardados: `lib/exigencia.ts`.
+ * El pedido, o un candidato en particular, puede llevar uno menos exigente sin
+ * que ninguna competencia se recalcule.
  */
-export type Banda = 'Sobresaliente' | 'Alto' | 'Adecuado' | 'Bajo';
+export { bandaDe, bandasDe, type Banda } from '@/lib/exigencia';
 
-/** Dónde arranca cada banda. En orden, de la más alta a la más baja. */
-export const BANDAS: { nombre: Banda; desde: number }[] = [
-  { nombre: 'Sobresaliente', desde: 80 },
-  { nombre: 'Alto', desde: 65 },
-  { nombre: 'Adecuado', desde: 35 },
-  { nombre: 'Bajo', desde: 0 },
-];
-
-export function bandaDe(puntaje: number | null): Banda | null {
-  if (puntaje === null) return null;
-  return (BANDAS.find((b) => puntaje >= b.desde) as { nombre: Banda }).nombre;
-}
 
 /**
  * Por qué el puntaje no lleva el signo de porcentaje.

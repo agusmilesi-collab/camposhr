@@ -6,6 +6,7 @@ import Baremos from './Baremos';
 import Ponderaciones from './Ponderaciones';
 import Redacciones from './Redacciones';
 import Potencial from './Potencial';
+import Exigencia from './Exigencia';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,7 @@ const PESTANAS = [
   { clave: 'ponderaciones', texto: 'Velocímetro' },
   { clave: 'redacciones', texto: 'Redacciones' },
   { clave: 'potencial', texto: 'Potencial' },
+  { clave: 'exigencia', texto: 'Exigencia' },
 ];
 
 const QUE_HACE: Record<string, string> = {
@@ -46,6 +48,8 @@ const QUE_HACE: Record<string, string> = {
     'Lo que el informe escribe cuando una lectura se dispara. Cuándo entra cada una lo decide su índice y su corte.',
   potencial:
     'Los cuatro estratos del análisis discursivo: qué rol abarca cada uno, qué lapso proyecta y qué lo caracteriza. Es lo que se lee al ubicar a la persona en la pirámide.',
+  exigencia:
+    'A partir de qué puntaje una competencia se llama Adecuada, Alta o Sobresaliente. Se guardan varios perfiles y el pedido elige con cuál se lee.',
 };
 
 export default async function Configuracion({
@@ -87,6 +91,7 @@ export default async function Configuracion({
       {ver === 'ponderaciones' && <Ponderaciones />}
       {ver === 'redacciones' && <Redacciones />}
       {ver === 'potencial' && <Potencial />}
+      {ver === 'exigencia' && <Exigencia />}
     </Shell>
   );
 }
