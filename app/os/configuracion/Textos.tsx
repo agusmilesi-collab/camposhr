@@ -32,7 +32,6 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { estirar } from '../psicotecnicos/piezas';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 export type Corte = {
@@ -57,6 +56,25 @@ export type Renglon = {
   recomiendaFabrica: string;
   corte: Corte | null;
 };
+
+/**
+ * Un campo que crece con lo que tiene escrito, sin fijarle la altura.
+ *
+ * `estirar` pone la altura en `height`, y un elemento de grilla con altura
+ * propia deja de estirarse a la de su fila: los dos campos de una lectura
+ * quedaban con alturas distintas y el más corto, con el borde a media
+ * columna. Acá lo medido va a `min-height`, así que la fila la define el
+ * texto más largo y el otro se estira hasta igualarlo.
+ */
+function estirarCampo(caja: HTMLTextAreaElement | null): void {
+  if (!caja) return;
+  const antes = caja.style.minHeight;
+  caja.style.minHeight = '0';
+  caja.style.height = 'auto';
+  const alto = caja.scrollHeight + (caja.offsetHeight - caja.clientHeight);
+  caja.style.height = '';
+  caja.style.minHeight = alto > 0 ? `${alto}px` : antes;
+}
 
 /** Dónde vuelve "Volver arriba": el panel del buscador, con el índice. */
 const ARRIBA = 'redacciones-indice';
@@ -147,7 +165,7 @@ export default function Textos({
   // renglones y la altura vieja lo cortaba: acá se vuelve a medir.
   useEffect(() => {
     const alRedimensionar = () => {
-      caja.current?.querySelectorAll('textarea').forEach((t) => estirar(t));
+      caja.current?.querySelectorAll('textarea').forEach((t) => estirarCampo(t));
     };
     window.addEventListener('resize', alRedimensionar);
     return () => window.removeEventListener('resize', alRedimensionar);
@@ -281,7 +299,7 @@ export default function Textos({
         </div>
       </section>
 
-      <div ref={caja}>
+      <div className="os-redacciones" ref={caja}>
         {areas.map((g) => (
           <div key={`${g.area}-${g.indices[0].renglones[0].clave}`}>
             {/* El área es el nivel de arriba y se lee como un capítulo: entre
@@ -356,37 +374,45 @@ export default function Textos({
                         </span>
                       </div>
 
-                      <div className="os-redaccion">
-                        <label className="os-etiqueta-campo" htmlFor={`dice-${r.clave}`}>
-                          Qué dice
-                        </label>
-                        <textarea
-                          id={`dice-${r.clave}`}
-                          className="os-campo"
-                          rows={1}
-                          value={textos[r.clave].dice}
-                          ref={estirar}
-                          onChange={(e) => {
-                            estirar(e.target);
-                            escribirTexto(r.clave, 'dice', e.target.value);
-                          }}
-                        />
+                      {/* Los dos textos, uno al lado del otro: son las dos
+                          mitades de la misma lectura, qué significa y qué
+                          hacer, y se corrigen mirando una contra la otra. Uno
+                          abajo del otro obligaba a subir para comparar. */}
+                      <div className="os-redaccion os-redaccion-doble">
+                        <div className="os-redaccion-campo">
+                          <label className="os-etiqueta-campo" htmlFor={`dice-${r.clave}`}>
+                            Qué dice
+                          </label>
+                          <textarea
+                            id={`dice-${r.clave}`}
+                            className="os-campo"
+                            rows={1}
+                            value={textos[r.clave].dice}
+                            ref={estirarCampo}
+                            onChange={(e) => {
+                              estirarCampo(e.target);
+                              escribirTexto(r.clave, 'dice', e.target.value);
+                            }}
+                          />
+                        </div>
 
-                        <label className="os-etiqueta-campo" htmlFor={`rec-${r.clave}`}>
-                          Qué se recomienda
-                        </label>
-                        <textarea
-                          id={`rec-${r.clave}`}
-                          className="os-campo"
-                          rows={1}
-                          value={textos[r.clave].recomienda}
-                          placeholder="El diccionario no fija recomendación para esta lectura"
-                          ref={estirar}
-                          onChange={(e) => {
-                            estirar(e.target);
-                            escribirTexto(r.clave, 'recomienda', e.target.value);
-                          }}
-                        />
+                        <div className="os-redaccion-campo">
+                          <label className="os-etiqueta-campo" htmlFor={`rec-${r.clave}`}>
+                            Qué se recomienda
+                          </label>
+                          <textarea
+                            id={`rec-${r.clave}`}
+                            className="os-campo"
+                            rows={1}
+                            value={textos[r.clave].recomienda}
+                            placeholder="El diccionario no fija recomendación para esta lectura"
+                            ref={estirarCampo}
+                            onChange={(e) => {
+                              estirarCampo(e.target);
+                              escribirTexto(r.clave, 'recomienda', e.target.value);
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   );
