@@ -186,22 +186,6 @@ export default function Exigencias({
 
   return (
     <>
-      <section className="os-panel">
-        <div className="os-panel-cuerpo">
-          <p className="os-form-nota">
-            El puntaje de una competencia sale del protocolo y no se toca desde acá. Lo que se
-            decide es a partir de qué número se lo llama Adecuado, Alto o Sobresaliente. El
-            mismo 62 puede alcanzar para un rol operativo y quedarse corto para una gerencia:
-            por eso hay más de un perfil y el pedido elige con cuál se lee.
-          </p>
-          <p className="os-form-nota">
-            Un informe usa la exigencia del candidato; si no tiene, la de su pedido; y si
-            tampoco, la predeterminada. Mover un corte no recalcula ningún puntaje, cambia el
-            nombre que le toca.
-          </p>
-        </div>
-      </section>
-
       <div className="os-redacciones">
         {exigencias.map((e) => {
           const abierta = editando === e.id;
@@ -210,7 +194,11 @@ export default function Exigencias({
             <section className="os-panel os-indice-panel" key={e.id}>
               <div className="os-panel-top">
                 <h3 className="os-indice-nombre-titulo">{e.nombre}</h3>
-                {e.predeterminada && <span className="os-etiqueta-si">predeterminada</span>}
+                {e.predeterminada && (
+                  <span className="os-sello-estado os-verde" title="Es la que rige cuando el pedido no pide otra">
+                    Predeterminada
+                  </span>
+                )}
                 <span className="os-columna-monto">
                   {e.pedidos === 0 && e.candidatos === 0
                     ? 'sin usar'
