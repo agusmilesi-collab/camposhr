@@ -2015,10 +2015,6 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   min-width: 0;
 }
 
-/* Con una sola casilla el número sobra y el campo toma todo el ancho. */
-.os-variante:only-of-type {
-  grid-template-columns: minmax(0, 1fr);
-}
 
 .os-variante-n {
   padding-top: 7px;
@@ -2026,32 +2022,6 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   font-variant-numeric: tabular-nums;
   color: var(--os-suave);
   text-align: right;
-}
-
-/* Lo propio del Zulliger, cerrado hasta que se lo pide: en casi todas las
-   lecturas vale lo mismo que en Rorschach, y abierto siempre serían sesenta y
-   ocho bloques vacíos. */
-.os-zulliger {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--os-linea-suave);
-}
-
-.os-zulliger > summary {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.8rem;
-  color: var(--os-suave);
-  cursor: pointer;
-}
-
-.os-zulliger > summary:hover {
-  color: var(--os-tinta);
-}
-
-.os-zulliger[open] > summary {
-  margin-bottom: 10px;
 }
 
 /* Qué dice y qué se recomienda, en dos columnas: son las dos mitades de la
@@ -2073,11 +2043,23 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 }
 
 /* El campo ocupa el ancho de su columna, esté suelto o dentro de una de las
-   tres casillas numeradas. */
+   tres casillas numeradas.
+
+   Todas las casillas del diccionario miden lo mismo, escriban dos renglones o
+   cinco. Con la altura atada al contenido, cada lectura tenía seis cajas de
+   alto distinto y la pantalla quedaba dentada: no se podía comparar la
+   redacción de una con la de al lado ni recorrer la columna de un vistazo.
+   Cinco renglones alcanzan para el texto más largo del diccionario; lo que no
+   entre se recorre dentro de la caja. */
 .os-redaccion-campo textarea.os-campo {
   width: 100%;
   min-width: 0;
+  height: 112px;
   margin-bottom: 0;
+  padding: 7px 9px;
+  line-height: 1.45;
+  resize: none;
+  overflow-y: auto;
 }
 
 /* La entrevista por competencias reemplaza un documento entero, así que el
