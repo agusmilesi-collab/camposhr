@@ -107,6 +107,20 @@ const hoy = () => new Date().toISOString().slice(0, 10);
 /** A cuántas personas cubre una factura, sin contar los adicionales. */
 const cubre = (f: Factura) => f.renglones.filter((r) => r.evaluacionId !== null).length;
 
+/**
+ * Cuánto se cobró por un renglón.
+ *
+ * Las facturas que emite el OS guardan el importe de cada renglón. Las 24 que
+ * vinieron de Airtable traen el total de la factura y nada adentro: cuando ese
+ * total cubre un solo renglón, es el importe de ese renglón y se muestra. Con
+ * dos o más no hay forma de repartirlo, y ahí el renglón va sin cifra en vez de
+ * mostrar una inventada.
+ */
+function importeDe(f: Factura, r: Factura['renglones'][number]): number | null {
+  if (r.importe !== null) return r.importe;
+  return f.renglones.length === 1 ? f.importe : null;
+}
+
 /** Las que están para facturar, agrupadas por cliente. */
 export function AFacturar({
   pendientes,
@@ -558,10 +572,18 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
                           <span className="os-cubre-nombre">{r.persona ?? r.descripcion}</span>
                           <span className="os-cubre-puesto">{r.puesto ?? ''}</span>
                           <span className="os-cubre-importe">
-                            {r.importe === null ? (
-                              <span className="os-dato-falta">sin abrir</span>
+                            {importeDe(f, r) === null ? (
+                              <span
+                                className="os-dato-flojo"
+                                title="La factura no reparte su importe entre los renglones."
+                              >
+                                —
+                              </span>
                             ) : (
-                              formatoImporte(r.importe, f.moneda === 'DOL' ? 'USD' : 'ARS')
+                              formatoImporte(
+                                importeDe(f, r) as number,
+                                f.moneda === 'DOL' ? 'USD' : 'ARS'
+                              )
                             )}
                           </span>
                         </li>
