@@ -6589,6 +6589,19 @@ body {
   border-bottom: 1px solid var(--line);
 }
 
+/* El valor en pesos cuelga del precio en dólares: el que manda es el de
+   arriba, porque es el que sigue valiendo hasta que se emite la factura. */
+.pedir-linea-pesos {
+  display: block;
+  text-align: right;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.pedir-linea-usd {
+  margin-top: 2px;
+}
+
 .pedir-total {
   display: flex;
   justify-content: space-between;
