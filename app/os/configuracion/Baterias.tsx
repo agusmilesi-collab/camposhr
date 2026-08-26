@@ -21,6 +21,10 @@ import Bateria from './Bateria';
  * El precio lo puede actualizar cualquiera de las tres, y las actualizaciones
  * valen para adelante: cada evaluación conserva el que regía cuando entró. Ver
  * `supabase/precios-de-baterias.sql`.
+ *
+ * **Cada tarjeta va en tres secciones: precio, descripción y alcance.** Son las
+ * tres preguntas que se le hacen a una batería (cuánto sale, qué es, qué cubre)
+ * y separadas se comparan de a una entre las tres columnas.
  */
 
 
@@ -50,15 +54,18 @@ export default async function Baterias() {
             </div>
 
             <div className="os-bateria-cuerpo">
-              <Precio
-                bateriaId={b.id}
-                vigente={precioA(b.precios)}
-                proximo={proximo(b.precios)}
-                historia={b.precios}
-                dolar={cambio?.valor ?? null}
-                fechaDolar={cambio?.fecha ?? null}
-                benzigerUsd={BENZIGER_USD}
-              />
+              <section className="os-bateria-seccion">
+                <span className="os-bateria-seccion-titulo">Precio</span>
+                <Precio
+                  bateriaId={b.id}
+                  vigente={precioA(b.precios)}
+                  proximo={proximo(b.precios)}
+                  historia={b.precios}
+                  dolar={cambio?.valor ?? null}
+                  fechaDolar={cambio?.fecha ?? null}
+                  benzigerUsd={BENZIGER_USD}
+                />
+              </section>
 
               <Bateria
                 bateriaId={b.id}

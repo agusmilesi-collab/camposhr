@@ -5476,11 +5476,18 @@ th.os-tabla-contacto {
 }
 
 /**
- * La lista de tests absorbe el sobrante, así "Entrega" queda a la misma altura
- * en las tres aunque una batería tenga un test más que las otras.
+ * La lista de tests absorbe el sobrante, así "Se le entrega" queda a la misma
+ * altura en las tres aunque una batería tenga un test más que las otras.
  */
-.os-bateria-cuerpo > .os-bateria-dato:nth-last-child(2) {
+.os-bateria-alcance {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+}
+
+.os-bateria-alcance > .os-bateria-dato:first-of-type {
+  flex: 1;
+  margin-bottom: 14px;
 }
 
 .os-bateria-nombre {
@@ -8470,16 +8477,33 @@ textarea.os-exigencia-notas {
   font-variant-numeric: tabular-nums;
 }
 
-/* Los dos títulos de la batería: qué se le toma a la persona y qué recibe el
-   cliente. Son las dos listas que se comparan entre baterías, así que pesan más
-   que los rótulos de los campos que tienen arriba. */
+/* Las tres secciones de la tarjeta: precio, descripción y alcance. La línea las
+   separa y el título dice cuál es cuál, así se compara una sección por vez entre
+   las tres columnas en vez de leer la tarjeta entera de arriba abajo. */
+.os-bateria-seccion + .os-bateria-seccion {
+  padding-top: 15px;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-bateria-seccion-titulo {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--os-azul);
+}
+
+/* Los dos títulos de adentro de Alcance: qué se le toma a la persona y qué
+   recibe el cliente. Pesan más que los rótulos de los campos y menos que el
+   título de la sección que los contiene. */
 .os-bateria-titulo {
   display: block;
   margin-bottom: 5px;
-  font-size: 0.96rem;
+  font-size: 0.88rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--os-azul);
+  color: var(--os-tinta);
 }
 
 /* Alto fijo: con tres baterías al lado, un renglón de más en la del medio
