@@ -6094,10 +6094,13 @@ th.os-tabla-contacto {
  * corta y de altura pareja a propósito: se recorre con la vista mientras se
  * habla, y una tarjeta más alta que las otras se lee como más importante.
  */
+/* Cada dato ocupa lo que su contenido pide y no una porción igual de la fila.
+   En columnas iguales, "B2" se quedaba con el mismo ancho que un correo entero,
+   y el correo terminaba apretado contra el borde. */
 .os-entrevista-datos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 34px;
   padding: 16px 18px;
 }
 
@@ -6105,7 +6108,9 @@ th.os-tabla-contacto {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 100%;
 }
 
 /* El valor se lee entero: un correo cortado obliga a abrir la ficha para
@@ -6115,15 +6120,10 @@ th.os-tabla-contacto {
   overflow-wrap: anywhere;
 }
 
-/* El correo es el dato más largo y se queda con dos columnas. */
-.os-entrevista-correo {
-  grid-column: span 2;
-}
-
 /* La videollamada lleva un campo o un botón, así que pide más lugar que un
-   dato de una línea: se queda con dos columnas de la grilla. */
+   dato de una línea y se lleva lo que sobra de la fila. */
 .os-entrevista-videollamada {
-  grid-column: span 2;
+  flex: 1 1 280px;
 }
 
 .os-entrevista-enlace {
