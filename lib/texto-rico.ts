@@ -33,6 +33,7 @@
  */
 const PERMITIDAS = new Set([
   'p',
+  'div',
   'br',
   'strong',
   'b',
@@ -49,8 +50,14 @@ const PERMITIDAS = new Set([
 /** Las que no llevan cierre. */
 const SUELTAS = new Set(['br']);
 
-/** Las que el navegador escribe de dos formas para lo mismo. */
-const NORMAL: Record<string, string> = { b: 'strong', i: 'em' };
+/**
+ * Las que el navegador escribe de dos formas para lo mismo.
+ *
+ * El `div` entra acá y no en la lista negra: Chrome separa los renglones de un
+ * campo editable con `div`, y descartarlo pegaba dos renglones en uno cada vez
+ * que se guardaba.
+ */
+const NORMAL: Record<string, string> = { b: 'strong', i: 'em', div: 'p' };
 
 /** Las que ocupan un renglón propio: no pueden vivir adentro de una negrita. */
 const BLOQUES = new Set(['p', 'ul', 'ol', 'h3', 'h4']);
@@ -124,10 +131,66 @@ export function limpiarHtml(crudo: unknown): string {
   // abrir la lista que el navegador había metido adentro deja uno vacío, y eso
   // se pinta como un renglón en blanco que nadie escribió. Un párrafo con un
   // salto adentro sí se respeta, porque ese sí lo puso alguien.
-  return salida
-    .join('')
-    .replace(/<(p|h3|h4)><\/\1>/g, '')
-    .trim();
+  return enBloques(
+    salida
+      .join('')
+      .replace(/<(p|h3|h4)><\/\1>/g, '')
+      .trim()
+  );
+}
+
+/**
+ * Todo renglón adentro de un bloque.
+ *
+ * En un campo editable la primera línea queda suelta, fuera de todo: el
+ * navegador recién abre un bloque cuando se aprieta Enter. Sobre texto suelto,
+ * "esto es un subtítulo" no tiene dónde terminar y el navegador se lleva hasta
+ * el final del campo, así que marcar dos palabras convertía en título todo lo
+ * que venía después.
+ *
+ * Acá cada tramo suelto pasa a ser un párrafo, y un `<br>` de primer nivel
+ * separa dos: es un renglón aparte, que es lo que quiso quien lo escribió.
+ * Adentro de un bloque no se toca nada, y ahí el `<br>` sigue siendo un salto.
+ */
+function enBloques(html: string): string {
+  if (!html) return '';
+  const salida: string[] = [];
+  let suelto: string[] = [];
+  let dentro = 0;
+
+  const cerrar = () => {
+    const tramo = suelto.join('');
+    if (tieneTexto(tramo)) salida.push(`<p>${tramo}</p>`);
+    suelto = [];
+  };
+
+  const etiquetas = /<\/?([a-z0-9]+)>/gi;
+  let i = 0;
+  let m: RegExpExecArray | null;
+  while ((m = etiquetas.exec(html)) !== null) {
+    (dentro > 0 ? salida : suelto).push(html.slice(i, m.index));
+    const etiqueta = m[1].toLowerCase();
+    const esCierre = m[0][1] === '/';
+    if (BLOQUES.has(etiqueta)) {
+      if (esCierre) {
+        dentro--;
+        salida.push(m[0]);
+      } else {
+        if (dentro === 0) cerrar();
+        dentro++;
+        salida.push(m[0]);
+      }
+    } else if (etiqueta === 'br' && dentro === 0) {
+      cerrar();
+    } else {
+      (dentro > 0 ? salida : suelto).push(m[0]);
+    }
+    i = m.index + m[0].length;
+  }
+  (dentro > 0 ? salida : suelto).push(html.slice(i));
+  cerrar();
+
+  return salida.join('');
 }
 
 /**

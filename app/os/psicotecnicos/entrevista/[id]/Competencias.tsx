@@ -103,6 +103,8 @@ export default function Competencias({
   const router = useRouter();
   const [, empezar] = useTransition();
   const campo = useRef<HTMLDivElement>(null);
+  /** La caja entera: la barra y el campo. Sirve para saber si el foco sigue acá. */
+  const editor = useRef<HTMLDivElement>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /** Qué formatos tiene la selección de ahora, para prender los botones. */
@@ -126,6 +128,13 @@ export default function Competencias({
       setTecleos((n) => n + 1);
     }
   }, [guardado]);
+
+  // Chrome separa los renglones con `div` y deja la primera línea suelta, fuera
+  // de todo bloque. Con `p` cada renglón es un párrafo desde el principio, que
+  // es lo que hace que "esto es un subtítulo" tenga dónde empezar y terminar.
+  useEffect(() => {
+    document.execCommand('defaultParagraphSeparator', false, 'p');
+  }, []);
 
   useEffect(() => {
     const mirar = () => {
@@ -193,7 +202,7 @@ export default function Competencias({
       <div className="os-competencias">
         {/* La barra y el campo son una sola caja con un borde: separados se
             leían como dos controles, y la barra no se entendía de quién era. */}
-        <div className="os-editor">
+        <div className="os-editor" ref={editor}>
           <div className="os-formato-barra">
             {/* El tamaño va en un cajón y no en botones: son tres opciones que
                 se excluyen, y el cajón dice cuál rige sin tener que mirar cuál
@@ -247,7 +256,15 @@ export default function Competencias({
               e.preventDefault();
               document.execCommand('insertText', false, e.clipboardData.getData('text/plain'));
             }}
-            onBlur={() => guardar()}
+            // Elegir el tamaño en el desplegable saca el foco del campo. Sin
+            // esta guarda eso disparaba el guardado, y la respuesta llegaba
+            // con el texto de antes justo después de aplicar el formato: el
+            // campo se redibujaba con lo guardado y el título recién puesto
+            // desaparecía.
+            onBlur={(e) => {
+              if (editor.current?.contains(e.relatedTarget as Node | null)) return;
+              guardar();
+            }}
           />
         </div>
 
