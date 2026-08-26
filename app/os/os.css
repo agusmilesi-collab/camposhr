@@ -2064,21 +2064,24 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 }
 
 .os-indice-item {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 11px;
-  font-size: 0.78rem;
-  color: var(--os-tinta);
-  text-decoration: none;
+  padding: 9px 11px 10px;
   background: var(--os-panel-2);
   border: 1px solid var(--os-linea-suave);
   border-radius: 6px;
 }
 
-.os-indice-item:hover {
-  border-color: var(--os-azul);
+.os-indice-area {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--os-tinta);
+  text-decoration: none;
+}
+
+.os-indice-area:hover {
   color: var(--os-azul-fuerte);
 }
 
@@ -2096,6 +2099,36 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   color: var(--os-suave);
 }
 
+/* Los índices que contiene el área, debajo de su nombre: llegar a Lambda era
+   bajar al área y después buscarla entre las doce tarjetas. Uno por renglón y
+   sangrados respecto del área, que es lo que dice que cuelgan de ella; en tono
+   suave, porque el nivel que se lee primero es el área. */
+.os-indice-hijos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  margin-top: 7px;
+  padding-top: 7px;
+  padding-left: 14px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-indice-hijo {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.73rem;
+  line-height: 1.55;
+  color: var(--os-suave);
+  text-decoration: none;
+}
+
+.os-indice-hijo:hover {
+  color: var(--os-azul-fuerte);
+}
+
 /* ---------- El área, y adentro sus índices ----------
    El área es el nivel de arriba: entre una y la siguiente hay hasta quince
    lecturas, y un rótulo en versalitas se perdía entre las tarjetas. Va en
@@ -2108,7 +2141,9 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   margin: 0 0 22px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--os-linea);
-  scroll-margin-top: 18px;
+  /* La barra de arriba es pegajosa y mide 66 px: sin contarla, el enlace deja
+     el título tapado detrás de ella. */
+  scroll-margin-top: 84px;
 }
 
 /* Entre un área y la siguiente, aire de capítulo. El área es un `div` que
@@ -2152,6 +2187,12 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 
 .os-area-volver:hover {
   color: var(--os-azul-fuerte);
+}
+
+/* Cada índice es destino del enlace de arriba: se despega del borde para que
+   al bajar se vea su nombre y no arranque cortado. */
+.os-indice-panel {
+  scroll-margin-top: 84px;
 }
 
 /* El nombre del índice manda sobre sus ramas: se lee "Lambda" y adentro, qué

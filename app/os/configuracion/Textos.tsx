@@ -79,6 +79,11 @@ function estirarCampo(caja: HTMLTextAreaElement | null): void {
 /** Dónde vuelve "Volver arriba": el panel del buscador, con el índice. */
 const ARRIBA = 'redacciones-indice';
 
+/** El ancla de un índice. Sale de la clave de su primera rama, que es única. */
+function anclaDeIndice(clave: string): string {
+  return `indice-${clave}`;
+}
+
 /** El identificador del ancla de un área, para que el índice pueda bajar a ella. */
 function anclaDe(area: string): string {
   return `area-${area
@@ -290,10 +295,25 @@ export default function Textos({
               siete lugares distintos y no se podían comparar. */}
           <nav className="os-indice" aria-label="Áreas del diccionario">
             {areas.map((g) => (
-              <a key={g.area} className="os-indice-item" href={`#${anclaDe(g.area)}`}>
-                <span className="os-indice-nombre">{g.area}</span>
-                <span className="os-indice-cuenta">{g.cuantas}</span>
-              </a>
+              <div key={g.area} className="os-indice-item">
+                <a className="os-indice-area" href={`#${anclaDe(g.area)}`}>
+                  <span className="os-indice-nombre">{g.area}</span>
+                  <span className="os-indice-cuenta">{g.cuantas}</span>
+                </a>
+                {/* Debajo del área, sus índices: llegar a Lambda era bajar al
+                    área y después buscarla entre las doce tarjetas. */}
+                <div className="os-indice-hijos">
+                  {g.indices.map((ind) => (
+                    <a
+                      key={ind.renglones[0].clave}
+                      className="os-indice-hijo"
+                      href={`#${anclaDeIndice(ind.renglones[0].clave)}`}
+                    >
+                      {ind.indice}
+                    </a>
+                  ))}
+                </div>
+              </div>
             ))}
           </nav>
         </div>
@@ -317,7 +337,11 @@ export default function Textos({
             </div>
 
             {g.indices.map((ind) => (
-              <section className="os-panel os-indice-panel" key={ind.renglones[0].clave}>
+              <section
+                className="os-panel os-indice-panel"
+                key={ind.renglones[0].clave}
+                id={anclaDeIndice(ind.renglones[0].clave)}
+              >
                 {/* El índice manda sobre sus ramas: Lambda por abajo y Lambda
                     por arriba son dos ramas de una decisión sola, y en dos
                     tarjetas obligaban a leer dos veces el mismo encabezado para
