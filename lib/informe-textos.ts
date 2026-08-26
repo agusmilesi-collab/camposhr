@@ -180,5 +180,6 @@ export const FIRMAS: Record<string, { titulo: string; matricula: string; correo?
   'Lucila Campos': {
     titulo: 'Lic. en Psicología',
     matricula: '6338',
+    correo: 'lulicamposhr@gmail.com',
   },
 };
