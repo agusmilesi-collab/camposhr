@@ -29,6 +29,7 @@ type Fila = {
   seniority: string | null;
   estado: string;
   fecha_pedido: string | null;
+  reabierto_el: string | null;
   notas: string | null;
   contexto: string | null;
   empresas: { nombre: string } | null;
@@ -47,7 +48,7 @@ type Fila = {
 
 const CAMPOS =
   'id,puesto,empresa_id,bateria_id,con_benziger,familia,seniority,estado,' +
-  'fecha_pedido,notas,contexto,puesto_problemas,puesto_presion,' +
+  'fecha_pedido,reabierto_el,notas,contexto,puesto_problemas,puesto_presion,' +
   'puesto_interaccion,puesto_estabilidad,puesto_contacto_jefe,' +
   'puesto_innovacion,jefe_estilo,jefe_paciencia,jefe_emociones,' +
   'empresas(nombre),baterias(codigo),evaluaciones(id,estado,personas(nombre))';
@@ -68,7 +69,12 @@ function armar(f: Fila): Pedido {
     familia: f.familia,
     seniority: f.seniority,
     estado: f.estado,
-    fechaPedido: f.fecha_pedido,
+    // La fecha de la solicitud que está en curso. Reabierto, es la de la
+    // reapertura: contarlo desde el día en que se pidió la primera tanda diría
+    // que lleva meses abierto.
+    fechaPedido: f.reabierto_el ?? f.fecha_pedido,
+    reabierto: f.reabierto_el,
+    fechaOriginal: f.fecha_pedido,
     notas: f.notas,
     contexto: f.contexto,
     candidatos: evaluaciones.length,

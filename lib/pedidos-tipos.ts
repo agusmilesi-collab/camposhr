@@ -20,7 +20,18 @@ export type Pedido = {
   familia: string | null;
   seniority: string | null;
   estado: string;
+  /**
+   * Cuándo se pidió lo que está en curso.
+   *
+   * Si el pedido se reabrió, es la fecha de la reapertura: la solicitud abierta
+   * es la nueva, y contarla desde el día en que se pidió la primera tanda diría
+   * que lleva meses esperando.
+   */
   fechaPedido: string | null;
+  /** Cuándo se reabrió, si se reabrió. */
+  reabierto: string | null;
+  /** El día en que se pidió por primera vez, aunque se haya reabierto. */
+  fechaOriginal: string | null;
   notas: string | null;
   contexto: string | null;
   /** Cuántas evaluaciones cuelgan del pedido y cuántas ya se entregaron. */

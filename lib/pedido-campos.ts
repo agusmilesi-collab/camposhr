@@ -17,6 +17,16 @@ export type EstadoPedido = (typeof ESTADOS_PEDIDO)[number];
 /** El único estado en el que un pedido admite candidatos nuevos. */
 export const ABIERTO: EstadoPedido = 'En curso';
 
+/**
+ * El estado de un pedido entregado entero.
+ *
+ * No lo pone nadie a mano: la base lo mantiene sola con lo que pasa en sus
+ * evaluaciones (`pedido_estado_al_dia`). Cerrado es tener al menos un candidato
+ * y todos entregados; entrar uno nuevo lo devuelve a `ABIERTO` y le deja la
+ * fecha de la reapertura en `reabierto_el`.
+ */
+export const CERRADO: EstadoPedido = 'Finalizado';
+
 export const FAMILIAS = [
   'Comercial / Ventas',
   'Administración / Contable / Finanzas',

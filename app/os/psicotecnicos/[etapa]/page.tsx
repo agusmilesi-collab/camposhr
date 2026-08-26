@@ -29,6 +29,7 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
     ocultas,
     evaluadoras,
     pedidos,
+    cerrados,
     evaluadorasAlta,
     empresasAlta,
     bateriasAlta,
@@ -76,6 +77,7 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
           alta={
             <Agregar
               pedidos={pedidos}
+              cerrados={cerrados}
               empresas={empresasAlta}
               baterias={bateriasAlta}
               evaluadoras={evaluadorasAlta}

@@ -18,7 +18,17 @@ export type PedidoDelCliente = {
   id: string;
   puesto: string;
   estado: string | null;
+  /**
+   * Cuándo se pidió.
+   *
+   * Si el pedido se reabrió, es la fecha de la reapertura: la solicitud que
+   * está en curso es la nueva, y contarla desde el día en que se pidió la
+   * primera tanda diría que lleva meses abierta.
+   */
   fecha: string | null;
+  /** Cuándo se reabrió, si se reabrió. La original queda en `fechaOriginal`. */
+  reabierto: string | null;
+  fechaOriginal: string | null;
   evaluaciones: number;
 };
 
@@ -83,14 +93,21 @@ type FilaEmpresa = {
   token_portal: string | null;
   informes_visibles: boolean | null;
   activa: boolean | null;
-  pedidos: { id: string; puesto: string; estado: string | null; fecha_pedido: string | null; evaluaciones: { id: string }[] }[];
+  pedidos: {
+    id: string;
+    puesto: string;
+    estado: string | null;
+    fecha_pedido: string | null;
+    reabierto_el: string | null;
+    evaluaciones: { id: string }[];
+  }[];
   cotizaciones: { id: string; estado: string | null }[];
 };
 
 const CAMPOS =
   'id,nombre,razon_social,cuit,condicion_iva,email_facturacion,contacto,' +
   'direccion_fiscal,rubro,tamano,notas,token_portal,informes_visibles,activa,' +
-  'pedidos(id,puesto,estado,fecha_pedido,evaluaciones(id)),cotizaciones(id,estado)';
+  'pedidos(id,puesto,estado,fecha_pedido,reabierto_el,evaluaciones(id)),cotizaciones(id,estado)';
 
 export async function listarClientes(): Promise<Cliente[]> {
   const [enSupabase, conToken] = await Promise.all([
@@ -136,7 +153,9 @@ export async function listarClientes(): Promise<Cliente[]> {
         id: p.id,
         puesto: p.puesto,
         estado: p.estado,
-        fecha: p.fecha_pedido,
+        fecha: p.reabierto_el ?? p.fecha_pedido,
+        reabierto: p.reabierto_el,
+        fechaOriginal: p.fecha_pedido,
         evaluaciones: p.evaluaciones?.length ?? 0,
       }))
       .sort((a, b) => (b.fecha ?? '').localeCompare(a.fecha ?? '')),
