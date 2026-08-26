@@ -8,6 +8,10 @@
  * tienen: "ma" deja Macro Agro. Se busca sin acentos y en cualquier parte del
  * nombre, porque nadie recuerda cómo empieza exactamente el nombre cargado.
  *
+ * **La lista aparece al escribir y no al entrar al campo.** El campo se toca
+ * para escribir; desplegar los doce encima del formulario antes de la primera
+ * letra tapa lo de abajo sin decir nada.
+ *
  * **Lo que no está se puede dar de alta desde el mismo campo.** Escribir
  * "Carrefour" y que no aparezca nada no es un callejón: la última opción de la
  * lista lo abre como cliente nuevo. Cargar el pedido de un cliente que todavía
@@ -47,9 +51,7 @@ export default function BuscarCliente({
   const caja = useRef<HTMLDivElement>(null);
 
   const busca = clave(texto);
-  const encontrados = busca
-    ? empresas.filter((e) => clave(e.nombre).includes(busca))
-    : empresas;
+  const encontrados = busca ? empresas.filter((e) => clave(e.nombre).includes(busca)) : [];
   /**
    * Dar de alta lo escrito.
    *
@@ -130,11 +132,13 @@ export default function BuscarCliente({
           setMarcado(0);
           setAbierto(true);
         }}
-        onFocus={() => setAbierto(true)}
         onKeyDown={alTeclado}
       />
 
-      {abierto && (
+      {/* La lista aparece al escribir y no al entrar al campo: desplegar los
+          doce clientes sobre el formulario cada vez que alguien toca el campo
+          tapa lo de abajo para no decir nada que no esté escribiendo. */}
+      {abierto && busca.length > 0 && (
         <ul className="os-buscar-lista" role="listbox">
           {encontrados.map((e, i) => (
             <li key={e.id}>
