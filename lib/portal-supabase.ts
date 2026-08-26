@@ -79,9 +79,14 @@ async function cobrosDe(ids: string[]): Promise<Map<string, boolean>> {
   return cobro;
 }
 
-/** La empresa a la que corresponde ese enlace, si es de una migrada. */
 /**
  * Qué empresa abre ese enlace.
+ *
+ * **Valen los dos enlaces de una empresa.** Cuando los datos vivían en Airtable
+ * cada cliente recibió un enlace, y al migrar se le generó otro: el viejo es el
+ * que quedó guardado del lado del cliente, y hasta el 26/8/2026 abría el portal
+ * anterior, sin facturación y con los datos que Airtable ya no recibe. Los dos
+ * abren la misma empresa y muestran lo mismo.
  *
  * También la usa el alta de pedido: el pedido se cuelga de la empresa del
  * token y no de una constante, así que quien carga solo puede cargar en la
@@ -91,9 +96,10 @@ export async function empresaDelToken(
   token: string
 ): Promise<{ id: string; nombre: string } | null> {
   if (!TOKEN_VALIDO.test(token)) return null;
+  const t = encodeURIComponent(token);
   const filas = await select<{ id: string; nombre: string }>(
     'empresas',
-    `select=id,nombre&token_portal=eq.${encodeURIComponent(token)}&limit=1`
+    `select=id,nombre&or=(token_portal.eq.${t},token_portal_anterior.eq.${t})&limit=1`
   );
   return filas[0] ?? null;
 }
