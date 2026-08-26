@@ -2104,10 +2104,12 @@ html[data-os-lateral='compacta'] .os-pie-quien {
    sangrados respecto del área, que es lo que dice que cuelgan de ella; en tono
    suave, porque el nivel que se lee primero es el área. */
 .os-indice-hijos {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
+  /* En dos columnas: con ocho índices en una sola, la tarjeta del área se
+     estiraba el doble de alto que las de al lado y el índice entero dejaba de
+     entrar de un vistazo. Se llenan de arriba abajo, como un índice impreso: la
+     primera columna completa y después la segunda. */
+  columns: 2;
+  column-gap: 14px;
   margin-top: 7px;
   padding-top: 7px;
   padding-left: 14px;
@@ -2115,12 +2117,13 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 }
 
 .os-indice-hijo {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: block;
+  /* Un nombre que no entre baja de renglón antes que partirse entre columnas.
+     Recortarlo con puntos suspensivos escondería cuál índice es, que es lo
+     único que este renglón tiene para decir. */
+  break-inside: avoid;
   font-size: 0.73rem;
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--os-suave);
   text-decoration: none;
 }

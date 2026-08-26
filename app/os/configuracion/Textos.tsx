@@ -281,11 +281,15 @@ export default function Textos({
             aria-label="Buscar una lectura"
             onChange={(e) => setFiltro(e.target.value)}
           />
-          <p className="os-form-nota">
-            {visibles.length === renglones.length
-              ? `${renglones.length} lecturas`
-              : `${visibles.length} de ${renglones.length} lecturas`}
-          </p>
+          {/* La cuenta sale solo cuando hay algo escrito en el buscador: sin
+              filtro son siempre las mismas sesenta y ocho, y el índice ya las
+              reparte área por área. Buscando sí hace falta, porque dice cuánto
+              quedó de lo que hay. */}
+          {busca && (
+            <p className="os-form-nota">
+              {visibles.length} de {renglones.length} lecturas
+            </p>
+          )}
 
           {/* Índice de áreas: son siete y cada una tiene entre cuatro y quince
               lecturas, así que sin esto llegar a la última es bajar a ciegas.
