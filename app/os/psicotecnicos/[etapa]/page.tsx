@@ -87,7 +87,7 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
       {/* Las tres etapas de una entrevista, en un tablero: citar, agendar y
           analizar. Se cambia de etapa arrastrando la tarjeta. */}
       {seccion.ruta === 'entrevistas' && (
-        <Entrevistas filas={filas} evaluadoras={evaluadoras} pedidos={pedidos} />
+        <Entrevistas filas={filas} />
       )}
 
       {/* El registro de lo entregado, con el seguimiento como una columna más.

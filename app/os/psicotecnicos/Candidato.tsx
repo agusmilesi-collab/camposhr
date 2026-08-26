@@ -1,38 +1,63 @@
 'use client';
 
 /**
- * Los datos de un candidato, en el mismo cajón que los carga.
+ * Los datos de un candidato, en un cajón.
  *
- * Se abre tocando su tarjeta en el tablero. Trae los cinco campos que se
- * cargaron y nada más: pedido, nombre, teléfono, correo y evaluadora, más el
- * CV. Corregir un teléfono mal tipeado no debería costar salir de la pantalla
- * y volver.
+ * Trae los cinco campos que se cargaron al darlo de alta y nada más: pedido,
+ * nombre, teléfono, correo y evaluadora, más el CV. Corregir un teléfono mal
+ * tipeado no debería costar salir de la pantalla y volver.
  *
- * La etapa se muestra y no se edita: se cambia arrastrando la tarjeta, que es
- * el gesto de esta pantalla. La evaluadora sí, y sigue la misma regla que el
- * arrastre: darle dueño a alguien que estaba en "Sin asignar" la manda a "Por
- * citar", y sacárselo la trae de vuelta.
+ * Se abre desde la pestaña Datos de su ficha, que es donde esos campos se leen.
+ * Estaba colgado de la tarjeta del tablero, y ahí competía con lo que la
+ * tarjeta hace, que es arrastrarse entre columnas.
  *
- * Todo lo demás del candidato (manchas, sumario, tests, informe) vive en su
- * ficha, que se abre desde el pie.
+ * La etapa se muestra y no se edita: se cambia arrastrando la tarjeta en el
+ * tablero. La evaluadora sí, y sigue la misma regla que el arrastre: darle
+ * dueño a alguien que estaba en "Sin asignar" la manda a "Por citar", y
+ * sacárselo la trae de vuelta.
  */
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import type { Evaluacion } from '@/lib/psicotecnicos';
-import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
+import { COLOR_ETAPA, type Origen } from '@/lib/psicotecnicos-tipos';
 import type { PedidoOpcion } from './Agregar';
+
+/**
+ * Lo que el cajón necesita saber del candidato.
+ *
+ * Son once campos y no la evaluación entera: así lo alimenta tanto el tablero,
+ * que tiene una `Evaluacion`, como la ficha, que tiene otra cosa, sin que
+ * ninguno de los dos tenga que fabricar los campos que no usa.
+ */
+export type DatosDelCandidato = {
+  id: string;
+  /** De qué lado vive esta fila. Decide a dónde va un guardado. */
+  origen: Origen;
+  nombre: string;
+  empresa: string;
+  puesto: string;
+  pedidoId: string | null;
+  email: string | null;
+  telefono: string | null;
+  evaluadora: string | null;
+  etapa: string;
+  /** Si la persona ya tiene el CV guardado. */
+  tieneCv: boolean;
+};
 
 export default function Candidato({
   e,
   pedidos,
   evaluadoras,
+  enLaFicha = false,
   onCerrar,
 }: {
-  e: Evaluacion;
+  e: DatosDelCandidato;
   pedidos: PedidoOpcion[];
   evaluadoras: string[];
+  /** Abierto desde la ficha: ahí no se ofrece volver a abrirla. */
+  enLaFicha?: boolean;
   onCerrar: () => void;
 }) {
   const router = useRouter();
@@ -240,9 +265,14 @@ export default function Candidato({
               >
                 {enviando ? 'Guardando…' : 'Guardar'}
               </button>
-              <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}`}>
-                Abrir la ficha completa
-              </Link>
+              {/* El salto a la ficha solo cuando el cajón se abrió desde otro
+                  lado: adentro de la ficha, ofrecer abrirla no lleva a ningún
+                  lado. */}
+              {!enLaFicha && (
+                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}`}>
+                  Abrir la ficha completa
+                </Link>
+              )}
             </div>
           </form>
 

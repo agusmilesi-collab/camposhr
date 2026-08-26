@@ -15,6 +15,7 @@ import RelojRaven from './RelojRaven';
 import SondeoRaven from './SondeoRaven';
 import Bateria from '../../Bateria';
 import Whatsapp from '../../Whatsapp';
+import { enlaceDelCv } from '@/lib/cv';
 import Orden from './Orden';
 import Competencias from './Competencias';
 
@@ -78,7 +79,9 @@ const RAVEN: Record<EstadoRaven, { texto: string; detalle: string; color: string
  * trabajo, con lo cargado en una sin aparecer en la otra hasta recargar.
  */
 export default async function HojaDeEntrevista({ id }: { id: string }) {
-  const e: Entrevista | null = await entrevistaDe(id);
+  // El CV se firma al dibujar la hoja: es lo primero que se mira antes de
+  // hablar con la persona, y buscarlo en otra pantalla es abrir otra pantalla.
+  const [e, cv] = await Promise.all([entrevistaDe(id), enlaceDelCv(id)]);
   if (!e) return null;
 
   const cuando = e.cuando ? `${diaDeLaSemana(e.cuando)} ${fechaHora(e.cuando)}` : null;
@@ -286,6 +289,21 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
           <span className="os-dato-rotulo">Correo</span>
           <span className="os-dato-valor">
             {e.email ? <a href={`mailto:${e.email}`}>{e.email}</a> : 'Sin correo'}
+          </span>
+        </div>
+        {/* El CV, al lado del correo: es lo primero que se lee antes de la
+            entrevista, para saber con quién se va a hablar. El enlace se firma
+            por cinco minutos, que es lo que tarda en abrirse. */}
+        <div>
+          <span className="os-dato-rotulo">CV</span>
+          <span className="os-dato-valor">
+            {cv ? (
+              <a href={cv} target="_blank" rel="noreferrer">
+                Abrir el CV
+              </a>
+            ) : (
+              'Sin cargar'
+            )}
           </span>
         </div>
       </section>
