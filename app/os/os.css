@@ -2020,66 +2020,135 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 
 /* ---------- Diccionario de lecturas ----------
    Son sesenta y ocho repartidas en siete áreas: sin un índice arriba, llegar a
-   la última es bajar a ciegas. Los nombres van en fila y se acomodan solos. */
+   la última es bajar a ciegas.
+
+   Van en columnas del mismo ancho y no en fila al ancho de cada nombre: el
+   nombre arranca en el borde izquierdo de su columna y la cuenta cierra contra
+   el derecho, así las siete cuentas caen alineadas y se comparan de un vistazo,
+   como en el índice de un libro. */
 .os-indice {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 6px;
   margin-top: 14px;
 }
 
 .os-indice-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 10px;
-  font-size: 0.76rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 11px;
+  font-size: 0.78rem;
   color: var(--os-tinta);
   text-decoration: none;
   background: var(--os-panel-2);
   border: 1px solid var(--os-linea-suave);
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 .os-indice-item:hover {
-  border-color: var(--os-linea);
+  border-color: var(--os-azul);
+  color: var(--os-azul-fuerte);
+}
+
+.os-indice-nombre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .os-indice-cuenta {
+  flex: none;
   font-variant-numeric: tabular-nums;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--os-suave);
 }
 
-/* El rótulo del área también es el destino del índice: se despega del panel
-   anterior para que al bajar quede a la vista y no pegado al borde. */
-.os-rotulo-ancla {
+/* ---------- El área, y adentro sus índices ----------
+   El área es el nivel de arriba: entre una y la siguiente hay hasta quince
+   lecturas, y un rótulo en versalitas se perdía entre las tarjetas. Va en
+   tamaño de capítulo, con la cuenta al lado y la vuelta al índice al final del
+   renglón, que es lo que se busca después de leer un área entera. */
+.os-area {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 6px 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--os-linea);
   scroll-margin-top: 18px;
 }
 
-.os-rotulo-cuenta {
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: none;
+.os-panel + div > .os-area {
+  margin-top: 54px;
+}
+
+.os-area-titulo {
+  font-size: 1.24rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--os-tinta);
+}
+
+.os-area-cuenta {
+  font-size: 0.76rem;
   color: var(--os-suave);
 }
 
-/* El título de una lectura: el índice, y al lado contra qué entra. El corte se
-   edita ahí mismo, así que el campo es del ancho del número y no del renglón. */
-.os-lectura-titulo {
+.os-area-volver {
+  margin-left: auto;
+  font-size: 0.76rem;
+  color: var(--os-suave);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.os-area-volver::before {
+  content: '↑ ';
+}
+
+.os-area-volver:hover {
+  color: var(--os-azul-fuerte);
+}
+
+/* El nombre del índice manda sobre sus ramas: se lee "Lambda" y adentro, qué
+   pasa por abajo y qué por arriba. */
+.os-indice-nombre-titulo {
+  font-size: 1.02rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.os-indice-ramas {
+  font-size: 0.72rem;
+  color: var(--os-suave);
+}
+
+/* Una rama del índice. La segunda y las que siguen se separan con una línea:
+   son la misma decisión mirada del otro lado, no otra tarjeta. */
+.os-rama {
+  padding: 14px 18px 16px;
+}
+
+.os-rama + .os-rama {
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-rama-cabeza {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  min-width: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  margin-bottom: 12px;
 }
 
-.os-lectura-indice::after {
-  content: ' ·';
-  color: var(--os-suave);
+/* Contra qué entra: cuelga del índice, así que va en tono suave y no compite
+   con el nombre de arriba. */
+.os-rama-cuando {
+  font-size: 0.84rem;
+  color: var(--os-tinta-media);
 }
 
 .os-lectura-corte {
