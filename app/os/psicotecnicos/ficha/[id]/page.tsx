@@ -23,6 +23,7 @@ import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/inf
 import { bandasDeLaHoja } from '@/lib/redacciones';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
+import Hoja from '../../entrevista/[id]/Hoja';
 import {
   llevaDiscursivo,
   nivelesQueRigen,
@@ -71,6 +72,13 @@ type Pestana = {
  */
 const PESTANAS: Pestana[] = [
   { clave: 'datos', texto: 'Datos', cuantos: () => 0 },
+  // Segunda, y antes que todo lo que produce: es lo primero que pasa con la
+  // persona, y era una pantalla aparte a la que había que saltar y volver.
+  {
+    clave: 'entrevista',
+    texto: 'Entrevista',
+    cuantos: (f) => (f.cabecera.entrevista_competencias ? 1 : 0),
+  },
   { clave: 'manchas', texto: 'Manchas', cuantos: (f) => f.manchas.length },
   // El Benziger no es de todos: lo agrega el pedido. En los que no lo llevan la
   // pestaña salía igual, vacía, y una pestaña vacía se lee como trabajo
@@ -664,12 +672,23 @@ export default async function FichaPagina({
           );
         })}
       </nav>
-        <Link className="os-boton os-boton-firme" href={`/os/psicotecnicos/entrevista/${params.id}`}>
-          Ver entrevista
+        {/* La hoja suelta, para tomarla con la persona enfrente y sin la ficha
+            alrededor. Adentro está la misma, en su pestaña. */}
+        <Link
+          className="os-boton"
+          href={`/os/psicotecnicos/entrevista/${params.id}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Hoja de entrevista
         </Link>
       </div>
 
       {ver === 'datos' && <Datos f={ficha} id={params.id} />}
+      {/* La hoja con la que se toma la entrevista, la misma que se abre desde
+          la lista de entrevistas. Sin panel alrededor: trae sus propias
+          tarjetas. */}
+      {ver === 'entrevista' && <Hoja id={params.id} />}
       {ver === 'manchas' && (
         <>
           {desajuste && (
