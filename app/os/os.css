@@ -8285,9 +8285,14 @@ textarea.os-exigencia-notas {
   align-items: stretch;
 }
 
-/* Sin margen propio: el segundo panel lo hereda de la regla que separa paneles
-   apilados, y en una fila eso lo bajaba dieciocho píxeles respecto del primero.
-   La separación entre los dos la pone el `gap` del grid. */
+/* El aire con lo de arriba lo pone la fila, y adentro ninguno lleva margen: el
+   segundo lo heredaba de la regla que separa paneles apilados, y en una fila
+   eso lo bajaba dieciocho píxeles respecto del primero. La separación entre las
+   dos columnas la pone el `gap`. */
+.os-tests-fila {
+  margin-top: 18px;
+}
+
 .os-tests-fila > .os-panel {
   display: flex;
   flex-direction: column;
