@@ -90,3 +90,42 @@ export function cortesValidos(c: {
   }
   return null;
 }
+
+/**
+ * El color de cada banda.
+ *
+ * Bajo va partido en dos: la mitad de abajo en rojo y la de arriba en naranja.
+ * No son dos bandas, es una sola que se informa junta, pero un 5 y un 30 no se
+ * leen igual y el color lo dice sin nombrarlo.
+ */
+const COLOR: Record<Banda | 'MuyBajo', [number, number, number]> = {
+  Sobresaliente: [58, 122, 74],
+  Alto: [110, 163, 118],
+  Adecuado: [67, 100, 143],
+  Bajo: [193, 89, 26],
+  MuyBajo: [140, 59, 59],
+};
+
+/**
+ * El color que le toca a un puntaje con esta exigencia.
+ *
+ * Sale de la banda y no de un número fijo, así que sigue a los cortes: con una
+ * exigencia más baja, el 30 pasa a ser Adecuado y se pinta de azul. Con los
+ * tramos escritos a mano ese 30 salía naranja al lado de la palabra Adecuado.
+ */
+export function colorDe(puntaje: number, e: Exigencia = DE_FABRICA): [number, number, number] {
+  const banda = bandaDe(puntaje, e);
+  if (banda !== 'Bajo') return COLOR[banda ?? 'Bajo'];
+  return puntaje < e.adecuado / 2 ? COLOR.MuyBajo : COLOR.Bajo;
+}
+
+/** Los cortes del degradado de la barra, en porcentaje de la escala. */
+export function tramosDe(e: Exigencia): { desde: number; rgb: [number, number, number] }[] {
+  return [
+    { desde: 0, rgb: COLOR.MuyBajo },
+    { desde: e.adecuado / 2, rgb: COLOR.Bajo },
+    { desde: e.adecuado, rgb: COLOR.Adecuado },
+    { desde: e.alto, rgb: COLOR.Alto },
+    { desde: e.sobresaliente, rgb: COLOR.Sobresaliente },
+  ];
+}

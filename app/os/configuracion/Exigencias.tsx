@@ -15,20 +15,18 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { LARGO_NOMBRE, bandasDe, cortesValidos, type Exigencia } from '@/lib/exigencia';
+import {
+  LARGO_NOMBRE,
+  bandasDe,
+  colorDe,
+  cortesValidos,
+  tramosDe,
+  type Exigencia,
+} from '@/lib/exigencia';
 
-/** Los colores de la escala del informe, para que la barra se vea igual. */
-const COLORES: { desde: number; rgb: [number, number, number] }[] = [
-  { desde: 80, rgb: [58, 122, 74] },
-  { desde: 65, rgb: [110, 163, 118] },
-  { desde: 35, rgb: [67, 100, 143] },
-  { desde: 18, rgb: [193, 89, 26] },
-  { desde: 0, rgb: [140, 59, 59] },
-];
-
-function tono(puntaje: number): string {
-  const base = COLORES.find((t) => puntaje >= t.desde) ?? COLORES[4];
-  return `rgb(${base.rgb.join(', ')})`;
+/** Un color como se escribe en el estilo. */
+function tono(rgb: [number, number, number]): string {
+  return `rgb(${rgb.join(', ')})`;
 }
 
 type Fila = Exigencia & { pedidos: number; candidatos: number };
@@ -106,28 +104,51 @@ export default function Exigencias({
    *
    * El ancho de cada tramo es el ancho real de la banda, así que se ve de una
    * cuánto de la escala se lleva cada una. Adecuado es la que más se mueve.
+   *
+   * Cuando el perfil está abierto, los tres cortes se arrastran sobre la barra
+   * misma. Con las barras deslizantes en filas aparte había que mirar dos cosas
+   * a la vez para entender qué se estaba moviendo: acá el pulgar está sobre el
+   * borde que separa las dos bandas que cambia.
    */
-  function barra(e: { sobresaliente: number; alto: number; adecuado: number }) {
-    const bandas = bandasDe(e as Exigencia).slice().reverse();
-    const tramos = COLORES.slice()
-      .reverse()
-      .map((t, i, todos) => {
-        const hasta = i === todos.length - 1 ? 100 : todos[i + 1].desde;
-        return `${tono(t.desde)} ${t.desde}% ${hasta}%`;
-      });
+  function barra(
+    e: { sobresaliente: number; alto: number; adecuado: number },
+    editable = false
+  ) {
+    const bandas = bandasDe(e as Exigencia)
+      .slice()
+      .reverse();
+    const tramos = tramosDe(e as Exigencia).map((t, i, todos) => {
+      const hasta = i === todos.length - 1 ? 100 : todos[i + 1].desde;
+      return `${tono(t.rgb)} ${t.desde}% ${hasta}%`;
+    });
     return (
       <div className="os-exigencia-escala">
-        <span
-          className="os-exigencia-barra"
-          style={{ backgroundImage: `linear-gradient(90deg, ${tramos.join(', ')})` }}
-        />
+        <div className={`os-exigencia-pista${editable ? ' os-exigencia-viva' : ''}`}>
+          <span
+            className="os-exigencia-barra"
+            style={{ backgroundImage: `linear-gradient(90deg, ${tramos.join(', ')})` }}
+          />
+          {editable &&
+            CORTES.map((c) => (
+              <input
+                key={c.clave}
+                className="os-exigencia-manija"
+                type="range"
+                min={1}
+                max={100}
+                value={e[c.clave]}
+                aria-label={c.rotulo}
+                onChange={(ev) => mover(c.clave, Number(ev.target.value))}
+              />
+            ))}
+        </div>
         <div
           className="os-exigencia-rotulos"
           style={{ gridTemplateColumns: bandas.map((b) => `${b.hasta + 1 - b.desde}fr`).join(' ') }}
         >
           {bandas.map((b) => (
             <span key={b.nombre}>
-              <em style={{ color: tono(b.desde === 0 ? 20 : b.desde) }}>{b.nombre}</em>
+              <em style={{ color: tono(colorDe(b.hasta, e as Exigencia)) }}>{b.nombre}</em>
               {b.desde === 0 ? `menos de ${e.adecuado}` : `${b.desde} a ${b.hasta}`}
             </span>
           ))}
@@ -204,7 +225,7 @@ export default function Exigencias({
               </div>
 
               <div className="os-panel-cuerpo">
-                {barra(v)}
+                {barra(v, abierta)}
 
                 {abierta && puesta ? (
                   <div className="os-exigencia-edicion">
@@ -223,22 +244,6 @@ export default function Exigencias({
                         }
                       />
                     </div>
-
-                    {CORTES.map((c) => (
-                      <div className="os-exigencia-corte" key={c.clave}>
-                        <label htmlFor={`${c.clave}-${e.id}`}>{c.rotulo}</label>
-                        <input
-                          id={`${c.clave}-${e.id}`}
-                          className="os-exigencia-slider"
-                          type="range"
-                          min={1}
-                          max={100}
-                          value={puesta[c.clave]}
-                          onChange={(ev) => mover(c.clave, Number(ev.target.value))}
-                        />
-                        <output>{puesta[c.clave]}</output>
-                      </div>
-                    ))}
 
                     <div className="os-exigencia-campo">
                       <label className="os-etiqueta-campo" htmlFor={`notas-${e.id}`}>
@@ -354,7 +359,7 @@ export default function Exigencias({
             <h3 className="os-indice-nombre-titulo">{puesta.nombre || 'Exigencia nueva'}</h3>
           </div>
           <div className="os-panel-cuerpo">
-            {barra(puesta)}
+            {barra(puesta, true)}
             <div className="os-exigencia-edicion">
               <div className="os-exigencia-campo">
                 <label className="os-etiqueta-campo" htmlFor="nombre-nueva">
@@ -370,22 +375,6 @@ export default function Exigencias({
                   onChange={(ev) => setPuesta((p) => (p ? { ...p, nombre: ev.target.value } : p))}
                 />
               </div>
-
-              {CORTES.map((c) => (
-                <div className="os-exigencia-corte" key={c.clave}>
-                  <label htmlFor={`${c.clave}-nueva`}>{c.rotulo}</label>
-                  <input
-                    id={`${c.clave}-nueva`}
-                    className="os-exigencia-slider"
-                    type="range"
-                    min={1}
-                    max={100}
-                    value={puesta[c.clave]}
-                    onChange={(ev) => mover(c.clave, Number(ev.target.value))}
-                  />
-                  <output>{puesta[c.clave]}</output>
-                </div>
-              ))}
 
               <div className="os-exigencia-campo">
                 <label className="os-etiqueta-campo" htmlFor="notas-nueva">
