@@ -21,6 +21,7 @@ import { BENZIGER_USD } from '@/lib/benziger';
 import { hoy } from '@/lib/hora';
 import { FAMILIAS, SENIORITY } from '@/lib/pedido-campos';
 import type { BateriaOpcion, Opcion, PedidoOpcion } from './Agregar';
+import BuscarCliente from './BuscarCliente';
 
 export default function PedidoNuevo({
   empresas,
@@ -42,14 +43,8 @@ export default function PedidoNuevo({
   onCreado: (pedido: PedidoOpcion) => void;
   onCerrar: () => void;
 }) {
-  const [clienteNuevo, setClienteNuevo] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const primero = useRef<HTMLSelectElement>(null);
-
-  useEffect(() => {
-    primero.current?.focus();
-  }, []);
 
   // Escape cierra, como en la tarjeta: la mano no se va del teclado.
   useEffect(() => {
@@ -66,6 +61,11 @@ export default function PedidoNuevo({
     const puesto = String(datos.get('puesto') ?? '').trim();
     const empresaId = String(datos.get('empresaId') ?? '');
     const empresaNueva = String(datos.get('empresaNueva') ?? '').trim();
+
+    if (!empresaId && !empresaNueva) {
+      setError('Elegí un cliente de la lista, o escribí uno nuevo y agregalo.');
+      return;
+    }
 
     setError(null);
     setEnviando(true);
@@ -111,40 +111,12 @@ export default function PedidoNuevo({
                     {empresas.find((x) => x.id === empresaFija)?.nombre ?? 'Este cliente'}
                   </p>
                 </>
-              ) : clienteNuevo ? (
-                <input
-                  className="os-campo"
-                  name="empresaNueva"
-                  placeholder="Nombre del cliente"
-                  maxLength={120}
-                  required
-                  autoFocus
-                />
               ) : (
-                <select
-                  ref={primero}
-                  className="os-campo"
-                  id="empresaId"
-                  name="empresaId"
-                  required
-                  defaultValue=""
-                >
-                  <option value="">Elegí un cliente</option>
-                  {empresas.map((x) => (
-                    <option key={x.id} value={x.id}>
-                      {x.nombre}
-                    </option>
-                  ))}
-                </select>
+                /* Se escribe y se filtra, y lo que no está se da de alta desde
+                   el mismo campo: cargar el pedido de un cliente que todavía no
+                   existe es el caso de todos los días. */
+                <BuscarCliente empresas={empresas} autoFocus />
               )}
-              <button
-                type="button"
-                className="os-enlace-boton"
-                hidden={Boolean(empresaFija)}
-                onClick={() => setClienteNuevo((v) => !v)}
-              >
-                {clienteNuevo ? 'Elegir uno de la lista' : 'Es un cliente nuevo'}
-              </button>
             </div>
 
             <div className="os-campo-bloque os-campo-entero">
