@@ -9,7 +9,12 @@ import {
 } from '@/lib/informe-textos';
 import Cerebro from './Cerebro';
 import Piramide from './Piramide';
-import { CONDICIONES, NOTA_PROYECCION } from '@/lib/discursivo';
+import {
+  CONDICIONES,
+  NOTA_ADAPTACION,
+  NOTA_EJEMPLOS,
+  NOTA_PROYECCION,
+} from '@/lib/discursivo';
 import Listas from './Listas';
 import './informe.css';
 
@@ -487,7 +492,8 @@ export default function Documento({
           <div className="inf-potencial">
             <p>
               El análisis estima el nivel de complejidad de trabajo que la persona puede
-              abordar hoy. Aplicarlo en un rol depende además de tres condiciones:
+              abordar hoy, que no es lo mismo que el cargo que ocupa ni que su desempeño
+              actual. Que esa capacidad llegue a aplicarse en un rol depende además de:
             </p>
             <ol className="inf-condiciones">
               {CONDICIONES.map((c, i) => (
@@ -521,6 +527,16 @@ export default function Documento({
                   })()}
                 </p>
                 <p>{inf.discursivo.detalle.actual}</p>
+                {inf.discursivo.detalle.ejemplos.length > 0 && (
+                  <>
+                    <p className="inf-estrato-marca">En el trabajo suele verse en:</p>
+                    <ul className="inf-estrato-ejemplos">
+                      {inf.discursivo.detalle.ejemplos.map((e) => (
+                        <li key={e}>{e}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </>
             )}
             {inf.discursivo.actual && <p>{inf.discursivo.actual}</p>}
@@ -533,10 +549,15 @@ export default function Documento({
             )}
             {inf.discursivo.futura && <p>{inf.discursivo.futura}</p>}
 
-            {/* Por qué no se llama capacidad potencial futura: afirmarlo
-                exigiría estimar la trayectoria de maduración de la persona y un
-                horizonte de tiempo explícito, y este instrumento no lo mide. */}
-            <p className="inf-estrato-nota">{NOTA_PROYECCION}</p>
+            {/* Las tres cosas que hay que decir para que el capítulo no se lea
+                mal: qué es del modelo y qué es nuestro, que los puestos del
+                ejemplo son orientativos, y por qué la proyección no es una
+                capacidad potencial futura. */}
+            <div className="inf-estrato-nota">
+              <p>{NOTA_ADAPTACION}</p>
+              <p>{NOTA_EJEMPLOS}</p>
+              <p>{NOTA_PROYECCION}</p>
+            </div>
           </div>
         </Capitulo>
       )}

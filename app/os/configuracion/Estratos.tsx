@@ -29,10 +29,16 @@ export type Estrato = TextoDeNivel & {
 };
 
 const CAMPOS = [
-  { clave: 'que', rotulo: 'En la pirámide', filas: 2 },
-  { clave: 'horizonte', rotulo: 'Horizonte temporal', filas: 2 },
-  { clave: 'actual', rotulo: 'Capacidad potencial actual', filas: 8 },
-  { clave: 'proyeccion', rotulo: 'Proyección de desarrollo', filas: 6 },
+  { clave: 'que', rotulo: 'Referencia laboral', filas: 2, ayuda: 'Va al lado del escalón en la pirámide' },
+  { clave: 'horizonte', rotulo: 'Horizonte temporal', filas: 2, ayuda: '' },
+  { clave: 'actual', rotulo: 'Capacidad potencial actual', filas: 8, ayuda: '' },
+  {
+    clave: 'ejemplos',
+    rotulo: 'Dónde suele verse',
+    filas: 6,
+    ayuda: 'Uno por renglón. Salen como lista en el informe',
+  },
+  { clave: 'proyeccion', rotulo: 'Proyección de desarrollo', filas: 6, ayuda: '' },
 ] as const;
 
 export default function Estratos({
@@ -49,7 +55,13 @@ export default function Estratos({
       Object.fromEntries(
         niveles.map((n) => [
           n.nombre,
-          { que: n.que, horizonte: n.horizonte, actual: n.actual, proyeccion: n.proyeccion },
+          {
+            que: n.que,
+            horizonte: n.horizonte,
+            actual: n.actual,
+            ejemplos: n.ejemplos,
+            proyeccion: n.proyeccion,
+          },
         ])
       ) as Record<string, TextoDeNivel>,
     [niveles]
@@ -110,19 +122,6 @@ export default function Estratos({
 
   return (
     <>
-      <section className="os-panel">
-        <div className="os-panel-cuerpo">
-          <p className="os-form-nota">
-            Los cuatro estratos del modelo de Jaques, que ordena el trabajo por su
-            complejidad: cuánto tiene que interpretar, anticipar y sostener a la vez quien
-            ocupa el rol, y qué horizonte de tiempo abarca su tarea más larga. El sistema no lo
-            calcula. La evaluadora escucha unos cinco minutos de discurso del candidato y elige
-            el escalón; estos textos son los que sostienen esa decisión y los que salen
-            impresos en el informe de quien caiga ahí.
-          </p>
-        </div>
-      </section>
-
       <div className="os-redacciones">
         {niveles.map((n) => (
           <section className="os-panel os-indice-panel" key={n.nombre}>
@@ -144,6 +143,7 @@ export default function Estratos({
                   <div className="os-redaccion-campo" key={c.clave}>
                     <label className="os-etiqueta-campo" htmlFor={`${c.clave}-${n.estrato}`}>
                       {c.rotulo}
+                      {c.ayuda && <span className="os-etiqueta-ayuda">{c.ayuda}</span>}
                     </label>
                     <textarea
                       id={`${c.clave}-${n.estrato}`}
@@ -169,10 +169,12 @@ export default function Estratos({
       <section className="os-panel">
         <div className="os-panel-cuerpo">
           <p className="os-form-nota">
-            Lo de la pirámide es lo que sale al lado de cada escalón, y por eso no puede
-            quedar vacío: sin eso el escalón queda mudo. El horizonte y la capacidad actual
-            arman el capítulo de potencial del informe de quien caiga en ese estrato, y la
-            proyección describe qué exige el nivel siguiente.
+            La referencia laboral sale al lado de cada escalón de la pirámide, y por eso no
+            puede quedar vacía: sin eso el escalón queda mudo. El resto arma el capítulo de
+            potencial del informe de quien caiga en ese estrato. Los ejemplos de puestos son
+            orientativos y el informe lo aclara: un especialista sin gente a cargo puede hacer
+            trabajo de alta complejidad, y la cantidad de personas que reportan no determina el
+            nivel.
           </p>
 
           {tocado && !cambiado && (

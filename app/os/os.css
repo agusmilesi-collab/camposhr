@@ -8146,3 +8146,16 @@ textarea.os-exigencia-notas {
 .os-form-nota + .os-form-nota {
   margin-top: 10px;
 }
+
+/* La aclaración de un campo, en su propia línea debajo del rótulo: pegada al
+   final del rótulo se leía como parte del mismo título y heredaba sus
+   versalitas. */
+.os-etiqueta-ayuda {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.76rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--os-suave);
+}

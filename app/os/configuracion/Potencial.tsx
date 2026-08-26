@@ -22,6 +22,7 @@ export default async function Potencial() {
       que: NIVELES[i].que,
       horizonte: NIVELES[i].horizonte,
       actual: NIVELES[i].actual,
+      ejemplos: NIVELES[i].ejemplos,
       proyeccion: NIVELES[i].proyeccion,
     },
   }));
