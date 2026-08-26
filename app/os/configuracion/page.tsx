@@ -49,7 +49,7 @@ const QUE_HACE: Record<string, string> = {
   redacciones:
     'Lo que el informe escribe cuando una lectura se dispara. Cuándo entra cada una lo decide su índice y su corte.',
   potencial:
-    'Los cuatro estratos del análisis discursivo: qué rol abarca cada uno, qué lapso proyecta y qué lo caracteriza. Es lo que se lee al ubicar a la persona en la pirámide.',
+    'Los cuatro estratos del análisis discursivo: qué complejidad de trabajo puede abordar quien está en cada uno y qué exige el nivel siguiente. Es lo que arma el capítulo de potencial del informe.',
 };
 
 export default async function Configuracion({

@@ -1539,24 +1539,22 @@
   font-size: 14px;
 }
 
-/* El escalón en el que quedó, debajo de la pirámide: qué lapso abarca y qué lo
-   define. Va con un filete al costado porque es la referencia del modelo y no
-   la lectura de esta persona, que son los dos párrafos que siguen. */
-.inf-estrato {
-  margin: 18px 0 4px;
-  padding: 2px 0 2px 14px;
-  border-left: 2px solid var(--linea);
-}
-
-.inf-estrato h3 {
-  margin: 0 0 2px;
-}
-
-.inf-estrato p {
+/* El estrato, el tipo de procesamiento y el horizonte, arriba de la
+   descripción: son la ficha técnica de la capacidad y no parte del párrafo. */
+.inf-estrato-marca {
   margin: 0 0 6px;
-}
-
-.inf-estrato-lapso {
   color: var(--suave);
   font-size: 13px;
+}
+
+/* Por qué la proyección no se llama capacidad potencial futura. Va al pie del
+   capítulo y en cuerpo chico: es el límite del instrumento, no una conclusión
+   sobre la persona. */
+.inf-estrato-nota {
+  margin: 14px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--linea-suave);
+  color: var(--suave);
+  font-size: 12px;
+  line-height: 1.55;
 }

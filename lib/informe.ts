@@ -163,8 +163,21 @@ export type Informe = {
     futura: string | null;
     /** Qué dice cada escalón de la pirámide, con lo que rige. */
     escalones: Record<string, string>;
-    /** El lapso y las características del escalón en el que quedó. */
-    detalle: { lapso: string; caracteristicas: string } | null;
+    /**
+     * El estrato en el que quedó, con lo que rige.
+     *
+     * Es lo que arma el capítulo: qué complejidad de trabajo puede abordar hoy
+     * y qué exige el nivel siguiente. Sale del catálogo y no de lo que escriba
+     * la evaluadora, porque es el marco del instrumento y no una lectura de
+     * esta persona.
+     */
+    detalle: {
+      romano: string;
+      procesamiento: string;
+      horizonte: string;
+      actual: string;
+      proyeccion: string;
+    } | null;
   } | null;
   tecnicas: string[];
   /** Lo que no estaba cargado y por eso no salió en el informe. */
@@ -341,14 +354,9 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     if (!f.discursivo?.nivel) {
       faltantes.push({ que: 'El nivel del análisis discursivo', donde: 'la pestaña Tests' });
     }
-    // Los dos párrafos salen igual con su título, así que un capítulo sin ellos
-    // se entrega diciendo "sin contenido" dos veces.
-    if (!f.discursivo?.actual) {
-      faltantes.push({ que: 'La capacidad potencial actual', donde: 'la pestaña Tests' });
-    }
-    if (!f.discursivo?.futura) {
-      faltantes.push({ que: 'La capacidad potencial futura', donde: 'la pestaña Tests' });
-    }
+    // Los dos párrafos que escribe la evaluadora dejaron de faltar: el capítulo
+    // sale completo con los textos del estrato, y lo que ella agregue es una
+    // lectura sobre esta persona, no el contenido del capítulo.
   }
 
   const bz =
@@ -477,7 +485,15 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
           ),
           detalle: (() => {
             const suyo = nivelesQueRigen(niveles).find((n) => n.nombre === f.discursivo?.nivel);
-            return suyo ? { lapso: suyo.lapso, caracteristicas: suyo.caracteristicas } : null;
+            return suyo
+              ? {
+                  romano: suyo.romano,
+                  procesamiento: suyo.procesamiento,
+                  horizonte: suyo.horizonte,
+                  actual: suyo.actual,
+                  proyeccion: suyo.proyeccion,
+                }
+              : null;
           })(),
         }
       : null,

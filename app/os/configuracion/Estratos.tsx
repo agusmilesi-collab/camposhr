@@ -4,9 +4,12 @@
  * Los cuatro estratos del potencial, editables.
  *
  * Van de arriba abajo como en la pirámide del informe, que es como los mira
- * quien tiene que ubicar a una persona: se lee de la gerencia general hacia la
- * primera línea de trabajo hasta encontrar el escalón que describe lo que se
- * escuchó.
+ * quien tiene que ubicar a una persona: se lee del estrato más alto hacia el
+ * más bajo hasta encontrar el que describe lo que se escuchó.
+ *
+ * **Un estrato no es un cargo.** El mismo nivel de complejidad puede aparecer
+ * en un rol gerencial, en uno de especialista o en un contribuidor individual,
+ * y la cantidad de gente a cargo no lo determina.
  *
  * **Se guarda la diferencia y no los cuatro**: lo que quedó igual al código no
  * se guarda, así que una corrección que mañana entre por ahí llega a quien no
@@ -17,19 +20,19 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { LARGO_MAXIMO, type TextoDeNivel } from '@/lib/discursivo';
 
-export type Estrato = {
+export type Estrato = TextoDeNivel & {
   nombre: string;
   estrato: number;
-  que: string;
-  lapso: string;
-  caracteristicas: string;
-  fabrica: TextoDeNivel;
+  romano: string;
+  procesamiento: string;
+  original: TextoDeNivel;
 };
 
 const CAMPOS = [
-  { clave: 'que', rotulo: 'Qué rol abarca', filas: 2 },
-  { clave: 'lapso', rotulo: 'Lapso del rol', filas: 1 },
-  { clave: 'caracteristicas', rotulo: 'Características principales', filas: 8 },
+  { clave: 'que', rotulo: 'En la pirámide', filas: 2 },
+  { clave: 'horizonte', rotulo: 'Horizonte temporal', filas: 2 },
+  { clave: 'actual', rotulo: 'Capacidad potencial actual', filas: 8 },
+  { clave: 'proyeccion', rotulo: 'Proyección de desarrollo', filas: 6 },
 ] as const;
 
 export default function Estratos({
@@ -46,7 +49,7 @@ export default function Estratos({
       Object.fromEntries(
         niveles.map((n) => [
           n.nombre,
-          { que: n.que, lapso: n.lapso, caracteristicas: n.caracteristicas },
+          { que: n.que, horizonte: n.horizonte, actual: n.actual, proyeccion: n.proyeccion },
         ])
       ) as Record<string, TextoDeNivel>,
     [niveles]
@@ -98,7 +101,7 @@ export default function Estratos({
       const uno: Partial<TextoDeNivel> = {};
       for (const c of CAMPOS) {
         const escrito = textos[n.nombre][c.clave].trim();
-        if (escrito !== n.fabrica[c.clave]) uno[c.clave] = escrito;
+        if (escrito !== n.original[c.clave]) uno[c.clave] = escrito;
       }
       if (Object.keys(uno).length > 0) d[n.nombre] = uno;
     }
@@ -110,11 +113,12 @@ export default function Estratos({
       <section className="os-panel">
         <div className="os-panel-cuerpo">
           <p className="os-form-nota">
-            Los cuatro escalones del modelo de Jaques, que ordena los roles por el lapso de
-            tiempo que abarca la tarea más larga que el puesto exige: cuanto más lejos tiene que
-            proyectar quien lo ocupa, más alto el estrato. El sistema no lo calcula. La
-            evaluadora escucha unos cinco minutos de discurso del candidato y elige el escalón,
-            y estos textos son los que sostienen esa decisión.
+            Los cuatro estratos del modelo de Jaques, que ordena el trabajo por su
+            complejidad: cuánto tiene que interpretar, anticipar y sostener a la vez quien
+            ocupa el rol, y qué horizonte de tiempo abarca su tarea más larga. El sistema no lo
+            calcula. La evaluadora escucha unos cinco minutos de discurso del candidato y elige
+            el escalón; estos textos son los que sostienen esa decisión y los que salen
+            impresos en el informe de quien caiga ahí.
           </p>
         </div>
       </section>
@@ -124,9 +128,12 @@ export default function Estratos({
           <section className="os-panel os-indice-panel" key={n.nombre}>
             <div className="os-panel-top">
               <h3 className="os-indice-nombre-titulo">
-                <span className="os-numero">Estrato {n.estrato}.</span> {n.nombre}
+                <span className="os-numero">Estrato {n.romano}.</span> {n.nombre}
               </h3>
-              {CAMPOS.some((c) => textos[n.nombre][c.clave].trim() !== n.fabrica[c.clave]) && (
+              <span className="os-columna-monto">
+                Procesamiento {n.procesamiento.toLowerCase()}
+              </span>
+              {CAMPOS.some((c) => textos[n.nombre][c.clave].trim() !== n.original[c.clave]) && (
                 <span className="os-dato-falta">reescrito</span>
               )}
             </div>
@@ -162,9 +169,10 @@ export default function Estratos({
       <section className="os-panel">
         <div className="os-panel-cuerpo">
           <p className="os-form-nota">
-            El rol y el lapso son los que se leen al elegir el escalón y los que salen impresos
-            en la pirámide del informe. Las características quedan de referencia para quien
-            evalúa. Un estrato sin rol se rechaza: la pirámide lo dibujaría mudo.
+            Lo de la pirámide es lo que sale al lado de cada escalón, y por eso no puede
+            quedar vacío: sin eso el escalón queda mudo. El horizonte y la capacidad actual
+            arman el capítulo de potencial del informe de quien caiga en ese estrato, y la
+            proyección describe qué exige el nivel siguiente.
           </p>
 
           {tocado && !cambiado && (

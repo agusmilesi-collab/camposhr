@@ -6,10 +6,11 @@ import { nivelesValidos, type TextoDeNivel } from '@/lib/discursivo';
 /**
  * Los textos del potencial de desarrollo, editables.
  *
- * Son los cuatro estratos del modelo de Jaques: qué rol abarca cada uno, qué
- * lapso de tiempo proyecta y qué lo caracteriza. La evaluadora ubica a la
+ * Son los cuatro estratos del modelo de Jaques: qué horizonte de tiempo abarca
+ * la tarea más larga de ese nivel, qué complejidad de trabajo puede abordar
+ * quien está ahí, y qué exige el nivel siguiente. La evaluadora ubica a la
  * persona en uno de los cuatro escuchando su discurso, y estos textos son los
- * que sostienen esa decisión y los que van al informe.
+ * que sostienen esa decisión y los que arman el capítulo del informe.
  */
 export default async function Potencial() {
   const guardados = await ajuste<Record<string, Partial<TextoDeNivel>>>('discursivo_niveles');
@@ -17,10 +18,11 @@ export default async function Potencial() {
 
   const niveles = nivelesQueRigen(movidos).map((n, i) => ({
     ...n,
-    fabrica: {
+    original: {
       que: NIVELES[i].que,
-      lapso: NIVELES[i].lapso,
-      caracteristicas: NIVELES[i].caracteristicas,
+      horizonte: NIVELES[i].horizonte,
+      actual: NIVELES[i].actual,
+      proyeccion: NIVELES[i].proyeccion,
     },
   }));
 
