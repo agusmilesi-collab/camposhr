@@ -8332,3 +8332,8 @@ textarea.os-exigencia-notas {
 .os-whatsapp span {
   min-width: 0;
 }
+
+/* Lo que se le hace al panel entero, contra el borde derecho de su encabezado. */
+.os-panel-accion {
+  margin-left: auto;
+}

@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Shell from '../../../Shell';
 import { desajusteDeProyectivo, fichaDe, proyectivoDe, type Ficha } from '@/lib/ficha';
-import { quienSoy } from '@/lib/identidad';
+import { equipo, quienSoy } from '@/lib/identidad';
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { nombrePerfil } from '@/lib/perfiles';
 import { RUTA } from '@/lib/psicotecnicos';
@@ -24,6 +24,9 @@ import { bandasDeLaHoja } from '@/lib/redacciones';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
 import Whatsapp from '../../Whatsapp';
+import Editar from './Editar';
+import type { PedidoOpcion } from '../../Agregar';
+import { pedidosAbiertos } from '@/lib/altas';
 import Hoja from '../../entrevista/[id]/Hoja';
 import {
   llevaDiscursivo,
@@ -143,24 +146,38 @@ function SinDatos({ que }: { que: string }) {
 function Bloque({
   titulo,
   dos,
+  accion,
   children,
 }: {
   titulo: string;
   /** En dos columnas: para el bloque largo, que si no es una tira. */
   dos?: boolean;
+  /** Lo que se le hace al bloque entero, contra el borde derecho. */
+  accion?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <section className="os-panel">
       <div className="os-panel-top">
         <h2>{titulo}</h2>
+        {accion && <span className="os-panel-accion">{accion}</span>}
       </div>
       <div className={`os-ficha-datos${dos ? ' os-ficha-datos-dos' : ''}`}>{children}</div>
     </section>
   );
 }
 
-function Datos({ f, id }: { f: Ficha; id: string }) {
+function Datos({
+  f,
+  id,
+  pedidos,
+  evaluadoras,
+}: {
+  f: Ficha;
+  id: string;
+  pedidos: PedidoOpcion[];
+  evaluadoras: string[];
+}) {
   const c = f.cabecera;
   const precio = f.precio;
   // El perfil puede ser de dos cuadrantes, con uno que manda o los dos parejos.
@@ -174,7 +191,29 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
       {/* Dos columnas que se leen distinto: a la izquierda con quién hablar, a
           la derecha lo que se sacó de la evaluación. Van alternadas porque el
           bloque acomoda sus datos de a pares. */}
-      <Bloque titulo="La persona" dos>
+      <Bloque
+        titulo="La persona"
+        dos
+        accion={
+          <Editar
+            datos={{
+              id,
+              origen: 'supabase',
+              nombre: c.personas?.nombre ?? '',
+              empresa: c.pedidos?.empresas?.nombre ?? '',
+              puesto: c.pedidos?.puesto ?? '',
+              pedidoId: c.pedido_id,
+              email: c.personas?.email ?? null,
+              telefono: c.personas?.telefono ?? null,
+              evaluadora: c.evaluadoras?.nombre ?? null,
+              etapa: c.estado,
+              tieneCv: Boolean(c.personas?.cv_path),
+            }}
+            pedidos={pedidos}
+            evaluadoras={evaluadoras}
+          />
+        }
+      >
         <Dato rotulo="Empresa">{c.pedidos?.empresas?.nombre ?? <Falta texto="sin empresa" />}</Dato>
         <Dato rotulo="Recomendación">
           {c.recomendacion ? (
@@ -601,11 +640,19 @@ export default async function FichaPagina({
   params: { id: string };
   searchParams: { ver?: string; desde?: string };
 }) {
-  const [yo, ficha, cuentas, rige] = await Promise.all([
+  // Los pedidos abiertos y las evaluadoras son para el cajón que corrige los
+  // datos del alta, que se abre desde la pestaña Datos.
+  const [yo, ficha, cuentas, rige, pedidos, evaluadoras] = await Promise.all([
     quienSoy(),
     fichaDe(params.id),
     cuentasDeLaBarra(),
     loQueRige(),
+    pedidosAbiertos().catch(() => [] as PedidoOpcion[]),
+    // Con qué nombre figura cada una en las evaluaciones, que no siempre es el
+    // del equipo: es el mismo nombre con el que las lista el tablero.
+    equipo()
+      .then((m) => m.map((x) => x.evaluadora).filter((n): n is string => Boolean(n)))
+      .catch(() => [] as string[]),
   ]);
   if (!ficha) notFound();
 
@@ -665,7 +712,9 @@ export default async function FichaPagina({
       </nav>
       </div>
 
-      {ver === 'datos' && <Datos f={ficha} id={params.id} />}
+      {ver === 'datos' && (
+        <Datos f={ficha} id={params.id} pedidos={pedidos} evaluadoras={evaluadoras} />
+      )}
       {/* La hoja con la que se toma la entrevista, la misma que se abre desde
           la lista de entrevistas. Sin panel alrededor: trae sus propias
           tarjetas. */}

@@ -32,10 +32,8 @@ import type { Evaluacion } from '@/lib/psicotecnicos';
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { desdeInput, diaDeLaSemana, fechaHora, haceCuanto, paraInput } from '@/lib/hora';
 import Bateria from './Bateria';
-import Candidato from './Candidato';
 import Desplegable from '@/app/os/Desplegable';
 import Whatsapp from './Whatsapp';
-import type { PedidoOpcion } from './Agregar';
 
 type EtapaTablero = 'Por citar' | 'Por entrevistar' | 'Por analizar';
 
@@ -88,7 +86,6 @@ function Tarjeta({
   ocupada,
   onArrastrar,
   onSoltar,
-  onAbrir,
   onGuardar,
   onEtapa,
 }: {
@@ -97,7 +94,6 @@ function Tarjeta({
   ocupada: boolean;
   onArrastrar: (ev: React.DragEvent) => void;
   onSoltar: () => void;
-  onAbrir: () => void;
   onGuardar: (campo: string, valor: unknown) => void;
   onEtapa: (etapa: EtapaTablero) => void;
 }) {
@@ -112,20 +108,11 @@ function Tarjeta({
       onDragStart={onArrastrar}
       onDragEnd={onSoltar}
     >
-      {/* El cuerpo abre los datos; los controles de abajo no, porque cada uno
-          hace lo suyo. */}
-      <div
-        className="os-tarjeta-cuerpo"
-        role="button"
-        tabIndex={0}
-        onClick={onAbrir}
-        onKeyDown={(ev) => {
-          if (ev.key === 'Enter' || ev.key === ' ') {
-            ev.preventDefault();
-            onAbrir();
-          }
-        }}
-      >
+      {/* El cuerpo abre la ficha; los controles de abajo no, porque cada uno
+          hace lo suyo. Antes abría un cajón con los cinco campos del alta, que
+          ahora se editan desde la pestaña Datos de esa misma ficha: un lugar
+          para leerlos y corregirlos, en vez de dos. */}
+      <Link className="os-tarjeta-cuerpo" href={`/os/psicotecnicos/ficha/${e.id}`}>
         {/* El nombre adelante: acá la tarjeta es la persona con la que se va
             a trabajar, y la batería al lado dice qué hay que tomarle. La
             empresa y la búsqueda van abajo, que es el contexto y no el sujeto. */}
@@ -137,7 +124,7 @@ function Tarjeta({
         <div className="os-tarjeta-concepto">
           {e.empresa} · {e.puesto}
         </div>
-      </div>
+      </Link>
 
       {e.etapa === 'Por citar' && (
         <div className="os-tarjeta-trabajo">
@@ -255,21 +242,12 @@ function Tarjeta({
   );
 }
 
-export default function Entrevistas({
-  filas,
-  evaluadoras,
-  pedidos,
-}: {
-  filas: Evaluacion[];
-  evaluadoras: string[];
-  pedidos: PedidoOpcion[];
-}) {
+export default function Entrevistas({ filas }: { filas: Evaluacion[] }) {
   const router = useRouter();
   const [, empezar] = useTransition();
   const [arrastrando, setArrastrando] = useState<string | null>(null);
   const [encima, setEncima] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [mirando, setMirando] = useState<string | null>(null);
   const [trabajando, setTrabajando] = useState<string | null>(null);
 
   /** Lo movido en pantalla que el servidor todavía no confirmó. */
@@ -355,7 +333,6 @@ export default function Entrevistas({
     }
   }
 
-  const abierta = mirando ? todas.find((x) => x.id === mirando) : null;
 
   return (
     <>
@@ -401,7 +378,6 @@ export default function Entrevistas({
                     setArrastrando(e.id);
                   }}
                   onSoltar={() => setArrastrando(null)}
-                  onAbrir={() => setMirando(e.id)}
                   onGuardar={(campo, valor) => guardar(e.id, campo, valor)}
                   onEtapa={(etapa) => cambiarEtapa(e.id, etapa)}
                 />
@@ -412,14 +388,6 @@ export default function Entrevistas({
         })}
       </div>
 
-      {abierta && (
-        <Candidato
-          e={abierta}
-          pedidos={pedidos}
-          evaluadoras={evaluadoras}
-          onCerrar={() => setMirando(null)}
-        />
-      )}
     </>
   );
 }

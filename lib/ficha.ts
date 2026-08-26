@@ -58,7 +58,13 @@ export type Cabecera = {
   seguimiento_al: string | null;
   seguimiento_resultado: string | null;
   seguimiento_notas: string | null;
-  personas: { nombre: string; email: string | null; telefono: string | null } | null;
+  personas: {
+    nombre: string;
+    email: string | null;
+    telefono: string | null;
+    /** Dónde vive el CV en el bucket. Null si no se cargó ninguno. */
+    cv_path: string | null;
+  } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
     puesto: string;
@@ -258,7 +264,7 @@ const CAMPOS_CABECERA =
   'recomendacion,recomendacion_notas,informe_path,entrevista_competencias,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,' +
-  'personas(nombre,email,telefono),evaluadoras(nombre),' +
+  'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),' +
   'pedidos(puesto,con_benziger,exigencia_id,empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';
 
