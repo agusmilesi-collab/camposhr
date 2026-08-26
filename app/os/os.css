@@ -8179,12 +8179,14 @@ textarea.os-exigencia-notas {
   background: var(--os-panel-2);
 }
 
-/* Los cuatro estratos como opciones: se elige uno y se ve cuál está puesto. */
+/* Los cuatro estratos como opciones de una sola elección. El punto de radio es
+   lo que dice que hay que elegir: vacío en las cuatro, la pantalla pide la
+   decisión sin un párrafo que lo explique. */
 .os-estratos-elegir {
   list-style: none;
-  margin: 12px 0 0;
+  margin: 6px 0 0;
   padding: 0;
-  border: 1px solid var(--os-linea-suave);
+  border: 1px solid var(--os-linea);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -8194,74 +8196,87 @@ textarea.os-exigencia-notas {
 }
 
 .os-estrato-opcion {
-  display: grid;
-  grid-template-columns: 26px 104px minmax(0, 1fr) 84px;
-  align-items: baseline;
-  gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
   width: 100%;
-  padding: 9px 12px;
+  padding: 11px 14px;
   border: 0;
   background: none;
   font: inherit;
-  font-size: 0.82rem;
-  color: var(--os-suave);
   text-align: left;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 .os-estrato-opcion:hover:not(:disabled) {
   background: var(--os-panel-2);
 }
 
-/* El elegido, con la misma marca que el rango del Raven: fondo, texto firme y
-   una barra al costado. */
-.os-estrato-opcion.suyo {
-  background: var(--os-panel-2);
-  color: var(--os-tinta);
+.os-estrato-marca {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--os-suave);
+  border-radius: 50%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.os-estrato-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.os-estrato-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.os-estrato-titulo strong {
+  font-size: 0.86rem;
   font-weight: 600;
-  box-shadow: inset 3px 0 0 var(--os-activo);
+  color: var(--os-tinta);
 }
 
 .os-estrato-numeral {
+  font-size: 0.72rem;
+  color: var(--os-suave);
   font-variant-numeric: tabular-nums;
 }
 
-.os-estrato-nombre {
-  color: var(--os-tinta);
-}
-
-.os-estrato-que,
-.os-estrato-proceso {
+.os-estrato-texto small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.78rem;
+  color: var(--os-suave);
 }
 
 .os-estrato-proceso {
-  text-align: right;
-  font-weight: 400;
+  flex: none;
+  font-size: 0.75rem;
+  color: var(--os-suave);
 }
 
-/* La pestaña de tests: sus paneles cierran todos contra el mismo borde, más
-   ancho que el de las otras, porque abajo van dos columnas. */
-.os-tests {
-  max-width: 1180px;
+/* El elegido: fondo, punto lleno y el tipo de procesamiento en tinta firme. */
+.os-estrato-opcion.suyo {
+  background: color-mix(in srgb, var(--os-activo) 7%, var(--os-panel));
 }
 
-.os-tests .os-cierre {
-  max-width: none;
+.os-estrato-opcion.suyo .os-estrato-marca {
+  border-color: var(--os-activo);
+  box-shadow: inset 0 0 0 4px var(--os-activo);
 }
 
-/* El aviso de que falta elegir el estrato: no es un error, es que la decisión
-   todavía no se tomó, y sin ella el informe sale con un capítulo menos. */
-.os-discursivo-falta {
-  margin: 10px 0 0;
-  padding: 7px 11px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--os-ambar) 12%, var(--os-panel));
+.os-estrato-opcion.suyo .os-estrato-proceso {
   color: var(--os-tinta);
-  font-size: 0.82rem;
+  font-weight: 600;
 }
+
 
 /* Las dos tarjetas de la fila miden lo mismo: la del Raven trae más contenido,
    pero dos cajas de distinto alto una al lado de la otra se leen como si a la
