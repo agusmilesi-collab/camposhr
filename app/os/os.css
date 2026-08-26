@@ -8140,3 +8140,9 @@ textarea.os-exigencia-notas {
 .os-exigencia-nota {
   margin: 0;
 }
+
+/* Dos notas seguidas necesitan aire entre sí: sin margen se leen como un solo
+   párrafo largo y el segundo pierde el punto que hace. */
+.os-form-nota + .os-form-nota {
+  margin-top: 10px;
+}

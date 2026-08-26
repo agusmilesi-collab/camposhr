@@ -370,7 +370,7 @@ export default function Textos({
     <>
       {/* Cada test tiene su diccionario: sus normas, sus cortes y sus textos.
           El selector va como dos tarjetas y no como una fila de pestañas más,
-          porque arriba ya hay una (Baterías, Baremos, Velocímetro,
+          porque arriba ya hay una (Baterías, Raven, Velocímetro,
           Redacciones) y dos filas iguales no dejaban ver cuál manda. */}
       <div className="os-diccionarios" role="radiogroup" aria-label="Test que se está editando">
         {(
@@ -538,7 +538,7 @@ export default function Textos({
                           {movido && (
                             <span
                               className="os-dato-falta"
-                              title={`De fábrica: ${escribir(corte!, corte!.fabrica)}`}
+                              title={`Original: ${escribir(corte!, corte!.fabrica)}`}
                             >
                               corte movido
                             </span>
@@ -589,9 +589,9 @@ export default function Textos({
                 className="os-boton"
                 disabled={guardando}
                 onClick={() => guardar(null, null)}
-                title="Borra lo guardado y vuelve a los textos y a los cortes del código"
+                title="Borra lo que se escribió y deja los textos y los cortes originales"
               >
-                Volver a los de fábrica
+                Volver a los originales
               </button>
             </div>
           )}

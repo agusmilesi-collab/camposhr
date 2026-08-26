@@ -173,9 +173,9 @@ export default function Estratos({
                 className="os-boton"
                 disabled={guardando}
                 onClick={() => guardar(null)}
-                title="Borra lo guardado y vuelve a los textos del código"
+                title="Borra lo que se escribió y deja los textos originales"
               >
-                Volver a los de fábrica
+                Volver a los originales
               </button>
             </div>
           )}
