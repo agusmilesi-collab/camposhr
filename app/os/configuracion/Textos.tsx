@@ -132,6 +132,22 @@ export default function Textos({
     [renglones]
   );
 
+  /**
+   * El número de cada área, como los capítulos de un documento.
+   *
+   * Se cuenta sobre el diccionario entero y no sobre lo que el buscador deja a
+   * la vista: si se renumerara con el filtro, un área sería la 6 con la
+   * pantalla completa y la 1 buscando algo suyo, y el número dejaría de servir
+   * para nombrarla.
+   */
+  const numeroDeArea = useMemo(() => {
+    const numero = new Map<string, number>();
+    for (const r of renglones) {
+      if (!numero.has(r.area)) numero.set(r.area, numero.size + 1);
+    }
+    return numero;
+  }, [renglones]);
+
   const [textos, setTextos] = useState(puestos);
   const [cortes, setCortes] = useState(cortesPuestos);
   const [filtro, setFiltro] = useState('');
@@ -150,10 +166,13 @@ export default function Textos({
     setCortes(cortesPuestos);
   }
 
-  const cambiado =
-    renglones.some(
-      (r) => textos[r.clave].dice !== r.dice || textos[r.clave].recomienda !== r.recomienda
-    ) || renglones.some((r) => r.corte && cortes[r.clave] !== cortesPuestos[r.clave]);
+  const sinGuardar = renglones.filter(
+    (r) =>
+      textos[r.clave].dice !== r.dice ||
+      textos[r.clave].recomienda !== r.recomienda ||
+      (r.corte && cortes[r.clave] !== cortesPuestos[r.clave])
+  );
+  const cambiado = sinGuardar.length > 0;
 
   /** Lo escrito en un campo de corte, ya como número; null si todavía no lo es. */
   function numero(clave: string): number | null {
@@ -272,6 +291,9 @@ export default function Textos({
   return (
     <>
       <section className="os-panel" id={ARRIBA}>
+        <div className="os-panel-top">
+          <h2>Índice</h2>
+        </div>
         <div className="os-panel-cuerpo">
           <input
             className="os-campo os-redaccion-buscar"
@@ -301,7 +323,9 @@ export default function Textos({
             {areas.map((g) => (
               <div key={g.area} className="os-indice-item">
                 <a className="os-indice-area" href={`#${anclaDe(g.area)}`}>
-                  <span className="os-indice-nombre">{g.area}</span>
+                  <span className="os-indice-nombre">
+                    <span className="os-numero">{numeroDeArea.get(g.area)}.</span> {g.area}
+                  </span>
                   <span className="os-indice-cuenta">{g.cuantas}</span>
                 </a>
                 {/* Debajo del área, sus índices: llegar a Lambda era bajar al
@@ -313,7 +337,7 @@ export default function Textos({
                       className="os-indice-hijo"
                       href={`#${anclaDeIndice(ind.renglones[0].clave)}`}
                     >
-                      {ind.indice}
+                      <span>{ind.indice}</span>
                     </a>
                   ))}
                 </div>
@@ -331,7 +355,9 @@ export default function Textos({
                 se perdía entre las tarjetas. Al lado, la vuelta al índice, que
                 es lo que se busca después de leer un área entera. */}
             <div className="os-area" id={anclaDe(g.area)}>
-              <h2 className="os-area-titulo">{g.area}</h2>
+              <h2 className="os-area-titulo">
+                <span className="os-numero">{numeroDeArea.get(g.area)}.</span> {g.area}
+              </h2>
               <span className="os-area-cuenta">
                 {g.cuantas} {g.cuantas === 1 ? 'lectura' : 'lecturas'}
               </span>
@@ -355,6 +381,12 @@ export default function Textos({
                   {ind.renglones.length > 1 && (
                     <span className="os-indice-ramas">{ind.renglones.length} lecturas</span>
                   )}
+                  {/* La vuelta al índice en cada indicador y no solo en el área:
+                      con cuarenta y un tarjetas, el que corrige una está casi
+                      siempre lejos del encabezado de su área. */}
+                  <a className="os-area-volver" href={`#${ARRIBA}`}>
+                    Volver arriba
+                  </a>
                 </div>
 
                 {ind.renglones.map((r) => {
@@ -465,27 +497,8 @@ export default function Textos({
             la cantidad de respuestas, o contra otro índice, y esas no se mueven.
           </p>
 
-          <div className="os-barra-acciones">
-            <button
-              className="os-boton os-boton-firme"
-              disabled={!cambiado || guardando || rotos.length > 0}
-              onClick={() => guardar(diferencias(), cortesMovidos())}
-            >
-              {guardando ? 'Guardando…' : 'Guardar los cambios'}
-            </button>
-            {cambiado && (
-              <button
-                className="os-boton"
-                disabled={guardando}
-                onClick={() => {
-                  setTextos(puestos);
-                  setCortes(cortesPuestos);
-                }}
-              >
-                Deshacer
-              </button>
-            )}
-            {tocado && !cambiado && (
+          {tocado && !cambiado && (
+            <div className="os-barra-acciones">
               <button
                 className="os-boton"
                 disabled={guardando}
@@ -494,20 +507,57 @@ export default function Textos({
               >
                 Volver a los de fábrica
               </button>
-            )}
-          </div>
-          {rotos.length > 0 && (
-            <p className="os-form-error">
-              {rotos.length === 1
-                ? `El corte de ${rotos[0].indice} no es un número.`
-                : `Hay ${rotos.length} cortes que no son un número: ${rotos
-                    .map((r) => r.indice)
-                    .join(', ')}.`}
-            </p>
+            </div>
           )}
-          {error && <p className="os-form-error">{error}</p>}
+          {error && !cambiado && <p className="os-form-error">{error}</p>}
         </div>
       </section>
+
+      {/* Guardar sigue en pantalla mientras haya algo sin guardar.
+
+          Vivía al pie de las sesenta y ocho lecturas: corregir la primera y
+          guardarla era bajar la pantalla entera, y el que no bajaba se iba con
+          lo escrito sin cargar. Se guarda todo junto igual, porque lo que se
+          manda es la diferencia contra el código y no una lectura suelta, pero
+          el botón está donde se lo necesita. */}
+      {cambiado && (
+        <div className="os-guardar-barra">
+          <span className="os-guardar-cuenta">
+            {rotos.length > 0 ? (
+              <span className="os-form-error">
+                {rotos.length === 1
+                  ? `El corte de ${rotos[0].indice} no es un número.`
+                  : `Hay ${rotos.length} cortes que no son un número: ${rotos
+                      .map((r) => r.indice)
+                      .join(', ')}.`}
+              </span>
+            ) : error ? (
+              <span className="os-form-error">{error}</span>
+            ) : (
+              `${sinGuardar.length} ${
+                sinGuardar.length === 1 ? 'lectura cambiada' : 'lecturas cambiadas'
+              }`
+            )}
+          </span>
+          <button
+            className="os-boton"
+            disabled={guardando}
+            onClick={() => {
+              setTextos(puestos);
+              setCortes(cortesPuestos);
+            }}
+          >
+            Deshacer
+          </button>
+          <button
+            className="os-boton os-boton-azul"
+            disabled={guardando || rotos.length > 0}
+            onClick={() => guardar(diferencias(), cortesMovidos())}
+          >
+            {guardando ? 'Guardando…' : 'Guardar los cambios'}
+          </button>
+        </div>
+      )}
     </>
   );
 }

@@ -2110,22 +2110,37 @@ html[data-os-lateral='compacta'] .os-pie-quien {
      primera columna completa y después la segunda. */
   columns: 2;
   column-gap: 14px;
-  margin-top: 7px;
-  padding-top: 7px;
-  padding-left: 14px;
+  margin-top: 8px;
+  padding-top: 8px;
+  padding-left: 4px;
   border-top: 1px solid var(--os-linea-suave);
 }
 
 .os-indice-hijo {
-  display: block;
   /* Un nombre que no entre baja de renglón antes que partirse entre columnas.
      Recortarlo con puntos suspensivos escondería cuál índice es, que es lo
      único que este renglón tiene para decir. */
   break-inside: avoid;
+  /* La viñeta va en su propia columna y el nombre en la de al lado: con una
+     sangría colgante, un nombre que no entra en la columna baja entero y deja
+     el punto solo en el renglón de arriba. */
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   font-size: 0.73rem;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--os-suave);
   text-decoration: none;
+}
+
+.os-indice-hijo::before {
+  content: '';
+  flex: none;
+  width: 5px;
+  height: 5px;
+  margin-top: 0.42em;
+  border-radius: 50%;
+  background: var(--os-azul);
 }
 
 .os-indice-hijo:hover {
@@ -2190,6 +2205,55 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 
 .os-area-volver:hover {
   color: var(--os-azul-fuerte);
+}
+
+/* La barra de guardar, pegada al pie de la pantalla mientras haya algo sin
+   guardar. Se queda a la vista sin tapar el contenido: es angosta, tiene el
+   fondo del panel y una sombra que la despega de lo que pasa por debajo. */
+.os-guardar-barra {
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(22, 32, 43, 0.1);
+}
+
+/* Cuántas quedaron sin guardar, o qué está mal: el que va a apretar tiene que
+   saber sobre cuántas lecturas cae lo que aprieta. */
+.os-guardar-cuenta {
+  margin-right: auto;
+  font-size: 0.8rem;
+  color: var(--os-tinta-media);
+}
+
+/* El número de un área o de un índice, delante de su nombre. Va en tono suave
+   y con cifras de ancho fijo: nombra el bloque para poder señalarlo en una
+   conversación, y el que se lee sigue siendo el nombre. */
+.os-numero {
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+/* En Ponderaciones el encabezado lleva tres cosas: el nombre, qué mide y la
+   vuelta al índice. El del medio cede el ancho, porque es el único que se puede
+   recortar sin perder de qué tabla se trata. */
+.os-indice-panel .os-columna-monto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-indice-panel .os-panel-top .os-area-volver {
+  flex: none;
 }
 
 /* Cada índice es destino del enlace de arriba: se despega del borde para que
