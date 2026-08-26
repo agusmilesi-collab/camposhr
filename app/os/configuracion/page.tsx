@@ -20,12 +20,17 @@ export const dynamic = 'force-dynamic';
  * **La pestaña viaja en la dirección** (`?ver=baremos`), igual que en la ficha,
  * así una se puede compartir y recargar. Las direcciones viejas (`/os/baremos`
  * y las otras tres) redirigen a la pestaña que les corresponde.
+ *
+ * La de los pesos se llama Velocímetro desde el 26/8/2026, que es como se la
+ * nombra: de ahí sale el puntaje que marca la aguja de cada competencia en el
+ * informe. La clave de la dirección sigue siendo `ponderaciones`, porque está
+ * guardada en marcadores y en el redirector de la ruta vieja.
  */
 
 const PESTANAS = [
   { clave: 'baterias', texto: 'Baterías' },
   { clave: 'baremos', texto: 'Baremos' },
-  { clave: 'ponderaciones', texto: 'Ponderaciones' },
+  { clave: 'ponderaciones', texto: 'Velocímetro' },
   { clave: 'redacciones', texto: 'Redacciones' },
 ];
 
@@ -34,7 +39,7 @@ const QUE_HACE: Record<string, string> = {
   baremos:
     'Dónde corta cada rango del Raven. Cambia el rango que se nombra en el informe y el puntaje de habilidad cognitiva.',
   ponderaciones:
-    'Cuánto pesa cada indicador dentro de su competencia. El puntaje es el promedio de los que tienen dato, cada uno por su peso.',
+    'Cuánto pesa cada indicador dentro de su competencia. De acá sale el puntaje que marca el velocímetro de cada una en el informe: el promedio de los que tienen dato, cada uno por su peso.',
   redacciones:
     'Lo que el informe escribe cuando una lectura se dispara. Cuándo entra cada una lo decide su índice y su corte.',
 };

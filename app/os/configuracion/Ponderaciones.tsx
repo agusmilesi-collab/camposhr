@@ -3,7 +3,10 @@ import { HOJAS, PESOS_DE_FABRICA, claveDePeso } from '@/lib/competencias';
 import { loQueRige } from '@/lib/informe';
 
 /**
- * Cuánto pesa cada indicador dentro de su competencia.
+ * El velocímetro: cuánto pesa cada indicador dentro de su competencia.
+ *
+ * Se llama así por lo que produce, que es la aguja de cada competencia en el
+ * informe.
  *
  * El puntaje de una competencia es el promedio de sus indicadores, cada uno por
  * su peso. Los pesos son criterio clínico: que la calidad del vínculo valga el
