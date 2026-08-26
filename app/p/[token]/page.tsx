@@ -278,6 +278,15 @@ export default async function Portal({ params }: { params: { token: string } }) 
       (a, b) => etapaDe(a) - etapaDe(b) || (b.fecha ?? '').localeCompare(a.fecha ?? '')
     );
 
+  /**
+   * Cuántos informes hay en camino.
+   *
+   * Se cuentan candidatos y no búsquedas, para que la cuenta signifique lo
+   * mismo de los dos lados: abajo dice cuántos informes se entregaron, y acá,
+   * cuántos faltan. Una búsqueda con tres candidatos son tres informes.
+   */
+  const informesEnCurso = enCurso.reduce((n, b) => n + b.candidatos.length, 0);
+
   return (
     <>
       <header className="top">
@@ -345,7 +354,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
               entregaron es lo primero que se pregunta al abrir el portal. */}
           {enCurso.length > 0 && (
             <div className="group-sep primera">
-              <span>Pedidos en curso ({enCurso.length})</span>
+              <span>Informes en curso ({informesEnCurso})</span>
             </div>
           )}
 
