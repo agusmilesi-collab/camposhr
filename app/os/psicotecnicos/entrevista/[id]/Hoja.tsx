@@ -12,6 +12,7 @@ import Papel from './Papel';
 import LinkLaminas from './LinkLaminas';
 import HojaBender from './HojaBender';
 import RelojRaven from './RelojRaven';
+import SondeoRaven from './SondeoRaven';
 import Bateria from '../../Bateria';
 import Orden from './Orden';
 import Competencias from './Competencias';
@@ -134,6 +135,9 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         if (t === 'Raven') {
           return (
             <>
+              {/* Mientras la persona responde, la pantalla se entera sola de
+                  que abrió el test y de que lo terminó. */}
+              <SondeoRaven id={e.id} estado={e.raven} />
               <div className="os-herramienta-accion">
                 <span className={`os-sello-estado ${raven.color}`} title={raven.detalle}>
                   {raven.texto}
