@@ -81,7 +81,9 @@ const PROPIOS_EMITIDAS = {
   'Número': 120,
   Emisora: 136,
   Cliente: 160,
-  Cubre: 112,
+  /* Entra "3 evaluaciones" con el chevron al lado: con los 112 de antes el
+     rótulo se cortaba en puntos suspensivos apenas la celda pasó a ser botón. */
+  Cubre: 148,
   Cobro: 136,
   /* La columna de la acción mide lo que mide "Quitar", y no los 166 de las
      tablas del pipeline, que llevaban botones de dos palabras. */
@@ -500,14 +502,30 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
                 ) : (
                   <button
                     type="button"
-                    className={`os-costo-abre${cajon ? ' abierto' : ''}`}
+                    className={`os-cubre-abre${cajon ? ' abierto' : ''}`}
+                    aria-expanded={cajon}
                     onClick={() => setAbierta(cajon ? null : f.id)}
-                    title={
-                      cajon ? 'Tocar para cerrar' : 'Tocar para ver a quiénes cubre'
-                    }
+                    title={cajon ? 'Tocar para cerrar' : 'Tocar para ver a quiénes cubre'}
                   >
                     {cuantas} {cuantas === 1 ? 'evaluación' : 'evaluaciones'}
-                    <span aria-hidden="true">{cajon ? '▾' : '▸'}</span>
+                    {/* Un chevron dibujado y no el carácter ▸: el glifo cambia
+                        de tamaño y de línea de base según la tipografía, y acá
+                        tiene que girar sin moverse. */}
+                    <svg
+                      className="os-cubre-flecha"
+                      viewBox="0 0 12 12"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <path
+                        d="M4 2.5 L8 6 L4 9.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </button>
                 )}
               </td>
@@ -529,24 +547,27 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
             {cajon && (
               <tr className="os-fila-abierta">
                 <td colSpan={COLUMNAS_EMITIDAS.length}>
-                  <ul className="os-cubre-lista">
-                    {f.renglones.map((r) => (
-                      <li key={r.id}>
-                        {/* El nombre sale de la evaluación cuando está: las
-                            facturas de Airtable dicen "Evaluación psicotécnica"
-                            a secas y ahí manda la descripción. */}
-                        <span className="os-cubre-nombre">
-                          {r.persona ?? r.descripcion}
-                        </span>
-                        {r.puesto && <span className="os-dato-flojo">{r.puesto}</span>}
-                        {r.importe !== null && (
+                  <div className="os-cubre-caja">
+                    <span className="os-dato-rotulo">Cubre a</span>
+                    <ul className="os-cubre-lista">
+                      {f.renglones.map((r) => (
+                        <li key={r.id} className={r.persona ? undefined : 'os-cubre-extra'}>
+                          {/* El nombre sale de la evaluación cuando está: las
+                              facturas de Airtable dicen "Evaluación
+                              psicotécnica" a secas y ahí manda la descripción. */}
+                          <span className="os-cubre-nombre">{r.persona ?? r.descripcion}</span>
+                          <span className="os-cubre-puesto">{r.puesto ?? ''}</span>
                           <span className="os-cubre-importe">
-                            {formatoImporte(r.importe, f.moneda === 'DOL' ? 'USD' : 'ARS')}
+                            {r.importe === null ? (
+                              <span className="os-dato-falta">sin abrir</span>
+                            ) : (
+                              formatoImporte(r.importe, f.moneda === 'DOL' ? 'USD' : 'ARS')
+                            )}
                           </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </td>
               </tr>
             )}

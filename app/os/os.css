@@ -1828,33 +1828,119 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 }
 
 /**
- * A quiénes cubre una factura, debajo de su fila.
+ * A quiénes cubre una factura: el botón de la celda y la lista que abre.
  *
- * Un renglón por persona, con el puesto al lado y el importe alineado a la
- * derecha: es la misma lectura que la tabla de arriba, un escalón adentro.
+ * El botón dice cuántas evaluaciones entraron y el subrayado punteado avisa que
+ * hay algo abajo. El chevron es un dibujo y no el carácter ▸, así gira sobre su
+ * eje en vez de saltar de glifo.
  */
-.os-cubre-lista {
-  display: grid;
-  gap: 4px;
-  margin: 0;
-  padding: 12px 0 0;
-  list-style: none;
-  font-size: 0.84rem;
+.os-cubre-abre {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-tinta);
+  cursor: pointer;
+  border-bottom: 1px dashed var(--os-linea);
+  transition: color 0.12s ease, border-color 0.12s ease;
 }
 
+.os-cubre-abre:hover,
+.os-cubre-abre.abierto {
+  border-bottom-color: var(--os-azul);
+  color: var(--os-azul);
+}
+
+.os-cubre-flecha {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  color: var(--os-suave);
+  transition: transform 0.15s ease, color 0.12s ease;
+}
+
+.os-cubre-abre:hover .os-cubre-flecha,
+.os-cubre-abre.abierto .os-cubre-flecha {
+  color: var(--os-azul);
+}
+
+.os-cubre-abre.abierto .os-cubre-flecha {
+  transform: rotate(90deg);
+}
+
+/**
+ * La lista que se abre, en su propia caja.
+ *
+ * Suelta sobre el fondo de la fila se leía como más filas de la tabla y no como
+ * el adentro de una: la caja blanca con el filo azul del lado izquierdo la ata a
+ * la factura de arriba.
+ */
+.os-cubre-caja {
+  margin: 12px 0 2px;
+  padding: 11px 16px 13px;
+  border: 1px solid var(--os-linea-suave);
+  border-left: 2px solid var(--os-azul);
+  border-radius: 4px 10px 10px 4px;
+  background: var(--os-panel);
+  box-shadow: var(--os-sombra);
+}
+
+.os-cubre-caja > .os-dato-rotulo {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.os-cubre-lista {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.86rem;
+}
+
+/* Tres columnas y no un renglón suelto: los importes se comparan de arriba
+   abajo, y con el puesto empujándolos cada uno terminaba en otro lugar. */
 .os-cubre-lista > li {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
+  gap: 14px;
   align-items: baseline;
-  gap: 10px;
+  padding: 5px 0;
+}
+
+.os-cubre-lista > li + li {
+  border-top: 1px solid var(--os-linea-suave);
 }
 
 .os-cubre-nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 550;
 }
 
+.os-cubre-puesto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--os-suave);
+}
+
 .os-cubre-importe {
-  margin-left: auto;
   font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--os-tinta-media);
+}
+
+/* Lo que no es una persona: el adicional Benziger es un renglón de alguien que
+   ya está en la lista, así que se lee como acompañamiento del de arriba. */
+.os-cubre-extra .os-cubre-nombre {
+  font-weight: 400;
   color: var(--os-tinta-media);
 }
 
