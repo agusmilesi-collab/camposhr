@@ -8251,3 +8251,30 @@ textarea.os-exigencia-notas {
 .os-tests .os-cierre {
   max-width: none;
 }
+
+/* El aviso de que falta elegir el estrato: no es un error, es que la decisión
+   todavía no se tomó, y sin ella el informe sale con un capítulo menos. */
+.os-discursivo-falta {
+  margin: 10px 0 0;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--os-ambar) 12%, var(--os-panel));
+  color: var(--os-tinta);
+  font-size: 0.82rem;
+}
+
+/* Las dos tarjetas de la fila miden lo mismo: la del Raven trae más contenido,
+   pero dos cajas de distinto alto una al lado de la otra se leen como si a la
+   corta le faltara algo. */
+.os-tests-fila {
+  align-items: stretch;
+}
+
+.os-tests-fila > .os-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.os-tests-fila > .os-panel > .os-panel-cuerpo {
+  flex: 1;
+}
