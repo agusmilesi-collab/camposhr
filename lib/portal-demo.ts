@@ -55,6 +55,8 @@ export function datosDemo(): DatosCliente {
       {
         id: 'demo-p1',
         puesto: 'Jefe de Depósito',
+        bateria: 'Batería 2',
+        conBenziger: false,
         estado: 'En curso',
         area: 'Operaciones',
         seniority: 'Jefatura',
@@ -104,6 +106,8 @@ export function datosDemo(): DatosCliente {
       {
         id: 'demo-p2',
         puesto: 'Analista de Compras',
+        bateria: 'Batería 2',
+        conBenziger: false,
         estado: 'En curso',
         area: 'Administración',
         seniority: 'Semi Senior',
@@ -140,6 +144,8 @@ export function datosDemo(): DatosCliente {
       {
         id: 'demo-p3',
         puesto: 'Supervisor de Mantenimiento Mecánico',
+        bateria: 'Batería 2',
+        conBenziger: false,
         estado: 'Cerrado',
         area: 'Operaciones',
         seniority: 'Supervisión',
@@ -176,6 +182,8 @@ export function datosDemo(): DatosCliente {
       {
         id: 'demo-p5',
         puesto: 'Coordinador de Logística',
+        bateria: 'Batería 2',
+        conBenziger: false,
         estado: 'En curso',
         area: 'Operaciones',
         seniority: 'Jefatura',

@@ -4,7 +4,7 @@ import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
-import { CAMPOS_PEDIDO, ESTADOS_PEDIDO } from '@/lib/pedido-campos';
+import { ABIERTO, CAMPOS_PEDIDO, ESTADOS_PEDIDO } from '@/lib/pedido-campos';
 
 export const runtime = 'nodejs';
 
@@ -68,6 +68,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, motivo: 'El puesto no puede quedar vacío.' }, { status: 400 });
     }
     fila = { [campo]: valor === '' ? null : valor };
+    // Reabrir a mano deja fecha, igual que reabrir cargando un candidato: la
+    // solicitud que queda en curso es la de hoy y no la del día en que se pidió
+    // la primera tanda. Ver `pedido_estado_al_dia` en la base.
+    if (campo === 'estado' && valor === ABIERTO) {
+      fila.reabierto_el = new Date().toISOString().slice(0, 10);
+    }
   } else {
     return NextResponse.json({ ok: false, motivo: 'Campo no editable.' }, { status: 400 });
   }

@@ -21,6 +21,12 @@ export const dynamic = 'force-dynamic';
  *
  * **Entra sin evaluadora**, así que la evaluación arranca en "Sin asignar", que
  * es la pantalla donde el equipo reparte. Nadie de afuera elige quién evalúa.
+ *
+ * **Los candidatos pueden ser varios y la búsqueda puede ser una que ya
+ * existe.** Es como llega el trabajo: el cliente manda tres para el mismo
+ * puesto, o pide dos más para uno que ya se entregó. En ese segundo caso el
+ * pedido se reabre solo, con la fecha del día, porque el estado lo mantiene la
+ * base (`pedido_estado_al_dia`).
  */
 
 const MAX_CV = 10 * 1024 * 1024;
@@ -52,72 +58,138 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'No disponible.' }, { status: 404 });
   }
 
+  /**
+   * Para qué búsqueda entran.
+   *
+   * Puede ser una que ya existe, abierta o entregada entera: en el segundo caso
+   * la reapertura la hace la base sola cuando entra el candidato, y le deja la
+   * fecha del día. O una nueva, y entonces vienen el puesto y la batería.
+   */
+  const pedidoId = texto('pedidoId');
   const puesto = texto('puesto');
-  const candidato = texto('candidato');
-  const telefono = texto('telefono');
-  const mail = texto('mail');
   const bateria = texto('bateria');
   const descripcion = texto('descripcion');
   const comentarios = texto('comentarios');
+  const conBenziger = texto('benziger') === 'si';
 
-  if (!puesto || !candidato) {
-    return NextResponse.json({ error: 'Faltan el pedido y el candidato.' }, { status: 400 });
+  /**
+   * Los candidatos, que pueden ser varios.
+   *
+   * Vienen numerados desde el formulario, que agrega y saca filas: se recorre
+   * hasta que no haya más nombre. Uno sin nombre no es un candidato a medias,
+   * es una fila que quedó vacía y se descarta.
+   */
+  const gente: { nombre: string; telefono: string; mail: string; cv: File | null }[] = [];
+  for (let i = 0; i < 40; i++) {
+    const nombre = texto(`nombre-${i}`);
+    if (!nombre) continue;
+    const adjunto = form.get(`cv-${i}`);
+    gente.push({
+      nombre,
+      telefono: texto(`telefono-${i}`),
+      mail: texto(`mail-${i}`),
+      cv: adjunto instanceof File && adjunto.size > 0 ? adjunto : null,
+    });
   }
-  if (!telefono && !mail) {
+
+  if (gente.length === 0) {
+    return NextResponse.json({ error: 'Cargá al menos un candidato.' }, { status: 400 });
+  }
+  const sinContacto = gente.find((g) => !g.telefono && !g.mail);
+  if (sinContacto) {
     return NextResponse.json(
-      { error: 'Hace falta un teléfono o un mail para citar al candidato.' },
+      {
+        error: `Falta un teléfono o un mail de ${sinContacto.nombre}: es por donde se lo cita.`,
+      },
+      { status: 400 }
+    );
+  }
+  const pesado = gente.find((g) => g.cv && g.cv.size > MAX_CV);
+  if (pesado) {
+    return NextResponse.json(
+      { error: `El CV de ${pesado.nombre} supera los 10 MB.` },
       { status: 400 }
     );
   }
 
+  /** La búsqueda que ya existe, si el cliente eligió una. Tiene que ser suya. */
+  const suyo = pedidoId
+    ? (
+        await select<{ id: string; puesto: string; baterias: { codigo: string } | null }>(
+          'pedidos',
+          `select=id,puesto,baterias(codigo)&id=eq.${encodeURIComponent(pedidoId)}` +
+            `&empresa_id=eq.${empresa.id}&limit=1`
+        )
+      )[0]
+    : undefined;
+  if (pedidoId && !suyo) {
+    return NextResponse.json({ error: 'Esa búsqueda no existe.' }, { status: 404 });
+  }
+
   // La batería se busca por su código en la tabla, que es de donde salen las
   // opciones del formulario: así una batería que se agregue entra sola, y una
-  // que no exista no arma un pedido a medias.
-  const elegida = (
-    await select<{ id: string; codigo: string }>(
-      'baterias',
-      `select=id,codigo&codigo=eq.${encodeURIComponent(bateria)}&limit=1`
-    )
-  )[0];
-  if (!elegida) {
-    return NextResponse.json({ error: 'Elegí una batería.' }, { status: 400 });
+  // que no exista no arma un pedido a medias. En una búsqueda que ya existe la
+  // batería es la suya: los que entran para el mismo puesto se miden con lo
+  // mismo, o sus informes no se pueden comparar.
+  let elegida: { id: string; codigo: string } | undefined;
+  if (!suyo) {
+    if (!puesto) {
+      return NextResponse.json({ error: 'Falta el puesto de la búsqueda.' }, { status: 400 });
+    }
+    elegida = (
+      await select<{ id: string; codigo: string }>(
+        'baterias',
+        `select=id,codigo&codigo=eq.${encodeURIComponent(bateria)}&limit=1`
+      )
+    )[0];
+    if (!elegida) {
+      return NextResponse.json({ error: 'Elegí una batería.' }, { status: 400 });
+    }
   }
 
-  const adjunto = form.get('cv');
-  const cv = adjunto instanceof File && adjunto.size > 0 ? adjunto : null;
-  if (cv && cv.size > MAX_CV) {
-    return NextResponse.json({ error: 'El CV supera los 10 MB.' }, { status: 400 });
-  }
-
+  const conCv = gente.filter((g) => g.cv).length;
   const base =
-    `${candidato} para ${puesto}, con ${elegida.codigo}` +
-    (cv ? ` y el CV adjunto (${Math.round(cv.size / 1024)} kB)` : '') +
+    `${gente.length === 1 ? gente[0].nombre : `${gente.length} candidatos`} para ` +
+    `${suyo ? suyo.puesto : puesto}, con ${suyo?.baterias?.codigo ?? elegida?.codigo}` +
+    (conBenziger && !suyo ? ' y el cuestionario de perfil' : '') +
+    (conCv ? ` y ${conCv === 1 ? 'el CV adjunto' : `${conCv} CV adjuntos`}` : '') +
     '.';
 
   try {
-    const pedido = await crearPedido({
-      empresaId: empresa.id,
-      puesto,
-      bateriaId: elegida.id,
-      conBenziger: false,
-      familia: null,
-      seniority: null,
-      // La fecha la pone el servidor: no viaja en el formulario, así que el
-      // pedido no puede quedar fechado en otro día.
-      fechaPedido: new Date().toISOString().slice(0, 10),
-      notas: [descripcion, comentarios].filter(Boolean).join('\n\n') || null,
-      origen: 'portal',
-    });
+    // Sobre una búsqueda que ya existe no se crea nada: los candidatos se le
+    // cuelgan, y si estaba entregada entera la base la reabre sola con la
+    // fecha de hoy.
+    const pedidoDestino =
+      suyo?.id ??
+      (
+        await crearPedido({
+          empresaId: empresa.id,
+          puesto,
+          bateriaId: elegida!.id,
+          conBenziger,
+          familia: null,
+          seniority: null,
+          // La fecha la pone el servidor: no viaja en el formulario, así que el
+          // pedido no puede quedar fechado en otro día.
+          fechaPedido: new Date().toISOString().slice(0, 10),
+          notas: [descripcion, comentarios].filter(Boolean).join('\n\n') || null,
+          origen: 'portal',
+        })
+      ).id;
 
-    await crearCandidato({
-      pedidoId: pedido.id,
-      nombre: candidato,
-      email: mail || null,
-      telefono: telefono || null,
-      evaluadoraId: null,
-      origen: 'portal',
-      cv,
-    });
+    // De a uno y no todos a la vez: cada candidato sube su CV, y si algo falla
+    // en el tercero los dos primeros ya quedaron cargados en vez de perderse.
+    for (const g of gente) {
+      await crearCandidato({
+        pedidoId: pedidoDestino,
+        nombre: g.nombre,
+        email: g.mail || null,
+        telefono: g.telefono || null,
+        evaluadoraId: null,
+        origen: 'portal',
+        cv: g.cv,
+      });
+    }
 
     revalidateTag(CACHE_PSICOTECNICOS);
     revalidateTag(CACHE_CLIENTES);

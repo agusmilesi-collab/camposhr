@@ -299,8 +299,14 @@ export default async function Portal({ params }: { params: { token: string } }) 
           </div>
           {/* El alta va en todos los portales: el pedido se cuelga de la
               empresa del token y entra sin evaluadora, así que cae en Sin
-              asignar, que es la pantalla donde el equipo reparte. */}
-          <NuevoPedido empresa={empresa} token={params.token} baterias={baterias} />
+              asignar, que es la pantalla donde el equipo reparte. Las búsquedas
+              viajan para poder sumar candidatos a una que ya existe. */}
+          <NuevoPedido
+            empresa={empresa}
+            token={params.token}
+            baterias={baterias}
+            busquedas={busquedas}
+          />
         </section>
 
         {/* El trabajo de fondo va arriba: las evaluaciones son una parte de él,
@@ -334,10 +340,12 @@ export default async function Portal({ params }: { params: { token: string } }) 
           )}
 
           {/* Las dos mitades de la pantalla se anuncian igual: lo que está
-              corriendo arriba y lo que ya se entregó abajo. */}
+              corriendo arriba y lo que ya se entregó abajo. Con la cuenta al
+              lado: cuántas búsquedas hay abiertas y cuántos informes se
+              entregaron es lo primero que se pregunta al abrir el portal. */}
           {enCurso.length > 0 && (
             <div className="group-sep primera">
-              <span>Pedidos en curso</span>
+              <span>Pedidos en curso ({enCurso.length})</span>
             </div>
           )}
 
@@ -369,7 +377,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
           {entregados.length > 0 && (
             <>
               <div className="group-sep">
-                <span>Informes entregados</span>
+                <span>Informes entregados ({filasEntregadas.length})</span>
               </div>
               <article className="card">
                 <TablaEntregados

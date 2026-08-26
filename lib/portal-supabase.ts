@@ -24,6 +24,8 @@ type FilaPedido = {
   seniority: string | null;
   fecha_pedido: string | null;
   reabierto_el: string | null;
+  con_benziger: boolean | null;
+  baterias: { codigo: string } | null;
   evaluaciones: {
     id: string;
     estado: string;
@@ -40,7 +42,8 @@ type FilaPedido = {
 };
 
 const CAMPOS =
-  'id,puesto,estado,familia,seniority,fecha_pedido,reabierto_el,' +
+  'id,puesto,estado,familia,seniority,fecha_pedido,reabierto_el,con_benziger,' +
+  'baterias(codigo),' +
   'evaluaciones(id,estado,fecha_entrevista,fecha_entrega,modalidad,recomendacion,' +
   'informe_path,facturado,pagado,personas(nombre),evaluadoras(nombre))';
 
@@ -132,6 +135,8 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
     // Reabierto, la fecha que ve el cliente es la de su pedido nuevo: es lo
     // que él pidió, y la primera tanda ya la recibió.
     fecha: p.reabierto_el ?? p.fecha_pedido,
+    bateria: p.baterias?.codigo ?? null,
+    conBenziger: p.con_benziger === true,
     candidatos: (p.evaluaciones ?? []).map(
       (e): Candidato => ({
         id: e.id,

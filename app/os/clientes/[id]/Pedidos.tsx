@@ -97,7 +97,7 @@ function Filas({ pedidos, cerrados = false }: { pedidos: Pedido[]; cerrados?: bo
             <th>Nivel</th>
             <th>Pedido el</th>
             <th>Avance</th>
-            <th>{cerrados ? 'Cómo terminó' : 'Para trabajarlo'}</th>
+            <th>{cerrados ? 'Reabrir' : 'Para trabajarlo'}</th>
           </tr>
         </thead>
         <tbody>
@@ -134,16 +134,15 @@ function Filas({ pedidos, cerrados = false }: { pedidos: Pedido[]; cerrados?: bo
               <td data-campo="Avance">
                 <Avance p={p} />
               </td>
-              <td data-campo={cerrados ? 'Cómo terminó' : 'Para trabajarlo'}>
+              {/* En los cerrados no va el sello de "Finalizado": el avance ya
+                  dice que se entregó todo. Cancelado sí, que es otra cosa y no
+                  se lee del avance. */}
+              <td data-campo={cerrados ? 'Reabrir' : 'Para trabajarlo'}>
                 {cerrados ? (
                   <span className="os-cerrado-fila">
-                    <span
-                      className={`os-sello-estado ${
-                        p.estado === 'Cancelado' ? 'os-rojo' : 'os-gris'
-                      }`}
-                    >
-                      {p.estado}
-                    </span>
+                    {p.estado === 'Cancelado' && (
+                      <span className="os-sello-estado os-rojo">{p.estado}</span>
+                    )}
                     <Reabrir id={p.id} />
                   </span>
                 ) : (
@@ -196,8 +195,10 @@ export default function Pedidos({
         </div>
       </section>
 
+      {/* Con ancla: desde el tablero de psicotécnicos se llega hasta acá para
+          reabrir uno. */}
       {cerrados.length > 0 && (
-        <section className="os-panel os-panel-separado">
+        <section className="os-panel os-panel-separado" id="cerrados">
           <div className="os-panel-top">
             <h2>Cerrados</h2>
             <span className="os-columna-monto">

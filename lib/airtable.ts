@@ -125,6 +125,15 @@ export type Busqueda = {
   seniority: string | null;
   fecha: string | null;
   candidatos: Candidato[];
+  /**
+   * Con qué se evalúa a quien entre a esta búsqueda.
+   *
+   * Es del pedido y no del candidato: los tres que entran para el mismo puesto
+   * se miden con lo mismo, o sus informes no se pueden comparar. Null en lo que
+   * sigue en Airtable, que no lo trae.
+   */
+  bateria: string | null;
+  conBenziger: boolean;
 };
 
 export type DatosCliente = {
