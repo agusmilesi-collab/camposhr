@@ -1292,17 +1292,27 @@ a.os-tarjeta:hover {
 
 /* El azul es para la acción que carga lo que se escribió en la sala: el negro
    del botón firme está tomado por la acción principal de cada pantalla, y esta
-   convive con ella sin competirle. */
+   convive con ella sin competirle.
+
+   Se arma con el mismo par que el firme, el azul de la marca contra la tinta
+   activa, así que se aclara u oscurece con el tema en vez de tener su propio
+   contraste. Y se apaga igual que el firme, con opacidad: aclarar el fondo con
+   un filtro daba dos azules distintos según el tema. */
 .os-boton-azul {
   background: var(--os-azul-fuerte);
-  color: var(--os-panel);
+  color: var(--os-activo-tinta);
   border-color: var(--os-azul-fuerte);
 }
 
 .os-boton-azul:hover:not(:disabled) {
   background: var(--os-azul-fuerte);
   border-color: var(--os-azul-fuerte);
-  filter: brightness(1.15);
+  color: var(--os-activo-tinta);
+  opacity: 0.88;
+}
+
+.os a.os-boton-azul {
+  color: var(--os-activo-tinta);
 }
 
 /* Un enlace con forma de botón lleva el color del botón. Hace falta decirlo
@@ -6382,19 +6392,53 @@ th.os-tabla-contacto {
 .os-competencias-pie {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
   margin-top: 8px;
+}
+
+/* En qué está lo escrito, dicho al pie: cuánto lleva, si quedó sin cargar o a
+   qué hora entró. Un campo que reemplaza un documento y no dice nada de eso
+   deja a quien escribe adivinando si lo suyo se guardó. */
+.os-editor-cuenta {
+  font-size: 0.76rem;
+  color: var(--os-suave);
 }
 
 /* ---------- El campo con formato ----------
    Reemplaza un documento, así que se escribe con negritas y listas. Es un
    `contenteditable`, no un textarea: un textarea guarda caracteres y acá hace
-   falta guardar marcado. */
+   falta guardar marcado.
+
+   La barra y el campo van adentro de una caja con un solo borde, como en
+   cualquier procesador de texto: sueltos se leían como dos controles distintos
+   y la barra no se entendía de quién era. El borde se ilumina con el foco del
+   campo, así que la caja entera dice dónde se está escribiendo. */
+.os-editor {
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  overflow: hidden;
+}
+
+.os-editor:focus-within {
+  border-color: var(--os-azul);
+}
+
 .os-formato-barra {
   display: flex;
+  align-items: center;
   gap: 4px;
-  margin-bottom: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+/* Los botones que hacen lo mismo van pegados y los grupos, separados: el
+   espacio es lo que dice que negrita y viñeta no son la misma clase de cosa. */
+.os-formato-grupo {
+  display: flex;
+  gap: 2px;
+  margin-left: 8px;
 }
 
 .os-formato-boton {
@@ -6446,27 +6490,31 @@ th.os-tabla-contacto {
   color: var(--os-tinta);
 }
 
-/* Una barra vertical separa lo que cambia el renglón entero de lo que cambia
-   las palabras marcadas: son dos cosas distintas y se apretaban seguidas. */
-.os-formato-tamano + .os-formato-boton {
-  margin-left: 8px;
-  border-left-color: var(--os-linea);
-}
-
 /* La tarjeta del test es `draggable` para poder reordenarla, y eso le saca la
    selección a todo lo que tiene adentro. Un campo de texto no se puede editar
    sin selección: los `input` se salvan porque el navegador los exceptúa, pero
-   un campo editable hay que devolverlo a mano. */
+   un campo editable hay que devolverlo a mano.
+
+   El borde y el fondo los pone la caja, así que acá se sacan: dos bordes, uno
+   dentro del otro, es lo que hacía que la barra pareciera de otra cosa. */
 .os-campo-rico {
   user-select: text;
   -webkit-user-select: text;
   position: relative;
   min-height: 220px;
-  padding: 10px 12px;
+  padding: 12px;
   line-height: 1.55;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   overflow-y: auto;
   text-align: left;
   cursor: text;
+}
+
+.os-campo-rico:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 /* Vacío no muestra nada, y un campo de doscientos píxeles en blanco no dice
@@ -6477,7 +6525,7 @@ th.os-tabla-contacto {
 .os-campo-vacio::before {
   content: attr(data-vacio);
   position: absolute;
-  top: 10px;
+  top: 12px;
   left: 12px;
   right: 12px;
   color: var(--os-suave);
