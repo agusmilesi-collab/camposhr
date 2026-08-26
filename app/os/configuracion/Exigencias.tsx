@@ -29,7 +29,7 @@ function tono(rgb: [number, number, number]): string {
   return `rgb(${rgb.join(', ')})`;
 }
 
-type Fila = Exigencia & { pedidos: number; candidatos: number };
+type Fila = Exigencia & { pedidos: number };
 
 /** Lo que se está editando de un perfil, todavía sin guardar. */
 type Puesta = { nombre: string; sobresaliente: number; alto: number; adecuado: number; notas: string };
@@ -221,15 +221,9 @@ export default function Exigencias({
                     dice nada que valga el lugar que ocupa, y lo que importa de
                     este número es que mover un corte cambia cómo se leen esos
                     pedidos. */}
-                {(e.pedidos > 0 || e.candidatos > 0) && (
+                {e.pedidos > 0 && (
                   <span className="os-columna-monto">
-                    {[
-                      e.pedidos > 0 && `${e.pedidos} ${e.pedidos === 1 ? 'pedido' : 'pedidos'}`,
-                      e.candidatos > 0 &&
-                        `${e.candidatos} ${e.candidatos === 1 ? 'candidato' : 'candidatos'}`,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
+                    {e.pedidos} {e.pedidos === 1 ? 'pedido' : 'pedidos'}
                   </span>
                 )}
               </div>
@@ -314,28 +308,24 @@ export default function Exigencias({
                       >
                         Mover los cortes
                       </button>
+                      {/* La default no se cambia: es la que rige siempre, y lo
+                          que se elige por pedido es apartarse de ella. Un botón
+                          para coronar otra volvía a esta pantalla el lugar
+                          donde se decide cómo se lee todo el sistema de una
+                          vez, que no es lo que se quiere. */}
                       {!e.predeterminada && hayTabla && (
-                        <>
-                          <button
-                            className="os-boton"
-                            disabled={guardando}
-                            onClick={() => mandar({ id: e.id, predeterminar: true })}
-                          >
-                            Poner de default
-                          </button>
-                          <button
-                            className="os-enlace-boton"
-                            disabled={guardando || e.pedidos > 0 || e.candidatos > 0}
-                            title={
-                              e.pedidos > 0 || e.candidatos > 0
-                                ? 'La están usando. Cambiásela a esos pedidos antes de borrarla.'
-                                : undefined
-                            }
-                            onClick={() => mandar({ id: e.id, borrar: true })}
-                          >
-                            Borrar
-                          </button>
-                        </>
+                        <button
+                          className="os-boton"
+                          disabled={guardando || e.pedidos > 0}
+                          title={
+                            e.pedidos > 0
+                              ? 'La usan pedidos abiertos. Cambiásela a esos pedidos antes de borrarla.'
+                              : undefined
+                          }
+                          onClick={() => mandar({ id: e.id, borrar: true })}
+                        >
+                          Borrar
+                        </button>
                       )}
                     </span>
                   </div>

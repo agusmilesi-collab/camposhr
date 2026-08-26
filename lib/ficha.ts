@@ -58,13 +58,6 @@ export type Cabecera = {
   seguimiento_al: string | null;
   seguimiento_resultado: string | null;
   seguimiento_notas: string | null;
-  /**
-   * La exigencia de este candidato, si lleva una propia.
-   *
-   * Pisa la del pedido. Null quiere decir "la del pedido", y si el pedido
-   * tampoco tiene, la predeterminada.
-   */
-  exigencia_id: string | null;
   personas: { nombre: string; email: string | null; telefono: string | null } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
@@ -264,7 +257,7 @@ const CAMPOS_CABECERA =
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'recomendacion,recomendacion_notas,informe_path,entrevista_competencias,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
-  'seguimiento_al,seguimiento_resultado,seguimiento_notas,exigencia_id,' +
+  'seguimiento_al,seguimiento_resultado,seguimiento_notas,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
   'pedidos(puesto,con_benziger,exigencia_id,empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';

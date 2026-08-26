@@ -17,6 +17,8 @@ export type Pedido = {
   bateria: string | null;
   bateriaId: string | null;
   conBenziger: boolean;
+  /** Con qué exigencia se leen los informes de este pedido. Null es la default. */
+  exigenciaId: string | null;
   familia: string | null;
   seniority: string | null;
   estado: string;
