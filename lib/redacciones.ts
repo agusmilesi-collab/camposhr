@@ -184,6 +184,14 @@ export type PorTest = {
   corte?: Corte;
   dice?: string[];
   recomienda?: string[];
+  /**
+   * `false` cuando la lectura no corre en ese test.
+   *
+   * Hay valores que en un test son un hallazgo y en el otro son la norma: T=0
+   * en Zulliger es lo esperado, y decir ahí que la persona evita la cercanía
+   * sería informar como rasgo lo que tiene casi todo el mundo.
+   */
+  aplica?: boolean;
 };
 
 export type Redaccion = {
@@ -214,7 +222,11 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'Lambda',
     corte: { op: 'menor', valor: 0.3, decimales: 2 },
-    zulliger: { corte: { op: 'menor', valor: 0.29, decimales: 2 } },
+    zulliger: {
+      corte: { op: 'menor', valor: 0.29, decimales: 2 },
+      dice: ['Está excesivamente pendiente de la información que recibe, y al tomar decisiones se ve sobrepasada por los datos y puede tener dificultad para encontrar la prioridad.'],
+      recomienda: ['Absorbe demasiados datos y al tomar decisiones necesita ayuda para priorizar la información.'],
+    },
     dice: ['Intenta captar todo, sin discriminar entre información relevante y accesoria. No se le escapa nada, y corre el riesgo de llenarse de datos que no sirven para resolver el problema, lo que puede hacer caer su eficacia.'],
     recomienda: ['Ayudarlo a separar la información relevante de la accesoria, para que cuando tenga que resolver algo rápido pueda hacerlo sin impulsividad.'],
   },
@@ -222,6 +234,10 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'Lambda',
     corte: { op: 'mayor', valor: 0.8, decimales: 2 },
+    zulliger: {
+      dice: ['Simplifica demasiado sus percepciones y deja los afectos fuera de la lectura de las situaciones, con lo cual puede perder algún dato de información. Puede fallar la permeabilidad a las emociones y la empatía.'],
+      recomienda: ['En situaciones con carga emocional, indicarle con claridad en qué aspectos debe enfocarse.'],
+    },
     dice: ['Simplifica sus percepciones más de lo esperado. Con eso evita procesar emociones y que los afectos lo invadan, y puede perder algún dato importante para la tarea.'],
     recomienda: ['En situaciones con carga emocional, darle seguimiento para que no pierda datos o información importante.'],
   },
@@ -243,6 +259,10 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'W',
     cuando: 'W en menos del 30 % de las localizaciones, con alguna D',
+    zulliger: {
+      dice: ['Tiene la visión global disminuida y absorbe los datos del entorno desde los detalles.'],
+      recomienda: ['Si se necesita que obtenga una visión más global de las situaciones, guiarla dándole información de contexto.'],
+    },
     dice: ['Puede necesitar ayuda para armar una visión global de las situaciones, con tendencia a centrarse en los detalles.'],
     recomienda: ['Darle información de contexto para ayudarlo a generar mayor visión de conjunto.'],
   },
@@ -257,6 +277,10 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'Dd',
     cuando: 'Dd en más del 15 % de las localizaciones',
+    zulliger: {
+      dice: ['Está muy preocupada por la exactitud y tiene miedo a cometer errores, y por eso se fija en cuestiones que para otros pueden ser insignificantes. Este indicador puede mostrar falta de confianza en sí misma.'],
+      recomienda: ['Ayudarla a distinguir la información relevante de la accesoria para evitar pérdida de tiempo, y a la vez destacar lo que hace bien para colaborar con su autoestima.'],
+    },
     dice: ['Revisa de manera minuciosa para evitar errores, y al fijarse en aspectos poco relevantes pierde la visión de conjunto: se fija en lo que la mayoría no mira y deja de lado datos obvios.'],
     recomienda: ['Ayudarlo a priorizar los aspectos centrales de la tarea, para que no se detenga en detalles poco relevantes.'],
   },
@@ -264,7 +288,11 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'DQv',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
-    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 0, decimales: 0 },
+      dice: ['Aparece un indicador de impulsividad: puede resolver de manera poco reflexiva.'],
+      recomienda: ['Revisar sus decisiones en conjunto, sobre todo al inicio, para ajustar el criterio y evitar las resoluciones apresuradas.'],
+    },
     dice: ['Aparece un modo de resolver poco reflexivo: puede avanzar sin detenerse a elaborar.'],
     recomienda: ['Pedirle que comparta su razonamiento antes de avanzar con una decisión, para chequear criterios sobre todo al principio.'],
   },
@@ -272,7 +300,11 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'PSV',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
-    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 0, decimales: 0 },
+      dice: ['Le puede costar cambiar de idea y sostiene su postura aun cuando le muestren otra.'],
+      recomienda: ['Mostrarle datos o información concreta para ayudarla a flexibilizar sus ideas.'],
+    },
     dice: ['Las preocupaciones pueden interferir en su proceso cognitivo, y eso se nota en el día a día como cierta rigidez para flexibilizarse.'],
     recomienda: ['Acompañarlo en los cambios, no dejarlo solo, y darle información y datos concretos para que logre flexibilizar.'],
   },
@@ -294,6 +326,10 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'W:M',
     cuando: 'W más de dos veces y media M',
+    zulliger: {
+      dice: ['Se pone metas más allá de sus posibilidades reales, con una actitud en exceso abarcativa. Cuando recibe una tarea nueva no toma dimensión de lo que requiere para responder en tiempo y forma, y le cuesta decir que ahora no puede.'],
+      recomienda: ['Ayudarla a evaluar conscientemente sus pendientes antes de considerar sumar tareas nuevas.'],
+    },
     dice: ['Tiende a comprometerse con asignaciones sin revisar antes si cuenta con los recursos para llevarlas adelante en tiempo y forma. Le cuesta decir que no puede o poner un límite.'],
     recomienda: ['Antes de asignarle una tarea nueva, ayudarlo a chequear si realmente tiene con qué responder, porque va a tender a aceptar todo.'],
   },
@@ -301,6 +337,10 @@ export const TEXTOS = {
     area: 'Cómo interpreta lo que ve',
     indice: 'XA% / WDA%',
     cuando: 'XA% menos de 0,80 con WDA% de 0,80 o más',
+    zulliger: {
+      dice: ['La percepción es generalmente apropiada en las situaciones obvias y tiende a no serlo en otras circunstancias. Ahí despliega una visión diferente a la de la mayoría de las personas.'],
+      recomienda: ['Dar consignas claras y hacer chequeos breves de interpretación en las situaciones ambiguas, para alinear criterios antes de que decida o avance.'],
+    },
     dice: ['Su percepción es apropiada en las situaciones obvias, y puede no serlo en otras circunstancias.'],
     recomienda: ['En situaciones complejas, ayudarlo a validar su interpretación antes de avanzar.'],
   },
@@ -308,6 +348,10 @@ export const TEXTOS = {
     area: 'Cómo interpreta lo que ve',
     indice: 'XA%',
     corte: { op: 'menor', valor: 0.8, decimales: 2 },
+    zulliger: {
+      dice: ['Le puede costar percibir las situaciones como las percibe la mayoría, de modo que su interpretación de una consigna puede no coincidir con lo que se le pidió.'],
+      recomienda: ['Asegurarse de que haya interpretado correctamente las consignas y las prioridades antes de iniciar una tarea, por ejemplo pidiéndole que repita qué entendió.'],
+    },
     dice: ['Es poco convencional en sus percepciones: en buena parte de las ocasiones no va a ver las cosas como las ve la mayoría, sino de un modo más personal.'],
     recomienda: ['Chequear que el mensaje que se le quiere transmitir se entienda, por ejemplo preguntándole qué entendió de lo que se le pidió.'],
   },
@@ -315,6 +359,10 @@ export const TEXTOS = {
     area: 'Cómo interpreta lo que ve',
     indice: 'X−%',
     corte: { op: 'mayor', valor: 0.25, decimales: 2 },
+    zulliger: {
+      dice: ['Se aparta de lo convencional en un grado que puede traer signos de desadaptación en el ambiente laboral: resulta difícil de entender y aparecen dificultades claras en la comunicación.'],
+      recomienda: ['Pedirle que explicite sus ideas para asegurar que el mensaje sea comprendido.'],
+    },
     dice: ['Aparece un apartamiento de lo convencional que puede aumentar el comportamiento desajustado frente a lo que la situación exige, y con eso las dificultades de comunicación con el entorno.'],
     recomienda: ['Conviene considerar si lo que el puesto necesita se sostiene con este nivel de interpretación de los datos, porque puede traer roce con otros y caída de productividad.'],
   },
@@ -322,7 +370,11 @@ export const TEXTOS = {
     area: 'Cómo interpreta lo que ve',
     indice: 'Xu%',
     corte: { op: 'mayor', valor: 0.2, decimales: 2 },
-    zulliger: { corte: { op: 'mayor', valor: 0.33, decimales: 2 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 0.33, decimales: 2 },
+      dice: ['Puede tener visiones más originales que la mayoría de las personas.'],
+      recomienda: ['Si necesita ajustarse a lo pautado, pedirle que se centre en datos e información concreta.'],
+    },
     dice: ['Marcada tendencia a ver las cosas desde su propio punto de vista, con reticencia a sumarse a visiones más convencionales. Si el entorno no lo presiona a ajustarse, no es relevante; si hay exigencia fuerte de ajustarse a lo ya definido, el riesgo de conflicto sube.'],
     recomienda: ['Marcarle qué cosas se hacen de una manera establecida y sin modificaciones por más que las vea distinto, y dónde sí puede poner su impronta.'],
   },
@@ -330,6 +382,10 @@ export const TEXTOS = {
     area: 'Cómo interpreta lo que ve',
     indice: 'P',
     cuando: 'menos de lo esperado para la cantidad de respuestas',
+    zulliger: {
+      dice: ['No ve las cosas como la mayoría. Podría tener dificultad de adaptación si su tarea implica atenerse a lo que ya está pautado, y podría funcionar bien en tareas donde se privilegie la capacidad creativa.'],
+      recomienda: ['Si se requiere que siga lo pautado, ayudarla a ver las situaciones a través de información concreta y de datos.'],
+    },
     dice: ['Tiene una mirada de las situaciones distinta a la de la mayoría de su entorno. Es alguien singular que, sin violar la realidad, prefiere manejarla de forma menos convencional.'],
     recomienda: ['Marcarle qué cosas se necesitan hacer de una manera determinada, y dónde puede ser original.'],
   },
@@ -337,6 +393,9 @@ export const TEXTOS = {
     area: 'Cómo interpreta lo que ve',
     indice: 'P',
     cuando: 'más de lo esperado para la cantidad de respuestas',
+    zulliger: {
+      dice: ['Se esfuerza por cumplir con las expectativas que piensa que los demás tienen sobre ella. Es buen indicador para tareas rutinarias y para funcionar apegada a lo convencional.'],
+    },
     dice: ['Se esfuerza por satisfacer las expectativas que cree que los demás tienen sobre él.'],
     recomienda: ['Ayudarlo a clarificar expectativas reales y criterios de desempeño, para que no opere desde supuestos sino desde acuerdos concretos.'],
   },
@@ -344,6 +403,9 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'EB',
     cuando: 'estilo introversivo',
+    zulliger: {
+      dice: ['Prefiere usar el pensamiento para resolver los problemas y mantiene sus emociones en segundo plano. Puede sentirse más cómoda en tareas donde no necesite interactuar con otros, y puede parecer seria o retraída. Sostiene un buen nivel de concentración durante períodos largos y piensa antes de actuar. Puede preferir la comunicación escrita a la hablada.'],
+    },
     dice: ['Prefiere la reflexión para resolver problemas: espera a considerar todas las alternativas antes de decidir, no procesa emoción mientras busca soluciones, y se apoya fuerte en su propia evaluación interna para elaborar juicios.'],
     recomienda: [''],
   },
@@ -351,6 +413,9 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'EB',
     cuando: 'estilo extratensivo',
+    zulliger: {
+      dice: ['Usa el ensayo y el error para resolver los problemas. Puede ser más emocional e incluir sus afectos al hacer evaluaciones. Prefiere tareas con interacción con otros, le gusta el cambio y la acción, y prefiere resolver de manera rápida.'],
+    },
     dice: ['Mezcla los sentimientos con sus decisiones. El contacto con los demás y el procesamiento de la emoción son prioritarios, y el control de esas descargas queda en segundo plano. Usa el ensayo y el error.'],
     recomienda: ['Al decidir o resolver un problema, acompañarlo para que distinga la carga emocional que le provoca la situación, y con ese registro llegue a resoluciones mejores.'],
   },
@@ -358,6 +423,9 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'EB',
     cuando: 'estilo ambigual',
+    zulliger: {
+      dice: ['Su estilo para resolver problemas o tomar decisiones no está definido: a veces logra dejar las emociones de lado y en otras circunstancias involucra sus afectos en la decisión. Eso la vuelve poco previsible.'],
+    },
     dice: ['A veces resuelve dejando de lado la emoción y centrándose en las ideas, y otras veces sus afectos influyen en la evaluación. Al no tener un estilo definido, la decisión le puede llevar más tiempo y resultar menos previsible.'],
     recomienda: [''],
   },
@@ -372,6 +440,10 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'a:p',
     cuando: 'p tres veces a o más',
+    zulliger: {
+      dice: ['Sus ideas son excesivamente rígidas: va a ser muy difícil alterar tanto sus opiniones como sus actitudes.'],
+      recomienda: ['Si se requiere que siga lo pautado, ayudarla a ver las situaciones a través de información concreta y de datos.'],
+    },
     dice: ['Tiende a oponerse a los cambios: le cuesta bastante cambiar de punto de vista y aprender pautas nuevas.'],
     recomienda: ['Mostrarle información concreta con datos para ayudarlo a ver otro punto de vista.'],
   },
@@ -379,6 +451,10 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'a:p',
     cuando: 'p mayor que a más uno',
+    zulliger: {
+      dice: ['Aparece una tendencia a adoptar un rol pasivo.'],
+      recomienda: ['Asignarle responsabilidades claras para favorecer la toma de iniciativa.'],
+    },
     dice: ['Tiende a adoptar un papel pasivo en sus relaciones: puede quedar como receptor de las acciones de los demás y esperar que otros le resuelvan los problemas.'],
     recomienda: ['Diseñar un camino de aprendizaje por etapas, para ir generando autonomía paso a paso.'],
   },
@@ -386,6 +462,10 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'Ma:Mp',
     cuando: 'Mp mayor que Ma más uno',
+    zulliger: {
+      dice: ['Suele esperar que otros le indiquen lo que tiene que hacer, y usa sus recursos para evitar enfrentar los problemas.'],
+      recomienda: ['Asignarle responsabilidades claras para favorecer la toma de iniciativa.'],
+    },
     dice: ['Evita la responsabilidad y la toma de decisiones, y recurre a la fantasía para negar los aspectos incómodos de la realidad. Eso conlleva cierta dependencia de que otros resuelvan.'],
     recomienda: ['Darle lineamientos claros y promover que asuma de a poco la responsabilidad sobre sus decisiones, evitando resolver por él lo que puede abordar solo.'],
   },
@@ -400,7 +480,11 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'Intelectualización',
     corte: { op: 'mayor', valor: 5, decimales: 0 },
-    zulliger: { corte: { op: 'mayor', valor: 1, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 1, decimales: 0 },
+      dice: ['Procesa las emociones como si fueran pensamientos. En el desempeño laboral concreto, puede tener dificultades para mantener la estabilidad emocional cuando se incrementan las tensiones, internas o externas.'],
+      recomienda: ['Ayudarla a distinguir entre lo que siente y lo que piensa en las situaciones de tensión, para que pueda responder con mayor claridad y estabilidad emocional.'],
+    },
     dice: ['Procesa las emociones como si fueran pensamientos. Con eso neutraliza su efecto, y a la vez tiende a distorsionar las situaciones, con lo cual las soluciones pierden eficacia. Se vuelve más vulnerable cuando la situación sube de intensidad.'],
     recomienda: ['Ayudarlo con el registro de sus emociones, y darle lugar para procesarlas y encontrar respuestas más eficientes.'],
   },
@@ -408,7 +492,11 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'M−',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
-    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 0, decimales: 0 },
+      dice: ['Aparece un indicador poco frecuente en evaluaciones laborales, que puede señalar alguna dificultad en la comunicación.'],
+      recomienda: ['Hacer chequeos breves de comprensión para asegurar que el mensaje haya sido entendido correctamente.'],
+    },
     dice: ['Aparece cierta probabilidad de dificultades en la calidad de sus ideas.'],
     recomienda: [''],
   },
@@ -451,6 +539,10 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'FC:CF+C',
     cuando: 'CF+C supera a FC por uno o dos',
+    zulliger: {
+      dice: ['Puede tratarse de una persona frontal, capaz de mostrarse tal como es, sin filtros.'],
+      recomienda: ['Desde el inicio, marcarle los límites que se esperan, por ejemplo en el manejo de información o en el contacto con clientes.'],
+    },
     dice: ['Expresa sus afectos sin filtro, de manera más espontánea que el adulto medio. No se esfuerza por controlar sus emociones en el mismo grado que la mayoría, sin que eso implique un problema serio de control.'],
     recomienda: ['Mostrarle, sobre todo al principio, los filtros que se esperan y qué información se mantiene reservada.'],
   },
@@ -458,7 +550,11 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'C pura',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
-    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 0, decimales: 0 },
+      dice: ['Disfruta cuando está involucrada en situaciones vertiginosas y de cambio. Es más proclive que el resto a desplegar conductas poco reflexivas.'],
+      recomienda: ['En las situaciones de cambio rápido, ayudarla a detenerse y evaluar la información relevante antes de decidir o avanzar.'],
+    },
     dice: ['Disfruta de las situaciones vertiginosas, y en ellas es más propenso a desplegar conductas poco reflexivas.'],
     recomienda: ['Mostrarle los límites que se esperan incluso en las situaciones más caóticas.'],
   },
@@ -487,7 +583,11 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'S',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
-    zulliger: { corte: { op: 'mayor', valor: 3, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 3, decimales: 0 },
+      dice: ['Se detecta un monto de irritación y de enojo mayor que lo convencional.'],
+      recomienda: ['Ayudarla a detectar ese enojo y a elegir acciones que la lleven a un estado emocional superador.'],
+    },
     dice: ['Le cuesta cambiar de opinión.'],
     recomienda: ['Ayudarlo a ver los otros puntos de vista mostrándole información concreta.'],
   },
@@ -495,6 +595,10 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: "C'",
     corte: { op: 'mayor', valor: 4, decimales: 0 },
+    zulliger: {
+      dice: ['Al no hacer las descargas ni los intercambios emocionales esperados, aumenta su tensión interna y se favorece la derivación de esa tensión al cuerpo.'],
+      recomienda: ['Darle espacios donde pueda abrirse emocionalmente y se sienta apoyada y escuchada.'],
+    },
     dice: ['Está conteniendo una irritación interna fuerte, que puede tardar bastante en bajar.'],
     recomienda: ['Generar un espacio de conversación donde se le consulte si necesita algo de la empresa o de su jefe para trabajar más tranquilo.'],
   },
@@ -502,6 +606,8 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'SumT',
     corte: { op: 'menor', valor: 1, decimales: 0 },
+    // En Zulliger T=0 es la norma y no se informa.
+    zulliger: { aplica: false },
     dice: ['Es distante en el contacto con los demás: no se siente cómodo en las situaciones de cercanía emocional y tiende a evitarlas. Cuida mantener una distancia de seguridad.'],
     recomienda: ['Ver cuánta cercanía emocional pide el puesto. Conviene no forzarla y respetar la distancia que prefiere, dejando una vía por la cual pueda pedir apoyo cuando lo necesite.'],
   },
@@ -509,7 +615,11 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'SumT',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
-    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 0, decimales: 0 },
+      dice: ['Tiene necesidad de cercanía con los demás. Se adapta mejor a estilos de conducción cercanos y a entornos donde se la aliente y reciba reconocimiento explícito por su desempeño.'],
+      recomienda: ['Que su líder sostenga cercanía y la aliente en su desempeño.'],
+    },
     dice: ['Necesita más cercanía y contacto que lo habitual: tiende a sentirse más solo y a depender de la presencia afectiva de otros.'],
     recomienda: ['Adoptar un estilo de conducción cercano, que le dé contención.'],
   },
@@ -517,6 +627,10 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'V',
     corte: { op: 'mayor', valor: 0, decimales: 0 },
+    zulliger: {
+      dice: ['Cuando se autoevalúa lo hace de manera severa y negativa. Es autoexigente, tiene poca confianza en sí misma y duda de sus posibilidades reales de llevar a cabo una tarea a la que no está habituada.'],
+      recomienda: ['Regular la exigencia externa, porque de manera interna ya se exige a sí misma.'],
+    },
     dice: ['Cuando se autoevalúa lo hace de manera severa: pocas veces está conforme con su propio desempeño, y se exige mucho.'],
     recomienda: ['Evitar sumarle exigencia externa, porque ya se exige por dentro.'],
   },
@@ -531,6 +645,10 @@ export const TEXTOS = {
     area: 'Cómo se ve a sí mismo',
     indice: 'Ego',
     corte: { op: 'menor', valor: 0.33, decimales: 2 },
+    zulliger: {
+      dice: ['Presenta cierta dificultad para tomarse a sí misma como centro de interés, y puede aparecer una tendencia al decaimiento anímico por falta de autoestima. Es desfavorable en puestos con tareas de riesgo, como vigilancia, conducción o manipulación de materiales peligrosos, porque al no cuidarse queda más expuesta.'],
+      recomienda: ['Dar reconocimiento a sus logros para ayudarla a cultivar su autoestima, y si el puesto lo requiere, extremar las medidas de seguridad.'],
+    },
     dice: ['No se toma a sí mismo como foco de atención en el grado suficiente: tiene una imagen desvalorizada de sí y no confía en sus recursos, con lo cual se puede dejar influenciar por los demás.'],
     recomienda: ['Alentar y reconocer su desempeño, para fomentar su autoestima.'],
   },
@@ -538,7 +656,11 @@ export const TEXTOS = {
     area: 'Cómo se ve a sí mismo',
     indice: 'Ego',
     corte: { op: 'mayor', valor: 0.55, decimales: 2 },
-    zulliger: { corte: { op: 'mayor', valor: 0.56, decimales: 2 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 0.56, decimales: 2 },
+      dice: ['Tiende a tomarse como centro exclusivo de sus preocupaciones y privilegia su punto de vista al punto de arrasar con los argumentos del interlocutor. Le cuesta entender a otros, negociar y adaptarse a quien tiene enfrente.'],
+      recomienda: ['Requiere asistencia para negociar y para ser empática. Le puede servir ver datos concretos sobre los puntos de vista distintos del propio para flexibilizarse.'],
+    },
     dice: ['Tiende a centrarse en sí mismo más de lo habitual, dando prioridad a su punto de vista, con dificultad para mirar las cosas desde otra óptica y ponerse en el lugar del otro.'],
     recomienda: ['En instancias de negociación puede necesitar asistencia: mostrarle datos que lo ayuden a considerar una visión distinta de la suya.'],
   },
@@ -546,6 +668,9 @@ export const TEXTOS = {
     area: 'Cómo se ve a sí mismo',
     indice: 'Fr+rF',
     corte: { op: 'mayor', valor: 0, decimales: 0 },
+    zulliger: {
+      dice: ['Necesita que le reafirmen su valor constantemente. Con buenos recursos, eso puede funcionar como motor para conseguir logros.'],
+    },
     dice: ['Necesita confirmación continua de su valor.'],
     recomienda: ['El reconocimiento de él y de sus resultados funciona como motor de motivación.'],
   },
@@ -553,7 +678,10 @@ export const TEXTOS = {
     area: 'Cómo se ve a sí mismo',
     indice: 'An+Xy',
     corte: { op: 'mayor', valor: 3, decimales: 0 },
-    zulliger: { corte: { op: 'mayor', valor: 1, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 1, decimales: 0 },
+      dice: ['Aparece un indicador que muestra preocupación elevada en torno a su cuerpo.'],
+    },
     dice: ['Está más preocupado de lo habitual por su funcionamiento corporal.'],
     recomienda: [''],
   },
@@ -561,6 +689,9 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'COP / AG',
     cuando: 'COP en cero y AG hasta 1',
+    zulliger: {
+      dice: ['La ausencia de ambos indicadores suele señalar bajo interés en las relaciones interpersonales.'],
+    },
     dice: ['No está especialmente interesado en las situaciones interpersonales, y los demás lo pueden percibir como distante.'],
     recomienda: ['En las relaciones su alcance va a ser superficial. Si alguna situación necesita más profundidad, conviene asistirlo.'],
   },
@@ -582,6 +713,9 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'COP / AG',
     cuando: 'COP de 2 o más y AG hasta 1',
+    zulliger: {
+      dice: ['Puede ser vista habitualmente como alguien que despliega actitudes de colaboración con otros.'],
+    },
     dice: ['Tiende a mantener actitudes socialmente positivas y a ser percibido como alguien agradable. Entiende la actividad interpersonal como parte importante de su día y busca interacciones armoniosas.'],
     recomienda: [''],
   },
@@ -589,6 +723,10 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'GHR:PHR',
     cuando: 'PHR mayor que GHR',
+    zulliger: {
+      dice: ['La calidad de sus interacciones no es la esperada.'],
+      recomienda: ['Darle indicaciones claras sobre lo que se espera en cuanto al estilo de vincularse, tanto dentro del equipo como en la empresa.'],
+    },
     dice: ['Sus herramientas interpersonales no alcanzan para generar vínculos de buena calidad: el estilo de sus intercambios no es el esperado.'],
     recomienda: [''],
   },
@@ -603,7 +741,11 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'Índice de aislamiento',
     corte: { op: 'mayor', valor: 0.25, decimales: 2 },
-    zulliger: { corte: { op: 'mayor', valor: 0.34, decimales: 2 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 0.34, decimales: 2 },
+      dice: ['Prefiere el trabajo individual. Es buen pronóstico de desempeño para quien deba trabajar sola o con pocas posibilidades de intercambio personal con otros.'],
+      recomienda: ['Favorecer tareas que requieran trabajo individual y autonomía.'],
+    },
     dice: ['Está menos implicado de lo habitual en las interacciones, y puede preferir trabajar de manera independiente.'],
     recomienda: ['Conviene que la mayoría de sus tareas sean asignaciones individuales.'],
   },
@@ -611,7 +753,11 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'PER',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
-    zulliger: { corte: { op: 'mayor', valor: 1, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 1, decimales: 0 },
+      dice: ['Cuando se siente cuestionada puede defenderse justificándose. También puede tener un estilo avasallante, tratando de imponer su idea.'],
+      recomienda: ['Ser concreto en los pedidos y en las consultas, para evitar que los reciba como un cuestionamiento.'],
+    },
     dice: ['Cuando se siente cuestionado puede reaccionar a la defensiva para justificarse.'],
     recomienda: ['Hacerle las consultas y los pedidos de forma concreta, para que no los reciba como un cuestionamiento.'],
   },
@@ -619,6 +765,10 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'Fd',
     corte: { op: 'mayor', valor: 0, decimales: 0 },
+    zulliger: {
+      dice: ['El indicador de dependencia está aumentado. Por un lado, cuando se compromete con la empresa se mantiene estable en sus compromisos y se subordina sin mayores conflictos. Por otro, puede necesitar a alguien cerca que supervise sus tareas y le dé seguridad.'],
+      recomienda: ['Necesita que le muestren el camino y que la apuntalen para tomar decisiones, porque naturalmente va a quedar a la espera de indicaciones o de que otros decidan.'],
+    },
     dice: ['Presenta más conductas de dependencia de lo esperable: espera que los demás busquen la solución a los problemas.'],
     recomienda: ['Alentar su autonomía paso a paso. Al principio necesita un referente con quien validar sus acciones o ideas.'],
   },
@@ -640,6 +790,10 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'H pura',
     cuando: 'los otros contenidos humanos superan a H pura',
+    zulliger: {
+      dice: ['No evidencia interés por las demás personas.'],
+      recomienda: ['Delegarle asignaciones individuales, y cuando tenga que trabajar en equipo acompañarla, porque sus habilidades interpersonales se detectan disminuidas.'],
+    },
     dice: ['Tiene una visión poco realista de sí mismo y de los demás: le puede costar ver tanto las fortalezas como las debilidades, propias y ajenas.'],
     recomienda: ['Cuando se le marque un error, hacerlo con información concreta para que le resulte más fácil registrarlo.'],
   },
@@ -668,6 +822,10 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'AdjD por debajo de −1',
+    zulliger: {
+      dice: ['Los recursos con los que cuenta para afrontar situaciones tensionantes no le alcanzan para mantener el control emocional, y queda expuesta a actuar impulsivamente. Está en malas condiciones para afrontar trabajos tensionantes en sí mismos, porque al malestar interno se le suma el externo.'],
+      recomienda: ['Evitar asignarle tareas con alto nivel de presión sostenida y ofrecer apoyo cercano en las situaciones de mayor exigencia.'],
+    },
     dice: ['Está en estado de sobrecarga: vive con mucha más tensión de la que puede manejar, y como resultado sus respuestas pierden eficiencia. Al ser negativo también el valor ajustado, la sobrecarga está instalada en su funcionamiento y no es solo del momento.'],
     recomienda: ['Regular la carga y priorizar tareas, con apoyo para organizar el trabajo y generar pausas, con el fin de bajar la tensión y mejorar la calidad de sus respuestas.'],
   },
@@ -675,7 +833,11 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
     corte: { op: 'menor', valor: 7, decimales: 0 },
-    zulliger: { corte: { op: 'menor', valor: 3, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'menor', valor: 3, decimales: 0 },
+      dice: ['Las herramientas para enfrentar situaciones de tensión elevada se encuentran por debajo del rango esperado: le puede costar tolerar situaciones tensas y responder adecuadamente.'],
+      recomienda: ['Acompañarla en las situaciones de tensión elevada para que pueda atravesarlas sin sentirse sobrepasada.'],
+    },
     dice: ['Sus recursos de afrontamiento son limitados.'],
     recomienda: [''],
   },
@@ -683,7 +845,10 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
     corte: { op: 'mayor', valor: 11, decimales: 0, ademas: 'con AdjD positivo' },
-    zulliger: { corte: { op: 'mayor', valor: 5, decimales: 0 } },
+    zulliger: {
+      corte: { op: 'mayor', valor: 5, decimales: 0 },
+      dice: ['Cuenta con herramientas sólidas para enfrentar situaciones de tensión elevada, suficientes para mantener el control emocional.'],
+    },
     dice: ['Confirma un nivel de control elevado.'],
     recomienda: [''],
   },
@@ -691,6 +856,9 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
     cuando: 'entre los dos cortes de EA, con AdjD en cero',
+    zulliger: {
+      dice: ['Las herramientas para enfrentar situaciones de tensión elevada se encuentran dentro del rango esperado: puede tolerar situaciones tensas y responder adecuadamente.'],
+    },
     dice: ['Confirma una capacidad de control adecuada.'],
     recomienda: [''],
   },
@@ -1018,6 +1186,7 @@ export function leer(
   const c = (clave: ClaveDeTexto) => corteDe(clave, cortes, test);
   const sumar = (clave: ClaveDeTexto, valor: string, sigue: ClaveDeTexto | null = null) => {
     const base = TEXTOS[clave] as Redaccion;
+    if (test === 'Zulliger' && base.zulliger?.aplica === false) return;
     const f = formas(clave, textos, test);
     const cola = sigue
       ? (() => {
