@@ -164,11 +164,21 @@ export function tecnicas(bateria: string | null, conBenziger: boolean): string[]
 export const CONFIDENCIALIDAD =
   'Los resultados contenidos en este informe son confidenciales. El contenido se obtuvo dentro de un contexto de evaluación llevado adelante por una psicóloga habilitada, siendo la única persona autorizada para dar feedback. La información se infiere al objetivo específico determinado con el cliente y puede contar con validez de hasta un año calendario a partir de la fecha de evaluación.';
 
-/** Quién firma. La matrícula es parte de la firma y no un dato de contacto. */
-export const FIRMAS: Record<string, { titulo: string; matricula: string; correo: string }> = {
+/**
+ * Quién firma. La matrícula es parte de la firma y no un dato de contacto.
+ *
+ * El correo es opcional: la firma vale por el título y la matrícula, que son lo
+ * que habilita a firmar el informe, y sin correo cargado el renglón no sale en
+ * vez de salir vacío.
+ */
+export const FIRMAS: Record<string, { titulo: string; matricula: string; correo?: string }> = {
   'Lorena Campos': {
     titulo: 'Lic. en Psicología',
     matricula: '5217',
     correo: 'lorecamposhr@gmail.com',
+  },
+  'Lucila Campos': {
+    titulo: 'Lic. en Psicología',
+    matricula: '6338',
   },
 };
