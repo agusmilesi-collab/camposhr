@@ -6859,6 +6859,43 @@ th.os-tabla-contacto {
 }
 
 /* El portal del cliente: abrir y copiar, en la fila del cliente. */
+/* Las acciones de la cabecera del cliente, en dos grupos rotulados: lo que
+   toca su portal y lo que toca su ficha. Los del cliente van contra el margen
+   derecho, así que entre los dos grupos hay todo el ancho que sobre: el rótulo
+   dice de qué es cada uno y la distancia dice que no son lo mismo.
+
+   Nombre propio y no `os-acciones`, que ya existe en otra pantalla apilando
+   sus botones en columna. */
+.os-cliente-acciones {
+  display: flex;
+  align-items: center;
+  /* En una ventana angosta los dos grupos no entran en un renglón: el del
+     cliente baja, y sigue contra el margen derecho. */
+  flex-wrap: wrap;
+  flex: 1;
+  gap: 10px 24px;
+  min-width: 0;
+}
+
+.os-cliente-acciones-suyas {
+  margin-left: auto;
+}
+
+.os-cliente-acciones-bloque {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.os-cliente-acciones-rotulo {
+  flex: none;
+  font-size: 0.66rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
 .os-portal-acciones {
   display: inline-flex;
   align-items: center;
@@ -6874,7 +6911,8 @@ th.os-tabla-contacto {
    Acá manda el contenedor, que lleva el nombre de la cabecera en el selector
    para ganarle a esa. El ancho mínimo es porque el de copiar cambia a "Copiado"
    al tocarlo y sin eso la fila se movía sola. */
-.os-panel-top .os-portal-acciones > * {
+.os-panel-top .os-portal-acciones > *,
+.os-cliente-acciones .os-portal-acciones > * {
   display: inline-flex;
   align-items: center;
   justify-content: center;
