@@ -3,7 +3,7 @@
 Informe de factibilidad. Investigación sobre `camposhr-site` en modo lectura, sin
 tocar nada del repositorio.
 
-**Estado al 24/08/2026: investigado, nada construido.** No hay una línea de
+**Estado al 26/08/2026: investigado, nada construido.** No hay una línea de
 código de esto en el repositorio, ni certificados pedidos, ni tablas creadas.
 Por dónde se empieza está en la sección 7, y la primera etapa no es ARCA: son
 las cuentas, porque sin ellas las dos evaluadoras no quedan separadas de verdad.
@@ -17,11 +17,14 @@ recibe ni firma nada.
 
 Se puede, y sale cero pesos. Los web services de ARCA (WSAA para autenticar,
 WSFEv1 para pedir el CAE) son gratuitos y públicos, y admiten tantos CUIT
-emisores como certificados se den de alta. Lo que cobra Afip SDK es el trabajo
-de firmar el pedido y hablar SOAP, que son unas trescientas líneas de código en
-el mismo estilo con el que el OS ya habla con Supabase y Airtable: `fetch`
-directo, sin SDK (`lib/supabase.ts:1-7`, "Sin SDK: la API REST (PostgREST) y la
-de Storage se resuelven con fetch").
+emisores como certificados se den de alta. Firmar el pedido de acceso y hablar
+SOAP lo resuelve `@arcasdk/core`, una biblioteca de código abierto que habla
+directo con ARCA, sin intermediarios y sin cobrar por CUIT. Es la única
+dependencia que el proyecto suma para esto, y vale la excepción a la costumbre
+de resolver todo con `fetch` directo (`lib/supabase.ts:1-7`, "Sin SDK: la API
+REST (PostgREST) y la de Storage se resuelven con fetch"): lo que se evita
+escribir es la firma CMS del pedido de acceso, donde un error se descubre tarde
+y sin mensaje claro.
 
 Con las dos evaluadoras monotributistas el caso fiscal es el más simple que hay:
 **siempre factura C**, sin IVA que discriminar y sin decidir la letra contra la
@@ -124,7 +127,7 @@ en la ficha. El campo `email_facturacion` está, el envío no.
 | Alta del punto de venta para web services | Gratis |
 | Ambiente de homologación (WSASS) | Gratis |
 | Consulta de constancia de inscripción (padrón) | Gratis |
-| Afip SDK | Pago por CUIT a partir del segundo |
+| `@arcasdk/core`, la biblioteca | Gratis, código abierto |
 | Proveedor de correo | Aparte, y ya está decidido incorporarlo |
 | Desarrollo propio | Tiempo, una vez |
 
@@ -248,36 +251,71 @@ ahí:
 
 ### 5.3 Código
 
-    lib/arca/tra.ts          arma el XML del pedido de acceso, con margen de reloj
-    lib/arca/firma.ts        lo firma en CMS con node-forge y devuelve base64
-    lib/arca/wsaa.ts         loginCms, con caché en arca_tickets
-    lib/arca/wsfe.ts         FEDummy, FECompUltimoAutorizado, FECAESolicitar,
-                             FECompConsultar, FEParamGetCondicionIvaReceptor
+La conversación con ARCA la resuelve `@arcasdk/core`: arma el pedido de acceso,
+lo firma en CMS, habla SOAP y devuelve el CAE. Es código abierto y gratis, no
+cobra por CUIT, y no pasa por ningún servidor intermedio (los únicos destinos
+que tiene adentro son `wsaahomo` y `wswhomo` para homologación, y `wsaa` y
+`servicios1` para producción). Trae los WSDL incorporados, así que no los
+descarga en cada arranque en frío.
+
+    npm i @arcasdk/core
+
+Se arma uno por CUIT, con el certificado y la clave de esa evaluadora:
+
+    const arca = new Arca({
+      cuit: emisor.cuit,                            // el de esa evaluadora
+      cert, key,                                    // contenido, no ruta
+      production: false,
+      ticketStorage: new TicketsEnSupabase(cuit),
+    });
+
+`ticketStorage` es la pieza que hace que esto funcione en Vercel. La biblioteca
+define `ITicketStoragePort` con `save`, `get` y `delete`, y la implementación
+propia lee y escribe en `arca_tickets`. Por defecto guarda el ticket en el disco
+de la función, que no sobrevive entre llamadas.
+
+Los certificados y las claves privadas se pasan como contenido. En `emisores` va
+lo fiscal, y el par de cada evaluadora vive en variables de entorno separadas
+por CUIT.
+
+Los archivos:
+
+    lib/arca/cliente.ts      arma el Arca de cada emisor con su certificado
+    lib/arca/tickets.ts      el store de tickets sobre arca_tickets
     lib/arca/comprobante.ts  de qué evaluaciones sale qué comprobante
     lib/facturas.ts          lectura para las pantallas, filtrada por evaluadora
     app/api/os/facturar/route.ts   emite una factura
     app/os/facturas/               "Por facturar" y "Emitidas"
 
-Los endpoints:
+Los métodos que se usan, con el web service al lado:
 
-    homologación  https://wsaahomo.afip.gov.ar/ws/services/LoginCms
-                  https://wswhomo.afip.gov.ar/wsfev1/service.asmx
-    producción    https://wsaa.afip.gov.ar/ws/services/LoginCms
-                  https://servicios1.afip.gov.ar/wsfev1/service.asmx
+    getServerStatus()          FEDummy, para probar la conexión
+    getLastVoucher()           FECompUltimoAutorizado
+    createVoucher()            FECAESolicitar
+    getVoucherInfo()           FECompConsultar
+    getIvaReceptorTypes()      FEParamGetCondicionIvaReceptor
+    getMaxRecordsPerRequest()  FECompTotXRequest
+
+La nota de crédito C (tipo 13) sale del mismo `createVoucher` con `CbtesAsoc`.
 
 El flujo de una emisión:
 
 1. Se juntan las evaluaciones a facturar y se resuelve el emisor por la
    evaluadora.
-2. Se pide el ticket de acceso: si hay uno vigente en `arca_tickets`, se usa.
-3. `FECompUltimoAutorizado` da el último número; se reserva el siguiente
-   insertando la factura en `borrador` con la clave única de arriba.
-4. `FECAESolicitar` con el detalle.
+2. Se arma el `Arca` de ese CUIT. El ticket sale de `arca_tickets` si hay uno
+   vigente, y si no la biblioteca pide uno y lo guarda ahí.
+3. `getLastVoucher` da el último número; se reserva el siguiente insertando la
+   factura en `borrador` con la clave única de arriba.
+4. `createVoucher` con el detalle.
 5. Con `Resultado = A` se guardan CAE y vencimiento y la factura pasa a
    `emitida`. Con `R` se guardan los errores, queda `rechazada` y el número se
    libera.
 6. Se genera el PDF, se marcan las evaluaciones como facturadas y se anota el
    acceso.
+
+Hay un `createNextVoucher` que junta los pasos 3 y 4 en una llamada. Acá no
+sirve, porque entre los dos pasos el número se reserva en la base para que dos
+emisiones simultáneas no pidan el mismo.
 
 ### 5.4 Cómo queda el comprobante C
 
@@ -297,7 +335,7 @@ Lo único que sigue dependiendo del cliente es `CondicionIVAReceptorId`, que es
 obligatorio desde el 1/7/2025 y sin el cual el pedido se rechaza. Hay que mapear
 los cuatro textos de `lib/clientes-tipos.ts` al identificador de ARCA
 (Responsable Inscripto = 1, Exento = 4, Consumidor Final = 5, Monotributo = 6) y
-confirmar la lista con `FEParamGetCondicionIvaReceptor`.
+confirmar la lista con `getIvaReceptorTypes` (`FEParamGetCondicionIvaReceptor`).
 
 **Un control que conviene sumar de una:** el monotributo tiene tope anual de
 facturación por categoría. Con todas las facturas en la base, el OS puede
@@ -340,10 +378,10 @@ Sí se puede, y de dos maneras.
 
 **Lo que admite el web service.** `FECAESolicitar` tiene modo en lote: varios
 comprobantes en una sola llamada, cada uno con su número y su receptor, y un CAE
-por comprobante. El tope lo informa `FECompTotXRequest` (hoy 350 en
-homologación). La restricción está en la cabecera: el tipo de comprobante y el
-punto de venta van una sola vez, así que todo el lote comparte emisor, tipo y
-punto de venta.
+por comprobante. En `createVoucher` eso es `CantReg` mayor que uno, y el tope lo
+informa `getMaxRecordsPerRequest` (`FECompTotXRequest`, hoy 350 en homologación).
+La restricción está en la cabecera: el tipo de comprobante y el punto de venta
+van una sola vez, así que todo el lote comparte emisor, tipo y punto de venta.
 
 Acá eso juega a favor. Como cada una factura lo suyo y todo es C, siete
 evaluaciones de cuatro clientes son cuatro comprobantes del mismo emisor, mismo
@@ -359,7 +397,7 @@ solo y diga "Facturar las 4":
   modos, así que el lote no ahorra el trabajo difícil.
 - De a una, cada factura tiene su número reservado, su reintento y su fila en
   pantalla. Si se corta en la tercera, se sabe cuál quedó a medias y se resuelve
-  con `FECompConsultar`.
+  con `getVoucherInfo` (`FECompConsultar`).
 - La pantalla va marcando fila por fila mientras avanza, como el OS ya hace en
   todos lados.
 - Iterando desde el navegador cada llamada es corta y no hay riesgo de que la
@@ -463,7 +501,7 @@ Así que el comprobante se genera acá y se guarda acá:
   descarga desde el OS y el portal del cliente ya alcanzan.
 - Después de facturar las cuatro, quedan las cuatro descargables juntas.
 
-**Cómo se genera el archivo.** Dos caminos, y hay que elegir:
+**Cómo se genera el archivo.** Tres caminos, y hay que elegir:
 
 1. `pdf-lib`, dibujando el comprobante. Liviano, sin binarios, anda en Vercel
    sin tocar nada, y deja el archivo guardado sin que nadie apriete nada. Es lo
@@ -471,8 +509,14 @@ Así que el comprobante se genera acá y se guarda acá:
 2. La página del comprobante en HTML, impresa a PDF desde el navegador. Cero
    dependencias nuevas, pero alguien tiene que apretar imprimir, y eso no se
    puede adjuntar solo.
+3. `@arcasdk/pdf`, el paquete de comprobantes de la misma biblioteca que resuelve
+   la conexión. Arma la hoja oficial con QR y las tres copias, pero funciona con
+   Puppeteer y se baja Chromium al instalar, lo que en una función de Vercel pide
+   `@sparticuz/chromium` y varios cientos de megabytes. Además el molde de acá
+   lleva la orden de compra y el detalle por candidato, que son propios.
 
-Con envío por correo en el plan, el primero es el que corresponde.
+Con envío por correo en el plan y el peso que trae el tercero, el primero es el
+que corresponde.
 
 El respaldo formal del comprobante siempre está en ARCA, en Mis Comprobantes. El
 PDF propio es para el cliente.
@@ -598,19 +642,29 @@ reintento ciego es un comprobante duplicado.
 
 **El ticket de acceso dura 12 horas y no se puede pedir otro mientras haya uno
 vigente.** ARCA devuelve `coe.alreadyAuthenticated`. En Vercel cada llamada
-puede caer en una instancia distinta y sin memoria compartida, así que la tabla
-`arca_tickets` es obligatoria y no una optimización. Son dos tickets, uno por
+puede caer en una instancia distinta y sin memoria compartida, así que el store
+de tickets sobre `arca_tickets` es obligatorio y no una optimización: la
+biblioteca, librada a su comportamiento por defecto, guarda el ticket en el
+disco de la función y pide uno nuevo en cada emisión. Son dos tickets, uno por
 CUIT.
 
 **El reloj.** El pedido de acceso lleva hora de generación y de expiración, y un
-desfase lo invalida. Se genera con diez minutos para atrás y diez para adelante.
+desfase lo invalida. Lo arma la biblioteca con su propia ventana
+(`WSAA_TRA_VALIDITY_WINDOW_MS`), y es lo primero que hay que mirar si aparecen
+rechazos de autenticación.
 
 **La región.** `vercel.json` fija `gru1` (San Pablo). Los web services de ARCA se
 alcanzan desde el exterior, pero conviene confirmarlo en homologación antes de
 avanzar.
 
-**Runtime.** `node-forge` necesita Node, no Edge. El proyecto ya está en Node por
-`pdfjs-dist` (`next.config.mjs`).
+**Runtime.** `@arcasdk/core` necesita Node, no Edge: firma con `node-forge` y
+habla SOAP con `soap`. El proyecto ya está en Node por `pdfjs-dist`
+(`next.config.mjs`). Si el empaquetado de Next se queja de `soap`, se agrega a
+`serverExternalPackages`.
+
+**La versión de la biblioteca queda fija.** Pasó de 0.3.6 en diciembre de 2025 a
+2.0.0 en junio de 2026, así que en `package.json` va la versión exacta y cada
+actualización se prueba en homologación antes de subirla.
 
 **Los certificados vencen a los dos años.** `emisores.cert_vence_el` y un aviso
 en Pendientes evita descubrirlo el día que hay que facturar.
@@ -629,16 +683,17 @@ se migran antes, o el botón no aparece para ellos.
 | --- | --- | --- |
 | 1. Cuentas | Autenticación real, una cuenta por persona, sobre `equipo.alcance` que ya existe | Sin esto no hay separación entre las dos, y no se puede emitir en producción |
 | 2. Trámites y datos | Certificados de homologación, puntos de venta, CUIT y condición de IVA de los clientes, marca de quién exige orden de compra | Nada del resto sirve |
-| 3. Conexión | `lib/arca`, `FEDummy` y `FECompUltimoAutorizado` contra homologación | Confirma certificado, reloj, región y firma |
+| 3. Conexión | `@arcasdk/core`, el store de tickets sobre `arca_tickets`, y `getServerStatus` y `getLastVoucher` contra homologación | Confirma certificado, reloj, región y firma |
 | 4. Emisión de prueba | Tablas, ruta y pantalla "Por facturar" con los borradores agrupados, emisión de a una, todo con Distribuidora Andina | La regla del repositorio: se prueba con la empresa inventada |
 | 5. El comprobante | PDF con QR y orden de compra, guardado en el bucket, descargable | Sin esto hay CAE pero nada para mandar |
 | 6. Producción | Certificados reales, primera factura real comparada contra Comprobantes en Línea | |
 | 7. Envío | Casilla del dominio, dominio firmado, Resend, correo a `emails_facturacion` con el PDF adjunto y webhook de rebote | Detallado en 5.10. Hoy el dominio no tiene ni MX ni SPF |
 | 8. Lo que sigue | Nota de crédito, pantalla de emitidas, acumulado del monotributo | |
 
-Las etapas 3 y 4 son el grueso del código y no dependen de nada externo una vez
-que existe el certificado. La 1 es la que conviene no postergar, porque toca
-todas las pantallas y es más barata ahora que después.
+La etapa 4 es el grueso del código. La 3 es conectar la biblioteca con el store
+de tickets y ver que ARCA conteste. Ninguna de las dos depende de nada externo
+una vez que existe el certificado. La 1 es la que conviene no postergar, porque
+toca todas las pantallas y es más barata ahora que después.
 
 ---
 
@@ -691,3 +746,21 @@ De referencia:
 - Modo en lote de FECAESolicitar:
   https://sites.google.com/site/facturaelectronicax/wsfev1/wsfev1/wsfev1-modo-en-lote
 - node-forge, firma CMS/PKCS#7 en JavaScript: https://www.npmjs.com/package/node-forge
+
+De Arca SDK, la biblioteca con la que se habla con ARCA. Verificado el
+26/08/2026 sobre `@arcasdk/core` 2.0.0, publicada el 23/06/2026, código abierto,
+del mismo autor que `afip.ts`:
+- Documentación: https://www.afipts.com/introduction.html
+- Configuración del constructor: https://www.afipts.com/config.html
+- Tickets de acceso y stores propios:
+  https://www.afipts.com/credential_management.html
+- Métodos de facturación electrónica:
+  https://www.afipts.com/services/facturacion_electronica.html
+- PDF de comprobantes, descartado en 5.9: https://www.afipts.com/packages/pdf.html
+- Código: https://github.com/ralcorta/arcasdk
+
+Del paquete descargado y leído, no de la documentación:
+`CondicionIVAReceptorId` está en `lib/domain/types/voucher.types.d.ts:23`;
+`ITicketStoragePort` en `lib/application/ports/storage/ticket-storage.port.d.ts`;
+los únicos destinos que tiene adentro son los de ARCA
+(`lib/infrastructure/soap/config`).
