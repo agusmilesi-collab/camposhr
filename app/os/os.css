@@ -3450,6 +3450,32 @@ th.os-tabla-contacto {
   border-bottom: 1px solid var(--os-linea-suave);
 }
 
+/**
+ * El campo se ajusta a su celda y no al revés.
+ *
+ * Una celda de grid no se encoge por debajo del contenido de su hijo, así que
+ * un desplegable con una opción larga (una batería con su nombre entero) se
+ * estiraba fuera de su columna y tapaba el rótulo del dato de al lado.
+ */
+.os-ficha-dato > * {
+  min-width: 0;
+}
+
+.os-ficha-dato .os-campo {
+  max-width: 100%;
+}
+
+/* Los campos de texto largo ocupan la fila entera del bloque de dos columnas:
+   con media fila, el rótulo caía debajo del campo y quedaba un hueco al lado.
+
+   El rótulo se alinea con el borde de arriba del campo: por línea base, contra
+   un cuadro de cuatro renglones, quedaba pegado al fondo. */
+.os-ficha-datos-dos .os-ficha-dato-fila {
+  grid-column: 1 / -1;
+  align-items: start;
+  box-shadow: none;
+}
+
 .os-ficha-dato:last-child {
   border-bottom: 0;
 }

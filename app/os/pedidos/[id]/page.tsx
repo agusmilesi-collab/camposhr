@@ -139,12 +139,6 @@ export default async function FichaPedido({ params }: { params: { id: string } }
           vacio="A definir"
           opciones={baterias.map((b) => ({ valor: b.id, texto: `${b.codigo} · ${b.nombre}` }))}
         />
-        <Benziger
-          id={pedido.id}
-          puesto={pedido.conBenziger}
-          usd={BENZIGER_USD}
-          enPesos={cambio ? pesos(BENZIGER_USD * cambio.valor) : null}
-        />
         {/* Con qué vara se leen los puntajes de los informes de este pedido.
             Va acá y en ningún otro lado: el resto del sistema usa la default,
             y apartarse de ella es una decisión del puesto. Cambiarla no
@@ -162,12 +156,19 @@ export default async function FichaPedido({ params }: { params: { id: string } }
               texto: `${e.nombre} · ${e.adecuado} / ${e.alto} / ${e.sobresaliente}`,
             }))}
         />
+        <Benziger
+          id={pedido.id}
+          puesto={pedido.conBenziger}
+          usd={BENZIGER_USD}
+          enPesos={cambio ? pesos(BENZIGER_USD * cambio.valor) : null}
+        />
         <Largo
           id={pedido.id}
           campo="notas"
           valor={pedido.notas}
           rotulo="Qué pidió el cliente"
           ayuda="Lo que dice el mail: contexto, urgencia, a quién reporta."
+          fila
         />
         <Largo
           id={pedido.id}
@@ -175,6 +176,7 @@ export default async function FichaPedido({ params }: { params: { id: string } }
           valor={pedido.contexto}
           rotulo="Contexto y cultura"
           ayuda="Cómo es la empresa por dentro: cómo se decide, cómo se habla, qué se tolera."
+          fila
         />
       </Bloque>
 
