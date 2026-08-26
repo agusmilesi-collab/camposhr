@@ -6685,33 +6685,57 @@ body {
   }
 }
 
-/* Los dos tests de Redacciones. Van como botones y no como otra fila de
-   pestañas: arriba ya hay una (Baterías, Baremos, Velocímetro, Redacciones) y
-   dos filas iguales una debajo de la otra no dejaban ver cuál manda sobre cuál. */
-.os-test-elegir {
-  display: inline-flex;
-  gap: 0;
-  margin: 0 0 20px;
+/* El selector de diccionario en Redacciones. Dos tarjetas de opción, para que
+   se distinga de la fila de pestañas de secciones que va arriba. */
+.os-diccionarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 0 0 22px;
+  max-width: 620px;
+}
+.os-diccionario {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 16px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 10px;
   background: var(--card);
-  padding: 3px;
-}
-.os-test-boton {
-  appearance: none;
-  border: 0;
-  background: none;
-  padding: 7px 20px;
   font: inherit;
-  font-size: 14px;
-  color: var(--muted);
-  border-radius: 999px;
+  text-align: left;
   cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
 }
-.os-test-boton:hover { color: var(--ink); }
-.os-test-puesto,
-.os-test-puesto:hover {
-  background: var(--ink);
-  color: var(--paper);
+.os-diccionario:hover { border-color: var(--ink-soft); }
+.os-diccionario-marca {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.os-diccionario-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.os-diccionario-texto strong {
+  font-size: 15px;
   font-weight: 600;
+  color: var(--ink);
+}
+.os-diccionario-texto small {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.os-diccionario-puesto {
+  border-color: var(--st-blue);
+  background: color-mix(in srgb, var(--st-blue) 6%, var(--card));
+}
+.os-diccionario-puesto .os-diccionario-marca {
+  border-color: var(--st-blue);
+  box-shadow: inset 0 0 0 4px var(--st-blue);
 }

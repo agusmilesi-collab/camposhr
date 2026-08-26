@@ -277,6 +277,18 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'Zd',
     corte: { op: 'mayor', valor: 3, decimales: 1 },
+    zulliger: {
+      dice: [
+        'Analiza la información con mucho más detalle que la mayoría: rastrea, revisa y gasta energía extra para no equivocarse. Cuando la presión externa aprieta, esa manera de decidir le puede fallar.',
+        'Dedica al examen de los datos más tiempo del que la tarea pide, movida por el temor a errar. Bajo apuro, ese mismo cuidado le complica la decisión.',
+        'Explora la información con un nivel de detalle superior al esperado. El miedo a equivocarse la lleva a revisar de más, y con presión encima eso le entorpece el resolver.',
+      ],
+      recomienda: [
+        'Darle indicaciones concretas que le acoten dónde mirar, y quedar disponible para sus consultas, sobre todo al decidir.',
+        'Delimitarle qué hay que revisar y qué no, y responderle las dudas para que el temor a errar no le trabe la decisión.',
+        'Precisarle el alcance de cada revisión y sostener la puerta abierta a preguntas en el momento de decidir.',
+      ],
+    },
     dice: [
       'Muy meticuloso en el análisis de la información: dedica más esfuerzo y energía que la mayoría a rastrear y explorar datos, por temor a equivocarse. Bajo presión externa, eso puede hacer fallar la toma de decisiones.',
       'Analiza la información con mucho más detalle que la mayoría: rastrea, vuelve sobre los datos y gasta energía extra en no equivocarse. Cuando la presión externa aprieta, esa manera de decidir le puede fallar.',
@@ -292,6 +304,18 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'Zd',
     corte: { op: 'menor', valor: -3, decimales: 1 },
+    zulliger: {
+      dice: [
+        'Recorre el entorno de manera apresurada: junta menos datos de los necesarios y decide antes de que aparezcan todos los puntos clave. Por eso puede cometer más errores.',
+        'Explora la información sin detenerse lo suficiente y resuelve con una parte de los datos. Esa prisa le hace pasar por alto puntos que después pesan.',
+        'Su rastreo de los datos es rápido e incompleto, y decide antes de tener el cuadro entero, con más margen de error del esperable.',
+      ],
+      recomienda: [
+        'Sumar un paso de control previo, con los puntos que tiene que haber mirado antes de resolver.',
+        'Fijar instancias de revisión previas a la decisión, para que no le falten datos al resolver.',
+        'Definir qué hay que chequear antes de cerrar una decisión, y sostener ese paso como parte del procedimiento.',
+      ],
+    },
     dice: [
       'Examina el entorno de manera poco cuidadosa: hace un rastreo apresurado, no llega a recoger datos suficientes y decide antes de que aparezcan todos los puntos clave. Puede cometer más errores por responder antes de procesar toda la información disponible.',
       'Recorre el entorno de manera apresurada: junta menos datos de los necesarios y resuelve antes de que aparezcan todos los elementos en juego. Por eso puede errar más de lo esperable.',
@@ -334,6 +358,13 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'W',
     cuando: 'W en más del 50 % de las localizaciones',
+    zulliger: {
+      dice: [
+        'Busca abarcar la situación completa y consigue una visión global.',
+        'Mira el panorama entero y logra formarse una lectura de conjunto.',
+        'Su forma de tomar la información apunta al conjunto, y llega a una mirada global de las situaciones.',
+      ],
+    },
     dice: [
       'Intenta abarcarlo todo y consigue tener visión global de las situaciones.',
       'Busca abarcar la situación completa y logra formarse una mirada de conjunto.',
@@ -428,6 +459,18 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'Zf',
     cuando: 'menos del 30 % de R, y el Raven no dio bajo',
+    zulliger: {
+      dice: [
+        'Trabaja poco la información que recibe y no toma la iniciativa de buscar más.',
+        'El esfuerzo que dedica a elaborar los datos es escaso, y esperar que salga a buscarlos por su cuenta no da resultado.',
+        'Procesa lo que recibe con poco esfuerzo y no toma la iniciativa de ampliar la información.',
+      ],
+      recomienda: [
+        'Fijarle objetivos concretos y revisarlos cada tanto para sostener su nivel de actividad.',
+        'Ponerle metas puntuales con fechas de revisión, porque la iniciativa propia no le alcanza.',
+        'Darle objetivos definidos y momentos pautados de revisión, así el ritmo no depende de su iniciativa.',
+      ],
+    },
     dice: [
       'Hace pocos esfuerzos por procesar los datos, con menos iniciativa de la esperada para buscar información.',
       'Invierte poco esfuerzo en procesar los datos y busca información con menos iniciativa de la esperada.',
@@ -443,6 +486,13 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'Zf',
     cuando: 'más del 55 % de R',
+    zulliger: {
+      dice: [
+        'Se motiva con la información: la trabaja, investiga y busca más datos.',
+        'Se involucra activamente en procesar lo que recibe y en ampliar la información.',
+        'Dedica esfuerzo a elaborar los datos y a buscar más de lo que se le da.',
+      ],
+    },
     dice: [
       'Tiene una motivación elevada para procesar información, investigar y buscar datos.',
       'Tiene mucha motivación para trabajar la información, investigar y buscar datos.',
@@ -697,6 +747,18 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'a:p',
     cuando: 'p cuatro veces a o más',
+    zulliger: {
+      dice: [
+        'Sostiene sus pensamientos con firmeza y le cuesta mucho revisar su punto de vista o incorporar formas nuevas de trabajar.',
+        'Sus ideas están fijas: adoptar otra mirada o aprender una pauta distinta le demanda un esfuerzo grande.',
+        'Sostiene sus pensamientos con mucha firmeza, y tanto revisar su posición como aprender un modo nuevo de hacer las cosas le demanda un esfuerzo grande.',
+      ],
+      recomienda: [
+        'Pedirle que confronte su idea con otro punto de vista antes de definir cómo avanzar.',
+        'Poner una revisión con otra persona antes de que cierre la decisión.',
+        'Sumar una mirada externa a sus definiciones antes de que las lleve a la acción.',
+      ],
+    },
     dice: [
       'Tiende a aferrarse a sus pensamientos, le cuesta cambiar de punto de vista y aprender pautas nuevas de funcionamiento.',
       'Se aferra a lo que piensa: cambiar de punto de vista o incorporar formas nuevas de trabajar le cuesta mucho.',
@@ -793,6 +855,18 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'Ma:Mp',
     cuando: 'Mp mayor que Ma',
+    zulliger: {
+      dice: [
+        'Se refugia en la imaginación para compensar lo que la frustra. Puesta al servicio de crear, suma; usada para evitar dificultades, ocupa el lugar de la búsqueda de soluciones. Bajo estrés se acentúa.',
+        'Frente a la frustración recurre a la imaginación. Puesta a crear aporta, y puesta a evitar ocupa el lugar de la solución. La exigencia la intensifica.',
+        'Ante lo que no sale, se apoya en la imaginación. Eso puede ser productivo o puede ocupar el lugar de la solución, y cuando la exigencia sube se nota más.',
+      ],
+      recomienda: [
+        'Llevarla a definir acciones concretas frente a cada situación, en especial cuando la exigencia sube.',
+        'Cuando la carga sube, pedirle pasos y fechas concretas para que la idea baje a la acción.',
+        'Traducir cada situación en acciones puntuales, sobre todo en los momentos de mayor demanda.',
+      ],
+    },
     dice: [
       'Tiende a refugiarse en la imaginación para compensar frustraciones. Usado de manera creativa suma; usado para evitar dificultades, reemplaza la búsqueda de soluciones, y se acentúa bajo estrés.',
       'Se refugia en la imaginación para compensar lo que lo frustra. Puesto al servicio de crear, suma; puesto a evitar dificultades, ocupa el lugar de la búsqueda de soluciones. Bajo estrés se acentúa.',
@@ -860,6 +934,18 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'FM',
     corte: { op: 'menor', valor: 1, decimales: 0 },
+    zulliger: {
+      dice: [
+        'Le cuesta registrar lo que ella misma necesita.',
+        'Sus propias necesidades no le llegan al registro.',
+        'Sus necesidades le pasan desapercibidas.',
+      ],
+      recomienda: [
+        'Puede necesitar ayuda de afuera para empezar a registrarlas. Un entorno donde pueda darse prioridad la favorece.',
+        'Un contexto que le habilite ocuparse de sí la ayuda, y al principio va a necesitar que alguien se lo señale.',
+        'Señalarle lo que necesita cuando ella no lo ve, y dejarle lugar para atenderlo.',
+      ],
+    },
     dice: [
       'Se le dificulta tomar registro de sus propias necesidades.',
       'Le cuesta registrar lo que él mismo necesita.',
@@ -875,6 +961,18 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'FM',
     corte: { op: 'mayor', valor: 5, decimales: 0 },
+    zulliger: {
+      dice: [
+        'Sus necesidades sin resolver le generan un malestar interno alto que se traduce en tensión, y puede afectarle la atención, la concentración y el descanso.',
+        'Carga una tensión interna elevada que nace de lo que necesita y no atiende, con impacto posible en cómo se concentra y cómo duerme.',
+        'El malestar por lo que necesita y no resuelve le sube la tensión, con impacto posible en cómo se concentra y cómo descansa.',
+      ],
+      recomienda: [
+        'Ayudarla a ordenar prioridades cuando la carga de trabajo aumenta.',
+        'Cuando sube el volumen de trabajo, definir con ella qué va primero.',
+        'Acompañarla a jerarquizar las tareas en los momentos de mayor carga.',
+      ],
+    },
     dice: [
       'Está con el malestar interno elevado por sus propias necesidades, y eso se manifiesta como tensión: puede afectar la atención, la concentración y el sueño.',
       'Sus propias necesidades le están generando un malestar interno alto, que se traduce en tensión: puede afectarle la atención, la concentración y el sueño.',
@@ -890,6 +988,18 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'm',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
+    zulliger: {
+      dice: [
+        'Hay circunstancias externas que la están afectando de manera importante: atraviesa una situación estresante.',
+        'Algo de su situación actual le genera molestia considerable y viene de afuera.',
+        'Está atravesando un momento de tensión cuya causa está en el entorno y no en ella.',
+      ],
+      recomienda: [
+        'Abrir una conversación para preguntarle si necesita algo de la empresa o de su jefe para trabajar más tranquila.',
+        'Preguntarle de manera directa qué necesitaría del trabajo para pasar este momento con menos tensión.',
+        'Darle un espacio de charla donde pueda decir qué le haría falta para estar más tranquila.',
+      ],
+    },
     dice: [
       'Hay circunstancias externas que le están causando molestias importantes: está atravesando una situación estresante.',
       'Hay circunstancias externas que lo están afectando de manera importante: atraviesa una situación estresante.',
@@ -905,6 +1015,13 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'FC:CF+C',
     cuando: 'sin descarga, o FC más del triple de CF+C',
+    zulliger: {
+      dice: [
+        'Controla sus descargas más de lo esperado: casi nunca se afloja al manejar emociones, porque desconfía de mostrarlas, y expresar lo que siente le cuesta.',
+        'Su control sobre la expresión del afecto es mayor al habitual. Mostrarse le genera desconfianza y por eso rara vez suelta lo que siente.',
+        'Sostiene un control estricto sobre lo que muestra. La expresión abierta del afecto le genera desconfianza y la evita.',
+      ],
+    },
     dice: [
       'Controla sus descargas más de lo esperado: casi nunca se relaja cuando maneja emociones, porque desconfía de cualquier expresión abierta del afecto. Le cuesta expresar lo que siente con libertad.',
       'Mantiene sus descargas bajo un control mayor al esperado: rara vez se afloja al manejar emociones, porque desconfía de mostrarlas. Expresar lo que siente le cuesta.',
@@ -916,6 +1033,13 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'FC:CF+C',
     cuando: 'CF+C supera a FC por más de 2',
+    zulliger: {
+      dice: [
+        'Se expresa con mucha intensidad, y el control emocional le falla, con lo cual da impresión de impulsividad.',
+        'Sus manifestaciones salen intensas y sin modular, y desde afuera se leen como impulsividad.',
+        'Muestra lo que siente con mucha carga y poco filtro, y desde afuera se percibe como falta de control.',
+      ],
+    },
     dice: [
       'Tiende a expresarse de manera intensa, y eso da impresión de impulsividad por la dificultad de control emocional.',
       'Se expresa con intensidad, y eso da impresión de impulsividad porque el control emocional le falla.',
@@ -982,6 +1106,13 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'Afr',
     cuando: 'por debajo de la banda de su estilo',
+    zulliger: {
+      dice: [
+        'Prefiere no quedar involucrada en situaciones con carga emocional. Esa misma tendencia le compensa cualquier problema de descontrol.',
+        'Se corre de las situaciones donde hay emoción en juego, y ese mismo retiro le frena cualquier descontrol.',
+        'Se corre de los contextos emocionalmente cargados, lo que a la vez le sirve de contención.',
+      ],
+    },
     dice: [
       'Prefiere no verse implicado en situaciones con carga emocional. Esa misma tendencia neutraliza los problemas de descontrol, si los hubiera.',
       'Prefiere no quedar involucrado en situaciones con carga emocional. Esa misma tendencia le compensa cualquier problema de descontrol.',
@@ -993,6 +1124,13 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'Afr',
     cuando: 'por encima de la banda de su estilo',
+    zulliger: {
+      dice: [
+        'Las situaciones con carga emocional la estimulan y en ellas se puede sentir más productiva.',
+        'Los contextos emocionalmente cargados la activan, y ahí es donde más rinde.',
+        'Se moviliza con lo emocional y encuentra ahí un terreno donde se siente productiva.',
+      ],
+    },
     dice: [
       'Las situaciones con carga emocional lo estimulan, y puede sentirse más productivo en ellas.',
       'Las situaciones con carga emocional lo estimulan y en ellas se puede sentir más productivo.',
@@ -1004,6 +1142,18 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'S',
     corte: { op: 'mayor', valor: 4, decimales: 0 },
+    zulliger: {
+      dice: [
+        'Sostiene una oposición hacia el entorno que resulta muy difícil de mover.',
+        'Se ubica en contra de lo que llega del entorno, y esa posición no cede con facilidad.',
+        'Su oposición al entorno es marcada y muy resistente al cambio.',
+      ],
+      recomienda: [
+        'Evitar el choque de frente y sostener límites claros y parejos, que es lo que le permite aflojar.',
+        'No confrontarla de frente y mantener reglas firmes y consistentes, que es lo que le permite flexibilizar.',
+        'Marcarle límites estables sin entrar en discusión directa, que es la vía por la que puede ceder.',
+      ],
+    },
     dice: [
       'Actitud de oposición hacia el entorno, difícil de modificar.',
       'Sostiene una actitud de oposición hacia el entorno que resulta difícil de mover.',
@@ -1074,8 +1224,21 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'SumT',
     corte: { op: 'menor', valor: 1, decimales: 0 },
-    // En Zulliger T=0 es la norma y no se informa.
-    zulliger: { aplica: false },
+    // En Zulliger T=0 es la norma: la lectura queda escrita por si alguna vez
+    // se decide informarla, y hoy no sale.
+    zulliger: {
+      aplica: false,
+      dice: [
+        'Cuida su distancia con los demás y no se acerca más allá de lo necesario.',
+        'La cercanía emocional la incomoda y se maneja con reserva en el trato.',
+        'Sostiene el contacto en un plano formal y esquiva la intimidad emocional.',
+      ],
+      recomienda: [
+        'Sostener un trato respetuoso de su distancia, con un espacio definido para cuando necesite consultar.',
+        'Dejarle un canal claro para pedir ayuda, sin empujar el acercamiento.',
+        'Evaluar cuánta cercanía exige el puesto antes de pedirle más contacto del que elige.',
+      ],
+    },
     dice: [
       'Es distante en el contacto con los demás: no se siente cómodo en las situaciones de cercanía emocional y tiende a evitarlas. Cuida mantener una distancia de seguridad.',
       'Mantiene distancia en el contacto: la cercanía emocional lo incomoda y tiende a esquivarla, cuidando dejar un margen.',
@@ -1146,6 +1309,13 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'Y',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
+    zulliger: {
+      dice: [
+        'Atraviesa una situación que le genera tensión y frente a la cual se siente desbordada. Buena parte de ese malestar es reactivo y va a ceder cuando se resuelvan las circunstancias que lo provocan.',
+        'Está bajo una tensión que la excede. El malestar responde a lo que está pasando y debería bajar cuando eso se resuelva.',
+        'La situación actual la tiene sobrepasada, con un malestar que depende de esas circunstancias y no de su funcionamiento habitual.',
+      ],
+    },
     dice: [
       'Está atravesando una situación que le genera tensión y frente a la cual se siente inundado. Buena parte de ese malestar es reactivo y va a ceder si se resuelven las circunstancias que lo provocan.',
       'Atraviesa una situación que le genera tensión y frente a la cual se siente desbordado. Buena parte de ese malestar es reactivo y va a ceder cuando se resuelvan las circunstancias que lo provocan.',
@@ -1275,6 +1445,13 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'COP / AG',
     cuando: 'COP hasta 1 y AG en 2',
+    zulliger: {
+      dice: [
+        'La agresividad forma parte natural de su modo de relacionarse, y es más propensa a manifestarla.',
+        'La agresividad aparece como un componente habitual de su modo de vincularse.',
+        'El componente agresivo aparece con naturalidad en sus relaciones.',
+      ],
+    },
     dice: [
       'La agresividad es un componente natural de sus relaciones, y es más propenso a manifestar conductas de ese tipo.',
       'La agresividad forma parte natural de su modo de relacionarse, y es más propenso a manifestarla.',
@@ -1286,6 +1463,13 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'COP / AG',
     cuando: 'COP hasta 2 y AG más de 2',
+    zulliger: {
+      dice: [
+        'Buena parte de su intercambio con los demás pasa por actitudes agresivas, que usa como defensa ante un ambiente que vive como hostil.',
+        'Se vincula sobre todo desde la agresión, que le sirve de resguardo frente a un entorno que percibe amenazante.',
+        'Su intercambio con otros está marcado por la agresión, como respuesta defensiva a un ambiente que siente en contra.',
+      ],
+    },
     dice: [
       'Buena parte de su actividad interpersonal está marcada por actitudes agresivas hacia los demás, como estrategia defensiva frente a un ambiente que vive como hostil.',
       'Gran parte de su actividad con los demás pasa por actitudes agresivas, que usa como defensa frente a un ambiente que vive como hostil.',
@@ -1338,6 +1522,18 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'Índice de aislamiento',
     corte: { op: 'mayor', valor: 0.33, decimales: 2 },
+    zulliger: {
+      dice: [
+        'Consigue apenas contactos significativos.',
+        'Las relaciones con algún peso son muy pocas.',
+        'Establece muy pocas relaciones de peso.',
+      ],
+      recomienda: [
+        'Al asignarle una tarea nueva, tener en cuenta que va a preferir resolverla sola.',
+        'Contemplar en cada asignación su inclinación a trabajar de manera independiente.',
+        'Considerar en cada asignación que va a elegir el camino individual.',
+      ],
+    },
     dice: [
       'Logra apenas contactos significativos.',
       'Alcanza apenas contactos significativos.',
@@ -1436,6 +1632,13 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'Contenidos humanos',
     cuando: 'por encima de lo esperado para su cantidad de respuestas y su estilo',
+    zulliger: {
+      dice: [
+        'El interés por los demás aparece de manera marcada.',
+        'Las otras personas ocupan un lugar importante para ella.',
+        'El interés por la gente aparece con fuerza.',
+      ],
+    },
     dice: [
       'Marcado interés por los demás.',
       'Muestra un interés marcado por los demás.',
@@ -1447,6 +1650,13 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'Contenidos humanos',
     cuando: 'sigue a la anterior cuando además hay COP',
+    zulliger: {
+      dice: [
+        ' Con la disposición a cooperar presente, eso se traduce en ofrecerse a ayudar.',
+        ' Como además está dispuesta a cooperar, se traduce en ofrecerse a ayudar.',
+        ' Sumada la disposición a colaborar, se muestra dispuesta a dar una mano.',
+      ],
+    },
     dice: [
       ' Con la disposición a la cooperación presente, eso se traduce en una actitud solícita.',
       ' Con la disposición a cooperar presente, eso deriva en una actitud servicial.',
@@ -1485,6 +1695,13 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'D y AdjD los dos en cero',
+    zulliger: {
+      dice: [
+        'Tolera bien la tensión cotidiana. Haría falta un estrés intenso, prolongado o inesperado para que sus controles fallaran de manera significativa.',
+        'Las exigencias del día a día no le desbordan el control, y solo una tensión fuerte o sostenida lo pondría en riesgo.',
+        'Sostiene sin dificultad la tensión habitual, y solo una situación fuera de lo común pondría en riesgo su control.',
+      ],
+    },
     dice: [
       'Tolera de manera adecuada las tensiones del día a día. Solo ante un estrés intenso, prolongado o inesperado podrían fallar los controles de manera significativa.',
       'Tolera bien las tensiones cotidianas. Solo un estrés intenso, prolongado o inesperado podría hacer fallar sus controles de manera significativa.',
@@ -1496,6 +1713,13 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'AdjD de 1 o más',
+    zulliger: {
+      dice: [
+        'Su control y su tolerancia al estrés están por encima de lo común: dispone de más recursos de los esperados para manejar la tensión y responder a lo que se le pide.',
+        'Cuenta con recursos de control muy por encima del promedio, que le permiten sostener tensión sin que caiga su rendimiento.',
+        'Maneja la tensión con holgura: tiene más herramientas de las esperables para responder a lo que se le pide.',
+      ],
+    },
     dice: [
       'Tiene una capacidad de control y de tolerancia al estrés fuera de lo común: cuenta con muchos más recursos de lo esperado para manejar sus tensiones y responder a las demandas.',
       'Su capacidad de control y de tolerancia al estrés está por encima de lo común: dispone de muchos más recursos de lo esperado para manejar la tensión y responder a las demandas.',
@@ -1507,6 +1731,18 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'AdjD en −1',
+    zulliger: {
+      dice: [
+        'Las situaciones nuevas la complican, y su mejor rendimiento aparece en entornos rutinarios y previsibles.',
+        'Ante lo desconocido tiene dificultades, y funciona mejor donde las cosas son estables.',
+        'Lo desconocido la complica, y su mejor rendimiento aparece en contextos previsibles.',
+      ],
+      recomienda: [
+        'Acompañarla en los cambios y en las situaciones que de por sí generan tensión.',
+        'Sostenerla cuando algo cambia y cuando la tarea es tensionante en sí misma.',
+        'Estar cerca en cada cambio y en las tareas que ya traen tensión propia.',
+      ],
+    },
     dice: [
       'Tiene dificultades ante las situaciones nuevas, y funciona mejor en entornos rutinarios y previsibles.',
       'Las situaciones nuevas le resultan difíciles, y rinde mejor en entornos rutinarios y previsibles.',
@@ -1610,6 +1846,13 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'D contra AdjD',
     cuando: 'D por debajo de AdjD',
+    zulliger: {
+      dice: [
+        'Aparece tensión situacional: hoy tolera menos estrés del que le es propio.',
+        'Una circunstancia del momento le bajó la tolerancia al estrés por debajo de lo habitual.',
+        'Algo del momento le bajó la tolerancia a la tensión respecto de lo que le es propio.',
+      ],
+    },
     dice: [
       'Hay tensión situacional: su tolerancia al estrés de hoy está por debajo de la habitual.',
       'Hay tensión situacional: hoy tolera menos estrés que de costumbre.',

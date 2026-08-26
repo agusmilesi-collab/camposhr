@@ -186,18 +186,11 @@ export default function Textos({
    * quiere decir "vale lo del Rorschach", y se dice.
    */
   const [test, setTest] = useState<'Rorschach' | 'Zulliger'>('Rorschach');
-  /** Qué campos tienen sus tres casillas a la vista. */
-  const [abiertos, setAbiertos] = useState<Record<string, boolean>>({});
   const esZulliger = test === 'Zulliger';
-
-  /**
-   * Lo que rige mientras la casilla del Zulliger esté vacía.
-   *
-   * Se muestra de fondo, en gris, para que se vea qué va a salir en el informe
-   * sin tener que abrir la otra pestaña a comparar.
-   */
-  const deFabrica = (texto: string | undefined) =>
-    texto ? `Hoy sale: ${texto}` : undefined;
+  /** Cuántas lecturas tienen en Zulliger un corte distinto del de Rorschach. */
+  const cortesPropios = renglones.filter(
+    (r) => r.corte && r.corteZ && r.corte.fabrica !== r.corteZ.fabrica
+  ).length;
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const caja = useRef<HTMLDivElement>(null);
@@ -246,6 +239,13 @@ export default function Textos({
     window.addEventListener('resize', alRedimensionar);
     return () => window.removeEventListener('resize', alRedimensionar);
   }, []);
+
+  // Al cambiar de diccionario React reusa las mismas cajas y solo les cambia el
+  // texto, con lo cual la altura queda medida sobre el texto anterior. Por eso
+  // se vuelven a medir todas cuando cambia el test.
+  useEffect(() => {
+    caja.current?.querySelectorAll('textarea').forEach((t) => estirarCampo(t));
+  }, [test]);
 
   const busca = filtro.trim().toLowerCase();
   const visibles = renglones.filter(
@@ -364,31 +364,28 @@ export default function Textos({
   }
 
   /**
-   * Un campo con sus tres formas de decir lo mismo.
+   * Un campo con sus tres formas de decir lo mismo, las tres a la vista.
    *
-   * La primera siempre a la vista, que es la que validó la psicóloga. Las otras
-   * dos detrás de un botón: son sesenta y ocho lecturas y con las nueve
-   * casillas abiertas la pantalla no se puede recorrer.
+   * El informe elige una de las tres según el lugar que ocupa el candidato en
+   * su pedido, así que las tres pesan igual y se corrigen juntas.
    */
-  function campo(r: Renglon, cual: keyof Campos, rotulo: string, vacio?: string) {
+  function campo(r: Renglon, cual: keyof Campos, rotulo: string) {
     const valores = textos[r.clave][cual];
-    const otras = valores.slice(1).filter((x) => x.trim()).length;
-    const abierto = abiertos[`${r.clave}-${cual}`] ?? otras > 0;
 
     return (
       <div className="os-redaccion-campo">
         <label className="os-etiqueta-campo" htmlFor={`${cual}-${r.clave}-0`}>
           {rotulo}
         </label>
-        {(abierto ? [0, 1, 2] : [0]).map((n) => (
+        {[0, 1, 2].map((n) => (
           <div className="os-variante" key={n}>
-            {abierto && <span className="os-variante-n">{n + 1}</span>}
+            <span className="os-variante-n">{n + 1}</span>
             <textarea
               id={`${cual}-${r.clave}-${n}`}
               className="os-campo"
               rows={1}
               value={valores[n] ?? ''}
-              placeholder={n === 0 ? vacio : 'Lo mismo, dicho de otra forma'}
+              placeholder="Lo mismo, dicho de otra forma"
               ref={estirarCampo}
               onChange={(e) => {
                 estirarCampo(e.target);
@@ -397,38 +394,36 @@ export default function Textos({
             />
           </div>
         ))}
-        <button
-          type="button"
-          className="os-enlace-boton"
-          onClick={() =>
-            setAbiertos((a) => ({ ...a, [`${r.clave}-${cual}`]: !abierto }))
-          }
-        >
-          {abierto
-            ? 'Dejar solo la primera'
-            : `Otras formas de decirlo${otras > 0 ? ` (${otras})` : ''}`}
-        </button>
       </div>
     );
   }
 
   return (
     <>
-      {/* Los dos tests se editan por separado, que es como los tiene escritos
-          la psicóloga: dos documentos, con sus propias normas y sus propios
-          textos. La pestaña cambia qué corte y qué textos se están tocando; el
-          esqueleto de lecturas es el mismo en las dos. */}
-      <div className="os-test-elegir" role="tablist" aria-label="Test">
-        {(['Rorschach', 'Zulliger'] as const).map((t) => (
+      {/* Cada test tiene su diccionario: sus normas, sus cortes y sus textos.
+          El selector va como dos tarjetas y no como una fila de pestañas más,
+          porque arriba ya hay una (Baterías, Baremos, Velocímetro,
+          Redacciones) y dos filas iguales no dejaban ver cuál manda. */}
+      <div className="os-diccionarios" role="radiogroup" aria-label="Test que se está editando">
+        {(
+          [
+            ['Rorschach', 'Diez láminas, cortes de Exner'],
+            ['Zulliger', `Tres láminas, ${cortesPropios} cortes propios`],
+          ] as const
+        ).map(([t, pie]) => (
           <button
             key={t}
             type="button"
-            role="tab"
-            aria-selected={test === t}
-            className={`os-test-boton${test === t ? ' os-test-puesto' : ''}`}
+            role="radio"
+            aria-checked={test === t}
+            className={`os-diccionario${test === t ? ' os-diccionario-puesto' : ''}`}
             onClick={() => setTest(t)}
           >
-            {t}
+            <span className="os-diccionario-marca" aria-hidden="true" />
+            <span className="os-diccionario-texto">
+              <strong>{t}</strong>
+              <small>{pie}</small>
+            </span>
           </button>
         ))}
       </div>
@@ -446,12 +441,6 @@ export default function Textos({
             aria-label="Buscar una lectura"
             onChange={(e) => setFiltro(e.target.value)}
           />
-          {esZulliger && (
-            <p className="os-form-nota">
-              Lo que quede en blanco sale con el texto del Rorschach, que es el que se ve de
-              fondo. Escribir acá lo reemplaza solo en los informes de Zulliger.
-            </p>
-          )}
           {/* La cuenta sale solo cuando hay algo escrito en el buscador: sin
               filtro son siempre las mismas sesenta y ocho, y el índice ya las
               reparte área por área. Buscando sí hace falta, porque dice cuánto
@@ -595,17 +584,11 @@ export default function Textos({
                           hacer, y se corrigen mirando una contra la otra. Uno
                           abajo del otro obligaba a subir para comparar. */}
                       <div className="os-redaccion os-redaccion-doble">
-                        {campo(
-                          r,
-                          esZulliger ? 'diceZ' : 'dice',
-                          'Qué dice',
-                          esZulliger ? deFabrica(r.dice[0]) : undefined
-                        )}
+                        {campo(r, esZulliger ? 'diceZ' : 'dice', 'Qué dice')}
                         {campo(
                           r,
                           esZulliger ? 'recomiendaZ' : 'recomienda',
-                          'Qué se recomienda',
-                          esZulliger ? deFabrica(r.recomienda[0]) : undefined
+                          'Qué se recomienda'
                         )}
                       </div>
 
