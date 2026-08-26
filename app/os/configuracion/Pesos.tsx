@@ -74,6 +74,20 @@ const MEDIDAS = columnas(COLUMNAS, {
   Aporte: 135,
 });
 
+/** Dónde vuelve "Volver arriba": el panel con el índice, al principio. */
+const ARRIBA = 'ponderaciones-indice';
+
+/** El ancla de un test o de una competencia, para poder bajar a ella. */
+function anclaDe(...partes: string[]): string {
+  return partes
+    .join('-')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export type Hoja = {
   test: string;
   competencias: {
@@ -128,7 +142,8 @@ export default function Pesos({ hojas, tocado }: { hojas: Hoja[]; tocado: boolea
     setPesos(puestos);
   }
 
-  const cambiado = Object.keys(puestos).some((k) => pesos[k] !== puestos[k]);
+  const sinGuardar = Object.keys(puestos).filter((k) => pesos[k] !== puestos[k]);
+  const cambiado = sinGuardar.length > 0;
 
   async function mandar(valor: unknown) {
     setGuardando(true);
@@ -158,19 +173,68 @@ export default function Pesos({ hojas, tocado }: { hojas: Hoja[]; tocado: boolea
 
   return (
     <>
-      {hojas.map((h) => (
+      {/* El índice: dos hojas de nueve competencias cada una, y la que hay que
+          corregir está casi siempre a media pantalla de distancia. */}
+      <section className="os-panel" id={ARRIBA}>
+        <div className="os-panel-top">
+          <h2>Índice</h2>
+        </div>
+        <div className="os-panel-cuerpo">
+          <nav className="os-indice" aria-label="Competencias por test">
+            {hojas.map((h, n) => (
+              <div key={h.test} className="os-indice-item">
+                <a className="os-indice-area" href={`#${anclaDe(h.test)}`}>
+                  <span className="os-indice-nombre">
+                    <span className="os-numero">{n + 1}.</span> {h.test}
+                  </span>
+                  <span className="os-indice-cuenta">{h.competencias.length}</span>
+                </a>
+                <div className="os-indice-hijos">
+                  {h.competencias.map((c) => (
+                    <a
+                      key={c.nombre}
+                      className="os-indice-hijo"
+                      href={`#${anclaDe(h.test, c.nombre)}`}
+                    >
+                      <span>{c.nombre}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </div>
+      </section>
+
+      <div className="os-redacciones">
+        {hojas.map((h, n) => (
         <div key={h.test}>
-          <p className="os-rotulo-seccion">{h.test}</p>
+          <div className="os-area" id={anclaDe(h.test)}>
+            <h2 className="os-area-titulo">
+              <span className="os-numero">{n + 1}.</span> {h.test}
+            </h2>
+            <span className="os-area-cuenta">{h.competencias.length} competencias</span>
+            <a className="os-area-volver" href={`#${ARRIBA}`}>
+              Volver arriba
+            </a>
+          </div>
 
           {h.competencias.map((c) => {
             const suyos = c.indicadores.map((i) => pesos[i.clave] ?? 0);
             const total = suyos.reduce((n, p) => n + p, 0);
             const parte = aportes(suyos);
             return (
-              <section className="os-panel" key={`${h.test}-${c.nombre}`}>
+              <section
+                className="os-panel os-indice-panel"
+                key={`${h.test}-${c.nombre}`}
+                id={anclaDe(h.test, c.nombre)}
+              >
                 <div className="os-panel-top">
-                  <h2>{c.nombre}</h2>
+                  <h3 className="os-indice-nombre-titulo">{c.nombre}</h3>
                   <span className="os-columna-monto">{c.mide}</span>
+                  <a className="os-area-volver" href={`#${ARRIBA}`}>
+                    Volver arriba
+                  </a>
                 </div>
 
                 <div className="os-tabla-marco">
@@ -253,7 +317,8 @@ export default function Pesos({ hojas, tocado }: { hojas: Hoja[]; tocado: boolea
             );
           })}
         </div>
-      ))}
+        ))}
+      </div>
 
       <section className="os-panel">
         <div className="os-panel-cuerpo">
@@ -265,20 +330,8 @@ export default function Pesos({ hojas, tocado }: { hojas: Hoja[]; tocado: boolea
             informes.
           </p>
 
-          <div className="os-barra-acciones">
-            <button
-              className="os-boton os-boton-firme"
-              disabled={!cambiado || guardando}
-              onClick={() => mandar(diferencias())}
-            >
-              {guardando ? 'Guardando…' : 'Guardar los pesos'}
-            </button>
-            {cambiado && (
-              <button className="os-boton" disabled={guardando} onClick={() => setPesos(puestos)}>
-                Deshacer
-              </button>
-            )}
-            {tocado && !cambiado && (
+          {tocado && !cambiado && (
+            <div className="os-barra-acciones">
               <button
                 className="os-boton"
                 disabled={guardando}
@@ -287,11 +340,39 @@ export default function Pesos({ hojas, tocado }: { hojas: Hoja[]; tocado: boolea
               >
                 Volver a los de fábrica
               </button>
-            )}
-          </div>
-          {error && <p className="os-form-error">{error}</p>}
+            </div>
+          )}
+          {error && !cambiado && <p className="os-form-error">{error}</p>}
         </div>
       </section>
+
+      {/* Guardar sigue en pantalla mientras haya algo sin guardar: mover un
+          peso de la primera competencia y guardarlo era bajar las dieciocho
+          tablas. Se guarda todo junto igual, porque lo que se manda es la
+          diferencia contra el código y no un peso suelto. */}
+      {cambiado && (
+        <div className="os-guardar-barra">
+          <span className="os-guardar-cuenta">
+            {error ? (
+              <span className="os-form-error">{error}</span>
+            ) : (
+              `${sinGuardar.length} ${
+                sinGuardar.length === 1 ? 'peso movido' : 'pesos movidos'
+              }`
+            )}
+          </span>
+          <button className="os-boton" disabled={guardando} onClick={() => setPesos(puestos)}>
+            Deshacer
+          </button>
+          <button
+            className="os-boton os-boton-azul"
+            disabled={guardando}
+            onClick={() => mandar(diferencias())}
+          >
+            {guardando ? 'Guardando…' : 'Guardar los pesos'}
+          </button>
+        </div>
+      )}
     </>
   );
 }
