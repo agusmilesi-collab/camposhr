@@ -6340,6 +6340,13 @@ th.os-tabla-contacto {
   margin-top: 0;
 }
 
+/* En la hoja de la entrevista el campo es el test entero, así que ocupa el
+   renglón completo y el botón se alinea con su primera línea y no con el medio
+   de una caja de doscientos píxeles. */
+.os-competencias {
+  align-items: start;
+}
+
 .os-papel-notas .os-campo {
   min-width: 0;
   height: 32px;
