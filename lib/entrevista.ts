@@ -7,8 +7,11 @@ import { select } from '@/lib/supabase';
  * La ficha del candidato guarda todo lo suyo y se lee después, sentada, para
  * codificar y escribir el informe. Esto es otra cosa: la hoja que se abre en la
  * sala, con la persona enfrente, para saber qué se le toma y con qué se le
- * toma. Por eso no lee manchas, ni sumario, ni competencias: nada de eso se
- * mira mientras se administra.
+ * toma. Por eso no lee manchas, ni sumario, ni puntajes de competencias: nada
+ * de eso se mira mientras se administra.
+ *
+ * Lo que sí trae es lo escrito de la entrevista por competencias, que se toma
+ * hablando y se escribe en el momento: no hay otra pantalla donde eso exista.
  *
  * Qué tests van sale de la batería que se le vendió al cliente, que es la que
  * fija el alcance de la evaluación. El Benziger va aparte: no lo declara la
@@ -27,6 +30,7 @@ type Fila = {
   bender_administrado: boolean;
   bender_observaciones: string | null;
   bender_nombre: string | null;
+  entrevista_competencias: string | null;
   benziger_administrado: boolean;
   /** El orden elegido para esta entrevista. Null: el de la batería. */
   orden_tests: string[] | null;
@@ -83,12 +87,20 @@ export type Entrevista = {
   ravenDuracion: number | null;
   /** En qué escalón de la pirámide quedó, si ya se lo ubicó. */
   discursivo: string | null;
+  /**
+   * Lo escrito de la entrevista por competencias.
+   *
+   * Es de los pocos datos de la persona que esta pantalla sí guarda: la
+   * entrevista por competencias no deja más rastro que su redacción, y se
+   * escribe mientras se toma.
+   */
+  competencias: string | null;
 };
 
 const CAMPOS =
   'id,estado,modalidad,fecha_entrevista,enlace_entrevista,' +
   'proyectivo_administrado,bender_administrado,bender_observaciones,bender_nombre,' +
-  'benziger_administrado,orden_tests,' +
+  'benziger_administrado,orden_tests,entrevista_competencias,' +
   'grafico_2_personas_administrado,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'personas(nombre,email,telefono),evaluadoras(nombre),' +
@@ -161,6 +173,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     graficoNombre: f.grafico_2_personas_nombre,
     raven,
     discursivo: discursivos[0]?.nivel ?? null,
+    competencias: f.entrevista_competencias,
     ravenIniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
     ravenDuracion:
       s?.terminado_at && s.iniciado_at

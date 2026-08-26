@@ -8,6 +8,7 @@ import { duracion } from '@/lib/raven';
 import LinkRaven from '../../LinkRaven';
 import Tomada from './Tomada';
 import { TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
+import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 import Enlace from './Enlace';
 import Grafico from './Grafico';
 import Papel from './Papel';
@@ -16,26 +17,31 @@ import HojaBender from './HojaBender';
 import RelojRaven from './RelojRaven';
 import Bateria from '../../Bateria';
 import Orden from './Orden';
+import Competencias from './Competencias';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * La hoja de la entrevista: con qué se le toma cada test.
  *
- * Es la pantalla que se abre con la persona enfrente. No guarda lo suyo ni lo
- * muestra: para eso está la ficha, que se lee después para codificar. Acá lo
- * único que hace falta es la herramienta de cada test a un clic, porque
- * buscarlas mientras alguien espera del otro lado es el momento más caro para
- * buscar nada.
+ * Es la pantalla que se abre con la persona enfrente. Lo que hace falta acá es
+ * la herramienta de cada test a un clic, porque buscarlas mientras alguien
+ * espera del otro lado es el momento más caro para buscar nada. Lo que la
+ * persona produjo se lee después en la ficha, que es donde se codifica.
+ *
+ * Lo que sí se escribe acá es lo que solo existe en el momento: las
+ * observaciones de los tests de papel y la entrevista por competencias, que no
+ * deja más rastro que su redacción.
  *
  * Qué tests aparecen lo dice la batería que se le vendió al cliente. El
  * Benziger se suma aparte cuando el pedido lo incluye: es opcional en las tres
  * baterías, así que no está en la lista de ninguna.
  *
- * Cada test dice cómo se administra, y son tres formas distintas: las manchas
+ * Cada test dice cómo se administra, y son cuatro formas distintas: las manchas
  * se comparten en pantalla, el Raven se manda por enlace y lo hace la persona
- * sola, y el Bender y el gráfico son lápiz y papel. Lo que se marca acá es solo
- * lo de papel, que es lo que después no deja rastro en el sistema.
+ * sola, el Bender y el gráfico son lápiz y papel, y la entrevista por
+ * competencias se toma hablando y se escribe. Lo que se carga acá es lo que
+ * después no deja rastro en ningún otro lado.
  */
 
 /** Con qué se toma cada test, por su nombre en la batería. */
@@ -209,6 +215,13 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
               </Papel>
             </>
           );
+        }
+
+        if (t === TEST_COMPETENCIAS) {
+          // Se toma hablando y no deja más rastro que lo que se escribe, así
+          // que el campo es el test: va acá y no en la ficha, que se abre
+          // después con la entrevista terminada.
+          return <Competencias id={e.id} texto={e.competencias} />;
         }
 
         if (t === TEST_DISCURSIVO) {
