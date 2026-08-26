@@ -1884,7 +1884,9 @@ html[data-os-lateral='compacta'] .os-pie-quien {
      quedaban a un lado y los importes al otro, con un vacío en el medio. */
   width: fit-content;
   max-width: 100%;
-  margin: 12px 0 2px;
+  /* Contra el margen derecho: los importes del detalle terminan cerca de la
+     columna Importe de la fila que lo abrió, que es contra lo que se leen. */
+  margin: 12px 0 2px auto;
   padding: 11px 16px 13px;
   border: 1px solid var(--os-linea-suave);
   border-left: 2px solid var(--os-azul);
