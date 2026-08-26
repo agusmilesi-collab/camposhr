@@ -140,7 +140,10 @@ export type ClaveDeTexto = keyof typeof TEXTOS;
  * de con qué se midió.
  */
 export type Textos = Partial<
-  Record<string, { dice?: string[]; recomienda?: string[]; recomiendaZ?: string[] }>
+  Record<
+    string,
+    { dice?: string[]; recomienda?: string[]; diceZ?: string[]; recomiendaZ?: string[] }
+  >
 >;
 
 /** Los dos tests de manchas. El diccionario se lee distinto según cuál se tomó. */
@@ -167,18 +170,19 @@ export type Cortes = Partial<Record<string, number>>;
 /**
  * Lo que cambia entre un test y el otro.
  *
- * El diccionario es uno solo porque lo que la lectura significa no cambia: un
- * Lambda alto dice lo mismo se haya medido con Rorschach o con Zulliger. Lo que
- * sí cambia son dos cosas, y por eso son las dos que se pueden escribir aparte:
- * **el corte**, porque las normas de cada test son distintas, y **la
- * recomendación**, porque lo que se sugiere hacer depende de con qué se midió.
+ * Los dos tests tienen su propio diccionario: normas distintas, cortes
+ * distintos y redacciones distintas, cada una escrita para lo que ese test
+ * puede leer. Están en dos documentos separados y así se editan, en dos
+ * pestañas.
  *
- * Lo que no está acá vale para los dos. Duplicar las sesenta y ocho lecturas
- * para que digan lo mismo sería mantener dos diccionarios que se desincronizan
- * a la primera corrección.
+ * Lo que no se escribe acá cae en lo del Rorschach, que es de donde salió el
+ * diccionario: mientras una lectura diga lo mismo en los dos, escribirla dos
+ * veces sería mantener dos textos que se desincronizan a la primera corrección.
+ * Cuando la psicóloga quiere que diga otra cosa, la escribe y manda la suya.
  */
 export type PorTest = {
   corte?: Corte;
+  dice?: string[];
   recomienda?: string[];
 };
 
@@ -210,6 +214,7 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'Lambda',
     corte: { op: 'menor', valor: 0.3, decimales: 2 },
+    zulliger: { corte: { op: 'menor', valor: 0.29, decimales: 2 } },
     dice: ['Intenta captar todo, sin discriminar entre información relevante y accesoria. No se le escapa nada, y corre el riesgo de llenarse de datos que no sirven para resolver el problema, lo que puede hacer caer su eficacia.'],
     recomienda: ['Ayudarlo a separar la información relevante de la accesoria, para que cuando tenga que resolver algo rápido pueda hacerlo sin impulsividad.'],
   },
@@ -259,6 +264,7 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'DQv',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
     dice: ['Aparece un modo de resolver poco reflexivo: puede avanzar sin detenerse a elaborar.'],
     recomienda: ['Pedirle que comparta su razonamiento antes de avanzar con una decisión, para chequear criterios sobre todo al principio.'],
   },
@@ -266,6 +272,7 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'PSV',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
     dice: ['Las preocupaciones pueden interferir en su proceso cognitivo, y eso se nota en el día a día como cierta rigidez para flexibilizarse.'],
     recomienda: ['Acompañarlo en los cambios, no dejarlo solo, y darle información y datos concretos para que logre flexibilizar.'],
   },
@@ -315,6 +322,7 @@ export const TEXTOS = {
     area: 'Cómo interpreta lo que ve',
     indice: 'Xu%',
     corte: { op: 'mayor', valor: 0.2, decimales: 2 },
+    zulliger: { corte: { op: 'mayor', valor: 0.33, decimales: 2 } },
     dice: ['Marcada tendencia a ver las cosas desde su propio punto de vista, con reticencia a sumarse a visiones más convencionales. Si el entorno no lo presiona a ajustarse, no es relevante; si hay exigencia fuerte de ajustarse a lo ya definido, el riesgo de conflicto sube.'],
     recomienda: ['Marcarle qué cosas se hacen de una manera establecida y sin modificaciones por más que las vea distinto, y dónde sí puede poner su impronta.'],
   },
@@ -392,6 +400,7 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'Intelectualización',
     corte: { op: 'mayor', valor: 5, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 1, decimales: 0 } },
     dice: ['Procesa las emociones como si fueran pensamientos. Con eso neutraliza su efecto, y a la vez tiende a distorsionar las situaciones, con lo cual las soluciones pierden eficacia. Se vuelve más vulnerable cuando la situación sube de intensidad.'],
     recomienda: ['Ayudarlo con el registro de sus emociones, y darle lugar para procesarlas y encontrar respuestas más eficientes.'],
   },
@@ -399,6 +408,7 @@ export const TEXTOS = {
     area: 'Cómo decide y cómo piensa',
     indice: 'M−',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
     dice: ['Aparece cierta probabilidad de dificultades en la calidad de sus ideas.'],
     recomienda: [''],
   },
@@ -448,6 +458,7 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'C pura',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
     dice: ['Disfruta de las situaciones vertiginosas, y en ellas es más propenso a desplegar conductas poco reflexivas.'],
     recomienda: ['Mostrarle los límites que se esperan incluso en las situaciones más caóticas.'],
   },
@@ -476,6 +487,7 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'S',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 3, decimales: 0 } },
     dice: ['Le cuesta cambiar de opinión.'],
     recomienda: ['Ayudarlo a ver los otros puntos de vista mostrándole información concreta.'],
   },
@@ -497,6 +509,7 @@ export const TEXTOS = {
     area: 'Cómo maneja lo que siente',
     indice: 'SumT',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 0, decimales: 0 } },
     dice: ['Necesita más cercanía y contacto que lo habitual: tiende a sentirse más solo y a depender de la presencia afectiva de otros.'],
     recomienda: ['Adoptar un estilo de conducción cercano, que le dé contención.'],
   },
@@ -525,6 +538,7 @@ export const TEXTOS = {
     area: 'Cómo se ve a sí mismo',
     indice: 'Ego',
     corte: { op: 'mayor', valor: 0.55, decimales: 2 },
+    zulliger: { corte: { op: 'mayor', valor: 0.56, decimales: 2 } },
     dice: ['Tiende a centrarse en sí mismo más de lo habitual, dando prioridad a su punto de vista, con dificultad para mirar las cosas desde otra óptica y ponerse en el lugar del otro.'],
     recomienda: ['En instancias de negociación puede necesitar asistencia: mostrarle datos que lo ayuden a considerar una visión distinta de la suya.'],
   },
@@ -539,6 +553,7 @@ export const TEXTOS = {
     area: 'Cómo se ve a sí mismo',
     indice: 'An+Xy',
     corte: { op: 'mayor', valor: 3, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 1, decimales: 0 } },
     dice: ['Está más preocupado de lo habitual por su funcionamiento corporal.'],
     recomienda: [''],
   },
@@ -588,6 +603,7 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'Índice de aislamiento',
     corte: { op: 'mayor', valor: 0.25, decimales: 2 },
+    zulliger: { corte: { op: 'mayor', valor: 0.34, decimales: 2 } },
     dice: ['Está menos implicado de lo habitual en las interacciones, y puede preferir trabajar de manera independiente.'],
     recomienda: ['Conviene que la mayoría de sus tareas sean asignaciones individuales.'],
   },
@@ -595,6 +611,7 @@ export const TEXTOS = {
     area: 'Cómo se relaciona',
     indice: 'PER',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 1, decimales: 0 } },
     dice: ['Cuando se siente cuestionado puede reaccionar a la defensiva para justificarse.'],
     recomienda: ['Hacerle las consultas y los pedidos de forma concreta, para que no los reciba como un cuestionamiento.'],
   },
@@ -658,6 +675,7 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
     corte: { op: 'menor', valor: 7, decimales: 0 },
+    zulliger: { corte: { op: 'menor', valor: 3, decimales: 0 } },
     dice: ['Sus recursos de afrontamiento son limitados.'],
     recomienda: [''],
   },
@@ -665,6 +683,7 @@ export const TEXTOS = {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
     corte: { op: 'mayor', valor: 11, decimales: 0, ademas: 'con AdjD positivo' },
+    zulliger: { corte: { op: 'mayor', valor: 5, decimales: 0 } },
     dice: ['Confirma un nivel de control elevado.'],
     recomienda: [''],
   },
@@ -700,10 +719,24 @@ function formas(
 ): { dice: string[]; recomienda: string[] } {
   const base = TEXTOS[clave] as Redaccion;
   const suyo = textos[clave] ?? {};
-  const propias = test === 'Zulliger' ? suyo.recomiendaZ ?? base.zulliger?.recomienda : undefined;
+  const z = test === 'Zulliger';
+
+  /** Lo propio del test si está escrito, y si no lo del Rorschach. */
+  const cual = (
+    propio: string[] | undefined,
+    propioFabrica: string[] | undefined,
+    comun: string[] | undefined,
+    comunFabrica: string[]
+  ) =>
+    (z ? propio ?? propioFabrica : undefined)?.length
+      ? (z ? propio ?? propioFabrica : undefined)!
+      : comun?.length
+        ? comun
+        : comunFabrica;
+
   return {
-    dice: suyo.dice?.length ? suyo.dice : base.dice,
-    recomienda: propias?.length ? propias : suyo.recomienda?.length ? suyo.recomienda : base.recomienda,
+    dice: cual(suyo.diceZ, base.zulliger?.dice, suyo.dice, base.dice),
+    recomienda: cual(suyo.recomiendaZ, base.zulliger?.recomienda, suyo.recomienda, base.recomienda),
   };
 }
 
@@ -930,9 +963,10 @@ export function textosValidos(guardados: unknown): Textos | null {
   for (const [clave, valor] of Object.entries(guardados as Record<string, unknown>)) {
     if (!(clave in TEXTOS)) return null;
     if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return null;
-    const { dice, recomienda, recomiendaZ } = valor as {
+    const { dice, recomienda, diceZ, recomiendaZ } = valor as {
       dice?: unknown;
       recomienda?: unknown;
+      diceZ?: unknown;
       recomiendaZ?: unknown;
     };
 
@@ -945,11 +979,15 @@ export function textosValidos(guardados: unknown): Textos | null {
     if (r === null) return null;
     if (r) uno.recomienda = r;
 
+    const dz = lista(diceZ, true);
+    if (dz === null) return null;
+    if (dz) uno.diceZ = dz;
+
     const rz = lista(recomiendaZ, true);
     if (rz === null) return null;
     if (rz) uno.recomiendaZ = rz;
 
-    if (uno.dice || uno.recomienda || uno.recomiendaZ) limpios[clave] = uno;
+    if (uno.dice || uno.recomienda || uno.diceZ || uno.recomiendaZ) limpios[clave] = uno;
   }
   return limpios;
 }

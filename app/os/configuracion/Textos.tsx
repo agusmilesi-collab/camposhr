@@ -46,10 +46,14 @@ export type Corte = {
 };
 
 /** Los tres campos de una lectura, cada uno con sus tres formas de decirlo. */
+/** Lo que se guarda de una lectura: los cuatro textos, cuando no son los del código. */
+type Campos4 = { dice?: string[]; recomienda?: string[]; diceZ?: string[]; recomiendaZ?: string[] };
+
 export type Campos = {
   dice: string[];
   recomienda: string[];
-  /** La del Zulliger. Vacía quiere decir "vale la del Rorschach". */
+  /** Lo del Zulliger. Vacío quiere decir "vale lo del Rorschach". */
+  diceZ: string[];
   recomiendaZ: string[];
 };
 
@@ -60,6 +64,7 @@ export type Renglon = Campos & {
   cuando: string;
   diceFabrica: string[];
   recomiendaFabrica: string[];
+  diceZFabrica: string[];
   recomiendaZFabrica: string[];
   corte: Corte | null;
   /** El del Zulliger, cuando las normas de ese test cortan en otro número. */
@@ -127,7 +132,12 @@ export default function Textos({
       Object.fromEntries(
         renglones.map((r) => [
           r.clave,
-          { dice: [...r.dice], recomienda: [...r.recomienda], recomiendaZ: [...r.recomiendaZ] },
+          {
+            dice: [...r.dice],
+            recomienda: [...r.recomienda],
+            diceZ: [...r.diceZ],
+            recomiendaZ: [...r.recomiendaZ],
+          },
         ])
       ),
     [renglones]
@@ -168,8 +178,26 @@ export default function Textos({
   const [textos, setTextos] = useState<Record<string, Campos>>(puestos);
   const [cortes, setCortes] = useState<Record<string, string>>(cortesPuestos);
   const [filtro, setFiltro] = useState('');
+  /**
+   * Qué test se está editando.
+   *
+   * Son dos diccionarios: normas distintas, cortes distintos y redacciones
+   * escritas para lo que cada test puede leer. En Zulliger, un campo vacío
+   * quiere decir "vale lo del Rorschach", y se dice.
+   */
+  const [test, setTest] = useState<'Rorschach' | 'Zulliger'>('Rorschach');
   /** Qué campos tienen sus tres casillas a la vista. */
   const [abiertos, setAbiertos] = useState<Record<string, boolean>>({});
+  const esZulliger = test === 'Zulliger';
+
+  /**
+   * Lo que rige mientras la casilla del Zulliger esté vacía.
+   *
+   * Se muestra de fondo, en gris, para que se vea qué va a salir en el informe
+   * sin tener que abrir la otra pestaña a comparar.
+   */
+  const deFabrica = (texto: string | undefined) =>
+    texto ? `Hoy sale: ${texto}` : undefined;
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const caja = useRef<HTMLDivElement>(null);
@@ -291,17 +319,15 @@ export default function Textos({
    */
   function diferencias() {
     const lleno = (v: string[]) => v.map((x) => x.trim()).filter(Boolean);
-    const d: Record<string, { dice?: string[]; recomienda?: string[]; recomiendaZ?: string[] }> =
-      {};
+    const d: Record<string, Campos4> = {};
     for (const r of renglones) {
-      const uno: { dice?: string[]; recomienda?: string[]; recomiendaZ?: string[] } = {};
+      const uno: Campos4 = {};
       const suyo = textos[r.clave];
-      if (!igual(lleno(suyo.dice), lleno(r.diceFabrica))) uno.dice = lleno(suyo.dice);
-      if (!igual(lleno(suyo.recomienda), lleno(r.recomiendaFabrica)))
-        uno.recomienda = lleno(suyo.recomienda);
-      if (!igual(lleno(suyo.recomiendaZ), lleno(r.recomiendaZFabrica)))
-        uno.recomiendaZ = lleno(suyo.recomiendaZ);
-      if (uno.dice || uno.recomienda || uno.recomiendaZ) d[r.clave] = uno;
+      for (const cual of ['dice', 'recomienda', 'diceZ', 'recomiendaZ'] as const) {
+        const fabrica = r[`${cual}Fabrica` as const];
+        if (!igual(lleno(suyo[cual]), lleno(fabrica))) uno[cual] = lleno(suyo[cual]);
+      }
+      if (uno.dice || uno.recomienda || uno.diceZ || uno.recomiendaZ) d[r.clave] = uno;
     }
     return d;
   }
@@ -388,6 +414,25 @@ export default function Textos({
 
   return (
     <>
+      {/* Los dos tests se editan por separado, que es como los tiene escritos
+          la psicóloga: dos documentos, con sus propias normas y sus propios
+          textos. La pestaña cambia qué corte y qué textos se están tocando; el
+          esqueleto de lecturas es el mismo en las dos. */}
+      <div className="os-test-elegir" role="tablist" aria-label="Test">
+        {(['Rorschach', 'Zulliger'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={test === t}
+            className={`os-test-boton${test === t ? ' os-test-puesto' : ''}`}
+            onClick={() => setTest(t)}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
       <section className="os-panel" id={ARRIBA}>
         <div className="os-panel-top">
           <h2>Índice</h2>
@@ -401,6 +446,12 @@ export default function Textos({
             aria-label="Buscar una lectura"
             onChange={(e) => setFiltro(e.target.value)}
           />
+          {esZulliger && (
+            <p className="os-form-nota">
+              Lo que quede en blanco sale con el texto del Rorschach, que es el que se ve de
+              fondo. Escribir acá lo reemplaza solo en los informes de Zulliger.
+            </p>
+          )}
           {/* La cuenta sale solo cuando hay algo escrito en el buscador: sin
               filtro son siempre las mismas sesenta y ocho, y el índice ya las
               reparte área por área. Buscando sí hace falta, porque dice cuánto
@@ -488,33 +539,39 @@ export default function Textos({
                 </div>
 
                 {ind.renglones.map((r) => {
-                  const propio =
-                    !igual(textos[r.clave].dice, r.diceFabrica) ||
-                    !igual(textos[r.clave].recomienda, r.recomiendaFabrica) ||
-                    !igual(textos[r.clave].recomiendaZ, r.recomiendaZFabrica);
-                  const movido = Boolean(r.corte) && numero(r.clave) !== r.corte!.fabrica;
+                  // Lo que se marca es lo de la pestaña abierta: en Zulliger,
+                  // "reescrita" quiere decir que esa lectura tiene texto propio
+                  // de ese test, y no que alguien tocó la del Rorschach.
+                  const propio = esZulliger
+                    ? !igual(textos[r.clave].diceZ, r.diceZFabrica) ||
+                      !igual(textos[r.clave].recomiendaZ, r.recomiendaZFabrica)
+                    : !igual(textos[r.clave].dice, r.diceFabrica) ||
+                      !igual(textos[r.clave].recomienda, r.recomiendaFabrica);
+                  const corte = esZulliger ? r.corteZ : r.corte;
+                  const claveCorte = esZulliger ? `zulliger:${r.clave}` : r.clave;
+                  const movido = Boolean(corte) && numero(claveCorte) !== corte!.fabrica;
                   return (
                     <div className="os-rama" key={r.clave}>
                       <div className="os-rama-cabeza">
-                        {r.corte ? (
+                        {corte ? (
                           <span className="os-lectura-corte">
                             <span className="os-rama-cuando">
-                              {r.corte.op === 'menor' ? 'menos de' : 'más de'}
+                              {corte.op === 'menor' ? 'menos de' : 'más de'}
                             </span>
                             <input
                               className="os-campo os-campo-umbral"
                               type="text"
                               inputMode="decimal"
-                              aria-label={`Corte de ${r.indice}, ${
-                                r.corte.op === 'menor' ? 'menos de' : 'más de'
+                              aria-label={`Corte de ${r.indice} en ${test}, ${
+                                corte.op === 'menor' ? 'menos de' : 'más de'
                               }`}
-                              value={cortes[r.clave] ?? ''}
+                              value={cortes[claveCorte] ?? ''}
                               onChange={(e) =>
-                                setCortes((c) => ({ ...c, [r.clave]: e.target.value }))
+                                setCortes((c) => ({ ...c, [claveCorte]: e.target.value }))
                               }
                             />
-                            {r.corte.ademas && (
-                              <span className="os-rama-cuando">, {r.corte.ademas}</span>
+                            {corte.ademas && (
+                              <span className="os-rama-cuando">, {corte.ademas}</span>
                             )}
                           </span>
                         ) : (
@@ -524,7 +581,7 @@ export default function Textos({
                           {movido && (
                             <span
                               className="os-dato-falta"
-                              title={`De fábrica: ${escribir(r.corte!, r.corte!.fabrica)}`}
+                              title={`De fábrica: ${escribir(corte!, corte!.fabrica)}`}
                             >
                               corte movido
                             </span>
@@ -538,53 +595,20 @@ export default function Textos({
                           hacer, y se corrigen mirando una contra la otra. Uno
                           abajo del otro obligaba a subir para comparar. */}
                       <div className="os-redaccion os-redaccion-doble">
-                        {campo(r, 'dice', 'Qué dice')}
-                        {campo(r, 'recomienda', 'Qué se recomienda')}
+                        {campo(
+                          r,
+                          esZulliger ? 'diceZ' : 'dice',
+                          'Qué dice',
+                          esZulliger ? deFabrica(r.dice[0]) : undefined
+                        )}
+                        {campo(
+                          r,
+                          esZulliger ? 'recomiendaZ' : 'recomienda',
+                          'Qué se recomienda',
+                          esZulliger ? deFabrica(r.recomienda[0]) : undefined
+                        )}
                       </div>
 
-                      {/* Lo propio del Zulliger: el corte, porque las normas de
-                          cada test son distintas, y la recomendación, porque lo
-                          que se sugiere hacer depende de con qué se midió. Lo
-                          que la lectura significa es lo mismo en los dos. */}
-                      {(r.corteZ || true) && (
-                        <details
-                          className="os-zulliger"
-                          open={textos[r.clave].recomiendaZ.some((x) => x.trim())}
-                        >
-                          <summary>
-                            Distinto en Zulliger
-                            {textos[r.clave].recomiendaZ.some((x) => x.trim()) && (
-                              <span className="os-dato-falta">propio</span>
-                            )}
-                          </summary>
-                          {r.corteZ && (
-                            <div className="os-rama-cabeza">
-                              <span className="os-rama-cuando">
-                                Corta en {r.corteZ.op === 'menor' ? 'menos de' : 'más de'}
-                              </span>
-                              <input
-                                className="os-campo os-campo-umbral"
-                                type="text"
-                                inputMode="decimal"
-                                aria-label={`Corte de ${r.indice} en Zulliger`}
-                                value={cortes[`zulliger:${r.clave}`] ?? ''}
-                                onChange={(e) =>
-                                  setCortes((c) => ({
-                                    ...c,
-                                    [`zulliger:${r.clave}`]: e.target.value,
-                                  }))
-                                }
-                              />
-                            </div>
-                          )}
-                          {campo(
-                            r,
-                            'recomiendaZ',
-                            'Qué se recomienda en Zulliger',
-                            'Vacío: vale la del Rorschach'
-                          )}
-                        </details>
-                      )}
                     </div>
                   );
                 })}
