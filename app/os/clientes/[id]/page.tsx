@@ -8,6 +8,8 @@ import { baterias as listarBaterias, empresas as listarEmpresas } from '@/lib/al
 import { ABIERTO } from '@/lib/pedido-campos';
 import Ficha from './Ficha';
 import Pedidos from './Pedidos';
+import Contactos from './Contactos';
+import { contactosDe } from '@/lib/contactos';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,12 +25,13 @@ export const dynamic = 'force-dynamic';
  * cerrado.
  */
 export default async function ClientePagina({ params }: { params: { id: string } }) {
-  const [yo, clientes, pedidos, empresas, baterias] = await Promise.all([
+  const [yo, clientes, pedidos, empresas, baterias, contactos] = await Promise.all([
     quienSoy(),
     listarClientes(),
     listarPedidos(),
     listarEmpresas(),
     listarBaterias(),
+    contactosDe(params.id),
   ]);
 
   const cliente = clientes.find((c) => c.id === params.id);
@@ -54,6 +57,11 @@ export default async function ClientePagina({ params }: { params: { id: string }
       </div>
 
       <Ficha cliente={cliente} />
+
+      {/* Quién pide y quién paga, que son dos personas distintas casi siempre.
+          Va entre los datos de la empresa y sus pedidos: se lee al llamar o al
+          facturar, y se mira más seguido que el CUIT. */}
+      <Contactos empresaId={params.id} contactos={contactos} />
 
       <Pedidos
         pedidos={suyos}

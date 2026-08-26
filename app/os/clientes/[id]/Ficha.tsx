@@ -165,7 +165,6 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
           <Dato rotulo="Razón social" valor={cliente.razonSocial} />
           <Dato rotulo="CUIT" valor={cliente.cuit} />
           <Dato rotulo="Condición IVA" valor={cliente.condicionIva} />
-          <Dato rotulo="Contacto" valor={cliente.contacto ?? cliente.emailFacturacion} />
           <Dato rotulo="Rubro" valor={cliente.rubro} />
           <Dato rotulo="Dirección fiscal" valor={cliente.direccionFiscal} />
         </div>
