@@ -56,6 +56,16 @@ const pesos = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
+/** La cotización sí lleva centavos: es el número contra el que se va a chequear. */
+const cotizacion = (n: number) =>
+  new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    minimumFractionDigits: 2,
+  }).format(n);
+
+const dolares = (n: number) => `USD ${new Intl.NumberFormat('es-AR').format(n)}`;
+
 export default function Pedido({
   token,
   empresa,
@@ -472,13 +482,18 @@ export default function Pedido({
                       permite decir cómo va a trabajar con su jefe y con su equipo, y no
                       solo si el puesto le queda.
                     </span>
+                    {/* En dólares primero, que es como está fijado, y la
+                        conversión de hoy al lado: el cliente tiene que saber
+                        que hasta la factura el precio sigue dolarizado. */}
                     <span className="pedir-suma-precio">
-                      {benzigerPesos
-                        ? `${pesos(benzigerPesos)} por candidato`
-                        : `USD ${alcance.benzigerUsd} por candidato`}
-                      <span className="pedir-suma-n">
-                        Se factura en pesos, al dólar tarjeta del día.
-                      </span>
+                      {dolares(alcance.benzigerUsd)} por candidato
+                      {benzigerPesos && (
+                        <span className="pedir-suma-n">
+                          Hoy son {pesos(benzigerPesos)}, al dólar tarjeta de{' '}
+                          {cotizacion(alcance.dolar as number)}. Se factura en pesos, al
+                          del día en que se emite.
+                        </span>
+                      )}
                     </span>
                   </span>
                 </button>
@@ -601,7 +616,12 @@ export default function Pedido({
             {conBenziger && (
               <div className="pedir-linea">
                 <span>Cuestionario de perfil</span>
-                <span>{benzigerPesos ? pesos(benzigerPesos) : `USD ${alcance.benzigerUsd}`}</span>
+                <span>
+                  {dolares(alcance.benzigerUsd)}
+                  {benzigerPesos && (
+                    <span className="pedir-linea-pesos">{pesos(benzigerPesos)}</span>
+                  )}
+                </span>
               </div>
             )}
             <div className="pedir-linea pedir-linea-cuenta">
@@ -614,9 +634,21 @@ export default function Pedido({
               <span>Total</span>
               <span>{total > 0 ? pesos(total) : 'A convenir'}</span>
             </div>
+
+            {/* Qué parte del total está dolarizada: hasta que se emite la
+                factura, esos dólares valen lo que valga el dólar ese día. */}
+            {conBenziger && (
+              <div className="pedir-linea pedir-linea-usd">
+                <span>De ese total, en dólares</span>
+                <span>{dolares(alcance.benzigerUsd * cuantos)}</span>
+              </div>
+            )}
+
             <p className="pedir-resumen-n">
-              Precios de hoy, sin IVA. El cuestionario de perfil se factura al dólar
-              tarjeta del día.
+              Precios de hoy, sin IVA.
+              {conBenziger && alcance.dolar
+                ? ` El cuestionario de perfil está fijado en dólares y se factura en pesos, al dólar tarjeta del día en que se emite la factura. Hoy está ${cotizacion(alcance.dolar)}.`
+                : ''}
             </p>
 
             {error && <p className="pedir-error">{error}</p>}
