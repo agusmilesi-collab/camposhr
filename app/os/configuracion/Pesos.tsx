@@ -76,7 +76,16 @@ function aportes(pesos: number[]): number[] | null {
   return enteros;
 }
 
-const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Peso', 'Aporte'];
+const COLUMNAS = [
+  'Indicador',
+  'Qué mide',
+  'Alto',
+  'Medio',
+  'Bajo',
+  'Si lo pasa',
+  'Peso',
+  'Aporte',
+];
 
 /* Medidos en pantalla contra el contenido más largo de cada columna, más los 28
    px de padding de la celda. Sin anchos declarados, cada competencia repartía
@@ -91,13 +100,14 @@ const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Peso', 'Ap
    ancho es "Dónde corta", que es texto de referencia y se lee entero en el
    informe. */
 const MEDIDAS = columnas(COLUMNAS, {
-  Indicador: 150,
-  'Qué mide': 260,
-  Alto: 175,
-  Medio: 175,
-  Bajo: 155,
-  Peso: 110,
-  Aporte: 115,
+  Indicador: 146,
+  'Qué mide': 196,
+  Alto: 176,
+  Medio: 176,
+  Bajo: 146,
+  'Si lo pasa': 118,
+  Peso: 94,
+  Aporte: 98,
 });
 
 /** Dónde vuelve "Volver arriba": el panel con el índice, al principio. */
@@ -118,8 +128,10 @@ export type Indicador = {
   clave: string;
   nombre: string;
   mide: string;
-  /** Los números que definen las bandas. Null cuando la banda no sale de un umbral. */
+  /** Los números que definen las bandas, con la dirección que rige. Null si no hay umbral. */
   escala: Escala | null;
+  /** La escala del código, para saber si la dirección se invirtió. */
+  escalaFabrica: Escala | null;
   /** Qué dice cada banda cuando no hay números: se compara un índice con otro. */
   reglas: string[] | null;
   /** Qué se compara, cuando no es el índice a secas. */
@@ -189,8 +201,18 @@ export default function Pesos({
     return d;
   }, [todos]);
 
+  /** Hacia dónde es mejor cada indicador de umbral, como está ahora. */
+  const direccionesPuestas = useMemo(() => {
+    const d: Record<string, boolean> = {};
+    for (const i of todos.values()) {
+      if (i.escala?.forma === 'umbral') d[i.clave] = i.escala.mayorEsMejor;
+    }
+    return d;
+  }, [todos]);
+
   const [pesos, setPesos] = useState<Record<string, number>>(puestos);
   const [cortes, setCortes] = useState<Record<string, string[]>>(escritos);
+  const [direcciones, setDirecciones] = useState<Record<string, boolean>>(direccionesPuestas);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -199,20 +221,31 @@ export default function Pesos({
   // mostrando los pesos que se acababan de borrar. Se compara por valor y no por
   // identidad porque cada dibujo del servidor manda un objeto nuevo, y compararlo
   // por identidad borraría lo que se está escribiendo.
-  const firma = JSON.stringify([puestos, escritos]);
+  const firma = JSON.stringify([puestos, escritos, direccionesPuestas]);
   const [ultima, setUltima] = useState(firma);
   if (ultima !== firma) {
     setUltima(firma);
     setPesos(puestos);
     setCortes(escritos);
+    setDirecciones(direccionesPuestas);
   }
 
   const pesosSinGuardar = Object.keys(puestos).filter((k) => pesos[k] !== puestos[k]);
   const cortesSinGuardar = Object.keys(escritos).filter(
     (k) => cortes[k]?.join('|') !== escritos[k].join('|')
   );
-  const sinGuardar = [...pesosSinGuardar, ...cortesSinGuardar];
+  const direccionesSinGuardar = Object.keys(direccionesPuestas).filter(
+    (k) => direcciones[k] !== direccionesPuestas[k]
+  );
+  const sinGuardar = [...pesosSinGuardar, ...cortesSinGuardar, ...direccionesSinGuardar];
   const cambiado = sinGuardar.length > 0;
+
+  /** La escala como quedaría con la dirección que está elegida en pantalla. */
+  function escalaDe(i: Indicador): Escala | null {
+    if (!i.escala) return null;
+    if (i.escala.forma !== 'umbral') return i.escala;
+    return { ...i.escala, mayorEsMejor: direcciones[i.clave] ?? i.escala.mayorEsMejor };
+  }
 
   /** Los números que rigen ahora para un indicador, con lo que se está escribiendo. */
   function numerosDe(i: Indicador): number[] | null {
@@ -231,13 +264,14 @@ export default function Pesos({
     if (!r.ok) throw new Error(r.motivo ?? 'No se pudo guardar.');
   }
 
-  /** Los dos ajustes en una pasada: se corrigen juntos y se guardan juntos. */
-  async function guardar(pesosNuevos: unknown, cortesNuevos: unknown) {
+  /** Los tres ajustes en una pasada: se corrigen juntos y se guardan juntos. */
+  async function guardar(pesosNuevos: unknown, cortesNuevos: unknown, direccionesNuevas: unknown) {
     setGuardando(true);
     setError(null);
     try {
       await mandar('competencias_pesos', pesosNuevos);
       await mandar('competencias_cortes', cortesNuevos);
+      await mandar('competencias_direccion', direccionesNuevas);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo guardar.');
@@ -269,8 +303,86 @@ export default function Pesos({
     return d;
   }
 
+  /** Solo las direcciones que quedaron distintas de la del código. */
+  function direccionesMovidas(): Record<string, boolean> {
+    const d: Record<string, boolean> = {};
+    for (const i of todos.values()) {
+      if (i.escalaFabrica?.forma !== 'umbral') continue;
+      const puesta = direcciones[i.clave];
+      if (puesta !== undefined && puesta !== i.escalaFabrica.mayorEsMejor) d[i.clave] = puesta;
+    }
+    return d;
+  }
+
   /** Qué campos quedaron sin un número legible. */
   const rotos = [...todos.values()].filter((i) => i.escala && numerosDe(i) === null);
+
+  /**
+   * Invierte hacia dónde es mejor, y con eso intercambia los dos cortes.
+   *
+   * Los mismos números leídos al revés dejarían la banda del medio por fuera de
+   * la de arriba: si alto era "desde 9" y medio "desde 7", al invertir tiene que
+   * quedar alto "hasta 7" y medio "hasta 9". Cambiarlo sin tocar los números
+   * daría una tabla que la ruta rechaza al guardar.
+   */
+  function invertir(i: Indicador) {
+    const escala = escalaDe(i);
+    if (escala?.forma !== 'umbral') return;
+    setDirecciones((d) => ({ ...d, [i.clave]: !escala.mayorEsMejor }));
+    setCortes((c) => {
+      const suyos = c[i.clave];
+      if (!suyos || suyos.length !== 2) return c;
+      return { ...c, [i.clave]: [suyos[1], suyos[0]] };
+    });
+  }
+
+  /**
+   * Si estar por encima del corte es positivo o negativo.
+   *
+   * Hay índices donde pasar el corte es un hallazgo bueno y otros donde es lo
+   * contrario, y hay casos donde eso depende del puesto: por eso se elige acá y
+   * no queda fijo en el código. Los que esperan una banda no lo tienen, porque
+   * desviarse para cualquiera de los dos lados es peor.
+   */
+  function mejor(i: Indicador) {
+    const escala = escalaDe(i);
+    if (escala?.forma !== 'umbral') {
+      return (
+        <td className="os-tabla-flojo" data-campo="Si lo pasa">
+          {/* Sin dirección que elegir: la banda no tiene un "hacia arriba", y
+              el que compara dos índices tampoco tiene umbral. */}
+          <span className="os-banda-nula" title={escala ? 'Lo esperable es la banda' : undefined}>
+            {escala ? 'banda' : '—'}
+          </span>
+        </td>
+      );
+    }
+    // Invertido respecto del código: el botón se marca solo, sin una etiqueta
+    // al lado que en esta columna no entra.
+    const movida =
+      i.escalaFabrica?.forma === 'umbral' && escala.mayorEsMejor !== i.escalaFabrica.mayorEsMejor;
+    return (
+      <td data-campo="Si lo pasa">
+        <button
+          type="button"
+          className={`os-mejor os-sello-estado ${escala.mayorEsMejor ? 'os-verde' : 'os-rojo'}${
+            movida ? ' os-mejor-movido' : ''
+          }`}
+          aria-pressed={escala.mayorEsMejor}
+          title={
+            (escala.mayorEsMejor
+              ? 'Estar por encima del corte es positivo.'
+              : 'Estar por encima del corte es negativo.') +
+            (movida ? ' Invertido respecto de lo original.' : '') +
+            ' Apretá para darlo vuelta.'
+          }
+          onClick={() => invertir(i)}
+        >
+          {escala.mayorEsMejor ? 'positivo' : 'negativo'}
+        </button>
+      </td>
+    );
+  }
 
   /** Una casilla de corte, con su número editable. */
   function casilla(i: Indicador, n: number, etiqueta: string) {
@@ -315,7 +427,7 @@ export default function Pesos({
    */
   function banda(i: Indicador, cual: 0 | 1 | 2) {
     const nombre = ['Alto', 'Medio', 'Bajo'][cual];
-    const e = i.escala;
+    const e = escalaDe(i);
     if (!e || cual === 2) {
       const texto = reglaDeBanda(e, numerosDe(i) ?? undefined, cual, i.reglas ?? undefined);
       return (
@@ -471,6 +583,9 @@ export default function Pesos({
                         <th>
                           Bajo <span className="os-banda-vale">0</span>
                         </th>
+                        {/* Qué significa que el valor pase el corte: si es un
+                            hallazgo bueno o uno malo. */}
+                        <th>Si lo pasa</th>
                         <th className="os-tabla-num">Peso</th>
                         <th className="os-tabla-num">Aporte</th>
                       </tr>
@@ -489,6 +604,7 @@ export default function Pesos({
                             {banda(i, 0)}
                             {banda(i, 1)}
                             {banda(i, 2)}
+                            {mejor(i)}
                             <td className="os-tabla-num" data-campo="Peso">
                               <div className="os-peso-celda">
                                 <input
@@ -521,7 +637,7 @@ export default function Pesos({
                         ruta rechaza al guardar. */}
                     <tfoot>
                       <tr>
-                        <td colSpan={5}>Suma de la competencia</td>
+                        <td colSpan={6}>Suma de la competencia</td>
                         <td className="os-tabla-num" data-campo="Peso">
                           {total}
                         </td>
@@ -562,7 +678,7 @@ export default function Pesos({
               <button
                 className="os-boton"
                 disabled={guardando}
-                onClick={() => guardar(null, null)}
+                onClick={() => guardar(null, null, null)}
                 title="Borra lo que se movió y deja los cortes y los pesos originales"
               >
                 Volver a los originales
@@ -605,7 +721,7 @@ export default function Pesos({
           <button
             className="os-boton os-boton-azul"
             disabled={guardando || rotos.length > 0}
-            onClick={() => guardar(pesosMovidos(), cortesMovidos())}
+            onClick={() => guardar(pesosMovidos(), cortesMovidos(), direccionesMovidas())}
           >
             {guardando ? 'Guardando…' : 'Guardar los cambios'}
           </button>

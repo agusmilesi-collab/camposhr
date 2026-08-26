@@ -42,6 +42,24 @@ export type Escala =
       porcentaje?: boolean;
     };
 
+/**
+ * La misma escala con la dirección que rige.
+ *
+ * Hacia dónde es mejor no es una propiedad del índice sino del criterio con el
+ * que se lo lee: hay indicadores donde estar por encima del corte es un
+ * hallazgo bueno y otros donde es lo contrario, y hay casos donde eso depende
+ * del puesto. Por eso se puede mover, y por eso la escala que llega al motor no
+ * siempre es la que trae el código.
+ *
+ * Solo las de umbral tienen dirección. En una banda lo esperable es un
+ * intervalo y desviarse para cualquiera de los dos lados es peor, así que no
+ * hay un "hacia arriba" que invertir.
+ */
+export function conDireccion(e: Escala, mayorEsMejor: boolean | undefined): Escala {
+  if (e.forma !== 'umbral' || mayorEsMejor === undefined) return e;
+  return { ...e, mayorEsMejor };
+}
+
 /** Los números de una escala, en el orden en que se guardan y se editan. */
 export function numerosDe(e: Escala): number[] {
   return e.forma === 'umbral' ? [e.alto, e.medio] : [...e.alto, ...e.medio];
