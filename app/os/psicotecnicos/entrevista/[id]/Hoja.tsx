@@ -14,6 +14,7 @@ import HojaBender from './HojaBender';
 import RelojRaven from './RelojRaven';
 import SondeoRaven from './SondeoRaven';
 import Bateria from '../../Bateria';
+import Whatsapp from '../../Whatsapp';
 import Orden from './Orden';
 import Competencias from './Competencias';
 
@@ -278,18 +279,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         <div>
           <span className="os-dato-rotulo">Teléfono</span>
           <span className="os-dato-valor">
-            {e.telefono ? (
-              <a
-                href={`https://wa.me/${e.telefono.replace(/\D/g, '')}`}
-                target="_blank"
-                rel="noreferrer"
-                title="Escribir por WhatsApp"
-              >
-                {e.telefono}
-              </a>
-            ) : (
-              'Sin teléfono'
-            )}
+            {e.telefono ? <Whatsapp telefono={e.telefono} /> : 'Sin teléfono'}
           </span>
         </div>
         <div className="os-entrevista-correo">

@@ -23,6 +23,7 @@ import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/inf
 import { bandasDeLaHoja } from '@/lib/redacciones';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
+import Whatsapp from '../../Whatsapp';
 import Hoja from '../../entrevista/[id]/Hoja';
 import {
   llevaDiscursivo,
@@ -195,17 +196,7 @@ function Datos({ f, id }: { f: Ficha; id: string }) {
           )}
         </Dato>
         <Dato rotulo="Teléfono">
-          {c.personas?.telefono ? (
-            <a
-              href={`https://wa.me/${c.personas.telefono.replace(/[^0-9]/g, '')}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {c.personas.telefono}
-            </a>
-          ) : (
-            <Falta />
-          )}
+          {c.personas?.telefono ? <Whatsapp telefono={c.personas.telefono} /> : <Falta />}
         </Dato>
         <Dato rotulo="Raven">
           {f.raven?.raw !== null && f.raven?.raw !== undefined ? (
