@@ -8312,3 +8312,23 @@ textarea.os-exigencia-notas {
 .os-tests .os-cierre {
   max-width: none;
 }
+
+/* El teléfono con el ícono de WhatsApp: dice a dónde lleva antes de apretarlo,
+   que es lo que un número subrayado no dice. El ícono no se achica cuando el
+   número no entra. */
+.os-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.os-whatsapp svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: #25d366;
+}
+
+.os-whatsapp span {
+  min-width: 0;
+}

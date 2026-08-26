@@ -34,6 +34,7 @@ import { desdeInput, diaDeLaSemana, fechaHora, haceCuanto, paraInput } from '@/l
 import Bateria from './Bateria';
 import Candidato from './Candidato';
 import Desplegable from '@/app/os/Desplegable';
+import Whatsapp from './Whatsapp';
 import type { PedidoOpcion } from './Agregar';
 
 type EtapaTablero = 'Por citar' | 'Por entrevistar' | 'Por analizar';
@@ -43,10 +44,6 @@ const COLUMNAS: { etapa: EtapaTablero; titulo: string; vacio: string }[] = [
   { etapa: 'Por entrevistar', titulo: 'Agendadas', vacio: 'Sin entrevistas agendadas' },
   { etapa: 'Por analizar', titulo: 'Por analizar', vacio: 'Nada esperando análisis' },
 ];
-
-function soloDigitos(t: string): string {
-  return t.replace(/[^0-9]/g, '');
-}
 
 /** Deja que el navegador anime el recorrido de la tarjeta entre columnas. */
 function mover(cambio: () => void): void {
@@ -146,15 +143,7 @@ function Tarjeta({
         <div className="os-tarjeta-trabajo">
           <div className="os-tarjeta-linea">
             {e.telefono ? (
-              <a
-                className="os-tarjeta-telefono"
-                href={`https://wa.me/${soloDigitos(e.telefono)}`}
-                target="_blank"
-                rel="noreferrer"
-                title="Escribir por WhatsApp"
-              >
-                {e.telefono}
-              </a>
+              <Whatsapp telefono={e.telefono} className="os-tarjeta-telefono" />
             ) : (
               <span className="os-dato-falta">sin teléfono</span>
             )}
