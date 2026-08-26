@@ -1827,6 +1827,37 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   margin-bottom: 6px;
 }
 
+/**
+ * A quiénes cubre una factura, debajo de su fila.
+ *
+ * Un renglón por persona, con el puesto al lado y el importe alineado a la
+ * derecha: es la misma lectura que la tabla de arriba, un escalón adentro.
+ */
+.os-cubre-lista {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 12px 0 0;
+  list-style: none;
+  font-size: 0.84rem;
+}
+
+.os-cubre-lista > li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.os-cubre-nombre {
+  font-weight: 550;
+}
+
+.os-cubre-importe {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-tinta-media);
+}
+
 /* Los dos controles del renglón de una factura, uno al lado del otro. */
 .os-gasto-factura .os-gasto-baja {
   display: flex;

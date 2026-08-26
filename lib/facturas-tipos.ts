@@ -42,6 +42,16 @@ export type Renglon = {
   descripcion: string;
   detalle: string | null;
   importe: number | null;
+  /**
+   * A quién cubre el renglón, leído de la evaluación y no de la descripción.
+   *
+   * Las facturas que emite el OS escriben el nombre adentro de la descripción,
+   * pero las 24 que vinieron de Airtable dicen "Evaluación psicotécnica" a
+   * secas: para poder listar los candidatos de cualquier factura hace falta el
+   * nombre de la fila, no el del texto.
+   */
+  persona: string | null;
+  puesto: string | null;
 };
 
 export type Factura = {

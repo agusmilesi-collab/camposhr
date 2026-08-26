@@ -436,8 +436,17 @@ export function Emitidas({ facturas }: { facturas: Factura[] }) {
   );
 }
 
-/** La tabla de comprobantes, que es la misma para los dos bloques. */
+/**
+ * La tabla de comprobantes, que es la misma para los dos bloques.
+ *
+ * **"Cubre" se abre.** En la fila va cuántas evaluaciones entraron, que es lo
+ * que se compara de un vistazo; para saber quiénes son había que abrir el
+ * comprobante de cada factura en otra pestaña. Ahora la fila se despliega y los
+ * nombres quedan debajo, con su puesto y lo que se cobró por cada uno.
+ */
 function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
+  const [abierta, setAbierta] = useState<string | null>(null);
+
   return (
     <div className="os-tabla-marco">
       <table className="os-tabla os-tabla-trabajo os-tabla-fija">
@@ -461,8 +470,12 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
           </tr>
         </thead>
         <tbody>
-          {facturas.map((f) => (
-            <tr key={f.id}>
+          {facturas.map((f) => {
+            const cuantas = cubre(f);
+            const cajon = abierta === f.id;
+            return (
+            <Fragmento key={f.id}>
+            <tr>
               <td data-campo="Fecha">{formatoFecha(f.fecha)}</td>
               <td className="os-tabla-nombre" data-campo="Número">
                 <a
@@ -482,9 +495,21 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
               <td className="os-tabla-recorta" data-campo="Cubre">
                 {/* Se cuentan personas y no renglones: el adicional Benziger es
                     un renglón más de alguien que ya está. */}
-                {cubre(f) === 0
-                  ? f.concepto ?? 'sin detalle'
-                  : `${cubre(f)} ${cubre(f) === 1 ? 'evaluación' : 'evaluaciones'}`}
+                {cuantas === 0 ? (
+                  f.concepto ?? 'sin detalle'
+                ) : (
+                  <button
+                    type="button"
+                    className={`os-costo-abre${cajon ? ' abierto' : ''}`}
+                    onClick={() => setAbierta(cajon ? null : f.id)}
+                    title={
+                      cajon ? 'Tocar para cerrar' : 'Tocar para ver a quiénes cubre'
+                    }
+                  >
+                    {cuantas} {cuantas === 1 ? 'evaluación' : 'evaluaciones'}
+                    <span aria-hidden="true">{cajon ? '▾' : '▸'}</span>
+                  </button>
+                )}
               </td>
               <td className="os-tabla-num" data-campo="Importe">
                 {f.importe === null ? (
@@ -500,7 +525,34 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
                 <BorrarFactura id={f.id} numero={numeroDe(f)} />
               </td>
             </tr>
-          ))}
+
+            {cajon && (
+              <tr className="os-fila-abierta">
+                <td colSpan={COLUMNAS_EMITIDAS.length}>
+                  <ul className="os-cubre-lista">
+                    {f.renglones.map((r) => (
+                      <li key={r.id}>
+                        {/* El nombre sale de la evaluación cuando está: las
+                            facturas de Airtable dicen "Evaluación psicotécnica"
+                            a secas y ahí manda la descripción. */}
+                        <span className="os-cubre-nombre">
+                          {r.persona ?? r.descripcion}
+                        </span>
+                        {r.puesto && <span className="os-dato-flojo">{r.puesto}</span>}
+                        {r.importe !== null && (
+                          <span className="os-cubre-importe">
+                            {formatoImporte(r.importe, f.moneda === 'DOL' ? 'USD' : 'ARS')}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </td>
+              </tr>
+            )}
+            </Fragmento>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -582,4 +634,10 @@ export function BorrarFactura({ id, numero }: { id: string; numero: string }) {
   );
 }
 
-
+/**
+ * Un fragmento con clave, para que la fila y su detalle sean un solo hijo del
+ * cuerpo de la tabla.
+ */
+function Fragmento({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
+}
