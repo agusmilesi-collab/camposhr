@@ -29,49 +29,77 @@ export const NIVELES = [
   {
     nombre: 'Liderazgo 2',
     estrato: 4,
-    que: 'Gerencia General.',
-    lapso: 'De 2 a 5 años.',
-    caracteristicas:
-      'Es el mundo del gerenciamiento general, de quien tiene proyectos a cargo o de quien investiga. No alcanza con avanzar por un solo camino: construye caminos en serie y alternativas, que funcionan todas al mismo tiempo e interconectadas. Puede llevar adelante varios subproyectos distintos de manera simultánea y entrelazada, o derivarlos en personas a cargo que avanzan cada una por el suyo, y mantenerlas en sincronía tanto en los planes como en los recursos, guiándolas por caminos alternativos. Procesa en paralelo proyectos que interactúan entre sí y los armoniza.',
+    romano: 'IV',
+    procesamiento: 'Paralelo',
+    que: 'Estrato IV · procesamiento paralelo · de 2 a 5 años',
+    horizonte: 'Aproximadamente entre 2 y 5 años.',
+    actual:
+      'Puede integrar diferentes líneas de trabajo que avanzan simultáneamente y se afectan entre sí. Es capaz de coordinar proyectos, recursos y decisiones interdependientes, manteniendo su sincronización y ajustando cada componente en función del conjunto. En este nivel ya no alcanza con construir caminos alternativos de manera secuencial: es necesario sostener a la vez múltiples procesos, proyectos o líneas de acción, comprendiendo cómo las modificaciones en uno repercuten sobre los demás.',
+    proyeccion:
+      'El siguiente nivel de complejidad corresponde al Estrato V, que se ubica por encima del alcance de este instrumento. Describirlo exige incorporar los criterios propios de ese estrato, y por eso no se asigna de manera automática a quien queda en Liderazgo 2.',
   },
   {
     nombre: 'Liderazgo 1',
     estrato: 3,
-    que: 'Mando Medio, Gerencia.',
-    lapso: 'De 1 a 2 años.',
-    caracteristicas:
-      'Gerencia de mandos medios, con hasta 250 personas a cargo de manera indirecta. Para seguir adelante con su trabajo, incluida la superación de los obstáculos y la acumulación diagnóstica, examina la situación y establece varios caminos alternativos por los que podría resolverse el problema. Tiene que encontrar uno que responda a los requerimientos de corto plazo, de semanas o meses, y que al mismo tiempo dé los pasos iniciales hacia metas de un año o más. Tiene que ser capaz de cambiar de camino si el primero no resulta. Construir esas alternativas es un proceso en serie: imagina qué pasa si sigue cada ruta.',
+    romano: 'III',
+    procesamiento: 'Serial',
+    que: 'Estrato III · procesamiento serial · de 1 a 2 años',
+    horizonte: 'Aproximadamente entre 1 y 2 años.',
+    actual:
+      'Puede abordar situaciones en las que no existe un único camino predeterminado. Examina el problema, construye diferentes cursos de acción y anticipa qué podría ocurrir al seguir cada uno. Puede elegir una alternativa, avanzar sobre ella y modificarla cuando deja de resultar adecuada. Este nivel requiere articular necesidades de corto plazo con objetivos de mayor alcance, evaluando una tras otra las alternativas hasta encontrar un camino viable.',
+    proyeccion:
+      'El siguiente nivel de complejidad implica pasar de construir y evaluar caminos alternativos en secuencia a gestionar a la vez múltiples líneas de acción interdependientes. Requiere integrar proyectos, recursos, prioridades y decisiones que evolucionan en paralelo, manteniendo su coherencia como un sistema.',
   },
   {
     nombre: 'Especialista',
     estrato: 2,
-    que: 'Tareas que exigen interpretación y conocimientos específicos.',
-    lapso: 'De 3 meses a 1 año.',
-    caracteristicas:
-      'Tareas de especialista, que pueden ser un trabajo gerencial de primera línea. La producción de cada tarea exige cierta interpretación: expone y acumula datos significativos a medida que avanza, de modo de contar con la información apropiada para resolver el problema. No solo supera los obstáculos inmediatos con su acción directa, también reflexiona sobre lo que ocurre para detectar aquello que pueda indicar problemas potenciales, y acumula y selecciona datos que le permiten anticiparlos y tomar medidas para impedirlos o superarlos. Se aplica el orden verbal simbólico de complejidad de la información, con un procesamiento acumulativo.',
+    romano: 'II',
+    procesamiento: 'Acumulativo',
+    que: 'Estrato II · procesamiento acumulativo · de 3 meses a 1 año',
+    horizonte: 'Aproximadamente entre 3 meses y 1 año.',
+    actual:
+      'Puede abordar tareas que requieren interpretar situaciones, reunir información relevante y construir progresivamente una respuesta. Además de resolver obstáculos inmediatos, puede identificar señales de posibles problemas, seleccionar los datos significativos y tomar medidas para anticiparlos o superarlos. En este nivel no se limita a aplicar un procedimiento conocido: necesita observar lo que ocurre, acumular información, interpretarla y usarla para determinar cómo avanzar.',
+    proyeccion:
+      'El siguiente nivel de complejidad requiere pasar del análisis acumulativo de información a la construcción y comparación de diferentes cursos de acción. Supone anticipar consecuencias, evaluar alternativas y articular decisiones de corto plazo con objetivos de mayor alcance temporal.',
   },
   {
     nombre: 'Operativo',
     estrato: 1,
-    que: 'Tareas concretas a realizar de forma determinada de antemano.',
-    lapso: 'De 1 día a 3 meses.',
-    caracteristicas:
-      'Primera línea de trabajo. Las tareas que se le asignan pueden ilustrarse con un ejemplo de lo que se pretende, y se le especifican tanto el camino y el método como los recursos para realizarlas. Al toparse con un obstáculo usa alguno de los métodos en los que fue capacitada, además del juicio práctico por ensayo y error. Si aun así no puede superar el problema, recurre a su gerente. Se aplica el orden verbal simbólico de complejidad de la información, con un procesamiento declarativo.',
+    romano: 'I',
+    procesamiento: 'Declarativo',
+    que: 'Estrato I · procesamiento declarativo · hasta 3 meses',
+    horizonte: 'Desde tareas inmediatas hasta aproximadamente 3 meses.',
+    actual:
+      'Puede abordar tareas concretas cuyos objetivos, métodos y recursos se encuentran claramente establecidos. Frente a obstáculos utiliza procedimientos conocidos, experiencia práctica y ensayo y error, y cuando la situación excede las alternativas disponibles pide orientación a un nivel superior. En este nivel la resolución de problemas se apoya sobre todo en aplicar métodos ya conocidos y en el juicio práctico dentro de un marco de trabajo definido.',
+    proyeccion:
+      'El siguiente nivel de complejidad supone avanzar desde la ejecución de procedimientos definidos hacia tareas que requieren mayor interpretación, diagnóstico y selección de información relevante. Implica ampliar la autonomía para reconocer problemas potenciales, reunir información significativa y construir respuestas a partir de los datos que se acumulan durante el trabajo.',
   },
 ] as const;
 
-/** Los tres textos de un nivel, que se editan desde Configuración. */
-export type TextoDeNivel = { que: string; lapso: string; caracteristicas: string };
+/** Los cuatro textos de un nivel, que se editan desde Configuración. */
+export type TextoDeNivel = {
+  /** El resumen que va al lado del escalón en la pirámide. */
+  que: string;
+  /** Qué lapso de tiempo abarca la tarea más larga de ese nivel. */
+  horizonte: string;
+  /** Qué complejidad de trabajo puede abordar hoy. */
+  actual: string;
+  /** Qué exige el nivel siguiente. */
+  proyeccion: string;
+};
 
 /** Cuánto puede medir cada texto. */
 export const LARGO_MAXIMO = 2000;
 
+/** Los campos editables, en el orden en que se muestran. */
+export const CAMPOS_DE_NIVEL = ['que', 'horizonte', 'actual', 'proyeccion'] as const;
+
 /**
  * Lo guardado para los niveles, si sirve; null si no.
  *
- * Se rechaza un nivel que no exista, un campo que no sea de los tres, un texto
- * que no sea una cadena o que pase el largo, y dejar sin resumen a un nivel: el
- * informe lo dibuja en la pirámide y sin él queda un escalón mudo.
+ * Se rechaza un nivel que no exista, un campo que no sea de los cuatro, un
+ * texto que no sea una cadena o que pase el largo, y dejar sin resumen a un
+ * nivel: el informe lo dibuja en la pirámide y sin él queda un escalón mudo.
  */
 export function nivelesValidos(
   guardados: unknown
@@ -83,36 +111,67 @@ export function nivelesValidos(
     if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return null;
     const uno: Partial<TextoDeNivel> = {};
     for (const [campo, texto] of Object.entries(valor as Record<string, unknown>)) {
-      if (campo !== 'que' && campo !== 'lapso' && campo !== 'caracteristicas') return null;
+      if (!(CAMPOS_DE_NIVEL as readonly string[]).includes(campo)) return null;
       if (typeof texto !== 'string' || texto.length > LARGO_MAXIMO) return null;
       const limpio = texto.trim();
       if (campo === 'que' && !limpio) return null;
-      if (limpio) uno[campo] = limpio;
+      if (limpio) uno[campo as keyof TextoDeNivel] = limpio;
     }
     if (Object.keys(uno).length > 0) limpios[nombre] = uno;
   }
   return limpios;
 }
 
-/** Los cuatro niveles con lo que rige: lo escrito desde Configuración, o lo del código. */
+/** Un nivel con lo que rige: lo escrito desde Configuración, o lo del código. */
+export type NivelQueRige = TextoDeNivel & {
+  nombre: NivelDiscursivo;
+  estrato: number;
+  romano: string;
+  procesamiento: string;
+};
+
+/** Los cuatro niveles con lo que rige. */
 export function nivelesQueRigen(
   movidos: Record<string, Partial<TextoDeNivel>> = {}
-): { nombre: NivelDiscursivo; estrato: number; que: string; lapso: string; caracteristicas: string }[] {
+): NivelQueRige[] {
   return NIVELES.map((n) => ({
     nombre: n.nombre,
     estrato: n.estrato,
+    romano: n.romano,
+    procesamiento: n.procesamiento,
     que: movidos[n.nombre]?.que ?? n.que,
-    lapso: movidos[n.nombre]?.lapso ?? n.lapso,
-    caracteristicas: movidos[n.nombre]?.caracteristicas ?? n.caracteristicas,
+    horizonte: movidos[n.nombre]?.horizonte ?? n.horizonte,
+    actual: movidos[n.nombre]?.actual ?? n.actual,
+    proyeccion: movidos[n.nombre]?.proyeccion ?? n.proyeccion,
   }));
 }
 
-/** Lo que hace falta para que ese nivel se alcance. Las tres, o no pasa. */
+/**
+ * De qué depende que esa capacidad se aplique en un rol.
+ *
+ * El análisis estima el nivel de complejidad de trabajo que la persona puede
+ * abordar hoy. Que llegue a ejercerlo en un puesto depende además de estas
+ * tres, y por eso van en el informe al lado del escalón.
+ */
 export const CONDICIONES = [
-  'Desarrollo necesario para lograrlo (habilidades, conocimientos).',
-  'Se le presentan las posibilidades u oportunidades de conseguirlo.',
-  'Tenga la motivación, deseo de hacerlo.',
+  'Contar con los conocimientos, habilidades y experiencia requeridos.',
+  'Disponer de la oportunidad de asumir trabajos de ese nivel de complejidad.',
+  'Valorar ese tipo de trabajo y estar motivado por él.',
 ];
+
+/**
+ * Por qué el capítulo dice "Proyección de desarrollo" y no capacidad futura.
+ *
+ * En Jaques, la capacidad potencial futura no es el estrato siguiente: es qué
+ * nivel podría alcanzar la persona en un momento dado, estimando su trayectoria
+ * de maduración. Eso exige un horizonte explícito y una metodología para
+ * proyectar esa curva, que este instrumento no tiene. Lo que sí puede decir es
+ * qué exige el nivel siguiente, y eso es lo que se informa.
+ */
+export const NOTA_PROYECCION =
+  'Describe el siguiente nivel de complejidad. No es una capacidad potencial futura: ' +
+  'afirmar eso exigiría estimar la trayectoria de maduración de la persona y un horizonte ' +
+  'de tiempo explícito, que este instrumento no mide.';
 
 /** El test, como se llama en la batería. */
 export const TEST = 'Análisis discursivo (Elliot Jaques)';

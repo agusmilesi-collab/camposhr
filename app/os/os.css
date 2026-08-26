@@ -7893,8 +7893,8 @@ th.os-tabla-contacto {
   font-weight: 600;
 }
 
-/* Los tres campos de un estrato: rol y lapso arriba, en dos columnas, y las
-   características abajo al ancho entero, que es el texto largo. */
+/* Los cuatro campos de un estrato: los dos cortos arriba, en dos columnas, y
+   los dos párrafos largos abajo al ancho entero. */
 .os-redaccion-estratos {
   grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
   align-items: start;
@@ -7910,7 +7910,7 @@ th.os-tabla-contacto {
   }
 }
 
-.os-redaccion-estratos > :last-child {
+.os-redaccion-estratos > :nth-child(n + 3) {
   grid-column: 1 / -1;
 }
 

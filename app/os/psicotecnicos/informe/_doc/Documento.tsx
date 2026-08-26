@@ -9,7 +9,7 @@ import {
 } from '@/lib/informe-textos';
 import Cerebro from './Cerebro';
 import Piramide from './Piramide';
-import { CONDICIONES } from '@/lib/discursivo';
+import { CONDICIONES, NOTA_PROYECCION } from '@/lib/discursivo';
 import Listas from './Listas';
 import './informe.css';
 
@@ -485,7 +485,10 @@ export default function Documento({
           sub="Según análisis discursivo (modelo de Elliot Jaques)"
         >
           <div className="inf-potencial">
-            <p>El nivel jerárquico al que puede llegar si se dan las tres condiciones:</p>
+            <p>
+              El análisis estima el nivel de complejidad de trabajo que la persona puede
+              abordar hoy. Aplicarlo en un rol depende además de tres condiciones:
+            </p>
             <ol className="inf-condiciones">
               {CONDICIONES.map((c, i) => (
                 <li key={c}>
@@ -499,36 +502,41 @@ export default function Documento({
               <Piramide nivel={inf.discursivo.nivel} textos={inf.discursivo.escalones} />
             </div>
 
-            {/* Qué es el escalón en el que quedó, con el lapso que abarca y lo
-                que lo define. Sin esto la pirámide dejaba al lector con el
-                nombre del nivel y sin saber qué implica. Se edita en
-                Configuración → Potencial. */}
+            {/* El capítulo lo arma el catálogo del instrumento y no lo que
+                escriba la evaluadora: qué complejidad de trabajo puede abordar
+                hoy quien quedó en ese estrato y qué exige el siguiente. Su
+                lectura sobre esta persona, si la escribió, va después. Se edita
+                en Configuración → Potencial. */}
             {inf.discursivo.detalle && (
-              <div className="inf-estrato">
-                <h3>{inf.discursivo.nivel}</h3>
-                <p className="inf-estrato-lapso">
-                  Lapso del rol: {inf.discursivo.detalle.lapso}
+              <>
+                <h3>Capacidad potencial actual</h3>
+                <p className="inf-estrato-marca">
+                  Estrato {inf.discursivo.detalle.romano} · procesamiento{' '}
+                  {inf.discursivo.detalle.procesamiento.toLowerCase()} · horizonte temporal:{' '}
+                  {(() => {
+                    // Entra a mitad de la frase, así que arranca en minúscula y
+                    // sin el punto final que sí lleva en la pantalla que lo edita.
+                    const h = inf.discursivo.detalle.horizonte.replace(/\.$/, '');
+                    return h.charAt(0).toLowerCase() + h.slice(1);
+                  })()}
                 </p>
-                <p>{inf.discursivo.detalle.caracteristicas}</p>
-              </div>
+                <p>{inf.discursivo.detalle.actual}</p>
+              </>
             )}
+            {inf.discursivo.actual && <p>{inf.discursivo.actual}</p>}
 
-            {/* Los dos van siempre, con o sin texto: el capítulo tiene tres
-                partes y una que falta se ve como una parte que falta, no como
-                una que no existe. */}
-            <h3>Capacidad potencial actual</h3>
-            {inf.discursivo.actual ? (
-              <p>{inf.discursivo.actual}</p>
-            ) : (
-              <p className="inf-vacio">Sin contenido.</p>
+            {inf.discursivo.detalle && (
+              <>
+                <h3>Proyección de desarrollo</h3>
+                <p>{inf.discursivo.detalle.proyeccion}</p>
+              </>
             )}
+            {inf.discursivo.futura && <p>{inf.discursivo.futura}</p>}
 
-            <h3>Capacidad potencial futura</h3>
-            {inf.discursivo.futura ? (
-              <p>{inf.discursivo.futura}</p>
-            ) : (
-              <p className="inf-vacio">Sin contenido.</p>
-            )}
+            {/* Por qué no se llama capacidad potencial futura: afirmarlo
+                exigiría estimar la trayectoria de maduración de la persona y un
+                horizonte de tiempo explícito, y este instrumento no lo mide. */}
+            <p className="inf-estrato-nota">{NOTA_PROYECCION}</p>
           </div>
         </Capitulo>
       )}

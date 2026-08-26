@@ -4,9 +4,12 @@
  * El análisis discursivo, en la ficha.
  *
  * La evaluadora ubica a la persona en uno de los cuatro escalones de la
- * pirámide y escribe los dos párrafos de capacidad potencial. El sistema no
- * deduce el nivel: se toma sobre unos cinco minutos de discurso y lo ubica
- * quien lo escuchó.
+ * pirámide. El sistema no deduce el nivel: se toma sobre unos cinco minutos de
+ * discurso y lo ubica quien lo escuchó.
+ *
+ * El capítulo del informe sale del catálogo de estratos, así que los dos campos
+ * de texto son agregados sobre esta persona en particular y pueden quedar
+ * vacíos.
  *
  * **La pirámide es la misma que sale impresa**, con sus colores y su recuadro,
  * así se elige mirando lo que el cliente va a ver y no una lista suelta de
@@ -69,8 +72,9 @@ export default function Discursivo({
   return (
     <div className="os-discursivo">
       <p className="os-form-nota">
-        El nivel jerárquico al que puede llegar. Se elige el escalón; el que está marcado es
-        el que sale en el informe.
+        El nivel de complejidad de trabajo que puede abordar hoy. Se elige el escalón; el que
+        está marcado es el que sale en el informe, con la descripción de su estrato y la del
+        nivel siguiente, que se escriben en Configuración → Potencial.
       </p>
 
       <Piramide
@@ -84,8 +88,11 @@ export default function Discursivo({
       />
 
       <div className="os-redaccion">
+        {/* Los dos campos son agregados sobre esta persona: el capítulo del
+            informe ya sale completo con los textos del estrato, y lo que se
+            escriba acá va después de ellos. En blanco no falta nada. */}
         <label className="os-etiqueta-campo" htmlFor={`actual-${id}`}>
-          Capacidad potencial actual
+          Qué agregar sobre su capacidad actual
         </label>
         <textarea
           id={`actual-${id}`}
@@ -101,7 +108,7 @@ export default function Discursivo({
         />
 
         <label className="os-etiqueta-campo" htmlFor={`futura-${id}`}>
-          Capacidad potencial futura
+          Qué agregar sobre su proyección
         </label>
         <textarea
           id={`futura-${id}`}
