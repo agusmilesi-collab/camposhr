@@ -23,6 +23,7 @@ import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/inf
 import { bandasDeLaHoja } from '@/lib/redacciones';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
+import Exigencia from './Exigencia';
 import {
   llevaDiscursivo,
   nivelesQueRigen,
@@ -529,6 +530,28 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
 
   return (
     <>
+      {/* Con qué vara se leen los puntajes de este informe. Va arriba de la
+          recomendación porque es lo primero que hay que fijar: la conclusión se
+          escribe mirando competencias ya nombradas. */}
+      <section className="os-panel os-cierre">
+        <div className="os-panel-top">
+          <h2>Exigencia</h2>
+          <span className="os-columna-monto">
+            A partir de qué puntaje una competencia se llama Adecuada, Alta o Sobresaliente
+          </span>
+        </div>
+        <div className="os-panel-cuerpo">
+          <Exigencia
+            evaluacionId={c.id}
+            pedidoId={c.pedido_id}
+            deLaEvaluacion={c.exigencia_id}
+            delPedido={c.pedidos?.exigencia_id ?? null}
+            perfiles={rige.exigencias}
+            rige={informe.exigencia}
+          />
+        </div>
+      </section>
+
       <section className="os-panel os-cierre os-informe-cierre">
         <div className="os-panel-top">
           <h2>Recomendación</h2>

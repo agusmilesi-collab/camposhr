@@ -7900,3 +7900,125 @@ th.os-tabla-contacto {
   line-height: 1.5;
   resize: vertical;
 }
+
+/* ---------- Exigencia del sistema ---------- */
+
+/* La misma barra que sale en el informe: se corrige mirando lo que el cliente
+   va a ver, y el ancho de cada tramo es el ancho real de su banda. */
+.os-exigencia-escala {
+  display: grid;
+  gap: 7px;
+  margin: 2px 0 14px;
+}
+
+.os-exigencia-barra {
+  display: block;
+  height: 9px;
+  border-radius: 5px;
+}
+
+.os-exigencia-rotulos {
+  display: grid;
+  gap: 0;
+  font-size: 0.78rem;
+  color: var(--os-suave);
+}
+
+.os-exigencia-rotulos > span {
+  display: grid;
+  gap: 1px;
+  padding: 0 8px;
+  text-align: center;
+  border-left: 1px solid var(--os-linea-suave);
+}
+
+.os-exigencia-rotulos > span:first-child {
+  border-left: 0;
+}
+
+.os-exigencia-rotulos em {
+  font-style: normal;
+  font-weight: 600;
+}
+
+.os-exigencia-edicion {
+  display: grid;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+/* Cada corte: su nombre, la barra deslizante y el número que va marcando. */
+.os-exigencia-corte {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.84rem;
+}
+
+.os-exigencia-corte output {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+}
+
+.os-exigencia-slider {
+  width: 100%;
+  accent-color: var(--os-azul);
+}
+
+@media (max-width: 700px) {
+  .os-exigencia-corte {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+  .os-exigencia-corte label {
+    grid-column: 1 / -1;
+  }
+}
+
+/* El nombre y las notas del perfil: la etiqueta arriba del campo, porque
+   `.os-form` las manda a una columna propia y con un campo al ancho entero eso
+   deja media pantalla en blanco al lado del rótulo. */
+.os-exigencia-campo {
+  display: grid;
+  gap: 4px;
+}
+
+.os-exigencia-campo .os-campo {
+  width: 100%;
+}
+
+textarea.os-exigencia-notas {
+  height: auto;
+  min-height: 62px;
+  padding: 7px 9px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+/* El selector de exigencia en la ficha: una fila por alcance. */
+.os-exigencia-elegir {
+  display: grid;
+  gap: 10px;
+}
+
+.os-exigencia-fila {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 320px);
+  align-items: center;
+  gap: 12px;
+  font-size: 0.86rem;
+}
+
+.os-exigencia-rige {
+  margin: 2px 0 0;
+  color: var(--os-tinta-media);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 620px) {
+  .os-exigencia-fila {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -21,6 +21,8 @@ import {
 } from '@/lib/competencias';
 import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
+import { DE_FABRICA as EXIGENCIA_DE_FABRICA, type Exigencia } from '@/lib/exigencia';
+import { exigenciasGuardadas } from '@/lib/exigencias-datos';
 import {
   llevaDiscursivo,
   nivelesQueRigen,
@@ -104,6 +106,14 @@ export type Informe = {
   proyectivo: string | null;
   nivel: NivelAjuste | null;
   competencias: Competencia[];
+  /**
+   * Con qué exigencia se nombran esos puntajes.
+   *
+   * Los puntajes no cambian: lo que cambia es dónde corta cada banda. Un
+   * pedido para un puesto operativo puede leerse con una exigencia más baja
+   * que uno de conducción.
+   */
+  exigencia: Exigencia;
   resumen: {
     /** Los párrafos del resumen, ya sean del motor o de la evaluadora. */
     parrafos: string[];
@@ -153,6 +163,8 @@ export type Informe = {
     futura: string | null;
     /** Qué dice cada escalón de la pirámide, con lo que rige. */
     escalones: Record<string, string>;
+    /** El lapso y las características del escalón en el que quedó. */
+    detalle: { lapso: string; caracteristicas: string } | null;
   } | null;
   tecnicas: string[];
   /** Lo que no estaba cargado y por eso no salió en el informe. */
@@ -243,6 +255,8 @@ export type Regulacion = {
   cortesCompetencias: Record<string, number[]>;
   /** Los textos de los cuatro estratos del potencial, si se reescribieron. */
   niveles: Record<string, Partial<TextoDeNivel>>;
+  /** Los perfiles de exigencia guardados. El informe usa el que le toque. */
+  exigencias: Exigencia[];
 };
 
 const DE_FABRICA: Regulacion = {
@@ -252,16 +266,18 @@ const DE_FABRICA: Regulacion = {
   cortes: {},
   cortesCompetencias: {},
   niveles: {},
+  exigencias: [EXIGENCIA_DE_FABRICA],
 };
 
 export async function loQueRige(): Promise<Regulacion> {
-  const [r, p, t, c, k, n] = await Promise.all([
+  const [r, p, t, c, k, n, x] = await Promise.all([
     ajuste('raven_rangos'),
     ajuste('competencias_pesos'),
     ajuste('redacciones_textos'),
     ajuste('redacciones_cortes'),
     ajuste('competencias_cortes'),
     ajuste('discursivo_niveles'),
+    exigenciasGuardadas(),
   ]);
   return {
     rangos: rangosValidos(r) ?? RANGOS,
@@ -270,6 +286,7 @@ export async function loQueRige(): Promise<Regulacion> {
     cortes: cortesValidos(c) ?? {},
     cortesCompetencias: cortesDeCompetenciasValidos(k) ?? {},
     niveles: nivelesValidos(n) ?? {},
+    exigencias: x.length > 0 ? x : [EXIGENCIA_DE_FABRICA],
   };
 }
 
@@ -295,8 +312,21 @@ function tieneAlgo(c: Cuatro | null): boolean {
 }
 
 export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
-  const { rangos, pesos, textos, cortes, cortesCompetencias, niveles } = rige;
+  const { rangos, pesos, textos, cortes, cortesCompetencias, niveles, exigencias } = rige;
+
   const c = f.cabecera;
+  /**
+   * Con qué exigencia se leen los puntajes de este informe.
+   *
+   * La del candidato pisa la del pedido, y si ninguno tiene, la predeterminada.
+   * Es un rótulo y no una cuenta: los puntajes son los mismos, lo que cambia es
+   * cómo se los nombra.
+   */
+  const exigencia =
+    exigencias.find((e) => e.id === c.exigencia_id) ??
+    exigencias.find((e) => e.id === c.pedidos?.exigencia_id) ??
+    exigencias.find((e) => e.predeterminada) ??
+    EXIGENCIA_DE_FABRICA;
   const faltantes: Faltante[] = [];
 
   const sumario = (f.sumario?.crudo ?? null) as SumarioCrudo | null;
@@ -436,6 +466,7 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     benziger: hayBenziger ? { preferentes, adulto, joven } : null,
     // Solo si la evaluadora lo ubicó: la pirámide sin un escalón marcado no
     // dice nada, y el capítulo entero es esa marca.
+    exigencia,
     discursivo: f.discursivo?.nivel
       ? {
           nivel: f.discursivo.nivel,
@@ -444,6 +475,10 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
           escalones: Object.fromEntries(
             nivelesQueRigen(niveles).map((n) => [n.nombre, n.que])
           ),
+          detalle: (() => {
+            const suyo = nivelesQueRigen(niveles).find((n) => n.nombre === f.discursivo?.nivel);
+            return suyo ? { lapso: suyo.lapso, caracteristicas: suyo.caracteristicas } : null;
+          })(),
         }
       : null,
     raven:
