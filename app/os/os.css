@@ -1290,6 +1290,21 @@ a.os-tarjeta:hover {
   opacity: 0.88;
 }
 
+/* El azul es para la acción que carga lo que se escribió en la sala: el negro
+   del botón firme está tomado por la acción principal de cada pantalla, y esta
+   convive con ella sin competirle. */
+.os-boton-azul {
+  background: var(--os-azul-fuerte);
+  color: var(--os-panel);
+  border-color: var(--os-azul-fuerte);
+}
+
+.os-boton-azul:hover:not(:disabled) {
+  background: var(--os-azul-fuerte);
+  border-color: var(--os-azul-fuerte);
+  filter: brightness(1.15);
+}
+
 /* Un enlace con forma de botón lleva el color del botón. Hace falta decirlo
    porque `.os a { color: inherit }` es más específico que la clase sola, así
    que sin esto un enlace firme queda con el texto del color de su fondo. */
@@ -5968,6 +5983,19 @@ th.os-tabla-contacto {
   margin-left: auto;
 }
 
+/* El Rorschach tiene tres cosas para hacer y no dos: abrir las láminas, pasar
+   la dirección y codificar. La columna que se suma va a la derecha y la fila
+   crece hacia la izquierda, porque se alinea contra el margen derecho.
+
+   Con eso el último botón sigue cayendo donde cae en el resto de las tarjetas,
+   que es la columna que más se mira, y lo que se corre es el estado: no entran
+   las dos cosas, porque tres botones y el estado no caben en los 464 px de la
+   fila normal. */
+.os-herramienta-accion:has(> .os-herramienta-codificar) {
+  grid-template-columns: minmax(0, 1fr) 132px 148px 148px;
+  width: 622px;
+}
+
 .os-herramienta-accion > .os-enlace-suave,
 .os-herramienta-accion > .os-enlace-apagado {
   justify-self: start;
@@ -6139,14 +6167,6 @@ th.os-tabla-contacto {
   align-items: center;
   gap: 10px;
   margin-top: 8px;
-}
-
-/* Codificar el Rorschach cuelga del renglón de abajo como los botones del
-   Bender, pero es un botón solo: sin esto la grilla de tres columnas se lo
-   lleva entero y queda un botón del ancho de la tarjeta. */
-.os-papel-dibujos > .os-herramienta-codificar {
-  grid-column: 1;
-  justify-self: start;
 }
 
 .os-papel-dibujos > .os-bender-ver {
@@ -6340,11 +6360,26 @@ th.os-tabla-contacto {
   margin-top: 0;
 }
 
-/* En la hoja de la entrevista el campo es el test entero, así que ocupa el
-   renglón completo y el botón se alinea con su primera línea y no con el medio
-   de una caja de doscientos píxeles. */
+/* La entrevista por competencias: el campo es el test entero, así que ocupa el
+   renglón completo de la tarjeta y no comparte la fila con nada. El botón
+   cierra abajo, contra el margen derecho, que es donde se termina de escribir:
+   al lado de una caja de doscientos píxeles quedaba a media altura y lejos de
+   la última línea. */
 .os-competencias {
-  align-items: start;
+  flex-basis: 100%;
+  padding-left: var(--os-herramienta-sangria, 0);
+}
+
+.os-competencias > .os-campo {
+  width: 100%;
+}
+
+.os-competencias-pie {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .os-papel-notas .os-campo {
