@@ -9,7 +9,7 @@ import {
 } from '@/lib/informe-textos';
 import Cerebro from './Cerebro';
 import Piramide from './Piramide';
-import { CONDICIONES, NOTA_PROYECCION } from '@/lib/discursivo';
+import { CONDICIONES } from '@/lib/discursivo';
 import Listas from './Listas';
 import './informe.css';
 
@@ -294,6 +294,11 @@ export default function Documento({
               <span>Empresa:</span> {inf.empresa}
             </p>
           )}
+          {inf.edad !== null && (
+            <p>
+              <span>Edad:</span> {inf.edad} {inf.edad === 1 ? 'año' : 'años'}
+            </p>
+          )}
           <p>
             <span>Evaluación:</span> {inf.cuando}
           </p>
@@ -538,20 +543,11 @@ export default function Documento({
 
             {inf.discursivo.detalle && (
               <>
-                <h3>Proyección de desarrollo</h3>
+                <h3>Capacidad potencial futura</h3>
                 <p>{inf.discursivo.detalle.proyeccion}</p>
               </>
             )}
             {inf.discursivo.futura && <p>{inf.discursivo.futura}</p>}
-
-            {/* Lo único que se aclara acá es por qué la proyección no se llama
-                capacidad potencial futura, que es lo que el lector podría dar
-                por sentado. De dónde sale el modelo y cuánto pesa cada ejemplo
-                de puesto se leen en Configuración → Potencial: son notas para
-                quien escribe el informe, no para quien lo recibe. */}
-            <div className="inf-estrato-nota">
-              <p>{NOTA_PROYECCION}</p>
-            </div>
           </div>
         </Capitulo>
       )}
