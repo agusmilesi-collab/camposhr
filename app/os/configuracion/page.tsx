@@ -5,6 +5,7 @@ import Baterias from './Baterias';
 import Baremos from './Baremos';
 import Ponderaciones from './Ponderaciones';
 import Redacciones from './Redacciones';
+import Potencial from './Potencial';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +33,7 @@ const PESTANAS = [
   { clave: 'baremos', texto: 'Baremos' },
   { clave: 'ponderaciones', texto: 'Velocímetro' },
   { clave: 'redacciones', texto: 'Redacciones' },
+  { clave: 'potencial', texto: 'Potencial' },
 ];
 
 const QUE_HACE: Record<string, string> = {
@@ -39,9 +41,11 @@ const QUE_HACE: Record<string, string> = {
   baremos:
     'Dónde corta cada rango del Raven. Cambia el rango que se nombra en el informe y el puntaje de habilidad cognitiva.',
   ponderaciones:
-    'Cuánto pesa cada indicador dentro de su competencia. De acá sale el puntaje que marca el velocímetro de cada una en el informe: el promedio de los que tienen dato, cada uno por su peso.',
+    'Dónde corta cada indicador entre bajo, medio y alto, y cuánto pesa dentro de su competencia. De acá sale el puntaje que marca el velocímetro de cada una en el informe.',
   redacciones:
     'Lo que el informe escribe cuando una lectura se dispara. Cuándo entra cada una lo decide su índice y su corte.',
+  potencial:
+    'Los cuatro estratos del análisis discursivo: qué rol abarca cada uno, qué lapso proyecta y qué lo caracteriza. Es lo que se lee al ubicar a la persona en la pirámide.',
 };
 
 export default async function Configuracion({
@@ -82,6 +86,7 @@ export default async function Configuracion({
       {ver === 'baremos' && <Baremos />}
       {ver === 'ponderaciones' && <Ponderaciones />}
       {ver === 'redacciones' && <Redacciones />}
+      {ver === 'potencial' && <Potencial />}
     </Shell>
   );
 }

@@ -21,9 +21,17 @@
 
 import type { SumarioCrudo } from '@/lib/redacciones';
 import { percentilDe, puntajesPorRango, rangoDe, type Rango } from '@/lib/raven';
+import {
+  comoNumero,
+  nivelPorEscala,
+  numerosDe,
+  reglaDeBanda,
+  type Escala,
+  type Nivel,
+} from '@/lib/escalas';
 
-/** Bajo, medio o alto. Null cuando el dato no está cargado. */
-type Nivel = 1 | 2 | 3 | null;
+export { numerosDe, comoNumero, reglaDeBanda, type Escala };
+
 
 /**
  * Cuánto vale cada nivel en la escala de salida.
@@ -59,6 +67,13 @@ export type Contexto = {
    * fábrica.
    */
   pesos?: Record<string, number>;
+  /**
+   * Dónde corta cada indicador, si se movió desde Sistema.
+   *
+   * Solo las diferencias, por `claveDePeso`. Cada valor es el arreglo de
+   * números de la escala de ese indicador, en el orden de {@link numerosDe}.
+   */
+  cortesCompetencias?: Record<string, number[]>;
 };
 
 function num(s: SumarioCrudo, seccion: string, clave: string): number | null {
@@ -84,13 +99,6 @@ function constelacion(s: SumarioCrudo, nombre: string): number | null {
 /** W vive en localización en el motor del OS. */
 function global(s: SumarioCrudo): number | null {
   return num(s, 'localizacion', 'global') ?? num(s, 'procesamiento', 'W');
-}
-
-/** Tres cortes en orden: si el valor llega al primero es alto, y así. */
-function escalonar(v: number | null, alto: number, medio: number, mayorEsMejor = true): Nivel {
-  if (v === null) return null;
-  if (mayorEsMejor) return v >= alto ? 3 : v >= medio ? 2 : 1;
-  return v <= alto ? 3 : v <= medio ? 2 : 1;
 }
 
 /**
@@ -145,8 +153,6 @@ function leidoPor(s: SumarioCrudo, nivel: (s: SumarioCrudo) => Nivel): string | 
 type Indicador = {
   nombre: string;
   mide: string;
-  /** Dónde corta entre bajo, medio y alto. Es lo que hay que revisar. */
-  corte: string;
   /**
    * Cuánto pesa dentro de su competencia. Uno si no dice nada.
    *
@@ -157,22 +163,46 @@ type Indicador = {
    * que la psicóloga los revise**, igual que los cortes.
    */
   peso?: number;
-  nivel: (s: SumarioCrudo) => Nivel;
+  /**
+   * El número que se compara contra la escala.
+   *
+   * Va junto con `escala`: con los dos, la banda la resuelve el motor y los
+   * cortes se pueden mover desde Configuración.
+   */
+  valor?: (s: SumarioCrudo) => number | null;
+  escala?: Escala;
+  /**
+   * Cuándo la banda no sale de un umbral sino de comparar dos índices entre sí.
+   *
+   * Ahí no hay número que mover, así que el indicador trae su propia función y
+   * la regla de cada banda escrita, para que la pantalla la muestre igual.
+   */
+  nivel?: (s: SumarioCrudo) => Nivel;
+  /** Qué dice cada banda, de alto a bajo, cuando no hay escala numérica. */
+  reglas?: [string, string, string];
+  /** Qué unidad se compara, cuando no es el índice a secas. */
+  sobre?: string;
 };
+
+/** La banda de un indicador con los cortes que rigen para él. */
+function nivelDe(i: Indicador, s: SumarioCrudo, n: number[] | undefined): Nivel {
+  if (i.escala && i.valor) return nivelPorEscala(i.valor(s), i.escala, n ?? numerosDe(i.escala));
+  return i.nivel ? i.nivel(s) : null;
+}
 
 // ── Indicadores compartidos por los dos protocolos ─────────────────────────
 
 const FD: Indicador = {
   nombre: 'Fd',
   mide: 'Autonomía frente a necesidad de apoyo',
-  corte: 'sin Fd alto; uno medio; dos o más bajo',
-  nivel: (s) => escalonar(num(s, 'interpersonal', 'Fd'), 0, 1, false),
+  escala: { forma: 'umbral', mayorEsMejor: false, alto: 0, medio: 1 },
+  valor: (s) => num(s, 'interpersonal', 'Fd'),
 };
 
 const GHR_PHR: Indicador = {
   nombre: 'GHR : PHR',
   mide: 'Calidad del vínculo interpersonal',
-  corte: 'GHR mayor que PHR alto; iguales medio; PHR mayor bajo',
+  reglas: ['GHR mayor que PHR', 'GHR igual a PHR', 'PHR mayor que GHR'],
   nivel: (s) => {
     const g = num(s, 'interpersonal', 'GHR');
     const p = num(s, 'interpersonal', 'PHR');
@@ -184,27 +214,21 @@ const GHR_PHR: Indicador = {
 const AISLAMIENTO: Indicador = {
   nombre: 'Índice de aislamiento',
   mide: 'Grado de retraimiento social',
-  corte: 'hasta 0,25 alto; hasta 0,33 medio; por encima bajo',
-  nivel: (s) => escalonar(num(s, 'interpersonal', 'Aislamiento'), 0.25, 0.33, false),
+  escala: { forma: 'umbral', mayorEsMejor: false, alto: 0.25, medio: 0.33, decimales: 2 },
+  valor: (s) => num(s, 'interpersonal', 'Aislamiento'),
 };
 
 const EGOCENTRISMO: Indicador = {
   nombre: 'Índice de egocentrismo',
   mide: 'Foco en sí mismo frente al registro del entorno',
-  corte: 'entre 0,33 y 0,45 alto; hasta 0,55 medio; fuera de esa banda bajo',
-  nivel: (s) => {
-    const e = num(s, 'autopercepcion', 'Ego');
-    if (e === null) return null;
-    if (e >= 0.33 && e <= 0.45) return 3;
-    if (e > 0.45 && e <= 0.55) return 2;
-    return 1;
-  },
+  escala: { forma: 'banda', alto: [0.33, 0.45], medio: [0.45, 0.55], decimales: 2 },
+  valor: (s) => num(s, 'autopercepcion', 'Ego'),
 };
 
 const FC_CF: Indicador = {
   nombre: 'FC : CF + C',
   mide: 'Capacidad de regulación emocional',
-  corte: 'más FC que descarga alto; iguales medio; más descarga bajo',
+  reglas: ['FC mayor que CF + C', 'FC igual a CF + C', 'CF + C mayor que FC'],
   nivel: (s) => {
     const fc = num(s, 'afectos', 'FC');
     if (fc === null) return null;
@@ -216,19 +240,20 @@ const FC_CF: Indicador = {
 const M_Y: Indicador = {
   nombre: 'm + Y',
   mide: 'Nivel de tensión interna y ansiedad',
-  corte: 'hasta 2 alto; hasta 4 medio; por encima bajo',
-  nivel: (s) => {
+  escala: { forma: 'umbral', mayorEsMejor: false, alto: 2, medio: 4 },
+  sobre: 'la suma de m e Y',
+  valor: (s) => {
     const m = num(s, 'determinantes', 'm');
     const y = num(s, 'determinantes', 'SumY') ?? num(s, 'determinantes', 'Y');
     if (m === null && y === null) return null;
-    return escalonar((m ?? 0) + (y ?? 0), 2, 4, false);
+    return (m ?? 0) + (y ?? 0);
   },
 };
 
 const COP_AG: Indicador = {
   nombre: 'COP / AG',
   mide: 'Tendencia a la cooperación frente a la confrontación',
-  corte: 'dos o más COP con poca AG alto; algún COP medio; sin COP bajo',
+  reglas: ['dos o más COP y hasta una AG', 'al menos una COP', 'ninguna COP'],
   nivel: (s) => {
     const cop = num(s, 'interpersonal', 'COP');
     const ag = num(s, 'interpersonal', 'AG');
@@ -242,24 +267,18 @@ const COP_AG: Indicador = {
 const M: Indicador = {
   nombre: 'M',
   mide: 'Iniciativa intencional y capacidad de elaboración',
-  corte: 'cuatro o más alto; dos o tres medio; menos bajo',
-  nivel: (s) => escalonar(num(s, 'determinantes', 'M'), 4, 2),
+  escala: { forma: 'umbral', mayorEsMejor: true, alto: 4, medio: 2 },
+  valor: (s) => num(s, 'determinantes', 'M'),
 };
 
 const LAMBDA: Indicador = {
   nombre: 'Lambda',
   mide: 'Estilo de afrontamiento y simplificación',
-  corte: 'dentro de 0,30 a 0,99 alto; hasta 1,50 medio; fuera bajo',
-  nivel: (s) => {
-    const l = num(s, 'cabecera', 'Lambda');
-    if (l === null) return null;
-    if (l >= 0.3 && l <= 0.99) return 3;
-    // Solo la banda de arriba es medio. Con `l < 0.3 || l <= 1.5` el extremo de
-    // abajo caía en medio: un Lambda de 0,1 es alguien que no consigue
-    // simplificar, se implica con todo lo que ve, y se informaba como promedio.
-    if (l > 0.99 && l <= 1.5) return 2;
-    return 1;
-  },
+  // Solo la banda de arriba es medio: un Lambda de 0,1 es alguien que no
+  // consigue simplificar, se implica con todo lo que ve, y como medio se
+  // informaba como promedio.
+  escala: { forma: 'banda', alto: [0.3, 0.99], medio: [0.99, 1.5], decimales: 2 },
+  valor: (s) => num(s, 'cabecera', 'Lambda'),
 };
 
 // ── Rorschach ──────────────────────────────────────────────────────────────
@@ -274,23 +293,27 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         mide: 'Organización mental',
         // El núcleo: organizar la tarea es lo que la competencia define.
         peso: 2,
-        corte: 'W hasta una vez y media M alto; hasta dos veces y media medio; por encima bajo',
-        nivel: (s) => {
+        escala: { forma: 'umbral', mayorEsMejor: false, alto: 1.5, medio: 2.5, decimales: 1 },
+        sobre: 'cuántas veces W entra en M',
+        valor: (s) => {
           const m = num(s, 'determinantes', 'M');
           const w = global(s);
           // Sin W no hay razón que calcular, ni siquiera con M en cero: antes
           // ese caso salía bajo sin tener el dato con el que se compara.
           if (m === null || w === null) return null;
-          return m === 0 ? 1 : escalonar(w / m, 1.5, 2.5, false);
+          // Con M en cero la razón no existe y la lectura es la peor: la
+          // organización mental no aparece. Se manda al fondo de la escala.
+          return m === 0 ? Number.POSITIVE_INFINITY : w / m;
         },
       },
       {
         nombre: 'Zd',
         mide: 'Esfuerzo organizativo',
-        corte: 'entre −3 y +3 alto; hasta ±5 medio; fuera bajo',
-        nivel: (s) => {
+        escala: { forma: 'umbral', mayorEsMejor: false, alto: 3, medio: 5 },
+        sobre: 'Zd sin signo',
+        valor: (s) => {
           const z = num(s, 'procesamiento', 'Zd');
-          return z === null ? null : escalonar(Math.abs(z), 3, 5, false);
+          return z === null ? null : Math.abs(z);
         },
       },
       {
@@ -298,8 +321,16 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         mide: 'Priorización',
         // Identificar prioridades está en la definición, con esas palabras.
         peso: 2,
-        corte: 'Dd hasta el 10% alto; hasta el 15% medio; por encima bajo',
-        nivel: (s) => {
+        escala: {
+          forma: 'umbral',
+          mayorEsMejor: false,
+          alto: 0.1,
+          medio: 0.15,
+          decimales: 2,
+          porcentaje: true,
+        },
+        sobre: 'Dd sobre el total de localizaciones',
+        valor: (s) => {
           const w = global(s);
           const d = num(s, 'procesamiento', 'D');
           const dd = num(s, 'procesamiento', 'Dd');
@@ -307,18 +338,19 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
           // localizaciones, y con una parte ausente el porcentaje sale inflado.
           // El motor escribe los ceros, así que faltar es faltar de verdad.
           if (w === null || d === null || dd === null || w + d + dd === 0) return null;
-          return escalonar(dd / (w + d + dd), 0.1, 0.15, false);
+          return dd / (w + d + dd);
         },
       },
       {
         nombre: 'FM + m',
         mide: 'Interferencia interna',
-        corte: 'hasta 5 alto; hasta 7 medio; por encima bajo',
-        nivel: (s) => {
+        escala: { forma: 'umbral', mayorEsMejor: false, alto: 5, medio: 7 },
+        sobre: 'la suma de FM y m',
+        valor: (s) => {
           const fm = num(s, 'determinantes', 'FM');
           const m = num(s, 'determinantes', 'm');
           if (fm === null && m === null) return null;
-          return escalonar((fm ?? 0) + (m ?? 0), 5, 7, false);
+          return (fm ?? 0) + (m ?? 0);
         },
       },
       FD,
@@ -333,15 +365,15 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         mide: 'Recursos disponibles para afrontar demandas',
         // Con qué cuenta la persona para sostener la presión.
         peso: 2,
-        corte: 'nueve o más alto; siete u ocho medio; menos bajo',
-        nivel: (s) => escalonar(num(s, 'control_estres', 'EA'), 9, 7),
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 9, medio: 7, decimales: 1 },
+        valor: (s) => num(s, 'control_estres', 'EA'),
       },
       {
         nombre: 'D / AdjD',
         mide: 'Tolerancia al estrés, inmediata y sostenida',
         // Mide la tolerancia a la presión, que es la competencia entera.
         peso: 2,
-        corte: 'los dos en cero o más alto; solo AdjD en cero o más medio; AdjD negativo bajo',
+        reglas: ['D y AdjD en cero o más', 'AdjD en cero o más, D negativo', 'AdjD negativo'],
         nivel: (s) => {
           const d = num(s, 'control_estres', 'D');
           const adj = num(s, 'control_estres', 'AdjD');
@@ -356,9 +388,8 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       {
         nombre: 'Vagas',
         mide: 'Grado de desorganización frente a la experiencia',
-        corte: 'hasta una alto; dos medio; más bajo',
-        nivel: (s) =>
-          escalonar(num(s, 'procesamiento', 'DQv') ?? num(s, 'localizacion', 'DQv'), 1, 2, false),
+        escala: { forma: 'umbral', mayorEsMejor: false, alto: 1, medio: 2 },
+        valor: (s) => num(s, 'procesamiento', 'DQv') ?? num(s, 'localizacion', 'DQv'),
       },
     ],
   },
@@ -373,8 +404,8 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         mide: 'Inhabilidad social',
         // Índice compuesto y del propio Exner: mide la competencia completa.
         peso: 2,
-        corte: 'hasta 3 alto; 4 medio; 5 bajo',
-        nivel: (s) => escalonar(constelacion(s, 'CDI'), 3, 4, false),
+        escala: { forma: 'umbral', mayorEsMejor: false, alto: 3, medio: 4 },
+        valor: (s) => constelacion(s, 'CDI'),
       },
       AISLAMIENTO,
       EGOCENTRISMO,
@@ -388,16 +419,16 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       {
         nombre: 'R',
         mide: 'Nivel general de productividad e iniciativa de respuesta',
-        corte: 'veintidós o más alto; diecisiete a veintiuno medio; menos bajo',
-        nivel: (s) => escalonar(num(s, 'cabecera', 'R'), 22, 17),
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 22, medio: 17 },
+        valor: (s) => num(s, 'cabecera', 'R'),
       },
       {
         nombre: 'Ma',
         mide: 'Dinamismo y tendencia a la acción',
         // Iniciativa y rol activo: el centro de la competencia.
         peso: 2,
-        corte: 'dos o más alto; uno medio; ninguno bajo',
-        nivel: (s) => escalonar(num(s, 'ideacion', 'Ma'), 2, 1),
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 2, medio: 1 },
+        valor: (s) => num(s, 'ideacion', 'Ma'),
       },
       M,
     ],
@@ -411,14 +442,22 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         mide: 'Visión global frente al foco en el detalle',
         // Es la primera frase de la definición de Liderazgo.
         peso: 2,
-        corte: 'W desde el 45% alto; desde el 30% medio; menos bajo',
-        nivel: (s) => {
+        escala: {
+          forma: 'umbral',
+          mayorEsMejor: true,
+          alto: 0.45,
+          medio: 0.3,
+          decimales: 2,
+          porcentaje: true,
+        },
+        sobre: 'W sobre W más D',
+        valor: (s) => {
           const w = global(s);
           const d = num(s, 'procesamiento', 'D');
           // Sin D, W sobre el total daba 1 y la visión global salía alta por no
           // tener con qué compararla.
           if (w === null || d === null || w + d === 0) return null;
-          return escalonar(w / (w + d), 0.45, 0.3);
+          return w / (w + d);
         },
       },
       {
@@ -440,7 +479,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
          * alimentara la competencia que lleva la decisión en su definición.
          */
         peso: 2,
-        corte: 'estilo definido alto; ambigual bajo',
+        reglas: ['introversivo o extratensivo', 'no se usa', 'ambigual'],
         nivel: (s) => {
           const estilo = s.control_estres?.estilo;
           if (typeof estilo !== 'string' || !estilo) return null;
@@ -471,8 +510,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         mide: 'Ajuste perceptual y lectura de la realidad',
         // Sin lectura ajustada de la realidad no hay tarea bien coordinada.
         peso: 2,
-        corte: 'desde 0,80 alto; desde 0,70 medio; menos bajo',
-        nivel: (s) => escalonar(num(s, 'calidad_formal', 'XA_pct'), 0.8, 0.7),
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 0.8, medio: 0.7, decimales: 2 },
+        valor: (s) => num(s, 'calidad_formal', 'XA_pct'),
       },
       {
         nombre: 'M',
@@ -487,8 +526,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
          * arrancar) y R (orientación al resultado) se fueron a Proactividad.
          */
         peso: 2,
-        corte: 'tres o más alto; dos medio; menos bajo',
-        nivel: (s) => escalonar(num(s, 'determinantes', 'M'), 3, 2),
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 3, medio: 2 },
+        valor: (s) => num(s, 'determinantes', 'M'),
       },
     ],
   },
@@ -503,24 +542,18 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         mide: 'Intensidad y modulación emocional',
         // Modular la emoción es lo que la competencia pide.
         peso: 2,
-        corte: 'entre 2,5 y 5 alto; hasta 7 medio; fuera bajo',
-        nivel: (s) => {
-          const c = num(s, 'afectos', 'WSumC');
-          if (c === null) return null;
-          if (c >= 2.5 && c <= 5) return 3;
-          // Igual que en Lambda: el `c < 2.5` mandaba a medio el extremo de
-          // abajo, y un SumC de cero es alguien sin ninguna respuesta de color,
-          // con el afecto constreñido. Eso es bajo, no promedio.
-          if (c > 5 && c <= 7) return 2;
-          return 1;
-        },
+        // Igual que en Lambda: el extremo de abajo no es medio. Un SumC de cero
+        // es alguien sin ninguna respuesta de color, con el afecto constreñido,
+        // y eso es bajo y no promedio.
+        escala: { forma: 'banda', alto: [2.5, 5], medio: [5, 7], decimales: 1 },
+        valor: (s) => num(s, 'afectos', 'WSumC'),
       },
       { ...LAMBDA, mide: 'Control frente a evitación emocional' },
       {
         nombre: "C'",
         mide: 'Inhibición o restricción emocional',
-        corte: 'hasta 2 alto; hasta 4 medio; por encima bajo',
-        nivel: (s) => escalonar(num(s, 'afectos', 'SumC_prima'), 2, 4, false),
+        escala: { forma: 'umbral', mayorEsMejor: false, alto: 2, medio: 4 },
+        valor: (s) => num(s, 'afectos', 'SumC_prima'),
       },
     ],
   },
@@ -533,8 +566,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       {
         nombre: 'H',
         mide: 'Interés y apertura hacia los otros',
-        corte: 'tres o más alto; dos medio; menos bajo',
-        nivel: (s) => escalonar(num(s, 'autopercepcion', 'H_pura'), 3, 2),
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 3, medio: 2 },
+        valor: (s) => num(s, 'autopercepcion', 'H_pura'),
       },
       AISLAMIENTO,
       EGOCENTRISMO,
@@ -551,7 +584,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         mide: 'Tendencia activa frente a pasiva',
         // Activo frente a pasivo es la definición de Proactividad.
         peso: 2,
-        corte: 'más Ma que Mp alto; iguales medio; más Mp bajo',
+        reglas: ['Ma mayor que Mp', 'Ma igual a Mp', 'Mp mayor que Ma'],
         nivel: (s) => {
           const ma = num(s, 'ideacion', 'Ma');
           const mp = num(s, 'ideacion', 'Mp');
@@ -562,20 +595,14 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       {
         nombre: 'FM',
         mide: 'Impulso hacia la acción',
-        corte: 'entre 2 y 5 alto; uno medio; ninguno o más de cinco bajo',
-        nivel: (s) => {
-          const fm = num(s, 'determinantes', 'FM');
-          if (fm === null) return null;
-          if (fm >= 2 && fm <= 5) return 3;
-          if (fm === 1) return 2;
-          return 1;
-        },
+        escala: { forma: 'banda', alto: [2, 5], medio: [1, 1] },
+        valor: (s) => num(s, 'determinantes', 'FM'),
       },
       {
         nombre: 'R',
         mide: 'Nivel de productividad y compromiso con la tarea',
-        corte: 'doce o más alto; ocho a once medio; menos bajo',
-        nivel: (s) => escalonar(num(s, 'cabecera', 'R'), 12, 8),
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 12, medio: 8 },
+        valor: (s) => num(s, 'cabecera', 'R'),
       },
       FD,
     ],
@@ -610,6 +637,85 @@ export const PESOS_DE_FABRICA: Record<string, number> = Object.fromEntries(
     )
   )
 );
+
+/**
+ * Los números de corte que trae el código, por indicador.
+ *
+ * Se guardan bajo la misma clave que el peso: un indicador es el mismo tenga
+ * uno u otro, y así hay una sola forma de nombrarlo en toda la configuración.
+ */
+export const CORTES_DE_FABRICA: Record<string, number[]> = Object.fromEntries(
+  Object.entries(HOJAS).flatMap(([test, hoja]) =>
+    hoja.flatMap((c) =>
+      c.indicadores
+        .filter((i) => i.escala)
+        .map((i) => [claveDePeso(test, c.competencia, i.nombre), numerosDe(i.escala as Escala)])
+    )
+  )
+);
+
+/** Los cortes que rigen para un indicador: los movidos, y si no los del código. */
+function cortesQueRigen(
+  test: string,
+  competencia: string,
+  i: Indicador,
+  movidos: Record<string, number[]> | undefined
+): number[] | undefined {
+  if (!i.escala) return undefined;
+  return movidos?.[claveDePeso(test, competencia, i.nombre)] ?? numerosDe(i.escala);
+}
+
+/** Las tres bandas de un indicador en una línea, para el desglose del informe. */
+function comoSeLee(i: Indicador, n: number[] | undefined): string {
+  const partes = ([0, 1, 2] as const)
+    .map(
+      (cual) =>
+        [reglaDeBanda(i.escala, n, cual, i.reglas), ['alto', 'medio', 'bajo'][cual]] as const
+    )
+    .filter(([regla]) => regla && regla !== 'no se usa')
+    .map(([regla, banda]) => `${regla} ${banda}`);
+  return partes.join('; ');
+}
+
+/**
+ * Lo guardado, si sirve para calcular; null si no.
+ *
+ * Se rechaza una clave que no tenga escala, un arreglo de largo distinto al que
+ * esa escala pide, cualquier valor que no sea un número finito, y una escala
+ * cuyos números queden desordenados: en un umbral, alto y medio del lado que
+ * corresponde a su dirección, y en una banda, cada intervalo con el desde antes
+ * del hasta. Un corte dado vuelta no da un criterio distinto, da uno que no se
+ * cumple nunca.
+ */
+export function cortesDeCompetenciasValidos(
+  guardados: unknown
+): Record<string, number[]> | null {
+  if (!guardados || typeof guardados !== 'object' || Array.isArray(guardados)) return null;
+  const porClave = new Map<string, Escala>();
+  for (const [test, hoja] of Object.entries(HOJAS)) {
+    for (const c of hoja) {
+      for (const i of c.indicadores) {
+        if (i.escala) porClave.set(claveDePeso(test, c.competencia, i.nombre), i.escala);
+      }
+    }
+  }
+  const limpios: Record<string, number[]> = {};
+  for (const [clave, valor] of Object.entries(guardados as Record<string, unknown>)) {
+    const e = porClave.get(clave);
+    if (!e) return null;
+    if (!Array.isArray(valor) || valor.length !== numerosDe(e).length) return null;
+    const n = valor as unknown[];
+    if (!n.every((v) => typeof v === 'number' && Number.isFinite(v))) return null;
+    const num = n as number[];
+    if (e.forma === 'umbral') {
+      if (e.mayorEsMejor ? num[0] < num[1] : num[0] > num[1]) return null;
+    } else if (num[0] > num[1] || num[2] > num[3]) {
+      return null;
+    }
+    limpios[clave] = num;
+  }
+  return limpios;
+}
 
 /** Hasta cuánto puede pesar un indicador. */
 export const PESO_MAXIMO = 5;
@@ -859,14 +965,18 @@ export function calcularCompetencias(
   const base = protocoloAlcanza(s, proyectivo);
 
   const medidas = juego.map((c) => {
-    const renglones = c.indicadores.map((i) => ({
-      indicador: i.nombre,
-      mide: i.mide,
-      nivel: i.nivel(s),
-      corte: i.corte,
-      peso: ctx.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ?? i.peso ?? 1,
-      datos: leidoPor(s, i.nivel),
-    }));
+    const renglones = c.indicadores.map((i) => {
+      const n = cortesQueRigen(test, c.competencia, i, ctx.cortesCompetencias);
+      const leer = (sumario: SumarioCrudo) => nivelDe(i, sumario, n);
+      return {
+        indicador: i.nombre,
+        mide: i.mide,
+        nivel: leer(s),
+        corte: comoSeLee(i, n),
+        peso: ctx.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ?? i.peso ?? 1,
+        datos: leidoPor(s, leer),
+      };
+    });
 
     // Con el protocolo corto o evitativo no se puntúa ninguna: el número
     // saldría de indicadores que están en cero porque el protocolo no los

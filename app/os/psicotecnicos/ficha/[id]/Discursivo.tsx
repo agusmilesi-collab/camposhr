@@ -27,11 +27,14 @@ export default function Discursivo({
   nivel,
   actual,
   futura,
+  escalones,
 }: {
   id: string;
   nivel: string | null;
   actual: string | null;
   futura: string | null;
+  /** Qué dice cada escalón, con lo que rige desde Configuración → Potencial. */
+  escalones: Record<string, string>;
 }) {
   const router = useRouter();
   const [puesto, setPuesto] = useState({
@@ -71,6 +74,7 @@ export default function Discursivo({
       </p>
 
       <Piramide
+        textos={escalones}
         nivel={puesto.nivel}
         elegir={(n: NivelDiscursivo) =>
           // Volver a apretar el que ya estaba lo desmarca: es la forma de

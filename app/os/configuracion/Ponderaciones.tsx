@@ -1,24 +1,31 @@
 import Pesos, { type Hoja } from './Pesos';
-import { HOJAS, PESOS_DE_FABRICA, claveDePeso } from '@/lib/competencias';
+import { HOJAS, PESOS_DE_FABRICA, claveDePeso, numerosDe } from '@/lib/competencias';
 import { loQueRige } from '@/lib/informe';
 
 /**
- * El velocímetro: cuánto pesa cada indicador dentro de su competencia.
+ * El velocímetro: dónde corta cada indicador y cuánto pesa en su competencia.
  *
  * Se llama así por lo que produce, que es la aguja de cada competencia en el
  * informe.
  *
- * El puntaje de una competencia es el promedio de sus indicadores, cada uno por
- * su peso. Los pesos son criterio clínico: que la calidad del vínculo valga el
- * doble que el índice de egocentrismo en Habilidad interpersonal es una decisión
- * sobre qué define esa competencia, no una cuenta.
+ * Cada indicador cae en una de tres bandas y aporta cien, cincuenta o cero. El
+ * puntaje de la competencia es el promedio de esos aportes, cada uno por su
+ * peso. Las dos cosas que deciden ese número se editan acá: **dónde corta** cada
+ * indicador entre bajo, medio y alto, y **cuánto pesa** frente a los otros.
+ *
+ * Los pesos son criterio clínico: que la calidad del vínculo valga el doble que
+ * el índice de egocentrismo en Habilidad interpersonal es una decisión sobre qué
+ * define esa competencia, no una cuenta.
  *
  * Las filas se arman acá y no en el componente porque cada indicador trae su
- * función de nivel, que no viaja al navegador.
+ * función de nivel, que no viaja al navegador. Lo que viaja es la escala, que
+ * es dato: con eso la pantalla escribe las tres bandas y deja mover sus
+ * números.
  */
 export default async function Ponderaciones() {
   const rige = await loQueRige();
   const movidos = rige.pesos;
+  const cortes = rige.cortesCompetencias;
 
   const hojas: Hoja[] = Object.entries(HOJAS).map(([test, hoja]) => ({
     test,
@@ -31,7 +38,11 @@ export default async function Ponderaciones() {
           clave,
           nombre: i.nombre,
           mide: i.mide,
-          corte: i.corte,
+          escala: i.escala ?? null,
+          reglas: i.reglas ? [...i.reglas] : null,
+          sobre: i.sobre ?? null,
+          cortes: i.escala ? (cortes[clave] ?? numerosDe(i.escala)) : [],
+          cortesFabrica: i.escala ? numerosDe(i.escala) : [],
           peso: movidos[clave] ?? PESOS_DE_FABRICA[clave],
           fabrica: PESOS_DE_FABRICA[clave],
         };
@@ -39,5 +50,11 @@ export default async function Ponderaciones() {
     })),
   }));
 
-  return <Pesos hojas={hojas} tocado={Object.keys(movidos).length > 0} />;
+  return (
+    <Pesos
+      hojas={hojas}
+      tocado={Object.keys(movidos).length > 0}
+      cortesTocados={Object.keys(cortes).length > 0}
+    />
+  );
 }

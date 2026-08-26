@@ -23,7 +23,11 @@ import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/inf
 import { bandasDeLaHoja } from '@/lib/redacciones';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
-import { llevaDiscursivo, TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
+import {
+  llevaDiscursivo,
+  nivelesQueRigen,
+  TEST as TEST_DISCURSIVO,
+} from '@/lib/discursivo';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 import { tieneTexto } from '@/lib/texto-rico';
 import BenzigerHoja from './BenzigerHoja';
@@ -416,6 +420,9 @@ function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
               nivel={f.discursivo?.nivel ?? null}
               actual={f.discursivo?.actual ?? null}
               futura={f.discursivo?.futura ?? null}
+              escalones={Object.fromEntries(
+                nivelesQueRigen(rige.niveles).map((n) => [n.nombre, n.que])
+              )}
             />
           </div>
         </section>
