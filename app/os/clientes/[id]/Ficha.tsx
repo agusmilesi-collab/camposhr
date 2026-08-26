@@ -95,58 +95,69 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
               </span>
             )}
           </h2>
-          <div className="os-portal-acciones">
-            {/* El enlace del portal vive con el cliente: es suyo y es lo que se
-                le manda cuando pregunta cómo viene. */}
-            {cliente.token ? (
-              <>
-                <a
-                  className="os-boton"
-                  href={`${PORTAL}/${cliente.token}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Ver portal
-                </a>
-                <CopyLink url={`${PORTAL}/${cliente.token}`} texto="Copiar enlace" />
-              </>
-            ) : (
-              <span className="os-tabla-flojo">sin portal</span>
-            )}
-            {/* Un interruptor y no dos botones: lo que se lee de un vistazo es
-                en qué estado está, y cambiarlo es un toque. El color lo dice
-                antes que el texto. */}
-            {cliente.token && (
-              <button
-                className={`os-boton os-boton-marcado os-sello-estado ${
-                  cliente.informesVisibles ? 'os-verde' : 'os-rojo'
-                }`}
-                aria-pressed={cliente.informesVisibles}
-                disabled={cambiandoInformes}
-                onClick={cambiarInformes}
-                title={
-                  cliente.informesVisibles
-                    ? 'Tocar para que el cliente deje de poder abrir los informes desde su portal.'
-                    : 'Tocar para que el cliente pueda abrir los informes desde su portal.'
-                }
-              >
-                {cambiandoInformes
-                  ? '…'
-                  : cliente.informesVisibles
-                    ? 'Informes a la vista'
-                    : 'Informes ocultos'}
-              </button>
-            )}
-            <button className="os-boton" onClick={() => setEditando(true)}>
-              Editar
-            </button>
-            {/* Un cliente sin un solo pedido ni una cotización enviada no se
-                puede activar a mano: lo que lo activa es que entre trabajo. */}
-            {(cliente.activa || cliente.pedidos > 0 || cliente.cotizaciones > 0) && (
-              <button className="os-boton" disabled={tocando} onClick={cambiarEstado}>
-                {tocando ? '…' : cliente.activa ? 'Desactivar' : 'Activar'}
-              </button>
-            )}
+          {/* Dos grupos rotulados y no cinco botones en fila: tres son sobre lo
+              que el cliente ve en su portal y dos sobre el cliente en el
+              sistema, y juntos se leían como una sola lista de cosas que hacer
+              acá. Los del cliente van contra el margen derecho. */}
+          <div className="os-cliente-acciones">
+            <div className="os-cliente-acciones-bloque">
+              <span className="os-cliente-acciones-rotulo">Portal</span>
+              {/* El enlace del portal vive con el cliente: es suyo y es lo que
+                  se le manda cuando pregunta cómo viene. */}
+              {cliente.token ? (
+                <div className="os-portal-acciones">
+                  <a
+                    className="os-boton"
+                    href={`${PORTAL}/${cliente.token}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Ver portal
+                  </a>
+                  <CopyLink url={`${PORTAL}/${cliente.token}`} texto="Copiar enlace" />
+                  {/* Un interruptor y no dos botones: lo que se lee de un
+                      vistazo es en qué estado está, y cambiarlo es un toque. El
+                      color lo dice antes que el texto. */}
+                  <button
+                    className={`os-boton os-boton-marcado os-sello-estado ${
+                      cliente.informesVisibles ? 'os-verde' : 'os-rojo'
+                    }`}
+                    aria-pressed={cliente.informesVisibles}
+                    disabled={cambiandoInformes}
+                    onClick={cambiarInformes}
+                    title={
+                      cliente.informesVisibles
+                        ? 'Tocar para que el cliente deje de poder abrir los informes desde su portal.'
+                        : 'Tocar para que el cliente pueda abrir los informes desde su portal.'
+                    }
+                  >
+                    {cambiandoInformes
+                      ? '…'
+                      : cliente.informesVisibles
+                        ? 'Informes a la vista'
+                        : 'Informes ocultos'}
+                  </button>
+                </div>
+              ) : (
+                <span className="os-tabla-flojo">sin portal</span>
+              )}
+            </div>
+
+            <div className="os-cliente-acciones-bloque os-cliente-acciones-suyas">
+              <span className="os-cliente-acciones-rotulo">Cliente</span>
+              <div className="os-portal-acciones">
+                <button className="os-boton" onClick={() => setEditando(true)}>
+                  Editar
+                </button>
+                {/* Un cliente sin un solo pedido ni una cotización enviada no se
+                    puede activar a mano: lo que lo activa es que entre trabajo. */}
+                {(cliente.activa || cliente.pedidos > 0 || cliente.cotizaciones > 0) && (
+                  <button className="os-boton" disabled={tocando} onClick={cambiarEstado}>
+                    {tocando ? '…' : cliente.activa ? 'Desactivar' : 'Activar'}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
