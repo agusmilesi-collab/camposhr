@@ -8159,3 +8159,95 @@ textarea.os-exigencia-notas {
   letter-spacing: 0;
   color: var(--os-suave);
 }
+
+/* Raven y análisis discursivo, uno al lado del otro: cada uno ocupa poco y
+   apilados dejaban media pantalla vacía a la derecha. Se apilan cuando el par
+   deja de entrar sin que las columnas se aprieten. */
+.os-tests-fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+/* La fila de encabezados de la escala del Raven: dice la unidad una vez. */
+.os-raven-cabeza {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+  background: var(--os-panel-2);
+}
+
+/* Los cuatro estratos como opciones: se elige uno y se ve cuál está puesto. */
+.os-estratos-elegir {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  border: 1px solid var(--os-linea-suave);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.os-estratos-elegir li + li {
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-estrato-opcion {
+  display: grid;
+  grid-template-columns: 26px 104px minmax(0, 1fr) 84px;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--os-suave);
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-estrato-opcion:hover:not(:disabled) {
+  background: var(--os-panel-2);
+}
+
+/* El elegido, con la misma marca que el rango del Raven: fondo, texto firme y
+   una barra al costado. */
+.os-estrato-opcion.suyo {
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--os-activo);
+}
+
+.os-estrato-numeral {
+  font-variant-numeric: tabular-nums;
+}
+
+.os-estrato-nombre {
+  color: var(--os-tinta);
+}
+
+.os-estrato-que,
+.os-estrato-proceso {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-estrato-proceso {
+  text-align: right;
+  font-weight: 400;
+}
+
+/* La pestaña de tests: sus paneles cierran todos contra el mismo borde, más
+   ancho que el de las otras, porque abajo van dos columnas. */
+.os-tests {
+  max-width: 1180px;
+}
+
+.os-tests .os-cierre {
+  max-width: none;
+}

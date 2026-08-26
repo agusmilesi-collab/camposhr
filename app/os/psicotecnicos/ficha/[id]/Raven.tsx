@@ -201,17 +201,25 @@ export default function Raven({
         <Origen origen={origen} sesion={sesion} raw={raw} tardo={tardo} />
       </div>
 
+      {/* La unidad va una vez, en el encabezado: repetir "aciertos" y "de cada
+          cien candidatos" en las cinco filas era lo que hacía ancha la tabla. */}
       <ol className="os-raven-escala">
+        <li className="os-raven-nivel os-raven-cabeza" aria-hidden="true">
+          <span className="os-raven-numeral" />
+          <span className="os-raven-nombre">Rango</span>
+          <span className="os-raven-tramo">Aciertos</span>
+          <span className="os-raven-frecuencia">Candidatos</span>
+        </li>
         {rangos.map((r) => {
           const t = tramos.get(r.numeral);
           return (
             <li key={r.numeral} className={`os-raven-nivel${suyo === r.numeral ? ' suyo' : ''}`}>
               <span className="os-raven-numeral">{r.numeral}</span>
               <span className="os-raven-nombre">{r.nombre}</span>
-              <span className="os-raven-tramo">
-                {t ? `${t.desde} a ${t.hasta} aciertos` : '—'}
+              <span className="os-raven-tramo">{t ? `${t.desde} a ${t.hasta}` : '—'}</span>
+              <span className="os-raven-frecuencia">
+                {r.frecuencia.replace(/^1 de cada /, '1 cada ').replace(/ candidatos$/, '')}
               </span>
-              <span className="os-raven-frecuencia">{r.frecuencia}</span>
             </li>
           );
         })}

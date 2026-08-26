@@ -21,7 +21,6 @@ import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
 import { bandasDeLaHoja } from '@/lib/redacciones';
-import { bandasDe } from '@/lib/exigencia';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
 import {
@@ -369,7 +368,10 @@ function BenzigerVista({ f, id }: { f: Ficha; id: string }) {
 function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
   const c = f.cabecera;
   return (
-    <>
+    // Los paneles de esta pestaña comparten ancho: con el tope de 820 px de
+    // `os-cierre`, Administrados quedaba más angosto que la fila de abajo y las
+    // tres cajas no cerraban contra el mismo borde.
+    <div className="os-tests">
       <section className="os-panel os-cierre">
         <div className="os-panel-top">
           <h2>Administrados</h2>
@@ -391,6 +393,9 @@ function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
         </div>
       </section>
 
+      {/* Los dos que quedan van en la misma fila: cada uno ocupa poco y
+          apilados dejaban media pantalla vacía a la derecha. */}
+      <div className="os-tests-fila">
       <section className="os-panel os-cierre">
         <div className="os-panel-top">
           <h2>Raven</h2>
@@ -419,15 +424,17 @@ function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
             <Discursivo
               id={id}
               nivel={f.discursivo?.nivel ?? null}
-              actual={f.discursivo?.actual ?? null}
-              futura={f.discursivo?.futura ?? null}
-              escalones={Object.fromEntries(
-                nivelesQueRigen(rige.niveles).map((n) => [n.nombre, n.que])
-              )}
+              niveles={nivelesQueRigen(rige.niveles).map((n) => ({
+                nombre: n.nombre,
+                romano: n.romano,
+                procesamiento: n.procesamiento,
+                que: n.que,
+              }))}
             />
           </div>
         </section>
       )}
+      </div>
 
       {f.cualitativos.map((t) => (
         <section key={t.id} className="os-panel">
@@ -439,7 +446,7 @@ function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
           </div>
         </section>
       ))}
-    </>
+    </div>
   );
 }
 
@@ -530,27 +537,6 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
 
   return (
     <>
-      {/* Con qué vara se leen los puntajes, dicho y no editable: la exigencia
-          se elige por pedido, en Clientes, porque apartarse de la default es
-          una decisión del puesto y no de un candidato suelto. */}
-      <p className="os-form-nota os-exigencia-aviso">
-        Los puntajes se leen con la exigencia <strong>{informe.exigencia.nombre}</strong>:{' '}
-        {bandasDe(informe.exigencia)
-          .slice()
-          .reverse()
-          .map(
-            (b) =>
-              `${b.nombre} ${
-                b.desde === 0 ? `menos de ${informe.exigencia.adecuado}` : `${b.desde} a ${b.hasta}`
-              }`
-          )
-          .join(' · ')}
-        .{' '}
-        {c.pedido_id && (
-          <Link href={`/os/pedidos/${c.pedido_id}`}>Cambiarla para todo el pedido</Link>
-        )}
-      </p>
-
       <section className="os-panel os-cierre os-informe-cierre">
         <div className="os-panel-top">
           <h2>Recomendación</h2>
