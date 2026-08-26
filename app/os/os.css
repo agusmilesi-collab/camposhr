@@ -8293,3 +8293,13 @@ textarea.os-exigencia-notas {
 .os-tests-fila > .os-panel > .os-panel-cuerpo {
   flex: 1;
 }
+
+/* La pestaña de tests: sus paneles cierran todos contra el mismo borde, más
+   ancho que el de las otras, porque abajo van dos columnas. */
+.os-tests {
+  max-width: 1180px;
+}
+
+.os-tests .os-cierre {
+  max-width: none;
+}

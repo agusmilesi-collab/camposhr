@@ -88,7 +88,7 @@ export default async function Inicio() {
             </Link>
           </div>
           {deHoy.map((e) => (
-            <Link className="os-fila os-fila-enlace" key={e.id} href={`/os/psicotecnicos/entrevista/${e.id}`}>
+            <Link className="os-fila os-fila-enlace" key={e.id} href={`/os/psicotecnicos/ficha/${e.id}?ver=entrevista`}>
               <span className="os-hoy-hora">{soloHora(e.fechaEntrevista) ?? 'sin hora'}</span>
               <div className="os-fila-cuerpo">
                 <div className="os-fila-titulo">{e.nombre}</div>

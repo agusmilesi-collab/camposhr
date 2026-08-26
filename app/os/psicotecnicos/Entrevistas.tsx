@@ -231,7 +231,7 @@ function Tarjeta({
               y en la hoja está el botón para cerrarla antes. */}
           <Link
             className="os-boton os-boton-firme os-tarjeta-accion"
-            href={`/os/psicotecnicos/entrevista/${e.id}`}
+            href={`/os/psicotecnicos/ficha/${e.id}?ver=entrevista`}
           >
             Entrevistar
           </Link>
