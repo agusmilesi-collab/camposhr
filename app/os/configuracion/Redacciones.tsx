@@ -52,11 +52,14 @@ export default async function Redacciones() {
         cuando: cuandoDe(clave as ClaveDeTexto, cortes),
         dice: tres(escritos[clave]?.dice ?? t.dice),
         recomienda: tres(escritos[clave]?.recomienda ?? t.recomienda),
-        // La del Zulliger se muestra vacía mientras no se escriba: vacía quiere
-        // decir "vale la del Rorschach", que es lo que pasa hoy en casi todas.
+        // Las del Zulliger se muestran vacías mientras no se escriban: vacío
+        // quiere decir "vale lo del Rorschach", que es lo que pasa hoy en la
+        // mayoría hasta que se carguen las del documento de ese test.
+        diceZ: tres(escritos[clave]?.diceZ ?? t.zulliger?.dice),
         recomiendaZ: tres(escritos[clave]?.recomiendaZ ?? t.zulliger?.recomienda),
         diceFabrica: tres(t.dice),
         recomiendaFabrica: tres(t.recomienda),
+        diceZFabrica: tres(t.zulliger?.dice),
         recomiendaZFabrica: tres(t.zulliger?.recomienda),
         corte: corteDeTest('Rorschach'),
         corteZ: corteDeTest('Zulliger'),

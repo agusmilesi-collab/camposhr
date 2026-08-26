@@ -6684,3 +6684,34 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Los dos tests de Redacciones. Van como botones y no como otra fila de
+   pestañas: arriba ya hay una (Baterías, Baremos, Velocímetro, Redacciones) y
+   dos filas iguales una debajo de la otra no dejaban ver cuál manda sobre cuál. */
+.os-test-elegir {
+  display: inline-flex;
+  gap: 0;
+  margin: 0 0 20px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  padding: 3px;
+}
+.os-test-boton {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 7px 20px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--muted);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.os-test-boton:hover { color: var(--ink); }
+.os-test-puesto,
+.os-test-puesto:hover {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 600;
+}
