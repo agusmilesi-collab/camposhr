@@ -2518,6 +2518,14 @@ textarea.os-campo {
   resize: vertical;
 }
 
+/* El desplegable del OS adentro de un formulario mide lo que miden los campos
+   de al lado: suelto se encoge a lo que dice la opción elegida, y la columna
+   quedaba con un control de la mitad del ancho que los demás. */
+.os-form .os-campo-bloque > .os-desplegable,
+.os-form .os-campo-bloque > .os-desplegable .os-desplegable-boton {
+  width: 100%;
+}
+
 .os-campo[type='file'] {
   height: auto;
   padding: 7px 9px;
