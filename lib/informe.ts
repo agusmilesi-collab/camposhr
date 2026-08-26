@@ -16,6 +16,7 @@ import {
   calcularCompetencias,
   pesosValidos,
   cortesDeCompetenciasValidos,
+  direccionesValidas,
   protocoloAlcanza,
   type Competencia,
 } from '@/lib/competencias';
@@ -276,6 +277,8 @@ export type Regulacion = {
   cortes: Cortes;
   /** Dónde corta cada indicador del velocímetro, por `claveDePeso`. */
   cortesCompetencias: Record<string, number[]>;
+  /** Hacia dónde es mejor cada indicador, cuando se invirtió. */
+  direcciones: Record<string, boolean>;
   /** Los textos de los cuatro estratos del potencial, si se reescribieron. */
   niveles: Record<string, Partial<TextoDeNivel>>;
   /** Los perfiles de exigencia guardados. El informe usa el que le toque. */
@@ -288,17 +291,19 @@ const DE_FABRICA: Regulacion = {
   textos: {},
   cortes: {},
   cortesCompetencias: {},
+  direcciones: {},
   niveles: {},
   exigencias: [EXIGENCIA_DE_FABRICA],
 };
 
 export async function loQueRige(): Promise<Regulacion> {
-  const [r, p, t, c, k, n, x] = await Promise.all([
+  const [r, p, t, c, k, dir, n, x] = await Promise.all([
     ajuste('raven_rangos'),
     ajuste('competencias_pesos'),
     ajuste('redacciones_textos'),
     ajuste('redacciones_cortes'),
     ajuste('competencias_cortes'),
+    ajuste('competencias_direccion'),
     ajuste('discursivo_niveles'),
     exigenciasGuardadas(),
   ]);
@@ -308,6 +313,7 @@ export async function loQueRige(): Promise<Regulacion> {
     textos: textosValidos(t) ?? {},
     cortes: cortesValidos(c) ?? {},
     cortesCompetencias: cortesDeCompetenciasValidos(k) ?? {},
+    direcciones: direccionesValidas(dir) ?? {},
     niveles: nivelesValidos(n) ?? {},
     exigencias: x.length > 0 ? x : [EXIGENCIA_DE_FABRICA],
   };
@@ -336,6 +342,7 @@ function tieneAlgo(c: Cuatro | null): boolean {
 
 export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
   const { rangos, pesos, textos, cortes, cortesCompetencias, niveles, exigencias } = rige;
+  const direcciones = rige.direcciones;
 
   const c = f.cabecera;
   /**
@@ -444,6 +451,7 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
           rangos,
           pesos,
           cortesCompetencias,
+          direcciones,
         },
         proyectivoDe(f)
       )

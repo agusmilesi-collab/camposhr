@@ -6,7 +6,11 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { rangosValidos } from '@/lib/raven';
-import { cortesDeCompetenciasValidos, pesosValidos } from '@/lib/competencias';
+import {
+  cortesDeCompetenciasValidos,
+  direccionesValidas,
+  pesosValidos,
+} from '@/lib/competencias';
 import { cortesValidos, textosValidos } from '@/lib/redacciones';
 import { nivelesValidos } from '@/lib/discursivo';
 
@@ -24,6 +28,8 @@ const MOTIVO = {
     'Cada corte tiene que ser un número de una lectura que entre contra un número fijo. Las que dependen del estilo o de la cantidad de respuestas no se mueven desde acá.',
   competencias_cortes:
     'Cada corte tiene que ser un número de un indicador que corte por umbral, y el de alto tiene que quedar del lado que le corresponde al de medio.',
+  competencias_direccion:
+    'Hacia dónde es mejor solo se elige en los indicadores que cortan por umbral: en los que esperan una banda, desviarse para cualquiera de los dos lados es peor.',
   discursivo_niveles:
     'Cada nivel tiene que ser uno de los cuatro que existen, con textos de hasta 2000 caracteres, y ninguno puede quedarse sin su resumen.',
 };
@@ -66,6 +72,7 @@ export async function POST(req: Request) {
     'redacciones_textos',
     'redacciones_cortes',
     'competencias_cortes',
+    'competencias_direccion',
     'discursivo_niveles',
   ];
   if (!CLAVES.includes(clave)) {
@@ -106,9 +113,11 @@ export async function POST(req: Request) {
           ? cortesValidos(valor)
           : clave === 'competencias_cortes'
             ? cortesDeCompetenciasValidos(valor)
-            : clave === 'discursivo_niveles'
-              ? nivelesValidos(valor)
-              : textosValidos(valor);
+            : clave === 'competencias_direccion'
+              ? direccionesValidas(valor)
+              : clave === 'discursivo_niveles'
+                ? nivelesValidos(valor)
+                : textosValidos(valor);
   if (!limpios) {
     return NextResponse.json(
       {

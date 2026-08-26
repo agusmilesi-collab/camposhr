@@ -23,6 +23,7 @@ import type { SumarioCrudo } from '@/lib/redacciones';
 import { percentilDe, puntajesPorRango, rangoDe, type Rango } from '@/lib/raven';
 import {
   comoNumero,
+  conDireccion,
   nivelPorEscala,
   numerosDe,
   reglaDeBanda,
@@ -30,7 +31,7 @@ import {
   type Nivel,
 } from '@/lib/escalas';
 
-export { numerosDe, comoNumero, reglaDeBanda, type Escala };
+export { numerosDe, comoNumero, reglaDeBanda, conDireccion, type Escala };
 
 
 /**
@@ -74,6 +75,12 @@ export type Contexto = {
    * números de la escala de ese indicador, en el orden de {@link numerosDe}.
    */
   cortesCompetencias?: Record<string, number[]>;
+  /**
+   * Hacia dónde es mejor cada indicador, si se invirtió desde Sistema.
+   *
+   * Solo las diferencias, por `claveDePeso`. `true` es que más es mejor.
+   */
+  direcciones?: Record<string, boolean>;
 };
 
 function num(s: SumarioCrudo, seccion: string, clave: string): number | null {
@@ -184,9 +191,15 @@ type Indicador = {
   sobre?: string;
 };
 
-/** La banda de un indicador con los cortes que rigen para él. */
-function nivelDe(i: Indicador, s: SumarioCrudo, n: number[] | undefined): Nivel {
-  if (i.escala && i.valor) return nivelPorEscala(i.valor(s), i.escala, n ?? numerosDe(i.escala));
+/** La banda de un indicador con los cortes y la dirección que rigen para él. */
+function nivelDe(
+  i: Indicador,
+  s: SumarioCrudo,
+  n: number[] | undefined,
+  e: Escala | undefined
+): Nivel {
+  const escala = e ?? i.escala;
+  if (escala && i.valor) return nivelPorEscala(i.valor(s), escala, n ?? numerosDe(escala));
   return i.nivel ? i.nivel(s) : null;
 }
 
@@ -665,12 +678,48 @@ function cortesQueRigen(
   return movidos?.[claveDePeso(test, competencia, i.nombre)] ?? numerosDe(i.escala);
 }
 
+/** La escala que rige: la del código con la dirección que se haya elegido. */
+export function escalaQueRige(
+  test: string,
+  competencia: string,
+  i: Indicador,
+  direcciones: Record<string, boolean> | undefined
+): Escala | undefined {
+  if (!i.escala) return undefined;
+  return conDireccion(i.escala, direcciones?.[claveDePeso(test, competencia, i.nombre)]);
+}
+
+/**
+ * Lo guardado para las direcciones, si sirve; null si no.
+ *
+ * Se rechaza una clave que no corte por umbral: una banda no tiene un "hacia
+ * arriba" que invertir, y guardarle una dirección sería guardar algo que nadie
+ * va a leer.
+ */
+export function direccionesValidas(guardadas: unknown): Record<string, boolean> | null {
+  if (!guardadas || typeof guardadas !== 'object' || Array.isArray(guardadas)) return null;
+  const conUmbral = new Set<string>();
+  for (const [test, hoja] of Object.entries(HOJAS)) {
+    for (const c of hoja) {
+      for (const i of c.indicadores) {
+        if (i.escala?.forma === 'umbral') conUmbral.add(claveDePeso(test, c.competencia, i.nombre));
+      }
+    }
+  }
+  const limpias: Record<string, boolean> = {};
+  for (const [clave, valor] of Object.entries(guardadas as Record<string, unknown>)) {
+    if (!conUmbral.has(clave) || typeof valor !== 'boolean') return null;
+    limpias[clave] = valor;
+  }
+  return limpias;
+}
+
 /** Las tres bandas de un indicador en una línea, para el desglose del informe. */
-function comoSeLee(i: Indicador, n: number[] | undefined): string {
+function comoSeLee(i: Indicador, n: number[] | undefined, e?: Escala): string {
   const partes = ([0, 1, 2] as const)
     .map(
       (cual) =>
-        [reglaDeBanda(i.escala, n, cual, i.reglas), ['alto', 'medio', 'bajo'][cual]] as const
+        [reglaDeBanda(e ?? i.escala, n, cual, i.reglas), ['alto', 'medio', 'bajo'][cual]] as const
     )
     .filter(([regla]) => regla && regla !== 'no se usa')
     .map(([regla, banda]) => `${regla} ${banda}`);
@@ -967,12 +1016,13 @@ export function calcularCompetencias(
   const medidas = juego.map((c) => {
     const renglones = c.indicadores.map((i) => {
       const n = cortesQueRigen(test, c.competencia, i, ctx.cortesCompetencias);
-      const leer = (sumario: SumarioCrudo) => nivelDe(i, sumario, n);
+      const e = escalaQueRige(test, c.competencia, i, ctx.direcciones);
+      const leer = (sumario: SumarioCrudo) => nivelDe(i, sumario, n, e);
       return {
         indicador: i.nombre,
         mide: i.mide,
         nivel: leer(s),
-        corte: comoSeLee(i, n),
+        corte: comoSeLee(i, n, e),
         peso: ctx.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ?? i.peso ?? 1,
         datos: leidoPor(s, leer),
       };

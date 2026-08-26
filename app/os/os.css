@@ -8399,3 +8399,28 @@ textarea.os-exigencia-notas {
   font-size: 0.76rem;
   color: var(--os-suave);
 }
+
+/* Si pasar el corte es positivo o negativo: el mismo sello de estado que el
+   resto del sistema, en verde o en rojo, y apretable. Al darlo vuelta los dos
+   cortes se intercambian solos. */
+.os-mejor {
+  padding: 3px 9px 3px 7px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.os-mejor:hover:not(:disabled) {
+  border-color: var(--os-linea);
+  background: var(--os-panel-2);
+}
+
+/* Dado vuelta respecto de lo original: se marca en el botón mismo, que es lo
+   que se movió, y no con una etiqueta al lado que en esta columna no entra. */
+.os-mejor-movido {
+  border-color: var(--os-ambar);
+  border-style: dashed;
+}

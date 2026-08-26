@@ -1,5 +1,11 @@
 import Pesos, { type Hoja } from './Pesos';
-import { HOJAS, PESOS_DE_FABRICA, claveDePeso, numerosDe } from '@/lib/competencias';
+import {
+  HOJAS,
+  PESOS_DE_FABRICA,
+  claveDePeso,
+  conDireccion,
+  numerosDe,
+} from '@/lib/competencias';
 import { loQueRige } from '@/lib/informe';
 
 /**
@@ -26,6 +32,7 @@ export default async function Ponderaciones() {
   const rige = await loQueRige();
   const movidos = rige.pesos;
   const cortes = rige.cortesCompetencias;
+  const direcciones = rige.direcciones;
 
   const hojas: Hoja[] = Object.entries(HOJAS).map(([test, hoja]) => ({
     test,
@@ -38,7 +45,11 @@ export default async function Ponderaciones() {
           clave,
           nombre: i.nombre,
           mide: i.mide,
-          escala: i.escala ?? null,
+          // La escala con la dirección que rige, que puede no ser la del
+          // código: hacia dónde es mejor se elige por indicador.
+          escala: i.escala ? conDireccion(i.escala, direcciones[clave]) : null,
+          // La del código, para poder decir que se invirtió.
+          escalaFabrica: i.escala ?? null,
           reglas: i.reglas ? [...i.reglas] : null,
           sobre: i.sobre ?? null,
           cortes: i.escala ? (cortes[clave] ?? numerosDe(i.escala)) : [],
@@ -54,7 +65,7 @@ export default async function Ponderaciones() {
     <Pesos
       hojas={hojas}
       tocado={Object.keys(movidos).length > 0}
-      cortesTocados={Object.keys(cortes).length > 0}
+      cortesTocados={Object.keys(cortes).length > 0 || Object.keys(direcciones).length > 0}
     />
   );
 }
