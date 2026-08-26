@@ -186,6 +186,17 @@ export default function Exigencias({
 
   return (
     <>
+      <div className="os-exigencia-cabecera">
+        {error && !editando && <p className="os-form-error">{error}</p>}
+        <button
+          className="os-boton os-boton-azul"
+          disabled={guardando || editando === 'nueva'}
+          onClick={() => abrir(null)}
+        >
+          Nueva exigencia
+        </button>
+      </div>
+
       <div className="os-redacciones">
         {exigencias.map((e) => {
           const abierta = editando === e.id;
@@ -206,54 +217,19 @@ export default function Exigencias({
                     </span>
                   )}
                 </h3>
-                <span className="os-columna-monto">
-                  {e.pedidos === 0 && e.candidatos === 0
-                    ? 'sin usar'
-                    : [
-                        e.pedidos > 0 && `${e.pedidos} ${e.pedidos === 1 ? 'pedido' : 'pedidos'}`,
-                        e.candidatos > 0 &&
-                          `${e.candidatos} ${e.candidatos === 1 ? 'candidato' : 'candidatos'}`,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                </span>
-
-                {/* Las acciones del perfil van en su encabezado y no debajo de
-                    la barra: ahí quedaban a la misma altura que el texto de la
-                    nota, como si fueran parte de ella. */}
-                {!abierta && (
-                  <span className="os-exigencia-acciones">
-                    <button
-                      className="os-boton"
-                      disabled={!hayTabla || guardando}
-                      onClick={() => abrir(e)}
-                      title={hayTabla ? undefined : 'Todavía no hay ninguna guardada'}
-                    >
-                      Mover los cortes
-                    </button>
-                    {!e.predeterminada && hayTabla && (
-                      <>
-                        <button
-                          className="os-boton"
-                          disabled={guardando}
-                          onClick={() => mandar({ id: e.id, predeterminar: true })}
-                        >
-                          Poner de default
-                        </button>
-                        <button
-                          className="os-enlace-boton"
-                          disabled={guardando || e.pedidos > 0 || e.candidatos > 0}
-                          title={
-                            e.pedidos > 0 || e.candidatos > 0
-                              ? 'La están usando. Cambiásela a esos pedidos antes de borrarla.'
-                              : undefined
-                          }
-                          onClick={() => mandar({ id: e.id, borrar: true })}
-                        >
-                          Borrar
-                        </button>
-                      </>
-                    )}
+                {/* Cuántos la usan, solo cuando alguno la usa: "sin usar" no
+                    dice nada que valga el lugar que ocupa, y lo que importa de
+                    este número es que mover un corte cambia cómo se leen esos
+                    pedidos. */}
+                {(e.pedidos > 0 || e.candidatos > 0) && (
+                  <span className="os-columna-monto">
+                    {[
+                      e.pedidos > 0 && `${e.pedidos} ${e.pedidos === 1 ? 'pedido' : 'pedidos'}`,
+                      e.candidatos > 0 &&
+                        `${e.candidatos} ${e.candidatos === 1 ? 'candidato' : 'candidatos'}`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </span>
                 )}
               </div>
@@ -327,7 +303,42 @@ export default function Exigencias({
                     </div>
                   </div>
                 ) : (
-                  e.notas && <p className="os-form-nota os-exigencia-nota">{e.notas}</p>
+                  <div className="os-exigencia-pieza">
+                    {e.notas && <p className="os-form-nota os-exigencia-nota">{e.notas}</p>}
+                    <span className="os-exigencia-acciones">
+                      <button
+                        className="os-boton"
+                        disabled={!hayTabla || guardando}
+                        onClick={() => abrir(e)}
+                        title={hayTabla ? undefined : 'Todavía no hay ninguna guardada'}
+                      >
+                        Mover los cortes
+                      </button>
+                      {!e.predeterminada && hayTabla && (
+                        <>
+                          <button
+                            className="os-boton"
+                            disabled={guardando}
+                            onClick={() => mandar({ id: e.id, predeterminar: true })}
+                          >
+                            Poner de default
+                          </button>
+                          <button
+                            className="os-enlace-boton"
+                            disabled={guardando || e.pedidos > 0 || e.candidatos > 0}
+                            title={
+                              e.pedidos > 0 || e.candidatos > 0
+                                ? 'La están usando. Cambiásela a esos pedidos antes de borrarla.'
+                                : undefined
+                            }
+                            onClick={() => mandar({ id: e.id, borrar: true })}
+                          >
+                            Borrar
+                          </button>
+                        </>
+                      )}
+                    </span>
+                  </div>
                 )}
               </div>
             </section>
@@ -335,16 +346,7 @@ export default function Exigencias({
         })}
       </div>
 
-      <div className="os-exigencia-pie">
-        {error && !editando && <p className="os-form-error">{error}</p>}
-        <button
-          className="os-boton os-boton-azul"
-          disabled={guardando || editando === 'nueva'}
-          onClick={() => abrir(null)}
-        >
-          Nueva exigencia
-        </button>
-      </div>
+
 
       {/* La nueva se edita en su propio panel, al pie: arriba están las
           guardadas y esta todavía no lo está. */}
