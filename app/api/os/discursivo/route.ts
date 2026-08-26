@@ -56,6 +56,34 @@ export async function POST(req: Request) {
   }
 
   const yo = await quienSoy();
+
+  /**
+   * Solo se pisa lo que vino en el cuerpo.
+   *
+   * El upsert reemplaza la fila entera, así que mandar la ficha con el nivel
+   * solo, que es lo que hace la pantalla donde se elige el escalón, borraba los
+   * dos párrafos de quien los hubiera escrito. Una clave ausente es "no lo
+   * toques" y no "ponelo en null".
+   */
+  const fila: Record<string, unknown> = {
+    evaluacion_id: id,
+    nivel,
+    quien: yo.nombre,
+    actualizado_at: new Date().toISOString(),
+  };
+  for (const campo of ['actual', 'futura'] as const) {
+    if (campo in (datos ?? {})) fila[campo] = parrafo(datos?.[campo]);
+  }
+  if (!('actual' in fila) || !('futura' in fila)) {
+    const antes = await fetch(
+      `${url}/rest/v1/analisis_discursivo?evaluacion_id=eq.${id}&select=actual,futura`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' }
+    );
+    const suya = (await antes.json().catch(() => []))[0] ?? {};
+    if (!('actual' in fila)) fila.actual = suya.actual ?? null;
+    if (!('futura' in fila)) fila.futura = suya.futura ?? null;
+  }
+
   const res = await fetch(`${url}/rest/v1/analisis_discursivo?on_conflict=evaluacion_id`, {
     method: 'POST',
     headers: {
@@ -64,14 +92,7 @@ export async function POST(req: Request) {
       'Content-Type': 'application/json',
       Prefer: 'resolution=merge-duplicates,return=minimal',
     },
-    body: JSON.stringify({
-      evaluacion_id: id,
-      nivel,
-      actual: parrafo(datos?.actual),
-      futura: parrafo(datos?.futura),
-      quien: yo.nombre,
-      actualizado_at: new Date().toISOString(),
-    }),
+    body: JSON.stringify(fila),
     cache: 'no-store',
   });
   if (!res.ok) {
