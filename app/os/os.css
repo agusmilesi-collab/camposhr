@@ -6367,7 +6367,12 @@ th.os-tabla-contacto {
    la última línea. */
 .os-competencias {
   flex-basis: 100%;
+  /* La sangría a los dos lados: el campo es una caja grande y con el margen
+     izquierdo del nombre y el derecho del borde de la tarjeta quedaba corrida.
+     El botón de abajo se alinea con el borde del campo, no con la columna de
+     las otras tarjetas, porque acá lo que tiene que cerrar es el campo. */
   padding-left: var(--os-herramienta-sangria, 0);
+  padding-right: var(--os-herramienta-sangria, 0);
 }
 
 .os-competencias > .os-campo {
@@ -6381,6 +6386,96 @@ th.os-tabla-contacto {
   gap: 12px;
   margin-top: 8px;
 }
+
+/* ---------- El campo con formato ----------
+   Reemplaza un documento, así que se escribe con negritas y listas. Es un
+   `contenteditable`, no un textarea: un textarea guarda caracteres y acá hace
+   falta guardar marcado. */
+.os-formato-barra {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.os-formato-boton {
+  min-width: 30px;
+  height: 26px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: 0.76rem;
+  color: var(--os-tinta-media);
+  background: var(--os-panel-2);
+  border: 1px solid var(--os-linea-suave);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.os-formato-boton:hover {
+  border-color: var(--os-linea);
+  color: var(--os-tinta);
+}
+
+/* El botón prendido dice qué tiene el texto donde está el cursor, no qué se
+   apretó por última vez: se lee antes de escribir, no después. */
+.os-formato-activo {
+  color: var(--os-panel);
+  background: var(--os-azul-fuerte);
+  border-color: var(--os-azul-fuerte);
+}
+
+.os-formato-negrita { font-weight: 700; }
+.os-formato-cursiva { font-style: italic; }
+
+/* La tarjeta del test es `draggable` para poder reordenarla, y eso le saca la
+   selección a todo lo que tiene adentro. Un campo de texto no se puede editar
+   sin selección: los `input` se salvan porque el navegador los exceptúa, pero
+   un campo editable hay que devolverlo a mano. */
+.os-campo-rico {
+  user-select: text;
+  -webkit-user-select: text;
+  position: relative;
+  min-height: 220px;
+  padding: 10px 12px;
+  line-height: 1.55;
+  overflow-y: auto;
+  text-align: left;
+  cursor: text;
+}
+
+/* Vacío no muestra nada, y un campo de doscientos píxeles en blanco no dice
+   qué se escribe adentro: el aviso hace de marca de agua. Va por encima y no
+   en el flujo, porque un campo recién vaciado no queda vacío del todo: el
+   navegador le deja un párrafo con un salto adentro, y un `::before` en el
+   flujo correría ese párrafo un renglón. */
+.os-campo-vacio::before {
+  content: attr(data-vacio);
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  color: var(--os-suave);
+  pointer-events: none;
+}
+
+.os-campo-rico > p {
+  margin: 0 0 0.6em;
+}
+
+.os-campo-rico > p:last-child {
+  margin-bottom: 0;
+}
+
+.os-campo-rico ul,
+.os-campo-rico ol {
+  margin: 0 0 0.6em;
+  padding-left: 1.5em;
+}
+
+.os-campo-rico li {
+  margin-bottom: 0.2em;
+}
+
+.os-campo-rico strong { font-weight: 650; }
 
 .os-papel-notas .os-campo {
   min-width: 0;

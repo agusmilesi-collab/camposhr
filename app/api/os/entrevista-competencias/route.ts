@@ -5,6 +5,7 @@ import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
+import { limpiarHtml, tieneTexto } from '@/lib/texto-rico';
 
 export const runtime = 'nodejs';
 
@@ -14,6 +15,12 @@ export const runtime = 'nodejs';
  * Va en la evaluación, que es donde vive todo lo que la describe. El campo
  * vacío se guarda como null y no como cadena vacía: "todavía no se escribió" y
  * "se escribió nada" son lo mismo, y la ficha pregunta por el null.
+ *
+ * **Lo que llega es marcado y se limpia acá**, con la lista blanca de
+ * `lib/texto-rico.ts`: el editor manda el contenido de un campo editable, y lo
+ * que se guarda tiene que ser lo que ese editor puede producir y nada más. La
+ * pantalla limpia lo mismo antes de mandar, pero la que no puede dejar pasar
+ * es la ruta.
  */
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -52,7 +59,8 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
-  const texto = typeof crudo === 'string' && crudo.trim() ? crudo.trim() : null;
+  const limpio = limpiarHtml(crudo);
+  const texto = tieneTexto(limpio) ? limpio : null;
 
   const yo = await quienSoy();
   const res = await fetch(`${url}/rest/v1/evaluaciones?id=eq.${id}`, {

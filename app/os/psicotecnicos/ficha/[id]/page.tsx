@@ -25,6 +25,7 @@ import Raven from './Raven';
 import Discursivo from './Discursivo';
 import { llevaDiscursivo, TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
+import { tieneTexto } from '@/lib/texto-rico';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
 import Bateria from '../../Bateria';
@@ -497,7 +498,7 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
       // Su marca es lo escrito, que se carga en la hoja de la entrevista: sin
       // eso, el capítulo cualitativo del informe se arma sin lo único que la
       // entrevista aporta.
-      estados.push({ test: t, puesto: Boolean(c.entrevista_competencias) });
+      estados.push({ test: t, puesto: tieneTexto(c.entrevista_competencias) });
     }
   }
   if (f.benziger) estados.push({ test: 'Benziger', puesto: Boolean(f.benziger.cuadrantes) });
