@@ -109,10 +109,12 @@ export async function listarClientes(): Promise<Cliente[]> {
     rubro: e.rubro,
     tamano: e.tamano,
     notas: e.notas,
-    // El de Airtable primero: es el que el cliente ya tiene en la mano. El de
-    // Supabase nace con la empresa, así que cubre a las que nunca tuvieron uno
-    // y a las que se dan de alta desde acá.
-    token: tokensPorClave.get(claveEmpresa(e.nombre)) ?? e.token_portal ?? null,
+    // El de Supabase primero. Hasta el 26/8/2026 mandaba el de Airtable, con
+    // el argumento de que era el que el cliente ya tenía en la mano, y por eso
+    // el enlace que se copiaba de acá abría el portal anterior. Los dos abren
+    // la misma empresa y muestran lo mismo (ver `empresaDelToken`), así que el
+    // que se reparte es el de la base donde viven los datos.
+    token: e.token_portal ?? tokensPorClave.get(claveEmpresa(e.nombre)) ?? null,
     activa:
       e.activa !== false &&
       ((e.pedidos ?? []).some((p) => p.estado === 'En curso') ||
