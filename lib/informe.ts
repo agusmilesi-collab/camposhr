@@ -176,6 +176,8 @@ export type Informe = {
       procesamiento: string;
       horizonte: string;
       actual: string;
+      /** Dónde suele verse ese nivel, ya partido en renglones. */
+      ejemplos: string[];
       proyeccion: string;
     } | null;
   } | null;
@@ -491,6 +493,10 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
                   procesamiento: suyo.procesamiento,
                   horizonte: suyo.horizonte,
                   actual: suyo.actual,
+                  ejemplos: suyo.ejemplos
+                    .split('\n')
+                    .map((e) => e.trim())
+                    .filter(Boolean),
                   proyeccion: suyo.proyeccion,
                 }
               : null;

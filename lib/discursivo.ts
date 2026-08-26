@@ -31,59 +31,69 @@ export const NIVELES = [
     estrato: 4,
     romano: 'IV',
     procesamiento: 'Paralelo',
-    que: 'Estrato IV · procesamiento paralelo · de 2 a 5 años',
+    que: 'Gerencia General, Dirección de áreas o proyectos de alta complejidad.',
     horizonte: 'Aproximadamente entre 2 y 5 años.',
     actual:
-      'Puede integrar diferentes líneas de trabajo que avanzan simultáneamente y se afectan entre sí. Es capaz de coordinar proyectos, recursos y decisiones interdependientes, manteniendo su sincronización y ajustando cada componente en función del conjunto. En este nivel ya no alcanza con construir caminos alternativos de manera secuencial: es necesario sostener a la vez múltiples procesos, proyectos o líneas de acción, comprendiendo cómo las modificaciones en uno repercuten sobre los demás.',
+      'Puede desenvolverse en trabajos donde hay que conducir al mismo tiempo diferentes frentes de acción relacionados entre sí. No se trata solo de elegir entre alternativas: tiene que lograr que distintos proyectos, equipos, prioridades y recursos avancen a la vez de manera coordinada. Una decisión tomada en un área puede afectar a las demás, así que necesita comprender las relaciones entre ellas, anticipar impactos y mantener el conjunto alineado con un objetivo común. La complejidad de este nivel está en integrar y sincronizar caminos de trabajo que funcionan al mismo tiempo y son interdependientes.',
+    ejemplos:
+      'Gerencias generales\nDirecciones de áreas\nConducción de unidades de negocio\nLiderazgo de programas o proyectos de alta complejidad\nPosiciones senior que integran equipos, proyectos y recursos\nRoles donde las decisiones de un frente impactan sobre otros',
     proyeccion:
-      'El siguiente nivel de complejidad corresponde al Estrato V, que se ubica por encima del alcance de este instrumento. Describirlo exige incorporar los criterios propios de ese estrato, y por eso no se asigna de manera automática a quien queda en Liderazgo 2.',
+      'El siguiente nivel de complejidad corresponde al Estrato V, que está por encima del alcance de este instrumento. Describirlo exigiría incorporar sus características dentro del marco de Organización Requerida, y por eso no se asigna de manera automática a quien queda en Liderazgo 2.',
   },
   {
     nombre: 'Liderazgo 1',
     estrato: 3,
     romano: 'III',
     procesamiento: 'Serial',
-    que: 'Estrato III · procesamiento serial · de 1 a 2 años',
+    que: 'Mando medio, Gerencia, Liderazgo de proyectos.',
     horizonte: 'Aproximadamente entre 1 y 2 años.',
     actual:
-      'Puede abordar situaciones en las que no existe un único camino predeterminado. Examina el problema, construye diferentes cursos de acción y anticipa qué podría ocurrir al seguir cada uno. Puede elegir una alternativa, avanzar sobre ella y modificarla cuando deja de resultar adecuada. Este nivel requiere articular necesidades de corto plazo con objetivos de mayor alcance, evaluando una tras otra las alternativas hasta encontrar un camino viable.',
+      'Puede desenvolverse en trabajos donde existen distintos caminos posibles para alcanzar un resultado y hay que evaluar cuál conviene. Frente a un problema construye alternativas, anticipa qué podría ocurrir al seguir cada una, elige un curso de acción y lo modifica cuando deja de resultar adecuado. También sostiene las necesidades de corto plazo sin perder de vista objetivos de un período más largo. La complejidad de este nivel está en que ya no hay un único camino dado de antemano: hay que construir, comparar y recorrer los caminos posibles.',
+    ejemplos:
+      'Posiciones de gerencia media\nResponsables de equipos o áreas\nLíderes de proyectos\nEspecialistas senior\nRoles que requieren decidir entre distintas alternativas\nPosiciones que articulan objetivos de corto y mediano plazo',
     proyeccion:
-      'El siguiente nivel de complejidad implica pasar de construir y evaluar caminos alternativos en secuencia a gestionar a la vez múltiples líneas de acción interdependientes. Requiere integrar proyectos, recursos, prioridades y decisiones que evolucionan en paralelo, manteniendo su coherencia como un sistema.',
+      'El siguiente nivel de complejidad implica pasar de construir y evaluar caminos alternativos uno tras otro a conducir a la vez múltiples líneas de acción que se afectan entre sí. Requiere integrar proyectos, equipos, prioridades, recursos y decisiones que evolucionan en paralelo, manteniendo la coherencia entre todas las partes.',
   },
   {
     nombre: 'Especialista',
     estrato: 2,
     romano: 'II',
     procesamiento: 'Acumulativo',
-    que: 'Estrato II · procesamiento acumulativo · de 3 meses a 1 año',
+    que: 'Tareas que exigen interpretación y conocimientos específicos.',
     horizonte: 'Aproximadamente entre 3 meses y 1 año.',
     actual:
-      'Puede abordar tareas que requieren interpretar situaciones, reunir información relevante y construir progresivamente una respuesta. Además de resolver obstáculos inmediatos, puede identificar señales de posibles problemas, seleccionar los datos significativos y tomar medidas para anticiparlos o superarlos. En este nivel no se limita a aplicar un procedimiento conocido: necesita observar lo que ocurre, acumular información, interpretarla y usarla para determinar cómo avanzar.',
+      'Puede desenvolverse en trabajos donde no alcanza con seguir un procedimiento: necesita analizar información, interpretar lo que está ocurriendo y usar sus conocimientos para decidir cómo resolver una situación. Además de responder a los problemas inmediatos, identifica señales de posibles dificultades, reúne datos relevantes, distingue qué información importa y toma medidas para prevenir o resolver. En este nivel va construyendo una comprensión de la situación a medida que acumula información y la usa para decidir cómo avanzar.',
+    ejemplos:
+      'Especialistas\nAnalistas\nProfesionales técnicos\nPosiciones que requieren diagnóstico y criterio profesional\nAlgunas funciones de supervisión o primera línea de conducción',
     proyeccion:
-      'El siguiente nivel de complejidad requiere pasar del análisis acumulativo de información a la construcción y comparación de diferentes cursos de acción. Supone anticipar consecuencias, evaluar alternativas y articular decisiones de corto plazo con objetivos de mayor alcance temporal.',
+      'El siguiente nivel de complejidad requiere pasar de reunir e interpretar información a construir diferentes cursos de acción. Supone pensar alternativas, anticipar qué podría ocurrir con cada una, elegir un camino y modificarlo si las condiciones cambian.',
   },
   {
     nombre: 'Operativo',
     estrato: 1,
     romano: 'I',
     procesamiento: 'Declarativo',
-    que: 'Estrato I · procesamiento declarativo · hasta 3 meses',
+    que: 'Tareas concretas a realizar de forma determinada de antemano.',
     horizonte: 'Desde tareas inmediatas hasta aproximadamente 3 meses.',
     actual:
-      'Puede abordar tareas concretas cuyos objetivos, métodos y recursos se encuentran claramente establecidos. Frente a obstáculos utiliza procedimientos conocidos, experiencia práctica y ensayo y error, y cuando la situación excede las alternativas disponibles pide orientación a un nivel superior. En este nivel la resolución de problemas se apoya sobre todo en aplicar métodos ya conocidos y en el juicio práctico dentro de un marco de trabajo definido.',
+      'Puede desenvolverse en trabajos donde el objetivo está claro y existen procedimientos, métodos o pautas conocidas para alcanzar el resultado. En el día a día resuelve las dificultades con su experiencia, los procedimientos aprendidos y el criterio práctico. Cuando aparece una situación que se sale de lo previsto y no tiene una respuesta disponible, necesita recurrir a otra persona para definir cómo continuar. En este nivel la complejidad del trabajo está sobre todo en ejecutar correctamente una tarea dentro de un marco ya definido.',
+    ejemplos:
+      'Ejecución de procesos establecidos\nTareas operativas, administrativas o técnicas con procedimientos conocidos\nResolución de problemas concretos del día a día\nTrabajos donde el método y los recursos están definidos de antemano',
     proyeccion:
-      'El siguiente nivel de complejidad supone avanzar desde la ejecución de procedimientos definidos hacia tareas que requieren mayor interpretación, diagnóstico y selección de información relevante. Implica ampliar la autonomía para reconocer problemas potenciales, reunir información significativa y construir respuestas a partir de los datos que se acumulan durante el trabajo.',
+      'El siguiente nivel de complejidad supone avanzar desde la ejecución de procedimientos definidos hacia tareas donde hay que interpretar situaciones, reunir información y decidir cómo actuar. Implica ganar autonomía para detectar problemas, identificar la información relevante y construir respuestas cuando el procedimiento conocido ya no alcanza.',
   },
 ] as const;
 
 /** Los cuatro textos de un nivel, que se editan desde Configuración. */
 export type TextoDeNivel = {
-  /** El resumen que va al lado del escalón en la pirámide. */
+  /** La referencia laboral que va al lado del escalón en la pirámide. */
   que: string;
   /** Qué lapso de tiempo abarca la tarea más larga de ese nivel. */
   horizonte: string;
   /** Qué complejidad de trabajo puede abordar hoy. */
   actual: string;
+  /** Dónde suele verse ese nivel, uno por renglón. */
+  ejemplos: string;
   /** Qué exige el nivel siguiente. */
   proyeccion: string;
 };
@@ -92,7 +102,13 @@ export type TextoDeNivel = {
 export const LARGO_MAXIMO = 2000;
 
 /** Los campos editables, en el orden en que se muestran. */
-export const CAMPOS_DE_NIVEL = ['que', 'horizonte', 'actual', 'proyeccion'] as const;
+export const CAMPOS_DE_NIVEL = [
+  'que',
+  'horizonte',
+  'actual',
+  'ejemplos',
+  'proyeccion',
+] as const;
 
 /**
  * Lo guardado para los niveles, si sirve; null si no.
@@ -142,22 +158,45 @@ export function nivelesQueRigen(
     que: movidos[n.nombre]?.que ?? n.que,
     horizonte: movidos[n.nombre]?.horizonte ?? n.horizonte,
     actual: movidos[n.nombre]?.actual ?? n.actual,
+    ejemplos: movidos[n.nombre]?.ejemplos ?? n.ejemplos,
     proyeccion: movidos[n.nombre]?.proyeccion ?? n.proyeccion,
   }));
 }
 
 /**
- * De qué depende que esa capacidad se aplique en un rol.
+ * De qué depende que esa capacidad llegue a aplicarse en un rol.
  *
- * El análisis estima el nivel de complejidad de trabajo que la persona puede
- * abordar hoy. Que llegue a ejercerlo en un puesto depende además de estas
- * tres, y por eso van en el informe al lado del escalón.
+ * El análisis estima el nivel de complejidad que la persona puede abordar hoy,
+ * que no es lo mismo que el cargo que ocupa ni que su desempeño: se puede tener
+ * capacidad para un nivel y no estar usándola en el puesto actual. Por eso el
+ * informe pone estas tres al lado del escalón.
  */
 export const CONDICIONES = [
-  'Contar con los conocimientos, habilidades y experiencia requeridos.',
-  'Disponer de la oportunidad de asumir trabajos de ese nivel de complejidad.',
-  'Valorar ese tipo de trabajo y estar motivado por él.',
+  'Los conocimientos, las habilidades y la experiencia que el trabajo pide.',
+  'La oportunidad de asumir trabajos de ese nivel de complejidad.',
+  'El interés y la valoración por ese tipo de trabajo.',
 ];
+
+/**
+ * Qué es de Jaques y qué es nuestro.
+ *
+ * Los estratos, el horizonte temporal del rol y las formas de procesamiento son
+ * del modelo. Las descripciones no: están escritas en lenguaje laboral para que
+ * se entienda cómo se expresa cada nivel en el trabajo concreto, y decirlo es
+ * lo que separa el marco teórico de nuestra adaptación.
+ */
+export const NOTA_ADAPTACION =
+  'Los estratos, el horizonte temporal del rol y las formas de procesamiento son del modelo ' +
+  'de Organización Requerida de Elliott Jaques. Las descripciones no son citas del autor: ' +
+  'son una adaptación al lenguaje laboral, para hacer más comprensible cómo se expresa cada ' +
+  'nivel de complejidad en el trabajo concreto.';
+
+/** Por qué los ejemplos de puestos no atan un estrato a un cargo. */
+export const NOTA_EJEMPLOS =
+  'Son referencias orientativas y no una asociación rígida entre estrato y cargo. Un ' +
+  'especialista sin gente a cargo puede hacer trabajo de alta complejidad, y la cantidad de ' +
+  'personas que reportan a una posición no determina por sí sola el nivel: lo determinan la ' +
+  'complejidad del trabajo y el horizonte de tiempo de su responsabilidad.';
 
 /**
  * Por qué el capítulo dice "Proyección de desarrollo" y no capacidad futura.

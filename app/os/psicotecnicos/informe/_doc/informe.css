@@ -1558,3 +1558,19 @@
   font-size: 12px;
   line-height: 1.55;
 }
+
+/* Dónde suele verse el estrato: puestos de referencia, en lista corta. */
+.inf-estrato-ejemplos {
+  margin: 0 0 4px;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.inf-estrato-nota p {
+  margin: 0 0 6px;
+}
+
+.inf-estrato-nota p:last-child {
+  margin-bottom: 0;
+}
