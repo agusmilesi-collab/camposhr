@@ -18,15 +18,22 @@
  * entre dos índices (a:p, COP y AG) no llevan corte: ahí la condición se lee y
  * no se mueve.
  *
- * Son sesenta y ocho, así que hay dos formas de llegar a una: el índice de
- * áreas, que baja a la que corresponda, y el buscador, donde escribir "Lambda"
- * o "aislamiento" deja a la vista solo esas. El filtro esconde renglones, no
- * los descarta: lo editado en uno que dejó de verse se guarda igual.
+ * **Las lecturas del mismo índice van en el mismo bloque.** Lambda por abajo y
+ * Lambda por arriba son dos ramas de una decisión sola, y separadas en dos
+ * tarjetas obligaban a leer dos veces el mismo encabezado para entender que
+ * hablaban del mismo número. El índice manda: se lee "Lambda" y adentro, qué
+ * pasa por abajo y qué por arriba.
+ *
+ * Son sesenta y ocho lecturas en veintitantos índices, así que hay dos formas
+ * de llegar a una: el índice de áreas, que baja a la que corresponda, y el
+ * buscador, donde escribir "Lambda" o "aislamiento" deja a la vista solo esas.
+ * El filtro esconde renglones, no los descarta: lo editado en uno que dejó de
+ * verse se guarda igual.
  */
 
 import { useRouter } from 'next/navigation';
 import { estirar } from '../psicotecnicos/piezas';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export type Corte = {
   op: 'menor' | 'mayor';
@@ -50,6 +57,9 @@ export type Renglon = {
   recomiendaFabrica: string;
   corte: Corte | null;
 };
+
+/** Dónde vuelve "Volver arriba": el panel del buscador, con el índice. */
+const ARRIBA = 'redacciones-indice';
 
 /** El identificador del ancla de un área, para que el índice pueda bajar a ella. */
 function anclaDe(area: string): string {
@@ -132,6 +142,17 @@ export default function Textos({
 
   const rotos = renglones.filter((r) => r.corte && numero(r.clave) === null);
 
+  // Los campos crecen con lo que tienen escrito, y esa altura se calcula una
+  // vez, al dibujarlos. Al angostar la ventana el mismo texto pasa a ocupar más
+  // renglones y la altura vieja lo cortaba: acá se vuelve a medir.
+  useEffect(() => {
+    const alRedimensionar = () => {
+      caja.current?.querySelectorAll('textarea').forEach((t) => estirar(t));
+    };
+    window.addEventListener('resize', alRedimensionar);
+    return () => window.removeEventListener('resize', alRedimensionar);
+  }, []);
+
   const busca = filtro.trim().toLowerCase();
   const visibles = renglones.filter(
     (r) =>
@@ -141,10 +162,21 @@ export default function Textos({
         .includes(busca)
   );
 
-  const areas = visibles.reduce<{ area: string; renglones: Renglon[] }[]>((acc, r) => {
-    const ultima = acc[acc.length - 1];
-    if (ultima && ultima.area === r.area) ultima.renglones.push(r);
-    else acc.push({ area: r.area, renglones: [r] });
+  // Dos niveles: el área, y adentro cada índice con sus ramas. Se agrupa por
+  // lo que viene seguido y no por el nombre suelto, porque el orden es el del
+  // diccionario y es parte de cómo se lee.
+  const areas = visibles.reduce<
+    { area: string; indices: { indice: string; renglones: Renglon[] }[]; cuantas: number }[]
+  >((acc, r) => {
+    let area = acc[acc.length - 1];
+    if (!area || area.area !== r.area) {
+      area = { area: r.area, indices: [], cuantas: 0 };
+      acc.push(area);
+    }
+    const indice = area.indices[area.indices.length - 1];
+    if (indice && indice.indice === r.indice) indice.renglones.push(r);
+    else area.indices.push({ indice: r.indice, renglones: [r] });
+    area.cuantas += 1;
     return acc;
   }, []);
 
@@ -216,7 +248,7 @@ export default function Textos({
 
   return (
     <>
-      <section className="os-panel">
+      <section className="os-panel" id={ARRIBA}>
         <div className="os-panel-cuerpo">
           <input
             className="os-campo os-redaccion-buscar"
@@ -233,12 +265,16 @@ export default function Textos({
           </p>
 
           {/* Índice de áreas: son siete y cada una tiene entre cuatro y quince
-              lecturas, así que sin esto llegar a la última es bajar a ciegas. */}
+              lecturas, así que sin esto llegar a la última es bajar a ciegas.
+              Van en columnas del mismo ancho, con el nombre contra el borde
+              izquierdo y la cuenta contra el derecho, como el índice de un
+              libro: en fila y al ancho de cada nombre, las cuentas caían en
+              siete lugares distintos y no se podían comparar. */}
           <nav className="os-indice" aria-label="Áreas del diccionario">
             {areas.map((g) => (
               <a key={g.area} className="os-indice-item" href={`#${anclaDe(g.area)}`}>
-                {g.area}
-                <span className="os-indice-cuenta">{g.renglones.length}</span>
+                <span className="os-indice-nombre">{g.area}</span>
+                <span className="os-indice-cuenta">{g.cuantas}</span>
               </a>
             ))}
           </nav>
@@ -247,92 +283,116 @@ export default function Textos({
 
       <div ref={caja}>
         {areas.map((g) => (
-          <div key={`${g.area}-${g.renglones[0].clave}`}>
-            <h2 className="os-rotulo-seccion os-rotulo-ancla" id={anclaDe(g.area)}>
-              {g.area}
-              <span className="os-rotulo-cuenta">{g.renglones.length} lecturas</span>
-            </h2>
+          <div key={`${g.area}-${g.indices[0].renglones[0].clave}`}>
+            {/* El área es el nivel de arriba y se lee como un capítulo: entre
+                una y la siguiente hay hasta quince lecturas, y un rótulo chico
+                se perdía entre las tarjetas. Al lado, la vuelta al índice, que
+                es lo que se busca después de leer un área entera. */}
+            <div className="os-area" id={anclaDe(g.area)}>
+              <h2 className="os-area-titulo">{g.area}</h2>
+              <span className="os-area-cuenta">
+                {g.cuantas} {g.cuantas === 1 ? 'lectura' : 'lecturas'}
+              </span>
+              <a className="os-area-volver" href={`#${ARRIBA}`}>
+                Volver arriba
+              </a>
+            </div>
 
-            {g.renglones.map((r) => {
-              const propio =
-                textos[r.clave].dice !== r.diceFabrica ||
-                textos[r.clave].recomienda !== r.recomiendaFabrica;
-              const movido = Boolean(r.corte) && numero(r.clave) !== r.corte!.fabrica;
-              return (
-                <section className="os-panel" key={r.clave}>
-                  <div className="os-panel-top">
-                    <h3 className="os-lectura-titulo">
-                      <span className="os-lectura-indice">{r.indice}</span>
-                      {r.corte ? (
-                        <span className="os-lectura-corte">
-                          <span className="os-tabla-flojo">
-                            {r.corte.op === 'menor' ? 'menos de' : 'más de'}
+            {g.indices.map((ind) => (
+              <section className="os-panel os-indice-panel" key={ind.renglones[0].clave}>
+                {/* El índice manda sobre sus ramas: Lambda por abajo y Lambda
+                    por arriba son dos ramas de una decisión sola, y en dos
+                    tarjetas obligaban a leer dos veces el mismo encabezado para
+                    entender que hablaban del mismo número. */}
+                <div className="os-panel-top">
+                  <h3 className="os-indice-nombre-titulo">{ind.indice}</h3>
+                  {ind.renglones.length > 1 && (
+                    <span className="os-indice-ramas">{ind.renglones.length} lecturas</span>
+                  )}
+                </div>
+
+                {ind.renglones.map((r) => {
+                  const propio =
+                    textos[r.clave].dice !== r.diceFabrica ||
+                    textos[r.clave].recomienda !== r.recomiendaFabrica;
+                  const movido = Boolean(r.corte) && numero(r.clave) !== r.corte!.fabrica;
+                  return (
+                    <div className="os-rama" key={r.clave}>
+                      <div className="os-rama-cabeza">
+                        {r.corte ? (
+                          <span className="os-lectura-corte">
+                            <span className="os-rama-cuando">
+                              {r.corte.op === 'menor' ? 'menos de' : 'más de'}
+                            </span>
+                            <input
+                              className="os-campo os-campo-umbral"
+                              type="text"
+                              inputMode="decimal"
+                              aria-label={`Corte de ${r.indice}, ${
+                                r.corte.op === 'menor' ? 'menos de' : 'más de'
+                              }`}
+                              value={cortes[r.clave] ?? ''}
+                              onChange={(e) =>
+                                setCortes((c) => ({ ...c, [r.clave]: e.target.value }))
+                              }
+                            />
+                            {r.corte.ademas && (
+                              <span className="os-rama-cuando">, {r.corte.ademas}</span>
+                            )}
                           </span>
-                          <input
-                            className="os-campo os-campo-umbral"
-                            type="text"
-                            inputMode="decimal"
-                            aria-label={`Corte de ${r.indice}, ${
-                              r.corte.op === 'menor' ? 'menos de' : 'más de'
-                            }`}
-                            value={cortes[r.clave] ?? ''}
-                            onChange={(e) =>
-                              setCortes((c) => ({ ...c, [r.clave]: e.target.value }))
-                            }
-                          />
-                          {r.corte.ademas && (
-                            <span className="os-tabla-flojo">, {r.corte.ademas}</span>
+                        ) : (
+                          <span className="os-rama-cuando">{r.cuando}</span>
+                        )}
+                        <span className="os-lectura-marcas">
+                          {movido && (
+                            <span
+                              className="os-dato-falta"
+                              title={`De fábrica: ${escribir(r.corte!, r.corte!.fabrica)}`}
+                            >
+                              corte movido
+                            </span>
                           )}
+                          {propio && <span className="os-dato-falta">reescrita</span>}
                         </span>
-                      ) : (
-                        <span className="os-tabla-flojo">{r.cuando}</span>
-                      )}
-                    </h3>
-                    <span className="os-lectura-marcas">
-                      {movido && (
-                        <span className="os-dato-falta" title={`De fábrica: ${escribir(r.corte!, r.corte!.fabrica)}`}>
-                          corte movido
-                        </span>
-                      )}
-                      {propio && <span className="os-dato-falta">reescrita</span>}
-                    </span>
-                  </div>
+                      </div>
 
-                  <div className="os-panel-cuerpo os-redaccion">
-                    <label className="os-etiqueta-campo" htmlFor={`dice-${r.clave}`}>
-                      Qué dice
-                    </label>
-                    <textarea
-                      id={`dice-${r.clave}`}
-                      className="os-campo"
-                      rows={1}
-                      value={textos[r.clave].dice}
-                      ref={estirar}
-                      onChange={(e) => {
-                        estirar(e.target);
-                        escribirTexto(r.clave, 'dice', e.target.value);
-                      }}
-                    />
+                      <div className="os-redaccion">
+                        <label className="os-etiqueta-campo" htmlFor={`dice-${r.clave}`}>
+                          Qué dice
+                        </label>
+                        <textarea
+                          id={`dice-${r.clave}`}
+                          className="os-campo"
+                          rows={1}
+                          value={textos[r.clave].dice}
+                          ref={estirar}
+                          onChange={(e) => {
+                            estirar(e.target);
+                            escribirTexto(r.clave, 'dice', e.target.value);
+                          }}
+                        />
 
-                    <label className="os-etiqueta-campo" htmlFor={`rec-${r.clave}`}>
-                      Qué se recomienda
-                    </label>
-                    <textarea
-                      id={`rec-${r.clave}`}
-                      className="os-campo"
-                      rows={1}
-                      value={textos[r.clave].recomienda}
-                      placeholder="El diccionario no fija recomendación para esta lectura"
-                      ref={estirar}
-                      onChange={(e) => {
-                        estirar(e.target);
-                        escribirTexto(r.clave, 'recomienda', e.target.value);
-                      }}
-                    />
-                  </div>
-                </section>
-              );
-            })}
+                        <label className="os-etiqueta-campo" htmlFor={`rec-${r.clave}`}>
+                          Qué se recomienda
+                        </label>
+                        <textarea
+                          id={`rec-${r.clave}`}
+                          className="os-campo"
+                          rows={1}
+                          value={textos[r.clave].recomienda}
+                          placeholder="El diccionario no fija recomendación para esta lectura"
+                          ref={estirar}
+                          onChange={(e) => {
+                            estirar(e.target);
+                            escribirTexto(r.clave, 'recomienda', e.target.value);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </section>
+            ))}
           </div>
         ))}
       </div>
