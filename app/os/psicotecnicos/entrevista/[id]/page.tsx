@@ -100,23 +100,6 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                 id={e.id}
                 campoMarca="proyectivoAdministrado"
                 administrado={e.proyectivoAdministrado}
-                /* Codificar va en su propio renglón y no en la fila de las
-                   láminas: abre otra pantalla, la de la evaluadora, y en la
-                   misma fila se leía como una tercera forma de abrir la
-                   mancha. Solo Rorschach por ahora; el Zulliger usa la misma
-                   pantalla cuando tenga su tabla. */
-                debajo={
-                  t === 'Rorschach' ? (
-                    <a
-                      className="os-boton os-herramienta-codificar"
-                      href={`/os/psicotecnicos/entrevista/${e.id}/rorschach`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Codificar lámina I
-                    </a>
-                  ) : undefined
-                }
               >
                 <a
                   className="os-boton os-boton-firme"
@@ -127,6 +110,21 @@ export default async function HojaDeEntrevista({ params }: { params: { id: strin
                   {h.boton}
                 </a>
                 <LinkLaminas href={h.href} />
+                {/* Las tres cosas que se hacen con las manchas, en la misma
+                    fila: abrirlas, pasar la dirección y codificar. Codificar
+                    colgaba de un renglón propio y era un botón solo ocupando
+                    una fila entera. Solo Rorschach por ahora; el Zulliger usa
+                    la misma pantalla cuando tenga su tabla. */}
+                {t === 'Rorschach' && (
+                  <a
+                    className="os-boton os-herramienta-codificar"
+                    href={`/os/psicotecnicos/entrevista/${e.id}/rorschach`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Codificar lámina I
+                  </a>
+                )}
               </Papel>
             </>
           );

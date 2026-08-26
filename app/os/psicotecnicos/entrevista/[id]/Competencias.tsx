@@ -80,7 +80,7 @@ export default function Competencias({
         <span />
       </div>
 
-      <div className="os-papel-notas os-competencias">
+      <div className="os-competencias">
         <textarea
           className="os-campo os-campo-largo"
           rows={6}
@@ -94,15 +94,20 @@ export default function Competencias({
           }}
           onBlur={() => guardar()}
         />
-        <button
-          className="os-boton"
-          type="button"
-          disabled={guardando || !pendiente}
-          onClick={() => guardar()}
-        >
-          {guardando ? 'Cargando…' : 'Cargar lo escrito'}
-        </button>
-        {error && <span className="os-form-error">{error}</span>}
+        {/* El botón cierra abajo y contra el margen derecho del campo, que es
+            donde se termina de escribir. Al lado de una caja de doscientos
+            píxeles quedaba flotando a media altura, lejos de la última línea. */}
+        <div className="os-competencias-pie">
+          {error && <span className="os-form-error">{error}</span>}
+          <button
+            className="os-boton os-boton-azul"
+            type="button"
+            disabled={guardando || !pendiente}
+            onClick={() => guardar()}
+          >
+            {guardando ? 'Cargando…' : 'Cargar lo escrito'}
+          </button>
+        </div>
       </div>
     </>
   );
