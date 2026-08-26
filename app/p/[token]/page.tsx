@@ -306,16 +306,23 @@ export default async function Portal({ params }: { params: { token: string } }) 
             <div className="eyebrow">Estado de evaluaciones</div>
             <h1>{empresa}</h1>
           </div>
-          {/* El alta va en todos los portales: el pedido se cuelga de la
-              empresa del token y entra sin evaluadora, así que cae en Sin
-              asignar, que es la pantalla donde el equipo reparte. Las búsquedas
-              viajan para poder sumar candidatos a una que ya existe. */}
-          <NuevoPedido
-            empresa={empresa}
-            token={params.token}
-            baterias={baterias}
-            busquedas={busquedas}
-          />
+          {/* El alta va en su propia pantalla y no en un cajón: el cliente
+              está decidiendo una compra, no completando un trámite al costado
+              de lo que estaba mirando. */}
+          <a className="btn-primario" href={`/p/${params.token}/pedido`}>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+            Nuevo pedido
+          </a>
         </section>
 
         {/* El trabajo de fondo va arriba: las evaluaciones son una parte de él,

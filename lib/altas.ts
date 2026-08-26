@@ -163,7 +163,17 @@ export type PedidoNuevo = {
   origen: 'interno' | 'portal';
 };
 
-export async function crearPedido(p: PedidoNuevo): Promise<{ id: string }> {
+export async function crearPedido(
+  p: PedidoNuevo,
+  /**
+   * El perfil del puesto, si vino cargado.
+   *
+   * Son las columnas `puesto_*` y `jefe_*`, las mismas que el equipo completa
+   * en la ficha del pedido. Desde el portal las contesta el cliente, que es
+   * quien de verdad sabe cómo es el puesto y quién lo conduce.
+   */
+  perfil: Record<string, string> = {}
+): Promise<{ id: string }> {
   return insertar<{ id: string }>('pedidos', {
     empresa_id: p.empresaId,
     puesto: p.puesto,
@@ -175,6 +185,7 @@ export async function crearPedido(p: PedidoNuevo): Promise<{ id: string }> {
     notas: p.notas,
     estado: ABIERTO,
     origen: p.origen,
+    ...perfil,
   });
 }
 
