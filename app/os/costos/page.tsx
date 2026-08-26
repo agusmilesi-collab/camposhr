@@ -9,6 +9,7 @@ import {
 } from '@/lib/cotizaciones';
 import { quienSoy } from '@/lib/identidad';
 import { listarEmisoras, listarFacturas, marchaMonotributo } from '@/lib/facturas';
+import { esDeServicios } from '@/lib/facturas-tipos';
 import { empresas as listarEmpresas } from '@/lib/altas';
 import Monotributo from './Monotributo';
 import { Facturado, OtraFactura } from './Servicios';
@@ -43,15 +44,13 @@ export default async function Costos() {
   const deLa = (id: string) => costos.filter((x) => x.cotizacionId === id);
 
   /**
-   * Las facturas de servicios: las que no cubren ninguna evaluación.
+   * Las facturas de servicios: las que cobran algo que no son evaluaciones.
    *
-   * No hace falta una marca: un comprobante de psicotécnicos siempre lleva sus
-   * candidatos en los renglones, y uno de servicios no lleva ninguno. Se
-   * reconocen por eso, que además es lo que ya distingue a los dos trabajos.
+   * El criterio vive en `lib/facturas-tipos.ts` y lo usan las tres pantallas
+   * que parten la caja en dos, para que ninguna factura aparezca en las dos ni
+   * en ninguna.
    */
-  const servicios = facturas.filter(
-    (f) => f.estado !== 'anulada' && f.renglones.every((r) => r.evaluacionId === null)
-  );
+  const servicios = facturas.filter((f) => f.estado !== 'anulada' && esDeServicios(f));
 
   /**
    * Cada trabajo con lo suyo: lo cotizado, lo facturado contra eso y lo que

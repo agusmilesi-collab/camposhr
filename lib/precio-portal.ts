@@ -19,7 +19,7 @@ import {
  * de precios que usa el OS y la misma regla, vale el último cargado con fecha
  * hasta hoy. Dos lugares para el mismo precio serían dos precios.
  *
- * **Todo se cobra en pesos.** El cuestionario de perfil está fijado en dólares
+ * **Todo se cobra en pesos.** La evaluación de perfil está fijada en dólares
  * y se pesifica al dólar tarjeta del día en que se emite la factura, así que lo
  * que el portal muestra es el valor de hoy y se dice: el definitivo es el del
  * día de la factura.
@@ -32,7 +32,7 @@ export type BateriaConPrecio = BateriaDelPortal & {
 export type Alcance = {
   baterias: BateriaConPrecio[];
   /**
-   * Lo que sale sumar el cuestionario de perfil, por candidato.
+   * Lo que sale sumar la evaluación de perfil, por candidato.
    *
    * Está fijado en dólares y se cobra en pesos, al dólar tarjeta del día en que
    * se emite la factura. Lo que se muestra es el de hoy.

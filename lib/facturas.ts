@@ -48,6 +48,7 @@ export {
  */
 import { ETAPAS_ENTREVISTADO, type Marcha } from '@/lib/facturas-tipos';
 import { cortes, mesesDelAnio } from '@/lib/monotributo';
+import { esDePsicotecnicos, esDeServicios } from '@/lib/facturas-tipos';
 
 type FilaEmisor = {
   id: string;
@@ -298,8 +299,8 @@ export async function marchaMonotributo(hoy = new Date()): Promise<Marcha[]> {
         // evaluación pero es de un candidato que sí está en el comprobante.
         const suma = (cuales: Factura[]) =>
           cuales.reduce((n, f) => n + (f.importe ?? 0), 0);
-        const psico = delMes.filter((f) => f.renglones.some((r) => r.evaluacionId !== null));
-        const servicios = delMes.filter((f) => f.renglones.every((r) => r.evaluacionId === null));
+        const psico = delMes.filter(esDePsicotecnicos);
+        const servicios = delMes.filter(esDeServicios);
         return {
           ...m,
           psico: suma(psico),

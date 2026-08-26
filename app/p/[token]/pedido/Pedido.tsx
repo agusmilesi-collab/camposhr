@@ -359,7 +359,7 @@ export default function Pedido({
             {elegida && (
               <p className="pedir-ayuda">
                 Se evalúan con {elegida.bateria ?? 'la batería de esa búsqueda'}
-                {elegida.conBenziger ? ' más el cuestionario de perfil' : ''}, que es lo
+                {elegida.conBenziger ? ' más la evaluación de perfil' : ''}, que es lo
                 acordado para ese puesto.
               </p>
             )}
@@ -444,7 +444,7 @@ export default function Pedido({
               </section>
 
               <section className="pedir-bloque">
-                <h2>Con qué se evalúa</h2>
+                <h2>Elegir evaluación</h2>
                 <div className="pedir-baterias">
                   {alcance.baterias.map((b) => (
                     <button
@@ -476,7 +476,7 @@ export default function Pedido({
                     {benziger ? '✓' : ''}
                   </span>
                   <span className="pedir-suma-cuerpo">
-                    <span className="pedir-suma-t">Sumar el cuestionario de perfil</span>
+                    <span className="pedir-suma-t">Sumar evaluación de perfil</span>
                     <span className="pedir-suma-d">
                       Cómo piensa y cómo decide, y qué le cuesta sostener. Es lo que
                       permite decir cómo va a trabajar con su jefe y con su equipo, y no
@@ -647,7 +647,7 @@ export default function Pedido({
             <p className="pedir-resumen-n">
               Precios de hoy, sin IVA.
               {conBenziger && alcance.dolar
-                ? ` El cuestionario de perfil está fijado en dólares y se factura en pesos, al dólar tarjeta del día en que se emite la factura. Hoy está ${cotizacion(alcance.dolar)}.`
+                ? ` La evaluación de perfil está fijada en dólares y se factura en pesos, al dólar tarjeta del día en que se emite la factura. Hoy está ${cotizacion(alcance.dolar)}.`
                 : ''}
             </p>
 

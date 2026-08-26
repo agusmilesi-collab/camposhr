@@ -54,6 +54,21 @@ export type Renglon = {
   puesto: string | null;
 };
 
+/**
+ * Si la factura cobra evaluaciones o un servicio de Campos HR.
+ *
+ * No hace falta una marca: un comprobante de psicotécnicos lleva sus candidatos
+ * en los renglones y uno de servicios lleva un renglón con el concepto. La
+ * factura **sin ningún renglón** no es ni una cosa ni la otra: son las dos que
+ * llegaron incompletas de Airtable, y se leían como servicios porque "todos sus
+ * renglones son sin evaluación" también es cierto cuando no hay ninguno. Van
+ * con las de psicotécnicos, que es donde se las puede completar.
+ */
+export const esDeServicios = (f: Factura) =>
+  f.renglones.length > 0 && f.renglones.every((r) => r.evaluacionId === null);
+
+export const esDePsicotecnicos = (f: Factura) => !esDeServicios(f);
+
 export type Factura = {
   id: string;
   numero: number | null;
