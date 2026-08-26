@@ -131,66 +131,129 @@ export function limpiarHtml(crudo: unknown): string {
   // abrir la lista que el navegador había metido adentro deja uno vacío, y eso
   // se pinta como un renglón en blanco que nadie escribió. Un párrafo con un
   // salto adentro sí se respeta, porque ese sí lo puso alguien.
-  return enBloques(
-    salida
-      .join('')
-      .replace(/<(p|h3|h4)><\/\1>/g, '')
-      .trim()
-  );
+  return enBloques(salida.join('').trim());
 }
 
 /**
- * Todo renglón adentro de un bloque.
+ * Un renglón, un bloque.
  *
  * En un campo editable la primera línea queda suelta, fuera de todo: el
- * navegador recién abre un bloque cuando se aprieta Enter. Sobre texto suelto,
- * "esto es un subtítulo" no tiene dónde terminar y el navegador se lleva hasta
- * el final del campo, así que marcar dos palabras convertía en título todo lo
- * que venía después.
+ * navegador recién abre un bloque cuando se aprieta Enter. Y un salto de línea
+ * adentro de un párrafo deja dos renglones en el mismo bloque. Las dos cosas
+ * rompen lo mismo: "esto es un subtítulo" se aplica al bloque entero, así que
+ * marcar dos palabras convertía en subtítulo todo lo que venía después hasta
+ * donde ese bloque terminara.
  *
- * Acá cada tramo suelto pasa a ser un párrafo, y un `<br>` de primer nivel
- * separa dos: es un renglón aparte, que es lo que quiso quien lo escribió.
- * Adentro de un bloque no se toca nada, y ahí el `<br>` sigue siendo un salto.
+ * Acá cada tramo suelto pasa a ser un párrafo y cada `<br>` corta el renglón en
+ * dos, reabriendo lo que estuviera abierto para no dejar el marcado cruzado.
+ * Adentro de una lista el `<br>` se respeta: ahí el renglón es el `li`.
  */
 function enBloques(html: string): string {
   if (!html) return '';
   const salida: string[] = [];
+  /** Todo lo abierto, en orden, para poder cerrar y reabrir en un corte. */
+  const abiertas: string[] = [];
+  /** Lo que va quedando fuera de todo bloque, a la espera de su párrafo. */
   let suelto: string[] = [];
-  let dentro = 0;
 
-  const cerrar = () => {
+  /** Dónde escribir: adentro de un bloque ya hay renglón, afuera se junta. */
+  const hayBloque = () => abiertas.some((e) => BLOQUES.has(e));
+  const poner = (trozo: string) => (hayBloque() ? salida : suelto).push(trozo);
+
+  /**
+   * El tramo suelto se convierte en párrafo.
+   *
+   * Lo que estuviera abierto se cierra para armarlo y se vuelve a abrir después,
+   * o el párrafo saldría con una negrita sin cerrar.
+   */
+  const cerrarSuelto = () => {
+    const inlines = [...abiertas];
+    for (let k = inlines.length - 1; k >= 0; k--) suelto.push(`</${inlines[k]}>`);
     const tramo = suelto.join('');
-    if (tieneTexto(tramo)) salida.push(`<p>${tramo}</p>`);
     suelto = [];
+    if (tieneTexto(tramo)) salida.push(`<p>${tramo}</p>`);
+    for (const e of inlines) suelto.push(`<${e}>`);
+  };
+
+  /** El bloque más cercano de los abiertos, que es el renglón de ahora. */
+  const bloqueActual = () => {
+    for (let i = abiertas.length - 1; i >= 0; i--) {
+      if (BLOQUES.has(abiertas[i])) return i;
+    }
+    return -1;
+  };
+
+  /** Cierra lo último abierto, del lado donde estaba escrito. */
+  const cerrarUna = () => {
+    const etiqueta = abiertas[abiertas.length - 1];
+    const donde = hayBloque() ? salida : suelto;
+    abiertas.pop();
+    donde.push(`</${etiqueta}>`);
   };
 
   const etiquetas = /<\/?([a-z0-9]+)>/gi;
   let i = 0;
   let m: RegExpExecArray | null;
   while ((m = etiquetas.exec(html)) !== null) {
-    (dentro > 0 ? salida : suelto).push(html.slice(i, m.index));
+    poner(html.slice(i, m.index));
     const etiqueta = m[1].toLowerCase();
     const esCierre = m[0][1] === '/';
-    if (BLOQUES.has(etiqueta)) {
-      if (esCierre) {
-        dentro--;
-        salida.push(m[0]);
+
+    if (etiqueta === 'br') {
+      const donde = bloqueActual();
+      const bloque = donde === -1 ? null : abiertas[donde];
+      if (bloque === null) {
+        cerrarSuelto();
+      } else if (bloque === 'p' || bloque === 'h3' || bloque === 'h4') {
+        // Se cierra hasta el bloque y se reabre igual: el renglón siguiente
+        // conserva la negrita o la cursiva que venía puesta.
+        const reabrir = abiertas.slice(donde);
+        for (let k = abiertas.length - 1; k >= donde; k--) salida.push(`</${abiertas[k]}>`);
+        for (const e of reabrir) salida.push(`<${e}>`);
       } else {
-        if (dentro === 0) cerrar();
-        dentro++;
+        // Adentro de una lista el renglón es el `li`, así que el salto queda.
         salida.push(m[0]);
       }
-    } else if (etiqueta === 'br' && dentro === 0) {
-      cerrar();
+    } else if (esCierre) {
+      const donde = abiertas.lastIndexOf(etiqueta);
+      if (donde !== -1) while (abiertas.length > donde) cerrarUna();
+    } else if (BLOQUES.has(etiqueta)) {
+      // Un bloque empieza renglón propio: lo suelto que venía se cierra antes.
+      if (!hayBloque()) cerrarSuelto();
+      salida.push(m[0]);
+      abiertas.push(etiqueta);
     } else {
-      (dentro > 0 ? salida : suelto).push(m[0]);
+      poner(m[0]);
+      if (!SUELTAS.has(etiqueta)) abiertas.push(etiqueta);
     }
+
     i = m.index + m[0].length;
   }
-  (dentro > 0 ? salida : suelto).push(html.slice(i));
-  cerrar();
 
-  return salida.join('');
+  poner(html.slice(i));
+  while (abiertas.length) cerrarUna();
+  cerrarSuelto();
+
+  return sinVacios(salida.join(''));
+}
+
+/**
+ * Los bloques que quedaron sin nada escrito adentro.
+ *
+ * Cortar por un salto deja uno vacío cada vez que el salto estaba al final del
+ * renglón, y eso se pinta como una línea en blanco que nadie escribió. Se
+ * repite hasta que no queda ninguno, porque un bloque vacío puede estar
+ * envuelto en otro.
+ */
+function sinVacios(html: string): string {
+  const vacio = /<(p|h3|h4|li|ul|ol)>(?:\s|<(?:strong|em|u|br)>|<\/(?:strong|em|u)>)*<\/\1>/g;
+  let antes = html;
+  for (let i = 0; i < 5; i++) {
+    const despues = antes.replace(vacio, '');
+    if (despues === antes) break;
+    antes = despues;
+  }
+  return antes;
 }
 
 /**
@@ -219,13 +282,12 @@ export function comoHtml(guardado: string | null | undefined): string {
   if (!guardado) return '';
   if (/<(p|ul|ol|li|br|strong|em|u|h3|h4)\b/i.test(guardado)) return limpiarHtml(guardado);
   return guardado
-    .split(/\n{2,}/)
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
     .map(
-      (parrafo) =>
-        `<p>${parrafo
-          .split('\n')
-          .map((l) => l.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'))
-          .join('<br>')}</p>`
+      (linea) =>
+        `<p>${linea.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`
     )
     .join('');
 }

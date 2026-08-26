@@ -66,6 +66,58 @@ const TAMANOS = [
   { etiqueta: 'p', texto: 'Texto' },
 ] as const;
 
+/** Lo que ya es un renglón propio adentro del campo. */
+const BLOQUES = new Set(['P', 'H3', 'H4', 'UL', 'OL', 'LI', 'DIV', 'BLOCKQUOTE']);
+
+/**
+ * Cada renglón suelto, adentro de un párrafo.
+ *
+ * Mientras se escribe, la primera línea vive suelta en el campo y un Shift+Enter
+ * deja dos renglones en el mismo bloque. "Esto es un subtítulo" se aplica al
+ * bloque entero, así que sobre texto suelto se lleva todo lo que sigue. Se
+ * ordena justo antes de aplicarlo, moviendo los nodos que ya están y volviendo
+ * a marcar lo que estaba marcado: los nodos son los mismos, pero la selección
+ * apunta a posiciones dentro de su padre y mudarlos la corre de renglón.
+ */
+function enParrafos(campo: HTMLElement) {
+  const seleccion = document.getSelection();
+  const marcado = seleccion && seleccion.rangeCount > 0 ? seleccion.getRangeAt(0) : null;
+  const desde = marcado ? { nodo: marcado.startContainer, en: marcado.startOffset } : null;
+  const hasta = marcado ? { nodo: marcado.endContainer, en: marcado.endOffset } : null;
+
+  let parrafo: HTMLElement | null = null;
+  for (const nodo of Array.from(campo.childNodes)) {
+    const etiqueta = nodo.nodeType === 1 ? (nodo as Element).tagName : null;
+    if (etiqueta && BLOQUES.has(etiqueta)) {
+      parrafo = null;
+      continue;
+    }
+    // Un salto suelto separa dos renglones: cierra el párrafo y se va.
+    if (etiqueta === 'BR') {
+      parrafo = null;
+      nodo.parentNode?.removeChild(nodo);
+      continue;
+    }
+    if (!parrafo && nodo.nodeType === 3 && !nodo.textContent?.trim()) continue;
+    if (!parrafo) {
+      parrafo = document.createElement('p');
+      campo.insertBefore(parrafo, nodo);
+    }
+    parrafo.appendChild(nodo);
+  }
+
+  // Los nodos de texto siguen siendo los mismos, así que alcanza con volver a
+  // pedir el mismo tramo. Si alguno era el campo mismo, ya no está: ahí no se
+  // toca nada y el navegador se queda con lo que tenga.
+  if (seleccion && desde && hasta && campo.contains(desde.nodo) && campo.contains(hasta.nodo)) {
+    const vuelta = document.createRange();
+    vuelta.setStart(desde.nodo, desde.en);
+    vuelta.setEnd(hasta.nodo, hasta.en);
+    seleccion.removeAllRanges();
+    seleccion.addRange(vuelta);
+  }
+}
+
 /** Un botón de la barra. Los dos grupos dibujan el mismo. */
 function Boton({
   f,
@@ -160,6 +212,9 @@ export default function Competencias({
 
   function formatear(comando: string, valor?: string) {
     campo.current?.focus();
+    // Lo que va a cambiar es el renglón entero, así que primero tiene que
+    // haber renglones: sin esto el título se lleva todo lo que viene después.
+    if (comando === 'formatBlock' && campo.current) enParrafos(campo.current);
     document.execCommand(comando, false, valor);
     setActivos(COMANDOS.filter((c) => document.queryCommandState(c)));
     setTecleos((n) => n + 1);
