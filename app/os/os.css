@@ -1828,11 +1828,12 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 }
 
 /**
- * A quiénes cubre una factura: el botón de la celda y la lista que abre.
+ * A quiénes cubre una factura: el botón de la celda y el árbol que abre.
  *
  * El botón dice cuántas evaluaciones entraron y el subrayado punteado avisa que
  * hay algo abajo. El chevron es un dibujo y no el carácter ▸, así gira sobre su
- * eje en vez de saltar de glifo.
+ * eje en vez de saltar de glifo. Sin transición: el detalle aparece entero, y
+ * una flecha que gira sola llamaba la atención sobre lo menos importante.
  */
 .os-cubre-abre {
   display: inline-flex;
@@ -1846,7 +1847,6 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   color: var(--os-tinta);
   cursor: pointer;
   border-bottom: 1px dashed var(--os-linea);
-  transition: color 0.12s ease, border-color 0.12s ease;
 }
 
 .os-cubre-abre:hover,
@@ -1860,7 +1860,6 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   height: 13px;
   flex: none;
   color: var(--os-suave);
-  transition: transform 0.15s ease, color 0.12s ease;
 }
 
 .os-cubre-abre:hover .os-cubre-flecha,
@@ -1873,52 +1872,57 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 }
 
 /**
- * La lista que se abre, en su propia caja.
+ * El detalle, dibujado como un árbol que baja de "Cubre".
  *
- * Suelta sobre el fondo de la fila se leía como más filas de la tabla y no como
- * el adentro de una: la caja blanca con el filo azul del lado izquierdo la ata a
- * la factura de arriba.
+ * La fila de abajo deja vacías las celdas de las primeras columnas, así el
+ * tronco cae debajo del botón que lo abrió y cada rama llega a su renglón: se
+ * lee que son las partes de esa factura y no filas nuevas de la tabla.
  */
-.os-cubre-caja {
-  /* Mide lo que mide su renglón más largo: a lo ancho de la tabla, los nombres
-     quedaban a un lado y los importes al otro, con un vacío en el medio. */
-  width: fit-content;
-  max-width: 100%;
-  /* Contra el margen derecho: los importes del detalle terminan cerca de la
-     columna Importe de la fila que lo abrió, que es contra lo que se leen. */
-  margin: 12px 0 2px auto;
-  padding: 11px 16px 13px;
-  border: 1px solid var(--os-linea-suave);
-  border-left: 2px solid var(--os-azul);
-  border-radius: 4px 10px 10px 4px;
+.os-fila-cubre > td {
   background: var(--os-panel);
-  box-shadow: var(--os-sombra);
-}
-
-.os-cubre-caja > .os-dato-rotulo {
-  display: block;
-  margin-bottom: 7px;
+  padding: 0 18px 12px 0;
 }
 
 .os-cubre-lista {
   display: grid;
+  width: fit-content;
   margin: 0;
   padding: 0;
   list-style: none;
   font-size: 0.86rem;
 }
 
-/* Quién a la izquierda y cuánto a la derecha, con la caja midiendo lo justo:
-   así los importes se comparan de arriba abajo sin alejarse del nombre. */
 .os-cubre-lista > li {
-  display: flex;
-  align-items: baseline;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 30px;
-  padding: 5px 0;
+  align-items: baseline;
+  padding: 4px 0 4px 24px;
 }
 
-.os-cubre-lista > li + li {
-  border-top: 1px solid var(--os-linea-suave);
+/* El codo: baja desde la fila de arriba y dobla hacia el renglón. */
+.os-cubre-lista > li::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 0;
+  width: 11px;
+  height: 15px;
+  border-left: 1px solid var(--os-linea);
+  border-bottom: 1px solid var(--os-linea);
+  border-bottom-left-radius: 7px;
+}
+
+/* El tronco sigue hasta el codo siguiente, y en el último renglón se corta. */
+.os-cubre-lista > li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 15px;
+  bottom: 0;
+  width: 1px;
+  background: var(--os-linea);
 }
 
 .os-cubre-quien {
@@ -1936,7 +1940,6 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 }
 
 .os-cubre-importe {
-  margin-left: auto;
   font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--os-tinta-media);
@@ -1947,13 +1950,6 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 .os-cubre-extra .os-cubre-quien {
   font-weight: 400;
   color: var(--os-tinta-media);
-}
-
-/* La fila del detalle arranca donde arranca la tabla: es el adentro de la fila
-   de arriba, no un bloque aparte. */
-.os-fila-cubre > td {
-  padding-left: 18px;
-  padding-right: 18px;
 }
 
 /* Los dos controles del renglón de una factura, uno al lado del otro. */

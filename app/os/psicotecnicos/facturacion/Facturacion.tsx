@@ -91,6 +91,15 @@ const PROPIOS_EMITIDAS = {
 };
 const MEDIDAS_EMITIDAS = columnas(COLUMNAS_EMITIDAS, PROPIOS_EMITIDAS);
 
+/**
+ * Dónde empieza la columna que se abre.
+ *
+ * El detalle no cuelga del borde de la tabla sino de "Cubre": las celdas vacías
+ * de antes le dan a la fila de abajo el mismo ancho de columna, y el árbol
+ * arranca justo debajo del botón que lo abrió.
+ */
+const ANTES_DE_CUBRE = COLUMNAS_EMITIDAS.indexOf('Cubre');
+
 async function mandar(cuerpo: unknown) {
   const res = await fetch('/api/os/facturas', {
     method: 'POST',
@@ -560,41 +569,38 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
 
             {cajon && (
               <tr className="os-fila-abierta os-fila-cubre">
-                <td colSpan={COLUMNAS_EMITIDAS.length}>
-                  <div className="os-cubre-caja">
-                    <span className="os-dato-rotulo">Cubre a</span>
-                    <ul className="os-cubre-lista">
-                      {f.renglones.map((r) => (
-                        <li key={r.id} className={r.persona ? undefined : 'os-cubre-extra'}>
-                          {/* El nombre sale de la evaluación cuando está: las
-                              facturas de Airtable dicen "Evaluación
-                              psicotécnica" a secas y ahí manda la descripción. */}
-                          {/* El puesto va pegado al nombre y no en su propia
-                              columna: son la misma cosa, quién es y de qué, y
-                              separados dejaban un hueco del ancho de la tabla. */}
-                          <span className="os-cubre-quien">
-                            {r.persona ?? r.descripcion}
-                            {r.puesto && <span className="os-cubre-puesto"> · {r.puesto}</span>}
-                          </span>
-                          <span className="os-cubre-importe">
-                            {importeDe(f, r) === null ? (
-                              <span
-                                className="os-dato-flojo"
-                                title="La factura no reparte su importe entre los renglones."
-                              >
-                                —
-                              </span>
-                            ) : (
-                              formatoImporte(
-                                importeDe(f, r) as number,
-                                f.moneda === 'DOL' ? 'USD' : 'ARS'
-                              )
-                            )}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                <td colSpan={ANTES_DE_CUBRE} />
+                <td colSpan={COLUMNAS_EMITIDAS.length - ANTES_DE_CUBRE}>
+                  <ul className="os-cubre-lista">
+                    {f.renglones.map((r) => (
+                      <li key={r.id} className={r.persona ? undefined : 'os-cubre-extra'}>
+                        {/* El nombre sale de la evaluación cuando está: las
+                            facturas de Airtable dicen "Evaluación psicotécnica"
+                            a secas y ahí manda la descripción. El puesto va
+                            pegado y no en su propia columna: son la misma cosa,
+                            quién es y de qué. */}
+                        <span className="os-cubre-quien">
+                          {r.persona ?? r.descripcion}
+                          {r.puesto && <span className="os-cubre-puesto"> · {r.puesto}</span>}
+                        </span>
+                        <span className="os-cubre-importe">
+                          {importeDe(f, r) === null ? (
+                            <span
+                              className="os-dato-flojo"
+                              title="La factura no reparte su importe entre los renglones."
+                            >
+                              —
+                            </span>
+                          ) : (
+                            formatoImporte(
+                              importeDe(f, r) as number,
+                              f.moneda === 'DOL' ? 'USD' : 'ARS'
+                            )
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 </td>
               </tr>
             )}
