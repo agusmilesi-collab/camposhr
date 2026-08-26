@@ -6859,6 +6859,67 @@ th.os-tabla-contacto {
 }
 
 /* El portal del cliente: abrir y copiar, en la fila del cliente. */
+/* ---------- Buscar un cliente escribiendo ----------
+   El campo se escribe y la lista queda debajo, sobre lo que haya: con la lista
+   empujando el formulario, cada letra movía los campos de abajo. */
+.os-buscar {
+  position: relative;
+  display: grid;
+  gap: 5px;
+}
+
+.os-buscar-lista {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin-top: 4px;
+  padding: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(22, 32, 43, 0.12);
+}
+
+.os-buscar-opcion {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  font: inherit;
+  font-size: 0.83rem;
+  text-align: left;
+  color: var(--os-tinta);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* La marcada es la que toma Enter: se pinta igual con el ratón y con las
+   flechas, o el teclado y el ratón dirían cosas distintas. */
+.os-buscar-marcada {
+  background: var(--os-hover);
+}
+
+/* Dar de alta lo escrito cierra la lista y se separa de los que ya existen:
+   es otra clase de cosa que elegir uno. */
+.os-buscar-crear {
+  margin-top: 2px;
+  border-top: 1px solid var(--os-linea-suave);
+  border-radius: 0 0 6px 6px;
+  color: var(--os-azul-fuerte);
+}
+
+.os-buscar-vacio {
+  padding: 7px 9px;
+  font-size: 0.8rem;
+  color: var(--os-suave);
+}
+
 /* Las acciones de la cabecera del cliente, en dos grupos rotulados: lo que
    toca su portal y lo que toca su ficha. Los del cliente van contra el margen
    derecho, así que entre los dos grupos hay todo el ancho que sobre: el rótulo
