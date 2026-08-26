@@ -7889,7 +7889,22 @@ th.os-tabla-contacto {
 }
 
 .os-velocimetro-marco > .os-tabla {
-  min-width: 1080px;
+  min-width: 1140px;
+}
+
+/* Qué mide y el nombre del indicador se leen enteros: recortados con puntos
+   suspensivos hay que apuntar con el ratón a cada fila para saber qué se está
+   moviendo, que es justo lo que esta pantalla tiene que dejar claro. */
+.os-velocimetro-marco .os-mide,
+.os-velocimetro-marco .os-tabla-nombre {
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.35;
+}
+
+.os-velocimetro-marco .os-formula {
+  overflow: visible;
+  white-space: normal;
 }
 
 /* Los cuatro pasos de la cuenta. Numerados porque son un orden: la banda antes
@@ -8439,4 +8454,18 @@ textarea.os-exigencia-notas {
 .os-mejor-movido {
   border-color: var(--os-ambar);
   border-style: dashed;
+}
+
+/* Qué se calcula, debajo del nombre del indicador: el nombre no siempre lo
+   dice, y sin esto hay que abrir el código para saber qué número se compara
+   contra el corte que se está moviendo. */
+.os-formula {
+  display: block;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
 }

@@ -51,7 +51,7 @@ export default async function Ponderaciones() {
           // La del código, para poder decir que se invirtió.
           escalaFabrica: i.escala ?? null,
           reglas: i.reglas ? [...i.reglas] : null,
-          sobre: i.sobre ?? null,
+          formula: i.formula,
           cortes: i.escala ? (cortes[clave] ?? numerosDe(i.escala)) : [],
           cortesFabrica: i.escala ? numerosDe(i.escala) : [],
           peso: movidos[clave] ?? PESOS_DE_FABRICA[clave],

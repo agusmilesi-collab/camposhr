@@ -187,8 +187,14 @@ type Indicador = {
   nivel?: (s: SumarioCrudo) => Nivel;
   /** Qué dice cada banda, de alto a bajo, cuando no hay escala numérica. */
   reglas?: [string, string, string];
-  /** Qué unidad se compara, cuando no es el índice a secas. */
-  sobre?: string;
+  /**
+   * Qué se calcula, en la notación del sumario.
+   *
+   * No es lo mismo que el nombre del indicador: "D vs Dd" se lee como la parte
+   * que Dd se lleva de todas las localizaciones, y sin decirlo cualquiera
+   * supondría que se compara D con Dd a secas.
+   */
+  formula: string;
 };
 
 /** La banda de un indicador con los cortes y la dirección que rigen para él. */
@@ -207,6 +213,7 @@ function nivelDe(
 
 const FD: Indicador = {
   nombre: 'Fd',
+  formula: 'Fd',
   mide: 'Autonomía frente a necesidad de apoyo',
   escala: { forma: 'umbral', mayorEsMejor: false, alto: 0, medio: 1 },
   valor: (s) => num(s, 'interpersonal', 'Fd'),
@@ -214,6 +221,7 @@ const FD: Indicador = {
 
 const GHR_PHR: Indicador = {
   nombre: 'GHR : PHR',
+  formula: 'GHR contra PHR',
   mide: 'Calidad del vínculo interpersonal',
   reglas: ['GHR mayor que PHR', 'GHR igual a PHR', 'PHR mayor que GHR'],
   nivel: (s) => {
@@ -226,6 +234,7 @@ const GHR_PHR: Indicador = {
 
 const AISLAMIENTO: Indicador = {
   nombre: 'Índice de aislamiento',
+  formula: '(Bt + 2Cl + Ge + Ls + 2Na) ÷ R',
   mide: 'Grado de retraimiento social',
   escala: { forma: 'umbral', mayorEsMejor: false, alto: 0.25, medio: 0.33, decimales: 2 },
   valor: (s) => num(s, 'interpersonal', 'Aislamiento'),
@@ -233,6 +242,7 @@ const AISLAMIENTO: Indicador = {
 
 const EGOCENTRISMO: Indicador = {
   nombre: 'Índice de egocentrismo',
+  formula: '(3r + (2)) ÷ R',
   mide: 'Foco en sí mismo frente al registro del entorno',
   escala: { forma: 'banda', alto: [0.33, 0.45], medio: [0.45, 0.55], decimales: 2 },
   valor: (s) => num(s, 'autopercepcion', 'Ego'),
@@ -240,6 +250,7 @@ const EGOCENTRISMO: Indicador = {
 
 const FC_CF: Indicador = {
   nombre: 'FC : CF + C',
+  formula: 'FC contra CF + C pura',
   mide: 'Capacidad de regulación emocional',
   reglas: ['FC mayor que CF + C', 'FC igual a CF + C', 'CF + C mayor que FC'],
   nivel: (s) => {
@@ -252,9 +263,9 @@ const FC_CF: Indicador = {
 
 const M_Y: Indicador = {
   nombre: 'm + Y',
+  formula: 'm + SumY',
   mide: 'Nivel de tensión interna y ansiedad',
   escala: { forma: 'umbral', mayorEsMejor: false, alto: 2, medio: 4 },
-  sobre: 'la suma de m e Y',
   valor: (s) => {
     const m = num(s, 'determinantes', 'm');
     const y = num(s, 'determinantes', 'SumY') ?? num(s, 'determinantes', 'Y');
@@ -265,6 +276,7 @@ const M_Y: Indicador = {
 
 const COP_AG: Indicador = {
   nombre: 'COP / AG',
+  formula: 'COP y AG',
   mide: 'Tendencia a la cooperación frente a la confrontación',
   reglas: ['dos o más COP y hasta una AG', 'al menos una COP', 'ninguna COP'],
   nivel: (s) => {
@@ -279,6 +291,7 @@ const COP_AG: Indicador = {
 
 const M: Indicador = {
   nombre: 'M',
+  formula: 'M',
   mide: 'Iniciativa intencional y capacidad de elaboración',
   escala: { forma: 'umbral', mayorEsMejor: true, alto: 4, medio: 2 },
   valor: (s) => num(s, 'determinantes', 'M'),
@@ -286,6 +299,7 @@ const M: Indicador = {
 
 const LAMBDA: Indicador = {
   nombre: 'Lambda',
+  formula: 'Lambda',
   mide: 'Estilo de afrontamiento y simplificación',
   // Solo la banda de arriba es medio: un Lambda de 0,1 es alguien que no
   // consigue simplificar, se implica con todo lo que ve, y como medio se
@@ -303,11 +317,11 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     indicadores: [
       {
         nombre: 'M : W',
+        formula: 'W ÷ M',
         mide: 'Organización mental',
         // El núcleo: organizar la tarea es lo que la competencia define.
         peso: 2,
         escala: { forma: 'umbral', mayorEsMejor: false, alto: 1.5, medio: 2.5, decimales: 1 },
-        sobre: 'cuántas veces W entra en M',
         valor: (s) => {
           const m = num(s, 'determinantes', 'M');
           const w = global(s);
@@ -321,9 +335,9 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       },
       {
         nombre: 'Zd',
+        formula: 'Zd sin signo',
         mide: 'Esfuerzo organizativo',
         escala: { forma: 'umbral', mayorEsMejor: false, alto: 3, medio: 5 },
-        sobre: 'Zd sin signo',
         valor: (s) => {
           const z = num(s, 'procesamiento', 'Zd');
           return z === null ? null : Math.abs(z);
@@ -331,6 +345,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       },
       {
         nombre: 'D vs Dd',
+        formula: 'Dd ÷ (W + D + Dd)',
         mide: 'Priorización',
         // Identificar prioridades está en la definición, con esas palabras.
         peso: 2,
@@ -342,7 +357,6 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
           decimales: 2,
           porcentaje: true,
         },
-        sobre: 'Dd sobre el total de localizaciones',
         valor: (s) => {
           const w = global(s);
           const d = num(s, 'procesamiento', 'D');
@@ -356,9 +370,9 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       },
       {
         nombre: 'FM + m',
+        formula: 'FM + m',
         mide: 'Interferencia interna',
         escala: { forma: 'umbral', mayorEsMejor: false, alto: 5, medio: 7 },
-        sobre: 'la suma de FM y m',
         valor: (s) => {
           const fm = num(s, 'determinantes', 'FM');
           const m = num(s, 'determinantes', 'm');
@@ -375,6 +389,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     indicadores: [
       {
         nombre: 'EA',
+        formula: 'EA',
         mide: 'Recursos disponibles para afrontar demandas',
         // Con qué cuenta la persona para sostener la presión.
         peso: 2,
@@ -383,6 +398,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       },
       {
         nombre: 'D / AdjD',
+        formula: 'D y AdjD',
         mide: 'Tolerancia al estrés, inmediata y sostenida',
         // Mide la tolerancia a la presión, que es la competencia entera.
         peso: 2,
@@ -400,6 +416,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       M_Y,
       {
         nombre: 'Vagas',
+        formula: 'DQv',
         mide: 'Grado de desorganización frente a la experiencia',
         escala: { forma: 'umbral', mayorEsMejor: false, alto: 1, medio: 2 },
         valor: (s) => num(s, 'procesamiento', 'DQv') ?? num(s, 'localizacion', 'DQv'),
@@ -414,6 +431,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       COP_AG,
       {
         nombre: 'CDI',
+        formula: 'CDI',
         mide: 'Inhabilidad social',
         // Índice compuesto y del propio Exner: mide la competencia completa.
         peso: 2,
@@ -431,12 +449,14 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       FD,
       {
         nombre: 'R',
+        formula: 'R',
         mide: 'Nivel general de productividad e iniciativa de respuesta',
         escala: { forma: 'umbral', mayorEsMejor: true, alto: 22, medio: 17 },
         valor: (s) => num(s, 'cabecera', 'R'),
       },
       {
         nombre: 'Ma',
+        formula: 'Ma',
         mide: 'Dinamismo y tendencia a la acción',
         // Iniciativa y rol activo: el centro de la competencia.
         peso: 2,
@@ -452,6 +472,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     indicadores: [
       {
         nombre: 'W : D',
+        formula: 'W ÷ (W + D)',
         mide: 'Visión global frente al foco en el detalle',
         // Es la primera frase de la definición de Liderazgo.
         peso: 2,
@@ -463,7 +484,6 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
           decimales: 2,
           porcentaje: true,
         },
-        sobre: 'W sobre W más D',
         valor: (s) => {
           const w = global(s);
           const d = num(s, 'procesamiento', 'D');
@@ -475,6 +495,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       },
       {
         nombre: 'EB',
+        formula: 'el estilo del EB',
         mide: 'Estilo de decisión',
         /**
          * El indicador que le faltaba a esta competencia.
@@ -520,6 +541,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       LAMBDA,
       {
         nombre: 'XA%',
+        formula: 'XA%',
         mide: 'Ajuste perceptual y lectura de la realidad',
         // Sin lectura ajustada de la realidad no hay tarea bien coordinada.
         peso: 2,
@@ -528,6 +550,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       },
       {
         nombre: 'M',
+        formula: 'M',
         mide: 'Planificación y organización mental',
         /**
          * Acá pesa doble y en Proactividad ya no está.
@@ -552,6 +575,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       M_Y,
       {
         nombre: 'SumC',
+        formula: 'SumC ponderada',
         mide: 'Intensidad y modulación emocional',
         // Modular la emoción es lo que la competencia pide.
         peso: 2,
@@ -564,6 +588,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       { ...LAMBDA, mide: 'Control frente a evitación emocional' },
       {
         nombre: "C'",
+        formula: "SumC'",
         mide: 'Inhibición o restricción emocional',
         escala: { forma: 'umbral', mayorEsMejor: false, alto: 2, medio: 4 },
         valor: (s) => num(s, 'afectos', 'SumC_prima'),
@@ -578,6 +603,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       COP_AG,
       {
         nombre: 'H',
+        formula: 'H pura',
         mide: 'Interés y apertura hacia los otros',
         escala: { forma: 'umbral', mayorEsMejor: true, alto: 3, medio: 2 },
         valor: (s) => num(s, 'autopercepcion', 'H_pura'),
@@ -594,6 +620,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       // dos competencias de tarea se movieran juntas.
       {
         nombre: 'Ma : Mp',
+        formula: 'Ma contra Mp',
         mide: 'Tendencia activa frente a pasiva',
         // Activo frente a pasivo es la definición de Proactividad.
         peso: 2,
@@ -607,12 +634,14 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       },
       {
         nombre: 'FM',
+        formula: 'FM',
         mide: 'Impulso hacia la acción',
         escala: { forma: 'banda', alto: [2, 5], medio: [1, 1] },
         valor: (s) => num(s, 'determinantes', 'FM'),
       },
       {
         nombre: 'R',
+        formula: 'R',
         mide: 'Nivel de productividad y compromiso con la tarea',
         escala: { forma: 'umbral', mayorEsMejor: true, alto: 12, medio: 8 },
         valor: (s) => num(s, 'cabecera', 'R'),
