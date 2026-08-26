@@ -35,15 +35,23 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { comoHtml, limpiarHtml, tieneTexto } from '@/lib/texto-rico';
+import { soloHora } from '@/lib/hora';
 
 /** Los botones de la barra, con el comando del navegador que ejecuta cada uno. */
 const FORMATOS = [
   { comando: 'bold', texto: 'N', titulo: 'Negrita (⌘B)', clase: 'os-formato-negrita' },
   { comando: 'italic', texto: 'C', titulo: 'Cursiva (⌘I)', clase: 'os-formato-cursiva' },
   { comando: 'underline', texto: 'S', titulo: 'Subrayado (⌘U)', clase: 'os-formato-subrayado' },
-  { comando: 'insertUnorderedList', texto: '• Lista', titulo: 'Lista con viñetas', clase: '' },
-  { comando: 'insertOrderedList', texto: '1. Lista', titulo: 'Lista numerada', clase: '' },
 ] as const;
+
+/** Las listas van aparte: cambian el renglón entero, no las palabras marcadas. */
+const LISTAS = [
+  { comando: 'insertUnorderedList', texto: '• Lista', titulo: 'Lista con viñetas' },
+  { comando: 'insertOrderedList', texto: '1. Lista', titulo: 'Lista numerada' },
+] as const;
+
+/** Todos los comandos que prenden un botón, para preguntar por ellos de una. */
+const COMANDOS = [...FORMATOS, ...LISTAS].map((f) => f.comando);
 
 /**
  * Los tamaños de renglón, del más grande al normal.
@@ -57,6 +65,33 @@ const TAMANOS = [
   { etiqueta: 'h4', texto: 'Subtítulo' },
   { etiqueta: 'p', texto: 'Texto' },
 ] as const;
+
+/** Un botón de la barra. Los dos grupos dibujan el mismo. */
+function Boton({
+  f,
+  activos,
+  formatear,
+}: {
+  f: { comando: string; texto: string; titulo: string; clase?: string };
+  activos: string[];
+  formatear: (comando: string, valor?: string) => void;
+}) {
+  const puesto = activos.includes(f.comando);
+  return (
+    <button
+      type="button"
+      className={`os-formato-boton ${f.clase ?? ''}${puesto ? ' os-formato-activo' : ''}`}
+      title={f.titulo}
+      aria-pressed={puesto}
+      // Con el ratón apretado el campo pierde el foco y la selección se
+      // deshace: el formato se aplicaría sobre nada.
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={() => formatear(f.comando)}
+    >
+      {f.texto}
+    </button>
+  );
+}
 
 export default function Competencias({
   id,
@@ -76,6 +111,8 @@ export default function Competencias({
   const [tamano, setTamano] = useState('p');
   /** Cambia cuando se escribe: es lo que vuelve a preguntar si hay pendiente. */
   const [tecleos, setTecleos] = useState(0);
+  /** A qué hora entró lo último que se cargó, mientras dure la pantalla. */
+  const [cargadoA, setCargadoA] = useState<string | null>(null);
 
   const guardado = limpiarHtml(comoHtml(texto));
 
@@ -93,7 +130,7 @@ export default function Competencias({
   useEffect(() => {
     const mirar = () => {
       if (!campo.current?.contains(document.getSelection()?.anchorNode ?? null)) return;
-      setActivos(FORMATOS.map((f) => f.comando).filter((c) => document.queryCommandState(c)));
+      setActivos(COMANDOS.filter((c) => document.queryCommandState(c)));
       const bloque = document.queryCommandValue('formatBlock').toLowerCase();
       setTamano(TAMANOS.some((t) => t.etiqueta === bloque) ? bloque : 'p');
     };
@@ -109,11 +146,13 @@ export default function Competencias({
   void tecleos;
   const pendiente = campo.current !== null && escrito() !== guardado;
   const vacio = campo.current ? !tieneTexto(campo.current.innerHTML) : !tieneTexto(guardado);
+  // Reemplaza un documento, y en un documento se mira cuánto se lleva escrito.
+  const palabras = (campo.current?.textContent ?? '').trim().split(/\s+/).filter(Boolean).length;
 
   function formatear(comando: string, valor?: string) {
     campo.current?.focus();
     document.execCommand(comando, false, valor);
-    setActivos(FORMATOS.map((f) => f.comando).filter((c) => document.queryCommandState(c)));
+    setActivos(COMANDOS.filter((c) => document.queryCommandState(c)));
     setTecleos((n) => n + 1);
   }
 
@@ -129,6 +168,8 @@ export default function Competencias({
       });
       const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
       if (!r.ok) throw new Error(r.motivo ?? 'No se pudo guardar.');
+      // En la hora del trabajo y de veinticuatro, como el resto del OS.
+      setCargadoA(soloHora(new Date().toISOString()));
       empezar(() => router.refresh());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo guardar.');
@@ -150,70 +191,82 @@ export default function Competencias({
       </div>
 
       <div className="os-competencias">
-        <div className="os-formato-barra">
-          {/* El tamaño va en un cajón y no en botones: son tres opciones que se
-              excluyen, y el cajón dice cuál rige sin tener que mirar cuál de
-              tres está prendido. */}
-          <select
-            className="os-formato-tamano"
-            value={tamano}
-            aria-label="Tamaño del renglón"
-            title="Qué es este renglón"
-            onMouseDown={(e) => e.stopPropagation()}
-            onChange={(e) => formatear('formatBlock', `<${e.target.value}>`)}
-          >
-            {TAMANOS.map((t) => (
-              <option key={t.etiqueta} value={t.etiqueta}>
-                {t.texto}
-              </option>
-            ))}
-          </select>
-
-          {FORMATOS.map((f) => (
-            <button
-              key={f.comando}
-              type="button"
-              className={`os-formato-boton ${f.clase}${
-                activos.includes(f.comando) ? ' os-formato-activo' : ''
-              }`}
-              title={f.titulo}
-              aria-pressed={activos.includes(f.comando)}
-              // Con el ratón apretado el campo pierde el foco y la selección se
-              // deshace: el formato se aplicaría sobre nada.
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => formatear(f.comando)}
+        {/* La barra y el campo son una sola caja con un borde: separados se
+            leían como dos controles, y la barra no se entendía de quién era. */}
+        <div className="os-editor">
+          <div className="os-formato-barra">
+            {/* El tamaño va en un cajón y no en botones: son tres opciones que
+                se excluyen, y el cajón dice cuál rige sin tener que mirar cuál
+                de tres está prendido. */}
+            <select
+              className="os-formato-tamano"
+              value={tamano}
+              aria-label="Tamaño del renglón"
+              title="Qué es este renglón"
+              onMouseDown={(e) => e.stopPropagation()}
+              onChange={(e) => formatear('formatBlock', `<${e.target.value}>`)}
             >
-              {f.texto}
-            </button>
-          ))}
+              {TAMANOS.map((t) => (
+                <option key={t.etiqueta} value={t.etiqueta}>
+                  {t.texto}
+                </option>
+              ))}
+            </select>
+
+            {/* Dos grupos separados: lo que cambia las palabras marcadas y lo
+                que cambia el renglón entero. Los cinco seguidos se apretaban
+                como si hicieran todos lo mismo. */}
+            <div className="os-formato-grupo">
+              {FORMATOS.map((f) => (
+                <Boton key={f.comando} f={f} activos={activos} formatear={formatear} />
+              ))}
+            </div>
+            <div className="os-formato-grupo">
+              {LISTAS.map((f) => (
+                <Boton key={f.comando} f={f} activos={activos} formatear={formatear} />
+              ))}
+            </div>
+          </div>
+
+          <div
+            ref={campo}
+            className={`os-campo os-campo-rico${vacio ? ' os-campo-vacio' : ''}`}
+            contentEditable
+            suppressContentEditableWarning
+            // La tarjeta se arrastra para reordenar los tests: sin esto,
+            // marcar una palabra con el ratón arranca el arrastre de la
+            // tarjeta entera.
+            draggable={false}
+            onDragStart={(e) => e.stopPropagation()}
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Lo que se trabajó en la entrevista por competencias"
+            data-vacio="Competencia por competencia: qué se preguntó, qué contestó y con qué situación lo respaldó."
+            onInput={() => setTecleos((n) => n + 1)}
+            onPaste={(e) => {
+              e.preventDefault();
+              document.execCommand('insertText', false, e.clipboardData.getData('text/plain'));
+            }}
+            onBlur={() => guardar()}
+          />
         </div>
 
-        <div
-          ref={campo}
-          className={`os-campo os-campo-rico${vacio ? ' os-campo-vacio' : ''}`}
-          contentEditable
-          suppressContentEditableWarning
-          // La tarjeta se arrastra para reordenar los tests: sin esto, marcar
-          // una palabra con el ratón arranca el arrastre de la tarjeta entera.
-          draggable={false}
-          onDragStart={(e) => e.stopPropagation()}
-          role="textbox"
-          aria-multiline="true"
-          aria-label="Lo que se trabajó en la entrevista por competencias"
-          data-vacio="Competencia por competencia: qué se preguntó, qué contestó y con qué situación lo respaldó."
-          onInput={() => setTecleos((n) => n + 1)}
-          onPaste={(e) => {
-            e.preventDefault();
-            document.execCommand('insertText', false, e.clipboardData.getData('text/plain'));
-          }}
-          onBlur={() => guardar()}
-        />
-
-        {/* El botón cierra abajo y contra el margen derecho del campo, que es
-            donde se termina de escribir. Al lado de una caja de doscientos
-            píxeles quedaba flotando a media altura, lejos de la última línea. */}
+        {/* El pie dice de un lado en qué está lo escrito y del otro qué hacer
+            con ello. El botón cierra contra el margen derecho del campo, que es
+            donde se termina de escribir: al lado de una caja de doscientos
+            píxeles quedaba a media altura y lejos de la última línea. */}
         <div className="os-competencias-pie">
-          {error && <span className="os-form-error">{error}</span>}
+          <span className="os-editor-cuenta">
+            {error ? (
+              <span className="os-form-error">{error}</span>
+            ) : pendiente ? (
+              'Sin cargar'
+            ) : cargadoA ? (
+              `Cargado a las ${cargadoA}`
+            ) : (
+              palabras > 0 && `${palabras} ${palabras === 1 ? 'palabra' : 'palabras'}`
+            )}
+          </span>
           <button
             className="os-boton os-boton-azul"
             type="button"
