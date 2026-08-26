@@ -17,17 +17,19 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { CACHE_COMERCIAL } from '@/lib/etiquetas';
-import type { Estado } from '@/lib/comercial-tipos';
+import type { Estado, Objecion } from '@/lib/comercial-tipos';
 
 export {
   ABIERTOS,
   ESTADOS,
+  OBJECIONES,
   SERVICIOS,
   TIPOS_COSTO,
   formatoFecha,
   formatoImporte,
   resultadoDe,
   type Estado,
+  type Objecion,
   type Resultado,
   type Servicio,
   type TipoCosto,
@@ -47,7 +49,10 @@ export type Cotizacion = {
   token: string | null;
   archivo: string | null;
   nota: string | null;
+  /** El detalle escrito de la perdida. */
   motivo: string | null;
+  /** Con cuál de las cinco objeciones se perdió. */
+  objecion: Objecion | null;
 };
 
 type Fila = Omit<Cotizacion, 'importe' | 'empresaId'> & {
@@ -56,7 +61,8 @@ type Fila = Omit<Cotizacion, 'importe' | 'empresaId'> & {
 };
 
 const CAMPOS =
-  'id,empresa_id,cliente,concepto,importe,moneda,version,estado,fecha,token,archivo,nota,motivo';
+  'id,empresa_id,cliente,concepto,importe,moneda,version,estado,fecha,token,archivo,nota,motivo,' +
+  'objecion';
 
 function armar(f: Fila): Cotizacion {
   return {
@@ -73,6 +79,7 @@ function armar(f: Fila): Cotizacion {
     archivo: f.archivo,
     nota: f.nota,
     motivo: f.motivo,
+    objecion: f.objecion,
   };
 }
 

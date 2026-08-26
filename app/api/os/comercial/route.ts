@@ -4,6 +4,7 @@ import { CACHE_CLIENTES, CACHE_COMERCIAL } from '@/lib/etiquetas';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { ESTADOS, TIPOS_COSTO } from '@/lib/cotizaciones';
+import { esObjecion } from '@/lib/comercial-tipos';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 
@@ -68,16 +69,23 @@ export async function POST(req: Request) {
         if (!UUID.test(id ?? '') || !ESTADOS.includes(estado)) {
           return NextResponse.json({ error: 'Estado inválido.' }, { status: 400 });
         }
+        // La objeción solo vale en una perdida, y solo si es una de las cinco:
+        // el sentido de tenerlas es poder contar cuál se repite.
+        const objecion = estado === 'Perdida' && esObjecion(datos.objecion) ? datos.objecion : null;
+        if (estado === 'Perdida' && datos.objecion && !objecion) {
+          return NextResponse.json({ error: 'Esa objeción no existe.' }, { status: 400 });
+        }
         await escribir(`cotizaciones?id=eq.${id}`, 'PATCH', {
           estado,
           motivo: estado === 'Perdida' ? motivo ?? null : null,
+          objecion,
         });
         await anotarAcceso({
           quien: yo.nombre,
           accion: 'escritura',
           recurso: 'cotizacion',
           recursoId: id,
-          detalle: { estado, motivo: motivo ?? null },
+          detalle: { estado, motivo: motivo ?? null, objecion },
         });
         revalidateTag(CACHE_CLIENTES);
         revalidateTag(CACHE_COMERCIAL);
@@ -112,6 +120,52 @@ export async function POST(req: Request) {
         revalidateTag(CACHE_CLIENTES);
         revalidateTag(CACHE_COMERCIAL);
                 return NextResponse.json({ ok: true, id: fila.id });
+      }
+
+      /**
+       * Editar lo que dice la tarjeta.
+       *
+       * El estado no entra acá: se mueve arrastrando de columna, que es lo que
+       * hace esa pantalla. Mezclarlo daría dos formas de cambiar lo mismo.
+       */
+      case 'editar': {
+        const { id } = datos;
+        if (!UUID.test(id ?? '')) {
+          return NextResponse.json({ error: 'Falta la oportunidad.' }, { status: 400 });
+        }
+        const cliente = String(datos.cliente ?? '').trim();
+        const concepto = String(datos.concepto ?? '').trim();
+        const importe = Number(datos.importe);
+        if (!cliente || !concepto) {
+          return NextResponse.json({ error: 'Faltan el cliente y el concepto.' }, { status: 400 });
+        }
+        if (concepto.length > 200) {
+          return NextResponse.json({ error: 'El concepto es muy largo.' }, { status: 400 });
+        }
+        if (!Number.isFinite(importe) || importe < 0) {
+          return NextResponse.json({ error: 'El importe no es un número.' }, { status: 400 });
+        }
+        const fecha = String(datos.fecha ?? '');
+        if (fecha && !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+          return NextResponse.json({ error: 'La fecha no es válida.' }, { status: 400 });
+        }
+        await escribir(`cotizaciones?id=eq.${id}`, 'PATCH', {
+          cliente,
+          concepto,
+          importe,
+          ...(fecha ? { fecha } : {}),
+          nota: String(datos.nota ?? '').trim() || null,
+        });
+        await anotarAcceso({
+          quien: yo.nombre,
+          accion: 'escritura',
+          recurso: 'cotizacion',
+          recursoId: id,
+          detalle: { edicion: true, cliente, concepto, importe },
+        });
+        revalidateTag(CACHE_CLIENTES);
+        revalidateTag(CACHE_COMERCIAL);
+        return NextResponse.json({ ok: true });
       }
 
       case 'costo': {

@@ -83,7 +83,9 @@ export default async function Cotizaciones() {
           token: c.token,
           nota: c.nota,
           motivo: c.motivo,
+          objecion: c.objecion,
         }))}
+        clientes={clientes.map((c) => c.nombre)}
       />
     </Shell>
   );
