@@ -571,7 +571,7 @@ export default function Documento({
               <span>
                 {firma.titulo} · Mat. {firma.matricula}
               </span>
-              <span>{firma.correo}</span>
+              {firma.correo && <span>{firma.correo}</span>}
             </>
           )}
         </div>
