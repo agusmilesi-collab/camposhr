@@ -15,12 +15,18 @@ import {
   bandaDe,
   calcularCompetencias,
   pesosValidos,
+  cortesDeCompetenciasValidos,
   protocoloAlcanza,
   type Competencia,
 } from '@/lib/competencias';
 import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
-import { llevaDiscursivo } from '@/lib/discursivo';
+import {
+  llevaDiscursivo,
+  nivelesQueRigen,
+  nivelesValidos,
+  type TextoDeNivel,
+} from '@/lib/discursivo';
 import {
   CUADRANTES,
   nivelDeConclusion,
@@ -145,6 +151,8 @@ export type Informe = {
     /** Los dos párrafos, si los escribió. */
     actual: string | null;
     futura: string | null;
+    /** Qué dice cada escalón de la pirámide, con lo que rige. */
+    escalones: Record<string, string>;
   } | null;
   tecnicas: string[];
   /** Lo que no estaba cargado y por eso no salió en el informe. */
@@ -231,22 +239,37 @@ export type Regulacion = {
   pesos: Record<string, number>;
   textos: Textos;
   cortes: Cortes;
+  /** Dónde corta cada indicador del velocímetro, por `claveDePeso`. */
+  cortesCompetencias: Record<string, number[]>;
+  /** Los textos de los cuatro estratos del potencial, si se reescribieron. */
+  niveles: Record<string, Partial<TextoDeNivel>>;
 };
 
-const DE_FABRICA: Regulacion = { rangos: RANGOS, pesos: {}, textos: {}, cortes: {} };
+const DE_FABRICA: Regulacion = {
+  rangos: RANGOS,
+  pesos: {},
+  textos: {},
+  cortes: {},
+  cortesCompetencias: {},
+  niveles: {},
+};
 
 export async function loQueRige(): Promise<Regulacion> {
-  const [r, p, t, c] = await Promise.all([
+  const [r, p, t, c, k, n] = await Promise.all([
     ajuste('raven_rangos'),
     ajuste('competencias_pesos'),
     ajuste('redacciones_textos'),
     ajuste('redacciones_cortes'),
+    ajuste('competencias_cortes'),
+    ajuste('discursivo_niveles'),
   ]);
   return {
     rangos: rangosValidos(r) ?? RANGOS,
     pesos: pesosValidos(p) ?? {},
     textos: textosValidos(t) ?? {},
     cortes: cortesValidos(c) ?? {},
+    cortesCompetencias: cortesDeCompetenciasValidos(k) ?? {},
+    niveles: nivelesValidos(n) ?? {},
   };
 }
 
@@ -272,7 +295,7 @@ function tieneAlgo(c: Cuatro | null): boolean {
 }
 
 export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
-  const { rangos, pesos, textos, cortes } = rige;
+  const { rangos, pesos, textos, cortes, cortesCompetencias, niveles } = rige;
   const c = f.cabecera;
   const faltantes: Faltante[] = [];
 
@@ -367,7 +390,13 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
   const competencias = sumario
     ? calcularCompetencias(
         sumario,
-        { ravenPercentil: f.raven?.percentil ?? null, ravenRaw: f.raven?.raw ?? null, rangos, pesos },
+        {
+          ravenPercentil: f.raven?.percentil ?? null,
+          ravenRaw: f.raven?.raw ?? null,
+          rangos,
+          pesos,
+          cortesCompetencias,
+        },
         proyectivoDe(f)
       )
     : [];
@@ -412,6 +441,9 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
           nivel: f.discursivo.nivel,
           actual: f.discursivo.actual,
           futura: f.discursivo.futura,
+          escalones: Object.fromEntries(
+            nivelesQueRigen(niveles).map((n) => [n.nombre, n.que])
+          ),
         }
       : null,
     raven:

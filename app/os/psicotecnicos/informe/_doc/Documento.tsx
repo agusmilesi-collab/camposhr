@@ -500,7 +500,7 @@ export default function Documento({
             </ol>
 
             <div className="inf-piramide-caja">
-              <Piramide nivel={inf.discursivo.nivel} />
+              <Piramide nivel={inf.discursivo.nivel} textos={inf.discursivo.escalones} />
             </div>
 
             {/* Los dos van siempre, con o sin texto: el capítulo tiene tres

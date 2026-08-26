@@ -6,8 +6,9 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { rangosValidos } from '@/lib/raven';
-import { pesosValidos } from '@/lib/competencias';
+import { cortesDeCompetenciasValidos, pesosValidos } from '@/lib/competencias';
 import { cortesValidos, textosValidos } from '@/lib/redacciones';
+import { nivelesValidos } from '@/lib/discursivo';
 
 export const runtime = 'nodejs';
 
@@ -21,6 +22,10 @@ const MOTIVO = {
     'Cada texto tiene que ser de una lectura que exista y de hasta 1200 caracteres, y ninguna lectura puede quedarse sin lo que dice.',
   redacciones_cortes:
     'Cada corte tiene que ser un número de una lectura que entre contra un número fijo. Las que dependen del estilo o de la cantidad de respuestas no se mueven desde acá.',
+  competencias_cortes:
+    'Cada corte tiene que ser un número de un indicador que corte por umbral, y el de alto tiene que quedar del lado que le corresponde al de medio.',
+  discursivo_niveles:
+    'Cada nivel tiene que ser uno de los cuatro que existen, con textos de hasta 2000 caracteres, y ninguno puede quedarse sin su resumen.',
 };
 export const dynamic = 'force-dynamic';
 
@@ -55,7 +60,14 @@ export async function POST(req: Request) {
   const clave = datos?.clave;
   const valor = datos?.valor;
 
-  const CLAVES = ['raven_rangos', 'competencias_pesos', 'redacciones_textos', 'redacciones_cortes'];
+  const CLAVES = [
+    'raven_rangos',
+    'competencias_pesos',
+    'redacciones_textos',
+    'redacciones_cortes',
+    'competencias_cortes',
+    'discursivo_niveles',
+  ];
   if (!CLAVES.includes(clave)) {
     return NextResponse.json({ ok: false, motivo: 'Ajuste desconocido.' }, { status: 400 });
   }
@@ -92,7 +104,11 @@ export async function POST(req: Request) {
         ? pesosValidos(valor)
         : clave === 'redacciones_cortes'
           ? cortesValidos(valor)
-          : textosValidos(valor);
+          : clave === 'competencias_cortes'
+            ? cortesDeCompetenciasValidos(valor)
+            : clave === 'discursivo_niveles'
+              ? nivelesValidos(valor)
+              : textosValidos(valor);
   if (!limpios) {
     return NextResponse.json(
       {

@@ -7793,3 +7793,110 @@ th.os-tabla-contacto {
   width: 100%;
   max-width: 420px;
 }
+
+/* ---------- Velocímetro: las tres bandas ---------- */
+
+/* Cuánto aporta cada banda, en el encabezado de su columna: es la respuesta a
+   qué le pasa al puntaje cuando el indicador cae ahí. */
+.os-banda-vale {
+  margin-left: 5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--os-panel-2);
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.os-banda-celda {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.os-banda-palabra {
+  color: var(--os-tinta-media);
+}
+
+/* Una banda que el indicador no usa: EB no tiene medio, se es ambigual o no. */
+.os-banda-nula {
+  color: var(--os-suave);
+  font-style: italic;
+}
+
+.os-corte-caja {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.os-corte-caja .os-campo-umbral {
+  width: 58px;
+  text-align: right;
+}
+
+.os-corte-roto .os-campo-umbral {
+  border-color: var(--os-rojo);
+}
+
+.os-corte-unidad {
+  color: var(--os-tinta-media);
+}
+
+/* La regla de una banda que se compara con otro índice no se recorta: es la
+   condición entera y con puntos suspensivos no se puede leer qué pasa ahí. */
+.os-tabla-fija td.os-banda-regla {
+  white-space: normal;
+  line-height: 1.4;
+}
+
+/* Los cuatro pasos de la cuenta. Numerados porque son un orden: la banda antes
+   que el valor, y el valor antes que el promedio. */
+.os-pasos-calculo {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  display: grid;
+  gap: 7px;
+  color: var(--os-tinta-media);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.os-pasos-calculo strong {
+  color: var(--os-tinta);
+  font-weight: 600;
+}
+
+/* Los tres campos de un estrato: rol y lapso arriba, en dos columnas, y las
+   características abajo al ancho entero, que es el texto largo. */
+.os-redaccion-estratos {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 20px;
+  row-gap: 12px;
+}
+
+/* En pantalla angosta los dos de arriba se apilan, que es cuando el lapso deja
+   de entrar al lado del rol sin partirse en dos renglones. */
+@media (max-width: 760px) {
+  .os-redaccion-estratos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.os-redaccion-estratos > :last-child {
+  grid-column: 1 / -1;
+}
+
+/* La altura la pone el `rows` de cada campo y no el alto fijo de `.os-campo`:
+   el lapso es una línea y las características son ocho. */
+/* Gana a la altura fija de las casillas del diccionario, que comparten la
+   clase del contenedor. */
+.os-redaccion-campo textarea.os-campo-estrato {
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  padding: 7px 9px;
+  line-height: 1.5;
+  resize: vertical;
+}

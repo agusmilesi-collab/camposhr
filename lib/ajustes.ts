@@ -23,7 +23,9 @@ export type ClaveDeAjuste =
   | 'raven_rangos'
   | 'competencias_pesos'
   | 'redacciones_textos'
-  | 'redacciones_cortes';
+  | 'redacciones_cortes'
+  | 'competencias_cortes'
+  | 'discursivo_niveles';
 
 type Fila = { clave: string; valor: unknown };
 

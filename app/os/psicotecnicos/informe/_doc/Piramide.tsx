@@ -61,11 +61,18 @@ function semiancho(y: number): number {
 export default function Piramide({
   nivel,
   elegir,
+  textos,
 }: {
   /** El que ubicó la evaluadora. Null mientras no se eligió. */
   nivel: string | null;
   /** Si viene, cada escalón es un botón. En el informe no viene. */
   elegir?: (n: NivelDiscursivo) => void;
+  /**
+   * Qué dice cada escalón, si se reescribió desde Configuración.
+   *
+   * Por nombre de nivel. Lo que no esté acá sale con el texto del código.
+   */
+  textos?: Record<string, string>;
 }) {
   // Con uno ubicado, los otros tres se atenúan: el que importa es a dónde puede
   // llegar, y los demás quedan como referencia de dónde cae eso. Sin ninguno
@@ -90,7 +97,7 @@ export default function Piramide({
               {/* El tilde va adentro del recuadro y no en una columna aparte:
                   suelto al costado quedaba flotando fuera de la figura. */}
               <span className="inf-piramide-que">
-                {n.que}
+                {textos?.[n.nombre] ?? n.que}
                 {suyo && (
                   <span className="inf-piramide-tilde" aria-hidden="true">
                     ✓
