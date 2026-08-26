@@ -9,10 +9,10 @@
  * redacción vivía en un Google Docs por candidato, fuera del sistema, y para
  * escribir el informe había que ir a buscarla.
  *
- * **Se escribe con formato**, porque reemplaza un documento: negrita, cursiva y
- * listas, que es lo que se usa para separar competencia por competencia. El
- * formato se pone con la barra o con los atajos del sistema (⌘B, ⌘I), que
- * funcionan solos en un campo editable.
+ * **Se escribe con formato**, porque reemplaza un documento: títulos, negrita,
+ * cursiva, subrayado y listas, que es lo que se usa para separar competencia
+ * por competencia. Se pone con la barra o con los atajos del sistema (⌘B, ⌘I,
+ * ⌘U), que funcionan solos en un campo editable.
  *
  * **Lo que se pega entra sin formato.** Pegar de un documento arrastra tipos de
  * letra, tamaños y colores que después hay que limpiar a mano, y nada de eso
@@ -40,8 +40,22 @@ import { comoHtml, limpiarHtml, tieneTexto } from '@/lib/texto-rico';
 const FORMATOS = [
   { comando: 'bold', texto: 'N', titulo: 'Negrita (⌘B)', clase: 'os-formato-negrita' },
   { comando: 'italic', texto: 'C', titulo: 'Cursiva (⌘I)', clase: 'os-formato-cursiva' },
+  { comando: 'underline', texto: 'S', titulo: 'Subrayado (⌘U)', clase: 'os-formato-subrayado' },
   { comando: 'insertUnorderedList', texto: '• Lista', titulo: 'Lista con viñetas', clase: '' },
   { comando: 'insertOrderedList', texto: '1. Lista', titulo: 'Lista numerada', clase: '' },
+] as const;
+
+/**
+ * Los tamaños de renglón, del más grande al normal.
+ *
+ * Lo que se elige es qué es el renglón y no cuántos píxeles mide: un título de
+ * competencia es un título, y el tamaño con el que se ve acá y el que use el
+ * informe pueden ser distintos sin que nadie tenga que volver a tocarlo.
+ */
+const TAMANOS = [
+  { etiqueta: 'h3', texto: 'Título' },
+  { etiqueta: 'h4', texto: 'Subtítulo' },
+  { etiqueta: 'p', texto: 'Texto' },
 ] as const;
 
 export default function Competencias({
@@ -58,6 +72,8 @@ export default function Competencias({
   const [error, setError] = useState<string | null>(null);
   /** Qué formatos tiene la selección de ahora, para prender los botones. */
   const [activos, setActivos] = useState<string[]>([]);
+  /** Qué tamaño tiene el renglón donde está el cursor. */
+  const [tamano, setTamano] = useState('p');
   /** Cambia cuando se escribe: es lo que vuelve a preguntar si hay pendiente. */
   const [tecleos, setTecleos] = useState(0);
 
@@ -78,6 +94,8 @@ export default function Competencias({
     const mirar = () => {
       if (!campo.current?.contains(document.getSelection()?.anchorNode ?? null)) return;
       setActivos(FORMATOS.map((f) => f.comando).filter((c) => document.queryCommandState(c)));
+      const bloque = document.queryCommandValue('formatBlock').toLowerCase();
+      setTamano(TAMANOS.some((t) => t.etiqueta === bloque) ? bloque : 'p');
     };
     document.addEventListener('selectionchange', mirar);
     return () => document.removeEventListener('selectionchange', mirar);
@@ -92,9 +110,9 @@ export default function Competencias({
   const pendiente = campo.current !== null && escrito() !== guardado;
   const vacio = campo.current ? !tieneTexto(campo.current.innerHTML) : !tieneTexto(guardado);
 
-  function formatear(comando: string) {
+  function formatear(comando: string, valor?: string) {
     campo.current?.focus();
-    document.execCommand(comando);
+    document.execCommand(comando, false, valor);
     setActivos(FORMATOS.map((f) => f.comando).filter((c) => document.queryCommandState(c)));
     setTecleos((n) => n + 1);
   }
@@ -133,6 +151,24 @@ export default function Competencias({
 
       <div className="os-competencias">
         <div className="os-formato-barra">
+          {/* El tamaño va en un cajón y no en botones: son tres opciones que se
+              excluyen, y el cajón dice cuál rige sin tener que mirar cuál de
+              tres está prendido. */}
+          <select
+            className="os-formato-tamano"
+            value={tamano}
+            aria-label="Tamaño del renglón"
+            title="Qué es este renglón"
+            onMouseDown={(e) => e.stopPropagation()}
+            onChange={(e) => formatear('formatBlock', `<${e.target.value}>`)}
+          >
+            {TAMANOS.map((t) => (
+              <option key={t.etiqueta} value={t.etiqueta}>
+                {t.texto}
+              </option>
+            ))}
+          </select>
+
           {FORMATOS.map((f) => (
             <button
               key={f.comando}
