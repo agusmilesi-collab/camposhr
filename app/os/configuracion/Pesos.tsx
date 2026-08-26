@@ -91,14 +91,14 @@ const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Rasgo', 'P
    ancho es "Dónde corta", que es texto de referencia y se lee entero en el
    informe. */
 const MEDIDAS = columnas(COLUMNAS, {
-  Indicador: 138,
-  'Qué mide': 168,
-  Alto: 190,
-  Medio: 190,
-  Bajo: 140,
-  Rasgo: 132,
-  Peso: 90,
-  Aporte: 94,
+  Indicador: 168,
+  'Qué mide': 214,
+  Alto: 182,
+  Medio: 182,
+  Bajo: 136,
+  Rasgo: 124,
+  Peso: 88,
+  Aporte: 92,
 });
 
 /** Dónde vuelve "Volver arriba": el panel con el índice, al principio. */
@@ -125,8 +125,8 @@ export type Indicador = {
   escalaFabrica: Escala | null;
   /** Qué dice cada banda cuando no hay números: se compara un índice con otro. */
   reglas: string[] | null;
-  /** Qué se compara, cuando no es el índice a secas. */
-  sobre: string | null;
+  /** Qué se calcula, en la notación del sumario. */
+  formula: string;
   cortes: number[];
   cortesFabrica: number[];
   peso: number;
@@ -585,10 +585,18 @@ export default function Pesos({
                         const peso = suyos[n];
                         return (
                           <tr key={i.clave}>
+                            {/* El nombre y, debajo, qué se calcula: "D vs Dd"
+                                no dice que lo que se mira es la parte que Dd se
+                                lleva de todas las localizaciones. Cuando el
+                                nombre ya es la fórmula, como en CDI o en R, no
+                                se repite. */}
                             <td className="os-tabla-nombre" data-campo="Indicador">
                               {i.nombre}
+                              {i.formula !== i.nombre && (
+                                <span className="os-formula">{i.formula}</span>
+                              )}
                             </td>
-                            <td className="os-tabla-flojo" data-campo="Qué mide">
+                            <td className="os-tabla-flojo os-mide" data-campo="Qué mide">
                               {i.mide}
                             </td>
                             {banda(i, 0)}
