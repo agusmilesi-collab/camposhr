@@ -100,14 +100,14 @@ const COLUMNAS = [
    ancho es "Dónde corta", que es texto de referencia y se lee entero en el
    informe. */
 const MEDIDAS = columnas(COLUMNAS, {
-  Indicador: 146,
-  'Qué mide': 196,
-  Alto: 176,
-  Medio: 176,
-  Bajo: 146,
-  'Si lo pasa': 118,
-  Peso: 94,
-  Aporte: 98,
+  Indicador: 138,
+  'Qué mide': 168,
+  Alto: 190,
+  Medio: 190,
+  Bajo: 140,
+  'Si lo pasa': 132,
+  Peso: 90,
+  Aporte: 94,
 });
 
 /** Dónde vuelve "Volver arriba": el panel con el índice, al principio. */
@@ -559,7 +559,7 @@ export default function Pesos({
                   </a>
                 </div>
 
-                <div className="os-tabla-marco">
+                <div className="os-tabla-marco os-velocimetro-marco">
                   <table className="os-tabla os-tabla-trabajo os-tabla-fija">
                     <colgroup>
                       {COLUMNAS.map((x, n) => (

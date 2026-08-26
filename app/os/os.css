@@ -7833,11 +7833,15 @@ th.os-tabla-contacto {
   font-variant-numeric: tabular-nums;
 }
 
+/* En una línea sola: partida, la palabra queda arriba y el campo abajo, y la
+   fila crece al doble para decir lo mismo. Lo que no entre se recorta con el
+   ancho de la columna, que es donde se arregla. */
 .os-banda-celda {
   display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 5px;
+  white-space: nowrap;
 }
 
 .os-banda-palabra {
@@ -7857,7 +7861,7 @@ th.os-tabla-contacto {
 }
 
 .os-corte-caja .os-campo-umbral {
-  width: 58px;
+  width: 54px;
   text-align: right;
 }
 
@@ -7874,6 +7878,18 @@ th.os-tabla-contacto {
 .os-tabla-fija td.os-banda-regla {
   white-space: normal;
   line-height: 1.4;
+}
+
+/* La tabla del velocímetro tiene ocho columnas y dos con campos editables: por
+   debajo de este ancho, en vez de apretarlas hasta que un número quede cortado,
+   el marco se corre. Achicar la ventana no puede esconder un dígito de un corte
+   que alguien está por escribir. */
+.os-velocimetro-marco {
+  overflow-x: auto;
+}
+
+.os-velocimetro-marco > .os-tabla {
+  min-width: 1080px;
 }
 
 /* Los cuatro pasos de la cuenta. Numerados porque son un orden: la banda antes
