@@ -90,16 +90,19 @@ export function Largo({
   valor,
   rotulo,
   ayuda,
+  fila,
 }: {
   id: string;
   campo: string;
   valor: string | null;
   rotulo: string;
   ayuda?: string;
+  /** Ocupa la fila entera cuando el bloque va en dos columnas. */
+  fila?: boolean;
 }) {
   const { guardar, error } = useGuardar(id);
   return (
-    <div className="os-ficha-dato os-ficha-dato-ancho">
+    <div className={`os-ficha-dato os-ficha-dato-ancho${fila ? ' os-ficha-dato-fila' : ''}`}>
       <div className="os-ficha-rotulo">{rotulo}</div>
       <div className="os-ficha-valor">
         {/* Ocupa todo el ancho de su celda: es donde se copia lo que dijo el
