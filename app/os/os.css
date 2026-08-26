@@ -8063,3 +8063,48 @@ textarea.os-exigencia-notas {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* El nombre del perfil y su sello, juntos: el sello habla del perfil, no de la
+   fila. Sin `baseline` el punto del sello quedaba montado sobre el título. */
+.os-exigencia-nombre {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+/* Las acciones de un perfil, contra el borde derecho de su encabezado. Es donde
+   el resto del sistema pone lo que se le hace a un panel.
+
+   El dato de uso viene con `margin-left: auto` propio: si las acciones también
+   lo llevaran, el espacio sobrante se repartiría entre los dos y "sin usar"
+   quedaría flotando en el medio de la fila. */
+.os-exigencia-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* En una fila de botones, el enlace se alinea con ellos y no con la primera
+   línea del bloque. */
+.os-exigencia-acciones .os-enlace-boton {
+  align-self: center;
+}
+
+.os-exigencia-acciones .os-enlace-boton:disabled {
+  color: var(--os-linea);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* La nota queda pegada a la barra, sin la separación que necesitaba cuando
+   abajo venían los botones. */
+.os-exigencia-nota {
+  margin: 0;
+}
+
+.os-exigencia-pie {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
