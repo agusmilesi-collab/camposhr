@@ -132,8 +132,19 @@ function hEsperado(r: number, estilo: string): [number, number] {
  */
 export type ClaveDeTexto = keyof typeof TEXTOS;
 
-/** Lo que alguien reescribió, por clave. Solo lo que cambió de fábrica. */
-export type Textos = Partial<Record<string, { dice?: string; recomienda?: string }>>;
+/**
+ * Lo que alguien reescribió, por clave. Solo lo que cambió de fábrica.
+ *
+ * Cada campo es la lista de formas de decirlo, de una a tres. `recomiendaZ` es
+ * la del Zulliger, que se escribe aparte porque lo que se sugiere hacer depende
+ * de con qué se midió.
+ */
+export type Textos = Partial<
+  Record<string, { dice?: string[]; recomienda?: string[]; recomiendaZ?: string[] }>
+>;
+
+/** Los dos tests de manchas. El diccionario se lee distinto según cuál se tomó. */
+export type TestDeManchas = 'Rorschach' | 'Zulliger';
 
 /**
  * El número contra el que entra una lectura.
@@ -153,14 +164,45 @@ export type Corte = {
 /** Los cortes movidos desde Sistema, por clave. Solo los que cambiaron. */
 export type Cortes = Partial<Record<string, number>>;
 
+/**
+ * Lo que cambia entre un test y el otro.
+ *
+ * El diccionario es uno solo porque lo que la lectura significa no cambia: un
+ * Lambda alto dice lo mismo se haya medido con Rorschach o con Zulliger. Lo que
+ * sí cambia son dos cosas, y por eso son las dos que se pueden escribir aparte:
+ * **el corte**, porque las normas de cada test son distintas, y **la
+ * recomendación**, porque lo que se sugiere hacer depende de con qué se midió.
+ *
+ * Lo que no está acá vale para los dos. Duplicar las sesenta y ocho lecturas
+ * para que digan lo mismo sería mantener dos diccionarios que se desincronizan
+ * a la primera corrección.
+ */
+export type PorTest = {
+  corte?: Corte;
+  recomienda?: string[];
+};
+
 export type Redaccion = {
   area: string;
   indice: string;
   /** El castellano escrito a mano, en las lecturas que no tienen corte. */
   cuando?: string;
   corte?: Corte;
-  dice: string;
-  recomienda: string;
+  /**
+   * Qué dice la lectura, en hasta tres formas de decir lo mismo.
+   *
+   * El informe toma una, elegida por la evaluación y no al azar en cada
+   * dibujo: un informe entregado no puede cambiar de texto cuando se vuelve a
+   * abrir. Entre candidatos del mismo pedido salen distintas, así que el
+   * cliente que recibe tres no lee tres veces el mismo párrafo.
+   *
+   * La primera es la que validó la psicóloga. Las otras son opcionales.
+   */
+  dice: string[];
+  /** Qué se recomienda hacer, con las mismas tres formas. */
+  recomienda: string[];
+  /** Lo propio del Zulliger, donde el corte o la recomendación difieren. */
+  zulliger?: PorTest;
 };
 
 export const TEXTOS = {
@@ -168,493 +210,527 @@ export const TEXTOS = {
     area: 'Cómo procesa la información',
     indice: 'Lambda',
     corte: { op: 'menor', valor: 0.3, decimales: 2 },
-    dice: 'Intenta captar todo, sin discriminar entre información relevante y accesoria. No se le escapa nada, y corre el riesgo de llenarse de datos que no sirven para resolver el problema, lo que puede hacer caer su eficacia.',
-    recomienda: 'Ayudarlo a separar la información relevante de la accesoria, para que cuando tenga que resolver algo rápido pueda hacerlo sin impulsividad.',
+    dice: ['Intenta captar todo, sin discriminar entre información relevante y accesoria. No se le escapa nada, y corre el riesgo de llenarse de datos que no sirven para resolver el problema, lo que puede hacer caer su eficacia.'],
+    recomienda: ['Ayudarlo a separar la información relevante de la accesoria, para que cuando tenga que resolver algo rápido pueda hacerlo sin impulsividad.'],
   },
   'lambda-alto': {
     area: 'Cómo procesa la información',
     indice: 'Lambda',
     corte: { op: 'mayor', valor: 0.8, decimales: 2 },
-    dice: 'Simplifica sus percepciones más de lo esperado. Con eso evita procesar emociones y que los afectos lo invadan, y puede perder algún dato importante para la tarea.',
-    recomienda: 'En situaciones con carga emocional, darle seguimiento para que no pierda datos o información importante.',
+    dice: ['Simplifica sus percepciones más de lo esperado. Con eso evita procesar emociones y que los afectos lo invadan, y puede perder algún dato importante para la tarea.'],
+    recomienda: ['En situaciones con carga emocional, darle seguimiento para que no pierda datos o información importante.'],
   },
   'zd-alto': {
     area: 'Cómo procesa la información',
     indice: 'Zd',
     corte: { op: 'mayor', valor: 3, decimales: 1 },
-    dice: 'Muy meticuloso en el análisis de la información: dedica más esfuerzo y energía que la mayoría a rastrear y explorar datos, por temor a equivocarse. Bajo presión externa, eso puede hacer fallar la toma de decisiones.',
-    recomienda: 'Dar indicaciones claras y concretas para ayudarlo a enfocar en lo importante, y mostrarse abierto a consultas para calmar su temor a cometer errores, sobre todo al decidir.',
+    dice: ['Muy meticuloso en el análisis de la información: dedica más esfuerzo y energía que la mayoría a rastrear y explorar datos, por temor a equivocarse. Bajo presión externa, eso puede hacer fallar la toma de decisiones.'],
+    recomienda: ['Dar indicaciones claras y concretas para ayudarlo a enfocar en lo importante, y mostrarse abierto a consultas para calmar su temor a cometer errores, sobre todo al decidir.'],
   },
   'zd-bajo': {
     area: 'Cómo procesa la información',
     indice: 'Zd',
     corte: { op: 'menor', valor: -3, decimales: 1 },
-    dice: 'Examina el entorno de manera poco cuidadosa: hace un rastreo apresurado, no llega a recoger datos suficientes y decide antes de que aparezcan todos los puntos clave. Puede cometer más errores por responder antes de procesar toda la información disponible.',
-    recomienda: 'Establecer instancias de chequeo o procedimientos que incluyan revisar determinados puntos antes de avanzar o decidir, para que no le falten datos en esas decisiones.',
+    dice: ['Examina el entorno de manera poco cuidadosa: hace un rastreo apresurado, no llega a recoger datos suficientes y decide antes de que aparezcan todos los puntos clave. Puede cometer más errores por responder antes de procesar toda la información disponible.'],
+    recomienda: ['Establecer instancias de chequeo o procedimientos que incluyan revisar determinados puntos antes de avanzar o decidir, para que no le falten datos en esas decisiones.'],
   },
   'w-bajo': {
     area: 'Cómo procesa la información',
     indice: 'W',
     cuando: 'W en menos del 30 % de las localizaciones, con alguna D',
-    dice: 'Puede necesitar ayuda para armar una visión global de las situaciones, con tendencia a centrarse en los detalles.',
-    recomienda: 'Darle información de contexto para ayudarlo a generar mayor visión de conjunto.',
+    dice: ['Puede necesitar ayuda para armar una visión global de las situaciones, con tendencia a centrarse en los detalles.'],
+    recomienda: ['Darle información de contexto para ayudarlo a generar mayor visión de conjunto.'],
   },
   'w-alto': {
     area: 'Cómo procesa la información',
     indice: 'W',
     cuando: 'W en más del 50 % de las localizaciones',
-    dice: 'Intenta abarcarlo todo y consigue tener visión global de las situaciones.',
-    recomienda: '',
+    dice: ['Intenta abarcarlo todo y consigue tener visión global de las situaciones.'],
+    recomienda: [''],
   },
   'dd-alto': {
     area: 'Cómo procesa la información',
     indice: 'Dd',
     cuando: 'Dd en más del 15 % de las localizaciones',
-    dice: 'Revisa de manera minuciosa para evitar errores, y al fijarse en aspectos poco relevantes pierde la visión de conjunto: se fija en lo que la mayoría no mira y deja de lado datos obvios.',
-    recomienda: 'Ayudarlo a priorizar los aspectos centrales de la tarea, para que no se detenga en detalles poco relevantes.',
+    dice: ['Revisa de manera minuciosa para evitar errores, y al fijarse en aspectos poco relevantes pierde la visión de conjunto: se fija en lo que la mayoría no mira y deja de lado datos obvios.'],
+    recomienda: ['Ayudarlo a priorizar los aspectos centrales de la tarea, para que no se detenga en detalles poco relevantes.'],
   },
   'dqv-alto': {
     area: 'Cómo procesa la información',
     indice: 'DQv',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
-    dice: 'Aparece un modo de resolver poco reflexivo: puede avanzar sin detenerse a elaborar.',
-    recomienda: 'Pedirle que comparta su razonamiento antes de avanzar con una decisión, para chequear criterios sobre todo al principio.',
+    dice: ['Aparece un modo de resolver poco reflexivo: puede avanzar sin detenerse a elaborar.'],
+    recomienda: ['Pedirle que comparta su razonamiento antes de avanzar con una decisión, para chequear criterios sobre todo al principio.'],
   },
   'psv-alto': {
     area: 'Cómo procesa la información',
     indice: 'PSV',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
-    dice: 'Las preocupaciones pueden interferir en su proceso cognitivo, y eso se nota en el día a día como cierta rigidez para flexibilizarse.',
-    recomienda: 'Acompañarlo en los cambios, no dejarlo solo, y darle información y datos concretos para que logre flexibilizar.',
+    dice: ['Las preocupaciones pueden interferir en su proceso cognitivo, y eso se nota en el día a día como cierta rigidez para flexibilizarse.'],
+    recomienda: ['Acompañarlo en los cambios, no dejarlo solo, y darle información y datos concretos para que logre flexibilizar.'],
   },
   'zf-bajo': {
     area: 'Cómo procesa la información',
     indice: 'Zf',
     cuando: 'menos del 30 % de R, y el Raven no dio bajo',
-    dice: 'Hace pocos esfuerzos por procesar los datos, con menos iniciativa de la esperada para buscar información.',
-    recomienda: 'Definir objetivos concretos y hacer seguimiento periódico para sostener su nivel de actividad.',
+    dice: ['Hace pocos esfuerzos por procesar los datos, con menos iniciativa de la esperada para buscar información.'],
+    recomienda: ['Definir objetivos concretos y hacer seguimiento periódico para sostener su nivel de actividad.'],
   },
   'zf-alto': {
     area: 'Cómo procesa la información',
     indice: 'Zf',
     cuando: 'más del 55 % de R',
-    dice: 'Tiene una motivación elevada para procesar información, investigar y buscar datos.',
-    recomienda: '',
+    dice: ['Tiene una motivación elevada para procesar información, investigar y buscar datos.'],
+    recomienda: [''],
   },
   'w-m-alto': {
     area: 'Cómo procesa la información',
     indice: 'W:M',
     cuando: 'W más de dos veces y media M',
-    dice: 'Tiende a comprometerse con asignaciones sin revisar antes si cuenta con los recursos para llevarlas adelante en tiempo y forma. Le cuesta decir que no puede o poner un límite.',
-    recomienda: 'Antes de asignarle una tarea nueva, ayudarlo a chequear si realmente tiene con qué responder, porque va a tender a aceptar todo.',
+    dice: ['Tiende a comprometerse con asignaciones sin revisar antes si cuenta con los recursos para llevarlas adelante en tiempo y forma. Le cuesta decir que no puede o poner un límite.'],
+    recomienda: ['Antes de asignarle una tarea nueva, ayudarlo a chequear si realmente tiene con qué responder, porque va a tender a aceptar todo.'],
   },
   'xa-bajo-wda-alto': {
     area: 'Cómo interpreta lo que ve',
     indice: 'XA% / WDA%',
     cuando: 'XA% menos de 0,80 con WDA% de 0,80 o más',
-    dice: 'Su percepción es apropiada en las situaciones obvias, y puede no serlo en otras circunstancias.',
-    recomienda: 'En situaciones complejas, ayudarlo a validar su interpretación antes de avanzar.',
+    dice: ['Su percepción es apropiada en las situaciones obvias, y puede no serlo en otras circunstancias.'],
+    recomienda: ['En situaciones complejas, ayudarlo a validar su interpretación antes de avanzar.'],
   },
   'xa-bajo': {
     area: 'Cómo interpreta lo que ve',
     indice: 'XA%',
     corte: { op: 'menor', valor: 0.8, decimales: 2 },
-    dice: 'Es poco convencional en sus percepciones: en buena parte de las ocasiones no va a ver las cosas como las ve la mayoría, sino de un modo más personal.',
-    recomienda: 'Chequear que el mensaje que se le quiere transmitir se entienda, por ejemplo preguntándole qué entendió de lo que se le pidió.',
+    dice: ['Es poco convencional en sus percepciones: en buena parte de las ocasiones no va a ver las cosas como las ve la mayoría, sino de un modo más personal.'],
+    recomienda: ['Chequear que el mensaje que se le quiere transmitir se entienda, por ejemplo preguntándole qué entendió de lo que se le pidió.'],
   },
   'x-menos-alto': {
     area: 'Cómo interpreta lo que ve',
     indice: 'X−%',
     corte: { op: 'mayor', valor: 0.25, decimales: 2 },
-    dice: 'Aparece un apartamiento de lo convencional que puede aumentar el comportamiento desajustado frente a lo que la situación exige, y con eso las dificultades de comunicación con el entorno.',
-    recomienda: 'Conviene considerar si lo que el puesto necesita se sostiene con este nivel de interpretación de los datos, porque puede traer roce con otros y caída de productividad.',
+    dice: ['Aparece un apartamiento de lo convencional que puede aumentar el comportamiento desajustado frente a lo que la situación exige, y con eso las dificultades de comunicación con el entorno.'],
+    recomienda: ['Conviene considerar si lo que el puesto necesita se sostiene con este nivel de interpretación de los datos, porque puede traer roce con otros y caída de productividad.'],
   },
   'xu-alto': {
     area: 'Cómo interpreta lo que ve',
     indice: 'Xu%',
     corte: { op: 'mayor', valor: 0.2, decimales: 2 },
-    dice: 'Marcada tendencia a ver las cosas desde su propio punto de vista, con reticencia a sumarse a visiones más convencionales. Si el entorno no lo presiona a ajustarse, no es relevante; si hay exigencia fuerte de ajustarse a lo ya definido, el riesgo de conflicto sube.',
-    recomienda: 'Marcarle qué cosas se hacen de una manera establecida y sin modificaciones por más que las vea distinto, y dónde sí puede poner su impronta.',
+    dice: ['Marcada tendencia a ver las cosas desde su propio punto de vista, con reticencia a sumarse a visiones más convencionales. Si el entorno no lo presiona a ajustarse, no es relevante; si hay exigencia fuerte de ajustarse a lo ya definido, el riesgo de conflicto sube.'],
+    recomienda: ['Marcarle qué cosas se hacen de una manera establecida y sin modificaciones por más que las vea distinto, y dónde sí puede poner su impronta.'],
   },
   'p-bajo': {
     area: 'Cómo interpreta lo que ve',
     indice: 'P',
     cuando: 'menos de lo esperado para la cantidad de respuestas',
-    dice: 'Tiene una mirada de las situaciones distinta a la de la mayoría de su entorno. Es alguien singular que, sin violar la realidad, prefiere manejarla de forma menos convencional.',
-    recomienda: 'Marcarle qué cosas se necesitan hacer de una manera determinada, y dónde puede ser original.',
+    dice: ['Tiene una mirada de las situaciones distinta a la de la mayoría de su entorno. Es alguien singular que, sin violar la realidad, prefiere manejarla de forma menos convencional.'],
+    recomienda: ['Marcarle qué cosas se necesitan hacer de una manera determinada, y dónde puede ser original.'],
   },
   'p-alto': {
     area: 'Cómo interpreta lo que ve',
     indice: 'P',
     cuando: 'más de lo esperado para la cantidad de respuestas',
-    dice: 'Se esfuerza por satisfacer las expectativas que cree que los demás tienen sobre él.',
-    recomienda: 'Ayudarlo a clarificar expectativas reales y criterios de desempeño, para que no opere desde supuestos sino desde acuerdos concretos.',
+    dice: ['Se esfuerza por satisfacer las expectativas que cree que los demás tienen sobre él.'],
+    recomienda: ['Ayudarlo a clarificar expectativas reales y criterios de desempeño, para que no opere desde supuestos sino desde acuerdos concretos.'],
   },
   'eb-introversivo': {
     area: 'Cómo decide y cómo piensa',
     indice: 'EB',
     cuando: 'estilo introversivo',
-    dice: 'Prefiere la reflexión para resolver problemas: espera a considerar todas las alternativas antes de decidir, no procesa emoción mientras busca soluciones, y se apoya fuerte en su propia evaluación interna para elaborar juicios.',
-    recomienda: '',
+    dice: ['Prefiere la reflexión para resolver problemas: espera a considerar todas las alternativas antes de decidir, no procesa emoción mientras busca soluciones, y se apoya fuerte en su propia evaluación interna para elaborar juicios.'],
+    recomienda: [''],
   },
   'eb-extratensivo': {
     area: 'Cómo decide y cómo piensa',
     indice: 'EB',
     cuando: 'estilo extratensivo',
-    dice: 'Mezcla los sentimientos con sus decisiones. El contacto con los demás y el procesamiento de la emoción son prioritarios, y el control de esas descargas queda en segundo plano. Usa el ensayo y el error.',
-    recomienda: 'Al decidir o resolver un problema, acompañarlo para que distinga la carga emocional que le provoca la situación, y con ese registro llegue a resoluciones mejores.',
+    dice: ['Mezcla los sentimientos con sus decisiones. El contacto con los demás y el procesamiento de la emoción son prioritarios, y el control de esas descargas queda en segundo plano. Usa el ensayo y el error.'],
+    recomienda: ['Al decidir o resolver un problema, acompañarlo para que distinga la carga emocional que le provoca la situación, y con ese registro llegue a resoluciones mejores.'],
   },
   'eb-ambigual': {
     area: 'Cómo decide y cómo piensa',
     indice: 'EB',
     cuando: 'estilo ambigual',
-    dice: 'A veces resuelve dejando de lado la emoción y centrándose en las ideas, y otras veces sus afectos influyen en la evaluación. Al no tener un estilo definido, la decisión le puede llevar más tiempo y resultar menos previsible.',
-    recomienda: '',
+    dice: ['A veces resuelve dejando de lado la emoción y centrándose en las ideas, y otras veces sus afectos influyen en la evaluación. Al no tener un estilo definido, la decisión le puede llevar más tiempo y resultar menos previsible.'],
+    recomienda: [''],
   },
   'a-p-pasivo-cuadruple': {
     area: 'Cómo decide y cómo piensa',
     indice: 'a:p',
     cuando: 'p cuatro veces a o más',
-    dice: 'Tiende a aferrarse a sus pensamientos, le cuesta cambiar de punto de vista y aprender pautas nuevas de funcionamiento.',
-    recomienda: 'Promover la revisión de sus ideas y la incorporación de otras miradas antes de definir acciones.',
+    dice: ['Tiende a aferrarse a sus pensamientos, le cuesta cambiar de punto de vista y aprender pautas nuevas de funcionamiento.'],
+    recomienda: ['Promover la revisión de sus ideas y la incorporación de otras miradas antes de definir acciones.'],
   },
   'a-p-pasivo-triple': {
     area: 'Cómo decide y cómo piensa',
     indice: 'a:p',
     cuando: 'p tres veces a o más',
-    dice: 'Tiende a oponerse a los cambios: le cuesta bastante cambiar de punto de vista y aprender pautas nuevas.',
-    recomienda: 'Mostrarle información concreta con datos para ayudarlo a ver otro punto de vista.',
+    dice: ['Tiende a oponerse a los cambios: le cuesta bastante cambiar de punto de vista y aprender pautas nuevas.'],
+    recomienda: ['Mostrarle información concreta con datos para ayudarlo a ver otro punto de vista.'],
   },
   'a-p-pasivo': {
     area: 'Cómo decide y cómo piensa',
     indice: 'a:p',
     cuando: 'p mayor que a más uno',
-    dice: 'Tiende a adoptar un papel pasivo en sus relaciones: puede quedar como receptor de las acciones de los demás y esperar que otros le resuelvan los problemas.',
-    recomienda: 'Diseñar un camino de aprendizaje por etapas, para ir generando autonomía paso a paso.',
+    dice: ['Tiende a adoptar un papel pasivo en sus relaciones: puede quedar como receptor de las acciones de los demás y esperar que otros le resuelvan los problemas.'],
+    recomienda: ['Diseñar un camino de aprendizaje por etapas, para ir generando autonomía paso a paso.'],
   },
   'ma-mp-pasivo-fuerte': {
     area: 'Cómo decide y cómo piensa',
     indice: 'Ma:Mp',
     cuando: 'Mp mayor que Ma más uno',
-    dice: 'Evita la responsabilidad y la toma de decisiones, y recurre a la fantasía para negar los aspectos incómodos de la realidad. Eso conlleva cierta dependencia de que otros resuelvan.',
-    recomienda: 'Darle lineamientos claros y promover que asuma de a poco la responsabilidad sobre sus decisiones, evitando resolver por él lo que puede abordar solo.',
+    dice: ['Evita la responsabilidad y la toma de decisiones, y recurre a la fantasía para negar los aspectos incómodos de la realidad. Eso conlleva cierta dependencia de que otros resuelvan.'],
+    recomienda: ['Darle lineamientos claros y promover que asuma de a poco la responsabilidad sobre sus decisiones, evitando resolver por él lo que puede abordar solo.'],
   },
   'ma-mp-pasivo': {
     area: 'Cómo decide y cómo piensa',
     indice: 'Ma:Mp',
     cuando: 'Mp mayor que Ma',
-    dice: 'Tiende a refugiarse en la imaginación para compensar frustraciones. Usado de manera creativa suma; usado para evitar dificultades, reemplaza la búsqueda de soluciones, y se acentúa bajo estrés.',
-    recomienda: 'Ayudarlo a enfocar las situaciones en acciones concretas, sobre todo en los momentos de mayor exigencia.',
+    dice: ['Tiende a refugiarse en la imaginación para compensar frustraciones. Usado de manera creativa suma; usado para evitar dificultades, reemplaza la búsqueda de soluciones, y se acentúa bajo estrés.'],
+    recomienda: ['Ayudarlo a enfocar las situaciones en acciones concretas, sobre todo en los momentos de mayor exigencia.'],
   },
   'intelectualizacion-alta': {
     area: 'Cómo decide y cómo piensa',
     indice: 'Intelectualización',
     corte: { op: 'mayor', valor: 5, decimales: 0 },
-    dice: 'Procesa las emociones como si fueran pensamientos. Con eso neutraliza su efecto, y a la vez tiende a distorsionar las situaciones, con lo cual las soluciones pierden eficacia. Se vuelve más vulnerable cuando la situación sube de intensidad.',
-    recomienda: 'Ayudarlo con el registro de sus emociones, y darle lugar para procesarlas y encontrar respuestas más eficientes.',
+    dice: ['Procesa las emociones como si fueran pensamientos. Con eso neutraliza su efecto, y a la vez tiende a distorsionar las situaciones, con lo cual las soluciones pierden eficacia. Se vuelve más vulnerable cuando la situación sube de intensidad.'],
+    recomienda: ['Ayudarlo con el registro de sus emociones, y darle lugar para procesarlas y encontrar respuestas más eficientes.'],
   },
   'm-menos-alto': {
     area: 'Cómo decide y cómo piensa',
     indice: 'M−',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
-    dice: 'Aparece cierta probabilidad de dificultades en la calidad de sus ideas.',
-    recomienda: '',
+    dice: ['Aparece cierta probabilidad de dificultades en la calidad de sus ideas.'],
+    recomienda: [''],
   },
   'fm-cero': {
     area: 'Cómo decide y cómo piensa',
     indice: 'FM',
     corte: { op: 'menor', valor: 1, decimales: 0 },
-    dice: 'Se le dificulta tomar registro de sus propias necesidades.',
-    recomienda: 'Puede necesitar ayuda externa para empezar a registrarlas. Un entorno donde se le permita darse prioridad ayuda.',
+    dice: ['Se le dificulta tomar registro de sus propias necesidades.'],
+    recomienda: ['Puede necesitar ayuda externa para empezar a registrarlas. Un entorno donde se le permita darse prioridad ayuda.'],
   },
   'fm-alto': {
     area: 'Cómo decide y cómo piensa',
     indice: 'FM',
     corte: { op: 'mayor', valor: 5, decimales: 0 },
-    dice: 'Está con el malestar interno elevado por sus propias necesidades, y eso se manifiesta como tensión: puede afectar la atención, la concentración y el sueño.',
-    recomienda: 'Ayudarlo a ordenar prioridades cuando se incrementa la carga de trabajo.',
+    dice: ['Está con el malestar interno elevado por sus propias necesidades, y eso se manifiesta como tensión: puede afectar la atención, la concentración y el sueño.'],
+    recomienda: ['Ayudarlo a ordenar prioridades cuando se incrementa la carga de trabajo.'],
   },
   'm-alto': {
     area: 'Cómo decide y cómo piensa',
     indice: 'm',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
-    dice: 'Hay circunstancias externas que le están causando molestias importantes: está atravesando una situación estresante.',
-    recomienda: 'Generar un espacio de charla para consultarle si necesita algo de la empresa o de su jefe para trabajar más tranquilo.',
+    dice: ['Hay circunstancias externas que le están causando molestias importantes: está atravesando una situación estresante.'],
+    recomienda: ['Generar un espacio de charla para consultarle si necesita algo de la empresa o de su jefe para trabajar más tranquilo.'],
   },
   'fc-control-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'FC:CF+C',
     cuando: 'sin descarga, o FC más del triple de CF+C',
-    dice: 'Controla sus descargas más de lo esperado: casi nunca se relaja cuando maneja emociones, porque desconfía de cualquier expresión abierta del afecto. Le cuesta expresar lo que siente con libertad.',
-    recomienda: '',
+    dice: ['Controla sus descargas más de lo esperado: casi nunca se relaja cuando maneja emociones, porque desconfía de cualquier expresión abierta del afecto. Le cuesta expresar lo que siente con libertad.'],
+    recomienda: [''],
   },
   'fc-descarga-intensa': {
     area: 'Cómo maneja lo que siente',
     indice: 'FC:CF+C',
     cuando: 'CF+C supera a FC por más de 2',
-    dice: 'Tiende a expresarse de manera intensa, y eso da impresión de impulsividad por la dificultad de control emocional.',
-    recomienda: '',
+    dice: ['Tiende a expresarse de manera intensa, y eso da impresión de impulsividad por la dificultad de control emocional.'],
+    recomienda: [''],
   },
   'fc-descarga': {
     area: 'Cómo maneja lo que siente',
     indice: 'FC:CF+C',
     cuando: 'CF+C supera a FC por uno o dos',
-    dice: 'Expresa sus afectos sin filtro, de manera más espontánea que el adulto medio. No se esfuerza por controlar sus emociones en el mismo grado que la mayoría, sin que eso implique un problema serio de control.',
-    recomienda: 'Mostrarle, sobre todo al principio, los filtros que se esperan y qué información se mantiene reservada.',
+    dice: ['Expresa sus afectos sin filtro, de manera más espontánea que el adulto medio. No se esfuerza por controlar sus emociones en el mismo grado que la mayoría, sin que eso implique un problema serio de control.'],
+    recomienda: ['Mostrarle, sobre todo al principio, los filtros que se esperan y qué información se mantiene reservada.'],
   },
   'c-pura-alta': {
     area: 'Cómo maneja lo que siente',
     indice: 'C pura',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
-    dice: 'Disfruta de las situaciones vertiginosas, y en ellas es más propenso a desplegar conductas poco reflexivas.',
-    recomienda: 'Mostrarle los límites que se esperan incluso en las situaciones más caóticas.',
+    dice: ['Disfruta de las situaciones vertiginosas, y en ellas es más propenso a desplegar conductas poco reflexivas.'],
+    recomienda: ['Mostrarle los límites que se esperan incluso en las situaciones más caóticas.'],
   },
   'afr-bajo': {
     area: 'Cómo maneja lo que siente',
     indice: 'Afr',
     cuando: 'por debajo de la banda de su estilo',
-    dice: 'Prefiere no verse implicado en situaciones con carga emocional. Esa misma tendencia neutraliza los problemas de descontrol, si los hubiera.',
-    recomienda: '',
+    dice: ['Prefiere no verse implicado en situaciones con carga emocional. Esa misma tendencia neutraliza los problemas de descontrol, si los hubiera.'],
+    recomienda: [''],
   },
   'afr-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'Afr',
     cuando: 'por encima de la banda de su estilo',
-    dice: 'Las situaciones con carga emocional lo estimulan, y puede sentirse más productivo en ellas.',
-    recomienda: '',
+    dice: ['Las situaciones con carga emocional lo estimulan, y puede sentirse más productivo en ellas.'],
+    recomienda: [''],
   },
   's-muy-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'S',
     corte: { op: 'mayor', valor: 4, decimales: 0 },
-    dice: 'Actitud de oposición hacia el entorno, difícil de modificar.',
-    recomienda: 'Para que pueda flexibilizarla, evitar la confrontación directa y marcar límites claros y consistentes.',
+    dice: ['Actitud de oposición hacia el entorno, difícil de modificar.'],
+    recomienda: ['Para que pueda flexibilizarla, evitar la confrontación directa y marcar límites claros y consistentes.'],
   },
   's-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'S',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
-    dice: 'Le cuesta cambiar de opinión.',
-    recomienda: 'Ayudarlo a ver los otros puntos de vista mostrándole información concreta.',
+    dice: ['Le cuesta cambiar de opinión.'],
+    recomienda: ['Ayudarlo a ver los otros puntos de vista mostrándole información concreta.'],
   },
   'c-prima-alta': {
     area: 'Cómo maneja lo que siente',
     indice: "C'",
     corte: { op: 'mayor', valor: 4, decimales: 0 },
-    dice: 'Está conteniendo una irritación interna fuerte, que puede tardar bastante en bajar.',
-    recomienda: 'Generar un espacio de conversación donde se le consulte si necesita algo de la empresa o de su jefe para trabajar más tranquilo.',
+    dice: ['Está conteniendo una irritación interna fuerte, que puede tardar bastante en bajar.'],
+    recomienda: ['Generar un espacio de conversación donde se le consulte si necesita algo de la empresa o de su jefe para trabajar más tranquilo.'],
   },
   'sumt-cero': {
     area: 'Cómo maneja lo que siente',
     indice: 'SumT',
     corte: { op: 'menor', valor: 1, decimales: 0 },
-    dice: 'Es distante en el contacto con los demás: no se siente cómodo en las situaciones de cercanía emocional y tiende a evitarlas. Cuida mantener una distancia de seguridad.',
-    recomienda: 'Ver cuánta cercanía emocional pide el puesto. Conviene no forzarla y respetar la distancia que prefiere, dejando una vía por la cual pueda pedir apoyo cuando lo necesite.',
+    dice: ['Es distante en el contacto con los demás: no se siente cómodo en las situaciones de cercanía emocional y tiende a evitarlas. Cuida mantener una distancia de seguridad.'],
+    recomienda: ['Ver cuánta cercanía emocional pide el puesto. Conviene no forzarla y respetar la distancia que prefiere, dejando una vía por la cual pueda pedir apoyo cuando lo necesite.'],
   },
   'sumt-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'SumT',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
-    dice: 'Necesita más cercanía y contacto que lo habitual: tiende a sentirse más solo y a depender de la presencia afectiva de otros.',
-    recomienda: 'Adoptar un estilo de conducción cercano, que le dé contención.',
+    dice: ['Necesita más cercanía y contacto que lo habitual: tiende a sentirse más solo y a depender de la presencia afectiva de otros.'],
+    recomienda: ['Adoptar un estilo de conducción cercano, que le dé contención.'],
   },
   'v-presente': {
     area: 'Cómo maneja lo que siente',
     indice: 'V',
     corte: { op: 'mayor', valor: 0, decimales: 0 },
-    dice: 'Cuando se autoevalúa lo hace de manera severa: pocas veces está conforme con su propio desempeño, y se exige mucho.',
-    recomienda: 'Evitar sumarle exigencia externa, porque ya se exige por dentro.',
+    dice: ['Cuando se autoevalúa lo hace de manera severa: pocas veces está conforme con su propio desempeño, y se exige mucho.'],
+    recomienda: ['Evitar sumarle exigencia externa, porque ya se exige por dentro.'],
   },
   'y-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'Y',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
-    dice: 'Está atravesando una situación que le genera tensión y frente a la cual se siente inundado. Buena parte de ese malestar es reactivo y va a ceder si se resuelven las circunstancias que lo provocan.',
-    recomienda: '',
+    dice: ['Está atravesando una situación que le genera tensión y frente a la cual se siente inundado. Buena parte de ese malestar es reactivo y va a ceder si se resuelven las circunstancias que lo provocan.'],
+    recomienda: [''],
   },
   'ego-bajo': {
     area: 'Cómo se ve a sí mismo',
     indice: 'Ego',
     corte: { op: 'menor', valor: 0.33, decimales: 2 },
-    dice: 'No se toma a sí mismo como foco de atención en el grado suficiente: tiene una imagen desvalorizada de sí y no confía en sus recursos, con lo cual se puede dejar influenciar por los demás.',
-    recomienda: 'Alentar y reconocer su desempeño, para fomentar su autoestima.',
+    dice: ['No se toma a sí mismo como foco de atención en el grado suficiente: tiene una imagen desvalorizada de sí y no confía en sus recursos, con lo cual se puede dejar influenciar por los demás.'],
+    recomienda: ['Alentar y reconocer su desempeño, para fomentar su autoestima.'],
   },
   'ego-alto': {
     area: 'Cómo se ve a sí mismo',
     indice: 'Ego',
     corte: { op: 'mayor', valor: 0.55, decimales: 2 },
-    dice: 'Tiende a centrarse en sí mismo más de lo habitual, dando prioridad a su punto de vista, con dificultad para mirar las cosas desde otra óptica y ponerse en el lugar del otro.',
-    recomienda: 'En instancias de negociación puede necesitar asistencia: mostrarle datos que lo ayuden a considerar una visión distinta de la suya.',
+    dice: ['Tiende a centrarse en sí mismo más de lo habitual, dando prioridad a su punto de vista, con dificultad para mirar las cosas desde otra óptica y ponerse en el lugar del otro.'],
+    recomienda: ['En instancias de negociación puede necesitar asistencia: mostrarle datos que lo ayuden a considerar una visión distinta de la suya.'],
   },
   'reflejos-presentes': {
     area: 'Cómo se ve a sí mismo',
     indice: 'Fr+rF',
     corte: { op: 'mayor', valor: 0, decimales: 0 },
-    dice: 'Necesita confirmación continua de su valor.',
-    recomienda: 'El reconocimiento de él y de sus resultados funciona como motor de motivación.',
+    dice: ['Necesita confirmación continua de su valor.'],
+    recomienda: ['El reconocimiento de él y de sus resultados funciona como motor de motivación.'],
   },
   'an-xy-alto': {
     area: 'Cómo se ve a sí mismo',
     indice: 'An+Xy',
     corte: { op: 'mayor', valor: 3, decimales: 0 },
-    dice: 'Está más preocupado de lo habitual por su funcionamiento corporal.',
-    recomienda: '',
+    dice: ['Está más preocupado de lo habitual por su funcionamiento corporal.'],
+    recomienda: [''],
   },
   'cop-cero-ag-bajo': {
     area: 'Cómo se relaciona',
     indice: 'COP / AG',
     cuando: 'COP en cero y AG hasta 1',
-    dice: 'No está especialmente interesado en las situaciones interpersonales, y los demás lo pueden percibir como distante.',
-    recomienda: 'En las relaciones su alcance va a ser superficial. Si alguna situación necesita más profundidad, conviene asistirlo.',
+    dice: ['No está especialmente interesado en las situaciones interpersonales, y los demás lo pueden percibir como distante.'],
+    recomienda: ['En las relaciones su alcance va a ser superficial. Si alguna situación necesita más profundidad, conviene asistirlo.'],
   },
   'cop-bajo-ag-dos': {
     area: 'Cómo se relaciona',
     indice: 'COP / AG',
     cuando: 'COP hasta 1 y AG en 2',
-    dice: 'La agresividad es un componente natural de sus relaciones, y es más propenso a manifestar conductas de ese tipo.',
-    recomienda: '',
+    dice: ['La agresividad es un componente natural de sus relaciones, y es más propenso a manifestar conductas de ese tipo.'],
+    recomienda: [''],
   },
   'cop-bajo-ag-alto': {
     area: 'Cómo se relaciona',
     indice: 'COP / AG',
     cuando: 'COP hasta 2 y AG más de 2',
-    dice: 'Buena parte de su actividad interpersonal está marcada por actitudes agresivas hacia los demás, como estrategia defensiva frente a un ambiente que vive como hostil.',
-    recomienda: '',
+    dice: ['Buena parte de su actividad interpersonal está marcada por actitudes agresivas hacia los demás, como estrategia defensiva frente a un ambiente que vive como hostil.'],
+    recomienda: [''],
   },
   'cop-alto-ag-bajo': {
     area: 'Cómo se relaciona',
     indice: 'COP / AG',
     cuando: 'COP de 2 o más y AG hasta 1',
-    dice: 'Tiende a mantener actitudes socialmente positivas y a ser percibido como alguien agradable. Entiende la actividad interpersonal como parte importante de su día y busca interacciones armoniosas.',
-    recomienda: '',
+    dice: ['Tiende a mantener actitudes socialmente positivas y a ser percibido como alguien agradable. Entiende la actividad interpersonal como parte importante de su día y busca interacciones armoniosas.'],
+    recomienda: [''],
   },
   'phr-mayor-que-ghr': {
     area: 'Cómo se relaciona',
     indice: 'GHR:PHR',
     cuando: 'PHR mayor que GHR',
-    dice: 'Sus herramientas interpersonales no alcanzan para generar vínculos de buena calidad: el estilo de sus intercambios no es el esperado.',
-    recomienda: '',
+    dice: ['Sus herramientas interpersonales no alcanzan para generar vínculos de buena calidad: el estilo de sus intercambios no es el esperado.'],
+    recomienda: [''],
   },
   'aislamiento-muy-alto': {
     area: 'Cómo se relaciona',
     indice: 'Índice de aislamiento',
     corte: { op: 'mayor', valor: 0.33, decimales: 2 },
-    dice: 'Logra apenas contactos significativos.',
-    recomienda: 'Al asignarle tareas nuevas, tener presente su preferencia por resolver de manera independiente.',
+    dice: ['Logra apenas contactos significativos.'],
+    recomienda: ['Al asignarle tareas nuevas, tener presente su preferencia por resolver de manera independiente.'],
   },
   'aislamiento-alto': {
     area: 'Cómo se relaciona',
     indice: 'Índice de aislamiento',
     corte: { op: 'mayor', valor: 0.25, decimales: 2 },
-    dice: 'Está menos implicado de lo habitual en las interacciones, y puede preferir trabajar de manera independiente.',
-    recomienda: 'Conviene que la mayoría de sus tareas sean asignaciones individuales.',
+    dice: ['Está menos implicado de lo habitual en las interacciones, y puede preferir trabajar de manera independiente.'],
+    recomienda: ['Conviene que la mayoría de sus tareas sean asignaciones individuales.'],
   },
   'per-alto': {
     area: 'Cómo se relaciona',
     indice: 'PER',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
-    dice: 'Cuando se siente cuestionado puede reaccionar a la defensiva para justificarse.',
-    recomienda: 'Hacerle las consultas y los pedidos de forma concreta, para que no los reciba como un cuestionamiento.',
+    dice: ['Cuando se siente cuestionado puede reaccionar a la defensiva para justificarse.'],
+    recomienda: ['Hacerle las consultas y los pedidos de forma concreta, para que no los reciba como un cuestionamiento.'],
   },
   'fd-presente': {
     area: 'Cómo se relaciona',
     indice: 'Fd',
     corte: { op: 'mayor', valor: 0, decimales: 0 },
-    dice: 'Presenta más conductas de dependencia de lo esperable: espera que los demás busquen la solución a los problemas.',
-    recomienda: 'Alentar su autonomía paso a paso. Al principio necesita un referente con quien validar sus acciones o ideas.',
+    dice: ['Presenta más conductas de dependencia de lo esperable: espera que los demás busquen la solución a los problemas.'],
+    recomienda: ['Alentar su autonomía paso a paso. Al principio necesita un referente con quien validar sus acciones o ideas.'],
   },
   'humanos-alto': {
     area: 'Cómo se relaciona',
     indice: 'Contenidos humanos',
     cuando: 'por encima de lo esperado para su cantidad de respuestas y su estilo',
-    dice: 'Marcado interés por los demás.',
-    recomienda: '',
+    dice: ['Marcado interés por los demás.'],
+    recomienda: [''],
   },
   'humanos-alto-cop': {
     area: 'Cómo se relaciona',
     indice: 'Contenidos humanos',
     cuando: 'sigue a la anterior cuando además hay COP',
-    dice: ' Con la disposición a la cooperación presente, eso se traduce en una actitud solícita.',
-    recomienda: '',
+    dice: [' Con la disposición a la cooperación presente, eso se traduce en una actitud solícita.'],
+    recomienda: [''],
   },
   'h-pura-baja': {
     area: 'Cómo se relaciona',
     indice: 'H pura',
     cuando: 'los otros contenidos humanos superan a H pura',
-    dice: 'Tiene una visión poco realista de sí mismo y de los demás: le puede costar ver tanto las fortalezas como las debilidades, propias y ajenas.',
-    recomienda: 'Cuando se le marque un error, hacerlo con información concreta para que le resulte más fácil registrarlo.',
+    dice: ['Tiene una visión poco realista de sí mismo y de los demás: le puede costar ver tanto las fortalezas como las debilidades, propias y ajenas.'],
+    recomienda: ['Cuando se le marque un error, hacerlo con información concreta para que le resulte más fácil registrarlo.'],
   },
   'd-adjd-cero': {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'D y AdjD los dos en cero',
-    dice: 'Tolera de manera adecuada las tensiones del día a día. Solo ante un estrés intenso, prolongado o inesperado podrían fallar los controles de manera significativa.',
-    recomienda: '',
+    dice: ['Tolera de manera adecuada las tensiones del día a día. Solo ante un estrés intenso, prolongado o inesperado podrían fallar los controles de manera significativa.'],
+    recomienda: [''],
   },
   'adjd-positivo': {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'AdjD de 1 o más',
-    dice: 'Tiene una capacidad de control y de tolerancia al estrés fuera de lo común: cuenta con muchos más recursos de lo esperado para manejar sus tensiones y responder a las demandas.',
-    recomienda: '',
+    dice: ['Tiene una capacidad de control y de tolerancia al estrés fuera de lo común: cuenta con muchos más recursos de lo esperado para manejar sus tensiones y responder a las demandas.'],
+    recomienda: [''],
   },
   'adjd-menos-uno': {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'AdjD en −1',
-    dice: 'Tiene dificultades ante las situaciones nuevas, y funciona mejor en entornos rutinarios y previsibles.',
-    recomienda: 'Necesita acompañamiento ante los cambios y ante las situaciones tensionantes en sí mismas.',
+    dice: ['Tiene dificultades ante las situaciones nuevas, y funciona mejor en entornos rutinarios y previsibles.'],
+    recomienda: ['Necesita acompañamiento ante los cambios y ante las situaciones tensionantes en sí mismas.'],
   },
   'adjd-sobrecarga': {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'AdjD por debajo de −1',
-    dice: 'Está en estado de sobrecarga: vive con mucha más tensión de la que puede manejar, y como resultado sus respuestas pierden eficiencia. Al ser negativo también el valor ajustado, la sobrecarga está instalada en su funcionamiento y no es solo del momento.',
-    recomienda: 'Regular la carga y priorizar tareas, con apoyo para organizar el trabajo y generar pausas, con el fin de bajar la tensión y mejorar la calidad de sus respuestas.',
+    dice: ['Está en estado de sobrecarga: vive con mucha más tensión de la que puede manejar, y como resultado sus respuestas pierden eficiencia. Al ser negativo también el valor ajustado, la sobrecarga está instalada en su funcionamiento y no es solo del momento.'],
+    recomienda: ['Regular la carga y priorizar tareas, con apoyo para organizar el trabajo y generar pausas, con el fin de bajar la tensión y mejorar la calidad de sus respuestas.'],
   },
   'ea-bajo': {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
     corte: { op: 'menor', valor: 7, decimales: 0 },
-    dice: 'Sus recursos de afrontamiento son limitados.',
-    recomienda: '',
+    dice: ['Sus recursos de afrontamiento son limitados.'],
+    recomienda: [''],
   },
   'ea-alto': {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
     corte: { op: 'mayor', valor: 11, decimales: 0, ademas: 'con AdjD positivo' },
-    dice: 'Confirma un nivel de control elevado.',
-    recomienda: '',
+    dice: ['Confirma un nivel de control elevado.'],
+    recomienda: [''],
   },
   'ea-adecuado': {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
     cuando: 'entre los dos cortes de EA, con AdjD en cero',
-    dice: 'Confirma una capacidad de control adecuada.',
-    recomienda: '',
+    dice: ['Confirma una capacidad de control adecuada.'],
+    recomienda: [''],
   },
   'd-menor-que-adjd': {
     area: 'Cuánta exigencia sostiene',
     indice: 'D contra AdjD',
     cuando: 'D por debajo de AdjD',
-    dice: 'Hay tensión situacional: su tolerancia al estrés de hoy está por debajo de la habitual.',
-    recomienda: '',
+    dice: ['Hay tensión situacional: su tolerancia al estrés de hoy está por debajo de la habitual.'],
+    recomienda: [''],
   },
 } satisfies Record<string, Redaccion>;
 
 /** Hasta dónde puede crecer un texto reescrito. */
 const LARGO_MAXIMO = 1200;
 
-/** La redacción que rige: la reescrita si la hay, y si no la de fábrica. */
-function redaccion(clave: ClaveDeTexto, textos: Textos): Redaccion {
+/**
+ * Las formas de decir cada cosa que rigen para esa lectura y ese test.
+ *
+ * La recomendación puede ser propia del Zulliger; lo que la lectura significa
+ * es lo mismo en los dos, así que el "qué dice" es uno solo.
+ */
+function formas(
+  clave: ClaveDeTexto,
+  textos: Textos,
+  test: TestDeManchas
+): { dice: string[]; recomienda: string[] } {
   const base = TEXTOS[clave] as Redaccion;
-  const suyo = textos[clave];
-  if (!suyo) return base;
+  const suyo = textos[clave] ?? {};
+  const propias = test === 'Zulliger' ? suyo.recomiendaZ ?? base.zulliger?.recomienda : undefined;
   return {
-    ...base,
-    dice: suyo.dice ?? base.dice,
-    recomienda: suyo.recomienda ?? base.recomienda,
+    dice: suyo.dice?.length ? suyo.dice : base.dice,
+    recomienda: propias?.length ? propias : suyo.recomienda?.length ? suyo.recomienda : base.recomienda,
   };
+}
+
+/**
+ * Un número estable a partir de un texto.
+ *
+ * Sirve para correr la elección de una lectura a otra: sin esto, un informe
+ * usaría la primera forma en las sesenta y ocho y el siguiente la segunda en
+ * todas, y se leerían como dos plantillas en vez de como dos informes.
+ */
+function huella(texto: string): number {
+  let n = 0;
+  for (let i = 0; i < texto.length; i++) n = (n * 31 + texto.charCodeAt(i)) % 100003;
+  return n;
+}
+
+/**
+ * Cuál de las formas de decirlo le toca.
+ *
+ * **No es al azar.** Un informe entregado no puede cambiar de texto cuando se
+ * vuelve a abrir, así que la elección sale de dónde está el candidato en su
+ * pedido y de qué lectura es: la misma evaluación lee siempre lo mismo, y el
+ * segundo candidato de un pedido no repite los párrafos del primero.
+ */
+function cual(cuantas: number, clave: string, vuelta: number): number {
+  if (cuantas <= 1) return 0;
+  return (((vuelta + huella(clave)) % cuantas) + cuantas) % cuantas;
 }
 
 /**
@@ -701,11 +777,23 @@ const ROTULOS_DE_HOJA: Record<string, string[]> = {
 /** Hasta dónde puede moverse un corte. Fuera de esto no es un criterio. */
 const CORTE_MAXIMO = 1000;
 
-/** El corte que rige para esa lectura: el movido si lo hay, y si no el de fábrica. */
-export function corteDe(clave: ClaveDeTexto, cortes: Cortes = {}): number {
-  const base = (TEXTOS[clave] as Redaccion).corte;
+/**
+ * El corte que rige para esa lectura: el movido si lo hay, y si no el de
+ * fábrica.
+ *
+ * Las normas de cada test son distintas, así que una lectura puede tener su
+ * propio corte en Zulliger. Lo movido desde Sistema se guarda por test, con la
+ * clave `zulliger:` adelante.
+ */
+export function corteDe(
+  clave: ClaveDeTexto,
+  cortes: Cortes = {},
+  test: TestDeManchas = 'Rorschach'
+): number {
+  const t = TEXTOS[clave] as Redaccion;
+  const base = (test === 'Zulliger' ? t.zulliger?.corte : undefined) ?? t.corte;
   if (!base) return NaN;
-  const suyo = cortes[clave];
+  const suyo = cortes[test === 'Zulliger' ? `zulliger:${clave}` : clave] ?? cortes[clave];
   return typeof suyo === 'number' && Number.isFinite(suyo) ? suyo : base.valor;
 }
 
@@ -784,15 +872,20 @@ export function cortesValidos(guardados: unknown): Cortes | null {
   if (!guardados || typeof guardados !== 'object' || Array.isArray(guardados)) return null;
   const limpios: Cortes = {};
   for (const [clave, valor] of Object.entries(guardados as Record<string, unknown>)) {
-    const t = (TEXTOS as Record<string, Redaccion>)[clave];
+    // El corte del Zulliger va con su test adelante: las normas de cada uno son
+    // distintas y una lectura puede cortar en otro número según con qué se midió.
+    const suelta = clave.startsWith('zulliger:') ? clave.slice('zulliger:'.length) : clave;
+    const t = (TEXTOS as Record<string, Redaccion>)[suelta];
     if (!t?.corte) return null;
     if (typeof valor !== 'number' || !Number.isFinite(valor)) return null;
     if (Math.abs(valor) > CORTE_MAXIMO) return null;
     // Se guarda con los decimales con los que se escribe: un corte con más
     // cifras que las que la pantalla muestra se dispararía contra un número
     // que nadie puede leer.
-    const redondeado = Number(valor.toFixed(t.corte.decimales));
-    if (redondeado !== t.corte.valor) limpios[clave] = redondeado;
+    const deFabrica =
+      (clave.startsWith('zulliger:') ? t.zulliger?.corte : undefined) ?? t.corte;
+    const redondeado = Number(valor.toFixed(deFabrica.decimales));
+    if (redondeado !== deFabrica.valor) limpios[clave] = redondeado;
   }
   return limpios;
 }
@@ -805,46 +898,102 @@ export function cortesValidos(guardados: unknown): Cortes | null {
  * significa. Vaciar la recomendación sí vale: hay lecturas del diccionario que
  * no llevan ninguna, y sacarla es una decisión.
  */
+/** Hasta cuántas formas de decir lo mismo se aceptan por campo. */
+export const VARIANTES = 3;
+
+/**
+ * Una lista de formas de decirlo, si sirve.
+ *
+ * Las vacías se descartan y no cuentan: un campo sin escribir no es una
+ * variante, es un campo sin escribir, y si entrara el informe saldría en blanco
+ * una de cada tres veces.
+ */
+function lista(valor: unknown, puedeEstarVacia: boolean): string[] | null | undefined {
+  if (valor === undefined) return undefined;
+  if (!Array.isArray(valor)) return null;
+  if (valor.length > VARIANTES) return null;
+  const limpias: string[] = [];
+  for (const v of valor) {
+    if (typeof v !== 'string' || v.length > LARGO_MAXIMO) return null;
+    const t = v.trim();
+    if (t) limpias.push(t);
+  }
+  // Todas vacías: para el "qué dice" es un error, porque la lectura entra
+  // igual en el informe y quedaría con su índice y sin nada que lo explique.
+  if (limpias.length === 0) return puedeEstarVacia ? [''] : null;
+  return limpias;
+}
+
 export function textosValidos(guardados: unknown): Textos | null {
   if (!guardados || typeof guardados !== 'object' || Array.isArray(guardados)) return null;
   const limpios: Textos = {};
   for (const [clave, valor] of Object.entries(guardados as Record<string, unknown>)) {
     if (!(clave in TEXTOS)) return null;
     if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return null;
-    const { dice, recomienda } = valor as { dice?: unknown; recomienda?: unknown };
-    const uno: { dice?: string; recomienda?: string } = {};
-    if (dice !== undefined) {
-      if (typeof dice !== 'string' || !dice.trim() || dice.length > LARGO_MAXIMO) return null;
-      uno.dice = dice.trim();
-    }
-    if (recomienda !== undefined) {
-      if (typeof recomienda !== 'string' || recomienda.length > LARGO_MAXIMO) return null;
-      uno.recomienda = recomienda.trim();
-    }
-    if (uno.dice !== undefined || uno.recomienda !== undefined) limpios[clave] = uno;
+    const { dice, recomienda, recomiendaZ } = valor as {
+      dice?: unknown;
+      recomienda?: unknown;
+      recomiendaZ?: unknown;
+    };
+
+    const uno: Textos[string] = {};
+    const d = lista(dice, false);
+    if (d === null) return null;
+    if (d) uno.dice = d;
+
+    const r = lista(recomienda, true);
+    if (r === null) return null;
+    if (r) uno.recomienda = r;
+
+    const rz = lista(recomiendaZ, true);
+    if (rz === null) return null;
+    if (rz) uno.recomiendaZ = rz;
+
+    if (uno.dice || uno.recomienda || uno.recomiendaZ) limpios[clave] = uno;
   }
   return limpios;
 }
+
+/** Con qué se tomó y qué lugar ocupa el candidato en su pedido. */
+export type Contexto = {
+  test?: TestDeManchas;
+  /**
+   * El orden del candidato dentro de su pedido, desde cero.
+   *
+   * Es lo que hace que el segundo informe de un pedido no repita los párrafos
+   * del primero: corre la elección de las formas de decirlo.
+   */
+  vuelta?: number;
+};
 
 export function leer(
   s: SumarioCrudo,
   ravenRango: string,
   textos: Textos = {},
-  cortes: Cortes = {}
+  cortes: Cortes = {},
+  contexto: Contexto = {}
 ): Lectura[] {
+  const test = contexto.test ?? 'Rorschach';
+  const vuelta = contexto.vuelta ?? 0;
   const salida: Lectura[] = [];
   /** El corte que rige para esa lectura. Ver `corteDe`. */
-  const c = (clave: ClaveDeTexto) => corteDe(clave, cortes);
+  const c = (clave: ClaveDeTexto) => corteDe(clave, cortes, test);
   const sumar = (clave: ClaveDeTexto, valor: string, sigue: ClaveDeTexto | null = null) => {
-    const t = redaccion(clave, textos);
-    const cola = sigue ? redaccion(sigue, textos).dice : '';
+    const base = TEXTOS[clave] as Redaccion;
+    const f = formas(clave, textos, test);
+    const cola = sigue
+      ? (() => {
+          const g = formas(sigue, textos, test);
+          return g.dice[cual(g.dice.length, sigue, vuelta)] ?? '';
+        })()
+      : '';
     salida.push({
       clave,
-      area: t.area,
-      indice: t.indice,
+      area: base.area,
+      indice: base.indice,
       valor,
-      dice: t.dice + cola,
-      recomienda: t.recomienda,
+      dice: (f.dice[cual(f.dice.length, clave, vuelta)] ?? '') + cola,
+      recomienda: f.recomienda[cual(f.recomienda.length, clave, vuelta)] ?? '',
     });
   };
 

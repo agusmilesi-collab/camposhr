@@ -336,7 +336,15 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     return Array.isArray(suya) ? suya.filter((t) => typeof t === 'string') : calculada;
   };
 
-  const lecturas = sumario ? leer(sumario, ravenResultado, textos, cortes) : [];
+  // Con qué se midió y qué lugar ocupa este candidato en su pedido: lo primero
+  // decide el corte y la recomendación, lo segundo cuál de las formas de decir
+  // cada cosa le toca, así dos informes del mismo pedido no se leen iguales.
+  const lecturas = sumario
+    ? leer(sumario, ravenResultado, textos, cortes, {
+        test: proyectivoDe(f) === 'Zulliger' ? 'Zulliger' : 'Rorschach',
+        vuelta: f.ordenEnPedido ?? 0,
+      })
+    : [];
   const destacadas = lecturas.filter((l) => senalDe(l) === 'destacada');
   const esperadas = lecturas.filter((l) => senalDe(l) === 'esperada');
   const desarrollar = lecturas.filter((l) => senalDe(l) === 'desarrollar');

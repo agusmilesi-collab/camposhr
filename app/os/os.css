@@ -2004,6 +2004,56 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   margin-bottom: 10px;
 }
 
+/* Las formas de decir lo mismo, numeradas: el informe toma una según dónde
+   está el candidato en su pedido, así el cliente que recibe tres informes de la
+   misma búsqueda no lee tres veces el mismo párrafo. */
+.os-variante {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* Con una sola casilla el número sobra y el campo toma todo el ancho. */
+.os-variante:only-of-type {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.os-variante-n {
+  padding-top: 7px;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-suave);
+  text-align: right;
+}
+
+/* Lo propio del Zulliger, cerrado hasta que se lo pide: en casi todas las
+   lecturas vale lo mismo que en Rorschach, y abierto siempre serían sesenta y
+   ocho bloques vacíos. */
+.os-zulliger {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--os-linea-suave);
+}
+
+.os-zulliger > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--os-suave);
+  cursor: pointer;
+}
+
+.os-zulliger > summary:hover {
+  color: var(--os-tinta);
+}
+
+.os-zulliger[open] > summary {
+  margin-bottom: 10px;
+}
+
 /* Qué dice y qué se recomienda, en dos columnas: son las dos mitades de la
    misma lectura y se corrigen mirando una contra la otra. Debajo de los seis
    centímetros de ancho que necesita un párrafo para leerse, bajan a una sola
@@ -2014,23 +2064,19 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   align-items: stretch;
 }
 
-/* El rótulo arriba y el campo con todo lo que queda: así el campo llega hasta
-   el borde de su fila, que la define el texto más largo de las dos columnas. */
+/* El rótulo arriba y las formas de decirlo debajo, una tras otra. */
 .os-redaccion-campo {
   display: grid;
-  grid-template-rows: auto 1fr;
+  align-content: start;
   gap: 4px;
   min-width: 0;
 }
 
-/* Los dos campos de una lectura terminan a la misma altura, aunque uno lleve
-   tres renglones y el otro uno: dos cajas de distinto alto lado a lado se leen
-   como dos cosas sin relación, y son las dos mitades de lo mismo. Lo que mide
-   el texto va en `min-height` (ver `estirarCampo`), así que la altura propia no
-   le impide estirarse hasta la del vecino. */
-.os-redaccion-campo > textarea.os-campo {
+/* El campo ocupa el ancho de su columna, esté suelto o dentro de una de las
+   tres casillas numeradas. */
+.os-redaccion-campo textarea.os-campo {
   width: 100%;
-  height: 100%;
+  min-width: 0;
   margin-bottom: 0;
 }
 

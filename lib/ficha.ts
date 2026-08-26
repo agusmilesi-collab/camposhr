@@ -17,6 +17,8 @@ import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 
 export type Cabecera = {
   id: string;
+  /** De qué pedido cuelga. Con eso se ordena entre sus hermanos. */
+  pedido_id: string | null;
   estado: string;
   mensaje: string | null;
   modalidad: string | null;
@@ -234,12 +236,20 @@ export type Ficha = {
   cualitativos: Cualitativo[];
   discursivo: Discursivo | null;
   competencias: Competencia[];
+  /**
+   * Qué lugar ocupa este candidato en su pedido, desde cero.
+   *
+   * El informe lo usa para elegir cuál de las formas de decir cada lectura le
+   * toca: el segundo candidato de una búsqueda no repite los párrafos del
+   * primero, y el cliente que recibe tres no lee tres veces lo mismo.
+   */
+  ordenEnPedido: number;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CAMPOS_CABECERA =
-  'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
+  'id,pedido_id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'proyectivo_administrado,bender_administrado,bender_observaciones,' +
   'grafico_2_personas_administrado,bender_nombre,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
@@ -328,8 +338,18 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
     `select=facturas(id,numero,punto_venta,fecha,cobrada_at)&evaluacion_id=eq.${id}&limit=1`
   ).catch(() => []);
 
+  // Los hermanos de este candidato, por orden de entrada: su posición es lo que
+  // corre las formas de decir cada lectura en el informe.
+  const hermanos = cabecera.pedido_id
+    ? await select<{ id: string }>(
+        'evaluaciones',
+        `select=id&pedido_id=eq.${cabecera.pedido_id}&order=created_at.asc`
+      ).catch(() => [])
+    : [];
+
   return {
     cabecera,
+    ordenEnPedido: Math.max(0, hermanos.findIndex((h) => h.id === id)),
     factura: renglones[0]?.facturas ?? null,
     precio,
     manchas,
