@@ -58,10 +58,18 @@ export default function Discursivo({
 
   return (
     <div className="os-discursivo">
+      {/* Acá hay que decidir. El Raven trae un puntaje que se carga y el resto
+          se calcula solo; el estrato lo elige la evaluadora sobre lo que
+          escuchó, y sin ese aviso la lista se leía como un dato ya resuelto. */}
       <p className="os-form-nota">
-        El nivel de complejidad de trabajo que puede abordar hoy. El que quede marcado es el
-        que sale en el informe, con la descripción de su estrato y la del nivel siguiente.
+        <strong>Lo elegís vos</strong> sobre unos cinco minutos de discurso: el nivel de
+        complejidad de trabajo que la persona puede abordar hoy. El que quede marcado sale en
+        el informe con la descripción de su estrato y la del nivel siguiente.
       </p>
+
+      {!puesto && (
+        <p className="os-discursivo-falta">Todavía sin elegir. El informe sale sin este capítulo.</p>
+      )}
 
       <ol className="os-estratos-elegir">
         {niveles.map((n) => {

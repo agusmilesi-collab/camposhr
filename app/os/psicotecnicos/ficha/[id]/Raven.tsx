@@ -229,37 +229,33 @@ export default function Raven({
 
       {error && <p className="os-form-error">{error}</p>}
 
+      {/* Tres líneas y no tres párrafos: lo que hay que saber para leer los dos
+          números y de dónde salen. El detalle de la frecuencia de nuestros
+          candidatos se lee en Configuración, que es donde se corrige. */}
       <div className="os-raven-glosario">
         {p !== null && d !== null ? (
           <>
             <p>
-              <strong>Percentil {p}.</strong> De cada cien personas que rindieron el test,{' '}
-              {Math.round(p)} sacaron menos puntos y {100 - Math.round(p)} sacaron más. Es una
-              posición dentro del grupo. Las respuestas acertadas se cuentan aparte: son{' '}
-              {valor || 0} de {RAVEN_MAXIMO}.
+              <strong>Percentil {p}.</strong> De cada cien que rindieron, {Math.round(p)}{' '}
+              sacaron menos puntos. Acertó {valor || 0} de {RAVEN_MAXIMO}.
             </p>
             <p>
               <strong>
                 Desvíos {d > 0 ? '+' : ''}
                 {coma(d)}.
               </strong>{' '}
-              Quedó {coma(Math.abs(d))} {d < 0 ? 'por debajo' : 'por encima'} del promedio,
-              que son 18,19 aciertos. Cada desvío equivale a 6,32 aciertos. Cuando dos candidatos
-              caen en el mismo rango, este número los separa.
+              {coma(Math.abs(d))} {d < 0 ? 'por debajo' : 'por encima'} del promedio de 18,19
+              aciertos, y cada desvío son 6,32.
             </p>
           </>
         ) : (
           <p>
-            El <strong>percentil</strong> dice cuántas personas de cada cien sacaron menos puntos.
-            Los <strong>desvíos</strong> dicen a qué distancia del promedio quedó, en unidades de
-            6,32 aciertos.
+            El <strong>percentil</strong> dice cuántos de cada cien sacaron menos puntos; los{' '}
+            <strong>desvíos</strong>, a qué distancia del promedio quedó.
           </p>
         )}
         <p className="os-benziger-aviso">
-          El percentil sale del baremo del manual y arriba de 28 aciertos es una proyección. Los
-          rangos cortan por puntaje directo, con la frecuencia de los candidatos de Campos HR, que
-          promedian 21,11 aciertos. En Configuración se ve, al lado, la que van dando los casos
-          propios a medida que se cargan.
+          El percentil sale del baremo del manual y arriba de 28 aciertos es una proyección.
         </p>
       </div>
     </div>
