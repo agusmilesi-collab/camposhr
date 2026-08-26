@@ -5,6 +5,7 @@ import { select } from '@/lib/supabase';
 import { crearCandidato, crearPedido } from '@/lib/altas';
 import { empresaDelToken } from '@/lib/portal-supabase';
 import { esDemo, NOMBRE_DEMO } from '@/lib/portal-demo';
+import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,6 +72,31 @@ export async function POST(req: Request) {
   const descripcion = texto('descripcion');
   const comentarios = texto('comentarios');
   const conBenziger = texto('benziger') === 'si';
+
+  /**
+   * El perfil del puesto, si el cliente lo contestó.
+   *
+   * Solo se aceptan las respuestas que están entre las opciones de cada
+   * pregunta: es lo que hace que el dato sirva para comparar entre pedidos, y
+   * lo que impide que llegue cualquier cosa por una dirección abierta.
+   */
+  const perfil: Record<string, string> = {};
+  for (const p of [...DEL_PUESTO, ...DEL_JEFE]) {
+    const v = texto(p.campo);
+    if (v && p.opciones.includes(v)) perfil[p.campo] = v;
+  }
+
+  /** Quién lo pidió, del lado del cliente. Tiene que ser de esa empresa. */
+  const contactoId = texto('contactoId');
+  const quienPide = contactoId
+    ? (
+        await select<{ id: string; nombre: string; email: string | null }>(
+          'contactos',
+          `select=id,nombre,email&id=eq.${encodeURIComponent(contactoId)}` +
+            `&empresa_id=eq.${empresa.id}&limit=1`
+        )
+      )[0]
+    : undefined;
 
   /**
    * Los candidatos, que pueden ser varios.
@@ -172,9 +198,18 @@ export async function POST(req: Request) {
           // La fecha la pone el servidor: no viaja en el formulario, así que el
           // pedido no puede quedar fechado en otro día.
           fechaPedido: new Date().toISOString().slice(0, 10),
-          notas: [descripcion, comentarios].filter(Boolean).join('\n\n') || null,
+          notas:
+            [
+              descripcion,
+              quienPide ? `Lo pidió ${quienPide.nombre}.` : '',
+              comentarios,
+            ]
+              .filter(Boolean)
+              .join('\n\n') || null,
           origen: 'portal',
-        })
+        },
+          perfil
+        )
       ).id;
 
     // De a uno y no todos a la vez: cada candidato sube su CV, y si algo falla

@@ -6130,3 +6130,544 @@ body {
   line-height: 1.4;
   margin-top: 4px;
 }
+
+
+/* =================================================================
+   Pedir una evaluación
+   =================================================================
+   Su propia pantalla y no un cajón: el cliente está decidiendo una compra de
+   cientos de miles de pesos por candidato, necesita el ancho para leer lo que
+   incluye cada batería, y el total a la vista mientras elige. */
+.pedir {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 34px 24px 80px;
+}
+
+.pedir-top {
+  margin-bottom: 28px;
+}
+
+.pedir-volver {
+  display: inline-block;
+  margin-bottom: 14px;
+  font-size: 0.86rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.pedir-volver:hover {
+  color: var(--ink);
+}
+
+.pedir-top h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 2rem;
+  letter-spacing: -0.01em;
+}
+
+.pedir-bajada {
+  margin-top: 6px;
+  max-width: 52ch;
+  color: var(--muted);
+}
+
+/* El formulario a la izquierda, el resumen a la derecha. Debajo de mil
+   píxeles el resumen baja al final y queda pegado al pie de la pantalla. */
+.pedir-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
+  gap: 32px;
+}
+
+.pedir-campos {
+  display: grid;
+  gap: 26px;
+  min-width: 0;
+}
+
+.pedir-bloque {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.pedir-bloque h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.pedir-bloque h3 {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pedir-ayuda {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.pedir-input,
+.pedir-select {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.pedir-input:focus,
+.pedir-select:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+
+.pedir-area {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Las búsquedas se muestran para reconocerlas, no para recordarlas. */
+.pedir-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+}
+
+.pedir-tarjeta {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  text-align: left;
+  font: inherit;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.pedir-tarjeta:hover {
+  border-color: var(--muted);
+}
+
+.pedir-tarjeta-t {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.pedir-tarjeta-d {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pedir-cerrada .pedir-tarjeta-t {
+  color: var(--muted);
+}
+
+/* Lo elegido se marca con el borde y el fondo, no con un tilde chico: la
+   tarjeta entera es el control. */
+.pedir-elegida,
+.pedir-tarjeta.pedir-elegida {
+  border-color: var(--ink);
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+/* Las baterías: primero para quién es, que es como se elige, y después qué
+   incluye y cuánto sale. */
+.pedir-baterias {
+  display: grid;
+  gap: 8px;
+}
+
+.pedir-bateria {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  text-align: left;
+  font: inherit;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.pedir-bateria:hover {
+  border-color: var(--muted);
+}
+
+.pedir-bateria-para {
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.pedir-bateria-cod {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pedir-min::before {
+  content: '· ';
+}
+
+.pedir-bateria-que {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.pedir-bateria-precio {
+  margin-top: 2px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* El cuestionario de perfil se suma a la batería elegida, así que es otra
+   clase de control: un tilde grande con lo que agrega al lado. */
+.pedir-suma {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 14px;
+  text-align: left;
+  font: inherit;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.pedir-suma-tilde {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.86rem;
+}
+
+.pedir-suma.pedir-elegida .pedir-suma-tilde {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.pedir-suma-cuerpo {
+  display: grid;
+  gap: 4px;
+}
+
+.pedir-suma-t {
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.pedir-suma-d {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.pedir-suma-precio {
+  display: grid;
+  gap: 2px;
+  margin-top: 2px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.pedir-suma-n {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* El perfil del puesto: nueve preguntas de tocar, escondidas hasta que se
+   piden. Es lo que permite medir a la persona contra el lugar donde entra. */
+.pedir-abrir {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.pedir-cuenta {
+  padding: 1px 7px;
+  font-size: 0.74rem;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  text-decoration: none;
+}
+
+.pedir-perfil {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  background: var(--paper);
+  border-radius: 9px;
+}
+
+.pedir-pregunta {
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.pedir-pregunta-t {
+  font-size: 0.86rem;
+}
+
+.pedir-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pedir-opcion {
+  padding: 6px 11px;
+  font: inherit;
+  font-size: 0.83rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.pedir-opcion:hover {
+  border-color: var(--muted);
+}
+
+.pedir-opcion.pedir-elegida {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  box-shadow: none;
+}
+
+/* Soltar los CV: es lo que el cliente ya tiene en la mano, así que es lo
+   primero y lo más grande del bloque de candidatos. */
+.pedir-soltar {
+  display: grid;
+  gap: 3px;
+  padding: 22px;
+  text-align: center;
+  background: var(--paper);
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.pedir-soltar:hover {
+  border-color: var(--ink);
+}
+
+.pedir-soltar-t {
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.pedir-soltar-d {
+  font-size: 0.83rem;
+  color: var(--muted);
+}
+
+.pedir-fila {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+.pedir-fila-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pedir-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.72rem;
+}
+
+.pedir-cv {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pedir-sacar {
+  margin-left: auto;
+  padding: 0;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.pedir-tres {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 8px;
+}
+
+/* El resumen sigue en pantalla mientras se elige: el total escondido es una
+   decisión que se posterga. */
+.pedir-resumen {
+  position: sticky;
+  top: 24px;
+}
+
+.pedir-resumen-caja {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.pedir-resumen-caja h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.pedir-linea {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.pedir-linea-cuenta {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pedir-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 1.06rem;
+  font-weight: 700;
+}
+
+.pedir-resumen-n {
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.pedir-error,
+.pedir-falta {
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.pedir-error {
+  color: #8c3b3b;
+}
+
+.pedir-falta {
+  color: var(--muted);
+}
+
+.pedir-enviar {
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.pedir-enviar:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Lo que se ve al terminar: qué entró y qué sigue. */
+.pedir-listo {
+  max-width: 46ch;
+  margin: 60px auto;
+  text-align: center;
+}
+
+.pedir-listo h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.8rem;
+}
+
+.pedir-listo p {
+  margin-top: 10px;
+}
+
+.pedir-listo-n {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.pedir-acciones {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+@media (max-width: 1000px) {
+  .pedir-cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* En pantalla angosta el resumen cierra la página en vez de quedar pegado
+     arriba, donde taparía el formulario. */
+  .pedir-resumen {
+    position: static;
+  }
+
+  .pedir-tres {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
