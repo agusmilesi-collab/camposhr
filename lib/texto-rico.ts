@@ -22,8 +22,29 @@
  * va a volver distinto.
  */
 
-/** Lo que se puede escribir: dar formato, hacer listas y separar párrafos. */
-const PERMITIDAS = new Set(['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li']);
+/**
+ * Lo que se puede escribir: dar formato, hacer listas, separar párrafos y
+ * titular.
+ *
+ * Los títulos van en `h3` y `h4` y no en tamaños de letra sueltos: lo que se
+ * elige es qué es cada renglón, no cuántos píxeles mide. Así el informe puede
+ * pintarlos con su propia escala el día que lea esto, sin arrastrar el tamaño
+ * de la pantalla donde se escribió.
+ */
+const PERMITIDAS = new Set([
+  'p',
+  'br',
+  'strong',
+  'b',
+  'em',
+  'i',
+  'u',
+  'ul',
+  'ol',
+  'li',
+  'h3',
+  'h4',
+]);
 
 /** Las que no llevan cierre. */
 const SUELTAS = new Set(['br']);
@@ -32,7 +53,7 @@ const SUELTAS = new Set(['br']);
 const NORMAL: Record<string, string> = { b: 'strong', i: 'em' };
 
 /** Las que ocupan un renglón propio: no pueden vivir adentro de una negrita. */
-const BLOQUES = new Set(['p', 'ul', 'ol']);
+const BLOQUES = new Set(['p', 'ul', 'ol', 'h3', 'h4']);
 
 /** Lo que se descarta con contenido y todo: adentro no hay texto de nadie. */
 const CON_CONTENIDO = new Set(['script', 'style', 'head', 'title', 'template']);
@@ -98,7 +119,15 @@ export function limpiarHtml(crudo: unknown): string {
   }
 
   while (abiertas.length) salida.push(`</${abiertas.pop()}>`);
-  return salida.join('').trim();
+
+  // Un bloque que quedó sin nada adentro se tira: cerrar un párrafo para poder
+  // abrir la lista que el navegador había metido adentro deja uno vacío, y eso
+  // se pinta como un renglón en blanco que nadie escribió. Un párrafo con un
+  // salto adentro sí se respeta, porque ese sí lo puso alguien.
+  return salida
+    .join('')
+    .replace(/<(p|h3|h4)><\/\1>/g, '')
+    .trim();
 }
 
 /**
@@ -125,7 +154,7 @@ export function tieneTexto(html: string | null | undefined): boolean {
  */
 export function comoHtml(guardado: string | null | undefined): string {
   if (!guardado) return '';
-  if (/<(p|ul|ol|li|br|strong|em|u)\b/i.test(guardado)) return limpiarHtml(guardado);
+  if (/<(p|ul|ol|li|br|strong|em|u|h3|h4)\b/i.test(guardado)) return limpiarHtml(guardado);
   return guardado
     .split(/\n{2,}/)
     .map(

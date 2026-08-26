@@ -6425,6 +6425,33 @@ th.os-tabla-contacto {
 
 .os-formato-negrita { font-weight: 700; }
 .os-formato-cursiva { font-style: italic; }
+.os-formato-subrayado { text-decoration: underline; }
+
+/* El cajón del tamaño: entra "Subtítulo", que es la opción más larga, y se lee
+   como parte de la barra y no como un campo del formulario. */
+.os-formato-tamano {
+  height: 26px;
+  padding: 0 6px;
+  font: inherit;
+  font-size: 0.76rem;
+  color: var(--os-tinta-media);
+  background: var(--os-panel-2);
+  border: 1px solid var(--os-linea-suave);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.os-formato-tamano:hover {
+  border-color: var(--os-linea);
+  color: var(--os-tinta);
+}
+
+/* Una barra vertical separa lo que cambia el renglón entero de lo que cambia
+   las palabras marcadas: son dos cosas distintas y se apretaban seguidas. */
+.os-formato-tamano + .os-formato-boton {
+  margin-left: 8px;
+  border-left-color: var(--os-linea);
+}
 
 /* La tarjeta del test es `draggable` para poder reordenarla, y eso le saca la
    selección a todo lo que tiene adentro. Un campo de texto no se puede editar
@@ -6459,6 +6486,26 @@ th.os-tabla-contacto {
 
 .os-campo-rico > p {
   margin: 0 0 0.6em;
+}
+
+/* Los títulos con la escala de la pantalla: lo que se guarda es qué es cada
+   renglón, así que el informe puede pintarlos con otra y esto no lo ata. */
+.os-campo-rico h3 {
+  margin: 0.9em 0 0.35em;
+  font-size: 1.06rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.os-campo-rico h4 {
+  margin: 0.8em 0 0.3em;
+  font-size: 0.93rem;
+  font-weight: 600;
+}
+
+.os-campo-rico > h3:first-child,
+.os-campo-rico > h4:first-child {
+  margin-top: 0;
 }
 
 .os-campo-rico > p:last-child {
