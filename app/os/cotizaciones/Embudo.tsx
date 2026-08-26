@@ -19,6 +19,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import Buscador from '@/app/os/Buscador';
+import Desplegable from '@/app/os/Desplegable';
 import {
   ESTADOS,
   OBJECIONES,
@@ -28,6 +29,14 @@ import {
   type Estado,
   type Objecion,
 } from '@/lib/comercial-tipos';
+
+/** El color de cada estado, el mismo que en el Inicio. */
+const COLOR_ESTADO: Record<string, string> = {
+  Lead: 'os-gris',
+  Enviada: 'os-ambar',
+  Aprobada: 'os-verde',
+  Perdida: 'os-rojo',
+};
 
 export type Oportunidad = {
   id: string;
@@ -304,6 +313,7 @@ function Editar({
   onGuardado: () => void;
 }) {
   const [cliente, setCliente] = useState(oportunidad.cliente);
+  const [servicio, setServicio] = useState(oportunidad.concepto);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -313,7 +323,7 @@ function Editar({
     setGuardando(true);
     setError(null);
     try {
-      await mandar({ accion: 'editar', id: oportunidad.id, ...datos, cliente });
+      await mandar({ accion: 'editar', id: oportunidad.id, ...datos, cliente, concepto: servicio });
       onGuardado();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar.');
@@ -349,29 +359,37 @@ function Editar({
               />
             </div>
 
-            {/* Se escribe y no se elige de la lista: las oportunidades que
-                vienen de antes dicen qué es el trabajo ("Rediseño
-                organizacional · cinco fases en once semanas"), y un
-                desplegable de cuatro servicios les cambiaría el nombre al
-                abrir el cajón. Los cuatro quedan como sugerencia. */}
+            {/* Las oportunidades que vienen de antes dicen qué es el trabajo
+                ("Rediseño organizacional · cinco fases en once semanas") en vez
+                de uno de los cuatro servicios: lo que dice esta sigue en la
+                lista, o abrir el cajón le cambiaría el nombre. */}
             <div className="os-campo-bloque os-campo-entero">
-              <label className="os-etiqueta-campo" htmlFor="concepto-editar">
-                Qué se le vende
-              </label>
-              <input
-                className="os-campo"
-                id="concepto-editar"
-                name="concepto"
-                required
-                maxLength={200}
-                list="servicios-cotizacion"
-                defaultValue={oportunidad.concepto}
+              <span className="os-etiqueta-campo">Servicio</span>
+              <Desplegable
+                valor={servicio}
+                opciones={[
+                  ...SERVICIOS.map((x) => ({ valor: x, texto: x })),
+                  ...(SERVICIOS.includes(oportunidad.concepto as (typeof SERVICIOS)[number])
+                    ? []
+                    : [{ valor: oportunidad.concepto, texto: oportunidad.concepto }]),
+                ]}
+                alElegir={setServicio}
+                etiqueta="Qué servicio es"
               />
-              <datalist id="servicios-cotizacion">
-                {SERVICIOS.map((x) => (
-                  <option key={x} value={x} />
-                ))}
-              </datalist>
+            </div>
+
+            <div className="os-campo-bloque os-campo-entero">
+              <label className="os-etiqueta-campo" htmlFor="nota-editar">
+                Descripción
+              </label>
+              <textarea
+                className="os-campo"
+                id="nota-editar"
+                name="nota"
+                rows={3}
+                maxLength={300}
+                defaultValue={oportunidad.nota ?? ''}
+              />
             </div>
 
             <div className="os-campo-bloque">
@@ -403,19 +421,6 @@ function Editar({
               />
             </div>
 
-            <div className="os-campo-bloque os-campo-entero">
-              <label className="os-etiqueta-campo" htmlFor="nota-editar">
-                Nota
-              </label>
-              <input
-                className="os-campo"
-                id="nota-editar"
-                name="nota"
-                maxLength={300}
-                defaultValue={oportunidad.nota ?? ''}
-              />
-            </div>
-
             {error && <p className="os-form-error">{error}</p>}
 
             <div className="os-campo-entero os-form-pie">
@@ -439,6 +444,8 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cliente, setCliente] = useState('');
+  const [servicio, setServicio] = useState('');
+  const [estado, setEstado] = useState<Estado>('Lead');
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -448,12 +455,24 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
       setError('Falta el cliente.');
       return;
     }
+    if (!servicio) {
+      setError('Falta el servicio.');
+      return;
+    }
     setEnviando(true);
     setError(null);
     try {
-      await mandar({ accion: 'nueva', ...datos, cliente: cliente.trim() });
+      await mandar({
+        accion: 'nueva',
+        ...datos,
+        cliente: cliente.trim(),
+        concepto: servicio,
+        estado,
+      });
       form.reset();
       setCliente('');
+      setServicio('');
+      setEstado('Lead');
       setAbierto(false);
       router.refresh();
     } catch (err) {
@@ -505,20 +524,33 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
                   />
                 </div>
 
+                {/* El desplegable del OS y no el del navegador: es el mismo
+                    control que en el resto de las pantallas, y el del navegador
+                    se dibuja distinto en cada sistema. */}
                 <div className="os-campo-bloque os-campo-entero">
-                  <label className="os-etiqueta-campo" htmlFor="concepto">
-                    Qué se le vende
+                  <span className="os-etiqueta-campo">Servicio</span>
+                  <Desplegable
+                    valor={servicio}
+                    opciones={SERVICIOS.map((x) => ({ valor: x, texto: x }))}
+                    alElegir={setServicio}
+                    etiqueta="Qué servicio se vende"
+                    vacio="Elegí el servicio"
+                  />
+                </div>
+
+                {/* Debajo del servicio, que es lo que describe: qué se acordó,
+                    en cuántas fases, con qué condición de pago. */}
+                <div className="os-campo-bloque os-campo-entero">
+                  <label className="os-etiqueta-campo" htmlFor="nota">
+                    Descripción
                   </label>
-                  <select className="os-campo" id="concepto" name="concepto" required defaultValue="">
-                    <option value="" disabled>
-                      Elegí el servicio
-                    </option>
-                    {SERVICIOS.map((x) => (
-                      <option key={x} value={x}>
-                        {x}
-                      </option>
-                    ))}
-                  </select>
+                  <textarea
+                    className="os-campo"
+                    id="nota"
+                    name="nota"
+                    rows={3}
+                    maxLength={300}
+                  />
                 </div>
 
                 <div className="os-campo-bloque">
@@ -537,16 +569,17 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
                 </div>
 
                 <div className="os-campo-bloque">
-                  <label className="os-etiqueta-campo" htmlFor="estado">
-                    Estado
-                  </label>
-                  <select className="os-campo" id="estado" name="estado" defaultValue="Lead">
-                    {ESTADOS.map((e) => (
-                      <option key={e} value={e}>
-                        {e}
-                      </option>
-                    ))}
-                  </select>
+                  <span className="os-etiqueta-campo">Estado</span>
+                  <Desplegable
+                    valor={estado}
+                    opciones={ESTADOS.map((e) => ({
+                      valor: e,
+                      texto: e,
+                      color: COLOR_ESTADO[e],
+                    }))}
+                    alElegir={(v) => setEstado(v as Estado)}
+                    etiqueta="En qué columna entra"
+                  />
                 </div>
 
                 <div className="os-campo-bloque os-campo-entero">
@@ -554,13 +587,6 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
                     Fecha
                   </label>
                   <input className="os-campo" id="fecha" name="fecha" type="date" />
-                </div>
-
-                <div className="os-campo-bloque os-campo-entero">
-                  <label className="os-etiqueta-campo" htmlFor="nota">
-                    Nota
-                  </label>
-                  <input className="os-campo" id="nota" name="nota" maxLength={300} />
                 </div>
 
                 {error && <p className="os-form-error">{error}</p>}
