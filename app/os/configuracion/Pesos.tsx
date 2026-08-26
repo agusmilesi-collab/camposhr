@@ -76,16 +76,7 @@ function aportes(pesos: number[]): number[] | null {
   return enteros;
 }
 
-const COLUMNAS = [
-  'Indicador',
-  'Qué mide',
-  'Alto',
-  'Medio',
-  'Bajo',
-  'Si lo pasa',
-  'Peso',
-  'Aporte',
-];
+const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Rasgo', 'Peso', 'Aporte'];
 
 /* Medidos en pantalla contra el contenido más largo de cada columna, más los 28
    px de padding de la celda. Sin anchos declarados, cada competencia repartía
@@ -105,7 +96,7 @@ const MEDIDAS = columnas(COLUMNAS, {
   Alto: 190,
   Medio: 190,
   Bajo: 140,
-  'Si lo pasa': 132,
+  Rasgo: 132,
   Peso: 90,
   Aporte: 94,
 });
@@ -348,7 +339,7 @@ export default function Pesos({
     const escala = escalaDe(i);
     if (escala?.forma !== 'umbral') {
       return (
-        <td className="os-tabla-flojo" data-campo="Si lo pasa">
+        <td className="os-tabla-flojo" data-campo="Rasgo">
           {/* Sin dirección que elegir: la banda no tiene un "hacia arriba", y
               el que compara dos índices tampoco tiene umbral. */}
           <span className="os-banda-nula" title={escala ? 'Lo esperable es la banda' : undefined}>
@@ -362,7 +353,7 @@ export default function Pesos({
     const movida =
       i.escalaFabrica?.forma === 'umbral' && escala.mayorEsMejor !== i.escalaFabrica.mayorEsMejor;
     return (
-      <td data-campo="Si lo pasa">
+      <td data-campo="Rasgo">
         <button
           type="button"
           className={`os-mejor os-sello-estado ${escala.mayorEsMejor ? 'os-verde' : 'os-rojo'}${
@@ -583,9 +574,8 @@ export default function Pesos({
                         <th>
                           Bajo <span className="os-banda-vale">0</span>
                         </th>
-                        {/* Qué significa que el valor pase el corte: si es un
-                            hallazgo bueno o uno malo. */}
-                        <th>Si lo pasa</th>
+                        {/* Qué rasgo es pasar el corte: uno bueno o uno malo. */}
+                        <th>Rasgo</th>
                         <th className="os-tabla-num">Peso</th>
                         <th className="os-tabla-num">Aporte</th>
                       </tr>
