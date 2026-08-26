@@ -69,20 +69,13 @@ const RAVEN: Record<EstadoRaven, { texto: string; detalle: string; color: string
  * es el orden en que se administra.
  */
 /**
- * La hoja entera, sin el marco.
+ * La hoja entera de la entrevista.
  *
- * La misma que se abre desde la lista de entrevistas y la que va como segunda
- * pestaña de la ficha: es el mismo trabajo, y tenerlo en dos pantallas obligaba
- * a saltar de una a otra con la persona esperando. `suelta` es la diferencia:
- * en la pantalla propia se ofrece abrir la ficha, y dentro de la ficha no.
+ * Vive en la segunda pestaña de la ficha y en ningún otro lado: era una
+ * pantalla aparte, y tener las dos dejaba dos lugares donde hacer el mismo
+ * trabajo, con lo cargado en una sin aparecer en la otra hasta recargar.
  */
-export default async function HojaDeEntrevista({
-  id,
-  suelta = false,
-}: {
-  id: string;
-  suelta?: boolean;
-}) {
+export default async function HojaDeEntrevista({ id }: { id: string }) {
   const e: Entrevista | null = await entrevistaDe(id);
   if (!e) return null;
 
@@ -326,11 +319,6 @@ export default async function HojaDeEntrevista({
             : `Esta evaluación ya está en ${e.estado}. Su etapa se corrige en la ficha.`}
         </p>
         <div className="os-entrevista-botones">
-          {suelta && (
-            <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?desde=entrevistas`}>
-              Abrir la ficha completa
-            </Link>
-          )}
           {e.estado === 'Por entrevistar' && <Tomada id={e.id} />}
         </div>
       </section>

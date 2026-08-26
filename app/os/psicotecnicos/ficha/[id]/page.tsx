@@ -672,16 +672,6 @@ export default async function FichaPagina({
           );
         })}
       </nav>
-        {/* La hoja suelta, para tomarla con la persona enfrente y sin la ficha
-            alrededor. Adentro está la misma, en su pestaña. */}
-        <Link
-          className="os-boton"
-          href={`/os/psicotecnicos/entrevista/${params.id}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Hoja de entrevista
-        </Link>
       </div>
 
       {ver === 'datos' && <Datos f={ficha} id={params.id} />}
