@@ -18,7 +18,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { LARGO_MAXIMO, type TextoDeNivel } from '@/lib/discursivo';
+import {
+  LARGO_MAXIMO,
+  NOTA_ADAPTACION,
+  NOTA_EJEMPLOS,
+  type TextoDeNivel,
+} from '@/lib/discursivo';
 
 export type Estrato = TextoDeNivel & {
   nombre: string;
@@ -171,11 +176,10 @@ export default function Estratos({
           <p className="os-form-nota">
             La referencia laboral sale al lado de cada escalón de la pirámide, y por eso no
             puede quedar vacía: sin eso el escalón queda mudo. El resto arma el capítulo de
-            potencial del informe de quien caiga en ese estrato. Los ejemplos de puestos son
-            orientativos y el informe lo aclara: un especialista sin gente a cargo puede hacer
-            trabajo de alta complejidad, y la cantidad de personas que reportan no determina el
-            nivel.
+            potencial del informe de quien caiga en ese estrato.
           </p>
+          <p className="os-form-nota">{NOTA_ADAPTACION}</p>
+          <p className="os-form-nota">{NOTA_EJEMPLOS}</p>
 
           {tocado && !cambiado && (
             <div className="os-barra-acciones">
