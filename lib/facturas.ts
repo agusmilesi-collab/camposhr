@@ -87,6 +87,10 @@ type FilaFactura = {
     descripcion: string;
     detalle: string | null;
     importe: string | number | null;
+    evaluaciones: {
+      personas: { nombre: string } | null;
+      pedidos: { puesto: string } | null;
+    } | null;
   }[];
 };
 
@@ -121,7 +125,8 @@ export async function listarFacturas(): Promise<Factura[]> {
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,' +
       'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),' +
-      'factura_items(id,evaluacion_id,descripcion,detalle,importe)' +
+      'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
+      'evaluaciones(personas(nombre),pedidos(puesto)))' +
       '&order=fecha.desc,numero.desc',
     CACHE_COMERCIAL
   );
@@ -135,7 +140,8 @@ export async function verFactura(id: string): Promise<Factura | null> {
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,' +
       'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),' +
-      'factura_items(id,evaluacion_id,descripcion,detalle,importe)' +
+      'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
+      'evaluaciones(personas(nombre),pedidos(puesto)))' +
       `&id=eq.${id}&limit=1`
   );
   return filas[0] ? armarFactura(filas[0]) : null;
@@ -167,6 +173,8 @@ function armarFactura(f: FilaFactura): Factura {
       descripcion: r.descripcion,
       detalle: r.detalle,
       importe: numeroOno(r.importe),
+      persona: r.evaluaciones?.personas?.nombre ?? null,
+      puesto: r.evaluaciones?.pedidos?.puesto ?? null,
     })),
   };
 }
