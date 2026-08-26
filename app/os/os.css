@@ -8072,16 +8072,29 @@ textarea.os-exigencia-notas {
   gap: 10px;
 }
 
-/* Las acciones de un perfil, contra el borde derecho de su encabezado. Es donde
-   el resto del sistema pone lo que se le hace a un panel.
+/* La nota a la izquierda y las acciones contra el borde derecho, en la misma
+   fila y debajo de la barra. */
+.os-exigencia-pieza {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-   El dato de uso viene con `margin-left: auto` propio: si las acciones también
-   lo llevaran, el espacio sobrante se repartiría entre los dos y "sin usar"
-   quedaría flotando en el medio de la fila. */
 .os-exigencia-acciones {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
+}
+
+/* El botón de alta va arriba y alineado a la derecha con los paneles, no en
+   una caja propia del ancho de la pantalla con un botón adentro. */
+.os-exigencia-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 /* En una fila de botones, el enlace se alinea con ellos y no con la primera
@@ -8100,11 +8113,4 @@ textarea.os-exigencia-notas {
    abajo venían los botones. */
 .os-exigencia-nota {
   margin: 0;
-}
-
-.os-exigencia-pie {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 4px;
 }
