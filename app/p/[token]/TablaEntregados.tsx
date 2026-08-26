@@ -70,10 +70,16 @@ function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
 export default function TablaEntregados({
   filas,
   conCobro = false,
+  conInforme = true,
 }: {
   filas: FilaEntregada[];
   /** La columna de facturación, mientras no se publique (ver lib/cobro.ts). */
   conCobro?: boolean;
+  /**
+   * La columna del informe. Se apaga desde la ficha del cliente en el OS,
+   * cuando los informes se entregan por otro lado.
+   */
+  conInforme?: boolean;
 }) {
   const [orden, setOrden] = useState<{ col: Clave; asc: boolean }>({
     col: 'fecha',
@@ -117,14 +123,17 @@ export default function TablaEntregados({
 
   return (
     <div className="tabla entregados">
-      <div className={`tr th${conCobro ? '' : ' sin-cobro'}`}>
+      <div className={`tr th${conCobro ? '' : ' sin-cobro'}${conInforme ? '' : ' sin-informe'}`}>
         {COLUMNAS.map(({ clave, titulo }) => cabecera(clave, titulo))}
-        <span>Informe</span>
+        {conInforme && <span>Informe</span>}
         {conCobro && cabecera('cobro', 'Facturación')}
       </div>
 
       {ordenadas.map((f) => (
-        <div className={`tr${conCobro ? '' : ' sin-cobro'}`} key={f.id}>
+        <div
+          className={`tr${conCobro ? '' : ' sin-cobro'}${conInforme ? '' : ' sin-informe'}`}
+          key={f.id}
+        >
           <span className="c-fecha" data-label="Fecha">
             {f.fechaTexto ?? <span className="dash">—</span>}
           </span>
@@ -153,23 +162,25 @@ export default function TablaEntregados({
               de quienes tienen archivo entregado, así que no hace falta otro
               interruptor: cargar el adjunto en Airtable alcanza para que la
               fila pase de "Próximamente" a abrir. */}
-          <span className="c-informe" data-label="Informe">
-            {f.informe ? (
-              <a
-                className="btn-informe"
-                href={f.informe}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <span className="bi-texto">Ver informe</span>
-              </a>
-            ) : (
-              <span className="btn-informe btn-informe-pronto">
-                <span className="bi-texto">Ver informe</span>
-                <span className="bi-pronto">Próximamente</span>
-              </span>
-            )}
-          </span>
+          {conInforme && (
+            <span className="c-informe" data-label="Informe">
+              {f.informe ? (
+                <a
+                  className="btn-informe"
+                  href={f.informe}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="bi-texto">Ver informe</span>
+                </a>
+              ) : (
+                <span className="btn-informe btn-informe-pronto">
+                  <span className="bi-texto">Ver informe</span>
+                  <span className="bi-pronto">Próximamente</span>
+                </span>
+              )}
+            </span>
+          )}
           {conCobro && (
             <span className="c-cobro" data-label="Facturación">
               <i className={`dot ${COBROS[f.cobro].clase}`} />

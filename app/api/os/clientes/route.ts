@@ -54,6 +54,21 @@ export async function POST(req: Request) {
   };
   const tamano = Number(datos.tamano);
 
+  const id = String(datos.id ?? '').trim();
+
+  /**
+   * Un campo de la fila, solo si el cuerpo lo trae.
+   *
+   * Editando, lo que no viene se deja como está. Sin esto, los botones que
+   * mandan un dato suelto (activar, prender los informes) pisaban con null la
+   * razón social, el CUIT y todo lo demás: el cuerpo no los traía y el campo
+   * salía vacío igual. En un alta sí van todos, con el valor que se cargó o
+   * vacío si no se cargó nada.
+   */
+  const trae = (k: string) => Object.prototype.hasOwnProperty.call(datos, k);
+  const campo = (columna: string, k: string, valor: unknown) =>
+    id && !trae(k) ? {} : { [columna]: valor };
+
   /**
    * Activo o inactivo.
    *
@@ -61,22 +76,30 @@ export async function POST(req: Request) {
    * con sus pedidos y sus informes, y deja de estar entre los de todos los
    * días. Al dar de alta nace activo; al editar, se respeta lo que venga y solo
    * si no viene nada se lo deja como estaba.
+   *
+   * Los informes se prenden y se apagan igual, y también nacen prendidos: es el
+   * valor por omisión de la columna, así que en un alta no hace falta mandarlo.
    */
-  const id = String(datos.id ?? '').trim();
-
   const fila = {
     nombre,
     slug: slug(nombre),
     ...(datos.activa === undefined ? (id ? {} : { activa: true }) : { activa: Boolean(datos.activa) }),
-    razon_social: texto('razonSocial'),
-    cuit: texto('cuit'),
-    condicion_iva: texto('condicionIva'),
-    email_facturacion: texto('emailFacturacion'),
-    contacto: texto('contacto'),
-    direccion_fiscal: texto('direccionFiscal'),
-    rubro: texto('rubro'),
-    tamano: Number.isFinite(tamano) && tamano > 0 ? Math.round(tamano) : null,
-    notas: texto('notas'),
+    ...(datos.informesVisibles === undefined
+      ? {}
+      : { informes_visibles: Boolean(datos.informesVisibles) }),
+    ...campo('razon_social', 'razonSocial', texto('razonSocial')),
+    ...campo('cuit', 'cuit', texto('cuit')),
+    ...campo('condicion_iva', 'condicionIva', texto('condicionIva')),
+    ...campo('email_facturacion', 'emailFacturacion', texto('emailFacturacion')),
+    ...campo('contacto', 'contacto', texto('contacto')),
+    ...campo('direccion_fiscal', 'direccionFiscal', texto('direccionFiscal')),
+    ...campo('rubro', 'rubro', texto('rubro')),
+    ...campo(
+      'tamano',
+      'tamano',
+      Number.isFinite(tamano) && tamano > 0 ? Math.round(tamano) : null
+    ),
+    ...campo('notas', 'notas', texto('notas')),
   };
 
   // Con id se está editando un cliente que ya existe; sin id, es un alta. En

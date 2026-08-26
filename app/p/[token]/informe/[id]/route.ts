@@ -9,6 +9,7 @@ import {
   INFORMES_PRUEBA,
 } from '@/lib/portal-demo';
 import { informeDe } from '@/lib/servicios';
+import { empresaDelToken } from '@/lib/portal-supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,6 +51,12 @@ export async function GET(
       },
     });
   }
+
+  // El enlace de una empresa migrada abre su portal de Supabase, así que el
+  // interruptor de los informes manda también acá: mientras esté apagado esta
+  // dirección no existe. Ver `informesVisibles`.
+  const empresa = await empresaDelToken(params.token);
+  if (empresa && !empresa.informes_visibles) return noEncontrado();
 
   const datos = await getDatosCliente(params.token);
   if (!datos) return noEncontrado();

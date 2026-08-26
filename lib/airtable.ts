@@ -133,6 +133,15 @@ export type DatosCliente = {
    *  documentos tiene este cliente además de las evaluaciones. */
   empresaId: string | null;
   busquedas: Busqueda[];
+  /**
+   * Si el portal deja abrir los informes.
+   *
+   * Se prende y se apaga desde la ficha del cliente en el OS. Apagado, la tabla
+   * de entregados sale sin la columna del informe y las rutas que lo sirven
+   * contestan que no existe: esconder el botón y dejar la dirección abierta no
+   * sería esconder nada.
+   */
+  informesVisibles: boolean;
 };
 
 type EmpresaPortal = {
@@ -254,7 +263,10 @@ async function armarDatos(
   sinCache = false
 ): Promise<DatosCliente> {
 
-  if (pedidoIds.length === 0) return { empresa, empresaId, busquedas: [] };
+  // Airtable no guarda el interruptor de los informes: lo que sigue ahí se ve
+  // como siempre.
+  if (pedidoIds.length === 0)
+    return { empresa, empresaId, busquedas: [], informesVisibles: true };
 
   // 2) Los pedidos
   const pp = new URLSearchParams({
@@ -363,5 +375,5 @@ async function armarDatos(
     })
     .sort((a: Busqueda, b: Busqueda) => (b.fecha ?? '').localeCompare(a.fecha ?? ''));
 
-  return { empresa, empresaId, busquedas };
+  return { empresa, empresaId, busquedas, informesVisibles: true };
 }

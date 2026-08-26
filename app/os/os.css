@@ -6866,17 +6866,37 @@ th.os-tabla-contacto {
   white-space: nowrap;
 }
 
-/* Los dos del mismo tamaño. El de copiar viene de otra hoja, con su propio
-   alto y su propio padding, y además cambia a "Copiado" al tocarlo: sin un
-   ancho mínimo, la fila se movía sola. */
-.os-portal-acciones > * {
+/* Todos del mismo tamaño, y del tamaño del botón del OS.
+
+   Convivían tres medidas en la misma fila: el de copiar viene de otra hoja con
+   su propio alto y su propio relleno, y los demás caían bajo la regla del botón
+   del panel, que los baja a veintiocho píxeles para la cabecera del Benziger.
+   Acá manda el contenedor, que lleva el nombre de la cabecera en el selector
+   para ganarle a esa. El ancho mínimo es porque el de copiar cambia a "Copiado"
+   al tocarlo y sin eso la fila se movía sola. */
+.os-panel-top .os-portal-acciones > * {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   min-width: 92px;
   height: 32px;
-  padding: 0 12px;
+  padding: 0 13px;
+  font-size: 0.81rem;
+}
+
+/* El interruptor de los informes también es un botón de la fila: el sello le
+   saca el marco para poder ir suelto en una tabla, y acá, entre cuatro con
+   marco, quedaba como si no se pudiera tocar. El color del punto sigue diciendo
+   en qué está. */
+.os-portal-acciones .os-boton-marcado {
+  background: var(--os-panel-2);
+  border-color: var(--os-linea);
+}
+
+.os-portal-acciones .os-boton-marcado:hover:not(:disabled) {
+  border-color: var(--os-suave);
+  background: var(--os-hover);
 }
 
 /* El botón que arma el informe, con lo que hace falta saber al lado. */
