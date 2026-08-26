@@ -58,36 +58,34 @@ export default function Discursivo({
 
   return (
     <div className="os-discursivo">
-      {/* Acá hay que decidir. El Raven trae un puntaje que se carga y el resto
-          se calcula solo; el estrato lo elige la evaluadora sobre lo que
-          escuchó, y sin ese aviso la lista se leía como un dato ya resuelto. */}
-      <p className="os-form-nota">
-        <strong>Lo elegís vos</strong> sobre unos cinco minutos de discurso: el nivel de
-        complejidad de trabajo que la persona puede abordar hoy. El que quede marcado sale en
-        el informe con la descripción de su estrato y la del nivel siguiente.
-      </p>
+      {/* La lista se elige, no se lee. El punto vacío de cada opción es lo que
+          dice que falta decidir: un párrafo arriba explicándolo se salteaba, y
+          la lista sin marcas se leía como un dato ya resuelto. */}
+      <span className="os-etiqueta-campo">Elegí el estrato</span>
 
-      {!puesto && (
-        <p className="os-discursivo-falta">Todavía sin elegir. El informe sale sin este capítulo.</p>
-      )}
-
-      <ol className="os-estratos-elegir">
+      <ol className="os-estratos-elegir" role="radiogroup" aria-label="Estrato">
         {niveles.map((n) => {
           const suyo = puesto === n.nombre;
           return (
             <li key={n.nombre}>
               <button
                 type="button"
+                role="radio"
                 className={`os-estrato-opcion${suyo ? ' suyo' : ''}`}
                 disabled={guardando}
-                aria-pressed={suyo}
+                aria-checked={suyo}
                 // Volver a apretar el que ya estaba lo desmarca: es la forma de
                 // corregir sin tener que elegir otro que no corresponde.
                 onClick={() => guardar(suyo ? null : (n.nombre as NivelDiscursivo))}
               >
-                <span className="os-estrato-numeral">{n.romano}</span>
-                <span className="os-estrato-nombre">{n.nombre}</span>
-                <span className="os-estrato-que">{n.que}</span>
+                <span className="os-estrato-marca" aria-hidden="true" />
+                <span className="os-estrato-texto">
+                  <span className="os-estrato-titulo">
+                    <strong>{n.nombre}</strong>
+                    <span className="os-estrato-numeral">Estrato {n.romano}</span>
+                  </span>
+                  <small>{n.que}</small>
+                </span>
                 <span className="os-estrato-proceso">{n.procesamiento}</span>
               </button>
             </li>
