@@ -8,6 +8,7 @@ import {
   empresas as listarEmpresas,
   evaluadoras as listarEvaluadoras,
   pedidosAbiertos,
+  pedidosCerrados,
 } from '@/lib/altas';
 import { equipo, esMia, quienSoy, type Miembro } from '@/lib/identidad';
 import { listarAFacturar } from '@/lib/facturas';
@@ -95,8 +96,12 @@ export async function cargar() {
 
   // Lo que necesita la tarjeta de alta del tablero. Va con el resto de la
   // lectura para no sumarle un viaje a la pantalla.
-  const [pedidos, evaluadorasAlta, empresasAlta, bateriasAlta] = await Promise.all([
+  const [pedidos, cerrados, evaluadorasAlta, empresasAlta, bateriasAlta] = await Promise.all([
     pedidosAbiertos().catch(() => []),
+    // Los que ya se entregaron enteros van aparte en el selector: elegir uno
+    // reabre el pedido, que es lo que pasa cuando el cliente pide más
+    // evaluaciones para la misma búsqueda.
+    pedidosCerrados().catch(() => []),
     listarEvaluadoras().catch(() => []),
     // Los clientes y las baterías son para el pedido que se carga desde la
     // misma tarjeta cuando el candidato llega antes que su búsqueda.
@@ -142,6 +147,7 @@ export async function cargar() {
     ocultas,
     evaluadoras,
     pedidos,
+    cerrados,
     evaluadorasAlta,
     empresasAlta,
     bateriasAlta,

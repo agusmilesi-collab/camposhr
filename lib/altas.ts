@@ -18,7 +18,7 @@ import 'server-only';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
 import { select } from '@/lib/supabase';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import { ABIERTO } from '@/lib/pedido-campos';
+import { ABIERTO, CERRADO } from '@/lib/pedido-campos';
 
 const BUCKET = 'psicotecnicos';
 
@@ -80,8 +80,27 @@ export async function evaluadoras(): Promise<EmpresaOpcion[]> {
   );
 }
 
-/** Los pedidos a los que se le puede colgar un candidato. */
+/**
+ * Los pedidos a los que se le puede colgar un candidato.
+ *
+ * Abiertos son los que tienen trabajo por hacer: el estado lo mantiene la base
+ * sola, y un pedido se cierra cuando todos sus candidatos quedaron entregados.
+ *
+ * Los cerrados vienen aparte y no mezclados: cargarle un candidato a uno de
+ * ellos es reabrirlo, que es lo que pasa cuando el cliente pide más
+ * evaluaciones para la misma búsqueda. La lista de todos los días son los
+ * abiertos; los otros están para ese caso.
+ */
 export async function pedidosAbiertos(): Promise<PedidoOpcion[]> {
+  return pedidosDeEstado(ABIERTO);
+}
+
+/** Los que ya se entregaron enteros. Elegir uno lo reabre. */
+export async function pedidosCerrados(): Promise<PedidoOpcion[]> {
+  return pedidosDeEstado(CERRADO);
+}
+
+async function pedidosDeEstado(estado: string): Promise<PedidoOpcion[]> {
   const filas = await select<{
     id: string;
     puesto: string;
@@ -90,7 +109,7 @@ export async function pedidosAbiertos(): Promise<PedidoOpcion[]> {
   }>(
     'pedidos',
     `select=id,puesto,empresas(nombre),evaluaciones(id)&estado=eq.${encodeURIComponent(
-      ABIERTO
+      estado
     )}&order=fecha_pedido.desc`,
     CACHE_PSICOTECNICOS
   );

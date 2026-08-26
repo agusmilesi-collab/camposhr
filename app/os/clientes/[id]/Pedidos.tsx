@@ -115,9 +115,18 @@ function Filas({ pedidos, cerrados = false }: { pedidos: Pedido[]; cerrados?: bo
                 {p.seniority ?? <span className="os-dato-falta">sin definir</span>}
               </td>
               {/* La fecha ubica el pedido en el mes; el "hace" dice sin contar
-                  si ya lleva demasiado abierto. */}
+                  si ya lleva demasiado abierto. Reabierto, la que vale es la de
+                  la reapertura, y se dice: la solicitud en curso es la nueva. */}
               <td data-campo="Pedido el">
                 {fecha(p.fechaPedido) ?? <span className="os-dato-falta">sin fecha</span>}
+                {p.reabierto && (
+                  <div
+                    className="os-tabla-flojo"
+                    title={`Se pidió por primera vez el ${fecha(p.fechaOriginal) ?? 'sin fecha'}.`}
+                  >
+                    reabierto
+                  </div>
+                )}
                 {p.fechaPedido && (
                   <div className="os-tabla-flojo">{haceCuanto(diasDesde(p.fechaPedido))}</div>
                 )}

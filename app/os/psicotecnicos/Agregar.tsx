@@ -43,11 +43,20 @@ const NUEVO = 'nuevo';
 
 export default function Agregar({
   pedidos,
+  cerrados = [],
   empresas,
   baterias,
   evaluadoras,
 }: {
   pedidos: PedidoOpcion[];
+  /**
+   * Los que ya se entregaron enteros.
+   *
+   * Van aparte al final del selector porque elegir uno reabre el pedido: es lo
+   * que pasa cuando el cliente pide más evaluaciones para la misma búsqueda, y
+   * el pedido vuelve a estar en curso con la fecha del día en que se reabrió.
+   */
+  cerrados?: PedidoOpcion[];
   empresas: Opcion[];
   baterias: BateriaOpcion[];
   evaluadoras: Opcion[];
@@ -181,6 +190,16 @@ export default function Agregar({
             </option>
           ))}
           <option value={NUEVO}>+ Pedido nuevo</option>
+          {/* Los entregados enteros, al final y dichos: elegir uno lo reabre. */}
+          {cerrados.length > 0 && (
+            <optgroup label="Entregados · elegir uno reabre el pedido">
+              {cerrados.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.empresa} · {p.puesto}
+                </option>
+              ))}
+            </optgroup>
+          )}
         </select>
 
         <input
