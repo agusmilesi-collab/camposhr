@@ -30,6 +30,11 @@ export default async function InformeDelPortal({
   const datos = await datosClienteDeSupabase(params.token);
   if (!datos) notFound();
 
+  // Con los informes apagados para esa empresa, esta dirección no existe:
+  // esconder el botón del portal y dejar el enlace abierto no sería esconder
+  // nada. Se prende y se apaga desde la ficha del cliente en el OS.
+  if (!datos.informesVisibles) notFound();
+
   // La evaluación tiene que ser de esta empresa y estar entregada.
   const suyo = datos.busquedas
     .flatMap((b) => b.candidatos)

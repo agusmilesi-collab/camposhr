@@ -92,14 +92,19 @@ async function cobrosDe(ids: string[]): Promise<Map<string, boolean>> {
  * token y no de una constante, así que quien carga solo puede cargar en la
  * suya.
  */
-export async function empresaDelToken(
-  token: string
-): Promise<{ id: string; nombre: string } | null> {
+export type EmpresaDelPortal = {
+  id: string;
+  nombre: string;
+  /** Si el portal deja abrir los informes. Ver `DatosCliente.informesVisibles`. */
+  informes_visibles: boolean;
+};
+
+export async function empresaDelToken(token: string): Promise<EmpresaDelPortal | null> {
   if (!TOKEN_VALIDO.test(token)) return null;
   const t = encodeURIComponent(token);
-  const filas = await select<{ id: string; nombre: string }>(
+  const filas = await select<EmpresaDelPortal>(
     'empresas',
-    `select=id,nombre&or=(token_portal.eq.${t},token_portal_anterior.eq.${t})&limit=1`
+    `select=id,nombre,informes_visibles&or=(token_portal.eq.${t},token_portal_anterior.eq.${t})&limit=1`
   );
   return filas[0] ?? null;
 }
@@ -150,7 +155,12 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
     ),
   }));
 
-  return { empresa: empresa.nombre, empresaId: null, busquedas };
+  return {
+    empresa: empresa.nombre,
+    empresaId: null,
+    busquedas,
+    informesVisibles: empresa.informes_visibles !== false,
+  };
 }
 
 /** Si ese enlace corresponde a una empresa de Supabase. */

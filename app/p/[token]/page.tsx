@@ -192,7 +192,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
     : (deSupabase ?? (await getDatosCliente(params.token)));
   if (!datos) return <Acceso />;
 
-  const { empresa, empresaId, busquedas } = datos;
+  const { empresa, empresaId, busquedas, informesVisibles } = datos;
 
   // Lo que el cliente lee al elegir sale de donde se edita, no de una copia.
   const baterias = await bateriasDelPortal();
@@ -247,13 +247,17 @@ export default async function Portal({ params }: { params: { token: string } }) 
         // Supabase se arma con los datos cargados y se muestra en su página; en
         // Airtable es un archivo escrito a mano, y en el cliente de prueba
         // manda la tilde que trae la tabla.
-        informe: deSupabase
-          ? c.tieneInforme
-            ? `/p/${params.token}/evaluacion/${c.id}`
-            : null
-          : (demo ? c.tieneInforme : informeDe(empresaId, c.nombre))
-            ? `/p/${params.token}/informe/${c.id}`
-            : null,
+        // Con los informes apagados no se arma ningún enlace: la tabla sale
+        // sin esa columna y no hay dirección que probar. Ver `informesVisibles`.
+        informe: !informesVisibles
+          ? null
+          : deSupabase
+            ? c.tieneInforme
+              ? `/p/${params.token}/evaluacion/${c.id}`
+              : null
+            : (demo ? c.tieneInforme : informeDe(empresaId, c.nombre))
+              ? `/p/${params.token}/informe/${c.id}`
+              : null,
         cobro: cobro(c),
       };
     }
@@ -371,6 +375,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
                 <TablaEntregados
                   filas={filasEntregadas}
                   conCobro={conCobro}
+                  conInforme={informesVisibles}
                 />
               </article>
             </>
@@ -380,8 +385,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
 
       <footer className="foot">
         <div className="wrap">
-          Los informes quedan disponibles en esta pantalla y se envían también
-          por los canales acordados.
+          {informesVisibles
+            ? 'Los informes quedan disponibles en esta pantalla y se envían también por los canales acordados.'
+            : 'Los informes se envían por los canales acordados.'}
         </div>
       </footer>
     </>

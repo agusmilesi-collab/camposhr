@@ -38,6 +38,15 @@ export type Cliente = {
   /** El enlace secreto del portal. Todo cliente tiene el suyo desde el alta. */
   token: string | null;
   /**
+   * Si su portal deja abrir los informes.
+   *
+   * Se prende y se apaga desde la ficha. Apagado, la tabla de entregados sale
+   * sin la columna del informe y las direcciones que lo sirven contestan que no
+   * existe. El resto del portal no cambia: el cliente sigue viendo en qué anda
+   * cada búsqueda.
+   */
+  informesVisibles: boolean;
+  /**
    * Si se está trabajando con él **ahora**.
    *
    * Son dos cosas a la vez y las dos tienen que darse: la marca de la base, que
@@ -72,6 +81,7 @@ type FilaEmpresa = {
   tamano: number | null;
   notas: string | null;
   token_portal: string | null;
+  informes_visibles: boolean | null;
   activa: boolean | null;
   pedidos: { id: string; puesto: string; estado: string | null; fecha_pedido: string | null; evaluaciones: { id: string }[] }[];
   cotizaciones: { id: string; estado: string | null }[];
@@ -79,7 +89,7 @@ type FilaEmpresa = {
 
 const CAMPOS =
   'id,nombre,razon_social,cuit,condicion_iva,email_facturacion,contacto,' +
-  'direccion_fiscal,rubro,tamano,notas,token_portal,activa,' +
+  'direccion_fiscal,rubro,tamano,notas,token_portal,informes_visibles,activa,' +
   'pedidos(id,puesto,estado,fecha_pedido,evaluaciones(id)),cotizaciones(id,estado)';
 
 export async function listarClientes(): Promise<Cliente[]> {
@@ -115,6 +125,7 @@ export async function listarClientes(): Promise<Cliente[]> {
     // la misma empresa y muestran lo mismo (ver `empresaDelToken`), así que el
     // que se reparte es el de la base donde viven los datos.
     token: e.token_portal ?? tokensPorClave.get(claveEmpresa(e.nombre)) ?? null,
+    informesVisibles: e.informes_visibles !== false,
     activa:
       e.activa !== false &&
       ((e.pedidos ?? []).some((p) => p.estado === 'En curso') ||
@@ -153,6 +164,7 @@ export async function listarClientes(): Promise<Cliente[]> {
       tamano: null,
       notas: null,
       token: c.token,
+      informesVisibles: true,
       // De los de Airtable el OS no ve un solo pedido, así que por la misma
       // regla que los demás no tienen trabajo en curso. Aparecen entre los
       // inactivos hasta que se migren, que es lo que son para este sistema.

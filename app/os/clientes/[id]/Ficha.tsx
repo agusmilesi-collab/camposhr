@@ -30,6 +30,7 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
   const router = useRouter();
   const [editando, setEditando] = useState(false);
   const [tocando, setTocando] = useState(false);
+  const [cambiandoInformes, setCambiandoInformes] = useState(false);
 
   /**
    * Activar o desactivar.
@@ -49,6 +50,34 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
       router.refresh();
     } finally {
       setTocando(false);
+    }
+  }
+
+  /**
+   * Prender o apagar los informes en su portal.
+   *
+   * Apagados, el cliente sigue viendo en qué anda cada búsqueda y con qué
+   * conclusión cerró cada candidato; lo que no puede es abrir el informe. Sirve
+   * cuando se entregan por otro canal, o mientras no corresponde entregarlos.
+   *
+   * No es esconder un botón: las direcciones que sirven el informe contestan
+   * que no existe mientras esté apagado.
+   */
+  async function cambiarInformes() {
+    setCambiandoInformes(true);
+    try {
+      await fetch('/api/os/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: cliente.id,
+          nombre: cliente.nombre,
+          informesVisibles: !cliente.informesVisibles,
+        }),
+      });
+      router.refresh();
+    } finally {
+      setCambiandoInformes(false);
     }
   }
 
@@ -83,6 +112,30 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
               </>
             ) : (
               <span className="os-tabla-flojo">sin portal</span>
+            )}
+            {/* Un interruptor y no dos botones: lo que se lee de un vistazo es
+                en qué estado está, y cambiarlo es un toque. El color lo dice
+                antes que el texto. */}
+            {cliente.token && (
+              <button
+                className={`os-boton os-boton-marcado os-sello-estado ${
+                  cliente.informesVisibles ? 'os-verde' : 'os-rojo'
+                }`}
+                aria-pressed={cliente.informesVisibles}
+                disabled={cambiandoInformes}
+                onClick={cambiarInformes}
+                title={
+                  cliente.informesVisibles
+                    ? 'Tocar para que el cliente deje de poder abrir los informes desde su portal.'
+                    : 'Tocar para que el cliente pueda abrir los informes desde su portal.'
+                }
+              >
+                {cambiandoInformes
+                  ? '…'
+                  : cliente.informesVisibles
+                    ? 'Informes a la vista'
+                    : 'Informes ocultos'}
+              </button>
             )}
             <button className="os-boton" onClick={() => setEditando(true)}>
               Editar
