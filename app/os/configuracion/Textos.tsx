@@ -45,16 +45,25 @@ export type Corte = {
   fabrica: number;
 };
 
-export type Renglon = {
+/** Los tres campos de una lectura, cada uno con sus tres formas de decirlo. */
+export type Campos = {
+  dice: string[];
+  recomienda: string[];
+  /** La del Zulliger. Vacía quiere decir "vale la del Rorschach". */
+  recomiendaZ: string[];
+};
+
+export type Renglon = Campos & {
   clave: string;
   area: string;
   indice: string;
   cuando: string;
-  dice: string;
-  recomienda: string;
-  diceFabrica: string;
-  recomiendaFabrica: string;
+  diceFabrica: string[];
+  recomiendaFabrica: string[];
+  recomiendaZFabrica: string[];
   corte: Corte | null;
+  /** El del Zulliger, cuando las normas de ese test cortan en otro número. */
+  corteZ: Corte | null;
 };
 
 /**
@@ -113,10 +122,13 @@ export default function Textos({
 }) {
   const router = useRouter();
 
-  const puestos = useMemo(
+  const puestos: Record<string, Campos> = useMemo(
     () =>
       Object.fromEntries(
-        renglones.map((r) => [r.clave, { dice: r.dice, recomienda: r.recomienda }])
+        renglones.map((r) => [
+          r.clave,
+          { dice: [...r.dice], recomienda: [...r.recomienda], recomiendaZ: [...r.recomiendaZ] },
+        ])
       ),
     [renglones]
   );
@@ -126,9 +138,14 @@ export default function Textos({
   // cada tecla le borraría la coma que acaba de escribir.
   const cortesPuestos = useMemo(
     () =>
-      Object.fromEntries(
-        renglones.filter((r) => r.corte).map((r) => [r.clave, escribir(r.corte!, r.corte!.valor)])
-      ),
+      Object.fromEntries([
+        ...renglones
+          .filter((r) => r.corte)
+          .map((r) => [r.clave, escribir(r.corte!, r.corte!.valor)]),
+        ...renglones
+          .filter((r) => r.corteZ)
+          .map((r) => [`zulliger:${r.clave}`, escribir(r.corteZ!, r.corteZ!.valor)]),
+      ]),
     [renglones]
   );
 
@@ -148,9 +165,11 @@ export default function Textos({
     return numero;
   }, [renglones]);
 
-  const [textos, setTextos] = useState(puestos);
-  const [cortes, setCortes] = useState(cortesPuestos);
+  const [textos, setTextos] = useState<Record<string, Campos>>(puestos);
+  const [cortes, setCortes] = useState<Record<string, string>>(cortesPuestos);
   const [filtro, setFiltro] = useState('');
+  /** Qué campos tienen sus tres casillas a la vista. */
+  const [abiertos, setAbiertos] = useState<Record<string, boolean>>({});
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const caja = useRef<HTMLDivElement>(null);
@@ -166,11 +185,16 @@ export default function Textos({
     setCortes(cortesPuestos);
   }
 
+  /** Dos listas de formas de decirlo son la misma si dicen lo mismo en orden. */
+  const igual = (a: string[], b: string[]) => a.join('\u0000') === b.join('\u0000');
+
   const sinGuardar = renglones.filter(
     (r) =>
-      textos[r.clave].dice !== r.dice ||
-      textos[r.clave].recomienda !== r.recomienda ||
-      (r.corte && cortes[r.clave] !== cortesPuestos[r.clave])
+      !igual(textos[r.clave].dice, r.dice) ||
+      !igual(textos[r.clave].recomienda, r.recomienda) ||
+      !igual(textos[r.clave].recomiendaZ, r.recomiendaZ) ||
+      (r.corte && cortes[r.clave] !== cortesPuestos[r.clave]) ||
+      (r.corteZ && cortes[`zulliger:${r.clave}`] !== cortesPuestos[`zulliger:${r.clave}`])
   );
   const cambiado = sinGuardar.length > 0;
 
@@ -258,34 +282,108 @@ export default function Textos({
     }
   }
 
-  /** Solo lo que quedó distinto de lo que trae el código. */
+  /**
+   * Solo lo que quedó distinto de lo que trae el código.
+   *
+   * Las casillas vacías se descartan: tres formas donde la segunda está en
+   * blanco son dos formas, no tres, y si entrara el informe saldría vacío una
+   * de cada tres veces.
+   */
   function diferencias() {
-    const d: Record<string, { dice?: string; recomienda?: string }> = {};
+    const lleno = (v: string[]) => v.map((x) => x.trim()).filter(Boolean);
+    const d: Record<string, { dice?: string[]; recomienda?: string[]; recomiendaZ?: string[] }> =
+      {};
     for (const r of renglones) {
-      const uno: { dice?: string; recomienda?: string } = {};
-      if (textos[r.clave].dice !== r.diceFabrica) uno.dice = textos[r.clave].dice;
-      if (textos[r.clave].recomienda !== r.recomiendaFabrica)
-        uno.recomienda = textos[r.clave].recomienda;
-      if (uno.dice !== undefined || uno.recomienda !== undefined) d[r.clave] = uno;
+      const uno: { dice?: string[]; recomienda?: string[]; recomiendaZ?: string[] } = {};
+      const suyo = textos[r.clave];
+      if (!igual(lleno(suyo.dice), lleno(r.diceFabrica))) uno.dice = lleno(suyo.dice);
+      if (!igual(lleno(suyo.recomienda), lleno(r.recomiendaFabrica)))
+        uno.recomienda = lleno(suyo.recomienda);
+      if (!igual(lleno(suyo.recomiendaZ), lleno(r.recomiendaZFabrica)))
+        uno.recomiendaZ = lleno(suyo.recomiendaZ);
+      if (uno.dice || uno.recomienda || uno.recomiendaZ) d[r.clave] = uno;
     }
     return d;
   }
 
-  /** Los cortes que quedaron distintos del que trae el código. */
+  /** Los cortes que quedaron distintos del que trae el código, por test. */
   function cortesMovidos() {
     const d: Record<string, number> = {};
     for (const r of renglones) {
-      if (!r.corte) continue;
-      const n = numero(r.clave);
-      if (n === null) continue;
-      const redondeado = Number(n.toFixed(r.corte.decimales));
-      if (redondeado !== r.corte.fabrica) d[r.clave] = redondeado;
+      for (const [clave, corte] of [
+        [r.clave, r.corte] as const,
+        [`zulliger:${r.clave}`, r.corteZ] as const,
+      ]) {
+        if (!corte) continue;
+        const n = numero(clave);
+        if (n === null) continue;
+        const redondeado = Number(n.toFixed(corte.decimales));
+        if (redondeado !== corte.fabrica) d[clave] = redondeado;
+      }
     }
     return d;
   }
 
-  function escribirTexto(clave: string, campo: 'dice' | 'recomienda', valor: string) {
-    setTextos((t) => ({ ...t, [clave]: { ...t[clave], [campo]: valor } }));
+  function escribirTexto(
+    clave: string,
+    cual: keyof Campos,
+    n: number,
+    valor: string
+  ) {
+    setTextos((t) => {
+      const lista = [...t[clave][cual]];
+      lista[n] = valor;
+      return { ...t, [clave]: { ...t[clave], [cual]: lista } };
+    });
+  }
+
+  /**
+   * Un campo con sus tres formas de decir lo mismo.
+   *
+   * La primera siempre a la vista, que es la que validó la psicóloga. Las otras
+   * dos detrás de un botón: son sesenta y ocho lecturas y con las nueve
+   * casillas abiertas la pantalla no se puede recorrer.
+   */
+  function campo(r: Renglon, cual: keyof Campos, rotulo: string, vacio?: string) {
+    const valores = textos[r.clave][cual];
+    const otras = valores.slice(1).filter((x) => x.trim()).length;
+    const abierto = abiertos[`${r.clave}-${cual}`] ?? otras > 0;
+
+    return (
+      <div className="os-redaccion-campo">
+        <label className="os-etiqueta-campo" htmlFor={`${cual}-${r.clave}-0`}>
+          {rotulo}
+        </label>
+        {(abierto ? [0, 1, 2] : [0]).map((n) => (
+          <div className="os-variante" key={n}>
+            {abierto && <span className="os-variante-n">{n + 1}</span>}
+            <textarea
+              id={`${cual}-${r.clave}-${n}`}
+              className="os-campo"
+              rows={1}
+              value={valores[n] ?? ''}
+              placeholder={n === 0 ? vacio : 'Lo mismo, dicho de otra forma'}
+              ref={estirarCampo}
+              onChange={(e) => {
+                estirarCampo(e.target);
+                escribirTexto(r.clave, cual, n, e.target.value);
+              }}
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          className="os-enlace-boton"
+          onClick={() =>
+            setAbiertos((a) => ({ ...a, [`${r.clave}-${cual}`]: !abierto }))
+          }
+        >
+          {abierto
+            ? 'Dejar solo la primera'
+            : `Otras formas de decirlo${otras > 0 ? ` (${otras})` : ''}`}
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -391,8 +489,9 @@ export default function Textos({
 
                 {ind.renglones.map((r) => {
                   const propio =
-                    textos[r.clave].dice !== r.diceFabrica ||
-                    textos[r.clave].recomienda !== r.recomiendaFabrica;
+                    !igual(textos[r.clave].dice, r.diceFabrica) ||
+                    !igual(textos[r.clave].recomienda, r.recomiendaFabrica) ||
+                    !igual(textos[r.clave].recomiendaZ, r.recomiendaZFabrica);
                   const movido = Boolean(r.corte) && numero(r.clave) !== r.corte!.fabrica;
                   return (
                     <div className="os-rama" key={r.clave}>
@@ -439,41 +538,53 @@ export default function Textos({
                           hacer, y se corrigen mirando una contra la otra. Uno
                           abajo del otro obligaba a subir para comparar. */}
                       <div className="os-redaccion os-redaccion-doble">
-                        <div className="os-redaccion-campo">
-                          <label className="os-etiqueta-campo" htmlFor={`dice-${r.clave}`}>
-                            Qué dice
-                          </label>
-                          <textarea
-                            id={`dice-${r.clave}`}
-                            className="os-campo"
-                            rows={1}
-                            value={textos[r.clave].dice}
-                            ref={estirarCampo}
-                            onChange={(e) => {
-                              estirarCampo(e.target);
-                              escribirTexto(r.clave, 'dice', e.target.value);
-                            }}
-                          />
-                        </div>
-
-                        <div className="os-redaccion-campo">
-                          <label className="os-etiqueta-campo" htmlFor={`rec-${r.clave}`}>
-                            Qué se recomienda
-                          </label>
-                          <textarea
-                            id={`rec-${r.clave}`}
-                            className="os-campo"
-                            rows={1}
-                            value={textos[r.clave].recomienda}
-                            placeholder="El diccionario no fija recomendación para esta lectura"
-                            ref={estirarCampo}
-                            onChange={(e) => {
-                              estirarCampo(e.target);
-                              escribirTexto(r.clave, 'recomienda', e.target.value);
-                            }}
-                          />
-                        </div>
+                        {campo(r, 'dice', 'Qué dice')}
+                        {campo(r, 'recomienda', 'Qué se recomienda')}
                       </div>
+
+                      {/* Lo propio del Zulliger: el corte, porque las normas de
+                          cada test son distintas, y la recomendación, porque lo
+                          que se sugiere hacer depende de con qué se midió. Lo
+                          que la lectura significa es lo mismo en los dos. */}
+                      {(r.corteZ || true) && (
+                        <details
+                          className="os-zulliger"
+                          open={textos[r.clave].recomiendaZ.some((x) => x.trim())}
+                        >
+                          <summary>
+                            Distinto en Zulliger
+                            {textos[r.clave].recomiendaZ.some((x) => x.trim()) && (
+                              <span className="os-dato-falta">propio</span>
+                            )}
+                          </summary>
+                          {r.corteZ && (
+                            <div className="os-rama-cabeza">
+                              <span className="os-rama-cuando">
+                                Corta en {r.corteZ.op === 'menor' ? 'menos de' : 'más de'}
+                              </span>
+                              <input
+                                className="os-campo os-campo-umbral"
+                                type="text"
+                                inputMode="decimal"
+                                aria-label={`Corte de ${r.indice} en Zulliger`}
+                                value={cortes[`zulliger:${r.clave}`] ?? ''}
+                                onChange={(e) =>
+                                  setCortes((c) => ({
+                                    ...c,
+                                    [`zulliger:${r.clave}`]: e.target.value,
+                                  }))
+                                }
+                              />
+                            </div>
+                          )}
+                          {campo(
+                            r,
+                            'recomiendaZ',
+                            'Qué se recomienda en Zulliger',
+                            'Vacío: vale la del Rorschach'
+                          )}
+                        </details>
+                      )}
                     </div>
                   );
                 })}
