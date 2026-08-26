@@ -3083,6 +3083,85 @@ textarea.os-campo {
   line-height: 1.45;
 }
 
+/* La nota de la oportunidad: qué se habló, en la tarjeta y no adentro de un
+   cajón que hay que abrir para leer una línea. */
+.os-tarjeta-nota {
+  margin-top: 7px;
+  font-size: 0.79rem;
+  line-height: 1.5;
+  color: var(--os-tinta-media);
+}
+
+/* La objeción con la que se perdió, marcada aparte del detalle escrito: es la
+   que se cuenta al final del mes. */
+.os-etiqueta-objecion {
+  border-color: color-mix(in srgb, var(--os-rojo) 35%, var(--os-linea));
+  background: color-mix(in srgb, var(--os-rojo) 8%, var(--os-panel));
+  color: var(--os-rojo);
+  font-weight: 550;
+}
+
+/**
+ * Las cinco objeciones, cada una con lo que quiere decir.
+ *
+ * En una línea sola el nombre no alcanza: "Ajuste" y "Valor" se confunden, dos
+ * personas clasifican distinto lo mismo y contarlas deja de servir. Con la
+ * explicación al lado, la elección es la misma para las dos.
+ */
+.os-objeciones {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.os-objeciones > legend {
+  margin-bottom: 6px;
+}
+
+.os-objecion {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel);
+  cursor: pointer;
+}
+
+.os-objecion:hover {
+  border-color: var(--os-azul);
+}
+
+.os-objecion:has(input:checked) {
+  border-color: var(--os-azul);
+  background: color-mix(in srgb, var(--os-azul) 6%, var(--os-panel));
+}
+
+.os-objecion > input {
+  margin-top: 3px;
+  accent-color: var(--os-azul);
+}
+
+.os-objecion-cuerpo {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.os-objecion-nombre {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.os-objecion-que {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--os-suave);
+}
+
 /* El importe manda y no se parte; lo demás baja de línea si no entra. */
 .os-tarjeta-pie {
   display: flex;

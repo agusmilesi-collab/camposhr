@@ -22,6 +22,26 @@ export type Estado = (typeof ESTADOS)[number];
 /** Las que todavía se pueden ganar. */
 export const ABIERTOS: readonly Estado[] = ['Lead', 'Enviada'];
 
+/**
+ * Por qué no avanzó una oportunidad.
+ *
+ * El motivo se escribía a mano y cada perdida decía lo suyo, así que revisar el
+ * mes no dejaba ver qué se repite. Son cinco y son excluyentes: lo que le faltó
+ * al otro para avanzar. El detalle del caso va aparte, en el texto libre.
+ */
+export const OBJECIONES = [
+  { nombre: 'Valor', que: 'No percibe suficiente beneficio por el precio.' },
+  { nombre: 'Ajuste', que: 'La solución no encaja con su necesidad.' },
+  { nombre: 'Timing', que: 'No es el momento adecuado para avanzar.' },
+  { nombre: 'Riesgo', que: 'Tiene dudas o falta de confianza.' },
+  { nombre: 'Capacidad', que: 'No puede concretar la compra ahora.' },
+] as const;
+
+export type Objecion = (typeof OBJECIONES)[number]['nombre'];
+
+export const esObjecion = (x: unknown): x is Objecion =>
+  OBJECIONES.some((o) => o.nombre === x);
+
 export const TIPOS_COSTO = ['Directo', 'Honorarios', 'Terceros', 'Otro'] as const;
 export type TipoCosto = (typeof TIPOS_COSTO)[number];
 

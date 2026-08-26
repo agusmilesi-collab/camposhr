@@ -7,34 +7,27 @@
  * que es la forma más corta de contestar la única pregunta que se le hace a
  * esta pantalla: dónde está cada cosa y qué se mueve hoy.
  *
- * Cada tarjeta lleva además un selector, porque arrastrar no funciona en una
- * pantalla táctil y porque es lo que puede usar quien navega con el teclado.
+ * **Perder pide la objeción**: con cuál de las cinco se cayó. Escrito a mano
+ * cada perdida decía lo suyo y revisar el mes no dejaba ver qué se repite; el
+ * detalle del caso va al lado, en el texto libre.
  *
- * Perder una oportunidad pide el motivo: una perdida sin motivo no enseña nada
- * cuando se la revisa el mes que viene.
+ * La tarjeta se edita desde su propio cajón. El estado no está ahí: se mueve
+ * arrastrando de columna, y tenerlo en los dos lados daría dos formas de hacer
+ * lo mismo.
  */
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import Desplegable from '@/app/os/Desplegable';
+import Buscador from '@/app/os/Buscador';
 import {
   ESTADOS,
+  OBJECIONES,
   SERVICIOS,
   formatoFecha,
   formatoImporte,
   type Estado,
+  type Objecion,
 } from '@/lib/comercial-tipos';
-
-/** El valor del desplegable que pide escribir un cliente que no está. */
-const OTRO = '__otro__';
-
-/** El color de cada estado, el mismo que en el Inicio. */
-const COLOR_ESTADO: Record<string, string> = {
-  Lead: 'os-gris',
-  Enviada: 'os-ambar',
-  Aprobada: 'os-verde',
-  Perdida: 'os-rojo',
-};
 
 export type Oportunidad = {
   id: string;
@@ -48,6 +41,7 @@ export type Oportunidad = {
   token: string | null;
   nota: string | null;
   motivo: string | null;
+  objecion: Objecion | null;
 };
 
 const QUE_ES: Record<Estado, string> = {
@@ -68,18 +62,32 @@ async function mandar(cuerpo: unknown) {
   return datos;
 }
 
-export function Tablero({ oportunidades }: { oportunidades: Oportunidad[] }) {
+export function Tablero({
+  oportunidades,
+  clientes,
+}: {
+  oportunidades: Oportunidad[];
+  /** Los que ya están cargados, para no escribir el mismo de tres maneras. */
+  clientes: string[];
+}) {
   const router = useRouter();
   const [, empezar] = useTransition();
   const [arrastrando, setArrastrando] = useState<string | null>(null);
   const [encima, setEncima] = useState<Estado | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [perdiendo, setPerdiendo] = useState<Oportunidad | null>(null);
+  const [editando, setEditando] = useState<Oportunidad | null>(null);
 
-  async function mover(id: string, estado: Estado, motivo?: string) {
+  async function mover(id: string, estado: Estado, cierre?: { objecion: Objecion; motivo: string }) {
     setError(null);
     try {
-      await mandar({ accion: 'estado', id, estado, motivo: motivo ?? null });
+      await mandar({
+        accion: 'estado',
+        id,
+        estado,
+        motivo: cierre?.motivo || null,
+        objecion: cierre?.objecion ?? null,
+      });
       empezar(() => router.refresh());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo guardar.');
@@ -144,9 +152,13 @@ export function Tablero({ oportunidades }: { oportunidades: Oportunidad[] }) {
                   <div className="os-tarjeta-concepto">
                     {o.concepto} · v{o.version} · {formatoFecha(o.fecha)}
                   </div>
-                  {o.motivo && (
+                  {o.nota && <div className="os-tarjeta-nota">{o.nota}</div>}
+                  {(o.objecion || o.motivo) && (
                     <div className="os-etiquetas">
-                      <span className="os-etiqueta">Se perdió: {o.motivo}</span>
+                      {o.objecion && (
+                        <span className="os-etiqueta os-etiqueta-objecion">{o.objecion}</span>
+                      )}
+                      {o.motivo && <span className="os-etiqueta">{o.motivo}</span>}
                     </div>
                   )}
                   <div className="os-tarjeta-pie">
@@ -158,16 +170,17 @@ export function Tablero({ oportunidades }: { oportunidades: Oportunidad[] }) {
                         Propuesta
                       </a>
                     )}
-                    <Desplegable
-                      valor={o.estado}
-                      opciones={ESTADOS.map((e) => ({
-                        valor: e,
-                        texto: e,
-                        color: COLOR_ESTADO[e],
-                      }))}
-                      alElegir={(v) => pedirMover(o, v as Estado)}
-                      etiqueta={`Mover ${o.cliente}`}
-                    />
+                    <button
+                      type="button"
+                      className="os-enlace-boton"
+                      // La tarjeta se arrastra: sin esto, apretar el botón
+                      // arranca el arrastre en vez de abrir el cajón.
+                      draggable={false}
+                      onDragStart={(e) => e.stopPropagation()}
+                      onClick={() => setEditando(o)}
+                    >
+                      Editar
+                    </button>
                   </div>
                 </article>
               ))}
@@ -197,29 +210,54 @@ export function Tablero({ oportunidades }: { oportunidades: Oportunidad[] }) {
                 className="os-form"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  const motivo = String(new FormData(e.currentTarget).get('motivo') ?? '').trim();
+                  const campos = new FormData(e.currentTarget);
+                  const objecion = String(campos.get('objecion') ?? '') as Objecion;
+                  const motivo = String(campos.get('motivo') ?? '').trim();
                   const o = perdiendo;
                   setPerdiendo(null);
-                  if (o) mover(o.id, 'Perdida', motivo || undefined);
+                  if (o) mover(o.id, 'Perdida', { objecion, motivo });
                 }}
               >
                 <p className="os-form-nota">
                   {perdiendo.cliente} · {formatoImporte(perdiendo.importe, perdiendo.moneda)}
                 </p>
+
+                {/* Las cinco con lo que quiere decir cada una: el nombre solo
+                    se presta a que dos personas clasifiquen distinto lo mismo,
+                    y entonces contarlas no sirve. */}
+                <fieldset className="os-campo-entero os-objeciones">
+                  <legend className="os-etiqueta-campo">Qué la frenó</legend>
+                  {OBJECIONES.map((x, i) => (
+                    <label className="os-objecion" key={x.nombre}>
+                      <input
+                        type="radio"
+                        name="objecion"
+                        value={x.nombre}
+                        required
+                        defaultChecked={perdiendo.objecion === x.nombre || (!perdiendo.objecion && i === 0)}
+                      />
+                      <span className="os-objecion-cuerpo">
+                        <span className="os-objecion-nombre">{x.nombre}</span>
+                        <span className="os-objecion-que">{x.que}</span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+
                 <div className="os-campo-bloque os-campo-entero">
                   <label className="os-etiqueta-campo" htmlFor="motivo">
-                    Por qué se perdió
+                    El detalle del caso
                   </label>
                   <input
                     className="os-campo"
                     id="motivo"
                     name="motivo"
                     maxLength={200}
-                    autoFocus
                     defaultValue={perdiendo.motivo ?? ''}
-                    placeholder="Precio, tiempos, se lo quedó otro…"
+                    placeholder="Se lo quedó otro, lo pasan a marzo…"
                   />
                 </div>
+
                 <div className="os-campo-entero os-form-pie">
                   <button className="os-boton os-boton-firme" type="submit">
                     Marcar perdida
@@ -233,6 +271,164 @@ export function Tablero({ oportunidades }: { oportunidades: Oportunidad[] }) {
           </div>
         </>
       )}
+      {editando && (
+        <Editar
+          oportunidad={editando}
+          clientes={clientes}
+          onCerrar={() => setEditando(null)}
+          onGuardado={() => {
+            setEditando(null);
+            empezar(() => router.refresh());
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+/**
+ * Cambiar lo que dice una tarjeta.
+ *
+ * Los mismos campos con los que se carga, menos el estado: eso se mueve
+ * arrastrando de columna.
+ */
+function Editar({
+  oportunidad,
+  clientes,
+  onCerrar,
+  onGuardado,
+}: {
+  oportunidad: Oportunidad;
+  clientes: string[];
+  onCerrar: () => void;
+  onGuardado: () => void;
+}) {
+  const [cliente, setCliente] = useState(oportunidad.cliente);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function enviar(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const datos = Object.fromEntries(new FormData(e.currentTarget).entries());
+    setGuardando(true);
+    setError(null);
+    try {
+      await mandar({ accion: 'editar', id: oportunidad.id, ...datos, cliente });
+      onGuardado();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo guardar.');
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <>
+      <button className="os-cajon-fondo" aria-label="Cerrar" onClick={onCerrar} />
+      <div className="os-cajon">
+        <div className="os-cajon-top">
+          <h2>Editar oportunidad</h2>
+          <button className="os-cajon-cerrar" onClick={onCerrar} aria-label="Cerrar">
+            ×
+          </button>
+        </div>
+        <div className="os-cajon-cuerpo">
+          <form className="os-form" onSubmit={enviar}>
+            <div className="os-campo-bloque os-campo-entero">
+              <label className="os-etiqueta-campo" htmlFor="cliente-editar">
+                Cliente
+              </label>
+              <Buscador
+                id="cliente-editar"
+                opciones={clientes.map((c) => ({ id: c, nombre: c }))}
+                inicial={oportunidad.cliente}
+                placeholder="Escribí el nombre del cliente"
+                alElegir={(o) => setCliente(o.nombre)}
+                alCrear={setCliente}
+                alEscribir={setCliente}
+              />
+            </div>
+
+            {/* Se escribe y no se elige de la lista: las oportunidades que
+                vienen de antes dicen qué es el trabajo ("Rediseño
+                organizacional · cinco fases en once semanas"), y un
+                desplegable de cuatro servicios les cambiaría el nombre al
+                abrir el cajón. Los cuatro quedan como sugerencia. */}
+            <div className="os-campo-bloque os-campo-entero">
+              <label className="os-etiqueta-campo" htmlFor="concepto-editar">
+                Qué se le vende
+              </label>
+              <input
+                className="os-campo"
+                id="concepto-editar"
+                name="concepto"
+                required
+                maxLength={200}
+                list="servicios-cotizacion"
+                defaultValue={oportunidad.concepto}
+              />
+              <datalist id="servicios-cotizacion">
+                {SERVICIOS.map((x) => (
+                  <option key={x} value={x} />
+                ))}
+              </datalist>
+            </div>
+
+            <div className="os-campo-bloque">
+              <label className="os-etiqueta-campo" htmlFor="importe-editar">
+                Precio de venta
+              </label>
+              <input
+                className="os-campo"
+                id="importe-editar"
+                name="importe"
+                type="number"
+                min="0"
+                step="1000"
+                required
+                defaultValue={oportunidad.importe}
+              />
+            </div>
+
+            <div className="os-campo-bloque">
+              <label className="os-etiqueta-campo" htmlFor="fecha-editar">
+                Fecha
+              </label>
+              <input
+                className="os-campo"
+                id="fecha-editar"
+                name="fecha"
+                type="date"
+                defaultValue={oportunidad.fecha}
+              />
+            </div>
+
+            <div className="os-campo-bloque os-campo-entero">
+              <label className="os-etiqueta-campo" htmlFor="nota-editar">
+                Nota
+              </label>
+              <input
+                className="os-campo"
+                id="nota-editar"
+                name="nota"
+                maxLength={300}
+                defaultValue={oportunidad.nota ?? ''}
+              />
+            </div>
+
+            {error && <p className="os-form-error">{error}</p>}
+
+            <div className="os-campo-entero os-form-pie">
+              <button className="os-boton os-boton-firme" type="submit" disabled={guardando}>
+                {guardando ? 'Guardando…' : 'Guardar'}
+              </button>
+              <button className="os-boton" type="button" onClick={onCerrar}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </>
   );
 }
@@ -242,18 +438,22 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
   const [abierto, setAbierto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [otroCliente, setOtroCliente] = useState(false);
+  const [cliente, setCliente] = useState('');
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const datos = Object.fromEntries(new FormData(form).entries());
+    if (!cliente.trim()) {
+      setError('Falta el cliente.');
+      return;
+    }
     setEnviando(true);
     setError(null);
     try {
-      await mandar({ accion: 'nueva', ...datos });
+      await mandar({ accion: 'nueva', ...datos, cliente: cliente.trim() });
       form.reset();
-      setOtroCliente(false);
+      setCliente('');
       setAbierto(false);
       router.refresh();
     } catch (err) {
@@ -285,55 +485,24 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
             </div>
             <div className="os-cajon-cuerpo">
               <form className="os-form" onSubmit={enviar}>
-                {/* Casi siempre se cotiza a un cliente que ya está cargado:
-                    la lista va primero y escribir queda para el que todavía no
-                    existe. Escrito a mano, el mismo cliente entraba con tres
-                    grafías distintas y el embudo no se podía leer por cliente. */}
+                {/* Se escribe y van quedando los que coinciden, el mismo
+                    campo con el que se carga un pedido. Con un desplegable
+                    había que recorrer la lista entera, y escrito a mano el
+                    mismo cliente entraba con tres grafías distintas y el embudo
+                    no se podía leer por cliente. */}
                 <div className="os-campo-bloque os-campo-entero">
                   <label className="os-etiqueta-campo" htmlFor="cliente">
                     Cliente
                   </label>
-                  {otroCliente ? (
-                    <input
-                      className="os-campo"
-                      id="cliente"
-                      name="cliente"
-                      required
-                      maxLength={120}
-                      autoFocus
-                      placeholder="Nombre del cliente nuevo"
-                    />
-                  ) : (
-                    <select
-                      className="os-campo"
-                      id="cliente"
-                      name="cliente"
-                      required
-                      defaultValue=""
-                      onChange={(e) => {
-                        if (e.target.value === OTRO) setOtroCliente(true);
-                      }}
-                    >
-                      <option value="" disabled>
-                        Elegí el cliente
-                      </option>
-                      {clientes.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                      <option value={OTRO}>Otro, lo escribo…</option>
-                    </select>
-                  )}
-                  {otroCliente && (
-                    <button
-                      className="os-enlace-boton"
-                      type="button"
-                      onClick={() => setOtroCliente(false)}
-                    >
-                      Elegir uno de la lista
-                    </button>
-                  )}
+                  <Buscador
+                    id="cliente"
+                    opciones={clientes.map((c) => ({ id: c, nombre: c }))}
+                    autoFocus
+                    placeholder="Escribí el nombre del cliente"
+                    alElegir={(o) => setCliente(o.nombre)}
+                    alCrear={setCliente}
+                    alEscribir={setCliente}
+                  />
                 </div>
 
                 <div className="os-campo-bloque os-campo-entero">
