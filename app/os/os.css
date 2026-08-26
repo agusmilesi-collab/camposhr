@@ -1880,6 +1880,10 @@ html[data-os-lateral='compacta'] .os-pie-quien {
  * la factura de arriba.
  */
 .os-cubre-caja {
+  /* Mide lo que mide su renglón más largo: a lo ancho de la tabla, los nombres
+     quedaban a un lado y los importes al otro, con un vacío en el medio. */
+  width: fit-content;
+  max-width: 100%;
   margin: 12px 0 2px;
   padding: 11px 16px 13px;
   border: 1px solid var(--os-linea-suave);
@@ -1902,13 +1906,12 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   font-size: 0.86rem;
 }
 
-/* Tres columnas y no un renglón suelto: los importes se comparan de arriba
-   abajo, y con el puesto empujándolos cada uno terminaba en otro lugar. */
+/* Quién a la izquierda y cuánto a la derecha, con la caja midiendo lo justo:
+   así los importes se comparan de arriba abajo sin alejarse del nombre. */
 .os-cubre-lista > li {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
-  gap: 14px;
+  display: flex;
   align-items: baseline;
+  gap: 30px;
   padding: 5px 0;
 }
 
@@ -1916,7 +1919,8 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   border-top: 1px solid var(--os-linea-suave);
 }
 
-.os-cubre-nombre {
+.os-cubre-quien {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1924,14 +1928,13 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 }
 
 .os-cubre-puesto {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: 400;
   font-size: 0.8rem;
   color: var(--os-suave);
 }
 
 .os-cubre-importe {
+  margin-left: auto;
   font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--os-tinta-media);
@@ -1939,9 +1942,16 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 
 /* Lo que no es una persona: el adicional Benziger es un renglón de alguien que
    ya está en la lista, así que se lee como acompañamiento del de arriba. */
-.os-cubre-extra .os-cubre-nombre {
+.os-cubre-extra .os-cubre-quien {
   font-weight: 400;
   color: var(--os-tinta-media);
+}
+
+/* La fila del detalle arranca donde arranca la tabla: es el adentro de la fila
+   de arriba, no un bloque aparte. */
+.os-fila-cubre > td {
+  padding-left: 18px;
+  padding-right: 18px;
 }
 
 /* Los dos controles del renglón de una factura, uno al lado del otro. */

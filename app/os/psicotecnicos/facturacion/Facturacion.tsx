@@ -559,7 +559,7 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
             </tr>
 
             {cajon && (
-              <tr className="os-fila-abierta">
+              <tr className="os-fila-abierta os-fila-cubre">
                 <td colSpan={COLUMNAS_EMITIDAS.length}>
                   <div className="os-cubre-caja">
                     <span className="os-dato-rotulo">Cubre a</span>
@@ -569,8 +569,13 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
                           {/* El nombre sale de la evaluación cuando está: las
                               facturas de Airtable dicen "Evaluación
                               psicotécnica" a secas y ahí manda la descripción. */}
-                          <span className="os-cubre-nombre">{r.persona ?? r.descripcion}</span>
-                          <span className="os-cubre-puesto">{r.puesto ?? ''}</span>
+                          {/* El puesto va pegado al nombre y no en su propia
+                              columna: son la misma cosa, quién es y de qué, y
+                              separados dejaban un hueco del ancho de la tabla. */}
+                          <span className="os-cubre-quien">
+                            {r.persona ?? r.descripcion}
+                            {r.puesto && <span className="os-cubre-puesto"> · {r.puesto}</span>}
+                          </span>
                           <span className="os-cubre-importe">
                             {importeDe(f, r) === null ? (
                               <span
