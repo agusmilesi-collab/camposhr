@@ -4490,7 +4490,10 @@ th.os-tabla-contacto {
   font-size: 0.82rem;
 }
 
-.os-panel-top .os-sello-estado {
+/* Un sello suelto en el encabezado va contra el margen derecho. Solo el suelto:
+   el que está adentro del título es parte del título, y con `auto` perdía la
+   separación y quedaba pegado a la palabra. */
+.os-panel-top > .os-sello-estado {
   margin-left: auto;
   align-self: center;
 }
