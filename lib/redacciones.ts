@@ -2510,33 +2510,39 @@ export function porArea(lecturas: Lectura[]): { area: string; lecturas: Lectura[
  * recomendación que describen un problema (GHR:PHR por debajo, M−) y otras que
  * describen una fortaleza (visión global, motivación para procesar).
  *
- * Se resuelve por el texto de la lectura, que es único por regla. Lo que no
- * está en la tabla se toma como esperado, que es el lugar donde una lectura
- * mal clasificada hace menos daño: describe sin recomendar ni destacar.
+ * **Se resuelve por la clave de la lectura y no por su texto.** Estaba escrito
+ * contra las primeras palabras de cada frase, y desde que cada lectura tiene
+ * tres formas de decir lo mismo, a quien le tocaba una de las otras dos se le
+ * caían las fortalezas al grupo de lo que hay que desarrollar. El texto cambia;
+ * la regla que lo disparó, no.
+ *
+ * Lo que no está en las dos listas se toma como esperado, que es el lugar donde
+ * una lectura mal clasificada hace menos daño: describe sin recomendar ni
+ * destacar.
  */
 export type Senal = 'destacada' | 'esperada' | 'desarrollar';
 
-const DESTACADAS = [
-  'Intenta abarcarlo todo y consigue',
-  'Tiene una motivación elevada para procesar',
-  'Tiene una capacidad de control y de tolerancia al estrés fuera de lo común',
-  'Confirma un nivel de control elevado',
-  'Tiende a mantener actitudes socialmente positivas',
-  'Marcado interés por los demás',
-  'Las situaciones con carga emocional lo estimulan',
-];
+const DESTACADAS = new Set([
+  'w-alto',
+  'zf-alto',
+  'adjd-positivo',
+  'ea-alto',
+  'cop-alto-ag-bajo',
+  'humanos-alto',
+  'afr-alto',
+]);
 
-const ESPERADAS = [
-  'Tolera de manera adecuada las tensiones',
-  'Confirma una capacidad de control adecuada',
-  'Prefiere la reflexión para resolver problemas',
-  'A veces resuelve dejando de lado la emoción',
-  'Mezcla los sentimientos con sus decisiones',
-  'Prefiere no verse implicado en situaciones con carga emocional',
-];
+const ESPERADAS = new Set([
+  'd-adjd-cero',
+  'ea-adecuado',
+  'eb-introversivo',
+  'eb-ambigual',
+  'eb-extratensivo',
+  'afr-bajo',
+]);
 
 export function senalDe(l: Lectura): Senal {
-  if (DESTACADAS.some((t) => l.dice.startsWith(t))) return 'destacada';
-  if (ESPERADAS.some((t) => l.dice.startsWith(t))) return 'esperada';
+  if (DESTACADAS.has(l.clave)) return 'destacada';
+  if (ESPERADAS.has(l.clave)) return 'esperada';
   return 'desarrollar';
 }
