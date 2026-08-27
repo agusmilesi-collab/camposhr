@@ -45,7 +45,6 @@ export type Oportunidad = {
   concepto: string;
   importe: number;
   moneda: string;
-  version: string;
   estado: Estado;
   fecha: string;
   token: string | null;
@@ -160,7 +159,7 @@ export function Tablero({
                 >
                   <div className="os-tarjeta-cliente">{o.cliente}</div>
                   <div className="os-tarjeta-concepto">
-                    {o.concepto} · v{o.version} · {formatoFecha(o.fecha)}
+                    {o.concepto} · {formatoFecha(o.fecha)}
                   </div>
                   {o.nota && <div className="os-tarjeta-nota">{o.nota}</div>}
                   {(o.objecion || o.motivo) && (
