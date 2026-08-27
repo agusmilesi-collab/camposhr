@@ -2508,17 +2508,20 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   align-items: start;
 }
 
-/* El lápiz de la tarjeta: pesa menos que el importe, y se prende al pasar. */
+/* El lápiz de la tarjeta, contra el margen derecho: el importe manda en el pie
+   y la acción queda del lado opuesto, siempre en el mismo lugar en todas las
+   tarjetas. El borde dice que es un botón antes de que alguien pase por encima. */
 .os-tarjeta-editar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
   padding: 0;
-  border: 1px solid transparent;
-  border-radius: 7px;
-  background: none;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel);
   color: var(--os-suave);
   cursor: pointer;
 }
@@ -2529,7 +2532,7 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 }
 
 .os-tarjeta-editar:hover {
-  border-color: var(--os-linea);
+  border-color: var(--os-azul);
   background: var(--os-panel-2);
   color: var(--os-azul);
 }
