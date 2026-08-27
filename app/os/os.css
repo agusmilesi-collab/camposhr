@@ -3160,10 +3160,19 @@ textarea.os-campo {
 }
 
 .os-tarjeta-concepto {
-  margin-top: 3px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
   font-size: 0.79rem;
   color: var(--os-suave);
   line-height: 1.45;
+}
+
+/* La fecha acompaña al servicio y no compite con él. */
+.os-tarjeta-fecha {
+  font-variant-numeric: tabular-nums;
 }
 
 /* La nota de la oportunidad: qué se habló, en la tarjeta y no adentro de un
