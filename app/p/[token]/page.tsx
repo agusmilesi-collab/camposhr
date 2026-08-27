@@ -1,6 +1,6 @@
 import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
 import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
-import { datosClienteDeSupabase } from '@/lib/portal-supabase';
+import { datosClienteDeSupabase, vaPorAirtable } from '@/lib/portal-supabase';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import NuevoPedido from './NuevoPedido';
@@ -186,7 +186,13 @@ export default async function Portal({ params }: { params: { token: string } }) 
   // El enlace se resuelve primero contra Supabase, que es donde viven las
   // empresas ya migradas, y después contra Airtable, que es donde siguen las
   // demás. Un token existe en uno de los dos, nunca en los dos.
-  const deSupabase = demo ? null : await datosClienteDeSupabase(params.token);
+  //
+  // La excepción es el enlace anterior de una empresa que pidió seguir viendo
+  // el portal de antes: ese va a Airtable aunque la empresa esté migrada. Es
+  // por empresa y por enlace, así que el de ahora sigue mostrando el OS.
+  const porAirtable = demo ? false : await vaPorAirtable(params.token);
+  const deSupabase =
+    demo || porAirtable ? null : await datosClienteDeSupabase(params.token);
   const datos = demo
     ? await datosDemoConAirtable()
     : (deSupabase ?? (await getDatosCliente(params.token)));
