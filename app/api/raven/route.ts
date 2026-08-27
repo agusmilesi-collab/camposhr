@@ -56,7 +56,7 @@ async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
   await patch(s.id, { terminado_at: terminado.toISOString(), cierre });
 
   // Cuánto tardó, contado desde que abrió la primera lámina. Con el tiempo
-  // agotado son los 45 minutos enteros; entregando antes, lo que haya usado.
+  // agotado son los minutos enteros del test; entregando antes, lo que haya usado.
   const duracion = s.iniciado_at
     ? Math.max(0, Math.round((terminado.getTime() - new Date(s.iniciado_at).getTime()) / 1000))
     : null;

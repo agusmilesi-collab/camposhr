@@ -3080,35 +3080,6 @@ textarea.os-campo {
   flex: none;
 }
 
-/*
- * La carga de cada evaluadora, arriba del tablero de entrevistas.
- *
- * Repartir es elegir a quién, y esa decisión se toma contra lo que cada una ya
- * tiene encima. Cuenta lo abierto de todos los clientes, no lo que quedó
- * después del filtro: la cola de una persona no cambia porque uno esté mirando
- * un cliente.
- */
-.os-carga {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  margin: 0 0 14px;
-  font-size: 0.78rem;
-  color: var(--os-suave);
-}
-
-.os-carga-quien {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.os-carga-quien b {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--os-tinta);
-}
-
 /* ---------- Kanban ---------- */
 
 .os-kanban {
@@ -7659,6 +7630,40 @@ th.os-tabla-contacto {
 .os-raven-reloj.urge {
   color: var(--os-ambar);
   font-weight: 600;
+}
+
+/*
+ * La columna del Raven: mientras corre, el reloj; entregado, cuánto tardó y qué
+ * dio.
+ *
+ * Los dos datos juntos porque la pregunta es una sola: cómo le fue. El tiempo
+ * solo no dice nada (media hora puede ser rápido o lento según el puntaje), y
+ * el puntaje sin el tiempo esconde a quien lo sacó contra reloj.
+ */
+.os-raven-medida {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Terminado son dos datos donde el resto de los tests tiene uno, así que esa
+   columna se ensancha y la fila crece hacia la izquierda: el botón sigue
+   cayendo donde cae en todas las demás, que es la columna que más se mira. */
+.os-herramienta-accion:has(> .os-raven-medida) {
+  grid-template-columns: minmax(0, 1fr) 176px 148px;
+  width: 508px;
+}
+
+.os-raven-medida .os-raven-reloj {
+  justify-self: auto;
+}
+
+.os-raven-puntaje {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* El portal del cliente: abrir y copiar, en la fila del cliente. */

@@ -360,6 +360,34 @@ quede sin baterías si la lectura falla.
 Los tres textos son obligatorios porque son lo que el cliente lee al elegir; la
 duración puede faltar, que es distinto de valer cero.
 
+## El Raven de la hoja se mira solo
+
+`app/os/psicotecnicos/entrevista/[id]/Raven.tsx`. El test lo responde la persona
+por su enlace y dura cincuenta minutos (`MINUTOS` en `lib/raven.ts`), así que la
+evaluadora le manda el enlace y se pone a escribir la entrevista: no puede
+quedarse recargando para ver si arrancó.
+
+**Lo que se dibuja sale del sondeo, no de la prop del servidor.** Cada seis
+segundos se pregunta `/api/os/raven-estado`, que devuelve el estado, cuándo
+abrió y, si ya entregó, cuánto tardó y qué dio. Antes ese sondeo solo avisaba
+que algo había cambiado y pedía la pantalla de nuevo: cuando ese redibujo no
+llegaba, el reloj recién aparecía si alguien recargaba a mano. El servidor ahora
+pone solamente la primera pintura.
+
+Igual se sigue pidiendo la pantalla cuando el estado cambia, porque el resto de
+la hoja también cambia: la evaluación pasa a Por analizar cuando el Raven era el
+último test que faltaba.
+
+**El reloj se cuenta contra la hora de arranque que fijó el servidor**, no
+descontando un segundo por vuelta: con la pestaña en segundo plano el navegador
+frena los temporizadores y la cuenta se atrasa. Por lo mismo se vuelve a
+preguntar al volver a la pestaña.
+
+**Entregado, el tiempo y el puntaje van juntos**, en la misma columna donde
+estaba el reloj: la pregunta es una sola, cómo le fue. Media hora puede ser
+rápido o lento según el puntaje, y el puntaje solo esconde a quien lo sacó
+contra reloj.
+
 ## El baremo propio del Raven se cuenta solo
 
 `lib/raven-propio.ts`. Qué tan raro es cada rango sale hoy de `RANGOS`, en
@@ -611,11 +639,11 @@ con esa persona.
   repartir es trabajo del equipo. Citar, agendar y analizar muestran lo de quien
   mira. Lo decide `visiblesEn` en `app/os/psicotecnicos/datos.ts`.
 - **De ahí no se sale arrastrando: se elige a quién.** Un arrastre no puede
-  decir de quién es. El botón lista los nombres con su carga al lado, y arriba
-  del tablero va la misma cuenta: repartir sin ver contra qué se reparte es
-  repartir a ciegas. La carga se cuenta sobre todo lo abierto y **no** sobre lo
-  que dejó el filtro por cliente, que diría que está libre alguien con doce de
-  otra empresa.
+  decir de quién es. El botón lista los nombres con su carga al lado, que es el
+  único momento en que esa cuenta hace falta: repartir sin ver contra qué se
+  reparte es repartir a ciegas. La carga se cuenta sobre todo lo abierto y **no**
+  sobre lo que dejó el filtro por cliente, que diría que está libre alguien con
+  doce de otra empresa.
 - **Al revés sí**: arrastrar una tarjeta de vuelta a la primera columna le
   suelta la dueña. Sin ese gesto, un reparto equivocado solo se podía corregir
   desde la ficha.

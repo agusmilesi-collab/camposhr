@@ -91,6 +91,8 @@ export type Entrevista = {
   raven: EstadoRaven;
   /** Cuándo abrió la primera lámina, para saber cuánto le queda. */
   ravenIniciado: string | null;
+  /** Lo que dio, cuando ya entregó. Null si todavía no hay medición. */
+  ravenMedida: { raw: number | null; percentil: number | null; resultado: string | null } | null;
   /** Cuánto tardó, si ya lo terminó. */
   ravenDuracion: number | null;
   /** En qué escalón de la pirámide quedó, si ya se lo ubicó. */
@@ -135,7 +137,7 @@ function ordenar(tests: string[], guardado: string[] | null | undefined): string
 export async function entrevistaDe(id: string): Promise<Entrevista | null> {
   if (!UUID.test(id)) return null;
 
-  const [filas, sesiones, discursivos] = await Promise.all([
+  const [filas, sesiones, discursivos, medidas] = await Promise.all([
     select<Fila>('evaluaciones', `select=${CAMPOS}&id=eq.${id}`),
     select<{ iniciado_at: string | null; terminado_at: string | null }>(
       'raven_sesiones',
@@ -144,6 +146,11 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     select<{ nivel: string | null }>(
       'analisis_discursivo',
       `select=nivel&evaluacion_id=eq.${id}`
+    ).catch(() => []),
+    // El puntaje del Raven, para mostrarlo al lado del tiempo apenas entrega.
+    select<{ raw: number | null; percentil: number | null; resultado: string | null }>(
+      'raven',
+      `select=raw,percentil,resultado&evaluacion_id=eq.${id}&limit=1`
     ).catch(() => []),
   ]);
 
@@ -191,6 +198,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     discursivo: discursivos[0]?.nivel ?? null,
     competencias: f.entrevista_competencias,
     ravenIniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
+    ravenMedida: medidas[0] ?? null,
     ravenDuracion:
       s?.terminado_at && s.iniciado_at
         ? Math.max(

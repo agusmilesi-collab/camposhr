@@ -16,7 +16,7 @@
 export const RAVEN_MAXIMO = 36;
 
 /** Cuánto dura el test, en minutos. */
-export const MINUTOS = 45;
+export const MINUTOS = 50;
 
 /** Cuándo se avisa que se está por terminar. */
 export const AVISO_MINUTOS = 5;
