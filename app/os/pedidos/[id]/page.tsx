@@ -11,6 +11,7 @@ import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
 import { Benziger, Borrar, Estado, Fecha, Largo, Lista, Pregunta, Texto } from './Editar';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
+import BorrarCandidato from './BorrarCandidato';
 
 export const dynamic = 'force-dynamic';
 
@@ -209,6 +210,9 @@ export default async function FichaPedido({ params }: { params: { id: string } }
                   <span className={`os-sello-estado ${COLOR_ETAPA[g.estado] ?? 'os-gris'}`}>
                     {g.estado}
                   </span>
+                  {/* Sacar a alguien que entró repetido o al pedido equivocado:
+                      el error se ve acá, que es la lista donde se cargaron. */}
+                  <BorrarCandidato id={g.id} nombre={g.nombre} />
                 </li>
               ))}
             </ul>
