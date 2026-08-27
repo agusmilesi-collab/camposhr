@@ -1995,14 +1995,19 @@ html[data-os-lateral='compacta'] .os-pie-quien {
  * abiertas y cuánta gente hay adentro. Los datos de facturación están en su
  * ficha, que es el día que se los necesita.
  */
+/* Todas las tarjetas miden lo mismo: un cliente cuya línea de pedidos cae en
+   dos renglones estiraba la suya y la fila quedaba despareja. Con las filas de
+   alto igual, la grilla se lee como una tabla. */
 .os-clientes {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 14px;
 }
 
 .os-cliente {
-  display: block;
+  display: flex;
+  flex-direction: column;
   padding: 16px 18px 14px;
   border: 1px solid var(--os-linea);
   border-radius: 13px;
@@ -2041,16 +2046,29 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   letter-spacing: -0.012em;
 }
 
+/* Dos renglones siempre: los nombres largos parten la línea en dos ("todavía
+   sin candidatos") y sin esto las tarjetas de Activos medían un renglón más que
+   las de Inactivos. Reservado el lugar, todas miden igual. */
 .os-cliente-linea {
   margin: 8px 0 0;
+  min-height: 2.6em;
   font-size: 0.86rem;
+  line-height: 1.3;
   color: var(--os-tinta-media);
 }
 
+/* Contra el pie de la tarjeta: el total de pedidos queda a la misma altura en
+   todas, en vez de colgar de una línea que a veces mide dos renglones. */
 .os-cliente-pie {
-  margin: 3px 0 0;
+  margin: 8px 0 0;
+  padding-top: 0;
   font-size: 0.76rem;
   color: var(--os-suave);
+}
+
+.os-cliente-linea + .os-cliente-pie {
+  margin-top: auto;
+  padding-top: 8px;
 }
 
 /* Los datos de facturación del cliente, en su ficha. Se llaman "cliente" y no
