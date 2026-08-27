@@ -10,6 +10,7 @@ import Ficha from './Ficha';
 import Pedidos from './Pedidos';
 import Contactos from './Contactos';
 import { contactosDe } from '@/lib/contactos';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,13 +41,15 @@ export default async function ClientePagina({ params }: { params: { id: string }
   const suyos = pedidos.filter((p) => p.empresaId === params.id);
   const abiertos = suyos.filter((p) => p.estado === ABIERTO);
 
+  const cuentas = await cuentasDeLaBarra();
+
   return (
     <Shell
       titulo={`Clientes · ${cliente.nombre}`}
       identidad={yo.nombre}
       ancho
       nota={abiertos.length === 1 ? '1 pedido abierto' : `${abiertos.length} pedidos abiertos`}
-      cuentas={{ '/os/clientes': clientes.length }}
+      cuentas={{ ...cuentas, '/os/clientes': clientes.length }}
     >
       <Link className="os-volver-enlace" href="/os/clientes">
         ← Volver a clientes

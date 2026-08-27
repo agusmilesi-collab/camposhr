@@ -3273,6 +3273,227 @@ textarea.os-campo {
 }
 
 
+/* ---------- El tablero de la home ---------- */
+
+/*
+ * El tablero va con el aire del panel, no pegado a sus bordes.
+ *
+ * `.os-panel` no tiene relleno propio: cada contenido pone el suyo, porque una
+ * fila lo necesita en cada renglón y no alrededor. Las columnas quedaban
+ * tocando los cuatro bordes y el panel se leía como si estuviera cortado. Los
+ * 18 px de los lados son los mismos del encabezado, así el título y la primera
+ * columna arrancan sobre la misma línea.
+ */
+.os-mini-tablero {
+  padding: 15px 18px 28px;
+}
+
+/*
+ * Las tarjetas del tablero de inicio son chicas a propósito: lo que se mira ahí
+ * es la cola entera de un vistazo, no una ficha. El nombre, de quién es y en
+ * qué anda; todo lo demás está a un clic, en la ficha.
+ */
+/*
+ * La columna se desplaza por dentro pasadas unas diez tarjetas: la home tiene
+ * tres bloques debajo del tablero, y con la cola entera estirada había que
+ * pasar dos pantallas de tarjetas para llegar a los pendientes del equipo. Las
+ * opciones del desplegable no se recortan, porque se dibujan colgadas de `.os`
+ * (ver `Desplegable.tsx`).
+ */
+/*
+ * Las tres columnas miden lo mismo: lo que mide la más llena.
+ *
+ * `.os-kanban` alinea al principio, que es lo que corresponde en los tableros
+ * del pipeline, donde las columnas son listas sueltas. Acá son tres partes de
+ * un mismo bloque dentro del panel, y con cada una de su alto el borde de abajo
+ * quedaba en tres escalones.
+ */
+.os-kanban-mini {
+  align-items: stretch;
+}
+
+.os-kanban-mini .os-columna {
+  min-height: 120px;
+  max-height: 460px;
+  overflow-y: auto;
+  /*
+   * Abajo queda el lugar de una tarjeta más, vacío.
+   *
+   * Con el alto justo de lo que hay adentro, la columna llena se leía como
+   * llena: no se veía dónde entra la que se está arrastrando. El hueco es
+   * literal, una tarjeta (80 px medidos en pantalla) más el espacio que la
+   * separaría de la anterior (7 px), y sale del padding y no de una caja vacía
+   * porque no hay nada que dibujar ahí.
+   *
+   * Los 16 px son el aire propio del borde: con el mismo de los costados, la
+   * última tarjeta quedaba apoyada contra el fondo de la columna y las dos
+   * líneas se leían como una sola.
+   */
+  --os-lugar-libre: 87px;
+  padding: 10px 10px calc(16px + var(--os-lugar-libre));
+  gap: 7px;
+}
+
+.os-mini {
+  display: grid;
+  gap: 5px;
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  padding: 7px 9px;
+  cursor: grab;
+}
+
+.os-mini:active {
+  cursor: grabbing;
+}
+
+.os-mini.arrastrando {
+  opacity: 0.45;
+}
+
+.os-mini-cuerpo {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* En una tarjeta de este ancho un nombre largo empuja al resto fuera de la
+   columna: se recorta con puntos suspensivos, como en las tablas. */
+.os-mini-nombre,
+.os-mini-detalle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-mini-nombre {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.os-mini-detalle {
+  font-size: 0.72rem;
+  color: var(--os-suave);
+}
+
+.os-mini-pie {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.os-mini-etapa {
+  font-size: 0.7rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* El sello de prioridad es el control, y va a la derecha: es lo que se compara
+   entre tarjetas al elegir qué sigue, así que queda alineado en una columna. */
+.os-mini-prioridad {
+  margin-left: auto;
+  flex: none;
+  font-size: 0.7rem;
+}
+
+/*
+ * La prioridad es una pastilla del color de su banda, y es el control.
+ *
+ * En la tarjeta chica el sello con punto se leía como un dato más, al lado del
+ * de la etapa, que también tiene punto: dos sellos iguales para dos cosas que
+ * no lo son. Pintada, la banda se reconoce por el color antes de leer la
+ * palabra, que es lo que se busca al elegir qué sigue.
+ *
+ * La flecha se queda, chica y del mismo color: sin ella el sello se lee como un
+ * dato y nadie prueba tocarlo (la misma razón por la que existe en el
+ * desplegable, ver más abajo).
+ */
+.os-mini-prioridad .os-desplegable-boton {
+  gap: 3px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--punto, var(--os-gris)) 34%, transparent);
+  background: color-mix(in srgb, var(--punto, var(--os-gris)) 15%, transparent);
+  color: var(--punto, var(--os-tinta));
+  font-size: 0.7rem;
+  font-weight: 550;
+  letter-spacing: 0.01em;
+}
+
+/* Pintada la pastilla, el punto repite el color que ya dice el fondo. */
+.os-mini-prioridad .os-desplegable-boton::before {
+  display: none;
+}
+
+.os-mini-prioridad .os-desplegable-boton:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--punto, var(--os-gris)) 60%, transparent);
+  background: color-mix(in srgb, var(--punto, var(--os-gris)) 24%, transparent);
+}
+
+.os-mini-prioridad .os-desplegable-flecha {
+  width: 8px;
+  opacity: 0.7;
+  /* Del color de la pastilla: la del desplegable es gris y acá quedaba pegada
+     al texto de otro color. */
+  color: inherit;
+}
+
+/*
+ * La entrevista de hoy: azul entero y con la hora grande.
+ *
+ * Es la única tarjeta del tablero que no se acomoda. Un análisis se hace cuando
+ * se puede; una entrevista es una cita con una persona a una hora, y si se pasa
+ * no se recupera. Pintada, se reconoce antes de leer el nombre, que es lo que
+ * hace falta en una columna donde conviven las dos cosas.
+ *
+ * No lleva prioridad ni sello de etapa: la hora ya dice cuándo va y la etapa,
+ * en una tarjeta que dice "entrevista", no agrega nada.
+ */
+.os-mini-cita {
+  border-color: color-mix(in srgb, var(--os-azul) 45%, transparent);
+  background: color-mix(in srgb, var(--os-azul) 13%, var(--os-panel));
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.os-mini-cita:hover {
+  border-color: var(--os-azul);
+  background: color-mix(in srgb, var(--os-azul) 20%, var(--os-panel));
+}
+
+.os-mini-hora {
+  font-size: 1.15rem;
+  font-weight: 650;
+  /* Da para dos renglones: en una columna angosta "18:00 Entrevista Presencial"
+     no entra en uno, y cortarlo con puntos suspensivos escondería justo la
+     modalidad. */
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-azul-fuerte);
+}
+
+/* Qué es y de qué modo: la misma frase que la hora, un 40 % más chica. En `em`
+   y no en `rem` para que siga a la hora si algún día cambia de cuerpo. */
+.os-mini-cita-modo {
+  font-size: 0.6em;
+  letter-spacing: 0;
+}
+
+/* La prioridad que todavía no fijó nadie: se ve, pero más apagada que una
+   decidida. Sube y baja sola con los días de espera. */
+.os-mini-auto {
+  opacity: 0.62;
+}
+
+
 .os-columna-vacia {
   padding: 14px 4px;
   font-size: 0.78rem;
@@ -5235,6 +5456,38 @@ th.os-tabla-contacto {
   background: var(--os-panel-2);
 }
 
+/* La fecha de vencimiento: el campo del navegador, al alto del resto de la
+   fila y sin el ancho de más que trae por defecto. */
+.os-pendiente-vence {
+  flex: none;
+  width: 132px;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 0.78rem;
+}
+
+.os-pendiente-estado {
+  flex: none;
+}
+
+/*
+ * La tarea cuya fecha ya pasó.
+ *
+ * El sello lo dice con su nombre y su color (`estadoVisible`); acá se pinta la
+ * fecha, que es la que lo explica: sin eso hay que ir a leer el día para saber
+ * de cuánto es el atraso.
+ */
+.os-pendiente.vencida .os-pendiente-vence {
+  color: var(--os-rojo);
+  border-color: color-mix(in srgb, var(--os-rojo) 45%, transparent);
+}
+
+
+.os-pendiente-estado .os-desplegable-boton {
+  height: 30px;
+  font-size: 0.78rem;
+}
+
 .os-pendiente-texto {
   flex: 1;
   min-width: 0;
@@ -5319,6 +5572,41 @@ th.os-tabla-contacto {
 /* Dentro de la grilla cada caja se separa por el gap, no por su margen. */
 .os-tablero .os-panel + .os-panel {
   margin-top: 0;
+}
+
+/*
+ * Y la grilla se separa de lo que tiene encima.
+ *
+ * El margen entre paneles lo pone `.os-panel + .os-panel`, y esta grilla no es
+ * un panel: quedaba a siete píxeles del tablero de psicotécnicos, menos que el
+ * hueco entre sus dos paneles, y las tres cajas se leían como un solo bloque.
+ * Los 26 px son un poco más que el gap de adentro, que es lo que separa dos
+ * cosas distintas de dos partes de la misma.
+ */
+.os-panel + .os-tablero {
+  margin-top: 26px;
+}
+
+/*
+ * Dos tercios para las tareas y uno para los temas.
+ *
+ * No son dos listas equivalentes: una tarea lleva dueño, fecha y estado, y en
+ * media pantalla esos tres controles no entraban en el renglón; un tema es
+ * solo un texto y con la mitad del panel le sobraba la mitad. El rótulo de
+ * sección ya trae su propio aire, así que acá el margen de arriba no va.
+ */
+.os-rotulo-seccion + .os-tablero-equipo {
+  margin-top: 0;
+}
+
+.os-tablero-equipo {
+  grid-template-columns: 2fr 1fr;
+}
+
+@media (max-width: 1100px) {
+  .os-tablero-equipo {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 900px) {

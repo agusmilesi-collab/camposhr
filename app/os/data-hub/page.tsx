@@ -2,6 +2,7 @@ import Shell from '../Shell';
 import { quienSoy } from '@/lib/identidad';
 import { datosDelHub, type PorEvaluadora, type Reparto } from '@/lib/data-hub';
 import { enDias } from '@/lib/hora';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -141,8 +142,10 @@ function FichaEvaluadora({ e }: { e: PorEvaluadora }) {
 export default async function DataHub() {
   const [yo, d] = await Promise.all([quienSoy(), datosDelHub()]);
 
+  const cuentas = await cuentasDeLaBarra();
+
   return (
-    <Shell titulo="Data hub" identidad={yo.nombre} ancho>
+    <Shell titulo="Data hub" identidad={yo.nombre} cuentas={cuentas} ancho>
       <div className="os-encabezado">
         <h1>Data hub</h1>
         <p>

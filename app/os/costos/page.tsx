@@ -14,6 +14,7 @@ import { empresas as listarEmpresas } from '@/lib/altas';
 import Monotributo from './Monotributo';
 import { Facturado, OtraFactura } from './Servicios';
 import Trabajos, { type Trabajo } from './Trabajos';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,8 +91,10 @@ export default async function Costos() {
     ganadas.reduce((n, c) => n + deLa(c.id).reduce((m, x) => m + x.importe, 0), 0)
   );
 
+  const cuentas = await cuentasDeLaBarra();
+
   return (
-    <Shell titulo="Costos" identidad={yo.nombre} nota={`${ganadas.length} aprobadas`}>
+    <Shell titulo="Costos" identidad={yo.nombre} cuentas={cuentas} nota={`${ganadas.length} aprobadas`}>
       <div className="os-encabezado">
         <h1>Costos</h1>
       </div>

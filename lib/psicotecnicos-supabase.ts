@@ -14,7 +14,12 @@ import 'server-only';
 import { select } from '@/lib/supabase';
 import { diasDesde } from '@/lib/hora';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import { yaEntregada, type Evaluacion } from '@/lib/psicotecnicos-tipos';
+import {
+  esColumnaTablero,
+  esPrioridad,
+  yaEntregada,
+  type Evaluacion,
+} from '@/lib/psicotecnicos-tipos';
 import { siEstaTodoTomado } from '@/lib/entrevista-completa';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
 
@@ -58,6 +63,8 @@ const COLUMNA: Record<string, string> = {
   seguimientoAl: 'seguimiento_al',
   seguimientoResultado: 'seguimiento_resultado',
   seguimientoNotas: 'seguimiento_notas',
+  tablero: 'tablero',
+  prioridad: 'prioridad',
 };
 
 type Fila = {
@@ -78,6 +85,8 @@ type Fila = {
   seguimiento_resultado: string | null;
   facturado: boolean | null;
   pagado: boolean | null;
+  tablero: string | null;
+  prioridad: string | null;
   personas: {
     nombre: string;
     email: string | null;
@@ -98,7 +107,7 @@ const CAMPOS =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'bender_administrado,grafico_2_personas_administrado,benziger_administrado,' +
   'recomendacion,informe_path,' +
-  'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,' +
+  'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,tablero,prioridad,' +
   'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
   'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo))';
 
@@ -147,6 +156,8 @@ export async function listar(): Promise<Evaluacion[]> {
     dias: diasDesde(f.fecha_entrevista, hoy),
     diasEsperando: f.fecha_entrevista ? null : diasDesde(f.fecha_ingreso, hoy),
     diasSolicitud: diasDesde(f.fecha_ingreso, hoy),
+    tablero: esColumnaTablero(f.tablero) ? f.tablero : null,
+    prioridad: esPrioridad(f.prioridad) ? f.prioridad : null,
     prueba: /^distribuidora andina/i.test(f.pedidos?.empresas?.nombre ?? ''),
   }));
 }
@@ -189,6 +200,15 @@ export async function guardarCampos(
     }
     const columna = COLUMNA[campo];
     if (!columna) return { ok: false, motivo: 'Campo no editable.' };
+    // Los dos campos del tablero tienen su lista cerrada y la base los
+    // comprueba: si llega otra cosa, el rechazo tiene que decir qué pasó y no
+    // devolver el texto de la restricción de Postgres.
+    if (campo === 'tablero' && valor !== null && !esColumnaTablero(valor)) {
+      return { ok: false, motivo: 'Esa columna del tablero no existe.' };
+    }
+    if (campo === 'prioridad' && valor !== null && !esPrioridad(valor)) {
+      return { ok: false, motivo: 'Esa prioridad no existe.' };
+    }
     fila[columna] = valor === '' ? null : valor;
   }
 

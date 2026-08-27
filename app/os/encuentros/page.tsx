@@ -3,6 +3,7 @@ import Shell from '../Shell';
 import { quienSoy } from '@/lib/identidad';
 import { listarCorridas } from '@/lib/ciclo';
 import { contarRespuestas, listarEmpresas } from '@/lib/supabase';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,8 +33,10 @@ export default async function Encuentros() {
     })
   );
 
+  const cuentas = await cuentasDeLaBarra();
+
   return (
-    <Shell identidad={yo.nombre} titulo="Encuentros" nota={`${corridas.length} corridas activas`}>
+    <Shell identidad={yo.nombre} titulo="Encuentros" cuentas={cuentas} nota={`${corridas.length} corridas activas`}>
       <div className="os-encabezado">
         <h1>Lo que se dicta en la sala</h1>
         <p>

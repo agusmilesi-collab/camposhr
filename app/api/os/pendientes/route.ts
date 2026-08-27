@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { ESTADOS } from '@/lib/pendientes-tipos';
 
 export const runtime = 'nodejs';
 
@@ -48,6 +49,23 @@ function limpiar(campos: Record<string, unknown>) {
       case 'hecha': {
         if (typeof valor !== 'boolean') return { motivo: `${campo} tiene que ser sí o no.` };
         fila[campo] = valor;
+        break;
+      }
+      case 'estado': {
+        if (!ESTADOS.includes(valor as never)) return { motivo: 'Ese estado no existe.' };
+        fila.estado = valor;
+        // `hecha` sale del estado y no se manda aparte: es lo que ordena la
+        // lista y lo que cuenta el "sin hacer" del encabezado, y con dos
+        // caminos para escribirlo quedaba una tarea tachada en estado
+        // Pendiente.
+        fila.hecha = valor === 'Hecha';
+        break;
+      }
+      case 'vence': {
+        if (valor !== null && (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor))) {
+          return { motivo: 'La fecha tiene que ser un día del calendario.' };
+        }
+        fila.vence = valor === '' ? null : valor;
         break;
       }
       default:
