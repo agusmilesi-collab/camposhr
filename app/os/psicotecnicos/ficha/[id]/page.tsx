@@ -8,8 +8,9 @@ import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { nombrePerfil } from '@/lib/perfiles';
 import { RUTA } from '@/lib/psicotecnicos';
 import { fechaCorta, fechaHora } from '@/lib/hora';
+import { enAños } from '@/lib/edad';
 import { formatoImporte } from '@/lib/cotizaciones';
-import { numeroDe } from '@/lib/facturas-tipos';
+import { formatoFecha, numeroDe } from '@/lib/facturas-tipos';
 import Manchas from './Manchas';
 import SumarioTexto from './SumarioTexto';
 import Ingreso from './Ingreso';
@@ -254,6 +255,20 @@ function Datos({
             <a href={`mailto:${c.personas.email}`}>{c.personas.email}</a>
           ) : (
             <Falta />
+          )}
+        </Dato>
+        {/* La fecha es de la persona y la edad es de esta evaluación: quedó
+            congelada el día que se la tomó, así que un informe reabierto dos
+            años después sigue diciendo la misma. */}
+        <Dato rotulo="Nacimiento">
+          {c.personas?.fecha_nacimiento ? (
+            <>
+              {/* Con el año entero: en "17/2/89" no se distingue 1989 de 2089. */}
+              {formatoFecha(c.personas.fecha_nacimiento)}
+              {enAños(c.edad) && <span className="os-dato-al-lado">{enAños(c.edad)}</span>}
+            </>
+          ) : (
+            <Falta texto="sin cargar" />
           )}
         </Dato>
         {/* La evaluadora cierra el bloque: de todo lo que quedaba del otro

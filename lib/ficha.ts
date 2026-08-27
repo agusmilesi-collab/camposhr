@@ -71,6 +71,8 @@ export type Cabecera = {
     telefono: string | null;
     /** Dónde vive el CV en el bucket. Null si no se cargó ninguno. */
     cv_path: string | null;
+    /** La fecha es de la persona y no cambia; la edad se congela por evaluación. */
+    fecha_nacimiento: string | null;
   } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
@@ -271,7 +273,7 @@ const CAMPOS_CABECERA =
   'recomendacion,recomendacion_notas,informe_path,entrevista_competencias,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,' +
-  'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),' +
+  'personas(nombre,email,telefono,cv_path,fecha_nacimiento),evaluadoras(nombre),' +
   'pedidos(puesto,con_benziger,exigencia_id,empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';
 

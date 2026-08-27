@@ -23,7 +23,7 @@
 
 import 'server-only';
 import { select } from '@/lib/supabase';
-import { CACHE_COMERCIAL } from '@/lib/etiquetas';
+import { CACHE_COMERCIAL, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { BENZIGER_USD, dolarTarjeta, precioA, type Precio } from '@/lib/baterias-precios';
 import type { Emisora, Factura, Facturable } from '@/lib/facturas-tipos';
 
@@ -216,7 +216,11 @@ export async function listarAFacturar(): Promise<Facturable[]> {
         'pedidos(puesto,empresa_id,fecha_pedido,con_benziger,empresas(nombre),' +
         'baterias(id,codigo,nombre))' +
         `&estado=in.(${etapas})&order=fecha_entrevista.desc`,
-      CACHE_COMERCIAL
+      // Con las dos etiquetas: una evaluación entra en esta cola cuando se le
+      // toma la entrevista, que se marca desde Psicotécnicos. Con la etiqueta
+      // comercial sola, el candidato aparecía para facturar recién cuando algo
+      // del lado comercial invalidaba la lista, o a los cinco minutos.
+      [CACHE_COMERCIAL, CACHE_PSICOTECNICOS]
     ),
     select<{ evaluacion_id: string | null }>(
       'factura_items',

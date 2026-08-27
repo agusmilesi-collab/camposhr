@@ -12,7 +12,7 @@ import 'server-only';
 import { select } from '@/lib/supabase';
 import { listarClientesConToken } from '@/lib/airtable';
 import { claveEmpresa } from '@/lib/os';
-import { CACHE_CLIENTES } from '@/lib/etiquetas';
+import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 
 export type PedidoDelCliente = {
   id: string;
@@ -116,7 +116,10 @@ export async function listarClientes(): Promise<Cliente[]> {
       // Vienen los dos: los inactivos se muestran aparte, no se esconden. Un
       // cliente que no aparece en ningún lado no se puede volver a activar.
       `select=${CAMPOS}&order=nombre.asc`,
-      CACHE_CLIENTES
+      // La tarjeta cuenta los pedidos abiertos y la gente que hay adentro, y eso
+      // cambia desde Psicotécnicos: con la etiqueta de clientes sola, cerrar un
+      // pedido dejaba la grilla diciendo lo de antes hasta los cinco minutos.
+      [CACHE_CLIENTES, CACHE_PSICOTECNICOS]
     ).catch(() => [] as FilaEmpresa[]),
     listarClientesConToken().catch(() => []),
   ]);
