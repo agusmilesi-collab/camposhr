@@ -787,6 +787,22 @@ a.os-fila:hover {
   color: var(--os-azul-fuerte);
 }
 
+/**
+ * La entrevista del día que ya terminó.
+ *
+ * Se sigue viendo, porque es lo que pasó hoy, pero apagada: a las once de la
+ * noche la de las tres de la tarde no es algo para hacer, y con el mismo peso
+ * que las que faltan obligaba a leer la hora de cada una para saber cuál es
+ * cuál.
+ */
+.os-hoy-paso {
+  opacity: 0.55;
+}
+
+.os-hoy-paso .os-hoy-hora {
+  color: var(--os-suave);
+}
+
 /* Una fila que se toca entera lleva a su hoja de entrevista. */
 .os-fila-enlace {
   color: inherit;
