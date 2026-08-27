@@ -187,9 +187,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
   // empresas ya migradas, y después contra Airtable, que es donde siguen las
   // demás. Un token existe en uno de los dos, nunca en los dos.
   //
-  // La excepción es el enlace anterior de una empresa que pidió seguir viendo
-  // el portal de antes: ese va a Airtable aunque la empresa esté migrada. Es
-  // por empresa y por enlace, así que el de ahora sigue mostrando el OS.
+  // Mientras el OS se termina, las evaluadoras siguen cargando en Airtable: los
+  // clientes marcados leen de ahí, que es donde está su trabajo al día. Se
+  // apaga por cliente, cuando el suyo pase a llevarse en el OS.
   const porAirtable = demo ? false : await vaPorAirtable(params.token);
   const deSupabase =
     demo || porAirtable ? null : await datosClienteDeSupabase(params.token);
