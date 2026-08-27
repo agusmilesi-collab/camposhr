@@ -238,6 +238,11 @@ export default function Reparto({
         onDrop={(ev) => {
           ev.preventDefault();
           setEncima(null);
+          // Se apaga acá y no solo en la tarjeta: al soltar, esa tarjeta se
+          // desmonta de su columna vieja antes de que llegue el `dragend`, así
+          // que ese aviso no lo recibe nadie y la tarjeta que aparece en la
+          // columna nueva se queda a media opacidad hasta que se arrastre otra.
+          setArrastrando(null);
           const id = ev.dataTransfer.getData('text/plain');
           if (id) repartir(id, clave === SIN_DUENO ? null : clave);
         }}

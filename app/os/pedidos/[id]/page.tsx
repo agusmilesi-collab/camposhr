@@ -10,6 +10,7 @@ import { ABIERTO, DEL_JEFE, DEL_PUESTO, FAMILIAS, SENIORITY } from '@/lib/pedido
 import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
 import { Benziger, Borrar, Estado, Fecha, Largo, Lista, Pregunta, Texto } from './Editar';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,8 +86,10 @@ export default async function FichaPedido({ params }: { params: { id: string } }
       : `faltan ${faltan} de ${preguntas.length}`;
   }
 
+  const cuentas = await cuentasDeLaBarra();
+
   return (
-    <Shell titulo={`Pedido · ${pedido.puesto}`} identidad={yo.nombre}>
+    <Shell titulo={`Pedido · ${pedido.puesto}`} identidad={yo.nombre} cuentas={cuentas}>
       {/* Se vuelve al cliente, que es donde vive ahora la lista de sus
           búsquedas. */}
       <Link className="os-volver-enlace" href={`/os/clientes/${pedido.empresaId}`}>

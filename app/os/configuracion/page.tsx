@@ -7,6 +7,7 @@ import Ponderaciones from './Ponderaciones';
 import Redacciones from './Redacciones';
 import Potencial from './Potencial';
 import Exigencia from './Exigencia';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,8 +62,10 @@ export default async function Configuracion({
   const pedida = searchParams.ver ?? '';
   const ver = PESTANAS.some((p) => p.clave === pedida) ? pedida : 'baterias';
 
+  const cuentas = await cuentasDeLaBarra();
+
   return (
-    <Shell titulo="Configuración" identidad={yo.nombre} ancho>
+    <Shell titulo="Configuración" identidad={yo.nombre} cuentas={cuentas} ancho>
       <div className="os-encabezado">
         <h1>Configuración</h1>
         <p>

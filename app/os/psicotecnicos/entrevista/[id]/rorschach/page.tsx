@@ -6,6 +6,7 @@ import { quienSoy } from '@/lib/identidad';
 import { select } from '@/lib/supabase';
 import Capturador from './Capturador';
 import './capturador.css';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,8 +34,10 @@ export default async function CodificarRorschach({ params }: { params: { id: str
   const desde = Math.max(0, ...yaEstan.map((r) => r.n_respuesta ?? 0)) + 1;
   const repetidas = yaEstan.filter((r) => r.lamina === 'I').length;
 
+  const cuentas = await cuentasDeLaBarra();
+
   return (
-    <Shell titulo={`Rorschach · ${e.nombre}`} identidad={yo.nombre}>
+    <Shell titulo={`Rorschach · ${e.nombre}`} identidad={yo.nombre} cuentas={cuentas}>
       <Link className="os-volver-enlace" href={`/os/psicotecnicos/entrevista/${params.id}`}>
         ← Volver a la entrevista
       </Link>

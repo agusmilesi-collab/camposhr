@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Shell from '../Shell';
 import { TOKEN_DEMO } from '@/lib/portal-demo';
 import { quienSoy } from '@/lib/identidad';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const metadata = { title: 'Herramientas — Campos OS' };
 
@@ -73,8 +74,10 @@ const FICHAS: Ficha[] = [
 
 export default async function Herramientas() {
   const yo = await quienSoy();
+  const cuentas = await cuentasDeLaBarra();
+
   return (
-    <Shell identidad={yo.nombre} titulo="Herramientas" nota={`${FICHAS.length} en uso`}>
+    <Shell identidad={yo.nombre} titulo="Herramientas" cuentas={cuentas} nota={`${FICHAS.length} en uso`}>
       <div className="os-encabezado">
         <h1>Lo que se usa para trabajar</h1>
         <p>

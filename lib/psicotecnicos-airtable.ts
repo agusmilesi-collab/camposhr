@@ -275,6 +275,10 @@ export async function listar(): Promise<Evaluacion[]> {
       dias: diasDesde(fechaEntrevista, hoy),
       diasEsperando: fechaEntrevista ? null : diasDesde(f[F.fechaIngreso] ?? null, hoy),
       diasSolicitud: diasDesde(f[F.fechaIngreso] ?? null, hoy),
+      // El tablero de la home es de Supabase: acá no hay dónde guardarlo, y
+      // estas filas ni siquiera se muestran (ver `lib/psicotecnicos.ts`).
+      tablero: null,
+      prioridad: null,
       prueba: EMPRESA_PRUEBA.test(empresa),
     };
   });

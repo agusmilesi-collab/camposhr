@@ -624,6 +624,89 @@ React la trata como un tipo nuevo en cada dibujo y desmonta el subárbol entero:
 se borra lo escrito en un campo y se pierde el clic en un botón, porque el
 elemento que recibió el `mousedown` ya no existe al soltar. Costó una tarde.
 
+**Y el estado de "se está arrastrando" se apaga en la columna, no en la
+tarjeta.** Al soltar, esa tarjeta se desmonta de su columna vieja antes de que
+llegue el `dragend`, así que ese aviso no lo recibe nadie: la que aparece en la
+columna nueva se queda a media opacidad hasta que se arrastre otra. El
+`onDragEnd` de la tarjeta se queda igual, para cuando se suelta fuera de toda
+columna y no hay movimiento que la desmonte. Vale para los tres tableros
+(`Reparto.tsx`, `Entrevistas.tsx`, `Tablero.tsx`).
+
+## Un tema de reunión y una tarea no son la misma anotación
+
+Las dos viven en `public.pendientes` y las separa `para_reunion`, pero no se
+editan igual, y por eso `Pendientes.tsx` dibuja distinto cada lista.
+
+**Un tema no tiene dueño, ni fecha, ni estado.** Es algo para hablar entre las
+tres: mientras esté en esa lista no es de nadie, y repartirlo es justamente
+moverlo a las tareas, que es donde aparecen los tres controles. Subir una tarea
+a la reunión le suelta el dueño, si no queda un nombre guardado que nadie ve y
+que reaparece al bajarla. El tilde es de los temas, que están hablados o no.
+
+**Una tarea tiene dueño, vencimiento y estado**, y el estado es de tres valores
+(Pendiente, En curso, Hecha): "no está hecha" no distingue lo que nadie empezó
+de lo que alguien ya tiene entre manos, y en la reunión las dos se volvían a
+repartir. `hecha` sale del estado y se escribe en la ruta, de un solo lado: con
+dos caminos quedaba una tarea tachada que seguía diciendo "Pendiente".
+
+**Vencida se muestra pero no se guarda.** Si la fecha pasó y la tarea no está
+hecha, el sello dice "Vencida" en rojo (`estadoVisible`) y la fecha se pinta
+igual; debajo sigue estando el estado elegido, y la tarea vuelve a decirlo sola
+en cuanto se le corre la fecha. Guardarlo obligaría a escribir en la base todas
+las noches para que una tarea amanezca vencida, y dejaría de ser cierto en
+cuanto alguien corriera la fecha: es la misma decisión que la prioridad del
+tablero.
+
+Vencida entra en la lista del desplegable solo cuando la tarea lo está, porque
+si no el sello no encontraría su nombre ni su color. Elegirla no hace nada: el
+desplegable solo avisa cuando lo elegido es distinto de lo que ya muestra, y lo
+que de verdad la saca de ahí es otra fecha o darla por hecha.
+
+**Y los tipos van en `lib/pendientes-tipos.ts`.** `lib/pendientes.ts` lleva
+`server-only` y el panel es un componente de cliente: importar de allá rompe el
+build entero con un "Invalid hook call" que no nombra el archivo culpable. Es la
+misma razón por la que existen `lib/comercial-tipos.ts` y
+`lib/clientes-tipos.ts`.
+
+## El tablero de la home no es el pipeline
+
+`app/os/Tablero.tsx`, en Inicio. Tres columnas: Backlog, Hoy y En curso. Viven
+en `evaluaciones.tablero` y **no tocan la etapa**: arrastrar ahí dice en qué
+anda la evaluadora, no que la evaluación avanzó de estado. La etapa se sigue
+cambiando en Entrevistas y en Sin asignar, que son los tableros del circuito.
+
+Existe porque la lista "Psicotécnicos en curso" decía lo mismo todos los días:
+era el estado del pipeline y no el del trabajo, y con una evaluación abierta en
+la mano lo que hace falta saber es qué agarrar cuando esa termine.
+
+**Sin columna guardada, una evaluación está en el backlog.** La columna se
+escribe solo al arrastrar, así lo que entra aparece sin que nadie lo mueva. Hoy
+es una elección deliberada: lo que se sacó del backlog para hacer en el día.
+
+**Lo agendado para hoy entra solo en Hoy, y sale pintado.** Una entrevista es
+una cita a una hora: no se elige cuándo hacerla, así que su tarjeta va a esa
+columna sin que nadie la arrastre, es azul, lleva la hora en grande y abre la
+hoja de la entrevista. Al lado de un análisis, que sí se acomoda, la diferencia
+tiene que verse antes de leer el nombre. Deja de ser cita cuando la entrevista
+se toma: ahí vuelve a ser trabajo y cae donde le toque.
+
+Por eso Inicio ya no tiene su propio panel de "Entrevistas de hoy": decía lo
+mismo un renglón más arriba.
+
+**No hay columna de terminadas.** Un informe que se subió al portal ya está
+listo: la tarjeta se va del tablero cuando la evaluación se entrega. Una cuarta
+columna de hechas se llena sola y se lleva un cuarto de la pantalla para mostrar
+algo que nadie necesita mirar; lo entregado está en Entregados. Se probó con
+ella y duró una tarde.
+
+**La prioridad se calcula mientras nadie opine.** Null en la base significa "la
+que le toca por espera": alta a los diez días de solicitada, media del quinto al
+noveno, baja antes (`prioridadPorDefecto` en `lib/psicotecnicos-tipos.ts`).
+Guardada, quedaría clavada en la banda del día que se escribió y el paso del
+tiempo no la movería. Por eso el desplegable ofrece "por espera" además de las
+tres: sin esa salida, tocarlo una vez la fijaba para siempre. La calculada se
+dibuja más apagada que la decidida.
+
 ## Las cuatro listas del informe las puede escribir la evaluadora
 
 Recomendaciones al líder, Desarrollo destacado, Desarrollo esperado y Necesidad
@@ -808,6 +891,12 @@ columna va vacía: "sin facturar" ahí se lee como algo pendiente y no lo es.
 los suyos y pasaba solo el de su sección, así que entrar a una ficha o a
 Facturación apagaba todos los demás: la barra dejaba de decir cuánto hay en cada
 sección y lo decía nada más que en la que uno ya está mirando.
+
+**Toda pantalla del OS la llama, Inicio incluida.** Es la que más se mira y era
+de las que apagaban los números (27/8/2026): se veía el de Cotizaciones, que
+ella misma calculaba, y ninguno del pipeline. La que además tiene un número
+propio lo suma encima (`{{ ...cuentas, '/os/clientes': clientes.length }}`).
+Al sumar una pantalla nueva, hay que pasarle `cuentas`.
 
 Dicen cuántas se van a ver al entrar, no cuántas existen: respetan el filtro por
 cliente y el alcance de quien mira. Un número que no coincide con la pantalla no

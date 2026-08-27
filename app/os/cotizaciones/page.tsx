@@ -3,6 +3,7 @@ import { NuevaOportunidad, Tablero } from './Embudo';
 import { ABIERTOS, formatoImporte, listarCotizaciones } from '@/lib/cotizaciones';
 import { quienSoy } from '@/lib/identidad';
 import { listarClientes } from '@/lib/clientes';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,12 +24,14 @@ export default async function Cotizaciones() {
   const resueltas = ganadas.length + perdidas.length;
   const cierre = resueltas > 0 ? Math.round((ganadas.length / resueltas) * 100) : null;
 
+  const cuentas = await cuentasDeLaBarra();
+
   return (
     <Shell
       titulo="Cotizaciones"
       identidad={yo.nombre}
       nota={`${todas.length} oportunidades`}
-      cuentas={{ '/os/cotizaciones': abiertas.length }}
+      cuentas={{ ...cuentas, '/os/cotizaciones': abiertas.length }}
     >
       <div className="os-encabezado">
         <h1>El embudo</h1>

@@ -1,5 +1,6 @@
 import Shell from '../Shell';
 import { quienSoy } from '@/lib/identidad';
+import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const metadata = { title: 'Especificaciones — Campos OS' };
 
@@ -60,8 +61,10 @@ const DECISIONES = [
 
 export default async function Especificaciones() {
   const yo = await quienSoy();
+  const cuentas = await cuentasDeLaBarra();
+
   return (
-    <Shell identidad={yo.nombre} titulo="Especificaciones" nota={`${SPECS.length} specs`}>
+    <Shell identidad={yo.nombre} titulo="Especificaciones" cuentas={cuentas} nota={`${SPECS.length} specs`}>
       <div className="os-encabezado">
         <h1>Qué se construye y en qué orden</h1>
         <p>

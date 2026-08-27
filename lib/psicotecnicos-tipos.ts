@@ -127,6 +127,74 @@ export const COLOR_ETAPA: Record<string, string> = {
   Seguimiento: 'os-violeta',
 };
 
+/**
+ * El tablero de la home: en qué anda hoy cada evaluación.
+ *
+ * No es la etapa. La etapa dice dónde va la evaluación en el circuito; esto
+ * dice qué está haciendo la evaluadora con ella ahora. Se puede estar
+ * escribiendo un informe que figura como "Por analizar" y no haber empezado
+ * otro que está en esa misma etapa, y esa diferencia es justamente la que hay
+ * que ver al abrir el OS.
+ *
+ * Sin valor es backlog: lo que entró y todavía nadie eligió para hoy.
+ *
+ * **La cuarta columna, Listo, no está acá porque no se guarda.** La decide la
+ * etapa: entregar el informe manda la tarjeta ahí. Guardada, había que
+ * arrastrar a mano lo que ya estaba terminado, y lo que nadie movía se quedaba
+ * en curso para siempre.
+ */
+export const COLUMNAS_TABLERO = ['backlog', 'hoy', 'en_curso'] as const;
+
+export type ColumnaTablero = (typeof COLUMNAS_TABLERO)[number];
+
+export function esColumnaTablero(x: unknown): x is ColumnaTablero {
+  return typeof x === 'string' && (COLUMNAS_TABLERO as readonly string[]).includes(x);
+}
+
+/** Las tres prioridades, de la que más apura a la que menos. */
+export const PRIORIDADES = ['alta', 'media', 'baja'] as const;
+
+export type Prioridad = (typeof PRIORIDADES)[number];
+
+export function esPrioridad(x: unknown): x is Prioridad {
+  return typeof x === 'string' && (PRIORIDADES as readonly string[]).includes(x);
+}
+
+export const COLOR_PRIORIDAD: Record<Prioridad, string> = {
+  alta: 'os-rojo',
+  media: 'os-ambar',
+  baja: 'os-verde',
+};
+
+/** Desde cuántos días de solicitada una evaluación pasa a cada prioridad. */
+export const CORTE_PRIORIDAD = { alta: 10, media: 5 } as const;
+
+/**
+ * La prioridad que le toca a una evaluación que nadie fijó a mano.
+ *
+ * La da la espera: a los diez días de solicitada es alta, del quinto al noveno
+ * media, antes baja. Se calcula en vez de guardarse porque el número cambia
+ * solo con el paso de los días, y una prioridad escrita el día que entró
+ * envejecería sin que nadie la toque.
+ *
+ * Sin fecha de solicitud no hay espera que contar, así que queda baja: lo que
+ * no se sabe no puede desplazar a lo que sí espera hace días.
+ */
+export function prioridadPorDefecto(diasSolicitud: number | null): Prioridad {
+  if (diasSolicitud === null) return 'baja';
+  if (diasSolicitud >= CORTE_PRIORIDAD.alta) return 'alta';
+  if (diasSolicitud >= CORTE_PRIORIDAD.media) return 'media';
+  return 'baja';
+}
+
+/** La que vale: la fijada a mano, y si no la que dan los días de espera. */
+export function prioridadDe(e: {
+  prioridad: Prioridad | null;
+  diasSolicitud: number | null;
+}): Prioridad {
+  return e.prioridad ?? prioridadPorDefecto(e.diasSolicitud);
+}
+
 export type Evaluacion = {
   id: string;
   /** De qué lado vive esta fila. Decide a dónde va un guardado. */
@@ -178,5 +246,9 @@ export type Evaluacion = {
    * con la que llega del servidor.
    */
   diasSolicitud: number | null;
+  /** En qué columna del tablero de inicio está. Null es "por hacer". */
+  tablero: ColumnaTablero | null;
+  /** La prioridad fijada a mano. Null: la que dan los días de espera. */
+  prioridad: Prioridad | null;
   prueba: boolean;
 };

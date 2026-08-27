@@ -7,18 +7,22 @@ import { select } from '@/lib/supabase';
  * Las dos cosas viven en `public.pendientes` y se distinguen por
  * `para_reunion` (ver `supabase/pendientes.sql`). Se leen juntas porque la home
  * muestra las dos y son pocas filas.
+ *
+ * **Un tema de reunión es solo un texto.** Responsable, estado y vencimiento
+ * son de las tareas: un tema es del grupo hasta que se reparte, y repartirlo es
+ * pasarlo a la otra lista.
  */
 
-export type Pendiente = {
-  id: string;
-  texto: string;
-  responsable: string | null;
-  para_reunion: boolean;
-  hecha: boolean;
-  created_at: string;
-};
+export {
+  COLOR_ESTADO,
+  ESTADOS,
+  type Estado,
+  type Pendiente,
+} from '@/lib/pendientes-tipos';
 
-const CAMPOS = 'id,texto,responsable,para_reunion,hecha,created_at';
+import type { Pendiente } from '@/lib/pendientes-tipos';
+
+const CAMPOS = 'id,texto,responsable,para_reunion,hecha,estado,vence,created_at';
 
 /**
  * Lo abierto, más lo que se cerró hace poco.
@@ -30,7 +34,9 @@ export async function pendientes(): Promise<{ reunion: Pendiente[]; tareas: Pend
   try {
     const filas = await select<Pendiente>(
       'pendientes',
-      `select=${CAMPOS}&order=hecha.asc,created_at.asc`
+      // Lo que vence primero arriba, y lo que no tiene fecha detrás: una tarea
+      // sin fecha no es más urgente que una que vence mañana.
+      `select=${CAMPOS}&order=hecha.asc,vence.asc.nullslast,created_at.asc`
     );
     return {
       reunion: filas.filter((f) => f.para_reunion),
