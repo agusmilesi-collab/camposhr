@@ -33,14 +33,11 @@ export default function Cards({ clientes }: { clientes: Cliente[] }) {
   const [abierto, setAbierto] = useState<Cliente | 'nuevo' | null>(null);
   const sinDatos = clientes.filter((c) => !c.cuit).length;
 
-  // Primero los que tienen trabajo abierto, y de esos el que más tiene: es por
-  // donde se entra cuando se entra a mirar cómo viene todo.
+  // Por nombre. Ordenados por cuánto trabajo tienen abierto, la tarjeta de un
+  // cliente cambiaba de lugar cada semana y había que recorrer la grilla entera
+  // para encontrarlo; el bloque de Activos ya dice quiénes tienen trabajo.
   const ordenar = (xs: Cliente[]) =>
-    [...xs].sort((a, b) => {
-      const x = enCurso(a);
-      const y = enCurso(b);
-      return y.abiertos - x.abiertos || y.gente - x.gente || a.nombre.localeCompare(b.nombre, 'es');
-    });
+    [...xs].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
   const activos = ordenar(clientes.filter((c) => c.activa));
   const inactivos = ordenar(clientes.filter((c) => !c.activa));
