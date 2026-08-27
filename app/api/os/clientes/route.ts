@@ -5,20 +5,10 @@ import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
+import { slugDeEmpresa as slug } from '@/lib/empresa-slug';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-/** El nombre como parte de una dirección. */
-function slug(nombre: string): string {
-  return nombre
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60);
-}
 
 /** Alta y edición de un cliente. */
 export async function POST(req: Request) {

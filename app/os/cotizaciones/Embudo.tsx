@@ -42,6 +42,8 @@ const COLOR_ESTADO: Record<string, string> = {
 export type Oportunidad = {
   id: string;
   cliente: string;
+  /** El cliente en Clientes, cuando la oportunidad ya está enlazada. */
+  empresaId: string | null;
   concepto: string;
   importe: number;
   moneda: string;
@@ -71,13 +73,16 @@ async function mandar(cuerpo: unknown) {
   return datos;
 }
 
+/** Un cliente de la lista: el id es el que ya está cargado en Clientes. */
+export type ClienteOpcion = { id: string | null; nombre: string };
+
 export function Tablero({
   oportunidades,
   clientes,
 }: {
   oportunidades: Oportunidad[];
   /** Los que ya están cargados, para no escribir el mismo de tres maneras. */
-  clientes: string[];
+  clientes: ClienteOpcion[];
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -319,11 +324,13 @@ function Editar({
   onGuardado,
 }: {
   oportunidad: Oportunidad;
-  clientes: string[];
+  clientes: ClienteOpcion[];
   onCerrar: () => void;
   onGuardado: () => void;
 }) {
   const [cliente, setCliente] = useState(oportunidad.cliente);
+  /** El de Clientes, cuando se eligió uno de la lista. */
+  const [empresaId, setEmpresaId] = useState<string | null>(oportunidad.empresaId);
   const [servicio, setServicio] = useState(oportunidad.concepto);
   const [precio, setPrecio] = useState(String(oportunidad.importe));
   const [guardando, setGuardando] = useState(false);
@@ -345,6 +352,7 @@ function Editar({
         id: oportunidad.id,
         ...datos,
         cliente,
+        empresaId,
         concepto: servicio,
         importe,
       });
@@ -389,12 +397,21 @@ function Editar({
               </label>
               <Buscador
                 id="cliente-editar"
-                opciones={clientes.map((c) => ({ id: c, nombre: c }))}
+                opciones={clientes.map((c) => ({ id: c.id ?? c.nombre, nombre: c.nombre }))}
                 inicial={oportunidad.cliente}
                 placeholder="Escribí el nombre del cliente"
-                alElegir={(o) => setCliente(o.nombre)}
-                alCrear={setCliente}
-                alEscribir={setCliente}
+                alElegir={(o) => {
+                  setCliente(o.nombre);
+                  setEmpresaId(clientes.find((c) => c.nombre === o.nombre)?.id ?? null);
+                }}
+                alCrear={(nombre) => {
+                  setCliente(nombre);
+                  setEmpresaId(null);
+                }}
+                alEscribir={(texto) => {
+                  setCliente(texto);
+                  setEmpresaId(null);
+                }}
               />
             </div>
 
@@ -483,12 +500,13 @@ function Editar({
   );
 }
 
-export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
+export function NuevaOportunidad({ clientes }: { clientes: ClienteOpcion[] }) {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cliente, setCliente] = useState('');
+  const [empresaId, setEmpresaId] = useState<string | null>(null);
   const [servicio, setServicio] = useState('');
   const [estado, setEstado] = useState<Estado>('Lead');
   const [precio, setPrecio] = useState('');
@@ -517,12 +535,14 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
         accion: 'nueva',
         ...datos,
         cliente: cliente.trim(),
+        empresaId,
         concepto: servicio,
         estado,
         importe,
       });
       form.reset();
       setCliente('');
+      setEmpresaId(null);
       setServicio('');
       setEstado('Lead');
       setPrecio('');
@@ -568,13 +588,30 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
                   </label>
                   <Buscador
                     id="cliente"
-                    opciones={clientes.map((c) => ({ id: c, nombre: c }))}
+                    opciones={clientes.map((c) => ({ id: c.id ?? c.nombre, nombre: c.nombre }))}
                     autoFocus
                     placeholder="Escribí el nombre del cliente"
-                    alElegir={(o) => setCliente(o.nombre)}
-                    alCrear={setCliente}
-                    alEscribir={setCliente}
+                    alElegir={(o) => {
+                      setCliente(o.nombre);
+                      setEmpresaId(clientes.find((c) => c.nombre === o.nombre)?.id ?? null);
+                    }}
+                    alCrear={(nombre) => {
+                      setCliente(nombre);
+                      setEmpresaId(null);
+                    }}
+                    alEscribir={(texto) => {
+                      setCliente(texto);
+                      setEmpresaId(null);
+                    }}
                   />
+                  {/* Lo que no está en la lista se da de alta: así el cliente
+                      nuevo aparece en Clientes con su enlace del portal, en vez
+                      de quedar como un nombre escrito adentro del embudo. */}
+                  {cliente.trim() && !empresaId && (
+                    <span className="os-form-nota">
+                      Se da de alta <b>{cliente.trim()}</b> como cliente.
+                    </span>
+                  )}
                 </div>
 
                 {/* El desplegable del OS y no el del navegador: es el mismo
