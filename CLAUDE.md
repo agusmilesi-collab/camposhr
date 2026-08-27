@@ -993,10 +993,46 @@ el botón cuando sabe que va a ser rechazado: en su lugar dice qué hacer.
 
 ## El CV se lee una sola vez, para los dos lados
 
-`lib/cv-lectura.ts`. De la primera página del PDF salen el nombre, el correo y
-el teléfono: el correo y el teléfono por su forma, el nombre por la primera
-línea corta de dos a cuatro palabras en mayúscula, que es como se encabeza un
-CV.
+`lib/cv-lectura.ts`. De las dos primeras páginas del PDF salen el nombre, el
+correo y el teléfono.
+
+**El PDF no viene en líneas: viene en trozos**, y pdfjs los corta donde cambia
+la tipografía. Un nombre puesto arriba con una fuente por palabra llega como
+"Marisol", "Rodríguez", "Graglia", y un mail con el dominio en otro color como
+"marisolrz.1111" y "@gmail.com". Por eso los trozos se juntan por su altura en
+la página (`transform[5]`) antes de buscar nada, y la arroba se pega aparte.
+Salteárselo hacía que el lector no encontrara nada en un CV perfectamente
+legible.
+
+Después, cada dato tiene su trampa:
+
+- **El nombre puede venir en dos renglones** (el nombre grande arriba, el
+  apellido debajo), así que una línea de una sola palabra se prueba junto con
+  la que sigue. Solo de una: con dos ya es un nombre entero, y unirla al renglón
+  de abajo se llevaría puesto el cargo.
+- **El primer número no es el teléfono.** El de una referencia laboral
+  ("Referencia: (03476) 15645765") se leía como el suyo. Se prefiere el que está
+  rotulado tel/cel/whatsapp, se descarta el que sigue a una referencia o a un
+  documento, y se exige un número entero de ocho a trece dígitos, porque el
+  patrón viejo se conformaba con siete y lo cortaba a la mitad.
+
+**No hay dos CV iguales**, así que esto acierta seguido y no siempre: cuando un
+dato no sale, la tarjeta lo dice ("Del CV no salió el correo") en vez de dejar
+el campo vacío sin explicación.
+
+**Es un motor de reglas y se queda así**: sin modelo, sin llamadas a nadie y sin
+tokens, como el lector del Benziger. Cada CV raro que aparece se arregla con una
+regla, no con una interpretación.
+
+**Y como el del Benziger, se corre contra los que ya andaban antes de tocarlo:**
+
+    node scripts/probar-cv.mjs ~/Documents/camposhr-privado/cv-prueba
+
+Muestra qué sacó de cada PDF y qué faltó. Sin eso, arreglar un CV rompe otro sin
+que nadie se entere. **Los CV de prueba no van al repositorio**: son datos de
+personas y esto es público, así que viven en `~/Documents/camposhr-privado`, y
+al que se arregla se lo suma ahí. Un dato que el CV no trae no es un error del
+lector: hay que abrir el PDF y ver si está adentro antes de tocar una regla.
 
 Lo usan las dos puertas que cargan candidatos: el cliente desde su portal
 (`app/api/portal/cv`, que valida el token) y la evaluadora desde el tablero de
