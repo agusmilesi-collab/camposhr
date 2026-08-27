@@ -17,6 +17,8 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { componer } from '@/lib/imagen-cliente';
+import SoltarArchivo from '@/app/os/SoltarArchivo';
+import IconoSoltar from '@/app/os/IconoSoltar';
 
 /** Cómo se llaman las láminas del Bender, en orden. */
 const LAMINAS = ['A', '1', '2', '3', '4', '5', '6', '7', '8'];
@@ -76,29 +78,58 @@ export default function HojaBender({ id, hoja }: { id: string; hoja: string | nu
         }}
       />
       {/* Debajo de los botones de la lámina: arriba lo que se le muestra a la
-          persona, abajo lo que dejó dibujado. */}
+          persona, abajo lo que dejó dibujado.
+
+          Sin dibujos, en vez de un botón va la caja punteada: es la misma de la
+          tarjeta de alta y dice de una las dos formas de cargarlo. Con dibujos
+          ya cargados, el enlace para verlos y el botón de reemplazar, que es lo
+          que se hace entonces. */}
       {hoja ? (
-        <a
-          className="os-boton os-bender-ver"
-          href={`/api/os/bender?id=${id}`}
-          target="_blank"
-          rel="noreferrer"
-          title={hoja}
-        >
-          Ver dibujo
-        </a>
+        <>
+          <a
+            className="os-boton os-bender-ver"
+            href={`/api/os/bender?id=${id}`}
+            target="_blank"
+            rel="noreferrer"
+            title={hoja}
+          >
+            Ver dibujo
+          </a>
+          <SoltarArchivo
+            className="os-bender-subir"
+            deshabilitado={Boolean(trabajando)}
+            onArchivos={(xs) => subir(xs)}
+            aviso="Soltá las fotos"
+          >
+            <button
+              className="os-boton os-bender-subir"
+              type="button"
+              disabled={Boolean(trabajando)}
+              onClick={() => campo.current?.click()}
+              title="Elegí las nueve fotos juntas, o soltalas acá"
+            >
+              {trabajando ?? 'Reemplazar'}
+            </button>
+          </SoltarArchivo>
+        </>
       ) : (
-        <span className="os-enlace-apagado os-bender-ver">Sin dibujos</span>
+        <SoltarArchivo
+          className="os-bender-caja"
+          deshabilitado={Boolean(trabajando)}
+          onArchivos={(xs) => subir(xs)}
+          aviso="Soltá las fotos"
+        >
+          <button
+            type="button"
+            className="os-agregar-cv os-caja-archivo"
+            disabled={Boolean(trabajando)}
+            onClick={() => campo.current?.click()}
+          >
+            <IconoSoltar />
+            {trabajando ?? 'Soltá las nueve fotos acá o elegilas'}
+          </button>
+        </SoltarArchivo>
       )}
-      <button
-        className={`os-boton os-bender-subir${hoja ? '' : ' os-boton-firme'}`}
-        type="button"
-        disabled={Boolean(trabajando)}
-        onClick={() => campo.current?.click()}
-        title="Elegí las nueve fotos juntas"
-      >
-        {trabajando ?? (hoja ? 'Reemplazar' : 'Subir las fotos')}
-      </button>
       {error && <span className="os-form-error">{error}</span>}
     </>
   );

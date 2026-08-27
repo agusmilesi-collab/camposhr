@@ -28,6 +28,8 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { INFO, PERFILES, nombrePerfil, type Perfil } from '@/lib/perfiles';
+import SoltarArchivo from '@/app/os/SoltarArchivo';
+import IconoSoltar from '@/app/os/IconoSoltar';
 
 export default function Benziger({
   id,
@@ -157,6 +159,16 @@ export default function Benziger({
             }}
           />
 
+          {/* El PDF se elige o se suelta sobre el bloque: viene de la
+              plataforma Benziger, o sea recién bajado y a la vista. */}
+          <SoltarArchivo
+            onArchivos={(xs) => {
+              setArchivo(xs[0] ?? null);
+              setHecho(null);
+            }}
+            deshabilitado={subiendo}
+            aviso="Soltá el informe"
+          >
           {archivo || informe ? (
             <div className="os-benziger-carga">
               {/* El archivo y el paso siguiente, uno al lado del otro: elegir
@@ -195,10 +207,20 @@ export default function Benziger({
               </div>
             </div>
           ) : (
-            <button type="button" className="os-boton" onClick={() => pdf.current?.click()}>
-              Elegir el archivo
+            /* Sin informe, la caja punteada dice las dos formas de cargarlo: el
+               marco de soltar solo aparece cuando ya se está arrastrando algo,
+               y un botón suelto no cuenta que también se puede tirar el PDF
+               acá. Es la misma caja de la tarjeta de alta. */
+            <button
+              type="button"
+              className="os-agregar-cv os-benziger-vacio"
+              onClick={() => pdf.current?.click()}
+            >
+              <IconoSoltar />
+              Soltá el informe acá o elegí el archivo
             </button>
           )}
+          </SoltarArchivo>
 
           {/* El aviso aparece solo cuando hay algo que avisar. */}
           {(error || hecho) && (

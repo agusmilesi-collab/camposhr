@@ -360,6 +360,39 @@ quede sin baterías si la lectura falla.
 Los tres textos son obligatorios porque son lo que el cliente lee al elegir; la
 duración puede faltar, que es distinto de valer cero.
 
+## Los archivos se eligen o se sueltan, en todos lados
+
+`app/os/SoltarArchivo.tsx` envuelve el control que ya había y le suma recibir lo
+que se le tire encima. Está en las nueve fotos del Bender, el dibujo, el informe
+del Benziger y el CV del cajón del candidato; la tarjeta de alta tiene su propia
+caja porque ahí el archivo es lo primero que se carga.
+
+**No reemplaza al botón, lo acompaña**: adentro sigue el control de siempre, y
+el marco punteado aparece solo mientras se arrastra algo encima. Un marco
+permanente en cada test convertiría la hoja de la entrevista en una grilla de
+recuadros.
+
+**Cuando el archivo viaja en un formulario, el soltado se mete en el `<input
+file>`** con un `DataTransfer`: si no, queda leído y se pierde al guardar.
+
+## Para agendar hacen falta fecha y modalidad
+
+`faltaParaAgendar` en `Entrevistas.tsx`, y la cumplen los dos caminos: el botón
+"Agendar" queda apagado y el arrastre a Agendadas se rechaza con el motivo. Una
+entrevista agendada sin día es lo mismo que una sin agendar, y a la persona hay
+que decirle cuándo y dónde.
+
+**Por citar se ordena por lo que espera desde la solicitud, no desde la
+entrevista.** Ahí la fecha se está cargando en ese momento: midiendo contra
+ella, la tarjeta saltaba de lugar apenas se elegía el día y había que ir a
+buscarla a otra parte de la columna para terminar de completarla. Lo que la
+mueve de verdad es agendarla, que la cambia de columna.
+
+**Y la fecha se puede cambiar desde la ficha** (`Cuando.tsx`, pestaña
+Entrevista): las entrevistas se reprograman, y hasta ahora eso obligaba a
+volver al tablero a buscar la tarjeta. Va detrás de "Reprogramar" y no como
+campo abierto, porque es el dato que más se lee del encabezado.
+
 ## El Raven de la hoja se mira solo
 
 `app/os/psicotecnicos/entrevista/[id]/Raven.tsx`. El test lo responde la persona

@@ -21,9 +21,10 @@
  * forma de corregir un reparto sin entrar a la ficha.
  *
  * La etapa se cambia arrastrando, como en el reparto. Con una regla que no es
- * de la pantalla sino del trabajo: **a Agendadas no se entra sin fecha**. Una
- * entrevista agendada sin día es exactamente lo mismo que una sin agendar, y
- * antes eso lo impedía el botón "Agendar", que estaba apagado hasta cargarla.
+ * de la pantalla sino del trabajo: **a Agendadas no se entra sin fecha y sin
+ * modalidad**. Una entrevista agendada sin día es lo mismo que una sin agendar,
+ * y a la persona hay que decirle cuándo y dónde. Lo cumplen los dos caminos, el
+ * botón y el arrastre, contra la misma función.
  *
  * Cada columna tiene su tarjeta porque en cada una se mira otra cosa: al citar,
  * el teléfono y si ya se la contactó; agendada, cuándo cae y si es presencial;
@@ -59,6 +60,21 @@ const COLUMNAS: { etapa: EtapaTablero; titulo: string; vacio: string }[] = [
 ];
 
 /**
+ * Qué le falta a una entrevista para poder agendarse.
+ *
+ * No es una regla de la pantalla sino del trabajo: una entrevista agendada sin
+ * día es lo mismo que una sin agendar, y a la persona hay que decirle cuándo y
+ * dónde. Vale para los dos caminos, el botón y el arrastre, así que se decide
+ * en un solo lugar.
+ */
+function faltaParaAgendar(e: Evaluacion): string | null {
+  const falta = [!e.fechaEntrevista && 'la fecha', !e.modalidad && 'la modalidad'].filter(
+    Boolean
+  ) as string[];
+  return falta.length > 0 ? falta.join(' y ') : null;
+}
+
+/**
  * En qué columna cae una tarjeta.
  *
  * Sin dueño va a la primera, esté en la etapa que esté: alguien que quedó sin
@@ -82,9 +98,15 @@ function mover(cambio: () => void): void {
 /**
  * El orden de cada columna es el de su urgencia, y cada una la mide distinto.
  *
- * Por citar y Por analizar, por lo que esperaron: lo más viejo arriba. Las
- * agendadas, por cuándo caen: lo que viene primero arriba, que es como se mira
- * una agenda.
+ * Sin asignar y Por citar, por lo que esperan desde que se las pidió; Por
+ * analizar, por lo que esperan desde la entrevista; las agendadas, por cuándo
+ * caen, que es como se mira una agenda.
+ *
+ * **Por citar mide desde la solicitud y no desde la entrevista a propósito.**
+ * Ahí la fecha se está cargando en ese momento, y midiendo contra ella la
+ * tarjeta saltaba de lugar apenas se elegía el día: había que ir a buscarla a
+ * otra parte de la columna para terminar de completarla. Lo que la mueve de
+ * verdad es agendarla, que la cambia de columna.
  */
 function ordenar(filas: Evaluacion[], etapa: EtapaTablero): Evaluacion[] {
   if (etapa === 'Por entrevistar') {
@@ -92,10 +114,13 @@ function ordenar(filas: Evaluacion[], etapa: EtapaTablero): Evaluacion[] {
       (a.fechaEntrevista ?? '9999').localeCompare(b.fechaEntrevista ?? '9999')
     );
   }
-  return [...filas].sort((a, b) => {
-    const espera = (x: Evaluacion) => x.dias ?? x.diasEsperando ?? -1;
-    return espera(b) - espera(a) || a.nombre.localeCompare(b.nombre);
-  });
+  const espera =
+    etapa === 'Por analizar'
+      ? (x: Evaluacion) => x.dias ?? x.diasEsperando ?? -1
+      : (x: Evaluacion) => x.diasSolicitud ?? x.diasEsperando ?? -1;
+  return [...filas].sort(
+    (a, b) => espera(b) - espera(a) || a.nombre.localeCompare(b.nombre)
+  );
 }
 
 /**
@@ -134,6 +159,8 @@ function Tarjeta({
   onEtapa: (etapa: EtapaTablero) => void;
   onAsignar: (evaluadora: string) => void;
 }) {
+  const falta = faltaParaAgendar(e);
+
   // Pasada la semana el análisis se está demorando.
   const demorada = e.etapa === 'Por analizar' && (e.dias ?? 0) > 7;
 
@@ -217,8 +244,11 @@ function Tarjeta({
             </button>
           </div>
           <div className="os-tarjeta-linea">
+            {/* Con el mismo aire que los controles de los pendientes del
+                equipo: acompañan al candidato, no lo encabezan, y con el marco
+                de los campos de formulario pesaban más que su nombre. */}
             <input
-              className="os-campo"
+              className="os-control-suave os-citar-fecha"
               type="datetime-local"
               defaultValue={paraInput(e.fechaEntrevista)}
               disabled={ocupada}
@@ -228,23 +258,25 @@ function Tarjeta({
               }}
               aria-label={`Fecha de la entrevista de ${e.nombre}`}
             />
-            <Desplegable
-              valor={e.modalidad ?? ''}
-              opciones={[
-                { valor: '', texto: 'Sin definir' },
-                { valor: 'Presencial', texto: 'Presencial' },
-                { valor: 'Online', texto: 'Online' },
-              ]}
-              alElegir={(v) => onGuardar('modalidad', v || null)}
-              deshabilitado={ocupada}
-              etiqueta="Modalidad"
-            />
+            <span className="os-control-suave">
+              <Desplegable
+                valor={e.modalidad ?? ''}
+                opciones={[
+                  { valor: '', texto: 'Sin definir' },
+                  { valor: 'Presencial', texto: 'Presencial' },
+                  { valor: 'Online', texto: 'Online' },
+                ]}
+                alElegir={(v) => onGuardar('modalidad', v || null)}
+                deshabilitado={ocupada}
+                etiqueta="Modalidad"
+              />
+            </span>
           </div>
           <button
             className="os-boton os-boton-firme os-tarjeta-accion"
-            disabled={ocupada || !e.fechaEntrevista}
+            disabled={ocupada || falta !== null}
             onClick={() => onEtapa('Por entrevistar')}
-            title={e.fechaEntrevista ? '' : 'Primero poné la fecha de la entrevista.'}
+            title={falta ? `Primero poné ${falta}.` : ''}
           >
             Agendar
           </button>
@@ -439,11 +471,14 @@ export default function Entrevistas({
     // quién es, y para eso está el botón con los nombres.
     if (!fila.evaluadora) return;
 
-    // La única regla del tablero, y no es de la pantalla: agendada sin fecha no
-    // es una entrevista agendada. Es la misma condición que apagaba el botón.
-    if (etapa === 'Por entrevistar' && !fila.fechaEntrevista) {
-      setError(`Primero poné la fecha de la entrevista de ${fila.nombre}.`);
-      return;
+    // La única regla del tablero, y no es de la pantalla: es la misma condición
+    // que apaga el botón "Agendar".
+    if (etapa === 'Por entrevistar') {
+      const falta = faltaParaAgendar(fila);
+      if (falta) {
+        setError(`Para agendar a ${fila.nombre} falta ${falta}.`);
+        return;
+      }
     }
 
     mover(() => setMovidas((m) => ({ ...m, [id]: { etapa } })));

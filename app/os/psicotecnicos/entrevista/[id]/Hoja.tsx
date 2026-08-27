@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { entrevistaDe, type Entrevista } from '@/lib/entrevista';
-import { cuandoCae, hoy } from '@/lib/hora';
 import Tomada from './Tomada';
 import { TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
@@ -9,7 +8,10 @@ import Grafico from './Grafico';
 import Papel from './Papel';
 import LinkLaminas from './LinkLaminas';
 import HojaBender from './HojaBender';
+import Cuando from './Cuando';
+import Marca from './Marca';
 import Raven from './Raven';
+import { SELLO_RAVEN } from '@/lib/raven-estado';
 import Bateria from '../../Bateria';
 import Whatsapp from '../../Whatsapp';
 import { enlaceDelCv } from '@/lib/cv';
@@ -67,9 +69,6 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
   const [e, cv] = await Promise.all([entrevistaDe(id), enlaceDelCv(id)]);
   if (!e) return null;
 
-  // La de hoy dice "Hoy": es la que se está por tomar, y es la hoja que se
-  // abre con la persona enfrente.
-  const cuando = cuandoCae(e.cuando, hoy());
   // El Benziger no lo declara la batería: lo agrega el pedido.
   const tests = [...e.tests, ...(e.conBenziger ? ['Benziger'] : [])];
 
@@ -79,6 +78,60 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
    * Devuelve solo el contenido: el marco de la tarjeta, con su número y su
    * agarre, lo dibuja `Orden`, que es quien sabe en qué posición quedó.
    */
+  /**
+   * En qué anda cada test, para el renglón del título.
+   *
+   * Va ahí y no en la columna de los botones: es lo primero que se mira al
+   * bajar por la lista mientras se administra, y a media pantalla del nombre
+   * había que ir y volver para saber de cuál era.
+   */
+  const estadoDe = (t: string): React.ReactNode => {
+    if (HERRAMIENTA[t]) {
+      return <Marca id={e.id} campo="proyectivoAdministrado" administrado={e.proyectivoAdministrado} />;
+    }
+    if (t === 'Bender') {
+      return <Marca id={e.id} campo="benderAdministrado" administrado={e.benderAdministrado} />;
+    }
+    if (t === 'Gráfico 2 personas') {
+      return (
+        <Marca
+          id={e.id}
+          campo="graficoAdministrado"
+          administrado={e.graficoAdministrado}
+        />
+      );
+    }
+    if (t === 'Benziger') {
+      return <Marca id={e.id} campo="benzigerAdministrado" administrado={e.benzigerAdministrado} />;
+    }
+    if (t === 'Raven') {
+      /* El sello del Raven lo pone el servidor y se actualiza solo: el bloque
+         de abajo sondea mientras la persona responde y pide la pantalla de
+         nuevo cuando el estado cambia. */
+      const r = SELLO_RAVEN[e.raven];
+      return (
+        <span className={`os-sello-estado os-marca ${r.color}`} title={r.detalle}>
+          {r.texto}
+        </span>
+      );
+    }
+    if (t === TEST_COMPETENCIAS) {
+      return (
+        <span className={`os-sello-estado os-marca ${e.competencias ? 'os-verde' : 'os-gris'}`}>
+          {e.competencias ? 'Escrita' : 'Sin escribir'}
+        </span>
+      );
+    }
+    if (t === TEST_DISCURSIVO) {
+      return (
+        <span className={`os-sello-estado os-marca ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
+          {e.discursivo ?? 'Sin ubicar'}
+        </span>
+      );
+    }
+    return null;
+  };
+
   const contenidoDe = (t: string): React.ReactNode => {
         const h = HERRAMIENTA[t];
         if (h) {
@@ -88,8 +141,6 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                   en la codificación, que es donde después se lee. */}
               <Papel
                 id={e.id}
-                campoMarca="proyectivoAdministrado"
-                administrado={e.proyectivoAdministrado}
               >
                 <a
                   className="os-boton os-boton-firme"
@@ -140,9 +191,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
             <>
               <Papel
                 id={e.id}
-                campoMarca="benderAdministrado"
                 campoNotas="benderObservaciones"
-                administrado={e.benderAdministrado}
                 observaciones={e.benderObservaciones}
                 debajo={<HojaBender id={e.id} hoja={e.benderHoja} />}
               >
@@ -165,9 +214,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
             <>
               <Papel
                 id={e.id}
-                campoMarca="graficoAdministrado"
                 campoNotas="graficoObservaciones"
-                administrado={e.graficoAdministrado}
                 observaciones={e.graficoObservaciones}
                 debajo={<Grafico id={e.id} nombre={e.graficoNombre} />}
               />
@@ -183,8 +230,6 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                   tomó, que es lo que la entrevista tiene que saber. */}
               <Papel
                 id={e.id}
-                campoMarca="benzigerAdministrado"
-                administrado={e.benzigerAdministrado}
               >
                 <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=benziger`}>
                   Cargar el informe
@@ -235,7 +280,9 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
       <section className="os-panel os-entrevista-datos">
         <div>
           <span className="os-dato-rotulo">Cuándo</span>
-          <span className="os-dato-valor">{cuando ?? 'Sin fecha'}</span>
+          {/* Editable acá: una entrevista se reprograma, y hasta ahora eso
+              obligaba a volver al tablero a buscar la tarjeta. */}
+          <Cuando id={e.id} cuando={e.cuando} />
         </div>
         <div>
           <span className="os-dato-rotulo">Modalidad</span>
@@ -299,7 +346,12 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         </section>
       )}
 
-      <Orden id={e.id} tests={tests} tarjetas={tests.map(contenidoDe)} />
+      <Orden
+        id={e.id}
+        tests={tests}
+        estados={tests.map(estadoDe)}
+        tarjetas={tests.map(contenidoDe)}
+      />
 
 
       <section className="os-panel os-entrevista-cierre">
