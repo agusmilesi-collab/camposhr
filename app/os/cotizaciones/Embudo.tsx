@@ -483,6 +483,46 @@ function Editar({
               />
             </div>
 
+            {/* Lo que la frenó se edita acá: la primera vez se elige al mover
+                la tarjeta a Perdida, y después se corrige sin tener que sacarla
+                de la columna y volverla a poner. */}
+            {oportunidad.estado === 'Perdida' && (
+              <>
+                <fieldset className="os-campo-entero os-objeciones">
+                  <legend className="os-etiqueta-campo">Qué la frenó</legend>
+                  {OBJECIONES.map((x) => (
+                    <label className="os-objecion" key={x.nombre}>
+                      <input
+                        type="radio"
+                        name="objecion"
+                        value={x.nombre}
+                        required
+                        defaultChecked={oportunidad.objecion === x.nombre}
+                      />
+                      <span className="os-objecion-cuerpo">
+                        <span className="os-objecion-nombre">{x.nombre}</span>
+                        <span className="os-objecion-que">{x.que}</span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+
+                <div className="os-campo-bloque os-campo-entero">
+                  <label className="os-etiqueta-campo" htmlFor="motivo-editar">
+                    El detalle del caso
+                  </label>
+                  <input
+                    className="os-campo"
+                    id="motivo-editar"
+                    name="motivo"
+                    maxLength={200}
+                    defaultValue={oportunidad.motivo ?? ''}
+                    placeholder="Se lo quedó otro, lo pasan a marzo…"
+                  />
+                </div>
+              </>
+            )}
+
             {error && <p className="os-form-error">{error}</p>}
 
             <div className="os-campo-entero os-form-pie">

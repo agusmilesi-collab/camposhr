@@ -197,11 +197,24 @@ export async function POST(req: Request) {
           return NextResponse.json({ error: 'La fecha no es válida.' }, { status: 400 });
         }
         const empresa = await empresaDe(cliente, datos.empresaId);
+        // La objeción es de una perdida: se edita desde el mismo cajón, pero
+        // solo entra si la oportunidad está perdida, y eso lo dice la fila y no
+        // el navegador.
+        const [fila] = await leer<{ estado: string }>(
+          `cotizaciones?select=estado&id=eq.${id}&limit=1`
+        );
+        const perdida = fila?.estado === 'Perdida';
+        if (perdida && datos.objecion !== undefined && !esObjecion(datos.objecion)) {
+          return NextResponse.json({ error: 'Esa objeción no existe.' }, { status: 400 });
+        }
         await escribir(`cotizaciones?id=eq.${id}`, 'PATCH', {
           cliente: empresa.nombre,
           empresa_id: empresa.id,
           concepto,
           importe,
+          ...(perdida && datos.objecion !== undefined
+            ? { objecion: datos.objecion, motivo: String(datos.motivo ?? '').trim() || null }
+            : {}),
           ...(fecha ? { fecha } : {}),
           nota: String(datos.nota ?? '').trim() || null,
         });
