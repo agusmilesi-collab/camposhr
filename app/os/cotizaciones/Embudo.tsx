@@ -26,6 +26,7 @@ import {
   SERVICIOS,
   formatoFecha,
   formatoImporte,
+  precioDeTexto,
   type Estado,
   type Objecion,
 } from '@/lib/comercial-tipos';
@@ -314,16 +315,29 @@ function Editar({
 }) {
   const [cliente, setCliente] = useState(oportunidad.cliente);
   const [servicio, setServicio] = useState(oportunidad.concepto);
+  const [precio, setPrecio] = useState(String(oportunidad.importe));
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const datos = Object.fromEntries(new FormData(e.currentTarget).entries());
+    const importe = precioDeTexto(precio);
+    if (importe === null || importe < 0) {
+      setError('Ese precio no se entiende. Va en números, con o sin puntos.');
+      return;
+    }
     setGuardando(true);
     setError(null);
     try {
-      await mandar({ accion: 'editar', id: oportunidad.id, ...datos, cliente, concepto: servicio });
+      await mandar({
+        accion: 'editar',
+        id: oportunidad.id,
+        ...datos,
+        cliente,
+        concepto: servicio,
+        importe,
+      });
       onGuardado();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar.');
@@ -392,6 +406,9 @@ function Editar({
               />
             </div>
 
+            {/* Se escribe como se escribe un precio. Con `type="number"` el
+                navegador rechazaba los puntos de miles y todo lo que no fuera
+                múltiplo de mil, y el formulario no se enviaba. */}
             <div className="os-campo-bloque">
               <label className="os-etiqueta-campo" htmlFor="importe-editar">
                 Precio de venta
@@ -399,13 +416,16 @@ function Editar({
               <input
                 className="os-campo"
                 id="importe-editar"
-                name="importe"
-                type="number"
-                min="0"
-                step="1000"
-                required
-                defaultValue={oportunidad.importe}
+                inputMode="decimal"
+                autoComplete="off"
+                value={precio}
+                onChange={(e) => setPrecio(e.target.value)}
               />
+              <span className="os-dato-flojo">
+                {precioDeTexto(precio) === null
+                  ? 'En números'
+                  : formatoImporte(precioDeTexto(precio) as number, oportunidad.moneda)}
+              </span>
             </div>
 
             <div className="os-campo-bloque">
@@ -446,6 +466,7 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
   const [cliente, setCliente] = useState('');
   const [servicio, setServicio] = useState('');
   const [estado, setEstado] = useState<Estado>('Lead');
+  const [precio, setPrecio] = useState('');
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -459,6 +480,11 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
       setError('Falta el servicio.');
       return;
     }
+    const importe = precioDeTexto(precio);
+    if (importe === null || importe < 0) {
+      setError('Ese precio no se entiende. Va en números, con o sin puntos.');
+      return;
+    }
     setEnviando(true);
     setError(null);
     try {
@@ -468,11 +494,13 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
         cliente: cliente.trim(),
         concepto: servicio,
         estado,
+        importe,
       });
       form.reset();
       setCliente('');
       setServicio('');
       setEstado('Lead');
+      setPrecio('');
       setAbierto(false);
       router.refresh();
     } catch (err) {
@@ -553,6 +581,8 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
                   />
                 </div>
 
+                {/* Se escribe como se escribe un precio: "525.000" con los
+                    puntos de miles entra igual, y abajo se lee qué entendió. */}
                 <div className="os-campo-bloque">
                   <label className="os-etiqueta-campo" htmlFor="importe">
                     Precio de venta
@@ -560,12 +590,17 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
                   <input
                     className="os-campo"
                     id="importe"
-                    name="importe"
-                    type="number"
-                    min="0"
-                    step="1000"
-                    required
+                    inputMode="decimal"
+                    autoComplete="off"
+                    placeholder="525.000"
+                    value={precio}
+                    onChange={(e) => setPrecio(e.target.value)}
                   />
+                  <span className="os-dato-flojo">
+                    {precioDeTexto(precio) === null
+                      ? 'En números'
+                      : formatoImporte(precioDeTexto(precio) as number)}
+                  </span>
                 </div>
 
                 <div className="os-campo-bloque">
