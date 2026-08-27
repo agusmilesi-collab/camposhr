@@ -174,16 +174,32 @@ export function Tablero({
                     <span className="os-tarjeta-importe">
                       {formatoImporte(o.importe, o.moneda)}
                     </span>
+                    {/* Un lápiz y no la palabra: la tarjeta es angosta y el
+                        pie tiene que dejarle el renglón al importe, que es lo
+                        que se compara al recorrer la columna. */}
                     <button
                       type="button"
-                      className="os-enlace-boton"
+                      className="os-tarjeta-editar"
+                      title="Editar"
+                      aria-label={`Editar ${o.cliente}`}
                       // La tarjeta se arrastra: sin esto, apretar el botón
                       // arranca el arrastre en vez de abrir el cajón.
                       draggable={false}
                       onDragStart={(e) => e.stopPropagation()}
                       onClick={() => setEditando(o)}
                     >
-                      Editar
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
+                        <path d="M13.5 6.5l4 4" />
+                      </svg>
                     </button>
                   </div>
                 </article>
@@ -366,7 +382,7 @@ function Editar({
               </a>
             </p>
           )}
-          <form className="os-form" onSubmit={enviar}>
+          <form className="os-form os-form-cotizacion" onSubmit={enviar}>
             <div className="os-campo-bloque os-campo-entero">
               <label className="os-etiqueta-campo" htmlFor="cliente-editar">
                 Cliente
@@ -540,7 +556,7 @@ export function NuevaOportunidad({ clientes }: { clientes: string[] }) {
               </button>
             </div>
             <div className="os-cajon-cuerpo">
-              <form className="os-form" onSubmit={enviar}>
+              <form className="os-form os-form-cotizacion" onSubmit={enviar}>
                 {/* Se escribe y van quedando los que coinciden, el mismo
                     campo con el que se carga un pedido. Con un desplegable
                     había que recorrer la lista entera, y escrito a mano el
