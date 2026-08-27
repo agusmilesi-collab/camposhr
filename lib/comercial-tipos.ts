@@ -22,6 +22,19 @@ export const SERVICIOS = [
   'Mindfulness',
 ] as const;
 export type Servicio = (typeof SERVICIOS)[number];
+
+/**
+ * El color de cada servicio, para reconocerlo sin leerlo.
+ *
+ * Cuatro tonos que no se confunden de reojo, como los de las baterías. El rojo
+ * queda afuera: en este tablero es el color de lo que se perdió.
+ */
+export const COLOR_SERVICIO: Record<string, string> = {
+  'Psicotécnicos': 'os-azul',
+  'Diseño organizacional': 'os-violeta',
+  Liderazgo: 'os-verde',
+  Mindfulness: 'os-ambar',
+};
 export type Estado = (typeof ESTADOS)[number];
 
 /** Las que todavía se pueden ganar. */

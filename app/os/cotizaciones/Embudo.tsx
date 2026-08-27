@@ -21,6 +21,7 @@ import { useState, useTransition } from 'react';
 import Buscador from '@/app/os/Buscador';
 import Desplegable from '@/app/os/Desplegable';
 import {
+  COLOR_SERVICIO,
   ESTADOS,
   OBJECIONES,
   SERVICIOS,
@@ -163,8 +164,19 @@ export function Tablero({
                   onDragEnd={() => setArrastrando(null)}
                 >
                   <div className="os-tarjeta-cliente">{o.cliente}</div>
+                  {/* El servicio con su color: en una columna de seis tarjetas
+                      dice de qué es cada una sin tener que leerlas. Lo que no
+                      es uno de los cuatro (las que vienen de antes dicen el
+                      trabajo entero) va como estaba, en texto. */}
                   <div className="os-tarjeta-concepto">
-                    {o.concepto} · {formatoFecha(o.fecha)}
+                    {COLOR_SERVICIO[o.concepto] ? (
+                      <span className={`os-sello-estado ${COLOR_SERVICIO[o.concepto]}`}>
+                        {o.concepto}
+                      </span>
+                    ) : (
+                      <span>{o.concepto}</span>
+                    )}
+                    <span className="os-tarjeta-fecha">{formatoFecha(o.fecha)}</span>
                   </div>
                   {o.nota && <div className="os-tarjeta-nota">{o.nota}</div>}
                   {(o.objecion || o.motivo) && (
