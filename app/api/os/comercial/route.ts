@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { ESTADOS, TIPOS_COSTO } from '@/lib/cotizaciones';
 import { esObjecion } from '@/lib/comercial-tipos';
+import { slugDeEmpresa } from '@/lib/empresa-slug';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 
@@ -35,6 +36,47 @@ async function escribir(camino: string, metodo: string, cuerpo: unknown) {
   });
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
   return metodo === 'POST' ? (await res.json())[0] : null;
+}
+
+async function leer<T>(camino: string): Promise<T[]> {
+  const { url, key } = config();
+  const res = await fetch(`${url}/rest/v1/${camino}`, {
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/**
+ * El cliente de la oportunidad, como fila de Clientes.
+ *
+ * Una oportunidad guardaba el nombre escrito y nada más, así que un cliente que
+ * nacía en el embudo no aparecía en Clientes: no tenía dónde cargarle el CUIT ni
+ * de dónde salirle el enlace del portal. Acá se resuelve contra `empresas`: si
+ * se eligió uno de la lista es ese, y si el nombre es nuevo se da de alta.
+ *
+ * Se busca por el slug y no por el nombre tal cual, que es la misma clave con la
+ * que la base impide dos veces el mismo cliente: "Pla SA" y "pla sa" son uno.
+ */
+async function empresaDe(
+  nombre: string,
+  empresaId?: unknown
+): Promise<{ id: string; nombre: string }> {
+  if (UUID.test(String(empresaId ?? ''))) {
+    const [ya] = await leer<{ id: string; nombre: string }>(
+      `empresas?select=id,nombre&id=eq.${empresaId}&limit=1`
+    );
+    if (ya) return ya;
+  }
+  const clave = slugDeEmpresa(nombre);
+  const [ya] = await leer<{ id: string; nombre: string }>(
+    `empresas?select=id,nombre&slug=eq.${encodeURIComponent(clave)}&limit=1`
+  );
+  // Si ya está, no se le toca nada: puede estar inactivo a propósito, y una
+  // oportunidad nueva no es motivo para reactivarlo por su cuenta.
+  if (ya) return ya;
+  return escribir('empresas', 'POST', { nombre, slug: clave, activa: true });
 }
 
 /**
@@ -102,8 +144,13 @@ export async function POST(req: Request) {
         if (!Number.isFinite(importe) || importe < 0) {
           return NextResponse.json({ error: 'El importe no es un número.' }, { status: 400 });
         }
+        // El cliente pasa a ser una fila de Clientes: el nombre queda escrito
+        // igual, para que la tarjeta diga lo mismo aunque la empresa se
+        // renombre después.
+        const empresa = await empresaDe(cliente, datos.empresaId);
         const fila = await escribir('cotizaciones', 'POST', {
-          cliente,
+          cliente: empresa.nombre,
+          empresa_id: empresa.id,
           concepto,
           importe,
           estado: ESTADOS.includes(datos.estado) ? datos.estado : 'Lead',
@@ -115,7 +162,7 @@ export async function POST(req: Request) {
           accion: 'escritura',
           recurso: 'cotizacion',
           recursoId: fila.id,
-          detalle: { alta: true, cliente, importe },
+          detalle: { alta: true, cliente: empresa.nombre, empresaId: empresa.id, importe },
         });
         revalidateTag(CACHE_CLIENTES);
         revalidateTag(CACHE_COMERCIAL);
@@ -149,8 +196,10 @@ export async function POST(req: Request) {
         if (fecha && !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
           return NextResponse.json({ error: 'La fecha no es válida.' }, { status: 400 });
         }
+        const empresa = await empresaDe(cliente, datos.empresaId);
         await escribir(`cotizaciones?id=eq.${id}`, 'PATCH', {
-          cliente,
+          cliente: empresa.nombre,
+          empresa_id: empresa.id,
           concepto,
           importe,
           ...(fecha ? { fecha } : {}),
@@ -161,7 +210,7 @@ export async function POST(req: Request) {
           accion: 'escritura',
           recurso: 'cotizacion',
           recursoId: id,
-          detalle: { edicion: true, cliente, concepto, importe },
+          detalle: { edicion: true, cliente: empresa.nombre, concepto, importe },
         });
         revalidateTag(CACHE_CLIENTES);
         revalidateTag(CACHE_COMERCIAL);

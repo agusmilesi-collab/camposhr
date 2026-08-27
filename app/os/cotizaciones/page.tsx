@@ -67,13 +67,14 @@ export default async function Cotizaciones() {
       </div>
 
       <div className="os-barra-acciones">
-        <NuevaOportunidad clientes={clientes.map((c) => c.nombre)} />
+        <NuevaOportunidad clientes={clientes.map((c) => ({ id: c.id, nombre: c.nombre }))} />
       </div>
 
       <Tablero
         oportunidades={todas.map((c) => ({
           id: c.id,
           cliente: c.cliente,
+          empresaId: c.empresaId,
           concepto: c.concepto,
           importe: c.importe,
           moneda: c.moneda,
@@ -84,7 +85,7 @@ export default async function Cotizaciones() {
           motivo: c.motivo,
           objecion: c.objecion,
         }))}
-        clientes={clientes.map((c) => c.nombre)}
+        clientes={clientes.map((c) => ({ id: c.id, nombre: c.nombre }))}
       />
     </Shell>
   );
