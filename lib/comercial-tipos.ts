@@ -23,6 +23,40 @@ export type Estado = (typeof ESTADOS)[number];
 export const ABIERTOS: readonly Estado[] = ['Lead', 'Enviada'];
 
 /**
+ * El precio, escrito como se escribe un precio.
+ *
+ * El campo era `type="number"` con `step` de mil, así que el navegador rechazaba
+ * "525.000" (los puntos de miles) y también cualquier importe que no fuera
+ * múltiplo de mil: el formulario no se enviaba y el botón parecía no hacer nada.
+ * Acá se acepta lo que alguien escribe y se lo lee: puntos de miles, coma
+ * decimal, un signo de peso adelante.
+ *
+ * Devuelve null cuando no hay un número adentro, que es lo que el formulario
+ * muestra como error en vez de mandar un NaN.
+ */
+export function precioDeTexto(escrito: string): number | null {
+  const limpio = String(escrito ?? '')
+    .replace(/[^\d.,-]/g, '')
+    .trim();
+  if (!limpio) return null;
+
+  let normal = limpio;
+  if (limpio.includes(',')) {
+    // Con coma, la coma es el decimal y los puntos son de miles.
+    normal = limpio.replace(/\./g, '').replace(',', '.');
+  } else {
+    const puntos = limpio.split('.');
+    // Un solo punto con tres dígitos detrás es de miles ("525.000"); con uno o
+    // dos, es decimal ("1.5"). Con varios puntos, todos son de miles.
+    const deMiles = puntos.length > 2 || (puntos.length === 2 && puntos[1].length === 3);
+    normal = deMiles ? puntos.join('') : limpio;
+  }
+
+  const n = Number(normal);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
  * Por qué no avanzó una oportunidad.
  *
  * El motivo se escribía a mano y cada perdida decía lo suyo, así que revisar el
