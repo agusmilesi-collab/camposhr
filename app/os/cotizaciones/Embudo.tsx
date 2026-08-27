@@ -174,11 +174,6 @@ export function Tablero({
                     <span className="os-tarjeta-importe">
                       {formatoImporte(o.importe, o.moneda)}
                     </span>
-                    {o.token && (
-                      <a href={`/q/${o.token}`} target="_blank" rel="noreferrer" className="os-enlace-boton">
-                        Propuesta
-                      </a>
-                    )}
                     <button
                       type="button"
                       className="os-enlace-boton"
@@ -356,6 +351,21 @@ function Editar({
           </button>
         </div>
         <div className="os-cajon-cuerpo">
+          {/* El documento que abre el cliente, acá y no en la tarjeta: se mira
+              cuando se entra a la oportunidad, no cada vez que se recorre el
+              tablero. */}
+          {oportunidad.token && (
+            <p className="os-form-nota">
+              <a
+                className="os-tabla-enlace"
+                href={`/q/${oportunidad.token}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Ver la propuesta que abre el cliente
+              </a>
+            </p>
+          )}
           <form className="os-form" onSubmit={enviar}>
             <div className="os-campo-bloque os-campo-entero">
               <label className="os-etiqueta-campo" htmlFor="cliente-editar">
