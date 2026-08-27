@@ -1,8 +1,6 @@
 import Link from 'next/link';
-import { entrevistaDe, type EstadoRaven, type Entrevista } from '@/lib/entrevista';
+import { entrevistaDe, type Entrevista } from '@/lib/entrevista';
 import { cuandoCae, hoy } from '@/lib/hora';
-import { duracion } from '@/lib/raven';
-import LinkRaven from '../../LinkRaven';
 import Tomada from './Tomada';
 import { TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
@@ -11,8 +9,7 @@ import Grafico from './Grafico';
 import Papel from './Papel';
 import LinkLaminas from './LinkLaminas';
 import HojaBender from './HojaBender';
-import RelojRaven from './RelojRaven';
-import SondeoRaven from './SondeoRaven';
+import Raven from './Raven';
 import Bateria from '../../Bateria';
 import Whatsapp from '../../Whatsapp';
 import { enlaceDelCv } from '@/lib/cv';
@@ -49,21 +46,6 @@ const HERRAMIENTA: Record<string, { href: string; boton: string }> = {
   Zulliger: { href: '/os/laminas/zulliger', boton: 'Abrir las láminas' },
 };
 
-const RAVEN: Record<EstadoRaven, { texto: string; detalle: string; color: string }> = {
-  'sin enlace': {
-    texto: 'Sin mandar',
-    detalle: 'Todavía no se le generó el enlace.',
-    color: 'os-gris',
-  },
-  'sin abrir': {
-    texto: 'Sin abrir',
-    detalle: 'Ya se le mandó el enlace y todavía no lo abrió.',
-    color: 'os-ambar',
-  },
-  empezado: { texto: 'En curso', detalle: 'Lo está respondiendo.', color: 'os-ambar' },
-  terminado: { texto: 'Terminado', detalle: 'Lo terminó y el puntaje está en la ficha.', color: 'os-verde' },
-};
-
 /**
  * Un test de la batería, con el número que le toca en la entrevista.
  *
@@ -88,7 +70,6 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
   // La de hoy dice "Hoy": es la que se está por tomar, y es la hoja que se
   // abre con la persona enfrente.
   const cuando = cuandoCae(e.cuando, hoy());
-  const raven = RAVEN[e.raven];
   // El Benziger no lo declara la batería: lo agrega el pedido.
   const tests = [...e.tests, ...(e.conBenziger ? ['Benziger'] : [])];
 
@@ -140,31 +121,17 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         }
 
         if (t === 'Raven') {
+          // Todo el bloque es de cliente: mientras la persona responde, la
+          // pantalla se entera sola de que abrió, corre el reloj y muestra el
+          // puntaje cuando entrega, sin que haya que recargar.
           return (
-            <>
-              {/* Mientras la persona responde, la pantalla se entera sola de
-                  que abrió el test y de que lo terminó. */}
-              <SondeoRaven id={e.id} estado={e.raven} />
-              <div className="os-herramienta-accion">
-                <span className={`os-sello-estado ${raven.color}`} title={raven.detalle}>
-                  {raven.texto}
-                </span>
-                {/* El orden de las columnas es el mismo en todos los tests:
-                    estado, lo que se mira, y la acción. Acá lo que se mira es
-                    cuánto le queda, que es el dato que se consulta mientras
-                    está respondiendo. */}
-                {e.raven === 'sin abrir' || e.raven === 'empezado' ? (
-                  <RelojRaven iniciado={e.ravenIniciado} />
-                ) : e.ravenDuracion !== null ? (
-                  <span className="os-raven-reloj" title="Lo que tardó en responderlo">
-                    Tardó {duracion(e.ravenDuracion)}
-                  </span>
-                ) : (
-                  <span />
-                )}
-                <LinkRaven evaluacionId={e.id} />
-              </div>
-            </>
+            <Raven
+              id={e.id}
+              estado={e.raven}
+              iniciado={e.ravenIniciado}
+              duracionSegundos={e.ravenDuracion}
+              medida={e.ravenMedida}
+            />
           );
         }
 

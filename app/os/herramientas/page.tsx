@@ -39,7 +39,7 @@ const FICHAS: Ficha[] = [
     rotulo: 'Test de razonamiento',
     titulo: 'Raven',
     detalle:
-      '36 láminas con ocho opciones y 45 minutos de reloj. El candidato lo responde por su enlace y el puntaje entra solo en su ficha. Acá se ve como lo ve él, sin guardar nada.',
+      '36 láminas con ocho opciones y 50 minutos de reloj. El candidato lo responde por su enlace y el puntaje entra solo en su ficha. Acá se ve como lo ve él, sin guardar nada.',
     href: '/raven',
   },
   {

@@ -15,7 +15,8 @@
  * **De Sin asignar no se sale arrastrando: se elige a quién.** Un arrastre no
  * puede decir de quién es, así que esa tarjeta lleva su botón con los nombres
  * y, al lado de cada uno, cuántas tiene encima: repartir sin ver contra qué se
- * reparte es repartir a ciegas. Al revés sí: arrastrar una tarjeta de vuelta a
+ * reparte es repartir a ciegas. La cuenta va ahí y no arriba del tablero, que
+ * es donde se decide y el único momento en que hace falta. Al revés sí: arrastrar una tarjeta de vuelta a
  * la primera columna le suelta la dueña, que es el gesto inverso y la única
  * forma de corregir un reparto sin entrar a la ficha.
  *
@@ -476,20 +477,6 @@ export default function Entrevistas({
   return (
     <>
       {error && <p className="os-form-error">{error}</p>}
-
-      {/* La cola de cada una, arriba y a la vista: el desplegable de asignar la
-          repite al lado de cada nombre, pero para saber cómo viene el reparto
-          no hay que tener una tarjeta sin dueño en la mano. */}
-      {evaluadoras.length > 0 && (
-        <p className="os-carga">
-          {evaluadoras.map((n) => (
-            <span className="os-carga-quien" key={n}>
-              {n.split(/\s+/)[0]}
-              <b>{carga[n] ?? 0}</b>
-            </span>
-          ))}
-        </p>
-      )}
 
       <div
         className="os-kanban"
