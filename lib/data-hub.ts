@@ -29,11 +29,22 @@ import type { SumarioCrudo } from '@/lib/redacciones';
  */
 
 const CAMPOS =
-  'id,estado,recomendacion,ingreso,seguimiento_resultado,' +
+  'id,estado,recomendacion,ingreso,seguimiento_resultado,benziger_administrado,' +
   'fecha_ingreso,fecha_entrevista,fecha_entrega,evaluadoras(nombre),' +
   'raven(raw,percentil),personas(nombre),' +
   'benziger(cuadrante_preferente,cuadrantes_parejos),' +
   'pedidos(puesto,familia,seniority,con_benziger,empresas(nombre),baterias(codigo,tests))';
+
+/**
+ * A quién le corresponde el Benziger.
+ *
+ * Lo pidió el pedido o se le tomó igual. Contra `pedidos.con_benziger` a secas,
+ * el tablero decía "Benziger leído: 4 de 2": el numerador cuenta los leídos de
+ * verdad y el denominador contaba los dos pedidos que llevan la marca, cuando
+ * hay cuarenta evaluaciones con el Benziger administrado.
+ */
+const llevaBenziger = (f: Fila) =>
+  Boolean(f.pedidos?.con_benziger || f.benziger_administrado);
 
 type Fila = {
   id: string;
@@ -41,6 +52,7 @@ type Fila = {
   recomendacion: string | null;
   ingreso: boolean | null;
   seguimiento_resultado: string | null;
+  benziger_administrado: boolean | null;
   fecha_ingreso: string | null;
   fecha_entrevista: string | null;
   fecha_entrega: string | null;
@@ -280,7 +292,7 @@ export async function datosDelHub(): Promise<DataHub> {
       {
         pieza: 'Benziger leído',
         hechas: filas.filter((f) => (f.benziger?.cuadrante_preferente ?? []).length > 0).length,
-        de: filas.filter((f) => f.pedidos?.con_benziger).length,
+        de: filas.filter(llevaBenziger).length,
       },
       {
         pieza: 'Informe cerrado',
@@ -295,8 +307,8 @@ export async function datosDelHub(): Promise<DataHub> {
       porBateria: contar(filas, (f) => f.pedidos?.baterias?.codigo),
       porEmpresa: contar(filas, (f) => f.pedidos?.empresas?.nombre),
       conBenziger: {
-        con: filas.filter((f) => f.pedidos?.con_benziger).length,
-        sin: filas.filter((f) => f.pedidos && !f.pedidos.con_benziger).length,
+        con: filas.filter(llevaBenziger).length,
+        sin: filas.filter((f) => f.pedidos && !llevaBenziger(f)).length,
       },
       entregasPorMes: [...meses.entries()]
         .map(([mes, n]) => ({ mes, n }))

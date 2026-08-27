@@ -32,16 +32,22 @@ function headers(extra: Record<string, string> = {}) {
  * sala, donde un dato de hace un minuto ya no sirve. `etiqueta` la vuelve
  * cacheable y le pone un nombre para poder invalidarla cuando algo se escribe,
  * que es lo que hace que moverse entre pantallas no vuelva a pedir todo.
+ *
+ * Se pueden poner varias: una lista que dos partes del sistema cambian por su
+ * cuenta (las evaluaciones, que son de psicotécnicos y también son lo que se
+ * factura) se invalida desde cualquiera de las dos y no espera los cinco
+ * minutos del techo.
  */
 export async function select<T>(
   tabla: string,
   query: string,
-  etiqueta?: string
+  etiqueta?: string | string[]
 ): Promise<T[]> {
+  const etiquetas = etiqueta === undefined ? [] : [etiqueta].flat();
   const res = await fetch(`${URL_BASE()}/rest/v1/${tabla}?${query}`, {
     headers: headers(),
-    ...(etiqueta
-      ? { next: { revalidate: 300, tags: [etiqueta] } }
+    ...(etiquetas.length > 0
+      ? { next: { revalidate: 300, tags: etiquetas } }
       : { cache: 'no-store' as const }),
   });
   if (!res.ok) throw new Error(`Supabase ${tabla} ${res.status}: ${await res.text()}`);
