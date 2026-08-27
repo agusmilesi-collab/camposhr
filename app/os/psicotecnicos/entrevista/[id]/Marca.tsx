@@ -75,7 +75,7 @@ export default function Marca({
   return (
     <button
       type="button"
-      className={`os-boton os-boton-marcado os-sello-estado os-marca ${
+      className={`os-boton os-boton-marcado os-sello-estado os-test-estado ${
         marca ? 'os-verde' : 'os-rojo'
       }`}
       aria-pressed={marca}

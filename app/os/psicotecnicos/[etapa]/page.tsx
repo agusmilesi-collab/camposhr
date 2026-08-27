@@ -42,7 +42,6 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
       nota={filas.length === 1 ? '1 persona' : `${filas.length} personas`}
       identidad={yo.nombre}
       ancho
-      avisos={['/os/psicotecnicos/entrevistas']}
       cuentas={cuentas}
     >
       <div className="os-encabezado">

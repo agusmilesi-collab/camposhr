@@ -49,7 +49,7 @@ export default async function ClientePagina({ params }: { params: { id: string }
       identidad={yo.nombre}
       ancho
       nota={abiertos.length === 1 ? '1 pedido abierto' : `${abiertos.length} pedidos abiertos`}
-      cuentas={{ ...cuentas, '/os/clientes': clientes.length }}
+      cuentas={cuentas}
     >
       <Link className="os-volver-enlace" href="/os/clientes">
         ← Volver a clientes

@@ -184,6 +184,33 @@ export function enDias(n: number | null): string {
 }
 
 /**
+ * Cuántos días hábiles pasaron desde una fecha.
+ *
+ * El trabajo del estudio es de lunes a viernes: un informe entregado el viernes
+ * y mirado el lunes esperó un día, no tres, y contando corridos todo lo del fin
+ * de semana aparecía demorado los lunes a la mañana. Cuenta los días
+ * transcurridos, sin incluir el de la fecha: el mismo día son cero.
+ *
+ * No sabe de feriados. Sumarlos pediría una tabla que alguien tiene que
+ * mantener al día, y errarle por un feriado no cambia ninguna decisión: lo que
+ * se mira es si algo lleva demasiado esperando.
+ */
+export function habilesDesde(iso: string | null, hoy: Date = new Date()): number | null {
+  const corridos = diasDesde(iso, hoy);
+  if (corridos === null || corridos <= 0) return corridos;
+
+  const desde = comoFecha(iso as string);
+  let habiles = 0;
+  for (let i = 1; i <= corridos; i++) {
+    const d = new Date(desde.getTime() + i * 24 * 60 * 60 * 1000);
+    // El día de la semana en la zona del trabajo, no en la del servidor.
+    const dia = new Date(d.toLocaleString('en-US', { timeZone: ZONA })).getDay();
+    if (dia !== 0 && dia !== 6) habiles++;
+  }
+  return habiles;
+}
+
+/**
  * La distancia en palabras: "hace 6 días", "hoy", "en 2 días".
  *
  * Los negativos son lo que todavía no pasó, que en este pipeline son las

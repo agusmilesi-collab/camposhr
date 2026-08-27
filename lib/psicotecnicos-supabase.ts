@@ -12,7 +12,7 @@
 
 import 'server-only';
 import { select } from '@/lib/supabase';
-import { diasDesde } from '@/lib/hora';
+import { diasDesde, habilesDesde } from '@/lib/hora';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import {
   esColumnaTablero,
@@ -154,6 +154,7 @@ export async function listar(): Promise<Evaluacion[]> {
     tieneCv: Boolean(f.personas?.cv_path),
     servicio: null,
     dias: diasDesde(f.fecha_entrevista, hoy),
+    diasHabiles: habilesDesde(f.fecha_entrevista, hoy),
     diasEsperando: f.fecha_entrevista ? null : diasDesde(f.fecha_ingreso, hoy),
     diasSolicitud: diasDesde(f.fecha_ingreso, hoy),
     tablero: esColumnaTablero(f.tablero) ? f.tablero : null,

@@ -192,22 +192,22 @@ export default function Shell({
   titulo,
   nota,
   cuentas,
-  avisos,
   identidad,
   ancho,
   children,
 }: {
   titulo: string;
   nota?: string;
-  /** Número al costado de una sección, por href. */
-  cuentas?: Record<string, number>;
   /**
-   * Secciones cuyo número va en círculo, por href.
+   * Lo que reclama, por href. Hoy es uno solo: lo que entró y no tomó nadie.
    *
-   * Es para lo que entró y todavía no tomó nadie: se ve desde cualquier
-   * pantalla, sin tener que entrar a mirar si hay algo nuevo.
+   * Va en círculo rojo y se ve desde cualquier pantalla, sin tener que entrar a
+   * mirar si hay algo nuevo. La barra llevaba además un número por sección
+   * (cuántas entrevistas, cuántos entregados, cuánto falta facturar): eran una
+   * foto del sistema, ninguno pedía nada, y entre cuatro el que sí pedía algo
+   * no se distinguía.
    */
-  avisos?: string[];
+  cuentas?: Record<string, number>;
   /** Con quién se está trabajando. Ver lib/identidad.ts. */
   identidad: string;
   /** Sin el ancho de lectura: para una tabla, que necesita todo el espacio. */
@@ -279,14 +279,8 @@ export default function Shell({
                     <Icono nombre={s.icono} />
                     <span>{s.texto}</span>
                     {typeof n === 'number' && n > 0 && (
-                  <span
-                    className={`os-item-cuenta${
-                      avisos?.includes(s.href) ? ' os-item-aviso' : ''
-                    }`}
-                  >
-                    {n}
-                  </span>
-                )}
+                      <span className="os-item-cuenta os-item-aviso">{n}</span>
+                    )}
                   </Link>
                 );
               })}

@@ -110,21 +110,21 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
          nuevo cuando el estado cambia. */
       const r = SELLO_RAVEN[e.raven];
       return (
-        <span className={`os-sello-estado os-marca ${r.color}`} title={r.detalle}>
+        <span className={`os-sello-estado os-test-estado ${r.color}`} title={r.detalle}>
           {r.texto}
         </span>
       );
     }
     if (t === TEST_COMPETENCIAS) {
       return (
-        <span className={`os-sello-estado os-marca ${e.competencias ? 'os-verde' : 'os-gris'}`}>
+        <span className={`os-sello-estado os-test-estado ${e.competencias ? 'os-verde' : 'os-gris'}`}>
           {e.competencias ? 'Escrita' : 'Sin escribir'}
         </span>
       );
     }
     if (t === TEST_DISCURSIVO) {
       return (
-        <span className={`os-sello-estado os-marca ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
+        <span className={`os-sello-estado os-test-estado ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
           {e.discursivo ?? 'Sin ubicar'}
         </span>
       );

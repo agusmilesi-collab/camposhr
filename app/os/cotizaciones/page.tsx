@@ -31,7 +31,7 @@ export default async function Cotizaciones() {
       titulo="Cotizaciones"
       identidad={yo.nombre}
       nota={`${todas.length} oportunidades`}
-      cuentas={{ ...cuentas, '/os/cotizaciones': abiertas.length }}
+      cuentas={cuentas}
     >
       <div className="os-encabezado">
         <h1>El embudo</h1>

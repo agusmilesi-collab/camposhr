@@ -161,8 +161,14 @@ function Tarjeta({
 }) {
   const falta = faltaParaAgendar(e);
 
-  // Pasada la semana el análisis se está demorando.
-  const demorada = e.etapa === 'Por analizar' && (e.dias ?? 0) > 7;
+  /**
+   * Pasada la semana de trabajo, el análisis se está demorando.
+   *
+   * Cinco días hábiles y no siete corridos: el informe que se toma un jueves y
+   * se mira el jueves siguiente esperó cinco días de trabajo, no siete, y
+   * contando corridos todo lo del fin de semana aparecía en rojo los lunes.
+   */
+  const demorada = e.etapa === 'Por analizar' && (e.diasHabiles ?? 0) > 5;
 
   return (
     <article
@@ -223,8 +229,11 @@ function Tarjeta({
             ) : (
               <span className="os-dato-falta">sin teléfono</span>
             )}
+            {/* Del mismo palo que la fecha y la modalidad: los tres controles de
+                la tarjeta se ven igual, y el punto de color sigue diciendo si
+                ya se la contactó. */}
             <button
-              className={`os-boton os-boton-marcado os-sello-estado ${
+              className={`os-control-suave os-sello-estado ${
                 e.mensaje === 'Esperando respuesta' ? 'os-ambar' : 'os-gris'
               }`}
               disabled={ocupada}
@@ -311,8 +320,14 @@ function Tarjeta({
       {e.etapa === 'Por analizar' && e.evaluadora && (
         <div className="os-tarjeta-trabajo">
           <div className="os-tarjeta-linea">
-            <span className={demorada ? 'os-dato-falta' : 'os-columna-monto'}>
-              espera {haceCuanto(e.dias)}
+            {/* Contra el borde derecho en todas las tarjetas: es el dato que se
+                compara entre una y otra al bajar por la columna, y alineado con
+                el largo de cada frase había que buscarlo en cada fila. */}
+            <span
+              className={`os-tarjeta-espera${demorada ? ' demorada' : ''}`}
+              title="Días hábiles desde la entrevista"
+            >
+              espera {haceCuanto(e.diasHabiles)}
             </span>
             {/* La recomendación sale solo si ya está: en Por analizar la
                 evaluación todavía no se cerró, así que decir "sin cerrar" en

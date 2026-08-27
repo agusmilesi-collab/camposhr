@@ -17,7 +17,7 @@ export default async function Clientes() {
       identidad={yo.nombre}
       ancho
       nota={`${clientes.length} clientes`}
-      cuentas={{ ...cuentas, '/os/clientes': clientes.length }}
+      cuentas={cuentas}
     >
       <div className="os-encabezado">
         <h1>Clientes</h1>

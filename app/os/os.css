@@ -251,7 +251,10 @@ body:has(.os) {
  */
 .os-item-cuenta.os-item-aviso {
   border-radius: 999px;
-  background: var(--os-azul);
+  /* Rojo: es lo único que la barra cuenta, y lo cuenta porque hace falta que
+     alguien lo agarre. Los números grises de las otras secciones se sacaron,
+     así que acá no compite con nada. */
+  background: var(--os-rojo);
   color: var(--os-panel);
   font-size: 0.7rem;
   font-weight: 600;
@@ -5661,10 +5664,33 @@ th.os-tabla-contacto {
   width: 118px;
 }
 
+/*
+ * Cuánto hace que un informe espera, contra el borde derecho.
+ *
+ * Es el dato que se compara entre una tarjeta y la siguiente al bajar por la
+ * columna; alineado con el largo de cada frase había que buscarlo en cada fila.
+ * En rojo pasados los cinco días hábiles, que es cuando deja de ser una espera
+ * y pasa a ser una demora.
+ */
+.os-tarjeta-espera {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--os-suave);
+  white-space: nowrap;
+}
+
+.os-tarjeta-espera.demorada {
+  color: var(--os-rojo);
+  font-weight: 600;
+}
+
 /* La fecha de la entrevista lleva día y hora, así que pide más que la de
-   vencimiento de una tarea. */
+   vencimiento de una tarea: se lleva el ancho que sobra y la modalidad se queda
+   con lo suyo, en el mismo renglón. A lo ancho entero empujaba la modalidad al
+   renglón de abajo y la tarjeta crecía un escalón por nada. */
 .os-citar-fecha {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* El calendario del navegador, del tono del resto en vez del negro que trae. */
@@ -7083,8 +7109,12 @@ th.os-tabla-contacto {
  *
  * Pastilla y no sello con punto: acá el color es el dato y un punto de siete
  * píxeles al lado de un título de 1,35 rem no se ve.
+ *
+ * Se llamó `os-marca` un rato y le comió el fondo al logo de la barra lateral,
+ * que ya se llamaba así: la hoja es una sola y las clases son globales (ver
+ * `CLAUDE.md`).
  */
-.os-marca {
+.os-test-estado {
   flex: none;
   /* Alto propio y no el de un botón del OS: adentro de un título, los 30 px del
      botón dan un óvalo que pesa más que el nombre del test. */
@@ -7103,17 +7133,17 @@ th.os-tabla-contacto {
 }
 
 /* El punto sobra: el fondo ya dice el color. */
-.os-marca::before {
+.os-test-estado::before {
   display: none;
 }
 
 /* El de los tests de papel además se toca para corregirlo. */
-button.os-marca {
+button.os-test-estado {
   border: 0;
   cursor: pointer;
 }
 
-button.os-marca:hover:not(:disabled) {
+button.os-test-estado:hover:not(:disabled) {
   background: color-mix(in srgb, var(--punto, var(--os-gris)) 26%, transparent);
 }
 
