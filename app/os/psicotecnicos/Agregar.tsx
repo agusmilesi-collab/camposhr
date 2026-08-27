@@ -101,6 +101,8 @@ export default function Agregar({
   const [encima, setEncima] = useState(false);
   /** El nombre del archivo elegido, para poder decir cuál quedó puesto. */
   const [archivo, setArchivo] = useState('');
+  /** Qué no se pudo sacar del CV, para que nadie espere un campo que no viene. */
+  const [aviso, setAviso] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
   const nombre = useRef<HTMLInputElement>(null);
@@ -129,6 +131,7 @@ export default function Agregar({
   function cerrar() {
     setAbierto(false);
     setArchivo('');
+    setAviso(null);
     setError(null);
     setHecho(null);
     setMasDatos(false);
@@ -174,6 +177,7 @@ export default function Agregar({
 
   async function leerCv(archivo: File) {
     setError(null);
+    setAviso(null);
     setLeyendo(true);
     try {
       const cuerpo = new FormData();
@@ -181,7 +185,32 @@ export default function Agregar({
       const res = await fetch('/api/os/cv', { method: 'POST', body: cuerpo });
       const r = await res.json().catch(() => null);
       const leido = r?.leidos?.[0];
-      if (!res.ok || !leido) return;
+      if (!res.ok || !leido) {
+        setAviso('No se pudo leer el CV. Cargá los datos a mano.');
+        return;
+      }
+
+      /**
+       * Lo que no salió se dice.
+       *
+       * No hay dos CV iguales: hay nombres en una tipografía por palabra,
+       * teléfonos que son de una referencia y archivos que son un escaneo sin
+       * texto adentro. Cuando el lector no encuentra algo, callarse deja a
+       * quien carga mirando un campo vacío sin saber si tiene que esperar o
+       * escribir.
+       */
+      const falta = [
+        !leido.nombre && 'el nombre',
+        !leido.telefono && 'el teléfono',
+        !leido.mail && 'el correo',
+      ].filter(Boolean) as string[];
+      setAviso(
+        falta.length === 3
+          ? 'Del CV no salió ningún dato. Cargalos a mano.'
+          : falta.length > 0
+            ? `Del CV no salió ${falta.join(' ni ')}.`
+            : null
+      );
 
       if (nombre.current && !nombre.current.value && leido.nombre) {
         nombre.current.value = leido.nombre;
@@ -198,8 +227,9 @@ export default function Agregar({
         setMasDatos(true);
       }
     } catch {
-      // Sin aviso: el lector es una ayuda, y que falle no puede leerse como que
-      // falló el alta.
+      // No es un error del alta, así que se dice como lo que es: el archivo
+      // igual se sube y los campos se completan a mano.
+      setAviso('No se pudo leer el CV. Cargá los datos a mano.');
     } finally {
       setLeyendo(false);
     }
@@ -238,6 +268,7 @@ export default function Agregar({
       // Se limpia y queda listo para el siguiente, con el pedido puesto.
       form.reset();
       setArchivo('');
+      setAviso(null);
       setHecho(`${String(datos.get('nombre') ?? '').trim()} quedó cargada.`);
       nombre.current?.focus();
       empezar(() => router.refresh());
@@ -372,6 +403,7 @@ export default function Agregar({
           </button>
         )}
 
+        {aviso && <p className="os-agregar-aviso">{aviso}</p>}
         {error && <p className="os-form-error">{error}</p>}
         {hecho && <p className="os-form-ok">{hecho}</p>}
 

@@ -6453,6 +6453,12 @@ th.os-tabla-contacto {
   display: none;
 }
 
+/* Lo que el CV no trajo: no es un error, es lo que falta escribir. */
+.os-agregar-aviso {
+  font-size: 0.74rem;
+  color: var(--os-suave);
+}
+
 .os-agregar-cv-texto {
   overflow: hidden;
   text-overflow: ellipsis;
