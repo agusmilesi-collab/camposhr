@@ -88,10 +88,8 @@ async function cobrosDe(ids: string[]): Promise<Map<string, boolean>> {
  *
  * **Valen los dos enlaces de una empresa.** Cuando los datos vivían en Airtable
  * cada cliente recibió un enlace, y al migrar se le generó otro: el viejo es el
- * que quedó guardado del lado del cliente, y hasta el 26/8/2026 abría el portal
- * anterior, sin facturación y con los datos que Airtable ya no recibe. Los dos
- * abren la misma empresa y, salvo que la empresa pida lo contrario, muestran lo
- * mismo (ver `portal_anterior_airtable`).
+ * que quedó guardado del lado del cliente. Los dos abren la misma empresa y
+ * muestran lo mismo, y de qué base sale eso lo decide `portal_desde_airtable`.
  *
  * También la usa el alta de pedido: el pedido se cuelga de la empresa del
  * token y no de una constante, así que quien carga solo puede cargar en la
@@ -102,11 +100,8 @@ export type EmpresaDelPortal = {
   nombre: string;
   /** Si el portal deja abrir los informes. Ver `DatosCliente.informesVisibles`. */
   informes_visibles: boolean;
-  /** Con el enlace anterior, servir Airtable en vez del OS. */
-  portal_anterior_airtable: boolean;
-  /** Se entró con el enlace de ahora o con el que el cliente tenía guardado. */
-  token_portal: string | null;
-  token_portal_anterior: string | null;
+  /** De qué base sale el portal de este cliente. */
+  portal_desde_airtable: boolean;
 };
 
 export async function empresaDelToken(token: string): Promise<EmpresaDelPortal | null> {
@@ -114,27 +109,25 @@ export async function empresaDelToken(token: string): Promise<EmpresaDelPortal |
   const t = encodeURIComponent(token);
   const filas = await select<EmpresaDelPortal>(
     'empresas',
-    'select=id,nombre,informes_visibles,portal_anterior_airtable,token_portal,' +
-      `token_portal_anterior&or=(token_portal.eq.${t},token_portal_anterior.eq.${t})&limit=1`
+    'select=id,nombre,informes_visibles,portal_desde_airtable' +
+      `&or=(token_portal.eq.${t},token_portal_anterior.eq.${t})&limit=1`
   );
   return filas[0] ?? null;
 }
 
 /**
- * Si a este enlace le toca el portal de antes, servido desde Airtable.
+ * Si el portal de este cliente sale de Airtable.
  *
- * Es el enlace anterior de una empresa que lo pidió: el portal como estaba
- * antes de la migración, con los datos congelados el día que se dejó de escribir
- * esa base. El enlace de ahora sigue mostrando el OS, y las demás empresas
- * también con el suyo viejo.
+ * Las evaluadoras siguen cargando ahí mientras el OS se termina, así que el
+ * cliente tiene que ver lo que ellas actualizan y no lo que hay en el OS, que
+ * se llena de a ratos para probar. Vale para los dos enlaces de esa empresa: el
+ * que tenía guardado y el que generó la base.
+ *
+ * Se apaga por cliente, cuando su trabajo pase a llevarse en el OS.
  */
 export async function vaPorAirtable(token: string): Promise<boolean> {
   const empresa = await empresaDelToken(token);
-  return Boolean(
-    empresa?.portal_anterior_airtable &&
-      empresa.token_portal_anterior === token &&
-      empresa.token_portal !== token
-  );
+  return Boolean(empresa?.portal_desde_airtable);
 }
 
 export async function datosClienteDeSupabase(token: string): Promise<DatosCliente | null> {
