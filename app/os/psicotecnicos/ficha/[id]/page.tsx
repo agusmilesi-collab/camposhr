@@ -274,7 +274,7 @@ function Datos({
           <Dato rotulo="Batería">
             <Bateria
               codigo={c.pedidos?.baterias?.codigo ?? null}
-              conBenziger={c.pedidos?.con_benziger === true}
+              conBenziger={llevaBenziger(f)}
             />
           </Dato>
           <Dato rotulo="Estado">
