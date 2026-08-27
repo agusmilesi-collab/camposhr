@@ -3,11 +3,14 @@
 Informe de factibilidad. Investigación sobre `camposhr-site` en modo lectura, sin
 tocar nada del repositorio.
 
-**Estado al 26/08/2026: investigado, nada construido.** No hay una línea de
-código de esto en el repositorio, ni certificados pedidos, ni tablas creadas.
-Por dónde se empieza está en la sección 7, y la primera etapa no es ARCA: son
-las cuentas, porque sin ellas las dos evaluadoras no quedan separadas de verdad.
-Lo que hace falta decidir antes de construir está en la sección 8. La sección
+**Estado al 26/08/2026.** Lo que no depende de ARCA está construido:
+`supabase/facturacion.sql` creó `emisores`, `facturas` y `factura_items`, el OS
+arma el comprobante con el diseño de la muestra y lo emite con la banda de "sin
+CAE", y los importes los calcula el servidor. Lo que falta es todo lo de ARCA:
+no hay certificados pedidos, ni `arca_tickets`, ni una línea que hable con los
+web services. Por dónde se sigue está en la sección 7, y la etapa que viene no
+es ARCA: son las cuentas, porque sin ellas las dos evaluadoras no quedan
+separadas de verdad. Lo que hace falta decidir está en la sección 8. La sección
 5.10 suma lo del correo, que arranca antes que el código: hoy el dominio no
 recibe ni firma nada.
 

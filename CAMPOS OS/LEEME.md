@@ -34,7 +34,8 @@ La misma regla está en `CLAUDE.md`, en la raíz del repositorio.
 | `SPECS-generador-informes.md` | El botón que genera el informe desde los datos cargados | Completo, con dos decisiones abiertas |
 | `SPECS-sesion-decision.md` | La pantalla que la psicóloga comparte con el cliente para decidir | Completo, con cuatro cosas a resolver |
 | `SPECS-organigrama.md` | La herramienta de estructura del servicio de mapeo | Completo, con las cuatro capas a resolver |
-| `SPECS-facturacion.md` | Emitir la factura del psicotécnico desde el OS con los web services de ARCA, gratis y con los dos CUIT | Completo, sin nada construido todavía. Su primera etapa son las cuentas |
+| `SPECS-facturacion.md` | Emitir la factura del psicotécnico desde el OS con los web services de ARCA, gratis y con los dos CUIT | El registro de comprobantes está construido; falta ARCA, y antes las cuentas |
+| `SPECS-inteligencia-de-talento.md` | Qué se puede afirmar con los datos de las evaluaciones, con cuántos casos, y en qué orden se construye | Completo, nada construido. Empieza por guardar las competencias |
 
 ---
 
