@@ -12,10 +12,15 @@ export const ESTADOS = ['Lead', 'Enviada', 'Aprobada', 'Perdida'] as const;
  * Lo que se vende, para que el embudo se pueda leer por servicio.
  *
  * Escrito a mano, cada oportunidad nombraba lo mismo de cuatro maneras y no
- * había forma de sumar cuánto se cotizó de cada cosa. El detalle de la
- * propuesta va en la nota.
+ * había forma de sumar cuánto se cotizó de cada cosa. Qué se acordó en cada una
+ * va en la descripción.
  */
-export const SERVICIOS = ['Psicotécnicos', 'Mapeos', 'Liderazgo', 'Mindfulness'] as const;
+export const SERVICIOS = [
+  'Psicotécnicos',
+  'Diseño organizacional',
+  'Liderazgo',
+  'Mindfulness',
+] as const;
 export type Servicio = (typeof SERVICIOS)[number];
 export type Estado = (typeof ESTADOS)[number];
 
