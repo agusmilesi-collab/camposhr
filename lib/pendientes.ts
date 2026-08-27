@@ -22,7 +22,7 @@ export {
 
 import type { Pendiente } from '@/lib/pendientes-tipos';
 
-const CAMPOS = 'id,texto,responsable,para_reunion,hecha,estado,vence,created_at';
+const CAMPOS = 'id,texto,responsable,para_reunion,hecha,estado,vence,orden,created_at';
 
 /**
  * Lo abierto, más lo que se cerró hace poco.
@@ -39,7 +39,15 @@ export async function pendientes(): Promise<{ reunion: Pendiente[]; tareas: Pend
       `select=${CAMPOS}&order=hecha.asc,vence.asc.nullslast,created_at.asc`
     );
     return {
-      reunion: filas.filter((f) => f.para_reunion),
+      // Los temas van en el orden en que se piensa hablarlos, que se arrastra;
+      // el que nadie movió queda al final, por antigüedad.
+      reunion: filas
+        .filter((f) => f.para_reunion)
+        .sort(
+          (a, b) =>
+            (a.orden ?? Infinity) - (b.orden ?? Infinity) ||
+            a.created_at.localeCompare(b.created_at)
+        ),
       tareas: filas.filter((f) => !f.para_reunion),
     };
   } catch {

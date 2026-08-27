@@ -6240,21 +6240,24 @@ body {
 }
 
 /* Las búsquedas se muestran para reconocerlas, no para recordarlas. */
+/* Las tarjetas son chicas: se eligen de un toque y lo que dicen son dos
+   renglones cortos, así que entran más a la vista y la lista de búsquedas no se
+   lleva media pantalla antes de llegar a los candidatos. */
 .pedir-tarjetas {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(172px, 1fr));
+  gap: 7px;
 }
 
 .pedir-tarjeta {
   display: grid;
-  gap: 3px;
-  padding: 12px;
+  gap: 2px;
+  padding: 8px 10px;
   text-align: left;
   font: inherit;
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
@@ -6263,13 +6266,33 @@ body {
 }
 
 .pedir-tarjeta-t {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 600;
 }
 
 .pedir-tarjeta-d {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: var(--muted);
+}
+
+/* El enlace que destapa las entregadas: es una salida y no una acción del
+   formulario, así que va como texto subrayado y no como botón. */
+.pedir-anteriores {
+  justify-self: start;
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.pedir-anteriores:hover {
+  color: var(--ink);
 }
 
 .pedir-cerrada .pedir-tarjeta-t {

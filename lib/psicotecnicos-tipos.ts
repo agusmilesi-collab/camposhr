@@ -60,15 +60,20 @@ export const ETAPA_DE_RUTA: Record<string, Etapa> = Object.fromEntries(
 export type Seccion = { ruta: string; texto: string; etapas: Etapa[] };
 
 export const SECCIONES: Seccion[] = [
-  { ruta: 'sin-asignar', texto: 'Sin asignar', etapas: ['Sin asignar'] },
-  // Las tres etapas de una entrevista, en un tablero de tres columnas: citar,
+  // El circuito entero de una entrevista en un tablero: repartir, citar,
   // agendar y analizar. Son el trabajo de la misma persona sobre el mismo
   // caso, y tenerlas en pantallas distintas obligaba a saltar de una a otra
   // para seguir a alguien. La etapa se cambia arrastrando la tarjeta.
+  //
+  // **Sin asignar era su propia sección hasta el 27/8/2026.** Repartir es el
+  // primer paso de esa misma entrevista, y en una pantalla aparte había que
+  // salir del tablero para ver quién no tenía dueño y volver para ver qué se
+  // hizo con esa persona. Como columna, además, se ve contra qué se reparte:
+  // la cola que ya tiene cada evaluadora está al lado.
   {
     ruta: 'entrevistas',
     texto: 'Entrevistas',
-    etapas: ['Por citar', 'Por entrevistar', 'Por analizar'],
+    etapas: ['Sin asignar', 'Por citar', 'Por entrevistar', 'Por analizar'],
   },
   // El cierre: el informe salió, y a los noventa días de que la persona entró
   // se llama al cliente para preguntar cómo le fue. Es el mismo tramo, y con

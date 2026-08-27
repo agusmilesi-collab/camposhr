@@ -113,6 +113,27 @@ export function diaDe(iso: string | null): string | null {
   return `${p.year}-${p.month}-${p.day}`;
 }
 
+/**
+ * Cuándo cae algo, como se dice en voz alta: "Hoy, 18:00" o "Jueves 27/08, 18:00".
+ *
+ * La de hoy dice "Hoy" y no su fecha: lo primero que se busca en una agenda es
+ * si es hoy, y leer "Jueves 27/08" obliga a acordarse de qué día es hoy para
+ * contestar eso. La de otro día lleva su día y su fecha, que es lo que la
+ * ubica.
+ *
+ * El día de referencia se pasa (`hoy()`, calculado en el servidor) en vez de
+ * mirarlo acá: en el navegador depende del huso de quien mira y la primera
+ * pintura no coincidiría con la que llega del servidor.
+ */
+export function cuandoCae(iso: string | null, dia: string): string | null {
+  if (!iso) return null;
+  if (diaDe(iso) === dia) {
+    const hora = soloHora(iso);
+    return hora ? `Hoy, ${hora}` : 'Hoy';
+  }
+  return `${diaDeLaSemana(iso)} ${fechaHora(iso)}`;
+}
+
 /** Solo la hora, "09:30", para cuando el día ya se sabe. */
 export function soloHora(iso: string | null): string | null {
   if (!iso || !iso.includes('T')) return null;

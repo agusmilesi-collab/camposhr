@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { entrevistaDe, type EstadoRaven, type Entrevista } from '@/lib/entrevista';
-import { diaDeLaSemana, fechaHora } from '@/lib/hora';
+import { cuandoCae, hoy } from '@/lib/hora';
 import { duracion } from '@/lib/raven';
 import LinkRaven from '../../LinkRaven';
 import Tomada from './Tomada';
@@ -85,7 +85,9 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
   const [e, cv] = await Promise.all([entrevistaDe(id), enlaceDelCv(id)]);
   if (!e) return null;
 
-  const cuando = e.cuando ? `${diaDeLaSemana(e.cuando)} ${fechaHora(e.cuando)}` : null;
+  // La de hoy dice "Hoy": es la que se está por tomar, y es la hoja que se
+  // abre con la persona enfrente.
+  const cuando = cuandoCae(e.cuando, hoy());
   const raven = RAVEN[e.raven];
   // El Benziger no lo declara la batería: lo agrega el pedido.
   const tests = [...e.tests, ...(e.conBenziger ? ['Benziger'] : [])];
@@ -272,15 +274,6 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
           <span className="os-dato-rotulo">Modalidad</span>
           <span className="os-dato-valor">{e.modalidad ?? 'Sin definir'}</span>
         </div>
-        {/* La videollamada solo aparece si la entrevista es online. Y si quedó
-            un enlace cargado de cuando lo era, se sigue mostrando: esconder un
-            dato que alguien puso es la forma de perderlo. */}
-        {(e.modalidad === 'Online' || e.enlace) && (
-          <div className="os-entrevista-videollamada">
-            <span className="os-dato-rotulo">Videollamada</span>
-            <Enlace id={e.id} enlace={e.enlace} />
-          </div>
-        )}
         <div>
           <span className="os-dato-rotulo">Batería</span>
           <span className="os-dato-valor">
@@ -314,9 +307,21 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
             )}
           </span>
         </div>
+
+        {/* La videollamada va última y en su propio renglón: es la única que
+            lleva un campo para escribir, y en el medio de los datos partía las
+            dos filas de tres. Aparece solo si la entrevista es online, y si
+            quedó un enlace cargado de cuando lo era se sigue mostrando:
+            esconder un dato que alguien puso es la forma de perderlo. */}
+        {(e.modalidad === 'Online' || e.enlace) && (
+          <div className="os-entrevista-videollamada">
+            <span className="os-dato-rotulo">Videollamada</span>
+            <Enlace id={e.id} enlace={e.enlace} />
+          </div>
+        )}
       </section>
 
-      <h2 className="os-subtitulo">Lo que se le toma</h2>
+      <h2 className="os-subtitulo">Entrevista</h2>
 
       {tests.length === 0 && (
         <section className="os-panel">
