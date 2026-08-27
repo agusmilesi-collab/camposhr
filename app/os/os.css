@@ -610,6 +610,39 @@ html[data-os-lateral='compacta'] .os-boton-pie {
   border-bottom: 0;
 }
 
+/* El nombre se lleva el ancho y lo demás queda alineado a la derecha, así los
+   sellos caen todos sobre la misma línea. */
+.os-pedido-gente li > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ * La cruz de borrar aparece al pasar por encima de la fila.
+ *
+ * Siempre a la vista, una lista de cinco candidatos son cinco cruces que se
+ * leen antes que los nombres, y lo que se hace acá es mirar quién está, no
+ * borrar. Se mantiene visible mientras tiene el foco, para quien va con el
+ * teclado y no pasa el mouse por ningún lado.
+ */
+.os-borrar-x {
+  opacity: 0;
+}
+
+.os-pedido-gente li:hover .os-borrar-x,
+.os-borrar-x:focus-visible {
+  opacity: 1;
+}
+
+/* Confirmar es la fila misma: dos botones donde estaba la cruz, sin ventana
+   encima para dos palabras. */
+.os-borrar-confirma {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Un campo de párrafo usa todo el ancho que tiene: lo que se escribe adentro
    son frases, no un dato corto. */
 .os-campo-parrafo {
