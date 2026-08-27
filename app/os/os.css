@@ -2496,6 +2496,44 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   grid-column: 1 / -1;
 }
 
+/**
+ * Los campos de la oportunidad se alinean por arriba.
+ *
+ * El formulario del OS alinea por abajo, para que dos campos con rótulos de
+ * distinto largo terminen a la misma altura. Acá el precio lleva debajo lo que
+ * el sistema entendió ("ARS 6.300.000"), así que alineados por abajo la fecha
+ * de al lado bajaba y los dos rótulos quedaban a distinta altura.
+ */
+.os-form-cotizacion {
+  align-items: start;
+}
+
+/* El lápiz de la tarjeta: pesa menos que el importe, y se prende al pasar. */
+.os-tarjeta-editar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  color: var(--os-suave);
+  cursor: pointer;
+}
+
+.os-tarjeta-editar svg {
+  width: 15px;
+  height: 15px;
+}
+
+.os-tarjeta-editar:hover {
+  border-color: var(--os-linea);
+  background: var(--os-panel-2);
+  color: var(--os-azul);
+}
+
 .os-etiqueta-campo {
   font-size: 0.7rem;
   letter-spacing: 0.1em;
