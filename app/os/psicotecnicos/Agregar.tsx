@@ -40,6 +40,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import PedidoNuevo from './PedidoNuevo';
+import IconoSoltar from '@/app/os/IconoSoltar';
 
 export type PedidoOpcion = { id: string; puesto: string; empresa: string };
 export type Opcion = { id: string; nombre: string };
@@ -349,6 +350,7 @@ export default function Agregar({
               if (a) tomarArchivo(a);
             }}
           />
+          <IconoSoltar />
           <span className="os-agregar-cv-texto">
             {leyendo ? 'Leyendo el CV…' : archivo || 'Soltá el CV acá o elegí el archivo'}
           </span>

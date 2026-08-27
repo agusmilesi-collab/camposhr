@@ -18,6 +18,8 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { achicar } from '@/lib/imagen-cliente';
+import SoltarArchivo from '@/app/os/SoltarArchivo';
+import IconoSoltar from '@/app/os/IconoSoltar';
 
 export default function Grafico({ id, nombre }: { id: string; nombre: string | null }) {
   const router = useRouter();
@@ -64,27 +66,55 @@ export default function Grafico({ id, nombre }: { id: string; nombre: string | n
           if (a) subir(a);
         }}
       />
+      {/* Sin dibujo, la caja punteada dice de una las dos formas de cargarlo, y
+          es la misma de la tarjeta de alta. Con dibujo, el enlace para verlo y
+          el botón de reemplazar. */}
       {nombre ? (
-        <a
-          className="os-boton os-bender-ver"
-          href={`/api/os/grafico?id=${id}`}
-          target="_blank"
-          rel="noreferrer"
-          title={nombre}
-        >
-          Ver dibujo
-        </a>
+        <>
+          <a
+            className="os-boton os-bender-ver"
+            href={`/api/os/grafico?id=${id}`}
+            target="_blank"
+            rel="noreferrer"
+            title={nombre}
+          >
+            Ver dibujo
+          </a>
+          <SoltarArchivo
+            className="os-bender-subir"
+            deshabilitado={subiendo}
+            onArchivos={(xs) => subir(xs[0])}
+            aviso="Soltá el dibujo"
+          >
+            <button
+              className="os-boton os-bender-subir"
+              type="button"
+              disabled={subiendo}
+              onClick={() => campo.current?.click()}
+              title="Elegí el archivo, o soltalo acá"
+            >
+              {subiendo ? 'Subiendo…' : 'Reemplazar'}
+            </button>
+          </SoltarArchivo>
+        </>
       ) : (
-        <span className="os-enlace-apagado os-bender-ver">Sin dibujo</span>
+        <SoltarArchivo
+          className="os-bender-caja"
+          deshabilitado={subiendo}
+          onArchivos={(xs) => subir(xs[0])}
+          aviso="Soltá el dibujo"
+        >
+          <button
+            type="button"
+            className="os-agregar-cv os-caja-archivo"
+            disabled={subiendo}
+            onClick={() => campo.current?.click()}
+          >
+            <IconoSoltar />
+            {subiendo ? 'Subiendo…' : 'Soltá el dibujo acá o elegí el archivo'}
+          </button>
+        </SoltarArchivo>
       )}
-      <button
-        className={`os-boton os-bender-subir${nombre ? '' : ' os-boton-firme'}`}
-        type="button"
-        disabled={subiendo}
-        onClick={() => campo.current?.click()}
-      >
-        {subiendo ? 'Subiendo…' : nombre ? 'Reemplazar' : 'Subir'}
-      </button>
       {error && <span className="os-form-error">{error}</span>}
     </>
   );

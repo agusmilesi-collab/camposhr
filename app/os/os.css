@@ -3023,12 +3023,16 @@ textarea.os-campo {
  */
 .os-boton-marcado {
   background: transparent;
-  border-color: transparent;
+  /* Con el marco transparente se leía como un dato y nadie probaba tocarlo, que
+     es justo lo que hay que hacer cuando se contactó a la persona. Suave, para
+     seguir diciendo que el trabajo está hecho y que esto no es lo que la
+     tarjeta propone hacer. */
+  border-color: var(--os-linea);
   color: var(--os-tinta-media);
 }
 
 .os-boton-marcado:hover:not(:disabled) {
-  border-color: var(--os-linea);
+  border-color: var(--os-suave);
   background: var(--os-panel-2);
 }
 
@@ -3078,6 +3082,76 @@ textarea.os-campo {
 
 .os-tabla-empresa .os-sello-estado {
   flex: none;
+}
+
+/*
+ * La caja que además recibe archivos soltados (`SoltarArchivo.tsx`).
+ *
+ * En reposo no se ve: adentro está el control de siempre y el marco punteado
+ * solo aparece mientras se arrastra algo encima, que es cuando hay que decir
+ * dónde soltarlo. Un marco permanente en cada test convertiría la hoja de la
+ * entrevista en una grilla de recuadros.
+ */
+.os-soltar {
+  position: relative;
+  display: contents;
+}
+
+.os-soltar.encima {
+  display: block;
+  border: 1px dashed var(--os-tinta-media);
+  border-radius: 9px;
+  background: var(--os-hover);
+}
+
+/*
+ * Donde todavía no hay archivo, en vez de un botón va la caja punteada.
+ *
+ * Es la misma de la tarjeta de alta de candidatos y dice de una las dos formas
+ * de cargarlo, que es lo que un botón solo no cuenta: el marco de `.os-soltar`
+ * recién aparece cuando ya se está arrastrando algo, y para entonces hay que
+ * haberlo intentado. Cargado el archivo, la caja deja lugar al enlace para
+ * verlo y al botón de reemplazar, que es lo que se hace entonces.
+ */
+.os-caja-archivo,
+.os-benziger-vacio {
+  width: 100%;
+  font: inherit;
+}
+
+/* La nube va arriba del texto y del tamaño de dos renglones: es lo que se ve
+   primero y lo que dice para qué es la caja antes de leerla. */
+.os-agregar-cv {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.os-icono-soltar {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  opacity: 0.75;
+}
+
+/* En la fila del test la caja se lleva las dos columnas de la derecha: la del
+   dato y la de la acción, que mientras no hay archivo son la misma cosa. Lleva
+   `display: block` porque `.os-soltar` en reposo no genera caja y sin caja no
+   hay columnas que ocupar. */
+.os-bender-caja {
+  display: block;
+  grid-column: 2 / -1;
+}
+
+.os-soltar-aviso {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: var(--os-panel-2);
+  font-size: 0.78rem;
+  color: var(--os-tinta-media);
 }
 
 /* ---------- Kanban ---------- */
@@ -4517,13 +4591,19 @@ th.os-tabla-contacto {
   font-weight: 600;
 }
 
-/* Las cruces van todas en un renglón: se leen comparándolas entre sí, y
-   partidas en dos filas esa comparación se pierde. Se reparten el ancho, sean
-   tres o cuatro. */
+/*
+ * Las cruces van todas en un renglón: se leen comparándolas entre sí, y
+ * partidas en dos filas esa comparación se pierde. Se reparten el ancho, sean
+ * tres o cuatro.
+ *
+ * **Pero bajan antes que desbordar.** Con una columna por cruz y ancho fijo,
+ * en un panel angosto la fila se pasaba del borde y la pantalla se leía con el
+ * desplazamiento horizontal, que esconde justo la última cruz. Con `auto-fit`
+ * siguen en un renglón mientras entren y recién ahí se acomodan en dos.
+ */
 .os-bz-cruces {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
   gap: 14px;
 }
 
@@ -5160,6 +5240,20 @@ th.os-tabla-contacto {
   overflow-y: auto;
 }
 
+/*
+ * La del Benziger no se desplaza por dentro.
+ *
+ * Con nueve bloques pasa de los 800 px, y el resultado era una barra adentro de
+ * la pestaña: se desplaza la hoja mientras la página queda quieta, así que
+ * queda media pantalla en blanco abajo y hay que descubrir dónde apoyar el
+ * cursor para ver el final. Crece lo que necesite y se baja con la página, como
+ * el resto de la ficha.
+ */
+.os-bz-hoja {
+  max-height: none;
+  overflow-y: visible;
+}
+
 .os-hoja-encabezado {
   display: flex;
   flex-wrap: wrap;
@@ -5529,17 +5623,17 @@ th.os-tabla-contacto {
 }
 
 /*
- * Los tres controles de una tarea se ven igual: pastilla sin borde, fondo
- * apenas marcado y letra chica.
+ * El control suave: pastilla sin borde, fondo apenas marcado y letra chica.
  *
- * El dueño ya era así y los otros dos venían con el marco de los campos de
- * formulario. En un renglón de lista, tres cajas con borde pesan más que el
- * texto de la tarea, que es lo que hay que leer; el fondo se marca al pasar por
- * encima, que es cuando se los va a tocar.
+ * Es para los controles que acompañan a un dato y no lo encabezan: el dueño, el
+ * vencimiento y el estado de una tarea, la fecha y la modalidad de una
+ * entrevista sin citar. Con el marco de los campos de formulario, tres cajas
+ * con borde pesan más que el texto al que pertenecen, que es lo que hay que
+ * leer. El fondo se marca al pasar por encima de la fila, que es cuando se los
+ * va a tocar.
  */
-.os-pendiente-quien,
-.os-pendiente-vence,
-.os-pendiente-estado .os-desplegable-boton {
+.os-control-suave,
+.os-control-suave .os-desplegable-boton {
   flex: none;
   height: 24px;
   border: 0;
@@ -5552,9 +5646,10 @@ th.os-tabla-contacto {
   cursor: pointer;
 }
 
-.os-pendiente:hover .os-pendiente-quien,
-.os-pendiente:hover .os-pendiente-vence,
-.os-pendiente:hover .os-pendiente-estado .os-desplegable-boton {
+.os-pendiente:hover .os-control-suave,
+.os-pendiente:hover .os-control-suave .os-desplegable-boton,
+.os-tarjeta-op:hover .os-control-suave,
+.os-tarjeta-op:hover .os-control-suave .os-desplegable-boton {
   background: var(--os-hover);
 }
 
@@ -5566,8 +5661,14 @@ th.os-tabla-contacto {
   width: 118px;
 }
 
+/* La fecha de la entrevista lleva día y hora, así que pide más que la de
+   vencimiento de una tarea. */
+.os-citar-fecha {
+  width: 100%;
+}
+
 /* El calendario del navegador, del tono del resto en vez del negro que trae. */
-.os-pendiente-vence::-webkit-calendar-picker-indicator {
+.os-control-suave::-webkit-calendar-picker-indicator {
   opacity: 0.45;
   cursor: pointer;
 }
@@ -6831,6 +6932,58 @@ th.os-tabla-contacto {
   overflow-wrap: anywhere;
 }
 
+/* Cuándo cae la entrevista: el dato y, al lado, la salida para reprogramarla.
+   El enlace aparece al pasar por encima del bloque: la fecha es lo primero que
+   se lee y no tiene que competir con un control. */
+.os-cuando {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+/* Una pastilla chica, del tono del dato que acompaña: es una salida y no la
+   acción principal del encabezado, así que aparece al pasar por encima y no
+   compite con la fecha, que es lo que se lee. */
+.os-cuando-boton,
+.os-cuando-volver {
+  padding: 2px 9px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--os-panel-2);
+  color: var(--os-suave);
+  font: inherit;
+  font-size: 0.72rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.os-cuando-boton:hover,
+.os-cuando-volver:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta-media);
+}
+
+.os-cuando-boton {
+  opacity: 0;
+}
+
+.os-entrevista-datos div:hover .os-cuando-boton,
+.os-cuando-boton:focus-visible {
+  opacity: 1;
+}
+
+.os-cuando-editar {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.os-cuando-editar .os-campo {
+  height: 30px;
+  font-size: 0.8rem;
+}
+
 /* Menos el teléfono, que va en un renglón: partido a la mitad deja de leerse
    como un número y hay que rearmarlo para marcarlo. */
 .os-entrevista-datos .os-whatsapp {
@@ -6858,10 +7011,13 @@ th.os-tabla-contacto {
   font-size: 0.81rem;
 }
 
+/* Abre la lista de tests, así que se lee como un título de sección y no como
+   un renglón más: al doble del cuerpo, con su aire propio. */
 .os-subtitulo {
-  margin: 22px 0 10px;
-  font-size: 0.95rem;
+  margin: 28px 0 14px;
+  font-size: 1.9rem;
   font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--os-tinta);
 }
 
@@ -6910,9 +7066,55 @@ th.os-tabla-contacto {
   align-items: center;
   gap: 10px;
   margin: 0;
-  font-size: 0.9rem;
+  /* Es lo que se busca al bajar por la lista mientras se toma la entrevista, y
+     a 0,9 rem pesaba lo mismo que el estado y los botones de al lado. */
+  font-size: 1.35rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--os-tinta);
+}
+
+/*
+ * En qué anda el test, al lado de su nombre.
+ *
+ * Estaba en la primera columna de los botones, a media pantalla del test al que
+ * pertenece: había que ir y volver para saber de cuál era. Pegado al nombre se
+ * lee de corrido, y del tamaño del resto del renglón, no como una nota al pie.
+ *
+ * Pastilla y no sello con punto: acá el color es el dato y un punto de siete
+ * píxeles al lado de un título de 1,35 rem no se ve.
+ */
+.os-marca {
+  flex: none;
+  /* Alto propio y no el de un botón del OS: adentro de un título, los 30 px del
+     botón dan un óvalo que pesa más que el nombre del test. */
+  height: auto;
+  min-height: 0;
+  margin-left: 4px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--punto, var(--os-gris)) 15%, transparent);
+  color: var(--punto, var(--os-tinta-media));
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* El punto sobra: el fondo ya dice el color. */
+.os-marca::before {
+  display: none;
+}
+
+/* El de los tests de papel además se toca para corregirlo. */
+button.os-marca {
+  border: 0;
+  cursor: pointer;
+}
+
+button.os-marca:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--punto, var(--os-gris)) 26%, transparent);
 }
 
 /**
@@ -6958,7 +7160,9 @@ th.os-tabla-contacto {
   flex: none;
   /* 22 más los 10 del gap dan la sangría de arriba. */
   min-width: 22px;
-  font-size: 0.8rem;
+  /* Del cuerpo del nombre, un punto abajo: se lee como parte del título y no
+     como una anotación al margen, que es lo que parecía a 0,85. */
+  font-size: 1.2rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;

@@ -138,7 +138,7 @@ function Linea({
               mismo que vencida: la tarea existe igual y no reclama nada. */}
           <input
             type="date"
-            className="os-pendiente-vence"
+            className="os-control-suave os-pendiente-vence"
             value={p.vence ?? ''}
             onChange={(e) => onCambio({ vence: e.target.value || null })}
             aria-label="Vence"
@@ -149,7 +149,7 @@ function Linea({
           />
 
           <select
-            className="os-pendiente-quien"
+            className="os-control-suave os-pendiente-quien"
             value={p.responsable ?? ''}
             onChange={(e) => onCambio({ responsable: e.target.value || null })}
             aria-label="Responsable"
@@ -162,7 +162,7 @@ function Linea({
             ))}
           </select>
 
-          <span className="os-pendiente-estado">
+          <span className="os-control-suave os-pendiente-estado">
             <Desplegable
               valor={p.estado}
               opciones={OPCIONES_ESTADO}

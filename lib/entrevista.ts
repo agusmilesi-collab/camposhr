@@ -1,4 +1,5 @@
 import 'server-only';
+import type { EstadoRaven } from '@/lib/raven-estado';
 import { select } from '@/lib/supabase';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 
@@ -54,7 +55,7 @@ type Fila = {
 };
 
 /** En qué anda el Raven, que es el único test que la persona hace sola. */
-export type EstadoRaven = 'sin enlace' | 'sin abrir' | 'empezado' | 'terminado';
+export type { EstadoRaven } from '@/lib/raven-estado';
 
 export type Entrevista = {
   id: string;

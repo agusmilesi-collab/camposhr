@@ -30,11 +30,14 @@ const ANIMACION = 190;
 export default function Orden({
   id,
   tests,
+  estados,
   tarjetas,
 }: {
   id: string;
   /** Los nombres, en el orden que rige. */
   tests: string[];
+  /** En qué anda cada uno: va en el renglón del título, no en la tarjeta. */
+  estados: React.ReactNode[];
   /** El contenido de cada uno, en el mismo orden que `tests`. */
   tarjetas: React.ReactNode[];
 }) {
@@ -168,6 +171,9 @@ export default function Orden({
                 {String(i + 1).padStart(2, '0')}
               </span>
               {tests[indice]}
+              {/* En qué anda, pegado al nombre: es lo que se busca al bajar por
+                  la lista mientras se administra. */}
+              {estados[indice]}
             </h3>
             {tarjetas[indice]}
           </section>

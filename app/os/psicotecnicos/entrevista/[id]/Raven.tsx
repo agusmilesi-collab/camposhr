@@ -26,31 +26,23 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import type { EstadoRaven } from '@/lib/entrevista';
+import type { EstadoRaven } from '@/lib/raven-estado';
 import { MINUTOS, RAVEN_MAXIMO, duracion } from '@/lib/raven';
 import LinkRaven from '../../LinkRaven';
 
-/** Cada cuánto se pregunta mientras la persona responde. */
-const CADA = 6_000;
-
-const SELLO: Record<EstadoRaven, { texto: string; detalle: string; color: string }> = {
-  'sin enlace': {
-    texto: 'Sin mandar',
-    detalle: 'Todavía no se le generó el enlace.',
-    color: 'os-gris',
-  },
-  'sin abrir': {
-    texto: 'Sin abrir',
-    detalle: 'Ya se le mandó el enlace y todavía no lo abrió.',
-    color: 'os-ambar',
-  },
-  empezado: { texto: 'En curso', detalle: 'Lo está respondiendo.', color: 'os-ambar' },
-  terminado: {
-    texto: 'Terminado',
-    detalle: 'Lo terminó y el puntaje está en la ficha.',
-    color: 'os-verde',
-  },
-};
+/**
+ * Cada cuánto se pregunta: una vez por minuto.
+ *
+ * Lo que se está esperando tarda: que la persona abra el enlace y que entregue
+ * cincuenta minutos después. Preguntando cada seis segundos eran seiscientas
+ * consultas por entrevista para enterarse antes de algo que igual se mira de
+ * reojo mientras se escribe la entrevista; por minuto son cincuenta, y el reloj
+ * arranca a lo sumo un minuto después de que la persona abrió.
+ *
+ * Al volver a la pestaña se pregunta de una, así que el minuto no se nota
+ * cuando alguien vuelve a mirar.
+ */
+const CADA = 60_000;
 
 type Medida = { raw: number | null; percentil: number | null; resultado: string | null };
 
@@ -142,13 +134,12 @@ export default function Raven({
     return () => clearInterval(t);
   }, [iniciado]);
 
-  const sello = SELLO[estado];
-
   return (
     <div className="os-herramienta-accion">
-      <span className={`os-sello-estado ${sello.color}`} title={sello.detalle}>
-        {sello.texto}
-      </span>
+      {/* La celda del estado queda vacía: en qué anda el Raven se dice al lado
+          del título, con el sello que pone el servidor. Se deja igual para que
+          el botón caiga en la misma columna que en el resto de los tests. */}
+      <span />
 
       {/* El orden de las columnas es el mismo en todos los tests: estado, lo que
           se mira, y la acción. Acá lo que se mira es cuánto le queda mientras

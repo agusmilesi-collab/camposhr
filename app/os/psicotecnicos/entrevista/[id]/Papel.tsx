@@ -12,9 +12,9 @@
  * Las observaciones guardan al salir del campo, y el sí/no al elegir, como el
  * resto del pipeline. Vacío significa sin observaciones, que es lo habitual.
  *
- * La marca también se pone sola al subir lo que la persona dibujó: si están los
- * dibujos, el test se tomó. Se puede corregir a mano igual, que es el caso de
- * haberlo administrado sin llegar a subir las fotos.
+ * **Si se tomó o no vive al lado del título** (`Marca.tsx`), que es donde se
+ * mira al bajar por la lista; acá quedan las observaciones y los botones del
+ * test.
  */
 
 import { useRouter } from 'next/navigation';
@@ -22,19 +22,14 @@ import { useState, useTransition } from 'react';
 
 export default function Papel({
   id,
-  campoMarca,
   campoNotas,
-  administrado,
   observaciones,
   children,
   debajo,
 }: {
   id: string;
-  /** El nombre del campo de administrado, como lo espera la API. */
-  campoMarca: string;
   /** Sin esto no se muestra el campo de observaciones. */
   campoNotas?: string;
-  administrado: boolean;
   observaciones?: string | null;
   /** Lo que se agrega a la derecha del sí/no, si el test tiene algo más. */
   children?: React.ReactNode;
@@ -44,17 +39,7 @@ export default function Papel({
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
-  const [marca, setMarca] = useState(administrado);
   const [notas, setNotas] = useState(observaciones ?? '');
-  // Subir lo que la persona dibujó marca el test como administrado del lado del
-  // servidor. Sin esto, el botón seguía diciendo "No administrado" hasta
-  // recargar la página entera: el estado de acá se quedaba con el valor de
-  // cuando se abrió la pantalla.
-  const [ultimo, setUltimo] = useState(administrado);
-  if (administrado !== ultimo) {
-    setUltimo(administrado);
-    setMarca(administrado);
-  }
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,30 +75,13 @@ export default function Papel({
     await guardar(campoNotas, notas.trim() || null);
   }
 
-  async function marcar(valor: boolean) {
-    const antes = marca;
-    setMarca(valor);
-    if (!(await guardar(campoMarca, valor))) setMarca(antes);
-  }
-
   return (
     <>
+      {/* La celda del estado queda vacía: si se tomó o no se dice al lado del
+          título (`Marca.tsx`). Se deja igual para que los botones sigan
+          cayendo en la misma columna que en el resto de los tests. */}
       <div className="os-herramienta-accion">
-        {/* Un botón que alterna, como el de contacto en el pipeline: el estado
-            se lee de un vistazo por el color y cambiarlo es un toque. Dos
-            botones para un sí o un no ocupaban el doble para decir lo mismo. */}
-        <button
-          type="button"
-          className={`os-boton os-boton-marcado os-sello-estado ${
-            marca ? 'os-verde' : 'os-rojo'
-          }`}
-          aria-pressed={marca}
-          disabled={guardando}
-          onClick={() => marcar(!marca)}
-          title={marca ? 'Tocar para marcar que no se tomó.' : 'Tocar para marcar que se tomó.'}
-        >
-          {marca ? 'Administrado' : 'No administrado'}
-        </button>
+        <span />
         {children}
       </div>
 

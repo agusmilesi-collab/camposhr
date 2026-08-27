@@ -19,9 +19,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { COLOR_ETAPA, type Origen } from '@/lib/psicotecnicos-tipos';
 import type { PedidoOpcion } from './Agregar';
+import SoltarArchivo from '@/app/os/SoltarArchivo';
 
 /**
  * Lo que el cajón necesita saber del candidato.
@@ -63,6 +64,8 @@ export default function Candidato({
   const router = useRouter();
   const [, empezar] = useTransition();
   const [enviando, setEnviando] = useState(false);
+  /** El campo del CV: el archivo soltado se mete acá, que es el que se manda. */
+  const cv = useRef<HTMLInputElement>(null);
   const [borrando, setBorrando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -245,13 +248,28 @@ export default function Candidato({
                 <label className="os-etiqueta-campo" htmlFor="cv">
                   {e.tieneCv ? 'CV cargado · subí otro para reemplazarlo' : 'CV'}
                 </label>
-                <input
-                  className="os-campo os-agregar-archivo"
-                  id="cv"
-                  name="cv"
-                  type="file"
-                  accept=".pdf,.doc,.docx,application/pdf"
-                />
+                {/* Se elige o se suelta encima: el archivo que viene de un mail
+                    ya está a la vista y abrir el buscador es el paso que sobra.
+                    El input es el que viaja con el formulario, así que el
+                    soltado se mete ahí. */}
+                <SoltarArchivo
+                  onArchivos={(xs) => {
+                    if (!cv.current || !xs[0]) return;
+                    const lista = new DataTransfer();
+                    lista.items.add(xs[0]);
+                    cv.current.files = lista.files;
+                  }}
+                  aviso="Soltá el CV"
+                >
+                  <input
+                    ref={cv}
+                    className="os-campo os-agregar-archivo"
+                    id="cv"
+                    name="cv"
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf"
+                  />
+                </SoltarArchivo>
               </div>
             </fieldset>
 
