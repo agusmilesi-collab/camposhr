@@ -6869,9 +6869,147 @@ body {
   margin: 0 0 8px;
 }
 
+/* Cada bloque abre con su título y respira contra el anterior: el documento se
+   lee de arriba abajo y decidiendo, no buscando un dato. */
+.precios-bloque {
+  margin-top: 42px;
+}
+
+.precios-titulo {
+  margin: 0 0 14px;
+  font-size: 1.24rem;
+  line-height: 1.25;
+}
+
+.precios-parrafo {
+  margin: 0 0 10px;
+  line-height: 1.65;
+}
+
+/* Qué recibe la empresa: el nombre en negrita y la explicación al lado, para
+   poder saltear las explicaciones y quedarse con la lista. */
+.precios-entrega {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.precios-entrega li {
+  padding-left: 16px;
+  line-height: 1.6;
+  border-left: 2px solid var(--line);
+}
+
+.precios-detalle {
+  margin-top: 14px;
+}
+
+.precios-detalle-titulo {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.precios-detalle ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  line-height: 1.55;
+  font-size: 0.94rem;
+}
+
+/* Lo que se entrega va en lista corta y a dos columnas cuando entra: son
+   nombres, no explicaciones, y en fila india parecían más de los que son. */
+.precios-entrega-corta {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+/* Lo opcional, separado por una línea: se suma a lo de arriba, no lo
+   reemplaza. */
+.precios-opcional {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.precios-pasos {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 12px;
+  line-height: 1.6;
+}
+
+.precios-cierre {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.precios-nota {
+  margin: 12px 0 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* Quiénes firman: la foto al costado y la bio al lado, una debajo de la otra.
+   La cara y la matrícula son parte de lo que se está comprando. */
+.precios-equipo {
+  display: grid;
+  gap: 20px;
+}
+
+.precios-persona {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.precios-foto {
+  flex: none;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--paper);
+}
+
+.precios-persona-nombre {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.precios-persona-titulo {
+  margin: 2px 0 6px;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.precios-persona-bio {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.94rem;
+}
+
 @media (max-width: 520px) {
   .precios-item-cabeza {
     flex-direction: column;
     gap: 2px;
+  }
+
+  .precios-persona {
+    flex-direction: column;
+    gap: 10px;
   }
 }
