@@ -77,7 +77,6 @@ export default async function Cotizaciones() {
           concepto: c.concepto,
           importe: c.importe,
           moneda: c.moneda,
-          version: c.version,
           estado: c.estado,
           fecha: c.fecha,
           token: c.token,
