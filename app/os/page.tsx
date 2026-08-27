@@ -138,7 +138,6 @@ export default async function Inicio() {
           equipo={nombres}
           yo={yo.nombre}
           paraReunion={false}
-          otraLista="la reunión"
         />
 
         <Pendientes
@@ -153,7 +152,6 @@ export default async function Inicio() {
           equipo={nombres}
           yo={yo.nombre}
           paraReunion
-          otraLista="pendientes"
         />
 
       </div>

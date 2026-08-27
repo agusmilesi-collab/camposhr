@@ -110,41 +110,45 @@ desarrollo empezó a devolver 500 sin que hubiera un error de código.
 
 - *Inicio.* El espacio de trabajo de las tres: temas de la próxima reunión,
   pendientes con responsable, y lo que cada una tiene en curso.
-- *Psicotécnicos, en cuatro secciones:* Sin asignar, Entrevistas, Entregados y
-  Facturación. **Sin asignar y Entrevistas son tableros**, y en los dos la etapa
-  se cambia arrastrando la tarjeta. Entregados es una tabla, porque ahí el
-  trabajo terminó y lo que se hace es consultar.
-  - **Sin asignar** es el tablero de reparto por arrastre, y significa todo lo
-    que no tiene evaluadora, esté en la etapa que esté. Cada tarjeta muestra la
-    fecha de la solicitud y hace cuánto entró. Tocarla abre el cajón de la
-    derecha, donde se corrigen pedido, nombre, teléfono, correo, evaluadora y
-    CV, y donde se borra un candidato: el borrado pide confirmación, arrastra
-    manchas, tests e informe por cascade, y queda anotado en `accesos` con su
-    propia acción.
+- *Psicotécnicos, en tres secciones:* Entrevistas, Entregados y Facturación.
+  **Entrevistas es el tablero** y ahí la etapa se cambia arrastrando la tarjeta.
+  Entregados es una tabla, porque ahí el trabajo terminó y lo que se hace es
+  consultar.
+  - **Entrevistas es un tablero de cuatro columnas** desde el 27/8/2026: Sin
+    asignar, Por citar, Agendadas y Por analizar. Las etapas siguen separadas en
+    la base; lo que se juntó es la pantalla, porque son el trabajo de la misma
+    persona sobre el mismo caso y repartidas en varios lugares había que saltar
+    de una a otra para seguir a alguien.
+  - **La primera columna es de las dos y las otras tres son de cada una.** Sin
+    asignar significa todo lo que no tiene evaluadora, esté en la etapa que
+    esté, y la ve el equipo entero porque repartir es trabajo de todas. Citar,
+    agendar y analizar muestran la cola de quien mira.
+  - **De Sin asignar no se sale arrastrando: se elige a quién.** La tarjeta trae
+    el botón con los nombres y, al lado de cada uno, cuántas tiene encima;
+    arriba del tablero va la misma cuenta, para saber cómo viene el reparto sin
+    tener una tarjeta en la mano. Asignar mueve a Por citar. Al revés sí se
+    arrastra: llevar una tarjeta de vuelta a la primera columna le suelta la
+    dueña, que es la forma de corregir un reparto.
   - La columna sin dueño cierra con la tarjeta **Agregar candidato**: pedido,
     nombre y un contacto a la vista, y el resto detrás de un clic. Si el pedido
     no existe todavía, "+ Pedido nuevo" abre un cajón con sus ocho campos
     (cliente, puesto, área, nivel, batería, Benziger, fecha y qué pidió), y al
     guardarlo queda elegido para seguir cargando candidatos.
-  - **Entrevistas es un tablero de tres columnas** desde el 24/8/2026: Por
-    citar, Agendadas y Por analizar. Las tres etapas siguen separadas en la
-    base; lo que se juntó es la pantalla, porque son el trabajo de la misma
-    persona sobre el mismo caso y repartidas en dos lugares había que saltar de
-    una a otra para seguir a alguien. Antes eran dos bloques de tabla y "Por
-    analizar" tenía su propia entrada en la barra.
-    - **La etapa se cambia arrastrando**, igual que en el reparto. Con una regla
-      que no es de la pantalla sino del trabajo: **a Agendadas no se entra sin
-      fecha**. Una entrevista agendada sin día es lo mismo que una sin agendar.
-    - **Cada columna tiene su tarjeta y su puerta**, porque en cada una se mira
-      otra cosa: al citar, el teléfono para escribir por WhatsApp, si ya se la
-      contactó, y la fecha y la modalidad editables; agendada, cuándo cae y el
-      botón para entrar a la hoja de la entrevista; al analizar, cuánto hace que
-      espera el informe y el botón a su ficha.
-    - Tocar el cuerpo de la tarjeta abre los datos en el cajón de la derecha,
-      como en Sin asignar. Los controles de abajo no lo abren: cada uno hace lo
-      suyo.
-    - `/os/psicotecnicos/por-analizar` redirige acá, igual que `/por-citar` y
-      `/por-entrevistar`.
+  - **La etapa se cambia arrastrando**, con una regla que no es de la pantalla
+    sino del trabajo: **a Agendadas no se entra sin fecha**. Una entrevista
+    agendada sin día es lo mismo que una sin agendar.
+  - **Cada columna tiene su tarjeta y su puerta**, porque en cada una se mira
+    otra cosa: sin asignar, hace cuánto se pidió y a quién dársela; al citar, el
+    teléfono para escribir por WhatsApp, si ya se la contactó, y la fecha y la
+    modalidad editables; agendada, cuándo cae y el botón para entrar a la hoja
+    de la entrevista; al analizar, cuánto hace que espera el informe y el botón
+    a su ficha.
+  - Tocar el cuerpo de la tarjeta abre la ficha, donde se corrigen pedido,
+    nombre, teléfono, correo, evaluadora y CV, y donde se borra un candidato: el
+    borrado pide confirmación, arrastra manchas, tests e informe por cascade, y
+    queda anotado en `accesos` con su propia acción.
+  - `/os/psicotecnicos/sin-asignar` redirige acá, igual que `/por-citar`,
+    `/por-entrevistar` y `/por-analizar`.
   - En Agendadas el botón "Entrevistar" abre la **hoja de la entrevista**, que
     es otra cosa que la ficha: se abre con la persona enfrente y tiene un renglón por test
     de la batería con su herramienta a un clic. Las láminas de Rorschach o

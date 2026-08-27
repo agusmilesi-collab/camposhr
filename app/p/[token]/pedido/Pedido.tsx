@@ -9,7 +9,9 @@
  *
  * 1. **Sus búsquedas se muestran, no se recuerdan.** Nadie sabe de memoria qué
  *    tiene abierto: cada una se ve con su avance ("2 de 3 entregados") y se
- *    elige tocándola. La primera tarjeta es un puesto nuevo.
+ *    elige tocándola. La primera tarjeta es un puesto nuevo. Las ya entregadas
+ *    quedan detrás de "Ver búsquedas anteriores": son la mayor parte de la
+ *    lista al año de trabajar juntos y taparían las que están abiertas.
  * 2. **Los CV se sueltan de a varios y llenan las filas.** Se arrastran los
  *    tres al mismo tiempo y de cada uno sale un candidato, con el mail y el
  *    teléfono que el archivo traiga. Es lo que ya tenía en la mano.
@@ -85,6 +87,15 @@ export default function Pedido({
 }) {
   const router = useRouter();
   const [busqueda, setBusqueda] = useState(NUEVA);
+  /**
+   * Si se muestran las búsquedas ya entregadas.
+   *
+   * Van escondidas: lo normal es sumar candidatos a lo que está abierto o abrir
+   * un puesto nuevo, y con un año de trabajo encima las entregadas son la mayor
+   * parte de la lista y tapan las tres que importan. Sumarle candidatos a una
+   * entregada la reabre, que es una decisión y no el camino de todos los días.
+   */
+  const [verAnteriores, setVerAnteriores] = useState(false);
   const [contacto, setContacto] = useState(contactos[0]?.id ?? '');
   const [puesto, setPuesto] = useState('');
   const [bateria, setBateria] = useState(alcance.baterias[1]?.codigo ?? alcance.baterias[0]?.codigo ?? '');
@@ -340,22 +351,38 @@ export default function Pedido({
                 </button>
               ))}
 
-              {entregadas.map((b) => (
-                <button
-                  type="button"
-                  key={b.id}
-                  className={`pedir-tarjeta pedir-cerrada${
-                    busqueda === b.id ? ' pedir-elegida' : ''
-                  }`}
-                  onClick={() => setBusqueda(b.id)}
-                >
-                  <span className="pedir-tarjeta-t">{b.puesto}</span>
-                  <span className="pedir-tarjeta-d">
-                    Entregada · sumar candidatos la reabre
-                  </span>
-                </button>
-              ))}
+              {/* Las entregadas salen solo si se piden, o si hay una elegida:
+                  escondida la que está elegida, el formulario diría que se
+                  está cargando para un puesto que no se ve en ningún lado. */}
+              {(verAnteriores || entregadas.some((b) => b.id === busqueda)) &&
+                entregadas.map((b) => (
+                  <button
+                    type="button"
+                    key={b.id}
+                    className={`pedir-tarjeta pedir-cerrada${
+                      busqueda === b.id ? ' pedir-elegida' : ''
+                    }`}
+                    onClick={() => setBusqueda(b.id)}
+                  >
+                    <span className="pedir-tarjeta-t">{b.puesto}</span>
+                    <span className="pedir-tarjeta-d">
+                      Entregada · sumar candidatos la reabre
+                    </span>
+                  </button>
+                ))}
             </div>
+
+            {entregadas.length > 0 && !entregadas.some((b) => b.id === busqueda) && (
+              <button
+                type="button"
+                className="pedir-anteriores"
+                onClick={() => setVerAnteriores((v) => !v)}
+              >
+                {verAnteriores
+                  ? 'Ocultar las búsquedas anteriores'
+                  : `Ver búsquedas anteriores (${entregadas.length})`}
+              </button>
+            )}
             {elegida && (
               <p className="pedir-ayuda">
                 Se evalúan con {elegida.bateria ?? 'la batería de esa búsqueda'}

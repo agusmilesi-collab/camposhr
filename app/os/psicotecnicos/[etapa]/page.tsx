@@ -3,10 +3,10 @@ import FiltroEmpresa from '../FiltroEmpresa';
 import Shell from '../../Shell';
 import Entrevistas from '../Entrevistas';
 import Entregados from '../Entregados';
-import Reparto from '../Reparto';
 import Agregar from '../Agregar';
 import { cargar, porEspera, visiblesEn } from '../datos';
 import { TODAS } from '@/lib/filtro-empresa';
+import { hoy } from '@/lib/hora';
 import { SECCIONES, SECCION_DE_RUTA } from '@/lib/psicotecnicos-tipos';
 
 export const dynamic = 'force-dynamic';
@@ -27,6 +27,7 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
     empresas,
     empresa,
     ocultas,
+    carga,
     evaluadoras,
     pedidos,
     evaluadorasAlta,
@@ -35,25 +36,20 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
   } = await cargar();
   const filas = porEspera(visiblesEn(todas, seccion, yo));
 
-  // El reparto necesita las dos mitades: lo que no tiene dueño y lo que ya está
-  // repartido, porque la carga de cada evaluadora es la mitad de la decisión.
-  const esReparto = seccion.ruta === 'sin-asignar';
-  const asignadas = esReparto ? todas.filter((f) => f.evaluadora) : [];
-
   return (
     <Shell
       titulo={`Psicotécnicos · ${seccion.texto}`}
       nota={filas.length === 1 ? '1 persona' : `${filas.length} personas`}
       identidad={yo.nombre}
       ancho
-      avisos={['/os/psicotecnicos/sin-asignar']}
+      avisos={['/os/psicotecnicos/entrevistas']}
       cuentas={cuentas}
     >
       <div className="os-encabezado">
         <h1>{seccion.texto}</h1>
       </div>
 
-      {/* Las tres secciones son tableros y se explican solas, así que el filtro
+      {/* Las dos secciones son tableros y se explican solas, así que el filtro
           por cliente solo aparece si está filtrando: escondido y activo a la
           vez, deja filas afuera sin decirlo y sin nada que tocar para entender
           por qué falta alguien. */}
@@ -67,12 +63,15 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
         </div>
       )}
 
-      {esReparto && (
-        <Reparto
-          sinAsignar={filas}
-          asignadas={asignadas}
+      {/* El circuito de una entrevista en un tablero: repartir, citar, agendar y
+          analizar. La etapa se cambia arrastrando la tarjeta; de la primera
+          columna se sale eligiendo a quién dársela. */}
+      {seccion.ruta === 'entrevistas' && (
+        <Entrevistas
+          filas={filas}
+          hoy={hoy()}
           evaluadoras={evaluadoras}
-          pedidos={pedidos}
+          carga={carga}
           alta={
             <Agregar
               pedidos={pedidos}
@@ -82,12 +81,6 @@ export default async function EtapaPagina({ params }: { params: { etapa: string 
             />
           }
         />
-      )}
-
-      {/* Las tres etapas de una entrevista, en un tablero: citar, agendar y
-          analizar. Se cambia de etapa arrastrando la tarjeta. */}
-      {seccion.ruta === 'entrevistas' && (
-        <Entrevistas filas={filas} />
       )}
 
       {/* El registro de lo entregado, con el seguimiento como una columna más.

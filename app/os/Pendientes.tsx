@@ -3,47 +3,53 @@
 /**
  * Lo pendiente del equipo: los temas de la próxima reunión y las tareas.
  *
- * El mismo componente sirve para las dos listas, porque son la misma anotación
- * con distinto destino (ver `supabase/pendientes.sql`). Cada línea se puede
- * tildar, mover de una lista a la otra y borrar; el dueño se elige en las
- * tareas y no en los temas.
+ * El mismo componente sirve para las dos listas, que comparten tabla y se
+ * separan por `para_reunion` (ver `supabase/pendientes.sql`). Lo que se hace en
+ * cada una es distinto: un tema se ordena y se tilda, una tarea se reparte, se
+ * fecha y cambia de estado.
+ *
+ * **No se pasan de una lista a la otra.** Hubo un botón para hacerlo y se sacó
+ * el 27/8/2026: un tema para hablar entre las tres y una tarea con dueño y
+ * fecha no son la misma anotación con distinto destino, así que convertir una
+ * en otra no es un movimiento sino inventarle la mitad de los datos o tirarlos.
  *
  * **Un tema de reunión no tiene dueño.** Es algo para hablar entre las tres, y
- * mientras esté en esa lista no es de nadie: repartirlo es justamente moverlo a
- * los pendientes, que es donde el selector aparece. Con el selector en las dos,
- * un tema con nombre se leía como una tarea que alguien ya tenía que hacer.
+ * mientras esté en esa lista no es de nadie. Con el selector en las dos, un
+ * tema con nombre se leía como una tarea que alguien ya tenía que hacer.
+ *
+ * **Los temas se ordenan arrastrándolos.** Se listaban por antigüedad, que es
+ * el orden en que se fueron anotando y no el orden en que conviene hablarlos:
+ * un tema que entró último puede ser el que abre la reunión. Las tareas no se
+ * arrastran, porque su prioridad ya la lleva la fecha en que vencen y dos
+ * criterios para la misma lista terminan contradiciéndose.
  *
  * Todo guarda solo y se ve al instante, sin esperar al servidor: es una lista
  * de tres personas anotando cosas, y un botón de guardar la vuelve un trámite.
  */
 
+/** Deja que el navegador anime el renglón que cambia de lugar. */
+function mover(cambio: () => void): void {
+  const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+  if (typeof doc.startViewTransition !== 'function') {
+    cambio();
+    return;
+  }
+  doc.startViewTransition(() => flushSync(cambio));
+}
+
 import { useRouter } from 'next/navigation';
+import { flushSync } from 'react-dom';
 import { useState, useTransition } from 'react';
 import {
   COLOR_ESTADO,
   ESTADOS,
-  VENCIDA,
   estaVencida,
-  estadoVisible,
   type Estado,
   type Pendiente,
 } from '@/lib/pendientes-tipos';
 import Desplegable from '@/app/os/Desplegable';
 
 const OPCIONES_ESTADO = ESTADOS.map((e) => ({ valor: e, texto: e, color: COLOR_ESTADO[e] }));
-
-/**
- * Vencida entra en la lista solo cuando la tarea lo está.
- *
- * Tiene que estar para que el sello la encuentre y salga con su nombre y su
- * color; elegirla no hace nada, porque el desplegable solo avisa cuando lo
- * elegido es distinto de lo que ya muestra. Para que deje de estar vencida hay
- * que darle otra fecha o darla por hecha, que es lo que de verdad la cambia.
- */
-const OPCIONES_VENCIDA = [
-  { valor: VENCIDA, texto: VENCIDA, color: COLOR_ESTADO[VENCIDA] },
-  ...OPCIONES_ESTADO,
-];
 
 /** La fecha guardada (2026-08-25) como se lee acá: 25/8/2026. */
 function diaCorto(iso: string | null): string {
@@ -61,25 +67,54 @@ function Linea({
   p,
   hoy,
   equipo,
-  otraLista,
+  ordenable,
   onCambio,
   onBorrar,
+  onArrastrar,
+  onEncima,
+  onSoltar,
 }: {
   p: Pendiente;
   /** El día de hoy, del servidor: es lo que dice si la tarea ya venció. */
   hoy: string;
   /** Vacío en los temas de reunión, que no se reparten. */
   equipo: string[];
-  otraLista: string;
+  /** Si esta fila se puede arrastrar para cambiarla de lugar. */
+  ordenable: boolean;
   onCambio: (campos: Record<string, unknown>) => void;
   onBorrar: () => void;
+  onArrastrar: () => void;
+  onEncima: () => void;
+  onSoltar: () => void;
 }) {
-  /* Debajo sigue estando el estado guardado: Vencida es lo que se muestra
-     mientras la fecha esté pasada. */
+  /* Vencida no es otro estado: la tarea sigue siendo la que era y lo que cambia
+     es que reclama. Se dice con el color de la fecha y del sello, que siguen
+     diciendo cuándo era y en qué anda. */
   const vencida = estaVencida(p, hoy);
 
   return (
-    <div className={`os-pendiente${p.hecha ? ' hecha' : ''}${vencida ? ' vencida' : ''}`}>
+    <div
+      className={`os-pendiente${p.hecha ? ' hecha' : ''}${vencida ? ' vencida' : ''}${
+        ordenable ? ' os-pendiente-mueve' : ''
+      }`}
+      style={ordenable ? ({ viewTransitionName: `tema-${p.id}` } as React.CSSProperties) : undefined}
+      draggable={ordenable}
+      onDragStart={onArrastrar}
+      onDragOver={(ev) => {
+        if (!ordenable) return;
+        ev.preventDefault();
+        onEncima();
+      }}
+      onDrop={(ev) => {
+        if (!ordenable) return;
+        // Frenarlo es lo que le dice al navegador que el destino valía: sin
+        // eso el renglón vuelve volando al lugar del que salió, y el texto que
+        // viaja en el arrastre se escribe adentro del campo que haya debajo.
+        ev.preventDefault();
+        onSoltar();
+      }}
+      onDragEnd={onSoltar}
+    >
       {/* El tilde es de los temas, que están hablados o no. Una tarea lo dice
           en su estado, y con las dos cosas se podía tildar algo que seguía
           diciendo "Pendiente". */}
@@ -103,7 +138,7 @@ function Linea({
               mismo que vencida: la tarea existe igual y no reclama nada. */}
           <input
             type="date"
-            className="os-campo os-pendiente-vence"
+            className="os-pendiente-vence"
             value={p.vence ?? ''}
             onChange={(e) => onCambio({ vence: e.target.value || null })}
             aria-label="Vence"
@@ -129,38 +164,21 @@ function Linea({
 
           <span className="os-pendiente-estado">
             <Desplegable
-              valor={estadoVisible(p, hoy)}
-              opciones={vencida ? OPCIONES_VENCIDA : OPCIONES_ESTADO}
+              valor={p.estado}
+              opciones={OPCIONES_ESTADO}
               alElegir={(v) => onCambio({ estado: v as Estado })}
               etiqueta={
                 vencida
                   ? `${p.texto} — venció el ${diaCorto(p.vence)}`
                   : `Estado de: ${p.texto}`
               }
-              /* Lo que pide "Pendiente", que es el más largo de los tres: con
-                 menos, el estado más común salía cortado con puntos. */
-              ancho={120}
+              /* Lo que pide "Pendiente", que es el más largo: con menos, el
+                 estado más común salía cortado con puntos. */
+              ancho={118}
             />
           </span>
         </>
       )}
-
-      <button
-        type="button"
-        className="os-pendiente-accion"
-        /* Subir una tarea a la reunión le suelta el dueño: allá no se muestra,
-           y sin soltarlo quedaría un nombre guardado que nadie ve y que
-           reaparecería al bajarla. */
-        onClick={() =>
-          onCambio(
-            p.para_reunion ? { para_reunion: false } : { para_reunion: true, responsable: null }
-          )
-        }
-        title={`Mover a ${otraLista}`}
-        aria-label={`Mover a ${otraLista}`}
-      >
-        {p.para_reunion ? '↓' : '↑'}
-      </button>
 
       <button
         type="button"
@@ -183,7 +201,6 @@ export default function Pendientes({
   equipo,
   yo,
   paraReunion,
-  otraLista,
 }: {
   titulo: string;
   nota?: string;
@@ -193,15 +210,45 @@ export default function Pendientes({
   equipo: string[];
   yo: string;
   paraReunion: boolean;
-  otraLista: string;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
   const [texto, setTexto] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [locales, setLocales] = useState<Pendiente[] | null>(null);
+  const [tomado, setTomado] = useState<string | null>(null);
 
   const vista = locales ?? filas;
+
+  /**
+   * Reordena mientras se arrastra: el renglón tomado se mete donde está el que
+   * se pasa por encima.
+   *
+   * Se cede el lugar al pasar por el vecino y no al soltar, así se ve dónde va
+   * a quedar antes de largarlo. Lo que se manda al servidor es la lista entera
+   * en su orden nuevo, al soltar, y no cada paso del camino.
+   */
+  function acomodar(sobre: string) {
+    if (!tomado || tomado === sobre) return;
+    const actual = vista;
+    const desde = actual.findIndex((f) => f.id === tomado);
+    const hasta = actual.findIndex((f) => f.id === sobre);
+    if (desde < 0 || hasta < 0) return;
+    const nueva = [...actual];
+    const [fila] = nueva.splice(desde, 1);
+    nueva.splice(hasta, 0, fila);
+    mover(() => setLocales(nueva));
+  }
+
+  async function guardarOrden() {
+    if (!tomado) return;
+    setTomado(null);
+    if (!locales) return;
+    const orden = locales.map((f) => f.id);
+    // Mismo orden que el que ya estaba: no hay nada que guardar.
+    if (orden.join() === filas.map((f) => f.id).join()) return;
+    await pedir({ method: 'POST', body: JSON.stringify({ orden }) });
+  }
 
   async function pedir(init: RequestInit & { url?: string }) {
     setError(null);
@@ -270,9 +317,12 @@ export default function Pendientes({
           p={p}
           hoy={hoy}
           equipo={equipo}
-          otraLista={otraLista}
+          ordenable={paraReunion}
           onCambio={(campos) => cambiar(p.id, campos)}
           onBorrar={() => borrar(p.id)}
+          onArrastrar={() => setTomado(p.id)}
+          onEncima={() => acomodar(p.id)}
+          onSoltar={guardarOrden}
         />
       ))}
 

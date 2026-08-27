@@ -16,27 +16,31 @@ import { CLIENTE_POR_DEFECTO, COOKIE_EMPRESA, TODAS } from '@/lib/filtro-empresa
 /**
  * Qué ve cada quien, por sección.
  *
- * **"Sin asignar" es todo lo que no tiene evaluadora**, esté en la etapa que
- * esté. La pantalla la ve el equipo entero porque el trabajo ahí es repartir, y
- * una persona que quedó sin dueño en Por citar necesita el mismo reparto que
- * una recién cargada: si se mostrara en su etapa, aparecería en la pantalla de
- * todas las evaluadoras y no sería trabajo de ninguna.
+ * **Lo que no tiene evaluadora lo ve el equipo entero**, esté en la etapa que
+ * esté: el trabajo ahí es repartir, y una persona que quedó sin dueño en Por
+ * citar necesita el mismo reparto que una recién cargada. Si saliera en su
+ * etapa aparecería en la pantalla de todas las evaluadoras y no sería trabajo
+ * de ninguna. Es la columna Sin asignar de Entrevistas.
  *
- * **Las demás muestran lo que ya tiene dueño**, y de eso lo de quien mira. Una
- * sección puede juntar varias etapas: Entrevistas trae las de citar y las ya
- * agendadas. Lo entregado no se reparte, así que sale por su etapa como
- * siempre.
+ * **Lo que ya tiene dueño sale para su dueña**, y esas son las otras tres
+ * columnas: citar, agendar y analizar muestran lo de quien mira (o todo, si
+ * tiene alcance `todo`). Lo entregado no se reparte, así que sale por su etapa
+ * como siempre.
  */
 const CERRADAS = new Set(['Entregado', 'Seguimiento']);
 
+/** Sin dueño y todavía abierta: es lo que hay que repartir. */
+export function sinDuena(f: Evaluacion): boolean {
+  return !f.evaluadora && !CERRADAS.has(f.etapa);
+}
+
 export function visiblesEn(filas: Evaluacion[], seccion: Seccion, yo: Miembro): Evaluacion[] {
-  if (seccion.ruta === 'sin-asignar') {
-    return filas.filter((f) => !f.evaluadora && !CERRADAS.has(f.etapa));
-  }
   const etapas = new Set<string>(seccion.etapas);
   const cerrada = seccion.etapas.every((e) => CERRADAS.has(e));
-  return filas.filter(
-    (f) => etapas.has(f.etapa) && (cerrada || f.evaluadora) && esMia(f.evaluadora, yo)
+  return filas.filter((f) =>
+    sinDuena(f)
+      ? seccion.ruta === 'entrevistas'
+      : etapas.has(f.etapa) && (cerrada || f.evaluadora) && esMia(f.evaluadora, yo)
   );
 }
 
@@ -132,8 +136,25 @@ export async function cargar() {
   ).length;
   const cuentas = cuentasDe(crudas, yo, aFacturar);
 
+  /**
+   * Cuántas tiene encima cada evaluadora, para poder repartir con eso a la
+   * vista.
+   *
+   * Se cuenta sobre todas las filas y no sobre las que quedaron después del
+   * filtro por cliente: la carga de una persona no cambia porque uno esté
+   * mirando un cliente, y filtrada diría que está libre alguien que tiene doce
+   * de otra empresa.
+   */
+  const carga: Record<string, number> = {};
+  for (const n of evaluadoras) carga[n] = 0;
+  for (const f of crudas) {
+    if (!f.evaluadora || CERRADAS.has(f.etapa)) continue;
+    carga[f.evaluadora] = (carga[f.evaluadora] ?? 0) + 1;
+  }
+
   return {
     todas,
+    carga,
     yo,
     cuentas,
     fallaron,

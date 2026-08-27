@@ -3047,6 +3047,35 @@ textarea.os-campo {
   flex: none;
 }
 
+/*
+ * La carga de cada evaluadora, arriba del tablero de entrevistas.
+ *
+ * Repartir es elegir a quién, y esa decisión se toma contra lo que cada una ya
+ * tiene encima. Cuenta lo abierto de todos los clientes, no lo que quedó
+ * después del filtro: la cola de una persona no cambia porque uno esté mirando
+ * un cliente.
+ */
+.os-carga {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0 0 14px;
+  font-size: 0.78rem;
+  color: var(--os-suave);
+}
+
+.os-carga-quien {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.os-carga-quien b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-tinta);
+}
+
 /* ---------- Kanban ---------- */
 
 .os-kanban {
@@ -5448,6 +5477,17 @@ th.os-tabla-contacto {
   border-bottom: 1px solid var(--os-linea-suave);
 }
 
+/* Un tema se agarra de cualquier parte del renglón: no tiene campos que
+   seleccionar, solo su texto, y un agarre aparte sería un control más en una
+   fila donde ya hay dos. Las tareas no se arrastran. */
+.os-pendiente-mueve {
+  cursor: grab;
+}
+
+.os-pendiente-mueve:active {
+  cursor: grabbing;
+}
+
 .os-pendiente:last-of-type {
   border-bottom: 0;
 }
@@ -5456,36 +5496,18 @@ th.os-tabla-contacto {
   background: var(--os-panel-2);
 }
 
-/* La fecha de vencimiento: el campo del navegador, al alto del resto de la
-   fila y sin el ancho de más que trae por defecto. */
-.os-pendiente-vence {
-  flex: none;
-  width: 132px;
-  height: 30px;
-  padding: 0 8px;
-  font-size: 0.78rem;
-}
-
-.os-pendiente-estado {
-  flex: none;
-}
-
 /*
  * La tarea cuya fecha ya pasó.
  *
- * El sello lo dice con su nombre y su color (`estadoVisible`); acá se pinta la
- * fecha, que es la que lo explica: sin eso hay que ir a leer el día para saber
- * de cuánto es el atraso.
+ * No cambia de estado: sigue diciendo Pendiente o En curso, que es lo que es.
+ * Lo que cambia es el color de las dos cosas que lo explican, la fecha y el
+ * sello, porque una tarea atrasada se tiene que ver antes de leerla.
  */
-.os-pendiente.vencida .os-pendiente-vence {
+.os-pendiente.vencida .os-pendiente-vence,
+.os-pendiente.vencida .os-pendiente-estado .os-desplegable-boton {
+  --punto: var(--os-rojo);
   color: var(--os-rojo);
-  border-color: color-mix(in srgb, var(--os-rojo) 45%, transparent);
-}
-
-
-.os-pendiente-estado .os-desplegable-boton {
-  height: 30px;
-  font-size: 0.78rem;
+  background: color-mix(in srgb, var(--os-rojo) 12%, transparent);
 }
 
 .os-pendiente-texto {
@@ -5502,11 +5524,23 @@ th.os-tabla-contacto {
   text-decoration-thickness: 1px;
 }
 
-.os-pendiente-quien {
+/*
+ * Los tres controles de una tarea se ven igual: pastilla sin borde, fondo
+ * apenas marcado y letra chica.
+ *
+ * El dueño ya era así y los otros dos venían con el marco de los campos de
+ * formulario. En un renglón de lista, tres cajas con borde pesan más que el
+ * texto de la tarea, que es lo que hay que leer; el fondo se marca al pasar por
+ * encima, que es cuando se los va a tocar.
+ */
+.os-pendiente-quien,
+.os-pendiente-vence,
+.os-pendiente-estado .os-desplegable-boton {
   flex: none;
+  height: 24px;
   border: 0;
   border-radius: 999px;
-  padding: 3px 8px;
+  padding: 0 8px;
   background: var(--os-panel-2);
   color: var(--os-tinta-media);
   font: inherit;
@@ -5514,8 +5548,24 @@ th.os-tabla-contacto {
   cursor: pointer;
 }
 
-.os-pendiente:hover .os-pendiente-quien {
+.os-pendiente:hover .os-pendiente-quien,
+.os-pendiente:hover .os-pendiente-vence,
+.os-pendiente:hover .os-pendiente-estado .os-desplegable-boton {
   background: var(--os-hover);
+}
+
+.os-pendiente-estado {
+  flex: none;
+}
+
+.os-pendiente-vence {
+  width: 118px;
+}
+
+/* El calendario del navegador, del tono del resto en vez del negro que trae. */
+.os-pendiente-vence::-webkit-calendar-picker-indicator {
+  opacity: 0.45;
+  cursor: pointer;
 }
 
 .os-pendiente-accion {
@@ -6361,11 +6411,52 @@ th.os-tabla-contacto {
   font-size: 0.82rem;
 }
 
-/* El archivo del CV no entra en el renglón de 30 px que sirve para el resto
-   de los campos: su botón es más alto. */
-.os-agregar-abierto .os-agregar-archivo {
-  height: auto;
-  padding: 6px 8px;
+/*
+ * El CV se suelta o se elige, y las dos formas caen en el mismo lugar.
+ *
+ * La caja entera es el `<label>`, así que tocarla abre el buscador de archivos
+ * y soltarle uno encima hace lo mismo que elegirlo: el input está adentro y
+ * escondido, porque su botón nativo no dice que también se puede arrastrar.
+ * El borde punteado es lo que lo dice, el mismo de la tarjeta de agregar.
+ */
+.os-agregar-cv {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 1px dashed var(--os-linea-fuerte, var(--os-linea));
+  border-radius: 9px;
+  background: var(--os-panel-2);
+  color: var(--os-suave);
+  font-size: 0.76rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.os-agregar-cv:hover,
+.os-agregar-cv.encima {
+  border-color: var(--os-tinta-media);
+  background: var(--os-hover);
+  color: var(--os-tinta-media);
+}
+
+/* Mientras lee, el texto dice qué está pasando y la caja no invita a soltar
+   otro archivo encima. */
+.os-agregar-cv.leyendo {
+  cursor: progress;
+}
+
+/* El input existe y viaja con el formulario, pero no se ve: lo reemplaza la
+   caja entera. */
+.os-agregar-archivo {
+  display: none;
+}
+
+.os-agregar-cv-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* El rótulo arriba del campo, para el que no se explica con un texto adentro:
@@ -6688,23 +6779,39 @@ th.os-tabla-contacto {
  * corta y de altura pareja a propósito: se recorre con la vista mientras se
  * habla, y una tarjeta más alta que las otras se lee como más importante.
  */
-/* Cada dato ocupa lo que su contenido pide y no una porción igual de la fila.
-   En columnas iguales, "B2" se quedaba con el mismo ancho que un correo entero,
-   y el correo terminaba apretado contra el borde. */
+/*
+ * Los datos de la entrevista, en columnas parejas.
+ *
+ * Iban en una fila donde cada uno medía lo que pedía su contenido, y el
+ * resultado era un renglón desparejo: "B2" pegado a la modalidad y un hueco de
+ * medio panel antes del correo, según cuánto midiera el teléfono de esa
+ * persona. En columnas iguales los rótulos caen siempre en el mismo lugar, así
+ * que se busca por posición y no leyendo cuál es cuál.
+ *
+ * Son tres, y los seis datos entran en dos filas iguales: cuándo, modalidad y
+ * batería arriba, que es lo de la entrevista; teléfono, correo y CV abajo, que
+ * es lo de la persona. Con más columnas cada una quedaba tan angosta que el
+ * correo y el teléfono pedían el ancho de dos, y las filas terminaban con
+ * huecos.
+ */
 .os-entrevista-datos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px 34px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 24px;
   padding: 16px 18px;
+}
+
+@media (max-width: 640px) {
+  .os-entrevista-datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .os-entrevista-datos > div {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  flex: 0 1 auto;
   min-width: 0;
-  max-width: 100%;
 }
 
 /* El valor se lee entero: un correo cortado obliga a abrir la ficha para
@@ -6714,10 +6821,17 @@ th.os-tabla-contacto {
   overflow-wrap: anywhere;
 }
 
-/* La videollamada lleva un campo o un botón, así que pide más lugar que un
-   dato de una línea y se lleva lo que sobra de la fila. */
+/* Menos el teléfono, que va en un renglón: partido a la mitad deja de leerse
+   como un número y hay que rearmarlo para marcarlo. */
+.os-entrevista-datos .os-whatsapp {
+  white-space: nowrap;
+}
+
+/* La videollamada se lleva dos columnas de su propio renglón: lleva un campo
+   con su botón, y en una sola el enlace queda de treinta píxeles y no se puede
+   ni leer ni pegar. */
 .os-entrevista-videollamada {
-  flex: 1 1 280px;
+  grid-column: span 2;
 }
 
 .os-entrevista-enlace {
@@ -6752,7 +6866,9 @@ th.os-tabla-contacto {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 11px 18px;
+  /* Más aire arriba que a los costados: el número y el nombre del test abren la
+     tarjeta, y con once píxeles el título quedaba montado sobre el borde. */
+  padding: 18px 18px 11px;
 }
 
 /* Con campo de observaciones la tarjeta crece hacia abajo, así que el relleno
@@ -8996,7 +9112,11 @@ textarea.os-exigencia-notas {
   align-items: flex-end;
   flex-wrap: wrap;
   gap: 8px 20px;
-  margin-bottom: 14px;
+  /* Separado del título y pegado al campo donde se escribe: la fecha es la
+     primera pregunta de la entrevista, así que arranca el bloque de abajo y no
+     cierra el de arriba. */
+  margin-top: 10px;
+  margin-bottom: 4px;
 }
 
 .os-nacimiento-campo {

@@ -585,27 +585,50 @@ la sección es nueva, su entrada en la barra lateral (`app/os/Shell.tsx`, que
 tiene su propia lista).
 
 **Al sacar una sección de la barra hay que dejarle su redirección.** Hoy
-`/por-citar`, `/por-entrevistar`, `/por-analizar` y `/seguimiento` redirigen a
-la sección que las absorbió: la ficha vuelve por esas direcciones cuando se
-abrió desde esa etapa, y sin ellas el botón de volver da 404.
+`/sin-asignar`, `/por-citar`, `/por-entrevistar`, `/por-analizar` y
+`/seguimiento` redirigen a la sección que las absorbió: la ficha vuelve por esas
+direcciones cuando se abrió desde esa etapa, y sin ellas el botón de volver da
+404.
 
 ## Las etapas y las secciones no son lo mismo
 
 `ETAPAS` son los estados del pipeline, los que viven en la base. `SECCIONES`
 (en `lib/psicotecnicos-tipos.ts`) son las entradas de la barra lateral, y una
-sección puede juntar varias etapas: **Entrevistas** trae "Por citar", "Por
-entrevistar" y "Por analizar" juntas, una por columna de su tablero.
+sección puede juntar varias etapas: **Entrevistas** trae "Sin asignar", "Por
+citar", "Por entrevistar" y "Por analizar" juntas, una por columna de su
+tablero.
 
 Agrupar en la navegación no cambia el pipeline: las seis etapas siguen enteras
-en la base. Hoy son tres secciones, con dos, tres y dos etapas cada una.
+en la base. Hoy son dos secciones, con cuatro y dos etapas cada una.
+
+**Repartir es la primera columna de Entrevistas, no una pantalla.** Lo fue
+hasta el 27/8/2026 (`Reparto.tsx`, borrado): en pantallas separadas había que
+salir del tablero para ver quién no tenía dueño y volver para ver qué se hizo
+con esa persona.
+
+- **La primera columna es de las dos; las otras tres, de cada una.** Sin
+  asignar muestra todo lo que no tiene dueño, esté en la etapa que esté, porque
+  repartir es trabajo del equipo. Citar, agendar y analizar muestran lo de quien
+  mira. Lo decide `visiblesEn` en `app/os/psicotecnicos/datos.ts`.
+- **De ahí no se sale arrastrando: se elige a quién.** Un arrastre no puede
+  decir de quién es. El botón lista los nombres con su carga al lado, y arriba
+  del tablero va la misma cuenta: repartir sin ver contra qué se reparte es
+  repartir a ciegas. La carga se cuenta sobre todo lo abierto y **no** sobre lo
+  que dejó el filtro por cliente, que diría que está libre alguien con doce de
+  otra empresa.
+- **Al revés sí**: arrastrar una tarjeta de vuelta a la primera columna le
+  suelta la dueña. Sin ese gesto, un reparto equivocado solo se podía corregir
+  desde la ficha.
+- **Asignar mueve a Por citar** si la evaluación estaba en la etapa Sin asignar;
+  una que venía de más adelante se queda donde estaba, porque lo que le faltaba
+  era dueña y no volver a empezar.
 
 **Tablero o tabla según qué se hace ahí.** Tablero donde el trabajo es mover
-una ficha de columna: Sin asignar (`Reparto.tsx`) y Entrevistas
-(`Entrevistas.tsx`), y en los dos la etapa se cambia arrastrando. Tabla donde el
-trabajo terminó y lo que se hace es consultar: Entregados (`Entregados.tsx`),
-que además trae el seguimiento como una columna. `Tabla.tsx`, que servía a todas
-las secciones a la vez, se borró el 24/8/2026; lo que compartía quedó en
-`piezas.tsx`.
+una ficha de columna: Entrevistas (`Entrevistas.tsx`), donde la etapa se cambia
+arrastrando. Tabla donde el trabajo terminó y lo que se hace es consultar:
+Entregados (`Entregados.tsx`), que además trae el seguimiento como una columna.
+`Tabla.tsx`, que servía a todas las secciones a la vez, se borró el 24/8/2026;
+lo que compartía quedó en `piezas.tsx`.
 
 **La facturación vive entera en su sección.** Entregados no lleva columnas de
 factura ni de cobro: un comprobante junta a varios candidatos de un cliente, así
@@ -630,7 +653,7 @@ llegue el `dragend`, así que ese aviso no lo recibe nadie: la que aparece en la
 columna nueva se queda a media opacidad hasta que se arrastre otra. El
 `onDragEnd` de la tarjeta se queda igual, para cuando se suelta fuera de toda
 columna y no hay movimiento que la desmonte. Vale para los tres tableros
-(`Reparto.tsx`, `Entrevistas.tsx`, `Tablero.tsx`).
+(`Entrevistas.tsx` y `Tablero.tsx`).
 
 ## Un tema de reunión y una tarea no son la misma anotación
 
@@ -638,10 +661,18 @@ Las dos viven en `public.pendientes` y las separa `para_reunion`, pero no se
 editan igual, y por eso `Pendientes.tsx` dibuja distinto cada lista.
 
 **Un tema no tiene dueño, ni fecha, ni estado.** Es algo para hablar entre las
-tres: mientras esté en esa lista no es de nadie, y repartirlo es justamente
-moverlo a las tareas, que es donde aparecen los tres controles. Subir una tarea
-a la reunión le suelta el dueño, si no queda un nombre guardado que nadie ve y
-que reaparece al bajarla. El tilde es de los temas, que están hablados o no.
+tres, y mientras esté en esa lista no es de nadie. El tilde es de los temas, que
+están hablados o no.
+
+**Y no se pasan de una lista a la otra.** Hubo un botón para hacerlo y se sacó
+el 27/8/2026: convertir un tema en tarea no es moverlo, es inventarle dueño,
+fecha y estado, y al revés es tirarlos. Se anota en la lista que corresponde.
+
+**Los temas se ordenan arrastrándolos** (`pendientes.orden`), porque el orden en
+que se anotaron no es el orden en que conviene hablarlos. Al soltar se manda la
+lista entera: fila por fila, una petición que falla deja dos temas en la misma
+posición. Las tareas no se arrastran, que su prioridad ya la lleva el
+vencimiento.
 
 **Una tarea tiene dueño, vencimiento y estado**, y el estado es de tres valores
 (Pendiente, En curso, Hecha): "no está hecha" no distingue lo que nadie empezó
@@ -673,7 +704,7 @@ misma razón por la que existen `lib/comercial-tipos.ts` y
 `app/os/Tablero.tsx`, en Inicio. Tres columnas: Backlog, Hoy y En curso. Viven
 en `evaluaciones.tablero` y **no tocan la etapa**: arrastrar ahí dice en qué
 anda la evaluadora, no que la evaluación avanzó de estado. La etapa se sigue
-cambiando en Entrevistas y en Sin asignar, que son los tableros del circuito.
+cambiando en Entrevistas, que es el tablero del circuito.
 
 Existe porque la lista "Psicotécnicos en curso" decía lo mismo todos los días:
 era el estado del pipeline y no el del trabajo, y con una evaluación abierta en
@@ -959,6 +990,36 @@ qué se les tomó y por qué.
 Las rutas lo hacen cumplir del lado del servidor (`app/api/os/pedidos`,
 `app/api/os/clientes`, ambas con su `DELETE`) y la pantalla ni siquiera ofrece
 el botón cuando sabe que va a ser rechazado: en su lugar dice qué hacer.
+
+## El CV se lee una sola vez, para los dos lados
+
+`lib/cv-lectura.ts`. De la primera página del PDF salen el nombre, el correo y
+el teléfono: el correo y el teléfono por su forma, el nombre por la primera
+línea corta de dos a cuatro palabras en mayúscula, que es como se encabeza un
+CV.
+
+Lo usan las dos puertas que cargan candidatos: el cliente desde su portal
+(`app/api/portal/cv`, que valida el token) y la evaluadora desde el tablero de
+Entrevistas (`app/api/os/cv`, que valida la sesión del OS). El motor es uno
+solo: el trabajo es el mismo y dos copias se habrían separado en la primera
+corrección.
+
+**Se lee en el servidor**, como el lector del Benziger: en el navegador habría
+que servir el worker de pdfjs y bajar un megabyte por visita.
+
+**No guarda nada.** Lee, devuelve y suelta; el archivo se sube con el alta.
+
+**Acierta casi siempre, no siempre**, así que lo que devuelve va a campos que se
+pueden corregir y solo llena los que están vacíos: lo que alguien escribió no se
+pisa. Un CV ilegible vuelve vacío y no interrumpe nada, porque no puede dejar a
+nadie sin poder cargar a esa persona.
+
+**Y el campo del CV va a la vista, no detrás de "más datos"**: escondido nadie
+lo usa, y entonces el lector no ahorra nada. Es una caja con borde punteado que
+se toca para elegir el archivo o recibe el que se le suelte encima; las dos
+formas terminan en el mismo `<input file>`, que es el que viaja con el alta, así
+que el archivo arrastrado se mete ahí con un `DataTransfer` en vez de quedar
+solo leído.
 
 ## Los datos de personas van a Supabase, no al repositorio
 

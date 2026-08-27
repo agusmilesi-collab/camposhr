@@ -28,7 +28,10 @@ const NAV: Grupo[] = [
     // cada una es la pantalla donde se hace ese tramo del trabajo.
     grupo: 'Psicotécnicos',
     items: [
-      { href: '/os/psicotecnicos/sin-asignar', texto: 'Sin asignar', icono: 'sinAsignar' },
+      // Sin asignar salió de la barra el 27/8/2026: repartir es la primera
+      // columna del tablero de Entrevistas, y en pantallas separadas había que
+      // salir del tablero para ver quién no tenía dueño y volver para ver qué
+      // se hizo con esa persona. `/sin-asignar` redirige.
       { href: '/os/psicotecnicos/entrevistas', texto: 'Entrevistas', icono: 'agenda' },
       { href: '/os/psicotecnicos/entregados', texto: 'Entregados', icono: 'listo' },
       // Facturación no es una etapa del pipeline: se deduce de que la

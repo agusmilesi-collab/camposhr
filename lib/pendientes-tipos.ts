@@ -18,27 +18,10 @@ export const ESTADOS = ['Pendiente', 'En curso', 'Hecha'] as const;
 
 export type Estado = (typeof ESTADOS)[number];
 
-/**
- * Vencida se muestra pero no se guarda: la dice la fecha.
- *
- * Guardarla obligaría a escribir en la base todas las noches para que una
- * tarea amanezca vencida, y dejaría de ser cierta en cuanto alguien corriera
- * la fecha. Es la misma decisión que la prioridad del tablero de psicotécnicos:
- * lo que depende del calendario se calcula al mirarlo.
- *
- * Debajo sigue estando el estado real, que es el que se elige y el que se
- * guarda: una vencida sigue siendo Pendiente o En curso, y vuelve a decirlo
- * sola en cuanto se le corre la fecha.
- */
-export const VENCIDA = 'Vencida';
-
-export type EstadoVisible = Estado | typeof VENCIDA;
-
-export const COLOR_ESTADO: Record<EstadoVisible, string> = {
+export const COLOR_ESTADO: Record<Estado, string> = {
   Pendiente: 'os-gris',
   'En curso': 'os-ambar',
   Hecha: 'os-verde',
-  [VENCIDA]: 'os-rojo',
 };
 
 export type Pendiente = {
@@ -51,15 +34,17 @@ export type Pendiente = {
   estado: Estado;
   /** Cuándo deja de poder esperar. Null es "sin fecha". */
   vence: string | null;
+  /** Dónde va en la lista de la reunión. Null: al final, por antigüedad. */
+  orden: number | null;
   created_at: string;
 };
 
 /**
  * Si la fecha ya pasó y la tarea sigue sin terminarse.
  *
- * No es un estado más: la tarea sigue siendo la que era, pendiente o en curso,
- * y lo que cambia es que ahora reclama. Por eso se calcula al mirarla en vez
- * de guardarse: guardarla obligaría a escribir en la base todas las noches
+ * No es otro estado: la tarea sigue siendo la que era, pendiente o en curso, y
+ * lo que cambia es que ahora reclama. El sello sigue diciendo su estado y se
+ * pinta de rojo, igual que la fecha. Se calcula al mirarla en vez de guardarse: guardarla obligaría a escribir en la base todas las noches
  * para que una tarea amanezca vencida, y dejaría de ser cierta en cuanto
  * alguien corriera la fecha.
  *
@@ -77,10 +62,3 @@ export function estaVencida(
   return p.estado !== 'Hecha' && Boolean(p.vence) && (p.vence as string) < hoy;
 }
 
-/** Lo que dice el sello: Vencida si la fecha pasó, y si no el estado guardado. */
-export function estadoVisible(
-  p: Pick<Pendiente, 'estado' | 'vence'>,
-  hoy: string
-): EstadoVisible {
-  return estaVencida(p, hoy) ? VENCIDA : p.estado;
-}

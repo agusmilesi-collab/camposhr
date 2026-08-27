@@ -61,6 +61,11 @@ function limpiar(campos: Record<string, unknown>) {
         fila.hecha = valor === 'Hecha';
         break;
       }
+      case 'orden': {
+        if (valor !== null && !Number.isInteger(valor)) return { motivo: 'Orden inválido.' };
+        fila.orden = valor;
+        break;
+      }
       case 'vence': {
         if (valor !== null && (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor))) {
           return { motivo: 'La fecha tiene que ser un día del calendario.' };
@@ -111,6 +116,42 @@ export async function POST(req: Request) {
   if (!cfg) return NextResponse.json({ ok: false, motivo: 'Falta la configuración.' }, { status: 500 });
 
   const datos = await req.json().catch(() => null);
+
+  /**
+   * Reordenar la lista entera: llega el orden nuevo y cada fila se queda con su
+   * posición.
+   *
+   * Va junto y no de a una fila porque mover un tema cambia el lugar de todos
+   * los que estaban debajo: mandados de a uno, una petición que falla deja la
+   * lista con dos temas en la misma posición.
+   */
+  if (Array.isArray(datos?.orden)) {
+    const ids: unknown[] = datos.orden;
+    if (ids.length > 200 || ids.some((x) => typeof x !== 'string' || !UUID.test(x))) {
+      return NextResponse.json({ ok: false, motivo: 'Orden inválido.' }, { status: 400 });
+    }
+    for (const [i, uno] of (ids as string[]).entries()) {
+      const res = await fetch(`${cfg.url}/rest/v1/pendientes?id=eq.${uno}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: cfg.key,
+          Authorization: `Bearer ${cfg.key}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ orden: i, actualizado_at: new Date().toISOString() }),
+        cache: 'no-store',
+      });
+      if (!res.ok) {
+        return NextResponse.json(
+          { ok: false, motivo: `Supabase respondió ${res.status}` },
+          { status: 400 }
+        );
+      }
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   const id = datos?.id;
   if (typeof id !== 'string' || !UUID.test(id)) {
     return NextResponse.json({ ok: false, motivo: 'Identificador inválido.' }, { status: 400 });
