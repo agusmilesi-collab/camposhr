@@ -10,7 +10,6 @@ import {
   pedidosAbiertos,
 } from '@/lib/altas';
 import { equipo, esMia, quienSoy, type Miembro } from '@/lib/identidad';
-import { listarAFacturar } from '@/lib/facturas';
 import { CLIENTE_POR_DEFECTO, COOKIE_EMPRESA, TODAS } from '@/lib/filtro-empresa';
 
 /**
@@ -57,39 +56,29 @@ function empresaElegida(empresas: string[]): string {
 }
 
 /**
- * Los números de la barra lateral.
+ * El único número de la barra lateral: lo que está sin repartir.
  *
- * Los calcula cualquier pantalla del OS y no solo las del pipeline: entrar a
- * una ficha o a Facturación apagaba todos los demás, y la barra pasaba de decir
- * cuánto hay en cada sección a decirlo solo en la que uno ya está mirando.
+ * Antes llevaba uno por sección y era una foto del sistema: cuántas entrevistas
+ * hay, cuántos informes se entregaron, cuánto falta facturar. Todos ciertos y
+ * ninguno pedía nada, y entre cuatro números el que sí pide algo no se
+ * distinguía.
  *
- * Dicen cuántas se van a ver al entrar, no cuántas existen: por eso respetan el
- * filtro por cliente y el alcance de quien mira. Un número que no coincide con
- * la pantalla no sirve para nada.
+ * Queda el que reclama: un candidato entró y no lo tomó nadie. Sale en rojo, lo
+ * ve el equipo entero (repartir es trabajo de todas) y desaparece cuando no hay
+ * ninguno, que es lo normal.
  */
 export async function cuentasDeLaBarra(): Promise<Record<string, number>> {
-  const yo = await quienSoy();
-  const [{ filas }, aFacturar] = await Promise.all([
-    listarEvaluaciones(),
-    listarAFacturar().catch(() => []),
-  ]);
-  return cuentasDe(filas, yo, aFacturar.filter((p) => esMia(p.evaluadora, yo)).length);
+  const { filas } = await listarEvaluaciones();
+  return avisoDeReparto(filas);
 }
 
-/** El mismo cálculo, para quien ya tiene las filas leídas. */
-function cuentasDe(filas: Evaluacion[], yo: Miembro, aFacturar: number): Record<string, number> {
-  const empresas = [...new Set(filas.map((f) => f.empresa))];
-  const empresa = empresaElegida(empresas);
-  const suyas = empresa === TODAS ? filas : filas.filter((f) => f.empresa === empresa);
+/** Dónde se muestra: la sección que tiene la columna de sin asignar. */
+export const SIN_ASIGNAR = '/os/psicotecnicos/entrevistas';
 
-  const cuentas: Record<string, number> = {};
-  for (const s of SECCIONES) {
-    cuentas[`/os/psicotecnicos/${s.ruta}`] = visiblesEn(suyas, s, yo).length;
-  }
-  // La facturación no filtra por cliente: la cola es de quien factura y se
-  // arma con todo lo que entrevistó, sea de la empresa que sea.
-  cuentas['/os/psicotecnicos/facturacion'] = aFacturar;
-  return cuentas;
+/** El aviso, para quien ya tiene las filas leídas. */
+function avisoDeReparto(filas: Evaluacion[]): Record<string, number> {
+  const sinDueno = filas.filter(sinDuena).length;
+  return sinDueno > 0 ? { [SIN_ASIGNAR]: sinDueno } : {};
 }
 
 /** Lo que necesitan todas las pantallas de la sección, con una sola lectura. */
@@ -130,11 +119,8 @@ export async function cargar() {
     detalle: { filas: todas.length, alcance: yo.alcance, empresa, fallaron },
   });
 
-  // Las de la barra salen de las filas ya leídas, sin volver a pedirlas.
-  const aFacturar = (await listarAFacturar().catch(() => [])).filter((p) =>
-    esMia(p.evaluadora, yo)
-  ).length;
-  const cuentas = cuentasDe(crudas, yo, aFacturar);
+  // El aviso de la barra sale de las filas ya leídas, sin volver a pedirlas.
+  const cuentas = avisoDeReparto(crudas);
 
   /**
    * Cuántas tiene encima cada evaluadora, para poder repartir con eso a la

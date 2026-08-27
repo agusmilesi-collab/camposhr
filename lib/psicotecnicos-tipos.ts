@@ -241,6 +241,14 @@ export type Evaluacion = {
   servicio: string | null;
   /** Días desde la entrevista, cuando ya se tomó. */
   dias: number | null;
+  /**
+   * Los mismos días, contando solo de lunes a viernes.
+   *
+   * Es lo que se mira para saber si un informe se está demorando: el trabajo es
+   * de lunes a viernes, y contando corridos todo lo del fin de semana aparecía
+   * demorado los lunes a la mañana.
+   */
+  diasHabiles: number | null;
   /** Días esperando desde que entró, cuando todavía no hay entrevista. */
   diasEsperando: number | null;
   /**

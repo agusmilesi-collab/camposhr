@@ -40,6 +40,23 @@ export default async function Baterias() {
 
   return (
     <>
+      {/* La misma información, como la ve el cliente. Se manda a quien pregunta
+          cuánto sale, y sale de acá: sin este enlace, nadie se acuerda de que
+          esa página existe ni de que cambia sola con lo que se edita abajo. */}
+      <div className="os-barra-acciones">
+        <a
+          className="os-boton"
+          href="https://camposhr.com/psicotecnicos"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Ver la página de precios
+        </a>
+        <span className="os-columna-nota">
+          camposhr.com/psicotecnicos · sin indexar, se manda por mail o WhatsApp
+        </span>
+      </div>
+
       {baterias.length === 0 && (
         <div className="os-panel">
           <p className="os-vacio">No se pudieron leer las baterías.</p>

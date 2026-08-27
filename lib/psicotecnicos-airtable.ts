@@ -31,7 +31,7 @@
  */
 
 import 'server-only';
-import { diasDesde } from '@/lib/hora';
+import { diasDesde, habilesDesde } from '@/lib/hora';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { ETAPAS, RUTA, type Etapa, type Evaluacion } from '@/lib/psicotecnicos-tipos';
 export { ETAPAS, RUTA, ETAPA_DE_RUTA } from '@/lib/psicotecnicos-tipos';
@@ -273,6 +273,7 @@ export async function listar(): Promise<Evaluacion[]> {
       pagado: false,
       servicio: f[F.servicio] ?? null,
       dias: diasDesde(fechaEntrevista, hoy),
+      diasHabiles: habilesDesde(fechaEntrevista, hoy),
       diasEsperando: fechaEntrevista ? null : diasDesde(f[F.fechaIngreso] ?? null, hoy),
       diasSolicitud: diasDesde(f[F.fechaIngreso] ?? null, hoy),
       // El tablero de la home es de Supabase: acá no hay dónde guardarlo, y

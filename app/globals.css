@@ -6762,3 +6762,116 @@ body {
   border-color: var(--st-blue);
   box-shadow: inset 0 0 0 4px var(--st-blue);
 }
+
+
+/* ---------- La lista de precios de psicotécnicos ----------
+   Vive en /psicotecnicos, sin indexar y sin enlace desde el sitio: se manda a
+   quien la pide. Una columna angosta, porque se lee de arriba abajo y casi
+   siempre en el teléfono, con el precio de cada batería a la derecha de su
+   título, que es lo que se vino a buscar. */
+.precios {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 22px 64px;
+}
+
+.precios-marca {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.precios-top h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  line-height: 1.1;
+}
+
+.precios-bajada {
+  margin: 0 0 30px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.precios-lista {
+  display: grid;
+  gap: 12px;
+}
+
+.precios-item {
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+
+.precios-item-cabeza {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.precios-item-cabeza h2 {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.3;
+}
+
+.precios-monto {
+  flex: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* El equivalente en pesos, más chico: el precio del perfil está fijado en
+   dólares y el peso es de hoy. */
+.precios-monto em {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.precios-cod {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.precios-por {
+  color: var(--muted);
+}
+
+.precios-incluye {
+  margin: 10px 0 0;
+  line-height: 1.6;
+}
+
+/* Lo que se suma a cualquier batería va separado de las tres, no como una
+   cuarta: no se elige en su lugar sino además. */
+.precios-suma {
+  margin-top: 26px;
+}
+
+.precios-pie {
+  margin-top: 30px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.precios-pie p {
+  margin: 0 0 8px;
+}
+
+@media (max-width: 520px) {
+  .precios-item-cabeza {
+    flex-direction: column;
+    gap: 2px;
+  }
+}

@@ -100,7 +100,7 @@ export default async function Inicio() {
   const cuentas = await cuentasDeLaBarra();
 
   return (
-    <Shell titulo="Inicio" identidad={yo.nombre} cuentas={{ ...cuentas, '/os/cotizaciones': abiertas.length }}>
+    <Shell titulo="Inicio" identidad={yo.nombre} cuentas={cuentas}>
       <div className="os-encabezado">
         <Saludo nombre={yo.nombre} />
       </div>
