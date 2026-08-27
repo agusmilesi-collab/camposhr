@@ -175,7 +175,10 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     bateria: f.pedidos?.baterias?.codigo ?? null,
     bateriaNombre: f.pedidos?.baterias?.nombre ?? null,
     tests: ordenar(f.pedidos?.baterias?.tests ?? [], f.orden_tests),
-    conBenziger: f.pedidos?.con_benziger ?? false,
+    // Lo pidió el pedido o se le tomó igual: el sello dice lo que esta persona
+    // tiene, y hay 38 evaluaciones con el Benziger tomado sobre un pedido que
+    // nunca lo marcó.
+    conBenziger: (f.pedidos?.con_benziger ?? false) || f.benziger_administrado === true,
     benzigerAdministrado: f.benziger_administrado,
     proyectivoAdministrado: f.proyectivo_administrado,
     benderAdministrado: f.bender_administrado,

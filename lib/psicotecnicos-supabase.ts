@@ -70,6 +70,7 @@ type Fila = {
   fecha_entrega: string | null;
   bender_administrado: boolean;
   grafico_2_personas_administrado: boolean;
+  benziger_administrado: boolean | null;
   recomendacion: string | null;
   informe_path: string | null;
   ingreso: boolean | null;
@@ -95,7 +96,8 @@ type Fila = {
 
 const CAMPOS =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
-  'bender_administrado,grafico_2_personas_administrado,recomendacion,informe_path,' +
+  'bender_administrado,grafico_2_personas_administrado,benziger_administrado,' +
+  'recomendacion,informe_path,' +
   'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,' +
   'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
   'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo))';
@@ -116,7 +118,9 @@ export async function listar(): Promise<Evaluacion[]> {
     puesto: f.pedidos?.puesto ?? 'Sin puesto',
     pedidoId: f.pedido_id,
     bateria: f.pedidos?.baterias?.codigo ?? null,
-    conBenziger: f.pedidos?.con_benziger === true,
+    // Lo pidió el pedido o se le tomó igual: las dos cosas quieren decir que
+    // esta persona tiene Benziger, que es lo que el sello dice.
+    conBenziger: f.pedidos?.con_benziger === true || f.benziger_administrado === true,
     email: f.personas?.email ?? null,
     telefono: f.personas?.telefono ?? null,
     evaluadora: f.evaluadoras?.nombre ?? null,
