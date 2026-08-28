@@ -213,7 +213,12 @@ export default function Orden({
                 </svg>
               </button>
             </div>
-            {abiertos.includes(tests[indice]) && tarjetas[indice]}
+            {/* Desplegado, una línea separa el título de lo que cuelga: sin
+                ella la tarjeta abierta se lee como un bloque continuo y no se
+                ve dónde termina el encabezado. */}
+            {abiertos.includes(tests[indice]) && (
+              <div className="os-herramienta-cuerpo">{tarjetas[indice]}</div>
+            )}
           </section>
         ))}
       </div>
