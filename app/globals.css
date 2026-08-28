@@ -6494,10 +6494,21 @@ body {
   font-size: 0.86rem;
 }
 
+/* Las tres opciones en columnas del mismo ancho: al ancho de su texto, cada
+   pregunta tenía sus pastillas en otro lugar y la columna del medio nunca caía
+   dos veces en el mismo sitio. Con la grilla, las nueve preguntas se contestan
+   bajando por la misma línea. */
 .pedir-opciones {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
+  max-width: 700px;
+}
+
+@media (max-width: 560px) {
+  .pedir-opciones {
+    grid-template-columns: 1fr;
+  }
 }
 
 /*
@@ -6517,6 +6528,9 @@ body {
   font: inherit;
   font-size: 0.83rem;
   color: var(--ink);
+  /* El botón centra su texto: el que entra en dos renglones quedaba centrado
+     al lado de su punto, con la segunda línea flotando en el medio. */
+  text-align: left;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 20px;
