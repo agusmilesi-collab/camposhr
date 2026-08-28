@@ -1041,8 +1041,12 @@
  * pantalla del OS, una caja de mil doscientos píxeles deja renglones que no se
  * pueden leer de corrido.
  */
+/* Centrado y no pegado a la izquierda: el panel ocupa el ancho de la pantalla,
+   que en un monitor grande son dos mil píxeles, y el informe medía novecientos
+   con el resto en blanco a la derecha. Es lo que hacía el documento. */
 .sitio-secciones-ficha {
   max-width: 940px;
+  margin: 0 auto;
   padding: 0 22px 8px;
 }
 
