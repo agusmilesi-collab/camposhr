@@ -96,17 +96,16 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
    */
   const conDiscursivo = todos.includes(TEST_DISCURSIVO);
   /*
-   * Tomado es tener el plazo y el cuestionario contestado.
+   * Tomado es tener el plazo y las cuatro preguntas contestadas.
    *
-   * Contestado es que haya al menos una respuesta, y no las cuatro: las
-   * preguntas son una escalera y la evaluadora marca hasta donde llega, así que
-   * exigir las cuatro dejaba en "no administrado" a quien contestó las que
-   * correspondían. Lo que la persona contó se anota mientras habla y no es lo
-   * que lo cierra.
+   * Las cuatro y no las que llegaron a marcarse: dejar una en blanco y dejarla
+   * en "no" son cosas distintas, y el estrato sale de la más alta contestada
+   * que sí. Lo que la persona contó se anota mientras habla y no es lo que lo
+   * cierra.
    */
   const potencialTomado =
     e.horizonteDias !== null &&
-    Object.values(e.complejidad ?? {}).some((v) => typeof v === 'boolean');
+    [1, 2, 3, 4].every((n) => typeof e.complejidad?.[String(n)] === 'boolean');
   const tests = todos.filter((t) => t !== TEST_DISCURSIVO);
 
   /**
