@@ -618,7 +618,7 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
           acciones y la hoja son la misma cosa. En dos paneles apilados se leían
           como bloques sueltos, y el de arriba tenía un título y tres botones y
           nada más. */}
-      <section className="os-panel">
+      <section className="os-panel os-panel-informe">
       <div className="os-generar">
         <h2>El informe</h2>
         <div className="os-generar-acciones">
