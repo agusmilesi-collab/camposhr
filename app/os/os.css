@@ -6675,10 +6675,46 @@ th.os-tabla-contacto {
   color: var(--os-tinta);
 }
 
+/*
+ * La respuesta del plazo: es un dato que se carga, así que se ve como un campo.
+ *
+ * Con el control suave del resto del sistema, el número y su unidad se perdían
+ * contra el fondo de la tarjeta y no parecían tocables. Acá son la respuesta a
+ * una pregunta, que es lo que hay que completar.
+ */
 .os-nivel-tiempo {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.os-nivel-tiempo .os-control-suave {
+  height: 32px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel);
+  color: var(--os-tinta);
+  font-size: 0.86rem;
+}
+
+.os-nivel-tiempo .os-control-suave:hover:not(:disabled) {
+  border-color: var(--os-suave);
+}
+
+.os-nivel-tiempo .os-potencial-numero {
+  width: 74px;
+  font-weight: 600;
+}
+
+/* Y lo que sale de esa respuesta, al lado y en tinta plena: es el resultado. */
+.os-nivel-tiempo .os-nivel-sale {
+  margin-left: 6px;
+  font-size: 0.86rem;
+  color: var(--os-tinta);
+}
+
+.os-nivel-tiempo .os-nivel-sale.vacio {
+  color: var(--os-suave);
 }
 
 /* Lo que el sistema dedujo, no lo que alguien eligió: en gris y sin marco. */
