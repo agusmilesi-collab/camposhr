@@ -1,5 +1,6 @@
 import 'server-only';
 import { RESPALDO, type BateriaDelPortal } from '@/lib/baterias';
+import { llevaDiscursivo } from '@/lib/discursivo';
 import {
   BENZIGER_USD,
   baterias as leerBaterias,
@@ -61,6 +62,9 @@ export async function alcanceYPrecios(): Promise<Alcance> {
         queIncluye: b.descripcion as string,
         paraQuien: b.para_quien as string,
         minutos: b.duracion_min,
+        // Lo que decide si al cliente se le piden los datos del potencial: que
+        // la batería incluya el análisis discursivo.
+        conPotencial: llevaDiscursivo(b.tests),
         precio: precioA(b.precios),
       }));
 

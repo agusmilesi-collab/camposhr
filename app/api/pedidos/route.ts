@@ -6,6 +6,16 @@ import { crearCandidato, crearPedido } from '@/lib/altas';
 import { empresaDelToken } from '@/lib/portal-supabase';
 import { esDemo, NOMBRE_DEMO } from '@/lib/portal-demo';
 import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
+import {
+  ESTRATOS,
+  PREGUNTAS,
+  UNIDADES,
+  aDias,
+  estratoDeTimeSpan,
+  estratoPorNumero,
+  nivelDeRespuestas,
+  type Unidad,
+} from '@/lib/potencial';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,6 +95,49 @@ export async function POST(req: Request) {
     const v = texto(p.campo);
     if (v && p.opciones.includes(v)) perfil[p.campo] = v;
   }
+
+  /**
+   * El nivel de trabajo del puesto, cuando la batería lleva potencial.
+   *
+   * Dos caminos, los mismos que el equipo contesta en la ficha del pedido: el
+   * plazo de la tarea de mayor alcance y las cinco preguntas de complejidad.
+   * Los dos dan un estrato solos; si coinciden, o si vino uno solo, queda
+   * guardado, y si se contradicen queda null y lo resuelve la evaluadora.
+   *
+   * Todo lo que llega se valida acá: es una dirección abierta con token, y un
+   * plazo de mil años o una pregunta que no existe entrarían igual.
+   */
+  const cantidad = Number(texto('spanCantidad').replace(',', '.'));
+  const unidad = texto('spanUnidad');
+  const timeSpanDias =
+    Number.isFinite(cantidad) && cantidad > 0 && UNIDADES.some((u) => u.clave === unidad)
+      ? aDias(cantidad, unidad as Unidad)
+      : null;
+
+  const complejidad: Record<string, boolean> = {};
+  for (const pr of PREGUNTAS) {
+    const v = texto(`complejidad-${pr.estrato}`);
+    if (v === 'si' || v === 'no') complejidad[String(pr.estrato)] = v === 'si';
+  }
+  const porPreguntas = estratoPorNumero(
+    nivelDeRespuestas(
+      Object.entries(complejidad)
+        .filter(([, si]) => si)
+        .map(([n]) => Number(n))
+    ) ?? 0
+  );
+  const porTiempo = timeSpanDias !== null ? estratoDeTimeSpan(timeSpanDias) : null;
+  const unico =
+    porTiempo && porPreguntas
+      ? porTiempo.romano === porPreguntas.romano
+        ? porTiempo
+        : null
+      : (porTiempo ?? porPreguntas);
+  const nivelDelPuesto = {
+    timeSpanDias,
+    complejidad: Object.keys(complejidad).length > 0 ? complejidad : null,
+    estratoPuesto: unico ? ESTRATOS.findIndex((e) => e.romano === unico.romano) + 1 : null,
+  };
 
   /** Quién lo pidió, del lado del cliente. Tiene que ser de esa empresa. */
   const contactoId = texto('contactoId');
@@ -207,8 +260,12 @@ export async function POST(req: Request) {
               .filter(Boolean)
               .join('\n\n') || null,
           origen: 'portal',
+          // Quién lo pidió queda en el pedido y no solo en las notas: el
+          // informe lo nombra debajo de la empresa.
+          solicitanteId: quienPide?.id ?? null,
         },
-          perfil
+          perfil,
+          nivelDelPuesto
         )
       ).id;
 
