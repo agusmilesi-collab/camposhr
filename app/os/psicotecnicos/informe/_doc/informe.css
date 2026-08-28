@@ -1925,3 +1925,14 @@
   font-size: 0.76rem;
   color: var(--tinta-media);
 }
+
+/* La firma manuscrita, arriba del nombre y de la matrícula.
+   `align-self` porque el bloque es una columna flexible y estira a sus hijos al
+   ancho entero: sin eso el trazo salía de punta a punta y aplastado. */
+.inf-firma-trazo {
+  align-self: flex-start;
+  display: block;
+  width: auto;
+  height: 88px;
+  margin: 0 0 -4px -4px;
+}

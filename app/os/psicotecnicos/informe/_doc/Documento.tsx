@@ -23,6 +23,7 @@ import {
 } from '@/lib/potencial';
 import Listas from './Listas';
 import { Encabezado, Marca, Pie } from './Marco';
+import { firmaEnDatos } from '@/lib/firmas';
 import Hoja from './Hoja';
 import './informe.css';
 
@@ -297,7 +298,7 @@ export type Parte = 'todo' | 'trabajo' | 'recomendacion' | 'fundamentos' | 'indi
  * carga, y la página suelta, que es la que se imprime. Un solo molde, para que
  * lo que se revisa en pantalla sea exactamente lo que sale en el PDF.
  */
-export default function Documento({
+export default async function Documento({
   inf,
   interno = false,
   editar,
@@ -336,6 +337,10 @@ export default function Documento({
   marco?: boolean;
 }) {
   const firma = inf.evaluadora ? FIRMAS[inf.evaluadora] : undefined;
+  /* La firma manuscrita entra como datos y no como dirección: el informe se
+     imprime a PDF y se guarda, y una dirección firmada que vence dejaría ese
+     papel sin firma al día siguiente. */
+  const trazo = firma?.trazo ? await firmaEnDatos(firma.trazo) : null;
 
   /** Si este capítulo entra en lo que se está dibujando. */
   const va = (cual: Exclude<Parte, 'todo' | 'trabajo'>) =>
@@ -986,6 +991,10 @@ export default function Documento({
       <Capitulo numero={num()} titulo="Profesional a cargo">
         <p className="inf-confidencial">{CONFIDENCIALIDAD}</p>
         <div className="inf-firma">
+          {/* La firma manuscrita arriba del nombre, como en un papel: sirve
+              para eso, para que se vea que alguien lo firmó. Sin texto
+              alternativo, que lo que dice está en el renglón de abajo. */}
+          {trazo && <img className="inf-firma-trazo" src={trazo} alt="" />}
           <strong>{inf.evaluadora ?? 'Sin evaluadora asignada'}</strong>
           {firma && (
             <>
