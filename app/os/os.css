@@ -10395,3 +10395,22 @@ textarea.os-campo-bateria {
   resize: none;
   overflow-y: auto;
 }
+
+/**
+ * El panel del informe: mil píxeles y centrado.
+ *
+ * Los paneles del OS ocupan el ancho de la pantalla, que en un monitor grande
+ * son dos mil píxeles: un informe de esa medida deja renglones que no se leen
+ * de corrido y un mar de blanco al costado de cada sección. Es el único panel
+ * con un ancho propio porque es el único que contiene un documento.
+ */
+.os-panel-informe {
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* El aire de adentro lo pone el informe, que sabe cuánto necesita. */
+.os-panel-informe .os-informe-marco {
+  padding: 0;
+}
