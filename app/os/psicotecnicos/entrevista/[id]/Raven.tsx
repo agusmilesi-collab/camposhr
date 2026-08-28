@@ -135,15 +135,12 @@ export default function Raven({
   }, [iniciado]);
 
   return (
-    <div className="os-herramienta-accion">
-      {/* La celda del estado queda vacía: en qué anda el Raven se dice al lado
-          del título, con el sello que pone el servidor. Se deja igual para que
-          el botón caiga en la misma columna que en el resto de los tests. */}
-      <span />
-
-      {/* El orden de las columnas es el mismo en todos los tests: estado, lo que
-          se mira, y la acción. Acá lo que se mira es cuánto le queda mientras
-          responde y qué dio cuando entregó. */}
+    /* El reloj y el enlace van contra el margen derecho, del otro lado de la
+       tarjeta: no son botones de administrar como los de los demás tests, son
+       lo que se mira mientras la persona responde sola. */
+    <div className="os-herramienta-accion os-accion-derecha">
+      {/* Lo que se mira mientras responde: cuánto le queda, y qué dio cuando
+          entregó. */}
       <span className="os-raven-medida">
         {estado === 'terminado' ? (
           <>
