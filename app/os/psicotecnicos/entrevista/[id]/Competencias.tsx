@@ -244,16 +244,6 @@ export default function Competencias({
 
   return (
     <>
-      <div className="os-herramienta-accion">
-        {/* El estado sale de si hay algo escrito: no hay marca de administrado
-            que poner aparte, porque el test es lo escrito. */}
-        <span className={`os-sello-estado ${tieneTexto(texto) ? 'os-verde' : 'os-gris'}`}>
-          {tieneTexto(texto) ? 'Escrita' : 'Sin escribir'}
-        </span>
-        <span />
-        <span />
-      </div>
-
       <div className="os-competencias">
         {/* La barra y el campo son una sola caja con un borde: separados se
             leían como dos controles, y la barra no se entendía de quién era. */}

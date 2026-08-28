@@ -37,6 +37,7 @@ export default function Orden({
   tests,
   estados,
   tarjetas,
+  abierto,
 }: {
   id: string;
   /** Los nombres, en el orden que rige. */
@@ -45,11 +46,22 @@ export default function Orden({
   estados: React.ReactNode[];
   /** El contenido de cada uno, en el mismo orden que `tests`. */
   tarjetas: React.ReactNode[];
+  /**
+   * Cuál arranca desplegado.
+   *
+   * La entrevista por competencias: es lo que se escribe mientras la persona
+   * habla, o sea lo que está abierto todo el rato, y abrirlo a mano cada vez
+   * que se entra a la hoja es un toque que sobra.
+   */
+  abierto?: string;
 }) {
   const router = useRouter();
   const [orden, setOrden] = useState(() => tests.map((_, i) => i));
   /** Cuáles están abiertos, por nombre de test: el índice cambia al reordenar. */
-  const [abiertos, setAbiertos] = useState<string[]>([]);
+  const [abiertos, setAbiertos] = useState<string[]>(
+    abierto && tests.includes(abierto) ? [abierto] : []
+  );
+  const todas = abiertos.length === tests.length;
 
   const plegar = (test: string) =>
     setAbiertos((a) => (a.includes(test) ? a.filter((x) => x !== test) : [...a, test]));
@@ -130,6 +142,20 @@ export default function Orden({
 
   return (
     <>
+      {/* El título de la lista, con el botón que la abre o la cierra entera:
+          repasar los siete tests uno por uno es tocar siete veces. */}
+      <div className="os-tests-cabeza">
+        <h2 className="os-subtitulo">Entrevista</h2>
+        {tests.length > 0 && (
+          <button
+            type="button"
+            className="os-boton"
+            onClick={() => setAbiertos(todas ? [] : [...tests])}
+          >
+            {todas ? 'Plegar todas' : 'Desplegar todas'}
+          </button>
+        )}
+      </div>
       <div ref={caja}>
         {orden.map((indice, i) => (
           <section

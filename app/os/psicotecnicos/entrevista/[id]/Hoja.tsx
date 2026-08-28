@@ -385,8 +385,6 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         )}
       </section>
 
-      <h2 className="os-subtitulo">Entrevista</h2>
-
       {tests.length === 0 && (
         <section className="os-panel">
           <p className="os-vacio">
@@ -396,11 +394,15 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         </section>
       )}
 
+      {/* El título va adentro de la lista: al lado lleva el botón que abre y
+          cierra todas las tarjetas, y ese botón necesita el estado que vive
+          ahí. */}
       <Orden
         id={e.id}
         tests={tests}
         estados={tests.map(estadoDe)}
         tarjetas={tests.map(contenidoDe)}
+        abierto={TEST_COMPETENCIAS}
       />
 
 
