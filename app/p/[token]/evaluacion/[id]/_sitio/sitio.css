@@ -1,0 +1,817 @@
+/**
+ * El informe del cliente como página.
+ *
+ * Hereda la paleta del informe impreso, que es la de la marca, y cambia la
+ * disposición: índice fijo a la izquierda, secciones a la derecha, y cada
+ * sección abriendo con qué contesta. Lo que se descarga sigue siendo el
+ * documento, que se dibuja en la misma página y solo existe al imprimir.
+ */
+
+/*
+ * Que esto es una muestra, antes del informe: la misma banda del comprobante
+ * sin CAE. Lo que sigue tiene la forma de un informe real, y quien lo abre
+ * tiene que saberlo desde el primer renglón; una nota al costado se saltea, una
+ * banda que cruza la pantalla no.
+ */
+.sitio-muestra {
+  margin: 0;
+  padding: 10px 20px;
+  background: #8c3b3b;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
+/* La banda cruza la pantalla entera; el texto se queda con el ancho de la
+   hoja, que extendido de punta a punta son dos renglones larguísimos. */
+.sitio-muestra > span {
+  display: block;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.sitio-muestra b {
+  font-weight: 600;
+}
+
+.sitio-pagina {
+  min-height: 100vh;
+  background: #f6f5f2;
+}
+
+.sitio {
+  --tinta: #16202b;
+  --tinta-media: #46505c;
+  --suave: #7b7770;
+  --papel: #f6f5f2;
+  --hoja: #ffffff;
+  --linea: #e5e2db;
+  --linea-suave: #efede8;
+  --verde: #37804a;
+  --ambar: #a97722;
+  --rojo: #8c3b3b;
+  --azul: #43648f;
+
+  min-height: 100vh;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── La barra ─────────────────────────────────────────────────────────── */
+.sitio-barra {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px 28px;
+  background: var(--papel);
+  border-bottom: 1px solid var(--linea);
+}
+
+.sitio-volver {
+  font-size: 0.86rem;
+  color: var(--tinta-media);
+  text-decoration: none;
+}
+
+.sitio-volver:hover {
+  text-decoration: underline;
+}
+
+.sitio-boton {
+  height: 34px;
+  padding: 0 15px;
+  border: 1px solid var(--tinta);
+  border-radius: 8px;
+  background: var(--tinta);
+  color: #fff;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sitio-boton:hover {
+  opacity: 0.88;
+}
+
+.sitio-boton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.sitio-enlace {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--azul);
+  font: inherit;
+  font-size: 0.82rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Qué se baja: el panel cuelga del botón y no empuja la barra. */
+.sitio-bajar {
+  position: relative;
+}
+
+.sitio-bajar-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 21;
+  width: 300px;
+  padding: 14px;
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  background: var(--hoja);
+  box-shadow: 0 12px 28px rgba(22, 32, 43, 0.14);
+}
+
+.sitio-bajar-titulo {
+  margin: 0 0 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.sitio-bajar-opcion {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 7px 0;
+  cursor: pointer;
+}
+
+.sitio-bajar-opcion input {
+  margin-top: 3px;
+  accent-color: var(--tinta);
+}
+
+.sitio-bajar-opcion span {
+  display: block;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.sitio-bajar-opcion em {
+  display: block;
+  font-style: normal;
+  font-size: 0.76rem;
+  color: var(--suave);
+}
+
+.sitio-bajar-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--linea-suave);
+}
+
+.sitio-aviso-descarga {
+  max-width: 1120px;
+  margin: 10px auto 0;
+  padding: 0 28px;
+  font-size: 0.8rem;
+  color: var(--suave);
+}
+
+/* ── La hoja ──────────────────────────────────────────────────────────── */
+.sitio-hoja {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 28px 80px;
+}
+
+.sitio-cabecera {
+  padding: 34px 0 26px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.sitio-marca {
+  margin: 0 0 20px;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.sitio-marca span {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.sitio-cabecera h1 {
+  margin: 0 0 12px;
+  font-size: 2.1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Los datos en fila y con el rótulo arriba: es una ficha y no un párrafo. */
+.sitio-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+
+.sitio-datos p {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.sitio-datos span {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+/* ── El índice y las secciones ────────────────────────────────────────── */
+.sitio-cuerpo {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.sitio-indice {
+  position: sticky;
+  top: 74px;
+  padding-top: 34px;
+}
+
+.sitio-indice ul {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sitio-indice-item {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: none;
+  color: var(--tinta-media);
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sitio-indice-item:hover {
+  color: var(--tinta);
+}
+
+/* Dónde está parado el lector: la línea de la izquierda, que es la que se ve
+   sin leer. */
+.sitio-indice-item.aqui {
+  border-left-color: var(--tinta);
+  color: var(--tinta);
+  font-weight: 550;
+}
+
+.sitio-seccion {
+  padding: 34px 0;
+  border-bottom: 1px solid var(--linea);
+  /* La barra fija tapa el arranque de la sección al saltar desde el índice. */
+  scroll-margin-top: 68px;
+}
+
+.sitio-seccion:last-child {
+  border-bottom: 0;
+}
+
+.sitio-seccion-top {
+  margin-bottom: 18px;
+}
+
+.sitio-seccion-top h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.sitio-seccion-top p {
+  margin: 3px 0 0;
+  font-size: 0.9rem;
+  color: var(--suave);
+}
+
+.sitio-seccion p {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.sitio-seccion p:last-child {
+  margin-bottom: 0;
+}
+
+.sitio-sub {
+  margin: 26px 0 8px;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.sitio-vacio,
+.sitio-aviso,
+.sitio-fuente {
+  font-size: 0.86rem;
+  color: var(--suave);
+}
+
+.sitio-fuente {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--linea-suave);
+}
+
+.sitio-lista {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+/* ── Recomendación ────────────────────────────────────────────────────── */
+/* El elegido en grande y con su explicación; los otros tres nombrados y
+   apagados, que el semáforo se lee comparando: solo, "ajuste alto" no dice
+   contra qué. */
+.sitio-semaforo {
+  display: grid;
+  gap: 8px;
+}
+
+.sitio-nivel-ajuste {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  color: var(--suave);
+}
+
+.sitio-nivel-ajuste h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 550;
+}
+
+.sitio-nivel-ajuste p {
+  margin: 5px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--tinta-media);
+}
+
+.sitio-nivel-ajuste .inf-nivel-icono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--linea-suave);
+  color: var(--suave);
+}
+
+.sitio-nivel-ajuste.elegido {
+  padding: 16px;
+  border-width: 2px;
+}
+
+.sitio-nivel-ajuste.elegido h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.sitio-nivel-ajuste.elegido.verde {
+  border-color: var(--verde);
+  background: rgba(55, 128, 74, 0.06);
+}
+.sitio-nivel-ajuste.elegido.azul {
+  border-color: var(--azul);
+  background: rgba(67, 100, 143, 0.06);
+}
+.sitio-nivel-ajuste.elegido.ambar {
+  border-color: var(--ambar);
+  background: rgba(169, 119, 34, 0.06);
+}
+.sitio-nivel-ajuste.elegido.rojo {
+  border-color: var(--rojo);
+  background: rgba(140, 59, 59, 0.06);
+}
+
+.sitio-nivel-ajuste.elegido h3 {
+  color: var(--tinta);
+}
+
+.sitio-nivel-ajuste.elegido.verde .inf-nivel-icono {
+  background: var(--verde);
+  color: #fff;
+}
+.sitio-nivel-ajuste.elegido.azul .inf-nivel-icono {
+  background: var(--azul);
+  color: #fff;
+}
+.sitio-nivel-ajuste.elegido.ambar .inf-nivel-icono {
+  background: var(--ambar);
+  color: #fff;
+}
+.sitio-nivel-ajuste.elegido.rojo .inf-nivel-icono {
+  background: var(--rojo);
+  color: #fff;
+}
+
+.sitio-firma {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.sitio-firma strong {
+  display: block;
+  font-size: 0.94rem;
+}
+
+.sitio-firma span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.84rem;
+  color: var(--suave);
+}
+
+.sitio-confidencial {
+  max-width: 420px;
+  margin: 0 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.5 !important;
+  color: var(--suave);
+}
+
+/* ── Competencias ─────────────────────────────────────────────────────── */
+/* Las tarjetas son las mismas del documento; acá entran cuatro por fila porque
+   la pantalla es más ancha que una hoja. */
+.sitio-competencias {
+  grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+}
+
+/* ── Cómo trabaja ─────────────────────────────────────────────────────── */
+.sitio-grupos {
+  display: grid;
+  gap: 14px;
+}
+
+.sitio-grupo {
+  padding: 16px 18px;
+  border: 1px solid var(--linea);
+  border-left-width: 3px;
+  border-radius: 10px;
+  background: var(--hoja);
+}
+
+.sitio-grupo.destacado {
+  border-left-color: var(--verde);
+}
+.sitio-grupo.esperado {
+  border-left-color: var(--azul);
+}
+.sitio-grupo.desarrollar {
+  border-left-color: var(--ambar);
+}
+
+.sitio-grupo header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.sitio-grupo h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.sitio-grupo header span {
+  font-size: 0.76rem;
+  color: var(--suave);
+}
+
+.sitio-grupo ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.sitio-grupo li + li {
+  margin-top: 7px;
+}
+
+/* ── Para su líder ────────────────────────────────────────────────────── */
+.sitio-lider {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.sitio-lider li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.sitio-orden {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--linea);
+  border-radius: 50%;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--suave);
+}
+
+.sitio-lider p {
+  margin: 2px 0 0;
+}
+
+/* ── Cómo piensa ──────────────────────────────────────────────────────── */
+.sitio-preferente {
+  margin-top: 18px;
+}
+
+/* ── Los datos ────────────────────────────────────────────────────────── */
+/* Es el mismo bloque del documento: hereda sus clases `inf-`, así que acá se
+   le da el marco de color de tinta y nada más. */
+.sitio-crudo {
+  --tinta: #16202b;
+  --tinta-media: #46505c;
+  --suave: #7b7770;
+  --linea: #e5e2db;
+  --linea-suave: #efede8;
+  font-size: 15px;
+  line-height: 1.62;
+}
+
+/* ── Lo imprimible ────────────────────────────────────────────────────── */
+/* En pantalla no está. Sacarlo con `display: none` alcanzaría, pero entonces
+   el navegador no dibuja nada y al imprimir tarda; queda fuera de la vista y
+   sin ocupar lugar. */
+.sitio-imprimible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+@media print {
+  .sitio-barra,
+  .sitio-hoja,
+  .sitio-aviso-descarga {
+    display: none !important;
+  }
+
+  .sitio {
+    background: #fff;
+  }
+
+  .sitio-imprimible {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  /* Se imprime lo elegido, en el orden en que está dibujado. Cada parte
+     arranca en hoja nueva salvo la primera, que si no deja una hoja en blanco
+     adelante. */
+  .sitio-parte {
+    display: none;
+  }
+
+  .sitio[data-imprimir~='recomendacion'] .sitio-parte[data-parte='recomendacion'],
+  .sitio[data-imprimir~='fundamentos'] .sitio-parte[data-parte='fundamentos'],
+  .sitio[data-imprimir~='indicadores'] .sitio-parte[data-parte='indicadores'] {
+    display: block;
+    break-before: page;
+  }
+
+  .sitio[data-primera='recomendacion'] .sitio-parte[data-parte='recomendacion'],
+  .sitio[data-primera='fundamentos'] .sitio-parte[data-parte='fundamentos'],
+  .sitio[data-primera='indicadores'] .sitio-parte[data-parte='indicadores'] {
+    break-before: auto;
+  }
+}
+
+@media (max-width: 860px) {
+  .sitio-cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  /* En el teléfono el índice va arriba y en fila: una columna fija se come
+     media pantalla. */
+  .sitio-indice {
+    position: static;
+    padding: 18px 0 0;
+    overflow-x: auto;
+  }
+
+  .sitio-indice ul {
+    display: flex;
+    gap: 4px;
+  }
+
+  .sitio-indice-item {
+    width: auto;
+    white-space: nowrap;
+    border-left: 0;
+    border-bottom: 2px solid transparent;
+  }
+
+  .sitio-indice-item.aqui {
+    border-left: 0;
+    border-bottom-color: var(--tinta);
+  }
+}
+
+/* ── Hasta dónde puede llegar ─────────────────────────────────────────── */
+/*
+ * Escalones y no una pirámide: cada nivel dice qué clase de trabajo es, con qué
+ * plazo se maneja y a qué puesto se parece. Los de más arriba arrancan más a la
+ * izquierda, así la escalera se ve antes de leerla.
+ */
+.sitio-escalera-intro {
+  margin-bottom: 16px !important;
+}
+
+.sitio-niveles {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.sitio-nivel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 186px;
+  gap: 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  background: var(--hoja);
+}
+
+.sitio-nivel[data-nivel='IV'] {
+  margin-left: 14px;
+}
+.sitio-nivel[data-nivel='III'] {
+  margin-left: 28px;
+}
+.sitio-nivel[data-nivel='II'] {
+  margin-left: 42px;
+}
+.sitio-nivel[data-nivel='I'] {
+  margin-left: 56px;
+}
+
+/* Los niveles que no son ninguna de las tres marcas están, pero apagados: la
+   escalera entera es la que da la medida, y sin ellos no se ve contra qué. */
+.sitio-nivel:not(.marcado) {
+  background: transparent;
+  color: var(--suave);
+}
+
+.sitio-nivel.marcado {
+  border-color: var(--tinta-media);
+}
+
+.sitio-nivel h4 {
+  margin: 0 0 3px;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.sitio-nivel-que {
+  margin: 0 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.5 !important;
+}
+
+.sitio-nivel-ej {
+  margin: 3px 0 0 !important;
+  font-size: 0.8rem !important;
+  color: var(--suave);
+}
+
+.sitio-nivel-lado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+}
+
+.sitio-nivel-plazo {
+  font-size: 0.78rem;
+  color: var(--suave);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Las tres marcas: lo que el puesto pide, dónde está hoy y hasta dónde llega.
+   Se distinguen por color y por texto, no solo por color.
+   No se llaman `sitio-marca`: esa es la del logotipo de la cabecera, y esta
+   heredaba de ella las versalitas. */
+.sitio-donde {
+  display: inline-block;
+  padding: 2px 9px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.sitio-donde.puesto {
+  border-color: var(--azul);
+  background: rgba(67, 100, 143, 0.08);
+  color: var(--azul);
+}
+
+.sitio-donde.hoy {
+  border-color: var(--verde);
+  background: rgba(55, 128, 74, 0.08);
+  color: var(--verde);
+}
+
+.sitio-donde.futuro {
+  border-style: dashed;
+  border-color: var(--suave);
+  color: var(--suave);
+}
+
+.sitio-escalera-cierre {
+  padding: 14px 16px;
+  border-left: 3px solid var(--tinta);
+  background: var(--hoja);
+  font-size: 0.98rem !important;
+  font-weight: 500;
+}
+
+.sitio-escalera-nota {
+  font-size: 0.88rem !important;
+  color: var(--tinta-media);
+}
+
+@media (max-width: 720px) {
+  .sitio-nivel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    margin-left: 0 !important;
+  }
+
+  .sitio-nivel-lado {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
