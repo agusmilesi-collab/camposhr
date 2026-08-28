@@ -3,7 +3,7 @@ import { armarInforme } from '@/lib/informe';
 import { datosClienteDeSupabase } from '@/lib/portal-supabase';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import Documento from '@/app/os/psicotecnicos/informe/_doc/Documento';
-import Descargar from './Descargar';
+import Partes from './Partes';
 import { esPortalEjemplo } from '@/lib/portal-ejemplo';
 import './portal-informe.css';
 
@@ -66,14 +66,17 @@ export default async function InformeDelPortal({
         </p>
       )}
 
-      <header className="pinf-top">
-        <a className="pinf-volver" href={`/${params.token}`}>
-          ← Volver
-        </a>
-        <Descargar muestra={muestra} />
-      </header>
-
-      <Documento inf={inf} />
+      {/* Las tres partes se dibujan acá, del lado del servidor, y el
+          componente de cliente decide cuál se ve y cuáles se imprimen: son el
+          mismo informe partido en tres profundidades, y no hay nada que ir a
+          buscar al cambiar de pestaña. */}
+      <Partes
+        volver={`/${params.token}`}
+        muestra={muestra}
+        recomendacion={<Documento inf={inf} parte="recomendacion" />}
+        fundamentos={<Documento inf={inf} parte="fundamentos" />}
+        indicadores={<Documento inf={inf} parte="indicadores" />}
+      />
     </main>
   );
 }

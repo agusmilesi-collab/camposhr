@@ -1759,3 +1759,182 @@
   background: color-mix(in srgb, var(--suave) 14%, transparent);
   color: var(--suave);
 }
+
+/**
+ * Los indicadores: los números, en tabla y sin colores.
+ *
+ * Es la parte que se archiva y que se compara contra la de otro candidato, así
+ * que se lee como una planilla: el rótulo a la izquierda, el número alineado a
+ * la derecha y una línea fina entre renglones. Un puntaje pintado de verde acá
+ * no agrega nada que la tabla no diga, y además tiene que salir igual impresa
+ * en blanco y negro.
+ */
+.inf-crudo {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4px 0 12px;
+  font-size: 0.84rem;
+}
+
+.inf-crudo th {
+  padding: 0 10px 6px;
+  text-align: left;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+  border-bottom: 1px solid var(--linea);
+}
+
+/* Una tabla de dos columnas usa el rótulo como encabezado de fila: ahí no es un
+   título de columna y no va en versalitas. */
+.inf-crudo tbody th {
+  width: 40%;
+  padding: 7px 10px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tinta-media);
+  border-bottom: 1px solid var(--linea-suave);
+}
+
+.inf-crudo td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--linea-suave);
+  vertical-align: top;
+}
+
+/* El rótulo de una columna de números va del mismo lado que los números: con la
+   columna ancha, alineado a la izquierda queda en la punta opuesta y no se lee
+   cuál encabeza cuál. */
+.inf-crudo .inf-crudo-num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-crudo-mide {
+  color: var(--tinta-media);
+  font-size: 0.78rem;
+}
+
+.inf-crudo-nota {
+  margin: -4px 0 18px;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--suave);
+}
+
+/*
+ * En los indicadores, el diagrama va en grises.
+ *
+ * Es el mismo dibujo del capítulo de potencial y no una segunda versión: lo que
+ * cambia es cómo se ve acá, donde nada está pintado. Con la banda celeste al
+ * lado de tablas en blanco y negro, el color se lee como si marcara algo que en
+ * esta parte no se está marcando.
+ */
+.inf[data-parte='indicadores'] .inf-progreso-caja svg {
+  filter: grayscale(1);
+}
+
+@media print {
+  .inf-crudo {
+    break-inside: auto;
+  }
+
+  .inf-crudo tr {
+    break-inside: avoid;
+  }
+}
+
+/* La tabla de ítems (las 36 láminas del Raven) es angosta y larga: en columnas
+   entra en un tercio de hoja en vez de en tres páginas. */
+.inf-crudo-items {
+  max-width: 420px;
+}
+
+/* La codificación del protocolo tiene diez columnas y renglones cortos. */
+.inf-crudo-protocolo {
+  font-size: 0.74rem;
+}
+
+.inf-crudo-protocolo th,
+.inf-crudo-protocolo td {
+  padding: 5px 6px;
+}
+
+/**
+ * El sumario estructural, en la parte de indicadores.
+ *
+ * Cada bloque con su título y los campos uno detrás de otro, envolviendo: es
+ * una constancia para verificar un valor, no la hoja de trabajo con la que se
+ * codifica, así que no necesita la disposición del papel ni el ancho fijo de
+ * cada celda.
+ */
+.inf-hoja {
+  margin: 4px 0 18px;
+}
+
+.inf-hoja-bloque {
+  margin-bottom: 14px;
+  break-inside: avoid;
+}
+
+.inf-hoja-bloque h4 {
+  margin: 0 0 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.inf-hoja-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.inf-hoja-par {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-hoja-rotulo {
+  color: var(--tinta-media);
+}
+
+.inf-hoja-valor {
+  font-weight: 600;
+}
+
+.inf-hoja-nota {
+  color: var(--suave);
+}
+
+.inf-hoja-grilla {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.inf-hoja-sueltas {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 0.76rem;
+  color: var(--tinta-media);
+}
