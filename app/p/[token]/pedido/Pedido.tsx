@@ -459,15 +459,16 @@ export default function Pedido({
                         {grupo.preguntas.map((p) => (
                           <div className="pedir-pregunta" key={p.campo}>
                             <span className="pedir-pregunta-t">{p.rotulo}</span>
-                            <div className="pedir-opciones">
-                              {/* Las tres opciones son una escala, de menos a
-                                  más: el punto de color dice en qué escalón
-                                  está cada una sin tener que leer las tres. */}
-                              {p.opciones.map((o, i) => (
+                            <div className="pedir-opciones" role="group" aria-label={p.rotulo}>
+                              {/* Un control partido en tres y no tres botones
+                                  sueltos: es una escala de menos a más con una
+                                  sola respuesta, y así se ve. */}
+                              {p.opciones.map((o) => (
                                 <button
                                   type="button"
                                   key={o}
-                                  className={`pedir-opcion pedir-paso-${i + 1}${
+                                  aria-pressed={perfil[p.campo] === o}
+                                  className={`pedir-opcion${
                                     perfil[p.campo] === o ? ' pedir-elegida' : ''
                                   }`}
                                   onClick={() =>

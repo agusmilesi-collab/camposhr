@@ -6494,74 +6494,71 @@ body {
   font-size: 0.86rem;
 }
 
-/* Las tres opciones en columnas del mismo ancho: al ancho de su texto, cada
-   pregunta tenía sus pastillas en otro lugar y la columna del medio nunca caía
-   dos veces en el mismo sitio. Con la grilla, las nueve preguntas se contestan
-   bajando por la misma línea. */
+/*
+ * Las tres opciones, en un control segmentado.
+ *
+ * Es una escala de tres pasos y una sola respuesta, que es exactamente lo que
+ * dice un control partido en tres: los tres pedazos son del mismo ancho, están
+ * unidos, y el elegido queda pintado. Sueltas, las pastillas se leían como tres
+ * botones independientes (podían estar las tres apagadas o las tres prendidas)
+ * y cada pregunta las ponía en un lugar distinto según el largo de su texto.
+ *
+ * El orden es la escala: de menos a más, de izquierda a derecha.
+ */
 .pedir-opciones {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  max-width: 700px;
+  max-width: 640px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  /* Los extremos redondeados recortan al primero y al último. */
+  overflow: hidden;
 }
 
+.pedir-opcion {
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  color: var(--muted);
+  text-align: center;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.pedir-opcion:first-child {
+  border-left: 0;
+}
+
+.pedir-opcion:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.pedir-opcion.pedir-elegida {
+  background: var(--ink);
+  color: #fff;
+  font-weight: 500;
+}
+
+/* En el teléfono los tres pedazos no entran en una línea: se apilan y la
+   escala pasa a leerse de arriba abajo, que sigue siendo de menos a más. */
 @media (max-width: 560px) {
   .pedir-opciones {
     grid-template-columns: 1fr;
   }
-}
 
-/*
- * Las opciones del contexto: pastilla liviana con un punto de color.
- *
- * Son nueve preguntas de tres opciones, veintisiete botones en una pantalla.
- * Con borde y con el elegido en negro, lo que se ve es una grilla de cajas y
- * hay que leerlas todas para saber qué se contestó. El punto marca el escalón
- * de cada opción (de menos a más) y el elegido se pinta apenas: lo contestado
- * se reconoce de un vistazo y lo que falta también.
- */
-.pedir-opcion {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 12px;
-  font: inherit;
-  font-size: 0.83rem;
-  color: var(--ink);
-  /* El botón centra su texto: el que entra en dos renglones quedaba centrado
-     al lado de su punto, con la segunda línea flotando en el medio. */
-  text-align: left;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 20px;
-  cursor: pointer;
-}
+  .pedir-opcion {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
 
-.pedir-opcion::before {
-  content: '';
-  flex: none;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--paso);
-}
-
-/* Un solo tono, tres intensidades: la escala no es buena ni mala, y con verde
-   y rojo "problemas complejos" se leería como un problema. */
-.pedir-paso-1 { --paso: #b6c8da; }
-.pedir-paso-2 { --paso: #7793b5; }
-.pedir-paso-3 { --paso: #2b4468; }
-
-.pedir-opcion:hover {
-  background: #fff;
-}
-
-.pedir-opcion.pedir-elegida {
-  background: #e8eef5;
-  border-color: #c3d1e2;
-  color: #223a5c;
-  font-weight: 500;
-  box-shadow: none;
+  .pedir-opcion:first-child {
+    border-top: 0;
+  }
 }
 
 /* Soltar los CV: es lo que el cliente ya tiene en la mano, así que es lo
