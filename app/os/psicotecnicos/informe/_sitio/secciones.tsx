@@ -36,9 +36,12 @@ import Escalera from './Escalera';
 async function Firma({ inf }: { inf: Informe }) {
   const firma = inf.evaluadora ? FIRMAS[inf.evaluadora] : undefined;
   const trazo = firma?.trazo ? await firmaEnDatos(firma.trazo) : null;
+  /* La firma cierra la fundamentación: es de quien la escribió, así que va
+     debajo de sus palabras y no en un bloque aparte con una línea en el medio.
+     La nota de confidencialidad va después, que es del documento y no de ella. */
   return (
-    <div className="sitio-firma">
-      <div>
+    <>
+      <div className="sitio-firma">
         {trazo && <img className="sitio-trazo" src={trazo} alt="" />}
         <strong>{inf.evaluadora ?? 'Sin evaluadora asignada'}</strong>
         {firma && (
@@ -49,7 +52,7 @@ async function Firma({ inf }: { inf: Informe }) {
         )}
       </div>
       <p className="sitio-confidencial">{CONFIDENCIALIDAD}</p>
-    </div>
+    </>
   );
 }
 
@@ -109,7 +112,7 @@ export function seccionesDe(
         </div>
         <p className="inf-nota">{NOTA_AJUSTE}</p>
 
-        <h3 className="sitio-sub">Qué dio la evaluación</h3>
+        <h3 className="sitio-sub">Resumen</h3>
         {inf.resumen.map((t, i) => (
           <p key={i}>{t}</p>
         ))}
@@ -119,13 +122,12 @@ export function seccionesDe(
             leerla al mismo cuerpo que lo que arma el motor la hace pasar por
             una conclusión más. */}
         {inf.fundamentacion.length > 0 && (
-          <blockquote className="sitio-cita">
-            <h3 className="sitio-cita-rotulo">Por qué esa recomendación</h3>
+          <div className="sitio-cita">
+            <h3 className="sitio-sub">Fundamentación</h3>
             {inf.fundamentacion.map((t, i) => (
               <p key={i}>{t}</p>
             ))}
-            <footer>{inf.evaluadora}</footer>
-          </blockquote>
+          </div>
         )}
 
         <Firma inf={inf} />
