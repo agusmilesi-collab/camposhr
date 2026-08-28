@@ -52,6 +52,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, motivo: 'Batería inválida.' }, { status: 400 });
     }
     fila = { bateria_id: valor };
+  } else if (campo === 'solicitante_id') {
+    // Quién pidió la búsqueda, de los contactos de esa empresa. Null es "no se
+    // sabe": los pedidos que vinieron de Airtable no lo traen.
+    if (valor !== null && !(typeof valor === 'string' && UUID.test(valor))) {
+      return NextResponse.json({ ok: false, motivo: 'Contacto inválido.' }, { status: 400 });
+    }
+    fila = { solicitante_id: valor };
   } else if (campo === 'exigencia_id') {
     // Null es "la predeterminada", y por eso se guarda null y no la
     // predeterminada copiada: si mañana cambia cuál es, este pedido la sigue.

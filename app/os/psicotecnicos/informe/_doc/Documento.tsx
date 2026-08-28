@@ -410,9 +410,9 @@ export default async function Documento({
         </div>
         <p className="inf-nota">{NOTA_AJUSTE}</p>
 
-        <h3 className="inf-subtitulo">
-          {inf.resumen.propio ? 'La recomendación de la evaluadora' : 'Resumen'}
-        </h3>
+        {/* Fundamentación y no resumen: no repite lo que sigue, dice por qué
+            se recomienda ese nivel. */}
+        <h3 className="inf-subtitulo">Fundamentación</h3>
         {inf.resumen.parrafos.map((t, i) => (
           <p key={i}>{t}</p>
         ))}

@@ -42,6 +42,11 @@ export function Encabezado({ inf }: { inf: Informe }) {
             <span>Empresa:</span> {inf.empresa}
           </p>
         )}
+        {inf.solicitante && (
+          <p>
+            <span>Solicitado por:</span> {inf.solicitante}
+          </p>
+        )}
         {inf.edad !== null && (
           <p>
             <span>Edad:</span> {inf.edad} {inf.edad === 1 ? 'año' : 'años'}

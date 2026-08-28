@@ -19,6 +19,14 @@ export type Pedido = {
   conBenziger: boolean;
   /** Con qué exigencia se leen los informes de este pedido. Null es la default. */
   exigenciaId: string | null;
+  /**
+   * Quién pidió la búsqueda, de los contactos del cliente.
+   *
+   * Va en el encabezado del informe, debajo de la empresa. Null en los pedidos
+   * que llegaron de Airtable y en los clientes con más de una persona que pide,
+   * donde hay que elegir cuál.
+   */
+  solicitanteId: string | null;
   familia: string | null;
   seniority: string | null;
   estado: string;
