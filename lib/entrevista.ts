@@ -81,6 +81,8 @@ export type Entrevista = {
   conBenziger: boolean;
   /** Si ya se le tomó el Benziger, que va aparte de la batería. */
   benzigerAdministrado: boolean;
+  /** El nombre del informe del Benziger ya cargado, si lo hay. */
+  benzigerInforme: string | null;
   /** Si ya se le tomó el test de manchas de su batería. */
   proyectivoAdministrado: boolean;
   benderAdministrado: boolean;
@@ -170,7 +172,7 @@ function ordenar(tests: string[], guardado: string[] | null | undefined): string
 export async function entrevistaDe(id: string): Promise<Entrevista | null> {
   if (!UUID.test(id)) return null;
 
-  const [filas, sesiones, discursivos, medidas] = await Promise.all([
+  const [filas, sesiones, discursivos, medidas, benzigers] = await Promise.all([
     select<Fila>('evaluaciones', `select=${CAMPOS}&id=eq.${id}`),
     /* La sesión entera: el estado del Raven sale de las dos primeras columnas,
        y la tarjeta necesita además saber si se cortó por el reloj y con qué
@@ -205,6 +207,11 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     }>(
       'raven',
       `select=raw,percentil,desvios,resultado,origen&evaluacion_id=eq.${id}&limit=1`
+    ).catch(() => []),
+    // El informe del Benziger, que se sube en la misma hoja.
+    select<{ pdf_nombre: string | null }>(
+      'benziger',
+      `select=pdf_nombre&evaluacion_id=eq.${id}&limit=1`
     ).catch(() => []),
   ]);
 
@@ -241,6 +248,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     // nunca lo marcó.
     conBenziger: llevaBenziger(f),
     benzigerAdministrado: f.benziger_administrado,
+    benzigerInforme: benzigers[0]?.pdf_nombre ?? null,
     proyectivoAdministrado: f.proyectivo_administrado,
     benderAdministrado: f.bender_administrado,
     benderObservaciones: f.bender_observaciones,

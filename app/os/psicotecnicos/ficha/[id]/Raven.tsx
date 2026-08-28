@@ -111,6 +111,7 @@ export default function Raven({
   sesion,
   tardo,
   rangos = RANGOS,
+  derecha,
 }: {
   id: string;
   raw: number | null;
@@ -121,6 +122,14 @@ export default function Raven({
   sesion: Sesion | null;
   /** Segundos que tardó en responderlo. */
   tardo: number | null;
+  /**
+   * Lo que va a la derecha del puntaje, en su misma línea.
+   *
+   * En la hoja de la entrevista, el reloj y el enlace: administrarlo y leer lo
+   * que dio son dos partes del mismo test, y en dos renglones el de arriba
+   * quedaba solo contra el margen derecho.
+   */
+  derecha?: React.ReactNode;
   /** Los cortes que rigen, que se pueden mover desde Configuración. */
   rangos?: Rango[];
 }) {
@@ -199,6 +208,9 @@ export default function Raven({
         </div>
 
         <Origen origen={origen} sesion={sesion} raw={raw} tardo={tardo} />
+
+        {/* El reloj y el enlace, contra el margen derecho de la misma línea. */}
+        {derecha && <div className="os-raven-derecha">{derecha}</div>}
       </div>
 
       {/* La unidad va una vez, en el encabezado: repetir "aciertos" y "de cada
