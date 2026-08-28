@@ -6467,11 +6467,39 @@ th.os-tabla-contacto {
   white-space: pre-wrap;
 }
 
-/* Los tres pasos del análisis, uno debajo del otro y separados: el horizonte,
-   las preguntas y el estrato que sale de los dos. */
+/*
+ * Los tres pasos del análisis, uno debajo del otro.
+ *
+ * Se hacen en orden y son distintos entre sí: la tarea que la persona cuenta,
+ * cuánto dura, y qué le exige. Un número por bloque y una línea fina entre
+ * ellos alcanzan para verlos separados sin convertir la tarjeta en tres cajas.
+ */
 .os-discursivo {
   display: grid;
-  gap: 22px;
+  gap: 20px;
+}
+
+.os-discursivo > .os-nivel-bloque + .os-nivel-bloque {
+  padding-top: 20px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+/* El número del paso, delante de su pregunta. */
+.os-nivel-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: var(--os-hover);
+  color: var(--os-tinta-media);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  vertical-align: 1px;
 }
 
 .os-discursivo .inf-piramide {

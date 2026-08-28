@@ -230,8 +230,11 @@ export default function Discursivo({
           demás, y codificar de memoria es codificar mal. Se escribe mientras
           habla y después se lee para codificar. */}
       {enEntrevista ? (
-        <div className="os-relato">
-          <p className="os-nivel-pregunta">{APERTURA}</p>
+        <div className="os-nivel-bloque">
+          <p className="os-nivel-pregunta">
+            <span className="os-nivel-numero">1</span>
+            {APERTURA}
+          </p>
           <textarea
             className="os-campo os-relato-campo"
             rows={5}
@@ -260,6 +263,7 @@ export default function Discursivo({
           ahí sale el estrato sin que nadie lo elija. */}
       <div className="os-nivel-bloque">
         <p className="os-nivel-pregunta">
+          {enEntrevista && <span className="os-nivel-numero">2</span>}
           {enEntrevista
             ? PREGUNTA_HORIZONTE
             : '¿Cuál es la tarea más larga que esta persona puede llevar hasta el final por sí misma, sin que le indiquen cómo?'}
@@ -300,8 +304,9 @@ export default function Discursivo({
           pudo, no sobre lo que sabe hacer: es lo que el libro indica pedir. */}
       <div className="os-nivel-bloque">
         <p className="os-nivel-pregunta">
+          {enEntrevista && <span className="os-nivel-numero">3</span>}
           {enEntrevista
-            ? 'De cada una de esas, ¿qué le exigió? Se pregunta y se marca acá mismo.'
+            ? 'Sobre esa tarea, ¿qué le exige? Se pregunta y se marca acá mismo.'
             : 'Tomando las dos o tres asignaciones que manejó al límite de lo que pudo, ¿qué le exigieron?'}
         </p>
         <ol className="os-nivel-preguntas">
