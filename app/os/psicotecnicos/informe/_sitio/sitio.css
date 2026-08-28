@@ -946,7 +946,11 @@
 /* La primera sección no necesita los 64 px de arriba: ya viene de la cabecera
    del panel, que es la que la separa de lo de arriba. */
 .sitio-secciones-ficha .sitio-seccion:first-child {
-  padding-top: 24px;
+  padding-top: 40px;
+}
+
+.sitio-secciones-ficha .sitio-cabecera {
+  padding-top: 22px;
 }
 
 /*

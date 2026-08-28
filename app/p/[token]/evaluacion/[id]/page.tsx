@@ -5,6 +5,7 @@ import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import Documento from '@/app/os/psicotecnicos/informe/_doc/Documento';
 import Sitio from '@/app/os/psicotecnicos/informe/_sitio/Sitio';
 import { seccionesDe } from '@/app/os/psicotecnicos/informe/_sitio/secciones';
+import Cabecera from '@/app/os/psicotecnicos/informe/_sitio/Cabecera';
 import Partes from './Partes';
 import { Encabezado, Marca, Pie } from '@/app/os/psicotecnicos/informe/_doc/Marco';
 import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
@@ -91,39 +92,8 @@ export default async function InformeDelPortal({
         <Sitio
           volver={`/${params.token}`}
           muestra={muestra}
-          cabecera={
-            <header className="sitio-cabecera">
-              <p className="sitio-marca">
-                <span>Campos HR</span> Evaluaciones psicotécnicas
-              </p>
-              <h1>{inf.nombre}</h1>
-              <div className="sitio-datos">
-                {inf.puesto && (
-                  <p>
-                    <span>Rol aspirado</span>
-                    {inf.puesto}
-                  </p>
-                )}
-                {inf.empresa && (
-                  <p>
-                    <span>Empresa</span>
-                    {inf.empresa}
-                  </p>
-                )}
-                {inf.solicitante && (
-                  <p>
-                    <span>Solicitado por</span>
-                    {inf.solicitante}
-                  </p>
-                )}
-                <p>
-                  <span>Evaluación</span>
-                  {inf.cuando}
-                </p>
-              </div>
-            </header>
-          }
-          indice={secciones.map((s, i) => ({
+          cabecera={<Cabecera inf={inf} />}
+        indice={secciones.map((s, i) => ({
             id: s.id,
             titulo: s.titulo,
             numero: String(i + 1).padStart(2, '0'),
