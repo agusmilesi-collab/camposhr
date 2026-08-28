@@ -264,9 +264,10 @@ export function comoSeDice(e: Estrato): string {
  * Elegir entre cuatro descripciones es una impresión; contestar cuatro
  * preguntas deja registrado por qué dio ese nivel.
  *
- * Cada una viene en dos redacciones: `texto` describe el trabajo y es la que se
- * contesta del puesto; `alCandidato` es la misma pregunta hecha a la persona,
- * sobre lo que ella contó. Son dos formas de averiguar lo mismo, y la segunda
+ * Cada una viene en tres redacciones: `texto` describe el trabajo y es la que
+ * se contesta del puesto; `alCandidato` es la misma pregunta hecha a la
+ * persona, sobre lo que ella contó; `simple` dice qué es ese nivel para alguien
+ * que no conoce el modelo, y es la que sale en la comparación. Son dos formas de averiguar lo mismo, y la segunda
  * existe para que la evaluadora pueda contestarla mientras escucha, sin tener
  * que traducir nada.
  *
@@ -278,6 +279,7 @@ export const PREGUNTAS = [
   {
     estrato: 1,
     corto: 'Juicio directo',
+    simple: 'Sigue un método que ya conoce y resuelve los obstáculos sobre la marcha.',
     texto:
       '¿El trabajo se puede llevar adelante siguiendo un plan ya asignado, resolviendo los obstáculos a medida que aparecen con la experiencia y el criterio práctico?',
     alCandidato: '¿Lo resolviste siguiendo un método o un procedimiento que ya conocías?',
@@ -285,6 +287,7 @@ export const PREGUNTAS = [
   {
     estrato: 2,
     corto: 'Acumulación diagnóstica',
+    simple: 'Reúne información, se da cuenta de qué está pasando y recién ahí decide.',
     texto:
       '¿Exige reunir e interpretar datos que van apareciendo, y llegar a un diagnóstico que los vincule para recién ahí decidir cómo resolver?',
     alCandidato:
@@ -293,6 +296,7 @@ export const PREGUNTAS = [
   {
     estrato: 3,
     corto: 'Caminos alternativos',
+    simple: 'Arma varias maneras de resolverlo, elige una y guarda otra por si falla.',
     texto:
       '¿Exige construir un plan que equilibre lo que hay que hacer hoy contra lo que se necesita más adelante, con otros caminos en reserva por si el elegido no funciona?',
     alCandidato:
@@ -301,6 +305,7 @@ export const PREGUNTAS = [
   {
     estrato: 4,
     corto: 'Procesamiento paralelo',
+    simple: 'Lleva varios frentes a la vez y va ajustando cada uno según los otros.',
     texto:
       '¿Exige llevar adelante varios proyectos que se afectan entre sí, ajustando cada uno en relación con los otros?',
     alCandidato:
@@ -309,6 +314,7 @@ export const PREGUNTAS = [
   {
     estrato: 5,
     corto: 'Sistema completo',
+    simple: 'Sigue cómo un cambio en un punto mueve todo lo demás y decide contando eso.',
     texto:
       '¿Exige seguir cómo un cambio en cualquier punto impacta en el sistema entero, y decidir contando las consecuencias que eso arrastra aguas abajo?',
     alCandidato:
@@ -372,6 +378,20 @@ export function estratoPorNumero(n: number): Estrato | null {
  */
 export function estratoDeTimeSpan(dias: number): Estrato {
   return estratoDeEscalon(escalonDe(dias));
+}
+
+/**
+ * El plazo de un estrato, en palabras: "de 1 año a 2 años", "hasta 3 meses".
+ *
+ * Sale de los cortes del modelo y no de un texto escrito a mano, así que dice
+ * exactamente lo mismo que mide el diagrama.
+ */
+export function plazoDe(e: Estrato): string {
+  const marcas: readonly { texto: string }[] = ESCALERA;
+  const hasta = marcas[e.hasta]?.texto ?? '';
+  // El estrato I arranca por debajo de la escalera: su piso no tiene marca.
+  const desde = e.desde >= 0 ? marcas[e.desde]?.texto : null;
+  return desde ? `De ${desde} a ${hasta}` : `Hasta ${hasta}`;
 }
 
 /**
