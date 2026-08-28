@@ -10412,17 +10412,13 @@ textarea.os-campo-bateria {
 }
 
 /*
- * La barra de acciones y la hoja son dos cosas.
+ * La barra de acciones y la hoja son dos cosas, y las separa una línea.
  *
- * La barra va del color del fondo y el informe queda en blanco, con un corte
- * recto entre las dos: así lo de abajo se lee como una hoja apoyada en el panel
- * y no como la continuación de la barra. El aire de adentro lo pone el informe,
- * que sabe cuánto necesita.
+ * Las dos en blanco: la barra es del panel, no del fondo. Lo que hace de corte
+ * es la línea entera de lado a lado, y debajo empieza la hoja.
  */
 .os-panel-informe .os-generar {
-  background: var(--os-fondo);
   border-bottom: 1px solid var(--os-linea);
-  border-radius: 12px 12px 0 0;
 }
 
 .os-panel-informe .os-informe-marco {
