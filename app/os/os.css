@@ -6516,6 +6516,53 @@ th.os-tabla-contacto {
   color: var(--os-suave);
 }
 
+/*
+ * La comparación del potencial: qué pide el puesto y hasta dónde llega la
+ * persona, un renglón cada uno.
+ *
+ * Lo que hay que ver es si los dos primeros números coinciden, y eso se lee de
+ * un vistazo cuando están uno debajo del otro y alineados por la izquierda.
+ */
+.os-comparacion {
+  width: 100%;
+  max-width: 640px;
+  border-collapse: collapse;
+}
+
+.os-comparacion th {
+  width: 180px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--os-linea-suave);
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--os-suave);
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.os-comparacion td {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--os-linea-suave);
+  font-size: 0.9rem;
+}
+
+/* El nombre del estrato, detrás del número y más suave: el número es el dato. */
+.os-comparacion td span {
+  margin-left: 8px;
+  font-size: 0.84rem;
+  color: var(--os-tinta-media);
+}
+
+/* La conclusión cierra la tabla y no lleva línea debajo. */
+.os-comparacion tfoot td {
+  padding-top: 12px;
+  border: 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--os-tinta-media);
+}
+
 /* El número del paso, delante de su pregunta. */
 .os-nivel-numero {
   display: inline-flex;
