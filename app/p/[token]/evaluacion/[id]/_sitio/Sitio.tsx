@@ -53,8 +53,8 @@ export default function Sitio({
   volver: string;
   /** Quién es, para qué puesto y quién lo pidió. */
   cabecera: React.ReactNode;
-  /** El índice, ya armado: {id, titulo, bajada}. */
-  indice: { id: string; titulo: string; bajada?: string }[];
+  /** El índice, ya armado: {id, numero, titulo}. */
+  indice: { id: string; numero: string; titulo: string }[];
   /** Las secciones dibujadas, en orden. */
   cuerpo: React.ReactNode;
   /** El documento imprimible, escondido en pantalla. */
@@ -210,6 +210,7 @@ export default function Sitio({
           {/* El índice se queda a la vista mientras se lee: es desde donde se
               salta a lo que cada lector necesita. */}
           <nav className="sitio-indice" aria-label="Secciones del informe">
+            <p className="sitio-indice-titulo">El informe</p>
             <ul>
               {indice.map((s) => (
                 <li key={s.id}>
@@ -219,6 +220,7 @@ export default function Sitio({
                     aria-current={aqui === s.id ? 'true' : undefined}
                     onClick={() => ir(s.id)}
                   >
+                    <span className="sitio-indice-n">{s.numero}</span>
                     {s.titulo}
                   </button>
                 </li>
