@@ -6890,6 +6890,15 @@ th.os-tabla-contacto {
   height: auto;
 }
 
+/* Qué es cada punto del diagrama, debajo y en cuerpo chico. */
+.os-potencial-pie {
+  margin: 6px 0 0;
+  max-width: 78ch;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--os-suave);
+}
+
 /* Los minutos y cómo se leen, en la misma línea. */
 .os-bateria-duracion {
   display: flex;
