@@ -6447,8 +6447,9 @@ th.os-tabla-contacto {
   color: var(--os-tinta-media);
 }
 
+/* El diagrama entra a lo ancho del panel: la lámina lleva las dos columnas de
+   rótulos a la izquierda y una a la derecha, y achicada no se leen. */
 .os-potencial-grafico {
-  max-width: 620px;
   margin-top: 10px;
 }
 
@@ -9373,6 +9374,12 @@ textarea.os-exigencia-notas {
   grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
   gap: 14px;
   align-items: start;
+}
+
+/* El análisis discursivo se lleva la fila entera cuando trae el diagrama: la
+   lámina tiene tres columnas de rótulos y en media pantalla no se leen. */
+.os-tests-fila .os-panel:has(.os-potencial-grafico) {
+  grid-column: 1 / -1;
 }
 
 /* La fila de encabezados de la escala del Raven: dice la unidad una vez. */
