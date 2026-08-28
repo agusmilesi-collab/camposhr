@@ -6628,9 +6628,36 @@ th.os-tabla-contacto {
   margin-top: 18px;
 }
 
-.os-conclusion p {
+/* El rótulo en azul: es la lectura del sistema y no un campo más de la
+   pantalla, así que se distingue de los otros rótulos. */
+.os-conclusion > .os-etiqueta-campo {
+  color: var(--os-azul-fuerte);
+}
+
+/* Hoy y más adelante, uno debajo del otro y con su tiempo verbal: en un solo
+   párrafo se mezclan los presentes con los futuros. */
+.os-conclusion-tiempos {
+  display: grid;
+  gap: 10px;
   margin: 0;
-  max-width: 74ch;
+  max-width: 82ch;
+}
+
+.os-conclusion-tiempos > div {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 14px;
+  align-items: baseline;
+}
+
+.os-conclusion-tiempos dt {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--os-azul-fuerte);
+}
+
+.os-conclusion-tiempos dd {
+  margin: 0;
   font-size: 0.92rem;
   line-height: 1.6;
 }

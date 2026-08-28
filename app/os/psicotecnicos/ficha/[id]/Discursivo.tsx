@@ -633,13 +633,13 @@ function Comparacion({
 }
 
 /**
- * Qué se concluye de la comparación.
+ * Qué se concluye de la comparación, en dos tiempos.
  *
- * **La conclusión habla del puesto en el tiempo y no solo de hoy.** Que la
- * persona alcance hoy el nivel que el puesto pide contesta si se la puede
- * tomar; lo que decide si conviene es qué pasa después, y eso lo dice su banda
- * de maduración: cuándo llega al nivel que le falta, o cuándo lo supera y el
- * puesto le queda corto.
+ * **Hoy y más adelante van en renglones separados.** En un solo párrafo se
+ * mezclan los tiempos verbales ("puede hoy" con "va a quedarle corto") y hay
+ * que leerlo dos veces para saber qué parte es de ahora y qué parte es una
+ * proyección. Separados, cada uno tiene un solo tiempo: el primero en presente,
+ * el segundo en futuro.
  *
  * Las tres salidas son distintas de verdad y no matices de la misma: alcanza,
  * sobra o falta.
@@ -670,41 +670,51 @@ function Conclusion({
   const pide = ESTRATOS.findIndex((e) => e.romano === puesto.romano);
   const siguiente = ESTRATOS[pide + 1] ?? null;
 
-  if (distancia === 0) {
+  const hoy =
+    distancia === 0
+      ? `La persona puede abordar la complejidad que el puesto exige: los dos están en el estrato ${puesto.romano}.`
+      : distancia > 0
+        ? `La persona puede abordar más complejidad que la que el puesto exige: el puesto pide estrato ${puesto.romano}.`
+        : `El puesto exige más complejidad que la que la persona puede abordar: pide estrato ${puesto.romano}.`;
+
+  /** Qué dice la banda de acá en adelante. Null sin diagrama que leer. */
+  const adelante = (): string | null => {
+    if (banda === null || edad === null) return null;
+
+    if (distancia < 0) {
+      const llega = cuandoLlega(pide);
+      return llega !== null
+        ? `Su banda de maduración la va a llevar a ese nivel alrededor de los ${llega} años. Hasta entonces va a necesitar que alguien de un estrato por encima le arme el marco del trabajo.`
+        : 'Su banda de maduración no la va a llevar a ese nivel dentro del alcance del diagrama.';
+    }
+
+    if (distancia > 0) {
+      return 'El puesto le va a quedar corto en cuanto lo domine, y la distancia se va a agrandar con los años.';
+    }
+
     const supera = cuandoLlega(pide + 1);
-    // Cuando la banda ya la ubica en el nivel de arriba, decir "alrededor de
-    // los 47" con 47 años encima se lee como una fecha futura que ya pasó.
-    const yaLoRoza = supera !== null && edad !== null && supera <= edad + 1;
-    return (
-      <p>
-        La persona puede abordar hoy la complejidad que el puesto exige.
-        {supera === null || !siguiente
-          ? ' Por su banda de maduración se mantiene en ese nivel dentro del alcance del diagrama.'
-          : yaLoRoza
-            ? ` Su banda de maduración ya la ubica en el borde del estrato ${siguiente.romano}: el puesto le va a quedar corto en cuanto lo domine, salvo que crezca con ella.`
-            : ` Por su banda de maduración, alrededor de los ${supera} años va a poder con el estrato ${siguiente.romano}: el puesto le queda corto a partir de ahí, salvo que crezca con ella.`}
-      </p>
-    );
-  }
+    if (supera === null || !siguiente) {
+      return 'Su banda de maduración la va a mantener en ese nivel dentro del alcance del diagrama.';
+    }
+    return supera <= edad + 1
+      ? `Su banda de maduración ya la ubica en el borde del estrato ${siguiente.romano}: el puesto le va a quedar corto en cuanto lo domine, salvo que crezca con ella.`
+      : `Alrededor de los ${supera} años va a poder con el estrato ${siguiente.romano}. Desde ahí el puesto le va a quedar corto, salvo que crezca con ella.`;
+  };
 
-  if (distancia > 0) {
-    return (
-      <p>
-        La persona puede abordar hoy más complejidad que la que el puesto exige: el
-        puesto le va a quedar corto en cuanto lo domine, y eso es lo que hay que tener
-        previsto antes de tomarla.
-      </p>
-    );
-  }
+  const luego = adelante();
 
-  const llega = cuandoLlega(pide);
   return (
-    <p>
-      El puesto exige más complejidad que la que la persona puede abordar hoy.
-      {banda !== null &&
-        (llega !== null
-          ? ` Por su banda de maduración llega a ese nivel alrededor de los ${llega} años: hasta entonces necesita que el trabajo se le arme por partes y que alguien de un estrato por encima le fije el marco.`
-          : ' Su banda de maduración no llega a ese nivel dentro del alcance del diagrama.')}
-    </p>
+    <dl className="os-conclusion-tiempos">
+      <div>
+        <dt>Hoy</dt>
+        <dd>{hoy}</dd>
+      </div>
+      {luego && (
+        <div>
+          <dt>Más adelante</dt>
+          <dd>{luego}</dd>
+        </div>
+      )}
+    </dl>
   );
 }
