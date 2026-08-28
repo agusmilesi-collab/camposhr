@@ -8,6 +8,7 @@ import { bateriasDelPortal } from '@/lib/baterias-portal';
 import { COBROS, COBRO_PUBLICADO, cobro } from '@/lib/cobro';
 import { informeDe, serviciosDe } from '@/lib/servicios';
 import { PAGINA_PSICOTECNICOS, esPortalEjemplo } from '@/lib/portal-ejemplo';
+import { sumandoHabiles } from '@/lib/hora';
 
 export const dynamic = 'force-dynamic';
 
@@ -140,11 +141,24 @@ function Encabezado({ conCobro }: { conCobro: boolean }) {
   );
 }
 
+/**
+ * A cuántos días hábiles de la entrevista se estima el informe.
+ *
+ * Es lo que la página de psicotécnicos promete y lo que el sistema viene
+ * cumpliendo. Sirve mientras el informe no está: una columna de entrega vacía
+ * no dice si falta un día o dos semanas, que es justo lo que el cliente mira.
+ */
+const HABILES_HASTA_LA_ENTREGA = 3;
+
 /** Una fila de candidato en curso. */
 function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
   const e = ESTADOS[c.estado] ?? { texto: c.estado, clase: 'gray' };
   const fe = fecha(c.fechaEntrevista, true);
-  const fen = fecha(c.fechaEntrega);
+  // Mientras no hay entrega, la fecha estimada; y se dice que es estimada,
+  // porque una fecha a secas se lee como un compromiso tomado.
+  const entrega = c.fechaEntrega ?? sumandoHabiles(c.fechaEntrevista, HABILES_HASTA_LA_ENTREGA);
+  const fen = fecha(entrega);
+  const estimada = !c.fechaEntrega && Boolean(fen);
   return (
     <div className={`tr${conCobro ? '' : ' sin-cobro'}`}>
       <span className="c-name">{c.nombre}</span>
@@ -162,7 +176,17 @@ function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
         {c.modalidad ?? <span className="dash">—</span>}
       </span>
       <span className="c-fecha" data-label="Entrega">
-        {fen ? fen : <span className="dash">—</span>}
+        {fen ? (
+          estimada ? (
+            <span className="c-estimada" title="Fecha estimada, a tres días hábiles de la entrevista">
+              {fen} <em>est.</em>
+            </span>
+          ) : (
+            fen
+          )
+        ) : (
+          <span className="dash">—</span>
+        )}
       </span>
       {/* El cobro también en curso: una evaluación se puede facturar antes de
           entregar el informe, así que el estado corre desde que el candidato

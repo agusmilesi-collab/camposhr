@@ -211,6 +211,29 @@ export function habilesDesde(iso: string | null, hoy: Date = new Date()): number
 }
 
 /**
+ * La fecha que cae a N días hábiles de otra, como "2026-09-02".
+ *
+ * Es la vuelta de {@link habilesDesde} y cuenta igual: de lunes a viernes, sin
+ * feriados. Se usa para estimar cuándo va a estar un informe, que se cuenta
+ * desde la entrevista y en días de trabajo: contando corridos, una entrevista
+ * de jueves prometía el informe un domingo.
+ */
+export function sumandoHabiles(iso: string | null, habiles: number): string | null {
+  const dia = diaDe(iso);
+  if (!dia) return null;
+
+  const d = comoFecha(dia);
+  let faltan = habiles;
+  while (faltan > 0) {
+    d.setTime(d.getTime() + 24 * 60 * 60 * 1000);
+    const semana = new Date(d.toLocaleString('en-US', { timeZone: ZONA })).getDay();
+    if (semana !== 0 && semana !== 6) faltan--;
+  }
+  const p = partes(d);
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+/**
  * La distancia en palabras: "hace 6 días", "hoy", "en 2 días".
  *
  * Los negativos son lo que todavía no pasó, que en este pipeline son las

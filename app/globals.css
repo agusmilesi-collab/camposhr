@@ -362,8 +362,10 @@ body {
   /* El nombre es la columna que se lee primero, así que se lleva el ancho que
      liberaron los estados cortos: a la de estado le alcanza con entrar "En
      seguimiento", que es el más largo que queda. */
+  /* La de entrega mide 100 y no 70: desde que muestra la fecha estimada lleva
+     su "est." al lado, y con 70 se recortaba a "03-sept…". */
   grid-template-columns:
-    minmax(0, 1.6fr) minmax(0, 1.25fr) minmax(0, 1.15fr) minmax(0, 1.05fr) minmax(0, 0.8fr) 70px 94px;
+    minmax(0, 1.6fr) minmax(0, 1.25fr) minmax(0, 1.15fr) minmax(0, 1.05fr) minmax(0, 0.8fr) 100px 94px;
   align-items: center;
   gap: 10px;
   padding: 10px 20px;
@@ -7030,6 +7032,14 @@ body {
   gap: 5px;
   margin-left: 10px;
   vertical-align: -2px;
+}
+
+/* La entrega que todavía no pasó: la fecha se lee igual que las otras y el
+   "est." al lado avisa que es una estimación y no una fecha acordada. */
+.c-estimada em {
+  font-style: normal;
+  font-size: 0.86em;
+  color: var(--muted);
 }
 
 /*

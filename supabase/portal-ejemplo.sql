@@ -63,8 +63,10 @@ insert into evaluaciones (
   bender_administrado, grafico_2_personas_administrado, proyectivo_administrado,
   benziger_administrado, edad
 )
+-- Entrevistado ayer: su entrega estimada (tres días hábiles) tiene que caer
+-- adelante, o la muestra se lee como si el informe estuviera demorado.
 select p.id, pe.id, ev.id, 'Por analizar', 'Online',
-       current_date - 18, (current_date - 4)::timestamptz + interval '13 hours',
+       current_date - 12, (current_date - 1)::timestamptz + interval '13 hours',
        true, true, true, true, 37
 from personas p, pedidos pe, empresas em, evaluadoras ev
 where p.nombre = 'Damián Ferrero' and em.slug = 'vega-materiales-ejemplo'

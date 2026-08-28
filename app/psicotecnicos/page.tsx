@@ -704,7 +704,7 @@ export default async function Precios() {
           que se compra es el criterio de quien firma, y un informe sin autor
           identificable vale menos que uno con matrícula al pie. */}
       <section className="precios-bloque">
-        <h2 className="precios-titulo">Quiénes firman</h2>
+        <h2 className="precios-titulo">Evaluadoras</h2>
         <div className="precios-equipo">
           {EQUIPO.map((p) => (
             <article className="precios-persona" key={p.nombre}>
@@ -762,24 +762,24 @@ export default async function Precios() {
         <h2 className="precios-titulo">
           Otros servicios de <span className="precios-firma">Campos HR</span>
         </h2>
-        {/* Cada uno con la misma forma: qué es y cuándo sirve. Sin la segunda
-            mitad, un servicio se lee como una capacidad más del estudio y nadie
-            sabe en qué momento pedirlo.
+        {/* Los tres servicios del catálogo que no son esta página, con la misma
+            forma: qué se hace y cuándo se usa.
+
+            Cuatro oraciones cada uno, contando la de cuándo se usa. Es el largo
+            que entra de un vistazo al final de un documento que se leyó entero,
+            y obliga a decir el método en vez de enumerar temas; el detalle de
+            cada línea está en su propia presentación.
 
             Lo que necesita muchas evaluaciones para decir algo no está acá: con
             la base de hoy, un patrón por área o por nivel se apoyaría en un
             puñado de casos. */}
-        {/* Los tres servicios del catálogo que no son esta página, con la
-            misma forma: qué es y cuándo se usa. Resumidos a dos renglones cada
-            uno: quien llegó hasta acá ya decidió sobre otra cosa, y el detalle
-            de cada línea está en su propia presentación. */}
         <ul className="precios-otros">
           <li>
-            <strong>Diseño organizacional.</strong> Mapeamos la cadena de valor,
-            derivamos las capacidades críticas y el organigrama objetivo, y definimos
-            para cada puesto su resultado esperado, qué decide por sí mismo y con
-            quién se coordina. Cierra en un plan de hasta ocho decisiones, cada una
-            con responsable, inversión estimada y costo de postergarla.
+            <strong>Diseño organizacional.</strong> Mapeamos la cadena de valor y
+            derivamos de ahí las capacidades críticas y el organigrama objetivo. Para
+            cada puesto definimos su resultado esperado, qué decide por sí mismo y
+            con quién se coordina. Cierra en un plan de hasta ocho decisiones, cada
+            una con responsable, inversión estimada y costo de postergarla.
             <span className="precios-cuando-sirve">
               Se usa cuando la empresa creció y sigue conducida como al principio, o
               cuando hay una sucesión o una venta a la vista.
@@ -787,12 +787,12 @@ export default async function Precios() {
           </li>
           <li>
             <strong>Formación de líderes y mandos medios.</strong> Relevamos cómo se
-            conduce hoy (qué decide cada uno, qué delega y qué conversaciones
-            posterga) y armamos un programa vivencial sobre casos que trae el propio
-            equipo: la transición de experto a conductor, delegación, devolución de
-            desempeño, comunicación de decisiones difíciles y manejo de conflictos.
-            Cada encuentro cierra con un compromiso de práctica que se revisa en el
-            siguiente.
+            conduce hoy: qué decide cada uno, qué delega y qué conversaciones
+            posterga. Sobre eso armamos un programa vivencial que trabaja la
+            transición de experto a conductor, la delegación, la devolución de
+            desempeño y el manejo de conflictos, con los casos que trae el propio
+            equipo. Cada encuentro cierra con un compromiso de práctica que se revisa
+            en el siguiente.
             <span className="precios-cuando-sirve">
               Se usa cuando alguien técnicamente muy competente conduce gente por
               primera vez, o cuando las conversaciones difíciles se postergan hasta
@@ -814,10 +814,12 @@ export default async function Precios() {
               <span className="precios-otro-firma">Campos HR by Sentir Mindfulness</span>
             </span>
             <strong>Talleres de habilidades humanas.</strong> Módulos de 40 o 90
-            minutos, con una medición al inicio y otra al cierre: mindfulness para
-            regular el estrés, comunicación y conversaciones difíciles, el HR Help
-            Kit para que Recursos Humanos se proteja del desgaste, y técnicas de
-            entrevista por competencias para que cada líder elija mejor a quien suma.
+            minutos sobre lo que ese equipo necesita: mindfulness para regular el
+            estrés, comunicación y conversaciones difíciles, el HR Help Kit para que
+            Recursos Humanos se proteja del desgaste, y entrevista por competencias
+            para que cada líder elija mejor a quien suma. Se arman con la conducción
+            del área y se dictan en la empresa, en el horario de trabajo. Cada módulo
+            abre y cierra con una medición, para saber qué se movió.
             <span className="precios-cuando-sirve">
               Se usa cuando el equipo trabaja a presión permanente, o cuando Recursos
               Humanos absorbe los conflictos de todos los sectores.
