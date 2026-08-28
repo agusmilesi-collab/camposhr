@@ -6498,11 +6498,26 @@ th.os-tabla-contacto {
   border-top: 1px solid var(--os-linea);
 }
 
+/* El título del bloque y su marca, en la misma línea: es la cabeza de un test
+   adentro de otro, así que se lee como las demás. */
+.os-competencias-cabeza {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
 .os-competencias-titulo {
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--os-tinta);
+}
+
+.os-competencias-cabeza .os-test-estado {
+  margin-left: auto;
+  min-width: 128px;
+  justify-content: center;
 }
 
 /* Lo que hay que tener en la cabeza al contestar, debajo de la pregunta y en
@@ -6723,8 +6738,10 @@ th.os-tabla-contacto {
 
 .os-nivel-cierre {
   display: grid;
-  gap: 6px;
-  padding-top: 14px;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 22px;
+  padding-bottom: 6px;
   border-top: 1px solid var(--os-linea);
 }
 

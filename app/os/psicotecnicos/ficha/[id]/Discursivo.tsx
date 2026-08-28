@@ -346,9 +346,6 @@ export default function Discursivo({
               </li>
             ))}
           </ol>
-          <span className={`os-nivel-sale${porPreguntas ? '' : ' vacio'}`}>
-            {porPreguntas ? `Estrato ${porPreguntas.romano}` : 'sin contestar'}
-          </span>
         </div>
 
         {choca && (
