@@ -319,8 +319,9 @@
      sigue: veintiséis abajo de la línea, no veinte. */
   margin-bottom: 26px;
   padding-bottom: 12px;
-  /* La misma línea gruesa que separa cada capítulo del documento. */
-  border-bottom: 2px solid var(--tinta);
+  /* La línea del título, fina: en pantalla la de dos píxeles del documento pesa
+     más que el título que sostiene. */
+  border-bottom: 1px solid var(--tinta);
 }
 
 .sitio-numero {
@@ -904,10 +905,12 @@
   padding: 0 80px 24px;
 }
 
-/* La primera sección no necesita los 64 px de arriba: ya viene de la cabecera
-   del panel, que es la que la separa de lo de arriba. */
-.sitio-secciones-ficha .sitio-seccion:first-child {
-  padding-top: 40px;
+/* La sección que sigue a los datos de la persona lleva menos aire arriba: la
+   cabecera ya deja el suyo abajo, y sumarle los 64 de una sección dejaba medio
+   palmo en blanco entre la fecha de evaluación y el título de Conclusiones.
+   Va por el hermano y no por `:first-child`, que el primero es la cabecera. */
+.sitio-cabecera + .sitio-seccion {
+  padding-top: 34px;
 }
 
 /* Sesenta entre el borde de la hoja y el logotipo, como el margen de arriba de
