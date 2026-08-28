@@ -638,9 +638,14 @@ function Comparacion({
 /**
  * Qué se concluye de la comparación.
  *
+ * **La conclusión habla del puesto en el tiempo y no solo de hoy.** Que la
+ * persona alcance hoy el nivel que el puesto pide contesta si se la puede
+ * tomar; lo que decide si conviene es qué pasa después, y eso lo dice su banda
+ * de maduración: cuándo llega al nivel que le falta, o cuándo lo supera y el
+ * puesto le queda corto.
+ *
  * Las tres salidas son distintas de verdad y no matices de la misma: alcanza,
- * sobra o falta. Cuando falta, lo que sigue es cuándo llega, que es lo que el
- * diagrama contesta y lo que decide si igual conviene tomarla.
+ * sobra o falta.
  */
 function Conclusion({
   distancia,
@@ -653,40 +658,50 @@ function Conclusion({
   banda: number | null;
   edad: number | null;
 }) {
-  if (distancia === 0) {
-    return <p>La persona puede abordar hoy la complejidad que el puesto exige.</p>;
-  }
-  if (distancia > 0) {
-    return (
-      <p>
-        La persona puede abordar hoy más complejidad que la que el puesto exige: es un
-        puesto que le va a quedar corto en cuanto lo domine.
-      </p>
-    );
-  }
-
-  // Cuándo su banda alcanza el nivel del puesto, que es lo que sigue después de
-  // saber que hoy no llega.
-  const pide = ESTRATOS.findIndex((e) => e.romano === puesto.romano);
-  let llega: number | null = null;
-  if (banda !== null && edad !== null) {
+  /** A qué edad su banda alcanza ese estrato. Null si no llega en el cuadro. */
+  const cuandoLlega = (nivel: number): number | null => {
+    if (banda === null || edad === null) return null;
     for (let e = Math.max(edad, EDAD_MIN); e <= EDAD_MAX; e++) {
       const suyo = ESTRATOS.findIndex(
         (x) => x.romano === estratoDeEscalon(horizonteEn(banda, e)).romano
       );
-      if (suyo >= pide) {
-        llega = e;
-        break;
-      }
+      if (suyo >= nivel) return e;
     }
+    return null;
+  };
+
+  const pide = ESTRATOS.findIndex((e) => e.romano === puesto.romano);
+  const siguiente = ESTRATOS[pide + 1] ?? null;
+
+  if (distancia === 0) {
+    const supera = cuandoLlega(pide + 1);
+    return (
+      <p>
+        La persona puede abordar hoy la complejidad que el puesto exige.
+        {supera !== null && siguiente
+          ? ` Por su banda de maduración, alrededor de los ${supera} años va a poder con el estrato ${siguiente.romano}: el puesto le queda corto a partir de ahí, salvo que crezca con ella.`
+          : ' Por su banda de maduración se mantiene en ese nivel dentro del alcance del diagrama.'}
+      </p>
+    );
   }
 
+  if (distancia > 0) {
+    return (
+      <p>
+        La persona puede abordar hoy más complejidad que la que el puesto exige: el
+        puesto le va a quedar corto en cuanto lo domine, y eso es lo que hay que tener
+        previsto antes de tomarla.
+      </p>
+    );
+  }
+
+  const llega = cuandoLlega(pide);
   return (
     <p>
       El puesto exige más complejidad que la que la persona puede abordar hoy.
       {banda !== null &&
         (llega !== null
-          ? ` Por su banda de maduración llega a ese nivel alrededor de los ${llega} años.`
+          ? ` Por su banda de maduración llega a ese nivel alrededor de los ${llega} años: hasta entonces necesita que el trabajo se le arme por partes y que alguien de un estrato por encima le fije el marco.`
           : ' Su banda de maduración no llega a ese nivel dentro del alcance del diagrama.')}
     </p>
   );
