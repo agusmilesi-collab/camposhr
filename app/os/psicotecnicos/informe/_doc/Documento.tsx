@@ -574,6 +574,24 @@ export default function Documento({
                 hoy quien quedó en ese estrato y qué exige el siguiente. Su
                 lectura sobre esta persona, si la escribió, va después. Se edita
                 en Configuración → Potencial. */}
+            {/* El puesto, en la misma escala. Es la comparación que decide: la
+                evaluación mide a la persona y lo que hay que resolver es si
+                eso alcanza para este puesto. Sale solo cuando el pedido tiene
+                determinado su nivel de trabajo. */}
+            {inf.discursivo.puesto && (
+              <p className="inf-ajuste-puesto">
+                <strong>
+                  El puesto es de estrato {inf.discursivo.puesto.romano} ·{' '}
+                  {inf.discursivo.puesto.nombre}.
+                </strong>{' '}
+                {inf.discursivo.puesto.distancia === 0
+                  ? 'La persona puede abordar hoy la complejidad que el puesto exige.'
+                  : inf.discursivo.puesto.distancia > 0
+                    ? 'La complejidad que la persona puede abordar hoy está por encima de la que el puesto exige, así que el puesto le va a quedar corto en cuanto lo domine.'
+                    : 'La complejidad que el puesto exige está por encima de la que la persona puede abordar hoy.'}
+              </p>
+            )}
+
             {inf.discursivo.detalle && (
               <>
                 <h3>Capacidad potencial actual</h3>
