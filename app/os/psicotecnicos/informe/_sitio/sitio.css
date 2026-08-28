@@ -443,103 +443,10 @@
 }
 
 /* ── Recomendación ────────────────────────────────────────────────────── */
-/* El elegido en grande y con su explicación; los otros tres nombrados y
-   apagados, que el semáforo se lee comparando: solo, "ajuste alto" no dice
-   contra qué. */
-.sitio-semaforo {
-  display: grid;
-  gap: 8px;
-}
-
-/* El elegido es el único que es una tarjeta. Los otros tres van como renglones
-   apagados: están para decir contra qué se eligió, y tres recuadros vacíos
-   pesan tanto como el que importa. */
-.sitio-nivel-ajuste {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 14px;
-  color: var(--suave);
-}
-
-.sitio-nivel-ajuste h3 {
-  margin: 0;
-  font-size: 0.92rem;
-  font-weight: 550;
-}
-
-.sitio-nivel-ajuste p {
-  margin: 5px 0 0;
-  font-size: 0.9rem;
-  line-height: 1.55;
-  color: var(--tinta-media);
-}
-
-.sitio-nivel-ajuste .inf-nivel-icono {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  color: var(--linea);
-}
-
-.sitio-nivel-ajuste.elegido {
-  align-items: flex-start;
-  padding: 16px 18px;
-  border: 1px solid;
-  border-radius: 10px;
-  margin-bottom: 4px;
-}
-
-.sitio-nivel-ajuste.elegido .inf-nivel-icono {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-}
-
-.sitio-nivel-ajuste.elegido h3 {
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.sitio-nivel-ajuste.elegido.verde {
-  border-color: var(--verde);
-  background: rgba(55, 128, 74, 0.06);
-}
-.sitio-nivel-ajuste.elegido.azul {
-  border-color: var(--azul);
-  background: rgba(67, 100, 143, 0.06);
-}
-.sitio-nivel-ajuste.elegido.ambar {
-  border-color: var(--ambar);
-  background: rgba(169, 119, 34, 0.06);
-}
-.sitio-nivel-ajuste.elegido.rojo {
-  border-color: var(--rojo);
-  background: rgba(140, 59, 59, 0.06);
-}
-
-.sitio-nivel-ajuste.elegido h3 {
-  color: var(--tinta);
-}
-
-.sitio-nivel-ajuste.elegido.verde .inf-nivel-icono {
-  background: var(--verde);
-  color: #fff;
-}
-.sitio-nivel-ajuste.elegido.azul .inf-nivel-icono {
-  background: var(--azul);
-  color: #fff;
-}
-.sitio-nivel-ajuste.elegido.ambar .inf-nivel-icono {
-  background: var(--ambar);
-  color: #fff;
-}
-.sitio-nivel-ajuste.elegido.rojo .inf-nivel-icono {
-  background: var(--rojo);
-  color: #fff;
-}
+/* El semáforo es el del documento (`inf-semaforo`): los cuatro niveles con su
+   color, cada uno con su texto y el elegido con el borde entero. Se dibujaba
+   acá con el elegido en tarjeta y los otros tres como renglones apagados, y
+   perdía la escala, que es lo que hace legible al que le tocó. */
 
 .sitio-firma {
   display: flex;
