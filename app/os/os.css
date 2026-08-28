@@ -10412,13 +10412,18 @@ textarea.os-campo-bateria {
 }
 
 /*
- * La barra de acciones y la hoja son dos cosas, y las separa una línea.
+ * La barra de acciones y la hoja son dos cosas, y las separa una franja ámbar.
  *
- * Las dos en blanco: la barra es del panel, no del fondo. Lo que hace de corte
- * es la línea entera de lado a lado, y debajo empieza la hoja.
+ * Las dos van en blanco, así que sin nada en el medio el informe se leía como
+ * la continuación de la barra. La franja de veinticinco píxeles de lado a lado
+ * es el corte: arriba, lo que se hace con el informe; abajo, el documento.
+ *
+ * Ámbar y no la línea de un píxel porque lo que hay que ver es que abajo
+ * empieza otra cosa, y una línea más en una pantalla que ya tiene doce no la
+ * ve nadie.
  */
 .os-panel-informe .os-generar {
-  border-bottom: 1px solid var(--os-linea);
+  border-bottom: 25px solid var(--os-ambar);
 }
 
 .os-panel-informe .os-informe-marco {
