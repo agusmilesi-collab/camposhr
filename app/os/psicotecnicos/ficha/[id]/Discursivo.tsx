@@ -33,10 +33,12 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import Opciones from '@/app/os/Opciones';
-import type { NivelDiscursivo } from '@/lib/discursivo';
+import { nivelesQueRigen, type NivelDiscursivo } from '@/lib/discursivo';
 import {
-  UNIDADES,
+  APERTURA,
   PREGUNTAS,
+  PREGUNTA_HORIZONTE,
+  UNIDADES,
   aDias,
   bandaDe,
   comoSeDice,
@@ -53,16 +55,18 @@ import Progreso from '../../informe/_doc/Progreso';
 export default function Discursivo({
   id,
   nivel,
-  niveles,
+  niveles: susNiveles,
   edad,
   edadEvaluacion,
   dias,
   complejidad,
+  relato,
+  modo = 'codificacion',
 }: {
   id: string;
   nivel: string | null;
   /** Los cuatro, del más alto al más bajo, con lo que rige. */
-  niveles: { nombre: string; romano: string; procesamiento: string; que: string }[];
+  niveles?: { nombre: string; romano: string; procesamiento: string; que: string }[];
   /** La edad guardada para el diagrama, si ya se cargó. */
   edad: number | null;
   /** La que quedó congelada el día de la entrevista, si la hay. */
@@ -71,8 +75,23 @@ export default function Discursivo({
   dias: number | null;
   /** Las respuestas de complejidad ya cargadas. */
   complejidad: Record<string, boolean> | null;
+  /** Lo que la persona contó, anotado en la entrevista. Es de dónde se codifica. */
+  relato: string | null;
+  /**
+   * Dónde se está usando.
+   *
+   * En la entrevista se ve qué preguntarle y se contesta mientras habla; en la
+   * codificación se lee lo anotado, sale el estrato y se dibuja el diagrama. Es
+   * el mismo dato en los dos lados, así que es el mismo componente: separarlos
+   * era mantener dos formularios que escriben las mismas columnas.
+   */
+  modo?: 'entrevista' | 'codificacion';
 }) {
   const router = useRouter();
+  // Sin lista propia, la del catálogo: la hoja de la entrevista no lee la
+  // configuración, y lo único que se usa de acá es el nombre de cada estrato.
+  const niveles = susNiveles ?? nivelesQueRigen();
+  const enEntrevista = modo === 'entrevista';
   const [puesto, setPuesto] = useState(nivel);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +103,7 @@ export default function Discursivo({
   const [cuanto, setCuanto] = useState(inicial ? String(inicial.cantidad) : '');
   const [unidad, setUnidad] = useState<Unidad>(inicial?.unidad ?? 'anios');
   const [respuestas, setRespuestas] = useState<Record<string, boolean>>(complejidad ?? {});
+  const [contado, setContado] = useState(relato ?? '');
 
   async function mandar(cuerpo: Record<string, unknown>) {
     setGuardando(true);
@@ -110,6 +130,12 @@ export default function Discursivo({
     const antes = puesto;
     setPuesto(elegido);
     if (!(await mandar({ nivel: elegido }))) setPuesto(antes);
+  }
+
+  /** Lo que contó, al soltar el campo: se escribe de a ratos mientras habla. */
+  async function guardarRelato() {
+    if (contado === (relato ?? '')) return;
+    await mandar({ relato: contado.trim() || null });
   }
 
   /** La edad se guarda al salir del campo, vacía la borra. */
@@ -200,12 +226,43 @@ export default function Discursivo({
 
   return (
     <div className="os-discursivo">
-      {/* Lo primero es el horizonte: en el modelo es la medida de la capacidad,
-          y de ahí sale el estrato sin que nadie lo elija. */}
+      {/* Lo que contó, arriba de todo: es el material del que sale todo lo
+          demás, y codificar de memoria es codificar mal. Se escribe mientras
+          habla y después se lee para codificar. */}
+      {enEntrevista ? (
+        <div className="os-relato">
+          <p className="os-nivel-pregunta">{APERTURA}</p>
+          <textarea
+            className="os-campo os-relato-campo"
+            rows={5}
+            maxLength={4000}
+            value={contado}
+            disabled={guardando}
+            placeholder="Cada cosa que cuente, en un renglón: qué era, qué tenía que resolver y cuánto duró."
+            onChange={(e) => setContado(e.target.value)}
+            onBlur={guardarRelato}
+          />
+        </div>
+      ) : (
+        <div className="os-relato-leido">
+          <span className="os-etiqueta-campo">Lo que contó</span>
+          {relato ? (
+            <p>{relato}</p>
+          ) : (
+            <p className="os-tabla-flojo">
+              Sin anotar. Se escribe en la hoja de la entrevista, mientras la persona habla.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Después el horizonte: en el modelo es la medida de la capacidad, y de
+          ahí sale el estrato sin que nadie lo elija. */}
       <div className="os-nivel-bloque">
         <p className="os-nivel-pregunta">
-          ¿Cuál es la tarea más larga que esta persona puede llevar hasta el final por
-          sí misma, sin que le indiquen cómo?
+          {enEntrevista
+            ? PREGUNTA_HORIZONTE
+            : '¿Cuál es la tarea más larga que esta persona puede llevar hasta el final por sí misma, sin que le indiquen cómo?'}
         </p>
         <div className="os-nivel-tiempo">
           <input
@@ -243,15 +300,18 @@ export default function Discursivo({
           pudo, no sobre lo que sabe hacer: es lo que el libro indica pedir. */}
       <div className="os-nivel-bloque">
         <p className="os-nivel-pregunta">
-          Tomando las dos o tres asignaciones que manejó al límite de lo que pudo,
-          ¿qué le exigieron?
+          {enEntrevista
+            ? 'De cada una de esas, ¿qué le exigió? Se pregunta y se marca acá mismo.'
+            : 'Tomando las dos o tres asignaciones que manejó al límite de lo que pudo, ¿qué le exigieron?'}
         </p>
         <ol className="os-nivel-preguntas">
           {PREGUNTAS.filter((p) => p.estrato <= 4).map((p) => (
             <li key={p.estrato}>
               <span className="os-nivel-texto">
                 <strong>{p.corto}</strong>
-                <small>{p.texto}</small>
+                {/* En la entrevista, la pregunta tal como se le hace a la
+                    persona; codificando, la que describe el trabajo. */}
+                <small>{enEntrevista ? p.alCandidato : p.texto}</small>
               </span>
               <Opciones
                 valor={respuestas[String(p.estrato)] ?? null}
@@ -339,8 +399,10 @@ export default function Discursivo({
         )}
       </div>
 
-      {/* El diagrama necesita además la edad. El horizonte ya se cargó arriba:
-          es el mismo dato con el que se determina el estrato. */}
+      {/* El diagrama no va en la entrevista: ahí la pantalla es para escuchar y
+          marcar, y un dibujo que se recalcula a cada toque distrae de eso. Se
+          mira al codificar, que es cuando hay que leerlo. */}
+      {!enEntrevista && (
       <div className="os-potencial-datos">
         <span className="os-etiqueta-campo">Diagrama de progreso potencial</span>
         <div className="os-potencial-campos">
@@ -374,6 +436,8 @@ export default function Discursivo({
           </>
         )}
       </div>
+
+      )}
 
       {error && <p className="os-form-error">{error}</p>}
     </div>

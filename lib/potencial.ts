@@ -264,6 +264,12 @@ export function comoSeDice(e: Estrato): string {
  * Elegir entre cuatro descripciones es una impresión; contestar cuatro
  * preguntas deja registrado por qué dio ese nivel.
  *
+ * Cada una viene en dos redacciones: `texto` describe el trabajo y es la que se
+ * contesta del puesto; `alCandidato` es la misma pregunta hecha a la persona,
+ * sobre lo que ella contó. Son dos formas de averiguar lo mismo, y la segunda
+ * existe para que la evaluadora pueda contestarla mientras escucha, sin tener
+ * que traducir nada.
+ *
  * La quinta existe para los puestos: una jefatura puede exigir un estrato V, y
  * saberlo cambia la búsqueda aunque el análisis discursivo no certifique ese
  * nivel en una persona.
@@ -274,32 +280,55 @@ export const PREGUNTAS = [
     corto: 'Juicio directo',
     texto:
       '¿El trabajo se puede llevar adelante siguiendo un plan ya asignado, resolviendo los obstáculos a medida que aparecen con la experiencia y el criterio práctico?',
+    alCandidato: '¿Lo resolviste siguiendo un método o un procedimiento que ya conocías?',
   },
   {
     estrato: 2,
     corto: 'Acumulación diagnóstica',
     texto:
       '¿Exige reunir e interpretar datos que van apareciendo, y llegar a un diagnóstico que los vincule para recién ahí decidir cómo resolver?',
+    alCandidato:
+      '¿Tuviste que ir juntando información y armar vos qué estaba pasando, antes de saber cómo resolverlo?',
   },
   {
     estrato: 3,
     corto: 'Caminos alternativos',
     texto:
       '¿Exige construir un plan que equilibre lo que hay que hacer hoy contra lo que se necesita más adelante, con otros caminos en reserva por si el elegido no funciona?',
+    alCandidato:
+      '¿Armaste distintas maneras de resolverlo y elegiste una? ¿Tenías otra preparada por si esa no funcionaba?',
   },
   {
     estrato: 4,
     corto: 'Procesamiento paralelo',
     texto:
       '¿Exige llevar adelante varios proyectos que se afectan entre sí, ajustando cada uno en relación con los otros?',
+    alCandidato:
+      '¿Estabas llevando varios frentes a la vez, donde lo que hacías en uno te cambiaba otro?',
   },
   {
     estrato: 5,
     corto: 'Sistema completo',
     texto:
       '¿Exige seguir cómo un cambio en cualquier punto impacta en el sistema entero, y decidir contando las consecuencias que eso arrastra aguas abajo?',
+    alCandidato:
+      '¿Tenías que seguir cómo un cambio en cualquier punto te movía todo lo demás, y decidir contando eso?',
   },
 ] as const;
+
+/**
+ * Con qué se abre: el pedido de ejemplos.
+ *
+ * Es lo primero y es una sola frase, porque de acá sale todo lo demás. Sin
+ * ejemplos concretos las cuatro preguntas se contestan sobre una impresión, que
+ * es exactamente lo que el procedimiento evita.
+ */
+export const APERTURA =
+  'Contame dos o tres cosas del trabajo que te hayan costado resolver, de esas donde tuviste que arreglártelas vos.';
+
+/** Y con qué se averigua el horizonte, que es la otra lectura. */
+export const PREGUNTA_HORIZONTE =
+  '¿Cuánto pasó desde que empezaste hasta que quedó terminada? Y hoy, ¿hasta cuándo estás planificando?';
 
 /**
  * El nivel que dan las respuestas: el más alto contestado que sí.

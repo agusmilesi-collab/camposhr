@@ -48,8 +48,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, motivo: 'Evaluación inválida.' }, { status: 400 });
   }
 
-  const nivel = datos?.nivel;
-  if (nivel !== null && !esNivel(nivel)) {
+  /* El nivel es opcional como todo lo demás: cada pantalla escribe lo suyo y lo
+     que no manda queda como estaba. La hoja de la entrevista guarda el relato
+     sin saber en qué estrato quedó, que se codifica después. */
+  const nivel = 'nivel' in (datos ?? {}) ? datos.nivel : undefined;
+  if (nivel !== undefined && nivel !== null && !esNivel(nivel)) {
     return NextResponse.json(
       { ok: false, motivo: 'El nivel tiene que ser uno de los cuatro de la pirámide.' },
       { status: 400 }
@@ -68,11 +71,11 @@ export async function POST(req: Request) {
    */
   const fila: Record<string, unknown> = {
     evaluacion_id: id,
-    nivel,
     quien: yo.nombre,
     actualizado_at: new Date().toISOString(),
   };
-  for (const campo of ['actual', 'futura'] as const) {
+  if (nivel !== undefined) fila.nivel = nivel;
+  for (const campo of ['actual', 'futura', 'relato'] as const) {
     if (campo in (datos ?? {})) fila[campo] = parrafo(datos?.[campo]);
   }
 
@@ -121,7 +124,15 @@ export async function POST(req: Request) {
      upsert escribe la fila con las columnas que le mandan, y una que falte
      quedaría en null. La pantalla del estrato manda el nivel solo, y la de los
      dos datos del diagrama manda esos dos. */
-  const opcionales = ['actual', 'futura', 'edad', 'horizonte_dias', 'complejidad'] as const;
+  const opcionales = [
+    'nivel',
+    'actual',
+    'futura',
+    'relato',
+    'edad',
+    'horizonte_dias',
+    'complejidad',
+  ] as const;
   if (opcionales.some((c) => !(c in fila))) {
     const antes = await fetch(
       `${url}/rest/v1/analisis_discursivo?evaluacion_id=eq.${id}` +
@@ -155,7 +166,7 @@ export async function POST(req: Request) {
     accion: 'escritura',
     recurso: 'analisis_discursivo',
     recursoId: id,
-    detalle: { nivel: nivel ?? 'sin ubicar' },
+    detalle: { nivel: (nivel ?? fila.nivel ?? 'sin ubicar') as string },
   });
   revalidateTag(CACHE_PSICOTECNICOS);
   return NextResponse.json({ ok: true });

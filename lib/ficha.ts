@@ -180,6 +180,8 @@ export type Discursivo = {
   horizonte_dias: number | null;
   /** Las respuestas a las preguntas de complejidad sobre sus asignaciones. */
   complejidad: Record<string, boolean> | null;
+  /** Lo que contó en la entrevista, que es el material del que se codifica. */
+  relato: string | null;
 };
 
 export type Competencia = {
@@ -337,7 +339,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       ),
       select<Discursivo>(
         'analisis_discursivo',
-        `select=nivel,actual,futura,edad,horizonte_dias,complejidad&evaluacion_id=eq.${id}`,
+        `select=nivel,actual,futura,edad,horizonte_dias,complejidad,relato&evaluacion_id=eq.${id}`,
         CACHE_PSICOTECNICOS
       ),
     ]);
