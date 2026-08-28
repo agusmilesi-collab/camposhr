@@ -600,7 +600,7 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
 
   return (
     <>
-      <section className="os-panel os-cierre os-informe-cierre">
+      <section className="os-panel os-cierre os-informe-cierre os-panel-informe">
         <div className="os-panel-top">
           <h2>Recomendación</h2>
         </div>
