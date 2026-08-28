@@ -35,13 +35,16 @@ const ANIMACION = 190;
 export default function Orden({
   id,
   tests,
+  nombres,
   estados,
   tarjetas,
   abierto,
 }: {
   id: string;
-  /** Los nombres, en el orden que rige. */
+  /** Los nombres, en el orden que rige. Son la clave: el orden se guarda así. */
   tests: string[];
+  /** Cómo se lo llama en pantalla, si no es como se llama en la batería. */
+  nombres?: string[];
   /** En qué anda cada uno: va en el renglón del título, no en la tarjeta. */
   estados: React.ReactNode[];
   /** El contenido de cada uno, en el mismo orden que `tests`. */
@@ -214,7 +217,9 @@ export default function Orden({
                 <span className="os-herramienta-numero" aria-hidden="true">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <h3 className="os-herramienta-texto">{tests[indice]}</h3>
+                <h3 className="os-herramienta-texto">
+                  {nombres?.[indice] ?? tests[indice]}
+                </h3>
               </button>
 
               {/* El estado va afuera del botón que pliega: el de los tests de

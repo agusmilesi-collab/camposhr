@@ -324,11 +324,17 @@ export const PREGUNTAS = [
  * es exactamente lo que el procedimiento evita.
  */
 export const APERTURA =
-  'Contame dos o tres cosas del trabajo que te hayan costado resolver, de esas donde tuviste que arreglártelas vos.';
+  '¿Cuál es la tarea de mayor alcance temporal que hacés en tu trabajo y que sea responsabilidad tuya?';
 
-/** Y con qué se averigua el horizonte, que es la otra lectura. */
+/**
+ * Y con qué se averigua el horizonte: cuánto dura esa tarea.
+ *
+ * Va después y no junto con la anterior: preguntadas a la vez, la persona
+ * contesta el plazo del proyecto entero del que participa y no el de lo que
+ * ella tiene que sostener, que es lo que se está midiendo.
+ */
 export const PREGUNTA_HORIZONTE =
-  '¿Cuánto pasó desde que empezaste hasta que quedó terminada? Y hoy, ¿hasta cuándo estás planificando?';
+  '¿Cuánto tiempo pasa desde que empezás esa tarea hasta que queda terminada?';
 
 /**
  * El nivel que dan las respuestas: el más alto contestado que sí.

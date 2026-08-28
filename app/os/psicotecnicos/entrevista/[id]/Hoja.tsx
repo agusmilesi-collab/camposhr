@@ -47,6 +47,18 @@ import Discursivo from '../../ficha/[id]/Discursivo';
  * después no deja rastro en ningún otro lado.
  */
 
+/**
+ * Cómo se llama cada test en la pantalla, cuando no es como se llama en la
+ * batería.
+ *
+ * El nombre de la batería lleva el autor entre paréntesis, que sirve en la
+ * factura y en el informe. En la lista de la entrevista sobra: quien administra
+ * sabe cuál es, y el paréntesis alarga el renglón sin agregar nada.
+ */
+const NOMBRE: Record<string, string> = {
+  [TEST_DISCURSIVO]: 'Análisis discursivo',
+};
+
 /** Con qué se toma cada test, por su nombre en la batería. */
 const HERRAMIENTA: Record<string, { href: string; boton: string }> = {
   Rorschach: { href: '/os/laminas/rorschach', boton: 'Abrir las láminas' },
@@ -316,11 +328,10 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                 complejidad={e.complejidad}
                 relato={e.relato}
               />
+              {/* El estrato ya lo dice el bloque de arriba: acá queda el
+                  camino a la pestaña, que es donde se lo revisa con el
+                  diagrama. */}
               <div className="os-herramienta-accion">
-                <span className={`os-sello-estado ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
-                  {e.discursivo ?? 'sin codificar'}
-                </span>
-                <span />
                 <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=potencial`}>
                   Ver el diagrama
                 </Link>
@@ -407,6 +418,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
       <Orden
         id={e.id}
         tests={tests}
+        nombres={tests.map((t) => NOMBRE[t] ?? t)}
         estados={tests.map(estadoDe)}
         tarjetas={tests.map(contenidoDe)}
         abierto={TEST_COMPETENCIAS}
