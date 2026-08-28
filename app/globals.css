@@ -6508,21 +6508,30 @@ body {
   color: var(--muted);
 }
 
+/* Son dos campos chicos al lado de una pregunta larga: con el alto y la
+   tipografía de los campos de texto quedaban del tamaño de la pregunta. */
 .pedir-span {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-top: 4px;
 }
 
+.pedir-span-num,
+.pedir-span-unidad {
+  padding: 5px 9px;
+  font-size: 0.84rem;
+  background: #fff;
+}
+
 .pedir-span-num {
-  width: 90px;
+  width: 66px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
 .pedir-span-unidad {
   width: auto;
-  min-width: 130px;
+  min-width: 116px;
 }
 
 /* Cada pregunta con su Sí y su No a la derecha: el texto se lee de corrido y
@@ -6553,10 +6562,19 @@ body {
 }
 
 /* Las dos opciones no se estiran a media fila: es Sí o No, y con el ancho de
-   la fila quedaban dos botones enormes al lado de un renglón de texto. */
+   la fila quedaban dos botones enormes al lado de un renglón de texto.
+
+   Y son dos columnas y no tres: el control está armado para las escalas de tres
+   pasos del perfil, y con dos respuestas dejaba una columna vacía a la derecha
+   que hacía ver el Sí más angosto que el No. */
 .pedir-si-no .pedir-opciones {
   flex: none;
-  width: 132px;
+  width: 118px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pedir-si-no .pedir-opcion {
+  padding: 6px 8px;
 }
 
 /*

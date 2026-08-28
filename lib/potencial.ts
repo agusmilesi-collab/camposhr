@@ -275,11 +275,16 @@ export function comoSeDice(e: Estrato): string {
  * saberlo cambia la búsqueda aunque el análisis discursivo no certifique ese
  * nivel en una persona.
  */
+/*
+ * `simple` va en infinitivo porque describe el trabajo y no a quien lo hace:
+ * se lee debajo de "¿Qué exige el trabajo que hay que hacer?", donde el sujeto
+ * es el puesto, y en la tabla de comparación, donde es el nivel.
+ */
 export const PREGUNTAS = [
   {
     estrato: 1,
     corto: 'Juicio directo',
-    simple: 'Sigue un método que ya conoce y resuelve los obstáculos sobre la marcha.',
+    simple: 'Seguir un método ya conocido y resolver los obstáculos sobre la marcha.',
     texto:
       '¿El trabajo se puede llevar adelante siguiendo un plan ya asignado, resolviendo los obstáculos a medida que aparecen con la experiencia y el criterio práctico?',
     alCandidato: '¿Lo resolviste siguiendo un método o un procedimiento que ya conocías?',
@@ -287,7 +292,7 @@ export const PREGUNTAS = [
   {
     estrato: 2,
     corto: 'Acumulación diagnóstica',
-    simple: 'Reúne información, se da cuenta de qué está pasando y recién ahí decide.',
+    simple: 'Reunir información, darse cuenta de qué está pasando y recién ahí decidir.',
     texto:
       '¿Exige reunir e interpretar datos que van apareciendo, y llegar a un diagnóstico que los vincule para recién ahí decidir cómo resolver?',
     alCandidato:
@@ -296,7 +301,7 @@ export const PREGUNTAS = [
   {
     estrato: 3,
     corto: 'Caminos alternativos',
-    simple: 'Arma varias maneras de resolverlo, elige una y guarda otra por si falla.',
+    simple: 'Armar varias maneras de resolverlo, elegir una y guardar otra por si falla.',
     texto:
       '¿Exige construir un plan que equilibre lo que hay que hacer hoy contra lo que se necesita más adelante, con otros caminos en reserva por si el elegido no funciona?',
     alCandidato:
@@ -305,7 +310,7 @@ export const PREGUNTAS = [
   {
     estrato: 4,
     corto: 'Procesamiento paralelo',
-    simple: 'Lleva varios frentes a la vez y va ajustando cada uno según los otros.',
+    simple: 'Llevar varios frentes a la vez y ajustar cada uno según los otros.',
     texto:
       '¿Exige llevar adelante varios proyectos que se afectan entre sí, ajustando cada uno en relación con los otros?',
     alCandidato:
@@ -314,7 +319,7 @@ export const PREGUNTAS = [
   {
     estrato: 5,
     corto: 'Sistema completo',
-    simple: 'Sigue cómo un cambio en un punto mueve todo lo demás y decide contando eso.',
+    simple: 'Seguir cómo un cambio en un punto mueve todo lo demás y decidir contando eso.',
     texto:
       '¿Exige seguir cómo un cambio en cualquier punto impacta en el sistema entero, y decidir contando las consecuencias que eso arrastra aguas abajo?',
     alCandidato:

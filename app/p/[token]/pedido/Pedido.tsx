@@ -626,7 +626,9 @@ export default function Pedido({
                       abajo y valen las que sí: la más alta contestada que sí es
                       la que manda. */}
                   <div className="pedir-pregunta">
-                    <span className="pedir-pregunta-t">¿Qué exige el trabajo que hay que hacer?</span>
+                    <span className="pedir-pregunta-t">
+                      ¿Qué exige el trabajo que va a hacer quien ocupe el puesto?
+                    </span>
                     {PREGUNTAS.map((p) => (
                       <div className="pedir-si-no" key={p.estrato}>
                         <span className="pedir-si-no-t">
