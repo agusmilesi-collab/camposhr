@@ -6540,13 +6540,11 @@ th.os-tabla-contacto {
  */
 .os-comparacion {
   width: 100%;
-  max-width: 640px;
   border-collapse: collapse;
 }
 
 .os-comparacion th {
-  width: 180px;
-  padding: 12px 0;
+  padding: 12px 16px 12px 0;
   border-bottom: 1px solid var(--os-linea-suave);
   font-size: 0.78rem;
   font-weight: 400;
@@ -6556,10 +6554,46 @@ th.os-tabla-contacto {
   vertical-align: baseline;
 }
 
+/* La primera columna dice de quién es el renglón y las otras tres lo detallan:
+   el estrato, qué trabajo abarca y hasta dónde llega en el tiempo. */
+.os-comparacion tbody th {
+  width: 190px;
+}
+
+.os-comparacion thead th {
+  padding-top: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .os-comparacion td {
-  padding: 12px 0;
+  padding: 12px 16px 12px 0;
   border-bottom: 1px solid var(--os-linea-suave);
   font-size: 0.9rem;
+  vertical-align: baseline;
+}
+
+/* El detalle del estrato: qué se hace en ese nivel y en qué plazo. En cuerpo
+   chico porque acompaña al número, que es el dato que se compara. */
+.os-comparacion-que,
+.os-comparacion-horizonte {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--os-tinta-media);
+}
+
+.os-comparacion-horizonte {
+  width: 170px;
+}
+
+/* Cuándo, debajo de a quién: "a los 50 años" es de ese renglón y no del de al
+   lado. */
+.os-comparacion-cuando {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.74rem;
+  color: var(--os-suave);
 }
 
 /* El nombre del estrato, detrás del número y más suave: el número es el dato. */
@@ -6571,7 +6605,7 @@ th.os-tabla-contacto {
 
 /* La conclusión cierra la tabla y no lleva línea debajo. */
 .os-comparacion tfoot td {
-  padding-top: 12px;
+  padding: 14px 0 0;
   border: 0;
   font-size: 0.86rem;
   line-height: 1.55;

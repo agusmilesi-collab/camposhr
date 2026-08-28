@@ -71,7 +71,13 @@ export default function Discursivo({
   id: string;
   nivel: string | null;
   /** Los cuatro, del más alto al más bajo, con lo que rige. */
-  niveles?: { nombre: string; romano: string; procesamiento: string; que: string }[];
+  niveles?: {
+    nombre: string;
+    romano: string;
+    procesamiento: string;
+    que: string;
+    horizonte: string;
+  }[];
   /** La edad guardada para el diagrama, si ya se cargó. */
   edad: number | null;
   /** La que quedó congelada el día de la entrevista, si la hay. */
@@ -197,6 +203,17 @@ export default function Discursivo({
   /** Nada contestado todavía: los cuatro estratos quedan para elegir a mano. */
   const aMano = !porHorizonte && !porPreguntas;
 
+  /**
+   * Si el potencial está tomado: el plazo y las cuatro preguntas.
+   *
+   * Se calcula acá y no en el servidor: la pastilla tiene que cambiar en el
+   * momento en que se marca la última respuesta, y esperando al redibujo del
+   * servidor quedaba un segundo diciendo lo contrario de lo que se ve.
+   */
+  const tomado =
+    diasNum !== null &&
+    [1, 2, 3, 4].every((n) => typeof respuestas[String(n)] === 'boolean');
+
   /** El nombre del nivel que le corresponde a un estrato, o null si no lo mide. */
   const nombreDe = (romano: string) => niveles.find((n) => n.romano === romano)?.nombre ?? null;
 
@@ -235,6 +252,18 @@ export default function Discursivo({
 
   return (
     <div className="os-discursivo">
+      {enEntrevista && (
+        /* El título del bloque con su marca, como la cabeza de cualquier test. */
+        <div className="os-competencias-cabeza">
+          <h4 className="os-competencias-titulo">Potencial de desarrollo</h4>
+          <span
+            className={`os-sello-estado os-test-estado ${tomado ? 'os-verde' : 'os-gris'}`}
+          >
+            {tomado ? 'Administrado' : 'No administrado'}
+          </span>
+        </div>
+      )}
+
       {enEntrevista ? (
         <>
       {/* Lo que contó, arriba de todo: es el material del que sale todo lo
@@ -394,6 +423,8 @@ export default function Discursivo({
             persona={elegido ? { romano: elegido.romano, nombre: elegido.nombre } : null}
             puesto={estratoPuesto ? estratoPorNumero(estratoPuesto) : null}
             banda={banda}
+            niveles={niveles}
+            pedidoId={pedidoId}
           />
 
           {/* Y el estrato a mano, en los dos casos en que el sistema no lo
@@ -496,70 +527,88 @@ function Comparacion({
   persona,
   puesto,
   banda,
+  niveles,
+  pedidoId,
 }: {
   persona: { romano: string; nombre: string } | null;
   puesto: Estrato | null;
   /** La banda de maduración, para proyectar. Null sin edad ni horizonte. */
   banda: number | null;
+  /** El catálogo, para el detalle de cada estrato. */
+  niveles: { romano: string; nombre: string; procesamiento: string; que: string; horizonte: string }[];
+  /** El pedido, para ir a ver o completar lo que pide. */
+  pedidoId?: string | null;
 }) {
+  const detalle = (romano: string) => niveles.find((n) => n.romano === romano) ?? null;
+  const numeroDe = (romano: string) => ESTRATOS.findIndex((e) => e.romano === romano);
   const distancia =
-    persona && puesto
-      ? ESTRATOS.findIndex((e) => e.romano === persona.romano) -
-        ESTRATOS.findIndex((e) => e.romano === puesto.romano)
-      : null;
+    persona && puesto ? numeroDe(persona.romano) - numeroDe(puesto.romano) : null;
+
+  /** Un renglón: qué es, en qué estrato y qué significa ese estrato. */
+  const fila = (que: string, romano: string | null, cuando: string | null, falta: string) => {
+    const d = romano ? detalle(romano) : null;
+    const e = romano ? ESTRATOS.find((x) => x.romano === romano) : null;
+    return (
+      <tr key={que}>
+        <th>
+          {que}
+          {cuando && <span className="os-comparacion-cuando">{cuando}</span>}
+        </th>
+        <td>
+          {romano ? (
+            <>
+              <strong>Estrato {romano}</strong>
+              <span>{d?.nombre ?? (e?.mide ? e.nombre : e?.grupo) ?? ''}</span>
+            </>
+          ) : (
+            <span className="os-tabla-flojo">{falta}</span>
+          )}
+        </td>
+        <td className="os-comparacion-que">
+          {d ? d.que : <span className="os-tabla-flojo">—</span>}
+        </td>
+        <td className="os-comparacion-horizonte">
+          {d ? d.horizonte.replace(/\.$/, '') : <span className="os-tabla-flojo">—</span>}
+        </td>
+      </tr>
+    );
+  };
 
   return (
     <table className="os-comparacion">
+      <thead>
+        <tr>
+          <th />
+          <th>Estrato</th>
+          <th>Qué trabajo puede abordar</th>
+          <th>Horizonte temporal</th>
+        </tr>
+      </thead>
       <tbody>
-        <tr>
-          <th>El puesto pide</th>
-          <td>
-            {puesto ? (
-              <>
-                <strong>Estrato {puesto.romano}</strong>
-                <span>{puesto.mide ? puesto.nombre : puesto.grupo}</span>
-              </>
-            ) : (
-              <span className="os-tabla-flojo">
-                Sin determinar. Se contesta en la ficha del pedido.
-              </span>
-            )}
-          </td>
-        </tr>
-        <tr>
-          <th>La persona, hoy</th>
-          <td>
-            {persona ? (
-              <>
-                <strong>Estrato {persona.romano}</strong>
-                <span>{persona.nombre}</span>
-              </>
-            ) : (
-              <span className="os-tabla-flojo">
-                Sin determinar. Se contesta en la hoja de la entrevista.
-              </span>
-            )}
-          </td>
-        </tr>
-        {banda !== null && (
-          <tr>
-            <th>Y más adelante</th>
-            <td>
-              <strong>
-                {(() => {
-                  const t = comoSeDice(estratoDeEscalon(horizonteEn(banda, 50)));
-                  return t.charAt(0).toUpperCase() + t.slice(1);
-                })()}
-              </strong>
-              <span>a los 50 años</span>
-            </td>
-          </tr>
+        {fila(
+          'El puesto pide',
+          puesto?.romano ?? null,
+          null,
+          'Sin determinar. Se contesta en la ficha del pedido.'
         )}
+        {fila(
+          'La persona, hoy',
+          persona?.romano ?? null,
+          null,
+          'Sin determinar. Se contesta en la hoja de la entrevista.'
+        )}
+        {banda !== null &&
+          fila(
+            'La persona, más adelante',
+            estratoDeEscalon(horizonteEn(banda, 50)).romano,
+            'a los 50 años',
+            ''
+          )}
       </tbody>
-      {distancia !== null && (
-        <tfoot>
+      <tfoot>
+        {distancia !== null && (
           <tr>
-            <td colSpan={2}>
+            <td colSpan={4}>
               {distancia === 0
                 ? 'La persona puede abordar hoy la complejidad que el puesto exige.'
                 : distancia > 0
@@ -567,8 +616,24 @@ function Comparacion({
                   : 'El puesto exige más complejidad que la que la persona puede abordar hoy.'}
             </td>
           </tr>
-        </tfoot>
-      )}
+        )}
+        {/* El camino a lo que pide el puesto: se determina en el pedido y desde
+            acá se va a verlo o a completarlo sin perder la ficha. */}
+        {pedidoId && (
+          <tr>
+            <td colSpan={4}>
+              <a
+                className="os-boton"
+                href={`/os/pedidos/${pedidoId}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Abrir el pedido
+              </a>
+            </td>
+          </tr>
+        )}
+      </tfoot>
     </table>
   );
 }

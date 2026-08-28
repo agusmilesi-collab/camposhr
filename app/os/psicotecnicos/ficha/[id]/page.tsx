@@ -554,11 +554,13 @@ function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) 
           complejidad={f.discursivo?.complejidad ?? null}
           relato={f.discursivo?.relato ?? null}
           estratoPuesto={delPuesto}
+          pedidoId={f.cabecera.pedido_id}
           niveles={nivelesQueRigen(rige.niveles).map((n) => ({
             nombre: n.nombre,
             romano: n.romano,
             procesamiento: n.procesamiento,
             que: n.que,
+            horizonte: n.horizonte,
           }))}
         />
       </div>
