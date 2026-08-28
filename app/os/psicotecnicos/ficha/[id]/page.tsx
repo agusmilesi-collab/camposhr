@@ -659,7 +659,7 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
         {comoSitio ? (
           <>
             <Faltantes inf={informe} />
-            <div className="sitio-secciones sitio">
+            <div className="sitio sitio-secciones-ficha">
               {seccionesDe(informe, c.id).map((s, i) => (
                 <section key={s.id} className="sitio-seccion">
                   <header className="sitio-seccion-top">
