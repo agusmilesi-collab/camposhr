@@ -20,6 +20,9 @@
   --os-hover: #eae7e0;
   --os-activo: #16202b;
   --os-activo-tinta: #f6f5f2;
+  /* El lado de cada cuadrante de la cruz del Benziger. Es una medida y no un
+     número suelto porque la caja de soltar el informe se mide contra ella. */
+  --os-cuadrante: 46px;
   --os-sombra: 0 1px 2px rgba(22, 32, 43, 0.04);
   --os-sombra-panel: 0 1px 3px rgba(22, 32, 43, 0.05);
 
@@ -3188,6 +3191,13 @@ textarea.os-campo {
   font: inherit;
 }
 
+/* Del alto de la cruz de cuadrantes: son las dos cosas que hay que hacer en
+   esta pestaña, van una al lado de la otra, y con la caja más baja las dos
+   tarjetas se veían de distinto peso. Dos cuadrantes más sus bordes. */
+.os-benziger-vacio {
+  min-height: calc(var(--os-cuadrante) * 2 + 2px);
+}
+
 /* La nube va arriba del texto y del tamaño de dos renglones: es lo que se ve
    primero y lo que dice para qué es la caja antes de leerla. */
 .os-agregar-cv {
@@ -4805,10 +4815,13 @@ th.os-tabla-contacto {
 }
 
 /* La cruz para elegir el cuadrante: la misma disposición que las cruces de
-   lectura, Frontal arriba y Basal abajo. */
+   lectura, Frontal arriba y Basal abajo.
+
+   El lado del cuadrante sale de `--os-cuadrante`: la caja de soltar el informe,
+   en la tarjeta de al lado, se mide contra esta cruz. */
 .os-benziger-cruz {
   display: grid;
-  grid-template-columns: repeat(2, 46px);
+  grid-template-columns: repeat(2, var(--os-cuadrante));
   width: max-content;
   flex: none;
   border: 1px solid var(--os-linea);
