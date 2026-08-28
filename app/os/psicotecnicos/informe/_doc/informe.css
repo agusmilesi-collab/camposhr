@@ -88,17 +88,51 @@
   letter-spacing: 0.01em;
 }
 
-.inf-marca em {
-  font-style: normal;
+/* El logotipo tipográfico, el mismo del sitio: Instrument Serif con el nombre
+   entero. Debajo, qué documento es. */
+.inf-marca-nombre {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.42rem;
+  font-weight: 400;
+  letter-spacing: -0.022em;
 }
 
-.inf-marca span {
+.inf-marca span:not(.inf-marca-nombre) {
   display: block;
   font-size: 0.72rem;
   font-weight: 400;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--suave);
+}
+
+/*
+ * El pie del informe: quién lo firma, dónde está y por dónde se lo ubica.
+ *
+ * Los mismos datos que cierran la página de precios, para que un informe
+ * impreso que se separó de su mail siga diciendo de quién es. Va en la última
+ * hoja y no en todas: repetido siete veces sería ruido.
+ */
+.inf-pie {
+  display: grid;
+  gap: 2px;
+  margin-top: 42px;
+  padding-top: 18px;
+  border-top: 1px solid var(--linea);
+  font-size: 0.78rem;
+  color: var(--suave);
+  line-height: 1.5;
+}
+
+.inf-pie-marca {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.24rem;
+  letter-spacing: -0.022em;
+  color: var(--azul);
+}
+
+.inf-pie-lema {
+  color: var(--tinta-media);
 }
 
 .inf-portada-cuerpo h1 {
@@ -146,11 +180,9 @@
   letter-spacing: 0.01em;
 }
 
-.inf-marca em {
-  font-style: normal;
-}
-
-.inf-marca span {
+/* La bajada, en versalitas. El nombre queda afuera: lleva el logotipo, y esta
+   regla lo pasaba a mayúsculas de cuerpo chico. */
+.inf-marca span:not(.inf-marca-nombre) {
   display: block;
   font-size: 0.66rem;
   font-weight: 400;
@@ -272,9 +304,26 @@
  * vistazo; con los cuatro a pleno, no se distingue cuál es.
  */
 .inf-nivel {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 12px;
+  align-items: start;
   border: 1px solid;
   border-radius: 10px;
   padding: 12px 16px;
+}
+
+/* El ícono en su círculo, del color del nivel: dice lo mismo que el color y
+   sirve donde el color no llega, impreso en blanco y negro o para quien no
+   distingue el verde del rojo. */
+.inf-nivel-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #fff;
 }
 
 .inf-nivel h3 {
@@ -295,9 +344,9 @@
   border-color: rgba(169, 119, 34, 0.3);
   background: rgba(169, 119, 34, 0.05);
 }
-.inf-nivel.naranja {
-  border-color: rgba(193, 89, 26, 0.3);
-  background: rgba(193, 89, 26, 0.05);
+.inf-nivel.azul {
+  border-color: rgba(67, 100, 143, 0.3);
+  background: rgba(67, 100, 143, 0.05);
 }
 .inf-nivel.rojo {
   border-color: rgba(140, 59, 59, 0.3);
@@ -333,9 +382,28 @@
   border-color: var(--ambar);
   background: rgba(169, 119, 34, 0.11);
 }
-.inf-nivel.elegido.naranja {
-  border-color: var(--naranja);
-  background: rgba(193, 89, 26, 0.11);
+.inf-nivel.elegido.azul {
+  border-color: #43648f;
+  background: rgba(67, 100, 143, 0.11);
+}
+
+/* El círculo del ícono, del color del nivel. Apagado en los que no son el
+   suyo, como el texto: la escala se lee entera, pero uno solo pesa. */
+.inf-nivel.verde .inf-nivel-icono {
+  background: var(--verde);
+}
+.inf-nivel.azul .inf-nivel-icono {
+  background: #43648f;
+}
+.inf-nivel.ambar .inf-nivel-icono {
+  background: var(--ambar);
+}
+.inf-nivel.rojo .inf-nivel-icono {
+  background: var(--rojo);
+}
+
+.inf-nivel:not(.elegido) .inf-nivel-icono {
+  opacity: 0.34;
 }
 .inf-nivel.elegido.rojo {
   border-color: var(--rojo);
@@ -344,6 +412,14 @@
 
 /* Al imprimir, los fondos de color se descartan salvo que el navegador tenga
    los gráficos activados: el borde grueso del elegido lo distingue igual. */
+/* El pie no se parte entre dos hojas: son cuatro renglones. */
+@media print {
+  .inf-pie {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
 @media print {
   .inf-nivel {
     print-color-adjust: exact;
@@ -479,20 +555,6 @@
 
 /* Cuántas lecturas trae el grupo: dice de un vistazo para qué lado carga el
    perfil, que es lo que el lector saca antes de leer las oraciones. */
-.inf-grupo-cuantas {
-  flex: none;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 7px;
-  display: grid;
-  place-items: center;
-  border-radius: 99px;
-  background: color-mix(in srgb, var(--color) 14%, var(--hoja));
-  color: var(--color);
-  font-size: 0.82rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
 
 .inf-grupo ul {
   margin: 0;
@@ -551,16 +613,50 @@
 }
 
 .inf-escala-rotulos span {
+  position: relative;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 1px;
-  border-left: 1px solid var(--linea);
   padding: 1px 4px 0;
   font-variant-numeric: tabular-nums;
+  /* La celda vale lo que vale su banda, no lo que mide su nombre: sin esto,
+     "Sobresaliente" ensanchaba su columna y corría la línea que la separa de
+     Alto, que es justo la que tiene que caer donde la barra cambia de color. */
+  min-width: 0;
 }
 
+/* La separación es una marquita bajo la barra y no una línea de arriba abajo:
+   entera, cruzaba por detrás de los nombres que se salen de su banda. Dice
+   dónde termina cada tramo, que es para lo que está. */
+.inf-escala-rotulos span::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 6px;
+  background: var(--linea);
+}
+
+.inf-escala-rotulos span:first-child::before {
+  display: none;
+}
+
+/*
+ * El nombre más largo que su banda se sale hacia adentro.
+ *
+ * Sobresaliente ocupa diez de los cien puntos y su nombre mide el triple: en
+ * las bandas del medio el sobrante se reparte a los dos lados y no molesta,
+ * pero en la última se salía de la hoja. Pegando el texto al borde que le toca,
+ * lo que sobra entra sobre la banda vecina, que es hacia donde hay lugar.
+ */
 .inf-escala-rotulos span:first-child {
-  border-left: 0;
+  align-items: flex-start;
+}
+
+.inf-escala-rotulos span:last-child {
+  align-items: flex-end;
 }
 
 .inf-escala-rotulos em {
@@ -1072,7 +1168,6 @@
   .inf-escala-bandas,
   .inf-escala-barra,
   .inf-grupo,
-  .inf-grupo-cuantas,
   .inf-grupo li::before,
   .inf-orden,
   .inf-ref::before,
@@ -1131,14 +1226,21 @@
     margin: 16px 0 6px;
   }
 
-  /* Cada capítulo arranca en hoja nueva, salvo el primero: antes de él solo
-     está el encabezado, y romper ahí dejaba la primera hoja con el nombre y el
-     resto en blanco.
-
-     Sin `break-inside`: el análisis cualitativo no entra en una página y
-     pedirle que no se parta lo empujaba entero a la siguiente. */
+  /*
+   * Los capítulos van uno detrás de otro y la hoja se corta donde toca.
+   *
+   * Hasta el 28/8/2026 cada capítulo abría en hoja nueva. Se veía prolijo con
+   * los largos, pero los de siete renglones (las técnicas, la firma) se
+   * llevaban una página entera y dejaban tres cuartos en blanco: el informe
+   * salía en ocho hojas cuando su contenido entra en cinco.
+   *
+   * Lo que no se puede partir sigue sin partirse (las tarjetas, los
+   * velocímetros, el cerebro, cada grupo del análisis), y un título nunca queda
+   * solo al pie: eso alcanza para que el corte caiga en un lugar razonable sin
+   * regalar papel.
+   */
   .inf-capitulo + .inf-capitulo {
-    break-before: page;
+    margin-top: 26px;
   }
 
   .inf-nivel,

@@ -62,6 +62,13 @@ const RECOMENDACIONES: Record<
 const TZ = 'America/Argentina/Buenos_Aires';
 const SOLO_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Una fecha del portal: "31/8", o "31/8, 12:00" cuando lleva hora.
+ *
+ * En número y no con el mes abreviado ("31-ago"): son fechas que se comparan
+ * entre sí en una tabla, y el número se lee de un vistazo, además de ocupar la
+ * mitad. El año no va porque todo lo que se muestra es del trabajo en curso.
+ */
 function fecha(iso: string | null, conHora = false): string | null {
   if (!iso) return null;
 
@@ -69,26 +76,21 @@ function fecha(iso: string | null, conHora = false): string | null {
   // pasáramos por la conversión a Argentina (-3) retrocederían un día.
   // Se formatean tal cual vienen.
   if (SOLO_FECHA.test(iso)) {
-    const [y, m, d] = iso.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: 'short',
-    });
+    const [, m, d] = iso.split('-').map(Number);
+    return `${d}/${m}`;
   }
 
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return null;
-  const opts: Intl.DateTimeFormatOptions = conHora
-    ? {
-        day: '2-digit',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: TZ,
-      }
-    : { day: '2-digit', month: 'short', timeZone: TZ };
-  return d.toLocaleDateString('es-AR', opts);
+  const f = new Date(iso);
+  if (isNaN(f.getTime())) return null;
+  const partes = new Intl.DateTimeFormat('es-AR', {
+    day: 'numeric',
+    month: 'numeric',
+    ...(conHora ? { hour: '2-digit', minute: '2-digit', hour12: false } : {}),
+    timeZone: TZ,
+  }).formatToParts(f);
+  const de = (t: string) => partes.find((p) => p.type === t)?.value ?? '';
+  const dia = `${de('day')}/${de('month')}`;
+  return conHora ? `${dia}, ${de('hour')}:${de('minute')}` : dia;
 }
 
 function Acceso() {

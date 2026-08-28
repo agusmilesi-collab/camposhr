@@ -4,6 +4,7 @@ import { datosClienteDeSupabase } from '@/lib/portal-supabase';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import Documento from '@/app/os/psicotecnicos/informe/_doc/Documento';
 import Descargar from './Descargar';
+import { esPortalEjemplo } from '@/lib/portal-ejemplo';
 import './portal-informe.css';
 
 export const dynamic = 'force-dynamic';
@@ -44,14 +45,34 @@ export default async function InformeDelPortal({
   const inf = await armarInforme(params.id);
   if (!inf) notFound();
 
+  const muestra = esPortalEjemplo(params.token);
+
   return (
     <main className="pinf">
+      {/* El aviso primero y de lado a lado, el mismo de las facturas sin CAE:
+          lo que se lee abajo tiene la forma de un informe real, y hay que decir
+          antes de nada que la persona no existe. Una nota al costado se saltea;
+          una banda que cruza la pantalla, no. Va arriba de la barra y no debajo
+          porque la barra se queda fija al desplazarse: puesto abajo, el aviso se
+          iba de la pantalla en el primer movimiento. */}
+      {muestra && (
+        <p className="pinf-muestra">
+          <span>
+            <b>Informe de muestra.</b> La persona, la empresa y el puesto son
+            inventados, y el protocolo se escribió para armar el ejemplo: no
+            corresponde a ninguna evaluación real. Lo demás es el informe tal como se
+            entrega.
+          </span>
+        </p>
+      )}
+
       <header className="pinf-top">
         <a className="pinf-volver" href={`/${params.token}`}>
           ← Volver
         </a>
-        <Descargar />
+        <Descargar muestra={muestra} />
       </header>
+
       <Documento inf={inf} />
     </main>
   );

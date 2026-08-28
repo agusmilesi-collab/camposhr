@@ -24,6 +24,11 @@ const NUEVA = 'nueva';
 /** Cuántos candidatos se pueden cargar de una vez. */
 const MAXIMO = 12;
 
+/** El color de la pastilla de cada batería, el mismo de la página de precios. */
+function colorDeBateria(codigo: string): string {
+  return `precios-pill-${codigo.match(/\d/)?.[0] ?? '1'}`;
+}
+
 type Fila = { id: number };
 
 export default function NuevoPedido({
@@ -243,8 +248,13 @@ export default function NuevoPedido({
                         required
                       />
                       <span className="opcion-cuerpo">
+                        {/* El código en pastilla y con su color, el mismo de la
+                            página de precios: es el nombre con el que se pide y
+                            con el que después figura en la factura. */}
                         <span className="opcion-t">
-                          {b.codigo}
+                          <span className={`precios-pill ${colorDeBateria(b.codigo)}`}>
+                            {b.codigo}
+                          </span>
                           {b.minutos && <span className="opcion-min">{b.minutos} min</span>}
                         </span>
                         <span className="opcion-d">{b.paraQuien}</span>
@@ -260,7 +270,12 @@ export default function NuevoPedido({
                 <label className="opcion opcion-suma">
                   <input type="checkbox" name="benziger" value="si" defaultChecked />
                   <span className="opcion-cuerpo">
-                    <span className="opcion-t">Sumar evaluación de perfil</span>
+                    <span className="opcion-t">
+                      Sumar evaluación de perfil de pensamiento
+                      <span className="pedir-suma-instrumento">
+                        BZG Thinking Styles Assessment (BTSA)
+                      </span>
+                    </span>
                     <span className="opcion-d">
                       Cómo piensa y cómo decide la persona, y qué le cuesta sostener.
                     </span>

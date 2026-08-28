@@ -29,6 +29,37 @@ function tono(puntaje: number | null, fuerza: number, exigencia: Exigencia): str
 }
 
 /**
+ * El ícono de cada nivel de ajuste.
+ *
+ * Dice lo mismo que el color y sirve donde el color no llega: impreso en blanco
+ * y negro, y para quien no distingue el verde del rojo. Cada forma es la de su
+ * significado: el tilde de lo que pasa, la admiración de lo que hay que
+ * acompañar, el triángulo de lo que hay que seguir de cerca y la cruz de lo que
+ * no da.
+ */
+function IconoNivel({ clave }: { clave: string }) {
+  const trazo = {
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
+  return (
+    <span className="inf-nivel-icono" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        {clave === 'alto' && <path d="M5 12.5l4.5 4.5L19 7.5" {...trazo} />}
+        {clave === 'desarrollar' && <path d="M12 6v8M12 18v.01" {...trazo} />}
+        {clave === 'alertas' && (
+          <path d="M12 4.5L21 19H3zM12 10v4M12 16.5v.01" {...trazo} />
+        )}
+        {clave === 'bajo' && <path d="M7 7l10 10M17 7L7 17" {...trazo} />}
+      </svg>
+    </span>
+  );
+}
+
+/**
  * La escala de las nueve competencias, dibujada.
  *
  * Era una línea de texto con los cuatro nombres y sus números. Dibujada dice
@@ -59,10 +90,18 @@ function EscalaBandas({ exigencia }: { exigencia: Exigencia }) {
         className="inf-escala-barra"
         style={{ backgroundImage: `linear-gradient(90deg, ${tramos.join(', ')})` }}
       />
+      {/* Las columnas en porcentaje y no en partes proporcionales: la línea que
+          separa dos rótulos tiene que caer justo donde la barra cambia de
+          color, y el degradado usa el corte a secas (35, 65, 90). Contando
+          `hasta + 1 - desde` el ancho de cada banda salía un punto más largo, y
+          las tres líneas quedaban corridas a la izquierda: al mover un corte
+          desde Configuración, el desfase saltaba a la vista. */}
       <div
         className="inf-escala-rotulos"
         style={{
-          gridTemplateColumns: bandas.map((b) => `${b.hasta + 1 - b.desde}fr`).join(' '),
+          gridTemplateColumns: bandas
+            .map((b, i, todas) => `${(todas[i + 1]?.desde ?? 100) - b.desde}%`)
+            .join(' '),
         }}
       >
         {bandas.map((b) => (
@@ -271,10 +310,14 @@ export default function Documento({
 
       {/* ── 01 · Conclusiones ───────────────────────────────────────────── */}
       {/* La marca, arriba de todo y en la primera hoja del impreso. */}
+      {/* El logotipo tipográfico, el mismo del sitio y de la página de precios,
+          con la bajada que dice qué es este documento. "Consulting Services"
+          nombraba al estudio en inglés y no decía nada de lo que se está
+          leyendo. */}
       <header className="inf-marca">
         <div>
-          Campos <em>HR</em>
-          <span>Consulting Services</span>
+          <span className="inf-marca-nombre">Campos HR</span>
+          <span>Evaluaciones psicotécnicas</span>
         </div>
         <span className="inf-sitio">www.camposhr.com</span>
       </header>
@@ -315,8 +358,11 @@ export default function Documento({
                 className={`inf-nivel ${nv.color}${elegido ? ' elegido' : ''}`}
                 aria-current={elegido ? 'true' : undefined}
               >
-                <h3>{nv.titulo}</h3>
-                <p>{nv.texto}</p>
+                <IconoNivel clave={nv.clave} />
+                <div>
+                  <h3>{nv.titulo}</h3>
+                  <p>{nv.texto}</p>
+                </div>
               </article>
             );
           })}
@@ -580,6 +626,22 @@ export default function Documento({
           )}
         </div>
       </Capitulo>
+
+      {/* El pie del documento, con los mismos datos que cierran la página de
+          precios: quién lo firma, dónde está y por dónde se lo ubica.
+
+          Se imprime en la última hoja y no en todas: en cada página sería un
+          renglón repetido siete veces, y lo que hace falta es que el informe
+          impreso, si se separa de su mail, siga diciendo de quién es. */}
+      <footer className="inf-pie">
+        <span className="inf-pie-marca">Campos HR</span>
+        <span className="inf-pie-lema">
+          Estructura inteligente. Potencial humano. Impacto medible.
+        </span>
+        <span className="inf-pie-datos">
+          Rosario, Argentina · www.camposhr.com
+        </span>
+      </footer>
 
       {/* De dónde sale cada puntaje. Está para revisar contra casos reales las
           dos cosas que se decidieron acá y no salen de las hojas de la

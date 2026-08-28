@@ -13,6 +13,7 @@
  */
 
 import 'server-only';
+import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import * as airtable from '@/lib/psicotecnicos-airtable';
 import * as supabase from '@/lib/psicotecnicos-supabase';
 import type { Evaluacion, Origen } from '@/lib/psicotecnicos-tipos';
@@ -45,7 +46,12 @@ export async function listarEvaluaciones(): Promise<{
   fallaron: Origen[];
 }> {
   try {
-    return { filas: await supabase.listar(), fallaron: [] };
+    // La empresa de la muestra queda afuera: es la que se le enseña a un
+    // cliente desde la página de precios, y sus candidatos inventados aparecían
+    // en el tablero del equipo con una entrevista agendada que nadie va a
+    // tomar. Su portal la sigue viendo entera.
+    const filas = (await supabase.listar()).filter((f) => !esEmpresaEjemplo(f.empresa));
+    return { filas, fallaron: [] };
   } catch {
     return { filas: [], fallaron: ['supabase'] };
   }

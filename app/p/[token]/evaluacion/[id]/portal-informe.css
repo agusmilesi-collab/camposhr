@@ -53,6 +53,53 @@
   opacity: 0.88;
 }
 
+/* El botón de la muestra y su explicación, uno al lado del otro: el aviso sale
+   recién al apretarlo, así el botón se ve igual que en un portal de verdad. */
+.pinf-descargar-muestra {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pinf-aviso-descarga {
+  max-width: 320px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: #7b7770;
+}
+
+/*
+ * Que esto es una muestra, antes del informe.
+ *
+ * Es la misma banda del comprobante sin CAE: de lado a lado, en rojo y con la
+ * primera frase en negrita. Lo que sigue tiene la forma de un informe real, y
+ * quien lo abre tiene que saberlo desde el primer renglón; una nota al costado
+ * se saltea, una banda que cruza la pantalla no.
+ */
+.pinf-muestra {
+  margin: 0;
+  padding: 10px 20px;
+  background: #8c3b3b;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
+/* La banda cruza la pantalla entera; el texto se queda con el ancho del
+   informe. Extendido de punta a punta, en una pantalla ancha son dos renglones
+   larguísimos que no se leen de un vistazo. */
+.pinf-muestra > span {
+  display: block;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.pinf-muestra b {
+  font-weight: 600;
+}
+
 @media print {
   .pinf-top {
     display: none;

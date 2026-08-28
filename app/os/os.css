@@ -9001,15 +9001,43 @@ button.os-test-estado:hover:not(:disabled) {
 }
 
 .os-exigencia-rotulos > span {
-  display: grid;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1px;
-  padding: 0 8px;
+  padding: 2px 8px 0;
   text-align: center;
-  border-left: 1px solid var(--os-linea-suave);
+  /* La celda vale lo que vale su banda: sin esto, "Sobresaliente" ensancha su
+     columna y corre la línea que tiene que caer donde cambia el color. */
+  min-width: 0;
 }
 
+/* La separación es una marquita bajo la barra y no una línea de arriba abajo:
+   entera cruzaba por detrás de los nombres que se salen de su banda, que son
+   los de las puntas. */
+.os-exigencia-rotulos > span::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 6px;
+  background: var(--os-linea-suave);
+}
+
+.os-exigencia-rotulos > span:first-child::before {
+  display: none;
+}
+
+/* El nombre más largo que su banda se sale hacia adentro, que es hacia donde
+   hay lugar. */
 .os-exigencia-rotulos > span:first-child {
-  border-left: 0;
+  align-items: flex-start;
+}
+
+.os-exigencia-rotulos > span:last-child {
+  align-items: flex-end;
 }
 
 .os-exigencia-rotulos em {

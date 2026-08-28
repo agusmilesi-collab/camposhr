@@ -217,10 +217,7 @@ export default function Listas({
     if (!grupo) {
       return (
         <section className="inf-grupo inf-grupo-liso">
-          <div className="inf-grupo-top-der inf-grupo-solo-der">
-            {barra}
-            <span className="inf-grupo-cuantas">{items.length}</span>
-          </div>
+          <div className="inf-grupo-top-der inf-grupo-solo-der">{barra}</div>
           {dentro}
         </section>
       );
@@ -232,10 +229,10 @@ export default function Listas({
             <h3>{grupo.titulo}</h3>
             <p className="inf-grupo-sub">{grupo.sub}</p>
           </div>
-          <div className="inf-grupo-top-der">
-            {barra}
-            <span className="inf-grupo-cuantas">{items.length}</span>
-          </div>
+          {/* Sin la cuenta de ítems: los renglones están a la vista y ahí
+              contarlos no cambia nada. Era además el único número del informe
+              que no dice nada de la persona. */}
+          <div className="inf-grupo-top-der">{barra}</div>
         </header>
         {dentro}
       </section>
