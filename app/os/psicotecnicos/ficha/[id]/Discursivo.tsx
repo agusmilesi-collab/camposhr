@@ -350,8 +350,9 @@ export default function Discursivo({
 
         {choca && (
           <p className="os-potencial-choca">
-            El horizonte da estrato {porHorizonte?.romano} y las preguntas dan estrato{' '}
-            {porPreguntas?.romano}. Elegí cuál rige.
+            El plazo da estrato {porHorizonte?.romano} y las preguntas dan estrato{' '}
+            {porPreguntas?.romano}. Se resuelve en la pestaña Potencial, con el puesto
+            delante.
           </p>
         )}
 
