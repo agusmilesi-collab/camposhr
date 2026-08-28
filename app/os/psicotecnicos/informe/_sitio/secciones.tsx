@@ -1,6 +1,12 @@
 import type { Informe } from '@/lib/informe';
 import { bandaDe, bandasDe } from '@/lib/exigencia';
-import { CONFIDENCIALIDAD, CUADRANTES, FIRMAS, NIVELES } from '@/lib/informe-textos';
+import {
+  CONFIDENCIALIDAD,
+  CUADRANTES,
+  FIRMAS,
+  NIVELES,
+  NOTA_AJUSTE,
+} from '@/lib/informe-textos';
 import { firmaEnDatos } from '@/lib/firmas';
 import Listas from '../_doc/Listas';
 import { EscalaBandas, IconoNivel, tono } from '../_doc/piezas';
@@ -80,24 +86,28 @@ export function seccionesDe(
     titulo: 'Conclusiones',
     cuerpo: (
       <>
-        <div className="sitio-semaforo">
+        {/* Los cuatro niveles con su color, como en el documento: quien lee
+            ve la escala entera y dónde cae la persona dentro de ella. Con uno
+            solo, "ajuste alto" no dice contra qué. */}
+        <div className="inf-semaforo">
           {NIVELES.map((nv) => {
             const elegido = inf.nivel?.clave === nv.clave;
             return (
               <article
                 key={nv.clave}
-                className={`sitio-nivel-ajuste ${nv.color}${elegido ? ' elegido' : ''}`}
+                className={`inf-nivel ${nv.color}${elegido ? ' elegido' : ''}`}
                 aria-current={elegido ? 'true' : undefined}
               >
                 <IconoNivel clave={nv.clave} />
                 <div>
                   <h3>{nv.titulo}</h3>
-                  {elegido && <p>{nv.texto}</p>}
+                  <p>{nv.texto}</p>
                 </div>
               </article>
             );
           })}
         </div>
+        <p className="inf-nota">{NOTA_AJUSTE}</p>
 
         <h3 className="sitio-sub">Qué dio la evaluación</h3>
         {inf.resumen.map((t, i) => (
