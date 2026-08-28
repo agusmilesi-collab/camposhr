@@ -6121,6 +6121,51 @@ th.os-tabla-contacto {
   border-top: 1px solid var(--os-linea);
 }
 
+/*
+ * Con la definición de cada opción adentro, la botonera es una fila de
+ * tarjetas y no una píldora: el texto se acomoda en varios renglones, así que
+ * ni el ancho fijo ni el `nowrap` ni el borde redondeado de píldora sirven.
+ *
+ * Va a la vista y no como título al pasar por encima porque la evaluadora hace
+ * estas preguntas por teléfono, leyéndolas: lo que está detrás de un gesto no
+ * se lee mientras se habla.
+ */
+.os-ingreso-opciones.con-ayuda {
+  border-radius: 9px;
+  align-items: stretch;
+}
+
+.os-ingreso-opciones.con-ayuda .os-ingreso-opcion {
+  min-width: 0;
+  padding: 7px 11px 8px;
+  white-space: normal;
+  text-align: left;
+}
+
+.os-opcion-nombre {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--os-tinta);
+}
+
+.os-opcion-ayuda {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--os-suave);
+}
+
+/* Elegida, los dos renglones van del color del botón pintado. */
+.os-ingreso-opcion.puesta .os-opcion-nombre,
+.os-ingreso-opcion.puesta .os-opcion-ayuda {
+  color: inherit;
+}
+
+.os-ingreso-opcion.puesta .os-opcion-ayuda {
+  opacity: 0.8;
+}
+
 .os-ingreso-opcion {
   padding: 4px 14px;
   min-width: 104px;
@@ -6302,7 +6347,7 @@ th.os-tabla-contacto {
        bloques son dos grillas distintas, y el rótulo más largo de cada uno
        ("Contacto con el jefe" arriba, "Paciencia para el arranque" abajo) los
        hacía arrancar en puntos distintos. Doscientos entran los nueve. */
-    grid-template-columns: 200px repeat(3, max-content);
+    grid-template-columns: 200px repeat(3, minmax(0, 1fr));
     gap: 10px 14px;
     align-items: center;
   }

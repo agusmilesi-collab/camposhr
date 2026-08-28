@@ -27,9 +27,13 @@ export default function Opciones<T extends string | boolean | null>({
 }: {
   valor: T;
   /**
-   * `ayuda` es qué significa esa opción, y sale como título al pasar por
-   * encima. Lo usan las nueve preguntas del pedido, que la evaluadora le hace
-   * al cliente por teléfono: en la pastilla entra el nombre y nada más.
+   * `ayuda` es qué significa esa opción, y va debajo de su nombre.
+   *
+   * Lo usan las nueve preguntas del pedido, que la evaluadora le hace al
+   * cliente por teléfono: "problemas mixtos" o "equipo fijo" se entienden
+   * distinto en cada empresa, y la definición tiene que estar a la vista y no
+   * detrás de pasar el mouse por encima. Con ayudas la botonera deja de ser una
+   * pastilla y pasa a ser una fila de tarjetas.
    */
   opciones: { v: T; texto: string; ayuda?: string }[];
   alElegir: (v: T) => void;
@@ -45,9 +49,13 @@ export default function Opciones<T extends string | boolean | null>({
    */
   apilada?: boolean;
 }) {
+  const conAyuda = opciones.some((o) => o.ayuda);
+
   return (
     <div
-      className={`os-ingreso-opciones${apilada ? ' apilada' : ''}`}
+      className={`os-ingreso-opciones${apilada ? ' apilada' : ''}${
+        conAyuda ? ' con-ayuda' : ''
+      }`}
       role="group"
       aria-label={etiqueta}
       style={apilada ? undefined : { gridTemplateColumns: `repeat(${opciones.length}, 1fr)` }}
@@ -57,12 +65,18 @@ export default function Opciones<T extends string | boolean | null>({
           key={String(o.v)}
           type="button"
           className={`os-ingreso-opcion${valor === o.v ? ' puesta' : ''}`}
-          title={o.ayuda}
           disabled={desactivado}
           onClick={() => alElegir(o.v)}
           aria-pressed={valor === o.v}
         >
-          {o.texto}
+          {o.ayuda ? (
+            <>
+              <span className="os-opcion-nombre">{o.texto}</span>
+              <span className="os-opcion-ayuda">{o.ayuda}</span>
+            </>
+          ) : (
+            o.texto
+          )}
         </button>
       ))}
     </div>
