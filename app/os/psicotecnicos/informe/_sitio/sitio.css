@@ -910,9 +910,10 @@
   padding-top: 40px;
 }
 
-/* Veinticinco entre la línea de la barra y donde arranca la hoja. */
+/* Sesenta entre el borde de la hoja y el logotipo, como el margen de arriba de
+   una página impresa. */
 .sitio-secciones-ficha .sitio-cabecera {
-  padding-top: 25px;
+  padding-top: 60px;
 }
 
 /*
