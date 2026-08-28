@@ -365,7 +365,7 @@ export default function Discursivo({
             estrato quedó la persona se lee en la pestaña Potencial, con la
             comparación delante. */}
         <div className="os-nivel-cierre">
-          <span className="os-etiqueta-campo">El puesto</span>
+          <span className="os-etiqueta-campo">Información sobre el puesto proyectado</span>
           <p className="os-nivel-resultado os-nivel-puesto">
             <span
               className={`os-sello-estado ${estratoPuesto ? 'os-verde' : 'os-rojo'}`}
