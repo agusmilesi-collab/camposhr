@@ -10,6 +10,17 @@ import {
 import Cerebro from './Cerebro';
 import Piramide from './Piramide';
 import { CONDICIONES } from '@/lib/discursivo';
+import Progreso from './Progreso';
+// `bandaDe` acá arriba es la de la escala de exigencia: la del potencial entra
+// con otro nombre, que son dos cosas distintas y el archivo usa las dos.
+import {
+  bandaDe as bandaDelPotencial,
+  comoSeDice,
+  enPalabras,
+  escalonDe,
+  estratoDeEscalon,
+  horizonteEn,
+} from '@/lib/potencial';
 import Listas from './Listas';
 import './informe.css';
 
@@ -598,6 +609,45 @@ export default function Documento({
               </>
             )}
             {inf.discursivo.futura && <p>{inf.discursivo.futura}</p>}
+
+            {/* El diagrama del modelo, con esta persona marcada. Va al final
+                del capítulo porque contesta lo último que queda por contestar:
+                cuándo, y no qué. Sale solo cuando están la edad y el horizonte;
+                sin los dos no hay punto que dibujar. */}
+            {inf.discursivo.punto && (
+              <div className="inf-progreso-caja">
+                <h3>Cuándo madura esa capacidad</h3>
+                <p>
+                  El modelo ordena la capacidad de trabajo por el horizonte temporal: el
+                  lapso de la tarea más larga que la persona puede llevar adelante sin que
+                  le indiquen cómo. Ese horizonte crece con la edad y lo hace por caminos
+                  regulares, así que ubicarla por su edad y su horizonte de hoy muestra por
+                  cuál de esos caminos viene subiendo y hasta dónde llega.
+                </p>
+                <Progreso edad={inf.discursivo.punto.edad} dias={inf.discursivo.punto.dias} />
+                <p className="inf-progreso-pie">
+                  {(() => {
+                    const { edad, dias } = inf.discursivo.punto;
+                    const banda = bandaDelPotencial(edad, dias);
+                    const hoy = estratoDeEscalon(escalonDe(dias));
+                    const a50 = estratoDeEscalon(horizonteEn(banda, 50));
+                    const a60 = estratoDeEscalon(horizonteEn(banda, 60));
+                    return (
+                      `El punto marca ${edad} años y un horizonte temporal de ` +
+                      `${enPalabras(dias)}, que cae en el estrato ${hoy.romano}. La banda ` +
+                      `que lo contiene llega a ${comoSeDice(a50)} a los 50 años y a ` +
+                      `${comoSeDice(a60)} a los 60.`
+                    );
+                  })()}
+                </p>
+                <p className="inf-progreso-pie">
+                  Las bandas son un redibujo del diagrama publicado por Elliott Jaques
+                  (1963, revisión 1990). Cerca de un límite, la banda es un criterio de
+                  lectura y no una medición: el diagrama ubica el ritmo de maduración
+                  probable, no dictamina una carrera.
+                </p>
+              </div>
+            )}
           </div>
         </Capitulo>
       )}

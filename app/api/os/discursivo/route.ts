@@ -6,6 +6,7 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
 import { esNivel } from '@/lib/discursivo';
+import { edadValida } from '@/lib/potencial';
 
 export const runtime = 'nodejs';
 
@@ -74,14 +75,44 @@ export async function POST(req: Request) {
   for (const campo of ['actual', 'futura'] as const) {
     if (campo in (datos ?? {})) fila[campo] = parrafo(datos?.[campo]);
   }
-  if (!('actual' in fila) || !('futura' in fila)) {
+
+  /* Los dos del diagrama de progreso potencial. Van con la misma regla: la
+     clave ausente no se toca, y null la borra. Un número que no sirva se
+     rechaza en vez de guardarse en cero, que dibujaría un punto en el piso. */
+  if ('edad' in (datos ?? {})) {
+    const e = datos.edad;
+    if (e !== null && edadValida(e) === null) {
+      return NextResponse.json(
+        { ok: false, motivo: 'La edad tiene que estar entre 16 y 80.' },
+        { status: 400 }
+      );
+    }
+    fila.edad = e === null ? null : edadValida(e);
+  }
+  if ('horizonteDias' in (datos ?? {})) {
+    const h = datos.horizonteDias;
+    const limpio = typeof h === 'number' && Number.isInteger(h) && h >= 1 && h <= 40_000 ? h : null;
+    if (h !== null && limpio === null) {
+      return NextResponse.json(
+        { ok: false, motivo: 'El horizonte tiene que ir entre un día y cincuenta años.' },
+        { status: 400 }
+      );
+    }
+    fila.horizonte_dias = limpio;
+  }
+  /* Lo que no vino en el cuerpo se rellena con lo que ya estaba guardado: el
+     upsert escribe la fila con las columnas que le mandan, y una que falte
+     quedaría en null. La pantalla del estrato manda el nivel solo, y la de los
+     dos datos del diagrama manda esos dos. */
+  const opcionales = ['actual', 'futura', 'edad', 'horizonte_dias'] as const;
+  if (opcionales.some((c) => !(c in fila))) {
     const antes = await fetch(
-      `${url}/rest/v1/analisis_discursivo?evaluacion_id=eq.${id}&select=actual,futura`,
+      `${url}/rest/v1/analisis_discursivo?evaluacion_id=eq.${id}` +
+        `&select=${opcionales.join(',')}`,
       { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' }
     );
     const suya = (await antes.json().catch(() => []))[0] ?? {};
-    if (!('actual' in fila)) fila.actual = suya.actual ?? null;
-    if (!('futura' in fila)) fila.futura = suya.futura ?? null;
+    for (const c of opcionales) if (!(c in fila)) fila[c] = suya[c] ?? null;
   }
 
   const res = await fetch(`${url}/rest/v1/analisis_discursivo?on_conflict=evaluacion_id`, {

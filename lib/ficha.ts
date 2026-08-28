@@ -172,6 +172,10 @@ export type Discursivo = {
   nivel: string | null;
   actual: string | null;
   futura: string | null;
+  /** La edad con la que se dibuja el diagrama de progreso potencial. */
+  edad: number | null;
+  /** El horizonte temporal que le atribuyó la evaluadora, en días. */
+  horizonte_dias: number | null;
 };
 
 export type Competencia = {
@@ -329,7 +333,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       ),
       select<Discursivo>(
         'analisis_discursivo',
-        `select=nivel,actual,futura&evaluacion_id=eq.${id}`,
+        `select=nivel,actual,futura,edad,horizonte_dias&evaluacion_id=eq.${id}`,
         CACHE_PSICOTECNICOS
       ),
     ]);

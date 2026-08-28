@@ -203,6 +203,14 @@ export type Informe = {
     /** Los dos párrafos, si los escribió. */
     actual: string | null;
     futura: string | null;
+    /**
+     * Dónde cae en el diagrama de progreso potencial, si se cargaron los dos.
+     *
+     * Son dos datos de la evaluadora: la edad del día de la entrevista y el
+     * horizonte temporal que le atribuye. Sin los dos no hay punto que dibujar
+     * y el capítulo sale con la pirámide sola, que es como salía antes.
+     */
+    punto: { edad: number; dias: number } | null;
     /** Qué dice cada escalón de la pirámide, con lo que rige. */
     escalones: Record<string, string>;
     /**
@@ -593,6 +601,15 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
           nivel: f.discursivo.nivel,
           actual: f.discursivo.actual,
           futura: f.discursivo.futura,
+          punto:
+            // La edad del análisis manda sobre la de la evaluación: es la que
+            // la evaluadora corrigió cuando la congelada no estaba o no era.
+            (f.discursivo.edad ?? c.edad) && f.discursivo.horizonte_dias
+              ? {
+                  edad: (f.discursivo.edad ?? c.edad) as number,
+                  dias: f.discursivo.horizonte_dias,
+                }
+              : null,
           escalones: Object.fromEntries(
             nivelesQueRigen(niveles).map((n) => [n.nombre, n.que])
           ),
