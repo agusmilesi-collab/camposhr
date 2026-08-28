@@ -10412,15 +10412,19 @@ textarea.os-campo-bateria {
 }
 
 /*
- * La barra de acciones y la hoja son dos cosas, y las separa una franja.
+ * La barra de acciones y la hoja son dos paneles, no uno partido.
  *
- * Las dos van en blanco, así que sin nada en el medio el informe se leía como
- * la continuación de la barra. La franja es del color del fondo de la pantalla
- * y cruza el panel de lado a lado: arriba, lo que se hace con el informe;
- * abajo, el documento, que así se ve apoyado y no pegado.
+ * Pintar una franja del color del fondo adentro de un panel deja su borde
+ * cruzándola de arriba abajo: se ve como una raya y no como un corte. Son dos
+ * paneles separados por veinticinco píxeles, igual que se separa cualquier otro
+ * panel del OS, y cada uno con su borde entero.
  */
 .os-panel-informe .os-generar {
-  border-bottom: 25px solid var(--os-fondo);
+  border-bottom: 0;
+}
+
+.os-panel-informe + .os-panel-informe {
+  margin-top: 25px;
 }
 
 .os-panel-informe .os-informe-marco {

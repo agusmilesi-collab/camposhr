@@ -618,6 +618,11 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
           acciones y la hoja son la misma cosa. En dos paneles apilados se leían
           como bloques sueltos, y el de arriba tenía un título y tres botones y
           nada más. */}
+      {/* Dos paneles y no uno: la barra de acciones arriba y el documento
+          abajo, separados por el fondo de la pantalla como se separa cualquier
+          otro panel. Pintar una franja adentro de un panel dejaba el borde
+          cruzándola de arriba abajo, que se ve como una raya y no como un
+          corte. */}
       <section className="os-panel os-panel-informe">
       <div className="os-generar">
         <h2>El informe</h2>
@@ -648,7 +653,9 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
           )}
         </div>
       </div>
+      </section>
 
+      <section className="os-panel os-panel-informe">
       <div className="os-informe-marco">
         {/* Lo que va a ver el cliente, y en el mismo lugar donde se corrige.
             Antes acá se revisaba el documento y el cliente leía otra cosa: dos
