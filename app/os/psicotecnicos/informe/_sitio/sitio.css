@@ -51,8 +51,15 @@
   --linea-suave: #efede8;
   --verde: #37804a;
   --ambar: #a97722;
+  /* La paleta es la misma del documento y tiene que estar entera: las piezas
+     que se comparten (los grupos del análisis, el velocímetro, las tablas)
+     piden estas variables por nombre, y la que falta no se ve como un error
+     sino como un color que no se pintó. `--naranja` es la de "necesidad de
+     desarrollo": sin ella el título salía negro y las viñetas, transparentes. */
+  --naranja: #c1591a;
   --rojo: #8c3b3b;
   --azul: #43648f;
+  --turquesa: #1d8a84;
 
   min-height: 100vh;
   color: var(--tinta);
@@ -1054,4 +1061,19 @@
    del panel, que es la que la separa de lo de arriba. */
 .sitio-secciones-ficha .sitio-seccion:first-child {
   padding-top: 24px;
+}
+
+/*
+ * En la ficha, el contenido de la sección va sin recuadro.
+ *
+ * En el portal la caja blanca es la hoja sobre el papel. Acá el panel ya es
+ * blanco, así que ese borde no separaba nada: encerraba a los recuadros de
+ * adentro, que son los que sí dicen algo (cada grupo del análisis, cada
+ * tarjeta), y quedaba una caja adentro de otra.
+ */
+.sitio-secciones-ficha .sitio-caja {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
 }
