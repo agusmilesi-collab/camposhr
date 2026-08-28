@@ -6599,6 +6599,21 @@ body {
   overflow: hidden;
 }
 
+/* Qué significa cada opción, debajo de su nombre y dentro del mismo botón: al
+   costado obligaría a cruzar el texto con la opción a la que corresponde. */
+.pedir-opcion-q {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.pedir-elegida .pedir-opcion-q {
+  color: inherit;
+  opacity: 0.72;
+}
+
 .pedir-opcion {
   padding: 9px 10px;
   font: inherit;
