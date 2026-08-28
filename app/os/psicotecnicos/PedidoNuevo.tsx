@@ -22,6 +22,8 @@ import { hoy } from '@/lib/hora';
 import { FAMILIAS, SENIORITY } from '@/lib/pedido-campos';
 import type { BateriaOpcion, Opcion, PedidoOpcion } from './Agregar';
 import BuscarCliente from './BuscarCliente';
+import Desplegable from '../Desplegable';
+import { COLOR, CORTO } from './Bateria';
 
 export default function PedidoNuevo({
   empresas,
@@ -45,6 +47,11 @@ export default function PedidoNuevo({
 }) {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /* La batería va por el desplegable del OS y no por uno del navegador: es lo
+     único del formulario que se reconoce por su color, y el del navegador no
+     deja pintar sus opciones. El valor viaja en un campo escondido, que es lo
+     que se manda con el resto. */
+  const [bateriaId, setBateriaId] = useState('');
 
   // Escape cierra, como en la tarjeta: la mano no se va del teclado.
   useEffect(() => {
@@ -162,17 +169,25 @@ export default function PedidoNuevo({
             </div>
 
             <div className="os-campo-bloque">
-              <label className="os-etiqueta-campo" htmlFor="bateriaId">
-                Batería
-              </label>
-              <select className="os-campo" id="bateriaId" name="bateriaId" defaultValue="">
-                <option value="">A definir</option>
-                {baterias.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.codigo} · {b.nombre}
-                  </option>
-                ))}
-              </select>
+              <span className="os-etiqueta-campo">Batería</span>
+              <input type="hidden" name="bateriaId" value={bateriaId} />
+              <Desplegable
+                valor={bateriaId}
+                etiqueta="Batería"
+                vacio="A definir"
+                alElegir={setBateriaId}
+                opciones={[
+                  { valor: '', texto: 'A definir' },
+                  ...baterias.map((b) => ({
+                    valor: b.id,
+                    // El código corto y el nombre: "Batería 2 · Batería
+                    // estándar…" repite la palabra dos veces y era lo que
+                    // empujaba la lista fuera de la pantalla.
+                    texto: `${CORTO[b.codigo] ?? b.codigo} · ${b.nombre}`,
+                    color: COLOR[b.codigo] ?? 'os-gris',
+                  })),
+                ]}
+              />
             </div>
 
             {/* El Benziger es opcional en cualquier batería y se cobra aparte.

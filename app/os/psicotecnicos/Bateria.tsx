@@ -17,13 +17,15 @@
  * y una excepción que no se ve no sirve de nada.
  */
 
-const CORTO: Record<string, string> = {
+/** El código corto de cada batería, el mismo que se ve en los tableros. */
+export const CORTO: Record<string, string> = {
   'Batería 1': 'B1',
   'Batería 2': 'B2',
   'Batería 3': 'B3',
 };
 
-const COLOR: Record<string, string> = {
+/** Y su color: azul la básica, ámbar la estándar, verde la ejecutiva. */
+export const COLOR: Record<string, string> = {
   'Batería 1': 'os-azul',
   'Batería 2': 'os-ambar',
   'Batería 3': 'os-verde',

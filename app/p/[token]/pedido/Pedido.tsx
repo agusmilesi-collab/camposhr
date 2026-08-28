@@ -460,11 +460,14 @@ export default function Pedido({
                           <div className="pedir-pregunta" key={p.campo}>
                             <span className="pedir-pregunta-t">{p.rotulo}</span>
                             <div className="pedir-opciones">
-                              {p.opciones.map((o) => (
+                              {/* Las tres opciones son una escala, de menos a
+                                  más: el punto de color dice en qué escalón
+                                  está cada una sin tener que leer las tres. */}
+                              {p.opciones.map((o, i) => (
                                 <button
                                   type="button"
                                   key={o}
-                                  className={`pedir-opcion${
+                                  className={`pedir-opcion pedir-paso-${i + 1}${
                                     perfil[p.campo] === o ? ' pedir-elegida' : ''
                                   }`}
                                   onClick={() =>
