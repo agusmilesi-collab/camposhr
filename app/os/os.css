@@ -7641,6 +7641,12 @@ button.os-test-estado:hover:not(:disabled) {
   padding-left: var(--os-herramienta-sangria, 0);
 }
 
+/* El Raven va del otro lado: lo suyo no son botones de administrar sino el
+   reloj y el enlace, que se miran mientras la persona responde sola. */
+.os-accion-derecha {
+  justify-content: flex-end;
+}
+
 /* Sin botones no hay fila: el gráfico de dos personas no tiene ninguno y
    dejaba un hueco arriba de sus dos cajas. */
 .os-herramienta-accion:empty {
@@ -8350,12 +8356,10 @@ textarea.os-papel-campo {
   min-width: 0;
 }
 
-/* Terminado son dos datos donde el resto de los tests tiene uno, así que esa
-   columna se ensancha y la fila crece hacia la izquierda: el botón sigue
-   cayendo donde cae en todas las demás, que es la columna que más se mira. */
+/* El reloj y el enlace, juntos y contra el margen derecho: los dos son de
+   mirar mientras la persona responde sola, no de administrar. */
 .os-herramienta-accion:has(> .os-raven-medida) {
-  grid-template-columns: minmax(0, 1fr) 176px 148px;
-  width: 508px;
+  gap: 14px;
 }
 
 .os-raven-medida .os-raven-reloj {
