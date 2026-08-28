@@ -142,9 +142,18 @@ export default function Exigencias({
               />
             ))}
         </div>
+        {/* En porcentaje y no en partes proporcionales, como en el informe: la
+            separación entre dos rótulos tiene que caer donde la barra cambia de
+            color, y el degradado corta en el número a secas. Contando
+            `hasta + 1 - desde` cada banda salía un punto más larga y las líneas
+            quedaban corridas, justo mientras se mueve un corte. */}
         <div
           className="os-exigencia-rotulos"
-          style={{ gridTemplateColumns: bandas.map((b) => `${b.hasta + 1 - b.desde}fr`).join(' ') }}
+          style={{
+            gridTemplateColumns: bandas
+              .map((b, i, todas) => `${(todas[i + 1]?.desde ?? 100) - b.desde}%`)
+              .join(' '),
+          }}
         >
           {bandas.map((b) => (
             <span key={b.nombre}>

@@ -15,6 +15,7 @@
  */
 
 import 'server-only';
+import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
 import { select } from '@/lib/supabase';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
@@ -57,11 +58,14 @@ export type PedidoOpcion = {
 };
 
 export async function empresas(): Promise<EmpresaOpcion[]> {
-  return select<EmpresaOpcion>(
+  const filas = await select<EmpresaOpcion>(
     'empresas',
     'select=id,nombre&activa=is.true&order=nombre.asc',
     CACHE_CLIENTES
   );
+  // La empresa de la muestra no se ofrece: no se le carga trabajo, se le
+  // enseña el portal a quien pregunta por los precios.
+  return filas.filter((f) => !esEmpresaEjemplo(f.nombre));
 }
 
 export async function baterias(): Promise<BateriaOpcion[]> {
@@ -110,6 +114,7 @@ async function pedidosDeEstado(estado: string): Promise<PedidoOpcion[]> {
     CACHE_PSICOTECNICOS
   );
   return filas
+    .filter((f) => !esEmpresaEjemplo(f.empresas?.nombre))
     .map((f) => ({
       id: f.id,
       puesto: f.puesto,

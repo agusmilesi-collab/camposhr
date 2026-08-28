@@ -9,6 +9,7 @@
  */
 
 import 'server-only';
+import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { select } from '@/lib/supabase';
 import { listarClientesConToken } from '@/lib/airtable';
 import { claveEmpresa } from '@/lib/os';
@@ -126,7 +127,11 @@ export async function listarClientes(): Promise<Cliente[]> {
 
   const tokensPorClave = new Map(conToken.map((c) => [claveEmpresa(c.nombre), c.token]));
 
-  const clientes: Cliente[] = enSupabase.map((e) => ({
+  const clientes: Cliente[] = enSupabase
+    // La empresa de la muestra no es un cliente: existe para enseñarle el portal
+    // a quien pregunta por los precios. En la grilla se leía como uno más.
+    .filter((e) => !esEmpresaEjemplo(e.nombre))
+    .map((e) => ({
     id: e.id,
     origen: 'supabase' as const,
     nombre: e.nombre,
@@ -166,7 +171,7 @@ export async function listarClientes(): Promise<Cliente[]> {
     // Las que salieron: un lead sin mandar es una idea, no trabajo con este
     // cliente.
     cotizaciones: (e.cotizaciones ?? []).filter((c) => c.estado && c.estado !== 'Lead').length,
-  }));
+    }));
 
   // Los de Airtable que todavía no existen de este lado.
   const yaEstan = new Set(clientes.map((c) => claveEmpresa(c.nombre)));

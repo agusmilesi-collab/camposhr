@@ -1,4 +1,5 @@
 import 'server-only';
+import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { select } from '@/lib/supabase';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { calcularCompetencias } from '@/lib/competencias';
@@ -192,11 +193,15 @@ function rangoRaven(p: number): string {
 }
 
 export async function datosDelHub(): Promise<DataHub> {
-  const [filas, sumarios, manchas] = await Promise.all([
+  let [filas, sumarios, manchas] = await Promise.all([
     select<Fila>('evaluaciones', `select=${CAMPOS}&order=fecha_ingreso.desc`, CACHE_PSICOTECNICOS),
     select<SumarioFila>('sumario_exner', 'select=evaluacion_id,crudo', CACHE_PSICOTECNICOS),
     select<ManchaFila>('rorschach_respuestas', 'select=evaluacion_id,test', CACHE_PSICOTECNICOS),
   ]);
+
+  // La empresa de la muestra queda afuera de todas las cuentas: sus tres fichas
+  // son inventadas y moverían los promedios del negocio.
+  filas = filas.filter((f) => !esEmpresaEjemplo(f.pedidos?.empresas?.nombre));
 
   const entregadas = filas.filter((f) => f.fecha_entrega);
 

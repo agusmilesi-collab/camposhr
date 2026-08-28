@@ -11,8 +11,16 @@ export type NivelAjuste = {
   clave: 'alto' | 'desarrollar' | 'alertas' | 'bajo';
   titulo: string;
   texto: string;
-  /** El color con el que se pinta la tarjeta cuando es la elegida. */
-  color: 'verde' | 'ambar' | 'naranja' | 'rojo';
+  /**
+   * El color con el que se pinta la tarjeta cuando es la elegida.
+   *
+   * Cuatro colores para cuatro niveles, y en el orden en que se leen: verde lo
+   * que anda, azul lo que anda con acompañamiento, ámbar lo que hay que seguir
+   * de cerca, rojo lo que no. El de desarrollar era ámbar y se confundía con el
+   * de alertas, que es el nivel siguiente: dos avisos del mismo color no dicen
+   * cuál es más grave.
+   */
+  color: 'verde' | 'azul' | 'ambar' | 'rojo';
 };
 
 export const NIVELES: NivelAjuste[] = [
@@ -28,14 +36,14 @@ export const NIVELES: NivelAjuste[] = [
     titulo: 'Ajuste con aspectos a desarrollar',
     texto:
       'Puede desempeñarse adecuadamente en el rol, aunque presenta algunos aspectos a desarrollar que, con acompañamiento, aparentemente no deberían impactar de manera significativa en su desempeño.',
-    color: 'ambar',
+    color: 'azul',
   },
   {
     clave: 'alertas',
     titulo: 'Ajuste con alertas',
     texto:
       'Podría desempeñarse en el rol, aunque presenta aspectos que podrían impactar su rendimiento, especialmente en contextos de presión o alta exigencia, requiriendo seguimiento cercano teniendo en cuenta las recomendaciones detalladas en el informe.',
-    color: 'naranja',
+    color: 'ambar',
   },
   {
     clave: 'bajo',

@@ -5998,6 +5998,14 @@ body {
   font-size: 0.84rem;
   font-weight: 500;
 }
+/* En el agregado, el título y el nombre del instrumento van uno debajo del
+   otro: la fila del título es flexible y si no, quedarían en la misma línea. */
+.opcion-suma .opcion-t {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
 .opcion-min {
   font-size: 0.7rem;
   font-weight: 400;
@@ -6348,6 +6356,16 @@ body {
 
 .pedir-min::before {
   content: '· ';
+}
+
+/* El nombre del instrumento, debajo del título y más chico: dice con qué se
+   mide, que es distinto de qué se está sumando. */
+.pedir-suma-instrumento {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .pedir-bateria-que {
@@ -6777,6 +6795,34 @@ body {
   padding: 48px 22px 64px;
 }
 
+/*
+ * Los enlaces del documento, en la tinta del texto y subrayados finos.
+ *
+ * El azul del navegador es de otro sistema: en una página en beige y con dos
+ * marcas propias (el verde del WhatsApp, el azul de LinkedIn) sumaba un tercer
+ * azul que no es de nadie. Subrayado alcanza para que se vean, que es lo único
+ * que un enlace tiene que decir de sí mismo.
+ */
+.precios a {
+  color: inherit;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+}
+
+.precios a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* El ícono con el color de su marca y el texto con el del documento: el
+   logotipo se reconoce por el color, el número de teléfono no. */
+.precios-wa svg {
+  color: #25d366;
+}
+
+.precios-linkedin svg {
+  color: #0a66c2;
+}
+
 /* El logotipo tipográfico: el mismo de camposhr.com, para que quien llega desde
    un mail sepa de dónde viene esto. */
 .precios-marca {
@@ -6800,13 +6846,23 @@ body {
   white-space: nowrap;
 }
 
-/* El nombre en el azul de la marca; lo que sigue, en gris: son el logotipo y
-   el nombre del documento, y con un solo color se leían como una sola frase. */
+/* El logotipo con la bajada debajo, como en el informe: el nombre en la serif y
+   qué documento es en versalitas. Iban en un renglón y separados por un punto,
+   que se leía como una sola frase. */
 .precios-marca-nombre {
+  display: block;
   color: var(--st-blue);
+  line-height: 1.1;
 }
 
 .precios-marca span span {
+  display: block;
+  margin-top: 4px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--muted);
 }
 
@@ -7177,9 +7233,18 @@ body {
   border-bottom: 1px solid var(--line);
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
-  font-size: 1.62rem;
+  /* Del tamaño del nombre de cada batería: los dos abren una unidad de lectura
+     (una sección, una tarjeta) y con el título de sección más chico el
+     documento se leía al revés de como está armado. */
+  font-size: 2.7rem;
   line-height: 1.08;
   letter-spacing: -0.026em;
+}
+
+/* El título del cierre, del cuerpo que tenían todas las secciones antes de
+   crecer: es lo que se lleva quien ya leyó, no lo que vino a leer. */
+.precios-titulo-menor {
+  font-size: 1.62rem;
 }
 
 .precios-parrafo {

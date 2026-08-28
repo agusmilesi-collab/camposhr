@@ -309,15 +309,18 @@ export default async function Precios() {
         {/* El logotipo tipográfico del sitio: Instrument Serif, el nombre con
             su punto. Es el mismo de camposhr.com, así que quien llega desde un
             mail reconoce dónde está parado. */}
+        {/* El mismo encabezado del informe: el logotipo con la bajada debajo, en
+            versalitas, y el sitio a la derecha. Quien pide precios y quien
+            recibe el informe tienen que reconocer el mismo papel. */}
         <p className="precios-marca">
           <span className="precios-marca-nombre">
-            Campos HR. <span>Evaluaciones psicotécnicas</span>
+            Campos HR
+            <span>Evaluaciones psicotécnicas</span>
           </span>
-          {/* El sitio arriba y a la derecha, en la misma línea del logotipo:
-              es donde se lo busca cuando la página llega reenviada y ya no se
-              sabe de dónde salió. */}
+          {/* El sitio arriba y a la derecha: es donde se lo busca cuando la
+              página llega reenviada y ya no se sabe de dónde salió. */}
           <a className="precios-sitio" href="https://www.camposhr.com">
-            camposhr.com
+            www.camposhr.com
           </a>
         </p>
         {/* El titular nombra el trabajo que se contrata, no el posicionamiento
@@ -341,7 +344,9 @@ export default async function Precios() {
       </header>
 
       <section className="precios-bloque">
-        <h2 className="precios-titulo">Evaluaciones psicotécnicas</h2>
+        {/* Más chico: nombra lo que sigue, que son las tres tarjetas, y cada
+            una abre con su propio título grande. */}
+        <h2 className="precios-titulo precios-titulo-menor">Evaluaciones psicotécnicas</h2>
         <div className="precios-lista">
           {conDetalle.map((b) => (
             <article className="precios-item" key={b.codigo}>
@@ -601,7 +606,7 @@ export default async function Precios() {
           </span>
           <span className="precios-demo-texto">
             <span className="precios-demo-rotulo">Portal del cliente</span>
-            <strong>Ver un portal de ejemplo</strong>
+            <strong>Ver portal e informe de ejemplo</strong>
             <span className="precios-demo-bajada">
               Una empresa de muestra, con sus búsquedas, sus candidatos en proceso y
               un informe completo para leer.
@@ -759,7 +764,9 @@ export default async function Precios() {
       <section className="precios-bloque">
         {/* El nombre con la tipografía del logotipo, la misma del encabezado:
             acá se está firmando el resto de lo que hace el estudio. */}
-        <h2 className="precios-titulo">
+        {/* Más chico que los otros títulos de sección: lo que cierra el
+            documento no puede pesar como lo que se vino a leer. */}
+        <h2 className="precios-titulo precios-titulo-menor">
           Otros servicios de <span className="precios-firma">Campos HR</span>
         </h2>
         {/* Los tres servicios del catálogo que no son esta página, con la misma
@@ -850,7 +857,7 @@ export default async function Precios() {
           <span>·</span>
           Rosario, Argentina
           <span>·</span>
-          <a href="https://www.camposhr.com">camposhr.com</a>
+          <a href="https://www.camposhr.com">www.camposhr.com</a>
         </p>
       </div>
       </div>

@@ -34,6 +34,11 @@ import type { Pregunta } from '@/lib/pedido-campos';
 /** El valor que dice que es un puesto que todavía no existe. */
 const NUEVA = 'nueva';
 
+/** El color de la pastilla de cada batería, el mismo de la página de precios. */
+function colorDeBateria(codigo: string): string {
+  return `precios-pill-${codigo.match(/\d/)?.[0] ?? '1'}`;
+}
+
 /** Cuántos candidatos entran de una vez. */
 const MAXIMO = 12;
 
@@ -86,7 +91,18 @@ export default function Pedido({
   delJefe: Pregunta[];
 }) {
   const router = useRouter();
-  const [busqueda, setBusqueda] = useState(NUEVA);
+  /**
+   * A qué búsqueda entra. Arranca en la única abierta, si hay una sola.
+   *
+   * Lo más común es sumarle candidatos a la búsqueda que está en curso, y con
+   * una sola abierta la elección ya está tomada: pedirla igual es un clic que
+   * no decide nada. Con dos o más no se elige por el cliente, porque errarle
+   * manda al candidato a otro puesto.
+   */
+  const [busqueda, setBusqueda] = useState(() => {
+    const enCurso = busquedas.filter((b) => b.estado !== 'Finalizado');
+    return enCurso.length === 1 ? enCurso[0].id : NUEVA;
+  });
   /**
    * Si se muestran las búsquedas ya entregadas.
    *
@@ -481,8 +497,14 @@ export default function Pedido({
                       onClick={() => setBateria(b.codigo)}
                     >
                       <span className="pedir-bateria-para">{b.paraQuien}</span>
+                      {/* El código en pastilla y con su color, como en la página
+                          de precios: es el nombre con el que después se pide y
+                          con el que figura en la factura, y ata las dos
+                          pantallas sin tener que leer el número cada vez. */}
                       <span className="pedir-bateria-cod">
-                        {b.codigo}
+                        <span className={`precios-pill ${colorDeBateria(b.codigo)}`}>
+                          {b.codigo}
+                        </span>
                         {b.minutos && <span className="pedir-min">{b.minutos} min</span>}
                       </span>
                       <span className="pedir-bateria-que">{b.queIncluye}</span>
@@ -503,7 +525,14 @@ export default function Pedido({
                     {benziger ? '✓' : ''}
                   </span>
                   <span className="pedir-suma-cuerpo">
-                    <span className="pedir-suma-t">Sumar evaluación de perfil</span>
+                    {/* Con el nombre del instrumento: es el que figura en el
+                        capítulo del informe y por el que el cliente lo pide. */}
+                    <span className="pedir-suma-t">
+                      Sumar evaluación de perfil de pensamiento
+                      <span className="pedir-suma-instrumento">
+                        BZG Thinking Styles Assessment (BTSA)
+                      </span>
+                    </span>
                     <span className="pedir-suma-d">
                       Cómo piensa y cómo decide, y qué le cuesta sostener. Es lo que
                       permite decir cómo va a trabajar con su jefe y con su equipo, y no
