@@ -1,9 +1,11 @@
 import type { Informe } from '@/lib/informe';
 import { bandaDe, bandasDe } from '@/lib/exigencia';
 import { CONFIDENCIALIDAD, CUADRANTES, FIRMAS, NIVELES } from '@/lib/informe-textos';
-import { EscalaBandas, IconoNivel, tono } from '@/app/os/psicotecnicos/informe/_doc/piezas';
-import Cerebro from '@/app/os/psicotecnicos/informe/_doc/Cerebro';
-import Crudo from '@/app/os/psicotecnicos/informe/_doc/Crudo';
+import { firmaEnDatos } from '@/lib/firmas';
+import Listas from '../_doc/Listas';
+import { EscalaBandas, IconoNivel, tono } from '../_doc/piezas';
+import Cerebro from '../_doc/Cerebro';
+import Crudo from '../_doc/Crudo';
 import Escalera from './Escalera';
 
 /**
@@ -18,6 +20,33 @@ import Escalera from './Escalera';
  * imprime. Lo que cambia es cómo se lee en pantalla.
  */
 
+/**
+ * Quién firma, con su firma.
+ *
+ * Es asincrónico porque el trazo se lee del bucket privado y entra al documento
+ * como datos. React espera un componente de servidor asincrónico como
+ * cualquier otro, así que se usa como un elemento más.
+ */
+async function Firma({ inf }: { inf: Informe }) {
+  const firma = inf.evaluadora ? FIRMAS[inf.evaluadora] : undefined;
+  const trazo = firma?.trazo ? await firmaEnDatos(firma.trazo) : null;
+  return (
+    <div className="sitio-firma">
+      <div>
+        {trazo && <img className="sitio-trazo" src={trazo} alt="" />}
+        <strong>{inf.evaluadora ?? 'Sin evaluadora asignada'}</strong>
+        {firma && (
+          <span>
+            {firma.titulo} · Mat. {firma.matricula}
+            {firma.correo ? ` · ${firma.correo}` : ''}
+          </span>
+        )}
+      </div>
+      <p className="sitio-confidencial">{CONFIDENCIALIDAD}</p>
+    </div>
+  );
+}
+
 export type Seccion = {
   /** El ancla de la dirección y el destino del índice. */
   id: string;
@@ -28,8 +57,17 @@ export type Seccion = {
   cuerpo: React.ReactNode;
 };
 
-export function seccionesDe(inf: Informe): Seccion[] {
-  const firma = inf.evaluadora ? FIRMAS[inf.evaluadora] : undefined;
+export function seccionesDe(
+  inf: Informe,
+  /**
+   * El id de la evaluación, cuando las cuatro listas se pueden editar.
+   *
+   * Va solo en la ficha: ahí la evaluadora ve exactamente lo que va a ver el
+   * cliente, y corrige sobre eso. En el portal no se pasa, y las listas salen
+   * como texto.
+   */
+  editar?: string
+): Seccion[] {
   const secciones: Seccion[] = [];
 
   /* ── Recomendación ──────────────────────────────────────────────────
@@ -81,18 +119,7 @@ export function seccionesDe(inf: Informe): Seccion[] {
           </blockquote>
         )}
 
-        <div className="sitio-firma">
-          <div>
-            <strong>{inf.evaluadora ?? 'Sin evaluadora asignada'}</strong>
-            {firma && (
-              <span>
-                {firma.titulo} · Mat. {firma.matricula}
-                {firma.correo ? ` · ${firma.correo}` : ''}
-              </span>
-            )}
-          </div>
-          <p className="sitio-confidencial">{CONFIDENCIALIDAD}</p>
-        </div>
+        <Firma inf={inf} />
       </>
     ),
   });
@@ -186,18 +213,21 @@ export function seccionesDe(inf: Informe): Seccion[] {
   const grupos = [
     {
       clave: 'destacado',
+      lista: 'destacadas' as const,
       titulo: 'Lo que se destaca',
       sub: 'Por encima del rango esperado',
       items: inf.analisis.destacadas,
     },
     {
       clave: 'esperado',
+      lista: 'esperadas' as const,
       titulo: 'Lo que está en lo esperado',
       sub: 'Dentro del rango esperado',
       items: inf.analisis.esperadas,
     },
     {
       clave: 'desarrollar',
+      lista: 'desarrollar' as const,
       titulo: 'Lo que conviene acompañar',
       sub: 'Fuera del rango esperado',
       items: inf.analisis.desarrollar,
@@ -215,7 +245,19 @@ export function seccionesDe(inf: Informe): Seccion[] {
               <h3>{g.titulo}</h3>
               <span>{g.sub}</span>
             </header>
-            {g.items.length === 0 ? (
+            {editar ? (
+              /* En la ficha se edita sobre lo mismo que el cliente va a leer:
+                 la lista se ordena, se corrige y se amplía acá, con el índice
+                 que respalda cada oración al costado. */
+              <Listas
+                id={editar}
+                lista={g.lista}
+                items={g.items}
+                intervenida={inf.intervenidas.includes(g.lista)}
+                vacio="Sin registros en este grupo."
+                respaldos={inf.respaldos}
+              />
+            ) : g.items.length === 0 ? (
               <p className="sitio-vacio">Sin registros en este grupo.</p>
             ) : (
               <ul>
@@ -235,7 +277,17 @@ export function seccionesDe(inf: Informe): Seccion[] {
     id: 'lider',
     titulo: 'Para su líder',
     bajada: 'Qué hacer para que rinda.',
-    cuerpo:
+    cuerpo: editar ? (
+      <Listas
+        id={editar}
+        lista="recomendaciones"
+        items={inf.recomendaciones}
+        intervenida={inf.intervenidas.includes('recomendaciones')}
+        numerada
+        vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
+        respaldos={inf.respaldos}
+      />
+    ) :
       inf.recomendaciones.length === 0 ? (
         <p className="sitio-vacio">
           No surgen indicadores fuera de los rangos esperados que requieran una gestión

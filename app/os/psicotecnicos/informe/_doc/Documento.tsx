@@ -15,6 +15,7 @@ import Listas from './Listas';
 import { Encabezado, Marca, Pie } from './Marco';
 import { firmaEnDatos } from '@/lib/firmas';
 import Crudo from './Crudo';
+import { Desglose, Faltantes } from './Interno';
 import './informe.css';
 
 function Capitulo({
@@ -132,21 +133,7 @@ export default async function Documento({
      anidada le sumaría otro ancho máximo y otro margen al de afuera. */
   return (
     <article className={marco ? 'inf' : 'inf-cuerpo'} data-parte={parte}>
-      {interno && inf.faltantes.length > 0 && (
-        <aside className="inf-pendientes">
-          <strong>Falta cargar para que el informe salga completo:</strong>
-          <ul>
-            {inf.faltantes.map((f) => (
-              <li key={f.que}>
-                {f.que}, en {f.donde}.
-              </li>
-            ))}
-          </ul>
-          <span className="inf-pendientes-nota">Este aviso no se imprime.</span>
-        </aside>
-      )}
-
-
+      {interno && <Faltantes inf={inf} />}
 
       {/* La marca y quién es, salvo en el portal, que las dibuja una vez
           para las tres pestañas. */}
@@ -508,67 +495,7 @@ export default async function Documento({
 
       {marco && <Pie />}
 
-      {/* De dónde sale cada puntaje. Está para revisar contra casos reales las
-          dos cosas que se decidieron acá y no salen de las hojas de la
-          psicóloga: dónde corta cada indicador entre bajo, medio y alto, y
-          cuánto pesa dentro de su competencia. */}
-      {interno && inf.competencias.some((c) => c.renglones.length > 1) && (
-        <details className="inf-desglose">
-          <summary>Cómo se calculó cada competencia</summary>
-          {/* En tabla y no en lista: es lo que la evaluadora mira cuando el
-              cliente pregunta de dónde sale un puntaje, así que los índices del
-              protocolo tienen que caer siempre en el mismo lugar del renglón. */}
-          {inf.competencias.map((c) => (
-            <div key={c.nombre} className="inf-desglose-comp">
-              <h4>
-                {c.nombre}
-                <span>
-                  {c.puntaje === null ? 'sin puntaje' : `${c.puntaje} de 100`}
-                  {c.referencia && ` · ${c.referencia}`}
-                </span>
-              </h4>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Indicador</th>
-                    <th>Del protocolo</th>
-                    <th>Nivel</th>
-                    <th>Peso</th>
-                    <th>Dónde corta</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {c.renglones.map((r) => {
-                    // El Raven no escalona: lo que trae del protocolo es su
-                    // percentil, y esa es la columna donde hay que buscarlo.
-                    const nivel =
-                      r.nivel === null
-                        ? r.valor
-                          ? '—'
-                          : 'sin dato'
-                        : ['bajo', 'medio', 'alto'][r.nivel - 1];
-                    return (
-                      <tr key={r.indicador}>
-                        <td>
-                          <b>{r.indicador}</b>
-                          <em>{r.mide}</em>
-                        </td>
-                        <td className="inf-desglose-datos">{r.datos ?? r.valor ?? '—'}</td>
-                        <td className="inf-desglose-nivel" data-nivel={r.nivel ?? 'falta'}>
-                          {nivel}
-                        </td>
-                        <td className="inf-desglose-peso">{r.peso === 1 ? '' : `×${r.peso}`}</td>
-                        <td className="inf-desglose-corte">{r.corte}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ))}
-          <span className="inf-pendientes-nota">Tampoco se imprime.</span>
-        </details>
-      )}
+      {interno && <Desglose inf={inf} />}
     </article>
   );
 }
