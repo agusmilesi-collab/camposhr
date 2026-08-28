@@ -102,6 +102,10 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
    * en "no" son cosas distintas, y el estrato sale de la más alta contestada
    * que sí. Lo que la persona contó se anota mientras habla y no es lo que lo
    * cierra.
+   *
+   * La misma cuenta la hace el bloque del potencial con lo que hay en pantalla,
+   * para que su pastilla cambie en el momento; esta es la del sello de la
+   * tarjeta, que se dibuja en el servidor.
    */
   const potencialTomado =
     e.horizonteDias !== null &&
@@ -163,8 +167,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
       /* Cuando la batería lleva el análisis discursivo, la tarjeta contiene los
          dos: se administra entera recién cuando además está contestado el
          potencial, y decir "Administrado" antes escondería lo que falta. */
-      const tomado =
-        Boolean(e.competencias) && (!conDiscursivo || Boolean(e.discursivo || e.relato));
+      const tomado = Boolean(e.competencias) && (!conDiscursivo || potencialTomado);
       return (
         <span className={`os-sello-estado os-test-estado ${tomado ? 'os-verde' : 'os-gris'}`}>
           {tomado ? 'Administrado' : 'No administrado'}
@@ -317,20 +320,6 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
               {/* Y las tres preguntas del potencial, en la misma conversación. */}
               {conDiscursivo && (
                 <div className="os-competencias-potencial">
-                  {/* La marca del potencial, como la de cualquier test y en el
-                      mismo lugar: arriba y a la derecha. Está tomado cuando
-                      están el plazo y las cuatro preguntas; lo que la persona
-                      contó se anota igual y no es lo que lo cierra. */}
-                  <div className="os-competencias-cabeza">
-                    <h4 className="os-competencias-titulo">Potencial de desarrollo</h4>
-                    <span
-                      className={`os-sello-estado os-test-estado ${
-                        potencialTomado ? 'os-verde' : 'os-gris'
-                      }`}
-                    >
-                      {potencialTomado ? 'Administrado' : 'No administrado'}
-                    </span>
-                  </div>
                   <Discursivo
                     id={e.id}
                     modo="entrevista"
