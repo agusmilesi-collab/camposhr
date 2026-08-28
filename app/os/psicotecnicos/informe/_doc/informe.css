@@ -626,22 +626,9 @@
   min-width: 0;
 }
 
-/* La separación es una marquita bajo la barra y no una línea de arriba abajo:
-   entera, cruzaba por detrás de los nombres que se salen de su banda. Dice
-   dónde termina cada tramo, que es para lo que está. */
-.inf-escala-rotulos span::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 6px;
-  background: var(--linea);
-}
-
-.inf-escala-rotulos span:first-child::before {
-  display: none;
-}
+/* Dónde termina cada tramo lo dice la barra, que cambia de color justo ahí.
+   La marquita gris debajo repetía ese corte con menos precisión y sumaba tres
+   líneas a un dibujo que son cuatro nombres y cuatro números. */
 
 /*
  * El nombre más largo que su banda se sale hacia adentro.

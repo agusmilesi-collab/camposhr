@@ -5021,6 +5021,9 @@ th.os-tabla-contacto {
   align-items: center;
   gap: 14px;
   width: 100%;
+  /* Lo mismo que arriba: lo que se escribe termina en el borde del campo, y la
+     lista de tests pegada a ese borde se leía como parte del campo. */
+  margin-top: 18px;
 }
 
 .os-ficha-titulo {
@@ -9808,22 +9811,8 @@ textarea.os-papel-campo {
   min-width: 0;
 }
 
-/* La separación es una marquita bajo la barra y no una línea de arriba abajo:
-   entera cruzaba por detrás de los nombres que se salen de su banda, que son
-   los de las puntas. */
-.os-exigencia-rotulos > span::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 6px;
-  background: var(--os-linea-suave);
-}
-
-.os-exigencia-rotulos > span:first-child::before {
-  display: none;
-}
+/* Dónde termina cada tramo lo dice la barra, que cambia de color justo ahí: la
+   marquita gris debajo repetía el corte con menos precisión. */
 
 /* El nombre más largo que su banda se sale hacia adentro, que es hacia donde
    hay lugar. */
