@@ -4,6 +4,7 @@ import { datosClienteDeSupabase } from '@/lib/portal-supabase';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import Documento from '@/app/os/psicotecnicos/informe/_doc/Documento';
 import Partes from './Partes';
+import { Encabezado, Marca, Pie } from '@/app/os/psicotecnicos/informe/_doc/Marco';
 import { esPortalEjemplo } from '@/lib/portal-ejemplo';
 import './portal-informe.css';
 
@@ -73,9 +74,16 @@ export default async function InformeDelPortal({
       <Partes
         volver={`/${params.token}`}
         muestra={muestra}
-        recomendacion={<Documento inf={inf} parte="recomendacion" />}
-        fundamentos={<Documento inf={inf} parte="fundamentos" />}
-        indicadores={<Documento inf={inf} parte="indicadores" />}
+        cabecera={
+          <>
+            <Marca />
+            <Encabezado inf={inf} />
+          </>
+        }
+        pie={<Pie />}
+        recomendacion={<Documento inf={inf} parte="recomendacion" marco={false} />}
+        fundamentos={<Documento inf={inf} parte="fundamentos" marco={false} />}
+        indicadores={<Documento inf={inf} parte="indicadores" marco={false} />}
       />
     </main>
   );
