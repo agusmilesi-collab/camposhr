@@ -1,4 +1,5 @@
 import 'server-only';
+import { lectorDePdf } from '@/lib/pdf-lector';
 
 /**
  * Lo que se puede leer de un CV, para llenar la fila del candidato.
@@ -61,7 +62,7 @@ function enLineas(trozos: Trozo[]): string[] {
  * al final de una página de portada, y una página de más cuesta milisegundos.
  */
 async function textoDe(bytes: Uint8Array): Promise<string[]> {
-  const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const getDocument = await lectorDePdf();
   // Una copia con su propio búfer: el lector le pasa los bytes a su hilo
   // interno y no puede transferir el que llega del formulario.
   const copia = new Uint8Array(bytes.byteLength);

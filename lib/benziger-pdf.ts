@@ -15,12 +15,13 @@
  */
 
 import 'server-only';
+import { lectorDePdf } from '@/lib/pdf-lector';
 
 /** Una pieza de texto del PDF, con dónde está. */
 type Pieza = { texto: string; x: number; y: number };
 
 async function piezasDe(bytes: Uint8Array, pagina: number): Promise<Pieza[]> {
-  const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const getDocument = await lectorDePdf();
   // Una copia con su propio búfer: el lector le pasa los bytes a su hilo
   // interno y no puede transferir el que llega del formulario.
   const copia = new Uint8Array(bytes.byteLength);
