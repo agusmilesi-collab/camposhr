@@ -2,7 +2,6 @@ import { alcanceYPrecios } from '@/lib/precio-portal';
 import { bateriasConContenido } from '@/lib/baterias-detalle';
 import { tiempoDeEntrega } from '@/lib/tiempo-entrega';
 import { TOKEN_PORTAL_EJEMPLO } from '@/lib/portal-ejemplo';
-import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
 
 export const dynamic = 'force-dynamic';
 
@@ -324,16 +323,20 @@ export default async function Precios() {
             del estudio: quien abre esto tiene un finalista y necesita decidir,
             con alguien que se haga cargo de la opinión.
 
-            Y lo nombra con la palabra del rubro: en un informe psicolaboral la
-            conclusión es "apto", "apto con observaciones" o "no apto", y esas
-            tres son las que después se citan en la reunión donde se decide. */}
-        <h1>Apto, apto con observaciones o no apto, firmado por quien la evaluó</h1>
-        <p className="precios-lead">
-          Evaluamos si la persona puede con el puesto y si va a funcionar con ese
-          jefe y ese equipo. El ajuste con el jefe y el equipo explica las
-          contrataciones que fracasan con alguien que en papel cerraba, y se
-          puede medir cuando nos cuentan dónde entra la persona.
-        </p>
+            Abre por el entregable y cierra con las tres palabras del rubro: en
+            un informe psicolaboral la conclusión es "apto", "apto con
+            observaciones" o "no apto", y esas tres son las que después se citan
+            en la reunión donde se decide. Empezando por ellas, el titular era
+            una lista antes de decir de qué. */}
+        {/* Lo decimos nosotras y no "te ayudamos a": lo que se contrata es la
+            recomendación tomada, no un apoyo para que la tome el cliente. */}
+        {/* El corte de renglón es parte del titular y no lo decide el ancho:
+            arriba la promesa, abajo con qué se sostiene. */}
+        <h1>
+          Definimos a quién contratar,
+          <br />
+          con la evidencia que lo respalda
+        </h1>
       </header>
 
       <section className="precios-bloque">
@@ -412,7 +415,7 @@ export default async function Precios() {
                 }`}
               >
                 <span className="precios-detalle-titulo">
-                  {recomendado(b.codigo) ? 'Indicado' : 'Opcional'}
+                  {recomendado(b.codigo) ? 'Recomendado' : 'Opcional'}
                 </span>
                 <p>
                   <strong className="precios-opcional-nombre">
@@ -496,7 +499,7 @@ export default async function Precios() {
                   que: 'Perfil de pensamiento (Benziger)',
                   en: () => true,
                   valor: (b: Bateria) =>
-                    `${recomendado(b.codigo) ? 'Indicado' : 'Opcional'} · USD ${benzigerUsd}`,
+                    `${recomendado(b.codigo) ? 'Recomendado' : 'Opcional'} · USD ${benzigerUsd}`,
                 } as Fila,
               ].map((fila) => (
                 <tr key={fila.que}>
@@ -629,25 +632,16 @@ export default async function Precios() {
             <span className="precios-num">1</span>
             <div>
               <strong>Nos mandás el pedido.</strong> Desde tu portal de cliente: el
-              puesto, los CV y nueve preguntas sobre cómo es el puesto y cómo conduce
+              puesto, los CV y unas preguntas sobre cómo es el puesto y cómo conduce
               quien va a ser su jefe.
-              {/* Las nueve, por su nombre y sin las opciones: son las mismas que
-                  el portal ya le hace al pedir (`lib/pedido-campos.ts`), así que
-                  esto no es una promesa. Con sus opciones ocupaban media
-                  pantalla, y contra qué se mide a la persona es una línea. */}
-              <span className="precios-paso-nota">
-                {[...DEL_PUESTO, ...DEL_JEFE].map((p) => p.rotulo).join(' · ')}. Sin
-                esas nueve respuestas igual se evalúa y se entrega, con una
-                recomendación que habla de la persona sin medirla contra ese puesto.
-              </span>
             </div>
           </li>
           <li>
             <span className="precios-num">2</span>
             <div>
               <strong>Citamos y evaluamos.</strong> La coordinación con cada candidato
-              la hacemos nosotras, presencial o por videollamada. La fecha depende de
-              su disponibilidad, así que es lo único del circuito que no controlamos.
+              la hacemos nosotras, presencial o por videollamada, y la fecha se acuerda
+              según su disponibilidad.
             </div>
           </li>
           <li>
@@ -686,9 +680,8 @@ export default async function Precios() {
               />
             </svg>
             +54 9 341 640 2533
-          </a>{' '}
-          y te abrimos tu portal: desde ahí pedís las evaluaciones y recibís los
-          informes.
+          </a>
+          .
         </p>
         {/* Las condiciones comerciales, todas juntas: qué comprobante llega y
             cómo se paga son las dos preguntas que hace administración antes de
@@ -763,7 +756,9 @@ export default async function Precios() {
           Otros servicios de <span className="precios-firma">Campos HR</span>
         </h2>
         {/* Los tres servicios del catálogo que no son esta página, con la misma
-            forma: qué se hace y cuándo se usa.
+            forma que el titular: qué problema resuelve, cómo se hace y cuándo se
+            usa. Sin la primera oración, cada uno abría por el método y quien lee
+            tenía que deducir para qué le serviría.
 
             Cuatro oraciones cada uno, contando la de cuándo se usa. Es el largo
             que entra de un vistazo al final de un documento que se leyó entero,
@@ -775,24 +770,22 @@ export default async function Precios() {
             puñado de casos. */}
         <ul className="precios-otros">
           <li>
-            <strong>Diseño organizacional.</strong> Mapeamos la cadena de valor y
-            derivamos de ahí las capacidades críticas y el organigrama objetivo. Para
-            cada puesto definimos su resultado esperado, qué decide por sí mismo y
-            con quién se coordina. Cierra en un plan de hasta ocho decisiones, cada
-            una con responsable, inversión estimada y costo de postergarla.
+            <strong>Diseño organizacional.</strong> Ordenamos quién decide qué y
+            qué se espera de cada puesto, cuando la estructura dejó de ser evidente.
+            Derivamos de la cadena de valor las capacidades críticas y el organigrama
+            objetivo, y cierra en un plan de hasta ocho decisiones, con responsable y
+            costo de postergarlas.
             <span className="precios-cuando-sirve">
               Se usa cuando la empresa creció y sigue conducida como al principio, o
               cuando hay una sucesión o una venta a la vista.
             </span>
           </li>
           <li>
-            <strong>Formación de líderes y mandos medios.</strong> Relevamos cómo se
-            conduce hoy: qué decide cada uno, qué delega y qué conversaciones
-            posterga. Sobre eso armamos un programa vivencial que trabaja la
-            transición de experto a conductor, la delegación, la devolución de
-            desempeño y el manejo de conflictos, con los casos que trae el propio
-            equipo. Cada encuentro cierra con un compromiso de práctica que se revisa
-            en el siguiente.
+            <strong>Formación de líderes y mandos medios.</strong> Damos herramientas
+            de conducción a quien llegó al puesto por su oficio técnico. Relevamos
+            cómo se conduce hoy y armamos un programa vivencial sobre los casos del
+            propio equipo: delegación, devolución de desempeño, decisiones difíciles
+            y conflictos.
             <span className="precios-cuando-sirve">
               Se usa cuando alguien técnicamente muy competente conduce gente por
               primera vez, o cuando las conversaciones difíciles se postergan hasta
@@ -813,13 +806,11 @@ export default async function Precios() {
               />
               <span className="precios-otro-firma">Campos HR by Sentir Mindfulness</span>
             </span>
-            <strong>Talleres de habilidades humanas.</strong> Módulos de 40 o 90
-            minutos sobre lo que ese equipo necesita: mindfulness para regular el
-            estrés, comunicación y conversaciones difíciles, el HR Help Kit para que
-            Recursos Humanos se proteja del desgaste, y entrevista por competencias
-            para que cada líder elija mejor a quien suma. Se arman con la conducción
-            del área y se dictan en la empresa, en el horario de trabajo. Cada módulo
-            abre y cierra con una medición, para saber qué se movió.
+            <strong>Talleres de habilidades humanas.</strong> Bajamos el desgaste de
+            un equipo que trabaja a presión, sin sacarlo una semana de su puesto.
+            Módulos de 40 o 90 minutos en la empresa: mindfulness para el estrés,
+            conversaciones difíciles, el HR Help Kit para Recursos Humanos y
+            entrevista por competencias.
             <span className="precios-cuando-sirve">
               Se usa cuando el equipo trabaja a presión permanente, o cuando Recursos
               Humanos absorbe los conflictos de todos los sectores.
