@@ -26,7 +26,12 @@ export default function Opciones<T extends string | boolean | null>({
   apilada = false,
 }: {
   valor: T;
-  opciones: { v: T; texto: string }[];
+  /**
+   * `ayuda` es qué significa esa opción, y sale como título al pasar por
+   * encima. Lo usan las nueve preguntas del pedido, que la evaluadora le hace
+   * al cliente por teléfono: en la pastilla entra el nombre y nada más.
+   */
+  opciones: { v: T; texto: string; ayuda?: string }[];
   alElegir: (v: T) => void;
   desactivado?: boolean;
   /** Qué pregunta contesta, para el lector de pantalla. */
@@ -52,6 +57,7 @@ export default function Opciones<T extends string | boolean | null>({
           key={String(o.v)}
           type="button"
           className={`os-ingreso-opcion${valor === o.v ? ' puesta' : ''}`}
+          title={o.ayuda}
           disabled={desactivado}
           onClick={() => alElegir(o.v)}
           aria-pressed={valor === o.v}

@@ -6599,19 +6599,44 @@ body {
   overflow: hidden;
 }
 
-/* Qué significa cada opción, debajo de su nombre y dentro del mismo botón: al
-   costado obligaría a cruzar el texto con la opción a la que corresponde. */
+/*
+ * Qué significa cada opción, debajo de su nombre y dentro del mismo botón: al
+ * costado obligaría a cruzar el texto con la opción a la que corresponde.
+ *
+ * Con dos renglones adentro, el botón deja de ser una pastilla y pasa a ser una
+ * tarjeta: el texto va alineado a la izquierda, que centrado se lee como un
+ * cartel y las dos o tres líneas quedan de anchos distintos. El nombre pesa más
+ * que la explicación, así se puede elegir leyendo solo los tres nombres y bajar
+ * a la letra chica nada más cuando se duda.
+ */
+.pedir-perfil .pedir-opcion {
+  padding: 8px 11px 9px;
+  text-align: left;
+}
+
+.pedir-opcion-n {
+  display: block;
+  font-weight: 500;
+  color: var(--ink);
+}
+
 .pedir-opcion-q {
   display: block;
-  margin-top: 3px;
-  font-size: 0.72rem;
+  margin-top: 2px;
+  font-size: 0.74rem;
   line-height: 1.35;
   color: var(--muted);
 }
 
+/* Elegida, el nombre y la explicación van del mismo color que el resto del
+   botón pintado. */
+.pedir-elegida .pedir-opcion-n,
 .pedir-elegida .pedir-opcion-q {
   color: inherit;
-  opacity: 0.72;
+}
+
+.pedir-elegida .pedir-opcion-q {
+  opacity: 0.78;
 }
 
 .pedir-opcion {
