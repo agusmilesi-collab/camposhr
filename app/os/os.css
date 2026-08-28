@@ -7831,6 +7831,14 @@ button.os-test-estado:hover:not(:disabled) {
   gap: 8px;
 }
 
+/* La caja de soltar, del alto exacto del campo que tiene al lado: nueve
+   píxeles de diferencia se ven como dos cajas que no cierran. */
+.os-papel-dibujos .os-agregar-cv,
+.os-papel-dibujos .os-caja-archivo {
+  height: 78px;
+  min-height: 78px;
+}
+
 .os-papel-dibujos > .os-bender-ver {
   grid-column: 2;
   text-align: center;
