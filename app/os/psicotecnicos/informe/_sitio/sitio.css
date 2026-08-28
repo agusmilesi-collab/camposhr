@@ -1014,3 +1014,26 @@
   height: 76px;
   margin: 0 0 -2px 16px;
 }
+
+/*
+ * Las mismas secciones, adentro de la ficha.
+ *
+ * En el portal viven en una grilla con el índice al costado, que es lo que les
+ * daba el margen izquierdo. Acá ocupan el panel entero, así que el margen se
+ * pone acá: el número de la sección y el borde de la caja arrancaban pegados al
+ * borde del panel.
+ *
+ * Y el ancho se limita por la misma razón que en el portal: a lo ancho de la
+ * pantalla del OS, una caja de mil doscientos píxeles deja renglones que no se
+ * pueden leer de corrido.
+ */
+.sitio-secciones-ficha {
+  max-width: 940px;
+  padding: 0 22px 8px;
+}
+
+/* La primera sección no necesita los 64 px de arriba: ya viene de la cabecera
+   del panel, que es la que la separa de lo de arriba. */
+.sitio-secciones-ficha .sitio-seccion:first-child {
+  padding-top: 24px;
+}
