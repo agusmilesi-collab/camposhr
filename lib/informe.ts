@@ -155,12 +155,21 @@ export type Informe = {
    * que uno de conducción.
    */
   exigencia: Exigencia;
-  resumen: {
-    /** Los párrafos del resumen, ya sean del motor o de la evaluadora. */
-    parrafos: string[];
-    /** Si lo escribió la evaluadora en el fundamento. */
-    propio: boolean;
-  };
+  /**
+   * Qué dio la evaluación, en dos frases que arma el motor.
+   *
+   * Sale de las mismas lecturas que el resto del informe y no de un modelo de
+   * lenguaje: son frases escritas, elegidas por los índices.
+   */
+  resumen: string[];
+  /**
+   * Por qué se recomienda ese nivel, escrito por la evaluadora.
+   *
+   * Es lo que ella deja cuando elige el nivel de ajuste, en primera persona y
+   * con su firma. Vacío cuando todavía no lo escribió: el informe sale igual
+   * con el resumen del motor, que es lo que se puede afirmar sin ella.
+   */
+  fundamentacion: string[];
   recomendaciones: string[];
   analisis: {
     destacadas: string[];
@@ -327,31 +336,22 @@ function mesYAnio(iso: string | null): string {
 /**
  * Las dos oraciones del resumen.
  *
- * La primera nombra dos o tres cosas que se destacan; si no se destaca nada, se
- * apoya en lo que dio dentro de lo esperado, que es lo que el esqueleto pide.
- * La segunda nombra lo que más le va a demandar al líder, que son las lecturas
- * a desarrollar que además traen recomendación.
+ * Es lo que la evaluación dio, dicho en dos frases: la primera nombra dos o
+ * tres cosas que se destacan, y si no se destaca nada se apoya en lo que dio
+ * dentro de lo esperado; la segunda nombra lo que más le va a demandar al
+ * líder, que son las lecturas a desarrollar que además traen recomendación.
+ *
+ * **Lo arma el motor con las mismas lecturas que el resto del informe**, sin
+ * modelo de lenguaje de por medio: son frases escritas, elegidas por los
+ * índices que dieron fuera o dentro de banda. Va antes de la fundamentación
+ * porque son dos cosas distintas: esto es lo que se vio, y la fundamentación es
+ * por qué se recomienda lo que se recomienda.
  */
 function armarResumen(
   lecturas: Lectura[],
   destacadas: Lectura[],
-  esperadas: Lectura[],
-  fundamento: string | null
-): { parrafos: string[]; propio: boolean } {
-  // Lo que escribió la evaluadora manda: el motor arma un resumen correcto
-  // pero genérico, y ella tiene la lectura del caso. Si no escribió nada, sale
-  // el generado, que es mejor que un informe sin resumen.
-  const propio = (fundamento ?? '').trim();
-  if (propio) {
-    return {
-      parrafos: propio
-        .split(/\n\s*\n|\n/)
-        .map((p) => p.trim())
-        .filter(Boolean),
-      propio: true,
-    };
-  }
-
+  esperadas: Lectura[]
+): string[] {
   const aFavor = (destacadas.length ? destacadas : esperadas).slice(0, 3);
   // Lo que le va a demandar al líder son las recomendaciones, no los índices:
   // el informe no nombra códigos, y al líder le sirve saber qué hacer.
@@ -376,7 +376,7 @@ function armarResumen(
     ? `Su líder directo deberá prestar especial atención a ${enumerar(pesan.map(enMinuscula))}.`
     : 'No se registran aspectos que demanden una gestión particular de su líder directo.';
 
-  return { parrafos: [destaca, demanda], propio: false };
+  return [destaca, demanda];
 }
 
 /**
@@ -653,7 +653,11 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     nivel: nivelDeConclusion(c.recomendacion),
     competencias,
     protocoloCorto: corto,
-    resumen: armarResumen(lecturas, destacadas, esperadas, c.recomendacion_notas),
+    resumen: armarResumen(lecturas, destacadas, esperadas),
+    fundamentacion: (c.recomendacion_notas ?? '')
+      .split(/\n\s*\n|\n/)
+      .map((t) => t.trim())
+      .filter(Boolean),
     // El líder recibe cada recomendación una sola vez, aunque dos índices
     // distintos lleven a lo mismo.
     recomendaciones: elegir(
