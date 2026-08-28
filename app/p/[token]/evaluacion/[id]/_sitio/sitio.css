@@ -57,7 +57,18 @@
   min-height: 100vh;
   background: var(--papel);
   color: var(--tinta);
-  font-family: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter', ui-sans-serif, -apple-system, system-ui, sans-serif;
+}
+
+/* Los títulos van en la serif de la marca, la misma del sitio y de la página de
+   precios: es lo que hace que esto se lea como un informe de Campos HR y no
+   como una pantalla cualquiera. El texto sigue en Inter, que es lo que se lee
+   bien en párrafos largos. */
+.sitio h1,
+.sitio-seccion-top h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 /* ── La barra ─────────────────────────────────────────────────────────── */
@@ -217,10 +228,9 @@
 }
 
 .sitio-cabecera h1 {
-  margin: 0 0 12px;
-  font-size: 2.1rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  margin: 0 0 14px;
+  font-size: 2.6rem;
+  line-height: 1.1;
 }
 
 /* Los datos en fila y con el rótulo arriba: es una ficha y no un párrafo. */
@@ -309,9 +319,8 @@
 
 .sitio-seccion-top h2 {
   margin: 0;
-  font-size: 1.35rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 1.7rem;
+  line-height: 1.2;
 }
 
 .sitio-seccion-top p {
@@ -811,5 +820,130 @@
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
+  }
+}
+
+/* ── Competencias, en barras ──────────────────────────────────────────── */
+/*
+ * Nueve puntajes se comparan, no se leen de a uno. Cada competencia es una
+ * fila: a la izquierda qué mide y a la derecha la barra con su número, y todas
+ * comparten la misma pista, que es lo que hace comparable el largo.
+ *
+ * La pista lleva marcados los cortes de las bandas. Sin ellos, un 62 y un 68
+ * se ven casi iguales y son cosas distintas: uno es Adecuado y el otro Alto.
+ */
+.sitio-comps {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 18px;
+}
+
+.sitio-comp {
+  display: grid;
+  grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--linea-suave);
+}
+
+.sitio-comp:last-child {
+  border-bottom: 0;
+}
+
+.sitio-comp-quien h3 {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 550;
+}
+
+.sitio-comp-quien p {
+  margin: 2px 0 0 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.4 !important;
+  color: var(--suave);
+}
+
+.sitio-comp-medida {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 116px;
+  gap: 16px;
+  align-items: center;
+}
+
+.sitio-pista {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background-color: var(--linea-suave);
+  overflow: hidden;
+}
+
+.sitio-relleno {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.sitio-comp-cifra {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sitio-comp-cifra strong {
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sitio-comp-cifra span {
+  font-size: 0.78rem;
+  color: var(--suave);
+}
+
+.sitio-sin {
+  font-size: 0.8rem;
+  color: var(--suave);
+}
+
+/* ── La cita de quien firma ───────────────────────────────────────────── */
+/*
+ * Es la única parte del informe escrita por una persona sobre esta persona. En
+ * serif y con la línea al costado se lee como lo que es, una voz, y no como un
+ * párrafo más de los que arma el motor.
+ */
+.sitio-cita {
+  margin: 26px 0 0;
+  padding: 0 0 0 22px;
+  border-left: 2px solid var(--tinta);
+}
+
+.sitio-cita-rotulo {
+  margin: 0 0 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.sitio-cita p {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.24rem !important;
+  line-height: 1.5 !important;
+  color: var(--tinta);
+}
+
+.sitio-cita footer {
+  margin-top: 6px;
+  font-size: 0.84rem;
+  color: var(--suave);
+}
+
+@media (max-width: 720px) {
+  .sitio-comp {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
 }

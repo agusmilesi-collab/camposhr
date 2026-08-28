@@ -1,12 +1,7 @@
 import type { Informe } from '@/lib/informe';
-import { bandaDe } from '@/lib/exigencia';
+import { bandaDe, bandasDe } from '@/lib/exigencia';
 import { CONFIDENCIALIDAD, CUADRANTES, FIRMAS, NIVELES } from '@/lib/informe-textos';
-import {
-  EscalaBandas,
-  IconoNivel,
-  Velocimetro,
-  tono,
-} from '@/app/os/psicotecnicos/informe/_doc/piezas';
+import { EscalaBandas, IconoNivel, tono } from '@/app/os/psicotecnicos/informe/_doc/piezas';
 import Cerebro from '@/app/os/psicotecnicos/informe/_doc/Cerebro';
 import Crudo from '@/app/os/psicotecnicos/informe/_doc/Crudo';
 import Escalera from './Escalera';
@@ -72,13 +67,18 @@ export function seccionesDe(inf: Informe): Seccion[] {
           <p key={i}>{t}</p>
         ))}
 
+        {/* Lo que escribió la evaluadora se destaca del resto: es la única
+            parte del informe que dice "yo la entrevisté y esto me parece", y
+            leerla al mismo cuerpo que lo que arma el motor la hace pasar por
+            una conclusión más. */}
         {inf.fundamentacion.length > 0 && (
-          <>
-            <h3 className="sitio-sub">Por qué esa recomendación</h3>
+          <blockquote className="sitio-cita">
+            <h3 className="sitio-cita-rotulo">Por qué esa recomendación</h3>
             {inf.fundamentacion.map((t, i) => (
               <p key={i}>{t}</p>
             ))}
-          </>
+            <footer>{inf.evaluadora}</footer>
+          </blockquote>
         )}
 
         <div className="sitio-firma">
@@ -97,11 +97,22 @@ export function seccionesDe(inf: Informe): Seccion[] {
     ),
   });
 
-  /* ── Competencias ───────────────────────────────────────────────────── */
+  /* ── Competencias ───────────────────────────────────────────────────
+     Nueve puntajes se comparan, no se leen de a uno: van en barras y ordenados
+     de mayor a menor, así la pregunta "en qué es fuerte y en qué no" se
+     contesta mirando y sin recorrer nueve números. La pista lleva marcados los
+     cortes de las bandas, que son los que le dan sentido al número. */
+  const ordenadas = inf.competencias
+    .slice()
+    .sort((a, b) => (b.puntaje ?? -1) - (a.puntaje ?? -1));
+  const cortes = bandasDe(inf.exigencia)
+    .filter((b) => b.desde > 0)
+    .map((b) => b.desde);
+
   secciones.push({
     id: 'competencias',
     titulo: 'Competencias',
-    bajada: 'Cómo dio en cada una de las nueve.',
+    bajada: 'Cómo dio en cada una, de mayor a menor.',
     cuerpo:
       inf.competencias.length === 0 ? (
         <p className="sitio-vacio">
@@ -115,23 +126,55 @@ export function seccionesDe(inf: Informe): Seccion[] {
               {inf.protocoloCorto}.
             </p>
           )}
-          <div className="inf-competencias sitio-competencias">
-            {inf.competencias.map((c) => (
-              <article key={c.nombre} className="inf-competencia">
-                <Velocimetro puntaje={c.puntaje} exigencia={inf.exigencia} />
-                <h3>{c.nombre}</h3>
-                {c.puntaje !== null && (
-                  <span
-                    className="inf-banda-texto"
-                    style={{ color: tono(c.puntaje, 1, inf.exigencia) }}
+
+          <div className="sitio-comps">
+            {ordenadas.map((c) => (
+              <article key={c.nombre} className="sitio-comp">
+                <div className="sitio-comp-quien">
+                  <h3>{c.nombre}</h3>
+                  <p>{c.mide}</p>
+                </div>
+                <div className="sitio-comp-medida">
+                  <div
+                    className="sitio-pista"
+                    /* Los cortes de las bandas, dibujados sobre la pista: sin
+                       ellos el largo de la barra no dice en qué banda cayó. */
+                    style={{
+                      backgroundImage: cortes
+                        .map(
+                          (x) =>
+                            `linear-gradient(90deg, transparent ${x}%, var(--linea) ${x}%, var(--linea) calc(${x}% + 1px), transparent calc(${x}% + 1px))`
+                        )
+                        .join(', '),
+                    }}
                   >
-                    {bandaDe(c.puntaje, inf.exigencia)}
-                  </span>
-                )}
-                <p className="inf-mide">{c.mide}</p>
+                    {c.puntaje !== null && (
+                      <span
+                        className="sitio-relleno"
+                        style={{
+                          width: `${c.puntaje}%`,
+                          background: tono(c.puntaje, 1, inf.exigencia),
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="sitio-comp-cifra">
+                    {c.puntaje === null ? (
+                      <span className="sitio-sin">sin datos</span>
+                    ) : (
+                      <>
+                        <strong style={{ color: tono(c.puntaje, 1, inf.exigencia) }}>
+                          {c.puntaje}
+                        </strong>
+                        <span>{bandaDe(c.puntaje, inf.exigencia)}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </article>
             ))}
           </div>
+
           <EscalaBandas exigencia={inf.exigencia} />
         </>
       ),
