@@ -467,12 +467,12 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
 
   const ravenResultado = f.raven?.resultado ?? '';
   if (f.raven?.raw === null || f.raven?.raw === undefined) {
-    faltantes.push({ que: 'El puntaje del Raven', donde: 'la pestaña Tests' });
+    faltantes.push({ que: 'El puntaje del Raven', donde: 'la hoja de la entrevista' });
   }
 
   if (llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests)) {
     if (!f.discursivo?.nivel) {
-      faltantes.push({ que: 'El nivel del análisis discursivo', donde: 'la pestaña Tests' });
+      faltantes.push({ que: 'El nivel del análisis discursivo', donde: 'la pestaña Potencial' });
     }
     // Los dos párrafos que escribe la evaluadora dejaron de faltar: el capítulo
     // sale completo con los textos del estrato, y lo que ella agregue es una

@@ -7372,13 +7372,78 @@ th.os-tabla-contacto {
      de su número. Va como variable para que las tres medidas no se
      desacoplen. */
   --os-herramienta-sangria: 32px;
+  /* La cabeza arriba y lo que cuelga debajo: plegada, la tarjeta es un renglón.
+     Antes era una sola fila y todo entraba en ella. */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 18px;
+}
+
+/*
+ * La cabeza de la tarjeta: el agarre, y el botón que la abre.
+ *
+ * Es lo único que se ve plegada, y con siete tests plegados la hoja entra en
+ * una pantalla: bajar por la lista para llegar al que se está tomando era el
+ * gesto de siempre y ahora no hace falta.
+ */
+.os-herramienta-cabeza {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  /* Más aire arriba que a los costados: el número y el nombre del test abren la
-     tarjeta, y con once píxeles el título quedaba montado sobre el borde. */
-  padding: 18px 18px 11px;
+  gap: 10px;
+}
+
+.os-herramienta-abrir {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* El estado contra el margen derecho, que es donde se lo busca al recorrer la
+   lista: al lado del nombre se corría con el largo de cada test. */
+.os-herramienta-estado {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.os-herramienta-flecha-boton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--os-suave);
+  cursor: pointer;
+}
+
+.os-herramienta-flecha-boton:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os-herramienta-flecha {
+  width: 11px;
+  height: 11px;
+  transition: transform 0.15s ease;
+}
+
+.os-herramienta-flecha.abierta {
+  transform: rotate(180deg);
 }
 
 /* Con campo de observaciones la tarjeta crece hacia abajo, así que el relleno
@@ -7395,21 +7460,13 @@ th.os-tabla-contacto {
   margin-top: 20px;
 }
 
-/* El texto cede ancho antes de empujar los botones al renglón de abajo: un
-   detalle largo partido en dos líneas se lee igual, y una fila de botones
-   fuera de su columna rompe la alineación de toda la lista. */
+/* El nombre del test, que es lo que se busca al recorrer la lista. */
 .os-herramienta-texto {
-  flex: 1 1 240px;
   min-width: 0;
-}
-
-/* El nombre con su ícono, en un renglón: quien administra sabe qué es cada
-   test, así que lo único que hace falta es reconocerlo de un vistazo. */
-.os-herramienta-texto {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   /* Es lo que se busca al bajar por la lista mientras se toma la entrevista, y
      a 0,9 rem pesaba lo mismo que el estado y los botones de al lado. */
   font-size: 1.35rem;

@@ -94,8 +94,27 @@ export type Entrevista = {
   raven: EstadoRaven;
   /** Cuándo abrió la primera lámina, para saber cuánto le queda. */
   ravenIniciado: string | null;
-  /** Lo que dio, cuando ya entregó. Null si todavía no hay medición. */
-  ravenMedida: { raw: number | null; percentil: number | null; resultado: string | null } | null;
+  /**
+   * Lo que dio, cuando ya entregó. Null si todavía no hay medición.
+   *
+   * Va entera y no solo el puntaje: el Raven se carga y se lee en la misma
+   * tarjeta de la entrevista, así que hacen falta también el percentil, los
+   * desvíos y de dónde salió el número.
+   */
+  ravenMedida: {
+    raw: number | null;
+    percentil: number | null;
+    desvios: number | null;
+    resultado: string | null;
+    origen: 'test' | 'manual' | null;
+  } | null;
+  /** La sesión, si rindió por su enlace: dice si se cortó por el reloj. */
+  ravenSesion: {
+    iniciado_at: string | null;
+    terminado_at: string | null;
+    cierre: string | null;
+    respuestas: Record<string, number> | null;
+  } | null;
   /** Cuánto tardó, si ya lo terminó. */
   ravenDuracion: number | null;
   /** En qué escalón de la pirámide quedó, si ya se lo codificó. */
@@ -153,9 +172,18 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
 
   const [filas, sesiones, discursivos, medidas] = await Promise.all([
     select<Fila>('evaluaciones', `select=${CAMPOS}&id=eq.${id}`),
-    select<{ iniciado_at: string | null; terminado_at: string | null }>(
+    /* La sesión entera: el estado del Raven sale de las dos primeras columnas,
+       y la tarjeta necesita además saber si se cortó por el reloj y con qué
+       respuestas. */
+    select<{
+      iniciado_at: string | null;
+      terminado_at: string | null;
+      cierre: string | null;
+      respuestas: Record<string, number> | null;
+    }>(
       'raven_sesiones',
-      `select=iniciado_at,terminado_at&evaluacion_id=eq.${id}&order=creado_at.desc&limit=1`
+      `select=iniciado_at,terminado_at,cierre,respuestas&evaluacion_id=eq.${id}` +
+        '&order=creado_at.desc&limit=1'
     ),
     select<{
       nivel: string | null;
@@ -166,10 +194,17 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
       'analisis_discursivo',
       `select=nivel,relato,horizonte_dias,complejidad&evaluacion_id=eq.${id}`
     ).catch(() => []),
-    // El puntaje del Raven, para mostrarlo al lado del tiempo apenas entrega.
-    select<{ raw: number | null; percentil: number | null; resultado: string | null }>(
+    // La medición del Raven entera: en la hoja se carga el puntaje y se lee su
+    // percentil, así que hace falta todo lo que muestra la tarjeta.
+    select<{
+      raw: number | null;
+      percentil: number | null;
+      desvios: number | null;
+      resultado: string | null;
+      origen: 'test' | 'manual' | null;
+    }>(
       'raven',
-      `select=raw,percentil,resultado&evaluacion_id=eq.${id}&limit=1`
+      `select=raw,percentil,desvios,resultado,origen&evaluacion_id=eq.${id}&limit=1`
     ).catch(() => []),
   ]);
 
@@ -221,6 +256,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     competencias: f.entrevista_competencias,
     ravenIniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
     ravenMedida: medidas[0] ?? null,
+    ravenSesion: sesiones[0] ?? null,
     ravenDuracion:
       s?.terminado_at && s.iniciado_at
         ? Math.max(

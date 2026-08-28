@@ -19,6 +19,11 @@
  * El arrastre es el mismo de las listas del informe (`_doc/Listas.tsx`): se
  * toma del agarre, el lugar se cede al pasar la mitad del vecino, y el
  * reacomodo se anima midiendo antes y después.
+ *
+ * **Cada test se pliega.** Con los siete abiertos, la hoja son cuatro pantallas
+ * y para llegar al que se está tomando hay que bajar pasando por todos. Plegado
+ * se ve lo único que hace falta para elegir: el número de orden, el nombre y si
+ * ya se administró. Arrancan todos plegados y se abre el que toca.
  */
 
 import { useLayoutEffect, useRef, useState } from 'react';
@@ -43,6 +48,11 @@ export default function Orden({
 }) {
   const router = useRouter();
   const [orden, setOrden] = useState(() => tests.map((_, i) => i));
+  /** Cuáles están abiertos, por nombre de test: el índice cambia al reordenar. */
+  const [abiertos, setAbiertos] = useState<string[]>([]);
+
+  const plegar = (test: string) =>
+    setAbiertos((a) => (a.includes(test) ? a.filter((x) => x !== test) : [...a, test]));
   const [movido, setMovido] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const caja = useRef<HTMLDivElement>(null);
@@ -159,7 +169,9 @@ export default function Orden({
               guardar(orden);
             }}
           >
-            <h3 className="os-herramienta-texto">
+            <div className="os-herramienta-cabeza">
+              {/* El agarre queda afuera del botón: adentro, tomarlo para
+                  arrastrar abría y cerraba la tarjeta. */}
               <span
                 className="os-herramienta-agarre"
                 title="Arrastrar para cambiar el orden"
@@ -167,15 +179,41 @@ export default function Orden({
               >
                 ⠿
               </span>
-              <span className="os-herramienta-numero" aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              {tests[indice]}
-              {/* En qué anda, pegado al nombre: es lo que se busca al bajar por
-                  la lista mientras se administra. */}
-              {estados[indice]}
-            </h3>
-            {tarjetas[indice]}
+              <button
+                type="button"
+                className="os-herramienta-abrir"
+                aria-expanded={abiertos.includes(tests[indice])}
+                onClick={() => plegar(tests[indice])}
+              >
+                <span className="os-herramienta-numero" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="os-herramienta-texto">{tests[indice]}</h3>
+              </button>
+
+              {/* El estado va afuera del botón que pliega: el de los tests de
+                  papel es a su vez un botón, y un botón adentro de otro no es
+                  HTML válido (React lo rechaza al hidratar). */}
+              <span className="os-herramienta-estado">{estados[indice]}</span>
+
+              <button
+                type="button"
+                className="os-herramienta-flecha-boton"
+                aria-label={abiertos.includes(tests[indice]) ? 'Plegar' : 'Desplegar'}
+                onClick={() => plegar(tests[indice])}
+              >
+                <svg
+                  className={`os-herramienta-flecha${
+                    abiertos.includes(tests[indice]) ? ' abierta' : ''
+                  }`}
+                  viewBox="0 0 10 6"
+                  aria-hidden="true"
+                >
+                  <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                </svg>
+              </button>
+            </div>
+            {abiertos.includes(tests[indice]) && tarjetas[indice]}
           </section>
         ))}
       </div>
