@@ -323,11 +323,15 @@ function Tarjeta({
             {/* Contra el borde derecho en todas las tarjetas: es el dato que se
                 compara entre una y otra al bajar por la columna, y alineado con
                 el largo de cada frase había que buscarlo en cada fila. */}
+            {/* "Espera hace" no decía desde cuándo, y en esta columna hay dos
+                fechas posibles: la solicitud y la entrevista. Lo que corre acá
+                es el análisis, así que se cuenta desde la entrevista y se lo
+                dice el rótulo. */}
             <span
               className={`os-tarjeta-espera${demorada ? ' demorada' : ''}`}
               title="Días hábiles desde la entrevista"
             >
-              espera {haceCuanto(e.diasHabiles)}
+              entrevistado {haceCuanto(e.diasHabiles)}
             </span>
             {/* La recomendación sale solo si ya está: en Por analizar la
                 evaluación todavía no se cerró, así que decir "sin cerrar" en
