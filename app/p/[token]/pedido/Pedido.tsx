@@ -496,17 +496,17 @@ export default function Pedido({
                       className={`pedir-bateria${bateria === b.codigo ? ' pedir-elegida' : ''}`}
                       onClick={() => setBateria(b.codigo)}
                     >
-                      <span className="pedir-bateria-para">{b.paraQuien}</span>
-                      {/* El código en pastilla y con su color, como en la página
-                          de precios: es el nombre con el que después se pide y
-                          con el que figura en la factura, y ata las dos
-                          pantallas sin tener que leer el número cada vez. */}
+                      {/* El código arriba de todo, en pastilla y con su color
+                          como en la página de precios: es el nombre con el que
+                          se pide y con el que después figura en la factura, así
+                          que es lo que ubica la tarjeta antes de leerla. */}
                       <span className="pedir-bateria-cod">
                         <span className={`precios-pill ${colorDeBateria(b.codigo)}`}>
                           {b.codigo}
                         </span>
                         {b.minutos && <span className="pedir-min">{b.minutos} min</span>}
                       </span>
+                      <span className="pedir-bateria-para">{b.paraQuien}</span>
                       <span className="pedir-bateria-que">{b.queIncluye}</span>
                       <span className="pedir-bateria-precio">
                         {b.precio ? `${pesos(b.precio)} por candidato` : 'A convenir'}
