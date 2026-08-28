@@ -6500,24 +6500,53 @@ body {
   gap: 6px;
 }
 
+/*
+ * Las opciones del contexto: pastilla liviana con un punto de color.
+ *
+ * Son nueve preguntas de tres opciones, veintisiete botones en una pantalla.
+ * Con borde y con el elegido en negro, lo que se ve es una grilla de cajas y
+ * hay que leerlas todas para saber qué se contestó. El punto marca el escalón
+ * de cada opción (de menos a más) y el elegido se pinta apenas: lo contestado
+ * se reconoce de un vistazo y lo que falta también.
+ */
 .pedir-opcion {
-  padding: 6px 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
   font: inherit;
   font-size: 0.83rem;
-  background: #fff;
-  border: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 20px;
   cursor: pointer;
 }
 
+.pedir-opcion::before {
+  content: '';
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--paso);
+}
+
+/* Un solo tono, tres intensidades: la escala no es buena ni mala, y con verde
+   y rojo "problemas complejos" se leería como un problema. */
+.pedir-paso-1 { --paso: #b6c8da; }
+.pedir-paso-2 { --paso: #7793b5; }
+.pedir-paso-3 { --paso: #2b4468; }
+
 .pedir-opcion:hover {
-  border-color: var(--muted);
+  background: #fff;
 }
 
 .pedir-opcion.pedir-elegida {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
+  background: #e8eef5;
+  border-color: #c3d1e2;
+  color: #223a5c;
+  font-weight: 500;
   box-shadow: none;
 }
 
