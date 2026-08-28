@@ -65,6 +65,8 @@ export type Cabecera = {
    * dice la edad que tenía cuando se la evaluó.
    */
   edad: number | null;
+  /** Si a esta persona le corresponde el Benziger aunque el pedido no lo pida. */
+  con_benziger: boolean | null;
   personas: {
     nombre: string;
     email: string | null;
@@ -272,7 +274,7 @@ const CAMPOS_CABECERA =
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'recomendacion,recomendacion_notas,informe_path,entrevista_competencias,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
-  'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,' +
+  'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,' +
   'personas(nombre,email,telefono,cv_path,fecha_nacimiento),evaluadoras(nombre),' +
   'pedidos(puesto,con_benziger,exigencia_id,empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';

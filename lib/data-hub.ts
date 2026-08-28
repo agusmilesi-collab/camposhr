@@ -3,6 +3,7 @@ import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { select } from '@/lib/supabase';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { calcularCompetencias } from '@/lib/competencias';
+import { llevaBenziger } from '@/lib/benziger';
 import type { SumarioCrudo } from '@/lib/redacciones';
 
 /**
@@ -30,22 +31,21 @@ import type { SumarioCrudo } from '@/lib/redacciones';
  */
 
 const CAMPOS =
-  'id,estado,recomendacion,ingreso,seguimiento_resultado,benziger_administrado,' +
+  'id,estado,recomendacion,ingreso,seguimiento_resultado,benziger_administrado,con_benziger,' +
   'fecha_ingreso,fecha_entrevista,fecha_entrega,evaluadoras(nombre),' +
   'raven(raw,percentil),personas(nombre),' +
   'benziger(cuadrante_preferente,cuadrantes_parejos),' +
   'pedidos(puesto,familia,seniority,con_benziger,empresas(nombre),baterias(codigo,tests))';
 
 /**
- * A quién le corresponde el Benziger.
+ * A quién le corresponde el Benziger: lo pidió el pedido, se le pidió a esta
+ * persona, o se le tomó igual.
  *
- * Lo pidió el pedido o se le tomó igual. Contra `pedidos.con_benziger` a secas,
- * el tablero decía "Benziger leído: 4 de 2": el numerador cuenta los leídos de
- * verdad y el denominador contaba los dos pedidos que llevan la marca, cuando
- * hay cuarenta evaluaciones con el Benziger administrado.
+ * Contra `pedidos.con_benziger` a secas, el tablero decía "Benziger leído: 4 de
+ * 2": el numerador cuenta los leídos de verdad y el denominador contaba los dos
+ * pedidos que llevan la marca, cuando hay cuarenta evaluaciones con el Benziger
+ * administrado.
  */
-const llevaBenziger = (f: Fila) =>
-  Boolean(f.pedidos?.con_benziger || f.benziger_administrado);
 
 type Fila = {
   id: string;
@@ -54,6 +54,7 @@ type Fila = {
   ingreso: boolean | null;
   seguimiento_resultado: string | null;
   benziger_administrado: boolean | null;
+  con_benziger: boolean | null;
   fecha_ingreso: string | null;
   fecha_entrevista: string | null;
   fecha_entrega: string | null;

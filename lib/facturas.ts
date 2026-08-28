@@ -25,6 +25,7 @@ import 'server-only';
 import { select } from '@/lib/supabase';
 import { CACHE_COMERCIAL, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { BENZIGER_USD, dolarTarjeta, precioA, type Precio } from '@/lib/baterias-precios';
+import { llevaBenziger } from '@/lib/benziger';
 import type { Emisora, Factura, Facturable } from '@/lib/facturas-tipos';
 
 export {
@@ -186,6 +187,7 @@ type FilaFacturable = {
   fecha_entrevista: string | null;
   fecha_entrega: string | null;
   benziger_administrado: boolean | null;
+  con_benziger: boolean | null;
   personas: { nombre: string } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
@@ -211,7 +213,7 @@ export async function listarAFacturar(): Promise<Facturable[]> {
   const [evaluaciones, renglones, precios, cambio] = await Promise.all([
     select<FilaFacturable>(
       'evaluaciones',
-      'select=id,estado,fecha_entrevista,fecha_entrega,benziger_administrado,' +
+      'select=id,estado,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,' +
         'personas(nombre),evaluadoras(nombre),' +
         'pedidos(puesto,empresa_id,fecha_pedido,con_benziger,empresas(nombre),' +
         'baterias(id,codigo,nombre))' +
@@ -243,9 +245,10 @@ export async function listarAFacturar(): Promise<Facturable[]> {
       const pedido = e.pedidos!;
       const suyos = precios.filter((p) => p.bateria_id === pedido.baterias?.id);
       const precio = precioA(suyos, pedido.fecha_pedido ?? e.fecha_entrevista);
-      // El Benziger se cobra cuando el pedido lo pidió o cuando se administró:
-      // las dos cosas significan que ese trabajo se hizo.
-      const conBenziger = Boolean(pedido.con_benziger || e.benziger_administrado);
+      // El Benziger se cobra cuando el pedido lo pidió, cuando se le pidió a
+      // esta persona o cuando se administró: las tres significan que ese
+      // trabajo se hizo.
+      const conBenziger = llevaBenziger(e);
       const benziger = conBenziger && cambio ? Math.round(BENZIGER_USD * cambio.valor) : null;
       return {
         evaluacionId: e.id,

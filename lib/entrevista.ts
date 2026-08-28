@@ -2,6 +2,7 @@ import 'server-only';
 import type { EstadoRaven } from '@/lib/raven-estado';
 import { select } from '@/lib/supabase';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
+import { llevaBenziger } from '@/lib/benziger';
 
 /**
  * Lo que hace falta para tener la entrevista, y nada más.
@@ -34,6 +35,7 @@ type Fila = {
   bender_nombre: string | null;
   entrevista_competencias: string | null;
   benziger_administrado: boolean;
+  con_benziger: boolean | null;
   /** El orden elegido para esta entrevista. Null: el de la batería. */
   orden_tests: string[] | null;
   grafico_2_personas_administrado: boolean;
@@ -111,7 +113,7 @@ export type Entrevista = {
 const CAMPOS =
   'id,estado,modalidad,fecha_entrevista,enlace_entrevista,' +
   'proyectivo_administrado,bender_administrado,bender_observaciones,bender_nombre,' +
-  'benziger_administrado,orden_tests,entrevista_competencias,' +
+  'benziger_administrado,con_benziger,orden_tests,entrevista_competencias,' +
   'grafico_2_personas_administrado,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'personas(nombre,email,telefono,fecha_nacimiento),evaluadoras(nombre),' +
@@ -186,7 +188,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     // Lo pidió el pedido o se le tomó igual: el sello dice lo que esta persona
     // tiene, y hay 38 evaluaciones con el Benziger tomado sobre un pedido que
     // nunca lo marcó.
-    conBenziger: (f.pedidos?.con_benziger ?? false) || f.benziger_administrado === true,
+    conBenziger: llevaBenziger(f),
     benzigerAdministrado: f.benziger_administrado,
     proyectivoAdministrado: f.proyectivo_administrado,
     benderAdministrado: f.bender_administrado,

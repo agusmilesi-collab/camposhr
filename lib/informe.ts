@@ -405,12 +405,15 @@ export async function loQueRige(): Promise<Regulacion> {
 /**
  * Si a esta persona le corresponde el Benziger.
  *
- * Lo agrega el pedido y no la batería (`pedidos.con_benziger`). Una fila
- * cargada también cuenta: si alguien lo tomó, se ve, aunque el pedido no lo
- * llevara.
+ * Lo agrega el pedido y no la batería, para todos sus candidatos
+ * (`pedidos.con_benziger`) o para uno solo (`evaluaciones.con_benziger`). Una
+ * fila cargada también cuenta: si alguien lo tomó, se ve, aunque no estuviera
+ * pedido.
  */
 export function llevaBenziger(f: Ficha): boolean {
-  return Boolean(f.cabecera.pedidos?.con_benziger || f.benziger?.cuadrantes);
+  return Boolean(
+    f.cabecera.pedidos?.con_benziger || f.cabecera.con_benziger || f.benziger?.cuadrantes
+  );
 }
 
 /**
