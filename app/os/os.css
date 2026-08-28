@@ -7426,6 +7426,24 @@ th.os-tabla-contacto {
   min-width: 128px;
 }
 
+/* El título de la lista de tests y el botón que la abre entera, en la misma
+   línea: el botón pertenece a la lista y suelto arriba parecía de la pantalla. */
+.os-tests-cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.os-tests-cabeza .os-subtitulo {
+  margin: 0;
+}
+
+/* La cabeza se lleva el margen que traía el título: la lista arranca debajo. */
+.os-tests-cabeza {
+  margin: 28px 0 14px;
+}
+
 /* Lo que cuelga del test, separado del encabezado por una línea y con aire
    debajo de ella: pegado a la raya, el contenido se leía como parte del
    renglón del título en vez de como lo que se abrió. */

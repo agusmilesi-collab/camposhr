@@ -69,16 +69,14 @@ export default function Nacimiento({
           onBlur={(e) => guardar(e.target.value)}
         />
       </label>
-      <span className="os-nacimiento-edad">
-        {edad ? (
-          <>
-            <strong>{edad}</strong>
-            <small>{entrevista ? 'el día de la entrevista' : 'hoy'}</small>
-          </>
-        ) : (
-          <span className="os-dato-falta">sin cargar</span>
-        )}
-      </span>
+      {/* La edad, solo cuando hay fecha: sin ella el campo vacío ya dice que
+          falta cargarla, y un "sin cargar" al lado lo dice dos veces. */}
+      {edad && (
+        <span className="os-nacimiento-edad">
+          <strong>{edad}</strong>
+          <small>{entrevista ? 'el día de la entrevista' : 'hoy'}</small>
+        </span>
+      )}
       {error && <p className="os-form-error">{error}</p>}
     </div>
   );
