@@ -4326,9 +4326,12 @@ th.os-tabla-contacto {
   align-items: start;
 }
 
+/* Los cuatro niveles en dos columnas: apilados ocupaban una columna alta al
+   lado de un campo de texto, y son cuatro opciones que se comparan entre sí. */
 .os-conclusion-niveles {
   display: grid;
-  gap: 7px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 /* Cada nivel con su punto en color pleno: el color del borde queda tenue para
