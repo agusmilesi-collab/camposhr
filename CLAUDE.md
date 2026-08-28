@@ -326,11 +326,10 @@ análisis cualitativo, las recomendaciones para su líder, y el informe de
 potencial, que sale del análisis discursivo y por eso lo pide.
 
 El documento entero no está en la lista porque es el continente: lo que se
-elige es qué trae adentro. El sumario estructural tampoco, porque no se
-entrega: son los índices crudos del protocolo, que se leen en la ficha y nunca
-estuvieron en el documento del cliente. Y el perfil Benziger tampoco, porque no
-lo decide la batería sino el pedido (`pedidos.con_benziger`), igual que su
-administración.
+elige es qué trae adentro. El sumario estructural tampoco, porque no lo decide
+la batería: va en la parte de indicadores del informe siempre que haya
+protocolo. Y el perfil Benziger tampoco, porque lo decide el pedido
+(`pedidos.con_benziger`) y no la batería, igual que su administración.
 
 **Qué toma y qué entrega una batería se tilda, no se escribe.** El vocabulario
 está en `lib/baterias-contenido.ts` y es cerrado, porque el nombre no es
@@ -881,6 +880,49 @@ quedar bajo el puntero y se intercambian de nuevo: la lista tiembla sin avanzar.
 frenarlo, soltar sobre un campo lo escribe adentro. Y frenarlo es además lo que
 le dice al navegador que el destino era válido, así el renglón se queda donde lo
 dejaron en vez de volar de vuelta al lugar del que salió.
+
+## El informe del cliente viene en tres profundidades
+
+El mismo informe contesta tres preguntas distintas según quién lo abra, y quien
+decide una contratación no necesita leer las tres. `Documento` recibe `parte`
+(`app/os/psicotecnicos/informe/_doc/Documento.tsx`) y el portal lo dibuja tres
+veces, una por profundidad (`app/p/[token]/evaluacion/[id]/Partes.tsx`):
+
+1. **Recomendación**: el semáforo, lo que escribió y firma la evaluadora, y su
+   matrícula. Entra en una hoja y es lo que se lee antes de decidir.
+2. **Fundamentos**: competencias, análisis cualitativo, recomendaciones al
+   líder, estilos de pensamiento y potencial.
+3. **Indicadores**: los valores medidos, sin interpretar y sin colores, con el
+   diagrama de Jaques en grises. Es la parte que se archiva y se imprime.
+
+**Cada parte es un documento completo**: lleva la marca, quién es la persona y
+para qué puesto, y la firma con la nota de confidencialidad. Se descarga una,
+dos o las tres, así que una que llegue suelta tiene que decir de quién es y de
+quién habla. Los capítulos se numeran desde 01 en cada una.
+
+**Las tres están dibujadas desde el primer momento y se muestra una.** Cambiar
+de pestaña no vuelve al servidor: es el mismo informe partido.
+
+**Se imprime lo elegido y no lo que se está mirando.** La descarga es la
+impresión del navegador, así que lo que hace el selector es marcar las partes en
+`data-imprimir` y la hoja esconde el resto. La primera de las elegidas no lleva
+salto de página adelante, que dejaría una hoja en blanco.
+
+**En indicadores queda el respaldo de todo lo que el informe afirma**
+(28/8/2026): los puntajes con los cortes que rigen ese informe, el Raven, los
+valores del Benziger, los números del potencial, la codificación del protocolo y
+el sumario estructural entero. Antes el sumario no salía del OS.
+
+Dos cosas quedan afuera a propósito:
+
+- **Lo que escribió quien tomó la entrevista.** La entrevista por competencias,
+  las observaciones del Bender y del gráfico y el relato del análisis discursivo
+  son su registro de trabajo, no un dato medido.
+- **Lo que la persona dijo en cada lámina y la clave del Raven.** Las respuestas
+  textuales del protocolo son su discurso y viven en el protocolo clínico; qué
+  opción es la correcta en cada lámina del Raven no se publica porque son las
+  mismas 36 en todas las evaluaciones, y una clave que circula deja al test sin
+  poder volver a usarse. Sí va qué opción eligió.
 
 ## El monotributo se mira contra los últimos doce meses
 

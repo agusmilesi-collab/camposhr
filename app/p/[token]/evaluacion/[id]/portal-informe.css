@@ -11,17 +11,22 @@
   padding-bottom: 60px;
 }
 
-.pinf-top {
+/**
+ * La barra de arriba: volver, las tres profundidades y la descarga.
+ *
+ * Se queda pegada arriba porque el informe es largo y cambiar de parte es algo
+ * que se hace leyendo, no antes de empezar. No se imprime.
+ */
+.pinf-barra {
   position: sticky;
   top: 0;
   z-index: 5;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   max-width: 820px;
   margin: 0 auto;
-  padding: 14px 28px;
+  padding: 12px 28px;
   background: #f6f5f2;
   border-bottom: 1px solid #e5e2db;
 }
@@ -30,10 +35,45 @@
   font-size: 0.86rem;
   color: #46505c;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .pinf-volver:hover {
   text-decoration: underline;
+}
+
+/* Las tres pestañas, en el medio y con la que se está mirando en blanco: es el
+   mismo control segmentado del formulario de pedido. */
+.pinf-tabs {
+  display: flex;
+  gap: 2px;
+  margin: 0 auto;
+  padding: 3px;
+  border-radius: 9px;
+  background: #eceae4;
+}
+
+.pinf-tab {
+  height: 28px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #46505c;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.pinf-tab:hover {
+  color: #16202b;
+}
+
+.pinf-tab.viva {
+  background: #ffffff;
+  color: #16202b;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(22, 32, 43, 0.12);
 }
 
 .pinf-descargar {
@@ -47,24 +87,112 @@
   font-size: 0.84rem;
   font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .pinf-descargar:hover {
   opacity: 0.88;
 }
 
-/* El botón de la muestra y su explicación, uno al lado del otro: el aviso sale
-   recién al apretarlo, así el botón se ve igual que en un portal de verdad. */
-.pinf-descargar-muestra {
-  display: inline-flex;
+.pinf-descargar:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Qué se baja. El panel cuelga del botón y no empuja la barra. */
+.pinf-bajar {
+  position: relative;
+}
+
+.pinf-bajar-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 6;
+  width: 292px;
+  padding: 14px;
+  border: 1px solid #e5e2db;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(22, 32, 43, 0.14);
+}
+
+.pinf-bajar-titulo {
+  margin: 0 0 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7b7770;
+}
+
+.pinf-bajar-opcion {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 7px 0;
+  cursor: pointer;
+}
+
+.pinf-bajar-opcion input {
+  margin-top: 3px;
+  accent-color: #16202b;
+}
+
+.pinf-bajar-opcion span {
+  display: block;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  color: #16202b;
+}
+
+.pinf-bajar-opcion em {
+  display: block;
+  font-style: normal;
+  font-size: 0.76rem;
+  color: #7b7770;
+}
+
+.pinf-bajar-pie {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #efede8;
+}
+
+.pinf-bajar-todas {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #43648f;
+  font: inherit;
+  font-size: 0.82rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/*
+ * Una parte a la vista, las tres en el documento.
+ *
+ * Son el mismo informe partido, así que están dibujadas desde el principio:
+ * cambiar de pestaña no vuelve al servidor a buscar nada.
+ */
+.pinf-parte {
+  display: none;
+}
+
+.pinf-parte.viva {
+  display: block;
 }
 
 .pinf-aviso-descarga {
-  max-width: 320px;
-  font-size: 0.78rem;
-  line-height: 1.4;
+  max-width: 820px;
+  margin: 10px auto 0;
+  padding: 0 28px;
+  font-size: 0.8rem;
   color: #7b7770;
 }
 
@@ -101,12 +229,38 @@
 }
 
 @media print {
-  .pinf-top {
+  .pinf-barra,
+  .pinf-aviso-descarga {
     display: none;
   }
 
   .pinf {
     background: #ffffff;
     padding: 0;
+  }
+
+  /*
+   * Se imprime lo que el cliente eligió, no lo que está mirando.
+   *
+   * `data-imprimir` nombra las partes elegidas y acá se muestran esas, aunque
+   * estén escondidas en pantalla. Cada una arranca en hoja nueva salvo la
+   * primera, que si no dejaría una hoja en blanco adelante.
+   */
+  .pinf-parte,
+  .pinf-parte.viva {
+    display: none;
+  }
+
+  .pinf-partes[data-imprimir~='recomendacion'] .pinf-parte[data-parte='recomendacion'],
+  .pinf-partes[data-imprimir~='fundamentos'] .pinf-parte[data-parte='fundamentos'],
+  .pinf-partes[data-imprimir~='indicadores'] .pinf-parte[data-parte='indicadores'] {
+    display: block;
+    break-before: page;
+  }
+
+  /* Con el mismo peso que la regla de arriba, que si no le gana y la primera
+     parte sale detrás de una hoja en blanco. */
+  .pinf-partes[data-imprimir] .pinf-parte.primera {
+    break-before: auto;
   }
 }

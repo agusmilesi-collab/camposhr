@@ -241,6 +241,39 @@ export type Informe = {
     } | null;
   } | null;
   tecnicas: string[];
+  /**
+   * El respaldo: los datos como quedaron registrados, sin interpretar.
+   *
+   * Va en la parte de indicadores, que es la que se archiva. Lo pidió Agustín
+   * el 28/8/2026: que de todo lo que el informe afirma quede el registro con el
+   * que se puede volver a revisar años después.
+   *
+   * **Está lo que se midió y no lo que se escribió.** La entrevista por
+   * competencias, las observaciones del Bender y del gráfico y el relato del
+   * análisis discursivo son texto de quien tomó la entrevista, no un dato: eso
+   * queda en la ficha. Del protocolo va su codificación, que es lo que produce
+   * los índices; las respuestas dichas por la persona no, que son su discurso y
+   * viven en el protocolo clínico.
+   */
+  crudo: {
+    /** El sumario estructural, con el orden y las abreviaturas de la hoja. */
+    sumario: string | null;
+    /** Cómo quedó codificada cada respuesta del test de manchas. */
+    protocolo: {
+      lamina: string;
+      n: number | null;
+      localizacion: string;
+      determinantes: string;
+      fq: string;
+      par: boolean;
+      contenidos: string;
+      popular: boolean;
+      z: number | null;
+      ccee: string;
+    }[];
+    /** Qué opción eligió en cada lámina del Raven. */
+    raven: { lamina: number; opcion: number }[];
+  };
   /** Lo que no estaba cargado y por eso no salió en el informe. */
   faltantes: Faltante[];
 };
@@ -660,6 +693,27 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     // La misma condición que la sección: una técnica sin un solo resultado no
     // se puede declarar como usada.
     tecnicas: tecnicas(c.pedidos?.baterias?.codigo ?? null, hayBenziger),
+    crudo: {
+      sumario: (f.sumario?.crudo as { texto?: string } | null)?.texto ?? null,
+      protocolo: f.manchas.map((m) => ({
+        lamina: m.lamina ?? '—',
+        n: m.n_respuesta,
+        localizacion: [m.localizacion, m.n_localizacion].filter(Boolean).join(' '),
+        determinantes: (m.determinantes ?? []).join('.'),
+        fq: m.fq ?? '',
+        par: Boolean(m.par),
+        contenidos: (m.contenidos ?? []).join(', '),
+        popular: Boolean(m.popular),
+        z: m.z,
+        ccee: (m.cc_ee ?? []).join(', ') + (m.agc ? (m.cc_ee?.length ? ', AgC' : 'AgC') : ''),
+      })),
+      // Las claves son el número de lámina y llegan como texto: se ordenan por
+      // número, que si no la 10 sale entre la 1 y la 2.
+      raven: Object.entries(f.sesionRaven?.respuestas ?? {})
+        .map(([lamina, opcion]) => ({ lamina: Number(lamina), opcion }))
+        .filter((r) => Number.isFinite(r.lamina))
+        .sort((a, b) => a.lamina - b.lamina),
+    },
     faltantes,
   };
 }
