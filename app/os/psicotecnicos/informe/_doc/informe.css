@@ -1822,7 +1822,7 @@
  * lado de tablas en blanco y negro, el color se lee como si marcara algo que en
  * esta parte no se está marcando.
  */
-.inf[data-parte='indicadores'] .inf-progreso-caja svg {
+[data-parte='indicadores'] .inf-progreso-caja svg {
   filter: grayscale(1);
 }
 

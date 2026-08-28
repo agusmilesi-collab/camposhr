@@ -642,7 +642,11 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
       </div>
 
       <div className="os-informe-marco">
-        <Documento inf={informe} interno editar={c.id} />
+        {/* Sin los indicadores: acá se revisa lo que el informe afirma, y el
+            sumario, la codificación y las respuestas del Raven están en sus
+            pestañas. El PDF que se baja sí los trae, que es el documento
+            completo. */}
+        <Documento inf={informe} interno editar={c.id} parte="trabajo" />
       </div>
       </section>
 

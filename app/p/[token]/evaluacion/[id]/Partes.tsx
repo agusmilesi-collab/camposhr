@@ -47,6 +47,8 @@ type Clave = (typeof PARTES)[number]['clave'];
 
 export default function Partes({
   volver,
+  cabecera,
+  pie,
   recomendacion,
   fundamentos,
   indicadores,
@@ -54,6 +56,16 @@ export default function Partes({
 }: {
   /** A dónde vuelve el cliente: su portal. */
   volver: string;
+  /**
+   * La marca y quién es, arriba de las tres pestañas.
+   *
+   * Va una vez y no en cada parte: el nombre, el puesto y la fecha no cambian
+   * al pasar de la recomendación a los indicadores, y repetirlos en cada
+   * pestaña es la forma de un PDF y no la de una página.
+   */
+  cabecera: React.ReactNode;
+  /** El pie del estudio, también una vez y al final de todo. */
+  pie: React.ReactNode;
   recomendacion: React.ReactNode;
   fundamentos: React.ReactNode;
   indicadores: React.ReactNode;
@@ -61,6 +73,36 @@ export default function Partes({
   muestra?: boolean;
 }) {
   const [viendo, setViendo] = useState<Clave>('recomendacion');
+
+  /*
+   * La pestaña también vive en la dirección.
+   *
+   * Es una página y no un PDF: el enlace que alguien copie tiene que abrir la
+   * parte que estaba mirando, y el botón de atrás del navegador tiene que
+   * volver a la anterior. Se lee al montarse y no en el servidor, porque la
+   * página se dibuja igual para las tres.
+   */
+  useEffect(() => {
+    const dela = () => {
+      const q = new URLSearchParams(window.location.search).get('ver');
+      return PARTES.some((p) => p.clave === q) ? (q as Clave) : 'recomendacion';
+    };
+    setViendo(dela());
+    const atras = () => setViendo(dela());
+    window.addEventListener('popstate', atras);
+    return () => window.removeEventListener('popstate', atras);
+  }, []);
+
+  function mirar(c: Clave) {
+    setViendo(c);
+    setAbierto(false);
+    const url = new URL(window.location.href);
+    url.searchParams.set('ver', c);
+    window.history.pushState(null, '', url);
+    // Cambiar de parte empieza de arriba: si no, se cae en la mitad de la
+    // parte nueva, a la altura a la que se había llegado en la anterior.
+    window.scrollTo({ top: 0 });
+  }
   const [abierto, setAbierto] = useState(false);
   const [elegidas, setElegidas] = useState<Clave[]>(['recomendacion']);
   const [aviso, setAviso] = useState(false);
@@ -133,12 +175,7 @@ export default function Partes({
               type="button"
               className={`pinf-tab${viendo === p.clave ? ' viva' : ''}`}
               aria-current={viendo === p.clave ? 'page' : undefined}
-              onClick={() => {
-                setViendo(p.clave);
-                // Lo que el panel propone es lo que se está mirando, así que
-                // abierto quedaría proponiendo la parte anterior.
-                setAbierto(false);
-              }}
+              onClick={() => mirar(p.clave)}
             >
               {p.titulo}
             </button>
@@ -199,17 +236,24 @@ export default function Partes({
         </p>
       )}
 
-      {PARTES.map((p) => (
-        <section
-          key={p.clave}
-          className={`pinf-parte${viendo === p.clave ? ' viva' : ''}${
-            primera === p.clave ? ' primera' : ''
-          }`}
-          data-parte={p.clave}
-        >
-          {cuerpos[p.clave]}
-        </section>
-      ))}
+      {/* Una sola hoja para las tres pestañas, con la marca y el encabezado
+          arriba y el pie abajo: lo que cambia al tocar una pestaña es el
+          contenido, como en cualquier página. */}
+      <article className="inf pinf-hoja">
+        {cabecera}
+        {PARTES.map((p) => (
+          <section
+            key={p.clave}
+            className={`pinf-parte${viendo === p.clave ? ' viva' : ''}${
+              primera === p.clave ? ' primera' : ''
+            }`}
+            data-parte={p.clave}
+          >
+            {cuerpos[p.clave]}
+          </section>
+        ))}
+        {pie}
+      </article>
     </div>
   );
 }

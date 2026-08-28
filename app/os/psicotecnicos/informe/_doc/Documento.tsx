@@ -22,6 +22,7 @@ import {
   horizonteEn,
 } from '@/lib/potencial';
 import Listas from './Listas';
+import { Encabezado, Marca, Pie } from './Marco';
 import Hoja from './Hoja';
 import './informe.css';
 
@@ -280,11 +281,14 @@ function Capitulo({
  *   pensamiento y el potencial.
  * - `indicadores`: los números, sin interpretar y sin colores.
  *
- * `todo` es el documento entero, en ese mismo orden: es lo que se ve en la
- * ficha, lo que se imprime desde el OS y lo que baja el cliente cuando pide las
- * tres partes juntas.
+ * `todo` es el documento entero, en ese mismo orden: es lo que se imprime desde
+ * el OS y lo que baja el cliente cuando pide las tres partes juntas.
+ *
+ * `trabajo` es lo mismo sin los indicadores, y es lo que se ve en la pestaña
+ * Informe de la ficha: ahí la evaluadora está revisando lo que se afirma, y los
+ * números crudos ya los tiene en sus propias pestañas, a un clic de distancia.
  */
-export type Parte = 'todo' | 'recomendacion' | 'fundamentos' | 'indicadores';
+export type Parte = 'todo' | 'trabajo' | 'recomendacion' | 'fundamentos' | 'indicadores';
 
 /**
  * El documento en sí, con el informe ya armado.
@@ -298,6 +302,7 @@ export default function Documento({
   interno = false,
   editar,
   parte = 'todo',
+  marco = true,
 }: {
   inf: Informe;
   /**
@@ -322,11 +327,21 @@ export default function Documento({
    * quién es y de quién habla.
    */
   parte?: Parte;
+  /**
+   * Si dibuja la marca de arriba, el encabezado con quién es y el pie.
+   *
+   * El portal los saca porque los dibuja una vez para las tres pestañas: ahí el
+   * informe se lee como una página y no como tres documentos apilados.
+   */
+  marco?: boolean;
 }) {
   const firma = inf.evaluadora ? FIRMAS[inf.evaluadora] : undefined;
 
   /** Si este capítulo entra en lo que se está dibujando. */
-  const va = (cual: Exclude<Parte, 'todo'>) => parte === 'todo' || parte === cual;
+  const va = (cual: Exclude<Parte, 'todo' | 'trabajo'>) =>
+    parte === 'todo' ||
+    parte === cual ||
+    (parte === 'trabajo' && cual !== 'indicadores');
 
   // Los capítulos se numeran solos. Escritos a mano, un informe sin Benziger
   // saltaba de 04 a 06, y ahora hay dos capítulos que pueden faltar. Pedida una
@@ -335,8 +350,10 @@ export default function Documento({
   let ultimo = 0;
   const num = () => String(++ultimo).padStart(2, '0');
 
+  /* Sin marco no lleva la clase `inf`: la pone el portal una sola vez, y
+     anidada le sumaría otro ancho máximo y otro margen al de afuera. */
   return (
-    <article className="inf" data-parte={parte}>
+    <article className={marco ? 'inf' : 'inf-cuerpo'} data-parte={parte}>
       {interno && inf.faltantes.length > 0 && (
         <aside className="inf-pendientes">
           <strong>Falta cargar para que el informe salga completo:</strong>
@@ -353,45 +370,14 @@ export default function Documento({
 
 
 
-      {/* ── 01 · Conclusiones ───────────────────────────────────────────── */}
-      {/* La marca, arriba de todo y en la primera hoja del impreso. */}
-      {/* El logotipo tipográfico, el mismo del sitio y de la página de precios,
-          con la bajada que dice qué es este documento. "Consulting Services"
-          nombraba al estudio en inglés y no decía nada de lo que se está
-          leyendo. */}
-      <header className="inf-marca">
-        <div>
-          <span className="inf-marca-nombre">Campos HR</span>
-          <span>Evaluaciones psicotécnicas</span>
-        </div>
-        <span className="inf-sitio">www.camposhr.com</span>
-      </header>
-
-      {/* Quién es y para qué puesto, una sola vez y antes de todo: repetirlo
-          debajo del nombre era decir dos veces lo mismo en dos renglones. */}
-      <header className="inf-encabezado">
-        <h1>{inf.nombre}</h1>
-        <div className="inf-datos">
-          {inf.puesto && (
-            <p>
-              <span>Rol aspirado:</span> {inf.puesto}
-            </p>
-          )}
-          {inf.empresa && (
-            <p>
-              <span>Empresa:</span> {inf.empresa}
-            </p>
-          )}
-          {inf.edad !== null && (
-            <p>
-              <span>Edad:</span> {inf.edad} {inf.edad === 1 ? 'año' : 'años'}
-            </p>
-          )}
-          <p>
-            <span>Evaluación:</span> {inf.cuando}
-          </p>
-        </div>
-      </header>
+      {/* La marca y quién es, salvo en el portal, que las dibuja una vez
+          para las tres pestañas. */}
+      {marco && (
+        <>
+          <Marca />
+          <Encabezado inf={inf} />
+        </>
+      )}
 
       {/* ── Recomendación ───────────────────────────────────────────────
           Qué se recomienda y por qué. La escribe y la firma la evaluadora: el
@@ -678,6 +664,19 @@ export default function Documento({
 
           </div>
         </Capitulo>
+      )}
+
+      {/* ── Técnicas ───────────────────────────────────────────────────
+          Con qué se la evaluó: es parte de en qué se apoya lo que el informe
+          dice, así que va con los fundamentos y no con los números. */}
+      {va('fundamentos') && (
+      <Capitulo numero={num()} titulo="Técnicas de evaluación utilizadas">
+        <ul className="inf-lista">
+          {inf.tecnicas.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+      </Capitulo>
       )}
 
       {/* ── Indicadores ─────────────────────────────────────────────────
@@ -980,17 +979,6 @@ export default function Documento({
         </Capitulo>
       )}
 
-      {/* ── Técnicas ────────────────────────────────────────────────────── */}
-      {va('indicadores') && (
-      <Capitulo numero={num()} titulo="Técnicas de evaluación utilizadas">
-        <ul className="inf-lista">
-          {inf.tecnicas.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-      </Capitulo>
-      )}
-
       {/* ── Profesional a cargo ─────────────────────────────────────────
           Va en las tres partes: cada una se descarga sola, y un documento
           suelto tiene que decir quién lo firma y bajo qué condición se
@@ -1010,21 +998,7 @@ export default function Documento({
         </div>
       </Capitulo>
 
-      {/* El pie del documento, con los mismos datos que cierran la página de
-          precios: quién lo firma, dónde está y por dónde se lo ubica.
-
-          Se imprime en la última hoja y no en todas: en cada página sería un
-          renglón repetido siete veces, y lo que hace falta es que el informe
-          impreso, si se separa de su mail, siga diciendo de quién es. */}
-      <footer className="inf-pie">
-        <span className="inf-pie-marca">Campos HR</span>
-        <span className="inf-pie-lema">
-          Estructura inteligente. Potencial humano. Impacto medible.
-        </span>
-        <span className="inf-pie-datos">
-          Rosario, Argentina · www.camposhr.com
-        </span>
-      </footer>
+      {marco && <Pie />}
 
       {/* De dónde sale cada puntaje. Está para revisar contra casos reales las
           dos cosas que se decidieron acá y no salen de las hojas de la
