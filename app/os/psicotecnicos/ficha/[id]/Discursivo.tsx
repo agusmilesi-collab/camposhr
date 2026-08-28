@@ -7,28 +7,42 @@
  * deduce el nivel: se toma sobre unos cinco minutos de discurso y lo ubica quien
  * lo escuchó.
  *
- * **Va sin la pirámide**: dibujarla acá ocupaba media pantalla para elegir entre
- * cuatro cosas. La pirámide es del informe, que es donde el cliente la lee; acá
- * alcanza con la lista de estratos y su referencia laboral.
+ * **El estrato no se elige: sale de lo que se contesta.** Son los mismos dos
+ * caminos con los que se determina el nivel del puesto, y por eso las dos
+ * puntas caen en la misma escala y se pueden comparar:
  *
- * Debajo van los dos datos del diagrama de progreso potencial: la edad y el
- * horizonte temporal. **El diagrama se dibuja acá mismo** y no solo en el
- * informe: es la comprobación de que el punto cayó donde la evaluadora esperaba,
- * y si no, el número está a un toque de corregirse.
+ * 1. El **horizonte temporal** que la evaluadora le atribuye después de
+ *    escucharlo, que en el modelo es la medida de la capacidad.
+ * 2. Las **preguntas de complejidad**, contestadas sobre las dos o tres
+ *    asignaciones que la persona manejó al límite de lo que pudo. Es como el
+ *    libro indica juzgarlo: no se pregunta el nivel, se piden ejemplos y se
+ *    clasifican.
  *
- * El capítulo del informe sale del catálogo de estratos, así que elegir el
- * escalón y cargar esos dos datos es todo lo que hay que hacer.
+ * Coinciden y el estrato queda firme; discrepan y lo resuelve ella. Sin nada
+ * contestado quedan los cuatro estratos para elegir a mano, que es lo que
+ * sostiene a las evaluaciones cargadas antes de que esto existiera.
+ *
+ * **Va sin la pirámide**: dibujarla acá ocupaba media pantalla. La pirámide es
+ * del informe, que es donde el cliente la lee.
+ *
+ * El diagrama de progreso potencial se dibuja acá mismo y no solo en el
+ * informe: es la comprobación de que el punto cayó donde la evaluadora
+ * esperaba, y si no, el número está a un toque de corregirse.
  */
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Opciones from '@/app/os/Opciones';
 import type { NivelDiscursivo } from '@/lib/discursivo';
 import {
   UNIDADES,
+  PREGUNTAS,
   aDias,
   bandaDe,
   comoSeDice,
   desdeDias,
+  estratoPorNumero,
+  nivelDeRespuestas,
   escalonDe,
   estratoDeEscalon,
   horizonteEn,
@@ -43,6 +57,7 @@ export default function Discursivo({
   edad,
   edadEvaluacion,
   dias,
+  complejidad,
 }: {
   id: string;
   nivel: string | null;
@@ -54,6 +69,8 @@ export default function Discursivo({
   edadEvaluacion: number | null;
   /** El horizonte guardado, en días. */
   dias: number | null;
+  /** Las respuestas de complejidad ya cargadas. */
+  complejidad: Record<string, boolean> | null;
 }) {
   const router = useRouter();
   const [puesto, setPuesto] = useState(nivel);
@@ -66,6 +83,7 @@ export default function Discursivo({
   const inicial = dias ? desdeDias(dias) : null;
   const [cuanto, setCuanto] = useState(inicial ? String(inicial.cantidad) : '');
   const [unidad, setUnidad] = useState<Unidad>(inicial?.unidad ?? 'anios');
+  const [respuestas, setRespuestas] = useState<Record<string, boolean>>(complejidad ?? {});
 
   async function mandar(cuerpo: Record<string, unknown>) {
     setGuardando(true);
@@ -123,48 +141,206 @@ export default function Discursivo({
   const dibuja = Number.isFinite(edadNum) && edadNum >= 16 && edadNum <= 80 && diasNum !== null;
   const banda = dibuja ? bandaDe(edadNum, diasNum as number) : null;
   const hoy = dibuja ? estratoDeEscalon(escalonDe(diasNum as number)) : null;
+
+  /* El estrato por cada camino. El del horizonte sale del punto en la escalera;
+     el de las preguntas, de la más alta contestada que sí. */
+  const porHorizonte = diasNum !== null ? estratoDeEscalon(escalonDe(diasNum)) : null;
+  const porPreguntas = estratoPorNumero(
+    nivelDeRespuestas(
+      Object.entries(respuestas)
+        .filter(([, si]) => si)
+        .map(([n]) => Number(n))
+    ) ?? 0
+  );
+  const coinciden =
+    porHorizonte && porPreguntas
+      ? porHorizonte.romano === porPreguntas.romano
+        ? porHorizonte
+        : null
+      : (porHorizonte ?? porPreguntas);
+  const choca = Boolean(porHorizonte && porPreguntas && !coinciden);
+  /** Nada contestado todavía: los cuatro estratos quedan para elegir a mano. */
+  const aMano = !porHorizonte && !porPreguntas;
+
+  /** El nombre del nivel que le corresponde a un estrato, o null si no lo mide. */
+  const nombreDe = (romano: string) => niveles.find((n) => n.romano === romano)?.nombre ?? null;
+
+  /*
+   * Las respuestas se acumulan sobre la referencia y no sobre el estado: cuatro
+   * preguntas seguidas son cuatro guardados en vuelo, y con el estado a secas
+   * la última pisaba a las anteriores.
+   */
+  const vivas = useRef(respuestas);
+
+  async function contestar(estrato: number, si: boolean | null) {
+    const nuevas = { ...vivas.current };
+    if (si === null) delete nuevas[String(estrato)];
+    else nuevas[String(estrato)] = si;
+    vivas.current = nuevas;
+    setRespuestas(nuevas);
+    await mandar({
+      nivel: puesto,
+      complejidad: Object.keys(nuevas).length > 0 ? nuevas : null,
+    });
+  }
+
+  /* El nivel se fija solo cuando los dos caminos coinciden. */
+  const salio = coinciden?.romano ?? null;
+  useEffect(() => {
+    if (choca || !salio) return;
+    const nombre = nombreDe(salio);
+    if (nombre === puesto) return;
+    setPuesto(nombre);
+    mandar({ nivel: nombre });
+    // Lo que dispara esto es el estrato que salió, no las funciones de guardado.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [salio, choca]);
+
   const elegido = niveles.find((n) => n.nombre === puesto);
 
   return (
     <div className="os-discursivo">
-      {/* La lista se elige, no se lee. El punto vacío de cada opción es lo que
-          dice que falta decidir: un párrafo arriba explicándolo se salteaba, y
-          la lista sin marcas se leía como un dato ya resuelto. */}
-      <span className="os-etiqueta-campo">Elegí el estrato</span>
+      {/* Lo primero es el horizonte: en el modelo es la medida de la capacidad,
+          y de ahí sale el estrato sin que nadie lo elija. */}
+      <div className="os-nivel-bloque">
+        <p className="os-nivel-pregunta">
+          ¿Cuál es la tarea más larga que esta persona puede llevar hasta el final por
+          sí misma, sin que le indiquen cómo?
+        </p>
+        <div className="os-nivel-tiempo">
+          <input
+            className="os-control-suave os-potencial-numero"
+            inputMode="decimal"
+            value={cuanto}
+            disabled={guardando}
+            placeholder="0"
+            onChange={(e) => setCuanto(e.target.value.replace(/[^\d,.]/g, '').slice(0, 5))}
+            onBlur={() => guardarHorizonte(cuanto, unidad)}
+          />
+          <select
+            className="os-control-suave"
+            value={unidad}
+            disabled={guardando}
+            onChange={(e) => {
+              const u = e.target.value as Unidad;
+              setUnidad(u);
+              guardarHorizonte(cuanto, u);
+            }}
+          >
+            {UNIDADES.map((u) => (
+              <option key={u.clave} value={u.clave}>
+                {u.texto}
+              </option>
+            ))}
+          </select>
+          <span className={`os-nivel-sale${porHorizonte ? '' : ' vacio'}`}>
+            {porHorizonte ? `Estrato ${porHorizonte.romano}` : 'sin contestar'}
+          </span>
+        </div>
+      </div>
 
-      <ol className="os-estratos-elegir" role="radiogroup" aria-label="Estrato">
-        {niveles.map((n) => {
-          const suyo = puesto === n.nombre;
-          return (
-            <li key={n.nombre}>
-              <button
-                type="button"
-                role="radio"
-                className={`os-estrato-opcion${suyo ? ' suyo' : ''}`}
-                disabled={guardando}
-                aria-checked={suyo}
-                // Volver a apretar el que ya estaba lo desmarca: es la forma de
-                // corregir sin tener que elegir otro que no corresponde.
-                onClick={() => guardar(suyo ? null : (n.nombre as NivelDiscursivo))}
-              >
-                <span className="os-estrato-marca" aria-hidden="true" />
-                <span className="os-estrato-texto">
-                  <span className="os-estrato-titulo">
-                    <strong>{n.nombre}</strong>
-                    <span className="os-estrato-numeral">Estrato {n.romano}</span>
-                  </span>
-                  <small>{n.que}</small>
-                </span>
-                <span className="os-estrato-proceso">{n.procesamiento}</span>
-              </button>
+      {/* Las preguntas van sobre las asignaciones que manejó al límite de lo que
+          pudo, no sobre lo que sabe hacer: es lo que el libro indica pedir. */}
+      <div className="os-nivel-bloque">
+        <p className="os-nivel-pregunta">
+          Tomando las dos o tres asignaciones que manejó al límite de lo que pudo,
+          ¿qué le exigieron?
+        </p>
+        <ol className="os-nivel-preguntas">
+          {PREGUNTAS.filter((p) => p.estrato <= 4).map((p) => (
+            <li key={p.estrato}>
+              <span className="os-nivel-texto">
+                <strong>{p.corto}</strong>
+                <small>{p.texto}</small>
+              </span>
+              <Opciones
+                valor={respuestas[String(p.estrato)] ?? null}
+                opciones={[
+                  { v: true as boolean | null, texto: 'Sí' },
+                  { v: false as boolean | null, texto: 'No' },
+                ]}
+                alElegir={(v) =>
+                  contestar(p.estrato, respuestas[String(p.estrato)] === v ? null : (v as boolean))
+                }
+                etiqueta={p.corto}
+              />
             </li>
-          );
-        })}
-      </ol>
+          ))}
+        </ol>
+        <span className={`os-nivel-sale${porPreguntas ? '' : ' vacio'}`}>
+          {porPreguntas ? `Estrato ${porPreguntas.romano}` : 'sin contestar'}
+        </span>
+      </div>
 
-      {/* Los dos datos del diagrama. El horizonte es el lapso de la tarea más
-          larga que la persona puede sostener sola: es la lectura de la
-          evaluadora sobre lo que escuchó, no una cuenta. */}
+      {choca && (
+        <p className="os-potencial-choca">
+          El horizonte da estrato {porHorizonte?.romano} y las preguntas dan estrato{' '}
+          {porPreguntas?.romano}. Elegí cuál rige.
+        </p>
+      )}
+
+      {/* El estrato que queda. Sin nada contestado, los cuatro para elegir a
+          mano: es lo que sostiene a las evaluaciones cargadas antes. */}
+      <div className="os-nivel-cierre">
+        <span className="os-etiqueta-campo">
+          {aMano || choca ? 'Elegí el estrato' : 'La persona está en'}
+        </span>
+        {aMano || choca ? (
+          <ol className="os-estratos-elegir" role="radiogroup" aria-label="Estrato">
+            {niveles
+              .filter(
+                (n) =>
+                  !choca ||
+                  n.romano === porHorizonte?.romano ||
+                  n.romano === porPreguntas?.romano
+              )
+              .map((n) => {
+                const suyo = puesto === n.nombre;
+                return (
+                  <li key={n.nombre}>
+                    <button
+                      type="button"
+                      role="radio"
+                      className={`os-estrato-opcion${suyo ? ' suyo' : ''}`}
+                      disabled={guardando}
+                      aria-checked={suyo}
+                      // Volver a apretar el que ya estaba lo desmarca: es la
+                      // forma de corregir sin elegir otro que no corresponde.
+                      onClick={() => guardar(suyo ? null : (n.nombre as NivelDiscursivo))}
+                    >
+                      <span className="os-estrato-marca" aria-hidden="true" />
+                      <span className="os-estrato-texto">
+                        <span className="os-estrato-titulo">
+                          <strong>{n.nombre}</strong>
+                          <span className="os-estrato-numeral">Estrato {n.romano}</span>
+                        </span>
+                        <small>{n.que}</small>
+                      </span>
+                      <span className="os-estrato-proceso">{n.procesamiento}</span>
+                    </button>
+                  </li>
+                );
+              })}
+          </ol>
+        ) : (
+          <p className="os-nivel-resultado">
+            {elegido ? (
+              <>
+                <strong>Estrato {elegido.romano}</strong> · {elegido.nombre}
+              </>
+            ) : (
+              <span className="os-tabla-flojo">
+                {coinciden
+                  ? `Estrato ${coinciden.romano}, por encima de lo que mide este análisis`
+                  : 'sin determinar'}
+              </span>
+            )}
+          </p>
+        )}
+      </div>
+
+      {/* El diagrama necesita además la edad. El horizonte ya se cargó arriba:
+          es el mismo dato con el que se determina el estrato. */}
       <div className="os-potencial-datos">
         <span className="os-etiqueta-campo">Diagrama de progreso potencial</span>
         <div className="os-potencial-campos">
@@ -180,47 +356,7 @@ export default function Discursivo({
             />
           </label>
 
-          <label className="os-potencial-campo">
-            <span>Horizonte temporal</span>
-            <span className="os-potencial-par">
-              <input
-                className="os-control-suave os-potencial-numero"
-                inputMode="decimal"
-                value={cuanto}
-                disabled={guardando}
-                placeholder="0"
-                onChange={(e) => setCuanto(e.target.value.replace(/[^\d,.]/g, '').slice(0, 5))}
-                onBlur={() => guardarHorizonte(cuanto, unidad)}
-              />
-              <select
-                className="os-control-suave"
-                value={unidad}
-                disabled={guardando}
-                onChange={(e) => {
-                  const u = e.target.value as Unidad;
-                  setUnidad(u);
-                  guardarHorizonte(cuanto, u);
-                }}
-              >
-                {UNIDADES.map((u) => (
-                  <option key={u.clave} value={u.clave}>
-                    {u.texto}
-                  </option>
-                ))}
-              </select>
-            </span>
-          </label>
         </div>
-
-        {/* El horizonte y el estrato son dos lecturas de lo mismo, así que
-            tienen que coincidir: si no, uno de los dos está mal cargado y hay
-            que revisarlo antes de que salga en el informe. */}
-        {dibuja && hoy && elegido && elegido.romano !== hoy.romano && (
-          <p className="os-potencial-choca">
-            Ese horizonte cae en el estrato {hoy.romano} y el elegido arriba es el{' '}
-            {elegido.romano}. Revisá cuál de los dos corresponde.
-          </p>
-        )}
 
         {/* Lo que dice el punto, en una línea: el estrato de hoy y hasta dónde
             llega su banda. Es la comprobación de que el dato quedó bien. */}

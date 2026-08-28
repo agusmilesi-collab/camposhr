@@ -27,6 +27,7 @@ import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
 import { DE_FABRICA as EXIGENCIA_DE_FABRICA, type Exigencia } from '@/lib/exigencia';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
+import { estratoPorNumero } from '@/lib/potencial';
 import {
   llevaDiscursivo,
   nivelesQueRigen,
@@ -211,6 +212,14 @@ export type Informe = {
      * y el capítulo sale con la pirámide sola, que es como salía antes.
      */
     punto: { edad: number; dias: number } | null;
+    /**
+     * El nivel de trabajo del puesto y la distancia con el de la persona.
+     *
+     * Es la comparación que el modelo considera central: la evaluación mide a
+     * la persona, y lo que hay que decidir es si eso alcanza para este puesto.
+     * Null cuando el pedido todavía no tiene determinado su nivel.
+     */
+    puesto: { romano: string; nombre: string; distancia: number } | null;
     /** Qué dice cada escalón de la pirámide, con lo que rige. */
     escalones: Record<string, string>;
     /**
@@ -601,6 +610,18 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
           nivel: f.discursivo.nivel,
           actual: f.discursivo.actual,
           futura: f.discursivo.futura,
+          puesto: (() => {
+            const n = c.pedidos?.estrato_puesto ?? null;
+            const suyo = nivelesQueRigen(niveles).find((x) => x.nombre === f.discursivo?.nivel);
+            const e = n ? estratoPorNumero(n) : null;
+            return e && suyo && n
+              ? {
+                  romano: e.romano,
+                  nombre: e.mide ? e.nombre : e.grupo,
+                  distancia: suyo.estrato - n,
+                }
+              : null;
+          })(),
           punto:
             // La edad del análisis manda sobre la de la evaluación: es la que
             // la evaluadora corrigió cuando la congelada no estaba o no era.

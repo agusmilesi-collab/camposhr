@@ -100,11 +100,28 @@ export async function POST(req: Request) {
     }
     fila.horizonte_dias = limpio;
   }
+  /* Las cinco preguntas de complejidad, contestadas sobre las asignaciones que
+     la persona manejó al límite de lo que pudo. */
+  if ('complejidad' in (datos ?? {})) {
+    const c = datos.complejidad;
+    const ok =
+      c === null ||
+      (typeof c === 'object' &&
+        !Array.isArray(c) &&
+        Object.entries(c as Record<string, unknown>).every(
+          ([k, v]) => /^[1-5]$/.test(k) && typeof v === 'boolean'
+        ));
+    if (!ok) {
+      return NextResponse.json({ ok: false, motivo: 'Respuestas inválidas.' }, { status: 400 });
+    }
+    fila.complejidad = c;
+  }
+
   /* Lo que no vino en el cuerpo se rellena con lo que ya estaba guardado: el
      upsert escribe la fila con las columnas que le mandan, y una que falte
      quedaría en null. La pantalla del estrato manda el nivel solo, y la de los
      dos datos del diagrama manda esos dos. */
-  const opcionales = ['actual', 'futura', 'edad', 'horizonte_dias'] as const;
+  const opcionales = ['actual', 'futura', 'edad', 'horizonte_dias', 'complejidad'] as const;
   if (opcionales.some((c) => !(c in fila))) {
     const antes = await fetch(
       `${url}/rest/v1/analisis_discursivo?evaluacion_id=eq.${id}` +

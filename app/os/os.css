@@ -6382,6 +6382,13 @@ th.os-tabla-contacto {
 /* La pirámide en la ficha, que va sin el recuadro que le pone el informe: le
    hace falta su propio aire para no quedar pegada al texto de arriba y al
    rótulo del campo de abajo. */
+/* Los tres pasos del análisis, uno debajo del otro y separados: el horizonte,
+   las preguntas y el estrato que sale de los dos. */
+.os-discursivo {
+  display: grid;
+  gap: 22px;
+}
+
 .os-discursivo .inf-piramide {
   margin: 14px 0 18px;
 }

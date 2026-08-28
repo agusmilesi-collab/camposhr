@@ -83,6 +83,8 @@ export type Cabecera = {
     con_benziger: boolean | null;
     /** Con qué exigencia se leen los puntajes de todo el pedido. */
     exigencia_id: string | null;
+    /** El nivel de trabajo del puesto, contra el que se compara a la persona. */
+    estrato_puesto: number | null;
     /** El token es el enlace del portal de esa empresa, si lo tiene. */
     empresas: { nombre: string; token_portal: string | null } | null;
     baterias: {
@@ -176,6 +178,8 @@ export type Discursivo = {
   edad: number | null;
   /** El horizonte temporal que le atribuyó la evaluadora, en días. */
   horizonte_dias: number | null;
+  /** Las respuestas a las preguntas de complejidad sobre sus asignaciones. */
+  complejidad: Record<string, boolean> | null;
 };
 
 export type Competencia = {
@@ -280,7 +284,7 @@ const CAMPOS_CABECERA =
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,' +
   'personas(nombre,email,telefono,cv_path,fecha_nacimiento),evaluadoras(nombre),' +
-  'pedidos(puesto,con_benziger,exigencia_id,empresas(nombre,token_portal),' +
+  'pedidos(puesto,con_benziger,exigencia_id,estrato_puesto,empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';
 
 /** Null si no existe, para que la pantalla conteste 404 en vez de romperse. */
@@ -333,7 +337,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       ),
       select<Discursivo>(
         'analisis_discursivo',
-        `select=nivel,actual,futura,edad,horizonte_dias&evaluacion_id=eq.${id}`,
+        `select=nivel,actual,futura,edad,horizonte_dias,complejidad&evaluacion_id=eq.${id}`,
         CACHE_PSICOTECNICOS
       ),
     ]);
