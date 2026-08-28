@@ -1110,10 +1110,10 @@
   color: var(--tinta-media);
 }
 
+/* Sin línea arriba: la firma manuscrita ya separa este bloque del párrafo de
+   confidencialidad, y la raya quedaba cruzando por detrás del trazo. */
 .inf-firma {
   margin-top: 26px;
-  padding-top: 12px;
-  border-top: 1px solid var(--linea);
   display: flex;
   flex-direction: column;
   font-size: 0.84rem;
@@ -1934,5 +1934,7 @@
   display: block;
   width: auto;
   height: 88px;
-  margin: 0 0 -4px -4px;
+  /* Corrida a la derecha, que es donde se firma en un papel, y no contra el
+     margen del texto. */
+  margin: 0 0 -4px 20px;
 }
