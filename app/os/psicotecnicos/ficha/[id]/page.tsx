@@ -38,6 +38,7 @@ import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 import { tieneTexto } from '@/lib/texto-rico';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
+import { estratoPorNumero } from '@/lib/potencial';
 import Bateria from '../../Bateria';
 import { cuentasDeLaBarra } from '../../datos';
 
@@ -89,10 +90,23 @@ const PESTANAS: Pestana[] = [
   // pestaña salía igual, vacía, y una pestaña vacía se lee como trabajo
   // pendiente.
   { clave: 'benziger', texto: 'Benziger', cuantos: (f) => (f.benziger ? 1 : 0), va: llevaBenziger },
+  /* El potencial es de la Batería 3 y de nadie más, y adentro de Tests competía
+     con el Raven por media pantalla: son dos preguntas, un diagrama y la
+     comparación con el puesto, y eso necesita la pantalla entera.
+
+     Va detrás del Benziger porque es el orden en que se trabaja: primero lo que
+     se administra y se carga, después las dos lecturas que hace la evaluadora
+     sobre lo que escuchó. */
+  {
+    clave: 'potencial',
+    texto: 'Potencial',
+    cuantos: (f) => (f.discursivo?.nivel ? 1 : 0),
+    va: (f) => llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests),
+  },
   {
     clave: 'tests',
     texto: 'Tests',
-    cuantos: (f) => f.cualitativos.length + (f.raven ? 1 : 0) + (f.discursivo?.nivel ? 1 : 0),
+    cuantos: (f) => f.cualitativos.length + (f.raven ? 1 : 0),
   },
   { clave: 'informe', texto: 'Informe', cuantos: (f) => (f.cabecera.recomendacion ? 1 : 0) },
 ];
@@ -475,8 +489,6 @@ function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
         </div>
       </section>
 
-      {/* Los dos que quedan van en la misma fila: cada uno ocupa poco y
-          apilados dejaban media pantalla vacía a la derecha. */}
       <div className="os-tests-fila">
       <section className="os-panel os-cierre">
         <div className="os-panel-top">
@@ -496,30 +508,6 @@ function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
           />
         </div>
       </section>
-      {llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests) && (
-        <section className="os-panel os-cierre">
-          <div className="os-panel-top">
-            <h2>Análisis discursivo</h2>
-            <span className="os-columna-monto">Modelo de Elliot Jaques</span>
-          </div>
-          <div className="os-panel-cuerpo">
-            <Discursivo
-              id={id}
-              nivel={f.discursivo?.nivel ?? null}
-              edad={f.discursivo?.edad ?? null}
-              edadEvaluacion={f.cabecera.edad ?? null}
-              dias={f.discursivo?.horizonte_dias ?? null}
-              complejidad={f.discursivo?.complejidad ?? null}
-              niveles={nivelesQueRigen(rige.niveles).map((n) => ({
-                nombre: n.nombre,
-                romano: n.romano,
-                procesamiento: n.procesamiento,
-                que: n.que,
-              }))}
-            />
-          </div>
-        </section>
-      )}
       </div>
 
       {f.cualitativos.map((t) => (
@@ -613,6 +601,55 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
         </span>
       ))}
     </>
+  );
+}
+
+/**
+ * El potencial: hasta qué nivel de complejidad puede llegar esta persona.
+ *
+ * Arriba, contra qué se la compara: el nivel de trabajo del puesto, que se
+ * determina en la ficha del pedido y acá solo se lee. Ver el número del puesto
+ * mientras se ubica a la persona es lo que evita cargar el análisis a ciegas y
+ * enterarse recién en el informe de que no se corresponden.
+ *
+ * Debajo, el análisis completo: el horizonte, las preguntas de complejidad, el
+ * estrato que sale de las dos y el diagrama de progreso potencial.
+ */
+function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
+  const delPuesto = f.cabecera.pedidos?.estrato_puesto ?? null;
+  const e = delPuesto ? estratoPorNumero(delPuesto) : null;
+  return (
+    <section className="os-panel os-informe-cierre">
+      <div className="os-panel-top">
+        <h2>Potencial de desarrollo</h2>
+        <span className="os-columna-monto">
+          {e ? (
+            <>
+              El puesto pide estrato <strong>{e.romano}</strong>
+              {e.mide ? ` · ${e.nombre}` : ''}
+            </>
+          ) : (
+            'el puesto no tiene nivel determinado'
+          )}
+        </span>
+      </div>
+      <div className="os-panel-cuerpo">
+        <Discursivo
+          id={id}
+          nivel={f.discursivo?.nivel ?? null}
+          edad={f.discursivo?.edad ?? null}
+          edadEvaluacion={f.cabecera.edad ?? null}
+          dias={f.discursivo?.horizonte_dias ?? null}
+          complejidad={f.discursivo?.complejidad ?? null}
+          niveles={nivelesQueRigen(rige.niveles).map((n) => ({
+            nombre: n.nombre,
+            romano: n.romano,
+            procesamiento: n.procesamiento,
+            que: n.que,
+          }))}
+        />
+      </div>
+    </section>
   );
 }
 
@@ -794,6 +831,7 @@ export default async function FichaPagina({
       {/* Sin panel alrededor: la vista trae sus propias tarjetas. */}
       {ver === 'benziger' && <BenzigerVista f={ficha} id={params.id} />}
       {ver === 'tests' && <Tests f={ficha} id={params.id} rige={rige} />}
+      {ver === 'potencial' && <Potencial f={ficha} id={params.id} rige={rige} />}
       {/* Sin panel alrededor: trae sus propias tarjetas, igual que Benziger y
           Tests. Envuelto, los dos paneles de adentro quedaban sobre un tercer
           fondo blanco y el conjunto se leía como una sola mancha. */}
