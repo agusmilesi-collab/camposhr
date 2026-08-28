@@ -84,7 +84,15 @@ export default function Agregar({
   // devolvió cuando se carga el primer candidato, y sin esto el selector
   // quedaría apuntando a un pedido que no está en la lista.
   const [nuevos, setNuevos] = useState<PedidoOpcion[]>([]);
-  const [pedido, setPedido] = useState(pedidos[0]?.id ?? '');
+  /**
+   * A qué pedido entra. Arranca sin elegir, a propósito.
+   *
+   * Proponía el primero de la lista, que es el más nuevo y casi nunca el que
+   * se está cargando: un candidato entraba a la búsqueda de otro cliente sin
+   * que nadie tocara el selector. Sin elección, el formulario no deja guardar
+   * hasta que se dice a cuál.
+   */
+  const [pedido, setPedido] = useState('');
   /**
    * El candidato entra sin evaluadora, que es donde está la tarjeta.
    *
@@ -247,7 +255,11 @@ export default function Agregar({
     setHecho(null);
 
     if (!pedido) {
-      setError('Abrí primero el pedido al que entra.');
+      setError(
+        opciones.length === 0
+          ? 'Abrí primero el pedido al que entra.'
+          : 'Elegí a qué pedido entra.'
+      );
       return;
     }
     if (!telefono && !email) {
@@ -312,7 +324,9 @@ export default function Agregar({
           }}
           aria-label="Para qué pedido"
         >
-          {opciones.length === 0 && <option value="">Ningún pedido abierto</option>}
+          <option value="">
+            {opciones.length === 0 ? 'Ningún pedido abierto' : 'Elegí el pedido'}
+          </option>
           {opciones.map((p) => (
             <option key={p.id} value={p.id}>
               {p.empresa} · {p.puesto}
