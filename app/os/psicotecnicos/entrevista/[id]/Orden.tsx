@@ -38,7 +38,6 @@ export default function Orden({
   nombres,
   estados,
   tarjetas,
-  abierto,
 }: {
   id: string;
   /** Los nombres, en el orden que rige. Son la clave: el orden se guarda así. */
@@ -49,21 +48,11 @@ export default function Orden({
   estados: React.ReactNode[];
   /** El contenido de cada uno, en el mismo orden que `tests`. */
   tarjetas: React.ReactNode[];
-  /**
-   * Cuál arranca desplegado.
-   *
-   * La entrevista por competencias: es lo que se escribe mientras la persona
-   * habla, o sea lo que está abierto todo el rato, y abrirlo a mano cada vez
-   * que se entra a la hoja es un toque que sobra.
-   */
-  abierto?: string;
 }) {
   const router = useRouter();
   const [orden, setOrden] = useState(() => tests.map((_, i) => i));
   /** Cuáles están abiertos, por nombre de test: el índice cambia al reordenar. */
-  const [abiertos, setAbiertos] = useState<string[]>(
-    abierto && tests.includes(abierto) ? [abierto] : []
-  );
+  const [abiertos, setAbiertos] = useState<string[]>([]);
   const todas = abiertos.length === tests.length;
 
   const plegar = (test: string) =>
