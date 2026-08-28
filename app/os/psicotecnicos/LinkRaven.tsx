@@ -45,7 +45,7 @@ export default function LinkRaven({ evaluacionId }: { evaluacionId: string }) {
 
   return (
     <span className="os-link-raven">
-      <button className="os-boton" onClick={copiar} disabled={estado === 'pidiendo'}>
+      <button className="os-boton os-boton-azul" onClick={copiar} disabled={estado === 'pidiendo'}>
         {estado === 'pidiendo' ? 'Generando…' : 'Copiar link'}
       </button>
       {estado === 'copiado' && <span className="os-form-ok">Copiado</span>}
