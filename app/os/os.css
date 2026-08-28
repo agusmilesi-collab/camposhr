@@ -6583,6 +6583,20 @@ th.os-tabla-contacto {
   color: var(--os-tinta-media);
 }
 
+/* El mecanismo del modelo arriba y los puestos donde suele verse debajo: lo
+   primero es de Jaques y lo segundo es nuestro. */
+.os-comparacion-que strong {
+  display: block;
+  color: var(--os-tinta);
+}
+
+.os-comparacion-que span {
+  display: block;
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: var(--os-suave);
+}
+
 .os-comparacion-horizonte {
   width: 170px;
 }
@@ -6826,6 +6840,12 @@ th.os-tabla-contacto {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+/* En el encabezado del panel va contra el margen derecho, como el resto de lo
+   que acompaña a un título. */
+.os-panel-top .os-nivel-puesto {
+  margin-left: auto;
 }
 
 /* Los dos datos discrepan: el horizonte dice un estrato y arriba está elegido

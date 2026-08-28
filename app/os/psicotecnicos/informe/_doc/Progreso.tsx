@@ -18,6 +18,8 @@
 
 import {
   ALTO,
+  diasDeEscalon,
+  enPalabras,
   EDAD_MAX,
   EDAD_MIN,
   ESCALERA,
@@ -330,6 +332,13 @@ export default function Progreso({
         const h = horizonteEn(banda, e);
         return (
           <g key={`ade-${e}`}>
+            {/* Al pasar por encima, qué es ese punto: el navegador lo muestra
+                solo y no ocupa lugar en el dibujo, que es lo que hace falta en
+                una lámina con nueve curvas. */}
+            <title>
+              {`A los ${e} años, por su banda de maduración: horizonte de ` +
+                `${enPalabras(diasDeEscalon(h))}, estrato ${estratoDeEscalon(h).romano}`}
+            </title>
             <circle cx={x(e)} cy={y(h)} r={3.2} fill="#ffffff" stroke={AZUL} strokeWidth={1.3} />
             <text
               x={x(e)}
@@ -354,7 +363,13 @@ export default function Progreso({
         strokeWidth={0.9}
         strokeDasharray="2 3"
       />
-      <circle cx={x(enCuadro)} cy={y(escalon)} r={5} fill={AZUL} />
+      <g>
+        <title>
+          {`Hoy: ${edad} años y un horizonte de ${enPalabras(dias)}, ` +
+            `que cae en el estrato ${estratoDeEscalon(escalon).romano}`}
+        </title>
+        <circle cx={x(enCuadro)} cy={y(escalon)} r={5} fill={AZUL} />
+      </g>
       <text
         x={x(enCuadro) + (enCuadro > EDAD_MAX - 10 ? -10 : 10)}
         y={y(escalon) - 9}

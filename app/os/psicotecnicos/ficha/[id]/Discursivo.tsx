@@ -424,7 +424,6 @@ export default function Discursivo({
             puesto={estratoPuesto ? estratoPorNumero(estratoPuesto) : null}
             banda={banda}
             niveles={niveles}
-            pedidoId={pedidoId}
           />
 
           {/* Y el estrato a mano, en los dos casos en que el sistema no lo
@@ -528,7 +527,6 @@ function Comparacion({
   puesto,
   banda,
   niveles,
-  pedidoId,
 }: {
   persona: { romano: string; nombre: string } | null;
   puesto: Estrato | null;
@@ -536,8 +534,6 @@ function Comparacion({
   banda: number | null;
   /** El catálogo, para el detalle de cada estrato. */
   niveles: { romano: string; nombre: string; procesamiento: string; que: string; horizonte: string }[];
-  /** El pedido, para ir a ver o completar lo que pide. */
-  pedidoId?: string | null;
 }) {
   const detalle = (romano: string) => niveles.find((n) => n.romano === romano) ?? null;
   const numeroDe = (romano: string) => ESTRATOS.findIndex((e) => e.romano === romano);
@@ -564,8 +560,19 @@ function Comparacion({
             <span className="os-tabla-flojo">{falta}</span>
           )}
         </td>
+        {/* El mecanismo es del modelo; los puestos de al lado son nuestros y se
+            editan en Configuración. Por eso van en ese orden y con ese peso. */}
         <td className="os-comparacion-que">
-          {d ? d.que : <span className="os-tabla-flojo">—</span>}
+          {romano ? (
+            <>
+              <strong>
+                {PREGUNTAS.find((q) => q.estrato === numeroDe(romano) + 1)?.corto ?? '—'}
+              </strong>
+              {d && <span>{d.que}</span>}
+            </>
+          ) : (
+            <span className="os-tabla-flojo">—</span>
+          )}
         </td>
         <td className="os-comparacion-horizonte">
           {d ? d.horizonte.replace(/\.$/, '') : <span className="os-tabla-flojo">—</span>}
@@ -580,7 +587,7 @@ function Comparacion({
         <tr>
           <th />
           <th>Estrato</th>
-          <th>Qué trabajo puede abordar</th>
+          <th>Qué exige ese nivel</th>
           <th>Horizonte temporal</th>
         </tr>
       </thead>
@@ -614,22 +621,6 @@ function Comparacion({
                 : distancia > 0
                   ? 'La persona puede abordar hoy más complejidad que la que el puesto exige.'
                   : 'El puesto exige más complejidad que la que la persona puede abordar hoy.'}
-            </td>
-          </tr>
-        )}
-        {/* El camino a lo que pide el puesto: se determina en el pedido y desde
-            acá se va a verlo o a completarlo sin perder la ficha. */}
-        {pedidoId && (
-          <tr>
-            <td colSpan={4}>
-              <a
-                className="os-boton"
-                href={`/os/pedidos/${pedidoId}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Abrir el pedido
-              </a>
             </td>
           </tr>
         )}

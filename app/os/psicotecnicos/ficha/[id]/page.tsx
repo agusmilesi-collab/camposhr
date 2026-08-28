@@ -543,6 +543,24 @@ function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) 
     <section className="os-panel os-informe-cierre">
       <div className="os-panel-top">
         <h2>Potencial de desarrollo</h2>
+        {/* Si el pedido tiene determinado lo que pide, y el camino para ir a
+            completarlo: lo mismo que se ve en la hoja de la entrevista, en el
+            mismo lugar. */}
+        <span className="os-nivel-puesto">
+          <span className={`os-sello-estado ${delPuesto ? 'os-verde' : 'os-rojo'}`}>
+            {delPuesto ? 'Puesto con nivel' : 'Puesto sin nivel'}
+          </span>
+          {f.cabecera.pedido_id && (
+            <a
+              className="os-boton"
+              href={`/os/pedidos/${f.cabecera.pedido_id}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Abrir el pedido
+            </a>
+          )}
+        </span>
       </div>
       <div className="os-panel-cuerpo">
         <Discursivo
@@ -554,7 +572,6 @@ function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) 
           complejidad={f.discursivo?.complejidad ?? null}
           relato={f.discursivo?.relato ?? null}
           estratoPuesto={delPuesto}
-          pedidoId={f.cabecera.pedido_id}
           niveles={nivelesQueRigen(rige.niveles).map((n) => ({
             nombre: n.nombre,
             romano: n.romano,
