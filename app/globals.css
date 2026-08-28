@@ -7032,38 +7032,110 @@ body {
   vertical-align: -2px;
 }
 
-/* El acceso al portal de ejemplo: una tira que se toca entera, entre lo que se
-   entrega y cómo se pide. */
+/*
+ * El acceso al portal de ejemplo, entre lo que se entrega y cómo se pide.
+ *
+ * Se toca entero y se ve que se toca: fondo tenue del azul de la marca, la
+ * flecha en su círculo lleno y el conjunto que se levanta al pasar por encima.
+ * Como marco blanco con una flecha suelta pasaba por un recuadro de aviso.
+ */
 .precios-demo {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  padding: 18px 20px;
-  border: 1px solid var(--st-blue);
-  border-radius: 12px;
-  background: var(--card);
+  padding: 22px 24px;
+  border: 1px solid color-mix(in srgb, var(--st-blue) 28%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--st-blue) 5%, var(--card));
   color: var(--ink);
   text-decoration: none;
-  line-height: 1.5;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.precios-demo:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--st-blue) 8%, var(--card));
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--st-blue) 14%, transparent);
+}
+
+/* El ícono adelante, en su cuadrado tenue: la tira abre por lo que hay del
+   otro lado y no por el texto. */
+.precios-demo-icono {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--st-blue) 12%, var(--card));
+  color: var(--st-blue);
+}
+
+.precios-demo-texto {
+  display: grid;
+  gap: 3px;
+  margin-right: auto;
+}
+
+.precios-demo-rotulo {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--st-blue) 75%, var(--muted));
 }
 
 .precios-demo strong {
-  display: block;
-  margin-bottom: 2px;
+  font-size: 1.1rem;
   color: var(--st-blue);
-  font-size: 1.02rem;
 }
 
-.precios-demo > span:first-child {
-  font-size: 0.94rem;
+.precios-demo-bajada {
+  font-size: 0.92rem;
+  line-height: 1.5;
   color: var(--ink-soft);
 }
 
+/* La flecha en su círculo: es el único control de la tira y se lee como
+   botón. Se corre un par de píxeles al pasar por encima. */
 .precios-demo-flecha {
   flex: none;
-  color: var(--st-blue);
-  font-size: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--st-blue);
+  color: #fff;
+  transition: transform 0.15s ease;
+}
+
+.precios-demo:hover .precios-demo-flecha {
+  transform: translateX(3px);
+}
+
+/* La vuelta desde el portal de muestra: el mismo bloque, con la flecha del
+   otro lado. A media pantalla y centrado, porque no es lo que se vino a hacer
+   acá: cierra la visita en vez de competir con la tabla de arriba. */
+.precios-demo-volver {
+  width: min(100%, 50%);
+  /* Sube contra el final de la sección de arriba: el aire que dejaba el
+     `main` lo separaba de la tabla que la persona acaba de mirar. */
+  margin: -24px auto 26px;
+}
+
+@media (max-width: 760px) {
+  .precios-demo-volver {
+    width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .precios-demo {
+    align-items: flex-start;
+    gap: 14px;
+  }
 }
 
 /* Una línea que separa dos maneras de leer lo mismo. */

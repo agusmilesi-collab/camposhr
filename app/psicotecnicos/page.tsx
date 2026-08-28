@@ -1,6 +1,7 @@
 import { alcanceYPrecios } from '@/lib/precio-portal';
 import { bateriasConContenido } from '@/lib/baterias-detalle';
 import { tiempoDeEntrega } from '@/lib/tiempo-entrega';
+import { TOKEN_PORTAL_EJEMPLO } from '@/lib/portal-ejemplo';
 import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
 
 export const dynamic = 'force-dynamic';
@@ -209,16 +210,7 @@ const ENTIENDE: Record<string, string> = {
 /** Cuántos capítulos, en palabras: un número en cifra al abrir se lee como precio. */
 const CUANTOS = ['', 'Un', 'Dos', 'Tres', 'Cuatro', 'Cinco', 'Seis'];
 
-/**
- * El portal que se muestra desde acá: una empresa inventada, cargada en
- * Supabase (`supabase/portal-ejemplo*.sql`).
- *
- * No es el portal de prueba del equipo (`lib/portal-demo.ts`, que vive en
- * Airtable y recibe lo que se carga probando): ese cambia de un día para el
- * otro y su formulario escribe en Airtable. Este tiene tres candidatos fijos y
- * un informe completo, que es lo que un cliente tiene que poder mirar.
- */
-const TOKEN_PORTAL_EJEMPLO = 'v_Ej3mPl0Portal7Kq2Zt8Rw5Nc1Yb';
+
 
 /**
  * Cómo se nombra un test en la página, cuando no es como se guarda.
@@ -578,13 +570,50 @@ export default async function Precios() {
           Va a la empresa de prueba, con candidatos inventados. */}
       <section className="precios-bloque">
         <a className="precios-demo" href={`https://clientes.camposhr.com/${TOKEN_PORTAL_EJEMPLO}`}>
-          <span>
+          {/* Una ventana con sus renglones: dice de un vistazo que del otro lado
+              hay una pantalla con la lista de candidatos, y no un documento. */}
+          <span className="precios-demo-icono" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22">
+              <rect
+                x="2.5"
+                y="4"
+                width="19"
+                height="16"
+                rx="2.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+              />
+              <path d="M2.5 8.5h19" stroke="currentColor" strokeWidth="1.6" />
+              <circle cx="5.6" cy="6.2" r="0.7" fill="currentColor" />
+              <path
+                d="M6 12h6M6 15.5h9"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+              <circle cx="17.5" cy="12" r="1.3" fill="currentColor" />
+            </svg>
+          </span>
+          <span className="precios-demo-texto">
+            <span className="precios-demo-rotulo">Portal del cliente</span>
             <strong>Ver un portal de ejemplo</strong>
-            Una empresa inventada, con sus búsquedas, sus candidatos en proceso y un
-            informe completo para leer.
+            <span className="precios-demo-bajada">
+              Una empresa de muestra, con sus búsquedas, sus candidatos en proceso y
+              un informe completo para leer.
+            </span>
           </span>
           <span className="precios-demo-flecha" aria-hidden="true">
-            →
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path
+                d="M5 12h13M13 6l6 6-6 6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </span>
         </a>
       </section>
