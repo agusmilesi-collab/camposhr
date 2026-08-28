@@ -22,6 +22,7 @@ import {
 } from '@/lib/psicotecnicos-tipos';
 import { siEstaTodoTomado } from '@/lib/entrevista-completa';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
+import { llevaBenziger } from '@/lib/benziger';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -78,6 +79,7 @@ type Fila = {
   bender_administrado: boolean;
   grafico_2_personas_administrado: boolean;
   benziger_administrado: boolean | null;
+  con_benziger: boolean | null;
   recomendacion: string | null;
   informe_path: string | null;
   ingreso: boolean | null;
@@ -105,7 +107,7 @@ type Fila = {
 
 const CAMPOS =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
-  'bender_administrado,grafico_2_personas_administrado,benziger_administrado,' +
+  'bender_administrado,grafico_2_personas_administrado,benziger_administrado,con_benziger,' +
   'recomendacion,informe_path,' +
   'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,tablero,prioridad,' +
   'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
@@ -129,7 +131,7 @@ export async function listar(): Promise<Evaluacion[]> {
     bateria: f.pedidos?.baterias?.codigo ?? null,
     // Lo pidió el pedido o se le tomó igual: las dos cosas quieren decir que
     // esta persona tiene Benziger, que es lo que el sello dice.
-    conBenziger: f.pedidos?.con_benziger === true || f.benziger_administrado === true,
+    conBenziger: llevaBenziger(f),
     email: f.personas?.email ?? null,
     telefono: f.personas?.telefono ?? null,
     evaluadora: f.evaluadoras?.nombre ?? null,

@@ -1,5 +1,6 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
+import { llevaBenziger } from '@/lib/benziger';
 
 /**
  * Cuándo una entrevista ya está tomada.
@@ -20,6 +21,8 @@ type Fila = {
   bender_administrado: boolean;
   grafico_2_personas_administrado: boolean;
   benziger_administrado: boolean;
+  /** Si a esta persona le corresponde, aunque el pedido no lo haya comprado. */
+  con_benziger: boolean | null;
   /** Uno a uno: PostgREST lo devuelve como objeto, no como lista. */
   raven: { raw: number | null } | null;
   pedidos: { con_benziger: boolean | null; baterias: { tests: string[] | null } | null } | null;
@@ -27,7 +30,7 @@ type Fila = {
 
 const CAMPOS =
   'estado,proyectivo_administrado,bender_administrado,grafico_2_personas_administrado,' +
-  'benziger_administrado,raven(raw),pedidos(con_benziger,baterias(tests))';
+  'benziger_administrado,con_benziger,raven(raw),pedidos(con_benziger,baterias(tests))';
 
 /** Qué marca mira cada test de la batería. Los que no están, no dejan marca. */
 const MARCA: Record<string, (f: Fila) => boolean> = {
@@ -67,8 +70,8 @@ async function revisar(evaluacionId: string): Promise<boolean> {
   const tests = f.pedidos?.baterias?.tests ?? [];
   const pendientes = tests.filter((t) => MARCA[t] && !MARCA[t](f));
   if (pendientes.length > 0) return false;
-  // El Benziger no está en la batería: lo agrega el pedido cuando lo lleva.
-  if (f.pedidos?.con_benziger && !f.benziger_administrado) return false;
+  // El Benziger no está en la batería: lo agrega el pedido, o el candidato.
+  if (llevaBenziger(f) && !f.benziger_administrado) return false;
   // Sin ningún test que deje marca no hay nada que dar por terminado.
   if (!tests.some((t) => MARCA[t])) return false;
 
