@@ -163,15 +163,29 @@ export function desdeInput(valor: string): string | null {
 /**
  * Cuántos días pasaron desde una fecha, con o sin hora.
  *
- * Los dos formatos conviven en Airtable: "Fecha entrevista" trae hora y
- * "Fecha de ingreso" no. Una fecha sin hora se lee a mediodía de Argentina y
- * no a medianoche UTC, que caería el día anterior y correría la cuenta uno.
+ * Los dos formatos conviven y no se cuentan igual: "Fecha entrevista" trae hora
+ * y ahí lo que se mide es tiempo transcurrido, mientras que "Fecha de ingreso"
+ * es un día del calendario y lo que se cuenta son días, no instantes.
+ *
+ * **Una fecha sin hora se compara día contra día.** Midiendo instantes, un
+ * pedido cargado hoy daba negativo hasta el mediodía (la fecha se lee a las
+ * doce de Argentina, y a las once todavía falta para llegar), y la tarjeta
+ * decía "pedido mañana"; y uno del 20 de julio mirado a la mañana daba 38 en
+ * vez de 39, porque le faltaban horas para completar el último día.
  */
 export function diasDesde(iso: string | null, hoy: Date = new Date()): number | null {
   if (!iso) return null;
-  const d = /^\d{4}-\d{2}-\d{2}$/.test(iso)
-    ? new Date(`${iso}T12:00:00${DESFASE}`)
-    : new Date(iso);
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const p = partes(hoy);
+    const desde = new Date(`${iso}T12:00:00${DESFASE}`).getTime();
+    const hasta = new Date(`${p.year}-${p.month}-${p.day}T12:00:00${DESFASE}`).getTime();
+    if (Number.isNaN(desde)) return null;
+    // Los dos al mediodía: la diferencia es un múltiplo exacto de un día.
+    return Math.round((hasta - desde) / 86_400_000);
+  }
+
+  const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   return Math.floor((hoy.getTime() - d.getTime()) / 86_400_000);
 }
