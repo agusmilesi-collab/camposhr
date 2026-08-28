@@ -6328,7 +6328,7 @@ body {
 .pedir-bateria {
   display: grid;
   gap: 4px;
-  padding: 14px;
+  padding: 16px;
   text-align: left;
   font: inherit;
   background: var(--paper);
@@ -6341,7 +6341,10 @@ body {
   border-color: var(--muted);
 }
 
+/* Aire arriba y abajo del puesto: entre la pastilla, a quién apunta y lo que
+   incluye hay tres niveles de lectura, y pegados se leen como un bloque. */
 .pedir-bateria-para {
+  margin-bottom: 3px;
   font-size: 0.94rem;
   font-weight: 600;
 }
@@ -6350,6 +6353,7 @@ body {
   display: flex;
   align-items: baseline;
   gap: 8px;
+  margin-bottom: 5px;
   font-size: 0.8rem;
   color: var(--muted);
 }
@@ -6375,7 +6379,7 @@ body {
 }
 
 .pedir-bateria-precio {
-  margin-top: 2px;
+  margin-top: 5px;
   font-size: 0.9rem;
   font-weight: 600;
 }
