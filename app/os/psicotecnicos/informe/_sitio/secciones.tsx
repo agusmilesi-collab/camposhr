@@ -237,36 +237,23 @@ export function seccionesDe(
     id: 'trabajo',
     titulo: 'Cómo trabaja',
     bajada: 'Qué se destaca, qué está en lo esperado y qué conviene acompañar.',
+    /* Cada grupo lo dibuja `Listas`: su recuadro, su título en el color de la
+       banda, sus viñetas del mismo color y, en la ficha, el botón de editar y
+       el índice que respalda cada oración. Es el mismo componente que dibuja el
+       documento, así que las dos pantallas no se pueden separar. */
     cuerpo: (
       <div className="sitio-grupos">
         {grupos.map((g) => (
-          <section key={g.clave} className={`sitio-grupo ${g.clave}`}>
-            <header>
-              <h3>{g.titulo}</h3>
-              <span>{g.sub}</span>
-            </header>
-            {editar ? (
-              /* En la ficha se edita sobre lo mismo que el cliente va a leer:
-                 la lista se ordena, se corrige y se amplía acá, con el índice
-                 que respalda cada oración al costado. */
-              <Listas
-                id={editar}
-                lista={g.lista}
-                items={g.items}
-                intervenida={inf.intervenidas.includes(g.lista)}
-                vacio="Sin registros en este grupo."
-                respaldos={inf.respaldos}
-              />
-            ) : g.items.length === 0 ? (
-              <p className="sitio-vacio">Sin registros en este grupo.</p>
-            ) : (
-              <ul>
-                {g.items.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            )}
-          </section>
+          <Listas
+            key={g.clave}
+            id={editar}
+            lista={g.lista}
+            items={g.items}
+            intervenida={inf.intervenidas.includes(g.lista)}
+            vacio="Sin registros en este grupo."
+            respaldos={editar ? inf.respaldos : undefined}
+            grupo={{ clave: g.clave, titulo: g.titulo, sub: g.sub }}
+          />
         ))}
       </div>
     ),
@@ -277,7 +264,7 @@ export function seccionesDe(
     id: 'lider',
     titulo: 'Para su líder',
     bajada: 'Qué hacer para que rinda.',
-    cuerpo: editar ? (
+    cuerpo: (
       <Listas
         id={editar}
         lista="recomendaciones"
@@ -285,24 +272,9 @@ export function seccionesDe(
         intervenida={inf.intervenidas.includes('recomendaciones')}
         numerada
         vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
-        respaldos={inf.respaldos}
+        respaldos={editar ? inf.respaldos : undefined}
       />
-    ) :
-      inf.recomendaciones.length === 0 ? (
-        <p className="sitio-vacio">
-          No surgen indicadores fuera de los rangos esperados que requieran una gestión
-          particular.
-        </p>
-      ) : (
-        <ol className="sitio-lider">
-          {inf.recomendaciones.map((t, i) => (
-            <li key={t}>
-              <span className="sitio-orden">{i + 1}</span>
-              <p>{t}</p>
-            </li>
-          ))}
-        </ol>
-      ),
+    ),
   });
 
   /* ── Cómo piensa ────────────────────────────────────────────────────── */
