@@ -5,89 +5,69 @@
  *
  * La consigna dice "falta una pieza y hay que elegir cuál la completa", y eso
  * escrito no se entiende del todo hasta que se lo ve. Acá está la misma
- * mecánica en chico, y con la misma forma que las láminas de verdad: una
- * matriz de tres por tres con el último lugar vacío y ocho opciones abajo. Al
- * tocar la que va, se pinta de verde y aparece la regla que la explica.
+ * mecánica, y con la misma forma que las láminas de verdad: una matriz de tres
+ * por tres con el último lugar vacío y ocho opciones abajo. Al tocar la que va,
+ * se pinta de verde y aparece la regla que la explica.
+ *
+ * **La regla se tiene que ver de un vistazo y sin pensarla**: la fila dice la
+ * forma y la columna dice cuántas. Contar uno, dos, tres es más inmediato que
+ * comparar tamaños o rellenos, y acá no se está midiendo nada: se está
+ * explicando qué hay que hacer. Las figuras van pintadas por lo mismo.
  *
  * **No es una lámina del test.** Las 36 del Raven se puntúan, así que usar la
  * primera como ejemplo sería regalar una respuesta y dejar de medir esa lámina.
- * Esta es un dibujo propio con la regla más simple que se puede escribir: la
- * fila dice la forma y la columna dice el tamaño.
  *
  * Las ocho opciones son las que hacen falta para que el ejemplo enseñe algo:
- * con dos o tres, la respuesta sale por descarte y no por la regla. Siete de
- * ellas son la forma correcta con otro tamaño, o el tamaño correcto con otra
- * forma, que es como están armadas las del test.
+ * con dos o tres, la respuesta sale por descarte y no por la regla. Todas son
+ * la forma correcta con otra cantidad, o la cantidad correcta con otra forma,
+ * que es como están armadas las del test.
  */
 
 import { useState } from 'react';
 
 type Figura = 'circulo' | 'cuadrado' | 'triangulo';
-/** Los tres tamaños de la fila, en radio o medio lado. */
-const TAMANOS = { chico: 8, medio: 12.5, grande: 17 } as const;
-type Tamano = keyof typeof TAMANOS;
+type Celda = { figura: Figura; cuantas: number };
 
-function Dibujo({ figura, tamano }: { figura: Figura; tamano: Tamano }) {
-  const r = TAMANOS[tamano];
-  /* El trazo no se agranda con el dibujo: la matriz y las opciones se dibujan
-     a tamaños distintos y las líneas tienen que verse del mismo grosor en las
-     dos. */
-  const trazo = {
-    fill: 'none',
-    stroke: 'currentColor',
-    strokeWidth: 2,
-    strokeLinejoin: 'round' as const,
-    vectorEffect: 'non-scaling-stroke' as const,
-  };
+function Dibujo({ figura, cuantas }: Celda) {
+  const relleno = { fill: 'currentColor' };
   return (
-    <svg viewBox="0 0 46 46" className="rv-ejemplo-figura" aria-hidden="true">
-      {figura === 'circulo' && <circle cx="23" cy="23" r={r} {...trazo} />}
-      {figura === 'cuadrado' && (
-        <rect x={23 - r} y={23 - r} width={r * 2} height={r * 2} {...trazo} />
-      )}
-      {/* El triángulo ocupa el mismo alto que el círculo y el cuadrado de su
-          columna: con la base a media altura del radio se veía un tamaño más
-          chico que el que le tocaba, y el tamaño es justamente la regla. */}
-      {figura === 'triangulo' && (
-        <polygon
-          points={`23,${23 - r} ${23 + r * 1.12},${23 + r} ${23 - r * 1.12},${23 + r}`}
-          {...trazo}
-        />
-      )}
-    </svg>
+    <span className="rv-ejemplo-figuras">
+      {Array.from({ length: cuantas }, (_, i) => (
+        <svg key={i} viewBox="0 0 24 24" className="rv-ejemplo-figura" aria-hidden="true">
+          {figura === 'circulo' && <circle cx="12" cy="12" r="10" {...relleno} />}
+          {figura === 'cuadrado' && <rect x="2" y="2" width="20" height="20" {...relleno} />}
+          {figura === 'triangulo' && <polygon points="12,1 23,22 1,22" {...relleno} />}
+        </svg>
+      ))}
+    </span>
   );
 }
 
-/** Las ocho filas de la matriz: la forma manda en la fila y el tamaño en la columna. */
-const MATRIZ: { figura: Figura; tamano: Tamano }[] = [
-  { figura: 'circulo', tamano: 'chico' },
-  { figura: 'circulo', tamano: 'medio' },
-  { figura: 'circulo', tamano: 'grande' },
-  { figura: 'cuadrado', tamano: 'chico' },
-  { figura: 'cuadrado', tamano: 'medio' },
-  { figura: 'cuadrado', tamano: 'grande' },
-  { figura: 'triangulo', tamano: 'chico' },
-  { figura: 'triangulo', tamano: 'medio' },
+/** Las ocho celdas dibujadas: la forma manda en la fila y la cantidad en la columna. */
+const MATRIZ: Celda[] = [
+  { figura: 'circulo', cuantas: 1 },
+  { figura: 'circulo', cuantas: 2 },
+  { figura: 'circulo', cuantas: 3 },
+  { figura: 'cuadrado', cuantas: 1 },
+  { figura: 'cuadrado', cuantas: 2 },
+  { figura: 'cuadrado', cuantas: 3 },
+  { figura: 'triangulo', cuantas: 1 },
+  { figura: 'triangulo', cuantas: 2 },
 ];
 
-/** Lo que falta: el triángulo grande. */
-const FALTA: { figura: Figura; tamano: Tamano } = { figura: 'triangulo', tamano: 'grande' };
+/** Lo que falta: tres triángulos. */
+const FALTA: Celda = { figura: 'triangulo', cuantas: 3 };
 
-/**
- * Las ocho opciones, como en el test: ocho, y todas plausibles.
- *
- * La correcta no va primera ni última, que son los dos lugares donde el ojo
- * cae solo.
- */
-const OPCIONES_EJ: { figura: Figura; tamano: Tamano }[] = [
-  { figura: 'triangulo', tamano: 'chico' },
-  { figura: 'circulo', tamano: 'grande' },
-  { figura: 'triangulo', tamano: 'medio' },
-  { figura: 'cuadrado', tamano: 'grande' },
-  { figura: 'triangulo', tamano: 'grande' },
-  { figura: 'cuadrado', tamano: 'medio' },
-  { figura: 'circulo', tamano: 'medio' },
-  { figura: 'cuadrado', tamano: 'chico' },
+/** Las ocho opciones. La que va no está ni primera ni última. */
+const OPCIONES_EJ: Celda[] = [
+  { figura: 'triangulo', cuantas: 2 },
+  { figura: 'circulo', cuantas: 3 },
+  { figura: 'triangulo', cuantas: 1 },
+  { figura: 'cuadrado', cuantas: 3 },
+  { figura: 'triangulo', cuantas: 3 },
+  { figura: 'cuadrado', cuantas: 2 },
+  { figura: 'circulo', cuantas: 1 },
+  { figura: 'circulo', cuantas: 2 },
 ];
 
 const CORRECTA = 4;
@@ -103,12 +83,12 @@ export default function Ejemplo() {
       <div className="rv-ejemplo-grilla">
         {MATRIZ.map((c, i) => (
           <span key={i}>
-            <Dibujo figura={c.figura} tamano={c.tamano} />
+            <Dibujo {...c} />
           </span>
         ))}
-        {/* El lugar vacío, punteado como el hueco de una lámina. */}
+        {/* El lugar vacío, apagado como el hueco de una lámina. */}
         <span className={`rv-ejemplo-falta${acerto ? ' resuelta' : ''}`}>
-          {acerto ? <Dibujo figura={FALTA.figura} tamano={FALTA.tamano} /> : '?'}
+          {acerto ? <Dibujo {...FALTA} /> : '?'}
         </span>
       </div>
 
@@ -124,7 +104,7 @@ export default function Ejemplo() {
               aria-label={`Opción ${i + 1}`}
               onClick={() => setElegida(i)}
             >
-              <Dibujo figura={o.figura} tamano={o.tamano} />
+              <Dibujo {...o} />
             </button>
           );
         })}
@@ -132,7 +112,7 @@ export default function Ejemplo() {
 
       <p className="rv-ejemplo-pie">
         {acerto
-          ? 'Esa es: la fila dice la forma y la columna dice el tamaño.'
+          ? 'Esa es: cada fila tiene su forma y cada columna suma una figura.'
           : elegida === null
             ? 'Tocá la opción que completa la matriz.'
             : 'Esa no. Mirá qué cambia de una fila a la otra y de una columna a la otra.'}

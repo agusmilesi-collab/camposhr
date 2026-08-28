@@ -436,10 +436,27 @@
   color: #9aa0a6;
 }
 
-/* El dibujo llena su celda; el aire lo pone el padding de la celda. */
+/* Las figuras de una celda, en fila y del mismo tamaño en todas: lo que cambia
+   de una celda a otra es cuántas hay, así que el tamaño no puede cambiar. */
+.rv-ejemplo-figuras {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
 .rv-ejemplo-figura {
-  width: 100%;
-  height: 100%;
+  width: 26px;
+  height: 26px;
+}
+
+.rv-ejemplo-opcion .rv-ejemplo-figura {
+  width: 20px;
+  height: 20px;
+}
+
+.rv-ejemplo-opcion .rv-ejemplo-figuras {
+  gap: 4px;
 }
 
 .rv-ejemplo-pie {
