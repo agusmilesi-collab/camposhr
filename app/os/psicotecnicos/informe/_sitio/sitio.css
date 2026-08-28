@@ -412,9 +412,10 @@
    acá con el elegido en tarjeta y los otros tres como renglones apagados, y
    perdía la escala, que es lo que hace legible al que le tocó. */
 
-/* La firma va debajo de lo que firma, sin línea que la separe del texto. */
+/* La firma va debajo de lo que firma, sin línea que la separe del texto: lo que
+   la separa es el aire, ochenta píxeles, como en un papel firmado. */
 .sitio-firma {
-  margin-top: 18px;
+  margin-top: 80px;
 }
 
 .sitio-firma strong {
