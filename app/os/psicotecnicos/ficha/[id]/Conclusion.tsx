@@ -12,10 +12,10 @@
  * escribe, se relee y recién entonces se sube. Guardar a mitad de una frase
  * dejaría en la base media decisión.
  *
- * El fundamento es el resumen del informe. Escrito, sale tal cual en el
- * documento que lee el cliente; vacío, lo arma el motor con las lecturas del
- * sumario. El motor redacta correcto pero genérico, así que quien tenga algo
- * que decir del caso lo escribe acá y reemplaza al automático.
+ * **La recomendación la escribe ella y la firma.** Es por qué eligió ese nivel,
+ * en primera persona, y es lo primero que el cliente lee en el portal. El resto
+ * del informe lo arma el sistema con lo que dio la evaluación; esto no, porque
+ * lo que se está diciendo es "yo la entrevisté y esto me parece".
  */
 
 import { useRouter } from 'next/navigation';
@@ -104,14 +104,14 @@ export default function Conclusion({
 
       <label className="os-conclusion-notas">
         <span className="os-dato-rotulo">
-          Fundamento <em>· es el resumen del informe</em>
+          Tu recomendación <em>· por qué elegiste ese nivel, en primera persona</em>
         </span>
         <textarea
           className="os-campo"
           value={texto}
           rows={6}
           maxLength={4000}
-          placeholder="Lo que escribas acá sale como resumen en el informe que lee el cliente. Vacío, lo escribe el sistema con lo que dio la evaluación."
+          placeholder="Es lo primero que el cliente lee, y va con tu firma. Contá por qué llegaste a esa recomendación: qué viste, qué te convenció y qué te dejó dudando."
           onChange={(e) => {
             setTexto(e.target.value);
             setHecho(false);
