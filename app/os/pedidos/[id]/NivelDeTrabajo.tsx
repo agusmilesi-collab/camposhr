@@ -32,6 +32,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Opciones from '@/app/os/Opciones';
 import {
+  AVISO_HORIZONTE,
   ESTRATOS,
   PREGUNTAS,
   UNIDADES,
@@ -157,9 +158,12 @@ export default function NivelDeTrabajo({
           evaluadora le hace al cliente, palabra por palabra. */}
       <div className="os-nivel-bloque">
         <p className="os-nivel-pregunta">
-          ¿Cuál es la tarea más larga que este puesto tiene que llevar hasta el final
-          por sí mismo, y en cuánto tiempo se espera que esté terminada?
+          ¿Cuál es la tarea de mayor alcance temporal de la que este puesto responde, y
+          para cuándo tiene que estar terminado su resultado?
         </p>
+        {/* La confusión que arruina la medición: el plazo del resultado contra
+            las horas de trabajo que cuesta producirlo. */}
+        <p className="os-nivel-aviso">{AVISO_HORIZONTE}</p>
         <div className="os-nivel-tiempo">
           <input
             className="os-control-suave os-potencial-numero"

@@ -327,14 +327,24 @@ export const APERTURA =
   '¿Cuál es la tarea de mayor alcance temporal que hacés en tu trabajo y que sea responsabilidad tuya?';
 
 /**
- * Y con qué se averigua el horizonte: cuánto dura esa tarea.
+ * Y con qué se averigua el horizonte: para cuándo tiene que estar el resultado.
+ *
+ * **Es el plazo del resultado y no el trabajo que cuesta hacerlo.** Jaques lo
+ * define como el *target completion time* de la tarea más larga asignada al
+ * rol: la fecha en la que se ve si salió bien. Fijar los objetivos del año
+ * puede llevar una tarde de trabajo y su plazo es un año, porque de eso
+ * responde la persona hasta que el año cierra.
  *
  * Va después y no junto con la anterior: preguntadas a la vez, la persona
- * contesta el plazo del proyecto entero del que participa y no el de lo que
- * ella tiene que sostener, que es lo que se está midiendo.
+ * contesta el plazo del proyecto entero del que participa y no el de aquello
+ * de lo que responde, que es lo que se está midiendo.
  */
 export const PREGUNTA_HORIZONTE =
-  '¿Cuánto tiempo pasa desde que empezás esa tarea hasta que queda terminada?';
+  '¿Para cuándo tenés que tener terminado el resultado de esa tarea?';
+
+/** Lo que hay que tener en la cabeza al contestarla. */
+export const AVISO_HORIZONTE =
+  'Es el plazo del resultado del que responde, no las horas que le lleva hacerlo: fijar los objetivos del año puede llevar una tarde y el plazo es un año.';
 
 /**
  * El nivel que dan las respuestas: el más alto contestado que sí.
