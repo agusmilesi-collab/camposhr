@@ -36,6 +36,7 @@ import Opciones from '@/app/os/Opciones';
 import { nivelesQueRigen, type NivelDiscursivo } from '@/lib/discursivo';
 import {
   APERTURA,
+  AVISO_HORIZONTE,
   PREGUNTAS,
   PREGUNTA_HORIZONTE,
   UNIDADES,
@@ -268,6 +269,9 @@ export default function Discursivo({
             ? PREGUNTA_HORIZONTE
             : '¿Cuál es la tarea más larga que esta persona puede llevar hasta el final por sí misma, sin que le indiquen cómo?'}
         </p>
+        {/* La confusión que arruina la medición: el plazo del resultado contra
+            las horas de trabajo que cuesta producirlo. */}
+        <p className="os-nivel-aviso">{AVISO_HORIZONTE}</p>
         <div className="os-nivel-tiempo">
           <input
             className="os-control-suave os-potencial-numero"

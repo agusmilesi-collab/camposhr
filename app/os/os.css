@@ -6484,6 +6484,17 @@ th.os-tabla-contacto {
   border-top: 1px solid var(--os-linea-suave);
 }
 
+/* Lo que hay que tener en la cabeza al contestar, debajo de la pregunta y en
+   cuerpo chico: es una aclaración y no otra pregunta. */
+.os-nivel-aviso {
+  margin: -4px 0 0;
+  padding-left: 26px;
+  max-width: 68ch;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--os-suave);
+}
+
 /* El número del paso, delante de su pregunta. */
 .os-nivel-numero {
   display: inline-flex;
