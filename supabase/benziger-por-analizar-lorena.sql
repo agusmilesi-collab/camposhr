@@ -16,3 +16,10 @@ join evaluadoras ev on ev.id = e.evaluadora_id
 where e.pedido_id = p.id
   and e.estado = 'Por analizar'
   and ev.nombre = 'Lorena Campos';
+
+-- Y Esteban Auguadra (Federada Salud, Analista de TD), que está por entrevistar:
+-- se sumó el mismo día, por el mismo pedido de Lorena. Su pedido también tiene
+-- un solo candidato.
+update pedidos
+set con_benziger = true
+where id = 'c0780700-412b-4360-b5ae-b253c5a5c950';
