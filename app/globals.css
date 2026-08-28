@@ -6495,6 +6495,71 @@ body {
 }
 
 /*
+ * El alcance del puesto: el plazo y las cinco preguntas.
+ *
+ * Va en las baterías que llevan análisis de potencial. El informe compara lo
+ * que la persona puede abordar contra lo que el puesto exige, y esa segunda
+ * mitad la sabe el cliente.
+ */
+.pedir-nota {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.pedir-span {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pedir-span-num {
+  width: 90px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pedir-span-unidad {
+  width: auto;
+  min-width: 130px;
+}
+
+/* Cada pregunta con su Sí y su No a la derecha: el texto se lee de corrido y
+   la respuesta cae siempre en el mismo lugar del renglón. */
+.pedir-si-no {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.pedir-si-no:last-child {
+  border-bottom: 0;
+}
+
+.pedir-si-no-t {
+  display: grid;
+  gap: 2px;
+  font-size: 0.86rem;
+}
+
+.pedir-si-no-t small {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* Las dos opciones no se estiran a media fila: es Sí o No, y con el ancho de
+   la fila quedaban dos botones enormes al lado de un renglón de texto. */
+.pedir-si-no .pedir-opciones {
+  flex: none;
+  width: 132px;
+}
+
+/*
  * Las tres opciones, en un control segmentado.
  *
  * Es una escala de tres pasos y una sola respuesta, que es exactamente lo que

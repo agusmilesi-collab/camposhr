@@ -166,6 +166,22 @@ export type PedidoNuevo = {
   fechaPedido: string | null;
   notas: string | null;
   origen: 'interno' | 'portal';
+  /** Quién lo pidió, de los contactos del cliente. Sale en el informe. */
+  solicitanteId?: string | null;
+};
+
+/**
+ * El nivel de trabajo del puesto, cuando la batería lleva análisis de potencial.
+ *
+ * Lo contesta el cliente en el formulario del portal: el time-span es la tarea
+ * de mayor alcance de la que responde el puesto, y las cinco preguntas son qué
+ * exige el trabajo. El estrato sale de esas dos respuestas y queda null cuando
+ * se contradicen, que es cuando lo resuelve la evaluadora.
+ */
+export type NivelDelPuesto = {
+  timeSpanDias: number | null;
+  complejidad: Record<string, boolean> | null;
+  estratoPuesto: number | null;
 };
 
 export async function crearPedido(
@@ -177,7 +193,9 @@ export async function crearPedido(
    * en la ficha del pedido. Desde el portal las contesta el cliente, que es
    * quien de verdad sabe cómo es el puesto y quién lo conduce.
    */
-  perfil: Record<string, string> = {}
+  perfil: Record<string, string> = {},
+  /** El nivel de trabajo del puesto, en las baterías que llevan potencial. */
+  nivel: NivelDelPuesto = { timeSpanDias: null, complejidad: null, estratoPuesto: null }
 ): Promise<{ id: string }> {
   return insertar<{ id: string }>('pedidos', {
     empresa_id: p.empresaId,
@@ -190,6 +208,10 @@ export async function crearPedido(
     notas: p.notas,
     estado: ABIERTO,
     origen: p.origen,
+    solicitante_id: p.solicitanteId ?? null,
+    time_span_dias: nivel.timeSpanDias,
+    complejidad: nivel.complejidad,
+    estrato_puesto: nivel.estratoPuesto,
     ...perfil,
   });
 }

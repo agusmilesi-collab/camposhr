@@ -2,6 +2,7 @@ import 'server-only';
 import { select } from '@/lib/supabase';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { RESPALDO, type BateriaDelPortal } from '@/lib/baterias';
+import { llevaDiscursivo } from '@/lib/discursivo';
 
 /**
  * Las baterías como las ve el cliente, leídas de donde se editan.
@@ -18,9 +19,10 @@ export async function bateriasDelPortal(): Promise<BateriaDelPortal[]> {
       descripcion: string | null;
       para_quien: string | null;
       duracion_min: number | null;
+      tests: string[] | null;
     }>(
       'baterias',
-      'select=codigo,descripcion,para_quien,duracion_min&order=codigo.asc',
+      'select=codigo,descripcion,para_quien,duracion_min,tests&order=codigo.asc',
       CACHE_PSICOTECNICOS
     );
     // Una batería sin sus dos textos no se puede ofrecer: el cliente elegiría a
@@ -32,6 +34,7 @@ export async function bateriasDelPortal(): Promise<BateriaDelPortal[]> {
         queIncluye: f.descripcion as string,
         paraQuien: f.para_quien as string,
         minutos: f.duracion_min,
+        conPotencial: llevaDiscursivo(f.tests),
       }));
     return listas.length ? listas : RESPALDO;
   } catch {

@@ -27,6 +27,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Busqueda } from '@/lib/airtable';
+import { AVISO_HORIZONTE, PREGUNTAS, UNIDADES, type Unidad } from '@/lib/potencial';
 import type { Alcance } from '@/lib/precio-portal';
 import type { Contacto } from '@/lib/contactos-tipos';
 import type { Pregunta } from '@/lib/pedido-campos';
@@ -120,6 +121,11 @@ export default function Pedido({
   const [comentarios, setComentarios] = useState('');
   const [perfil, setPerfil] = useState<Record<string, string>>({});
   const [verPerfil, setVerPerfil] = useState(false);
+  /* El nivel de trabajo del puesto, solo en las baterías que llevan análisis de
+     potencial: el plazo de la tarea más larga y las cinco preguntas. */
+  const [spanCantidad, setSpanCantidad] = useState('');
+  const [spanUnidad, setSpanUnidad] = useState<Unidad>('meses');
+  const [complejidad, setComplejidad] = useState<Record<string, boolean>>({});
   const [filas, setFilas] = useState<Fila[]>([vacia(0)]);
   const [proxima, setProxima] = useState(1);
   const [leyendo, setLeyendo] = useState(false);
@@ -236,6 +242,17 @@ export default function Pedido({
         cuerpo.set('descripcion', descripcion.trim());
         for (const [campo, valor] of Object.entries(perfil)) {
           if (valor) cuerpo.set(campo, valor);
+        }
+        // El nivel del puesto viaja tal como se contestó y el servidor saca el
+        // estrato: la cuenta es la misma que hace el OS y vive en un solo lado.
+        if (laBateria?.conPotencial) {
+          if (spanCantidad.trim()) {
+            cuerpo.set('spanCantidad', spanCantidad.trim());
+            cuerpo.set('spanUnidad', spanUnidad);
+          }
+          for (const [estrato, si] of Object.entries(complejidad)) {
+            cuerpo.set(`complejidad-${estrato}`, si ? 'si' : 'no');
+          }
         }
       }
       if (contacto) cuerpo.set('contactoId', contacto);
@@ -558,6 +575,95 @@ export default function Pedido({
                   </span>
                 </button>
               </section>
+
+              {/* ── El alcance del puesto ────────────────────────────────
+                  Solo en las baterías que llevan análisis de potencial. El
+                  informe compara lo que la persona puede abordar hoy contra lo
+                  que el puesto exige, y esa segunda mitad la sabe el cliente:
+                  sin ella el informe dice en qué nivel está la persona y deja
+                  la cuenta que importa sin hacer. */}
+              {laBateria?.conPotencial && (
+                <section className="pedir-bloque">
+                  <h2>El alcance del puesto</h2>
+                  <p className="pedir-ayuda">
+                    {alcance.baterias.find((b) => b.conPotencial)?.codigo ?? 'Esta batería'}{' '}
+                    incluye el análisis de potencial, que dice hasta qué complejidad de
+                    trabajo puede llegar la persona. Para que el informe diga si eso
+                    alcanza para este puesto, necesitamos saber qué exige el puesto.
+                  </p>
+
+                  <div className="pedir-pregunta">
+                    <span className="pedir-pregunta-t">
+                      ¿Cuál es la tarea de mayor alcance temporal de la que responde este
+                      puesto, y cuándo se sabe si su resultado salió bien?
+                    </span>
+                    <p className="pedir-nota">{AVISO_HORIZONTE}</p>
+                    <div className="pedir-span">
+                      <input
+                        className="pedir-input pedir-span-num"
+                        inputMode="decimal"
+                        value={spanCantidad}
+                        placeholder="0"
+                        onChange={(e) =>
+                          setSpanCantidad(e.target.value.replace(/[^\d,.]/g, '').slice(0, 5))
+                        }
+                      />
+                      <select
+                        className="pedir-input pedir-span-unidad"
+                        value={spanUnidad}
+                        onChange={(e) => setSpanUnidad(e.target.value as Unidad)}
+                      >
+                        {UNIDADES.map((u) => (
+                          <option key={u.clave} value={u.clave}>
+                            {u.texto}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Las cinco, por sí o por no. Se contestan de arriba hacia
+                      abajo y valen las que sí: la más alta contestada que sí es
+                      la que manda. */}
+                  <div className="pedir-pregunta">
+                    <span className="pedir-pregunta-t">¿Qué exige el trabajo que hay que hacer?</span>
+                    {PREGUNTAS.map((p) => (
+                      <div className="pedir-si-no" key={p.estrato}>
+                        <span className="pedir-si-no-t">
+                          <strong>{p.corto}</strong>
+                          <small>{p.simple}</small>
+                        </span>
+                        <div className="pedir-opciones" role="group" aria-label={p.corto}>
+                          {[
+                            { v: true, t: 'Sí' },
+                            { v: false, t: 'No' },
+                          ].map((o) => (
+                            <button
+                              type="button"
+                              key={o.t}
+                              aria-pressed={complejidad[String(p.estrato)] === o.v}
+                              className={`pedir-opcion${
+                                complejidad[String(p.estrato)] === o.v ? ' pedir-elegida' : ''
+                              }`}
+                              onClick={() =>
+                                setComplejidad((c) => {
+                                  const nueva = { ...c };
+                                  if (nueva[String(p.estrato)] === o.v)
+                                    delete nueva[String(p.estrato)];
+                                  else nueva[String(p.estrato)] = o.v;
+                                  return nueva;
+                                })
+                              }
+                            >
+                              {o.t}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
             </>
           )}
 

@@ -19,6 +19,15 @@ export type BateriaDelPortal = {
    *  con el resto del cajón. */
   paraQuien: string;
   minutos: number | null;
+  /**
+   * Si esa batería incluye el análisis de potencial.
+   *
+   * Cuando lo incluye, el formulario del portal le pide al cliente el nivel de
+   * trabajo del puesto: el informe compara a la persona contra ese nivel, y sin
+   * él dice en qué estrato está la persona y deja la cuenta que importa sin
+   * hacer.
+   */
+  conPotencial: boolean;
 };
 
 /**
@@ -35,6 +44,7 @@ export const RESPALDO: BateriaDelPortal[] = [
       'Evaluación psicotécnica con test proyectivo abreviado (Zulliger) más tests cognitivos y de estilo de pensamiento.',
     paraQuien: 'Puestos operativos y mandos medios.',
     minutos: 135,
+    conPotencial: false,
   },
   {
     codigo: 'Batería 2',
@@ -42,6 +52,7 @@ export const RESPALDO: BateriaDelPortal[] = [
       'Evaluación psicotécnica con test proyectivo completo (Rorschach, Sistema Comprehensivo de Exner) más tests cognitivos y de estilo de pensamiento.',
     paraQuien: 'Perfiles profesionales y mandos medios calificados.',
     minutos: 180,
+    conPotencial: false,
   },
   {
     codigo: 'Batería 3',
@@ -49,6 +60,7 @@ export const RESPALDO: BateriaDelPortal[] = [
       'Todo lo de la estándar más análisis discursivo según el modelo de Elliot Jaques, sobre cinco minutos de discurso del candidato.',
     paraQuien: 'Jefaturas, gerencias y puestos de decisión.',
     minutos: 210,
+    conPotencial: true,
   },
 ];
 
