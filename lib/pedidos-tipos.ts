@@ -50,6 +50,17 @@ export type Pedido = {
   jefe_estilo: string | null;
   jefe_paciencia: string | null;
   jefe_emociones: string | null;
+  /**
+   * El nivel de trabajo del puesto, por los dos caminos del modelo de Jaques.
+   *
+   * El time-span es el tiempo máximo de finalización de la tarea más larga que
+   * el puesto lleva hasta el final, y `complejidad` son las respuestas a las
+   * cinco preguntas. `estratoPuesto` es el que rige: sale de los dos y solo se
+   * elige a mano cuando discrepan.
+   */
+  timeSpanDias: number | null;
+  complejidad: Record<string, boolean> | null;
+  estratoPuesto: number | null;
 };
 
 /**

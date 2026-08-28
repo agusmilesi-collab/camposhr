@@ -4,7 +4,7 @@ import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
-import { ABIERTO, CAMPOS_PEDIDO, ESTADOS_PEDIDO } from '@/lib/pedido-campos';
+import { ABIERTO, CAMPOS_PEDIDO, ESTADOS_PEDIDO, type EstadoPedido } from '@/lib/pedido-campos';
 
 export const runtime = 'nodejs';
 
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   const datos = await req.json().catch(() => null);
   const id = datos?.id;
   const campo = datos?.campo;
-  const valor = datos?.valor;
+  const valor = datos?.valor as unknown;
 
   if (typeof id !== 'string' || !UUID.test(id)) {
     return NextResponse.json({ ok: false, motivo: 'Pedido inválido.' }, { status: 400 });
@@ -59,6 +59,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, motivo: 'Exigencia inválida.' }, { status: 400 });
     }
     fila = { exigencia_id: valor };
+  } else if (campo === 'time_span_dias' || campo === 'estrato_puesto') {
+    /* Los dos números del nivel de trabajo. El time-span va en días, del día a
+       los cincuenta años; el estrato, del I al VII. Null los borra. */
+    const tope = campo === 'time_span_dias' ? 40_000 : 7;
+    const n = typeof valor === 'number' && Number.isInteger(valor) && valor >= 1 && valor <= tope
+      ? valor
+      : null;
+    if (valor !== null && n === null) {
+      return NextResponse.json({ ok: false, motivo: 'Valor fuera de rango.' }, { status: 400 });
+    }
+    fila = { [campo]: n };
+  } else if (campo === 'complejidad') {
+    /* Las cinco preguntas: un objeto con claves del 1 al 5 y sí o no. Se
+       comprueba entero, porque de acá sale el estrato. */
+    if (valor !== null) {
+      const ok =
+        valor !== null &&
+        typeof valor === 'object' &&
+        !Array.isArray(valor) &&
+        Object.entries(valor as Record<string, unknown>).every(
+          ([k, v]) => /^[1-5]$/.test(k) && typeof v === 'boolean'
+        );
+      if (!ok) {
+        return NextResponse.json({ ok: false, motivo: 'Respuestas inválidas.' }, { status: 400 });
+      }
+    }
+    fila = { complejidad: valor };
   } else if (campo === 'con_benziger') {
     if (typeof valor !== 'boolean') {
       return NextResponse.json({ ok: false, motivo: 'Valor inválido.' }, { status: 400 });
@@ -68,7 +95,7 @@ export async function POST(req: Request) {
     if (valor !== null && typeof valor !== 'string') {
       return NextResponse.json({ ok: false, motivo: 'Valor inválido.' }, { status: 400 });
     }
-    if (campo === 'estado' && !ESTADOS_PEDIDO.includes(valor)) {
+    if (campo === 'estado' && !ESTADOS_PEDIDO.includes(valor as EstadoPedido)) {
       return NextResponse.json({ ok: false, motivo: 'Estado inválido.' }, { status: 400 });
     }
     if (campo === 'puesto' && !String(valor ?? '').trim()) {

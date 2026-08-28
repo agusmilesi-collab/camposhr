@@ -22,7 +22,13 @@ export function useGuardar(id: string) {
   const [error, setError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  async function guardar(campo: string, valor: string | boolean | null): Promise<boolean> {
+  /* Los campos del pedido son texto casi todos, pero el nivel de trabajo tiene
+     dos números y un objeto con las cinco respuestas: el valor viaja como
+     viene y quien lo recibe lo comprueba. */
+  async function guardar(
+    campo: string,
+    valor: string | boolean | number | Record<string, boolean> | null
+  ): Promise<boolean> {
     setError(null);
     setGuardando(true);
     try {

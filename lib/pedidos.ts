@@ -45,6 +45,10 @@ type Fila = {
   jefe_estilo: string | null;
   jefe_paciencia: string | null;
   jefe_emociones: string | null;
+  /** El nivel de trabajo del puesto, que es contra lo que se mide a la persona. */
+  time_span_dias: number | null;
+  complejidad: Record<string, boolean> | null;
+  estrato_puesto: number | null;
 };
 
 const CAMPOS =
@@ -52,6 +56,7 @@ const CAMPOS =
   'fecha_pedido,reabierto_el,notas,contexto,puesto_problemas,puesto_presion,' +
   'puesto_interaccion,puesto_estabilidad,puesto_contacto_jefe,' +
   'puesto_innovacion,jefe_estilo,jefe_paciencia,jefe_emociones,' +
+  'time_span_dias,complejidad,estrato_puesto,' +
   'empresas(nombre),baterias(codigo),evaluaciones(id,estado,personas(nombre))';
 
 /** Los estados de una evaluación que cuentan como trabajo terminado. */
@@ -95,6 +100,9 @@ function armar(f: Fila): Pedido {
     jefe_estilo: f.jefe_estilo,
     jefe_paciencia: f.jefe_paciencia,
     jefe_emociones: f.jefe_emociones,
+    timeSpanDias: f.time_span_dias,
+    complejidad: f.complejidad,
+    estratoPuesto: f.estrato_puesto,
   };
 }
 
