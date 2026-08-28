@@ -85,6 +85,14 @@ export type Cabecera = {
     exigencia_id: string | null;
     /** El nivel de trabajo del puesto, contra el que se compara a la persona. */
     estrato_puesto: number | null;
+    /**
+     * Quién pidió la búsqueda, de las personas del cliente.
+     *
+     * Sale en el encabezado del informe debajo de la empresa: el documento
+     * circula entre gente que no estuvo en el pedido. Los pedidos que vinieron
+     * de Airtable pueden no traerlo.
+     */
+    solicitante: { nombre: string; cargo: string | null } | null;
     /** El token es el enlace del portal de esa empresa, si lo tiene. */
     empresas: { nombre: string; token_portal: string | null } | null;
     baterias: {
@@ -286,7 +294,8 @@ const CAMPOS_CABECERA =
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,' +
   'personas(nombre,email,telefono,cv_path,fecha_nacimiento),evaluadoras(nombre),' +
-  'pedidos(puesto,con_benziger,exigencia_id,estrato_puesto,empresas(nombre,token_portal),' +
+  'pedidos(puesto,con_benziger,exigencia_id,estrato_puesto,' +
+  'solicitante:contactos(nombre,cargo),empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';
 
 /** Null si no existe, para que la pantalla conteste 404 en vez de romperse. */

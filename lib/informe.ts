@@ -120,8 +120,20 @@ export type Informe = {
   empresa: string | null;
   puesto: string | null;
   evaluadora: string | null;
-  /** Mes y año de la evaluación, que es lo que se imprime. */
+  /**
+   * Cuándo se evaluó: el día de la entrevista, escrito entero.
+   *
+   * Las evaluaciones viejas sin fecha de entrevista salen con el mes y el año,
+   * que es lo que se puede afirmar de ellas.
+   */
   cuando: string;
+  /**
+   * Quién pidió la búsqueda, con su cargo si está cargado.
+   *
+   * Va debajo de la empresa: el informe circula reenviado entre gente que no
+   * estuvo en el pedido, y de quién salió es lo primero que se pregunta.
+   */
+  solicitante: string | null;
   bateria: string | null;
   /** El test de manchas que se administró, para las técnicas. */
   proyectivo: string | null;
@@ -278,10 +290,37 @@ export type Informe = {
   faltantes: Faltante[];
 };
 
-/** El mes y el año, que es la precisión con la que se fecha el informe. */
+/**
+ * Cuándo se evaluó a la persona.
+ *
+ * Es el día de la entrevista, escrito entero: el informe se guarda en un legajo
+ * y se lo compara con otro, y el mes y el año no alcanzan para saber cuál se
+ * tomó antes ni si fue antes o después de algo que pasó en la empresa. Las
+ * evaluaciones viejas que no tienen fecha de entrevista se siguen fechando por
+ * mes y año, que es lo que se puede afirmar de ellas.
+ *
+ * Una fecha sin hora (`fecha_ingreso` es `date`) se arma con sus tres números y
+ * no con `new Date`, que la lee como medianoche en Londres y en Córdoba la
+ * devuelve un día antes.
+ */
+const ZONA = 'America/Argentina/Cordoba';
+
+function fechaLarga(iso: string): string {
+  const soloDia = /^\d{4}-\d{2}-\d{2}$/.test(iso);
+  const d = soloDia
+    ? new Date(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)))
+    : new Date(iso);
+  return d.toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    ...(soloDia ? {} : { timeZone: ZONA }),
+  });
+}
+
 function mesYAnio(iso: string | null): string {
   const d = iso ? new Date(iso) : new Date();
-  const mes = d.toLocaleDateString('es-AR', { month: 'long', timeZone: 'America/Argentina/Cordoba' });
+  const mes = d.toLocaleDateString('es-AR', { month: 'long', timeZone: ZONA });
   return `${mes[0].toUpperCase()}${mes.slice(1)} de ${d.getFullYear()}`;
 }
 
@@ -602,7 +641,12 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     empresa: c.pedidos?.empresas?.nombre ?? null,
     puesto: c.pedidos?.puesto ?? null,
     evaluadora: c.evaluadoras?.nombre ?? null,
-    cuando: mesYAnio(c.fecha_entrevista ?? c.fecha_ingreso),
+    cuando: c.fecha_entrevista ? fechaLarga(c.fecha_entrevista) : mesYAnio(c.fecha_ingreso),
+    solicitante: c.pedidos?.solicitante
+      ? c.pedidos.solicitante.cargo
+        ? `${c.pedidos.solicitante.nombre} · ${c.pedidos.solicitante.cargo}`
+        : c.pedidos.solicitante.nombre
+      : null,
     edad: c.edad,
     bateria: c.pedidos?.baterias?.codigo ?? null,
     proyectivo: proyectivoDe(f),

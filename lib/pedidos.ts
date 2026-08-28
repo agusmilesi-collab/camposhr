@@ -26,6 +26,7 @@ type Fila = {
   bateria_id: string | null;
   con_benziger: boolean;
   exigencia_id: string | null;
+  solicitante_id: string | null;
   familia: string | null;
   seniority: string | null;
   estado: string;
@@ -52,7 +53,7 @@ type Fila = {
 };
 
 const CAMPOS =
-  'id,puesto,empresa_id,bateria_id,con_benziger,exigencia_id,familia,seniority,estado,' +
+  'id,puesto,empresa_id,bateria_id,con_benziger,exigencia_id,solicitante_id,familia,seniority,estado,' +
   'fecha_pedido,reabierto_el,notas,contexto,puesto_problemas,puesto_presion,' +
   'puesto_interaccion,puesto_estabilidad,puesto_contacto_jefe,' +
   'puesto_innovacion,jefe_estilo,jefe_paciencia,jefe_emociones,' +
@@ -73,6 +74,7 @@ function armar(f: Fila): Pedido {
     bateriaId: f.bateria_id,
     conBenziger: f.con_benziger,
     exigenciaId: f.exigencia_id,
+    solicitanteId: f.solicitante_id,
     familia: f.familia,
     seniority: f.seniority,
     estado: f.estado,

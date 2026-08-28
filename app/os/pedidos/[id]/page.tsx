@@ -9,6 +9,7 @@ import { BENZIGER_USD } from '@/lib/benziger';
 import { ABIERTO, DEL_JEFE, DEL_PUESTO, FAMILIAS, SENIORITY } from '@/lib/pedido-campos';
 import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
+import { contactosDe } from '@/lib/contactos';
 import { Benziger, Borrar, Estado, Fecha, Largo, Lista, Pregunta, Texto } from './Editar';
 import NivelDeTrabajo from './NivelDeTrabajo';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
@@ -68,6 +69,11 @@ export default async function FichaPedido({ params }: { params: { id: string } }
   ]);
   if (!pedido) notFound();
 
+  /* Quién puede figurar como solicitante: las personas del cliente. El informe
+     lo nombra debajo de la empresa, así que se elige acá y una sola vez para
+     toda la búsqueda. */
+  const contactos = await contactosDe(pedido.empresaId);
+
   const porDefecto = exigencias.find((e) => e.predeterminada) ?? null;
 
   const pendientes = pedido.candidatos - pedido.entregados;
@@ -113,6 +119,20 @@ export default async function FichaPedido({ params }: { params: { id: string } }
         dos
       >
         <Texto id={pedido.id} campo="puesto" valor={pedido.puesto} rotulo="Puesto" />
+        {/* Quién lo pidió: sale en el encabezado del informe, debajo de la
+            empresa. Se ofrecen todos los contactos activos y no solo los que
+            piden, porque a veces la búsqueda la abre alguien del área. */}
+        <Lista
+          id={pedido.id}
+          campo="solicitante_id"
+          valor={pedido.solicitanteId}
+          rotulo="Solicitado por"
+          vacio="Sin indicar"
+          opciones={contactos.map((c) => ({
+            valor: c.id,
+            texto: c.cargo ? `${c.nombre} · ${c.cargo}` : c.nombre,
+          }))}
+        />
         <Fecha
           id={pedido.id}
           campo="fecha_pedido"
