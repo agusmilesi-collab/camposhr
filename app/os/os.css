@@ -7641,6 +7641,34 @@ button.os-test-estado:hover:not(:disabled) {
   padding-left: var(--os-herramienta-sangria, 0);
 }
 
+/*
+ * El número del paso, adentro del botón.
+ *
+ * Los tres botones del test de manchas son tres pasos en orden: abrir las
+ * láminas, pasarle la dirección y codificar. El número lo dice; sin él hay que
+ * deducirlo del lugar que ocupa cada botón, y quien administra por primera vez
+ * no tiene de dónde deducirlo.
+ */
+.os-boton-paso {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  margin-right: 1px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* En el botón oscuro el fondo del número tiene que aclarar, no oscurecer. */
+.os-boton-firme .os-boton-paso {
+  background: color-mix(in srgb, currentColor 24%, transparent);
+}
+
 /* El Raven va del otro lado: lo suyo no son botones de administrar sino el
    reloj y el enlace, que se miran mientras la persona responde sola. */
 .os-accion-derecha {

@@ -165,15 +165,19 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
               <Papel
                 id={e.id}
               >
+                {/* Numerados: son los tres pasos del test en el orden en que
+                    se hacen, y el número los dice sin tener que deducirlos del
+                    lugar que ocupan. */}
                 <a
                   className="os-boton os-boton-firme"
                   href={h.href}
                   target="_blank"
                   rel="noreferrer"
                 >
+                  <span className="os-boton-paso">1</span>
                   {h.boton}
                 </a>
-                <LinkLaminas href={h.href} />
+                <LinkLaminas href={h.href} numero={2} />
                 {/* Las tres cosas que se hacen con las manchas, en la misma
                     fila: abrirlas, pasar la dirección y codificar. Codificar
                     colgaba de un renglón propio y era un botón solo ocupando
@@ -186,7 +190,8 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Codificar lámina I
+                    <span className="os-boton-paso">3</span>
+                    Codificar
                   </a>
                 )}
               </Papel>
