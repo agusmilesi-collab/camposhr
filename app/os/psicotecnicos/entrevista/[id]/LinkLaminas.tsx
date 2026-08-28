@@ -17,7 +17,7 @@
 
 import { useState } from 'react';
 
-export default function LinkLaminas({ href }: { href: string }) {
+export default function LinkLaminas({ href, numero }: { href: string; numero?: number }) {
   const [copiado, setCopiado] = useState(false);
 
   async function copiar() {
@@ -32,6 +32,9 @@ export default function LinkLaminas({ href }: { href: string }) {
 
   return (
     <button className="os-boton" type="button" onClick={copiar}>
+      {/* El número dice en qué paso del test va: el orden de los botones es el
+          orden en que se administra, y numerados no hay que deducirlo. */}
+      {numero && !copiado && <span className="os-boton-paso">{numero}</span>}
       {copiado ? 'Copiado' : 'Copiar link'}
     </button>
   );
