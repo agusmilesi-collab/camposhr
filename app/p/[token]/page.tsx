@@ -7,6 +7,7 @@ import NuevoPedido from './NuevoPedido';
 import { bateriasDelPortal } from '@/lib/baterias-portal';
 import { COBROS, COBRO_PUBLICADO, cobro } from '@/lib/cobro';
 import { informeDe, serviciosDe } from '@/lib/servicios';
+import { PAGINA_PSICOTECNICOS, esPortalEjemplo } from '@/lib/portal-ejemplo';
 
 export const dynamic = 'force-dynamic';
 
@@ -412,6 +413,35 @@ export default async function Portal({ params }: { params: { token: string } }) 
           )}
         </section>
       </main>
+
+      {/* Solo en el portal de muestra: quien llegó desde la página de
+          psicotécnicos vino a mirar y tiene que poder volver a donde estaban
+          los precios. En el portal de un cliente este bloque no existe. */}
+      {esPortalEjemplo(params.token) && (
+        <div className="wrap">
+          <a className="precios-demo precios-demo-volver" href={PAGINA_PSICOTECNICOS}>
+            <span className="precios-demo-flecha" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <path
+                  d="M19 12H6M11 6l-6 6 6 6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <span className="precios-demo-texto">
+              <span className="precios-demo-rotulo">Estabas mirando</span>
+              <strong>Volver a cotizaciones</strong>
+              <span className="precios-demo-bajada">
+                Qué toma y qué entrega cada batería, con sus precios de hoy.
+              </span>
+            </span>
+          </a>
+        </div>
+      )}
 
       <footer className="foot">
         <div className="wrap">
