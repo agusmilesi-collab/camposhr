@@ -141,7 +141,7 @@ const EQUIPO = [
     foto: '/equipo/lorena-campos.png',
     titulo: 'Lic. en Psicología · Mat. 5217',
     linkedin: 'https://www.linkedin.com/in/lorecamposhr/',
-    bio: 'Especialista en Psicología Cognitiva y licenciataria del BZG Thinking Styles Assessment, el cuestionario de perfil de pensamiento que administra el estudio. Desde 2009 trabaja en el ámbito organizacional, acompañando empresas locales, nacionales y multinacionales en liderazgo, gestión de personas y procesos soft.',
+    bio: 'Especialista en Psicología Cognitiva y licenciataria del BZG Thinking Styles Assessment. Desde 2009 trabaja en el ámbito organizacional, acompañando empresas locales, nacionales y multinacionales en liderazgo, gestión de personas y procesos soft.',
   },
   {
     nombre: 'Lucila Campos',
