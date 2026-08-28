@@ -7426,10 +7426,13 @@ th.os-tabla-contacto {
   min-width: 128px;
 }
 
-/* Lo que cuelga del test, separado del encabezado por una línea. */
+/* Lo que cuelga del test, separado del encabezado por una línea y con aire
+   debajo de ella: pegado a la raya, el contenido se leía como parte del
+   renglón del título en vez de como lo que se abrió. */
 .os-herramienta-cuerpo {
   margin-top: 6px;
-  padding-top: 12px;
+  padding-top: 22px;
+  padding-bottom: 6px;
   border-top: 1px solid var(--os-linea);
 }
 
