@@ -6529,6 +6529,18 @@ th.os-tabla-contacto {
   gap: 22px;
 }
 
+/* Sobre qué se contesta. Va arriba y en el tono de una nota, no de una
+   pregunta: es la aclaración que evita medir contra el puesto equivocado. */
+.os-nivel-alcance {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--os-tinta-media);
+}
+
 .os-nivel-bloque {
   display: grid;
   gap: 10px;
