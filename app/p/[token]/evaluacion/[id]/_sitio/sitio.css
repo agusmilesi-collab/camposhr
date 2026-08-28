@@ -365,13 +365,14 @@
   gap: 8px;
 }
 
+/* El elegido es el único que es una tarjeta. Los otros tres van como renglones
+   apagados: están para decir contra qué se eligió, y tres recuadros vacíos
+   pesan tanto como el que importa. */
 .sitio-nivel-ajuste {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  padding: 11px 14px;
-  border: 1px solid var(--linea);
-  border-radius: 10px;
+  padding: 6px 14px;
   color: var(--suave);
 }
 
@@ -392,16 +393,23 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--linea-suave);
-  color: var(--suave);
+  width: 24px;
+  height: 24px;
+  color: var(--linea);
 }
 
 .sitio-nivel-ajuste.elegido {
-  padding: 16px;
-  border-width: 2px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border: 1px solid;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+
+.sitio-nivel-ajuste.elegido .inf-nivel-icono {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
 }
 
 .sitio-nivel-ajuste.elegido h3 {
@@ -485,34 +493,23 @@
 }
 
 /* ── Cómo trabaja ─────────────────────────────────────────────────────── */
+/* Tres bloques de texto separados por una línea, sin recuadro y sin barras de
+   color: son tres listas de oraciones y lo único que las separa es de qué
+   hablan, que lo dice el título. */
 .sitio-grupos {
   display: grid;
-  gap: 14px;
+  gap: 22px;
 }
 
-.sitio-grupo {
-  padding: 16px 18px;
-  border: 1px solid var(--linea);
-  border-left-width: 3px;
-  border-radius: 10px;
-  background: var(--hoja);
-}
-
-.sitio-grupo.destacado {
-  border-left-color: var(--verde);
-}
-.sitio-grupo.esperado {
-  border-left-color: var(--azul);
-}
-.sitio-grupo.desarrollar {
-  border-left-color: var(--ambar);
+.sitio-grupo + .sitio-grupo {
+  padding-top: 22px;
+  border-top: 1px solid var(--linea);
 }
 
 .sitio-grupo header {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 14px;
+  gap: 10px;
   margin-bottom: 10px;
 }
 
@@ -789,11 +786,12 @@
   color: var(--suave);
 }
 
+/* La respuesta a lo que la escalera plantea. En cuerpo un poco mayor y con
+   aire arriba, sin recuadro: lo que la destaca es que está sola. */
 .sitio-escalera-cierre {
-  padding: 14px 16px;
-  border-left: 3px solid var(--tinta);
-  background: var(--hoja);
-  font-size: 0.98rem !important;
+  margin-top: 20px !important;
+  font-size: 1.02rem !important;
+  line-height: 1.6 !important;
   font-weight: 500;
 }
 
