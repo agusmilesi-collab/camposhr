@@ -10427,6 +10427,13 @@ textarea.os-campo-bateria {
   margin-top: 25px;
 }
 
+/* El informe, con las esquinas rectas: es una hoja y las hojas no vienen
+   redondeadas. La barra de arriba sigue siendo un panel del OS y conserva las
+   suyas. */
+.os-panel-hoja {
+  border-radius: 0;
+}
+
 .os-panel-informe .os-informe-marco {
   padding: 0;
   background: var(--os-panel);

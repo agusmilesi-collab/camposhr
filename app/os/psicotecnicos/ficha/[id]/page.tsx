@@ -655,7 +655,7 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
       </div>
       </section>
 
-      <section className="os-panel os-panel-informe">
+      <section className="os-panel os-panel-informe os-panel-hoja">
       <div className="os-informe-marco">
         {/* Lo que va a ver el cliente, y en el mismo lugar donde se corrige.
             Antes acá se revisaba el documento y el cliente leía otra cosa: dos
