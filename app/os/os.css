@@ -5998,6 +5998,27 @@ th.os-tabla-contacto {
   gap: 26px;
 }
 
+/* En la hoja de la entrevista, la carga del informe del Benziger no es un
+   panel aparte: es el contenido de la tarjeta del test. */
+.os-bz-solo .os-panel {
+  border: 0;
+  box-shadow: none;
+  background: none;
+}
+
+.os-bz-solo .os-panel-cuerpo {
+  padding: 0;
+}
+
+/* El reloj y el enlace, contra el margen derecho de la línea del puntaje. */
+.os-raven-derecha {
+  margin-left: auto;
+}
+
+.os-raven-derecha .os-herramienta-accion {
+  padding-left: 0;
+}
+
 .os-raven-campo {
   display: grid;
   gap: 6px;

@@ -21,6 +21,7 @@ import { RANGOS, rangosValidos } from '@/lib/raven';
 import Orden from './Orden';
 import Competencias from './Competencias';
 import Nacimiento from './Nacimiento';
+import BenzigerInforme from '../../ficha/[id]/Benziger';
 import Discursivo from '../../ficha/[id]/Discursivo';
 
 /**
@@ -204,29 +205,29 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
           // pantalla se entera sola de que abrió, corre el reloj y muestra el
           // puntaje cuando entrega, sin que haya que recargar.
           return (
-            <>
-              <Raven
-                id={e.id}
-                estado={e.raven}
-                iniciado={e.ravenIniciado}
-                duracionSegundos={e.ravenDuracion}
-                medida={e.ravenMedida}
-              />
-              {/* Y debajo el puntaje con su lectura, que hasta ahora vivía en
-                  una pestaña aparte: mandar el enlace y leer lo que dio son dos
-                  momentos del mismo test, y estaban en dos pantallas. */}
-              <RavenPuntaje
-                id={e.id}
-                raw={e.ravenMedida?.raw ?? null}
-                percentil={e.ravenMedida?.percentil ?? null}
-                desvios={e.ravenMedida?.desvios ?? null}
-                resultado={e.ravenMedida?.resultado ?? null}
-                origen={e.ravenMedida?.origen ?? null}
-                tardo={e.ravenDuracion}
-                sesion={e.ravenSesion}
-                rangos={rangos}
-              />
-            </>
+            /* El puntaje con su lectura, y el reloj y el enlace en la misma
+               línea: mandar el enlace y leer lo que dio son dos momentos del
+               mismo test, y estaban en dos pantallas. */
+            <RavenPuntaje
+              id={e.id}
+              raw={e.ravenMedida?.raw ?? null}
+              percentil={e.ravenMedida?.percentil ?? null}
+              desvios={e.ravenMedida?.desvios ?? null}
+              resultado={e.ravenMedida?.resultado ?? null}
+              origen={e.ravenMedida?.origen ?? null}
+              tardo={e.ravenDuracion}
+              sesion={e.ravenSesion}
+              rangos={rangos}
+              derecha={
+                <Raven
+                  id={e.id}
+                  estado={e.raven}
+                  iniciado={e.ravenIniciado}
+                  duracionSegundos={e.ravenDuracion}
+                  medida={e.ravenMedida}
+                />
+              }
+            />
           );
         }
 
@@ -269,16 +270,17 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         if (t === 'Benziger') {
           return (
             <>
-              {/* Se responde en la plataforma de la licencia y el informe se
-                  carga después, en la ficha; acá queda la marca de si ya se le
-                  tomó, que es lo que la entrevista tiene que saber. */}
-              <Papel
+              {/* Se responde en la plataforma de la licencia y el PDF se baja
+                  de ahí, así que se sube acá mismo en vez de mandar a otra
+                  pantalla. El cuadrante lo elige la evaluadora después,
+                  leyéndolo, y para eso está la pestaña. */}
+              <Papel id={e.id} />
+              <BenzigerInforme
                 id={e.id}
-              >
-                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=benziger`}>
-                  Cargar el informe
-                </Link>
-              </Papel>
+                cuadrantes={[]}
+                informe={e.benzigerInforme}
+                soloInforme
+              />
             </>
           );
         }

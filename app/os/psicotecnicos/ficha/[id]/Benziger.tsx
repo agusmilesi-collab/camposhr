@@ -36,6 +36,7 @@ export default function Benziger({
   cuadrantes,
   parejos: parejosGuardados = false,
   informe,
+  soloInforme = false,
 }: {
   id: string;
   /** Uno o dos códigos. El primero es el preferente. */
@@ -44,6 +45,14 @@ export default function Benziger({
   parejos?: boolean;
   /** El nombre del informe ya leído, o null si todavía no hay ninguno. */
   informe: string | null;
+  /**
+   * Solo la carga del informe, sin la cruz de cuadrantes.
+   *
+   * Es lo que va en la hoja de la entrevista: el PDF se baja de la plataforma
+   * y se sube ahí mismo, mientras que el cuadrante lo elige la evaluadora
+   * después, leyéndolo, y para eso está la pestaña.
+   */
+  soloInforme?: boolean;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -134,19 +143,24 @@ export default function Benziger({
     // Con el mismo tope de ancho que la hoja: las dos filas se leen como una
     // sola grilla y no como dos anchos distintos.
     <div
-      className="os-hoja-fila os-bz-hoja"
-      style={{ '--os-hoja-columnas': 2 } as React.CSSProperties}
+      className={`os-hoja-fila os-bz-hoja${soloInforme ? ' os-bz-solo' : ''}`}
+      style={{ '--os-hoja-columnas': soloInforme ? 1 : 2 } as React.CSSProperties}
     >
       <section className="os-panel">
-        <div className="os-panel-top">
-          <h2>El informe</h2>
-          {/* El estado va con el título: es de todo el informe, no del paso. */}
-          {(archivo || informe) && (
-            <span className={`os-sello-estado ${archivo ? 'os-ambar' : 'os-verde'}`}>
-              {archivo ? 'Sin calcular' : 'Leído'}
-            </span>
-          )}
-        </div>
+        {/* En la hoja de la entrevista el título ya lo pone la tarjeta del
+            test, y el estado su pastilla: repetirlos era decir dos veces lo
+            mismo adentro de la misma caja. */}
+        {!soloInforme && (
+          <div className="os-panel-top">
+            <h2>El informe</h2>
+            {/* El estado va con el título: es de todo el informe, no del paso. */}
+            {(archivo || informe) && (
+              <span className={`os-sello-estado ${archivo ? 'os-ambar' : 'os-verde'}`}>
+                {archivo ? 'Sin calcular' : 'Leído'}
+              </span>
+            )}
+          </div>
+        )}
         <div className="os-panel-cuerpo">
           <input
             ref={pdf}
@@ -235,6 +249,7 @@ export default function Benziger({
         </div>
       </section>
 
+      {!soloInforme && (
       <section className="os-panel">
         <div className="os-panel-top">
           <h2>Cuadrante preferente</h2>
@@ -296,6 +311,7 @@ export default function Benziger({
           </div>
         </div>
       </section>
+      )}
     </div>
   );
 }
