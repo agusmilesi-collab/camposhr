@@ -21,7 +21,7 @@ import Administrados from './Administrados';
 import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
-import { bandasDeLaHoja } from '@/lib/redacciones';
+import { bandaDeAfr, bandasDeLaHoja } from '@/lib/redacciones';
 import Raven from './Raven';
 import Discursivo from './Discursivo';
 import Whatsapp from '../../Whatsapp';
@@ -381,7 +381,17 @@ function SumarioEstructural({ f, rige }: { f: Ficha; rige: Regulacion }) {
   // La banda de cada indicador sale de los mismos cortes con los que el motor
   // elige las lecturas del informe, así que la hoja no puede pintar de verde un
   // valor sobre el que el informe escribe una recomendación.
-  return texto ? <SumarioTexto texto={texto} bandas={bandasDeLaHoja(rige.cortes)} /> : null;
+  //
+  // Afr entra aparte porque su banda no es un corte guardado: depende del
+  // estilo del protocolo, y con él se puede pintar igual que las demás. Lo pidió
+  // la psicóloga el 28/8/2026, que lo quería en rojo pasando 0,83 y por debajo
+  // de 0,53, que es la banda del ambigual.
+  const estilo = (s.crudo as { control_estres?: { estilo?: unknown } } | null)?.control_estres
+    ?.estilo;
+  const afr = bandaDeAfr(typeof estilo === 'string' ? estilo : 'Ambigual');
+  const bandas = { ...bandasDeLaHoja(rige.cortes), ...(afr ? { Afr: afr } : {}) };
+
+  return texto ? <SumarioTexto texto={texto} bandas={bandas} /> : null;
 }
 
 /**

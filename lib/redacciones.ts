@@ -2032,23 +2032,57 @@ export type Banda = {
   decimales: number;
 };
 
-export function bandasDeLaHoja(cortes: Cortes = {}): Record<string, Banda> {
-  const porIndice = new Map<string, Banda>();
+/**
+ * Qué se espera de cada índice, por su nombre.
+ *
+ * Sale de los mismos cortes con los que se eligen las lecturas: un índice que
+ * dispara "menor que" pone su piso y uno que dispara "mayor que" pone su techo,
+ * y los dos juntos arman la banda. Es lo que pinta el sumario en la ficha y,
+ * desde el 28/8/2026, lo que respalda cada texto del informe.
+ *
+ * A diferencia de `bandasDeLaHoja`, acá entran todos los índices con corte y no
+ * solo los que la hoja muestra: el informe nombra índices que en la hoja no
+ * tienen su propio rótulo.
+ */
+export function bandasPorIndice(
+  cortes: Cortes = {},
+  test: TestDeManchas = 'Rorschach'
+): Record<string, Banda> {
+  const porIndice: Record<string, Banda> = {};
   for (const [clave, t] of Object.entries(TEXTOS as Record<string, Redaccion>)) {
-    if (!t.corte || !ROTULOS_DE_HOJA[t.indice]) continue;
-    const v = corteDe(clave as ClaveDeTexto, cortes);
+    if (!t.corte) continue;
+    const v = corteDe(clave as ClaveDeTexto, cortes, test);
     const b =
-      porIndice.get(t.indice) ??
+      porIndice[t.indice] ??
       ({ indice: t.indice, minimo: null, maximo: null, decimales: 0 } as Banda);
     b.decimales = Math.max(b.decimales, t.corte.decimales);
     if (t.corte.op === 'menor') b.minimo = b.minimo === null ? v : Math.max(b.minimo, v);
     else b.maximo = b.maximo === null ? v : Math.min(b.maximo, v);
-    porIndice.set(t.indice, b);
+    porIndice[t.indice] = b;
   }
+  return porIndice;
+}
 
+/**
+ * La banda de Afr, que depende del estilo.
+ *
+ * No sale de un corte guardado como las demás: lo que se espera de la
+ * proporción afectiva cambia según la persona sea introversiva, ambigual o
+ * extratensiva, y por eso vive en `AFR_BANDA` y no en `TEXTOS`. La hoja la pinta
+ * con la del estilo que dio el protocolo, así que un 0,80 sale verde en un
+ * extratensivo y rojo en un introversivo, que es lo que dice el instrumento.
+ */
+export function bandaDeAfr(estilo: string): Banda | null {
+  const b = AFR_BANDA[estilo];
+  if (!b) return null;
+  return { indice: 'Afr', minimo: b[0], maximo: b[1], decimales: 2 };
+}
+
+export function bandasDeLaHoja(cortes: Cortes = {}): Record<string, Banda> {
+  const porIndice = bandasPorIndice(cortes);
   const porRotulo: Record<string, Banda> = {};
-  for (const [indice, banda] of porIndice) {
-    for (const rotulo of ROTULOS_DE_HOJA[indice]) porRotulo[rotulo] = banda;
+  for (const [indice, banda] of Object.entries(porIndice)) {
+    for (const rotulo of ROTULOS_DE_HOJA[indice] ?? []) porRotulo[rotulo] = banda;
   }
   return porRotulo;
 }

@@ -40,10 +40,11 @@
  * valor cae dentro de lo esperado y rojo cuando lo cruza. La banda sale de los
  * mismos cortes con los que el motor elige las lecturas del informe
  * (`bandasDeLaHoja`), así que la hoja y el informe no pueden decir cosas
- * distintas, y moverla se hace desde Sistema → Redacciones. Los indicadores que
- * entran contra una banda que depende del estilo o de la cantidad de respuestas
- * (Afr, Zf, P) quedan sin pintar: ahí el rótulo solo no alcanza para saber qué
- * se espera.
+ * distintas, y moverla se hace desde Sistema → Redacciones. Afr se pinta con la
+ * banda de su estilo, que la pasa la ficha: lo que se espera de la proporción
+ * afectiva cambia según la persona sea introversiva, ambigual o extratensiva.
+ * Los que entran contra la cantidad de respuestas (Zf, P) quedan sin pintar: ahí
+ * el rótulo solo no alcanza para saber qué se espera.
  */
 
 import type { Banda } from '@/lib/redacciones';

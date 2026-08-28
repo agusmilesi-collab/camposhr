@@ -6821,13 +6821,21 @@ body {
   letter-spacing: -0.022em;
 }
 
+/*
+ * Los títulos, con la serif del sitio.
+ *
+ * Es la misma familia y las mismas medidas que camposhr.com (`public/home.html`):
+ * Instrument Serif para lo que titula e Inter para lo que se lee. Con todo en
+ * Inter, esta página se veía de otra empresa que la home a la que llega el
+ * mismo cliente.
+ */
 .precios-top h1 {
   margin: 0 0 12px;
-  /* Un punto menos que antes: el titular pasó a decir la frase entera y a
-     2,2 rem se llevaba cuatro renglones de la primera pantalla. */
-  font-size: clamp(1.55rem, 3.4vw, 1.95rem);
-  line-height: 1.15;
-  letter-spacing: -0.012em;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.9rem, 5.2vw, 2.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
 }
 
 .precios-bajada {
@@ -6918,9 +6926,16 @@ body {
 }
 
 .precios-item-titulo {
-  margin: 12px 0 0;
-  font-size: 1.16rem;
-  line-height: 1.3;
+  /* Respira contra la línea del código y el precio: al doble de cuerpo, con
+     doce píxeles el título quedaba colgado de ella. */
+  margin: 22px 0 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  /* Para quién es la batería, al doble: es lo primero que se busca al recorrer
+     las tres tarjetas, y al tamaño del título de sección competía con ellos. */
+  font-size: 2.7rem;
+  line-height: 1.1;
+  letter-spacing: -0.024em;
 }
 
 .precios-cod {
@@ -7163,8 +7178,11 @@ body {
   margin: 0 0 18px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--line);
-  font-size: 1.24rem;
-  line-height: 1.25;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: 1.62rem;
+  line-height: 1.08;
+  letter-spacing: -0.026em;
 }
 
 .precios-parrafo {
