@@ -90,6 +90,8 @@ export default function NivelDeTrabajo({
         : null
       : (porTiempo ?? porPreguntas);
   const choca = Boolean(porTiempo && porPreguntas && !solos);
+  /** Sin ninguno de los dos contestados, lo pone la evaluadora a mano. */
+  const aMano = !porTiempo && !porPreguntas;
   const numeroDe = (r: string) => ESTRATOS.findIndex((e) => e.romano === r) + 1;
 
   async function guardarTiempo(cantidad: string, u: Unidad) {
@@ -158,8 +160,8 @@ export default function NivelDeTrabajo({
           evaluadora le hace al cliente, palabra por palabra. */}
       <div className="os-nivel-bloque">
         <p className="os-nivel-pregunta">
-          ¿Cuál es la tarea de mayor alcance temporal de la que este puesto responde, y
-          para cuándo tiene que estar terminado su resultado?
+          ¿Cuál es la tarea de mayor alcance temporal de la que responde este puesto, y
+          para cuándo tiene que estar lista?
         </p>
         {/* La confusión que arruina la medición: el plazo del resultado contra
             las horas de trabajo que cuesta producirlo. */}
@@ -233,8 +235,23 @@ export default function NivelDeTrabajo({
       )}
 
       <div className="os-nivel-cierre">
-        <span className="os-etiqueta-campo">El puesto es</span>
-        {choca ? (
+        <span className="os-etiqueta-campo">
+          {aMano ? 'O elegilo a mano' : 'El puesto es'}
+        </span>
+        {aMano ? (
+          /* Sin las dos preguntas contestadas, la evaluadora lo pone: hay
+             pedidos que llegan con el nivel acordado de antes, y obligarla a
+             inventar un plazo para que el sistema lo deduzca sería peor. */
+          <Opciones
+            valor={rige !== null ? String(rige) : null}
+            opciones={ESTRATOS.slice(0, 5).map((e, i) => ({
+              v: String(i + 1) as string | null,
+              texto: e.romano,
+            }))}
+            alElegir={(v) => elegirCual(Number(v))}
+            etiqueta="Estrato del puesto"
+          />
+        ) : choca ? (
           <Opciones
             valor={rige !== null ? String(rige) : null}
             opciones={[porTiempo, porPreguntas].filter(Boolean).map((e) => ({

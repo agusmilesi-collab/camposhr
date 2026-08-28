@@ -6484,6 +6484,27 @@ th.os-tabla-contacto {
   border-top: 1px solid var(--os-linea-suave);
 }
 
+/*
+ * El potencial, adentro de la entrevista por competencias.
+ *
+ * Son tres preguntas que se hacen en la misma conversación, así que van en la
+ * misma tarjeta y detrás de lo que se escribe. La línea y el título dicen dónde
+ * empieza.
+ */
+.os-competencias-potencial {
+  flex-basis: 100%;
+  margin-top: 22px;
+  padding: 20px var(--os-herramienta-sangria, 0) 0;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-competencias-titulo {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--os-tinta);
+}
+
 /* Lo que hay que tener en la cabeza al contestar, debajo de la pregunta y en
    cuerpo chico: es una aclaración y no otra pregunta. */
 .os-nivel-aviso {
