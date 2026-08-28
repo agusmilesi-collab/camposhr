@@ -55,17 +55,22 @@
   --azul: #43648f;
 
   min-height: 100vh;
-  background: var(--papel);
   color: var(--tinta);
   font-family: 'Inter', ui-sans-serif, -apple-system, system-ui, sans-serif;
 }
 
-/* Los títulos van en la serif de la marca, la misma del sitio y de la página de
-   precios: es lo que hace que esto se lea como un informe de Campos HR y no
-   como una pantalla cualquiera. El texto sigue en Inter, que es lo que se lee
-   bien en párrafos largos. */
-.sitio h1,
-.sitio-seccion-top h2 {
+/* El papel es de la página del portal. Las mismas secciones adentro de la ficha
+   van sobre el panel, que es blanco: pintarlo desde `.sitio` dejaba una banda
+   gris alrededor de cada título. */
+.sitio-pagina .sitio {
+  background: var(--papel);
+}
+
+/* El nombre de la persona va en la serif de la marca, la misma del sitio y de
+   la página de precios. Los títulos de sección no: van como los capítulos del
+   documento, en la sans y con la línea gruesa debajo, que es lo que se
+   reconoce como "acá empieza otra cosa" al pasar de una a otra. */
+.sitio h1 {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
   letter-spacing: 0;
@@ -339,26 +344,32 @@
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr);
   align-items: start;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  /* La misma línea gruesa que separa cada capítulo del documento. */
+  border-bottom: 2px solid var(--tinta);
 }
 
 .sitio-numero {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1.7rem;
+  font-size: 1.42rem;
+  font-weight: 700;
   line-height: 1.2;
   color: #c9c4ba;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
 .sitio-seccion-top h2 {
   margin: 0;
-  font-size: 1.7rem;
+  font-size: 1.42rem;
+  font-weight: 600;
   line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 
 .sitio-seccion-top p {
-  margin: 4px 0 0;
-  font-size: 0.92rem;
+  margin: 3px 0 0;
+  font-size: 0.86rem;
   color: var(--suave);
 }
 
