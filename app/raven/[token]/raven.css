@@ -358,17 +358,18 @@
   color: #6b7076;
 }
 
+/* Tres por tres, como las láminas del test. */
 .rv-ejemplo-grilla {
   display: grid;
-  grid-template-columns: repeat(2, 58px);
+  grid-template-columns: repeat(3, 54px);
   gap: 4px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .rv-ejemplo-grilla > span {
   display: grid;
   place-items: center;
-  height: 58px;
+  height: 54px;
   border: 1px solid #cfd3d8;
   border-radius: 6px;
   background: #ffffff;
@@ -390,17 +391,18 @@
   color: #37804a !important;
 }
 
+/* Las ocho, en dos filas de cuatro: es la disposición de la lámina. */
 .rv-ejemplo-opciones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 54px);
+  gap: 6px;
 }
 
 .rv-ejemplo-opcion {
   display: grid;
   place-items: center;
-  width: 58px;
-  height: 58px;
+  width: 54px;
+  height: 54px;
   padding: 0;
   border: 1px solid #cfd3d8;
   border-radius: 6px;
