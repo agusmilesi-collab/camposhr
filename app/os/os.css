@@ -6538,6 +6538,16 @@ th.os-tabla-contacto {
  * Lo que hay que ver es si los dos primeros números coinciden, y eso se lee de
  * un vistazo cuando están uno debajo del otro y alineados por la izquierda.
  */
+/* Qué se está comparando, antes de la tabla: sin esto son tres renglones de
+   números romanos. */
+.os-comparacion-intro {
+  margin: 0 0 14px;
+  max-width: 84ch;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--os-tinta-media);
+}
+
 .os-comparacion {
   width: 100%;
   border-collapse: collapse;
@@ -6598,7 +6608,7 @@ th.os-tabla-contacto {
 }
 
 .os-comparacion-horizonte {
-  width: 170px;
+  width: 150px;
 }
 
 /* Cuándo, debajo de a quién: "a los 50 años" es de ese renglón y no del de al

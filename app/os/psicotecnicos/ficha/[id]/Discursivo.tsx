@@ -39,8 +39,8 @@ import {
   APERTURA,
   EDAD_MAX,
   EDAD_MIN,
-  ESTRATOS,
   AVISO_HORIZONTE,
+  ESTRATOS,
   PREGUNTAS,
   PREGUNTA_HORIZONTE,
   UNIDADES,
@@ -50,6 +50,7 @@ import {
   desdeDias,
   estratoPorNumero,
   nivelDeRespuestas,
+  plazoDe,
   escalonDe,
   estratoDeEscalon,
   horizonteEn,
@@ -556,10 +557,13 @@ function Comparacion({
   const detalle = (romano: string) => niveles.find((n) => n.romano === romano) ?? null;
   const numeroDe = (romano: string) => ESTRATOS.findIndex((e) => e.romano === romano);
 
-  /** Un renglón: qué es, en qué estrato y qué significa ese estrato. */
+  /** Un renglón: de quién es, en qué nivel está y qué significa ese nivel. */
   const fila = (que: string, romano: string | null, cuando: string | null, falta: string) => {
     const d = romano ? detalle(romano) : null;
     const e = romano ? ESTRATOS.find((x) => x.romano === romano) : null;
+    const mecanismo = romano
+      ? PREGUNTAS.find((q) => q.estrato === numeroDe(romano) + 1) ?? null
+      : null;
     return (
       <tr key={que}>
         <th>
@@ -576,59 +580,66 @@ function Comparacion({
             <span className="os-tabla-flojo">{falta}</span>
           )}
         </td>
-        {/* El mecanismo es del modelo; los puestos de al lado son nuestros y se
-            editan en Configuración. Por eso van en ese orden y con ese peso. */}
+        {/* Qué clase de problemas se resuelven en ese nivel, dicho para quien no
+            conoce el modelo. El nombre del mecanismo va arriba porque es el que
+            aparece en el informe y en las preguntas de la entrevista. */}
         <td className="os-comparacion-que">
-          {romano ? (
+          {mecanismo ? (
             <>
-              <strong>
-                {PREGUNTAS.find((q) => q.estrato === numeroDe(romano) + 1)?.corto ?? '—'}
-              </strong>
-              {d && <span>{d.que}</span>}
+              <strong>{mecanismo.corto}</strong>
+              <span>{mecanismo.simple}</span>
             </>
           ) : (
             <span className="os-tabla-flojo">—</span>
           )}
         </td>
         <td className="os-comparacion-horizonte">
-          {d ? d.horizonte.replace(/\.$/, '') : <span className="os-tabla-flojo">—</span>}
+          {e ? plazoDe(e) : <span className="os-tabla-flojo">—</span>}
         </td>
       </tr>
     );
   };
 
   return (
-    <table className="os-comparacion">
-      <thead>
-        <tr>
-          <th />
-          <th>Estrato</th>
-          <th>Qué exige ese nivel</th>
-          <th>Horizonte temporal</th>
-        </tr>
-      </thead>
-      <tbody>
-        {fila(
-          'El puesto pide',
-          puesto?.romano ?? null,
-          null,
-          'Sin determinar. Se contesta en la ficha del pedido.'
-        )}
-        {fila(
-          'La persona, hoy',
-          persona?.romano ?? null,
-          null,
-          'Sin determinar. Se contesta en la hoja de la entrevista.'
-        )}
-        {banda !== null &&
-          fila(
-            'La persona, más adelante',
-            estratoDeEscalon(horizonteEn(banda, 50)).romano,
-            'a los 50 años',
-            ''
+    <>
+      {/* Qué se está comparando, antes de la tabla: sin esto son tres renglones
+          de números romanos. */}
+      <p className="os-comparacion-intro">
+        El puesto y la persona se miden con la misma escala: el nivel de complejidad del
+        trabajo que cada uno alcanza, del I al VII.
+      </p>
+      <table className="os-comparacion">
+        <thead>
+          <tr>
+            <th />
+            <th>Nivel de trabajo</th>
+            <th>Qué clase de problemas resuelve</th>
+            <th>Plazo del que responde</th>
+          </tr>
+        </thead>
+        <tbody>
+          {fila(
+            'El puesto pide',
+            puesto?.romano ?? null,
+            null,
+            'Sin determinar. Se contesta en la ficha del pedido.'
           )}
-      </tbody>
-    </table>
+          {fila(
+            'La persona, hoy',
+            persona?.romano ?? null,
+            null,
+            'Sin determinar. Se contesta en la hoja de la entrevista.'
+          )}
+          {banda !== null &&
+            fila(
+              'La persona, más adelante',
+              estratoDeEscalon(horizonteEn(banda, 50)).romano,
+              'a los 50 años',
+              ''
+            )}
+        </tbody>
+      </table>
+    </>
   );
 }
 
@@ -674,31 +685,38 @@ function Conclusion({
     distancia === 0
       ? `La persona puede abordar la complejidad que el puesto exige: los dos están en el estrato ${puesto.romano}.`
       : distancia > 0
-        ? `La persona puede abordar más complejidad que la que el puesto exige: el puesto pide estrato ${puesto.romano}.`
-        : `El puesto exige más complejidad que la que la persona puede abordar: pide estrato ${puesto.romano}.`;
+        ? `La persona puede abordar trabajo más complejo que el que este puesto exige. El puesto pide estrato ${puesto.romano} y ella está un nivel por encima.`
+        : `El puesto exige trabajo más complejo que el que la persona puede abordar hoy. El puesto pide estrato ${puesto.romano} y ella está por debajo.`;
 
-  /** Qué dice la banda de acá en adelante. Null sin diagrama que leer. */
+  /**
+   * Qué dice el diagrama de acá en adelante, sin dar nada por sabido.
+   *
+   * Lo lee alguien que no conoce el modelo: cada afirmación dice qué pasa con
+   * la persona, qué pasa con el puesto, y qué habría que hacer. "El puesto le
+   * queda corto" o "salvo que crezca con ella" son atajos que solo se entienden
+   * sabiendo de antemano que un puesto puede sumar responsabilidades.
+   */
   const adelante = (): string | null => {
     if (banda === null || edad === null) return null;
 
     if (distancia < 0) {
       const llega = cuandoLlega(pide);
       return llega !== null
-        ? `Su banda de maduración la va a llevar a ese nivel alrededor de los ${llega} años. Hasta entonces va a necesitar que alguien de un estrato por encima le arme el marco del trabajo.`
-        : 'Su banda de maduración no la va a llevar a ese nivel dentro del alcance del diagrama.';
+        ? `Su capacidad sigue creciendo con los años: alrededor de los ${llega} va a poder con el trabajo que este puesto pide. Hasta entonces necesita que alguien con más alcance le divida el trabajo en partes y le fije el marco de cada una.`
+        : 'Dentro de los años que muestra el diagrama, su capacidad no llega al nivel de trabajo que este puesto pide.';
     }
 
     if (distancia > 0) {
-      return 'El puesto le va a quedar corto en cuanto lo domine, y la distancia se va a agrandar con los años.';
+      return 'La diferencia se agranda con los años. Es probable que el trabajo del puesto le resulte poco exigente en poco tiempo, y para retenerla habría que sumarle responsabilidades de mayor complejidad.';
     }
 
     const supera = cuandoLlega(pide + 1);
     if (supera === null || !siguiente) {
-      return 'Su banda de maduración la va a mantener en ese nivel dentro del alcance del diagrama.';
+      return 'Su capacidad se mantiene en este nivel dentro de los años que muestra el diagrama, así que el puesto le va a seguir quedando a medida.';
     }
     return supera <= edad + 1
-      ? `Su banda de maduración ya la ubica en el borde del estrato ${siguiente.romano}: el puesto le va a quedar corto en cuanto lo domine, salvo que crezca con ella.`
-      : `Alrededor de los ${supera} años va a poder con el estrato ${siguiente.romano}. Desde ahí el puesto le va a quedar corto, salvo que crezca con ella.`;
+      ? `Su capacidad ya está en el borde del nivel siguiente (estrato ${siguiente.romano}): en poco tiempo va a poder con trabajo más complejo que el que este puesto le da. Para que el puesto le siga sirviendo habría que ir sumándole responsabilidades de ese nivel.`
+      : `Su capacidad sigue creciendo: alrededor de los ${supera} años va a poder con trabajo del nivel siguiente (estrato ${siguiente.romano}), más complejo que el que este puesto pide. Desde esa edad, para que el puesto le siga sirviendo habría que sumarle responsabilidades de ese nivel.`;
   };
 
   const luego = adelante();
