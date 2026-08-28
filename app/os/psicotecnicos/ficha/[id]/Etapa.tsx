@@ -60,13 +60,17 @@ export default function Etapa({ id, etapa }: { id: string; etapa: string }) {
 
   return (
     <>
-      <Desplegable
-        valor={valor}
-        opciones={ETAPAS.map((e) => ({ valor: e, texto: e, color: COLOR_ETAPA[e] ?? 'os-gris' }))}
-        alElegir={cambiar}
-        deshabilitado={guardando}
-        etiqueta="Mover la evaluación a otra etapa"
-      />
+      {/* Con el envoltorio suave de los desplegables del tablero: es el mismo
+          control y en la ficha se veía más pesado que el dato que muestra. */}
+      <span className="os-control-suave">
+        <Desplegable
+          valor={valor}
+          opciones={ETAPAS.map((e) => ({ valor: e, texto: e, color: COLOR_ETAPA[e] ?? 'os-gris' }))}
+          alElegir={cambiar}
+          deshabilitado={guardando}
+          etiqueta="Mover la evaluación a otra etapa"
+        />
+      </span>
       {error && <span className="os-form-error">{error}</span>}
     </>
   );

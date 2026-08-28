@@ -966,6 +966,28 @@ a.os-fila:hover {
   color: var(--os-tinta-media);
 }
 
+/* La modalidad de una entrevista agendada, en pastilla de color: ámbar la
+   presencial y verde la online. Lo que cambia entre una y otra es qué hay que
+   preparar, la sala o el enlace, y eso se mira antes de leer la hora. */
+.os-modalidad {
+  flex: none;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.os-modalidad-sala {
+  background: color-mix(in srgb, var(--os-ambar) 16%, transparent);
+  color: var(--os-ambar);
+}
+
+.os-modalidad-enlace {
+  background: color-mix(in srgb, var(--os-verde) 16%, transparent);
+  color: var(--os-verde);
+}
+
 .os-tarjetas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -6105,6 +6127,14 @@ th.os-tabla-contacto {
   min-width: 92px;
 }
 
+/* El control se queda con lo que ocupa y no con la columna entera: la celda de
+   la derecha es flexible, y una píldora estirada a todo el ancho se lee como
+   un campo de texto vacío. */
+.os-seguimiento-fila > .os-control-suave,
+.os-seguimiento-fila > input.os-control-suave {
+  justify-self: start;
+}
+
 .os-seguimiento-cuando {
   margin-left: 8px;
   font-size: 0.78rem;
@@ -9402,8 +9432,9 @@ textarea.os-exigencia-notas {
   gap: 3px;
 }
 
-.os-nacimiento-campo .os-campo {
-  width: 170px;
+.os-nacimiento-campo .os-control-suave {
+  width: 150px;
+  justify-self: start;
 }
 
 .os-nacimiento-edad {
