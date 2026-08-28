@@ -139,8 +139,8 @@ export default function Escalera({ inf }: { inf: Informe }) {
       {/* De dónde sale: el instrumento, nombrado una vez y al pie. */}
       <p className="sitio-fuente">
         Sale del análisis discursivo sobre cinco minutos del relato de la persona, según el
-        modelo de niveles de trabajo de Elliott Jaques. El detalle técnico está en Los
-        datos.
+        modelo de niveles de trabajo de Elliott Jaques. El detalle técnico está en
+        Indicadores.
       </p>
     </div>
   );

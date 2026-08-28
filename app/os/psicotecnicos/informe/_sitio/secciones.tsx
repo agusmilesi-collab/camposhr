@@ -77,8 +77,7 @@ export function seccionesDe(
      qué. */
   secciones.push({
     id: 'recomendacion',
-    titulo: 'Recomendación',
-    bajada: 'Qué se recomienda y por qué.',
+    titulo: 'Conclusiones',
     cuerpo: (
       <>
         <div className="sitio-semaforo">
@@ -138,8 +137,7 @@ export function seccionesDe(
 
   secciones.push({
     id: 'competencias',
-    titulo: 'Competencias',
-    bajada: 'Cómo dio en cada una, de mayor a menor.',
+    titulo: 'Competencias evaluadas',
     cuerpo:
       inf.competencias.length === 0 ? (
         <p className="sitio-vacio">
@@ -214,29 +212,28 @@ export function seccionesDe(
     {
       clave: 'destacado',
       lista: 'destacadas' as const,
-      titulo: 'Lo que se destaca',
+      titulo: 'Desarrollo destacado',
       sub: 'Por encima del rango esperado',
       items: inf.analisis.destacadas,
     },
     {
       clave: 'esperado',
       lista: 'esperadas' as const,
-      titulo: 'Lo que está en lo esperado',
+      titulo: 'Desarrollo esperado',
       sub: 'Dentro del rango esperado',
       items: inf.analisis.esperadas,
     },
     {
       clave: 'desarrollar',
       lista: 'desarrollar' as const,
-      titulo: 'Lo que conviene acompañar',
-      sub: 'Fuera del rango esperado',
+      titulo: 'Necesidad de desarrollo',
+      sub: 'Fuera del rango esperado: conviene acompañar',
       items: inf.analisis.desarrollar,
     },
   ];
   secciones.push({
     id: 'trabajo',
-    titulo: 'Cómo trabaja',
-    bajada: 'Qué se destaca, qué está en lo esperado y qué conviene acompañar.',
+    titulo: 'Análisis cualitativo de las competencias',
     /* Cada grupo lo dibuja `Listas`: su recuadro, su título en el color de la
        banda, sus viñetas del mismo color y, en la ficha, el botón de editar y
        el índice que respalda cada oración. Es el mismo componente que dibuja el
@@ -262,8 +259,7 @@ export function seccionesDe(
   /* ── Para su líder ──────────────────────────────────────────────────── */
   secciones.push({
     id: 'lider',
-    titulo: 'Para su líder',
-    bajada: 'Qué hacer para que rinda.',
+    titulo: 'Recomendaciones para su líder directo',
     cuerpo: (
       <Listas
         id={editar}
@@ -281,8 +277,8 @@ export function seccionesDe(
   if (inf.benziger) {
     secciones.push({
       id: 'pensamiento',
-      titulo: 'Cómo piensa',
-      bajada: 'Con qué parte del cerebro trabaja cómoda.',
+      titulo: 'Estilos de pensamiento predominantes',
+      bajada: 'Según BTSA (Benziger Thinking Styles Assessment)',
       cuerpo: (
         <>
           <div className="inf-referencia-perfil">
@@ -332,8 +328,8 @@ export function seccionesDe(
   if (inf.discursivo) {
     secciones.push({
       id: 'potencial',
-      titulo: 'Hasta dónde puede llegar',
-      bajada: 'Qué tamaño de trabajo puede manejar, hoy y más adelante.',
+      titulo: 'Potencial de desarrollo',
+      bajada: 'Según análisis discursivo (modelo de Elliot Jaques)',
       cuerpo: <Escalera inf={inf} />,
     });
   }
@@ -341,8 +337,8 @@ export function seccionesDe(
   /* ── Los datos ──────────────────────────────────────────────────────── */
   secciones.push({
     id: 'datos',
-    titulo: 'Los datos',
-    bajada: 'Los valores medidos, sin interpretar.',
+    titulo: 'Indicadores',
+    bajada: 'Los valores medidos, sin interpretación',
     cuerpo: (
       <div className="sitio-crudo">
         <Crudo inf={inf} />
