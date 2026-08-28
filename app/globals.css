@@ -6822,9 +6822,12 @@ body {
 }
 
 .precios-top h1 {
-  margin: 0 0 10px;
-  font-size: clamp(1.7rem, 4vw, 2.2rem);
-  line-height: 1.1;
+  margin: 0 0 12px;
+  /* Un punto menos que antes: el titular pasó a decir la frase entera y a
+     2,2 rem se llevaba cuatro renglones de la primera pantalla. */
+  font-size: clamp(1.55rem, 3.4vw, 1.95rem);
+  line-height: 1.15;
+  letter-spacing: -0.012em;
 }
 
 .precios-bajada {
@@ -7249,7 +7252,9 @@ body {
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 14px;
+  /* Cada capítulo respira contra el siguiente: son cuatro cosas distintas que
+     llegan, y apretadas se leían como los renglones de una sola. */
+  gap: 22px;
 }
 
 .precios-entrega li {
@@ -7427,16 +7432,6 @@ body {
   background: var(--paper);
 }
 
-/* La aclaración de un paso: más chica y en gris, para que el paso se lea
-   entero antes de entrar en el detalle. */
-.precios-paso-nota {
-  display: block;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-
 /* El plazo medido, debajo del paso que lo promete, con la cifra en grande:
    es el dato que respalda la promesa y el único número de la página que sale
    de lo que ya se entregó. Sin cuántos casos son: hoy son pocos, y publicarlos
@@ -7511,6 +7506,14 @@ body {
  */
 .precios-tabla-marco {
   overflow-x: auto;
+  /* La tabla en su panel blanco, como las tarjetas de las baterías: sobre el
+     beige de la página flotaba sin borde y se leía como texto suelto. El
+     recorte por desplazamiento vive en este mismo elemento, así que el redondeo
+     tiene que ir con él y no en la tabla de adentro. */
+  padding: 20px 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
 }
 
 .precios-tabla {
