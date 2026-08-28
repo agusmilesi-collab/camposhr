@@ -506,6 +506,9 @@ function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
             <Discursivo
               id={id}
               nivel={f.discursivo?.nivel ?? null}
+              edad={f.discursivo?.edad ?? null}
+              edadEvaluacion={f.cabecera.edad ?? null}
+              dias={f.discursivo?.horizonte_dias ?? null}
               niveles={nivelesQueRigen(rige.niveles).map((n) => ({
                 nombre: n.nombre,
                 romano: n.romano,

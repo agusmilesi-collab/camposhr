@@ -6386,6 +6386,77 @@ th.os-tabla-contacto {
   margin: 14px 0 18px;
 }
 
+/*
+ * Los dos datos del diagrama de progreso potencial, debajo del estrato.
+ *
+ * Separados por una línea: el estrato es la lectura del discurso y estos dos
+ * ubican a la persona en el diagrama. Se cargan en el mismo momento, pero son
+ * dos cosas distintas y pegados se leían como un solo formulario de seis campos.
+ */
+.os-potencial-datos {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-potencial-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin-top: 8px;
+}
+
+.os-potencial-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--os-tinta-media);
+}
+
+.os-potencial-par {
+  display: flex;
+  gap: 6px;
+}
+
+.os-potencial-numero {
+  width: 62px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Los dos datos discrepan: el horizonte dice un estrato y arriba está elegido
+   otro. En ámbar y no en rojo: no es un error del sistema sino algo para
+   revisar, y puede estar bien por decisión de la evaluadora. */
+.os-potencial-choca {
+  margin: 12px 0 0;
+  padding: 8px 11px;
+  border-radius: 8px;
+  background: #fbf3e2;
+  color: #6b4e12;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+/* Lo que dice el punto, en una línea: es la comprobación de que el dato quedó
+   bien cargado, así que va antes del dibujo y no debajo. */
+.os-potencial-lectura {
+  margin: 14px 0 0;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--os-tinta-media);
+}
+
+.os-potencial-grafico {
+  max-width: 620px;
+  margin-top: 10px;
+}
+
+.os-potencial-grafico svg {
+  width: 100%;
+  height: auto;
+}
+
 /* Los minutos y cómo se leen, en la misma línea. */
 .os-bateria-duracion {
   display: flex;

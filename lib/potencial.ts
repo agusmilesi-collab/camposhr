@@ -1,0 +1,269 @@
+/**
+ * El diagrama de progreso potencial de Elliot Jaques, redibujado.
+ *
+ * Jaques ordena la capacidad de trabajo por **horizonte temporal**: el lapso de
+ * la tarea más larga que la persona puede sostener sin que alguien se lo
+ * ordene. Ese horizonte crece con la edad, y crece por caminos regulares: las
+ * *bandas de maduración*. Ubicando a alguien por su edad y su horizonte de hoy
+ * se ve por cuál de esas bandas viene subiendo, y la banda dice hasta dónde
+ * llega y cuándo.
+ *
+ * Son dos datos de la evaluadora y ninguno lo calcula el sistema: la edad del
+ * día de la entrevista y el horizonte que ella le atribuye después de
+ * escucharlo. Acá está la geometría que los convierte en un punto del diagrama.
+ *
+ * ## El eje vertical
+ *
+ * No es lineal ni logarítmico parejo: es la escalera de horizontes del propio
+ * modelo (un día, una semana, un mes, tres meses, …, cincuenta años), con todos
+ * sus escalones del mismo alto. Cada estrato son tres escalones, así que el
+ * estrato ocupa siempre la misma altura y se lee de un vistazo cuánto falta
+ * para el siguiente. Es como está dibujado el original.
+ *
+ * ## Las curvas
+ *
+ * **Son un redibujo, no la lámina escaneada.** Cada límite entre dos bandas
+ * arranca a los veinte años en un escalón de la escalera y se va acercando al
+ * techo de un estrato: el límite entre la primera banda y la segunda termina
+ * pegado a los tres meses (techo del estrato I), el siguiente al año (techo del
+ * II), el siguiente a los dos años, y así. Esa es la forma que tiene la lámina
+ * publicada, y es lo que hace que las bandas de arriba sigan subiendo a los
+ * sesenta y cinco mientras las de abajo ya se aplanaron a los cuarenta.
+ *
+ * La curva es `techo − (techo − arranque) · e^(−k·(edad−20))`, con una `k` por
+ * banda calibrada contra la lámina. **Cerca de un límite, la banda es un
+ * criterio y no una medición**: el diagrama ubica, no dictamina, y así hay que
+ * leerlo cuando el punto cae sobre una raya.
+ *
+ * Sin `server-only`: lo usan la ficha, donde se cargan los dos datos, y el
+ * informe, donde se dibuja.
+ */
+
+/** Desde y hasta qué edad se dibuja, como en la lámina. */
+export const EDAD_MIN = 20;
+export const EDAD_MAX = 65;
+
+/**
+ * La escalera de horizontes, de abajo hacia arriba.
+ *
+ * Los veintidós escalones del modelo. `dias` es lo que mide cada marca y sirve
+ * para ubicar un horizonte cualquiera entre dos de ellas.
+ */
+export const ESCALERA = [
+  { dias: 1, texto: '1 día' },
+  { dias: 7, texto: '1 semana' },
+  { dias: 30, texto: '1 mes' },
+  { dias: 91, texto: '3 meses' },
+  { dias: 182, texto: '6 meses' },
+  { dias: 273, texto: '9 meses' },
+  { dias: 365, texto: '1 año' },
+  { dias: 487, texto: '16 meses' },
+  { dias: 608, texto: '20 meses' },
+  { dias: 730, texto: '2 años' },
+  { dias: 1095, texto: '3 años' },
+  { dias: 1460, texto: '4 años' },
+  { dias: 1825, texto: '5 años' },
+  { dias: 2555, texto: '7 años' },
+  { dias: 3103, texto: '8 años y medio' },
+  { dias: 3650, texto: '10 años' },
+  { dias: 5110, texto: '14 años' },
+  { dias: 6205, texto: '17 años' },
+  { dias: 7300, texto: '20 años' },
+  { dias: 10950, texto: '30 años' },
+  { dias: 14600, texto: '40 años' },
+  { dias: 18250, texto: '50 años' },
+] as const;
+
+/** El escalón más alto del diagrama. */
+export const ALTO = ESCALERA.length - 1;
+
+/**
+ * Los estratos, cada uno de tres escalones.
+ *
+ * `desde` y `hasta` son posiciones de la escalera. Los cuatro primeros son los
+ * que mide el análisis discursivo y llevan el nombre con el que se los escribe
+ * en el informe; del quinto para arriba se nombran como en el modelo, porque
+ * están por encima del alcance del instrumento y en el informe se dicen como
+ * referencia y no como resultado.
+ */
+export const ESTRATOS = [
+  { romano: 'I', desde: 0, hasta: 3, nombre: 'Operativo', mide: true },
+  { romano: 'II', desde: 3, hasta: 6, nombre: 'Especialista', mide: true },
+  { romano: 'III', desde: 6, hasta: 9, nombre: 'Liderazgo 1', mide: true },
+  { romano: 'IV', desde: 9, hasta: 12, nombre: 'Liderazgo 2', mide: true },
+  { romano: 'V', desde: 12, hasta: 15, nombre: 'Estratégico general', mide: false },
+  { romano: 'VI', desde: 15, hasta: 18, nombre: 'Estratégico corporativo', mide: false },
+  { romano: 'VII', desde: 18, hasta: 21, nombre: 'Estratégico corporativo', mide: false },
+] as const;
+
+export type Estrato = (typeof ESTRATOS)[number];
+
+/**
+ * Las ocho bandas de maduración, de la más baja a la más alta.
+ *
+ * `arranque` es el escalón en el que el límite superior de la banda está a los
+ * veinte años, y `techo` aquel al que se acerca sin llegar. `k` es cuán rápido
+ * lo hace: las bandas bajas se aplanan antes de los cuarenta y las altas siguen
+ * subiendo después de los sesenta, que es lo que dice el modelo ("cuanto más
+ * alto es el modo, más veloz es el ritmo de maduración y más se prolonga").
+ */
+const BANDAS = Array.from({ length: 8 }, (_, i) => {
+  const n = i + 1;
+  return { n, arranque: n, techo: 3 * n, k: 0.05 + 0.06 / n };
+});
+
+/** Cuántas bandas hay. */
+export const CUANTAS_BANDAS = BANDAS.length;
+
+/** Dónde está el límite superior de una banda a cierta edad, en escalones. */
+export function limiteDeBanda(n: number, edad: number): number {
+  const b = BANDAS[n - 1];
+  if (!b) return 0;
+  return b.techo - (b.techo - b.arranque) * Math.exp(-b.k * (edad - EDAD_MIN));
+}
+
+/**
+ * En qué escalón cae un horizonte, con decimales.
+ *
+ * Entre dos marcas se interpola por logaritmo y no derecho: de un año a
+ * dieciséis meses hay ciento veinte días y de veinte años a treinta hay tres
+ * mil seiscientos, y en el mismo alto de escalón. El logaritmo es lo que hace
+ * que un horizonte a mitad de camino se dibuje a mitad del escalón.
+ */
+export function escalonDe(dias: number): number {
+  if (!Number.isFinite(dias) || dias <= 0) return 0;
+  if (dias <= ESCALERA[0].dias) return 0;
+  if (dias >= ESCALERA[ALTO].dias) return ALTO;
+  for (let i = 0; i < ALTO; i++) {
+    const a = ESCALERA[i].dias;
+    const b = ESCALERA[i + 1].dias;
+    if (dias <= b) return i + Math.log(dias / a) / Math.log(b / a);
+  }
+  return ALTO;
+}
+
+/** La vuelta: cuántos días mide un escalón con decimales. */
+export function diasDeEscalon(escalon: number): number {
+  const e = Math.max(0, Math.min(ALTO, escalon));
+  const i = Math.min(ALTO - 1, Math.floor(e));
+  const a = ESCALERA[i].dias;
+  const b = ESCALERA[i + 1].dias;
+  return a * Math.pow(b / a, e - i);
+}
+
+/**
+ * En qué estrato cae un escalón.
+ *
+ * Las marcas de la escalera son los techos: tres meses es el techo del estrato
+ * I y dos años el del III. Un horizonte que cae justo sobre una marca es del
+ * estrato de abajo y no del de arriba, que es como lo dice el modelo y como lo
+ * elige la evaluadora cuando escribe "dos años".
+ */
+export function estratoDeEscalon(escalon: number): Estrato {
+  const e = Math.max(0, Math.min(ALTO, escalon));
+  return ESTRATOS.find((x) => e <= x.hasta) ?? ESTRATOS[ESTRATOS.length - 1];
+}
+
+/**
+ * Por qué banda viene subiendo alguien de esta edad con este horizonte.
+ *
+ * La banda es la que tiene su límite superior justo por encima del punto. Por
+ * debajo de la primera devuelve 1, que es el piso del diagrama, y por encima de
+ * la última devuelve 8.
+ */
+export function bandaDe(edad: number, dias: number): number {
+  const e = escalonDe(dias);
+  for (const b of BANDAS) {
+    if (e <= limiteDeBanda(b.n, edad)) return b.n;
+  }
+  return CUANTAS_BANDAS;
+}
+
+/**
+ * Hasta dónde llega esa banda, edad por edad.
+ *
+ * Se toma el medio de la banda y no su límite superior: el límite es el borde
+ * con la banda de arriba, y proyectar por el borde le atribuye a la persona el
+ * techo de una banda a la que todavía no se sabe si pertenece.
+ */
+export function horizonteEn(banda: number, edad: number): number {
+  const arriba = limiteDeBanda(banda, edad);
+  const abajo = banda > 1 ? limiteDeBanda(banda - 1, edad) : 0;
+  return (arriba + abajo) / 2;
+}
+
+/**
+ * Cómo se nombra un estrato al que la banda proyecta.
+ *
+ * Del quinto para arriba el instrumento no mide: el análisis discursivo ubica
+ * entre el I y el IV, y decir "va a llegar al VI" sería afirmar algo que esta
+ * evaluación no puede sostener. Se dice hasta dónde llega el alcance y se
+ * nombra el resto como lo que es.
+ */
+export function comoSeDice(e: Estrato): string {
+  return e.mide ? `estrato ${e.romano}` : 'un nivel por encima del alcance de este análisis';
+}
+
+/** El horizonte en palabras: "3 años", "8 meses", "2 semanas". */
+export function enPalabras(dias: number): string {
+  if (dias < 14) {
+    const d = Math.max(1, Math.round(dias));
+    return `${d} ${d === 1 ? 'día' : 'días'}`;
+  }
+  if (dias < 60) {
+    const s = Math.round(dias / 7);
+    return `${s} ${s === 1 ? 'semana' : 'semanas'}`;
+  }
+  if (dias < 365) {
+    const m = Math.round(dias / 30.4);
+    return `${m} ${m === 1 ? 'mes' : 'meses'}`;
+  }
+  const a = dias / 365;
+  if (a < 10) {
+    const r = Math.round(a * 2) / 2;
+    return `${r.toString().replace('.5', ' años y medio').replace('.', ',')}${
+      r % 1 === 0 ? (r === 1 ? ' año' : ' años') : ''
+    }`;
+  }
+  return `${Math.round(a)} años`;
+}
+
+/** Las unidades en que se carga un horizonte, y cuántos días vale cada una. */
+export const UNIDADES = [
+  { clave: 'dias', texto: 'días', dias: 1 },
+  { clave: 'semanas', texto: 'semanas', dias: 7 },
+  { clave: 'meses', texto: 'meses', dias: 30.4 },
+  { clave: 'anios', texto: 'años', dias: 365 },
+] as const;
+
+export type Unidad = (typeof UNIDADES)[number]['clave'];
+
+/** Cuántos días son, redondeado, o null si el número no sirve. */
+export function aDias(cantidad: number, unidad: Unidad): number | null {
+  const u = UNIDADES.find((x) => x.clave === unidad);
+  if (!u || !Number.isFinite(cantidad) || cantidad <= 0) return null;
+  const dias = Math.round(cantidad * u.dias);
+  return dias >= 1 && dias <= 40_000 ? dias : null;
+}
+
+/**
+ * Cómo mostrar unos días en el par número + unidad con que se cargaron.
+ *
+ * Elige la unidad más grande que dé un número redondo: 730 días vuelve como
+ * "2 años" y no como "730 días", que es lo que se escribió.
+ */
+export function desdeDias(dias: number): { cantidad: number; unidad: Unidad } {
+  for (const u of [...UNIDADES].reverse()) {
+    const n = dias / u.dias;
+    if (n >= 1 && Math.abs(n - Math.round(n * 2) / 2) < 0.02) {
+      return { cantidad: Math.round(n * 2) / 2, unidad: u.clave };
+    }
+  }
+  return { cantidad: dias, unidad: 'dias' };
+}
+
+/** Una edad que sirva para el diagrama. */
+export function edadValida(v: unknown): number | null {
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isInteger(n) && n >= 16 && n <= 80 ? n : null;
+}
