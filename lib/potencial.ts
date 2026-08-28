@@ -339,12 +339,11 @@ export const APERTURA =
  * contesta el plazo del proyecto entero del que participa y no el de aquello
  * de lo que responde, que es lo que se está midiendo.
  */
-export const PREGUNTA_HORIZONTE =
-  '¿Para cuándo tenés que tener terminado el resultado de esa tarea?';
+export const PREGUNTA_HORIZONTE = 'Esa tarea, ¿para cuándo tiene que estar lista?';
 
 /** Lo que hay que tener en la cabeza al contestarla. */
 export const AVISO_HORIZONTE =
-  'Es el plazo del resultado del que responde, no las horas que le lleva hacerlo: fijar los objetivos del año puede llevar una tarde y el plazo es un año.';
+  'Se cuenta hasta la fecha en la que el resultado tiene que estar. Fijar los objetivos del año puede llevar una tarde de trabajo y la fecha es fin de año.';
 
 /**
  * El nivel que dan las respuestas: el más alto contestado que sí.

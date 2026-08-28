@@ -47,18 +47,6 @@ import Discursivo from '../../ficha/[id]/Discursivo';
  * después no deja rastro en ningún otro lado.
  */
 
-/**
- * Cómo se llama cada test en la pantalla, cuando no es como se llama en la
- * batería.
- *
- * El nombre de la batería lleva el autor entre paréntesis, que sirve en la
- * factura y en el informe. En la lista de la entrevista sobra: quien administra
- * sabe cuál es, y el paréntesis alarga el renglón sin agregar nada.
- */
-const NOMBRE: Record<string, string> = {
-  [TEST_DISCURSIVO]: 'Análisis discursivo',
-};
-
 /** Con qué se toma cada test, por su nombre en la batería. */
 const HERRAMIENTA: Record<string, { href: string; boton: string }> = {
   Rorschach: { href: '/os/laminas/rorschach', boton: 'Abrir las láminas' },
@@ -94,7 +82,20 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
   if (!e) return null;
 
   // El Benziger no lo declara la batería: lo agrega el pedido.
-  const tests = [...e.tests, ...(e.conBenziger ? ['Benziger'] : [])];
+  const todos = [...e.tests, ...(e.conBenziger ? ['Benziger'] : [])];
+
+  /*
+   * El análisis discursivo no tiene tarjeta propia: va adentro de la entrevista
+   * por competencias.
+   *
+   * Es el único test que no se administra aparte: son tres preguntas que se
+   * hacen hablando, en la misma conversación que la entrevista, y en su propia
+   * tarjeta quedaban plegadas al final de la lista. Adentro de la entrevista,
+   * que es la que arranca desplegada, están a la vista desde que se abre la
+   * hoja y no hay forma de olvidarse de preguntarlas.
+   */
+  const conDiscursivo = todos.includes(TEST_DISCURSIVO);
+  const tests = todos.filter((t) => t !== TEST_DISCURSIVO);
 
   /**
    * Con qué se toma cada test.
@@ -148,17 +149,11 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
       );
     }
     if (t === TEST_COMPETENCIAS) {
-      return (
-        <span className={`os-sello-estado os-test-estado ${e.competencias ? 'os-verde' : 'os-gris'}`}>
-          {e.competencias ? 'Administrado' : 'No administrado'}
-        </span>
-      );
-    }
-    if (t === TEST_DISCURSIVO) {
-      /* La marca dice si se tomó, como en todos los demás: en qué estrato quedó
-         es el resultado, y el resultado se lee adentro de la tarjeta o en la
-         pestaña Potencial, no en la lista plegada. */
-      const tomado = Boolean(e.discursivo || e.relato);
+      /* Cuando la batería lleva el análisis discursivo, la tarjeta contiene los
+         dos: se administra entera recién cuando además está contestado el
+         potencial, y decir "Administrado" antes escondería lo que falta. */
+      const tomado =
+        Boolean(e.competencias) && (!conDiscursivo || Boolean(e.discursivo || e.relato));
       return (
         <span className={`os-sello-estado os-test-estado ${tomado ? 'os-verde' : 'os-gris'}`}>
           {tomado ? 'Administrado' : 'No administrado'}
@@ -307,35 +302,31 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                   resto: la fecha de nacimiento, con la edad que sale de ella. */}
               <Nacimiento id={e.id} nacimiento={e.nacimiento} entrevista={e.cuando} />
               <Competencias id={e.id} texto={e.competencias} />
-            </>
-          );
-        }
 
-        if (t === TEST_DISCURSIVO) {
-          return (
-            <>
-              {/* Se toma hablando, así que acá no hay lámina ni enlace que
-                  abrir: lo que hace falta es qué preguntarle y poder marcar la
-                  respuesta en el momento. El estrato sale de eso, y la pestaña
-                  Potencial de la ficha es donde se revisa con el diagrama. */}
-              <Discursivo
-                id={e.id}
-                modo="entrevista"
-                nivel={e.discursivo}
-                edad={null}
-                edadEvaluacion={null}
-                dias={e.horizonteDias}
-                complejidad={e.complejidad}
-                relato={e.relato}
-              />
-              {/* El estrato ya lo dice el bloque de arriba: acá queda el
-                  camino a la pestaña, que es donde se lo revisa con el
-                  diagrama. */}
-              <div className="os-herramienta-accion">
-                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=potencial`}>
-                  Ver el diagrama
-                </Link>
-              </div>
+              {/* Y las tres preguntas del potencial, en la misma conversación. */}
+              {conDiscursivo && (
+                <div className="os-competencias-potencial">
+                  <h4 className="os-competencias-titulo">Potencial de desarrollo</h4>
+                  <Discursivo
+                    id={e.id}
+                    modo="entrevista"
+                    nivel={e.discursivo}
+                    edad={null}
+                    edadEvaluacion={null}
+                    dias={e.horizonteDias}
+                    complejidad={e.complejidad}
+                    relato={e.relato}
+                  />
+                  <div className="os-herramienta-accion">
+                    <Link
+                      className="os-boton"
+                      href={`/os/psicotecnicos/ficha/${e.id}?ver=potencial`}
+                    >
+                      Ver el diagrama
+                    </Link>
+                  </div>
+                </div>
+              )}
             </>
           );
         }
@@ -418,7 +409,6 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
       <Orden
         id={e.id}
         tests={tests}
-        nombres={tests.map((t) => NOMBRE[t] ?? t)}
         estados={tests.map(estadoDe)}
         tarjetas={tests.map(contenidoDe)}
         abierto={TEST_COMPETENCIAS}
