@@ -303,6 +303,7 @@ export default async function Precios() {
   const conDetalle = baterias.map((b) => ({ ...b, ...(detalle[b.codigo] ?? { tests: [], entrega: [] }) }));
 
   return (
+    <>
     <main className="precios">
       <header className="precios-top">
         {/* El logotipo tipográfico del sitio: Instrument Serif, el nombre con
@@ -743,13 +744,19 @@ export default async function Precios() {
         </p>
       </section>
 
-      {/* Lo demás que hace el estudio, al final y en tres renglones.
+      {/* Lo demás que hace el estudio y el pie, en una banda blanca de ancho
+          completo.
 
-          Va después de los precios y de quiénes firman: quien abre esta página
-          vino por un psicotécnico, y esto es lo que se lleva sin haberlo
-          buscado. Tres líneas y nada de detalle: el detalle se cuenta en una
-          llamada, y acá compite con la decisión que la persona vino a tomar. */}
-      <section className="precios-bloque precios-bloque-linea">
+          Fuera del cuerpo del documento a propósito: quien abre esta página vino
+          por un psicotécnico, y esto es lo que se lleva sin haberlo buscado. El
+          cambio de fondo dice que el documento terminó, y adentro el texto sigue
+          alineado con el resto porque la banda lleva su propia caja del mismo
+          ancho. */}
+    </main>
+
+    <footer className="precios-final">
+      <div className="precios-final-caja">
+      <section className="precios-bloque">
         {/* El nombre con la tipografía del logotipo, la misma del encabezado:
             acá se está firmando el resto de lo que hace el estudio. */}
         <h2 className="precios-titulo">
@@ -823,7 +830,7 @@ export default async function Precios() {
           La tripleta es la de la marca, en castellano: el documento entero está
           en castellano y un lema en inglés en el pie se lee como de otra
           empresa. */}
-      <footer className="precios-pie">
+      <div className="precios-pie">
         <p className="precios-pie-marca">Campos HR</p>
         <p className="precios-pie-lema">
           Estructura inteligente. Potencial humano. Impacto medible.
@@ -845,7 +852,9 @@ export default async function Precios() {
           <span>·</span>
           <a href="https://www.camposhr.com">camposhr.com</a>
         </p>
-      </footer>
-    </main>
+      </div>
+      </div>
+    </footer>
+    </>
   );
 }

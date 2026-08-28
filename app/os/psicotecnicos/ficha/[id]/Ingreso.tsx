@@ -142,17 +142,21 @@ export default function Ingreso({
         {/* Tres estados y no un tilde: "sin respuesta" no es lo mismo que
             "no". Viaja como texto porque el desplegable maneja texto, y se
             traduce acá: es el único lugar donde esa pregunta se contesta. */}
-        <Desplegable
-          valor={valor === true ? 'si' : valor === false ? 'no' : ''}
-          opciones={[
-            { valor: '', texto: 'Sin respuesta', color: 'os-gris' },
-            { valor: 'si', texto: 'Sí', color: 'os-verde' },
-            { valor: 'no', texto: 'No', color: 'os-rojo' },
-          ]}
-          alElegir={(v) => responder(v === 'si' ? true : v === 'no' ? false : null)}
-          etiqueta="Entró a trabajar"
-          ancho={ANCHO_RESPUESTA}
-        />
+        {/* Con el envoltorio suave del tablero, como el resto de los controles
+            de la ficha: lo que se completa no puede pesar más que el dato. */}
+        <span className="os-control-suave">
+          <Desplegable
+            valor={valor === true ? 'si' : valor === false ? 'no' : ''}
+            opciones={[
+              { valor: '', texto: 'Sin respuesta', color: 'os-gris' },
+              { valor: 'si', texto: 'Sí', color: 'os-verde' },
+              { valor: 'no', texto: 'No', color: 'os-rojo' },
+            ]}
+            alElegir={(v) => responder(v === 'si' ? true : v === 'no' ? false : null)}
+            etiqueta="Entró a trabajar"
+            ancho={ANCHO_RESPUESTA}
+          />
+        </span>
       </div>
 
       <div className={`os-seguimiento-fila${trabaja && seguimientoAl ? '' : ' apagada'}`}>
@@ -172,7 +176,7 @@ export default function Ingreso({
       <div className={`os-seguimiento-fila${trabaja ? '' : ' apagada'}`}>
         <span className="os-dato-rotulo">Desde</span>
         <input
-          className="os-campo os-ingreso-fecha"
+          className="os-control-suave os-ingreso-fecha"
           type="date"
           value={desde ?? ''}
           disabled={!trabaja}
@@ -204,22 +208,24 @@ export default function Ingreso({
             Entregados, así el dato se carga igual desde los dos lados. Con su
             punto de color, que es lo que hace que "Bien" y "Mal" se reconozcan
             sin leerlos. */}
-        <Desplegable
-          valor={comoFue ?? ''}
-          deshabilitado={!trabaja}
-          opciones={[
-            { valor: '', texto: 'Sin preguntar', color: 'os-gris' },
-            { valor: 'Bien', texto: 'Bien', color: 'os-verde' },
-            { valor: 'Regular', texto: 'Regular', color: 'os-ambar' },
-            { valor: 'Mal', texto: 'Mal', color: 'os-rojo' },
-          ]}
-          alElegir={(v) => {
-            setComoFue(v || null);
-            guardar({ seguimientoResultado: v || null });
-          }}
-          etiqueta="Cómo le fue en la empresa"
-          ancho={ANCHO_RESPUESTA}
-        />
+        <span className="os-control-suave">
+          <Desplegable
+            valor={comoFue ?? ''}
+            deshabilitado={!trabaja}
+            opciones={[
+              { valor: '', texto: 'Sin preguntar', color: 'os-gris' },
+              { valor: 'Bien', texto: 'Bien', color: 'os-verde' },
+              { valor: 'Regular', texto: 'Regular', color: 'os-ambar' },
+              { valor: 'Mal', texto: 'Mal', color: 'os-rojo' },
+            ]}
+            alElegir={(v) => {
+              setComoFue(v || null);
+              guardar({ seguimientoResultado: v || null });
+            }}
+            etiqueta="Cómo le fue en la empresa"
+            ancho={ANCHO_RESPUESTA}
+          />
+        </span>
       </div>
 
       {error && <p className="os-form-error">{error}</p>}

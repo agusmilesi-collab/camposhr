@@ -198,26 +198,34 @@ function Tarjeta({
 
       {!e.evaluadora && (
         <div className="os-tarjeta-trabajo">
+          {/* El control y la espera en el mismo renglón, como en Por citar: la
+              tarjeta tiene un solo dato y una sola acción, y en dos líneas
+              ocupaba el alto de una que tiene cuatro.
+
+              El desplegable con el envoltorio suave de la fecha y la modalidad:
+              los tres son lo que se completa en la tarjeta, y con el borde de un
+              campo de formulario pesaban más que el nombre de la persona. Cada
+              nombre va con su cola al lado, que es la mitad de la decisión. */}
           <div className="os-tarjeta-linea">
+            <span className="os-control-suave">
+              <Desplegable
+                valor=""
+                opciones={evaluadoras.map((n) => ({
+                  valor: n,
+                  texto: `${n.split(/\s+/)[0]} · ${carga[n] ?? 0}`,
+                }))}
+                alElegir={(v) => onAsignar(v)}
+                deshabilitado={ocupada}
+                etiqueta={`Asignar a ${e.nombre}`}
+                vacio="Asignar a…"
+              />
+            </span>
             <span className="os-columna-monto">
               {e.diasSolicitud === null
                 ? 'sin fecha de pedido'
                 : `pedido ${haceCuanto(e.diasSolicitud)}`}
             </span>
           </div>
-          {/* El nombre y su cola en la misma línea: se elige a quién dársela
-              mirando cuánto tiene encima, que es la mitad de la decisión. */}
-          <Desplegable
-            valor=""
-            opciones={evaluadoras.map((n) => ({
-              valor: n,
-              texto: `${n.split(/\s+/)[0]} · ${carga[n] ?? 0}`,
-            }))}
-            alElegir={(v) => onAsignar(v)}
-            deshabilitado={ocupada}
-            etiqueta={`Asignar a ${e.nombre}`}
-            vacio="Asignar a…"
-          />
         </div>
       )}
 
@@ -303,7 +311,20 @@ function Tarjeta({
                 <span className="os-dato-falta">sin fecha</span>
               )}
             </span>
-            <span className="os-columna-monto">{e.modalidad ?? 'sin definir'}</span>
+            {/* La modalidad como pastilla de color: ámbar presencial, verde
+                online. Es lo que cambia lo que hay que preparar (la sala o el
+                enlace), y en gris al lado de la fecha se leía al final. */}
+            {e.modalidad ? (
+              <span
+                className={`os-modalidad ${
+                  e.modalidad === 'Presencial' ? 'os-modalidad-sala' : 'os-modalidad-enlace'
+                }`}
+              >
+                {e.modalidad}
+              </span>
+            ) : (
+              <span className="os-dato-falta">sin definir</span>
+            )}
           </div>
           {/* Lleva a la hoja en vez de dar la entrevista por tomada: la
               evaluación avanza sola cuando queda administrado el último test,

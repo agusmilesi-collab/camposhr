@@ -23,6 +23,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { COLOR_ETAPA, type Origen } from '@/lib/psicotecnicos-tipos';
 import type { PedidoOpcion } from './Agregar';
 import SoltarArchivo from '@/app/os/SoltarArchivo';
+import { paraInput } from '@/lib/hora';
 
 /**
  * Lo que el cajón necesita saber del candidato.
@@ -43,6 +44,9 @@ export type DatosDelCandidato = {
   telefono: string | null;
   evaluadora: string | null;
   etapa: string;
+  /** Cuándo y cómo es la entrevista. Solo se editan desde la ficha. */
+  fechaEntrevista?: string | null;
+  modalidad?: string | null;
   /** Si la persona ya tiene el CV guardado. */
   tieneCv: boolean;
 };
@@ -243,6 +247,43 @@ export default function Candidato({
                   ))}
                 </select>
               </div>
+
+              {/* Cuándo y cómo, solo desde la ficha: en el tablero cada
+                  columna ya tiene su control para eso, y acá se corrigen sin
+                  tener que volver a Entrevistas a buscar la tarjeta. Van juntos
+                  porque una reprogramación suele cambiar las dos cosas. */}
+              {enLaFicha && (
+                <>
+                  <div className="os-campo-bloque">
+                    <label className="os-etiqueta-campo" htmlFor="fechaEntrevista">
+                      Fecha de la entrevista
+                    </label>
+                    <input
+                      className="os-campo"
+                      id="fechaEntrevista"
+                      name="fechaEntrevista"
+                      type="datetime-local"
+                      defaultValue={paraInput(e.fechaEntrevista ?? null)}
+                    />
+                  </div>
+
+                  <div className="os-campo-bloque">
+                    <label className="os-etiqueta-campo" htmlFor="modalidad">
+                      Modalidad
+                    </label>
+                    <select
+                      className="os-campo"
+                      id="modalidad"
+                      name="modalidad"
+                      defaultValue={e.modalidad ?? ''}
+                    >
+                      <option value="">Sin definir</option>
+                      <option value="Presencial">Presencial</option>
+                      <option value="Online">Online</option>
+                    </select>
+                  </div>
+                </>
+              )}
 
               <div className="os-campo-bloque os-campo-entero">
                 <label className="os-etiqueta-campo" htmlFor="cv">

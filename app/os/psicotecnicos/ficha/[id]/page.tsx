@@ -208,6 +208,8 @@ function Datos({
               telefono: c.personas?.telefono ?? null,
               evaluadora: c.evaluadoras?.nombre ?? null,
               etapa: c.estado,
+              fechaEntrevista: c.fecha_entrevista,
+              modalidad: c.modalidad,
               tieneCv: Boolean(c.personas?.cv_path),
             }}
             pedidos={pedidos}
@@ -262,11 +264,8 @@ function Datos({
             años después sigue diciendo la misma. */}
         <Dato rotulo="Nacimiento">
           {c.personas?.fecha_nacimiento ? (
-            <>
-              {/* Con el año entero: en "17/2/89" no se distingue 1989 de 2089. */}
-              {formatoFecha(c.personas.fecha_nacimiento)}
-              {enAños(c.edad) && <span className="os-dato-al-lado">{enAños(c.edad)}</span>}
-            </>
+            /* Con el año entero: en "17/2/89" no se distingue 1989 de 2089. */
+            formatoFecha(c.personas.fecha_nacimiento)
           ) : (
             <Falta texto="sin cargar" />
           )}
@@ -274,6 +273,12 @@ function Datos({
         {/* La evaluadora cierra el bloque: de todo lo que quedaba del otro
             lado, es lo único que responde "quién" y no "cuándo". */}
         <Dato rotulo="Evaluadora">{c.evaluadoras?.nombre ?? <Falta texto="sin asignar" />}</Dato>
+        {/* La edad en su propio renglón, frente a la evaluadora: la columna
+            derecha tenía una fila menos que la izquierda y el bloque quedaba
+            desparejo, con la edad colgada al lado de la fecha. */}
+        <Dato rotulo="Edad">
+          {enAños(c.edad) || <Falta texto="sin fecha de nacimiento" />}
+        </Dato>
       </Bloque>
 
       {/* La evaluación y la factura, una al lado de la otra: la primera es lo
@@ -305,7 +310,21 @@ function Datos({
           <Dato rotulo="Subido al portal">
             {fechaHora(c.fecha_entrega) ?? <Falta texto="todavía no" />}
           </Dato>
-          <Dato rotulo="Modalidad">{c.modalidad ?? <Falta texto="sin definir" />}</Dato>
+          {/* La modalidad con el color del tablero: ámbar presencial, verde
+              online. Es lo que dice qué hay que preparar, la sala o el enlace. */}
+          <Dato rotulo="Modalidad">
+            {c.modalidad ? (
+              <span
+                className={`os-modalidad ${
+                  c.modalidad === 'Presencial' ? 'os-modalidad-sala' : 'os-modalidad-enlace'
+                }`}
+              >
+                {c.modalidad}
+              </span>
+            ) : (
+              <Falta texto="sin definir" />
+            )}
+          </Dato>
         </Bloque>
 
         {/* La plata se lee acá y se opera en Facturación: el comprobante junta

@@ -72,8 +72,21 @@ export type CandidatoEditado = {
   pedidoId: string;
   /** El nombre de la evaluadora, o vacío para devolverlo a Sin asignar. */
   evaluadora: string;
+  /**
+   * Cuándo y cómo es la entrevista, o null para borrarlas.
+   *
+   * Se corrigen desde acá además de desde el tablero: una reprogramación se
+   * avisa mientras se está mirando la ficha, y hasta ahora había que volver a
+   * Entrevistas a buscar la tarjeta. `undefined` es "no se tocó"; `null`, "se
+   * vació", que no es lo mismo.
+   */
+  fechaEntrevista?: string | null;
+  modalidad?: string | null;
   cv?: File | null;
 };
+
+/** Las dos formas en que se toma una entrevista. */
+const MODALIDADES = ['Presencial', 'Online'];
 
 export async function editarCandidato(id: string, c: CandidatoEditado): Promise<Resultado> {
   if (!UUID.test(id)) return { ok: false, motivo: 'Identificador inválido.' };
@@ -120,6 +133,20 @@ export async function editarCandidato(id: string, c: CandidatoEditado): Promise<
   } else {
     evaluacion.evaluadora_id = null;
     if (fila.estado === 'Por citar') evaluacion.estado = 'Sin asignar';
+  }
+
+  if (c.modalidad !== undefined) {
+    if (c.modalidad && !MODALIDADES.includes(c.modalidad)) {
+      return { ok: false, motivo: 'Esa modalidad no existe.' };
+    }
+    evaluacion.modalidad = c.modalidad || null;
+  }
+
+  if (c.fechaEntrevista !== undefined) {
+    if (c.fechaEntrevista && Number.isNaN(Date.parse(c.fechaEntrevista))) {
+      return { ok: false, motivo: 'Esa fecha de entrevista no se entiende.' };
+    }
+    evaluacion.fecha_entrevista = c.fechaEntrevista || null;
   }
 
   if (c.cv) {

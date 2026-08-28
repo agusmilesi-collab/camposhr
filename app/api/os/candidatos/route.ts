@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { desdeInput } from '@/lib/hora';
 import { revalidateTag } from 'next/cache';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { cookies } from 'next/headers';
@@ -46,12 +47,23 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Los dos de la entrevista solo viajan desde la ficha, que es donde se
+    // ofrecen: si el formulario no los trae, no se tocan. `undefined` y `null`
+    // no son lo mismo (no se tocó / se vació).
+    const conEntrevista = form.has('fechaEntrevista') || form.has('modalidad');
+
     const r = await editarCandidato(id, {
       nombre: texto('nombre'),
       email: texto('email') || null,
       telefono: texto('telefono') || null,
       pedidoId: texto('pedidoId'),
       evaluadora: texto('evaluadora'),
+      ...(conEntrevista
+        ? {
+            fechaEntrevista: desdeInput(texto('fechaEntrevista')),
+            modalidad: texto('modalidad') || null,
+          }
+        : {}),
       cv,
     });
     if (!r.ok) return NextResponse.json(r, { status: 400 });

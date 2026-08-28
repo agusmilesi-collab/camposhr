@@ -57,9 +57,11 @@ export default function Nacimiento({
     <div className="os-nacimiento">
       <label className="os-nacimiento-campo" htmlFor={`nacimiento-${id}`}>
         <span className="os-dato-rotulo">Fecha de nacimiento</span>
+        {/* Con el control suave del resto del sistema: lo que se completa no
+            pesa más que el dato. */}
         <input
           id={`nacimiento-${id}`}
-          className="os-campo"
+          className="os-control-suave"
           type="date"
           value={valor}
           disabled={guardando}
