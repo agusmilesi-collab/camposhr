@@ -480,7 +480,7 @@ export default function Pedido({
                               {/* Un control partido en tres y no tres botones
                                   sueltos: es una escala de menos a más con una
                                   sola respuesta, y así se ve. */}
-                              {p.opciones.map((o) => (
+                              {p.opciones.map((o, i) => (
                                 <button
                                   type="button"
                                   key={o}
@@ -496,6 +496,12 @@ export default function Pedido({
                                   }
                                 >
                                   {o}
+                                  {/* Qué significa esa opción: quien contesta no
+                                      trabaja acá, y "problemas mixtos" se
+                                      entiende distinto en cada empresa. */}
+                                  {p.ayudas[i] && (
+                                    <small className="pedir-opcion-q">{p.ayudas[i]}</small>
+                                  )}
                                 </button>
                               ))}
                             </div>
