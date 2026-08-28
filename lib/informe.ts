@@ -623,11 +623,12 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
               : null;
           })(),
           punto:
-            // La edad del análisis manda sobre la de la evaluación: es la que
-            // la evaluadora corrigió cuando la congelada no estaba o no era.
-            (f.discursivo.edad ?? c.edad) && f.discursivo.horizonte_dias
+            // La edad sale de la fecha de nacimiento, que se carga en la
+            // entrevista; la guardada en el análisis queda de respaldo para las
+            // evaluaciones viejas que no la tienen.
+            (c.edad ?? f.discursivo.edad) && f.discursivo.horizonte_dias
               ? {
-                  edad: (f.discursivo.edad ?? c.edad) as number,
+                  edad: (c.edad ?? f.discursivo.edad) as number,
                   dias: f.discursivo.horizonte_dias,
                 }
               : null,

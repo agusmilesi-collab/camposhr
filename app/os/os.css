@@ -6619,8 +6619,11 @@ th.os-tabla-contacto {
 
 /* La conclusión, debajo de la tabla: es lo que se lee después de comparar los
    dos números, así que va separada de ella y con su rótulo. */
+/* Una sola columna: la hoja tiene reglas de dos columnas para los bloques del
+   panel, y la conclusión caía con su rótulo en una y el texto en la otra. */
 .os-conclusion {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
   margin-top: 18px;
 }
