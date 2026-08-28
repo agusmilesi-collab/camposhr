@@ -16,6 +16,12 @@
  * 2. Las **cinco preguntas** de complejidad, por sí o por no. El estrato es la
  *    más alta contestada que sí.
  *
+ * **Se contesta sobre la vacante y no sobre otra cosa.** El time-span es una
+ * propiedad del rol, medida sobre las tareas que se le van a asignar: ni el
+ * puesto que el candidato ocupa hoy, ni aquello en lo que la vacante pueda
+ * convertirse más adelante. Lo primero se pregunta en la entrevista y lo
+ * segundo lo contesta el diagrama de progreso.
+ *
  * Van los dos porque se contestan distinto: el time-span sale de una pregunta
  * al cliente sobre plazos, y las cinco salen de qué hay que hacer en el puesto.
  * Cuando coinciden, el estrato queda firme sin que nadie decida nada. Cuando no,
@@ -138,6 +144,15 @@ export default function NivelDeTrabajo({
 
   return (
     <div className="os-nivel-trabajo">
+      {/* Contra qué se contesta, arriba de todo: las tres cosas se confunden y
+          medir contra la equivocada cambia el estrato. */}
+      <p className="os-nivel-alcance">
+        Las dos preguntas son sobre <strong>el puesto que se va a cubrir</strong>, con las
+        tareas que se le van a asignar de verdad. Lo que la persona hizo hasta hoy se
+        pregunta en la entrevista, y hasta dónde puede llegar el puesto más adelante lo
+        contesta el diagrama de progreso del informe.
+      </p>
+
       {/* El time-span. La pregunta va escrita entera porque es la que la
           evaluadora le hace al cliente, palabra por palabra. */}
       <div className="os-nivel-bloque">
