@@ -137,14 +137,18 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
     if (t === TEST_COMPETENCIAS) {
       return (
         <span className={`os-sello-estado os-test-estado ${e.competencias ? 'os-verde' : 'os-gris'}`}>
-          {e.competencias ? 'Escrita' : 'Sin escribir'}
+          {e.competencias ? 'Administrado' : 'No administrado'}
         </span>
       );
     }
     if (t === TEST_DISCURSIVO) {
+      /* La marca dice si se tomó, como en todos los demás: en qué estrato quedó
+         es el resultado, y el resultado se lee adentro de la tarjeta o en la
+         pestaña Potencial, no en la lista plegada. */
+      const tomado = Boolean(e.discursivo || e.relato);
       return (
-        <span className={`os-sello-estado os-test-estado ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
-          {e.discursivo ?? 'Sin codificar'}
+        <span className={`os-sello-estado os-test-estado ${tomado ? 'os-verde' : 'os-gris'}`}>
+          {tomado ? 'Administrado' : 'No administrado'}
         </span>
       );
     }

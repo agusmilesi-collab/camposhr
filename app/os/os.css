@@ -7409,11 +7409,28 @@ th.os-tabla-contacto {
 }
 
 /* El estado contra el margen derecho, que es donde se lo busca al recorrer la
-   lista: al lado del nombre se corría con el largo de cada test. */
+   lista: al lado del nombre se corría con el largo de cada test.
+   Todas las pastillas miden lo mismo, así los siete estados caen en una
+   columna y se comparan bajando; al ancho de su texto, cada una empezaba en un
+   lugar distinto. */
 .os-herramienta-estado {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
+}
+
+.os-herramienta-estado .os-test-estado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 128px;
+}
+
+/* Lo que cuelga del test, separado del encabezado por una línea. */
+.os-herramienta-cuerpo {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-linea);
 }
 
 .os-herramienta-flecha-boton {
@@ -7467,11 +7484,12 @@ th.os-tabla-contacto {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  /* Es lo que se busca al bajar por la lista mientras se toma la entrevista, y
-     a 0,9 rem pesaba lo mismo que el estado y los botones de al lado. */
-  font-size: 1.35rem;
+  /* Con las tarjetas plegadas la lista se lee entera de un vistazo, así que el
+     nombre no necesita el cuerpo de un título de pantalla: alcanza con pesar
+     más que su estado. */
+  font-size: 0.82rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
   color: var(--os-tinta);
 }
 
@@ -7565,9 +7583,9 @@ button.os-test-estado:hover:not(:disabled) {
   flex: none;
   /* 22 más los 10 del gap dan la sangría de arriba. */
   min-width: 22px;
-  /* Del cuerpo del nombre, un punto abajo: se lee como parte del título y no
-     como una anotación al margen, que es lo que parecía a 0,85. */
-  font-size: 1.2rem;
+  /* Del cuerpo del nombre, apenas abajo: se lee como parte del título y no
+     como una anotación al margen. */
+  font-size: 0.78rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
