@@ -113,9 +113,14 @@ export default function Discursivo({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // La edad arranca con la de la evaluación cuando todavía no se cargó una:
-  // volver a escribir un dato que el sistema ya tiene es trabajo de más.
-  const [suEdad, setSuEdad] = useState(String(edad ?? edadEvaluacion ?? ''));
+  /*
+   * La edad sale de la fecha de nacimiento, que se carga en la entrevista.
+   *
+   * Manda la de la evaluación, que sale de la fecha de nacimiento cargada en la
+   * entrevista. La guardada en el análisis queda de respaldo para las
+   * evaluaciones viejas que no tienen fecha de nacimiento.
+   */
+  const suEdad = String(edadEvaluacion ?? edad ?? '');
   const inicial = dias ? desdeDias(dias) : null;
   const [cuanto, setCuanto] = useState(inicial ? String(inicial.cantidad) : '');
   const [unidad, setUnidad] = useState<Unidad>(inicial?.unidad ?? 'anios');
@@ -153,14 +158,6 @@ export default function Discursivo({
   async function guardarRelato() {
     if (contado === (relato ?? '')) return;
     await mandar({ relato: contado.trim() || null });
-  }
-
-  /** La edad se guarda al salir del campo, vacía la borra. */
-  async function guardarEdad() {
-    const limpio = suEdad.trim();
-    const n = limpio ? Number(limpio) : null;
-    if (n !== null && !Number.isFinite(n)) return;
-    await mandar({ nivel: puesto, edad: n });
   }
 
   /** El horizonte viaja en días: el par número + unidad es solo para escribirlo. */
@@ -500,31 +497,24 @@ export default function Discursivo({
 
       {/* El diagrama no va en la entrevista: ahí la pantalla es para escuchar y
           marcar, y un dibujo que se recalcula a cada toque distrae de eso. Se
-          mira al codificar, que es cuando hay que leerlo. */}
+          mira al codificar, que es cuando hay que leerlo.
+
+          La edad sale de la fecha de nacimiento, que se carga en la hoja de la
+          entrevista: escribirla otra vez acá es un dato repetido que puede
+          quedar distinto del que ya está guardado. */}
       {!enEntrevista && (
       <div className="os-potencial-datos">
         <span className="os-etiqueta-campo">Diagrama de progreso potencial</span>
-        <div className="os-potencial-campos">
-          <label className="os-potencial-campo">
-            <span>Edad</span>
-            <input
-              className="os-control-suave os-potencial-numero"
-              inputMode="numeric"
-              value={suEdad}
-              disabled={guardando}
-              onChange={(e) => setSuEdad(e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
-              onBlur={guardarEdad}
-            />
-          </label>
-
-        </div>
-
-        {dibuja && (
-          <>
-            <div className="os-potencial-grafico">
-              <Progreso edad={edadNum} dias={diasNum as number} />
-            </div>
-          </>
+        {dibuja ? (
+          <div className="os-potencial-grafico">
+            <Progreso edad={edadNum} dias={diasNum as number} />
+          </div>
+        ) : (
+          <p className="os-tabla-flojo">
+            {edadEvaluacion === null && edad === null
+              ? 'Falta la edad, que sale de la fecha de nacimiento: se carga en la hoja de la entrevista.'
+              : 'Falta el plazo de la tarea, que se contesta en la hoja de la entrevista.'}
+          </p>
         )}
       </div>
 
@@ -675,12 +665,17 @@ function Conclusion({
 
   if (distancia === 0) {
     const supera = cuandoLlega(pide + 1);
+    // Cuando la banda ya la ubica en el nivel de arriba, decir "alrededor de
+    // los 47" con 47 años encima se lee como una fecha futura que ya pasó.
+    const yaLoRoza = supera !== null && edad !== null && supera <= edad + 1;
     return (
       <p>
         La persona puede abordar hoy la complejidad que el puesto exige.
-        {supera !== null && siguiente
-          ? ` Por su banda de maduración, alrededor de los ${supera} años va a poder con el estrato ${siguiente.romano}: el puesto le queda corto a partir de ahí, salvo que crezca con ella.`
-          : ' Por su banda de maduración se mantiene en ese nivel dentro del alcance del diagrama.'}
+        {supera === null || !siguiente
+          ? ' Por su banda de maduración se mantiene en ese nivel dentro del alcance del diagrama.'
+          : yaLoRoza
+            ? ` Su banda de maduración ya la ubica en el borde del estrato ${siguiente.romano}: el puesto le va a quedar corto en cuanto lo domine, salvo que crezca con ella.`
+            : ` Por su banda de maduración, alrededor de los ${supera} años va a poder con el estrato ${siguiente.romano}: el puesto le queda corto a partir de ahí, salvo que crezca con ella.`}
       </p>
     );
   }

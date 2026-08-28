@@ -24,6 +24,7 @@ import {
   NOTA_EJEMPLOS,
   type TextoDeNivel,
 } from '@/lib/discursivo';
+import { ESCALERA, ESTRATOS } from '@/lib/potencial';
 
 export type Estrato = TextoDeNivel & {
   nombre: string;
@@ -32,6 +33,24 @@ export type Estrato = TextoDeNivel & {
   procesamiento: string;
   original: TextoDeNivel;
 };
+
+/**
+ * El corte que usa el sistema para ese estrato, en palabras.
+ *
+ * El texto del horizonte lo escribe quien configura, y el cálculo del diagrama
+ * y de la tabla usa los cortes del modelo, que están en `lib/potencial`. Son
+ * dos cosas distintas que tienen que decir lo mismo: mostrando el corte al lado
+ * del campo, una edición no puede desalinearlos sin que se vea.
+ */
+function corteDe(estrato: number): string {
+  const e = ESTRATOS[estrato - 1];
+  if (!e) return '';
+  const marcas: readonly { texto: string }[] = ESCALERA;
+  const hasta = marcas[e.hasta]?.texto ?? '';
+  // El estrato I arranca por debajo de la escalera: su piso no tiene marca.
+  const desde = e.desde >= 0 ? marcas[e.desde]?.texto : null;
+  return desde ? `de ${desde} a ${hasta}` : `hasta ${hasta}`;
+}
 
 const CAMPOS = [
   { clave: 'que', rotulo: 'Referencia laboral', filas: 2, ayuda: 'Va al lado del escalón en la pirámide' },
@@ -149,6 +168,15 @@ export default function Estratos({
                     <label className="os-etiqueta-campo" htmlFor={`${c.clave}-${n.estrato}`}>
                       {c.rotulo}
                       {c.ayuda && <span className="os-etiqueta-ayuda">{c.ayuda}</span>}
+                      {/* El corte con el que el sistema mide, al lado del texto
+                          que lo describe: son dos cosas distintas y tienen que
+                          decir lo mismo. El texto se escribe acá; el corte sale
+                          del modelo y no se toca. */}
+                      {c.clave === 'horizonte' && (
+                        <span className="os-etiqueta-ayuda">
+                          El sistema mide {corteDe(n.estrato)}
+                        </span>
+                      )}
                     </label>
                     <textarea
                       id={`${c.clave}-${n.estrato}`}
