@@ -881,37 +881,45 @@ frenarlo, soltar sobre un campo lo escribe adentro. Y frenarlo es además lo que
 le dice al navegador que el destino era válido, así el renglón se queda donde lo
 dejaron en vez de volar de vuelta al lugar del que salió.
 
-## El informe del cliente viene en tres profundidades
+## El informe del cliente es una página, y el PDF es otra cosa
 
-El mismo informe contesta tres preguntas distintas según quién lo abra, y quien
-decide una contratación no necesita leer las tres. `Documento` recibe `parte`
-(`app/os/psicotecnicos/informe/_doc/Documento.tsx`) y el portal lo dibuja tres
-veces, una por profundidad (`app/p/[token]/evaluacion/[id]/Partes.tsx`):
+Se leía como un PDF puesto en pantalla: un documento largo que se recorre de
+arriba abajo. Quien lo abre está decidiendo una contratación y llega con una
+pregunta, si esta persona va para el puesto; después, según quién sea, quiere
+ver algo distinto (el líder cómo trabajarla, la gerencia el número, la
+psicóloga del cliente el protocolo).
 
-1. **Recomendación**: el semáforo, lo que escribió y firma la evaluadora, y su
-   matrícula. Entra en una hoja y es lo que se lee antes de decidir.
-2. **Fundamentos**: competencias, análisis cualitativo, recomendaciones al
-   líder, estilos de pensamiento y potencial.
-3. **Indicadores**: los valores medidos, sin interpretar y sin colores, con el
-   diagrama de Jaques en grises. Es la parte que se archiva y se imprime.
+Desde el 28/8/2026 son dos cosas separadas, y cada una está resuelta por su
+lado:
 
-**Cada parte es un documento completo**: lleva la marca, quién es la persona y
-para qué puesto, y la firma con la nota de confidencialidad. Se descarga una,
-dos o las tres, así que una que llegue suelta tiene que decir de quién es y de
-quién habla. Los capítulos se numeran desde 01 en cada una.
+- **La lectura en pantalla** es `app/p/[token]/evaluacion/[id]/_sitio/`: índice
+  fijo a la izquierda y siete secciones a la derecha (Recomendación,
+  Competencias, Cómo trabaja, Para su líder, Cómo piensa, Hasta dónde puede
+  llegar, Los datos). El índice marca dónde está parado el lector con un
+  `IntersectionObserver`, y saltar a una sección deja el ancla en la dirección.
+- **Lo que se descarga** es el documento de siempre (`_doc/Documento.tsx`), sin
+  un cambio: se dibuja en la misma página, fuera de la vista, y aparece recién
+  al imprimir. Se elige qué bajar (la recomendación firmada, los fundamentos,
+  los indicadores, o todo junto) y lo que se imprime es lo elegido y no lo que
+  se está mirando. **Si hay que volver al informe-como-PDF en pantalla, la
+  versión con pestañas está en el commit `63a80d7`.**
 
-**Las tres están dibujadas desde el primer momento y se muestra una.** Cambiar
-de pestaña no vuelve al servidor: es el mismo informe partido.
+**Lo que dibuja las dos vive una sola vez.** `_doc/piezas.tsx` tiene el
+velocímetro, el ícono de cada nivel de ajuste, la escala de bandas y el color de
+un puntaje; `_doc/Crudo.tsx` tiene el respaldo entero. Dibujados dos veces se
+habrían separado en la primera corrección.
 
-**Se imprime lo elegido y no lo que se está mirando.** La descarga es la
-impresión del navegador, así que lo que hace el selector es marcar las partes en
-`data-imprimir` y la hoja esconde el resto. La primera de las elegidas no lleva
-salto de página adelante, que dejaría una hoja en blanco.
+**El potencial se cuenta sin el modelo.** La pirámide dice bien lo que dice y
+para leerla hay que saber qué es un estrato. En la página son cinco escalones
+(`_sitio/Escalera.tsx`), cada uno con qué clase de trabajo es, con qué plazo se
+maneja y a qué puesto se parece, y tres marcas encima: lo que el puesto pide,
+dónde está la persona hoy y hasta dónde llega con los años. Los nombres del
+modelo quedan en Los datos, que es donde se los va a buscar.
 
-**En indicadores queda el respaldo de todo lo que el informe afirma**
-(28/8/2026): los puntajes con los cortes que rigen ese informe, el Raven, los
-valores del Benziger, los números del potencial, la codificación del protocolo y
-el sumario estructural entero. Antes el sumario no salía del OS.
+**En indicadores queda el respaldo de todo lo que el informe afirma**: los
+puntajes con los cortes que rigen ese informe, el Raven, los valores del
+Benziger, los números del potencial, la codificación del protocolo y el sumario
+estructural entero. Antes el sumario no salía del OS.
 
 Dos cosas quedan afuera a propósito:
 
@@ -923,6 +931,12 @@ Dos cosas quedan afuera a propósito:
   opción es la correcta en cada lámina del Raven no se publica porque son las
   mismas 36 en todas las evaluaciones, y una clave que circula deja al test sin
   poder volver a usarse. Sí va qué opción eligió.
+
+**En la ficha, la pestaña Informe no muestra los indicadores** (`parte="trabajo"`):
+ahí la evaluadora revisa lo que el informe afirma, y el sumario, la codificación
+y las respuestas del Raven están en sus propias pestañas. El PDF que se baja
+desde ahí los trae igual, que es el documento completo.
+
 
 ## El monotributo se mira contra los últimos doce meses
 
