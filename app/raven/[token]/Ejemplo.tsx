@@ -45,9 +45,12 @@ function Dibujo({ figura, tamano }: { figura: Figura; tamano: Tamano }) {
       {figura === 'cuadrado' && (
         <rect x={23 - r} y={23 - r} width={r * 2} height={r * 2} {...trazo} />
       )}
+      {/* El triángulo ocupa el mismo alto que el círculo y el cuadrado de su
+          columna: con la base a media altura del radio se veía un tamaño más
+          chico que el que le tocaba, y el tamaño es justamente la regla. */}
       {figura === 'triangulo' && (
         <polygon
-          points={`23,${23 - r} ${23 + r},${23 + r * 0.86} ${23 - r},${23 + r * 0.86}`}
+          points={`23,${23 - r} ${23 + r * 1.12},${23 + r} ${23 - r * 1.12},${23 + r}`}
           {...trazo}
         />
       )}
