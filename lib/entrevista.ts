@@ -48,8 +48,10 @@ type Fila = {
     fecha_nacimiento: string | null;
   } | null;
   evaluadoras: { nombre: string } | null;
+  pedido_id: string | null;
   pedidos: {
     puesto: string;
+    estrato_puesto: number | null;
     con_benziger: boolean;
     empresas: { nombre: string } | null;
     baterias: { codigo: string; nombre: string | null; tests: string[] | null } | null;
@@ -68,6 +70,9 @@ export type Entrevista = {
   /** La primera pregunta de la entrevista por competencias. */
   nacimiento: string | null;
   puesto: string | null;
+  /** El pedido y el nivel de trabajo que tiene determinado, si lo tiene. */
+  pedidoId: string | null;
+  estratoPuesto: number | null;
   empresa: string | null;
   evaluadora: string | null;
   cuando: string | null;
@@ -149,7 +154,7 @@ const CAMPOS =
   'grafico_2_personas_administrado,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'personas(nombre,email,telefono,fecha_nacimiento),evaluadoras(nombre),' +
-  'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo,nombre,tests))';
+  'pedido_id,pedidos(puesto,con_benziger,estrato_puesto,empresas(nombre),baterias(codigo,nombre,tests))';
 
 /**
  * Los tests en el orden que eligió quien toma la entrevista.
@@ -235,6 +240,8 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     telefono: f.personas?.telefono ?? null,
     nacimiento: f.personas?.fecha_nacimiento ?? null,
     puesto: f.pedidos?.puesto ?? null,
+    pedidoId: f.pedido_id,
+    estratoPuesto: f.pedidos?.estrato_puesto ?? null,
     empresa: f.pedidos?.empresas?.nombre ?? null,
     evaluadora: f.evaluadoras?.nombre ?? null,
     cuando: f.fecha_entrevista,

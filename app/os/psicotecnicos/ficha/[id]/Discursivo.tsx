@@ -65,6 +65,7 @@ export default function Discursivo({
   complejidad,
   relato,
   estratoPuesto,
+  pedidoId,
   modo = 'codificacion',
 }: {
   id: string;
@@ -83,6 +84,8 @@ export default function Discursivo({
   relato: string | null;
   /** El nivel de trabajo del puesto, contra el que se compara. */
   estratoPuesto?: number | null;
+  /** El pedido, para poder ir a completarlo desde la entrevista. */
+  pedidoId?: string | null;
   /**
    * Dónde se está usando.
    *
@@ -357,21 +360,29 @@ export default function Discursivo({
 
         {/* El estrato que queda. Sin nada contestado, los cuatro para elegir a
             mano: es lo que sostiene a las evaluaciones cargadas antes. */}
-        {/* En la entrevista el estrato se lee, no se elige: elegirlo es de la
-            pestaña Potencial, con la comparación contra el puesto delante. */}
+        {/* Contra qué se va a comparar esto, que es lo único que la evaluadora
+            necesita saber acá: si el pedido tiene su nivel determinado. En qué
+            estrato quedó la persona se lee en la pestaña Potencial, con la
+            comparación delante. */}
         <div className="os-nivel-cierre">
-          <span className="os-etiqueta-campo">La persona está en</span>
-          <p className="os-nivel-resultado">
-            {elegido ? (
-              <>
-                <strong>Estrato {elegido.romano}</strong> · {elegido.nombre}
-              </>
-            ) : (
-              <span className="os-tabla-flojo">
-                {coinciden
-                  ? `Estrato ${coinciden.romano}, por encima de lo que mide este análisis`
-                  : 'sin determinar'}
-              </span>
+          <span className="os-etiqueta-campo">El puesto</span>
+          <p className="os-nivel-resultado os-nivel-puesto">
+            <span
+              className={`os-sello-estado ${estratoPuesto ? 'os-verde' : 'os-rojo'}`}
+            >
+              {estratoPuesto
+                ? `Estrato ${estratoPorNumero(estratoPuesto)?.romano ?? ''}`
+                : 'Sin nivel determinado'}
+            </span>
+            {pedidoId && (
+              <a
+                className="os-boton"
+                href={`/os/pedidos/${pedidoId}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Abrir el pedido
+              </a>
             )}
           </p>
         </div>

@@ -6733,6 +6733,14 @@ th.os-tabla-contacto {
   font-size: 0.95rem;
 }
 
+/* Si el pedido tiene su nivel determinado, y el camino para completarlo: es lo
+   único del puesto que hace falta saber mientras se administra. */
+.os-nivel-puesto {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 /* Los dos datos discrepan: el horizonte dice un estrato y arriba está elegido
    otro. En ámbar y no en rojo: no es un error del sistema sino algo para
    revisar, y puede estar bien por decisión de la evaluadora. */
