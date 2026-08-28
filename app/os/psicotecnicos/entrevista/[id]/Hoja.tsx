@@ -95,6 +95,11 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
    * hoja y no hay forma de olvidarse de preguntarlas.
    */
   const conDiscursivo = todos.includes(TEST_DISCURSIVO);
+  /* Tomado es tener el plazo y las cuatro preguntas contestadas. Lo que la
+     persona contó se anota mientras habla y no es lo que lo cierra. */
+  const potencialTomado =
+    e.horizonteDias !== null &&
+    [1, 2, 3, 4].every((n) => typeof e.complejidad?.[String(n)] === 'boolean');
   const tests = todos.filter((t) => t !== TEST_DISCURSIVO);
 
   /**
@@ -306,7 +311,20 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
               {/* Y las tres preguntas del potencial, en la misma conversación. */}
               {conDiscursivo && (
                 <div className="os-competencias-potencial">
-                  <h4 className="os-competencias-titulo">Potencial de desarrollo</h4>
+                  {/* La marca del potencial, como la de cualquier test y en el
+                      mismo lugar: arriba y a la derecha. Está tomado cuando
+                      están el plazo y las cuatro preguntas; lo que la persona
+                      contó se anota igual y no es lo que lo cierra. */}
+                  <div className="os-competencias-cabeza">
+                    <h4 className="os-competencias-titulo">Potencial de desarrollo</h4>
+                    <span
+                      className={`os-sello-estado os-test-estado ${
+                        potencialTomado ? 'os-verde' : 'os-gris'
+                      }`}
+                    >
+                      {potencialTomado ? 'Administrado' : 'No administrado'}
+                    </span>
+                  </div>
                   <Discursivo
                     id={e.id}
                     modo="entrevista"
