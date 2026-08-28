@@ -799,6 +799,35 @@ tiempo no la movería. Por eso el desplegable ofrece "por espera" además de las
 tres: sin esa salida, tocarlo una vez la fijaba para siempre. La calculada se
 dibuja más apagada que la decidida.
 
+## Cada texto del informe muestra de dónde salió, y solo a quien evalúa
+
+Los tres grupos del análisis y las recomendaciones al líder llevan, al final de
+cada oración, el índice que la disparó con su valor: verde si cayó dentro de lo
+esperado y rojo si lo cruzó, con la misma banda que pinta la hoja del sumario.
+Lo pidió la psicóloga (28/8/2026): revisando el informe quiere ver el respaldo
+de cada párrafo sin volver al sumario a buscarlo.
+
+**Es de quien firma y no del cliente.** `Documento` pasa `respaldos` únicamente
+cuando recibe `editar`, que es lo que distingue la ficha de la vista para
+imprimir y del portal: esas dos dibujan la misma lista sin un solo sello.
+
+**La clave del mapa es el texto, no la posición.** Las listas se reordenan y se
+editan, así que por posición el sello terminaría al lado de otra oración. Un
+texto corregido a mano deja de encontrar su respaldo y sale sin sello, que es lo
+correcto: ya no es lo que dijo la codificación.
+
+**El valor se lee del final de la cadena y solo si lo de adelante no tiene
+dígitos.** Las lecturas traen el valor escrito para leerse ("Xu 0,35", "+3,5",
+"W:M 9:3"), y una razón como 9:3 no se compara contra una banda: queda sin
+pintar, con el índice dicho en el título.
+
+**Afr se pinta con la banda de su estilo.** No sale de un corte guardado como
+las demás: lo que se espera de la proporción afectiva cambia según la persona
+sea introversiva (0,53 a 0,78), ambigual (0,53 a 0,83) o extratensiva (0,60 a
+0,89), y por eso vive en `AFR_BANDA` y se pide con `bandaDeAfr(estilo)`. Hasta
+el 28/8/2026 quedaba sin pintar en la hoja por depender del estilo; con el
+estilo a mano se puede pintar sin que la hoja y el informe se contradigan.
+
 ## Las cuatro listas del informe las puede escribir la evaluadora
 
 Recomendaciones al líder, Desarrollo destacado, Desarrollo esperado y Necesidad

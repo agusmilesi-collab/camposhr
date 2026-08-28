@@ -414,6 +414,9 @@ export default function Documento({
             items={dichos}
             intervenida={inf.intervenidas.includes(lista)}
             vacio="Sin registros en este grupo."
+            // El respaldo va solo donde va el botón de editar: es de quien
+            // firma el informe, no del cliente que lo lee.
+            respaldos={editar ? inf.respaldos : undefined}
             grupo={{ clave, titulo, sub }}
           />
         ))}
@@ -428,6 +431,7 @@ export default function Documento({
           intervenida={inf.intervenidas.includes('recomendaciones')}
           numerada
           vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
+          respaldos={editar ? inf.respaldos : undefined}
         />
       </Capitulo>
 

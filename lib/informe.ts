@@ -4,11 +4,14 @@ import {
   cortesValidos,
   leer,
   porArea,
+  bandaDeAfr,
+  bandasPorIndice,
   senalDe,
   textosValidos,
   type Cortes,
   type Lectura,
   type SumarioCrudo,
+  type TestDeManchas,
   type Textos,
 } from '@/lib/redacciones';
 import {
@@ -58,6 +61,22 @@ import type { Cuatro } from '@/lib/benziger-perfil';
  */
 
 export type Faltante = { que: string; donde: string };
+
+/**
+ * El índice que sostiene un texto del informe, con su valor y su banda.
+ *
+ * `dentro` es null cuando ese índice no tiene una banda con la que compararlo:
+ * pasa con los que se disparan contra otra lectura o contra un valor que no es
+ * un número. Ahí se muestra el índice y su valor, sin pintar, que es la misma
+ * regla que sigue la hoja del sumario.
+ */
+export type Respaldo = {
+  indice: string;
+  valor: string;
+  dentro: boolean | null;
+  /** Qué se esperaba, escrito: "de 0,30 a 0,80". Para el título del sello. */
+  esperado: string | null;
+};
 
 /**
  * Quita las recomendaciones que dicen lo mismo con otras palabras.
@@ -135,6 +154,20 @@ export type Informe = {
     esperadas: string[];
     desarrollar: string[];
   };
+  /**
+   * Qué índice respalda cada texto, por el texto mismo.
+   *
+   * Lo pidió la psicóloga el 28/8/2026: al revisar el informe quiere ver de
+   * dónde salió cada párrafo sin tener que volver al sumario y buscarlo. **Es
+   * de quien evalúa y no del cliente**: `Documento` lo dibuja solo cuando
+   * recibe `editar`, que es lo que distingue la ficha de la vista para imprimir
+   * y del portal.
+   *
+   * La clave es el texto y no la posición porque las listas se pueden reordenar
+   * y editar. Un texto corregido a mano deja de encontrar su respaldo, que es
+   * lo correcto: ya no es lo que dijo la codificación.
+   */
+  respaldos: Record<string, Respaldo>;
   /**
    * Por qué las competencias del proyectivo van sin puntaje, si es el caso.
    *
@@ -255,6 +288,56 @@ function armarResumen(
     : 'No se registran aspectos que demanden una gestión particular de su líder directo.';
 
   return { parrafos: [destaca, demanda], propio: false };
+}
+
+/**
+ * El respaldo de cada texto: de qué índice salió y si cayó dentro de lo esperado.
+ *
+ * Se arma sobre las lecturas, así que vale tanto para lo que dice cada grupo del
+ * análisis como para las recomendaciones al líder: las dos cosas salen de la
+ * misma lectura y comparten su índice.
+ */
+function respaldosDe(
+  lecturas: Lectura[],
+  cortes: Cortes,
+  test: TestDeManchas,
+  estilo: string
+): Record<string, Respaldo> {
+  const bandas = bandasPorIndice(cortes, test);
+  const salida: Record<string, Respaldo> = {};
+
+  for (const l of lecturas) {
+    // Afr no tiene corte guardado: su banda depende del estilo del protocolo.
+    const banda = l.indice === 'Afr' ? bandaDeAfr(estilo) : bandas[l.indice];
+    // El valor viene escrito para leerse ("Xu 0,35", "+3,5", "W:M 9:3"), así
+    // que el número se saca del final y solo si lo que va delante no tiene
+    // dígitos: una razón como 9:3 no se compara contra una banda.
+    const m = l.valor.match(/^[^\d]*([+−-]?\d+(?:[.,]\d+)?)$/);
+    const numero = m ? Number(m[1].replace('−', '-').replace(',', '.')) : NaN;
+    const comparable = banda && Number.isFinite(numero);
+    const dentro = comparable
+      ? (banda.minimo === null || numero >= banda.minimo) &&
+        (banda.maximo === null || numero <= banda.maximo)
+      : null;
+
+    const n = (x: number) => x.toFixed(banda?.decimales ?? 0).replace('.', ',');
+    const esperado = !banda
+      ? null
+      : banda.minimo !== null && banda.maximo !== null
+        ? banda.minimo === banda.maximo
+          ? `exactamente ${n(banda.minimo)}`
+          : `de ${n(banda.minimo)} a ${n(banda.maximo)}`
+        : banda.minimo !== null
+          ? `${n(banda.minimo)} o más`
+          : banda.maximo === 0
+            ? 'en cero'
+            : `hasta ${n(banda.maximo as number)}`;
+
+    const respaldo: Respaldo = { indice: l.indice, valor: l.valor, dentro, esperado };
+    if (l.dice) salida[l.dice] = respaldo;
+    if (l.recomienda) salida[l.recomienda] = respaldo;
+  }
+  return salida;
 }
 
 export async function armarInforme(id: string): Promise<Informe | null> {
@@ -485,6 +568,14 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
       esperadas: elegir('esperadas', esperadas.map((l) => l.dice)),
       desarrollar: elegir('desarrollar', desarrollar.map((l) => l.dice)),
     },
+    respaldos: respaldosDe(
+      lecturas,
+      cortes,
+      proyectivoDe(f) === 'Zulliger' ? 'Zulliger' : 'Rorschach',
+      typeof sumario?.control_estres?.estilo === 'string'
+        ? (sumario.control_estres.estilo as string)
+        : 'Ambigual'
+    ),
     intervenidas: LISTAS_DEL_INFORME.filter((k) => Array.isArray(guardadas[k])),
     // La sección sale si hay algo que mostrar, y no por existir la fila. Un
     // Benziger cargado a medias, sin ningún cuadrante, dibujaba el cerebro sin

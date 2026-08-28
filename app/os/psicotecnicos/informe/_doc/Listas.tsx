@@ -20,7 +20,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { ListaDelInforme } from '@/lib/informe';
+import type { ListaDelInforme, Respaldo } from '@/lib/informe';
 import { estirar } from '../../piezas';
 
 /**
@@ -43,6 +43,7 @@ export default function Listas({
   intervenida,
   numerada = false,
   vacio,
+  respaldos,
   grupo,
 }: {
   /**
@@ -58,6 +59,15 @@ export default function Listas({
   /** Las recomendaciones van numeradas; los tres grupos del análisis, no. */
   numerada?: boolean;
   vacio: string;
+  /**
+   * De qué índice salió cada texto, por el texto mismo.
+   *
+   * Solo llega desde la ficha: el documento lo pasa cuando recibe `editar`, así
+   * que la vista para imprimir y el portal del cliente no lo tienen. Un texto
+   * que la evaluadora corrigió no encuentra su respaldo y sale sin sello, que
+   * es lo correcto: dejó de ser lo que dijo la codificación.
+   */
+  respaldos?: Record<string, Respaldo>;
   /**
    * Cuando la lista es uno de los tres grupos del análisis, su recuadro.
    *
@@ -232,6 +242,33 @@ export default function Listas({
     );
   }
 
+  /**
+   * El índice que respalda un texto, para quien evalúa.
+   *
+   * Va pegado al final del párrafo y no en una columna aparte: es la nota al pie
+   * de esa oración, y en su propia columna obligaba a cruzar la vista para saber
+   * cuál corresponde a cuál. Verde dentro de lo esperado y rojo cuando lo cruza,
+   * los mismos colores que la hoja del sumario.
+   */
+  const sello = (texto: string) => {
+    const r = respaldos?.[texto];
+    if (!r) return null;
+    const clase =
+      r.dentro === null ? 'inf-respaldo-neutro' : r.dentro ? 'inf-respaldo-dentro' : 'inf-respaldo-fuera';
+    // Hay lecturas que ya traen el índice adentro del valor ("W:M 9:3",
+    // "EB 3:1.5 · ambigual"). Ahí se muestra el valor solo: repetirlo daba
+    // sellos como "W:M W:M 9:3".
+    const etiqueta = /[a-zA-Z]/.test(r.valor) ? r.valor : `${r.indice} ${r.valor}`;
+    return (
+      <span
+        className={`inf-respaldo ${clase}`}
+        title={r.esperado ? `${r.indice} esperado: ${r.esperado}` : `Sale de ${r.indice}`}
+      >
+        {etiqueta}
+      </span>
+    );
+  };
+
   if (!editando) {
     return envuelto(
       items.length === 0 ? (
@@ -241,14 +278,20 @@ export default function Listas({
           {items.map((t, i) => (
             <li key={i}>
               <span className="inf-orden">{String(i + 1).padStart(2, '0')}</span>
-              <p>{t}</p>
+              <p>
+                {t}
+                {sello(t)}
+              </p>
             </li>
           ))}
         </ol>
       ) : (
         <ul>
           {items.map((t, i) => (
-            <li key={i}>{t}</li>
+            <li key={i}>
+              {t}
+              {sello(t)}
+            </li>
           ))}
         </ul>
       )
