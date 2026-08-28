@@ -98,8 +98,19 @@ export type Entrevista = {
   ravenMedida: { raw: number | null; percentil: number | null; resultado: string | null } | null;
   /** Cuánto tardó, si ya lo terminó. */
   ravenDuracion: number | null;
-  /** En qué escalón de la pirámide quedó, si ya se lo ubicó. */
+  /** En qué escalón de la pirámide quedó, si ya se lo codificó. */
   discursivo: string | null;
+  /**
+   * Lo que la persona contó, anotado mientras hablaba.
+   *
+   * Como la entrevista por competencias, es de lo poco que esta pantalla
+   * guarda: el análisis discursivo se toma escuchando, y sin esto entre la
+   * entrevista y la codificación no queda más que la memoria.
+   */
+  relato: string | null;
+  /** El horizonte y las respuestas de complejidad, que se cargan acá mismo. */
+  horizonteDias: number | null;
+  complejidad: Record<string, boolean> | null;
   /**
    * Lo escrito de la entrevista por competencias.
    *
@@ -146,9 +157,14 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
       'raven_sesiones',
       `select=iniciado_at,terminado_at&evaluacion_id=eq.${id}&order=creado_at.desc&limit=1`
     ),
-    select<{ nivel: string | null }>(
+    select<{
+      nivel: string | null;
+      relato: string | null;
+      horizonte_dias: number | null;
+      complejidad: Record<string, boolean> | null;
+    }>(
       'analisis_discursivo',
-      `select=nivel&evaluacion_id=eq.${id}`
+      `select=nivel,relato,horizonte_dias,complejidad&evaluacion_id=eq.${id}`
     ).catch(() => []),
     // El puntaje del Raven, para mostrarlo al lado del tiempo apenas entrega.
     select<{ raw: number | null; percentil: number | null; resultado: string | null }>(
@@ -199,6 +215,9 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     graficoNombre: f.grafico_2_personas_nombre,
     raven,
     discursivo: discursivos[0]?.nivel ?? null,
+    relato: discursivos[0]?.relato ?? null,
+    horizonteDias: discursivos[0]?.horizonte_dias ?? null,
+    complejidad: discursivos[0]?.complejidad ?? null,
     competencias: f.entrevista_competencias,
     ravenIniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
     ravenMedida: medidas[0] ?? null,

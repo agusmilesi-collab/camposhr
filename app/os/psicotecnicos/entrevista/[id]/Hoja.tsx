@@ -18,6 +18,7 @@ import { enlaceDelCv } from '@/lib/cv';
 import Orden from './Orden';
 import Competencias from './Competencias';
 import Nacimiento from './Nacimiento';
+import Discursivo from '../../ficha/[id]/Discursivo';
 
 /**
  * La hoja de la entrevista: con qué se le toma cada test.
@@ -125,7 +126,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
     if (t === TEST_DISCURSIVO) {
       return (
         <span className={`os-sello-estado os-test-estado ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
-          {e.discursivo ?? 'Sin ubicar'}
+          {e.discursivo ?? 'Sin codificar'}
         </span>
       );
     }
@@ -256,16 +257,27 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         if (t === TEST_DISCURSIVO) {
           return (
             <>
-              {/* Se toma hablando, sobre unos cinco minutos de discurso, así
-                  que acá no hay lámina ni enlace que abrir: lo que hace falta
-                  es dónde dejar en qué nivel quedó, que se carga en la ficha. */}
+              {/* Se toma hablando, así que acá no hay lámina ni enlace que
+                  abrir: lo que hace falta es qué preguntarle y poder marcar la
+                  respuesta en el momento. El estrato sale de eso, y la pestaña
+                  Potencial de la ficha es donde se revisa con el diagrama. */}
+              <Discursivo
+                id={e.id}
+                modo="entrevista"
+                nivel={e.discursivo}
+                edad={null}
+                edadEvaluacion={null}
+                dias={e.horizonteDias}
+                complejidad={e.complejidad}
+                relato={e.relato}
+              />
               <div className="os-herramienta-accion">
                 <span className={`os-sello-estado ${e.discursivo ? 'os-verde' : 'os-gris'}`}>
-                  {e.discursivo ?? 'sin ubicar'}
+                  {e.discursivo ?? 'sin codificar'}
                 </span>
                 <span />
-                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=tests`}>
-                  Ubicar en la pirámide
+                <Link className="os-boton" href={`/os/psicotecnicos/ficha/${e.id}?ver=potencial`}>
+                  Ver el diagrama
                 </Link>
               </div>
             </>

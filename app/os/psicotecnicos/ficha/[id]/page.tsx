@@ -641,6 +641,7 @@ function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) 
           edadEvaluacion={f.cabecera.edad ?? null}
           dias={f.discursivo?.horizonte_dias ?? null}
           complejidad={f.discursivo?.complejidad ?? null}
+          relato={f.discursivo?.relato ?? null}
           niveles={nivelesQueRigen(rige.niveles).map((n) => ({
             nombre: n.nombre,
             romano: n.romano,

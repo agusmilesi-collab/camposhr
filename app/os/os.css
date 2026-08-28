@@ -6382,6 +6382,61 @@ th.os-tabla-contacto {
 /* La pirámide en la ficha, que va sin el recuadro que le pone el informe: le
    hace falta su propio aire para no quedar pegada al texto de arriba y al
    rótulo del campo de abajo. */
+/*
+ * El análisis discursivo en la hoja de la entrevista: qué preguntar y dónde
+ * anotarlo.
+ *
+ * Las preguntas van numeradas y a la vista: es lo que se lee de reojo con la
+ * persona enfrente, y esconderlas detrás de un botón obliga a acordarse de
+ * ellas, que es justo lo que no se puede hacer mientras alguien habla.
+ */
+.os-relato {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0 4px;
+}
+
+.os-guion {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--os-tinta-media);
+}
+
+.os-relato-campo {
+  width: 100%;
+  height: auto;
+  padding: 9px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.os-relato-hecho {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--os-verde-fuerte, var(--os-tinta-media));
+}
+
+/* Y en la codificación, lo anotado se lee: arriba de todo, porque es el
+   material del que sale el resto. */
+.os-relato-leido {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: var(--os-panel-2);
+}
+
+.os-relato-leido p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
 /* Los tres pasos del análisis, uno debajo del otro y separados: el horizonte,
    las preguntas y el estrato que sale de los dos. */
 .os-discursivo {
