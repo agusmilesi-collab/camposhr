@@ -508,6 +508,13 @@ export default function Discursivo({
         {dibuja ? (
           <div className="os-potencial-grafico">
             <Progreso edad={edadNum} dias={diasNum as number} />
+            {/* Qué es cada punto, escrito: el globo del navegador tarda un
+                segundo en aparecer y hay que pegarle al punto para verlo. */}
+            <p className="os-potencial-pie">
+              El punto lleno es hoy. Los huecos son a qué estrato llega su banda de
+              maduración a los 50 y a los 60 años; al pasar por encima de cada uno dice
+              con qué horizonte.
+            </p>
           </div>
         ) : (
           <p className="os-tabla-flojo">

@@ -341,6 +341,10 @@ export default function Progreso({
               {`A los ${e} años, por su banda de maduración: horizonte de ` +
                 `${enPalabras(diasDeEscalon(h))}, estrato ${estratoDeEscalon(h).romano}`}
             </title>
+            {/* Una zona de contacto invisible alrededor del punto: apuntarle a
+                un círculo de tres píxeles para leer su explicación es imposible
+                con el mouse. `transparent` sí recibe el puntero; `none` no. */}
+            <circle cx={x(e)} cy={y(h)} r={16} fill="transparent" />
             <circle cx={x(e)} cy={y(h)} r={3.2} fill="#ffffff" stroke={AZUL} strokeWidth={1.3} />
             <text
               x={x(e)}
@@ -370,18 +374,19 @@ export default function Progreso({
           {`Hoy: ${edad} años y un horizonte de ${enPalabras(dias)}, ` +
             `que cae en el estrato ${estratoDeEscalon(escalon).romano}`}
         </title>
+        <circle cx={x(enCuadro)} cy={y(escalon)} r={16} fill="transparent" />
         <circle cx={x(enCuadro)} cy={y(escalon)} r={5} fill={AZUL} />
+        <text
+          x={x(enCuadro) + (enCuadro > EDAD_MAX - 10 ? -10 : 10)}
+          y={y(escalon) - 9}
+          textAnchor={enCuadro > EDAD_MAX - 10 ? 'end' : 'start'}
+          fontSize={11}
+          fontWeight={700}
+          fill={AZUL}
+        >
+          Hoy
+        </text>
       </g>
-      <text
-        x={x(enCuadro) + (enCuadro > EDAD_MAX - 10 ? -10 : 10)}
-        y={y(escalon) - 9}
-        textAnchor={enCuadro > EDAD_MAX - 10 ? 'end' : 'start'}
-        fontSize={11}
-        fontWeight={700}
-        fill={AZUL}
-      >
-        Hoy
-      </text>
     </svg>
   );
 }
