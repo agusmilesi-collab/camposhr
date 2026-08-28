@@ -340,7 +340,8 @@ export const APERTURA =
  * contesta el plazo del proyecto entero del que participa y no el de aquello
  * de lo que responde, que es lo que se está midiendo.
  */
-export const PREGUNTA_HORIZONTE = 'Esa tarea, ¿cuándo se sabe si salió bien?';
+export const PREGUNTA_HORIZONTE =
+  'El resultado de esa tarea, ¿cuándo se sabe si salió bien?';
 
 /** Lo que hay que tener en la cabeza al contestarla. */
 export const AVISO_HORIZONTE =
