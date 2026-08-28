@@ -224,49 +224,23 @@
   padding: 0 28px 96px;
 }
 
+/* La cabecera es la del documento: acá solo se le pone el aire y la línea que
+   la separa del índice y de la primera sección. */
 .sitio-cabecera {
-  padding: 34px 0 26px;
+  padding: 34px 0 8px;
   border-bottom: 1px solid var(--linea);
 }
 
-.sitio-marca {
-  margin: 0 0 20px;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--suave);
-}
-
-.sitio-marca span {
-  font-weight: 600;
-  color: var(--tinta);
-}
-
-.sitio-cabecera h1 {
-  margin: 0 0 14px;
-  font-size: 2.6rem;
-  line-height: 1.1;
-}
-
-/* Los datos en fila y con el rótulo arriba: es una ficha y no un párrafo. */
-.sitio-datos {
+.sitio-cabecera .inf-marca {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 32px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 26px;
 }
 
-.sitio-datos p {
-  display: grid;
-  gap: 1px;
-  margin: 0;
-  font-size: 0.92rem;
-}
-
-.sitio-datos span {
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--suave);
+.sitio-cabecera .inf-encabezado {
+  margin-bottom: 22px;
 }
 
 /* ── El índice y las secciones ────────────────────────────────────────── */
