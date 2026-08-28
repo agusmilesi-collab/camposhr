@@ -354,10 +354,10 @@
   background: var(--hoja);
 }
 
+/* Todo llega al mismo margen: el ancho del renglón lo pone la hoja, que ya está
+   limitada, y no cada párrafo por su cuenta. Con un límite propio, los textos
+   terminaban antes que las líneas y cada bloque cortaba en un lugar distinto. */
 .sitio-seccion p {
-  /* Sesenta y pico de caracteres por renglón: a lo ancho de la caja son más de
-     cien y el ojo pierde el renglón al volver. */
-  max-width: 68ch;
   margin: 0 0 12px;
   font-size: 0.95rem;
   line-height: 1.65;
@@ -432,7 +432,6 @@
 /* La nota de confidencialidad cierra la sección: es del documento y no de
    quien firma, así que va después de la firma y en cuerpo chico. */
 .sitio-confidencial {
-  max-width: 68ch;
   margin: 20px 0 0 !important;
   padding-top: 14px;
   border-top: 1px solid var(--linea-suave);
