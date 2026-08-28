@@ -28,6 +28,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AVISO_MINUTOS, MINUTOS, OPCIONES, RAVEN_MAXIMO } from '@/lib/raven';
+import Ejemplo from './Ejemplo';
 
 function reloj(segundos: number): string {
   const m = Math.floor(segundos / 60);
@@ -217,6 +218,9 @@ export default function Test({
           </p>
         )}
         <h1>Test de razonamiento</h1>
+        {/* El ejemplo antes que nada: la consigna dice qué hay que hacer y esto
+            lo muestra. No es una lámina del test, que las 36 se puntúan. */}
+        <Ejemplo />
         {/* La consigna va destacada: es lo único que hay que entender para
             empezar, y lo demás son detalles de cómo funciona la pantalla. */}
         <p className="rv-consigna">

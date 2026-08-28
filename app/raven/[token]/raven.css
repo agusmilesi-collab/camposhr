@@ -333,3 +333,102 @@
     grid-template-columns: repeat(9, minmax(0, 1fr));
   }
 }
+
+/**
+ * El ejemplo resuelto, antes de la consigna.
+ *
+ * La consigna escrita no se entiende del todo hasta que se ve la mecánica, así
+ * que va la misma en chico y para tocar. Ocupa el ancho del texto y nada más:
+ * es una ayuda para leer la explicación, no la explicación.
+ */
+.rv-ejemplo {
+  margin: 0 0 22px;
+  padding: 16px 18px;
+  border: 1px solid #e2e4e7;
+  border-radius: 12px;
+  background: #fbfbfa;
+}
+
+.rv-ejemplo-rotulo {
+  margin: 0 0 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6b7076;
+}
+
+.rv-ejemplo-grilla {
+  display: grid;
+  grid-template-columns: repeat(2, 58px);
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.rv-ejemplo-grilla > span {
+  display: grid;
+  place-items: center;
+  height: 58px;
+  border: 1px solid #cfd3d8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1a1d21;
+}
+
+/* El lugar vacío: punteado, como el hueco de una lámina. Resuelto, se pinta del
+   mismo verde que la opción que lo completó. */
+.rv-ejemplo-falta {
+  border-style: dashed !important;
+  color: #9aa0a6 !important;
+  font-size: 1.2rem;
+}
+
+.rv-ejemplo-falta.resuelta {
+  border-style: solid !important;
+  border-color: #37804a !important;
+  background: #f0f7f2 !important;
+  color: #37804a !important;
+}
+
+.rv-ejemplo-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rv-ejemplo-opcion {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  padding: 0;
+  border: 1px solid #cfd3d8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1a1d21;
+  cursor: pointer;
+}
+
+.rv-ejemplo-opcion:hover {
+  border-color: #1a1d21;
+}
+
+.rv-ejemplo-opcion.bien {
+  border-color: #37804a;
+  background: #f0f7f2;
+  color: #37804a;
+}
+
+/* La equivocada se apaga y no se marca en rojo: es un ejemplo para entender,
+   no una respuesta que cuente. */
+.rv-ejemplo-opcion.mal {
+  border-color: #cfd3d8;
+  background: #f2f3f4;
+  color: #9aa0a6;
+}
+
+.rv-ejemplo-pie {
+  margin: 12px 0 0 !important;
+  font-size: 0.86rem !important;
+  color: #46505c;
+}
