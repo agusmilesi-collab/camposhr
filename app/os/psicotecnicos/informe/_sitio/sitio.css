@@ -219,11 +219,11 @@
 }
 
 /* La cabecera es la del documento y se dibuja con sus reglas: acá solo va el
-   aire de arriba y la línea que la separa del índice. Lo que le agregue este
-   archivo son dos cabeceras distintas esperando a separarse. */
+   aire, arriba y abajo. Sin línea al pie: ya la tiene abajo de la marca, y dos
+   líneas horizontales en cinco renglones parten la cabecera en tres. Lo que
+   sigue arranca con la suya, que es la del título de la sección. */
 .sitio-cabecera {
   padding: 34px 0 0;
-  border-bottom: 1px solid var(--linea);
 }
 
 .sitio-cabecera .inf-encabezado {
