@@ -370,8 +370,8 @@
 /* Los subtítulos de adentro de una sección: en versalitas y con una línea
    arriba, para que se vean como una división y no como un párrafo en negrita. */
 .sitio-sub {
-  margin: 30px 0 12px;
-  padding-top: 16px;
+  margin: 56px 0 14px;
+  padding-top: 18px;
   border-top: 1px solid var(--linea-suave);
   font-size: 0.7rem;
   font-weight: 600;
@@ -772,6 +772,13 @@
   }
 }
 
+/* La nota del semáforo es una aclaración al pie, no un párrafo: en pantalla
+   hereda el cuerpo y el interlineado del texto corrido y pesa como si lo fuera. */
+.sitio .inf-nota {
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
 /* ── Competencias, en barras ──────────────────────────────────────────── */
 /*
  * Nueve puntajes se comparan, no se leen de a uno. Cada competencia es una
@@ -865,8 +872,8 @@
  */
 .sitio-cita p {
   font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1.24rem !important;
-  line-height: 1.5 !important;
+  font-size: 1.38rem !important;
+  line-height: 1.48 !important;
   color: var(--tinta);
 }
 
