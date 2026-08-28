@@ -10,6 +10,7 @@ import { ABIERTO, DEL_JEFE, DEL_PUESTO, FAMILIAS, SENIORITY } from '@/lib/pedido
 import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
 import { Benziger, Borrar, Estado, Fecha, Largo, Lista, Pregunta, Texto } from './Editar';
+import NivelDeTrabajo from './NivelDeTrabajo';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 import BorrarCandidato from './BorrarCandidato';
 
@@ -217,6 +218,22 @@ export default async function FichaPedido({ params }: { params: { id: string } }
               ))}
             </ul>
           )}
+        </div>
+      </Bloque>
+
+      {/* Antes de cómo es el puesto va cuánto pesa: es la medida objetiva del
+          modelo y es contra lo que después se compara a cada candidato. */}
+      <Bloque
+        titulo="Nivel de trabajo del puesto"
+        nota={pedido.estratoPuesto ? 'determinado' : 'sin determinar'}
+      >
+        <div className="os-pedido-suelto">
+          <NivelDeTrabajo
+            id={pedido.id}
+            timeSpanDias={pedido.timeSpanDias}
+            complejidad={pedido.complejidad}
+            estratoPuesto={pedido.estratoPuesto}
+          />
         </div>
       </Bloque>
 

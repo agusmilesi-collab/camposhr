@@ -249,6 +249,98 @@ export function comoSeDice(e: Estrato): string {
   return e.mide ? `estrato ${e.romano}` : 'un nivel por encima del alcance de este análisis';
 }
 
+/**
+ * Las preguntas que determinan el nivel de complejidad, en cascada.
+ *
+ * Son las del procedimiento de Jaques (*Determining the Level of Task
+ * Complexity*): se contestan por sí o por no y **el nivel es el número más alto
+ * contestado que sí**. Sirven para las dos puntas del mismo problema, porque
+ * describen el trabajo y no a la persona:
+ *
+ * - sobre el **puesto**, contestando qué exige el trabajo que hay que hacer;
+ * - sobre la **persona**, contestando sobre las dos o tres asignaciones que
+ *   manejó al límite de lo que pudo, que es como el libro indica juzgarlo.
+ *
+ * Elegir entre cuatro descripciones es una impresión; contestar cuatro
+ * preguntas deja registrado por qué dio ese nivel.
+ *
+ * La quinta existe para los puestos: una jefatura puede exigir un estrato V, y
+ * saberlo cambia la búsqueda aunque el análisis discursivo no certifique ese
+ * nivel en una persona.
+ */
+export const PREGUNTAS = [
+  {
+    estrato: 1,
+    corto: 'Juicio directo',
+    texto:
+      '¿El trabajo se puede llevar adelante siguiendo un plan ya asignado, resolviendo los obstáculos a medida que aparecen con la experiencia y el criterio práctico?',
+  },
+  {
+    estrato: 2,
+    corto: 'Acumulación diagnóstica',
+    texto:
+      '¿Exige reunir e interpretar datos que van apareciendo, y llegar a un diagnóstico que los vincule para recién ahí decidir cómo resolver?',
+  },
+  {
+    estrato: 3,
+    corto: 'Caminos alternativos',
+    texto:
+      '¿Exige construir un plan que equilibre lo que hay que hacer hoy contra lo que se necesita más adelante, con otros caminos en reserva por si el elegido no funciona?',
+  },
+  {
+    estrato: 4,
+    corto: 'Procesamiento paralelo',
+    texto:
+      '¿Exige llevar adelante varios proyectos que se afectan entre sí, ajustando cada uno en relación con los otros?',
+  },
+  {
+    estrato: 5,
+    corto: 'Sistema completo',
+    texto:
+      '¿Exige seguir cómo un cambio en cualquier punto impacta en el sistema entero, y decidir contando las consecuencias que eso arrastra aguas abajo?',
+  },
+] as const;
+
+/**
+ * El nivel que dan las respuestas: el más alto contestado que sí.
+ *
+ * Null cuando no se contestó ninguna que sí, que no es lo mismo que estrato I:
+ * es que todavía no se preguntó.
+ */
+export function nivelDeRespuestas(sies: number[]): number | null {
+  const validos = sies.filter((n) => PREGUNTAS.some((p) => p.estrato === n));
+  return validos.length > 0 ? Math.max(...validos) : null;
+}
+
+/** El estrato por su número, del I al VII. */
+export function estratoPorNumero(n: number): Estrato | null {
+  return ESTRATOS[n - 1] ?? null;
+}
+
+/**
+ * El estrato que le corresponde a un time-span, que es la medida objetiva.
+ *
+ * El tiempo máximo de finalización de la tarea más larga que el puesto tiene
+ * que llevar hasta el final. Los cortes son los del modelo y ya están en la
+ * escalera: tres meses, un año, dos años, cinco, diez.
+ */
+export function estratoDeTimeSpan(dias: number): Estrato {
+  return estratoDeEscalon(escalonDe(dias));
+}
+
+/**
+ * Qué tan lejos está una persona de un puesto, en estratos.
+ *
+ * Cero es el ajuste: la persona puede con la complejidad que el puesto pide.
+ * Positivo es que le sobra nivel y negativo que le falta. Jaques mide la
+ * distancia entre un jefe y su subordinado con la misma cuenta: un estrato de
+ * diferencia es lo que corresponde, y cero (los dos en el mismo) es "demasiado
+ * cerca", porque el jefe no puede agregar contexto.
+ */
+export function distancia(persona: number, puesto: number): number {
+  return persona - puesto;
+}
+
 /** El horizonte en palabras: "3 años", "8 meses", "2 semanas". */
 export function enPalabras(dias: number): string {
   if (dias < 14) {
@@ -298,10 +390,14 @@ export function aDias(cantidad: number, unidad: Unidad): number | null {
  * "2 años" y no como "730 días", que es lo que se escribió.
  */
 export function desdeDias(dias: number): { cantidad: number; unidad: Unidad } {
-  for (const u of [...UNIDADES].reverse()) {
-    const n = dias / u.dias;
-    if (n >= 1 && Math.abs(n - Math.round(n * 2) / 2) < 0.02) {
-      return { cantidad: Math.round(n * 2) / 2, unidad: u.clave };
+  // Primero la unidad más grande que dé un número entero, y recién después una
+  // que dé un medio: 547 días son "18 meses" y no "1,5 años", que es lo que se
+  // escribió y lo que la evaluadora espera volver a ver.
+  for (const enteros of [true, false]) {
+    for (const u of [...UNIDADES].reverse()) {
+      const n = dias / u.dias;
+      const redondo = enteros ? Math.round(n) : Math.round(n * 2) / 2;
+      if (n >= 1 && Math.abs(n - redondo) < 0.02) return { cantidad: redondo, unidad: u.clave };
     }
   }
   return { cantidad: dias, unidad: 'dias' };

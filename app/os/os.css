@@ -6425,6 +6425,103 @@ th.os-tabla-contacto {
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * El nivel de trabajo del puesto: dos preguntas, y de cada una sale un estrato.
+ *
+ * Lo que se lee primero es la pregunta, escrita entera, porque es la que la
+ * evaluadora le hace al cliente por teléfono palabra por palabra. El estrato
+ * que sale va al costado, en gris: no se contesta, aparece.
+ */
+.os-nivel-trabajo {
+  display: grid;
+  gap: 22px;
+}
+
+.os-nivel-bloque {
+  display: grid;
+  gap: 10px;
+}
+
+.os-nivel-pregunta {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--os-tinta);
+}
+
+.os-nivel-tiempo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Lo que el sistema dedujo, no lo que alguien eligió: en gris y sin marco. */
+.os-nivel-sale {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--os-tinta-media);
+}
+
+.os-nivel-sale.vacio {
+  font-weight: 400;
+  color: var(--os-suave);
+}
+
+.os-nivel-preguntas {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* La pregunta a la izquierda y el sí/no a la derecha, con el mismo ancho en las
+   cinco: contestadas de arriba hacia abajo, los botones caen en una columna. */
+/* Sí y No son dos palabras cortas: la píldora del OS reserva 104px por opción,
+   que acá sobra y empujaba el "No" fuera de su columna. */
+.os-nivel-preguntas .os-ingreso-opcion {
+  min-width: 0;
+  padding: 4px 0;
+}
+
+.os-nivel-preguntas .os-ingreso-opciones {
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.os-nivel-preguntas li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 116px;
+  align-items: center;
+  gap: 16px;
+  padding: 9px 0;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-nivel-texto {
+  display: grid;
+  gap: 3px;
+  font-size: 0.84rem;
+}
+
+.os-nivel-texto small {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--os-tinta-media);
+}
+
+.os-nivel-cierre {
+  display: grid;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-nivel-resultado {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
 /* Los dos datos discrepan: el horizonte dice un estrato y arriba está elegido
    otro. En ámbar y no en rojo: no es un error del sistema sino algo para
    revisar, y puede estar bien por decisión de la evaluadora. */
