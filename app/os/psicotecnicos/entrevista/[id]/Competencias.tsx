@@ -335,7 +335,7 @@ export default function Competencias({
             disabled={guardando || !pendiente}
             onClick={() => guardar()}
           >
-            {guardando ? 'Cargando…' : 'Cargar lo escrito'}
+            {guardando ? 'Guardando…' : 'Guardar'}
           </button>
         </div>
       </div>

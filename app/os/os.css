@@ -3708,10 +3708,19 @@ textarea.os-campo {
   white-space: nowrap;
 }
 
+/* En la fila de acciones el botón del Raven es uno más: mismo alto y mismo
+   ancho que los demás. Fuera de ahí (la ficha, la tarjeta del tablero) sigue
+   siendo un botón chico que acompaña a un dato. */
 .os-link-raven .os-boton {
   height: 28px;
   padding: 0 11px;
   font-size: 0.78rem;
+}
+
+.os-herramienta-accion .os-link-raven .os-boton {
+  height: 32px;
+  padding: 0 13px;
+  font-size: 0.81rem;
 }
 
 /**
@@ -7621,29 +7630,38 @@ button.os-test-estado:hover:not(:disabled) {
  * en vez de buscar cada botón donde el ancho del texto lo haya dejado. Un test
  * sin estado deja su celda vacía en lugar de correr los otros dos.
  */
+/* Los botones del test, contra el margen izquierdo y todos del mismo ancho:
+   es donde arranca lo demás de la tarjeta, y contra el derecho quedaban lejos
+   del nombre al que pertenecen. */
 .os-herramienta-accion {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 132px 148px;
+  display: flex;
   align-items: center;
   gap: 10px;
-  width: 464px;
-  flex-shrink: 0;
-  justify-items: stretch;
-  /* Si igual tuviera que bajar, baja contra el margen derecho. */
-  margin-left: auto;
+  width: 100%;
+  padding-left: var(--os-herramienta-sangria, 0);
+}
+
+/* Sin botones no hay fila: el gráfico de dos personas no tiene ninguno y
+   dejaba un hueco arriba de sus dos cajas. */
+.os-herramienta-accion:empty {
+  display: none;
+}
+
+.os-herramienta-accion > .os-boton,
+.os-herramienta-accion > a.os-boton {
+  /* Todos del mismo ancho y ninguno se estira: al ancho de su texto, "Abrir
+     las láminas" y "Copiar link" median distinto y la fila se leía despareja. */
+  flex: none;
+  width: 168px;
+  justify-content: center;
 }
 
 /* El Rorschach tiene tres cosas para hacer y no dos: abrir las láminas, pasar
-   la dirección y codificar. La columna que se suma va a la derecha y la fila
-   crece hacia la izquierda, porque se alinea contra el margen derecho.
-
-   Con eso el último botón sigue cayendo donde cae en el resto de las tarjetas,
-   que es la columna que más se mira, y lo que se corre es el estado: no entran
-   las dos cosas, porque tres botones y el estado no caben en los 464 px de la
-   fila normal. */
-.os-herramienta-accion:has(> .os-herramienta-codificar) {
-  grid-template-columns: minmax(0, 1fr) 132px 148px 148px;
-  width: 622px;
+   la dirección y codificar. Las dos primeras son de administrarlo y van con el
+   resto a la izquierda; codificar es de después, así que se va sola al margen
+   derecho. */
+.os-herramienta-codificar {
+  margin-left: auto;
 }
 
 .os-herramienta-accion > .os-enlace-suave,
@@ -7674,14 +7692,13 @@ button.os-test-estado:hover:not(:disabled) {
   white-space: nowrap;
 }
 
-/* Los botones de acción sí ocupan su columna entera; el del estado no. */
+/* El del estado mide lo que dice; los de acción, todos lo mismo. */
 .os-herramienta-accion > .os-boton.os-sello-estado {
   width: auto;
 }
 
-.os-herramienta-accion > .os-boton,
 .os-herramienta-accion > .os-link-raven > .os-boton {
-  width: 100%;
+  width: 168px;
 }
 
 .os-herramienta-accion > .os-link-raven {
@@ -7810,13 +7827,8 @@ button.os-test-estado:hover:not(:disabled) {
 }
 
 .os-papel-dibujos {
-  flex-basis: 100%;
-  padding-left: var(--os-herramienta-sangria, 0);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 132px 148px;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 8px;
 }
 
 .os-papel-dibujos > .os-bender-ver {
@@ -7995,19 +8007,44 @@ button.os-test-estado:hover:not(:disabled) {
   flex-wrap: wrap;
 }
 
-/* Las observaciones van en su propio renglón, debajo del nombre y a lo ancho
-   de la tarjeta, con su botón en la misma columna que el resto de las
-   acciones. */
-.os-papel-notas {
-  flex-basis: 100%;
-  padding-left: var(--os-herramienta-sangria, 0);
+/*
+ * Lo anotado y lo dibujado, uno al lado del otro y del mismo tamaño.
+ *
+ * Son las dos cosas que quedan de un test de papel: lo que la evaluadora vio
+ * mientras la persona dibujaba, y el dibujo. Apiladas, la de abajo se leía
+ * como un agregado de la de arriba.
+ */
+.os-papel-fila {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 148px;
-  align-items: center;
-  gap: 10px;
-  /* Pegado al renglón de arriba: lo que separa las dos filas es el alto de los
-     botones, y todo lo que se agregue encima se lee como aire. */
-  margin-top: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 14px;
+  width: 100%;
+  margin-top: 14px;
+  padding-left: var(--os-herramienta-sangria, 0);
+}
+
+/* Con un solo lado, ese lado se lleva la fila entera. */
+.os-papel-fila > :only-child {
+  grid-column: 1 / -1;
+}
+
+.os-papel-notas {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
+/* Del alto de la caja de soltar, que es lo que tiene al lado: un renglón de
+   treinta y dos píxeles contra una caja de ochenta se leía como un descuido.
+   Con el selector de elemento porque `textarea.os-campo` le pone alto
+   automático y gana por especificidad. */
+textarea.os-papel-campo {
+  width: 100%;
+  height: 78px;
+  padding: 9px;
+  line-height: 1.5;
+  resize: vertical;
 }
 
 /* La entrevista por competencias: el campo es el test entero, así que ocupa el
@@ -8023,6 +8060,9 @@ button.os-test-estado:hover:not(:disabled) {
      las otras tarjetas, porque acá lo que tiene que cerrar es el campo. */
   padding-left: var(--os-herramienta-sangria, 0);
   padding-right: var(--os-herramienta-sangria, 0);
+  /* Separado de la fecha de nacimiento: son dos cosas distintas, la primera
+     pregunta y lo que se escribe de toda la entrevista. */
+  margin-top: 18px;
 }
 
 .os-competencias > .os-campo {
@@ -8212,9 +8252,11 @@ button.os-test-estado:hover:not(:disabled) {
 
 .os-campo-rico strong { font-weight: 650; }
 
+/* El campo de observaciones: del alto de la caja de soltar que tiene al lado,
+   y no del alto de un renglón. */
 .os-papel-notas .os-campo {
   min-width: 0;
-  height: 32px;
+  height: 78px;
   font-size: 0.81rem;
 }
 
@@ -8267,12 +8309,16 @@ button.os-test-estado:hover:not(:disabled) {
 
 /* El tiempo que le queda al candidato en el Raven, en la columna donde los
    otros tests muestran lo que se abre. */
+/* El reloj se lee de lejos, mientras la persona responde y la evaluadora está
+   en otra cosa: a 0,81 rem había que acercarse a la pantalla. */
 .os-raven-reloj {
   justify-self: center;
-  font-size: 0.81rem;
-  color: var(--os-tinta-media);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--os-tinta);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  font-size: 1.15rem;
 }
 
 .os-raven-reloj.urge {

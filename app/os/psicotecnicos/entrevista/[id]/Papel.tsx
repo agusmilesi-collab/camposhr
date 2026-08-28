@@ -15,6 +15,10 @@
  * **Si se tomó o no vive al lado del título** (`Marca.tsx`), que es donde se
  * mira al bajar por la lista; acá quedan las observaciones y los botones del
  * test.
+ *
+ * Lo anotado y lo dibujado van uno al lado del otro y del mismo tamaño: son
+ * las dos cosas que el test deja, y apiladas la de abajo se leía como un
+ * agregado de la de arriba.
  */
 
 import { useRouter } from 'next/navigation';
@@ -77,43 +81,44 @@ export default function Papel({
 
   return (
     <>
-      {/* La celda del estado queda vacía: si se tomó o no se dice al lado del
-          título (`Marca.tsx`). Se deja igual para que los botones sigan
-          cayendo en la misma columna que en el resto de los tests. */}
-      <div className="os-herramienta-accion">
-        <span />
-        {children}
-      </div>
+      {/* Los botones del test, contra el margen izquierdo: es donde arranca
+          todo lo demás de la tarjeta, y contra el derecho quedaban lejos del
+          nombre al que pertenecen. */}
+      <div className="os-herramienta-accion">{children}</div>
 
-      {/* El campo va debajo, a lo ancho: lo que se anota es una frase entera y
-          escribirla en un hueco angosto obliga a leerla de a pedazos. */}
-      {campoNotas && (
-        <div className="os-papel-notas">
-          <input
-            className="os-campo"
-            type="text"
-            placeholder="Sin observaciones"
-            value={notas}
-            onChange={(e) => setNotas(e.target.value)}
-            // También al salir del campo: el botón dice cuándo hay algo sin
-            // cargar, y perder lo escrito por no llegar a apretarlo sería peor
-            // que tener dos caminos para lo mismo.
-            onBlur={() => cargar()}
-            aria-label="Observaciones"
-          />
-          <button
-            className="os-boton"
-            type="button"
-            disabled={guardando || !pendiente}
-            onClick={() => cargar()}
-          >
-            {guardando ? 'Cargando…' : 'Cargar observación'}
-          </button>
-          {error && <span className="os-form-error">{error}</span>}
+      {/* Lo que se anota a la izquierda y lo que la persona dejó dibujado a la
+          derecha, del mismo tamaño: son las dos cosas que quedan del test y en
+          dos renglones apilados el de abajo se leía como un agregado. */}
+      {(campoNotas || debajo) && (
+        <div className="os-papel-fila">
+          {campoNotas && (
+            <div className="os-papel-notas">
+              <textarea
+                className="os-campo os-papel-campo"
+                placeholder="Sin observaciones"
+                value={notas}
+                onChange={(e) => setNotas(e.target.value)}
+                // También al salir del campo: el botón dice cuándo hay algo sin
+                // guardar, y perder lo escrito por no llegar a apretarlo sería
+                // peor que tener dos caminos para lo mismo.
+                onBlur={() => cargar()}
+                aria-label="Observaciones"
+              />
+              <button
+                className="os-boton"
+                type="button"
+                disabled={guardando || !pendiente}
+                onClick={() => cargar()}
+              >
+                {guardando ? 'Guardando…' : 'Guardar'}
+              </button>
+              {error && <span className="os-form-error">{error}</span>}
+            </div>
+          )}
+
+          {debajo && <div className="os-papel-dibujos">{debajo}</div>}
         </div>
       )}
-
-      {debajo && <div className="os-papel-dibujos">{debajo}</div>}
     </>
   );
 }
