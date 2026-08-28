@@ -206,7 +206,7 @@
 .sitio-hoja {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 0 28px 80px;
+  padding: 0 28px 96px;
 }
 
 .sitio-cabecera {
@@ -257,15 +257,24 @@
 /* ── El índice y las secciones ────────────────────────────────────────── */
 .sitio-cuerpo {
   display: grid;
-  grid-template-columns: 190px minmax(0, 1fr);
-  gap: 48px;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 64px;
   align-items: start;
 }
 
 .sitio-indice {
   position: sticky;
   top: 74px;
-  padding-top: 34px;
+  padding-top: 64px;
+}
+
+.sitio-indice-titulo {
+  margin: 0 0 10px 12px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--suave);
 }
 
 .sitio-indice ul {
@@ -277,17 +286,30 @@
 }
 
 .sitio-indice-item {
-  display: block;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 6px;
   width: 100%;
-  padding: 7px 12px;
+  padding: 8px 12px;
   border: 0;
   border-left: 2px solid transparent;
   background: none;
   color: var(--tinta-media);
   font: inherit;
   font-size: 0.88rem;
+  line-height: 1.35;
   text-align: left;
   cursor: pointer;
+}
+
+.sitio-indice-n {
+  font-size: 0.72rem;
+  color: var(--linea);
+  font-variant-numeric: tabular-nums;
+}
+
+.sitio-indice-item.aqui .sitio-indice-n {
+  color: var(--suave);
 }
 
 .sitio-indice-item:hover {
@@ -302,19 +324,30 @@
   font-weight: 550;
 }
 
+/*
+ * Cada sección abre con su número y su título sobre el papel, y su contenido va
+ * en una caja blanca. Sin eso las siete se leían como un solo texto largo: la
+ * caja es lo que hace ver dónde termina una y empieza la otra.
+ */
 .sitio-seccion {
-  padding: 34px 0;
-  border-bottom: 1px solid var(--linea);
+  padding-top: 64px;
   /* La barra fija tapa el arranque de la sección al saltar desde el índice. */
   scroll-margin-top: 68px;
 }
 
-.sitio-seccion:last-child {
-  border-bottom: 0;
+.sitio-seccion-top {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: start;
+  margin-bottom: 16px;
 }
 
-.sitio-seccion-top {
-  margin-bottom: 18px;
+.sitio-numero {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.7rem;
+  line-height: 1.2;
+  color: #c9c4ba;
+  font-variant-numeric: tabular-nums;
 }
 
 .sitio-seccion-top h2 {
@@ -324,12 +357,22 @@
 }
 
 .sitio-seccion-top p {
-  margin: 3px 0 0;
-  font-size: 0.9rem;
+  margin: 4px 0 0;
+  font-size: 0.92rem;
   color: var(--suave);
 }
 
+.sitio-caja {
+  padding: 28px 32px;
+  border: 1px solid var(--linea);
+  border-radius: 14px;
+  background: var(--hoja);
+}
+
 .sitio-seccion p {
+  /* Sesenta y pico de caracteres por renglón: a lo ancho de la caja son más de
+     cien y el ojo pierde el renglón al volver. */
+  max-width: 68ch;
   margin: 0 0 12px;
   font-size: 0.95rem;
   line-height: 1.65;
@@ -339,10 +382,23 @@
   margin-bottom: 0;
 }
 
+/* Los subtítulos de adentro de una sección: en versalitas y con una línea
+   arriba, para que se vean como una división y no como un párrafo en negrita. */
 .sitio-sub {
-  margin: 26px 0 8px;
-  font-size: 0.98rem;
+  margin: 30px 0 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linea-suave);
+  font-size: 0.7rem;
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.sitio-caja > .sitio-sub:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .sitio-vacio,
@@ -704,7 +760,7 @@
   padding: 12px 16px;
   border: 1px solid var(--linea);
   border-radius: 10px;
-  background: var(--hoja);
+  background: var(--papel);
 }
 
 .sitio-nivel[data-nivel='IV'] {
@@ -723,12 +779,14 @@
 /* Los niveles que no son ninguna de las tres marcas están, pero apagados: la
    escalera entera es la que da la medida, y sin ellos no se ve contra qué. */
 .sitio-nivel:not(.marcado) {
+  border-color: var(--linea-suave);
   background: transparent;
   color: var(--suave);
 }
 
 .sitio-nivel.marcado {
   border-color: var(--tinta-media);
+  background: var(--hoja);
 }
 
 .sitio-nivel h4 {

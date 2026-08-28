@@ -107,14 +107,25 @@ export default async function InformeDelPortal({
             </div>
           </header>
         }
-        indice={secciones.map((s) => ({ id: s.id, titulo: s.titulo, bajada: s.bajada }))}
-        cuerpo={secciones.map((s) => (
+        indice={secciones.map((s, i) => ({
+          id: s.id,
+          titulo: s.titulo,
+          numero: String(i + 1).padStart(2, '0'),
+        }))}
+        cuerpo={secciones.map((s, i) => (
           <section key={s.id} id={s.id} className="sitio-seccion">
+            {/* El número, el título y qué se contesta ahí: es lo que separa una
+                sección de la anterior cuando todo es texto. */}
             <header className="sitio-seccion-top">
-              <h2>{s.titulo}</h2>
-              {s.bajada && <p>{s.bajada}</p>}
+              <span className="sitio-numero">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h2>{s.titulo}</h2>
+                {s.bajada && <p>{s.bajada}</p>}
+              </div>
             </header>
-            {s.cuerpo}
+            {/* El contenido va en blanco sobre el papel: sin eso las secciones
+                se leen como un solo texto largo. */}
+            <div className="sitio-caja">{s.cuerpo}</div>
           </section>
         ))}
         documento={
