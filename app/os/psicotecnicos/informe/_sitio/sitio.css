@@ -448,14 +448,9 @@
    acá con el elegido en tarjeta y los otros tres como renglones apagados, y
    perdía la escala, que es lo que hace legible al que le tocó. */
 
+/* La firma va debajo de lo que firma, sin línea que la separe del texto. */
 .sitio-firma {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 28px;
-  margin-top: 26px;
-  padding-top: 16px;
-  border-top: 1px solid var(--linea);
+  margin-top: 18px;
 }
 
 .sitio-firma strong {
@@ -470,9 +465,13 @@
   color: var(--suave);
 }
 
+/* La nota de confidencialidad cierra la sección: es del documento y no de
+   quien firma, así que va después de la firma y en cuerpo chico. */
 .sitio-confidencial {
-  max-width: 420px;
-  margin: 0 !important;
+  max-width: 68ch;
+  margin: 20px 0 0 !important;
+  padding-top: 14px;
+  border-top: 1px solid var(--linea-suave);
   font-size: 0.78rem !important;
   line-height: 1.5 !important;
   color: var(--suave);
@@ -896,35 +895,15 @@
 /* ── La cita de quien firma ───────────────────────────────────────────── */
 /*
  * Es la única parte del informe escrita por una persona sobre esta persona. En
- * serif y con la línea al costado se lee como lo que es, una voz, y no como un
- * párrafo más de los que arma el motor.
+ * serif se lee como lo que es, una voz, y no como un párrafo más de los que
+ * arma el motor. Sin línea al costado y sin el nombre al pie: abajo va la
+ * firma, que dice lo mismo y lo dice mejor.
  */
-.sitio-cita {
-  margin: 26px 0 0;
-  padding: 0 0 0 22px;
-  border-left: 2px solid var(--tinta);
-}
-
-.sitio-cita-rotulo {
-  margin: 0 0 8px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--suave);
-}
-
 .sitio-cita p {
   font-family: 'Instrument Serif', Georgia, serif;
   font-size: 1.24rem !important;
   line-height: 1.5 !important;
   color: var(--tinta);
-}
-
-.sitio-cita footer {
-  margin-top: 6px;
-  font-size: 0.84rem;
-  color: var(--suave);
 }
 
 @media (max-width: 720px) {
