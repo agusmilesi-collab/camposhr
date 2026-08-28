@@ -224,6 +224,10 @@ export default function Progreso({
       ))}
 
       {/* ── El cuadro ───────────────────────────────────────────────────── */}
+      {/* La banda de la persona va debajo de la cuadrícula: pintada encima,
+          tapaba las líneas de la escalera justo donde hay que leer el punto. */}
+      <path d={franja(banda)} fill={PINTADA} />
+
       {/* Una vertical por año, como la lámina: son las que dejan seguir una
           curva sin regla. Las de los cinco en cinco, más marcadas. */}
       {Array.from({ length: EDAD_MAX - EDAD_MIN + 1 }, (_, i) => EDAD_MIN + i).map((e) => (
@@ -251,8 +255,6 @@ export default function Progreso({
         />
       ))}
 
-      {/* La banda de la persona, pintada, y las ocho curvas. */}
-      <path d={franja(banda)} fill={PINTADA} />
       {Array.from({ length: CUANTAS_BANDAS }, (_, i) => i + 1).map((n) => (
         <path
           key={n}

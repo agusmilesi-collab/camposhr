@@ -37,6 +37,8 @@ import { nivelesQueRigen, type NivelDiscursivo } from '@/lib/discursivo';
 import type { Estrato } from '@/lib/potencial';
 import {
   APERTURA,
+  EDAD_MAX,
+  EDAD_MIN,
   ESTRATOS,
   AVISO_HORIZONTE,
   PREGUNTAS,
@@ -426,6 +428,25 @@ export default function Discursivo({
             niveles={niveles}
           />
 
+          {/* La conclusión, debajo de la tabla y con su rótulo: es lo que se
+              lee después de comparar los dos números. */}
+          {elegido && estratoPuesto && estratoPorNumero(estratoPuesto) && (
+            <div className="os-conclusion">
+              <span className="os-etiqueta-campo">Conclusión</span>
+              <Conclusion
+                distancia={
+                  ESTRATOS.findIndex((e) => e.romano === elegido.romano) -
+                  ESTRATOS.findIndex(
+                    (e) => e.romano === estratoPorNumero(estratoPuesto)?.romano
+                  )
+                }
+                puesto={estratoPorNumero(estratoPuesto) as Estrato}
+                banda={banda}
+                edad={dibuja ? edadNum : null}
+              />
+            </div>
+          )}
+
           {/* Y el estrato a mano, en los dos casos en que el sistema no lo
               puede resolver: cuando los dos caminos discrepan y cuando en la
               entrevista no se contestó ninguno. */}
@@ -537,8 +558,6 @@ function Comparacion({
 }) {
   const detalle = (romano: string) => niveles.find((n) => n.romano === romano) ?? null;
   const numeroDe = (romano: string) => ESTRATOS.findIndex((e) => e.romano === romano);
-  const distancia =
-    persona && puesto ? numeroDe(persona.romano) - numeroDe(puesto.romano) : null;
 
   /** Un renglón: qué es, en qué estrato y qué significa ese estrato. */
   const fila = (que: string, romano: string | null, cuando: string | null, falta: string) => {
@@ -612,19 +631,63 @@ function Comparacion({
             ''
           )}
       </tbody>
-      <tfoot>
-        {distancia !== null && (
-          <tr>
-            <td colSpan={4}>
-              {distancia === 0
-                ? 'La persona puede abordar hoy la complejidad que el puesto exige.'
-                : distancia > 0
-                  ? 'La persona puede abordar hoy más complejidad que la que el puesto exige.'
-                  : 'El puesto exige más complejidad que la que la persona puede abordar hoy.'}
-            </td>
-          </tr>
-        )}
-      </tfoot>
     </table>
+  );
+}
+
+/**
+ * Qué se concluye de la comparación.
+ *
+ * Las tres salidas son distintas de verdad y no matices de la misma: alcanza,
+ * sobra o falta. Cuando falta, lo que sigue es cuándo llega, que es lo que el
+ * diagrama contesta y lo que decide si igual conviene tomarla.
+ */
+function Conclusion({
+  distancia,
+  puesto,
+  banda,
+  edad,
+}: {
+  distancia: number;
+  puesto: Estrato;
+  banda: number | null;
+  edad: number | null;
+}) {
+  if (distancia === 0) {
+    return <p>La persona puede abordar hoy la complejidad que el puesto exige.</p>;
+  }
+  if (distancia > 0) {
+    return (
+      <p>
+        La persona puede abordar hoy más complejidad que la que el puesto exige: es un
+        puesto que le va a quedar corto en cuanto lo domine.
+      </p>
+    );
+  }
+
+  // Cuándo su banda alcanza el nivel del puesto, que es lo que sigue después de
+  // saber que hoy no llega.
+  const pide = ESTRATOS.findIndex((e) => e.romano === puesto.romano);
+  let llega: number | null = null;
+  if (banda !== null && edad !== null) {
+    for (let e = Math.max(edad, EDAD_MIN); e <= EDAD_MAX; e++) {
+      const suyo = ESTRATOS.findIndex(
+        (x) => x.romano === estratoDeEscalon(horizonteEn(banda, e)).romano
+      );
+      if (suyo >= pide) {
+        llega = e;
+        break;
+      }
+    }
+  }
+
+  return (
+    <p>
+      El puesto exige más complejidad que la que la persona puede abordar hoy.
+      {banda !== null &&
+        (llega !== null
+          ? ` Por su banda de maduración llega a ese nivel alrededor de los ${llega} años.`
+          : ' Su banda de maduración no llega a ese nivel dentro del alcance del diagrama.')}
+    </p>
   );
 }
