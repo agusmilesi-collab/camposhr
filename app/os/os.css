@@ -10411,7 +10411,21 @@ textarea.os-campo-bateria {
   max-width: 1000px;
 }
 
-/* El aire de adentro lo pone el informe, que sabe cuánto necesita. */
+/*
+ * La barra de acciones y la hoja son dos cosas.
+ *
+ * La barra va del color del fondo y el informe queda en blanco, con un corte
+ * recto entre las dos: así lo de abajo se lee como una hoja apoyada en el panel
+ * y no como la continuación de la barra. El aire de adentro lo pone el informe,
+ * que sabe cuánto necesita.
+ */
+.os-panel-informe .os-generar {
+  background: var(--os-fondo);
+  border-bottom: 1px solid var(--os-linea);
+  border-radius: 12px 12px 0 0;
+}
+
 .os-panel-informe .os-informe-marco {
   padding: 0;
+  background: var(--os-panel);
 }
