@@ -19,6 +19,10 @@ import Entregar from './Entregar';
 import Benziger from './Benziger';
 import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
+import { Desglose, Faltantes } from '../../informe/_doc/Interno';
+import { seccionesDe } from '../../informe/_sitio/secciones';
+import '../../informe/_sitio/sitio.css';
+import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
 import { bandaDeAfr, bandasDeLaHoja } from '@/lib/redacciones';
 import Discursivo from './Discursivo';
@@ -589,6 +593,9 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
   const c = f.cabecera;
   const informe = desdeFicha(f, rige);
   const portal = portalDe(c.pedidos?.empresas?.token_portal ?? null);
+  /* El molde nuevo del informe corre por ahora solo en la empresa de prueba,
+     igual que en el portal: acá se ve lo mismo que va a ver ese cliente. */
+  const comoSitio = esEmpresaDePrueba(c.pedidos?.empresas?.nombre);
 
   return (
     <>
@@ -642,11 +649,35 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
       </div>
 
       <div className="os-informe-marco">
-        {/* Sin los indicadores: acá se revisa lo que el informe afirma, y el
-            sumario, la codificación y las respuestas del Raven están en sus
-            pestañas. El PDF que se baja sí los trae, que es el documento
-            completo. */}
-        <Documento inf={informe} interno editar={c.id} parte="trabajo" />
+        {/* Lo que va a ver el cliente, y en el mismo lugar donde se corrige.
+            Antes acá se revisaba el documento y el cliente leía otra cosa: dos
+            formas del mismo informe, y la evaluadora no veía la que se entrega.
+
+            El molde nuevo corre por ahora solo en la empresa de prueba, igual
+            que en el portal; para el resto sigue el documento, sin los
+            indicadores, que están en sus propias pestañas. */}
+        {comoSitio ? (
+          <>
+            <Faltantes inf={informe} />
+            <div className="sitio-secciones sitio">
+              {seccionesDe(informe, c.id).map((s, i) => (
+                <section key={s.id} className="sitio-seccion">
+                  <header className="sitio-seccion-top">
+                    <span className="sitio-numero">{String(i + 1).padStart(2, '0')}</span>
+                    <div>
+                      <h2>{s.titulo}</h2>
+                      {s.bajada && <p>{s.bajada}</p>}
+                    </div>
+                  </header>
+                  <div className="sitio-caja">{s.cuerpo}</div>
+                </section>
+              ))}
+            </div>
+            <Desglose inf={informe} />
+          </>
+        ) : (
+          <Documento inf={informe} interno editar={c.id} parte="trabajo" />
+        )}
       </div>
       </section>
 

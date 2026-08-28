@@ -31,6 +31,7 @@
  */
 
 import 'server-only';
+import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { diasDesde, habilesDesde } from '@/lib/hora';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { ETAPAS, RUTA, type Etapa, type Evaluacion } from '@/lib/psicotecnicos-tipos';
@@ -44,9 +45,6 @@ const T_EVALUADORAS = 'tblBhmxk02yBccL8d';
 const T_PEDIDOS = 'tblA3o1XsDXyJXSgF';
 const T_EMPRESAS = 'tblNKMu8gqYmoA70N';
 const T_BATERIAS = 'tbl32bHLZ3sKv4Lt2';
-
-/** La empresa inventada con la que se prueba: no es trabajo real. */
-const EMPRESA_PRUEBA = /^distribuidora andina/i;
 
 const F = {
   nombre: 'fldB61ycDOKvlCTaQ',
@@ -280,7 +278,7 @@ export async function listar(): Promise<Evaluacion[]> {
       // estas filas ni siquiera se muestran (ver `lib/psicotecnicos.ts`).
       tablero: null,
       prioridad: null,
-      prueba: EMPRESA_PRUEBA.test(empresa),
+      prueba: esEmpresaDePrueba(empresa),
     };
   });
 }

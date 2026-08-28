@@ -883,6 +883,20 @@ dejaron en vez de volar de vuelta al lugar del que salió.
 
 ## El informe del cliente es una página, y el PDF es otra cosa
 
+**Por ahora corre solo en Distribuidora Andina**, que es la empresa de prueba
+(`lib/empresa-prueba.ts`). El molde se está afinando ahí y el resto de los
+clientes sigue con el informe que ya conocen, en tres pestañas, hasta que
+Agustín lo dé por bueno: un informe que cambia de forma entre dos candidatos de
+la misma búsqueda es un informe que hay que volver a explicar. El interruptor
+está en dos lados y es el mismo, la empresa del pedido: el portal
+(`app/p/[token]/evaluacion/[id]/page.tsx`) y la pestaña Informe de la ficha.
+
+**La evaluadora ve lo que ve el cliente, y corrige sobre eso.** La pestaña
+Informe de la ficha dibuja las mismas secciones del portal, con las cuatro
+listas editables adentro y con el aviso de faltantes y el desglose de cada
+puntaje alrededor, que son de ella y no se imprimen. Antes ahí se revisaba el
+documento y el cliente leía otra cosa.
+
 Se leía como un PDF puesto en pantalla: un documento largo que se recorre de
 arriba abajo. Quien lo abre está decidiendo una contratación y llega con una
 pregunta, si esta persona va para el puesto; después, según quién sea, quiere

@@ -1005,3 +1005,12 @@
     gap: 8px;
   }
 }
+
+/* La firma manuscrita, arriba del nombre, igual que en el documento: acá el
+   informe no se imprime, y aun así lo firma una persona. */
+.sitio-trazo {
+  display: block;
+  width: auto;
+  height: 76px;
+  margin: 0 0 -2px 16px;
+}
