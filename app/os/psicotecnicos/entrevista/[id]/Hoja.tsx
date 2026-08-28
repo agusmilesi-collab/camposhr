@@ -412,13 +412,13 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
 
       {/* El título va adentro de la lista: al lado lleva el botón que abre y
           cierra todas las tarjetas, y ese botón necesita el estado que vive
-          ahí. */}
+          ahí. Todas arrancan plegadas: la lista entera en una pantalla es lo
+          que deja elegir por dónde empezar. */}
       <Orden
         id={e.id}
         tests={tests}
         estados={tests.map(estadoDe)}
         tarjetas={tests.map(contenidoDe)}
-        abierto={TEST_COMPETENCIAS}
       />
 
 
