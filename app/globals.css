@@ -6775,12 +6775,48 @@ body {
   padding: 48px 22px 64px;
 }
 
+/* El logotipo tipográfico: el mismo de camposhr.com, para que quien llega desde
+   un mail sepa de dónde viene esto. */
 .precios-marca {
-  margin: 0 0 6px;
-  font-size: 0.78rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 26px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.35rem;
+  letter-spacing: -0.022em;
+}
+
+/* El sitio, del cuerpo del texto y no del logotipo: acompaña la firma, no
+   forma parte de ella. */
+.precios-sitio {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.88rem;
+  letter-spacing: 0;
   color: var(--muted);
+  white-space: nowrap;
+}
+
+/* El nombre en el azul de la marca; lo que sigue, en gris: son el logotipo y
+   el nombre del documento, y con un solo color se leían como una sola frase. */
+.precios-marca-nombre {
+  color: var(--st-blue);
+}
+
+.precios-marca span span {
+  color: var(--muted);
+}
+
+/* El nombre del estudio dentro de un título corriente, con la tipografía del
+   logotipo. Un poco más grande porque la serif calza más chica que la Inter al
+   mismo cuerpo. */
+.precios-firma {
+  color: var(--st-blue);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.12em;
+  font-weight: 400;
+  letter-spacing: -0.022em;
 }
 
 .precios-top h1 {
@@ -6797,14 +6833,20 @@ body {
 
 .precios-lista {
   display: grid;
-  gap: 12px;
+  gap: 28px;
 }
 
+/* Cada batería es un bloque blanco sobre el beige de la página, y adentro los
+   dos detalles vuelven al beige. Con la tarjeta del mismo color que el fondo
+   las tres se leían como un solo texto largo y había que buscar dónde
+   empezaba la siguiente. */
 .precios-item {
-  padding: 18px 20px;
+  /* Más abajo que arriba: la última línea es la letra chica del Benziger y sin
+     ese respiro queda contra el borde de la tarjeta. */
+  padding: 24px 26px 32px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--paper);
+  border-radius: 14px;
+  background: var(--card);
 }
 
 .precios-item-cabeza {
@@ -6822,10 +6864,21 @@ body {
 
 .precios-monto {
   flex: none;
+  display: grid;
+  justify-items: end;
   font-size: 1.05rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* "por candidato" debajo del número: es parte del precio y no un dato más de la
+   fila de abajo, donde se perdía entre la duración y el código. */
+.precios-monto em {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.76rem;
+  color: var(--muted);
 }
 
 /* El equivalente en pesos, más chico: el precio del perfil está fijado en
@@ -6837,10 +6890,67 @@ body {
   color: var(--muted);
 }
 
+/* El código arriba de todo, con la duración al lado y el precio contra el
+   borde derecho: es por dónde se entra a comparar una batería con otra. */
+.precios-pill-fila {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+/* El precio empujado a la derecha, con "por candidato" al lado y no debajo:
+   en dos renglones estiraba el renglón del código al doble de su alto. */
+.precios-pill-fila .precios-monto {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 1.12rem;
+}
+
+.precios-item-titulo {
+  margin: 12px 0 0;
+  font-size: 1.16rem;
+  line-height: 1.3;
+}
+
 .precios-cod {
-  margin: 4px 0 0;
   font-size: 0.82rem;
   color: var(--muted);
+}
+
+/* El código de la batería como pastilla: es el nombre con el que se pide y con
+   el que después figura en la factura, así que se reconoce de un vistazo.
+   Un color por batería, el mismo en su tarjeta y en la tabla comparativa: es lo
+   que ata una cosa con la otra sin tener que leer el número cada vez. */
+.precios-pill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.precios-pill-1 {
+  background: #e4ede4;
+  color: #33553c;
+}
+
+.precios-pill-2 {
+  background: #e2e9f2;
+  color: #2b4468;
+}
+
+.precios-pill-3 {
+  background: #efe6dc;
+  color: #6b4a24;
 }
 
 .precios-por {
@@ -6859,24 +6969,115 @@ body {
 }
 
 .precios-pie {
-  margin-top: 30px;
+  margin-top: 64px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
   font-size: 0.85rem;
   line-height: 1.6;
   color: var(--muted);
 }
 
 .precios-pie p {
-  margin: 0 0 8px;
+  margin: 0 0 4px;
+}
+
+.precios-pie-marca {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.35rem;
+  letter-spacing: -0.022em;
+  color: var(--st-blue);
+}
+
+.precios-pie-lema {
+  color: var(--ink-soft);
+}
+
+.precios-pie-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px !important;
+}
+
+.precios-pie-datos span {
+  color: var(--line);
+}
+
+.precios-wa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Cuándo conviene esta y no otra: es lo que decide entre las tres, así que va
+   antes que las listas y con el cuerpo del texto de lectura. */
+.precios-cuando {
+  margin: 10px 0 0;
+  line-height: 1.6;
 }
 
 /* Cada bloque abre con su título y respira contra el anterior: el documento se
    lee de arriba abajo y decidiendo, no buscando un dato. */
 .precios-bloque {
-  margin-top: 42px;
+  margin-top: 64px;
 }
 
+/* El perfil de cada psicóloga, al lado de su matrícula: el logotipo dice a
+   dónde lleva sin tener que escribir la dirección entera. */
+.precios-linkedin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 10px;
+  vertical-align: -2px;
+}
+
+/* El acceso al portal de ejemplo: una tira que se toca entera, entre lo que se
+   entrega y cómo se pide. */
+.precios-demo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--st-blue);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  line-height: 1.5;
+}
+
+.precios-demo strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--st-blue);
+  font-size: 1.02rem;
+}
+
+.precios-demo > span:first-child {
+  font-size: 0.94rem;
+  color: var(--ink-soft);
+}
+
+.precios-demo-flecha {
+  flex: none;
+  color: var(--st-blue);
+  font-size: 1.2rem;
+}
+
+/* Una línea que separa dos maneras de leer lo mismo. */
+.precios-bloque-linea {
+  padding-top: 56px;
+  border-top: 1px solid var(--line);
+}
+
+/* Con su línea debajo: el título abre la sección y la línea marca dónde
+   empieza lo que hay que leer. */
 .precios-titulo {
-  margin: 0 0 14px;
+  margin: 0 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
   font-size: 1.24rem;
   line-height: 1.25;
 }
@@ -6886,6 +7087,79 @@ body {
   line-height: 1.65;
 }
 
+/* La bajada del titular: lo que se compra, en dos renglones, antes de cualquier
+   precio. */
+.precios-lead {
+  margin: 14px 0 0;
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+/* En qué momento de la decisión sirve cada entrega: el rótulo arriba, para que
+   la lista se lea como un recorrido y no como cuatro documentos sueltos. */
+.precios-entrega-paso {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Los otros servicios, al final: tres renglones y nada más. Quien lee vino por
+   un psicotécnico, así que esto se cuenta en el alto de una pantalla de
+   teléfono y el detalle queda para una llamada. */
+.precios-otros {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 20px;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+/* Sin línea al costado: son tres servicios sueltos, y la línea los ataba en
+   una lista que se leía como los capítulos del informe de más arriba. Los
+   separa el aire entre uno y otro. */
+.precios-otros > li {
+  padding-left: 0;
+}
+
+/* Cuándo sirve cada servicio, en su propio renglón y en gris: es la mitad que
+   dice en qué momento pedirlo, y de corrido con la descripción se leía como
+   una oración más de lo mismo. */
+/* Por su clase y no por su posición: en el renglón con logo, el `span` de
+   afuera envuelve todo el texto y teñía de gris el servicio entero. */
+.precios-cuando-sirve {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+}
+
+/* La de Sentir abre con el logo y la firma: es la marca bajo la que se dicta,
+   así que encabeza el servicio en vez de acompañarlo al costado. */
+.precios-otro-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.precios-otro-firma {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.precios-logo-sentir {
+  flex: none;
+  width: 92px;
+  height: auto;
+}
+
+
+
 /* Qué recibe la empresa: el nombre en negrita y la explicación al lado, para
    poder saltear las explicaciones y quedarse con la lista. */
 .precios-entrega {
@@ -6893,13 +7167,15 @@ body {
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 10px;
+  gap: 14px;
 }
 
 .precios-entrega li {
-  padding-left: 16px;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  align-items: start;
   line-height: 1.6;
-  border-left: 2px solid var(--line);
 }
 
 .precios-detalle {
@@ -6924,33 +7200,214 @@ body {
   font-size: 0.94rem;
 }
 
-/* Lo que se entrega va en lista corta y a dos columnas cuando entra: son
-   nombres, no explicaciones, y en fila india parecían más de los que son. */
-.precios-entrega-corta {
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+/*
+ * Lo que se toma y lo que se entrega, uno al lado del otro.
+ *
+ * Son las dos preguntas distintas que tiene quien compara (qué le van a hacer a
+ * la persona y qué me llega a mí), y una debajo de la otra se leían como una
+ * sola lista larga. En pantalla angosta bajan, con la línea de arriba haciendo
+ * de separación.
+ */
+/*
+ * Lo que se mide y lo que llega, uno debajo del otro y a todo el ancho.
+ *
+ * Estuvieron en dos columnas hasta el 27/8/2026: en la mitad de una tarjeta
+ * cada renglón entraba en cuatro líneas de tres palabras, y la lista de la
+ * izquierda quedaba con el largo de una columna de diario mientras la derecha
+ * terminaba a un tercio.
+ */
+.precios-item-detalles {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.precios-item-detalles .precios-detalle {
+  margin: 0;
+  /* Más arriba que a los lados: el rótulo del bloque (ALCANCE, ENTREGA) es la
+     primera línea y pegado al borde se lee como el pie de lo que viene arriba. */
+  padding: 20px 16px 20px;
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+/* El rótulo del bloque, separado de la lista que abre. */
+.precios-item-detalles .precios-detalle-titulo {
+  margin-bottom: 10px;
+}
+
+/* Los tests numerados, con el número en su círculo: dice cuántos son y en qué
+   orden se toman, que es la mitad de lo que separa una batería de otra. */
+.precios-medidas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  line-height: 1.55;
+  font-size: 0.94rem;
+}
+
+.precios-medidas li {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.precios-num {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--st-blue);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--st-blue);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lo que llega escrito va en prosa: el nombre de una sección le dice algo a
+   quien ya trabaja con psicotécnicos, y lo que se compra es lo que se va a
+   entender de la persona al leer el informe. */
+.precios-detalle-entrega p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.94rem;
+}
+
+.precios-detalle-entrega p + p {
+  margin-top: 10px;
 }
 
 /* Lo opcional, separado por una línea: se suma a lo de arriba, no lo
-   reemplaza. */
+   reemplaza. Va adentro de cada batería porque el perfil de pensamiento se
+   agrega a la que sea, y en una sección aparte había que ir a buscarlo para
+   entender de qué se trata. */
 .precios-opcional {
-  margin: 16px 0 0;
-  padding-top: 12px;
+  /* El aire va debajo de la línea y no encima: la línea cierra lo que viene
+     arriba, y el rótulo abre lo que sigue. */
+  margin: 18px 0 0;
+  padding-top: 26px;
   border-top: 1px solid var(--line);
   font-size: 0.92rem;
   line-height: 1.55;
+}
+
+.precios-opcional p {
+  margin: 0;
+}
+
+/* El nombre del agregado, del tamaño del título de la batería: es el único
+   servicio que se decide acá adentro, y en el cuerpo del párrafo pasaba como
+   una oración más. */
+.precios-opcional-nombre {
+  font-size: 1.05rem;
+}
+
+/* Recomendado se distingue de opcional por el rótulo, que va en el azul del
+   sitio y con una línea del mismo color arriba: en gris las dos palabras se
+   leían igual y la diferencia es lo que se está diciendo. */
+.precios-sugerido {
+  border-top-color: var(--st-blue);
+}
+
+.precios-sugerido .precios-detalle-titulo {
+  color: var(--st-blue);
+}
+
+.precios-opcional-precio {
+  margin-top: 6px !important;
   color: var(--muted);
 }
 
+/* Los tres pasos, cada uno en su tarjeta y con su número en círculo: el mismo
+   lenguaje que el alcance y los entregables. La numeración del navegador dejaba
+   tres párrafos largos corridos, con el dígito colgando afuera. */
 .precios-pasos {
   margin: 0;
-  padding-left: 20px;
+  padding: 0;
+  list-style: none;
   display: grid;
   gap: 12px;
   line-height: 1.6;
 }
 
+.precios-pasos li {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 18px 18px 18px 16px;
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+/* La aclaración de un paso: más chica y en gris, para que el paso se lea
+   entero antes de entrar en el detalle. */
+.precios-paso-nota {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* El plazo medido, debajo del paso que lo promete, con la cifra en grande:
+   es el dato que respalda la promesa y el único número de la página que sale
+   de lo que ya se entregó. Sin cuántos casos son: hoy son pocos, y publicarlos
+   invita a mirar la cantidad en vez del plazo. */
+.precios-plazo {
+  display: flex;
+  /* La cifra al medio de las dos líneas del texto y no sobre la primera: es un
+     dato al lado de su aclaración, no el arranque de la oración. */
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.precios-plazo strong {
+  /* En un renglón: partido, "4,2" y "días" se leen como dos datos. */
+  flex: none;
+  white-space: nowrap;
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--st-blue);
+  font-variant-numeric: tabular-nums;
+}
+
+.precios-plazo > span {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 620px) {
+  .precios-plazo {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+/* La línea de contexto de un paso (las nueve preguntas), más chica y con su
+   marca al costado. */
+.precios-dato-vivo {
+  display: block;
+  margin-top: 6px;
+  padding-left: 10px;
+  border-left: 2px solid var(--st-blue);
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
 .precios-cierre {
-  margin: 0 0 10px;
+  /* Separado del último paso: cierra la sección y no es el paso cuatro. */
+  margin: 22px 0 10px;
   font-size: 1rem;
   color: var(--ink);
   line-height: 1.6;
@@ -6961,6 +7418,77 @@ body {
   font-size: 0.88rem;
   line-height: 1.6;
   color: var(--muted);
+}
+
+/*
+ * La tabla comparativa: las tres al lado, para elegir de un vistazo.
+ *
+ * Se desplaza adentro de su marco en pantalla angosta: tres columnas de datos
+ * más la de los rótulos no entran en un teléfono, y apretarlas hasta que entren
+ * parte cada celda en cinco renglones.
+ */
+.precios-tabla-marco {
+  overflow-x: auto;
+}
+
+.precios-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.precios-tabla th,
+.precios-tabla td {
+  padding: 11px 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+/* La columna de los rótulos manda de qué es cada fila y no compite con los
+   datos: más chica y en gris. */
+.precios-tabla tbody th {
+  width: 190px;
+  font-weight: 400;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.precios-tabla thead th {
+  border-bottom-width: 2px;
+}
+
+.precios-tabla-monto {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Lo que una batería trae y lo que no, en pastilla de color: recorriendo la
+   tabla con la vista, verde y rojo se ven antes de leer la palabra, que es lo
+   que se busca al comparar tres columnas. La raya gris pedía leer la fila
+   entera para saber cuál era cuál. */
+.precios-marca-tabla {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.precios-marca-si {
+  background: #e4ede4;
+  color: #33553c;
+}
+
+.precios-marca-no {
+  background: #f2e3e3;
+  color: #8c3b3b;
+}
+
+.precios-tabla tbody tr:last-child th,
+.precios-tabla tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 /* Quiénes firman: la foto al costado y la bio al lado, una debajo de la otra.
