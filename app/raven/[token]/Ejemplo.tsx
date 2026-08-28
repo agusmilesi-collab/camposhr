@@ -29,14 +29,18 @@ type Tamano = keyof typeof TAMANOS;
 
 function Dibujo({ figura, tamano }: { figura: Figura; tamano: Tamano }) {
   const r = TAMANOS[tamano];
+  /* El trazo no se agranda con el dibujo: la matriz y las opciones se dibujan
+     a tamaños distintos y las líneas tienen que verse del mismo grosor en las
+     dos. */
   const trazo = {
     fill: 'none',
     stroke: 'currentColor',
-    strokeWidth: 2.2,
+    strokeWidth: 2,
     strokeLinejoin: 'round' as const,
+    vectorEffect: 'non-scaling-stroke' as const,
   };
   return (
-    <svg viewBox="0 0 46 46" width="46" height="46" aria-hidden="true">
+    <svg viewBox="0 0 46 46" className="rv-ejemplo-figura" aria-hidden="true">
       {figura === 'circulo' && <circle cx="23" cy="23" r={r} {...trazo} />}
       {figura === 'cuadrado' && (
         <rect x={23 - r} y={23 - r} width={r * 2} height={r * 2} {...trazo} />

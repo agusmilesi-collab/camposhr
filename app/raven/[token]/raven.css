@@ -358,52 +358,59 @@
   color: #6b7076;
 }
 
-/* Tres por tres, como las láminas del test. */
+/* Tres por tres y de lado a lado de la tarjeta, como la lámina, que ocupa el
+   ancho de la pantalla. Las celdas se reparten el ancho en partes iguales y son
+   cuadradas, así el dibujo no se estira. */
 .rv-ejemplo-grilla {
   display: grid;
-  grid-template-columns: repeat(3, 54px);
-  gap: 4px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-bottom: 14px;
+  border: 1px solid #cfd3d8;
+  border-radius: 8px;
+  background: #cfd3d8;
+  overflow: hidden;
 }
 
+/* Las divisiones son el fondo que se ve por el hueco de un píxel entre celdas:
+   con borde en cada una, las del medio quedaban con línea doble. */
 .rv-ejemplo-grilla > span {
   display: grid;
   place-items: center;
-  height: 54px;
-  border: 1px solid #cfd3d8;
-  border-radius: 6px;
+  /* Apaisadas y no cuadradas: a lo ancho de la tarjeta, una celda cuadrada da
+     una matriz de media pantalla y empuja la explicación abajo de todo. */
+  aspect-ratio: 1.55;
+  padding: 10px;
   background: #ffffff;
   color: #1a1d21;
 }
 
-/* El lugar vacío: punteado, como el hueco de una lámina. Resuelto, se pinta del
+/* El lugar vacío, apagado como el hueco de una lámina. Resuelto, se pinta del
    mismo verde que la opción que lo completó. */
 .rv-ejemplo-falta {
-  border-style: dashed !important;
+  background: #f2f3f4 !important;
   color: #9aa0a6 !important;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
 }
 
 .rv-ejemplo-falta.resuelta {
-  border-style: solid !important;
-  border-color: #37804a !important;
   background: #f0f7f2 !important;
   color: #37804a !important;
 }
 
-/* Las ocho, en dos filas de cuatro: es la disposición de la lámina. */
+/* Las ocho, en dos filas de cuatro y del mismo ancho que la matriz: es la
+   disposición de la lámina. */
 .rv-ejemplo-opciones {
   display: grid;
-  grid-template-columns: repeat(4, 54px);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
 }
 
 .rv-ejemplo-opcion {
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
-  padding: 0;
+  aspect-ratio: 1.55;
+  padding: 8px;
   border: 1px solid #cfd3d8;
   border-radius: 6px;
   background: #ffffff;
@@ -427,6 +434,12 @@
   border-color: #cfd3d8;
   background: #f2f3f4;
   color: #9aa0a6;
+}
+
+/* El dibujo llena su celda; el aire lo pone el padding de la celda. */
+.rv-ejemplo-figura {
+  width: 100%;
+  height: 100%;
 }
 
 .rv-ejemplo-pie {
