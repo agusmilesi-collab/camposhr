@@ -410,12 +410,23 @@ export default async function Documento({
         </div>
         <p className="inf-nota">{NOTA_AJUSTE}</p>
 
-        {/* Fundamentación y no resumen: no repite lo que sigue, dice por qué
-            se recomienda ese nivel. */}
-        <h3 className="inf-subtitulo">Fundamentación</h3>
-        {inf.resumen.parrafos.map((t, i) => (
+        {/* Dos cosas distintas, en este orden. El resumen es qué dio la
+            evaluación, y lo arma el motor con las mismas lecturas que el resto
+            del informe. La fundamentación es por qué se recomienda ese nivel, y
+            la escribe la evaluadora cuando lo elige. */}
+        <h3 className="inf-subtitulo">Resumen</h3>
+        {inf.resumen.map((t, i) => (
           <p key={i}>{t}</p>
         ))}
+
+        {inf.fundamentacion.length > 0 && (
+          <>
+            <h3 className="inf-subtitulo">Fundamentación</h3>
+            {inf.fundamentacion.map((t, i) => (
+              <p key={i}>{t}</p>
+            ))}
+          </>
+        )}
       </Capitulo>
       )}
 

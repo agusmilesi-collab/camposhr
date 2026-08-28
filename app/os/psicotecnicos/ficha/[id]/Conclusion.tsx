@@ -104,7 +104,7 @@ export default function Conclusion({
 
       <label className="os-conclusion-notas">
         <span className="os-dato-rotulo">
-          Tu recomendación <em>· por qué elegiste ese nivel, en primera persona</em>
+          Fundamentación <em>· por qué elegiste ese nivel, en primera persona</em>
         </span>
         <textarea
           className="os-campo"
