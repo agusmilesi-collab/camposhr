@@ -56,7 +56,10 @@
 
   min-height: 100vh;
   color: var(--tinta);
-  font-family: 'Inter', ui-sans-serif, -apple-system, system-ui, sans-serif;
+  /* La misma familia del documento: las dos presentaciones se miran una al
+     lado de la otra, y con dos sans distintas los mismos títulos salían de
+     distinto grosor. */
+  font-family: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
 }
 
 /* El papel es de la página del portal. Las mismas secciones adentro de la ficha
