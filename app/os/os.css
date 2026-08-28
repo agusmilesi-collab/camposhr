@@ -4362,6 +4362,11 @@ th.os-tabla-contacto {
 .os-nivel-opcion.verde {
   --punto-nivel: #37804a;
 }
+/* El de "aspectos a desarrollar" es azul y no una variante del verde: es el
+   nivel que se elige más seguido, y en el semáforo del informe ya sale así. */
+.os-nivel-opcion.azul {
+  --punto-nivel: #43648f;
+}
 .os-nivel-opcion.ambar {
   --punto-nivel: #a97722;
 }
@@ -4391,6 +4396,10 @@ th.os-tabla-contacto {
 .os-nivel-opcion.verde {
   border-color: rgba(55, 128, 74, 0.32);
   background: rgba(55, 128, 74, 0.05);
+}
+.os-nivel-opcion.azul {
+  border-color: rgba(67, 100, 143, 0.32);
+  background: rgba(67, 100, 143, 0.05);
 }
 .os-nivel-opcion.ambar {
   border-color: rgba(169, 119, 34, 0.3);
@@ -4499,6 +4508,9 @@ th.os-tabla-contacto {
   display: grid;
   gap: 6px;
   width: 100%;
+  /* Aire entre los cuatro niveles y lo que se escribe: son dos pasos de la
+     misma decisión y pegados se leían como una sola caja. */
+  margin-top: 26px;
 }
 
 .os-conclusion-notas .os-campo {
