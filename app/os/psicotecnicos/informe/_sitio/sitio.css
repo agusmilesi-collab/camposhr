@@ -367,12 +367,11 @@
   margin-bottom: 0;
 }
 
-/* Los subtítulos de adentro de una sección: en versalitas y con una línea
-   arriba, para que se vean como una división y no como un párrafo en negrita. */
+/* Los subtítulos de adentro de una sección, en versalitas y sin línea arriba:
+   lo que los separa es el aire. Con línea, la sección quedaba dividida en
+   tantas partes como subtítulos tiene y competía con la del título. */
 .sitio-sub {
   margin: 56px 0 14px;
-  padding-top: 18px;
-  border-top: 1px solid var(--linea-suave);
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -382,8 +381,6 @@
 
 .sitio-caja > .sitio-sub:first-child {
   margin-top: 0;
-  padding-top: 0;
-  border-top: 0;
 }
 
 .sitio-vacio,
