@@ -267,6 +267,7 @@ export default async function FichaPedido({ params }: { params: { id: string } }
               rotulo={p.rotulo}
               valor={(pedido as unknown as Record<string, string | null>)[p.campo]}
               opciones={p.opciones}
+              ayudas={p.ayudas}
             />
           ))}
         </div>
@@ -282,6 +283,7 @@ export default async function FichaPedido({ params }: { params: { id: string } }
               rotulo={p.rotulo}
               valor={(pedido as unknown as Record<string, string | null>)[p.campo]}
               opciones={p.opciones}
+              ayudas={p.ayudas}
             />
           ))}
         </div>

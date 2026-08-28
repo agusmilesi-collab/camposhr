@@ -495,12 +495,12 @@ export default function Pedido({
                                     }))
                                   }
                                 >
-                                  {o}
+                                  <span className="pedir-opcion-n">{o}</span>
                                   {/* Qué significa esa opción: quien contesta no
                                       trabaja acá, y "problemas mixtos" se
                                       entiende distinto en cada empresa. */}
                                   {p.ayudas[i] && (
-                                    <small className="pedir-opcion-q">{p.ayudas[i]}</small>
+                                    <span className="pedir-opcion-q">{p.ayudas[i]}</span>
                                   )}
                                 </button>
                               ))}

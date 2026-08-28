@@ -258,12 +258,15 @@ export function Pregunta({
   rotulo,
   valor,
   opciones,
+  ayudas = [],
 }: {
   id: string;
   campo: string;
   rotulo: string;
   valor: string | null;
   opciones: string[];
+  /** Qué significa cada opción, en el mismo orden. Sale al pasar por encima. */
+  ayudas?: string[];
 }) {
   const { guardar, error } = useGuardar(id);
   const [puesto, setPuesto] = useState(valor);
@@ -281,7 +284,11 @@ export function Pregunta({
       <span className="os-dato-rotulo">{rotulo}</span>
       <Opciones
         valor={puesto}
-        opciones={opciones.map((o) => ({ v: o as string | null, texto: o }))}
+        opciones={opciones.map((o, i) => ({
+          v: o as string | null,
+          texto: o,
+          ayuda: ayudas[i],
+        }))}
         alElegir={(v) => elegir(v as string)}
         etiqueta={rotulo}
       />
