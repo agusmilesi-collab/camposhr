@@ -36,7 +36,6 @@ import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 import { tieneTexto } from '@/lib/texto-rico';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
-import { estratoPorNumero } from '@/lib/potencial';
 import Bateria from '../../Bateria';
 import { cuentasDeLaBarra } from '../../datos';
 
@@ -540,21 +539,10 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
  */
 function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
   const delPuesto = f.cabecera.pedidos?.estrato_puesto ?? null;
-  const e = delPuesto ? estratoPorNumero(delPuesto) : null;
   return (
     <section className="os-panel os-informe-cierre">
       <div className="os-panel-top">
         <h2>Potencial de desarrollo</h2>
-        <span className="os-columna-monto">
-          {e ? (
-            <>
-              El puesto pide estrato <strong>{e.romano}</strong>
-              {e.mide ? ` · ${e.nombre}` : ''}
-            </>
-          ) : (
-            'el puesto no tiene nivel determinado'
-          )}
-        </span>
       </div>
       <div className="os-panel-cuerpo">
         <Discursivo
@@ -565,6 +553,7 @@ function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) 
           dias={f.discursivo?.horizonte_dias ?? null}
           complejidad={f.discursivo?.complejidad ?? null}
           relato={f.discursivo?.relato ?? null}
+          estratoPuesto={delPuesto}
           niveles={nivelesQueRigen(rige.niveles).map((n) => ({
             nombre: n.nombre,
             romano: n.romano,

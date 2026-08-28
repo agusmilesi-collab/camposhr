@@ -317,14 +317,6 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                     complejidad={e.complejidad}
                     relato={e.relato}
                   />
-                  <div className="os-herramienta-accion">
-                    <Link
-                      className="os-boton"
-                      href={`/os/psicotecnicos/ficha/${e.id}?ver=potencial`}
-                    >
-                      Ver el diagrama
-                    </Link>
-                  </div>
                 </div>
               )}
             </>
