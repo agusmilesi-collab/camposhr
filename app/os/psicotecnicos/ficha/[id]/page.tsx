@@ -17,12 +17,10 @@ import Ingreso from './Ingreso';
 import Conclusion from './Conclusion';
 import Entregar from './Entregar';
 import Benziger from './Benziger';
-import Administrados from './Administrados';
 import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
 import { bandaDeAfr, bandasDeLaHoja } from '@/lib/redacciones';
-import Raven from './Raven';
 import Discursivo from './Discursivo';
 import Whatsapp from '../../Whatsapp';
 import Editar from './Editar';
@@ -102,11 +100,6 @@ const PESTANAS: Pestana[] = [
     texto: 'Potencial',
     cuantos: (f) => (f.discursivo?.nivel ? 1 : 0),
     va: (f) => llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests),
-  },
-  {
-    clave: 'tests',
-    texto: 'Tests',
-    cuantos: (f) => f.cualitativos.length + (f.raven ? 1 : 0),
   },
   { clave: 'informe', texto: 'Informe', cuantos: (f) => (f.cabecera.recomendacion ? 1 : 0) },
 ];
@@ -455,76 +448,6 @@ function BenzigerVista({ f, id }: { f: Ficha; id: string }) {
 }
 
 /**
- * Los tests que no son de manchas.
- *
- * Arriba lo que se administró, que se marca acá y no en Datos: es parte del
- * trabajo de esta pestaña. Después el Raven con su puntaje, y por último los
- * cualitativos.
- */
-function Tests({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
-  const c = f.cabecera;
-  return (
-    // Los paneles de esta pestaña comparten ancho: con el tope de 820 px de
-    // `os-cierre`, Administrados quedaba más angosto que la fila de abajo y las
-    // tres cajas no cerraban contra el mismo borde.
-    <div className="os-tests">
-      <section className="os-panel os-cierre">
-        <div className="os-panel-top">
-          <h2>Administrados</h2>
-          {/* Se cargan en la hoja de la entrevista y acá se leen. El dibujo se
-              sube allá y se mira acá, que es donde se escribe el informe que
-              habla de él. */}
-
-        </div>
-        <div className="os-panel-cuerpo">
-          <Administrados
-            id={id}
-            bender={c.bender_administrado}
-            benderNotas={c.bender_observaciones}
-            benderHoja={c.bender_nombre}
-            graficoDibujo={c.grafico_2_personas_nombre}
-            grafico={c.grafico_2_personas_administrado}
-            graficoNotas={c.grafico_2_personas_observaciones}
-          />
-        </div>
-      </section>
-
-      <div className="os-tests-fila">
-      <section className="os-panel os-cierre">
-        <div className="os-panel-top">
-          <h2>Raven</h2>
-        </div>
-        <div className="os-panel-cuerpo">
-          <Raven
-            id={id}
-            raw={f.raven?.raw ?? null}
-            percentil={f.raven?.percentil ?? null}
-            desvios={f.raven?.desvios ?? null}
-            resultado={f.raven?.resultado ?? null}
-            origen={f.raven?.origen ?? null}
-            tardo={f.raven?.duracion_segundos ?? null}
-            sesion={f.sesionRaven}
-            rangos={rige.rangos}
-          />
-        </div>
-      </section>
-      </div>
-
-      {f.cualitativos.map((t) => (
-        <section key={t.id} className="os-panel">
-          <h2 className="os-ficha-titulo">{t.test ?? 'Test'}</h2>
-          <div className="os-ficha-datos">
-            <Dato rotulo="Observaciones">{t.observaciones ?? <Falta />}</Dato>
-            <Dato rotulo="Interpretación">{t.interpretacion ?? <Falta />}</Dato>
-            <Dato rotulo="Hallazgos">{t.hallazgos ?? <Falta />}</Dato>
-          </div>
-        </section>
-      ))}
-    </div>
-  );
-}
-
-/**
  * El informe de competencias y, al pie, la entrega.
  *
  * Entregar cierra esta pantalla porque el informe es lo que se entrega: el
@@ -831,7 +754,6 @@ export default async function FichaPagina({
       )}
       {/* Sin panel alrededor: la vista trae sus propias tarjetas. */}
       {ver === 'benziger' && <BenzigerVista f={ficha} id={params.id} />}
-      {ver === 'tests' && <Tests f={ficha} id={params.id} rige={rige} />}
       {ver === 'potencial' && <Potencial f={ficha} id={params.id} rige={rige} />}
       {/* Sin panel alrededor: trae sus propias tarjetas, igual que Benziger y
           Tests. Envuelto, los dos paneles de adentro quedaban sobre un tercer

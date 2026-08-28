@@ -11,10 +11,13 @@ import HojaBender from './HojaBender';
 import Cuando from './Cuando';
 import Marca from './Marca';
 import Raven from './Raven';
+import RavenPuntaje from '../../ficha/[id]/Raven';
 import { SELLO_RAVEN } from '@/lib/raven-estado';
 import Bateria from '../../Bateria';
 import Whatsapp from '../../Whatsapp';
 import { enlaceDelCv } from '@/lib/cv';
+import { ajuste } from '@/lib/ajustes';
+import { RANGOS, rangosValidos } from '@/lib/raven';
 import Orden from './Orden';
 import Competencias from './Competencias';
 import Nacimiento from './Nacimiento';
@@ -67,7 +70,14 @@ const HERRAMIENTA: Record<string, { href: string; boton: string }> = {
 export default async function HojaDeEntrevista({ id }: { id: string }) {
   // El CV se firma al dibujar la hoja: es lo primero que se mira antes de
   // hablar con la persona, y buscarlo en otra pantalla es abrir otra pantalla.
-  const [e, cv] = await Promise.all([entrevistaDe(id), enlaceDelCv(id)]);
+  /* Los cortes del Raven salen de Configuración: la tarjeta lee el puntaje con
+     los que rigen hoy, igual que el informe. */
+  const [e, cv, guardados] = await Promise.all([
+    entrevistaDe(id),
+    enlaceDelCv(id),
+    ajuste('raven_rangos'),
+  ]);
+  const rangos = rangosValidos(guardados) ?? RANGOS;
   if (!e) return null;
 
   // El Benziger no lo declara la batería: lo agrega el pedido.
@@ -108,7 +118,15 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
     if (t === 'Raven') {
       /* El sello del Raven lo pone el servidor y se actualiza solo: el bloque
          de abajo sondea mientras la persona responde y pide la pantalla de
-         nuevo cuando el estado cambia. */
+         nuevo cuando el estado cambia.
+
+         Con el puntaje ya cargado el sello dice "Administrado" y no "Sin
+         mandar": el Raven se puede tomar en papel, y ahí no hay enlace que
+         mandar pero el test está tomado igual, que es lo que la lista plegada
+         tiene que decir. */
+      if (e.ravenMedida?.raw !== null && e.ravenMedida?.raw !== undefined) {
+        return <span className="os-sello-estado os-test-estado os-verde">Administrado</span>;
+      }
       const r = SELLO_RAVEN[e.raven];
       return (
         <span className={`os-sello-estado os-test-estado ${r.color}`} title={r.detalle}>
@@ -177,13 +195,29 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
           // pantalla se entera sola de que abrió, corre el reloj y muestra el
           // puntaje cuando entrega, sin que haya que recargar.
           return (
-            <Raven
-              id={e.id}
-              estado={e.raven}
-              iniciado={e.ravenIniciado}
-              duracionSegundos={e.ravenDuracion}
-              medida={e.ravenMedida}
-            />
+            <>
+              <Raven
+                id={e.id}
+                estado={e.raven}
+                iniciado={e.ravenIniciado}
+                duracionSegundos={e.ravenDuracion}
+                medida={e.ravenMedida}
+              />
+              {/* Y debajo el puntaje con su lectura, que hasta ahora vivía en
+                  una pestaña aparte: mandar el enlace y leer lo que dio son dos
+                  momentos del mismo test, y estaban en dos pantallas. */}
+              <RavenPuntaje
+                id={e.id}
+                raw={e.ravenMedida?.raw ?? null}
+                percentil={e.ravenMedida?.percentil ?? null}
+                desvios={e.ravenMedida?.desvios ?? null}
+                resultado={e.ravenMedida?.resultado ?? null}
+                origen={e.ravenMedida?.origen ?? null}
+                tardo={e.ravenDuracion}
+                sesion={e.ravenSesion}
+                rangos={rangos}
+              />
+            </>
           );
         }
 
