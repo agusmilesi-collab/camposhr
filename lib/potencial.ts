@@ -47,53 +47,98 @@ export const EDAD_MAX = 65;
  * La escalera de horizontes, de abajo hacia arriba.
  *
  * Los veintidós escalones del modelo. `dias` es lo que mide cada marca y sirve
- * para ubicar un horizonte cualquiera entre dos de ellas.
+ * para ubicar un horizonte cualquiera entre dos de ellas; `celda` es el nombre
+ * con el que la lámina rotula la franja que termina en esa marca, y que es la
+ * subdivisión del estrato (IIIB es la parte del medio del estrato III).
+ *
+ * Cada marca es el **techo** de su franja: la franja IA va de un mes a tres
+ * meses, y su rótulo es "3 meses". El piso de la más baja, ID, queda fuera de
+ * la escala, igual que en la lámina.
  */
 export const ESCALERA = [
-  { dias: 1, texto: '1 día' },
-  { dias: 7, texto: '1 semana' },
-  { dias: 30, texto: '1 mes' },
-  { dias: 91, texto: '3 meses' },
-  { dias: 182, texto: '6 meses' },
-  { dias: 273, texto: '9 meses' },
-  { dias: 365, texto: '1 año' },
-  { dias: 487, texto: '16 meses' },
-  { dias: 608, texto: '20 meses' },
-  { dias: 730, texto: '2 años' },
-  { dias: 1095, texto: '3 años' },
-  { dias: 1460, texto: '4 años' },
-  { dias: 1825, texto: '5 años' },
-  { dias: 2555, texto: '7 años' },
-  { dias: 3103, texto: '8 años y medio' },
-  { dias: 3650, texto: '10 años' },
-  { dias: 5110, texto: '14 años' },
-  { dias: 6205, texto: '17 años' },
-  { dias: 7300, texto: '20 años' },
-  { dias: 10950, texto: '30 años' },
-  { dias: 14600, texto: '40 años' },
-  { dias: 18250, texto: '50 años' },
+  { dias: 1, texto: '1 día', celda: 'ID' },
+  { dias: 7, texto: '1 semana', celda: 'IC' },
+  { dias: 30, texto: '1 mes', celda: 'IB' },
+  { dias: 91, texto: '3 meses', celda: 'IA' },
+  { dias: 182, texto: '6 meses', celda: 'IIC' },
+  { dias: 273, texto: '9 meses', celda: 'IIB' },
+  { dias: 365, texto: '1 año', celda: 'IIA' },
+  { dias: 487, texto: '16 meses', celda: 'IIIC' },
+  { dias: 608, texto: '20 meses', celda: 'IIIB' },
+  { dias: 730, texto: '2 años', celda: 'IIIA' },
+  { dias: 1095, texto: '3 años', celda: 'IVC' },
+  { dias: 1460, texto: '4 años', celda: 'IVB' },
+  { dias: 1825, texto: '5 años', celda: 'IVA' },
+  { dias: 2555, texto: '7 años', celda: 'VC' },
+  { dias: 3103, texto: '8,5 años', celda: 'VB' },
+  { dias: 3650, texto: '10 años', celda: 'VA' },
+  { dias: 5110, texto: '14 años', celda: 'VIC' },
+  { dias: 6205, texto: '17 años', celda: 'VIB' },
+  { dias: 7300, texto: '20 años', celda: 'VIA' },
+  { dias: 10950, texto: '30 años', celda: 'VIIC' },
+  { dias: 14600, texto: '40 años', celda: 'VIIB' },
+  { dias: 18250, texto: '50 años', celda: 'VIIA' },
 ] as const;
 
-/** El escalón más alto del diagrama. */
+/** El escalón más alto del diagrama: el techo de la franja VIIA. */
 export const ALTO = ESCALERA.length - 1;
 
 /**
- * Los estratos, cada uno de tres escalones.
+ * El piso del cuadro.
  *
- * `desde` y `hasta` son posiciones de la escalera. Los cuatro primeros son los
+ * Un escalón por debajo de "1 día", que es donde empieza la franja ID: la
+ * lámina la dibuja entera aunque su piso no tenga número.
+ */
+export const PISO = -1;
+
+/**
+ * Los estratos, con sus franjas.
+ *
+ * `desde` y `hasta` son posiciones de la escalera; el I llega hasta el piso del
+ * cuadro (−1) porque tiene cuatro franjas y los demás tres, como en la lámina.
+ * `grupo` es el nombre que la lámina pone al costado, que agrupa estratos: los
+ * dos primeros son "Operacional" y los dos últimos "Estratégico corporativo". Los cuatro primeros son los
  * que mide el análisis discursivo y llevan el nombre con el que se los escribe
  * en el informe; del quinto para arriba se nombran como en el modelo, porque
  * están por encima del alcance del instrumento y en el informe se dicen como
  * referencia y no como resultado.
  */
 export const ESTRATOS = [
-  { romano: 'I', desde: 0, hasta: 3, nombre: 'Operativo', mide: true },
-  { romano: 'II', desde: 3, hasta: 6, nombre: 'Especialista', mide: true },
-  { romano: 'III', desde: 6, hasta: 9, nombre: 'Liderazgo 1', mide: true },
-  { romano: 'IV', desde: 9, hasta: 12, nombre: 'Liderazgo 2', mide: true },
-  { romano: 'V', desde: 12, hasta: 15, nombre: 'Estratégico general', mide: false },
-  { romano: 'VI', desde: 15, hasta: 18, nombre: 'Estratégico corporativo', mide: false },
-  { romano: 'VII', desde: 18, hasta: 21, nombre: 'Estratégico corporativo', mide: false },
+  { romano: 'I', desde: -1, hasta: 3, nombre: 'Operativo', mide: true, grupo: 'Operacional' },
+  { romano: 'II', desde: 3, hasta: 6, nombre: 'Especialista', mide: true, grupo: 'Operacional' },
+  { romano: 'III', desde: 6, hasta: 9, nombre: 'Liderazgo 1', mide: true, grupo: 'Táctico' },
+  {
+    romano: 'IV',
+    desde: 9,
+    hasta: 12,
+    nombre: 'Liderazgo 2',
+    mide: true,
+    grupo: 'Estratégico funcional',
+  },
+  {
+    romano: 'V',
+    desde: 12,
+    hasta: 15,
+    nombre: 'Estratégico general',
+    mide: false,
+    grupo: 'Estratégico general',
+  },
+  {
+    romano: 'VI',
+    desde: 15,
+    hasta: 18,
+    nombre: 'Estratégico corporativo',
+    mide: false,
+    grupo: 'Estratégico corporativo',
+  },
+  {
+    romano: 'VII',
+    desde: 18,
+    hasta: 21,
+    nombre: 'Estratégico corporativo',
+    mide: false,
+    grupo: 'Estratégico corporativo',
+  },
 ] as const;
 
 export type Estrato = (typeof ESTRATOS)[number];
