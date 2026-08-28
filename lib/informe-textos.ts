@@ -179,11 +179,17 @@ export const CONFIDENCIALIDAD =
  * que habilita a firmar el informe, y sin correo cargado el renglón no sale en
  * vez de salir vacío.
  */
-export const FIRMAS: Record<string, { titulo: string; matricula: string; correo?: string }> = {
+export const FIRMAS: Record<
+  string,
+  { titulo: string; matricula: string; correo?: string; trazo?: string }
+> = {
   'Lorena Campos': {
     titulo: 'Lic. en Psicología',
     matricula: '5217',
     correo: 'lorecamposhr@gmail.com',
+    // La firma manuscrita, en el bucket privado: este repositorio es público y
+    // una firma en `public/` se baja limpia desde cualquier lado.
+    trazo: 'firmas/lorena-campos.png',
   },
   'Lucila Campos': {
     titulo: 'Lic. en Psicología',
