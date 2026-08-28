@@ -21,6 +21,7 @@ import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
 import { Desglose, Faltantes } from '../../informe/_doc/Interno';
 import { seccionesDe } from '../../informe/_sitio/secciones';
+import Cabecera from '../../informe/_sitio/Cabecera';
 import '../../informe/_sitio/sitio.css';
 import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
@@ -660,6 +661,9 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
           <>
             <Faltantes inf={informe} />
             <div className="sitio sitio-secciones-ficha">
+              {/* Los mismos datos con los que abre el informe del cliente: sin
+                  ellos, acá no se ve para qué puesto ni con qué fecha sale. */}
+              <Cabecera inf={informe} />
               {seccionesDe(informe, c.id).map((s, i) => (
                 <section key={s.id} className="sitio-seccion">
                   <header className="sitio-seccion-top">
