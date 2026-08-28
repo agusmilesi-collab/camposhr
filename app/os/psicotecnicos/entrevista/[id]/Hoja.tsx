@@ -316,6 +316,8 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                     dias={e.horizonteDias}
                     complejidad={e.complejidad}
                     relato={e.relato}
+                    estratoPuesto={e.estratoPuesto}
+                    pedidoId={e.pedidoId}
                   />
                 </div>
               )}

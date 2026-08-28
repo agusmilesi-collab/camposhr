@@ -161,7 +161,7 @@ export default function NivelDeTrabajo({
       <div className="os-nivel-bloque">
         <p className="os-nivel-pregunta">
           ¿Cuál es la tarea de mayor alcance temporal de la que responde este puesto, y
-          para cuándo tiene que estar lista?
+          cuándo se sabe si salió bien?
         </p>
         {/* La confusión que arruina la medición: el plazo del resultado contra
             las horas de trabajo que cuesta producirlo. */}

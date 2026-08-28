@@ -329,21 +329,22 @@ export const APERTURA =
 /**
  * Y con qué se averigua el horizonte: para cuándo tiene que estar el resultado.
  *
- * **Es el plazo del resultado y no el trabajo que cuesta hacerlo.** Jaques lo
- * define como el *target completion time* de la tarea más larga asignada al
- * rol: la fecha en la que se ve si salió bien. Fijar los objetivos del año
- * puede llevar una tarde de trabajo y su plazo es un año, porque de eso
- * responde la persona hasta que el año cierra.
+ * **Es el plazo del resultado y no el de la entrega.** Jaques lo define como el
+ * *target completion time* de la tarea más larga asignada al rol: la fecha en
+ * la que se ve si salió bien. Planificar los objetivos del año se entrega la
+ * semana que viene, y de esos objetivos la persona responde hasta que el año
+ * cierra: el plazo es un año. Preguntando "¿para cuándo tiene que estar lista?"
+ * se contesta la fecha de la entrega, que es otra cosa.
  *
  * Va después y no junto con la anterior: preguntadas a la vez, la persona
  * contesta el plazo del proyecto entero del que participa y no el de aquello
  * de lo que responde, que es lo que se está midiendo.
  */
-export const PREGUNTA_HORIZONTE = 'Esa tarea, ¿para cuándo tiene que estar lista?';
+export const PREGUNTA_HORIZONTE = 'Esa tarea, ¿cuándo se sabe si salió bien?';
 
 /** Lo que hay que tener en la cabeza al contestarla. */
 export const AVISO_HORIZONTE =
-  'Se cuenta hasta la fecha en la que el resultado tiene que estar. Fijar los objetivos del año puede llevar una tarde de trabajo y la fecha es fin de año.';
+  'Se cuenta hasta la fecha en la que se ve el resultado. Planificar los objetivos del año se entrega la semana que viene y el resultado se ve a fin de año: ahí el plazo es un año.';
 
 /**
  * El nivel que dan las respuestas: el más alto contestado que sí.
