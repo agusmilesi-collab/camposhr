@@ -12,6 +12,13 @@
  * escribe, se relee y recién entonces se sube. Guardar a mitad de una frase
  * dejaría en la base media decisión.
  *
+ * **El botón dice "Firmar informe" y no "Generar informe".** El informe se arma
+ * solo con lo que se va cargando en las otras pestañas: acá no se genera nada.
+ * Lo que este botón guarda es lo único que no sale de un test, el nivel de
+ * ajuste y por qué, que es lo que ella pone de su parte y lo que después el
+ * cliente lee arriba de su firma. Sin eso el informe no tiene veredicto y no se
+ * puede entregar.
+ *
  * **La recomendación la escribe ella y la firma.** Es por qué eligió ese nivel,
  * en primera persona, y es lo primero que el cliente lee en el portal. El resto
  * del informe lo arma el sistema con lo que dio la evaluación; esto no, porque
@@ -134,12 +141,12 @@ export default function Conclusion({
           onClick={cargar}
           disabled={guardando || sinCambios}
         >
-          {guardando ? 'Generando…' : 'Generar informe'}
+          {guardando ? 'Firmando…' : 'Firmar informe'}
         </button>
         {error ? (
           <span className="os-form-error">{error}</span>
         ) : hecho ? (
-          <span className="os-form-ok">Informe generado.</span>
+          <span className="os-form-ok">Informe firmado.</span>
         ) : (
           !sinCambios && <span className="os-columna-monto">Hay cambios sin cargar.</span>
         )}
