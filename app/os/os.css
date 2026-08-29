@@ -5108,15 +5108,29 @@ th.os-tabla-contacto {
   padding-bottom: 9px;
 }
 
-/* Lámina y Nº de respuesta, angostas: una es un código de hasta cuatro letras y
-   el otro nunca pasa de dos dígitos. Con el ancho de sus títulos se llevaban
-   ciento cincuenta píxeles de una tabla que ya se desplaza en horizontal. */
+/* Lámina, Nº de respuesta y Loc.+DQ, angostas: son un código de hasta cuatro
+   letras y un número de dos dígitos. Con el ancho de sus títulos se llevaban
+   doscientos píxeles de una tabla que ya se desplaza en horizontal. */
 .os-tabla-manchas th:nth-child(1),
 .os-tabla-manchas td:nth-child(1),
 .os-tabla-manchas th:nth-child(2),
-.os-tabla-manchas td:nth-child(2) {
+.os-tabla-manchas td:nth-child(2),
+.os-tabla-manchas th:nth-child(3),
+.os-tabla-manchas td:nth-child(3) {
   padding-left: 8px;
   padding-right: 8px;
+}
+
+/*
+ * Una línea finita entre columnas.
+ *
+ * Son doce columnas de códigos cortos y la vista salta de una a otra todo el
+ * tiempo: sin nada en el medio, el ojo se pierde de fila. Apenas visible, que
+ * lo que tiene que verse son las etiquetas y no la grilla.
+ */
+.os-tabla-manchas th + th,
+.os-tabla-manchas td + td {
+  border-left: 1px solid rgba(22, 32, 43, 0.05);
 }
 
 /* El número de respuesta no se escribe: lo pone el sistema. Va como texto y
@@ -5129,12 +5143,21 @@ th.os-tabla-contacto {
   color: var(--os-tinta-media);
 }
 
-/* El código, con el color que tiene en Airtable. */
+/*
+ * El código, con el color que tiene en Airtable.
+ *
+ * Todos del mismo tamaño, 55 por 25: la tabla se lee de arriba abajo columna
+ * por columna, y con cada etiqueta del ancho de su texto las columnas quedaban
+ * dentadas y ninguna fila se alineaba con la de al lado.
+ */
 .os-chip {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 8px;
+  justify-content: center;
+  gap: 2px;
+  width: 55px;
+  height: 25px;
+  padding: 0 4px;
   border-radius: 999px;
   background: var(--os-panel-2);
   color: #1c1c1c;
@@ -5182,8 +5205,12 @@ th.os-tabla-contacto {
 }
 
 .os-codigo-boton {
-  min-width: 34px;
-  padding: 2px 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 55px;
+  height: 25px;
+  padding: 0 4px;
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
