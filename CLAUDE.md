@@ -57,6 +57,46 @@ vuelve a generar; no se edita a mano. Leer ese esquema necesita el permiso
 `schema.bases:read`, que hoy tiene `AIRTABLE_TOKEN_ESCRITURA` y no
 `AIRTABLE_TOKEN`.
 
+## La tabla de codificación se llena mirando el color y escribiendo
+
+`app/os/psicotecnicos/ficha/[id]/Manchas.tsx` es donde la evaluadora carga el
+protocolo, y `Codigo.tsx` es el selector de cada celda. Cuatro reglas que
+costaron y conviene no deshacer:
+
+- **La lista se ve del color que va a quedar en la celda.** El `select` del
+  navegador no deja pintar sus opciones, así que salía en blanco y negro y el
+  color aparecía recién al elegir, que es cuando ya no hace falta. Los códigos
+  se reconocen por su color, que es el que tienen en la tabla de Airtable que
+  se viene usando.
+- **Se escribe para buscar**, en todas menos Lámina: determinantes tiene
+  veintiocho opciones y contenidos más de treinta. Filtra por lo que el código
+  empieza y después por lo que contiene, así "F" propone F antes que FMa.
+- **La lámina sigue el orden del protocolo.** En cada fila se ofrecen dos: la de
+  la respuesta anterior y la siguiente. El protocolo se toma en orden y no se
+  vuelve, así que ofrecer las diez es ofrecer ocho maneras de equivocarse. Al
+  pie queda "Mostrar todas" para las excepciones, y con la primera respuesta ya
+  cargada desaparecen las del otro test: un protocolo es de Rorschach o de
+  Zulliger, y el sumario se calcula con normas distintas.
+- **El número de respuesta no se escribe.** Lo pone el sistema, correlativo de
+  todo el protocolo. A mano, dos filas podían quedar con el mismo número y el
+  sumario cuenta respuestas.
+
+**Agregar una respuesta es instantáneo.** La fila se dibuja al tocar el botón y
+el alta viaja por atrás; cuando vuelve, la fila cambia su id provisorio por el
+de verdad, y si la evaluadora la toca antes, el cambio espera a ese id en vez de
+mandarse con uno que no existe. Esperar el alta más el redibujo de la ficha son
+dos segundos por respuesta, y un protocolo tiene veinticinco.
+
+**Las etiquetas miden 55 de mínimo por 25 de alto**, no 55 fijos: la columna se
+lee de arriba abajo y con el ancho de cada texto quedaba dentada, pero los pocos
+códigos largos (FABCOM2, CONTAM) crecen en vez de cortarse.
+
+**El anclaje de las listas que cuelgan de `.os`** (escaparse de los tres
+`overflow: hidden`, seguir al botón, abrirse hacia arriba si abajo no entra)
+está en `app/os/anclar.ts` y lo comparten este selector y `Desplegable`. Una
+trampa: el foco no entra en un elemento con `visibility: hidden`, y la lista se
+dibuja así hasta saber dónde va.
+
 ## Las tablas tienen anchos fijos, por campo
 
 `ANCHO` en `app/os/psicotecnicos/piezas.tsx` declara cuánto mide cada columna
@@ -419,6 +459,19 @@ preguntar al volver a la pestaña.
 estaba el reloj: la pregunta es una sola, cómo le fue. Media hora puede ser
 rápido o lento según el puntaje, y el puntaje solo esconde a quien lo sacó
 contra reloj.
+
+## El ejemplo del Raven no es una lámina del test
+
+La pantalla de empezar abre con un ejemplo resuelto y para tocar: una matriz de
+tres por tres con el último lugar vacío y ocho opciones, como una lámina. La
+consigna escrita ("falta una pieza y hay que elegir cuál la completa") no
+termina de entenderse hasta que se ve.
+
+**Es un dibujo propio y no la lámina 1.** Las 36 se puntúan: usar una de ejemplo
+con la respuesta marcada regala un punto y deja esa lámina sin medir nada. La
+regla del ejemplo es la más simple que se puede escribir, la fila dice la forma
+y la columna dice cuántas, y la equivocada se apaga en gris en vez de marcarse
+en rojo, que es un ejemplo para entender y no una respuesta que cuente.
 
 ## El baremo propio del Raven se cuenta solo
 
@@ -1092,6 +1145,29 @@ Al sumar una pantalla nueva, hay que pasarle `cuentas`.
 Dicen cuántas se van a ver al entrar, no cuántas existen: respetan el filtro por
 cliente y el alcance de quien mira. Un número que no coincide con la pantalla no
 sirve para nada.
+
+## El pedido dice quién lo pidió y contra qué se mide
+
+Dos datos que el informe usa y que antes no se preguntaban:
+
+- **Quién pidió la búsqueda** (`pedidos.solicitante_id`, uno de los contactos de
+  esa empresa). Sale en el encabezado del informe debajo de la empresa: el
+  documento circula reenviado entre gente que no estuvo en el pedido. Lo elige
+  el equipo en la ficha del pedido y lo manda el portal cuando el cliente carga
+  el pedido él mismo.
+- **El nivel de trabajo del puesto**, en las baterías que llevan análisis de
+  potencial. Son el plazo de la tarea de mayor alcance y las cinco preguntas de
+  complejidad, y el estrato sale de las dos: si coinciden, o si vino una sola,
+  queda guardado; si se contradicen queda sin definir y lo resuelve la
+  evaluadora. Qué batería lo pide no está escrito en ningún lado, sale de que la
+  batería incluya el análisis discursivo.
+
+**Las nueve preguntas del perfil son escalas y tienen que cerrar.** Cada opción
+lleva debajo qué significa, porque quien contesta desde el portal no trabaja acá
+y "problemas mixtos" se entiende distinto en cada empresa. Dos de las nueve no
+cerraban y se corrigieron el 28/8/2026: "pocas personas" y "equipo reducido"
+eran lo mismo, y entre "una vez al día" y "una vez por semana o menos" quedaba
+afuera quien ve a su jefe tres veces por semana.
 
 ## Los pedidos viven adentro de su cliente
 
