@@ -46,10 +46,14 @@ async function Firma({ inf }: { inf: Informe }) {
         {trazo && <img className="sitio-trazo" src={trazo} alt="" />}
         <strong>{inf.evaluadora ?? 'Sin evaluadora asignada'}</strong>
         {firma && (
-          <span>
-            {firma.titulo} · Mat. {firma.matricula}
-            {firma.correo ? ` · ${firma.correo}` : ''}
-          </span>
+          <>
+            <span>
+              {firma.titulo} · Mat. {firma.matricula}
+            </span>
+            {/* El correo en su propio renglón: es por dónde se la busca, y al
+                final de la matrícula se lee como parte del número. */}
+            {firma.correo && <span>{firma.correo}</span>}
+          </>
         )}
       </div>
       <p className="sitio-confidencial">{CONFIDENCIALIDAD}</p>
