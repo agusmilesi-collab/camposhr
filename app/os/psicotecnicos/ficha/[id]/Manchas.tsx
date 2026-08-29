@@ -55,6 +55,8 @@ function Simple({
   buscable = true,
   porFila,
   sinVacio,
+  anchoBoton,
+  nuevaFilaAntesDe,
 }: {
   valor: string | null;
   opciones: Opcion[];
@@ -64,6 +66,8 @@ function Simple({
   buscable?: boolean;
   porFila?: number;
   sinVacio?: boolean;
+  anchoBoton?: number;
+  nuevaFilaAntesDe?: string;
 }) {
   return (
     <span className="os-celda-select" style={ancho ? { minWidth: ancho } : undefined}>
@@ -75,6 +79,8 @@ function Simple({
         buscable={buscable}
         porFila={porFila}
         sinVacio={sinVacio}
+        anchoBoton={anchoBoton}
+        nuevaFilaAntesDe={nuevaFilaAntesDe}
       />
     </span>
   );
@@ -264,15 +270,21 @@ export default function Manchas({
                     valor={f.lamina}
                     opciones={LAMINA}
                     onCambio={(v) => cambiar(f.id, { lamina: v })}
-                    ancho={72}
                     etiqueta="Lámina"
                     buscable={false}
                     porFila={3}
                     sinVacio
+                    anchoBoton={46}
+                    nuevaFilaAntesDe="Z1"
                   />
                 </td>
                 <td>
-                  <Numero valor={f.n_respuesta} onCambio={(v) => cambiar(f.id, { n_respuesta: v })} />
+                  {/* El número no se escribe: lo pone el sistema, correlativo
+                      de todo el protocolo, al capturar la respuesta en la
+                      encuesta o al agregar una fila acá. Editable, dos filas
+                      podían terminar con el mismo número y el sumario cuenta
+                      respuestas. */}
+                  <span className="os-manchas-n">{f.n_respuesta ?? '—'}</span>
                 </td>
                 <td>
                   <Simple

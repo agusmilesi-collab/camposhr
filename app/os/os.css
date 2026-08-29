@@ -5108,6 +5108,27 @@ th.os-tabla-contacto {
   padding-bottom: 9px;
 }
 
+/* Lámina y Nº de respuesta, angostas: una es un código de hasta cuatro letras y
+   el otro nunca pasa de dos dígitos. Con el ancho de sus títulos se llevaban
+   ciento cincuenta píxeles de una tabla que ya se desplaza en horizontal. */
+.os-tabla-manchas th:nth-child(1),
+.os-tabla-manchas td:nth-child(1),
+.os-tabla-manchas th:nth-child(2),
+.os-tabla-manchas td:nth-child(2) {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* El número de respuesta no se escribe: lo pone el sistema. Va como texto y
+   alineado a la derecha, que es una cuenta y no un rótulo. */
+.os-manchas-n {
+  display: inline-block;
+  min-width: 22px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-tinta-media);
+}
+
 /* El código, con el color que tiene en Airtable. */
 .os-chip {
   display: inline-flex;
@@ -5265,6 +5286,12 @@ th.os-tabla-contacto {
   font: inherit;
   font-size: 0.78rem;
   cursor: pointer;
+}
+
+/* Un salto de fila adentro de la grilla de opciones. */
+.os-codigos-salto {
+  grid-column: 1 / -1;
+  height: 0;
 }
 
 .os-codigos-nada {
