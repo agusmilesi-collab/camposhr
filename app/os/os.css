@@ -4452,8 +4452,11 @@ th.os-tabla-contacto {
 }
 
 /* El fundamento ocupa el alto de la columna de niveles. */
+/* El campo entra en cinco renglones: más alto, el panel de la recomendación se
+   lleva media pantalla antes de llegar al informe, que es contra lo que se
+   escribe. */
 .os-conclusion-notas textarea.os-campo {
-  min-height: 150px;
+  min-height: 108px;
 }
 
 .os-conclusion-notas .os-dato-rotulo em {
@@ -4509,8 +4512,8 @@ th.os-tabla-contacto {
   gap: 6px;
   width: 100%;
   /* Aire entre los cuatro niveles y lo que se escribe: son dos pasos de la
-     misma decisión y pegados se leían como una sola caja. */
-  margin-top: 26px;
+     misma decisión, y pegados se leen como una sola caja. */
+  margin-top: 16px;
 }
 
 .os-conclusion-notas .os-campo {
@@ -5022,8 +5025,8 @@ th.os-tabla-contacto {
   gap: 14px;
   width: 100%;
   /* Lo mismo que arriba: lo que se escribe termina en el borde del campo, y la
-     lista de tests pegada a ese borde se leía como parte del campo. */
-  margin-top: 18px;
+     lista de tests pegada a ese borde se lee como parte del campo. */
+  margin-top: 14px;
 }
 
 .os-ficha-titulo {
