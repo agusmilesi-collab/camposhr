@@ -4485,13 +4485,21 @@ th.os-tabla-contacto {
 
 /* El rótulo se queda con el renglón entero: los tests van debajo, todos
    alineados, y no colgando del final de una frase. Los sellos van sangrados,
-   así se leen como la lista de lo que encabeza el rótulo. */
+   así se leen como la lista de lo que encabeza el rótulo.
+
+   En columnas y no envolviendo: envueltos, la última fila quedaba con un solo
+   test al final de un renglón vacío y la lista no se podía recorrer de arriba
+   abajo. Cuatro columnas parten los siete de la batería más larga en cuatro y
+   tres. */
 .os-conclusion-tests {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, max-content));
+  gap: 8px 22px;
   padding-left: 15px;
 }
 
 .os-conclusion-tests .os-dato-rotulo {
-  flex-basis: 100%;
+  grid-column: 1 / -1;
   margin-left: -15px;
 }
 
@@ -10427,6 +10435,11 @@ textarea.os-campo-bateria {
 .os-panel-informe .os-generar {
   padding-left: 80px;
   padding-right: 80px;
+}
+
+/* Y abajo, cuarenta: la lista de tests terminaba contra el borde del panel. */
+.os-panel-informe .os-panel-cuerpo {
+  padding-bottom: 40px;
 }
 
 /*
