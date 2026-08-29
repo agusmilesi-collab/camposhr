@@ -33,7 +33,13 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import Opciones from '@/app/os/Opciones';
-import { nivelesQueRigen, type NivelDiscursivo } from '@/lib/discursivo';
+import {
+  conHuecos,
+  conclusionesQueRigen,
+  nivelesQueRigen,
+  type CasoDeConclusion,
+  type NivelDiscursivo,
+} from '@/lib/discursivo';
 import type { Estrato } from '@/lib/potencial';
 import {
   APERTURA,
@@ -71,6 +77,7 @@ export default function Discursivo({
   estratoPuesto,
   puestoDias,
   puestoComplejidad,
+  conclusiones,
   pedidoId,
   modo = 'codificacion',
 }: {
@@ -99,6 +106,8 @@ export default function Discursivo({
   /** De dónde sale el nivel del puesto: el plazo y las cinco preguntas. */
   puestoDias?: number | null;
   puestoComplejidad?: Record<string, boolean> | null;
+  /** Las conclusiones reescritas desde Configuración, si las hay. */
+  conclusiones?: Record<string, string>;
   /** El pedido, para poder ir a completarlo desde la entrevista. */
   pedidoId?: string | null;
   /**
@@ -449,6 +458,7 @@ export default function Discursivo({
                 puesto={estratoPorNumero(estratoPuesto) as Estrato}
                 banda={banda}
                 edad={dibuja ? edadNum : null}
+                textos={conclusionesQueRigen(conclusiones)}
               />
             </div>
           )}
@@ -586,13 +596,21 @@ function Comparacion({
   const detalle = (romano: string) => niveles.find((n) => n.romano === romano) ?? null;
   const numeroDe = (romano: string) => ESTRATOS.findIndex((e) => e.romano === romano);
 
-  /** Un renglón: de quién es, en qué nivel está y qué significa ese nivel. */
-  const fila = (
+  /**
+   * Cada lado, en su tarjeta.
+   *
+   * Era una tabla de cinco columnas con dos renglones de texto en cada celda:
+   * lo que se compara son dos números, y para encontrarlos había que recorrer
+   * una grilla. En tarjetas, el estrato es lo primero de cada una y las tres se
+   * leen de un vistazo, que es lo que la pantalla tiene que contestar.
+   */
+  const tarjeta = (
     que: string,
     romano: string | null,
     cuando: string | null,
     falta: string,
-    porque: string[] = []
+    porque: string[],
+    clase: string
   ) => {
     const d = romano ? detalle(romano) : null;
     const e = romano ? ESTRATOS.find((x) => x.romano === romano) : null;
@@ -600,94 +618,84 @@ function Comparacion({
       ? PREGUNTAS.find((q) => q.estrato === numeroDe(romano) + 1) ?? null
       : null;
     return (
-      <tr key={que}>
-        <th>
-          {que}
+      <article className={`os-comparacion-tarjeta ${clase}`} key={que}>
+        <header>
+          <span className="os-comparacion-quien">{que}</span>
           {cuando && <span className="os-comparacion-cuando">{cuando}</span>}
-        </th>
-        <td>
-          {romano ? (
-            <>
-              <strong>Estrato {romano}</strong>
-              <span>{d?.nombre ?? (e?.mide ? e.nombre : e?.grupo) ?? ''}</span>
-            </>
-          ) : (
-            <span className="os-tabla-flojo">{falta}</span>
+        </header>
+
+        {romano ? (
+          <p className="os-comparacion-estrato">
+            <strong>Estrato {romano}</strong>
+            <span>{d?.nombre ?? (e?.mide ? e.nombre : e?.grupo) ?? ''}</span>
+          </p>
+        ) : (
+          <p className="os-comparacion-sin">{falta}</p>
+        )}
+
+        {mecanismo && (
+          <p className="os-comparacion-que">
+            <strong>{mecanismo.corto}</strong>
+            <span>{mecanismo.simple}</span>
+          </p>
+        )}
+
+        {/* De dónde salió ese estrato: sin esto la pantalla afirma un nivel y no
+            dice qué se contestó para llegar a él, que es lo primero que pregunta
+            quien no está de acuerdo. El plazo va con su rótulo porque es el que
+            decide, y no un dato más. */}
+        <dl className="os-comparacion-porque">
+          {e && (
+            <div>
+              <dt>Plazo del que responde</dt>
+              <dd>{plazoDe(e)}</dd>
+            </div>
           )}
-        </td>
-        {/* Qué clase de problemas se resuelven en ese nivel, dicho para quien no
-            conoce el modelo. El nombre del mecanismo va arriba porque es el que
-            aparece en el informe y en las preguntas de la entrevista. */}
-        <td className="os-comparacion-que">
-          {mecanismo ? (
-            <>
-              <strong>{mecanismo.corto}</strong>
-              <span>{mecanismo.simple}</span>
-            </>
-          ) : (
-            <span className="os-tabla-flojo">—</span>
-          )}
-        </td>
-        <td className="os-comparacion-horizonte">
-          {e ? plazoDe(e) : <span className="os-tabla-flojo">—</span>}
-        </td>
-        {/* De dónde salió ese estrato. Sin esto la tabla afirma dos niveles y
-            no dice qué se contestó para llegar a ellos, que es lo primero que
-            se pregunta quien no está de acuerdo. */}
-        <td className="os-comparacion-porque">
-          {porque.length > 0 ? (
-            porque.map((t) => <span key={t}>{t}</span>)
-          ) : (
-            <span className="os-tabla-flojo">—</span>
-          )}
-        </td>
-      </tr>
+          {porque.map((t) => (
+            <div key={t}>
+              <dd>{t}</dd>
+            </div>
+          ))}
+        </dl>
+      </article>
     );
   };
 
   return (
     <>
-      {/* Qué se está comparando, antes de la tabla: sin esto son tres renglones
-          de números romanos. */}
+      {/* Qué se está comparando, antes de las tarjetas: sin esto son tres
+          números romanos sueltos. */}
       <p className="os-comparacion-intro">
         El puesto y la persona se miden con la misma escala: el nivel de complejidad del
         trabajo que cada uno alcanza, del I al VII.
       </p>
-      <table className="os-comparacion">
-        <thead>
-          <tr>
-            <th />
-            <th>Nivel de trabajo</th>
-            <th>Qué clase de problemas resuelve</th>
-            <th>Plazo del que responde</th>
-            <th>De dónde sale</th>
-          </tr>
-        </thead>
-        <tbody>
-          {fila(
-            'El puesto pide',
-            puesto?.romano ?? null,
-            null,
-            'Sin determinar. Se contesta en la ficha del pedido.',
-            desdeElPuesto
+      <div className="os-comparacion-tarjetas">
+        {tarjeta(
+          'El puesto pide',
+          puesto?.romano ?? null,
+          null,
+          'Sin determinar. Se contesta en la ficha del pedido.',
+          desdeElPuesto,
+          'puesto'
+        )}
+        {tarjeta(
+          'La persona, hoy',
+          persona?.romano ?? null,
+          null,
+          'Sin determinar. Se contesta en la hoja de la entrevista.',
+          desdeLaPersona,
+          'persona'
+        )}
+        {banda !== null &&
+          tarjeta(
+            'La persona, más adelante',
+            estratoDeEscalon(horizonteEn(banda, 50)).romano,
+            'a los 50 años',
+            '',
+            [`Por su banda de maduración, la ${banda}`],
+            'futuro'
           )}
-          {fila(
-            'La persona, hoy',
-            persona?.romano ?? null,
-            null,
-            'Sin determinar. Se contesta en la hoja de la entrevista.',
-            desdeLaPersona
-          )}
-          {banda !== null &&
-            fila(
-              'La persona, más adelante',
-              estratoDeEscalon(horizonteEn(banda, 50)).romano,
-              'a los 50 años',
-              '',
-              [`Por su banda de maduración, la ${banda}`]
-            )}
-        </tbody>
-      </table>
+      </div>
     </>
   );
 }
@@ -709,11 +717,20 @@ function Conclusion({
   puesto,
   banda,
   edad,
+  textos,
 }: {
   distancia: number;
   puesto: Estrato;
   banda: number | null;
   edad: number | null;
+  /**
+   * Las frases que rigen, de Configuración → Potencial.
+   *
+   * El sistema elige cuál entra comparando los dos estratos y le llena los
+   * huecos; no redacta nada. Escritas acá adentro no se podían corregir sin una
+   * entrega, y son criterio de quien firma el informe.
+   */
+  textos: Record<CasoDeConclusion, string>;
 }) {
   /** A qué edad su banda alcanza ese estrato. Null si no llega en el cuadro. */
   const cuandoLlega = (nivel: number): number | null => {
@@ -730,12 +747,19 @@ function Conclusion({
   const pide = ESTRATOS.findIndex((e) => e.romano === puesto.romano);
   const siguiente = ESTRATOS[pide + 1] ?? null;
 
+  const decir = (caso: CasoDeConclusion, edadLlega?: number | null) =>
+    conHuecos(textos[caso], {
+      estrato: puesto.romano,
+      siguiente: siguiente?.romano,
+      edad: edadLlega,
+    });
+
   const hoy =
     distancia === 0
-      ? `La persona puede abordar la complejidad que el puesto exige: los dos están en el estrato ${puesto.romano}.`
+      ? decir('hoy_alcanza')
       : distancia > 0
-        ? `La persona puede abordar trabajo más complejo que el que este puesto exige. El puesto pide estrato ${puesto.romano} y ella está un nivel por encima.`
-        : `El puesto exige trabajo más complejo que el que la persona puede abordar hoy. El puesto pide estrato ${puesto.romano} y ella está por debajo.`;
+        ? decir('hoy_sobra')
+        : decir('hoy_falta');
 
   /**
    * Qué dice el diagrama de acá en adelante, sin dar nada por sabido.
@@ -750,22 +774,16 @@ function Conclusion({
 
     if (distancia < 0) {
       const llega = cuandoLlega(pide);
-      return llega !== null
-        ? `Su capacidad sigue creciendo con los años: alrededor de los ${llega} va a poder con el trabajo que este puesto pide. Hasta entonces necesita que alguien con más alcance le divida el trabajo en partes y le fije el marco de cada una.`
-        : 'Dentro de los años que muestra el diagrama, su capacidad no llega al nivel de trabajo que este puesto pide.';
+      return llega !== null ? decir('luego_falta_llega', llega) : decir('luego_falta_no_llega');
     }
 
-    if (distancia > 0) {
-      return 'La diferencia se agranda con los años. Es probable que el trabajo del puesto le resulte poco exigente en poco tiempo, y para retenerla habría que sumarle responsabilidades de mayor complejidad.';
-    }
+    if (distancia > 0) return decir('luego_sobra');
 
     const supera = cuandoLlega(pide + 1);
-    if (supera === null || !siguiente) {
-      return 'Su capacidad se mantiene en este nivel dentro de los años que muestra el diagrama, así que el puesto le va a seguir quedando a medida.';
-    }
+    if (supera === null || !siguiente) return decir('luego_alcanza_estable');
     return supera <= edad + 1
-      ? `Su capacidad ya está en el borde del nivel siguiente (estrato ${siguiente.romano}): en poco tiempo va a poder con trabajo más complejo que el que este puesto le da. Para que el puesto le siga sirviendo habría que ir sumándole responsabilidades de ese nivel.`
-      : `Su capacidad sigue creciendo: alrededor de los ${supera} años va a poder con trabajo del nivel siguiente (estrato ${siguiente.romano}), más complejo que el que este puesto pide. Desde esa edad, para que el puesto le siga sirviendo habría que sumarle responsabilidades de ese nivel.`;
+      ? decir('luego_alcanza_borde')
+      : decir('luego_alcanza_supera', supera);
   };
 
   const luego = adelante();
@@ -776,23 +794,31 @@ function Conclusion({
      entrar, así que también va en verde y lo explica el renglón de abajo. */
   const alcanza = distancia >= 0;
 
+  /*
+   * El veredicto arriba y solo, y debajo lo que lo explica.
+   *
+   * Es la única pregunta que la pantalla contesta, y estaba como una etiqueta
+   * al principio de un párrafo, al mismo peso que el resto. Centrado y en
+   * cuerpo grande se lee sin leer: quien abre la pestaña quiere saber eso, y el
+   * detalle es para después.
+   */
   return (
-    <dl className="os-conclusion-tiempos">
-      <div>
-        <dt>Hoy</dt>
-        <dd>
-          <span className={`os-veredicto ${alcanza ? 'alcanza' : 'no-alcanza'}`}>
-            {alcanza ? 'Alcanza' : 'No alcanza'}
-          </span>
-          {hoy}
-        </dd>
-      </div>
-      {luego && (
+    <div className={`os-veredicto-bloque ${alcanza ? 'alcanza' : 'no-alcanza'}`}>
+      <p className="os-veredicto-titulo">
+        {alcanza ? 'Alcanza el nivel del puesto' : 'No alcanza el nivel del puesto'}
+      </p>
+      <dl className="os-conclusion-tiempos">
         <div>
-          <dt>Más adelante</dt>
-          <dd>{luego}</dd>
+          <dt>Hoy</dt>
+          <dd>{hoy}</dd>
         </div>
-      )}
-    </dl>
+        {luego && (
+          <div>
+            <dt>Más adelante</dt>
+            <dd>{luego}</dd>
+          </div>
+        )}
+      </dl>
+    </div>
   );
 }

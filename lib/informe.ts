@@ -29,6 +29,7 @@ import { DE_FABRICA as EXIGENCIA_DE_FABRICA, type Exigencia } from '@/lib/exigen
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
 import { estratoPorNumero } from '@/lib/potencial';
 import {
+  conclusionesValidas,
   llevaDiscursivo,
   nivelesQueRigen,
   nivelesValidos,
@@ -453,6 +454,8 @@ export type Regulacion = {
   direcciones: Record<string, boolean>;
   /** Los textos de los cuatro estratos del potencial, si se reescribieron. */
   niveles: Record<string, Partial<TextoDeNivel>>;
+  /** Las conclusiones del potencial, si se reescribieron. */
+  conclusiones: Record<string, string>;
   /** Los perfiles de exigencia guardados. El informe usa el que le toque. */
   exigencias: Exigencia[];
 };
@@ -465,11 +468,12 @@ const DE_FABRICA: Regulacion = {
   cortesCompetencias: {},
   direcciones: {},
   niveles: {},
+  conclusiones: {},
   exigencias: [EXIGENCIA_DE_FABRICA],
 };
 
 export async function loQueRige(): Promise<Regulacion> {
-  const [r, p, t, c, k, dir, n, x] = await Promise.all([
+  const [r, p, t, c, k, dir, n, cl, x] = await Promise.all([
     ajuste('raven_rangos'),
     ajuste('competencias_pesos'),
     ajuste('redacciones_textos'),
@@ -477,6 +481,7 @@ export async function loQueRige(): Promise<Regulacion> {
     ajuste('competencias_cortes'),
     ajuste('competencias_direccion'),
     ajuste('discursivo_niveles'),
+    ajuste('discursivo_conclusiones'),
     exigenciasGuardadas(),
   ]);
   return {
@@ -487,6 +492,7 @@ export async function loQueRige(): Promise<Regulacion> {
     cortesCompetencias: cortesDeCompetenciasValidos(k) ?? {},
     direcciones: direccionesValidas(dir) ?? {},
     niveles: nivelesValidos(n) ?? {},
+    conclusiones: conclusionesValidas(cl) ?? {},
     exigencias: x.length > 0 ? x : [EXIGENCIA_DE_FABRICA],
   };
 }

@@ -26,7 +26,8 @@ export type ClaveDeAjuste =
   | 'redacciones_cortes'
   | 'competencias_cortes'
   | 'competencias_direccion'
-  | 'discursivo_niveles';
+  | 'discursivo_niveles'
+  | 'discursivo_conclusiones';
 
 type Fila = { clave: string; valor: unknown };
 

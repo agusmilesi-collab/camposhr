@@ -579,6 +579,7 @@ function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) 
           estratoPuesto={delPuesto}
           puestoDias={f.cabecera.pedidos?.time_span_dias ?? null}
           puestoComplejidad={f.cabecera.pedidos?.complejidad ?? null}
+          conclusiones={rige.conclusiones}
           niveles={nivelesQueRigen(rige.niveles).map((n) => ({
             nombre: n.nombre,
             romano: n.romano,
