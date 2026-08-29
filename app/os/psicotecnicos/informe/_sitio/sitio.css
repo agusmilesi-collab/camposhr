@@ -306,7 +306,10 @@
  * caja es lo que hace ver dónde termina una y empieza la otra.
  */
 .sitio-seccion {
-  padding-top: 64px;
+  /* Noventa arriba de cada título: es lo que separa una sección de la anterior
+     cuando se lee de corrido, y con sesenta y cuatro el título quedaba pegado a
+     lo último de la sección de arriba. */
+  padding-top: 90px;
   /* La barra fija tapa el arranque de la sección al saltar desde el índice. */
   scroll-margin-top: 68px;
 }
@@ -767,6 +770,32 @@
     align-items: center;
     flex-wrap: wrap;
   }
+}
+
+/*
+ * Los tres grupos del análisis, sin recuadro.
+ *
+ * En el papel el recuadro es lo que agrupa; en pantalla, con las secciones ya
+ * separadas por su título y su línea, son tres cajas adentro de una hoja. Queda
+ * el título en el color de su banda, la línea debajo y las viñetas, que es lo
+ * que dice de qué habla cada uno.
+ */
+.sitio .inf-grupo {
+  margin-bottom: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.sitio .inf-grupo:last-child {
+  margin-bottom: 0;
+}
+
+/* Cada renglón separado del que sigue: son lecturas distintas de la misma
+   persona, y pegadas se leen como un párrafo partido en viñetas. */
+.sitio .inf-grupo li {
+  margin-bottom: 14px;
 }
 
 /* La nota del semáforo es una aclaración al pie, no un párrafo: en pantalla
