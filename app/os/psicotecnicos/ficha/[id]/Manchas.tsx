@@ -318,7 +318,7 @@ export default function Manchas({
     const provisorio = `nueva-${siguiente}-${vista.length}`;
     const fila = {
       id: provisorio,
-      test: 'Rorschach',
+      test: esZulliger ? 'Zulliger' : 'Rorschach',
       lamina,
       n_respuesta: siguiente,
       localizacion: null,
@@ -331,6 +331,7 @@ export default function Manchas({
       z: null,
       cc_ee: [],
       agc: false,
+      sl: false,
     } satisfies Mancha;
 
     setSucio(true);
@@ -393,7 +394,10 @@ export default function Manchas({
               <th>Par</th>
               <th>Contenidos</th>
               <th>P</th>
-              <th>Pje Z</th>
+              {/* La dimensión Z no existe en Zulliger, y el síndrome del
+                  ladrón es propio de la hoja de Zdunic: cada test muestra su
+                  columna y no la del otro. */}
+              <th>{esZulliger ? 'SL' : 'Pje Z'}</th>
               <th>CC.EE</th>
               <th>AgC</th>
               <th className="os-tabla-accion" />
@@ -474,7 +478,11 @@ export default function Manchas({
                   <Tilde puesto={Boolean(f.popular)} onCambio={(v) => cambiar(f.id, { popular: v })} />
                 </td>
                 <td>
-                  <Numero valor={f.z} paso="0.5" onCambio={(v) => cambiar(f.id, { z: v })} />
+                  {esZulliger ? (
+                    <Tilde puesto={Boolean(f.sl)} onCambio={(v) => cambiar(f.id, { sl: v })} />
+                  ) : (
+                    <Numero valor={f.z} paso="0.5" onCambio={(v) => cambiar(f.id, { z: v })} />
+                  )}
                 </td>
                 <td>
                   <Multiple

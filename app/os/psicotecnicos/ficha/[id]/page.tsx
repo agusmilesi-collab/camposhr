@@ -13,7 +13,7 @@ import { equipo, quienSoy } from '@/lib/identidad';
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { nombrePerfil } from '@/lib/perfiles';
 import { RUTA } from '@/lib/psicotecnicos';
-import { fechaCorta, fechaHora } from '@/lib/hora';
+import { fecha, fechaCorta, fechaHora } from '@/lib/hora';
 import { enAños } from '@/lib/edad';
 import { formatoImporte } from '@/lib/cotizaciones';
 import { formatoFecha, numeroDe } from '@/lib/facturas-tipos';
@@ -422,10 +422,16 @@ function SumarioEstructural({ f, rige }: { f: Ficha; rige: Regulacion }) {
   // estilo del protocolo, y con él se puede pintar igual que las demás. Lo pidió
   // la psicóloga el 28/8/2026, que lo quería en rojo pasando 0,83 y por debajo
   // de 0,53, que es la banda del ambigual.
+  //
+  // Y va con el test que se tomó: los cortes del Zulliger son otros, y sin
+  // decírselo la hoja pintaba todo protocolo con las normas de Exner.
+  const test = proyectivoDe(f) ?? 'Rorschach';
   const estilo = (s.crudo as { control_estres?: { estilo?: unknown } } | null)?.control_estres
     ?.estilo;
-  const afr = bandaDeAfr(typeof estilo === 'string' ? estilo : 'Ambigual');
-  const bandas = { ...bandasDeLaHoja(rige.cortes), ...(afr ? { Afr: afr } : {}) };
+  // La proporción afectiva no existe en Zulliger: el motor no la calcula y su
+  // banda no tiene dónde pintarse.
+  const afr = test === 'Zulliger' ? null : bandaDeAfr(typeof estilo === 'string' ? estilo : 'Ambigual');
+  const bandas = { ...bandasDeLaHoja(rige.cortes, test), ...(afr ? { Afr: afr } : {}) };
 
   return texto ? <SumarioTexto texto={texto} bandas={bandas} /> : null;
 }
@@ -588,6 +594,17 @@ function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) 
           puestoDias={f.cabecera.pedidos?.time_span_dias ?? null}
           puestoComplejidad={f.cabecera.pedidos?.complejidad ?? null}
           conclusiones={rige.conclusiones}
+          nombre={f.cabecera.personas?.nombre ?? null}
+          fecha={fecha(f.cabecera.fecha_entrevista ?? f.cabecera.fecha_ingreso)}
+          empresa={f.cabecera.pedidos?.empresas?.nombre ?? null}
+          solicitante={
+            f.cabecera.pedidos?.solicitante
+              ? [f.cabecera.pedidos.solicitante.nombre, f.cabecera.pedidos.solicitante.cargo]
+                  .filter(Boolean)
+                  .join(' · ')
+              : null
+          }
+          puesto={f.cabecera.pedidos?.puesto ?? null}
           niveles={nivelesQueRigen(rige.niveles).map((n) => ({
             nombre: n.nombre,
             romano: n.romano,

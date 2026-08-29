@@ -124,6 +124,8 @@ export type Mancha = {
   z: number | null;
   cc_ee: string[] | null;
   agc: boolean | null;
+  /** Síndrome del ladrón, que se tilda por respuesta y es propio del Zulliger. */
+  sl: boolean | null;
 };
 
 export type Sumario = Record<string, unknown> & { evaluacion_id: string };
