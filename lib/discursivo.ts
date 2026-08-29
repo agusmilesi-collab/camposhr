@@ -163,6 +163,107 @@ export function nivelesQueRigen(
   }));
 }
 
+
+/**
+ * Las conclusiones del potencial, escritas de antemano.
+ *
+ * El modelo no interpreta: compara dos números, el nivel de trabajo que el
+ * puesto pide y el que la persona alcanza, y de esa comparación salen unos
+ * pocos casos. Cada caso tiene su texto, escrito por quien firma los informes y
+ * editable desde Sistema → Configuración → Potencial, como el resto del
+ * criterio clínico. Acá está lo de fábrica.
+ *
+ * **Nada se redacta al vuelo.** Lo único que cambia de un informe a otro son
+ * los datos que se meten en los huecos: `{estrato}` es el que pide el puesto,
+ * `{siguiente}` el que viene después, y `{edad}` la edad a la que su banda de
+ * maduración llega a ese nivel.
+ */
+export const CONCLUSIONES_POTENCIAL = {
+  hoy_alcanza:
+    'La persona puede abordar la complejidad que el puesto exige: los dos están en el estrato {estrato}.',
+  hoy_sobra:
+    'La persona puede abordar trabajo más complejo que el que este puesto exige. El puesto pide estrato {estrato} y ella está un nivel por encima.',
+  hoy_falta:
+    'El puesto exige trabajo más complejo que el que la persona puede abordar hoy. El puesto pide estrato {estrato} y ella está por debajo.',
+  luego_falta_llega:
+    'Su capacidad sigue creciendo con los años: alrededor de los {edad} va a poder con el trabajo que este puesto pide. Hasta entonces necesita que alguien con más alcance le divida el trabajo en partes y le fije el marco de cada una.',
+  luego_falta_no_llega:
+    'Dentro de los años que muestra el diagrama, su capacidad no llega al nivel de trabajo que este puesto pide.',
+  luego_sobra:
+    'La diferencia se agranda con los años. Es probable que el trabajo del puesto le resulte poco exigente en poco tiempo, y para retenerla habría que sumarle responsabilidades de mayor complejidad.',
+  luego_alcanza_estable:
+    'Su capacidad se mantiene en este nivel dentro de los años que muestra el diagrama, así que el puesto le va a seguir quedando a medida.',
+  luego_alcanza_borde:
+    'Su capacidad ya está en el borde del nivel siguiente (estrato {siguiente}): en poco tiempo va a poder con trabajo más complejo que el que este puesto le da. Para que el puesto le siga sirviendo habría que ir sumándole responsabilidades de ese nivel.',
+  luego_alcanza_supera:
+    'Su capacidad sigue creciendo: alrededor de los {edad} años va a poder con trabajo del nivel siguiente (estrato {siguiente}), más complejo que el que este puesto pide. Desde esa edad, para que el puesto le siga sirviendo habría que sumarle responsabilidades de ese nivel.',
+} as const;
+
+export type CasoDeConclusion = keyof typeof CONCLUSIONES_POTENCIAL;
+
+/** Cuándo entra cada una, para poder corregir un texto sabiendo qué dispara. */
+export const CUANDO_LA_CONCLUSION: Record<CasoDeConclusion, string> = {
+  hoy_alcanza: 'Los dos están en el mismo estrato.',
+  hoy_sobra: 'La persona está por encima del estrato que pide el puesto.',
+  hoy_falta: 'La persona está por debajo del estrato que pide el puesto.',
+  luego_falta_llega:
+    'Está por debajo, y su banda de maduración llega al nivel del puesto dentro del cuadro.',
+  luego_falta_no_llega: 'Está por debajo y su banda no llega al nivel del puesto.',
+  luego_sobra: 'Está por encima del puesto.',
+  luego_alcanza_estable: 'Está a la par y su banda se queda en ese nivel.',
+  luego_alcanza_borde: 'Está a la par y ya en el borde del nivel siguiente.',
+  luego_alcanza_supera: 'Está a la par y su banda pasa al nivel siguiente más adelante.',
+};
+
+/** Qué huecos acepta cada texto, para avisar antes de guardar uno que no existe. */
+export const HUECOS_DE_CONCLUSION = ['{estrato}', '{siguiente}', '{edad}'];
+
+/**
+ * Lo guardado para las conclusiones, si sirve; null si no.
+ *
+ * Se rechaza un caso que no exista, un texto que no sea una cadena o que pase
+ * el largo, y un hueco que el sistema no sepa llenar: `{edad}` en un texto que
+ * entra cuando no hay proyección quedaría escrito así, con llaves, en el
+ * informe de alguien.
+ */
+export function conclusionesValidas(guardadas: unknown): Record<string, string> | null {
+  if (!guardadas || typeof guardadas !== 'object' || Array.isArray(guardadas)) return null;
+  const limpias: Record<string, string> = {};
+  for (const [caso, texto] of Object.entries(guardadas as Record<string, unknown>)) {
+    if (!(caso in CONCLUSIONES_POTENCIAL)) return null;
+    if (typeof texto !== 'string' || texto.length > LARGO_MAXIMO) return null;
+    const limpio = texto.trim();
+    if (!limpio) return null;
+    for (const hueco of limpio.match(/\{[a-z]+\}/g) ?? []) {
+      if (!HUECOS_DE_CONCLUSION.includes(hueco)) return null;
+    }
+    limpias[caso] = limpio;
+  }
+  return limpias;
+}
+
+/** Las conclusiones con lo que rige: lo escrito desde Configuración, o lo del código. */
+export function conclusionesQueRigen(
+  movidas: Record<string, string> = {}
+): Record<CasoDeConclusion, string> {
+  const salida = {} as Record<CasoDeConclusion, string>;
+  for (const caso of Object.keys(CONCLUSIONES_POTENCIAL) as CasoDeConclusion[]) {
+    salida[caso] = movidas[caso] ?? CONCLUSIONES_POTENCIAL[caso];
+  }
+  return salida;
+}
+
+/** El texto con sus huecos llenos. Lo que no se pasa se borra del renglón. */
+export function conHuecos(
+  texto: string,
+  datos: { estrato?: string; siguiente?: string; edad?: number | null }
+): string {
+  return texto
+    .replace(/\{estrato\}/g, datos.estrato ?? '')
+    .replace(/\{siguiente\}/g, datos.siguiente ?? '')
+    .replace(/\{edad\}/g, datos.edad != null ? String(datos.edad) : '');
+}
+
 /**
  * De qué depende que esa capacidad llegue a aplicarse en un rol.
  *

@@ -6809,57 +6809,127 @@ th.os-tabla-contacto {
   color: var(--os-tinta-media);
 }
 
-.os-comparacion {
-  width: 100%;
-  border-collapse: collapse;
+/*
+ * Los dos lados de la comparación, en tarjetas.
+ *
+ * Era una tabla de cinco columnas con dos renglones de texto en cada celda: lo
+ * que se compara son dos números y para encontrarlos había que recorrer una
+ * grilla. En tarjetas el estrato es lo primero de cada una y las tres se leen de
+ * un vistazo.
+ */
+.os-comparacion-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
 }
 
-.os-comparacion th {
-  padding: 12px 16px 12px 0;
-  border-bottom: 1px solid var(--os-linea-suave);
-  font-size: 0.78rem;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  color: var(--os-suave);
-  text-align: left;
-  vertical-align: baseline;
+.os-comparacion-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--os-linea);
+  border-radius: 12px;
+  background: var(--os-panel);
 }
 
-/* La primera columna dice de quién es el renglón y las otras tres lo detallan:
-   el estrato, qué trabajo abarca y hasta dónde llega en el tiempo. */
-.os-comparacion tbody th {
-  width: 190px;
+/* La del puesto es contra la que se compara, así que va apagada: lo que se está
+   mirando es dónde cae la persona. */
+.os-comparacion-tarjeta.puesto,
+.os-comparacion-tarjeta.futuro {
+  background: transparent;
 }
 
-.os-comparacion thead th {
-  padding-top: 0;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
+.os-comparacion-tarjeta header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.os-comparacion-quien {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--os-suave);
 }
 
-.os-comparacion td {
-  padding: 12px 16px 12px 0;
-  border-bottom: 1px solid var(--os-linea-suave);
-  font-size: 0.9rem;
-  vertical-align: baseline;
+.os-comparacion-cuando {
+  font-size: 0.74rem;
+  color: var(--os-suave);
 }
 
-/* El detalle del estrato: qué se hace en ese nivel y en qué plazo. En cuerpo
-   chico porque acompaña al número, que es el dato que se compara. */
-.os-comparacion-que,
-.os-comparacion-horizonte {
-  font-size: 0.82rem;
-  line-height: 1.5;
+/* El estrato, que es el dato que se compara: en grande y con su nombre debajo. */
+.os-comparacion-estrato {
+  margin: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.os-comparacion-estrato strong {
+  font-size: 1.32rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.os-comparacion-estrato span {
+  font-size: 0.86rem;
   color: var(--os-tinta-media);
 }
 
-/* El mecanismo del modelo arriba y los puestos donde suele verse debajo: lo
-   primero es de Jaques y lo segundo es nuestro. */
+.os-comparacion-sin {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--os-suave);
+}
+
+/* El mecanismo del modelo arriba y qué es en dos palabras debajo: lo primero es
+   de Jaques y lo segundo es nuestro. */
+.os-comparacion-que {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--os-tinta-media);
+}
+
 .os-comparacion-que strong {
-  display: block;
+  font-size: 0.86rem;
   color: var(--os-tinta);
 }
+
+/* De dónde salió el estrato, al pie y separado por una línea: es el respaldo y
+   no el dato. */
+.os-comparacion-porque {
+  display: grid;
+  gap: 6px;
+  margin: auto 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-comparacion-porque div {
+  display: grid;
+  gap: 1px;
+}
+
+.os-comparacion-porque dt {
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-comparacion-porque dd {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--os-tinta-media);
+}
+
 
 .os-comparacion-que span {
   display: block;
@@ -10678,44 +10748,65 @@ textarea.os-campo-bateria {
 }
 
 /*
- * El veredicto del potencial, en una etiqueta.
+ * El veredicto del potencial: primero la respuesta, después por qué.
  *
- * La conclusión son dos párrafos y lo que hay que contestar es uno solo: si la
- * persona puede con el trabajo que el puesto pide. Verde o rojo y nada en el
- * medio; que además le sobre alcance va en verde, porque no impide entrar, y lo
- * explica el renglón de "más adelante".
+ * La pestaña contesta una sola pregunta, si la persona puede con el trabajo que
+ * el puesto pide, y estaba dicha en el medio de un párrafo al mismo peso que
+ * todo lo demás. Va arriba, centrada y en cuerpo grande, con los dos renglones
+ * del detalle debajo.
+ *
+ * Verde o rojo y nada en el medio. Que además le sobre alcance va en verde,
+ * porque no impide entrar, y lo explica el renglón de "más adelante".
  */
-.os-veredicto {
-  display: inline-block;
-  margin-right: 8px;
-  padding: 2px 10px;
+.os-veredicto-bloque {
+  padding: 22px 26px 24px;
   border: 1px solid;
-  border-radius: 999px;
-  font-size: 0.74rem;
-  font-weight: 600;
-  vertical-align: 1px;
+  border-radius: 12px;
+  text-align: center;
 }
 
-.os-veredicto.alcanza {
-  border-color: rgba(74, 120, 86, 0.4);
-  background: rgba(74, 120, 86, 0.1);
+.os-veredicto-bloque.alcanza {
+  border-color: rgba(74, 120, 86, 0.35);
+  background: rgba(74, 120, 86, 0.05);
+}
+
+.os-veredicto-bloque.no-alcanza {
+  border-color: rgba(140, 59, 59, 0.32);
+  background: rgba(140, 59, 59, 0.04);
+}
+
+.os-veredicto-titulo {
+  margin: 0 0 16px;
+  font-size: 1.28rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.os-veredicto-bloque.alcanza .os-veredicto-titulo {
   color: var(--os-verde);
 }
 
-.os-veredicto.no-alcanza {
-  border-color: rgba(140, 59, 59, 0.4);
-  background: rgba(140, 59, 59, 0.09);
+.os-veredicto-bloque.no-alcanza .os-veredicto-titulo {
   color: var(--os-rojo);
 }
 
-/* De dónde salió cada nivel: dos renglones cortos, uno por camino. */
-.os-comparacion-porque {
-  display: table-cell;
+/* Los dos renglones del detalle: centrados bajo el veredicto y con su rótulo
+   arriba, que en dos columnas quedaban descolgados del centro. */
+.os-veredicto-bloque .os-conclusion-tiempos {
+  max-width: 62ch;
+  margin: 0 auto;
+  gap: 14px;
+  text-align: left;
 }
 
-.os-comparacion-porque span {
-  display: block;
-  font-size: 0.78rem;
-  line-height: 1.4;
+.os-veredicto-bloque .os-conclusion-tiempos > div {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+
+.os-veredicto-bloque .os-conclusion-tiempos dt {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--os-suave);
 }

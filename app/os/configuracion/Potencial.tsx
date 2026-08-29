@@ -1,5 +1,12 @@
 import Estratos from './Estratos';
-import { NIVELES, nivelesQueRigen } from '@/lib/discursivo';
+import Conclusiones from './Conclusiones';
+import {
+  CONCLUSIONES_POTENCIAL,
+  NIVELES,
+  conclusionesQueRigen,
+  conclusionesValidas,
+  nivelesQueRigen,
+} from '@/lib/discursivo';
 import { ajuste } from '@/lib/ajustes';
 import { nivelesValidos, type TextoDeNivel } from '@/lib/discursivo';
 
@@ -27,5 +34,20 @@ export default async function Potencial() {
     },
   }));
 
-  return <Estratos niveles={niveles} tocado={Object.keys(movidos).length > 0} />;
+  /* Las conclusiones se editan al pie de los estratos: son lo que se lee
+     después de ubicar a la persona, y el orden de la pantalla sigue el orden en
+     que se usa. */
+  const guardadasConclusiones = await ajuste<Record<string, string>>('discursivo_conclusiones');
+  const movidasConclusiones = conclusionesValidas(guardadasConclusiones) ?? {};
+
+  return (
+    <>
+      <Estratos niveles={niveles} tocado={Object.keys(movidos).length > 0} />
+      <Conclusiones
+        textos={conclusionesQueRigen(movidasConclusiones)}
+        originales={{ ...CONCLUSIONES_POTENCIAL }}
+        tocado={Object.keys(movidasConclusiones).length > 0}
+      />
+    </>
+  );
 }
