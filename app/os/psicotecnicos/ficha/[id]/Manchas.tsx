@@ -16,7 +16,7 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import {
   CC_EE,
   CONTENIDOS,
@@ -256,12 +256,32 @@ export default function Manchas({
     }
   }
 
+  /**
+   * Las altas que todavía no volvieron del servidor, por su id provisorio.
+   *
+   * La fila aparece en pantalla antes de existir en la base, así que puede
+   * recibir un cambio o un borrado mientras el alta viaja. Acá se espera a que
+   * llegue su id de verdad, que es lo único que le falta.
+   */
+  const enVuelo = useRef(new Map<string, Promise<string | null>>());
+
+  async function idReal(id: string): Promise<string | null> {
+    const p = enVuelo.current.get(id);
+    return p ? await p : id;
+  }
+
   async function cambiar(id: string, campos: Record<string, unknown>) {
     const antes = vista;
     setSucio(true);
     setLocales(vista.map((f) => (f.id === id ? { ...f, ...(campos as object) } : f)));
 
-    const r = await pedir({ method: 'POST', body: JSON.stringify({ id, campos }) });
+    const suyo = await idReal(id);
+    if (!suyo) {
+      setLocales(antes);
+      setError('Esa respuesta no llegó a guardarse. Volvé a agregarla.');
+      return;
+    }
+    const r = await pedir({ method: 'POST', body: JSON.stringify({ id: suyo, campos }) });
     if (!r) {
       setLocales(antes);
       return;
@@ -272,22 +292,76 @@ export default function Manchas({
     });
   }
 
-  async function agregar() {
+  /**
+   * Una respuesta más, en el acto.
+   *
+   * La fila se dibuja antes de mandar nada: se cargan veinte o treinta seguidas
+   * y esperar el alta y el redibujo del servidor entre una y otra son dos
+   * segundos por respuesta mirando un botón apagado. El alta viaja por atrás y,
+   * cuando vuelve, la fila cambia su id provisorio por el de verdad.
+   */
+  function agregar() {
     const siguiente = Math.max(0, ...vista.map((f) => f.n_respuesta ?? 0)) + 1;
     /* La lámina de la última respuesta, o la primera del test si no hay
        ninguna: una respuesta nueva casi siempre es de la misma lámina que la
        anterior, y arrancar en blanco obliga a elegirla veintidós veces. */
     const lamina = [...vista].reverse().find((f) => f.lamina)?.lamina ?? laminas[0]?.v ?? null;
-    const r = await pedir({
+    const provisorio = `nueva-${siguiente}-${vista.length}`;
+    const fila = {
+      id: provisorio,
+      test: 'Rorschach',
+      lamina,
+      n_respuesta: siguiente,
+      localizacion: null,
+      n_localizacion: null,
+      determinantes: [],
+      fq: null,
+      par: false,
+      contenidos: [],
+      popular: false,
+      z: null,
+      cc_ee: [],
+      agc: false,
+    } satisfies Mancha;
+
+    setSucio(true);
+    setLocales([...vista, fila]);
+
+    const alta = pedir({
       method: 'PUT',
       body: JSON.stringify({ evaluacionId, campos: { n_respuesta: siguiente, lamina } }),
+    }).then((r) => {
+      const id = r?.fila?.id ?? null;
+      if (!id) {
+        setLocales((antes) => antes.filter((f) => f.id !== provisorio));
+        return null;
+      }
+      setLocales((antes) => antes.map((f) => (f.id === provisorio ? { ...f, id } : f)));
+      empezar(() => {
+        router.refresh();
+        setSucio(false);
+      });
+      return id;
     });
-    if (r) empezar(() => router.refresh());
+    enVuelo.current.set(provisorio, alta);
   }
 
   async function borrar(id: string) {
-    const r = await pedir({ method: 'DELETE', url: `/api/os/manchas?id=${id}` });
-    if (r) empezar(() => router.refresh());
+    const antes = vista;
+    setSucio(true);
+    setLocales(vista.filter((f) => f.id !== id));
+
+    const suyo = await idReal(id);
+    if (!suyo) return;
+    const r = await pedir({ method: 'DELETE', url: `/api/os/manchas?id=${suyo}` });
+    if (!r) {
+      setLocales(antes);
+      return;
+    }
+    empezar(() => {
+      router.refresh();
+      setSucio(false);
+    });
   }
 
   return (
@@ -423,7 +497,9 @@ export default function Manchas({
       {/* Cargar una respuesta más y cerrar el protocolo son los dos finales
           posibles de esta grilla: van en el mismo renglón, uno en cada punta. */}
       <div className="os-barra-acciones os-manchas-pie">
-        <button className="os-boton" disabled={ocupado} onClick={agregar}>
+        {/* Sin apagarse mientras guarda: la fila ya está en pantalla y se
+            pueden cargar dos seguidas sin esperar a la primera. */}
+        <button className="os-boton" onClick={agregar}>
           Agregar respuesta
         </button>
         <span className="os-columna-monto">
