@@ -936,3 +936,56 @@
   border-radius: 0;
   background: none;
 }
+
+/*
+ * Los indicadores, plegados.
+ *
+ * Son el respaldo de todo lo que el informe afirma y tienen que estar, pero
+ * desplegados son tres pantallas de tablas antes de terminar de leer. Quien los
+ * quiere, los abre.
+ */
+.sitio-desplegable > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--hoja);
+  font-size: 0.86rem;
+  color: var(--tinta-media);
+  cursor: pointer;
+  list-style: none;
+}
+
+/* La flecha propia, que la del navegador queda afuera del recuadro. */
+.sitio-desplegable > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* El triángulo, dibujado con bordes: los caracteres de flecha no existen en
+   todas las tipografías y salían como un punto. */
+.sitio-desplegable > summary::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--suave);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+.sitio-desplegable[open] > summary::before {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--suave);
+  border-bottom: 0;
+}
+
+.sitio-desplegable > summary:hover {
+  border-color: var(--tinta-media);
+  color: var(--tinta);
+}
+
+.sitio-desplegable[open] > summary {
+  margin-bottom: 22px;
+}

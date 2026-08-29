@@ -346,21 +346,37 @@ export function seccionesDe(
     });
   }
 
-  /* ── Los datos ──────────────────────────────────────────────────────── */
+  /* ── Técnicas ───────────────────────────────────────────────────────
+     Con qué se la evaluó. Es su propia sección y va antes de los números: se
+     lee de corrido con el resto del informe, mientras que los valores crudos
+     se consultan cuando alguien los busca. */
+  secciones.push({
+    id: 'tecnicas',
+    titulo: 'Técnicas de evaluación utilizadas',
+    cuerpo: (
+      <ul className="sitio-lista">
+        {inf.tecnicas.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
+    ),
+  });
+
+  /* ── Indicadores ────────────────────────────────────────────────────
+     Plegados. Son el respaldo de todo lo que el informe afirma y tienen que
+     estar, pero desplegados son tres pantallas de tablas antes de terminar de
+     leer: quien los quiere, los abre. */
   secciones.push({
     id: 'datos',
     titulo: 'Indicadores',
     bajada: 'Los valores medidos, sin interpretación',
     cuerpo: (
-      <div className="sitio-crudo">
-        <Crudo inf={inf} />
-        <h3 className="sitio-sub">Técnicas de evaluación utilizadas</h3>
-        <ul className="sitio-lista">
-          {inf.tecnicas.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-      </div>
+      <details className="sitio-desplegable">
+        <summary>Cómo se calculó: ver todos los valores</summary>
+        <div className="sitio-crudo">
+          <Crudo inf={inf} />
+        </div>
+      </details>
     ),
   });
 
