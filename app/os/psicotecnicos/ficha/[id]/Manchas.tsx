@@ -50,7 +50,6 @@ function Simple({
   valor,
   opciones,
   onCambio,
-  ancho,
   etiqueta,
   buscable = true,
   porFila,
@@ -62,7 +61,6 @@ function Simple({
   valor: string | null;
   opciones: Opcion[];
   onCambio: (v: string | null) => void;
-  ancho?: number;
   etiqueta: string;
   buscable?: boolean;
   porFila?: number;
@@ -72,7 +70,7 @@ function Simple({
   todas?: Opcion[];
 }) {
   return (
-    <span className="os-celda-select" style={ancho ? { minWidth: ancho } : undefined}>
+    <span className="os-celda-select">
       <Codigo
         valor={valor}
         opciones={opciones}
@@ -377,7 +375,7 @@ export default function Manchas({
             <tr>
               <th>Lámina</th>
               <th>Nº rta</th>
-              <th>Loc. + DQ</th>
+              <th>Loc.+DQ</th>
               <th>Nº loc.</th>
               <th>Determinantes</th>
               <th>FQ</th>
@@ -419,7 +417,6 @@ export default function Manchas({
                     valor={f.localizacion}
                     opciones={LOCALIZACION}
                     onCambio={(v) => cambiar(f.id, { localizacion: v })}
-                    ancho={92}
                     etiqueta="Localización y DQ"
                   />
                 </td>
@@ -444,7 +441,6 @@ export default function Manchas({
                     valor={f.fq}
                     opciones={FQ}
                     onCambio={(v) => cambiar(f.id, { fq: v })}
-                    ancho={68}
                     etiqueta="Calidad formal"
                   />
                 </td>
