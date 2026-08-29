@@ -57,6 +57,7 @@ function Simple({
   sinVacio,
   anchoBoton,
   nuevaFilaAntesDe,
+  todas,
 }: {
   valor: string | null;
   opciones: Opcion[];
@@ -68,6 +69,7 @@ function Simple({
   sinVacio?: boolean;
   anchoBoton?: number;
   nuevaFilaAntesDe?: string;
+  todas?: Opcion[];
 }) {
   return (
     <span className="os-celda-select" style={ancho ? { minWidth: ancho } : undefined}>
@@ -81,6 +83,7 @@ function Simple({
         sinVacio={sinVacio}
         anchoBoton={anchoBoton}
         nuevaFilaAntesDe={nuevaFilaAntesDe}
+        todas={todas}
       />
     </span>
   );
@@ -203,6 +206,34 @@ export default function Manchas({
       ? LAMINA
       : LAMINA.filter((o) => o.v.startsWith('Z') === esZulliger);
 
+  /**
+   * Qué láminas se le ofrecen a una fila.
+   *
+   * El protocolo se toma en orden: se dan las respuestas de la lámina I, se
+   * pasa a la II y no se vuelve. Así que en cada fila lo único que puede pasar
+   * es repetir la lámina de la respuesta anterior o pasar a la siguiente, y
+   * ofrecer las diez es ofrecer ocho maneras de equivocarse.
+   *
+   * La lámina que la fila ya tiene entra siempre, para que una respuesta vieja
+   * fuera de orden se siga viendo. Y el resto queda a un toque, en "Mostrar
+   * todas": las excepciones existen y no se las puede dejar sin salida.
+   */
+  function laminasDe(i: number): Opcion[] {
+    const previa = i > 0 ? (vista[i - 1].lamina ?? null) : null;
+    const propia = vista[i].lamina ?? null;
+    const base = propia ?? previa ?? laminas[0]?.v ?? null;
+    if (!base) return laminas;
+    const donde = laminas.findIndex((o) => o.v === base);
+    if (donde < 0) return laminas;
+    const ofrecidas = [laminas[donde], laminas[donde + 1]].filter(Boolean) as Opcion[];
+    // La previa también, cuando la fila todavía está vacía: es la que se repite.
+    if (propia === null && previa && !ofrecidas.some((o) => o.v === previa)) {
+      const p = laminas.find((o) => o.v === previa);
+      if (p) ofrecidas.unshift(p);
+    }
+    return ofrecidas;
+  }
+
   async function pedir(init: RequestInit & { url?: string }): Promise<any> {
     setError(null);
     setOcupado(true);
@@ -243,9 +274,13 @@ export default function Manchas({
 
   async function agregar() {
     const siguiente = Math.max(0, ...vista.map((f) => f.n_respuesta ?? 0)) + 1;
+    /* La lámina de la última respuesta, o la primera del test si no hay
+       ninguna: una respuesta nueva casi siempre es de la misma lámina que la
+       anterior, y arrancar en blanco obliga a elegirla veintidós veces. */
+    const lamina = [...vista].reverse().find((f) => f.lamina)?.lamina ?? laminas[0]?.v ?? null;
     const r = await pedir({
       method: 'PUT',
-      body: JSON.stringify({ evaluacionId, campos: { n_respuesta: siguiente } }),
+      body: JSON.stringify({ evaluacionId, campos: { n_respuesta: siguiente, lamina } }),
     });
     if (r) empezar(() => router.refresh());
   }
@@ -282,12 +317,13 @@ export default function Manchas({
             </tr>
           </thead>
           <tbody>
-            {vista.map((f) => (
+            {vista.map((f, i) => (
               <tr key={f.id}>
                 <td>
                   <Simple
                     valor={f.lamina}
-                    opciones={laminas}
+                    opciones={laminasDe(i)}
+                    todas={laminas}
                     onCambio={(v) => cambiar(f.id, { lamina: v })}
                     etiqueta="Lámina"
                     buscable={false}
