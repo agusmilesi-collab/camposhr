@@ -184,6 +184,25 @@ export default function Manchas({
   const [sucio, setSucio] = useState(false);
   const vista = sucio ? locales : filas;
 
+  /*
+   * Las láminas de un solo test.
+   *
+   * Un protocolo es de Rorschach o de Zulliger, no de los dos: las diez del
+   * Sistema Comprehensivo y las tres de Zdunic se codifican distinto y el
+   * sumario se calcula con normas distintas. Con las trece a la vista, un
+   * protocolo mezclado se arma con un solo clic mal dado y recién se nota al
+   * calcular.
+   *
+   * Manda la primera respuesta que tenga lámina cargada. Sin ninguna, se
+   * ofrecen las trece: ahí todavía se está eligiendo el test.
+   */
+  const primera = vista.find((f) => f.lamina)?.lamina ?? null;
+  const esZulliger = primera?.startsWith('Z') ?? null;
+  const laminas =
+    esZulliger === null
+      ? LAMINA
+      : LAMINA.filter((o) => o.v.startsWith('Z') === esZulliger);
+
   async function pedir(init: RequestInit & { url?: string }): Promise<any> {
     setError(null);
     setOcupado(true);
@@ -268,7 +287,7 @@ export default function Manchas({
                 <td>
                   <Simple
                     valor={f.lamina}
-                    opciones={LAMINA}
+                    opciones={laminas}
                     onCambio={(v) => cambiar(f.id, { lamina: v })}
                     etiqueta="Lámina"
                     buscable={false}
