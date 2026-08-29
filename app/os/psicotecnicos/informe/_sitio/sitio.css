@@ -715,6 +715,41 @@
   color: var(--tinta-media);
 }
 
+/* Cómo hay que leer el estrato cuando el puesto que ocupa no la exige. */
+.sitio-escalera-aviso {
+  margin-top: 18px !important;
+  padding: 12px 14px;
+  border-left: 3px solid #b98a2e;
+  background: #fbf6ec;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.92rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Lo que escribió quien firma, separado de todo lo que calcula el sistema. */
+.sitio-escalera-firma {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--linea);
+}
+
+.sitio-escalera-firma h4 {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.sitio-escalera-firma p {
+  margin: 0 0 10px;
+}
+
+.sitio-escalera-firma p:last-child {
+  margin-bottom: 0;
+}
+
 @media (max-width: 720px) {
   .sitio-nivel {
     grid-template-columns: minmax(0, 1fr);

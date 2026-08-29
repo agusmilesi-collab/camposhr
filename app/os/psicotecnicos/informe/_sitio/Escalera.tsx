@@ -136,6 +136,30 @@ export default function Escalera({ inf }: { inf: Informe }) {
         </p>
       )}
 
+      {/* Que el número describe al puesto que ocupa y no a su techo. Va antes
+          de la fundamentación porque cambia cómo se lee todo lo anterior. */}
+      {d.subutilizado && (
+        <p className="sitio-escalera-aviso">
+          El instrumento mide el alcance del trabajo que la persona tiene asignado hoy. El
+          puesto que ocupa no le exige lo que puede, así que lo que se leyó arriba describe
+          a ese puesto y queda por debajo de lo que la persona podría manejar.
+        </p>
+      )}
+
+      {/* Lo único del capítulo escrito por quien firma el informe. */}
+      {d.fundamentacion && (
+        <div className="sitio-escalera-firma">
+          <h4>Fundamentación de la evaluadora</h4>
+          {d.fundamentacion
+            .split('\n')
+            .map((t) => t.trim())
+            .filter(Boolean)
+            .map((t) => (
+              <p key={t}>{t}</p>
+            ))}
+        </div>
+      )}
+
       {/* De dónde sale: el instrumento, nombrado una vez y al pie. */}
       <p className="sitio-fuente">
         Sale del análisis discursivo sobre cinco minutos del relato de la persona, según el

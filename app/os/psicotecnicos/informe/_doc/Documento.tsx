@@ -438,6 +438,34 @@ export default async function Documento({
             )}
             {inf.discursivo.futura && <p>{inf.discursivo.futura}</p>}
 
+            {/* El estrato mide el trabajo que la persona tiene asignado hoy: si
+                el puesto que ocupa no la exige, el número describe a ese puesto
+                y no hasta dónde puede llegar. */}
+            {inf.discursivo.subutilizado && (
+              <p className="inf-subutilizado">
+                El nivel medido corresponde al alcance del trabajo que la persona tiene
+                asignado hoy. El puesto que ocupa no le exige lo que puede, así que este
+                estrato describe a ese puesto y queda por debajo de lo que ella podría
+                manejar.
+              </p>
+            )}
+
+            {/* Lo único del capítulo escrito por quien firma el informe: el
+                resto sale del catálogo del instrumento y de la comparación de
+                los dos estratos. */}
+            {inf.discursivo.fundamentacion && (
+              <>
+                <h3>Fundamentación de la evaluadora</h3>
+                {inf.discursivo.fundamentacion
+                  .split('\n')
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+                  .map((t) => (
+                    <p key={t}>{t}</p>
+                  ))}
+              </>
+            )}
+
           </div>
         </Capitulo>
       )}

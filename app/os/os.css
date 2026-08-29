@@ -6817,15 +6817,20 @@ th.os-tabla-contacto {
  * grilla. En tarjetas el estrato es lo primero de cada una y las tres se leen de
  * un vistazo.
  */
+/* Las cuatro filas son de la grilla de afuera y no de cada tarjeta: con cada
+   una midiendo lo suyo, un encabezado de dos renglones empujaba su estrato un
+   renglón más abajo que el de al lado, que es lo que se compara. */
 .os-comparacion-tarjetas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-rows: repeat(4, auto);
   gap: 12px;
 }
 
 .os-comparacion-tarjeta {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
   gap: 12px;
   padding: 16px 18px 18px;
   border: 1px solid var(--os-linea);
@@ -6868,7 +6873,7 @@ th.os-tabla-contacto {
 }
 
 .os-comparacion-estrato strong {
-  font-size: 1.32rem;
+  font-size: 1.18rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
@@ -6896,17 +6901,24 @@ th.os-tabla-contacto {
   color: var(--os-tinta-media);
 }
 
+.os-comparacion-que.vacia {
+  min-height: 0;
+}
+
 .os-comparacion-que strong {
   font-size: 0.86rem;
   color: var(--os-tinta);
 }
 
 /* De dónde salió el estrato, al pie y separado por una línea: es el respaldo y
-   no el dato. */
+   no el dato. La línea arranca a la misma altura en las tres tarjetas porque
+   comparten la fila; empujada al fondo, cada una la ponía donde le llegaba el
+   texto. */
 .os-comparacion-porque {
   display: grid;
+  align-content: start;
   gap: 6px;
-  margin: auto 0 0;
+  margin: 0;
   padding-top: 12px;
   border-top: 1px solid var(--os-linea-suave);
 }
@@ -6942,12 +6954,11 @@ th.os-tabla-contacto {
   width: 150px;
 }
 
-/* Cuándo, debajo de a quién: "a los 50 años" es de ese renglón y no del de al
-   lado. */
+/* Cuándo, al mismo cuerpo que el rótulo de al lado: más grande empujaba el
+   encabezado y la tarjeta entera arrancaba más abajo que las otras dos. */
 .os-comparacion-cuando {
   display: block;
-  margin-top: 2px;
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   color: var(--os-suave);
 }
 
@@ -7238,13 +7249,120 @@ th.os-tabla-contacto {
   line-height: 1.5;
 }
 
-/* Lo que dice el punto, en una línea: es la comprobación de que el dato quedó
-   bien cargado, así que va antes del dibujo y no debajo. */
-.os-potencial-lectura {
-  margin: 14px 0 0;
-  font-size: 0.84rem;
-  line-height: 1.55;
+
+/*
+ * Qué es cada marca del diagrama, como referencia: el punto lleno, el hueco y
+ * la franja son tres cosas distintas y en prosa hay que buscarlas de a una.
+ *
+ * Centrada sobre el cuadro y no sobre el ancho del panel: el dibujo lleva a la
+ * izquierda las dos columnas de rótulos, así que su centro cae más a la derecha
+ * que el del bloque. El cuadro va de 136 a 920 en las 980 unidades del dibujo
+ * (Progreso.tsx), o sea centro en el 53,9 %, y el aire de la izquierda corre la
+ * referencia esos 3,9 puntos.
+ */
+.os-potencial-referencias {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 20px;
+  margin: 12px 0 0;
+  padding: 0 0 0 7.8%;
+  list-style: none;
+  font-size: 0.8rem;
   color: var(--os-tinta-media);
+}
+
+.os-potencial-referencias li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Los mismos colores que el dibujo, escritos a mano: el diagrama es un SVG con
+   sus constantes adentro y acá no llegan. */
+.os-potencial-punto {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.os-potencial-punto.hoy {
+  background: #2b4468;
+}
+
+.os-potencial-punto.luego {
+  background: #ffffff;
+  border: 1.5px solid #2b4468;
+}
+
+.os-potencial-punto.franja {
+  width: 16px;
+  height: 10px;
+  border-radius: 2px;
+  background: #e7eef6;
+  border: 1px solid rgba(43, 68, 104, 0.3);
+}
+
+/* En pantalla angosta la referencia se parte en varios renglones y el aire de
+   la izquierda le come lugar: ahí va centrada a secas. */
+@media (max-width: 900px) {
+  .os-potencial-referencias {
+    padding-left: 0;
+  }
+}
+
+/*
+ * Lo único del capítulo que escribe una persona.
+ *
+ * El estrato sale de comparar dos números y la conclusión está redactada de
+ * antemano, así que este bloque va separado del resto y con su rótulo: es lo
+ * que la evaluadora firma.
+ */
+.os-potencial-fundamento {
+  display: grid;
+  gap: 8px;
+  margin: 26px 0 4px;
+}
+
+.os-potencial-ayuda {
+  margin: 0;
+  max-width: 78ch;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--os-suave);
+}
+
+.os-potencial-tilde {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.os-potencial-tilde input {
+  margin-top: 3px;
+  accent-color: var(--os-azul-fuerte);
+}
+
+.os-potencial-tilde span {
+  display: grid;
+  gap: 2px;
+}
+
+.os-potencial-tilde strong {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.os-potencial-tilde small {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--os-suave);
 }
 
 /* El diagrama entra a lo ancho del panel: la lámina lleva las dos columnas de
@@ -7256,15 +7374,6 @@ th.os-tabla-contacto {
 .os-potencial-grafico svg {
   width: 100%;
   height: auto;
-}
-
-/* Qué es cada punto del diagrama, debajo y en cuerpo chico. */
-.os-potencial-pie {
-  margin: 6px 0 0;
-  max-width: 78ch;
-  font-size: 0.8rem;
-  line-height: 1.55;
-  color: var(--os-suave);
 }
 
 /* Los minutos y cómo se leen, en la misma línea. */
@@ -10759,7 +10868,7 @@ textarea.os-campo-bateria {
  * porque no impide entrar, y lo explica el renglón de "más adelante".
  */
 .os-veredicto-bloque {
-  padding: 22px 26px 24px;
+  padding: 14px 18px 16px;
   border: 1px solid;
   border-radius: 12px;
   text-align: center;
@@ -10776,8 +10885,8 @@ textarea.os-campo-bateria {
 }
 
 .os-veredicto-titulo {
-  margin: 0 0 16px;
-  font-size: 1.28rem;
+  margin: 0 0 10px;
+  font-size: 0.98rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
@@ -10795,8 +10904,13 @@ textarea.os-campo-bateria {
 .os-veredicto-bloque .os-conclusion-tiempos {
   max-width: 62ch;
   margin: 0 auto;
-  gap: 14px;
+  gap: 8px;
   text-align: left;
+}
+
+.os-veredicto-bloque .os-conclusion-tiempos dd {
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 .os-veredicto-bloque .os-conclusion-tiempos > div {
@@ -10805,7 +10919,7 @@ textarea.os-campo-bateria {
 }
 
 .os-veredicto-bloque .os-conclusion-tiempos dt {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--os-suave);

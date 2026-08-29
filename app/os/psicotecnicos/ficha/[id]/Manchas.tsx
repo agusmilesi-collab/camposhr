@@ -170,9 +170,18 @@ function Numero({
 export default function Manchas({
   evaluacionId,
   filas,
+  bateria,
 }: {
   evaluacionId: string;
   filas: Mancha[];
+  /**
+   * El test de manchas que declara la batería que se le vendió al cliente.
+   *
+   * Es lo que decide con qué láminas se arranca un protocolo vacío. Sin esto se
+   * ofrecían las trece y la primera respuesta salía con la lámina I, así que un
+   * Zulliger empezaba codificado como Rorschach.
+   */
+  bateria: 'Rorschach' | 'Zulliger' | null;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -194,11 +203,13 @@ export default function Manchas({
    * protocolo mezclado se arma con un solo clic mal dado y recién se nota al
    * calcular.
    *
-   * Manda la primera respuesta que tenga lámina cargada. Sin ninguna, se
-   * ofrecen las trece: ahí todavía se está eligiendo el test.
+   * Manda la primera respuesta que tenga lámina cargada, que es lo que
+   * efectivamente se le tomó. Con el protocolo vacío manda la batería, que es
+   * lo que se le va a tomar. Sin ninguna de las dos se ofrecen las trece.
    */
   const primera = vista.find((f) => f.lamina)?.lamina ?? null;
-  const esZulliger = primera?.startsWith('Z') ?? null;
+  const esZulliger =
+    primera !== null ? primera.startsWith('Z') : bateria ? bateria === 'Zulliger' : null;
   const laminas =
     esZulliger === null
       ? LAMINA
@@ -392,10 +403,14 @@ export default function Manchas({
             {vista.map((f, i) => (
               <tr key={f.id}>
                 <td>
+                  {/* En "Mostrar todas" van las trece y no las del test que se
+                      dedujo: si el protocolo arrancó con la lámina del test
+                      equivocado, este es el único lugar desde donde se
+                      corrige. */}
                   <Simple
                     valor={f.lamina}
                     opciones={laminasDe(i)}
-                    todas={laminas}
+                    todas={LAMINA}
                     onCambio={(v) => cambiar(f.id, { lamina: v })}
                     etiqueta="Lámina"
                     buscable={false}

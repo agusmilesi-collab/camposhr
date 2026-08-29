@@ -75,8 +75,15 @@ export async function POST(req: Request) {
     actualizado_at: new Date().toISOString(),
   };
   if (nivel !== undefined) fila.nivel = nivel;
-  for (const campo of ['actual', 'futura', 'relato'] as const) {
+  for (const campo of ['actual', 'futura', 'relato', 'fundamentacion'] as const) {
     if (campo in (datos ?? {})) fila[campo] = parrafo(datos?.[campo]);
+  }
+
+  /* Si el puesto que la persona ocupa hoy no le exige lo que puede. El estrato
+     mide el alcance de lo asignado, así que sin esta marca un puesto que la
+     subutiliza se lee como un techo de la persona. */
+  if ('subutilizado' in (datos ?? {})) {
+    fila.subutilizado = Boolean(datos.subutilizado);
   }
 
   /* Los dos del diagrama de progreso potencial. Van con la misma regla: la

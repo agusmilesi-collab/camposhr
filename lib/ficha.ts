@@ -194,6 +194,10 @@ export type Discursivo = {
   complejidad: Record<string, boolean> | null;
   /** Lo que contó en la entrevista, que es el material del que se codifica. */
   relato: string | null;
+  /** Por qué la evaluadora lo ubicó en ese estrato, en primera persona. */
+  fundamentacion: string | null;
+  /** El puesto que ocupa hoy no le exige lo que puede. */
+  subutilizado: boolean | null;
 };
 
 export type Competencia = {
@@ -352,7 +356,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       ),
       select<Discursivo>(
         'analisis_discursivo',
-        `select=nivel,actual,futura,edad,horizonte_dias,complejidad,relato&evaluacion_id=eq.${id}`,
+        `select=nivel,actual,futura,edad,horizonte_dias,complejidad,relato,fundamentacion,subutilizado&evaluacion_id=eq.${id}`,
         CACHE_PSICOTECNICOS
       ),
     ]);
