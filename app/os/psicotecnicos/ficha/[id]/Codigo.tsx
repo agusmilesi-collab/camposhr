@@ -20,7 +20,7 @@
  * panel, y en la última fila no se vería ninguna opción.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { anfitrion, useAnclaje } from '@/app/os/anclar';
 import { tonoDe, type Opcion } from '@/lib/rorschach';
@@ -62,6 +62,16 @@ export default function Codigo({
    * sería un protocolo que no se puede leer.
    */
   sinVacio = false,
+  /**
+   * Cuánto mide el botón de la celda.
+   *
+   * Las láminas van todas del mismo ancho: son una columna de códigos que se
+   * leen de arriba abajo, y con el ancho de cada texto la columna quedaba
+   * dentada entre "I" y "VIII".
+   */
+  anchoBoton,
+  /** Antes de este valor, la grilla empieza una fila nueva. */
+  nuevaFilaAntesDe,
 }: {
   valor?: string | null;
   opciones: Opcion[];
@@ -73,6 +83,8 @@ export default function Codigo({
   comoAgregar?: boolean;
   porFila?: number;
   sinVacio?: boolean;
+  anchoBoton?: number;
+  nuevaFilaAntesDe?: string;
 }) {
   const [abierta, setAbierta] = useState(false);
   const [busca, setBusca] = useState('');
@@ -192,8 +204,11 @@ export default function Codigo({
           </button>
         )}
         {visibles.map((o, i) => (
+          <Fragment key={o.v}>
+            {/* Las tres del Zulliger empiezan su propia fila: son otro test y
+                leerlas al final de la fila de las de Rorschach las esconde. */}
+            {nuevaFilaAntesDe === o.v && !busca && <span className="os-codigos-salto" />}
           <button
-            key={o.v}
             type="button"
             role="option"
             aria-selected={o.v === valor}
@@ -206,6 +221,7 @@ export default function Codigo({
           >
             {o.v}
           </button>
+          </Fragment>
         ))}
         {visibles.length === 0 && <span className="os-codigos-nada">Ningún código con eso</span>}
       </span>
@@ -218,9 +234,10 @@ export default function Codigo({
         type="button"
         ref={boton}
         className={comoAgregar ? 'os-chip-agregar' : 'os-codigo-boton'}
-        style={
-          comoAgregar || !valor ? undefined : { background: tonoDe(opciones, valor) }
-        }
+        style={{
+          ...(comoAgregar || !valor ? {} : { background: tonoDe(opciones, valor) }),
+          ...(anchoBoton && !comoAgregar ? { width: anchoBoton } : {}),
+        }}
         aria-haspopup="listbox"
         aria-expanded={abierta}
         onClick={() => setAbierta((x) => !x)}
