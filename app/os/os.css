@@ -10415,6 +10415,21 @@ textarea.os-campo-bateria {
 }
 
 /*
+ * Todo lo que hay adentro arranca en el mismo margen que el informe.
+ *
+ * Son ochenta píxeles, los de la hoja: el título del panel, los cuatro niveles,
+ * el campo de la fundamentación y la barra de acciones caen sobre la misma
+ * línea vertical que el logotipo y los títulos de las secciones. Con el
+ * dieciocho de un panel cualquiera, cada bloque empezaba en un lugar distinto.
+ */
+.os-panel-informe .os-panel-top,
+.os-panel-informe .os-panel-cuerpo,
+.os-panel-informe .os-generar {
+  padding-left: 80px;
+  padding-right: 80px;
+}
+
+/*
  * La barra de acciones y la hoja son dos paneles, no uno partido.
  *
  * Pintar una franja del color del fondo adentro de un panel deja su borde
