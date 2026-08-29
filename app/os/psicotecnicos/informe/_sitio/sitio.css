@@ -960,8 +960,11 @@
  * adentro, que son los que sí dicen algo (cada grupo del análisis, cada
  * tarjeta), y quedaba una caja adentro de otra.
  */
+/* El contenido arranca donde arranca el título, no donde el número: la columna
+   del número queda como un margen propio de la sección y todo lo que cuelga de
+   ese título se lee alineado con él. */
 .sitio-secciones-ficha .sitio-caja {
-  padding: 0;
+  padding: 0 0 0 46px;
   border: 0;
   border-radius: 0;
   background: none;
