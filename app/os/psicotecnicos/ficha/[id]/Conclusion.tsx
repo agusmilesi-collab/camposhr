@@ -109,7 +109,7 @@ export default function Conclusion({
         <textarea
           className="os-campo"
           value={texto}
-          rows={6}
+          rows={4}
           maxLength={4000}
           placeholder="Es lo primero que el cliente lee, y va con tu firma. Contá por qué llegaste a esa recomendación: qué viste, qué te convenció y qué te dejó dudando."
           onChange={(e) => {
