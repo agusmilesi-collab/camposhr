@@ -322,9 +322,10 @@
      sigue: veintiséis abajo de la línea, no veinte. */
   margin-bottom: 26px;
   padding-bottom: 12px;
-  /* La línea del título, fina: en pantalla la de dos píxeles del documento pesa
-     más que el título que sostiene. */
-  border-bottom: 1px solid var(--tinta);
+  /* La línea del título, fina y clara: en pantalla la negra de dos píxeles del
+     documento pesaba más que el título que sostiene, y la de un píxel a tinta
+     plena todavía se leía como un subrayado. */
+  border-bottom: 1px solid rgba(22, 32, 43, 0.22);
 }
 
 .sitio-numero {
@@ -449,46 +450,11 @@
 }
 
 /* ── Cómo trabaja ─────────────────────────────────────────────────────── */
-/* Tres bloques de texto separados por una línea, sin recuadro y sin barras de
-   color: son tres listas de oraciones y lo único que las separa es de qué
-   hablan, que lo dice el título. */
+/* Los tres grupos arrancan más abajo que el resto de las secciones: el primero
+   abre con su propio título, y pegado a la línea del título de la sección se
+   leían los dos como si fueran uno. */
 .sitio-grupos {
-  display: grid;
-  gap: 22px;
-}
-
-.sitio-grupo + .sitio-grupo {
-  padding-top: 22px;
-  border-top: 1px solid var(--linea);
-}
-
-.sitio-grupo header {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.sitio-grupo h3 {
-  margin: 0;
-  font-size: 0.98rem;
-  font-weight: 600;
-}
-
-.sitio-grupo header span {
-  font-size: 0.76rem;
-  color: var(--suave);
-}
-
-.sitio-grupo ul {
-  margin: 0;
-  padding-left: 20px;
-  font-size: 0.94rem;
-  line-height: 1.6;
-}
-
-.sitio-grupo li + li {
-  margin-top: 7px;
+  padding-top: 20px;
 }
 
 /* ── Para su líder ────────────────────────────────────────────────────── */
