@@ -5118,10 +5118,42 @@ th.os-tabla-contacto {
  * lectura, "LOC. + DQ" pedía ciento nueve píxeles para una etiqueta de
  * cincuenta y cinco, y el título terminaba decidiendo el ancho de la columna.
  */
+/* Alta: es la fila que queda pegada mientras se codifica, y con el alto de una
+   fila más se distingue de las respuestas que le pasan por debajo. */
 .os-tabla-manchas th {
-  padding-top: 9px;
-  padding-bottom: 9px;
+  padding-top: 18px;
+  padding-bottom: 18px;
   letter-spacing: 0.04em;
+}
+
+/*
+ * Los títulos quedan a la vista mientras se codifica.
+ *
+ * Un protocolo son veinte o treinta respuestas de doce columnas de códigos
+ * cortos: en la respuesta veinte no se sabe cuál columna es cuál, y para verlo
+ * había que subir y perder de vista la fila que se estaba codificando. La fila
+ * de títulos se pega debajo de la barra de la aplicación, que también está
+ * pegada, y la página se desplaza como siempre.
+ *
+ * Se desplaza la página y no la grilla por dentro: una ventana propia adentro
+ * de otra que también se desplaza deja el cursor decidiendo cuál de las dos se
+ * mueve, y al llegar al final de la de adentro sigue la de afuera.
+ *
+ * El marco recorta con `clip` y no con `hidden`: `hidden` lo convierte en un
+ * contenedor de desplazamiento, y contra él la fila se pega a un borde que
+ * nunca se mueve, o sea nunca.
+ */
+.os-manchas > .os-tabla-marco {
+  overflow-x: clip;
+}
+
+.os-tabla-manchas thead th {
+  position: sticky;
+  /* La barra de la aplicación mide 66 y está pegada arriba. */
+  top: 66px;
+  /* Debajo de esa barra, que le pasa por encima al desplazarse. */
+  z-index: 3;
+  background: var(--os-fondo);
 }
 
 /* Lámina, Nº de respuesta y Loc.+DQ, angostas: son un código de hasta cuatro
@@ -5537,28 +5569,19 @@ th.os-tabla-contacto {
  * trabajo debajo de las pestañas, y de ahí salen los tamaños de este bloque:
  * cada renglón está apretado a propósito.
  */
+/*
+ * La hoja crece lo que necesite y se baja con la página.
+ *
+ * Tenía un tope de 800 px y una barra propia: un sumario de treinta y tres
+ * respuestas se desplazaba por dentro mientras la página quedaba quieta, había
+ * que descubrir dónde apoyar el cursor para ver el final, y lo que se perdía de
+ * vista era justo lo que se estaba leyendo. Lo único que se desplaza por dentro
+ * en esta pestaña es la grilla de codificación.
+ */
 .os-hoja {
   display: grid;
   gap: 7px;
   margin: 4px 0 16px;
-  max-height: 800px;
-  /* Red por si un protocolo trae más de lo previsto: se desplaza adentro en
-     vez de perderse el final. Con el sumario completo no aparece. */
-  overflow-y: auto;
-}
-
-/*
- * La del Benziger no se desplaza por dentro.
- *
- * Con nueve bloques pasa de los 800 px, y el resultado era una barra adentro de
- * la pestaña: se desplaza la hoja mientras la página queda quieta, así que
- * queda media pantalla en blanco abajo y hay que descubrir dónde apoyar el
- * cursor para ver el final. Crece lo que necesite y se baja con la página, como
- * el resto de la ficha.
- */
-.os-bz-hoja {
-  max-height: none;
-  overflow-y: visible;
 }
 
 .os-hoja-encabezado {
