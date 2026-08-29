@@ -758,10 +758,11 @@
   margin-bottom: 0;
 }
 
-/* Cada renglón separado del que sigue: son lecturas distintas de la misma
-   persona, y pegadas se leen como un párrafo partido en viñetas. */
+/* Cada renglón separado del que sigue, pero poco: son lecturas distintas de la
+   misma persona y hay que ver que son varias, no que cada una es un párrafo
+   aparte. */
 .sitio .inf-grupo li {
-  margin-bottom: 14px;
+  margin-bottom: 9px;
 }
 
 /* La nota del semáforo es una aclaración al pie, no un párrafo: en pantalla
