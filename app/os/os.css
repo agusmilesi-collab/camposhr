@@ -10676,3 +10676,46 @@ textarea.os-campo-bateria {
 .os-codigos-todas:hover {
   text-decoration: underline;
 }
+
+/*
+ * El veredicto del potencial, en una etiqueta.
+ *
+ * La conclusión son dos párrafos y lo que hay que contestar es uno solo: si la
+ * persona puede con el trabajo que el puesto pide. Verde o rojo y nada en el
+ * medio; que además le sobre alcance va en verde, porque no impide entrar, y lo
+ * explica el renglón de "más adelante".
+ */
+.os-veredicto {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 10px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  vertical-align: 1px;
+}
+
+.os-veredicto.alcanza {
+  border-color: rgba(74, 120, 86, 0.4);
+  background: rgba(74, 120, 86, 0.1);
+  color: var(--os-verde);
+}
+
+.os-veredicto.no-alcanza {
+  border-color: rgba(140, 59, 59, 0.4);
+  background: rgba(140, 59, 59, 0.09);
+  color: var(--os-rojo);
+}
+
+/* De dónde salió cada nivel: dos renglones cortos, uno por camino. */
+.os-comparacion-porque {
+  display: table-cell;
+}
+
+.os-comparacion-porque span {
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--os-suave);
+}
