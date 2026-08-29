@@ -47,6 +47,21 @@ export default function Codigo({
   vacio = '—',
   /** El botón chico de agregar, para las celdas de varios códigos. */
   comoAgregar = false,
+  /**
+   * Cuántas opciones por fila.
+   *
+   * Sin esto se acomodan solas y llenan el ancho, que es lo que conviene con
+   * treinta códigos de dos letras. La lámina va en filas de tres: son diez, van
+   * en orden, y en tres columnas se busca la que se quiere por su lugar.
+   */
+  porFila,
+  /**
+   * Si se puede dejar la celda sin código.
+   *
+   * La lámina no: una respuesta siempre es de una lámina, y "sin código" ahí
+   * sería un protocolo que no se puede leer.
+   */
+  sinVacio = false,
 }: {
   valor?: string | null;
   opciones: Opcion[];
@@ -56,6 +71,8 @@ export default function Codigo({
   ancho?: number;
   vacio?: string;
   comoAgregar?: boolean;
+  porFila?: number;
+  sinVacio?: boolean;
 }) {
   const [abierta, setAbierta] = useState(false);
   const [busca, setBusca] = useState('');
@@ -156,9 +173,16 @@ export default function Codigo({
           aria-label={`Buscar en ${etiqueta}`}
         />
       )}
-      <span className="os-codigos-opciones">
+      <span
+        className="os-codigos-opciones"
+        style={
+          porFila
+            ? { display: 'grid', gridTemplateColumns: `repeat(${porFila}, minmax(0, 1fr))` }
+            : undefined
+        }
+      >
         {/* Sacar lo elegido va primero y sin color: no es un código más. */}
-        {valor && (
+        {valor && !sinVacio && (
           <button
             type="button"
             className="os-codigos-vaciar"

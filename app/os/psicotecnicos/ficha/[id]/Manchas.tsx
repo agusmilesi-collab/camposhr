@@ -53,6 +53,8 @@ function Simple({
   ancho,
   etiqueta,
   buscable = true,
+  porFila,
+  sinVacio,
 }: {
   valor: string | null;
   opciones: Opcion[];
@@ -60,6 +62,8 @@ function Simple({
   ancho?: number;
   etiqueta: string;
   buscable?: boolean;
+  porFila?: number;
+  sinVacio?: boolean;
 }) {
   return (
     <span className="os-celda-select" style={ancho ? { minWidth: ancho } : undefined}>
@@ -69,6 +73,8 @@ function Simple({
         onElegir={onCambio}
         etiqueta={etiqueta}
         buscable={buscable}
+        porFila={porFila}
+        sinVacio={sinVacio}
       />
     </span>
   );
@@ -261,6 +267,8 @@ export default function Manchas({
                     ancho={72}
                     etiqueta="Lámina"
                     buscable={false}
+                    porFila={3}
+                    sinVacio
                   />
                 </td>
                 <td>
