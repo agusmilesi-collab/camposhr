@@ -72,6 +72,15 @@ export default function Codigo({
   anchoBoton,
   /** Antes de este valor, la grilla empieza una fila nueva. */
   nuevaFilaAntesDe,
+  /**
+   * La lista completa, cuando lo que se ofrece es un recorte.
+   *
+   * En las láminas se ofrecen las dos que siguen en el protocolo, que es lo que
+   * se elige el noventa y nueve por ciento de las veces. Esto es la salida para
+   * el otro uno: una respuesta que se codificó fuera de orden, una lámina que
+   * se saltó, un protocolo viejo que hay que corregir.
+   */
+  todas,
 }: {
   valor?: string | null;
   opciones: Opcion[];
@@ -85,17 +94,20 @@ export default function Codigo({
   sinVacio?: boolean;
   anchoBoton?: number;
   nuevaFilaAntesDe?: string;
+  todas?: Opcion[];
 }) {
   const [abierta, setAbierta] = useState(false);
   const [busca, setBusca] = useState('');
   const [marcada, setMarcada] = useState(0);
+  const [ampliada, setAmpliada] = useState(false);
   const caja = useRef<HTMLSpanElement>(null);
   const boton = useRef<HTMLButtonElement>(null);
   const lista = useRef<HTMLSpanElement>(null);
   const campo = useRef<HTMLInputElement>(null);
 
   const sitio = useAnclaje(abierta, boton, lista, () => setAbierta(false));
-  const visibles = useMemo(() => filtrar(opciones, busca), [opciones, busca]);
+  const enJuego = ampliada && todas ? todas : opciones;
+  const visibles = useMemo(() => filtrar(enJuego, busca), [enJuego, busca]);
 
   /*
    * Al abrir, el foco va al campo y la marca al primero: se abre y se escribe,
@@ -110,6 +122,7 @@ export default function Codigo({
     if (!abierta) return;
     setBusca('');
     setMarcada(0);
+    setAmpliada(false);
   }, [abierta]);
 
   const enfocado = useRef(false);
@@ -215,7 +228,7 @@ export default function Codigo({
             className={`os-codigo-opcion${i === marcada ? ' marcada' : ''}${
               o.v === valor ? ' elegida' : ''
             }`}
-            style={{ background: tonoDe(opciones, o.v) }}
+            style={{ background: tonoDe(enJuego, o.v) }}
             onMouseEnter={() => setMarcada(i)}
             onClick={() => elegir(o.v)}
           >
@@ -225,6 +238,12 @@ export default function Codigo({
         ))}
         {visibles.length === 0 && <span className="os-codigos-nada">Ningún código con eso</span>}
       </span>
+
+      {todas && !ampliada && todas.length > opciones.length && (
+        <button type="button" className="os-codigos-todas" onClick={() => setAmpliada(true)}>
+          Mostrar todas
+        </button>
+      )}
     </span>
   );
 
@@ -235,7 +254,7 @@ export default function Codigo({
         ref={boton}
         className={comoAgregar ? 'os-chip-agregar' : 'os-codigo-boton'}
         style={{
-          ...(comoAgregar || !valor ? {} : { background: tonoDe(opciones, valor) }),
+          ...(comoAgregar || !valor ? {} : { background: tonoDe(todas ?? opciones, valor) }),
           ...(anchoBoton && !comoAgregar ? { width: anchoBoton } : {}),
         }}
         aria-haspopup="listbox"

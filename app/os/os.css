@@ -10604,3 +10604,23 @@ textarea.os-campo-bateria {
   padding: 0;
   background: var(--os-panel);
 }
+
+/* La salida a la lista completa, al pie de las opciones recortadas. */
+.os-codigos-todas {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 8px;
+  border: 0;
+  border-top: 1px solid var(--os-linea-suave);
+  background: none;
+  color: var(--os-azul);
+  font: inherit;
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-codigos-todas:hover {
+  text-decoration: underline;
+}
