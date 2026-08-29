@@ -595,8 +595,12 @@
 /* ── Hasta dónde puede llegar ─────────────────────────────────────────── */
 /*
  * Escalones y no una pirámide: cada nivel dice qué clase de trabajo es, con qué
- * plazo se maneja y a qué puesto se parece. Los de más arriba arrancan más a la
- * izquierda, así la escalera se ve antes de leerla.
+ * plazo se maneja y a qué puesto se parece.
+ *
+ * Todos del mismo ancho. Estuvieron escalonados hacia la derecha para que la
+ * escalera se viera antes de leerla, y lo que se veía era que unos niveles
+ * pesan más que otros: lo que sube es el alcance del trabajo, no el tamaño de
+ * la caja. El orden y las tres marcas alcanzan para leerlo.
  */
 .sitio-escalera-intro {
   margin-bottom: 16px !important;
@@ -618,19 +622,6 @@
   border: 1px solid var(--linea);
   border-radius: 10px;
   background: var(--papel);
-}
-
-.sitio-nivel[data-nivel='IV'] {
-  margin-left: 14px;
-}
-.sitio-nivel[data-nivel='III'] {
-  margin-left: 28px;
-}
-.sitio-nivel[data-nivel='II'] {
-  margin-left: 42px;
-}
-.sitio-nivel[data-nivel='I'] {
-  margin-left: 56px;
 }
 
 /* Los niveles que no son ninguna de las tres marcas están, pero apagados: la
@@ -728,7 +719,6 @@
   .sitio-nivel {
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
-    margin-left: 0 !important;
   }
 
   .sitio-nivel-lado {

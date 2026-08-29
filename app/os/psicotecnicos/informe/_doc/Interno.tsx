@@ -40,11 +40,26 @@ export function Faltantes({ inf }: { inf: Informe }) {
  * no salen de las hojas de la psicóloga: dónde corta cada indicador entre bajo,
  * medio y alto, y cuánto pesa dentro de su competencia.
  */
-export function Desglose({ inf }: { inf: Informe }) {
+export function Desglose({
+  inf,
+  suelto = false,
+}: {
+  inf: Informe;
+  /**
+   * Sin su propio desplegable, para cuando ya va adentro de otro.
+   *
+   * En la ficha vive dentro del desplegable de los indicadores, que se llama
+   * igual: dos desplegables anidados con el mismo nombre son uno que hay que
+   * abrir dos veces.
+   */
+  suelto?: boolean;
+}) {
   if (!inf.competencias.some((c) => c.renglones.length > 1)) return null;
+  const Marco = suelto ? 'div' : 'details';
   return (
-<details className="inf-desglose">
-    <summary>Cómo se calculó cada competencia</summary>
+<Marco className="inf-desglose">
+    {!suelto && <summary>Cómo se calculó cada competencia</summary>}
+    {suelto && <h3 className="inf-subtitulo">Cómo se calculó cada competencia</h3>}
     {/* En tabla y no en lista: es lo que la evaluadora mira cuando el
         cliente pregunta de dónde sale un puntaje, así que los índices del
         protocolo tienen que caer siempre en el mismo lugar del renglón. */}
@@ -97,6 +112,6 @@ export function Desglose({ inf }: { inf: Informe }) {
       </div>
     ))}
     <span className="inf-pendientes-nota">Tampoco se imprime.</span>
-  </details>
+  </Marco>
   );
 }

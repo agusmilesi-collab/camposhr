@@ -19,7 +19,7 @@ import Entregar from './Entregar';
 import Benziger from './Benziger';
 import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
-import { Desglose, Faltantes } from '../../informe/_doc/Interno';
+import { Faltantes } from '../../informe/_doc/Interno';
 import { seccionesDe } from '../../informe/_sitio/secciones';
 import Cabecera from '../../informe/_sitio/Cabecera';
 import '../../informe/_sitio/sitio.css';
@@ -684,7 +684,6 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
                 </section>
               ))}
             </div>
-            <Desglose inf={informe} />
           </>
         ) : (
           <Documento inf={informe} interno editar={c.id} parte="trabajo" />
