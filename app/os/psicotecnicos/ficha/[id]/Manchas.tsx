@@ -329,7 +329,6 @@ export default function Manchas({
                     buscable={false}
                     porFila={3}
                     sinVacio
-                    anchoBoton={46}
                     nuevaFilaAntesDe="Z1"
                   />
                 </td>
