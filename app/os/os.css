@@ -5122,15 +5122,15 @@ th.os-tabla-contacto {
 }
 
 /*
- * Una línea finita entre columnas.
+ * Una línea entre columnas, la misma que separa las filas.
  *
  * Son doce columnas de códigos cortos y la vista salta de una a otra todo el
- * tiempo: sin nada en el medio, el ojo se pierde de fila. Apenas visible, que
- * lo que tiene que verse son las etiquetas y no la grilla.
+ * tiempo: sin nada en el medio, el ojo se pierde de fila. Del mismo tono que la
+ * horizontal, que si no se ven dos grillas superpuestas.
  */
 .os-tabla-manchas th + th,
 .os-tabla-manchas td + td {
-  border-left: 1px solid rgba(22, 32, 43, 0.05);
+  border-left: 1px solid var(--os-linea-suave);
 }
 
 /* El número de respuesta no se escribe: lo pone el sistema. Va como texto y
