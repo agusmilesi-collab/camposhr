@@ -9,6 +9,7 @@ import {
 } from '@/lib/informe-textos';
 import { firmaEnDatos } from '@/lib/firmas';
 import Listas from '../_doc/Listas';
+import { Desglose } from '../_doc/Interno';
 import { EscalaBandas, IconoNivel, tono } from '../_doc/piezas';
 import Cerebro from '../_doc/Cerebro';
 import Crudo from '../_doc/Crudo';
@@ -375,6 +376,9 @@ export function seccionesDe(
         <summary>Cómo se calculó: ver todos los valores</summary>
         <div className="sitio-crudo">
           <Crudo inf={inf} />
+          {/* De dónde sale cada puntaje: es del equipo y no del cliente, así
+              que va solo en la ficha, y adentro de este mismo desplegable. */}
+          {editar && <Desglose inf={inf} suelto />}
         </div>
       </details>
     ),
