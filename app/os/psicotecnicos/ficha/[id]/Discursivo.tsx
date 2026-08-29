@@ -32,6 +32,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Opciones from '@/app/os/Opciones';
 import {
   conHuecos,
@@ -81,6 +82,11 @@ export default function Discursivo({
   puestoComplejidad,
   conclusiones,
   pedidoId,
+  nombre,
+  fecha,
+  empresa,
+  solicitante,
+  puesto: elPuesto,
   modo = 'codificacion',
 }: {
   id: string;
@@ -116,6 +122,14 @@ export default function Discursivo({
   conclusiones?: Record<string, string>;
   /** El pedido, para poder ir a completarlo desde la entrevista. */
   pedidoId?: string | null;
+  /** De quién es, para que el PDF del diagrama diga a quién describe. */
+  nombre?: string | null;
+  /** Cuándo se la evaluó, para el encabezado de ese PDF. */
+  fecha?: string | null;
+  /** Para quién se la evaluó: empresa, quién la pidió y para qué pedido. */
+  empresa?: string | null;
+  solicitante?: string | null;
+  puesto?: string | null;
   /**
    * Dónde se está usando.
    *
@@ -183,6 +197,43 @@ export default function Discursivo({
     if (contado === (relato ?? '')) return;
     await mandar({ relato: contado.trim() || null });
   }
+
+  /**
+   * El diagrama solo, en PDF.
+   *
+   * Se imprime la página con todo lo demás en invisible, que es lo que hace el
+   * informe: el navegador arma el PDF y no hace falta ningún generador. La
+   * marca se saca cuando termina de imprimir, así la pantalla vuelve a quedar
+   * como estaba haya guardado el PDF o haya cancelado.
+   */
+  const [imprimiendo, setImprimiendo] = useState(false);
+
+  /*
+   * Imprimir cuando la hoja ya está en la pantalla.
+   *
+   * `window.print` congela lo que hay dibujado en ese momento, así que llamarlo
+   * en el mismo clic que pide la hoja imprime la pantalla sin ella. El efecto
+   * corre después del dibujo, y `afterprint` saca la hoja haya guardado el PDF
+   * o haya cancelado.
+   */
+  useEffect(() => {
+    if (!imprimiendo) return;
+    document.body.dataset.imprimir = 'diagrama';
+    /* El navegador le pone al archivo el título del documento, que es el de la
+       pantalla y sale "Campos OS.pdf" para todos. Se cambia mientras dura la
+       impresión y se repone después. */
+    const titulo = document.title;
+    document.title = apellidoDe(nombre) ? `${apellidoDe(nombre)} potencial` : 'potencial';
+    const fin = () => setImprimiendo(false);
+    window.addEventListener('afterprint', fin);
+    const cuadro = requestAnimationFrame(() => window.print());
+    return () => {
+      document.title = titulo;
+      delete document.body.dataset.imprimir;
+      window.removeEventListener('afterprint', fin);
+      cancelAnimationFrame(cuadro);
+    };
+  }, [imprimiendo, nombre]);
 
   /** Su fundamentación, al soltar el campo: se escribe de corrido. */
   async function guardarFundamentacion() {
@@ -290,6 +341,16 @@ export default function Discursivo({
   }, [salio, choca]);
 
   const elegido = niveles.find((n) => n.nombre === puesto);
+
+  /* Cuántos escalones hay entre la persona y el puesto. Es toda la conclusión:
+     cero alcanza justo, positivo le sobra y negativo le falta. Null cuando
+     falta alguno de los dos, que no es lo mismo que cero. */
+  const puestoRige = estratoPuesto ? estratoPorNumero(estratoPuesto) : null;
+  const distancia =
+    elegido && puestoRige
+      ? ESTRATOS.findIndex((e) => e.romano === elegido.romano) -
+        ESTRATOS.findIndex((e) => e.romano === puestoRige.romano)
+      : null;
 
   return (
     <div className="os-discursivo">
@@ -467,72 +528,101 @@ export default function Discursivo({
             niveles={niveles}
             desdeElPuesto={porQue(puestoDias, puestoComplejidad)}
             desdeLaPersona={porQue(diasNum, respuestas)}
+            preguntasDelPuesto={marcadas(PREGUNTAS, puestoComplejidad)}
+            preguntasDeLaPersona={marcadas(
+              PREGUNTAS.filter((p) => p.estrato <= 4),
+              respuestas
+            )}
           />
 
           {/*
-            Lo único del capítulo que escribe una persona.
-            El estrato sale de comparar dos números y la conclusión está redactada
-            de antemano en Configuración; el instrumento mide el alcance del
-            trabajo que la persona tiene asignado hoy, y eso deja afuera lo que
-            ella vio en la entrevista. Va delante de la conclusión porque es lo
-            que la sostiene, sale al informe con su firma y no se recalcula.
+            Lo que se escribe y lo que se concluye, juntos y aparte de la
+            comparación.
+
+            Arriba de esta tarjeta están los dos estratos, que son datos. Acá
+            está la lectura: primero la de la evaluadora, que es lo único del
+            capítulo que escribe una persona, y después la del sistema, que sale
+            de restar los dos estratos y de textos escritos de antemano en
+            Configuración. Separarlas de las tarjetas es lo que deja ver de un
+            vistazo qué se midió y qué se concluyó.
           */}
-          <div className="os-potencial-fundamento">
-            <span className="os-etiqueta-campo">Fundamentación de la evaluadora</span>
-            <p className="os-potencial-ayuda">
-              Por qué esta persona quedó en ese estrato, en primera persona. Sale en el
-              informe con tu firma.
-            </p>
-            <textarea
-              className="os-campo os-relato-campo"
-              rows={4}
-              maxLength={2000}
-              value={porQueAsi}
-              disabled={guardando}
-              placeholder="Qué sostuvo en la entrevista que respalda el estrato, y qué matiza el número."
-              onChange={(e) => setPorQueAsi(e.target.value)}
-              onBlur={guardarFundamentacion}
-            />
-
-            <label className="os-potencial-tilde">
-              {/* El tilde no se apaga mientras se guarda: se lo marca justo
-                  después de soltar el campo de arriba, que es cuando hay un
-                  guardado en vuelo, y apagado se comía ese clic sin avisar. */}
-              <input
-                type="checkbox"
-                checked={subutiliza}
-                onChange={(e) => marcarSubutilizado(e.target.checked)}
-              />
-              <span>
-                <strong>El puesto que ocupa hoy no le exige lo que puede</strong>
-                <small>
-                  La medición toma el plazo del trabajo que tiene asignado. Marcado, el
-                  informe avisa que el estrato describe a ese puesto y no al techo de la
-                  persona.
-                </small>
-              </span>
-            </label>
-          </div>
-
-          {/* La conclusión, debajo de la tabla y con su rótulo: es lo que se
-              lee después de comparar los dos números. */}
-          {elegido && estratoPuesto && estratoPorNumero(estratoPuesto) && (
-            <div className="os-conclusion">
-              <span className="os-etiqueta-campo">Conclusión</span>
+          {/* Lo que dice el sistema, pegado a las tarjetas: es la resta de los
+              dos estratos de arriba y nada más, con su marca verde o roja al
+              lado del rótulo. */}
+          <div className="os-conclusion">
+            <div className="os-conclusion-cabeza">
+              <span className="os-etiqueta-campo">Conclusión del sistema</span>
+              {distancia !== null && (
+                <span
+                  className={`os-veredicto-tag ${distancia >= 0 ? 'alcanza' : 'no-alcanza'}`}
+                >
+                  {distancia >= 0 ? 'Alcanza' : 'No alcanza'}
+                </span>
+              )}
+            </div>
+            {distancia !== null && estratoPuesto ? (
               <Conclusion
-                distancia={
-                  ESTRATOS.findIndex((e) => e.romano === elegido.romano) -
-                  ESTRATOS.findIndex(
-                    (e) => e.romano === estratoPorNumero(estratoPuesto)?.romano
-                  )
-                }
+                distancia={distancia}
                 puesto={estratoPorNumero(estratoPuesto) as Estrato}
                 banda={banda}
                 edad={dibuja ? edadNum : null}
                 textos={conclusionesQueRigen(conclusiones)}
               />
+            ) : (
+              <p className="os-tabla-flojo">
+                {elegido
+                  ? 'El pedido todavía no tiene determinado el nivel de trabajo del puesto, así que no hay contra qué comparar.'
+                  : 'Falta el estrato de la persona, que sale de lo contestado en la entrevista.'}
+              </p>
+            )}
+          </div>
+
+          {/*
+            Lo único del capítulo que escribe una persona, en su propia tarjeta.
+
+            Arriba están los dos estratos y lo que el sistema concluye de ellos,
+            que sale de restar dos números y de textos escritos de antemano en
+            Configuración. Esto es la lectura de quien escuchó a la persona, va
+            al informe con su firma y no se recalcula.
+          */}
+          <div className="os-cierre-tarjeta">
+            <div className="os-potencial-fundamento">
+              <span className="os-etiqueta-campo">Fundamentación de la evaluadora</span>
+              <p className="os-potencial-ayuda">
+                Por qué esta persona quedó en ese estrato, en primera persona. Sale en el
+                informe con tu firma.
+              </p>
+              <textarea
+                className="os-campo os-relato-campo"
+                rows={4}
+                maxLength={2000}
+                value={porQueAsi}
+                disabled={guardando}
+                placeholder="Qué sostuvo en la entrevista que respalda el estrato, y qué matiza el número."
+                onChange={(e) => setPorQueAsi(e.target.value)}
+                onBlur={guardarFundamentacion}
+              />
+
+              <label className="os-potencial-tilde">
+                {/* El tilde no se apaga mientras se guarda: se lo marca justo
+                    después de soltar el campo de arriba, que es cuando hay un
+                    guardado en vuelo, y apagado se comía ese clic sin avisar. */}
+                <input
+                  type="checkbox"
+                  checked={subutiliza}
+                  onChange={(e) => marcarSubutilizado(e.target.checked)}
+                />
+                <span>
+                  <strong>El puesto que ocupa hoy no le exige lo que puede</strong>
+                  <small>
+                    La medición toma el plazo del trabajo que tiene asignado. Marcado, el
+                    informe avisa que el estrato describe a ese puesto y no al techo de la
+                    persona.
+                  </small>
+                </span>
+              </label>
             </div>
-          )}
+          </div>
 
           {/* Y el estrato a mano, en los dos casos en que el sistema no lo
               puede resolver: cuando los dos caminos discrepan y cuando en la
@@ -594,7 +684,18 @@ export default function Discursivo({
           quedar distinto del que ya está guardado. */}
       {!enEntrevista && (
       <div className="os-potencial-datos">
-        <span className="os-etiqueta-campo">Diagrama de progreso potencial</span>
+        <div className="os-potencial-cabeza">
+          <span className="os-etiqueta-campo">Diagrama de progreso potencial</span>
+          {dibuja && (
+            <button
+              type="button"
+              className="os-boton"
+              onClick={() => setImprimiendo(true)}
+            >
+              Descargar PDF
+            </button>
+          )}
+        </div>
         {dibuja ? (
           <div className="os-potencial-grafico">
             <Progreso edad={edadNum} dias={diasNum as number} />
@@ -602,26 +703,7 @@ export default function Discursivo({
                 cosas distintas dibujadas y en prosa hay que buscarlas de a una.
                 El globo del navegador tarda un segundo y hay que pegarle al
                 punto, así que la referencia va escrita. */}
-            <ul className="os-potencial-referencias">
-              <li>
-                <span className="os-potencial-punto hoy" aria-hidden="true" />
-                Hoy, a los {edadNum} años
-              </li>
-              {futuras.length > 0 && (
-                <li>
-                  <span className="os-potencial-punto luego" aria-hidden="true" />
-                  Hasta dónde llega a los{' '}
-                  {futuras.length > 1
-                    ? `${futuras.slice(0, -1).join(', ')} y ${futuras[futuras.length - 1]}`
-                    : futuras[0]}{' '}
-                  años
-                </li>
-              )}
-              <li>
-                <span className="os-potencial-punto franja" aria-hidden="true" />
-                Su banda de maduración
-              </li>
-            </ul>
+            <Referencias edad={edadNum} futuras={futuras} />
           </div>
         ) : (
           <p className="os-tabla-flojo">
@@ -633,6 +715,49 @@ export default function Discursivo({
       </div>
 
       )}
+
+      {/* La hoja del PDF, colgada del body y no de la pantalla.
+          Imprimir apagando lo que está alrededor deja las hojas en blanco que
+          ese contenido apagado sigue ocupando; una copia suelta al lado de la
+          aplicación se imprime sola, en una hoja y apaisada. */}
+      {imprimiendo &&
+        dibuja &&
+        createPortal(
+          <div className="os-papel-diagrama">
+            {/* La marca, la misma del informe: el PDF sale del sistema y se
+                manda al cliente, así que se presenta como lo que es. */}
+            <header className="os-papel-marca">
+              <span>
+                <span className="os-papel-nombre">Campos HR</span>
+                <span>Evaluaciones psicotécnicas</span>
+              </span>
+              <span className="os-papel-sitio">www.camposhr.com</span>
+            </header>
+
+            {/* De quién es y de cuándo: el PDF se manda o se archiva fuera del
+                sistema, y ahí un diagrama suelto no dice nada por sí solo. */}
+            <p className="os-papel-titulo">Diagrama de progreso potencial</p>
+            <dl className="os-papel-datos">
+              {[
+                { rotulo: 'Nombre', valor: nombre },
+                { rotulo: 'Fecha de evaluación', valor: fecha },
+                { rotulo: 'Empresa', valor: empresa },
+                { rotulo: 'Solicitado por', valor: solicitante },
+                { rotulo: 'Pedido', valor: elPuesto },
+              ]
+                .filter((d) => d.valor)
+                .map((d) => (
+                  <div key={d.rotulo}>
+                    <dt>{d.rotulo}</dt>
+                    <dd>{d.valor}</dd>
+                  </div>
+                ))}
+            </dl>
+            <Progreso edad={edadNum} dias={diasNum as number} />
+            <Referencias edad={edadNum} futuras={futuras} />
+          </div>,
+          document.body
+        )}
 
       {error && <p className="os-form-error">{error}</p>}
     </div>
@@ -647,6 +772,61 @@ export default function Discursivo({
  * otro. El tercero dice cuándo alcanza el nivel siguiente, que es lo que el
  * puesto va a pedir más adelante.
  */
+/**
+ * El apellido, que es la última palabra del nombre completo.
+ *
+ * Es para nombrar el archivo que se descarga, y ahí lo que se busca es el
+ * apellido. Con nombres compuestos ("Mauro Lionel Lambhert") la última palabra
+ * es la que sirve.
+ */
+function apellidoDe(nombre: string | null | undefined): string {
+  const partes = (nombre ?? '').trim().split(/\s+/).filter(Boolean);
+  return partes.length ? partes[partes.length - 1].toLowerCase() : '';
+}
+
+/**
+ * Qué es cada marca del diagrama.
+ *
+ * Va aparte porque se dibuja dos veces: debajo del diagrama en pantalla y otra
+ * vez en la hoja que se imprime, que es una copia del dibujo sin la pantalla
+ * alrededor.
+ */
+function Referencias({ edad, futuras }: { edad: number; futuras: number[] }) {
+  return (
+    <ul className="os-potencial-referencias">
+      <li>
+        <span className="os-potencial-punto hoy" aria-hidden="true" />
+        Hoy, a los {edad} años
+      </li>
+      {futuras.length > 0 && (
+        <li>
+          <span className="os-potencial-punto luego" aria-hidden="true" />
+          Hasta dónde llega a los{' '}
+          {futuras.length > 1
+            ? `${futuras.slice(0, -1).join(', ')} y ${futuras[futuras.length - 1]}`
+            : futuras[0]}{' '}
+          años
+        </li>
+      )}
+      <li>
+        <span className="os-potencial-punto franja" aria-hidden="true" />
+        Su banda de maduración
+      </li>
+    </ul>
+  );
+}
+
+/** Cada pregunta con lo que se marcó: sí, no, o sin contestar. */
+function marcadas(
+  preguntas: readonly { estrato: number; corto: string }[],
+  respuestas: Record<string, boolean> | null | undefined
+): { corto: string; si: boolean | null }[] {
+  return preguntas.map((p) => ({
+    corto: p.corto,
+    si: typeof respuestas?.[String(p.estrato)] === 'boolean' ? respuestas[String(p.estrato)] : null,
+  }));
+}
+
 /** De dónde salió un nivel: el plazo contestado y la pregunta más alta que sí. */
 function porQue(
   dias: number | null | undefined,
@@ -654,12 +834,9 @@ function porQue(
 ): string[] {
   const partes: string[] = [];
   if (dias) partes.push(`Responde por tareas de hasta ${enPalabras(dias)}`);
-  const sies = Object.entries(respuestas ?? {})
-    .filter(([, si]) => si)
-    .map(([n]) => Number(n));
-  const alta = nivelDeRespuestas(sies);
-  const pregunta = alta ? PREGUNTAS.find((p) => p.estrato === alta) : null;
-  if (pregunta) partes.push(`Lo más alto que exige: ${pregunta.corto.toLowerCase()}`);
+  // Cuál es la más alta contestada que sí se lee en la lista de preguntas de la
+  // tarjeta, que las muestra a las cinco con lo que se marcó en cada una.
+  void respuestas;
   return partes;
 }
 
@@ -670,12 +847,23 @@ function Comparacion({
   niveles,
   desdeElPuesto,
   desdeLaPersona,
+  preguntasDelPuesto,
+  preguntasDeLaPersona,
 }: {
   persona: { romano: string; nombre: string } | null;
   puesto: Estrato | null;
   /** Qué se contestó de cada lado, que es de donde salió su estrato. */
   desdeElPuesto: string[];
   desdeLaPersona: string[];
+  /**
+   * Las preguntas de complejidad de cada lado, con su respuesta.
+   *
+   * El puesto lleva las cinco y la persona las cuatro primeras: el estrato V se
+   * pregunta sobre el trabajo y no sobre lo que la persona manejó, que es como
+   * se toma en la entrevista.
+   */
+  preguntasDelPuesto: { corto: string; si: boolean | null }[];
+  preguntasDeLaPersona: { corto: string; si: boolean | null }[];
   /** La banda de maduración, para proyectar. Null sin edad ni horizonte. */
   banda: number | null;
   /** El catálogo, para el detalle de cada estrato. */
@@ -698,7 +886,9 @@ function Comparacion({
     cuando: string | null,
     falta: string,
     porque: string[],
-    clase: string
+    clase: string,
+    /** Las preguntas de complejidad con lo que se marcó en cada una. */
+    marcadas: { corto: string; si: boolean | null }[] | null
   ) => {
     const d = romano ? detalle(romano) : null;
     const e = romano ? ESTRATOS.find((x) => x.romano === romano) : null;
@@ -750,6 +940,31 @@ function Comparacion({
             </div>
           ))}
         </dl>
+
+        {/* Las preguntas de complejidad, con lo que se contestó en cada una. El
+            estrato es la más alta que salió que sí, y verlas todas es lo que
+            deja comprobar de dónde salió el número sin ir a la otra pantalla. */}
+        {marcadas ? (
+          <div className="os-comparacion-preguntas">
+            <span className="os-comparacion-rotulo">Qué exige el trabajo</span>
+            <ul>
+              {marcadas.map((m) => (
+                <li key={m.corto}>
+                  <span>{m.corto}</span>
+                  <span
+                    className={`os-sino ${m.si === true ? 'si' : m.si === false ? 'no' : 'sin'}`}
+                  >
+                    {m.si === true ? 'Sí' : m.si === false ? 'No' : '—'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          /* El renglón vacío: las tres tarjetas comparten filas, y saltearlo
+             desalinea a las de al lado. */
+          <div className="os-comparacion-preguntas vacia" aria-hidden="true" />
+        )}
       </article>
     );
   };
@@ -769,7 +984,8 @@ function Comparacion({
           null,
           'Sin determinar. Se contesta en la ficha del pedido.',
           desdeElPuesto,
-          'puesto'
+          'puesto',
+          preguntasDelPuesto
         )}
         {tarjeta(
           'La persona, hoy',
@@ -777,7 +993,8 @@ function Comparacion({
           null,
           'Sin determinar. Se contesta en la hoja de la entrevista.',
           desdeLaPersona,
-          'persona'
+          'persona',
+          preguntasDeLaPersona
         )}
         {banda !== null &&
           tarjeta(
@@ -786,7 +1003,9 @@ function Comparacion({
             'a los 50 años',
             '',
             [`Por su banda de maduración, la ${banda}`],
-            'futuro'
+            'futuro',
+            // Acá no se contesta nada: sale de la edad y de la banda.
+            null
           )}
       </div>
     </>
@@ -881,37 +1100,26 @@ function Conclusion({
 
   const luego = adelante();
 
-  /* Verde o rojo, y nada en el medio: lo que hay que contestar es si la persona
-     puede con el trabajo que el puesto pide. Que además le sobre alcance es una
-     advertencia sobre cuánto le va a durar el puesto, no un impedimento para
-     entrar, así que también va en verde y lo explica el renglón de abajo. */
-  const alcanza = distancia >= 0;
-
   /*
-   * El veredicto arriba y solo, y debajo lo que lo explica.
+   * Los dos renglones y nada más.
    *
-   * Es la única pregunta que la pantalla contesta, y estaba como una etiqueta
-   * al principio de un párrafo, al mismo peso que el resto. Centrado y en
-   * cuerpo grande se lee sin leer: quien abre la pestaña quiere saber eso, y el
-   * detalle es para después.
+   * Si alcanza o no lo dice la marca verde o roja que está arriba, al lado del
+   * rótulo. Acá quedan las dos frases que lo explican, en cuerpo chico: era un
+   * recuadro de color con un título grande, y ocupaba media pantalla para decir
+   * lo que la marca dice en una palabra.
    */
   return (
-    <div className={`os-veredicto-bloque ${alcanza ? 'alcanza' : 'no-alcanza'}`}>
-      <p className="os-veredicto-titulo">
-        {alcanza ? 'Alcanza el nivel del puesto' : 'No alcanza el nivel del puesto'}
-      </p>
-      <dl className="os-conclusion-tiempos">
+    <dl className="os-conclusion-tiempos">
+      <div>
+        <dt>Hoy</dt>
+        <dd>{hoy}</dd>
+      </div>
+      {luego && (
         <div>
-          <dt>Hoy</dt>
-          <dd>{hoy}</dd>
+          <dt>Más adelante</dt>
+          <dd>{luego}</dd>
         </div>
-        {luego && (
-          <div>
-            <dt>Más adelante</dt>
-            <dd>{luego}</dd>
-          </div>
-        )}
-      </dl>
-    </div>
+      )}
+    </dl>
   );
 }

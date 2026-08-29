@@ -6823,13 +6823,13 @@ th.os-tabla-contacto {
 .os-comparacion-tarjetas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  grid-template-rows: repeat(4, auto);
+  grid-template-rows: repeat(5, auto);
   gap: 12px;
 }
 
 .os-comparacion-tarjeta {
   display: grid;
-  grid-row: span 4;
+  grid-row: span 5;
   grid-template-rows: subgrid;
   gap: 12px;
   padding: 16px 18px 18px;
@@ -6962,6 +6962,77 @@ th.os-tabla-contacto {
   color: var(--os-suave);
 }
 
+/*
+ * Las preguntas de complejidad con lo que se contestó en cada una.
+ *
+ * El estrato es la más alta que salió que sí, y la tarjeta lo afirmaba sin
+ * mostrar de dónde: para comprobarlo había que abrir la ficha del pedido o la
+ * hoja de la entrevista.
+ */
+.os-comparacion-preguntas {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-comparacion-preguntas.vacia {
+  border-top: none;
+  padding-top: 0;
+}
+
+.os-comparacion-rotulo {
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-comparacion-preguntas ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-comparacion-preguntas li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--os-tinta-media);
+}
+
+/* Sí, no, o sin contestar. El sí es el que arma el estrato, así que es el que
+   se ve; el no queda apagado y el sin contestar apenas se insinúa. */
+.os-sino {
+  flex: none;
+  min-width: 26px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.os-sino.si {
+  background: rgba(43, 68, 104, 0.1);
+  color: var(--os-azul-fuerte);
+}
+
+.os-sino.no {
+  background: var(--os-fondo-suave, rgba(0, 0, 0, 0.03));
+  color: var(--os-suave);
+}
+
+.os-sino.sin {
+  color: var(--os-linea);
+}
+
 /* El nombre del estrato, detrás del número y más suave: el número es el dato. */
 .os-comparacion td span {
   margin-left: 8px;
@@ -6977,7 +7048,7 @@ th.os-tabla-contacto {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 6px;
-  margin-top: 18px;
+  margin-top: 22px;
 }
 
 /* El rótulo en azul: es la lectura del sistema y no un campo más de la
@@ -6987,31 +7058,33 @@ th.os-tabla-contacto {
 }
 
 /* Hoy y más adelante, uno debajo del otro y con su tiempo verbal: en un solo
-   párrafo se mezclan los presentes con los futuros. */
+   párrafo se mezclan los presentes con los futuros. Su rótulo arriba y en
+   cuerpo chico, que si alcanza o no lo dice la marca de la cabecera. */
 .os-conclusion-tiempos {
   display: grid;
-  gap: 10px;
-  margin: 0;
+  gap: 8px;
+  margin: 10px 0 0;
   max-width: 82ch;
 }
 
 .os-conclusion-tiempos > div {
   display: grid;
-  grid-template-columns: 108px minmax(0, 1fr);
-  gap: 14px;
-  align-items: baseline;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
 }
 
 .os-conclusion-tiempos dt {
-  font-size: 0.8rem;
+  font-size: 0.62rem;
   font-weight: 600;
-  color: var(--os-azul-fuerte);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--os-suave);
 }
 
 .os-conclusion-tiempos dd {
   margin: 0;
-  font-size: 0.92rem;
-  line-height: 1.6;
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 /* El número del paso, delante de su pregunta. */
@@ -7363,6 +7436,140 @@ th.os-tabla-contacto {
   font-size: 0.78rem;
   line-height: 1.45;
   color: var(--os-suave);
+}
+
+/* El rótulo del diagrama y el botón que lo baja en PDF, en la misma línea. */
+.os-potencial-cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/*
+ * El diagrama solo, en PDF.
+ *
+ * Es una copia del dibujo colgada del body, al lado de la aplicación y no
+ * adentro: apagar lo que está alrededor con `visibility` deja las hojas en
+ * blanco que ese contenido apagado sigue ocupando, y con `display` se apagan
+ * también los padres del diagrama. Como hermana del árbol de la aplicación,
+ * imprimir es esconder a los hermanos y mostrarla a ella.
+ *
+ * Lo arma el navegador con su propia impresión, igual que el informe: no hay
+ * generador de PDF de por medio.
+ */
+.os-papel-diagrama {
+  display: none;
+}
+
+@media print {
+  body[data-imprimir='diagrama'] > *:not(.os-papel-diagrama) {
+    display: none !important;
+  }
+
+  body[data-imprimir='diagrama'] .os-papel-diagrama {
+    display: block;
+    /* Apaisada: el cuadro va de los 20 a los 65 años y en vertical entra a la
+       mitad del tamaño. */
+    page: apaisada;
+    color: #16202b;
+    font-family: var(--os-tipo, inherit);
+  }
+
+  /* El navegador saltea los fondos al imprimir, y las marcas de la referencia
+     son fondos: el punto lleno salía en blanco y el recuadro de la banda sin su
+     celeste, que es justo lo que la referencia tiene que mostrar. */
+  body[data-imprimir='diagrama'] .os-papel-diagrama,
+  body[data-imprimir='diagrama'] .os-papel-diagrama * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* La marca arriba, con el logotipo tipográfico a la izquierda y el sitio a
+     la derecha: es el mismo encabezado del informe. */
+  .os-papel-marca {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    /* La marca queda arriba y sola, separada del documento por su línea y por
+       este aire. */
+    margin-bottom: 34px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ded9d1;
+  }
+
+  .os-papel-nombre {
+    display: block;
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.42rem;
+    letter-spacing: -0.022em;
+    line-height: 1.1;
+  }
+
+  .os-papel-marca span > span:not(.os-papel-nombre) {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8a857c;
+  }
+
+  .os-papel-sitio {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a857c;
+    white-space: nowrap;
+  }
+
+  .os-papel-titulo {
+    margin: 0 0 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  /* De quién es y de cuándo, debajo del título y como datos: rótulo y valor en
+     la misma línea, uno debajo del otro. */
+  .os-papel-datos {
+    display: grid;
+    gap: 2px;
+    margin: 0 0 30px;
+    font-size: 0.82rem;
+  }
+
+  .os-papel-datos > div {
+    display: flex;
+    gap: 6px;
+  }
+
+  .os-papel-datos dt {
+    color: #6b675f;
+  }
+
+  .os-papel-datos dt::after {
+    content: ':';
+  }
+
+  .os-papel-datos dd {
+    margin: 0;
+  }
+
+  .os-papel-diagrama svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .os-papel-diagrama .os-potencial-referencias {
+    margin-top: 10px;
+    font-size: 0.8rem;
+  }
+}
+
+@page apaisada {
+  size: landscape;
+  margin: 12mm;
 }
 
 /* El diagrama entra a lo ancho del panel: la lámina lleva las dos columnas de
@@ -10857,70 +11064,58 @@ textarea.os-campo-bateria {
 }
 
 /*
- * El veredicto del potencial: primero la respuesta, después por qué.
+ * El veredicto del potencial: una marca al lado del rótulo.
  *
  * La pestaña contesta una sola pregunta, si la persona puede con el trabajo que
- * el puesto pide, y estaba dicha en el medio de un párrafo al mismo peso que
- * todo lo demás. Va arriba, centrada y en cuerpo grande, con los dos renglones
- * del detalle debajo.
+ * el puesto pide. Era un recuadro de color con un título grande y ocupaba media
+ * pantalla para decir lo que una palabra dice.
  *
  * Verde o rojo y nada en el medio. Que además le sobre alcance va en verde,
  * porque no impide entrar, y lo explica el renglón de "más adelante".
  */
-.os-veredicto-bloque {
-  padding: 14px 18px 16px;
+.os-veredicto-tag {
+  padding: 3px 10px;
   border: 1px solid;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.os-veredicto-bloque.alcanza {
-  border-color: rgba(74, 120, 86, 0.35);
-  background: rgba(74, 120, 86, 0.05);
-}
-
-.os-veredicto-bloque.no-alcanza {
-  border-color: rgba(140, 59, 59, 0.32);
-  background: rgba(140, 59, 59, 0.04);
-}
-
-.os-veredicto-titulo {
-  margin: 0 0 10px;
-  font-size: 0.98rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
 }
 
-.os-veredicto-bloque.alcanza .os-veredicto-titulo {
+.os-veredicto-tag.alcanza {
+  border-color: rgba(74, 120, 86, 0.4);
+  background: rgba(74, 120, 86, 0.08);
   color: var(--os-verde);
 }
 
-.os-veredicto-bloque.no-alcanza .os-veredicto-titulo {
+.os-veredicto-tag.no-alcanza {
+  border-color: rgba(140, 59, 59, 0.38);
+  background: rgba(140, 59, 59, 0.07);
   color: var(--os-rojo);
 }
 
-/* Los dos renglones del detalle: centrados bajo el veredicto y con su rótulo
-   arriba, que en dos columnas quedaban descolgados del centro. */
-.os-veredicto-bloque .os-conclusion-tiempos {
-  max-width: 62ch;
-  margin: 0 auto;
-  gap: 8px;
-  text-align: left;
+/* El rótulo y la marca en la misma línea: la marca es la respuesta de eso que
+   el rótulo nombra. */
+.os-conclusion-cabeza {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.os-veredicto-bloque .os-conclusion-tiempos dd {
-  font-size: 0.82rem;
-  line-height: 1.5;
+/*
+ * Lo que se escribe y lo que se concluye, en una tarjeta aparte.
+ *
+ * Arriba quedan las tres tarjetas con los estratos, que son datos. Esto es la
+ * lectura, y mezclado con la comparación se leía como un dato más.
+ */
+.os-cierre-tarjeta {
+  margin-top: 24px;
+  padding: 20px 22px;
+  border: 1px solid var(--os-linea);
+  border-radius: 12px;
+  background: var(--os-panel);
 }
 
-.os-veredicto-bloque .os-conclusion-tiempos > div {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 2px;
-}
-
-.os-veredicto-bloque .os-conclusion-tiempos dt {
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--os-suave);
+.os-cierre-tarjeta .os-potencial-fundamento {
+  margin: 0;
 }

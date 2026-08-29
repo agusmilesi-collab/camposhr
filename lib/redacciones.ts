@@ -2051,6 +2051,10 @@ export function bandasPorIndice(
   const porIndice: Record<string, Banda> = {};
   for (const [clave, t] of Object.entries(TEXTOS as Record<string, Redaccion>)) {
     if (!t.corte) continue;
+    /* La lectura que no corre en ese test tampoco pone su borde. T=0 en
+       Zulliger es la norma y "sumt-cero" no aplica: contando su corte, la banda
+       quedaba con piso 1 y techo 0, que ningún valor puede cumplir. */
+    if (test === 'Zulliger' && t.zulliger?.aplica === false) continue;
     const v = corteDe(clave as ClaveDeTexto, cortes, test);
     const b =
       porIndice[t.indice] ??
@@ -2078,8 +2082,18 @@ export function bandaDeAfr(estilo: string): Banda | null {
   return { indice: 'Afr', minimo: b[0], maximo: b[1], decimales: 2 };
 }
 
-export function bandasDeLaHoja(cortes: Cortes = {}): Record<string, Banda> {
-  const porIndice = bandasPorIndice(cortes);
+/**
+ * Lo mismo, por el rótulo con el que la hoja escribe cada índice.
+ *
+ * Lleva el test porque los cortes del Zulliger son otros: sin decírselo pintaba
+ * todo protocolo con las normas de Exner, y un valor esperado en Zdunic salía
+ * en rojo.
+ */
+export function bandasDeLaHoja(
+  cortes: Cortes = {},
+  test: TestDeManchas = 'Rorschach'
+): Record<string, Banda> {
+  const porIndice = bandasPorIndice(cortes, test);
   const porRotulo: Record<string, Banda> = {};
   for (const [indice, banda] of Object.entries(porIndice)) {
     for (const rotulo of ROTULOS_DE_HOJA[indice] ?? []) porRotulo[rotulo] = banda;
