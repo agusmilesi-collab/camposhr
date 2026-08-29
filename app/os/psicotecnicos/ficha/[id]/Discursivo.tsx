@@ -74,6 +74,8 @@ export default function Discursivo({
   dias,
   complejidad,
   relato,
+  fundamentacion,
+  subutilizado,
   estratoPuesto,
   puestoDias,
   puestoComplejidad,
@@ -101,6 +103,10 @@ export default function Discursivo({
   complejidad: Record<string, boolean> | null;
   /** Lo que la persona contó, anotado en la entrevista. Es de dónde se codifica. */
   relato: string | null;
+  /** Por qué la evaluadora lo ubicó en ese estrato, con sus palabras. */
+  fundamentacion?: string | null;
+  /** Si el puesto que ocupa hoy no le exige lo que puede. */
+  subutilizado?: boolean | null;
   /** El nivel de trabajo del puesto, contra el que se compara. */
   estratoPuesto?: number | null;
   /** De dónde sale el nivel del puesto: el plazo y las cinco preguntas. */
@@ -142,6 +148,8 @@ export default function Discursivo({
   const [unidad, setUnidad] = useState<Unidad>(inicial?.unidad ?? 'anios');
   const [respuestas, setRespuestas] = useState<Record<string, boolean>>(complejidad ?? {});
   const [contado, setContado] = useState(relato ?? '');
+  const [porQueAsi, setPorQueAsi] = useState(fundamentacion ?? '');
+  const [subutiliza, setSubutiliza] = useState(Boolean(subutilizado));
 
   async function mandar(cuerpo: Record<string, unknown>) {
     setGuardando(true);
@@ -176,6 +184,19 @@ export default function Discursivo({
     await mandar({ relato: contado.trim() || null });
   }
 
+  /** Su fundamentación, al soltar el campo: se escribe de corrido. */
+  async function guardarFundamentacion() {
+    if (porQueAsi === (fundamentacion ?? '')) return;
+    await mandar({ fundamentacion: porQueAsi.trim() || null });
+  }
+
+  /* La marca de subutilización se guarda en el momento: es un tilde, y esperar
+     a que pierda el foco deja al dato sin escribir si se cambia de pestaña. */
+  async function marcarSubutilizado(si: boolean) {
+    setSubutiliza(si);
+    if (!(await mandar({ subutilizado: si }))) setSubutiliza(!si);
+  }
+
   /** El horizonte viaja en días: el par número + unidad es solo para escribirlo. */
   async function guardarHorizonte(cantidad: string, u: Unidad) {
     const limpio = cantidad.trim();
@@ -197,6 +218,11 @@ export default function Discursivo({
   const dibuja = Number.isFinite(edadNum) && edadNum >= 16 && edadNum <= 80 && diasNum !== null;
   const banda = dibuja ? bandaDe(edadNum, diasNum as number) : null;
   const hoy = dibuja ? estratoDeEscalon(escalonDe(diasNum as number)) : null;
+
+  /* Las edades que el diagrama dibuja hacia adelante. Es el mismo filtro que
+     usa el dibujo, y va acá para que la referencia nombre los puntos que están
+     y no los tres de siempre. */
+  const futuras = dibuja ? [40, 50, 60].filter((e) => e > edadNum + 2 && e <= EDAD_MAX) : [];
 
   /* El estrato por cada camino. El del horizonte sale del punto en la escalera;
      el de las preguntas, de la más alta contestada que sí. */
@@ -443,6 +469,51 @@ export default function Discursivo({
             desdeLaPersona={porQue(diasNum, respuestas)}
           />
 
+          {/*
+            Lo único del capítulo que escribe una persona.
+            El estrato sale de comparar dos números y la conclusión está redactada
+            de antemano en Configuración; el instrumento mide el alcance del
+            trabajo que la persona tiene asignado hoy, y eso deja afuera lo que
+            ella vio en la entrevista. Va delante de la conclusión porque es lo
+            que la sostiene, sale al informe con su firma y no se recalcula.
+          */}
+          <div className="os-potencial-fundamento">
+            <span className="os-etiqueta-campo">Fundamentación de la evaluadora</span>
+            <p className="os-potencial-ayuda">
+              Por qué esta persona quedó en ese estrato, en primera persona. Sale en el
+              informe con tu firma.
+            </p>
+            <textarea
+              className="os-campo os-relato-campo"
+              rows={4}
+              maxLength={2000}
+              value={porQueAsi}
+              disabled={guardando}
+              placeholder="Qué sostuvo en la entrevista que respalda el estrato, y qué matiza el número."
+              onChange={(e) => setPorQueAsi(e.target.value)}
+              onBlur={guardarFundamentacion}
+            />
+
+            <label className="os-potencial-tilde">
+              {/* El tilde no se apaga mientras se guarda: se lo marca justo
+                  después de soltar el campo de arriba, que es cuando hay un
+                  guardado en vuelo, y apagado se comía ese clic sin avisar. */}
+              <input
+                type="checkbox"
+                checked={subutiliza}
+                onChange={(e) => marcarSubutilizado(e.target.checked)}
+              />
+              <span>
+                <strong>El puesto que ocupa hoy no le exige lo que puede</strong>
+                <small>
+                  La medición toma el plazo del trabajo que tiene asignado. Marcado, el
+                  informe avisa que el estrato describe a ese puesto y no al techo de la
+                  persona.
+                </small>
+              </span>
+            </label>
+          </div>
+
           {/* La conclusión, debajo de la tabla y con su rótulo: es lo que se
               lee después de comparar los dos números. */}
           {elegido && estratoPuesto && estratoPorNumero(estratoPuesto) && (
@@ -527,13 +598,30 @@ export default function Discursivo({
         {dibuja ? (
           <div className="os-potencial-grafico">
             <Progreso edad={edadNum} dias={diasNum as number} />
-            {/* Qué es cada punto, escrito: el globo del navegador tarda un
-                segundo en aparecer y hay que pegarle al punto para verlo. */}
-            <p className="os-potencial-pie">
-              El punto lleno es hoy. Los huecos son a qué estrato llega su banda de
-              maduración a los 50 y a los 60 años; al pasar por encima de cada uno dice
-              con qué horizonte.
-            </p>
+            {/* Qué es cada marca, como referencia y no como párrafo: son tres
+                cosas distintas dibujadas y en prosa hay que buscarlas de a una.
+                El globo del navegador tarda un segundo y hay que pegarle al
+                punto, así que la referencia va escrita. */}
+            <ul className="os-potencial-referencias">
+              <li>
+                <span className="os-potencial-punto hoy" aria-hidden="true" />
+                Hoy, a los {edadNum} años
+              </li>
+              {futuras.length > 0 && (
+                <li>
+                  <span className="os-potencial-punto luego" aria-hidden="true" />
+                  Hasta dónde llega a los{' '}
+                  {futuras.length > 1
+                    ? `${futuras.slice(0, -1).join(', ')} y ${futuras[futuras.length - 1]}`
+                    : futuras[0]}{' '}
+                  años
+                </li>
+              )}
+              <li>
+                <span className="os-potencial-punto franja" aria-hidden="true" />
+                Su banda de maduración
+              </li>
+            </ul>
           </div>
         ) : (
           <p className="os-tabla-flojo">
@@ -633,11 +721,16 @@ function Comparacion({
           <p className="os-comparacion-sin">{falta}</p>
         )}
 
-        {mecanismo && (
+        {mecanismo ? (
           <p className="os-comparacion-que">
             <strong>{mecanismo.corto}</strong>
             <span>{mecanismo.simple}</span>
           </p>
+        ) : (
+          /* El renglón se dibuja vacío igual: las tres tarjetas comparten las
+             mismas filas, y salteando este hueco lo de abajo sube y las de al
+             lado dejan de alinearse. */
+          <p className="os-comparacion-que vacia" aria-hidden="true" />
         )}
 
         {/* De dónde salió ese estrato: sin esto la pantalla afirma un nivel y no

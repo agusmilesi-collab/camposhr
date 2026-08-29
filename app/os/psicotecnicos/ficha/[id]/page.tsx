@@ -2,7 +2,13 @@ import Link from 'next/link';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Shell from '../../../Shell';
-import { desajusteDeProyectivo, fichaDe, proyectivoDe, type Ficha } from '@/lib/ficha';
+import {
+  desajusteDeProyectivo,
+  fichaDe,
+  proyectivoDe,
+  proyectivoDeLaBateria,
+  type Ficha,
+} from '@/lib/ficha';
 import { equipo, quienSoy } from '@/lib/identidad';
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { nombrePerfil } from '@/lib/perfiles';
@@ -576,6 +582,8 @@ function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) 
           dias={f.discursivo?.horizonte_dias ?? null}
           complejidad={f.discursivo?.complejidad ?? null}
           relato={f.discursivo?.relato ?? null}
+          fundamentacion={f.discursivo?.fundamentacion ?? null}
+          subutilizado={f.discursivo?.subutilizado ?? false}
           estratoPuesto={delPuesto}
           puestoDias={f.cabecera.pedidos?.time_span_dias ?? null}
           puestoComplejidad={f.cabecera.pedidos?.complejidad ?? null}
@@ -804,7 +812,11 @@ export default async function FichaPagina({
               botón que lo calcula: ahí sí lo que hay que mirar es la
               codificación. */}
           {ficha.sumario && <SumarioEstructural f={ficha} rige={rige} />}
-          <Manchas evaluacionId={params.id} filas={ficha.manchas} />
+          <Manchas
+            evaluacionId={params.id}
+            filas={ficha.manchas}
+            bateria={proyectivoDeLaBateria(ficha)}
+          />
           {!ficha.sumario && <SumarioEstructural f={ficha} rige={rige} />}
         </>
       )}

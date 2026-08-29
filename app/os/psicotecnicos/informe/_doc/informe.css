@@ -1440,6 +1440,18 @@
   line-height: 1.55;
 }
 
+/* Que el estrato medido describe al puesto que la persona ocupa hoy. Va con la
+   misma marca lateral que la comparación, en ámbar: es una advertencia sobre
+   cómo leer el número y no un resultado más. */
+.inf-subutilizado {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-left: 3px solid #b98a2e;
+  background: #fbf6ec;
+  border-radius: 0 8px 8px 0;
+  line-height: 1.55;
+}
+
 /*
  * El diagrama de progreso potencial y sus dos pies.
  *

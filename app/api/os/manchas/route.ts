@@ -132,6 +132,40 @@ async function conSesion(): Promise<boolean> {
   return Boolean(cookie && igual(cookie, await huella(clave)));
 }
 
+/**
+ * De qué test es una respuesta que se está dando de alta.
+ *
+ * Manda la lámina, que es lo que se le mostró a la persona: las tres de Zdunic
+ * son Z1, Z2 y Z3, y las diez del Sistema Comprehensivo van en romanos. Sin
+ * lámina se cae en lo que dice la batería que se le vendió al cliente, que es
+ * lo que se le va a tomar.
+ *
+ * Estaba escrito 'Rorschach' fijo, así que cada protocolo de Zulliger que se
+ * codificaba acá quedaba marcado como Rorschach: la pestaña cambiaba de nombre,
+ * saltaba el aviso de desajuste y el sumario se iba a calcular con las normas
+ * que no son.
+ */
+async function testDe(
+  cfg: { url: string; key: string },
+  evaluacion: string,
+  lamina: unknown
+): Promise<'Rorschach' | 'Zulliger'> {
+  if (typeof lamina === 'string' && lamina) return lamina.startsWith('Z') ? 'Zulliger' : 'Rorschach';
+
+  const res = await fetch(
+    `${cfg.url}/rest/v1/evaluaciones?select=pedidos(baterias(tests))&id=eq.${evaluacion}`,
+    {
+      headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` },
+      cache: 'no-store',
+    }
+  ).catch(() => null);
+  if (!res?.ok) return 'Rorschach';
+  const [fila] = (await res.json().catch(() => [])) as {
+    pedidos?: { baterias?: { tests?: string[] | null } | null } | null;
+  }[];
+  return fila?.pedidos?.baterias?.tests?.includes('Zulliger') ? 'Zulliger' : 'Rorschach';
+}
+
 /** Alta de una respuesta, al final del protocolo. */
 export async function PUT(req: Request) {
   if (!(await conSesion())) {
@@ -149,6 +183,8 @@ export async function PUT(req: Request) {
   const limpio = limpiar(datos.campos ?? {});
   if ('ok' in limpio) return NextResponse.json(limpio, { status: 400 });
 
+  const test = await testDe(cfg, evaluacion, limpio.lamina);
+
   const res = await fetch(`${cfg.url}/rest/v1/rorschach_respuestas`, {
     method: 'POST',
     headers: {
@@ -157,7 +193,7 @@ export async function PUT(req: Request) {
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     },
-    body: JSON.stringify({ ...limpio, evaluacion_id: evaluacion, test: 'Rorschach' }),
+    body: JSON.stringify({ ...limpio, evaluacion_id: evaluacion, test }),
     cache: 'no-store',
   });
   if (!res.ok) {
@@ -194,6 +230,13 @@ export async function POST(req: Request) {
   const limpio = limpiar(datos.campos ?? {});
   if ('ok' in limpio) return NextResponse.json(limpio, { status: 400 });
   if (Object.keys(limpio).length === 0) return NextResponse.json({ ok: true });
+
+  /* Corregir la lámina corrige el test: la fila pasa de una lámina romana a una
+     Z cuando el protocolo se empezó con la lámina que no era, y dejar el test
+     viejo sostiene el error en la columna con la que se elige la norma. */
+  if (typeof limpio.lamina === 'string' && limpio.lamina) {
+    limpio.test = limpio.lamina.startsWith('Z') ? 'Zulliger' : 'Rorschach';
+  }
 
   const res = await fetch(`${cfg.url}/rest/v1/rorschach_respuestas?id=eq.${id}`, {
     method: 'PATCH',

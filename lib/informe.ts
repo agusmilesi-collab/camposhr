@@ -227,6 +227,22 @@ export type Informe = {
     actual: string | null;
     futura: string | null;
     /**
+     * Por qué la evaluadora lo ubicó ahí, con sus palabras.
+     *
+     * El capítulo entero sale de comparar dos estratos, y hasta acá se
+     * publicaba sin una línea de quien lo firma. Es lo único del potencial que
+     * no calcula el sistema.
+     */
+    fundamentacion: string | null;
+    /**
+     * El puesto que ocupa hoy no le exige lo que puede.
+     *
+     * El instrumento mide el alcance del trabajo asignado, así que un puesto
+     * que la subutiliza devuelve un estrato bajo sin decir por qué. Con esto
+     * marcado, el informe avisa que el número describe al puesto.
+     */
+    subutilizado: boolean;
+    /**
      * Dónde cae en el diagrama de progreso potencial, si se cargaron los dos.
      *
      * Son dos datos de la evaluadora: la edad del día de la entrevista y el
@@ -697,6 +713,8 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
           nivel: f.discursivo.nivel,
           actual: f.discursivo.actual,
           futura: f.discursivo.futura,
+          fundamentacion: f.discursivo.fundamentacion,
+          subutilizado: Boolean(f.discursivo.subutilizado),
           puesto: (() => {
             const n = c.pedidos?.estrato_puesto ?? null;
             const suyo = nivelesQueRigen(niveles).find((x) => x.nombre === f.discursivo?.nivel);
