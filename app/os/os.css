@@ -5150,19 +5150,127 @@ th.os-tabla-contacto {
   min-height: 26px;
 }
 
-.os-select-encima {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  opacity: 0;
-  cursor: pointer;
-  font: inherit;
+/*
+ * El selector de un código: el botón es la etiqueta.
+ *
+ * Elegido, el botón se pinta del color del código, que es el mismo que tenía la
+ * opción en la lista. Vacío, es una raya apagada que dice que ahí falta algo.
+ */
+.os-codigo {
+  display: inline-flex;
 }
 
-.os-celda-select:hover {
-  outline: 1px solid var(--os-linea);
-  outline-offset: 2px;
-  border-radius: 6px;
+.os-codigo-boton {
+  min-width: 34px;
+  padding: 2px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: #1c1c1c;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Sin código: el botón se ve como el hueco que es. */
+.os-codigo-boton:not([style]) {
+  color: var(--os-suave);
+  border-color: var(--os-linea-suave);
+  border-style: dashed;
+}
+
+.os-codigo-boton:hover,
+.os-chip-agregar:hover {
+  border-color: var(--os-suave);
+}
+
+/*
+ * La lista de códigos, con cada opción de su color.
+ *
+ * Es lo que el `select` del navegador no deja hacer: ahí la lista sale en
+ * blanco y negro y el color aparece recién al elegir, que es cuando ya no hace
+ * falta. Acá se elige mirando el color, que es como está codificada la tabla
+ * que la evaluadora viene usando.
+ */
+.os-codigos-lista {
+  z-index: 60;
+  display: block;
+  width: max-content;
+  max-width: 420px;
+  padding: 8px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel);
+  box-shadow: 0 14px 34px rgba(22, 32, 43, 0.16);
+}
+
+.os-codigos-buscar {
+  width: 100%;
+  height: 30px;
+  margin-bottom: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--os-linea);
+  border-radius: 7px;
+  background: var(--os-fondo);
+  color: var(--os-tinta);
+  font: inherit;
+  font-size: 0.84rem;
+}
+
+.os-codigos-buscar:focus {
+  outline: none;
+  border-color: var(--os-tinta);
+}
+
+/* Las opciones en grilla y no en lista: son códigos de dos o tres letras, y en
+   una columna la lista medía media pantalla para mostrar treinta cosas cortas. */
+.os-codigos-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.os-codigo-opcion {
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #1c1c1c;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* La marcada es la que se elige con Enter: el borde y no otro fondo, que el
+   fondo es el color del código y es lo que hay que seguir viendo. */
+.os-codigo-opcion.marcada {
+  border-color: var(--os-tinta);
+}
+
+.os-codigo-opcion.elegida {
+  box-shadow: inset 0 0 0 1px var(--os-tinta);
+}
+
+.os-codigos-vaciar {
+  padding: 3px 10px;
+  border: 1px dashed var(--os-linea);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--os-suave);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.os-codigos-nada {
+  padding: 4px 2px;
+  font-size: 0.8rem;
+  color: var(--os-suave);
 }
 
 .os-celda-multiple {

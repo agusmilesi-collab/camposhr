@@ -29,6 +29,7 @@ import {
 } from '@/lib/rorschach';
 import type { Mancha } from '@/lib/ficha';
 import Calcular from './Calcular';
+import Codigo from './Codigo';
 
 /** Una etiqueta con el color que le toca a ese código. */
 function Chip({ valor, opciones }: { valor: string; opciones: Opcion[] }) {
@@ -39,36 +40,36 @@ function Chip({ valor, opciones }: { valor: string; opciones: Opcion[] }) {
   );
 }
 
+/**
+ * Una celda de un solo código.
+ *
+ * La lámina no se busca escribiendo: son diez opciones en orden y se eligen
+ * mirando, así que ahí el campo de búsqueda sería un paso de más.
+ */
 function Simple({
   valor,
   opciones,
   onCambio,
   ancho,
+  etiqueta,
+  buscable = true,
 }: {
   valor: string | null;
   opciones: Opcion[];
   onCambio: (v: string | null) => void;
   ancho?: number;
+  etiqueta: string;
+  buscable?: boolean;
 }) {
   return (
-    // El ancho lo reserva la celda y no el desplegable: el desplegable está
-    // encima y en posición absoluta, y con un ancho propio se sale de su celda
-    // y se queda con los clics de la de al lado.
     <span className="os-celda-select" style={ancho ? { minWidth: ancho } : undefined}>
-      {valor && <Chip valor={valor} opciones={opciones} />}
-      <select
-        className="os-select-encima"
-        value={valor ?? ''}
-        onChange={(e) => onCambio(e.target.value || null)}
-        aria-label="Opción"
-      >
-        <option value="">—</option>
-        {opciones.map((o) => (
-          <option key={o.v} value={o.v}>
-            {o.v}
-          </option>
-        ))}
-      </select>
+      <Codigo
+        valor={valor}
+        opciones={opciones}
+        onElegir={onCambio}
+        etiqueta={etiqueta}
+        buscable={buscable}
+      />
     </span>
   );
 }
@@ -84,10 +85,12 @@ function Multiple({
   valores,
   opciones,
   onCambio,
+  etiqueta,
 }: {
   valores: string[];
   opciones: Opcion[];
   onCambio: (v: string[]) => void;
+  etiqueta: string;
 }) {
   return (
     <div className="os-celda-multiple">
@@ -104,24 +107,14 @@ function Multiple({
           </button>
         </span>
       ))}
-      <select
-        className="os-chip-agregar"
-        value=""
-        onChange={(e) => {
-          const v = e.target.value;
+      <Codigo
+        opciones={opciones.filter((o) => !valores.includes(o.v))}
+        onElegir={(v) => {
           if (v && !valores.includes(v)) onCambio([...valores, v]);
         }}
-        aria-label="Agregar"
-      >
-        <option value="">+</option>
-        {opciones
-          .filter((o) => !valores.includes(o.v))
-          .map((o) => (
-            <option key={o.v} value={o.v}>
-              {o.v}
-            </option>
-          ))}
-      </select>
+        etiqueta={etiqueta}
+        comoAgregar
+      />
     </div>
   );
 }
@@ -266,6 +259,8 @@ export default function Manchas({
                     opciones={LAMINA}
                     onCambio={(v) => cambiar(f.id, { lamina: v })}
                     ancho={72}
+                    etiqueta="Lámina"
+                    buscable={false}
                   />
                 </td>
                 <td>
@@ -277,6 +272,7 @@ export default function Manchas({
                     opciones={LOCALIZACION}
                     onCambio={(v) => cambiar(f.id, { localizacion: v })}
                     ancho={92}
+                    etiqueta="Localización y DQ"
                   />
                 </td>
                 <td>
@@ -292,6 +288,7 @@ export default function Manchas({
                     valores={f.determinantes ?? []}
                     opciones={DETERMINANTES}
                     onCambio={(v) => cambiar(f.id, { determinantes: v })}
+                    etiqueta="Determinantes"
                   />
                 </td>
                 <td>
@@ -300,6 +297,7 @@ export default function Manchas({
                     opciones={FQ}
                     onCambio={(v) => cambiar(f.id, { fq: v })}
                     ancho={68}
+                    etiqueta="Calidad formal"
                   />
                 </td>
                 <td>
@@ -310,6 +308,7 @@ export default function Manchas({
                     valores={f.contenidos ?? []}
                     opciones={CONTENIDOS}
                     onCambio={(v) => cambiar(f.id, { contenidos: v })}
+                    etiqueta="Contenidos"
                   />
                 </td>
                 <td>
@@ -323,6 +322,7 @@ export default function Manchas({
                     valores={f.cc_ee ?? []}
                     opciones={CC_EE}
                     onCambio={(v) => cambiar(f.id, { cc_ee: v })}
+                    etiqueta="Códigos especiales"
                   />
                 </td>
                 <td>
