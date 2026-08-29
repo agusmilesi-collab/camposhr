@@ -85,6 +85,10 @@ export type Cabecera = {
     exigencia_id: string | null;
     /** El nivel de trabajo del puesto, contra el que se compara a la persona. */
     estrato_puesto: number | null;
+    /** De dónde sale ese nivel: el plazo de la tarea más larga y las cinco
+     *  preguntas de complejidad, las dos cosas que se contestan en el pedido. */
+    time_span_dias: number | null;
+    complejidad: Record<string, boolean> | null;
     /**
      * Quién pidió la búsqueda, de las personas del cliente.
      *
@@ -294,7 +298,7 @@ const CAMPOS_CABECERA =
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,' +
   'personas(nombre,email,telefono,cv_path,fecha_nacimiento),evaluadoras(nombre),' +
-  'pedidos(puesto,con_benziger,exigencia_id,estrato_puesto,' +
+  'pedidos(puesto,con_benziger,exigencia_id,estrato_puesto,time_span_dias,complejidad,' +
   'solicitante:contactos(nombre,cargo),empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';
 

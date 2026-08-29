@@ -48,6 +48,7 @@ import {
   bandaDe,
   comoSeDice,
   desdeDias,
+  enPalabras,
   estratoPorNumero,
   nivelDeRespuestas,
   plazoDe,
@@ -68,6 +69,8 @@ export default function Discursivo({
   complejidad,
   relato,
   estratoPuesto,
+  puestoDias,
+  puestoComplejidad,
   pedidoId,
   modo = 'codificacion',
 }: {
@@ -93,6 +96,9 @@ export default function Discursivo({
   relato: string | null;
   /** El nivel de trabajo del puesto, contra el que se compara. */
   estratoPuesto?: number | null;
+  /** De dónde sale el nivel del puesto: el plazo y las cinco preguntas. */
+  puestoDias?: number | null;
+  puestoComplejidad?: Record<string, boolean> | null;
   /** El pedido, para poder ir a completarlo desde la entrevista. */
   pedidoId?: string | null;
   /**
@@ -424,6 +430,8 @@ export default function Discursivo({
             puesto={estratoPuesto ? estratoPorNumero(estratoPuesto) : null}
             banda={banda}
             niveles={niveles}
+            desdeElPuesto={porQue(puestoDias, puestoComplejidad)}
+            desdeLaPersona={porQue(diasNum, respuestas)}
           />
 
           {/* La conclusión, debajo de la tabla y con su rótulo: es lo que se
@@ -541,14 +549,35 @@ export default function Discursivo({
  * otro. El tercero dice cuándo alcanza el nivel siguiente, que es lo que el
  * puesto va a pedir más adelante.
  */
+/** De dónde salió un nivel: el plazo contestado y la pregunta más alta que sí. */
+function porQue(
+  dias: number | null | undefined,
+  respuestas: Record<string, boolean> | null | undefined
+): string[] {
+  const partes: string[] = [];
+  if (dias) partes.push(`Responde por tareas de hasta ${enPalabras(dias)}`);
+  const sies = Object.entries(respuestas ?? {})
+    .filter(([, si]) => si)
+    .map(([n]) => Number(n));
+  const alta = nivelDeRespuestas(sies);
+  const pregunta = alta ? PREGUNTAS.find((p) => p.estrato === alta) : null;
+  if (pregunta) partes.push(`Lo más alto que exige: ${pregunta.corto.toLowerCase()}`);
+  return partes;
+}
+
 function Comparacion({
   persona,
   puesto,
   banda,
   niveles,
+  desdeElPuesto,
+  desdeLaPersona,
 }: {
   persona: { romano: string; nombre: string } | null;
   puesto: Estrato | null;
+  /** Qué se contestó de cada lado, que es de donde salió su estrato. */
+  desdeElPuesto: string[];
+  desdeLaPersona: string[];
   /** La banda de maduración, para proyectar. Null sin edad ni horizonte. */
   banda: number | null;
   /** El catálogo, para el detalle de cada estrato. */
@@ -558,7 +587,13 @@ function Comparacion({
   const numeroDe = (romano: string) => ESTRATOS.findIndex((e) => e.romano === romano);
 
   /** Un renglón: de quién es, en qué nivel está y qué significa ese nivel. */
-  const fila = (que: string, romano: string | null, cuando: string | null, falta: string) => {
+  const fila = (
+    que: string,
+    romano: string | null,
+    cuando: string | null,
+    falta: string,
+    porque: string[] = []
+  ) => {
     const d = romano ? detalle(romano) : null;
     const e = romano ? ESTRATOS.find((x) => x.romano === romano) : null;
     const mecanismo = romano
@@ -596,6 +631,16 @@ function Comparacion({
         <td className="os-comparacion-horizonte">
           {e ? plazoDe(e) : <span className="os-tabla-flojo">—</span>}
         </td>
+        {/* De dónde salió ese estrato. Sin esto la tabla afirma dos niveles y
+            no dice qué se contestó para llegar a ellos, que es lo primero que
+            se pregunta quien no está de acuerdo. */}
+        <td className="os-comparacion-porque">
+          {porque.length > 0 ? (
+            porque.map((t) => <span key={t}>{t}</span>)
+          ) : (
+            <span className="os-tabla-flojo">—</span>
+          )}
+        </td>
       </tr>
     );
   };
@@ -615,6 +660,7 @@ function Comparacion({
             <th>Nivel de trabajo</th>
             <th>Qué clase de problemas resuelve</th>
             <th>Plazo del que responde</th>
+            <th>De dónde sale</th>
           </tr>
         </thead>
         <tbody>
@@ -622,20 +668,23 @@ function Comparacion({
             'El puesto pide',
             puesto?.romano ?? null,
             null,
-            'Sin determinar. Se contesta en la ficha del pedido.'
+            'Sin determinar. Se contesta en la ficha del pedido.',
+            desdeElPuesto
           )}
           {fila(
             'La persona, hoy',
             persona?.romano ?? null,
             null,
-            'Sin determinar. Se contesta en la hoja de la entrevista.'
+            'Sin determinar. Se contesta en la hoja de la entrevista.',
+            desdeLaPersona
           )}
           {banda !== null &&
             fila(
               'La persona, más adelante',
               estratoDeEscalon(horizonteEn(banda, 50)).romano,
               'a los 50 años',
-              ''
+              '',
+              [`Por su banda de maduración, la ${banda}`]
             )}
         </tbody>
       </table>
@@ -721,11 +770,22 @@ function Conclusion({
 
   const luego = adelante();
 
+  /* Verde o rojo, y nada en el medio: lo que hay que contestar es si la persona
+     puede con el trabajo que el puesto pide. Que además le sobre alcance es una
+     advertencia sobre cuánto le va a durar el puesto, no un impedimento para
+     entrar, así que también va en verde y lo explica el renglón de abajo. */
+  const alcanza = distancia >= 0;
+
   return (
     <dl className="os-conclusion-tiempos">
       <div>
         <dt>Hoy</dt>
-        <dd>{hoy}</dd>
+        <dd>
+          <span className={`os-veredicto ${alcanza ? 'alcanza' : 'no-alcanza'}`}>
+            {alcanza ? 'Alcanza' : 'No alcanza'}
+          </span>
+          {hoy}
+        </dd>
       </div>
       {luego && (
         <div>
