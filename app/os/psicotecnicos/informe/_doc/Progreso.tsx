@@ -33,9 +33,17 @@ import {
   CUANTAS_BANDAS,
 } from '@/lib/potencial';
 
-/** El cuadro, en unidades del dibujo. */
+/**
+ * El cuadro, en unidades del dibujo.
+ *
+ * Más alto que ancho, como la lámina original: son veintidós franjas de
+ * horizonte contra cincuenta años de edad, y en un cuadro cuadrado cada franja
+ * queda tan baja que las curvas se ven planas y se pegan entre sí. En la lámina
+ * cada franja mide más de la mitad de lo que miden cinco años del eje de abajo,
+ * y con esa proporción se separan.
+ */
 const ANCHO = 980;
-const ALTURA = 700;
+const ALTURA = 1180;
 
 /** Las columnas de la izquierda, de afuera hacia adentro. */
 const TITULO = 16;

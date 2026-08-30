@@ -7562,9 +7562,9 @@ th.os-tabla-contacto {
 
   body[data-imprimir='diagrama'] .os-papel-diagrama {
     display: block;
-    /* Apaisada: el cuadro va de los 20 a los 65 años y en vertical entra a la
-       mitad del tamaño. */
-    page: apaisada;
+    /* Vertical, como la lámina: el cuadro es más alto que ancho, y apaisado
+       entraba a la mitad del tamaño. */
+    page: derecha;
     color: #16202b;
     font-family: var(--os-tipo, inherit);
   }
@@ -7649,9 +7649,14 @@ th.os-tabla-contacto {
     margin: 0;
   }
 
+  /* Un poco angosto para que entre en una hoja: el cuadro es más alto que
+     ancho, y a todo el ancho de la hoja se pasaba de largo y se partía en dos.
+     Va centrado. */
   .os-papel-diagrama svg {
-    width: 100%;
+    display: block;
+    width: 88%;
     height: auto;
+    margin: 0 auto;
   }
 
   /* La referencia, centrada y en cuerpo chico: en el papel es una nota al pie
@@ -7679,8 +7684,8 @@ th.os-tabla-contacto {
   }
 }
 
-@page apaisada {
-  size: landscape;
+@page derecha {
+  size: portrait;
   margin: 12mm;
 }
 
