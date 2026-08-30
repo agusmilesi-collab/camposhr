@@ -58,7 +58,9 @@ export const EDAD_MAX = 65;
  * escala, igual que en la lámina, y por eso esa fila va sin letra.
  */
 export const ESCALERA = [
-  { dias: 1, texto: '1 día', celda: 'I' },
+  // El piso del cuadro. En la lámina no hay celda debajo del día: la más baja
+  // es IB, que va de un día a una semana.
+  { dias: 1, texto: '1 día', celda: '' },
   { dias: 7, texto: '1 semana', celda: 'IB' },
   { dias: 30, texto: '1 mes', celda: 'IM' },
   { dias: 91, texto: '3 meses', celda: 'IA' },
