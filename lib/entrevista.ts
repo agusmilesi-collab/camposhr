@@ -1,4 +1,5 @@
 import 'server-only';
+import { enlaceDelAudio } from '@/lib/audio-discurso';
 import type { EstadoRaven } from '@/lib/raven-estado';
 import { select } from '@/lib/supabase';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
@@ -137,6 +138,11 @@ export type Entrevista = {
   /** El horizonte y las respuestas de complejidad, que se cargan acá mismo. */
   horizonteDias: number | null;
   complejidad: Record<string, boolean> | null;
+  /** La grabación de los cinco minutos, si ya se subió. */
+  audioNombre: string | null;
+  audioBytes: number | null;
+  /** El enlace firmado para escucharla, si hay. */
+  audioEnlace: string | null;
   /**
    * Lo escrito de la entrevista por competencias.
    *
@@ -197,9 +203,11 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
       relato: string | null;
       horizonte_dias: number | null;
       complejidad: Record<string, boolean> | null;
+      audio_nombre: string | null;
+      audio_bytes: number | null;
     }>(
       'analisis_discursivo',
-      `select=nivel,relato,horizonte_dias,complejidad&evaluacion_id=eq.${id}`
+      `select=nivel,relato,horizonte_dias,complejidad,audio_nombre,audio_bytes&evaluacion_id=eq.${id}`
     ).catch(() => []),
     // La medición del Raven entera: en la hoja se carga el puntaje y se lee su
     // percentil, así que hace falta todo lo que muestra la tarjeta.
@@ -268,6 +276,9 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     relato: discursivos[0]?.relato ?? null,
     horizonteDias: discursivos[0]?.horizonte_dias ?? null,
     complejidad: discursivos[0]?.complejidad ?? null,
+    audioNombre: discursivos[0]?.audio_nombre ?? null,
+    audioBytes: discursivos[0]?.audio_bytes ?? null,
+    audioEnlace: await enlaceDelAudio(id),
     competencias: f.entrevista_competencias,
     ravenIniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
     ravenMedida: medidas[0] ?? null,

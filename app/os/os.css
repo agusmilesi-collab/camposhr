@@ -6791,6 +6791,10 @@ th.os-tabla-contacto {
   margin-bottom: 18px;
 }
 
+.os-competencias-cabeza:has(+ .os-tramo) {
+  margin-bottom: 10px;
+}
+
 .os-competencias-titulo {
   margin: 0;
   font-size: 0.95rem;
@@ -6810,8 +6814,8 @@ th.os-tabla-contacto {
   margin: -4px 0 0;
   padding-left: 26px;
   max-width: 68ch;
-  font-size: 0.78rem;
-  line-height: 1.5;
+  font-size: 0.75rem;
+  line-height: 1.45;
   color: var(--os-suave);
 }
 
@@ -6843,18 +6847,17 @@ th.os-tabla-contacto {
 /* Las cuatro filas son de la grilla de afuera y no de cada tarjeta: con cada
    una midiendo lo suyo, un encabezado de dos renglones empujaba su estrato un
    renglón más abajo que el de al lado, que es lo que se compara. */
+/* Una sola tarjeta, del ancho de la pantalla: adentro, las marcas se acomodan
+   en una fila y el plazo queda al lado. */
 .os-comparacion-tarjetas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  grid-template-rows: repeat(5, auto);
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 
 .os-comparacion-tarjeta {
   display: grid;
-  grid-row: span 5;
-  grid-template-rows: subgrid;
-  gap: 12px;
+  gap: 10px;
   padding: 16px 18px 18px;
   border: 1px solid var(--os-linea);
   border-radius: 12px;
@@ -6875,6 +6878,55 @@ th.os-tabla-contacto {
   gap: 8px;
 }
 
+/* El cuerpo de la tarjeta del puesto: el estrato con su plazo a la izquierda y
+   las cinco marcas a la derecha, para que entre en la mitad del alto. */
+.os-puesto-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 32px;
+}
+
+.os-puesto-plazo {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--os-tinta-media);
+}
+
+.os-puesto-plazo span {
+  margin-right: 8px;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-puesto-cuerpo .os-comparacion-preguntas {
+  justify-content: flex-end;
+  padding-top: 0;
+  border-top: none;
+}
+
+@media (max-width: 900px) {
+  .os-puesto-cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-puesto-cuerpo .os-comparacion-preguntas {
+    justify-content: flex-start;
+  }
+}
+
+/* El camino al pedido, en la cabecera de la tarjeta y como enlace: es dónde se
+   corrige lo que la tarjeta muestra. */
+.os-comparacion-ir {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--os-azul-fuerte);
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
 .os-comparacion-quien {
   font-size: 0.68rem;
   font-weight: 600;
@@ -6888,11 +6940,14 @@ th.os-tabla-contacto {
   color: var(--os-suave);
 }
 
-/* El estrato, que es el dato que se compara: en grande y con su nombre debajo. */
+/* El estrato, que es el dato que se compara: en grande y con su nombre al lado,
+   en el mismo renglón. */
 .os-comparacion-estrato {
   margin: 0;
-  display: grid;
-  gap: 1px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .os-comparacion-estrato strong {
@@ -6913,8 +6968,8 @@ th.os-tabla-contacto {
   color: var(--os-suave);
 }
 
-/* El mecanismo del modelo arriba y qué es en dos palabras debajo: lo primero es
-   de Jaques y lo segundo es nuestro. */
+/* El mecanismo del modelo, en una línea: es el nombre del nivel dicho como lo
+   dice Jaques. */
 .os-comparacion-que {
   margin: 0;
   display: grid;
@@ -6986,17 +7041,21 @@ th.os-tabla-contacto {
 }
 
 /*
- * Las preguntas de complejidad con lo que se contestó en cada una.
+ * Las preguntas de complejidad, en una fila de marcas.
  *
- * El estrato es la más alta que salió que sí, y la tarjeta lo afirmaba sin
- * mostrar de dónde: para comprobarlo había que abrir la ficha del pedido o la
- * hoja de la entrevista.
+ * Cinco renglones con su sí y su no se llevaban media tarjeta, y lo que hay que
+ * ver de un vistazo es cuáles dieron que sí: el estrato es la más alta de
+ * ellas. La contestada que sí va pintada, la que no queda apagada, y al pasar
+ * por encima cada una dice qué se contestó.
  */
 .os-comparacion-preguntas {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   align-content: start;
-  padding-top: 12px;
+  margin: 0;
+  padding: 10px 0 0;
+  list-style: none;
   border-top: 1px solid var(--os-linea-suave);
 }
 
@@ -7005,54 +7064,25 @@ th.os-tabla-contacto {
   padding-top: 0;
 }
 
-.os-comparacion-rotulo {
-  font-size: 0.66rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--os-suave);
-}
-
-.os-comparacion-preguntas ul {
-  display: grid;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 .os-comparacion-preguntas li {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 0.8rem;
-  line-height: 1.35;
-  color: var(--os-tinta-media);
-}
-
-/* Sí, no, o sin contestar. El sí es el que arma el estrato, así que es el que
-   se ve; el no queda apagado y el sin contestar apenas se insinúa. */
-.os-sino {
-  flex: none;
-  min-width: 26px;
-  padding: 1px 7px;
+  padding: 2px 8px;
   border-radius: 999px;
-  text-align: center;
   font-size: 0.72rem;
-  font-weight: 600;
+  line-height: 1.35;
 }
 
-.os-sino.si {
-  background: rgba(43, 68, 104, 0.1);
-  color: var(--os-azul-fuerte);
+.os-comparacion-preguntas li.si {
+  background: rgba(74, 120, 86, 0.12);
+  color: var(--os-verde);
 }
 
-.os-sino.no {
-  background: var(--os-fondo-suave, rgba(0, 0, 0, 0.03));
-  color: var(--os-suave);
+.os-comparacion-preguntas li.no {
+  background: rgba(140, 59, 59, 0.08);
+  color: var(--os-rojo);
 }
 
-.os-sino.sin {
+.os-comparacion-preguntas li.sin {
+  border: 1px dashed var(--os-linea);
   color: var(--os-linea);
 }
 
@@ -7208,11 +7238,10 @@ th.os-tabla-contacto {
 }
 
 /*
- * La respuesta del plazo: es un dato que se carga, así que se ve como un campo.
+ * La respuesta del plazo: el número y su unidad.
  *
- * Con el control suave del resto del sistema, el número y su unidad se perdían
- * contra el fondo de la tarjeta y no parecían tocables. Acá son la respuesta a
- * una pregunta, que es lo que hay que completar.
+ * Livianos, como el resto de los controles suaves del sistema: son dos campos
+ * cortos al pie de una pregunta y con marco propio pesaban más que ella.
  */
 .os-nivel-tiempo {
   display: flex;
@@ -7220,22 +7249,10 @@ th.os-tabla-contacto {
   gap: 8px;
 }
 
-.os-nivel-tiempo .os-control-suave {
-  height: 32px;
-  border: 1px solid var(--os-linea);
-  border-radius: 8px;
-  background: var(--os-panel);
-  color: var(--os-tinta);
-  font-size: 0.86rem;
-}
-
-.os-nivel-tiempo .os-control-suave:hover:not(:disabled) {
-  border-color: var(--os-suave);
-}
-
 .os-nivel-tiempo .os-potencial-numero {
-  width: 74px;
+  width: 56px;
   font-weight: 600;
+  color: var(--os-tinta);
 }
 
 /* Y lo que sale de esa respuesta, al lado y en tinta plena: es el resultado. */
@@ -7263,7 +7280,7 @@ th.os-tabla-contacto {
 
 .os-nivel-preguntas {
   display: grid;
-  gap: 10px;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -7283,24 +7300,26 @@ th.os-tabla-contacto {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.os-nivel-preguntas li {
+/* Solo las de primer nivel: adentro de cada una van las repreguntas, que son
+   otra lista y no otra pregunta con su sí y su no. */
+.os-nivel-preguntas > li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 116px;
+  grid-template-columns: minmax(0, 1fr) 104px;
   align-items: center;
-  gap: 16px;
-  padding: 9px 0;
+  gap: 14px;
+  padding: 7px 0;
   border-top: 1px solid var(--os-linea-suave);
 }
 
 .os-nivel-texto {
   display: grid;
-  gap: 3px;
-  font-size: 0.84rem;
+  gap: 1px;
+  font-size: 0.82rem;
 }
 
 .os-nivel-texto small {
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 0.78rem;
+  line-height: 1.45;
   color: var(--os-tinta-media);
 }
 
@@ -7350,19 +7369,20 @@ th.os-tabla-contacto {
  * Qué es cada marca del diagrama, como referencia: el punto lleno, el hueco y
  * la franja son tres cosas distintas y en prosa hay que buscarlas de a una.
  *
- * Centrada sobre el cuadro y no sobre el ancho del panel: el dibujo lleva a la
- * izquierda las dos columnas de rótulos, así que su centro cae más a la derecha
- * que el del bloque. El cuadro va de 136 a 920 en las 980 unidades del dibujo
- * (Progreso.tsx), o sea centro en el 53,9 %, y el aire de la izquierda corre la
- * referencia esos 3,9 puntos.
+ * En un recuadro con el borde azul del dibujo y centrada debajo: es parte de la
+ * lámina y no un renglón suelto de la pantalla.
  */
 .os-potencial-referencias {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 20px;
-  margin: 12px 0 0;
-  padding: 0 0 0 7.8%;
+  /* En dos filas de a dos: en una sola, la referencia se estira casi tan ancha
+     como el cuadro y deja de leerse como una nota al pie. */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, auto));
+  gap: 6px 24px;
+  width: max-content;
+  max-width: 100%;
+  margin: 14px auto 0;
+  padding: 10px 18px;
+  border: 1px solid rgba(43, 68, 104, 0.35);
   list-style: none;
   font-size: 0.8rem;
   color: var(--os-tinta-media);
@@ -7392,20 +7412,21 @@ th.os-tabla-contacto {
   border: 1.5px solid #2b4468;
 }
 
+/* El cuadradito del puesto de hoy: la misma marca que el dibujo. */
+.os-potencial-punto.puesto {
+  width: 9px;
+  height: 9px;
+  border-radius: 1px;
+  background: #ffffff;
+  border: 1.4px solid #8a857c;
+}
+
 .os-potencial-punto.franja {
   width: 16px;
   height: 10px;
   border-radius: 2px;
   background: #e7eef6;
   border: 1px solid rgba(43, 68, 104, 0.3);
-}
-
-/* En pantalla angosta la referencia se parte en varios renglones y el aire de
-   la izquierda le come lugar: ahí va centrada a secas. */
-@media (max-width: 900px) {
-  .os-potencial-referencias {
-    padding-left: 0;
-  }
 }
 
 /*
@@ -7419,14 +7440,6 @@ th.os-tabla-contacto {
   display: grid;
   gap: 8px;
   margin: 26px 0 4px;
-}
-
-.os-potencial-ayuda {
-  margin: 0;
-  max-width: 78ch;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: var(--os-suave);
 }
 
 .os-potencial-tilde {
@@ -7459,6 +7472,63 @@ th.os-tabla-contacto {
   font-size: 0.78rem;
   line-height: 1.45;
   color: var(--os-suave);
+}
+
+/*
+ * Los tres datos con los que se dibuja el punto.
+ *
+ * Con la forma que el OS usa para mostrar datos: el rótulo arriba en cuerpo
+ * chico y el valor debajo, los tres en fila y separados por una línea. De dónde
+ * sale cada uno lo dice el globo, que es una ayuda y no algo que haya que leer
+ * cada vez.
+ */
+/* El rótulo del grupo, con la línea que lo separa de lo de arriba. */
+.os-potencial-entradas-titulo {
+  display: block;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-potencial-entradas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 28px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: entrada;
+}
+
+.os-potencial-entradas li {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.os-potencial-entrada-que {
+  counter-increment: entrada;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-potencial-entrada-que::before {
+  content: counter(entrada) ' · ';
+  color: var(--os-azul-fuerte);
+}
+
+.os-potencial-entrada-valor {
+  font-size: 0.88rem;
+  color: var(--os-tinta);
+}
+
+@media (max-width: 900px) {
+  .os-potencial-entradas {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* El rótulo del diagrama y el botón que lo baja en PDF, en la misma línea. */
@@ -7584,9 +7654,28 @@ th.os-tabla-contacto {
     height: auto;
   }
 
+  /* La referencia, centrada y en cuerpo chico: en el papel es una nota al pie
+     del dibujo, y con el tamaño de la pantalla se llevaba un cuarto de la hoja.
+     Todo baja en la misma proporción para que nada se rompa. */
   .os-papel-diagrama .os-potencial-referencias {
-    margin-top: 10px;
-    font-size: 0.8rem;
+    margin: 8px auto 0;
+    padding: 5px 11px;
+    gap: 3px 14px;
+    font-size: 0.6rem;
+  }
+
+  .os-papel-diagrama .os-potencial-referencias li {
+    gap: 5px;
+  }
+
+  .os-papel-diagrama .os-potencial-punto {
+    width: 7px;
+    height: 7px;
+  }
+
+  .os-papel-diagrama .os-potencial-punto.franja {
+    width: 12px;
+    height: 7px;
   }
 }
 
@@ -11126,17 +11215,604 @@ textarea.os-campo-bateria {
 }
 
 /*
- * Lo que se escribe y lo que se concluye, en una tarjeta aparte.
+ * Lo que se concluye y lo que se decide, debajo de los tres estratos.
  *
- * Arriba quedan las tres tarjetas con los estratos, que son datos. Esto es la
- * lectura, y mezclado con la comparación se leía como un dato más.
+ * Las mismas columnas que las tarjetas de arriba: el sistema ocupa una, porque
+ * lo suyo es restar dos números y elegir una frase escrita de antemano, y lo de
+ * la evaluadora ocupa dos, porque es donde se trabaja.
  */
-.os-cierre-tarjeta {
+/* Con nombre propio: `.os-cierre` ya existía en la pestaña del informe con un
+   ancho máximo de 820, y le recortaba la tarjeta. */
+.os-potencial-cierre {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
   margin-top: 24px;
+}
+
+.os-cierre-tarjeta {
+  display: grid;
+  align-content: start;
+  gap: 10px;
   padding: 20px 22px;
   border: 1px solid var(--os-linea);
   border-radius: 12px;
   background: var(--os-panel);
+}
+
+/* Sin la tarjeta de la conclusión al lado, ocupa la fila entera. */
+.os-cierre-psico {
+  grid-column: 1 / -1;
+}
+
+/*
+ * La grabación de los cinco minutos: la caja donde se suelta y el reproductor.
+ *
+ * La caja va del ancho del bloque y con el borde punteado de las otras zonas
+ * donde se sueltan archivos. El reproductor es el del navegador: tiene lo que
+ * hace falta, que es una barra donde volver a un tramo y escucharlo de nuevo.
+ */
+.os-audio {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+/* El paso 4 entero en una tarjeta: el pedido, el aviso y la grabación son una
+   sola cosa. */
+.os-paso-audio {
+  padding: 14px 16px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel);
+}
+
+/* El grabador: los dos botones uno arriba del otro, del mismo ancho. */
+.os-grabador {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
+.os-grabador .os-boton {
+  width: 100%;
+  max-width: 260px;
+  justify-content: flex-start;
+}
+
+/* El punto rojo de grabar, en el botón: dice qué hace antes de apretarlo. */
+.os-boton-grabar::before {
+  content: '';
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--os-rojo);
+}
+
+/* Y mientras graba, el botón se pinta y el punto late: es lo único que dice
+   que el micrófono está abierto. */
+.os-boton.os-grabando {
+  border-color: rgba(140, 59, 59, 0.4);
+  background: rgba(140, 59, 59, 0.07);
+  color: var(--os-rojo);
+}
+
+.os-boton.os-grabando::before {
+  animation: os-latido 1.2s ease-in-out infinite;
+}
+
+@keyframes os-latido {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.os-grabador small {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--os-suave);
+}
+
+.os-caja-audio {
+  display: grid;
+  gap: 3px;
+  padding: 16px 18px;
+  border: 1px dashed var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.os-caja-audio:hover,
+.os-caja-audio.encima {
+  border-color: var(--os-azul-fuerte);
+  background: var(--os-panel-2);
+}
+
+.os-caja-audio.ocupada {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.os-caja-audio strong {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.os-caja-audio small {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--os-suave);
+}
+
+.os-audio-player {
+  width: 100%;
+  max-width: 520px;
+  height: 36px;
+}
+
+.os-audio-pie {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--os-suave);
+}
+
+/* Una acción escrita como parte de la frase: sacar la grabación es raro y no
+   merece un botón, pero tiene que estar. */
+.os-enlace-pelado {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--os-azul-fuerte);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/*
+ * Las cuatro preguntas del paso 3, en cuatro tarjetas.
+ *
+ * Apiladas a lo largo se llevaban media pantalla para lo que entra en un
+ * cuarto. En dos columnas y con el borde de la tarjeta, cada pregunta se lee
+ * como una unidad: arriba su nombre con el sí y el no, y debajo lo que se le
+ * pregunta a la persona con sus repreguntas.
+ */
+.os-nivel-preguntas.os-preguntas-dos {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+/* Sin aire entre las filas de la tarjeta: lo pone cada pieza, y con el hueco
+   de la grilla la primera pregunta quedaba más separada que las otras dos. */
+/* `align-content: start` deja las filas con su alto natural: el par apilado del
+   sí y el no es más alto que los tres renglones de texto, y sin esto la grilla
+   repartía esa diferencia como aire entre el nombre y la primera pregunta. */
+/* El sí y el no van sacados del flujo, arriba a la derecha: apilados miden más
+   que el renglón del nombre, y como parte de la grilla estiraban esa fila y
+   dejaban un hueco entre el nombre y la primera pregunta. */
+.os-preguntas-dos > li {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  align-content: start;
+  gap: 0;
+  padding: 12px 92px 12px 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel);
+}
+
+/* El nombre arriba, con la botonera al lado; el texto ocupa el ancho entero. */
+.os-preguntas-dos .os-nivel-texto {
+  display: contents;
+}
+
+/* Las tres preguntas de la tarjeta, con la misma jerarquía: la que se le hace a
+   la persona y las dos repreguntas son lo mismo, tres cosas para preguntar. */
+.os-preguntas-dos .os-nivel-texto small {
+  margin-top: 7px;
+  padding-left: 13px;
+  text-indent: -13px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--os-suave);
+}
+
+.os-preguntas-dos .os-nivel-texto small::before {
+  content: '– ';
+}
+
+.os-preguntas-dos .os-nivel-texto strong {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 0.84rem;
+  color: var(--os-tinta);
+}
+
+.os-preguntas-dos .os-nivel-texto small,
+.os-preguntas-dos .os-repreguntas {
+  grid-column: 1;
+}
+
+/* Lo de adentro, en su lugar: el nombre arriba y las preguntas debajo. */
+.os-preguntas-dos .os-nivel-texto strong {
+  grid-row: 1;
+}
+
+/* Y las tres arrancan en el mismo lugar: el guion de todas cae en la misma
+   columna, que es lo que las pone al mismo nivel. */
+.os-preguntas-dos .os-repreguntas {
+  margin-top: 1px;
+  padding-left: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.os-preguntas-dos .os-repreguntas li {
+  padding-left: 13px;
+  text-indent: -13px;
+}
+
+/* La regla de las cinco preguntas del pedido los pone en dos columnas y viene
+   después de la del apilado, así que hay que decirlo otra vez acá. */
+.os-preguntas-dos .os-ingreso-opciones {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: max-content;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Apilados: el sí arriba del no, centrados y del ancho de la palabra. Sin la
+   línea que los separa: acá son las dos mitades de una misma píldora. */
+.os-preguntas-dos .os-ingreso-opcion {
+  padding: 4px 16px;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.os-preguntas-dos .os-ingreso-opcion + .os-ingreso-opcion {
+  border-top: 0;
+}
+
+@media (max-width: 1000px) {
+  .os-nivel-preguntas.os-preguntas-dos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * Los pasos 1 y 2, uno al lado del otro.
+ *
+ * Son la misma pregunta en dos partes: qué tarea y en cuánto se sabe si salió
+ * bien. Apilados se llevaban media pantalla para dos campos, y el paso 3 quedaba
+ * abajo de todo.
+ */
+.os-pasos-dos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 26px;
+  /* Las dos columnas del mismo alto, para que el campo del paso 1 termine donde
+     termina el paso 2. */
+  align-items: stretch;
+  /* En una tarjeta, como las cuatro preguntas del paso 3: los dos pasos son la
+     misma pregunta en dos partes y el borde los agrupa. */
+  padding: 14px 16px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel);
+}
+
+.os-pasos-dos > .os-nivel-bloque {
+  margin: 0;
+}
+
+.os-pasos-dos .os-relato-campo {
+  min-height: 150px;
+}
+
+/* El campo del relato se estira hasta el pie de la columna de al lado. */
+.os-pasos-dos > .os-nivel-bloque:first-of-type {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.os-pasos-dos .os-relato-campo {
+  height: 100%;
+}
+
+/* El plazo, en su propia tarjeta adentro del paso 2: son dos campos y el
+   estrato que sale de ellos, que es la respuesta de todo el paso. */
+.os-pasos-dos .os-nivel-tiempo {
+  width: max-content;
+  max-width: 100%;
+  margin-top: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-fondo);
+}
+
+@media (max-width: 1000px) {
+  .os-pasos-dos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * Los dos tramos de la hoja de la entrevista.
+ *
+ * Los tres primeros pasos miden el trabajo que la persona tiene asignado y el
+ * cuarto la mide a ella. Son dos cosas distintas y sin el corte se leían como
+ * una sola batería de preguntas, que es lo que hace que después se confunda
+ * hasta dónde la dejaron llegar con hasta dónde puede.
+ */
+.os-tramo {
+  margin: 26px 0 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-tramo:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Pegado al título del bloque y sin línea: el título ya separa, y la raya
+   quedaba a cuatro píxeles de la de arriba. */
+.os-competencias-cabeza + .os-tramo {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.os-tramo h5 {
+  margin: 0 0 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--os-azul-fuerte);
+}
+
+.os-tramo p {
+  margin: 0;
+  max-width: 78ch;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--os-suave);
+}
+
+/* Lo que hay que repreguntar, colgando de la pregunta: son las que convierten
+   un adjetivo en una fecha, un nombre o una decisión. Van más chicas y con su
+   guion, que son ayuda para quien pregunta y no preguntas del formulario. */
+.os-repreguntas {
+  display: grid;
+  gap: 1px;
+  margin: 4px 0 0;
+  padding: 0 0 0 13px;
+  list-style: none;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--os-suave);
+}
+
+.os-repreguntas li::before {
+  content: '– ';
+}
+
+/* El instrumento del discurso, en la primera columna de la tarjeta: es lo
+   primero que se hace después de escuchar la grabación, y de ahí sale el
+   estrato. */
+.os-discurso {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+/* Acá la descripción se lee entera: es con lo que se elige, y cortada en la
+   primera línea las cuatro opciones empiezan igual. */
+.os-discurso .os-estrato-texto small {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  line-height: 1.45;
+}
+
+.os-discurso .os-estrato-opcion {
+  align-items: flex-start;
+}
+
+.os-discurso .os-estrato-marca {
+  margin-top: 3px;
+}
+
+/*
+ * La tarjeta de la evaluadora, en cuatro tramos de arriba abajo: la grabación,
+ * los cuatro modos, las dos marcas y lo que escribe. Cada uno usa el ancho
+ * entero, que es lo que deja la tarjeta baja.
+ */
+.os-cierre-psico {
+  gap: 18px;
+}
+
+/* La grabación: el reproductor a la izquierda y dónde soltarla a la derecha. */
+.os-evaluadora-audio .os-audio {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 8px 24px;
+}
+
+.os-evaluadora-audio .os-audio-player {
+  grid-column: 1;
+  max-width: none;
+}
+
+.os-evaluadora-audio .os-grabador,
+.os-evaluadora-audio .os-audio-pie {
+  grid-column: 1;
+}
+
+.os-evaluadora-audio .os-caja-audio {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+/* Los cuatro modos, en dos filas de a dos. */
+.os-modos-fila {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.os-modos-fila > li:nth-child(even) {
+  border-left: 1px solid var(--os-linea);
+}
+
+.os-modos-fila > li:nth-child(n + 3) {
+  border-top: 1px solid var(--os-linea);
+}
+
+/* El nombre del modo, detrás del estrato: el número es con lo que se compara y
+   el nombre es lo que se reconoce al escuchar. */
+.os-modo-nombre {
+  font-size: 0.86rem;
+  color: var(--os-tinta-media);
+}
+
+.os-modos-fila .os-estrato-opcion {
+  height: 100%;
+  align-items: flex-start;
+}
+
+.os-modos-fila .os-estrato-titulo {
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+
+/* Las tres precisiones del método, una al lado de la otra y con su nombre. */
+.os-evaluadora-marcas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.os-precision {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel);
+}
+
+.os-precision-que {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-azul-fuerte);
+}
+
+.os-precision .os-potencial-tilde {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.os-precision small {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--os-suave);
+}
+
+/* Las tres celdas del estrato, como las rotula la lámina. */
+.os-celdas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.os-celda {
+  padding: 5px 4px;
+  border: 0;
+  background: var(--os-panel-2);
+  color: var(--os-tinta-media);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.os-celda + .os-celda {
+  border-left: 1px solid var(--os-linea);
+}
+
+.os-celda.suya {
+  background: var(--os-tinta);
+  color: #fff;
+  font-weight: 600;
+}
+
+@media (max-width: 1000px) {
+  .os-evaluadora-audio .os-audio,
+  .os-modos-fila,
+  .os-evaluadora-marcas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-evaluadora-audio .os-caja-audio {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .os-modos-fila > li + li {
+    border-left: 0;
+    border-top: 1px solid var(--os-linea);
+  }
+
+  .os-modos-fila > li:nth-child(even) {
+    border-left: 0;
+  }
+}
+
+.os-cierre-marcas {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+
+.os-cierre-medida {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+/* En pantalla angosta, todo en una columna: la tarjeta de la evaluadora deja de
+   ocupar dos y lo de adentro se apila. */
+@media (max-width: 1100px) {
+  .os-comparacion-tarjetas,
+  .os-potencial-cierre {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-cierre-psico {
+    grid-column: auto;
+  }
+
+  .os-cierre-columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .os-cierre-tarjeta .os-potencial-fundamento {

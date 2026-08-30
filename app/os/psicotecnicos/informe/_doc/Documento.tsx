@@ -428,6 +428,20 @@ export default async function Documento({
                 )}
               </>
             )}
+            {/* Dónde cae dentro de su estrato, que es la subdivisión del propio
+                modelo: entrando, sostenida o a punto de pasar al siguiente. */}
+            {inf.discursivo.celda === 'A' && (
+              <p>
+                Dentro de ese nivel se la ubica en el borde de arriba: sostiene esa manera
+                de pensar y ya asoma la del nivel siguiente.
+              </p>
+            )}
+            {inf.discursivo.celda === 'B' && (
+              <p>
+                Dentro de ese nivel se la ubica en el comienzo: recién está entrando en esa
+                manera de pensar.
+              </p>
+            )}
             {inf.discursivo.actual && <p>{inf.discursivo.actual}</p>}
 
             {inf.discursivo.detalle && (

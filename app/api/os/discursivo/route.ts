@@ -6,7 +6,7 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
 import { esNivel } from '@/lib/discursivo';
-import { edadValida } from '@/lib/potencial';
+import { edadValida, esCelda, esModo } from '@/lib/potencial';
 
 export const runtime = 'nodejs';
 
@@ -77,6 +77,35 @@ export async function POST(req: Request) {
   if (nivel !== undefined) fila.nivel = nivel;
   for (const campo of ['actual', 'futura', 'relato', 'fundamentacion'] as const) {
     if (campo in (datos ?? {})) fila[campo] = parrafo(datos?.[campo]);
+  }
+
+  /* Cómo ordena lo que dice, leído en los cinco minutos de discurso libre. Es
+     la vía del modelo que mide la capacidad de la persona, así que se guarda
+     con su propio nombre y no mezclada con lo que contestó del trabajo. */
+  if ('discursoModo' in (datos ?? {})) {
+    const m = datos.discursoModo;
+    if (m !== null && !esModo(m)) {
+      return NextResponse.json(
+        { ok: false, motivo: 'El modo de procesamiento tiene que ser uno de los cuatro.' },
+        { status: 400 }
+      );
+    }
+    fila.discurso_modo = m;
+  }
+  if ('discursoAbstracto' in (datos ?? {})) {
+    fila.discurso_abstracto = Boolean(datos.discursoAbstracto);
+  }
+  /* La celda no le cambia el estrato: dice dónde cae dentro de él, que es la
+     subdivisión que la lámina rotula en su columna. */
+  if ('discursoCelda' in (datos ?? {})) {
+    const c = datos.discursoCelda;
+    if (c !== null && !esCelda(c)) {
+      return NextResponse.json(
+        { ok: false, motivo: 'La celda tiene que ser A, B o C.' },
+        { status: 400 }
+      );
+    }
+    fila.discurso_celda = c;
   }
 
   /* Si el puesto que la persona ocupa hoy no le exige lo que puede. El estrato

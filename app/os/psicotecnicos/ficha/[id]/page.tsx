@@ -10,6 +10,7 @@ import {
   type Ficha,
 } from '@/lib/ficha';
 import { equipo, quienSoy } from '@/lib/identidad';
+import { enlaceDelAudio } from '@/lib/audio-discurso';
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { nombrePerfil } from '@/lib/perfiles';
 import { RUTA } from '@/lib/psicotecnicos';
@@ -554,30 +555,15 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
  * Debajo, el análisis completo: el horizonte, las preguntas de complejidad, el
  * estrato que sale de las dos y el diagrama de progreso potencial.
  */
-function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
+async function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) {
   const delPuesto = f.cabecera.pedidos?.estrato_puesto ?? null;
+  // El enlace para escuchar la grabación se firma acá y dura una hora: la
+  // evaluadora la escucha, vuelve sobre un tramo y recién ahí elige el modo.
+  const audio = f.discursivo?.audio_path ? await enlaceDelAudio(id) : null;
   return (
     <section className="os-panel os-informe-cierre">
       <div className="os-panel-top">
         <h2>Potencial de desarrollo</h2>
-        {/* Si el pedido tiene determinado lo que pide, y el camino para ir a
-            completarlo: lo mismo que se ve en la hoja de la entrevista, en el
-            mismo lugar. */}
-        <span className="os-nivel-puesto">
-          <span className={`os-sello-estado ${delPuesto ? 'os-verde' : 'os-rojo'}`}>
-            {delPuesto ? 'Puesto con nivel' : 'Puesto sin nivel'}
-          </span>
-          {f.cabecera.pedido_id && (
-            <a
-              className="os-boton"
-              href={`/os/pedidos/${f.cabecera.pedido_id}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Abrir el pedido
-            </a>
-          )}
-        </span>
       </div>
       <div className="os-panel-cuerpo">
         <Discursivo
@@ -590,10 +576,16 @@ function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulacion }) 
           relato={f.discursivo?.relato ?? null}
           fundamentacion={f.discursivo?.fundamentacion ?? null}
           subutilizado={f.discursivo?.subutilizado ?? false}
+          discursoModo={f.discursivo?.discurso_modo ?? null}
+          discursoAbstracto={f.discursivo?.discurso_abstracto ?? false}
+          discursoCelda={f.discursivo?.discurso_celda ?? null}
+          audioNombre={f.discursivo?.audio_nombre ?? null}
+          audioBytes={f.discursivo?.audio_bytes ?? null}
+          audioEnlace={audio}
+          pedidoId={f.cabecera.pedido_id ?? null}
           estratoPuesto={delPuesto}
           puestoDias={f.cabecera.pedidos?.time_span_dias ?? null}
           puestoComplejidad={f.cabecera.pedidos?.complejidad ?? null}
-          conclusiones={rige.conclusiones}
           nombre={f.cabecera.personas?.nombre ?? null}
           fecha={fecha(f.cabecera.fecha_entrevista ?? f.cabecera.fecha_ingreso)}
           empresa={f.cabecera.pedidos?.empresas?.nombre ?? null}

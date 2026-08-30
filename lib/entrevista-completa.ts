@@ -1,6 +1,7 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { llevaBenziger } from '@/lib/benziger';
+import { TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 
 /**
  * Cuándo una entrevista ya está tomada.
@@ -10,9 +11,10 @@ import { llevaBenziger } from '@/lib/benziger';
  * tomada" al final, con la persona ya saludando: el botón sigue estando para
  * cerrarla antes, pero olvidarse deja de sacar la evaluación de la lista.
  *
- * Solo cuentan los tests que dejan marca. La entrevista por competencias y el
- * análisis discursivo no la dejan, así que exigirlos sería exigir algo que
- * nadie puede tildar.
+ * Solo cuentan los tests que dejan marca. La entrevista por competencias no
+ * deja ninguna, así que exigirla sería exigir algo que nadie puede tildar. El
+ * análisis discursivo sí deja una desde que se graban los cinco minutos: sin
+ * ese archivo no hay nada que escuchar, así que la entrevista no está tomada.
  */
 
 type Fila = {
@@ -25,12 +27,15 @@ type Fila = {
   con_benziger: boolean | null;
   /** Uno a uno: PostgREST lo devuelve como objeto, no como lista. */
   raven: { raw: number | null } | null;
+  /** La grabación de los cinco minutos, que es la marca del análisis discursivo. */
+  analisis_discursivo: { audio_path: string | null } | null;
   pedidos: { con_benziger: boolean | null; baterias: { tests: string[] | null } | null } | null;
 };
 
 const CAMPOS =
   'estado,proyectivo_administrado,bender_administrado,grafico_2_personas_administrado,' +
-  'benziger_administrado,con_benziger,raven(raw),pedidos(con_benziger,baterias(tests))';
+  'benziger_administrado,con_benziger,raven(raw),analisis_discursivo(audio_path),' +
+  'pedidos(con_benziger,baterias(tests))';
 
 /** Qué marca mira cada test de la batería. Los que no están, no dejan marca. */
 const MARCA: Record<string, (f: Fila) => boolean> = {
@@ -39,6 +44,7 @@ const MARCA: Record<string, (f: Fila) => boolean> = {
   Bender: (f) => f.bender_administrado,
   'Gráfico 2 personas': (f) => f.grafico_2_personas_administrado,
   Raven: (f) => f.raven?.raw !== null && f.raven?.raw !== undefined,
+  [TEST_DISCURSIVO]: (f) => Boolean(f.analisis_discursivo?.audio_path),
 };
 
 /**
