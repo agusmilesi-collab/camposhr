@@ -330,7 +330,10 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                     complejidad={e.complejidad}
                     relato={e.relato}
                     estratoPuesto={e.estratoPuesto}
-                    pedidoId={e.pedidoId}
+                    nombre={e.nombre}
+                    audioNombre={e.audioNombre}
+                    audioBytes={e.audioBytes}
+                    audioEnlace={e.audioEnlace}
                   />
                 </div>
               )}

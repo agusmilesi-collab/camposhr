@@ -49,34 +49,36 @@ export const EDAD_MAX = 65;
  * Los veintidós escalones del modelo. `dias` es lo que mide cada marca y sirve
  * para ubicar un horizonte cualquiera entre dos de ellas; `celda` es el nombre
  * con el que la lámina rotula la franja que termina en esa marca, y que es la
- * subdivisión del estrato (IIIB es la parte del medio del estrato III).
+ * subdivisión del estrato: A arriba, M en el medio y B abajo, así que IIIM es
+ * la parte del medio del estrato III. El original de Jaques las llama A, B y C;
+ * acá se dicen por lo que significan.
  *
  * Cada marca es el **techo** de su franja: la franja IA va de un mes a tres
- * meses, y su rótulo es "3 meses". El piso de la más baja, ID, queda fuera de
- * la escala, igual que en la lámina.
+ * meses, y su rótulo es "3 meses". El piso de la más baja queda fuera de la
+ * escala, igual que en la lámina, y por eso esa fila va sin letra.
  */
 export const ESCALERA = [
-  { dias: 1, texto: '1 día', celda: 'ID' },
-  { dias: 7, texto: '1 semana', celda: 'IC' },
-  { dias: 30, texto: '1 mes', celda: 'IB' },
+  { dias: 1, texto: '1 día', celda: 'I' },
+  { dias: 7, texto: '1 semana', celda: 'IB' },
+  { dias: 30, texto: '1 mes', celda: 'IM' },
   { dias: 91, texto: '3 meses', celda: 'IA' },
-  { dias: 182, texto: '6 meses', celda: 'IIC' },
-  { dias: 273, texto: '9 meses', celda: 'IIB' },
+  { dias: 182, texto: '6 meses', celda: 'IIB' },
+  { dias: 273, texto: '9 meses', celda: 'IIM' },
   { dias: 365, texto: '1 año', celda: 'IIA' },
-  { dias: 487, texto: '16 meses', celda: 'IIIC' },
-  { dias: 608, texto: '20 meses', celda: 'IIIB' },
+  { dias: 487, texto: '16 meses', celda: 'IIIB' },
+  { dias: 608, texto: '20 meses', celda: 'IIIM' },
   { dias: 730, texto: '2 años', celda: 'IIIA' },
-  { dias: 1095, texto: '3 años', celda: 'IVC' },
-  { dias: 1460, texto: '4 años', celda: 'IVB' },
+  { dias: 1095, texto: '3 años', celda: 'IVB' },
+  { dias: 1460, texto: '4 años', celda: 'IVM' },
   { dias: 1825, texto: '5 años', celda: 'IVA' },
-  { dias: 2555, texto: '7 años', celda: 'VC' },
-  { dias: 3103, texto: '8,5 años', celda: 'VB' },
+  { dias: 2555, texto: '7 años', celda: 'VB' },
+  { dias: 3103, texto: '8,5 años', celda: 'VM' },
   { dias: 3650, texto: '10 años', celda: 'VA' },
-  { dias: 5110, texto: '14 años', celda: 'VIC' },
-  { dias: 6205, texto: '17 años', celda: 'VIB' },
+  { dias: 5110, texto: '14 años', celda: 'VIB' },
+  { dias: 6205, texto: '17 años', celda: 'VIM' },
   { dias: 7300, texto: '20 años', celda: 'VIA' },
-  { dias: 10950, texto: '30 años', celda: 'VIIC' },
-  { dias: 14600, texto: '40 años', celda: 'VIIB' },
+  { dias: 10950, texto: '30 años', celda: 'VIIB' },
+  { dias: 14600, texto: '40 años', celda: 'VIIM' },
   { dias: 18250, texto: '50 años', celda: 'VIIA' },
 ] as const;
 
@@ -288,6 +290,10 @@ export const PREGUNTAS = [
     texto:
       '¿El trabajo se puede llevar adelante siguiendo un plan ya asignado, resolviendo los obstáculos a medida que aparecen con la experiencia y el criterio práctico?',
     alCandidato: '¿Lo resolviste siguiendo un método o un procedimiento que ya conocías?',
+    repreguntas: [
+      '¿De dónde salió ese método? ¿Te lo pasaron o lo armaste vos?',
+      '¿Qué hiciste cuando algo no estaba en el procedimiento?',
+    ],
   },
   {
     estrato: 2,
@@ -297,6 +303,10 @@ export const PREGUNTAS = [
       '¿Exige reunir e interpretar datos que van apareciendo, y llegar a un diagnóstico que los vincule para recién ahí decidir cómo resolver?',
     alCandidato:
       '¿Tuviste que ir juntando información y armar vos qué estaba pasando, antes de saber cómo resolverlo?',
+    repreguntas: [
+      '¿Qué información juntaste y de dónde la sacaste?',
+      '¿A qué conclusión llegaste que no era evidente al principio?',
+    ],
   },
   {
     estrato: 3,
@@ -306,6 +316,10 @@ export const PREGUNTAS = [
       '¿Exige construir un plan que equilibre lo que hay que hacer hoy contra lo que se necesita más adelante, con otros caminos en reserva por si el elegido no funciona?',
     alCandidato:
       '¿Armaste distintas maneras de resolverlo y elegiste una? ¿Tenías otra preparada por si esa no funcionaba?',
+    repreguntas: [
+      'Contame el camino que descartaste. ¿Por qué lo descartaste?',
+      'El plan B, ¿estaba armado o era una idea? ¿Qué tenía adentro?',
+    ],
   },
   {
     estrato: 4,
@@ -315,6 +329,10 @@ export const PREGUNTAS = [
       '¿Exige llevar adelante varios proyectos que se afectan entre sí, ajustando cada uno en relación con los otros?',
     alCandidato:
       '¿Estabas llevando varios frentes a la vez, donde lo que hacías en uno te cambiaba otro?',
+    repreguntas: [
+      '¿Qué otras cosas llevabas en paralelo? ¿Cómo decidías a cuál darle prioridad?',
+      'Cuando se movió una, ¿qué tuviste que rehacer de las otras?',
+    ],
   },
   {
     estrato: 5,
@@ -324,6 +342,10 @@ export const PREGUNTAS = [
       '¿Exige seguir cómo un cambio en cualquier punto impacta en el sistema entero, y decidir contando las consecuencias que eso arrastra aguas abajo?',
     alCandidato:
       '¿Tenías que seguir cómo un cambio en cualquier punto te movía todo lo demás, y decidir contando eso?',
+    repreguntas: [
+      'Cuando cambiabas algo acá, ¿qué se movía en otra área?',
+      '¿A quién más le pegaba esa decisión? ¿Cómo lo tuviste en cuenta?',
+    ],
   },
 ] as const;
 
@@ -355,8 +377,151 @@ export const PREGUNTA_HORIZONTE =
   'El resultado de esa tarea, ¿cuándo se sabe si salió bien?';
 
 /** Lo que hay que tener en la cabeza al contestarla. */
+/**
+ * Lo que hay que repreguntar para que el plazo sea un dato y no una impresión.
+ *
+ * Un plazo dicho de memoria se estira: "más o menos un año" suele ser tres
+ * meses de trabajo y nueve de espera. La primera lo convierte en dos fechas, y
+ * la segunda dice si respondía sola por el resultado, que es lo que separa la
+ * tarea propia de la tarea supervisada.
+ */
+export const REPREGUNTAS_PLAZO = [
+  '¿En qué fecha empezó y en qué fecha se supo si había salido bien?',
+  '¿Quién lo revisaba antes de que saliera? Si te equivocabas, ¿quién se enteraba y cuándo?',
+] as const;
+
+/**
+ * Los cinco minutos de discurso libre.
+ *
+ * Es la otra vía del modelo, la de Gillian Stamp: el nivel de la persona se lee
+ * en cómo arma el argumento y no en lo que cuenta. Por eso el tema lo elige la
+ * persona y da lo mismo cuál sea: lo que se mira es si enumera razones sueltas,
+ * si las acumula hasta un diagnóstico, si encadena consecuencias o si sostiene
+ * varias líneas a la vez.
+ *
+ * En la entrevista solo se pide y se graba. Se codifica después, escuchando, en
+ * la pestaña Potencial.
+ */
+export const PEDIDO_DISCURSO =
+  'Elegí un tema que te interese, el que quieras, y contame cinco minutos sobre eso. No es sobre trabajo y no hay respuesta correcta.';
+
 export const AVISO_HORIZONTE =
-  'Se cuenta hasta la fecha en la que se ve el resultado. Planificar los objetivos del año se entrega la semana que viene y el resultado se ve a fin de año: ahí el plazo es un año.';
+  'Se cuenta hasta la fecha en la que se ve el resultado: un plan anual se entrega en una semana y su plazo es de un año.';
+
+/**
+ * Cómo la persona ordena lo que dice, que es la medida de Stamp.
+ *
+ * Los cuatro modos de procesamiento se repiten en cada orden de complejidad de
+ * la información. En el orden verbal simbólico, que es el de casi todas las
+ * evaluaciones, van del estrato I al IV; sobre conceptos abstractos, los mismos
+ * cuatro dan del V al VIII.
+ *
+ * **Se lee cómo arma el argumento y no de qué habla.** El tema lo elige la
+ * persona y no dice nada del nivel; lo que dice es si las razones quedan
+ * sueltas, si se acumulan hasta un diagnóstico, si se encadenan o si van varias
+ * a la vez.
+ */
+export const MODOS = [
+  {
+    clave: 'declarativo',
+    nombre: 'Declarativo',
+    estrato: 1,
+    suena:
+      'Da razones sueltas, una atrás de otra. Cada una vale por sí sola y no las relaciona entre sí.',
+  },
+  {
+    clave: 'acumulativo',
+    nombre: 'Acumulativo',
+    estrato: 2,
+    suena:
+      'Junta varias razones que recién juntas dicen algo, y con eso llega a una conclusión que ninguna daba sola.',
+  },
+  {
+    clave: 'serial',
+    nombre: 'Serial',
+    estrato: 3,
+    suena:
+      'Encadena una línea: si pasa esto entonces esto, y por eso aquello. Sigue la consecuencia hasta el final.',
+  },
+  {
+    clave: 'paralelo',
+    nombre: 'Paralelo',
+    estrato: 4,
+    suena:
+      'Sostiene dos o más líneas a la vez y las cruza: cómo lo que pasa en una mueve a la otra, y decide con las dos.',
+  },
+] as const;
+
+export type ModoDeDiscurso = (typeof MODOS)[number]['clave'];
+
+/**
+ * Dónde cae dentro de su estrato.
+ *
+ * Cada estrato se subdivide en tres celdas, que son las que la lámina rotula en
+ * su columna: IIB abajo, IIM en el medio y IIA arriba. Es la granularidad del
+ * propio modelo, y estar en A es estar a punto de pasar al estrato siguiente.
+ */
+export const CELDAS = [
+  { clave: 'A', nombre: 'A · alto', dice: 'En el borde de arriba, a punto de pasar al siguiente.' },
+  { clave: 'M', nombre: 'M · medio', dice: 'En el medio de su estrato, sostenido.' },
+  { clave: 'B', nombre: 'B · bajo', dice: 'Recién entrando en ese estrato.' },
+] as const;
+
+export type CeldaDelEstrato = (typeof CELDAS)[number]['clave'];
+
+/** Si lo guardado es una de las tres celdas. Sin valor se lee como M. */
+export function esCelda(v: unknown): v is CeldaDelEstrato {
+  return typeof v === 'string' && CELDAS.some((c) => c.clave === v);
+}
+
+/** Si lo guardado es uno de los cuatro modos. */
+export function esModo(v: unknown): v is ModoDeDiscurso {
+  return typeof v === 'string' && MODOS.some((m) => m.clave === v);
+}
+
+/**
+ * El estrato que da el discurso.
+ *
+ * Los cuatro modos sobre cosas concretas dan del I al IV. Los mismos cuatro
+ * sobre conceptos, que es el orden siguiente de complejidad, dan del V al VIII.
+ */
+export function estratoDeDiscurso(modo: ModoDeDiscurso | null, abstracto = false): number | null {
+  const m = MODOS.find((x) => x.clave === modo);
+  if (!m) return null;
+  /* El cuarto modo sobre conceptos daría el estrato VIII, que en Jaques existe
+     y en esta tabla no: la escalera del diagrama llega al VII. Se topea ahí en
+     vez de devolver un estrato que no está, que dejaba a la persona sin ninguno
+     y sin decir por qué. */
+  return Math.min(m.estrato + (abstracto ? 4 : 0), ESTRATOS.length);
+}
+
+/**
+ * Con qué horizonte se dibuja el punto en el diagrama de progreso.
+ *
+ * El diagrama ubica a la persona por su edad y su horizonte, y el horizonte que
+ * corresponde es el de su capacidad. Cuando esa capacidad se leyó en el
+ * discurso, lo que hay es un estrato y no un número de días: se dibuja en el
+ * medio de su franja, que es el punto que no queda apoyado sobre ninguna de las
+ * dos rayas que la limitan.
+ *
+ * Si el plazo que se le midió en el trabajo cae dentro de ese mismo estrato,
+ * manda el plazo medido, que dice lo mismo con más precisión.
+ */
+export function diasParaElDiagrama(
+  porDiscurso: Estrato | null,
+  diasMedidos: number | null,
+  celda: CeldaDelEstrato = 'M'
+): number | null {
+  if (!porDiscurso) return diasMedidos;
+  /* En el medio de la celda que se eligió: las tres del estrato son las tres
+     últimas marcas de la escalera antes de su techo, y el medio de cada una es
+     el punto que no queda apoyado sobre ninguna raya.
+
+     El plazo del trabajo no entra acá: lo que se está diciendo es dónde cae la
+     capacidad dentro del estrato, y eso se leyó en el discurso. */
+  const desde = { A: 0.5, M: 1.5, B: 2.5 }[celda];
+  return diasDeEscalon(Math.max(0, porDiscurso.hasta - desde));
+}
 
 /**
  * El nivel que dan las respuestas: el más alto contestado que sí.
@@ -429,9 +594,10 @@ export function enPalabras(dias: number): string {
   const a = dias / 365;
   if (a < 10) {
     const r = Math.round(a * 2) / 2;
-    return `${r.toString().replace('.5', ' años y medio').replace('.', ',')}${
-      r % 1 === 0 ? (r === 1 ? ' año' : ' años') : ''
-    }`;
+    if (r === 1) return 'un año';
+    if (r === 1.5) return 'un año y medio';
+    const entero = Math.floor(r);
+    return r % 1 === 0 ? `${entero} años` : `${entero} años y medio`;
   }
   return `${Math.round(a)} años`;
 }

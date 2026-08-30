@@ -200,6 +200,16 @@ export type Discursivo = {
   fundamentacion: string | null;
   /** El puesto que ocupa hoy no le exige lo que puede. */
   subutilizado: boolean | null;
+  /** Cómo ordena lo que dice, leído en los cinco minutos de discurso libre. */
+  discurso_modo: string | null;
+  /** Ese modo, sobre conceptos y no sobre cosas concretas. */
+  discurso_abstracto: boolean | null;
+  /** Dónde cae dentro de su estrato: A arriba, B en el medio, C abajo. */
+  discurso_celda: string | null;
+  /** La grabación de los cinco minutos: dónde está, cómo se llama y cuánto pesa. */
+  audio_path: string | null;
+  audio_nombre: string | null;
+  audio_bytes: number | null;
 };
 
 export type Competencia = {
@@ -358,7 +368,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       ),
       select<Discursivo>(
         'analisis_discursivo',
-        `select=nivel,actual,futura,edad,horizonte_dias,complejidad,relato,fundamentacion,subutilizado&evaluacion_id=eq.${id}`,
+        `select=nivel,actual,futura,edad,horizonte_dias,complejidad,relato,fundamentacion,subutilizado,discurso_modo,discurso_abstracto,discurso_celda,audio_path,audio_nombre,audio_bytes&evaluacion_id=eq.${id}`,
         CACHE_PSICOTECNICOS
       ),
     ]);

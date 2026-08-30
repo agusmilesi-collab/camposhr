@@ -136,6 +136,20 @@ export default function Escalera({ inf }: { inf: Informe }) {
         </p>
       )}
 
+      {/* Dónde cae dentro de ese nivel, que es la subdivisión del propio
+          modelo. En el medio no se dice: es lo esperable. */}
+      {d.celda === 'A' && (
+        <p className="sitio-escalera-nota">
+          Está en el borde de arriba de ese nivel: sostiene la manera de pensar que le
+          corresponde y ya asoma la del nivel siguiente.
+        </p>
+      )}
+      {d.celda === 'B' && (
+        <p className="sitio-escalera-nota">
+          Está en el comienzo de ese nivel: recién está entrando en esa manera de pensar.
+        </p>
+      )}
+
       {/* Que el número describe al puesto que ocupa y no a su techo. Va antes
           de la fundamentación porque cambia cómo se lee todo lo anterior. */}
       {d.subutilizado && (

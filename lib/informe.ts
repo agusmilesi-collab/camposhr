@@ -27,7 +27,13 @@ import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
 import { DE_FABRICA as EXIGENCIA_DE_FABRICA, type Exigencia } from '@/lib/exigencia';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
-import { estratoPorNumero } from '@/lib/potencial';
+import {
+  diasParaElDiagrama,
+  esCelda,
+  esModo,
+  estratoDeDiscurso,
+  estratoPorNumero,
+} from '@/lib/potencial';
 import {
   conclusionesValidas,
   llevaDiscursivo,
@@ -235,6 +241,14 @@ export type Informe = {
      */
     fundamentacion: string | null;
     /**
+     * Dónde cae dentro de su estrato: A, B o C.
+     *
+     * Cada estrato se subdivide en tres celdas, que son las que la lámina
+     * rotula en su columna: A arriba, M en el medio y B abajo. No le cambia el
+     * estrato: dice si está entrando, sostenido o a punto de pasar.
+     */
+    celda: 'A' | 'M' | 'B';
+    /**
      * El puesto que ocupa hoy no le exige lo que puede.
      *
      * El instrumento mide el alcance del trabajo asignado, así que un puesto
@@ -249,7 +263,7 @@ export type Informe = {
      * horizonte temporal que le atribuye. Sin los dos no hay punto que dibujar
      * y el capítulo sale con la pirámide sola, que es como salía antes.
      */
-    punto: { edad: number; dias: number } | null;
+    punto: { edad: number; dias: number; aplicado: number | null } | null;
     /**
      * El nivel de trabajo del puesto y la distancia con el de la persona.
      *
@@ -714,6 +728,7 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
           actual: f.discursivo.actual,
           futura: f.discursivo.futura,
           fundamentacion: f.discursivo.fundamentacion,
+          celda: esCelda(f.discursivo.discurso_celda) ? f.discursivo.discurso_celda : 'M',
           subutilizado: Boolean(f.discursivo.subutilizado),
           puesto: (() => {
             const n = c.pedidos?.estrato_puesto ?? null;
@@ -727,16 +742,29 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
                 }
               : null;
           })(),
-          punto:
+          punto: (() => {
             // La edad sale de la fecha de nacimiento, que se carga en la
             // entrevista; la guardada en el análisis queda de respaldo para las
             // evaluaciones viejas que no la tienen.
-            (c.edad ?? f.discursivo.edad) && f.discursivo.horizonte_dias
-              ? {
-                  edad: (c.edad ?? f.discursivo.edad) as number,
-                  dias: f.discursivo.horizonte_dias,
-                }
-              : null,
+            const edad = (c.edad ?? f.discursivo?.edad) as number | null;
+            // Y el horizonte es el de su capacidad: con el discurso codificado,
+            // el punto va en la franja de ese estrato y no en el plazo del
+            // trabajo que le asignaron, que puede ser más bajo.
+            const delDiscurso = estratoDeDiscurso(
+              esModo(f.discursivo?.discurso_modo) ? f.discursivo.discurso_modo : null,
+              Boolean(f.discursivo?.discurso_abstracto)
+            );
+            const dias = diasParaElDiagrama(
+              delDiscurso ? estratoPorNumero(delDiscurso) : null,
+              f.discursivo?.horizonte_dias ?? null,
+              esCelda(f.discursivo?.discurso_celda) ? f.discursivo.discurso_celda : 'M'
+            );
+            /* Y el plazo del trabajo que tiene asignado, cuando el discurso
+               dice otra cosa: en el dibujo va como una marca aparte, porque la
+               distancia entre los dos es lo que el puesto le deja sin usar. */
+            const aplicado = delDiscurso ? (f.discursivo?.horizonte_dias ?? null) : null;
+            return edad && dias ? { edad, dias, aplicado } : null;
+          })(),
           escalones: Object.fromEntries(
             nivelesQueRigen(niveles).map((n) => [n.nombre, n.que])
           ),

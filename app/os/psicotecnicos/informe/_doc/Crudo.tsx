@@ -202,7 +202,11 @@ export default function Crudo({ inf }: { inf: Informe }) {
               regulares, así que ubicarla por su edad y su horizonte de hoy muestra por
               cuál de esos caminos viene subiendo y hasta dónde llega.
             </p>
-            <Progreso edad={inf.discursivo.punto.edad} dias={inf.discursivo.punto.dias} />
+            <Progreso
+              edad={inf.discursivo.punto.edad}
+              dias={inf.discursivo.punto.dias}
+              diasAplicado={inf.discursivo.punto.aplicado}
+            />
             <p className="inf-progreso-pie">
               {(() => {
                 const { edad, dias } = inf.discursivo.punto;

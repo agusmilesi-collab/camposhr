@@ -54,8 +54,11 @@ const FRANJAS = ESCALERA.length;
 
 const TINTA = '#16202b';
 const SUAVE = '#8a857c';
-const LINEA = '#ded9d1';
-const FINA = '#efece6';
+/* La cuadrícula va en tinta transparente y no en un crema opaco: sobre la
+   banda pintada, el crema desaparecía y el cuadro se cortaba justo donde hay
+   que leer el punto. */
+const LINEA = 'rgba(22, 32, 43, 0.16)';
+const FINA = 'rgba(22, 32, 43, 0.07)';
 const AZUL = '#2b4468';
 const PINTADA = '#e7eef6';
 
@@ -144,11 +147,21 @@ function Vertical({
 export default function Progreso({
   edad,
   dias,
+  diasAplicado = null,
 }: {
   /** La edad del día de la entrevista. */
   edad: number;
-  /** El horizonte temporal que le atribuyó la evaluadora, en días. */
+  /** El horizonte de su capacidad, que es el que ubica la banda. */
   dias: number;
+  /**
+   * El plazo del trabajo que tiene asignado hoy, si es otro.
+   *
+   * La banda se dibuja con la capacidad y no con esto: un puesto que no exige
+   * lo que la persona puede la pondría en una banda más baja y la proyección
+   * saldría corta. Pero el dato importa, así que se marca aparte: la distancia
+   * entre los dos puntos es lo que el puesto le está dejando sin usar.
+   */
+  diasAplicado?: number | null;
 }) {
   const escalon = escalonDe(dias);
   const banda = bandaDe(edad, dias);
@@ -158,6 +171,13 @@ export default function Progreso({
   // Las edades redondas que quedan por delante: es lo que la banda agrega al
   // dato de hoy. Ninguna si la persona ya pasó los sesenta.
   const adelante = [40, 50, 60].filter((e) => e > edad + 2 && e <= EDAD_MAX);
+
+  /* El plazo del trabajo asignado, cuando cae en otro escalón que la capacidad:
+     dibujarlo encima del otro punto sería una sola marca dicha dos veces. */
+  const escalonAplicado =
+    diasAplicado !== null && Math.abs(escalonDe(diasAplicado) - escalon) > 0.15
+      ? escalonDe(diasAplicado)
+      : null;
 
   return (
     <svg
@@ -224,8 +244,8 @@ export default function Progreso({
       ))}
 
       {/* ── El cuadro ───────────────────────────────────────────────────── */}
-      {/* La banda de la persona va debajo de la cuadrícula: pintada encima,
-          tapaba las líneas de la escalera justo donde hay que leer el punto. */}
+      {/* La banda de la persona va debajo de la cuadrícula, y la cuadrícula en
+          tinta transparente: así se dibuja entera por encima del celeste. */}
       <path d={franja(banda)} fill={PINTADA} />
 
       {/* Una vertical por año, como la lámina: son las que dejan seguir una
@@ -369,6 +389,36 @@ export default function Progreso({
         strokeWidth={0.9}
         strokeDasharray="2 3"
       />
+      {/* Lo que el puesto de hoy le pide, cuando es menos que lo que puede. */}
+      {escalonAplicado !== null && (
+        <g>
+          <title>
+            {`En el trabajo que tiene asignado responde por tareas de hasta ${enPalabras(
+              diasAplicado as number
+            )}, que cae en el estrato ${estratoDeEscalon(escalonAplicado).romano}`}
+          </title>
+          <circle cx={x(enCuadro)} cy={y(escalonAplicado)} r={14} fill="transparent" />
+          <rect
+            x={x(enCuadro) - 4.5}
+            y={y(escalonAplicado) - 4.5}
+            width={9}
+            height={9}
+            fill="#ffffff"
+            stroke={SUAVE}
+            strokeWidth={1.4}
+          />
+          <text
+            x={x(enCuadro) + (enCuadro > EDAD_MAX - 10 ? -10 : 10)}
+            y={y(escalonAplicado) + 12}
+            textAnchor={enCuadro > EDAD_MAX - 10 ? 'end' : 'start'}
+            fontSize={9.5}
+            fill={SUAVE}
+          >
+            Su puesto de hoy
+          </text>
+        </g>
+      )}
+
       <g>
         <title>
           {`Hoy: ${edad} años y un horizonte de ${enPalabras(dias)}, ` +
