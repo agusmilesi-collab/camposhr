@@ -153,10 +153,18 @@ export type Estrato = (typeof ESTRATOS)[number];
  * lo hace: las bandas bajas se aplanan antes de los cuarenta y las altas siguen
  * subiendo después de los sesenta, que es lo que dice el modelo ("cuanto más
  * alto es el modo, más veloz es el ritmo de maduración y más se prolonga").
+ *
+ * **Los arranques están leídos del Potential Progression Chart original.** Ahí
+ * las curvas ya salen separadas a los veinte años y abren todo el alto del
+ * cuadro: el modo más bajo entra por el piso y el más alto por los veinte años,
+ * porque el modo es de la persona desde el principio y lo que la edad hace es
+ * llevarla por esa curva. Cada uno arranca dos estratos por debajo de su techo,
+ * salvo los dos primeros, cuyo techo está tan abajo que no da el lugar.
  */
 const BANDAS = Array.from({ length: 8 }, (_, i) => {
   const n = i + 1;
-  return { n, arranque: n, techo: 3 * n, k: 0.05 + 0.06 / n };
+  const techo = 3 * n;
+  return { n, arranque: techo - Math.min(6, 2 + n), techo, k: 0.05 + 0.06 / n };
 });
 
 /** Cuántas bandas hay. */

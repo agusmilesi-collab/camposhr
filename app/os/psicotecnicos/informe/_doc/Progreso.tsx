@@ -188,6 +188,15 @@ export default function Progreso({
         estratoDeEscalon(escalon).romano
       }`}
     >
+      {/* Las curvas se recortan al cuadro: las de los modos altos se van por
+          arriba antes de los cuarenta, y sin esto seguían dibujándose sobre los
+          rótulos y fuera del marco. */}
+      <defs>
+        <clipPath id="progreso-cuadro">
+          <rect x={X0} y={Y1} width={X1 - X0} height={Y0 - Y1} />
+        </clipPath>
+      </defs>
+
       {/* ── Columna de la izquierda ─────────────────────────────────────── */}
       <Vertical cx={TITULO} cy={(Y0 + Y1) / 2} size={9.5} peso={600} color={SUAVE}>
         HORIZONTE TEMPORAL
@@ -246,7 +255,9 @@ export default function Progreso({
       {/* ── El cuadro ───────────────────────────────────────────────────── */}
       {/* La banda de la persona va debajo de la cuadrícula, y la cuadrícula en
           tinta transparente: así se dibuja entera por encima del celeste. */}
-      <path d={franja(banda)} fill={PINTADA} />
+      <g clipPath="url(#progreso-cuadro)">
+        <path d={franja(banda)} fill={PINTADA} />
+      </g>
 
       {/* Una vertical por año, como la lámina: son las que dejan seguir una
           curva sin regla. Las de los cinco en cinco, más marcadas. */}
@@ -275,16 +286,18 @@ export default function Progreso({
         />
       ))}
 
-      {Array.from({ length: CUANTAS_BANDAS }, (_, i) => i + 1).map((n) => (
-        <path
-          key={n}
-          d={curva(n)}
-          fill="none"
-          stroke={n === banda || n === banda - 1 ? AZUL : TINTA}
-          strokeWidth={n === banda || n === banda - 1 ? 1.7 : 1}
-          strokeOpacity={n === banda || n === banda - 1 ? 0.95 : 0.55}
-        />
-      ))}
+      <g clipPath="url(#progreso-cuadro)">
+        {Array.from({ length: CUANTAS_BANDAS }, (_, i) => i + 1).map((n) => (
+          <path
+            key={n}
+            d={curva(n)}
+            fill="none"
+            stroke={n === banda || n === banda - 1 ? AZUL : TINTA}
+            strokeWidth={n === banda || n === banda - 1 ? 1.7 : 1}
+            strokeOpacity={n === banda || n === banda - 1 ? 0.95 : 0.55}
+          />
+        ))}
+      </g>
 
       <rect
         x={X0}
