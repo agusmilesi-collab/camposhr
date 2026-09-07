@@ -7561,7 +7561,17 @@ th.os-tabla-contacto {
   }
 
   body[data-imprimir='diagrama'] .os-papel-diagrama {
-    display: block;
+    /* La hoja mide lo que mide y el dibujo se acomoda a lo que sobra: el
+       encabezado cambia de alto según cuántos datos tenga el pedido y cuántos
+       renglones ocupe cada uno, así que repartir a ojo deja el dibujo partido
+       en dos hojas cuando el nombre es largo. En columna, con el dibujo
+       tomándose lo que queda, entra siempre.
+       Los 255 milímetros son el alto útil de una carta con estos márgenes, que
+       es la hoja más corta de las dos que se usan: así entra también en A4.
+       Abajo se estira a lo que mida la página de verdad. */
+    display: flex;
+    flex-direction: column;
+    height: 255mm;
     /* Vertical, como la lámina: el cuadro es más alto que ancho, y apaisado
        entraba a la mitad del tamaño. */
     page: derecha;
@@ -7649,12 +7659,29 @@ th.os-tabla-contacto {
     margin: 0;
   }
 
-  /* Un poco angosto para que entre en una hoja: el cuadro es más alto que
-     ancho, y a todo el ancho de la hoja se pasaba de largo y se partía en dos.
-     Va centrado. */
+  /* En A4 la hoja da dieciocho milímetros más que en carta, y son para el
+     dibujo. Se piden con el alto de la página en vez de escribirlo: `100%`
+     mide, al imprimir, la caja de la hoja que el usuario haya elegido.
+     Va colgado de `:has` a propósito: donde no se entienda, la regla entera se
+     descarta y queda el alto de más arriba, que entra igual. */
+  html:has(body[data-imprimir='diagrama']),
+  html:has(body[data-imprimir='diagrama']) body {
+    height: 100%;
+  }
+
+  html:has(body[data-imprimir='diagrama']) body .os-papel-diagrama {
+    height: 100%;
+  }
+
+  /* El dibujo se lleva lo que quede de la hoja, sin pasarse. `min-height: 0`
+     es lo que lo deja achicarse: sin eso el alto que trae el viewBox es un piso
+     y el dibujo se sale por abajo. Como conserva su proporción, lo que sobra a
+     los lados queda en blanco y el dibujo va centrado. */
   .os-papel-diagrama svg {
     display: block;
-    width: 88%;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
     height: auto;
     margin: 0 auto;
   }
