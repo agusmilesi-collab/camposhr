@@ -3,8 +3,8 @@
  *
  * Es la lámina de Elliot Jaques tal como está publicada, con todo lo que trae:
  * la edad arriba y abajo, el horizonte temporal a la izquierda con sus
- * veintidós franjas (ID, IC, IB, IA, IIC…) y el nombre del grupo al costado, y
- * a la derecha en qué termina cada banda de maduración a los sesenta y cinco.
+ * veintidós franjas (ID, IC, IB, IA, IIC…), y a la derecha en qué termina cada
+ * banda de maduración a los sesenta y cinco.
  * Lo único que se agrega es el punto de la persona y la banda por la que viene
  * subiendo.
  *
@@ -24,7 +24,6 @@ import {
   EDAD_MAX,
   EDAD_MIN,
   ESCALERA,
-  ESTRATOS,
   PISO,
   bandaDe,
   edadEnQueLlega,
@@ -47,17 +46,16 @@ import {
  * cada franja mide más de la mitad de lo que miden cinco años del eje de abajo,
  * y con esa proporción se separan.
  */
-const ANCHO = 980;
+const ANCHO = 933;
 const ALTURA = 1180;
 
 /** Las columnas de la izquierda, de afuera hacia adentro. */
 const TITULO = 16;
 const HORAS = 128;
-const GRUPO_X = 136;
-const GRUPO_ANCHO = 24;
-const CELDA_ANCHO = 46;
+const CELDA_X = 136;
+const CELDA_ANCHO = 23;
 
-const X0 = GRUPO_X + GRUPO_ANCHO + CELDA_ANCHO;
+const X0 = CELDA_X + CELDA_ANCHO;
 const X1 = ANCHO - 60;
 /**
  * Hasta qué escalón sigue el dibujo por encima de los cien años.
@@ -117,6 +115,20 @@ function inclinacion(i: number): number {
   const pend = (y(curvaDeLamina(i, EDAD_MAX)) - y(curvaDeLamina(i, EDAD_MAX - 1))) /
     (x(EDAD_MAX) - x(EDAD_MAX - 1));
   return Math.max(-26, pend * 26);
+}
+
+/**
+ * El cuerpo de letra del nombre de una franja, para que entre en su columna.
+ *
+ * Las romanas van de dos a cinco letras y la columna es angosta, así que las
+ * largas se achican lo justo. Se mide letra por letra y no por cantidad: la I es
+ * angosta y la M ancha, y "VIIIM" ocupa bastante más que "IIIA" con las mismas
+ * cinco letras de ancho nominal.
+ */
+const ANCHO_DE_LETRA: Record<string, number> = { I: 0.35, V: 0.72, M: 0.89, A: 0.72, B: 0.66 };
+function cuerpoDeFranja(celda: string): number {
+  const em = [...celda].reduce((suma, letra) => suma + (ANCHO_DE_LETRA[letra] ?? 0.6), 0);
+  return em ? Math.min(8.5, (CELDA_ANCHO - 5) / em) : 8.5;
 }
 
 /** Un punto de la curva, de edad y altura de papel a coordenadas del dibujo. */
@@ -292,24 +304,6 @@ export default function Progreso({
         </text>
       ))}
 
-      {/* Los grupos, de costado, y las franjas con su nombre. */}
-      {ESTRATOS.map((e) => (
-        <g key={`grupo-${e.romano}`}>
-          <rect
-            x={GRUPO_X}
-            y={y(e.hasta)}
-            width={GRUPO_ANCHO}
-            height={y(e.desde) - y(e.hasta)}
-            fill="none"
-            stroke={TINTA}
-            strokeWidth={0.7}
-          />
-          <Vertical cx={GRUPO_X + GRUPO_ANCHO / 2} cy={(y(e.desde) + y(e.hasta)) / 2}>
-            {e.grupo}
-          </Vertical>
-        </g>
-      ))}
-
       {/* Cada celda va del escalón anterior al suyo, y su alto es el de esa
           franja: las de abajo miden menos. La primera es la celda sin nombre
           que la lámina dibuja debajo del día. */}
@@ -319,7 +313,7 @@ export default function Progreso({
         return (
           <g key={`celda-${i}`}>
             <rect
-              x={GRUPO_X + GRUPO_ANCHO}
+              x={CELDA_X}
               y={arriba}
               width={CELDA_ANCHO}
               height={abajo - arriba}
@@ -328,10 +322,10 @@ export default function Progreso({
               strokeWidth={0.6}
             />
             <text
-              x={GRUPO_X + GRUPO_ANCHO + CELDA_ANCHO / 2}
+              x={CELDA_X + CELDA_ANCHO / 2}
               y={(arriba + abajo) / 2 + 3}
               textAnchor="middle"
-              fontSize={8.5}
+              fontSize={cuerpoDeFranja(m.celda)}
               fontWeight={600}
               fill={TINTA}
             >
