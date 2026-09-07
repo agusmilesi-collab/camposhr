@@ -29,8 +29,8 @@ import { DE_FABRICA as EXIGENCIA_DE_FABRICA, type Exigencia } from '@/lib/exigen
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
 import {
   diasParaElDiagrama,
-  esCelda,
   esModo,
+  brechaDeAplicacion,
   estratoDeDiscurso,
   estratoPorNumero,
 } from '@/lib/potencial';
@@ -241,21 +241,14 @@ export type Informe = {
      */
     fundamentacion: string | null;
     /**
-     * Dónde cae dentro de su estrato: A, B o C.
+     * Cuántos estratos por debajo de lo que puede está el trabajo que hoy le dan.
      *
-     * Cada estrato se subdivide en tres celdas, que son las que la lámina
-     * rotula en su columna: A arriba, M en el medio y B abajo. No le cambia el
-     * estrato: dice si está entrando, sostenido o a punto de pasar.
+     * Cero cuando le queda a la medida. Sale de comparar el estrato que dio el
+     * discurso con el plazo de la tarea más larga que hoy le asignan: son dos
+     * mediciones independientes, y la distancia entre ellas es lo que el puesto
+     * le está dejando sin usar.
      */
-    celda: 'A' | 'M' | 'B';
-    /**
-     * El puesto que ocupa hoy no le exige lo que puede.
-     *
-     * El instrumento mide el alcance del trabajo asignado, así que un puesto
-     * que la subutiliza devuelve un estrato bajo sin decir por qué. Con esto
-     * marcado, el informe avisa que el número describe al puesto.
-     */
-    subutilizado: boolean;
+    brecha: number;
     /**
      * Dónde cae en el diagrama de progreso potencial, si se cargaron los dos.
      *
@@ -263,7 +256,7 @@ export type Informe = {
      * horizonte temporal que le atribuye. Sin los dos no hay punto que dibujar
      * y el capítulo sale con la pirámide sola, que es como salía antes.
      */
-    punto: { edad: number; dias: number; aplicado: number | null } | null;
+    punto: { edad: number; dias: number; aplicado: number | null; puesto: number | null } | null;
     /**
      * El nivel de trabajo del puesto y la distancia con el de la persona.
      *
@@ -728,8 +721,13 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
           actual: f.discursivo.actual,
           futura: f.discursivo.futura,
           fundamentacion: f.discursivo.fundamentacion,
-          celda: esCelda(f.discursivo.discurso_celda) ? f.discursivo.discurso_celda : 'M',
-          subutilizado: Boolean(f.discursivo.subutilizado),
+          brecha: brechaDeAplicacion(
+            estratoDeDiscurso(
+              esModo(f.discursivo.discurso_modo) ? f.discursivo.discurso_modo : null,
+              Boolean(f.discursivo.discurso_abstracto)
+            ),
+            f.discursivo.horizonte_dias
+          ),
           puesto: (() => {
             const n = c.pedidos?.estrato_puesto ?? null;
             const suyo = nivelesQueRigen(niveles).find((x) => x.nombre === f.discursivo?.nivel);
@@ -754,16 +752,14 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
               esModo(f.discursivo?.discurso_modo) ? f.discursivo.discurso_modo : null,
               Boolean(f.discursivo?.discurso_abstracto)
             );
-            const dias = diasParaElDiagrama(
-              delDiscurso ? estratoPorNumero(delDiscurso) : null,
-              f.discursivo?.horizonte_dias ?? null,
-              esCelda(f.discursivo?.discurso_celda) ? f.discursivo.discurso_celda : 'M'
-            );
+            const dias = diasParaElDiagrama(delDiscurso ? estratoPorNumero(delDiscurso) : null);
             /* Y el plazo del trabajo que tiene asignado, cuando el discurso
                dice otra cosa: en el dibujo va como una marca aparte, porque la
                distancia entre los dos es lo que el puesto le deja sin usar. */
             const aplicado = delDiscurso ? (f.discursivo?.horizonte_dias ?? null) : null;
-            return edad && dias ? { edad, dias, aplicado } : null;
+            /* Y el plazo del puesto que se busca, que es la raya a alcanzar. */
+            const puesto = c.pedidos?.time_span_dias ?? null;
+            return edad && dias ? { edad, dias, aplicado, puesto } : null;
           })(),
           escalones: Object.fromEntries(
             nivelesQueRigen(niveles).map((n) => [n.nombre, n.que])

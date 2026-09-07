@@ -147,7 +147,11 @@ function xy(edad: number, alto: number): string {
  * quebrado y un dibujo pesado.
  */
 function curva(i: number): string {
-  const tramos = tramosDeLamina(i);
+  /* Cortada donde toca el techo de la banda de arriba, y no dibujada de largo y
+     recortada con un `clipPath`: al imprimir, el recorte no siempre se aplica y
+     las dos punteadas seguían más allá de la última horizontal. */
+  const cima = edadEnQueLlega(i, CIMA);
+  const tramos = tramosDeLamina(i, EDAD_MIN, cima ?? EDAD_MAX);
   if (tramos.length === 0) return '';
   const partes = tramos.map(
     (t) =>
@@ -237,11 +241,20 @@ export default function Progreso({
   edad,
   dias,
   diasAplicado = null,
+  diasPuesto = null,
 }: {
   /** La edad del día de la entrevista. */
   edad: number;
   /** El horizonte de su capacidad, que es el que ubica la banda. */
   dias: number;
+  /**
+   * El plazo de la tarea más larga del puesto que se busca, si está cargado.
+   *
+   * Va como una raya que cruza el cuadro entero: no es de esta persona, es la
+   * altura que hay que alcanzar, y con ella el punto se lee sin tener que ir a
+   * buscar el estrato del pedido a otra pantalla.
+   */
+  diasPuesto?: number | null;
   /**
    * El plazo del trabajo que tiene asignado hoy, si es otro.
    *
@@ -266,6 +279,12 @@ export default function Progreso({
   const escalonAplicado =
     diasAplicado !== null && Math.abs(escalonDe(diasAplicado) - escalon) > 0.15
       ? escalonDe(diasAplicado)
+      : null;
+
+  /* La altura que pide el puesto que se está cubriendo. */
+  const escalonPuesto =
+    diasPuesto !== null && diasPuesto !== undefined && diasPuesto > 0
+      ? Math.min(ALTO, escalonDe(diasPuesto))
       : null;
 
   return (
@@ -540,6 +559,36 @@ export default function Progreso({
         strokeWidth={0.9}
         strokeDasharray="2 3"
       />
+      {/* La altura que pide el puesto que se busca: cruza el cuadro entero
+          porque no depende de la edad, es el nivel de trabajo del rol. */}
+      {escalonPuesto !== null && (
+        <g>
+          <title>
+            {`El puesto que se busca responde por tareas de hasta ${enPalabras(
+              diasPuesto as number
+            )}, que cae en el estrato ${estratoDeEscalon(escalonPuesto).romano}`}
+          </title>
+          <line
+            x1={X0}
+            y1={y(escalonPuesto)}
+            x2={X1}
+            y2={y(escalonPuesto)}
+            stroke={TINTA}
+            strokeWidth={1.2}
+            strokeDasharray="6 4"
+          />
+          <text
+            x={X0 + 8}
+            y={y(escalonPuesto) - 6}
+            fontSize={9.5}
+            fontWeight={600}
+            fill={TINTA}
+          >
+            {`Lo que pide el puesto · estrato ${estratoDeEscalon(escalonPuesto).romano}`}
+          </text>
+        </g>
+      )}
+
       {/* Lo que el puesto de hoy le pide, cuando es menos que lo que puede. */}
       {escalonAplicado !== null && (
         <g>

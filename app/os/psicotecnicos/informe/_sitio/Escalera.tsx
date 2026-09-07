@@ -136,27 +136,17 @@ export default function Escalera({ inf }: { inf: Informe }) {
         </p>
       )}
 
-      {/* Dónde cae dentro de ese nivel, que es la subdivisión del propio
-          modelo. En el medio no se dice: es lo esperable. */}
-      {d.celda === 'A' && (
-        <p className="sitio-escalera-nota">
-          Está en el borde de arriba de ese nivel: sostiene la manera de pensar que le
-          corresponde y ya asoma la del nivel siguiente.
-        </p>
-      )}
-      {d.celda === 'B' && (
-        <p className="sitio-escalera-nota">
-          Está en el comienzo de ese nivel: recién está entrando en esa manera de pensar.
-        </p>
-      )}
-
-      {/* Que el número describe al puesto que ocupa y no a su techo. Va antes
-          de la fundamentación porque cambia cómo se lee todo lo anterior. */}
-      {d.subutilizado && (
+      {/* La distancia entre lo que puede y lo que le dan. Va antes de la
+          fundamentación porque cambia cómo se lee todo lo anterior. */}
+      {d.brecha > 0 && (
         <p className="sitio-escalera-aviso">
-          El instrumento mide el alcance del trabajo que la persona tiene asignado hoy. El
-          puesto que ocupa no le exige lo que puede, así que lo que se leyó arriba describe
-          a ese puesto y queda por debajo de lo que la persona podría manejar.
+          {d.brecha === 1
+            ? 'El trabajo que tiene asignado hoy responde por tareas de un nivel por ' +
+              'debajo del que muestra su manera de razonar: el puesto que ocupa no le ' +
+              'está pidiendo todo lo que puede.'
+            : `El trabajo que tiene asignado hoy responde por tareas de ${d.brecha} niveles ` +
+              'por debajo del que muestra su manera de razonar: el puesto que ocupa no le ' +
+              'está pidiendo todo lo que puede.'}
         </p>
       )}
 

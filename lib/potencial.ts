@@ -560,6 +560,29 @@ export function edadEnQueLlega(i: number, escalon: number): number | null {
 }
 
 /**
+ * Cuántos estratos por debajo de lo que puede está el trabajo que hoy le dan.
+ *
+ * Cero cuando el trabajo le queda a la medida o le exige más. Es una resta de
+ * estratos enteros y no de escalones: dentro del mismo estrato, que el plazo
+ * caiga una celda más abajo es ruido de medición y no un puesto que le queda
+ * chico.
+ *
+ * Se calcula y no se tilda a mano: los dos números ya están cargados, uno del
+ * discurso y otro de la entrevista, y pedir además una opinión sobre ellos
+ * abría la puerta a que el informe dijera lo contrario de lo que muestran.
+ */
+export function brechaDeAplicacion(
+  estratoDeLaPersona: number | null,
+  diasAsignados: number | null | undefined
+): number {
+  if (!estratoDeLaPersona || !diasAsignados || diasAsignados <= 0) return 0;
+  const suyo = ESTRATOS.findIndex(
+    (e) => e.romano === estratoDeEscalon(escalonDe(diasAsignados)).romano
+  );
+  return Math.max(0, estratoDeLaPersona - (suyo + 1));
+}
+
+/**
  * En qué escalón cae un horizonte, con decimales.
  *
  * Entre dos marcas se interpola por logaritmo y no derecho: de un año a
@@ -845,11 +868,18 @@ export const MODOS = [
 export type ModoDeDiscurso = (typeof MODOS)[number]['clave'];
 
 /**
- * Dónde cae dentro de su estrato.
+ * Dónde cae un puesto dentro de su estrato.
  *
  * Cada estrato se subdivide en tres celdas, que son las que la lámina rotula en
  * su columna: IIB abajo, IIM en el medio y IIA arriba. Es la granularidad del
  * propio modelo, y estar en A es estar a punto de pasar al estrato siguiente.
+ *
+ * **Gradúa el puesto y no a la persona.** Jaques gradúa midiendo el plazo de la
+ * tarea más larga del rol: el número cae en un rango y ese rango es el grado,
+ * sin que nadie interprete nada (*Requisite Organization*, "To Classify
+ * Roles"). Para la capacidad de una persona no da método de graduación, y el
+ * análisis del discurso tiene cuatro modos, o sea la resolución de un estrato
+ * entero: pedirle que distinga tres celdas adentro es pedirle algo que no mide.
  */
 export const CELDAS = [
   { clave: 'A', nombre: 'A · alto', dice: 'En el borde de arriba, a punto de pasar al siguiente.' },
@@ -858,6 +888,26 @@ export const CELDAS = [
 ] as const;
 
 export type CeldaDelEstrato = (typeof CELDAS)[number]['clave'];
+
+/**
+ * En qué celda de su estrato cae un plazo, que es cómo Jaques gradúa un puesto.
+ *
+ * Los tres tercios de cada estrato son tres escalones de la escalera, y el
+ * escalón en el que cae el plazo dice cuál: el de abajo es B, el del medio M y
+ * el de arriba A. Un plazo justo sobre el techo del estrato es del estrato de
+ * abajo y por lo tanto A, que es como se lee la lámina.
+ */
+export function celdaDeSpan(dias: number | null | undefined): CeldaDelEstrato | null {
+  if (!dias || !Number.isFinite(dias) || dias <= 0) return null;
+  const e = escalonDe(dias);
+  const estrato = estratoDeEscalon(e);
+  /* Cuánto falta para el techo del estrato, en escalones: menos de uno es la
+     celda de arriba, menos de dos la del medio, y el resto la de abajo. */
+  const alTecho = estrato.hasta - e;
+  if (alTecho <= 1) return 'A';
+  if (alTecho <= 2) return 'M';
+  return 'B';
+}
 
 /** Si lo guardado es una de las tres celdas. Sin valor se lee como M. */
 export function esCelda(v: unknown): v is CeldaDelEstrato {
@@ -889,28 +939,25 @@ export function estratoDeDiscurso(modo: ModoDeDiscurso | null, abstracto = false
  * Con qué horizonte se dibuja el punto en el diagrama de progreso.
  *
  * El diagrama ubica a la persona por su edad y su horizonte, y el horizonte que
- * corresponde es el de su capacidad. Cuando esa capacidad se leyó en el
- * discurso, lo que hay es un estrato y no un número de días: se dibuja en el
- * medio de su franja, que es el punto que no queda apoyado sobre ninguna de las
- * dos rayas que la limitan.
+ * corresponde es el de su capacidad. Esa capacidad se lee en el discurso, así
+ * que lo que hay es un estrato y no un número de días: el punto va en el medio
+ * de su franja, que es donde no queda apoyado sobre ninguna de las dos rayas
+ * que la limitan.
  *
- * Si el plazo que se le midió en el trabajo cae dentro de ese mismo estrato,
- * manda el plazo medido, que dice lo mismo con más precisión.
+ * **Sin discurso codificado no hay punto**, y el diagrama no se dibuja.
  */
-export function diasParaElDiagrama(
-  porDiscurso: Estrato | null,
-  diasMedidos: number | null,
-  celda: CeldaDelEstrato = 'M'
-): number | null {
-  if (!porDiscurso) return diasMedidos;
-  /* En el medio de la celda que se eligió: las tres del estrato son las tres
-     últimas marcas de la escalera antes de su techo, y el medio de cada una es
-     el punto que no queda apoyado sobre ninguna raya.
+export function diasParaElDiagrama(porDiscurso: Estrato | null): number | null {
+  /* Sin el discurso codificado no hay punto. El plazo del trabajo asignado mide
+     hasta dónde la dejaron llegar y no lo que puede: dibujarlo igual ponía en
+     la lámina, con la misma marca, un dato que dice otra cosa. */
+  if (!porDiscurso) return null;
+  /* En el medio del estrato, que es toda la precisión que da el discurso: son
+     cuatro modos para cuatro estratos, y decir en qué tercio del estrato cae la
+     persona sería inventar una resolución que el método no tiene.
 
-     El plazo del trabajo no entra acá: lo que se está diciendo es dónde cae la
-     capacidad dentro del estrato, y eso se leyó en el discurso. */
-  const desde = { A: 0.5, M: 1.5, B: 2.5 }[celda];
-  return diasDeEscalon(Math.max(0, porDiscurso.hasta - desde));
+     El plazo del trabajo no entra acá: lo que se está diciendo es la capacidad,
+     y eso se leyó en el discurso. */
+  return diasDeEscalon(Math.max(0, porDiscurso.hasta - 1.5));
 }
 
 /**
