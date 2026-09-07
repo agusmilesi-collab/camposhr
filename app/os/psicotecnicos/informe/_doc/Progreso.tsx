@@ -403,12 +403,12 @@ export default function Progreso({
         return (
           <g>
             {/* Del trazo del margen y no del marco: el grueso queda para donde
-                termina la cuadrícula. */}
-            <line
-              x1={x(cima)}
-              y1={Y1 - CORONA}
-              x2={X1 + 26}
-              y2={Y1 - CORONA}
+                termina la cuadrícula. Baja hasta el techo del cuadro al llegar
+                al borde de afuera: la banda es un ángulo y ahí es donde cierra
+                contra la franja del modo de abajo. */}
+            <path
+              d={`M ${x(cima)} ${Y1 - CORONA} L ${X1 + 26} ${Y1 - CORONA} L ${X1 + 26} ${Y1}`}
+              fill="none"
               stroke={LINEA}
               strokeWidth={0.6}
             />
