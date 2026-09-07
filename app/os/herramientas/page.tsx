@@ -43,6 +43,13 @@ const FICHAS: Ficha[] = [
     href: '/raven',
   },
   {
+    rotulo: 'Análisis discursivo',
+    titulo: 'Progreso del potencial',
+    detalle:
+      'La lámina de Jaques con los dos datos a mano: se mueve la edad y el horizonte temporal y el dibujo dice en qué banda cae la persona y hasta dónde llega. No guarda nada; el punto de alguien real se carga en su ficha.',
+    href: '/os/potencial',
+  },
+  {
     rotulo: 'Portal de clientes',
     titulo: 'Portal de prueba',
     detalle:

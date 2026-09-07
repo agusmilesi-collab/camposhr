@@ -11823,3 +11823,89 @@ textarea.os-campo-bateria {
 .os-cierre-tarjeta .os-potencial-fundamento {
   margin: 0;
 }
+
+/* ── El explorador de la lámina de Jaques ──────────────────────────────────
+   Los mandos a la izquierda y el dibujo a la derecha: la lámina es más alta
+   que ancha y al lado de una columna angosta entra entera sin achicarse. */
+.os-potencial-explorador {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 26px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .os-potencial-explorador {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.os-potencial-mandos {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: sticky;
+  top: 16px;
+}
+
+.os-potencial-mando label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 0.78rem;
+  color: var(--os-tinta-suave, #6b6558);
+}
+
+.os-potencial-mando label b {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--os-tinta, #16202b);
+}
+
+.os-potencial-mando input[type='range'] {
+  width: 100%;
+  accent-color: #2b4468;
+}
+
+/* La lectura, en dos columnas: el rótulo pesa menos que el valor, que es lo
+   que se mira mientras se mueve el deslizador. */
+.os-potencial-lectura {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 4px 0 0;
+  border-top: 1px solid var(--os-linea, #e4e0d8);
+}
+
+.os-potencial-lectura > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--os-linea, #e4e0d8);
+}
+
+.os-potencial-lectura dt {
+  font-size: 0.76rem;
+  color: var(--os-tinta-suave, #6b6558);
+}
+
+.os-potencial-lectura dd {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: right;
+  color: var(--os-tinta, #16202b);
+}
+
+.os-potencial-lectura-fuerte dd {
+  font-size: 1rem;
+  color: #2b4468;
+}
+
+.os-potencial-lamina svg {
+  width: 100%;
+  height: auto;
+}

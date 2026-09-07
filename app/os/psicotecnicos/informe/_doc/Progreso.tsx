@@ -18,6 +18,7 @@
 
 import {
   ALTO,
+  alturaDelEscalon,
   diasDeEscalon,
   enPalabras,
   EDAD_MAX,
@@ -26,10 +27,14 @@ import {
   ESTRATOS,
   PISO,
   bandaDe,
+  edadEnQueLlega,
   escalonDe,
   estratoDeEscalon,
   horizonteEn,
+  curvaDeLamina,
   limiteDeBanda,
+  pisoDeBanda,
+  tramosDeLamina,
   CUANTAS_BANDAS,
 } from '@/lib/potencial';
 
@@ -54,11 +59,26 @@ const CELDA_ANCHO = 46;
 
 const X0 = GRUPO_X + GRUPO_ANCHO + CELDA_ANCHO;
 const X1 = ANCHO - 60;
-const Y1 = 44;
+/**
+ * Hasta qué escalón sigue el dibujo por encima de los cien años.
+ *
+ * Las dos curvas más altas cruzan el techo del cuadro antes de los setenta, así
+ * que sus franjas no llegan al borde derecho y no se pueden rotular al costado.
+ * La lámina las sigue dibujando dos tercios de franja más arriba, y en esa banda
+ * escribe el nombre del modo más alto: el borde de arriba de la banda arranca
+ * donde la primera curva lo toca, así que el costado izquierdo de la banda es la
+ * curva misma y no una raya vertical.
+ */
+const CORONA_ESCALONES = 0.68;
+const Y1 = 44 + 22;
 const Y0 = ALTURA - 62;
+/** Ese mismo alto, en píxeles. */
+const CORONA = (CORONA_ESCALONES * (Y0 - Y1)) / (ALTO - PISO);
+/** El escalón del borde de arriba de la banda. */
+const CIMA = ALTO + CORONA_ESCALONES;
 
-/** Alto de cada franja: veintidós, todas iguales. */
-const FRANJAS = ESCALERA.length;
+/** El alto del cuadro en unidades de celda alta, para normalizar la escala. */
+const TOTAL = alturaDelEscalon(ALTO);
 
 const TINTA = '#16202b';
 const SUAVE = '#8a857c';
@@ -70,34 +90,83 @@ const FINA = 'rgba(22, 32, 43, 0.07)';
 const AZUL = '#2b4468';
 const PINTADA = '#e7eef6';
 
+/** Los diez modos, como los nombra la lámina. */
+const ROMANOS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+
 function x(edad: number): number {
   return X0 + ((edad - EDAD_MIN) / (EDAD_MAX - EDAD_MIN)) * (X1 - X0);
 }
 
-/** El escalón `u` en coordenadas del dibujo. `PISO` es el borde de abajo. */
+/**
+ * El escalón `u` en coordenadas del dibujo. `PISO` es el borde de abajo.
+ *
+ * No es proporcional al escalón: las celdas de los estratos I y II son más
+ * bajas que las de arriba, como en la lámina (ver `alturaDelEscalon`).
+ */
 function y(u: number): number {
-  return Y0 - ((u - PISO) / (ALTO - PISO)) * (Y0 - Y1);
+  return Y0 - (alturaDelEscalon(u) / TOTAL) * (Y0 - Y1);
 }
 
-/** El límite de una banda, muestreado año a año. */
-function curva(n: number): string {
-  const puntos: string[] = [];
-  for (let edad = EDAD_MIN; edad <= EDAD_MAX; edad++) {
-    puntos.push(`${x(edad).toFixed(1)},${y(limiteDeBanda(n, edad)).toFixed(1)}`);
-  }
-  return `M ${puntos.join(' L ')}`;
+/**
+ * Cuánto sigue subiendo la curva `n` en el ancho del margen derecho.
+ *
+ * Es su pendiente en el borde llevada a los veintiséis píxeles del margen. Sale
+ * negativo porque en el dibujo subir es restar.
+ */
+function inclinacion(i: number): number {
+  const pend = (y(curvaDeLamina(i, EDAD_MAX)) - y(curvaDeLamina(i, EDAD_MAX - 1))) /
+    (x(EDAD_MAX) - x(EDAD_MAX - 1));
+  return Math.max(-26, pend * 26);
+}
+
+/** Un punto de la curva, de edad y altura de papel a coordenadas del dibujo. */
+function xy(edad: number, alto: number): string {
+  const px = X0 + ((edad - EDAD_MIN) / (EDAD_MAX - EDAD_MIN)) * (X1 - X0);
+  const py = Y0 - (alto / TOTAL) * (Y0 - Y1);
+  return `${px.toFixed(2)},${py.toFixed(2)}`;
+}
+
+/**
+ * El límite de una banda, como curva y no como poligonal.
+ *
+ * Los tramos vienen ya calculados de `tramosDeLamina` y cada uno entra como un
+ * comando `C`: seis por curva. Es la curva misma y no una sucesión de rectas
+ * que se le parece, así que no hay paso de muestreo que elegir entre un trazo
+ * quebrado y un dibujo pesado.
+ */
+function curva(i: number): string {
+  const tramos = tramosDeLamina(i);
+  if (tramos.length === 0) return '';
+  const partes = tramos.map(
+    (t) =>
+      `C ${xy(t.tiroEdad1, t.tiroAlto1)} ${xy(t.tiroEdad2, t.tiroAlto2)} ${xy(t.edadFin, t.altoFin)}`,
+  );
+  return `M ${xy(tramos[0].edad, tramos[0].alto)} ${partes.join(' ')}`;
 }
 
 /** La banda entera, para pintarla: su límite de ida y el de abajo de vuelta. */
 function franja(n: number): string {
-  const ida: string[] = [];
-  const vuelta: string[] = [];
-  for (let edad = EDAD_MIN; edad <= EDAD_MAX; edad++) {
-    ida.push(`${x(edad).toFixed(1)},${y(limiteDeBanda(n, edad)).toFixed(1)}`);
-    const abajo = n > 1 ? limiteDeBanda(n - 1, edad) : PISO;
-    vuelta.unshift(`${x(edad).toFixed(1)},${y(abajo).toFixed(1)}`);
-  }
-  return `M ${ida.join(' L ')} L ${vuelta.join(' L ')} Z`;
+  const arriba = tramosDeLamina(n + 1);
+  const abajo = tramosDeLamina(n);
+  if (arriba.length === 0 || abajo.length === 0) return '';
+  const ida = arriba.map(
+    (t) =>
+      `C ${xy(t.tiroEdad1, t.tiroAlto1)} ${xy(t.tiroEdad2, t.tiroAlto2)} ${xy(t.edadFin, t.altoFin)}`,
+  );
+  /* De vuelta se recorre el piso al revés, así que cada tramo va del final al
+     principio y sus dos puntos de tiro cambian de orden. */
+  const vuelta = abajo
+    .slice()
+    .reverse()
+    .map(
+      (t) =>
+        `C ${xy(t.tiroEdad2, t.tiroAlto2)} ${xy(t.tiroEdad1, t.tiroAlto1)} ${xy(t.edad, t.alto)}`,
+    );
+  const ultimo = abajo[abajo.length - 1];
+  return (
+    `M ${xy(arriba[0].edad, arriba[0].alto)} ${ida.join(' ')} ` +
+    `L ${xy(ultimo.edadFin, ultimo.altoFin)} ${vuelta.join(' ')} Z`
+  );
 }
 
 /**
@@ -203,6 +272,11 @@ export default function Progreso({
         <clipPath id="progreso-cuadro">
           <rect x={X0} y={Y1} width={X1 - X0} height={Y0 - Y1} />
         </clipPath>
+        {/* Las curvas siguen dibujándose dentro de la banda de arriba: es donde
+            se ve cuál se va primero y dónde arranca el techo de la banda. */}
+        <clipPath id="progreso-con-banda">
+          <rect x={X0} y={Y1 - CORONA} width={X1 - X0} height={Y0 - Y1 + CORONA} />
+        </clipPath>
       </defs>
 
       {/* ── Columna de la izquierda ─────────────────────────────────────── */}
@@ -236,29 +310,36 @@ export default function Progreso({
         </g>
       ))}
 
-      {ESCALERA.map((m, i) => (
-        <g key={`celda-${m.celda}`}>
-          <rect
-            x={GRUPO_X + GRUPO_ANCHO}
-            y={y(i)}
-            width={CELDA_ANCHO}
-            height={(Y0 - Y1) / FRANJAS}
-            fill="none"
-            stroke={LINEA}
-            strokeWidth={0.6}
-          />
-          <text
-            x={GRUPO_X + GRUPO_ANCHO + CELDA_ANCHO / 2}
-            y={y(i) + (Y0 - Y1) / FRANJAS / 2 + 3}
-            textAnchor="middle"
-            fontSize={8.5}
-            fontWeight={600}
-            fill={TINTA}
-          >
-            {m.celda}
-          </text>
-        </g>
-      ))}
+      {/* Cada celda va del escalón anterior al suyo, y su alto es el de esa
+          franja: las de abajo miden menos. La primera es la celda sin nombre
+          que la lámina dibuja debajo del día. */}
+      {ESCALERA.map((m, i) => {
+        const arriba = y(i);
+        const abajo = y(i - 1);
+        return (
+          <g key={`celda-${i}`}>
+            <rect
+              x={GRUPO_X + GRUPO_ANCHO}
+              y={arriba}
+              width={CELDA_ANCHO}
+              height={abajo - arriba}
+              fill="none"
+              stroke={LINEA}
+              strokeWidth={0.6}
+            />
+            <text
+              x={GRUPO_X + GRUPO_ANCHO + CELDA_ANCHO / 2}
+              y={(arriba + abajo) / 2 + 3}
+              textAnchor="middle"
+              fontSize={8.5}
+              fontWeight={600}
+              fill={TINTA}
+            >
+              {m.celda}
+            </text>
+          </g>
+        );
+      })}
 
       {/* ── El cuadro ───────────────────────────────────────────────────── */}
       {/* La banda de la persona va debajo de la cuadrícula, y la cuadrícula en
@@ -281,30 +362,43 @@ export default function Progreso({
         />
       ))}
 
-      {/* Una horizontal por franja; la del techo de cada estrato, más marcada. */}
-      {ESCALERA.map((m, i) => (
-        <line
-          key={`h-${m.celda}`}
-          x1={X0}
-          y1={y(i)}
-          x2={X1}
-          y2={y(i)}
-          stroke={ESTRATOS.some((e) => e.hasta === i) ? LINEA : FINA}
-          strokeWidth={ESTRATOS.some((e) => e.hasta === i) ? 0.8 : 0.4}
-        />
-      ))}
-
-      <g clipPath="url(#progreso-cuadro)">
-        {Array.from({ length: CUANTAS_BANDAS }, (_, i) => i + 1).map((n) => (
-          <path
-            key={n}
-            d={curva(n)}
-            fill="none"
-            stroke={n === banda || n === banda - 1 ? AZUL : TINTA}
-            strokeWidth={n === banda || n === banda - 1 ? 1.7 : 1}
-            strokeOpacity={n === banda || n === banda - 1 ? 0.95 : 0.55}
+      {/* Una horizontal por franja. Las de los escalones múltiplos de tres van
+          más marcadas: son las fronteras de estrato, y el día es una de ellas
+          aunque debajo no haya otro estrato. */}
+      {ESCALERA.map((m, i) => {
+        const frontera = i % 3 === 0;
+        return (
+          <line
+            key={`h-${i}`}
+            x1={X0}
+            y1={y(i)}
+            x2={X1}
+            y2={y(i)}
+            stroke={frontera ? LINEA : FINA}
+            strokeWidth={frontera ? 0.8 : 0.4}
           />
-        ))}
+        );
+      })}
+
+      <g clipPath="url(#progreso-con-banda)">
+        {Array.from({ length: CUANTAS_BANDAS + 1 }, (_, i) => i + 1).map((n) => {
+          const suya = n === banda + 1 || n === banda;
+          // Las dos más altas van punteadas, como en la lámina: son las que se
+          // van del cuadro y quedan por encima de lo que mide el instrumento.
+          const puntos = n > CUANTAS_BANDAS - 1;
+          return (
+            <path
+              key={n}
+              d={curva(n)}
+              fill="none"
+              stroke={suya ? AZUL : TINTA}
+              strokeWidth={suya ? 1.7 : 1}
+              strokeOpacity={suya ? 0.95 : 0.55}
+              strokeDasharray={puntos ? '1.5 2.5' : undefined}
+              strokeLinecap={puntos ? 'round' : undefined}
+            />
+          );
+        })}
       </g>
 
       <rect
@@ -317,47 +411,90 @@ export default function Progreso({
         strokeWidth={0.9}
       />
 
+      {/* La banda de arriba: su techo arranca donde la curva más alta lo toca,
+          así que el costado izquierdo de la banda es esa curva. El nombre del
+          modo va entre ella y la siguiente, que son las dos que la cruzan. */}
+      {(() => {
+        const cima = edadEnQueLlega(CUANTAS_BANDAS + 1, CIMA);
+        if (cima === null) return null;
+        const segunda = edadEnQueLlega(CUANTAS_BANDAS, ALTO);
+        const centro = segunda === null ? (x(cima) + X1) / 2 : (x(cima) + x(segunda)) / 2;
+        return (
+          <g>
+            {/* Del trazo del margen y no del marco: el grueso queda para donde
+                termina la cuadrícula. */}
+            <line
+              x1={x(cima)}
+              y1={Y1 - CORONA}
+              x2={X1 + 26}
+              y2={Y1 - CORONA}
+              stroke={LINEA}
+              strokeWidth={0.6}
+            />
+            <text
+              x={centro}
+              y={Y1 - CORONA / 2 + 3.2}
+              textAnchor="middle"
+              fontSize={9}
+              fill={CUANTAS_BANDAS === banda ? AZUL : TINTA}
+              fontWeight={CUANTAS_BANDAS === banda ? 700 : 400}
+            >
+              {`Modo ${ROMANOS[CUANTAS_BANDAS - 1]}`}
+            </text>
+          </g>
+        );
+      })()}
+
       {/* ── Columna de la derecha ───────────────────────────────────────── */}
-      {/* En qué termina cada banda a los sesenta y cinco: es lo que la lámina
-          rotula del lado derecho, y lo que dice hasta dónde llega cada camino. */}
+      {/* Los modos, que es lo que la lámina rotula de este lado: cada franja del
+          margen es un modo, y su nombre va donde esa franja sale del cuadro. La
+          de la persona va marcada. */}
       {Array.from({ length: CUANTAS_BANDAS }, (_, i) => i + 1).map((n) => {
         const arriba = Math.min(ALTO, limiteDeBanda(n, EDAD_MAX));
-        const abajo = n > 1 ? limiteDeBanda(n - 1, EDAD_MAX) : PISO;
+        // El modo I se lleva todo lo que queda debajo de su curva de abajo: no
+        // hay un modo por debajo, así que su franja cierra en el piso del cuadro.
+        const abajo = n === 1 ? PISO : Math.min(ALTO, pisoDeBanda(n, EDAD_MAX));
         if (arriba - abajo < 1.2) return null;
-        const e = estratoDeEscalon((arriba + abajo) / 2);
+        // La raya que separa dos franjas del margen sigue la pendiente con la
+        // que su curva llega al borde: en la lámina el margen no es una escalera
+        // de rayas horizontales, es la continuación de las curvas.
+        // La que se va por arriba llega hasta el techo de la banda de arriba: su
+        // región es todo lo que queda a la derecha de la diagonal.
+        const sale = edadEnQueLlega(n + 1, ALTO) !== null;
+        const yArriba = sale
+          ? Y1 - CORONA
+          : y(arriba) + inclinacion(n + 1);
+        const yAbajo = y(abajo) + inclinacion(n);
         return (
           <g key={`der-${n}`}>
-            <rect
-              x={X1}
-              y={y(arriba)}
-              width={24}
-              height={y(abajo) - y(arriba)}
+            <path
+              d={
+                `M ${X1} ${sale ? Y1 : y(arriba)} L ${X1 + 26} ${yArriba} ` +
+                `L ${X1 + 26} ${yAbajo} L ${X1} ${y(abajo)}`
+              }
               fill="none"
               stroke={LINEA}
               strokeWidth={0.6}
             />
             <Vertical
-              cx={X1 + 12}
-              cy={(y(arriba) + y(abajo)) / 2}
+              cx={X1 + 13}
+              cy={(y(arriba) + y(abajo) + yArriba + yAbajo) / 4}
               color={n === banda ? AZUL : TINTA}
               peso={n === banda ? 700 : 400}
             >
-              {e.grupo}
+              {`Modo ${ROMANOS[n - 1]}`}
             </Vertical>
           </g>
         );
       })}
 
       {/* ── Edad, arriba y abajo ────────────────────────────────────────── */}
+      {/* Sólo abajo: la lámina no repite la edad arriba, ahí va el título y la
+          banda del modo más alto. */}
       {edades.map((e) => (
-        <g key={`edad-${e}`}>
-          <text x={x(e)} y={Y1 - 8} textAnchor="middle" fontSize={9.5} fill={TINTA}>
-            {e}
-          </text>
-          <text x={x(e)} y={Y0 + 16} textAnchor="middle" fontSize={9.5} fill={TINTA}>
-            {e}
-          </text>
-        </g>
+        <text key={`edad-${e}`} x={x(e)} y={Y0 + 16} textAnchor="middle" fontSize={9.5} fill={TINTA}>
+          {e}
+        </text>
       ))}
       <text
         x={(X0 + X1) / 2}
