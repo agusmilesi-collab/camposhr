@@ -206,6 +206,7 @@ export default function Crudo({ inf }: { inf: Informe }) {
               edad={inf.discursivo.punto.edad}
               dias={inf.discursivo.punto.dias}
               diasAplicado={inf.discursivo.punto.aplicado}
+              diasPuesto={inf.discursivo.punto.puesto}
             />
             <p className="inf-progreso-pie">
               {(() => {

@@ -6,7 +6,7 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
 import { esNivel } from '@/lib/discursivo';
-import { edadValida, esCelda, esModo } from '@/lib/potencial';
+import { edadValida, esModo } from '@/lib/potencial';
 
 export const runtime = 'nodejs';
 
@@ -94,25 +94,6 @@ export async function POST(req: Request) {
   }
   if ('discursoAbstracto' in (datos ?? {})) {
     fila.discurso_abstracto = Boolean(datos.discursoAbstracto);
-  }
-  /* La celda no le cambia el estrato: dice dónde cae dentro de él, que es la
-     subdivisión que la lámina rotula en su columna. */
-  if ('discursoCelda' in (datos ?? {})) {
-    const c = datos.discursoCelda;
-    if (c !== null && !esCelda(c)) {
-      return NextResponse.json(
-        { ok: false, motivo: 'La celda tiene que ser A, B o C.' },
-        { status: 400 }
-      );
-    }
-    fila.discurso_celda = c;
-  }
-
-  /* Si el puesto que la persona ocupa hoy no le exige lo que puede. El estrato
-     mide el alcance de lo asignado, así que sin esta marca un puesto que la
-     subutiliza se lee como un techo de la persona. */
-  if ('subutilizado' in (datos ?? {})) {
-    fila.subutilizado = Boolean(datos.subutilizado);
   }
 
   /* Los dos del diagrama de progreso potencial. Van con la misma regla: la

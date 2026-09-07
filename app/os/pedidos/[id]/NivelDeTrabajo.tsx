@@ -37,6 +37,7 @@ import {
   PREGUNTAS,
   UNIDADES,
   aDias,
+  celdaDeSpan,
   desdeDias,
   estratoDeTimeSpan,
   estratoPorNumero,
@@ -144,6 +145,13 @@ export default function NivelDeTrabajo({
   }
 
   const suyo = rige ? estratoPorNumero(rige) : null;
+  /* La celda del puesto sale del plazo y no de un juicio: es como Jaques
+     gradúa un rol, midiendo la tarea más larga y viendo en qué tercio del
+     estrato cae. Sólo cuando el plazo está cargado y cae en el estrato que
+     rige; si el estrato lo pusieron las preguntas o la evaluadora, el plazo no
+     lo confirma y graduar sería inventar. */
+  const celdaDelPuesto =
+    dias !== null && suyo && porTiempo?.romano === suyo.romano ? celdaDeSpan(dias) : null;
 
   return (
     <div className="os-nivel-trabajo">
@@ -265,7 +273,10 @@ export default function NivelDeTrabajo({
           <p className="os-nivel-resultado">
             {suyo ? (
               <>
-                <strong>Estrato {suyo.romano}</strong>
+                <strong>
+                  Estrato {suyo.romano}
+                  {celdaDelPuesto ? ` · celda ${celdaDelPuesto}` : ''}
+                </strong>
                 {suyo.mide ? ` · ${suyo.nombre}` : ` · ${suyo.grupo}`}
               </>
             ) : (

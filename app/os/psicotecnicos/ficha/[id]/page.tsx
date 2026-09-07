@@ -575,10 +575,8 @@ async function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulaci
           complejidad={f.discursivo?.complejidad ?? null}
           relato={f.discursivo?.relato ?? null}
           fundamentacion={f.discursivo?.fundamentacion ?? null}
-          subutilizado={f.discursivo?.subutilizado ?? false}
           discursoModo={f.discursivo?.discurso_modo ?? null}
           discursoAbstracto={f.discursivo?.discurso_abstracto ?? false}
-          discursoCelda={f.discursivo?.discurso_celda ?? null}
           audioNombre={f.discursivo?.audio_nombre ?? null}
           audioBytes={f.discursivo?.audio_bytes ?? null}
           audioEnlace={audio}

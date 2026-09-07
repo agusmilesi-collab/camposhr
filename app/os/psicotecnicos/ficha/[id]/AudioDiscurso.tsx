@@ -342,6 +342,27 @@ export default function AudioDiscurso({
     );
   }
 
+/** El micrófono de la grabación presencial, y la pantalla de la videollamada. */
+function Microfono() {
+  return (
+    <svg className="os-icono-grabar" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <rect x="5.6" y="1.6" width="4.8" height="8" rx="2.4" fill="none" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M3.4 7.4a4.6 4.6 0 0 0 9.2 0" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <line x1="8" y1="12" x2="8" y2="14.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Pantalla() {
+  return (
+    <svg className="os-icono-grabar" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <rect x="1.4" y="2.6" width="13.2" height="9" rx="1.4" fill="none" stroke="currentColor" strokeWidth="1.3" />
+      <line x1="5.4" y1="14" x2="10.6" y2="14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <line x1="8" y1="11.6" x2="8" y2="14" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  );
+}
+
   return (
     <div className="os-audio">
       {/* El reproductor está siempre, aunque todavía no haya nada que oír: es
@@ -363,6 +384,7 @@ export default function AudioDiscurso({
           onClick={grabando ? detener : grabar}
           disabled={subiendo}
         >
+          <Microfono />
           {grabando ? `Detener · ${reloj(segundos)}` : 'Grabar presencial'}
         </button>
         {!grabando && (
@@ -372,6 +394,7 @@ export default function AudioDiscurso({
             onClick={grabarLlamada}
             disabled={subiendo}
           >
+            <Pantalla />
             Grabar videollamada
           </button>
         )}

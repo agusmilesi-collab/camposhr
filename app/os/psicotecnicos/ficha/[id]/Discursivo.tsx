@@ -55,12 +55,9 @@ import {
   escalonDe,
   estratoDeEscalon,
   horizonteEn,
-  CELDAS,
-  esCelda,
   esModo,
   estratoDeDiscurso,
   MODOS,
-  type CeldaDelEstrato,
   PEDIDO_DISCURSO,
   REPREGUNTAS_PLAZO,
   type ModoDeDiscurso,
@@ -79,10 +76,8 @@ export default function Discursivo({
   complejidad,
   relato,
   fundamentacion,
-  subutilizado,
   discursoModo,
   discursoAbstracto,
-  discursoCelda,
   audioNombre,
   audioBytes,
   audioEnlace,
@@ -120,13 +115,11 @@ export default function Discursivo({
   /** Por qué la evaluadora lo ubicó en ese estrato, con sus palabras. */
   fundamentacion?: string | null;
   /** Si el puesto que ocupa hoy no le exige lo que puede. */
-  subutilizado?: boolean | null;
   /** Cómo ordena lo que dice, leído en los cinco minutos de discurso libre. */
   discursoModo?: string | null;
   /** Ese modo, sobre conceptos en vez de cosas concretas. */
   discursoAbstracto?: boolean | null;
   /** Dónde cae dentro de su estrato: A, B o C. */
-  discursoCelda?: string | null;
   /** La grabación de los cinco minutos, si ya se subió. */
   audioNombre?: string | null;
   audioBytes?: number | null;
@@ -184,10 +177,6 @@ export default function Discursivo({
     esModo(discursoModo) ? discursoModo : null
   );
   const [abstracto, setAbstracto] = useState(Boolean(discursoAbstracto));
-  const [celda, setCelda] = useState<CeldaDelEstrato>(
-    esCelda(discursoCelda) ? discursoCelda : 'M'
-  );
-  const [subutiliza, setSubutiliza] = useState(Boolean(subutilizado));
 
   async function mandar(cuerpo: Record<string, unknown>) {
     setGuardando(true);
@@ -269,23 +258,10 @@ export default function Discursivo({
     if (!(await mandar({ discursoAbstracto: si }))) setAbstracto(!si);
   }
 
-  async function elegirCelda(c: CeldaDelEstrato) {
-    const antes = celda;
-    setCelda(c);
-    if (!(await mandar({ discursoCelda: c }))) setCelda(antes);
-  }
-
   /** Su fundamentación, al soltar el campo: se escribe de corrido. */
   async function guardarFundamentacion() {
     if (porQueAsi === (fundamentacion ?? '')) return;
     await mandar({ fundamentacion: porQueAsi.trim() || null });
-  }
-
-  /* La marca de subutilización se guarda en el momento: es un tilde, y esperar
-     a que pierda el foco deja al dato sin escribir si se cambia de pestaña. */
-  async function marcarSubutilizado(si: boolean) {
-    setSubutiliza(si);
-    if (!(await mandar({ subutilizado: si }))) setSubutiliza(!si);
   }
 
   /** El horizonte viaja en días: el par número + unidad es solo para escribirlo. */
@@ -323,18 +299,13 @@ export default function Discursivo({
   const porDiscurso = numeroDelDiscurso ? estratoPorNumero(numeroDelDiscurso) : null;
   const rige = porDiscurso;
   /**
-   * Con qué horizonte se dibuja el punto en el diagrama.
+   * Dónde va el punto de la persona.
    *
-   * El diagrama ubica a la persona por su edad y su horizonte, y el horizonte
-   * que corresponde es el de su capacidad. Con el discurso codificado, esa
-   * capacidad es un estrato y no un número de días: se dibuja en el medio de la
-   * franja de ese estrato, que es el punto que no queda apoyado sobre ninguna
-   * de sus dos rayas.
-   *
-   * Si el plazo que se le midió en el trabajo cae dentro de ese mismo estrato,
-   * manda el plazo medido, que es más preciso que el medio de la franja.
+   * En el medio del estrato que dio el discurso, que es toda la precisión que
+   * ese método tiene: son cuatro modos para cuatro estratos. El plazo del
+   * trabajo asignado no lo mueve, va como una marca aparte.
    */
-  const diasDelPunto = diasParaElDiagrama(porDiscurso, diasNum, celda);
+  const diasDelPunto = diasParaElDiagrama(porDiscurso);
 
   const dibuja =
     Number.isFinite(edadNum) && edadNum >= 16 && edadNum <= 80 && diasDelPunto !== null;
@@ -417,9 +388,10 @@ export default function Discursivo({
           {/* Los dos tramos de la hoja, que miden cosas distintas y no se
               mezclan: los tres primeros pasos son sobre el trabajo que la
               persona tiene hoy, y el cuarto es sobre ella. */}
-          <div className="os-tramo">
-            <h5>Pasos 1 a 3 · Sobre el trabajo que tiene hoy</h5>
-          </div>
+          {/* Los tres pasos en una tarjeta, con el rótulo del tramo adentro:
+              afuera se leía como un título de la pantalla y no como el nombre
+              de lo que la tarjeta contiene. */}
+          <div className="os-tramo-caja">
       {/* Los pasos 1 y 2 van uno al lado del otro: son la misma pregunta en dos
           partes, qué tarea y en cuánto se sabe si salió bien, y apilados se
           llevaban media pantalla para dos campos. */}
@@ -479,6 +451,7 @@ export default function Discursivo({
             ))}
           </ul>
         )}
+        <div className="os-nivel-plazo">
         <div className="os-nivel-tiempo">
           <input
             className="os-control-suave os-potencial-numero"
@@ -505,16 +478,28 @@ export default function Discursivo({
               </option>
             ))}
           </select>
-          <span className={`os-nivel-sale${porHorizonte ? '' : ' vacio'}`}>
-            {porHorizonte ? `Estrato ${porHorizonte.romano}` : 'sin contestar'}
-          </span>
+        </div>
+        {/* El estrato que sale de ese plazo, afuera de la caja de carga: adentro
+            se leía como un tercer campo para tocar. Y con su rango escrito, que
+            es lo único que deja notar un cero de más o de menos antes de que el
+            dato quede guardado. */}
+        <p className={`os-nivel-sale${porHorizonte ? '' : ' vacio'}`}>
+          {porHorizonte ? (
+            <>
+              <strong>Estrato {porHorizonte.romano}</strong>
+              <span>{plazoDe(porHorizonte).toLowerCase()}</span>
+            </>
+          ) : (
+            'Sin el plazo cargado no sale el estrato'
+          )}
+        </p>
         </div>
       </div>
       </div>
 
       {/* Las preguntas van sobre las asignaciones que manejó al límite de lo que
           pudo, no sobre lo que sabe hacer: es lo que el libro indica pedir. */}
-      <div className="os-nivel-bloque">
+      <div className="os-nivel-bloque os-paso-tres">
         <p className="os-nivel-pregunta">
           {enEntrevista && <span className="os-nivel-numero">3</span>}
           {enEntrevista
@@ -560,16 +545,14 @@ export default function Discursivo({
           ))}
         </ol>
       </div>
-
-        <div className="os-tramo">
-          <h5>Paso 4 · Análisis discursivo</h5>
-        </div>
+      </div>
 
         {/* Los cinco minutos de discurso libre, que es la otra vía del modelo.
             Acá solo se pide y se graba: lo que se escucha se codifica después,
             en la pestaña Potencial, y de ahí sale el estrato de la persona. Lo
             de arriba mide el trabajo que le asignaron, que es otra cosa. */}
         <div className="os-nivel-bloque os-paso-audio">
+          <h5 className="os-tramo-titulo">Paso 4 · Análisis discursivo</h5>
           <p className="os-nivel-pregunta">
             <span className="os-nivel-numero">4</span>
             {PEDIDO_DISCURSO}
@@ -627,7 +610,7 @@ export default function Discursivo({
 
               {/* Los cuatro modos, en fila: de acá sale el estrato. */}
               <div className="os-discurso">
-                <span className="os-etiqueta-campo">Cómo ordenó lo que dijo</span>
+                <span className="os-etiqueta-campo">Mecanismo cognitivo</span>
                 <ol
                   className="os-estratos-elegir os-modos-fila"
                   role="radiogroup"
@@ -667,11 +650,27 @@ export default function Discursivo({
               {/*
                 Las tres precisiones del método sobre esa lectura, cada una en
                 su tarjeta y con el nombre que le da el modelo: en qué orden de
-                complejidad procesa, en qué celda del estrato cae, y qué relación
-                hay entre lo que puede y lo que el puesto le deja usar.
+                complejidad procesa y qué relación hay entre lo que puede y lo
+                que el puesto le deja usar.
               */}
-              <span className="os-etiqueta-campo">Capacidad potencial y aplicada</span>
-              <div className="os-evaluadora-marcas">
+              {/* Al pie, lo que escribe, y al lado la única precisión que le
+                  queda por marcar: las dos cosas se resuelven al final, con el
+                  modo ya elegido. */}
+              <div className="os-potencial-cierre-discurso">
+                <div className="os-precision os-potencial-fundamento">
+                  <span className="os-precision-que">Fundamentación</span>
+                  <textarea
+                    className="os-campo os-relato-campo"
+                    rows={4}
+                    maxLength={2000}
+                    value={porQueAsi}
+                    disabled={guardando}
+                    placeholder="Qué sostuvo en la entrevista que respalda el estrato, y qué matiza el número."
+                    onChange={(e) => setPorQueAsi(e.target.value)}
+                    onBlur={guardarFundamentacion}
+                  />
+                </div>
+
                 <div className="os-precision">
                   <span className="os-precision-que">Orden de complejidad</span>
                   <label className="os-potencial-tilde">
@@ -689,114 +688,8 @@ export default function Discursivo({
                     repiten en cada orden, así que el mismo modo corre cuatro estratos.
                   </small>
                 </div>
-
-                <div className="os-precision">
-                  <span className="os-precision-que">Celda del estrato</span>
-                  <div className="os-celdas">
-                    {CELDAS.map((c) => (
-                      <button
-                        key={c.clave}
-                        type="button"
-                        className={`os-celda${celda === c.clave ? ' suya' : ''}`}
-                        disabled={guardando}
-                        aria-pressed={celda === c.clave}
-                        title={c.dice}
-                        onClick={() => elegirCelda(c.clave)}
-                      >
-                        {c.nombre}
-                      </button>
-                    ))}
-                  </div>
-                  <small>
-                    Cada estrato se divide en tres, como los rótulos de la lámina: B bajo,
-                    recién entrando; M medio, sostenido; A alto, a punto de pasar al
-                    siguiente.
-                  </small>
-                </div>
-
-                <div className="os-precision">
-                  <span className="os-precision-que">Capacidad aplicada</span>
-                  <label className="os-potencial-tilde">
-                    <input
-                      type="checkbox"
-                      checked={subutiliza}
-                      onChange={(e) => marcarSubutilizado(e.target.checked)}
-                    />
-                    <span>
-                      <strong>Puede más que lo que el puesto actual le exige</strong>
-                    </span>
-                  </label>
-                  <small>
-                    El estrato dice lo que puede. El trabajo que tiene asignado puede estar
-                    por debajo, y entonces el informe lo aclara.
-                  </small>
-                </div>
               </div>
 
-              {/* Y al pie, lo que escribe: es lo último que se hace, con todo lo
-                  de arriba resuelto. */}
-              <div className="os-potencial-fundamento">
-                <span className="os-etiqueta-campo">Fundamentación</span>
-                <textarea
-                  className="os-campo os-relato-campo"
-                  rows={4}
-                  maxLength={2000}
-                  value={porQueAsi}
-                  disabled={guardando}
-                  placeholder="Qué sostuvo en la entrevista que respalda el estrato, y qué matiza el número."
-                  onChange={(e) => setPorQueAsi(e.target.value)}
-                  onBlur={guardarFundamentacion}
-                />
-              </div>
-
-          {/*
-            Con qué se dibuja el punto, escrito.
-            El diagrama es una lámina con curvas y a simple vista no se sabe qué
-            dato lo movió. Son tres, y cada uno se carga en otro lado: la edad en
-            la hoja de la entrevista, el modo escuchando la grabación, y el plazo
-            del trabajo también en la entrevista.
-          */}
-          <span className="os-etiqueta-campo os-potencial-entradas-titulo">
-            Inputs del diagrama
-          </span>
-          <ol className="os-potencial-entradas">
-            <li title="De la fecha de nacimiento, en la hoja de la entrevista">
-              <span className="os-potencial-entrada-que">Edad</span>
-              <span className="os-potencial-entrada-valor">
-                {Number.isFinite(edadNum) && edadNum > 0 ? `${edadNum} años` : 'Falta'}
-              </span>
-            </li>
-            <li
-              title={
-                porDiscurso
-                  ? `El punto va en la celda ${celda} de ese estrato${
-                      diasDelPunto ? `, ${enPalabras(diasDelPunto)}` : ''
-                    }`
-                  : 'Se elige escuchando la grabación, acá arriba'
-              }
-            >
-              <span className="os-potencial-entrada-que">Análisis del discurso</span>
-              <span className="os-potencial-entrada-valor">
-                {porDiscurso
-                  ? `Estrato ${porDiscurso.romano} · ${
-                      MODOS.find((m) => m.clave === suModo)?.nombre ?? ''
-                    }${abstracto ? ' sobre conceptos' : ''} · celda ${celda}`
-                  : 'Sin codificar'}
-              </span>
-            </li>
-            <li
-              title={
-                porDiscurso
-                  ? 'Es el cuadradito gris, y no mueve la banda'
-                  : 'Sin discurso codificado, es lo que ubica el punto azul'
-              }
-            >
-              <span className="os-potencial-entrada-que">Plazo del trabajo actual</span>
-              <span className="os-potencial-entrada-valor">
-                {diasNum ? enPalabras(diasNum) : 'Falta'}
-              </span>
-            </li>
-          </ol>
             </section>
           </div>
         </>
@@ -830,6 +723,7 @@ export default function Discursivo({
               edad={edadNum}
               dias={diasDelPunto as number}
               diasAplicado={porDiscurso ? diasNum : null}
+              diasPuesto={puestoDias ?? null}
             />
             {/* Qué es cada marca, como referencia y no como párrafo: son tres
                 cosas distintas dibujadas y en prosa hay que buscarlas de a una.
@@ -843,9 +737,9 @@ export default function Discursivo({
           </div>
         ) : (
           <p className="os-tabla-flojo">
-            {edadEvaluacion === null && edad === null
-              ? 'Falta la edad, que sale de la fecha de nacimiento: se carga en la hoja de la entrevista.'
-              : 'Falta el plazo de la tarea, que se contesta en la hoja de la entrevista.'}
+            {!porDiscurso
+              ? 'Falta la elección del mecanismo cognitivo.'
+              : 'Falta la edad, que sale de la fecha de nacimiento: se carga en la hoja de la entrevista.'}
           </p>
         )}
       </div>
@@ -893,6 +787,7 @@ export default function Discursivo({
               edad={edadNum}
               dias={diasDelPunto as number}
               diasAplicado={porDiscurso ? diasNum : null}
+              diasPuesto={puestoDias ?? null}
             />
             <Referencias edad={edadNum} futuras={futuras} aplicado={Boolean(porDiscurso && diasNum)} />
           </div>,

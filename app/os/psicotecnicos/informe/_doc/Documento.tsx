@@ -428,20 +428,6 @@ export default async function Documento({
                 )}
               </>
             )}
-            {/* Dónde cae dentro de su estrato, que es la subdivisión del propio
-                modelo: entrando, sostenida o a punto de pasar al siguiente. */}
-            {inf.discursivo.celda === 'A' && (
-              <p>
-                Dentro de ese nivel se la ubica en el borde de arriba: sostiene esa manera
-                de pensar y ya asoma la del nivel siguiente.
-              </p>
-            )}
-            {inf.discursivo.celda === 'B' && (
-              <p>
-                Dentro de ese nivel se la ubica en el comienzo: recién está entrando en esa
-                manera de pensar.
-              </p>
-            )}
             {inf.discursivo.actual && <p>{inf.discursivo.actual}</p>}
 
             {inf.discursivo.detalle && (
@@ -455,12 +441,15 @@ export default async function Documento({
             {/* El estrato mide el trabajo que la persona tiene asignado hoy: si
                 el puesto que ocupa no la exige, el número describe a ese puesto
                 y no hasta dónde puede llegar. */}
-            {inf.discursivo.subutilizado && (
+            {inf.discursivo.brecha > 0 && (
               <p className="inf-subutilizado">
-                El nivel medido corresponde al alcance del trabajo que la persona tiene
-                asignado hoy. El puesto que ocupa no le exige lo que puede, así que este
-                estrato describe a ese puesto y queda por debajo de lo que ella podría
-                manejar.
+                {inf.discursivo.brecha === 1
+                  ? 'El trabajo que tiene asignado hoy responde por tareas de un estrato ' +
+                    'por debajo del que muestra su manera de razonar: el puesto que ocupa ' +
+                    'no le está pidiendo todo lo que puede.'
+                  : `El trabajo que tiene asignado hoy responde por tareas de ${inf.discursivo.brecha} ` +
+                    'estratos por debajo del que muestra su manera de razonar: el puesto ' +
+                    'que ocupa no le está pidiendo todo lo que puede.'}
               </p>
             )}
 
