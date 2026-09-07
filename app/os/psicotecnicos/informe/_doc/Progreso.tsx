@@ -26,6 +26,7 @@ import {
   ESCALERA,
   PISO,
   bandaDe,
+  curvaDeLamina,
   edadEnQueLlega,
   escalonDe,
   estratoDeEscalon,
@@ -102,6 +103,18 @@ function x(edad: number): number {
  */
 function y(u: number): number {
   return Y0 - (alturaDelEscalon(u) / TOTAL) * (Y0 - Y1);
+}
+
+/**
+ * Cuánto sigue subiendo la curva `i` en el ancho del margen derecho.
+ *
+ * Es su pendiente en el borde llevada a los veintiséis píxeles del margen. Sale
+ * negativo porque en el dibujo subir es restar.
+ */
+function inclinacion(i: number): number {
+  const pend = (y(curvaDeLamina(i, EDAD_MAX)) - y(curvaDeLamina(i, EDAD_MAX - 1))) /
+    (x(EDAD_MAX) - x(EDAD_MAX - 1));
+  return Math.max(-26, pend * 26);
 }
 
 /**
@@ -436,22 +449,29 @@ export default function Progreso({
         // hay un modo por debajo, así que su franja cierra en el piso del cuadro.
         const abajo = n === 1 ? PISO : Math.min(ALTO, pisoDeBanda(n, EDAD_MAX));
         if (arriba - abajo < 1.2) return null;
-        // Pasados los setenta la raya que separa dos franjas del margen va
-        // horizontal: la curva termina en el borde del cuadro y el margen es una
-        // columna de rótulos, no la continuación del dibujo.
-        const yArriba = y(arriba);
-        const yAbajo = y(abajo);
+        // La raya que separa dos franjas del margen sigue la pendiente con la
+        // que su curva llega al borde: en la lámina el margen no es una escalera
+        // de rayas horizontales, es la continuación de las curvas.
+        const yArriba = y(arriba) + inclinacion(n + 1);
+        // Salvo la base del modo I, que no es una curva sino el piso del cuadro:
+        // el modo I se lleva todo lo que queda debajo de la primera, así que su
+        // franja apoya en el borde de abajo y ahí sigue derecha.
+        const yAbajo = n === 1 ? y(abajo) : y(abajo) + inclinacion(n);
+        // La franja más alta no lleva techo propio: su curva ya se fue por
+        // arriba del cuadro y quien cierra ahí es la banda del modo de encima,
+        // que baja por el borde de afuera hasta esta misma altura.
+        const techo = arriba < ALTO ? `M ${X1} ${y(arriba)} L ${X1 + 26} ${yArriba} ` : `M ${X1 + 26} ${Y1} `;
         return (
           <g key={`der-${n}`}>
             <path
-              d={`M ${X1} ${yArriba} L ${X1 + 26} ${yArriba} L ${X1 + 26} ${yAbajo} L ${X1} ${yAbajo}`}
+              d={`${techo}L ${X1 + 26} ${yAbajo} L ${X1} ${y(abajo)}`}
               fill="none"
               stroke={LINEA}
               strokeWidth={0.6}
             />
             <Vertical
               cx={X1 + 13}
-              cy={(yArriba + yAbajo) / 2}
+              cy={(y(arriba) + y(abajo) + yArriba + yAbajo) / 4}
               color={n === banda ? AZUL : TINTA}
               peso={n === banda ? 700 : 400}
             >
