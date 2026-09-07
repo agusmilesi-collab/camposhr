@@ -30,7 +30,6 @@ import {
   escalonDe,
   estratoDeEscalon,
   horizonteEn,
-  curvaDeLamina,
   limiteDeBanda,
   pisoDeBanda,
   tramosDeLamina,
@@ -103,18 +102,6 @@ function x(edad: number): number {
  */
 function y(u: number): number {
   return Y0 - (alturaDelEscalon(u) / TOTAL) * (Y0 - Y1);
-}
-
-/**
- * Cuánto sigue subiendo la curva `n` en el ancho del margen derecho.
- *
- * Es su pendiente en el borde llevada a los veintiséis píxeles del margen. Sale
- * negativo porque en el dibujo subir es restar.
- */
-function inclinacion(i: number): number {
-  const pend = (y(curvaDeLamina(i, EDAD_MAX)) - y(curvaDeLamina(i, EDAD_MAX - 1))) /
-    (x(EDAD_MAX) - x(EDAD_MAX - 1));
-  return Math.max(-26, pend * 26);
 }
 
 /**
@@ -449,30 +436,22 @@ export default function Progreso({
         // hay un modo por debajo, así que su franja cierra en el piso del cuadro.
         const abajo = n === 1 ? PISO : Math.min(ALTO, pisoDeBanda(n, EDAD_MAX));
         if (arriba - abajo < 1.2) return null;
-        // La raya que separa dos franjas del margen sigue la pendiente con la
-        // que su curva llega al borde: en la lámina el margen no es una escalera
-        // de rayas horizontales, es la continuación de las curvas.
-        // La que se va por arriba llega hasta el techo de la banda de arriba: su
-        // región es todo lo que queda a la derecha de la diagonal.
-        const sale = edadEnQueLlega(n + 1, ALTO) !== null;
-        const yArriba = sale
-          ? Y1 - CORONA
-          : y(arriba) + inclinacion(n + 1);
-        const yAbajo = y(abajo) + inclinacion(n);
+        // Pasados los setenta la raya que separa dos franjas del margen va
+        // horizontal: la curva termina en el borde del cuadro y el margen es una
+        // columna de rótulos, no la continuación del dibujo.
+        const yArriba = y(arriba);
+        const yAbajo = y(abajo);
         return (
           <g key={`der-${n}`}>
             <path
-              d={
-                `M ${X1} ${sale ? Y1 : y(arriba)} L ${X1 + 26} ${yArriba} ` +
-                `L ${X1 + 26} ${yAbajo} L ${X1} ${y(abajo)}`
-              }
+              d={`M ${X1} ${yArriba} L ${X1 + 26} ${yArriba} L ${X1 + 26} ${yAbajo} L ${X1} ${yAbajo}`}
               fill="none"
               stroke={LINEA}
               strokeWidth={0.6}
             />
             <Vertical
               cx={X1 + 13}
-              cy={(y(arriba) + y(abajo) + yArriba + yAbajo) / 4}
+              cy={(yArriba + yAbajo) / 2}
               color={n === banda ? AZUL : TINTA}
               peso={n === banda ? 700 : 400}
             >
