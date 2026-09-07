@@ -1,3 +1,5 @@
+import curvasDelPapel from './curvas-jaques.json';
+
 /**
  * El diagrama de progreso potencial de Elliot Jaques, redibujado.
  *
@@ -22,18 +24,18 @@
  *
  * ## Las curvas
  *
- * **Son un redibujo, no la lámina escaneada.** Cada límite entre dos bandas
- * arranca a los veinte años en un escalón de la escalera y se va acercando al
- * techo de un estrato: el límite entre la primera banda y la segunda termina
- * pegado a los tres meses (techo del estrato I), el siguiente al año (techo del
- * II), el siguiente a los dos años, y así. Esa es la forma que tiene la lámina
- * publicada, y es lo que hace que las bandas de arriba sigan subiendo a los
- * sesenta y cinco mientras las de abajo ya se aplanaron a los cuarenta.
+ * **Son un redibujo de la lámina publicada.** Cada límite entre dos bandas
+ * arranca a los veinte años en un escalón de la escalera y sube hasta cruzar, a
+ * los setenta, el techo de un estrato: el límite entre la primera banda y la
+ * segunda pasa por los tres meses (techo del estrato I), el siguiente por el año
+ * (techo del II), el siguiente por los dos años, y así. Las bandas de arriba
+ * siguen subiendo a los sesenta y cinco mientras las de abajo ya se aplanaron
+ * alrededor de los cincuenta.
  *
- * La curva es `techo − (techo − arranque) · e^(−k·(edad−20))`, con una `k` por
- * banda calibrada contra la lámina. **Cerca de un límite, la banda es un
- * criterio y no una medición**: el diagrama ubica, no dictamina, y así hay que
- * leerlo cuando el punto cae sobre una raya.
+ * La curva de cada límite es una logística de cuatro constantes ajustadas sobre
+ * la lámina (ver {@link limiteDeBanda}).
+ * **Cerca de un límite, la banda es un criterio y no una medición**: el diagrama
+ * ubica, no dictamina, y así hay que leerlo cuando el punto cae sobre una raya.
  *
  * Sin `server-only`: lo usan la ficha, donde se cargan los dos datos, y el
  * informe, donde se dibuja.
@@ -41,7 +43,7 @@
 
 /** Desde y hasta qué edad se dibuja, como en la lámina. */
 export const EDAD_MIN = 20;
-export const EDAD_MAX = 65;
+export const EDAD_MAX = 70;
 
 /**
  * La escalera de horizontes, de abajo hacia arriba.
@@ -58,8 +60,8 @@ export const EDAD_MAX = 65;
  * escala, igual que en la lámina, y por eso esa fila va sin letra.
  */
 export const ESCALERA = [
-  // El piso del cuadro. En la lámina no hay celda debajo del día: la más baja
-  // es IB, que va de un día a una semana.
+  // El piso del cuadro. No hay celda debajo del día: la más baja es IB, que va
+  // de un día a una semana.
   { dias: 1, texto: '1 día', celda: '' },
   { dias: 7, texto: '1 semana', celda: 'IB' },
   { dias: 30, texto: '1 mes', celda: 'IM' },
@@ -82,6 +84,9 @@ export const ESCALERA = [
   { dias: 10950, texto: '30 años', celda: 'VIIB' },
   { dias: 14600, texto: '40 años', celda: 'VIIM' },
   { dias: 18250, texto: '50 años', celda: 'VIIA' },
+  { dias: 25550, texto: '70 años', celda: 'VIIIB' },
+  { dias: 31025, texto: '85 años', celda: 'VIIIM' },
+  { dias: 36500, texto: '100 años', celda: 'VIIIA' },
 ] as const;
 
 /** El escalón más alto del diagrama: el techo de la franja VIIA. */
@@ -90,8 +95,9 @@ export const ALTO = ESCALERA.length - 1;
 /**
  * El piso del cuadro.
  *
- * Un escalón por debajo de "1 día", que es donde empieza la franja ID: la
- * lámina la dibuja entera aunque su piso no tenga número.
+ * Una celda por debajo de "1 día", que la lámina dibuja sin etiqueta de tiempo
+ * ni de sub-estrato. Ninguna de nuestras curvas la cruza (la más baja está en
+ * 0,74 a los veinte años), pero el cuadro se cierra ahí y no en el día.
  */
 export const PISO = -1;
 
@@ -143,40 +149,414 @@ export const ESTRATOS = [
     mide: false,
     grupo: 'Estratégico corporativo',
   },
+  {
+    romano: 'VIII',
+    desde: 21,
+    hasta: 24,
+    nombre: 'Estratégico corporativo',
+    mide: false,
+    grupo: 'Estratégico corporativo',
+  },
 ] as const;
 
 export type Estrato = (typeof ESTRATOS)[number];
 
 /**
- * Las ocho bandas de maduración, de la más baja a la más alta.
+ * El alto de una celda del eje, y de ahí la escala vertical del cuadro.
  *
- * `arranque` es el escalón en el que el límite superior de la banda está a los
- * veinte años, y `techo` aquel al que se acerca sin llegar. `k` es cuán rápido
- * lo hace: las bandas bajas se aplanan antes de los cuarenta y las altas siguen
- * subiendo después de los sesenta, que es lo que dice el modelo ("cuanto más
- * alto es el modo, más veloz es el ritmo de maduración y más se prolonga").
- *
- * **Los arranques están leídos del Potential Progression Chart original.** Ahí
- * las curvas ya salen separadas a los veinte años y abren todo el alto del
- * cuadro: el modo más bajo entra por el piso y el más alto por los veinte años,
- * porque el modo es de la persona desde el principio y lo que la edad hace es
- * llevarla por esa curva. Cada uno arranca dos estratos por debajo de su techo,
- * salvo los dos primeros, cuyo techo está tan abajo que no da el lugar.
+ * **Las celdas no miden todas lo mismo.** Las de los estratos I y II, más la
+ * celda sin nombre de abajo, se dibujan al 70% de las de arriba: medidas sobre
+ * la lámina dan 66 píxeles contra 92. Dibujarlas todas iguales estira la mitad
+ * de abajo del cuadro y las curvas dejan de pasar por donde pasan en el papel.
  */
-const BANDAS = Array.from({ length: 8 }, (_, i) => {
-  const n = i + 1;
-  const techo = 3 * n;
-  return { n, arranque: techo - Math.min(6, 2 + n), techo, k: 0.05 + 0.06 / n };
-});
+export const CELDA_BAJA = 0.7;
 
-/** Cuántas bandas hay. */
-export const CUANTAS_BANDAS = BANDAS.length;
+/** Hasta qué escalón valen las celdas bajas: el año, techo del estrato II. */
+export const HASTA_CELDA_BAJA = 6;
 
-/** Dónde está el límite superior de una banda a cierta edad, en escalones. */
+/** Dónde queda el codo de la escala, en unidades de celda alta. */
+const CODO = (HASTA_CELDA_BAJA - PISO) * CELDA_BAJA;
+
+/**
+ * A qué altura sobre el piso cae un escalón, en unidades de celda alta.
+ *
+ * Es la escala vertical del diagrama: `alturaDelEscalon(ALTO)` da el alto total
+ * del cuadro, con el que se normaliza.
+ */
+export function alturaDelEscalon(b: number): number {
+  if (b <= HASTA_CELDA_BAJA) return (b - PISO) * CELDA_BAJA;
+  return CODO + (b - HASTA_CELDA_BAJA);
+}
+
+/** La vuelta: de una altura del papel al escalón que le toca. */
+export function escalonDeAltura(alt: number): number {
+  return alt <= CODO ? alt / CELDA_BAJA + PISO : HASTA_CELDA_BAJA + (alt - CODO);
+}
+
+/**
+ * Las once curvas de la lámina, de abajo hacia arriba, punto por punto.
+ *
+ * Son once y no diez: la lámina dibuja los once límites que separan los diez
+ * modos, y el de más abajo es el piso del modo I. Ese piso nace a los veintiocho
+ * años y no a los veinte, porque antes viene por debajo del cuadro, toca la
+ * línea del día a los cincuenta y seis y desde ahí baja: es la única que
+ * desciende.
+ *
+ * **El modo I incluye lo que queda debajo de esa curva.** No hay un modo por
+ * debajo del I, así que su franja llega hasta el piso del cuadro y su nombre en
+ * el margen derecho se escribe sobre todo ese alto.
+ *
+ * **Son puntos leídos del papel y no una fórmula.** Se probó ajustar una
+ * exponencial por curva y no tiene la forma de estas: fijando el arranque se
+ * iba el final, y al revés. Así que cada curva son siete nodos y entre ellos
+ * pasa una curva suave ({@link curvaSuave}). Siete alcanzan para que el trazo
+ * siga al del papel sin tramos largos donde no se lo pueda corregir, y son
+ * pocos como para leerlos de un vistazo en `curvas-jaques.json`.
+ *
+ * **Los puntos están medidos sobre el Gráfico de Progreso del Potencial** con
+ * sus curvas repasadas a mano: se digitalizó el dibujo, se calibró la
+ * cuadrícula línea por línea para descontar la perspectiva de la foto y se
+ * separaron las curvas por color. Los dos extremos de cada una están clavados a
+ * esta tabla, leída del papel y confirmada a ojo:
+ *
+ * | curva | nace a los 20 en | llega a |
+ * |-------|------------------|---------|
+ * | 1     | el borde de abajo, y recién a los 28 | toca el día a los 56 y baja: a los 70 queda apenas debajo |
+ * | 2     | el borde de abajo | 3 meses a los 70 |
+ * | 3     | 1 día             | 1 año |
+ * | 4     | 1 mes             | 2 años |
+ * | 5     | 6 meses           | 5 años |
+ * | 6     | entre 9 meses y 1 año | 10 años, apenas debajo |
+ * | 7     | apenas debajo de 16 meses | entre 17 y 20 años |
+ * | 8     | apenas arriba de 20 meses | 40 años, apenas arriba |
+ * | 9     | apenas arriba de 2 años | 70 años, a mitad de celda |
+ * | 10    | apenas debajo de 4 años | los 100 años a los 65: se va por arriba |
+ * | 11    | apenas arriba de 5 años | los 100 años a los 54: se va por arriba |
+ *
+ * **Las tres de arriba terminan por debajo del techo de su estrato.** El modelo
+ * dice que el modo VI llega a los veinte años de horizonte, el VII a los
+ * cincuenta y el VIII a los cien; en el papel esas tres curvas terminan en
+ * diecisiete años y medio, cuarenta y setenta. Se probó llevarlas a su techo y
+ * no se puede: la novena hay que subirla un escalón y medio y la curva entera se
+ * despega del trazo, hasta una celda y media a los sesenta y cinco. Así que
+ * mandan los puntos del papel, que es lo que el instrumento usa para ubicar a
+ * alguien; la diferencia con el modelo queda para leerla, no para corregirla.
+ *
+ * Las seis de abajo sí terminan clavadas en el techo de un estrato, y eso es lo
+ * que da por buena la lectura: la escala no se corrió.
+ *
+ * Jaques no publica una fórmula de estas curvas: las dedujo de la progresión
+ * real de los ingresos de casi doscientas personas seguidas entre dieciocho y
+ * veinticinco años, y las publica como dibujo. Por eso acá son puntos.
+ *
+ * **Lo que se guarda de cada curva es su perfil de pendientes.** Se mide cuánto
+ * sube el trazo en cada tramo de dos años, se suaviza ese perfil para sacarle el
+ * ruido del marcador y se reconstruye la curva sumando. Así conserva su forma:
+ * hay curvas que en el medio suben un poco más que al principio, y forzarlas a
+ * que la pendiente sólo baje las deja rectas.
+ *
+ * Los dos primeros años del trazo y el último quedan afuera de la medición
+ * porque ahí el marcador deja su punta y corre la lectura; esos tramos se
+ * completan siguiendo la tendencia de los vecinos.
+ *
+ * Cada entrada es `[edad, escalón]`, y viven en `curvas-jaques.json`. **Son
+ * fijos**: se calcaron una vez contra el papel y con eso queda todo el sistema,
+ * el diagrama de la ficha, el del informe y la banda que se le asigna a cada
+ * persona. Si alguna vez hubiera que corregir una, se editan los números del
+ * archivo y se corre el control que está en `RETOMAR-lamina-jaques.md`.
+ */
+const CURVAS: ReadonlyArray<ReadonlyArray<readonly [number, number]>> =
+  curvasDelPapel.curvas as unknown as ReadonlyArray<ReadonlyArray<readonly [number, number]>>;
+
+/** Cuántos modos dibuja la lámina: uno por cada franja entre dos curvas. */
+export const CUANTAS_BANDAS = CURVAS.length - 1;
+
+/**
+ * Las pendientes de nodo de la curva que pasa por esos puntos.
+ *
+ * Se eligen de manera que la **curvatura** no salte de un tramo al siguiente,
+ * que es lo que hace que el trazo se vea redondo: con la pendiente puesta a ojo
+ * (el promedio de las dos secantes) la tangente sigue, pero el radio cambia de
+ * golpe en cada nodo y el ojo lee un codo. Salen de resolver, para toda la
+ * curva a la vez, el sistema que iguala la segunda derivada a los dos lados de
+ * cada nodo; en los extremos se la deja en cero, que es la condición de una
+ * regla flexible sin sujetar.
+ *
+ * **Donde la curva cambia de dirección la pendiente se clava en cero.** Ahí el
+ * cambio de curvatura es el dibujo y no un defecto: es el pico. Sin eso el
+ * máximo se corre de lugar y se pasa de largo, y la primera curva tiene que
+ * tocar el día a los cincuenta y seis exactos. Cada cambio de dirección parte
+ * la curva, y el sistema se resuelve por separado a cada lado.
+ *
+ * Es también lo que impide que dos curvas se toquen: entre dos picos la curva
+ * no se pasa del nodo más alto, así que ninguna invade la banda de al lado.
+ */
+function pendientesDeNodo(X: readonly number[], Y: readonly number[]): number[] {
+  const n = X.length;
+  const h: number[] = [];
+  const d: number[] = [];
+  for (let k = 0; k < n - 1; k++) {
+    h.push(X[k + 1] - X[k]);
+    d.push((Y[k + 1] - Y[k]) / h[k]);
+  }
+  if (n === 2) return [d[0], d[0]];
+
+  const m: (number | null)[] = new Array(n).fill(null);
+  const cortes: number[] = [0];
+  for (let k = 1; k < n - 1; k++) {
+    if (d[k - 1] * d[k] <= 0) {
+      m[k] = 0;
+      cortes.push(k);
+    }
+  }
+  cortes.push(n - 1);
+
+  for (let c = 0; c < cortes.length - 1; c++) {
+    const desde = cortes[c];
+    const hasta = cortes[c + 1];
+    const libres: number[] = [];
+    for (let k = desde; k <= hasta; k++) if (m[k] === null) libres.push(k);
+    if (libres.length === 0) continue;
+
+    const N = libres.length;
+    const A: number[][] = Array.from({ length: N }, () => new Array(N).fill(0));
+    const r: number[] = new Array(N).fill(0);
+    const fila = new Map(libres.map((k, i) => [k, i]));
+    libres.forEach((k, i) => {
+      const pon = (j: number, v: number) => {
+        const col = fila.get(j);
+        if (col === undefined) r[i] -= v * (m[j] as number);
+        else A[i][col] += v;
+      };
+      if (k === 0) {
+        pon(0, 2 / h[0]);
+        pon(1, 1 / h[0]);
+        r[i] += (3 * d[0]) / h[0];
+      } else if (k === n - 1) {
+        pon(n - 2, 1 / h[n - 2]);
+        pon(n - 1, 2 / h[n - 2]);
+        r[i] += (3 * d[n - 2]) / h[n - 2];
+      } else {
+        pon(k - 1, 1 / h[k - 1]);
+        pon(k, 2 * (1 / h[k - 1] + 1 / h[k]));
+        pon(k + 1, 1 / h[k]);
+        r[i] += 3 * (d[k - 1] / h[k - 1] + d[k] / h[k]);
+      }
+    });
+
+    /* Gauss con pivoteo: el sistema tiene a lo sumo siete incógnitas. */
+    for (let i = 0; i < N; i++) {
+      let piv = i;
+      for (let q = i + 1; q < N; q++) if (Math.abs(A[q][i]) > Math.abs(A[piv][i])) piv = q;
+      [A[i], A[piv]] = [A[piv], A[i]];
+      [r[i], r[piv]] = [r[piv], r[i]];
+      for (let q = i + 1; q < N; q++) {
+        const w = A[q][i] / A[i][i];
+        if (!w) continue;
+        for (let s = i; s < N; s++) A[q][s] -= w * A[i][s];
+        r[q] -= w * r[i];
+      }
+    }
+    const sol: number[] = new Array(N);
+    for (let i = N - 1; i >= 0; i--) {
+      let acum = r[i];
+      for (let q = i + 1; q < N; q++) acum -= A[i][q] * sol[q];
+      sol[i] = acum / A[i][i];
+    }
+    libres.forEach((k, i) => {
+      m[k] = sol[i];
+    });
+  }
+
+  return m as number[];
+}
+
+/**
+ * Una curva suave que pasa por los puntos dados, sin inventar picos.
+ *
+ * Entre dos nodos va una cúbica; las pendientes de los nodos salen de
+ * {@link pendientesDeNodo}, que las elige para que la curvatura no salte.
+ *
+ * Trabaja en la altura del papel, donde las curvas son suaves de verdad, y
+ * devuelve escalones. Fuera del tramo sigue derecho con la pendiente del
+ * extremo: hace falta para que la curva 1 tenga un valor antes de los 28 (por
+ * debajo del cuadro) y las dos de arriba después de irse (por encima).
+ */
+export function curvaSuave(puntos: ReadonlyArray<readonly [number, number]>, edad: number): number {
+  const n = puntos.length;
+  if (n === 0) return 0;
+  if (n === 1) return puntos[0][1];
+  const X = puntos.map((p) => p[0]);
+  const Y = puntos.map((p) => alturaDelEscalon(p[1]));
+  const m = pendientesDeNodo(X, Y);
+
+  if (edad <= X[0]) return escalonDeAltura(Y[0] + m[0] * (edad - X[0]));
+  if (edad >= X[n - 1]) return escalonDeAltura(Y[n - 1] + m[n - 1] * (edad - X[n - 1]));
+
+  let k = 0;
+  while (k < n - 2 && X[k + 1] <= edad) k++;
+  const h = X[k + 1] - X[k];
+  const t = (edad - X[k]) / h;
+  const t2 = t * t;
+  const t3 = t2 * t;
+  const alt =
+    (2 * t3 - 3 * t2 + 1) * Y[k] +
+    (t3 - 2 * t2 + t) * h * m[k] +
+    (-2 * t3 + 3 * t2) * Y[k + 1] +
+    (t3 - t2) * h * m[k + 1];
+  return escalonDeAltura(alt);
+}
+
+/** Un tramo de curva, en edad y altura de papel, con sus dos puntos de tiro. */
+export type TramoDeCurva = {
+  edad: number;
+  alto: number;
+  tiroEdad1: number;
+  tiroAlto1: number;
+  tiroEdad2: number;
+  tiroAlto2: number;
+  edadFin: number;
+  altoFin: number;
+};
+
+/**
+ * La curva `i` partida en los tramos que la dibujan, entre dos edades.
+ *
+ * Cada tramo es la misma cúbica que evalúa {@link curvaSuave}, escrita como una
+ * curva de Bézier: se dibuja con un solo comando `C` de SVG y sale idéntica,
+ * sin la escalerita que deja muestrear la curva año a año. Seis tramos por
+ * curva en lugar de doscientos puntos, y el trazo es la curva y no una
+ * poligonal que se le parece.
+ *
+ * Va en altura de papel y no en escalones porque en altura la cúbica es exacta;
+ * los escalones tienen el codo del año y ahí la cuenta deja de ser un polinomio.
+ * Los pedazos que quedan fuera de los nodos (la curva 1 antes de los veintiocho,
+ * las dos de arriba después de irse por el techo) salen derechos, con la
+ * pendiente del extremo, igual que en {@link curvaSuave}.
+ */
+export function tramosDeLamina(i: number, desde = EDAD_MIN, hasta = EDAD_MAX): TramoDeCurva[] {
+  const puntos = CURVAS[i - 1];
+  if (!puntos || puntos.length < 2) return [];
+  const X = puntos.map((p) => p[0]);
+  const Y = puntos.map((p) => alturaDelEscalon(p[1]));
+  const n = X.length;
+  const m = pendientesDeNodo(X, Y);
+
+  const tramo = (
+    x0: number,
+    y0: number,
+    m0: number,
+    x1: number,
+    y1: number,
+    m1: number,
+  ): TramoDeCurva => {
+    const h = (x1 - x0) / 3;
+    return {
+      edad: x0,
+      alto: y0,
+      tiroEdad1: x0 + h,
+      tiroAlto1: y0 + m0 * h,
+      tiroEdad2: x1 - h,
+      tiroAlto2: y1 - m1 * h,
+      edadFin: x1,
+      altoFin: y1,
+    };
+  };
+
+  const salida: TramoDeCurva[] = [];
+  if (desde < X[0]) {
+    const y0 = Y[0] + m[0] * (desde - X[0]);
+    salida.push(tramo(desde, y0, m[0], X[0], Y[0], m[0]));
+  }
+  for (let k = 0; k < n - 1; k++) {
+    if (X[k + 1] <= desde || X[k] >= hasta) continue;
+    salida.push(tramo(X[k], Y[k], m[k], X[k + 1], Y[k + 1], m[k + 1]));
+  }
+  if (hasta > X[n - 1]) {
+    const y1 = Y[n - 1] + m[n - 1] * (hasta - X[n - 1]);
+    salida.push(tramo(X[n - 1], Y[n - 1], m[n - 1], hasta, y1, m[n - 1]));
+  }
+  return salida;
+}
+
+/** Dónde está una de las once curvas a cierta edad, en escalones. */
+export function curvaDeLamina(i: number, edad: number): number {
+  const c = CURVAS[i - 1];
+  return c ? curvaSuave(c, edad) : 0;
+}
+
+/**
+ * El límite superior de la banda `n`, en escalones.
+ *
+ * La banda del modo `n` va de la curva `n` a la `n+1`: el modo I es la franja
+ * entre el día y los tres meses a los setenta, el II entre los tres meses y el
+ * año, y así.
+ */
 export function limiteDeBanda(n: number, edad: number): number {
-  const b = BANDAS[n - 1];
-  if (!b) return 0;
-  return b.techo - (b.techo - b.arranque) * Math.exp(-b.k * (edad - EDAD_MIN));
+  return curvaDeLamina(n + 1, edad);
+}
+
+/** El piso de la banda `n`, que es la curva de abajo. */
+export function pisoDeBanda(n: number, edad: number): number {
+  return curvaDeLamina(n, edad);
+}
+
+/**
+ * En qué modo cae alguien de esta edad con esta capacidad, con decimales.
+ *
+ * Por bisección sobre {@link limiteDeBanda}: el modo no se despeja a mano
+ * porque cada curva tiene los suyos. Con decimal porque sirve para leer qué tan
+ * adentro de su banda está la persona; para asignar la banda está {@link bandaDe}.
+ */
+export function modoDe(edad: number, escalon: number): number {
+  if (escalon <= limiteDeBanda(1, edad)) {
+    return escalon <= PISO ? 0 : escalon / Math.max(0.001, limiteDeBanda(1, edad));
+  }
+  for (let n = 1; n < CUANTAS_BANDAS; n++) {
+    const abajo = limiteDeBanda(n, edad);
+    const arriba = limiteDeBanda(n + 1, edad);
+    if (escalon <= arriba) return n + (escalon - abajo) / (arriba - abajo);
+  }
+  return CUANTAS_BANDAS;
+}
+
+/**
+ * A qué edad un modo termina de crecer.
+ *
+ * Se toma el noventa por ciento del recorrido de su curva de arriba entre los
+ * veinte y los setenta: de ahí en adelante lo que queda por subir no llega a un
+ * tercio de celda.
+ */
+export function edadEnQueMadura(modo: number): number {
+  const i = modo + 1;
+  const a0 = alturaDelEscalon(curvaDeLamina(i, EDAD_MIN));
+  const a1 = alturaDelEscalon(curvaDeLamina(i, EDAD_MAX));
+  const meta = a0 + 0.9 * (a1 - a0);
+  for (let e = EDAD_MIN; e <= EDAD_MAX; e += 0.25) {
+    if (alturaDelEscalon(curvaDeLamina(i, e)) >= meta) return e;
+  }
+  return EDAD_MAX;
+}
+
+/**
+ * A qué edad la curva `i` de la lámina pasa por un escalón, si pasa dentro del
+ * cuadro.
+ *
+ * Sirve para saber dónde una curva se va por arriba: las dos más altas cruzan
+ * los cien años antes de los setenta, la undécima a los 54 y la décima a los 65.
+ * Arriba de esa raya la lámina las sigue dibujando un poco más, y ahí es donde
+ * entra el nombre del modo más alto.
+ */
+export function edadEnQueLlega(i: number, escalon: number): number | null {
+  let previo = curvaDeLamina(i, EDAD_MIN);
+  for (let e = EDAD_MIN + 0.1; e <= EDAD_MAX; e += 0.1) {
+    const actual = curvaDeLamina(i, e);
+    if (previo < escalon && actual >= escalon) {
+      return e - 0.1 + (0.1 * (escalon - previo)) / (actual - previo);
+    }
+    previo = actual;
+  }
+  return null;
 }
 
 /**
@@ -230,8 +610,8 @@ export function estratoDeEscalon(escalon: number): Estrato {
  */
 export function bandaDe(edad: number, dias: number): number {
   const e = escalonDe(dias);
-  for (const b of BANDAS) {
-    if (e <= limiteDeBanda(b.n, edad)) return b.n;
+  for (let n = 1; n <= CUANTAS_BANDAS; n++) {
+    if (e <= limiteDeBanda(n, edad)) return n;
   }
   return CUANTAS_BANDAS;
 }
