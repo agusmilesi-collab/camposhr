@@ -41,7 +41,10 @@ const NAV: Grupo[] = [
   },
   {
     grupo: 'Sentir Mindfulness',
-    items: [{ href: '/os/encuentros', texto: 'Encuentros', icono: 'encuentros' }],
+    items: [
+      { href: '/os/encuentros', texto: 'Encuentros', icono: 'encuentros' },
+      { href: '/os/consultorios', texto: 'Consultorios', icono: 'salas' },
+    ],
   },
   {
     grupo: 'Comercial',
@@ -82,6 +85,7 @@ const ICONOS = {
   accesos: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
   herramientas: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
   specs: <><path d="M5 4h11l3 3v13H5z" /><path d="M9 9h6" /><path d="M9 13h6" /><path d="M9 17h3" /></>,
+  salas: <><rect x="4" y="3.5" width="12.5" height="17" rx="1.5" /><circle cx="13.5" cy="12" r="1" /><path d="M16.5 8h3.5v12.5h-3.5" /></>,
   rueda: <><circle cx="12" cy="12" r="3.2" /><path d="M12 2.8v2.6M12 18.6v2.6M4.5 4.5l1.9 1.9M17.6 17.6l1.9 1.9M2.8 12h2.6M18.6 12h2.6M4.5 19.5l1.9-1.9M17.6 6.4l1.9-1.9" /></>,
 };
 

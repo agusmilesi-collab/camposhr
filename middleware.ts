@@ -9,6 +9,10 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
  *     muestra la home del OS y el resto de la app sigue disponible acá, porque
  *     las secciones enlazan pantallas que todavía viven en sus rutas viejas.
  *
+ *  centro.camposhr.com    -> los inquilinos de los consultorios. Entran con
+ *     correo y contraseña y ven solo lo suyo: el calendario, sus reservas y su
+ *     cuenta. Nada del OS existe acá.
+ *
  *  clientes.camposhr.com  -> portal de clientes (exclusivo).
  *     /<token>  se reescribe a /p/<token> (URL limpia); nada más existe acá.
  *
@@ -24,6 +28,9 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
  */
 
 const CLIENT_HOST = 'clientes.camposhr.com';
+// La zona de los inquilinos del Centro Integral Santiago. El día que se compre
+// centrointegralsantiago.com se suma acá y no cambia nada más.
+const CENTRO_HOSTS = ['centro.camposhr.com'];
 const TOOLS_HOST = 'tools.camposhr.com';
 const OS_HOST = 'os.camposhr.com';
 // Prototipo de interfaz del hub. Vive en public/v2/ y se ve en su propio
@@ -94,6 +101,24 @@ export async function middleware(req: NextRequest) {
       return NextResponse.rewrite(dest);
     }
     return NextResponse.next();
+  }
+
+  // --- Los inquilinos del Centro ---
+  // La puerta la vuelve a revisar cada pantalla con la cookie firmada: acá se
+  // resuelve el ruteo y se saca de la vista todo lo que no es de ellos.
+  if (CENTRO_HOSTS.includes(host)) {
+    if (pathname === '/') {
+      const dest = url.clone();
+      dest.pathname = '/centro';
+      return NextResponse.rewrite(dest);
+    }
+    if (pathname === '/centro' || pathname.startsWith('/centro/') || pathname.startsWith('/api/centro/')) {
+      return NextResponse.next();
+    }
+    return new NextResponse('No autorizado.', {
+      status: 404,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    });
   }
 
   // --- Portal de clientes: subdominio exclusivo ---
