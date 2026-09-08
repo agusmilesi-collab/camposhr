@@ -33,6 +33,11 @@
   --os-violeta: #6a5a8c;
   --os-verde: #4a7856;
   --os-rojo: #8c3b3b;
+  /* Terracota apagado. Nació para las barras de horas del histórico, al lado
+     de la línea azul del facturado: el verde del OS es el del sí y el del
+     activo, y en un gráfico se leía como si las horas estuvieran bien o mal.
+     Es cálido como el fondo hueso y contrasta con el azul acero sin gritar. */
+  --os-arcilla: #b57d55;
 
   --lateral: 252px;
 
@@ -70,6 +75,7 @@ html[data-os-tema='oscuro'] .os {
   --os-violeta: #a394c4;
   --os-verde: #7bab88;
   --os-rojo: #cd7d7d;
+  --os-arcilla: #d2a077;
 }
 
 html[data-os-lateral='compacta'] .os {
@@ -706,6 +712,99 @@ html[data-os-lateral='compacta'] .os-boton-pie {
   color: var(--os-tinta-media);
 }
 
+/**
+ * Las mismas cifras, apiladas pero a la mitad de alto.
+ *
+ * Es el tamaño de las del calendario sin su forma: en un renglón, el rótulo, el
+ * importe y el pie compiten por el mismo ancho, y con "FACTURADO $ 1.479.910
+ * septiembre de 2026" en ciento sesenta píxeles el rótulo salía cortado con
+ * puntos suspensivos. La del calendario funciona porque ahí los tres textos son
+ * cortos ("Consultorio 1", "58 %", "45/78 h").
+ *
+ * Apiladas, cada texto tiene su renglón y ninguno pisa al otro; lo que se
+ * achica es el número y el aire, que es de donde salía el alto.
+ */
+.os-cifras-finas {
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.os-cifras-finas .os-cifra {
+  padding: 10px 13px;
+  border-radius: 10px;
+}
+
+.os-cifras-finas .os-cifra-rotulo {
+  font-size: 0.66rem;
+  letter-spacing: 0.09em;
+}
+
+.os-cifras-finas .os-cifra-valor {
+  margin-top: 4px;
+  font-size: 1.32rem;
+  white-space: nowrap;
+}
+
+.os-cifras-finas .os-cifra-pie {
+  margin-top: 2px;
+  font-size: 0.71rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/**
+ * Las mismas cifras, en un renglón.
+ *
+ * Cinco tarjetas de ochenta y cinco píxeles se llevaban un cuarto de la pantalla
+ * antes de que empezara el calendario, que es lo que se viene a mirar. En una
+ * línea dicen lo mismo en menos de la mitad del alto.
+ */
+.os-cifras-chicas {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.os-cifras-chicas .os-cifra {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 8px 13px;
+  border-radius: 9px;
+}
+
+.os-cifras-chicas .os-cifra-rotulo {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* El valor no se parte nunca: con el pie escrito en frases ("septiembre de
+   2026"), al angostar la pantalla "0 h" caía en dos renglones con la unidad
+   debajo del número. */
+.os-cifras-chicas .os-cifra-valor {
+  white-space: nowrap;
+  margin: 0 0 0 auto;
+  font-size: 1.15rem;
+}
+
+/* Y el pie cede antes que el resto: es el dato de contexto, y recortado con
+   puntos suspensivos sigue diciendo de qué mes habla. */
+.os-cifras-chicas .os-cifra-pie {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin: 0;
+  font-size: 0.68rem;
+  color: var(--os-suave);
+  white-space: nowrap;
+}
+
 .os-rejilla {
   display: grid;
   gap: 18px;
@@ -750,6 +849,13 @@ html[data-os-lateral='compacta'] .os-boton-pie {
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+/* La cuenta que acompaña al título va pegada a él y no contra el borde
+   derecho, que es de donde no se mueve `os-columna-monto`. */
+.os-panel-cuenta {
+  font-weight: 400;
+  color: var(--os-suave);
 }
 
 /* Las lecturas del diccionario cuelgan del área, que es un h2: su título es un
@@ -875,6 +981,17 @@ a.os-fila:hover {
   font-size: 0.81rem;
   color: var(--os-tinta-media);
   font-variant-numeric: tabular-nums;
+}
+
+/* En el mes el anillo se achica con el resto de la grilla. */
+.os-semana-compacta .os-semana-anillo {
+  width: 30px;
+  height: 30px;
+}
+
+.os-semana-compacta .os-semana-anillo > span {
+  width: 22px;
+  height: 22px;
 }
 
 .os-avatar {
@@ -1447,6 +1564,47 @@ select.os-campo:hover:not(:disabled) {
   border-color: var(--os-suave);
 }
 
+/**
+ * El campo suave: el mismo lenguaje que los controles de las tarjetas de
+ * Entrevistas (`os-control-suave`), con el alto de un campo de formulario.
+ *
+ * Un formulario que vive dentro de un panel ya está adentro de un marco, y el
+ * borde de cada campo sumaba una caja adentro de otra: la ficha se leía como
+ * ocho recuadros y no como una ficha. El campo se reconoce por su fondo apagado
+ * y aparece su marco al enfocarlo, que es cuando hace falta saber dónde se está
+ * escribiendo.
+ */
+.os-campo-suave {
+  border-color: transparent;
+  border-radius: 999px;
+  padding: 0 13px;
+}
+
+.os-campo-suave:hover:not(:disabled) {
+  background: var(--os-hover);
+}
+
+.os-campo-suave:focus {
+  border-color: var(--os-linea);
+  background: var(--os-panel);
+  outline: none;
+}
+
+select.os-campo-suave {
+  padding-right: 30px;
+}
+
+select.os-campo-suave:hover:not(:disabled) {
+  border-color: transparent;
+}
+
+/* Un campo de fecha trae adentro el botón del calendario del navegador, que
+   contra el borde redondeado queda pisándolo. */
+input[type='date'].os-campo-suave,
+input[type='datetime-local'].os-campo-suave {
+  padding-right: 9px;
+}
+
 /* La flecha va dibujada en el fondo, así que su color no puede salir de una
    variable: en tinta se cambia el dibujo entero. */
 html[data-os-tema='oscuro'] select.os-campo {
@@ -1770,6 +1928,17 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   background: var(--os-violeta);
 }
 
+/* Los dos gráficos de la ficha de un inquilino: las horas que usó y lo que se
+   le facturó. Van de dos colores porque están uno al lado del otro y dicen
+   cosas distintas; del mismo, se leían como un gráfico partido en dos. */
+.os-mes-lleno.horas {
+  background: var(--os-arcilla);
+}
+
+.os-mes-lleno.facturado {
+  background: var(--os-azul);
+}
+
 /* Una línea del color del panel entre los dos tramos: pegados, el corte se
    pierde cuando la barra es chica. */
 .os-mes-lleno.servicios + .os-mes-lleno.psico {
@@ -1803,6 +1972,20 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 
 .os-referencia-color.servicios {
   background: var(--os-violeta);
+}
+
+/* Los tres estados de la grilla de consultorios, en el cuadrito de la
+   referencia: el mismo color que la celda, plano. */
+.os-referencia-color.banda {
+  background: color-mix(in srgb, var(--os-azul) 45%, transparent);
+}
+
+.os-referencia-color.hora-suelta {
+  background: color-mix(in srgb, var(--os-violeta) 55%, transparent);
+}
+
+.os-referencia-color.cerrado {
+  background: color-mix(in srgb, var(--os-tinta-media) 22%, var(--os-panel));
 }
 
 .os-mes-rotulo {
@@ -2993,6 +3176,37 @@ textarea.os-campo {
   color: var(--os-rojo);
 }
 
+/* Las dos clases nacieron para enlaces, y sobre un `button` el navegador
+   agrega su marco gris y su fondo: "Cerrar" y "Borrar" salían encerrados en un
+   recuadro que no es de ningún control del OS. */
+button.os-enlace-suave,
+button.os-enlace-peligro {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.os-enlace-suave {
+  font-size: 0.8rem;
+}
+
+button.os-enlace-peligro {
+  font-size: 0.78rem;
+}
+
+button.os-enlace-suave:hover,
+button.os-enlace-peligro:hover {
+  color: var(--os-tinta);
+}
+
+button.os-enlace-peligro:hover {
+  color: var(--os-rojo);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .os-boton-peligro {
   border-color: var(--os-rojo);
   background: var(--os-rojo);
@@ -3071,6 +3285,33 @@ textarea.os-campo {
   padding: 12px 14px;
   border-bottom: 1px solid var(--os-linea-suave);
   vertical-align: top;
+}
+
+/* Una tabla de renglones de un solo dato, como el ranking de inquilinos: con el
+   alto normal, trece filas se llevan media pantalla para decir quién factura
+   cuánto. La mitad de aire arriba y abajo alcanza cuando ninguna celda tiene
+   dos líneas. */
+.os-tabla-compacta td,
+.os-tabla-compacta th {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+/* Los números de una tabla angosta, centrados bajo su título. Contra el borde
+   derecho, con seis columnas de ochenta píxeles, el valor y el rótulo que lo
+   encabeza dejaban de compartir eje. Va nombrado con la tabla delante porque
+   `.os-tabla th` y `.os-tabla-num` pesan más que una clase sola. */
+.os-tabla.os-tabla-centrada th.os-tabla-num,
+.os-tabla.os-tabla-centrada td.os-tabla-num {
+  text-align: center;
+}
+
+/* La celda que lleva botones cede su aire: el botón de fila mide veintiséis, y
+   con el mismo relleno que una celda de texto la fila salía seis píxeles más
+   alta que la de una tabla sin botones. */
+.os-tabla-compacta .os-tabla-accion {
+  padding-top: 3px;
+  padding-bottom: 3px;
 }
 
 .os-tabla tr:last-child td {
@@ -3925,6 +4166,44 @@ th.os-tabla-contacto {
   white-space: nowrap;
 }
 
+/* Dos acciones en una celda: en fila y a la derecha, con aire entre ellas.
+   Sueltas, los botones se pegaban y se leían como uno partido en dos. */
+.os-tabla-accion:has(.os-boton) {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/**
+ * Un botón adentro de una fila de tabla.
+ *
+ * Es un botón y no un enlace subrayado, como manda la hoja: al lado de otro
+ * control, un enlace se lee como otra cosa. Pero con los 32 píxeles del botón
+ * normal la fila crecía un tercio, y una tabla de veinte movimientos se
+ * volvía el doble de larga.
+ */
+/* El botón que cierra una fila, contra el borde derecho. Lo empuja el margen y
+   no un `justify-content` de la fila: al lado hay texto que tiene que quedarse
+   donde está, a la izquierda. */
+.os-boton-derecha {
+  margin-left: auto;
+}
+
+.os-boton-fila {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 0.76rem;
+  border-radius: 7px;
+}
+
+/* El que borra se nombra en rojo recién al apuntarlo: en rojo lleno, una
+   columna de veinte movimientos era una columna de veinte alarmas. */
+.os-boton-quitar:hover:not(:disabled) {
+  border-color: var(--os-rojo);
+  color: var(--os-rojo);
+  background: var(--os-panel-2);
+}
+
 .os-tabla-error {
   color: var(--os-rojo);
   font-size: 0.82rem;
@@ -3945,6 +4224,581 @@ th.os-tabla-contacto {
  * Las pestañas son enlaces y no botones porque cada una es una dirección: se
  * puede compartir, recargar y volver con el botón del navegador.
  */
+/* Un campo de una fila que mide lo que mide su contenido más largo. Nació para
+   la forma de pago: con `flex: 1`, "Transferencia" quedaba en un campo de
+   setecientos píxeles al lado de un importe de tres cifras. Va con la fila
+   delante porque ahí `.os-incluye-alta .os-campo` pesa más que una clase. */
+.os-incluye-alta .os-campo-medio,
+.os-incluye-alta .os-etiqueta-campo:has(.os-campo-medio) {
+  flex: 0 0 auto;
+  width: 176px;
+  min-width: 0;
+}
+
+/**
+ * Los campos de la ficha de un inquilino, en grilla.
+ *
+ * `os-incluye-alta` es una fila donde cada campo se estira: sirve para un
+ * formulario de dos o tres campos al pie de un panel, y con seis un nombre se
+ * llevaba el ancho entero del panel para mostrar diez caracteres. En columnas
+ * parejas todos miden igual y los rótulos caen en la misma vertical, que es lo
+ * que se recorre al revisar una ficha.
+ */
+.os-ficha-campos {
+  display: grid;
+  /* Cuatro: tres de datos y una de acciones. Los datos van en tres porque cada
+     renglón es un grupo (quién es arriba, su matrícula abajo); con las que
+     entren, la matrícula subía al renglón del correo y "Vence" quedaba abajo,
+     separada de lo que vence. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px 18px;
+  padding: 16px 20px 18px;
+  /* Un nombre y una matrícula no piden más: en un panel ancho, cuatro columnas
+     libres dejaban campos de cuatrocientos píxeles para diez caracteres. */
+  max-width: 1240px;
+}
+
+/**
+ * La columna de los botones: la última, ocupando las dos filas.
+ *
+ * Al pie del panel quedaba una franja vacía del ancho de la pantalla entre la
+ * última fila de campos y ellos, y "Guardar" caía lejos de lo último que se
+ * escribió. Apilados y estirados, y no en fila: "Restablecer contraseña" no
+ * entra al lado de "Guardar" en el ancho de una columna, y envueltos los dos
+ * quedaban de anchos distintos.
+ */
+.os-ficha-acciones {
+  grid-column: 4;
+  grid-row: 1 / span 2;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* A la mitad del ancho de la columna: estirados medían lo mismo que un campo y
+   se leían como uno más. Alineados a la izquierda, arrancan en la misma
+   vertical que los campos de al lado. */
+.os-ficha-acciones .os-boton {
+  width: 50%;
+  min-width: 132px;
+  justify-content: center;
+}
+
+@media (max-width: 1100px) {
+  .os-ficha-campos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* En dos columnas los botones vuelven a ser un renglón propio, a lo ancho:
+     una columna de acciones de la mitad de la pantalla se lee como un campo
+     más. */
+  .os-ficha-acciones {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    flex-direction: row;
+  }
+
+  .os-ficha-acciones .os-boton {
+    width: auto;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .os-ficha-campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/**
+ * Las horas y lo facturado en un cuadro: barras para las horas, línea con
+ * puntos para la plata.
+ *
+ * Cada serie con su propia escala, porque son horas y pesos. Lo que se compara
+ * es la forma de las dos curvas (un mes con muchas horas y poca plata es
+ * alguien que pasó a un tramo más barato), y los máximos van escritos en la
+ * referencia, que hacen de eje.
+ *
+ * **Las dos grillas van sin separación entre columnas.** Con `gap`, el centro
+ * de la columna deja de estar en `(k + 0.5) / 12` del ancho y los puntos de la
+ * línea se corren de sus barras. El aire lo da el ancho de la barra.
+ */
+.os-mixto {
+  padding: 10px 20px 16px;
+}
+
+.os-mixto-lienzo {
+  position: relative;
+  height: 132px;
+}
+
+.os-mixto-barras {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  height: 100%;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-mixto-col {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 0;
+}
+
+.os-mixto-barra {
+  width: 58%;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  background: var(--os-azul);
+}
+
+.os-mixto-linea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.os-mixto-linea path {
+  stroke: var(--os-arcilla);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* El punto sí es redondo: el lienzo se estira sin conservar la proporción, así
+   que un círculo dibujado adentro del SVG saldría ovalado. */
+.os-mixto-punto {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-bottom: -4px;
+  border-radius: 50%;
+  background: var(--os-arcilla);
+  box-shadow: 0 0 0 2px var(--os-panel);
+  pointer-events: none;
+}
+
+.os-mixto-rotulos {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  margin-top: 7px;
+}
+
+.os-mixto-rotulos span {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--os-suave);
+}
+
+/**
+ * El gráfico del año en Finanzas: dos barras por mes, lo que entró y lo que
+ * salió, y debajo del rótulo lo que quedó.
+ *
+ * Al lado y no apiladas: apiladas, el costo se leía como una parte del ingreso
+ * y el resultado había que restarlo con la vista, que es justo el número que se
+ * mira.
+ */
+.os-mixto-alto {
+  height: 186px;
+}
+
+/* Aire arriba para el importe: la barra del mes más alto llega al tope del
+   lienzo, y su número se salía del panel y cruzaba la línea del encabezado. El
+   relleno se lo come el área de barras, así que el cien por ciento sigue siendo
+   el mes más grande. */
+.os-mixto-alto .os-mixto-barras {
+  padding-top: 22px;
+  box-sizing: border-box;
+}
+
+.os-mixto-doce {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+/* Angosta: la barra del año dice qué proporción se va en costos, y ancha esa
+   proporción se lee igual mientras el bloque de color pesa el doble. */
+.os-mixto-lienzo .os-mes-pila {
+  width: 34%;
+}
+
+/* El total, apoyado sobre la barra. Absoluto para no empujarla hacia abajo:
+   sumado al alto, el tope de la columna dejaría de coincidir con la escala. */
+.os-mixto-col {
+  position: relative;
+}
+
+.os-mixto-total {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-bottom: 4px;
+  text-align: center;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-suave);
+  pointer-events: none;
+}
+
+/* Los tramos de la barra del año. Reusa `os-mes-pila` y `os-mes-lleno`, que ya
+   traen el cartel que aparece al pasar por encima de cada tramo: es lo que
+   contesta qué es cada pedazo sin tener que ponerle un número encima. */
+.os-mes-lleno.gasto {
+  background: var(--os-ambar);
+}
+
+.os-mes-lleno.resultado {
+  background: var(--os-azul);
+}
+
+/* Un mes en pérdida: la barra mide el gasto y esto es lo que no se cubrió. */
+.os-mes-lleno.perdida {
+  background: var(--os-rojo);
+}
+
+/* Entre dos tramos, una línea del color del panel: sin ella, verde sobre
+   amarillo se leía como un degradado y no como dos cosas. */
+.os-mes-lleno + .os-mes-lleno {
+  border-top: 2px solid var(--os-panel);
+}
+
+/* Lo que quedó, debajo del nombre del mes: es la respuesta y va donde la vista
+   ya está parada al leer el mes. */
+.os-mixto-rotulos b {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--os-tinta-media);
+}
+
+.os-referencia-color.gasto {
+  background: var(--os-ambar);
+}
+
+.os-referencia-color.resultado {
+  background: var(--os-azul);
+}
+
+/* Un resultado negativo se nombra en rojo: en la misma tinta que el resto, un
+   mes en pérdida se lee igual que uno bueno. */
+.os-cifra-roja {
+  color: var(--os-rojo);
+}
+
+/**
+ * El mapa de horas: día por hora, cuanto más ocupado más fuerte.
+ *
+ * Es lo que contesta la pregunta sin que nadie la formule: la fila más clara es
+ * la banda que hay que poner en promoción. Con dos listas ordenadas (las tres
+ * más ocupadas y las tres menos) se sabe el ranking pero no el dibujo: que los
+ * jueves a las diez estén llenos y los viernes a las diez vacíos no aparece en
+ * ningún ranking de horas.
+ */
+.os-mapa {
+  padding: 4px 20px 14px;
+}
+
+/* Apaisado: seis filas de días por trece columnas de hora, y a lo ancho del
+   panel. Tuvo un ancho máximo y sobraba medio panel al costado: la mancha se
+   lee mejor cuanto más grande, y con trece columnas el ancho entero deja
+   celdas de sesenta píxeles, no de ciento treinta como cuando eran siete. */
+.os-mapa-tabla {
+  table-layout: fixed;
+}
+
+/* La columna de los días mide lo que mide "Media"; las de hora, lo que sobra en
+   partes iguales. */
+.os-mapa-tabla th:first-child {
+  width: 54px;
+}
+
+.os-mapa-tabla th:last-child,
+.os-mapa-tabla td:last-child {
+  width: 58px;
+}
+
+.os-mapa-tabla td,
+.os-mapa-tabla th {
+  padding: 5px 4px;
+}
+
+.os-mapa-tabla th {
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+/* El rótulo de una columna de hora va centrado sobre sus números, y el de la
+   columna de la media, del lado de los suyos. */
+.os-mapa-tabla thead th:last-child {
+  text-align: right;
+}
+
+.os-mapa-tabla tbody th {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--os-suave);
+  text-align: right;
+  padding-right: 10px;
+  font-size: 0.74rem;
+}
+
+.os-mapa-celda {
+  text-align: center;
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-tinta-media);
+  border-radius: 4px;
+}
+
+/* El tono lo pone la celda (`--demanda`); acá se decide cuánto se aclara, que
+   es lo que cambia entre el tema claro y el oscuro. La luminosidad sube con el
+   tono porque un amarillo y un verde a la misma luz que un rojo se ven
+   lavados: sin esa corrección, la franja del medio desaparecía. */
+.os-mapa-llena {
+  background: hsl(var(--demanda) 66% calc(78% + (var(--demanda) / 140) * 6%));
+  color: hsl(var(--demanda) 55% 24%);
+}
+
+html[data-os-tema='oscuro'] .os-mapa-llena {
+  background: hsl(var(--demanda) 34% 26%);
+  color: hsl(var(--demanda) 60% 84%);
+}
+
+/* La escala, debajo del mapa: un mapa de colores sin referencia se lee al
+   revés, y acá el rojo no es un problema sino la banda que no hay que tocar. */
+.os-mapa-escala {
+  padding: 0 20px 6px;
+}
+
+.os-mapa-pie th,
+.os-mapa-pie td {
+  border-top: 1px solid var(--os-linea);
+  font-weight: 600;
+}
+
+/**
+ * Las cuatro salas contra el techo de horas abiertas.
+ *
+ * En columnas y no en barras horizontales: la pregunta no es qué porcentaje
+ * hizo cada una sino **cuánto le falta para llenarse**, y eso se ve cuando las
+ * cuatro se miden contra la misma línea. El techo es la línea punteada de
+ * arriba, con las horas que hay para vender escritas al costado.
+ */
+/* Las tres lecturas del panel en una fila: qué horas están llenas, cuáles
+   vacías y cuánto le falta a cada sala. El gráfico se lleva la mitad porque
+   son cuatro columnas con su rótulo; las listas son tres renglones. */
+.os-analisis {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr 2fr;
+  gap: 0;
+}
+
+.os-analisis > section {
+  padding: 15px 0 6px;
+  min-width: 0;
+}
+
+.os-analisis > section + section {
+  border-left: 1px solid var(--os-linea-suave);
+}
+
+.os-analisis h3 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0 20px;
+  margin-bottom: 3px;
+}
+
+@media (max-width: 1240px) {
+  .os-analisis {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .os-analisis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-analisis > section + section {
+    border-left: 0;
+    border-top: 1px solid var(--os-linea-suave);
+  }
+}
+
+.os-salas {
+  padding: 6px 20px 18px;
+}
+
+/* Adentro de la fila de tres, el gráfico ya recibe el aire de su sección. */
+.os-analisis .os-salas {
+  padding: 10px 20px 6px;
+}
+
+.os-salas-lienzo {
+  position: relative;
+  height: 150px;
+  /* El fondo es la capacidad: rojo es la hora abierta que no se vendió, y el
+     verde del área es lo que sí. Lo que se mira es el hueco entre la línea y el
+     techo. */
+  background: color-mix(in srgb, var(--os-rojo) 14%, transparent);
+  border-radius: 5px;
+  /* La línea del techo arriba y el piso abajo: el alto del lienzo es el 100 %,
+     así una columna llena toca la línea punteada. Con un número encima de cada
+     barra, ese número le robaba veinte píxeles a la columna y el tope dejaba de
+     coincidir con el techo, que es contra lo que se lee el dibujo. */
+  border-top: 1px dashed var(--os-linea);
+  border-bottom: 1px solid var(--os-linea);
+}
+
+/* El rótulo del techo, colgado de la línea y sobre el fondo del panel para que
+   la línea no lo cruce. */
+.os-salas-techo {
+  position: absolute;
+  top: -9px;
+  right: 0;
+  padding-left: 8px;
+  background: var(--os-panel);
+  font-size: 0.7rem;
+  color: var(--os-suave);
+}
+
+/* El área que se estira con el lienzo. Los puntos no van adentro del SVG: sin
+   conservar la proporción, un círculo saldría ovalado. */
+.os-salas-area {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.os-salas-verde {
+  fill: color-mix(in srgb, var(--os-verde) 30%, transparent);
+}
+
+.os-salas-linea {
+  stroke: var(--os-verde);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.os-salas-punto {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  margin-bottom: -4.5px;
+  border-radius: 50%;
+  background: var(--os-verde);
+  box-shadow: 0 0 0 2px var(--os-panel);
+}
+
+.os-salas-rotulos {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 7px;
+  text-align: center;
+  font-size: 0.78rem;
+}
+
+.os-salas-rotulos b {
+  display: block;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-salas-rotulos small {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Una lista de dato y valor, sin tabla: son tres renglones y una tabla les
+   pondría encabezado y bordes para nada. */
+.os-lista-datos {
+  list-style: none;
+  margin: 0;
+  padding: 0 20px 6px;
+}
+
+.os-lista-datos li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--os-linea-suave);
+  font-size: 0.84rem;
+}
+
+.os-lista-datos li:last-child {
+  border-bottom: 0;
+}
+
+.os-lista-datos strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.os-referencia-color.horas {
+  background: var(--os-azul);
+}
+
+/* La segunda serie es una línea y su marca también: un cuadrado del mismo
+   color diría que las dos se leen igual. */
+.os-referencia-linea {
+  width: 14px;
+  height: 0;
+  border-top: 2px solid var(--os-arcilla);
+}
+
+.os-ficha-campos .os-etiqueta-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* El campo llena su celda y no impone su propio ancho: un `date` trae el suyo,
+   y con él la columna de la fecha salía más angosta que las demás. */
+.os-ficha-campos .os-campo {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  box-sizing: border-box;
+}
+
+/* Las dos tildes ocupan una celda de la grilla y se leen como un par: sueltas
+   al lado de la fecha parecían parte de ella. Van abajo, alineadas con los
+   campos y no con sus rótulos. */
+.os-ficha-tildes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  align-self: end;
+  min-height: 32px;
+}
+
+/* El nombre de una fila que lleva a su ficha. Se lee como el resto de la tabla
+   y se subraya al pasar por encima: subrayado siempre, una columna de nombres
+   parecía una lista de enlaces sueltos. */
+.os-enlace-nombre {
+  color: inherit;
+  text-decoration: none;
+}
+
+.os-enlace-nombre:hover {
+  text-decoration: underline;
+}
+
 .os-volver-enlace {
   display: inline-block;
   margin-bottom: 18px;
@@ -7789,6 +8643,241 @@ th.os-tabla-contacto {
 @page derecha {
   size: portrait;
   margin: 12mm;
+}
+
+/**
+ * El resumen de cuenta que se le manda a un inquilino.
+ *
+ * Se dibuja siempre y no se ve nunca, hasta que se imprime: así lo que sale en
+ * el PDF es la misma cuenta que está en la pantalla, y no una segunda versión
+ * que se separa de esta en la primera corrección. Es el mismo camino del
+ * informe de psicotécnicos.
+ *
+ * Fuera de la vista con posición y no con `display: none`: un bloque sin
+ * dibujar no se mide, y al imprimir aparecía sin sus altos calculados. Y
+ * `fixed` y no `absolute`, porque una hoja de dos carillas colgada del
+ * documento le estira el alto y deja la pantalla con desplazamiento vertical
+ * de más.
+ */
+.os-papel-cuenta,
+.os-papel-recibo {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 186mm;
+}
+
+@media print {
+  body[data-imprimir='cuenta'] > *:not(.os-papel-cuenta) {
+    display: none !important;
+  }
+
+  body[data-imprimir='cuenta'] .os-papel-cuenta {
+    position: static;
+    width: auto;
+    page: derecha;
+    color: #16202b;
+    font-family: var(--os-tipo, inherit);
+    font-size: 0.84rem;
+  }
+
+  .os-papel-cuenta .os-papel-titulo {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+  }
+
+  .os-papel-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 18px;
+  }
+
+  .os-papel-tabla th {
+    padding: 6px 8px;
+    text-align: left;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b675f;
+    border-bottom: 1px solid #ded9d1;
+  }
+
+  .os-papel-tabla td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f0ece6;
+  }
+
+  /* Los importes se comparan de arriba abajo: alineados por su cifra. */
+  .os-papel-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* El pie es la cuenta y no una fila más: se separa de los movimientos con su
+     línea, y el renglón que hay que leer va en negrita. */
+  .os-papel-tabla tfoot td {
+    border-bottom: 0;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .os-papel-tabla tfoot tr:first-child td {
+    border-top: 1px solid #ded9d1;
+    padding-top: 10px;
+  }
+
+  .os-papel-tabla tfoot tr.os-papel-total td {
+    border-top: 1px solid #ded9d1;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .os-papel-pie {
+    margin: 0;
+    font-size: 0.74rem;
+    color: #6b675f;
+  }
+
+  body[data-imprimir='recibo'] > *:not(.os-papel-recibo) {
+    display: none !important;
+  }
+
+  body[data-imprimir='recibo'] .os-papel-recibo {
+    position: static;
+    width: auto;
+    page: derecha;
+    color: #16202b;
+    font-family: var(--os-tipo, inherit);
+    font-size: 0.86rem;
+  }
+
+  .os-papel-recibo .os-papel-titulo {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  /* El número va debajo del título y como dato secundario: es para encontrar
+     el pago en el sistema, no para leerlo primero. */
+  .os-papel-referencia {
+    margin: 2px 0 26px;
+    font-size: 0.76rem;
+    letter-spacing: 0.06em;
+    color: #6b675f;
+  }
+
+  /* Los datos del recibo son más grandes que los de un informe: es una hoja de
+     seis renglones que alguien lee de una vez. */
+  .os-papel-recibo .os-papel-datos {
+    gap: 9px;
+    margin-bottom: 40px;
+    font-size: 0.9rem;
+  }
+
+  .os-papel-recibo .os-papel-datos dt {
+    flex: 0 0 128px;
+  }
+
+  /* El renglón de la firma: la línea la dibuja el borde y el rótulo va debajo,
+     que es donde se escribe la aclaración. */
+  .os-papel-firma {
+    position: relative;
+    width: 62mm;
+    /* El aire de arriba tiene que dar para el trazo, que se dibuja por encima
+       de la línea y sale de la caja: con menos, la firma se montaba sobre el
+       último dato del recibo. */
+    margin: 68px auto 26px 0;
+    padding-top: 6px;
+    text-align: center;
+    font-size: 0.74rem;
+    color: #6b675f;
+  }
+
+  /* La línea es para firmar a mano: con el trazo dibujado encima, partía la
+     firma del nombre en vez de sostenerla. */
+  .os-papel-firma:not(:has(.os-papel-trazo)) {
+    border-top: 1px solid #ded9d1;
+  }
+
+  /* El trazo se apoya sobre la línea, no la reemplaza: la imagen tiene fondo
+     transparente, así que sentada encima se lee como una firma de puño. Va
+     absoluta para no empujar la línea hacia abajo. */
+  .os-papel-trazo {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 17mm;
+    margin-bottom: -3mm;
+  }
+
+  /* El título de cada bloque del resumen. Chico y en versalita: nombra la
+     tabla que sigue, no compite con el título de la hoja. */
+  .os-papel-seccion {
+    margin: 26px 0 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6b675f;
+  }
+
+  .os-papel-seccion + .os-papel-tabla {
+    margin-top: 8px;
+  }
+
+  /* Seis columnas para que la cuenta se pueda rehacer: día, sala, horario,
+     horas, precio de la hora e importe. Las de números se aprietan, que las de
+     texto son las que piden ancho. */
+  .os-papel-consumos {
+    font-size: 0.8rem;
+  }
+
+  .os-papel-consumos th,
+  .os-papel-consumos td {
+    padding: 5px 8px;
+  }
+
+  /* El cierre es la cuenta final y no una lista: sin encabezado, con la línea
+     arriba que la separa de los movimientos. */
+  .os-papel-cierre {
+    width: auto;
+    min-width: 78mm;
+    margin-left: auto;
+    margin-bottom: 6px;
+  }
+
+  .os-papel-cierre td {
+    border-bottom: 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .os-papel-cierre tr.os-papel-total td {
+    border-top: 1px solid #ded9d1;
+    padding-top: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  /* Los tres plazos de pago: es una cuenta y no una lista de movimientos, así
+     que va sin encabezado y pegada al pie. */
+  .os-papel-plazos {
+    width: auto;
+    min-width: 78mm;
+    margin-left: auto;
+    margin-top: 4px;
+  }
+
+  .os-papel-plazos td {
+    border-bottom: 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .os-papel-plazos tr:first-child td {
+    font-weight: 700;
+  }
 }
 
 /* El diagrama entra a lo ancho del panel: la lámina lleva las dos columnas de
@@ -12105,4 +13194,1095 @@ textarea.os-campo-bateria {
 .os-potencial-lamina svg {
   width: 100%;
   height: auto;
+}
+
+/**
+ * La grilla de la semana: las cuatro salas, los cinco días y las doce horas.
+ *
+ * Es una sola tabla con encabezado de dos niveles, el día arriba y las salas
+ * abajo, porque lo que se busca acá es el hueco de un día y no el estado de una
+ * sala. Veinte columnas no entran en cualquier pantalla, así que el marco se
+ * desplaza en vez de recortar.
+ *
+ * Un bloque de tres horas es una sola reserva y se dibuja como un solo bloque:
+ * `os-agenda-sigue` le saca el borde de arriba a las horas que continúan, así
+ * la grilla muestra bandas y no doce celdas sueltas.
+ */
+/* La grilla va cerrada: con los bordes solo entre celdas, las columnas de los
+   extremos y la fila de arriba quedaban abiertas y la tabla se derramaba sobre
+   el panel en vez de leerse como una pieza. */
+.os-agenda-marco {
+  border: 1px solid var(--os-linea);
+}
+
+.os-agenda {
+  /* Al arrastrar para elegir horas, sin esto el navegador va seleccionando el
+     texto de las celdas y la grilla queda pintada de azul. */
+  user-select: none;
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  width: 100%;
+  font-size: 12px;
+}
+
+.os-agenda th {
+  font-weight: 600;
+  color: var(--os-tinta-media);
+  text-align: center;
+  padding: 6px 4px;
+  white-space: nowrap;
+}
+
+/* La banda de los días, en el gris apagado de lo cerrado: apiladas las semanas,
+   es lo que corta una de la otra, y sobre el mismo blanco de las celdas el
+   corte quedaba en manos de una línea de un píxel. */
+.os-agenda-dia {
+  background: var(--os-hover);
+  border-bottom: 1px solid var(--os-linea);
+  letter-spacing: 0.01em;
+}
+
+/**
+ * Las columnas de sala no declaran ancho: se reparten lo que queda.
+ *
+ * Con un ancho fijo, seis días por cinco salas piden más de lo que hay y la
+ * tabla se iba a un desplazamiento horizontal, que esconde columnas enteras sin
+ * avisar. Repartido, todo entra siempre y lo que se achica es el nombre, que
+ * igual está entero en el `title` de cada celda.
+ */
+.os-agenda-sala {
+  color: var(--os-suave);
+  font-weight: 500;
+  font-size: 11px;
+  /* Simétrico arriba y abajo: con padding solo abajo, el número quedaba pegado
+     al nombre del día en vez de centrado en su franja. */
+  padding: 5px 2px !important;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-agenda-hora {
+  width: 56px;
+  text-align: right !important;
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500 !important;
+  padding-right: 10px !important;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+/* Con seis días y cinco salas la columna mide treinta y ocho píxeles: el
+   nombre se corta donde llega, sin puntos suspensivos, porque los tres puntos
+   se comen tres letras de las cinco que entran. El nombre entero está en el
+   `title` de la celda. */
+.os-agenda-celda {
+  height: 30px;
+  padding: 0 3px;
+  font-size: 10.5px;
+  border: 1px solid var(--os-linea-suave);
+  border-right: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+}
+
+
+
+/**
+ * La línea que separa un día del otro.
+ *
+ * Va en la primera sala de cada día y corre de arriba abajo, encabezados
+ * incluidos: sin ella, veinte columnas iguales se leen como una sola tira. Es
+ * más marcada que la línea entre salas porque separa dos cosas de distinto
+ * orden, el día y la sala, y con el mismo gris había que contar de a cuatro
+ * para saber dónde termina el martes.
+ */
+.os-agenda-corte,
+.os-agenda-dia + .os-agenda-dia {
+  border-left: 1px solid color-mix(in srgb, var(--os-tinta) 34%, transparent) !important;
+}
+
+.os-agenda-libre {
+  background: var(--os-panel);
+}
+
+/**
+ * Cada inquilino, de su color.
+ *
+ * El tono lo pone la celda como `--tono` (ver `tonoDe`); acá se decide cuánto
+ * se aclara el fondo y cuánto se oscurece la tinta, que es lo que cambia entre
+ * el tema claro y el oscuro. Con un solo azul para todos, una fila de la grilla
+ * era una franja continua y había que leer los nombres para saber dónde
+ * terminaba una persona y empezaba la otra.
+ *
+ * El fondo va muy lavado a propósito: son celdas grandes y pegadas, y a
+ * saturación media la grilla entera se volvía un mosaico donde no se distinguía
+ * lo libre de lo ocupado.
+ */
+.os-agenda-ocupado {
+  background: hsl(var(--tono, 210) 46% 92%);
+  box-shadow: inset 3px 0 0 hsl(var(--tono, 210) 42% 52%);
+}
+
+.os-agenda-ocupado .os-agenda-quien {
+  color: hsl(var(--tono, 210) 45% 30%);
+}
+
+/* La hora suelta se distingue de la banda fija: son dos negocios distintos y la
+   diferencia es lo que se mira al decidir a quién ofrecerle un contrato. Sigue
+   con el color de su persona; lo que cambia es la trama, que no compite con el
+   tono. */
+.os-agenda-suelta {
+  background: repeating-linear-gradient(
+    -45deg,
+    hsl(var(--tono, 210) 46% 92%),
+    hsl(var(--tono, 210) 46% 92%) 5px,
+    hsl(var(--tono, 210) 44% 87%) 5px,
+    hsl(var(--tono, 210) 44% 87%) 10px
+  );
+}
+
+html[data-os-tema='oscuro'] .os-agenda-ocupado {
+  background: hsl(var(--tono, 210) 26% 24%);
+  box-shadow: inset 3px 0 0 hsl(var(--tono, 210) 45% 58%);
+}
+
+html[data-os-tema='oscuro'] .os-agenda-ocupado .os-agenda-quien {
+  color: hsl(var(--tono, 210) 55% 82%);
+}
+
+html[data-os-tema='oscuro'] .os-agenda-suelta {
+  background: repeating-linear-gradient(
+    -45deg,
+    hsl(var(--tono, 210) 26% 24%),
+    hsl(var(--tono, 210) 26% 24%) 5px,
+    hsl(var(--tono, 210) 26% 29%) 5px,
+    hsl(var(--tono, 210) 26% 29%) 10px
+  );
+}
+
+.os-agenda-sigue {
+  border-top-color: transparent;
+}
+
+/* Lo cerrado, en gris frío y no en el beige de la banda de días: desde que esa
+   banda usa `os-hover`, el mismo tono en el cuerpo se leía como parte del
+   encabezado. */
+.os-agenda-cerrado {
+  background: color-mix(in srgb, var(--os-tinta-media) 11%, var(--os-panel));
+  color: var(--os-suave);
+}
+
+.os-agenda-quien {
+  font-weight: 600;
+}
+
+/* Qué incluye una sala: las etiquetas cargadas y el campo para sumar una más.
+   El campo se lleva el ancho sobrante y el botón queda del tamaño de su texto;
+   con la grilla de cinco columnas de `os-form-linea` el botón salía tan ancho
+   como el campo. */
+.os-incluye-lista {
+  padding: 6px 20px 12px;
+}
+
+.os-incluye-alta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  align-items: flex-end;
+  padding: 0 20px 18px;
+}
+
+/* Dos filas seguidas de campos son un formulario, no dos bloques: entre ellas
+   va el mismo aire que hay entre dos campos de la misma fila. */
+.os-incluye-alta + .os-incluye-alta {
+  padding-top: 2px;
+}
+
+/* Una fila de campos pegada al título del panel se lee como parte del título.
+   El encabezado trae su propia línea abajo y el formulario arrancaba contra
+   ella, sin el aire que tiene cualquier otro contenido de un panel. */
+.os-panel-top + .os-incluye-alta {
+  padding-top: 15px;
+}
+
+/**
+ * El pie de un panel: lo que se hace con lo que está arriba.
+ *
+ * Sobre fondo apagado, como el de la burbuja. Sin eso, el formulario de cobro
+ * caía debajo de la tabla de movimientos con sus columnas casi alineadas y se
+ * leía como un renglón más de la cuenta.
+ */
+.os-panel-pie {
+  padding-top: 14px;
+  padding-bottom: 15px;
+  background: var(--os-panel-2);
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+/* Un pie de panel que lleva campos adentro. Los campos son `os-campo-suave`,
+   del mismo color que el pie, y ahí no se veía dónde empezaba cada uno: sobre
+   blanco vuelven a tener borde propio. */
+.os-panel-pie.os-panel-pie-claro {
+  background: var(--os-panel);
+}
+
+/* `os-campo-corto` mide 62 px, que alcanzan para un corte de baremo y no para
+   un importe de cinco cifras ni para una hora. Del ancho de una fecha, porque
+   en una fila los campos que no se estiran tienen que medir todos igual: con
+   dos anchos distintos, sus rótulos quedaban a distinta altura. */
+.os-incluye-alta .os-campo-corto,
+.os-burbuja .os-campo-corto {
+  width: 152px;
+  flex: none;
+}
+
+.os-incluye-alta .os-campo {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Un campo con rótulo vive dentro de una etiqueta en columna, y ahí ese
+   `flex: 1` se aplica al alto: la base de cero le gana al `height` y el campo
+   colapsa a lo que mide su texto. El de aumento medía 18 px al lado del de
+   fecha, que se salvaba por tener su propia regla. El ancho no cambia, que en
+   una columna lo da el estirado del eje cruzado y no el `flex`. */
+.os-incluye-alta .os-etiqueta-campo > .os-campo {
+  flex: 0 0 auto;
+}
+
+/* Una fecha y una hora miden lo que miden: estiradas se llevan medio panel para
+   mostrar diez caracteres y cinco. */
+.os-incluye-alta input[type='date'] {
+  flex: 0 0 auto;
+  width: 152px;
+}
+
+.os-incluye-alta input[type='time'] {
+  flex: 0 0 auto;
+  width: 108px;
+}
+
+/* Ni una fecha, ni una hora, ni un campo corto se estiran: los tres declaran su
+   ancho, y su etiqueta tiene que respetarlo o el resto de la fila se va al
+   borde. */
+.os-incluye-alta .os-etiqueta-campo:has(input[type='date']),
+.os-incluye-alta .os-etiqueta-campo:has(input[type='time']),
+.os-incluye-alta .os-etiqueta-campo:has(.os-campo-corto) {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+/* Dentro de Configuración, el ancho lo declara la etiqueta y el campo la
+   llena. Declarado en el campo, el `date` no lo respetaba: trae un ancho
+   intrínseco propio (el texto más el ícono del calendario) y quedaba más ancho
+   que el del aumento, que está al lado y tiene que medir igual. */
+.os-config-dos .os-incluye-alta .os-etiqueta-campo:has(input[type='date']),
+.os-config-dos .os-incluye-alta .os-etiqueta-campo:has(.os-campo-corto) {
+  width: 152px;
+}
+
+.os-config-dos .os-incluye-alta input[type='date'],
+.os-config-dos .os-incluye-alta .os-campo-corto {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Todos los campos de una fila miden lo mismo de alto: los nativos de fecha y
+   hora traen su propio relleno, y con un rótulo encima ese píxel de más
+   levantaba el rótulo del vecino. */
+.os-incluye-alta .os-campo {
+  height: 32px;
+  box-sizing: border-box;
+}
+
+/* Un campo con rótulo se lleva el ancho sobrante junto con su etiqueta; sin
+   esto la etiqueta quedaba encima del campo de al lado. */
+.os-incluye-alta .os-etiqueta-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 130px;
+}
+
+/* Los tildes no se achican: apretados, el texto se partía en dos renglones y
+   se montaba sobre el botón de guardar. */
+.os-incluye-alta .os-tilde-fila {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.os-incluye-alta button {
+  flex: 0 0 auto;
+}
+
+/* La acción principal se va contra el borde derecho: al lado de los tildes se
+   leía como un tercer tilde. */
+.os-incluye-alta .os-boton-firme[type='submit'] {
+  margin-left: auto;
+}
+
+/* Dar de baja va contra el borde derecho del panel, no al lado del nombre. */
+.os-incluye-baja {
+  margin-left: auto;
+}
+
+/* Una celda libre se toca para reservarla o cerrarla, y una ocupada para
+   liberarla: el cursor lo dice antes del clic. */
+.os-agenda-libre,
+.os-agenda-ocupado {
+  cursor: pointer;
+}
+
+/* Lo que se está por reservar, mientras el panel está abierto. */
+.os-agenda-elegida {
+  background: color-mix(in srgb, var(--os-verde) 26%, transparent) !important;
+  box-shadow: inset 2px 0 0 var(--os-verde);
+}
+
+/**
+ * La burbuja del calendario: lo que se abre al lado de la hora que se tocó.
+ *
+ * Antes era un panel arriba de la grilla, y después una barra fija abajo: en
+ * los dos casos, para saber de qué hora hablaba había que volver a mirar la
+ * fila. Colgada al lado, con su punta apuntando a la celda, la respuesta queda
+ * donde estaba la pregunta.
+ *
+ * Cuelga de `.os` y se ubica desde `Burbuja.tsx`, así que va en coordenadas de
+ * la ventana.
+ */
+.os-burbuja {
+  position: fixed;
+  z-index: 60;
+  width: 320px;
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 14px;
+  box-shadow: 0 12px 34px rgba(22, 32, 43, 0.18);
+  font-size: 0.86rem;
+  overflow: hidden;
+}
+
+/* La punta. Es un cuadrado girado con dos bordes, y no un triángulo con
+   `border`, porque así lleva el mismo borde y el mismo fondo que la caja. */
+.os-burbuja::before {
+  content: '';
+  position: absolute;
+  top: var(--punta);
+  width: 11px;
+  height: 11px;
+  margin-top: -6px;
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  transform: rotate(45deg);
+}
+
+.os-burbuja-derecha::before {
+  left: -6px;
+  border-right: 0;
+  border-top: 0;
+}
+
+.os-burbuja-izquierda::before {
+  right: -6px;
+  border-left: 0;
+  border-bottom: 0;
+}
+
+/* El encabezado: quién es, y al lado lo que se hace con eso. */
+.os-burbuja-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 15px 11px;
+}
+
+.os-burbuja-titulo {
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.os-burbuja-sub {
+  color: var(--os-suave);
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+.os-burbuja-cerrar {
+  border: 0;
+  background: none;
+  padding: 0 2px;
+  color: var(--os-suave);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Cada dato en su renglón, separados por una línea fina: es la forma del
+   calendario del sistema y se lee de un vistazo. */
+.os-burbuja-fila {
+  padding: 10px 15px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-burbuja-fila-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.os-burbuja-fila .os-campo {
+  min-width: 0;
+  flex: 1;
+}
+
+.os-burbuja-cuando {
+  font-variant-numeric: tabular-nums;
+}
+
+.os-burbuja-importe {
+  color: var(--os-suave);
+  font-size: 0.8rem;
+  margin-top: 3px;
+}
+
+/**
+ * El pie de la burbuja: la decisión y la acción, juntas.
+ *
+ * Separadas por una línea se leían como dos bloques sin relación, y el tilde
+ * quedaba como un dato más de la reserva en vez de como lo que cambia lo que va
+ * a pasar al apretar. El fondo apagado es lo que las agrupa.
+ */
+.os-burbuja-pie {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 13px 15px 14px;
+  background: var(--os-panel-2);
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+/* La acción ocupa el ancho: es una sola, y a media caja se leía como si
+   hubiera otra al lado que faltaba. Es más alta que un botón de tabla porque
+   es el final de un camino, no un control de una fila. */
+.os-burbuja-principal {
+  width: 100%;
+  height: 38px;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  box-shadow: 0 1px 2px rgba(22, 32, 43, 0.12);
+  transition: opacity 0.12s ease;
+}
+
+.os-burbuja-principal:disabled {
+  box-shadow: none;
+}
+
+/* El tilde explica qué cambia, en un renglón más chico debajo. */
+.os-burbuja .os-tilde-fila {
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.os-burbuja .os-tilde-fila input {
+  margin-top: 2px;
+}
+
+.os-burbuja .os-tilde-fila small {
+  display: block;
+  margin-top: 2px;
+  color: var(--os-suave);
+  font-size: 0.76rem;
+}
+
+.os-burbuja-error {
+  color: var(--os-rojo);
+  font-size: 0.8rem;
+  padding: 0 15px 11px;
+}
+
+/* El panel del calendario lleva su aire adentro: los demás lo ponen sus hijos
+   (`os-panel-top`, `os-incluye-alta`), y acá el contenido es una grilla que
+   llegaba pegada a los cuatro bordes. */
+.os-panel-calendario {
+  padding: 16px 18px 18px;
+}
+
+/* La barra de arriba de la grilla: qué semana se está viendo y cómo moverse. */
+.os-agenda-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.os-agenda-semana {
+  font-weight: 600;
+}
+
+.os-agenda-mover {
+  display: flex;
+  gap: 8px;
+  align-self: center;
+}
+
+/**
+ * El mes: las semanas apiladas, sin aire entre ellas.
+ *
+ * Es la misma grilla de la semana repetida, no una vista aparte: lo que se
+ * busca en el mes es la misma información con más horizonte, y una segunda
+ * forma de dibujar lo mismo se separa de la primera en la primera corrección.
+ *
+ * Pegadas y con las esquinas rectas, el mes es una sola tabla larga y los
+ * encabezados de día hacen de corte entre semanas. El margen negativo junta los
+ * dos marcos en una línea: uno debajo del otro daban dos píxeles de borde.
+ */
+.os-semana-compacta + .os-semana-compacta {
+  margin-top: -1px;
+}
+
+/**
+ * La esquina de la grilla: la ocupación de esa semana.
+ *
+ * La línea de la derecha es la misma que separa un día del otro: sin ella, el
+ * corte que baja por toda la tabla arrancaba recién debajo de la esquina.
+ */
+.os-agenda-esquina {
+  vertical-align: middle;
+  /* Sin padding y centrada: hereda de `os-agenda-hora`, que alinea a la derecha
+     y le deja siete píxeles de ese lado, y el anillo quedaba corrido. */
+  text-align: center !important;
+  padding: 0 !important;
+  border-right: 1px solid color-mix(in srgb, var(--os-tinta) 34%, transparent);
+}
+
+/* Un anillo y no una barra: el lugar es casi cuadrado, y una barra de cuatro
+   píxeles de alto sobre una celda de treinta se leía como un renglón suelto. */
+.os-semana-anillo {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--os-azul) calc(var(--pct) * 1%),
+    var(--os-hover) 0
+  );
+}
+
+.os-semana-anillo > span {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: var(--os-panel);
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--os-tinta-media);
+  font-variant-numeric: tabular-nums;
+}
+
+/**
+ * El mes, condensado.
+ *
+ * Con el tamaño de la semana suelta, cinco grillas miden tres pantallas y hay
+ * que desplazarse para comparar la primera semana con la última, que es lo
+ * único que el mes agrega. Achicado, el mes entra casi de una vez y se lee como
+ * un mapa: dónde hay bloques y dónde está vacío.
+ *
+ * Todo se achica junto (la fila, la columna, la tipografía y el aire de los
+ * encabezados): bajar solo el alto deja una grilla ancha y chata que no entra
+ * igual.
+ */
+.os-semana-compacta .os-agenda-celda {
+  height: 15px;
+  padding: 0 2px;
+  font-size: 9px;
+}
+
+.os-semana-compacta .os-agenda-sala {
+  font-size: 9.5px;
+  padding: 3px 2px !important;
+}
+
+.os-semana-compacta .os-agenda-hora {
+  width: 48px;
+  font-size: 10px;
+  padding: 0 7px 0 0 !important;
+}
+
+.os-semana-compacta .os-agenda-dia {
+  font-size: 10.5px;
+  padding: 3px 2px;
+}
+
+.os-semana-compacta .os-agenda-quien {
+  font-weight: 500;
+}
+
+/**
+ * La navegación del calendario: qué tramo se mira y en qué vista.
+ *
+ * Son dos preguntas de la misma familia, así que van en dos grupos de la misma
+ * forma. Antes la vista era una píldora y el movimiento tres enlaces
+ * subrayados, y al lado uno del otro parecían dos controles de sistemas
+ * distintos.
+ */
+.os-nav-grupo {
+  display: inline-flex;
+  border: 1px solid var(--os-linea);
+  border-radius: 9px;
+  overflow: hidden;
+  box-shadow: var(--os-sombra);
+}
+
+.os-nav-grupo > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--os-panel);
+  color: var(--os-tinta-media);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.os-nav-grupo > * + * {
+  border-left: 1px solid var(--os-linea);
+}
+
+.os-nav-grupo > *:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os-nav-grupo > .activa,
+.os-nav-grupo > .activa:hover {
+  background: var(--os-activo);
+  color: var(--os-activo-tinta);
+}
+
+/* Las flechas llevan menos aire a los lados: son un glifo y no una palabra, y
+   con el mismo padding quedaban dos botones vacíos al lado del del medio. */
+.os-nav-flecha {
+  padding: 0 10px;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+/**
+ * Dos opciones que se excluyen miden lo mismo.
+ *
+ * Con el ancho de su texto, "Semana" salía más grande que "Mes" y la que estaba
+ * activa cambiaba de tamaño al elegir la otra: el control se movía debajo del
+ * puntero. Es la misma regla de `os-modos-fila`, donde todas las opciones de
+ * una botonera miden igual.
+ */
+.os-nav-grupo-parejo > * {
+  flex: 1;
+  min-width: 68px;
+}
+
+/* La escala de precios de una sala, al pie de su panel: es lo que explica por
+   qué una cuesta más que otra, así que va al lado de lo que incluye. */
+.os-precio-tira {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 14px 20px 16px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-precio-tramo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.os-precio-tramo b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-precio-tramo small {
+  color: var(--os-suave);
+  font-size: 0.72rem;
+}
+
+/**
+ * La tabla de comparación de las salas.
+ *
+ * Las salas en columnas y lo que las distingue en filas: la pregunta de esa
+ * pantalla es en qué se diferencian, y apiladas una debajo de otra había que
+ * recordar el precio de la primera para compararlo con el de la cuarta.
+ */
+.os-comparar {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* La columna de los rótulos es la que ancla la lectura, así que va fija y del
+   ancho de su texto más largo. */
+.os-comparar-rotulos {
+  width: 152px;
+}
+
+/* Una sala fuera de alquiler se apaga sin cambiar de forma: `os-cerrado-fila`
+   es un `inline-flex` para una fila de controles y en un `th` le comía el
+   centrado. */
+.os-sala-baja {
+  opacity: 0.45;
+}
+
+/* El nombre de la sala envuelve en vez de desbordar: `.os-tabla th` lleva
+   `nowrap`, y con la tabla angosta "CONSULTORIO 1" se salía de su columna y se
+   montaba sobre el de al lado. */
+.os-comparar thead th {
+  padding: 13px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--os-tinta);
+  text-align: center;
+  border-bottom: 1px solid var(--os-linea);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Los rótulos de la izquierda son frases y no encabezados de columna: en la
+   versaleta de `os-tabla th`, con su espaciado, "20 hs por semana" se salía de
+   la columna. */
+.os-comparar tbody th {
+  padding: 11px 16px 11px 18px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--os-suave);
+  text-align: left;
+  vertical-align: middle;
+  white-space: normal;
+}
+
+.os-comparar td {
+  padding: 11px 14px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.83rem;
+  border-left: 1px solid var(--os-linea-suave);
+}
+
+.os-comparar tbody tr + tr td,
+.os-comparar tbody tr + tr th {
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+/* La última fila cierra la tabla. Sin esa línea, la fila de abajo quedaba
+   abierta contra el aire del panel y la tabla parecía cortada. */
+.os-comparar tbody tr:last-child td,
+.os-comparar tbody tr:last-child th {
+  border-bottom: 1px solid var(--os-linea);
+}
+
+/* El renglón que dice qué son los números que siguen.
+   Arriba de él la columna izquierda trae "Abre" y "Qué incluye", así que un
+   "8 a 11" suelto no diría de qué habla; ponerle "por semana" a cada uno de
+   los seis desbordaba la columna. Va nombrado con la tabla delante porque
+   `.os-comparar tbody th` pesa más que una clase sola. */
+.os-comparar tbody tr.os-comparar-seccion th {
+  padding: 11px 14px 11px 18px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--os-azul);
+  background: var(--os-panel);
+  border-top: 1px solid var(--os-linea);
+  /* En un renglón: partido en dos, el encabezado medía el doble de alto que la
+     fila que nombra y se leía como otra sección. */
+  white-space: nowrap;
+}
+
+/* Y sus celdas son encabezados de columna: cada una nombra lo que hay debajo,
+   como el `thead` nombra las salas. Van centradas sobre sus números, no
+   alineadas a la izquierda como el rótulo de la fila. */
+.os-comparar tbody tr.os-comparar-seccion th:not(:first-child) {
+  text-align: center;
+  font-weight: 500;
+  border-left: 1px solid var(--os-linea-suave);
+}
+
+/* El encabezado de la columna de rótulos va del lado de sus rótulos, que están
+   a la izquierda; centrado quedaba lejos de lo que encabeza. */
+.os-comparar thead th:first-child {
+  text-align: left;
+  padding-left: 18px;
+  color: var(--os-suave);
+}
+
+/* Los precios en columna se comparan de arriba abajo: alineados por su cifra y
+   no por el ancho del texto. */
+/* Los precios en columna se comparan de arriba abajo, y se escriben donde se
+   leen: el campo va sin marco y del ancho de su celda. */
+.os-comparar-precio {
+  font-variant-numeric: tabular-nums;
+  padding: 5px 8px !important;
+}
+
+.os-comparar-precio .os-campo,
+.os-comparar-horario .os-campo {
+  height: 28px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.83rem;
+}
+
+/* Un precio de cuatro cifras no necesita el ancho de la celda: estirado hasta
+   el borde, la píldora gris pesaba más que el número que contiene y la columna
+   se leía como una fila de botones. Mide lo que mide el número y va centrada,
+   que es donde la busca la vista al comparar dos salas. */
+.os-comparar-precio .os-campo {
+  width: 84px;
+  display: inline-block;
+}
+
+/* El horario: los días arriba y las dos horas debajo, editables. */
+.os-comparar-horario {
+  padding: 10px 8px !important;
+}
+
+/**
+ * Qué días abre: seis píldoras que se prenden y se apagan.
+ *
+ * Eran un texto ("Lun a Sáb") que decía cómo está y no dejaba cambiarlo. Con
+ * las iniciales en fila se ve la semana entera de un vistazo y se toca la que
+ * hay que mover, que es más rápido que una lista de tildes con el nombre
+ * escrito y ocupa un tercio del ancho.
+ */
+.os-dias {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.os-dia {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--os-linea);
+  border-radius: 6px;
+  background: var(--os-panel-2);
+  color: var(--os-suave);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.os-dia:hover {
+  border-color: var(--os-suave);
+}
+
+.os-dia.abre {
+  border-color: var(--os-azul);
+  background: color-mix(in srgb, var(--os-azul) 16%, var(--os-panel));
+  color: var(--os-azul-fuerte);
+}
+
+/* Los días arriba y las horas abajo, los dos centrados y con aire entre medio:
+   pegados se leían como un solo bloque de controles y no como dos preguntas
+   (qué días abre, de qué hora a qué hora). */
+.os-comparar-horario .os-dias {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 9px;
+  /* En una columna angosta las seis píldoras pasan a dos renglones antes que
+     salirse: la fila entera es lo que se lee, no cada botón. */
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+/* Adentro de la tabla las píldoras son más chicas que en Configuración: ahí
+   sobra ancho y acá hay que meter seis en una columna de ciento cuarenta. */
+.os-comparar-horario .os-dia {
+  width: 20px;
+  height: 20px;
+  font-size: 0.66rem;
+}
+
+.os-comparar-horas {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Las dos horas miden lo mismo y a lo sumo noventa y dos: estiradas a la celda,
+   el campo pesaba más que el "08:00" que contiene y las columnas quedaban con
+   anchos distintos según lo ancha que fuera su sala. Con el ancho clavado, en
+   cambio, los dos campos no entraban en una columna angosta y se salían por el
+   costado; así ceden antes de desbordar. */
+.os-comparar-horas .os-campo {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 92px;
+  padding: 0 4px;
+}
+
+.os-comparar-nada {
+  color: var(--os-suave);
+}
+
+/**
+ * El equipamiento se edita en su propia celda: las etiquetas y, debajo, el
+ * campo para sumar una.
+ *
+ * Las tres cosas miden lo mismo de alto y llevan la misma letra: la etiqueta es
+ * un dato de la sala, no un botón, y con el alto de `os-chip` pesaba más que el
+ * precio de la fila de al lado.
+ */
+.os-comparar-incluye {
+  text-align: left !important;
+}
+
+.os-comparar-incluye .os-chip {
+  min-width: 0;
+  height: 24px;
+  margin: 0 4px 4px 0;
+  padding: 0 4px 0 9px;
+  font-size: 0.76rem;
+  font-weight: 400;
+}
+
+.os-comparar-incluye .os-chip-quitar {
+  font-size: 0.8rem;
+  padding: 0 2px;
+}
+
+.os-comparar-incluye form {
+  margin-top: 2px;
+}
+
+.os-comparar-incluye .os-campo {
+  width: 100%;
+  height: 24px;
+  padding: 0 9px;
+  font-size: 0.76rem;
+}
+
+/**
+ * El interruptor de sala activa.
+ *
+ * Reemplaza al enlace "Dar de baja": el enlace decía la acción y no el estado,
+ * así que había que leer las cinco columnas para saber cuáles están en uso. El
+ * color contesta eso de un vistazo y el mismo control lo cambia.
+ */
+.os-activa {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.76rem;
+  color: var(--os-suave);
+  cursor: pointer;
+}
+
+.os-activa-luz {
+  width: 30px;
+  height: 17px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--os-rojo) 55%, transparent);
+  position: relative;
+  flex: none;
+  transition: background 0.16s ease;
+}
+
+.os-activa-luz::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--os-panel);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.16s ease;
+}
+
+.os-activa.si .os-activa-luz {
+  background: var(--os-verde);
+}
+
+.os-activa.si .os-activa-luz::after {
+  transform: translateX(13px);
+}
+
+.os-activa.si {
+  color: var(--os-verde);
+}
+
+/**
+ * La configuración del Centro, en dos columnas.
+ *
+ * El horario y el precio son las dos cosas que se mueven para todas las salas a
+ * la vez. Una debajo de la otra, la segunda quedaba al final de un panel largo
+ * y había que buscarla.
+ */
+.os-config-dos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.os-config-dos > section {
+  padding: 15px 0 6px;
+}
+
+.os-config-dos > section + section {
+  border-left: 1px solid var(--os-linea-suave);
+}
+
+.os-config-dos h3 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0 20px;
+  margin-bottom: 3px;
+}
+
+.os-config-dos .os-panel-nota {
+  padding-bottom: 12px;
+}
+
+/* Las dos acciones miden lo mismo: son la misma clase de botón en dos columnas
+   que se leen en paralelo, y con el ancho de su texto una salía más grande que
+   la otra. */
+.os-config-dos .os-boton {
+  min-width: 104px;
+}
+
+@media (max-width: 700px) {
+  .os-config-dos > section + section {
+    border-left: 0;
+    border-top: 1px solid var(--os-linea-suave);
+  }
 }

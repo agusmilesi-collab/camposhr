@@ -195,5 +195,6 @@ export const FIRMAS: Record<
     titulo: 'Lic. en Psicología',
     matricula: '6338',
     correo: 'lulicamposhr@gmail.com',
+    trazo: 'firmas/lucila-campos.png',
   },
 };

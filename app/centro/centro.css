@@ -1,0 +1,883 @@
+/**
+ * La zona de los inquilinos del Centro Integral Santiago.
+ *
+ * Hoja propia y no `os.css`: el OS es un escritorio con barra lateral y esto se
+ * abre casi siempre desde el teléfono, parado en la sala de espera, para ver si
+ * el 2 está libre el jueves. Misma paleta y misma tipografía, otra estructura.
+ */
+
+.centro {
+  --fondo: #f2f0ec;
+  --panel: #ffffff;
+  --panel-2: #faf9f6;
+  --linea: #e2ded6;
+  --linea-suave: #eeebe4;
+  --tinta: #16202b;
+  --tinta-media: #46505c;
+  --suave: #7b7770;
+  --azul: #43648f;
+  --azul-fuerte: #2b4468;
+  --verde: #4a7856;
+  --rojo: #8c3b3b;
+  --ambar: #a97722;
+
+  min-height: 100vh;
+  background: var(--fondo);
+  color: var(--tinta);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/**
+ * La barra lateral y el cuerpo, en dos columnas.
+ *
+ * De costado, reservar y la cuenta están siempre a la vista y con el mismo
+ * peso; arriba, la cuenta era un enlace chico al lado del nombre. En el
+ * teléfono vuelve a ser una fila arriba, porque una columna fija de doscientos
+ * píxeles sobre trescientos sesenta se come el calendario.
+ */
+.centro {
+  display: grid;
+  /* Los mismos 252 que la del OS: es la misma barra vista desde el otro lado
+     del mostrador, y con dos anchos distintos se leen como dos sistemas. */
+  grid-template-columns: 252px minmax(0, 1fr);
+  align-items: start;
+}
+
+.centro-lateral {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-right: 1px solid var(--linea);
+  overflow: hidden;
+}
+
+/* Pantalla baja: la barra crece y hace scroll la página entera, que es mejor
+   que dejar el pie cortado contra el borde. */
+@media (max-height: 700px) {
+  .centro-lateral {
+    position: static;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+}
+
+.centro-sello {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--tinta);
+  color: #f6f5f2;
+  display: grid;
+  place-items: center;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 0.95rem;
+}
+
+.centro-marca-texto {
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.centro-marca-nombre {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.12rem;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+.centro-marca-bajada {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--suave);
+  white-space: nowrap;
+}
+
+/* El rótulo de cada grupo del menú, como en el OS. */
+.centro-grupo {
+  font-size: 0.67rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--suave);
+  padding: 11px 10px 5px;
+}
+
+@media (max-width: 860px) {
+  /* En la fila de arriba los grupos no entran: los cinco ítems van seguidos,
+     que es lo que cabe en una mano. */
+  .centro-grupo {
+    display: none;
+  }
+
+  .centro-nav > div {
+    display: contents;
+  }
+}
+
+/* Cada sección del menú, con su ícono. La activa se pinta entera, como en el
+   OS: es la señal que no depende del color de la letra.
+
+   Se llama `centro-menu-item` y no `centro-item` porque ese nombre ya es la
+   fila de la lista de movimientos, y la de abajo le comía el relleno. */
+.centro-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  color: var(--tinta-media);
+  font-size: 0.895rem;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.centro-menu-item + .centro-menu-item {
+  margin-top: 1px;
+}
+
+.centro-menu-item svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.7;
+}
+
+.centro-menu-item:hover {
+  background: color-mix(in srgb, var(--tinta) 6%, transparent);
+  color: var(--tinta);
+}
+
+.centro-menu-item[aria-current='page'] {
+  background: var(--tinta);
+  color: #f6f5f2;
+}
+
+.centro-pie {
+  padding: 4px 12px 12px;
+}
+
+.centro-pie-quien {
+  padding: 4px 10px 8px;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.centro-boton-pie {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--tinta-media);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.centro-boton-pie svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.7;
+}
+
+.centro-boton-pie:hover {
+  background: color-mix(in srgb, var(--tinta) 6%, transparent);
+  color: var(--tinta);
+}
+
+@media (max-width: 860px) {
+  .centro-lateral {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: auto;
+    padding: 10px 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--linea);
+    z-index: 5;
+  }
+
+  .centro-pie {
+    padding: 0;
+  }
+
+  /* Quién entró desaparece: el nombre no es lo que se viene a mirar y en una
+     fila angosta le saca lugar a las dos secciones. */
+  .centro-pie-quien {
+    display: none;
+  }
+}
+
+.centro-marca {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 18px 18px 16px;
+  min-height: 66px;
+}
+
+@media (max-width: 860px) {
+  .centro-marca {
+    padding: 0;
+    min-height: 0;
+  }
+}
+
+/* La navegación se lleva el alto que sobra, así el pie queda pegado abajo. */
+.centro-nav {
+  flex: 1;
+  padding: 4px 12px 6px;
+}
+
+@media (max-width: 860px) {
+  .centro-nav {
+    display: flex;
+    flex: none;
+    gap: 4px;
+    padding: 0;
+  }
+}
+
+
+.centro-cuerpo {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 20px 18px 60px;
+}
+
+.centro-titulo {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.7rem;
+  line-height: 1.15;
+  margin: 6px 0 4px;
+}
+
+.centro-bajada {
+  color: var(--tinta-media);
+  margin: 0 0 18px;
+  font-size: 0.92rem;
+}
+
+.centro-panel {
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: 13px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.centro-panel h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.centro-nota {
+  color: var(--suave);
+  font-size: 0.82rem;
+  margin: 10px 0 0;
+}
+
+.centro-aviso {
+  background: color-mix(in srgb, var(--ambar) 12%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--ambar) 35%, transparent);
+  color: #6d4c14;
+}
+
+.centro-error {
+  color: var(--rojo);
+  font-size: 0.86rem;
+  margin: 0 0 10px;
+}
+
+/* Los días: una tira que se desplaza con el pulgar. */
+/**
+ * Qué sala se mira. Reemplazó a la tira de días que se corría con el pulgar:
+ * el día se elige mirando el mes entero, y lo que se decide una sola vez es la
+ * sala.
+ */
+.centro-salas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.centro-sala {
+  flex: 1 1 auto;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--linea);
+  background: var(--panel);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--tinta-media);
+  white-space: nowrap;
+}
+
+.centro-sala.activo {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: #f6f5f2;
+}
+
+/* Las semanas, una debajo de otra con aire entre ellas. */
+.centro-semanas {
+  display: grid;
+  gap: 16px;
+}
+
+/* Con las cuatro salas por día son veinticinco columnas: en un teléfono no
+   entran, y el desplazamiento va adentro de la semana y no en la página, para
+   que la barra de arriba y el panel de reserva se queden quietos. Eligiendo una
+   sala, la semana vuelve a seis columnas y no hay nada que correr. */
+.centro-marco {
+  overflow-x: auto;
+  border-radius: 8px;
+}
+
+/* El día se separa de los de al lado, que si no las cuatro salas de un martes
+   se leen pegadas a las del miércoles. */
+.centro-mes-salas .centro-corte {
+  border-left: 2px solid var(--linea);
+}
+
+.centro-mes-salas {
+  min-width: 620px;
+}
+
+.centro-dia-cab {
+  border-left: 2px solid var(--linea);
+}
+
+.centro-salas-cab th {
+  font-size: 0.6rem;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--suave);
+  padding: 3px 0;
+}
+
+/* Una columna sin día: la ventana arranca hoy, así que la primera semana tiene
+   vacíos los días que ya pasaron. */
+.centro-fuera {
+  background: transparent;
+  border-color: transparent;
+}
+
+/**
+ * Una semana: un renglón por hora, una columna por día.
+ *
+ * Los veintiocho días no entran en un eje horizontal de teléfono, así que el
+ * mes se apila de a semanas: seis columnas entran en una mano y el mes se
+ * recorre hacia abajo, que es el gesto natural.
+ */
+.centro-mes {
+  user-select: none;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.72rem;
+}
+
+.centro-mes th {
+  font-weight: 600;
+  color: var(--tinta-media);
+  padding: 5px 2px;
+  border-bottom: 1px solid var(--linea);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* La columna de la hora. Mide lo que mide "Consultorio", que es el rótulo de su
+   esquina: la hora sola pedía cuarenta y dos y la palabra se salía. */
+.centro-mes tbody th {
+  width: 64px;
+  white-space: nowrap;
+  text-align: right;
+  padding-right: 7px;
+  border-bottom: 0;
+  color: var(--suave);
+  font-weight: 500;
+  font-size: 0.7rem;
+}
+
+/* El día arriba y la fecha al lado, en el encabezado de cada columna. */
+.centro-mes thead th small {
+  display: block;
+  color: var(--suave);
+  text-transform: uppercase;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+}
+
+.centro-mes .centro-celda {
+  height: 30px;
+  text-align: center;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* En un teléfono angosto ceden el rótulo del día y el aire de las celdas antes
+   que aparecer desplazamiento horizontal, que esconde horas sin avisar. */
+@media (max-width: 380px) {
+  .centro-mes {
+    font-size: 0.64rem;
+  }
+
+  .centro-mes tbody th {
+    width: 56px;
+    padding-right: 4px;
+  }
+
+  .centro-mes th {
+    padding: 4px 0;
+  }
+
+  .centro-mes .centro-celda {
+    height: 24px;
+    padding: 0;
+  }
+}
+
+/* La grilla del día: una columna por sala. */
+.centro-grilla {
+  user-select: none;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.78rem;
+}
+
+.centro-grilla th {
+  font-weight: 600;
+  color: var(--tinta-media);
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--linea);
+  text-align: center;
+}
+
+.centro-hora {
+  width: 54px;
+  text-align: right !important;
+  color: var(--suave);
+  font-variant-numeric: tabular-nums;
+  padding-right: 8px !important;
+}
+
+.centro-celda {
+  height: 34px;
+  border: 1px solid var(--linea-suave);
+  border-right: none;
+  text-align: center;
+  padding: 0 2px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.centro-celda:last-child {
+  border-right: 1px solid var(--linea-suave);
+}
+
+.centro-libre {
+  background: var(--panel);
+  cursor: pointer;
+  color: var(--suave);
+}
+
+/* Lo propio, en verde lleno: es lo único que se busca de un vistazo en un mes
+   entero ("¿cuándo tengo?"), y al 20 % de tinte se perdía entre el blanco de lo
+   libre y el gris de lo ocupado. */
+.centro-mia {
+  background: color-mix(in srgb, var(--verde) 55%, var(--panel));
+  box-shadow: inset 3px 0 0 var(--verde);
+  color: #f6f5f2;
+  font-weight: 600;
+}
+
+/**
+ * Lo que no se puede reservar, en gris marcado.
+ *
+ * Con el gris apenas insinuado, una grilla de un mes se leía como una plancha
+ * blanca y había que buscar los huecos leyendo celda por celda. Lo importante
+ * en esta pantalla es lo contrario que en el calendario de las psicólogas: acá
+ * lo que se busca es el blanco, así que lo ocupado tiene que pesar.
+ */
+/**
+ * Lo que no se puede reservar, en gris pleno: tomado por otro, cerrado por
+ * mantenimiento o un día que el Centro no abre.
+ *
+ * Los tres son lo mismo para quien busca un hueco, así que se ven igual. La
+ * diferencia (tomado o cerrado) queda en el rótulo que sale al pasar por
+ * encima: para el que mira no cambia nada, y dos grises parecidos obligaban a
+ * compararlos para descubrir que ninguno sirve.
+ */
+.centro-tomada,
+.centro-cerrada {
+  background: #d9d5ce;
+  color: #8d887f;
+}
+
+.centro-elegida {
+  background: color-mix(in srgb, var(--azul) 24%, transparent) !important;
+  box-shadow: inset 2px 0 0 var(--azul);
+}
+
+.centro-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.centro-campo {
+  border: 1px solid var(--linea);
+  border-radius: 9px;
+  padding: 9px 11px;
+  font: inherit;
+  background: var(--panel-2);
+  color: var(--tinta);
+  min-width: 0;
+}
+
+.centro-campo:focus {
+  outline: 2px solid color-mix(in srgb, var(--azul) 45%, transparent);
+  outline-offset: 1px;
+}
+
+.centro-ancho {
+  width: 100%;
+}
+
+.centro-boton {
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 16px;
+  background: var(--tinta);
+  color: #f6f5f2;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.centro-boton[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.centro-boton-suave {
+  background: var(--panel-2);
+  border: 1px solid var(--linea);
+  color: var(--tinta-media);
+}
+
+.centro-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.centro-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--linea-suave);
+  font-size: 0.9rem;
+}
+
+.centro-item:last-child {
+  border-bottom: 0;
+}
+
+.centro-item small {
+  display: block;
+  color: var(--suave);
+  font-size: 0.78rem;
+}
+
+.centro-saldo {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.centro-entrar {
+  max-width: 360px;
+  margin: 12vh auto 0;
+  padding: 0 18px;
+}
+
+.centro-entrar .centro-campo {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.centro-referencias {
+  display: flex;
+  gap: 14px;
+  font-size: 0.72rem;
+  color: var(--suave);
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.centro-referencia {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.centro-color {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.centro-color.mia {
+  background: color-mix(in srgb, var(--verde) 55%, var(--panel));
+}
+
+.centro-color.tomada {
+  background: #d9d5ce;
+}
+
+/**
+ * La burbuja que se abre al lado de la hora tocada.
+ *
+ * Reemplazó al panel de arriba de la grilla: con el mes entero en pantalla, ese
+ * panel podía quedar a dos pantallas de la celda elegida y había que subir a
+ * buscarlo. Colgada al lado, la respuesta está donde estaba la pregunta.
+ */
+.centro-burbuja {
+  position: fixed;
+  z-index: 60;
+  width: 268px;
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: 14px;
+  box-shadow: 0 12px 34px rgba(22, 32, 43, 0.18);
+  padding: 12px 14px 14px;
+  font-size: 0.86rem;
+}
+
+/* La punta: un cuadrado girado con dos bordes, y no un triángulo hecho con
+   `border`, porque así lleva el mismo borde y el mismo fondo que la caja. */
+.centro-burbuja::before {
+  content: '';
+  position: absolute;
+  top: var(--punta);
+  width: 11px;
+  height: 11px;
+  margin-top: -6px;
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  transform: rotate(45deg);
+}
+
+.centro-burbuja-derecha::before {
+  left: -6px;
+  border-right: 0;
+  border-top: 0;
+}
+
+.centro-burbuja-izquierda::before {
+  right: -6px;
+  border-left: 0;
+  border-bottom: 0;
+}
+
+.centro-burbuja-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.centro-burbuja-cerrar {
+  border: 0;
+  background: none;
+  padding: 0 2px;
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--suave);
+  cursor: pointer;
+}
+
+.centro-burbuja-cuando {
+  color: var(--tinta-media);
+  font-size: 0.8rem;
+  margin-bottom: 10px;
+}
+
+.centro-burbuja .centro-fila {
+  margin-bottom: 4px;
+}
+
+.centro-burbuja .centro-nota {
+  margin: 6px 0 10px;
+}
+
+/* El botón cierra la burbuja a lo ancho: es la única acción que queda, y
+   cancelar ya es tocar afuera o la ×. */
+.centro-burbuja-boton {
+  width: 100%;
+}
+
+/* Por qué no se puede soltar una hora, donde estaría el botón. Sin esto, la
+   única manera de enterarse era tocarlo y leer el rechazo. */
+.centro-porque {
+  font-size: 0.76rem;
+  color: var(--suave);
+  text-align: right;
+  max-width: 160px;
+}
+
+/* La regla que explica qué pasa al soltar: va en letra chica y antes del botón,
+   porque se lee para decidir y no para informarse. */
+.centro-regla {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--suave);
+}
+
+/**
+ * El resumen de cuenta: una fila por hora usada, con lo que costó.
+ *
+ * Es el mismo detalle que las propietarias bajan en PDF, leído en pantalla. Un
+ * renglón que dice "$ 13.220" y nada más obliga a preguntar de dónde salió, que
+ * es justo el WhatsApp que este sistema viene a sacar.
+ */
+.centro-resumen {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.centro-resumen th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--suave);
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.centro-resumen td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--linea-suave);
+}
+
+.centro-resumen tfoot td {
+  border-bottom: 0;
+  border-top: 1px solid var(--linea);
+  font-weight: 600;
+}
+
+.centro-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Una hora soltada fuera de plazo: sigue en la cuenta y hay que decir por qué,
+   porque en el calendario ya no está. */
+.centro-liberada {
+  color: var(--suave);
+  font-size: 0.74rem;
+}
+
+/* El cierre y los plazos: son cuentas, no listas, así que van sin encabezado y
+   arrimadas a la derecha. */
+.centro-cierre {
+  width: 100%;
+  max-width: 340px;
+  margin-left: auto;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.centro-cierre td {
+  padding: 4px 0;
+}
+
+.centro-cierre tr.centro-total td {
+  border-top: 1px solid var(--linea);
+  padding-top: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.centro-plazos {
+  margin-top: 14px;
+  font-size: 0.8rem;
+  color: var(--tinta-media);
+}
+
+.centro-plazos tr:first-child td {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+/* El navegador de meses, como el del calendario de las psicólogas. */
+.centro-meses {
+  display: inline-flex;
+  border: 1px solid var(--linea);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.centro-meses a {
+  padding: 5px 11px;
+  font-size: 0.78rem;
+  color: var(--tinta-media);
+  text-decoration: none;
+  background: var(--panel);
+}
+
+.centro-meses a + a {
+  border-left: 1px solid var(--linea);
+}
+
+@media (max-width: 620px) {
+  .centro-resumen {
+    font-size: 0.74rem;
+  }
+
+  .centro-resumen th,
+  .centro-resumen td {
+    padding: 6px 4px;
+  }
+}
