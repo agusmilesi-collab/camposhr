@@ -122,6 +122,19 @@ viernes a las diez vacíos no aparece en ningún ranking de horas.
 **Y el ranking de inquilinos lleva su barra de participación**: tres personas
 que suman la mitad del mes es un riesgo que en una columna de números no se ve.
 
+### Qué falta
+
+**Mis turnos y Pacientes**, en la barra del inquilino, están declaradas y
+vacías: cada una abre una pantalla que dice qué va a haber ahí. Es la fase 2, la
+agenda de la consulta y las fichas, que se cobra como adicional mensual sobre el
+alquiler. Se dejaron a la vista a propósito: verlas en la barra es lo que hace
+que alguien pregunte por ellas, y muestra para dónde va el sistema.
+
+**Y del lado del OS queda pendiente lo que el calendario todavía no hace solo**:
+generar las reservas de un mes desde los contratos al abrirlo, y la pantalla de
+renovación del 26 en adelante. Hoy las bandas fijas se cargaron una vez con un
+script, fuera del repositorio porque lleva nombres de personas.
+
 ### La pantalla de una persona
 
 **La pestaña Inquilinos es una lista, y cada persona tiene su pantalla**, en
@@ -159,6 +172,14 @@ cobró por eso. Y en orden cronológico, del principio del mes al final, que es
 como se lee un extracto; en la pantalla la cuenta va al revés, porque ahí se
 busca lo último que pasó.
 
+**Las horas del resumen se cuentan sobre los cargos y no sobre las reservas.**
+Son las horas que se cobraron, que es lo que tiene que cuadrar con el importe de
+al lado: una hora soltada fuera de plazo deja de estar en el calendario y su
+cargo queda, así que contando reservas el resumen decía "2 h · $ 28.280" cuando
+esos pesos eran siete horas. En el gráfico de la ficha, en cambio, "horas
+usadas" sigue contando las reservas: ahí la pregunta es cuánto usó, no cuánto se
+le cobró.
+
 **El resumen trae los tres plazos con la cuenta hecha**: lo que se paga hasta
 el 10, del 11 al 20 con el 15 % y del 21 en adelante con el 25 %. La regla sola
 obliga a quien lo recibe a sacar el porcentaje de su propio saldo, y el que
@@ -179,11 +200,17 @@ firma. El número es el principio del identificador del movimiento, que sirve
 para encontrar el pago en el sistema; no es una numeración correlativa, que es
 lo que exigiría un comprobante fiscal.
 
-**Lo firma quien cobró.** El trazo es el mismo que va en los informes de
-psicotécnicos (`firmas/lorena-campos.png` en el bucket privado, leído con
-`firmaEnDatos`), y entra como `data:` porque el recibo se guarda como PDF: una
-dirección firmada que vence en una hora dejaría el papel sin firma al día
-siguiente. Quien no tenga trazo cargado deja la línea para firmar a mano.
+**Lo firma siempre Lucila**, y no quien registró el pago: un pago lo puede
+cargar cualquiera del equipo y el papel lo emite una sola persona. Quién lo
+cargó queda anotado en el movimiento, que es donde sirve. El trazo es el mismo
+que va en los informes de psicotécnicos (`firmas/lucila-campos.png` en el bucket
+privado, leído con `firmaEnDatos`), y entra como `data:` porque el recibo se
+guarda como PDF: una dirección firmada que vence en una hora dejaría el papel
+sin firma al día siguiente.
+
+**Firma como titular del Centro y no con su matrícula.** La matrícula avala un
+informe psicológico, no el recibo de un alquiler, y ponerla en un comprobante de
+plata dice algo que no corresponde.
 
 **El resumen se imprime desde la misma pantalla.** Es lo que se le manda cuando
 pregunta cuánto debe: los movimientos del mes, las horas usadas, lo que pagó y
