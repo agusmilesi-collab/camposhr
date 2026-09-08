@@ -8752,6 +8752,20 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
     font-size: 0.86rem;
   }
 
+  /* El membrete del Centro va todo a la izquierda: el nombre y debajo la
+     dirección. En el informe de psicotécnicos la marca se reparte a los dos
+     lados porque a la derecha va el sitio, que es una segunda cosa; acá la
+     dirección es parte del mismo bloque y separada quedaba flotando. */
+  .os-papel-recibo .os-papel-marca,
+  .os-papel-cuenta .os-papel-marca {
+    display: block;
+  }
+
+  .os-papel-recibo .os-papel-sitio,
+  .os-papel-cuenta .os-papel-sitio {
+    margin-top: 3px;
+  }
+
   .os-papel-recibo .os-papel-titulo {
     margin: 0;
     font-size: 1.15rem;
@@ -8785,8 +8799,10 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
     width: 62mm;
     /* El aire de arriba tiene que dar para el trazo, que se dibuja por encima
        de la línea y sale de la caja: con menos, la firma se montaba sobre el
-       último dato del recibo. */
-    margin: 68px auto 26px 0;
+       último dato del recibo. Y encima el recibo son seis renglones: la firma
+       separada dice que ahí termina lo que se declara y empieza quien lo
+       declara. */
+    margin: 108px auto 26px 0;
     padding-top: 6px;
     text-align: center;
     font-size: 0.74rem;

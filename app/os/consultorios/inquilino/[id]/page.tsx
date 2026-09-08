@@ -54,27 +54,32 @@ export default async function InquilinoFicha({
   ]);
 
   /**
-   * La firma de quien registró cada pago, para su recibo.
+   * La firma del recibo.
    *
-   * Es la misma que va en los informes: vive en el bucket privado y entra como
-   * `data:`, porque el recibo se guarda como PDF y una dirección firmada que
-   * vence en una hora dejaría el papel sin firma al día siguiente. Se piden
-   * solo las de quienes cobraron en esta ficha, y `firmaEnDatos` las deja en
-   * memoria: son quince kilobytes que no cambian.
+   * **Siempre la de Lucila**, que es quien firma los recibos del Centro, y no
+   * la de quien registró el pago: un pago lo puede cargar cualquiera del equipo
+   * y el papel lo emite una sola persona. Quién lo cargó queda anotado en el
+   * movimiento, que es donde sirve.
    *
-   * Quien no tenga trazo cargado deja la línea en blanco, para firmar a mano.
+   * Firma como titular del Centro y no con su matrícula: es el mismo trazo que
+   * va en los informes, pero el cargo que lo acompaña es otro.
+   *
+   * Es la misma firma que va en los informes: vive en el bucket privado y entra
+   * como `data:`, porque el recibo se guarda como PDF y una dirección firmada
+   * que vence en una hora dejaría el papel sin firma al día siguiente.
    */
-  const quienes = [...new Set(movimientos.filter((m) => m.tipo === 'pago').map((m) => m.quien))];
-  const firmas: Record<string, { titulo: string; matricula: string; trazo: string | null }> = {};
-  for (const quien of quienes) {
-    const f = quien ? FIRMAS[quien] : null;
-    if (!quien || !f) continue;
-    firmas[quien] = {
-      titulo: f.titulo,
-      matricula: f.matricula,
-      trazo: f.trazo ? await firmaEnDatos(f.trazo) : null,
-    };
-  }
+  const QUIEN_FIRMA = 'Lucila Campos';
+  const suya = FIRMAS[QUIEN_FIRMA];
+  const firma = suya
+    ? {
+        nombre: QUIEN_FIRMA,
+        // Acá firma como dueña del Centro y no como psicóloga: la matrícula
+        // avala un informe psicológico, no el recibo de un alquiler, y ponerla
+        // en un comprobante de plata dice algo que no corresponde.
+        cargo: 'Titular · Centro Integral Santiago',
+        trazo: suya.trazo ? await firmaEnDatos(suya.trazo) : null,
+      }
+    : null;
 
   return (
     <Shell
@@ -90,7 +95,7 @@ export default async function InquilinoFicha({
         contratos={contratos.filter((c) => c.inquilino_id === params.id)}
         movimientos={movimientos}
         reservas={reservas}
-        firmas={firmas}
+        firma={firma}
         periodo={periodo}
         hoy={hoy}
       />

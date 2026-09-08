@@ -133,7 +133,7 @@ export default function Ficha({
   contratos,
   movimientos,
   reservas,
-  firmas,
+  firma,
   periodo,
   hoy,
 }: {
@@ -142,8 +142,8 @@ export default function Ficha({
   contratos: Contrato[];
   movimientos: Movimiento[];
   reservas: Reserva[];
-  /** La firma de quien cobró, por nombre. Ver el porqué en `page.tsx`. */
-  firmas: Record<string, { titulo: string; matricula: string; trazo: string | null }>;
+  /** Quién firma los recibos del Centro. Ver el porqué en `page.tsx`. */
+  firma: { nombre: string; cargo: string; trazo: string | null } | null;
   periodo: string;
   hoy: string;
 }) {
@@ -226,11 +226,15 @@ export default function Ficha({
       return { m, sala, horario, horas };
     });
 
-  const reservasDelMes = reservas.filter((r) => periodoDe(r.fecha) === periodo);
-  const horasDelMes = reservasDelMes.reduce(
-    (n, r) => n + (hora(r.hasta_hora) - hora(r.desde_hora)),
-    0
-  );
+  /**
+   * Las horas del mes salen de los cargos y no de las reservas activas.
+   *
+   * Son las horas que se cobraron, que es lo que tiene que cuadrar con el
+   * importe de al lado: una hora soltada fuera de plazo deja de estar en el
+   * calendario y su cargo queda, así que contando reservas el resumen decía
+   * "2 h · $ 28.280" cuando esos pesos eran siete horas.
+   */
+  const horasDelMes = consumos.reduce((n, c) => n + c.horas, 0);
 
   /**
    * Los últimos doce meses, con las horas que usó y lo que se le facturó.
@@ -389,7 +393,7 @@ export default function Ficha({
           <div className="os-cifra-pie">por semana</div>
         </div>
         <div className="os-cifra">
-          <div className="os-cifra-rotulo">Usó</div>
+          <div className="os-cifra-rotulo">Cobradas</div>
           <div className="os-cifra-valor">{horasDelMes} h</div>
           <div className="os-cifra-pie">{mesLargo(periodo)}</div>
         </div>
@@ -863,11 +867,7 @@ export default function Ficha({
           <section className="os-papel-recibo" aria-hidden="true">
           <div className="os-papel-marca">
             <span className="os-papel-nombre">Centro Integral Santiago</span>
-            <span className="os-papel-sitio">
-              Santiago 1269
-              <br />
-              Rosario
-            </span>
+            <span className="os-papel-sitio">Santiago 1269, Rosario</span>
           </div>
 
           <h1 className="os-papel-titulo">Recibo de pago</h1>
@@ -898,38 +898,27 @@ export default function Ficha({
               <dt>Fecha</dt>
               <dd>{fechaLarga(recibo.fecha)}</dd>
             </div>
-            {recibo.quien && (
-              <div>
-                <dt>Recibió</dt>
-                <dd>{recibo.quien}</dd>
-              </div>
-            )}
           </dl>
 
           {/* A la izquierda, que es donde firma quien emite. Sin línea entre el
               trazo y el nombre: con el trazo dibujado, esa raya lo partía en
-              dos en vez de sostenerlo. Queda para quien no tiene trazo
-              cargado, que ahí sí firma a mano. */}
-          {(() => {
-            const f = recibo.quien ? firmas[recibo.quien] : null;
-            return (
-              <div className="os-papel-firma">
-                {f?.trazo && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img className="os-papel-trazo" src={f.trazo} alt="" />
-                )}
-                <span>
-                  {recibo.quien ?? 'Firma y aclaración'}
-                  {f && (
-                    <>
-                      <br />
-                      {f.titulo} · M.P. {f.matricula}
-                    </>
-                  )}
-                </span>
-              </div>
-            );
-          })()}
+              dos en vez de sostenerlo. Queda para el día que no haya trazo
+              cargado, que ahí se firma a mano. */}
+          <div className="os-papel-firma">
+            {firma?.trazo && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="os-papel-trazo" src={firma.trazo} alt="" />
+            )}
+            <span>
+              {firma?.nombre ?? 'Firma y aclaración'}
+              {firma && (
+                <>
+                  <br />
+                  {firma.cargo}
+                </>
+              )}
+            </span>
+          </div>
 
             <p className="os-papel-pie">
               Comprobante interno de pago, sin validez fiscal. Emitido el {fechaLarga(hoy)}.
@@ -946,11 +935,7 @@ export default function Ficha({
           <section className="os-papel-cuenta" aria-hidden="true">
         <div className="os-papel-marca">
           <span className="os-papel-nombre">Centro Integral Santiago</span>
-          <span className="os-papel-sitio">
-            Santiago 1269
-            <br />
-            Rosario
-          </span>
+          <span className="os-papel-sitio">Santiago 1269, Rosario</span>
         </div>
 
         <h1 className="os-papel-titulo">
@@ -1085,9 +1070,11 @@ export default function Ficha({
                 </tbody>
               </table>
             ) : (
+              /* Con el mes saldado no se habla de recargos: la regla del 15 y
+                 el 25 % es sobre lo que se debe, y sin deuda es una advertencia
+                 sobre algo que no existe. */
               <p className="os-papel-pie">
-                El alquiler vence el 10 de cada mes. Del 11 al 20 corre un recargo del 15 %, y del
-                21 en adelante del 25 %.
+                {saldo === 0 ? 'El mes está saldado.' : `Queda ${pesos(-saldo)} a favor.`}
               </p>
             )}
           </section>,
