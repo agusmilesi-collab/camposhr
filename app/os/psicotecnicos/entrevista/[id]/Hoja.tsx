@@ -201,10 +201,13 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                 </a>
                 <LinkLaminas href={h.href} numero={2} />
                 {/* Las tres cosas que se hacen con las manchas, en la misma
-                    fila: abrirlas, pasar la dirección y codificar. Codificar
-                    colgaba de un renglón propio y era un botón solo ocupando
-                    una fila entera. Solo Rorschach por ahora; el Zulliger usa
-                    la misma pantalla cuando tenga su tabla. */}
+                    fila: abrirlas, pasar la dirección y encuestar. La pantalla
+                    se abre en la encuesta, que es cuando la persona dice dónde
+                    vio cada cosa, y de ahí sale la codificación: por eso el
+                    botón se llama por el momento de la entrevista y no por lo
+                    que produce. Colgaba de un renglón propio y era un botón
+                    solo ocupando una fila entera. Solo Rorschach por ahora; el
+                    Zulliger usa la misma pantalla cuando tenga su tabla. */}
                 {t === 'Rorschach' && (
                   <a
                     className="os-boton os-herramienta-codificar"
@@ -213,7 +216,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                     rel="noreferrer"
                   >
                     <span className="os-boton-paso">3</span>
-                    Codificar
+                    Encuestar
                   </a>
                 )}
               </Papel>
