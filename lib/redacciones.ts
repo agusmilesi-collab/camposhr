@@ -236,7 +236,7 @@ export const TEXTOS = {
       ],
     },
     dice: [
-      'Intenta captar todo, sin discriminar entre información relevante y accesoria. No se le escapa nada, y corre el riesgo de llenarse de datos que no sirven para resolver el problema, lo que puede hacer caer su eficacia.',
+      'Intenta captar todo, sin discriminar entre información relevante y accesoria. No se le escapa nada, y corre el riesgo de llenarse de datos que no sirven para resolver el problema: el pensamiento queda sobrecargado de información accesoria y eso puede hacer caer su eficacia.',
       'Toma todo lo que llega sin separar lo que sirve de lo que sobra. No pierde detalle, y al mismo tiempo junta más datos de los que el problema necesita, lo que le puede restar eficacia.',
       'Registra la información sin filtrarla, y al momento de resolver queda con un volumen de datos que excede lo que la situación pide. Eso puede enlentecer su respuesta.',
     ],
@@ -249,7 +249,10 @@ export const TEXTOS = {
   'lambda-alto': {
     area: 'Cómo procesa la información',
     indice: 'Lambda',
-    corte: { op: 'mayor', valor: 0.8, decimales: 2 },
+    // Lo esperado es de 0,30 a 0,99, y de 0,99 para arriba el estilo es
+    // evitativo. Definido por las psicólogas el 9/9/2026; antes el corte
+    // estaba en 0,80.
+    corte: { op: 'mayor', valor: 0.99, decimales: 2 },
     zulliger: {
       dice: [
         'Simplifica demasiado sus percepciones y deja los afectos fuera de la lectura de las situaciones, con lo cual puede perder algún dato de información. Puede fallar la permeabilidad a las emociones y la empatía.',
@@ -397,6 +400,47 @@ export const TEXTOS = {
       'Ayudarlo a priorizar los aspectos centrales de la tarea, para que no se detenga en detalles poco relevantes.',
       'Marcarle qué es lo central de la tarea, para que no se quede en detalles de poco peso.',
       'Indicarle explícitamente dónde poner el foco, así el tiempo no se le va en cuestiones menores.',
+    ],
+  },
+  'd-bajo': {
+    area: 'Cómo procesa la información',
+    indice: 'W:D:Dd',
+    cuando: 'D en menos del 60 % de las localizaciones',
+    dice: [
+      'Se le puede perder de vista algún detalle que para la mayoría de las personas es obvio de ver.',
+      'Puede pasar por alto algún dato que para la mayoría está a la vista.',
+      'Algún detalle evidente para los demás se le puede escapar.',
+    ],
+    recomienda: [
+      'Desde su ingreso, marcarle los detalles a los que tiene que prestar atención en su tarea, y ayudarla con listas de control o procedimientos.',
+      'Dejarle por escrito qué datos revisar en cada tarea, con una lista de control desde el primer día.',
+      'Acompañarla con procedimientos escritos que nombren los puntos que no puede saltear.',
+    ],
+  },
+  'localizacion-ok': {
+    area: 'Cómo procesa la información',
+    indice: 'W:D:Dd',
+    cuando: 'W del 35 % o más, D del 60 % o más y Dd hasta el 5 %',
+    dice: [
+      'Logra captar datos tanto desde una visión global como desde los detalles.',
+      'Toma la información completa y también sus detalles.',
+      'Alterna la mirada de conjunto con la del detalle sin perder ninguna de las dos.',
+    ],
+    recomienda: [''],
+  },
+  'm-baja': {
+    area: 'Cómo procesa la información',
+    indice: 'W:M',
+    cuando: 'W:M por debajo del piso de su estilo',
+    dice: [
+      'Aparece una tendencia cautelosa, por autoestima baja o por falta de energía. Puede necesitar que otros la motiven para desarrollar todo su potencial.',
+      'Se maneja con cautela, y detrás puede haber una autoestima baja o poca energía disponible. Para dar todo lo que puede necesita el empuje de otros.',
+      'Su modo de encarar las tareas es cauteloso. Puede deberse a una autoestima baja o a falta de energía, y por eso rinde más cuando alguien la motiva.',
+    ],
+    recomienda: [
+      'Reconocerle los avances y proponerle objetivos alcanzables, para que la cautela no le impida mostrar lo que puede hacer.',
+      'Marcarle lo que hace bien y darle metas cortas, así se anima a tomar más.',
+      'Sostenerla con devoluciones frecuentes, que es lo que la mueve a ocupar el lugar que puede.',
     ],
   },
   'dqv-alto': {
@@ -552,6 +596,36 @@ export const TEXTOS = {
       'En situaciones complejas, ayudarlo a validar su interpretación antes de avanzar.',
       'Ante situaciones poco claras, pedirle que cuente cómo las está entendiendo antes de que avance.',
       'En los casos complejos, confirmar con él la interpretación antes de pasar a la acción.',
+    ],
+  },
+  'xa-medio-wda-bajo': {
+    area: 'Cómo interpreta lo que ve',
+    indice: 'XA% / WDA%',
+    cuando: 'XA% de 0,70 a 0,77 con WDA% por debajo de 0,75',
+    dice: [
+      'Indica un nivel moderado de disfunción en la percepción, que suele deberse a la interferencia de estados afectivos o preocupaciones.',
+      'Su percepción muestra una alteración moderada, en general por interferencia de lo afectivo o de sus preocupaciones.',
+      'Aparece una dificultad moderada para percibir las situaciones, atribuible a estados afectivos o preocupaciones que se le cruzan.',
+    ],
+    recomienda: [
+      'No dejarle decisiones autónomas: conviene revisar periódicamente sus evaluaciones de las situaciones.',
+      'Revisar con ella sus evaluaciones cada tanto, y no dejarle decisiones para tomar sola.',
+      'Acompañar sus decisiones con revisiones pautadas, en vez de delegarle criterios autónomos.',
+    ],
+  },
+  'wda-medio': {
+    area: 'Cómo interpreta lo que ve',
+    indice: 'XA% / WDA%',
+    cuando: 'XA% de 0,78 o más con WDA% entre 0,75 y 0,79',
+    dice: [
+      'Puede reflejar un problema atencional, sin perder una correcta percepción.',
+      'Percibe correctamente, y aun así aparece un indicador de dificultad atencional.',
+      'Su percepción es correcta, con un signo de que la atención le puede fallar.',
+    ],
+    recomienda: [
+      'En tareas que pidan atención sostenida, dejar instancias de revisión para que no pase por alto información importante.',
+      'Poner puntos de revisión en las tareas largas, así lo que se le escapa aparece a tiempo.',
+      'En el trabajo que exige atención continua, revisar el resultado antes de darlo por cerrado.',
     ],
   },
   'xa-bajo': {
@@ -2262,21 +2336,44 @@ export function leer(
     sumar('zd-bajo', conSigno(zd, 1));
   }
 
-  // W vive en la sección de localización, que es donde el motor del OS lo deja.
+  /**
+   * W:D:Dd se lee por porcentaje y no por proporción.
+   *
+   * Las psicólogas pasaron las dos formas y en algunos protocolos se
+   * contradicen (W 8, D 10, Dd 2 da 40 % de W, que está bien, y 1:1,25 de
+   * proporción, que sería "más globales de lo esperado"). Manda el porcentaje,
+   * definido el 9/9/2026: W del 35 % para arriba, D del 60 % para arriba, Dd
+   * hasta el 5 %.
+   *
+   * Cuando las tres caen donde se espera, el informe lo dice: es la única
+   * lectura de esta parte que afirma algo que funciona, y sin ella un
+   * procesamiento correcto salía como un capítulo en blanco.
+   */
   const w = n(s, 'localizacion', 'global', n(s, 'procesamiento', 'W'));
   const dLoc = n(s, 'procesamiento', 'D', n(s, 'localizacion', 'D'));
   const ddLoc = n(s, 'procesamiento', 'Dd', n(s, 'localizacion', 'Dd'));
   const totalLoc = w + dLoc + ddLoc;
   if (totalLoc) {
     const wPct = w / totalLoc;
+    const dPct = dLoc / totalLoc;
     const ddPct = ddLoc / totalLoc;
-    if (wPct < 0.3 && dLoc) {
-      sumar('w-bajo', `W:D:Dd ${w}:${dLoc}:${ddLoc}`);
+    const marca = `W:D:Dd ${w}:${dLoc}:${ddLoc}`;
+    if (wPct < 0.35 && dLoc) {
+      sumar('w-bajo', marca);
     } else if (wPct > 0.5) {
-      sumar('w-alto', `W:D:Dd ${w}:${dLoc}:${ddLoc}`);
+      sumar('w-alto', marca);
     }
-    if (ddPct > 0.15) {
+    if (dPct < 0.6) {
+      sumar('d-bajo', marca);
+    }
+    // Lo esperado es hasta el 5 % de las respuestas; pasado eso, Dd está
+    // aumentado. Definido por las psicólogas el 9/9/2026; antes el corte
+    // estaba en el 15 %.
+    if (ddPct > 0.05) {
       sumar('dd-alto', `Dd ${ddLoc}`);
+    }
+    if (wPct >= 0.35 && dPct >= 0.6 && ddPct <= 0.05) {
+      sumar('localizacion-ok', marca);
     }
   }
 
@@ -2300,18 +2397,48 @@ export function leer(
     sumar('zf-alto', `Zf ${zf}`);
   }
 
+  /**
+   * W:M se mide contra la banda de su estilo, y no contra un número solo.
+   *
+   * Lo esperado cambia según la persona sea introversiva (de 0,80 a 1,5),
+   * ambigual (de 1,3 a 2) o extratensiva (de 1,3 a 3): la misma razón que en un
+   * estilo está bien, en otro dice que se compromete con más de lo que puede.
+   * Por debajo del piso la lectura es la contraria, cautela por autoestima baja
+   * o por falta de energía. Definido por las psicólogas el 9/9/2026; antes el
+   * único corte era W más de dos veces y media M.
+   */
   const mTotal = n(s, 'determinantes', 'M');
-  if (mTotal && w > mTotal * 2.5) {
-    sumar('w-m-alto', `W:M ${w}:${mTotal}`);
+  const BANDA_WM: Record<string, [number, number]> = {
+    Introversivo: [0.8, 1.5],
+    Ambigual: [1.3, 2],
+    Extratensivo: [1.3, 3],
+  };
+  if (mTotal) {
+    const razon = w / mTotal;
+    const [piso, techo] = BANDA_WM[estilo] ?? BANDA_WM.Ambigual;
+    const marca = `W:M ${w}:${mTotal}`;
+    if (razon > techo) {
+      sumar('w-m-alto', marca);
+    } else if (razon < piso) {
+      sumar('m-baja', marca);
+    }
   }
 
   // ── Cómo interpreta lo que ve ──────────────────────────────────────────────
   const xa = n(s, 'calidad_formal', 'XA_pct');
   const wda = n(s, 'calidad_formal', 'WDA_pct');
+  const marcaXA = `XA ${dec(xa)} · WDA ${dec(wda)}`;
   if (xa < c('xa-bajo') && wda >= WDA_ACEPTABLE) {
-    sumar('xa-bajo-wda-alto', `XA ${dec(xa)} · WDA ${dec(wda)}`);
+    sumar('xa-bajo-wda-alto', marcaXA);
+  } else if (xa >= 0.7 && xa <= 0.77 && wda < 0.75) {
+    // Los dos huecos que la tabla de las psicólogas no cubría, definidos el
+    // 9/9/2026: acá la percepción falla de manera moderada, y abajo la
+    // percepción es correcta y lo que falla es la atención.
+    sumar('xa-medio-wda-bajo', marcaXA);
   } else if (xa < c('xa-bajo')) {
     sumar('xa-bajo', `XA ${dec(xa)}`);
+  } else if (wda >= 0.75 && wda < 0.8) {
+    sumar('wda-medio', marcaXA);
   }
 
   const xMenos = n(s, 'calidad_formal', 'X_menos_pct');
@@ -2571,6 +2698,7 @@ export function porArea(lecturas: Lectura[]): { area: string; lecturas: Lectura[
 export type Senal = 'destacada' | 'esperada' | 'desarrollar';
 
 const DESTACADAS = new Set([
+  'localizacion-ok',
   'w-alto',
   'zf-alto',
   'adjd-positivo',
