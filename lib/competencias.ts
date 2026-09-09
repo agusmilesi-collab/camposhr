@@ -1001,7 +1001,10 @@ const R_MINIMO: Record<string, number> = { Rorschach: 14, Zulliger: 6 };
  * protocolo de veintiuna respuestas y Lambda normal, coincidió con ella en las
  * cinco competencias.
  */
-const LAMBDA_MAXIMO = 1;
+// El mismo corte con el que el diccionario nombra el estilo evitativo: lo
+// esperado llega hasta 0,99 y de ahí para arriba el protocolo simplifica.
+// Definido por las psicólogas el 9/9/2026.
+const LAMBDA_MAXIMO = 0.99;
 
 /**
  * Si el protocolo alcanza para puntuar competencias, y si no, por qué no.

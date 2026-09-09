@@ -38,9 +38,39 @@ export type PuntajesZ = { ZW: number; ZA: number; ZD: number; ZS: number };
 export type Lamina = {
   /** La respuesta popular, y en qué área se da. */
   popular: { area: string; respuestas: string[] };
-  z: PuntajesZ;
   /** Las áreas, en el orden en que las presenta el libro. */
   areas: Record<string, string[]>;
+};
+
+/**
+ * Cuánto vale cada clase de Z en cada lámina.
+ *
+ * Salen del encabezado de la lámina en el cuadernillo y valen para las diez.
+ * Viven fuera de `LAMINAS` porque la transcripción de áreas y respuestas va
+ * lámina por lámina, y hoy está hecha la I: con los puntajes adentro de esa
+ * tabla, el capturador no podía anotar una Z en las otras nueve hasta terminar
+ * de copiar el libro entero, que son varios miles de renglones.
+ *
+ * Los cuatro de la lámina I son los mismos que estaban transcriptos con ella.
+ * Los otros nueve se cargaron el 8/9/2026 y hay que verificarlos contra el
+ * cuadernillo antes de tomarlos por buenos: de acá sale la Zsum, y la Zsum
+ * entra en Zd, que es lo que dice si la persona explora de más o de menos.
+ *
+ * El Zulliger no está: sus tres láminas tienen su propia tabla y todavía no se
+ * cargó, así que ahí el capturador avisa que faltan los valores en vez de
+ * puntuar con los del Rorschach.
+ */
+export const Z: Record<string, PuntajesZ> = {
+  I: { ZW: 1.0, ZA: 4.0, ZD: 6.0, ZS: 3.5 },
+  II: { ZW: 4.5, ZA: 3.0, ZD: 5.5, ZS: 4.5 },
+  III: { ZW: 5.5, ZA: 3.0, ZD: 4.0, ZS: 4.5 },
+  IV: { ZW: 2.0, ZA: 4.0, ZD: 3.5, ZS: 5.0 },
+  V: { ZW: 1.0, ZA: 2.5, ZD: 5.0, ZS: 4.0 },
+  VI: { ZW: 2.5, ZA: 2.5, ZD: 6.0, ZS: 6.5 },
+  VII: { ZW: 2.5, ZA: 1.0, ZD: 3.0, ZS: 4.0 },
+  VIII: { ZW: 4.5, ZA: 3.0, ZD: 3.0, ZS: 4.0 },
+  IX: { ZW: 5.5, ZA: 2.5, ZD: 4.5, ZS: 5.0 },
+  X: { ZW: 5.5, ZA: 4.0, ZD: 4.5, ZS: 6.0 },
 };
 
 /* ------------------------------------------------------------------ lámina I
@@ -733,7 +763,6 @@ const I_Dd35 = [
 export const LAMINAS: Record<string, Lamina> = {
   I: {
     popular: { area: 'W', respuestas: ['murciélago', 'mariposa'] },
-    z: { ZW: 1.0, ZA: 4.0, ZD: 6.0, ZS: 3.5 },
     areas: {
       W: I_W,
       D1: I_D1,

@@ -171,6 +171,19 @@ function dq(loc: string | null): string {
   return 'o';
 }
 
+/**
+ * Si el código de localización trae calidad evolutiva.
+ *
+ * Las cuatro de la Tabla 4 son +, o, v/+ y v, y toda respuesta tiene una: no
+ * hay localización sin calidad evolutiva. Un código como "Dd" a secas no dice
+ * cuál es, y `dq()` lo devolvería como "o" (ordinaria), que es afirmar algo que
+ * nadie codificó: DQo y DQv se leen distinto en el informe, y DQ+ decide si la
+ * respuesta puntúa Z. Por eso se avisa en vez de suponer.
+ */
+function tieneDQ(loc: string | null): boolean {
+  return !!loc && /(v\/\+|\+|v|o)$/i.test(loc);
+}
+
 function tallyFQ(rs: Respuesta[]) {
   const c = counter(rs.map((r) => r.fq));
   return {
@@ -219,6 +232,14 @@ export function calcularSumario(respuestas: Respuesta[], perfil: Perfil): any {
     avisos.push(
       `${locsRaras.length} respuesta(s) con Loc.+DQ no reconocida: ` +
       locsRaras.map((r) => `#${r.n_rta}="${r.loc}"`).join(', ')
+    );
+  }
+  const sinDQ = respuestas.filter((r) => locBase(r.loc) !== '?' && !tieneDQ(r.loc));
+  if (sinDQ.length > 0) {
+    avisos.push(
+      `${sinDQ.length} respuesta(s) con localización sin calidad evolutiva (+, o, v o v/+): ` +
+      sinDQ.map((r) => `#${r.n_rta}="${r.loc}"`).join(', ') +
+      '. Se cuentan como DQo hasta que se codifiquen.'
     );
   }
   const laminasRaras = respuestas.filter((r) => !perfil.laminas.includes(r.lam));
@@ -881,7 +902,10 @@ function formatearExner(s: any) {
   L.push([kv('R', cab.R), kv('L', t2(cab.Lambda))].join(SEP));
   L.push([kv('EB', ce.EB), kv('EA', t2(ce.EA)), kv('EBPer', ce.EBPer === null ? 'n/a' : t2(ce.EBPer))].join(SEP));
   L.push([kv('eb', ce.eb), kv('es', ce.es), kv('EA−es', sg(t2(ce.dif_EA_es))), kv('D', sg(ce.D))].join(SEP));
-  L.push([kv('Adj es', n0(ce.Adj_es)), kv('EA−Adj es', sg(t2(ce.dif_EA_Adjes))), kv('Adj D', sg(ce.AdjD))].join(SEP));
+  // La resta EA−Adj es no va en la hoja del Rorschach: lo que se lee es Adj D,
+  // que es esa diferencia ya convertida a puntaje. Pedido de las psicólogas
+  // (8/9/2026). Se sigue calculando, porque de ella sale Adj D.
+  L.push([kv('Adj es', n0(ce.Adj_es)), kv('Adj D', sg(ce.AdjD))].join(SEP));
   L.push(CORTE);
   L.push([
     kv('FM', det.FM), kv('m', det.m),

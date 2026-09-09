@@ -26,12 +26,13 @@
  *   · Que el blanco esté integrado con la tinta también lo dice ella, por lo
  *     mismo.
  *
- * Los valores salen del encabezado de cada lámina del cuadernillo. Los de la I
- * son ZW 1.0, ZA 4.0, ZD 6.0, ZS 3.5.
+ * Los valores salen del encabezado de cada lámina del cuadernillo y están en
+ * `Z`, dentro de `rorschach-tabla-a.ts`, para las diez. Los de la I son ZW 1.0,
+ * ZA 4.0, ZD 6.0, ZS 3.5.
  */
 
 import { ADYACENTES, CONTENIDAS } from './rorschach-areas.ts';
-import { LAMINAS } from './rorschach-tabla-a.ts';
+import { Z } from './rorschach-tabla-a.ts';
 
 export type TipoZ = 'ZW' | 'ZA' | 'ZD' | 'ZS';
 
@@ -95,7 +96,7 @@ export function sonAdyacentes(a: string, b: string): boolean {
 }
 
 export function puntajeZ(lamina: string, s: Situacion): Veredicto {
-  const valores = LAMINAS[lamina]?.z;
+  const valores = Z[lamina];
   const aConfirmar: string[] = [];
   if (!valores) return { z: null, otros: [], aConfirmar: ['No están cargados los valores de Z de esta lámina.'] };
 

@@ -1,11 +1,23 @@
 /**
  * La pantalla de codificación del Rorschach.
  *
- * Dos columnas arriba (el mapa y la elección) y lo capturado abajo, porque
- * mientras se toma hay que ver las tres cosas sin desplazar la pantalla.
+ * Tres paneles apilados: los mapas de la lámina, la respuesta y lo capturado.
+ * El mapa se lleva el ancho entero porque es lo que se mira mientras la persona
+ * habla, y con la columna angosta cada una de las siete viñetas quedaba de
+ * doscientos y pico de píxeles, donde a un área de un solo pedazo hay que
+ * apuntarle. Lo demás se escribe mirando el teclado, no la pantalla.
  *
  * Las clases van con prefijo `os-ror-`: la hoja del OS es una sola y global, y
  * ya pasó dos veces que un nombre nuevo se comiera los estilos de otro.
+ *
+ * **Los colores salen de los tokens del OS y no escritos acá.** El OS tiene dos
+ * temas y los dos cuelgan de `.os` (`--os-tinta`, `--os-linea`, `--os-ambar`),
+ * así que un color fijo funciona en uno de los dos y desaparece en el otro. Ya
+ * pasó: los chips de área salían negros sobre el fondo oscuro, porque un
+ * `<button>` no hereda el color del texto y el del navegador es negro; y los
+ * cuatro fondos pastel de la calidad formal, escritos en claro, se quedaban con
+ * la tinta clara encima. El borde iba contra `--os-borde`, que no existe en
+ * ninguno de los dos temas, así que siempre caía en el gris de respaldo.
  */
 
 .os-ror {
@@ -19,35 +31,68 @@
    toca los bordes, y como el panel recorta lo que se sale, el botón del pie
    quedaba cortado contra el borde. */
 .os-ror-mapa,
-.os-ror-eleccion,
 .os-ror-capturadas {
   padding: 14px 18px 16px;
-}
-
-.os-ror-arriba {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
 }
 
 /* ------------------------------------------------------------------ el mapa */
 
 .os-ror-capas {
   display: flex;
+  align-items: center;
   gap: 8px;
   margin-bottom: 12px;
 }
 
+.os-ror-puestas {
+  font-size: 12px;
+  color: var(--os-tinta-media);
+}
+
+/* Los siete mapas, como las viñetas del cuadernillo. Se acomodan solos: en el
+   panel entran dos por fila, y en una pantalla ancha tres. El mínimo son 200px
+   porque más chico las áreas de un solo pedazo (Dd31, Dd28) quedan de pocos
+   píxeles y hay que apuntarles. */
+.os-ror-mapas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Tres columnas fijas y no las que entren: los siete mapas más el recuadro de
+   lo que dijo dan nueve celdas, que son tres filas justas. Con las columnas
+   libres el último mapa quedaba solo en su fila y al lado sobraba el panel en
+   blanco. */
+@media (max-width: 900px) {
+  .os-ror-mapas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .os-ror-mapas {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* El mapa mide lo que mide su lámina y no se estira con la fila. Sin esto, al
+   crecer la celda de al lado (la lista de la Tabla A con cuarenta respuestas) el
+   recuadro se estiraba hacia abajo y el SVG, que va pegado a los cuatro lados,
+   dibujaba las áreas fuera de la mancha: quedaban los contornos rojos flotando
+   debajo de la imagen. */
 .os-ror-lienzo {
   position: relative;
+  align-self: start;
   line-height: 0;
+  border: 1px solid var(--os-linea);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .os-ror-lienzo img {
   width: 100%;
   height: auto;
-  border-radius: 6px;
+  display: block;
 }
 
 .os-ror-lienzo svg {
@@ -55,6 +100,22 @@
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+/* La línea corta que va del borde del área hasta su nombre. El grosor va en
+   píxeles de pantalla, como el contorno: el viewBox es cuadrado y la lámina no,
+   así que sin esto sale más fina de un lado que del otro. */
+.os-ror-guia {
+  /* Negra y no del color del tema: va sobre la lámina, que es la misma imagen
+     clara con el tema claro y con el oscuro. */
+  stroke: #1c1c1c;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.os-ror-guia-encima {
+  stroke: rgba(220, 40, 40, 0.9);
 }
 
 .os-ror-area {
@@ -83,6 +144,50 @@
   stroke-width: 2.5;
 }
 
+/* El nombre del área sobre su pedazo más grande, como los rótulos del
+   cuadernillo. Es un botón y no un cartel: al área chica se le puede errar el
+   clic, y el nombre está justo encima. Va en HTML y no en un `<text>` del SVG
+   porque el lienzo se estira con `preserveAspectRatio: none` y ahí la letra
+   saldría deformada. */
+.os-ror-rotulo {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 4px;
+  padding: 1px 4px;
+  /* Blanco pleno y tinta negra, no el panel del tema: va sobre la lámina, que
+     es la misma imagen clara con el tema claro y con el oscuro, y traslúcido
+     dejaba ver la mancha a través del nombre. */
+  background: #fff;
+  color: #1c1c1c;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Al apuntar el área, su nombre se enciende en el acto: fondo blanco pleno y
+   tinta negra. Antes eso lo decía el `title` del SVG, que es el globo del
+   navegador y tarda casi un segundo en aparecer. */
+.os-ror-rotulo:hover,
+.os-ror-rotulo-encima {
+  background: #fff;
+  color: #1c1c1c;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* Dd99 no es un área de la lámina, así que va en el borde y con su marco: es lo
+   único que lo distingue, porque no tiene contorno que se encienda. */
+.os-ror-rotulo-fuera {
+  border: 1px solid var(--os-suave);
+}
+
+.os-ror-rotulo-puesto {
+  background: rgba(220, 40, 40, 0.85);
+  color: #fff;
+}
+
 .os-ror-lista-areas {
   display: flex;
   flex-wrap: wrap;
@@ -93,8 +198,9 @@
 }
 
 .os-ror-chip {
-  border: 1px solid var(--os-borde, #d8d8d8);
+  border: 1px solid var(--os-linea);
   background: transparent;
+  color: inherit;
   border-radius: 999px;
   padding: 3px 10px;
   font-size: 12px;
@@ -106,12 +212,41 @@
   border-color: rgba(220, 40, 40, 0.6);
 }
 
+.os-ror-chip:hover {
+  background: var(--os-hover);
+}
+
 /* -------------------------------------------------------------- la elección */
 
-.os-ror-eleccion {
+/* Lo que dijo la persona y lo que la Tabla A propone, en las dos celdas que
+   sobran de la grilla de mapas. Van juntos porque son un solo gesto: se escribe
+   y se elige de la lista, con los mapas al lado y sin mover la vista. La lista
+   se lleva el alto que sobra y se desplaza adentro, así la celda mide siempre
+   lo mismo que un mapa y la grilla no se deforma. */
+.os-ror-campos {
+  grid-column: span 2;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--os-linea);
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+
+/* El rótulo y el botón de soltar, en la misma línea. */
+.os-ror-campo-alto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  min-height: 26px;
+}
+
+/* Como en la lista: `hidden` esconde con `display: none`, que pesa menos que
+   esta clase, así que sin esto el campo seguía a la vista mientras se elegía la
+   calidad evolutiva. */
+.os-ror-campo[hidden] {
+  display: none;
 }
 
 .os-ror-campo {
@@ -120,17 +255,110 @@
   gap: 4px;
 }
 
-.os-ror-opciones {
+/* El paso de la calidad evolutiva, con la respuesta ya elegida: arriba cuál es
+   y abajo las cuatro que admite su área. Apretar una carga la respuesta, así que
+   son dos toques en total y no hay que volver a la tabla. Mientras dura, el
+   campo y la lista no están: no hay nada que buscar. */
+.os-ror-dq {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  max-height: 420px;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 6px;
+  background: var(--os-panel-2);
+}
+
+/* La respuesta elegida es lo que se está confirmando, así que se lee de un
+   vistazo: es el dato contra el que se decide la calidad evolutiva. */
+.os-ror-dq-que {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.os-ror-dq-area {
+  margin-left: 10px;
+  color: var(--os-suave);
+  font-size: 17px;
+  font-weight: 400;
+}
+
+.os-ror-dq-fila {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.os-ror-dq .os-dato-rotulo {
+  margin-right: 2px;
+}
+
+/* Grandes: son cuatro y se eligen de un toque, y el símbolo que las distingue
+   es de uno o tres caracteres. */
+.os-ror-dq-opcion {
+  min-width: 64px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.os-ror-dq-opcion:hover {
+  background: var(--os-hover);
+}
+
+/* Cada una lleva el color que ese código tiene en la tabla de la ficha, así que
+   la tinta va oscura fija: los tonos son claros en los dos temas. */
+.os-ror-dq-opcion {
+  border-color: transparent;
+  color: #1c1c1c;
+  font-weight: 500;
+}
+
+.os-ror-dq-opcion:hover {
+  box-shadow: 0 0 0 2px var(--os-suave);
+}
+
+/* La lista se desplaza adentro en vez de estirar la celda: con cuarenta
+   respuestas empujaba la fila de la grilla y los mapas quedaban lejos. */
+/* `hidden` tiene que ganarle al `display: grid` de acá abajo: el atributo
+   esconde con `display: none`, que pesa menos que cualquier clase, así que la
+   lista seguía viéndose mientras se elegía la calidad evolutiva. */
+.os-ror-opciones[hidden] {
+  display: none;
+}
+
+.os-ror-opciones {
+  flex: 1;
+  min-height: 0;
+  max-height: 260px;
   overflow-y: auto;
+}
+
+/* En columnas y no en grilla: así el alfabeto baja por la primera columna y
+   sigue arriba de la segunda, que es como se busca una palabra en una lista. En
+   grilla el orden es por renglón y hay que leerla en zigzag. El alto lo recorta
+   el contenedor de arriba, porque una caja de columnas con alto propio desborda
+   a lo ancho en vez de hacia abajo. */
+.os-ror-opciones-columnas {
+  column-width: 220px;
+  column-gap: 12px;
+}
+
+.os-ror-opciones-columnas > * {
+  break-inside: avoid;
 }
 
 .os-ror-vacio {
   margin: 0;
-  padding: 24px 4px;
+  padding: 12px 4px;
   font-size: 13px;
   opacity: 0.65;
 }
@@ -143,6 +371,7 @@
   text-align: left;
   border: 0;
   background: transparent;
+  color: inherit;
   border-radius: 4px;
   padding: 5px 6px;
   cursor: pointer;
@@ -150,7 +379,7 @@
 }
 
 .os-ror-opcion:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--os-hover);
 }
 
 .os-ror-opcion-area {
@@ -158,68 +387,213 @@
   opacity: 0.6;
 }
 
-/* La calidad formal se reconoce por su color, como las etapas del pipeline. */
-.os-ror-fq {
+/* Los códigos se reconocen por su color, el mismo que tienen en la tabla de
+   codificación de la ficha: es la misma respuesta antes y después de pasarla, y
+   con dos paletas habría que volver a aprender cuál es cuál. El fondo lo pone
+   `tonoDe` en línea y la tinta es oscura fija, porque los tonos son claros y
+   valen igual en los dos temas del OS. */
+.os-ror-fq,
+.os-ror-etiqueta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
+  min-width: 20px;
   height: 20px;
-  border-radius: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: #1c1c1c;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-.os-ror-fq-o {
-  background: #d1f7c4;
-}
-
-.os-ror-fq-u {
-  background: #ffeab6;
-}
-
-.os-ror-fq-menos {
-  background: #ffdce5;
-}
-
-.os-ror-fq-\+ {
-  background: #cfdfff;
+/* Los contenidos son varios por respuesta y van uno al lado del otro. */
+.os-ror-contenidos {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 /* ----------------------------------------------------------- lo capturado */
-
-.os-ror-encabezado {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.os-ror-encabezado h2 {
-  margin: 0;
-  font-size: 15px;
-}
-
-.os-ror-cuenta {
-  margin: 0;
-  font-size: 12px;
-  opacity: 0.75;
-}
 
 /* Cada respuesta es una ficha y no una fila de tabla: abajo de los códigos
    lleva las dos confirmaciones del puntaje Z y lo que quedó por decidir, y eso
    no entra en un renglón. */
 .os-ror-fila {
-  border-top: 1px solid var(--os-borde, #e4e4e4);
+  border-top: 1px solid var(--os-linea);
   padding: 10px 0;
 }
 
+/*
+ * Las nueve columnas de una respuesta.
+ *
+ * Las de código miden parecido y todas dan para que su rótulo entre en un
+ * renglón: con 24px, "N° rta" se partía en dos y "P" quedaba pegado al de al
+ * lado, y la fila se leía como si las columnas estuvieran corridas. El sobrante
+ * se lo reparten las dos de texto libre, que son lo que de verdad crece: lo que
+ * dijo la persona y los contenidos.
+ */
 .os-ror-fila-datos {
   display: grid;
-  grid-template-columns: 24px minmax(0, 2fr) 110px 96px 28px minmax(0, 1fr) 24px 70px;
+  /* La última columna lleva los dos botones de la fila, y reserva el ancho que
+     piden al confirmar aunque se vean el lápiz y la cruz: midiendo lo que hay,
+     al apretar la cruz la columna crecía, les robaba ancho a las de texto y la
+     fila dejaba de coincidir con sus rótulos. */
+  grid-template-columns:
+    64px minmax(0, 1.5fr) 88px 104px 64px minmax(0, 1fr) 56px 80px 150px;
   gap: 10px;
   align-items: center;
   font-size: 13px;
+}
+
+/*
+ * Una línea entre columnas, como en la tabla de codificación de la ficha.
+ *
+ * Son ocho columnas de códigos cortos y la vista salta de una a otra: sin nada
+ * en el medio se pierde de fila. Del mismo tono suave que la horizontal, que si
+ * no se ven dos grillas superpuestas. El gap va a los lados de la línea, así
+ * que el relleno lo pone cada celda y no el espacio de la grilla.
+ */
+.os-ror-fila-datos {
+  gap: 0;
+  /* Aire a la derecha: el fondo del último botón llegaba al borde del panel y
+     se veía cortado contra él. */
+  padding-right: 8px;
+}
+
+.os-ror-fila-datos > * + * {
+  border-left: 1px solid var(--os-linea-suave);
+}
+
+.os-ror-fila-datos > * {
+  padding: 0 5px;
+  min-height: 26px;
+}
+
+/* Los códigos van centrados en su columna, con su rótulo encima: alineados a la
+   izquierda, una píldora de dos letras en una columna de 80 quedaba lejos del
+   nombre que la encabeza. El texto libre sigue a la izquierda. */
+.os-ror-fila-datos > *:nth-child(1),
+.os-ror-fila-datos > *:nth-child(3),
+.os-ror-fila-datos > *:nth-child(4),
+.os-ror-fila-datos > *:nth-child(5),
+.os-ror-fila-datos > *:nth-child(7),
+.os-ror-fila-datos > *:nth-child(8),
+.os-ror-fila-datos > *:nth-child(9) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* El texto libre también se alinea al medio del renglón, y lo que no entra se
+   recorta: una respuesta larga no puede empujar el alto de la fila. Arranca a
+   15px de la línea que la separa del número: pegada a ella, el renglón se leía
+   como si la respuesta fuera parte de esa columna. */
+.os-ror-fila-datos > *:nth-child(2) {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-left: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Los nombres de las columnas, una sola vez arriba de todas las filas: en una
+   fila suelta se adivina qué es cada cosa por su forma, y con cinco cargadas
+   hay que contar de izquierda a derecha para saber cuál es FQ y cuál Z. */
+.os-ror-titulos {
+  color: var(--os-suave);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 10px;
+  padding-bottom: 4px;
+}
+
+/* Los cuatro criterios de calidad evolutiva, mientras haya alguna respuesta sin
+   DQ elegido. Es lo único de esa decisión que no sale del área marcada, y sin
+   esto hay que ir al manual con la entrevista en curso. */
+.os-ror-criterios {
+  display: grid;
+  /* Dos por fila, que son cuatro en dos renglones parejos: con las columnas
+     libres entraban tres arriba y una sola abajo. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 18px;
+  margin: 10px 0 0;
+  /* Arrancan donde arranca la respuesta, como la observación: los 64 de la
+     primera columna más los 15 con que esa columna separa de su línea. */
+  padding: 10px 0 0 79px;
+  border-top: 1px solid var(--os-linea);
+  list-style: none;
+  color: var(--os-tinta-media);
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .os-ror-criterios {
+    grid-template-columns: 1fr;
+  }
+}
+
+.os-ror-simbolo {
+  display: inline-block;
+  min-width: 26px;
+  color: var(--os-tinta);
+  font-weight: 600;
+}
+
+/* Abrir la nota de esa respuesta, al lado del de borrar. Se marca cuando ya hay
+   algo escrito, así una fila con observación se reconoce sin abrirla. */
+.os-ror-nota {
+  border: 0;
+  background: transparent;
+  color: var(--os-suave);
+  font-size: 13px;
+  line-height: 1;
+  padding: 3px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.os-ror-nota:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os-ror-nota-puesta {
+  color: var(--os-ambar);
+}
+
+/* Sacar una fila que salió mal. Es una cruz y no la palabra: "Borrar" en cada
+   renglón son veinticinco veces la misma palabra en un protocolo, y el gesto ya
+   se reconoce. Se nombra recién al confirmar. */
+.os-ror-borrar {
+  border: 0;
+  background: transparent;
+  color: var(--os-suave);
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.os-ror-borrar:hover {
+  background: color-mix(in srgb, var(--os-rojo) 16%, transparent);
+  color: var(--os-rojo);
+}
+
+/* Los dos botones de la fila van en una sola celda: al confirmar son dos, y
+   sueltos en la grilla el segundo abría una columna más y caía en el renglón de
+   abajo. */
+.os-ror-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-left: 6px;
 }
 
 .os-ror-n {
@@ -242,13 +616,17 @@
   font-weight: 600;
 }
 
+/* Lo de abajo del renglón (la nota, las confirmaciones de Z) arranca donde
+   arranca la respuesta, que es el ancho de la primera columna: alineado con el
+   borde del panel se leía como otro bloque y no como parte de esa respuesta. */
 .os-ror-fila-z {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 14px;
   margin-top: 6px;
-  padding-left: 34px;
+  /* Los 64 de la primera columna más los 15 con que arranca la respuesta. */
+  padding-left: 79px;
 }
 
 .os-ror-tilde {
@@ -273,24 +651,23 @@
    una pregunta para la evaluadora, no un dato. */
 .os-ror-duda {
   font-size: 11px;
-  background: #ffeab6;
+  background: color-mix(in srgb, var(--os-ambar) 18%, transparent);
+  color: var(--os-ambar);
   border-radius: 4px;
   padding: 3px 8px;
 }
 
 .os-ror-extrapolada {
-  background: rgba(255, 234, 182, 0.28);
+  background: color-mix(in srgb, var(--os-ambar) 10%, transparent);
 }
 
-.os-ror-falta {
-  font-size: 11px;
-  opacity: 0.7;
-}
-
+/* El pie quedó con un solo botón, así que va contra el borde derecho: repartido
+   a los extremos, un botón solo se pega a la izquierda y la fila se lee como si
+   faltara algo al lado. */
 .os-ror-pie {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 16px;
   margin-top: 14px;
   padding-top: 12px;
@@ -315,8 +692,14 @@
 
 /* La nota va en la misma línea que las confirmaciones del puntaje Z: es lo que
    se escribe mientras la persona habla, no algo que se abre aparte. */
+/* La nota es de una línea y mide siempre lo mismo, y va primera aunque en el
+   marcado esté al final: detrás del porqué del puntaje Z, arrancaba y terminaba
+   en un lugar distinto en cada fila según lo que tuviera al lado, y una columna
+   de campos que no coinciden se lee como si estuvieran corridos. */
 .os-ror-observacion {
-  flex: 1 1 220px;
-  min-width: 160px;
+  order: -1;
+  flex: 0 0 600px;
+  height: 26px;
+  padding: 2px 8px;
   font-size: 12px;
 }

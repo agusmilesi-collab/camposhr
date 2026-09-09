@@ -3213,7 +3213,12 @@ button.os-enlace-peligro:hover {
   color: #fff;
 }
 
+/* Al apuntarlo se aclara, pero sigue rojo: sin repetir acá el fondo y el borde
+   se los ponía el hover de `.os-boton`, que pesa lo mismo y es de fondo claro,
+   y la letra blanca del botón quedaba ilegible sobre él. */
 .os-boton-peligro:hover:not(:disabled) {
+  border-color: var(--os-rojo);
+  background: var(--os-rojo);
   filter: brightness(1.08);
 }
 
@@ -6605,6 +6610,20 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
 .os-hoja-valor.os-hoja-fuera {
   background: color-mix(in srgb, var(--os-rojo) 14%, transparent);
   color: var(--os-rojo);
+}
+
+/* Hacia dónde se salió: arriba si pasó el máximo esperado, abajo si quedó
+   debajo del mínimo. El rojo dice que hay que mirar ese número y la flecha dice
+   de qué lado quedó, que es lo que cambia la interpretación. Va pegada al valor,
+   dentro de la misma píldora, y más grande que él: el número se lee dígito por
+   dígito y la flecha se tiene que ver de una pasada por la columna. El
+   `line-height: 0` la deja crecer sin estirar el alto de la píldora. */
+.os-hoja-flecha {
+  margin-left: 4px;
+  font-size: 1.45em;
+  font-weight: 700;
+  line-height: 0;
+  vertical-align: -0.06em;
 }
 
 .os-hoja-nota {

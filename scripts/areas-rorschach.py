@@ -55,35 +55,51 @@ UMBRAL = 190
 
 ZONAS = {
     # -- centro, de arriba hacia abajo
-    'D1':    {'zonas': [(39, 18, 61, 27)],   'espejo': False},   # las dos garras superiores
-    'Dd22':  {'zonas': [(43, 25, 57, 33)],   'espejo': False},   # los dos bultos bajo las garras
-    'Dd21':  {'zonas': [(39, 18, 61, 45)],   'espejo': False},   # el cuerpo central superior con cuernos
-    'D4':    {'zonas': [(38, 17, 62, 100)],  'espejo': False},   # la columna central entera
-    'Dd27':  {'zonas': [(45, 39, 55, 55)],   'espejo': False},   # la franja entre los dos espacios de arriba
-    'D3':    {'zonas': [(41, 55, 59, 92)],   'espejo': False},   # el cuerpo central inferior
-    'Dd31':  {'zonas': [(43, 84, 57, 93)],   'espejo': False},   # el bloque del pie
-    'Dd24':  {'zonas': [(44, 91, 56, 101)],  'espejo': False},   # la punta final
+    # Las dos antenitas y nada más: los dos trazos finos que salen del bloque
+    # central hacia arriba, entre el 20 % y el 28 % de alto. Se declara una y se
+    # refleja. Una zona más ancha se lleva el borde superior del cuerpo y sale
+    # una franja horizontal, y una que llegue al centro se lleva los dos cuernos
+    # internos, que son parte de Dd21.
+    'D1':    {'zonas': [(42, 20, 46, 28)],   'espejo': True},    # las dos antenitas
+    'Dd22':  {'zonas': [(46, 18, 54, 35)],   'espejo': False},   # los dos bultos bajo las garras
+    'Dd21':  {'zonas': [(41, 17, 59, 49)],   'espejo': False},   # el cuerpo central superior con cuernos
+    'D4':    {'zonas': [(40, 9, 59, 103)],   'espejo': False},   # la columna central entera
+    'Dd27':  {'zonas': [(47, 45, 53, 53)],   'espejo': False},   # la franja entre los dos espacios de arriba
+    'D3':    {'zonas': [(44, 60, 54, 98)],   'espejo': False},   # el cuerpo central inferior
+    'Dd31':  {'zonas': [(46, 90, 53, 102)],  'espejo': False},   # el bloque del pie
+    # La campana central baja con su punta, y no solo la punta: la lista del
+    # libro para esta área son "violonchelo", "figura humana entera", "campana"
+    # y "falda", que no se ven en un pedacito. Confirmado por Agustín el
+    # 9/9/2026 sobre la hoja de control.
+    'Dd24':  {'zonas': [(40, 45, 59, 102)],  'espejo': False},   # la campana central baja
 
     # -- laterales, se declaran a la izquierda y se reflejan
-    'D2':    {'zonas': [(0, 0, 44, 72)],     'espejo': True},    # la mitad lateral entera
+    'D2':    {'zonas': [(0, -3, 43, 79)],    'espejo': True},    # la mitad lateral entera
     # El ala se separa del cuerpo por una diagonal, así que va como polígono:
     # con un rectángulo el recorte cortaba el ala en vertical y se notaba.
-    'D7':    {'poli': [(0, 24), (10, 16), (22, 14), (32, 19), (36, 30),
-                       (30, 41), (14, 43), (1, 36)],             'espejo': True},
-    'Dd34':  {'zonas': [(0, 26, 13, 41)],    'espejo': True},    # la punta externa del ala
+    'D7':    {'poli': [(1, 18), (7, 2), (20, -3), (31, 9), (40, 27),
+                       (31, 40), (12, 41), (0, 32)],             'espejo': True},
+    'Dd34':  {'zonas': [(0, 17, 22, 36)],    'espejo': True},    # la punta externa del ala
     'Dd28':  {'zonas': [(16, -1, 31, 11)],   'espejo': True},    # la punta superior externa
-    'Dd35':  {'zonas': [(13, 37, 24, 50)],   'espejo': True},    # bajo el ala
-    'Dd33':  {'zonas': [(28, 56, 38, 68)],   'espejo': True},    # la protuberancia lateral baja
-    'Dd25':  {'zonas': [(31, 40, 38, 48)],   'espejo': True},    # la manchita suelta al costado del centro
+    'Dd35':  {'zonas': [(15, 35, 25, 63)],   'espejo': True},    # bajo el ala
+    'Dd33':  {'zonas': [(17, 66, 26, 80)],   'espejo': True},    # la protuberancia lateral baja
+    'Dd25':  {'zonas': [(11, 36, 22, 53)],   'espejo': True},    # la manchita suelta adentro del ala
 }
 
 # El espacio blanco de arriba del centro no es un hueco cerrado (se abre hacia
 # arriba), así que no lo encuentra la detección de huecos: se recorta a mano
 # como el blanco que queda adentro de esta zona.
-ZONA_DdS32 = (30, 6, 70, 20)
+ZONA_DdS32 = (29, 1, 69, 27)
 
 # Dd23 son las salpicaduras: los pedazos de tinta separados de la mancha.
+#
+# No todas: solo las de abajo, las que el cuadernillo señala con sus tres
+# flechas. Sin acotarlo entraban también dos manchitas sueltas a media altura,
+# una de cada lado, que no son Dd23. La zona se declara de un lado y vale
+# espejada, como las áreas laterales. Marcado por Agustín el 9/9/2026 sobre la
+# hoja de control.
 AREA_SALPICADURA = 'Dd23'
+ZONA_Dd23 = (64, 68, 86, 92)
 
 # Cómo se reparten los cuatro huecos cerrados.
 #
@@ -217,13 +233,15 @@ def main():
     areas['DdS32'] = zona_a_mascara(ZONA_DdS32) & casco & ~tinta
 
     # --- las salpicaduras
+    dentro = zona_a_mascara(ZONA_Dd23) | zona_a_mascara(ZONA_Dd23, reflejar=True)
     m = tinta & ~mancha
     ml, mn = ndimage.label(m)
     mt = ndimage.sum(m, ml, range(1, mn + 1))
     chicas = np.zeros_like(mancha)
     for i in range(mn):
-        if mt[i] > 60:
-            chicas |= ml == i + 1
+        pieza = ml == i + 1
+        if mt[i] > 60 and (pieza & dentro).any():
+            chicas |= pieza
     areas[AREA_SALPICADURA] = chicas
 
     # --- a polígonos normalizados

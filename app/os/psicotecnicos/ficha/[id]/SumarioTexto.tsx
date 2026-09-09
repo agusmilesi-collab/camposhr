@@ -45,6 +45,12 @@
  * afectiva cambia según la persona sea introversiva, ambigual o extratensiva.
  * Los que entran contra la cantidad de respuestas (Zf, P) quedan sin pintar: ahí
  * el rótulo solo no alcanza para saber qué se espera.
+ *
+ * El que se salió lleva además una flecha: hacia arriba cuando el valor pasó el
+ * máximo esperado y hacia abajo cuando quedó por debajo del mínimo. El color
+ * dice que ese número hay que mirarlo y la flecha dice de qué lado quedó, que
+ * es lo que cambia la lectura: un Lambda por encima de su banda y uno por
+ * debajo se interpretan al revés.
  */
 
 import type { Banda } from '@/lib/redacciones';
@@ -70,7 +76,7 @@ const OCULTOS = (titulo: string) => titulo.startsWith('No aplica');
 type Par = { rotulo: string; valor: string; nota: string };
 
 /** Si el valor de ese par cae dentro de su banda, la cruza, o no tiene banda. */
-type Estado = { clase: string; title: string } | null;
+type Estado = { clase: string; title: string; flecha: '↑' | '↓' | null } | null;
 
 /**
  * El número de un valor de la hoja.
@@ -97,7 +103,9 @@ function estadoDe(p: Par, bandas: Record<string, Banda>): Estado {
   if (!b) return null;
   const v = numeroDe(p.valor);
   if (v === null) return null;
-  const dentro = (b.minimo === null || v >= b.minimo) && (b.maximo === null || v <= b.maximo);
+  const porArriba = b.maximo !== null && v > b.maximo;
+  const porAbajo = b.minimo !== null && v < b.minimo;
+  const dentro = !porArriba && !porAbajo;
   const n = (x: number) => extremo(x, b.decimales);
   const esperado =
     b.minimo !== null && b.maximo !== null
@@ -109,9 +117,11 @@ function estadoDe(p: Par, bandas: Record<string, Banda>): Estado {
         : b.maximo === 0
           ? 'en cero'
           : `hasta ${n(b.maximo as number)}`;
+  const lado = porArriba ? ', quedó por arriba' : porAbajo ? ', quedó por debajo' : '';
   return {
     clase: dentro ? 'os-hoja-dentro' : 'os-hoja-fuera',
-    title: `${b.indice} esperado: ${esperado}`,
+    title: `${b.indice} esperado: ${esperado}${lado}`,
+    flecha: porArriba ? '↑' : porAbajo ? '↓' : null,
   };
 }
 /** Una línea del bloque: sus campos, o el corte punteado de la hoja. */
@@ -143,6 +153,7 @@ function Valor({ p, bandas }: { p: Par; bandas: Record<string, Banda> }) {
   return (
     <span className={`os-hoja-valor${e ? ` ${e.clase}` : ''}`} title={e?.title}>
       {p.valor || '—'}
+      {e?.flecha && <span className="os-hoja-flecha">{e.flecha}</span>}
     </span>
   );
 }
