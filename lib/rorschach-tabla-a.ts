@@ -862,7 +862,10 @@ export function areasDe(lamina: string): string[] {
  */
 export function buscar(lamina: string, texto: string, conGiro = false): Hallazgo[] {
   const q = plano(texto.trim());
-  if (q.length < 2) return [];
+  // Desde la primera letra: quien codifica escribe la inicial de lo que la
+  // persona dijo y espera ver lo que empieza así. Con dos letras de mínimo, la
+  // lista aparecía recién después de la segunda y parecía que no había nada.
+  if (q.length < 1) return [];
 
   const hallados: { h: Hallazgo; peso: number }[] = [];
   for (const area of areasDe(lamina)) {
@@ -870,7 +873,10 @@ export function buscar(lamina: string, texto: string, conGiro = false): Hallazgo
       const r = plano(e.respuesta);
       if (r === q) hallados.push({ h: e, peso: 0 });
       else if (r.startsWith(q)) hallados.push({ h: e, peso: 1 });
-      else if (r.includes(q)) hallados.push({ h: e, peso: 2 });
+      // Lo que solo contiene la letra entra recién con dos escritas: con una,
+      // "c" traía "bicho" y "violonchelo" mezclados con "campana" y "casco", y
+      // lo que se busca al escribir una inicial es lo que empieza así.
+      else if (q.length > 1 && r.includes(q)) hallados.push({ h: e, peso: 2 });
     }
   }
   return hallados.sort((a, b) => a.peso - b.peso).map((x) => x.h);

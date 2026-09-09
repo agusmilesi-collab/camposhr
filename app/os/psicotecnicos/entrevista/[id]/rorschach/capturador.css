@@ -39,8 +39,9 @@
 
 .os-ror-capas {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
   margin-bottom: 12px;
 }
 
@@ -233,13 +234,16 @@
   padding: 14px 16px;
 }
 
-/* El rótulo y el botón de soltar, en la misma línea. */
+/* El rótulo y el botón de soltar, en la misma línea. El botón es más alto que
+   el rótulo, así que la línea lleva su propio aire abajo: sin eso quedaba
+   tocando el campo de la respuesta. */
 .os-ror-campo-alto {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   min-height: 26px;
+  margin-bottom: 4px;
 }
 
 /* Como en la lista: `hidden` esconde con `display: none`, que pesa menos que

@@ -314,11 +314,19 @@ export default function Capturador({
    */
   const opciones: Hallazgo[] = useMemo(() => {
     const q = plano(dijo.trim());
-    if (puestas.length === 0) return q.length >= 2 ? buscar(LAMINA, dijo).slice(0, 40) : [];
+    if (puestas.length === 0) return q ? buscar(LAMINA, dijo).slice(0, 40) : [];
     const suyas = puestas
       .flatMap((a) => entradasDe(LAMINA, a))
       .sort((x, y) => x.respuesta.localeCompare(y.respuesta, 'es') || x.area.localeCompare(y.area));
-    return q.length < 2 ? suyas : suyas.filter((e) => plano(e.respuesta).includes(q));
+    if (!q) return suyas;
+    // Primero lo que empieza con lo escrito y después lo que lo contiene, como
+    // en el buscador de toda la lámina. Con una sola letra, solo lo que empieza.
+    const empieza = suyas.filter((e) => plano(e.respuesta).startsWith(q));
+    if (q.length === 1) return empieza;
+    const contiene = suyas.filter(
+      (e) => !plano(e.respuesta).startsWith(q) && plano(e.respuesta).includes(q)
+    );
+    return [...empieza, ...contiene];
   }, [dijo, puestas]);
 
   function alternar(a: string) {
@@ -479,9 +487,7 @@ export default function Capturador({
       <section className="os-panel os-ror-mapa">
         <div className="os-ror-capas">
           <span className="os-ror-puestas">
-            {puestas.length > 0
-              ? `Marcadas: ${puestas.join(' + ')}`
-              : 'Apretá el área donde lo vio'}
+            {puestas.length > 0 ? `Marcadas: ${puestas.join(' + ')}` : ''}
           </span>
         </div>
 
@@ -540,7 +546,7 @@ export default function Capturador({
                     }
                     title={
                       a === FUERA_DE_TABLA
-                        ? 'El recorte que señaló no es ninguna de las áreas del libro'
+                        ? 'El recorte que señaló no es ninguna de las locaciones del libro'
                         : undefined
                     }
                     style={{ left: `${c.x * 100}%`, top: `${c.y * 100}%` }}
@@ -564,9 +570,7 @@ export default function Capturador({
               <div className="os-ror-campo-alto">
                 <span className="os-dato-rotulo">
                   Respuesta
-                  {puestas.length > 0
-                    ? ` · se busca en ${puestas.join(' + ')}`
-                    : ' · se busca en toda la lámina'}
+                  {puestas.length > 0 ? ` · se busca en ${puestas.join(' + ')}` : ''}
                 </span>
                 {/* Soltar el área va acá, al lado de lo que dice cuál está
                     marcada, y no arriba de los mapas: es lo que se corrige
@@ -639,16 +643,18 @@ export default function Capturador({
                 muestra: la palabra ya está elegida y lo único que queda es el
                 DQ. */}
             <div className="os-ror-opciones" hidden={Boolean(pendiente)}>
-              <div className="os-ror-opciones-columnas">
+              {/* El aviso va fuera de las columnas: adentro se parte en dos
+                  renglones al ancho de una columna. */}
               {opciones.length === 0 && (
                 <p className="os-ror-vacio">
                   {puestas.length === 0
-                    ? 'Apretá el área donde lo vio, o escribí lo que dijo.'
-                    : dijo.trim().length >= 2
+                    ? 'Apretá la locación donde lo vio, o escribí lo que dijo. Podés marcar más de una cuando la respuesta las integre.'
+                    : dijo.trim()
                       ? `«${dijo.trim()}» no figura en ${puestas.join(' + ')}: se carga igual, con la calidad a mano.`
-                      : 'Esas áreas no tienen entradas para la lámina derecha.'}
+                      : 'Esas locaciones no tienen entradas para la lámina derecha.'}
                 </p>
               )}
+              <div className="os-ror-opciones-columnas">
               {opciones.map((h, i) => (
                 <button
                   key={`${h.area}-${h.respuesta}-${i}`}
@@ -678,10 +684,6 @@ export default function Capturador({
           </div>
         </div>
 
-        <p className="os-ror-aclaracion">
-          Marcá más de un área cuando la respuesta las integre: de ahí sale si el
-          puntaje Z es ZA, ZD o ZS.
-        </p>
       </section>
 
       {/* -------------------------------------------------------- lo capturado */}
