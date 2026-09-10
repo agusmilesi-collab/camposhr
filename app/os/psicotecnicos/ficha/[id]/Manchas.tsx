@@ -30,6 +30,7 @@ import {
 import type { Mancha } from '@/lib/ficha';
 import Calcular from './Calcular';
 import Codigo from './Codigo';
+import { Multiple, Simple } from './Celdas';
 
 /** Una etiqueta con el color que le toca a ese código. */
 function Chip({ valor, opciones }: { valor: string; opciones: Opcion[] }) {
@@ -37,98 +38,6 @@ function Chip({ valor, opciones }: { valor: string; opciones: Opcion[] }) {
     <span className="os-chip" style={{ background: tonoDe(opciones, valor) }}>
       {valor}
     </span>
-  );
-}
-
-/**
- * Una celda de un solo código.
- *
- * La lámina no se busca escribiendo: son diez opciones en orden y se eligen
- * mirando, así que ahí el campo de búsqueda sería un paso de más.
- */
-function Simple({
-  valor,
-  opciones,
-  onCambio,
-  etiqueta,
-  buscable = true,
-  porFila,
-  sinVacio,
-  anchoBoton,
-  nuevaFilaAntesDe,
-  todas,
-}: {
-  valor: string | null;
-  opciones: Opcion[];
-  onCambio: (v: string | null) => void;
-  etiqueta: string;
-  buscable?: boolean;
-  porFila?: number;
-  sinVacio?: boolean;
-  anchoBoton?: number;
-  nuevaFilaAntesDe?: string;
-  todas?: Opcion[];
-}) {
-  return (
-    <span className="os-celda-select">
-      <Codigo
-        valor={valor}
-        opciones={opciones}
-        onElegir={onCambio}
-        etiqueta={etiqueta}
-        buscable={buscable}
-        porFila={porFila}
-        sinVacio={sinVacio}
-        anchoBoton={anchoBoton}
-        nuevaFilaAntesDe={nuevaFilaAntesDe}
-        todas={todas}
-      />
-    </span>
-  );
-}
-
-/**
- * Varios códigos en una celda.
- *
- * El desplegable agrega y cada etiqueta se saca con su cruz. Se eligió esto en
- * vez de una lista con control para elegir varios porque en una tabla de
- * veinticinco filas hay que ver lo cargado de un vistazo, no abrir cada celda.
- */
-function Multiple({
-  valores,
-  opciones,
-  onCambio,
-  etiqueta,
-}: {
-  valores: string[];
-  opciones: Opcion[];
-  onCambio: (v: string[]) => void;
-  etiqueta: string;
-}) {
-  return (
-    <div className="os-celda-multiple">
-      {valores.map((v) => (
-        <span key={v} className="os-chip" style={{ background: tonoDe(opciones, v) }}>
-          {v}
-          <button
-            type="button"
-            className="os-chip-quitar"
-            onClick={() => onCambio(valores.filter((x) => x !== v))}
-            aria-label={`Quitar ${v}`}
-          >
-            ×
-          </button>
-        </span>
-      ))}
-      <Codigo
-        opciones={opciones.filter((o) => !valores.includes(o.v))}
-        onElegir={(v) => {
-          if (v && !valores.includes(v)) onCambio([...valores, v]);
-        }}
-        etiqueta={etiqueta}
-        comoAgregar
-      />
-    </div>
   );
 }
 
@@ -332,6 +241,9 @@ export default function Manchas({
       cc_ee: [],
       agc: false,
       sl: false,
+      verbalizacion: null,
+      posicion: null,
+      observacion: null,
     } satisfies Mancha;
 
     setSucio(true);

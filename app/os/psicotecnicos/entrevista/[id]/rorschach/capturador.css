@@ -756,3 +756,517 @@
   padding: 2px 8px;
   font-size: 12px;
 }
+
+/* ── Los dos momentos de la administración ────────────────────────────────
+   La toma y la encuesta comparten el panel de la respuesta: la evaluadora
+   escribe lo que el candidato dice con la lámina delante, y vuelve sobre eso
+   para preguntarle dónde lo vio. Los dos botones van arriba del campo, que es
+   donde mira antes de escribir. */
+.os-ror-fases {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+/* En cuál de las dos instancias está la pantalla. Es lo que manda sobre todo
+   lo demás, así que lleva su nombre arriba y el peso de un título: cambia qué
+   se ve, qué se escribe y qué se guarda. */
+.os-ror-instancia {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+
+/* Las dos instancias, una debajo de la otra y numeradas: son dos momentos en
+   orden, primero se toma lo que la persona dice y después se le pregunta dónde
+   lo vio. Una al lado de la otra se leían como dos opciones sueltas. */
+.os-ror-toggle {
+  display: inline-flex;
+  flex-direction: column;
+  /* Con aire a la derecha del nombre más largo: ajustado al texto, las dos
+     opciones quedaban apretadas contra el borde de su caja. */
+  min-width: 186px;
+  padding: 8px;
+  gap: 3px;
+  background: var(--os-panel);
+  border: 1px solid var(--os-linea);
+  border-radius: 11px;
+}
+
+/* El número del paso, en su círculo: azul oscuro el de la instancia en la que
+   se está, gris el de la otra. Dice en cuál se está desde el número mismo, sin
+   depender solo del fondo de su renglón. */
+.os-ror-toggle-paso {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 19px;
+  height: 19px;
+  border-radius: 999px;
+  background: var(--os-suave);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.os-ror-toggle-opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* En columna las dos ocupan lo mismo, y el nombre arranca a la misma altura
+     que el de la otra: con el ancho de su texto los dos círculos quedaban en
+     su lugar pero los nombres bailaban. */
+  justify-content: flex-start;
+  padding: 6px 16px 6px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--os-tinta-media);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.os-ror-toggle-opcion:hover {
+  color: var(--os-tinta);
+}
+
+/* La puesta se levanta del fondo: es la única forma de que un interruptor de
+   dos posiciones diga en cuál está sin leer las dos. */
+/* Con la card blanca, la puesta se marca con el fondo suave: al revés que
+   antes, cuando la card era gris y la puesta era la blanca. */
+.os-ror-toggle-opcion.puesta {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+  font-weight: 600;
+}
+
+.os-ror-toggle-opcion.puesta .os-ror-toggle-paso {
+  background: var(--os-azul-fuerte);
+}
+
+/* El botón de la pantalla del candidato se va al extremo: no es uno de los dos
+   momentos, es lo que se abre una vez al empezar. */
+.os-ror-fases .os-boton-derecha {
+  margin-left: auto;
+}
+
+.os-ror-fases[hidden] {
+  display: none;
+}
+
+/* Tomando no hay siete mapas que acomodar, hay dos cosas una encima de la otra:
+   la lámina y el campo donde se escribe. En columna y del mismo ancho, con los
+   dos bordes alineados: en la grilla de tres, la lámina se centraba sobre el
+   panel entero y el campo ocupaba dos de las tres columnas, así que uno
+   quedaba corrido respecto del otro. */
+.os-ror-mapas-tomando {
+  display: flex;
+  flex-direction: column;
+}
+
+/* La lámina en miniatura, para corroborar cuál está viendo la persona, y al
+   lado si su pantalla contesta. Ocupa un renglón: la mancha grande la mira
+   ella en la suya, y acá le sacaba el lugar a lo que se necesita a la vista. */
+/* La cabecera del panel, en un renglón: qué está viendo la persona, en qué
+   instancia se está y con qué se abre su pantalla. Todo lo que manda sobre lo
+   de abajo, junto y antes de lo que se lee o se escribe. */
+.os-ror-cabecera {
+  display: flex;
+  /* La miniatura manda el alto y el resto se centra contra ella: estirándolos
+     todos, la imagen quedaba con marco blanco arriba y abajo. */
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.os-ror-cabecera[hidden] {
+  display: none;
+}
+
+/* La miniatura a la izquierda y, al lado, en columna: qué está viendo la
+   persona, el botón que abre su pantalla y el que gira la lámina. Los tres son
+   sobre lo mismo, la pantalla del candidato. */
+.os-ror-espejo {
+  display: flex;
+  /* La columna toma el alto de la miniatura para que el estado quede apoyado
+     en la misma línea que el pie de la lámina. */
+  align-items: stretch;
+  gap: 12px;
+}
+
+/* El estado arriba y, debajo, en columna, los dos botones de la pantalla de la
+   persona: abrirla y girar la lámina son dos cosas que se hacen ahí. */
+.os-ror-espejo-datos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* Los dos del mismo ancho, el del más largo: uno debajo del otro y de distinto
+   ancho, la columna quedaba dentada. Solo el ancho, que el de rotar dice en qué
+   posición está y no es el que se aprieta todo el tiempo. */
+.os-ror-espejo-botones {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.os-ror-espejo-botones > button {
+  justify-content: center;
+}
+
+.os-ror-cabecera .os-ror-instancia {
+  margin-left: auto;
+  align-items: flex-end;
+}
+
+/* El nombre adentro del recuadro, arriba de las dos opciones y contra el
+   margen derecho. */
+.os-ror-toggle-rotulo {
+  display: block;
+  padding: 2px 8px 6px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--os-linea-suave);
+  text-align: right;
+}
+
+.os-ror-cabecera .os-ror-fases-derecha {
+  margin-left: 0;
+}
+
+/* Sin marco: la lámina ya trae su propio papel, y el borde la encerraba en una
+   caja que competía con la tarjeta de al lado. */
+.os-ror-miniatura {
+  flex: none;
+  align-self: flex-start;
+  /* El ancho está puesto para que su alto sea el mayor de la fila: la lámina es
+     lo primero que se mira y es lo que marca la altura de la cabecera, no el
+     interruptor de al lado. */
+  width: 174px;
+  border-radius: 6px;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.os-ror-miniatura img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: grayscale(1);
+}
+
+/* Si esa pantalla está abierta y en qué lámina. El punto de adelante dice el
+   estado sin leer: son tres, y el que importa es el que no está bien. */
+.os-ror-espejo-estado {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  /* Al pie de la columna: apoyado en la misma línea que el borde de abajo de
+     la lámina de al lado. */
+  margin: auto 0 0;
+  color: var(--os-tinta-media);
+  font-size: 0.88rem;
+}
+
+.os-ror-espejo-estado::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--os-gris);
+}
+
+.os-ror-espejo-estado.bien::before {
+  background: var(--os-verde);
+}
+
+.os-ror-espejo-estado.distinta::before {
+  background: var(--os-ambar);
+}
+
+.os-ror-espejo-estado.sin {
+  color: var(--os-suave);
+}
+
+.os-ror-mapas-tomando .os-ror-campos {
+  width: 100%;
+  margin: 0;
+  /* El lienzo trae `align-self: start`, que es lo que le corresponde en la
+     grilla de los siete mapas y acá lo dejaba de otro ancho que el campo. */
+  align-self: stretch;
+}
+
+/* Cómo sostuvo la lámina, en un botón que la va girando un cuarto por vez.
+   Cuál quedó puesta se ve en la lámina de al lado, que gira con esto, así que
+   el botón solo muestra el signo cuando dejó de estar derecha. */
+.os-ror-girar {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border: 1px solid var(--os-linea);
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--os-tinta);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.os-ror-girar svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.os-ror-girar.puesta {
+  border-color: var(--os-tinta);
+}
+
+/* La posición en que quedó, al lado del nombre: se ve en la miniatura, y el
+   signo es el del protocolo, que es lo que después se guarda. */
+.os-ror-girar-signo {
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--os-hover);
+  font-variant-numeric: tabular-nums;
+}
+
+/* La pantalla del candidato se abre desde el extremo derecho de la fila: no es
+   una de las dos instancias, es lo que se abre una vez al empezar. */
+.os-ror-fases-derecha {
+  margin-left: auto;
+}
+
+
+
+/* Lo tomado y todavía sin ubicar. Se lee entero y de un vistazo: es lo que la
+   evaluadora le va a leer en voz alta al candidato para preguntarle dónde lo
+   vio, así que el texto no se recorta. */
+.os-ror-tomadas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.os-ror-tomada {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--os-linea);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: var(--os-tinta);
+}
+
+.os-ror-tomada.puesta {
+  border-color: var(--os-tinta);
+  background: var(--os-fondo-suave, rgba(0, 0, 0, 0.03));
+}
+
+.os-ror-tomada-n {
+  flex: none;
+  min-width: 18px;
+  color: var(--os-tinta-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.os-ror-tomada-texto {
+  flex: 1;
+}
+
+/* El giro, cuando la dio con la lámina en otra posición: va al final y no al
+   lado del número porque es la excepción, y la mayoría de las respuestas se
+   dan con la lámina derecha. */
+.os-ror-tomada-giro {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--os-fondo-suave, rgba(0, 0, 0, 0.06));
+  color: var(--os-tinta-suave);
+  font-size: 12px;
+}
+
+
+/* Lo que ya dijo en esta lámina, arriba del campo. Va en su orden y con su
+   número, que es el del protocolo entero: la evaluadora la lee de un vistazo
+   mientras escucha la que sigue. */
+/* Qué es la lista: las respuestas de esta lámina, en el orden en que las dio.
+   El número de cada una es el del protocolo entero, que es lo que cuenta el
+   sumario. */
+.os-ror-dichas-titulo {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--os-tinta);
+  letter-spacing: -0.01em;
+}
+
+.os-ror-dichas {
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.os-ror-dichas li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--os-panel-2);
+  font-size: 0.92rem;
+}
+
+.os-ror-dichas-n {
+  flex: none;
+  min-width: 16px;
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.os-ror-dichas-texto {
+  flex: 1;
+}
+
+/* El campo de la respuesta va sin marco hasta que se lo toca: la lista se lee
+   de un vistazo mientras la persona habla, y cuatro cajas con borde la
+   convertían en un formulario. Corregir es la excepción, escuchar es lo que se
+   hace todo el tiempo. */
+input.os-ror-dichas-texto {
+  border-color: transparent;
+  background: transparent;
+  padding: 2px 6px;
+  min-width: 0;
+}
+
+input.os-ror-dichas-texto:hover {
+  border-color: var(--os-linea);
+}
+
+input.os-ror-dichas-texto:focus {
+  border-color: var(--os-tinta-media);
+  background: var(--os-panel);
+}
+
+/* La cruz que borra la respuesta entera. Siempre a la vista: aparecer al pasar
+   el puntero obliga a buscarla, y borrar una respuesta mal escuchada es parte
+   de tomar el protocolo. Antes de borrar pregunta una vez. */
+.os-ror-dichas-x {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--os-suave);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.os-ror-dichas-x:hover {
+  background: var(--os-hover);
+  color: var(--os-rojo);
+}
+
+.os-ror-dichas-confirma {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+.os-ror-dichas-giro {
+  flex: none;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--os-hover);
+  color: var(--os-tinta-media);
+  font-size: 12px;
+}
+
+/* Qué lámina y qué número de respuesta se está por escribir. Es el dato que
+   ordena la toma, así que va con el peso de un título y no con el de un rótulo
+   al margen. */
+.os-ror-titulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--os-tinta);
+  letter-spacing: -0.01em;
+}
+
+/* Sin el texto de al lado, el botón de guardar se va solo a la derecha, y con
+   aire respecto del campo: pegado al borde de arriba se leía como parte de él. */
+.os-ror-campo-alto-solo {
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+
+/* Las diez láminas adentro de la tarjeta, entrevistando: se alinean con el
+   campo y no con el borde, que es donde cae la vista al terminar de escribir.
+   Al pie de la pantalla quedaban lejos y de otro ancho. Todas del mismo ancho,
+   flechas incluidas: los romanos van de una letra a cuatro, y con el ancho de
+   su texto la fila se dentaba y cada lámina cambiaba de lugar. */
+.os-ror-pasador {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+/* Las flechas contra el margen izquierdo y los diez números contra el derecho:
+   son dos cosas distintas, avanzar de a una y saltar a cualquiera, y el hueco
+   del medio las separa mejor que cualquier línea. */
+.os-ror-pasador .os-ror-paso + .os-ror-romano {
+  margin-left: auto;
+}
+
+.os-ror-pasador .os-ror-romano {
+  min-width: 38px;
+  padding-left: 0;
+  padding-right: 0;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Las dos flechas, más anchas que los números y del mismo alto: son los
+   botones que se aprietan en cada lámina, y del ancho de un romano había que
+   apuntarles igual que a cualquier otro. */
+.os-ror-pasador .os-ror-paso {
+  min-width: 64px;
+  padding-left: 0;
+  padding-right: 0;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Apagada la que no lleva a ningún lado: en la I no hay anterior y en la X no
+   hay siguiente. */
+.os-ror-pasador .os-ror-paso:disabled {
+  background: var(--os-linea);
+  border-color: var(--os-linea);
+  color: var(--os-suave);
+}

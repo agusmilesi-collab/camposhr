@@ -27,14 +27,24 @@
  * la ficha queda vacía y se carga a mano, como siempre.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AREAS, type Parte } from '@/lib/rorschach-areas';
 import { buscar, entradasDe, esPopular, familiaDe, plano, type Hallazgo } from '@/lib/rorschach-tabla-a';
 import { contenidoSugerido, fqDeLaFicha, localizacionesDe } from '@/lib/rorschach-sugerencias';
-import { CONTENIDOS, FQ, LOCALIZACION, tonoDe } from '@/lib/rorschach';
+import { Multiple, Simple } from '@/app/os/psicotecnicos/ficha/[id]/Celdas';
+import { CONTENIDOS, FQ, GIRO, LOCALIZACION, POSICION, tonoDe } from '@/lib/rorschach';
 import Codigo from '@/app/os/psicotecnicos/ficha/[id]/Codigo';
 import { esEspacio, puntajeZ } from '@/lib/rorschach-z';
 import { CARGADAS, ORDEN, siguienteDe } from '@/lib/rorschach-laminas';
+import {
+  abrirCanal,
+  DESFASE_MS,
+  esParaMi,
+  PULSO_MS,
+  SIN_RESPUESTA_MS,
+  type Aviso,
+} from '@/lib/laminas-sincro';
+import Toma, { NOMBRE_POSICION, siguienteGiro } from './Toma';
 
 /**
  * Qué distingue a cada calidad evolutiva, en una línea.
@@ -80,6 +90,26 @@ const CRITERIO_DQ: [string, string][] = [
  * a mano.
  */
 const FUERA_DE_TABLA = 'Dd99';
+
+/**
+ * La calidad formal que puede tener una respuesta fuera de tabla.
+ *
+ * Dd99 es el área que la Tabla A no lista, así que no hay contra qué comparar
+ * la forma: la evaluadora decide si se parece a lo que ahí ve mucha gente (U) o
+ * si no se parece (-). Ordinaria y superior salen de estar en la tabla, y una
+ * respuesta que no está no las puede tener.
+ */
+const FQ_FUERA_DE_TABLA = FQ.filter((o) => o.v === 'U' || o.v === '-');
+
+/**
+ * Cuántas respuestas se toman por lámina.
+ *
+ * Lo puso Agustín el 10/9/2026. Es una pared: la quinta no se escribe. Si
+ * alguna vez entra un protocolo de papel que tenga más, se levanta cambiando
+ * este número y nada más.
+ */
+const TOPE_POR_LAMINA = 4;
+
 
 /**
  * La calidad evolutiva sola, sin la familia que la acompaña.
@@ -285,6 +315,7 @@ function promedio(partes: Parte[], eje: 0 | 1): number {
  * ya son de la ficha, que es donde se corrigen.
  */
 export type YaEnLaFicha = {
+  id: string;
   n_respuesta: number | null;
   lamina: string | null;
   localizacion: string | null;
@@ -293,10 +324,20 @@ export type YaEnLaFicha = {
   contenidos: string[] | null;
   popular: boolean | null;
   z: number | null;
+  /** Lo que dijo el candidato, si esta respuesta se tomó en la primera vuelta. */
+  verbalizacion: string | null;
+  /** Cómo sostuvo la lámina al darla. */
+  posicion: string | null;
 };
 
 type Respuesta = {
   n: number;
+  /**
+   * La fila que esta respuesta actualiza, si venía tomada de la primera
+   * instancia. Sin esto se guardaría una fila nueva y la tomada quedaría
+   * duplicada y sin locación.
+   */
+  id?: string;
   dijo: string;
   areas: string[];
   /** Sin entrada en la tabla: la calidad la pone la evaluadora. */
@@ -311,12 +352,31 @@ type Respuesta = {
   blancoIntegrado: boolean;
   /** Nota libre de la evaluadora sobre esta respuesta. */
   observacion: string;
+  /** Lo que dijo el candidato, textual, si venía tomado. */
+  verbalizacion: string | null;
+  /** Cómo sostuvo la lámina al darla. */
+  posicion: string | null;
 };
 
 /** '4' para D4, '26' para DdS26, '4+7' cuando integra dos. W va sin número. */
 function numeroDe(areas: string[]): string | null {
   const ns = areas.map((a) => a.replace(/^D?d?S?/, '')).filter(Boolean);
   return ns.length ? ns.join('+') : null;
+}
+
+/**
+ * Cómo se muestra la lámina cuando el candidato la giró.
+ *
+ * Se gira el lienzo entero, con los contornos y los rótulos adentro: es lo que
+ * ella ve si da vuelta la hoja, y así la locación que marca es la que él vio.
+ * Girada un cuarto, la lámina apaisada queda parada y no entra a lo ancho del
+ * recuadro, así que se achica en la misma proporción que tienen sus lados.
+ */
+function estiloDelGiro(posicion: string | null): React.CSSProperties | undefined {
+  const grados = GIRO[posicion ?? '^'] ?? 0;
+  if (!grados) return undefined;
+  const cuarto = grados === 90 || grados === 270;
+  return { transform: `rotate(${grados}deg)${cuarto ? ' scale(0.667)' : ''}` };
 }
 
 function camino(parte: Parte): string {
@@ -380,6 +440,52 @@ export default function Capturador({
    * navegar, para que recargar mantenga la lámina.
    */
   const [lamina, setLamina] = useState(primera);
+  /**
+   * En cuál de las dos instancias está la pantalla.
+   *
+   * La entrevista y la encuesta son dos momentos de la administración, y a veces con
+   * días de por medio: primero la evaluadora le muestra las láminas y anota lo
+   * que el candidato dice, y después vuelve sobre lo anotado a preguntarle
+   * dónde vio cada cosa. Los dos botones dicen en cuál está y cuántas quedan
+   * por ubicar en esta lámina, con los nombres que ellas usan.
+   */
+  /* Abre en la entrevista: es el primer momento de la administración y el que
+     se hace con la persona delante. La encuesta se elige después, cuando ella ya
+     dijo todo y se vuelve sobre lo anotado. */
+  const [fase, setFase] = useState<'entrevista' | 'encuesta'>('entrevista');
+  /**
+   * Qué está viendo la persona, según su propia pantalla.
+   *
+   * Es lo que ella contesta sola cada dos segundos. Sin esto, desde acá no había
+   * forma de saber si esa pantalla seguía abierta: se pasaba de lámina, no
+   * pasaba nada del otro lado y recién se descubría preguntándole a la persona
+   * qué estaba viendo.
+   */
+  const [ve, setVe] = useState<{ lamina: number; cuando: number } | null>(null);
+  /** Se recalcula solo, para que "no está abierta" aparezca sin tocar nada. */
+  const [ahora, setAhora] = useState(() => Date.now());
+  useEffect(() => {
+    const preguntar = () => {
+      setAhora(Date.now());
+      canal.current?.postMessage({
+        lamina: 0,
+        de: 'codificacion',
+        evaluacion: evaluacionId,
+        pulso: 'donde',
+      } satisfies Aviso);
+    };
+    const reloj = window.setInterval(preguntar, PULSO_MS);
+    preguntar();
+    return () => window.clearInterval(reloj);
+  }, [evaluacionId]);
+  const laPantallaEsta = ve !== null && ahora - ve.cuando < SIN_RESPUESTA_MS;
+
+  /** Lo que dijo el candidato, mientras se lo escribe en la entrevista. */
+  const [tomando, setTomando] = useState('');
+  /** Cómo sostuvo la lámina en la respuesta que se está anotando. */
+  const [posicion, setPosicion] = useState('^');
+  /** Cuál de las tomadas se está ubicando. */
+  const [ubicando, setUbicando] = useState<string | null>(null);
   /** Lo que hay en la ficha, más lo que se va pasando sin recargar. */
   const [enLaFicha, setEnLaFicha] = useState(yaEstan);
   /** Desde qué número numerar, contando lo que se pasó sin recargar. */
@@ -388,8 +494,83 @@ export default function Capturador({
   // El archivo de la lámina va por número y la codificación por su romano.
   const numeroDeLamina = ORDEN.indexOf(lamina) + 1;
   const anterior = numeroDeLamina > 1 ? ORDEN[numeroDeLamina - 2] : null;
+  /* Desde cuándo están en láminas distintas. El desfase se avisa recién cuando
+     dura: en cada cambio hay un momento en que una ya cambió y la otra está
+     bajando la imagen nueva, y un aviso que salta en cada cambio enseña a
+     ignorarlo. */
+  const coinciden = laPantallaEsta && ve?.lamina === numeroDeLamina;
+  const desdeCuandoDistintas = useRef(0);
+  if (coinciden || !laPantallaEsta) desdeCuandoDistintas.current = 0;
+  else if (!desdeCuandoDistintas.current) desdeCuandoDistintas.current = Date.now();
+  const veLaMisma =
+    coinciden ||
+    (laPantallaEsta && ahora - desdeCuandoDistintas.current < DESFASE_MS);
   const suyas = enLaFicha.filter((r) => r.lamina === lamina);
   const archivoDe = (n: string) => `/api/os/lamina/rorschach/${ORDEN.indexOf(n) + 1}`;
+
+  /**
+   * Las que se tomaron y todavía no se ubicaron en la mancha.
+   *
+   * Son las de la primera instancia: la evaluadora escuchó al candidato y
+   * escribió lo que dijo, sin preguntarle dónde lo vio. Se reconocen porque
+   * tienen su verbalización y ninguna locación.
+   */
+  const sinUbicar = suyas.filter((r) => r.verbalizacion && !r.localizacion && !r.n_localizacion);
+
+  /**
+   * Lo que la persona ya dijo en esta lámina, en orden.
+   *
+   * Junta lo que está en la ficha con lo que se acaba de capturar sin pasar:
+   * las dos cosas son respuestas que ella dio en esta lámina, y de eso se trata
+   * la lista que la evaluadora mira mientras escucha la que sigue.
+   */
+  const dichasDeLaLamina = [
+    ...suyas
+      .filter((r) => r.verbalizacion)
+      .map((r) => ({
+        id: r.id,
+        n: r.n_respuesta ?? 0,
+        texto: r.verbalizacion ?? '',
+        posicion: r.posicion,
+      })),
+    ...respuestas
+      .filter((r) => !r.id && r.verbalizacion)
+      .map((r) => ({ n: r.n, texto: r.verbalizacion ?? '', posicion: r.posicion })),
+  ]
+    .sort((a, b) => a.n - b.n)
+    // El número que se ve es el de esta lámina; el del protocolo va en la ficha.
+    .map((r, i) => ({ ...r, n: i + 1, nProtocolo: r.n }));
+
+  /** La posición de la respuesta que se está ubicando, para girar los mapas. */
+  const posicionDeLaQueUbico = ubicando
+    ? suyas.find((v) => v.id === ubicando)?.posicion ?? '^'
+    : '^';
+
+  /** Cuántas respuestas tiene ya esta lámina, tomadas y capturadas. */
+  const cuantasEnLaLamina = suyas.length + respuestas.filter((r) => !r.id).length;
+  const laminaLlena = cuantasEnLaLamina >= TOPE_POR_LAMINA;
+  /**
+   * Qué número le toca a la respuesta que se está por escribir.
+   *
+   * Es el del protocolo entero, contando las de las láminas anteriores: el
+   * botón decía "Guardar respuesta 1" en la VII porque contaba solo las de esa
+   * lámina, y después guardaba con el número que de verdad le tocaba. Es el
+   * mismo cálculo que hace `anotar` al guardar, así que lo que se lee es lo que
+   * queda escrito.
+   */
+  const proximoNumero =
+    enLaFicha.filter((r) => ORDEN.indexOf(r.lamina ?? '') <= numeroDeLamina - 1).length + 1;
+  /**
+   * Y el que se muestra mientras se entrevista, que es la cuenta de esta
+   * lámina.
+   *
+   * Son dos números distintos a propósito. La ficha guarda el del protocolo,
+   * que es lo que cuenta el sumario y sigue de corrido de una lámina a la otra.
+   * Pero administrando, lo que se lleva en la cabeza es cuántas van en la
+   * lámina que se tiene delante: con cuatro cargadas en la I, la primera de la
+   * II decía "respuesta 5" y se leía como un error.
+   */
+  const numeroEnLaLamina = cuantasEnLaLamina + 1;
 
   /**
    * Las láminas vecinas se bajan mientras se codifica esta.
@@ -400,12 +581,66 @@ export default function Capturador({
    * el cambio sea inmediato, y cuesta nada: se hace mientras la evaluadora
    * escribe.
    */
+  /**
+   * La pantalla que ve el candidato sigue a esta.
+   *
+   * En la toma la evaluadora comparte por videollamada la pestaña de las
+   * láminas y trabaja en esta: pasa de lámina acá, mientras escribe, y allá
+   * cambia sola. Comparte la pestaña y no la pantalla justamente para eso, así
+   * él ve la mancha y no lo que ella está anotando.
+   */
+  const canal = useRef<BroadcastChannel | null>(null);
+  /* El canal se abre una sola vez, así que su escucha se quedaría con el
+     `guardar` del primer dibujo y con las respuestas que había entonces. Esta
+     referencia apunta siempre al último. */
+  const irA = useRef<((n: string) => void) | null>(null);
+  useEffect(() => {
+    const c = abrirCanal();
+    canal.current = c;
+    if (!c) return;
+    c.onmessage = (e: MessageEvent<Aviso>) => {
+      /* Si ella pasa de lámina en la pantalla compartida, esta la sigue, y por
+         el mismo camino que los botones de acá: cambiar sin pasar lo capturado
+         a la ficha lo perdería, y desde allá ni se vería que se perdió. */
+      if (e.data?.de !== 'laminas' || !esParaMi(e.data, evaluacionId)) return;
+      /* La respuesta dice dónde está esa pantalla; no pide cambiar de lámina.
+         Se cuenta solo la de la pantalla abierta para esta evaluación: una
+         abierta suelta, sin candidato, le contesta a cualquiera, y si quedó en
+         otra lámina haría decir que la persona ve algo que no ve. */
+      if (e.data.pulso) {
+        if (e.data.pulso === 'aca' && e.data.evaluacion === evaluacionId) {
+          setVe({ lamina: e.data.lamina, cuando: Date.now() });
+        }
+        return;
+      }
+      const romano = ORDEN[e.data.lamina - 1];
+      if (romano) irA.current?.(romano);
+    };
+    return () => {
+      canal.current = null;
+      c.close();
+    };
+  }, []);
+
+  // La lámina que se está codificando es la que el candidato tiene que ver.
+  useEffect(() => {
+    canal.current?.postMessage({
+      lamina: ORDEN.indexOf(lamina) + 1,
+      de: 'codificacion',
+      evaluacion: evaluacionId,
+    } satisfies Aviso);
+  }, [lamina]);
+
   useEffect(() => {
     for (const n of [siguienteDe(lamina), anterior]) {
       if (n && CARGADAS.includes(n)) new window.Image().src = archivoDe(n);
     }
   }, [lamina, anterior]);
   const [guardando, setGuardando] = useState(false);
+  /** Mientras se guarda una respuesta de la entrevista. */
+  const [anotando, setAnotando] = useState(false);
+  /** Cuál respuesta tomada está esperando que confirmen su borrado. */
+  const [borrando, setBorrando] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
   /**
@@ -463,6 +698,7 @@ export default function Capturador({
      */
     const areas = puestas.length > 0 ? puestas : h ? [h.area] : [];
     if (areas.length === 0) return;
+    const tomada = ubicando ? suyas.find((v) => v.id === ubicando) ?? null : null;
     const respuesta = h?.respuesta ?? dijo.trim();
     // La calidad formal es la que esa respuesta tiene en el área elegida, no la
     // del renglón que se apretó: la misma respuesta no vale lo mismo en dos
@@ -477,7 +713,9 @@ export default function Capturador({
     setRespuestas((rs) => [
       ...rs,
       {
-        n: proximo + rs.length,
+        /* La tomada conserva su número: se lo dio la primera instancia y el
+           orden de las respuestas es el orden en que el candidato las dijo. */
+        n: tomada?.n_respuesta ?? proximo + rs.length,
         // Elegido un renglón, la respuesta es la de la tabla y no lo que quedó
         // escrito: con un solo campo, lo escrito es lo que se tipeó para
         // encontrarla, y apretar "escarabajo" después de escribir "esca"
@@ -494,11 +732,149 @@ export default function Capturador({
         integradas: false,
         blancoIntegrado: false,
         observacion: '',
+        /* Ubicando una respuesta de la primera instancia, la fila ya existe y
+           lleva lo que dijo el candidato: se completa esa. Capturando de una
+           sola pasada, la fila nace acá y lo escrito es la verbalización. */
+        id: tomada?.id,
+        verbalizacion: tomada?.verbalizacion ?? (h ? null : dijo.trim() || null),
+        posicion: tomada?.posicion ?? null,
       },
     ]);
     setDijo('');
     setPuestas([]);
     setPendiente(null);
+    setUbicando(null);
+  }
+
+  /**
+   * Guarda lo que dijo el candidato, sin codificar nada.
+   *
+   * Va derecho a la ficha en vez de esperar el cambio de lámina, que es lo que
+   * hace la captura: en la toma la evaluadora está escuchando y escribiendo, y
+   * lo anotado tiene que estar guardado antes de que ella pase a la siguiente
+   * sin pensarlo. La fila nace con su lámina, su número y su verbalización, y
+   * la locación se le completa en la encuesta.
+   */
+  async function anotar() {
+    const texto = tomando.trim();
+    if (!texto || laminaLlena) return;
+    setAnotando(true);
+    /* El número sale del orden del protocolo y no del final de la lista: las
+       respuestas van en el orden de las láminas, así que una que se agrega a la
+       I cuando ya hay cargadas de la III se numera antes que ellas y las corre.
+       Administrando en orden esto no cambia nada; volviendo atrás a sumar una
+       respuesta es lo que evita que los números queden entremezclados. */
+    const lugar = (l: string | null) => ORDEN.indexOf(l ?? '');
+    const n = proximoNumero;
+    const corridas = enLaFicha.filter((r) => lugar(r.lamina) > lugar(lamina));
+    const res = await fetch('/api/os/manchas', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        evaluacionId,
+        campos: {
+          lamina,
+          n_respuesta: n,
+          verbalizacion: texto,
+          posicion,
+          origen: 'captura',
+          determinantes: [],
+          contenidos: [],
+          cc_ee: [],
+          par: false,
+          agc: false,
+          sl: false,
+          popular: false,
+        },
+      }),
+    });
+    const cuerpo = await res.json().catch(() => null);
+    if (!res.ok || !cuerpo?.fila?.id) {
+      setAnotando(false);
+      setAviso('No se pudo guardar esa respuesta. Probá de nuevo antes de seguir.');
+      return;
+    }
+    // Las de las láminas que siguen corren un lugar.
+    for (const r of corridas) {
+      await guardarCelda(r.id, { n_respuesta: (r.n_respuesta ?? 0) + 1 });
+    }
+    setAnotando(false);
+    setEnLaFicha((f) => [
+      ...f.map((r) =>
+        lugar(r.lamina) > lugar(lamina)
+          ? { ...r, n_respuesta: (r.n_respuesta ?? 0) + 1 }
+          : r
+      ),
+      {
+        id: cuerpo.fila.id,
+        n_respuesta: n,
+        lamina,
+        localizacion: null,
+        n_localizacion: null,
+        fq: null,
+        contenidos: [],
+        popular: false,
+        z: null,
+        verbalizacion: texto,
+        posicion,
+      },
+    ]);
+    setProximo(n + 1);
+    setTomando('');
+    setPosicion('^');
+    setAviso(null);
+  }
+
+  irA.current = (n: string) => {
+    void guardar(n);
+  };
+
+  /** Guarda una celda de una respuesta que ya está en la ficha. */
+  async function guardarCelda(id: string, campos: Record<string, unknown>) {
+    const res = await fetch('/api/os/manchas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, campos }),
+    });
+    return res.ok;
+  }
+
+  /** Corregir lo que se escribió: se toma al vuelo y una palabra sale mal. */
+  async function corregir(id: string, texto: string) {
+    setEnLaFicha((f) => f.map((r) => (r.id === id ? { ...r, verbalizacion: texto } : r)));
+    if (!(await guardarCelda(id, { verbalizacion: texto }))) {
+      setAviso('No se pudo guardar esa corrección. Probá de nuevo.');
+    }
+  }
+
+  /**
+   * Saca una respuesta y renumera lo que sigue.
+   *
+   * El número de respuesta es correlativo de todo el protocolo y es lo que
+   * cuenta el sumario: dejando el hueco, el protocolo pasa a decir que hubo una
+   * respuesta que nadie dio. Se corrigen todas las posteriores, que son las
+   * únicas que se corren.
+   */
+  async function borrarTomada(id: string, n: number) {
+    setBorrando(null);
+    const posteriores = enLaFicha.filter((r) => (r.n_respuesta ?? 0) > n);
+    const res = await fetch(`/api/os/manchas?id=${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      setAviso('No se pudo borrar esa respuesta. Probá de nuevo.');
+      return;
+    }
+    for (const r of posteriores) {
+      await guardarCelda(r.id, { n_respuesta: (r.n_respuesta ?? 0) - 1 });
+    }
+    setEnLaFicha((f) =>
+      f
+        .filter((r) => r.id !== id)
+        .map((r) =>
+          (r.n_respuesta ?? 0) > n ? { ...r, n_respuesta: (r.n_respuesta ?? 0) - 1 } : r
+        )
+    );
+    setProximo((p) => Math.max(1, p - 1));
+    setAviso(null);
   }
 
   function cambiar(n: number, campos: Partial<Respuesta>) {
@@ -542,11 +918,15 @@ export default function Capturador({
     setAviso(null);
     let mal = 0;
     for (const r of respuestas) {
+      /* La que venía tomada de la primera instancia ya tiene su fila, con lo
+         que dijo el candidato adentro: se le completa la codificación. Guardar
+         una nueva dejaría dos, la tomada sin locación y la codificada sin
+         verbalización, y el número de respuesta repetido. */
       const res = await fetch('/api/os/manchas', {
-        method: 'PUT',
+        method: r.id ? 'POST' : 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          evaluacionId,
+          ...(r.id ? { id: r.id } : { evaluacionId }),
           campos: {
             lamina: lamina,
             n_respuesta: r.n,
@@ -583,9 +963,11 @@ export default function Capturador({
     // preguntarle al servidor: pasa a verse en la lista de arriba y la
     // numeración sigue de ahí.
     const cuantas = respuestas.length;
+    const actualizadas = new Set(respuestas.map((r) => r.id).filter(Boolean));
     setEnLaFicha((f) => [
-      ...f,
+      ...f.filter((v) => !actualizadas.has(v.id)),
       ...respuestas.map((r) => ({
+        id: r.id ?? `nueva-${r.n}`,
         n_respuesta: r.n,
         lamina,
         localizacion: r.localizacion,
@@ -594,13 +976,15 @@ export default function Capturador({
         contenidos: r.contenidos,
         popular: r.popular,
         z: zDe(r).z?.valor ?? null,
+        verbalizacion: r.verbalizacion,
+        posicion: r.posicion,
       })),
     ]);
     setProximo((n) => n + cuantas);
     setRespuestas([]);
 
     const sigue = destino;
-    if (sigue && CARGADAS.includes(sigue)) {
+    if (sigue && (fase === 'entrevista' || CARGADAS.includes(sigue))) {
       // Esperar a que la imagen esté: si ya se bajó, esto no demora nada, y si
       // no, es preferible medio segundo en el botón que la lámina anterior con
       // los contornos de la nueva encima.
@@ -627,11 +1011,63 @@ export default function Capturador({
     );
   }
 
+  /**
+   * Las diez láminas y los dos pasos, en una sola barra.
+   *
+   * Se dibuja en dos lugares según la instancia: entrevistando va adentro de la
+   * tarjeta, debajo del campo y del mismo ancho, porque ahí es lo único que se
+   * hace además de escribir; encuestando va al pie, que es donde estuvo siempre
+   * y donde no le saca lugar a la tabla de codificación.
+   */
+  const barraDeLaminas = (
+        <div className="os-ror-pie">
+      <button
+        type="button"
+        className="os-boton os-boton-firme"
+        disabled={guardando || !anterior}
+        onClick={() => guardar(anterior)}
+      >
+        ← Lámina anterior
+      </button>
+
+      <div className="os-ror-laminas">
+        {ORDEN.map((n) => (
+          <button
+            key={n}
+            type="button"
+            className={`os-boton os-boton-fila${n === lamina ? ' os-boton-firme' : ''}`}
+            /* Tomando se llega a las diez: lo que le falta a la IV en
+               adelante es su Tabla A y sus áreas, y para anotar lo que el
+               candidato dice no hace falta ninguna de las dos. Recién
+               ubicando importa, que es cuando se codifica. */
+            disabled={guardando || (fase === 'encuesta' && !CARGADAS.includes(n))}
+            onClick={() => guardar(n)}
+            title={
+              fase === 'entrevista' || CARGADAS.includes(n)
+                ? `Lámina ${n}`
+                : `La lámina ${n} todavía no está cargada`
+            }
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        className="os-boton os-boton-firme"
+        disabled={guardando}
+        onClick={() => guardar()}
+      >
+        {guardando ? 'Pasando…' : 'Próxima lámina →'}
+      </button>
+    </div>
+  );
+
   return (
     <div className="os-ror">
       <div className="os-encabezado">
         <h1>Rorschach · Lámina {lamina}</h1>
-        <p>{nombre} · se codifica en la encuesta, cuando ella dice dónde vio cada cosa</p>
       </div>
 
 
@@ -643,8 +1079,135 @@ export default function Capturador({
           </span>
         </div>
 
-        <div className="os-ror-mapas">
-          {(MAPAS[lamina] ?? []).map((grupo, g) => (
+        {/* El interruptor de instancia manda sobre todo lo que hay debajo, así
+            que va arriba de todo y no adentro de la tarjeta de una de las dos.
+            En la fila de la miniatura, que es lo primero que se mira. */}
+        <div className="os-ror-cabecera" hidden={Boolean(pendiente)}>
+          {/* Entrevistando, la lámina va en miniatura y no grande. Quien la
+              mira es la persona, en su pantalla; de este lado alcanza con
+              corroborar que está viendo la que corresponde, y grande le sacaba
+              el lugar a lo que la evaluadora sí necesita a la vista: lo que ya
+              dijo y el campo donde escribir. Al lado dice si esa pantalla
+              contesta, que hasta ahora no se sabía desde acá. */}
+          {fase === 'entrevista' && (
+            <div className="os-ror-espejo">
+              <div className="os-ror-miniatura">
+                <img
+                  src={archivoDe(lamina)}
+                  alt={`Lámina ${lamina}`}
+                  style={estiloDelGiro(posicion)}
+                />
+              </div>
+              <div className="os-ror-espejo-datos">
+              <span className="os-ror-espejo-botones">
+              {fase === 'entrevista' && (
+                <button
+                  type="button"
+                  className="os-boton os-boton-fila"
+                  onClick={() =>
+                    window.open(
+                      `/os/laminas/rorschach?de=${evaluacionId}`,
+                      `laminas-${evaluacionId}`
+                    )
+                  }
+                  title="Compartí esa pestaña en la videollamada, no la pantalla entera"
+                >
+                  Abrir las láminas
+                </button>
+              )}
+                {/* Cómo sostuvo la lámina, en un botón que la va girando un
+                    cuarto por vez. Debajo de la pantalla del candidato porque
+                    es lo que gira: la miniatura de al lado gira con él, así que
+                    qué quedó puesto se ve sin leer ningún signo. Va por
+                    respuesta y no por lámina: puede darla derecha y girarla
+                    para la que sigue. */}
+                <button
+                  type="button"
+                  className={`os-ror-girar${posicion !== '^' ? ' puesta' : ''}`}
+                  onClick={() => setPosicion((p) => siguienteGiro(p))}
+                  title={NOMBRE_POSICION[posicion]}
+                  aria-label={`Cómo sostiene la lámina: ${NOMBRE_POSICION[posicion]}`}
+                >
+                  {/* Un arco de tres cuartos y una punta maciza apoyada en su
+                      extremo. La anterior eran dos trazos abiertos que a este
+                      tamaño no cerraban en una flecha. */}
+                  <svg viewBox="0 0 24 24" aria-hidden>
+                    <path
+                      d="M12 6 A6 6 0 1 1 6.9 8.9"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.1"
+                      strokeLinecap="round"
+                    />
+                    <path d="M12 2.4 L12 9.6 L7.8 6 Z" fill="currentColor" />
+                  </svg>
+                  Rotar lámina
+                  {posicion !== '^' && <span className="os-ror-girar-signo">{posicion}</span>}
+                </button>
+              </span>
+              <p
+                className={`os-ror-espejo-estado${
+                  laPantallaEsta ? (veLaMisma ? ' bien' : ' distinta') : ' sin'
+                }`}
+              >
+                {!laPantallaEsta && 'La pantalla del candidato no está abierta'}
+                {laPantallaEsta && veLaMisma && `El candidato está viendo la lámina ${lamina}`}
+                {laPantallaEsta &&
+                  !veLaMisma &&
+                  `El candidato está viendo la lámina ${ORDEN[(ve?.lamina ?? 1) - 1]}`}
+              </p>
+              {/* La pantalla que ve la persona, en una pestaña aparte. Se abre
+                  desde acá porque lo que hay que compartir en la videollamada es
+                  esa pestaña y no la pantalla: así ella ve la mancha y no lo que
+                  se escribe, y las dos pasan de lámina juntas. */}
+              </div>
+            </div>
+          )}
+              <div className="os-ror-instancia">
+                <div className="os-ror-toggle" role="group" aria-label="Instancia">
+                  {/* El nombre adentro del recuadro: es el título de lo que hay
+                      abajo y afuera quedaba como una etiqueta suelta. */}
+                  <span className="os-dato-rotulo os-ror-toggle-rotulo">Instancia</span>
+                  <button
+                    type="button"
+                    className={`os-ror-toggle-opcion${
+                      fase === 'entrevista' ? ' puesta' : ''
+                    }`}
+                    aria-pressed={fase === 'entrevista'}
+                    onClick={() => {
+                      setFase('entrevista');
+                      setUbicando(null);
+                      setPuestas([]);
+                      setDijo('');
+                    }}
+                  >
+                    <span className="os-ror-toggle-paso">1</span>
+                    Entrevista
+                  </button>
+                  <button
+                    type="button"
+                    className={`os-ror-toggle-opcion${fase === 'encuesta' ? ' puesta' : ''}`}
+                    aria-pressed={fase === 'encuesta'}
+                    onClick={() => {
+                      setFase('encuesta');
+                      setTomando('');
+                    }}
+                  >
+                    <span className="os-ror-toggle-paso">2</span>
+                    Encuesta
+                  </button>
+                </div>
+              </div>
+              {/* La pantalla del candidato, en una pestaña aparte. Se abre desde
+                  acá y no se busca a mano porque lo que hay que compartir en la
+                  videollamada es esa pestaña y no la pantalla: así él ve la
+                  mancha y no lo que ella escribe, y las dos pasan de lámina
+                  juntas. */}
+        </div>
+
+        <div className={`os-ror-mapas${fase === 'entrevista' ? ' os-ror-mapas-tomando' : ''}`}>
+          {fase === 'encuesta' &&
+            (MAPAS[lamina] ?? []).map((grupo, g) => (
             // La clave lleva la lámina: sin eso React reusa el mismo <img> y
             // solo le cambia la dirección, y el navegador sigue pintando la
             // mancha anterior hasta que termina de bajar la nueva. Los
@@ -654,7 +1217,11 @@ export default function Capturador({
             // de nuevo y en el peor caso queda vacío, que es lo que
             // corresponde: una mancha con las áreas de otra lámina se codifica
             // mal sin que nadie lo note.
-            <div key={`${lamina}-${g}`} className="os-ror-lienzo">
+            <div
+              key={`${lamina}-${g}`}
+              className="os-ror-lienzo"
+              style={estiloDelGiro(posicionDeLaQueUbico)}
+            >
               <img src={archivoDe(lamina)} alt={`Lámina ${lamina}`} />
               <svg viewBox="0 0 100 100" preserveAspectRatio="none">
                 {grupo.map((a) =>
@@ -727,10 +1294,103 @@ export default function Capturador({
               con la lámina delante. Nueve celdas en tres filas, siete de mapa y
               esta de dos. */}
           <div className="os-ror-campos">
-            <div className="os-ror-campo" hidden={Boolean(pendiente)}>
+            {fase === 'entrevista' && !pendiente && (
+              <Toma
+                lamina={lamina}
+                numero={numeroEnLaLamina}
+                texto={tomando}
+                onTexto={setTomando}
+                onGuardar={anotar}
+                guardando={anotando}
+                llena={laminaLlena}
+                tomadas={dichasDeLaLamina}
+                onCorregir={corregir}
+                onBorrar={borrarTomada}
+                borrando={borrando}
+                onBorrando={setBorrando}
+              />
+            )}
+
+            {/* Entrevistando, la barra de láminas va acá: pasar de lámina es lo
+                único que se hace además de escribir, y al pie de la pantalla
+                quedaba lejos del campo y de otro ancho que la tarjeta. */}
+            {/* Entrevistando, las diez con las dos flechas a los costados: la
+                barra de abajo lleva los dos botones anchos ("← Lámina anterior",
+                "Próxima lámina →") y adentro de la tarjeta no entraba, se salía
+                por los dos lados. Acá alcanza con las flechas. */}
+            {fase === 'entrevista' && (
+              <div className="os-ror-pasador">
+                {/* Las dos flechas juntas y después los números: pasar a la que
+                    sigue y volver a la anterior son lo que se hace en cada
+                    lámina, y el número suelto es para volver a una lejana. Con
+                    una flecha en cada punta había que cruzar los diez números
+                    para corregir un paso de más. */}
+                <button
+                  type="button"
+                  className="os-boton os-boton-fila os-ror-paso"
+                  disabled={guardando || !anterior}
+                  onClick={() => guardar(anterior)}
+                  aria-label="Lámina anterior"
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  className="os-boton os-boton-fila os-ror-paso"
+                  disabled={guardando || numeroDeLamina >= ORDEN.length}
+                  onClick={() => guardar()}
+                  aria-label="Lámina siguiente"
+                >
+                  →
+                </button>
+                {ORDEN.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={`os-boton os-boton-fila os-ror-romano${
+                      n === lamina ? ' os-boton-firme' : ''
+                    }`}
+                    disabled={guardando}
+                    onClick={() => guardar(n)}
+                    title={`Lámina ${n}`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            )}
+            {fase === 'entrevista' && aviso && <p className="os-form-ok">{aviso}</p>}
+
+            {fase === 'encuesta' && sinUbicar.length > 0 && !pendiente && (
+              <div className="os-ror-tomadas">
+                <span className="os-dato-rotulo">Sin ubicar en la lámina {lamina}</span>
+                {sinUbicar.map((v) => (
+                  <button
+                    key={v.id}
+                    type="button"
+                    className={`os-ror-tomada${ubicando === v.id ? ' puesta' : ''}`}
+                    onClick={() => {
+                      setUbicando(v.id);
+                      setDijo(v.verbalizacion ?? '');
+                      setPuestas([]);
+                    }}
+                  >
+                    <span className="os-ror-tomada-n">{v.n_respuesta}</span>
+                    <span className="os-ror-tomada-texto">{v.verbalizacion}</span>
+                    {v.posicion && v.posicion !== '^' && (
+                      <span className="os-ror-tomada-giro" title={NOMBRE_POSICION[v.posicion]}>
+                        {v.posicion}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="os-ror-campo" hidden={Boolean(pendiente) || fase === 'entrevista'}>
               <div className="os-ror-campo-alto">
                 <span className="os-dato-rotulo">
-                  Respuesta
+                  {ubicando ? 'Dónde lo vio' : 'Respuesta'}
                   {puestas.length > 0 ? ` · se busca en ${puestas.join(' + ')}` : ''}
                 </span>
                 {/* Soltar el área va acá, al lado de lo que dice cuál está
@@ -803,7 +1463,7 @@ export default function Capturador({
                 mapas al lado. Con una respuesta esperando su calidad no se
                 muestra: la palabra ya está elegida y lo único que queda es el
                 DQ. */}
-            <div className="os-ror-opciones" hidden={Boolean(pendiente)}>
+            <div className="os-ror-opciones" hidden={Boolean(pendiente) || fase === 'entrevista'}>
               {/* El aviso va fuera de las columnas: adentro se parte en dos
                   renglones al ancho de una columna. */}
               {opciones.length === 0 && (
@@ -836,7 +1496,7 @@ export default function Capturador({
               </div>
             </div>
 
-            {!pendiente && (puestas.length > 0 || dijo.trim()) && (
+            {!pendiente && fase === 'encuesta' && (puestas.length > 0 || dijo.trim()) && (
               <button type="button" className="os-boton" onClick={() => setPendiente({ h: null })}>
                 No está en la tabla: cargar igual
                 {puestas.length > 0 ? ` en ${puestas.join(' + ')}` : ''}
@@ -848,54 +1508,23 @@ export default function Capturador({
       </section>
 
       {/* -------------------------------------------------------- lo capturado */}
-      <section className="os-panel os-ror-capturadas">
+      {/* Entrevistando no hay nada que mostrar acá: la codificación está toda
+          vacía y la barra de láminas se dibuja arriba, adentro de la tarjeta. */}
+      <section className="os-panel os-ror-capturadas" hidden={fase === 'entrevista'}>
         {/* El protocolo se toma en orden, y aun así hay que poder volver: una
             respuesta que la persona agrega al final es de la lámina que ya
             pasó. Por eso las diez están en el pie, con la actual marcada, y no
             solo el botón de seguir. Las que todavía no tienen su mapa quedan
             apagadas. Se puede pasar sin haber capturado nada: no todas las
             láminas dan respuestas. */}
-        <div className="os-ror-pie">
-          <button
-            type="button"
-            className="os-boton os-boton-firme"
-            disabled={guardando || !anterior}
-            onClick={() => guardar(anterior)}
-          >
-            ← Lámina anterior
-          </button>
-
-          <div className="os-ror-laminas">
-            {ORDEN.map((n) => (
-              <button
-                key={n}
-                type="button"
-                className={`os-boton os-boton-fila${n === lamina ? ' os-boton-firme' : ''}`}
-                disabled={guardando || !CARGADAS.includes(n)}
-                onClick={() => guardar(n)}
-                title={CARGADAS.includes(n) ? `Lámina ${n}` : `La lámina ${n} todavía no está cargada`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            className="os-boton os-boton-firme"
-            disabled={guardando}
-            onClick={() => guardar()}
-          >
-            {guardando ? 'Pasando…' : 'Próxima lámina →'}
-          </button>
-        </div>
-        {aviso && <p className="os-form-ok">{aviso}</p>}
+        {fase === 'encuesta' && barraDeLaminas}
+        {fase === 'encuesta' && aviso && <p className="os-form-ok">{aviso}</p>}
 
         {/* Los rótulos son los de la tabla de codificación de la ficha, con su
             mismo nombre: el área marcada en el mapa es el número de localización
             de allá, y llamarla "áreas" acá obligaba a traducir al pasar de una
             pantalla a la otra. */}
-        {(respuestas.length > 0 || suyas.length > 0) && (
+        {fase === 'encuesta' && (respuestas.length > 0 || suyas.length > 0) && (
           <div className="os-ror-fila-datos os-ror-titulos">
             <span>N° rta</span>
             <span>Respuesta</span>
@@ -913,7 +1542,10 @@ export default function Capturador({
 
         {/* Lo que ya está en la ficha de esta lámina: apagado y sin controles,
             porque se corrige allá. Va arriba, que es donde cae por número. */}
-        {suyas.map((r) => (
+        {/* La tabla de codificación es de la encuesta: en la entrevista lo que
+            hay que ver es lo que la persona va diciendo, y estas columnas
+            (locación, FQ, contenidos, Z) todavía están todas vacías. */}
+        {fase === 'encuesta' && suyas.map((r) => (
           <article key={`ficha-${r.n_respuesta}`} className="os-ror-fila os-ror-fila-ficha">
             <div className="os-ror-fila-datos">
               <span className="os-ror-n">{r.n_respuesta ?? '—'}</span>
@@ -960,7 +1592,7 @@ export default function Capturador({
           </article>
         ))}
 
-        {respuestas.map((r) => {
+        {fase === 'encuesta' && respuestas.map((r) => {
           const v = zDe(r);
           const tieneEspacio = r.areas.some(esEspacio);
           const tieneTinta = r.areas.some((a) => !esEspacio(a));
@@ -987,27 +1619,30 @@ export default function Capturador({
                   // hueco vacío se lee como si faltara también la localización.
                   vacio={`${familiaDe(r.areas[0])}…`}
                 />
+                {/* La Tabla A propone la calidad formal, y se puede cambiar:
+                    la misma respuesta dicha de dos maneras no siempre vale
+                    igual, y esa lectura es de la evaluadora. Fuera de tabla la
+                    tabla no propone nada y las opciones son las dos que puede
+                    tener un área que no está en ella. */}
                 <span className="os-ror-dato">
-                  {r.fq ? (
-                    <span className="os-ror-fq" style={{ background: tonoDe(FQ, r.fq) }}>
-                      {r.fq}
-                    </span>
-                  ) : (
-                    '—'
-                  )}
+                  <Simple
+                    valor={r.fq}
+                    opciones={r.areas.includes(FUERA_DE_TABLA) ? FQ_FUERA_DE_TABLA : FQ}
+                    onCambio={(v) => cambiar(r.n, { fq: v })}
+                    etiqueta="Calidad formal"
+                    buscable={false}
+                  />
                 </span>
+                {/* Lo que propone el diccionario de palabras entra acá y
+                    se corrige: una palabra suelta no dice el contenido, que
+                    depende de a qué pertenece lo que la persona vio. */}
                 <span className="os-ror-dato os-ror-contenidos">
-                  {r.contenidos.length === 0
-                    ? '—'
-                    : r.contenidos.map((c) => (
-                        <span
-                          key={c}
-                          className="os-ror-etiqueta"
-                          style={{ background: tonoDe(CONTENIDOS, c) }}
-                        >
-                          {c}
-                        </span>
-                      ))}
+                  <Multiple
+                    valores={r.contenidos}
+                    opciones={CONTENIDOS}
+                    onCambio={(v) => cambiar(r.n, { contenidos: v })}
+                    etiqueta="Contenidos"
+                  />
                 </span>
                 <span className="os-ror-dato">{r.popular ? 'P' : ''}</span>
                 <span className="os-ror-dato os-ror-z">
@@ -1113,7 +1748,7 @@ export default function Capturador({
           );
         })}
 
-        {respuestas.some((r) => !r.localizacion) && (
+        {fase === 'encuesta' && respuestas.some((r) => !r.localizacion) && (
           <ul className="os-ror-criterios">
             {CRITERIO_DQ.map(([simbolo, criterio]) => (
               <li key={simbolo}>
@@ -1123,6 +1758,7 @@ export default function Capturador({
           </ul>
         )}
       </section>
+
     </div>
   );
 }

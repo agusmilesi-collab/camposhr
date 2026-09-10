@@ -126,6 +126,12 @@ export type Mancha = {
   agc: boolean | null;
   /** Síndrome del ladrón, que se tilda por respuesta y es propio del Zulliger. */
   sl: boolean | null;
+  /** Lo que dijo el candidato, textual, tomado en la primera instancia. */
+  verbalizacion: string | null;
+  /** Cómo sostuvo la lámina al darla: '^', 'v', '<' o '>'. */
+  posicion: string | null;
+  /** Lo que anotó la evaluadora sobre esta respuesta. */
+  observacion: string | null;
 };
 
 export type Sumario = Record<string, unknown> & { evaluacion_id: string };

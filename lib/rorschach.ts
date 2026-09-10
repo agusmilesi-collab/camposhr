@@ -119,6 +119,23 @@ export const FQ: Opcion[] = [
   { v: 'none', c: 'cyanLight2' },
 ];
 
+/**
+ * Cómo sostuvo la lámina el candidato al dar esta respuesta.
+ *
+ * Va por respuesta y no por lámina: puede darla derecha y girarla para la que
+ * sigue. Importa porque la locación se marca sobre la lámina en la posición en
+ * que él la vio, y sobre la imagen derecha caería en otra área.
+ */
+export const POSICION: Opcion[] = [
+  { v: '^', c: 'grayLight2' },
+  { v: 'v', c: 'blueLight2' },
+  { v: '<', c: 'cyanLight2' },
+  { v: '>', c: 'tealLight2' },
+];
+
+/** Cuántos grados hay que girar la lámina para verla como la vio el candidato. */
+export const GIRO: Record<string, number> = { '^': 0, v: 180, '<': 270, '>': 90 };
+
 export const CONTENIDOS: Opcion[] = [
   { v: 'A', c: 'blueLight2' },
   { v: 'H', c: 'cyanLight2' },
