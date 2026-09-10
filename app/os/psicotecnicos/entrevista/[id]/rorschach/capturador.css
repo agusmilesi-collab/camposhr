@@ -436,6 +436,19 @@
   padding: 10px 0;
 }
 
+/* Lo que ya está en la ficha se lee más apagado que lo que se está
+   capturando: se muestra para no tener que abrir la ficha al lado, pero lo que
+   se está haciendo ahora es lo de abajo. */
+.os-ror-fila-ficha {
+  opacity: 0.6;
+}
+
+.os-ror-fila-ficha .os-ror-dijo {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--os-suave);
+}
+
 /*
  * Las nueve columnas de una respuesta.
  *
@@ -679,18 +692,30 @@
    desplazarse hasta abajo para cambiar de lámina. Los números van juntos y
    centrados, que es como se lee una serie. */
 .os-ror-pie {
-  display: flex;
+  display: grid;
+  /* Tres columnas y no `space-between`: los botones de los lados cambian de
+     texto al guardar ("Pasando…"), y repartiendo el sobrante los números del
+     medio se corrían de lugar en cada cambio de lámina. */
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   margin-bottom: 14px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--os-linea);
 }
 
+/* Los dos de los lados miden lo que pide su texto: estirados a la columna, el
+   de volver quedaba del triple que el de seguir. */
+.os-ror-pie > :first-child {
+  justify-self: start;
+}
+
+.os-ror-pie > :last-child {
+  justify-self: end;
+}
+
 .os-ror-laminas {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   gap: 4px;
 }

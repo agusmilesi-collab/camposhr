@@ -37,6 +37,14 @@ const AGRUPADAS_POR_CONCEPTO = new Set([
   // D2 pone las orejas pequeñas antes que las grandes: son la misma entrada
   // partida en dos, y el libro las deja juntas en ese orden.
   'I·D2·animal específico con orejas pequeñas, tal como gato, vaca, algunas razas de perros',
+  // Las tres formas de "figuras humanas" van juntas y de la más pegada a la
+  // menos: con D5 de brazos, con D7 formando parte, y con D7 aparte. Ordenadas
+  // por su texto quedarían intercaladas y se leerían como tres entradas
+  // distintas en vez de las tres variantes de una.
+  'III·D1·figuras humanas, dos con D7 o Dd31 formando parte de la figura humana',
+  // "muñeco/a" antes que "muñeco de caja sorpresa": el libro ordena por la
+  // palabra y deja la sola antes que la compuesta.
+  'III·D9·muñeco/a',
 ]);
 
 let mal = 0;

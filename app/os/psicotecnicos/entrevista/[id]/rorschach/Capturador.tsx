@@ -27,8 +27,7 @@
  * la ficha queda vacía y se carga a mano, como siempre.
  */
 
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { AREAS, type Parte } from '@/lib/rorschach-areas';
 import { buscar, entradasDe, esPopular, familiaDe, plano, type Hallazgo } from '@/lib/rorschach-tabla-a';
 import { contenidoSugerido, fqDeLaFicha, localizacionesDe } from '@/lib/rorschach-sugerencias';
@@ -121,6 +120,18 @@ const MAPAS: Record<string, string[][]> = {
     ['Dd23', 'Dd24', 'Dd26', 'Dd27'],
     ['Dd25', 'Dd28', 'DdS29', 'DdS30'],
   ],
+  // El reparto del cuadernillo para la III, recuadro por recuadro: cada
+  // locación va en el mismo mapa en el que la agrupa el libro. Ese reparto no
+  // es decorativo, agrupa lo que no se pisa entre sí.
+  III: [
+    ['W', FUERA_DE_TABLA],
+    ['D1'],
+    ['D9', 'Dd27', 'Dd28', 'Dd21', 'D8', 'Dd33'],
+    ['Dd35', 'Dd25', 'Dd29', 'Dd26'],
+    ['D2', 'Dd34', 'Dd32', 'D3', 'Dd31', 'D5'],
+    ['Dd22', 'Dd30', 'D7'],
+    ['DdS24', 'DdS23'],
+  ],
 };
 
 /**
@@ -182,6 +193,33 @@ const TAGS: Record<string, Record<string, [number, number]>> = {
     Dd31: [0.823, 0.307],
     Dd99: [0.865, 0.9],
   },
+  // Marcados por Agustín el 10/9/2026 sobre la hoja de control de la III.
+  III: {
+    W: [0.5, 0.09],
+    D1: [0.65, 0.112],
+    D2: [0.369, 0.112],
+    D3: [0.504, 0.211],
+    D5: [0.779, 0.782],
+    D7: [0.498, 0.867],
+    D8: [0.44, 0.867],
+    D9: [0.471, 0.145],
+    Dd21: [0.808, 0.381],
+    Dd22: [0.4, 0.189],
+    DdS23: [0.796, 0.708],
+    DdS24: [0.492, 0.09],
+    Dd25: [0.591, 0.108],
+    Dd26: [0.776, 0.712],
+    Dd27: [0.6, 0.189],
+    Dd28: [0.44, 0.223],
+    Dd29: [0.56, 0.223],
+    Dd30: [0.66, 0.223],
+    Dd31: [0.6, 0.863],
+    Dd32: [0.638, 0.101],
+    Dd33: [0.87, 0.763],
+    Dd34: [0.36, 0.112],
+    Dd35: [0.26, 0.112],
+    Dd99: [0.88, 0.93],
+  },
 };
 
 /** La lámina es más ancha que alta, y las distancias hay que medirlas parejas. */
@@ -238,6 +276,25 @@ function promedio(partes: Parte[], eje: 0 | 1): number {
   return puntos.length ? puntos.reduce((t, q) => t + q[eje], 0) / puntos.length : 0.5;
 }
 
+/**
+ * Una respuesta que ya está en la ficha.
+ *
+ * Se muestran arriba de las que se están capturando, apagadas: la evaluadora
+ * tiene que ver qué hay de esta lámina sin abrir la ficha en otra pestaña, y
+ * el número correlativo solo se entiende viendo lo anterior. No se editan acá:
+ * ya son de la ficha, que es donde se corrigen.
+ */
+export type YaEnLaFicha = {
+  n_respuesta: number | null;
+  lamina: string | null;
+  localizacion: string | null;
+  n_localizacion: string | null;
+  fq: string | null;
+  contenidos: string[] | null;
+  popular: boolean | null;
+  z: number | null;
+};
+
 type Respuesta = {
   n: number;
   dijo: string;
@@ -269,18 +326,18 @@ function camino(parte: Parte): string {
 export default function Capturador({
   evaluacionId,
   nombre,
-  lamina,
+  lamina: primera,
   desde,
-  repetidas,
+  yaEstan,
 }: {
   evaluacionId: string;
   nombre: string;
-  /** Cuál se está codificando: la pantalla es la misma para las diez. */
+  /** Con cuál abre: después la pantalla la lleva por su cuenta. */
   lamina: string;
   /** Desde qué número seguir: el protocolo se numera corrido, no por lámina. */
   desde: number;
-  /** Cuántas respuestas de la lámina I ya están cargadas en la ficha. */
-  repetidas: number;
+  /** Lo que ya está en la ficha, de todas las láminas. */
+  yaEstan: YaEnLaFicha[];
 }) {
   const [puestas, setPuestas] = useState<string[]>([]);
   const [encima, setEncima] = useState<string | null>(null);
@@ -313,10 +370,41 @@ export default function Capturador({
    * del OS antes de un borrado.
    */
   const [aBorrar, setABorrar] = useState<number | null>(null);
-  const router = useRouter();
+
+  /**
+   * La lámina la lleva la pantalla, no el servidor.
+   *
+   * Todo lo que cambia al pasar de una a otra (los mapas, las áreas, la Tabla
+   * A) es del cliente: volver al servidor por cada cambio costaba medio segundo
+   * de esperar una página que ya se tenía. La dirección se acomoda igual, sin
+   * navegar, para que recargar mantenga la lámina.
+   */
+  const [lamina, setLamina] = useState(primera);
+  /** Lo que hay en la ficha, más lo que se va pasando sin recargar. */
+  const [enLaFicha, setEnLaFicha] = useState(yaEstan);
+  /** Desde qué número numerar, contando lo que se pasó sin recargar. */
+  const [proximo, setProximo] = useState(desde);
+
   // El archivo de la lámina va por número y la codificación por su romano.
   const numeroDeLamina = ORDEN.indexOf(lamina) + 1;
   const anterior = numeroDeLamina > 1 ? ORDEN[numeroDeLamina - 2] : null;
+  const suyas = enLaFicha.filter((r) => r.lamina === lamina);
+  const archivoDe = (n: string) => `/api/os/lamina/rorschach/${ORDEN.indexOf(n) + 1}`;
+
+  /**
+   * Las láminas vecinas se bajan mientras se codifica esta.
+   *
+   * Los contornos son un dibujo y aparecen al instante; la lámina es una
+   * imagen de dos megas que sale del bucket, así que al cambiar se veían un
+   * segundo las áreas nuevas sobre la mancha anterior. Bajarla antes hace que
+   * el cambio sea inmediato, y cuesta nada: se hace mientras la evaluadora
+   * escribe.
+   */
+  useEffect(() => {
+    for (const n of [siguienteDe(lamina), anterior]) {
+      if (n && CARGADAS.includes(n)) new window.Image().src = archivoDe(n);
+    }
+  }, [lamina, anterior]);
   const [guardando, setGuardando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -389,7 +477,7 @@ export default function Capturador({
     setRespuestas((rs) => [
       ...rs,
       {
-        n: desde + rs.length,
+        n: proximo + rs.length,
         // Elegido un renglón, la respuesta es la de la tabla y no lo que quedó
         // escrito: con un solo campo, lo escrito es lo que se tipeó para
         // encontrarla, y apretar "escarabajo" después de escribir "esca"
@@ -429,7 +517,7 @@ export default function Capturador({
    */
   function borrar(n: number) {
     setRespuestas((rs) =>
-      rs.filter((r) => r.n !== n).map((r, i) => ({ ...r, n: desde + i }))
+      rs.filter((r) => r.n !== n).map((r, i) => ({ ...r, n: proximo + i }))
     );
   }
 
@@ -491,18 +579,48 @@ export default function Capturador({
       setAviso(`Quedaron ${mal} respuestas sin pasar. Miralo antes de seguir.`);
       return;
     }
+    // Lo que se acaba de pasar se suma a lo que ya estaba, sin volver a
+    // preguntarle al servidor: pasa a verse en la lista de arriba y la
+    // numeración sigue de ahí.
+    const cuantas = respuestas.length;
+    setEnLaFicha((f) => [
+      ...f,
+      ...respuestas.map((r) => ({
+        n_respuesta: r.n,
+        lamina,
+        localizacion: r.localizacion,
+        n_localizacion: numeroDe(r.areas),
+        fq: r.fq,
+        contenidos: r.contenidos,
+        popular: r.popular,
+        z: zDe(r).z?.valor ?? null,
+      })),
+    ]);
+    setProximo((n) => n + cuantas);
+    setRespuestas([]);
+
     const sigue = destino;
     if (sigue && CARGADAS.includes(sigue)) {
-      // Lo capturado ya está en la ficha, así que la pantalla puede empezar de
-      // cero en la lámina que sigue. Va por la dirección y no por estado: el
-      // número de respuesta desde el que sigue numerando lo tiene que volver a
-      // contar el servidor.
-      router.push(`?lamina=${sigue}`);
-      router.refresh();
+      // Esperar a que la imagen esté: si ya se bajó, esto no demora nada, y si
+      // no, es preferible medio segundo en el botón que la lámina anterior con
+      // los contornos de la nueva encima.
+      await new Promise<void>((listo) => {
+        const img = new window.Image();
+        img.onload = () => listo();
+        img.onerror = () => listo();
+        img.src = archivoDe(sigue);
+      });
+      setLamina(sigue);
+      setAviso(null);
+      // La dirección se acomoda sin navegar: recargar tiene que abrir la
+      // lámina en la que se estaba, y volver a pedirle la página al servidor
+      // costaba medio segundo por cada cambio.
+      window.history.replaceState(null, '', `?lamina=${sigue}`);
+      window.scrollTo({ top: 0 });
       return;
     }
     setAviso(
-      `Se pasaron ${respuestas.length} respuestas a la ficha de ${nombre}.` +
+      `Se pasaron ${cuantas} respuestas a la ficha de ${nombre}.` +
         (sigue
           ? ` La lámina ${sigue} todavía no está cargada en el sistema: se sigue codificando en la ficha.`
           : '')
@@ -511,13 +629,11 @@ export default function Capturador({
 
   return (
     <div className="os-ror">
-      {repetidas > 0 && (
-        <p className="os-ror-duda">
-          Esta evaluación ya tiene {repetidas} respuesta{repetidas === 1 ? '' : 's'} de la
-          lámina I cargada{repetidas === 1 ? '' : 's'}. Lo que captures acá se suma, no las
-          reemplaza: mirá la ficha antes de pasarlas.
-        </p>
-      )}
+      <div className="os-encabezado">
+        <h1>Rorschach · Lámina {lamina}</h1>
+        <p>{nombre} · se codifica en la encuesta, cuando ella dice dónde vio cada cosa</p>
+      </div>
+
 
       {/* ------------------------------------------------------------ el mapa */}
       <section className="os-panel os-ror-mapa">
@@ -529,8 +645,17 @@ export default function Capturador({
 
         <div className="os-ror-mapas">
           {(MAPAS[lamina] ?? []).map((grupo, g) => (
-            <div key={g} className="os-ror-lienzo">
-              <img src={`/api/os/lamina/rorschach/${numeroDeLamina}`} alt={`Lámina ${lamina}`} />
+            // La clave lleva la lámina: sin eso React reusa el mismo <img> y
+            // solo le cambia la dirección, y el navegador sigue pintando la
+            // mancha anterior hasta que termina de bajar la nueva. Los
+            // contornos, que son SVG, cambian en el acto. Se veía la mancha de
+            // una lámina con las áreas de otra, y quedaba así para siempre si
+            // la imagen no llegaba a bajar. Con la clave el recuadro se monta
+            // de nuevo y en el peor caso queda vacío, que es lo que
+            // corresponde: una mancha con las áreas de otra lámina se codifica
+            // mal sin que nadie lo note.
+            <div key={`${lamina}-${g}`} className="os-ror-lienzo">
+              <img src={archivoDe(lamina)} alt={`Lámina ${lamina}`} />
               <svg viewBox="0 0 100 100" preserveAspectRatio="none">
                 {grupo.map((a) =>
                   (AREAS[lamina]?.[a] ?? []).map((parte, i) => (
@@ -733,7 +858,7 @@ export default function Capturador({
         <div className="os-ror-pie">
           <button
             type="button"
-            className="os-boton"
+            className="os-boton os-boton-firme"
             disabled={guardando || !anterior}
             onClick={() => guardar(anterior)}
           >
@@ -770,7 +895,7 @@ export default function Capturador({
             mismo nombre: el área marcada en el mapa es el número de localización
             de allá, y llamarla "áreas" acá obligaba a traducir al pasar de una
             pantalla a la otra. */}
-        {respuestas.length > 0 && (
+        {(respuestas.length > 0 || suyas.length > 0) && (
           <div className="os-ror-fila-datos os-ror-titulos">
             <span>N° rta</span>
             <span>Respuesta</span>
@@ -785,6 +910,55 @@ export default function Capturador({
             <span>Nota</span>
           </div>
         )}
+
+        {/* Lo que ya está en la ficha de esta lámina: apagado y sin controles,
+            porque se corrige allá. Va arriba, que es donde cae por número. */}
+        {suyas.map((r) => (
+          <article key={`ficha-${r.n_respuesta}`} className="os-ror-fila os-ror-fila-ficha">
+            <div className="os-ror-fila-datos">
+              <span className="os-ror-n">{r.n_respuesta ?? '—'}</span>
+              <span className="os-ror-dijo">En la ficha</span>
+              <span>{r.n_localizacion ?? '—'}</span>
+              <span>
+                {r.localizacion ? (
+                  <span
+                    className="os-ror-etiqueta"
+                    style={{ background: tonoDe(LOCALIZACION, r.localizacion) }}
+                  >
+                    {r.localizacion}
+                  </span>
+                ) : (
+                  '—'
+                )}
+              </span>
+              <span>
+                {r.fq ? (
+                  <span className="os-ror-fq" style={{ background: tonoDe(FQ, r.fq) }}>
+                    {r.fq}
+                  </span>
+                ) : (
+                  '—'
+                )}
+              </span>
+              <span className="os-ror-contenidos">
+                {(r.contenidos ?? []).length === 0
+                  ? '—'
+                  : (r.contenidos ?? []).map((c) => (
+                      <span
+                        key={c}
+                        className="os-ror-etiqueta"
+                        style={{ background: tonoDe(CONTENIDOS, c) }}
+                      >
+                        {c}
+                      </span>
+                    ))}
+              </span>
+              <span>{r.popular ? 'P' : ''}</span>
+              <span>{r.z ?? '—'}</span>
+              <span />
+            </div>
+          </article>
+        ))}
 
         {respuestas.map((r) => {
           const v = zDe(r);
