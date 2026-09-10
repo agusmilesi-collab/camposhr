@@ -29,13 +29,18 @@ export async function GET(req: Request, { params }: { params: { test: string; n:
   const lamina = await leerLamina(params.test, Number(params.n));
   if (!lamina) return new NextResponse('No existe esa lámina.', { status: 404 });
 
-  // El navegador guarda la imagen y pregunta antes de usarla. Volver a la
-  // lámina 3 es el caso normal y no debería bajarla de nuevo, pero el número
-  // de una lámina puede pasar a ser otra imagen: sin revalidar, una pantalla
-  // vieja sigue mostrando la que ya no está.
+  // El navegador la guarda cinco minutos y después pregunta. Con `no-cache`
+  // preguntaba siempre, y esa vuelta pasa por el bucket antes de poder
+  // contestar 304: al cambiar de lámina se veía un segundo la mancha anterior
+  // con los contornos de la nueva encima. Cinco minutos alcanzan para
+  // administrar el test de corrido, y son el tiempo que una pantalla abierta
+  // podría seguir mostrando una lámina que se acaba de reemplazar.
+  //
+  // Privada, no compartida: la sirve la sesión del OS y no puede quedar en una
+  // caché intermedia.
   const cabeceras: Record<string, string> = {
     'Content-Type': lamina.tipo,
-    'Cache-Control': 'private, no-cache',
+    'Cache-Control': 'private, max-age=300, must-revalidate',
   };
   if (lamina.etag) {
     cabeceras.ETag = lamina.etag;

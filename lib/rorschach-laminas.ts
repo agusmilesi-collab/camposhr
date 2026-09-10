@@ -14,7 +14,7 @@
 
 export const ORDEN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
-export const CARGADAS = ['I', 'II'];
+export const CARGADAS = ['I', 'II', 'III'];
 
 /** La que sigue en el protocolo, que se toma en orden y no se vuelve. */
 export function siguienteDe(lamina: string): string | null {

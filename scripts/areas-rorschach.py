@@ -109,6 +109,31 @@ ZONAS = {
         'Dd28':  {'zonas': [(50, 64, 70, 87)],   'espejo': False, 'tinta': 'rojizo'},
         'Dd31':  {'zonas': [(91, 40, 100, 58)],  'espejo': False, 'tinta': 'gris'},
     },
+    'III': {
+        # Zonas marcadas por Agustín el 10/9/2026 sobre la hoja de control. La
+        # lámina está fragmentada y casi todas las áreas van de un lado solo:
+        # dibujadas con espejo se confundirían con W, que es la mancha entera.
+        'D1':    {'zonas': [(10, 18, 90, 100)],  'espejo': False, 'tinta': 'gris'},
+        'D2':    {'zonas': [(-1, -6, 15, 34)],   'espejo': False, 'tinta': 'rojo'},
+        'D3':    {'zonas': [(37, 37, 63, 58)],   'espejo': False, 'tinta': 'rojo'},
+        'D5':    {'zonas': [(58, 50, 82, 88)],   'espejo': False, 'tinta': 'gris'},
+        'D7':    {'zonas': [(38, 56, 62, 82)],   'espejo': False, 'tinta': 'gris'},
+        'D8':    {'zonas': [(40, 68, 62, 96)],   'espejo': False, 'tinta': 'gris'},
+        'D9':    {'zonas': [(2, 10, 48, 101)],   'espejo': False, 'tinta': 'gris'},
+        'Dd21':  {'zonas': [(78, 36, 98, 60)],   'espejo': False, 'tinta': 'gris'},
+        'Dd22':  {'zonas': [(22, 22, 50, 58)],   'espejo': False, 'tinta': 'gris'},
+        'Dd25':  {'zonas': [(90, -4, 99, 21)],   'espejo': False, 'tinta': 'rojo'},
+        'Dd26':  {'zonas': [(73, 67, 87, 76)],   'espejo': False, 'tinta': 'gris'},
+        'Dd27':  {'zonas': [(60, 30, 76, 50)],   'espejo': False, 'tinta': 'gris'},
+        'Dd28':  {'zonas': [(43, 36, 57, 52)],   'espejo': False},
+        'Dd29':  {'zonas': [(52, 36, 62, 57)],   'espejo': False, 'tinta': 'rojo'},
+        'Dd30':  {'zonas': [(54, 42, 74, 62)],   'espejo': False, 'tinta': 'gris'},
+        'Dd31':  {'zonas': [(50, 60, 68, 82)],   'espejo': False, 'tinta': 'gris'},
+        'Dd32':  {'zonas': [(58, 14, 74, 38)],   'espejo': False, 'tinta': 'gris'},
+        'Dd33':  {'zonas': [(62, 82, 90, 101)],  'espejo': False, 'tinta': 'gris'},
+        'Dd34':  {'zonas': [(18, 12, 46, 52)],   'espejo': False, 'tinta': 'gris'},
+        'Dd35':  {'zonas': [(26, 15, 74, 100)],  'espejo': False, 'tinta': 'gris'},
+    },
 }
 
 # Los espacios blancos cerrados de cada lámina, y cómo se reparten.
@@ -123,14 +148,17 @@ ZONAS = {
 HUECOS = {
     'I': {'DdS30': 'arriba', 'DdS29': 'abajo', 'DdS26': 'todos'},
     'II': {'DS5': 'todos'},
+    'III': {},
 }
 
 # Los espacios que no cierran: se abren hacia afuera y la detección de huecos no
 # los ve. Salen como el blanco que queda entre la mancha y su casco convexo,
-# recortado a la zona declarada.
+# recortado a la zona declarada, y de ahí se toma el pedazo más grande: son el
+# espacio contenido y no las esquirlas de blanco que quedan alrededor.
 ABIERTOS = {
     'I': {'DdS32': (29, 1, 69, 27)},
     'II': {'DdS29': (43, 35, 57, 45), 'DdS30': (29, 20, 48, 34)},
+    'III': {'DdS23': (56, 50, 80, 84), 'DdS24': (33, 12, 67, 64)},
 }
 
 # Las salpicaduras: los pedazos de tinta separados de la mancha, y en qué zona
@@ -180,8 +208,11 @@ def contornos(mascara, minimo=150):
 
 # En qué número de archivo vive cada lámina, y cuánto tiene que medir un pedazo
 # de tinta para contar como parte de la mancha y no como salpicadura.
-NUMERO = {'I': 1, 'II': 2}
+NUMERO = {'I': 1, 'II': 2, 'III': 3}
 MINIMO_PIEZA = 2000
+# La III está fragmentada: sus piezas rojas rondan los diez mil píxeles y las
+# salpicaduras, los cientos.
+MINIMO_POR_LAMINA = {'III': 1500}
 
 
 def main(lamina='I'):
@@ -208,7 +239,8 @@ def main(lamina='I'):
     # componente principal sola quedaba afuera de W.
     lab, n = ndimage.label(tinta)
     tam = ndimage.sum(tinta, lab, range(1, n + 1))
-    piezas = [i + 1 for i in range(n) if tam[i] > MINIMO_PIEZA]
+    minimo = MINIMO_POR_LAMINA.get(lamina, MINIMO_PIEZA)
+    piezas = [i + 1 for i in range(n) if tam[i] > minimo]
     mancha = np.isin(lab, piezas)
 
     ys, xs = np.where(mancha)
@@ -278,8 +310,12 @@ def main(lamina='I'):
     # casco es lo que "tapa" la entrante de arriba y la vuelve medible.
     casco = morphology.binary_closing(morphology.convex_hull_image(mancha))
     for nombre, zona in ABIERTOS.get(lamina, {}).items():
-        m = zona_a_mascara(zona) | zona_a_mascara(zona, reflejar=True)
-        areas[nombre] = m & casco & ~tinta
+        m = (zona_a_mascara(zona) | zona_a_mascara(zona, reflejar=True)) & casco & ~tinta
+        el, en = ndimage.label(m)
+        if en > 1:
+            et = ndimage.sum(m, el, range(1, en + 1))
+            m = el == int(np.argmax(et)) + 1
+        areas[nombre] = m
 
     # --- las salpicaduras
     salpica = SALPICADURAS.get(lamina)
@@ -359,6 +395,9 @@ ORDEN = {
           'Dd33', 'Dd34', 'Dd35'],
     'II': ['W', 'D1', 'D2', 'D3', 'D4', 'DS5', 'D6', 'Dd21', 'Dd22', 'Dd23',
            'Dd24', 'Dd25', 'Dd26', 'Dd27', 'Dd28', 'DdS29', 'DdS30', 'Dd31'],
+    'III': ['W', 'D1', 'D2', 'D3', 'D5', 'D7', 'D8', 'D9', 'Dd21', 'Dd22',
+            'DdS23', 'DdS24', 'Dd25', 'Dd26', 'Dd27', 'Dd28', 'Dd29', 'Dd30',
+            'Dd31', 'Dd32', 'Dd33', 'Dd34', 'Dd35'],
 }
 
 

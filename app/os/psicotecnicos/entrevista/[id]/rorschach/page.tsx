@@ -4,7 +4,7 @@ import Shell from '../../../../Shell';
 import { entrevistaDe } from '@/lib/entrevista';
 import { quienSoy } from '@/lib/identidad';
 import { select } from '@/lib/supabase';
-import Capturador from './Capturador';
+import Capturador, { type YaEnLaFicha } from './Capturador';
 import { CARGADAS } from '@/lib/rorschach-laminas';
 import './capturador.css';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
@@ -30,9 +30,9 @@ export default async function CodificarRorschach({
   const e = await entrevistaDe(params.id);
   if (!e) notFound();
 
-  // La lámina viene en la dirección, así el botón de pasar a la siguiente no
-  // necesita más que un enlace, y volver a una ya codificada es cambiar el
-  // número. Una que no está cargada no tiene mapa que mostrar.
+  // La lámina viene en la dirección para que recargar la mantenga, pero
+  // cambiarla no vuelve al servidor: la pantalla la lleva como estado. Una que
+  // no está cargada no tiene mapa que mostrar.
   const lamina = CARGADAS.includes(searchParams.lamina ?? '')
     ? (searchParams.lamina as string)
     : 'I';
@@ -41,12 +41,15 @@ export default async function CodificarRorschach({
   // lámina, así que hay que mirar lo que ya está cargado antes de numerar. Sin
   // esto, capturar sobre una evaluación que ya tenía respuestas escribía otra
   // con el mismo número.
-  const yaEstan = await select<{ n_respuesta: number | null; lamina: string | null }>(
+  // Se traen enteras y de todas las láminas: la pantalla las muestra arriba de
+  // lo que se está capturando, así se ve lo que ya está sin abrir la ficha, y
+  // cambiar de lámina no vuelve a preguntar.
+  const yaEstan = await select<YaEnLaFicha>(
     'rorschach_respuestas',
-    `select=n_respuesta,lamina&evaluacion_id=eq.${params.id}`
+    `select=n_respuesta,lamina,localizacion,n_localizacion,fq,contenidos,popular,z` +
+      `&evaluacion_id=eq.${params.id}&order=n_respuesta`
   );
   const desde = Math.max(0, ...yaEstan.map((r) => r.n_respuesta ?? 0)) + 1;
-  const repetidas = yaEstan.filter((r) => r.lamina === lamina).length;
 
   const cuentas = await cuentasDeLaBarra();
 
@@ -56,19 +59,14 @@ export default async function CodificarRorschach({
         ← Volver a la entrevista
       </Link>
 
-      <div className="os-encabezado">
-        <h1>Rorschach · Lámina {lamina}</h1>
-        <p>
-          {e.nombre} · se codifica en la encuesta, cuando ella dice dónde vio cada cosa
-        </p>
-      </div>
-
+      {/* El título nombra la lámina, así que lo dibuja el capturador: cambiar
+          de lámina no vuelve al servidor. */}
       <Capturador
         evaluacionId={params.id}
         nombre={e.nombre}
         lamina={lamina}
         desde={desde}
-        repetidas={repetidas}
+        yaEstan={yaEstan}
       />
     </Shell>
   );
