@@ -5,7 +5,7 @@ import { entrevistaDe } from '@/lib/entrevista';
 import { quienSoy } from '@/lib/identidad';
 import { select } from '@/lib/supabase';
 import Capturador, { type YaEnLaFicha } from './Capturador';
-import { CARGADAS } from '@/lib/rorschach-laminas';
+import { ORDEN } from '@/lib/rorschach-laminas';
 import './capturador.css';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
@@ -30,10 +30,14 @@ export default async function CodificarRorschach({
   const e = await entrevistaDe(params.id);
   if (!e) notFound();
 
-  // La lámina viene en la dirección para que recargar la mantenga, pero
-  // cambiarla no vuelve al servidor: la pantalla la lleva como estado. Una que
-  // no está cargada no tiene mapa que mostrar.
-  const lamina = CARGADAS.includes(searchParams.lamina ?? '')
+  /* La lámina viene en la dirección para que recargar la mantenga, pero
+     cambiarla no vuelve al servidor: la pantalla la lleva como estado.
+
+     Vale cualquiera de las diez y no solo las que tienen su Tabla A: en la
+     entrevista se recorre el protocolo entero, y recargando en la VII esto
+     devolvía a la I sin decir nada. Lo que le falta a una lámina sin cargar es
+     el mapa, y eso lo resuelve la instancia: entrevistando no hace falta. */
+  const lamina = ORDEN.includes(searchParams.lamina ?? '')
     ? (searchParams.lamina as string)
     : 'I';
 
@@ -46,7 +50,8 @@ export default async function CodificarRorschach({
   // cambiar de lámina no vuelve a preguntar.
   const yaEstan = await select<YaEnLaFicha>(
     'rorschach_respuestas',
-    `select=n_respuesta,lamina,localizacion,n_localizacion,fq,contenidos,popular,z` +
+    `select=id,n_respuesta,lamina,localizacion,n_localizacion,fq,contenidos,popular,z,` +
+      `verbalizacion,posicion` +
       `&evaluacion_id=eq.${params.id}&order=n_respuesta`
   );
   const desde = Math.max(0, ...yaEstan.map((r) => r.n_respuesta ?? 0)) + 1;

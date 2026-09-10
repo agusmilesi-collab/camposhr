@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
-import { CC_EE, CONTENIDOS, DETERMINANTES, FQ, LAMINA, LOCALIZACION } from '@/lib/rorschach';
+import { CC_EE, CONTENIDOS, DETERMINANTES, FQ, LAMINA, LOCALIZACION, POSICION } from '@/lib/rorschach';
 
 export const runtime = 'nodejs';
 
@@ -29,6 +29,7 @@ const VALIDOS = {
   determinantes: new Set(DETERMINANTES.map((o) => o.v)),
   contenidos: new Set(CONTENIDOS.map((o) => o.v)),
   cc_ee: new Set(CC_EE.map((o) => o.v)),
+  posicion: new Set(POSICION.map((o) => o.v)),
 };
 
 type Fallo = { ok: false; motivo: string };
@@ -41,6 +42,7 @@ function limpiar(campos: Record<string, unknown>): Record<string, unknown> | Fal
     switch (campo) {
       case 'lamina':
       case 'localizacion':
+      case 'posicion':
       case 'fq': {
         if (valor === null || valor === '') {
           fila[campo] = null;
@@ -93,6 +95,10 @@ function limpiar(campos: Record<string, unknown>): Record<string, unknown> | Fal
         break;
       }
       case 'n_localizacion':
+      // Lo que dijo el candidato, textual. Tiene columna propia y no va con las
+      // notas: es el dato de la primera instancia y lo que se lee en la
+      // segunda para preguntarle dónde lo vio.
+      case 'verbalizacion':
       case 'observacion': {
         if (valor !== null && typeof valor !== 'string') {
           return { ok: false, motivo: `${campo} es texto.` };

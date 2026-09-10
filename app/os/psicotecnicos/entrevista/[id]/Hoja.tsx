@@ -187,37 +187,35 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
               <Papel
                 id={e.id}
               >
-                {/* Numerados: son los tres pasos del test en el orden en que
-                    se hacen, y el número los dice sin tener que deducirlos del
-                    lugar que ocupan. */}
-                <a
-                  className="os-boton os-boton-firme"
-                  href={h.href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <span className="os-boton-paso">1</span>
-                  {h.boton}
-                </a>
-                <LinkLaminas href={h.href} numero={2} />
-                {/* Las tres cosas que se hacen con las manchas, en la misma
-                    fila: abrirlas, pasar la dirección y encuestar. La pantalla
-                    se abre en la encuesta, que es cuando la persona dice dónde
-                    vio cada cosa, y de ahí sale la codificación: por eso el
-                    botón se llama por el momento de la entrevista y no por lo
-                    que produce. Colgaba de un renglón propio y era un botón
-                    solo ocupando una fila entera. Solo Rorschach por ahora; el
-                    Zulliger usa la misma pantalla cuando tenga su tabla. */}
-                {t === 'Rorschach' && (
+                {/* Una sola puerta para las manchas: adentro pasa todo, la
+                    lámina que ve la persona, lo que va diciendo y dónde lo vio.
+                    Abrir las láminas y copiar su dirección vivían acá y se
+                    fueron adentro, que es donde se necesitan: se abren cuando
+                    ella ya está por administrar, y desde acá obligaban a
+                    decidir por cuál de tres botones entrar. Los tests que
+                    todavía no tienen esa pantalla siguen con los dos de antes.
+                 */}
+                {t === 'Rorschach' ? (
                   <a
-                    className="os-boton os-herramienta-codificar"
+                    className="os-boton os-boton-firme"
                     href={`/os/psicotecnicos/entrevista/${e.id}/rorschach`}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <span className="os-boton-paso">3</span>
-                    Encuestar
+                    Iniciar
                   </a>
+                ) : (
+                  <>
+                    <a
+                      className="os-boton os-boton-firme"
+                      href={h.href}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {h.boton}
+                    </a>
+                    <LinkLaminas href={h.href} />
+                  </>
                 )}
               </Papel>
             </>

@@ -21,6 +21,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { abrirCanal, esParaMi, type Aviso } from '@/lib/laminas-sincro';
 
 /** Cuánto tarda cada punto del trazo en desaparecer. */
 const VIDA_MS = 5000;
@@ -38,16 +39,88 @@ export default function Placas({ test, total }: { test: string; total: number })
   const actual = useRef<Trazo | null>(null);
   const dibujando = useRef(false);
 
+  /** El canal que mueve las dos pantallas juntas. */
+  const canal = useRef<BroadcastChannel | null>(null);
+  /** Cuál se está mostrando, para la escucha, que se arma una sola vez. */
+  const laminaAhora = useRef(1);
+  laminaAhora.current = lamina;
+  /* De qué evaluación es esta pantalla. La pone quien la abre desde la de
+     codificación, para que con dos candidatos abiertos cada pantalla siga a la
+     suya. Abierta a mano desde la ficha viene vacía y sigue a cualquiera, que
+     es lo que hacía antes de que existiera esto. */
+  const deQuien = useRef<string | null>(null);
+  useEffect(() => {
+    deQuien.current = new URLSearchParams(window.location.search).get('de');
+  }, []);
+
   const ir = useCallback(
-    (n: number) => {
+    (n: number, avisar = true) => {
       if (n < 1 || n > total) return;
       setLamina(n);
       trazos.current = [];
       actual.current = null;
       dibujando.current = false;
+      if (avisar) {
+        canal.current?.postMessage({
+          lamina: n,
+          de: 'laminas',
+          evaluacion: deQuien.current,
+        } satisfies Aviso);
+      }
+      /* Y dice dónde quedó, sin esperar a que se lo pregunten: así la otra
+         pantalla se entera del cambio en cuanto pasa. */
+      canal.current?.postMessage({
+        lamina: n,
+        de: 'laminas',
+        evaluacion: deQuien.current,
+        pulso: 'aca',
+      } satisfies Aviso);
     },
     [total]
   );
+
+  /**
+   * La lámina que se muestra la puede cambiar la otra pantalla.
+   *
+   * La evaluadora comparte esta pestaña con el candidato y trabaja en la de
+   * codificación: pasa de lámina allá, con la mano en el teclado donde está
+   * escribiendo, y acá cambia sola. Lo que llega de afuera no se vuelve a
+   * anunciar, o las dos pantallas se estarían avisando entre ellas para siempre.
+   */
+  useEffect(() => {
+    const c = abrirCanal();
+    canal.current = c;
+    if (!c) return;
+    const contestar = () =>
+      c.postMessage({
+        lamina: laminaAhora.current,
+        de: 'laminas',
+        evaluacion: deQuien.current,
+        pulso: 'aca',
+      } satisfies Aviso);
+    c.onmessage = (e: MessageEvent<Aviso>) => {
+      // Contestar dónde está: lo pregunta la pantalla de codificación.
+      if (e.data?.pulso === 'donde' && esParaMi(e.data, deQuien.current)) {
+        contestar();
+        return;
+      }
+      /* La misma lámina no se vuelve a poner: `ir` limpia los trazos, y el
+         aviso llega de rebote cada vez que la otra pantalla confirma dónde
+         está. Borraría lo que la evaluadora acaba de señalar. */
+      if (
+        e.data?.de === 'codificacion' &&
+        esParaMi(e.data, deQuien.current) &&
+        e.data.lamina !== laminaAhora.current
+      ) {
+        ir(e.data.lamina, false);
+      }
+    };
+    contestar();
+    return () => {
+      canal.current = null;
+      c.close();
+    };
+  }, [ir]);
 
   // Las flechas del teclado mueven la lámina: durante la administración las
   // manos están en otra cosa y buscar un botón chico con el mouse se nota.
