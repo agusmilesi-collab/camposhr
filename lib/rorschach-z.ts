@@ -84,15 +84,15 @@ export function esEspacio(area: string): boolean {
  * Elegir D4 y Dd21 no es integrar dos zonas: Dd21 es una parte de D4. Se
  * descarta la contenida y queda la que la contiene.
  */
-export function areasDistintas(areas: string[]): string[] {
-  return areas.filter(
-    (a) => !areas.some((b) => b !== a && (CONTENIDAS[b] ?? []).includes(a))
-  );
+export function areasDistintas(lamina: string, areas: string[]): string[] {
+  const dentro = CONTENIDAS[lamina] ?? {};
+  return areas.filter((a) => !areas.some((b) => b !== a && (dentro[b] ?? []).includes(a)));
 }
 
 /** Si dos áreas se tocan en la lámina. */
-export function sonAdyacentes(a: string, b: string): boolean {
-  return (ADYACENTES[a] ?? []).includes(b) || (ADYACENTES[b] ?? []).includes(a);
+export function sonAdyacentes(lamina: string, a: string, b: string): boolean {
+  const vecinas = ADYACENTES[lamina] ?? {};
+  return (vecinas[a] ?? []).includes(b) || (vecinas[b] ?? []).includes(a);
 }
 
 export function puntajeZ(lamina: string, s: Situacion): Veredicto {
@@ -114,7 +114,7 @@ export function puntajeZ(lamina: string, s: Situacion): Veredicto {
   }
 
   // -- ZA y ZD: integrar áreas.
-  const distintas = areasDistintas(s.areas);
+  const distintas = areasDistintas(lamina, s.areas);
   if (distintas.length >= 2) {
     if (!s.integradas) {
       aConfirmar.push(
@@ -125,7 +125,7 @@ export function puntajeZ(lamina: string, s: Situacion): Veredicto {
       const pares: string[] = [];
       for (let i = 0; i < distintas.length; i++) {
         for (let j = i + 1; j < distintas.length; j++) {
-          const juntas = sonAdyacentes(distintas[i], distintas[j]);
+          const juntas = sonAdyacentes(lamina, distintas[i], distintas[j]);
           if (!juntas) hayDistante = true;
           pares.push(`${distintas[i]}${juntas ? '+' : '·'}${distintas[j]}`);
         }

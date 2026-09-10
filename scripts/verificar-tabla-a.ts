@@ -54,13 +54,18 @@ for (const [lamina, datos] of Object.entries(LAMINAS)) {
       }
     }
 
+    // La misma respuesta puede figurar dos veces en un área cuando cambia de
+    // calidad según cómo esté la lámina: en la II, D1 lista "figura humana" con
+    // o invertida y con - derecha. Repetida es la que coincide también en
+    // posición, que ahí sí es un renglón copiado dos veces.
     const vistas = new Set<string>();
     for (const e of entradas) {
-      if (vistas.has(e.respuesta)) {
+      const clave = `${e.respuesta}·${e.posicion ?? ''}`;
+      if (vistas.has(clave)) {
         console.error(`✗ ${lamina} ${area}: "${e.respuesta}" está dos veces`);
         mal++;
       }
-      vistas.add(e.respuesta);
+      vistas.add(clave);
     }
 
     const puestas = entradas.map((e) => e.respuesta);

@@ -71,15 +71,30 @@ export default function Grafico({ id, nombre }: { id: string; nombre: string | n
           el botón de reemplazar. */}
       {nombre ? (
         <>
-          <a
-            className="os-boton os-bender-ver"
-            href={`/api/os/grafico?id=${id}`}
-            target="_blank"
-            rel="noreferrer"
-            title={nombre}
-          >
-            Ver dibujo
-          </a>
+          {/* La miniatura dice de una si el dibujo está y cuál es, y se
+              aprieta para verlo entero. Un PDF no se puede miniaturizar en el
+              navegador, así que ahí queda el botón. */}
+          {/\.pdf$/i.test(nombre) ? (
+            <a
+              className="os-boton os-bender-ver"
+              href={`/api/os/grafico?id=${id}`}
+              target="_blank"
+              rel="noreferrer"
+              title={nombre}
+            >
+              Ver dibujo
+            </a>
+          ) : (
+            <a
+              className="os-papel-mini"
+              href={`/api/os/grafico?id=${id}`}
+              target="_blank"
+              rel="noreferrer"
+              title={nombre}
+            >
+              <img src={`/api/os/grafico?id=${id}`} alt="Lo que dibujó" />
+            </a>
+          )}
           <SoltarArchivo
             className="os-bender-subir"
             deshabilitado={subiendo}

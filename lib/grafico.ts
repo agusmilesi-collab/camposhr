@@ -147,9 +147,10 @@ export async function guardarBender(
     },
     body: JSON.stringify({
       bender_path: ruta,
-      // Cuántas se unieron: con menos de nueve, la hoja está incompleta y hay
-      // que poder verlo sin abrir la imagen.
-      bender_nombre: `${cuantas} de 9 láminas`,
+      // Cuántas fotos se subieron, que hoy es una: las nueve figuras vienen
+      // hechas en la misma hoja. Se guarda igual porque en dos fotos hay que
+      // poder ver que son dos sin abrir la imagen.
+      bender_nombre: cuantas === 1 ? 'La hoja' : `${cuantas} fotos`,
       bender_administrado: true,
     }),
     cache: 'no-store',

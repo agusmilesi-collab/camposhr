@@ -54,77 +54,102 @@ UMBRAL = 190
 # simétrica y la persona puede ver la respuesta de cualquiera de los dos lados.
 
 ZONAS = {
-    # -- centro, de arriba hacia abajo
-    # Las dos antenitas y nada más: los dos trazos finos que salen del bloque
-    # central hacia arriba, entre el 20 % y el 28 % de alto. Se declara una y se
-    # refleja. Una zona más ancha se lleva el borde superior del cuerpo y sale
-    # una franja horizontal, y una que llegue al centro se lleva los dos cuernos
-    # internos, que son parte de Dd21.
-    'D1':    {'zonas': [(42, 20, 46, 28)],   'espejo': True},    # las dos antenitas
-    'Dd22':  {'zonas': [(46, 18, 54, 35)],   'espejo': False},   # los dos bultos bajo las garras
-    'Dd21':  {'zonas': [(41, 17, 59, 49)],   'espejo': False},   # el cuerpo central superior con cuernos
-    'D4':    {'zonas': [(40, 9, 59, 103)],   'espejo': False},   # la columna central entera
-    'Dd27':  {'zonas': [(47, 45, 53, 53)],   'espejo': False},   # la franja entre los dos espacios de arriba
-    'D3':    {'zonas': [(44, 60, 54, 98)],   'espejo': False},   # el cuerpo central inferior
-    'Dd31':  {'zonas': [(46, 90, 53, 102)],  'espejo': False},   # el bloque del pie
-    # La campana central baja con su punta, y no solo la punta: la lista del
-    # libro para esta área son "violonchelo", "figura humana entera", "campana"
-    # y "falda", que no se ven en un pedacito. Confirmado por Agustín el
-    # 9/9/2026 sobre la hoja de control.
-    'Dd24':  {'zonas': [(40, 45, 59, 102)],  'espejo': False},   # la campana central baja
+    'I': {
+        # -- centro, de arriba hacia abajo
+        # Las dos antenitas y nada más: los dos trazos finos que salen del bloque
+        # central hacia arriba, entre el 20 % y el 28 % de alto. Se declara una y
+        # se refleja. Una zona más ancha se lleva el borde superior del cuerpo y
+        # sale una franja horizontal, y una que llegue al centro se lleva los dos
+        # cuernos internos, que son parte de Dd21.
+        'D1':    {'zonas': [(42, 20, 46, 28)],   'espejo': True},    # las dos antenitas
+        'Dd22':  {'zonas': [(46, 18, 54, 35)],   'espejo': False},   # los dos bultos bajo las garras
+        'Dd21':  {'zonas': [(41, 17, 59, 49)],   'espejo': False},   # el cuerpo central superior con cuernos
+        'D4':    {'zonas': [(40, 9, 59, 103)],   'espejo': False},   # la columna central entera
+        'Dd27':  {'zonas': [(47, 45, 53, 53)],   'espejo': False},   # la franja entre los dos espacios de arriba
+        'D3':    {'zonas': [(44, 60, 54, 98)],   'espejo': False},   # el cuerpo central inferior
+        'Dd31':  {'zonas': [(46, 90, 53, 102)],  'espejo': False},   # el bloque del pie
+        # La campana central baja con su punta, y no solo la punta: la lista del
+        # libro para esta área son "violonchelo", "figura humana entera",
+        # "campana" y "falda", que no se ven en un pedacito. Confirmado por
+        # Agustín el 9/9/2026 sobre la hoja de control.
+        'Dd24':  {'zonas': [(40, 45, 59, 102)],  'espejo': False},   # la campana central baja
 
-    # -- laterales, se declaran a la izquierda y se reflejan
-    'D2':    {'zonas': [(0, -3, 43, 79)],    'espejo': True},    # la mitad lateral entera
-    # El ala se separa del cuerpo por una diagonal, así que va como polígono:
-    # con un rectángulo el recorte cortaba el ala en vertical y se notaba.
-    'D7':    {'poli': [(1, 18), (7, 2), (20, -3), (31, 9), (40, 27),
-                       (31, 40), (12, 41), (0, 32)],             'espejo': True},
-    'Dd34':  {'zonas': [(0, 17, 22, 36)],    'espejo': True},    # la punta externa del ala
-    'Dd28':  {'zonas': [(16, -1, 31, 11)],   'espejo': True},    # la punta superior externa
-    'Dd35':  {'zonas': [(15, 35, 25, 63)],   'espejo': True},    # bajo el ala
-    'Dd33':  {'zonas': [(17, 66, 26, 80)],   'espejo': True},    # la protuberancia lateral baja
-    'Dd25':  {'zonas': [(11, 36, 22, 53)],   'espejo': True},    # la manchita suelta adentro del ala
+        # -- laterales, se declaran a la izquierda y se reflejan
+        'D2':    {'zonas': [(0, -3, 43, 79)],    'espejo': True},    # la mitad lateral entera
+        # El ala se separa del cuerpo por una diagonal, así que va como polígono:
+        # con un rectángulo el recorte cortaba el ala en vertical y se notaba.
+        'D7':    {'poli': [(1, 18), (7, 2), (20, -3), (31, 9), (40, 27),
+                           (31, 40), (12, 41), (0, 32)],             'espejo': True},
+        'Dd34':  {'zonas': [(0, 17, 22, 36)],    'espejo': True},    # la punta externa del ala
+        'Dd28':  {'zonas': [(16, -1, 31, 11)],   'espejo': True},    # la punta superior externa
+        'Dd35':  {'zonas': [(15, 35, 25, 63)],   'espejo': True},    # bajo el ala
+        'Dd33':  {'zonas': [(17, 66, 26, 80)],   'espejo': True},    # la protuberancia lateral baja
+        'Dd25':  {'zonas': [(11, 36, 22, 53)],   'espejo': True},    # la manchita suelta adentro del ala
+    },
+    'II': {
+        # La lámina II tiene dos tintas y las áreas siguen el color: D1 y D6 son
+        # lo gris, D2 y D3 lo rojo. Sin eso, el recorte de D1 se lleva medio D3,
+        # porque el rojo de abajo toca el cuerpo gris.
+        #
+        # Las zonas salieron de que Agustín marcara sobre la hoja de control el
+        # 9/9/2026. D1 va de un lado solo: es una mitad lateral, y dibujada con
+        # espejo quedaba igual que D6, que son las dos juntas.
+        'D1':    {'zonas': [(46, 18, 101, 89)],  'espejo': False, 'tinta': 'gris'},
+        'D2':    {'zonas': [(25, -2, 42, 26)],   'espejo': False, 'tinta': 'rojo'},
+        'D3':    {'zonas': [(30, 60, 70, 100)],  'espejo': False, 'tinta': 'rojo'},
+        'D4':    {'zonas': [(45, 20, 55, 34)],   'espejo': False, 'tinta': 'gris'},
+        'D6':    {'zonas': [(0, 25, 100, 100)],  'espejo': False, 'tinta': 'gris'},
+        'Dd21':  {'zonas': [(54, 26, 99, 54)],   'espejo': False, 'tinta': 'gris'},
+        'Dd22':  {'zonas': [(-3, 75, 14, 91)],   'espejo': False, 'tinta': 'gris'},
+        'Dd23':  {'zonas': [(66, 76, 84, 89)],   'espejo': False, 'tinta': 'gris'},
+        'Dd24':  {'zonas': [(47, 69, 52, 85)],   'espejo': False},
+        'Dd25':  {'zonas': [(35, 72, 49, 101)],  'espejo': False},
+        'Dd26':  {'zonas': [(70, 28, 89, 36)],   'espejo': False, 'tinta': 'rojizo'},
+        'Dd27':  {'zonas': [(40, 41, 59, 46)],   'espejo': False, 'tinta': 'gris'},
+        'Dd28':  {'zonas': [(50, 64, 70, 87)],   'espejo': False, 'tinta': 'rojizo'},
+        'Dd31':  {'zonas': [(91, 40, 100, 58)],  'espejo': False, 'tinta': 'gris'},
+    },
 }
 
-# El espacio blanco de arriba del centro no es un hueco cerrado (se abre hacia
-# arriba), así que no lo encuentra la detección de huecos: se recorta a mano
-# como el blanco que queda adentro de esta zona.
-ZONA_DdS32 = (29, 1, 69, 27)
-
-# Dd23 son las salpicaduras: los pedazos de tinta separados de la mancha.
+# Los espacios blancos cerrados de cada lámina, y cómo se reparten.
 #
-# No todas: solo las de abajo, las que el cuadernillo señala con sus tres
-# flechas. Sin acotarlo entraban también dos manchitas sueltas a media altura,
-# una de cada lado, que no son Dd23. La zona se declara de un lado y vale
-# espejada, como las áreas laterales. Marcado por Agustín el 9/9/2026 sobre la
-# hoja de control.
-AREA_SALPICADURA = 'Dd23'
-ZONA_Dd23 = (64, 68, 86, 92)
-
-# Cómo se reparten los cuatro huecos cerrados.
+# En la I las dos líneas guía del cuadernillo se cruzan y no se puede leer cuál
+# es cuál, así que el reparto se dedujo de las listas de respuestas: los dos de
+# arriba son altos y angostos, y el libro lista ahí "pulmones", "árboles",
+# "figura humana"; los dos de abajo son triangulares, y lista "pirámides",
+# "tiendas de campaña", "triángulos". Confirmado por la evaluadora el 25/8/2026.
 #
-# En el diagrama del cuadernillo las dos líneas guía se cruzan y no se puede
-# leer cuál es cuál, así que el reparto se dedujo de las listas de respuestas:
-# los dos de arriba son altos y angostos, y el libro lista ahí "pulmones",
-# "árboles", "figura humana"; los dos de abajo son triangulares, y lista
-# "pirámides", "tiendas de campaña", "triángulos". Confirmado por la evaluadora
-# el 25/8/2026.
+# La II tiene uno solo, el rombo del medio.
 HUECOS = {
-    'DdS30': 'arriba',      # los dos espacios altos, a los lados del centro
-    'DdS29': 'abajo',       # los dos espacios triangulares de abajo
-    'DdS26': 'todos',       # los cuatro juntos
+    'I': {'DdS30': 'arriba', 'DdS29': 'abajo', 'DdS26': 'todos'},
+    'II': {'DS5': 'todos'},
 }
 
+# Los espacios que no cierran: se abren hacia afuera y la detección de huecos no
+# los ve. Salen como el blanco que queda entre la mancha y su casco convexo,
+# recortado a la zona declarada.
+ABIERTOS = {
+    'I': {'DdS32': (29, 1, 69, 27)},
+    'II': {'DdS29': (43, 35, 57, 45), 'DdS30': (29, 20, 48, 34)},
+}
 
-def laminaI():
-    """Baja la lámina I del bucket privado."""
+# Las salpicaduras: los pedazos de tinta separados de la mancha, y en qué zona
+# valen. En la I son solo las de abajo, las que el cuadernillo señala con sus
+# tres flechas; sin acotarlo entraban dos manchitas de media altura que no son
+# Dd23. Marcado por Agustín el 9/9/2026 sobre la hoja de control.
+SALPICADURAS = {
+    'I': ('Dd23', (64, 68, 86, 92)),
+}
+
+def bajar(numero):
+    """Baja una lámina del bucket privado."""
     env = {}
     with io.open(os.path.join(RAIZ, '.env.local'), encoding='utf-8') as f:
         for linea in f:
             if '=' in linea and not linea.strip().startswith('#'):
                 k, v = linea.split('=', 1)
                 env[k.strip()] = v.strip().strip('"').strip("'")
-    url = f"{env['SUPABASE_URL']}/storage/v1/object/psicotecnicos/laminas/rorschach/1.png"
+    url = f"{env['SUPABASE_URL']}/storage/v1/object/psicotecnicos/laminas/rorschach/{numero}.png"
     key = env['SUPABASE_SERVICE_KEY']
     out = subprocess.run(
         ['curl', '-s', url, '-H', f'apikey: {key}', '-H', f'Authorization: Bearer {key}'],
@@ -153,16 +178,38 @@ def contornos(mascara, minimo=150):
     return salida
 
 
-def main():
-    im = laminaI().convert('L')
+# En qué número de archivo vive cada lámina, y cuánto tiene que medir un pedazo
+# de tinta para contar como parte de la mancha y no como salpicadura.
+NUMERO = {'I': 1, 'II': 2}
+MINIMO_PIEZA = 2000
+
+
+def main(lamina='I'):
+    color = bajar(NUMERO[lamina]).convert('RGB')
+    im = color.convert('L')
     a = np.array(im)
+    rgb = np.array(color).astype(int)
     alto, ancho = a.shape
     tinta = a < UMBRAL
 
+    # La tinta roja de la lámina II: lo que tiene rojo bastante más alto que el
+    # verde y el azul. Las áreas de esa lámina siguen el color, así que hay que
+    # poder separar una capa de la otra.
+    diferencia = rgb[:, :, 0] - np.maximum(rgb[:, :, 1], rgb[:, :, 2])
+    rojo = tinta & (diferencia > 40)
+    gris = tinta & ~rojo
+    # Los rojos de adentro del gris están apagados por la tinta que tienen
+    # encima: con el corte del rojo pleno no los ve ninguno.
+    rojizo = tinta & (diferencia > 6)
+    capa = {'rojo': rojo, 'gris': gris, 'rojizo': rojizo}
+
+    # La mancha son todos los pedazos grandes y no solo el mayor: en la II una
+    # de las dos manchas rojas de arriba está separada del cuerpo, y con la
+    # componente principal sola quedaba afuera de W.
     lab, n = ndimage.label(tinta)
     tam = ndimage.sum(tinta, lab, range(1, n + 1))
-    principal = np.argmax(tam) + 1
-    mancha = lab == principal
+    piezas = [i + 1 for i in range(n) if tam[i] > MINIMO_PIEZA]
+    mancha = np.isin(lab, piezas)
 
     ys, xs = np.where(mancha)
     cx0, cx1, cy0, cy1 = xs.min(), xs.max(), ys.min(), ys.max()
@@ -194,7 +241,7 @@ def main():
     areas = {}
 
     # --- áreas de tinta
-    for nombre, cfg in ZONAS.items():
+    for nombre, cfg in ZONAS[lamina].items():
         m = np.zeros_like(mancha)
         for z in cfg.get('zonas', []):
             m |= zona_a_mascara(z)
@@ -204,7 +251,7 @@ def main():
             m |= poli_a_mascara(cfg['poli'])
             if cfg['espejo']:
                 m |= poli_a_mascara(cfg['poli'], reflejar=True)
-        areas[nombre] = m & mancha
+        areas[nombre] = m & mancha & capa.get(cfg.get('tinta'), mancha)
 
     # --- los cuatro espacios cerrados
     lleno = ndimage.binary_fill_holes(mancha)
@@ -217,7 +264,7 @@ def main():
     arriba, abajo = orden[:2], orden[2:]
     print(f'espacios cerrados: {len(grandes)} · arriba {arriba} · abajo {abajo}')
     reparto = {'arriba': arriba, 'abajo': abajo, 'todos': grandes}
-    for nombre, cual in HUECOS.items():
+    for nombre, cual in HUECOS[lamina].items():
         m = np.zeros_like(mancha)
         for i in reparto[cual]:
             m |= hl == i
@@ -229,25 +276,30 @@ def main():
     # que la detección de huecos no lo ve. Sale como el blanco que queda entre
     # la mancha y su casco convexo, recortado a la zona superior central. El
     # casco es lo que "tapa" la entrante de arriba y la vuelve medible.
-    casco = morphology.convex_hull_image(mancha)
-    areas['DdS32'] = zona_a_mascara(ZONA_DdS32) & casco & ~tinta
+    casco = morphology.binary_closing(morphology.convex_hull_image(mancha))
+    for nombre, zona in ABIERTOS.get(lamina, {}).items():
+        m = zona_a_mascara(zona) | zona_a_mascara(zona, reflejar=True)
+        areas[nombre] = m & casco & ~tinta
 
     # --- las salpicaduras
-    dentro = zona_a_mascara(ZONA_Dd23) | zona_a_mascara(ZONA_Dd23, reflejar=True)
-    m = tinta & ~mancha
-    ml, mn = ndimage.label(m)
-    mt = ndimage.sum(m, ml, range(1, mn + 1))
-    chicas = np.zeros_like(mancha)
-    for i in range(mn):
-        pieza = ml == i + 1
-        if mt[i] > 60 and (pieza & dentro).any():
-            chicas |= pieza
-    areas[AREA_SALPICADURA] = chicas
+    salpica = SALPICADURAS.get(lamina)
+    if salpica:
+        nombre, zona = salpica
+        dentro = zona_a_mascara(zona) | zona_a_mascara(zona, reflejar=True)
+        m = tinta & ~mancha
+        ml, mn = ndimage.label(m)
+        mt = ndimage.sum(m, ml, range(1, mn + 1))
+        chicas = np.zeros_like(mancha)
+        for i in range(mn):
+            pieza = ml == i + 1
+            if mt[i] > 60 and (pieza & dentro).any():
+                chicas |= pieza
+        areas[nombre] = chicas
 
     # --- a polígonos normalizados
     salida = {}
     for nombre, m in areas.items():
-        minimo = 60 if nombre == AREA_SALPICADURA else 150
+        minimo = 60 if salpica and nombre == salpica[0] else 150
         polis = contornos(m, minimo)
         salida[nombre] = [
             [[round(float(p[1]) / ancho, 4), round(float(p[0]) / alto, 4)] for p in poli]
@@ -262,8 +314,7 @@ def main():
     ]
     print(f"  {'W':>6}: {mancha.sum():>7} px · {len(salida['W'])} parte(s)")
 
-    escribir_ts(salida, vecindad(areas, mancha.shape))
-    control(im, areas, mancha)
+    return salida, vecindad(areas, mancha.shape), color, areas
 
 
 def vecindad(areas, forma):
@@ -302,22 +353,49 @@ def vecindad(areas, forma):
     return adyacentes, contenidas
 
 
-def escribir_ts(areas, vecinos):
-    orden = ['W', 'D1', 'D2', 'D3', 'D4', 'D7', 'Dd21', 'Dd22', 'Dd23', 'Dd24',
-             'Dd25', 'DdS26', 'Dd27', 'Dd28', 'DdS29', 'DdS30', 'Dd31', 'DdS32',
-             'Dd33', 'Dd34', 'Dd35']
+ORDEN = {
+    'I': ['W', 'D1', 'D2', 'D3', 'D4', 'D7', 'Dd21', 'Dd22', 'Dd23', 'Dd24',
+          'Dd25', 'DdS26', 'Dd27', 'Dd28', 'DdS29', 'DdS30', 'Dd31', 'DdS32',
+          'Dd33', 'Dd34', 'Dd35'],
+    'II': ['W', 'D1', 'D2', 'D3', 'D4', 'DS5', 'D6', 'Dd21', 'Dd22', 'Dd23',
+           'Dd24', 'Dd25', 'Dd26', 'Dd27', 'Dd28', 'DdS29', 'DdS30', 'Dd31'],
+}
+
+
+def bloque(areas, orden, sangria='    '):
     cuerpo = []
     for nombre in orden:
         partes = areas.get(nombre, [])
+        # Un área sin partes se escribe vacía y en un renglón: con la coma de
+        # separación quedaba un agujero en el arreglo y el archivo no compilaba.
+        if not partes:
+            cuerpo.append(f'{sangria}{nombre}: [],')
+            continue
         ps = ',\n'.join(
-            '    [' + ', '.join(f'[{x}, {y}]' for x, y in parte) + ']' for parte in partes)
-        cuerpo.append(f"  {nombre}: [\n{ps},\n  ],")
-    ady = ',\n'.join(f'  {k}: {v!r}'.replace("'", "'") for k, v in sorted(vecinos[0].items()))
-    cont = ',\n'.join(f'  {k}: {v!r}' for k, v in sorted(vecinos[1].items()))
-    adyacentes = '{\n' + ady.replace("'", '\"') + ',\n}'
-    contenidas = '{\n' + cont.replace("'", '\"') + ',\n}'
+            sangria + '  [' + ', '.join(f'[{x}, {y}]' for x, y in parte) + ']'
+            for parte in partes)
+        cuerpo.append(f"{sangria}{nombre}: [\n{ps},\n{sangria}],")
+    return '\n'.join(cuerpo)
+
+
+def mapa(d, sangria='  '):
+    filas = ',\n'.join(f'{sangria}{k}: {v!r}'.replace("'", '"') for k, v in sorted(d.items()))
+    return '{\n' + filas + ',\n}'
+
+
+def escribir_ts(por_lamina):
+    """`por_lamina` es {lámina: (áreas, (adyacentes, contenidas))}."""
+    areas = '\n'.join(
+        f"  {lamina}: {{\n{bloque(a, ORDEN[lamina])}\n  }},"
+        for lamina, (a, _) in por_lamina.items())
+    ady = '\n'.join(
+        f"  {lamina}: {mapa(v[0], '    ')[:-2]}\n  }},".replace('{\n', '{\n')
+        for lamina, (_, v) in por_lamina.items())
+    cont = '\n'.join(
+        f"  {lamina}: {mapa(v[1], '    ')[:-2]}\n  }},"
+        for lamina, (_, v) in por_lamina.items())
     texto = f'''/**
- * Dónde está cada área de localización sobre la lámina.
+ * Dónde está cada área de localización sobre cada lámina.
  *
  * GENERADO por `scripts/areas-rorschach.py`, no se edita a mano: los contornos
  * salen de recortar la tinta real de la lámina contra las zonas declaradas en
@@ -326,11 +404,11 @@ def escribir_ts(areas, vecinos):
  *
  * Cada área es una lista de partes, y cada parte una lista de puntos [x, y] en
  * 0..1 sobre la imagen de la lámina. Son varias partes cuando el área son
- * varios pedazos: D1 son las dos garras, DdS26 los cuatro espacios, Dd23 las
- * salpicaduras.
+ * varios pedazos: en la I, D1 son las dos antenitas y DdS26 los cuatro
+ * espacios.
  *
- * Sirven para dos cosas a la vez: dibujar el mapa donde la evaluadora elige el
- * área, y ubicar contra qué área cae lo que señaló la persona. Por eso se
+ * Sirven para dos cosas a la vez: dibujar el mapa donde la evaluadora elige la
+ * locación, y ubicar contra qué área cae lo que señaló la persona. Por eso se
  * trazan sobre la lámina que ella ve y no sobre los diagramas del cuadernillo,
  * que tienen otra proporción.
  */
@@ -338,21 +416,25 @@ def escribir_ts(areas, vecinos):
 export type Punto = [number, number];
 export type Parte = Punto[];
 
-export const AREAS: Record<string, Parte[]> = {{
-{chr(10).join(cuerpo)}
+export const AREAS: Record<string, Record<string, Parte[]>> = {{
+{areas}
 }};
 
 /**
  * Qué áreas se tocan. Separa ZA de ZD: integrar dos áreas adyacentes puntúa
  * distinto que integrar dos distantes, y eso lo dice la lámina.
  */
-export const ADYACENTES: Record<string, string[]> = {adyacentes};
+export const ADYACENTES: Record<string, Record<string, string[]>> = {{
+{ady}
+}};
 
 /**
  * Qué áreas están adentro de otra. Elegir D4 y Dd21 no es integrar dos áreas:
  * Dd21 es una parte de D4, y nombrar la misma zona dos veces no organiza nada.
  */
-export const CONTENIDAS: Record<string, string[]> = {contenidas};
+export const CONTENIDAS: Record<string, Record<string, string[]>> = {{
+{cont}
+}};
 
 /** Si un punto en 0..1 cae adentro de un área. */
 export function caeEn(area: Parte[], x: number, y: number): boolean {{
@@ -367,15 +449,8 @@ export function caeEn(area: Parte[], x: number, y: number): boolean {{
   return adentro;
 }}
 
-/** Las áreas que contienen un punto, de la más chica a la más grande. */
-export function areasEn(x: number, y: number): string[] {{
-  return Object.entries(AREAS)
-    .filter(([, a]) => caeEn(a, x, y))
-    .sort((a, b) => superficie(a[1]) - superficie(b[1]))
-    .map(([n]) => n);
-}}
-
-function superficie(area: Parte[]): number {{
+/** La superficie de un área, para elegir la más chica cuando dos se superponen. */
+export function superficie(area: Parte[]): number {{
   let total = 0;
   for (const parte of area) {{
     let s = 0;
@@ -392,7 +467,7 @@ function superficie(area: Parte[]): number {{
     print(f'\nescrito {SALIDA_TS}')
 
 
-def control(im, areas, mancha):
+def control(im, areas, lamina):
     """Una imagen con cada área pintada, para mirar que cayó donde va."""
     orden = [n for n in areas if n]
     cols = 6
@@ -401,7 +476,9 @@ def control(im, areas, mancha):
     esc = 260 / w
     tw, th = int(w * esc), int(h * esc)
     hoja = Image.new('RGB', (tw * cols, th * filas), 'white')
-    base = im.convert('RGB').resize((tw, th))
+    # En grises, como el mapa de la pantalla: sobre la tinta roja de la II no se
+    # distingue el área pintada de la mancha.
+    base = im.convert('L').convert('RGB').resize((tw, th))
     d0 = ImageDraw.Draw(hoja)
     for k, nombre in enumerate(orden):
         tile = base.copy()
@@ -411,9 +488,18 @@ def control(im, areas, mancha):
         x, y = (k % cols) * tw, (k // cols) * th
         hoja.paste(tile, (x, y))
         d0.text((x + 6, y + 6), nombre, fill=(0, 0, 0))
-    hoja.save(CONTROL)
-    print(f'control {CONTROL}')
+    salida = CONTROL.replace('.png', f'-{lamina}.png')
+    hoja.save(salida)
+    print(f'control {salida}')
 
 
 if __name__ == '__main__':
-    main()
+    # Las dos láminas en la misma corrida: el archivo de salida las lleva a las
+    # dos, así que generar una sola borraría la otra.
+    resultado = {}
+    for lamina in ZONAS:
+        print(f'\n── lámina {lamina}')
+        salida, vecinos, color, mascaras = main(lamina)
+        resultado[lamina] = (salida, vecinos)
+        control(color.convert('L'), mascaras, lamina)
+    escribir_ts(resultado)

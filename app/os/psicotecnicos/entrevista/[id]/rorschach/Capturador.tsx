@@ -28,31 +28,14 @@
  */
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AREAS, type Parte } from '@/lib/rorschach-areas';
 import { buscar, entradasDe, esPopular, familiaDe, plano, type Hallazgo } from '@/lib/rorschach-tabla-a';
 import { contenidoSugerido, fqDeLaFicha, localizacionesDe } from '@/lib/rorschach-sugerencias';
 import { CONTENIDOS, FQ, LOCALIZACION, tonoDe } from '@/lib/rorschach';
 import Codigo from '@/app/os/psicotecnicos/ficha/[id]/Codigo';
 import { esEspacio, puntajeZ } from '@/lib/rorschach-z';
-
-const LAMINA = 'I';
-
-/**
- * Cuál sigue, y hasta dónde llega el sistema.
- *
- * El protocolo se toma en orden y no se vuelve, así que el botón del pie hace
- * las dos cosas de una: pasa lo capturado a la ficha y abre la lámina que
- * sigue. Hoy solo está cargada la I (su Tabla A transcripta y sus áreas
- * dibujadas), así que la II todavía no tiene a dónde llevar: lo capturado se
- * pasa igual y el aviso dice por qué la pantalla se queda donde está.
- */
-const ORDEN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
-const CARGADAS = ['I'];
-
-function siguienteDe(lamina: string): string | null {
-  const i = ORDEN.indexOf(lamina);
-  return i >= 0 && i + 1 < ORDEN.length ? ORDEN[i + 1] : null;
-}
+import { CARGADAS, ORDEN, siguienteDe } from '@/lib/rorschach-laminas';
 
 /**
  * Qué distingue a cada calidad evolutiva, en una línea.
@@ -114,18 +97,31 @@ function soloDq(localizacion: string): string {
   return localizacion.replace(/^(W|Dd|D)S?/, '');
 }
 
-const MAPAS: string[][] = [
+const MAPAS: Record<string, string[][]> = {
   // Dd99 va en el mapa de W, en una esquina libre de tinta: no es un área de la
   // lámina, es el recorte que no figura en el libro, así que no tiene contorno
   // que dibujar ni línea que lo una a nada.
-  ['W', FUERA_DE_TABLA],
-  ['D1', 'Dd24'],
-  ['D2', 'D3', 'Dd22', 'Dd28'],
-  ['D4', 'Dd23', 'Dd25'],
-  ['D7', 'Dd21', 'Dd33', 'Dd34', 'Dd35'],
-  ['Dd27', 'DdS29', 'DdS30'],
-  ['Dd31', 'DdS26', 'DdS32'],
-];
+  I: [
+    ['W', FUERA_DE_TABLA],
+    ['D1', 'Dd24'],
+    ['D2', 'D3', 'Dd22', 'Dd28'],
+    ['D4', 'Dd23', 'Dd25'],
+    ['D7', 'Dd21', 'Dd33', 'Dd34', 'Dd35'],
+    ['Dd27', 'DdS29', 'DdS30'],
+    ['Dd31', 'DdS26', 'DdS32'],
+  ],
+  // El reparto del cuadernillo para la II, que agrupa distinto: son seis
+  // recuadros y no cinco, y las áreas no son las mismas que las de la I.
+  II: [
+    ['W', FUERA_DE_TABLA],
+    ['D1', 'D2'],
+    ['D3', 'D4', 'Dd21'],
+    ['D6'],
+    ['DS5', 'Dd22', 'Dd31'],
+    ['Dd23', 'Dd24', 'Dd26', 'Dd27'],
+    ['Dd25', 'Dd28', 'DdS29', 'DdS30'],
+  ],
+};
 
 /**
  * Dónde va el nombre de cada área, marcado sobre la lámina.
@@ -139,7 +135,8 @@ const MAPAS: string[][] = [
  * Para corregir uno se vuelve a generar la hoja, se marca el punto nuevo y se
  * mide; a mano se pierde media hora en acertar un decimal.
  */
-const TAGS: Record<string, [number, number]> = {
+const TAGS: Record<string, Record<string, [number, number]>> = {
+  I: {
   W: [0.492, 0.453],
   D1: [0.502, 0.177],
   D2: [0.853, 0.175],
@@ -162,6 +159,29 @@ const TAGS: Record<string, [number, number]> = {
   Dd34: [0.847, 0.2],
   Dd35: [0.123, 0.545],
   Dd99: [0.865, 0.813],
+  },
+  // Marcados por Agustín el 9/9/2026 sobre la hoja de control de la II.
+  II: {
+    W: [0.496, 0.121],
+    D1: [0.739, 0.184],
+    D2: [0.253, 0.184],
+    D3: [0.327, 0.879],
+    D4: [0.496, 0.121],
+    DS5: [0.496, 0.13],
+    D6: [0.496, 0.121],
+    Dd21: [0.723, 0.184],
+    Dd22: [0.116, 0.82],
+    Dd23: [0.792, 0.845],
+    Dd24: [0.348, 0.82],
+    Dd25: [0.316, 0.845],
+    Dd26: [0.765, 0.18],
+    Dd27: [0.248, 0.222],
+    Dd28: [0.707, 0.879],
+    DdS29: [0.749, 0.206],
+    DdS30: [0.227, 0.206],
+    Dd31: [0.823, 0.307],
+    Dd99: [0.865, 0.9],
+  },
 };
 
 /** La lámina es más ancha que alta, y las distancias hay que medirlas parejas. */
@@ -190,8 +210,8 @@ function adentro(x: number, y: number, partes: Parte[]): boolean {
  * lámina nueva) cae en el medio de su pedazo más grande, que alcanza para no
  * dejarla sin nombre.
  */
-function puesto(nombre: string, partes: Parte[]): Puesto {
-  const marcado = TAGS[nombre];
+function puesto(lamina: string, nombre: string, partes: Parte[]): Puesto {
+  const marcado = TAGS[lamina]?.[nombre];
   const x = marcado ? marcado[0] : promedio(partes, 0);
   const y = marcado ? marcado[1] : promedio(partes, 1);
   if (adentro(x, y, partes)) return { x, y, ax: x, ay: y };
@@ -249,11 +269,14 @@ function camino(parte: Parte): string {
 export default function Capturador({
   evaluacionId,
   nombre,
+  lamina,
   desde,
   repetidas,
 }: {
   evaluacionId: string;
   nombre: string;
+  /** Cuál se está codificando: la pantalla es la misma para las diez. */
+  lamina: string;
   /** Desde qué número seguir: el protocolo se numera corrido, no por lámina. */
   desde: number;
   /** Cuántas respuestas de la lámina I ya están cargadas en la ficha. */
@@ -290,6 +313,10 @@ export default function Capturador({
    * del OS antes de un borrado.
    */
   const [aBorrar, setABorrar] = useState<number | null>(null);
+  const router = useRouter();
+  // El archivo de la lámina va por número y la codificación por su romano.
+  const numeroDeLamina = ORDEN.indexOf(lamina) + 1;
+  const anterior = numeroDeLamina > 1 ? ORDEN[numeroDeLamina - 2] : null;
   const [guardando, setGuardando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -314,9 +341,9 @@ export default function Capturador({
    */
   const opciones: Hallazgo[] = useMemo(() => {
     const q = plano(dijo.trim());
-    if (puestas.length === 0) return q ? buscar(LAMINA, dijo).slice(0, 40) : [];
+    if (puestas.length === 0) return q ? buscar(lamina, dijo).slice(0, 40) : [];
     const suyas = puestas
-      .flatMap((a) => entradasDe(LAMINA, a))
+      .flatMap((a) => entradasDe(lamina, a))
       .sort((x, y) => x.respuesta.localeCompare(y.respuesta, 'es') || x.area.localeCompare(y.area));
     if (!q) return suyas;
     // Primero lo que empieza con lo escrito y después lo que lo contiene, como
@@ -356,7 +383,7 @@ export default function Capturador({
       h && areas.includes(h.area)
         ? h
         : areas
-            .flatMap((a) => entradasDe(LAMINA, a))
+            .flatMap((a) => entradasDe(lamina, a))
             .find((e) => e.respuesta === respuesta) ?? null;
     const locs = localizacionesDe(areas[0]);
     setRespuestas((rs) => [
@@ -375,7 +402,7 @@ export default function Capturador({
         // esa. Con varias y sin elegir queda pendiente para la fila.
         localizacion: dq ?? (locs.length === 1 ? locs[0] : null),
         contenidos: contenidoSugerido(respuesta),
-        popular: esPopular(LAMINA, areas[0], respuesta),
+        popular: esPopular(lamina, areas[0], respuesta),
         integradas: false,
         blancoIntegrado: false,
         observacion: '',
@@ -407,7 +434,7 @@ export default function Capturador({
   }
 
   function zDe(r: Respuesta) {
-    return puntajeZ(LAMINA, {
+    return puntajeZ(lamina, {
       areas: r.areas,
       localizacion: r.localizacion,
       integradas: r.integradas,
@@ -415,7 +442,14 @@ export default function Capturador({
     });
   }
 
-  async function guardar() {
+  /**
+   * Pasa lo capturado a la ficha y abre la lámina que se pida.
+   *
+   * Todos los caminos para cambiar de lámina pasan por acá, también los
+   * números del pie: irse sin guardar perdería lo capturado de esta lámina, y
+   * nadie espera que apretar "IV" tire lo que acaba de anotar.
+   */
+  async function guardar(destino: string | null = siguienteDe(lamina)) {
     setGuardando(true);
     setAviso(null);
     let mal = 0;
@@ -426,7 +460,7 @@ export default function Capturador({
         body: JSON.stringify({
           evaluacionId,
           campos: {
-            lamina: LAMINA,
+            lamina: lamina,
             n_respuesta: r.n,
             // La ficha guarda el número del área y la letra va en la
             // localización: D1 es localizacion 'Do' con n_localizacion '1'. W
@@ -457,12 +491,14 @@ export default function Capturador({
       setAviso(`Quedaron ${mal} respuestas sin pasar. Miralo antes de seguir.`);
       return;
     }
-    const sigue = siguienteDe(LAMINA);
+    const sigue = destino;
     if (sigue && CARGADAS.includes(sigue)) {
-      // Acá va la lámina siguiente cuando esté cargada. Lo capturado ya está en
-      // la ficha, así que la pantalla puede empezar de cero.
-      setRespuestas([]);
-      setAviso(null);
+      // Lo capturado ya está en la ficha, así que la pantalla puede empezar de
+      // cero en la lámina que sigue. Va por la dirección y no por estado: el
+      // número de respuesta desde el que sigue numerando lo tiene que volver a
+      // contar el servidor.
+      router.push(`?lamina=${sigue}`);
+      router.refresh();
       return;
     }
     setAviso(
@@ -492,12 +528,12 @@ export default function Capturador({
         </div>
 
         <div className="os-ror-mapas">
-          {MAPAS.map((grupo, g) => (
+          {(MAPAS[lamina] ?? []).map((grupo, g) => (
             <div key={g} className="os-ror-lienzo">
-              <img src="/api/os/lamina/rorschach/1" alt="Lámina I" />
+              <img src={`/api/os/lamina/rorschach/${numeroDeLamina}`} alt={`Lámina ${lamina}`} />
               <svg viewBox="0 0 100 100" preserveAspectRatio="none">
                 {grupo.map((a) =>
-                  (AREAS[a] ?? []).map((parte, i) => (
+                  (AREAS[lamina]?.[a] ?? []).map((parte, i) => (
                     <path
                       key={`${a}-${i}`}
                       d={camino(parte)}
@@ -516,7 +552,7 @@ export default function Capturador({
                     cuadernillo: dice cuál nombra a cuál cuando dos quedan
                     cerca. */}
                 {grupo.map((a) => {
-                  const c = puesto(a, AREAS[a] ?? []);
+                  const c = puesto(lamina, a, AREAS[lamina]?.[a] ?? []);
                   // Sin distancia entre el borde y el nombre no hay línea que
                   // dibujar: el nombre está adentro del área.
                   if (Math.abs(c.y - c.ay) + Math.abs(c.x - c.ax) < 0.01) return null;
@@ -533,7 +569,7 @@ export default function Capturador({
                 })}
               </svg>
               {grupo.map((a) => {
-                const c = puesto(a, AREAS[a] ?? []);
+                const c = puesto(lamina, a, AREAS[lamina]?.[a] ?? []);
                 return (
                   <button
                     key={a}
@@ -688,6 +724,48 @@ export default function Capturador({
 
       {/* -------------------------------------------------------- lo capturado */}
       <section className="os-panel os-ror-capturadas">
+        {/* El protocolo se toma en orden, y aun así hay que poder volver: una
+            respuesta que la persona agrega al final es de la lámina que ya
+            pasó. Por eso las diez están en el pie, con la actual marcada, y no
+            solo el botón de seguir. Las que todavía no tienen su mapa quedan
+            apagadas. Se puede pasar sin haber capturado nada: no todas las
+            láminas dan respuestas. */}
+        <div className="os-ror-pie">
+          <button
+            type="button"
+            className="os-boton"
+            disabled={guardando || !anterior}
+            onClick={() => guardar(anterior)}
+          >
+            ← Lámina anterior
+          </button>
+
+          <div className="os-ror-laminas">
+            {ORDEN.map((n) => (
+              <button
+                key={n}
+                type="button"
+                className={`os-boton os-boton-fila${n === lamina ? ' os-boton-firme' : ''}`}
+                disabled={guardando || !CARGADAS.includes(n)}
+                onClick={() => guardar(n)}
+                title={CARGADAS.includes(n) ? `Lámina ${n}` : `La lámina ${n} todavía no está cargada`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            className="os-boton os-boton-firme"
+            disabled={guardando}
+            onClick={() => guardar()}
+          >
+            {guardando ? 'Pasando…' : 'Próxima lámina →'}
+          </button>
+        </div>
+        {aviso && <p className="os-form-ok">{aviso}</p>}
+
         {/* Los rótulos son los de la tabla de codificación de la ficha, con su
             mismo nombre: el área marcada en el mapa es el número de localización
             de allá, y llamarla "áreas" acá obligaba a traducir al pasar de una
@@ -870,18 +948,6 @@ export default function Capturador({
             ))}
           </ul>
         )}
-
-        <div className="os-ror-pie">
-          <button
-            type="button"
-            className="os-boton os-boton-firme"
-            disabled={respuestas.length === 0 || guardando}
-            onClick={guardar}
-          >
-            {guardando ? 'Pasando…' : 'Próxima lámina'}
-          </button>
-        </div>
-        {aviso && <p className="os-form-ok">{aviso}</p>}
       </section>
     </div>
   );

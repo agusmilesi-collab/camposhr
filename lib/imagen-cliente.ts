@@ -86,20 +86,33 @@ export async function achicar(archivo: File, lado = 1600, calidad = 0.75): Promi
  *
  * El número va impreso sobre cada casilla porque la hoja se mira meses después
  * de la entrevista: sin él, hay que reconocer la lámina por el dibujo, que es
- * justamente lo que puede estar deformado.
+ * justamente lo que puede estar deformado. Se puede pedir sin rótulos, que es
+ * lo que corresponde cuando cada foto ya es una hoja entera.
+ *
+ * **Las casillas son cuadradas salvo que se diga otra cosa.** Con nueve fotos
+ * de lámina eso está bien; con una hoja A4 vertical, la casilla cuadrada deja
+ * una franja de blanco a cada lado del dibujo, y por eso `alto` permite darle
+ * a la casilla la proporción de lo que se está pegando.
  */
 export async function componer(
   archivos: File[],
-  opciones: { columnas?: number; lado?: number; calidad?: number; rotulos?: string[] } = {}
+  opciones: {
+    columnas?: number;
+    lado?: number;
+    alto?: number;
+    calidad?: number;
+    rotulos?: string[];
+  } = {}
 ): Promise<Blob> {
   const columnas = opciones.columnas ?? 3;
   const lado = opciones.lado ?? LADO;
+  const alto = opciones.alto ?? lado;
   const calidad = opciones.calidad ?? CALIDAD;
   const filas = Math.ceil(archivos.length / columnas);
 
   const lienzo = document.createElement('canvas');
   lienzo.width = columnas * lado;
-  lienzo.height = filas * lado;
+  lienzo.height = filas * alto;
   const ctx = lienzo.getContext('2d');
   if (!ctx) throw new Error('No se pudo armar la imagen.');
   ctx.fillStyle = '#ffffff';
@@ -108,18 +121,19 @@ export async function componer(
 
   for (let i = 0; i < archivos.length; i++) {
     const x = (i % columnas) * lado;
-    const y = Math.floor(i / columnas) * lado;
+    const y = Math.floor(i / columnas) * alto;
     const img = await leer(archivos[i]);
     if (img) {
-      encajar(ctx, img, x + 8, y + 8, lado - 16, lado - 16);
+      encajar(ctx, img, x + 8, y + 8, lado - 16, alto - 16);
       img.close();
     }
 
     // La línea que separa una hoja de la siguiente, y su número.
     ctx.strokeStyle = '#d8d4cc';
     ctx.lineWidth = 2;
-    ctx.strokeRect(x + 1, y + 1, lado - 2, lado - 2);
-    const rotulo = opciones.rotulos?.[i] ?? String(i + 1);
+    ctx.strokeRect(x + 1, y + 1, lado - 2, alto - 2);
+    const rotulo = opciones.rotulos?.[i];
+    if (!rotulo) continue;
     ctx.font = `600 ${Math.round(lado * 0.045)}px ui-sans-serif, system-ui, sans-serif`;
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(x + 10, y + 10, ctx.measureText(rotulo).width + 20, Math.round(lado * 0.07));

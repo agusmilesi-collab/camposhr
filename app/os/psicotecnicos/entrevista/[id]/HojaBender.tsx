@@ -1,27 +1,27 @@
 'use client';
 
 /**
- * Las nueve láminas que dibujó la persona, subidas juntas.
+ * Lo que la persona dibujó del Bender, en una imagen.
  *
- * Llegan por WhatsApp como nueve fotos de teléfono, una por lámina. Se eligen
- * las nueve de una vez y el navegador las achica y las une en una sola imagen
- * antes de que salgan de acá: subirlas enteras sería mandar unos treinta megas
- * para guardar menos de dos, y dejaría nueve archivos sueltos que hay que
- * volver a ordenar cada vez que se abre la evaluación.
+ * Hoy las nueve figuras vienen hechas en una misma hoja, así que es una foto y
+ * a lo sumo dos. Antes eran nueve, una por lámina, y por eso esto compone: si
+ * llegan varias se unen en una sola imagen antes de subirlas, y si llega una va
+ * derecho. En los dos casos el navegador la achica primero, que es lo que evita
+ * mandar treinta megas para guardar menos de dos.
  *
- * El orden es el de los nombres de archivo, que es el que trae WhatsApp. La
- * hoja sale rotulada con el nombre de cada lámina (A y 1 a 8), así que si
- * alguna quedó en el lugar equivocado se ve al mirarla y se vuelven a subir.
+ * Ya no se rotula cada figura: el rótulo tenía sentido cuando cada foto era una
+ * lámina suelta y había que ver si alguna quedó fuera de orden. Sobre una hoja
+ * con las nueve, escribiría encima del dibujo.
  */
 
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
-import { componer } from '@/lib/imagen-cliente';
+import { achicar, componer } from '@/lib/imagen-cliente';
+
+/** El ancho de casilla que usa `componer` por defecto. */
+const LADO_HOJA = 860;
 import SoltarArchivo from '@/app/os/SoltarArchivo';
 import IconoSoltar from '@/app/os/IconoSoltar';
-
-/** Cómo se llaman las láminas del Bender, en orden. */
-const LAMINAS = ['A', '1', '2', '3', '4', '5', '6', '7', '8'];
 
 export default function HojaBender({ id, hoja }: { id: string; hoja: string | null }) {
   const router = useRouter();
@@ -33,16 +33,29 @@ export default function HojaBender({ id, hoja }: { id: string; hoja: string | nu
   async function subir(archivos: File[]) {
     setError(null);
     if (archivos.length > 9) {
-      setError('Son nueve láminas como máximo.');
+      setError('Son nueve fotos como máximo.');
       return;
     }
     try {
-      setTrabajando('Armando la hoja…');
+      setTrabajando(archivos.length > 1 ? 'Armando la hoja…' : 'Achicando…');
       // Por nombre, que es el orden en que las mandó el teléfono.
       const orden = [...archivos].sort((a, b) =>
         a.name.localeCompare(b.name, 'es', { numeric: true })
       );
-      const hoja = await componer(orden, { columnas: 3, rotulos: LAMINAS });
+      // Una sola foto va tal cual, solo achicada: componerla la metía en una
+      // casilla cuadrada de una grilla de tres, y la imagen guardada quedaba
+      // con dos tercios de blanco al lado del dibujo. Varias sí se componen,
+      // una debajo de otra mientras sean pocas, porque son hojas enteras y en
+      // tres columnas quedarían del tamaño de una estampilla.
+      const hoja =
+        orden.length === 1
+          ? await achicar(orden[0])
+          : await componer(orden, {
+              columnas: orden.length > 4 ? 3 : 1,
+              // Una hoja A4 es más alta que ancha: en casilla cuadrada quedaba
+              // una franja de blanco a cada lado.
+              alto: orden.length > 4 ? undefined : Math.round(LADO_HOJA * 1.35),
+            });
 
       setTrabajando('Subiendo…');
       const cuerpo = new FormData();
@@ -86,27 +99,30 @@ export default function HojaBender({ id, hoja }: { id: string; hoja: string | nu
           que se hace entonces. */}
       {hoja ? (
         <>
+          {/* La miniatura, que es lo que dice de una si el dibujo está y cuál
+              es: el botón de ver obligaba a abrirlo para saberlo. Se aprieta y
+              abre la imagen entera. */}
           <a
-            className="os-boton os-bender-ver"
+            className="os-papel-mini"
             href={`/api/os/bender?id=${id}`}
             target="_blank"
             rel="noreferrer"
             title={hoja}
           >
-            Ver dibujo
+            <img src={`/api/os/bender?id=${id}`} alt="Lo que dibujó" />
           </a>
           <SoltarArchivo
             className="os-bender-subir"
             deshabilitado={Boolean(trabajando)}
             onArchivos={(xs) => subir(xs)}
-            aviso="Soltá las fotos"
+            aviso="Soltá la foto"
           >
             <button
               className="os-boton os-bender-subir"
               type="button"
               disabled={Boolean(trabajando)}
               onClick={() => campo.current?.click()}
-              title="Elegí las nueve fotos juntas, o soltalas acá"
+              title="Elegí la foto de la hoja, o soltala acá"
             >
               {trabajando ?? 'Reemplazar'}
             </button>
@@ -117,7 +133,7 @@ export default function HojaBender({ id, hoja }: { id: string; hoja: string | nu
           className="os-bender-caja"
           deshabilitado={Boolean(trabajando)}
           onArchivos={(xs) => subir(xs)}
-          aviso="Soltá las fotos"
+          aviso="Soltá la foto"
         >
           <button
             type="button"
@@ -126,7 +142,7 @@ export default function HojaBender({ id, hoja }: { id: string; hoja: string | nu
             onClick={() => campo.current?.click()}
           >
             <IconoSoltar />
-            {trabajando ?? 'Soltá las nueve fotos acá o elegilas'}
+            {trabajando ?? 'Soltá la hoja acá o elegila'}
           </button>
         </SoltarArchivo>
       )}

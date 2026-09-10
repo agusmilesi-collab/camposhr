@@ -40,9 +40,11 @@ const CASOS: Caso[] = [
     espera: 'ZA 4',
   },
   {
-    // D4 (el centro) y D7 (el ala) no se tocan: entre medio está D2.
+    // D7 y Dd31 son el ala de arriba y el pie: no se tocan por ningún lado.
+    // El caso usaba D4 y D7, que dejaron de servir cuando D4 se corrigió y pasó
+    // a llegar hasta los cuernos: ahí sí toca el ala, y el par es adyacente.
     que: 'dos áreas distantes, integradas',
-    s: { areas: ['D4', 'D7'], localizacion: 'D+', integradas: true, blancoIntegrado: false },
+    s: { areas: ['D7', 'Dd31'], localizacion: 'D+', integradas: true, blancoIntegrado: false },
     espera: 'ZD 6',
   },
   {
