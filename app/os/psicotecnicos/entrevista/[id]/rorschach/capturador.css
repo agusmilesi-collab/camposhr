@@ -90,10 +90,16 @@
   overflow: hidden;
 }
 
+/* La lámina va en grises en el mapa, aunque la II y las últimas tengan color.
+   El contorno de las áreas es rojo y sobre la tinta roja de la II no se
+   distinguía cuál era el borde del área y cuál la mancha. Acá se elige dónde
+   vio la persona, no de qué color: el color lo ve ella en la lámina que se le
+   muestra, que es otra pantalla y va sin filtro. */
 .os-ror-lienzo img {
   width: 100%;
   height: auto;
   display: block;
+  filter: grayscale(1);
 }
 
 .os-ror-lienzo svg {
@@ -130,19 +136,21 @@
      unidades del viewBox (que mide 100) el contorno quedaba en un cuarto de
      píxel y no se veía ninguna área. */
   vector-effect: non-scaling-stroke;
-  stroke-width: 1;
+  /* Dos píxeles y no uno: en los mapas chicos, con el trazo de un píxel el
+     contorno se pierde contra el borde de la mancha. */
+  stroke-width: 2;
   cursor: pointer;
   transition: fill 120ms ease;
 }
 
 .os-ror-area-encima {
   fill: rgba(220, 40, 40, 0.35);
-  stroke-width: 2;
+  stroke-width: 3;
 }
 
 .os-ror-area-puesta {
   fill: rgba(220, 40, 40, 0.5);
-  stroke-width: 2.5;
+  stroke-width: 3.5;
 }
 
 /* El nombre del área sobre su pedazo más grande, como los rótulos del
@@ -665,17 +673,33 @@
   background: color-mix(in srgb, var(--os-ambar) 10%, transparent);
 }
 
-/* El pie quedó con un solo botón, así que va contra el borde derecho: repartido
-   a los extremos, un botón solo se pega a la izquierda y la fila se lee como si
-   faltara algo al lado. */
+/* La navegación entre láminas: volver a la izquierda, las diez en el medio y
+   seguir a la derecha. Va arriba de lo capturado y no al pie, porque con veinte
+   respuestas cargadas quedaba al final de una lista larga y había que
+   desplazarse hasta abajo para cambiar de lámina. Los números van juntos y
+   centrados, que es como se lee una serie. */
 .os-ror-pie {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 16px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--os-linea);
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-ror-laminas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* Cuadrados: son números romanos de uno a cuatro caracteres y con el ancho de
+   cada texto la fila quedaba dentada. */
+.os-ror-laminas .os-boton {
+  min-width: 42px;
+  padding: 0 6px;
 }
 
 .os-ror-aclaracion {

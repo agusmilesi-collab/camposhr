@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * La hoja del Bender: las nueve láminas dibujadas, en una imagen.
+ * La hoja del Bender: lo que dibujó la persona, en una imagen.
  *
  * Lo que llega acá ya está armado y comprimido: las nueve fotos se unen en el
  * navegador de la evaluadora, que es donde están. Subirlas de a una sería
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, motivo: 'La hoja supera los 8 MB.' }, { status: 400 });
   }
   if (!Number.isInteger(cuantas) || cuantas < 1 || cuantas > 9) {
-    return NextResponse.json({ ok: false, motivo: 'Cantidad de láminas inválida.' }, { status: 400 });
+    return NextResponse.json({ ok: false, motivo: 'Cantidad de fotos inválida.' }, { status: 400 });
   }
 
   try {

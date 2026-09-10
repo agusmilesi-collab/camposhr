@@ -10160,9 +10160,57 @@ button.os-test-estado:hover:not(:disabled) {
   font-weight: 600;
 }
 
+/*
+ * Lo que la persona dejó dibujado, al lado del campo de observaciones.
+ *
+ * Con dibujo cargado son dos botones, ver y reemplazar, y van uno al lado del
+ * otro repartiéndose el ancho: declarados en la columna 2 y en la 3 de una
+ * grilla que no tenía columnas, cada uno abría la suya y quedaban en dos
+ * renglones distintos y corridos hacia la derecha. Sin dibujo es la caja de
+ * soltar, que se lleva el ancho entero.
+ */
 .os-papel-dibujos {
   display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-content: start;
   gap: 8px;
+}
+
+/* Con dibujo cargado, la miniatura arriba y el botón debajo, del ancho que
+   pide su texto y a la altura del Guardar que tiene enfrente: estirado a lo
+   ancho o al costado pesaba más que el dibujo, que es lo que hay que mirar. */
+.os-papel-dibujos:has(.os-papel-mini) {
+  grid-auto-flow: row;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+}
+
+/* El recuadro toma la forma de la imagen: fijo y apaisado, una hoja vertical
+   quedaba como una franja angosta en el medio de un rectángulo blanco. Lo que
+   manda es el alto, que es el del campo de observaciones que tiene al lado, y
+   el ancho sale de la proporción del dibujo. */
+.os-papel-mini {
+  display: block;
+  height: 78px;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  overflow: hidden;
+}
+
+.os-papel-mini img {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.os-papel-mini:hover {
+  border-color: var(--os-suave);
 }
 
 /* La caja de soltar, del alto exacto del campo que tiene al lado: nueve
@@ -10174,21 +10222,21 @@ button.os-test-estado:hover:not(:disabled) {
 }
 
 .os-papel-dibujos > .os-bender-ver {
-  grid-column: 2;
   text-align: center;
-}
-
-.os-papel-dibujos > .os-bender-subir {
-  grid-column: 3;
 }
 
 .os-papel-dibujos > .os-enlace-apagado {
   justify-self: center;
 }
 
-.os-papel-dibujos .os-form-error {
+/* El aviso de error va abajo y cruzado, no en una columna al lado de los
+   botones. */
+.os-papel-dibujos > .os-form-error {
+  grid-row: 2;
   grid-column: 1 / -1;
 }
+
+
 
 .os-enlace-apagado {
   font-size: 0.8rem;

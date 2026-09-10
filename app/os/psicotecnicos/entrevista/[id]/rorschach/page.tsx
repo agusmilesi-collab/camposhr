@@ -5,6 +5,7 @@ import { entrevistaDe } from '@/lib/entrevista';
 import { quienSoy } from '@/lib/identidad';
 import { select } from '@/lib/supabase';
 import Capturador from './Capturador';
+import { CARGADAS } from '@/lib/rorschach-laminas';
 import './capturador.css';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
@@ -18,10 +19,23 @@ export const dynamic = 'force-dynamic';
  * lo que la persona ve. Lo que se le muestra a ella es `/os/laminas/rorschach`,
  * que es la lámina sola.
  */
-export default async function CodificarRorschach({ params }: { params: { id: string } }) {
+export default async function CodificarRorschach({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { lamina?: string };
+}) {
   const yo = await quienSoy();
   const e = await entrevistaDe(params.id);
   if (!e) notFound();
+
+  // La lámina viene en la dirección, así el botón de pasar a la siguiente no
+  // necesita más que un enlace, y volver a una ya codificada es cambiar el
+  // número. Una que no está cargada no tiene mapa que mostrar.
+  const lamina = CARGADAS.includes(searchParams.lamina ?? '')
+    ? (searchParams.lamina as string)
+    : 'I';
 
   // El número de respuesta es correlativo de todo el protocolo, no de la
   // lámina, así que hay que mirar lo que ya está cargado antes de numerar. Sin
@@ -32,7 +46,7 @@ export default async function CodificarRorschach({ params }: { params: { id: str
     `select=n_respuesta,lamina&evaluacion_id=eq.${params.id}`
   );
   const desde = Math.max(0, ...yaEstan.map((r) => r.n_respuesta ?? 0)) + 1;
-  const repetidas = yaEstan.filter((r) => r.lamina === 'I').length;
+  const repetidas = yaEstan.filter((r) => r.lamina === lamina).length;
 
   const cuentas = await cuentasDeLaBarra();
 
@@ -43,7 +57,7 @@ export default async function CodificarRorschach({ params }: { params: { id: str
       </Link>
 
       <div className="os-encabezado">
-        <h1>Rorschach · Lámina I</h1>
+        <h1>Rorschach · Lámina {lamina}</h1>
         <p>
           {e.nombre} · se codifica en la encuesta, cuando ella dice dónde vio cada cosa
         </p>
@@ -52,6 +66,7 @@ export default async function CodificarRorschach({ params }: { params: { id: str
       <Capturador
         evaluacionId={params.id}
         nombre={e.nombre}
+        lamina={lamina}
         desde={desde}
         repetidas={repetidas}
       />
