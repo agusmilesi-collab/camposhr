@@ -322,35 +322,87 @@
    y abajo las cuatro que admite su área. Apretar una carga la respuesta, así que
    son dos toques en total y no hay que volver a la tabla. Mientras dura, el
    campo y la lista no están: no hay nada que buscar. */
+/* Ocupa la tarjeta entera y no es una tarjeta adentro de otra: mientras espera
+   la calidad evolutiva, confirmar esa respuesta es lo único que hay para hacer
+   en esa celda. */
 .os-ror-dq {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 14px;
-  border: 1px solid var(--os-linea);
-  border-radius: 6px;
-  background: var(--os-panel-2);
 }
 
 /* La respuesta elegida es lo que se está confirmando, así que se lee de un
    vistazo: es el dato contra el que se decide la calidad evolutiva. */
 .os-ror-dq-que {
   margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
+/* Las locaciones van en su propio renglón, debajo de lo que se vio: al lado
+   del texto se leían como una palabra más de la respuesta. */
 .os-ror-dq-area {
-  margin-left: 10px;
+  display: block;
+  margin-top: 2px;
   color: var(--os-suave);
   font-size: 17px;
   font-weight: 400;
+}
+
+/* Los tildes y las dos salidas, en la banda del medio: separada por una línea
+   de las locaciones de arriba y otra de las calidades de abajo, que son tres
+   cosas distintas y se leían como un bloque solo. */
+.os-ror-dq-medio {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  /* Los tildes arrancan con aire desde la línea de arriba: pegados a ella se
+     leían como parte de las locaciones. */
+  padding: 18px 0 10px;
+  border-top: 1px solid var(--os-linea);
+  border-bottom: 1px solid var(--os-linea);
+}
+
+/* Los dos tildes del puntaje, entre lo que se vio y la calidad que cierra. */
+.os-ror-dq-tildes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* El que no puede cambiar nada en esta respuesta: se ve, para que el paso sea
+   siempre el mismo, y se lee que no está disponible. */
+.os-ror-tilde.apagado {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .os-ror-dq-fila {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Las calidades y las dos salidas, al pie de la tarjeta: el aire que sobra
+   queda entre lo que se lee y lo que se decide. */
+.os-ror-dq-cierre {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: auto;
+}
+
+/* Las dos salidas, una sobre otra y del mismo ancho. */
+.os-ror-dq-pie {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: stretch;
   gap: 6px;
 }
 
@@ -361,15 +413,15 @@
 /* Grandes: son cuatro y se eligen de un toque, y el símbolo que las distingue
    es de uno o tres caracteres. */
 .os-ror-dq-opcion {
-  min-width: 64px;
-  height: 38px;
-  padding: 0 14px;
+  min-width: 86px;
+  height: 52px;
+  padding: 0 18px;
   border: 1px solid var(--os-linea);
   border-radius: 999px;
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 15px;
+  font-size: 19px;
   cursor: pointer;
 }
 
@@ -494,14 +546,14 @@
   padding: 10px 0;
 }
 
-/* Lo que ya está en la ficha se lee más apagado que lo que se está
-   capturando: se muestra para no tener que abrir la ficha al lado, pero lo que
-   se está haciendo ahora es lo de abajo. */
-.os-ror-fila-ficha {
+/* La que se tomó y todavía no se codificó: se muestra para que la tabla tenga
+   todas las respuestas de la lámina en orden, apagada porque lo que se hace con
+   ella es codificarla arriba. */
+.os-ror-fila-tomada {
   opacity: 0.6;
 }
 
-.os-ror-fila-ficha .os-ror-dijo {
+.os-ror-fila-tomada .os-ror-dijo {
   font-style: italic;
   font-weight: 400;
   color: var(--os-suave);
@@ -523,7 +575,7 @@
      al apretar la cruz la columna crecía, les robaba ancho a las de texto y la
      fila dejaba de coincidir con sus rótulos. */
   grid-template-columns:
-    64px minmax(0, 1.5fr) 88px 104px 64px minmax(0, 1fr) 56px 80px 150px;
+    64px minmax(0, 1.5fr) 150px 104px 64px minmax(0, 1fr) 56px 80px 64px;
   gap: 10px;
   align-items: center;
   font-size: 13px;
@@ -679,6 +731,20 @@
   padding-left: 6px;
 }
 
+/* Los dos botones de confirmar el borrado, en la columna de dos íconos: no
+   entran en un renglón, así que se ponen uno sobre otro y la fila crece
+   mientras se pregunta. */
+.os-ror-acciones {
+  flex-wrap: wrap;
+}
+
+.os-ror-acciones .os-boton-fila {
+  flex: 1 0 100%;
+  padding: 0 4px;
+  font-size: 11px;
+}
+
+
 .os-ror-n {
   opacity: 0.6;
 }
@@ -687,12 +753,75 @@
   font-weight: 500;
 }
 
+/* Las locaciones van todas en un renglón: con dos filas la respuesta ocupaba
+   el doble de alto y la tabla dejaba de leerse de un vistazo. Con tres o más,
+   lo que se achica es la etiqueta, no la fila. */
 .os-ror-areas {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
   font-variant-numeric: tabular-nums;
+}
+
+.os-ror-areas-chicas {
+  gap: 3px;
+}
+
+.os-ror-areas-chicas .os-ror-etiqueta {
+  height: 21px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.os-ror-areas-mini {
+  gap: 2px;
+}
+
+.os-ror-areas-mini .os-ror-etiqueta {
+  height: 19px;
+  padding: 0 4px;
+  font-size: 10px;
+}
+
+/* Las locaciones se leen más que ningún otro código de la fila: es dónde vio
+   lo que vio, y se comparan contra el mapa de al lado. */
+.os-ror-areas .os-ror-etiqueta {
+  height: 24px;
+  padding: 0 9px;
+  font-size: 13px;
 }
 
 .os-ror-dato {
   opacity: 0.85;
+}
+
+/* El botón que abre lo de abajo de la fila: el lápiz, porque ahí adentro se
+   corrige el puntaje y se escribe la observación. Abierto queda marcado. */
+.os-ror-abrir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--os-suave);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.os-ror-abrir:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+.os-ror-abrir.puesta {
+  background: var(--os-hover);
+  color: var(--os-tinta);
 }
 
 .os-ror-z {
@@ -702,14 +831,76 @@
 /* Lo de abajo del renglón (la nota, las confirmaciones de Z) arranca donde
    arranca la respuesta, que es el ancho de la primera columna: alineado con el
    borde del panel se leía como otro bloque y no como parte de esa respuesta. */
-.os-ror-fila-z {
+/* `hidden` esconde con `display: none`, que pesa menos que esta clase: sin
+   esto, cerrar el detalle no lo sacaba de la fila. */
+/* `hidden` esconde con `display: none`, que pesa menos que esta clase. */
+.os-ror-detalle[hidden] {
+  display: none;
+}
+
+/*
+ * El detalle de la fila, en dos columnas parejas.
+ *
+ * A la izquierda de dónde sale el puntaje Z (los dos tildes que lo deciden y el
+ * porqué), a la derecha la observación. Arranca donde arranca la respuesta, que
+ * es el ancho de la primera columna, así se lee como parte de esa fila y no
+ * como un bloque suelto.
+ */
+.os-ror-detalle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 10px 24px;
+  margin-top: 8px;
+  padding: 12px 8px 12px 79px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+/* Cada renglón con su alto reservado: los tildes, el porqué, lo descartado y
+   los avisos ocupan lo mismo estén llenos o vacíos, así el detalle de dos
+   respuestas distintas se ve igual. */
+.os-ror-detalle-lado {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 14px;
-  margin-top: 6px;
-  /* Los 64 de la primera columna más los 15 con que arranca la respuesta. */
-  padding-left: 79px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+}
+
+.os-ror-detalle-lado > .os-dato-rotulo {
+  min-height: 16px;
+}
+
+.os-ror-detalle .os-ror-tilde {
+  min-height: 20px;
+}
+
+.os-ror-detalle .os-ror-porque {
+  min-height: 16px;
+}
+
+/* La observación, cruzando las dos columnas. */
+.os-ror-detalle-nota {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+}
+
+/* El lugar de los avisos: dos renglones, aunque no haya ninguno. */
+.os-ror-dudas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  min-height: 46px;
+}
+
+.os-ror-detalle .os-ror-observacion {
+  width: 100%;
+  resize: vertical;
 }
 
 .os-ror-tilde {
@@ -803,16 +994,14 @@
 
 /* La nota va en la misma línea que las confirmaciones del puntaje Z: es lo que
    se escribe mientras la persona habla, no algo que se abre aparte. */
-/* La nota es de una línea y mide siempre lo mismo, y va primera aunque en el
-   marcado esté al final: detrás del porqué del puntaje Z, arrancaba y terminaba
-   en un lugar distinto en cada fila según lo que tuviera al lado, y una columna
-   de campos que no coinciden se lee como si estuvieran corridos. */
+/* La nota ocupa su columna del detalle, con tres renglones de alto: es donde
+   se escribe lo que no entra en ningún código. */
 .os-ror-observacion {
-  order: -1;
-  flex: 0 0 600px;
-  height: 26px;
-  padding: 2px 8px;
+  width: 100%;
+  height: 52px;
+  padding: 6px 8px;
   font-size: 12px;
+  line-height: 1.4;
 }
 
 /* ── Los dos momentos de la administración ────────────────────────────────
@@ -1375,9 +1564,16 @@ input.os-ror-dichas-texto:focus {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: 8px;
-  padding-top: 10px;
+  margin-top: 6px;
+  padding-top: 8px;
   border-top: 1px solid var(--os-linea-suave);
+}
+
+/* Cómo va a quedar la respuesta: es un renglón más de la lista de objetos, sin
+   el aire de un párrafo aparte. */
+.os-ror-trozos > .os-ror-vacio {
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 .os-ror-trozo {
