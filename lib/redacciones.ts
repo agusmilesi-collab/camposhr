@@ -281,6 +281,7 @@ export const TEXTOS = {
     indice: 'Zd',
     corte: { op: 'mayor', valor: 3, decimales: 1 },
     zulliger: {
+      aplica: false,
       dice: [
         'Analiza la información con mucho más detalle que la mayoría: rastrea, revisa y gasta energía extra para no equivocarse. Cuando la presión externa aprieta, esa manera de decidir le puede fallar.',
         'Dedica al examen de los datos más tiempo del que la tarea pide, movida por el temor a errar. Bajo apuro, ese mismo cuidado le complica la decisión.',
@@ -308,6 +309,7 @@ export const TEXTOS = {
     indice: 'Zd',
     corte: { op: 'menor', valor: -3, decimales: 1 },
     zulliger: {
+      aplica: false,
       dice: [
         'Recorre el entorno de manera apresurada: junta menos datos de los necesarios y decide antes de que aparezcan todos los puntos clave. Por eso puede cometer más errores.',
         'Explora la información sin detenerse lo suficiente y resuelve con una parte de los datos. Esa prisa le hace pasar por alto puntos que después pesan.',
@@ -378,7 +380,7 @@ export const TEXTOS = {
   'dd-alto': {
     area: 'Cómo procesa la información',
     indice: 'Dd',
-    cuando: 'Dd en más del 15 % de las localizaciones',
+    cuando: 'Dd en más del 5 % de las localizaciones',
     zulliger: {
       dice: [
         'Está muy preocupada por la exactitud y tiene miedo a cometer errores, y por eso se fija en cuestiones que para otros pueden ser insignificantes. Este indicador puede mostrar falta de confianza en sí misma.',
@@ -420,7 +422,17 @@ export const TEXTOS = {
   'localizacion-ok': {
     area: 'Cómo procesa la información',
     indice: 'W:D:Dd',
-    cuando: 'W del 35 % o más, D del 60 % o más y Dd hasta el 5 %',
+    cuando: 'W cerca del 35 %, D cerca del 60 % y Dd hasta el 5 %',
+    /* En el Zulliger lo esperado son cantidades y no porcentajes: W de 2 a 5,
+       D de 3 a 6 y Dd de 0 a 2. Definido por las psicólogas el 10/9/2026. */
+    zulliger: {
+      dice: [
+        'Absorbe los datos del entorno tanto desde los detalles como también consigue una visión global de las situaciones.',
+        'Toma la información del entorno por sus detalles y a la vez se forma una visión de conjunto.',
+        'Mira el detalle y el panorama completo, sin quedarse en uno solo de los dos.',
+      ],
+      recomienda: [''],
+    },
     dice: [
       'Logra captar datos tanto desde una visión global como desde los detalles.',
       'Toma la información completa y también sus detalles.',
@@ -471,6 +483,354 @@ export const TEXTOS = {
       'Revisar con él el criterio de sus decisiones al principio, para poder corregirlo a tiempo.',
     ],
   },
+  /**
+   * MOR: cuántas respuestas de contenido dañado o deteriorado.
+   *
+   * Definido por las psicólogas el 10/9/2026, con dos rangos en el mismo
+   * documento: de 0 a 1 y de 0 a 2. Queda en 1, el más exigente de los dos, y
+   * en Zulliger también: la lectura habla de pesimismo, y con tres láminas una
+   * sola respuesta de este tipo ya es proporcionalmente mucho.
+   */
+  'mor-alto': {
+    area: 'Cómo piensa',
+    indice: 'MOR',
+    corte: { op: 'mayor', valor: 1, decimales: 0 },
+    zulliger: {
+      corte: { op: 'mayor', valor: 1, decimales: 0 },
+    },
+    dice: [
+      'Su pensamiento puede estar teñido por el pesimismo: es probable que tenga expectativas negativas sobre sus propios emprendimientos.',
+      'Aparece una mirada pesimista sobre lo propio, con expectativas negativas respecto de lo que emprende.',
+      'Tiende a esperar que lo suyo salga mal, y eso le resta entusiasmo en lo que empieza.',
+    ],
+    recomienda: [
+      'Mostrarle los avances concretos de su trabajo, para sostener la motivación cuando la expectativa propia juega en contra.',
+      'Señalarle lo que va logrando con datos concretos, que es lo que compensa su expectativa negativa.',
+      'Devolverle resultados concretos de lo que hace, para que la mirada pesimista no le baje el entusiasmo.',
+    ],
+  },
+  /**
+   * DR: respuestas desviadas, que se van del tema mientras se contestan.
+   *
+   * No tiene corte: cualquier DR ya es la lectura. Definido por las psicólogas
+   * el 10/9/2026.
+   */
+  'dr-presente': {
+    area: 'Cómo piensa',
+    indice: 'DR',
+    cuando: 'Aparece al menos un DR',
+    dice: [
+      'Puede tener dificultades para comunicarse con los demás: sus ideas se despliegan con una impulsividad que le cuesta controlar, y eso influye en cómo interactúa.',
+      'Le cuesta controlar la impulsividad con la que salen sus ideas, y eso se le nota en el intercambio con los demás.',
+      'Sus ideas salen antes de estar ordenadas, y eso le complica la comunicación.',
+    ],
+    recomienda: [
+      'Invitarlo a tomarse unos segundos antes de responder y a ordenar sus ideas, para favorecer intercambios más claros.',
+      'Pedirle que se tome un momento antes de contestar, para que el intercambio salga más claro.',
+      'Darle el tiempo de ordenar la idea antes de que la diga, que es donde se le arma el problema.',
+    ],
+  },
+  /**
+   * ALOG: lógica arbitraria, razonamientos que no se sostienen.
+   *
+   * Como DR, alcanza con que aparezca una. Definido por las psicólogas el
+   * 10/9/2026.
+   */
+  'alog-presente': {
+    area: 'Cómo piensa',
+    indice: 'ALOG',
+    cuando: 'Aparece al menos un ALOG',
+    dice: [
+      'Aparece el uso de una lógica que sale de lo convencional, propia de una forma de pensar relajada y simplista. Puede verse alterada su capacidad de organización.',
+      'Razona por fuera de lo convencional, de un modo simplificado, y eso puede afectarle la organización.',
+      'Su forma de razonar se apoya en atajos que no siempre se sostienen, y eso le complica organizarse.',
+    ],
+    recomienda: [
+      'No asignarle decisiones que dependan de su propio criterio sin revisión.',
+      'Revisar con ella las decisiones antes de que se ejecuten.',
+      'Acompañar sus decisiones con una revisión previa.',
+    ],
+  },
+  /**
+   * S−: respuestas en el blanco con calidad formal negativa.
+   *
+   * Se espera menos de la mitad de las S. Definido por las psicólogas el
+   * 10/9/2026.
+   */
+  's-menos-alto': {
+    area: 'Cómo maneja lo que siente',
+    indice: 'S−',
+    cuando: 'S− en la mitad o más de las respuestas en blanco',
+    dice: [
+      'Podría desplegar algunas actitudes oposicionistas frente a los cambios.',
+      'Frente a los cambios puede ponerse en una posición de oposición.',
+      'Los cambios pueden encontrarla en una actitud de resistencia.',
+    ],
+    recomienda: [
+      'Cuando se le pida algo nuevo o se le presente un cambio, hacerlo con información de contexto y datos específicos, para ayudarla a sortear la tendencia a oponerse.',
+      'Presentarle los cambios con contexto y datos concretos, que es lo que le baja la resistencia.',
+      'Explicarle el porqué de cada cambio con datos, antes de pedirle que lo adopte.',
+    ],
+  },
+  /**
+   * D aumentado: mira lo obvio de cada situación.
+   *
+   * En el informe va solo la recomendación. La lectura describe un estilo de
+   * bajo esfuerzo mental, y dicho así en un informe de selección se lee como
+   * un juicio sobre la persona más que como algo accionable. Definido por las
+   * psicólogas el 10/9/2026.
+   */
+  'd-alto': {
+    area: 'Cómo procesa la información',
+    indice: 'D',
+    cuando: 'D por encima de lo esperado',
+    dice: [''],
+    recomienda: [
+      'Cuando sea necesario profundizar en una situación, ayudarlo a mirar más allá de la información evidente y a considerar otros datos relevantes antes de avanzar.',
+      'Ante una situación que pida profundidad, guiarlo para que mire más allá de lo evidente antes de decidir.',
+      'Pedirle que busque los datos que no están a la vista antes de avanzar, cuando la situación lo requiera.',
+    ],
+  },
+  /**
+   * Sum6: los seis códigos críticos del pensamiento, sin ponderar.
+   *
+   * No se informa: es la señal de que hay que ir a revisar cuáles son y qué
+   * dicen, y eso lo hace la evaluadora sobre la tabla. Definido por las
+   * psicólogas el 10/9/2026: se esperan menos de 3, y hasta 4 en SumaPond6.
+   */
+  'sum6-alto': {
+    area: 'Cómo piensa',
+    indice: 'Sum6',
+    corte: { op: 'mayor', valor: 2, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 2, decimales: 0 } },
+    dice: [''],
+    recomienda: [''],
+  },
+  /**
+   * La complejidad de las respuestas contra su cantidad.
+   *
+   * Se espera entre 1 y 3. Por debajo, y con Lambda alto, puede haber una
+   * tendencia a simplificar de más; eso no se informa, se usa para leer el
+   * resto. Definido por las psicólogas el 10/9/2026.
+   */
+  'complejidad-baja': {
+    area: 'Cómo procesa la información',
+    indice: 'Complejidad:R',
+    cuando: 'Complejidad:R por debajo de 1 y Lambda alto',
+    dice: [''],
+    recomienda: [''],
+  },
+  'complejidad-alta': {
+    area: 'Cómo procesa la información',
+    indice: 'Complejidad:R',
+    cuando: 'Complejidad:R por encima de 3, con recursos suficientes',
+    dice: [
+      'Puede considerar los estímulos de manera integral y tiene una buena capacidad para elaborarlos.',
+      'Toma la información de manera integral y la elabora bien.',
+      'Procesa lo que recibe de forma completa, integrando sus partes.',
+    ],
+    recomienda: [''],
+  },
+  'complejidad-alta-sin-recursos': {
+    area: 'Cómo maneja lo que siente',
+    indice: 'Complejidad:R',
+    cuando: 'Complejidad:R por encima de 3, con pocos recursos',
+    dice: [
+      'Puede tener dificultades para controlar sus emociones: procesa más información de la que sus recursos le permiten elaborar.',
+      'Toma más información de la que puede elaborar con los recursos que tiene, y eso le dificulta el control emocional.',
+      'La cantidad de información que procesa excede sus recursos, y ahí aparece la dificultad para sostener el control emocional.',
+    ],
+    recomienda: [
+      'Acompañarla en situaciones de mucha información simultánea, ayudándola a ordenar por prioridades.',
+      'Ayudarla a priorizar cuando la situación trae mucha información junta.',
+      'Bajarle la cantidad de frentes abiertos a la vez, y ordenar con ella qué va primero.',
+    ],
+  },
+  /**
+   * Color cromático junto con acromático o sombreado en la misma respuesta.
+   *
+   * Definido por las psicólogas el 10/9/2026. La atribución de los autores
+   * (que es propia de personas depresivas) queda afuera del informe: lo que se
+   * informa es la conducta esperable.
+   */
+  'color-mixto': {
+    area: 'Cómo maneja lo que siente',
+    indice: 'Color cromático con acromático o sombreado',
+    cuando: 'Alguna respuesta combina color cromático con acromático o sombreado',
+    dice: [
+      'Aparece una ambivalencia afectiva que le provoca sufrimiento, y cierta tendencia a decaídas del ánimo.',
+      'Convive con sentimientos encontrados que le pesan, y por momentos el ánimo le decae.',
+      'Los afectos se le mezclan de un modo que le cuesta sostener, y eso se le nota en el ánimo.',
+    ],
+    recomienda: [
+      'Alentarlo para colaborar con su estado de ánimo y su motivación.',
+      'Reconocerle lo que hace bien, que es lo que le sostiene el ánimo.',
+      'Acompañarlo con devoluciones que le sostengan la motivación.',
+    ],
+  },
+  /**
+   * SumC' por encima de la suma ponderada de color.
+   *
+   * Lo esperado es al revés. Definido por las psicólogas el 10/9/2026.
+   */
+  'sumc-prima-mayor': {
+    area: 'Cómo maneja lo que siente',
+    indice: "SumC' : SumPondC",
+    cuando: "SumC' por encima de la suma ponderada de color",
+    dice: [
+      'Al no realizar las descargas ni los intercambios emocionales esperados, aumenta su tensión interna y se favorece que esa tensión se derive al cuerpo.',
+      'Se guarda lo que siente en vez de descargarlo, y esa tensión acumulada puede terminar en el cuerpo.',
+      'No descarga emocionalmente lo que le pasa, y la tensión que junta puede manifestarse físicamente.',
+    ],
+    recomienda: [
+      'Brindarle espacios donde pueda abrirse emocionalmente y se sienta apoyada y escuchada.',
+      'Darle lugar para que pueda hablar de lo que le pasa y sentirse escuchada.',
+      'Generar momentos de intercambio donde pueda expresar lo que siente.',
+    ],
+  },
+  /**
+   * Sin ninguna respuesta de color: ni FC, ni CF, ni C pura.
+   *
+   * Definido por las psicólogas el 10/9/2026.
+   */
+  'fc-todo-cero': {
+    area: 'Cómo maneja lo que siente',
+    indice: 'FC:CF+C',
+    cuando: 'Sin respuestas de color',
+    dice: [
+      'Se detecta una evitación a procesar emociones, que la lleva a tener dificultades para comprender tanto lo que ella siente como lo que sienten los demás.',
+      'Evita procesar lo emocional, y eso le dificulta entender lo que siente ella y lo que sienten los otros.',
+      'Deja las emociones de lado, propias y ajenas, y por eso le cuesta interpretarlas.',
+    ],
+    recomienda: [
+      'Necesita ayuda para gestionar las emociones, las propias y las de los demás: puede presentar dificultades en su capacidad de empatía.',
+      'Acompañarla en la lectura de lo emocional, que es donde puede quedar corta la empatía.',
+      'Darle apoyo en las situaciones que dependan de leer emociones ajenas.',
+    ],
+  },
+  /**
+   * GHR por encima de PHR: los vínculos que arma son de buena calidad.
+   *
+   * Definido por las psicólogas el 10/9/2026.
+   */
+  'ghr-alto': {
+    area: 'Cómo se vincula',
+    indice: 'GHR:PHR',
+    cuando: 'GHR por encima de PHR',
+    dice: [
+      'En general los vínculos que genera son cordiales.',
+      'Los vínculos que arma suelen ser cordiales.',
+      'Se maneja en los vínculos de manera cordial.',
+    ],
+    recomienda: [''],
+  },
+  /**
+   * H pura contra el resto de los contenidos humanos.
+   *
+   * Con H por encima del resto, la imagen de sí misma es realista. Definido por
+   * las psicólogas el 10/9/2026.
+   */
+  'h-mayor': {
+    area: 'Cómo se vincula',
+    indice: 'H : (H)+Hd+(Hd)',
+    cuando: 'H pura por encima del resto de los contenidos humanos',
+    dice: [
+      'Es capaz de tener una imagen realista de sí misma, y puede reconocer tanto fortalezas como debilidades.',
+      'Tiene una imagen realista de sí misma y reconoce lo que le sale bien y lo que no.',
+      'Se ve a sí misma con realismo, con sus fortalezas y sus límites.',
+    ],
+    recomienda: [''],
+  },
+  /**
+   * XA% y WDA% en 0,80 o más: la percepción es correcta.
+   *
+   * Definido por las psicólogas el 10/9/2026. Es el complemento de las
+   * lecturas de percepción alterada, que hasta ahora salían solas: el informe
+   * decía qué falla y callaba cuando no falla nada.
+   */
+  'xa-wda-ok': {
+    area: 'Cómo interpreta lo que ve',
+    indice: 'XA% / WDA%',
+    cuando: 'XA% y WDA% de 0,80 o más',
+    dice: [
+      'Logra comprender como la mayoría de las personas, haciendo un uso adecuado del criterio de realidad. La comprensión de la información del entorno es correcta.',
+      'Interpreta la información del entorno como lo hace la mayoría, con un criterio de realidad adecuado.',
+      'Entiende lo que pasa a su alrededor del mismo modo que la mayoría de las personas.',
+    ],
+    recomienda: [''],
+  },
+  /**
+   * P dentro de lo esperado: se adapta a lo convencional.
+   *
+   * Definido por las psicólogas el 10/9/2026: de 2 a 4 en Zulliger, con 3 como
+   * valor central. Entra cuando no es ni alta ni baja, así que el rango sale
+   * de los cortes de esas dos y no se pisa con ninguna.
+   */
+  'p-ok': {
+    area: 'Cómo interpreta lo que ve',
+    indice: 'P',
+    cuando: 'P dentro de lo esperado',
+    dice: [
+      'Se evidencia capacidad de adaptación a las normas de su entorno, dentro de lo esperado.',
+      'Se adapta a lo convencional de su entorno como se espera.',
+      'Responde a lo convencional dentro de lo que se espera.',
+    ],
+    recomienda: [''],
+  },
+  /**
+   * DQv/+ con W aumentadas: parece emprendedora y sus ideas complican.
+   *
+   * Las tres lecturas que siguen combinan la calidad evolutiva con la
+   * localización, y son propias del Zulliger. "W aumentada" y "D aumentada"
+   * usan los mismos cortes que las lecturas de W alto y D alto, que en
+   * Zulliger son W de 6 o más y D de 7 o más. Definidas por las psicólogas el
+   * 10/9/2026.
+   */
+  'dqvmas-w-alto': {
+    area: 'Cómo procesa la información',
+    indice: 'DQv/+ con W',
+    cuando: 'DQv/+ presente con W por encima de lo esperado',
+    dice: [
+      'Es probable que impresione como una persona emprendedora, pero que al seguir sus ideas las situaciones se compliquen en vez de solucionarse. Se ponen en evidencia errores de evaluación que pueden ser significativos.',
+      'Da la impresión de ser emprendedora, y sin embargo sus ideas tienden a complicar las situaciones en vez de resolverlas, por errores de evaluación que pueden pesar.',
+      'Impresiona como emprendedora, pero lo que propone suele complicar la situación: hay errores de evaluación de por medio.',
+    ],
+    recomienda: [
+      'Revisar con ella sus propuestas antes de ponerlas en marcha, para detectar los errores de evaluación a tiempo.',
+      'Chequear sus iniciativas antes de ejecutarlas.',
+      'Poner una instancia de revisión entre su propuesta y la puesta en marcha.',
+    ],
+  },
+  'dqv-w-alto': {
+    area: 'Cómo procesa la información',
+    indice: 'DQv con W',
+    cuando: 'DQv presente con W por encima de lo esperado',
+    dice: [
+      'Poco confiable en puestos de conducción: quiere organizar y planificar, pero lo hace mal. Podría funcionar bien en trabajos donde estén limitadas las posibilidades de tomar decisiones por cuenta propia.',
+      'En puestos de conducción no es confiable: intenta organizar y planificar, y lo hace mal. Rinde mejor donde las decisiones propias estén acotadas.',
+      'Quiere planificar y organizar pero lo resuelve mal, así que conducir no es su lugar: funciona mejor con las decisiones acotadas.',
+    ],
+    recomienda: [
+      'Asignarle funciones con lineamientos claros y supervisión cercana, evitando roles que requieran decisiones autónomas o liderazgo de equipos. Puede desempeñarse mejor en tareas operativas con procesos definidos.',
+      'Darle tareas con lineamientos claros y seguimiento cercano, sin decisiones autónomas ni equipos a cargo.',
+      'Ubicarla en tareas operativas de proceso definido, con supervisión cercana y sin gente a cargo.',
+    ],
+  },
+  'dqv-d-alto': {
+    area: 'Cómo procesa la información',
+    indice: 'DQv con D',
+    cuando: 'DQv presente con D por encima de lo esperado',
+    dice: [
+      'Es poco hábil para resolver cuestiones prácticas y concretas, porque es vulnerable a desplegar conductas impulsivas. Puede ser una persona muy emprendedora, y aun así no estar en condiciones de ejecutar correctamente la tarea.',
+      'Le cuesta resolver lo práctico y concreto: aparecen conductas impulsivas. Puede ser emprendedora y aun así no llegar a ejecutar bien.',
+      'En lo práctico se le arma el problema, por impulsividad: emprende, pero la ejecución no le sale.',
+    ],
+    recomienda: [
+      'Podría desempeñarse mucho mejor en tareas rutinarias, donde no deba tomar decisiones.',
+      'Ubicarla en tareas rutinarias, sin decisiones a su cargo.',
+      'Darle trabajo de rutina, donde no tenga que decidir sobre la marcha.',
+    ],
+  },
   'psv-alto': {
     area: 'Cómo procesa la información',
     indice: 'PSV',
@@ -504,6 +864,7 @@ export const TEXTOS = {
     indice: 'Zf',
     cuando: 'menos del 30 % de R, y el Raven no dio bajo',
     zulliger: {
+      aplica: false,
       dice: [
         'Trabaja poco la información que recibe y no toma la iniciativa de buscar más.',
         'El esfuerzo que dedica a elaborar los datos es escaso, y esperar que salga a buscarlos por su cuenta no da resultado.',
@@ -531,6 +892,7 @@ export const TEXTOS = {
     indice: 'Zf',
     cuando: 'más del 55 % de R',
     zulliger: {
+      aplica: false,
       dice: [
         'Se motiva con la información: la trabaja, investiga y busca más datos.',
         'Se involucra activamente en procesar lo que recibe y en ampliar la información.',
@@ -1036,6 +1398,9 @@ export const TEXTOS = {
     indice: 'FM',
     corte: { op: 'mayor', valor: 5, decimales: 0 },
     zulliger: {
+      /* FM se espera de 0 a 2 en el Zulliger, contra el corte del Rorschach.
+         Definido por las psicólogas el 10/9/2026. */
+      corte: { op: 'mayor', valor: 2, decimales: 0 },
       dice: [
         'Sus necesidades sin resolver le generan un malestar interno alto que se traduce en tensión, y puede afectarle la atención, la concentración y el descanso.',
         'Carga una tensión interna elevada que nace de lo que necesita y no atiende, con impacto posible en cómo se concentra y cómo duerme.',
@@ -1063,6 +1428,9 @@ export const TEXTOS = {
     indice: 'm',
     corte: { op: 'mayor', valor: 2, decimales: 0 },
     zulliger: {
+      /* m se espera de 0 a 1 en el Zulliger, contra el corte del Rorschach.
+         Definido por las psicólogas el 10/9/2026. */
+      corte: { op: 'mayor', valor: 1, decimales: 0 },
       dice: [
         'Hay circunstancias externas que la están afectando de manera importante: atraviesa una situación estresante.',
         'Algo de su situación actual le genera molestia considerable y viene de afuera.',
@@ -1181,6 +1549,7 @@ export const TEXTOS = {
     indice: 'Afr',
     cuando: 'por debajo de la banda de su estilo',
     zulliger: {
+      aplica: false,
       dice: [
         'Prefiere no quedar involucrada en situaciones con carga emocional. Esa misma tendencia le compensa cualquier problema de descontrol.',
         'Se corre de las situaciones donde hay emoción en juego, y ese mismo retiro le frena cualquier descontrol.',
@@ -1199,6 +1568,7 @@ export const TEXTOS = {
     indice: 'Afr',
     cuando: 'por encima de la banda de su estilo',
     zulliger: {
+      aplica: false,
       dice: [
         'Las situaciones con carga emocional la estimulan y en ellas se puede sentir más productiva.',
         'Los contextos emocionalmente cargados la activan, y ahí es donde más rinde.',
@@ -1272,6 +1642,9 @@ export const TEXTOS = {
     indice: "C'",
     corte: { op: 'mayor', valor: 4, decimales: 0 },
     zulliger: {
+      /* C' se espera de 0 a 1 en el Zulliger, contra el corte del Rorschach.
+         Definido por las psicólogas el 10/9/2026. */
+      corte: { op: 'mayor', valor: 1, decimales: 0 },
       dice: [
         'Al no hacer las descargas ni los intercambios emocionales esperados, aumenta su tensión interna y se favorece la derivación de esa tensión al cuerpo.',
         'Al no hacer las descargas ni los intercambios emocionales esperados, su tensión interna sube y esa tensión se deriva al cuerpo.',
@@ -1384,6 +1757,9 @@ export const TEXTOS = {
     indice: 'Y',
     corte: { op: 'mayor', valor: 1, decimales: 0 },
     zulliger: {
+      /* Y se espera de 0 a 2 en el Zulliger, contra el corte del Rorschach.
+         Definido por las psicólogas el 10/9/2026. */
+      corte: { op: 'mayor', valor: 2, decimales: 0 },
       dice: [
         'Atraviesa una situación que le genera tensión y frente a la cual se siente desbordada. Buena parte de ese malestar es reactivo y va a ceder cuando se resuelvan las circunstancias que lo provocan.',
         'Está bajo una tensión que la excede. El malestar responde a lo que está pasando y debería bajar cuando eso se resuelva.',
@@ -1680,6 +2056,9 @@ export const TEXTOS = {
     indice: 'Fd',
     corte: { op: 'mayor', valor: 0, decimales: 0 },
     zulliger: {
+      /* FD se espera de 0 a 2 en el Zulliger, contra el corte del Rorschach.
+         Definido por las psicólogas el 10/9/2026. */
+      corte: { op: 'mayor', valor: 2, decimales: 0 },
       dice: [
         'El indicador de dependencia está aumentado. Por un lado, cuando se compromete con la empresa se mantiene estable en sus compromisos y se subordina sin mayores conflictos. Por otro, puede necesitar a alguien cerca que supervise sus tareas y le dé seguridad.',
         'El indicador de dependencia está por encima de lo esperado. Por un lado, una vez que se compromete con la empresa sostiene sus compromisos y se subordina sin mayores conflictos. Por otro, puede necesitar a alguien cerca que supervise su tarea y le dé seguridad.',
@@ -1770,6 +2149,7 @@ export const TEXTOS = {
     indice: 'D / AdjD',
     cuando: 'D y AdjD los dos en cero',
     zulliger: {
+      aplica: false,
       dice: [
         'Tolera bien la tensión cotidiana. Haría falta un estrés intenso, prolongado o inesperado para que sus controles fallaran de manera significativa.',
         'Las exigencias del día a día no le desbordan el control, y solo una tensión fuerte o sostenida lo pondría en riesgo.',
@@ -2358,22 +2738,57 @@ export function leer(
     const dPct = dLoc / totalLoc;
     const ddPct = ddLoc / totalLoc;
     const marca = `W:D:Dd ${w}:${dLoc}:${ddLoc}`;
-    if (wPct < 0.35 && dLoc) {
-      sumar('w-bajo', marca);
-    } else if (wPct > 0.5) {
-      sumar('w-alto', marca);
-    }
-    if (dPct < 0.6) {
-      sumar('d-bajo', marca);
-    }
-    // Lo esperado es hasta el 5 % de las respuestas; pasado eso, Dd está
-    // aumentado. Definido por las psicólogas el 9/9/2026; antes el corte
-    // estaba en el 15 %.
-    if (ddPct > 0.05) {
-      sumar('dd-alto', `Dd ${ddLoc}`);
-    }
-    if (wPct >= 0.35 && dPct >= 0.6 && ddPct <= 0.05) {
-      sumar('localizacion-ok', marca);
+
+    /* En el Zulliger la localización se mide por cantidad y no por porcentaje.
+       Lo esperado son W de 2 a 5, D de 3 a 6 y Dd de 0 a 2: son tres láminas y
+       diez respuestas contra las veintipico del Rorschach, así que la
+       proporción sobre el total dice poco y lo que importa es cuántas de cada
+       una hubo. Alto es por encima del techo del rango y bajo por debajo del
+       piso. Definido por las psicólogas el 10/9/2026. */
+    if (test === 'Zulliger') {
+      if (w < 2) {
+        sumar('w-bajo', marca);
+      } else if (w > 5) {
+        sumar('w-alto', marca);
+      }
+      if (dLoc < 3) {
+        sumar('d-bajo', marca);
+      } else if (dLoc > 6) {
+        sumar('d-alto', marca);
+      }
+      if (ddLoc > 2) {
+        sumar('dd-alto', `Dd ${ddLoc}`);
+      }
+      if (w >= 2 && w <= 5 && dLoc >= 3 && dLoc <= 6 && ddLoc <= 2) {
+        sumar('localizacion-ok', marca);
+      }
+    } else {
+      if (wPct < 0.35 && dLoc) {
+        sumar('w-bajo', marca);
+      } else if (wPct > 0.5) {
+        sumar('w-alto', marca);
+      }
+      if (dPct < 0.6) {
+        sumar('d-bajo', marca);
+      }
+      /* Lo esperado es hasta el 5 % de las respuestas; pasado eso, Dd está
+         aumentado, sin ninguna otra condición. Definido por las psicólogas el
+         9/9/2026 y confirmado el 10/9. Con este corte la lectura sale en siete
+         de cada diez protocolos de los 51 cargados, contra cuatro de cada diez
+         con el 15 % que regía antes: se los avisó y lo dejaron igual. */
+      if (ddPct > 0.05) {
+        sumar('dd-alto', `Dd ${ddLoc}`);
+      }
+      /* El reparto parejo: W cerca del 35 %, D cerca del 60 % y Dd hasta el 5 %.
+         Es "aproximadamente" y no "al menos", que era como estaba: los tres
+         números reparten el mismo total, así que pedir W ≥ 35 y D ≥ 60 solo se
+         cumple con el reparto exacto y cualquier desvío rompe uno de los dos.
+         Definido por las psicólogas el 10/9/2026, sabiendo que aun con la
+         tolerancia la lectura sale en 1 de los 50 protocolos cargados. */
+      const CERCA = 0.05;
+      if (Math.abs(wPct - 0.35) <= CERCA && Math.abs(dPct - 0.6) <= CERCA && ddPct <= 0.05) {
+        sumar('localizacion-ok', marca);
+      }
     }
   }
 
@@ -2382,6 +2797,24 @@ export function leer(
     // El diccionario marca la atribución causal como no publicable: acá va la
     // conducta observable y la recomendación, sin el porqué.
     sumar('dqv-alto', `DQv ${dqv}`);
+  }
+
+  /* La calidad evolutiva combinada con la localización, propio del Zulliger.
+     "Aumentada" es el mismo corte de las lecturas de W alto y D alto, que ahí
+     son W de 6 o más y D de 7 o más: la misma palabra no puede querer decir
+     dos cosas distintas en el mismo informe. Definidas por las psicólogas el
+     10/9/2026. */
+  if (test === 'Zulliger') {
+    const dqvMas = n(s, 'procesamiento', 'DQ_v_mas');
+    if (dqvMas > 0 && w > 5) {
+      sumar('dqvmas-w-alto', `DQv/+ ${dqvMas} con W ${w}`);
+    }
+    if (dqv > 0 && w > 5) {
+      sumar('dqv-w-alto', `DQv ${dqv} con W ${w}`);
+    }
+    if (dqv > 0 && dLoc > 6) {
+      sumar('dqv-d-alto', `DQv ${dqv} con D ${dLoc}`);
+    }
   }
 
   const psv = n(s, 'procesamiento', 'PSV');
@@ -2439,6 +2872,10 @@ export function leer(
     sumar('xa-bajo', `XA ${dec(xa)}`);
   } else if (wda >= 0.75 && wda < 0.8) {
     sumar('wda-medio', marcaXA);
+  } else if (xa >= 0.8 && wda >= 0.8) {
+    // Los dos en 0,80 o más: la percepción es correcta y así se informa.
+    // Definido por las psicólogas el 10/9/2026.
+    sumar('xa-wda-ok', marcaXA);
   }
 
   const xMenos = n(s, 'calidad_formal', 'X_menos_pct');
@@ -2457,6 +2894,10 @@ export function leer(
     sumar('p-bajo', `P ${p}`);
   } else if (p > pMax) {
     sumar('p-alto', `P ${p}`);
+  } else {
+    // Dentro de la banda de su cantidad de respuestas: se adapta como se
+    // espera. Definido por las psicólogas el 10/9/2026.
+    sumar('p-ok', `P ${p}`);
   }
 
   // ── Cómo decide y cómo piensa ──────────────────────────────────────────────
@@ -2497,6 +2938,31 @@ export function leer(
     sumar('m-menos-alto', `M− ${mMenos}`);
   }
 
+  /* Sum6 no se informa: es la señal de ir a mirar cuáles son los códigos y qué
+     dicen, y eso lo hace la evaluadora sobre la tabla. Definido por las
+     psicólogas el 10/9/2026. */
+  const sum6 = n(s, 'ideacion', 'Sum6', n(s, 'codigos_especiales', 'Sum6'));
+  if (sum6 > c('sum6-alto')) {
+    sumar('sum6-alto', `Sum6 ${sum6}`);
+  }
+
+  const mor = n(s, 'ideacion', 'MOR', n(s, 'codigos_especiales', 'MOR'));
+  if (mor > c('mor-alto')) {
+    sumar('mor-alto', `MOR ${mor}`);
+  }
+
+  /* DR y ALOG no tienen corte: alcanza con que aparezca uno. Los dos niveles
+     del DR cuentan igual, que es como los lee el informe. Definido por las
+     psicólogas el 10/9/2026. */
+  const dr = n(s, 'codigos_especiales', 'DR') + n(s, 'codigos_especiales', 'DR2');
+  if (dr > 0) {
+    sumar('dr-presente', `DR ${dr}`);
+  }
+  const alog = n(s, 'codigos_especiales', 'ALOG');
+  if (alog > 0) {
+    sumar('alog-presente', `ALOG ${alog}`);
+  }
+
   const fm = n(s, 'determinantes', 'FM');
   if (fm < c('fm-cero')) {
     sumar('fm-cero', 'FM 0');
@@ -2514,7 +2980,13 @@ export function leer(
   const cfd = n(s, 'afectos', 'CF');
   const cpuro = n(s, 'afectos', 'C_puro');
   const descarga = cfd + cpuro;
-  if (descarga === 0 || (descarga && fc > descarga * 3)) {
+  /* Sin ninguna respuesta de color no hay control emocional que destacar: hay
+     evitación de procesar lo emocional, que es otra lectura. Antes esto caía en
+     "control alto" y el informe elogiaba lo que en realidad es una falta.
+     Definido por las psicólogas el 10/9/2026. */
+  if (fc === 0 && descarga === 0) {
+    sumar('fc-todo-cero', 'FC:CF+C 0:0');
+  } else if (descarga === 0 || (descarga && fc > descarga * 3)) {
     sumar('fc-control-alto', `${fc}:${descarga}`);
   } else if (descarga > fc) {
     if (descarga - fc > 2) {
@@ -2543,9 +3015,33 @@ export function leer(
     sumar('s-alto', `S ${sBlanco}`);
   }
 
+  /* S− contra el total de S: se espera menos de la mitad. Sin S no hay nada
+     que comparar. Definido por las psicólogas el 10/9/2026. */
+  const sMenos = n(s, 'calidad_formal', 'S_menos');
+  if (sBlanco > 0 && sMenos * 2 >= sBlanco) {
+    sumar('s-menos-alto', `S− ${sMenos} de ${sBlanco}`);
+  }
+
   const cPrima = n(s, 'afectos', 'SumC_prima', n(s, 'determinantes', 'SumC_prima'));
   if (cPrima > c('c-prima-alta')) {
     sumar('c-prima-alta', `C' ${cPrima}`);
+  }
+
+  /* Lo esperado es que las descargas de color superen a las acromáticas. Al
+     revés, lo que no sale se acumula. Definido por las psicólogas el
+     10/9/2026. */
+  const wsumc = n(s, 'afectos', 'WSumC');
+  if (cPrima > wsumc) {
+    sumar('sumc-prima-mayor', `C' ${cPrima} contra SumPondC ${dec(wsumc)}`);
+  }
+
+  /* Color cromático junto con acromático o sombreado en la misma respuesta. El
+     sumario ya lo cuenta como mezcla color-sombreado, con C', T, V e Y del lado
+     del sombreado, que es lo que pide la lectura. Definido por las psicólogas
+     el 10/9/2026. */
+  const mezclas = n(s, 'afectos', 'CS_Blends', n(s, 'procesamiento', 'CS_Blends'));
+  if (mezclas > 0) {
+    sumar('color-mixto', `Mezclas color-sombreado ${mezclas}`);
   }
 
   const sumt = n(s, 'interpersonal', 'SumT', n(s, 'determinantes', 'T'));
@@ -2600,6 +3096,8 @@ export function leer(
   const phr = n(s, 'interpersonal', 'PHR');
   if (phr > ghr) {
     sumar('phr-mayor-que-ghr', `${ghr}:${phr}`);
+  } else if (ghr > phr) {
+    sumar('ghr-alto', `${ghr}:${phr}`);
   }
 
   const ais = n(s, 'interpersonal', 'Aislamiento');
@@ -2632,6 +3130,8 @@ export function leer(
   const otrosH = hParen + hd + hdParen;
   if (otrosH > hPura) {
     sumar('h-pura-baja', `H ${hPura} contra ${otrosH}`);
+  } else if (hPura > otrosH) {
+    sumar('h-mayor', `H ${hPura} contra ${otrosH}`);
   }
 
   // ── Cuánta exigencia sostiene ──────────────────────────────────────────────
