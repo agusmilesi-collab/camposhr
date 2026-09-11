@@ -31,8 +31,16 @@
    toca los bordes, y como el panel recorta lo que se sale, el botón del pie
    quedaba cortado contra el borde. */
 .os-ror-mapa,
+/* En columna para poder ordenar las filas por número de respuesta: la barra de
+   láminas y los rótulos se quedan arriba (orden 0) y los criterios al final. */
 .os-ror-capturadas {
+  display: flex;
+  flex-direction: column;
   padding: 14px 18px 16px;
+}
+
+.os-ror-capturadas .os-ror-criterios {
+  order: 999;
 }
 
 /* ------------------------------------------------------------------ el mapa */
@@ -232,6 +240,49 @@
    y se elige de la lista, con los mapas al lado y sin mover la vista. La lista
    se lleva el alto que sobra y se desplaza adentro, así la celda mide siempre
    lo mismo que un mapa y la grilla no se deforma. */
+/* Sin separar objetos la celda mide lo que un mapa, así la fila termina en la
+   línea de la última lámina. El alto se toma de la fila (height: 0 para no
+   alargarla, min-height: 100% para llenarla) y lo que sobra lo absorbe la
+   lista de la Tabla A, que se desplaza adentro. */
+.os-ror-campos-justo {
+  height: 0;
+  min-height: 100%;
+  /* Con el alto de la fila, lo fijo de la card (la frase, el campo y el botón)
+     casi lo llena: el aire de adentro se achica para que la lista de la Tabla A
+     quede con lugar, y lo que aun así no entra se desplaza acá adentro. */
+  gap: 6px;
+  padding: 10px 14px;
+  overflow: auto;
+}
+
+.os-ror-campos-justo .os-ror-tomadas {
+  margin-bottom: 0;
+}
+
+.os-ror-campos-justo .os-ror-dijo-grande {
+  margin: 0 0 2px;
+}
+
+.os-ror-campos-justo .os-ror-campo {
+  gap: 4px;
+}
+
+.os-ror-campos-justo .os-campo {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+/* El renglón que dice qué hacer lleva su aire de una card que crece; acá el
+   alto está dado y ese aire es lo que dejaba al botón de abajo sin el suyo. */
+.os-ror-campos-justo .os-ror-vacio {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.os-ror-campos-justo .os-ror-campo-alto {
+  margin-bottom: 0;
+}
+
 .os-ror-campos {
   grid-column: span 2;
   display: flex;
@@ -352,6 +403,13 @@
   min-height: 0;
   max-height: 260px;
   overflow-y: auto;
+}
+
+/* Sin opciones que elegir lo único que hay acá es el renglón que dice qué
+   hacer: ese no se achica, porque medio renglón cortado se lee como una falla.
+   La lista sí se achica, que para eso se desplaza adentro. */
+.os-ror-opciones-sola {
+  flex: none;
 }
 
 /* En columnas y no en grilla: así el alfabeto baja por la primera columna y
@@ -774,31 +832,50 @@
    se ve, qué se escribe y qué se guarda. */
 .os-ror-instancia {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: baseline;
+  gap: 12px;
 }
 
 
-/* Las dos instancias, una debajo de la otra y numeradas: son dos momentos en
-   orden, primero se toma lo que la persona dice y después se le pregunta dónde
-   lo vio. Una al lado de la otra se leían como dos opciones sueltas. */
-.os-ror-toggle {
+/* Las dos instancias como pestañas: dos momentos de la misma pantalla, en un
+   renglón y con la línea debajo del nombre marcando en cuál se está. */
+.os-ror-tabs {
   display: inline-flex;
-  flex-direction: column;
-  /* Con aire a la derecha del nombre más largo: ajustado al texto, las dos
-     opciones quedaban apretadas contra el borde de su caja. */
-  min-width: 186px;
-  padding: 8px;
-  gap: 3px;
-  background: var(--os-panel);
-  border: 1px solid var(--os-linea);
-  border-radius: 11px;
+  align-items: stretch;
+  gap: 2px;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-ror-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--os-tinta-media);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.os-ror-tab:hover {
+  color: var(--os-tinta);
+}
+
+.os-ror-tab.puesta {
+  border-bottom-color: var(--os-azul-fuerte);
+  color: var(--os-tinta);
+  font-weight: 600;
 }
 
 /* El número del paso, en su círculo: azul oscuro el de la instancia en la que
-   se está, gris el de la otra. Dice en cuál se está desde el número mismo, sin
-   depender solo del fondo de su renglón. */
-.os-ror-toggle-paso {
+   se está, gris el de la otra. */
+.os-ror-tab-paso {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -814,42 +891,29 @@
   line-height: 1;
 }
 
-.os-ror-toggle-opcion {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  /* En columna las dos ocupan lo mismo, y el nombre arranca a la misma altura
-     que el de la otra: con el ancho de su texto los dos círculos quedaban en
-     su lugar pero los nombres bailaban. */
-  justify-content: flex-start;
-  padding: 6px 16px 6px 8px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--os-tinta-media);
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 500;
-  line-height: 1.2;
-  cursor: pointer;
-}
-
-.os-ror-toggle-opcion:hover {
-  color: var(--os-tinta);
-}
-
-/* La puesta se levanta del fondo: es la única forma de que un interruptor de
-   dos posiciones diga en cuál está sin leer las dos. */
-/* Con la card blanca, la puesta se marca con el fondo suave: al revés que
-   antes, cuando la card era gris y la puesta era la blanca. */
-.os-ror-toggle-opcion.puesta {
-  background: var(--os-hover);
-  color: var(--os-tinta);
-  font-weight: 600;
-}
-
-.os-ror-toggle-opcion.puesta .os-ror-toggle-paso {
+.os-ror-tab.puesta .os-ror-tab-paso {
   background: var(--os-azul-fuerte);
+}
+
+/* Las de la respuesta son las mismas pestañas en chico: al lado del rótulo y
+   sin la línea de abajo, que ahí adentro cortaba la card en dos. */
+.os-ror-tabs-chicas {
+  border-bottom: 0;
+}
+
+.os-ror-tabs-chicas .os-ror-tab {
+  padding: 2px 8px;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-ror-tabs-chicas .os-ror-tab:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.os-ror-tabs-rotulo {
+  padding-bottom: 4px;
 }
 
 /* El botón de la pantalla del candidato se va al extremo: no es uno de los dos
@@ -925,19 +989,12 @@
   justify-content: center;
 }
 
+/* Las pestañas arriba de todo y no centradas contra la miniatura: en
+   entrevista la fila es más alta y quedaban cuarenta píxeles más abajo que en
+   encuesta, así que al cambiar de instancia se movían de lugar. */
 .os-ror-cabecera .os-ror-instancia {
   margin-left: auto;
-  align-items: flex-end;
-}
-
-/* El nombre adentro del recuadro, arriba de las dos opciones y contra el
-   margen derecho. */
-.os-ror-toggle-rotulo {
-  display: block;
-  padding: 2px 8px 6px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid var(--os-linea-suave);
-  text-align: right;
+  align-self: flex-start;
 }
 
 .os-ror-cabecera .os-ror-fases-derecha {
@@ -1059,6 +1116,41 @@
   flex-direction: column;
   gap: 4px;
   margin-bottom: 8px;
+}
+
+/* Lo que dijo la persona, que es el texto que hay que leer para codificar: con
+   el peso del título de la instancia y sin recuadro, para que se distinga de
+   los renglones de objetos que vienen abajo. */
+.os-ror-dijo-grande {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 2px 0 8px;
+  color: var(--os-tinta);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* De qué respuesta se trata y cuántas quedan atrás, en un renglón. */
+.os-ror-tomadas-alto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* El número de respuesta y las dos flechas, juntos: son lo mismo, cuál se está
+   codificando y cómo cambiar de una. */
+.os-ror-tomadas-cual {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.os-ror-tomadas-faltan {
+  color: var(--os-suave);
+  font-size: 0.82rem;
 }
 
 .os-ror-tomada {
@@ -1269,4 +1361,92 @@ input.os-ror-dichas-texto:focus {
   background: var(--os-linea);
   border-color: var(--os-linea);
   color: var(--os-suave);
+}
+
+/* ── La respuesta partida en palabras ──────────────────────────────────────
+   Una respuesta larga no está en la Tabla A y sus palabras sí. Cada una queda
+   en su renglón con dónde cae y qué calidad tiene ahí, y abajo dice cómo va a
+   quedar la respuesta entera: con todas las áreas y con la peor calidad. */
+.os-ror-partir {
+  flex: none;
+}
+
+.os-ror-trozos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-ror-trozo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--os-panel-2);
+}
+
+/* Qué número de objeto es. Va adelante y del mismo ancho en todos, para que la
+   columna se lea de corrido. */
+.os-ror-trozo-n {
+  flex: none;
+  min-width: 62px;
+  color: var(--os-suave);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.os-ror-trozo-texto {
+  flex: 1;
+}
+
+/* El que se está cargando: en línea de puntos, para que se lea como el renglón
+   que falta completar y no como uno ya hecho. Adentro lleva el campo donde se
+   escribe qué es ese objeto. */
+.os-ror-trozo-enCurso {
+  background: transparent;
+  border: 1px dashed var(--os-linea);
+  color: var(--os-tinta-media);
+}
+
+.os-ror-trozo-campo {
+  flex: 1;
+  min-width: 0;
+  border-color: transparent;
+  background: transparent;
+  padding: 2px 6px;
+}
+
+.os-ror-trozo-campo:hover {
+  border-color: var(--os-linea);
+}
+
+.os-ror-trozo-campo:focus {
+  border-color: var(--os-tinta-media);
+  background: var(--os-panel);
+}
+
+.os-ror-trozo-area {
+  flex: none;
+  color: var(--os-tinta-media);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-ror-trozos-pie {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* Cargar el objeto fuera de tabla queda a la izquierda, separado de los dos que
+   deciden sobre la respuesta entera. */
+.os-ror-trozos-fuera {
+  margin-right: auto;
 }

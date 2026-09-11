@@ -45,6 +45,7 @@ import {
   type Aviso,
 } from '@/lib/laminas-sincro';
 import Toma, { NOMBRE_POSICION, siguienteGiro } from './Toma';
+import LinkLaminas from '@/app/os/psicotecnicos/entrevista/[id]/LinkLaminas';
 
 /**
  * Qué distingue a cada calidad evolutiva, en una línea.
@@ -330,6 +331,31 @@ export type YaEnLaFicha = {
   posicion: string | null;
 };
 
+/** Un objeto de la respuesta: qué es, dónde cae y qué calidad tiene ahí. */
+type Trozo = {
+  texto: string;
+  areas: string[];
+  fq: string | null;
+  contenidos: string[];
+  popular: boolean;
+};
+
+/**
+ * De peor a mejor. El FQ de una respuesta partida es el de su peor palabra.
+ *
+ * Definido por las psicólogas el 10/9/2026: si una parte cae en una locación
+ * donde lo que dijo no se parece a nada, la respuesta entera arrastra eso.
+ */
+const RANGO_FQ = ['-', 'U', 'O', '+'];
+
+function peorFq(fqs: (string | null)[]): string | null {
+  const puestos = fqs.filter((f): f is string => Boolean(f));
+  if (puestos.length === 0) return null;
+  return puestos.reduce((peor, f) =>
+    RANGO_FQ.indexOf(f) < RANGO_FQ.indexOf(peor) ? f : peor
+  );
+}
+
 type Respuesta = {
   n: number;
   /**
@@ -410,7 +436,7 @@ export default function Capturador({
    * se tiene fresco recién dicha la respuesta. `null` adentro es la respuesta
    * que no figura en la tabla, que también lleva DQ.
    */
-  const [pendiente, setPendiente] = useState<{ h: Hallazgo | null } | null>(null);
+  const [pendiente, setPendiente] = useState<{ h: Hallazgo | null; partida?: boolean } | null>(null);
   const [respuestas, setRespuestas] = useState<Respuesta[]>([]);
   /**
    * Qué filas tienen la nota abierta.
@@ -486,6 +512,19 @@ export default function Capturador({
   const [posicion, setPosicion] = useState('^');
   /** Cuál de las tomadas se está ubicando. */
   const [ubicando, setUbicando] = useState<string | null>(null);
+  /**
+   * En qué objetos se separó la respuesta que se está codificando.
+   *
+   * "Un mono tomando birra en la copa de un árbol" no está en la Tabla A, y sus
+   * objetos sí: mono, birra, árbol. Cada uno se busca por separado, cae en su
+   * propia locación y tiene su propia calidad formal. La respuesta se cierra
+   * con las áreas de todas y con la peor de sus calidades, que es la regla que
+   * dieron las psicólogas el 10/9/2026: el FQ es el de menor rango entre las
+   * palabras (−, u, o, +).
+   */
+  const [trozos, setTrozos] = useState<Trozo[]>([]);
+  /** Si la respuesta en curso se está codificando por partes. */
+  const [partiendo, setPartiendo] = useState(false);
   /** Lo que hay en la ficha, más lo que se va pasando sin recargar. */
   const [enLaFicha, setEnLaFicha] = useState(yaEstan);
   /** Desde qué número numerar, contando lo que se pasó sin recargar. */
@@ -515,7 +554,13 @@ export default function Capturador({
    * escribió lo que dijo, sin preguntarle dónde lo vio. Se reconocen porque
    * tienen su verbalización y ninguna locación.
    */
-  const sinUbicar = suyas.filter((r) => r.verbalizacion && !r.localizacion && !r.n_localizacion);
+  /* Las que se acaban de codificar y todavía no se pasaron a la ficha ya no
+     están sin ubicar: sin esto, terminar de codificar una la dejaba en la lista
+     y la pantalla volvía a pedir la misma respuesta. */
+  const yaCodificadas = new Set(respuestas.map((r) => r.id).filter(Boolean));
+  const sinUbicar = suyas.filter(
+    (r) => r.verbalizacion && !r.localizacion && !r.n_localizacion && !yaCodificadas.has(r.id)
+  );
 
   /**
    * Lo que la persona ya dijo en esta lámina, en orden.
@@ -535,11 +580,36 @@ export default function Capturador({
       })),
     ...respuestas
       .filter((r) => !r.id && r.verbalizacion)
-      .map((r) => ({ n: r.n, texto: r.verbalizacion ?? '', posicion: r.posicion })),
+      .map((r) => ({
+        id: undefined as string | undefined,
+        n: r.n,
+        texto: r.verbalizacion ?? '',
+        posicion: r.posicion,
+      })),
   ]
     .sort((a, b) => a.n - b.n)
     // El número que se ve es el de esta lámina; el del protocolo va en la ficha.
     .map((r, i) => ({ ...r, n: i + 1, nProtocolo: r.n }));
+
+  /**
+   * Cuál se está codificando: la elegida, o la primera que falte ubicar.
+   *
+   * Se codifica de a una. Mostrar las tres pendientes obligaba a elegir en cada
+   * paso cuál seguía, y el orden ya está dado: es el que la persona las dijo.
+   */
+  const enCurso = sinUbicar.find((v) => v.id === ubicando) ?? sinUbicar[0] ?? null;
+  /* Y el buscador arranca cargado con lo que dijo, sin que haya que elegir la
+     respuesta primero: entrando a la encuesta ya está la primera lista para
+     ubicar. */
+  useEffect(() => {
+    if (fase !== 'encuesta' || !enCurso) return;
+    if (ubicando === enCurso.id) return;
+    setUbicando(enCurso.id);
+    // Separando objetos el campo es el del objeto, y arranca vacío: lo que dijo
+    // la persona está arriba a la vista y se escribe una palabra por vez.
+    setDijo(partiendo ? '' : enCurso.verbalizacion ?? '');
+    setPuestas([]);
+  }, [fase, enCurso, ubicando, partiendo]);
 
   /** La posición de la respuesta que se está ubicando, para girar los mapas. */
   const posicionDeLaQueUbico = ubicando
@@ -684,6 +754,78 @@ export default function Capturador({
     // Cambiar de área es empezar otra respuesta: la que esperaba su calidad ya
     // no va en el área que quedó marcada.
     setPendiente(null);
+  }
+
+  /**
+   * Suma un trozo a la respuesta que se está codificando.
+   *
+   * Se usa cuando la respuesta se rompe en palabras: cada una cae en su
+   * locación y trae su calidad de la Tabla A. La respuesta se cierra después,
+   * con todas juntas.
+   */
+  function sumarTrozo(h: Hallazgo | null) {
+    const areas = puestas.length > 0 ? puestas : h ? [h.area] : [];
+    if (areas.length === 0) return;
+    const texto = h?.respuesta ?? dijo.trim();
+    if (!texto) return;
+    const entrada =
+      h && areas.includes(h.area)
+        ? h
+        : areas
+            .flatMap((a) => entradasDe(lamina, a))
+            .find((e) => e.respuesta === texto) ?? null;
+    setTrozos((t) => [
+      ...t,
+      {
+        texto,
+        areas,
+        fq: entrada ? fqDeLaFicha(entrada.calidad) : null,
+        contenidos: contenidoSugerido(texto),
+        popular: esPopular(lamina, areas[0], texto),
+      },
+    ]);
+    setDijo('');
+    setPuestas([]);
+    setPendiente(null);
+  }
+
+  /**
+   * Cierra la respuesta partida: junta las áreas y se queda con el peor FQ.
+   *
+   * Las áreas van todas, sin repetir, y en el orden en que se marcaron. Los
+   * contenidos se suman: cada palabra aporta el suyo, que es de lo que se
+   * trataba partir la respuesta.
+   */
+  function cerrarPartida(dq: string | null) {
+    if (trozos.length === 0) return;
+    const tomada = ubicando ? suyas.find((v) => v.id === ubicando) ?? null : null;
+    const areas = [...new Set(trozos.flatMap((t) => t.areas))];
+    const contenidos = [...new Set(trozos.flatMap((t) => t.contenidos))];
+    const locs = localizacionesDe(areas[0]);
+    setRespuestas((rs) => [
+      ...rs,
+      {
+        n: tomada?.n_respuesta ?? proximo + rs.length,
+        dijo: tomada?.verbalizacion ?? trozos.map((t) => t.texto).join(' · '),
+        areas,
+        extrapolada: trozos.some((t) => !t.fq),
+        fq: peorFq(trozos.map((t) => t.fq)),
+        localizacion: dq ?? (locs.length === 1 ? locs[0] : null),
+        contenidos,
+        popular: trozos.some((t) => t.popular),
+        integradas: false,
+        blancoIntegrado: false,
+        observacion: '',
+        id: tomada?.id,
+        verbalizacion: tomada?.verbalizacion ?? null,
+        posicion: tomada?.posicion ?? null,
+      },
+    ]);
+    setTrozos([]);
+    setDijo('');
+    setPuestas([]);
+    setPendiente(null);
+    setUbicando(null);
   }
 
   function tomar(h: Hallazgo | null, dq: string | null) {
@@ -1083,6 +1225,16 @@ export default function Capturador({
             que va arriba de todo y no adentro de la tarjeta de una de las dos.
             En la fila de la miniatura, que es lo primero que se mira. */}
         <div className="os-ror-cabecera" hidden={Boolean(pendiente)}>
+          {/* La dirección de las láminas, para pasársela al candidato: en la
+              encuesta él señala dónde lo vio, y para señalar necesita la lámina
+              en su propia pantalla, con su cursor. Entrevistando no va: ahí
+              alcanza con que la vea por la pantalla compartida. */}
+          {fase === 'encuesta' && (
+            <LinkLaminas
+              href={`/os/laminas/rorschach?de=${evaluacionId}`}
+              clase="os-boton os-boton-fila"
+            />
+          )}
           {/* Entrevistando, la lámina va en miniatura y no grande. Quien la
               mira es la persona, en su pantalla; de este lado alcanza con
               corroborar que está viendo la que corresponde, y grande le sacaba
@@ -1164,16 +1316,16 @@ export default function Capturador({
             </div>
           )}
               <div className="os-ror-instancia">
-                <div className="os-ror-toggle" role="group" aria-label="Instancia">
-                  {/* El nombre adentro del recuadro: es el título de lo que hay
-                      abajo y afuera quedaba como una etiqueta suelta. */}
-                  <span className="os-dato-rotulo os-ror-toggle-rotulo">Instancia</span>
+                {/* Las dos instancias como pestañas: son dos momentos de la
+                    misma pantalla, y la que está puesta se marca con la línea
+                    debajo del nombre, como cualquier pestaña. */}
+                <span className="os-dato-rotulo os-ror-tabs-rotulo">Instancia</span>
+                <div className="os-ror-tabs" role="tablist" aria-label="Instancia">
                   <button
                     type="button"
-                    className={`os-ror-toggle-opcion${
-                      fase === 'entrevista' ? ' puesta' : ''
-                    }`}
-                    aria-pressed={fase === 'entrevista'}
+                    role="tab"
+                    className={`os-ror-tab${fase === 'entrevista' ? ' puesta' : ''}`}
+                    aria-selected={fase === 'entrevista'}
                     onClick={() => {
                       setFase('entrevista');
                       setUbicando(null);
@@ -1181,19 +1333,20 @@ export default function Capturador({
                       setDijo('');
                     }}
                   >
-                    <span className="os-ror-toggle-paso">1</span>
+                    <span className="os-ror-tab-paso">1</span>
                     Entrevista
                   </button>
                   <button
                     type="button"
-                    className={`os-ror-toggle-opcion${fase === 'encuesta' ? ' puesta' : ''}`}
-                    aria-pressed={fase === 'encuesta'}
+                    role="tab"
+                    className={`os-ror-tab${fase === 'encuesta' ? ' puesta' : ''}`}
+                    aria-selected={fase === 'encuesta'}
                     onClick={() => {
                       setFase('encuesta');
                       setTomando('');
                     }}
                   >
-                    <span className="os-ror-toggle-paso">2</span>
+                    <span className="os-ror-tab-paso">2</span>
                     Encuesta
                   </button>
                 </div>
@@ -1293,7 +1446,17 @@ export default function Capturador({
               no en un panel de abajo: se escribe mientras ella habla y señala,
               con la lámina delante. Nueve celdas en tres filas, siete de mapa y
               esta de dos. */}
-          <div className="os-ror-campos">
+          <div
+            /* Mientras no haya nada que elegir, la celda mide lo que un mapa y la
+               fila termina en la línea de la última lámina. Con la lista de la
+               Tabla A abierta crece: con el alto de un mapa a la lista le
+               quedaban 26px y no se podía buscar en ella. */
+            className={`os-ror-campos${
+              fase === 'encuesta' && !partiendo && !pendiente && opciones.length === 0
+                ? ' os-ror-campos-justo'
+                : ''
+            }`}
+          >
             {fase === 'entrevista' && !pendiente && (
               <Toma
                 lamina={lamina}
@@ -1361,37 +1524,202 @@ export default function Capturador({
             )}
             {fase === 'entrevista' && aviso && <p className="os-form-ok">{aviso}</p>}
 
+            {/* Una sola respuesta a la vez, la que se está codificando. Las
+                demás distraen: se codifica de a una y hasta terminar esta no se
+                pasa a la que sigue. Cuántas faltan se dice al costado. */}
             {fase === 'encuesta' && sinUbicar.length > 0 && !pendiente && (
               <div className="os-ror-tomadas">
-                <span className="os-dato-rotulo">Sin ubicar en la lámina {lamina}</span>
-                {sinUbicar.map((v) => (
-                  <button
-                    key={v.id}
-                    type="button"
-                    className={`os-ror-tomada${ubicando === v.id ? ' puesta' : ''}`}
-                    onClick={() => {
-                      setUbicando(v.id);
-                      setDijo(v.verbalizacion ?? '');
-                      setPuestas([]);
-                    }}
-                  >
-                    <span className="os-ror-tomada-n">{v.n_respuesta}</span>
-                    <span className="os-ror-tomada-texto">{v.verbalizacion}</span>
-                    {v.posicion && v.posicion !== '^' && (
-                      <span className="os-ror-tomada-giro" title={NOMBRE_POSICION[v.posicion]}>
-                        {v.posicion}
+                {/* En qué lámina y cuál de sus respuestas: el número es el de
+                    la lámina, como en la entrevista, y el total dice cuántas
+                    dio ahí. La cuenta del protocolo va en la ficha. */}
+                <div className="os-ror-tomadas-alto">
+                  <span className="os-ror-tomadas-cual">
+                    <span className="os-dato-rotulo">Lámina {lamina} · Respuesta</span>
+                    {/* Las respuestas de la lámina, en pestañas como las de
+                        instancia: se codifica la que está puesta y se puede
+                        volver a una que quedó esperando, que hasta acá no tenía
+                        cómo. Las ya codificadas quedan apagadas: esas se
+                        corrigen en la tabla de abajo. */}
+                    <span className="os-ror-tabs os-ror-tabs-chicas" role="tablist" aria-label="Respuesta de la lámina">
+                      {dichasDeLaLamina.map((d) => {
+                        const pendiente = sinUbicar.some((r) => r.id === d.id);
+                        return (
+                          <button
+                            key={`${d.id ?? 'nueva'}-${d.n}`}
+                            type="button"
+                            role="tab"
+                            className={`os-ror-tab${d.id === enCurso?.id ? ' puesta' : ''}`}
+                            aria-selected={d.id === enCurso?.id}
+                            disabled={!pendiente || partiendo}
+                            title={
+                              pendiente
+                                ? `Codificar «${d.texto}»`
+                                : `«${d.texto}» ya está codificada`
+                            }
+                            onClick={() => {
+                              const suya = sinUbicar.find((r) => r.id === d.id);
+                              if (!suya) return;
+                              setUbicando(suya.id);
+                              setDijo(suya.verbalizacion ?? '');
+                              setPuestas([]);
+                            }}
+                          >
+                            {d.n}
+                          </button>
+                        );
+                      })}
+                    </span>
+                  </span>
+                  {/* Separar va en el renglón de arriba y a la derecha: es lo
+                      que se decide antes de empezar a marcar, y abajo de la
+                      frase cortaba la lectura entre lo que dijo y dónde lo vio.
+                      Deshacerlo va en el mismo lugar: es el mismo interruptor,
+                      y al pie quedaba lejos de donde se apretó. */}
+                  {enCurso && !partiendo && trozos.length === 0 && (
+                    <button
+                      type="button"
+                      className="os-boton os-boton-fila os-ror-partir"
+                      onClick={() => {
+                        setPartiendo(true);
+                        setDijo('');
+                        setPuestas([]);
+                      }}
+                    >
+                      Separar los objetos
+                    </button>
+                  )}
+                  {enCurso && partiendo && (
+                    <button
+                      type="button"
+                      className="os-boton os-boton-fila os-ror-partir"
+                      onClick={() => {
+                        setPartiendo(false);
+                        setTrozos([]);
+                        setDijo(enCurso?.verbalizacion ?? '');
+                        setPuestas([]);
+                      }}
+                    >
+                      Volver sin separar
+                    </button>
+                  )}
+                </div>
+                {/* Lo que dijo, sin recuadro: es el texto que hay que leer para
+                    codificar, no un elemento más de la lista. */}
+                {enCurso && (
+                  <p className="os-ror-dijo-grande">
+                    {enCurso.verbalizacion}
+                    {enCurso.posicion && enCurso.posicion !== '^' && (
+                      <span
+                        className="os-ror-tomada-giro"
+                        title={NOMBRE_POSICION[enCurso.posicion]}
+                      >
+                        {enCurso.posicion}
                       </span>
                     )}
-                  </button>
-                ))}
+                  </p>
+                )}
+
+                {/* Una respuesta larga no está en la Tabla A, y sus palabras sí:
+                    "un mono tomando birra en la copa de un árbol" se parte en
+                    mono, birra y árbol, cada una en su locación y con su
+                    calidad. La respuesta se cierra con las áreas de todas y con
+                    la peor de las calidades. */}
+
+                {partiendo && (
+                  <div className="os-ror-trozos">
+                    {trozos.map((t, i) => (
+                      <div key={`${t.texto}-${i}`} className="os-ror-trozo">
+                        <span className="os-ror-trozo-n">Objeto {i + 1}</span>
+                        <span className="os-ror-trozo-texto">{t.texto}</span>
+                        <span className="os-ror-trozo-area">{t.areas.join(' + ')}</span>
+                        <span
+                          className="os-ror-fq"
+                          style={{ background: t.fq ? tonoDe(FQ, t.fq) : undefined }}
+                        >
+                          {t.fq ?? '—'}
+                        </span>
+                        <button
+                          type="button"
+                          className="os-ror-dichas-x"
+                          onClick={() => setTrozos((v) => v.filter((_, j) => j !== i))}
+                          aria-label={`Sacar ${t.texto}`}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    {/* El que se está cargando, con su número y en qué paso va:
+                        una instrucción escrita no dice cuántos van ni cuál
+                        falta. */}
+                    {/* El renglón del objeto en curso es el campo donde se
+                        escribe: con el texto de ayuda adentro parecía un campo
+                        y no lo era, y el de verdad estaba más abajo. */}
+                    <div className="os-ror-trozo os-ror-trozo-enCurso">
+                      <span className="os-ror-trozo-n">Objeto {trozos.length + 1}</span>
+                      <input
+                        className="os-campo os-ror-trozo-campo"
+                        value={dijo}
+                        onChange={(e) => setDijo(e.target.value)}
+                        placeholder={
+                          puestas.length === 0
+                            ? 'Marcá en la mancha dónde lo vio, o escribí qué es'
+                            : 'Qué vio en esa parte'
+                        }
+                        aria-label={`Objeto ${trozos.length + 1}`}
+                      />
+                      <span className="os-ror-trozo-area">
+                        {puestas.length > 0 ? puestas.join(' + ') : '—'}
+                      </span>
+                    </div>
+                    {trozos.length > 0 && (
+                      <p className="os-ror-vacio">
+                        La respuesta va a quedar en{' '}
+                        {[...new Set(trozos.flatMap((t) => t.areas))].join(' + ')}, con la calidad{' '}
+                        {peorFq(trozos.map((t) => t.fq)) ?? 'a mano'}.
+                      </p>
+                    )}
+                    <div className="os-ror-trozos-pie">
+                      {/* Cargar el objeto fuera de tabla va acá y no al pie de
+                          la pantalla: es lo que se hace con el objeto que se
+                          está cargando, antes de decidir sobre la respuesta
+                          entera. */}
+                      {(puestas.length > 0 || dijo.trim()) && (
+                        <button
+                          type="button"
+                          className="os-boton os-boton-fila os-ror-trozos-fuera"
+                          onClick={() => sumarTrozo(null)}
+                        >
+                          No está en la tabla: cargarlo igual
+                          {puestas.length > 0 ? ` en ${puestas.join(' + ')}` : ''}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="os-boton os-boton-firme"
+                        disabled={trozos.length === 0}
+                        onClick={() => {
+                          setPartiendo(false);
+                          setPendiente({ h: null, partida: true });
+                        }}
+                      >
+                        Terminar la respuesta {enCurso?.n_respuesta}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             <div className="os-ror-campo" hidden={Boolean(pendiente) || fase === 'entrevista'}>
               <div className="os-ror-campo-alto">
                 <span className="os-dato-rotulo">
-                  {ubicando ? 'Dónde lo vio' : 'Respuesta'}
-                  {puestas.length > 0 ? ` · se busca en ${puestas.join(' + ')}` : ''}
+                  {partiendo
+                    ? `Objeto ${trozos.length + 1}${
+                        puestas.length > 0 ? ` · se busca en ${puestas.join(' + ')}` : ''
+                      }`
+                    : `${ubicando ? 'Dónde lo vio' : 'Respuesta'}${
+                        puestas.length > 0 ? ` · se busca en ${puestas.join(' + ')}` : ''
+                      }`}
                 </span>
                 {/* Soltar el área va acá, al lado de lo que dice cuál está
                     marcada, y no arriba de los mapas: es lo que se corrige
@@ -1406,27 +1734,43 @@ export default function Capturador({
                   </button>
                 )}
               </div>
-              <input
-                className="os-campo"
-                value={dijo}
-                onChange={(e) => setDijo(e.target.value)}
-                placeholder="Sus palabras, textuales"
-                aria-label="Respuesta"
-              />
+              {/* Separando objetos, lo que se escribe va en el renglón del
+                  objeto y este campo sobra: son el mismo texto en dos lugares. */}
+              {!partiendo && (
+                <input
+                  className="os-campo"
+                  value={dijo}
+                  onChange={(e) => setDijo(e.target.value)}
+                  placeholder="Sus palabras, textuales"
+                  aria-label="Respuesta"
+                />
+              )}
             </div>
 
             {pendiente && (
               <div className="os-ror-dq">
                 <p className="os-ror-dq-que">
-                  {pendiente.h?.respuesta ?? dijo.trim()}
+                  {pendiente.partida
+                    ? trozos.map((t) => t.texto).join(' · ')
+                    : pendiente.h?.respuesta ?? dijo.trim()}
                   <span className="os-ror-dq-area">
-                    {(puestas.length > 0 ? puestas : pendiente.h ? [pendiente.h.area] : []).join(
-                      ' + '
-                    )}
+                    {(pendiente.partida
+                      ? [...new Set(trozos.flatMap((t) => t.areas))]
+                      : puestas.length > 0
+                        ? puestas
+                        : pendiente.h
+                          ? [pendiente.h.area]
+                          : []
+                    ).join(' + ')}
                   </span>
                 </p>
                 <div className="os-ror-dq-fila">
-                  {localizacionesDe(puestas[0] ?? pendiente.h?.area ?? 'W')
+                  {localizacionesDe(
+                    (pendiente.partida ? trozos[0]?.areas[0] : undefined) ??
+                      puestas[0] ??
+                      pendiente.h?.area ??
+                      'W'
+                  )
                     .filter((l) => soloDq(l))
                     .map((l) => (
                       <button
@@ -1434,7 +1778,9 @@ export default function Capturador({
                         type="button"
                         className="os-ror-dq-opcion"
                         style={{ background: tonoDe(LOCALIZACION, l) }}
-                        onClick={() => tomar(pendiente.h, l)}
+                        onClick={() =>
+                          pendiente.partida ? cerrarPartida(l) : tomar(pendiente.h, l)
+                        }
                         title={l}
                       >
                         {soloDq(l)}
@@ -1443,7 +1789,7 @@ export default function Capturador({
                   <button
                     type="button"
                     className="os-boton os-boton-fila os-boton-derecha"
-                    onClick={() => tomar(pendiente.h, null)}
+                    onClick={() => (pendiente.partida ? cerrarPartida(null) : tomar(pendiente.h, null))}
                   >
                     Sin decidir
                   </button>
@@ -1463,12 +1809,29 @@ export default function Capturador({
                 mapas al lado. Con una respuesta esperando su calidad no se
                 muestra: la palabra ya está elegida y lo único que queda es el
                 DQ. */}
-            <div className="os-ror-opciones" hidden={Boolean(pendiente) || fase === 'entrevista'}>
+            <div
+              className={`os-ror-opciones${
+                opciones.length === 0 ? ' os-ror-opciones-sola' : ''
+              }`}
+              hidden={Boolean(pendiente) || fase === 'entrevista'}
+            >
               {/* El aviso va fuera de las columnas: adentro se parte en dos
                   renglones al ancho de una columna. */}
-              {opciones.length === 0 && (
+              {/* La lámina sin sus áreas trazadas no tiene dónde marcar, y el
+                  renglón de abajo pedía apretar una locación que no existe: se
+                  leía como que la pantalla falla. */}
+              {!CARGADAS.includes(lamina) && (
                 <p className="os-ror-vacio">
-                  {puestas.length === 0
+                  La lámina {lamina} todavía no tiene sus áreas cargadas en el sistema, así que acá
+                  no hay dónde marcar. Lo que se tomó en la entrevista está guardado, y la
+                  locación de estas respuestas se completa a mano en la ficha.
+                </p>
+              )}
+              {CARGADAS.includes(lamina) && opciones.length === 0 && (
+                <p className="os-ror-vacio">
+                  {partiendo
+                    ? 'Marcá dónde vio este objeto, o escribí qué es, y elegilo de la tabla.'
+                    : puestas.length === 0
                     ? 'Apretá la locación donde lo vio, o escribí lo que dijo. Podés marcar más de una cuando la respuesta las integre.'
                     : dijo.trim()
                       ? `«${dijo.trim()}» no figura en ${puestas.join(' + ')}: se carga igual, con la calidad a mano.`
@@ -1481,7 +1844,7 @@ export default function Capturador({
                   key={`${h.area}-${h.respuesta}-${i}`}
                   type="button"
                   className="os-ror-opcion"
-                  onClick={() => setPendiente({ h })}
+                  onClick={() => (partiendo ? sumarTrozo(h) : setPendiente({ h }))}
                 >
                   <span
                     className="os-ror-fq"
@@ -1496,8 +1859,12 @@ export default function Capturador({
               </div>
             </div>
 
-            {!pendiente && fase === 'encuesta' && (puestas.length > 0 || dijo.trim()) && (
-              <button type="button" className="os-boton" onClick={() => setPendiente({ h: null })}>
+            {!pendiente && fase === 'encuesta' && !partiendo && (puestas.length > 0 || dijo.trim()) && (
+              <button
+                type="button"
+                className="os-boton"
+                onClick={() => (partiendo ? sumarTrozo(null) : setPendiente({ h: null }))}
+              >
                 No está en la tabla: cargar igual
                 {puestas.length > 0 ? ` en ${puestas.join(' + ')}` : ''}
               </button>
@@ -1545,11 +1912,24 @@ export default function Capturador({
         {/* La tabla de codificación es de la encuesta: en la entrevista lo que
             hay que ver es lo que la persona va diciendo, y estas columnas
             (locación, FQ, contenidos, Z) todavía están todas vacías. */}
-        {fase === 'encuesta' && suyas.map((r) => (
-          <article key={`ficha-${r.n_respuesta}`} className="os-ror-fila os-ror-fila-ficha">
+        {/* Las que ya están en la ficha, sin la que se acaba de codificar: esa
+            ya se ve abajo con su codificación, y arriba aparecía otra vez y
+            vacía, como si fueran dos respuestas distintas. */}
+        {fase === 'encuesta' && suyas.filter((r) => !yaCodificadas.has(r.id)).map((r) => (
+          <article
+            key={`ficha-${r.n_respuesta}`}
+            className="os-ror-fila os-ror-fila-ficha"
+            /* El orden de la tabla es el del protocolo, sin importar en qué
+               orden se codificaron: se puede volver a una respuesta anterior, y
+               ahí la recién codificada se ponía arriba de la número 1. */
+            style={{ order: r.n_respuesta ?? 0 }}
+          >
             <div className="os-ror-fila-datos">
               <span className="os-ror-n">{r.n_respuesta ?? '—'}</span>
-              <span className="os-ror-dijo">En la ficha</span>
+              {/* Lo que dijo la persona, si se tomó en la entrevista. "En la
+                  ficha" era lo único que se veía, y de una respuesta sin
+                  codificar eso no dice cuál es. */}
+              <span className="os-ror-dijo">{r.verbalizacion ?? 'En la ficha'}</span>
               <span>{r.n_localizacion ?? '—'}</span>
               <span>
                 {r.localizacion ? (
@@ -1597,7 +1977,11 @@ export default function Capturador({
           const tieneEspacio = r.areas.some(esEspacio);
           const tieneTinta = r.areas.some((a) => !esEspacio(a));
           return (
-            <article key={r.n} className={`os-ror-fila${r.extrapolada ? ' os-ror-extrapolada' : ''}`}>
+            <article
+              key={r.n}
+              className={`os-ror-fila${r.extrapolada ? ' os-ror-extrapolada' : ''}`}
+              style={{ order: r.n }}
+            >
               <div className="os-ror-fila-datos">
                 <span className="os-ror-n">{r.n}</span>
                 <span className="os-ror-dijo">{r.dijo}</span>
