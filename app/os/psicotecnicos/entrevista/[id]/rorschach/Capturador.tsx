@@ -29,7 +29,15 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AREAS, type Parte } from '@/lib/rorschach-areas';
-import { buscar, entradasDe, esPopular, familiaDe, plano, type Hallazgo } from '@/lib/rorschach-tabla-a';
+import {
+  buscar,
+  empiezaAlgunaPalabra,
+  entradasDe,
+  esPopular,
+  familiaDe,
+  plano,
+  type Hallazgo,
+} from '@/lib/rorschach-tabla-a';
 import { contenidoSugerido, fqDeLaFicha, localizacionesDe } from '@/lib/rorschach-sugerencias';
 import { Multiple, Simple } from '@/app/os/psicotecnicos/ficha/[id]/Celdas';
 import { CONTENIDOS, FQ, GIRO, LOCALIZACION, POSICION, tonoDe } from '@/lib/rorschach';
@@ -325,6 +333,8 @@ export type YaEnLaFicha = {
   contenidos: string[] | null;
   popular: boolean | null;
   z: number | null;
+  /** La nota de la evaluadora sobre esta respuesta. */
+  observacion: string | null;
   /** Lo que dijo el candidato, si esta respuesta se tomó en la primera vuelta. */
   verbalizacion: string | null;
   /** Cómo sostuvo la lámina al darla. */
@@ -385,6 +395,29 @@ type Respuesta = {
 };
 
 /** '4' para D4, '26' para DdS26, '4+7' cuando integra dos. W va sin número. */
+/**
+ * Las áreas de una respuesta que ya está guardada.
+ *
+ * La ficha guarda el número del área y la letra aparte ("33+29" con "Ddv/+"),
+ * así que para volver a dibujarla y para recalcular su Z hay que rearmar los
+ * nombres. El número es único dentro de la lámina, así que alcanza con buscarlo
+ * entre las áreas de esa lámina; si no aparece, se arma con la familia que dice
+ * la localización.
+ */
+function areasDeLaFicha(r: YaEnLaFicha): string[] {
+  const familia = (r.localizacion ?? '').replace(/(v\/\+|o|v|\+)$/, '') || 'Dd';
+  const numeros = (r.n_localizacion ?? '')
+    .split('+')
+    .map((n) => n.trim())
+    .filter((n) => /^\d+$/.test(n));
+  if (numeros.length === 0) return familia === 'W' || familia === 'WS' ? [familia] : [];
+  const dela = AREAS[r.lamina ?? ''] ?? {};
+  const nombres = Object.keys(dela);
+  return numeros.map(
+    (n) => nombres.find((a) => a.replace(/^D?d?S?/, '') === n) ?? `${familia}${n}`
+  );
+}
+
 function numeroDe(areas: string[]): string | null {
   const ns = areas.map((a) => a.replace(/^D?d?S?/, '')).filter(Boolean);
   return ns.length ? ns.join('+') : null;
@@ -436,17 +469,15 @@ export default function Capturador({
    * se tiene fresco recién dicha la respuesta. `null` adentro es la respuesta
    * que no figura en la tabla, que también lleva DQ.
    */
-  const [pendiente, setPendiente] = useState<{ h: Hallazgo | null; partida?: boolean } | null>(null);
+  const [pendiente, setPendiente] = useState<{
+    h: Hallazgo | null;
+    partida?: boolean;
+    /** Lo confirma ella antes de cerrar: las áreas van con relación entre sí. */
+    integradas?: boolean;
+    /** Lo confirma ella antes de cerrar: el blanco entra junto con la tinta. */
+    blancoIntegrado?: boolean;
+  } | null>(null);
   const [respuestas, setRespuestas] = useState<Respuesta[]>([]);
-  /**
-   * Qué filas tienen la nota abierta.
-   *
-   * La observación es la excepción y no la regla: se anota en una de cada
-   * tantas respuestas, y con el campo siempre puesto había un renglón vacío
-   * debajo de cada fila. Se abre desde su botón, y una fila que ya tiene algo
-   * escrito lo muestra sin que haya que abrirla.
-   */
-  const [conNota, setConNota] = useState<number[]>([]);
   /**
    * Qué fila está pidiendo confirmación para borrarse.
    *
@@ -456,6 +487,26 @@ export default function Capturador({
    * del OS antes de un borrado.
    */
   const [aBorrar, setABorrar] = useState<number | null>(null);
+  /**
+   * Qué filas tienen abierto lo de abajo.
+   *
+   * Los tildes del puntaje y el porqué de la Z se deciden al cerrar la
+   * respuesta; en la tabla son para corregir, y puestos siempre hacían de cada
+   * fila tres renglones. Se abren desde su botón.
+   */
+  const [abiertas, setAbiertas] = useState<number[]>([]);
+  /**
+   * Los dos tildes de Z de las respuestas que ya están en la ficha.
+   *
+   * La ficha guarda el puntaje pero no de dónde salió, así que corrigiendo una
+   * respuesta guardada hay que volver a preguntarlos. Arrancan sin tildar, que
+   * es como se guardó el puntaje la primera vez.
+   */
+  const [marcas, setMarcas] = useState<
+    Record<string, { integradas: boolean; blancoIntegrado: boolean }>
+  >({});
+  /** Para no mandar un guardado por cada tecla de la nota. */
+  const enEspera = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   /**
    * La lámina la lleva la pantalla, no el servidor.
@@ -611,6 +662,131 @@ export default function Capturador({
     setPuestas([]);
   }, [fase, enCurso, ubicando, partiendo]);
 
+  /**
+   * Lo que ya está en la ficha de esta lámina, con la forma de una respuesta.
+   *
+   * Se corrige acá mismo y no solo en la ficha: la evaluadora está mirando la
+   * mancha, y mandarla a otra pantalla para cambiar un contenido le hace perder
+   * dónde estaba.
+   */
+  /**
+   * Con qué tildes se guardó el puntaje Z de una respuesta que ya está.
+   *
+   * La ficha guarda el número y no de dónde salió. Se prueban las cuatro
+   * combinaciones y se queda con la que da ese número: así una respuesta
+   * guardada muestra el Z que tiene, y no uno nuevo calculado sin sus tildes.
+   */
+  function marcasDe(r: YaEnLaFicha): { integradas: boolean; blancoIntegrado: boolean } {
+    const puestas = marcas[r.id];
+    if (puestas) return puestas;
+    const apagadas = { integradas: false, blancoIntegrado: false };
+    if (r.z == null) return apagadas;
+    const areas = areasDeLaFicha(r);
+    for (const integradas of [false, true]) {
+      for (const blancoIntegrado of [false, true]) {
+        const v = puntajeZ(lamina, {
+          areas,
+          localizacion: r.localizacion,
+          integradas,
+          blancoIntegrado,
+        });
+        if ((v.z?.valor ?? null) === r.z) return { integradas, blancoIntegrado };
+      }
+    }
+    return apagadas;
+  }
+
+  /* Sin locación no hay fila que corregir: esa respuesta se tomó en la
+     entrevista y todavía se está codificando arriba. Va como renglón simple,
+     con su número y lo que dijo, y sin los selectores, que necesitan un área
+     para saber qué localizaciones ofrecer. */
+  const enLaFichaSinCodificar = suyas.filter(
+    (r) => !yaCodificadas.has(r.id) && areasDeLaFicha(r).length === 0
+  );
+
+  const deLaFicha: Respuesta[] = suyas
+    .filter((r) => !yaCodificadas.has(r.id) && areasDeLaFicha(r).length > 0)
+    .map((r) => ({
+      n: r.n_respuesta ?? 0,
+      id: r.id,
+      dijo: r.verbalizacion ?? '',
+      areas: areasDeLaFicha(r),
+      extrapolada: false,
+      fq: r.fq,
+      localizacion: r.localizacion,
+      contenidos: r.contenidos ?? [],
+      popular: r.popular ?? false,
+      integradas: marcasDe(r).integradas,
+      blancoIntegrado: marcasDe(r).blancoIntegrado,
+      observacion: r.observacion ?? '',
+      verbalizacion: r.verbalizacion,
+      posicion: r.posicion,
+    }));
+
+  /**
+   * Corregir una respuesta que ya está guardada.
+   *
+   * Va derecho a la ficha, sin esperar a que se pase de lámina: la fila ya
+   * existe allá, y lo que se toca acá es esa misma fila. El puntaje Z se
+   * recalcula, porque cambiar la locación o los tildes lo cambia.
+   */
+  async function cambiarEnLaFicha(id: string, campos: Partial<Respuesta>) {
+    const fila = deLaFicha.find((r) => r.id === id);
+    if (!fila) return;
+    const nueva = { ...fila, ...campos };
+    if ('integradas' in campos || 'blancoIntegrado' in campos) {
+      setMarcas((m) => ({
+        ...m,
+        [id]: { integradas: nueva.integradas, blancoIntegrado: nueva.blancoIntegrado },
+      }));
+    }
+    const z = zDe(nueva).z?.valor ?? null;
+    setEnLaFicha((f) =>
+      f.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              localizacion: nueva.localizacion,
+              fq: nueva.fq,
+              contenidos: nueva.contenidos,
+              popular: nueva.popular,
+              observacion: nueva.observacion || null,
+              z,
+            }
+          : r
+      )
+    );
+    const guardar = async () => {
+      const bien = await guardarCelda(id, {
+        localizacion: nueva.localizacion,
+        fq: nueva.fq,
+        contenidos: nueva.contenidos,
+        popular: nueva.popular,
+        observacion: nueva.observacion || null,
+        z,
+      });
+      if (!bien) setAviso('No se pudo guardar esa corrección. Probá de nuevo.');
+    };
+    // La nota se escribe letra por letra: se espera a que pare de escribir.
+    clearTimeout(enEspera.current[id]);
+    if ('observacion' in campos) {
+      enEspera.current[id] = setTimeout(guardar, 600);
+      return;
+    }
+    await guardar();
+  }
+
+  /** Dónde cae la respuesta que está esperando su calidad evolutiva. */
+  const areasPendientes = !pendiente
+    ? []
+    : pendiente.partida
+      ? [...new Set(trozos.flatMap((t) => t.areas))]
+      : puestas.length > 0
+        ? puestas
+        : pendiente.h
+          ? [pendiente.h.area]
+          : [];
+
   /** La posición de la respuesta que se está ubicando, para girar los mapas. */
   const posicionDeLaQueUbico = ubicando
     ? suyas.find((v) => v.id === ubicando)?.posicion ?? '^'
@@ -739,14 +915,15 @@ export default function Capturador({
       .flatMap((a) => entradasDe(lamina, a))
       .sort((x, y) => x.respuesta.localeCompare(y.respuesta, 'es') || x.area.localeCompare(y.area));
     if (!q) return suyas;
-    // Primero lo que empieza con lo escrito y después lo que lo contiene, como
-    // en el buscador de toda la lámina. Con una sola letra, solo lo que empieza.
+    // Primero lo que empieza con lo escrito y después lo que lo tiene al
+    // principio de alguna de sus palabras, como en el buscador de toda la
+    // lámina. Con una sola letra, solo lo que empieza.
     const empieza = suyas.filter((e) => plano(e.respuesta).startsWith(q));
     if (q.length === 1) return empieza;
-    const contiene = suyas.filter(
-      (e) => !plano(e.respuesta).startsWith(q) && plano(e.respuesta).includes(q)
+    const enOtraPalabra = suyas.filter(
+      (e) => !plano(e.respuesta).startsWith(q) && empiezaAlgunaPalabra(plano(e.respuesta), q)
     );
-    return [...empieza, ...contiene];
+    return [...empieza, ...enOtraPalabra];
   }, [dijo, puestas]);
 
   function alternar(a: string) {
@@ -813,8 +990,8 @@ export default function Capturador({
         localizacion: dq ?? (locs.length === 1 ? locs[0] : null),
         contenidos,
         popular: trozos.some((t) => t.popular),
-        integradas: false,
-        blancoIntegrado: false,
+        integradas: pendiente?.integradas ?? false,
+        blancoIntegrado: pendiente?.blancoIntegrado ?? false,
         observacion: '',
         id: tomada?.id,
         verbalizacion: tomada?.verbalizacion ?? null,
@@ -871,8 +1048,8 @@ export default function Capturador({
         localizacion: dq ?? (locs.length === 1 ? locs[0] : null),
         contenidos: contenidoSugerido(respuesta),
         popular: esPopular(lamina, areas[0], respuesta),
-        integradas: false,
-        blancoIntegrado: false,
+        integradas: pendiente?.integradas ?? false,
+        blancoIntegrado: pendiente?.blancoIntegrado ?? false,
         observacion: '',
         /* Ubicando una respuesta de la primera instancia, la fila ya existe y
            lleva lo que dijo el candidato: se completa esa. Capturando de una
@@ -957,6 +1134,7 @@ export default function Capturador({
         contenidos: [],
         popular: false,
         z: null,
+        observacion: null,
         verbalizacion: texto,
         posicion,
       },
@@ -1118,6 +1296,7 @@ export default function Capturador({
         contenidos: r.contenidos,
         popular: r.popular,
         z: zDe(r).z?.valor ?? null,
+        observacion: r.observacion || null,
         verbalizacion: r.verbalizacion,
         posicion: r.posicion,
       })),
@@ -1205,6 +1384,258 @@ export default function Capturador({
       </button>
     </div>
   );
+
+  /**
+   * Una fila de la tabla de codificación.
+   *
+   * La misma para lo que se acaba de codificar y para lo que ya está en la
+   * ficha: los dos son respuestas de esta lámina y se corrigen igual. Lo único
+   * que cambia es a dónde va el cambio, que es lo que entra por `onCambio`.
+   */
+  function filaDeCodificacion(
+    r: Respuesta,
+    {
+      onCambio,
+      onBorrar,
+    }: { onCambio: (campos: Partial<Respuesta>) => void; onBorrar: () => void }
+  ) {
+          const v = zDe(r);
+          const tieneEspacio = r.areas.some(esEspacio);
+          const tieneTinta = r.areas.some((a) => !esEspacio(a));
+          return (
+            <article
+              key={`${r.id ?? 'nueva'}-${r.n}`}
+              className={`os-ror-fila${r.extrapolada ? ' os-ror-extrapolada' : ''}`}
+              style={{ order: r.n }}
+            >
+              <div className="os-ror-fila-datos">
+                <span className="os-ror-n">{r.n}</span>
+                <span className="os-ror-dijo">{r.dijo}</span>
+                {/* Cada área con el color de su familia, como el resto de los
+                    códigos de la tabla: el mismo dato en dos columnas no puede
+                    ser una etiqueta de color en una y texto pelado en la otra. */}
+                <span
+                  className={`os-ror-areas${
+                    r.areas.length >= 4
+                      ? ' os-ror-areas-mini'
+                      : r.areas.length === 3
+                        ? ' os-ror-areas-chicas'
+                        : ''
+                  }`}
+                >
+                  {r.areas.map((a) => (
+                    <span
+                      key={a}
+                      className="os-ror-etiqueta"
+                      style={{ background: tonoDe(LOCALIZACION, `${familiaDe(a)}o`) }}
+                    >
+                      {a}
+                    </span>
+                  ))}
+                </span>
+                {/* El mismo selector que la tabla de codificación de la ficha,
+                    con sus mismos colores: los códigos se reconocen por su
+                    color y no puede ser uno acá y otro allá. Ofrece las
+                    localizaciones compatibles con el área, y "Mostrar todas"
+                    para el caso raro. */}
+                <Codigo
+                  valor={r.localizacion}
+                  opciones={LOCALIZACION.filter((o) => localizacionesDe(r.areas[0]).includes(o.v))}
+                  todas={LOCALIZACION}
+                  onElegir={(v) => onCambio({ localizacion: v })}
+                  etiqueta="Localización y DQ"
+                  buscable={false}
+                  // Sin elegir muestra la familia que ya sale del área ("D…"),
+                  // no un guion: lo que falta es la calidad evolutiva, y un
+                  // hueco vacío se lee como si faltara también la localización.
+                  vacio={`${familiaDe(r.areas[0])}…`}
+                />
+                {/* La Tabla A propone la calidad formal, y se puede cambiar:
+                    la misma respuesta dicha de dos maneras no siempre vale
+                    igual, y esa lectura es de la evaluadora. Fuera de tabla la
+                    tabla no propone nada y las opciones son las dos que puede
+                    tener un área que no está en ella. */}
+                <span className="os-ror-dato">
+                  <Simple
+                    valor={r.fq}
+                    opciones={r.areas.includes(FUERA_DE_TABLA) ? FQ_FUERA_DE_TABLA : FQ}
+                    onCambio={(v) => onCambio({ fq: v })}
+                    etiqueta="Calidad formal"
+                    buscable={false}
+                  />
+                </span>
+                {/* Lo que propone el diccionario de palabras entra acá y
+                    se corrige: una palabra suelta no dice el contenido, que
+                    depende de a qué pertenece lo que la persona vio. */}
+                <span className="os-ror-dato os-ror-contenidos">
+                  <Multiple
+                    valores={r.contenidos}
+                    opciones={CONTENIDOS}
+                    onCambio={(v) => onCambio({ contenidos: v })}
+                    etiqueta="Contenidos"
+                  />
+                </span>
+                <span className="os-ror-dato">{r.popular ? 'P' : ''}</span>
+                <span className="os-ror-dato os-ror-z">
+                  {v.z ? `${v.z.tipo} ${v.z.valor}` : '—'}
+                </span>
+                {/* Los dos botones de la fila, en una columna sola: abrir el
+                    detalle y borrar. El borrado se confirma como en el resto
+                    del OS, partiéndose en "Sí, borrar" y "No", porque no se
+                    puede deshacer y esta columna está al lado de campos que se
+                    tocan todo el tiempo. */}
+                <span className="os-ror-acciones">
+                  {/* Confirmando el borrado, los otros dos botones no van: la
+                      pregunta necesita el ancho de la columna entera, y además
+                      lo único que hay que contestar ahí es sí o no. */}
+                  {aBorrar !== r.n && (
+                    <>
+                  {/* Un solo botón abre lo de abajo: los tildes del puntaje y la
+                      observación se escriben ahí. */}
+                  <button
+                    type="button"
+                    className={`os-ror-abrir${abiertas.includes(r.n) ? ' puesta' : ''}`}
+                    onClick={() =>
+                      setAbiertas((ns) =>
+                        ns.includes(r.n) ? ns.filter((n) => n !== r.n) : [...ns, r.n]
+                      )
+                    }
+                    title={
+                      abiertas.includes(r.n)
+                        ? 'Cerrar el detalle'
+                        : v.aConfirmar.length > 0
+                          ? 'Hay algo que confirmar del puntaje'
+                          : r.observacion || 'Puntaje y observación'
+                    }
+                    aria-expanded={abiertas.includes(r.n)}
+                    aria-label={`Detalle de la respuesta ${r.n}`}
+                  >
+                    ✎
+                  </button>
+                    </>
+                  )}
+                  {aBorrar === r.n ? (
+                    <>
+                      <button
+                        type="button"
+                        className="os-boton os-boton-fila os-boton-peligro"
+                        onClick={() => {
+                          setABorrar(null);
+                          onBorrar();
+                        }}
+                      >
+                        Sí, borrar
+                      </button>
+                      <button
+                        type="button"
+                        className="os-boton os-boton-fila"
+                        onClick={() => setABorrar(null)}
+                      >
+                        No
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="os-ror-borrar"
+                      onClick={() => setABorrar(r.n)}
+                      title={`Borrar la respuesta ${r.n}`}
+                      aria-label={`Borrar la respuesta ${r.n}`}
+                    >
+                      ×
+                    </button>
+                  )}
+                </span>
+              </div>
+
+              {/* El detalle, en dos columnas parejas: a la izquierda de dónde
+                  sale el puntaje Z, a la derecha lo que quiera anotar quien
+                  codifica. Antes era una sola fila que envolvía, y el campo de
+                  la nota partía los tildes al medio. */}
+              <div className="os-ror-detalle" hidden={!abiertas.includes(r.n)}>
+                <div className="os-ror-detalle-lado">
+                  <span className="os-dato-rotulo">Puntaje Z</span>
+                  <label
+                    className={`os-ror-tilde${r.areas.length < 2 ? ' apagado' : ''}`}
+                    title={
+                      r.areas.length < 2
+                        ? 'La respuesta está en una sola locación: no hay áreas que integrar'
+                        : undefined
+                    }
+                  >
+                    <input
+                      type="checkbox"
+                      checked={r.integradas}
+                      disabled={r.areas.length < 2}
+                      onChange={(e) => onCambio({ integradas: e.target.checked })}
+                    />
+                    Integra las áreas con una relación significativa
+                  </label>
+                  <label
+                    className={`os-ror-tilde${
+                      !tieneEspacio && !(r.localizacion?.includes('S') ?? false) ? ' apagado' : ''
+                    }`}
+                    title={
+                      !tieneEspacio && !(r.localizacion?.includes('S') ?? false)
+                        ? 'La respuesta no cae en ningún blanco'
+                        : undefined
+                    }
+                  >
+                    <input
+                      type="checkbox"
+                      checked={r.blancoIntegrado}
+                      disabled={
+                        (!tieneEspacio && !(r.localizacion?.includes('S') ?? false)) ||
+                        (!tieneTinta && !r.localizacion?.match(/^(W|D)S/))
+                      }
+                      onChange={(e) => onCambio({ blancoIntegrado: e.target.checked })}
+                    />
+                    El blanco se integra con la mancha
+                  </label>
+                  {/* Los tres renglones del porqué van siempre, aunque estén
+                      vacíos: cada cosa del detalle tiene que caer en el mismo
+                      lugar en todas las respuestas, o abrir dos filas seguidas
+                      se lee como dos pantallas distintas. */}
+                  <span className="os-ror-porque">
+                    {v.z ? `${v.z.tipo}: ${v.z.porque}` : 'Sin puntaje Z'}
+                  </span>
+                  <span className="os-ror-porque os-ror-descartado">
+                    {v.otros
+                      .map((o) => `${o.tipo} ${o.valor} también daba, gana el más alto`)
+                      .join(' · ')}
+                  </span>
+                </div>
+                {/* Los avisos van del lado derecho, a la altura de los tildes
+                    que preguntan: lo que hay que confirmar está al lado de
+                    dónde se confirma. */}
+                <div className="os-ror-detalle-lado">
+                  <span className="os-dato-rotulo">
+                    {v.aConfirmar.length > 0 ? 'A confirmar' : ''}
+                  </span>
+                  <div className="os-ror-dudas">
+                    {v.aConfirmar.map((a, i) => (
+                      <span key={i} className="os-ror-duda">
+                        {a}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                {/* La observación cruza las dos columnas: a lo ancho entra en
+                    dos renglones lo que en media fila pedía cinco. */}
+                <div className="os-ror-detalle-nota">
+                  <span className="os-dato-rotulo">Observación</span>
+                  <textarea
+                    className="os-campo os-ror-observacion"
+                    value={r.observacion}
+                    onChange={(e) => onCambio({ observacion: e.target.value })}
+                    placeholder="Lo que convenga dejar anotado de esta respuesta"
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </article>
+          );
+  }
 
   return (
     <div className="os-ror">
@@ -1575,7 +2006,10 @@ export default function Capturador({
                       frase cortaba la lectura entre lo que dijo y dónde lo vio.
                       Deshacerlo va en el mismo lugar: es el mismo interruptor,
                       y al pie quedaba lejos de donde se apretó. */}
-                  {enCurso && !partiendo && trozos.length === 0 && (
+                  {/* Con objetos ya cargados el botón también tiene que estar:
+                      sin eso, volver atrás desde la confirmación dejaba los
+                      objetos guardados y sin forma de seguir cargándolos. */}
+                  {enCurso && !partiendo && (
                     <button
                       type="button"
                       className="os-boton os-boton-fila os-ror-partir"
@@ -1683,14 +2117,23 @@ export default function Capturador({
                           la pantalla: es lo que se hace con el objeto que se
                           está cargando, antes de decidir sobre la respuesta
                           entera. */}
+                      {/* Un objeto necesita su locación: sin área marcada el
+                          botón no hacía nada y no decía qué faltaba. */}
                       {(puestas.length > 0 || dijo.trim()) && (
                         <button
                           type="button"
                           className="os-boton os-boton-fila os-ror-trozos-fuera"
+                          disabled={puestas.length === 0}
+                          title={
+                            puestas.length === 0
+                              ? 'Marcá primero en la mancha dónde vio este objeto'
+                              : undefined
+                          }
                           onClick={() => sumarTrozo(null)}
                         >
-                          No está en la tabla: cargarlo igual
-                          {puestas.length > 0 ? ` en ${puestas.join(' + ')}` : ''}
+                          {puestas.length === 0
+                            ? 'Marcá dónde lo vio para cargarlo'
+                            : `No está en la tabla: cargarlo igual en ${puestas.join(' + ')}`}
                         </button>
                       )}
                       <button
@@ -1710,7 +2153,13 @@ export default function Capturador({
               </div>
             )}
 
-            <div className="os-ror-campo" hidden={Boolean(pendiente) || fase === 'entrevista'}>
+            {/* Separando objetos este bloque sobra: el renglón del objeto de
+                arriba ya tiene su rótulo y su campo, y acá quedaban repetidos y
+                vacíos. */}
+            <div
+              className="os-ror-campo"
+              hidden={Boolean(pendiente) || fase === 'entrevista' || partiendo}
+            >
               <div className="os-ror-campo-alto">
                 <span className="os-dato-rotulo">
                   {partiendo
@@ -1753,17 +2202,70 @@ export default function Capturador({
                   {pendiente.partida
                     ? trozos.map((t) => t.texto).join(' · ')
                     : pendiente.h?.respuesta ?? dijo.trim()}
-                  <span className="os-ror-dq-area">
-                    {(pendiente.partida
-                      ? [...new Set(trozos.flatMap((t) => t.areas))]
-                      : puestas.length > 0
-                        ? puestas
-                        : pendiente.h
-                          ? [pendiente.h.area]
-                          : []
-                    ).join(' + ')}
-                  </span>
+                  <span className="os-ror-dq-area">{areasPendientes.join(' + ')}</span>
                 </p>
+                {/* Los dos tildes del puntaje Z van antes de cerrar y no en la
+                    fila de la tabla: son de esta respuesta y los sabe quien la
+                    acaba de escuchar. Están siempre, para que el paso tenga la
+                    misma forma en todas las respuestas, y el que no puede
+                    cambiar nada queda apagado diciendo por qué. Se pueden dejar
+                    sin tocar; lo que cierra la respuesta es la calidad
+                    evolutiva de abajo. */}
+                <div className="os-ror-dq-medio">
+                <div className="os-ror-dq-tildes">
+                  <label
+                    className={`os-ror-tilde${areasPendientes.length < 2 ? ' apagado' : ''}`}
+                    title={
+                      areasPendientes.length < 2
+                        ? 'La respuesta está en una sola locación: no hay áreas que integrar'
+                        : undefined
+                    }
+                  >
+                    <input
+                      type="checkbox"
+                      checked={pendiente.integradas ?? false}
+                      disabled={areasPendientes.length < 2}
+                      onChange={(e) =>
+                        setPendiente((p) => (p ? { ...p, integradas: e.target.checked } : p))
+                      }
+                    />
+                    Integra las áreas con una relación significativa
+                  </label>
+                  <label
+                    className={`os-ror-tilde${
+                      !areasPendientes.some(esEspacio) ||
+                      !areasPendientes.some((a) => !esEspacio(a))
+                        ? ' apagado'
+                        : ''
+                    }`}
+                    title={
+                      !areasPendientes.some(esEspacio)
+                        ? 'La respuesta no cae en ningún blanco'
+                        : !areasPendientes.some((a) => !esEspacio(a))
+                          ? 'La respuesta está solo en el blanco: no hay tinta con la que integrarlo'
+                          : undefined
+                    }
+                  >
+                    <input
+                      type="checkbox"
+                      checked={pendiente.blancoIntegrado ?? false}
+                      disabled={
+                        !areasPendientes.some(esEspacio) ||
+                        !areasPendientes.some((a) => !esEspacio(a))
+                      }
+                      onChange={(e) =>
+                        setPendiente((p) => (p ? { ...p, blancoIntegrado: e.target.checked } : p))
+                      }
+                    />
+                    El blanco se integra con la mancha
+                  </label>
+                </div>
+                </div>
+                {/* Las calidades y las dos salidas, abajo de la tarjeta: lo que
+                    hay arriba es lo que se lee para decidir, y esto es la
+                    decisión. Las dos salidas van una sobre otra a la derecha,
+                    para que no se lean como una quinta calidad. */}
+                <div className="os-ror-dq-cierre">
                 <div className="os-ror-dq-fila">
                   {localizacionesDe(
                     (pendiente.partida ? trozos[0]?.areas[0] : undefined) ??
@@ -1786,20 +2288,28 @@ export default function Capturador({
                         {soloDq(l)}
                       </button>
                     ))}
+                </div>
+                {/* Las dos salidas, una sobre otra: no son una quinta calidad,
+                    así que van aparte de las cuatro. */}
+                <div className="os-ror-dq-pie">
                   <button
                     type="button"
-                    className="os-boton os-boton-fila os-boton-derecha"
+                    className="os-boton os-boton-fila"
                     onClick={() => (pendiente.partida ? cerrarPartida(null) : tomar(pendiente.h, null))}
                   >
-                    Sin decidir
+                    No decidir calidad
                   </button>
                   <button
                     type="button"
                     className="os-boton os-boton-fila"
-                    onClick={() => setPendiente(null)}
+                    onClick={() => {
+                      if (pendiente.partida) setPartiendo(true);
+                      setPendiente(null);
+                    }}
                   >
-                    Cancelar
+                    {pendiente.partida ? 'Volver a objetos' : 'Volver'}
                   </button>
+                </div>
                 </div>
               </div>
             )}
@@ -1813,7 +2323,11 @@ export default function Capturador({
               className={`os-ror-opciones${
                 opciones.length === 0 ? ' os-ror-opciones-sola' : ''
               }`}
-              hidden={Boolean(pendiente) || fase === 'entrevista'}
+              /* Separando, sin nada que elegir esta caja queda vacía y sigue
+                 ocupando su aire entre los renglones de la card. */
+              hidden={
+                Boolean(pendiente) || fase === 'entrevista' || (partiendo && opciones.length === 0)
+              }
             >
               {/* El aviso va fuera de las columnas: adentro se parte en dos
                   renglones al ancho de una columna. */}
@@ -1827,11 +2341,11 @@ export default function Capturador({
                   locación de estas respuestas se completa a mano en la ficha.
                 </p>
               )}
-              {CARGADAS.includes(lamina) && opciones.length === 0 && (
+              {/* Separando, el renglón del objeto ya dice qué hacer con su
+                  texto de ayuda adentro: acá abajo era el mismo aviso repetido. */}
+              {CARGADAS.includes(lamina) && opciones.length === 0 && !partiendo && (
                 <p className="os-ror-vacio">
-                  {partiendo
-                    ? 'Marcá dónde vio este objeto, o escribí qué es, y elegilo de la tabla.'
-                    : puestas.length === 0
+                  {puestas.length === 0
                     ? 'Apretá la locación donde lo vio, o escribí lo que dijo. Podés marcar más de una cuando la respuesta las integre.'
                     : dijo.trim()
                       ? `«${dijo.trim()}» no figura en ${puestas.join(' + ')}: se carga igual, con la calidad a mano.`
@@ -1859,14 +2373,23 @@ export default function Capturador({
               </div>
             </div>
 
+            {/* Lo mismo para la respuesta entera: sin locación no hay dónde
+                cargarla, y el botón se quedaba quieto sin decir por qué. */}
             {!pendiente && fase === 'encuesta' && !partiendo && (puestas.length > 0 || dijo.trim()) && (
               <button
                 type="button"
                 className="os-boton"
-                onClick={() => (partiendo ? sumarTrozo(null) : setPendiente({ h: null }))}
+                disabled={puestas.length === 0}
+                title={
+                  puestas.length === 0
+                    ? 'Marcá primero en la mancha dónde lo vio'
+                    : undefined
+                }
+                onClick={() => setPendiente({ h: null })}
               >
-                No está en la tabla: cargar igual
-                {puestas.length > 0 ? ` en ${puestas.join(' + ')}` : ''}
+                {puestas.length === 0
+                  ? 'Marcá dónde lo vio para cargarla'
+                  : `No está en la tabla: cargar igual en ${puestas.join(' + ')}`}
               </button>
             )}
           </div>
@@ -1901,236 +2424,52 @@ export default function Capturador({
             <span>Contenidos</span>
             <span>P</span>
             <span>Pje Z</span>
-            {/* La última columna lleva el lápiz de la nota y la cruz que borra.
-                El rótulo nombra al primero, que es el que deja algo escrito. */}
-            <span>Nota</span>
+            {/* La última columna lleva los tres botones de la fila: abrir lo
+                de abajo, la nota y el borrado. */}
+            <span>Acciones</span>
           </div>
         )}
 
-        {/* Lo que ya está en la ficha de esta lámina: apagado y sin controles,
-            porque se corrige allá. Va arriba, que es donde cae por número. */}
-        {/* La tabla de codificación es de la encuesta: en la entrevista lo que
-            hay que ver es lo que la persona va diciendo, y estas columnas
-            (locación, FQ, contenidos, Z) todavía están todas vacías. */}
-        {/* Las que ya están en la ficha, sin la que se acaba de codificar: esa
-            ya se ve abajo con su codificación, y arriba aparecía otra vez y
-            vacía, como si fueran dos respuestas distintas. */}
-        {fase === 'encuesta' && suyas.filter((r) => !yaCodificadas.has(r.id)).map((r) => (
-          <article
-            key={`ficha-${r.n_respuesta}`}
-            className="os-ror-fila os-ror-fila-ficha"
-            /* El orden de la tabla es el del protocolo, sin importar en qué
-               orden se codificaron: se puede volver a una respuesta anterior, y
-               ahí la recién codificada se ponía arriba de la número 1. */
-            style={{ order: r.n_respuesta ?? 0 }}
-          >
-            <div className="os-ror-fila-datos">
-              <span className="os-ror-n">{r.n_respuesta ?? '—'}</span>
-              {/* Lo que dijo la persona, si se tomó en la entrevista. "En la
-                  ficha" era lo único que se veía, y de una respuesta sin
-                  codificar eso no dice cuál es. */}
-              <span className="os-ror-dijo">{r.verbalizacion ?? 'En la ficha'}</span>
-              <span>{r.n_localizacion ?? '—'}</span>
-              <span>
-                {r.localizacion ? (
-                  <span
-                    className="os-ror-etiqueta"
-                    style={{ background: tonoDe(LOCALIZACION, r.localizacion) }}
-                  >
-                    {r.localizacion}
-                  </span>
-                ) : (
-                  '—'
-                )}
-              </span>
-              <span>
-                {r.fq ? (
-                  <span className="os-ror-fq" style={{ background: tonoDe(FQ, r.fq) }}>
-                    {r.fq}
-                  </span>
-                ) : (
-                  '—'
-                )}
-              </span>
-              <span className="os-ror-contenidos">
-                {(r.contenidos ?? []).length === 0
-                  ? '—'
-                  : (r.contenidos ?? []).map((c) => (
-                      <span
-                        key={c}
-                        className="os-ror-etiqueta"
-                        style={{ background: tonoDe(CONTENIDOS, c) }}
-                      >
-                        {c}
-                      </span>
-                    ))}
-              </span>
-              <span>{r.popular ? 'P' : ''}</span>
-              <span>{r.z ?? '—'}</span>
-              <span />
-            </div>
-          </article>
-        ))}
-
-        {fase === 'encuesta' && respuestas.map((r) => {
-          const v = zDe(r);
-          const tieneEspacio = r.areas.some(esEspacio);
-          const tieneTinta = r.areas.some((a) => !esEspacio(a));
-          return (
+        {/* Las que ya están en la ficha van con los mismos controles que las
+            recién codificadas: se corrigen acá, sin ir a la otra pantalla. La
+            que se acaba de codificar no entra en esta lista, que si no aparecía
+            dos veces. */}
+        {fase === 'encuesta' &&
+          enLaFichaSinCodificar.map((r) => (
             <article
-              key={r.n}
-              className={`os-ror-fila${r.extrapolada ? ' os-ror-extrapolada' : ''}`}
-              style={{ order: r.n }}
+              key={`tomada-${r.id}`}
+              className="os-ror-fila os-ror-fila-tomada"
+              style={{ order: r.n_respuesta ?? 0 }}
             >
               <div className="os-ror-fila-datos">
-                <span className="os-ror-n">{r.n}</span>
-                <span className="os-ror-dijo">{r.dijo}</span>
-                <span className="os-ror-areas">{r.areas.join(' + ')}</span>
-                {/* El mismo selector que la tabla de codificación de la ficha,
-                    con sus mismos colores: los códigos se reconocen por su
-                    color y no puede ser uno acá y otro allá. Ofrece las
-                    localizaciones compatibles con el área, y "Mostrar todas"
-                    para el caso raro. */}
-                <Codigo
-                  valor={r.localizacion}
-                  opciones={LOCALIZACION.filter((o) => localizacionesDe(r.areas[0]).includes(o.v))}
-                  todas={LOCALIZACION}
-                  onElegir={(v) => cambiar(r.n, { localizacion: v })}
-                  etiqueta="Localización y DQ"
-                  buscable={false}
-                  // Sin elegir muestra la familia que ya sale del área ("D…"),
-                  // no un guion: lo que falta es la calidad evolutiva, y un
-                  // hueco vacío se lee como si faltara también la localización.
-                  vacio={`${familiaDe(r.areas[0])}…`}
-                />
-                {/* La Tabla A propone la calidad formal, y se puede cambiar:
-                    la misma respuesta dicha de dos maneras no siempre vale
-                    igual, y esa lectura es de la evaluadora. Fuera de tabla la
-                    tabla no propone nada y las opciones son las dos que puede
-                    tener un área que no está en ella. */}
-                <span className="os-ror-dato">
-                  <Simple
-                    valor={r.fq}
-                    opciones={r.areas.includes(FUERA_DE_TABLA) ? FQ_FUERA_DE_TABLA : FQ}
-                    onCambio={(v) => cambiar(r.n, { fq: v })}
-                    etiqueta="Calidad formal"
-                    buscable={false}
-                  />
-                </span>
-                {/* Lo que propone el diccionario de palabras entra acá y
-                    se corrige: una palabra suelta no dice el contenido, que
-                    depende de a qué pertenece lo que la persona vio. */}
-                <span className="os-ror-dato os-ror-contenidos">
-                  <Multiple
-                    valores={r.contenidos}
-                    opciones={CONTENIDOS}
-                    onCambio={(v) => cambiar(r.n, { contenidos: v })}
-                    etiqueta="Contenidos"
-                  />
-                </span>
-                <span className="os-ror-dato">{r.popular ? 'P' : ''}</span>
-                <span className="os-ror-dato os-ror-z">
-                  {v.z ? `${v.z.tipo} ${v.z.valor}` : '—'}
-                </span>
-                {/* El lápiz y la cruz van en la misma celda: son los dos botones
-                    de la fila y ocupan una columna sola. El borrado se confirma
-                    como en el resto del OS, partiéndose en "Sí, borrar" y "No",
-                    porque no se puede deshacer y esta columna está al lado de
-                    campos que se tocan todo el tiempo. */}
-                <span className="os-ror-acciones">
-                  <button
-                    type="button"
-                    className={`os-ror-nota${r.observacion ? ' os-ror-nota-puesta' : ''}`}
-                    onClick={() =>
-                      setConNota((ns) =>
-                        ns.includes(r.n) ? ns.filter((n) => n !== r.n) : [...ns, r.n]
-                      )
-                    }
-                    title={r.observacion || 'Dejar una observación'}
-                    aria-label={`Observación de la respuesta ${r.n}`}
-                  >
-                    ✎
-                  </button>
-                  {aBorrar === r.n ? (
-                    <>
-                      <button
-                        type="button"
-                        className="os-boton os-boton-fila os-boton-peligro"
-                        onClick={() => {
-                          setABorrar(null);
-                          borrar(r.n);
-                        }}
-                      >
-                        Sí, borrar
-                      </button>
-                      <button
-                        type="button"
-                        className="os-boton os-boton-fila"
-                        onClick={() => setABorrar(null)}
-                      >
-                        No
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      className="os-ror-borrar"
-                      onClick={() => setABorrar(r.n)}
-                      title={`Borrar la respuesta ${r.n}`}
-                      aria-label={`Borrar la respuesta ${r.n}`}
-                    >
-                      ×
-                    </button>
-                  )}
-                </span>
-              </div>
-
-              <div className="os-ror-fila-z">
-                {r.areas.length >= 2 && (
-                  <label className="os-ror-tilde">
-                    <input
-                      type="checkbox"
-                      checked={r.integradas}
-                      onChange={(e) => cambiar(r.n, { integradas: e.target.checked })}
-                    />
-                    Integra las áreas con una relación significativa
-                  </label>
-                )}
-                {(tieneEspacio || (r.localizacion?.includes('S') ?? false)) && (
-                  <label className="os-ror-tilde">
-                    <input
-                      type="checkbox"
-                      checked={r.blancoIntegrado}
-                      onChange={(e) => cambiar(r.n, { blancoIntegrado: e.target.checked })}
-                      disabled={!tieneTinta && !r.localizacion?.match(/^(W|D)S/)}
-                    />
-                    El blanco se integra con la mancha
-                  </label>
-                )}
-                {v.z && <span className="os-ror-porque">{v.z.tipo}: {v.z.porque}</span>}
-                {v.otros.map((o) => (
-                  <span key={o.tipo} className="os-ror-porque os-ror-descartado">
-                    {o.tipo} {o.valor} también daba, gana el más alto
-                  </span>
-                ))}
-                {v.aConfirmar.map((a, i) => (
-                  <span key={i} className="os-ror-duda">
-                    {a}
-                  </span>
-                ))}
-                {(conNota.includes(r.n) || r.observacion) && (
-                  <input
-                    className="os-campo os-ror-observacion"
-                    value={r.observacion}
-                    onChange={(e) => cambiar(r.n, { observacion: e.target.value })}
-                    placeholder="Observación"
-                    autoFocus
-                  />
-                )}
+                <span className="os-ror-n">{r.n_respuesta ?? '—'}</span>
+                <span className="os-ror-dijo">{r.verbalizacion ?? 'En la ficha'}</span>
+                <span>—</span>
+                <span>—</span>
+                <span>—</span>
+                <span>—</span>
+                <span />
+                <span>—</span>
+                <span />
               </div>
             </article>
-          );
-        })}
+          ))}
+
+        {fase === 'encuesta' &&
+          deLaFicha.map((r) =>
+            filaDeCodificacion(r, {
+              onCambio: (campos) => cambiarEnLaFicha(r.id ?? '', campos),
+              onBorrar: () => borrarTomada(r.id ?? '', r.n),
+            })
+          )}
+
+        {fase === 'encuesta' &&
+          respuestas.map((r) =>
+            filaDeCodificacion(r, {
+              onCambio: (campos) => cambiar(r.n, campos),
+              onBorrar: () => borrar(r.n),
+            })
+          )}
 
         {fase === 'encuesta' && respuestas.some((r) => !r.localizacion) && (
           <ul className="os-ror-criterios">

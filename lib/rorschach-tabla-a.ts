@@ -1939,6 +1939,17 @@ export function leerRenglon(renglon: string): Entrada {
 }
 
 /** Sin tildes y en minúscula, para poder buscar como se escribe rápido. */
+/**
+ * Si alguna palabra de la respuesta empieza con lo escrito.
+ *
+ * Buscar en cualquier parte de la palabra traía cosas que nadie escribió:
+ * "sal" devolvía "espina dorsal" por el final de "dorsal". Se busca por
+ * principio de palabra, así "sal" trae "saliendo" y "dor" trae "dorsal".
+ */
+export function empiezaAlgunaPalabra(respuesta: string, q: string): boolean {
+  return respuesta.split(/[^a-z0-9]+/).some((palabra) => palabra.startsWith(q));
+}
+
 export function plano(texto: string): string {
   return texto
     .toLowerCase()
@@ -1975,7 +1986,8 @@ export function areasDe(lamina: string): string[] {
  * Es la búsqueda que sirve cuando la persona describió la respuesta con
  * palabras y no señaló nada: devuelve en qué áreas existe y con qué calidad en
  * cada una, que es la decisión que hoy se toma hojeando el librito. Ordena por
- * las que empiezan con lo buscado y después por las que lo contienen.
+ * las que empiezan con lo buscado y después por las que lo tienen al principio
+ * de alguna de sus palabras.
  */
 export function buscar(lamina: string, texto: string, conGiro = false): Hallazgo[] {
   const q = plano(texto.trim());
@@ -1990,10 +2002,10 @@ export function buscar(lamina: string, texto: string, conGiro = false): Hallazgo
       const r = plano(e.respuesta);
       if (r === q) hallados.push({ h: e, peso: 0 });
       else if (r.startsWith(q)) hallados.push({ h: e, peso: 1 });
-      // Lo que solo contiene la letra entra recién con dos escritas: con una,
+      // Una palabra del medio entra recién con dos letras escritas: con una,
       // "c" traía "bicho" y "violonchelo" mezclados con "campana" y "casco", y
       // lo que se busca al escribir una inicial es lo que empieza así.
-      else if (q.length > 1 && r.includes(q)) hallados.push({ h: e, peso: 2 });
+      else if (q.length > 1 && empiezaAlgunaPalabra(r, q)) hallados.push({ h: e, peso: 2 });
     }
   }
   return hallados.sort((a, b) => a.peso - b.peso).map((x) => x.h);

@@ -51,7 +51,7 @@ export default async function CodificarRorschach({
   const yaEstan = await select<YaEnLaFicha>(
     'rorschach_respuestas',
     `select=id,n_respuesta,lamina,localizacion,n_localizacion,fq,contenidos,popular,z,` +
-      `verbalizacion,posicion` +
+      `observacion,verbalizacion,posicion` +
       `&evaluacion_id=eq.${params.id}&order=n_respuesta`
   );
   const desde = Math.max(0, ...yaEstan.map((r) => r.n_respuesta ?? 0)) + 1;
