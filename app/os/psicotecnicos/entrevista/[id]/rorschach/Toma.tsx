@@ -153,7 +153,10 @@ export default function Toma({
           value={texto}
           onChange={(e) => onTexto(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && texto.trim()) onGuardar();
+            // El Enter respeta que ya se esté guardando, como el botón: sin
+            // eso, dos Enter seguidos daban de alta la misma respuesta dos
+            // veces, y quedaban dos filas con el mismo número.
+            if (e.key === 'Enter' && texto.trim() && !guardando) onGuardar();
           }}
           placeholder="Sus palabras, textuales"
           aria-label="Lo que dijo el candidato"

@@ -171,6 +171,46 @@ const MAPAS: Record<string, string[][]> = {
     ['Dd22', 'Dd30', 'D7'],
     ['DdS24', 'DdS23'],
   ],
+  // El reparto del cuadernillo para la IV, recuadro por recuadro.
+  IV: [
+    ['W', FUERA_DE_TABLA],
+    ['D1', 'D2', 'D3', 'D4'],
+    ['Dd22', 'Dd27', 'Dd30', 'Dd31', 'Dd32'],
+    ['Dd33', 'DdS24'],
+    ['D7'],
+    ['D5', 'D6'],
+    ['Dd21', 'Dd23', 'Dd25', 'Dd26', 'Dd28', 'DdS29'],
+  ],
+  // El reparto del cuadernillo para la V, recuadro por recuadro.
+  V: [
+    ['W', FUERA_DE_TABLA],
+    ['D1', 'D4', 'Dd31', 'Dd32'],
+    ['D10', 'Dd34', 'Dd35'],
+    ['Dd24', 'DdS27', 'DdS28', 'DdS29'],
+    ['D6', 'D9', 'Dd33'],
+    ['D7', 'Dd22', 'Dd26'],
+    ['Dd23', 'Dd25', 'Dd30'],
+  ],
+  // El reparto del cuadernillo para la VI, recuadro por recuadro.
+  VI: [
+    ['W', FUERA_DE_TABLA],
+    ['D3', 'D4', 'Dd24', 'Dd28'],
+    ['Dd22', 'Dd23', 'Dd29', 'Dd32', 'Dd33'],
+    ['D8', 'Dd21', 'Dd25', 'Dd27'],
+    ['D6', 'D12', 'Dd31', 'DdS30'],
+    ['D1', 'D2', 'Dd26'],
+    ['D5'],
+  ],
+  // El reparto del cuadernillo para la VII, recuadro por recuadro.
+  VII: [
+    ['W', FUERA_DE_TABLA],
+    ['D1', 'D2', 'Dd23'],
+    ['D9', 'Dd24', 'Dd25', 'Dd28'],
+    ['Dd21', 'Dd26', 'Dd27', 'DS10'],
+    ['D4', 'D5', 'D8'],
+    ['D3', 'Dd22'],
+    ['D6', 'DS7'],
+  ],
 };
 
 /**
@@ -258,6 +298,105 @@ const TAGS: Record<string, Record<string, [number, number]>> = {
     Dd34: [0.36, 0.112],
     Dd35: [0.26, 0.112],
     Dd99: [0.88, 0.93],
+  },
+  // Marcados por Agustín sobre las imágenes de la IV, en verde.
+  IV: {
+    W: [0.5, 0.06],
+    Dd99: [0.86, 0.9],
+    D1: [0.321, 0.916],
+    D2: [0.802, 0.502],
+    D3: [0.694, 0.129],
+    D4: [0.309, 0.122],
+    D5: [0.673, 0.127],
+    D6: [0.818, 0.485],
+    D7: [0.686, 0.125],
+    Dd21: [0.304, 0.102],
+    Dd22: [0.656, 0.137],
+    Dd23: [0.798, 0.41],
+    DdS24: [0.254, 0.916],
+    Dd25: [0.697, 0.103],
+    Dd26: [0.657, 0.91],
+    Dd27: [0.79, 0.436],
+    Dd28: [0.273, 0.919],
+    DdS29: [0.144, 0.518],
+    Dd30: [0.319, 0.128],
+    Dd31: [0.155, 0.454],
+    Dd32: [0.825, 0.867],
+    Dd33: [0.653, 0.934],
+  },
+  // Marcados por Agustín sobre las imágenes de la V, en verde.
+  V: {
+    W: [0.5, 0.12],
+    Dd99: [0.87, 0.88],
+    D1: [0.826, 0.515],
+    D4: [0.309, 0.274],
+    D6: [0.363, 0.273],
+    D7: [0.668, 0.233],
+    D9: [0.366, 0.84],
+    D10: [0.842, 0.462],
+    Dd22: [0.157, 0.493],
+    Dd23: [0.633, 0.817],
+    Dd24: [0.589, 0.327],
+    Dd25: [0.395, 0.794],
+    Dd26: [0.826, 0.498],
+    DdS27: [0.605, 0.765],
+    DdS28: [0.356, 0.244],
+    DdS29: [0.115, 0.55],
+    Dd30: [0.653, 0.269],
+    Dd31: [0.614, 0.257],
+    Dd32: [0.598, 0.749],
+    Dd33: [0.683, 0.323],
+    Dd34: [0.652, 0.201],
+    Dd35: [0.297, 0.302],
+  },
+  // Marcados por Agustín sobre las imágenes de la VI, en verde.
+  VI: {
+    W: [0.5, 0.05],
+    Dd99: [0.87, 0.9],
+    D1: [0.677, 0.28],
+    D2: [0.311, 0.246],
+    D3: [0.692, 0.075],
+    D4: [0.654, 0.293],
+    D5: [0.647, 0.306],
+    D6: [0.285, 0.193],
+    D8: [0.292, 0.283],
+    D12: [0.792, 0.476],
+    Dd21: [0.237, 0.943],
+    Dd22: [0.349, 0.245],
+    Dd23: [0.292, 0.117],
+    Dd24: [0.18, 0.541],
+    Dd25: [0.718, 0.232],
+    Dd26: [0.7, 0.072],
+    Dd27: [0.75, 0.889],
+    Dd28: [0.217, 0.877],
+    Dd29: [0.831, 0.553],
+    DdS30: [0.759, 0.893],
+    Dd31: [0.693, 0.279],
+    Dd32: [0.657, 0.28],
+    Dd33: [0.762, 0.894],
+  },
+  // Marcados por Agustín sobre las imágenes de la VII, en verde.
+  VII: {
+    W: [0.5, 0.05],
+    Dd99: [0.87, 0.88],
+    D1: [0.417, 0.138],
+    D2: [0.545, 0.144],
+    D3: [0.518, 0.545],
+    D4: [0.498, 0.57],
+    D5: [0.57, 0.137],
+    D6: [0.204, 0.801],
+    DS7: [0.149, 0.212],
+    D8: [0.417, 0.137],
+    D9: [0.414, 0.141],
+    DS10: [0.485, 0.272],
+    Dd21: [0.158, 0.243],
+    Dd22: [0.41, 0.172],
+    Dd23: [0.466, 0.575],
+    Dd24: [0.534, 0.233],
+    Dd25: [0.488, 0.57],
+    Dd26: [0.141, 0.797],
+    Dd27: [0.841, 0.866],
+    Dd28: [0.175, 0.903],
   },
 };
 
@@ -438,6 +577,26 @@ function estiloDelGiro(posicion: string | null): React.CSSProperties | undefined
   return { transform: `rotate(${grados}deg)${cuarto ? ' scale(0.667)' : ''}` };
 }
 
+/**
+ * Cuánto mide un área, en el cuadrado de la lámina.
+ *
+ * Sirve para decidir qué se pinta encima de qué: dos áreas de un mismo mapa se
+ * pisan (Dd31 cae adentro de D5, Dd28 adentro de D2), y el clic lo recibe la
+ * última que se dibuja. Con la grande arriba, la chica no se puede marcar sobre
+ * la mancha: había que apretar su nombre.
+ */
+function tamanoDe(partes: Parte[]): number {
+  return partes.reduce((total, parte) => {
+    let doble = 0;
+    for (let i = 0; i < parte.length; i++) {
+      const [x1, y1] = parte[i];
+      const [x2, y2] = parte[(i + 1) % parte.length];
+      doble += x1 * y2 - x2 * y1;
+    }
+    return total + Math.abs(doble) / 2;
+  }, 0);
+}
+
 function camino(parte: Parte): string {
   return parte.map(([x, y], i) => `${i ? 'L' : 'M'}${(x * 100).toFixed(2)} ${(y * 100).toFixed(2)}`).join(' ') + 'Z';
 }
@@ -488,6 +647,14 @@ export default function Capturador({
    */
   const [aBorrar, setABorrar] = useState<number | null>(null);
   /**
+   * Ver todas las palabras de la locación marcada, sin filtrar por lo escrito.
+   *
+   * Lo que dijo el candidato casi nunca está con esas palabras en el libro
+   * ("2 payasos" no figura, "payaso" sí), y la lista filtrada quedaba vacía
+   * justo cuando hace falta mirar qué ofrece esa área.
+   */
+  const [verTodas, setVerTodas] = useState(false);
+  /**
    * Qué filas tienen abierto lo de abajo.
    *
    * Los tildes del puntaje y el porqué de la Z se deciden al cerrar la
@@ -505,6 +672,8 @@ export default function Capturador({
   const [marcas, setMarcas] = useState<
     Record<string, { integradas: boolean; blancoIntegrado: boolean }>
   >({});
+  /** Mientras se da de alta una respuesta tomada, para no darla dos veces. */
+  const anotandoAhora = useRef(false);
   /** Para no mandar un guardado por cada tecla de la nota. */
   const enEspera = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
@@ -914,7 +1083,7 @@ export default function Capturador({
     const suyas = puestas
       .flatMap((a) => entradasDe(lamina, a))
       .sort((x, y) => x.respuesta.localeCompare(y.respuesta, 'es') || x.area.localeCompare(y.area));
-    if (!q) return suyas;
+    if (!q || verTodas) return suyas;
     // Primero lo que empieza con lo escrito y después lo que lo tiene al
     // principio de alguna de sus palabras, como en el buscador de toda la
     // lámina. Con una sola letra, solo lo que empieza.
@@ -924,9 +1093,10 @@ export default function Capturador({
       (e) => !plano(e.respuesta).startsWith(q) && empiezaAlgunaPalabra(plano(e.respuesta), q)
     );
     return [...empieza, ...enOtraPalabra];
-  }, [dijo, puestas]);
+  }, [dijo, puestas, verTodas, lamina]);
 
   function alternar(a: string) {
+    setVerTodas(false);
     setPuestas((p) => (p.includes(a) ? p.filter((x) => x !== a) : [...p, a]));
     // Cambiar de área es empezar otra respuesta: la que esperaba su calidad ya
     // no va en el área que quedó marcada.
@@ -1076,7 +1246,11 @@ export default function Capturador({
    */
   async function anotar() {
     const texto = tomando.trim();
-    if (!texto || laminaLlena) return;
+    /* La guarda va en una ref y no en el estado: `setAnotando` no se ve hasta
+       el próximo dibujo, así que dos llamadas seguidas (el Enter y el botón, o
+       dos Enter) pasaban las dos y daban de alta la respuesta dos veces. */
+    if (!texto || laminaLlena || anotandoAhora.current) return;
+    anotandoAhora.current = true;
     setAnotando(true);
     /* El número sale del orden del protocolo y no del final de la lista: las
        respuestas van en el orden de las láminas, así que una que se agrega a la
@@ -1109,6 +1283,7 @@ export default function Capturador({
     });
     const cuerpo = await res.json().catch(() => null);
     if (!res.ok || !cuerpo?.fila?.id) {
+      anotandoAhora.current = false;
       setAnotando(false);
       setAviso('No se pudo guardar esa respuesta. Probá de nuevo antes de seguir.');
       return;
@@ -1117,6 +1292,7 @@ export default function Capturador({
     for (const r of corridas) {
       await guardarCelda(r.id, { n_respuesta: (r.n_respuesta ?? 0) + 1 });
     }
+    anotandoAhora.current = false;
     setAnotando(false);
     setEnLaFicha((f) => [
       ...f.map((r) =>
@@ -1808,7 +1984,15 @@ export default function Capturador({
             >
               <img src={archivoDe(lamina)} alt={`Lámina ${lamina}`} />
               <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-                {grupo.map((a) =>
+                {/* De la más grande a la más chica: así la chica queda arriba y
+                    el clic sobre la mancha cae en ella. En el orden del
+                    cuadernillo, D5 tapaba tres cuartos de Dd31. */}
+                {[...grupo]
+                  .sort(
+                    (x, y) =>
+                      tamanoDe(AREAS[lamina]?.[y] ?? []) - tamanoDe(AREAS[lamina]?.[x] ?? [])
+                  )
+                  .map((a) =>
                   (AREAS[lamina]?.[a] ?? []).map((parte, i) => (
                     <path
                       key={`${a}-${i}`}
@@ -2375,22 +2559,36 @@ export default function Capturador({
 
             {/* Lo mismo para la respuesta entera: sin locación no hay dónde
                 cargarla, y el botón se quedaba quieto sin decir por qué. */}
+            {/* Los dos botones de salida, en un renglón: son lo que se hace
+                cuando la Tabla A no trae lo que dijo, y uno debajo del otro
+                empujaban la tarjeta fuera de su alto. */}
             {!pendiente && fase === 'encuesta' && !partiendo && (puestas.length > 0 || dijo.trim()) && (
-              <button
-                type="button"
-                className="os-boton"
-                disabled={puestas.length === 0}
-                title={
-                  puestas.length === 0
-                    ? 'Marcá primero en la mancha dónde lo vio'
-                    : undefined
-                }
-                onClick={() => setPendiente({ h: null })}
-              >
-                {puestas.length === 0
-                  ? 'Marcá dónde lo vio para cargarla'
-                  : `No está en la tabla: cargar igual en ${puestas.join(' + ')}`}
-              </button>
+              <div className="os-ror-salidas">
+                {puestas.length > 0 && (
+                  <button
+                    type="button"
+                    className={`os-boton os-boton-fila${verTodas ? ' os-boton-marcado' : ''}`}
+                    onClick={() => setVerTodas((v) => !v)}
+                  >
+                    {verTodas ? 'Volver a filtrar' : `Ver palabras de ${puestas.join(' + ')}`}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="os-boton os-boton-fila"
+                  disabled={puestas.length === 0}
+                  title={
+                    puestas.length === 0
+                      ? 'Marcá primero en la mancha dónde lo vio'
+                      : undefined
+                  }
+                  onClick={() => setPendiente({ h: null })}
+                >
+                  {puestas.length === 0
+                    ? 'Marcá dónde lo vio para cargarla'
+                    : `No está en la tabla: cargar en ${puestas.join(' + ')}`}
+                </button>
+              </div>
             )}
           </div>
         </div>
