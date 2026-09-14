@@ -20,3 +20,6 @@ tsconfig.tsbuildinfo
 # Viven en ~/Documents/camposhr-privado y se corren con scripts/supabase-sql.sh
 # desde ahí.
 supabase/migrar-*.sql
+
+# Los .pyc de los programas de láminas
+scripts/__pycache__/
