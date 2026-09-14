@@ -2,14 +2,17 @@
 """
 Mide los puntos con los que se marcó dónde va el nombre de cada área.
 
-    python3 scripts/leer-tags-rorschach.py
+    python3 scripts/leer-tags-rorschach.py         # la hoja de una página
+    python3 scripts/leer-tags-rorschach.py IV      # la carpeta de esa lámina
 
-Lee `~/Desktop/tags-rorschach.png` con las marcas encima, busca la mancha azul
-de cada recuadro y la pasa a porcentaje de la caja de la mancha, que es la
-unidad en la que el capturador guarda las posiciones. Imprime la tabla lista
-para pegar en `Capturador.tsx`.
+De la hoja de una página lee el punto **azul** de cada recuadro. De la carpeta
+`~/Desktop/Lámina <n> con dibujo` lee el punto **verde** de cada imagen, que es
+el color con el que se marca el nombre cuando el trazo del área va en azul.
+
+En los dos casos imprime la tabla lista para pegar en `Capturador.tsx`, en
+fracción de la imagen de la lámina.
 """
-import io, os, subprocess
+import io, os, subprocess, sys
 import numpy as np
 from PIL import Image
 from scipy import ndimage
@@ -36,7 +39,59 @@ def lamina():
     return Image.open(io.BytesIO(out))
 
 
+def verde(imagen):
+    """El color con el que se marca dónde va el nombre, para no confundirlo con
+    el trazo del área, que va en azul."""
+    M = np.array(imagen.convert('RGB')).astype(int)
+    return (M[:, :, 1] > 110) & (M[:, :, 1] - M[:, :, 0] > 60) & (M[:, :, 1] - M[:, :, 2] > 60)
+
+
+def centro(mascara):
+    """El centro de la marca más grande, en fracción de la imagen."""
+    l, n = ndimage.label(mascara, structure=np.ones((3, 3)))
+    if n == 0:
+        return None
+    tam = ndimage.sum(mascara, l, range(1, n + 1))
+    yy, xx = np.where(l == int(np.argmax(tam)) + 1)
+    alto, ancho = mascara.shape
+    return ((xx.min() + xx.max()) / 2 / ancho, (yy.min() + yy.max()) / 2 / alto)
+
+
+def de_la_carpeta(lamina_romana):
+    """Los puntos verdes de la carpeta con una imagen por área."""
+    import json
+    n = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6,
+         'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10}[lamina_romana]
+    # Listar el Escritorio lo bloquea macOS, así que la carpeta se busca por
+    # nombre entre las formas en que se suele copiar, y si no, se pasa su ruta
+    # como segundo argumento.
+    candidatas = [os.path.expanduser(f'~/Desktop/Lámina {n}{sufijo}')
+                  for sufijo in (' con dibujo', ' 2', ' marcada', ' copia', '')]
+    if len(sys.argv) > 2:
+        candidatas.insert(0, os.path.expanduser(sys.argv[2]))
+    carpetas = [c for c in candidatas
+                if os.path.isdir(c) and os.path.exists(os.path.join(c, 'geometria.json'))]
+    if not carpetas:
+        print(f'No está la carpeta de la lámina {lamina_romana}.')
+        return
+    carpeta = carpetas[0]
+    geo = json.load(io.open(os.path.join(carpeta, 'geometria.json'), encoding='utf-8'))
+    print(f'  // Medido sobre {carpeta}, en fracción de la imagen.')
+    print(f'  {lamina_romana}: {{')
+    for nombre in geo['areas']:
+        archivo = os.path.join(carpeta, f'{nombre}.png')
+        if not os.path.exists(archivo):
+            continue
+        punto = centro(verde(Image.open(archivo)))
+        if punto is None:
+            continue
+        print(f'    {nombre}: [{punto[0]:.3f}, {punto[1]:.3f}],')
+    print('  },')
+
+
 def main():
+    if len(sys.argv) > 1:
+        return de_la_carpeta(sys.argv[1])
     im = lamina()
     w, h = im.size
     esc = 300 / w
