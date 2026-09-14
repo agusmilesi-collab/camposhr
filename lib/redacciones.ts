@@ -181,6 +181,17 @@ export type Cortes = Partial<Record<string, number>>;
  * Cuando la psicóloga quiere que diga otra cosa, la escribe y manda la suya.
  */
 export type PorTest = {
+  /**
+   * El índice contra el que corta en ese test, si es otro.
+   *
+   * El Zulliger no calcula D ni AdjD: su sumario reporta la diferencia EA − es
+   * directa, sin conversión a puntaje. Las lecturas de control son las mismas,
+   * pero ahí se disparan contra esa diferencia, y la hoja la pinta con esa
+   * banda y no con la de D.
+   */
+  indice?: string;
+  /** Lo que se escribe en la lista de lecturas cuando no hay corte. */
+  cuando?: string;
   corte?: Corte;
   dice?: string[];
   recomienda?: string[];
@@ -2144,12 +2155,21 @@ export const TEXTOS = {
       'Señalarle las fallas con datos específicos, porque de otro modo le cuesta reconocerlas.',
     ],
   },
+  /**
+   * El control se mantiene.
+   *
+   * En Rorschach se lee con D y AdjD los dos en cero. En Zulliger no existen
+   * esos dos puntajes (el sumario reporta la diferencia EA − es directa, sin
+   * conversión), así que ahí la misma lectura se dispara con EA − es dentro de
+   * lo esperado. Definido por las psicólogas el 14/9/2026.
+   */
   'd-adjd-cero': {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'D y AdjD los dos en cero',
     zulliger: {
-      aplica: false,
+      indice: 'EA − es',
+      cuando: 'EA − es de −1,5 para arriba',
       dice: [
         'Tolera bien la tensión cotidiana. Haría falta un estrés intenso, prolongado o inesperado para que sus controles fallaran de manera significativa.',
         'Las exigencias del día a día no le desbordan el control, y solo una tensión fuerte o sostenida lo pondría en riesgo.',
@@ -2208,11 +2228,20 @@ export const TEXTOS = {
       'Sostenerlo cuando algo cambia y cuando la tarea es tensionante en sí misma.',
     ],
   },
+  /**
+   * La sobrecarga: la tensión excede los recursos.
+   *
+   * En Zulliger se lee con la diferencia EA − es, que es lo que el sumario de
+   * ese test reporta: hasta −1,5 el control se mantiene, y por debajo de eso
+   * no. Definido por las psicólogas el 14/9/2026.
+   */
   'adjd-sobrecarga': {
     area: 'Cuánta exigencia sostiene',
     indice: 'D / AdjD',
     cuando: 'AdjD por debajo de −1',
     zulliger: {
+      indice: 'EA − es',
+      corte: { op: 'menor', valor: -1.5, decimales: 1 },
       dice: [
         'Los recursos con los que cuenta para afrontar situaciones tensionantes no le alcanzan para mantener el control emocional, y queda expuesta a actuar impulsivamente. Está en malas condiciones para afrontar trabajos tensionantes en sí mismos, porque al malestar interno se le suma el externo.',
         'Los recursos con los que cuenta no le alcanzan para mantener el control emocional frente a la tensión, y queda expuesta a actuar impulsivamente. Un trabajo tensionante en sí mismo le sumaría carga externa a la interna que ya tiene.',
@@ -2418,6 +2447,9 @@ const ROTULOS_DE_HOJA: Record<string, string[]> = {
   PER: ['PER'],
   Fd: ['Fd'],
   EA: ['EA'],
+  // La diferencia que el sumario del Zulliger reporta en lugar de D y AdjD. Se
+  // escribe con guion largo en la hoja de ese test y pegada en la del Rorschach.
+  'EA − es': ['EA − es', 'EA−es'],
 };
 
 /** Hasta dónde puede moverse un corte. Fuera de esto no es un criterio. */
@@ -2504,19 +2536,27 @@ export function bandasPorIndice(
 ): Record<string, Banda> {
   const porIndice: Record<string, Banda> = {};
   for (const [clave, t] of Object.entries(TEXTOS as Record<string, Redaccion>)) {
-    if (!t.corte) continue;
+    if (!t.corte && !(test === 'Zulliger' && t.zulliger?.corte)) continue;
     /* La lectura que no corre en ese test tampoco pone su borde. T=0 en
        Zulliger es la norma y "sumt-cero" no aplica: contando su corte, la banda
        quedaba con piso 1 y techo 0, que ningún valor puede cumplir. */
     if (test === 'Zulliger' && t.zulliger?.aplica === false) continue;
+    if (test === 'Zulliger' && !t.corte && !t.zulliger?.corte) continue;
+    const propio = (test === 'Zulliger' ? t.zulliger : undefined) ?? {};
+    /* El corte del test manda sobre el general: sin esto, una lectura que en
+       Zulliger corta contra otro índice (EA − es en vez de D) le ponía su borde
+       al índice equivocado. */
+    const corte = propio.corte ?? t.corte;
+    if (!corte) continue;
+    const indice = propio.indice ?? t.indice;
     const v = corteDe(clave as ClaveDeTexto, cortes, test);
     const b =
-      porIndice[t.indice] ??
-      ({ indice: t.indice, minimo: null, maximo: null, decimales: 0 } as Banda);
-    b.decimales = Math.max(b.decimales, t.corte.decimales);
-    if (t.corte.op === 'menor') b.minimo = b.minimo === null ? v : Math.max(b.minimo, v);
+      porIndice[indice] ??
+      ({ indice, minimo: null, maximo: null, decimales: 0 } as Banda);
+    b.decimales = Math.max(b.decimales, corte.decimales);
+    if (corte.op === 'menor') b.minimo = b.minimo === null ? v : Math.max(b.minimo, v);
     else b.maximo = b.maximo === null ? v : Math.min(b.maximo, v);
-    porIndice[t.indice] = b;
+    porIndice[indice] = b;
   }
   return porIndice;
 }
@@ -3135,9 +3175,23 @@ export function leer(
   }
 
   // ── Cuánta exigencia sostiene ──────────────────────────────────────────────
+  /* El Zulliger no calcula D ni AdjD: su sumario reporta la diferencia EA − es
+     directa. Las lecturas de control son las mismas y ahí se disparan con esa
+     diferencia: hasta −1,5 el control se mantiene, y por debajo hay sobrecarga.
+     Definido por las psicólogas el 14/9/2026. Sin esto, D y AdjD llegaban en
+     cero por no existir y todo protocolo de Zulliger decía que tolera bien la
+     tensión, incluso uno con EA 1,5 contra es 5. */
   const d = n(s, 'control_estres', 'D');
   const adjd = n(s, 'control_estres', 'AdjD');
-  if (adjd === 0 && d === 0) {
+  if (test === 'Zulliger') {
+    const dif = n(s, 'control_estres', 'dif_EA_es');
+    const marca = `EA − es ${dec(dif)}`;
+    if (dif < c('adjd-sobrecarga')) {
+      sumar('adjd-sobrecarga', marca);
+    } else {
+      sumar('d-adjd-cero', marca);
+    }
+  } else if (adjd === 0 && d === 0) {
     sumar('d-adjd-cero', dd(d, adjd));
   } else if (adjd >= 1) {
     sumar('adjd-positivo', dd(d, adjd));
