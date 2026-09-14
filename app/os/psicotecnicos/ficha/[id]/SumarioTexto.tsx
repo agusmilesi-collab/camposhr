@@ -93,9 +93,13 @@ function numeroDe(valor: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** Cómo se escribe un extremo de la banda: con los decimales de su corte. */
+/**
+ * Cómo se escribe un extremo de la banda: con los decimales de su corte, y sin
+ * los que no dicen nada. La banda de EA − es va de −1,5 a 0, y escribir "0,0"
+ * al lado de "−1,5" sugiere una precisión que ese extremo no tiene.
+ */
 function extremo(v: number, decimales: number): string {
-  return v.toFixed(decimales).replace('.', ',');
+  return v.toFixed(Number.isInteger(v) ? 0 : decimales).replace('.', ',');
 }
 
 function estadoDe(p: Par, bandas: Record<string, Banda>): Estado {
@@ -118,8 +122,12 @@ function estadoDe(p: Par, bandas: Record<string, Banda>): Estado {
           ? 'en cero'
           : `hasta ${n(b.maximo as number)}`;
   const lado = porArriba ? ', quedó por arriba' : porAbajo ? ', quedó por debajo' : '';
+  /* Hay un techo que no es un hallazgo: en EA − es, pasar de cero quiere decir
+     que los recursos le sobran a la tensión. Se marca con la flecha y se pinta
+     como lo que está en su banda, porque el rojo es para lo que hay que mirar. */
+  const alarma = porAbajo || (porArriba && !b.techoSinAviso);
   return {
-    clase: dentro ? 'os-hoja-dentro' : 'os-hoja-fuera',
+    clase: alarma ? 'os-hoja-fuera' : 'os-hoja-dentro',
     title: `${b.indice} esperado: ${esperado}${lado}`,
     flecha: porArriba ? '↑' : porAbajo ? '↓' : null,
   };

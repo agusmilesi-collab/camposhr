@@ -2188,6 +2188,9 @@ export const TEXTOS = {
     indice: 'D / AdjD',
     cuando: 'AdjD de 1 o más',
     zulliger: {
+      // El Zulliger no calcula AdjD: ahí el control se lee con EA − es, y esta
+      // lectura no tiene con qué dispararse. Decidido el 14/9/2026.
+      aplica: false,
       dice: [
         'Su control y su tolerancia al estrés están por encima de lo común: dispone de más recursos de los esperados para manejar la tensión y responder a lo que se le pide.',
         'Cuenta con recursos de control muy por encima del promedio, que le permiten sostener tensión sin que caiga su rendimiento.',
@@ -2206,6 +2209,7 @@ export const TEXTOS = {
     indice: 'D / AdjD',
     cuando: 'AdjD en −1',
     zulliger: {
+      aplica: false,
       dice: [
         'Las situaciones nuevas la complican, y su mejor rendimiento aparece en entornos rutinarios y previsibles.',
         'Ante lo desconocido tiene dificultades, y funciona mejor donde las cosas son estables.',
@@ -2516,6 +2520,32 @@ export type Banda = {
   maximo: number | null;
   /** Con cuántos decimales se escribe, para decir la banda como el corte. */
   decimales: number;
+  /**
+   * `true` cuando pasarse por arriba no es un hallazgo.
+   *
+   * En EA − es, quedar por encima de cero quiere decir que los recursos le
+   * sobran a la tensión, que no es algo para revisar: la hoja lo marca con la
+   * flecha y no lo pinta de rojo, que está reservado para lo que hay que mirar.
+   */
+  techoSinAviso?: boolean;
+};
+
+/**
+ * La banda de EA − es en Zulliger.
+ *
+ * No sale de los cortes de las lecturas como las demás: el piso lo pone la
+ * lectura de sobrecarga (−1,5), pero el techo no dispara ninguna, porque por
+ * encima de cero no hay nada que informar. Definida por las psicólogas el
+ * 14/9/2026: de −1,5 a 0 el control se mantiene.
+ */
+const DIF_EA_ES_ZULLIGER: Banda = {
+  indice: 'EA − es',
+  minimo: -1.5,
+  // Sin decimales: los dos extremos son redondos y "de −1,5 a 0" se lee mejor
+  // que "de −1,5 a 0,0". El valor se sigue escribiendo como lo manda el motor.
+  maximo: 0,
+  decimales: 1,
+  techoSinAviso: true,
 };
 
 /**
@@ -2591,6 +2621,14 @@ export function bandasDeLaHoja(
   const porRotulo: Record<string, Banda> = {};
   for (const [indice, banda] of Object.entries(porIndice)) {
     for (const rotulo of ROTULOS_DE_HOJA[indice] ?? []) porRotulo[rotulo] = banda;
+  }
+  if (test === 'Zulliger') {
+    // El piso lo pone la lectura de sobrecarga, con el corte que rija; el techo
+    // y que no alarme salen de la banda escrita.
+    const piso = porIndice['EA − es']?.minimo ?? DIF_EA_ES_ZULLIGER.minimo;
+    for (const rotulo of ROTULOS_DE_HOJA['EA − es'] ?? []) {
+      porRotulo[rotulo] = { ...DIF_EA_ES_ZULLIGER, minimo: piso };
+    }
   }
   return porRotulo;
 }
