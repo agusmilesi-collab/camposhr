@@ -457,6 +457,24 @@
   overflow-y: auto;
 }
 
+/* Los dos botones de salida, uno al lado del otro y chicos: la tarjeta tiene
+   el alto de un mapa, y apilados no entraban. */
+.os-ror-salidas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.os-ror-salidas .os-boton {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 8px;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Sin opciones que elegir lo único que hay acá es el renglón que dice qué
    hacer: ese no se achica, porque medio renglón cortado se lee como una falla.
    La lista sí se achica, que para eso se desplaza adentro. */
