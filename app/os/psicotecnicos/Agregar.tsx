@@ -121,6 +121,23 @@ export default function Agregar({
 
   const opciones = [...pedidos, ...nuevos.filter((n) => !pedidos.some((p) => p.id === n.id))];
 
+  /**
+   * Llegando de reabrir un pedido (`?agregar=<id>`), el alta se abre con ese
+   * pedido elegido. El parámetro se borra de la dirección para que recargar no
+   * vuelva a abrirla.
+   */
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get('agregar');
+    if (!id) return;
+    if (pedidos.some((p) => p.id === id)) {
+      setPedido(id);
+      setAbierto(true);
+    }
+    url.searchParams.delete('agregar');
+    window.history.replaceState(null, '', url.pathname + url.search);
+  }, [pedidos]);
+
   useEffect(() => {
     if (abierto) nombre.current?.focus();
   }, [abierto]);

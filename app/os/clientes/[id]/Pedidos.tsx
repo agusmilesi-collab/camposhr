@@ -65,15 +65,18 @@ function Reabrir({ id }: { id: string }) {
   const router = useRouter();
   const [tocando, setTocando] = useState(false);
 
+  // Reabierto, vuelve a Entrevistas con el alta abierta y este pedido elegido:
+  // se reabre para sumarle a alguien, y eso se carga allá.
   async function reabrir() {
     setTocando(true);
     try {
-      await fetch('/api/os/pedidos', {
+      const res = await fetch('/api/os/pedidos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, campo: 'estado', valor: ABIERTO }),
       });
-      router.refresh();
+      if (res.ok) router.push(`/os/psicotecnicos/entrevistas?agregar=${id}`);
+      else router.refresh();
     } finally {
       setTocando(false);
     }

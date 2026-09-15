@@ -20,7 +20,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { COLOR_ETAPA, type Origen } from '@/lib/psicotecnicos-tipos';
+import { COLOR_ETAPA, RUTA, type Origen } from '@/lib/psicotecnicos-tipos';
 import type { PedidoOpcion } from './Agregar';
 import SoltarArchivo from '@/app/os/SoltarArchivo';
 import { paraInput } from '@/lib/hora';
@@ -132,8 +132,15 @@ export default function Candidato({
         setConfirmando(false);
         return;
       }
-      empezar(() => router.refresh());
       onCerrar();
+      if (enLaFicha) {
+        // La ficha era de este candidato: recargarla da 404. Se vuelve a la
+        // cola de la que se vino, y con replace para que "atrás" no la reabra.
+        const desde = new URLSearchParams(window.location.search).get('desde');
+        router.replace(`/os/psicotecnicos/${desde ?? RUTA['Sin asignar']}`);
+      } else {
+        empezar(() => router.refresh());
+      }
     } catch {
       setError('No se pudo borrar.');
       setConfirmando(false);
