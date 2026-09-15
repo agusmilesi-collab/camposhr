@@ -590,10 +590,12 @@ body {
 .btn-informe-pronto .bi-pronto {
   visibility: hidden;
 }
-.btn-informe-pronto:hover .bi-texto {
+.btn-informe-pronto:hover .bi-texto,
+.btn-informe-pronto.avisando .bi-texto {
   visibility: hidden;
 }
-.btn-informe-pronto:hover .bi-pronto {
+.btn-informe-pronto:hover .bi-pronto,
+.btn-informe-pronto.avisando .bi-pronto {
   visibility: visible;
 }
 

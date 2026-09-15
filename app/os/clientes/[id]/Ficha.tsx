@@ -127,7 +127,7 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
                     onClick={cambiarInformes}
                     title={
                       cliente.informesVisibles
-                        ? 'Tocar para que el cliente deje de poder abrir los informes desde su portal.'
+                        ? 'Tocar para que el cliente vea "Ver informe" con el aviso Próximamente, sin poder abrirlos.'
                         : 'Tocar para que el cliente pueda abrir los informes desde su portal.'
                     }
                   >
@@ -135,7 +135,7 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
                       ? '…'
                       : cliente.informesVisibles
                         ? 'Informes a la vista'
-                        : 'Informes ocultos'}
+                        : 'Informes: próximamente'}
                   </button>
                 </div>
               ) : (
