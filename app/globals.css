@@ -6959,7 +6959,9 @@ body {
 .precios {
   max-width: 720px;
   margin: 0 auto;
-  padding: 48px 22px 64px;
+  /* Abajo con aire: el último bloque no puede quedar pegado a la banda blanca
+     de otros servicios. */
+  padding: 48px 22px 112px;
 }
 
 /*
@@ -7031,6 +7033,38 @@ body {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+/* Las pestañas de servicios, entre el logotipo y el titular: una línea con los
+   tres nombres y la activa subrayada en el azul del sitio. Van después de
+   `.precios a` para ganarle el color y el subrayado. */
+.precios-pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  /* Separadas del logotipo: pegadas a él se leían como su bajada y no como
+     pestañas. */
+  margin: 44px 0 30px;
+  border-bottom: 1px solid var(--line);
+}
+
+.precios-pestanas a {
+  margin-bottom: -1px;
+  padding: 0 0 10px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-size: 0.94rem;
+  text-decoration: none;
+}
+
+.precios-pestanas a:hover {
+  color: var(--ink);
+}
+
+.precios-pestanas a[aria-current='page'] {
+  border-bottom-color: var(--st-blue);
+  color: var(--ink);
+  font-weight: 600;
 }
 
 /* El nombre del estudio dentro de un título corriente, con la tipografía del
@@ -7872,4 +7906,204 @@ body {
     flex-direction: column;
     gap: 10px;
   }
+}
+
+/*
+ * Las tarjetas de servicio, desplegables.
+ *
+ * Cerradas muestran el código, el precio, el título y la bajada: con eso se
+ * elige entre las tres. El detalle se abre sobre la que interesa, y con todo
+ * abierto había que recorrer tres tarjetas largas para comparar tres precios.
+ */
+.precios-desplegable > summary {
+  display: block;
+  cursor: pointer;
+  list-style: none;
+}
+
+.precios-desplegable > summary::-webkit-details-marker {
+  display: none;
+}
+
+.precios-ver {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  color: var(--st-blue);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.precios-ver::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.precios-desplegable[open] .precios-ver::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+.precios-ver-cerrar,
+.precios-desplegable[open] .precios-ver-abrir {
+  display: none;
+}
+
+.precios-desplegable[open] .precios-ver-cerrar {
+  display: inline;
+}
+
+.precios-desplegable > summary:hover .precios-ver {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* El acompañamiento a RH, separado de los capítulos: llega después del
+   informe y no es una parte de él. */
+.precios-entrega + .precios-entrega-despues {
+  margin-top: 24px;
+}
+
+/* Las tarjetas plegadas miden lo mismo: el alto lo iguala `IgualarTarjetas`, y
+   el espacio que sobra queda antes de "Ver detalle", que va siempre al pie. */
+.precios-plegada,
+.precios-desplegable > summary.precios-plegada {
+  display: flex;
+  flex-direction: column;
+}
+
+.precios-plegada .precios-ver {
+  align-self: flex-start;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+/*
+ * El perfil de pensamiento Benziger, con jerarquía de producto.
+ *
+ * Se recomienda en las tres baterías y es lo que más conviene sumar: en cada
+ * tarjeta va una tira a la vista aun cerrada, y debajo de las tarjetas tiene su
+ * propio panel, en el azul del sitio, con los cuatro cuadrantes.
+ */
+.precios-benziger-tira {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f1f5fa;
+  color: #3d5a80;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.precios-benziger-tira-rotulo {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #dce6f2;
+  color: #2b4468;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.precios-benziger {
+  padding: 30px 28px 28px;
+  border: 1px solid #cfdcec;
+  border-radius: 14px;
+  background: #f7f9fc;
+  line-height: 1.6;
+}
+
+.precios-benziger p {
+  margin: 0 0 12px;
+}
+
+.precios-benziger-rotulo {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #dce6f2;
+  color: #2b4468;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.precios-benziger-titulo {
+  margin: 14px 0 12px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: 2.7rem;
+  line-height: 1.08;
+  letter-spacing: -0.026em;
+}
+
+.precios-cuadrantes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 20px 0 22px;
+}
+
+.precios-cuadrante {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e3ebf4;
+  color: #3d5a80;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.precios-cuadrante strong {
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.precios-cuadrante-rotulo {
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.precios-benziger-precio {
+  font-size: 1rem;
+}
+
+.precios-benziger-licencia {
+  margin: 0 !important;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+/* El portal de ejemplo, en espera: gris y sin reacción al pasar el puntero,
+   con la pastilla que dice por qué no se puede abrir. */
+.precios-demo-pronto,
+.precios-demo-pronto:hover {
+  border-color: var(--line);
+  background: var(--card);
+  color: var(--muted);
+  cursor: default;
+}
+
+.precios-demo-pronto-rotulo {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
