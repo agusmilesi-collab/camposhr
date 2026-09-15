@@ -9261,6 +9261,12 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
   font-size: 0.8rem;
 }
 
+/* En el alta de candidatos, Agregar se lleva tres cuartos y Cerrar uno: es la
+   acción que se repite, y cerrar se usa una vez al terminar. */
+.os-agregar-abierto .os-agregar-pie .os-boton-firme {
+  flex: 3;
+}
+
 /* El adicional del pedido: una casilla con su texto al lado, en el renglón. */
 .os-agregar-opcion {
   display: flex;

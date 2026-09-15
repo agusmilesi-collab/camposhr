@@ -428,7 +428,7 @@ export default function Agregar({
             {enviando ? 'Guardando…' : 'Agregar'}
           </button>
           <button type="button" className="os-boton" onClick={cerrar}>
-            Listo
+            Cerrar
           </button>
         </div>
       </form>
