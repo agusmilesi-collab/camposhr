@@ -42,7 +42,7 @@ export const RESPALDO: BateriaDelPortal[] = [
     codigo: 'Batería 1',
     queIncluye:
       'Evaluación psicotécnica con test proyectivo abreviado (Zulliger) más tests cognitivos y de estilo de pensamiento.',
-    paraQuien: 'Puestos operativos y mandos medios.',
+    paraQuien: 'Analistas, técnicos y especialistas (Sin personal a cargo)',
     minutos: 135,
     conPotencial: false,
   },
@@ -50,7 +50,7 @@ export const RESPALDO: BateriaDelPortal[] = [
     codigo: 'Batería 2',
     queIncluye:
       'Evaluación psicotécnica con test proyectivo completo (Rorschach, Sistema Comprehensivo de Exner) más tests cognitivos y de estilo de pensamiento.',
-    paraQuien: 'Perfiles profesionales y mandos medios calificados.',
+    paraQuien: 'Perfiles de liderazgo y claves de la organización',
     minutos: 180,
     conPotencial: false,
   },
@@ -58,7 +58,7 @@ export const RESPALDO: BateriaDelPortal[] = [
     codigo: 'Batería 3',
     queIncluye:
       'Todo lo de la estándar más análisis discursivo según el modelo de Elliot Jaques, sobre cinco minutos de discurso del candidato.',
-    paraQuien: 'Jefaturas, gerencias y puestos de decisión.',
+    paraQuien: 'Evaluación de potencial',
     minutos: 210,
     conPotencial: true,
   },
