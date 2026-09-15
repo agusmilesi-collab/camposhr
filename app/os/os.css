@@ -4600,7 +4600,7 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
    son cuatro columnas con su rótulo; las listas son tres renglones. */
 .os-analisis {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr 2fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
 }
 
@@ -4623,6 +4623,13 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
 @media (max-width: 1240px) {
   .os-analisis {
     grid-template-columns: 1fr 1fr;
+  }
+
+  /* El de horas, solo en su fila, a todo el ancho: son trece columnas. */
+  .os-analisis > section:nth-child(3) {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--os-linea-suave);
   }
 }
 
@@ -4725,6 +4732,17 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
   font-size: 0.72rem;
   color: var(--os-suave);
   font-variant-numeric: tabular-nums;
+}
+
+/* Las horas: trece columnas en un tercio del ancho, así que pegadas y más
+   chicas, con la hora en dos cifras. */
+.os-salas-rotulos-compactos {
+  gap: 2px;
+  font-size: 0.68rem;
+}
+
+.os-salas-rotulos-compactos b {
+  font-size: 0.72rem;
 }
 
 /* Una lista de dato y valor, sin tabla: son tres renglones y una tabla les
