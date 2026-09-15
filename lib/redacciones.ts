@@ -618,23 +618,41 @@ export const TEXTOS = {
     recomienda: [''],
   },
   /**
-   * La complejidad de las respuestas contra su cantidad.
+   * SumaPond 6: los mismos seis códigos, pesados por su gravedad.
    *
-   * Se espera entre 1 y 3. Por debajo, y con Lambda alto, puede haber una
-   * tendencia a simplificar de más; eso no se informa, se usa para leer el
-   * resto. Definido por las psicólogas el 10/9/2026.
+   * Tampoco se informa, por lo mismo que Sum6: es la señal de ir a mirar la
+   * tabla. Se esperan hasta 4, como definieron las psicólogas el 10/9/2026
+   * junto con el corte de Sum6.
+   */
+  'sumpond6-alto': {
+    area: 'Cómo piensa',
+    indice: 'SumPond6',
+    corte: { op: 'mayor', valor: 4, decimales: 0 },
+    zulliger: { corte: { op: 'mayor', valor: 4, decimales: 0 } },
+    dice: [''],
+    recomienda: [''],
+  },
+  /**
+   * La complejidad de las respuestas contra su cantidad, en el Zulliger.
+   *
+   * Complejidad es cuántas respuestas tienen más de un determinante (las
+   * mezclas), y se lee al lado de R: "2:10". Se esperan de 1 a 3. Por debajo, y
+   * con Lambda alto, puede haber una tendencia a simplificar de más; eso no se
+   * informa, se usa para leer el resto. Por encima, los recursos deciden cuál de
+   * las dos lecturas va. Definido por las psicólogas el 10/9/2026; cómo se
+   * cuenta lo aclararon el 15/9/2026.
    */
   'complejidad-baja': {
     area: 'Cómo procesa la información',
     indice: 'Complejidad:R',
-    cuando: 'Complejidad:R por debajo de 1 y Lambda alto',
+    cuando: 'Ninguna respuesta con más de un determinante, y Lambda alto',
     dice: [''],
     recomienda: [''],
   },
   'complejidad-alta': {
     area: 'Cómo procesa la información',
     indice: 'Complejidad:R',
-    cuando: 'Complejidad:R por encima de 3, con recursos suficientes',
+    cuando: 'Más de 3 respuestas con más de un determinante, y EA − es de 0 o más',
     dice: [
       'Puede considerar los estímulos de manera integral y tiene una buena capacidad para elaborarlos.',
       'Toma la información de manera integral y la elabora bien.',
@@ -645,7 +663,7 @@ export const TEXTOS = {
   'complejidad-alta-sin-recursos': {
     area: 'Cómo maneja lo que siente',
     indice: 'Complejidad:R',
-    cuando: 'Complejidad:R por encima de 3, con pocos recursos',
+    cuando: 'Más de 3 respuestas con más de un determinante, y EA − es por debajo de 0',
     dice: [
       'Puede tener dificultades para controlar sus emociones: procesa más información de la que sus recursos le permiten elaborar.',
       'Toma más información de la que puede elaborar con los recursos que tiene, y eso le dificulta el control emocional.',
@@ -2451,6 +2469,10 @@ const ROTULOS_DE_HOJA: Record<string, string[]> = {
   PER: ['PER'],
   Fd: ['Fd'],
   EA: ['EA'],
+  // Los seis códigos críticos, sin pesar y pesados. La hoja del Rorschach los
+  // escribe con el nombre largo y la del Zulliger abreviado.
+  Sum6: ['SumaBruta 6', 'Sum6'],
+  SumPond6: ['SumaPond 6', 'SumPond6', 'WSum6'],
   // La diferencia que el sumario del Zulliger reporta en lugar de D y AdjD. Se
   // escribe con guion largo en la hoja de ese test y pegada en la del Rorschach.
   'EA − es': ['EA − es', 'EA−es'],
@@ -2787,6 +2809,21 @@ export function leer(
     sumar('lambda-alto', dec(lam));
   }
 
+  if (test === 'Zulliger') {
+    const complejas = n(s, 'afectos', 'Blends');
+    const marcaComplejidad = `Complejidad:R ${complejas}:${r}`;
+    if (complejas < 1 && lam > c('lambda-alto')) {
+      sumar('complejidad-baja', marcaComplejidad);
+    } else if (complejas > 3) {
+      sumar(
+        n(s, 'control_estres', 'dif_EA_es') >= 0
+          ? 'complejidad-alta'
+          : 'complejidad-alta-sin-recursos',
+        marcaComplejidad
+      );
+    }
+  }
+
   const zd = n(s, 'procesamiento', 'Zd');
   if (zd > c('zd-alto')) {
     sumar('zd-alto', conSigno(zd, 1));
@@ -2917,6 +2954,10 @@ export function leer(
    * Por debajo del piso la lectura es la contraria, cautela por autoestima baja
    * o por falta de energía. Definido por las psicólogas el 9/9/2026; antes el
    * único corte era W más de dos veces y media M.
+   *
+   * **En el Zulliger no hay banda por estilo: se espera que W sea el doble de
+   * M**, para todos. Por encima es W:M alto y por debajo, M baja. Definido por
+   * las psicólogas el 15/9/2026.
    */
   const mTotal = n(s, 'determinantes', 'M');
   const BANDA_WM: Record<string, [number, number]> = {
@@ -2926,7 +2967,8 @@ export function leer(
   };
   if (mTotal) {
     const razon = w / mTotal;
-    const [piso, techo] = BANDA_WM[estilo] ?? BANDA_WM.Ambigual;
+    const [piso, techo] =
+      test === 'Zulliger' ? [2, 2] : (BANDA_WM[estilo] ?? BANDA_WM.Ambigual);
     const marca = `W:M ${w}:${mTotal}`;
     if (razon > techo) {
       sumar('w-m-alto', marca);
@@ -3022,6 +3064,11 @@ export function leer(
   const sum6 = n(s, 'ideacion', 'Sum6', n(s, 'codigos_especiales', 'Sum6'));
   if (sum6 > c('sum6-alto')) {
     sumar('sum6-alto', `Sum6 ${sum6}`);
+  }
+
+  const sumPond6 = n(s, 'ideacion', 'WSum6', n(s, 'codigos_especiales', 'WSum6'));
+  if (sumPond6 > c('sumpond6-alto')) {
+    sumar('sumpond6-alto', `SumaPond 6 ${sumPond6}`);
   }
 
   const mor = n(s, 'ideacion', 'MOR', n(s, 'codigos_especiales', 'MOR'));
