@@ -94,7 +94,16 @@ function corto(n: number): string {
  * van fuera del SVG porque el lienzo se estira sin conservar la proporción y un
  * círculo dibujado adentro saldría ovalado.
  */
-function Area({ cortes, techo }: { cortes: Corte[]; techo: string }) {
+function Area({
+  cortes,
+  techo,
+  compacto = false,
+}: {
+  cortes: Corte[];
+  techo: string;
+  /** Muchos cortes en poco ancho (las horas): rótulo corto y sin las horas vendidas. */
+  compacto?: boolean;
+}) {
   const x = (k: number) => ((k + 0.5) / cortes.length) * 100;
   const camino =
     `M 0 ${100 - (cortes[0]?.pct ?? 0)} ` +
@@ -125,16 +134,23 @@ function Area({ cortes, techo }: { cortes: Corte[]; techo: string }) {
 
       {/* Las horas van debajo y no encima del punto: arriba tapaban la línea
           justo donde hay que leerla. */}
-      <div className="os-salas-rotulos">
-        {cortes.map((c) => (
-          <span key={c.clave}>
-            {c.rotulo}
-            <b>{c.pct} %</b>
-            <small>
-              {c.vendidas} de {c.abiertas} h
-            </small>
-          </span>
-        ))}
+      <div className={`os-salas-rotulos${compacto ? ' os-salas-rotulos-compactos' : ''}`}>
+        {cortes.map((c) =>
+          compacto ? (
+            <span key={c.clave} title={`${c.vendidas} de ${c.abiertas} h`}>
+              {c.rotulo.slice(0, 2)}
+              <b>{c.pct}%</b>
+            </span>
+          ) : (
+            <span key={c.clave}>
+              {c.rotulo}
+              <b>{c.pct} %</b>
+              <small>
+                {c.vendidas} de {c.abiertas} h
+              </small>
+            </span>
+          )
+        )}
       </div>
     </>
   );
@@ -218,8 +234,6 @@ export default function Finanzas({
 
   // -------------------------------------------------------- qué está vacío
   const ocupacion = medirOcupacion(espacios, dias, aperturas, reservas, cierres);
-  const frias = [...ocupacion.porHora].sort((a, b) => a.pct - b.pct).slice(0, 3);
-  const calientes = [...ocupacion.porHora].sort((a, b) => b.pct - a.pct).slice(0, 3);
 
   /**
    * El color de una celda del mapa, como tono de la rueda.
@@ -708,42 +722,9 @@ export default function Finanzas({
           </span>
         </p>
 
-        {/* Las dos listas y el gráfico de salas en la misma fila: son tres
-            lecturas de lo mismo (qué hora, qué sala) y una debajo de otra
-            obligaban a desplazarse para comparar. */}
+        {/* Tres cortes del mismo dibujo en la misma fila: por sala dice cuál
+            llenar, por día cuándo, y por hora en qué banda. */}
         <div className="os-analisis">
-          <section>
-            <h3>Las bandas calientes</h3>
-            <ul className="os-lista-datos">
-              {calientes.map((c) => (
-                <li key={c.clave}>
-                  <span>{c.rotulo}</span>
-                  <strong>{c.pct} %</strong>
-                </li>
-              ))}
-            </ul>
-            <p className="os-panel-nota">
-              Acá no conviene descuento: se vende sola y bajar el precio es
-              regalar lo que ya se cobra.
-            </p>
-          </section>
-          <section>
-            <h3>Las bandas frías</h3>
-            <ul className="os-lista-datos">
-              {frias.map((c) => (
-                <li key={c.clave}>
-                  <span>{c.rotulo}</span>
-                  <strong>{c.pct} %</strong>
-                </li>
-              ))}
-            </ul>
-            <p className="os-panel-nota">
-              {frias[0]
-                ? `Cada hora de ${frias[0].rotulo} que se venda es margen entero: la sala está abierta igual.`
-                : 'Sin datos todavía.'}
-            </p>
-          </section>
-
           {/* En columnas contra el techo de horas abiertas, y no en barras
               horizontales: la pregunta no es qué porcentaje hizo cada sala sino
               cuánto le falta para llenarse, y eso se ve cuando las cuatro se
@@ -764,6 +745,15 @@ export default function Finanzas({
             <Area
               cortes={ocupacion.porDia}
               techo={`${Math.max(...ocupacion.porDia.map((c) => c.abiertas), 0)} h abiertas`}
+            />
+          </section>
+
+          <section className="os-salas">
+            <h3>% de ocupación por hora</h3>
+            <Area
+              cortes={ocupacion.porHora}
+              techo={`${Math.max(...ocupacion.porHora.map((c) => c.abiertas), 0)} h abiertas`}
+              compacto
             />
           </section>
         </div>
