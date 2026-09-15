@@ -81,6 +81,8 @@ export default function TablaEntregados({
    */
   conInforme?: boolean;
 }) {
+  /** La fila cuyo "Ver informe" se tocó sin informe: muestra "Próximamente" un momento. */
+  const [avisando, setAvisando] = useState<string | null>(null);
   const [orden, setOrden] = useState<{ col: Clave; asc: boolean }>({
     col: 'fecha',
     asc: false,
@@ -174,10 +176,24 @@ export default function TablaEntregados({
                   <span className="bi-texto">Ver informe</span>
                 </a>
               ) : (
-                <span className="btn-informe btn-informe-pronto">
+                // Al pasar el cursor y también al tocarlo: en el teléfono no hay
+                // cursor, y un botón que no responde se lee como roto.
+                <button
+                  type="button"
+                  className={`btn-informe btn-informe-pronto${
+                    avisando === f.id ? ' avisando' : ''
+                  }`}
+                  onClick={() => {
+                    setAvisando(f.id);
+                    window.setTimeout(
+                      () => setAvisando((actual) => (actual === f.id ? null : actual)),
+                      2000
+                    );
+                  }}
+                >
                   <span className="bi-texto">Ver informe</span>
                   <span className="bi-pronto">Próximamente</span>
-                </span>
+                </button>
               )}
             </span>
           )}

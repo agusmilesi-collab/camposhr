@@ -280,8 +280,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
         // Supabase se arma con los datos cargados y se muestra en su página; en
         // Airtable es un archivo escrito a mano, y en el cliente de prueba
         // manda la tilde que trae la tabla.
-        // Con los informes apagados no se arma ningún enlace: la tabla sale
-        // sin esa columna y no hay dirección que probar. Ver `informesVisibles`.
+        // Con los informes apagados no se arma ningún enlace: la columna sale
+        // igual, con "Ver informe" en todas las filas y el aviso de que llega
+        // próximamente, y no hay dirección que probar. Ver `informesVisibles`.
         informe: !informesVisibles
           ? null
           : deSupabase
@@ -432,7 +433,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
                 <TablaEntregados
                   filas={filasEntregadas}
                   conCobro={conCobro}
-                  conInforme={informesVisibles}
+                  conInforme
                 />
               </article>
             </>
