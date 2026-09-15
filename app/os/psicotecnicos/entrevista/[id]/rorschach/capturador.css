@@ -366,6 +366,15 @@
   border-bottom: 1px solid var(--os-linea);
 }
 
+/* La calidad formal de una respuesta fuera de tabla, a la izquierda de los
+   tildes: es lo primero que falta decidir cuando la Tabla A no la trae. */
+.os-ror-dq-fq {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
 /* Los dos tildes del puntaje, entre lo que se vio y la calidad que cierra. */
 .os-ror-dq-tildes {
   display: flex;
@@ -593,7 +602,7 @@
      al apretar la cruz la columna crecía, les robaba ancho a las de texto y la
      fila dejaba de coincidir con sus rótulos. */
   grid-template-columns:
-    64px minmax(0, 1.5fr) 150px 104px 64px minmax(0, 1fr) 56px 80px 64px;
+    64px minmax(0, 1.5fr) 150px 104px 64px minmax(0, 1fr) 56px 80px 92px;
   gap: 10px;
   align-items: center;
   font-size: 13px;
@@ -1646,9 +1655,34 @@ input.os-ror-dichas-texto:focus {
 
 .os-ror-trozo-area {
   flex: none;
+  min-width: 56px;
+  text-align: right;
   color: var(--os-tinta-media);
   font-size: 0.85rem;
   font-variant-numeric: tabular-nums;
+}
+
+/* La calidad de cada objeto, en una columna del ancho del desplegable: el sello
+   de la tabla y el desplegable de fuera de tabla miden lo mismo, y los renglones
+   quedan alineados venga de donde venga la calidad. */
+.os-ror-trozo-fq {
+  flex: none;
+  display: inline-flex;
+  justify-content: center;
+  width: 55px;
+}
+
+.os-ror-trozo-fq .os-ror-fq,
+.os-ror-trozo-fq .os-codigo-boton {
+  width: 55px;
+  height: 25px;
+  font-size: 0.76rem;
+}
+
+/* El lugar de la cruz en el renglón que se está cargando, que todavía no tiene
+   nada que sacar. */
+.os-ror-trozo-hueco {
+  visibility: hidden;
 }
 
 .os-ror-trozos-pie {
