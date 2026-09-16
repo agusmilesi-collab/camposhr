@@ -26,7 +26,12 @@ import indice from '@/data/presentaciones.json';
 export type Presentacion = {
   /** Null mientras la charla no está publicada. */
   token: string | null;
-  ciclo: string;
+  /**
+   * El programa al que pertenece, cuando la charla es parte de uno. Null en las
+   * sueltas: una charla que se dicta una vez para un cliente no cuelga de
+   * ningún ciclo, y antes no tenía dónde entrar en el índice.
+   */
+  ciclo: string | null;
   /**
    * Null cuando la charla sirve para cualquier cliente. El material del ciclo
    * con actividades es el mismo para todos: quién lo está dictando se resuelve
@@ -63,4 +68,26 @@ export function formatoFecha(iso: string): string {
   const [a, m, d] = iso.split('-');
   if (!a || !m || !d) return iso;
   return `${d}/${m}/${a}`;
+}
+
+/**
+ * El ciclo como dirección: "Liderazgos Humanos · plan B" -> "liderazgos-humanos-plan-b".
+ *
+ * Sale del nombre y no de un campo nuevo en el índice: el nombre ya es único, y
+ * un identificador aparte obliga a mantener dos cosas en línea.
+ */
+export function slugDeCiclo(nombre: string): string {
+  return nombre
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/** Las charlas de un ciclo, por su dirección. Vacío si no existe. */
+export function charlasDelCiclo(slug: string): { ciclo: string; charlas: Presentacion[] } | null {
+  const filas = listarPresentaciones().filter((p) => p.ciclo && slugDeCiclo(p.ciclo) === slug);
+  if (filas.length === 0) return null;
+  return { ciclo: filas[0].ciclo as string, charlas: filas.sort((a, b) => a.orden - b.orden) };
 }

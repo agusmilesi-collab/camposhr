@@ -1,63 +1,8 @@
 [
   {
-    "token": "pla-mindfulness-a37f21",
-    "cliente": "Pla S.A.",
-    "ciclo": "Liderazgos Humanos",
-    "titulo": "Mindfulness",
-    "subtitulo": "Tengo la cabeza a mil",
-    "placas": 16,
-    "fecha": "2026-08-07",
-    "orden": 1,
-    "archivo": "pla-mindfulness-a37f21.html"
-  },
-  {
-    "token": "pla-emociones-25442e",
-    "cliente": "Pla S.A.",
-    "ciclo": "Liderazgos Humanos",
-    "titulo": "Registro de Emociones",
-    "subtitulo": "Cuando algo me está afectando",
-    "placas": 20,
-    "fecha": "2026-08-07",
-    "orden": 2,
-    "archivo": "pla-emociones-25442e.html"
-  },
-  {
-    "token": "pla-habilidades-cb8577",
-    "cliente": "Pla S.A.",
-    "ciclo": "Liderazgos Humanos",
-    "titulo": "Registro de Habilidades",
-    "subtitulo": "Quiero conocerme mejor",
-    "placas": 20,
-    "fecha": "2026-08-07",
-    "orden": 3,
-    "archivo": "pla-habilidades-cb8577.html"
-  },
-  {
-    "token": "pla-malas-noticias-ffa3d5",
-    "cliente": "Pla S.A.",
-    "ciclo": "Liderazgos Humanos",
-    "titulo": "Comunicar Malas Noticias",
-    "subtitulo": "Mañana tengo una conversación difícil",
-    "placas": 15,
-    "fecha": "2026-08-11",
-    "orden": 4,
-    "archivo": "pla-malas-noticias-ffa3d5.html"
-  },
-  {
-    "token": "pla-conflictos-2f4e9a",
-    "cliente": "Pla S.A.",
-    "ciclo": "Liderazgos Humanos",
-    "titulo": "Resolver Conflictos",
-    "subtitulo": "Hay tensión en mi equipo",
-    "placas": 33,
-    "fecha": "2026-08-11",
-    "orden": 5,
-    "archivo": "pla-conflictos-2f4e9a.html"
-  },
-  {
     "token": "pla-mindfulness-b-51356e",
     "cliente": null,
-    "ciclo": "Liderazgos Humanos · plan B",
+    "ciclo": "Liderazgos Humanos",
     "titulo": "Mindfulness",
     "subtitulo": "Tengo la cabeza a mil",
     "placas": 17,
@@ -68,7 +13,7 @@
   {
     "token": "pla-emociones-b-65f32f",
     "cliente": null,
-    "ciclo": "Liderazgos Humanos · plan B",
+    "ciclo": "Liderazgos Humanos",
     "titulo": "Registro de Emociones",
     "subtitulo": "Cuando algo me está afectando",
     "placas": 20,
@@ -79,7 +24,7 @@
   {
     "token": "pla-habilidades-b-e32070",
     "cliente": null,
-    "ciclo": "Liderazgos Humanos · plan B",
+    "ciclo": "Liderazgos Humanos",
     "titulo": "Registro de Habilidades",
     "subtitulo": "Quiero conocerme mejor",
     "placas": 20,
@@ -90,7 +35,7 @@
   {
     "token": "pla-malas-noticias-b-ee6e92",
     "cliente": null,
-    "ciclo": "Liderazgos Humanos · plan B",
+    "ciclo": "Liderazgos Humanos",
     "titulo": "Comunicar Malas Noticias",
     "subtitulo": "Mañana tengo una conversación difícil",
     "placas": 16,
@@ -101,12 +46,23 @@
   {
     "token": "pla-conflictos-b-90a1dc",
     "cliente": null,
-    "ciclo": "Liderazgos Humanos · plan B",
+    "ciclo": "Liderazgos Humanos",
     "titulo": "Resolver Conflictos",
     "subtitulo": "Hay tensión en mi equipo",
     "placas": 42,
     "fecha": "2026-08-11",
     "orden": 5,
     "archivo": "pla-conflictos-b-90a1dc.html"
+  },
+  {
+    "token": "johndeere-conversaciones-prueba",
+    "cliente": "John Deere",
+    "ciclo": null,
+    "titulo": "Conversaciones difíciles",
+    "subtitulo": "Marco conceptual y método, sin las dinámicas",
+    "placas": 17,
+    "fecha": "2026-09-24",
+    "orden": 1,
+    "archivo": "johndeere-conversaciones-prueba.html"
   }
 ]
