@@ -55,10 +55,6 @@
       font-size: clamp(1.9rem, 5vw, 2.6rem); font-weight: 400;
       letter-spacing: -0.015em; line-height: 1.1;
     }
-    .head-nota {
-      margin-top: 14px; max-width: 52ch;
-      font-size: 0.95rem; line-height: 1.5; color: var(--muted);
-    }
 
     /* Grilla de herramientas */
     .tools {
@@ -68,11 +64,11 @@
     }
     .tool {
       background: var(--card); border: 1px solid var(--line);
-      border-radius: 12px; padding: 22px 22px 20px;
+      border-radius: 5px; padding: 22px 22px 20px;
       display: flex; flex-direction: column;
     }
     .tool-icon {
-      width: 34px; height: 34px; border-radius: 9px;
+      width: 34px; height: 34px; border-radius: 5px;
       border: 1px solid var(--line); color: var(--ink-soft);
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 16px;
@@ -97,17 +93,24 @@
       display: inline-flex; align-items: center; gap: 7px;
       font: inherit; font-size: 0.84rem; font-weight: 500; text-decoration: none;
       color: #fff; background: var(--ink);
-      border: 1px solid var(--ink); border-radius: 8px;
+      border: 1px solid var(--ink); border-radius: 4px;
       padding: 8px 15px; cursor: pointer;
       transition: opacity 0.12s;
     }
     .btn:hover { opacity: 0.88; }
+
+    /* La herramienta que todavía no existe: el botón se ve, en gris y sin
+       reacción, para que el lugar quede tomado. */
+    .btn-pronto, .btn-pronto:hover {
+      color: var(--muted); background: var(--paper);
+      border-color: var(--line); cursor: default; opacity: 1;
+    }
     .btn svg { width: 13px; height: 13px; }
     .btn-ghost {
       display: inline-flex; align-items: center; justify-content: center;
       font: inherit; font-size: 0.82rem; color: var(--ink-soft);
       background: var(--paper); border: 1px solid var(--line);
-      border-radius: 8px; padding: 8px 12px; cursor: pointer;
+      border-radius: 4px; padding: 8px 12px; cursor: pointer;
       transition: background 0.12s, color 0.12s, border-color 0.12s;
     }
     .btn-ghost:hover { background: #efece5; color: var(--ink); }
@@ -139,53 +142,10 @@
 
   <main class="wrap">
     <section class="head">
-      <div class="eyebrow">Herramientas de evaluación</div>
-      <h1>Tests y accesos</h1>
-      <p class="head-nota">
-        Tests psicotécnicos e informes en un solo lugar. Compartí el link con el
-        entrevistado y administrá la sesión en tiempo real.
-      </p>
+      <h1>Herramientas</h1>
     </section>
 
     <section class="tools" aria-label="Herramientas disponibles">
-
-      <article class="tool">
-        <div class="tool-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3c-3 4-5 6-5 10a5 5 0 0 0 10 0c0-4-2-6-5-10z"/>
-            <path d="M8 14c0 2 1.5 3 4 3s4-1 4-3"/>
-          </svg>
-        </div>
-        <div class="tool-eyebrow">Test proyectivo</div>
-        <h2>Rorschach</h2>
-        <p>12 láminas con puntero de señalización y pincel temporal. Administración remota vía Meet: compartí el link y ves los gestos del entrevistado sobre la placa.</p>
-        <div class="tool-actions">
-          <a href="/test-rorschach/" class="btn">
-            Abrir test
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-          </a>
-          <button class="btn-ghost copy-link" data-copy-path="/test-rorschach/" title="Copiar link para compartir">Copiar link</button>
-        </div>
-      </article>
-
-      <article class="tool">
-        <div class="tool-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 7v5l3 2"/>
-          </svg>
-        </div>
-        <div class="tool-eyebrow">Test proyectivo</div>
-        <h2>Zulliger</h2>
-        <p>Variante abreviada de 3 láminas. Para evaluaciones grupales o entrevistas de tiempo limitado, con la misma dinámica de señalización.</p>
-        <div class="tool-actions">
-          <a href="/test-zulliger/" class="btn">
-            Abrir test
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-          </a>
-          <button class="btn-ghost copy-link" data-copy-path="/test-zulliger/" title="Copiar link para compartir">Copiar link</button>
-        </div>
-      </article>
 
       <article class="tool">
         <div class="tool-icon" aria-hidden="true">
@@ -209,39 +169,15 @@
       <article class="tool">
         <div class="tool-icon" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6z"/>
-            <path d="M14 3v6h6"/>
-            <path d="M8 13h8"/><path d="M8 17h6"/>
+            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5z"/>
+            <path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5z"/>
           </svg>
         </div>
-        <div class="tool-eyebrow">Accesos de clientes</div>
-        <h2>Informes</h2>
-        <p>El link de portal de cada cliente, listo para copiar y enviar por el canal acordado.</p>
+        <div class="tool-eyebrow">Lo que sabemos, escrito</div>
+        <h2>Knowledge base</h2>
+        <p>La teoría, los ejercicios y los casos de cada tema, en archivos de texto. De acá va a salir el material de las charlas en vez de copiarlo de un deck anterior.</p>
         <div class="tool-actions">
-          <a href="/informes" class="btn">
-            Ver accesos
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-          </a>
-        </div>
-      </article>
-
-      <article class="tool">
-        <div class="tool-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
-            <path d="M15 3v5h5"/>
-            <path d="M12 11v6"/>
-            <path d="M14 12.6c-.5-.5-1.2-.8-2-.8-1.2 0-2 .6-2 1.5s.9 1.3 2 1.5 2 .6 2 1.5-.8 1.5-2 1.5c-.8 0-1.5-.3-2-.8"/>
-          </svg>
-        </div>
-        <div class="tool-eyebrow">Propuestas enviadas</div>
-        <h2>Cotizaciones</h2>
-        <p>Qué se cotizó, a quién, por cuánto y en qué estado quedó. Con el link de cada propuesta para mandarle al cliente.</p>
-        <div class="tool-actions">
-          <a href="/cotizaciones" class="btn">
-            Ver cotizaciones
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-          </a>
+          <span class="btn btn-pronto">Próximamente</span>
         </div>
       </article>
 

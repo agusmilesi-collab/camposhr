@@ -1,55 +1,113 @@
-import { listarPresentaciones, formatoFecha } from '@/lib/presentaciones';
-import { listarAsistentes, listarCiclos, listarCorridas } from '@/lib/ciclo';
-import Encuentros, { type EnCurso } from './Encuentros';
-import TablaCharlas from './TablaCharlas';
+import Link from 'next/link';
+import {
+  listarPresentaciones,
+  formatoFecha,
+  slugDeCiclo,
+  type Presentacion,
+} from '@/lib/presentaciones';
+import { diasDesde, hoy as hoyISO } from '@/lib/hora';
+import { encuentrosEnCurso } from '@/lib/presentaciones-encuentros';
 
 export const dynamic = 'force-dynamic';
 
-const BASE = 'https://tools.camposhr.com/pres';
+// Relativo y no con el host escrito: en tools.camposhr.com lleva al mismo
+// lugar, y en local abre el deck que se está probando en vez de mandar al sitio
+// publicado.
+const BASE = '/pres';
 
 /**
- * Qué material corresponde a qué ciclo de la base.
+ * El índice del material: una fila por cosa que se dicta.
  *
- * El índice de presentaciones nombra al material y la base nombra al producto,
- * y no tienen por qué escribirse igual. Los clientes no se declaran acá: salen
- * de las corridas activas, así dar de alta uno nuevo lo hace aparecer solo.
+ * Una charla suelta es una fila y un ciclo también, aunque adentro tenga cinco
+ * charlas: lo que se dictó fue el ciclo, para un cliente y en unos días, y
+ * entrar a él es ver sus charlas. Con las cinco sueltas en el índice, elegir
+ * cuál abrir era elegir entre versiones del mismo material.
+ *
+ * Arriba va la próxima, sola: el día del encuentro es lo único que se busca acá.
  */
-const MATERIAL_DEL_CICLO: Record<string, string> = {
-  'Liderazgos Humanos · plan B': 'Liderazgos Humanos',
+
+/**
+ * Cuánto falta, dicho como se dice en voz alta.
+ *
+ * El día del encuentro la tarjeta dice "Hoy". Los días previos dice cuántos
+ * faltan, que es cuando se prepara el material: con un "Hoy" a secas, el día
+ * anterior había que buscarlo en la lista y ahí se abre lo que no es.
+ */
+function cuantoFalta(fecha: string): string {
+  const faltan = -(diasDesde(fecha) ?? 0);
+  if (faltan <= 0) return 'Hoy';
+  if (faltan === 1) return 'Mañana';
+  return `En ${faltan} días`;
+}
+
+/** Una fila del índice: una charla suelta o un ciclo entero. */
+type Fila = {
+  clave: string;
+  /** Con la que se ordena: la del encuentro, o la primera del ciclo. */
+  fecha: string;
+  fechaTexto: string;
+  cliente: string | null;
+  titulo: string;
+  bajada: string;
+  /** "17 placas" en una charla, "5 charlas · 115 placas" en un ciclo. */
+  tamano: string;
+  /** Adónde lleva: la presentación, o la pantalla del ciclo. */
+  href: string | null;
+  /** La presentación se abre en otra pestaña; el ciclo, en la misma. */
+  externo: boolean;
 };
 
 export default async function Presentaciones() {
   const todas = listarPresentaciones();
+  const { porMaterial } = await encuentrosEnCurso();
 
-  // Un bloque por ciclo, en el orden en que aparecen en el índice.
-  const ciclos = todas.reduce<{ nombre: string; filas: typeof todas }[]>((acc, p) => {
-    const grupo = acc.find((g) => g.nombre === p.ciclo);
-    if (grupo) grupo.filas.push(p);
-    else acc.push({ nombre: p.ciclo, filas: [p] });
-    return acc;
-  }, []);
+  const sueltas = todas.filter((p) => !p.ciclo);
+  const ciclos = todas
+    .filter((p) => p.ciclo)
+    .reduce<{ nombre: string; filas: Presentacion[] }[]>((acc, p) => {
+      const grupo = acc.find((g) => g.nombre === p.ciclo);
+      if (grupo) grupo.filas.push(p);
+      else acc.push({ nombre: p.ciclo as string, filas: [p] });
+      return acc;
+    }, []);
 
-  // Los encuentros en curso, agrupados por el material que les corresponde.
-  // Los asistentes se cuentan acá, así el día del encuentro se ve de un vistazo
-  // cuánta gente entró sin abrir otra pantalla.
-  const [corridas, ciclosBase] = await Promise.all([listarCorridas(), listarCiclos()]);
-  const enVivo = new Map<string, EnCurso[]>();
+  const filas: Fila[] = [
+    ...sueltas.map((p) => ({
+      clave: `charla-${p.titulo}-${p.fecha}`,
+      fecha: p.fecha,
+      fechaTexto: formatoFecha(p.fecha),
+      cliente: p.cliente,
+      titulo: p.titulo,
+      bajada: p.subtitulo,
+      tamano: p.placas > 0 ? `${p.placas} placas` : 'Sin material',
+      href: p.token ? `${BASE}/${p.token}` : null,
+      externo: true,
+    })),
+    ...ciclos.map((c) => {
+      // Para quién se dictó sale de las corridas y no del índice: el material
+      // del ciclo es el mismo para todos, y quién lo recorrió vive en la base.
+      const clientes = (porMaterial.get(c.nombre) ?? []).map((e) => e.empresa);
+      const fechas = c.filas.map((p) => p.fecha);
+      return {
+        clave: `ciclo-${c.nombre}`,
+        fecha: [...fechas].sort()[0],
+        // La del primer encuentro: el rango de fechas hacía de la columna
+        // la más ancha de la tabla para decir algo que se ve entrando al ciclo.
+        fechaTexto: formatoFecha([...fechas].sort()[0]),
+        cliente: clientes.join(', ') || null,
+        titulo: c.nombre,
+        bajada: `Ciclo de ${c.filas.length} charlas`,
+        tamano: `${c.filas.reduce((n, p) => n + p.placas, 0)} placas`,
+        href: `/presentaciones/${slugDeCiclo(c.nombre)}`,
+        externo: false,
+      };
+    }),
+  ].sort((a, b) => b.fecha.localeCompare(a.fecha));
 
-  for (const [material, nombreCiclo] of Object.entries(MATERIAL_DEL_CICLO)) {
-    if (!ciclos.some((c) => c.nombre === material)) continue;
-    const filas: EnCurso[] = [];
-    for (const corrida of corridas.filter((c) => c.ciclos?.nombre === nombreCiclo)) {
-      const asistentes = await listarAsistentes(corrida.id);
-      filas.push({
-        slug: corrida.empresas.slug,
-        empresa: corrida.empresas.nombre,
-        registrados: asistentes.length,
-        clave: corrida.clave_control,
-        abierta: Boolean(corrida.actividad_abierta_id),
-      });
-    }
-    enVivo.set(material, filas);
-  }
+  const hoy = hoyISO();
+  const proxima =
+    [...filas].filter((f) => f.fecha >= hoy).sort((a, b) => a.fecha.localeCompare(b.fecha))[0] ??
+    null;
 
   return (
     <main className="wrap wrap-ancho">
@@ -64,34 +122,68 @@ export default async function Presentaciones() {
         <h1>Presentaciones</h1>
       </section>
 
-      {ciclos.map((ciclo) => (
-        <section className="presentaciones" key={ciclo.nombre}>
-          <h2 className="pres-ciclo">{ciclo.nombre}</h2>
-          <TablaCharlas
-            clientes={(enVivo.get(ciclo.nombre) ?? []).map((e) => ({
-              slug: e.slug,
-              empresa: e.empresa,
-            }))}
-            charlas={ciclo.filas.map((p) => ({
-              token: p.token,
-              archivo: p.archivo,
-              titulo: p.titulo,
-              subtitulo: p.subtitulo,
-              orden: p.orden,
-              placas: p.placas,
-              fechaTexto: formatoFecha(p.fecha),
-              cliente: p.cliente,
-            }))}
-          />
-
-          {enVivo.has(ciclo.nombre) && (
-            <Encuentros
-              enCurso={enVivo.get(ciclo.nombre)!}
-              ciclos={ciclosBase.map((c) => ({ id: c.id, nombre: c.nombre }))}
-            />
+      {proxima && (
+        <section className={`pres-proxima${cuantoFalta(proxima.fecha) === 'Hoy' ? ' es-hoy' : ''}`}>
+          <span className="pres-proxima-cuando">{cuantoFalta(proxima.fecha)}</span>
+          <div className="pres-proxima-que">
+            <b>{proxima.titulo}</b>
+            <span>{[proxima.cliente, proxima.fechaTexto].filter(Boolean).join(' · ')}</span>
+          </div>
+          {proxima.href ? (
+            proxima.externo ? (
+              <a className="copiar pres-ver" href={proxima.href} target="_blank" rel="noreferrer">
+                Ver presentación
+              </a>
+            ) : (
+              <Link className="copiar pres-ver" href={proxima.href}>
+                Ver las charlas
+              </Link>
+            )
+          ) : (
+            <em className="pres-pendiente">Sin material cargado</em>
           )}
         </section>
-      ))}
+      )}
+
+      <section className="presentaciones">
+        <div className="card pres-tabla pres-indice">
+          <div className="pres-row pres-th">
+            <span>Fecha</span>
+            <span>Cliente</span>
+            <span>Qué es</span>
+            <span className="pres-num">Tamaño</span>
+          </div>
+
+          {filas.map((f) => (
+            <div className="pres-row" key={f.clave}>
+              <span className="cot-fecha">{f.fechaTexto}</span>
+              <span className="pres-cliente">{f.cliente}</span>
+              {/* El título es el enlace: un botón al final de la fila repetía
+                  el mismo destino en dos lugares. Sin material, no lleva a
+                  ningún lado y la fila lo dice al lado del título. */}
+              <span className="pres-charla">
+                {f.href ? (
+                  f.externo ? (
+                    <a className="pres-entrar" href={f.href} target="_blank" rel="noreferrer">
+                      {f.titulo}
+                    </a>
+                  ) : (
+                    <Link className="pres-entrar" href={f.href}>
+                      {f.titulo}
+                    </Link>
+                  )
+                ) : (
+                  <b>
+                    {f.titulo} <em className="pres-pendiente">Sin publicar</em>
+                  </b>
+                )}
+                <em>{f.bajada}</em>
+              </span>
+              <span className="pres-num">{f.tamano}</span>
+            </div>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

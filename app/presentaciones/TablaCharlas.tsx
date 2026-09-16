@@ -12,7 +12,10 @@ import { useEffect, useState } from 'react';
  * sala nadie se enteraría de que las palabras proyectadas son de otro grupo.
  */
 
-const BASE = 'https://tools.camposhr.com/pres';
+// Relativo y no con el host escrito: en tools.camposhr.com lleva al mismo
+// lugar, y en local abre el deck que se está probando en vez de mandar al sitio
+// publicado.
+const BASE = '/pres';
 
 export type Charla = {
   token: string | null;
@@ -30,10 +33,13 @@ export type Cliente = { slug: string; empresa: string };
 export default function TablaCharlas({
   charlas,
   clientes,
+  numerar = true,
 }: {
   charlas: Charla[];
   /** Vacío en los ciclos sin actividades desde el teléfono. */
   clientes: Cliente[];
+  /** El número de orden es del programa: una charla suelta no lo tiene. */
+  numerar?: boolean;
 }) {
   const [elegido, setElegido] = useState<string>('');
 
@@ -119,7 +125,8 @@ export default function TablaCharlas({
             )}
             <span className="pres-charla">
               <b>
-                {p.orden}. {p.titulo}
+                {numerar ? `${p.orden}. ` : ''}
+                {p.titulo}
               </b>
               <em>{p.subtitulo}</em>
             </span>

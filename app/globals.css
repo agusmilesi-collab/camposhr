@@ -3025,6 +3025,60 @@ body {
 
 /* Nombre del ciclo, como encabezado del grupo: la columna Ciclo sale de la
    tabla porque dentro de un grupo dice siempre lo mismo. */
+/* La próxima charla, sola arriba de todo: el día del encuentro se abre desde
+   acá y no hay que buscarla entre las dictadas. Resaltada cuando es hoy. */
+.pres-proxima {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  margin: 0 0 26px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.pres-proxima.es-hoy {
+  border-color: var(--st-blue);
+}
+
+.pres-proxima-cuando {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.pres-proxima.es-hoy .pres-proxima-cuando {
+  background: var(--st-blue);
+  color: #fff;
+}
+
+.pres-proxima-que {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pres-proxima-que b {
+  font-size: 1.05rem;
+}
+
+.pres-proxima-que span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.pres-proxima .pres-ver,
+.pres-proxima .pres-pendiente {
+  margin-left: auto;
+}
+
 .pres-ciclo {
   font-family: 'Instrument Serif', Georgia, serif;
   font-size: 1.25rem;
@@ -3044,6 +3098,31 @@ body {
   overflow: hidden;
 }
 /* Sin fecha, cliente ni descarga: quedan la charla, las placas y el enlace. */
+/* El índice: cinco columnas, con una sola acción por fila (abrir la charla o
+   entrar al ciclo). La de charlas de adentro de un ciclo tiene seis, porque
+   además se descarga. */
+.pres-indice {
+  grid-template-columns: max-content max-content minmax(16rem, 1fr) max-content;
+}
+
+.pres-cliente {
+  color: var(--ink-soft);
+}
+
+/* El título como enlace: del mismo cuerpo que cuando no lo es, con el
+   subrayado fino del resto del hub. */
+.pres-entrar {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+}
+
+.pres-entrar:hover {
+  text-decoration-color: currentColor;
+}
+
 .pres-tabla-sola {
   grid-template-columns: minmax(16rem, 1fr) max-content max-content;
 }
@@ -5645,10 +5724,12 @@ body {
   /* Las tres del mismo ancho: recorriendo la columna, una pastilla más corta
      que la de al lado se lee como otra clase de dato. */
   justify-content: center;
-  min-width: 92px;
-  padding: 3px 10px;
+  /* Ancho fijo y no mínimo: con mínimo, "Sin facturar" lo pasaba y esa pastilla
+     salía más larga que las otras dos. Entra en los 96 px de la columna. */
+  width: 92px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 600;
   line-height: 1.3;
   white-space: nowrap;
