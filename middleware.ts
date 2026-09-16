@@ -45,7 +45,7 @@ const ESTATICOS_DEL_PORTAL = /^\/informe\//;
 
 const TOKEN = /^\/([A-Za-z0-9_-]+)\/?$/;
 const TOKEN_EN_P = /^\/p\/([A-Za-z0-9_-]+)\/?$/;
-const RUTAS_TOOLS = /^\/(informes|cuestionario|cotizaciones|presentaciones|pres)(\/|$)/;
+const RUTAS_TOOLS = /^\/(informes|cuestionario|cotizaciones|presentaciones|pres|kb)(\/|$)/;
 
 // Los tests de manchas se mudaron adentro del OS, con las láminas en el bucket
 // privado. Las direcciones viejas siguen andando y llevan a la nueva: están
