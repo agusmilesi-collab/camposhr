@@ -5642,6 +5642,10 @@ body {
 .cobro-tag {
   display: inline-flex;
   align-items: center;
+  /* Las tres del mismo ancho: recorriendo la columna, una pastilla más corta
+     que la de al lado se lee como otra clase de dato. */
+  justify-content: center;
+  min-width: 92px;
   padding: 3px 10px;
   border-radius: 999px;
   font-size: 0.74rem;
