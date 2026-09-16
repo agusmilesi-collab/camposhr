@@ -1,6 +1,7 @@
 import 'server-only';
 import { enlaceDelAudio } from '@/lib/audio-discurso';
 import type { EstadoRaven } from '@/lib/raven-estado';
+import { duracionDeSesion } from '@/lib/raven';
 import { select } from '@/lib/supabase';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 import { llevaBenziger } from '@/lib/benziger';
@@ -283,14 +284,6 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     ravenIniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
     ravenMedida: medidas[0] ?? null,
     ravenSesion: sesiones[0] ?? null,
-    ravenDuracion:
-      s?.terminado_at && s.iniciado_at
-        ? Math.max(
-            0,
-            Math.round(
-              (new Date(s.terminado_at).getTime() - new Date(s.iniciado_at).getTime()) / 1000
-            )
-          )
-        : null,
+    ravenDuracion: duracionDeSesion(s?.iniciado_at ?? null, s?.terminado_at ?? null, s?.cierre ?? null),
   };
 }

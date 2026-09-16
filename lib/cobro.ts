@@ -34,7 +34,7 @@ export const COBROS: Record<
   { texto: string; clase: string; detalle: string }
 > = {
   pagado:         { texto: 'Pagado',       clase: 'green', detalle: 'Facturado y cobrado' },
-  impago:         { texto: 'Impago',       clase: 'amber', detalle: 'Facturado, sin cobrar' },
+  impago:         { texto: 'Impago',       clase: 'red',   detalle: 'Facturado, sin cobrar' },
   'sin-facturar': { texto: 'Sin facturar', clase: 'gray',  detalle: 'Todavía sin facturar' },
   'sin-dato':     { texto: '—',            clase: 'gray',  detalle: 'Sin cargar' },
 };

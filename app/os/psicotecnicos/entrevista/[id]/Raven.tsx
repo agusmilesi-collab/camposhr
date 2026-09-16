@@ -155,7 +155,7 @@ export default function Raven({
                 para quien lo quiera de paso. */}
             {resultado !== null && resultado.raw !== null && (
               <span
-                className="os-sello-estado os-azul os-raven-puntaje"
+                className="os-sello-estado os-verde os-raven-puntaje"
                 title={resultado.resultado ?? 'Sin rango'}
               >
                 {resultado.raw}/{RAVEN_MAXIMO}

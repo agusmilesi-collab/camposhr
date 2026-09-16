@@ -199,8 +199,7 @@ export default function TablaEntregados({
           )}
           {conCobro && (
             <span className="c-cobro" data-label="Facturación">
-              <i className={`dot ${COBROS[f.cobro].clase}`} />
-              <span className="cobro-txt" title={COBROS[f.cobro].detalle}>
+              <span className={`cobro-tag ${COBROS[f.cobro].clase}`} title={COBROS[f.cobro].detalle}>
                 {COBROS[f.cobro].texto}
               </span>
             </span>

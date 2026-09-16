@@ -48,7 +48,7 @@ const PESTANAS = [
   { clave: 'semana', texto: 'Calendario' },
   { clave: 'inquilinos', texto: 'Inquilinos' },
   { clave: 'finanzas', texto: 'Finanzas' },
-  { clave: 'espacios', texto: 'Espacios' },
+  { clave: 'espacios', texto: 'Configuración' },
 ];
 
 const QUE_HACE: Record<string, string> = {

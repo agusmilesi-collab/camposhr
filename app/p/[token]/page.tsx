@@ -195,8 +195,10 @@ function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
           entra. */}
       {conCobro && (
         <span className="c-cobro" data-label="Facturación">
-          <i className={`dot ${COBROS[cobro(c)].clase}`} />
-          <span className="cobro-txt" title={COBROS[cobro(c)].detalle}>
+          <span
+            className={`cobro-tag ${COBROS[cobro(c)].clase}`}
+            title={COBROS[cobro(c)].detalle}
+          >
             {COBROS[cobro(c)].texto}
           </span>
         </span>
