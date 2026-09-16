@@ -8,7 +8,7 @@ import {
   sesionPorToken,
   type Sesion,
 } from '@/lib/raven-test';
-import { calcularRaven, OPCIONES, RAVEN_MAXIMO } from '@/lib/raven';
+import { calcularRaven, MINUTOS, OPCIONES, RAVEN_MAXIMO } from '@/lib/raven';
 import { anotarAcceso } from '@/lib/accesos';
 import { siEstaTodoTomado } from '@/lib/entrevista-completa';
 
@@ -56,9 +56,13 @@ async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
   await patch(s.id, { terminado_at: terminado.toISOString(), cierre });
 
   // Cuánto tardó, contado desde que abrió la primera lámina. Con el tiempo
-  // agotado son los minutos enteros del test; entregando antes, lo que haya usado.
+  // agotado son los minutos enteros del test, y no los segundos que tardó el
+  // cierre en llegar: un "50:01" se lee como que el reloj la dejó seguir.
   const duracion = s.iniciado_at
-    ? Math.max(0, Math.round((terminado.getTime() - new Date(s.iniciado_at).getTime()) / 1000))
+    ? Math.min(
+        cierre === 'tiempo' ? MINUTOS * 60 : Infinity,
+        Math.max(0, Math.round((terminado.getTime() - new Date(s.iniciado_at).getTime()) / 1000))
+      )
     : null;
 
   // Sin la clave cargada no se corrige: dejar un cero sería un resultado, y lo

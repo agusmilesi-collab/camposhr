@@ -7,23 +7,19 @@
  * seis, y el percentil, los desvíos y el rango se calculan solos. Los tres son
  * derivados: cargarlos a mano sería tres formas de equivocarse.
  *
- * El puntaje entra por dos caminos y los dos son válidos: lo escribe el test
- * cuando la persona lo termina por su enlace, o lo carga la evaluadora cuando
- * el Raven se tomó en papel. Arriba se dice cuál de los dos fue, porque un
- * número sin origen no se puede discutir, y un test cortado por el reloj con
- * láminas en blanco no se lee igual que uno entregado.
+ * El puntaje lo escribe el test cuando la persona lo termina por su enlace, y
+ * no se carga a mano: acá se lee. Se cargaba a mano hasta el 16/9/2026, y un
+ * guardado en blanco pisó un Raven rendido, con su tiempo y sus respuestas
+ * guardados y ninguna corrección. Arriba se dice de dónde salió, porque un test
+ * cortado por el reloj con láminas en blanco no se lee igual que uno entregado.
  *
  * Los cinco rangos se muestran enteros y con el suyo marcado. Un rango suelto
  * dice en qué cajón cayó la persona; la escala completa dice además qué tan
  * lejos quedó de los otros, que es lo que se necesita cuando hay que comparar
  * dos candidatos o explicarle el resultado a alguien.
  *
- * Guarda al soltar el campo. Vaciarlo borra la medición, que no es lo mismo
- * que un cero: un cero es haber rendido y no acertar nada.
  */
 
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
 import {
   calcularRaven,
   duracion,
@@ -74,15 +70,18 @@ function Origen({
   const rindio = Boolean(sesion?.terminado_at);
   const respondidas = Object.keys(sesion?.respuestas ?? {}).length;
   const porTiempo = sesion?.cierre === 'tiempo';
-  const comoCerro = `${porTiempo ? 'se le acabó el tiempo' : 'lo entregó'} el ${fechaHora(
-    sesion?.terminado_at ?? null
-  )}, con ${respondidas} de ${RAVEN_MAXIMO} láminas respondidas`;
+  // Sin repetir que se lo tomó por su enlace ni cuánto tardó: las dos cosas
+  // están arriba, en la cabecera de la tarjeta. Acá queda lo que no está en
+  // ningún otro lado: cuándo terminó y cuántas láminas contestó.
+  const comoCerro = `${fechaHora(sesion?.terminado_at ?? null)}, con ${respondidas} de ${RAVEN_MAXIMO} láminas respondidas`;
 
   if (origen === 'test') {
     return (
-      <span className={`os-raven-origen${porTiempo ? ' os-ambar' : ''}`}>
-        Lo respondió por su enlace: {comoCerro}
-        {cuanto && `, en ${cuanto}`}
+      <span
+        className={`os-raven-origen${porTiempo ? ' os-ambar' : ''}`}
+        title={porTiempo ? `Se le acabó el tiempo${cuanto ? `, a los ${cuanto}` : ''}.` : undefined}
+      >
+        {comoCerro}
       </span>
     );
   }
@@ -110,8 +109,8 @@ export default function Raven({
   origen,
   sesion,
   tardo,
-  rangos = RANGOS,
   derecha,
+  rangos = RANGOS,
 }: {
   id: string;
   raw: number | null;
@@ -123,78 +122,38 @@ export default function Raven({
   /** Segundos que tardó en responderlo. */
   tardo: number | null;
   /**
-   * Lo que va a la derecha del puntaje, en su misma línea.
-   *
-   * En la hoja de la entrevista, el reloj y el enlace: administrarlo y leer lo
-   * que dio son dos partes del mismo test, y en dos renglones el de arriba
-   * quedaba solo contra el margen derecho.
+   * Lo que va contra el margen derecho de la línea del puntaje: en la hoja de
+   * la entrevista, el reloj, lo que dio y el botón de copiar el enlace.
    */
   derecha?: React.ReactNode;
   /** Los cortes que rigen, que se pueden mover desde Configuración. */
   rangos?: Rango[];
 }) {
-  const router = useRouter();
-  const [, empezar] = useTransition();
-  const [valor, setValor] = useState(raw === null ? '' : String(raw));
-  const [guardando, setGuardando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Lo que se ve mientras se escribe sale del mismo cálculo que el servidor va
-  // a guardar: así el número no aparece un segundo después de escribirlo.
-  const enPantalla = calcularRaven(valor === '' ? null : Number(valor));
+  // Lo derivado se recalcula acá con los cortes que rigen: lo guardado nombra
+  // el rango del día en que se midió.
+  const enPantalla = calcularRaven(raw);
   const p = enPantalla?.percentil ?? percentil;
   const d = enPantalla?.desvios ?? desvios;
   const texto = enPantalla?.resultado ?? resultado ?? SIN_MEDICION;
   // Cuál de los cinco es el suyo, para marcarlo en la escala. Se busca por el
   // puntaje que hay en pantalla y no por el texto guardado: los cortes se
   // pueden mover, y el texto de una medición vieja nombra el rango de entonces.
-  const enEscala = valor === '' ? null : rangoDe(Number(valor), rangos);
+  const enEscala = raw === null ? null : rangoDe(raw, rangos);
   const suyo =
     enEscala?.numeral ?? rangos.find((r) => texto.startsWith(`Rango ${r.numeral} ·`))?.numeral ?? null;
   const tramos = puntajesPorRango(rangos);
 
-  async function guardar(t: string) {
-    if (t === (raw === null ? '' : String(raw))) return;
-    setError(null);
-    setGuardando(true);
-    try {
-      const res = await fetch('/api/os/raven', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ evaluacionId: id, raw: t === '' ? null : Number(t) }),
-      });
-      const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
-      if (!r.ok) {
-        setError(r.motivo ?? 'No se pudo guardar.');
-        return;
-      }
-      empezar(() => router.refresh());
-    } catch {
-      setError('No se pudo guardar.');
-    } finally {
-      setGuardando(false);
-    }
-  }
-
   return (
     <div className="os-raven">
       <div className="os-raven-carga">
-        <label className="os-raven-campo">
+        {/* Se lee, no se escribe: el número lo pone el test al terminar. */}
+        <span className="os-raven-campo">
           <span className="os-dato-rotulo">Puntaje directo</span>
           <span className="os-raven-entrada">
-            <input
-              className="os-campo"
-              type="number"
-              min={0}
-              max={RAVEN_MAXIMO}
-              value={valor}
-              disabled={guardando}
-              onChange={(e) => setValor(e.target.value)}
-              onBlur={(e) => guardar(e.target.value)}
-            />
+            <strong className="os-raven-directo">{raw ?? '—'}</strong>
             <span className="os-raven-sobre">de {RAVEN_MAXIMO}</span>
           </span>
-        </label>
+        </span>
 
         <div className="os-raven-derivados">
           <span className="os-hoja-par">
@@ -207,11 +166,14 @@ export default function Raven({
           </span>
         </div>
 
-        <Origen origen={origen} sesion={sesion} raw={raw} tardo={tardo} />
-
-        {/* El reloj y el enlace, contra el margen derecho de la misma línea. */}
+        {/* El reloj, el puntaje y el enlace contra el margen derecho de esta
+            misma línea, debajo de la línea de la cabecera. */}
         {derecha && <div className="os-raven-derecha">{derecha}</div>}
       </div>
+
+      {/* Cuándo terminó y cuántas contestó, debajo del puntaje y contra el
+          margen izquierdo: es la letra chica del número que está arriba. */}
+      <Origen origen={origen} sesion={sesion} raw={raw} tardo={tardo} />
 
       {/* La unidad va una vez, en el encabezado: repetir "aciertos" y "de cada
           cien candidatos" en las cinco filas era lo que hacía ancha la tabla. */}
@@ -239,8 +201,6 @@ export default function Raven({
 
       {!suyo && <p className="os-raven-rango">{texto}</p>}
 
-      {error && <p className="os-form-error">{error}</p>}
-
       {/* Tres líneas y no tres párrafos: lo que hay que saber para leer los dos
           números y de dónde salen. El detalle de la frecuencia de nuestros
           candidatos se lee en Configuración, que es donde se corrige. */}
@@ -249,7 +209,7 @@ export default function Raven({
           <>
             <p>
               <strong>Percentil {p}.</strong> De cada cien que rindieron, {Math.round(p)}{' '}
-              sacaron menos puntos. Acertó {valor || 0} de {RAVEN_MAXIMO}.
+              sacaron menos puntos.
             </p>
             <p>
               <strong>
@@ -266,9 +226,6 @@ export default function Raven({
             <strong>desvíos</strong>, a qué distancia del promedio quedó.
           </p>
         )}
-        <p className="os-benziger-aviso">
-          El percentil sale del baremo del manual y arriba de 28 aciertos es una proyección.
-        </p>
       </div>
     </div>
   );

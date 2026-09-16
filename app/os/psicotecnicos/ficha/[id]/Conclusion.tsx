@@ -50,6 +50,8 @@ export default function Conclusion({
   const [hecho, setHecho] = useState(false);
 
   const sinCambios = valor === (recomendacion ?? '') && texto === (notas ?? '');
+  /** Tenía nivel y se lo sacaron: guardar es quitarlo, no firmar. */
+  const quitando = Boolean(recomendacion) && !valor;
 
   async function cargar() {
     setError(null);
@@ -108,6 +110,21 @@ export default function Conclusion({
           );
         })}
       </div>
+      {/* Explícito además del segundo toque: que volver a apretar el nivel lo
+          saca no se adivina, y había evaluaciones que quedaban con una
+          recomendación que nadie podía quitar. */}
+      {valor && (
+        <button
+          type="button"
+          className="os-agregar-mas-datos"
+          onClick={() => {
+            setValor('');
+            setHecho(false);
+          }}
+        >
+          Quitar la recomendación
+        </button>
+      )}
 
       <label className="os-conclusion-notas">
         <span className="os-dato-rotulo">
@@ -141,12 +158,12 @@ export default function Conclusion({
           onClick={cargar}
           disabled={guardando || sinCambios}
         >
-          {guardando ? 'Firmando…' : 'Firmar informe'}
+          {guardando ? 'Guardando…' : quitando ? 'Guardar sin recomendación' : 'Firmar informe'}
         </button>
         {error ? (
           <span className="os-form-error">{error}</span>
         ) : hecho ? (
-          <span className="os-form-ok">Informe firmado.</span>
+          <span className="os-form-ok">{valor ? 'Informe firmado.' : 'Guardado sin recomendación.'}</span>
         ) : (
           !sinCambios && <span className="os-columna-monto">Hay cambios sin cargar.</span>
         )}

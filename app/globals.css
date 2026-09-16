@@ -495,7 +495,6 @@ body {
 .tabla.entregados .c-pedido,
 .tabla.entregados .c-name,
 .tabla.entregados .c-evaluadora,
-.tabla.entregados .cobro-txt,
 .tabla.entregados .reco-txt {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -753,9 +752,6 @@ body {
   .c-cobro[data-label]::before {
     content: attr(data-label) ': ';
     color: var(--muted);
-  }
-  .tabla.entregados .cobro-txt {
-    white-space: normal;
   }
 }
 
@@ -5639,12 +5635,40 @@ body {
 
 
 /* ---------- Facturación de cada evaluación ----------
-   Los dos campos (facturado y pagado) se muestran como un solo estado, igual
-   que la recomendación: un punto de color y una palabra. */
+   Los dos campos (facturado y pagado) se muestran como un solo estado, en una
+   pastilla del color de ese estado: gris sin facturar, rojo impago y verde
+   pagado. Con un punto de color al lado de la palabra, los tres estados se
+   leían igual al recorrer la columna. */
+.cobro-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.cobro-tag.green {
+  background: #e4ede4;
+  color: #33553c;
+}
+
+.cobro-tag.red {
+  background: #f3e0de;
+  color: #7c3230;
+}
+
+.cobro-tag.gray {
+  background: #eceae5;
+  color: #6b6862;
+}
+
 .c-cobro {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   color: var(--ink-soft);
 }

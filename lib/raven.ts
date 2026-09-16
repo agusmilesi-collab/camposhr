@@ -122,6 +122,26 @@ export function puntajesPorRango(rangos: Rango[] = RANGOS): Map<string, { desde:
 export const SIN_MEDICION = 'Sin medición';
 
 /** Cuánto tardó, escrito como el reloj del test: minutos y segundos. */
+/**
+ * Cuánto tardó una sesión, contado entre las dos marcas del servidor.
+ *
+ * Con el tiempo agotado se corta en los minutos del test: el cierre llega un
+ * instante después del vencimiento, y un "50:01" se lee como que el reloj la
+ * dejó seguir de largo.
+ */
+export function duracionDeSesion(
+  iniciado: string | null,
+  terminado: string | null,
+  cierre: string | null
+): number | null {
+  if (!iniciado || !terminado) return null;
+  const segundos = Math.max(
+    0,
+    Math.round((new Date(terminado).getTime() - new Date(iniciado).getTime()) / 1000)
+  );
+  return cierre === 'tiempo' ? Math.min(segundos, MINUTOS * 60) : segundos;
+}
+
 export function duracion(segundos: number | null): string | null {
   if (segundos === null || !Number.isFinite(segundos)) return null;
   const m = Math.floor(segundos / 60);

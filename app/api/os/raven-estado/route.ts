@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { select } from '@/lib/supabase';
+import { duracionDeSesion } from '@/lib/raven';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -44,9 +45,9 @@ export async function GET(req: Request) {
 
   try {
     const [sesiones, medidas] = await Promise.all([
-      select<{ iniciado_at: string | null; terminado_at: string | null }>(
+      select<{ iniciado_at: string | null; terminado_at: string | null; cierre: string | null }>(
         'raven_sesiones',
-        `select=iniciado_at,terminado_at&evaluacion_id=eq.${id}&order=creado_at.desc&limit=1`
+        `select=iniciado_at,terminado_at,cierre&evaluacion_id=eq.${id}&order=creado_at.desc&limit=1`
       ),
       select<{ raw: number | null; percentil: number | null; resultado: string | null }>(
         'raven',
@@ -68,15 +69,7 @@ export async function GET(req: Request) {
       // Mientras corre, cuándo arrancó; entregado, cuánto le llevó. Son los dos
       // datos que la hoja muestra en la misma columna.
       iniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
-      duracion:
-        s?.terminado_at && s.iniciado_at
-          ? Math.max(
-              0,
-              Math.round(
-                (new Date(s.terminado_at).getTime() - new Date(s.iniciado_at).getTime()) / 1000
-              )
-            )
-          : null,
+      duracion: duracionDeSesion(s?.iniciado_at ?? null, s?.terminado_at ?? null, s?.cierre ?? null),
       resultado: medidas[0] ?? null,
     });
   } catch {

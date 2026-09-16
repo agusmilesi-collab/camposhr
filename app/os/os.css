@@ -7174,6 +7174,15 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
   font-variant-numeric: tabular-nums;
 }
 
+/* El puntaje, ahora un número y no un campo: del alto que tenía el recuadro,
+   para que la línea no cambie de alto. `os-raven-puntaje` ya es el sello de la
+   hoja de entrevista, así que este lleva su propio nombre. */
+.os-raven-directo {
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 34px;
+}
+
 .os-raven-sobre {
   color: var(--os-suave);
   font-size: 0.8rem;
@@ -10325,6 +10334,8 @@ button.os-test-estado:hover:not(:disabled) {
  * el número en cada renglón.
  */
 .os-raven-origen {
+  display: block;
+  margin-top: 8px;
   font-size: 0.78rem;
   color: var(--os-suave);
 }
