@@ -83,14 +83,14 @@ function dd(d: number, adjd: number): string {
 }
 
 /** Populares esperadas según la cantidad de respuestas del protocolo. */
-function pEsperado(r: number): [number, number] {
+export function pEsperado(r: number): [number, number] {
   if (r < 17) return [4, 6];
   if (r <= 28) return [5, 7];
   return [6, 9];
 }
 
 /** Contenidos humanos esperados, por cantidad de respuestas y estilo. */
-function hEsperado(r: number, estilo: string): [number, number] {
+export function hEsperado(r: number, estilo: string): [number, number] {
   if (r < 17) return estilo === 'Introversivo' ? [4, 6] : [2, 4];
   if (r <= 27) {
     if (estilo === 'Introversivo') return [5, 8];
@@ -346,7 +346,7 @@ export const TEXTOS = {
   'w-bajo': {
     area: 'Cómo procesa la información',
     indice: 'W',
-    cuando: 'W en menos del 30 % de las localizaciones, con alguna D',
+    cuando: 'W por debajo del 35 % de las localizaciones (Zulliger: menos de 2)',
     zulliger: {
       dice: [
         'Tiene la visión global disminuida y absorbe los datos del entorno desde los detalles.',
@@ -373,7 +373,7 @@ export const TEXTOS = {
   'w-alto': {
     area: 'Cómo procesa la información',
     indice: 'W',
-    cuando: 'W en más del 50 % de las localizaciones',
+    cuando: 'W por encima del 35 % de las localizaciones (Zulliger: más de 5)',
     zulliger: {
       dice: [
         'Busca abarcar la situación completa y consigue una visión global.',
@@ -391,7 +391,7 @@ export const TEXTOS = {
   'dd-alto': {
     area: 'Cómo procesa la información',
     indice: 'Dd',
-    cuando: 'Dd en más del 5 % de las localizaciones',
+    cuando: 'Dd por encima del 5 % de las localizaciones (Zulliger: más de 2)',
     zulliger: {
       dice: [
         'Está muy preocupada por la exactitud y tiene miedo a cometer errores, y por eso se fija en cuestiones que para otros pueden ser insignificantes. Este indicador puede mostrar falta de confianza en sí misma.',
@@ -417,8 +417,8 @@ export const TEXTOS = {
   },
   'd-bajo': {
     area: 'Cómo procesa la información',
-    indice: 'W:D:Dd',
-    cuando: 'D en menos del 60 % de las localizaciones',
+    indice: 'D',
+    cuando: 'D por debajo del 60 % de las localizaciones (Zulliger: menos de 3)',
     dice: [
       'Se le puede perder de vista algún detalle que para la mayoría de las personas es obvio de ver.',
       'Puede pasar por alto algún dato que para la mayoría está a la vista.',
@@ -433,7 +433,7 @@ export const TEXTOS = {
   'localizacion-ok': {
     area: 'Cómo procesa la información',
     indice: 'W:D:Dd',
-    cuando: 'W cerca del 35 %, D cerca del 60 % y Dd hasta el 5 %',
+    cuando: 'W cerca del 35 %, D cerca del 60 % y Dd hasta el 5 % (Zulliger: W de 2 a 5, D de 3 a 6, Dd hasta 2)',
     /* En el Zulliger lo esperado son cantidades y no porcentajes: W de 2 a 5,
        D de 3 a 6 y Dd de 0 a 2. Definido por las psicólogas el 10/9/2026. */
     zulliger: {
@@ -594,7 +594,7 @@ export const TEXTOS = {
   'd-alto': {
     area: 'Cómo procesa la información',
     indice: 'D',
-    cuando: 'D por encima de lo esperado',
+    cuando: 'D por encima del 60 % de las localizaciones (Zulliger: más de 6)',
     dice: [''],
     recomienda: [
       'Cuando sea necesario profundizar en una situación, ayudarlo a mirar más allá de la información evidente y a considerar otros datos relevantes antes de avanzar.',
@@ -2878,30 +2878,34 @@ export function leer(
         sumar('localizacion-ok', marca);
       }
     } else {
-      if (wPct < 0.35 && dLoc) {
+      /* Cada componente tiene una sola lectura, y las tres bandas no se pisan.
+         Lo esperado es W cerca del 35 %, D cerca del 60 % y Dd hasta el 5 %;
+         "cerca" es cinco puntos para cada lado. Antes W bajo cortaba en 35 % y
+         W alto en 50 %, así que un protocolo con W en 34,8 % salía a la vez
+         como W bajo y como localización correcta: el mismo código dos veces con
+         porcentajes distintos, que es lo que pidieron sacar el 17/9/2026. */
+      const CERCA = 0.05;
+      const wOk = Math.abs(wPct - 0.35) <= CERCA;
+      const dOk = Math.abs(dPct - 0.6) <= CERCA;
+      const ddOk = ddPct <= 0.05;
+      if (!wOk && wPct < 0.35 && dLoc) {
         sumar('w-bajo', marca);
-      } else if (wPct > 0.5) {
+      } else if (!wOk && wPct > 0.35) {
+        // Por encima de lo esperado la visión global está elevada, y eso juega
+        // a favor: la lectura lo dice y no recomienda nada.
         sumar('w-alto', marca);
       }
-      if (dPct < 0.6) {
+      if (!dOk && dPct < 0.6) {
         sumar('d-bajo', marca);
+      } else if (!dOk && dPct > 0.6) {
+        // D por encima de lo esperado también se informa en Rorschach, como en
+        // Zulliger: se queda en lo evidente y no profundiza.
+        sumar('d-alto', marca);
       }
-      /* Lo esperado es hasta el 5 % de las respuestas; pasado eso, Dd está
-         aumentado, sin ninguna otra condición. Definido por las psicólogas el
-         9/9/2026 y confirmado el 10/9. Con este corte la lectura sale en siete
-         de cada diez protocolos de los 51 cargados, contra cuatro de cada diez
-         con el 15 % que regía antes: se los avisó y lo dejaron igual. */
-      if (ddPct > 0.05) {
+      if (!ddOk) {
         sumar('dd-alto', `Dd ${ddLoc}`);
       }
-      /* El reparto parejo: W cerca del 35 %, D cerca del 60 % y Dd hasta el 5 %.
-         Es "aproximadamente" y no "al menos", que era como estaba: los tres
-         números reparten el mismo total, así que pedir W ≥ 35 y D ≥ 60 solo se
-         cumple con el reparto exacto y cualquier desvío rompe uno de los dos.
-         Definido por las psicólogas el 10/9/2026, sabiendo que aun con la
-         tolerancia la lectura sale en 1 de los 50 protocolos cargados. */
-      const CERCA = 0.05;
-      if (Math.abs(wPct - 0.35) <= CERCA && Math.abs(dPct - 0.6) <= CERCA && ddPct <= 0.05) {
+      if (wOk && dOk && ddOk) {
         sumar('localizacion-ok', marca);
       }
     }

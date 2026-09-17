@@ -652,6 +652,12 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
         {
           ravenPercentil: f.raven?.percentil ?? null,
           ravenRaw: f.raven?.raw ?? null,
+          /* El estrato del potencial alimenta un indicador de Liderazgo, así
+             que viaja como el Raven: lo carga la evaluadora y no sale del
+             sumario. */
+          potencial: f.discursivo
+            ? { nivel: f.discursivo.nivel, celda: f.discursivo.discurso_celda }
+            : null,
           rangos,
           pesos,
           cortesCompetencias,
