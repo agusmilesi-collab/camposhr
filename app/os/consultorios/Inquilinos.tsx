@@ -35,6 +35,8 @@ import {
   type Movimiento,
 } from '@/lib/consultorios-calculo';
 import { mandar, pesos } from './acciones';
+import Facturar, { type Facturable, type FacturaEmitida } from './Facturar';
+import type { Emisora } from '@/lib/facturas-tipos';
 
 export default function Inquilinos({
   inquilinos,
@@ -42,16 +44,36 @@ export default function Inquilinos({
   movimientos,
   periodo,
   hoy,
+  facturacion,
 }: {
   inquilinos: Inquilino[];
   contratos: Contrato[];
   movimientos: Movimiento[];
   periodo: string;
   hoy: string;
+  /**
+   * Lo que hace falta para facturar el mes.
+   *
+   * Va adentro de esta tabla y no en un panel aparte: acá está lo que sumó cada
+   * uno, y facturar es tildar a quién se le emite.
+   */
+  facturacion?: {
+    cola: Facturable[];
+    emisoras: Emisora[];
+    facturas: FacturaEmitida[];
+  };
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+
+  /**
+   * Quiénes tienen cargos sin facturar este mes. Arrancan todos tildados, que
+   * es lo que se hace al cerrar: emitir a todos.
+   */
+  const conCargos = facturacion?.cola.map((c) => c.id) ?? [];
+  const [fuera, setFuera] = useState<string[]>([]);
+  const aFacturar = conCargos.filter((id) => !fuera.includes(id));
 
   const pct = recargoDelDia(hoy, periodo);
   const delMes = movimientos.filter((m) => m.periodo === periodo);
@@ -170,7 +192,8 @@ export default function Inquilinos({
                 8/9/2026: acá se mira la lista para saber a quién hay que
                 reclamarle, y el teléfono se necesita recién al abrirlo. */}
             <colgroup>
-              <col style={{ width: '36%' }} />
+              {facturacion && <col style={{ width: '4%' }} />}
+              <col style={{ width: facturacion ? '32%' : '36%' }} />
               <col style={{ width: '12%' }} />
               <col style={{ width: '18%' }} />
               <col style={{ width: '16%' }} />
@@ -178,6 +201,8 @@ export default function Inquilinos({
             </colgroup>
             <thead>
               <tr>
+                {/* La tilde dice a quién se le emite factura este mes. */}
+                {facturacion && <th />}
                 <th>Nombre</th>
                 <th className="os-tabla-num">Horas</th>
                 <th className="os-tabla-num">Reservas</th>
@@ -188,6 +213,28 @@ export default function Inquilinos({
             <tbody>
               {filas.map((f) => (
                 <tr key={f.i.id} className={f.i.activo ? undefined : 'os-cerrado-fila'}>
+                  {facturacion && (
+                    <td className="os-tabla-tilde">
+                      {conCargos.includes(f.i.id) ? (
+                        <input
+                          type="checkbox"
+                          aria-label={`Facturar a ${f.i.nombre}`}
+                          checked={aFacturar.includes(f.i.id)}
+                          onChange={() =>
+                            setFuera((prev) =>
+                              prev.includes(f.i.id)
+                                ? prev.filter((x) => x !== f.i.id)
+                                : [...prev, f.i.id]
+                            )
+                          }
+                        />
+                      ) : f.cargos > 0 ? (
+                        <span className="os-dato-falta" title="Ya facturado">
+                          ✓
+                        </span>
+                      ) : null}
+                    </td>
+                  )}
                   {/* El nombre es el enlace, no un botón al final de la fila:
                       es lo que se busca con la vista y lo que se toca. Y el
                       enlace y no la fila entera, para poder seleccionar un
@@ -204,6 +251,7 @@ export default function Inquilinos({
                 </tr>
               ))}
               <tr>
+                {facturacion && <td />}
                 <td>
                   <strong>Total</strong>
                 </td>
@@ -214,6 +262,17 @@ export default function Inquilinos({
               </tr>
             </tbody>
           </table>
+        )}
+
+        {facturacion && inquilinos.length > 0 && (
+          <Facturar
+            cola={facturacion.cola}
+            emisoras={facturacion.emisoras}
+            facturas={facturacion.facturas}
+            periodo={periodo}
+            hoy={hoy}
+            seleccion={aFacturar}
+          />
         )}
       </div>
 
