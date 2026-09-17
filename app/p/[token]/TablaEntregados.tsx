@@ -81,6 +81,14 @@ export default function TablaEntregados({
    */
   conInforme?: boolean;
 }) {
+  /**
+   * Lo escrito en el buscador.
+   *
+   * Filtra por candidato, pedido, evaluadora y recomendación a la vez: quien
+   * busca escribe lo que se acuerda, y no siempre es el nombre. Con treinta
+   * informes entregados, recorrer la tabla con la vista ya no alcanza.
+   */
+  const [busca, setBusca] = useState('');
   /** La fila cuyo "Ver informe" se tocó sin informe: muestra "Próximamente" un momento. */
   const [avisando, setAvisando] = useState<string | null>(null);
   const [orden, setOrden] = useState<{ col: Clave; asc: boolean }>({
@@ -88,8 +96,21 @@ export default function TablaEntregados({
     asc: false,
   });
 
+  // Sin tildes y en minúsculas de los dos lados: "Martinez" tiene que encontrar
+  // a "Martínez", que es como está cargado.
+  const plano = (t: string) =>
+    t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const pedido = plano(busca.trim());
+  const encontradas = pedido
+    ? filas.filter((f) =>
+        plano([f.nombre, f.puesto, f.evaluadora ?? '', f.recoCompleta ?? ''].join(' ')).includes(
+          pedido
+        )
+      )
+    : filas;
+
   // A igualdad de valor manda el nombre, así el orden no baila entre clics.
-  const ordenadas = [...filas].sort((a, b) => {
+  const ordenadas = [...encontradas].sort((a, b) => {
     const d = comparar(a, b, orden.col);
     if (d !== 0) return orden.asc ? d : -d;
     return a.nombre.localeCompare(b.nombre, 'es');
@@ -124,6 +145,28 @@ export default function TablaEntregados({
   };
 
   return (
+    <>
+      {/* El buscador arriba de la tabla, con la cuenta al lado: dice cuántos
+          quedaron sin tener que contarlos. */}
+      <div className="tabla-buscar">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M16 16l4.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+        <input
+          type="search"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por candidato, pedido o evaluadora"
+          aria-label="Buscar en los informes entregados"
+        />
+        {busca.trim() && (
+          <span className="tabla-buscar-cuenta">
+            {encontradas.length} de {filas.length}
+          </span>
+        )}
+      </div>
+
     <div className="tabla entregados">
       <div className={`tr th${conCobro ? '' : ' sin-cobro'}${conInforme ? '' : ' sin-informe'}`}>
         {COLUMNAS.map(({ clave, titulo }) => cabecera(clave, titulo))}
@@ -206,6 +249,11 @@ export default function TablaEntregados({
           )}
         </div>
       ))}
+
+      {ordenadas.length === 0 && (
+        <p className="empty">Ningún informe entregado coincide con “{busca.trim()}”.</p>
+      )}
     </div>
+    </>
   );
 }

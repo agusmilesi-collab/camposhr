@@ -8302,3 +8302,37 @@ body {
 .kb-pie {
   margin-top: 16px;
 }
+
+/* El buscador de la tabla de entregados: una caja con la lupa adentro, del
+   ancho de la tabla, y la cuenta de lo que quedó a la derecha. */
+.tabla-buscar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--muted);
+}
+
+.tabla-buscar:focus-within {
+  border-color: var(--st-blue);
+}
+
+.tabla-buscar input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--ink);
+  outline: none;
+}
+
+.tabla-buscar-cuenta {
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
