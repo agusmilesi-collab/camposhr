@@ -1,4 +1,4 @@
-import { listarCotizaciones, formatoImporte, formatoFecha, ABIERTOS } from '@/lib/cotizaciones';
+import { listarCotizaciones, formatoImporte, formatoFecha, ABIERTOS, GANADOS } from '@/lib/cotizaciones';
 import CopyLink from '../informes/CopyLink';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,7 @@ export default async function Cotizaciones() {
   const todas = await listarCotizaciones();
 
   const abiertas = todas.filter((c) => ABIERTOS.includes(c.estado)).length;
-  const aprobadas = todas.filter((c) => c.estado === 'Aprobada');
+  const aprobadas = todas.filter((c) => GANADOS.includes(c.estado));
   const montoAprobado = aprobadas.reduce((a, c) => a + c.importe, 0);
 
   return (

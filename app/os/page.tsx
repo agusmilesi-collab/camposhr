@@ -6,7 +6,8 @@ import Tablero from './Tablero';
 import { listarCotizaciones } from '@/lib/cotizaciones';
 import { equipo, quienSoy } from '@/lib/identidad';
 import { pendientes } from '@/lib/pendientes';
-import { ABIERTOS } from '@/lib/cotizaciones';
+import { ABIERTOS, DIAS_SEGUIMIENTO } from '@/lib/cotizaciones';
+import { diasEntre } from '@/lib/comercial-tipos';
 import { diaDe, hoy as diaDeHoy } from '@/lib/hora';
 import { listarEvaluaciones } from '@/lib/psicotecnicos';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
@@ -97,6 +98,27 @@ export default async function Inicio() {
     .filter((e) => diaDe(e.fechaEntrevista) === dia && sinTomar(e.etapa))
     .map((e) => e.id);
 
+  /**
+   * Las propuestas que hay que seguir, que entran solas a la columna Hoy.
+   *
+   * Una propuesta enviada y sin respuesta se enfría sin que nadie se entere, y
+   * el embudo no avisa: hay que entrar a mirarlo. Se cuentan los días desde el
+   * envío, o desde el último seguimiento cuando ya se hizo uno, y a los tres
+   * aparece el aviso. Lo ven las tres, porque seguir una propuesta no es de
+   * nadie en particular.
+   */
+  const seguimientos = cotizaciones
+    .filter((c) => c.estado === 'Enviada')
+    .map((c) => ({
+      id: c.id,
+      cliente: c.cliente,
+      concepto: c.concepto,
+      token: c.token,
+      dias: diasEntre(c.seguimientoEl ?? c.fecha, dia),
+    }))
+    .filter((s) => s.dias >= DIAS_SEGUIMIENTO)
+    .sort((a, b) => b.dias - a.dias);
+
   const cuentas = await cuentasDeLaBarra();
 
   return (
@@ -112,7 +134,7 @@ export default async function Inicio() {
             Ver el pipeline
           </Link>
         </div>
-        {mios.length === 0 ? (
+        {mios.length === 0 && seguimientos.length === 0 ? (
           <p className="os-vacio">
             {yo.alcance === 'todo'
               ? 'No hay evaluaciones abiertas.'
@@ -123,6 +145,7 @@ export default async function Inicio() {
             filas={mios}
             citasDeHoy={citasDeHoy}
             conEvaluadora={yo.alcance === 'todo'}
+            seguimientos={seguimientos}
           />
         )}
       </section>

@@ -135,10 +135,13 @@ export function AFacturar({
   pendientes,
   emisoras,
   quien,
+  conRotulo = true,
 }: {
   pendientes: Facturable[];
   emisoras: Emisora[];
   quien: string;
+  /** El rótulo "Para facturar" sobra cuando lo dice la pestaña de arriba. */
+  conRotulo?: boolean;
 }) {
   const grupos = useMemo(() => {
     const m = new Map<string, Facturable[]>();
@@ -162,7 +165,7 @@ export function AFacturar({
 
   return (
     <>
-      <div className="os-rotulo-bloque">Para facturar</div>
+      {conRotulo && <div className="os-rotulo-bloque">Para facturar</div>}
       {grupos.map(([empresaId, suyas]) => (
         <GrupoCliente
           key={empresaId}
@@ -410,18 +413,29 @@ function GrupoCliente({
  * para saber qué reclamar. Arriba lo que está sin cobrar, con su total, que es
  * lo único que pide una acción; abajo lo cobrado, que se consulta.
  */
-export function Emitidas({ facturas }: { facturas: Factura[] }) {
-  const sinCobrar = facturas.filter((f) => !f.cobradaAt);
-  const cobradas = facturas.filter((f) => f.cobradaAt);
+export function Emitidas({
+  facturas,
+  solo,
+}: {
+  facturas: Factura[];
+  /** Qué mitad mostrar, cuando cada una vive en su pestaña. */
+  solo?: 'sin-cobrar' | 'cobrado';
+}) {
+  const sinCobrar = solo === 'cobrado' ? [] : facturas.filter((f) => !f.cobradaAt);
+  const cobradas = solo === 'sin-cobrar' ? [] : facturas.filter((f) => f.cobradaAt);
   const pendiente = sinCobrar.reduce((n, f) => n + (f.importe ?? 0), 0);
 
-  if (facturas.length === 0) {
+  if (sinCobrar.length === 0 && cobradas.length === 0) {
     return (
       <>
-        <div className="os-rotulo-bloque">Facturado</div>
+        {!solo && <div className="os-rotulo-bloque">Facturado</div>}
         <div className="os-panel">
           <p className="os-vacio">
-            Todavía no hay ninguna factura. Las 24 de Airtable entran con la migración.
+            {solo === 'sin-cobrar'
+              ? 'No queda nada por cobrar.'
+              : solo === 'cobrado'
+                ? 'Todavía no se cobró ninguna.'
+                : 'Todavía no hay ninguna factura.'}
           </p>
         </div>
       </>
@@ -432,7 +446,7 @@ export function Emitidas({ facturas }: { facturas: Factura[] }) {
     <>
       {sinCobrar.length > 0 && (
         <>
-          <div className="os-rotulo-bloque">Facturado y sin cobrar</div>
+          {!solo && <div className="os-rotulo-bloque">Facturado y sin cobrar</div>}
           <div className="os-panel">
             <TablaEmitidas facturas={sinCobrar} />
             <div className="os-resumen-linea">
@@ -451,7 +465,7 @@ export function Emitidas({ facturas }: { facturas: Factura[] }) {
 
       {cobradas.length > 0 && (
         <>
-          <div className="os-rotulo-bloque">Cobrado</div>
+          {!solo && <div className="os-rotulo-bloque">Cobrado</div>}
           <div className="os-panel">
             <TablaEmitidas facturas={cobradas} />
           </div>

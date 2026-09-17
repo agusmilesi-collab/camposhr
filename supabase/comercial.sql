@@ -8,11 +8,12 @@
 -- El documento que ve el cliente sigue siendo un HTML estático en
 -- `public/q/<token>.html`. Lo que se mudó acá es el índice, no la propuesta.
 --
--- Los cuatro estados son el embudo entero:
---   Lead     -> hay interés, todavía no se mandó nada.
---   Enviada  -> la propuesta está del lado del cliente.
---   Aprobada -> se cerró. Es lo que entra a la cuenta de resultado.
---   Perdida  -> no se cerró, por lo que sea.
+-- Los cinco estados son el embudo entero:
+--   Lead      -> hay interés, todavía no se mandó nada.
+--   Enviada   -> la propuesta está del lado del cliente.
+--   Aprobada  -> se cerró. Es lo que entra a la cuenta de resultado.
+--   Entregada -> se cerró y el trabajo ya se hizo. Sigue contando como ingreso.
+--   Perdida   -> no se cerró, por lo que sea.
 
 create table if not exists public.cotizaciones (
   id         uuid primary key default gen_random_uuid(),
@@ -25,7 +26,7 @@ create table if not exists public.cotizaciones (
   moneda     text not null default 'ARS',
   version    text not null default '1.0',
   estado     text not null default 'Lead'
-             check (estado in ('Lead','Enviada','Aprobada','Perdida')),
+             check (estado in ('Lead','Enviada','Aprobada','Entregada','Perdida')),
   fecha      date not null default current_date,
   -- El enlace secreto del documento, cuando ya hay uno escrito.
   token      text unique,
@@ -33,6 +34,10 @@ create table if not exists public.cotizaciones (
   nota       text,
   -- Por qué se perdió. Es lo único que hace útil revisar las perdidas.
   motivo     text,
+  -- La última vez que se le movió el amperímetro al cliente. La home avisa a
+  -- los tres días de la fecha de envío, y a los tres días de este si ya se
+  -- siguió una vez: sin la fecha, el aviso volvería cada vez que se recarga.
+  seguimiento_el date,
   created_at timestamptz not null default now(),
   actualizado_at timestamptz not null default now()
 );

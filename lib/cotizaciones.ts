@@ -21,6 +21,8 @@ import type { Estado, Objecion } from '@/lib/comercial-tipos';
 
 export {
   ABIERTOS,
+  DIAS_SEGUIMIENTO,
+  GANADOS,
   ESTADOS,
   OBJECIONES,
   SERVICIOS,
@@ -53,16 +55,19 @@ export type Cotizacion = {
   motivo: string | null;
   /** Con cuál de las cinco objeciones se perdió. */
   objecion: Objecion | null;
+  /** La última vez que se siguió, cuando ya se siguió alguna. */
+  seguimientoEl: string | null;
 };
 
-type Fila = Omit<Cotizacion, 'importe' | 'empresaId'> & {
+type Fila = Omit<Cotizacion, 'importe' | 'empresaId' | 'seguimientoEl'> & {
   importe: string | number;
   empresa_id: string | null;
+  seguimiento_el: string | null;
 };
 
 const CAMPOS =
   'id,empresa_id,cliente,concepto,importe,moneda,version,estado,fecha,token,archivo,nota,motivo,' +
-  'objecion';
+  'objecion,seguimiento_el';
 
 function armar(f: Fila): Cotizacion {
   return {
@@ -80,6 +85,7 @@ function armar(f: Fila): Cotizacion {
     nota: f.nota,
     motivo: f.motivo,
     objecion: f.objecion,
+    seguimientoEl: f.seguimiento_el,
   };
 }
 

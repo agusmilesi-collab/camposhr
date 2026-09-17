@@ -1,6 +1,6 @@
 import Shell from '../Shell';
 import { NuevaOportunidad, Tablero } from './Embudo';
-import { ABIERTOS, formatoImporte, listarCotizaciones } from '@/lib/cotizaciones';
+import { ABIERTOS, GANADOS, formatoImporte, listarCotizaciones } from '@/lib/cotizaciones';
 import { quienSoy } from '@/lib/identidad';
 import { listarClientes } from '@/lib/clientes';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
@@ -15,7 +15,7 @@ export default async function Cotizaciones() {
   ]);
 
   const abiertas = todas.filter((c) => ABIERTOS.includes(c.estado));
-  const ganadas = todas.filter((c) => c.estado === 'Aprobada');
+  const ganadas = todas.filter((c) => GANADOS.includes(c.estado));
   const perdidas = todas.filter((c) => c.estado === 'Perdida');
   const suma = (xs: typeof todas) => xs.reduce((n, c) => n + c.importe, 0);
 
@@ -36,8 +36,8 @@ export default async function Cotizaciones() {
       <div className="os-encabezado">
         <h1>El embudo</h1>
         <p>
-          Se mueve arrastrando la tarjeta a la columna. Lo que llega a Aprobada
-          aparece en Costos como ingreso.
+          Se mueve arrastrando la tarjeta a la columna. Lo que llega a Aprobada o
+          a Entregada aparece en Costos como ingreso.
         </p>
       </div>
 
@@ -53,7 +53,7 @@ export default async function Cotizaciones() {
         <div className="os-cifra">
           <div className="os-cifra-rotulo">Ganado</div>
           <div className="os-cifra-valor">{formatoImporte(suma(ganadas))}</div>
-          <div className="os-cifra-pie">{ganadas.length} aprobadas.</div>
+          <div className="os-cifra-pie">{ganadas.length} aprobadas o entregadas.</div>
         </div>
         <div className="os-cifra">
           <div className="os-cifra-rotulo">Perdido</div>

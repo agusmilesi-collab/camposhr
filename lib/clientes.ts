@@ -154,7 +154,9 @@ export async function listarClientes(): Promise<Cliente[]> {
     activa:
       e.activa !== false &&
       ((e.pedidos ?? []).some((p) => p.estado === 'En curso') ||
-        (e.cotizaciones ?? []).some((c) => c.estado === 'Enviada' || c.estado === 'Aprobada')),
+        (e.cotizaciones ?? []).some(
+          (c) => c.estado === 'Enviada' || c.estado === 'Aprobada' || c.estado === 'Entregada'
+        )),
     pedidos: e.pedidos?.length ?? 0,
     susPedidos: (e.pedidos ?? [])
       .map((p) => ({

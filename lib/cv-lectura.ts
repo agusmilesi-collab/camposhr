@@ -155,6 +155,40 @@ function nombreDe(lineas: string[]): string {
   return '';
 }
 
+/**
+ * El nombre escrito como se escribe un nombre: "JUAN TOMÁS BELTRÁN" queda
+ * "Juan Tomás Beltrán".
+ *
+ * Muchos CV encabezan con el nombre en mayúsculas, y así entraba al sistema y
+ * después aparecía gritado en el tablero, en la ficha y en el informe. Se
+ * tocan solo las palabras que vienen enteras en mayúscula o enteras en
+ * minúscula: una que ya mezcla ("McDonald", "DiCarlo") está escrita a
+ * propósito y se respeta.
+ *
+ * Las partículas van en minúscula salvo al principio ("de la Fuente", pero
+ * "De la Fuente" si con eso arranca), y después de guion o apóstrofo se vuelve
+ * a levantar la mayúscula ("D'Angelo", "Sánchez-Ruiz").
+ */
+export function nombrePropio(texto: string): string {
+  const particulas = new Set(PARTICULA.split('|'));
+  const mayusculaInicial = (p: string) =>
+    p.replace(/(^|[-'’])([\p{Ll}\p{Lu}])/gu, (_, borde, letra) => borde + letra.toLocaleUpperCase('es'));
+
+  return texto
+    .trim()
+    .split(/\s+/)
+    .map((palabra, i) => {
+      const tieneMinuscula = /\p{Ll}/u.test(palabra);
+      const tieneMayuscula = /\p{Lu}/u.test(palabra);
+      // Una palabra con mayúsculas y minúsculas ya está escrita a mano.
+      if (tieneMinuscula && tieneMayuscula) return palabra;
+      const baja = palabra.toLocaleLowerCase('es');
+      if (i > 0 && particulas.has(baja)) return baja;
+      return mayusculaInicial(baja);
+    })
+    .join(' ');
+}
+
 export function leer(lineas: string[]): LeidoDeCv {
   const todo = lineas.join(' \n ');
   /**
@@ -166,7 +200,7 @@ export function leer(lineas: string[]): LeidoDeCv {
   const mail = todo.replace(/\s*@\s*/g, '@').match(/[\w.+-]+@[\w-]+\.[\w.-]{2,}/)?.[0] ?? '';
   const telefono = telefonoDe(todo);
 
-  const nombre = nombreDe(lineas);
+  const nombre = nombrePropio(nombreDe(lineas));
 
   return { nombre, mail, telefono };
 }

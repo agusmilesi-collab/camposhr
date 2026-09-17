@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Shell from '../../Shell';
 import { AFacturar, Emitidas } from './Facturacion';
 import {
@@ -7,7 +8,7 @@ import {
   listarFacturas,
 } from '@/lib/facturas';
 import { esDePsicotecnicos, totalDe } from '@/lib/facturas-tipos';
-import { esMia, quienSoy } from '@/lib/identidad';
+import { equipo, esMia, quienSoy } from '@/lib/identidad';
 import { cuentasDeLaBarra } from '../datos';
 
 export const dynamic = 'force-dynamic';
@@ -28,17 +29,37 @@ export const dynamic = 'force-dynamic';
  * hay que marcar nada, y por eso no depende de que el informe esté escrito: se
  * factura el trabajo hecho.
  */
-export default async function Facturacion() {
-  const [yo, pendientes, facturas, emisoras, cuentas] = await Promise.all([
+export default async function Facturacion({
+  searchParams,
+}: {
+  searchParams?: { ver?: string };
+}) {
+  const [yo, miembros, pendientes, facturas, emisoras, cuentas] = await Promise.all([
     quienSoy(),
+    equipo(),
     listarAFacturar(),
     listarFacturas(),
     listarEmisoras(),
     cuentasDeLaBarra(),
   ]);
 
-  // Arriba, lo de quien mira. Agustín tiene alcance 'todo' y ve las dos colas.
+  // Lo de quien mira, para la cifra de arriba: Agustín ve las dos colas.
   const mias = pendientes.filter((p) => esMia(p.evaluadora, yo));
+
+  /**
+   * Una pestaña por evaluadora, y dos compartidas.
+   *
+   * Lo que está para facturar es de alguien y se mira de a una: en una sola
+   * lista había que buscar lo propio entre lo ajeno, y con la cola de las dos
+   * arriba nadie sabía dónde terminaba la suya. Lo emitido, en cambio, es la
+   * caja del estudio y lo miran las dos, partido por si entró la plata.
+   */
+  const evaluadoras = miembros.filter((m) => m.evaluadora);
+  const colas = evaluadoras.map((m) => ({
+    clave: (m.evaluadora ?? m.nombre).split(' ')[0].toLowerCase(),
+    nombre: (m.evaluadora ?? m.nombre).split(' ')[0],
+    filas: pendientes.filter((p) => (p.evaluadora ?? '').includes(m.evaluadora ?? '\u0000')),
+  }));
   /**
    * Las de psicotécnicos: las que cubren evaluaciones, más las que llegaron sin
    * renglones y hay que completar.
@@ -50,11 +71,28 @@ export default async function Facturacion() {
   const vivas = facturas.filter((f) => f.estado !== 'anulada' && esDePsicotecnicos(f));
   const sinCobrar = vivas.filter((f) => f.cobradaAt === null);
 
+  const cobradas = vivas.filter((f) => f.cobradaAt !== null);
+
+  const PESTANAS = [
+    ...colas.map((c) => ({ clave: c.clave, texto: `${c.nombre} a facturar`, cuenta: c.filas.length })),
+    { clave: 'sin-cobrar', texto: 'Sin cobrar', cuenta: sinCobrar.length },
+    { clave: 'cobrado', texto: 'Cobrado', cuenta: cobradas.length },
+  ];
+
+  /**
+   * La pestaña que se abre primero es la propia: cada una entra a esta pantalla
+   * a facturar lo suyo. Agustín, que ve todo, entra por la primera.
+   */
+  const porDefecto =
+    colas.find((c) => yo.evaluadora?.startsWith(c.nombre))?.clave ?? PESTANAS[0].clave;
+  const ver = PESTANAS.some((p) => p.clave === searchParams?.ver)
+    ? (searchParams?.ver as string)
+    : porDefecto;
+  const cola = colas.find((c) => c.clave === ver);
+
   const aFacturar = mias.reduce((n, p) => n + totalDe(p), 0);
   const porCobrar = sinCobrar.reduce((n, f) => n + (f.importe ?? 0), 0);
-  const cobrado = vivas
-    .filter((f) => f.cobradaAt !== null)
-    .reduce((n, f) => n + (f.importe ?? 0), 0);
+  const cobrado = cobradas.reduce((n, f) => n + (f.importe ?? 0), 0);
 
   return (
     <Shell
@@ -67,7 +105,7 @@ export default async function Facturacion() {
         <h1>Facturación</h1>
         <p>
           Una evaluación entra en la cola en cuanto se tomó la entrevista, sin esperar al
-          informe. Arriba está lo tuyo; abajo, lo que facturaron las dos.
+          informe. Cada una factura lo suyo; lo emitido lo miran las dos.
         </p>
       </div>
 
@@ -97,8 +135,30 @@ export default async function Facturacion() {
         </div>
       </div>
 
-      <AFacturar pendientes={mias} emisoras={emisoras} quien={yo.nombre} />
-      <Emitidas facturas={vivas} />
+      <nav className="os-pestanas">
+        {PESTANAS.map((p) => (
+          <Link
+            key={p.clave}
+            href={`/os/psicotecnicos/facturacion?ver=${p.clave}`}
+            className={`os-pestana${ver === p.clave ? ' activa' : ''}`}
+            aria-current={ver === p.clave ? 'page' : undefined}
+          >
+            {p.texto}
+            <span className="os-pestana-cuenta">{p.cuenta}</span>
+          </Link>
+        ))}
+      </nav>
+
+      {cola && (
+        <AFacturar
+          pendientes={cola.filas}
+          emisoras={emisoras}
+          quien={yo.nombre}
+          conRotulo={false}
+        />
+      )}
+      {ver === 'sin-cobrar' && <Emitidas facturas={vivas} solo="sin-cobrar" />}
+      {ver === 'cobrado' && <Emitidas facturas={vivas} solo="cobrado" />}
     </Shell>
   );
 }
