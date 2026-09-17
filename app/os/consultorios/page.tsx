@@ -23,9 +23,12 @@ import {
   sumarDias,
 } from '@/lib/consultorios';
 import Calendario from './Calendario';
+import Facturar from './Facturar';
 import Inquilinos from './Inquilinos';
 import Espacios from './Espacios';
 import Finanzas from './Finanzas';
+import { aFacturarDelCentro, facturasDelCentro } from '@/lib/facturas-centro';
+import { listarEmisoras } from '@/lib/facturas';
 
 export const dynamic = 'force-dynamic';
 
@@ -149,6 +152,13 @@ export default async function Consultorios({
     ver === 'espacios' ? escalas() : Promise.resolve([]),
     ver === 'finanzas' ? leerGastos() : Promise.resolve([]),
   ]);
+
+  // Lo que hay para facturar del mes y lo ya emitido: solo en su pestaña, que
+  // son tres lecturas más y en el calendario no se miran.
+  const [cola, emisoras, facturasCentro] =
+    ver === 'inquilinos'
+      ? await Promise.all([aFacturarDelCentro(periodo), listarEmisoras(), facturasDelCentro()])
+      : [[], [], []];
 
   const activos = espacios.filter((e) => e.activo);
   // Lo que se dibuja: todas las salas, o la elegida. La ocupación de arriba
@@ -321,6 +331,16 @@ export default async function Consultorios({
       )}
 
       {ver === 'inquilinos' && (
+        <>
+        {/* Facturar arriba de la lista: al cerrar el mes es lo primero que se
+            hace, y son trece facturas a trece CUIT distintos. */}
+        <Facturar
+          cola={cola}
+          emisoras={emisoras}
+          facturas={facturasCentro}
+          periodo={periodo}
+          hoy={hoy}
+        />
         <Inquilinos
           inquilinos={inquilinos}
           contratos={contratos}
@@ -328,6 +348,7 @@ export default async function Consultorios({
           periodo={periodo}
           hoy={hoy}
         />
+        </>
       )}
 
       {ver === 'finanzas' && (

@@ -14,7 +14,9 @@ import {
   saldoDe,
   signo,
 } from '@/lib/consultorios';
+import Link from 'next/link';
 import Barra from '../Barra';
+import { facturasDelCentro } from '@/lib/facturas-centro';
 
 export const dynamic = 'force-dynamic';
 
@@ -128,6 +130,10 @@ export default async function Cuenta({ searchParams }: { searchParams: { mes?: s
     return periodoDe(d.toISOString().slice(0, 10));
   };
 
+  // Las facturas emitidas a esta persona, para descargar. Salen del mismo
+  // comprobante que ve el equipo: un solo papel para los dos lados.
+  const facturas = await facturasDelCentro(yo.id);
+
   return (
     <>
       <Barra nombre={yo.nombre} donde="/centro/cuenta" />
@@ -150,6 +156,29 @@ export default async function Cuenta({ searchParams }: { searchParams: { mes?: s
             {total !== saldo && ` Tu saldo total, contando todos los meses, es ${pesos(total)}.`}
           </p>
         </div>
+
+        {facturas.length > 0 && (
+          <div className="centro-panel">
+            <h2>Tus facturas</h2>
+            <div className="centro-facturas">
+              {facturas.map((f) => (
+                <Link className="centro-factura" key={f.id} href={`/centro/factura/${f.id}`}>
+                  <span>
+                    <b>{f.periodo ? mesLargo(`${f.periodo}-01`) : dia(f.fecha)}</b>
+                    <span className="centro-nota">
+                      {f.numero === null
+                        ? 'Sin número'
+                        : `Factura C ${String(f.puntoVenta ?? 0).padStart(5, '0')}-${String(f.numero).padStart(8, '0')}`}
+                    </span>
+                  </span>
+                  <span className="centro-factura-monto">
+                    {f.importe === null ? '—' : pesos(f.importe)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* El mismo detalle que las propietarias bajan en PDF, leído en
             pantalla: qué día, en qué sala, de qué hora a qué hora, cuántas

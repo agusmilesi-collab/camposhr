@@ -15,6 +15,8 @@ import {
 import { FIRMAS } from '@/lib/informe-textos';
 import { firmaEnDatos } from '@/lib/firmas';
 import Ficha from './Ficha';
+import { aFacturarDelCentro, facturasDelCentro } from '@/lib/facturas-centro';
+import { listarEmisoras } from '@/lib/facturas';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,12 +48,16 @@ export default async function InquilinoFicha({
     ? (searchParams.periodo as string)
     : periodoDe(hoy);
 
-  const [espacios, contratos, movimientos, reservas] = await Promise.all([
-    listarEspacios(),
-    leerContratos(),
-    movimientosDe(params.id),
-    reservasDe(params.id),
-  ]);
+  const [espacios, contratos, movimientos, reservas, cola, emisoras, facturasSuyas] =
+    await Promise.all([
+      listarEspacios(),
+      leerContratos(),
+      movimientosDe(params.id),
+      reservasDe(params.id),
+      aFacturarDelCentro(periodo),
+      listarEmisoras(),
+      facturasDelCentro(params.id),
+    ]);
 
   /**
    * La firma del recibo.
@@ -98,7 +104,9 @@ export default async function InquilinoFicha({
         firma={firma}
         periodo={periodo}
         hoy={hoy}
+        facturacion={{ cola, emisoras, facturas: facturasSuyas }}
       />
+
     </Shell>
   );
 }

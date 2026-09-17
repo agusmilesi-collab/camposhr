@@ -14,7 +14,13 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Identidad from './Identidad';
 
-type Seccion = { href: string; texto: string; icono: keyof typeof ICONOS };
+type Seccion = {
+  href: string;
+  texto: string;
+  icono: keyof typeof ICONOS;
+  /** A la vista pero sin enlace: la pantalla todavía no está para usarse. */
+  sinEnlace?: boolean;
+};
 /** Un grupo sin título va suelto arriba, sin encabezado. */
 type Grupo = { grupo: string | null; items: Seccion[] };
 
@@ -42,7 +48,7 @@ const NAV: Grupo[] = [
   {
     grupo: 'Sentir Mindfulness',
     items: [
-      { href: '/os/encuentros', texto: 'Encuentros', icono: 'encuentros' },
+      { href: '/os/encuentros', texto: 'Talleres', icono: 'encuentros', sinEnlace: true },
       { href: '/os/consultorios', texto: 'Consultorios', icono: 'salas' },
     ],
   },
@@ -273,18 +279,29 @@ export default function Shell({
               {g.grupo && <div className="os-grupo">{g.grupo}</div>}
               {g.items.map((s) => {
                 const n = cuentas?.[s.href];
-                return (
+                const cuerpo = (
+                  <>
+                    <Icono nombre={s.icono} />
+                    <span>{s.texto}</span>
+                    {typeof n === 'number' && n > 0 && (
+                      <span className="os-item-cuenta os-item-aviso">{n}</span>
+                    )}
+                  </>
+                );
+                // Sin enlace queda en la barra y no lleva a ninguna parte: la
+                // sección existe como lugar, y la pantalla todavía no.
+                return s.sinEnlace ? (
+                  <span key={s.href} className="os-item os-item-inerte" aria-disabled="true">
+                    {cuerpo}
+                  </span>
+                ) : (
                   <Link
                     key={s.href}
                     href={s.href}
                     className="os-item"
                     aria-current={esActiva(s.href, ruta) ? 'page' : undefined}
                   >
-                    <Icono nombre={s.icono} />
-                    <span>{s.texto}</span>
-                    {typeof n === 'number' && n > 0 && (
-                      <span className="os-item-cuenta os-item-aviso">{n}</span>
-                    )}
+                    {cuerpo}
                   </Link>
                 );
               })}

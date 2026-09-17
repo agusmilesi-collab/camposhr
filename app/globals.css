@@ -8303,22 +8303,16 @@ body {
   margin-top: 16px;
 }
 
-/* El buscador de la tabla de entregados: una caja con la lupa adentro, del
-   ancho de la tabla, y la cuenta de lo que quedó a la derecha. */
+/* El buscador de la tabla de entregados: una banda arriba de la tabla, adentro
+   de la misma tarjeta. Como caja suelta se tocaba con los bordes de la tarjeta
+   de abajo; como banda, el borde es el de la tarjeta y adentro respira. */
 .tabla-buscar {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 12px;
-  padding: 7px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--card);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
   color: var(--muted);
-}
-
-.tabla-buscar:focus-within {
-  border-color: var(--st-blue);
 }
 
 .tabla-buscar input {
@@ -8327,12 +8321,17 @@ body {
   border: 0;
   background: none;
   font: inherit;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   color: var(--ink);
   outline: none;
 }
 
+.tabla-buscar input::placeholder {
+  color: var(--muted);
+}
+
 .tabla-buscar-cuenta {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   white-space: nowrap;
 }
+
