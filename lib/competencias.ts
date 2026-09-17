@@ -11,16 +11,19 @@
  * es dónde corta cada indicador entre bajo, medio y alto: las hojas dan la
  * escala pero no los cortes. Cada uno declara el suyo al lado.
  *
- * El Zulliger evalúa cuatro competencias y el Rorschach cinco: el liderazgo se
- * mide solo con el Rorschach, que es el de las baterías para perfiles
- * profesionales y de conducción.
+ * **Qué indicador va en qué competencia lo definieron las psicólogas el
+ * 17/9/2026**, y esa lista es la que está escrita abajo. El Zulliger evalúa
+ * cinco competencias y el Rorschach seis: Liderazgo no está en la lista y queda
+ * como estaba, a la espera de que digan si sigue.
  *
- * La habilidad cognitiva no sale de las manchas sino del Raven, que es el
- * instrumento que la mide.
+ * **El Raven es un indicador más de Capacidad intelectual**, junto con los
+ * índices del protocolo. Hasta el 17/9/2026 era una competencia aparte,
+ * Habilidad cognitiva, que salía solo de él.
  */
 
-import type { SumarioCrudo } from '@/lib/redacciones';
+import { bandaDeAfr, hEsperado, pEsperado, type SumarioCrudo } from '@/lib/redacciones';
 import { percentilDe, puntajesPorRango, rangoDe, type Rango } from '@/lib/raven';
+import { ESTRATOS } from '@/lib/potencial';
 import {
   comoNumero,
   conDireccion,
@@ -61,6 +64,13 @@ export type Contexto = {
    * mover un corte cambia esa competencia: es justamente para lo que está.
    */
   rangos?: Rango[];
+  /**
+   * El estrato del potencial y su franja, del análisis discursivo.
+   *
+   * Lo carga la evaluadora escuchando el discurso, así que no está en el
+   * sumario: viaja por acá, como el Raven.
+   */
+  potencial?: { nivel: string | null; celda: string | null } | null;
   /**
    * Lo que pesa cada indicador, si se movió desde Sistema.
    *
@@ -176,15 +186,22 @@ type Indicador = {
    * Va junto con `escala`: con los dos, la banda la resuelve el motor y los
    * cortes se pueden mover desde Configuración.
    */
-  valor?: (s: SumarioCrudo) => number | null;
+  valor?: (s: SumarioCrudo, ctx: Contexto) => number | null;
   escala?: Escala;
+  /**
+   * Qué mostrar en el desglose cuando el dato no sale del sumario.
+   *
+   * Lo usa el Raven, que vive en el contexto: el espía que arma esa línea mira
+   * el sumario, y ahí no hay nada que ver.
+   */
+  datosDe?: (ctx: Contexto) => string | undefined;
   /**
    * Cuándo la banda no sale de un umbral sino de comparar dos índices entre sí.
    *
    * Ahí no hay número que mover, así que el indicador trae su propia función y
    * la regla de cada banda escrita, para que la pantalla la muestre igual.
    */
-  nivel?: (s: SumarioCrudo) => Nivel;
+  nivel?: (s: SumarioCrudo, ctx: Contexto) => Nivel;
   /** Qué dice cada banda, de alto a bajo, cuando no hay escala numérica. */
   reglas?: [string, string, string];
   /**
@@ -202,20 +219,54 @@ function nivelDe(
   i: Indicador,
   s: SumarioCrudo,
   n: number[] | undefined,
-  e: Escala | undefined
+  e: Escala | undefined,
+  ctx: Contexto
 ): Nivel {
   const escala = e ?? i.escala;
-  if (escala && i.valor) return nivelPorEscala(i.valor(s), escala, n ?? numerosDe(escala));
-  return i.nivel ? i.nivel(s) : null;
+  if (escala && i.valor) return nivelPorEscala(i.valor(s, ctx), escala, n ?? numerosDe(escala));
+  return i.nivel ? i.nivel(s, ctx) : null;
 }
 
 // ── Indicadores compartidos por los dos protocolos ─────────────────────────
+
+/**
+ * Los indicadores de cada competencia los definieron las psicólogas el
+ * 17/9/2026, y esa lista manda: qué índice entra en qué competencia no es
+ * criterio nuestro.
+ *
+ * **Muchos son binarios**: el rasgo está a favor o en contra, sin punto medio
+ * ("Lambda entre 0,30 y 0,99 es positivo, fuera es negativo"). Un binario se
+ * escribe con las dos bandas de la escala pegadas: la de arriba y la del medio
+ * son la misma, así que un valor cae en alto o cae en bajo y nunca en el medio.
+ * Los que sí tienen tres bandas están escritos como tales, y ahí el medio es lo
+ * adecuado.
+ *
+ * **Todos pesan uno.** La lista no dice cuánto pesa cada uno, y el promedio
+ * ponderado con pesos inventados hacía que dos indicadores decidieran la
+ * competencia. Se mueven desde Configuración.
+ */
+const binario = (corte: number, mayorEsMejor: boolean, decimales?: number, porcentaje?: boolean): Escala => ({
+  forma: 'umbral',
+  mayorEsMejor,
+  alto: corte,
+  medio: corte,
+  ...(decimales === undefined ? {} : { decimales }),
+  ...(porcentaje ? { porcentaje } : {}),
+});
+
+/** Dentro del intervalo es positivo y fuera, para cualquier lado, negativo. */
+const dentroDe = (desde: number, hasta: number, decimales?: number): Escala => ({
+  forma: 'banda',
+  alto: [desde, hasta],
+  medio: [desde, hasta],
+  ...(decimales === undefined ? {} : { decimales }),
+});
 
 const FD: Indicador = {
   nombre: 'Fd',
   formula: 'Fd',
   mide: 'Autonomía frente a necesidad de apoyo',
-  escala: { forma: 'umbral', mayorEsMejor: false, alto: 0, medio: 1 },
+  escala: binario(0, false),
   valor: (s) => num(s, 'interpersonal', 'Fd'),
 };
 
@@ -223,6 +274,18 @@ const GHR_PHR: Indicador = {
   nombre: 'GHR : PHR',
   formula: 'GHR contra PHR',
   mide: 'Calidad del vínculo interpersonal',
+  reglas: ['GHR mayor que PHR', 'no se usa', 'GHR igual o menor que PHR'],
+  nivel: (s) => {
+    const g = num(s, 'interpersonal', 'GHR');
+    const p = num(s, 'interpersonal', 'PHR');
+    if (g === null || p === null) return null;
+    return g > p ? 3 : 1;
+  },
+};
+
+/** El de Liderazgo, que conserva sus tres bandas hasta que lo revisen. */
+const GHR_PHR_TRES: Indicador = {
+  ...GHR_PHR,
   reglas: ['GHR mayor que PHR', 'GHR igual a PHR', 'PHR mayor que GHR'],
   nivel: (s) => {
     const g = num(s, 'interpersonal', 'GHR');
@@ -236,15 +299,17 @@ const AISLAMIENTO: Indicador = {
   nombre: 'Índice de aislamiento',
   formula: '(Bt + 2Cl + Ge + Ls + 2Na) ÷ R',
   mide: 'Grado de retraimiento social',
-  escala: { forma: 'umbral', mayorEsMejor: false, alto: 0.25, medio: 0.33, decimales: 2 },
+  escala: binario(0.33, false, 2),
   valor: (s) => num(s, 'interpersonal', 'Aislamiento'),
 };
 
 const EGOCENTRISMO: Indicador = {
   nombre: 'Índice de egocentrismo',
   formula: '(3r + (2)) ÷ R',
+  // Alto es negativo; dentro del rango o bajo, positivo. Por eso es binario y
+  // no una banda: quedarse corto no descuenta.
   mide: 'Foco en sí mismo frente al registro del entorno',
-  escala: { forma: 'banda', alto: [0.33, 0.45], medio: [0.45, 0.55], decimales: 2 },
+  escala: binario(0.55, false, 2),
   valor: (s) => num(s, 'autopercepcion', 'Ego'),
 };
 
@@ -252,12 +317,12 @@ const FC_CF: Indicador = {
   nombre: 'FC : CF + C',
   formula: 'FC contra CF + C pura',
   mide: 'Capacidad de regulación emocional',
-  reglas: ['FC mayor que CF + C', 'FC igual a CF + C', 'CF + C mayor que FC'],
+  reglas: ['FC mayor que CF + C', 'no se usa', 'CF + C igual o mayor que FC'],
   nivel: (s) => {
     const fc = num(s, 'afectos', 'FC');
     if (fc === null) return null;
     const descarga = (num(s, 'afectos', 'CF') ?? 0) + (num(s, 'afectos', 'C_puro') ?? 0);
-    return fc > descarga ? 3 : fc === descarga ? 2 : 1;
+    return fc > descarga ? 3 : 1;
   },
 };
 
@@ -265,7 +330,7 @@ const M_Y: Indicador = {
   nombre: 'm + Y',
   formula: 'm + SumY',
   mide: 'Nivel de tensión interna y ansiedad',
-  escala: { forma: 'umbral', mayorEsMejor: false, alto: 2, medio: 4 },
+  escala: binario(2, false),
   valor: (s) => {
     const m = num(s, 'determinantes', 'm');
     const y = num(s, 'determinantes', 'SumY') ?? num(s, 'determinantes', 'Y');
@@ -297,15 +362,303 @@ const M: Indicador = {
   valor: (s) => num(s, 'determinantes', 'M'),
 };
 
-const LAMBDA: Indicador = {
-  nombre: 'Lambda',
-  formula: 'Lambda',
-  mide: 'Estilo de afrontamiento y simplificación',
-  // Solo la banda de arriba es medio: un Lambda de 0,1 es alguien que no
-  // consigue simplificar, se implica con todo lo que ve, y como medio se
-  // informaba como promedio.
-  escala: { forma: 'banda', alto: [0.3, 0.99], medio: [0.99, 1.5], decimales: 2 },
-  valor: (s) => num(s, 'cabecera', 'Lambda'),
+/** El estilo del EB: solo el introversivo juega a favor. */
+const EB: Indicador = {
+  nombre: 'EB',
+  formula: 'el estilo del EB',
+  mide: 'Estilo de decisión',
+  reglas: ['introversivo', 'no se usa', 'ambigual o extratensivo'],
+  nivel: (s) => {
+    const estilo = s.control_estres?.estilo;
+    if (typeof estilo !== 'string' || !estilo) return null;
+    if (estilo === 'Introversivo') return 3;
+    return estilo === 'Ambigual' || estilo === 'Extratensivo' ? 1 : null;
+  },
+};
+
+/**
+ * W : M, que se espera exactamente en el doble.
+ *
+ * Con M en cero la razón no existe y la lectura es la peor: la organización
+ * mental no aparece.
+ */
+const W_M: Indicador = {
+  nombre: 'W : M',
+  formula: 'W ÷ M',
+  mide: 'Organización mental',
+  reglas: ['W igual al doble de M', 'no se usa', 'W distinto del doble de M'],
+  nivel: (s) => {
+    const m = num(s, 'determinantes', 'M');
+    const w = global(s);
+    if (m === null || w === null) return null;
+    return m > 0 && w / m === 2 ? 3 : 1;
+  },
+};
+
+const ZD: Indicador = {
+  nombre: 'Zd',
+  formula: 'Zd',
+  mide: 'Esfuerzo organizativo',
+  escala: dentroDe(-3, 3, 1),
+  valor: (s) => num(s, 'procesamiento', 'Zd'),
+};
+
+const MA_MP: Indicador = {
+  nombre: 'Ma : Mp',
+  formula: 'Ma contra Mp',
+  mide: 'Tendencia activa frente a pasiva',
+  reglas: ['Mp hasta Ma + 1', 'no se usa', 'Mp por encima de Ma + 1'],
+  nivel: (s) => {
+    const ma = num(s, 'ideacion', 'Ma');
+    const mp = num(s, 'ideacion', 'Mp');
+    if (ma === null || mp === null) return null;
+    return mp > ma + 1 ? 1 : 3;
+  },
+};
+
+const XA_WDA: Indicador = {
+  nombre: 'XA% / WDA%',
+  formula: 'el menor de XA% y WDA%',
+  mide: 'Ajuste perceptual y lectura de la realidad',
+  // El corte es el que rige en el diccionario, movido por ellas a 0,78.
+  escala: binario(0.78, true, 2, true),
+  valor: (s) => {
+    const xa = num(s, 'calidad_formal', 'XA_pct');
+    const wda = num(s, 'calidad_formal', 'WDA_pct');
+    if (xa === null && wda === null) return null;
+    return Math.min(xa ?? 1, wda ?? 1);
+  },
+};
+
+const X_MENOS: Indicador = {
+  nombre: 'X−%',
+  formula: 'X−%',
+  mide: 'Distorsión perceptual',
+  escala: binario(0.25, false, 2, true),
+  valor: (s) => num(s, 'calidad_formal', 'X_menos_pct'),
+};
+
+const M_MENOS: Indicador = {
+  nombre: 'M−',
+  formula: 'M−',
+  mide: 'Distorsión en la lectura de los otros',
+  escala: binario(1, false),
+  valor: (s) => num(s, 'ideacion', 'M_menos'),
+};
+
+
+/**
+ * P contra lo esperado para la cantidad de respuestas.
+ *
+ * Lo esperado sale de R, así que no hay un número fijo que mover: por encima
+ * del rango es alto, adentro es medio y por debajo, bajo.
+ */
+const POPULARES: Indicador = {
+  nombre: 'P',
+  formula: 'P contra lo esperado para R',
+  mide: 'Ajuste a lo convencional',
+  reglas: ['por encima de lo esperado para R', 'dentro de lo esperado', 'por debajo de lo esperado'],
+  nivel: (s) => {
+    const p = num(s, 'procesamiento', 'P') ?? num(s, 'calidad_formal', 'P');
+    const r = num(s, 'cabecera', 'R');
+    if (p === null || r === null) return null;
+    const [minimo, maximo] = pEsperado(r);
+    if (p > maximo) return 3;
+    return p < minimo ? 1 : 2;
+  },
+};
+
+const AFR: Indicador = {
+  nombre: 'Afr',
+  formula: 'Afr contra la banda de su estilo',
+  mide: 'Disposición a involucrarse con lo emocional',
+  reglas: ['dentro de la banda de su estilo', 'no se usa', 'fuera de la banda de su estilo'],
+  nivel: (s) => {
+    const afr = num(s, 'afectos', 'Afr');
+    const estilo = s.control_estres?.estilo;
+    const banda = typeof estilo === 'string' ? bandaDeAfr(estilo) : null;
+    if (afr === null || banda?.minimo == null || banda.maximo == null) return null;
+    return afr >= banda.minimo && afr <= banda.maximo ? 3 : 1;
+  },
+};
+
+const INTELECTUALIZACION: Indicador = {
+  nombre: 'Índice de intelectualización',
+  formula: '2AB + (Art + Ay)',
+  mide: 'Distancia intelectual frente a la emoción',
+  escala: binario(5, false),
+  valor: (s) => num(s, 'ideacion', 'Intelectualizacion') ?? num(s, 'codigos_especiales', 'Intelectualizacion'),
+};
+
+const C_PRIMA: Indicador = {
+  nombre: "C'",
+  formula: "SumC'",
+  mide: 'Inhibición o restricción emocional',
+  escala: binario(2, false),
+  valor: (s) => num(s, 'afectos', 'SumC_prima') ?? num(s, 'determinantes', 'SumC_prima'),
+};
+
+const VAGAS: Indicador = {
+  nombre: 'Vagas',
+  formula: 'DQv',
+  mide: 'Grado de desorganización frente a la experiencia',
+  escala: binario(2, false),
+  valor: (s) => num(s, 'procesamiento', 'DQv') ?? num(s, 'localizacion', 'DQv'),
+};
+
+const PSV: Indicador = {
+  nombre: 'PSV',
+  formula: 'PSV',
+  mide: 'Flexibilidad frente a la perseveración',
+  // El corte que rige en el diccionario, movido por ellas a 1.
+  escala: binario(1, false),
+  valor: (s) => num(s, 'codigos_especiales', 'PSV') ?? num(s, 'procesamiento', 'PSV'),
+};
+
+const RAVEN: Indicador = {
+  nombre: 'Raven',
+  formula: 'aciertos sobre 36 láminas',
+  mide: 'Razonamiento abstracto',
+  escala: { forma: 'umbral', mayorEsMejor: true, alto: 31, medio: 21 },
+  valor: (_s, ctx) => ctx?.ravenRaw ?? null,
+  datosDe: (ctx) =>
+    ctx.ravenRaw === null || ctx.ravenRaw === undefined
+      ? undefined
+      : `Raven ${ctx.ravenRaw} de 36` +
+        (ctx.ravenPercentil === null ? '' : ` · percentil ${Math.round(ctx.ravenPercentil * 10) / 10}`),
+};
+
+const T: Indicador = {
+  nombre: 'T',
+  formula: 'SumT',
+  mide: 'Disposición al contacto afectivo',
+  escala: dentroDe(1, 1),
+  valor: (s) => num(s, 'determinantes', 'SumT') ?? num(s, 'determinantes', 'T'),
+};
+
+/** Dd sobre el total de localizaciones: aumentado es negativo. */
+const DD: Indicador = {
+  nombre: 'Dd',
+  formula: 'Dd ÷ (W + D + Dd)',
+  mide: 'Priorización',
+  escala: binario(0.05, false, 2, true),
+  valor: (s) => {
+    const w = global(s);
+    const d = num(s, 'procesamiento', 'D');
+    const dd = num(s, 'procesamiento', 'Dd');
+    if (w === null || d === null || dd === null || w + d + dd === 0) return null;
+    return dd / (w + d + dd);
+  },
+};
+
+/**
+ * Los contenidos humanos contra lo esperado para R y para el estilo.
+ *
+ * Es el total (H + (H) + Hd + (Hd)), que es lo que la hoja llama "contenidos
+ * H", y el rango sale de la misma tabla que usa el diccionario: cambia con la
+ * cantidad de respuestas y con el estilo, así que no hay un número fijo que
+ * mover.
+ */
+const CONTENIDOS_H: Indicador = {
+  nombre: 'Contenidos H',
+  formula: 'H + (H) + Hd + (Hd) contra lo esperado para R y el estilo',
+  mide: 'Interés y apertura hacia los otros',
+  reglas: ['por encima de lo esperado', 'dentro de lo esperado', 'por debajo de lo esperado'],
+  nivel: (s) => {
+    const r = num(s, 'cabecera', 'R');
+    const estilo = s.control_estres?.estilo;
+    const hPura = num(s, 'autopercepcion', 'H_pura') ?? num(s, 'interpersonal', 'H_pura');
+    if (r === null || typeof estilo !== 'string' || hPura === null) return null;
+    const humanos =
+      hPura +
+      (num(s, 'autopercepcion', 'H_paren') ?? 0) +
+      (num(s, 'autopercepcion', 'Hd') ?? 0) +
+      (num(s, 'autopercepcion', 'Hd_paren') ?? 0);
+    const [minimo, maximo] = hEsperado(r, estilo);
+    if (humanos > maximo) return 3;
+    return humanos < minimo ? 1 : 2;
+  },
+};
+
+/** H pura contra el resto de los contenidos humanos. */
+const H_CONTRA_RESTO: Indicador = {
+  nombre: 'H : (H) + Hd + (Hd)',
+  formula: 'H pura contra el resto de los contenidos humanos',
+  mide: 'Registro de la persona entera y no de sus partes',
+  reglas: ['H mayor que el resto', 'no se usa', 'H igual o menor que el resto'],
+  nivel: (s) => {
+    const hPura = num(s, 'autopercepcion', 'H_pura') ?? num(s, 'interpersonal', 'H_pura');
+    if (hPura === null) return null;
+    const resto =
+      (num(s, 'autopercepcion', 'H_paren') ?? 0) +
+      (num(s, 'autopercepcion', 'Hd') ?? 0) +
+      (num(s, 'autopercepcion', 'Hd_paren') ?? 0);
+    return hPura > resto ? 3 : 1;
+  },
+};
+
+/**
+ * El estrato del potencial, del análisis discursivo.
+ *
+ * Positivo desde el nivel 2 alto: Especialista en su franja alta, o cualquier
+ * estrato por encima. Lo dijeron el 17/9/2026. La franja la carga la evaluadora
+ * junto con el estrato; sin estrato cargado el indicador no puntúa, que es
+ * distinto de puntuar bajo.
+ */
+const POTENCIAL: Indicador = {
+  nombre: 'Potencial',
+  formula: 'el estrato del análisis discursivo',
+  mide: 'Hasta dónde puede llegar el nivel de trabajo que sostiene',
+  reglas: ['nivel 2 en su franja alta, o un estrato por encima', 'no se usa', 'por debajo de eso'],
+  nivel: (_s, ctx) => {
+    const nombre = ctx.potencial?.nivel;
+    if (!nombre) return null;
+    const orden = ESTRATOS.findIndex((e) => e.nombre === nombre);
+    if (orden < 0) return null;
+    // Los estratos van del 0 (Operativo) para arriba: el 1 es el nivel 2.
+    if (orden > 1) return 3;
+    return orden === 1 && ctx.potencial?.celda === 'A' ? 3 : 1;
+  },
+};
+
+/** Afr por debajo de la banda de su estilo; por encima no descuenta. */
+const AFR_PISO: Indicador = {
+  nombre: 'Afr',
+  formula: 'Afr contra el piso de la banda de su estilo',
+  mide: 'Disposición a involucrarse con lo emocional',
+  reglas: ['desde el piso de la banda de su estilo', 'no se usa', 'por debajo del piso'],
+  nivel: (s) => {
+    const afr = num(s, 'afectos', 'Afr');
+    const estilo = s.control_estres?.estilo;
+    const banda = typeof estilo === 'string' ? bandaDeAfr(estilo) : null;
+    if (afr === null || banda?.minimo == null) return null;
+    return afr >= banda.minimo ? 3 : 1;
+  },
+};
+
+/** W sobre el total de localizaciones, con sus tres bandas. */
+const W_LOCALIZACION: Indicador = {
+  nombre: 'W',
+  formula: 'W ÷ (W + D + Dd)',
+  mide: 'Visión global frente al foco en el detalle',
+  // Lo esperado es el 35 % con cinco puntos de tolerancia, como en el
+  // diccionario: por encima es alto, adentro medio y por debajo bajo.
+  escala: { forma: 'umbral', mayorEsMejor: true, alto: 0.4, medio: 0.3, decimales: 2, porcentaje: true },
+  valor: (s) => {
+    const w = global(s);
+    const d = num(s, 'procesamiento', 'D');
+    const dd = num(s, 'procesamiento', 'Dd');
+    if (w === null || d === null || dd === null || w + d + dd === 0) return null;
+    return w / (w + d + dd);
+  },
+};
+
+const MIDE = {
+  autogestion: 'Coordinación de tareas en función del tiempo. Identificar prioridades. Gestión del cambio.',
+  control: 'Tolerancia a la presión. Gestión de las emociones en la resolución de conflictos.',
+  interpersonal: 'Negociación. Orientación al cliente externo o interno. Capacidad de comunicación. Empatía.',
+  proactividad: 'Orientación al resultado. Iniciativa. Rol activo en los grupos. Gestión de la innovación.',
+  intelectual: 'Lectura ajustada de la realidad, esfuerzo de análisis y razonamiento abstracto.',
 };
 
 // ── Rorschach ──────────────────────────────────────────────────────────────
@@ -313,86 +666,30 @@ const LAMBDA: Indicador = {
 const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }[] = [
   {
     competencia: 'Autogestión',
-    mide: 'Coordinación de tareas en función del tiempo. Identificar prioridades. Gestión del cambio.',
+    mide: MIDE.autogestion,
     indicadores: [
       {
-        nombre: 'M : W',
-        formula: 'W ÷ M',
-        mide: 'Organización mental',
-        // El núcleo: organizar la tarea es lo que la competencia define.
-        peso: 2,
-        escala: { forma: 'umbral', mayorEsMejor: false, alto: 1.5, medio: 2.5, decimales: 1 },
-        valor: (s) => {
-          const m = num(s, 'determinantes', 'M');
-          const w = global(s);
-          // Sin W no hay razón que calcular, ni siquiera con M en cero: antes
-          // ese caso salía bajo sin tener el dato con el que se compara.
-          if (m === null || w === null) return null;
-          // Con M en cero la razón no existe y la lectura es la peor: la
-          // organización mental no aparece. Se manda al fondo de la escala.
-          return m === 0 ? Number.POSITIVE_INFINITY : w / m;
-        },
+        nombre: 'Lambda',
+        formula: 'Lambda',
+        mide: 'Estilo de afrontamiento y simplificación',
+        escala: dentroDe(0.3, 0.99, 2),
+        valor: (s) => num(s, 'cabecera', 'Lambda'),
       },
-      {
-        nombre: 'Zd',
-        formula: 'Zd sin signo',
-        mide: 'Esfuerzo organizativo',
-        escala: { forma: 'umbral', mayorEsMejor: false, alto: 3, medio: 5 },
-        valor: (s) => {
-          const z = num(s, 'procesamiento', 'Zd');
-          return z === null ? null : Math.abs(z);
-        },
-      },
-      {
-        nombre: 'D vs Dd',
-        formula: 'Dd ÷ (W + D + Dd)',
-        mide: 'Priorización',
-        // Identificar prioridades está en la definición, con esas palabras.
-        peso: 2,
-        escala: {
-          forma: 'umbral',
-          mayorEsMejor: false,
-          alto: 0.1,
-          medio: 0.15,
-          decimales: 2,
-          porcentaje: true,
-        },
-        valor: (s) => {
-          const w = global(s);
-          const d = num(s, 'procesamiento', 'D');
-          const dd = num(s, 'procesamiento', 'Dd');
-          // Los tres tienen que estar: es una proporción sobre el total de
-          // localizaciones, y con una parte ausente el porcentaje sale inflado.
-          // El motor escribe los ceros, así que faltar es faltar de verdad.
-          if (w === null || d === null || dd === null || w + d + dd === 0) return null;
-          return dd / (w + d + dd);
-        },
-      },
-      {
-        nombre: 'FM + m',
-        formula: 'FM + m',
-        mide: 'Interferencia interna',
-        escala: { forma: 'umbral', mayorEsMejor: false, alto: 5, medio: 7 },
-        valor: (s) => {
-          const fm = num(s, 'determinantes', 'FM');
-          const m = num(s, 'determinantes', 'm');
-          if (fm === null && m === null) return null;
-          return (fm ?? 0) + (m ?? 0);
-        },
-      },
-      FD,
+      EB,
+      W_M,
+      ZD,
+      DD,
+      T,
     ],
   },
   {
     competencia: 'Control emocional',
-    mide: 'Tolerancia a la presión. Gestión de las emociones en la resolución de conflictos.',
+    mide: MIDE.control,
     indicadores: [
       {
         nombre: 'EA',
         formula: 'EA',
         mide: 'Recursos disponibles para afrontar demandas',
-        // Con qué cuenta la persona para sostener la presión.
-        peso: 2,
         escala: { forma: 'umbral', mayorEsMejor: true, alto: 9, medio: 7, decimales: 1 },
         valor: (s) => num(s, 'control_estres', 'EA'),
       },
@@ -400,8 +697,6 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         nombre: 'D / AdjD',
         formula: 'D y AdjD',
         mide: 'Tolerancia al estrés, inmediata y sostenida',
-        // Mide la tolerancia a la presión, que es la competencia entera.
-        peso: 2,
         reglas: ['D y AdjD en cero o más', 'AdjD en cero o más, D negativo', 'AdjD negativo'],
         nivel: (s) => {
           const d = num(s, 'control_estres', 'D');
@@ -412,121 +707,92 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
           return 1;
         },
       },
+      INTELECTUALIZACION,
       FC_CF,
+      C_PRIMA,
+      VAGAS,
       M_Y,
-      {
-        nombre: 'Vagas',
-        formula: 'DQv',
-        mide: 'Grado de desorganización frente a la experiencia',
-        escala: { forma: 'umbral', mayorEsMejor: false, alto: 1, medio: 2 },
-        valor: (s) => num(s, 'procesamiento', 'DQv') ?? num(s, 'localizacion', 'DQv'),
-      },
     ],
   },
   {
     competencia: 'Habilidad interpersonal',
-    mide: 'Negociación. Orientación al cliente externo o interno. Capacidad de comunicación. Empatía.',
+    mide: MIDE.interpersonal,
     indicadores: [
-      { ...GHR_PHR, peso: 2 },
+      GHR_PHR,
+      CONTENIDOS_H,
+      AISLAMIENTO,
+      AFR,
+      M_MENOS,
+      POPULARES,
       COP_AG,
       {
         nombre: 'CDI',
         formula: 'CDI',
         mide: 'Inhabilidad social',
-        // Índice compuesto y del propio Exner: mide la competencia completa.
-        peso: 2,
-        escala: { forma: 'umbral', mayorEsMejor: false, alto: 3, medio: 4 },
+        // La constelación positiva (cuatro o cinco) es lo negativo.
+        escala: binario(3, false),
         valor: (s) => constelacion(s, 'CDI'),
       },
-      AISLAMIENTO,
       EGOCENTRISMO,
     ],
   },
   {
     competencia: 'Proactividad',
-    mide: 'Orientación al resultado. Iniciativa. Rol activo en los grupos. Gestión de la innovación.',
+    mide: MIDE.proactividad,
     indicadores: [
       FD,
+      MA_MP,
       {
         nombre: 'R',
         formula: 'R',
         mide: 'Nivel general de productividad e iniciativa de respuesta',
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 22, medio: 17 },
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 29, medio: 17 },
         valor: (s) => num(s, 'cabecera', 'R'),
       },
-      {
-        nombre: 'Ma',
-        formula: 'Ma',
-        mide: 'Dinamismo y tendencia a la acción',
-        // Iniciativa y rol activo: el centro de la competencia.
-        peso: 2,
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 2, medio: 1 },
-        valor: (s) => num(s, 'ideacion', 'Ma'),
-      },
-      M,
     ],
   },
   {
+    competencia: 'Capacidad intelectual',
+    mide: MIDE.intelectual,
+    indicadores: [
+      XA_WDA,
+      X_MENOS,
+      {
+        nombre: 'Zf',
+        formula: 'Zf contra R',
+        mide: 'Esfuerzo de organización',
+        reglas: ['más del 55 % de R', 'entre el 30 % y el 55 % de R', 'menos del 30 % de R'],
+        nivel: (s) => {
+          const zf = num(s, 'procesamiento', 'Zf');
+          const r = num(s, 'cabecera', 'R');
+          if (zf === null || r === null || r === 0) return null;
+          if (zf > r * 0.55) return 3;
+          return zf < r * 0.3 ? 1 : 2;
+        },
+      },
+      ZD,
+      PSV,
+      RAVEN,
+    ],
+  },
+  {
+    /**
+     * Liderazgo lo definieron el 17/9/2026, después que las otras cinco.
+     *
+     * Va solo en Rorschach: dos de sus indicadores (Afr y el potencial) no
+     * existen en un Zulliger, que no tiene proporción afectiva ni se toma con
+     * análisis discursivo.
+     */
     competencia: 'Liderazgo',
     mide: 'Visión global frente al foco en el detalle. Gestión de personas. Capacidad de decisión.',
     indicadores: [
-      {
-        nombre: 'W : D',
-        formula: 'W ÷ (W + D)',
-        mide: 'Visión global frente al foco en el detalle',
-        // Es la primera frase de la definición de Liderazgo.
-        peso: 2,
-        escala: {
-          forma: 'umbral',
-          mayorEsMejor: true,
-          alto: 0.45,
-          medio: 0.3,
-          decimales: 2,
-          porcentaje: true,
-        },
-        valor: (s) => {
-          const w = global(s);
-          const d = num(s, 'procesamiento', 'D');
-          // Sin D, W sobre el total daba 1 y la visión global salía alta por no
-          // tener con qué compararla.
-          if (w === null || d === null || w + d === 0) return null;
-          return w / (w + d);
-        },
-      },
-      {
-        nombre: 'EB',
-        formula: 'el estilo del EB',
-        mide: 'Estilo de decisión',
-        /**
-         * El indicador que le faltaba a esta competencia.
-         *
-         * Liderazgo define tres cosas y medía dos: visión global (W : D) y
-         * gestión de personas (prestada de Habilidad interpersonal). **Capacidad
-         * de decisión no tenía ningún indicador**, y por eso la competencia se
-         * apoyaba en los de vínculo hasta compartir la mitad de su puntaje.
-         *
-         * El EB es, en Exner, cómo decide la persona. Con un estilo definido,
-         * introversivo o extratensivo, decide con un criterio parejo. El
-         * ambigual no lo tiene: a veces resuelve pensando y a veces con el
-         * afecto, tarda más y es menos previsible. El informe ya lo dice con
-         * esas palabras en "Cómo decide y cómo piensa"; lo que faltaba era que
-         * alimentara la competencia que lleva la decisión en su definición.
-         */
-        peso: 2,
-        reglas: ['introversivo o extratensivo', 'no se usa', 'ambigual'],
-        nivel: (s) => {
-          const estilo = s.control_estres?.estilo;
-          if (typeof estilo !== 'string' || !estilo) return null;
-          if (estilo === 'Ambigual') return 1;
-          return estilo === 'Introversivo' || estilo === 'Extratensivo' ? 3 : null;
-        },
-      },
-      M,
-      // Gestión de personas, prestado de Habilidad interpersonal: acá va de
-      // apoyo y no de núcleo. Con peso doble en las dos, la mitad del puntaje de
-      // Liderazgo era el de la otra competencia. COP / AG salió por lo mismo:
-      // su casa es Habilidad interpersonal.
-      { ...GHR_PHR, peso: 1 },
+      GHR_PHR,
+      W_LOCALIZACION,
+      EB,
+      H_CONTRA_RESTO,
+      POTENCIAL,
+      CONTENIDOS_H,
+      AFR_PISO,
     ],
   },
 ];
@@ -536,118 +802,87 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
 const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[] = [
   {
     competencia: 'Autogestión',
-    mide: 'Coordinación de tareas en función del tiempo. Identificar prioridades. Gestión del cambio.',
+    mide: MIDE.autogestion,
     indicadores: [
-      LAMBDA,
       {
-        nombre: 'XA%',
-        formula: 'XA%',
-        mide: 'Ajuste perceptual y lectura de la realidad',
-        // Sin lectura ajustada de la realidad no hay tarea bien coordinada.
-        peso: 2,
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 0.8, medio: 0.7, decimales: 2 },
-        valor: (s) => num(s, 'calidad_formal', 'XA_pct'),
+        nombre: 'Lambda',
+        formula: 'Lambda',
+        mide: 'Estilo de afrontamiento y simplificación',
+        // La banda del Zulliger, con el techo que ellas movieron a 0,80.
+        escala: dentroDe(0.29, 0.8, 2),
+        valor: (s) => num(s, 'cabecera', 'Lambda'),
       },
+      EB,
+      W_M,
       {
-        nombre: 'M',
-        formula: 'M',
-        mide: 'Planificación y organización mental',
-        /**
-         * Acá pesa doble y en Proactividad ya no está.
-         *
-         * Las dos competencias compartían M, Fd y R: tres de cinco cada una, la
-         * mitad del puntaje, así que daban casi siempre el mismo número. Se
-         * repartieron por lo que dice cada definición. Planificar es el núcleo
-         * de coordinar tareas, así que M se queda acá. Fd (autonomía para
-         * arrancar) y R (orientación al resultado) se fueron a Proactividad.
-         */
-        peso: 2,
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 3, medio: 2 },
-        valor: (s) => num(s, 'determinantes', 'M'),
+        nombre: 'Dd',
+        formula: 'Dd',
+        mide: 'Priorización',
+        // En Zulliger la localización se lee por cantidad: hasta dos Dd.
+        escala: binario(2, false),
+        valor: (s) => num(s, 'procesamiento', 'Dd') ?? num(s, 'localizacion', 'Dd'),
       },
+      { ...T, escala: dentroDe(0, 0) },
     ],
   },
   {
     competencia: 'Control emocional',
-    mide: 'Tolerancia a la presión. Gestión de las emociones en la resolución de conflictos.',
+    mide: MIDE.control,
     indicadores: [
+      {
+        nombre: 'EA',
+        formula: 'EA',
+        mide: 'Recursos disponibles para afrontar demandas',
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 5, medio: 3, decimales: 1 },
+        valor: (s) => num(s, 'control_estres', 'EA'),
+      },
+      {
+        nombre: 'EA − es',
+        formula: 'EA − es',
+        mide: 'Tolerancia al estrés',
+        // Hasta −1,5 es lo esperado; por debajo, la demanda supera al recurso.
+        escala: binario(-1.5, true, 1),
+        valor: (s) => num(s, 'control_estres', 'dif_EA_es'),
+      },
+      { ...INTELECTUALIZACION, escala: binario(1, false) },
       FC_CF,
+      C_PRIMA,
+      { ...VAGAS, escala: binario(0, false) },
       M_Y,
-      {
-        nombre: 'SumC',
-        formula: 'SumC ponderada',
-        mide: 'Intensidad y modulación emocional',
-        // Modular la emoción es lo que la competencia pide.
-        peso: 2,
-        // Igual que en Lambda: el extremo de abajo no es medio. Un SumC de cero
-        // es alguien sin ninguna respuesta de color, con el afecto constreñido,
-        // y eso es bajo y no promedio.
-        escala: { forma: 'banda', alto: [2.5, 5], medio: [5, 7], decimales: 1 },
-        valor: (s) => num(s, 'afectos', 'WSumC'),
-      },
-      { ...LAMBDA, mide: 'Control frente a evitación emocional' },
-      {
-        nombre: "C'",
-        formula: "SumC'",
-        mide: 'Inhibición o restricción emocional',
-        escala: { forma: 'umbral', mayorEsMejor: false, alto: 2, medio: 4 },
-        valor: (s) => num(s, 'afectos', 'SumC_prima'),
-      },
     ],
   },
   {
     competencia: 'Habilidad interpersonal',
-    mide: 'Negociación. Orientación al cliente externo o interno. Capacidad de comunicación. Empatía.',
+    mide: MIDE.interpersonal,
     indicadores: [
-      { ...GHR_PHR, peso: 2 },
-      COP_AG,
-      {
-        nombre: 'H',
-        formula: 'H pura',
-        mide: 'Interés y apertura hacia los otros',
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 3, medio: 2 },
-        valor: (s) => num(s, 'autopercepcion', 'H_pura'),
-      },
+      GHR_PHR,
+      CONTENIDOS_H,
       AISLAMIENTO,
-      EGOCENTRISMO,
+      { ...M_MENOS, escala: binario(0, false) },
+      POPULARES,
+      COP_AG,
+      { ...EGOCENTRISMO, escala: binario(0.56, false, 2) },
     ],
   },
   {
     competencia: 'Proactividad',
-    mide: 'Orientación al resultado. Iniciativa. Rol activo en los grupos. Gestión de la innovación.',
+    mide: MIDE.proactividad,
     indicadores: [
-      // Sin M: es el núcleo de Autogestión, y tenerlo en las dos hacía que las
-      // dos competencias de tarea se movieran juntas.
-      {
-        nombre: 'Ma : Mp',
-        formula: 'Ma contra Mp',
-        mide: 'Tendencia activa frente a pasiva',
-        // Activo frente a pasivo es la definición de Proactividad.
-        peso: 2,
-        reglas: ['Ma mayor que Mp', 'Ma igual a Mp', 'Mp mayor que Ma'],
-        nivel: (s) => {
-          const ma = num(s, 'ideacion', 'Ma');
-          const mp = num(s, 'ideacion', 'Mp');
-          if (ma === null || mp === null) return null;
-          return ma > mp ? 3 : ma === mp ? 2 : 1;
-        },
-      },
-      {
-        nombre: 'FM',
-        formula: 'FM',
-        mide: 'Impulso hacia la acción',
-        escala: { forma: 'banda', alto: [2, 5], medio: [1, 1] },
-        valor: (s) => num(s, 'determinantes', 'FM'),
-      },
+      FD,
+      MA_MP,
       {
         nombre: 'R',
         formula: 'R',
         mide: 'Nivel de productividad y compromiso con la tarea',
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 12, medio: 8 },
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 12, medio: 9 },
         valor: (s) => num(s, 'cabecera', 'R'),
       },
-      FD,
     ],
+  },
+  {
+    competencia: 'Capacidad intelectual',
+    mide: MIDE.intelectual,
+    indicadores: [XA_WDA, X_MENOS, { ...PSV, escala: binario(0, false) }, RAVEN],
   },
 ];
 
@@ -743,14 +978,20 @@ export function direccionesValidas(guardadas: unknown): Record<string, boolean> 
   return limpias;
 }
 
-/** Las tres bandas de un indicador en una línea, para el desglose del informe. */
+/**
+ * Las bandas de un indicador en una línea, para el desglose del informe.
+ *
+ * En un binario las dos bandas de arriba son la misma, así que la del medio se
+ * saltea: "hasta 0,05 alto; hasta 0,05 medio" decía dos veces lo mismo y hacía
+ * creer que había un punto medio donde no lo hay.
+ */
 function comoSeLee(i: Indicador, n: number[] | undefined, e?: Escala): string {
-  const partes = ([0, 1, 2] as const)
-    .map(
-      (cual) =>
-        [reglaDeBanda(e ?? i.escala, n, cual, i.reglas), ['alto', 'medio', 'bajo'][cual]] as const
-    )
-    .filter(([regla]) => regla && regla !== 'no se usa')
+  const bandas = ([0, 1, 2] as const).map((cual) =>
+    reglaDeBanda(e ?? i.escala, n, cual, i.reglas)
+  );
+  const partes = bandas
+    .map((regla, cual) => [regla, ['alto', 'medio', 'bajo'][cual]] as const)
+    .filter(([regla], cual) => regla && regla !== 'no se usa' && !(cual === 1 && regla === bandas[0]))
     .map(([regla, banda]) => `${regla} ${banda}`);
   return partes.join('; ');
 }
@@ -948,34 +1189,6 @@ function rangoRaven(raw: number, rangos?: Rango[]): string | undefined {
   return r ? `Rango ${r.numeral} · ${r.nombre.toLowerCase()}` : undefined;
 }
 
-function cognitiva(ctx: Contexto): Competencia {
-  const p = ctx.ravenPercentil;
-  const raw = ctx.ravenRaw ?? null;
-
-  return {
-    nombre: 'Habilidad cognitiva',
-    referencia: raw === null ? undefined : rangoRaven(raw, ctx.rangos),
-    mide: 'Estilo de aprendizaje: capacidad de lógica abstracta frente a pensamiento concreto y práctico.',
-    puntaje: raw === null ? null : puntajeDeRaven(raw, ctx.rangos),
-    renglones: [
-      {
-        indicador: 'Raven',
-        mide: 'Razonamiento abstracto',
-        nivel: null,
-        corte: 'el rango del test, y adentro del rango el percentil del baremo',
-        peso: 1,
-        valor:
-          p === null
-            ? undefined
-            : `percentil ${Math.round(p * 10) / 10}` +
-              (ctx.ravenRaw === null || ctx.ravenRaw === undefined
-                ? ''
-                : ` · ${ctx.ravenRaw} de 36 láminas`),
-      },
-    ],
-  };
-}
-
 /**
  * Cuántas respuestas hacen falta para que el protocolo diga algo.
  *
@@ -1049,14 +1262,14 @@ export function calcularCompetencias(
     const renglones = c.indicadores.map((i) => {
       const n = cortesQueRigen(test, c.competencia, i, ctx.cortesCompetencias);
       const e = escalaQueRige(test, c.competencia, i, ctx.direcciones);
-      const leer = (sumario: SumarioCrudo) => nivelDe(i, sumario, n, e);
+      const leer = (sumario: SumarioCrudo) => nivelDe(i, sumario, n, e, ctx);
       return {
         indicador: i.nombre,
         mide: i.mide,
         nivel: leer(s),
         corte: comoSeLee(i, n, e),
         peso: ctx.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ?? i.peso ?? 1,
-        datos: leidoPor(s, leer),
+        datos: i.datosDe ? i.datosDe(ctx) : leidoPor(s, leer),
       };
     });
 
@@ -1106,7 +1319,7 @@ export function calcularCompetencias(
     };
   });
 
-  return [cognitiva(ctx), ...medidas];
+  return medidas;
 }
 
 /**
