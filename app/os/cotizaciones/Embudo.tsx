@@ -37,6 +37,7 @@ const COLOR_ESTADO: Record<string, string> = {
   Lead: 'os-gris',
   Enviada: 'os-ambar',
   Aprobada: 'os-verde',
+  Entregada: 'os-azul',
   Perdida: 'os-rojo',
 };
 
@@ -60,6 +61,7 @@ const QUE_ES: Record<Estado, string> = {
   Lead: 'Hay interés, todavía no se mandó nada.',
   Enviada: 'La propuesta está del lado del cliente.',
   Aprobada: 'Se cerró. Entra a la cuenta de resultado.',
+  Entregada: 'El trabajo ya se hizo.',
   Perdida: 'No se cerró.',
 };
 
@@ -92,6 +94,15 @@ export function Tablero({
   const [error, setError] = useState<string | null>(null);
   const [perdiendo, setPerdiendo] = useState<Oportunidad | null>(null);
   const [editando, setEditando] = useState<Oportunidad | null>(null);
+  /**
+   * Las columnas cerradas, que arrancan cerradas por lo que son: lo entregado
+   * y lo perdido ya no se trabaja, y abiertas le comen la mitad del ancho a
+   * las tres que sí se miran todos los días. Se sigue pudiendo soltar una
+   * tarjeta encima sin abrirlas.
+   */
+  const [plegadas, setPlegadas] = useState<Estado[]>(['Entregada', 'Perdida']);
+  const alternar = (estado: Estado) =>
+    setPlegadas((xs) => (xs.includes(estado) ? xs.filter((x) => x !== estado) : [...xs, estado]));
 
   async function mover(id: string, estado: Estado, cierre?: { objecion: Objecion; motivo: string }) {
     setError(null);
@@ -122,14 +133,26 @@ export function Tablero({
     <>
       {error && <p className="os-form-error">{error}</p>}
 
-      <div className="os-kanban">
+      <div
+        className="os-kanban os-kanban-embudo"
+        style={
+          {
+            ['--os-kanban-cols' as string]: ESTADOS.map((e) =>
+              plegadas.includes(e) ? '46px' : 'minmax(0, 1fr)'
+            ).join(' '),
+          } as React.CSSProperties
+        }
+      >
         {ESTADOS.map((estado) => {
           const filas = oportunidades.filter((o) => o.estado === estado);
           const monto = filas.reduce((n, o) => n + o.importe, 0);
+          const plegada = plegadas.includes(estado);
           return (
             <div
               key={estado}
-              className={`os-columna${encima === estado ? ' encima' : ''}`}
+              className={`os-columna${encima === estado ? ' encima' : ''}${
+                plegada ? ' plegada' : ''
+              }`}
               onDragOver={(e) => {
                 e.preventDefault();
                 setEncima(estado);
@@ -143,86 +166,140 @@ export function Tablero({
                 if (o) pedirMover(o, estado);
               }}
             >
-              <div className="os-columna-top">
-                <span className="os-columna-titulo">{estado}</span>
-                <span className="os-columna-monto">
-                  {filas.length} · {formatoImporte(monto)}
-                </span>
-              </div>
-              <p className="os-columna-nota">{QUE_ES[estado]}</p>
-
-              {filas.map((o) => (
-                <article
-                  key={o.id}
-                  className={`os-tarjeta-op${arrastrando === o.id ? ' arrastrando' : ''}`}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('text/plain', o.id);
-                    e.dataTransfer.effectAllowed = 'move';
-                    setArrastrando(o.id);
-                  }}
-                  onDragEnd={() => setArrastrando(null)}
+              {plegada ? (
+                <button
+                  type="button"
+                  className="os-columna-cerrada"
+                  title={`Abrir ${estado}`}
+                  aria-label={`Abrir la columna ${estado}`}
+                  onClick={() => alternar(estado)}
                 >
-                  <div className="os-tarjeta-cliente">{o.cliente}</div>
-                  {/* El servicio con su color: en una columna de seis tarjetas
-                      dice de qué es cada una sin tener que leerlas. Lo que no
-                      es uno de los cuatro (las que vienen de antes dicen el
-                      trabajo entero) va como estaba, en texto. */}
-                  <div className="os-tarjeta-concepto">
-                    {COLOR_SERVICIO[o.concepto] ? (
-                      <span className={`os-sello-estado ${COLOR_SERVICIO[o.concepto]}`}>
-                        {o.concepto}
-                      </span>
-                    ) : (
-                      <span>{o.concepto}</span>
-                    )}
-                    <span className="os-tarjeta-fecha">{formatoFecha(o.fecha)}</span>
-                  </div>
-                  {o.nota && <div className="os-tarjeta-nota">{o.nota}</div>}
-                  {(o.objecion || o.motivo) && (
-                    <div className="os-etiquetas">
-                      {o.objecion && (
-                        <span className="os-etiqueta os-etiqueta-objecion">{o.objecion}</span>
-                      )}
-                      {o.motivo && <span className="os-etiqueta">{o.motivo}</span>}
-                    </div>
-                  )}
-                  <div className="os-tarjeta-pie">
-                    <span className="os-tarjeta-importe">
-                      {formatoImporte(o.importe, o.moneda)}
-                    </span>
-                    {/* Un lápiz y no la palabra: la tarjeta es angosta y el
-                        pie tiene que dejarle el renglón al importe, que es lo
-                        que se compara al recorrer la columna. */}
-                    <button
-                      type="button"
-                      className="os-tarjeta-editar"
-                      title="Editar"
-                      aria-label={`Editar ${o.cliente}`}
-                      // La tarjeta se arrastra: sin esto, apretar el botón
-                      // arranca el arrastre en vez de abrir el cajón.
-                      draggable={false}
-                      onDragStart={(e) => e.stopPropagation()}
-                      onClick={() => setEditando(o)}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
-                        <path d="M13.5 6.5l4 4" />
-                      </svg>
-                    </button>
-                  </div>
-                </article>
-              ))}
+                  <span className="os-columna-cuenta">{filas.length}</span>
+                  <span className="os-columna-vertical">{estado}</span>
+                </button>
+              ) : (
+                <>
+                <div className="os-columna-top">
+                  <button
+                    type="button"
+                    className="os-columna-plegar"
+                    title={`Cerrar ${estado}`}
+                    aria-label={`Cerrar la columna ${estado}`}
+                    onClick={() => alternar(estado)}
+                  >
+                    ‹
+                  </button>
+                  <span className="os-columna-titulo">{estado}</span>
+                  <span className="os-columna-monto">
+                    {filas.length} · {formatoImporte(monto)}
+                  </span>
+                </div>
+                <p className="os-columna-nota">{QUE_ES[estado]}</p>
 
-              {filas.length === 0 && <p className="os-columna-vacia">Nada acá</p>}
+                {filas.map((o) => (
+                  <article
+                    key={o.id}
+                    className={`os-tarjeta-op${arrastrando === o.id ? ' arrastrando' : ''}`}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', o.id);
+                      e.dataTransfer.effectAllowed = 'move';
+                      setArrastrando(o.id);
+                    }}
+                    onDragEnd={() => setArrastrando(null)}
+                  >
+                    <div className="os-tarjeta-cliente">{o.cliente}</div>
+                    {/* El servicio con su color: en una columna de seis tarjetas
+                        dice de qué es cada una sin tener que leerlas. Lo que no
+                        es uno de los cuatro (las que vienen de antes dicen el
+                        trabajo entero) va como estaba, en texto. */}
+                    <div className="os-tarjeta-concepto">
+                      {COLOR_SERVICIO[o.concepto] ? (
+                        <span className={`os-sello-estado ${COLOR_SERVICIO[o.concepto]}`}>
+                          {o.concepto}
+                        </span>
+                      ) : (
+                        <span>{o.concepto}</span>
+                      )}
+                      <span className="os-tarjeta-fecha">{formatoFecha(o.fecha)}</span>
+                    </div>
+                    {o.nota && <div className="os-tarjeta-nota">{o.nota}</div>}
+                    {(o.objecion || o.motivo) && (
+                      <div className="os-etiquetas">
+                        {o.objecion && (
+                          <span className="os-etiqueta os-etiqueta-objecion">{o.objecion}</span>
+                        )}
+                        {o.motivo && <span className="os-etiqueta">{o.motivo}</span>}
+                      </div>
+                    )}
+                    <div className="os-tarjeta-pie">
+                      <span className="os-tarjeta-importe">
+                        {formatoImporte(o.importe, o.moneda)}
+                      </span>
+                      <div className="os-tarjeta-acciones">
+                        {/* El documento que abre el cliente, cuando ya está
+                            escrito: se mira desde la tarjeta, sin entrar a la
+                            oportunidad. */}
+                        {o.token && (
+                          <a
+                            className="os-tarjeta-ver"
+                            href={`/q/${o.token}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="Ver la propuesta"
+                            aria-label={`Ver la propuesta de ${o.cliente}`}
+                            draggable={false}
+                            onDragStart={(e) => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" />
+                              <circle cx="12" cy="12" r="2.6" />
+                            </svg>
+                          </a>
+                        )}
+                        {/* Un lápiz y no la palabra: la tarjeta es angosta y el
+                            pie tiene que dejarle el renglón al importe, que es lo
+                            que se compara al recorrer la columna. */}
+                        <button
+                          type="button"
+                          className="os-tarjeta-editar"
+                          title="Editar"
+                          aria-label={`Editar ${o.cliente}`}
+                          // La tarjeta se arrastra: sin esto, apretar el botón
+                          // arranca el arrastre en vez de abrir el cajón.
+                          draggable={false}
+                          onDragStart={(e) => e.stopPropagation()}
+                          onClick={() => setEditando(o)}
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
+                            <path d="M13.5 6.5l4 4" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+                  {filas.length === 0 && <p className="os-columna-vacia">Nada acá</p>}
+                </>
+              )}
             </div>
           );
         })}

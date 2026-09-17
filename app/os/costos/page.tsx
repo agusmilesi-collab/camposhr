@@ -1,6 +1,7 @@
 import Shell from '../Shell';
 import { BorrarCosto, NuevoCosto } from './Costos';
 import {
+  GANADOS,
   formatoFecha,
   formatoImporte,
   listarCostos,
@@ -41,7 +42,7 @@ export default async function Costos() {
     listarEmpresas().catch(() => []),
   ]);
 
-  const ganadas = cotizaciones.filter((c) => c.estado === 'Aprobada');
+  const ganadas = cotizaciones.filter((c) => GANADOS.includes(c.estado));
   const deLa = (id: string) => costos.filter((x) => x.cotizacionId === id);
 
   /**

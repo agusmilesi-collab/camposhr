@@ -7,6 +7,7 @@ import { ESTADOS, TIPOS_COSTO } from '@/lib/cotizaciones';
 import { esObjecion } from '@/lib/comercial-tipos';
 import { slugDeEmpresa } from '@/lib/empresa-slug';
 import { anotarAcceso } from '@/lib/accesos';
+import { hoy } from '@/lib/hora';
 import { quienSoy } from '@/lib/identidad';
 
 export const runtime = 'nodejs';
@@ -132,6 +133,30 @@ export async function POST(req: Request) {
         revalidateTag(CACHE_CLIENTES);
         revalidateTag(CACHE_COMERCIAL);
                 return NextResponse.json({ ok: true });
+      }
+
+      /**
+       * "Ya lo seguí": corre el aviso de la home tres días más.
+       *
+       * Guarda el día y no borra nada: la propuesta sigue enviada, lo que
+       * cambia es desde cuándo se cuentan los días hasta el próximo recordatorio.
+       */
+      case 'seguimiento': {
+        const { id } = datos;
+        if (!UUID.test(id ?? '')) {
+          return NextResponse.json({ error: 'Oportunidad inválida.' }, { status: 400 });
+        }
+        const dia = hoy();
+        await escribir(`cotizaciones?id=eq.${id}`, 'PATCH', { seguimiento_el: dia });
+        await anotarAcceso({
+          quien: yo.nombre,
+          accion: 'escritura',
+          recurso: 'cotizacion',
+          recursoId: id,
+          detalle: { seguimiento_el: dia },
+        });
+        revalidateTag(CACHE_COMERCIAL);
+        return NextResponse.json({ ok: true });
       }
 
       case 'nueva': {

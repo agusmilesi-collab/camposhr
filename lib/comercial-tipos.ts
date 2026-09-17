@@ -6,7 +6,7 @@
  * cuatro estados y los tipos de costo los necesitan las dos mitades.
  */
 
-export const ESTADOS = ['Lead', 'Enviada', 'Aprobada', 'Perdida'] as const;
+export const ESTADOS = ['Lead', 'Enviada', 'Aprobada', 'Entregada', 'Perdida'] as const;
 
 /**
  * Lo que se vende, para que el embudo se pueda leer por servicio.
@@ -39,6 +39,31 @@ export type Estado = (typeof ESTADOS)[number];
 
 /** Las que todavía se pueden ganar. */
 export const ABIERTOS: readonly Estado[] = ['Lead', 'Enviada'];
+
+/**
+ * Las que se ganaron, aprobadas y entregadas.
+ *
+ * Entregada es Aprobada con el trabajo ya hecho, así que sigue contando como
+ * ingreso: si solo mirara 'Aprobada', mover la tarjeta al entregar el trabajo
+ * borraría la venta de Costos y del porcentaje de cierre.
+ */
+export const GANADOS: readonly Estado[] = ['Aprobada', 'Entregada'];
+
+/**
+ * Cuántos días se le da al cliente antes de volver a preguntar.
+ *
+ * Tres: menos parece apuro y más ya es una propuesta que se enfrió sin que
+ * nadie se enterara.
+ */
+export const DIAS_SEGUIMIENTO = 3;
+
+/** Los días corridos entre dos fechas escritas como 2026-09-17. */
+export function diasEntre(desde: string, hasta: string): number {
+  const a = Date.parse(desde + 'T00:00:00Z');
+  const b = Date.parse(hasta + 'T00:00:00Z');
+  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
+  return Math.round((b - a) / 86400000);
+}
 
 /**
  * El precio, escrito como se escribe un precio.

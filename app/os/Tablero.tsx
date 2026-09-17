@@ -223,10 +223,28 @@ function Tarjeta({
   );
 }
 
+/**
+ * Una propuesta enviada que ya pide que alguien pregunte cómo viene.
+ *
+ * No es una evaluación y no se arrastra: entra sola a Hoy cuando pasaron los
+ * días, y se va cuando alguien dice que ya la siguió o cuando la cotización
+ * cambia de estado. Lo ven las tres, porque seguir una propuesta no es de
+ * nadie en particular.
+ */
+export type Seguimiento = {
+  id: string;
+  cliente: string;
+  concepto: string;
+  /** Días desde que se mandó, o desde el último seguimiento. */
+  dias: number;
+  token: string | null;
+};
+
 export default function Tablero({
   filas,
   citasDeHoy,
   conEvaluadora,
+  seguimientos = [],
 }: {
   filas: Evaluacion[];
   /**
@@ -238,6 +256,8 @@ export default function Tablero({
   citasDeHoy: string[];
   /** Si la tarjeta dice de quién es: solo cuando quien mira ve el conjunto. */
   conEvaluadora: boolean;
+  /** Las propuestas que hay que seguir hoy. */
+  seguimientos?: Seguimiento[];
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -245,6 +265,24 @@ export default function Tablero({
   const [encima, setEncima] = useState<ColumnaTablero | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [trabajando, setTrabajando] = useState<string | null>(null);
+  /** Las que alguien acaba de seguir, para que la tarjeta se vaya al toque. */
+  const [seguidas, setSeguidas] = useState<string[]>([]);
+
+  async function seguida(id: string) {
+    setSeguidas((xs) => [...xs, id]);
+    try {
+      const res = await fetch('/api/os/comercial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion: 'seguimiento', id }),
+      });
+      if (!res.ok) throw new Error();
+      empezar(() => router.refresh());
+    } catch {
+      setSeguidas((xs) => xs.filter((x) => x !== id));
+      setError('No se pudo guardar el seguimiento.');
+    }
+  }
 
   /** Lo cambiado en pantalla que el servidor todavía no confirmó. */
   const [movidas, setMovidas] = useState<Record<string, Partial<Evaluacion>>>({});
@@ -348,8 +386,51 @@ export default function Tablero({
             >
               <div className="os-columna-top">
                 <span className="os-columna-titulo">{c.titulo}</span>
-                <span className="os-columna-monto">{suyas.length}</span>
+                <span className="os-columna-monto">
+                  {suyas.length +
+                    (c.clave === 'hoy'
+                      ? seguimientos.filter((s) => !seguidas.includes(s.id)).length
+                      : 0)}
+                </span>
               </div>
+              {c.clave === 'hoy' &&
+                seguimientos
+                  .filter((s) => !seguidas.includes(s.id))
+                  .map((s) => (
+                    <article key={s.id} className="os-mini os-mini-seguimiento">
+                      <div className="os-mini-cuerpo">
+                        <span className="os-mini-nombre">{s.cliente}</span>
+                        <span className="os-mini-detalle">
+                          Propuesta enviada hace {s.dias} {s.dias === 1 ? 'día' : 'días'} ·{' '}
+                          {s.concepto}
+                        </span>
+                      </div>
+                      <div className="os-mini-pie">
+                        {s.token ? (
+                          <a
+                            className="os-enlace"
+                            href={`/q/${s.token}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Ver la propuesta
+                          </a>
+                        ) : (
+                          <Link className="os-enlace" href="/os/cotizaciones">
+                            Ver el embudo
+                          </Link>
+                        )}
+                        <button
+                          type="button"
+                          className="os-boton-chico"
+                          onClick={() => seguida(s.id)}
+                        >
+                          Ya la seguí
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+
               {suyas.map((e) => (
                 <Tarjeta
                   key={e.id}
@@ -367,7 +448,10 @@ export default function Tablero({
                   onPrioridad={(p) => guardar(e.id, { prioridad: p })}
                 />
               ))}
-              {suyas.length === 0 && <p className="os-columna-vacia">{c.vacio}</p>}
+              {suyas.length === 0 &&
+                !(c.clave === 'hoy' && seguimientos.some((s) => !seguidas.includes(s.id))) && (
+                  <p className="os-columna-vacia">{c.vacio}</p>
+                )}
             </div>
           );
         })}

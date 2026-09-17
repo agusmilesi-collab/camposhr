@@ -2804,6 +2804,134 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   cursor: pointer;
 }
 
+/* El embudo: el ancho de cada columna lo pone el tablero, según cuáles estén
+   cerradas. Con el ancho en línea, la regla angosta no podría ganarle, así que
+   viaja como variable y acá se decide. */
+.os-kanban.os-kanban-embudo {
+  grid-template-columns: var(--os-kanban-cols);
+}
+
+@media (max-width: 1100px) {
+  .os-kanban.os-kanban-embudo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.os-columna.plegada {
+  padding: 10px 4px;
+  min-height: 160px;
+}
+
+.os-columna-cerrada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--os-suave);
+  cursor: pointer;
+}
+
+.os-columna-cerrada:hover {
+  color: var(--os-texto);
+}
+
+.os-columna-vertical {
+  writing-mode: vertical-rl;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.os-columna-cuenta {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-columna-plegar {
+  padding: 0 4px;
+  margin-right: 4px;
+  border: 0;
+  background: none;
+  color: var(--os-suave);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.os-columna-plegar:hover {
+  color: var(--os-texto);
+}
+
+/* El aviso de seguir una propuesta, en la columna Hoy del Inicio: la misma
+   tarjeta que una evaluación, sin el cursor de arrastre porque no se mueve. */
+.os-mini-seguimiento {
+  cursor: default;
+}
+
+.os-mini-seguimiento .os-mini-pie {
+  justify-content: space-between;
+}
+
+.os-mini-seguimiento .os-enlace {
+  font-size: 0.72rem;
+}
+
+.os-boton-chico {
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+  color: var(--os-texto);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+
+.os-boton-chico:hover {
+  border-color: var(--os-ambar, #d9a13b);
+}
+
+.os-tarjeta-acciones {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.os-tarjeta-ver {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel);
+  color: var(--os-suave);
+  text-decoration: none;
+}
+
+.os-tarjeta-ver svg {
+  width: 15px;
+  height: 15px;
+}
+
+.os-tarjeta-ver:hover {
+  border-color: var(--os-azul);
+  background: var(--os-panel-2);
+  color: var(--os-texto);
+}
+
+/* Los dos van juntos en su caja, así que el lápiz ya no empuja solo. */
+.os-tarjeta-acciones .os-tarjeta-editar {
+  margin-left: 0;
+}
+
 .os-tarjeta-editar svg {
   width: 15px;
   height: 15px;
