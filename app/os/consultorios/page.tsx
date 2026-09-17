@@ -23,7 +23,6 @@ import {
   sumarDias,
 } from '@/lib/consultorios';
 import Calendario from './Calendario';
-import Facturar from './Facturar';
 import Inquilinos from './Inquilinos';
 import Espacios from './Espacios';
 import Finanzas from './Finanzas';
@@ -331,24 +330,14 @@ export default async function Consultorios({
       )}
 
       {ver === 'inquilinos' && (
-        <>
-        {/* Facturar arriba de la lista: al cerrar el mes es lo primero que se
-            hace, y son trece facturas a trece CUIT distintos. */}
-        <Facturar
-          cola={cola}
-          emisoras={emisoras}
-          facturas={facturasCentro}
-          periodo={periodo}
-          hoy={hoy}
-        />
         <Inquilinos
           inquilinos={inquilinos}
           contratos={contratos}
           movimientos={movimientos}
           periodo={periodo}
           hoy={hoy}
+          facturacion={{ cola, emisoras, facturas: facturasCentro }}
         />
-        </>
       )}
 
       {ver === 'finanzas' && (

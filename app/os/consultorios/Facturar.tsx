@@ -56,6 +56,7 @@ export default function Facturar({
   hoy,
   soloInquilino,
   cargosElegidos,
+  seleccion,
 }: {
   cola: Facturable[];
   emisoras: Emisora[];
@@ -72,6 +73,14 @@ export default function Facturar({
    * es lo que se hace al cerrar.
    */
   cargosElegidos?: string[];
+  /**
+   * A quiénes se factura, tildados afuera.
+   *
+   * En la lista del mes las tildes están en la tabla de inquilinos, que es
+   * donde se ve cuánto sumó cada uno: repetir la lista acá abajo era la misma
+   * gente dos veces en la misma pantalla.
+   */
+  seleccion?: string[];
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -90,7 +99,8 @@ export default function Facturar({
   const [emisor, setEmisor] = useState(porDefecto);
   const [fecha, setFecha] = useState(hoy);
   const [numero, setNumero] = useState('');
-  const [elegidos, setElegidos] = useState<string[]>(pendientes.map((p) => p.id));
+  const [propios, setElegidos] = useState<string[]>(pendientes.map((p) => p.id));
+  const elegidos = seleccion ?? propios;
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
@@ -187,7 +197,7 @@ export default function Facturar({
                 descubre cuando la factura ya salió. */}
             {/* Con una sola persona la fila sobra: los cargos se tildan arriba,
                 en la tabla del resumen. */}
-            <div className={soloInquilino ? 'os-oculto' : 'os-facturar-lista'}>
+            <div className={soloInquilino || seleccion ? 'os-oculto' : 'os-facturar-lista'}>
               {pendientes.map((p) => (
                 <label className="os-facturar-fila" key={p.id}>
                   <input
