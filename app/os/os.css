@@ -14404,3 +14404,117 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
     border-top: 1px solid var(--os-linea-suave);
   }
 }
+
+/* Una sección de la barra que está a la vista y no lleva a ninguna parte: la
+   pantalla todavía no existe. En gris y sin cursor de enlace, para que no se
+   toque esperando que abra algo. */
+.os-item-inerte,
+.os-item-inerte:hover {
+  color: var(--os-suave);
+  background: none;
+  cursor: default;
+}
+
+/* ---------- Facturar el alquiler del Centro ----------
+   La cola del mes: una fila por inquilino con su tilde, a nombre de quién sale
+   la factura y cuánto suma. Es la misma forma que la cola de psicotécnicos, con
+   menos columnas porque acá el renglón es una persona y no un candidato. */
+.os-facturar-lista {
+  display: grid;
+  gap: 6px;
+}
+
+.os-facturar-fila {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--os-linea-suave);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.os-facturar-fila:hover {
+  border-color: var(--os-linea);
+}
+
+/* Las emitidas no se tildan: llevan el comprobante al final. */
+.os-facturar-emitida {
+  grid-template-columns: minmax(0, 1fr) max-content max-content;
+  cursor: default;
+}
+
+.os-facturar-quien {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.os-facturar-quien b {
+  font-size: 0.92rem;
+}
+
+.os-facturar-quien .os-dato-falta {
+  font-size: 0.78rem;
+}
+
+.os-facturar-monto {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Quién factura, con qué fecha y con qué número: en una fila, al pie de la
+   cola. El botón cierra la fila, que es el orden en que se completa. */
+.os-facturar-datos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-facturar-datos .os-campo-bloque {
+  min-width: 150px;
+}
+
+.os-facturar-datos .os-boton {
+  margin-left: auto;
+}
+
+/* Facturar adentro del resumen del mes, en la ficha de un inquilino: es un pie
+   del panel y no un panel propio, porque se factura lo que la tabla de arriba
+   acaba de mostrar. */
+.os-facturar-pie {
+  padding: 16px 20px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+.os-facturar-pie .os-panel-top {
+  padding: 0 0 10px;
+  border: 0;
+}
+
+.os-facturar-pie .os-vacio {
+  padding: 4px 0 0;
+}
+
+/* La tilde de cada cargo en el resumen del mes: dice si ese renglón entra en la
+   factura que se emite abajo. Angosta y centrada, para que la columna no le
+   saque ancho al detalle. */
+.os-tabla-tilde {
+  text-align: center;
+  padding-right: 0 !important;
+}
+
+/* El total de lo que se va a facturar, contra el margen derecho y del cuerpo de
+   un total: cae en la misma columna que los importes de la tabla de arriba. */
+.os-facturar-top .os-facturar-total {
+  margin-left: auto;
+  font-size: 1.02rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

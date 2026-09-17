@@ -312,6 +312,13 @@ export async function POST(req: Request) {
         if (typeof datos?.matricula === 'string') cambios.matricula = datos.matricula.trim() || null;
         if (typeof datos?.matriculaVence === 'string')
           cambios.matricula_vence = FECHA.test(datos.matriculaVence) ? datos.matriculaVence : null;
+        // Los datos fiscales, que son los que salen en la factura del alquiler.
+        if (typeof datos?.cuit === 'string')
+          cambios.cuit = datos.cuit.replace(/\D/g, '') || null;
+        if (typeof datos?.razonSocial === 'string')
+          cambios.razon_social = datos.razonSocial.trim() || null;
+        if (typeof datos?.condicionIva === 'string')
+          cambios.condicion_iva = datos.condicionIva.trim() || null;
         if (typeof datos?.llaveEntregada === 'boolean') cambios.llave_entregada = datos.llaveEntregada;
         if (typeof datos?.activo === 'boolean') cambios.activo = datos.activo;
         if (Object.keys(cambios).length === 0) return mal('No vino ningún cambio.');

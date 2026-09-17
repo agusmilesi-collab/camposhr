@@ -146,10 +146,10 @@ export default function TablaEntregados({
 
   return (
     <>
-      {/* El buscador arriba de la tabla, con la cuenta al lado: dice cuántos
-          quedaron sin tener que contarlos. */}
+      {/* El buscador como banda de la misma tarjeta, arriba de la cabecera:
+          suelto, su recuadro chocaba con el borde de la tabla. */}
       <div className="tabla-buscar">
-        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
           <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
           <path d="M16 16l4.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
@@ -157,7 +157,7 @@ export default function TablaEntregados({
           type="search"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
-          placeholder="Buscar por candidato, pedido o evaluadora"
+          placeholder="Escribí acá para buscar por candidato, pedido o evaluadora"
           aria-label="Buscar en los informes entregados"
         />
         {busca.trim() && (

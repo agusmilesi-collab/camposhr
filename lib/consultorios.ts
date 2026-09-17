@@ -117,6 +117,7 @@ export async function listarInquilinos(): Promise<Inquilino[]> {
   return select<Inquilino>(
     'inquilinos',
     'select=id,nombre,correo,telefono,activo,hash,matricula,matricula_vence,dni_archivo,' +
+      'cuit,razon_social,condicion_iva,' +
       'matricula_archivo,llave_entregada,normas_version,normas_aceptadas_at,created_at&order=nombre.asc',
     'consultorios'
   );
@@ -149,6 +150,7 @@ export async function inquilinoPorId(id: string): Promise<Inquilino | null> {
   const filas = await select<Inquilino>(
     'inquilinos',
     'select=id,nombre,correo,telefono,activo,hash,matricula,matricula_vence,dni_archivo,' +
+      'cuit,razon_social,condicion_iva,' +
       `matricula_archivo,llave_entregada,normas_version,normas_aceptadas_at&id=eq.${id}`
   );
   return filas[0] ?? null;

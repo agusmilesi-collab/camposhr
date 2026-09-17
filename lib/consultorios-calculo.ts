@@ -106,6 +106,10 @@ export type Inquilino = {
   llave_entregada: boolean;
   normas_version: string | null;
   normas_aceptadas_at: string | null;
+  /** Los datos fiscales: son los que salen impresos en la factura del alquiler. */
+  cuit: string | null;
+  razon_social: string | null;
+  condicion_iva: string | null;
   /** Cuándo se dio de alta. De acá sale su color en el calendario. */
   created_at?: string;
 };

@@ -70,7 +70,8 @@ type FilaFactura = {
   punto_venta: number | null;
   fecha: string;
   emisor_id: string;
-  empresa_id: string;
+  empresa_id: string | null;
+  inquilino_id: string | null;
   concepto: string | null;
   orden_compra: string | null;
   cotizacion_id: string | null;
@@ -83,6 +84,7 @@ type FilaFactura = {
   cae_vence_el: string | null;
   emisores: { razon_social: string; evaluadoras: { nombre: string } | null } | null;
   empresas: { nombre: string } | null;
+  inquilinos: { nombre: string } | null;
   factura_items: {
     id: string;
     evaluacion_id: string | null;
@@ -124,9 +126,9 @@ export async function listarEmisoras(): Promise<Emisora[]> {
 export async function listarFacturas(): Promise<Factura[]> {
   const filas = await select<FilaFactura>(
     'facturas',
-    'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,concepto,orden_compra,cotizacion_id,' +
+    'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,' +
-      'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),' +
+      'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(personas(nombre),pedidos(puesto)))' +
       '&order=fecha.desc,numero.desc',
@@ -139,9 +141,9 @@ export async function listarFacturas(): Promise<Factura[]> {
 export async function verFactura(id: string): Promise<Factura | null> {
   const filas = await select<FilaFactura>(
     'facturas',
-    'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,concepto,orden_compra,cotizacion_id,' +
+    'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,' +
-      'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),' +
+      'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(personas(nombre),pedidos(puesto)))' +
       `&id=eq.${id}&limit=1`
@@ -158,7 +160,8 @@ function armarFactura(f: FilaFactura): Factura {
     emisorId: f.emisor_id,
     emisora: f.emisores?.evaluadoras?.nombre ?? f.emisores?.razon_social ?? 'sin emisora',
     empresaId: f.empresa_id,
-    cliente: f.empresas?.nombre ?? 'sin cliente',
+    inquilinoId: f.inquilino_id,
+    cliente: f.empresas?.nombre ?? f.inquilinos?.nombre ?? 'sin cliente',
     concepto: f.concepto,
     ordenCompra: f.orden_compra,
     cotizacionId: f.cotizacion_id,

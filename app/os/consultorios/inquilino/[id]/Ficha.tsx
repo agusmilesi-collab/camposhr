@@ -36,6 +36,8 @@ import {
   type Reserva,
 } from '@/lib/consultorios-calculo';
 import { mandar, pesos } from '../../acciones';
+import Facturar, { type Facturable, type FacturaEmitida } from '../../Facturar';
+import type { Emisora } from '@/lib/facturas-tipos';
 
 const NOMBRE: Record<Movimiento['tipo'], string> = {
   cargo: 'Reserva',
@@ -136,6 +138,7 @@ export default function Ficha({
   firma,
   periodo,
   hoy,
+  facturacion,
 }: {
   inquilino: Inquilino;
   espacios: Espacio[];
@@ -146,6 +149,18 @@ export default function Ficha({
   firma: { nombre: string; cargo: string; trazo: string | null } | null;
   periodo: string;
   hoy: string;
+  /**
+   * Lo que hace falta para facturar el mes, leído del servidor.
+   *
+   * El bloque se dibuja adentro del resumen y no en un panel aparte: se factura
+   * lo que la tabla de arriba acaba de mostrar, y por eso los cargos se tildan
+   * ahí mismo, renglón por renglón.
+   */
+  facturacion?: {
+    cola: Facturable[];
+    emisoras: Emisora[];
+    facturas: FacturaEmitida[];
+  };
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -177,6 +192,17 @@ export default function Ficha({
   const salaDe = (id: string) => espacios.find((e) => e.id === id)?.nombre ?? 'Sala';
 
   const delMes = movimientos.filter((m) => m.periodo === periodo);
+
+  /**
+   * Qué cargos del mes están sin facturar y cuáles entran en la factura.
+   *
+   * Arrancan todos tildados, que es el caso de siempre: se factura el mes
+   * entero. Destildar un renglón lo deja afuera de esta factura y lo devuelve a
+   * la cola, para facturarlo aparte o más adelante.
+   */
+  const pendientes = facturacion?.cola.find((c) => c.id === i.id)?.cargos.map((c) => c.id) ?? [];
+  const [fuera, setFuera] = useState<string[]>([]);
+  const porFacturar = pendientes.filter((id) => !fuera.includes(id));
   const cargos = delMes.filter((m) => m.tipo === 'cargo').reduce((n, m) => n + m.importe, 0);
   const pagos = delMes.filter((m) => m.tipo === 'pago').reduce((n, m) => n + m.importe, 0);
   const saldo = saldoDe(delMes);
@@ -329,6 +355,9 @@ export default function Ficha({
       correo: String(d.get('correo') ?? ''),
       telefono: String(d.get('telefono') ?? ''),
       matricula: String(d.get('matricula') ?? ''),
+      cuit: String(d.get('cuit') ?? ''),
+      razonSocial: String(d.get('razonSocial') ?? ''),
+      condicionIva: String(d.get('condicionIva') ?? ''),
       llaveEntregada: d.get('llave') === 'on',
       activo: d.get('activo') === 'on',
     });
@@ -466,6 +495,42 @@ export default function Ficha({
                 autoComplete="off"
                 defaultValue={i.matricula ?? ''}
               />
+            </label>
+            {/* Los datos fiscales: son los que salen impresos en la factura del
+                alquiler, y cada una va a un CUIT distinto. */}
+            <label className="os-etiqueta-campo">
+              CUIT
+              <input
+                className="os-campo os-campo-suave"
+                name="cuit"
+                autoComplete="off"
+                inputMode="numeric"
+                placeholder="Sin cargar"
+                defaultValue={i.cuit ?? ''}
+              />
+            </label>
+            <label className="os-etiqueta-campo">
+              Razón social
+              <input
+                className="os-campo os-campo-suave"
+                name="razonSocial"
+                autoComplete="off"
+                placeholder="Si factura a nombre propio, queda vacío"
+                defaultValue={i.razon_social ?? ''}
+              />
+            </label>
+            <label className="os-etiqueta-campo">
+              Condición de IVA
+              <select
+                className="os-campo os-campo-suave"
+                name="condicionIva"
+                defaultValue={i.condicion_iva ?? 'Consumidor Final'}
+              >
+                <option>Consumidor Final</option>
+                <option>Monotributo</option>
+                <option>Responsable Inscripto</option>
+                <option>Exento</option>
+              </select>
             </label>
             <div className="os-ficha-tildes">
               <label className="os-tilde-fila">
@@ -696,14 +761,18 @@ export default function Ficha({
         ) : (
           <table className="os-tabla os-tabla-fija">
             <colgroup>
+              {facturacion && <col style={{ width: '4%' }} />}
               <col style={{ width: '12%' }} />
               <col style={{ width: '16%' }} />
-              <col style={{ width: '36%' }} />
+              <col style={{ width: facturacion ? '32%' : '36%' }} />
               <col style={{ width: '18%' }} />
               <col style={{ width: '18%' }} />
             </colgroup>
             <thead>
               <tr>
+                {/* La tilde no lleva rótulo: lo que dice qué es está en la fila
+                    de abajo, en el bloque de facturar. */}
+                {facturacion && <th />}
                 <th>Fecha</th>
                 <th>Qué</th>
                 <th>Detalle</th>
@@ -714,6 +783,28 @@ export default function Ficha({
             <tbody>
               {delMes.map((m) => (
                 <tr key={m.id}>
+                  {facturacion && (
+                    <td className="os-tabla-tilde">
+                      {pendientes.includes(m.id) ? (
+                        <input
+                          type="checkbox"
+                          aria-label="Entra en la factura"
+                          checked={porFacturar.includes(m.id)}
+                          onChange={() =>
+                            setFuera((prev) =>
+                              prev.includes(m.id)
+                                ? prev.filter((x) => x !== m.id)
+                                : [...prev, m.id]
+                            )
+                          }
+                        />
+                      ) : m.tipo === 'cargo' ? (
+                        <span className="os-dato-falta" title="Ya facturado">
+                          ✓
+                        </span>
+                      ) : null}
+                    </td>
+                  )}
                   <td>{dia(m.fecha)}</td>
                   <td>{NOMBRE[m.tipo]}</td>
                   <td>{detalleDe(m)}</td>
@@ -854,6 +945,18 @@ export default function Ficha({
               Registrar un pago
             </button>
           </div>
+        )}
+
+        {facturacion && (
+          <Facturar
+            cola={facturacion.cola}
+            emisoras={facturacion.emisoras}
+            facturas={facturacion.facturas}
+            periodo={periodo}
+            hoy={hoy}
+            soloInquilino={i.id}
+            cargosElegidos={porFacturar}
+          />
         )}
       </div>
 
