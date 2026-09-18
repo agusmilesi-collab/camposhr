@@ -5545,12 +5545,6 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
  * dibujadas en cruz: Frontal arriba, Basal abajo, que es la disposición del
  * modelo. La diagonal se ve de un vistazo y en una lista de números no.
  */
-/* Lo que escribió pide más ancho que la lista de acontecimientos: son
-   párrafos contra renglones sueltos. */
-.os-bz-cierre {
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-}
-
 /* Pasado cierto ancho las tarjetas quedan medio vacías y la lectura se
    dispersa: la hoja del Benziger tiene tope. */
 .os-bz-hoja {
@@ -5740,16 +5734,76 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
  * gráfico los leen de variables que se declaran en `.inf`, y una medida chica:
  * en la tarjeta va como referencia de la figura, no para medir vértices.
  */
-/* Las cruces ocupan dos tercios de la fila y la tabla del perfil el tercio que
-   queda: así el gráfico entra al lado de las cruces y no debajo. */
-.os-bz-bloque-cruces {
+/**
+ * Estilo y estrés, Estado emocional, Autoimagen, lo que escribió y lo que le
+ * pasó: los cinco en una sola tarjeta.
+ *
+ * Una grilla de tres columnas: arriba las tres del estado de la persona, abajo
+ * lo que escribió, que toma dos porque son párrafos, y los acontecimientos, que
+ * son renglones sueltos. Las líneas entre columnas y entre las dos partes son
+ * lo que separa los bloques ahora que no los separa el fondo de la pantalla.
+ */
+.os-bz-estado {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Aire entre la línea del título de la columna y lo primero que viene debajo:
+   pegados, el primer renglón se leía como parte del encabezado. */
+.os-bz-estado .os-hoja-titulo {
+  margin-bottom: 18px;
+}
+
+/* El aire lo pone el relleno de cada columna y no un espacio entre ellas: con
+   un hueco, la línea horizontal de la segunda parte se cortaría justo donde una
+   columna termina y empieza la otra. */
+.os-bz-estado .os-bz-columna {
+  padding-right: 20px;
+}
+
+.os-bz-estado .os-bz-columna:last-child {
+  padding-right: 0;
+}
+
+.os-bz-estado .os-bz-corte-izq {
+  padding-left: 20px;
+  border-left: 1px solid var(--os-linea);
+}
+
+.os-bz-estado .os-bz-corte-arriba {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-bz-estado .os-bz-ancha {
   grid-column: span 2;
 }
 
-/* Separadas de la línea del título de la tarjeta: los tres subtítulos quedaban
-   pegados a ella y se leían como parte del encabezado. */
+/* En una pantalla angosta las cinco van una debajo de la otra y todos los
+   cortes pasan a ser horizontales. */
+@media (max-width: 900px) {
+  .os-bz-estado {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-bz-estado .os-bz-columna {
+    padding-right: 0;
+  }
+
+  .os-bz-estado .os-bz-ancha {
+    grid-column: auto;
+  }
+
+  .os-bz-estado .os-bz-corte-izq {
+    margin-top: 16px;
+    padding: 16px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--os-linea);
+  }
+}
+
 .os-bz-cruces-fila {
-  margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
   /* El gráfico es más alto que las cruces y es el que marca el alto de la
@@ -5899,6 +5953,69 @@ html[data-os-tema='oscuro'] .os-bz-cerebro {
 .os-bz-lectura.diagonal {
   color: var(--os-tinta-media);
   font-weight: 500;
+}
+
+/* Los bloques de adentro de las columnas, más juntos: el aire que ganó el
+   título debajo de su línea se recupera acá, así la tarjeta mide lo mismo que
+   antes. El alto de la fila lo marca Estado emocional, que es la columna con
+   más bloques. */
+.os-bz-relato .os-hoja-detalle {
+  margin-top: 7px;
+  padding-top: 5px;
+}
+
+/* Los renglones de los adjetivos, un poco más juntos entre sí: es una lista de
+   palabras separadas por punto y coma, no un párrafo. */
+.os-bz-relato .os-bz-texto {
+  line-height: 1.4;
+}
+
+/* El adjetivo que resume el período, en el casillero gris de los números de la
+   escala: es un valor leído, igual que el 8 del nivel de alerta. */
+.os-bz-ponderado {
+  margin-left: 7px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta-media);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+/**
+ * Los rótulos de adentro de la tarjeta del relato, en minúscula.
+ *
+ * "Lo que disfruta" o "Últimos 3 meses" son el nombre de una respuesta, no un
+ * bloque de la hoja: en versalitas espaciadas tienen la misma forma que el
+ * título de la columna y a la primera mirada se cuentan como títulos. Los de
+ * las cruces y el gráfico siguen en versalitas, porque ahí sí nombran bloques.
+ */
+.os-bz-relato .os-hoja-subtitulo {
+  font-size: 0.79rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--os-tinta);
+}
+
+/* Lo que escribió, más junto: son tres respuestas cortas con su rótulo, y con
+   el aire de los demás detalles la columna se leía como cinco bloques sueltos
+   repartidos en toda la altura de la tarjeta. */
+.os-bz-escrito .os-hoja-detalle {
+  margin-top: 10px;
+  padding-top: 0;
+  /* Sin la línea de puntos entre respuestas: el rótulo en versalitas ya marca
+     dónde empieza cada una, y tres líneas en una columna de tres respuestas
+     partían la lectura más de lo que la ordenaban. */
+  border-top: 0;
+}
+
+.os-bz-escrito .os-hoja-subtitulo {
+  margin-bottom: 2px;
+}
+
+.os-bz-escrito .os-bz-texto {
+  line-height: 1.4;
 }
 
 .os-bz-texto {
@@ -6686,7 +6803,7 @@ html[data-os-tema='oscuro'] .os-bz-cerebro {
 }
 
 .os-hoja-bloque {
-  padding: 14px 18px 16px;
+  padding: 20px 24px 22px;
   border: 1px solid var(--os-linea);
   border-radius: 12px;
   background: var(--os-panel);
@@ -6962,10 +7079,6 @@ html[data-os-tema='oscuro'] .os-bz-cerebro {
 @media (max-width: 720px) {
   .os-hoja-fila {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .os-bz-bloque-cruces {
-    grid-column: auto;
   }
 
   .os-hoja-campos {

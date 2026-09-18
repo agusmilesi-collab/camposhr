@@ -155,8 +155,8 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
     <div className="os-hoja os-bz-hoja">
       {/* Perfil y cruces arriba: son la misma lectura, los números y su
           dibujo. Todo lo demás va debajo. */}
-      <div className="os-hoja-fila" style={{ '--os-hoja-columnas': 3 } as React.CSSProperties}>
-        <section className="os-hoja-bloque">
+      <section className="os-hoja-bloque os-bz-estado">
+        <div className="os-bz-columna">
           <h3 className="os-hoja-titulo">Perfil</h3>
           <Perfil filas={l.filas} />
           {!l.tiempoLibre.cuenta && (
@@ -165,12 +165,12 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
               {l.tiempoLibre.respuesta ? `, sino "${l.tiempoLibre.respuesta}"` : ''}.
             </p>
           )}
-        </section>
+        </div>
 
-        {/* Dos tercios de la fila: adentro van las tres cruces y el gráfico
+        {/* Dos tercios de la tarjeta: adentro van las tres cruces y el gráfico
             uno al lado del otro, que es como se leen, y la tabla del perfil se
             arregla con el tercio restante. */}
-        <section className="os-hoja-bloque os-bz-bloque-cruces">
+        <div className="os-bz-columna os-bz-ancha os-bz-corte-izq">
           <h3 className="os-hoja-titulo">Cruces</h3>
           <div className="os-bz-cruces-fila">
             <div className="os-bz-cruces">
@@ -192,11 +192,16 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
               </div>
             )}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      <div className="os-hoja-fila" style={{ '--os-hoja-columnas': 3 } as React.CSSProperties}>
-        <section className="os-hoja-bloque">
+      {/* Todo lo que no son números, en una sola tarjeta: arriba el estado de la
+          persona en tres columnas, abajo lo que escribió y lo que le pasó en dos.
+          Una línea vertical separa las columnas y una horizontal las dos partes.
+          En cinco tarjetas sueltas, el mismo material se leía como cinco temas
+          distintos. */}
+      <section className="os-hoja-bloque os-bz-estado os-bz-relato">
+        <div className="os-bz-columna">
           <h3 className="os-hoja-titulo">Estilo y estrés</h3>
           {[
             { rotulo: 'Adulto', nivel: alerta.adulto, estilo: alerta.estiloAdulto },
@@ -218,9 +223,9 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
               <span className="os-hoja-valor">{estres.puntos ?? '—'}</span>
             </div>
           </div>
-        </section>
+        </div>
 
-        <section className="os-hoja-bloque">
+        <div className="os-bz-columna os-bz-corte-izq">
           <h3 className="os-hoja-titulo">Estado emocional</h3>
           <table className="os-bz-tabla">
             <thead>
@@ -260,14 +265,16 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
             <div key={rotulo} className="os-hoja-detalle">
               <h4 className="os-hoja-subtitulo">
                 {rotulo}
-                {d.ponderado ? ` · ${d.ponderado}` : ''}
+                {/* El adjetivo que pondera el período, en un casillero gris:
+                    es el resultado de la fila y no parte del rótulo. */}
+                {d.ponderado && <span className="os-bz-ponderado">{d.ponderado}</span>}
               </h4>
               {d.adjetivos && <p className="os-bz-texto">{d.adjetivos}</p>}
             </div>
           ))}
-        </section>
+        </div>
 
-        <section className="os-hoja-bloque">
+        <div className="os-bz-columna os-bz-corte-izq">
           <h3 className="os-hoja-titulo">Autoimagen</h3>
           <div className="os-hoja-campos">
             <div className="os-hoja-par">
@@ -285,17 +292,14 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
               <p className="os-bz-texto">{l.autoimagen.adjetivo}</p>
             </div>
           )}
-        </section>
-      </div>
+        </div>
 
-      {/* Lo que la persona escribió y lo que le pasó, uno al lado del otro:
-          las dos cosas se leen juntas para entender el momento en que llega. */}
-      <div
-        className="os-hoja-fila os-bz-cierre"
-        style={{ '--os-hoja-columnas': 2 } as React.CSSProperties}
-      >
+        {/* Lo que la persona escribió y lo que le pasó, uno al lado del otro:
+            las dos cosas se leen juntas para entender el momento en que llega.
+            Lo que escribió pide más ancho: son párrafos contra renglones
+            sueltos, así que toma dos de las tres columnas. */}
         {l.abiertas.length > 0 && (
-          <section className="os-hoja-bloque">
+          <div className="os-bz-columna os-bz-escrito os-bz-ancha os-bz-corte-arriba">
             <h3 className="os-hoja-titulo">Lo que escribió</h3>
             {l.abiertas.map((a) => (
               <div key={a.rotulo} className="os-hoja-detalle">
@@ -303,10 +307,14 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
                 <p className="os-bz-texto">{a.texto}</p>
               </div>
             ))}
-          </section>
+          </div>
         )}
 
-        <section className="os-hoja-bloque">
+        <div
+          className={`os-bz-columna os-bz-corte-arriba${
+            l.abiertas.length > 0 ? ' os-bz-corte-izq' : ' os-bz-ancha'
+          }`}
+        >
           <h3 className="os-hoja-titulo">Acontecimientos del último año</h3>
           {estres.eventos.length > 0 ? (
             <ul className="os-hoja-sueltas">
@@ -319,8 +327,8 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
           ) : (
             <p className="os-hoja-nota-tl">Ninguno registrado.</p>
           )}
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
