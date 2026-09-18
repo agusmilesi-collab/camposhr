@@ -57,20 +57,6 @@ const FICHAS: Ficha[] = [
     href: `https://clientes.camposhr.com/${TOKEN_DEMO}`,
   },
   {
-    rotulo: 'Perfiles de equipo',
-    titulo: 'Cuestionario de perfil',
-    detalle:
-      'Cada persona responde por QR desde el celular y la matriz de cuadrantes se arma en vivo para proyectarla en el encuentro.',
-    href: '/cuestionario',
-  },
-  {
-    rotulo: 'Material de los encuentros',
-    titulo: 'Presentaciones',
-    detalle:
-      'Las placas de cada charla, con las notas del orador adentro. Se descargan y funcionan sin internet.',
-    href: '/presentaciones',
-  },
-  {
     rotulo: 'Ejercicios de sala',
     titulo: 'Rueda y pasos',
     detalle:
@@ -85,11 +71,23 @@ export default async function Herramientas() {
 
   return (
     <Shell identidad={yo.nombre} titulo="Herramientas" cuentas={cuentas} nota={`${FICHAS.length} en uso`}>
-      <div className="os-encabezado">
-        <h1>Lo que se usa para trabajar</h1>
-        <p>
-          Las herramientas que ya funcionan, todas adentro del OS.
-        </p>
+      <div className="os-encabezado os-encabezado-con-accion">
+        <div>
+          <h1>Lo que se usa para trabajar</h1>
+          <p>
+            Las pantallas que se abren desde el OS. El material de los encuentros
+            vive en Tools: presentaciones, cuestionario de perfil e informes de
+            clientes.
+          </p>
+        </div>
+        <a
+          className="os-boton"
+          href="https://tools.camposhr.com"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Ir a Tools
+        </a>
       </div>
 
       <div className="os-tarjetas">

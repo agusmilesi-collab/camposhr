@@ -35,6 +35,13 @@ type TipoActividad =
 /** Quién está respondiendo desde este teléfono. */
 type Yo = { id: string; nombre: string; apellido: string };
 
+/**
+ * Un campo que este ciclo le pide a quien se registra, además del nombre y la
+ * selfie. Viene declarado en la base: el código no sabe qué áreas tiene cada
+ * cliente ni cómo les dice.
+ */
+export type CampoRegistro = { clave: string; etiqueta: string; opciones: string[] };
+
 type ActividadPublica = {
   id: string;
   clave: string;
@@ -235,10 +242,12 @@ export default function Asistente({
   slug,
   empresa,
   caras,
+  campos,
 }: {
   slug: string;
   empresa: string;
   caras: Cara[];
+  campos: CampoRegistro[];
 }) {
   const [yo, setYo] = useState<Yo | null>(null);
   const [listo, setListo] = useState(false);
@@ -371,6 +380,7 @@ export default function Asistente({
           {pantalla === 'registro' && (
             <Registro
               slug={slug}
+              campos={campos}
               onListo={entrar}
               onVolver={() => setPantalla('inicio')}
             />
@@ -452,21 +462,29 @@ function Encabezado({
 
 function Registro({
   slug,
+  campos,
   onListo,
   onVolver,
 }: {
   slug: string;
+  campos: CampoRegistro[];
   onListo: (id: string, nombre: string, apellido: string) => void;
   onVolver: () => void;
 }) {
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
+  const [datos, setDatos] = useState<Record<string, string>>({});
   const [foto, setFoto] = useState<{ blob: Blob; url: string } | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputFoto = useRef<HTMLInputElement>(null);
 
-  const completo = nombre.trim().length >= 2 && apellido.trim().length >= 2;
+  // Los campos del ciclo son obligatorios: son los que arman los grupos, y uno
+  // vacío deja a esa persona afuera del reparto.
+  const completo =
+    nombre.trim().length >= 2 &&
+    apellido.trim().length >= 2 &&
+    campos.every((c) => datos[c.clave]);
 
   async function elegirFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const archivo = e.target.files?.[0];
@@ -483,14 +501,15 @@ function Registro({
     setEnviando(true);
     setError(null);
     try {
-      const datos = new FormData();
-      datos.append('nombre', nombre.trim());
-      datos.append('apellido', apellido.trim());
-      if (foto) datos.append('foto', foto.blob, 'selfie.jpg');
+      const cuerpo = new FormData();
+      cuerpo.append('nombre', nombre.trim());
+      cuerpo.append('apellido', apellido.trim());
+      cuerpo.append('datos', JSON.stringify(datos));
+      if (foto) cuerpo.append('foto', foto.blob, 'selfie.jpg');
 
       const res = await fetch(`/api/ciclo/${slug}/registro`, {
         method: 'POST',
-        body: datos,
+        body: cuerpo,
       });
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
@@ -505,7 +524,7 @@ function Registro({
   return (
     <section className="cq-placa">
       <h1 className="ci-titulo">¿Cómo te llamás?</h1>
-      <p className="cq-ayuda">Se carga una sola vez, para los cinco encuentros.</p>
+      <p className="cq-ayuda">Se carga una sola vez.</p>
 
       <div className="cq-campos">
         <label className="cq-campo-doble">
@@ -526,6 +545,24 @@ function Registro({
           />
         </label>
       </div>
+
+      {campos.map((campo) => (
+        <div className="ci-reg-campo" key={campo.clave}>
+          <span className="ci-reg-titulo">{campo.etiqueta}</span>
+          <div className="ci-reg-opciones">
+            {campo.opciones.map((opcion) => (
+              <button
+                type="button"
+                key={opcion}
+                className={`ci-reg-opcion${datos[campo.clave] === opcion ? ' elegida' : ''}`}
+                onClick={() => setDatos((d) => ({ ...d, [campo.clave]: opcion }))}
+              >
+                {opcion}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
 
       <div className="cq-selfie">
         <div className="cq-selfie-preview">

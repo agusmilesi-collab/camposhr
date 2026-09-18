@@ -91,3 +91,15 @@ export function charlasDelCiclo(slug: string): { ciclo: string; charlas: Present
   if (filas.length === 0) return null;
   return { ciclo: filas[0].ciclo as string, charlas: filas.sort((a, b) => a.orden - b.orden) };
 }
+
+/**
+ * Una charla por su token.
+ *
+ * La usa el hub del encuentro: una charla suelta dictada a un cliente tiene su
+ * propia pantalla, y el token es lo único que la identifica sin ambigüedad. El
+ * título no alcanza, porque la misma charla se le puede dictar a dos clientes.
+ */
+export function charlaPorToken(token: string): Presentacion | null {
+  if (!TOKEN_VALIDO.test(token)) return null;
+  return listarPresentaciones().find((p) => p.token === token) ?? null;
+}

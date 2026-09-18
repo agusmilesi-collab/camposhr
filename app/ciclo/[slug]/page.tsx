@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { firmarSelfies } from '@/lib/supabase';
-import { listarAsistentes, resolverCiclo } from '@/lib/ciclo';
+import { camposDeRegistro, listarAsistentes, resolverCiclo } from '@/lib/ciclo';
 import Asistente, { type Cara } from './Asistente';
 
 /**
@@ -28,6 +28,7 @@ export default async function CicloAsistente({
   const { empresa, corrida } = ciclo;
 
   const asistentes = await listarAsistentes(corrida.id);
+  const campos = await camposDeRegistro(corrida.ciclo_id);
   const fotos = await firmarSelfies(
     asistentes.map((a) => a.foto_path).filter((p): p is string => Boolean(p))
   );
@@ -49,5 +50,12 @@ export default async function CicloAsistente({
         orden.compare(a.apellido, b.apellido) || orden.compare(a.nombre, b.nombre)
     );
 
-  return <Asistente slug={empresa.slug} empresa={empresa.nombre} caras={caras} />;
+  return (
+    <Asistente
+      slug={empresa.slug}
+      empresa={empresa.nombre}
+      caras={caras}
+      campos={campos}
+    />
+  );
 }

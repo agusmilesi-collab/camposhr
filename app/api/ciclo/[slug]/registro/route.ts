@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { subirSelfie } from '@/lib/supabase';
-import { crearAsistente, resolverCiclo } from '@/lib/ciclo';
+import { camposDeRegistro, crearAsistente, resolverCiclo } from '@/lib/ciclo';
 
 /**
  * Alta de un asistente. Se hace una sola vez por ciclo, no por encuentro.
@@ -34,6 +34,26 @@ export async function POST(
   if (nombre.length < 2) return new NextResponse('Falta el nombre', { status: 400 });
   if (apellido.length < 2) return new NextResponse('Falta el apellido', { status: 400 });
 
+  // Los campos que pide este ciclo se validan contra lo declarado en la base:
+  // lo que llegue con una clave o una opción que no existe, no entra.
+  const campos = await camposDeRegistro(corrida.ciclo_id);
+  const datos: Record<string, string> = {};
+  if (campos.length > 0) {
+    let crudo: Record<string, unknown> = {};
+    try {
+      crudo = JSON.parse(String(form.get('datos') ?? '{}'));
+    } catch {
+      return new NextResponse('Datos ilegibles', { status: 400 });
+    }
+    for (const campo of campos) {
+      const valor = String(crudo[campo.clave] ?? '');
+      if (!campo.opciones.includes(valor)) {
+        return new NextResponse(`Falta ${campo.etiqueta}`, { status: 400 });
+      }
+      datos[campo.clave] = valor;
+    }
+  }
+
   let fotoPath: string | null = null;
   const foto = form.get('foto');
   if (foto instanceof File && foto.size > 0) {
@@ -56,6 +76,7 @@ export async function POST(
       nombre,
       apellido,
       foto_path: fotoPath,
+      datos,
     });
     return NextResponse.json({
       ok: true,

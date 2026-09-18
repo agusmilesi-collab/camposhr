@@ -40,6 +40,16 @@ function cuantoFalta(fecha: string): string {
   return `En ${faltan} días`;
 }
 
+/** La flecha del botón, la misma de la portada y del hub. */
+function Flecha() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14" />
+      <path d="M12 5l7 7-7 7" />
+    </svg>
+  );
+}
+
 /** Una fila del índice: una charla suelta o un ciclo entero. */
 type Fila = {
   clave: string;
@@ -51,10 +61,14 @@ type Fila = {
   bajada: string;
   /** "17 placas" en una charla, "5 charlas · 115 placas" en un ciclo. */
   tamano: string;
-  /** Adónde lleva: la presentación, o la pantalla del ciclo. */
+  /** Adónde lleva: el deck, el hub de la charla, o la pantalla del ciclo. */
   href: string | null;
-  /** La presentación se abre en otra pestaña; el ciclo, en la misma. */
+  /** La presentación se abre en otra pestaña; las pantallas, en la misma. */
   externo: boolean;
+  /** Lo que dice el botón de la tarjeta de arriba. */
+  accion: string;
+  /** "En 6 días" mientras no pasó; null cuando ya se dictó. */
+  falta: string | null;
 };
 
 export default async function Presentaciones() {
@@ -72,17 +86,30 @@ export default async function Presentaciones() {
     }, []);
 
   const filas: Fila[] = [
-    ...sueltas.map((p) => ({
-      clave: `charla-${p.titulo}-${p.fecha}`,
-      fecha: p.fecha,
-      fechaTexto: formatoFecha(p.fecha),
-      cliente: p.cliente,
-      titulo: p.titulo,
-      bajada: p.subtitulo,
-      tamano: p.placas > 0 ? `${p.placas} placas` : 'Sin material',
-      href: p.token ? `${BASE}/${p.token}` : null,
-      externo: true,
-    })),
+    // Una charla dictada a un cliente entra por su hub: el día del encuentro
+    // no se busca el deck, se busca el panel y el código de entrada, y los tres
+    // viven ahí. Sin cliente no hay encuentro que conducir y el índice abre el
+    // deck directo.
+    ...sueltas.map((p) => {
+      const conCliente = Boolean(p.cliente && p.token);
+      return {
+        clave: `charla-${p.titulo}-${p.fecha}`,
+        fecha: p.fecha,
+        fechaTexto: formatoFecha(p.fecha),
+        cliente: p.cliente,
+        titulo: p.titulo,
+        bajada: p.subtitulo,
+        tamano: p.placas > 0 ? `${p.placas} placas` : 'Sin material',
+        falta: null,
+        href: p.token
+          ? conCliente
+            ? `/presentaciones/charla/${p.token}`
+            : `${BASE}/${p.token}`
+          : null,
+        externo: !conCliente,
+        accion: conCliente ? 'Abrir el encuentro' : 'Ver presentación',
+      };
+    }),
     ...ciclos.map((c) => {
       // Para quién se dictó sale de las corridas y no del índice: el material
       // del ciclo es el mismo para todos, y quién lo recorrió vive en la base.
@@ -100,11 +127,17 @@ export default async function Presentaciones() {
         tamano: `${c.filas.reduce((n, p) => n + p.placas, 0)} placas`,
         href: `/presentaciones/${slugDeCiclo(c.nombre)}`,
         externo: false,
+        accion: 'Ver las charlas',
+        falta: null,
       };
     }),
   ].sort((a, b) => b.fecha.localeCompare(a.fecha));
 
   const hoy = hoyISO();
+  // Lo que todavía no pasó lleva cuánto falta. El índice se mira para preparar
+  // el encuentro que viene, y sin esto hay que restar fechas de cabeza.
+  for (const f of filas) f.falta = f.fecha >= hoy ? cuantoFalta(f.fecha) : null;
+
   const proxima =
     [...filas].filter((f) => f.fecha >= hoy).sort((a, b) => a.fecha.localeCompare(b.fecha))[0] ??
     null;
@@ -131,12 +164,14 @@ export default async function Presentaciones() {
           </div>
           {proxima.href ? (
             proxima.externo ? (
-              <a className="copiar pres-ver" href={proxima.href} target="_blank" rel="noreferrer">
-                Ver presentación
+              <a className="hub-btn pres-ver" href={proxima.href} target="_blank" rel="noreferrer">
+                {proxima.accion}
+                <Flecha />
               </a>
             ) : (
-              <Link className="copiar pres-ver" href={proxima.href}>
-                Ver las charlas
+              <Link className="hub-btn pres-ver" href={proxima.href}>
+                {proxima.accion}
+                <Flecha />
               </Link>
             )
           ) : (
@@ -155,8 +190,16 @@ export default async function Presentaciones() {
           </div>
 
           {filas.map((f) => (
-            <div className="pres-row" key={f.clave}>
-              <span className="cot-fecha">{f.fechaTexto}</span>
+            <div
+              className={`pres-row${f.falta ? ' pres-row-viene' : ''}${
+                f.falta === 'Hoy' ? ' es-hoy' : ''
+              }`}
+              key={f.clave}
+            >
+              <span className="cot-fecha">
+                {f.fechaTexto}
+                {f.falta && <em className="pres-falta">{f.falta}</em>}
+              </span>
               <span className="pres-cliente">{f.cliente}</span>
               {/* El título es el enlace: un botón al final de la fila repetía
                   el mismo destino en dos lugares. Sin material, no lleva a
