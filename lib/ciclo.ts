@@ -78,6 +78,19 @@ export type Ciclo = {
   id: string;
   nombre: string;
   activo: boolean;
+  /**
+   * Lo que este ciclo le pide a quien se registra, además de nombre, apellido
+   * y selfie. Se responde con un toque, y las respuestas quedan en
+   * `asistentes.datos` bajo la clave de cada campo.
+   */
+  campos_registro: CampoRegistro[];
+};
+
+/** Un campo del registro, declarado en el ciclo y no en el código. */
+export type CampoRegistro = {
+  clave: string;
+  etiqueta: string;
+  opciones: string[];
 };
 
 /** Un ciclo dictado a un cliente. Es lo que se da de alta por cada encuentro. */
@@ -144,6 +157,11 @@ export type Asistente = {
   apellido: string;
   foto_path: string | null;
   created_at: string;
+  /**
+   * Lo que contestó en los campos que pide su ciclo, por clave. Vacío en los
+   * ciclos que solo piden nombre, apellido y foto.
+   */
+  datos: Record<string, string>;
   /** Cuándo entró desde algún teléfono. Null si todavía no entró nadie por él. */
   entro_en: string | null;
   /**
@@ -255,7 +273,7 @@ const CAMPOS_ACTIVIDAD =
   'id,ciclo_id,clave,charla,orden,tipo,titulo,enunciado,opciones,grupo,' +
   'placa,titulo_control,created_at';
 const CAMPOS_ASISTENTE =
-  'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en,expositora';
+  'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en,expositora,datos';
 const CAMPOS_APORTE = 'id,corrida_id,actividad_id,asistente_id,valor,created_at';
 const CAMPOS_CORRIDA =
   'id,empresa_id,ciclo_id,clave_control,actividad_abierta_id,fase,activa';
@@ -321,7 +339,10 @@ export async function listarCorridas(): Promise<
 }
 
 export async function listarCiclos(): Promise<Ciclo[]> {
-  return select<Ciclo>('ciclos', 'select=id,nombre,activo&activo=is.true&order=nombre.asc');
+  return select<Ciclo>(
+    'ciclos',
+    'select=id,nombre,activo,campos_registro&activo=is.true&order=nombre.asc'
+  );
 }
 
 /**
@@ -388,11 +409,24 @@ export async function listarGrupo(
   );
 }
 
+/**
+ * Los campos que este ciclo le pide a quien se registra.
+ *
+ * Se sirve de memoria un rato: no cambian durante el encuentro, y esta lectura
+ * cuelga de la pantalla que abren ochenta teléfonos a la vez en el minuto del
+ * pico de entrada.
+ */
+export async function camposDeRegistro(cicloId: string): Promise<CampoRegistro[]> {
+  if (!UUID.test(cicloId)) return [];
+  const ciclo = await recordar(`campos:${cicloId}`, 300, () => getCiclo(cicloId));
+  return ciclo?.campos_registro ?? [];
+}
+
 export async function getCiclo(cicloId: string): Promise<Ciclo | null> {
   if (!UUID.test(cicloId)) return null;
   const filas = await select<Ciclo>(
     'ciclos',
-    `select=id,nombre,activo&id=eq.${cicloId}&limit=1`
+    `select=id,nombre,activo,campos_registro&id=eq.${cicloId}&limit=1`
   );
   return filas[0] ?? null;
 }
@@ -562,6 +596,7 @@ export async function crearAsistente(fila: {
   nombre: string;
   apellido: string;
   foto_path: string | null;
+  datos?: Record<string, string>;
 }): Promise<Asistente> {
   return insert<Asistente>('asistentes', fila);
 }

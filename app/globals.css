@@ -8335,3 +8335,252 @@ body {
   white-space: nowrap;
 }
 
+
+/* ---------------------------------------------------------------- hub de la charla
+   Los tres accesos del día del encuentro: la presentación, el panel de control
+   y el código de entrada.
+
+   Son las mismas tarjetas que la portada de tools, con su ícono arriba y su
+   botón abajo. El hub se entra desde ahí y conviene que se lea igual: la
+   diferencia entre las tres cosas que se pueden tocar tiene que verse con la
+   sala esperando, y un botón oscuro se encuentra más rápido que una tarjeta
+   entera que resulta ser un enlace. */
+.hub-accesos {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.hub-acceso {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-acceso-icono {
+  width: 34px;
+  height: 34px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.hub-acceso-rotulo {
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.hub-acceso h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+/* Crece para empujar el botón al pie: con textos de largo distinto, los tres
+   botones quedan igual alineados. */
+.hub-acceso p {
+  margin-top: 10px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  flex: 1;
+}
+
+.hub-acceso-pie {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* El botón oscuro de tools. Vive acá con su propio nombre porque `.btn` es de
+   la portada estática y esta app no comparte esa hoja. */
+.hub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: #fff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  padding: 8px 15px;
+  transition: opacity 0.12s;
+}
+
+.hub-btn:hover {
+  opacity: 0.88;
+}
+
+.hub-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Lo que todavía no existe: el botón se ve, en gris y sin reacción, para que el
+   lugar quede tomado. Una tarjeta que desaparece deja a alguien buscándola el
+   día del encuentro. */
+.hub-btn-pronto,
+.hub-btn-pronto:hover {
+  color: var(--muted);
+  background: var(--paper);
+  border-color: var(--line);
+  cursor: default;
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------- guion
+   Un solo campo con el guion entero. Alto fijo y grande: se escribe y se
+   relee de corrido, y un campo que crece empuja el botón fuera de la vista. */
+.guion {
+  padding-bottom: 72px;
+}
+
+.guion-barra {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.guion-estado {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.guion-estado-guardado {
+  color: #43648f;
+}
+
+.guion-estado-error {
+  color: #a8742a;
+}
+
+.guion-barra .hub-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.guion-texto {
+  display: block;
+  width: 100%;
+  min-height: 62vh;
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 20px 22px;
+  resize: vertical;
+}
+
+.guion-texto:focus {
+  outline: none;
+  border-color: var(--ink-soft);
+}
+
+/* ------------------------------------------------- campos del registro
+   Lo que cada ciclo pide además del nombre y la selfie: el área, el nivel,
+   hace cuánto tiene gente a cargo. Se contesta con un toque y sin teclado,
+   que es lo único que entra en el minuto en que ochenta teléfonos se
+   registran a la vez.
+
+   En grilla y no en columna: seis áreas en fila vertical dejan el botón de
+   entrar abajo de todo, y el que no scrollea cree que la pantalla se colgó. */
+.ci-reg-campo {
+  margin-top: 22px;
+}
+
+.ci-reg-titulo {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.ci-reg-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ci-reg-opcion {
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 11px 16px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.ci-reg-opcion:hover {
+  border-color: var(--ink-soft);
+}
+
+.ci-reg-opcion.elegida {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+/* Lo que todavía no se dictó, en el índice.
+   La fila se levanta del resto: el índice se abre para preparar lo que viene,
+   y el resto es archivo. */
+.pres-row-viene {
+  background: var(--card);
+}
+
+.pres-row-viene .pres-entrar {
+  font-weight: 600;
+}
+
+.pres-falta {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-style: normal;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+
+/* El día del encuentro, en el color de la casa. */
+.pres-row-viene.es-hoy .pres-falta {
+  background: var(--st-blue, #43648f);
+}
+
+/* El botón de la tarjeta de arriba es el mismo de la portada, y ahí vive
+   pegado a la derecha. */
+.pres-proxima .hub-btn {
+  margin-left: auto;
+}

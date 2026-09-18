@@ -54,3 +54,26 @@ export async function encuentrosEnCurso(): Promise<{
 
   return { porMaterial, ciclosBase: ciclosBase.map((c) => ({ id: c.id, nombre: c.nombre })) };
 }
+
+/**
+ * La corrida activa de un cliente, buscada por su nombre.
+ *
+ * El hub de una charla suelta no pasa por `MATERIAL_DEL_CICLO`: la charla ya
+ * dice para quién es, y lo que hace falta es la corrida de esa empresa, sea
+ * cual sea el ciclo del que cuelgue en la base.
+ */
+export async function corridaDeEmpresa(nombreEmpresa: string): Promise<EnCurso | null> {
+  const buscado = nombreEmpresa.trim().toLowerCase();
+  const corridas = await listarCorridas();
+  const corrida = corridas.find((c) => c.empresas.nombre.trim().toLowerCase() === buscado);
+  if (!corrida) return null;
+
+  const asistentes = await listarAsistentes(corrida.id);
+  return {
+    slug: corrida.empresas.slug,
+    empresa: corrida.empresas.nombre,
+    registrados: asistentes.length,
+    clave: corrida.clave_control,
+    abierta: Boolean(corrida.actividad_abierta_id),
+  };
+}

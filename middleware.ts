@@ -8,6 +8,8 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
  *  os.camposhr.com        -> Campos OS, el sistema interno del equipo. La raíz
  *     muestra la home del OS y el resto de la app sigue disponible acá, porque
  *     las secciones enlazan pantallas que todavía viven en sus rutas viejas.
+ *     Las presentaciones son la excepción: viven solo en tools y desde acá
+ *     redirigen.
  *
  *  centro.camposhr.com    -> los inquilinos de los consultorios. Entran con
  *     correo y contraseña y ven solo lo suyo: el calendario, sus reservas y su
@@ -18,8 +20,8 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
  *
  *  tools.camposhr.com     -> hub interno (equipo): landing de herramientas,
  *     tests Rorschach/Zulliger e /informes (accesos de clientes). Acá viven
- *     también las presentaciones de los encuentros: /pres/<token> sirve el
- *     archivo de la charla.
+ *     también las presentaciones de los encuentros, y solo acá: /presentaciones
+ *     es el índice de charlas y /pres/<token> sirve el archivo de una.
  *
  *  camposhr.com (y www)   -> site comercial.
  *     La raíz muestra la home; las herramientas viejas y los enlaces de portal
@@ -68,6 +70,11 @@ const COTIZACION = /^\/q\/([A-Za-z0-9_-]{6,128})\/?$/;
 // en public/pres/<token>.html. Mismo criterio que las cotizaciones: el token es
 // secreto y la presentación lleva noindex.
 const PRESENTACION = /^\/pres\/([A-Za-z0-9_-]{6,128})\/?$/;
+
+// Todo lo de presentaciones vive en tools y en ningún otro host: el índice de
+// charlas (/presentaciones) y el archivo de cada una (/pres/<token>). Está
+// aparte del OS a propósito, para poder ponerle puerta o moverlo sin tocarlo.
+const RUTAS_DE_PRESENTACIONES = /^\/(presentaciones|pres)(\/|$)/;
 
 // Lo que responde la persona evaluada vive en el host principal, porque es el
 // destino de los códigos QR y de los enlaces que se le mandan: el cuestionario
@@ -142,6 +149,11 @@ export async function middleware(req: NextRequest) {
   // rutas viejas (/cuestionario, /presentaciones, /ciclo) y tienen que abrir
   // sin salir del subdominio.
   if (host === OS_HOST) {
+    // Las presentaciones tienen su propio host. El OS las enlaza hacia afuera,
+    // y las direcciones viejas de este subdominio siguen andando.
+    if (RUTAS_DE_PRESENTACIONES.test(pathname)) {
+      return NextResponse.redirect(`https://${TOOLS_HOST}${pathname}`, 307);
+    }
     // La puerta va antes del ruteo y no adentro de cada pantalla. Existe solo
     // si `OS_CLAVE` está cargada: mientras se prueba el sistema, no lo está.
     const entrando =
