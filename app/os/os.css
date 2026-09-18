@@ -5311,16 +5311,10 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
 }
 
 /* En la pestaña del informe el cierre encabeza la columna, así que mide lo
-   mismo que el documento que tiene debajo. */
+   mismo que el documento que tiene debajo, y es un panel como los demás: fondo
+   blanco, borde y esquinas redondeadas. */
 .os-informe-cierre {
   max-width: none;
-  /* Sin tarjeta propia: lo que lleva adentro ya son dos tarjetas, y meterlas en
-     una tercera las ata en un bloque solo. Se ve el fondo de la pantalla entre
-     las dos. */
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
 }
 
 /**
@@ -5735,6 +5729,86 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
 
 .os-bz-cruz {
   min-width: 0;
+}
+
+/**
+ * El gráfico del Benziger, chico, debajo de las cruces.
+ *
+ * Es el mismo dibujo que sale en el informe y se arma con las mismas reglas de
+ * `informe.css`, que esta pantalla ya carga porque la pestaña del informe vive
+ * en la misma ficha. Acá solo se le dan los colores, porque las reglas del
+ * gráfico los leen de variables que se declaran en `.inf`, y una medida chica:
+ * en la tarjeta va como referencia de la figura, no para medir vértices.
+ */
+/* Las cruces ocupan dos tercios de la fila y la tabla del perfil el tercio que
+   queda: así el gráfico entra al lado de las cruces y no debajo. */
+.os-bz-bloque-cruces {
+  grid-column: span 2;
+}
+
+/* Separadas de la línea del título de la tarjeta: los tres subtítulos quedaban
+   pegados a ella y se leían como parte del encabezado. */
+.os-bz-cruces-fila {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  /* El gráfico es más alto que las cruces y es el que marca el alto de la
+     tarjeta: las cruces van al medio de esa altura y no colgando de arriba. */
+  align-items: center;
+  gap: 14px;
+}
+
+.os-bz-cruces-fila .os-bz-cruces {
+  flex: 1 1 320px;
+}
+
+.os-bz-cerebro {
+  --linea: var(--os-linea);
+  --suave: var(--os-suave);
+  --hoja: var(--os-panel);
+  --azul: var(--os-azul);
+  --turquesa: #1d8a84;
+
+  flex: none;
+  width: 165px;
+  text-align: center;
+}
+
+html[data-os-tema='oscuro'] .os-bz-cerebro {
+  --turquesa: #4fb3ad;
+}
+
+/* El título del gráfico va alineado con los de las cruces, aunque el dibujo y
+   su referencia vayan centrados. */
+.os-bz-cerebro .os-hoja-subtitulo {
+  text-align: left;
+}
+
+.os-bz-cerebro .inf-referencia-perfil {
+  gap: 14px;
+  margin: 2px 0 0;
+  font-size: 0.7rem;
+}
+
+.os-bz-cerebro .inf-ref::before {
+  width: 16px;
+  margin-right: 5px;
+  border-top-width: 2px;
+}
+
+/* La medida de la tarjeta y no la del informe: 320 px hacían que el gráfico
+   ocupara más que las dos cruces que tiene arriba. */
+.os-bz-cerebro .inf-cerebro {
+  grid-area: auto;
+  width: 100%;
+  height: auto;
+}
+
+/* Los números de la escala, más chicos: son veinticuatro sobre un gráfico de
+   doscientos píxeles. */
+.os-bz-cerebro .inf-escala {
+  font-size: 15px;
+  stroke-width: 5px;
 }
 
 /**
@@ -6888,6 +6962,10 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
 @media (max-width: 720px) {
   .os-hoja-fila {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-bz-bloque-cruces {
+    grid-column: auto;
   }
 
   .os-hoja-campos {

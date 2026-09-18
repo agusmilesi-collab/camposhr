@@ -13,6 +13,7 @@
  * escribió y los acontecimientos del último año.
  */
 
+import Cerebro from '../../informe/_doc/Cerebro';
 import type { Lectura } from '@/lib/benziger-lectura';
 import type { Cruz, Cuatro } from '@/lib/benziger-perfil';
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
@@ -136,14 +137,25 @@ function CruzVista({ c }: { c: Cruz }) {
   );
 }
 
+/** Los cuatro totales de una fila del perfil, o null si esa fila no está. */
+function totales(l: Lectura, titulo: string): Cuatro | null {
+  const fila = l.filas.find((f) => f.titulo === titulo);
+  if (!fila) return null;
+  return PERFILES.some((p) => fila.valores[p] !== null) ? fila.valores : null;
+}
+
 export default function BenzigerHoja({ l }: { l: Lectura }) {
   const { alerta, emocional, estres } = l;
+  /* El mismo gráfico que sale en el informe, acá al lado de los números que lo
+     arman: la evaluadora lee el perfil y ve la figura sin abrir el documento. */
+  const adulto = totales(l, 'Total adulto');
+  const joven = totales(l, 'Total joven');
 
   return (
     <div className="os-hoja os-bz-hoja">
       {/* Perfil y cruces arriba: son la misma lectura, los números y su
           dibujo. Todo lo demás va debajo. */}
-      <div className="os-hoja-fila" style={{ '--os-hoja-columnas': 2 } as React.CSSProperties}>
+      <div className="os-hoja-fila" style={{ '--os-hoja-columnas': 3 } as React.CSSProperties}>
         <section className="os-hoja-bloque">
           <h3 className="os-hoja-titulo">Perfil</h3>
           <Perfil filas={l.filas} />
@@ -155,12 +167,30 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
           )}
         </section>
 
-        <section className="os-hoja-bloque">
+        {/* Dos tercios de la fila: adentro van las tres cruces y el gráfico
+            uno al lado del otro, que es como se leen, y la tabla del perfil se
+            arregla con el tercio restante. */}
+        <section className="os-hoja-bloque os-bz-bloque-cruces">
           <h3 className="os-hoja-titulo">Cruces</h3>
-          <div className="os-bz-cruces">
-            {l.cruces.map((c) => (
-              <CruzVista key={c.titulo} c={c} />
-            ))}
+          <div className="os-bz-cruces-fila">
+            <div className="os-bz-cruces">
+              {l.cruces.map((c) => (
+                <CruzVista key={c.titulo} c={c} />
+              ))}
+            </div>
+
+            {(adulto || joven) && (
+              <div className="os-bz-cerebro">
+                <h4 className="os-hoja-subtitulo">Gráfico</h4>
+                <Cerebro adulto={adulto} joven={joven} fondo={false} escalaFina />
+                {/* La referencia al pie, como en cualquier gráfico: arriba
+                    separaba el título del dibujo que nombra. */}
+                <div className="inf-referencia-perfil">
+                  <span className="inf-ref adulto">Adulto</span>
+                  <span className="inf-ref joven">Adolescente</span>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </div>

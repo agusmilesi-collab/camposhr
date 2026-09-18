@@ -26,6 +26,9 @@ import type { Cuatro } from '@/lib/benziger-perfil';
 
 const MAXIMO = 120;
 const ANILLOS = [40, 80, 120];
+/* En chico, sin el dibujo de fondo, entran las marcas intermedias y el vértice
+   se ubica sin contar a ojo entre un anillo y el siguiente. */
+const ANILLOS_FINOS = [20, 40, 60, 80, 100, 120];
 
 /** Lo que la plataforma de Benziger le hace al perfil joven antes de dibujarlo. */
 const ESCALA_JOVEN = 4;
@@ -70,29 +73,48 @@ function poligono(v: Cuatro, factor = 1): string | null {
   return trazar((k) => (v[k] as number) * factor);
 }
 
-export default function Cerebro({ adulto, joven }: { adulto: Cuatro | null; joven: Cuatro | null }) {
+export default function Cerebro({
+  adulto,
+  joven,
+  fondo = true,
+  escalaFina = false,
+}: {
+  adulto: Cuatro | null;
+  joven: Cuatro | null;
+  /**
+   * El dibujo del cerebro detrás del perfil.
+   *
+   * En el informe ubica cada cuadrante sobre la parte del cerebro que nombra.
+   * En la ficha el gráfico mide doscientos píxeles y ahí el dibujo es una
+   * mancha gris debajo de las líneas, así que va sin él.
+   */
+  fondo?: boolean;
+  /** Marcas cada veinte puntos en lugar de cada cuarenta. */
+  escalaFina?: boolean;
+}) {
   const trazoAdulto = adulto ? poligono(adulto) : null;
   const trazoJoven = joven ? poligono(joven, ESCALA_JOVEN) : null;
+  const anillos = escalaFina ? ANILLOS_FINOS : ANILLOS;
 
   return (
     <svg className="inf-cerebro" viewBox="-230 -230 460 460" role="img" aria-label="Perfil Benziger">
-      {/* El cerebro de fondo, con su centro en el cruce de los ejes: cada
-          cuadrante del gráfico cae sobre la parte del cerebro que nombra. */}
-      <image
-        href="/informe/cerebro.png"
-        x="-215"
-        y="-215"
-        width="430"
-        height="430"
-        className="inf-cerebro-fondo"
-        preserveAspectRatio="xMidYMid meet"
-      />
+      {fondo && (
+        <image
+          href="/informe/cerebro.png"
+          x="-215"
+          y="-215"
+          width="430"
+          height="430"
+          className="inf-cerebro-fondo"
+          preserveAspectRatio="xMidYMid meet"
+        />
+      )}
 
       {/* La guía vertical, que separa izquierdo de derecho. La horizontal la
           dibuja el contenedor: cruza el capítulo entero, de margen a margen. */}
       <line x1="0" y1="-215" x2="0" y2="215" className="inf-eje-guia" />
 
-      {ANILLOS.filter((v) => v < MAXIMO).map((v) => (
+      {anillos.filter((v) => v < MAXIMO).map((v) => (
         <polygon key={v} points={trazar(() => v)} className="inf-anillo" />
       ))}
 
@@ -108,7 +130,7 @@ export default function Cerebro({ adulto, joven }: { adulto: Cuatro | null; jove
           halo del color de la hoja por si algo lo cruza igual. */}
       {ORDEN.map((clave) => {
         const d = DIRECCION[clave];
-        return ANILLOS.map((v) => {
+        return anillos.map((v) => {
           const p = punto(clave, v);
           return (
             <text
