@@ -6686,7 +6686,7 @@ html[data-os-tema='oscuro'] .os-bz-cerebro {
 }
 
 .os-hoja-bloque {
-  padding: 8px 13px 6px;
+  padding: 14px 18px 16px;
   border: 1px solid var(--os-linea);
   border-radius: 12px;
   background: var(--os-panel);
