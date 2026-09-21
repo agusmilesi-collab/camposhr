@@ -10,7 +10,7 @@ import {
   getActividadPorClave,
   listarAportes,
   delTaller,
-  listarAsistentes,
+  asistentesDeLaSala,
   resolverCiclo,
   resumir,
   type Actividad,
@@ -174,7 +174,7 @@ export default async function Proyeccion({
 
     const [aportes, sala] = await Promise.all([
       listarAportes(corrida.id, origen.id),
-      listarAsistentes(corrida.id),
+      asistentesDeLaSala(corrida.id),
     ]);
     const porId = new Map(sala.map((a) => [a.id, a]));
     const quienes = searchParams?.de ?? null;
@@ -235,7 +235,7 @@ export default async function Proyeccion({
    * eligió.
    */
   if (soloConsigna) {
-    const inscriptos = delTaller(await listarAsistentes(corrida.id)).length;
+    const inscriptos = delTaller(await asistentesDeLaSala(corrida.id)).length;
     return (
       <main className={`cp cp-consigna ${enPlaca ? 'cp-placa' : ''}`}>
         {enPlaca && <FondoTransparente />}
@@ -262,7 +262,7 @@ export default async function Proyeccion({
   }
 
   if (soloConteo) {
-    const inscriptos = delTaller(await listarAsistentes(corrida.id)).length;
+    const inscriptos = delTaller(await asistentesDeLaSala(corrida.id)).length;
     // El cuestionario no deja aporte: sus respuestas viven en su propia tabla,
     // se responda adentro del encuentro o desde su enlace.
     const hechas =
@@ -292,7 +292,10 @@ export default async function Proyeccion({
               ? 'Respondieron todos'
               : 'respondieron'}
         </p>
-        <AutoRefresco segundos={3} oculto />
+        {/* Seis y no tres: es el número que ella mira de reojo para saber si
+            puede avanzar, y corre justo cuando la sala entera está
+            escribiendo. */}
+        <AutoRefresco segundos={6} oculto />
       </main>
     );
   }
@@ -316,7 +319,7 @@ export default async function Proyeccion({
     if (origen) {
       const [preguntas, sala] = await Promise.all([
         listarAportes(corrida.id, origen.id),
-        listarAsistentes(corrida.id),
+        asistentesDeLaSala(corrida.id),
       ]);
       const quienes = new Map(sala.map((a) => [a.id, a]));
       const porId = new Map(preguntas.map((a) => [a.id, a]));

@@ -45,3 +45,42 @@ export async function recordar<T>(
   }
   return valor;
 }
+
+/**
+ * Borra lo guardado que empieza con `prefijo`.
+ *
+ * Lo usa quien escribe algo que el caché acaba de servir viejo: la expositora
+ * abre una consigna y su propia pantalla tiene que mostrarla ya, sin esperar a
+ * que venza el plazo.
+ */
+export function olvidar(prefijo: string): void {
+  for (const clave of CAJON.keys()) {
+    if (clave.startsWith(prefijo)) CAJON.delete(clave);
+  }
+}
+
+/**
+ * Una sola ejecución a la vez para el mismo trabajo.
+ *
+ * Los repartos (los tríos del ensayo, los equipos de las frases, el cruce) los
+ * dispara el sondeo cuando un teléfono no encuentra su puesto. Si el reparto
+ * todavía no se hizo, los ochenta teléfonos entran juntos a la misma función y
+ * cada uno paga sus lecturas antes de descubrir que otro ya estaba en eso.
+ *
+ * Con esto el primero trabaja y los demás esperan su resultado. No es un
+ * cerrojo entre instancias del servidor, y no hace falta que lo sea: los
+ * repartos ya se escriben con la clave única de `aportes`, así que dos
+ * instancias a la vez terminan en la misma fila y no en dos.
+ */
+const ENCURSO = new Map<string, Promise<unknown>>();
+
+export function unaVez<T>(clave: string, hacer: () => Promise<T>): Promise<T> {
+  const yendo = ENCURSO.get(clave);
+  if (yendo) return yendo as Promise<T>;
+
+  const promesa = hacer().finally(() => {
+    ENCURSO.delete(clave);
+  });
+  ENCURSO.set(clave, promesa);
+  return promesa;
+}

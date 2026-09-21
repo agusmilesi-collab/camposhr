@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import {
   actividadesDelCiclo,
   aportesDeEn,
+  aportesDeLaSala,
   asistentesDeLaSala,
   contarAvance,
   getAporteDe,
@@ -20,6 +21,7 @@ import {
   type Corrida,
 } from '@/lib/ciclo';
 import { firmarSelfies } from '@/lib/supabase';
+import { unaVez } from '@/lib/memoria';
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
 import { motivoEntre, type Motivo } from '@/lib/cruce';
 import { CASOS, REACCIONES, type Rol } from '@/lib/ensayo';
@@ -97,13 +99,20 @@ export async function GET(
   req: Request,
   { params }: { params: { slug: string } }
 ) {
-  const ciclo = await resolverCiclo(params.slug);
+  const parametros = new URL(req.url).searchParams;
+
+  // `total=1` lo pide sólo el panel de quien dicta, y es el único que necesita
+  // la corrida recién leída: tocó abrir y quiere verlo. Los teléfonos la toman
+  // del caché de dos segundos.
+  const ciclo = await resolverCiclo(
+    params.slug,
+    parametros.get('total') === '1'
+  );
   if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
 
   // Este sondeo es la señal de que alguien está adentro con ese nombre: el
   // teléfono lo repite mientras la pantalla esté abierta. Con eso alcanza para
   // sacar su cara de la grilla de los demás, sin un endpoint aparte.
-  const parametros = new URL(req.url).searchParams;
   const asistenteId = parametros.get('asistente') ?? '';
   // Sólo en el primer sondeo de la sesión: escrito una vez queda escrito, y
   // repetirlo cada pocos segundos por cada teléfono es carga pura contra la
@@ -248,9 +257,15 @@ export async function GET(
         ? await paraVotar(ciclo.corrida, catalogo, actividad, asistenteId)
         : null,
     // Si su pregunta quedó entre las ganadoras: cuánto junta y si ya lo cobró.
+    // La pregunta propia ya vino en la consulta de arriba, porque `config.desde`
+    // la sumó a la lista: acá no se vuelve a preguntar por ella.
     pozo:
-      actividad.tipo === 'monedas' && asistenteId
-        ? await pozoDe(ciclo.corrida, catalogo, actividad, asistenteId)
+      actividad.tipo === 'monedas' && asistenteId && deAntes
+        ? await pozoDe(
+            ciclo.corrida,
+            actividad,
+            propios.get(deAntes.id) ?? null
+          )
         : null,
     cruce:
       actividad.tipo === 'cruce' && asistenteId
@@ -303,10 +318,18 @@ async function frasesDe(
   // El puesto propio ya vino con el resto del sondeo, igual que en el ensayo.
   let aporte = yaLeido;
 
-  // Se registró después de que la expositora abriera el ejercicio: entra ahora,
-  // en el equipo más chico, sin tocar a los que ya están trabajando.
+  /*
+   * Se registró después de que la expositora abriera el ejercicio: entra ahora,
+   * en el equipo más chico, sin tocar a los que ya están trabajando.
+   *
+   * Va con cerrojo porque esto lo dispara el sondeo: si el reparto todavía no
+   * se hizo, los ochenta teléfonos entran juntos a la misma función y cada uno
+   * paga sus lecturas antes de descubrir que otro ya estaba en eso.
+   */
   if (!aporte) {
-    await repartirFrases(corrida, actividad);
+    await unaVez(`reparto:${corrida.id}:${actividad.id}`, () =>
+      repartirFrases(corrida, actividad)
+    );
     aporte = await getAporteDe(actividad.id, asistenteId);
   }
   if (aporte?.valor?.tipo !== 'frases') return null;
@@ -426,7 +449,9 @@ async function ensayoDe(
   // Se registró después de que la expositora abriera la ronda: entra ahora,
   // como segundo observador, sin tocar los tríos que ya están conversando.
   if (!aporte) {
-    await repartirEnsayo(corrida, rondasDelEnsayo(catalogo));
+    await unaVez(`reparto:${corrida.id}:${actividad.id}`, () =>
+      repartirEnsayo(corrida, rondasDelEnsayo(catalogo))
+    );
     aporte = await getAporteDe(actividad.id, asistenteId);
   }
   if (aporte?.valor?.tipo !== 'ensayo') return null;
@@ -521,7 +546,9 @@ async function cruceDe(
   // Se registró después de que la expositora abriera la consigna: se reparte
   // ahora, sin tocar los grupos que ya están conversando.
   if (!aporte) {
-    await repartirCruce(corrida, actividad);
+    await unaVez(`reparto:${corrida.id}:${actividad.id}`, () =>
+      repartirCruce(corrida, actividad)
+    );
     aporte = await getAporteDe(actividad.id, asistenteId);
   }
   if (aporte?.valor?.tipo !== 'cruce') return null;
@@ -584,8 +611,11 @@ async function paraVotar(
   const origen = catalogo.find((a) => a.clave === clave);
   if (!origen) return null;
 
+  // Las dos lecturas son iguales para toda la sala y las pide cada teléfono en
+  // cada sondeo: van por memoria. Lo único propio de cada uno es el orden, que
+  // sale de `barajar`, y que la suya no aparezca, que es un filtro de acá.
   const [aportes, sala] = await Promise.all([
-    listarAportes(corrida.id, origen.id),
+    aportesDeLaSala(corrida.id, origen.id),
     asistentesDeLaSala(corrida.id),
   ]);
   const porId = new Map(sala.map((a) => [a.id, a]));
@@ -638,19 +668,16 @@ function barajar<T>(lista: T[], semilla: string): T[] {
  */
 async function pozoDe(
   corrida: Corrida,
-  catalogo: Actividad[],
   actividad: Actividad,
-  asistenteId: string
+  /** Su pregunta, ya leída con el resto del sondeo. */
+  mio: Aporte | null
 ): Promise<{ monedas: number; puesto: number; reclamado: boolean; texto: string } | null> {
-  const clave = actividad.config.desde;
-  if (!clave) return null;
-  const origen = catalogo.find((a) => a.clave === clave);
-  if (!origen) return null;
-
-  const mio = await getAporteDe(origen.id, asistenteId);
+  // Quien no escribió pregunta no tiene pozo posible, y son la mayoría de la
+  // sala: se corta acá, antes de leer nada.
   if (!mio || mio.valor?.tipo !== 'texto') return null;
 
-  const repartos = await listarAportes(corrida.id, actividad.id);
+  // El reparto es el mismo para todos: de memoria, como la lista que se vota.
+  const repartos = await aportesDeLaSala(corrida.id, actividad.id);
   const resumen = resumir(actividad, repartos);
   if (resumen.tipo !== 'monedas') return null;
 

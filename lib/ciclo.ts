@@ -36,7 +36,7 @@ import type { Empresa } from '@/lib/supabase';
 import { armarGrupos, type Candidato, type Grupo } from '@/lib/cruce';
 import { conSuplentes, repartoEnsayo, type Rol } from '@/lib/ensayo';
 import { DEL_EJERCICIO, MITADES, repartoFrases, type Mitad } from '@/lib/frases';
-import { recordar } from '@/lib/memoria';
+import { olvidar, recordar, unaVez } from '@/lib/memoria';
 import { PERFILES, type Perfil } from '@/lib/perfiles';
 
 // -------------------------------------------------------------------- tipos
@@ -398,16 +398,37 @@ const CLAVE = /^[a-z0-9-]{2,60}$/;
  * corrida en curso, que para el visitante es lo mismo.
  */
 export async function resolverCiclo(
-  slug: string
+  slug: string,
+  /**
+   * Saltea el caché de la corrida. Lo pide quien dicta: toca el botón y su
+   * pantalla tiene que cambiar en el acto, sin dos segundos en el medio.
+   */
+  fresco = false
 ): Promise<{ empresa: Empresa; corrida: Corrida } | null> {
   // La empresa se sirve de memoria: su nombre y su slug no cambian mientras se
-  // dicta. La corrida se pregunta siempre, porque ahí vive qué está abierto y
-  // ese dato viejo sería un teléfono mostrando la consigna equivocada.
+  // dicta.
   const empresa = await recordar(`empresa:${slug}`, 60, () =>
     getEmpresaPorSlug(slug)
   );
   if (!empresa) return null;
-  const corrida = await getCorridaActiva(empresa.id);
+
+  /*
+   * La corrida, dos segundos.
+   *
+   * Ahí vive qué actividad está abierta, así que servirla vieja tiene un costo
+   * directo: un teléfono mostrando la consigna anterior. Dos segundos adentro
+   * de un sondeo de veinte no se notan, y es la consulta que hacen los ochenta
+   * teléfonos en cada vuelta y también cada escritura, o sea la mitad del piso
+   * de todo el encuentro.
+   *
+   * Quien abre la consigna la invalida al escribirla, así que la demora la
+   * pagan los teléfonos y nunca la pantalla de quien dicta.
+   */
+  const corrida = fresco
+    ? await getCorridaActiva(empresa.id)
+    : await recordar(`corrida:${empresa.id}`, 2, () =>
+        getCorridaActiva(empresa.id)
+      );
   if (!corrida) return null;
   return { empresa, corrida };
 }
@@ -616,6 +637,7 @@ export async function abrirActividad(
     actividad_abierta_id: actividadId,
     fase: 0,
   });
+  olvidar('corrida:');
 }
 
 /** Avanza el momento de la actividad abierta. Lo toca sólo quien dicta. */
@@ -627,6 +649,7 @@ export async function pasarFase(
   const n = Math.trunc(fase);
   if (!Number.isFinite(n) || n < 0 || n > 9) throw new Error('Fase inválida');
   await patch('corridas', `id=eq.${corridaId}`, { fase: n });
+  olvidar('corrida:');
 }
 
 export async function cerrarActividades(corridaId: string): Promise<void> {
@@ -635,6 +658,7 @@ export async function cerrarActividades(corridaId: string): Promise<void> {
     actividad_abierta_id: null,
     fase: 0,
   });
+  olvidar('corrida:');
 }
 
 // ---------------------------------------------------------------- asistentes
@@ -944,12 +968,22 @@ export async function aportesDeEn(
   return new Map(filas.map((f) => [f.actividad_id, f]));
 }
 
-/** Guarda la respuesta. Si la persona ya había respondido, la corrige. */
+/**
+ * Guarda la respuesta. Si la persona ya había respondido, la corrige.
+ *
+ * `devolver` en false pide que la base no mande de vuelta la fila escrita. El
+ * endpoint del teléfono no la usa (contesta con el valor que ya tiene en la
+ * mano), y son ochenta escrituras juntas en el minuto en que toda la sala
+ * responde: ahí el techo medido es de 6,7 por segundo y todo lo que no viaja
+ * ayuda. Los caminos del ensayo y de las frases sí la necesitan, porque le
+ * devuelven al teléfono el puesto completo.
+ */
 export async function guardarAporte(
   corridaId: string,
   actividadId: string,
   asistenteId: string,
-  valor: Valor
+  valor: Valor,
+  devolver = true
 ): Promise<Aporte> {
   if (!UUID.test(corridaId) || !UUID.test(actividadId) || !UUID.test(asistenteId)) {
     throw new Error('Aporte inválido');
@@ -962,7 +996,30 @@ export async function guardarAporte(
       asistente_id: asistenteId,
       valor,
     },
-    'actividad_id,asistente_id'
+    'actividad_id,asistente_id',
+    devolver
+  );
+}
+
+/**
+ * Lo respondido en una actividad, servido de memoria por unos segundos.
+ *
+ * Es para las lecturas que son iguales para toda la sala y que el sondeo de
+ * cada teléfono pide igual: la lista de preguntas que se votan y el reparto de
+ * monedas. Sin esto son dos consultas por teléfono y por sondeo, que con
+ * ochenta teléfonos es la forma exacta en que se saturó la base el 7 de agosto
+ * de 2026.
+ *
+ * Ocho segundos: lo único que puede llegar tarde es una moneda que acaba de
+ * caer, y el ranking se mueve igual en la pantalla siguiente.
+ */
+export async function aportesDeLaSala(
+  corridaId: string,
+  actividadId: string,
+  segundos = 8
+): Promise<Aporte[]> {
+  return recordar(`aportes:${corridaId}:${actividadId}`, segundos, () =>
+    listarAportes(corridaId, actividadId)
   );
 }
 
