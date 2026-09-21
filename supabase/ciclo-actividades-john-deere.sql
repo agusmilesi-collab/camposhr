@@ -36,17 +36,22 @@ cross join (values
 
   -- 2 · El mismo reconocimiento, en tres campos. Después de escuchar la
   -- diferencia entre "sos un crack" y el dato.
+  -- El primer campo pide el detalle comprobable y no el verbo pelado. Con
+  -- "un verbo y un objeto" la traducción salía "redactó el informe", que no le
+  -- dice a nadie qué repetir: redactar informes es lo que esa persona hace
+  -- todos los meses. Lo que se saca es la calificación ("lo hizo bien"), no
+  -- aquello que distinguió a ese trabajo, que es justamente lo repetible.
   ('cd-reconocimiento-traducido', 1, 2, 'campos',
    'Ahora traducilo',
-   'Lo mismo que escribiste, dicho de manera que la persona sepa qué repetir.',
+   'Lo mismo que escribiste, **con el detalle suficiente para que pueda volver a hacerlo**.',
    '[]'::jsonb, null, 'Reconocimiento · traducir',
    '{
       "desde": "cd-reconocimiento",
       "desde_titulo": "Lo que escribiste recién",
       "campos": [
-        {"clave": "que_hizo", "etiqueta": "¿Qué hizo?", "ayuda": "Un verbo y un objeto."},
+        {"clave": "que_hizo", "etiqueta": "¿Qué hizo exactamente?", "ayuda": "El detalle que se puede comprobar: “entregó el informe con las tres áreas cargadas”. “Lo hizo bien” no dice qué repetir."},
         {"clave": "cuando", "etiqueta": "¿Cuándo?", "ayuda": "Un día, o una semana."},
-        {"clave": "para_que", "etiqueta": "¿Qué se consiguió gracias a eso?", "ayuda": "El efecto, no el elogio."}
+        {"clave": "para_que", "etiqueta": "¿Qué se consiguió gracias a eso?", "ayuda": "El efecto. Acá sí entra por qué estuvo bueno."}
       ]
     }'::jsonb),
 
@@ -74,13 +79,16 @@ cross join (values
   -- escrito un adjetivo, y por eso no hay cuestionario al final.
   ('cd-traduccion', 1, 5, 'campos',
    'Traducí tu conversación',
-   'No escribas otra: rompé la que ya tenés.',
+   'No escribas otra: **rompé la que ya tenés**.',
    '[]'::jsonb, null, 'La conversación · traducir',
+   -- Acá sí se nombran el hecho y el juicio: esta consigna va después de la
+   -- teoría, y en la del reconocimiento, que va quince minutos antes, esas dos
+   -- palabras todavía no significan nada para la sala.
    '{
       "desde": "cd-conversacion",
       "desde_titulo": "Lo que escribiste antes de la teoría",
       "campos": [
-        {"clave": "que_hizo", "etiqueta": "¿Qué hizo?", "ayuda": "Un verbo y un objeto. Todavía no expliques por qué."},
+        {"clave": "que_hizo", "etiqueta": "¿Qué hizo?", "ayuda": "Un hecho que la otra persona puede verificar: “entregó tres informes después de la fecha”. Un juicio como “es desprolijo” no se puede corregir."},
         {"clave": "que_dia", "etiqueta": "¿Qué día pasó?", "ayuda": "Una fecha, o un día de la semana."},
         {"clave": "cuantas_veces", "etiqueta": "¿Cuántas veces?", "ayuda": "Un número."},
         {"clave": "que_pedis", "etiqueta": "¿Qué le vas a pedir?", "ayuda": "Una acción concreta."},
