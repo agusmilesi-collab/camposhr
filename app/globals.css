@@ -8603,6 +8603,39 @@ body {
   color: var(--muted);
 }
 
+/*
+ * La etiqueta de cada dato, en azul y con peso.
+ *
+ * Son tres o seis campos seguidos y cada uno pide una cosa distinta: en gris
+ * claro la pregunta se mezclaba con su propia ayuda y con la del campo de
+ * arriba, y la persona terminaba completando el que tenía el cursor.
+ */
+.ci-campos .ci-campo > span {
+  color: var(--st-blue);
+  font-weight: 600;
+  font-size: 0.76rem;
+}
+
+/*
+ * El campo, blanco y con borde.
+ *
+ * Sobre el papel crema una línea sola no se lee como algo para completar, y
+ * menos en un teléfono con la sala esperando. Blanco y recuadrado se ve dónde
+ * hay que escribir sin mirar dos veces.
+ */
+.ci-campos .cq-input {
+  margin-top: 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 1.05rem;
+}
+
+.ci-campos .cq-input:focus {
+  border-color: var(--st-blue);
+}
+
 /* Cuántas monedas quedan. Es el único número de la pantalla, así que va
    grande: se mira entre toque y toque sin dejar de mirar la lista. */
 .ci-monedas-quedan {

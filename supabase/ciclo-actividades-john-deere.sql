@@ -50,7 +50,7 @@ cross join (values
       "desde_titulo": "Lo que escribiste recién",
       "campos": [
         {"clave": "que_hizo", "etiqueta": "¿Qué hizo exactamente?", "ayuda": "El detalle que se puede comprobar: “entregó el informe con las tres áreas cargadas”. “Lo hizo bien” no dice qué repetir."},
-        {"clave": "cuando", "etiqueta": "¿Cuándo?", "ayuda": "Un día, o una semana."},
+        {"clave": "cuando", "etiqueta": "¿Cuándo lo hizo?", "ayuda": "El día, o la semana, en que pasó."},
         {"clave": "para_que", "etiqueta": "¿Qué se consiguió gracias a eso?", "ayuda": "El efecto. Acá sí entra por qué estuvo bueno."}
       ]
     }'::jsonb),
