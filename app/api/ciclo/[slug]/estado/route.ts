@@ -92,6 +92,10 @@ function publica(a: Actividad, datos: Record<string, string> = {}) {
     aviso: a.config.aviso,
     desdeTitulo: a.config.desde_titulo ?? null,
     monedas: a.config.monedas ?? null,
+    // Cómo se lee de corrido lo que escribió en los campos, para mostrárselo
+    // al terminar al lado de lo que había escrito antes. Vive en la actividad
+    // porque cada consigna arma su frase con sus propios campos.
+    frase: a.config.frase ?? null,
   };
 }
 
