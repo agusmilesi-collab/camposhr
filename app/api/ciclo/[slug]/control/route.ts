@@ -27,7 +27,8 @@ export async function POST(
   req: Request,
   { params }: { params: { slug: string } }
 ) {
-  const ciclo = await resolverCiclo(params.slug);
+  // Sin caché: acá se abre y se cierra, y se decide contra lo que hay escrito.
+  const ciclo = await resolverCiclo(params.slug, true);
   if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
   const { corrida } = ciclo;
 

@@ -57,7 +57,15 @@ function reloj(ms: number): string {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 }
 
-const SONDEO_MS = 4000;
+/**
+ * Cada cuánto se actualiza el panel de quien dicta.
+ *
+ * Es una sola pantalla, pero pide más que un teléfono: los contadores de
+ * avance y, durante el ensayo, lo que anotaron los observadores. Ocho segundos
+ * es más lento que lo que la sala responde, así que el número se mueve igual, y
+ * en el minuto en que los ochenta escriben deja de competir con ellos.
+ */
+const SONDEO_MS = 8000;
 
 export default function Control({
   slug,

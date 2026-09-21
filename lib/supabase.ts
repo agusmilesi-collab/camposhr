@@ -95,7 +95,13 @@ export async function patch(
 export async function upsert<T>(
   tabla: string,
   fila: Record<string, unknown>,
-  conflicto: string
+  conflicto: string,
+  /**
+   * En false la base no manda de vuelta la fila escrita, y la función devuelve
+   * undefined. Es para las escrituras que llegan de a ochenta juntas y cuyo
+   * retorno nadie mira.
+   */
+  devolver = true
 ): Promise<T> {
   const res = await fetch(
     `${URL_BASE()}/rest/v1/${tabla}?on_conflict=${conflicto}`,
@@ -103,12 +109,15 @@ export async function upsert<T>(
       method: 'POST',
       headers: headers({
         'content-type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=representation',
+        Prefer: devolver
+          ? 'resolution=merge-duplicates,return=representation'
+          : 'resolution=merge-duplicates,return=minimal',
       }),
       body: JSON.stringify(fila),
     }
   );
   if (!res.ok) throw new Error(`Supabase upsert ${tabla} ${res.status}: ${await res.text()}`);
+  if (!devolver) return undefined as T;
   const filas = await res.json();
   return filas[0];
 }

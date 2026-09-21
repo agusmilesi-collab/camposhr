@@ -179,12 +179,13 @@ export type Cara = {
 /**
  * Cada cuánto el teléfono pregunta si hay algo abierto.
  *
- * Son treinta teléfonos preguntando a la vez, así que cada segundo que se le
- * saca al intervalo se multiplica por treinta contra la base. Doce segundos es
- * lo que tarda la expositora en terminar de decir la consigna: para la persona
- * la pantalla igual aparece sola.
+ * Son ochenta teléfonos preguntando a la vez, así que cada segundo que se le
+ * saca al intervalo se multiplica por ochenta contra la base. Veinte segundos
+ * es lo que tarda la expositora en decir la consigna y esperar a que la sala
+ * saque el teléfono, y es el número con el que se midió la carga: cien
+ * teléfonos cada veinte segundos, 2354 pedidos y ningún error.
  */
-const SONDEO_MS = 12000;
+const SONDEO_MS = 20000;
 
 /**
  * Consignas que la persona lee en voz alta después de responder.

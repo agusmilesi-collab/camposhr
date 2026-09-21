@@ -30,7 +30,8 @@ export default async function ControlDelCiclo({
   params: { slug: string };
   searchParams: { k?: string };
 }) {
-  const ciclo = await resolverCiclo(params.slug);
+  // Sin caché: quien dicta toca un botón y su pantalla cambia en el acto.
+  const ciclo = await resolverCiclo(params.slug, true);
   if (!ciclo) notFound();
   const { empresa, corrida } = ciclo;
 

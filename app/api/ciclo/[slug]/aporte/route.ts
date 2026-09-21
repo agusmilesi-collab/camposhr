@@ -146,7 +146,10 @@ export async function POST(
   }
 
   try {
-    await guardarAporte(corrida.id, actividad.id, asistente.id, valor);
+    // Sin pedirle a la base que devuelva la fila: la respuesta de acá es el
+    // valor que ya está en la mano, y son ochenta escrituras en el mismo
+    // minuto.
+    await guardarAporte(corrida.id, actividad.id, asistente.id, valor, false);
   } catch {
     return new NextResponse('No se pudo guardar', { status: 500 });
   }
