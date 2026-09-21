@@ -197,6 +197,21 @@ const SONDEO_MS = 20000;
 const SE_LEEN_EN_VOZ_ALTA = new Set(['c1-momento']);
 
 /**
+ * Negrita adentro del enunciado de una consigna, con dobles asteriscos.
+ *
+ * Los enunciados viven en la base y se corrigen hasta el día anterior sin
+ * desplegar nada, así que la única forma de resaltar la parte que importa era
+ * escribirla en mayúsculas. Esto alcanza para eso y no abre la puerta a meter
+ * HTML en un campo de texto: parte por el asterisco doble y arma los nodos.
+ */
+function conNegrita(texto: string) {
+  const partes = texto.split(/\*\*(.+?)\*\*/g);
+  return partes.map((parte, i) =>
+    i % 2 === 1 ? <strong key={i}>{parte}</strong> : parte
+  );
+}
+
+/**
  * Consignas que se muestran, no se proyectan.
  *
  * En el juego del Match cada uno escribe con qué completa la frase y después
@@ -1189,7 +1204,9 @@ function Formulario({
   return (
     <section className="cq-placa">
       <h1 className="ci-titulo">{actividad.titulo}</h1>
-      {actividad.enunciado && <p className="cq-ayuda">{actividad.enunciado}</p>}
+      {actividad.enunciado && (
+        <p className="cq-ayuda">{conNegrita(actividad.enunciado)}</p>
+      )}
 
       {actividad.tipo === 'enlace' && (
         <div className="ci-acciones">
