@@ -8584,3 +8584,580 @@ body {
 .pres-proxima .hub-btn {
   margin-left: auto;
 }
+
+/* ------------------------------------------- consigna de campos y de monedas
+   Dos formas nuevas de responder desde el teléfono, las dos pensadas para el
+   pulgar y para una sala que está esperando. */
+
+/* Los campos de la traducción: uno por dato, en el orden declarado. */
+.ci-campos {
+  margin-top: 4px;
+}
+
+.ci-campo-ayuda {
+  display: block;
+  margin-top: 5px;
+  font-style: normal;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* Cuántas monedas quedan. Es el único número de la pantalla, así que va
+   grande: se mira entre toque y toque sin dejar de mirar la lista. */
+.ci-monedas-quedan {
+  margin: 4px 0 14px;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.ci-monedas-quedan b {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--ink);
+  vertical-align: -2px;
+  margin: 0 2px;
+}
+
+.ci-votos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ci-voto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+/* La que ya tiene monedas se distingue de un vistazo: la lista es larga y
+   hay que poder ver dónde se puso sin contar. */
+.ci-voto.con-monedas {
+  border-color: var(--ink-soft);
+}
+
+.ci-voto-texto {
+  flex: 1;
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.ci-voto-contador {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Cuadrados de 44 px: es el mínimo que se toca sin errarle con el pulgar. */
+.ci-voto-btn {
+  width: 44px;
+  height: 44px;
+  font: inherit;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ci-voto-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.ci-voto-num {
+  min-width: 26px;
+  text-align: center;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.3rem;
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------- ranking proyectado
+   El reparto de monedas, ordenado. Las tres primeras se leen en voz alta y por
+   eso se marcan; el resto queda a la vista para que se vea que la sala eligió
+   entre todas y no entre tres. */
+.cp-ranking {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.cp-ranking-fila {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.cp-ranking-fila.gana {
+  border-color: var(--ink);
+}
+
+.cp-ranking-puesto {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--line-soft);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.cp-ranking-fila.gana .cp-ranking-puesto {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.cp-ranking-que {
+  flex: 1;
+  min-width: 0;
+}
+
+.cp-ranking-que p {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+/* El pozo. Es el número que el que contesta escucha antes de abrir la boca. */
+.cp-ranking-pozo {
+  flex: none;
+  text-align: right;
+  line-height: 1.1;
+}
+
+.cp-ranking-pozo b {
+  display: block;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.cp-ranking-pozo em {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------- la placa del antes y después
+   Dos números y nada más. La conclusión la saca la sala: si acá dijera "dos de
+   cada tres se equivocaron", la placa estaría discutiendo con la gente en vez
+   de mostrarle lo que acaba de pasar. */
+.cp-antes-despues {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+  width: 100%;
+}
+
+.cp-ad-lado {
+  text-align: center;
+}
+
+.cp-ad-cuando {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.cp-ad-num {
+  display: block;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(3.5rem, 11vw, 6rem);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.cp-ad-que {
+  margin: 12px auto 0;
+  max-width: 22ch;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+.cp-ad-de {
+  display: block;
+  margin-top: 8px;
+  font-style: normal;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Lo que hay que hacer para juntarse, arriba de los nombres del trío. Va
+   destacado porque es una orden de movimiento y no un dato: si se lee como el
+   resto, la mitad de la sala sigue sentada. */
+.ci-ensayo-juntarse {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* ------------------------------------------------- las respuestas que rotan
+   Una sola a la vez y grande: se proyecta mientras la sala mira su teléfono
+   para repartir monedas, y lo que aparece tiene que leerse al levantar la
+   cabeza. */
+.cp-rotan {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+}
+
+.cp-rotan-texto {
+  margin: 0;
+  max-width: 24ch;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(2rem, 5.5vw, 3.6rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--ink);
+  animation: cp-rotan-entra 0.5s ease;
+}
+
+@keyframes cp-rotan-entra {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cp-rotan-pie {
+  margin-top: 26px;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------------- el pozo
+   Lo que junta la pregunta propia cuando queda entre las que se contestan.
+   Va arriba de todo y en oscuro: en ese momento el pozo está proyectado y los
+   ochenta esperan a ver si alguien habla. */
+.ci-pozo {
+  margin: 0 0 20px;
+  padding: 18px 20px;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.ci-pozo-que {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.7;
+}
+
+.ci-pozo-texto {
+  margin: 10px 0 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.ci-pozo-monedas {
+  margin: 14px 0 16px;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  opacity: 0.8;
+}
+
+.ci-pozo-monedas b {
+  display: block;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 2.6rem;
+  font-weight: 400;
+  line-height: 1;
+  opacity: 1;
+}
+
+.ci-pozo .cq-btn {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+}
+
+.ci-pozo-aviso {
+  margin: 12px 0 0;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  opacity: 0.65;
+}
+
+.ci-pozo-listo {
+  margin: 0;
+  font-size: 0.88rem;
+  opacity: 0.85;
+}
+
+/* Cobrado: ya no hay nada que decidir, así que baja de jerarquía. */
+.ci-pozo.cobrado {
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+/* El nombre de quien reclamó su pozo. Aparece por elección suya: hasta que
+   toca el botón, la pregunta es anónima. */
+.cp-ranking-quien {
+  display: block;
+  margin: -4px 0 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------ el repaso descargable
+   Lo que se lleva cada uno en el teléfono. Se lee de arriba abajo: primero lo
+   propio, que es lo único que no puede conseguir en otro lado, y después el
+   método, para volver a leerlo el día que tenga la conversación. */
+.rs {
+  max-width: 640px;
+  padding-bottom: 60px;
+}
+
+.rs-head {
+  padding: 28px 0 20px;
+}
+
+.rs-head h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(2rem, 8vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.1;
+  margin-top: 6px;
+}
+
+.rs-bloque {
+  margin-top: 30px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+
+.rs-bloque h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 400;
+  margin-bottom: 14px;
+}
+
+.rs-bajada {
+  margin: -8px 0 14px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+/* Lo propio, destacado: es lo que se viene a buscar. */
+.rs-mio {
+  border-top: 0;
+  padding: 20px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.rs-mio-vacio {
+  border-top: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.rs-mia + .rs-mia {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.rs-mia-que {
+  margin: 0 0 6px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.rs-mia-frase {
+  margin: 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.2rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.rs-mia-dato {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.rs-mia-fecha {
+  margin: 10px 0 0;
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.8rem;
+}
+
+.rs-conceptos,
+.rs-momentos,
+.rs-oficio {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rs-conceptos li {
+  margin-bottom: 16px;
+}
+
+.rs-conceptos b,
+.rs-momentos b {
+  display: block;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.rs-conceptos p,
+.rs-momentos p {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.rs-momentos li {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.rs-momento-num {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.82rem;
+}
+
+.rs-traduccion {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.rs-traduccion:last-child {
+  border-bottom: 0;
+}
+
+.rs-juicio {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.rs-hecho {
+  margin: 4px 0 0;
+  font-size: 0.98rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.rs-remate {
+  margin-top: 18px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+.rs-oficio li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.rs-oficio li:last-child {
+  border-bottom: 0;
+}
+
+.rs-pie {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* La pregunta que le tocó a cada uno para contestar al cerrar. No se responde
+   en el teléfono: se contesta hablando, así que la pantalla es un cartel. */
+.ci-tocada-que {
+  margin: 0 0 10px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.ci-tocada-texto {
+  margin: 0;
+  padding: 0 0 0 16px;
+  border-left: 3px solid var(--ink);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.ci-tocada-como {
+  margin: 18px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}

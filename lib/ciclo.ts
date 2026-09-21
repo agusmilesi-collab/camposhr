@@ -71,6 +71,21 @@ export const TIPOS = [
    *  el servidor arma los equipos de color y las dos mitades al abrirla, y de
    *  cada mitad escribe una sola persona por las tres. */
   'frases',
+  /** Varios campos en una pantalla, uno por dato, declarados en `config`.
+   *  Es lo que convierte una frase escrita de corrido en un hecho verificable:
+   *  separar "qué hizo", "qué día" y "cuántas veces" hace imposible escribir un
+   *  adjetivo sin darse cuenta. Con `config.desde` muestra arriba lo que la
+   *  persona escribió en otra actividad, para que traduzca lo suyo. */
+  'campos',
+  /** Repartir una cantidad fija de monedas entre las respuestas de texto de
+   *  otra actividad. Viaja en una sola escritura al confirmar: una ráfaga de
+   *  pujas repetidas está arriba del techo que midió la prueba de carga. */
+  'monedas',
+  /** No se responde: el servidor le asigna a cada persona con años en el rol
+   *  una de las preguntas que quedaron sin contestar, de otra área que la suya.
+   *  Con eso cada quien recién empieza sale con un referente y sin que la
+   *  empresa monte un programa de mentoría. */
+  'reparto',
 ] as const;
 export type TipoActividad = (typeof TIPOS)[number];
 
@@ -146,8 +161,68 @@ export type Actividad = {
    * de la primera: no alcanza para reconocer el momento de la charla.
    */
   titulo_control: string | null;
+  /**
+   * Lo que el tipo necesita y no entra en `opciones`: la lista de campos, de
+   * qué actividad viene el texto que se traduce, cuántas monedas se reparten,
+   * y el enunciado que cambia según lo que la persona contestó en el registro.
+   */
+  config: ConfigActividad;
   abierta: boolean;
   created_at: string;
+};
+
+/** Un campo de una actividad de tipo `campos`. */
+export type CampoActividad = {
+  clave: string;
+  etiqueta: string;
+  ayuda?: string;
+};
+
+export type ConfigActividad = {
+  /** Clave de la actividad cuyo texto se muestra arriba, para traducirlo. */
+  desde?: string;
+  desde_titulo?: string;
+  campos?: CampoActividad[];
+  /** Cuántas monedas reparte cada uno. */
+  monedas?: number;
+  /** De quiénes son las respuestas que se votan, por dato del registro. */
+  de_quienes?: { campo: string; valor: string };
+  /** A quiénes se les reparten esas respuestas para contestarlas al cerrar. */
+  a_quienes?: { campo: string; valor: string };
+  /**
+   * Qué le pasa a lo que escribe, dicho debajo del campo.
+   *
+   * Vacío no muestra nada: sirve cuando el enunciado ya lo dice, y repetirlo
+   * abajo con otras palabras deja a la persona sin saber cuál de las dos vale.
+   */
+  aviso?: string;
+  /** El dato del registro que decide qué enunciado le toca a cada uno. */
+  segun?: string;
+  enunciados?: Record<string, string>;
+  /** Qué ronda del ensayo es esta actividad. */
+  ronda?: number;
+  /**
+   * El caso de esta ronda, cuando lo trae la actividad.
+   *
+   * Los del ciclo de Pla viven en `lib/ensayo.ts` porque son los mismos para
+   * todos sus encuentros. Los de una charla suelta los define el cliente, y
+   * escribirlos en el código obligaría a un despliegue para cambiar una ficha.
+   */
+  caso?: {
+    titulo: string;
+    ficha: [string, string][];
+    paraQuienRecibe: string;
+  };
+  /** La reacción que le toca a quien recibe, apareada con el caso. */
+  reaccion?: { nombre: string; instruccion: string; guion: string[] };
+  /**
+   * Qué hacer para juntarse, arriba de los nombres del trío.
+   *
+   * En una sala con sillas en fila y sin mesas, el trío no existe hasta que
+   * las corren. Decirlo solo en voz alta se pierde entre ochenta personas
+   * leyendo su teléfono.
+   */
+  juntarse?: string;
 };
 
 export type Asistente = {
@@ -189,7 +264,13 @@ export type Valor =
   | { tipo: 'palabra'; palabra: string }
   | { tipo: 'opcion'; opcion: number }
   | { tipo: 'escala'; escala: number }
-  | { tipo: 'texto'; texto: string }
+  /**
+   * `reclamado` existe solo en las consignas que se votan: quien escribió una
+   * de las preguntas ganadoras decide si cobra el pozo, y cobrarlo es decir
+   * que fue suya. Es una elección y no un dato que el sistema revele: el que
+   * escribió algo delicado se queda callado sin tener que explicar nada.
+   */
+  | { tipo: 'texto'; texto: string; reclamado?: boolean }
   | { tipo: 'marcas'; marcas: number[] }
   /** Días de la semana (1 lunes a 5 viernes), hora en 24 horas y antes de qué.
    *  Varios días porque la pausa se sostiene mejor repetida que una sola vez. */
@@ -261,7 +342,28 @@ export type Valor =
       enfrente: { id: string; escribe: boolean }[];
       /** Una por fila del ejercicio, en el orden de `DEL_EJERCICIO`. */
       respuestas?: string[];
-    };
+    }
+  /**
+   * Lo que se escribió campo por campo, por la clave de cada uno.
+   *
+   * Se guarda separado y no armado en una frase: el informe necesita contar
+   * cuántos pusieron una fecha, y de una frase armada eso no se saca.
+   */
+  | { tipo: 'campos'; campos: Record<string, string> }
+  /**
+   * El reparto de monedas: cuántas puso en cada respuesta que se vota, por el
+   * id del aporte votado.
+   *
+   * Viaja entero en una sola escritura al confirmar. Por eso el reparto es una
+   * fila y no una por moneda: ochenta teléfonos mandando diez escrituras cada
+   * uno estaría muy arriba del techo medido.
+   */
+  | { tipo: 'monedas'; reparto: Record<string, number> }
+  /**
+   * La pregunta que le tocó contestar a esta persona al cerrar. Tampoco la
+   * responde ella: la escribe el servidor al abrir la actividad.
+   */
+  | { tipo: 'reparto'; aporteId: string; texto: string };
 
 /** La dirección de una actividad de tipo 'enlace'. Sólo se acepta https. */
 export function destinoDe(actividad: Actividad): string | null {
@@ -271,7 +373,7 @@ export function destinoDe(actividad: Actividad): string | null {
 
 const CAMPOS_ACTIVIDAD =
   'id,ciclo_id,clave,charla,orden,tipo,titulo,enunciado,opciones,grupo,' +
-  'placa,titulo_control,created_at';
+  'placa,titulo_control,config,created_at';
 const CAMPOS_ASISTENTE =
   'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en,expositora,datos';
 const CAMPOS_APORTE = 'id,corrida_id,actividad_id,asistente_id,valor,created_at';
@@ -591,6 +693,122 @@ export async function marcarIngreso(asistenteId: string): Promise<void> {
   });
 }
 
+/**
+ * Marca una respuesta como reclamada por quien la escribió.
+ *
+ * Solo la puede reclamar su dueño, y una vez: el nombre aparece proyectado, y
+ * deshacerlo no le devolvería el anonimato a nadie.
+ */
+export async function reclamarAporte(
+  actividadId: string,
+  asistenteId: string
+): Promise<boolean> {
+  if (!UUID.test(actividadId) || !UUID.test(asistenteId)) return false;
+  const mio = await getAporteDe(actividadId, asistenteId);
+  if (!mio || mio.valor?.tipo !== 'texto') return false;
+  if (mio.valor.reclamado) return true;
+
+  await patch(
+    'aportes',
+    `id=eq.${mio.id}`,
+    { valor: { ...mio.valor, reclamado: true } }
+  );
+  return true;
+}
+
+/**
+ * Reparte las preguntas que quedaron sin contestar.
+ *
+ * Toma las que no entraron entre las tres que se leen en voz alta y le da una a
+ * cada persona con años en el rol, siempre de un área distinta a la suya: la
+ * idea es que el que recién empieza se lleve un referente de otro sector, que
+ * es donde nunca hubiese preguntado solo.
+ *
+ * Se llama al abrir la actividad, igual que el cruce y el ensayo, para que el
+ * primer teléfono que sondee ya encuentre la suya escrita.
+ */
+export async function repartirPreguntas(
+  corrida: Corrida,
+  actividad: Actividad,
+  catalogo: Actividad[]
+): Promise<void> {
+  if (actividad.tipo !== 'reparto') return;
+  const origen = catalogo.find((a) => a.clave === actividad.config.desde);
+  const votacion = catalogo.find((a) => a.tipo === 'monedas');
+  if (!origen) return;
+
+  const [preguntas, votos, asistentes, yaHechos] = await Promise.all([
+    listarAportes(corrida.id, origen.id),
+    votacion ? listarAportes(corrida.id, votacion.id) : Promise.resolve([] as Aporte[]),
+    listarAsistentes(corrida.id),
+    listarAportes(corrida.id, actividad.id),
+  ]);
+  if (yaHechos.length > 0) return;
+
+  const porId = new Map(asistentes.map((a) => [a.id, a]));
+  const deQuienes = actividad.config.de_quienes;
+
+  // Las tres más votadas ya se contestaron en la sala: las que se reparten son
+  // las otras.
+  const contestadas = new Set(
+    votacion
+      ? (() => {
+          const r = resumir(votacion, votos);
+          return r.tipo === 'monedas' ? r.ranking.slice(0, 3).map((x) => x.aporteId) : [];
+        })()
+      : []
+  );
+
+  const pendientes = preguntas
+    .filter((a) => a.valor?.tipo === 'texto' && a.valor.texto.trim() !== '')
+    .filter((a) => !contestadas.has(a.id))
+    .filter((a) => {
+      if (!deQuienes) return true;
+      return porId.get(a.asistente_id)?.datos?.[deQuienes.campo] === deQuienes.valor;
+    });
+  if (pendientes.length === 0) return;
+
+  const aQuienes = actividad.config.a_quienes;
+  const candidatos = delTaller(asistentes).filter((a) => {
+    if (!aQuienes) return true;
+    return a.datos?.[aQuienes.campo] === aQuienes.valor;
+  });
+  if (candidatos.length === 0) return;
+
+  const filas: Record<string, unknown>[] = [];
+  const usados = new Set<string>();
+
+  for (const pregunta of pendientes) {
+    const autor = porId.get(pregunta.asistente_id);
+    // De otra área que la de quien preguntó, y que no tenga ya una. Si no
+    // queda ninguno así, se afloja primero el área y después lo demás: es
+    // preferible un referente del mismo sector que ninguno.
+    const elegido =
+      candidatos.find(
+        (c) => !usados.has(c.id) && c.datos?.area !== autor?.datos?.area
+      ) ??
+      candidatos.find((c) => !usados.has(c.id)) ??
+      null;
+    if (!elegido) break;
+
+    usados.add(elegido.id);
+    filas.push({
+      corrida_id: corrida.id,
+      actividad_id: actividad.id,
+      asistente_id: elegido.id,
+      valor: {
+        tipo: 'reparto',
+        aporteId: pregunta.id,
+        texto: pregunta.valor?.tipo === 'texto' ? pregunta.valor.texto : '',
+      },
+    });
+  }
+
+  if (filas.length > 0) {
+    await upsertVarias('aportes', filas, 'actividad_id,asistente_id');
+  }
+}
+
 export async function crearAsistente(fila: {
   corrida_id: string;
   nombre: string;
@@ -876,6 +1094,39 @@ export function rondasDelEnsayo(catalogo: Actividad[]): Actividad[] {
  * Once tríos enterándose a mitad del ejercicio de que ahora tienen otros
  * compañeros sería peor que cualquier error de la base.
  */
+/**
+ * En qué orden entran a la grilla del ensayo.
+ *
+ * El reparto corta la lista en tres filas seguidas y arma cada trío con una
+ * persona de cada una. Así, ordenar por área y por nivel antes de cortar hace
+ * que los tres de un trío vengan de tres zonas distintas de la lista: ningún
+ * trío queda con tres del mismo sector ni del mismo escalón, que es justo lo
+ * que hay que evitar cuando el ejercicio también integra.
+ *
+ * Cuando el ciclo no pide esos datos en el registro, manda la fecha de
+ * registro, que es como se repartía antes. El desempate siempre es la fecha:
+ * el reparto se calcula una vez y recalcularlo tiene que dar lo mismo.
+ */
+function ordenParaTrios(asistentes: Asistente[]): Asistente[] {
+  const clasifica = asistentes.some((a) => Object.keys(a.datos ?? {}).length > 0);
+  if (!clasifica) {
+    return [...asistentes].sort((a, b) => a.created_at.localeCompare(b.created_at));
+  }
+
+  const orden = new Intl.Collator('es', { sensitivity: 'base' });
+  return [...asistentes].sort((a, b) => {
+    const areaA = a.datos?.area ?? '';
+    const areaB = b.datos?.area ?? '';
+    const gradoA = a.datos?.grado ?? '';
+    const gradoB = b.datos?.grado ?? '';
+    return (
+      orden.compare(areaA, areaB) ||
+      orden.compare(gradoA, gradoB) ||
+      a.created_at.localeCompare(b.created_at)
+    );
+  });
+}
+
 export async function repartirEnsayo(
   corrida: Corrida,
   rondas: Actividad[]
@@ -887,11 +1138,8 @@ export async function repartirEnsayo(
     ...rondas.map((r) => listarAportes(corrida.id, r.id)),
   ]);
 
-  // El orden manda: define la grilla y, con ella, el reparto entero. Por fecha
-  // de registro es estable, así que recalcular da siempre lo mismo.
-  const porRegistro = [...asistentes].sort((a, b) =>
-    a.created_at.localeCompare(b.created_at)
-  );
+  // El orden manda: define la grilla y, con ella, el reparto entero.
+  const porRegistro = ordenParaTrios(asistentes);
   const yaTienen = new Set(previos[0].map((p) => p.asistente_id));
   const enOrden = conSuplentes(porRegistro, yaTienen);
   const vigentes = new Set(enOrden.map((a) => a.id));
@@ -1350,6 +1598,49 @@ export function normalizarValor(actividad: Actividad, crudo: unknown): Valor {
       if (marcas.length === 0) throw new Error('Marcá al menos una');
       return { tipo: 'marcas', marcas };
     }
+
+    case 'campos': {
+      const declarados = actividad.config.campos ?? [];
+      if (declarados.length === 0) throw new Error('Esta actividad no tiene campos');
+      const crudos = (dato.campos ?? {}) as Record<string, unknown>;
+
+      const campos: Record<string, string> = {};
+      for (const campo of declarados) {
+        campos[campo.clave] = String(crudos[campo.clave] ?? '')
+          .trim()
+          .slice(0, MAX_TEXTO);
+      }
+      // Alcanza con uno: la persona va llenando y el teléfono guarda mientras
+      // tanto. Exigirlos todos para poder guardar perdería lo escrito de quien
+      // se queda pensando el último.
+      if (!Object.values(campos).some((v) => v.length > 0)) {
+        throw new Error('Completá al menos un campo');
+      }
+      return { tipo: 'campos', campos };
+    }
+
+    case 'reparto':
+      // La escribe el servidor al abrir la actividad, igual que el cruce y el
+      // ensayo: acá no llega nada del teléfono.
+      throw new Error('Esta actividad no se responde');
+
+    case 'monedas': {
+      const crudo = (dato.reparto ?? {}) as Record<string, unknown>;
+      const tope = actividad.config.monedas ?? 10;
+
+      const reparto: Record<string, number> = {};
+      let suma = 0;
+      for (const [aporteId, valor] of Object.entries(crudo)) {
+        if (!UUID.test(aporteId)) continue;
+        const monedas = Math.floor(Number(valor));
+        if (!Number.isFinite(monedas) || monedas <= 0) continue;
+        reparto[aporteId] = monedas;
+        suma += monedas;
+      }
+      if (suma === 0) throw new Error('Poné al menos una moneda');
+      if (suma > tope) throw new Error(`Son ${tope} monedas y pusiste ${suma}`);
+      return { tipo: 'monedas', reparto };
+    }
   }
 }
 
@@ -1414,6 +1705,32 @@ export type Resumen =
       escribieron: number;
       /** Equipos con las dos mitades listas, o sea los que ya pueden leerse. */
       completos: number;
+    }
+  /**
+   * Cuántos completaron cada campo. Es lo que la expositora mira para saber si
+   * la sala terminó de traducir, y el número que el informe necesita: cuántos
+   * pusieron un día y cuántos no.
+   */
+  | {
+      tipo: 'campos';
+      total: number;
+      /** Los que llenaron todos los campos, que es lo que cuenta como listo. */
+      completos: number;
+      porCampo: { clave: string; etiqueta: string; veces: number }[];
+    }
+  /**
+   * El reparto de monedas, ordenado. El texto de cada pregunta no vive acá:
+   * está en los aportes de la actividad votada, y lo resuelve la pantalla que
+   * proyecta.
+   */
+  /** Cuántas preguntas pendientes quedaron con alguien que las conteste. */
+  | { tipo: 'reparto'; total: number; repartidas: number }
+  | {
+      tipo: 'monedas';
+      total: number;
+      /** Monedas puestas sobre el total posible, para saber si ya votaron. */
+      puestas: number;
+      ranking: { aporteId: string; monedas: number; votantes: number }[];
     };
 
 /** Para agrupar 'apurado' con 'Apurado' y con 'apurada' no, que es otra cosa. */
@@ -1637,6 +1954,65 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
         escribieron: listas.size,
         completos,
       };
+    }
+
+    case 'reparto': {
+      // Cuántas preguntas quedaron con alguien que las conteste. Es lo que la
+      // expositora mira para saber si ya puede cerrar.
+      return { tipo: 'reparto', total, repartidas: total };
+    }
+
+    case 'campos': {
+      const declarados = actividad.config.campos ?? [];
+      const veces = new Map<string, number>();
+      let completos = 0;
+      for (const a of aportes) {
+        if (a.valor?.tipo !== 'campos') continue;
+        let llenos = 0;
+        for (const campo of declarados) {
+          const valor = (a.valor.campos[campo.clave] ?? '').trim();
+          if (valor) {
+            veces.set(campo.clave, (veces.get(campo.clave) ?? 0) + 1);
+            llenos += 1;
+          }
+        }
+        if (llenos === declarados.length && declarados.length > 0) completos += 1;
+      }
+      return {
+        tipo: 'campos',
+        total,
+        completos,
+        porCampo: declarados.map((c) => ({
+          clave: c.clave,
+          etiqueta: c.etiqueta,
+          veces: veces.get(c.clave) ?? 0,
+        })),
+      };
+    }
+
+    case 'monedas': {
+      const monedas = new Map<string, number>();
+      const votantes = new Map<string, number>();
+      let puestas = 0;
+      for (const a of aportes) {
+        if (a.valor?.tipo !== 'monedas') continue;
+        for (const [aporteId, cuantas] of Object.entries(a.valor.reparto)) {
+          if (!Number.isFinite(cuantas) || cuantas <= 0) continue;
+          monedas.set(aporteId, (monedas.get(aporteId) ?? 0) + cuantas);
+          votantes.set(aporteId, (votantes.get(aporteId) ?? 0) + 1);
+          puestas += cuantas;
+        }
+      }
+      const ranking = [...monedas.entries()]
+        .map(([aporteId, m]) => ({
+          aporteId,
+          monedas: m,
+          votantes: votantes.get(aporteId) ?? 0,
+        }))
+        // A igual cantidad de monedas, adelante la que quiere escuchar más
+        // gente: diez de una persona no valen lo mismo que diez de diez.
+        .sort((a, b) => b.monedas - a.monedas || b.votantes - a.votantes);
+      return { tipo: 'monedas', total, puestas, ranking };
     }
 
     case 'marcas': {

@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import {
+  actividadesDelCiclo,
   anotarEnsayo,
   anotarFrases,
+  asistentesDeLaSala,
   type RespuestaEnsayo,
-  getActividad,
   getAsistente,
   guardarAporte,
   normalizarValor,
@@ -16,6 +17,16 @@ import {
  * Se valida contra la actividad guardada, no contra lo que dice el navegador:
  * el tipo, el rango de la escala y los índices de las opciones salen de la fila
  * de `actividades`.
+ *
+ * **Las lecturas de validación salen de memoria.** El catálogo del ciclo y la
+ * lista de la sala ya están cacheados porque los usa el sondeo, y este camino
+ * los pedía de nuevo a la base: eran cuatro o cinco idas en fila justo en el
+ * momento en que ochenta teléfonos escriben a la vez. Ahora son dos, y el techo
+ * de escrituras por segundo sube con eso.
+ *
+ * Quien se registró hace menos de lo que dura el caché todavía no está en la
+ * lista de memoria, así que ahí sí se lo pregunta a la base: es un caso por
+ * encuentro y perder su respuesta sería peor que la consulta.
  */
 
 export const runtime = 'nodejs';
@@ -36,7 +47,9 @@ export async function POST(
     return new NextResponse('Datos ilegibles', { status: 400 });
   }
 
-  const actividad = await getActividad(corrida.ciclo_id, String(datos.actividadId ?? ''));
+  const catalogo = await actividadesDelCiclo(corrida.ciclo_id);
+  const actividadId = String(datos.actividadId ?? '');
+  const actividad = catalogo.find((a) => a.id === actividadId);
   if (!actividad) return new NextResponse('Actividad no encontrada', { status: 404 });
 
   // Cerrada quiere decir cerrada: una vez que la expositora la cierra, lo que
@@ -50,14 +63,16 @@ export async function POST(
     corrida.actividad_abierta_id === actividad.id ||
     (actividad.grupo !== null &&
       actividad.grupo ===
-        (await getActividad(corrida.ciclo_id, corrida.actividad_abierta_id ?? ''))
-          ?.grupo);
+        catalogo.find((a) => a.id === corrida.actividad_abierta_id)?.grupo);
 
   if (!abierta) {
     return new NextResponse('La actividad está cerrada', { status: 409 });
   }
 
-  const asistente = await getAsistente(corrida.id, String(datos.asistenteId ?? ''));
+  const asistenteId = String(datos.asistenteId ?? '');
+  const asistente =
+    (await asistentesDeLaSala(corrida.id)).find((a) => a.id === asistenteId) ??
+    (await getAsistente(corrida.id, asistenteId));
   if (!asistente) return new NextResponse('Asistente no encontrado', { status: 404 });
 
   /*

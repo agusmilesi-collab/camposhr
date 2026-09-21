@@ -19,6 +19,7 @@ import {
 import AutoRefresco from '@/app/cuestionario/[slug]/matriz/AutoRefresco';
 import { aportesDePrueba } from '@/lib/palabras-prueba';
 import Nube from './Nube';
+import Rotan from './Rotan';
 
 /**
  * Lo que se proyecta.
@@ -59,6 +60,8 @@ export default async function Proyeccion({
     vista?: string;
     prueba?: string;
     repite?: string;
+    /** En la vista que rota: de qué tramo son las respuestas que se muestran. */
+    de?: string;
   };
 }) {
   const ciclo = await resolverCiclo(params.slug);
@@ -86,6 +89,109 @@ export default async function Proyeccion({
         {enPlaca && <FondoTransparente />}
         <CierreDelEnsayo aportes={aportes} />
         <AutoRefresco segundos={15} oculto />
+      </main>
+    );
+  }
+
+  /*
+   * El antes y el después de la traducción, que es la única medición que se
+   * proyecta en el día.
+   *
+   * El "antes" es lo que la sala creyó de lo suyo cuando todavía no sabía nada:
+   * cuántos apostaron que habían escrito un hecho. El "después" no es otra
+   * opinión: es cuántos completaron los seis campos, y el que puso un día y un
+   * número escribió un hecho por construcción.
+   *
+   * Los dos números salen de lo que ya está guardado, así que la placa no pide
+   * ninguna consigna nueva ni un minuto más de sala.
+   */
+  if (searchParams?.vista === 'antes-despues') {
+    const catalogo = await actividadesDelCiclo(corrida.ciclo_id);
+    const apuesta = catalogo.find((a) => a.clave === 'cd-es-hecho');
+    const traduccion = catalogo.find((a) => a.clave === 'cd-traduccion');
+
+    const [deApuesta, deTraduccion] = await Promise.all([
+      apuesta ? listarAportes(corrida.id, apuesta.id) : Promise.resolve([]),
+      traduccion ? listarAportes(corrida.id, traduccion.id) : Promise.resolve([]),
+    ]);
+
+    const creyeron = deApuesta.filter(
+      (a) => a.valor?.tipo === 'opcion' && a.valor.opcion === 0
+    ).length;
+    const resumenTraduccion =
+      traduccion && resumir(traduccion, deTraduccion);
+    const lograron =
+      resumenTraduccion?.tipo === 'campos' ? resumenTraduccion.completos : 0;
+
+    return (
+      <main className={enPlaca ? 'cp cp-placa' : 'cp'}>
+        {enPlaca && <FondoTransparente />}
+        <div className="cp-antes-despues">
+          <div className="cp-ad-lado">
+            <span className="cp-ad-cuando">Al empezar</span>
+            <b className="cp-ad-num">{creyeron}</b>
+            <p className="cp-ad-que">
+              creyeron que lo que habían escrito era un hecho
+            </p>
+            <em className="cp-ad-de">de {deApuesta.length} que respondieron</em>
+          </div>
+          <div className="cp-ad-lado">
+            <span className="cp-ad-cuando">Al terminar</span>
+            <b className="cp-ad-num">{lograron}</b>
+            <p className="cp-ad-que">
+              lo dejaron escrito con un día y una cantidad
+            </p>
+            <em className="cp-ad-de">de {deTraduccion.length} que lo tradujeron</em>
+          </div>
+        </div>
+        <AutoRefresco segundos={10} oculto />
+      </main>
+    );
+  }
+
+  /*
+   * Las respuestas de los que llevan años, pasando de a una.
+   *
+   * Va mientras la sala reparte las monedas. Sin esto, setenta personas
+   * escriben algo que nadie lee y que recién aparece en el informe cinco días
+   * después: pasándolas anónimas durante la votación, el material se usa el
+   * mismo día y el que recién empieza lee consejo real mientras vota.
+   *
+   *   ?vista=rotan&clave=cd-pregunta&de=Más de un año
+   */
+  if (searchParams?.vista === 'rotan') {
+    const origen = searchParams?.clave
+      ? await getActividadPorClave(corrida.ciclo_id, searchParams.clave)
+      : null;
+    if (!origen) {
+      return (
+        <main className={enPlaca ? 'cp cp-placa' : 'cp'}>
+          {enPlaca && <FondoTransparente />}
+          <p className="cp-vacio">Falta decir qué consigna se muestra.</p>
+        </main>
+      );
+    }
+
+    const [aportes, sala] = await Promise.all([
+      listarAportes(corrida.id, origen.id),
+      listarAsistentes(corrida.id),
+    ]);
+    const porId = new Map(sala.map((a) => [a.id, a]));
+    const quienes = searchParams?.de ?? null;
+
+    const textos = aportes
+      .filter((a) => a.valor?.tipo === 'texto' && a.valor.texto.trim() !== '')
+      .filter((a) => {
+        if (!quienes) return true;
+        return porId.get(a.asistente_id)?.datos?.rol === quienes;
+      })
+      .map((a) => (a.valor?.tipo === 'texto' ? a.valor.texto : ''));
+
+    return (
+      <main className={enPlaca ? 'cp cp-placa cp-lleno' : 'cp cp-lleno'}>
+        {enPlaca && <FondoTransparente />}
+        <Rotan textos={textos} />
+        <AutoRefresco segundos={20} oculto />
       </main>
     );
   }
@@ -194,6 +300,49 @@ export default async function Proyeccion({
   const resumen = resumir(actividad, aportes);
 
   /*
+   * El ranking de monedas necesita el texto de cada pregunta, que vive en los
+   * aportes de la actividad votada y no en este resumen. Se resuelve acá, del
+   * lado del servidor, y viaja ya armado: la pantalla que se proyecta no tiene
+   * que saber de dónde sale nada.
+   */
+  let votadas: {
+    texto: string;
+    monedas: number;
+    votantes: number;
+    quien: string | null;
+  }[] = [];
+  if (resumen.tipo === 'monedas' && actividad.config.desde) {
+    const origen = await getActividadPorClave(corrida.ciclo_id, actividad.config.desde);
+    if (origen) {
+      const [preguntas, sala] = await Promise.all([
+        listarAportes(corrida.id, origen.id),
+        listarAsistentes(corrida.id),
+      ]);
+      const quienes = new Map(sala.map((a) => [a.id, a]));
+      const porId = new Map(preguntas.map((a) => [a.id, a]));
+
+      votadas = resumen.ranking
+        .map((r) => {
+          const aporte = porId.get(r.aporteId);
+          const texto = aporte?.valor?.tipo === 'texto' ? aporte.valor.texto : '';
+          // El nombre solo si lo reclamó: el resto queda anónimo, que es la
+          // condición con la que escribieron.
+          const duena =
+            aporte?.valor?.tipo === 'texto' && aporte.valor.reclamado
+              ? quienes.get(aporte.asistente_id)
+              : null;
+          return {
+            texto,
+            monedas: r.monedas,
+            votantes: r.votantes,
+            quien: duena ? `${duena.nombre} ${duena.apellido}` : null,
+          };
+        })
+        .filter((r) => r.texto !== '');
+    }
+  }
+
+  /*
    * La nube necesita el alto del marco para poder medirse: adentro de la placa
    * el bloque se adapta a su contenido, y contra eso no hay nada que medir. Los
    * demás resúmenes se siguen acomodando solos.
@@ -205,7 +354,7 @@ export default async function Proyeccion({
       {enPlaca && <FondoTransparente />}
       {!enPlaca && <h1 className="cp-titulo">{actividad.titulo}</h1>}
 
-      <Vista actividad={actividad} resumen={resumen} />
+      <Vista actividad={actividad} resumen={resumen} votadas={votadas} />
 
       <p className="cp-pie">{pie(resumen)}</p>
 
@@ -232,7 +381,21 @@ function FondoTransparente() {
   );
 }
 
-function Vista({ actividad, resumen }: { actividad: Actividad; resumen: Resumen }) {
+function Vista({
+  actividad,
+  resumen,
+  votadas = [],
+}: {
+  actividad: Actividad;
+  resumen: Resumen;
+  /** El ranking con el texto de cada pregunta, ya resuelto por el servidor. */
+  votadas?: {
+    texto: string;
+    monedas: number;
+    votantes: number;
+    quien: string | null;
+  }[];
+}) {
   switch (resumen.tipo) {
     case 'palabra':
       /*
@@ -241,6 +404,67 @@ function Vista({ actividad, resumen }: { actividad: Actividad; resumen: Resumen 
        * del lado del cliente, en `Nube`.
        */
       return <Nube palabras={resumen.nube} />;
+
+    /*
+     * El reparto, ordenado. Las tres primeras son las que se leen en voz alta,
+     * así que se marcan: el resto queda a la vista para que se vea que la sala
+     * eligió entre todas y no entre tres.
+     *
+     * El pozo va al lado de cada una. Es lo que hace que el senior escuche que
+     * 52 de 80 querían esa respuesta antes de abrir la boca.
+     */
+    case 'monedas': {
+      if (votadas.length === 0) {
+        return <p className="cp-vacio">Se arma sola a medida que reparten.</p>;
+      }
+      const tope = Math.max(1, ...votadas.map((v) => v.monedas));
+      return (
+        <ol className="cp-ranking">
+          {votadas.map((v, i) => (
+            <li className={`cp-ranking-fila${i < 3 ? ' gana' : ''}`} key={v.texto}>
+              <span className="cp-ranking-puesto">{i + 1}</span>
+              <div className="cp-ranking-que">
+                <p>{v.texto}</p>
+                {/* Quien la reclamó sale del anonimato por elección suya, y
+                    entonces la pantalla dice de quién es. */}
+                {v.quien && <span className="cp-ranking-quien">{v.quien}</span>}
+                <div className="cp-barra-riel">
+                  <span style={{ width: `${(v.monedas / tope) * 100}%` }} />
+                </div>
+              </div>
+              <span className="cp-ranking-pozo">
+                <b>{v.monedas}</b>
+                <em>{v.votantes === 1 ? '1 persona' : `${v.votantes} personas`}</em>
+              </span>
+            </li>
+          ))}
+        </ol>
+      );
+    }
+
+    /*
+     * La traducción no proyecta ningún texto: muestra cuántos completaron cada
+     * dato. Eso conserva la prueba sobre la propia sala sin exponer a nadie, y
+     * es además lo que la expositora mira para saber si puede seguir.
+     */
+    case 'campos': {
+      const tope = Math.max(1, resumen.total);
+      return (
+        <div className="cp-barras">
+          {resumen.porCampo.map((c) => (
+            <div className="cp-barra" key={c.clave}>
+              <div className="cp-barra-fila">
+                <span className="cp-barra-texto">{c.etiqueta}</span>
+                <span className="cp-barra-valor">{c.veces}</span>
+              </div>
+              <div className="cp-barra-riel">
+                <span style={{ width: `${(c.veces / tope) * 100}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
 
     case 'opcion':
     case 'marcas': {
