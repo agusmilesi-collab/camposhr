@@ -9,6 +9,7 @@ import {
   repartirCruce,
   repartirEnsayo,
   repartirFrases,
+  repartirPreguntas,
   resolverCiclo,
   rondasDelEnsayo,
 } from '@/lib/ciclo';
@@ -63,6 +64,16 @@ export async function POST(
       // pregunte ya encuentre su pareja escrita en vez de armarla él.
       const actividad = await getActividad(corrida.ciclo_id, actividadId);
       if (actividad?.tipo === 'cruce') await repartirCruce(corrida, actividad);
+
+      // El reparto de las preguntas que quedaron sin contestar: cada persona
+      // con años en el rol se lleva una, de otra área que la de quien preguntó.
+      if (actividad?.tipo === 'reparto') {
+        await repartirPreguntas(
+          corrida,
+          actividad,
+          await actividadesDelCiclo(corrida.ciclo_id)
+        );
+      }
 
       /*
        * El ensayo de la charla 4 se reparte igual, y las tres rondas de una

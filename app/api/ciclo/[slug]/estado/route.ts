@@ -64,14 +64,32 @@ const RECUERDAN: Record<string, string> = {
   'c5-desarmar': 'c5-tension',
 };
 
-function publica(a: Actividad) {
+/**
+ * La actividad como la ve el teléfono.
+ *
+ * `datos` son los del registro de quien pregunta: con ellos el enunciado puede
+ * cambiar según el tramo, que es lo que hace que la misma actividad le pida
+ * una cosa al que recién empieza a liderar y otra al que lleva años.
+ */
+function publica(a: Actividad, datos: Record<string, string> = {}) {
+  const segun = a.config.segun ? datos[a.config.segun] : undefined;
+  const propio = segun ? a.config.enunciados?.[segun] : undefined;
+
   return {
     id: a.id,
     clave: a.clave,
     tipo: a.tipo,
     titulo: a.titulo,
-    enunciado: a.enunciado,
+    enunciado: propio ?? a.enunciado,
     opciones: a.opciones,
+    // Solo lo que la pantalla necesita para dibujarse. El resto de `config`
+    // es del servidor: de dónde sale cada cosa y a quiénes se vota.
+    campos: a.config.campos ?? null,
+    // `undefined` deja el aviso de siempre; una cadena, aunque esté vacía,
+    // manda sobre él.
+    aviso: a.config.aviso,
+    desdeTitulo: a.config.desde_titulo ?? null,
+    monedas: a.config.monedas ?? null,
   };
 }
 
@@ -123,7 +141,12 @@ export async function GET(
    * Viaja con su id sumado al mismo in.(...) que ya trae los aportes del grupo,
    * así que el sondeo sigue costando dos consultas.
    */
-  const recuerda = RECUERDAN[actividad.grupo ?? ''] ?? RECUERDAN[actividad.clave];
+  // `config.desde` es la forma nueva y la que usan las actividades de tipo
+  // `campos`: la vieja quedó para el ciclo de Pla, que ya está dictado.
+  const recuerda =
+    actividad.config.desde ??
+    RECUERDAN[actividad.grupo ?? ''] ??
+    RECUERDAN[actividad.clave];
   const deAntes =
     recuerda && recuerda !== actividad.clave
       ? catalogo.find((a) => a.clave === recuerda)
@@ -140,13 +163,21 @@ export async function GET(
     : new Map<string, Aporte>();
   const mio = propios.get(actividad.id) ?? null;
 
+  // Quién es el que pregunta: hace falta para el enunciado que cambia según el
+  // registro y para no dejarlo votar su propia pregunta. Sale de la lectura de
+  // la sala, que ya está en memoria.
+  const yo = asistenteId
+    ? (await asistentesDeLaSala(ciclo.corrida.id)).find((a) => a.id === asistenteId) ?? null
+    : null;
+  const misDatos = yo?.datos ?? {};
+
   const antes = deAntes ? propios.get(deAntes.id)?.valor : undefined;
 
   const grupo = enFila.length
     ? enFila.map((a) => {
         const propio = propios.get(a.id) ?? null;
         return {
-          ...publica(a),
+          ...publica(a, misDatos),
           respondida: Boolean(propio),
           mio: propio?.valor ?? null,
         };
@@ -194,7 +225,7 @@ export async function GET(
       : null;
 
   return NextResponse.json({
-    actividad: publica(actividad),
+    actividad: publica(actividad, misDatos),
     // En qué momento de la actividad está la sala. Lo mueve el panel.
     fase: ciclo.corrida.fase ?? 0,
     ensayoConteo: ensayoConteo?.tipo === 'ensayo' ? ensayoConteo : null,
@@ -211,6 +242,16 @@ export async function GET(
     // Lo que escribió al abrir la charla, para tenerlo a la vista mientras
     // contesta sobre eso mismo.
     antes: antes?.tipo === 'texto' ? antes.texto : null,
+    // Lo que se vota, cuando la actividad abierta reparte monedas.
+    votar:
+      actividad.tipo === 'monedas'
+        ? await paraVotar(ciclo.corrida, catalogo, actividad, asistenteId)
+        : null,
+    // Si su pregunta quedó entre las ganadoras: cuánto junta y si ya lo cobró.
+    pozo:
+      actividad.tipo === 'monedas' && asistenteId
+        ? await pozoDe(ciclo.corrida, catalogo, actividad, asistenteId)
+        : null,
     cruce:
       actividad.tipo === 'cruce' && asistenteId
         ? await cruceDe(ciclo.corrida, actividad, asistenteId, mio)
@@ -351,6 +392,8 @@ async function frasesDe(
 type Ensayo = {
   ronda: number;
   grupo: number;
+  /** Qué hacer para juntarse, cuando la sala tiene que moverse. */
+  juntarse: string | null;
   rol: Rol;
   /**
    * El caso, contado como le sirve a este rol. A quien comunica le llegan los
@@ -409,9 +452,15 @@ async function ensayoDe(
   return {
     ronda: ronda < 0 ? 0 : ronda,
     grupo: puesto.grupo,
+    // Lo que hay que hacer antes de empezar, cuando la sala tiene que moverse.
+    // En una sala de sillas en fila, el trío no existe hasta que las corren.
+    juntarse: actividad.config.juntarse ?? null,
     rol: puesto.rol,
     caso: (() => {
-      const c = CASOS[puesto.caso] ?? CASOS[0];
+      // El caso de la actividad manda sobre el del código: una charla suelta
+      // trae los suyos, escritos con el cliente, y el ciclo de Pla sigue con
+      // los que tiene.
+      const c = actividad.config.caso ?? CASOS[puesto.caso] ?? CASOS[0];
       if (puesto.rol === 'recibe') {
         return { titulo: c.titulo, ficha: [], situacion: c.paraQuienRecibe };
       }
@@ -421,14 +470,16 @@ async function ensayoDe(
         situacion: null,
       };
     })(),
-    reaccion:
-      puesto.rol === 'recibe' && REACCIONES[puesto.reaccion]
-        ? {
-            nombre: REACCIONES[puesto.reaccion].nombre,
-            instruccion: REACCIONES[puesto.reaccion].instruccion,
-            guion: [...REACCIONES[puesto.reaccion].guion],
-          }
-        : null,
+    reaccion: (() => {
+      if (puesto.rol !== 'recibe') return null;
+      const r = actividad.config.reaccion ?? REACCIONES[puesto.reaccion];
+      if (!r) return null;
+      return {
+        nombre: r.nombre,
+        instruccion: r.instruccion,
+        guion: [...r.guion],
+      };
+    })(),
     con: companeros.map((c) => ({
       nombre: c.quien.nombre,
       apellido: c.quien.apellido,
@@ -508,5 +559,108 @@ async function cruceDe(
         motivo: motivoEntre(mio, suyo),
       };
     }),
+  };
+}
+
+/**
+ * Las respuestas que se votan con las monedas.
+ *
+ * Salen de la actividad que dice `config.desde`, y se quedan solo las de
+ * quienes cumplen `config.de_quienes`: las preguntas del bloque final son las
+ * de los que llevan menos de un año liderando, y las de los demás son el
+ * material que pasa en pantalla mientras tanto.
+ *
+ * La propia no viaja. Sin eso, uno pone sus diez monedas en la suya y cobra el
+ * pozo, con ganancia esperada siempre positiva.
+ */
+async function paraVotar(
+  corrida: Corrida,
+  catalogo: Actividad[],
+  actividad: Actividad,
+  asistenteId: string
+): Promise<{ id: string; texto: string }[] | null> {
+  const clave = actividad.config.desde;
+  if (!clave) return null;
+  const origen = catalogo.find((a) => a.clave === clave);
+  if (!origen) return null;
+
+  const [aportes, sala] = await Promise.all([
+    listarAportes(corrida.id, origen.id),
+    asistentesDeLaSala(corrida.id),
+  ]);
+  const porId = new Map(sala.map((a) => [a.id, a]));
+  const filtro = actividad.config.de_quienes;
+
+  const lista = aportes
+    .filter((a) => a.valor?.tipo === 'texto' && a.valor.texto.trim() !== '')
+    .filter((a) => a.asistente_id !== asistenteId)
+    .filter((a) => {
+      if (!filtro) return true;
+      const quien = porId.get(a.asistente_id);
+      return quien?.datos?.[filtro.campo] === filtro.valor;
+    })
+    .map((a) => ({
+      id: a.id,
+      texto: a.valor?.tipo === 'texto' ? a.valor.texto : '',
+    }));
+
+  // Mezcladas y no por orden de llegada: el primero de la lista se lleva las
+  // monedas de los que no bajan hasta el final.
+  return barajar(lista, asistenteId);
+}
+
+/**
+ * Baraja con un orden distinto para cada persona y estable entre sondeos: el
+ * teléfono repinta cada pocos segundos y una lista que se reordena sola es
+ * imposible de votar.
+ */
+function barajar<T>(lista: T[], semilla: string): T[] {
+  let n = 0;
+  for (const letra of semilla) n = (n * 31 + letra.charCodeAt(0)) >>> 0;
+  const salida = [...lista];
+  for (let i = salida.length - 1; i > 0; i -= 1) {
+    n = (n * 1664525 + 1013904223) >>> 0;
+    const j = n % (i + 1);
+    [salida[i], salida[j]] = [salida[j], salida[i]];
+  }
+  return salida;
+}
+
+/**
+ * El pozo de la pregunta propia, cuando quedó entre las que se contestan.
+ *
+ * Aparece recién cuando entra en las tres primeras: mostrarle a cada uno
+ * cuántas monedas junta la suya mientras la sala todavía vota convertiría el
+ * reparto en un marcador y la gente votaría mirando el puesto.
+ *
+ * Reclamarlo es salir del anonimato, y es una elección. Por eso el teléfono
+ * dice cuánto hay y ofrece el botón, en lugar de publicar el nombre solo.
+ */
+async function pozoDe(
+  corrida: Corrida,
+  catalogo: Actividad[],
+  actividad: Actividad,
+  asistenteId: string
+): Promise<{ monedas: number; puesto: number; reclamado: boolean; texto: string } | null> {
+  const clave = actividad.config.desde;
+  if (!clave) return null;
+  const origen = catalogo.find((a) => a.clave === clave);
+  if (!origen) return null;
+
+  const mio = await getAporteDe(origen.id, asistenteId);
+  if (!mio || mio.valor?.tipo !== 'texto') return null;
+
+  const repartos = await listarAportes(corrida.id, actividad.id);
+  const resumen = resumir(actividad, repartos);
+  if (resumen.tipo !== 'monedas') return null;
+
+  const puesto = resumen.ranking.findIndex((r) => r.aporteId === mio.id);
+  if (puesto < 0 || puesto >= 3) return null;
+
+  return {
+    monedas: resumen.ranking[puesto].monedas,
+    puesto: puesto + 1,
+    reclamado: Boolean(mio.valor.reclamado),
+    texto: mio.valor.texto,
   };
 }

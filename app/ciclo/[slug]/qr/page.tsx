@@ -27,13 +27,27 @@ export default async function QrDelCiclo({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { placa?: string };
+  searchParams: { placa?: string; destino?: string };
 }) {
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) notFound();
   const { empresa, corrida } = ciclo;
 
-  const url = `${BASE_PUBLICA}/ciclo/${empresa.slug}`;
+  /*
+   * A dónde lleva el código.
+   *
+   * Sin nada, al encuentro: es el de la primera placa, el que abre el registro.
+   * Con `?destino=resumen`, al repaso que se lleva cada uno, que es el de la
+   * última. Son dos códigos distintos en dos momentos distintos, y el mismo
+   * marco los dibuja.
+   */
+  const alResumen = searchParams?.destino === 'resumen';
+  const url = alResumen
+    ? `${BASE_PUBLICA}/ciclo/${empresa.slug}/resumen`
+    : `${BASE_PUBLICA}/ciclo/${empresa.slug}`;
+  const titulo = alResumen
+    ? 'Llevate lo que escribiste'
+    : 'Entrá al ciclo desde tu teléfono';
   const svg = await QRCode.toString(url, {
     type: 'svg',
     margin: 1,
@@ -78,7 +92,7 @@ export default async function QrDelCiclo({
           }}
         />
         <div className="qr-marco">
-          <p className="qr-titulo">Entrá al ciclo desde tu teléfono</p>
+          <p className="qr-titulo">{titulo}</p>
           <p className="qr-empresa">{empresa.nombre}</p>
           <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />
           <p className="qr-url">{url.replace(/^https:\/\//, '')}</p>
@@ -114,7 +128,7 @@ export default async function QrDelCiclo({
 
       <section className="qr-bloque">
         <div className="qr-marco">
-          <p className="qr-titulo">Entrá al ciclo desde tu teléfono</p>
+          <p className="qr-titulo">{titulo}</p>
           <p className="qr-empresa">{empresa.nombre}</p>
           <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />
           <p className="qr-url">{url.replace(/^https:\/\//, '')}</p>

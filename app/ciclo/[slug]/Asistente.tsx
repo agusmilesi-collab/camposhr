@@ -30,7 +30,16 @@ type TipoActividad =
   | 'plan'
   | 'cruce'
   | 'ensayo'
-  | 'frases';
+  | 'frases'
+  | 'campos'
+  | 'monedas'
+  | 'reparto';
+
+/** Un campo de una consigna que se responde dato por dato. */
+type CampoActividad = { clave: string; etiqueta: string; ayuda?: string };
+
+/** Una respuesta de otra persona, para repartirle monedas. */
+type ParaVotar = { id: string; texto: string };
 
 /** Quién está respondiendo desde este teléfono. */
 type Yo = { id: string; nombre: string; apellido: string };
@@ -49,6 +58,14 @@ type ActividadPublica = {
   titulo: string;
   enunciado: string | null;
   opciones: string[];
+  /** Los campos declarados, en las consignas que se responden dato por dato. */
+  campos?: CampoActividad[] | null;
+  /** Cómo se llama lo que escribió antes, cuando lo tiene arriba para traducir. */
+  desdeTitulo?: string | null;
+  /** Cuántas monedas reparte, en las consignas de votación. */
+  monedas?: number | null;
+  /** Qué pasa con lo que escribe. Vacío no muestra nada. */
+  aviso?: string;
 };
 
 type Valor =
@@ -57,7 +74,10 @@ type Valor =
   | { tipo: 'escala'; escala: number }
   | { tipo: 'texto'; texto: string }
   | { tipo: 'marcas'; marcas: number[] }
-  | { tipo: 'plan'; dias: number[]; hora: string; texto: string };
+  | { tipo: 'plan'; dias: number[]; hora: string; texto: string }
+  | { tipo: 'campos'; campos: Record<string, string> }
+  | { tipo: 'reparto'; aporteId: string; texto: string }
+  | { tipo: 'monedas'; reparto: Record<string, number> };
 
 /** Con quién le toca juntarse, en la consigna de consultar una decisión. */
 type Cruce = {
@@ -75,6 +95,8 @@ type Cruce = {
 type Ensayo = {
   ronda: number;
   grupo: number;
+  /** Qué hacer para juntarse, cuando la sala tiene que moverse. */
+  juntarse?: string | null;
   rol: 'comunica' | 'recibe' | 'observa';
   caso: { titulo: string; ficha: [string, string][]; situacion: string | null };
   /** Sólo llega al que recibe la noticia: los otros dos no tienen que verla. */
@@ -131,6 +153,18 @@ type Estado = {
   fase: number;
   /** Lo que escribió al abrir la charla, cuando la consigna pregunta por eso. */
   antes?: string | null;
+  /** Las respuestas que se votan, cuando la consigna reparte monedas. */
+  votar?: ParaVotar[] | null;
+  /** El pozo de la pregunta propia, si quedó entre las que se contestan. */
+  pozo?: Pozo | null;
+};
+
+/** Lo que junta la pregunta propia cuando entra entre las ganadoras. */
+type Pozo = {
+  monedas: number;
+  puesto: number;
+  reclamado: boolean;
+  texto: string;
 };
 
 export type Cara = {
@@ -663,6 +697,67 @@ function Grilla({
   );
 }
 
+/**
+ * El pozo de la pregunta propia, con el botón de cobrarlo.
+ *
+ * En la sala es el mejor momento del bloque: el pozo está proyectado y los
+ * ochenta esperan a ver si alguien habla. Por eso el botón dice lo que va a
+ * pasar, que es que se vea el nombre.
+ */
+function ElPozo({
+  slug,
+  asistenteId,
+  pozo,
+}: {
+  slug: string;
+  asistenteId: string;
+  pozo: Pozo;
+}) {
+  const [reclamado, setReclamado] = useState(pozo.reclamado);
+  const [yendo, setYendo] = useState(false);
+
+  async function reclamar() {
+    setYendo(true);
+    try {
+      const res = await fetch(`/api/ciclo/${slug}/reclamar`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ asistenteId, clave: 'cd-pregunta' }),
+      });
+      if (res.ok) setReclamado(true);
+    } finally {
+      setYendo(false);
+    }
+  }
+
+  return (
+    <section className={`ci-pozo${reclamado ? ' cobrado' : ''}`}>
+      <p className="ci-pozo-que">
+        Tu pregunta quedó {pozo.puesto === 1 ? 'primera' : `${pozo.puesto}ª`}
+      </p>
+      <p className="ci-pozo-texto">{pozo.texto}</p>
+      <p className="ci-pozo-monedas">
+        <b>{pozo.monedas}</b> monedas
+      </p>
+      {reclamado ? (
+        <p className="ci-pozo-listo">
+          Es tuyo. Tu nombre ya está en la pantalla.
+        </p>
+      ) : (
+        <button className="cq-btn" disabled={yendo} onClick={reclamar}>
+          {yendo ? 'Un segundo…' : 'Reclamar el pozo'}
+        </button>
+      )}
+      {!reclamado && (
+        <p className="ci-pozo-aviso">
+          Para cobrarlo se muestra tu nombre al lado de la pregunta. Si preferís
+          que quede anónima, no toques nada.
+        </p>
+      )}
+    </section>
+  );
+}
+
 // --------------------------------------------------------------- formularios
 
 /**
@@ -742,7 +837,7 @@ function Fila({
           son sobre eso mismo. Entre una placa y la otra pasa más de una hora. */}
       {estado.antes && (
         <div className="ci-antes">
-          <p className="ci-antes-que">Tu tensión</p>
+          <p className="ci-antes-que">{actual.desdeTitulo ?? 'Tu tensión'}</p>
           <blockquote className="ci-mio">{estado.antes}</blockquote>
         </div>
       )}
@@ -758,6 +853,8 @@ function Fila({
         cruce={estado.cruce}
         ensayo={estado.ensayo}
         frases={estado.frases}
+        votar={estado.votar ?? null}
+        pozo={estado.pozo ?? null}
         fase={estado.fase}
         onGuardado={(valor) =>
           setRespondidas((r) => ({ ...r, [actual.id]: valor }))
@@ -778,6 +875,8 @@ function Formulario({
   cruce,
   ensayo,
   frases,
+  votar,
+  pozo,
   fase,
   onGuardado,
 }: {
@@ -791,6 +890,8 @@ function Formulario({
   cruce: Cruce | null;
   ensayo: Ensayo | null;
   frases: Frases | null;
+  votar: ParaVotar[] | null;
+  pozo: Pozo | null;
   fase: number;
   onGuardado: (valor: Valor) => void;
 }) {
@@ -804,6 +905,14 @@ function Formulario({
   const [tocada, setTocada] = useState<number | null>(null);
   const [dias, setDias] = useState<number[]>([]);
   const [hora, setHora] = useState('');
+  /** Lo escrito en cada campo, por su clave. */
+  const [campos, setCampos] = useState<Record<string, string>>(
+    mio?.tipo === 'campos' ? mio.campos : {}
+  );
+  /** Cuántas monedas puso en cada respuesta, por id. */
+  const [reparto, setReparto] = useState<Record<string, number>>(
+    mio?.tipo === 'monedas' ? mio.reparto : {}
+  );
   /** Si ya tocó el botón que baja el evento al calendario. */
   const [agendado, setAgendado] = useState(false);
 
@@ -814,14 +923,32 @@ function Formulario({
 
   /** Devuelve si quedó guardado, que es lo que el compromiso necesita saber
       para seguir de largo hasta el calendario sin pedir otro toque. */
+  /**
+   * Guarda la respuesta.
+   *
+   * La pantalla pasa de largo apenas se toca, sin esperar al servidor: con
+   * ochenta teléfonos escribiendo a la vez, esperar la confirmación deja a la
+   * gente mirando un botón gris mientras la charla sigue. El pedido viaja por
+   * atrás y reintenta solo.
+   *
+   * Si después de los tres intentos no entró, ahí sí la pantalla vuelve atrás y
+   * lo dice: es preferible avisar tarde que dar por guardado algo que no está.
+   *
+   * Devuelve una promesa que dice si quedó guardado, para el único caso que
+   * necesita esperar de verdad: el compromiso, que sigue de largo al calendario
+   * con lo que acaba de escribirse.
+   */
   async function enviar(valor: Valor): Promise<boolean> {
-    setEnviando(true);
     setError(null);
+    // La pantalla avanza ya. El servidor todavía no contestó.
+    setCorrigiendo(false);
+    setAgendado(false);
+    onGuardado(valor);
+
     // Treinta teléfonos respondiendo en el mismo minuto hacen que alguno se
     // tope con la base ocupada. Con un solo intento eso deja a esa persona
     // parada en la consigna mientras la charla sigue, así que reintenta.
     const ESPERAS = [0, 1200, 3000];
-    let ultimo = 'No pudimos guardarlo. Probá de nuevo.';
     for (const espera of ESPERAS) {
       if (espera) await new Promise((r) => setTimeout(r, espera));
       try {
@@ -830,32 +957,26 @@ function Formulario({
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ actividadId: actividad.id, asistenteId, valor }),
         });
-        if (res.ok) {
-          setCorrigiendo(false);
-          // Si cambió el compromiso, el evento que bajó antes ya no dice lo
-          // mismo: la pantalla vuelve a pedir que lo agende.
-          setAgendado(false);
-          setEnviando(false);
-          onGuardado(valor);
-          return true;
-        }
+        if (res.ok) return true;
+
         // Lo que responde el servidor con criterio (cerrada, valor inválido)
         // no mejora reintentando: sólo se reintenta cuando se cayó.
-        const texto = await res.text();
         if (res.status < 500) {
-          setError(texto && texto.length < 80 ? texto : ultimo);
-          setEnviando(false);
+          const texto = await res.text();
+          setError(
+            texto && texto.length < 80 ? texto : 'No pudimos guardarlo. Probá de nuevo.'
+          );
+          setCorrigiendo(true);
           return false;
         }
-        ultimo = 'La conexión está lenta. Estamos reintentando.';
-        setError(ultimo);
       } catch {
-        ultimo = 'La conexión está lenta. Estamos reintentando.';
-        setError(ultimo);
+        // Sin conexión: se reintenta sin decir nada todavía, porque en la
+        // mayoría de los casos el segundo intento entra.
       }
     }
-    setError('No pudimos guardarlo. Tocá de nuevo la opción.');
-    setEnviando(false);
+
+    setError('No entró. Tocá de nuevo para guardarlo.');
+    setCorrigiendo(true);
     return false;
   }
 
@@ -875,6 +996,40 @@ function Formulario({
 
   if (actividad.tipo === 'cruce') {
     return <Cruzado actividad={actividad} cruce={cruce} />;
+  }
+
+  /*
+   * La pregunta que le tocó contestar al cerrar.
+   *
+   * No se responde en el teléfono: se contesta hablando, al terminar la
+   * charla. La pantalla dice cuál es y qué hacer con ella, y nada más.
+   */
+  if (actividad.tipo === 'reparto') {
+    if (mio?.tipo !== 'reparto') {
+      return (
+        <section className="cq-placa">
+          <h1 className="ci-titulo">{actividad.titulo}</h1>
+          <p className="cq-ayuda">
+            Esta vez no te tocó ninguna. Si alguien se te acerca con una
+            pregunta, contestala.
+          </p>
+        </section>
+      );
+    }
+    return (
+      <section className="cq-placa ci-tocada">
+        <p className="ci-tocada-que">Te toca esta</p>
+        <blockquote className="ci-tocada-texto">{mio.texto}</blockquote>
+        <p className="ci-tocada-como">
+          La escribió alguien que está empezando a liderar, de otra área. Si
+          sabés la respuesta, contestala. Si no, presentalo con quien sí.
+        </p>
+        <p className="ci-anonimo">
+          No hace falta que escribas nada acá: esto se resuelve hablando, al
+          terminar.
+        </p>
+      </section>
+    );
   }
 
   /* El ejercicio de las frases tampoco se responde de a uno: el equipo lo armó
@@ -1218,21 +1373,179 @@ function Formulario({
             maxLength={400}
             autoFocus
           />
-          <p className="ci-anonimo">
-            {AVISO_TEXTO[actividad.clave] ??
-              (NO_SE_PROYECTAN.has(actividad.clave)
-                ? 'Lo leen Lorena y Lucila. No se proyecta.'
-                : 'Se proyecta sin tu nombre. Nadie va a saber cuál escribiste vos.')}
-          </p>
+          {/* El aviso de la actividad manda sobre el de siempre, y vacío no
+              muestra nada: cuando el enunciado ya dice qué pasa con lo que
+              escribe, repetirlo abajo con otras palabras confunde. */}
+          {(actividad.aviso ?? '—') !== '' && (
+            <p className="ci-anonimo">
+              {actividad.aviso ??
+                AVISO_TEXTO[actividad.clave] ??
+                (NO_SE_PROYECTAN.has(actividad.clave)
+                  ? 'Lo leen Lorena y Lucila. No se proyecta.'
+                  : 'Se proyecta sin tu nombre. Nadie va a saber cuál escribiste vos.')}
+            </p>
+          )}
           <div className="ci-acciones">
             <button
               className="cq-btn"
               disabled={texto.trim().length < 3 || enviando}
               onClick={() => enviar({ tipo: 'texto', texto: texto.trim() })}
             >
-              Enviar
+              {/* Guardar y no Enviar: lo que se escribe queda en el teléfono de
+                  quien lo escribió, y "enviar" hace pensar que va a algún lado. */}
+              {enviando ? 'Un segundo…' : 'Guardar'}
             </button>
           </div>
+        </>
+      )}
+
+      {/*
+        Dato por dato, y en el orden en que están declarados.
+
+        Escribir de corrido deja salir un adjetivo sin que nadie lo note; un
+        campo que pide el día y otro que pide el número lo hacen imposible. Por
+        eso acá no hay ningún control al final: el control es la forma.
+      */}
+      {actividad.tipo === 'campos' && actividad.campos && (
+        <>
+          <div className="ci-campos">
+            {actividad.campos.map((campo, i) => (
+              <label className="ci-campo" key={campo.clave}>
+                <span>{campo.etiqueta}</span>
+                <input
+                  className="cq-input"
+                  value={campos[campo.clave] ?? ''}
+                  onChange={(e) =>
+                    setCampos((c) => ({ ...c, [campo.clave]: e.target.value }))
+                  }
+                  maxLength={400}
+                  autoFocus={i === 0}
+                />
+                {campo.ayuda && <em className="ci-campo-ayuda">{campo.ayuda}</em>}
+              </label>
+            ))}
+          </div>
+          <p className="ci-anonimo">
+            Lo tuyo no se proyecta. Lo que se muestra es cuántos completaron cada
+            dato.
+          </p>
+          <div className="ci-acciones">
+            <button
+              className="cq-btn"
+              disabled={
+                enviando ||
+                !actividad.campos.every((c) => (campos[c.clave] ?? '').trim())
+              }
+              onClick={() => {
+                const limpios: Record<string, string> = {};
+                for (const campo of actividad.campos ?? []) {
+                  limpios[campo.clave] = (campos[campo.clave] ?? '').trim();
+                }
+                enviar({ tipo: 'campos', campos: limpios });
+              }}
+            >
+              {enviando ? 'Un segundo…' : 'Guardar'}
+            </button>
+          </div>
+        </>
+      )}
+
+      {/*
+        El reparto de monedas.
+
+        Se suma y se resta tocando, sin teclado, y viaja entero en una sola
+        escritura al confirmar: una ráfaga de pujas de ochenta teléfonos está
+        arriba de lo que aguanta la base.
+      */}
+      {actividad.tipo === 'monedas' && (
+        <>
+          {/*
+            El pozo propio.
+
+            Aparece solo si la pregunta entró entre las tres que se contestan.
+            Reclamarlo es decir que fue tuya, y por eso es un botón y no algo
+            que el sistema haga solo: el que escribió algo delicado se queda
+            callado sin tener que explicar nada.
+          */}
+          {pozo && <ElPozo slug={slug} asistenteId={asistenteId} pozo={pozo} />}
+
+          {votar && votar.length > 0 ? (
+            <>
+              <p className="ci-monedas-quedan">
+                Te quedan{' '}
+                <b>
+                  {(actividad.monedas ?? 10) -
+                    Object.values(reparto).reduce((s, n) => s + n, 0)}
+                </b>{' '}
+                de {actividad.monedas ?? 10}
+              </p>
+
+              <div className="ci-votos">
+                {votar.map((v) => {
+                  const puestas = reparto[v.id] ?? 0;
+                  const usadas = Object.values(reparto).reduce((s, n) => s + n, 0);
+                  const quedan = (actividad.monedas ?? 10) - usadas;
+                  return (
+                    <div className={`ci-voto${puestas ? ' con-monedas' : ''}`} key={v.id}>
+                      <p className="ci-voto-texto">{v.texto}</p>
+                      <div className="ci-voto-contador">
+                        <button
+                          type="button"
+                          className="ci-voto-btn"
+                          disabled={puestas === 0}
+                          onClick={() =>
+                            setReparto((r) => {
+                              const n = (r[v.id] ?? 0) - 1;
+                              const copia = { ...r };
+                              if (n <= 0) delete copia[v.id];
+                              else copia[v.id] = n;
+                              return copia;
+                            })
+                          }
+                          aria-label="Sacar una moneda"
+                        >
+                          −
+                        </button>
+                        <span className="ci-voto-num">{puestas}</span>
+                        <button
+                          type="button"
+                          className="ci-voto-btn"
+                          disabled={quedan <= 0}
+                          onClick={() =>
+                            setReparto((r) => ({ ...r, [v.id]: (r[v.id] ?? 0) + 1 }))
+                          }
+                          aria-label="Poner una moneda"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <p className="ci-anonimo">
+                Nadie ve lo que votaste. Tu propia pregunta no está en la lista.
+              </p>
+              <div className="ci-acciones">
+                <button
+                  className="cq-btn"
+                  disabled={
+                    enviando ||
+                    Object.values(reparto).reduce((s, n) => s + n, 0) === 0
+                  }
+                  onClick={() => enviar({ tipo: 'monedas', reparto })}
+                >
+                  {enviando ? 'Un segundo…' : 'Confirmar el reparto'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="ci-anonimo">
+              Todavía no hay preguntas para votar. Va a aparecer en unos
+              segundos.
+            </p>
+          )}
         </>
       )}
 
@@ -1978,6 +2291,10 @@ function Ensayando({
         Ronda {ensayo.ronda + 1} de 3 · Grupo {ensayo.grupo}
       </p>
       <h1 className="ci-titulo">{ROL_TITULO[ensayo.rol]}</h1>
+
+      {/* Primero se mueve la sala y después se busca a la gente: al revés son
+          ochenta personas paradas mirando el teléfono. */}
+      {ensayo.juntarse && <p className="ci-ensayo-juntarse">{ensayo.juntarse}</p>}
 
       <div className="ci-ensayo-gente">
         {ensayo.con.map((p) => (

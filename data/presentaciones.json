@@ -55,14 +55,14 @@
     "archivo": "pla-conflictos-b-90a1dc.html"
   },
   {
-    "token": "johndeere-conversaciones-prueba",
+    "token": "johndeere-conversaciones",
     "cliente": "John Deere",
     "ciclo": null,
     "titulo": "Conversaciones difíciles",
-    "subtitulo": "Marco conceptual y método, sin las dinámicas",
-    "placas": 17,
+    "subtitulo": "Marco conceptual, método y las cuatro dinámicas",
+    "placas": 34,
     "fecha": "2026-09-24",
     "orden": 1,
-    "archivo": "johndeere-conversaciones-prueba.html"
+    "archivo": "johndeere-conversaciones.html"
   }
 ]
