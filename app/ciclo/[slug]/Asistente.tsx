@@ -64,6 +64,8 @@ type ActividadPublica = {
   desdeTitulo?: string | null;
   /** Cuántas monedas reparte, en las consignas de votación. */
   monedas?: number | null;
+  /** Cómo se lee de corrido lo que quedó en los campos, con {clave} adentro. */
+  frase?: string | null;
   /** Qué pasa con lo que escribe. Vacío no muestra nada. */
   aviso?: string;
 };
@@ -1168,7 +1170,17 @@ function Formulario({
           ✓
         </p>
         <h1 className="ci-titulo">Listo</h1>
-        {mio?.tipo === 'texto' && SE_LEEN_EN_VOZ_ALTA.has(actividad.clave) ? (
+        {mio?.tipo === 'campos' ? (
+          /* El cierre del ejercicio es ver las dos juntas. Arriba quedó lo que
+             había escrito antes, y acá lo mismo dicho con los datos adentro:
+             nadie nota que cambió su manera de decirlo hasta que las compara. */
+          <>
+            <p className="ci-antes-que ci-despues-que">Cómo queda ahora</p>
+            <blockquote className="ci-mio ci-despues">
+              {fraseDeCampos(mio.campos, actividad)}
+            </blockquote>
+          </>
+        ) : mio?.tipo === 'texto' && SE_LEEN_EN_VOZ_ALTA.has(actividad.clave) ? (
           /* Lo escrito queda entero en pantalla mientras la consigna siga
              abierta: esta se lee en voz alta y de memoria se pierde la
              redacción exacta, que es lo que se trabaja. */
@@ -2550,6 +2562,26 @@ function nombrarDias(dias: number[]): string {
 }
 
 /** Lo que la persona respondió, para que se reconozca sin tener que recordarlo. */
+/**
+ * Lo que escribió en los campos, leído de corrido.
+ *
+ * Con la plantilla de la actividad, que pone cada dato en su lugar. Sin ella,
+ * los datos separados por un punto medio, que igual se lee.
+ */
+function fraseDeCampos(
+  campos: Record<string, string>,
+  actividad: ActividadPublica
+): string {
+  const plantilla = actividad.frase;
+  if (plantilla) {
+    return plantilla.replace(/\{(\w+)\}/g, (_, clave) => campos[clave] ?? '');
+  }
+  return (actividad.campos ?? [])
+    .map((c) => campos[c.clave])
+    .filter((v) => v && v.trim())
+    .join(' · ');
+}
+
 function resumenPropio(mio: Valor | null, actividad: ActividadPublica): string {
   if (!mio) return 'Tu respuesta quedó guardada.';
   switch (mio.tipo) {

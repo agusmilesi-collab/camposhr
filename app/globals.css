@@ -4774,6 +4774,23 @@ body {
 .ci-antes .ci-mio {
   margin-top: 8px;
 }
+
+/*
+ * El después, debajo del tilde.
+ *
+ * Mismo formato que el de arriba y otro color en el filo, para que las dos se
+ * lean como la misma frase dicha de dos maneras. En la pantalla de confirmación
+ * los rótulos van alineados a la izquierda aunque el resto esté centrado: si el
+ * rótulo queda en el medio, deja de leerse como el par de la frase de arriba.
+ */
+.ci-listo .ci-despues-que {
+  margin: 22px 0 0;
+  text-align: left;
+}
+.ci-mio.ci-despues {
+  margin-top: 8px;
+  border-left-color: var(--st-blue);
+}
 .ci-mio {
   margin: 18px 0 0;
   padding: 14px 16px;
