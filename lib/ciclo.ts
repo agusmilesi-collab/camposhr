@@ -183,15 +183,6 @@ export type ConfigActividad = {
   desde?: string;
   desde_titulo?: string;
   campos?: CampoActividad[];
-  /**
-   * Cómo se lee de corrido lo que quedó en los campos.
-   *
-   * Cada clave entre llaves se reemplaza por lo que escribió: "{que_hizo},
-   * {cuando}". Es para mostrarle al terminar su frase nueva al lado de la que
-   * había escrito antes, que es el cierre del ejercicio: nadie ve que mejoró
-   * su manera de decirlo hasta que tiene las dos juntas delante.
-   */
-  frase?: string;
   /** Cuántas monedas reparte cada uno. */
   monedas?: number;
   /** De quiénes son las respuestas que se votan, por dato del registro. */

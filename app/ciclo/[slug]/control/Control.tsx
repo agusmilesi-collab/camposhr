@@ -380,16 +380,25 @@ export default function Control({
                     : mandar({ accion: 'abrir', actividadId: a.id })
                 }
               >
-                <span className="ct-item-titulo">{a.titulo}</span>
-                {/* La placa manda: mientras dicta, lo que la expositora tiene
-                    delante es el deck, y el número le dice si está parada donde
-                    corresponde. Cuando no está cargada queda el tipo. */}
-                <span className="ct-item-tipo">
-                  {a.placa
-                    ? `Placa ${a.placa}`
-                    : a.grupo
-                      ? `${cuantasEnGrupo.get(a.grupo)} seguidas`
-                      : a.tipo}
+                <span className="ct-item-texto">
+                  <span className="ct-item-titulo">{a.titulo}</span>
+                  {/* La placa manda: mientras dicta, lo que la expositora tiene
+                      delante es el deck, y el número le dice si está parada
+                      donde corresponde. Cuando no está cargada queda el tipo. */}
+                  <span className="ct-item-tipo">
+                    {a.placa
+                      ? `Placa ${a.placa}`
+                      : a.grupo
+                        ? `${cuantasEnGrupo.get(a.grupo)} seguidas`
+                        : a.tipo}
+                  </span>
+                </span>
+                {/* Dice qué va a pasar si la toca, que es lo único que hay que
+                    decidir con la sala mirando. Es un span y no un botón: el
+                    botón es la tarjeta entera, y de noche, con el teléfono en
+                    una mano, apuntarle a un rectángulo chico se falla. */}
+                <span className="ct-item-accion">
+                  {a.id === abiertaId ? 'Cerrar' : 'Abrir'}
                 </span>
               </button>
             ))}

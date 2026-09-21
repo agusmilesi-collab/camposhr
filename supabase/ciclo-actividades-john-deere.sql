@@ -147,3 +147,25 @@ on conflict (ciclo_id, clave) do update
       grupo = excluded.grupo,
       titulo_control = excluded.titulo_control,
       config = excluded.config;
+-- En qué placa del deck se abre cada una. Es lo que el panel muestra al lado
+-- del título: mientras dicta, lo que la expositora tiene delante es el deck, y
+-- el número le dice si está parada donde corresponde.
+update public.actividades a
+   set placa = v.placa
+  from public.ciclos c,
+       (values
+         ('cd-reconocimiento', 5),
+         ('cd-reconocimiento-traducido', 8),
+         ('cd-conversacion', 9),
+         ('cd-es-hecho', 10),
+         ('cd-traduccion', 18),
+         ('cd-ensayo-1', 23),
+         ('cd-ensayo-2', 24),
+         ('cd-ensayo-3', 25),
+         ('cd-pregunta', 27),
+         ('cd-monedas', 29),
+         ('cd-reparto', 30)
+       ) as v(clave, placa)
+ where c.id = a.ciclo_id
+   and c.nombre = 'Conversaciones difíciles'
+   and a.clave = v.clave;

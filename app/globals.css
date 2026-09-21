@@ -13,6 +13,10 @@
   --st-blue-2: #43648f;
   --st-violet: #6a5a8c;
   --st-verde: #4a7856;
+  /* El verde de "esto está abierto", en el panel de quien dicta. Manzana, más
+     claro y más vivo que el de los perfiles, que es un color de lectura y no
+     una señal. Es claro, así que el texto encima va oscuro. */
+  --ct-verde: #ade2a8;
   --st-naranja: #c1591a;
   --st-rojo: #8c3b3b;
 }
@@ -3553,10 +3557,24 @@ body {
   padding: 16px 14px;
   margin-top: 18px;
 }
+/*
+ * El campo de escribir, blanco y recuadrado, igual que los de la traducción.
+ *
+ * Sobre el papel crema una línea al pie no se lee como algo para completar: la
+ * pantalla parecía un texto con un renglón suelto abajo.
+ */
 .ci-textarea {
   margin-top: 18px;
   line-height: 1.5;
   resize: vertical;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  min-height: 130px;
+}
+.ci-textarea:focus {
+  border-color: var(--st-blue);
 }
 .ci-anonimo {
   margin-top: 10px;
@@ -3794,19 +3812,54 @@ body {
   color: var(--ink);
   cursor: pointer;
 }
+/*
+ * La que está abierta, verde entera.
+ *
+ * Es el único dato que la expositora busca mientras dicta, y lo busca de reojo
+ * con el teléfono en la mano: un filo de tres píxeles obliga a leer la lista
+ * para encontrarlo.
+ */
 .ct-item-on {
-  border-color: var(--st-amber);
-  box-shadow: inset 3px 0 0 var(--st-amber);
+  background: var(--ct-verde);
+  border-color: var(--ct-verde);
+  color: var(--ink);
+}
+.ct-item-on .ct-item-titulo {
+  /* Un poco más de peso: es la línea que la expositora busca de reojo. */
+  font-weight: 600;
+}
+.ct-item-on .ct-item-tipo {
+  color: rgba(22, 32, 43, 0.62);
+}
+.ct-item-on .ct-item-accion {
+  border-color: rgba(22, 32, 43, 0.28);
+  color: var(--ink);
+}
+.ct-item-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 .ct-item-titulo {
   font-size: 0.92rem;
   line-height: 1.3;
 }
 .ct-item-tipo {
-  flex: none;
   font-size: 0.7rem;
   color: var(--muted);
   letter-spacing: 0.06em;
+}
+
+/* Qué pasa si la toca. Tiene cara de botón y no lo es: la tarjeta entera lo es. */
+.ct-item-accion {
+  flex: none;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
 }
 .ct-vacio {
   margin-top: 30px;
@@ -4616,9 +4669,9 @@ body {
 .ci-frases-dato {
   margin: 6px 0 0;
   padding: 9px 12px;
-  border-left: 3px solid var(--ink);
   background: var(--paper);
-  border-radius: 0 8px 8px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   font-family: 'Instrument Serif', Georgia, serif;
   font-size: 1.08rem;
   line-height: 1.3;
@@ -4776,27 +4829,64 @@ body {
 }
 
 /*
- * El después, debajo del tilde.
+ * El después, debajo de lo que había escrito antes.
  *
- * Mismo formato que el de arriba y otro color en el filo, para que las dos se
- * lean como la misma frase dicha de dos maneras. En la pantalla de confirmación
- * los rótulos van alineados a la izquierda aunque el resto esté centrado: si el
- * rótulo queda en el medio, deja de leerse como el par de la frase de arriba.
+ * Mismo formato que el de arriba, para que las dos se lean como la misma cosa
+ * dicha de dos maneras; lo que las separa es el rótulo. En la pantalla de
+ * confirmación esos rótulos van alineados a la izquierda aunque el resto esté
+ * centrado: en el medio dejan de leerse como el par de la frase de arriba.
  */
 .ci-listo .ci-despues-que {
   margin: 22px 0 0;
   text-align: left;
 }
-.ci-mio.ci-despues {
-  margin-top: 8px;
-  border-left-color: var(--st-blue);
+/*
+ * Los datos que quedaron, uno debajo del otro, en una sola tarjeta.
+ *
+ * Es el par de la frase de arriba: allá un párrafo donde no se distingue qué
+ * pasó, acá cada dato con su nombre. Van en la misma tarjeta para que se lean
+ * como una sola cosa y no como tres respuestas sueltas.
+ */
+.ci-despues-datos {
+  margin: 8px 0 0;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  text-align: left;
+}
+.ci-despues-datos > div + div {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+.ci-despues-datos dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--st-blue);
+  font-weight: 600;
+}
+.ci-despues-prueba {
+  margin: 14px 0 0;
+  text-align: left;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.ci-despues-datos dd {
+  margin: 4px 0 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.3rem;
+  line-height: 1.3;
+  color: var(--ink);
 }
 .ci-mio {
   margin: 18px 0 0;
   padding: 14px 16px;
-  border-left: 3px solid var(--st-amber);
   background: var(--card);
-  border-radius: 0 10px 10px 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   font-family: 'Instrument Serif', Georgia, serif;
   font-size: 1.35rem;
   line-height: 1.35;
@@ -9197,8 +9287,7 @@ body {
 
 .ci-tocada-texto {
   margin: 0;
-  padding: 0 0 0 16px;
-  border-left: 3px solid var(--ink);
+  padding: 0;
   font-family: 'Instrument Serif', Georgia, serif;
   font-size: 1.5rem;
   line-height: 1.25;
