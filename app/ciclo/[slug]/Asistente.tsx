@@ -1236,9 +1236,21 @@ function Formulario({
 
   return (
     <section className="cq-placa">
-      <h1 className="ci-titulo">{actividad.titulo}</h1>
-      {actividad.enunciado && (
-        <p className="cq-ayuda">{conNegrita(actividad.enunciado)}</p>
+      {/* Sin título, el enunciado ocupa su lugar. Es para las consignas que
+          son una sola pregunta, donde un rótulo arriba la repite con otras
+          palabras y la pregunta queda chica y en gris, que es lo que la
+          persona tiene que leer. */}
+      {actividad.titulo ? (
+        <>
+          <h1 className="ci-titulo">{actividad.titulo}</h1>
+          {actividad.enunciado && (
+            <p className="cq-ayuda">{conNegrita(actividad.enunciado)}</p>
+          )}
+        </>
+      ) : (
+        actividad.enunciado && (
+          <h1 className="ci-titulo">{conNegrita(actividad.enunciado)}</h1>
+        )
       )}
 
       {actividad.tipo === 'enlace' && (

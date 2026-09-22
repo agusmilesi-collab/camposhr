@@ -114,8 +114,11 @@ cross join (values
   -- 9 · La pregunta del bloque final. El enunciado cambia según lo que la
   -- persona contestó en el registro: es la misma pregunta mirada desde los dos
   -- lados, y por eso la lista que producen se lee junta.
+  -- Sin título: la pregunta cambia según el tramo y es lo único que hay que
+  -- leer, así que ocupa ella el lugar del título. Un rótulo arriba la repetía
+  -- con otras palabras y dejaba la pregunta chica y en gris.
   ('cd-pregunta', 1, 9, 'texto',
-   'Una pregunta para la sala',
+   '',
    'Se proyecta sin tu nombre.',
    '[]'::jsonb, null, 'Preguntas · escribir',
    '{
