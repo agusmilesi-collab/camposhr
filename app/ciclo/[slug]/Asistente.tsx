@@ -449,15 +449,18 @@ export default function Asistente({
                 Desde acá vas a responder algunas de las consignas del encuentro.
               </p>
               <div className="ci-acciones">
+                {/* Sirve igual para una charla suelta y para un ciclo: el
+                    que ya se registró, en este encuentro o en otro, entra
+                    tocando su cara. */}
                 <button className="cq-btn" onClick={() => setPantalla('registro')}>
-                  Es mi primer encuentro
+                  Registrarme
                 </button>
                 <button
                   className="cq-btn-ghost"
                   onClick={() => setPantalla('elegir')}
                   disabled={caras.length === 0}
                 >
-                  Ya vine antes
+                  Ya me registré
                 </button>
               </div>
             </section>
@@ -656,8 +659,8 @@ function Registro({
         <div className="cq-selfie-texto">
           <strong>Sacate una selfie</strong>
           <p>
-            Es lo que te va a permitir entrar en el próximo encuentro sin cargar
-            nada de nuevo.
+            Es para que tus compañeros de equipo te encuentren en la sala. No se
+            proyecta.
           </p>
           <input
             ref={inputFoto}
@@ -2402,7 +2405,7 @@ function Ensayando({
         <p className="ci-espera-punto" aria-hidden="true" />
         <h1 className="ci-titulo">Un segundo</h1>
         <p className="cq-ayuda">
-          Estamos armando los tríos. Tu lugar aparece solo en esta pantalla.
+          Estamos armando los equipos. Tu lugar aparece solo en esta pantalla.
         </p>
       </section>
     );

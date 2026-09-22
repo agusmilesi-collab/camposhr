@@ -53,7 +53,7 @@ export const CASOS = [
         'Qué pasó',
         'Cumplió todos los objetivos técnicos del año. En las reuniones ' +
           'interrumpe y descalifica a los que opinan distinto, y dos personas ' +
-          'del equipo pidieron no trabajar con él.',
+          'del equipo pidieron no trabajar con esa persona.',
       ],
       [
         'Decisión',
@@ -63,7 +63,7 @@ export const CASOS = [
     ],
     /** Sin la decisión: se entera cuando se la dicen, como en la oficina. */
     paraQuienRecibe:
-      'Cumpliste todos tus objetivos del año. Tu jefe te pidió cinco minutos.',
+      'Cumpliste todos tus objetivos del año. Tu líder te pidió cinco minutos.',
   },
   {
     titulo: 'Despido',
@@ -80,7 +80,7 @@ export const CASOS = [
       ],
     ],
     paraQuienRecibe:
-      'Tuviste dos devoluciones formales este año. Tu jefe te pidió cinco ' +
+      'Tuviste dos devoluciones formales este año. Tu líder te pidió cinco ' +
       'minutos.',
   },
   {
@@ -99,7 +99,7 @@ export const CASOS = [
       ],
     ],
     paraQuienRecibe:
-      'Ibas a liderar un equipo nuevo desde octubre. Tu jefe te pidió cinco ' +
+      'Ibas a liderar un equipo nuevo desde octubre. Tu líder te pidió cinco ' +
       'minutos.',
   },
 ] as const;
@@ -124,12 +124,12 @@ export const CASOS = [
 export const REACCIONES = [
   {
     nombre: 'Te enojás',
-    instruccion: 'Estás enojado: cumpliste todos los objetivos del año.',
+    instruccion: 'Te da bronca: cumpliste todos los objetivos del año.',
     guion: [
       'Cuando te dice que hay algo que no está bien, subí la voz: “¿Por qué ' +
         'yo? Cumplí todos los objetivos del año”.',
       'Cruzá los brazos, dá un paso atrás y mirá para otro lado.',
-      'Cada vez que te dé una razón, interrumpilo: “A nadie le dijeron nada ' +
+      'Cada vez que te dé una razón, interrumpí: “A nadie le dijeron nada ' +
         'por cómo habla en una reunión”.',
     ],
   },
@@ -137,7 +137,7 @@ export const REACCIONES = [
     nombre: 'Llorás',
     instruccion: 'Se te llenan los ojos de lágrimas y te cuesta hablar.',
     guion: [
-      'Cuando te dice que te desvinculan, quedate callado y mirá para abajo ' +
+      'Cuando te dice que te desvinculan, no digas nada y mirá para abajo ' +
         'tres o cuatro segundos.',
       'Después hablá en voz baja y cortada: “Perdón… dame un segundo”.',
       'Si te apura o te sigue dando explicaciones, tapate la cara con una ' +
@@ -148,10 +148,10 @@ export const REACCIONES = [
     nombre: 'No decís nada',
     instruccion: 'Contestás lo mínimo y querés terminar la conversación.',
     guion: [
-      'Cuando te dice que el proyecto no se hace, quedate callado, aunque ' +
+      'Cuando te dice que el proyecto no se hace, no digas nada, aunque ' +
         'el silencio se haga largo.',
       'Si te pregunta algo, contestá “ajá” o “está bien”, y nada más.',
-      'Quedate quieto, con las manos a los costados, mirando la puerta. Si ' +
+      'No te muevas: las manos a los costados y la mirada en la puerta. Si ' +
         'insiste, decí: “¿Puedo irme?”.',
     ],
   },
