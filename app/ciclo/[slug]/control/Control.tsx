@@ -43,7 +43,7 @@ type ConteoEnsayo = {
   cerrados: number;
   observan: number;
   contestaron: number;
-  sostuvo: { escucho: number; explico: number };
+  sostuvo: { escucho: number; explico: number; negocio: number };
   motivo: { hecho: number; juicio: number; ninguno: number };
   reciben: number;
   contestaronReciben: number;

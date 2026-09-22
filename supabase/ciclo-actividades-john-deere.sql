@@ -29,10 +29,13 @@ cross join (values
   -- 1 · El reconocimiento, como salió. Se abre con la sala recién sentada: el
   -- ejercicio optimista primero, y por lo que salió bien.
   ('cd-reconocimiento', 1, 1, 'texto',
-   'El último reconocimiento que diste',
-   'A alguien de tu equipo, con las palabras que usaste. Nadie lo ve más que vos.',
+   'El último reconocimiento que le hiciste a alguien de tu equipo',
+   'Con las palabras que usaste. No lo ve nadie más que vos, escribilo como salga.',
    '[]'::jsonb, null, 'Reconocimiento · escribir',
-   '{}'::jsonb),
+   -- Sin el aviso de siempre: esta consigna no se proyecta, así que decir que
+   -- se proyecta sin el nombre hace pensar lo contrario. El enunciado ya dice
+   -- que no lo ve nadie más que quien escribe.
+   '{"aviso": ""}'::jsonb),
 
   -- 2 · El mismo reconocimiento, en tres campos. Después de escuchar la
   -- diferencia entre "sos un crack" y el dato.
@@ -49,9 +52,9 @@ cross join (values
       "desde": "cd-reconocimiento",
       "desde_titulo": "Lo que escribiste recién",
       "campos": [
-        {"clave": "que_hizo", "etiqueta": "¿Qué hizo exactamente?", "ayuda": "El detalle que se puede comprobar: “entregó el informe con las tres áreas cargadas”. “Lo hizo bien” no dice qué repetir."},
+        {"clave": "que_hizo", "etiqueta": "¿Qué hizo exactamente?", "ayuda": "El detalle que se puede comprobar: “entregó el informe con una recomendación además de los números”."},
         {"clave": "cuando", "etiqueta": "¿Cuándo lo hizo?", "ayuda": "El día, o la semana, en que pasó."},
-        {"clave": "para_que", "etiqueta": "¿Qué se consiguió gracias a eso?", "ayuda": "El efecto. Acá sí entra por qué estuvo bueno."}
+        {"clave": "para_que", "etiqueta": "¿Qué se consiguió gracias a eso?", "ayuda": "El valor que entregó con eso: una entrega que salió, un costo que bajó, una decisión que se pudo tomar."}
       ]
     }'::jsonb),
 
@@ -60,10 +63,11 @@ cross join (values
   -- corrige. Con campos desde el principio escribirían bien de entrada y no
   -- habría nada que mostrar.
   ('cd-conversacion', 1, 3, 'texto',
-   'La conversación que tenés pendiente',
-   'Escribila como se la dirías. No pedimos con quién: ningún nombre entra acá.',
+   'La conversación difícil que tenés pendiente',
+   'Escribí lo que le tenés que decir a alguien de tu equipo, con las palabras que usarías.',
    '[]'::jsonb, 'conversacion', 'La conversación · como sale',
-   '{}'::jsonb),
+   -- Sin el aviso de siempre: lo que se escribe acá no se proyecta.
+   '{"aviso": ""}'::jsonb),
 
   -- 4 · La apuesta, antes de la teoría. Es el "antes" de la única medición que
   -- se proyecta, y funciona porque se contesta cuando todavía cree que sí.
@@ -154,17 +158,17 @@ update public.actividades a
    set placa = v.placa
   from public.ciclos c,
        (values
-         ('cd-reconocimiento', 5),
-         ('cd-reconocimiento-traducido', 8),
-         ('cd-conversacion', 9),
-         ('cd-es-hecho', 10),
-         ('cd-traduccion', 18),
-         ('cd-ensayo-1', 23),
-         ('cd-ensayo-2', 24),
-         ('cd-ensayo-3', 25),
-         ('cd-pregunta', 27),
-         ('cd-monedas', 29),
-         ('cd-reparto', 30)
+         ('cd-reconocimiento', 4),
+         ('cd-reconocimiento-traducido', 7),
+         ('cd-conversacion', 8),
+         ('cd-es-hecho', 9),
+         ('cd-traduccion', 17),
+         ('cd-ensayo-1', 21),
+         ('cd-ensayo-2', 22),
+         ('cd-ensayo-3', 23),
+         ('cd-pregunta', 25),
+         ('cd-monedas', 27),
+         ('cd-reparto', 28)
        ) as v(clave, placa)
  where c.id = a.ciclo_id
    and c.nombre = 'Conversaciones difíciles'

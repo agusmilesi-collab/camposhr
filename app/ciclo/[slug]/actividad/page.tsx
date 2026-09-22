@@ -576,7 +576,7 @@ function Vista({
  */
 function CierreDelEnsayo({ aportes }: { aportes: Aporte[] }) {
   let conversaciones = 0;
-  let dijeronMotivo = 0;
+  let lesQuedoClaro = 0;
   let motivoFueHecho = 0;
   let seQuedaronEscuchando = 0;
   let cerraronConFecha = 0;
@@ -586,7 +586,7 @@ function CierreDelEnsayo({ aportes }: { aportes: Aporte[] }) {
     // Una conversación por grupo y por ronda, y en cada una comunica uno solo.
     if (a.valor.rol === 'comunica') conversaciones += 1;
     if (a.valor.rol === 'recibe') {
-      if (a.valor.porque) dijeronMotivo += 1;
+      if (a.valor.porque) lesQuedoClaro += 1;
       if (a.valor.cuando) cerraronConFecha += 1;
     }
     if (a.valor.rol === 'observa') {
@@ -596,10 +596,10 @@ function CierreDelEnsayo({ aportes }: { aportes: Aporte[] }) {
   }
 
   const filas = [
-    ['dijeron el motivo', dijeronMotivo],
-    ['ese motivo fue un hecho y no un juicio', motivoFueHecho],
+    ['al otro le quedó claro por qué', lesQuedoClaro],
+    ['el motivo que dieron fue un hecho', motivoFueHecho],
     ['se quedaron escuchando cuando el otro reaccionó', seQuedaronEscuchando],
-    ['cerraron con día y hora', cerraronConFecha],
+    ['el otro sabe qué pasa ahora y cuándo', cerraronConFecha],
   ] as const;
 
   if (conversaciones === 0) {
@@ -620,7 +620,7 @@ function CierreDelEnsayo({ aportes }: { aportes: Aporte[] }) {
       <p className="cp-cierre-lectura">
         {lectura({
           conversaciones,
-          dijeronMotivo,
+          lesQuedoClaro,
           motivoFueHecho,
           seQuedaronEscuchando,
           cerraronConFecha,
@@ -643,7 +643,7 @@ function CierreDelEnsayo({ aportes }: { aportes: Aporte[] }) {
  */
 function lectura(n: {
   conversaciones: number;
-  dijeronMotivo: number;
+  lesQuedoClaro: number;
   motivoFueHecho: number;
   seQuedaronEscuchando: number;
   cerraronConFecha: number;
@@ -652,14 +652,14 @@ function lectura(n: {
 
   if (n.cerraronConFecha < mitad) {
     return (
-      'Casi todos dijeron lo difícil y casi nadie dijo qué pasa después. ' +
-      'La conversación termina, la situación sigue. ¿Qué les pasó ahí?'
+      'Casi todos dijeron lo difícil y casi nadie se fue sabiendo qué pasa ' +
+      'después. La conversación termina, la situación sigue. ¿Qué les pasó ahí?'
     );
   }
-  if (n.motivoFueHecho < n.dijeronMotivo / 2) {
+  if (n.motivoFueHecho < n.lesQuedoClaro / 2) {
     return (
-      'La mitad de los motivos fueron un juicio sobre la persona y no un ' +
-      'hecho. Con un hecho se puede conversar. ¿Se dieron cuenta en el momento?'
+      'La mitad de los motivos fueron un juicio sobre la persona. Con un ' +
+      'hecho se puede conversar. ¿Se dieron cuenta en el momento?'
     );
   }
   if (n.seQuedaronEscuchando < mitad) {
