@@ -295,6 +295,9 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Inter,syste
   padding:26px 48px 20px}
 .matriz-viva h2{font-family:'Instrument Serif',Georgia,serif;font-size:68px;line-height:1;color:#f3f2eb;
   letter-spacing:-.01em;margin-bottom:14px}
+/* La consigna de la placa, entre el título y el marco: lo que la sala tiene
+   que hacer con lo que está viendo. */
+.matriz-bajada{font-size:38px;color:var(--muted);margin:0 0 22px}
 .matriz-marco{position:relative;flex:1;width:100%}
 .matriz-marco iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent}
 .matriz-aviso{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
@@ -726,6 +729,15 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 /* Los diez temas del ciclo, en dos filas de cinco. Es la última placa con
    contenido, así que lo que no entra acá no se nombra nunca más: por eso van
    los diez y no un resumen. */
+/* El compendio: doce temas, cuatro por fila. Cada uno con su nombre arriba y
+   qué dice abajo, en gris. Son doce y no once ni trece porque cada tarjeta es
+   un tema distinto: ninguna repite lo que dice otra. */
+.repaso{display:flex;flex-wrap:wrap;gap:22px;width:100%;max-width:var(--ancho);margin:0 auto}
+.repaso>div{flex:0 0 calc(33.333% - 15px);background:var(--card);border:1px solid var(--line);
+  border-radius:20px;padding:30px 32px}
+.repaso h3{font-family:'Instrument Serif',Georgia,serif;font-size:42px;line-height:1.05;
+  font-weight:400;margin-bottom:14px}
+.repaso p{font-size:27px;line-height:1.32;color:var(--muted)}
 .tarjetas.diez{flex-wrap:wrap;gap:14px}
 .tarjetas.diez>div{flex:0 0 calc(20% - 12px);padding:20px 18px;
   display:flex;flex-direction:column}
@@ -781,6 +793,17 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 /* La caja de entrada es más alta que ancha: adentro van el nombre de la
    empresa, el código y la dirección. */
 .qr-vivo.qr-caja{width:560px;height:720px}
+/* La portada: el título, el código de entrada y las dos marcas, repartidos en
+   el alto. El código va acá porque es lo único que la sala tiene que hacer
+   mientras entra. */
+.portada-entrada{flex-direction:row;align-items:center;justify-content:space-between;
+  gap:80px;text-align:left}
+.portada-texto{flex:1;min-width:0}
+.qr-portada{flex:none;margin-bottom:0;padding:22px}
+.qr-portada .qr-vivo{width:340px;height:440px}
+.portada-marcas{display:flex;align-items:center;gap:56px;margin-top:58px}
+.portada-campos{font-family:'Instrument Serif',Georgia,serif;font-size:46px;color:var(--ink)}
+.portada-marcas img{height:58px;width:auto;display:block}
 /* Las dos marcas juntas, en la placa donde se presentan. Se leen desde el
    fondo de la sala, así que van del tamaño del texto que tienen debajo, y
    apoyadas contra él: el bloque de la izquierda lo ocupa una foto y ese alto
@@ -830,10 +853,19 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 <div id="escenario">
 
   <!-- 1 · Portada -->
-  <section class="placa" data-notas="Portada. Queda proyectada mientras la sala entra. Saludo y para qué está este bloque: cerrar el encuentro trimestral con una conversación preparada.">
+  <section class="placa sin-marca" data-notas="Portada. Queda proyectada mientras la sala entra. Saludo y para qué está este bloque: cerrar el encuentro trimestral con una conversación preparada.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="portada-nombre" style="font-size:132px">Conversaciones difíciles</div>
+    <div class="contenido portada-entrada">
+      <div class="portada-texto">
+        <div class="portada-nombre" style="font-size:112px">Conversaciones difíciles</div>
+        <div class="portada-marcas">
+          <span class="portada-campos">Campos HR</span>
+          <img src="/marcas/sentir.svg" alt="Sentir Mindfulness">
+        </div>
+      </div>
+      <div class="qr-caja qr-portada">
+        <iframe class="qr-vivo" data-src="https://camposhr.com/ciclo/__CLIENTE__/qr?placa=1" title="Código para entrar al encuentro"></iframe>
+      </div>
     </div>
   </section>
 
@@ -1166,7 +1198,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- D13 · Lo que dejaron los que llevan años -->
-  <section class="placa" data-notas="Pasa mientras la sala reparte las monedas. Dejarla correr sin leerla en voz alta: cada uno la lee cuando levanta la cabeza del teléfono. Es el material que produce el informe.">
+  <section class="placa" data-notas="Pasa mientras la sala reparte los Deer Coins. Dejarla correr sin leerla en voz alta: cada uno la lee cuando levanta la cabeza del teléfono. Es el material que produce el informe.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido matriz-viva">
       <h2>Lo que dejaron los que llevan años</h2>
@@ -1185,10 +1217,11 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido matriz-viva">
       <h2>Las que más quiere escuchar la sala</h2>
+      <p class="matriz-bajada">Necesitamos 3 personas para responderlas.</p>
       <div class="matriz-marco">
         <iframe data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?placa=1&clave=cd-monedas" title="Lo que responde la sala"></iframe>
         <div class="matriz-aviso">
-          <p class="cargando">Se arma sola a medida que reparten las monedas.</p>
+          <p class="cargando">Se arma sola a medida que reparten los Deer Coins.</p>
           <p class="offline">Sin conexión. Se sigue en papel.</p>
         </div>
       </div>
@@ -1205,24 +1238,21 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- C1 · Los tres conceptos -->
-  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="Primera placa del repaso. Leerlas y no volver a explicarlas: cinco minutos alcanzan para repasar, no para enseñar de nuevo.">
+  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="El repaso entero: los cuatro conceptos, el método del reconocimiento, los cuatro que no son hechos y los cuatro momentos de la conversación. Nombrar los bloques y no volver a explicar cada tarjeta: cinco minutos alcanzan para repasar, no para enseñar de nuevo.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq tres">
-      <div class="kicker">Lo que vimos hoy</div>
-      <div class="titulo-placa">Los tres conceptos</div>
-      <div class="tarjetas tres">
-        <div><h3>Cuanto más arriba estás, menos te dicen</h3><p>Sos el que menos devoluciones recibe y el que más decisiones toma con información que nadie chequeó.</p></div>
-        <div><h3>Si no lo puede verificar, no lo puede corregir</h3><p>El hecho abre una conversación. El adjetivo abre una pelea.</p></div>
-        <div><h3>La corrección se apoya en el reconocimiento</h3><p>Sin confianza previa y sin expectativas dichas, corregir baja el desempeño.</p></div>
+    <div class="contenido izq cuatro suelto">
+      <div class="fila-titulo">
+        <div class="titulo-placa">Lo que vimos hoy</div>
+        <div class="kicker">Repaso</div>
       </div>
-    </div>
-  </section>
-
-<!-- 16 · La frase que cierra -->
-  <section class="placa" data-notas="La frase que resume los noventa minutos. Decirla y dejar el silencio.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <p class="frase">Un adjetivo no se puede repetir.<br><b>Un hecho sí.</b></p>
+      <div class="repaso">
+        <div><h3>A vos tampoco te dicen cómo vas</h3><p>¿Cómo sabés si vas bien? Es la misma pregunta que se hace alguien de tu equipo, y vos la podrías contestar.</p></div>
+        <div><h3>Solo el hecho se puede corregir</h3><p>El hecho se puede ir a mirar. La interpretación no, y por eso abre una pelea en lugar de una conversación.</p></div>
+        <div><h3>Lo bueno se dice con el hecho</h3><p>Qué hizo, cuándo lo hizo y el valor que entregó con eso. Cuando pasa, sin esperar al GPM.</p></div>
+        <div><h3>La conversación se prepara todo el año</h3><p>Decir la expectativa antes de reclamarla, y anotar los hechos para llegar con el día y el número.</p></div>
+        <div><h3>La conversación difícil tiene cuatro momentos</h3><p>Elegí dónde y cuándo, decilo en dos frases, sostené el silencio, cerrá con una fecha.</p></div>
+        <div><h3>Lo que aprendió uno le sirve al que empieza</h3><p>Pasa si alguien lo pregunta y alguien lo contesta. Hoy pasó acá, y puede volver a pasar mañana.</p></div>
+      </div>
     </div>
   </section>
 
@@ -1287,6 +1317,18 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     // De una sola vez: alcanza tanto las direcciones de los marcos como el
     // texto de las placas donde figura.
     escenario.innerHTML = escenario.innerHTML.split(marcador).join(cliente);
+    /*
+     * Abierto en el servidor de desarrollo, los marcos se cargan de ahí.
+     *
+     * Sin esto, el deck local proyecta las pantallas del sitio publicado y
+     * cualquier cambio en el código de entrada, en la matriz o en el ranking
+     * se ve recién después de subir.
+     */
+    if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+      escenario.innerHTML = escenario.innerHTML
+        .split('https://camposhr.com')
+        .join(location.origin);
+    }
     // El código de entrada se carga ya: es la primera placa del encuentro y
     // pesa poco. El resto de los marcos espera a que se llegue a su placa.
     escenario.querySelectorAll('iframe.qr-vivo[data-src]').forEach(function (f) {

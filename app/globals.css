@@ -3582,6 +3582,24 @@ body {
 .ci-textarea:focus {
   border-color: var(--st-blue);
 }
+/* La moneda del reparto. Va con el texto: se alinea a la línea de base y crece
+   con el cuerpo, así sirve igual en el contador de arriba y en el de cada
+   pregunta. */
+.ci-coin {
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  margin-left: 0.22em;
+}
+
+/* En el contador de arriba la moneda acompaña a un número grande, así que
+   necesita su propio tamaño: con el del texto quedaba diminuta al lado. */
+.ci-monedas-quedan .ci-coin {
+  width: 1.9rem;
+  height: 1.9rem;
+  vertical-align: -0.45rem;
+}
+
 .ci-anonimo {
   margin-top: 18px;
   font-size: 0.95rem;
@@ -4000,7 +4018,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 .cp-barra-riel {
-  height: 10px;
+  height: 7px;
   border-radius: 5px;
   background: var(--line-soft);
   overflow: hidden;
@@ -4315,6 +4333,14 @@ body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+/* La moneda del ranking proyectado. Acompaña al número y crece con él. */
+.cp-coin {
+  width: 0.85em;
+  height: 0.85em;
+  vertical-align: -0.08em;
+  margin-left: 0.18em;
 }
 
 /* Dentro de una placa el bloque va centrado: la diapositiva ya tiene su propio
@@ -8772,7 +8798,7 @@ body {
 
 .ci-monedas-quedan b {
   font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1.6rem;
+  font-size: 2.3rem;
   font-weight: 400;
   color: var(--ink);
   vertical-align: -2px;
@@ -8836,7 +8862,10 @@ body {
 }
 
 .ci-voto-num {
-  min-width: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.1em;
   text-align: center;
   font-family: 'Instrument Serif', Georgia, serif;
   font-size: 1.3rem;
@@ -8853,34 +8882,33 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   width: 100%;
 }
 
 .cp-ranking-fila {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 14px 18px;
+  gap: 26px;
+  padding: 22px 28px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--card);
 }
 
-.cp-ranking-fila.gana {
-  border-color: var(--ink);
-}
+/* Las tres van iguales: son las tres que se contestan, y numerarlas ya dice
+   el orden sin que ninguna quede señalada como la que perdió. */
 
 .cp-ranking-puesto {
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: 52px;
+  height: 52px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--line-soft);
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 1.35rem;
 }
 
 .cp-ranking-fila.gana .cp-ranking-puesto {
@@ -8891,11 +8919,12 @@ body {
 .cp-ranking-que {
   flex: 1;
   min-width: 0;
+  text-align: left;
 }
 
 .cp-ranking-que p {
-  margin: 0 0 8px;
-  font-size: 1.15rem;
+  margin: 0;
+  font-size: 2.3rem;
   line-height: 1.35;
   color: var(--ink);
 }
@@ -8910,14 +8939,14 @@ body {
 .cp-ranking-pozo b {
   display: block;
   font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 2rem;
+  font-size: 3rem;
   font-weight: 400;
   color: var(--ink);
 }
 
 .cp-ranking-pozo em {
   font-style: normal;
-  font-size: 0.72rem;
+  font-size: 1.05rem;
   color: var(--muted);
 }
 
@@ -9100,10 +9129,13 @@ body {
 /* El nombre de quien reclamó su pozo. Aparece por elección suya: hasta que
    toca el botón, la pregunta es anónima. */
 .cp-ranking-quien {
-  display: block;
-  margin: -4px 0 8px;
-  font-size: 0.85rem;
-  color: var(--muted);
+  display: inline-block;
+  margin: 10px 0 0;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  font-size: 1.15rem;
+  color: var(--ink-soft);
 }
 
 /* ------------------------------------------------------ el repaso descargable

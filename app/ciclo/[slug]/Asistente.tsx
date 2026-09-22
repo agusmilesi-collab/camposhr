@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -62,6 +63,8 @@ type ActividadPublica = {
   campos?: CampoActividad[] | null;
   /** Cómo se llama lo que escribió antes, cuando lo tiene arriba para traducir. */
   desdeTitulo?: string | null;
+  /** De qué actividad sale lo que se muestra arriba, cuando corresponde. */
+  desde?: string | null;
   /** Cuántas monedas reparte, en las consignas de votación. */
   monedas?: number | null;
   /** Qué pasa con lo que escribe. Vacío no muestra nada. */
@@ -204,6 +207,28 @@ const SE_LEEN_EN_VOZ_ALTA = new Set(['c1-momento']);
  * escribirla en mayúsculas. Esto alcanza para eso y no abre la puerta a meter
  * HTML en un campo de texto: parte por el asterisco doble y arma los nodos.
  */
+/**
+ * El título con la moneda dibujada donde se la nombra.
+ *
+ * El nombre viene de la base, así que la imagen no puede venir con él: se
+ * parte el texto por el nombre de la moneda y se mete el icono en el medio.
+ */
+function conMoneda(texto: string) {
+  const partes = texto.split('Deer Coins');
+  if (partes.length === 1) return texto;
+  return partes.map((p, i) => (
+    <Fragment key={i}>
+      {i > 0 && (
+        <>
+          <img className="ci-coin" src="/jd-coin.png" alt="" />
+          Deer Coins
+        </>
+      )}
+      {p}
+    </Fragment>
+  ));
+}
+
 function conNegrita(texto: string) {
   const partes = texto.split(/\*\*(.+?)\*\*/g);
   return partes.map((parte, i) =>
@@ -752,7 +777,8 @@ function ElPozo({
       </p>
       <p className="ci-pozo-texto">{pozo.texto}</p>
       <p className="ci-pozo-monedas">
-        <b>{pozo.monedas}</b> monedas
+        <b>{pozo.monedas}</b> <img className="ci-coin" src="/jd-coin.png" alt="" />
+        Deer Coins
       </p>
       {reclamado ? (
         <p className="ci-pozo-listo">
@@ -848,14 +874,24 @@ function Fila({
           {numero} de {todas.length}
         </p>
       )}
-      {/* Lo que escribió al abrir la charla, arriba de las tres preguntas que
-          son sobre eso mismo. Entre una placa y la otra pasa más de una hora. */}
-      {estado.antes && (
-        <div className="ci-antes">
-          <p className="ci-antes-que">{actual.desdeTitulo ?? 'Tu tensión'}</p>
-          <blockquote className="ci-mio">{estado.antes}</blockquote>
-        </div>
-      )}
+      {/* Lo que escribió antes, arriba de la pregunta que es sobre eso mismo.
+          Puede venir de una consigna vieja, y entonces lo trae el sondeo, o de
+          la anterior de esta misma fila, y entonces ya está en la mano. */}
+      {(() => {
+        const dePaso = actual.desde
+          ? todas.find((a) => a.clave === actual.desde)?.mio
+          : undefined;
+        const texto =
+          estado.antes ??
+          (dePaso?.tipo === 'texto' ? dePaso.texto : null);
+        if (!texto) return null;
+        return (
+          <div className="ci-antes">
+            <p className="ci-antes-que">{actual.desdeTitulo ?? 'Tu tensión'}</p>
+            <blockquote className="ci-mio">{texto}</blockquote>
+          </div>
+        );
+      })()}
       <Formulario
         key={actual.id}
         slug={slug}
@@ -1242,7 +1278,7 @@ function Formulario({
           persona tiene que leer. */}
       {actividad.titulo ? (
         <>
-          <h1 className="ci-titulo">{actividad.titulo}</h1>
+          <h1 className="ci-titulo">{conMoneda(actividad.titulo)}</h1>
           {actividad.enunciado && (
             <p className="cq-ayuda">{conNegrita(actividad.enunciado)}</p>
           )}
@@ -1545,7 +1581,8 @@ function Formulario({
                   {(actividad.monedas ?? 10) -
                     Object.values(reparto).reduce((s, n) => s + n, 0)}
                 </b>{' '}
-                de {actividad.monedas ?? 10}
+                <img className="ci-coin" src="/jd-coin.png" alt="" /> Deer
+                Coins de {actividad.monedas ?? 10}
               </p>
 
               <div className="ci-votos">
@@ -1570,11 +1607,16 @@ function Formulario({
                               return copia;
                             })
                           }
-                          aria-label="Sacar una moneda"
+                          aria-label="Sacar un Deer Coin"
                         >
                           −
                         </button>
-                        <span className="ci-voto-num">{puestas}</span>
+                        <span className="ci-voto-num">
+                          {puestas}
+                          {puestas > 0 && (
+                            <img className="ci-coin" src="/jd-coin.png" alt="" />
+                          )}
+                        </span>
                         <button
                           type="button"
                           className="ci-voto-btn"
@@ -1582,7 +1624,7 @@ function Formulario({
                           onClick={() =>
                             setReparto((r) => ({ ...r, [v.id]: (r[v.id] ?? 0) + 1 }))
                           }
-                          aria-label="Poner una moneda"
+                          aria-label="Poner un Deer Coin"
                         >
                           +
                         </button>

@@ -88,9 +88,13 @@ function publica(a: Actividad, datos: Record<string, string> = {}) {
     // es del servidor: de dónde sale cada cosa y a quiénes se vota.
     campos: a.config.campos ?? null,
     // `undefined` deja el aviso de siempre; una cadena, aunque esté vacía,
-    // manda sobre él.
-    aviso: a.config.aviso,
+    // manda sobre él. Y si la actividad trae uno por tramo, ése gana: es la
+    // misma consigna pidiéndole cosas distintas a cada uno.
+    aviso: (segun ? a.config.avisos?.[segun] : undefined) ?? a.config.aviso,
     desdeTitulo: a.config.desde_titulo ?? null,
+    // La clave de la que viene: sirve cuando las dos se abren juntas y lo que
+    // hay que mostrar ya viajó en el mismo grupo.
+    desde: a.config.desde ?? null,
     monedas: a.config.monedas ?? null,
   };
 }

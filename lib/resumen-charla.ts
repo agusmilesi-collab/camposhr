@@ -12,59 +12,73 @@ import 'server-only';
  */
 
 export type RepasoCharla = {
-  conceptos: { titulo: string; bajada: string }[];
+  /** Los seis temas del encuentro, los mismos que la placa del repaso. */
+  temas: { titulo: string; bajada: string }[];
   momentos: { numero: number; nombre: string; que: string }[];
   traducciones: { juicio: string; hecho: string }[];
 };
 
 export const REPASOS: Record<string, RepasoCharla> = {
   'Conversaciones difíciles': {
-    conceptos: [
+    temas: [
       {
-        titulo: 'Cuanto más arriba estás, menos te dicen',
+        titulo: 'A vos tampoco te dicen cómo vas',
         bajada:
-          'Sos el que menos devoluciones recibe de toda la sala y el que más decisiones toma con información que nadie chequeó.',
+          '¿Cómo sabés si vas bien? Es la misma pregunta que se hace alguien de tu equipo, y vos la podrías contestar.',
       },
       {
-        titulo: 'Si no lo puede verificar, no lo puede corregir',
+        titulo: 'Solo el hecho se puede corregir',
         bajada:
-          '"Llegaste tarde el martes, el jueves y el viernes" abre una conversación. "No te importa nada" abre una pelea.',
+          '"Llegaste tarde el martes, el jueves y el viernes" se puede ir a mirar. "No te importa nada" no, y por eso abre una pelea.',
       },
       {
-        titulo: 'La corrección de septiembre se apoya en el reconocimiento de marzo',
+        titulo: 'Lo bueno se dice con el hecho',
         bajada:
-          'El reconocimiento mejora el desempeño de forma confiable. La corrección funciona solo si hubo confianza antes.',
+          'Qué hizo, cuándo lo hizo y el valor que entregó con eso. Cuando pasa, sin esperar al GPM.',
+      },
+      {
+        titulo: 'La conversación se prepara todo el año',
+        bajada:
+          'Decir la expectativa antes de reclamarla, y anotar los hechos para llegar con el día y el número.',
+      },
+      {
+        titulo: 'La conversación difícil tiene cuatro momentos',
+        bajada:
+          'Elegí dónde y cuándo, decilo en dos frases, sostené el silencio, cerrá con una fecha.',
+      },
+      {
+        titulo: 'Lo que aprendió uno le sirve al que empieza',
+        bajada:
+          'Pasa si alguien lo pregunta y alguien lo contesta. Hoy pasó acá, y puede volver a pasar mañana.',
       },
     ],
     momentos: [
       {
         numero: 1,
-        nombre: 'Lo que sabés y no decís',
-        que: 'Anotar los hechos cuando pasan y decir lo bueno cuando pasa, en las conversaciones de desarrollo. Sin esto, los otros cuatro no funcionan.',
-      },
-      {
-        numero: 2,
-        nombre: 'Encuadrá',
+        nombre: 'Elegí dónde y cuándo',
         que: 'Lugar privado, sin apuro, y un aviso corto antes de empezar.',
       },
       {
+        numero: 2,
+        nombre: 'Decilo en dos frases',
+        que: 'La decisión primero y el motivo enseguida, con hechos. El motivo se repite después del silencio, que es cuando lo escucha.',
+      },
+      {
         numero: 3,
-        nombre: 'Decilo claro',
-        que: 'El motivo y la decisión juntos, en las primeras dos frases, con hechos verificables.',
+        nombre: 'Sostené el silencio',
+        que: 'No negocies ni discutas mientras reacciona. Cuando pare, repetí una vez lo ya dicho.',
       },
       {
         numero: 4,
-        nombre: 'Sostené el silencio',
-        que: 'Mientras descarga, aunque llore o levante la voz. Cuando pare, repetir una vez lo ya dicho.',
-      },
-      {
-        numero: 5,
         nombre: 'Cerrá con una fecha',
-        que: 'Qué pasa ahora, con día y hora.',
+        que: 'Qué tiene que pasar y cuándo, con día y hora.',
       },
     ],
     traducciones: [
-      { juicio: 'Es desprolijo', hecho: 'Dejó el tablero sin cerrar el martes y el jueves' },
+      {
+        juicio: 'Es desprolijo',
+        hecho: 'Dejó el puesto sin ordenar al terminar el turno, el martes y el jueves',
+      },
       {
         juicio: 'No le importa el trabajo',
         hecho: 'Entregó los tres últimos informes después de la fecha',
@@ -73,7 +87,7 @@ export const REPASOS: Record<string, RepasoCharla> = {
       {
         juicio: 'Le falta mirada estratégica',
         hecho:
-          'En la reunión del 12, cuando salió lo del proveedor, te metiste en las cláusulas y el equipo esperaba que definieras si seguíamos',
+          'En la reunión del 12 revisó el precio de cada ítem y no definió si cambiábamos de proveedor',
       },
     ],
   },
