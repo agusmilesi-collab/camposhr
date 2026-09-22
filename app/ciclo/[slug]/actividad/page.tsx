@@ -6,9 +6,7 @@ import {
   listarAportesDeVarias,
   rondasDelEnsayo,
   type Aporte,
-  getActividadAbierta,
-  getActividadPorClave,
-  listarAportes,
+  aportesDeLaSala,
   delTaller,
   asistentesDeLaSala,
   resolverCiclo,
@@ -111,8 +109,8 @@ export default async function Proyeccion({
     const traduccion = catalogo.find((a) => a.clave === 'cd-traduccion');
 
     const [deApuesta, deTraduccion] = await Promise.all([
-      apuesta ? listarAportes(corrida.id, apuesta.id) : Promise.resolve([]),
-      traduccion ? listarAportes(corrida.id, traduccion.id) : Promise.resolve([]),
+      apuesta ? aportesDeLaSala(corrida.id, apuesta.id) : Promise.resolve([]),
+      traduccion ? aportesDeLaSala(corrida.id, traduccion.id) : Promise.resolve([]),
     ]);
 
     const creyeron = deApuesta.filter(
@@ -161,7 +159,7 @@ export default async function Proyeccion({
    */
   if (searchParams?.vista === 'rotan') {
     const origen = searchParams?.clave
-      ? await getActividadPorClave(corrida.ciclo_id, searchParams.clave)
+      ? await deMemoria(corrida.ciclo_id, searchParams.clave)
       : null;
     if (!origen) {
       return (
@@ -173,7 +171,7 @@ export default async function Proyeccion({
     }
 
     const [aportes, sala] = await Promise.all([
-      listarAportes(corrida.id, origen.id),
+      aportesDeLaSala(corrida.id, origen.id),
       asistentesDeLaSala(corrida.id),
     ]);
     const porId = new Map(sala.map((a) => [a.id, a]));
@@ -197,8 +195,8 @@ export default async function Proyeccion({
   }
 
   const actividad = searchParams?.clave
-    ? await getActividadPorClave(corrida.ciclo_id, searchParams.clave)
-    : await getActividadAbierta(corrida);
+    ? await deMemoria(corrida.ciclo_id, searchParams.clave)
+    : await abiertaDeMemoria(corrida.ciclo_id, corrida.actividad_abierta_id);
 
   if (!actividad) {
     return (
@@ -225,7 +223,7 @@ export default async function Proyeccion({
           Math.trunc(pedidas),
           Math.trunc(Number(searchParams?.repite)) || 0
         )
-      : await listarAportes(corrida.id, actividad.id);
+      : await aportesDeLaSala(corrida.id, actividad.id);
 
   /**
    * La consigna proyectada: lo que hay que leer para poder responder desde el
@@ -315,10 +313,10 @@ export default async function Proyeccion({
     quien: string | null;
   }[] = [];
   if (resumen.tipo === 'monedas' && actividad.config.desde) {
-    const origen = await getActividadPorClave(corrida.ciclo_id, actividad.config.desde);
+    const origen = await deMemoria(corrida.ciclo_id, actividad.config.desde);
     if (origen) {
       const [preguntas, sala] = await Promise.all([
-        listarAportes(corrida.id, origen.id),
+        aportesDeLaSala(corrida.id, origen.id),
         asistentesDeLaSala(corrida.id),
       ]);
       const quienes = new Map(sala.map((a) => [a.id, a]));
@@ -675,4 +673,22 @@ function lectura(n: {
     'Los cuatro pasos aparecieron en la mayoría de las conversaciones. ' +
     '¿Cuál les costó más sostener?'
   );
+}
+
+/*
+ * Lo que se proyecta se refresca solo cada cinco a veinte segundos, y lo pide
+ * además cada pantalla que tenga el deck abierto. Las actividades salen del
+ * catálogo que ya tienen en memoria los teléfonos, y las respuestas de la misma
+ * lectura compartida que usan ellos (ocho segundos): el ranking o la nube
+ * pueden llegar con unos segundos de atraso, que proyectado no se nota, y cada
+ * refresco deja de costar dos o tres consultas a la base.
+ */
+async function deMemoria(cicloId: string, clave: string | undefined) {
+  if (!clave) return null;
+  return (await actividadesDelCiclo(cicloId)).find((a) => a.clave === clave) ?? null;
+}
+
+async function abiertaDeMemoria(cicloId: string, id: string | null) {
+  if (!id) return null;
+  return (await actividadesDelCiclo(cicloId)).find((a) => a.id === id) ?? null;
 }

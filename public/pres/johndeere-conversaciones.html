@@ -1372,10 +1372,27 @@ const canal = ('BroadcastChannel' in window) ? new BroadcastChannel('placas-jd-c
  * conexión. Sin internet queda el aviso con la dirección, para proyectar la
  * captura que se llevó impresa.
  */
+/* Un marco se descarga al salir de su placa. Cada pantalla proyectada se
+   refresca sola cada pocos segundos y consulta la base, y escondida seguía
+   haciéndolo: al final del encuentro corrían todas las que se habían visto,
+   para nadie. Si se vuelve a la placa, se carga de nuevo. */
+function descargarMatrices() {
+  placas.forEach((p, n) => {
+    if (n === actual) return;
+    p.querySelectorAll('.matriz-marco iframe').forEach(f => {
+      const src = f.getAttribute('src');
+      if (!src || src === 'about:blank') return;
+      f.src = 'about:blank';
+      f.closest('.matriz-marco').classList.remove('cargada');
+    });
+  });
+}
+
 function cargarMatriz() {
   document.querySelectorAll('.placa.activa .matriz-marco').forEach(marco => {
     const f = marco.querySelector('iframe');
-    if (!f || f.src) return;
+    const src = f && f.getAttribute('src');
+    if (!f || (src && src !== 'about:blank')) return;
     if (!navigator.onLine) { marco.classList.add('sin-red'); return; }
     marco.classList.remove('sin-red');
     f.addEventListener('load', () => marco.classList.add('cargada'), { once: true });
@@ -1392,6 +1409,7 @@ function mostrar(i) {
     notas: placas[actual].dataset.notas || '',
     sigue: placas[actual + 1] ? (placas[actual + 1].textContent.trim().slice(0, 90) || 'placa sin texto') : 'fin de la charla'
   };
+  descargarMatrices();
   cargarMatriz();
   if (typeof minis !== 'undefined') {
     marcarMini();
