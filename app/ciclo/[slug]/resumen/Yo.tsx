@@ -24,6 +24,8 @@ type Loprio = {
 export default function Yo({ slug, inicial }: { slug: string; inicial: string | null }) {
   const [mio, setMio] = useState<Loprio | null>(null);
   const [buscando, setBuscando] = useState(true);
+  /** Si el teléfono sabe quién es. Sin eso no hay a quién pedirle lo suyo. */
+  const [conocido, setConocido] = useState(false);
 
   useEffect(() => {
     let id = inicial;
@@ -39,6 +41,7 @@ export default function Yo({ slug, inicial }: { slug: string; inicial: string | 
       setBuscando(false);
       return;
     }
+    setConocido(true);
     fetch(`/api/ciclo/${slug}/resumen?asistente=${id}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setMio(d?.mio ?? null))
@@ -48,12 +51,16 @@ export default function Yo({ slug, inicial }: { slug: string; inicial: string | 
 
   if (buscando) return null;
 
+  /* Dos motivos distintos para no tener nada propio, y cada uno con su texto:
+     si el teléfono sabe quién es, lo que falta es lo escrito, y culpar al
+     teléfono lo manda a buscar otro que no existe. */
   if (!mio) {
     return (
       <section className="rs-bloque rs-mio-vacio">
         <p>
-          Abrí este código desde el mismo teléfono con el que respondiste y acá
-          vas a ver lo que escribiste.
+          {conocido
+            ? 'No encontramos lo que escribiste hoy. El repaso del encuentro está abajo.'
+            : 'Abrí este código desde el mismo teléfono con el que respondiste y acá vas a ver lo que escribiste.'}
         </p>
       </section>
     );

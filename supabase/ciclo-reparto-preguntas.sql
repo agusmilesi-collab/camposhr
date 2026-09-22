@@ -20,6 +20,7 @@ select c.id, 'cd-reparto', 1, 11, 'reparto',
        'Preguntas · repartir las que quedaron',
        '{
           "desde": "cd-pregunta",
+          "desde_titulo": "Tu pregunta",
           "de_quienes": {"campo": "rol", "valor": "Menos de un año"},
           "a_quienes": {"campo": "rol", "valor": "Más de un año"}
         }'::jsonb

@@ -79,7 +79,7 @@ type Valor =
   | { tipo: 'marcas'; marcas: number[] }
   | { tipo: 'plan'; dias: number[]; hora: string; texto: string }
   | { tipo: 'campos'; campos: Record<string, string> }
-  | { tipo: 'reparto'; aporteId: string; texto: string }
+  | { tipo: 'reparto'; aporteId: string; texto: string; otras?: { aporteId: string; texto: string }[] }
   | { tipo: 'monedas'; reparto: Record<string, number> };
 
 /** Con quién le toca juntarse, en la consigna de consultar una decisión. */
@@ -160,7 +160,14 @@ type Estado = {
   votar?: ParaVotar[] | null;
   /** El pozo de la pregunta propia, si quedó entre las que se contestan. */
   pozo?: Pozo | null;
+  /** En el reparto, qué pasó con la pregunta propia. */
+  miPregunta?: MiPregunta | null;
 };
+
+/** A quien escribió una pregunta: quién se la llevó, o que ya se contestó. */
+type MiPregunta =
+  | { estado: 'repartida'; nombre: string; apellido: string; area: string | null }
+  | { estado: 'contestada' };
 
 /** Lo que junta la pregunta propia cuando entra entre las ganadoras. */
 type Pozo = {
@@ -267,6 +274,10 @@ const NO_SE_PROYECTAN = new Set(['c5-gracias']);
  * charlas, así que la pantalla se despide en lugar de ofrecer corregir.
  */
 const FIN_DEL_CICLO = 'c5-gracias';
+/* La última pregunta de la encuesta de un encuentro suelto (John Deere). Al
+   contestarla no se despide y listo: le da su resumen, que es lo que se lleva
+   del encuentro, con lo que escribió y el método. */
+const FIN_CON_RESUMEN = 'cd-cambiarias';
 
 /**
  * El aviso al pie del campo de texto, cuando la consigna necesita el suyo.
@@ -849,6 +860,27 @@ function Fila({
      despide en vez de ofrecer corregir la última respuesta. En cualquier otro
      grupo el botón sigue, porque la charla continúa y alguien se puede haber
      equivocado de opción. */
+  if (!pendiente && todas[todas.length - 1]?.clave === FIN_CON_RESUMEN) {
+    return (
+      <section className="cq-placa ci-listo">
+        <p className="ci-tilde" aria-hidden="true">
+          ✓
+        </p>
+        <h1 className="ci-titulo">Gracias</h1>
+        <p className="cq-ayuda">
+          Tu resumen está listo: lo que escribiste hoy y el método, para volver
+          a leerlo el día que tengas la conversación.
+        </p>
+        <div className="ci-acciones">
+          <a className="cq-btn" href={`/ciclo/${slug}/resumen?a=${yo.id}`}>
+            Ver y descargar tu resumen
+          </a>
+        </div>
+        <p className="ci-firma">Lorena y Lucila</p>
+      </section>
+    );
+  }
+
   if (!pendiente && todas[todas.length - 1]?.clave === FIN_DEL_CICLO) {
     return (
       <section className="cq-placa ci-listo">
@@ -884,7 +916,10 @@ function Fila({
         const texto =
           estado.antes ??
           (dePaso?.tipo === 'texto' ? dePaso.texto : null);
-        if (!texto) return null;
+        // En el reparto no: a quien responde, lo que escribió al principio no
+        // tiene nada que ver con la pregunta que le tocó, y a quien preguntó
+        // su pantalla ya le muestra la suya junto con a quién buscar.
+        if (!texto || actual.tipo === 'reparto') return null;
         return (
           <div className="ci-antes">
             <p className="ci-antes-que">{actual.desdeTitulo ?? 'Tu tensión'}</p>
@@ -906,6 +941,8 @@ function Fila({
         frases={estado.frases}
         votar={estado.votar ?? null}
         pozo={estado.pozo ?? null}
+        miPregunta={estado.miPregunta ?? null}
+        antes={estado.antes ?? null}
         fase={estado.fase}
         onGuardado={(valor) =>
           setRespondidas((r) => ({ ...r, [actual.id]: valor }))
@@ -928,6 +965,8 @@ function Formulario({
   frases,
   votar,
   pozo,
+  miPregunta,
+  antes,
   fase,
   onGuardado,
 }: {
@@ -943,6 +982,9 @@ function Formulario({
   frases: Frases | null;
   votar: ParaVotar[] | null;
   pozo: Pozo | null;
+  miPregunta: MiPregunta | null;
+  /** Lo que escribió en la consigna de la que sale esta, si la hay. */
+  antes: string | null;
   fase: number;
   onGuardado: (valor: Valor) => void;
 }) {
@@ -1056,24 +1098,65 @@ function Formulario({
    * charla. La pantalla dice cuál es y qué hacer con ella, y nada más.
    */
   if (actividad.tipo === 'reparto') {
-    if (mio?.tipo !== 'reparto') {
+    /* Quien escribió la pregunta. Es la única persona que sabe de quién es, así
+       que es la que va a buscar: la pantalla le dice a quién y dónde. */
+    if (mio?.tipo !== 'reparto' && miPregunta?.estado === 'repartida') {
       return (
-        <section className="cq-placa">
-          <h1 className="ci-titulo">{actividad.titulo}</h1>
-          <p className="cq-ayuda">
-            Esta vez no te tocó ninguna. Si alguien se te acerca con una
-            pregunta, contestala.
+        <section className="cq-placa ci-tocada">
+          {antes && (
+            <div className="ci-antes">
+              <p className="ci-antes-que">Tu pregunta</p>
+              <blockquote className="ci-mio">{antes}</blockquote>
+            </div>
+          )}
+          <p className="ci-tocada-que">Se la llevó</p>
+          <p className="ci-tocada-texto">
+            {miPregunta.nombre} {miPregunta.apellido}
+            {miPregunta.area ? `, de ${miPregunta.area}` : ''}
+          </p>
+          <p className="ci-tocada-como">
+            Al terminar, buscá a {miPregunta.nombre}: sabe que alguien le va a
+            llevar una pregunta y te está esperando.
+          </p>
+          <p className="ci-anonimo">
+            No sabe que es tuya. Se entera solo si vas.
           </p>
         </section>
       );
     }
+    if (mio?.tipo !== 'reparto') {
+      return (
+        <section className="cq-placa">
+          {/* El título habla de contestar una: a quien ya tuvo su respuesta en
+              la sala no le corresponde. */}
+          {miPregunta?.estado !== 'contestada' && (
+            <h1 className="ci-titulo">{actividad.titulo}</h1>
+          )}
+          <p className="cq-ayuda">
+            {miPregunta?.estado === 'contestada'
+              ? 'Tu pregunta ya se contestó en la sala.'
+              : 'Esta vez no te tocó ninguna. Si alguien se te acerca con una pregunta, contestá lo que sepas.'}
+          </p>
+        </section>
+      );
+    }
+    const suyas = [mio.texto, ...(mio.otras ?? []).map((o) => o.texto)];
     return (
       <section className="cq-placa ci-tocada">
-        <p className="ci-tocada-que">Te toca esta</p>
-        <blockquote className="ci-tocada-texto">{mio.texto}</blockquote>
+        <p className="ci-tocada-que">
+          {suyas.length > 1 ? 'Te tocan estas' : 'Te toca esta'}
+        </p>
+        {suyas.map((t, i) => (
+          <blockquote className="ci-tocada-texto" key={i}>
+            {t}
+          </blockquote>
+        ))}
         <p className="ci-tocada-como">
-          La escribió alguien que está empezando a liderar, de otra área. Si
-          sabés la respuesta, contestala. Si no, presentalo con quien sí.
+          {suyas.length > 1
+            ? 'Las escribió gente que está empezando a liderar.'
+            : 'La escribió alguien que está empezando a liderar.'}{' '}
+          Al terminar te va a buscar: si sabés la respuesta, contestala; si no,
+          presentale a alguien que sepa.
         </p>
         <p className="ci-anonimo">
           No hace falta que escribas nada acá: esto se resuelve hablando, al
@@ -1207,6 +1290,13 @@ function Formulario({
     const comparando = mio?.tipo === 'campos';
     return (
       <section className="cq-placa ci-listo">
+        {/* El pozo va también acá, y arriba de todo. El ranking se proyecta
+            cuando la sala ya repartió, así que en ese momento todos tienen
+            las monedas enviadas: si el pozo viviera solo en el formulario de
+            votar, nadie llegaría a verlo. */}
+        {actividad.tipo === 'monedas' && pozo && (
+          <ElPozo slug={slug} asistenteId={asistenteId} pozo={pozo} />
+        )}
         {!comparando && (
           <>
             <p className="ci-tilde" aria-hidden="true">

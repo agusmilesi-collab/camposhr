@@ -9,6 +9,7 @@ import {
 } from '@/lib/ciclo';
 import { REPASOS } from '@/lib/resumen-charla';
 import Yo from './Yo';
+import Descargar from './Descargar';
 
 /**
  * El repaso de la charla, en el teléfono de cada uno.
@@ -64,8 +65,15 @@ export default async function Resumen({
   return (
     <main className="wrap rs">
       <header className="rs-head">
+        {/* Las mismas dos marcas del cierre del encuentro: el resumen circula
+            como PDF y tiene que decir de quién es. */}
+        <div className="rs-marcas">
+          <span className="rs-campos">Campos HR</span>
+          <img src="/marcas/sentir.svg" alt="Sentir Mindfulness" />
+        </div>
         <p className="eyebrow">Conversaciones difíciles</p>
         <h1>Lo que te llevás</h1>
+        <Descargar />
       </header>
 
       {/* Lo propio se pide desde el teléfono, que es el que sabe quién sos. */}
@@ -130,7 +138,9 @@ export default async function Resumen({
         </section>
       )}
 
-      <footer className="rs-pie">Campos HR · 24 de septiembre de 2026</footer>
+      <footer className="rs-pie">
+        <a href="https://www.camposhr.com">www.camposhr.com</a> · 24 de septiembre de 2026
+      </footer>
     </main>
   );
 }

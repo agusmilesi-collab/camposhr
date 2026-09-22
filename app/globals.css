@@ -3640,19 +3640,25 @@ body {
   font-size: 0.8rem;
   color: var(--muted);
 }
+/* La escala en una sola fila, sea de cinco o de diez: partida en dos, el 6
+   quedaba abajo del 1 y la recomendación se leía como dos grupos. En un
+   teléfono de 360 px cada botón mide unos 28 de ancho, así que se estira en
+   alto para que siga siendo fácil de tocar. */
 .ci-escala {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
   margin-top: 22px;
 }
 .ci-escala-boton {
-  aspect-ratio: 1;
+  min-height: 52px;
+  padding: 0;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--card);
   color: var(--ink);
-  font-size: 1.2rem;
+  font-size: 1rem;
   cursor: pointer;
 }
 .ci-escala-boton:active {
@@ -9350,4 +9356,44 @@ body {
   font-size: 0.95rem;
   line-height: 1.5;
   color: var(--ink-soft);
+}
+
+/* El botón que lleva del final de la encuesta al resumen es un enlace: sin
+   subrayado, igual que los botones. */
+a.cq-btn {
+  text-decoration: none;
+}
+/* Descargar el resumen: arriba, debajo del título, y fuera del PDF. */
+.rs-descargar {
+  margin-top: 14px;
+}
+@media print {
+  .rs-descargar {
+    display: none;
+  }
+}
+
+/* Las marcas arriba del resumen, como en el cierre del encuentro: Campos HR con
+   la serif del ciclo y el logo de Sentir al lado, a la misma altura. */
+.rs-marcas {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 28px;
+}
+.rs-campos {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--ink);
+}
+.rs-marcas img {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+.rs-pie a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
 }

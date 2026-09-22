@@ -67,7 +67,8 @@ export async function POST(
       if (actividad?.tipo === 'cruce') await repartirCruce(corrida, actividad);
 
       // El reparto de las preguntas que quedaron sin contestar: cada persona
-      // con años en el rol se lleva una, de otra área que la de quien preguntó.
+      // con años en el rol se lleva una, de la misma área que quien preguntó
+      // cuando se puede.
       if (actividad?.tipo === 'reparto') {
         await repartirPreguntas(
           corrida,

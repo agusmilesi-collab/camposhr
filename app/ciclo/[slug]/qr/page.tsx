@@ -42,12 +42,21 @@ export default async function QrDelCiclo({
    * marco los dibuja.
    */
   const alResumen = searchParams?.destino === 'resumen';
+  /*
+   * A la encuesta se llega por el mismo camino que al encuentro, porque la
+   * encuesta es la consigna que está abierta. Lo único que cambia es el
+   * rótulo: en el cierre, "entrá al ciclo" no le dice a nadie qué tiene que
+   * hacer con el código.
+   */
+  const aLaEncuesta = searchParams?.destino === 'encuesta';
   const url = alResumen
     ? `${BASE_PUBLICA}/ciclo/${empresa.slug}/resumen`
     : `${BASE_PUBLICA}/ciclo/${empresa.slug}`;
   const titulo = alResumen
     ? 'Llevate lo que escribiste'
-    : 'Entrá al ciclo desde tu teléfono';
+    : aLaEncuesta
+      ? 'Encuesta y tu resumen'
+      : 'Entrá al ciclo desde tu teléfono';
   const svg = await QRCode.toString(url, {
     type: 'svg',
     margin: 1,

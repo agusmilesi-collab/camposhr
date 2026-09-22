@@ -149,9 +149,39 @@ cross join (values
    '[]'::jsonb, null, 'Preguntas · repartir Deer Coins',
    '{
       "desde": "cd-pregunta",
+      "desde_titulo": "Tu pregunta",
       "monedas": 10,
       "de_quienes": {"campo": "rol", "valor": "Menos de un año"}
-    }'::jsonb)
+    }'::jsonb),
+
+  -- 11 a 13 · La encuesta del final. Las tres van en el mismo grupo: se abren
+  -- de una vez y cada uno las recorre en fila mientras la sala se levanta.
+  -- El número va primero porque es el que se contesta aunque después no
+  -- escriban nada.
+  ('cd-nps', 1, 11, 'escala',
+   '¿Qué tan probable es que le recomiendes este encuentro a otro líder de John Deere?',
+   'De 1 a 10, donde 10 es que se lo recomendarías seguro.',
+   '[]'::jsonb, 'cierre', 'Encuesta · recomendación',
+   '{"aviso": ""}'::jsonb),
+
+  -- La primera abierta mide lo único que importa del día siguiente: si quedó
+  -- algo que se pueda hacer. Y da las frases textuales del informe.
+  ('cd-llevas', 1, 12, 'texto',
+   '¿Qué te llevás concreto, o qué te resonó que podés aplicar?',
+   'Una sola cosa alcanza.',
+   '[]'::jsonb, 'cierre', 'Encuesta · qué te llevás',
+   '{"aviso": "Se lee para el informe, sin tu nombre."}'::jsonb),
+
+  -- La segunda no pide opinión sobre el encuentro ("estuvo muy bueno" no sirve
+  -- para nada): pide lo que la persona ya sabía y no hace, y qué se lo impide.
+  -- Es la respuesta que más vale para el informe, porque nombra el freno real
+  -- y no el contenido. La clave queda igual: es la última del encuentro y el
+  -- teléfono la usa para dar el resumen.
+  ('cd-cambiarias', 1, 13, 'texto',
+   '¿Qué de lo que vimos hoy ya sabías y no hacés?',
+   'Y qué te frena. Es lo que más nos sirve para la próxima.',
+   '[]'::jsonb, 'cierre', 'Encuesta · lo que sabés y no hacés',
+   '{"aviso": "Se lee para el informe, sin tu nombre."}'::jsonb)
 
 ) as v(clave, charla, orden, tipo, titulo, enunciado, opciones, grupo, titulo_control, config)
 where c.nombre = 'Conversaciones difíciles'
@@ -177,12 +207,15 @@ update public.actividades a
          ('cd-conversacion', 8),
          ('cd-es-hecho', 9),
          ('cd-traduccion', 17),
-         ('cd-ensayo-1', 21),
-         ('cd-ensayo-2', 22),
-         ('cd-ensayo-3', 23),
-         ('cd-pregunta', 25),
-         ('cd-monedas', 27),
-         ('cd-reparto', 28)
+         ('cd-ensayo-1', 20),
+         ('cd-ensayo-2', 21),
+         ('cd-ensayo-3', 22),
+         ('cd-pregunta', 24),
+         ('cd-monedas', 26),
+         ('cd-reparto', 27),
+         ('cd-nps', 29),
+         ('cd-llevas', 29),
+         ('cd-cambiarias', 29)
        ) as v(clave, placa)
  where c.id = a.ciclo_id
    and c.nombre = 'Conversaciones difíciles'
