@@ -45,52 +45,62 @@ export type Rol = (typeof ROLES)[number];
  */
 export const CASOS = [
   {
-    titulo: 'Comunicar una suspensión',
+    titulo: 'Revisión comportamental',
     /** Los datos, para que arme él la manera de decirlo. */
     ficha: [
-      ['A quién', 'Un mecánico del taller.'],
+      ['A quién', 'Alguien de tu equipo, dos años en el puesto.'],
       [
         'Qué pasó',
-        'Lo vieron trabajando sin los elementos de seguridad, dos veces, ' +
-          'después de que se lo advirtieran.',
-      ],
-      ['Decisión', 'Cinco días de suspensión, desde el miércoles.'],
-    ],
-    /** Sin la decisión: se entera cuando se la dicen, como en la oficina. */
-    paraQuienRecibe: 'Sos mecánico del taller. Tu jefe te pidió cinco minutos.',
-  },
-  {
-    titulo: 'Dar una devolución por un desempeño que no alcanza',
-    ficha: [
-      ['A quién', 'Alguien de repuestos.'],
-      [
-        'Qué pasó',
-        'Entrega pedidos con el código equivocado desde hace tres meses. Ya ' +
-          'se lo dijeron una vez, sin formalidad, y siguió igual.',
+        'Cumplió todos los objetivos técnicos del año. En las reuniones ' +
+          'interrumpe y descalifica a los que opinan distinto, y dos personas ' +
+          'del equipo pidieron no trabajar con él.',
       ],
       [
         'Decisión',
-        'Queda registrado como una devolución formal, y en un mes se revisa.',
+        'Queda registrado en el GPM: los objetivos de negocio cumplidos, los ' +
+          'de valores no. Se vuelve a mirar en tres meses.',
       ],
     ],
+    /** Sin la decisión: se entera cuando se la dicen, como en la oficina. */
     paraQuienRecibe:
-      'Trabajás en repuestos. Tu jefe te pidió cinco minutos.',
+      'Cumpliste todos tus objetivos del año. Tu jefe te pidió cinco minutos.',
   },
   {
-    titulo: 'Avisar que no hubo recategorización',
+    titulo: 'Despido',
     ficha: [
-      ['A quién', 'Alguien de administración.'],
+      ['A quién', 'Alguien de tu equipo, seis años en la compañía.'],
       [
         'Qué pasó',
-        'Pidió la recategorización hace ocho meses y vos la apoyaste. Quedó ' +
-          'afuera del último ajuste porque el presupuesto alcanzó para dos ' +
-          'personas de todo el sector.',
+        'Entregó tarde los últimos cuatro pedidos. Ya tuvo dos devoluciones ' +
+          'formales por lo mismo en el último año.',
       ],
-      ['Decisión', 'Este año no hay recategorización para esa persona.'],
+      [
+        'Decisión',
+        'Se desvincula. Se lo decís hoy y el último día es el viernes.',
+      ],
     ],
     paraQuienRecibe:
-      'Trabajás en administración. Hace ocho meses pediste la ' +
-      'recategorización. Tu jefe te pidió cinco minutos.',
+      'Tuviste dos devoluciones formales este año. Tu jefe te pidió cinco ' +
+      'minutos.',
+  },
+  {
+    titulo: 'Cambios de la compañía',
+    ficha: [
+      ['A quién', 'Alguien de tu equipo que iba a liderar un proyecto nuevo.'],
+      [
+        'Qué pasó',
+        'Se congelaron las contrataciones externas. El proyecto que arrancaba ' +
+          'en octubre no se hace y el equipo que iba a liderar no se abre.',
+      ],
+      [
+        'Decisión',
+        'Sigue en el puesto que tiene. Lo que iba a hacer el equipo nuevo se ' +
+          'reparte entre los que ya están.',
+      ],
+    ],
+    paraQuienRecibe:
+      'Ibas a liderar un equipo nuevo desde octubre. Tu jefe te pidió cinco ' +
+      'minutos.',
   },
 ] as const;
 
@@ -114,33 +124,32 @@ export const CASOS = [
 export const REACCIONES = [
   {
     nombre: 'Te enojás',
-    instruccion: 'Estás enojado y te parece injusto que te suspendan a vos.',
+    instruccion: 'Estás enojado: cumpliste todos los objetivos del año.',
     guion: [
-      'Cuando te dice la sanción, subí la voz: “¿Por qué yo? A otros los ' +
-        'vi trabajando igual y nadie les dijo nada”.',
+      'Cuando te dice que hay algo que no está bien, subí la voz: “¿Por qué ' +
+        'yo? Cumplí todos los objetivos del año”.',
       'Cruzá los brazos, dá un paso atrás y mirá para otro lado.',
-      'Cada vez que te dé una razón, interrumpilo: “Eso ya lo veníamos ' +
-        'hablando y nadie hizo nada”.',
+      'Cada vez que te dé una razón, interrumpilo: “A nadie le dijeron nada ' +
+        'por cómo habla en una reunión”.',
     ],
   },
   {
     nombre: 'Llorás',
     instruccion: 'Se te llenan los ojos de lágrimas y te cuesta hablar.',
     guion: [
-      'Cuando te dice que tu trabajo no está bien, quedate callado y mirá ' +
-        'para abajo tres o cuatro segundos.',
+      'Cuando te dice que te desvinculan, quedate callado y mirá para abajo ' +
+        'tres o cuatro segundos.',
       'Después hablá en voz baja y cortada: “Perdón… dame un segundo”.',
       'Si te apura o te sigue dando explicaciones, tapate la cara con una ' +
-        'mano y decí: “Hace tres meses que vengo pidiendo que me expliquen ' +
-        'bien el sistema”.',
+        'mano y decí: “Seis años acá y me entero así”.',
     ],
   },
   {
     nombre: 'No decís nada',
     instruccion: 'Contestás lo mínimo y querés terminar la conversación.',
     guion: [
-      'Cuando te dice que este año no hay, quedate callado, ' +
-        'aunque el silencio se haga largo.',
+      'Cuando te dice que el proyecto no se hace, quedate callado, aunque ' +
+        'el silencio se haga largo.',
       'Si te pregunta algo, contestá “ajá” o “está bien”, y nada más.',
       'Quedate quieto, con las manos a los costados, mirando la puerta. Si ' +
         'insiste, decí: “¿Puedo irme?”.',

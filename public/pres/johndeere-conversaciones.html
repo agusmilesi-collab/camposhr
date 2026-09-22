@@ -74,7 +74,7 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Inter,syste
 .bajada{font-size:51px;line-height:1.1;margin-top:34px;font-weight:400}
 .portada-nombre{font-family:'Instrument Serif',Georgia,serif;font-size:172px;line-height:.92;letter-spacing:-.03em}
 .portada-sub{font-size:46px;margin-top:28px;opacity:.92}
-.kicker{font-size:34px;letter-spacing:.22em;text-transform:uppercase;opacity:.6;margin-bottom:38px;font-weight:600}
+.kicker{font-size:28px;letter-spacing:.22em;text-transform:uppercase;opacity:.6;margin-bottom:12px;font-weight:600}
 
 .anclas{display:flex;gap:60px;width:100%;max-width:1560px}
 .ancla{flex:1;display:flex;flex-direction:column;align-items:center;gap:26px}
@@ -85,11 +85,11 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Inter,syste
 
 .duo{display:flex;gap:90px;width:100%;max-width:1440px;margin:0 auto;text-align:left}
 .duo>div{flex:1}
-.duo h3{font-size:56px;font-weight:600;margin-bottom:24px}
+.duo h3{font-size:64px;font-weight:600;margin-bottom:24px}
 .duo p{font-size:40px;line-height:1.4;opacity:.9}
 /* Titulo de las placas de dos columnas: va en la tipografia de titulos.
    Instrument Serif tiene un solo grosor, asi que no lleva font-weight. */
-.duo-titulo{font-family:'Instrument Serif',Georgia,serif;font-size:72px;line-height:1.06;
+.duo-titulo{font-family:'Instrument Serif',Georgia,serif;font-size:58px;line-height:1.06;
   letter-spacing:-.015em;margin-bottom:58px;width:100%;max-width:1440px;margin-left:auto;margin-right:auto}
 
 .lista{width:100%;max-width:1500px;text-align:left;display:flex;flex-direction:column;gap:30px}
@@ -101,6 +101,13 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Inter,syste
 .consigna{font-size:40px;margin-top:56px;opacity:.75;font-weight:400}
 .contenido.izq .duo ~ .consigna{width:100%;max-width:1440px;margin-left:auto;margin-right:auto}
 .contenido.izq .frase{max-width:100%}
+/* Placas sin bloques de ancho fijo: el titulo arranca en el mismo margen que
+   el kicker y la consigna. Con `margin:0 auto` quedaba centrado dentro del
+   ancho util y entraba cuarenta pixeles mas adentro que el resto del texto. */
+.contenido.izq.suelto .titulo-placa,
+.contenido.izq.suelto .duo,
+.contenido.izq.suelto .tarjetas,
+.contenido.izq.suelto .duo ~ .consigna{margin-left:0;margin-right:0;max-width:100%}
 
 .foto{position:absolute;inset:0;background-size:cover;background-position:center}
 .placa.lisa{background:#0a0a0a}
@@ -302,8 +309,8 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Inter,syste
 /* Título de placa, para las que llevan un rótulo arriba del contenido. Comparte
    ancho y margen con el bloque que encabeza, así los dos arrancan en la misma
    vertical. */
-.titulo-placa{font-family:'Instrument Serif',Georgia,serif;font-size:72px;line-height:1.06;
-  letter-spacing:-.015em;margin:0 auto 46px;width:100%;max-width:var(--ancho)}
+.titulo-placa{font-family:'Instrument Serif',Georgia,serif;font-size:58px;line-height:1.06;
+  letter-spacing:-.015em;margin:0 auto 72px;width:100%;max-width:var(--ancho)}
 .contenido.izq .lista.ancha{max-width:1440px;margin:0 auto}
 .contenido.izq .escala{max-width:var(--ancho)}
 
@@ -351,7 +358,7 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Inter,syste
 .tarjetas{display:flex;gap:56px;width:100%;max-width:var(--ancho);margin:0 auto}
 .tarjetas>div{flex:1;background:rgba(0,0,0,.32);border:1px solid rgba(243,242,235,.26);
   border-radius:22px;padding:52px 46px;text-align:left}
-.tarjetas h3{font-family:'Instrument Serif',Georgia,serif;font-size:60px;line-height:1;font-weight:400;
+.tarjetas h3{font-family:'Instrument Serif',Georgia,serif;font-size:64px;line-height:1;font-weight:400;
   letter-spacing:-.01em;margin-bottom:26px}
 .tarjetas p{font-size:36px;line-height:1.4;opacity:.9}
 /* La flecha baja del nombre de la emoción a lo que significa: son dos cosas
@@ -367,14 +374,95 @@ html,body{height:100%;background:#11100e;overflow:hidden;font-family:Inter,syste
 /* Tres y cuatro tarjetas: mismo lenguaje, cuerpo más chico para que entren. */
 .tarjetas.tres{gap:40px}
 .tarjetas.tres>div{padding:44px 38px}
-.tarjetas.tres h3{font-size:48px;margin-bottom:22px}
+.tarjetas.tres h3{font-size:56px;margin-bottom:22px}
 .tarjetas.tres p{font-size:32px}
 .tarjetas.cuatro{gap:30px}
 .tarjetas.cuatro>div{padding:38px 32px}
-.tarjetas.cuatro h3{font-size:42px;margin-bottom:18px}
+.tarjetas.cuatro h3{font-size:48px;margin-bottom:18px}
 .tarjetas.cuatro p{font-size:29px;line-height:1.38}
 .tarjetas.cuatro .num{font-size:32px;margin-bottom:16px}
 .contenido.izq .tarjetas ~ .consigna{width:100%;max-width:var(--ancho);margin-left:auto;margin-right:auto}
+
+/* Tarjetas con el porqué: las filas son las mismas para todas.
+   Cada tarjeta era una caja aparte, así que la línea del porqué caía a
+   distinta altura en cada una, según cuántos renglones ocupara la instrucción
+   de arriba. Con `subgrid` las tres comparten las filas del contenedor y las
+   líneas cruzan derecho de lado a lado. */
+.tarjetas:has(.porque):not(.diez){display:grid;grid-auto-flow:column;
+  grid-auto-columns:1fr;row-gap:0}
+.tarjetas:has(.porque):not(.diez)>div{display:grid;grid-template-rows:subgrid;
+  grid-row:span 3}
+/* Las que llevan el número arriba tienen una fila más. */
+.tarjetas:has(.num):has(.porque)>div{grid-row:span 4}
+/* Las dos columnas comparten filas por el mismo motivo: la línea del porqué
+   tiene que cruzar a la misma altura en las dos, aunque una frase ocupe un
+   renglón y la otra tres. Sin eso el antes y el después no se comparan. */
+.duo{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;row-gap:0}
+.duo>div{display:grid;grid-template-rows:subgrid;grid-row:span 2}
+.duo:has(.porque)>div,
+.duo:has(.chequeo)>div{grid-row:span 3}
+/* La línea bajo el título de la caja, cuando el título es la afirmación y lo
+   de abajo es el ejemplo que la prueba: ahí la separación tiene que verse. */
+.duo.con-linea h3{border-bottom:1px solid var(--line)}
+/* En las cajas de dos columnas el porqué heredaba el tamaño del párrafo y se
+   leía igual de fuerte que el ejemplo. Va más chico y en gris, como en las
+   tarjetas, sin llegar al cuerpo de tres columnas. */
+.duo p.porque{font-size:30px;line-height:1.35;opacity:1;color:var(--muted)}
+/* Segunda fila de cajas, cuando la placa ya tiene una arriba: entra más chica
+   para que las dos filas quepan sin apretar. */
+.duo.menor h3{font-size:48px;padding-bottom:16px}
+.duo.menor p{font-size:36px}
+.duo.menor p.porque{font-size:27px;margin-top:24px;padding-top:14px}
+.duo.menor>div{padding:30px 36px}
+/* Mismo tamaño de texto, menos alto: se recorta el relleno y el aire del
+   porqué, sin tocar los cuerpos. */
+.duo.bajo>div{padding:26px 44px}
+.duo.bajo h3{padding-bottom:16px}
+.duo.bajo p.porque{margin-top:22px;padding-top:14px}
+/* Tarjeta que lee al revés: debajo del título va el diagnóstico, en gris y sin
+   línea, y el hecho queda abajo, separado por la línea y con el peso del cuerpo. */
+.tarjetas .porque.suelta{border-top:0;padding-top:0;margin-top:14px}
+.tarjetas p.dato{margin-top:32px;padding-top:18px;border-top:1px solid var(--line)}
+/* La flecha marca que lo de abajo es la traducción de lo de arriba. */
+.tarjetas p.dato:before{content:"→ ";display:inline-block;margin-right:6px}
+/* El rótulo que encabeza la segunda fila. */
+.rotulo-medio{font-size:30px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin:28px 0 14px;font-weight:600}
+/* Con dos filas de cajas, el aire de una placa de una sola fila no entra:
+   se recorta parejo en el título y en el relleno de las cajas. */
+.contenido.dos-filas .titulo-placa{margin-bottom:40px}
+.contenido.dos-filas .duo>div{padding:32px 44px}
+.contenido.dos-filas .duo.menor>div{padding:24px 34px}
+
+/* Los tres datos del reconocimiento, marcados uno por uno en cada columna: la
+   misma lista, tachada de un lado y tildada del otro. La marca va en un
+   inline-block para que el tachado no la cruce. */
+.chequeo{list-style:none;margin-top:32px;padding-top:18px;
+  border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px;
+  font-size:34px;line-height:1.2}
+.chequeo li{display:flex;align-items:baseline;gap:18px}
+.chequeo li:before{display:inline-block;flex:none;width:34px;font-size:30px}
+.chequeo.si li:before{content:"✓"}
+.chequeo.no li:before{content:"✕"}
+.chequeo.no li{color:var(--muted)}
+.chequeo.no li span{text-decoration:line-through}
+
+/* El remate va debajo de la columna de la que se desprende, y no al medio del
+   pie: cae en la segunda columna del mismo reparto que usan las dos cajas. */
+.consigna.remate{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.consigna.remate>span{grid-column:2}
+
+/* El rótulo al lado del título, sobre la misma línea de base: sirve para los
+   que marcan una acción ("en tu teléfono") y no un tema, que quedan mejor
+   junto al título que encima de él. */
+.fila-titulo{display:flex;align-items:baseline;gap:30px;width:100%;
+  max-width:var(--ancho);margin:0 auto 72px}
+.fila-titulo .titulo-placa,.fila-titulo .kicker{margin:0;width:auto;max-width:none}
+.contenido.izq.suelto .fila-titulo{margin-left:0;margin-right:0;max-width:100%}
+/* El aire debajo del título de la tarjeta, sin línea: las tres partes se
+   separan por el espacio, y la única línea de la tarjeta queda para el porqué. */
+.tarjetas h3:not(:has(+ .porque)),
+.duo h3:not(:has(+ .porque)){padding-bottom:22px}
 
 /* Mapa de los cuatro modos, con los ejes nombrados y el cerebro en el cruce.
    El eje vertical va de lo macro a lo micro y el horizontal de la razón a la
@@ -489,8 +577,8 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 /* El porqué de cada paso, debajo de la instrucción. Va más chico y en gris
    para que la tarjeta se siga leyendo de un vistazo: la instrucción es lo que
    se hace y esta línea es la que da criterio cuando el caso no encaja. */
-.porque{font-size:25px;line-height:1.35;color:var(--muted);margin-top:14px;
-  padding-top:14px;border-top:1px solid var(--line)}
+.porque{font-size:23px;line-height:1.35;color:var(--muted);margin-top:32px;
+  padding-top:18px;border-top:1px solid var(--line)}
 
 /* El código de la rueda en la placa de la emoción propia. Va chico y al
    costado: la consigna es poner una palabra, y la rueda es la ayuda para el
@@ -582,9 +670,10 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 /* Bordes y cajas, con la línea del sitio. */
 .cuadro>div{border:1px solid var(--line);background:var(--card);border-radius:12px}
 /* Las tarjetas del deck oscuro se apoyaban en un negro al 32%, que sobre papel
-   se ve gris sucio. Van sin fondo y con el borde en la tinta del sistema. */
-.tarjetas>div,.escala>div{background:transparent;
-  border:1px solid rgba(22,32,43,.35)}
+   se ve gris sucio. Van en blanco, como las del sitio, y se recortan del papel
+   por el fondo y no por el peso del borde. */
+.tarjetas>div,.escala>div{background:var(--card);
+  border:1px solid var(--line)}
 /* Los dos caminos, cada uno en su tarjeta: se leen como dos opciones y no
    como un texto partido en dos columnas. */
 .duo{gap:40px}
@@ -743,7 +832,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="portada-nombre" style="font-size:132px">Conversaciones difíciles</div>
-      <div class="portada-sub">John Deere · Encuentro de Líderes · 24 de septiembre</div>
     </div>
   </section>
 
@@ -773,31 +861,17 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <section class="placa" data-notas="La frase que abre la charla. Decirla y dejar el silencio. Casi todo lo que una persona necesita para trabajar mejor ya lo sabe alguien de la empresa: no se dice, se dice tarde, o se dice de una forma que el otro no puede usar.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <p class="frase">Alguien lo sabe y no lo dice.<br><b>Del otro lado hay alguien que quiere saberlo.</b></p>
+      <p class="frase">Alguien sabe algo y no lo dice.<br><b>Del otro lado hay alguien que necesita saberlo.</b></p>
     </div>
   </section>
 
-  <!-- 4 · Alcance -->
-  <section class="placa" data-notas="El alcance, dicho en voz alta: esta charla cubre las conversaciones con tu gente. Las que van hacia arriba y las laterales quedan afuera. Declarar qué no cubrimos compra credibilidad con una sala que ya escuchó capacitaciones antes.">
+  <!-- D1 · Consigna del reconocimiento -->
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="Primera consigna del teléfono. Leerla en voz alta y esperar: la sala recién se sienta y tarda en sacar el teléfono. No adelantar nada de la teoría, que viene después.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq tres">
-      <div class="titulo-placa">De qué conversaciones hablamos hoy</div>
-      <div class="tarjetas tres">
-        <div><h3>Con tu gente</h3><p>La conversación de desarrollo del mes, el pedido que no se cumple, la decisión que no tomaste vos.</p><p class="porque">Es lo que cubrimos hoy.</p></div>
-        <div><h3>Hacia arriba</h3><p>Discutirle a tu jefe una decisión.</p><p class="porque">Queda afuera de esta charla.</p></div>
-        <div><h3>Entre pares</h3><p>Negociar con otra área sin escalar.</p><p class="porque">Queda afuera de esta charla.</p></div>
-      </div>
-    </div>
-  </section>
-
-    <!-- D1 · Consigna del reconocimiento -->
-  <section class="placa" data-notas="Primera consigna del teléfono. Leerla en voz alta y esperar: la sala recién se sienta y tarda en sacar el teléfono. No adelantar nada de la teoría, que viene después.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
+    <div class="contenido izq suelto">
       <div class="kicker">En tu teléfono</div>
-      <div class="titulo-placa">El último reconocimiento que diste</div>
-      <p class="frase" style="font-size:52px">A alguien de tu equipo,<br><b>con las palabras que usaste.</b></p>
-      <div class="consigna">Nadie lo ve más que vos. Escribilo como salió.</div>
+      <div class="titulo-placa">Escribí el último reconocimiento que le hiciste a alguien de tu equipo.</div>
+      <div class="consigna">No lo ve nadie más que vos, escribilo como salga.</div>
     </div>
   </section>
 
@@ -806,11 +880,11 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq tres">
       <div class="kicker">Dar una devolución positiva</div>
-      <div class="titulo-placa" style="margin-top:14px">Lo bueno también se posterga</div>
+      <div class="titulo-placa">Lo bueno también se posterga</div>
       <div class="tarjetas tres">
-        <div><h3>Decilo cuando pasa</h3><p>No lo guardes para el GPM.</p><p class="porque">En la conversación de desarrollo se dice cuando pasó. A diez meses ya no se acuerda de qué hizo bien, así que no lo puede repetir.</p></div>
-        <div><h3>Decí el hecho</h3><p>“El informe salió el jueves y sin un error”, en lugar de “sos un crack”.</p><p class="porque">Un adjetivo no se puede repetir. Un hecho sí.</p></div>
-        <div><h3>Decí qué cambió</h3><p>“Con eso cerramos el pedido a tiempo”.</p><p class="porque">Ahí sabe para qué sirvió lo que hizo, y no solo que a vos te gustó.</p></div>
+        <div><h3>Decilo cuando pasa</h3><p>“Te quiero decir algo de lo de ayer”.</p><p class="porque">No lo guardes para el GPM: a diez meses ya no se acuerda de qué hizo bien, así que no lo puede repetir.</p></div>
+        <div><h3>Decí el hecho</h3><p>“El informe salió el jueves con una recomendación además de los números”.</p><p class="porque">En lugar de “sos un crack”: un adjetivo no se puede repetir, un hecho sí.</p></div>
+        <div><h3>Decí qué cambió</h3><p>“Con eso cerramos el presupuesto a tiempo”.</p><p class="porque">Ahí sabe para qué sirvió lo que hizo, y no solo que a vos te gustó.</p></div>
       </div>
     </div>
   </section>
@@ -818,51 +892,52 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <!-- 10 · Juicio y dato, en el reconocimiento -->
   <section class="placa" data-notas="El mismo reconocimiento dicho de dos maneras. Leer primero el juicio, preguntar qué tiene que repetir la persona que lo escucha, y recién después mostrar el dato.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
+    <div class="contenido izq suelto">
       <div class="titulo-placa">El mismo reconocimiento, dicho de dos maneras</div>
       <div class="duo">
         <div>
           <h3>Con juicio</h3>
-          <p>“Sos un crack.”</p>
-          <p class="porque">Halaga y no se puede repetir: no dice qué hizo.</p>
+          <p>“Sos un crack. Hiciste todo bien.”</p>
+          <ul class="chequeo no"><li><span>Qué hizo</span></li><li><span>Cuándo</span></li><li><span>Qué cambió</span></li></ul>
         </div>
         <div>
           <h3>Con datos</h3>
-          <p>“El informe salió el jueves sin un error, y con eso cerramos el pedido a tiempo.”</p>
-          <p class="porque">Dice qué hizo, cuándo, y qué se consiguió gracias a eso.</p>
+          <p>“El informe salió el jueves con una recomendación además de los números, y con eso cerramos el presupuesto a tiempo.”</p>
+          <ul class="chequeo si"><li><span>Qué hizo</span></li><li><span>Cuándo</span></li><li><span>Qué cambió</span></li></ul>
         </div>
       </div>
-      <div class="consigna">Qué hizo · cuándo · qué cambió gracias a eso.</div>
+      <div class="consigna remate"><span>El que lo escucha sabe qué repetir.</span></div>
     </div>
   </section>
 
     <!-- D2 · Traducí el reconocimiento -->
-  <section class="placa" data-notas="Segunda parte del reconocimiento, después de ver el ejemplo del crack. Ahora la pantalla les devuelve lo suyo y lo rompen en tres campos: qué hizo, cuándo, y qué se consiguió. El primero es el que más se les escapa: si ponen sólo el verbo, &quot;redactó el informe&quot;, la persona no se entera de qué repetir, porque redactar informes es lo que hace siempre. Lo que va es el detalle comprobable que hizo distinto a ese: cuántas áreas, sin errores, antes de la fecha.">
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="Segunda parte del reconocimiento, después de ver el ejemplo del crack. Ahora la pantalla les devuelve lo suyo y lo rompen en tres campos: qué hizo, cuándo, y qué se consiguió. El primero es el que más se les escapa: si ponen sólo el verbo, &quot;redactó el informe&quot;, la persona no se entera de qué repetir, porque redactar informes es lo que hace siempre. Lo que va es el detalle comprobable que hizo distinto a ese: cuántas áreas, sin errores, antes de la fecha.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
-      <div class="kicker">En tu teléfono</div>
-      <div class="titulo-placa">Ahora traducilo</div>
+    <div class="contenido izq suelto">
+      <div class="fila-titulo">
+        <div class="titulo-placa">Ahora traducilo</div>
+        <div class="kicker">En tu teléfono</div>
+      </div>
       <div class="tarjetas tres">
-        <div><h3>Qué hizo</h3><p>Con el detalle que se puede comprobar.</p><p class="porque">“Entregó el informe con las tres áreas cargadas”. “Lo hizo bien” no dice qué repetir.</p></div>
+        <div><h3>Qué hizo</h3><p>Con el detalle que se puede comprobar.</p><p class="porque">“Entregó el informe con una recomendación además de los números”.</p></div>
         <div><h3>Cuándo lo hizo</h3><p>El día, o la semana, en que pasó.</p><p class="porque">Sin esto no se puede volver a mirar.</p></div>
-        <div><h3>Qué se consiguió</h3><p>El efecto que tuvo.</p><p class="porque">Acá sí entra por qué estuvo bueno.</p></div>
+        <div><h3>Qué se consiguió</h3><p>El valor que entregó con eso.</p><p class="porque">Una entrega que salió, un costo que bajó, una decisión que se pudo tomar. Acá entra por qué estuvo bueno.</p></div>
       </div>
     </div>
   </section>
 
   <!-- D3 · La conversación, como sale -->
-  <section class="placa" data-notas="La consigna central del encuentro. Un campo libre y sin ninguna ayuda: lo que sale acá es el material del error, y el error es lo que la charla corrige. No dar ningún ejemplo antes.">
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="La consigna central del encuentro. Un campo libre y sin ninguna ayuda: lo que sale acá es el material del error, y el error es lo que la charla corrige. No dar ningún ejemplo antes.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
+    <div class="contenido izq suelto">
       <div class="kicker">En tu teléfono</div>
-      <div class="titulo-placa">La conversación que tenés que tener</div>
-      <p class="frase" style="font-size:48px">Escribila <b>como se la dirías</b>.</p>
-      <div class="consigna">No pedimos con quién. Ningún nombre entra al sistema.</div>
+      <div class="titulo-placa" style="font-size:88px">Ahora: La conversación difícil</div>
+      <p class="frase" style="font-size:48px">Escribí lo que le tenés que decir a alguien de tu equipo,<br><b>con las palabras que usarías.</b></p>
     </div>
   </section>
 
   <!-- D4 · La apuesta -->
-  <section class="placa" data-notas="Un toque y nada más, antes de la teoría. Se contesta cuando todavía cree que sí, y por eso el número de después golpea. No explicar nada acá: se explica en las placas siguientes.">
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="Un toque y nada más, antes de la teoría. Se contesta cuando todavía cree que sí, y por eso el número de después golpea. No explicar nada acá: se explica en las placas siguientes.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase">Lo que acabás de escribir,<br><b>¿es un hecho?</b></p>
@@ -871,29 +946,48 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
 <!-- 5 · Concepto 1 -->
-  <section class="placa" data-notas="Concepto 1. Sos el que menos devoluciones recibe de toda la sala y el que más decisiones toma con información que nadie chequeó. Abre la escucha de una sala que va de supervisor a director.">
+  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="Concepto 1. Sos el que menos devoluciones recibe de toda la sala y el que más decisiones toma con información que nadie chequeó. Abre la escucha de una sala que va de supervisor a director.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <p class="frase">Cuanto más arriba estás,<br><b>menos te dicen</b>.</p>
+    <div class="contenido pleno">
+      <p class="frase" style="font-size:56px;max-width:1760px">Conducir un equipo puede ser un espacio solitario. ¿Cómo sabés si vas bien?<br><b>Es la misma pregunta que se hace alguien de tu equipo, y vos la podrías contestar.</b></p>
     </div>
   </section>
 
   <!-- 6 · Concepto 2 -->
   <section class="placa" data-notas="Concepto 2, el que sostiene toda la charla. Un hecho se puede verificar, una interpretación se discute. Leer los dos ejemplos en voz alta y dejar que la sala note la diferencia antes de explicarla.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
+    <div class="contenido izq suelto">
       <div class="titulo-placa">Si no lo puede verificar, no lo puede corregir</div>
-      <div class="duo">
+      <div class="duo con-linea bajo">
         <div>
           <h3>Un hecho abre una conversación</h3>
           <p>“Llegaste tarde el martes, el jueves y el viernes.”</p>
+          <p class="porque">Puede ir a mirar el reloj, y entonces puede corregirlo.</p>
         </div>
         <div>
           <h3>Una interpretación abre una pelea</h3>
           <p>“No te importa nada.”</p>
+          <p class="porque">No hay dónde ir a mirarlo, así que lo único que puede hacer es defenderse.</p>
         </div>
       </div>
-      <div class="consigna">Verificar pide dos cosas de antes: que la expectativa estuviera dicha, y que los hechos estén anotados.</div>
+    </div>
+  </section>
+
+  <!-- 12 · Lo que verificar pide de antes -->
+  <section class="placa" data-notas="Las dos condiciones que hacen posible el hecho, y que pasan mucho antes de la conversación. La primera es del líder: si nunca dijo qué esperaba, el reclamo llega de sorpresa. La segunda es la razón por la que el momento 1 del método existe.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido izq suelto">
+      <div class="titulo-placa">Antes de la conversación tienen que haber pasado dos cosas</div>
+      <div class="duo con-linea">
+        <div>
+          <h3>La expectativa, dicha</h3>
+          <p>Que sepa qué se espera de él antes de que se lo reclames.</p>
+        </div>
+        <div>
+          <h3>Los hechos, anotados</h3>
+          <p>Que tengas el día y el número cuando llegue la conversación.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -901,7 +995,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <section class="placa" data-notas="Concepto 3. La corrección funciona solo si hubo reconocimiento antes. Sin confianza previa y sin expectativas explícitas, la corrección baja el desempeño.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <p class="frase">La corrección de septiembre<br><b>se apoya en el reconocimiento de marzo</b>.</p>
+      <p class="frase" style="font-size:62px;max-width:1560px">La corrección de septiembre se apoya en el reconocimiento de marzo.<br><b>El GPM se apoya en las conversaciones de desarrollo del año.</b></p>
     </div>
   </section>
 
@@ -911,11 +1005,10 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="contenido izq tres">
       <div class="titulo-placa">Qué hace que una devolución funcione</div>
       <div class="tarjetas tres">
-        <div><h3>Sobre la tarea, no sobre la persona</h3><p>La devolución sobre lo que se hizo mejora el desempeño; la que apunta a quién es la persona lo baja.</p><p class="porque">Kluger y DeNisi, 1996. 607 estudios: un tercio de las devoluciones baja el desempeño.</p></div>
-        <div><h3>Corregir funciona si hubo reconocimiento</h3><p>El reconocimiento mejora el desempeño de forma confiable. La corrección, solo cuando hubo reconocimiento antes.</p><p class="porque">Heine, Stouten y Liden, 2026. Revisión de 173 estudios.</p></div>
-        <div><h3>Lo bueno se posterga por miedo a incomodar</h3><p>Quien elogia subestima cuánto le importa a la otra persona y sobreestima lo incómodo que resulta.</p><p class="porque">Zhao y Epley, 2021.</p></div>
+        <div><h3>Sobre lo que hizo</h3><p>Un tercio de las devoluciones baja el desempeño, y son las que apuntan a quién es la persona.</p></div>
+        <div><h3>Después de haber reconocido</h3><p>La corrección mejora el desempeño solo cuando antes hubo reconocimiento.</p></div>
+        <div><h3>Con algo para hacer distinto</h3><p>La que dice qué cambiar sirve. La que solo califica, no deja nada para la próxima vez.</p></div>
       </div>
-      <div class="fuente">Las dos cuentas están mal para el mismo lado: creés que va a incomodar más de lo que incomoda, y que va a importar menos de lo que importa.</div>
     </div>
   </section>
 
@@ -935,56 +1028,34 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 14 · Qué falla en cada una -->
-  <section class="placa" data-notas="Qué falla en cada una. Son cuatro errores distintos: un adjetivo sobre la persona, una intención que nadie puede verificar, una generalización, y el mismo defecto en versión gerencial.">
+  <section class="placa" data-notas="Las cuatro traducidas. Cada tarjeta trae el hecho arriba y, en gris, qué tipo de no-hecho era la frase original: un atributo, una intención, una frecuencia y una competencia. Son cuatro errores distintos, no el mismo cuatro veces.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq cuatro">
-      <div class="titulo-placa">Qué falla en cada una</div>
+      <div class="titulo-placa">Las mismas cuatro, dichas como hechos</div>
       <div class="tarjetas cuatro">
-        <div><h3>“Es desprolijo”</h3><p>Un adjetivo sobre la persona.</p><p class="porque">Describe quién es y no qué hizo.</p></div>
-        <div><h3>“No le importa el trabajo”</h3><p>Una intención que nadie puede verificar.</p><p class="porque">Le adjudicás un motivo que está en tu cabeza.</p></div>
-        <div><h3>“Siempre llega tarde”</h3><p>Una generalización con una palabra imprecisa.</p><p class="porque">Con un día que haya llegado a horario, la frase se cae.</p></div>
-        <div><h3>“Le falta mirada estratégica”</h3><p>El mismo defecto en versión gerencial.</p><p class="porque">Suena técnico y sigue sin decir qué hizo ni cuándo.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 15 · Cómo queda cada una -->
-  <section class="placa" data-notas="Las mismas cuatro, reescritas como hechos. Leer la de la derecha después de la de la izquierda: la diferencia es que ahora la persona puede ir a chequearlo.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq cuatro">
-      <div class="titulo-placa">Las mismas cuatro, como hechos</div>
-      <div class="tarjetas cuatro">
-        <div><h3>“Es desprolijo”</h3><p class="porque">Dejó el tablero sin cerrar el martes y el jueves.</p></div>
-        <div><h3>“No le importa el trabajo”</h3><p class="porque">Entregó los tres últimos informes después de la fecha.</p></div>
-        <div><h3>“Siempre llega tarde”</h3><p class="porque">Llegó tarde el martes, el jueves y el viernes.</p></div>
-        <div><h3>“Le falta mirada estratégica”</h3><p class="porque">En la reunión del 12, cuando salió lo del proveedor, te metiste en las cláusulas y el equipo esperaba que definieras si seguíamos.</p></div>
+        <div><h3>“Es desprolijo”</h3><p class="porque suelta">Un atributo de la persona.</p><p class="dato">Dejó el puesto sin ordenar al terminar el turno, el martes y el jueves.</p></div>
+        <div><h3>“No le importa el trabajo”</h3><p class="porque suelta">Una intención que le atribuís.</p><p class="dato">Entregó los tres últimos informes después de la fecha.</p></div>
+        <div><h3>“Siempre llega tarde”</h3><p class="porque suelta">Una frecuencia que nadie contó.</p><p class="dato">Llegó tarde el martes, el jueves y el viernes.</p></div>
+        <div><h3>“Le falta mirada estratégica”</h3><p class="porque suelta">Una competencia que nadie define.</p><p class="dato">En la reunión del 12 revisó el precio de cada ítem y no definió si cambiábamos de proveedor.</p></div>
       </div>
     </div>
   </section>
 
     <!-- D5 · Traducí tu conversación -->
-  <section class="placa" data-notas="La segunda instancia. La pantalla les devuelve su propia frase y aparecen los seis campos. Insistir: no escribir otra, romper la que ya tienen.">
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="La segunda instancia. La pantalla les devuelve su propia frase y aparecen los seis campos. Insistir: no escribir otra, romper la que ya tienen.">
     <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq">
-      <div class="kicker">En tu teléfono</div>
-      <div class="titulo-placa">Traducí la tuya</div>
-      <div class="duo">
-        <div>
-          <h3>Los seis campos</h3>
-          <p>Qué hizo · qué día · cuántas veces · qué le vas a pedir · para cuándo · qué día se lo decís.</p>
-          <p class="porque">El que completa un día y un número no puede haber escrito un adjetivo.</p>
-        </div>
-        <div>
-          <h3>No escribas otra</h3>
-          <p>Rompé la que ya tenés.</p>
-          <p class="porque">Traducir lo propio es el ejercicio. Escribir algo nuevo y correcto no enseña nada.</p>
-        </div>
+    <div class="contenido izq suelto">
+      <div class="fila-titulo">
+        <div class="titulo-placa">Traducí la tuya</div>
+        <div class="kicker">En tu teléfono</div>
       </div>
+      <p class="frase" style="font-size:54px">Qué hizo · qué día · cuántas veces<br><b>qué le vas a pedir · para cuándo · qué día se lo decís</b></p>
+      <div class="consigna">La que ya escribiste. No escribas otra.</div>
     </div>
   </section>
 
   <!-- D6 · El antes y el después -->
-  <section class="placa" data-notas="El número de la sala. Leerlo sin agregar conclusión: el dato solo. Si alguien pregunta, la cuenta está a la vista. Esta es la única medición que se proyecta en el día.">
+  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="El número de la sala. Leerlo sin agregar conclusión: el dato solo. Si alguien pregunta, la cuenta está a la vista. Esta es la única medición que se proyecta en el día.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido matriz-viva">
       <h2>Lo que creíamos y lo que quedó escrito</h2>
@@ -999,26 +1070,17 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
 <!-- 11 · El método -->
-  <section class="placa" data-notas="Los cinco momentos, sobre el eje tiempo de una conversación. El momento 1 es el año entero; los otros cuatro son la conversación. Sin el 1, los otros cuatro no funcionan.">
+  <section class="placa" data-notas="Los cuatro momentos de la conversación, en orden. Lo del año entero ya quedó dicho en la placa de las dos cosas de antes: acá empieza la conversación.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq cuatro">
-      <div class="titulo-placa">Los cinco momentos de una conversación difícil</div>
+      <div class="titulo-placa">Los cuatro momentos de una conversación difícil</div>
       <div class="tarjetas cuatro">
-        <div><span class="num">02</span><h3>Encuadrá</h3><p>Lugar privado, sin apuro, y un aviso corto antes: “necesito hablarte de algo difícil”.</p><p class="porque">El aviso le da un momento para acomodarse.</p></div>
-        <div><span class="num">03</span><h3>Decilo claro</h3><p>El motivo y la decisión juntos, en las primeras dos frases y con hechos.</p><p class="porque">Ya se dio cuenta de que algo pasa, y mientras das vueltas imagina algo peor.</p></div>
-        <div><span class="num">04</span><h3>Sostené el silencio</h3><p>Callate mientras descarga, aunque llore o levante la voz. Cuando pare, repetí una vez lo ya dicho.</p><p class="porque">Con la emoción alta no entra información.</p></div>
-        <div><span class="num">05</span><h3>Cerrá con una fecha</h3><p>Qué pasa ahora, con día y hora: “el lunes a las 9 vemos cómo seguimos”.</p><p class="porque">El cambio de conducta viene de una meta concreta acordada.</p></div>
+        <div><span class="num">01</span><h3>Elegí dónde y cuándo</h3><p>Lugar privado, sin apuro, y un aviso corto antes: “necesito hablarte de algo difícil”.</p><p class="porque">El aviso le da un momento para acomodarse.</p></div>
+        <div><span class="num">02</span><h3>Decilo en dos frases</h3><p>La decisión primero y el motivo enseguida. Repetí el motivo después del silencio: recién ahí lo escucha.</p><p class="porque">Ya se dio cuenta de que algo pasa, y mientras das vueltas imagina algo peor.</p></div>
+        <div><span class="num">03</span><h3>Sostené el silencio</h3><p>No negocies ni discutas aunque llore o levante la voz. Cuando pare, repetí una vez lo ya dicho.</p><p class="porque">Con la emoción alta no entra información.</p></div>
+        <div><span class="num">04</span><h3>Cerrá con una fecha</h3><p>Qué tiene que pasar y cuándo: “el lunes a las 9 me traés las fechas de las tres entregas”.</p><p class="porque">El cambio de conducta viene de una meta concreta acordada.</p></div>
       </div>
       <div class="fuente">Adaptado del protocolo SPIKES (Baile y otros, 2000), usado en medicina para comunicar diagnósticos graves.</div>
-    </div>
-  </section>
-
-  <!-- 12 · El momento 1 -->
-  <section class="placa" data-notas="El momento 1 es el que falta casi siempre: el año entero. Anotar los hechos cuando pasan y decir lo bueno cuando pasa. Con alguien que entró hace tres meses, este momento está vacío.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido">
-      <div class="kicker">Momento 01 · todo el año</div>
-      <p class="frase">Lo que sabés y no decís.<br><b>Anotá los hechos cuando pasan y decí lo bueno cuando pasa.</b></p>
     </div>
   </section>
 
@@ -1027,48 +1089,47 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq tres">
       <div class="kicker">Tres rondas · cada uno pasa por los tres roles</div>
-      <div class="titulo-placa" style="margin-top:14px">Se practica en tríos</div>
+      <div class="titulo-placa">Vamos a tener conversaciones difíciles. Practicamos de a 3.</div>
       <div class="tarjetas tres">
-        <div><h3>Comunica</h3><p>Ve a quién tiene que hablarle, qué pasó y qué se decidió, en datos sueltos.</p><p class="porque">Armar cómo decirlo es el ejercicio.</p></div>
-        <div><h3>Recibe</h3><p>No conoce la decisión. Le toca una reacción que nadie más ve.</p><p class="porque">Ahí se practica sostener el silencio.</p></div>
-        <div><h3>Observa</h3><p>Mira todo y al final anota qué pasó.</p><p class="porque">Si el motivo fue un hecho, si sostuvo el silencio, si cerró con una fecha.</p></div>
+        <div><h3>Comunica</h3><p>En el teléfono tiene los datos del caso: a quién le habla, qué pasó y qué se decidió. Arma él cómo decirlo.</p></div>
+        <div><h3>Recibe</h3><p>No conoce la decisión. Le toca una reacción que nadie más ve.</p></div>
+        <div><h3>Observa</h3><p>Mira todo y al final anota qué pasó.</p></div>
       </div>
       <div class="consigna">Corran las sillas y armen una ronda de tres. El teléfono les dice con quién.</div>
     </div>
   </section>
 
   <!-- D8 · Ronda 1 -->
-  <section class="placa" data-notas="Ronda 1. El caso es la revisión comportamental: cumple los objetivos de negocio y falla en los de valores. Cortar a los ocho minutos aunque algunos no hayan terminado.">
+  <section class="placa" data-aviso="Abrir teléfonos · cerrar cuando anotaron casi todos" data-notas="Ronda 1. El caso es la revisión comportamental: cumple los objetivos de negocio y falla en los de valores. Cortar a los ocho minutos aunque algunos no hayan terminado.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="kicker">Role play</div>
       <p class="frase" style="font-size:96px"><b>Ronda 1</b> de 3</p>
-      <div class="consigna">Corran las sillas y armen su trío. Cada teléfono dice con quién y qué rol te toca.</div>
     </div>
   </section>
 
   <!-- D9 · Ronda 2 -->
-  <section class="placa" data-notas="Ronda 2. El despido: la decisión está tomada y la persona sabía que venía flojo, pero no esperaba esto. Recordar que se cambia de trío y que las sillas se corren otra vez. Acá aparece el que se quiebra.">
+  <section class="placa" data-aviso="Abrir teléfonos · cerrar cuando anotaron casi todos" data-notas="Ronda 2. El despido: la decisión está tomada y la persona sabía que venía flojo, pero no esperaba esto. Recordar que se cambia de trío y que las sillas se corren otra vez. Acá aparece el que se quiebra.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="kicker">Role play</div>
       <p class="frase" style="font-size:96px"><b>Ronda 2</b> de 3</p>
-      <div class="consigna">Se cambia de trío: corran las sillas otra vez. Cada teléfono dice con quién y qué rol te toca.</div>
+      <div class="consigna">Se cambia de trío. El teléfono dice con quién.</div>
     </div>
   </section>
 
   <!-- D10 · Ronda 3 -->
-  <section class="placa" data-notas="Ronda 3. El cambio de la compañía: una decisión que el líder tampoco tomó. Es la que más se parece a lo que les pasa todas las semanas.">
+  <section class="placa" data-aviso="Abrir teléfonos · cerrar cuando anotaron casi todos" data-notas="Ronda 3. El cambio de la compañía: una decisión que el líder tampoco tomó. Es la que más se parece a lo que les pasa todas las semanas.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <div class="kicker">Role play</div>
       <p class="frase" style="font-size:96px"><b>Ronda 3</b> de 3</p>
-      <div class="consigna">Se cambia de trío: corran las sillas otra vez. Cada teléfono dice con quién y qué rol te toca.</div>
+      <div class="consigna">Se cambia de trío. El teléfono dice con quién.</div>
     </div>
   </section>
 
   <!-- D11 · Lo que pasó en los tríos -->
-  <section class="placa" data-notas="Los números de las tres rondas juntas. Es la foto de la sala entera y con eso arranca la puesta en común. Va después del ensayo y no durante: con los números a la vista, los últimos tríos juegan para el marcador.">
+  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="Los números de las tres rondas juntas. Es la foto de la sala entera y con eso arranca la puesta en común. Va después del ensayo y no durante: con los números a la vista, los últimos tríos juegan para el marcador.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido matriz-viva">
       <h2>Lo que pasó en los tríos</h2>
@@ -1083,7 +1144,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- D12 · La pregunta -->
-  <section class="placa" data-notas="El bloque de integración. A cada teléfono le llega una consigna distinta según hace cuánto tiene gente a cargo: el que empieza pide, el que lleva años deja. No aclararlo en voz alta, la pantalla de cada uno ya lo dice.">
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="El bloque de integración. A cada teléfono le llega una consigna distinta según hace cuánto tiene gente a cargo: el que empieza pide, el que lleva años deja. No aclararlo en voz alta, la pantalla de cada uno ya lo dice.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq">
       <div class="kicker">En tu teléfono</div>
@@ -1118,7 +1179,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- D14 · Las más votadas -->
-  <section class="placa" data-notas="El ranking con los pozos. Leer las tres primeras en voz alta y preguntar quién la quiere contestar. Contesta UNA sola persona por pregunta: la primera que levanta la mano, y ahí se corta aunque haya más manos.">
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="El ranking con los pozos. Leer las tres primeras en voz alta y preguntar quién la quiere contestar. Contesta UNA sola persona por pregunta: la primera que levanta la mano, y ahí se corta aunque haya más manos.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido matriz-viva">
       <h2>Las que más quiere escuchar la sala</h2>
@@ -1133,7 +1194,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- D15 · Las que quedaron -->
-  <section class="placa" data-notas="El reparto de las pendientes. Cada persona con años en el rol se lleva una, de otra área. Aclarar que se resuelve hablando al terminar, no en el teléfono.">
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="El reparto de las pendientes. Cada persona con años en el rol se lleva una, de otra área. Aclarar que se resuelve hablando al terminar, no en el teléfono.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
       <p class="frase">Las que no llegamos a contestar<br><b>se las lleva alguien.</b></p>
@@ -1142,11 +1203,11 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- C1 · Los tres conceptos -->
-  <section class="placa" data-notas="Primera placa del repaso. Leerlas y no volver a explicarlas: cinco minutos alcanzan para repasar, no para enseñar de nuevo.">
+  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="Primera placa del repaso. Leerlas y no volver a explicarlas: cinco minutos alcanzan para repasar, no para enseñar de nuevo.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq tres">
       <div class="kicker">Lo que vimos hoy</div>
-      <div class="titulo-placa" style="margin-top:14px">Los tres conceptos</div>
+      <div class="titulo-placa">Los tres conceptos</div>
       <div class="tarjetas tres">
         <div><h3>Cuanto más arriba estás, menos te dicen</h3><p>Sos el que menos devoluciones recibe y el que más decisiones toma con información que nadie chequeó.</p></div>
         <div><h3>Si no lo puede verificar, no lo puede corregir</h3><p>El hecho abre una conversación. El adjetivo abre una pelea.</p></div>

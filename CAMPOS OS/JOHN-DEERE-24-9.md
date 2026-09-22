@@ -1,7 +1,8 @@
 # John Deere, 24 de septiembre · dónde retomar
 
 Contexto para seguir en otra terminal. Última actualización: **21 de septiembre
-de 2026**. El encuentro es el **jueves 24, de 8:45 a 10:30**, y quedan tres días.
+de 2026, 16:45**. El encuentro es el **jueves 24, de 8:45 a 10:30**, y quedan
+tres días.
 
 ---
 
@@ -43,7 +44,9 @@ John Deere.
 ## 3. Qué está construido
 
 Todo el sistema del encuentro, probado de punta a punta contra la base real y
-desplegado. El último commit es `af22bb5`.
+desplegado. El último commit es `4472d17`, y `main` está igual que `origin/main`.
+Lo que hay sin commitear son ajustes de esta tarde que se listan en la sección
+4.4.
 
 **Las once actividades** (`supabase/ciclo-actividades-john-deere.sql`), en el
 orden del reloj:
@@ -72,10 +75,16 @@ está escrito en `supabase/ciclo-tipos-campos-monedas.sql`.
 - `/ciclo/john-deere/actividad?vista=cierre` — los números del role play
 - `/ciclo/john-deere/qr?destino=resumen` — el código de la última placa
 
-**El deck**: `public/pres/johndeere-conversaciones.html`, 34 placas en el orden
+**El deck**: `public/pres/johndeere-conversaciones.html`, 33 placas en el orden
 del reloj, cinco de ellas con el marco que se llena con lo que responde la sala.
 Se abre desde el hub, que le pasa el cliente en el enlace. El de prueba, de 17
 placas, quedó al lado sin uso.
+
+En qué placa se abre cada actividad está en la columna `placa` de `actividades`,
+con la numeración de 33 ya aplicada en la base: reconocimiento en la 4,
+traducido en la 7, conversación en la 8, la apuesta en la 9, traducción en la 17,
+las tres rondas del ensayo en 22, 23 y 24, la pregunta en la 26, las monedas en
+la 28 y el reparto en la 29.
 
 **El hub del encuentro**: `tools.camposhr.com/presentaciones/charla/johndeere-conversaciones`.
 Presentación, guion, admin y código QR.
@@ -89,10 +98,15 @@ Presentación, guion, admin y código QR.
 
 ### 4.1 El guion de las expositoras
 
-**Es lo que sigue, y Agustín va a traer el material.** Va a pasar el guion que
-las expositoras usaron en la última charla del ciclo de Pla.
+**Está escrito y falta pegarlo en el hub.** La versión nueva, contra el deck de
+33 placas, es
+`~/Desktop/Codigo Proyectos/Pla/Charla John Deere 24-9 - Guion de sala.md`. Lo
+que hoy tiene la tabla `guiones` es la versión anterior, la de 34 placas, así que
+la pantalla del hub todavía muestra esa.
 
-**La consigna es reciclar todo lo que se pueda**: Lorena y Lucila no tienen que
+Lo que sigue ahí es repasarlo placa por placa contra el deck actual y pegarlo.
+
+**La consigna fue reciclar todo lo que se pudiera**: Lorena y Lucila no tienen que
 aprender contenido nuevo a tres días del encuentro. Lo que ya saben decir se
 mantiene tal cual, y lo nuevo se limita a lo que el cliente pidió el 18/9 y no
 existe en el material de Pla: el vocabulario (GPM, conversaciones de
@@ -139,6 +153,23 @@ El script es `scripts/carga-ciclo.mjs` y la medición anterior está en la secci
 Al terminar, **borrar los aportes de prueba, los asistentes y la corrida de
 prueba, en ese orden**.
 
+### 4.4 Lo que está en local y sin commitear
+
+Se viene trabajando así: se edita, Agustín mira localhost, y el commit se arma al
+final del lote cuando él lo pide.
+
+| Archivo | Qué cambió |
+|:--|:--|
+| `public/pres/johndeere-conversaciones.html` | Se sacó la placa "De qué conversaciones hablamos hoy" y cambió la frase de apertura |
+| `data/presentaciones.json` | El deck declara 33 placas |
+| `supabase/ciclo-actividades-john-deere.sql` | El mapeo actividad a placa corrido uno, ya aplicado en la base |
+| `lib/ciclo.ts` | Los repartos de ensayo, cruce y frases excluyen a las expositoras |
+| `app/ciclo/[slug]/Asistente.tsx`, `app/globals.css` | Ajustes de la pantalla del teléfono |
+
+**El deck publicado todavía tiene 34 placas**, porque es un archivo del
+repositorio y espera el push. Hasta que se suba, el número de placa que muestra
+el panel en producción está corrido uno respecto de lo que proyecta la sala.
+
 ---
 
 ## 5. Lo que hay en la base ahora mismo
@@ -147,6 +178,10 @@ prueba, en ese orden**.
   selfie. Tiene respondidas varias consignas.
 - **Doce asistentes de prueba** con apellido `ZZPRUEBA`, con sus preguntas y sus
   votos, para que las pantallas se vean llenas.
+- **Lucila y Lore Campos**, marcadas con `expositora = true`. Se registran como
+  todas porque necesitan el teléfono para ver lo que ve la sala, y `delTaller()`
+  en `lib/ciclo.ts` las deja fuera de los repartos y de los contadores. **No se
+  borran.**
 
 **Todo eso hay que borrarlo antes del 24.** Si queda, entra al reparto de tríos y
 ocupa lugares con gente que no está en la sala.
@@ -154,7 +189,8 @@ ocupa lugares con gente que no está en la sala.
 ```sql
 delete from asistentes a using corridas c, empresas e
  where a.corrida_id = c.id and c.empresa_id = e.id
-   and e.slug = 'john-deere';
+   and e.slug = 'john-deere'
+   and a.apellido ilike '%ZZPRUEBA%';
 ```
 
 Los aportes se van con ellos por la cascada. La corrida y las actividades quedan.

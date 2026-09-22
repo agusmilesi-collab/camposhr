@@ -429,7 +429,7 @@ type Ensayo = {
   con: { nombre: string; apellido: string; foto: string | null; rol: Rol }[];
   /** Lo que ya anotó, para que la pantalla no vuelva a preguntarlo. */
   anotado: {
-    sostuvo: 'escucho' | 'explico' | null;
+    sostuvo: 'escucho' | 'explico' | 'negocio' | null;
     motivo: 'hecho' | 'juicio' | 'ninguno' | null;
     porque: boolean | null;
     cuando: boolean | null;

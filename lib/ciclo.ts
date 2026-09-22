@@ -312,7 +312,7 @@ export type Valor =
        * estaba decidido de antemano. Esto en cambio depende solo de lo que
        * hace quien da la noticia.
        */
-      sostuvo?: 'escucho' | 'explico';
+      sostuvo?: 'escucho' | 'explico' | 'negocio';
       /** Si el motivo fue un hecho verificable o un juicio sobre la persona.
        *  También lo anota quien observa: el que recibe no lo puede juzgar,
        *  porque desde su silla "sos un irresponsable" también es un motivo. */
@@ -1044,7 +1044,7 @@ export async function repartirCruce(
   if (actividad.tipo !== 'cruce') return;
 
   const [asistentes, previos, perfiles] = await Promise.all([
-    listarAsistentes(corrida.id),
+    listarAsistentes(corrida.id).then(delTaller),
     listarAportes(corrida.id, actividad.id),
     perfilesDeCorrida(corrida.id),
   ]);
@@ -1190,8 +1190,15 @@ export async function repartirEnsayo(
 ): Promise<void> {
   if (rondas.length !== 3 || rondas.some((r) => r.tipo !== 'ensayo')) return;
 
+  /*
+   * Sin quien dicta.
+   *
+   * Lorena y Lucila se registran como todos, porque necesitan el teléfono para
+   * probar lo que va a ver la sala. Adentro del reparto dejarían un trío
+   * esperando a alguien que está caminando entre las mesas.
+   */
   const [asistentes, ...previos] = await Promise.all([
-    listarAsistentes(corrida.id),
+    listarAsistentes(corrida.id).then(delTaller),
     ...rondas.map((r) => listarAportes(corrida.id, r.id)),
   ]);
 
@@ -1313,7 +1320,7 @@ export async function repartirEnsayo(
  * tocar el botón dos veces deja lo mismo que tocarlo una.
  */
 export type RespuestaEnsayo = {
-  sostuvo?: 'escucho' | 'explico';
+  sostuvo?: 'escucho' | 'explico' | 'negocio';
   motivo?: 'hecho' | 'juicio' | 'ninguno';
   porque?: boolean;
   cuando?: boolean;
@@ -1377,7 +1384,7 @@ export async function repartirFrases(
   if (actividad.tipo !== 'frases') return;
 
   const [asistentes, previos] = await Promise.all([
-    listarAsistentes(corrida.id),
+    listarAsistentes(corrida.id).then(delTaller),
     listarAportes(corrida.id, actividad.id),
   ]);
 
@@ -1742,7 +1749,7 @@ export type Resumen =
       cerrados: number;
       observan: number;
       contestaron: number;
-      sostuvo: { escucho: number; explico: number };
+      sostuvo: { escucho: number; explico: number; negocio: number };
       motivo: { hecho: number; juicio: number; ninguno: number };
       reciben: number;
       contestaronReciben: number;
@@ -1922,7 +1929,7 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
       let contestaronReciben = 0;
       let dijoPorque = 0;
       let dijoCuando = 0;
-      const sostuvo = { escucho: 0, explico: 0 };
+      const sostuvo = { escucho: 0, explico: 0, negocio: 0 };
       const motivo = { hecho: 0, juicio: 0, ninguno: 0 };
       for (const a of aportes) {
         if (a.valor?.tipo !== 'ensayo') continue;

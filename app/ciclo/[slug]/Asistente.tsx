@@ -108,7 +108,7 @@ type Ensayo = {
     rol: 'comunica' | 'recibe' | 'observa';
   }[];
   anotado: {
-    sostuvo: 'escucho' | 'explico' | null;
+    sostuvo: 'escucho' | 'explico' | 'negocio' | null;
     motivo: 'hecho' | 'juicio' | 'ninguno' | null;
     porque: boolean | null;
     cuando: boolean | null;
@@ -574,7 +574,6 @@ function Registro({
   return (
     <section className="cq-placa">
       <h1 className="ci-titulo">¿Cómo te llamás?</h1>
-      <p className="cq-ayuda">Se carga una sola vez.</p>
 
       <div className="cq-campos">
         <label className="cq-campo-doble">
@@ -2204,19 +2203,22 @@ const ROL_TITULO = {
 /**
  * Los cuatro pasos, para quien tiene que darla.
  *
- * Sin el ejemplo: el ejemplo está en la placa proyectada y nombra la
- * suspensión, que es uno de los tres casos. Acá cada uno tiene el suyo, así
- * que el recordatorio dice el paso y no la frase.
+ * Sin el ejemplo: el ejemplo está en la placa proyectada y no en los tres
+ * casos del role play. Acá cada uno tiene el suyo, así que el recordatorio
+ * dice el paso y no la frase.
  */
 const PASOS = [
-  ['Encuadrá', 'Lugar privado y un aviso corto antes de empezar.'],
-  ['Decilo claro', 'El motivo y la decisión juntos, en las primeras dos frases.'],
+  ['Elegí dónde y cuándo', 'Lugar privado y un aviso corto antes de empezar.'],
   [
-    'En silencio, sostené',
-    'Callate mientras descarga. Cuando pare, decile una vez: “la decisión ya ' +
-      'está tomada”.',
+    'Decilo en dos frases',
+    'La decisión primero y el motivo enseguida, con hechos.',
   ],
-  ['Cerrá con una fecha', 'Qué pasa ahora, con día y hora.'],
+  [
+    'Sostené el silencio',
+    'No negocies ni discutas mientras descarga. Cuando pare, decile una vez: ' +
+      '“la decisión ya está tomada”.',
+  ],
+  ['Cerrá con una fecha', 'Qué tiene que pasar y cuándo, con día y hora.'],
 ] as const;
 
 /** Y cómo se nombra el de los otros dos, para ubicarlos en el trío. */
@@ -2441,6 +2443,7 @@ function Ensayando({
             opciones={[
               { valor: 'escucho', etiqueta: 'Se quedó escuchando' },
               { valor: 'explico', etiqueta: 'Siguió hablando' },
+              { valor: 'negocio', etiqueta: 'Se puso a negociar' },
             ]}
           />
           <Pregunta
@@ -2459,11 +2462,12 @@ function Ensayando({
       {ensayo.rol === 'recibe' && (
         <div className="ci-ensayo-observa">
           <p className="ci-ensayo-cuando">
-            Contestá cuando la conversación haya terminado, no mientras hablan.
+            Salí del personaje y contestá por vos, cuando la conversación haya
+            terminado.
           </p>
           <Pregunta
             campo="porque"
-            texto="¿Te dijo el motivo, o sea qué pasó para que tomaran esta decisión?"
+            texto="¿Te quedó claro por qué tomaron esta decisión?"
             opciones={[
               { valor: true, etiqueta: 'Sí' },
               { valor: false, etiqueta: 'No' },
@@ -2471,7 +2475,7 @@ function Ensayando({
           />
           <Pregunta
             campo="cuando"
-            texto="¿Te dijo el día y la hora en que vuelven a hablar del tema?"
+            texto="¿Sabés qué pasa ahora y cuándo?"
             opciones={[
               { valor: true, etiqueta: 'Sí' },
               { valor: false, etiqueta: 'No' },

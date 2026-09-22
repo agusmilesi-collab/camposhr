@@ -10,6 +10,9 @@
   --st-gray: #8a8580;
   --st-amber: #a97722;
   --st-blue: #43648f;
+  /* El azul de texto, más oscuro que el de las etiquetas: sobre el papel tiene
+     que leerse como tinta y no como un enlace. */
+  --st-blue-osc: #2c4569;
   --st-blue-2: #43648f;
   --st-violet: #6a5a8c;
   --st-verde: #4a7856;
@@ -2577,9 +2580,12 @@ body {
 }
 .cq-campo-doble span {
   display: block;
-  font-size: 0.78rem;
-  color: var(--muted);
-  margin-bottom: 2px;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--st-blue);
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 .cq-campo-doble .cq-input {
   margin-top: 0;
@@ -3577,8 +3583,8 @@ body {
   border-color: var(--st-blue);
 }
 .ci-anonimo {
-  margin-top: 10px;
-  font-size: 0.78rem;
+  margin-top: 18px;
+  font-size: 0.95rem;
   color: var(--muted);
 }
 .ci-opciones {
@@ -4864,7 +4870,7 @@ body {
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--st-blue);
+  color: var(--st-blue-osc);
   font-weight: 600;
 }
 .ci-despues-prueba {
@@ -8620,35 +8626,46 @@ body {
 .ci-reg-titulo {
   display: block;
   margin-bottom: 8px;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--muted);
+  color: var(--st-blue-osc);
+  font-weight: 600;
 }
 
+/*
+ * Todos los botones del mismo tamaño, en los tres grupos.
+ *
+ * En fila, "IT" quedaba del ancho de dos letras y "Menos de un año" cinco veces
+ * más grande, así que el tamaño del botón contaba lo largo que es el nombre de
+ * la opción y no cuánto pesa la respuesta. En grilla, el que elige compara
+ * opciones y no rectángulos.
+ */
 .ci-reg-opciones {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
   gap: 8px;
 }
 
 .ci-reg-opcion {
   font: inherit;
   font-size: 0.95rem;
-  color: var(--ink);
+  color: var(--st-blue-osc);
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 11px 16px;
-  min-height: 44px;
+  padding: 11px 12px;
+  min-height: 52px;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
 .ci-reg-opcion:hover {
-  border-color: var(--ink-soft);
+  border-color: var(--st-blue);
 }
 
+/* La elegida, en tinta: con todas azules, el azul ya no alcanza para decir
+   cuál es la que quedó marcada. */
 .ci-reg-opcion.elegida {
   background: var(--ink);
   border-color: var(--ink);
