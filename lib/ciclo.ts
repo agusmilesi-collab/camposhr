@@ -371,7 +371,13 @@ export type Valor =
    * La pregunta que le tocó contestar a esta persona al cerrar. Tampoco la
    * responde ella: la escribe el servidor al abrir la actividad.
    */
-  | { tipo: 'reparto'; aporteId: string; texto: string };
+  | {
+      tipo: 'reparto';
+      aporteId: string;
+      texto: string;
+      /** Si hubo más preguntas que gente con años: las que se lleva de más. */
+      otras?: { aporteId: string; texto: string }[];
+    };
 
 /** La dirección de una actividad de tipo 'enlace'. Sólo se acepta https. */
 export function destinoDe(actividad: Actividad): string | null {
@@ -751,10 +757,10 @@ export async function reclamarAporte(
 /**
  * Reparte las preguntas que quedaron sin contestar.
  *
- * Toma las que no entraron entre las tres que se leen en voz alta y le da una a
- * cada persona con años en el rol, siempre de un área distinta a la suya: la
- * idea es que el que recién empieza se lleve un referente de otro sector, que
- * es donde nunca hubiese preguntado solo.
+ * Toma las de quienes tienen menos de un año en el rol que no entraron entre
+ * las tres que se leen en voz alta, y le da una a cada persona con más de un
+ * año, de la misma área que quien preguntó cuando se puede. Lo que escribieron
+ * los que llevan años no se reparte: se proyecta y va al resumen.
  *
  * Se llama al abrir la actividad, igual que el cruce y el ensayo, para que el
  * primer teléfono que sondee ya encuentre la suya escrita.
@@ -807,34 +813,55 @@ export async function repartirPreguntas(
   });
   if (candidatos.length === 0) return;
 
-  const filas: Record<string, unknown>[] = [];
-  const usados = new Set<string>();
+  /*
+   * Primero alguien de la misma área que quien preguntó, y que no tenga
+   * ninguna: es quien conoce el trabajo de esa persona y a quien va a poder
+   * volver a consultar. Si en su área no queda nadie libre, alguien de otra
+   * área. Y si hay más preguntas que gente con años, alguien se lleva dos,
+   * empezando por su área: es preferible una respuesta de más que una
+   * pregunta sin nadie.
+   *
+   * Una persona tiene una sola fila por actividad, así que la segunda viaja
+   * adentro de la primera, en `otras`.
+   */
+  const cuantas = new Map<string, { aporteId: string; texto: string }[]>();
+  const menosCargado = (lista: typeof candidatos) =>
+    lista.reduce<(typeof candidatos)[number] | null>((mejor, c) => {
+      const n = cuantas.get(c.id)?.length ?? 0;
+      if (!mejor) return c;
+      return n < (cuantas.get(mejor.id)?.length ?? 0) ? c : mejor;
+    }, null);
 
   for (const pregunta of pendientes) {
-    const autor = porId.get(pregunta.asistente_id);
-    // De otra área que la de quien preguntó, y que no tenga ya una. Si no
-    // queda ninguno así, se afloja primero el área y después lo demás: es
-    // preferible un referente del mismo sector que ninguno.
+    const area = porId.get(pregunta.asistente_id)?.datos?.area;
+    const libres = candidatos.filter((c) => !cuantas.has(c.id));
+    const deSuArea = (lista: typeof candidatos) => lista.filter((c) => c.datos?.area === area);
     const elegido =
-      candidatos.find(
-        (c) => !usados.has(c.id) && c.datos?.area !== autor?.datos?.area
-      ) ??
-      candidatos.find((c) => !usados.has(c.id)) ??
-      null;
+      deSuArea(libres)[0] ??
+      libres[0] ??
+      menosCargado(deSuArea(candidatos)) ??
+      menosCargado(candidatos);
     if (!elegido) break;
 
-    usados.add(elegido.id);
-    filas.push({
-      corrida_id: corrida.id,
-      actividad_id: actividad.id,
-      asistente_id: elegido.id,
-      valor: {
-        tipo: 'reparto',
-        aporteId: pregunta.id,
-        texto: pregunta.valor?.tipo === 'texto' ? pregunta.valor.texto : '',
-      },
+    const lista = cuantas.get(elegido.id) ?? [];
+    lista.push({
+      aporteId: pregunta.id,
+      texto: pregunta.valor?.tipo === 'texto' ? pregunta.valor.texto : '',
     });
+    cuantas.set(elegido.id, lista);
   }
+
+  const filas: Record<string, unknown>[] = [...cuantas.entries()].map(([id, lista]) => ({
+    corrida_id: corrida.id,
+    actividad_id: actividad.id,
+    asistente_id: id,
+    valor: {
+      tipo: 'reparto',
+      aporteId: lista[0].aporteId,
+      texto: lista[0].texto,
+      ...(lista.length > 1 ? { otras: lista.slice(1) } : {}),
+    },
+  }));
 
   if (filas.length > 0) {
     await upsertVarias('aportes', filas, 'actividad_id,asistente_id');
@@ -2030,8 +2057,13 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
 
     case 'reparto': {
       // Cuántas preguntas quedaron con alguien que las conteste. Es lo que la
-      // expositora mira para saber si ya puede cerrar.
-      return { tipo: 'reparto', total, repartidas: total };
+      // expositora mira para saber si ya puede cerrar. Quien se llevó dos
+      // cuenta por dos.
+      const repartidas = aportes.reduce(
+        (n, a) => n + (a.valor?.tipo === 'reparto' ? 1 + (a.valor.otras?.length ?? 0) : 0),
+        0
+      );
+      return { tipo: 'reparto', total, repartidas };
     }
 
     case 'campos': {

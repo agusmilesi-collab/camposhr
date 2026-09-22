@@ -271,6 +271,18 @@ export async function GET(
             propios.get(deAntes.id) ?? null
           )
         : null,
+    // A quien escribió una pregunta, en el reparto: quién se la llevó, o si ya
+    // se contestó en la sala. Sin esto su pantalla decía "no te tocó ninguna"
+    // y no se enteraba de que alguien la estaba esperando para contestarla.
+    miPregunta:
+      actividad.tipo === 'reparto' && asistenteId && deAntes
+        ? await destinoDePregunta(
+            ciclo.corrida,
+            catalogo,
+            actividad,
+            propios.get(deAntes.id) ?? null
+          )
+        : null,
     cruce:
       actividad.tipo === 'cruce' && asistenteId
         ? await cruceDe(ciclo.corrida, actividad, asistenteId, mio)
@@ -658,6 +670,56 @@ function barajar<T>(lista: T[], semilla: string): T[] {
     [salida[i], salida[j]] = [salida[j], salida[i]];
   }
   return salida;
+}
+
+/**
+ * Qué pasó con la pregunta propia al repartir las que quedaron.
+ *
+ * La pregunta es anónima para la sala y para quien la recibe: el único que
+ * sabe de quién es es quien la escribió, y por eso es a esa persona a quien se
+ * le dice a quién buscar. El anonimato lo rompe ella, si va.
+ */
+async function destinoDePregunta(
+  corrida: Corrida,
+  catalogo: Actividad[],
+  actividad: Actividad,
+  /** Su pregunta, ya leída con el resto del sondeo. */
+  mia: Aporte | null
+): Promise<
+  | { estado: 'repartida'; nombre: string; apellido: string; area: string | null }
+  | { estado: 'contestada' }
+  | null
+> {
+  if (!mia || mia.valor?.tipo !== 'texto' || !mia.valor.texto.trim()) return null;
+
+  const repartos = await aportesDeLaSala(corrida.id, actividad.id);
+  const fila = repartos.find(
+    (r) =>
+      r.valor?.tipo === 'reparto' &&
+      (r.valor.aporteId === mia.id || r.valor.otras?.some((o) => o.aporteId === mia.id))
+  );
+  if (fila) {
+    const quien = (await asistentesDeLaSala(corrida.id)).find((a) => a.id === fila.asistente_id);
+    if (quien) {
+      return {
+        estado: 'repartida',
+        nombre: quien.nombre,
+        apellido: quien.apellido,
+        area: quien.datos?.area ?? null,
+      };
+    }
+  }
+
+  // Si no está en el reparto puede ser porque entró entre las tres que se
+  // contestaron en voz alta.
+  const votacion = catalogo.find((a) => a.tipo === 'monedas');
+  if (votacion) {
+    const r = resumir(votacion, await aportesDeLaSala(corrida.id, votacion.id));
+    if (r.tipo === 'monedas' && r.ranking.slice(0, 3).some((x) => x.aporteId === mia.id)) {
+      return { estado: 'contestada' };
+    }
+  }
+  return null;
 }
 
 /**
