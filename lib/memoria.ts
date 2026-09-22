@@ -19,6 +19,9 @@ type Guardado = { hasta: number; valor: unknown };
 
 const CAJON = new Map<string, Guardado>();
 
+/** Lo que se está trayendo en este momento, por clave. */
+const TRAYENDO = new Map<string, Promise<unknown>>();
+
 /**
  * El valor guardado si todavía sirve, y si no, el que traiga `traer`.
  *
@@ -35,7 +38,23 @@ export async function recordar<T>(
   const guardado = CAJON.get(clave);
   if (guardado && guardado.hasta > ahora) return guardado.valor as T;
 
-  const valor = await traer();
+  /*
+   * Si otro pedido ya está trayendo lo mismo, se espera ese resultado en vez de
+   * salir a buscarlo de nuevo. Con ochenta teléfonos, cuando vence la corrida
+   * (cada dos segundos) entran varios juntos, y cada uno pagaba su propia
+   * lectura de lo mismo.
+   */
+  const yendo = TRAYENDO.get(clave);
+  if (yendo) return yendo as Promise<T>;
+
+  const promesa = traer();
+  TRAYENDO.set(clave, promesa);
+  let valor: T;
+  try {
+    valor = await promesa;
+  } finally {
+    TRAYENDO.delete(clave);
+  }
   CAJON.set(clave, { hasta: ahora + segundos * 1000, valor });
 
   // El cajón no crece: son una empresa y un ciclo por encuentro, y las claves
