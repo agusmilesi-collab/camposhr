@@ -76,7 +76,9 @@ cross join (values
    'Un hecho es algo que la otra persona puede ir a verificar.',
    '["Sí, es un hecho", "No, es una interpretación mía"]'::jsonb,
    'conversacion', 'La conversación · la apuesta',
-   '{}'::jsonb),
+   -- Con lo que acaba de escribir a la vista: la apuesta es sobre eso, y sin
+   -- tenerlo delante contesta de memoria.
+   '{"desde": "cd-conversacion", "desde_titulo": "Lo que escribiste"}'::jsonb),
 
   -- 5 · La traducción, con su propia frase arriba. Los campos son el control:
   -- el que completó "qué día" y "cuántas veces" no tiene forma de haber
@@ -121,21 +123,30 @@ cross join (values
    '',
    'Se proyecta sin tu nombre.',
    '[]'::jsonb, null, 'Preguntas · escribir',
+   -- El aviso del pie hace tres cosas: abre el alcance, porque por el tema del
+   -- día suponen que la pregunta tiene que ser sobre conversaciones difíciles;
+   -- ancla la búsqueda en algo que les pasó, que es lo que la vuelve fácil de
+   -- escribir; y pide la forma de pregunta, porque lo que se escriba acá lo
+   -- contesta alguien en voz alta y un tema suelto no se puede contestar.
    '{
+      "avisos": {
+        "Menos de un año": "Sobre cualquier cosa de liderar un equipo. Pensá en algo que te pasó estas semanas y no supiste resolver. Se proyecta sin tu nombre.",
+        "Más de un año": "Sobre cualquier cosa de liderar un equipo. Escribí algo que te costó aprender y hoy le ahorrarías a alguien que empieza. Se proyecta sin tu nombre."
+      },
       "segun": "rol",
       "enunciados": {
-        "Menos de un año": "¿Qué te gustaría que alguien con más años liderando te explicara ahora?",
+        "Menos de un año": "Escribí una pregunta: ¿qué te gustaría que alguien con más años liderando te explicara ahora?",
         "Más de un año": "¿Qué te hubiese gustado saber en tu primer año como líder, y lo terminaste aprendiendo con el tiempo?"
       }
     }'::jsonb),
 
-  -- 10 · El reparto. Diez monedas entre las preguntas de los que recién
+  -- 10 · El reparto. Diez Deer Coins entre las preguntas de los que recién
   -- empiezan, y nadie puede ponerle a la suya: sin esa regla, uno pone sus
   -- diez en la propia y cobra el pozo con ganancia esperada siempre positiva.
   ('cd-monedas', 1, 10, 'monedas',
-   'Repartí tus diez monedas',
+   'Repartí tus 10 Deer Coins',
    'Entre las preguntas que más querés escuchar. Podés poner todas en una.',
-   '[]'::jsonb, null, 'Preguntas · repartir monedas',
+   '[]'::jsonb, null, 'Preguntas · repartir Deer Coins',
    '{
       "desde": "cd-pregunta",
       "monedas": 10,

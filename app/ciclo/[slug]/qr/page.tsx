@@ -81,8 +81,9 @@ export default async function QrDelCiclo({
   // diapositiva. Es la primera placa del encuentro, la que se proyecta
   // mientras la gente entra.
   //
-  // Va la caja entera, no sólo el código: con el nombre de la empresa adentro,
-  // el que escanea confirma que está entrando al encuentro que le toca.
+  // Sólo el rótulo y el código. El nombre de la empresa y la dirección
+  // escrita salían acá y no hacían falta: la placa ya dice de qué encuentro se
+  // trata, y nadie tipea una dirección teniendo el código delante.
   if (searchParams?.placa === '1') {
     return (
       <main className="qr-en-placa">
@@ -93,9 +94,7 @@ export default async function QrDelCiclo({
         />
         <div className="qr-marco">
           <p className="qr-titulo">{titulo}</p>
-          <p className="qr-empresa">{empresa.nombre}</p>
           <div className="qr-codigo" dangerouslySetInnerHTML={{ __html: svg }} />
-          <p className="qr-url">{url.replace(/^https:\/\//, '')}</p>
         </div>
       </main>
     );

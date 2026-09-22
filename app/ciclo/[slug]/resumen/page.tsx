@@ -74,9 +74,9 @@ export default async function Resumen({
       {repaso && (
         <>
           <section className="rs-bloque">
-            <h2>Los tres conceptos</h2>
+            <h2>Lo que vimos hoy</h2>
             <ol className="rs-conceptos">
-              {repaso.conceptos.map((c) => (
+              {repaso.temas.map((c) => (
                 <li key={c.titulo}>
                   <b>{c.titulo}</b>
                   <p>{c.bajada}</p>
@@ -86,7 +86,7 @@ export default async function Resumen({
           </section>
 
           <section className="rs-bloque">
-            <h2>Los cinco momentos</h2>
+            <h2>Los cuatro momentos</h2>
             <ol className="rs-momentos">
               {repaso.momentos.map((m) => (
                 <li key={m.numero}>

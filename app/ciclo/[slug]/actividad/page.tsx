@@ -420,23 +420,25 @@ function Vista({
       if (votadas.length === 0) {
         return <p className="cp-vacio">Se arma sola a medida que reparten.</p>;
       }
-      const tope = Math.max(1, ...votadas.map((v) => v.monedas));
       return (
         <ol className="cp-ranking">
-          {votadas.map((v, i) => (
-            <li className={`cp-ranking-fila${i < 3 ? ' gana' : ''}`} key={v.texto}>
+          {/* Solo las tres que se contestan. Las demás no se publican: la
+              placa siguiente las reparte de a una y proyectarlas acá deja a
+              la vista cuáles quedaron últimas. */}
+          {votadas.slice(0, 3).map((v, i) => (
+            <li className="cp-ranking-fila" key={v.texto}>
               <span className="cp-ranking-puesto">{i + 1}</span>
               <div className="cp-ranking-que">
                 <p>{v.texto}</p>
                 {/* Quien la reclamó sale del anonimato por elección suya, y
                     entonces la pantalla dice de quién es. */}
                 {v.quien && <span className="cp-ranking-quien">{v.quien}</span>}
-                <div className="cp-barra-riel">
-                  <span style={{ width: `${(v.monedas / tope) * 100}%` }} />
-                </div>
               </div>
               <span className="cp-ranking-pozo">
-                <b>{v.monedas}</b>
+                <b>
+                  {v.monedas}
+                  <img className="cp-coin" src="/jd-coin.png" alt="" />
+                </b>
                 <em>{v.votantes === 1 ? '1 persona' : `${v.votantes} personas`}</em>
               </span>
             </li>

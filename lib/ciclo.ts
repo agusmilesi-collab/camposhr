@@ -199,6 +199,14 @@ export type ConfigActividad = {
   /** El dato del registro que decide qué enunciado le toca a cada uno. */
   segun?: string;
   enunciados?: Record<string, string>;
+  /**
+   * El aviso al pie, cuando también cambia según el registro.
+   *
+   * La consigna de las preguntas le pide cosas distintas a cada tramo: al que
+   * empieza, una pregunta; al que lleva años, algo que aprendió. La ayuda de
+   * abajo tiene que decir cada una de las dos.
+   */
+  avisos?: Record<string, string>;
   /** Qué ronda del ensayo es esta actividad. */
   ronda?: number;
   /**
