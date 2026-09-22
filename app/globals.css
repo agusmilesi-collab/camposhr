@@ -3905,7 +3905,9 @@ body {
   font-size: 4em;
 }
 .cp-placa {
-  min-height: auto;
+  /* Sin anular el alto de `.cp`: el iframe ocupa todo el marco de la placa, y
+     con `min-height: auto` el contenido quedaba pegado al borde de arriba en
+     lugar de centrarse en el alto disponible. */
   padding: 0;
   background: transparent;
 }
