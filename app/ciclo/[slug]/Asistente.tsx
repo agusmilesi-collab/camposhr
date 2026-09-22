@@ -2770,7 +2770,13 @@ async function reducirImagen(archivo: File): Promise<Blob> {
   const desdeX = (bitmap.width - lado) / 2;
   const desdeY = (bitmap.height - lado) * 0.22;
 
-  const salida = Math.min(640, lado);
+  /*
+   * 400 px de lado. La cara se muestra a 68 a 84 px, que en un teléfono de alta
+   * densidad son unos 250 reales: con 640 cada selfie pesaba el doble para
+   * nada, y la grilla de caras las baja todas a cada teléfono que la abre. Una
+   * foto con mucho grano (luz baja, el peor caso) pasa de 218 a 85 KB.
+   */
+  const salida = Math.min(400, lado);
   const canvas = document.createElement('canvas');
   canvas.width = salida;
   canvas.height = salida;
@@ -2782,7 +2788,7 @@ async function reducirImagen(archivo: File): Promise<Blob> {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error('sin blob'))),
       'image/jpeg',
-      0.82
+      0.8
     );
   });
 }

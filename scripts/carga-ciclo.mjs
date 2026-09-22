@@ -9,11 +9,17 @@
  * borra entera con --limpiar.
  *
  *   node scripts/carga-ciclo.mjs --preparar
- *   node scripts/carga-ciclo.mjs --telefonos 100 --minutos 5 --sondeo 20
+ *   node scripts/carga-ciclo.mjs --telefonos 100 --minutos 5 --sondeo 20 --foto selfie.jpg
  *   node scripts/carga-ciclo.mjs --limpiar
+ *
+ * Por defecto simula la sala de John Deere: su ciclo, los tres datos del
+ * registro (área, grado, rol) repartidos como en la sala, y con `--foto` cada
+ * teléfono sube esa selfie al registrarse, los cien a la vez. La foto no va al
+ * repositorio: se arma aparte, del tamaño que genera el teléfono.
  */
 
 import { readFileSync } from 'node:fs';
+import { basename } from 'node:path';
 
 const env = Object.fromEntries(
   readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
@@ -33,7 +39,10 @@ const bandera = (nombre) => process.argv.includes(`--${nombre}`);
 
 const SITIO = arg('sitio', 'https://camposhr.com');
 const SLUG = 'prueba-carga';
-const CICLO = 'f4b5164a-65b9-41e4-a918-63041aaa1e67';
+// "Conversaciones difíciles", el de John Deere. Con --ciclo se prueba otro.
+const CICLO = arg('ciclo', 'be651bc8-0eb2-4330-a59c-5d1f5202e020');
+const FOTO = arg('foto', null);
+const FOTO_BYTES = FOTO ? readFileSync(FOTO) : null;
 const TELEFONOS = Number(arg('telefonos', 100));
 const SONDEO = Number(arg('sondeo', 20)) * 1000;
 const MINUTOS = Number(arg('minutos', 5));
@@ -111,7 +120,30 @@ async function limpiar() {
     delete from corridas where empresa_id in (select id from empresas where slug = '${SLUG}');
     delete from empresas where slug = '${SLUG}';
   `);
-  console.log('corrida de prueba borrada');
+
+  // Las selfies quedan en el bucket aunque se borren los asistentes: se
+  // listan por la carpeta de la empresa de prueba y se borran de a cien.
+  const base = env.SUPABASE_URL;
+  const llave = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
+  const cabeceras = { Authorization: `Bearer ${llave}`, apikey: llave, 'Content-Type': 'application/json' };
+  let borradas = 0;
+  for (;;) {
+    const r = await fetch(`${base}/storage/v1/object/list/selfies`, {
+      method: 'POST',
+      headers: cabeceras,
+      body: JSON.stringify({ prefix: `${SLUG}/ciclo`, limit: 100 }),
+    });
+    const lista = r.ok ? await r.json() : [];
+    if (!lista.length) break;
+    const prefixes = lista.map((o) => `${SLUG}/ciclo/${o.name}`);
+    await fetch(`${base}/storage/v1/object/selfies`, {
+      method: 'DELETE',
+      headers: cabeceras,
+      body: JSON.stringify({ prefixes }),
+    });
+    borradas += prefixes.length;
+  }
+  console.log(`corrida de prueba borrada, y ${borradas} selfies`);
 }
 
 /** El pico de entrada: todos los teléfonos registrándose al mismo tiempo. */
@@ -122,6 +154,18 @@ async function registrar() {
       const form = new FormData();
       form.append('nombre', `Prueba${i}`);
       form.append('apellido', `Carga${i}`);
+      // Como la sala: seis áreas, y uno de cada cinco con menos de un año.
+      form.append(
+        'datos',
+        JSON.stringify({
+          area: ['Fábrica', 'Branch', 'JDF', 'Finanzas', 'IT', 'Share'][i % 6],
+          grado: ['8', '9', '10 o más'][i % 3],
+          rol: i % 5 === 0 ? 'Menos de un año' : 'Más de un año',
+        })
+      );
+      if (FOTO_BYTES) {
+        form.append('foto', new Blob([FOTO_BYTES], { type: 'image/jpeg' }), basename(FOTO));
+      }
       const t = performance.now();
       try {
         const r = await fetch(`${SITIO}/api/ciclo/${SLUG}/registro`, {
@@ -129,25 +173,49 @@ async function registrar() {
           body: form,
         });
         const j = r.ok ? await r.json() : null;
-        anotar('registro', performance.now() - t, r.ok);
+        anotar(FOTO_BYTES ? 'registro con selfie' : 'registro', performance.now() - t, r.ok);
         return j?.asistente?.id ?? null;
       } catch {
-        anotar('registro', performance.now() - t, false);
+        anotar(FOTO_BYTES ? 'registro con selfie' : 'registro', performance.now() - t, false);
         return null;
       }
     })
   );
   const seg = (performance.now() - t0) / 1000;
   const vivos = ids.filter(Boolean);
+  // La ruta registra igual aunque falle la subida de la foto, así que el éxito
+  // del pedido no dice si la selfie quedó: se cuenta en la base.
+  let fotosPerdidas = 0;
+  if (FOTO_BYTES) {
+    const [f] = await sql(
+      `select count(*)::int as n from asistentes a join corridas co on co.id = a.corrida_id
+       join empresas e on e.id = co.empresa_id
+       where e.slug = '${SLUG}' and a.foto_path is null`
+    );
+    fotosPerdidas = f.n;
+  }
   console.log(
     `registro: ${vivos.length}/${TELEFONOS} en ${seg.toFixed(1)}s ` +
-      `(${(TELEFONOS / seg).toFixed(1)} por segundo)`
+      `(${(TELEFONOS / seg).toFixed(1)} por segundo)` +
+      (FOTO_BYTES
+        ? `, con selfie de ${Math.round(FOTO_BYTES.length / 1024)} KB; ${fotosPerdidas} sin foto guardada`
+        : '')
   );
   return vivos;
 }
 
 /** El sondeo sostenido de toda la sala, con una ráfaga de escrituras al medio. */
 async function sondear(ids) {
+  // Una consigna abierta desde el arranque: sin nada abierto el sondeo corta
+  // antes de leer la base y la prueba mediría el caso barato.
+  const [act] = await sql(
+    `select id from actividades where ciclo_id = '${CICLO}' and tipo = 'texto'
+       and grupo is null order by orden limit 1`
+  );
+  await sql(`
+    update corridas set actividad_abierta_id = '${act.id}'
+    where empresa_id = (select id from empresas where slug = '${SLUG}')
+  `);
   const hasta = Date.now() + MINUTOS * 60 * 1000;
 
   const unTelefono = async (id, i) => {
@@ -167,16 +235,6 @@ async function sondear(ids) {
 
   const escrituras = async () => {
     await new Promise((r) => setTimeout(r, (MINUTOS * 60 * 1000) / 2));
-    // La consigna tiene que estar abierta en la corrida o el endpoint rechaza
-    // todo con 409, que es justamente lo que pasa en la sala si ella no abrió.
-    const [act] = await sql(
-      `select id from actividades where tipo = 'texto' and grupo is null
-       order by orden limit 1`
-    );
-    await sql(`
-      update corridas set actividad_abierta_id = '${act.id}'
-      where empresa_id = (select id from empresas where slug = '${SLUG}')
-    `);
     const t0 = performance.now();
     await Promise.all(
       ids.map((id) =>
