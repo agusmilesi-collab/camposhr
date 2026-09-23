@@ -161,7 +161,7 @@ cross join (values
   ('cd-nps', 1, 11, 'escala',
    '¿Qué tan probable es que le recomiendes este encuentro a otro líder de John Deere?',
    'De 1 a 10, donde 10 es que se lo recomendarías seguro.',
-   '[]'::jsonb, 'cierre', 'Encuesta · recomendación',
+   '[]'::jsonb, 'cierre', 'Encuesta final · las 3 preguntas',
    '{"aviso": ""}'::jsonb),
 
   -- La primera abierta mide lo único que importa del día siguiente: si quedó
@@ -203,19 +203,19 @@ update public.actividades a
   from public.ciclos c,
        (values
          ('cd-reconocimiento', 4),
-         ('cd-reconocimiento-traducido', 7),
-         ('cd-conversacion', 8),
-         ('cd-es-hecho', 9),
-         ('cd-traduccion', 17),
-         ('cd-ensayo-1', 20),
-         ('cd-ensayo-2', 21),
-         ('cd-ensayo-3', 22),
-         ('cd-pregunta', 24),
-         ('cd-monedas', 26),
-         ('cd-reparto', 27),
-         ('cd-nps', 29),
-         ('cd-llevas', 29),
-         ('cd-cambiarias', 29)
+         ('cd-reconocimiento-traducido', 8),
+         ('cd-conversacion', 9),
+         ('cd-es-hecho', 10),
+         ('cd-traduccion', 20),
+         ('cd-ensayo-1', 23),
+         ('cd-ensayo-2', 24),
+         ('cd-ensayo-3', 25),
+         ('cd-pregunta', 27),
+         ('cd-monedas', 29),
+         ('cd-reparto', 30),
+         ('cd-nps', 32),
+         ('cd-llevas', 32),
+         ('cd-cambiarias', 32)
        ) as v(clave, placa)
  where c.id = a.ciclo_id
    and c.nombre = 'Conversaciones difíciles'

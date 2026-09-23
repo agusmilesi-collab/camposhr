@@ -93,6 +93,54 @@ export default async function Resumen({
             </ol>
           </section>
 
+          {repaso.reconocimiento && (
+            <section className="rs-bloque">
+              <h2>El reconocimiento en 3 pasos</h2>
+              <ol className="rs-momentos">
+                {repaso.reconocimiento.pasos.map((p, i) => (
+                  <li key={p.etapa}>
+                    <span className="rs-momento-num">{i + 1}</span>
+                    <div>
+                      <b>
+                        {p.etapa}: {p.nombre}
+                      </b>
+                      <p>"{p.ejemplo}"</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <p className="rs-remate">{repaso.reconocimiento.agradecimiento}</p>
+            </section>
+          )}
+
+          {repaso.evitar && (
+            <section className="rs-bloque">
+              <h2>Las tres formas de no tener la conversación</h2>
+              <ol className="rs-conceptos">
+                {repaso.evitar.map((c) => (
+                  <li key={c.nombre}>
+                    <b>{c.nombre}</b>
+                    <p>{c.que}</p>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
+          {repaso.recibe && (
+            <section className="rs-bloque">
+              <h2>Lo que le llega a la otra persona</h2>
+              <ol className="rs-conceptos">
+                {repaso.recibe.map((c) => (
+                  <li key={c.nombre}>
+                    <b>{c.nombre}</b>
+                    <p>{c.que}</p>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
           <section className="rs-bloque">
             <h2>Los cuatro momentos</h2>
             <ol className="rs-momentos">

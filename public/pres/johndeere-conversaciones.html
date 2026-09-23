@@ -864,6 +864,26 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   align-items:center;justify-content:center;gap:38px}
 .cierre-marca p{color:var(--ink);
   font-family:'Instrument Serif',Georgia,serif}
+
+/* En la placa del método la etapa va en gris: es un rótulo, no un número que
+   haya que leer primero. */
+.tarjetas.metodo .num{color:var(--muted)}
+
+/* Tarjetas sin h3: el rótulo numerado hace de título, así que cada tarjeta
+   ocupa una fila menos de la grilla compartida. */
+.tarjetas.sin-titulo:has(.num):has(.porque)>div{grid-row:span 3}
+
+/* En la placa de los cuatro momentos el rótulo numerado es el título: grande y
+   en el azul de texto del sistema, y la descripción un punto más chica. */
+.tarjetas.metodo.sin-titulo .num{color:#2c4569;font-size:46px;line-height:1.1;margin-bottom:18px}
+.tarjetas.sin-titulo p{font-size:25px;line-height:1.4}
+
+/* La tarjeta de cierre del repaso ocupa dos columnas: no es una herramienta
+   numerada sino el cierre, y su texto es el más largo. */
+.repaso > .ancha{flex:0 0 calc(66.666% - 8px)}
+/* Cuatro herramientas en una fila y el cierre a lo ancho, debajo. */
+.repaso.cuatro-col>div{flex:0 0 calc(25% - 16.5px)}
+.repaso.cuatro-col>.ancha{flex:0 0 100%}
 </style>
 
 <div id="escenario">
@@ -911,7 +931,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <section class="placa" data-notas="La frase que abre la charla. Decirla y dejar el silencio. Casi todo lo que una persona necesita para trabajar mejor ya lo sabe alguien de la empresa: no se dice, se dice tarde, o se dice de una forma que el otro no puede usar.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <p class="frase">Alguien sabe algo y no lo dice.<br><b>Del otro lado hay alguien que necesita saberlo.</b></p>
+      <p class="frase">Lo difícil de decir no se dice, se dice tarde,<br><b>o se dice de una forma que el otro no puede usar.</b></p>
     </div>
   </section>
 
@@ -926,16 +946,17 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
 <!-- 9 · Feedback positivo -->
-  <section class="placa" data-notas="La devolución positiva. Lo bueno también se posterga. Los tres puntos son el método del reconocimiento: cuándo, con qué y para qué sirvió.">
+  <section class="placa" data-notas="La devolución positiva. Los tres puntos son el método del reconocimiento: cuándo fue, qué hizo y qué cambió. Son los mismos tres que se tildan en la placa siguiente. Y decilo cuando pasa: lo bueno también se posterga.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq tres">
       <div class="kicker">Dar una devolución positiva</div>
       <div class="titulo-placa">Lo bueno también se posterga</div>
-      <div class="tarjetas tres">
-        <div><h3>Decilo cuando pasa</h3><p>“Te quiero decir algo de lo de ayer”.</p><p class="porque">No lo guardes para el GPM: a diez meses ya no se acuerda de qué hizo bien, así que no lo puede repetir.</p></div>
-        <div><h3>Decí el hecho</h3><p>“El informe salió el jueves con una recomendación además de los números”.</p><p class="porque">En lugar de “sos un crack”: un adjetivo no se puede repetir, un hecho sí.</p></div>
-        <div><h3>Decí qué cambió</h3><p>“Con eso cerramos el presupuesto a tiempo”.</p><p class="porque">Ahí sabe para qué sirvió lo que hizo, y no solo que a vos te gustó.</p></div>
+      <div class="tarjetas tres metodo">
+        <div><span class="num">1. Situación</span><h3>Decí cuándo fue</h3><p>“En el informe del jueves…”</p><p class="porque">Sin el momento, no sabe de qué le hablás.</p></div>
+        <div><span class="num">2. Conducta</span><h3>Decí qué hizo</h3><p>“…sumaste una recomendación por tu cuenta.”</p><p class="porque">“Sos un crack” no se puede repetir. Lo que hizo, sí.</p></div>
+        <div><span class="num">3. Impacto</span><h3>Decí qué cambió</h3><p>“Esa recomendación destrabó la decisión y pudimos cerrar el presupuesto a tiempo.”</p><p class="porque">Así sabe para qué sirvió lo que hizo.</p></div>
       </div>
+      <div class="consigna">Decilo en el momento. Diez meses después, en el GPM, la persona ya no se acuerda de lo que hizo.</div>
     </div>
   </section>
 
@@ -946,13 +967,13 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
       <div class="titulo-placa">El mismo reconocimiento, dicho de dos maneras</div>
       <div class="duo">
         <div>
-          <h3>Con juicio</h3>
-          <p>“Sos un crack. Hiciste todo bien.”</p>
+          <h3>Con juicio (subjetivo)</h3>
+          <p>“Sos un crack. Hiciste todo bien. Me salvaste las papas.”</p>
           <ul class="chequeo no"><li><span>Qué hizo</span></li><li><span>Cuándo</span></li><li><span>Qué cambió</span></li></ul>
         </div>
         <div>
-          <h3>Con datos</h3>
-          <p>“El informe salió el jueves con una recomendación además de los números, y con eso cerramos el presupuesto a tiempo.”</p>
+          <h3>Con hechos (objetivo)</h3>
+          <p>“En el informe del jueves sumaste una recomendación por tu cuenta. Esa recomendación destrabó la decisión y pudimos cerrar el presupuesto a tiempo.”</p>
           <ul class="chequeo si"><li><span>Qué hizo</span></li><li><span>Cuándo</span></li><li><span>Qué cambió</span></li></ul>
         </div>
       </div>
@@ -960,7 +981,22 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     </div>
   </section>
 
-    <!-- D2 · Traducí el reconocimiento -->
+    <!-- 6b · El cierre humano del reconocimiento -->
+  <section class="placa" data-notas="El agradecimiento, al final del reconocimiento. Va después del impacto, así se apoya en algo concreto. Y agradece lo que hizo: la segunda opción además vuelve a marcar la iniciativa, que es lo que queremos que repita.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido izq tres">
+      <div class="kicker">Dar una devolución positiva</div>
+      <div class="titulo-placa">Un cierre opcional, y recomendado: el agradecimiento</div>
+      <div class="tarjetas tres">
+        <div><h3>Agradece</h3><p>“Gracias por sumarla.”</p><p class="porque">Corto, y sobre lo que hizo.</p></div>
+        <div><h3>Agradece y refuerza</h3><p>“Me gustó que la sumaras sin que nadie te la pidiera.”</p><p class="porque">Vuelve a marcar la iniciativa, que es lo que querés que repita.</p></div>
+        <div><h3>Muestra que se vio</h3><p>“Quiero que sepas que se notó.”</p><p class="porque">Le confirma que alguien lo registró.</p></div>
+      </div>
+      <div class="consigna">La condición es que el agradecimiento apunte a lo que hizo, no a quién es.</div>
+    </div>
+  </section>
+
+  <!-- D2 · Traducí el reconocimiento -->
   <section class="placa" data-aviso="Abrir teléfonos" data-notas="Segunda parte del reconocimiento, después de ver el ejemplo del crack. Ahora la pantalla les devuelve lo suyo y lo rompen en tres campos: qué hizo, cuándo, y qué se consiguió. El primero es el que más se les escapa: si ponen sólo el verbo, &quot;redactó el informe&quot;, la persona no se entera de qué repetir, porque redactar informes es lo que hace siempre. Lo que va es el detalle comprobable que hizo distinto a ese: cuántas áreas, sin errores, antes de la fecha.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq suelto">
@@ -995,7 +1031,21 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     </div>
   </section>
 
-<!-- 5 · Concepto 1 -->
+<!-- 10b · Las tres formas de no tener la conversación -->
+  <section class="placa" data-notas="Las tres formas de no tener la conversación, y las tres salen de las propias emociones. Postergar: la conversación que venís pateando hace tres semanas; cada vez que lo ves pensás 'hoy se lo digo', y cada vez aparece algo más urgente. En esas tres semanas la persona siguió haciendo lo mismo, porque nadie le avisó. Suavizar: se lo dijiste, pero envuelto: 'che, habría que mejorar algunas cositas del informe'. Vos saliste pensando que se lo dijiste; la otra persona salió pensando que estaba todo bien, y dentro de dos meses, cuando la cosa escale, va a decir con toda razón que nadie le avisó nada. Apurar: se lo soltaste en el pasillo, entre dos reuniones, en treinta segundos. Te lo sacaste de encima, y esa persona se quedó el resto del día sin nadie con quien procesarlo.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido izq tres">
+      <div class="kicker">Por tus propias emociones, podés</div>
+      <div class="titulo-placa">Las tres formas de no tener la conversación</div>
+      <div class="tarjetas tres">
+        <div><h3>Postergar</h3><p>“Hoy se lo digo.”</p><p class="porque">Pasan tres semanas y sigue haciendo lo mismo, porque nadie le avisó.</p></div>
+        <div><h3>Suavizar</h3><p>“Habría que mejorar algunas cositas.”</p><p class="porque">Vos creés que se lo dijiste. La otra persona cree que está todo bien.</p></div>
+        <div><h3>Apurar</h3><p>Treinta segundos, en el pasillo.</p><p class="porque">Te lo sacaste de encima, y la otra persona se quedó sola con eso.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Concepto 1 -->
   <section class="placa" data-aviso="Cerrar teléfonos" data-notas="Concepto 1. Sos el que menos devoluciones recibe de toda la sala y el que más decisiones toma con información que nadie chequeó. Abre la escucha de una sala que va de supervisor a director.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido pleno">
@@ -1023,6 +1073,20 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     </div>
   </section>
 
+  <!-- 13b · Lo que le llega a la otra persona -->
+  <section class="placa" data-notas="Lo que le llega a quien escucha una conversación difícil: tres cosas juntas. El hecho es lo único que se puede corregir. La emoción aparece igual, aunque el hecho esté bien dicho. Y la interpretación es lo que la otra persona concluye sobre sí misma, que muchas veces es más grave que lo que se le dijo.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido izq tres">
+      <div class="kicker">Lo que escucha la otra persona</div>
+      <div class="titulo-placa">Una conversación difícil trae tres cosas juntas</div>
+      <div class="tarjetas tres">
+        <div><h3>El hecho</h3><p>Qué pasó.</p><p class="porque">“Entregó tres informes fuera de fecha.”</p></div>
+        <div><h3>La emoción</h3><p>Lo que se siente al escucharlo.</p><p class="porque">Enojo, vergüenza, miedo.</p></div>
+        <div><h3>La interpretación</h3><p>Lo que la otra persona concluye sobre sí misma.</p><p class="porque">“¿Esto significa que no sirvo?” “¿Me tienen de punto?” “¿Y ahora qué digo en casa?”</p></div>
+      </div>
+    </div>
+  </section>
+
   <!-- 12 · Lo que verificar pide de antes -->
   <section class="placa" data-notas="Las dos condiciones que hacen posible el hecho, y que pasan mucho antes de la conversación. La primera es del líder: si nunca dijo qué esperaba, el reclamo llega de sorpresa. La segunda es la razón por la que el momento 1 del método existe.">
     <div class="fondo"></div><div class="velo"></div>
@@ -1045,7 +1109,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <section class="placa" data-notas="Concepto 3. La corrección funciona solo si hubo reconocimiento antes. Sin confianza previa y sin expectativas explícitas, la corrección baja el desempeño.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <p class="frase" style="font-size:62px;max-width:1560px">La corrección de septiembre se apoya en el reconocimiento de marzo.<br><b>El GPM se apoya en las conversaciones de desarrollo del año.</b></p>
+      <p class="frase" style="font-size:62px;max-width:1560px">El GPM se apoya en las conversaciones de desarrollo del año.</p>
     </div>
   </section>
 
@@ -1055,9 +1119,9 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="contenido izq tres">
       <div class="titulo-placa">Qué hace que una devolución funcione</div>
       <div class="tarjetas tres">
-        <div><h3>Sobre lo que hizo</h3><p>Un tercio de las devoluciones baja el desempeño, y son las que apuntan a quién es la persona.</p></div>
-        <div><h3>Después de haber reconocido</h3><p>La corrección mejora el desempeño solo cuando antes hubo reconocimiento.</p></div>
-        <div><h3>Con algo para hacer distinto</h3><p>La que dice qué cambiar sirve. La que solo califica, no deja nada para la próxima vez.</p></div>
+        <div><h3>Sobre lo que hizo</h3><p>El desempeño baja cuando la devolución apunta a la persona.</p></div>
+        <div><h3>Después de haber reconocido</h3><p>El desempeño mejora sólo cuando antes hubo reconocimiento.</p></div>
+        <div><h3>Con algo para hacer distinto</h3><p>La devolución que dice qué cambiar es muy útil. La que sólo califica no deja nada para la próxima vez.</p></div>
       </div>
     </div>
   </section>
@@ -1109,11 +1173,11 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq cuatro">
       <div class="titulo-placa">Los cuatro momentos de una conversación difícil</div>
-      <div class="tarjetas cuatro">
-        <div><span class="num">01</span><h3>Elegí dónde y cuándo</h3><p>Lugar privado, sin apuro, y un aviso corto antes: “necesito hablarte de algo difícil”.</p><p class="porque">El aviso le da un momento para acomodarse.</p></div>
-        <div><span class="num">02</span><h3>Decilo en dos frases</h3><p>La decisión primero y el motivo enseguida. Repetí el motivo después del silencio: recién ahí lo escucha.</p><p class="porque">Ya se dio cuenta de que algo pasa, y mientras das vueltas imagina algo peor.</p></div>
-        <div><span class="num">03</span><h3>Sostené el silencio</h3><p>No negocies ni discutas aunque llore o levante la voz. Cuando pare, repetí una vez lo ya dicho.</p><p class="porque">Con la emoción alta no entra información.</p></div>
-        <div><span class="num">04</span><h3>Cerrá con una fecha</h3><p>Qué tiene que pasar y cuándo: “el lunes a las 9 me traés las fechas de las tres entregas”.</p><p class="porque">El cambio de conducta viene de una meta concreta acordada.</p></div>
+      <div class="tarjetas cuatro metodo sin-titulo">
+        <div><span class="num">1. Encuadre</span><p>Elegí dónde y cuándo. Lugar privado, sin apuro, y un aviso corto antes: “necesito hablarte de algo importante”.</p><p class="porque">El aviso le da un momento para acomodarse.</p></div>
+        <div><span class="num">2. Decilo claro</span><p>Decilo en dos frases. La decisión primero y el motivo enseguida. Repetí el motivo después del silencio: recién ahí lo escucha.</p><p class="porque">Ya se dio cuenta de que algo pasa, y mientras das vueltas imagina algo peor.</p></div>
+        <div><span class="num">3. Sostené el silencio</span><p>No negocies ni discutas aunque llore o levante la voz. Cuando pare, repetí una vez lo ya dicho.</p><p class="porque">Con la emoción alta no entra información.</p></div>
+        <div><span class="num">4. Cerrá con una fecha</span><p>Qué tiene que pasar y cuándo: “el lunes 24 a las 9:30 espero el reporte del último trimestre”.</p><p class="porque">El cambio de conducta viene de una meta concreta acordada.</p></div>
       </div>
       <div class="fuente">Adaptado del protocolo SPIKES (Baile y otros, 2000), usado en medicina para comunicar diagnósticos graves.</div>
     </div>
@@ -1199,7 +1263,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- D13 · Lo que dejaron los que llevan años -->
-  <section class="placa" data-notas="Pasa mientras la sala reparte los Deer Coins. Dejarla correr sin leerla en voz alta: cada uno la lee cuando levanta la cabeza del teléfono. Es el material que produce el informe.">
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="Pasa mientras la sala reparte los Deer Coins. Dejarla correr sin leerla en voz alta: cada uno la lee cuando levanta la cabeza del teléfono. Es el material que produce el informe.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido matriz-viva">
       <h2>Lo que dejaron los que llevan años</h2>
@@ -1233,32 +1297,31 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   <section class="placa" data-aviso="Abrir teléfonos" data-notas="El reparto de las pendientes. Cada pregunta de los que tienen menos de un año se la lleva alguien con más de un año, de la misma área cuando se puede. Quien escribió la pregunta ve en su teléfono quién se la llevó, y es quien va a buscar: así su anonimato lo rompe solo si quiere. Aclarar que se resuelve hablando al terminar, no en el teléfono.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido">
-      <p class="frase">Las que no llegamos a contestar<br><b>se las lleva alguien.</b></p>
+      <p class="frase">Las preguntas que no llegamos a contestar<br><b>se las lleva alguien para dar las respuestas.</b></p>
       <div class="consigna">Mirá tu teléfono. Si escribiste una pregunta, ahí dice quién se la llevó: al terminar, andá a buscar a esa persona. Si te tocó una, te van a buscar.</div>
     </div>
   </section>
 
   <!-- C1 · Los tres conceptos -->
-  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="El repaso entero: los cuatro conceptos, el método del reconocimiento, los cuatro que no son hechos y los cuatro momentos de la conversación. Nombrar los bloques y no volver a explicar cada tarjeta: cinco minutos alcanzan para repasar, no para enseñar de nuevo.">
+  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="Las cinco herramientas, en el orden en que se usan: preparar, reconocer, pasar el juicio a hecho, seguir los cuatro momentos y compartir la experiencia. Nombrarlas y no volver a explicar cada una: cinco minutos alcanzan para repasar, no para enseñar de nuevo.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq cuatro suelto">
       <div class="fila-titulo">
         <div class="titulo-placa">Lo que vimos hoy</div>
         <div class="kicker">Repaso</div>
       </div>
-      <div class="repaso">
-        <div><h3>A vos tampoco te dicen cómo vas</h3><p>¿Cómo sabés si vas bien? Es la misma pregunta que se hace alguien de tu equipo, y vos la podrías contestar.</p></div>
-        <div><h3>Solo el hecho se puede corregir</h3><p>El hecho se puede ir a mirar. La interpretación no, y por eso abre una pelea en lugar de una conversación.</p></div>
-        <div><h3>Lo bueno se dice con el hecho</h3><p>Qué hizo, cuándo lo hizo y el valor que entregó con eso. Cuando pasa, sin esperar al GPM.</p></div>
-        <div><h3>La conversación se prepara todo el año</h3><p>Decir la expectativa antes de reclamarla, y anotar los hechos para llegar con el día y el número.</p></div>
-        <div><h3>La conversación difícil tiene cuatro momentos</h3><p>Elegí dónde y cuándo, decilo en dos frases, sostené el silencio, cerrá con una fecha.</p></div>
-        <div><h3>Lo que aprendió uno le sirve al que empieza</h3><p>Pasa si alguien lo pregunta y alguien lo contesta. Hoy pasó acá, y puede volver a pasar mañana.</p></div>
+      <div class="repaso cuatro-col">
+        <div><h3>1. Prepará la conversación</h3><p>Decí la expectativa antes de reclamarla y anotá los hechos con día y número.</p></div>
+        <div><h3>2. Reconocé en 3 pasos</h3><p>Cuándo fue, qué hizo, qué cambió. Si agradecés, agradecé lo que hizo.</p></div>
+        <div><h3>3. Pasá el juicio a hecho</h3><p>Preguntate: ¿la otra persona lo puede verificar? Si no, no lo puede corregir.</p></div>
+        <div><h3>4. Seguí los 4 momentos</h3><p>Encuadre, decilo claro, sostené el silencio, cerrá con fecha. Sin postergar, suavizar ni apurar.</p></div>
+        <div class="ancha"><h3>La importancia de compartir la experiencia en gestión</h3><p>Transmitir lo aprendido también es parte del rol de un líder con trayectoria. Y para el que empieza, es la oportunidad de nutrirse de quienes ya lo transitaron.</p></div>
       </div>
     </div>
   </section>
 
 <!-- 17 · Cierre -->
-<section class="placa cierre sin-logo" data-aviso="Abrir teléfonos" data-notas="Placa de cierre, con el código de la encuesta. Queda proyectada mientras la gente se levanta y contesta. Si alguien cerró el navegador, este código lo devuelve al encuentro.">
+<section class="placa cierre sin-logo" data-aviso="Abrir teléfonos" data-notas="Placa de cierre. La encuesta se abre desde el panel, con la tarjeta Encuesta final: les aparece sola en el teléfono. Queda proyectada mientras la gente se levanta y contesta. Al terminar la encuesta, el teléfono les da su resumen para descargar.">
     <div class="fondo"></div>
     <div class="contenido izq suelto cierre-final">
       <div class="cierre-texto">
@@ -1268,9 +1331,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
           <span class="portada-campos">Campos HR</span>
           <img src="/marcas/sentir.svg" alt="Sentir Mindfulness">
         </div>
-      </div>
-      <div class="qr-caja qr-portada">
-        <iframe class="qr-vivo" data-src="https://camposhr.com/ciclo/__CLIENTE__/qr?placa=1&amp;destino=encuesta" title="Código para contestar la encuesta"></iframe>
       </div>
     </div>
   </section>
