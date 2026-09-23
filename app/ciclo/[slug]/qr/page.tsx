@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import QRCode from 'qrcode';
 import { listarAsistentes, resolverCiclo } from '@/lib/ciclo';
+import PasaAlDeck from '../../_placa/PasaAlDeck';
 
 /**
  * El código de entrada al ciclo, para proyectar.
@@ -96,6 +97,7 @@ export default async function QrDelCiclo({
   if (searchParams?.placa === '1') {
     return (
       <main className="qr-en-placa">
+        <PasaAlDeck />
         <style
           dangerouslySetInnerHTML={{
             __html: 'html,body{background:transparent;overflow:hidden}',

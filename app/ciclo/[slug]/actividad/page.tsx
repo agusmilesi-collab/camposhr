@@ -18,6 +18,7 @@ import AutoRefresco from '@/app/cuestionario/[slug]/matriz/AutoRefresco';
 import Revelar from './Revelar';
 import RevelarPrimera from './RevelarPrimera';
 import AbrirReclamo from './AbrirReclamo';
+import PasaAlDeck from '../../_placa/PasaAlDeck';
 import { firmarSelfies } from '@/lib/supabase';
 import { recordar } from '@/lib/memoria';
 import { aportesDePrueba } from '@/lib/palabras-prueba';
@@ -476,10 +477,17 @@ function pie(resumen: Resumen): string {
   return `${resumen.total} ${resumen.total === 1 ? 'respuesta' : 'respuestas'}`;
 }
 
-/** El fondo de la placa se ve a través del marco. */
+/**
+ * El fondo de la placa se ve a través del marco. Va en toda pantalla que se
+ * proyecta adentro del deck, así que también le reenvía al deck los clicks y
+ * las teclas: sin eso, en las placas con datos no se podía pasar de placa.
+ */
 function FondoTransparente() {
   return (
-    <style dangerouslySetInnerHTML={{ __html: 'body{background:transparent}' }} />
+    <>
+      <style dangerouslySetInnerHTML={{ __html: 'body{background:transparent}' }} />
+      <PasaAlDeck />
+    </>
   );
 }
 
