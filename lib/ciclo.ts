@@ -780,6 +780,29 @@ export async function marcarIngreso(asistenteId: string): Promise<void> {
  * Solo la puede reclamar su dueño, y una vez: el nombre aparece proyectado, y
  * deshacerlo no le devolvería el anonimato a nadie.
  */
+/**
+ * La pregunta más votada, tal como la proyecta la placa: una pregunta borrada
+ * después de recibir monedas no se muestra, así que tampoco cuenta.
+ */
+export async function primeraDelRanking(
+  corrida: Corrida,
+  votacion: Actividad,
+  origenId: string
+): Promise<{ aporte: Aporte; monedas: number } | null> {
+  const [repartos, preguntas] = await Promise.all([
+    aportesDeLaSala(corrida.id, votacion.id),
+    aportesDeLaSala(corrida.id, origenId),
+  ]);
+  const resumen = resumir(votacion, repartos);
+  if (resumen.tipo !== 'monedas') return null;
+  const porId = new Map(preguntas.map((p) => [p.id, p]));
+  for (const r of resumen.ranking) {
+    const aporte = porId.get(r.aporteId);
+    if (aporte) return { aporte, monedas: r.monedas };
+  }
+  return null;
+}
+
 export async function reclamarAporte(
   actividadId: string,
   asistenteId: string

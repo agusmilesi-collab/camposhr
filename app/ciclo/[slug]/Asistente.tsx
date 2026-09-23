@@ -181,6 +181,8 @@ type Pozo = {
   puesto: number;
   reclamado: boolean;
   texto: string;
+  /** Si la escribió quien mira. Decide qué pasa al tocar, no qué se ve. */
+  mia: boolean;
 };
 
 export type Cara = {
@@ -773,10 +775,12 @@ function ElPozo({
   asistenteId: string;
   pozo: Pozo;
 }) {
-  const [reclamado, setReclamado] = useState(pozo.reclamado);
+  const [reclamado, setReclamado] = useState(pozo.reclamado && pozo.mia);
+  const [eligio, setEligio] = useState<'reclamar' | 'anonimo' | 'ok' | null>(null);
   const [yendo, setYendo] = useState(false);
 
   async function reclamar() {
+    setEligio('reclamar');
     setYendo(true);
     try {
       const res = await fetch(`/api/ciclo/${slug}/reclamar`, {
@@ -790,30 +794,70 @@ function ElPozo({
     }
   }
 
+  /*
+   * Toda la sala tiene algo para tocar: si solo quien escribió la primera
+   * tuviera un botón, se vería una sola persona con el teléfono en la mano.
+   * Quien la escribió elige entre reclamar y quedarse anónima; el resto
+   * agradece con un "Ok" y queda avisado de que, si sale del anonimato, va un
+   * aplauso.
+   */
+  let respuesta: string | null = null;
+  if (reclamado) respuesta = 'Es tuyo. Tu nombre y tu foto ya están en la pantalla.';
+  else if (eligio === 'anonimo')
+    respuesta = 'Listo. Tu pregunta sigue anónima y nadie va a saber que era tuya.';
+
+  // Quien no la escribió: solo el agradecimiento y el "Ok". La pregunta y el
+  // pozo ya están proyectados, y en este teléfono no hay nada que decidir.
+  if (!pozo.mia) {
+    return (
+      <section className="ci-pozo ci-pozo-sala">
+        {eligio === 'ok' ? (
+          <p className="ci-pozo-listo">Ya podés guardar el teléfono.</p>
+        ) : (
+          <>
+            <p className="ci-pozo-aviso">
+              Gracias por participar. Si quien la escribió sale del anonimato, su
+              nombre y su foto aparecen en la pantalla: ese es el momento de
+              aplaudir.
+            </p>
+            <div className="ci-pozo-botones">
+              <button className="cq-btn" onClick={() => setEligio('ok')}>
+                Ok
+              </button>
+            </div>
+          </>
+        )}
+      </section>
+    );
+  }
+
   return (
-    <section className={`ci-pozo${reclamado ? ' cobrado' : ''}`}>
-      <p className="ci-pozo-que">
-        Tu pregunta quedó {pozo.puesto === 1 ? 'primera' : `${pozo.puesto}ª`}
-      </p>
+    <section className={`ci-pozo${respuesta ? ' cobrado' : ''}`}>
+      <img className="ci-pozo-bolsa" src="/jd-pozo.png" alt="" />
+      <p className="ci-pozo-que">La más votada</p>
       <p className="ci-pozo-texto">{pozo.texto}</p>
-      <p className="ci-pozo-monedas">
-        <b>{pozo.monedas}</b> <img className="ci-coin" src="/jd-coin.png" alt="" />
-        Deer Coins
-      </p>
-      {reclamado ? (
-        <p className="ci-pozo-listo">
-          Es tuyo. Tu nombre ya está en la pantalla.
-        </p>
+      {respuesta ? (
+        <p className="ci-pozo-listo">{respuesta}</p>
       ) : (
-        <button className="cq-btn" disabled={yendo} onClick={reclamar}>
-          {yendo ? 'Un segundo…' : 'Reclamar el premio'}
-        </button>
-      )}
-      {!reclamado && (
-        <p className="ci-pozo-aviso">
-          Para llevarte el premio, tu nombre aparece en la pantalla al lado de
-          la pregunta. Si preferís que quede anónima, no toques nada.
-        </p>
+        <>
+          <p className="ci-pozo-aviso">La escribiste vos. Elegí qué hacer con el premio.</p>
+          <div className="ci-pozo-botones">
+            <button className="cq-btn" disabled={yendo} onClick={reclamar}>
+              {yendo ? 'Un segundo…' : 'Reclamar el premio'}
+            </button>
+            <button
+              className="cq-btn ci-pozo-otro"
+              disabled={yendo}
+              onClick={() => setEligio('anonimo')}
+            >
+              Permanecer en el anonimato
+            </button>
+          </div>
+          <p className="ci-pozo-aviso">
+            Si reclamás el premio, tu nombre y tu foto aparecen en la pantalla al
+            lado de la pregunta.
+          </p>
+        </>
       )}
     </section>
   );
@@ -929,6 +973,10 @@ function Fila({
         // tiene nada que ver con la pregunta que le tocó, y a quien preguntó
         // su pantalla ya le muestra la suya junto con a quién buscar.
         if (!texto || actual.tipo === 'reparto') return null;
+        // Con la votación cerrada toda la sala ve la misma pantalla del pozo:
+        // la pregunta propia arriba dejaría ver, a quien mira de costado, que
+        // es la misma que la más votada.
+        if (actual.tipo === 'monedas' && estado.votacionCerrada) return null;
         return (
           <div className="ci-antes">
             <p className="ci-antes-que">{actual.desdeTitulo ?? 'Tu tensión'}</p>
