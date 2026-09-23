@@ -700,6 +700,33 @@ export async function revelarPrimera(corridaId: string): Promise<void> {
   olvidar('corrida:');
 }
 
+/**
+ * Vuelve el ranking al principio, para ensayar de nuevo: esconde las tres
+ * preguntas, cierra los teléfonos y le saca el reclamo a la pregunta que lo
+ * tenía. Los votos y las preguntas quedan como están.
+ *
+ * Existe porque revelar solo avanza: una vez que alguien pasó por la placa de
+ * la más votada, el ensayo siguiente arrancaría con las tres a la vista.
+ */
+export async function reiniciarRanking(corridaId: string, origenId: string): Promise<void> {
+  if (!UUID.test(corridaId) || !UUID.test(origenId)) throw new Error('Corrida inválida');
+  const reclamadas = (await listarAportes(corridaId, origenId)).filter(
+    (a) => a.valor?.tipo === 'texto' && a.valor.reclamado
+  );
+  for (const a of reclamadas) {
+    if (a.valor?.tipo !== 'texto') continue;
+    const { reclamado: _, ...valor } = a.valor;
+    await patch('aportes', `id=eq.${a.id}`, { valor });
+  }
+  await patch('corridas', `id=eq.${corridaId}`, {
+    revelado: 0,
+    actividad_abierta_id: null,
+    fase: 0,
+  });
+  olvidar('corrida:');
+  olvidar(`aportes:${corridaId}:${origenId}`);
+}
+
 export async function revelarSiguiente(corridaId: string, desde: number): Promise<void> {
   if (!UUID.test(corridaId)) throw new Error('Corrida inválida');
   const n = Math.trunc(desde);

@@ -11,6 +11,7 @@ import {
   repartirFrases,
   repartirPreguntas,
   resolverCiclo,
+  reiniciarRanking,
   rondasDelEnsayo,
 } from '@/lib/ciclo';
 
@@ -94,6 +95,20 @@ export async function POST(
       // equipos de color tienen que estar escritos antes de que el primer
       // teléfono pregunte de cuál es.
       if (actividad?.tipo === 'frases') await repartirFrases(corrida, actividad);
+    } else if (datos.accion === 'reiniciar-ranking') {
+      // Para ensayar de nuevo: el ranking vuelve a esconder las tres y la más
+      // votada pierde el reclamo. Va acá, con la clave, y no en la placa: la
+      // placa es pública y esto borra lo que ya pasó.
+      const votacion = (await actividadesDelCiclo(corrida.ciclo_id)).find(
+        (a) => a.tipo === 'monedas' && a.config?.desde
+      );
+      const origen = votacion
+        ? (await actividadesDelCiclo(corrida.ciclo_id)).find(
+            (a) => a.clave === votacion.config.desde
+          )
+        : undefined;
+      if (!origen) return new NextResponse('Este ciclo no tiene ranking', { status: 400 });
+      await reiniciarRanking(corrida.id, origen.id);
     } else {
       return new NextResponse('Acción inválida', { status: 400 });
     }

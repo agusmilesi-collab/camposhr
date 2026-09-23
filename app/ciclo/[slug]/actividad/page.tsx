@@ -548,10 +548,11 @@ function Vista({
       if (columnas) {
         return (
           <>
-            {/* La 2ª a la izquierda y la 3ª a la derecha. Mientras la 2ª no
-                salió, su lugar queda marcado vacío: la sala ve que falta una. */}
+            {/* La 3ª a la izquierda y la 2ª a la derecha: se leen en el orden en
+                que salen. Mientras la 2ª no salió, su lugar queda marcado
+                vacío: la sala ve que falta una. */}
             <div className="cp-duo">
-              {[1, 2].map((puesto) => {
+              {[2, 1].map((puesto) => {
                 const fila = visibles.find(({ i }) => i === puesto);
                 if (!fila) {
                   return resto.some(({ i }) => i === puesto) ? (

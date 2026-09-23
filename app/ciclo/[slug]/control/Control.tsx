@@ -73,12 +73,17 @@ export default function Control({
   actividades,
   clave,
   registrados,
+  conRanking = false,
+  revelado = 0,
 }: {
   slug: string;
   empresa: string;
   actividades: ActividadControl[];
   clave: string;
   registrados: number;
+  conRanking?: boolean;
+  /** Hasta dónde se reveló el ranking: 0 nada, 1 la 2ª, 2 la más votada. */
+  revelado?: number;
 }) {
   const [abiertaId, setAbiertaId] = useState<string | null>(
     actividades.find((a) => a.abierta)?.id ?? null
@@ -91,6 +96,9 @@ export default function Control({
   /** Cuántas consignas se abrieron juntas, para saber si hay un final al que llegar. */
   const [enFila, setEnFila] = useState(0);
   const [ocupado, setOcupado] = useState(false);
+  /** El reinicio del ranking pide un segundo toque: borra lo que ya pasó. */
+  const [confirmando, setConfirmando] = useState(false);
+  const [rankingListo, setRankingListo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /** Durante el ensayo: cuántos observadores contestaron y qué contestaron. */
   const [ensayo, setEnsayo] = useState<ConteoEnsayo | null>(null);
@@ -158,6 +166,12 @@ export default function Control({
         // Mover la fase no cambia qué está abierto.
         if (cuerpo.accion === 'fase') {
           setFase(Number(cuerpo.fase) || 0);
+        } else if (cuerpo.accion === 'reiniciar-ranking') {
+          setAbiertaId(null);
+          setTotal(0);
+          setFase(0);
+          setConfirmando(false);
+          setRankingListo(true);
         } else {
           setAbiertaId(cuerpo.accion === 'abrir' ? String(cuerpo.actividadId) : null);
           setTotal(0);
@@ -214,6 +228,13 @@ export default function Control({
     cuantasEnGrupo.set(a.grupo, vistas + 1);
     if (vistas === 0) enLista.push(a);
   }
+
+  /*
+   * Cada tarjeta lleva su número, correlativo en todo el panel. El aviso de
+   * cada placa dice "Abrir actividad 5": con la sala mirando, buscar un número
+   * es más rápido que leer títulos que se parecen entre sí.
+   */
+  const numero = new Map(enLista.map((a, i) => [a.id, i + 1]));
 
   const porCharla = new Map<number, ActividadControl[]>();
   for (const a of enLista) {
@@ -380,6 +401,7 @@ export default function Control({
                     : mandar({ accion: 'abrir', actividadId: a.id })
                 }
               >
+                <span className="ct-item-num">{numero.get(a.id)}</span>
                 <span className="ct-item-texto">
                   <span className="ct-item-titulo">{a.titulo}</span>
                   {/* La placa manda: mientras dicta, lo que la expositora tiene
@@ -404,6 +426,52 @@ export default function Control({
             ))}
           </section>
         ))}
+
+        {/* Entre ensayos. Revelar solo avanza, así que sin esto el segundo
+            ensayo arrancaría con las tres preguntas a la vista. */}
+        {conRanking && (
+          <section className="ct-charla ct-ensayo-ranking">
+            <h2>Ensayo</h2>
+            <p className="ct-ensayo-nota">
+              {rankingListo || revelado === 0
+                ? 'El ranking está al principio: la placa 29 arranca con la 3ª sola.'
+                : revelado === 1
+                  ? 'El ranking ya mostró la 2ª.'
+                  : 'El ranking ya mostró la más votada.'}{' '}
+              Reiniciarlo vuelve a esconder las tres, borra el reclamo del pozo y
+              cierra los teléfonos. Los votos quedan.
+            </p>
+            {confirmando ? (
+              <div className="ct-ensayo-botones">
+                <button
+                  className="ct-cerrar"
+                  disabled={ocupado}
+                  onClick={() => mandar({ accion: 'reiniciar-ranking' })}
+                >
+                  Sí, reiniciar
+                </button>
+                <button
+                  className="ct-pasar"
+                  disabled={ocupado}
+                  onClick={() => setConfirmando(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            ) : (
+              <button
+                className="ct-pasar"
+                disabled={ocupado}
+                onClick={() => {
+                  setRankingListo(false);
+                  setConfirmando(true);
+                }}
+              >
+                Reiniciar ranking
+              </button>
+            )}
+          </section>
+        )}
 
         {actividades.length === 0 && (
           <p className="ct-vacio">

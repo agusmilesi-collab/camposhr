@@ -9789,3 +9789,52 @@ a.cq-btn {
 .ci-pozo .ci-pozo-texto + .ci-pozo-listo {
   margin-top: 16px;
 }
+
+/* El reinicio del ranking, al pie del panel: es de los ensayos, no de la
+   charla, y no tiene que quedar a mano mientras se dicta. */
+.ct-ensayo-nota {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.ct-ensayo-botones {
+  display: flex;
+  gap: 10px;
+}
+
+/* "Reclamar pozo" en azul: es el botón que la expositora tiene que encontrar
+   con la sala mirando, y no el de revelar, que es discreto a propósito. */
+.cp-revelar.cp-reclamar {
+  background: var(--st-blue-osc);
+  border-color: var(--st-blue-osc);
+  color: #fff;
+  font-weight: 500;
+}
+
+.cp-revelar.cp-reclamar:hover {
+  background: var(--st-blue);
+  border-color: var(--st-blue);
+  color: #fff;
+}
+
+/* El número de cada actividad del panel: el mismo que nombra el aviso de la
+   placa ("Abrir actividad 5"). */
+.ct-item-num {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--st-blue-osc);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ct-item .ct-item-texto {
+  flex: 1;
+  min-width: 0;
+}
