@@ -198,6 +198,11 @@ export type ConfigActividad = {
   monedas?: number;
   /** En las de prioridad, cuántas opciones hay que elegir. */
   elegir?: number;
+  /**
+   * La frase que se lee al terminar los campos, antes de guardar. Sin la clave
+   * va la del reconocimiento; una cadena vacía no muestra ninguna.
+   */
+  prueba?: string;
   /** De quiénes son las respuestas que se votan, por dato del registro. */
   de_quienes?: { campo: string; valor: string };
   /** A quiénes se les reparten esas respuestas para contestarlas al cerrar. */

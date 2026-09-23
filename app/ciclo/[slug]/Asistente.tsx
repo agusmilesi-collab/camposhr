@@ -70,6 +70,8 @@ type ActividadPublica = {
   monedas?: number | null;
   /** Cuántas opciones hay que elegir, en las de prioridad. */
   elegir?: number | null;
+  /** La frase antes de guardar los campos: null la de siempre, vacía ninguna. */
+  prueba?: string | null;
   /** Qué pasa con lo que escribe. Vacío no muestra nada. */
   aviso?: string;
 };
@@ -1704,10 +1706,12 @@ function Formulario({
               y guardada ya no. Va para leer y no para contestar: un toque más
               sería una autoauditoría de algo que los campos ya obligaron a
               hacer, y la respuesta sería que sí en todos los casos. */}
-          <p className="ci-despues-prueba">
-            Leelo como si fueras esa persona. ¿Sabrías qué hiciste bien y cómo
-            volver a hacerlo?
-          </p>
+          {actividad.prueba !== '' && (
+            <p className="ci-despues-prueba">
+              {actividad.prueba ??
+                'Leelo como si fueras esa persona. ¿Sabrías qué hiciste bien y cómo volver a hacerlo?'}
+            </p>
+          )}
           <div className="ci-acciones">
             <button
               className="cq-btn"
