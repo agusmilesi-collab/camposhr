@@ -80,95 +80,63 @@ export default async function Resumen({
       <Yo slug={params.slug} inicial={searchParams?.a ?? null} />
 
       {repaso && (
-        <>
-          <section className="rs-bloque">
-            <h2>Lo que vimos hoy</h2>
-            <ol className="rs-conceptos">
-              {repaso.temas.map((c) => (
-                <li key={c.titulo}>
-                  <b>{c.titulo}</b>
-                  <p>{c.bajada}</p>
-                </li>
-              ))}
-            </ol>
-          </section>
-
-          {repaso.reconocimiento && (
-            <section className="rs-bloque">
-              <h2>El reconocimiento en 3 pasos</h2>
-              <ol className="rs-momentos">
-                {repaso.reconocimiento.pasos.map((p, i) => (
-                  <li key={p.etapa}>
-                    <span className="rs-momento-num">{i + 1}</span>
-                    <div>
-                      <b>
-                        {p.etapa}: {p.nombre}
-                      </b>
-                      <p>"{p.ejemplo}"</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              <p className="rs-remate">{repaso.reconocimiento.agradecimiento}</p>
-            </section>
-          )}
-
-          {repaso.evitar && (
-            <section className="rs-bloque">
-              <h2>Las tres formas de no tener la conversación</h2>
-              <ol className="rs-conceptos">
-                {repaso.evitar.map((c) => (
-                  <li key={c.nombre}>
-                    <b>{c.nombre}</b>
-                    <p>{c.que}</p>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          )}
-
-          {repaso.recibe && (
-            <section className="rs-bloque">
-              <h2>Lo que le llega a la otra persona</h2>
-              <ol className="rs-conceptos">
-                {repaso.recibe.map((c) => (
-                  <li key={c.nombre}>
-                    <b>{c.nombre}</b>
-                    <p>{c.que}</p>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          )}
-
-          <section className="rs-bloque">
-            <h2>Los cuatro momentos</h2>
-            <ol className="rs-momentos">
-              {repaso.momentos.map((m) => (
-                <li key={m.numero}>
-                  <span className="rs-momento-num">{m.numero}</span>
-                  <div>
-                    <b>{m.nombre}</b>
-                    <p>{m.que}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </section>
-
-          <section className="rs-bloque">
-            <h2>De adjetivo a hecho</h2>
-            <div className="rs-traducciones">
-              {repaso.traducciones.map((t) => (
-                <div className="rs-traduccion" key={t.juicio}>
-                  <p className="rs-juicio">{t.juicio}</p>
-                  <p className="rs-hecho">{t.hecho}</p>
+        <section className="rs-bloque">
+          <h2>El camino de una conversación difícil</h2>
+          {/* Lo que se enseñó, en el orden en que se hace. Los pasos se
+              numeran corrido a través de las etapas. */}
+          <div className="rs-camino">
+            {(() => {
+              let n = 0;
+              return repaso.camino.map((etapa) => (
+                <div className={`rs-etapa rs-etapa-${etapa.tono}`} key={etapa.nombre}>
+                  <p className="rs-etapa-nombre">
+                    {etapa.nombre}
+                    {etapa.detalle && <span>{etapa.detalle}</span>}
+                  </p>
+                  <ol>
+                    {etapa.pasos.map((p) => {
+                      n += 1;
+                      return (
+                        <li key={p.titulo}>
+                          <span className="rs-camino-num">{n}</span>
+                          <div>
+                            <b>{p.titulo}</b>
+                            <p>{p.texto}</p>
+                            {p.detalle?.map((d, k) => (
+                              <div className="rs-paso-detalle" key={k}>
+                                {d.titulo && <p className="rs-detalle-titulo">{d.titulo}</p>}
+                                <ul>
+                                  {d.items.map((it, j) => (
+                                    <li key={j}>
+                                      {it.juicio && <s className="rs-detalle-juicio">{it.juicio}</s>}
+                                      {it.nombre && <strong>{it.nombre}. </strong>}
+                                      {it.texto}
+                                    </li>
+                                  ))}
+                                </ul>
+                                {d.nota && <p className="rs-detalle-nota">{d.nota}</p>}
+                              </div>
+                            ))}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                  {etapa.nota && <p className="rs-etapa-nota">{etapa.nota}</p>}
                 </div>
-              ))}
-            </div>
-            <p className="rs-remate">Un adjetivo no se puede repetir, un hecho sí.</p>
-          </section>
-        </>
+              ));
+            })()}
+          </div>
+        </section>
+      )}
+
+      {repaso?.aparte && (
+        <section className="rs-bloque">
+          <div className="rs-aparte">
+            <b>{repaso.aparte.titulo}</b>
+            <p>{repaso.aparte.bajada}</p>
+          </div>
+        </section>
       )}
 
       {delOficio.length > 0 && (

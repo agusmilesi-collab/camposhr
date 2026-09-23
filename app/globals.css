@@ -9838,3 +9838,356 @@ a.cq-btn {
   flex: 1;
   min-width: 0;
 }
+
+/* ---------------------------------------------- el camino, en el resumen
+   Una línea vertical que baja por las cuatro etapas. Cada etapa tiene su
+   color en el rótulo y en los puntos; la línea es una sola y no se corta
+   entre etapas, porque es un único recorrido. */
+.rs-camino {
+  position: relative;
+  padding-left: 4px;
+}
+
+.rs-camino::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 30px;
+  bottom: 18px;
+  width: 2px;
+  background: #2c4569;
+}
+
+.rs-etapa + .rs-etapa {
+  margin-top: 40px;
+}
+
+.rs-etapa-nombre {
+  position: relative;
+  margin: 0 0 10px 44px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rs-etapa-nombre span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.rs-etapa ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rs-etapa li {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.rs-camino-num {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 3px solid var(--paper);
+  box-sizing: content-box;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.rs-etapa li b {
+  display: block;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin-top: 3px;
+}
+
+.rs-etapa li p {
+  margin: 3px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.rs-etapa-anio .rs-etapa-nombre { color: #c98f2e; }
+.rs-etapa-anio .rs-camino-num { background: #f0b64c; color: #2b2926; }
+.rs-etapa-antes .rs-etapa-nombre { color: #6f675c; }
+.rs-etapa-antes .rs-camino-num { background: #b9b1a4; }
+.rs-etapa-conversacion .rs-etapa-nombre { color: #2c4569; }
+.rs-etapa-conversacion .rs-camino-num { background: #2c4569; }
+.rs-etapa-despues .rs-etapa-nombre { color: #7d8a6a; }
+.rs-etapa-despues .rs-camino-num { background: #7d8a6a; }
+
+.rs-aparte {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.rs-aparte b {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.rs-aparte p {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.rs-etapa-nota {
+  margin: -4px 0 6px 50px;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.rs-sub {
+  margin: 18px 0 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* La teoría de cada paso, debajo del paso: más chica y con una línea a la
+   izquierda, para que el recorrido principal se siga leyendo de un vistazo. */
+.rs-paso-detalle {
+  position: relative;
+  margin-top: 14px;
+}
+
+/* Cada subtema cuelga de la línea principal: un tramo horizontal que sale de
+   la línea vertical y llega al subtema. */
+.rs-paso-detalle::before {
+  content: '';
+  position: absolute;
+  left: -33px;
+  top: 8px;
+  width: 26px;
+  height: 2px;
+  background: #2c4569;
+}
+
+.rs-etapa .rs-paso-detalle ul {
+  list-style: disc;
+  margin: 0;
+  padding: 0 0 0 18px;
+}
+
+.rs-etapa .rs-paso-detalle li {
+  display: list-item;
+  margin: 0 0 6px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.rs-paso-detalle strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.rs-detalle-juicio {
+  display: block;
+  color: var(--muted);
+}
+
+.rs-detalle-nota {
+  margin: 4px 0 0 !important;
+  font-size: 0.82rem !important;
+  font-style: italic;
+  color: var(--muted) !important;
+}
+
+/* Jerarquía del camino, sin cards: la etapa manda con su rótulo y una línea
+   que la separa; el paso se lee grande; los subtemas quedan en segundo plano,
+   más chicos y en gris, con aire entre bloque y bloque. */
+.rs-etapa + .rs-etapa {
+  margin-top: 52px;
+}
+
+.rs-etapa-nombre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin-bottom: 18px;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+}
+
+.rs-etapa-nombre::after {
+  content: '';
+  flex: 1;
+  min-width: 40px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.35;
+  align-self: center;
+}
+
+.rs-etapa-nombre span {
+  order: 3;
+  flex-basis: 100%;
+  margin-top: 0;
+  font-size: 0.82rem;
+}
+
+.rs-etapa li {
+  margin-bottom: 38px;
+}
+
+.rs-etapa li b {
+  font-size: 1.4rem;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+.rs-etapa li > div > p {
+  margin-top: 4px;
+  font-size: 0.97rem;
+  color: var(--ink);
+}
+
+.rs-paso-detalle {
+  margin-top: 20px;
+}
+
+.rs-paso-detalle + .rs-paso-detalle {
+  margin-top: 20px;
+}
+
+.rs-detalle-titulo {
+  margin-bottom: 8px !important;
+  font-size: 0.66rem !important;
+  letter-spacing: 0.12em;
+}
+
+.rs-etapa .rs-paso-detalle li {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.rs-paso-detalle strong {
+  color: var(--ink-soft);
+}
+
+.rs-etapa .rs-detalle-titulo {
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-soft) !important;
+}
+
+/* Cada subtema es un bloque: los ítems de adentro van juntos y entre un
+   bloque y el siguiente hay aire de sobra, así se leen como unidades sin
+   necesitar una caja. */
+.rs-etapa .rs-paso-detalle + .rs-paso-detalle {
+  margin-top: 34px;
+}
+
+.rs-etapa .rs-detalle-titulo {
+  margin-bottom: 10px !important;
+  font-size: 0.7rem !important;
+  color: var(--ink) !important;
+}
+
+.rs-etapa .rs-paso-detalle li {
+  margin: 0 0 5px;
+}
+
+.rs-etapa .rs-paso-detalle li:last-child {
+  margin-bottom: 0;
+}
+
+.rs-etapa .rs-detalle-nota {
+  margin-top: 8px !important;
+}
+
+/* El título de cada paso, en el color de los títulos del resumen y en
+   negrita: es lo primero que se lee al bajar por el camino. */
+.rs-etapa li > div > b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Más aire en los subbloques: antes del primero, entre uno y otro, y entre
+   los ítems de adentro. */
+.rs-etapa .rs-paso-detalle {
+  margin-top: 26px;
+}
+
+.rs-etapa .rs-paso-detalle + .rs-paso-detalle {
+  margin-top: 44px;
+}
+
+.rs-etapa .rs-detalle-titulo {
+  margin-bottom: 14px !important;
+}
+
+.rs-etapa .rs-paso-detalle li {
+  margin: 0 0 9px;
+  line-height: 1.55;
+}
+
+.rs-etapa .rs-detalle-nota {
+  margin-top: 12px !important;
+}
+
+.rs-etapa li:has(.rs-paso-detalle) {
+  margin-bottom: 48px;
+}
+
+/* Entre subbloques, aire de sobra; adentro, los ítems juntos. El contraste
+   es lo que hace que cada uno se lea como un bloque. */
+.rs-etapa .rs-paso-detalle + .rs-paso-detalle {
+  margin-top: 64px;
+}
+
+.rs-etapa .rs-paso-detalle li {
+  margin: 0 0 6px;
+}
+
+/* Adentro de cada subbloque, apretado: título pegado a sus ítems y los ítems
+   casi sin separación entre sí. */
+.rs-etapa .rs-detalle-titulo {
+  margin-bottom: 6px !important;
+}
+
+.rs-etapa .rs-paso-detalle li {
+  margin: 0 0 2px;
+  line-height: 1.4;
+}
+
+.rs-etapa .rs-detalle-nota {
+  margin-top: 6px !important;
+}
+
+/* Entre el texto del paso y su primer subbloque, también aire. */
+.rs-etapa li > div > p + .rs-paso-detalle {
+  margin-top: 44px;
+}
