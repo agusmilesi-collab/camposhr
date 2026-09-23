@@ -12,8 +12,17 @@ import 'server-only';
  */
 
 export type RepasoCharla = {
-  /** Los seis temas del encuentro, los mismos que la placa del repaso. */
+  /** Las herramientas del encuentro, las mismas que la placa del repaso. */
   temas: { titulo: string; bajada: string }[];
+  /** El reconocimiento en sus tres pasos, con el ejemplo de la placa. */
+  reconocimiento?: {
+    pasos: { etapa: string; nombre: string; ejemplo: string }[];
+    agradecimiento: string;
+  };
+  /** Las formas de no tener la conversación. */
+  evitar?: { nombre: string; que: string }[];
+  /** Lo que le llega a quien escucha una conversación difícil. */
+  recibe?: { nombre: string; que: string }[];
   momentos: { numero: number; nombre: string; que: string }[];
   traducciones: { juicio: string; hecho: string }[];
 };
@@ -22,46 +31,64 @@ export const REPASOS: Record<string, RepasoCharla> = {
   'Conversaciones difíciles': {
     temas: [
       {
-        titulo: 'A vos tampoco te dicen cómo vas',
-        bajada:
-          '¿Cómo sabés si vas bien? Es la misma pregunta que se hace alguien de tu equipo, y vos la podrías contestar.',
+        titulo: '1. Prepará la conversación',
+        bajada: 'Decí la expectativa antes de reclamarla y anotá los hechos con día y número.',
       },
       {
-        titulo: 'Solo el hecho se puede corregir',
-        bajada:
-          '"Llegaste tarde el martes, el jueves y el viernes" se puede ir a mirar. "No te importa nada" no, y por eso abre una pelea.',
+        titulo: '2. Reconocé en 3 pasos',
+        bajada: 'Cuándo fue, qué hizo, qué cambió. Si agradecés, agradecé lo que hizo.',
       },
       {
-        titulo: 'Lo bueno se dice con el hecho',
-        bajada:
-          'Qué hizo, cuándo lo hizo y el valor que entregó con eso. Cuando pasa, sin esperar al GPM.',
+        titulo: '3. Pasá el juicio a hecho',
+        bajada: 'Preguntate: ¿la otra persona lo puede verificar? Si no, no lo puede corregir.',
       },
       {
-        titulo: 'La conversación se prepara todo el año',
+        titulo: '4. Seguí los 4 momentos',
         bajada:
-          'Decir la expectativa antes de reclamarla, y anotar los hechos para llegar con el día y el número.',
+          'Encuadre, decilo claro, sostené el silencio, cerrá con fecha. Sin postergar, suavizar ni apurar.',
       },
       {
-        titulo: 'La conversación difícil tiene cuatro momentos',
+        titulo: 'La importancia de compartir la experiencia en gestión',
         bajada:
-          'Elegí dónde y cuándo, decilo en dos frases, sostené el silencio, cerrá con una fecha.',
+          'Transmitir lo aprendido también es parte del rol de un líder con trayectoria. Y para el que empieza, es la oportunidad de nutrirse de quienes ya lo transitaron.',
       },
+    ],
+    reconocimiento: {
+      pasos: [
+        { etapa: 'Situación', nombre: 'Decí cuándo fue', ejemplo: 'En el informe del jueves…' },
+        { etapa: 'Conducta', nombre: 'Decí qué hizo', ejemplo: '…sumaste una recomendación por tu cuenta.' },
+        {
+          etapa: 'Impacto',
+          nombre: 'Decí qué cambió',
+          ejemplo: 'Esa recomendación destrabó la decisión y pudimos cerrar el presupuesto a tiempo.',
+        },
+      ],
+      agradecimiento:
+        'Y al final, si querés, el agradecimiento: "Me gustó que la sumaras sin que nadie te la pidiera". La condición es que apunte a lo que hizo, no a quién es.',
+    },
+    evitar: [
+      { nombre: 'Postergar', que: '"Hoy se lo digo." Pasan tres semanas y sigue haciendo lo mismo, porque nadie le avisó.' },
+      { nombre: 'Suavizar', que: '"Habría que mejorar algunas cositas." Vos creés que se lo dijiste; la otra persona cree que está todo bien.' },
+      { nombre: 'Apurar', que: 'Treinta segundos, en el pasillo. Te lo sacaste de encima, y la otra persona se quedó sola con eso.' },
+    ],
+    recibe: [
+      { nombre: 'El hecho', que: 'Qué pasó: "entregó tres informes fuera de fecha".' },
+      { nombre: 'La emoción', que: 'Lo que se siente al escucharlo.' },
       {
-        titulo: 'Lo que aprendió uno le sirve al que empieza',
-        bajada:
-          'Pasa si alguien lo pregunta y alguien lo contesta. Hoy pasó acá, y puede volver a pasar mañana.',
+        nombre: 'La interpretación',
+        que: 'Lo que la otra persona concluye sobre sí misma: "¿esto significa que no sirvo?".',
       },
     ],
     momentos: [
       {
         numero: 1,
-        nombre: 'Elegí dónde y cuándo',
-        que: 'Lugar privado, sin apuro, y un aviso corto antes de empezar.',
+        nombre: 'Encuadre',
+        que: 'Elegí dónde y cuándo. Lugar privado, sin apuro, y un aviso corto antes: "necesito hablarte de algo importante".',
       },
       {
         numero: 2,
-        nombre: 'Decilo en dos frases',
-        que: 'La decisión primero y el motivo enseguida, con hechos. El motivo se repite después del silencio, que es cuando lo escucha.',
+        nombre: 'Decilo claro',
+        que: 'Decilo en dos frases: la decisión primero y el motivo enseguida. Repetí el motivo después del silencio, que es cuando lo escucha.',
       },
       {
         numero: 3,
@@ -71,7 +98,7 @@ export const REPASOS: Record<string, RepasoCharla> = {
       {
         numero: 4,
         nombre: 'Cerrá con una fecha',
-        que: 'Qué tiene que pasar y cuándo, con día y hora.',
+        que: 'Qué tiene que pasar y cuándo: "el lunes 24 a las 9:30 espero el reporte del último trimestre".',
       },
     ],
     traducciones: [
