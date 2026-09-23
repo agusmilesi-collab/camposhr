@@ -154,11 +154,11 @@ cross join (values
       "de_quienes": {"campo": "rol", "valor": "Menos de un año"}
     }'::jsonb),
 
-  -- 11 a 13 · La encuesta del final. Las tres van en el mismo grupo: se abren
+  -- 12 a 14 · La encuesta del final. Las tres van en el mismo grupo: se abren
   -- de una vez y cada uno las recorre en fila mientras la sala se levanta.
   -- El número va primero porque es el que se contesta aunque después no
   -- escriban nada.
-  ('cd-nps', 1, 11, 'escala',
+  ('cd-nps', 1, 12, 'escala',
    '¿Qué tan probable es que le recomiendes este encuentro a otro líder de John Deere?',
    'De 1 a 10, donde 10 es que se lo recomendarías seguro.',
    '[]'::jsonb, 'cierre', 'Encuesta final · las 3 preguntas',
@@ -166,7 +166,7 @@ cross join (values
 
   -- La primera abierta mide lo único que importa del día siguiente: si quedó
   -- algo que se pueda hacer. Y da las frases textuales del informe.
-  ('cd-llevas', 1, 12, 'texto',
+  ('cd-llevas', 1, 13, 'texto',
    '¿Qué te llevás concreto, o qué te resonó que podés aplicar?',
    'Una sola cosa alcanza.',
    '[]'::jsonb, 'cierre', 'Encuesta · qué te llevás',
@@ -177,7 +177,7 @@ cross join (values
   -- Es la respuesta que más vale para el informe, porque nombra el freno real
   -- y no el contenido. La clave queda igual: es la última del encuentro y el
   -- teléfono la usa para dar el resumen.
-  ('cd-cambiarias', 1, 13, 'texto',
+  ('cd-cambiarias', 1, 14, 'texto',
    '¿Qué de lo que vimos hoy ya sabías y no hacés?',
    'Y qué te frena. Es lo que más nos sirve para la próxima.',
    '[]'::jsonb, 'cierre', 'Encuesta · lo que sabés y no hacés',
