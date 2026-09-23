@@ -203,6 +203,11 @@ export type ConfigActividad = {
    * va la del reconocimiento; una cadena vacía no muestra ninguna.
    */
   prueba?: string;
+  /**
+   * Hasta qué placa del deck queda abierta, cuando se cierra a mano y no al
+   * abrir la siguiente. El panel la muestra al lado de la placa donde se abre.
+   */
+  hasta?: number;
   /** De quiénes son las respuestas que se votan, por dato del registro. */
   de_quienes?: { campo: string; valor: string };
   /** A quiénes se les reparten esas respuestas para contestarlas al cerrar. */
