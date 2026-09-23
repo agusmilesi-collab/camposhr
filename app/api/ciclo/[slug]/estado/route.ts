@@ -97,6 +97,7 @@ function publica(a: Actividad, datos: Record<string, string> = {}) {
     desde: a.config.desde ?? null,
     monedas: a.config.monedas ?? null,
     elegir: a.config.elegir ?? null,
+    prueba: a.config.prueba ?? null,
   };
 }
 

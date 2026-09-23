@@ -82,13 +82,13 @@ cross join (values
    '{
       "desde": "cd-conversacion",
       "desde_titulo": "Lo que escribiste antes de la teoría",
+      "prueba": "",
       "campos": [
         {"clave": "que_hizo", "etiqueta": "¿Qué hizo?", "ayuda": "Un hecho que la otra persona puede verificar: “entregó tres informes después de la fecha”. Un juicio como “es desprolijo” no se puede corregir."},
         {"clave": "que_dia", "etiqueta": "¿Qué día pasó?", "ayuda": "Una fecha, o un día de la semana."},
         {"clave": "cuantas_veces", "etiqueta": "¿Cuántas veces?", "ayuda": "Un número."},
         {"clave": "que_pedis", "etiqueta": "¿Qué le vas a pedir?", "ayuda": "Una acción concreta."},
-        {"clave": "para_cuando", "etiqueta": "¿Para cuándo?", "ayuda": "Una fecha."},
-        {"clave": "cuando_se_lo_decis", "etiqueta": "¿Qué día se lo decís?", "ayuda": "Antes del jueves 2 de octubre."}
+        {"clave": "para_cuando", "etiqueta": "¿Para cuándo?", "ayuda": "Una fecha."}
       ]
     }'::jsonb),
 
