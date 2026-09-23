@@ -9458,3 +9458,29 @@ a.cq-btn {
   color: rgba(255, 255, 255, 0.78);
   opacity: 1;
 }
+
+/* El botón que revela la pregunta siguiente del ranking. Lo toca la expositora
+   con el mouse de la compu que proyecta, así que va chico y abajo: la sala
+   mira la pregunta, no el botón. */
+.cp-revelar {
+  margin-top: 22px;
+  align-self: center;
+  padding: 12px 28px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--muted);
+  font: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.cp-revelar:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.cp-revelar:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

@@ -15,6 +15,7 @@ import {
   type Resumen,
 } from '@/lib/ciclo';
 import AutoRefresco from '@/app/cuestionario/[slug]/matriz/AutoRefresco';
+import Revelar from './Revelar';
 import { aportesDePrueba } from '@/lib/palabras-prueba';
 import Nube from './Nube';
 import Rotan from './Rotan';
@@ -355,7 +356,13 @@ export default async function Proyeccion({
       {enPlaca && <FondoTransparente />}
       {!enPlaca && <h1 className="cp-titulo">{actividad.titulo}</h1>}
 
-      <Vista actividad={actividad} resumen={resumen} votadas={votadas} />
+      <Vista
+        actividad={actividad}
+        resumen={resumen}
+        votadas={votadas}
+        revelado={corrida.revelado ?? 0}
+        slug={empresa.slug}
+      />
 
       <p className="cp-pie">{pie(resumen)}</p>
 
@@ -386,9 +393,14 @@ function Vista({
   actividad,
   resumen,
   votadas = [],
+  revelado = 0,
+  slug,
 }: {
   actividad: Actividad;
   resumen: Resumen;
+  /** Cuántas del ranking se revelaron: 0 la tercera, 1 hasta la segunda, 2 las tres. */
+  revelado?: number;
+  slug: string;
   /** El ranking con el texto de cada pregunta, ya resuelto por el servidor. */
   votadas?: {
     texto: string;
@@ -418,30 +430,54 @@ function Vista({
       if (votadas.length === 0) {
         return <p className="cp-vacio">Se arma sola a medida que reparten.</p>;
       }
+      /*
+       * Se revelan de a una, de la tercera a la primera, y las que ya salieron
+       * quedan a la vista: la placa va sumando, no reemplazando. Cada una se
+       * contesta en voz alta antes de pasar a la siguiente, y la primera, que
+       * es la que tiene premio, llega al final.
+       *
+       * Solo las tres que se contestan. Las demás no se publican: la placa
+       * siguiente las reparte de a una y proyectarlas acá deja a la vista
+       * cuáles quedaron últimas.
+       */
+      const top = votadas.slice(0, 3);
+      // Con menos de tres preguntas votadas, la primera que se muestra es la
+      // última que haya, y se revelan las que quedan.
+      const desdeAbajo = top.length - 1;
+      const visibles = top
+        .map((v, i) => ({ v, i }))
+        .filter(({ i }) => i >= desdeAbajo - revelado);
+      const falta = desdeAbajo - revelado;
       return (
-        <ol className="cp-ranking">
-          {/* Solo las tres que se contestan. Las demás no se publican: la
-              placa siguiente las reparte de a una y proyectarlas acá deja a
-              la vista cuáles quedaron últimas. */}
-          {votadas.slice(0, 3).map((v, i) => (
-            <li className="cp-ranking-fila" key={v.texto}>
-              <span className="cp-ranking-puesto">{i + 1}</span>
-              <div className="cp-ranking-que">
-                <p>{v.texto}</p>
-                {/* Quien la reclamó sale del anonimato por elección suya, y
-                    entonces la pantalla dice de quién es. */}
-                {v.quien && <span className="cp-ranking-quien">{v.quien}</span>}
-              </div>
-              <span className="cp-ranking-pozo">
-                <b>
-                  {v.monedas}
-                  <img className="cp-coin" src="/jd-coin.png" alt="" />
-                </b>
-                <em>{v.votantes === 1 ? '1 persona' : `${v.votantes} personas`}</em>
-              </span>
-            </li>
-          ))}
-        </ol>
+        <>
+          <ol className="cp-ranking">
+            {visibles.map(({ v, i }) => (
+              <li className="cp-ranking-fila" key={v.texto}>
+                <span className="cp-ranking-puesto">{i + 1}</span>
+                <div className="cp-ranking-que">
+                  <p>{v.texto}</p>
+                  {/* Quien la reclamó sale del anonimato por elección suya, y
+                      entonces la pantalla dice de quién es. */}
+                  {v.quien && <span className="cp-ranking-quien">{v.quien}</span>}
+                </div>
+                <span className="cp-ranking-pozo">
+                  <b>
+                    {v.monedas}
+                    <img className="cp-coin" src="/jd-coin.png" alt="" />
+                  </b>
+                  <em>{v.votantes === 1 ? '1 persona' : `${v.votantes} personas`}</em>
+                </span>
+              </li>
+            ))}
+          </ol>
+          {falta >= 1 && (
+            <Revelar
+              slug={slug}
+              revelado={revelado}
+              etiqueta={falta === 1 ? 'Mostrar la 1ª' : `Mostrar la ${falta}ª`}
+            />
+          )}
+        </>
       );
     }
 

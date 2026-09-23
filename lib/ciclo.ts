@@ -132,6 +132,13 @@ export type Corrida = {
    * Vuelve a cero al abrir cualquier actividad.
    */
   fase: number;
+  /**
+   * Cuántas de las preguntas más votadas se revelaron en la placa del ranking:
+   * 0 la tercera, 1 también la segunda, 2 las tres. No vuelve a cero al abrir
+   * o cerrar, porque en el medio se cierran los teléfonos y al final se abren
+   * de nuevo para que quien escribió la primera reclame el premio.
+   */
+  revelado: number;
   activa: boolean;
 };
 
@@ -400,7 +407,7 @@ const CAMPOS_ASISTENTE =
   'id,corrida_id,nombre,apellido,foto_path,created_at,entro_en,expositora,datos';
 const CAMPOS_APORTE = 'id,corrida_id,actividad_id,asistente_id,valor,created_at';
 const CAMPOS_CORRIDA =
-  'id,empresa_id,ciclo_id,clave_control,actividad_abierta_id,fase,activa';
+  'id,empresa_id,ciclo_id,clave_control,actividad_abierta_id,fase,revelado,activa';
 
 /**
  * Todo id que viaja a PostgREST se valida antes de entrar en la query.
@@ -671,6 +678,22 @@ export async function pasarFase(
   const n = Math.trunc(fase);
   if (!Number.isFinite(n) || n < 0 || n > 9) throw new Error('Fase inválida');
   await patch('corridas', `id=eq.${corridaId}`, { fase: n });
+  olvidar('corrida:');
+}
+
+/**
+ * Revela la pregunta siguiente en la placa del ranking.
+ *
+ * Solo avanza, y de a un paso: el botón está en la placa proyectada, que es
+ * pública, así que lo peor que puede pasar es que alguien adelante una
+ * revelación. Nunca vuelve atrás ni toca los votos. Con `desde` se pide el paso
+ * que se ve en pantalla: si otro toque ya lo pasó, no avanza dos veces.
+ */
+export async function revelarSiguiente(corridaId: string, desde: number): Promise<void> {
+  if (!UUID.test(corridaId)) throw new Error('Corrida inválida');
+  const n = Math.trunc(desde);
+  if (!Number.isFinite(n) || n < 0 || n > 1) return;
+  await patch('corridas', `id=eq.${corridaId}&revelado=eq.${n}`, { revelado: n + 1 });
   olvidar('corrida:');
 }
 

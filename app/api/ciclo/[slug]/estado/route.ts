@@ -257,8 +257,10 @@ export async function GET(
     // contesta sobre eso mismo.
     antes: antes?.tipo === 'texto' ? antes.texto : null,
     // Lo que se vota, cuando la actividad abierta reparte monedas.
+    // Revelada la primera, la votación terminó: se reabre solo para el premio.
+    votacionCerrada: actividad.tipo === 'monedas' && ciclo.corrida.revelado >= 2,
     votar:
-      actividad.tipo === 'monedas'
+      actividad.tipo === 'monedas' && ciclo.corrida.revelado < 2
         ? await paraVotar(ciclo.corrida, catalogo, actividad, asistenteId)
         : null,
     // Si su pregunta quedó entre las ganadoras: cuánto junta y si ya lo cobró.
@@ -269,6 +271,7 @@ export async function GET(
         ? await pozoDe(
             ciclo.corrida,
             actividad,
+            deAntes.id,
             propios.get(deAntes.id) ?? null
           )
         : null,
@@ -724,11 +727,11 @@ async function destinoDePregunta(
 }
 
 /**
- * El pozo de la pregunta propia, cuando quedó entre las que se contestan.
+ * El premio de la pregunta más votada.
  *
- * Aparece recién cuando entra en las tres primeras: mostrarle a cada uno
- * cuántas monedas junta la suya mientras la sala todavía vota convertiría el
- * reparto en un marcador y la gente votaría mirando el puesto.
+ * Solo la primera tiene premio, y aparece recién cuando la placa del ranking
+ * la reveló: mostrarlo antes le contaría el resultado a esa persona antes que
+ * a la sala, y mientras se vota convertiría el reparto en un marcador.
  *
  * Reclamarlo es salir del anonimato, y es una elección. Por eso el teléfono
  * dice cuánto hay y ofrece el botón, en lugar de publicar el nombre solo.
@@ -736,6 +739,8 @@ async function destinoDePregunta(
 async function pozoDe(
   corrida: Corrida,
   actividad: Actividad,
+  /** La consigna donde se escribieron las preguntas que se votan. */
+  origenId: string,
   /** Su pregunta, ya leída con el resto del sondeo. */
   mio: Aporte | null
 ): Promise<{ monedas: number; puesto: number; reclamado: boolean; texto: string } | null> {
@@ -744,15 +749,28 @@ async function pozoDe(
   if (!mio || mio.valor?.tipo !== 'texto') return null;
 
   // El reparto es el mismo para todos: de memoria, como la lista que se vota.
-  const repartos = await aportesDeLaSala(corrida.id, actividad.id);
+  // Solo la primera tiene premio, y recién cuando la placa la reveló: antes
+  // de eso el teléfono le contaría el resultado antes que a la sala.
+  if (corrida.revelado < 2) return null;
+
+  const [repartos, preguntas] = await Promise.all([
+    aportesDeLaSala(corrida.id, actividad.id),
+    aportesDeLaSala(corrida.id, origenId),
+  ]);
   const resumen = resumir(actividad, repartos);
   if (resumen.tipo !== 'monedas') return null;
 
-  const puesto = resumen.ranking.findIndex((r) => r.aporteId === mio.id);
-  if (puesto < 0 || puesto >= 3) return null;
+  // El mismo ranking que proyecta la placa: una pregunta borrada después de
+  // recibir monedas no se muestra, así que tampoco cuenta para el puesto.
+  // Sin esto, el teléfono podía darle el premio a la que la pantalla muestra
+  // segunda.
+  const existen = new Set(preguntas.map((p) => p.id));
+  const ranking = resumen.ranking.filter((r) => existen.has(r.aporteId));
+  const puesto = ranking.findIndex((r) => r.aporteId === mio.id);
+  if (puesto !== 0) return null;
 
   return {
-    monedas: resumen.ranking[puesto].monedas,
+    monedas: ranking[puesto].monedas,
     puesto: puesto + 1,
     reclamado: Boolean(mio.valor.reclamado),
     texto: mio.valor.texto,
