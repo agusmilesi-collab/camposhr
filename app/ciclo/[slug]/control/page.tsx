@@ -62,6 +62,7 @@ export default async function ControlDelCiclo({
         titulo: a.titulo_control ?? a.titulo,
         grupo: a.grupo,
         placa: a.placa,
+        hasta: a.config?.hasta ?? null,
         abierta: corrida.actividad_abierta_id === a.id,
       }))}
     />

@@ -187,7 +187,8 @@ on conflict (ciclo_id, clave) do update
       config = excluded.config;
 -- En qué placa del deck se abre cada una. Es lo que el panel muestra al lado
 -- del título: mientras dicta, lo que la expositora tiene delante es el deck, y
--- el número le dice si está parada donde corresponde.
+-- el número le dice si está parada donde corresponde. Hasta qué placa queda
+-- abierta cada una va en config.hasta (supabase/ciclo-sin-placa-11.sql).
 update public.actividades a
    set placa = v.placa
   from public.ciclos c,
@@ -195,16 +196,16 @@ update public.actividades a
          ('cd-reconocimiento', 4),
          ('cd-reconocimiento-traducido', 8),
          ('cd-conversacion', 9),
-         ('cd-traduccion', 19),
-         ('cd-ensayo-1', 22),
-         ('cd-ensayo-2', 23),
-         ('cd-ensayo-3', 24),
-         ('cd-pregunta', 26),
-         ('cd-monedas', 27),
-         ('cd-reparto', 30),
-         ('cd-nps', 32),
-         ('cd-llevas', 32),
-         ('cd-cambiarias', 32)
+         ('cd-traduccion', 18),
+         ('cd-ensayo-1', 21),
+         ('cd-ensayo-2', 22),
+         ('cd-ensayo-3', 23),
+         ('cd-pregunta', 25),
+         ('cd-monedas', 26),
+         ('cd-reparto', 29),
+         ('cd-nps', 31),
+         ('cd-llevas', 31),
+         ('cd-cambiarias', 31)
        ) as v(clave, placa)
  where c.id = a.ciclo_id
    and c.nombre = 'Conversaciones difíciles'

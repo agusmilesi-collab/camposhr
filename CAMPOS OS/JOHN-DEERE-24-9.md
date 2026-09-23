@@ -71,20 +71,22 @@ está escrito en `supabase/ciclo-tipos-campos-monedas.sql`.
 
 - `/ciclo/john-deere/actividad?vista=antes-despues`: la medición del día
 - `/ciclo/john-deere/actividad?vista=rotan&clave=cd-pregunta&de=Más de un año`
-- `/ciclo/john-deere/actividad?clave=cd-monedas`: la 3ª y la 2ª más votadas (placa 28)
-- `/ciclo/john-deere/actividad?clave=cd-monedas&vista=primera`: la 1ª sola, con la card de quien la escribió (placa 29)
+- `/ciclo/john-deere/actividad?clave=cd-monedas`: la 3ª y la 2ª más votadas (placa 27)
+- `/ciclo/john-deere/actividad?clave=cd-monedas&vista=primera`: la 1ª sola, con la card de quien la escribió (placa 28)
 - `/ciclo/john-deere/actividad?vista=cierre`: los números del role play
 
-**El deck**: `public/pres/johndeere-conversaciones.html`, **32 placas** en el
-orden del reloj. `data/presentaciones.json` declara 32. Se abre desde el hub, que
+**El deck**: `public/pres/johndeere-conversaciones.html`, **31 placas** en el
+orden del reloj. `data/presentaciones.json` declara 31. Se abre desde el hub, que
 le pasa el cliente en el enlace (`?c=john-deere`).
 
 En qué placa se abre cada actividad está en la columna `placa` de `actividades`
 y en `supabase/ciclo-actividades-john-deere.sql`, ya aplicado: reconocimiento en
-la 4, traducido en la 8, conversación en la 9, traducción en la 19, las tres
-rondas del ensayo en 22, 23 y 24, la pregunta en la 26, las monedas en la 27, el
-reparto en la 30 y la encuesta final en la 32. La apuesta ("¿es un hecho?") se
-sacó el 23/9, con su placa.
+la 4, traducido en la 8, conversación en la 9, traducción en la 18, las tres
+rondas del ensayo en 21, 22 y 23, la pregunta en la 25, las monedas en la 26, el
+reparto en la 29 y la encuesta final en la 31. El 23/9 se sacaron la apuesta
+("¿es un hecho?"), con su placa, y la placa "Conducir un equipo puede ser un
+espacio solitario". Hasta qué placa queda abierta cada actividad va en
+`config.hasta`, y el panel lo muestra como "Placas 9 a 11".
 
 **El panel numera las actividades del 1 al 11** y el aviso de cada placa dice
 cuál abrir o cerrar ("Abrir actividad 9", "Cerrar actividad 9").
@@ -92,27 +94,27 @@ cuál abrir o cerrar ("Abrir actividad 9", "Cerrar actividad 9").
 **El hub del encuentro**: `tools.camposhr.com/presentaciones/charla/johndeere-conversaciones`.
 Presentación, guion, admin y código QR. El guion vive en
 `~/Desktop/Codigo Proyectos/Pla/Charla John Deere 24-9 - Guion de sala.md` y está
-cargado en la tabla `guiones` con las 32 placas: cada cambio al archivo se vuelve
+cargado en la tabla `guiones` con las 31 placas: cada cambio al archivo se vuelve
 a cargar ahí.
 
 **La clave del panel de control** está en la fila de la corrida, en la tabla
 `corridas`. No se versiona: el repositorio es público.
 
-### El bloque de las preguntas (placas 26 a 30)
+### El bloque de las preguntas (placas 25 a 29)
 
-- **26**: cada uno escribe su pregunta en el teléfono.
-- **27**: se abren los Deer Coins y la sala vota mientras pasan las respuestas de
+- **25**: cada uno escribe su pregunta en el teléfono.
+- **26**: se abren los Deer Coins y la sala vota mientras pasan las respuestas de
   los que llevan años.
-- **28**, teléfonos cerrados: llega con la 3ª más votada; el botón "Mostrar la 2ª"
+- **27**, teléfonos cerrados: llega con la 3ª más votada; el botón "Mostrar la 2ª"
   suma la 2ª. Una persona contesta cada una.
-- **29**: la 1ª sola, en dos cards. **Llegar a esta placa es lo que la revela** y
+- **28**: la 1ª sola, en dos cards. **Llegar a esta placa es lo que la revela** y
   cierra la votación. Se reabren los Deer Coins desde el panel: a todos les dice
   que la votación cerró, y solo quien escribió la 1ª ve "Reclamar el premio". Si
   reclama, su nombre y su selfie aparecen en la card de la derecha.
-- **30**: el reparto de las que quedaron.
+- **29**: el reparto de las que quedaron.
 
 El paso del ranking vive en `corridas.revelado` (0 la 3ª, 1 hasta la 2ª, 2 la
-1ª) y **solo avanza**. Abrir la pantalla de la placa 29 en cualquier navegador
+1ª) y **solo avanza**. Abrir la pantalla de la placa 28 en cualquier navegador
 lo pone en 2.
 
 ---
