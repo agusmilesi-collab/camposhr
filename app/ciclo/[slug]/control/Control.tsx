@@ -434,7 +434,7 @@ export default function Control({
             <h2>Ensayo</h2>
             <p className="ct-ensayo-nota">
               {rankingListo || revelado === 0
-                ? 'El ranking está al principio: la placa 29 arranca con la 3ª sola.'
+                ? 'El ranking está al principio: la placa 28 arranca con la 3ª sola.'
                 : revelado === 1
                   ? 'El ranking ya mostró la 2ª.'
                   : 'El ranking ya mostró la más votada.'}{' '}

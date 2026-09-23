@@ -10,7 +10,7 @@
 --
 -- El reloj de referencia, 105 minutos:
 --   8   El reconocimiento traducido          -> cd-reconocimiento, cd-reconocimiento-traducido
---   4   La conversación, como sale           -> cd-conversacion, cd-es-hecho
+--   4   La conversación, como sale           -> cd-conversacion
 --   9   Teoría: hecho contra interpretación     (sin teléfono)
 --   20  La conversación, traducida           -> cd-traduccion
 --   9   Teoría: los cinco momentos              (sin teléfono)
@@ -65,20 +65,9 @@ cross join (values
   ('cd-conversacion', 1, 3, 'texto',
    'La conversación difícil que tenés pendiente',
    'Escribí lo que le tenés que decir a alguien de tu equipo, con las palabras que usarías.',
-   '[]'::jsonb, 'conversacion', 'La conversación · como sale',
+   '[]'::jsonb, null, 'La conversación · como sale',
    -- Sin el aviso de siempre: lo que se escribe acá no se proyecta.
    '{"aviso": ""}'::jsonb),
-
-  -- 4 · La apuesta, antes de la teoría. Es el "antes" de la única medición que
-  -- se proyecta, y funciona porque se contesta cuando todavía cree que sí.
-  ('cd-es-hecho', 1, 4, 'opcion',
-   '¿Lo que escribiste es un hecho?',
-   'Un hecho es algo que la otra persona puede ir a verificar.',
-   '["Sí, es un hecho", "No, es una interpretación mía"]'::jsonb,
-   'conversacion', 'La conversación · la apuesta',
-   -- Con lo que acaba de escribir a la vista: la apuesta es sobre eso, y sin
-   -- tenerlo delante contesta de memoria.
-   '{"desde": "cd-conversacion", "desde_titulo": "Lo que escribiste"}'::jsonb),
 
   -- 5 · La traducción, con su propia frase arriba. Los campos son el control:
   -- el que completó "qué día" y "cuántas veces" no tiene forma de haber
@@ -206,17 +195,16 @@ update public.actividades a
          ('cd-reconocimiento', 4),
          ('cd-reconocimiento-traducido', 8),
          ('cd-conversacion', 9),
-         ('cd-es-hecho', 10),
-         ('cd-traduccion', 20),
-         ('cd-ensayo-1', 23),
-         ('cd-ensayo-2', 24),
-         ('cd-ensayo-3', 25),
-         ('cd-pregunta', 27),
-         ('cd-monedas', 28),
-         ('cd-reparto', 31),
-         ('cd-nps', 33),
-         ('cd-llevas', 33),
-         ('cd-cambiarias', 33)
+         ('cd-traduccion', 19),
+         ('cd-ensayo-1', 22),
+         ('cd-ensayo-2', 23),
+         ('cd-ensayo-3', 24),
+         ('cd-pregunta', 26),
+         ('cd-monedas', 27),
+         ('cd-reparto', 30),
+         ('cd-nps', 32),
+         ('cd-llevas', 32),
+         ('cd-cambiarias', 32)
        ) as v(clave, placa)
  where c.id = a.ciclo_id
    and c.nombre = 'Conversaciones difíciles'

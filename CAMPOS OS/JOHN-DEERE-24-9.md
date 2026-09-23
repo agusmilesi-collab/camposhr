@@ -71,44 +71,48 @@ está escrito en `supabase/ciclo-tipos-campos-monedas.sql`.
 
 - `/ciclo/john-deere/actividad?vista=antes-despues`: la medición del día
 - `/ciclo/john-deere/actividad?vista=rotan&clave=cd-pregunta&de=Más de un año`
-- `/ciclo/john-deere/actividad?clave=cd-monedas`: la 3ª y la 2ª más votadas (placa 29)
-- `/ciclo/john-deere/actividad?clave=cd-monedas&vista=primera`: la 1ª sola, con la card de quien la escribió (placa 30)
+- `/ciclo/john-deere/actividad?clave=cd-monedas`: la 3ª y la 2ª más votadas (placa 28)
+- `/ciclo/john-deere/actividad?clave=cd-monedas&vista=primera`: la 1ª sola, con la card de quien la escribió (placa 29)
 - `/ciclo/john-deere/actividad?vista=cierre`: los números del role play
 
-**El deck**: `public/pres/johndeere-conversaciones.html`, **33 placas** en el
-orden del reloj. `data/presentaciones.json` declara 33. Se abre desde el hub, que
+**El deck**: `public/pres/johndeere-conversaciones.html`, **32 placas** en el
+orden del reloj. `data/presentaciones.json` declara 32. Se abre desde el hub, que
 le pasa el cliente en el enlace (`?c=john-deere`).
 
 En qué placa se abre cada actividad está en la columna `placa` de `actividades`
 y en `supabase/ciclo-actividades-john-deere.sql`, ya aplicado: reconocimiento en
-la 4, traducido en la 8, conversación en la 9, la apuesta en la 10, traducción en
-la 20, las tres rondas del ensayo en 23, 24 y 25, la pregunta en la 27, las
-monedas en la 28, el reparto en la 31 y la encuesta final en la 33.
+la 4, traducido en la 8, conversación en la 9, traducción en la 19, las tres
+rondas del ensayo en 22, 23 y 24, la pregunta en la 26, las monedas en la 27, el
+reparto en la 30 y la encuesta final en la 32. La apuesta ("¿es un hecho?") se
+sacó el 23/9, con su placa.
+
+**El panel numera las actividades del 1 al 11** y el aviso de cada placa dice
+cuál abrir o cerrar ("Abrir actividad 9", "Cerrar actividad 9").
 
 **El hub del encuentro**: `tools.camposhr.com/presentaciones/charla/johndeere-conversaciones`.
 Presentación, guion, admin y código QR. El guion vive en
 `~/Desktop/Codigo Proyectos/Pla/Charla John Deere 24-9 - Guion de sala.md` y está
-cargado en la tabla `guiones` con las 33 placas: cada cambio al archivo se vuelve
+cargado en la tabla `guiones` con las 32 placas: cada cambio al archivo se vuelve
 a cargar ahí.
 
 **La clave del panel de control** está en la fila de la corrida, en la tabla
 `corridas`. No se versiona: el repositorio es público.
 
-### El bloque de las preguntas (placas 27 a 31)
+### El bloque de las preguntas (placas 26 a 30)
 
-- **27**: cada uno escribe su pregunta en el teléfono.
-- **28**: se abren los Deer Coins y la sala vota mientras pasan las respuestas de
+- **26**: cada uno escribe su pregunta en el teléfono.
+- **27**: se abren los Deer Coins y la sala vota mientras pasan las respuestas de
   los que llevan años.
-- **29**, teléfonos cerrados: llega con la 3ª más votada; el botón "Mostrar la 2ª"
+- **28**, teléfonos cerrados: llega con la 3ª más votada; el botón "Mostrar la 2ª"
   suma la 2ª. Una persona contesta cada una.
-- **30**: la 1ª sola, en dos cards. **Llegar a esta placa es lo que la revela** y
+- **29**: la 1ª sola, en dos cards. **Llegar a esta placa es lo que la revela** y
   cierra la votación. Se reabren los Deer Coins desde el panel: a todos les dice
   que la votación cerró, y solo quien escribió la 1ª ve "Reclamar el premio". Si
   reclama, su nombre y su selfie aparecen en la card de la derecha.
-- **31**: el reparto de las que quedaron.
+- **30**: el reparto de las que quedaron.
 
 El paso del ranking vive en `corridas.revelado` (0 la 3ª, 1 hasta la 2ª, 2 la
-1ª) y **solo avanza**. Abrir la pantalla de la placa 30 en cualquier navegador
+1ª) y **solo avanza**. Abrir la pantalla de la placa 29 en cualquier navegador
 lo pone en 2.
 
 ---
