@@ -123,7 +123,12 @@ lo pone en 2.
   `update corridas set revelado = 0 where id = '<corrida>'`. Si no, la charla
   arranca con la votación cerrada.
 - **Borrar los asistentes de prueba** (`ZZPRUEBA`, "Junior", "Senior",
-  "Encuesta") y sus aportes, en ese orden.
+  "Encuesta") y sus aportes, en ese orden. También el registro de prueba de
+  Agustín Milesi, que no lleva `ZZPRUEBA`.
+- **Borrar todos los aportes del role play** (`cd-ensayo-1`, `-2`, `-3`),
+  incluidos los de las expositoras. El reparto de tríos se guarda como aportes
+  y solo se arma entero cuando no hay ninguno: si queda uno de prueba, la sala
+  real entra como segundos observadores de los tríos viejos.
 - **El documento de una carilla para el cliente** está listo y lo manda Agustín.
 
 Lo hecho y comprobado: la prueba de carga con cien teléfonos y selfies (cero
