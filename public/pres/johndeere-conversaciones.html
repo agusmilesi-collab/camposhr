@@ -1278,15 +1278,31 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- D14 · Las más votadas -->
-  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="El ranking se revela de a una. Llega mostrando la 3ª más votada con su pozo: leerla y preguntar quién la quiere contestar. Contesta UNA sola persona por pregunta, la primera que levanta la mano, y ahí se corta aunque haya más manos. Después tocar Mostrar la 2ª, y lo mismo. Después Mostrar la 1ª. Con la 1ª a la vista, abrir otra vez la tarjeta de los Deer Coins desde el panel: solo quien escribió la 1ª ve Reclamar el premio, y si lo toca su nombre aparece al lado de la pregunta. La 2ª y la 3ª quedan anónimas y sin premio.">
+  <section class="placa" data-aviso="Cerrar teléfonos" data-notas="El ranking se revela de a una. Llega mostrando la 3ª más votada con su pozo: leerla y preguntar quién la quiere contestar. Contesta UNA sola persona por pregunta, la primera que levanta la mano, y ahí se corta aunque haya más manos. Después tocar Mostrar la 2ª, y lo mismo. La 1ª va sola en la placa siguiente.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido matriz-viva junto">
       <h2>Las que más quiere escuchar la sala</h2>
-      <p class="matriz-bajada">Necesitamos 3 personas para responderlas.</p>
+      <p class="matriz-bajada">¿Quién se ofrece a responder?</p>
       <div class="matriz-marco">
         <iframe data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?placa=1&clave=cd-monedas" title="Lo que responde la sala"></iframe>
         <div class="matriz-aviso">
           <p class="cargando">Se arma sola a medida que reparten los Deer Coins.</p>
+          <p class="offline">Sin conexión. Se sigue en papel.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- D14b · La más votada -->
+  <section class="placa" data-aviso="Abrir teléfonos" data-notas="La más votada, sola. Llegar a esta placa es lo que la revela y cierra la votación. Leerla y que la conteste una sola persona. Después abrir otra vez la tarjeta de los Deer Coins desde el panel: solo quien la escribió ve Reclamar el premio, y si lo toca aparecen su nombre y su foto en la card de la derecha. Si nadie lo reclama, seguir sin insistir.">
+    <div class="fondo"></div><div class="velo"></div>
+    <div class="contenido matriz-viva junto">
+      <h2>La que más quiere escuchar la sala</h2>
+      <p class="matriz-bajada">El pozo es para quien la escribió.</p>
+      <div class="matriz-marco">
+        <iframe data-src="https://camposhr.com/ciclo/__CLIENTE__/actividad?placa=1&clave=cd-monedas&vista=primera" title="La pregunta más votada"></iframe>
+        <div class="matriz-aviso">
+          <p class="cargando">Un segundo.</p>
           <p class="offline">Sin conexión. Se sigue en papel.</p>
         </div>
       </div>

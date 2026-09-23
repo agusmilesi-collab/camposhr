@@ -69,106 +69,62 @@ está escrito en `supabase/ciclo-tipos-campos-monedas.sql`.
 
 **Las pantallas que se proyectan**, todas con `?placa=1` para ir dentro del deck:
 
-- `/ciclo/john-deere/actividad?vista=antes-despues` — la medición del día
+- `/ciclo/john-deere/actividad?vista=antes-despues`: la medición del día
 - `/ciclo/john-deere/actividad?vista=rotan&clave=cd-pregunta&de=Más de un año`
-- `/ciclo/john-deere/actividad?clave=cd-monedas` — el ranking con los pozos
-- `/ciclo/john-deere/actividad?vista=cierre` — los números del role play
-- `/ciclo/john-deere/qr?destino=resumen` — el código de la última placa
+- `/ciclo/john-deere/actividad?clave=cd-monedas`: la 3ª y la 2ª más votadas (placa 29)
+- `/ciclo/john-deere/actividad?clave=cd-monedas&vista=primera`: la 1ª sola, con la card de quien la escribió (placa 30)
+- `/ciclo/john-deere/actividad?vista=cierre`: los números del role play
 
-**El deck**: `public/pres/johndeere-conversaciones.html`, 33 placas en el orden
-del reloj, cinco de ellas con el marco que se llena con lo que responde la sala.
-Se abre desde el hub, que le pasa el cliente en el enlace. El de prueba, de 17
-placas, quedó al lado sin uso.
+**El deck**: `public/pres/johndeere-conversaciones.html`, **33 placas** en el
+orden del reloj. `data/presentaciones.json` declara 33. Se abre desde el hub, que
+le pasa el cliente en el enlace (`?c=john-deere`).
 
-En qué placa se abre cada actividad está en la columna `placa` de `actividades`,
-con la numeración de 33 ya aplicada en la base: reconocimiento en la 4,
-traducido en la 7, conversación en la 8, la apuesta en la 9, traducción en la 17,
-las tres rondas del ensayo en 22, 23 y 24, la pregunta en la 26, las monedas en
-la 28 y el reparto en la 29.
+En qué placa se abre cada actividad está en la columna `placa` de `actividades`
+y en `supabase/ciclo-actividades-john-deere.sql`, ya aplicado: reconocimiento en
+la 4, traducido en la 8, conversación en la 9, la apuesta en la 10, traducción en
+la 20, las tres rondas del ensayo en 23, 24 y 25, la pregunta en la 27, las
+monedas en la 28, el reparto en la 31 y la encuesta final en la 33.
 
 **El hub del encuentro**: `tools.camposhr.com/presentaciones/charla/johndeere-conversaciones`.
-Presentación, guion, admin y código QR.
+Presentación, guion, admin y código QR. El guion vive en
+`~/Desktop/Codigo Proyectos/Pla/Charla John Deere 24-9 - Guion de sala.md` y está
+cargado en la tabla `guiones` con las 33 placas: cada cambio al archivo se vuelve
+a cargar ahí.
 
 **La clave del panel de control** está en la fila de la corrida, en la tabla
 `corridas`. No se versiona: el repositorio es público.
 
+### El bloque de las preguntas (placas 27 a 31)
+
+- **27**: cada uno escribe su pregunta en el teléfono.
+- **28**: se abren los Deer Coins y la sala vota mientras pasan las respuestas de
+  los que llevan años.
+- **29**, teléfonos cerrados: llega con la 3ª más votada; el botón "Mostrar la 2ª"
+  suma la 2ª. Una persona contesta cada una.
+- **30**: la 1ª sola, en dos cards. **Llegar a esta placa es lo que la revela** y
+  cierra la votación. Se reabren los Deer Coins desde el panel: a todos les dice
+  que la votación cerró, y solo quien escribió la 1ª ve "Reclamar el premio". Si
+  reclama, su nombre y su selfie aparecen en la card de la derecha.
+- **31**: el reparto de las que quedaron.
+
+El paso del ranking vive en `corridas.revelado` (0 la 3ª, 1 hasta la 2ª, 2 la
+1ª) y **solo avanza**. Abrir la pantalla de la placa 30 en cualquier navegador
+lo pone en 2.
+
 ---
 
-## 4. Lo que falta
+## 4. Lo que falta antes del 24
 
-### 4.1 El guion de las expositoras
+- **Volver el ranking a 0** después de cualquier ensayo:
+  `update corridas set revelado = 0 where id = '<corrida>'`. Si no, la charla
+  arranca con la votación cerrada.
+- **Borrar los asistentes de prueba** (`ZZPRUEBA`, "Junior", "Senior",
+  "Encuesta") y sus aportes, en ese orden.
+- **El documento de una carilla para el cliente** está listo y lo manda Agustín.
 
-**Está escrito y falta pegarlo en el hub.** La versión nueva, contra el deck de
-33 placas, es
-`~/Desktop/Codigo Proyectos/Pla/Charla John Deere 24-9 - Guion de sala.md`. Lo
-que hoy tiene la tabla `guiones` es la versión anterior, la de 34 placas, así que
-la pantalla del hub todavía muestra esa.
-
-Lo que sigue ahí es repasarlo placa por placa contra el deck actual y pegarlo.
-
-**La consigna fue reciclar todo lo que se pudiera**: Lorena y Lucila no tienen que
-aprender contenido nuevo a tres días del encuentro. Lo que ya saben decir se
-mantiene tal cual, y lo nuevo se limita a lo que el cliente pidió el 18/9 y no
-existe en el material de Pla: el vocabulario (GPM, conversaciones de
-desarrollo), los tres casos del role play, y el bloque de las preguntas.
-
-Dónde se escribe: la pantalla del guion ya existe y es editable, en el hub →
-**Guion**. Arranca cargada con las notas del orador que trae el deck, una
-entrada por placa. Lo que se guarda vive en la tabla `guiones`.
-
-El material de Pla está en `~/Desktop/Codigo Proyectos/Pla/`, en los archivos
-`GUION Charla 4 - expositoras.md` y `GUION Charla 5 - expositoras.md`, que son
-los dos más cercanos a esta charla.
-
-### 4.2 Revisión de código para bajar el costo de los sondeos
-
-Después del guion. El objetivo es que el encuentro entre cómodo en la base, no
-que entre justo.
-
-Dos arreglos ya están hechos y son la referencia de lo que se busca:
-
-- El camino de escritura (`app/api/ciclo/[slug]/aporte/route.ts`) lee de memoria
-  lo que el sondeo ya cachea. Pasó de cuatro o cinco idas a la base a dos, y las
-  escrituras quedaron en unos 230 ms.
-- La pantalla del teléfono avanza al tocar sin esperar al servidor, y reintenta
-  por atrás.
-
-Lo que hay que mirar: el sondeo de `estado` con ochenta teléfonos cada veinte
-segundos, cuántas consultas cuesta cada uno, y qué más se puede servir del
-catálogo que ya está en memoria. El cuidado es siempre el mismo: lo que se
-cachea no puede ser lo que cambia durante el encuentro, y quien se registra
-tarde tiene que poder responder igual.
-
-### 4.3 La prueba de carga, al final de todo
-
-**No correrla antes.** Agustín lo pidió explícitamente: primero se cierra la
-versión, después se bombardea la base. Correrla sobre algo que todavía cambia no
-mide nada y deja basura en producción.
-
-Cuando toque, la corrida es con **cien teléfonos**, y esta vez tiene que incluir
-lo que la prueba del 11/9 no cubrió: **cien selfies subiendo al mismo tiempo**.
-El script es `scripts/carga-ciclo.mjs` y la medición anterior está en la sección
-13 del diseño (techo de 6,7 escrituras por segundo, sondeo de 20 segundos).
-
-Al terminar, **borrar los aportes de prueba, los asistentes y la corrida de
-prueba, en ese orden**.
-
-### 4.4 Lo que está en local y sin commitear
-
-Se viene trabajando así: se edita, Agustín mira localhost, y el commit se arma al
-final del lote cuando él lo pide.
-
-| Archivo | Qué cambió |
-|:--|:--|
-| `public/pres/johndeere-conversaciones.html` | Se sacó la placa "De qué conversaciones hablamos hoy" y cambió la frase de apertura |
-| `data/presentaciones.json` | El deck declara 33 placas |
-| `supabase/ciclo-actividades-john-deere.sql` | El mapeo actividad a placa corrido uno, ya aplicado en la base |
-| `lib/ciclo.ts` | Los repartos de ensayo, cruce y frases excluyen a las expositoras |
-| `app/ciclo/[slug]/Asistente.tsx`, `app/globals.css` | Ajustes de la pantalla del teléfono |
-
-**El deck publicado todavía tiene 34 placas**, porque es un archivo del
-repositorio y espera el push. Hasta que se suba, el número de placa que muestra
-el panel en producción está corrido uno respecto de lo que proyecta la sala.
+Lo hecho y comprobado: la prueba de carga con cien teléfonos y selfies (cero
+errores, limpiada después), la revisión del costo de los sondeos, y el guion
+cargado en el hub.
 
 ---
 
