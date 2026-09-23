@@ -9397,3 +9397,64 @@ a.cq-btn {
   text-decoration: none;
   font-weight: 500;
 }
+
+/* Elegir en orden de prioridad: el número del puesto va al frente de cada
+   opción elegida, y las que quedaron afuera se apagan. */
+.ci-prio-guia {
+  margin: 14px 0 4px;
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+.ci-prio {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+}
+.ci-prio-num {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.ci-opcion-on .ci-prio-num {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.ci-prio-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ci-prio-texto em {
+  font-style: normal;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+.ci-prio-fuera {
+  opacity: 0.4;
+}
+.ci-prio .ci-prio-texto {
+  color: var(--ink);
+  font-weight: 500;
+}
+.ci-opcion-on.ci-prio .ci-prio-texto {
+  color: #fff;
+}
+.ci-opcion-on .ci-prio-num {
+  background: #fff;
+  border-color: #fff;
+  color: var(--ink);
+}
+.ci-opcion-on.ci-prio .ci-prio-texto em {
+  color: rgba(255, 255, 255, 0.78);
+  opacity: 1;
+}

@@ -86,6 +86,10 @@ export const TIPOS = [
    *  Con eso cada quien recién empieza sale con un referente y sin que la
    *  empresa monte un programa de mentoría. */
   'reparto',
+  /** Elegir algunas de las opciones, en orden de prioridad: el primer toque es
+   *  la que más importa. Obliga a dejar afuera las demás, que es lo que hace
+   *  que el resultado diga algo. Cuántas se eligen lo dice `config.elegir`. */
+  'prioridad',
 ] as const;
 export type TipoActividad = (typeof TIPOS)[number];
 
@@ -185,6 +189,8 @@ export type ConfigActividad = {
   campos?: CampoActividad[];
   /** Cuántas monedas reparte cada uno. */
   monedas?: number;
+  /** En las de prioridad, cuántas opciones hay que elegir. */
+  elegir?: number;
   /** De quiénes son las respuestas que se votan, por dato del registro. */
   de_quienes?: { campo: string; valor: string };
   /** A quiénes se les reparten esas respuestas para contestarlas al cerrar. */
@@ -271,6 +277,8 @@ export type Aporte = {
 export type Valor =
   | { tipo: 'palabra'; palabra: string }
   | { tipo: 'opcion'; opcion: number }
+  /** Los índices de las opciones elegidas, de la que más importa a la que menos. */
+  | { tipo: 'prioridad'; orden: number[] }
   | { tipo: 'escala'; escala: number }
   /**
    * `reclamado` existe solo en las consignas que se votan: quien escribió una
@@ -1633,6 +1641,20 @@ export function normalizarValor(actividad: Actividad, crudo: unknown): Valor {
       return { tipo: 'opcion', opcion };
     }
 
+    case 'prioridad': {
+      // Exactamente las que pide, sin repetir y en orden: con menos, el
+      // ejercicio deja de obligar a dejar algo afuera.
+      const elegir = Math.min(actividad.config.elegir ?? 3, actividad.opciones.length);
+      const crudo = Array.isArray(dato.orden) ? dato.orden : [];
+      const orden = crudo.map(Number);
+      const validas =
+        orden.length === elegir &&
+        new Set(orden).size === orden.length &&
+        orden.every((i) => Number.isInteger(i) && i >= 0 && i < actividad.opciones.length);
+      if (!validas) throw new Error(`Elegí ${elegir}, en orden`);
+      return { tipo: 'prioridad', orden };
+    }
+
     case 'escala': {
       const escala = Number(dato.escala);
       if (!Number.isInteger(escala) || escala < 1 || escala > 10) {
@@ -1748,6 +1770,14 @@ export function normalizarValor(actividad: Actividad, crudo: unknown): Valor {
 export type Resumen =
   | { tipo: 'palabra'; total: number; nube: { texto: string; veces: number }[] }
   | { tipo: 'opcion'; total: number; conteo: { texto: string; veces: number }[] }
+  /** Ordenadas por puntos: la primera elegida suma tantos como opciones se
+   *  eligen, la segunda uno menos, y así. `primero` cuenta cuántos la pusieron
+   *  en el primer lugar, que desempata. */
+  | {
+      tipo: 'prioridad';
+      total: number;
+      ranking: { texto: string; puntos: number; primero: number }[];
+    }
   | {
       tipo: 'escala';
       total: number;
@@ -1882,6 +1912,27 @@ export function resumir(actividad: Actividad, aportes: Aporte[]): Resumen {
         tipo: 'opcion',
         total,
         conteo: actividad.opciones.map((texto, i) => ({ texto, veces: veces[i] })),
+      };
+    }
+
+    case 'prioridad': {
+      const elegir = Math.min(actividad.config.elegir ?? 3, actividad.opciones.length);
+      const puntos = new Array(actividad.opciones.length).fill(0) as number[];
+      const primero = new Array(actividad.opciones.length).fill(0) as number[];
+      for (const a of aportes) {
+        if (a.valor?.tipo !== 'prioridad') continue;
+        a.valor.orden.forEach((i, puesto) => {
+          if (puntos[i] === undefined) return;
+          puntos[i] += elegir - puesto;
+          if (puesto === 0) primero[i] += 1;
+        });
+      }
+      return {
+        tipo: 'prioridad',
+        total,
+        ranking: actividad.opciones
+          .map((texto, i) => ({ texto, puntos: puntos[i], primero: primero[i] }))
+          .sort((x, y) => y.puntos - x.puntos || y.primero - x.primero),
       };
     }
 

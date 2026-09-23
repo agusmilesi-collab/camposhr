@@ -34,7 +34,8 @@ type TipoActividad =
   | 'frases'
   | 'campos'
   | 'monedas'
-  | 'reparto';
+  | 'reparto'
+  | 'prioridad';
 
 /** Un campo de una consigna que se responde dato por dato. */
 type CampoActividad = { clave: string; etiqueta: string; ayuda?: string };
@@ -67,6 +68,8 @@ type ActividadPublica = {
   desde?: string | null;
   /** Cuántas monedas reparte, en las consignas de votación. */
   monedas?: number | null;
+  /** Cuántas opciones hay que elegir, en las de prioridad. */
+  elegir?: number | null;
   /** Qué pasa con lo que escribe. Vacío no muestra nada. */
   aviso?: string;
 };
@@ -74,6 +77,7 @@ type ActividadPublica = {
 type Valor =
   | { tipo: 'palabra'; palabra: string }
   | { tipo: 'opcion'; opcion: number }
+  | { tipo: 'prioridad'; orden: number[] }
   | { tipo: 'escala'; escala: number }
   | { tipo: 'texto'; texto: string }
   | { tipo: 'marcas'; marcas: number[] }
@@ -1460,6 +1464,15 @@ function Formulario({
         </div>
       )}
 
+      {actividad.tipo === 'prioridad' && (
+        <Prioridad
+          opciones={actividad.opciones}
+          elegir={actividad.elegir ?? 3}
+          enviando={enviando}
+          onEnviar={(orden) => enviar({ tipo: 'prioridad', orden })}
+        />
+      )}
+
       {actividad.tipo === 'escala' && (
         <div className="ci-escala">
           {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
@@ -2747,6 +2760,10 @@ function resumenPropio(mio: Valor | null, actividad: ActividadPublica): string {
       return `Pusiste "${mio.palabra}".`;
     case 'opcion':
       return `Elegiste "${actividad.opciones[mio.opcion] ?? '—'}".`;
+    case 'prioridad':
+      return `Tu orden: ${mio.orden
+        .map((i, n) => `${n + 1}. ${partirOpcion(actividad.opciones[i] ?? '—')[0]}`)
+        .join(' · ')}.`;
     case 'escala':
       return `Elegiste ${mio.escala}.`;
     case 'texto':
@@ -2795,3 +2812,74 @@ async function reducirImagen(archivo: File): Promise<Blob> {
     );
   });
 }
+
+/**
+ * Elegir algunas opciones en orden de prioridad.
+ *
+ * Cada toque suma la opción en el puesto siguiente, y el número queda al lado
+ * para que se vea que el orden cuenta: el 1 es la que más le interesa. Al
+ * completar las que se piden, las demás se apagan, que es lo que obliga a
+ * dejar algo afuera. Tocar una elegida la saca y las de abajo suben un puesto.
+ */
+function Prioridad({
+  opciones,
+  elegir,
+  enviando,
+  onEnviar,
+}: {
+  opciones: string[];
+  elegir: number;
+  enviando: boolean;
+  onEnviar: (orden: number[]) => void;
+}) {
+  const [orden, setOrden] = useState<number[]>([]);
+  const lleno = orden.length >= elegir;
+
+  function tocar(i: number) {
+    setOrden((o) => (o.includes(i) ? o.filter((x) => x !== i) : o.length >= elegir ? o : [...o, i]));
+  }
+
+  return (
+    <>
+      <p className="ci-prio-guia">
+        {lleno
+          ? 'Listo. Si querés cambiar el orden, tocá una para sacarla.'
+          : orden.length === 0
+            ? 'Tocá primero la que más te interesa.'
+            : `Ahora la ${orden.length + 1}ª. Van ${orden.length} de ${elegir}.`}
+      </p>
+      <div className="ci-opciones">
+        {opciones.map((o, i) => {
+          const [titulo, aclara] = partirOpcion(o);
+          const puesto = orden.indexOf(i);
+          const fuera = lleno && puesto < 0;
+          return (
+            <button
+              key={i}
+              type="button"
+              className={`cq-opcion ci-opcion ci-prio ${puesto >= 0 ? 'ci-opcion-on' : ''} ${
+                fuera ? 'ci-prio-fuera' : ''
+              }`}
+              disabled={enviando}
+              onClick={() => tocar(i)}
+            >
+              <span className="ci-prio-num" aria-hidden={puesto < 0}>
+                {puesto >= 0 ? puesto + 1 : ''}
+              </span>
+              <span className="ci-prio-texto">
+                {titulo}
+                {aclara && <em>{aclara}</em>}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="ci-acciones">
+        <button className="cq-btn" disabled={!lleno || enviando} onClick={() => onEnviar(orden)}>
+          {enviando ? 'Un segundo…' : 'Guardar mi orden'}
+        </button>
+      </div>
+    </>
+  );
+}
+

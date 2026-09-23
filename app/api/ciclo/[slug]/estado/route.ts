@@ -96,6 +96,7 @@ function publica(a: Actividad, datos: Record<string, string> = {}) {
     // hay que mostrar ya viajó en el mismo grupo.
     desde: a.config.desde ?? null,
     monedas: a.config.monedas ?? null,
+    elegir: a.config.elegir ?? null,
   };
 }
 
