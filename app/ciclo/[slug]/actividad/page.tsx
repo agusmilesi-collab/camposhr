@@ -16,6 +16,9 @@ import {
 } from '@/lib/ciclo';
 import AutoRefresco from '@/app/cuestionario/[slug]/matriz/AutoRefresco';
 import Revelar from './Revelar';
+import RevelarPrimera from './RevelarPrimera';
+import { firmarSelfies } from '@/lib/supabase';
+import { recordar } from '@/lib/memoria';
 import { aportesDePrueba } from '@/lib/palabras-prueba';
 import Nube from './Nube';
 import Rotan from './Rotan';
@@ -312,6 +315,7 @@ export default async function Proyeccion({
     monedas: number;
     votantes: number;
     quien: string | null;
+    foto: string | null;
   }[] = [];
   if (resumen.tipo === 'monedas' && actividad.config.desde) {
     const origen = await deMemoria(corrida.ciclo_id, actividad.config.desde);
@@ -338,9 +342,23 @@ export default async function Proyeccion({
             monedas: r.monedas,
             votantes: r.votantes,
             quien: duena ? `${duena.nombre} ${duena.apellido}` : null,
+            fotoPath: duena?.foto_path ?? null,
           };
         })
-        .filter((r) => r.texto !== '');
+        .filter((r) => r.texto !== '')
+        .map(({ fotoPath, ...r }) => ({ ...r, foto: fotoPath }));
+      // La foto se firma solo para quien reclamó, que es a lo sumo uno.
+      const conFoto = votadas.map((v) => v.foto).filter((f): f is string => Boolean(f));
+      if (conFoto.length) {
+        // Firmada una vez por hora: la pantalla se redibuja cada cinco
+        // segundos, y con una dirección nueva en cada vuelta la foto parpadea.
+        const firmadas = await recordar(`selfie:${conFoto.join(',')}`, 3600, () =>
+          firmarSelfies(conFoto)
+        );
+        votadas = votadas.map((v) => ({ ...v, foto: v.foto ? firmadas.get(v.foto) ?? null : null }));
+      } else {
+        votadas = votadas.map((v) => ({ ...v, foto: null }));
+      }
     }
   }
 
@@ -350,6 +368,50 @@ export default async function Proyeccion({
    * demás resúmenes se siguen acomodando solos.
    */
   const lleno = resumen.tipo === 'palabra' ? ' cp-lleno' : '';
+
+  /*
+   * La más votada, sola en su placa: la pregunta y quien la escribió. Llegar
+   * acá es lo que la revela, y quien la escribió sigue anónimo hasta que
+   * reclama el pozo desde el teléfono; ahí aparecen su nombre y su foto.
+   */
+  if (resumen.tipo === 'monedas' && searchParams?.vista === 'primera') {
+    const primera = votadas[0];
+    return (
+      <main className={enPlaca ? 'cp cp-placa' : 'cp'}>
+        {enPlaca && <FondoTransparente />}
+        {enPlaca && <RevelarPrimera slug={empresa.slug} />}
+        {!primera ? (
+          <p className="cp-vacio">Todavía no hay preguntas votadas.</p>
+        ) : (
+          <div className="cp-primera">
+            <div className="cp-primera-card cp-primera-pregunta">
+              <span className="cp-ranking-puesto">1</span>
+              <p>{primera.texto}</p>
+              <span className="cp-ranking-pozo">
+                <b>
+                  {primera.monedas}
+                  <img className="cp-coin" src="/jd-coin.png" alt="" />
+                </b>
+                <em>
+                  {primera.votantes === 1 ? '1 persona' : `${primera.votantes} personas`}
+                </em>
+              </span>
+            </div>
+            <div className={'cp-primera-card cp-primera-autor' + (primera.quien ? ' reclamada' : '')}>
+              <span className="cp-primera-cara">
+                {primera.foto ? <img src={primera.foto} alt="" /> : <span>?</span>}
+              </span>
+              <span className="cp-primera-rotulo">Quién la escribió</span>
+              {/* Sin género: la sala todavía no sabe quién es. */}
+              <strong>{primera.quien ?? 'Todavía no se sabe'}</strong>
+              {!primera.quien && <em>Aparece si reclama el pozo</em>}
+            </div>
+          </div>
+        )}
+        <AutoRefresco segundos={5} oculto />
+      </main>
+    );
+  }
 
   return (
     <main className={(enPlaca ? 'cp cp-placa' : 'cp') + lleno}>
@@ -431,23 +493,23 @@ function Vista({
         return <p className="cp-vacio">Se arma sola a medida que reparten.</p>;
       }
       /*
-       * Se revelan de a una, de la tercera a la primera, y las que ya salieron
-       * quedan a la vista: la placa va sumando, no reemplazando. Cada una se
-       * contesta en voz alta antes de pasar a la siguiente, y la primera, que
-       * es la que tiene premio, llega al final.
+       * Se revelan de a una, primero la tercera y después la segunda, y la que
+       * ya salió queda a la vista: la placa va sumando, no reemplazando. Cada
+       * una se contesta en voz alta antes de pasar a la siguiente. La primera,
+       * que es la que tiene premio, llega sola en la placa que sigue.
        *
        * Solo las tres que se contestan. Las demás no se publican: la placa
        * siguiente las reparte de a una y proyectarlas acá deja a la vista
        * cuáles quedaron últimas.
        */
-      const top = votadas.slice(0, 3);
-      // Con menos de tres preguntas votadas, la primera que se muestra es la
-      // última que haya, y se revelan las que quedan.
-      const desdeAbajo = top.length - 1;
-      const visibles = top
-        .map((v, i) => ({ v, i }))
-        .filter(({ i }) => i >= desdeAbajo - revelado);
-      const falta = desdeAbajo - revelado;
+      // La 1ª va sola en la placa siguiente: acá quedan la 2ª y la 3ª. Con
+      // menos preguntas votadas se muestra lo que haya después de la primera.
+      const resto = votadas.slice(1, 3).map((v, k) => ({ v, i: k + 1 }));
+      if (resto.length === 0) {
+        return <p className="cp-vacio">La más votada va en la placa siguiente.</p>;
+      }
+      const visibles = resto.filter(({ i }) => i === resto.length || revelado >= 1);
+      const falta = resto.length === 2 && revelado < 1 ? 1 : 0;
       return (
         <>
           <ol className="cp-ranking">
@@ -474,7 +536,7 @@ function Vista({
             <Revelar
               slug={slug}
               revelado={revelado}
-              etiqueta={falta === 1 ? 'Mostrar la 1ª' : `Mostrar la ${falta}ª`}
+              etiqueta="Mostrar la 2ª"
             />
           )}
         </>

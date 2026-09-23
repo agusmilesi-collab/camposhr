@@ -689,10 +689,22 @@ export async function pasarFase(
  * revelación. Nunca vuelve atrás ni toca los votos. Con `desde` se pide el paso
  * que se ve en pantalla: si otro toque ya lo pasó, no avanza dos veces.
  */
+/**
+ * La primera se revela al llegar a su placa, y desde ahí la votación queda
+ * cerrada. Salta desde donde esté: si nadie tocó "Mostrar la 2ª", la placa de
+ * la primera igual tiene que mostrarla.
+ */
+export async function revelarPrimera(corridaId: string): Promise<void> {
+  if (!UUID.test(corridaId)) throw new Error('Corrida inválida');
+  await patch('corridas', `id=eq.${corridaId}&revelado=lt.2`, { revelado: 2 });
+  olvidar('corrida:');
+}
+
 export async function revelarSiguiente(corridaId: string, desde: number): Promise<void> {
   if (!UUID.test(corridaId)) throw new Error('Corrida inválida');
   const n = Math.trunc(desde);
-  if (!Number.isFinite(n) || n < 0 || n > 1) return;
+  // Desde el botón solo se pasa de la 3ª a la 2ª: la 1ª la revela su placa.
+  if (n !== 0) return;
   await patch('corridas', `id=eq.${corridaId}&revelado=eq.${n}`, { revelado: n + 1 });
   olvidar('corrida:');
 }

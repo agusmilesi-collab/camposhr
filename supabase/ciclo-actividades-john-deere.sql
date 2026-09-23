@@ -212,11 +212,11 @@ update public.actividades a
          ('cd-ensayo-2', 24),
          ('cd-ensayo-3', 25),
          ('cd-pregunta', 27),
-         ('cd-monedas', 29),
-         ('cd-reparto', 30),
-         ('cd-nps', 32),
-         ('cd-llevas', 32),
-         ('cd-cambiarias', 32)
+         ('cd-monedas', 28),
+         ('cd-reparto', 31),
+         ('cd-nps', 33),
+         ('cd-llevas', 33),
+         ('cd-cambiarias', 33)
        ) as v(clave, placa)
  where c.id = a.ciclo_id
    and c.nombre = 'Conversaciones difíciles'

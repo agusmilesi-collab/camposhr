@@ -9484,3 +9484,94 @@ a.cq-btn {
   opacity: 0.5;
   cursor: default;
 }
+
+/* -------------------------------------------- la más votada, sola en su placa
+   Dos cards: la pregunta con su pozo, y quien la escribió. La segunda dice
+   "Anónimo" hasta que esa persona reclama el pozo desde el teléfono; ahí
+   aparecen su nombre y su foto. */
+.cp-primera {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 18px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.cp-primera-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 30px 32px;
+}
+
+.cp-primera-pregunta {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.cp-primera-pregunta p {
+  flex: 1;
+  margin: 0;
+  font-size: 2.6rem;
+  line-height: 1.3;
+  color: var(--ink);
+  text-align: left;
+}
+
+.cp-primera-pregunta .cp-ranking-puesto {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.cp-primera-autor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.cp-primera-cara {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--line-soft);
+  color: var(--muted);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 4rem;
+  margin-bottom: 8px;
+}
+
+.cp-primera-cara img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cp-primera-rotulo {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cp-primera-autor strong {
+  font-size: 1.7rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.cp-primera-autor.reclamada strong {
+  color: var(--ink);
+}
+
+.cp-primera-autor em {
+  font-style: normal;
+  font-size: 1rem;
+  color: var(--muted);
+}
