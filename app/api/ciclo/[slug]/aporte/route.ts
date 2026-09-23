@@ -69,6 +69,13 @@ export async function POST(
     return new NextResponse('La actividad está cerrada', { status: 409 });
   }
 
+  // Revelada la primera, la votación terminó: los teléfonos se vuelven a abrir
+  // solo para que quien la escribió reclame el premio, y un voto tardío
+  // movería un ranking que la sala ya vio.
+  if (actividad.tipo === 'monedas' && corrida.revelado >= 2) {
+    return new NextResponse('La votación ya cerró', { status: 409 });
+  }
+
   const asistenteId = String(datos.asistenteId ?? '');
   const asistente =
     (await asistentesDeLaSala(corrida.id)).find((a) => a.id === asistenteId) ??

@@ -162,6 +162,8 @@ type Estado = {
   antes?: string | null;
   /** Las respuestas que se votan, cuando la consigna reparte monedas. */
   votar?: ParaVotar[] | null;
+  /** Revelada la primera en la placa: ya no se vota, solo se reclama el premio. */
+  votacionCerrada?: boolean;
   /** El pozo de la pregunta propia, si quedó entre las que se contestan. */
   pozo?: Pozo | null;
   /** En el reparto, qué pasó con la pregunta propia. */
@@ -804,13 +806,13 @@ function ElPozo({
         </p>
       ) : (
         <button className="cq-btn" disabled={yendo} onClick={reclamar}>
-          {yendo ? 'Un segundo…' : 'Reclamar el pozo'}
+          {yendo ? 'Un segundo…' : 'Reclamar el premio'}
         </button>
       )}
       {!reclamado && (
         <p className="ci-pozo-aviso">
-          Para cobrarlo se muestra tu nombre al lado de la pregunta. Si preferís
-          que quede anónima, no toques nada.
+          Para llevarte el premio, tu nombre aparece en la pantalla al lado de
+          la pregunta. Si preferís que quede anónima, no toques nada.
         </p>
       )}
     </section>
@@ -947,6 +949,7 @@ function Fila({
         ensayo={estado.ensayo}
         frases={estado.frases}
         votar={estado.votar ?? null}
+        votacionCerrada={Boolean(estado.votacionCerrada)}
         pozo={estado.pozo ?? null}
         miPregunta={estado.miPregunta ?? null}
         antes={estado.antes ?? null}
@@ -971,6 +974,7 @@ function Formulario({
   ensayo,
   frases,
   votar,
+  votacionCerrada,
   pozo,
   miPregunta,
   antes,
@@ -988,6 +992,7 @@ function Formulario({
   ensayo: Ensayo | null;
   frases: Frases | null;
   votar: ParaVotar[] | null;
+  votacionCerrada: boolean;
   pozo: Pozo | null;
   miPregunta: MiPregunta | null;
   /** Lo que escribió en la consigna de la que sale esta, si la hay. */
@@ -1104,6 +1109,22 @@ function Formulario({
    * No se responde en el teléfono: se contesta hablando, al terminar la
    * charla. La pantalla dice cuál es y qué hacer con ella, y nada más.
    */
+  /* Revelada la primera en la placa, las monedas se reabren solo para el
+     premio: quien escribió la primera lo ve y lo reclama, y al resto se le dice
+     que la votación cerró, sin formulario ni "cambiar mi respuesta". */
+  if (actividad.tipo === 'monedas' && votacionCerrada) {
+    return pozo ? (
+      <section className="cq-placa">
+        <ElPozo slug={slug} asistenteId={asistenteId} pozo={pozo} />
+      </section>
+    ) : (
+      <section className="cq-placa">
+        <h1 className="ci-titulo">La votación ya cerró</h1>
+        <p className="cq-ayuda">Ya podés guardar el teléfono.</p>
+      </section>
+    );
+  }
+
   if (actividad.tipo === 'reparto') {
     /* Quien escribió la pregunta. Es la única persona que sabe de quién es, así
        que es la que va a buscar: la pantalla le dice a quién y dónde. */
