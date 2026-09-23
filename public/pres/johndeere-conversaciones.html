@@ -896,6 +896,13 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
 .capas-flecha svg{display:block;width:100%;height:100%;overflow:visible}
 .capas-flecha svg path{fill:none;stroke:#2c4569;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 
+/* Placa 5: las tres cards y la frase de abajo no entraban sobre el aviso de
+   la actividad. Un poco menos de aire adentro de cada card. */
+.tarjetas.apretada>div{padding:34px 34px}
+.tarjetas.apretada p{font-size:30px}
+.tarjetas.apretada h3{margin-bottom:14px}
+.contenido:has(>.tarjetas.apretada){padding-top:80px;padding-bottom:180px}
+
 /* En la placa de los cuatro momentos el rótulo numerado es el título: grande y
    en el azul de texto del sistema, y la descripción un punto más chica. */
 .tarjetas.metodo.sin-titulo .num{color:#2c4569;font-size:46px;line-height:1.1;margin-bottom:18px}
@@ -974,7 +981,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     <div class="contenido izq tres">
       <div class="kicker">Dar una devolución positiva</div>
       <div class="titulo-placa">Lo bueno también se posterga</div>
-      <div class="tarjetas tres metodo">
+      <div class="tarjetas tres metodo apretada">
         <div><span class="num">1. Situación</span><h3>Decí cuándo fue</h3><p>“En el informe del jueves…”</p><p class="porque">Sin el momento, no sabe de qué le hablás.</p></div>
         <div><span class="num">2. Conducta</span><h3>Decí qué hizo</h3><p>“…sumaste una recomendación por tu cuenta.”</p><p class="porque">“Sos un crack” no se puede repetir. Lo que hizo, sí.</p></div>
         <div><span class="num">3. Impacto</span><h3>Decí qué cambió</h3><p>“Esa recomendación destrabó la decisión y pudimos cerrar el presupuesto a tiempo.”</p><p class="porque">Así sabe para qué sirvió lo que hizo.</p></div>
