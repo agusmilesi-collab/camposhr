@@ -196,16 +196,16 @@ update public.actividades a
          ('cd-reconocimiento', 4),
          ('cd-reconocimiento-traducido', 8),
          ('cd-conversacion', 9),
-         ('cd-traduccion', 18),
-         ('cd-ensayo-1', 21),
-         ('cd-ensayo-2', 22),
-         ('cd-ensayo-3', 23),
-         ('cd-pregunta', 25),
-         ('cd-monedas', 26),
-         ('cd-reparto', 29),
-         ('cd-nps', 31),
-         ('cd-llevas', 31),
-         ('cd-cambiarias', 31)
+         ('cd-traduccion', 17),
+         ('cd-ensayo-1', 20),
+         ('cd-ensayo-2', 21),
+         ('cd-ensayo-3', 22),
+         ('cd-pregunta', 24),
+         ('cd-monedas', 25),
+         ('cd-reparto', 28),
+         ('cd-nps', 30),
+         ('cd-llevas', 30),
+         ('cd-cambiarias', 30)
        ) as v(clave, placa)
  where c.id = a.ciclo_id
    and c.nombre = 'Conversaciones difíciles'

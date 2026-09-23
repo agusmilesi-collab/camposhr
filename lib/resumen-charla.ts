@@ -73,9 +73,9 @@ export const REPASOS: Record<string, RepasoCharla> = {
     ],
     recibe: [
       { nombre: 'El hecho', que: 'Qué pasó: "entregó tres informes fuera de fecha".' },
-      { nombre: 'La emoción', que: 'Lo que se siente al escucharlo.' },
+      { nombre: 'La emoción de la otra persona', que: 'Lo que se siente al escucharlo.' },
       {
-        nombre: 'La interpretación',
+        nombre: 'La interpretación de la otra persona',
         que: 'Lo que la otra persona concluye sobre sí misma: "¿esto significa que no sirvo?".',
       },
     ],
