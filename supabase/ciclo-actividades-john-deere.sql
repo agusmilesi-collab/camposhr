@@ -172,16 +172,17 @@ cross join (values
    '[]'::jsonb, 'cierre', 'Encuesta · qué te llevás',
    '{"aviso": "Se lee para el informe, sin tu nombre."}'::jsonb),
 
-  -- La segunda no pide opinión sobre el encuentro ("estuvo muy bueno" no sirve
-  -- para nada): pide lo que la persona ya sabía y no hace, y qué se lo impide.
-  -- Es la respuesta que más vale para el informe, porque nombra el freno real
-  -- y no el contenido. La clave queda igual: es la última del encuentro y el
-  -- teléfono la usa para dar el resumen.
-  ('cd-cambiarias', 1, 14, 'texto',
-   '¿Qué de lo que vimos hoy ya sabías y no hacés?',
-   'Y qué te frena. Es lo que más nos sirve para la próxima.',
-   '[]'::jsonb, 'cierre', 'Encuesta · lo que sabés y no hacés',
-   '{"aviso": "Se lee para el informe, sin tu nombre."}'::jsonb)
+  -- La última: qué temas de liderazgo quiere aprender, tres de cinco y en
+  -- orden. Las cinco opciones no se pisan (a sí mismo, a cada persona, al
+  -- equipo, los resultados, el cambio), y elegir tres obliga a dejar dos
+  -- afuera. La clave queda igual: es la última del encuentro y el teléfono la
+  -- usa para dar el resumen.
+  ('cd-cambiarias', 1, 14, 'prioridad',
+   '¿Qué temas de liderazgo te gustaría aprender?',
+   'Elegí 3, en orden: la primera que toques es la que más te interesa.',
+   '["Liderarme a mí · Tiempo, prioridades, manejo del estrés y de las propias emociones", "Liderar a cada persona · Conversaciones, reconocimiento, desarrollo, motivación", "Liderar al equipo · Delegar, reuniones, conflictos entre compañeros, confianza", "Liderar para resultados · Objetivos, decisiones, seguimiento, GPM", "Liderar el cambio · Comunicar decisiones de la compañía, influir hacia arriba y entre áreas"]'::jsonb,
+   'cierre', 'Encuesta · temas para aprender',
+   '{"aviso": "Se lee para el informe, sin tu nombre.", "elegir": 3}'::jsonb)
 
 ) as v(clave, charla, orden, tipo, titulo, enunciado, opciones, grupo, titulo_control, config)
 where c.nombre = 'Conversaciones difíciles'
