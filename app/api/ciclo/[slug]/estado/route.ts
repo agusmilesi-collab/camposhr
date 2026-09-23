@@ -267,7 +267,7 @@ export async function GET(
     // La pregunta propia ya vino en la consulta de arriba, porque `config.desde`
     // la sumó a la lista: acá no se vuelve a preguntar por ella.
     pozo:
-      actividad.tipo === 'monedas' && asistenteId && deAntes
+      actividad.tipo === 'monedas' && deAntes
         ? await pozoDe(
             ciclo.corrida,
             actividad,
@@ -743,11 +743,13 @@ async function pozoDe(
   origenId: string,
   /** Su pregunta, ya leída con el resto del sondeo. */
   mio: Aporte | null
-): Promise<{ monedas: number; puesto: number; reclamado: boolean; texto: string } | null> {
-  // Quien no escribió pregunta no tiene pozo posible, y son la mayoría de la
-  // sala: se corta acá, antes de leer nada.
-  if (!mio || mio.valor?.tipo !== 'texto') return null;
-
+): Promise<{
+  monedas: number;
+  puesto: number;
+  reclamado: boolean;
+  texto: string;
+  mia: boolean;
+} | null> {
   // El reparto es el mismo para todos: de memoria, como la lista que se vota.
   // Solo la primera tiene premio, y recién cuando la placa la reveló: antes
   // de eso el teléfono le contaría el resultado antes que a la sala.
@@ -766,13 +768,22 @@ async function pozoDe(
   // segunda.
   const existen = new Set(preguntas.map((p) => p.id));
   const ranking = resumen.ranking.filter((r) => existen.has(r.aporteId));
-  const puesto = ranking.findIndex((r) => r.aporteId === mio.id);
-  if (puesto !== 0) return null;
+  const primera = ranking[0];
+  if (!primera) return null;
+  const aporte = preguntas.find((p) => p.id === primera.aporteId);
+  if (aporte?.valor?.tipo !== 'texto') return null;
 
+  /*
+   * Va a toda la sala y no solo a quien la escribió: todos ven la misma
+   * pantalla, con los mismos dos botones. Si solo una persona tuviera algo
+   * para tocar, la sala la encontraría mirando quién tiene el teléfono en la
+   * mano. `mia` decide qué pasa al tocar, no qué se ve.
+   */
   return {
-    monedas: ranking[puesto].monedas,
-    puesto: puesto + 1,
-    reclamado: Boolean(mio.valor.reclamado),
-    texto: mio.valor.texto,
+    monedas: primera.monedas,
+    puesto: 1,
+    reclamado: Boolean(aporte.valor.reclamado),
+    texto: aporte.valor.texto,
+    mia: mio?.id === aporte.id,
   };
 }

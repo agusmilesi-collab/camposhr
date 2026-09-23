@@ -17,6 +17,7 @@ import {
 import AutoRefresco from '@/app/cuestionario/[slug]/matriz/AutoRefresco';
 import Revelar from './Revelar';
 import RevelarPrimera from './RevelarPrimera';
+import AbrirReclamo from './AbrirReclamo';
 import { firmarSelfies } from '@/lib/supabase';
 import { recordar } from '@/lib/memoria';
 import { aportesDePrueba } from '@/lib/palabras-prueba';
@@ -64,6 +65,8 @@ export default async function Proyeccion({
     repite?: string;
     /** En la vista que rota: de qué tramo son las respuestas que se muestran. */
     de?: string;
+    largo?: string;
+    forma?: string;
   };
 }) {
   const ciclo = await resolverCiclo(params.slug);
@@ -369,6 +372,16 @@ export default async function Proyeccion({
    */
   const lleno = resumen.tipo === 'palabra' ? ' cp-lleno' : '';
 
+  // Solo en local: `&largo=1` pone todas las preguntas del largo máximo
+  // que acepta el teléfono (400), para ver cómo se acomoda la placa.
+  if (process.env.NODE_ENV !== 'production' && searchParams?.largo && votadas.length) {
+    const larga =
+      'Cuando tengo que marcarle algo a alguien de mi equipo que además es amigo mío desde antes de que yo fuera su jefe, ' +
+      'y sé que lo que le voy a decir le va a doler porque está pasando un momento complicado en su casa, ¿cómo separo la ' +
+      'relación personal de lo que le tengo que pedir como líder sin que sienta que lo traicioné o que cambié con él por el cargo?';
+    votadas = votadas.map((v) => ({ ...v, texto: larga.slice(0, 400) }));
+  }
+
   /*
    * La más votada, sola en su placa: la pregunta y quien la escribió. Llegar
    * acá es lo que la revela, y quien la escribió sigue anónimo hasta que
@@ -384,7 +397,11 @@ export default async function Proyeccion({
           <p className="cp-vacio">Todavía no hay preguntas votadas.</p>
         ) : (
           <div className="cp-primera">
-            <div className="cp-primera-card cp-primera-pregunta">
+            <div
+              className={
+                'cp-primera-card cp-primera-pregunta' + (primera.texto.length > 160 ? ' larga' : '')
+              }
+            >
               <span className="cp-ranking-puesto">1</span>
               <p>{primera.texto}</p>
               <span className="cp-ranking-pozo">
@@ -398,13 +415,25 @@ export default async function Proyeccion({
               </span>
             </div>
             <div className={'cp-primera-card cp-primera-autor' + (primera.quien ? ' reclamada' : '')}>
-              <span className="cp-primera-cara">
-                {primera.foto ? <img src={primera.foto} alt="" /> : <span>?</span>}
-              </span>
+              {primera.quien ? (
+                <span className="cp-primera-cara">
+                  {primera.foto ? <img src={primera.foto} alt="" /> : <span>?</span>}
+                </span>
+              ) : (
+                // Mientras nadie lo reclama, lo que se ve es el pozo.
+                <img className="cp-primera-pozo" src="/jd-pozo.png" alt="" />
+              )}
               <span className="cp-primera-rotulo">Quién la escribió</span>
               {/* Sin género: la sala todavía no sabe quién es. */}
               <strong>{primera.quien ?? 'Todavía no se sabe'}</strong>
-              {!primera.quien && <em>Aparece si reclama el pozo</em>}
+              {!primera.quien &&
+                (corrida.actividad_abierta_id === actividad.id ? (
+                  <em>Teléfonos abiertos: el pozo espera a quien la escribió</em>
+                ) : enPlaca ? (
+                  <AbrirReclamo slug={empresa.slug} actividadId={actividad.id} />
+                ) : (
+                  <em>Aparece si reclama el pozo</em>
+                ))}
             </div>
           </div>
         )}
@@ -424,9 +453,12 @@ export default async function Proyeccion({
         votadas={votadas}
         revelado={corrida.revelado ?? 0}
         slug={empresa.slug}
+        columnas={searchParams?.forma !== 'lista'}
       />
 
-      <p className="cp-pie">{pie(resumen)}</p>
+      {/* En el ranking la cuenta de respuestas no dice nada: lo que se mira es
+          el pozo de cada pregunta. */}
+      {resumen.tipo !== 'monedas' && <p className="cp-pie">{pie(resumen)}</p>}
 
       <AutoRefresco segundos={5} oculto />
     </main>
@@ -457,7 +489,10 @@ function Vista({
   votadas = [],
   revelado = 0,
   slug,
+  columnas = false,
 }: {
+  /** La 2ª y la 3ª lado a lado, en cards. `&forma=lista` las pone una debajo de la otra. */
+  columnas?: boolean;
   actividad: Actividad;
   resumen: Resumen;
   /** Cuántas del ranking se revelaron: 0 la tercera, 1 hasta la segunda, 2 las tres. */
@@ -510,11 +545,46 @@ function Vista({
       }
       const visibles = resto.filter(({ i }) => i === resto.length || revelado >= 1);
       const falta = resto.length === 2 && revelado < 1 ? 1 : 0;
+      if (columnas) {
+        return (
+          <>
+            {/* La 2ª a la izquierda y la 3ª a la derecha. Mientras la 2ª no
+                salió, su lugar queda marcado vacío: la sala ve que falta una. */}
+            <div className="cp-duo">
+              {[1, 2].map((puesto) => {
+                const fila = visibles.find(({ i }) => i === puesto);
+                if (!fila) {
+                  return resto.some(({ i }) => i === puesto) ? (
+                    <div className="cp-duo-card cp-duo-vacia" key={puesto}>
+                      <span className="cp-ranking-puesto">{puesto + 1}</span>
+                    </div>
+                  ) : null;
+                }
+                const { v } = fila;
+                return (
+                  <div className={'cp-duo-card' + (v.texto.length > 160 ? ' larga' : '')} key={puesto}>
+                    <span className="cp-ranking-puesto">{puesto + 1}</span>
+                    <p>{v.texto}</p>
+                    <span className="cp-ranking-pozo">
+                      <b>
+                        {v.monedas}
+                        <img className="cp-coin" src="/jd-coin.png" alt="" />
+                      </b>
+                      <em>{v.votantes === 1 ? '1 persona' : `${v.votantes} personas`}</em>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            {falta >= 1 && <Revelar slug={slug} revelado={revelado} etiqueta="Mostrar la 2ª" />}
+          </>
+        );
+      }
       return (
         <>
           <ol className="cp-ranking">
             {visibles.map(({ v, i }) => (
-              <li className="cp-ranking-fila" key={v.texto}>
+              <li className={'cp-ranking-fila' + (v.texto.length > 160 ? ' larga' : '')} key={v.texto}>
                 <span className="cp-ranking-puesto">{i + 1}</span>
                 <div className="cp-ranking-que">
                   <p>{v.texto}</p>
@@ -595,7 +665,7 @@ function Vista({
             <strong>{resumen.promedio.toFixed(1)}</strong>
             <span>promedio</span>
           </p>
-          <div className="cp-columnas">
+          <div className="cp-duo">
             {resumen.distribucion.map((d) => (
               <div className={`cp-columna ${tramo(d.valor)}`} key={d.valor}>
                 <span

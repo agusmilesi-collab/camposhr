@@ -9575,3 +9575,217 @@ a.cq-btn {
   font-size: 1rem;
   color: var(--muted);
 }
+
+/* La 2ª y la 3ª lado a lado. Cada card arriba el puesto, en el medio la
+   pregunta y abajo el pozo, así una pregunta larga crece para abajo sin
+   empujar el número ni las monedas. */
+.cp-duo {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.cp-duo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px 30px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  text-align: left;
+}
+
+.cp-duo-card p {
+  flex: 1;
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.cp-duo-card .cp-ranking-pozo {
+  text-align: left;
+}
+
+.cp-duo-card .cp-ranking-pozo b {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cp-duo-vacia {
+  background: transparent;
+  border-style: dashed;
+  min-height: 240px;
+}
+
+.cp-duo-card {
+  align-items: flex-start;
+  gap: 14px;
+  padding: 24px 28px;
+}
+
+.cp-duo-card p {
+  font-size: 1.9rem;
+}
+
+.cp-duo-card .cp-ranking-pozo {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+/* Una pregunta larga (el teléfono acepta hasta 400 caracteres) baja de
+   tamaño para entrar en la placa sin cortarse. */
+.cp-duo-card.larga p {
+  font-size: 1.7rem;
+}
+
+.cp-ranking-fila.larga .cp-ranking-que p {
+  font-size: 1.9rem;
+}
+
+.cp-primera-pregunta.larga p {
+  font-size: 1.9rem;
+}
+
+/* Aire a los costados: el marco de la placa llega hasta el borde, y las cards
+   pegadas al filo se leían cortadas. */
+.cp-placa .cp-duo,
+.cp-placa .cp-primera {
+  width: calc(100% - 96px);
+}
+
+/* La card de quien la escribió pesa más: cuando reclama, su cara es lo que
+   la sala mira. */
+.cp-primera {
+  grid-template-columns: 1fr 400px;
+}
+
+.cp-primera-cara {
+  width: 200px;
+  height: 200px;
+}
+
+.cp-primera-autor strong {
+  font-size: 2rem;
+}
+
+/* El pozo, mientras nadie lo reclamó. Ocupa el lugar de la cara. */
+.cp-primera-pozo {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
+.cp-primera-autor .cp-revelar {
+  margin-top: 10px;
+}
+
+/* Los dos botones del pozo, lado a lado y del mismo ancho: son dos opciones
+   del mismo peso, y ninguna tiene que leerse como la que corresponde. El
+   texto largo parte en dos renglones antes que achicarse. */
+.ci-pozo-botones {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0 0;
+}
+
+.ci-pozo-botones .cq-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* La card de quien la escribió va clara, como la del resto de la sala: el
+   botón principal oscuro y la otra opción con borde. */
+.ci-pozo {
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.ci-pozo .cq-btn {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.ci-pozo .cq-btn.ci-pozo-otro {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Lo que ve el resto de la sala: los colores al revés que la de quien la
+   escribió, card clara y botón oscuro. */
+.ci-pozo.ci-pozo-sala {
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.ci-pozo.ci-pozo-sala .ci-pozo-aviso {
+  margin-top: 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.ci-pozo.ci-pozo-sala .cq-btn {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.ci-pozo.ci-pozo-sala .ci-pozo-aviso {
+  font-size: 1.15rem;
+  line-height: 1.45;
+  opacity: 1;
+}
+
+.ci-pozo.ci-pozo-sala .ci-pozo-botones {
+  align-items: center;
+  margin-top: 18px;
+}
+
+.ci-pozo.ci-pozo-sala .cq-btn {
+  width: auto;
+  min-width: 140px;
+  justify-content: center;
+  text-align: center;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* El pozo, arriba de la pregunta: es lo primero que ve quien la escribió. */
+.ci-pozo-bolsa {
+  display: block;
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  margin: 0 auto 6px;
+}
+
+/* El "Ok" del resto de la sala no se estira como los dos del autor. */
+.ci-pozo.ci-pozo-sala .ci-pozo-botones {
+  justify-content: center;
+}
+
+.ci-pozo.ci-pozo-sala .ci-pozo-botones .cq-btn {
+  flex: none;
+}
+
+/* Sin el número del pozo, la pregunta necesita su propio aire antes de la
+   frase que sigue. */
+.ci-pozo .ci-pozo-texto + .ci-pozo-aviso,
+.ci-pozo .ci-pozo-texto + .ci-pozo-listo {
+  margin-top: 16px;
+}
