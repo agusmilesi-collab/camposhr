@@ -40,7 +40,7 @@ export default function AbrirReclamo({
   }
 
   return (
-    <button type="button" className="cp-revelar" disabled={yendo} onClick={abrir}>
+    <button type="button" className="cp-revelar cp-reclamar" disabled={yendo} onClick={abrir}>
       {yendo ? 'Un segundo…' : 'Reclamar pozo'}
     </button>
   );

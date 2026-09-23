@@ -50,6 +50,10 @@ export default async function ControlDelCiclo({
       clave={clave}
       /* Sin las expositoras: el contador tiene que poder llegar a su total. */
       registrados={delTaller(asistentes).length}
+      /* Solo en los ciclos que tienen ranking de Deer Coins: ahí va el botón
+         para reiniciarlo entre ensayos. */
+      conRanking={actividades.some((a) => a.tipo === 'monedas')}
+      revelado={corrida.revelado}
       actividades={actividades.map((a) => ({
         id: a.id,
         clave: a.clave,
