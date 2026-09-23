@@ -873,6 +873,29 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
    ocupa una fila menos de la grilla compartida. */
 .tarjetas.sin-titulo:has(.num):has(.porque)>div{grid-row:span 3}
 
+/* Placa 12: el hecho dispara la emoción y la interpretación de la otra
+   persona. La primera card a la izquierda, una flecha que se abre en dos y
+   las otras dos apiladas a la derecha. */
+.tarjetas.capas{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1.55fr);gap:0 18px;align-items:center}
+/* Las cards del deck comparten tres filas (título, texto, ejemplo) para
+   alinearse entre sí. Acá cada columna va en una sola fila. */
+.placa .tarjetas.capas{grid-template-rows:auto}
+.placa .tarjetas.capas>*{grid-row:1}
+.placa .tarjetas.capas>div.capa-hecho{display:block;grid-template-rows:none;height:auto}
+.placa .tarjetas.capas .capas-destino>div{display:block;grid-template-rows:none}
+.tarjetas.capas>.capa-hecho{align-self:center;height:auto;min-height:0;display:block}
+.tarjetas.capas>.capa-hecho .porque{margin-top:22px}
+/* Las dos de la derecha miden lo mismo, así cada punta de la flecha cae en
+   el medio de su card. */
+.tarjetas.capas>.capas-destino{background:none;border:0;padding:0;border-radius:0;display:grid;grid-template-rows:1fr 1fr;gap:26px;align-self:stretch}
+.tarjetas.capas .capas-destino>div{background:#fff;border:1px solid #e5e2db;border-radius:22px;padding:30px 36px}
+.tarjetas.capas .capas-destino h3{font-size:46px;margin-bottom:12px}
+.tarjetas.capas .capas-destino p{font-size:29px}
+.tarjetas.capas .capas-destino .porque{margin-top:14px;padding-top:14px}
+.placa .tarjetas.capas>div.capas-flecha{align-self:stretch;width:150px;background:none;border:0;padding:0;border-radius:0;display:block}
+.capas-flecha svg{display:block;width:100%;height:100%;overflow:visible}
+.capas-flecha svg path{fill:none;stroke:#2c4569;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+
 /* En la placa de los cuatro momentos el rótulo numerado es el título: grande y
    en el azul de texto del sistema, y la descripción un punto más chica. */
 .tarjetas.metodo.sin-titulo .num{color:#2c4569;font-size:46px;line-height:1.1;margin-bottom:18px}
@@ -1050,7 +1073,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
           <p class="porque">Puede ir a mirar el reloj, y entonces puede corregirlo.</p>
         </div>
         <div>
-          <h3>Una interpretación abre una pelea</h3>
+          <h3>Una interpretación abre una discusión</h3>
           <p>“No te importa nada.”</p>
           <p class="porque">No hay dónde ir a mirarlo, así que lo único que puede hacer es defenderse.</p>
         </div>
@@ -1059,14 +1082,24 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- 13b · Lo que le llega a la otra persona -->
-  <section class="placa" data-notas="Lo que le llega a quien escucha una conversación difícil: tres cosas juntas. El hecho es lo único que se puede corregir. La emoción aparece igual, aunque el hecho esté bien dicho. Y la interpretación es lo que la otra persona concluye sobre sí misma, que muchas veces es más grave que lo que se le dijo.">
+  <section class="placa" data-notas="Lo que le llega a quien escucha una conversación difícil. El hecho dispara las otras dos, que pasan en la otra persona: la emoción y la interpretación. El hecho es lo único que se puede corregir. La emoción aparece igual, aunque el hecho esté bien dicho. Y la interpretación es lo que la otra persona concluye sobre sí misma, que muchas veces es más grave que lo que se le dijo.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido izq tres">
       <div class="titulo-placa">Las 3 capas de una conversación difícil</div>
-      <div class="tarjetas tres">
-        <div><h3>El hecho</h3><p>Qué pasó.</p><p class="porque">“Entregó tres informes fuera de fecha.”</p></div>
-        <div><h3>La emoción</h3><p>Lo que se siente al escucharlo.</p><p class="porque">Enojo, vergüenza, miedo.</p></div>
-        <div><h3>La interpretación</h3><p>Lo que la otra persona concluye sobre sí misma.</p><p class="porque">“¿Esto significa que no sirvo?” “¿Me tienen de punto?” “¿Y ahora qué digo en casa?”</p></div>
+      <!-- El hecho dispara las otras dos: la flecha sale de la primera card y se
+           abre hacia las dos que pasan en la otra persona. -->
+      <div class="tarjetas tres capas">
+        <div class="capa-hecho"><h3>El hecho</h3><p>Qué pasó.</p><p class="porque">“Entregó tres informes fuera de fecha.”</p></div>
+        <div class="capas-flecha"><svg viewBox="0 0 160 400" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M4 200 H56 C88 200 92 100 150 100" />
+          <path d="M4 200 H56 C88 200 92 300 150 300" />
+          <path class="punta" d="M136 90 L152 100 L136 110" />
+          <path class="punta" d="M136 290 L152 300 L136 310" />
+        </svg></div>
+        <div class="capas-destino">
+          <div><h3>La emoción de la otra persona</h3><p>Lo que se siente al escucharlo.</p><p class="porque">Enojo, vergüenza, miedo.</p></div>
+          <div><h3>La interpretación de la otra persona</h3><p>Lo que la otra persona concluye sobre sí misma.</p><p class="porque">“¿Esto significa que no sirvo?” “¿Me tienen de punto?” “¿Y ahora qué digo en casa?”</p></div>
+        </div>
       </div>
     </div>
   </section>
@@ -1097,18 +1130,6 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
     </div>
   </section>
 
-  <!-- 8 · Los tres hallazgos -->
-  <section class="placa" data-notas="Los tres hallazgos, con su fuente. Decir el número: un tercio de las devoluciones baja el desempeño. Si preguntan de dónde salen, están al pie.">
-    <div class="fondo"></div><div class="velo"></div>
-    <div class="contenido izq tres">
-      <div class="titulo-placa">Qué hace que una devolución funcione</div>
-      <div class="tarjetas tres">
-        <div><h3>Sobre lo que hizo</h3><p>El desempeño baja cuando la devolución apunta a la persona.</p></div>
-        <div><h3>Después de haber reconocido</h3><p>El desempeño mejora sólo cuando antes hubo reconocimiento.</p></div>
-        <div><h3>Con algo para hacer distinto</h3><p>La devolución que dice qué cambiar es muy útil. La que sólo califica no deja nada para la próxima vez.</p></div>
-      </div>
-    </div>
-  </section>
 
   <!-- 13 · Las cuatro frases -->
   <section class="placa" data-notas="Las cuatro frases para analizar en voz alta. Leer una por una y preguntar a la sala: ¿esto lo puede verificar la persona que lo escucha? No decir todavía qué falla en cada una.">
@@ -1247,7 +1268,7 @@ html,body{background:#0b0b0b;font-family:Inter,system-ui,-apple-system,sans-seri
   </section>
 
   <!-- D13 · Lo que dejaron los que llevan años -->
-  <section class="placa" data-aviso="Abrir actividad 9" data-notas="Abrir en el panel la tarjeta de los Deer Coins: la sala reparte en el teléfono mientras esta placa corre sola. Dejarla correr sin leerla en voz alta: cada uno la lee cuando levanta la cabeza del teléfono. Es el material que produce el informe. Cuando el reparto se frena, cerrar la tarjeta y pasar a la 27.">
+  <section class="placa" data-aviso="Abrir actividad 9" data-notas="Abrir en el panel la tarjeta de los Deer Coins: la sala reparte en el teléfono mientras esta placa corre sola. Dejarla correr sin leerla en voz alta: cada uno la lee cuando levanta la cabeza del teléfono. Es el material que produce el informe. Cuando el reparto se frena, cerrar la tarjeta y pasar a la 26.">
     <div class="fondo"></div><div class="velo"></div>
     <div class="contenido matriz-viva">
       <h2>Lo que dejaron los que llevan años</h2>
