@@ -5,6 +5,7 @@ import {
   aportesDeLaSala,
   asistentesDeLaSala,
   contarAvance,
+  delTaller,
   getAporteDe,
   listarAportes,
   marcarIngreso,
@@ -133,8 +134,19 @@ export async function GET(
   const catalogo = await actividadesDelCiclo(ciclo.corrida.ciclo_id);
   const actividad =
     catalogo.find((a) => a.id === ciclo.corrida.actividad_abierta_id) ?? null;
+  /*
+   * Cuántos hay en la sala, para el "10 de 54" del panel. Se pide en cada
+   * sondeo y no una vez al abrir: el panel se abre antes de que llegue la
+   * gente, y con el número de ese momento el contador decía "10 de 0" toda la
+   * charla. Sale de la lectura en memoria de la sala, sin consulta de más.
+   */
+  const registrados =
+    parametros.get('total') === '1'
+      ? delTaller(await asistentesDeLaSala(ciclo.corrida.id)).length
+      : undefined;
+
   if (!actividad) {
-    return NextResponse.json({ actividad: null, respondida: false, total: 0 });
+    return NextResponse.json({ actividad: null, respondida: false, total: 0, registrados });
   }
 
   /**
@@ -252,6 +264,7 @@ export async function GET(
     // Los que terminaron la consigna entera, no los que tocaron la primera.
     total: avance?.terminaron ?? 0,
     empezaron: avance?.empezaron ?? 0,
+    registrados,
     enFila: enFila.length,
     grupo,
     // Lo que escribió al abrir la charla, para tenerlo a la vista mientras
