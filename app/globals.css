@@ -10191,3 +10191,25 @@ a.cq-btn {
 .rs-etapa li > div > p + .rs-paso-detalle {
   margin-top: 44px;
 }
+
+/* En el PDF, "Lo que dejaron los que llevan años" va en dos columnas y con la
+   letra más chica: con setenta respuestas eran siete u ocho páginas solo de
+   este bloque. En la pantalla queda igual. Cada respuesta va entera, sin
+   partirse entre columnas ni entre páginas. */
+@media print {
+  .rs-oficio {
+    column-count: 2;
+    column-gap: 22px;
+  }
+
+  .rs-oficio li {
+    break-inside: avoid;
+    padding: 6px 0;
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
+  .rs-oficio li:last-child {
+    border-bottom: 1px solid var(--line-soft);
+  }
+}
