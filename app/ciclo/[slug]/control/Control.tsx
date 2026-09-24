@@ -74,7 +74,7 @@ export default function Control({
   empresa,
   actividades,
   clave,
-  registrados,
+  registrados: registradosAlAbrir,
   conRanking = false,
   revelado = 0,
 }: {
@@ -91,6 +91,8 @@ export default function Control({
     actividades.find((a) => a.abierta)?.id ?? null
   );
   const [total, setTotal] = useState(0);
+  /** Los de la sala. Arranca con lo que había al abrir el panel y lo actualiza el sondeo. */
+  const [registrados, setRegistrados] = useState(registradosAlAbrir);
   /** En qué momento de la actividad abierta está la sala. */
   const [fase, setFase] = useState(0);
   /** Los que respondieron algo pero todavía no llegaron al final. */
@@ -136,6 +138,7 @@ export default function Control({
         if (!vivo) return;
         setAbiertaId(json.actividad?.id ?? null);
         setTotal(json.total ?? 0);
+        if (typeof json.registrados === 'number') setRegistrados(json.registrados);
         setFase(json.fase ?? 0);
         setEmpezaron(json.empezaron ?? 0);
         setEnFila(json.enFila ?? 0);
