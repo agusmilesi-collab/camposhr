@@ -2082,6 +2082,12 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   min-width: 0;
 }
 
+/* Las dos partes una abajo de la otra, cada una con el ancho entero. */
+.os-abierta-apilada {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+}
+
 .os-abierta-mitad > .os-dato-rotulo {
   display: block;
   margin-bottom: 6px;
@@ -7383,6 +7389,133 @@ html[data-os-tema='oscuro'] .os-bz-cerebro {
 
 .os-gasto:hover {
   background: var(--os-panel-2);
+}
+
+/* El gasto lleva además quién lo pagó: una columna más entre el concepto y la
+   fecha, del ancho de un nombre. */
+/* El gasto lleva además quién lo pagó, entre el concepto y la fecha. La última
+   columna mide lo que mide el botón de sumar, porque el alta usa esta misma
+   grilla. */
+.os-gasto-pagado {
+  grid-template-columns: minmax(0, 1fr) 124px 128px 132px 92px;
+}
+
+/**
+ * El importe se corrige donde se lee.
+ *
+ * El campo no se ve hasta que se pasa por encima: en reposo el renglón tiene el
+ * mismo aspecto que cuando el importe era un texto, con su moneda adelante y el
+ * número a la derecha.
+ */
+.os-gasto-monto {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.os-gasto-moneda {
+  color: var(--os-suave);
+  font-size: 0.8rem;
+}
+
+.os-gasto-numero {
+  width: 76px;
+  height: 26px;
+  padding: 0 6px;
+  background: none;
+  text-align: right;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-gasto-numero:hover:not(:disabled),
+.os-gasto-numero:focus {
+  background: var(--os-panel);
+}
+
+/**
+ * El alta, en las mismas columnas que los gastos de arriba.
+ *
+ * Cada campo cae debajo del dato que produce: el concepto sobre los conceptos,
+ * quién paga sobre los nombres, el importe sobre los importes. Cargado a mano,
+ * en un renglón aparte de cuatro campos, había que leer el rótulo para saber
+ * qué se estaba escribiendo.
+ */
+.os-gasto-alta {
+  align-items: end;
+  padding-top: 12px;
+  padding-bottom: 4px;
+  border-bottom: 0;
+}
+
+.os-gasto-alta:hover {
+  background: none;
+}
+
+.os-gasto-alta .os-campo-bloque {
+  min-width: 0;
+}
+
+.os-gasto-alta .os-campo {
+  width: 100%;
+}
+
+/* El importe se escribe donde después se lee: a la derecha de su columna. */
+.os-gasto-alta .os-campo-importe {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* El error, debajo de todo y no en una columna. */
+.os-gasto-alta .os-campo-entero {
+  grid-column: 1 / -1;
+}
+
+/* Lo que le toca a cada uno, debajo de los gastos del trabajo. */
+.os-reparto {
+  margin-top: 18px;
+}
+
+.os-reparto > .os-dato-rotulo {
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* Nombre, su parte, lo que puso y lo que cobra. */
+.os-gasto-reparto {
+  grid-template-columns: minmax(0, 1fr) 124px 132px 140px;
+  gap: 12px;
+}
+
+/* Los rótulos de las tres columnas de números. */
+.os-reparto-encabezado {
+  padding-top: 0;
+  padding-bottom: 2px;
+  border-bottom: 0;
+  color: var(--os-suave);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.os-reparto-encabezado span {
+  text-align: right;
+}
+
+/* La cuenta, en gris: son los dos números que explican el tercero. */
+.os-reparto-cuenta {
+  color: var(--os-suave);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Lo que cada uno se lleva: es el número que se transfiere, así que va como el
+   importe de un gasto y no como su detalle. */
+.os-reparto-cobra {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .os-gasto-concepto {

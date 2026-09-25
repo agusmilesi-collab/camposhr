@@ -111,6 +111,13 @@ export type Costo = {
   tipo: string;
   fecha: string;
   nota: string | null;
+  /**
+   * Quién puso la plata, por su nombre en el equipo.
+   *
+   * Nulo cuando lo pagó el estudio o cuando todavía no se cargó: un gasto sin
+   * dueño se resta del pozo igual, pero no se le devuelve a nadie.
+   */
+  pagadoPor: string | null;
 };
 
 /** Los costos de todas las oportunidades, para cruzarlos con sus ingresos. */
@@ -124,9 +131,10 @@ export async function listarCostos(): Promise<Costo[]> {
       tipo: string;
       fecha: string;
       nota: string | null;
+      pagado_por: string | null;
     }>(
       'costos',
-      'select=id,cotizacion_id,concepto,importe,tipo,fecha,nota&order=fecha.desc',
+      'select=id,cotizacion_id,concepto,importe,tipo,fecha,nota,pagado_por&order=fecha.desc',
       CACHE_COMERCIAL
     );
     return filas.map((f) => ({
@@ -137,6 +145,7 @@ export async function listarCostos(): Promise<Costo[]> {
       tipo: f.tipo,
       fecha: f.fecha,
       nota: f.nota,
+      pagadoPor: f.pagado_por,
     }));
   } catch {
     return [];

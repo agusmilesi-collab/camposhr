@@ -25,7 +25,7 @@ import { formatoImporte, type Factura } from '@/lib/facturas-tipos';
 import { formatoFecha } from '@/lib/comercial-tipos';
 import { columnas } from '@/app/os/psicotecnicos/piezas';
 import { Cobro, BorrarFactura } from '@/app/os/psicotecnicos/facturacion/Facturacion';
-import { BorrarCosto, NuevoCosto } from './Costos';
+import { BorrarCosto, ImporteCosto, NuevoCosto, QuienPago } from './Costos';
 import { numeroDe } from '@/lib/facturas-tipos';
 
 /** Lo que la pantalla ya resolvió para cada trabajo. */
@@ -39,9 +39,57 @@ export type Trabajo = {
   facturado: number;
   cobrado: number;
   costo: number;
-  gastos: { id: string; concepto: string; fecha: string; importe: number }[];
+  gastos: {
+    id: string;
+    concepto: string;
+    fecha: string;
+    importe: number;
+    /** Quién puso la plata. Nulo si la puso el estudio. */
+    pagadoPor: string | null;
+  }[];
   facturas: Factura[];
 };
+
+/**
+ * Sobre qué plata se reparte un trabajo.
+ *
+ * Lo cobrado cuando ya entró algo, que es la plata que de verdad se puede
+ * dividir. Mientras no entró, la cuenta se hace igual con lo facturado, y si
+ * tampoco hay factura, con lo cotizado: así el trabajo dice desde el primer día
+ * cuánto le va a tocar a cada uno, y el número se va afinando a medida que se
+ * factura y se cobra.
+ */
+function ingresoDelReparto(t: Trabajo) {
+  if (t.cobrado > 0) return { monto: t.cobrado, de: 'lo cobrado', firme: true };
+  if (t.facturado > 0) return { monto: t.facturado, de: 'lo facturado', firme: false };
+  return { monto: t.cotizado, de: 'lo cotizado', firme: false };
+}
+
+/**
+ * Lo que le toca a cada uno de un trabajo.
+ *
+ * Primero se le devuelve a cada uno lo que puso de su bolsillo y lo que queda
+ * se parte en partes iguales, así que cada uno se lleva su tercio más sus
+ * adelantos. Quien no puso nada cobra solo su tercio.
+ *
+ * Los gastos que pagó el estudio se restan del pozo igual, pero no se le
+ * devuelven a nadie.
+ *
+ * El último se lleva el resto de la división, para que las partes sumen
+ * exactamente lo que entró y no falte ni sobre un peso.
+ */
+function repartoDe(t: Trabajo, equipo: string[]) {
+  const puso = (quien: string) =>
+    t.gastos.filter((g) => g.pagadoPor === quien).reduce((n, g) => n + g.importe, 0);
+  const aPartir = ingresoDelReparto(t).monto - t.costo;
+  const parte = Math.round(aPartir / equipo.length);
+
+  return equipo.map((nombre, i) => {
+    const suParte = i === equipo.length - 1 ? aPartir - parte * (equipo.length - 1) : parte;
+    const adelanto = puso(nombre);
+    return { nombre, parte: suParte, adelanto, cobra: suParte + adelanto };
+  });
+}
 
 const COLUMNAS = ['Cliente', 'Trabajo', 'Cotizado', 'Facturado', 'Costo', 'Resultado', 'Margen'];
 const MEDIDAS = columnas(COLUMNAS, {
@@ -53,7 +101,14 @@ const MEDIDAS = columnas(COLUMNAS, {
   Resultado: 140,
 });
 
-export default function Trabajos({ trabajos }: { trabajos: Trabajo[] }) {
+export default function Trabajos({
+  trabajos,
+  equipo,
+}: {
+  trabajos: Trabajo[];
+  /** Entre quiénes se parte la plata del estudio. */
+  equipo: string[];
+}) {
   const [abierto, setAbierto] = useState<string | null>(null);
 
   if (trabajos.length === 0) {
@@ -156,7 +211,11 @@ export default function Trabajos({ trabajos }: { trabajos: Trabajo[] }) {
                   {cajon && (
                     <tr className="os-fila-abierta">
                       <td colSpan={COLUMNAS.length}>
-                        <div className="os-abierta-cuerpo">
+                        {/* Uno abajo del otro y a todo el ancho: los gastos
+                            llevan el selector de quién pagó y el reparto, que
+                            en media pantalla quedaban apretados contra una
+                            columna de facturas casi vacía. */}
+                        <div className="os-abierta-cuerpo os-abierta-apilada">
                           <div className="os-abierta-mitad">
                             <span className="os-dato-rotulo">Gastos</span>
                             {t.gastos.length === 0 ? (
@@ -165,19 +224,71 @@ export default function Trabajos({ trabajos }: { trabajos: Trabajo[] }) {
                               </p>
                             ) : (
                               t.gastos.map((g) => (
-                                <div className="os-gasto" key={g.id}>
+                                <div className="os-gasto os-gasto-pagado" key={g.id}>
                                   <span className="os-gasto-concepto">{g.concepto}</span>
+                                  <QuienPago id={g.id} valor={g.pagadoPor} equipo={equipo} />
                                   <span className="os-gasto-fecha">{formatoFecha(g.fecha)}</span>
-                                  <span className="os-gasto-importe">
-                                    {formatoImporte(g.importe, t.moneda)}
-                                  </span>
+                                  <ImporteCosto id={g.id} importe={g.importe} moneda={t.moneda} />
                                   <span className="os-gasto-baja">
                                     <BorrarCosto id={g.id} />
                                   </span>
                                 </div>
                               ))
                             )}
-                            <NuevoCosto cotizacionId={t.id} />
+                            <NuevoCosto cotizacionId={t.id} equipo={equipo} />
+
+                            {/* Cuánto le toca a cada uno de este trabajo. Va
+                                pegado a los gastos porque es su consecuencia:
+                                quien puso plata la recupera acá. */}
+                            <div className="os-reparto">
+                              <span className="os-dato-rotulo">Reparto</span>
+                              {ingresoDelReparto(t).monto === 0 && t.costo === 0 ? (
+                                <p className="os-panel-nota">
+                                  Sin ingreso y sin gastos: todavía no hay nada que repartir.
+                                </p>
+                              ) : (
+                                <>
+                                  <p className="os-panel-nota">
+                                    Se reparte {ingresoDelReparto(t).de} (
+                                    {formatoImporte(ingresoDelReparto(t).monto, t.moneda)}) menos
+                                    los gastos ({formatoImporte(t.costo, t.moneda)}).
+                                    {!ingresoDelReparto(t).firme &&
+                                      ' Todavía no entró: las cifras se recalculan al cobrar.'}
+                                  </p>
+                                  {/* Tres números por persona: su parte, lo que
+                                      puso y lo que termina cobrando, que es la
+                                      suma de los dos anteriores y el único que
+                                      se lleva a la transferencia. */}
+                                  <div className="os-gasto os-gasto-reparto os-reparto-encabezado">
+                                    <span />
+                                    <span>Parte</span>
+                                    <span>Puso</span>
+                                    <span>Cobra</span>
+                                  </div>
+                                  {repartoDe(t, equipo).map((r) => (
+                                    <div className="os-gasto os-gasto-reparto" key={r.nombre}>
+                                      <span className="os-gasto-concepto">{r.nombre}</span>
+                                      <span className="os-reparto-cuenta">
+                                        {formatoImporte(r.parte, t.moneda)}
+                                      </span>
+                                      <span className="os-reparto-cuenta">
+                                        {r.adelanto > 0 ? formatoImporte(r.adelanto, t.moneda) : '—'}
+                                      </span>
+                                      <span
+                                        className={`os-reparto-cobra${r.cobra < 0 ? ' os-resultado-rojo' : ''}`}
+                                        title={
+                                          r.cobra < 0
+                                            ? 'Puso menos de lo que le toca: tiene que poner esta diferencia.'
+                                            : 'Lo que se lleva de este trabajo.'
+                                        }
+                                      >
+                                        {formatoImporte(r.cobra, t.moneda)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </>
+                              )}
+                            </div>
                           </div>
 
                           <div className="os-abierta-mitad">

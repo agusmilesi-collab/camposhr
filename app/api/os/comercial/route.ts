@@ -8,7 +8,7 @@ import { esObjecion } from '@/lib/comercial-tipos';
 import { slugDeEmpresa } from '@/lib/empresa-slug';
 import { anotarAcceso } from '@/lib/accesos';
 import { hoy } from '@/lib/hora';
-import { quienSoy } from '@/lib/identidad';
+import { equipo, quienSoy } from '@/lib/identidad';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -78,6 +78,20 @@ async function empresaDe(
   // oportunidad nueva no es motivo para reactivarlo por su cuenta.
   if (ya) return ya;
   return escribir('empresas', 'POST', { nombre, slug: clave, activa: true });
+}
+
+/**
+ * Quién puso la plata de un gasto.
+ *
+ * Solo se guarda un nombre que esté hoy en el equipo: si lo pagó el estudio, o
+ * todavía no se sabe, queda nulo y ese gasto se resta del pozo sin
+ * devolvérsele a nadie.
+ */
+async function quienPago(valor: unknown): Promise<string | null> {
+  const nombre = String(valor ?? '').trim();
+  if (!nombre) return null;
+  const miembros = await equipo();
+  return miembros.some((m) => m.nombre === nombre) ? nombre : null;
 }
 
 /**
@@ -273,6 +287,7 @@ export async function POST(req: Request) {
           importe,
           tipo: TIPOS_COSTO.includes(tipo) ? tipo : 'Directo',
           fecha: datos.fecha || new Date().toISOString().slice(0, 10),
+          pagado_por: await quienPago(datos.pagadoPor),
         });
         await anotarAcceso({
           quien: yo.nombre,
@@ -284,6 +299,51 @@ export async function POST(req: Request) {
         revalidateTag(CACHE_CLIENTES);
         revalidateTag(CACHE_COMERCIAL);
                 return NextResponse.json({ ok: true, id: fila.id });
+      }
+
+      /* Corregir el importe de un gasto: se escribe encima del número, en el
+         mismo renglón, y guarda al salir del campo. */
+      case 'importeCosto': {
+        const { id } = datos;
+        const importe = Number(datos.importe);
+        if (!UUID.test(id ?? '')) {
+          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        }
+        if (!Number.isFinite(importe) || importe < 0) {
+          return NextResponse.json({ error: 'El importe no es un número.' }, { status: 400 });
+        }
+        await escribir(`costos?id=eq.${id}`, 'PATCH', { importe });
+        await anotarAcceso({
+          quien: yo.nombre,
+          accion: 'escritura',
+          recurso: 'costo',
+          recursoId: id,
+          detalle: { importe },
+        });
+        revalidateTag(CACHE_CLIENTES);
+        revalidateTag(CACHE_COMERCIAL);
+        return NextResponse.json({ ok: true });
+      }
+
+      /* Cambiar quién pagó un gasto ya cargado: se elige en el mismo renglón
+         del gasto y guarda al soltar el selector. */
+      case 'pagadorCosto': {
+        const { id } = datos;
+        if (!UUID.test(id ?? '')) {
+          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        }
+        const pagadoPor = await quienPago(datos.pagadoPor);
+        await escribir(`costos?id=eq.${id}`, 'PATCH', { pagado_por: pagadoPor });
+        await anotarAcceso({
+          quien: yo.nombre,
+          accion: 'escritura',
+          recurso: 'costo',
+          recursoId: id,
+          detalle: { pagado_por: pagadoPor },
+        });
+        revalidateTag(CACHE_CLIENTES);
+        revalidateTag(CACHE_COMERCIAL);
+        return NextResponse.json({ ok: true });
       }
 
       case 'borrarCosto': {
