@@ -8,7 +8,7 @@ import {
   listarCotizaciones,
   resultadoDe,
 } from '@/lib/cotizaciones';
-import { quienSoy } from '@/lib/identidad';
+import { equipo as listarEquipo, quienSoy } from '@/lib/identidad';
 import { listarEmisoras, listarFacturas, marchaMonotributo } from '@/lib/facturas';
 import { esDeServicios } from '@/lib/facturas-tipos';
 import { empresas as listarEmpresas } from '@/lib/altas';
@@ -32,7 +32,8 @@ export const dynamic = 'force-dynamic';
  * persona no querría decir nada.
  */
 export default async function Costos() {
-  const [yo, cotizaciones, costos, marcha, facturas, emisoras, empresas] = await Promise.all([
+  const [yo, cotizaciones, costos, marcha, facturas, emisoras, empresas, miembros] =
+    await Promise.all([
     quienSoy(),
     listarCotizaciones(),
     listarCostos(),
@@ -40,7 +41,13 @@ export default async function Costos() {
     listarFacturas(),
     listarEmisoras(),
     listarEmpresas().catch(() => []),
+    listarEquipo(),
   ]);
+
+  /* Entre quiénes se parte lo que deja cada trabajo: el equipo entero, que hoy
+     son tres. Sale de la tabla y no de una lista escrita acá, así que el día
+     que entre o salga alguien el reparto lo sigue solo. */
+  const socios = miembros.map((m) => m.nombre);
 
   const ganadas = cotizaciones.filter((c) => GANADOS.includes(c.estado));
   const deLa = (id: string) => costos.filter((x) => x.cotizacionId === id);
@@ -76,6 +83,7 @@ export default async function Costos() {
         concepto: x.concepto,
         fecha: x.fecha,
         importe: x.importe,
+        pagadoPor: x.pagadoPor,
       })),
       facturas: suyas,
     };
@@ -132,7 +140,7 @@ export default async function Costos() {
         </div>
       </div>
 
-      <Trabajos trabajos={trabajos} />
+      <Trabajos trabajos={trabajos} equipo={socios} />
 
       <OtraFactura
         emisoras={emisoras}
