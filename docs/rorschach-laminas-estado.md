@@ -19,7 +19,7 @@ Se actualiza cada vez que se toca una lámina.
 | I | sí | sí | **Ok final** (29/9) | Nada |
 | II | sí | sí | Encaminada | Revisión final. Dd24 sale casi rectangular (llena el 92 % de su caja) |
 | III | sí | sí | Encaminada | Revisión final. **DdS24 está mal**: se lleva el 59 % de la lámina y casi no toca blanco. Hace falta otro criterio de recorte |
-| IV | sí | sí | Encaminada | Revisión final. Dd33 sale casi rectangular (88 %) |
+| IV | sí | sí | **Ok final** (29/9) | Nada |
 | V | sí | sí | Encaminada | Revisión final |
 | VI | sí | sí | Encaminada | Revisión final |
 | VII | sí | sí | Encaminada | Revisión final |
@@ -39,6 +39,17 @@ Cerrada el 29/9/2026 con el ok de Agustín.
 | --- | --- | --- |
 | 29/9 | Sin espejo, y cada una de un solo lado: D2, D7, Dd33 y Dd25 a la derecha; Dd28, Dd34 y Dd35 a la izquierda | Sí. D2, D7, Dd33 y Dd25 estaban trazadas a la izquierda, y Dd34 a la derecha: de esas cinco queda solo el reflejo (`'reflejado'`) |
 | 29/9 | D7 a la izquierda y Dd34 a la derecha | Sí. Quedan del lado en que se trazaron |
+
+## Lámina IV: cambios pedidos en la revisión
+
+Cerrada el 29/9/2026 con el ok de Agustín.
+
+| Fecha | Pedido | Hecho |
+| --- | --- | --- |
+| 29/9 | Sin espejo, cada una de su lado: D2, D6, Dd22, Dd23, Dd27 y Dd32 a la derecha; Dd21, Dd28 y Dd31 a la izquierda | Sí |
+| 29/9 | D4 a la izquierda, sin el espacio vacío | Sí. El blanco del gancho queda como hueco (`'huecos'`) y en pantalla se ve vacío |
+| 29/9 | DdS29 a la izquierda, con el espacio de arriba | Sí. Toma las dos ranuras blancas de ese lado (`'todo'`) |
+| 29/9 | DdS24 es el blanco de abajo más DdS29, a la izquierda | Sí (`'suma'`) |
 
 ## Lámina VIII: cambios pedidos en la revisión
 
