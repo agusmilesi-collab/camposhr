@@ -2070,11 +2070,14 @@ export default function Capturador({
                     (x, y) =>
                       tamanoDe(AREAS[lamina]?.[y] ?? []) - tamanoDe(AREAS[lamina]?.[x] ?? [])
                   )
-                  .map((a) =>
-                  (AREAS[lamina]?.[a] ?? []).map((parte, i) => (
+                  .map((a) => (
+                    /* Las partes de un área van en un solo trazo y pares-impares:
+                       así el blanco que la tinta encierra (el gancho de D4 en la
+                       IV) se ve vacío y el clic ahí no la elige. */
                     <path
-                      key={`${a}-${i}`}
-                      d={camino(parte)}
+                      key={a}
+                      d={(AREAS[lamina]?.[a] ?? []).map(camino).join(' ')}
+                      fillRule="evenodd"
                       className={
                         'os-ror-area' +
                         (puestas.includes(a) ? ' os-ror-area-puesta' : '') +
@@ -2084,8 +2087,7 @@ export default function Capturador({
                       onMouseLeave={() => setEncima(null)}
                       onClick={() => alternar(a)}
                     />
-                  ))
-                )}
+                  ))}
                 {/* La línea que va del área hasta su nombre, como en el
                     cuadernillo: dice cuál nombra a cuál cuando dos quedan
                     cerca. */}
