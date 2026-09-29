@@ -27,7 +27,8 @@ NUMERO = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6,
 def medir(lamina):
     """Los recintos, como los devuelve el lector."""
     salida = subprocess.run(
-        [sys.executable, os.path.join(RAIZ, 'scripts', 'leer-zonas-rorschach.py'), lamina],
+        [sys.executable, os.path.join(RAIZ, 'scripts', 'leer-zonas-rorschach.py'), lamina]
+        + sys.argv[2:3],
         capture_output=True, text=True, check=True).stdout
     polis, nombre = {}, None
     for linea in salida.split('\n'):
@@ -39,6 +40,9 @@ def medir(lamina):
             polis[nombre] = [tuple(float(v) for v in p.split(','))
                              for p in re.findall(r'\(([-\d.]+, [-\d.]+)\)', m2.group(1))]
     abiertos = re.search(r'# Sin cerrar, no se midieron: (.+)\.', salida)
+    # La W es la mancha entera y el generador la arma sola: si viene trazada
+    # se descarta.
+    polis.pop('W', None)
     return polis, (abiertos.group(1).split(', ') if abiertos else [])
 
 

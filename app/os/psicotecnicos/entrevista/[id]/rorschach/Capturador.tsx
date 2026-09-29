@@ -38,7 +38,12 @@ import {
   plano,
   type Hallazgo,
 } from '@/lib/rorschach-tabla-a';
-import { contenidoSugerido, fqDeLaFicha, localizacionesDe } from '@/lib/rorschach-sugerencias';
+import {
+  contenidoSugerido,
+  fqDeLaFicha,
+  localizacionesPosibles,
+  rotuloDe,
+} from '@/lib/rorschach-sugerencias';
 import { Multiple, Simple } from '@/app/os/psicotecnicos/ficha/[id]/Celdas';
 import { CONTENIDOS, FQ, GIRO, LOCALIZACION, POSICION, tonoDe } from '@/lib/rorschach';
 import Codigo from '@/app/os/psicotecnicos/ficha/[id]/Codigo';
@@ -210,6 +215,17 @@ const MAPAS: Record<string, string[][]> = {
     ['D4', 'D5', 'D8'],
     ['D3', 'Dd22'],
     ['D6', 'DS7'],
+  ],
+  // El reparto del cuadernillo para la VIII, recuadro por recuadro. D8 no tiene
+  // dibujo propio: el libro la anota en el recuadro de D4 como D4 + D5.
+  VIII: [
+    ['W', FUERA_DE_TABLA],
+    ['D1', 'D5', 'Dd23', 'Dd30'],
+    ['D2', 'D4', 'D8', 'DdS29'],
+    ['Dd22', 'Dd27', 'Dd31', 'Dd33'],
+    ['D6'],
+    ['D3', 'D7', 'Dd24', 'DdS32'],
+    ['Dd21', 'Dd25', 'Dd26', 'DdS28'],
   ],
 };
 
@@ -397,6 +413,32 @@ const TAGS: Record<string, Record<string, [number, number]>> = {
     Dd26: [0.141, 0.797],
     Dd27: [0.841, 0.866],
     Dd28: [0.175, 0.903],
+  },
+  // Marcados por Agustín sobre las imágenes de la VIII, en verde.
+  VIII: {
+    W: [0.775, 0.143],
+    Dd99: [0.87, 0.88],
+    D1: [0.776, 0.302],
+    D2: [0.177, 0.86],
+    D3: [0.284, 0.216],
+    D4: [0.258, 0.19],
+    D5: [0.261, 0.23],
+    D6: [0.274, 0.191],
+    D7: [0.175, 0.753],
+    D8: [0.858, 0.142],
+    Dd21: [0.29, 0.191],
+    Dd22: [0.241, 0.189],
+    Dd23: [0.167, 0.85],
+    Dd24: [0.668, 0.11],
+    Dd25: [0.698, 0.223],
+    Dd26: [0.732, 0.933],
+    Dd27: [0.764, 0.203],
+    DdS28: [0.19, 0.828],
+    DdS29: [0.712, 0.22],
+    Dd30: [0.661, 0.108],
+    Dd31: [0.693, 0.113],
+    DdS32: [0.704, 0.273],
+    Dd33: [0.195, 0.87],
   },
 };
 
@@ -1126,7 +1168,7 @@ export default function Capturador({
     const areas = [...new Set(trozos.flatMap((t) => t.areas))];
     const contenidos = [...new Set(trozos.flatMap((t) => t.contenidos))];
     if (tomada) setPartidas((p) => ({ ...p, [tomada.id]: trozos }));
-    const locs = localizacionesDe(localizacionFinal(lamina, areas).familia);
+    const locs = localizacionesPosibles(lamina, areas);
     setRespuestas((rs) => [
       ...rs,
       {
@@ -1174,7 +1216,7 @@ export default function Capturador({
         : areas
             .flatMap((a) => entradasDe(lamina, a))
             .find((e) => e.respuesta === respuesta) ?? null;
-    const locs = localizacionesDe(localizacionFinal(lamina, areas).familia);
+    const locs = localizacionesPosibles(lamina, areas);
     setRespuestas((rs) => [
       ...rs,
       {
@@ -1671,7 +1713,9 @@ export default function Capturador({
                     para el caso raro. */}
                 <Codigo
                   valor={r.localizacion}
-                  opciones={LOCALIZACION.filter((o) => localizacionesDe(final.familia).includes(o.v))}
+                  opciones={LOCALIZACION.filter((o) =>
+                    localizacionesPosibles(lamina, r.areas).includes(o.v)
+                  )}
                   todas={LOCALIZACION}
                   onElegir={(v) => onCambio({ localizacion: v })}
                   etiqueta="Localización y DQ"
@@ -2084,7 +2128,7 @@ export default function Capturador({
                     onMouseLeave={() => setEncima(null)}
                     onClick={() => alternar(a)}
                   >
-                    {a}
+                    {rotuloDe(lamina, a)}
                   </button>
                 );
               })}
@@ -2470,9 +2514,9 @@ export default function Capturador({
                     para que no se lean como una quinta calidad. */}
                 <div className="os-ror-dq-cierre">
                 <div className="os-ror-dq-fila">
-                  {localizacionesDe(localizacionFinal(lamina, areasPendientes).familia)
+                  {localizacionesPosibles(lamina, areasPendientes)
                     .filter((l) => soloDq(l))
-                    .map((l) => (
+                    .map((l, _, todas) => (
                       <button
                         key={l}
                         type="button"
@@ -2483,7 +2527,9 @@ export default function Capturador({
                         }
                         title={l}
                       >
-                        {soloDq(l)}
+                        {/* Con y sin blanco a la vez, la letra sola se repite:
+                            se muestra el código entero para ver cuál lleva S. */}
+                        {todas.length > 4 ? l : soloDq(l)}
                       </button>
                     ))}
                 </div>
