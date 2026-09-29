@@ -53,10 +53,18 @@ export function localizacionesDe(area: string): string[] {
  * en la lámina son una sola, y si la respuesta usa el blanco lo decide la
  * evaluadora al elegir el código.
  */
-export const CON_O_SIN_BLANCO: Record<string, string[]> = { VIII: ['D3'] };
+export const CON_O_SIN_BLANCO: Record<string, string[]> = { VIII: ['D3'], IX: ['D8', 'Dd22'] };
+
+/**
+ * Los rótulos que el libro escribe distinto del nombre del área: D11 de la IX
+ * no tiene dibujo propio y el cuadernillo la anota como la suma de las dos D1.
+ */
+const ROTULOS: Record<string, Record<string, string>> = { IX: { D11: 'D1+D1=D11' } };
 
 /** El nombre que lleva el área en la lámina: "D3/DS3" para las que van juntas. */
 export function rotuloDe(lamina: string, area: string): string {
+  const escrito = ROTULOS[lamina]?.[area];
+  if (escrito) return escrito;
   return (CON_O_SIN_BLANCO[lamina] ?? []).includes(area)
     ? `${area}/${area.replace(/^(Dd|D|W)/, '$1S')}`
     : area;
