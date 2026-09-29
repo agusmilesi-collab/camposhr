@@ -247,7 +247,19 @@ function Datos({
             <Falta texto="sin cerrar" />
           )}
         </Dato>
-        <Dato rotulo="Puesto">{c.pedidos?.puesto ?? <Falta texto="sin puesto" />}</Dato>
+        <Dato rotulo="Puesto">
+          {c.pedidos?.puesto ? (
+            c.pedido_id ? (
+              <Link className="os-ficha-enlace" href={`/os/pedidos/${c.pedido_id}`}>
+                {c.pedidos.puesto}
+              </Link>
+            ) : (
+              c.pedidos.puesto
+            )
+          ) : (
+            <Falta texto="sin puesto" />
+          )}
+        </Dato>
         <Dato rotulo="Perfil Benziger">
           {perfil ? (
             <span className="os-sello-estado os-violeta">{perfil}</span>
