@@ -16,7 +16,7 @@ Se actualiza cada vez que se toca una lámina.
 
 | Lámina | Tabla A | Áreas en pantalla | Estado | Lo que queda |
 | --- | --- | --- | --- | --- |
-| I | sí | sí | Encaminada | Revisión final |
+| I | sí | sí | **Ok final** (29/9) | Nada |
 | II | sí | sí | Encaminada | Revisión final. Dd24 sale casi rectangular (llena el 92 % de su caja) |
 | III | sí | sí | Encaminada | Revisión final. **DdS24 está mal**: se lleva el 59 % de la lámina y casi no toca blanco. Hace falta otro criterio de recorte |
 | IV | sí | sí | Encaminada | Revisión final. Dd33 sale casi rectangular (88 %) |
@@ -30,6 +30,15 @@ Se actualiza cada vez que se toca una lámina.
 Los avisos de las láminas I a VII salen de `python3 scripts/auditar-areas.py`.
 Los ENORME de esas láminas son áreas grandes de verdad (D2 de la I, D7 de la IV)
 y no se anotan como pendientes.
+
+## Lámina I: cambios pedidos en la revisión
+
+Cerrada el 29/9/2026 con el ok de Agustín.
+
+| Fecha | Pedido | Hecho |
+| --- | --- | --- |
+| 29/9 | Sin espejo, y cada una de un solo lado: D2, D7, Dd33 y Dd25 a la derecha; Dd28, Dd34 y Dd35 a la izquierda | Sí. D2, D7, Dd33 y Dd25 estaban trazadas a la izquierda, y Dd34 a la derecha: de esas cinco queda solo el reflejo (`'reflejado'`) |
+| 29/9 | D7 a la izquierda y Dd34 a la derecha | Sí. Quedan del lado en que se trazaron |
 
 ## Lámina VIII: cambios pedidos en la revisión
 
