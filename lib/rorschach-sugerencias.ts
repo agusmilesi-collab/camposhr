@@ -15,6 +15,7 @@
 
 import { LOCALIZACION } from './rorschach';
 import { familiaDe, plano, type CalidadFormal } from './rorschach-tabla-a';
+import { localizacionFinal } from './rorschach-z';
 
 /** Los campos que la herramienta nunca puede completar. */
 export const PENDIENTES = [
@@ -45,6 +46,33 @@ export function localizacionesDe(area: string): string[] {
     const sinDQ = v.replace(/(v\/\+|o|v|\+)$/, '');
     return sinDQ === familia;
   });
+}
+
+/**
+ * Las áreas que el libro titula con y sin blanco juntas ("D3/DS3" en la VIII):
+ * en la lámina son una sola, y si la respuesta usa el blanco lo decide la
+ * evaluadora al elegir el código.
+ */
+export const CON_O_SIN_BLANCO: Record<string, string[]> = { VIII: ['D3'] };
+
+/** El nombre que lleva el área en la lámina: "D3/DS3" para las que van juntas. */
+export function rotuloDe(lamina: string, area: string): string {
+  return (CON_O_SIN_BLANCO[lamina] ?? []).includes(area)
+    ? `${area}/${area.replace(/^(Dd|D|W)/, '$1S')}`
+    : area;
+}
+
+/**
+ * Los códigos que admite una respuesta marcada en esas áreas: los de su
+ * familia y, si toca un área con o sin blanco, también los de la familia con S.
+ */
+export function localizacionesPosibles(lamina: string, areas: string[]): string[] {
+  const { familia } = localizacionFinal(lamina, areas);
+  const dos =
+    !familia.endsWith('S') && areas.some((a) => (CON_O_SIN_BLANCO[lamina] ?? []).includes(a));
+  return dos
+    ? [...localizacionesDe(familia), ...localizacionesDe(`${familia}S`)]
+    : localizacionesDe(familia);
 }
 
 /** La calidad formal, como la escribe la tabla de la ficha. */

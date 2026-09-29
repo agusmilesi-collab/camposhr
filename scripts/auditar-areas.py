@@ -21,7 +21,7 @@ from PIL import Image, ImageDraw
 from scipy import ndimage
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-NUMERO = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7}
+NUMERO = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8}
 UMBRAL = 190
 MINIMO_PIEZA = 2000
 MINIMO_POR_LAMINA = {'III': 1500}
