@@ -21,10 +21,11 @@ from PIL import Image, ImageDraw
 from scipy import ndimage
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-NUMERO = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8}
+NUMERO = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'X': 10}
 UMBRAL = 190
 MINIMO_PIEZA = 2000
-MINIMO_POR_LAMINA = {'III': 1500}
+MINIMO_POR_LAMINA = {'III': 1500, 'VIII': 150, 'X': 150}
+SATURACION = {'X': 50}  # igual que en areas-rorschach.py
 
 
 def entorno():
@@ -61,10 +62,14 @@ def areas_del_ts():
 def main(laminas):
     todas = areas_del_ts()
     for lamina in laminas:
-        im = bajar(NUMERO[lamina]).convert('L')
+        color = bajar(NUMERO[lamina]).convert('RGB')
+        im = color.convert('L')
         a = np.array(im)
         alto, ancho = a.shape
         tinta = a < UMBRAL
+        if lamina in SATURACION:
+            rgb = np.array(color).astype(int)
+            tinta |= (rgb.max(axis=2) - rgb.min(axis=2)) > SATURACION[lamina]
         lab, n = ndimage.label(tinta)
         tam = ndimage.sum(tinta, lab, range(1, n + 1))
         minimo = MINIMO_POR_LAMINA.get(lamina, MINIMO_PIEZA)
