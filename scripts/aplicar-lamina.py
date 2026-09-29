@@ -39,6 +39,13 @@ def medir(lamina):
         if m2 and nombre:
             polis[nombre] = [tuple(float(v) for v in p.split(','))
                              for p in re.findall(r'\(([-\d.]+, [-\d.]+)\)', m2.group(1))]
+        # Un área en varios contornos: una lista de listas, que el generador
+        # combina pares-impares (un contorno adentro de otro es un hueco).
+        m3 = re.search(r"'polis': \[(.*)\], 'espejo'", linea)
+        if m3 and nombre:
+            polis[nombre] = [[tuple(float(v) for v in p.split(','))
+                              for p in re.findall(r'\(([-\d.]+, [-\d.]+)\)', parte)]
+                             for parte in re.findall(r'\[([^\[\]]*)\]', m3.group(1))]
     abiertos = re.search(r'# Sin cerrar, no se midieron: (.+)\.', salida)
     # La W es la mancha entera y el generador la arma sola: si viene trazada
     # se descarta.
@@ -51,12 +58,16 @@ def puntos(pts, sangria):
                      for i in range(0, len(pts), 6))
 
 
+def varios(pts):
+    return bool(pts) and isinstance(pts[0], list)
+
+
 def lateral(pts):
     """Si el recinto es de un lado. Con dos puntos de tolerancia sobre el eje:
     trazando a mano el borde interno de un área lateral se cruza el eje por un
     pelo, y sin la tolerancia esa área quedaba sin su par. Una central angosta
     entra en la tolerancia y se refleja sobre sí misma, que no cambia nada."""
-    xs = [x for x, _ in pts]
+    xs = [x for x, _ in (sum(pts, []) if varios(pts) else pts)]
     return max(xs) < 52 or min(xs) > 48
 
 
@@ -73,9 +84,17 @@ def main(lamina):
               "        # Trazadas sobre las imágenes de `zonas-por-area.py`, mirando los",
               "        # diagramas de localización del cuadernillo."]
     for area in sorted(tinta, key=lambda a: (a.startswith('Dd'), len(a), a)):
-        lineas.append(f"        '{area}':".ljust(17) + "{'poli': [")
-        lineas.append(puntos(polis[area], '                           '))
-        lineas.append(f"                           ], 'espejo': {lateral(polis[area])}}},")
+        if varios(polis[area]):
+            lineas.append(f"        '{area}':".ljust(17) + "{'polis': [")
+            for parte in polis[area]:
+                lineas.append('                           [')
+                lineas.append(puntos(parte, '                            '))
+                lineas.append('                           ],')
+            lineas.append(f"                           ], 'espejo': {lateral(polis[area])}}},")
+        else:
+            lineas.append(f"        '{area}':".ljust(17) + "{'poli': [")
+            lineas.append(puntos(polis[area], '                           '))
+            lineas.append(f"                           ], 'espejo': {lateral(polis[area])}}},")
     lineas.append('    },')
 
     s = io.open(FUENTE, encoding='utf-8').read()
@@ -83,9 +102,14 @@ def main(lamina):
     s = s[:fin] + '\n' + '\n'.join(lineas) + s[fin:]
 
     if espacios:
-        bloque = f"    '{lamina}': {{\n" + ''.join(
-            f"        '{a}': {{'espejo': {lateral(polis[a])}, 'poli': [\n"
-            f"{puntos(polis[a], '            ')}\n        ]}},\n" for a in espacios) + '    },\n'
+        def espacio(a):
+            if varios(polis[a]):
+                partes = ''.join(f"            [\n{puntos(p, '             ')}\n            ],\n"
+                                 for p in polis[a])
+                return f"        '{a}': {{'espejo': {lateral(polis[a])}, 'polis': [\n{partes}        ]}},\n"
+            return (f"        '{a}': {{'espejo': {lateral(polis[a])}, 'poli': [\n"
+                    f"{puntos(polis[a], '            ')}\n        ]}},\n")
+        bloque = f"    '{lamina}': {{\n" + ''.join(espacio(a) for a in espacios) + '    },\n'
         i = s.index('ABIERTOS = {')
         s = s[:i + len('ABIERTOS = {\n')] + bloque + s[i + len('ABIERTOS = {\n'):]
 

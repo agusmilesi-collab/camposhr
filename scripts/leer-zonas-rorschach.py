@@ -145,21 +145,33 @@ def main(lamina='III'):
         # que encierra y se toma su borde: así vale igual un óvalo, una
         # diagonal o una L.
         # El trazo, cerrado por sus dos puntas y con lo de adentro relleno.
-        cerrado = ndimage.binary_closing(sub, np.ones((5, 5)))
-        piezas_trazo, cuantas_trazo = ndimage.label(cerrado, structure=np.ones((3, 3)))
-        if cuantas_trazo > 1:
-            tam_trazo = ndimage.sum(cerrado, piezas_trazo, range(1, cuantas_trazo + 1))
-            cerrado = piezas_trazo == int(np.argmax(tam_trazo)) + 1
-        chico = np.array(Image.fromarray((cerrado * 255).astype('uint8')).resize(
-            (max(1, cerrado.shape[1] // 4), max(1, cerrado.shape[0] // 4)), Image.NEAREST)) > 128
-        punta1, punta2 = extremos(chico)
-        if punta1 is not None and punta2 is not None:
-            lienzo = Image.fromarray((cerrado * 255).astype('uint8'))
-            ImageDraw.Draw(lienzo).line(
-                [(punta2[1] * 4, punta2[0] * 4), (punta1[1] * 4, punta1[0] * 4)],
-                fill=255, width=9)
-            cerrado = np.array(lienzo) > 128
-        relleno = encerrado(cerrado)
+        # Un área puede venir en varios recintos (DdS22 de la X: el cuerpo, los
+        # amarillos y el verde) o con un recinto adentro de otro, que es un
+        # hueco (DdS29 de la X deja afuera la figurita amarilla). Cada recinto se
+        # rellena por separado y se combinan pares-impares: lo que queda adentro
+        # de dos recintos se descuenta. Los pedazos de trazo chicos al lado del
+        # mayor son manchas del lápiz y no cuentan.
+        cerrado_todo = ndimage.binary_closing(sub, np.ones((5, 5)))
+        piezas_trazo, cuantas_trazo = ndimage.label(cerrado_todo, structure=np.ones((3, 3)))
+        tam_trazo = ndimage.sum(cerrado_todo, piezas_trazo, range(1, cuantas_trazo + 1))
+        relleno = np.zeros_like(cerrado_todo)
+        trazo_valido = np.zeros_like(cerrado_todo)
+        for k in range(cuantas_trazo):
+            if tam_trazo[k] < 0.02 * tam_trazo.max():
+                continue
+            cerrado = piezas_trazo == k + 1
+            chico = np.array(Image.fromarray((cerrado * 255).astype('uint8')).resize(
+                (max(1, cerrado.shape[1] // 4), max(1, cerrado.shape[0] // 4)), Image.NEAREST)) > 128
+            punta1, punta2 = extremos(chico)
+            if punta1 is not None and punta2 is not None:
+                lienzo = Image.fromarray((cerrado * 255).astype('uint8'))
+                ImageDraw.Draw(lienzo).line(
+                    [(punta2[1] * 4, punta2[0] * 4), (punta1[1] * 4, punta1[0] * 4)],
+                    fill=255, width=9)
+                cerrado = np.array(lienzo) > 128
+            relleno ^= encerrado(cerrado)
+            trazo_valido |= cerrado
+        cerrado = trazo_valido
 
         yy, xx = np.where(cerrado)
         caja_px = (xx.max() - xx.min() + 1) * (yy.max() - yy.min() + 1)
@@ -171,9 +183,9 @@ def main(lamina='III'):
         recto = relleno.sum() / caja_px > 0.9
         poli = None
         if not recto:
-            bordes = measure.find_contours(relleno.astype(float), 0.5)
-            if bordes:
-                borde = max(bordes, key=len)
+            bordes = [b for b in measure.find_contours(relleno.astype(float), 0.5) if len(b) > 20]
+            polis = []
+            for borde in sorted(bordes, key=len, reverse=True):
                 # El contorno sigue al trazo, no lo convierte en una figura: se
                 # simplifica lo justo para que no queden mil puntos pegados, y
                 # si aun así son muchos se afloja de a poco. Una mancha no tiene
@@ -184,7 +196,7 @@ def main(lamina='III'):
                 while len(aprox) > 120 and tolerancia < 12:
                     tolerancia += 1.5
                     aprox = measure.approximate_polygon(borde, tolerance=tolerancia)
-                poli = [
+                pts = [
                     (
                         round(((px_ / esc) - cx0) / ancho_caja * 100, 1),
                         round(((py_ / esc) - cy0) / alto_caja * 100, 1),
@@ -192,8 +204,11 @@ def main(lamina='III'):
                     for py_, px_ in aprox
                 ]
                 # Sin el punto repetido del cierre: el generador cierra solo.
-                if len(poli) > 2 and poli[0] == poli[-1]:
-                    poli = poli[:-1]
+                if len(pts) > 2 and pts[0] == pts[-1]:
+                    pts = pts[:-1]
+                if len(pts) > 2:
+                    polis.append(pts)
+            poli = polis if len(polis) > 1 else (polis[0] if polis else None)
         salidas.append(
             (nombre, (round(a), round(b), round(c), round(e)), int(sub.sum()), trozos, poli)
         )
@@ -211,7 +226,11 @@ def main(lamina='III'):
         abierto = nombre.startswith('DdS')
         donde = "ABIERTOS['%s']" % lamina if abierto else "ZONAS['%s']" % lamina
         print(f"    {nombre + ':':8} {z}    # {donde}, {px} px de trazo en {trozos} pieza(s)")
-        if poli:
+        if poli and isinstance(poli[0], list):
+            # Varios contornos, que se combinan pares-impares en el generador.
+            partes = ', '.join('[' + ', '.join(f'({x}, {y})' for x, y in p) + ']' for p in poli)
+            print(f"    #   trazo libre en {len(poli)} contornos: {{'polis': [{partes}], 'espejo': True}}")
+        elif poli:
             puntos = ', '.join(f'({x}, {y})' for x, y in poli)
             print(f"    #   trazo libre, {len(poli)} puntos: {{'poli': [{puntos}], 'espejo': True}}")
 

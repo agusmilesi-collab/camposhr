@@ -17,15 +17,15 @@ Se actualiza cada vez que se toca una lámina.
 | Lámina | Tabla A | Áreas en pantalla | Estado | Lo que queda |
 | --- | --- | --- | --- | --- |
 | I | sí | sí | **Ok final** (29/9) | Nada |
-| II | sí | sí | Encaminada | Revisión final. Dd24 sale casi rectangular (llena el 92 % de su caja) |
-| III | sí | sí | Encaminada | Revisión final. **DdS24 está mal**: se lleva el 59 % de la lámina y casi no toca blanco. Hace falta otro criterio de recorte |
+| II | sí | sí | **A retrazar** | Agustín las dibuja de nuevo sobre `~/Desktop/Lámina 2` (17 áreas, DS5 incluida) |
+| III | sí | sí | **A retrazar** | Agustín las dibuja de nuevo sobre `~/Desktop/Lámina 3` (22 áreas). DdS24 estaba mal: se llevaba el 59 % de la lámina |
 | IV | sí | sí | **Ok final** (29/9) | Nada |
-| V | sí | sí | Encaminada | Revisión final |
-| VI | sí | sí | Encaminada | Revisión final |
-| VII | sí | sí | Encaminada | Revisión final |
+| V | sí | sí | **Ok final** (29/9) | Nada |
+| VI | sí | sí | **Ok final** (29/9) | Nada |
+| VII | sí | sí | **Ok final** (29/9) | Nada |
 | VIII | sí | sí | **Ok final** (29/9) | Nada |
 | IX | sí | no | Falta trazar | Dibujar las 28 áreas. Dd22/DdS22 y D8/DS8 van juntas, como D3/DS3 de la VIII |
-| X | sí | no | Falta trazar | Dibujar las 29 áreas |
+| X | sí | sí | **En revisión** | Seguir con lo que marque Agustín |
 
 Los avisos de las láminas I a VII salen de `python3 scripts/auditar-areas.py`.
 Los ENORME de esas láminas son áreas grandes de verdad (D2 de la I, D7 de la IV)
@@ -39,6 +39,48 @@ Cerrada el 29/9/2026 con el ok de Agustín.
 | --- | --- | --- |
 | 29/9 | Sin espejo, y cada una de un solo lado: D2, D7, Dd33 y Dd25 a la derecha; Dd28, Dd34 y Dd35 a la izquierda | Sí. D2, D7, Dd33 y Dd25 estaban trazadas a la izquierda, y Dd34 a la derecha: de esas cinco queda solo el reflejo (`'reflejado'`) |
 | 29/9 | D7 a la izquierda y Dd34 a la derecha | Sí. Quedan del lado en que se trazaron |
+
+## Lámina X: carga (29/9)
+
+Trazada por Agustín en `~/Desktop/Entrevistador/Lámina 10 redibujada`; los recuadros salen de la foto `Lamina 10.heic`.
+
+- Ninguna área se espeja.
+- El amarillo en gris queda casi como el papel: en la X la tinta suma lo que tiene color (`SATURACION`), y el mínimo de pieza baja a 150 px porque D3 y Dd33 son pedazos sueltos chicos.
+- El lector ahora lee todos los recintos de un área y los combina pares-impares (`'polis'`): DdS29 y DdS30 dejan afuera las figuritas que rodeaste aparte, y DdS22 son cuatro recintos.
+- DdS22 lleva la tinta y el blanco que encierra (`'con_tinta'`). DdS29 y DdS30 toman todo el blanco de su trazo.
+
+| Fecha | Pedido | Hecho |
+| --- | --- | --- |
+| 29/9 | Los nombres de Dd25 y D12 se pisan | Sí. Dd25 subió y D12 se corrió a la derecha |
+| 29/9 | DdS22 incluye también el espacio vacío de adentro | Sí (`'rellenar'`): suma el hueco del centro, con la figurita amarilla adentro |
+| 29/9 | DdS22 también con el espacio vacío de abajo | Sí: suma DdS30, que es el hueco del centro más el blanco entre las patas |
+
+## Lámina VII: cambios pedidos en la revisión
+
+Cerrada el 29/9/2026 con el ok de Agustín.
+
+| Fecha | Pedido | Hecho |
+| --- | --- | --- |
+| 29/9 | No espejar nada | Sí. Eran diez; cada una queda del lado en que se trazó |
+
+## Lámina VI: cambios pedidos en la revisión
+
+Cerrada el 29/9/2026 con el ok de Agustín.
+
+| Fecha | Pedido | Hecho |
+| --- | --- | --- |
+| 29/9 | No espejar nada, para ver cómo queda | Sí. Eran nueve: D4, Dd21, Dd22, Dd24, Dd25, Dd26, Dd28, Dd29 y Dd31. Cada una queda del lado en que se trazó |
+| 29/9 | Dd21 sí va espejada | Sí. Es la única de la VI que se espeja |
+
+La VI está declarada dos veces en `ZONAS` y en `ABIERTOS` de `areas-rorschach.py`: vale la segunda, y la primera no se usa.
+
+## Lámina V: cambios pedidos en la revisión
+
+Cerrada el 29/9/2026 con el ok de Agustín.
+
+| Fecha | Pedido | Hecho |
+| --- | --- | --- |
+| 29/9 | Sin espejo, cada una de su lado: D1, D10, Dd23, Dd24, Dd26, Dd32 y Dd33 a la derecha; D4, Dd22, Dd25, DdS29 y Dd35 a la izquierda | Sí. Todas estaban trazadas de ese lado |
 
 ## Lámina IV: cambios pedidos en la revisión
 
