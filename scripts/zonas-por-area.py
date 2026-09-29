@@ -89,6 +89,13 @@ def main(lamina='I'):
 
     umbral, minimo, por_lamina = z.cortes()
     tinta = np.array(im.convert('L')) < umbral
+    # El naranja claro y el verde de la IX y el amarillo de la X quedan en gris
+    # como el papel: el borde tiene que ser el mismo con el que recorta el
+    # generador, que les suma el color.
+    corte_color = z.saturacion().get(lamina)
+    if corte_color is not None:
+        rgb = np.array(im.convert('RGB')).astype(int)
+        tinta |= (rgb.max(axis=2) - rgb.min(axis=2)) > corte_color
     lab, n = ndimage.label(tinta)
     tam = ndimage.sum(tinta, lab, range(1, n + 1))
     corte = por_lamina.get(lamina, minimo)

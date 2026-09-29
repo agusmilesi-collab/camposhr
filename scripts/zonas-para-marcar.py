@@ -58,6 +58,13 @@ def cortes():
     return umbral, minimo, por_lamina
 
 
+def saturacion():
+    """Las láminas donde la tinta de color claro cuenta aunque en gris quede
+    como el papel, con su corte (el mismo de `areas-rorschach.py`)."""
+    fuente = io.open(os.path.join(RAIZ, 'scripts/areas-rorschach.py'), encoding='utf-8').read()
+    return eval(re.search(r'^SATURACION = (\{.*\})', fuente, re.M).group(1))
+
+
 def zonas_declaradas(lamina):
     """Lo que hoy dice el programa: {área: (x0, y0, x1, y1)}, para el gris de referencia."""
     fuente = io.open(os.path.join(RAIZ, 'scripts/areas-rorschach.py'), encoding='utf-8').read()
