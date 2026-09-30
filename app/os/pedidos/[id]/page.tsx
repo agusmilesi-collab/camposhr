@@ -22,6 +22,8 @@ import { Benziger, Borrar, Estado, Fecha, Largo, Lista, Pregunta, Texto } from '
 import NivelDeTrabajo from './NivelDeTrabajo';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 import BorrarCandidato from './BorrarCandidato';
+import CopyLink from '@/app/informes/CopyLink';
+import { select } from '@/lib/supabase';
 import { llevaDiscursivo } from '@/lib/discursivo';
 
 export const dynamic = 'force-dynamic';
@@ -128,6 +130,17 @@ export default async function FichaPedido({
   const conPotencial = llevaDiscursivo(
     baterias.find((b) => b.id === pedido.bateriaId)?.tests ?? null,
   );
+  /* El enlace que se le manda al cliente para que complete el perfil del
+     puesto y, si la batería lo lleva, el alcance. Cuelga del enlace de su
+     portal, así que sin portal no hay enlace. */
+  const token = (
+    await select<{ token_portal: string | null }>(
+      'empresas',
+      `select=token_portal&id=eq.${pedido.empresaId}&limit=1`
+    ).catch(() => [])
+  )[0]?.token_portal;
+  const enlaceCliente = token ? `https://clientes.camposhr.com/p/${token}/puesto/${pedido.id}` : null;
+
   const pestanas = PESTANAS.filter((p) => p.clave !== 'potencial' || conPotencial);
   /* Una pestaña que no le corresponde cae en Datos: la dirección puede venir
      guardada de cuando el pedido tenía otra batería. */
@@ -159,6 +172,11 @@ export default async function FichaPedido({
             </Link>
           ))}
         </nav>
+        {/* En perfil y potencial, el enlace para que lo complete el cliente:
+            son los datos que mejor conoce él. Uno solo para las dos cosas. */}
+        {enlaceCliente && (ver === 'perfil' || ver === 'potencial') && (
+          <CopyLink url={enlaceCliente} texto="Copiar enlace para el cliente" />
+        )}
       </div>
 
       {ver === 'datos' && (

@@ -6708,20 +6708,48 @@ body {
 
 /* El perfil del puesto: nueve preguntas de tocar, escondidas hasta que se
    piden. Es lo que permite medir a la persona contra el lugar donde entra. */
+/* Botón y no enlace subrayado: suma una fila al formulario, que es una acción,
+   y al lado de los campos un texto subrayado se lee como una nota al pie. Va
+   delineado y no lleno: el lleno es el de enviar el pedido, que es la acción
+   principal de la pantalla. Comparte alto, radio y tipografía con `btn-primario`
+   para que los dos se vean de la misma familia. */
 .pedir-abrir {
   justify-self: start;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 0;
+  justify-content: center;
+  gap: 7px;
   font: inherit;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
+  line-height: 1;
+  white-space: nowrap;
   color: var(--ink);
-  background: none;
-  border: 0;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 16px;
   cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.pedir-abrir:hover {
+  background: #faf8f4;
+  border-color: var(--ink);
+}
+
+/* Sumar un candidato va lleno y del color del número de la fila: es lo que hace
+   crecer la lista, y delineado se perdía al lado de las tarjetas. */
+.pedir-abrir--firme,
+.pedir-abrir--firme:hover {
+  color: #fff;
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.pedir-abrir--firme:hover {
+  background: #000;
+  border-color: #000;
 }
 
 .pedir-cuenta {
@@ -6969,11 +6997,13 @@ body {
   color: var(--muted);
 }
 
+/* Blanca, con los campos en el color papel adentro: con la tarjeta y los campos
+   del mismo color no se veía dónde empieza cada campo. */
 .pedir-fila {
   display: grid;
   gap: 8px;
   padding: 12px;
-  background: var(--paper);
+  background: #fff;
   border: 1px solid var(--line);
   border-radius: 9px;
 }
@@ -10219,4 +10249,445 @@ a.cq-btn {
 .pedir-si-no-t small.pedir-ejemplo {
   font-style: italic;
   opacity: 0.85;
+}
+
+/* El perfil del puesto que completa el cliente: una sola columna, sin el
+   resumen lateral del formulario de pedido, y dos pestañas arriba cuando la
+   batería lleva el alcance. */
+.pedir-cuerpo.pedir-cuerpo-solo {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 860px;
+}
+
+.pedir-tabs {
+  display: flex;
+  gap: 4px;
+  max-width: 860px;
+  margin: 0 0 22px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.pedir-tab {
+  padding: 10px 16px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.pedir-tab:hover {
+  color: var(--ink);
+}
+
+.pedir-tab.activa {
+  border-bottom-color: var(--ink);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Los pasos del formulario de pedido: un círculo oscuro con el número delante
+   del título de cada bloque. El contador salta los bloques que no están, así
+   que la numeración no tiene huecos. */
+.pedir-pasos {
+  counter-reset: paso;
+}
+
+.pedir-pasos > .pedir-bloque > h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pedir-pasos > .pedir-bloque > h2::before {
+  counter-increment: paso;
+  content: counter(paso);
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Los pasos del formulario de pedido, arriba: círculo con número y nombre.
+   El actual en oscuro, los hechos con su número tachado de color y
+   clickeables para volver, los que vienen apagados. */
+.pedir-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  max-width: 1120px;
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.pedir-stepper button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.pedir-stepper button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.pedir-stepper-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.pedir-stepper .actual button {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.pedir-stepper .actual .pedir-stepper-n {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.pedir-stepper .hecho button {
+  color: var(--ink);
+}
+
+.pedir-stepper .hecho button:hover {
+  text-decoration: underline;
+}
+
+/* Atrás y seguir, al pie de los bloques del paso. */
+.pedir-navegar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.pedir-navegar .btn-primario {
+  margin-left: auto;
+}
+
+/* El rótulo de las búsquedas ya entregadas, entre las dos grillas. */
+.pedir-subtitulo {
+  margin: 18px 0 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Más aire antes de las búsquedas ya entregadas, para que se lean como otro
+   grupo y no como la continuación de las en curso. */
+.pedir-subtitulo {
+  margin-top: 30px;
+}
+
+/* El aviso de reabrir, con interlineado apretado. */
+.pedir-ayuda.pedir-ayuda-junta {
+  margin-top: 10px;
+  line-height: 1.35;
+}
+
+/* Una frase que tiene que leerse primero dentro de un texto de ayuda: en
+   negrita y azul oscuro. */
+.pedir-destacado {
+  color: #2b4468;
+  font-weight: 600;
+}
+
+/* El perfil del puesto en un recuadro propio dentro del bloque "El puesto":
+   título, para qué sirve y el botón que abre las preguntas, juntos. */
+.pedir-perfil-caja {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #faf8f4;
+}
+
+.pedir-perfil-caja .pedir-perfil-titulo {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pedir-perfil-caja .pedir-ayuda {
+  margin: 0;
+}
+
+/* La decisión de dos (nueva o ya pedida), en dos tarjetas del mismo ancho. */
+.pedir-tarjetas.pedir-dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* El "¿Cuál?" va más cerca de la decisión que el rótulo de las entregadas. */
+.pedir-subtitulo.pedir-subtitulo-primero {
+  margin-top: 22px;
+}
+
+/* La pregunta que abre la lista de búsquedas ya pedidas, y los dos grupos
+   debajo con el mismo rótulo: "En curso" y "Ya entregadas". */
+.pedir-cual {
+  display: block;
+  margin: 24px 0 0;
+}
+
+.pedir-cual + .pedir-subtitulo.pedir-subtitulo-primero {
+  margin-top: 12px;
+}
+
+/* "¿A cuál sumás candidatos?" es la pregunta del paso: va del tamaño de un
+   título de bloque. */
+.pedir-cual {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Las tarjetas de búsquedas, pegadas a su rótulo ("En curso", "Ya
+   entregadas"): se leen como parte de ese grupo y no del que está arriba. */
+.pedir-subtitulo {
+  margin-bottom: 4px;
+}
+
+.pedir-subtitulo + .pedir-tarjetas {
+  margin-top: 0;
+}
+
+/* El bloque separa todo con 10 px; entre un rótulo de grupo y sus tarjetas
+   se descuenta casi entero, así quedan pegadas a su título. */
+.pedir-subtitulo {
+  margin-bottom: 0;
+}
+
+.pedir-bloque .pedir-subtitulo + .pedir-tarjetas {
+  margin-top: -6px;
+}
+
+/* Entre el grupo "En curso" y el de "Ya entregadas", aire de sobra: son dos
+   grupos y así se leen. */
+.pedir-bloque .pedir-tarjetas + .pedir-subtitulo {
+  margin-top: 40px;
+}
+
+/* Una raya gris debajo de "¿A cuál sumás candidatos?": cierra la pregunta y
+   abre la lista de búsquedas. */
+.pedir-cual {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Un tercio menos de aire entre "En curso" y "Ya entregadas": de 50 a 33 px
+   contando los 10 del bloque. */
+.pedir-bloque .pedir-tarjetas + .pedir-subtitulo {
+  margin-top: 23px;
+}
+
+/* El alcance del puesto se abre justo debajo de las baterías cuando se elige
+   una que lleva potencial: un recuadro dentro del mismo bloque, con su
+   título, para que se lea como parte de esa elección. */
+.pedir-alcance {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 1px solid var(--ink);
+  border-radius: 12px;
+  background: #faf8f4;
+  scroll-margin-top: 24px;
+  animation: pedir-aparece 0.25s ease;
+}
+
+.pedir-alcance .pedir-alcance-t {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+@keyframes pedir-aparece {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* La primera pregunta del pedido, más grande: es la que decide todo lo que
+   sigue, y la tarjeta tiene que leerse primero. */
+.pedir-bloque .pedir-pregunta-grande {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.pedir-bloque:has(> .pedir-pregunta-grande) {
+  padding: 28px;
+}
+
+.pedir-tarjetas.pedir-dos .pedir-tarjeta {
+  padding: 22px 22px;
+  gap: 6px;
+}
+
+.pedir-tarjetas.pedir-dos .pedir-tarjeta-t {
+  font-size: 1.05rem;
+}
+
+.pedir-tarjetas.pedir-dos .pedir-tarjeta-d {
+  font-size: 0.88rem;
+}
+
+/* Las baterías y la suma del perfil de pensamiento: las que no están
+   elegidas van en blanco; la elegida se distingue por el borde oscuro y un
+   fondo apenas tostado. */
+.pedir-bateria,
+.pedir-suma {
+  background: #fff;
+}
+
+.pedir-bateria.pedir-elegida,
+.pedir-suma.pedir-elegida {
+  background: #faf6ee;
+}
+
+/* El "← Volver" a la primera pregunta: un enlace chico arriba del bloque, sin
+   marco de botón. */
+.pedir-volver-link {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pedir-volver-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* Sin la pregunta arriba, "¿A cuál sumás candidatos?" abre el bloque. */
+.pedir-volver-link + .pedir-cual {
+  margin-top: 4px;
+}
+
+/* Las tarjetas de las búsquedas ya pedidas, más grandes: son la elección de
+   este paso y se reconocen por el nombre del puesto, que tiene que leerse. */
+.pedir-tarjetas:not(.pedir-dos) {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta {
+  gap: 5px;
+  padding: 16px 18px;
+  border-radius: 10px;
+}
+
+.pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta-t {
+  font-size: 0.98rem;
+}
+
+.pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta-d {
+  font-size: 0.82rem;
+}
+
+/* La columna del formulario y el resumen terminan a la misma altura: la fila
+   de arriba se estira a la más alta y el resumen la ocupa entera, con el
+   botón de mandar contra el borde de abajo. "Atrás" y "Próximo paso" van en
+   su propia fila, debajo de la columna del formulario. */
+.pedir-cuerpo {
+  align-items: stretch;
+}
+
+.pedir-cuerpo > .pedir-navegar {
+  grid-column: 1;
+}
+
+.pedir-resumen {
+  position: static;
+  display: flex;
+  flex-direction: column;
+}
+
+.pedir-resumen-caja {
+  flex: 1;
+  align-content: start;
+}
+
+.pedir-resumen-caja .pedir-enviar {
+  align-self: end;
+}
+
+.pedir-resumen-caja {
+  display: flex;
+  flex-direction: column;
+}
+
+.pedir-resumen-caja .pedir-enviar {
+  margin-top: auto;
+}
+
+/* El formulario y el resumen, lado a lado en la primera fila; la navegación
+   debajo del formulario. */
+.pedir-cuerpo > .pedir-campos {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.pedir-cuerpo > .pedir-resumen {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.pedir-cuerpo > .pedir-navegar {
+  grid-row: 2;
+}
+
+/* En angosto, una sola columna y en orden: formulario, navegación, resumen. */
+@media (max-width: 1000px) {
+  .pedir-cuerpo > .pedir-campos,
+  .pedir-cuerpo > .pedir-resumen,
+  .pedir-cuerpo > .pedir-navegar {
+    grid-column: 1;
+    grid-row: auto;
+  }
 }
