@@ -604,6 +604,12 @@ export default function Pedido({
                       puesto, y cuándo se sabe si su resultado salió bien?
                     </span>
                     <p className="pedir-nota">{AVISO_HORIZONTE}</p>
+                    {/* En el método el plazo lo fija quien asigna la tarea, y
+                        quien carga el pedido suele ser Recursos Humanos. */}
+                    <p className="pedir-nota">
+                      Si no sos el jefe directo del puesto, confirmá con él qué tarea le
+                      asigna y para cuándo espera el resultado.
+                    </p>
                     <div className="pedir-span">
                       <input
                         className="pedir-input pedir-span-num"
@@ -640,6 +646,9 @@ export default function Pedido({
                         <span className="pedir-si-no-t">
                           <strong>{p.corto}</strong>
                           <small>{p.simple}</small>
+                          {/* Un puesto cualquiera que contesta que sí: quien no
+                              conoce el modelo necesita contra qué comparar. */}
+                          <small className="pedir-ejemplo">Por ejemplo: {p.ejemplo}</small>
                         </span>
                         <div className="pedir-opciones" role="group" aria-label={p.corto}>
                           {[

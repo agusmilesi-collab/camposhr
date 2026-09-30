@@ -155,66 +155,98 @@ export default function NivelDeTrabajo({
 
   return (
     <div className="os-nivel-trabajo">
-      {/* Contra qué se contesta, arriba de todo: las tres cosas se confunden y
-          medir contra la equivocada cambia el estrato. */}
-      <p className="os-nivel-alcance">
-        Las dos preguntas son sobre <strong>el puesto que se va a cubrir</strong>, con las
-        tareas que se le van a asignar de verdad. Lo que la persona hizo hasta hoy se
-        pregunta en la entrevista, y hasta dónde puede llegar el puesto más adelante lo
-        contesta el diagrama de progreso del informe.
-      </p>
 
       {/* El time-span. La pregunta va escrita entera porque es la que la
           evaluadora le hace al cliente, palabra por palabra. */}
-      <div className="os-nivel-bloque">
-        <p className="os-nivel-pregunta">
-          ¿Cuál es la tarea de mayor alcance temporal de la que responde este puesto, y
-          cuándo se sabe si su resultado salió bien?
-        </p>
-        {/* La confusión que arruina la medición: el plazo del resultado contra
-            las horas de trabajo que cuesta producirlo. */}
-        <p className="os-nivel-aviso">{AVISO_HORIZONTE}</p>
-        <div className="os-nivel-tiempo">
-          <input
-            className="os-control-suave os-potencial-numero"
-            inputMode="decimal"
-            value={cuanto}
-            placeholder="0"
-            onChange={(e) => setCuanto(e.target.value.replace(/[^\d,.]/g, '').slice(0, 5))}
-            onBlur={() => guardarTiempo(cuanto, unidad)}
-          />
-          <select
-            className="os-control-suave"
-            value={unidad}
-            onChange={(e) => {
-              const u = e.target.value as Unidad;
-              setUnidad(u);
-              guardarTiempo(cuanto, u);
-            }}
-          >
-            {UNIDADES.map((u) => (
-              <option key={u.clave} value={u.clave}>
-                {u.texto}
-              </option>
-            ))}
-          </select>
-          <span className={`os-nivel-sale${porTiempo ? '' : ' vacio'}`}>
-            {porTiempo ? `Estrato ${porTiempo.romano}` : 'sin contestar'}
-          </span>
-        </div>
+      {/* En cuatro columnas: la pregunta con sus avisos ocupa dos, el plazo
+          una y lo que da la cuarta, cada uno en su tarjeta. */}
+      <div className="os-nivel-card os-plazo-fila">
+        <section className="os-nivel-mini os-plazo-pregunta">
+          <p className="os-nivel-pregunta">
+            ¿Cuál es la tarea de mayor alcance temporal de la que responde este puesto, y
+            cuándo se sabe si su resultado salió bien?
+          </p>
+          {/* La confusión que arruina la medición: el plazo del resultado contra
+              las horas de trabajo que cuesta producirlo. */}
+          <p className="os-nivel-aviso">{AVISO_HORIZONTE}</p>
+          {/* En el método el plazo lo fija quien asigna la tarea: es su
+              expectativa y no lo que el puesto dice de sí mismo. */}
+          <p className="os-nivel-aviso">
+            Se contesta con lo que dice el jefe directo: qué tarea le asigna y para cuándo
+            espera el resultado.
+          </p>
+        </section>
+
+        <section className="os-nivel-mini os-plazo-dato">
+          <span className="os-etiqueta-campo">Plazo</span>
+          <div className="os-nivel-tiempo">
+            <input
+              className="os-control-suave os-potencial-numero"
+              inputMode="decimal"
+              value={cuanto}
+              placeholder="0"
+              onChange={(e) => setCuanto(e.target.value.replace(/[^\d,.]/g, '').slice(0, 5))}
+              onBlur={() => guardarTiempo(cuanto, unidad)}
+            />
+            <select
+              className="os-control-suave"
+              value={unidad}
+              onChange={(e) => {
+                const u = e.target.value as Unidad;
+                setUnidad(u);
+                guardarTiempo(cuanto, u);
+              }}
+            >
+              {UNIDADES.map((u) => (
+                <option key={u.clave} value={u.clave}>
+                  {u.texto}
+                </option>
+              ))}
+            </select>
+          </div>
+        </section>
+
+        <section className="os-nivel-mini os-plazo-dato">
+          <span className="os-etiqueta-campo">Resultado</span>
+          {porTiempo ? (
+            <strong className="os-nivel-mini-dato os-plazo-estrato">
+              Estrato {porTiempo.romano}
+            </strong>
+          ) : (
+            <span className="os-tabla-flojo">sin contestar</span>
+          )}
+        </section>
       </div>
 
       {/* Las cinco preguntas. Se contestan de arriba hacia abajo y el estrato es
           la más alta que sí, así que las de abajo no se borran al subir. */}
-      <div className="os-nivel-bloque">
-        <p className="os-nivel-pregunta">¿Qué exige el trabajo que hay que hacer?</p>
-        <ol className="os-nivel-preguntas">
+      <div className="os-nivel-bloque os-nivel-card">
+        <p className="os-nivel-pregunta">
+          ¿Qué exige el trabajo? El estrato es la pregunta más alta que da Sí.
+        </p>
+        {/* Contestadas de memoria, casi todas dan que sí: cualquier jefatura
+            dice que planifica con alternativas. El ejemplo es lo que separa el
+            dato de la impresión. */}
+        <p className="os-nivel-aviso">
+          Antes de marcar Sí, pedí un ejemplo concreto de esa exigencia en este puesto.
+        </p>
+        <ol className="os-nivel-preguntas os-preguntas-pedido">
           {PREGUNTAS.map((p) => (
             <li key={p.estrato}>
               <span className="os-nivel-texto">
-                <strong>{p.corto}</strong>
+                <strong className="os-pregunta-estrato">
+                  <span className="os-nivel-numero os-numero-oscuro">{p.estrato}</span>
+                  {p.corto}
+                </strong>
                 <small>{p.texto}</small>
+                <small className="os-pregunta-ejemplo">Por ejemplo: {p.ejemplo}</small>
               </span>
+              {/* El estrato arriba del sí y el no: el nivel es la más alta que
+                  sí, y así se lee cuál da sin saberse el orden de memoria. */}
+              <div className="os-pregunta-respuesta">
+                <span className="os-pregunta-romano">
+                  Estrato {estratoPorNumero(p.estrato)?.romano}
+                </span>
               <Opciones
                 valor={respuestas[String(p.estrato)] ?? null}
                 opciones={[
@@ -226,12 +258,11 @@ export default function NivelDeTrabajo({
                 }
                 etiqueta={p.corto}
               />
+              </div>
             </li>
           ))}
         </ol>
-        <span className={`os-nivel-sale${porPreguntas ? '' : ' vacio'}`}>
-          {porPreguntas ? `Estrato ${porPreguntas.romano}` : 'sin contestar'}
-        </span>
+        <Resultado estrato={porPreguntas?.romano ?? null} />
       </div>
 
       {/* Lo que queda. */}
@@ -242,51 +273,100 @@ export default function NivelDeTrabajo({
         </p>
       )}
 
-      <div className="os-nivel-cierre">
-        <span className="os-etiqueta-campo">
-          {aMano ? 'O elegilo a mano' : 'El puesto es'}
-        </span>
-        {aMano ? (
-          /* Sin las dos preguntas contestadas, la evaluadora lo pone: hay
-             pedidos que llegan con el nivel acordado de antes, y obligarla a
-             inventar un plazo para que el sistema lo deduzca sería peor. */
-          <Opciones
-            valor={rige !== null ? String(rige) : null}
-            opciones={ESTRATOS.slice(0, 5).map((e, i) => ({
-              v: String(i + 1) as string | null,
-              texto: e.romano,
-            }))}
-            alElegir={(v) => elegirCual(Number(v))}
-            etiqueta="Estrato del puesto"
-          />
-        ) : choca ? (
-          <Opciones
-            valor={rige !== null ? String(rige) : null}
-            opciones={[porTiempo, porPreguntas].filter(Boolean).map((e) => ({
-              v: String(numeroDe((e as { romano: string }).romano)) as string | null,
-              texto: `Estrato ${(e as { romano: string }).romano}`,
-            }))}
-            alElegir={(v) => elegirCual(Number(v))}
-            etiqueta="Estrato del puesto"
-          />
-        ) : (
-          <p className="os-nivel-resultado">
-            {suyo ? (
+      {/* Tres tarjetas en fila: qué es el puesto, de dónde sale y si el otro
+          camino lo confirma. El plazo es la medida del método y las preguntas
+          son el control. */}
+      <div className="os-nivel-cierre os-nivel-card">
+        <div className="os-nivel-cierre-fila">
+          <section className="os-nivel-mini">
+            <span className="os-etiqueta-campo">
+              {aMano ? 'O elegilo a mano' : 'El puesto es'}
+            </span>
+            {aMano ? (
+              /* Sin las dos preguntas contestadas, la evaluadora lo pone: hay
+                 pedidos que llegan con el nivel acordado de antes, y obligarla a
+                 inventar un plazo para que el sistema lo deduzca sería peor. */
+              <Opciones
+                valor={rige !== null ? String(rige) : null}
+                opciones={ESTRATOS.slice(0, 5).map((e, i) => ({
+                  v: String(i + 1) as string | null,
+                  texto: e.romano,
+                }))}
+                alElegir={(v) => elegirCual(Number(v))}
+                etiqueta="Estrato del puesto"
+              />
+            ) : choca ? (
+              <Opciones
+                valor={rige !== null ? String(rige) : null}
+                opciones={[porTiempo, porPreguntas].filter(Boolean).map((e) => ({
+                  v: String(numeroDe((e as { romano: string }).romano)) as string | null,
+                  texto: `Estrato ${(e as { romano: string }).romano}`,
+                }))}
+                alElegir={(v) => elegirCual(Number(v))}
+                etiqueta="Estrato del puesto"
+              />
+            ) : suyo ? (
               <>
-                <strong>
+                <strong className="os-nivel-mini-dato">
                   Estrato {suyo.romano}
                   {celdaDelPuesto ? ` · celda ${celdaDelPuesto}` : ''}
                 </strong>
-                {suyo.mide ? ` · ${suyo.nombre}` : ` · ${suyo.grupo}`}
+                <span className="os-nivel-mini-nota">
+                  {suyo.mide ? suyo.nombre : suyo.grupo}
+                </span>
               </>
             ) : (
               <span className="os-tabla-flojo">sin determinar</span>
             )}
-          </p>
-        )}
+          </section>
+
+          {!aMano && (
+            <>
+              <section className="os-nivel-mini">
+                <span className="os-etiqueta-campo">Input</span>
+                {/* Tal como se cargó: pasado a palabras, 18 meses se leía
+                    "un año y medio" y parecía otro dato. */}
+                <strong className="os-nivel-mini-dato">
+                  {porTiempo && dias !== null
+                    ? `Plazo de ${cuanto.trim()} ${UNIDADES.find((u) => u.clave === unidad)?.texto ?? ''}`
+                    : 'Las preguntas'}
+                </strong>
+                <span className="os-nivel-mini-nota">
+                  {porTiempo ? `Da estrato ${porTiempo.romano}` : 'Sin plazo cargado'}
+                </span>
+              </section>
+
+              <section className="os-nivel-mini">
+                <span className="os-etiqueta-campo">Preguntas</span>
+                {porPreguntas ? (
+                  <strong className="os-nivel-mini-dato">Estrato {porPreguntas.romano}</strong>
+                ) : (
+                  <span className="os-tabla-flojo">sin contestar</span>
+                )}
+                {porPreguntas && porTiempo && (
+                  <span className={`os-sello-estado ${choca ? 'os-rojo' : 'os-verde'}`}>
+                    {choca ? 'No coinciden con el plazo' : 'Coinciden con el plazo'}
+                  </span>
+                )}
+              </section>
+            </>
+          )}
+        </div>
       </div>
 
       {error && <p className="os-form-error">{error}</p>}
+    </div>
+  );
+}
+
+/** El pie de cada tarjeta: qué estrato da ese camino. */
+function Resultado({ estrato }: { estrato: string | null }) {
+  return (
+    <div className="os-nivel-card-pie">
+      <span className="os-etiqueta-campo">Resultado</span>
+      <span className={`os-nivel-sale${estrato ? '' : ' vacio'}`}>
+        {estrato ? `Estrato ${estrato}` : 'sin contestar'}
+      </span>
     </div>
   );
 }

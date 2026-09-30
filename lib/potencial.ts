@@ -691,6 +691,9 @@ export function comoSeDice(e: Estrato): string {
  * nivel en una persona.
  */
 /*
+ * `ejemplo` es un puesto cualquiera que contesta que sí, para que quien carga
+ * el pedido tenga contra qué comparar antes de marcar. No nombra ningún caso.
+ *
  * `simple` va en infinitivo porque describe el trabajo y no a quien lo hace:
  * se lee debajo de "¿Qué exige el trabajo que hay que hacer?", donde el sujeto
  * es el puesto, y en la tabla de comparación, donde es el nivel.
@@ -698,10 +701,16 @@ export function comoSeDice(e: Estrato): string {
 export const PREGUNTAS = [
   {
     estrato: 1,
+    ejemplo:
+      'Un operario que resuelve una falla de la máquina con lo que sabe, o una administrativa que corrige una factura mal cargada.',
     corto: 'Juicio directo',
-    simple: 'Seguir un método ya conocido y resolver los obstáculos sobre la marcha.',
+    simple: 'Resolver sobre la marcha los obstáculos de una tarea concreta.',
+    /* En forma de exigencia, como las otras cuatro: cada nivel incluye a los de
+       abajo, así que un puesto alto la contesta que sí sin contradecirse. Con
+       "¿se puede llevar adelante siguiendo un plan ya asignado?" la respuesta
+       honesta de un puesto III era que no, y había que marcar que sí. */
     texto:
-      '¿El trabajo se puede llevar adelante siguiendo un plan ya asignado, resolviendo los obstáculos a medida que aparecen con la experiencia y el criterio práctico?',
+      '¿Exige resolver sobre la marcha los obstáculos de una tarea concreta, con la experiencia y el criterio práctico?',
     alCandidato: '¿Lo resolviste siguiendo un método o un procedimiento que ya conocías?',
     repreguntas: [
       '¿De dónde salió ese método? ¿Te lo pasaron o lo armaste vos?',
@@ -710,6 +719,8 @@ export const PREGUNTAS = [
   },
   {
     estrato: 2,
+    ejemplo:
+      'Un analista que junta los reclamos de varios meses, descubre que casi todos vienen del mismo proveedor y recién ahí propone qué hacer.',
     corto: 'Acumulación diagnóstica',
     simple: 'Reunir información, darse cuenta de qué está pasando y recién ahí decidir.',
     texto:
@@ -723,6 +734,8 @@ export const PREGUNTAS = [
   },
   {
     estrato: 3,
+    ejemplo:
+      'Un jefe que arma el plan del año de su sector, decide qué va primero y tiene preparado qué hacer si le recortan el presupuesto.',
     corto: 'Caminos alternativos',
     simple: 'Armar varias maneras de resolverlo, elegir una y guardar otra por si falla.',
     texto:
@@ -736,6 +749,8 @@ export const PREGUNTAS = [
   },
   {
     estrato: 4,
+    ejemplo:
+      'Un gerente que lleva a la vez la apertura de una sucursal, un cambio de sistema y una baja de costos, y reprograma cada uno según avanzan los otros.',
     corto: 'Procesamiento paralelo',
     simple: 'Llevar varios frentes a la vez y ajustar cada uno según los otros.',
     texto:
@@ -749,6 +764,8 @@ export const PREGUNTAS = [
   },
   {
     estrato: 5,
+    ejemplo:
+      'Un gerente general que, antes de bajar un precio, calcula qué pasa con los márgenes, la producción, la fuerza de ventas y la competencia.',
     corto: 'Sistema completo',
     simple: 'Seguir cómo un cambio en un punto mueve todo lo demás y decidir contando eso.',
     texto:

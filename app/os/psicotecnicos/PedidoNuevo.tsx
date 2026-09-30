@@ -19,7 +19,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { BENZIGER_USD } from '@/lib/benziger';
 import { hoy } from '@/lib/hora';
-import { FAMILIAS, SENIORITY } from '@/lib/pedido-campos';
+import { FAMILIAS, SENIORITY, nivelCorto } from '@/lib/pedido-campos';
 import type { BateriaOpcion, Opcion, PedidoOpcion } from './Agregar';
 import BuscarCliente from './BuscarCliente';
 import Desplegable from '../Desplegable';
@@ -162,7 +162,7 @@ export default function PedidoNuevo({
                 <option value="">Sin definir</option>
                 {SENIORITY.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {nivelCorto(s)}
                   </option>
                 ))}
               </select>

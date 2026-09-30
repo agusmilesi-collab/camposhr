@@ -14970,3 +14970,1050 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+
+/* El estrato y el nombre de cada pregunta del pedido, en azul: es lo que se
+   busca con la vista para saber qué nivel da cada una. */
+.os-nivel-texto .os-pregunta-estrato {
+  color: var(--os-azul-fuerte);
+}
+
+/* El nivel del puesto en tres tarjetas: el plazo, las preguntas y lo que
+   queda. Cada camino cierra con su resultado, y la última dice de cuál salió
+   el estrato y si el otro lo confirma. */
+.os-nivel-card {
+  padding: 18px 20px 20px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel);
+}
+
+/* La de cierre ya no necesita su raya de arriba: la separa el marco. */
+.os-nivel-cierre.os-nivel-card {
+  margin-top: 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-nivel-card-pie {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-nivel-card-pie .os-nivel-sale strong,
+.os-nivel-card-pie .os-nivel-sale {
+  color: var(--os-azul-fuerte);
+}
+
+.os-nivel-card-pie .os-nivel-sale.vacio {
+  color: var(--os-suave);
+  font-weight: 400;
+}
+
+.os-nivel-origen {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.os-nivel-origen > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.os-nivel-origen dt {
+  min-width: 78px;
+  color: var(--os-suave);
+}
+
+.os-nivel-origen dd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--os-tinta);
+}
+
+/* El estrato de cada pregunta del pedido, centrado arriba de su sí y no. */
+.os-pregunta-respuesta {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.os-pregunta-romano {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--os-azul-fuerte);
+}
+
+/* El número de cada pregunta del pedido, en círculo azul oscuro. */
+.os-nivel-numero.os-numero-oscuro {
+  background: var(--os-azul-fuerte);
+  color: #ffffff;
+}
+
+/* El ejemplo de cada pregunta del pedido, debajo y más apagado: es para
+   comparar, no para leer primero. */
+.os-nivel-texto small.os-pregunta-ejemplo {
+  margin-top: 2px;
+  font-style: italic;
+  color: var(--os-suave);
+}
+
+/* En el pedido, el texto corta siempre en la misma raya y a la derecha queda
+   una columna fija para el estrato y el sí/no. La píldora medía más que los
+   104 px de la columna y, centrada, se montaba sobre el texto. */
+.os-nivel-preguntas.os-preguntas-pedido > li {
+  grid-template-columns: minmax(0, 1fr) 170px;
+  gap: 32px;
+}
+
+.os-preguntas-pedido .os-pregunta-respuesta {
+  justify-items: stretch;
+  text-align: center;
+}
+
+.os-preguntas-pedido .os-pregunta-respuesta .os-ingreso-opciones {
+  width: 100%;
+}
+
+/* La raya vertical que separa las preguntas de los estratos con su sí/no: la
+   columna se estira a todo el alto de la fila y centra su contenido. */
+.os-nivel-preguntas.os-preguntas-pedido > li {
+  grid-template-columns: minmax(0, 1fr) 194px;
+  gap: 24px;
+}
+
+.os-preguntas-pedido .os-pregunta-respuesta {
+  align-self: stretch;
+  align-content: center;
+  padding-left: 24px;
+  border-left: 1px solid var(--os-linea);
+}
+
+/* El cierre del nivel del puesto: tres tarjetas chicas en fila. */
+.os-nivel-cierre-fila {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.os-nivel-mini {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+}
+
+.os-nivel-mini-dato {
+  font-size: 0.95rem;
+  color: var(--os-tinta);
+}
+
+.os-nivel-mini-nota {
+  font-size: 0.8rem;
+  color: var(--os-suave);
+}
+
+@media (max-width: 760px) {
+  .os-nivel-cierre-fila {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Si el plazo y las preguntas coinciden es lo que se viene a mirar a esta
+   tarjeta: el sello va más grande y el texto del color del punto. */
+.os-nivel-mini .os-sello-estado {
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--punto);
+}
+
+.os-nivel-mini .os-sello-estado::before {
+  width: 11px;
+  height: 11px;
+}
+
+/* El rótulo de cada escala del pedido va arriba de sus tres opciones y no en
+   una columna aparte: la columna le sacaba doscientos píxeles a las opciones,
+   que son lo que hay que leer. */
+@supports (grid-template-columns: subgrid) {
+  .os-pedido-preguntas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px 14px;
+  }
+
+  .os-pedido-preguntas .os-seguimiento-fila {
+    gap: 8px 14px;
+  }
+
+  .os-pedido-preguntas .os-seguimiento-fila > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .os-pedido-preguntas .os-ingreso-opciones {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Cada pregunta de complejidad del pedido es su propia tarjeta. */
+.os-nivel-preguntas.os-preguntas-pedido {
+  gap: 10px;
+}
+
+.os-nivel-preguntas.os-preguntas-pedido > li {
+  padding: 14px 18px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel-2);
+}
+
+/* El plazo del puesto en cuatro columnas: la pregunta ocupa dos, el campo una
+   y el estrato que da la última. */
+.os-plazo-fila {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.os-plazo-fila .os-plazo-pregunta {
+  grid-column: span 2;
+  gap: 8px;
+}
+
+.os-plazo-estrato {
+  color: var(--os-azul-fuerte);
+}
+
+@media (max-width: 760px) {
+  .os-plazo-fila {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-plazo-fila .os-plazo-pregunta {
+    grid-column: auto;
+  }
+}
+
+/* El plazo y su resultado llenan la tarjeta: el rótulo arriba y el dato en
+   grande, centrado en lo que queda de alto y a todo el ancho. */
+.os-plazo-fila .os-plazo-dato {
+  grid-template-rows: auto 1fr;
+  justify-items: stretch;
+}
+
+.os-plazo-dato > :last-child {
+  align-self: center;
+}
+
+.os-plazo-dato .os-nivel-tiempo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 10px;
+}
+
+.os-plazo-dato .os-nivel-tiempo .os-control-suave {
+  width: 100%;
+  min-width: 0;
+  height: 52px;
+  font-size: 1.35rem;
+}
+
+.os-plazo-dato .os-plazo-estrato {
+  font-size: 2rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.os-plazo-dato > .os-tabla-flojo {
+  text-align: center;
+}
+
+/* El estado del pedido como un campo más: el sello y el botón en la misma
+   línea. */
+.os-pedido-estado-fila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Los campos de la ficha del pedido: todos del mismo ancho y alto, así las
+   dos columnas quedan alineadas y ningún desplegable mide lo que su texto. */
+.os-pedido-ficha .os-ficha-valor > .os-campo:not(.os-campo-parrafo) {
+  width: 100%;
+  max-width: 380px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background-color: var(--os-panel);
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.os-pedido-ficha .os-ficha-valor > select.os-campo {
+  padding-right: 38px;
+  background-position: right 14px center;
+  background-size: 11px 7px;
+}
+
+.os-pedido-ficha .os-ficha-valor > .os-campo:not(.os-campo-parrafo):hover:not(:disabled) {
+  border-color: var(--os-suave);
+}
+
+.os-pedido-ficha .os-ficha-valor > .os-campo:focus-visible {
+  outline: none;
+  border-color: var(--os-azul);
+  box-shadow: 0 0 0 3px rgba(67, 100, 143, 0.16);
+}
+
+/* Los candidatos del pedido en columnas: nombre, evaluadora, las dos fechas,
+   la recomendación, el estado y la cruz de borrar. Todas las filas con la
+   misma grilla, así cada dato cae debajo de su rótulo. */
+.os-pedido-gente.os-pedido-gente-datos li {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) 90px 90px minmax(0, 1.2fr) 120px 28px;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.85rem;
+}
+
+.os-pedido-gente-datos li > * {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-pedido-gente-datos .os-pedido-gente-cabeza {
+  padding-top: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+@media (max-width: 760px) {
+  .os-pedido-gente.os-pedido-gente-datos li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .os-pedido-gente-datos .os-pedido-gente-cabeza {
+    display: none;
+  }
+}
+
+/* En la ficha del pedido el desplegable del OS mide lo mismo que los demás
+   campos: todo el ancho hasta 380 px y 40 de alto, con el texto largo cortado
+   y la flecha contra el borde derecho. */
+.os-pedido-ficha .os-ficha-valor > .os-desplegable {
+  display: flex;
+  width: 100%;
+  max-width: 380px;
+}
+
+.os-pedido-ficha .os-ficha-valor > .os-desplegable .os-desplegable-boton {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+}
+
+.os-pedido-ficha .os-desplegable-texto {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Los párrafos del pedido crecen con su texto, así que no necesitan barra. */
+.os-pedido-ficha .os-campo-parrafo {
+  overflow-y: hidden;
+  resize: none;
+}
+
+/* Los pedidos del cliente, abiertos y cerrados, en filas bajas: cada dato en
+   un renglón, el avance con la barra al lado del número y poco aire arriba y
+   abajo. Es una lista para ubicar un pedido, no para leerlo. */
+.os-tabla-pedidos td {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.os-tabla-pedidos .os-avance {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.os-tabla-pedidos .os-avance-barra {
+  width: 60px;
+}
+
+.os-tabla-pedidos .os-boton {
+  height: 26px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Editar y desactivar, dentro de los datos del cliente: en la última columna,
+   abajo a la derecha, al lado de la dirección fiscal. */
+.os-cliente-datos .os-cliente-datos-acciones {
+  grid-column: -2 / -1;
+  justify-self: end;
+  align-self: end;
+}
+
+/* Los contactos, como segunda parte de la tarjeta de datos del cliente: los
+   separa una raya y no un marco. */
+.os-cliente-contactos {
+  border-top: 1px solid var(--os-linea);
+}
+
+/* El título de los datos de la empresa, dentro de la tarjeta: sin raya de
+   abajo, para que se lea como el encabezado de los datos que siguen. */
+.os-cliente-subtitulo {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Tampoco lleva raya debajo del título de Contactos: la separación ya la hace
+   la raya de arriba. */
+.os-cliente-contactos .os-panel-top {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* El portal, segunda parte de la tarjeta del cliente: como los contactos, lo
+   separa una raya de arriba y no un marco. */
+.os-cliente-portal {
+  border-top: 1px solid var(--os-linea);
+}
+
+/* Nuevo pedido a la izquierda y los botones del portal a su derecha, en una
+   fila, con una raya entre los dos: uno es trabajo con el cliente y los otros
+   son lo que el cliente ve. */
+.os-cliente-portal-fila {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.os-cliente-portal-fila > .os-boton-firme {
+  padding-right: 18px;
+  margin-right: 4px;
+}
+
+.os-cliente-portal-fila > .os-portal-acciones {
+  padding-left: 18px;
+  border-left: 1px solid var(--os-linea);
+}
+
+/* Nuevo pedido a la izquierda y el portal a la derecha, cada uno con su
+   título, separados por una raya vertical. */
+.os-cliente-dos {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.os-cliente-dos .os-cliente-dos-derecha {
+  border-left: 1px solid var(--os-linea);
+}
+
+@media (max-width: 760px) {
+  .os-cliente-dos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-cliente-dos .os-cliente-dos-derecha {
+    border-left: 0;
+    border-top: 1px solid var(--os-linea);
+  }
+}
+
+/* La tabla de pedidos del cliente ocupa el panel y reparte por el colgroup:
+   cada celda en un renglón, y lo que no entra se corta con puntos en vez de
+   empujar las columnas de la derecha fuera del marco. */
+.os-panel:has(> .os-tabla-marco > .os-tabla-pedidos) {
+  width: auto;
+}
+
+.os-tabla.os-tabla-pedidos {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.os-tabla-pedidos td,
+.os-tabla-pedidos th {
+  width: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* La última columna lleva un botón y no texto: no se corta ni se marca con
+   puntos suspensivos, que aparecían sueltos delante de "Reabrir". */
+.os-tabla-pedidos td:last-child {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Aire entre la última fila de pedidos y el borde de abajo de la tarjeta: al
+   sacar el botón de nuevo pedido del pie, la última fila quedaba pegada. */
+.os-tabla-marco:has(> .os-tabla-pedidos) {
+  padding-bottom: 16px;
+}
+
+.os-tabla-pedidos tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* En la ficha del cliente todos los botones miden lo mismo: mismo alto, mismo
+   ancho mínimo, misma letra. Hay de cinco lugares distintos (datos, portal,
+   nuevo pedido, contactos y reabrir) y cada uno venía con su tamaño. */
+.os-cliente-pagina .os-boton,
+.os-cliente-pagina .copiar,
+.os-cliente-pagina .os-tabla-pedidos .os-boton {
+  height: 34px;
+  min-width: 120px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  justify-content: center;
+}
+
+/* Nuevo pedido y portal, mitad y mitad. */
+.os-cliente-dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* El botón que es solo un ícono: cuadrado y con el dibujo centrado. Va
+   después de la regla de la ficha del cliente para ganarle el ancho mínimo. */
+.os-boton.os-boton-icono,
+.os-cliente-pagina .os-boton.os-boton-icono {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+}
+
+.os-boton-icono svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* Si los informes están a la vista o todavía no, al lado del título Portal y
+   con forma de estado: el punto de color y el texto, sin marco de botón.
+   Sigue siendo un botón, así que se cambia tocándolo. */
+.os-cliente-subtitulo .os-portal-estado {
+  margin-right: auto;
+  margin-left: 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--os-linea);
+  border-radius: 999px;
+  background: var(--os-panel-2);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.os-cliente-subtitulo .os-portal-estado:hover:not(:disabled) {
+  border-color: var(--os-suave);
+}
+
+/* Reabrir, dentro de la tabla de cerrados, más chico que el resto de los
+   botones de la ficha: con el ancho mínimo de 120 px se salía de su columna. */
+.os-cliente-pagina .os-tabla-pedidos .os-boton {
+  min-width: 0;
+  height: 26px;
+  padding: 0 10px;
+  font-size: 0.76rem;
+}
+
+/* La lista de clientes en tabla: ocupa el panel, reparte por el colgroup y
+   cada fila es un renglón bajo. Los inactivos van apagados. */
+.os-panel:has(> .os-tabla-marco > .os-tabla-clientes) {
+  width: auto;
+}
+
+.os-tabla.os-tabla-clientes {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.os-tabla-clientes td,
+.os-tabla-clientes th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-tabla-clientes td {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  vertical-align: middle;
+}
+
+.os-tabla-clientes .os-punto-etapa {
+  margin-right: 8px;
+}
+
+.os-tabla-clientes .os-fila-apagada td {
+  opacity: 0.7;
+}
+
+.os-tabla-clientes tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.os-tabla-marco:has(> .os-tabla-clientes) {
+  padding-bottom: 12px;
+}
+
+/* La tabla de clientes, más prolija: encabezado chico en versalita sobre un
+   fondo apenas marcado, filas que se iluminan al pasar, y los números en
+   negrita para que se lean antes que el "de". */
+.os-tabla-clientes thead th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background: var(--os-panel-2);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+
+.os-tabla-clientes td {
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+.os-tabla-clientes tbody tr {
+  transition: background 0.12s ease;
+}
+
+.os-tabla-clientes tbody tr:hover {
+  background: var(--os-panel-2);
+}
+
+.os-tabla-clientes .os-tabla-nombre {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.os-tabla-clientes .os-tabla-nombre:hover {
+  text-decoration: underline;
+}
+
+.os-tabla-clientes td strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lo que falta cargar, como una pastilla ámbar chica. */
+.os-clientes-falta {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(176, 128, 40, 0.12);
+  color: #8a6420;
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+
+/* Una barra de acciones con su botón contra el margen derecho. */
+.os-barra-acciones.os-barra-derecha {
+  justify-content: flex-end;
+}
+
+/* Un encabezado con su botón a la derecha, alineados por la base del título. */
+.os-encabezado.os-encabezado-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* La barra que va pegada a lo que sigue: poco aire entre el botón y la tabla. */
+.os-barra-acciones.os-barra-pegada {
+  margin-bottom: 8px;
+}
+
+.os-barra-pegada + .os-panel-separado {
+  margin-top: 0;
+}
+
+/* El título que va casi pegado a lo que sigue: en Clientes, entre el título y
+   la tabla solo queda la línea del botón. */
+.os-encabezado.os-encabezado-junto {
+  margin-bottom: 4px;
+}
+
+/* Portal en un renglón: título y estado a la izquierda, botones a la derecha,
+   con el mismo aire que la cabecera de Contactos. */
+.os-cliente-portal .os-panel-top {
+  display: flex;
+  align-items: center;
+  padding-bottom: 16px;
+}
+
+.os-cliente-portal .os-panel-top .os-portal-acciones,
+.os-cliente-portal .os-panel-top > .os-tabla-flojo {
+  margin-left: auto;
+}
+
+.os-cliente-portal .os-panel-top .os-portal-estado {
+  margin-right: 0;
+}
+
+/* El estado del cliente al lado del título Datos: la misma pastilla que el
+   estado de los informes, con palabras y su punto. */
+.os-datos-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.os-estado-cliente {
+  padding: 3px 10px;
+  border: 1px solid var(--os-linea);
+  border-radius: 999px;
+  background: var(--os-panel-2);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.os-estado-cliente:hover:not(:disabled) {
+  border-color: var(--os-suave);
+}
+
+.os-estado-cliente:disabled {
+  cursor: default;
+}
+
+/* El lápiz de Empresa, contra el margen derecho de su título. */
+.os-empresa-top {
+  display: flex;
+  align-items: center;
+}
+
+.os-empresa-top .os-boton-icono {
+  margin-left: auto;
+}
+
+/* Los datos de la empresa como campos: cada uno a todo el ancho de su celda. */
+.os-cliente-edita .os-campo {
+  width: 100%;
+  height: 36px;
+  margin-top: 4px;
+}
+
+/* El estado activo o inactivo va en la línea de Empresa, a la derecha y
+   pegado al lápiz. */
+.os-empresa-top .os-estado-cliente {
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+.os-empresa-top .os-estado-cliente + .os-boton-icono {
+  margin-left: 0;
+}
+
+/* En la fila del portal, el estado y el lápiz de la empresa se separan un poco
+   de Ver portal y Copiar enlace: son del cliente y no de su portal. */
+.os-cliente-portal .os-portal-acciones .os-boton-icono {
+  margin-right: 10px;
+}
+
+.os-cliente-portal .os-portal-acciones .os-estado-cliente {
+  margin: 0;
+}
+
+/* La fila entre Empresa y Contactos: lo del cliente a la izquierda y lo de su
+   portal a la derecha. */
+.os-cliente-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  padding: 16px 18px;
+}
+
+.os-cliente-fila-lado {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.os-cliente-fila-lado h2 {
+  margin: 0 4px 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.os-cliente-fila .os-estado-cliente,
+.os-cliente-fila .os-portal-estado {
+  margin: 0;
+  padding: 3px 10px;
+  border: 1px solid var(--os-linea);
+  border-radius: 999px;
+  background: var(--os-panel-2);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+/* En la fila del cliente y su portal, los desplegables y los botones miden lo
+   mismo: el ancho lo manda el texto más largo, "Informes: próximamente". */
+.os-cliente-fila .os-desplegable {
+  width: 216px;
+}
+
+.os-cliente-fila .os-desplegable-boton {
+  width: 216px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+
+.os-cliente-fila .os-desplegable-texto {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-cliente-pagina .os-cliente-fila .os-boton,
+.os-cliente-pagina .os-cliente-fila .copiar {
+  width: 216px;
+}
+
+/* Todo en una sola fila: cada control mide lo que su texto (con un mínimo
+   parejo) y la fila no se parte. Con 216 px cada uno no entraban los cinco en
+   una tarjeta de ancho normal y los del portal bajaban a otro renglón. */
+.os-cliente-fila,
+.os-cliente-fila-lado {
+  flex-wrap: nowrap;
+}
+
+.os-cliente-fila .os-desplegable,
+.os-cliente-fila .os-desplegable-boton,
+.os-cliente-pagina .os-cliente-fila .os-boton,
+.os-cliente-pagina .os-cliente-fila .copiar {
+  width: auto;
+  min-width: 110px;
+}
+
+.os-cliente-fila .os-desplegable-boton {
+  gap: 8px;
+}
+
+@media (max-width: 760px) {
+  .os-cliente-fila,
+  .os-cliente-fila-lado {
+    flex-wrap: wrap;
+  }
+}
+
+/* Los datos de la empresa en tres columnas fijas: arriba la razón social (que
+   es larga y ocupa dos) y el CUIT; abajo condición IVA, dirección y rubro. */
+.os-cliente-datos.os-cliente-datos-tres {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.os-cliente-datos-tres:not(.os-cliente-edita) > :first-child {
+  grid-column: span 2;
+}
+
+@media (max-width: 760px) {
+  .os-cliente-datos.os-cliente-datos-tres {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-cliente-datos-tres:not(.os-cliente-edita) > :first-child {
+    grid-column: auto;
+  }
+}
+
+/* Entre el título Contactos y la primera persona, poco aire: el cuerpo pierde
+   su relleno de arriba y la primera fila el suyo. */
+.os-cliente-contactos .os-panel-cuerpo {
+  padding-top: 0;
+}
+
+.os-cliente-contactos .os-panel-cuerpo > .os-contacto:first-child {
+  padding-top: 4px;
+}
+
+/* Más aire entre la última fila de datos de la empresa y la raya de abajo. */
+.os-cliente-datos.os-cliente-datos-tres {
+  padding-bottom: 28px;
+}
+
+/* Cada contacto en un renglón: nombre, cargo, mail, WhatsApp, los dos íconos
+   de qué hace y las acciones. */
+.os-contacto.os-contacto-fila {
+  grid-template-columns:
+    minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1.2fr)
+    auto auto;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.os-contacto-fila > * {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-contacto-fila .os-contacto-acciones,
+.os-contacto-fila .os-contacto-roles {
+  overflow: visible;
+}
+
+.os-contacto-roles {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.os-contacto-rol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--os-suave);
+  opacity: 0.35;
+}
+
+.os-contacto-rol.si {
+  background: rgba(67, 100, 143, 0.1);
+  color: var(--os-azul-fuerte);
+  opacity: 1;
+}
+
+.os-contacto-rol svg {
+  width: 17px;
+  height: 17px;
+}
+
+@media (max-width: 760px) {
+  .os-contacto.os-contacto-fila {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+/* Sin los íconos de qué hace: una columna menos. */
+.os-contacto.os-contacto-fila {
+  grid-template-columns:
+    minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1.2fr)
+    auto;
+}
+
+/* Un poco de aire entre "Agregar contacto" y los botones de la primera fila. */
+.os-cliente-contactos .os-panel-cuerpo > .os-contacto:first-child {
+  padding-top: 14px;
+}
+
+/* Filas más bajas en la lista de clientes. */
+.os-tabla-clientes td {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.os-tabla-clientes thead th {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.os-tabla-clientes td:first-child {
+  line-height: 1.3;
+}
+
+/* Los rótulos de la lista de clientes no se cortan: si el ancho no alcanza,
+   bajan a un segundo renglón en vez de perder la mitad del nombre. */
+.os-tabla-clientes thead th {
+  white-space: normal;
+  line-height: 1.3;
+  vertical-align: bottom;
+}
+
+/* El rótulo del sumario no se achica por debajo de su texto: cuando el valor
+   es ancho ("2:18:13", "+7.50 ↑") el rótulo se quedaba en cero y su texto
+   pasaba por debajo del número. Lo que cede es la guía punteada. */
+.os-hoja-par > .os-hoja-rotulo {
+  flex: 1 0 auto;
+  white-space: nowrap;
+}
+
+.os-hoja-par > .os-hoja-rotulo::after {
+  min-width: 4px;
+}
+
+/* Salvo los de renglón entero, que llevan la fórmula en el rótulo
+   ("Aislamiento (Bt+2Cl+…)"): esos sí pueden partirse en dos renglones, o
+   empujan el valor fuera de la tarjeta. */
+.os-hoja-par-ancho > .os-hoja-rotulo {
+  flex: 1 1 auto;
+  white-space: normal;
+}
+
+
+/* El rótulo de renglón entero se parte entre palabras, pero ninguna palabra
+   queda más angosta que su texto. */
+.os-hoja-par-ancho > .os-hoja-rotulo {
+  flex: 1 1 0;
+  min-width: min-content;
+}
+
+/* Una tarjeta del sumario angosta pone sus datos en una sola columna: dos
+   columnas de ochenta píxeles no alcanzan para rótulo, guía y valor, y el
+   valor pisaba el rótulo o se salía de la tarjeta. Se mide la tarjeta y no la
+   ventana, porque según el ancho entran dos, tres o cuatro por fila. */
+.os-hoja-bloque {
+  container-type: inline-size;
+}
+
+@container (max-width: 290px) {
+  .os-hoja-campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-hoja-par-ancho,
+  .os-hoja-par-inicio {
+    grid-column: auto;
+  }
+}
+
+/* La fórmula del rótulo de renglón entero es una tira sin espacios
+   ("(Bt+2Cl+Ge+Ls+2Na/R)"): se puede partir en cualquier punto, así el valor
+   no se empuja contra el borde de la tarjeta. */
+.os-hoja-par-ancho > .os-hoja-rotulo {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

@@ -6,14 +6,23 @@ import { quienSoy } from '@/lib/identidad';
 import { baterias as listarBaterias } from '@/lib/altas';
 import { dolarTarjeta } from '@/lib/baterias-precios';
 import { BENZIGER_USD } from '@/lib/benziger';
-import { ABIERTO, DEL_JEFE, DEL_PUESTO, FAMILIAS, SENIORITY } from '@/lib/pedido-campos';
-import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
+import {
+  ABIERTO,
+  DEL_JEFE,
+  DEL_PUESTO,
+  FAMILIAS,
+  SENIORITY,
+  nivelCorto,
+} from '@/lib/pedido-campos';
+import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
+import { fechaCorta } from '@/lib/hora';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
 import { contactosDe } from '@/lib/contactos';
 import { Benziger, Borrar, Estado, Fecha, Largo, Lista, Pregunta, Texto } from './Editar';
 import NivelDeTrabajo from './NivelDeTrabajo';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 import BorrarCandidato from './BorrarCandidato';
+import { llevaDiscursivo } from '@/lib/discursivo';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +58,7 @@ function Bloque({
   children: React.ReactNode;
 }) {
   return (
-    <section className="os-panel" style={{ marginTop: 18 }}>
+    <section className="os-panel os-pedido-ficha" style={{ marginTop: 18 }}>
       <div className="os-panel-top">
         <h2>{titulo}</h2>
         {nota && <span className="os-columna-monto">{nota}</span>}
@@ -59,7 +68,27 @@ function Bloque({
   );
 }
 
-export default async function FichaPedido({ params }: { params: { id: string } }) {
+/**
+ * Las pestañas del pedido.
+ *
+ * Datos es lo que se completa apenas entra el pedido y lo que se consulta
+ * después; el perfil son las nueve escalas que se contestan con el cliente; el
+ * potencial va solo si la batería incluye el análisis discursivo, porque es
+ * contra lo que se compara el estrato de cada candidato.
+ */
+const PESTANAS = [
+  { clave: 'datos', texto: 'Datos' },
+  { clave: 'perfil', texto: 'Perfil del puesto' },
+  { clave: 'potencial', texto: 'Potencial' },
+] as const;
+
+export default async function FichaPedido({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { ver?: string };
+}) {
   const [yo, pedido, baterias, cambio, exigencias] = await Promise.all([
     quienSoy(),
     leerPedido(params.id),
@@ -96,11 +125,19 @@ export default async function FichaPedido({ params }: { params: { id: string } }
 
   const cuentas = await cuentasDeLaBarra();
 
+  const conPotencial = llevaDiscursivo(
+    baterias.find((b) => b.id === pedido.bateriaId)?.tests ?? null,
+  );
+  const pestanas = PESTANAS.filter((p) => p.clave !== 'potencial' || conPotencial);
+  /* Una pestaña que no le corresponde cae en Datos: la dirección puede venir
+     guardada de cuando el pedido tenía otra batería. */
+  const ver = pestanas.some((p) => p.clave === searchParams.ver) ? searchParams.ver : 'datos';
+
   return (
     <Shell titulo={`Pedido · ${pedido.puesto}`} identidad={yo.nombre} cuentas={cuentas}>
       {/* Se vuelve al cliente, que es donde vive ahora la lista de sus
           búsquedas. */}
-      <Link className="os-volver-enlace" href={`/os/clientes/${pedido.empresaId}`}>
+      <Link className="os-volver-enlace" href={`/os/clientes/${pedido.empresaId}?ver=pedidos`}>
         ← Volver a {pedido.empresa}
       </Link>
 
@@ -109,200 +146,270 @@ export default async function FichaPedido({ params }: { params: { id: string } }
         <p>{pedido.empresa}</p>
       </div>
 
-      <Bloque
-        titulo="La búsqueda"
-        nota={
-          pedido.candidatos === 0
-            ? 'sin candidatos'
-            : `${pedido.entregados} de ${pedido.candidatos} entregados`
-        }
-        dos
-      >
-        <Texto id={pedido.id} campo="puesto" valor={pedido.puesto} rotulo="Puesto" />
-        {/* Quién lo pidió: sale en el encabezado del informe, debajo de la
+      <div className="os-pestanas-fila">
+        <nav className="os-pestanas">
+          {pestanas.map((p) => (
+            <Link
+              key={p.clave}
+              href={`/os/pedidos/${pedido.id}?ver=${p.clave}`}
+              className={`os-pestana${ver === p.clave ? ' activa' : ''}`}
+              aria-current={ver === p.clave ? 'page' : undefined}
+            >
+              {p.texto}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      {ver === 'datos' && (
+        <>
+          <Bloque
+            titulo="La búsqueda"
+            nota={
+              pedido.candidatos === 0
+                ? 'sin candidatos'
+                : `${pedido.entregados} de ${pedido.candidatos} entregados`
+            }
+            dos
+          >
+            <Texto id={pedido.id} campo="puesto" valor={pedido.puesto} rotulo="Puesto" />
+            {/* Quién lo pidió: sale en el encabezado del informe, debajo de la
             empresa. Se ofrecen todos los contactos activos y no solo los que
             piden, porque a veces la búsqueda la abre alguien del área. */}
-        <Lista
-          id={pedido.id}
-          campo="solicitante_id"
-          valor={pedido.solicitanteId}
-          rotulo="Solicitado por"
-          vacio="Sin indicar"
-          opciones={contactos.map((c) => ({
-            valor: c.id,
-            texto: c.cargo ? `${c.nombre} · ${c.cargo}` : c.nombre,
-          }))}
-        />
-        <Fecha
-          id={pedido.id}
-          campo="fecha_pedido"
-          valor={pedido.fechaPedido}
-          rotulo="Fecha del pedido"
-        />
-        <Lista
-          id={pedido.id}
-          campo="familia"
-          valor={pedido.familia}
-          rotulo="Familia"
-          opciones={FAMILIAS.map((f) => ({ valor: f, texto: f }))}
-        />
-        <Lista
-          id={pedido.id}
-          campo="seniority"
-          valor={pedido.seniority}
-          rotulo="Nivel"
-          opciones={SENIORITY.map((s) => ({ valor: s, texto: s }))}
-        />
-      </Bloque>
+            <Lista
+              id={pedido.id}
+              campo="solicitante_id"
+              valor={pedido.solicitanteId}
+              rotulo="Solicitado por"
+              vacio="Sin indicar"
+              opciones={contactos.map((c) => ({
+                valor: c.id,
+                texto: c.cargo ? `${c.nombre} · ${c.cargo}` : c.nombre,
+              }))}
+            />
+            <Fecha
+              id={pedido.id}
+              campo="fecha_pedido"
+              valor={pedido.fechaPedido}
+              rotulo="Fecha del pedido"
+            />
+            <Lista
+              id={pedido.id}
+              campo="familia"
+              valor={pedido.familia}
+              rotulo="Familia"
+              opciones={FAMILIAS.map((f) => ({ valor: f, texto: f }))}
+            />
+            {/* El estado es un campo más de la búsqueda: si está abierta o
+                cerrada se mira junto con lo demás, no al pie de la ficha. */}
+            <Estado
+              id={pedido.id}
+              estado={pedido.estado}
+              abierto={ABIERTO}
+              pendientes={pendientes}
+            />
+            <Lista
+              id={pedido.id}
+              campo="seniority"
+              valor={pedido.seniority}
+              rotulo="Nivel"
+              opciones={SENIORITY.map((s) => ({ valor: s, texto: nivelCorto(s) }))}
+            />
+          </Bloque>
 
-      <Bloque titulo="El encargo" dos>
-        <Lista
-          id={pedido.id}
-          campo="bateria_id"
-          valor={pedido.bateriaId}
-          rotulo="Batería"
-          vacio="A definir"
-          opciones={baterias.map((b) => ({ valor: b.id, texto: `${b.codigo} · ${b.nombre}` }))}
-        />
-        {/* Con qué vara se leen los puntajes de los informes de este pedido.
+          <Bloque titulo="El encargo" dos>
+            <Lista
+              id={pedido.id}
+              campo="bateria_id"
+              valor={pedido.bateriaId}
+              rotulo="Batería"
+              vacio="A definir"
+              opciones={baterias.map((b) => ({
+                valor: b.id,
+                texto: `${b.codigo} · ${b.nombre}`,
+              }))}
+            />
+            {/* Con qué vara se leen los puntajes de los informes de este pedido.
             Va acá y en ningún otro lado: el resto del sistema usa la default,
             y apartarse de ella es una decisión del puesto. Cambiarla no
             recalcula nada, cambia el nombre que le toca a cada puntaje. */}
-        <Lista
-          id={pedido.id}
-          campo="exigencia_id"
-          valor={pedido.exigenciaId}
-          rotulo="Exigencia"
-          vacio={`La default${porDefecto ? ` (${porDefecto.nombre})` : ''}`}
-          opciones={exigencias
-            .filter((e) => !e.predeterminada)
-            .map((e) => ({
-              valor: e.id,
-              texto: `${e.nombre} · ${e.adecuado} / ${e.alto} / ${e.sobresaliente}`,
-            }))}
-        />
-        <Benziger
-          id={pedido.id}
-          puesto={pedido.conBenziger}
-          usd={BENZIGER_USD}
-          enPesos={cambio ? pesos(BENZIGER_USD * cambio.valor) : null}
-        />
-        <Largo
-          id={pedido.id}
-          campo="notas"
-          valor={pedido.notas}
-          rotulo="Qué pidió el cliente"
-          ayuda="Lo que dice el mail: contexto, urgencia, a quién reporta."
-          fila
-        />
-        <Largo
-          id={pedido.id}
-          campo="contexto"
-          valor={pedido.contexto}
-          rotulo="Contexto y cultura"
-          ayuda="Cómo es la empresa por dentro: cómo se decide, cómo se habla, qué se tolera."
-          fila
-        />
-      </Bloque>
+            <Lista
+              id={pedido.id}
+              campo="exigencia_id"
+              valor={pedido.exigenciaId}
+              rotulo="Exigencia"
+              vacio={`La default${porDefecto ? ` (${porDefecto.nombre})` : ''}`}
+              opciones={exigencias
+                .filter((e) => !e.predeterminada)
+                .map((e) => ({
+                  valor: e.id,
+                  texto: `${e.nombre} · ${e.adecuado} / ${e.alto} / ${e.sobresaliente}`,
+                }))}
+            />
+            <Benziger
+              id={pedido.id}
+              puesto={pedido.conBenziger}
+              usd={BENZIGER_USD}
+              enPesos={cambio ? pesos(BENZIGER_USD * cambio.valor) : null}
+            />
+            <Largo
+              id={pedido.id}
+              campo="notas"
+              valor={pedido.notas}
+              rotulo="Qué pidió el cliente"
+              ayuda="Lo que dice el mail: contexto, urgencia, a quién reporta."
+              fila
+            />
+            <Largo
+              id={pedido.id}
+              campo="contexto"
+              valor={pedido.contexto}
+              rotulo="Contexto y cultura"
+              ayuda="Cómo es la empresa por dentro: cómo se decide, cómo se habla, qué se tolera."
+              fila
+            />
+          </Bloque>
 
-      {/* Quiénes entraron por este pedido, con su etapa y un salto a la ficha.
+          {/* Quiénes entraron por este pedido, con su etapa y un salto a la ficha.
           Lo que el pedido produce estaba solo como número: para ver a quién se
           le tomó había que ir al pipeline y buscar por empresa. */}
-      <Bloque
-        titulo="Los candidatos"
-        nota={
-          pedido.candidatos === 0
-            ? 'todavía ninguno'
-            : `${pedido.entregados} de ${pedido.candidatos} entregados`
-        }
-      >
-        <div className="os-pedido-suelto">
-          {pedido.gente.length === 0 ? (
-            <p className="os-vacio">
-              Nadie cargado todavía. Se agregan desde Sin asignar, eligiendo este pedido.
-            </p>
-          ) : (
-            <ul className="os-pedido-gente">
-              {pedido.gente.map((g) => (
-                <li key={g.id}>
-                  <Link className="os-tabla-nombre os-tabla-ficha" href={`/os/psicotecnicos/ficha/${g.id}`}>
-                    {g.nombre}
-                  </Link>
-                  <span className={`os-sello-estado ${COLOR_ETAPA[g.estado] ?? 'os-gris'}`}>
-                    {g.estado}
-                  </span>
-                  {/* Sacar a alguien que entró repetido o al pedido equivocado:
+          <Bloque
+            titulo="Los candidatos"
+            nota={
+              pedido.candidatos === 0
+                ? 'todavía ninguno'
+                : `${pedido.entregados} de ${pedido.candidatos} entregados`
+            }
+          >
+            <div className="os-pedido-suelto">
+              {pedido.gente.length === 0 ? (
+                <p className="os-vacio">
+                  Nadie cargado todavía. Se agregan desde Sin asignar, eligiendo este pedido.
+                </p>
+              ) : (
+                <ul className="os-pedido-gente os-pedido-gente-datos">
+                  {/* Los rótulos arriba, una sola vez: con cinco datos por
+                      fila, sin ellos no se sabe qué fecha es cuál. */}
+                  <li className="os-pedido-gente-cabeza" aria-hidden="true">
+                    <span>Candidato</span>
+                    <span>Evaluadora</span>
+                    <span>Entrevista</span>
+                    <span>Entrega</span>
+                    <span>Recomendación</span>
+                    <span>Estado</span>
+                    <span />
+                  </li>
+                  {pedido.gente.map((g) => (
+                    <li key={g.id}>
+                      <Link
+                        className="os-tabla-nombre os-tabla-ficha"
+                        href={`/os/psicotecnicos/ficha/${g.id}`}
+                      >
+                        {g.nombre}
+                      </Link>
+                      <span className={g.evaluadora ? '' : 'os-tabla-flojo'}>
+                        {g.evaluadora ?? 'sin asignar'}
+                      </span>
+                      <span className={g.entrevista ? '' : 'os-tabla-flojo'}>
+                        {fechaCorta(g.entrevista) ?? '—'}
+                      </span>
+                      <span className={g.entrega ? '' : 'os-tabla-flojo'}>
+                        {fechaCorta(g.entrega) ?? '—'}
+                      </span>
+                      <span>
+                        {g.recomendacion ? (
+                          <span
+                            className={`os-sello-estado ${
+                              COLOR_RECOMENDACION[g.recomendacion] ?? 'os-gris'
+                            }`}
+                          >
+                            {g.recomendacion}
+                          </span>
+                        ) : (
+                          <span className="os-tabla-flojo">sin cerrar</span>
+                        )}
+                      </span>
+                      <span className={`os-sello-estado ${COLOR_ETAPA[g.estado] ?? 'os-gris'}`}>
+                        {g.estado}
+                      </span>
+                      {/* Sacar a alguien que entró repetido o al pedido equivocado:
                       el error se ve acá, que es la lista donde se cargaron. */}
-                  <BorrarCandidato id={g.id} nombre={g.nombre} />
-                </li>
-              ))}
-            </ul>
+                      <BorrarCandidato id={g.id} nombre={g.nombre} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </Bloque>
+
+          {/* Borrar es para lo que nunca debió existir, y solo se puede sin
+              nadie cargado: con candidatos, el bloque no aparece y lo que
+              corresponde es cerrarlo desde el estado de la búsqueda. */}
+          {pedido.candidatos === 0 && (
+            <Bloque titulo="Borrar el pedido">
+              <div className="os-pedido-suelto">
+                <Borrar id={pedido.id} puesto={pedido.puesto} candidatos={pedido.candidatos} />
+              </div>
+            </Bloque>
           )}
-        </div>
-      </Bloque>
+        </>
+      )}
 
-      {/* Antes de cómo es el puesto va cuánto pesa: es la medida objetiva del
+      {ver === 'perfil' && (
+        <>
+          <Bloque titulo="Cómo es el puesto" nota={sinContestar(DEL_PUESTO)}>
+            <div className="os-seguimiento os-pedido-suelto os-pedido-preguntas">
+              {DEL_PUESTO.map((p) => (
+                <Pregunta
+                  key={p.campo}
+                  id={pedido.id}
+                  campo={p.campo}
+                  rotulo={p.rotulo}
+                  valor={(pedido as unknown as Record<string, string | null>)[p.campo]}
+                  opciones={p.opciones}
+                  ayudas={p.ayudas}
+                />
+              ))}
+            </div>
+          </Bloque>
+
+          <Bloque titulo="Cómo es el jefe" nota={sinContestar(DEL_JEFE)}>
+            <div className="os-seguimiento os-pedido-suelto os-pedido-preguntas">
+              {DEL_JEFE.map((p) => (
+                <Pregunta
+                  key={p.campo}
+                  id={pedido.id}
+                  campo={p.campo}
+                  rotulo={p.rotulo}
+                  valor={(pedido as unknown as Record<string, string | null>)[p.campo]}
+                  opciones={p.opciones}
+                  ayudas={p.ayudas}
+                />
+              ))}
+            </div>
+          </Bloque>
+        </>
+      )}
+
+      {ver === 'potencial' && (
+        <>
+          {/* Antes de cómo es el puesto va cuánto pesa: es la medida objetiva del
           modelo y es contra lo que después se compara a cada candidato. */}
-      <Bloque
-        titulo="Nivel de trabajo del puesto"
-        nota={pedido.estratoPuesto ? 'determinado' : 'sin determinar'}
-      >
-        <div className="os-pedido-suelto">
-          <NivelDeTrabajo
-            id={pedido.id}
-            timeSpanDias={pedido.timeSpanDias}
-            complejidad={pedido.complejidad}
-            estratoPuesto={pedido.estratoPuesto}
-          />
-        </div>
-      </Bloque>
-
-      <Bloque titulo="Cómo es el puesto" nota={sinContestar(DEL_PUESTO)}>
-        <div className="os-seguimiento os-pedido-suelto os-pedido-preguntas">
-          {DEL_PUESTO.map((p) => (
-            <Pregunta
-              key={p.campo}
-              id={pedido.id}
-              campo={p.campo}
-              rotulo={p.rotulo}
-              valor={(pedido as unknown as Record<string, string | null>)[p.campo]}
-              opciones={p.opciones}
-              ayudas={p.ayudas}
-            />
-          ))}
-        </div>
-      </Bloque>
-
-      <Bloque titulo="Cómo es el jefe" nota={sinContestar(DEL_JEFE)}>
-        <div className="os-seguimiento os-pedido-suelto os-pedido-preguntas">
-          {DEL_JEFE.map((p) => (
-            <Pregunta
-              key={p.campo}
-              id={pedido.id}
-              campo={p.campo}
-              rotulo={p.rotulo}
-              valor={(pedido as unknown as Record<string, string | null>)[p.campo]}
-              opciones={p.opciones}
-              ayudas={p.ayudas}
-            />
-          ))}
-        </div>
-      </Bloque>
-
-      {/* Cerrar y borrar juntos, con una línea entre medio: se parecen y hacen
-          lo contrario. Cerrar guarda todo y lo saca del selector de alta;
-          borrar no deja nada, y solo se ofrece si no hay nadie cargado. */}
-      <Bloque titulo="Estado">
-        <div className="os-pedido-suelto">
-          <Estado
-            id={pedido.id}
-            estado={pedido.estado}
-            abierto={ABIERTO}
-            pendientes={pendientes}
-          />
-          <Borrar id={pedido.id} puesto={pedido.puesto} candidatos={pedido.candidatos} />
-        </div>
-      </Bloque>
+          <Bloque
+            titulo="Análisis de potencial (nivel de trabajo del puesto)"
+            nota={pedido.estratoPuesto ? 'determinado' : 'sin determinar'}
+          >
+            <div className="os-pedido-suelto">
+              <NivelDeTrabajo
+                id={pedido.id}
+                timeSpanDias={pedido.timeSpanDias}
+                complejidad={pedido.complejidad}
+                estratoPuesto={pedido.estratoPuesto}
+              />
+            </div>
+          </Bloque>
+        </>
+      )}
     </Shell>
   );
 }
