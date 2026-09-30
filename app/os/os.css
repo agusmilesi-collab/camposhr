@@ -16017,3 +16017,80 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* ---------- Potencial del pedido en ventanas angostas ----------
+   Las tarjetas se miden a sí mismas: cuando no hay lugar para tres (el
+   cierre) o cuatro columnas (el plazo), se apilan en vez de pisarse. */
+.os-nivel-cierre,
+.os-nivel-trabajo {
+  container-type: inline-size;
+}
+
+@container (max-width: 760px) {
+  .os-nivel-cierre-fila {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 760px) {
+  .os-plazo-fila {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .os-plazo-fila .os-plazo-pregunta {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (max-width: 420px) {
+  .os-plazo-fila {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* La botonera para elegir qué estrato rige entra en su tarjeta: sin el ancho
+   mínimo de 104 px por opción, que la sacaba por el costado. */
+.os-nivel-mini .os-ingreso-opciones {
+  width: 100%;
+  max-width: 100%;
+}
+
+.os-nivel-mini .os-ingreso-opcion {
+  min-width: 0;
+}
+
+/* El sello de coincidencia puede partirse en dos renglones. */
+.os-nivel-mini .os-sello-estado {
+  white-space: normal;
+  align-items: flex-start;
+}
+
+.os-nivel-mini .os-sello-estado::before {
+  margin-top: 0.35em;
+}
+
+/* Cada pregunta, en angosto: el estrato y el sí/no bajan debajo del texto en
+   vez de quedarse con una columna fija de 194 px. */
+@container (max-width: 640px) {
+  .os-nivel-preguntas.os-preguntas-pedido > li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-preguntas-pedido .os-pregunta-respuesta {
+    padding-left: 0;
+    padding-top: 10px;
+    border-left: 0;
+    border-top: 1px solid var(--os-linea);
+    justify-items: start;
+  }
+
+  .os-preguntas-pedido .os-pregunta-respuesta .os-ingreso-opciones {
+    width: 194px;
+  }
+}
+
+/* El botón de copiar en la fila de pestañas se apoya sobre la raya, como los
+   demás botones de esa fila. */
+.os-pestanas-fila .copiar {
+  margin-bottom: 8px;
+}
