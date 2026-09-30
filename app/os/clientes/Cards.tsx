@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Los clientes, en fichas.
+ * Los clientes, en una tabla.
  *
  * Antes era una tabla de datos de facturación: razón social, CUIT, IVA. Eso es
  * lo que se necesita el día que se factura, y no lo que se busca al entrar, que
@@ -17,7 +17,18 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import Cajon from './Cajon';
+import { diasDesde, fechaCorta, haceCuanto } from '@/lib/hora';
 import type { Cliente } from '@/lib/clientes';
+
+/**
+ * El peso de un cliente: su parte de todas las evaluaciones, en porcentaje.
+ * Por debajo del uno se dice así, porque "0 %" parece que no tiene ninguna.
+ */
+function peso(suyas: number, total: number): string {
+  if (!total || !suyas) return '0 %';
+  const p = (suyas / total) * 100;
+  return p < 1 ? '<1 %' : `${Math.round(p)} %`;
+}
 
 /** Cuántos pedidos tiene abiertos y cuánta gente hay adentro. */
 function enCurso(c: Cliente) {
@@ -31,114 +42,129 @@ function enCurso(c: Cliente) {
 export default function Cards({ clientes }: { clientes: Cliente[] }) {
   /** null = cerrado; el objeto = editando ese; 'nuevo' = dando de alta. */
   const [abierto, setAbierto] = useState<Cliente | 'nuevo' | null>(null);
-  const sinDatos = clientes.filter((c) => !c.cuit).length;
 
   // Por nombre. Ordenados por cuánto trabajo tienen abierto, la tarjeta de un
   // cliente cambiaba de lugar cada semana y había que recorrer la grilla entera
   // para encontrarlo; el bloque de Activos ya dice quiénes tienen trabajo.
-  const ordenar = (xs: Cliente[]) =>
-    [...xs].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  const ordenar = (xs: Cliente[]) => [...xs].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
-  const activos = ordenar(clientes.filter((c) => c.activa));
-  const inactivos = ordenar(clientes.filter((c) => !c.activa));
+  // Una sola tabla: el punto de color ya dice quién está activo. Los activos
+  // van primero, que son los de todos los días, y cada grupo por nombre.
+  const todos = [
+    ...ordenar(clientes.filter((c) => c.activa)),
+    ...ordenar(clientes.filter((c) => !c.activa)),
+  ];
 
   return (
     <>
-      <div className="os-barra-acciones">
+      {/* Nuevo cliente a la derecha, apenas arriba de la tabla. */}
+      <div className="os-barra-acciones os-barra-derecha os-barra-pegada">
         <button className="os-boton os-boton-firme" onClick={() => setAbierto('nuevo')}>
           Nuevo cliente
         </button>
-        {sinDatos > 0 && <span className="os-columna-nota">{sinDatos} sin CUIT cargado.</span>}
       </div>
 
-      {/* Los dos bloques con su rótulo, también el de arriba: sin nombrarlo, el
-          de abajo parecía una excepción colgada de una lista sin título. */}
-      <div className="os-rotulo-seccion">Activos</div>
-      <Grilla clientes={activos} vacio="Todavía no hay clientes activos." />
-
-      {/* Los inactivos siguen enteros y a la vista: son con los que no se está
-          trabajando, no los que se borraron. */}
-      {inactivos.length > 0 && (
-        <>
-          <div className="os-rotulo-seccion">Inactivos</div>
-          <Grilla clientes={inactivos} vacio="" />
-        </>
-      )}
+      <Grilla clientes={todos} vacio="Todavía no hay clientes." />
 
       {abierto && (
-        <Cajon
-          cliente={abierto === 'nuevo' ? null : abierto}
-          alCerrar={() => setAbierto(null)}
-        />
+        <Cajon cliente={abierto === 'nuevo' ? null : abierto} alCerrar={() => setAbierto(null)} />
       )}
     </>
   );
 }
 
-/** Una grilla de fichas. La de activos y la de inactivos son la misma. */
+/**
+ * La tabla de clientes, activos e inactivos juntos.
+ *
+ * En tabla y no en fichas: con treinta clientes la grilla ocupaba tres
+ * pantallas, y en filas se recorren de un vistazo y se comparan por columna.
+ */
 function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
   if (clientes.length === 0) {
     return vacio ? <p className="os-vacio">{vacio}</p> : null;
   }
 
-  return (
-    <div className="os-clientes">
-      {clientes.map((c) => {
-        const { abiertos, gente } = enCurso(c);
-        const cuerpo = (
-          <>
-            <div className="os-cliente-top">
-              {/* Verde el que está activo, gris el que no: el estado se
-                  reconoce sin leerlo, como en el resto del sistema. */}
-              <h2>
-                <i className={`os-punto-etapa ${c.activa ? 'os-verde' : 'os-gris'}`} />
-                {c.nombre}
-              </h2>
-            </div>
-            {/* Cuántos pedidos y cuánta gente, en una línea. El sello con el
-                número que había arriba decía lo mismo dos veces. */}
-            <p className="os-cliente-linea">
-              {abiertos === 0 ? (
-                <span className="os-tabla-flojo">Sin pedidos abiertos</span>
-              ) : (
-                <>
-                  {abiertos === 1 ? '1 pedido abierto' : `${abiertos} pedidos abiertos`}
-                  {' · '}
-                  {gente === 0
-                    ? 'todavía sin candidatos'
-                    : gente === 1
-                      ? '1 candidato'
-                      : `${gente} candidatos`}
-                </>
-              )}
-            </p>
-            <p className="os-cliente-pie">
-              {c.susPedidos.length === 1
-                ? '1 pedido en total'
-                : `${c.susPedidos.length} pedidos en total`}
-              {!c.cuit && <span className="os-dato-falta"> · falta el CUIT</span>}
-              {c.origen === 'airtable' && <span className="os-dato-falta"> · sin migrar</span>}
-            </p>
-          </>
-        );
+  const total = clientes.reduce((n, c) => n + c.evaluaciones, 0);
 
-        // Los de Airtable no abren ficha: no se editan desde acá hasta que se
-        // migren, y una ficha que no deja hacer nada es una puerta a un cuarto
-        // vacío.
-        return c.id ? (
-          <Link
-            className={`os-cliente${c.activa ? '' : ' inactiva'}`}
-            key={c.id}
-            href={`/os/clientes/${c.id}`}
-          >
-            {cuerpo}
-          </Link>
-        ) : (
-          <div className="os-cliente apagada" key={c.nombre}>
-            {cuerpo}
-          </div>
-        );
-      })}
-    </div>
+  return (
+    <section className="os-panel os-panel-separado">
+      <div className="os-tabla-marco">
+        <table className="os-tabla os-tabla-clientes">
+          <colgroup>
+            {[40, 21, 11, 13, 15].map((w, i) => (
+              <col key={i} style={{ width: `${w}%` }} />
+            ))}
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Último pedido</th>
+              <th className="os-tabla-num">Pedidos abiertos</th>
+              <th className="os-tabla-num">Candidatos en curso</th>
+              <th className="os-tabla-num">Peso</th>
+            </tr>
+          </thead>
+          <tbody>
+            {clientes.map((c) => {
+              const { abiertos, gente } = enCurso(c);
+              return (
+                <tr key={c.id ?? c.nombre} className={c.activa ? '' : 'os-fila-apagada'}>
+                  <td data-campo="Cliente">
+                    {/* Verde el que está activo, gris el que no: el estado se
+                        reconoce sin leerlo, como en el resto del sistema. */}
+                    <i className={`os-punto-etapa ${c.activa ? 'os-verde' : 'os-gris'}`} />
+                    {/* Los de Airtable no abren ficha: no se editan desde acá
+                        hasta que se migren. */}
+                    {c.id ? (
+                      <Link
+                        className="os-tabla-nombre os-tabla-ficha"
+                        href={`/os/clientes/${c.id}`}
+                      >
+                        {c.nombre}
+                      </Link>
+                    ) : (
+                      <span className="os-tabla-nombre">{c.nombre}</span>
+                    )}
+                  </td>
+                  {/* Hace cuánto que no pide: los pedidos vienen ordenados del
+                      más nuevo al más viejo, así que el primero es el último. */}
+                  <td data-campo="Último pedido">
+                    {c.susPedidos[0]?.fecha ? (
+                      <>
+                        {fechaCorta(c.susPedidos[0].fecha)}
+                        <span className="os-tabla-flojo">
+                          {' · '}
+                          {haceCuanto(diasDesde(c.susPedidos[0].fecha))}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="os-tabla-flojo">—</span>
+                    )}
+                  </td>
+                  <td data-campo="Pedidos abiertos" className="os-tabla-num">
+                    <strong className={abiertos === 0 ? 'os-tabla-flojo' : ''}>{abiertos}</strong>
+                  </td>
+                  <td data-campo="Candidatos en curso" className="os-tabla-num">
+                    <strong className={gente === 0 ? 'os-tabla-flojo' : ''}>{gente}</strong>
+                  </td>
+                  {/* Qué parte de todas las evaluaciones hechas son de este
+                      cliente: cuánto pesa en el trabajo. El número de
+                      evaluaciones queda al pasar el mouse. */}
+                  <td
+                    data-campo="Peso"
+                    className="os-tabla-num"
+                    title={`${c.evaluaciones} de ${total} evaluaciones`}
+                  >
+                    <strong className={c.evaluaciones === 0 ? 'os-tabla-flojo' : ''}>
+                      {peso(c.evaluaciones, total)}
+                    </strong>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

@@ -36,7 +36,15 @@ type Fila = {
   contexto: string | null;
   empresas: { nombre: string } | null;
   baterias: { codigo: string } | null;
-  evaluaciones: { id: string; estado: string | null; personas: { nombre: string } | null }[];
+  evaluaciones: {
+    id: string;
+    estado: string | null;
+    fecha_entrevista: string | null;
+    fecha_entrega: string | null;
+    recomendacion: string | null;
+    evaluadoras: { nombre: string } | null;
+    personas: { nombre: string } | null;
+  }[];
   puesto_problemas: string | null;
   puesto_presion: string | null;
   puesto_interaccion: string | null;
@@ -58,7 +66,7 @@ const CAMPOS =
   'puesto_interaccion,puesto_estabilidad,puesto_contacto_jefe,' +
   'puesto_innovacion,jefe_estilo,jefe_paciencia,jefe_emociones,' +
   'time_span_dias,complejidad,estrato_puesto,' +
-  'empresas(nombre),baterias(codigo),evaluaciones(id,estado,personas(nombre))';
+  'empresas(nombre),baterias(codigo),evaluaciones(id,estado,fecha_entrevista,fecha_entrega,recomendacion,evaluadoras(nombre),personas(nombre))';
 
 /** Los estados de una evaluación que cuentan como trabajo terminado. */
 const CERRADAS = new Set(['Entregado', 'Seguimiento']);
@@ -92,6 +100,10 @@ function armar(f: Fila): Pedido {
       id: e.id,
       nombre: e.personas?.nombre ?? 'Sin nombre',
       estado: e.estado ?? 'Sin asignar',
+      evaluadora: e.evaluadoras?.nombre ?? null,
+      entrevista: e.fecha_entrevista,
+      entrega: e.fecha_entrega,
+      recomendacion: e.recomendacion,
     })),
     puesto_problemas: f.puesto_problemas,
     puesto_presion: f.puesto_presion,

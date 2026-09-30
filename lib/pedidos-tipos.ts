@@ -48,7 +48,16 @@ export type Pedido = {
   candidatos: number;
   entregados: number;
   /** Quiénes son, para poder saltar a su ficha desde el pedido. */
-  gente: { id: string; nombre: string; estado: string }[];
+  gente: {
+    id: string;
+    nombre: string;
+    estado: string;
+    evaluadora: string | null;
+    /** Cuándo se la entrevistó y cuándo se entregó el informe. */
+    entrevista: string | null;
+    entrega: string | null;
+    recomendacion: string | null;
+  }[];
   puesto_problemas: string | null;
   puesto_presion: string | null;
   puesto_interaccion: string | null;
@@ -100,7 +109,8 @@ export function loQueFalta(p: Pedido): string[] {
   if (!p.bateriaId) falta.push('batería');
   if (!p.seniority) falta.push('nivel');
   const perfil = perfilContestado(p);
-  if (perfil.hechas === 0) falta.push('el perfil del puesto');
-  else if (perfil.hechas < perfil.total) falta.push(`${perfil.total - perfil.hechas} del perfil`);
+  // Una palabra: va en una columna angosta de la lista de pedidos, y cuántas
+  // preguntas faltan se ve al abrir el pedido.
+  if (perfil.hechas < perfil.total) falta.push('perfil');
   return falta;
 }

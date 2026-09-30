@@ -11,7 +11,8 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import CopyLink from '@/app/informes/CopyLink';
-import Cajon from '../Cajon';
+import Desplegable from '@/app/os/Desplegable';
+import { CONDICIONES_IVA } from '@/lib/clientes-tipos';
 import type { Cliente } from '@/lib/clientes';
 
 const PORTAL = 'https://clientes.camposhr.com';
@@ -26,9 +27,44 @@ function Dato({ rotulo, valor }: { rotulo: string; valor: string | null }) {
   );
 }
 
-export default function Ficha({ cliente }: { cliente: Cliente }) {
+/** Un dato de la empresa convertido en campo, con su rótulo arriba. */
+function Campo({
+  rotulo,
+  nombre,
+  valor,
+  requerido = false,
+}: {
+  rotulo: string;
+  nombre: string;
+  valor: string | null;
+  requerido?: boolean;
+}) {
+  return (
+    <label className="os-cliente-dato">
+      <span className="os-dato-rotulo">{rotulo}</span>
+      <input
+        className="os-campo"
+        name={nombre}
+        defaultValue={valor ?? ''}
+        required={requerido}
+        maxLength={200}
+      />
+    </label>
+  );
+}
+
+export default function Ficha({
+  cliente,
+  children,
+}: {
+  cliente: Cliente;
+  /** Lo que va en la misma tarjeta debajo de los datos: los contactos. */
+  children?: React.ReactNode;
+}) {
   const router = useRouter();
   const [editando, setEditando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [tocando, setTocando] = useState(false);
   const [cambiandoInformes, setCambiandoInformes] = useState(false);
 
@@ -81,96 +117,182 @@ export default function Ficha({ cliente }: { cliente: Cliente }) {
     }
   }
 
+  /**
+   * Guardar los datos de la empresa, editados ahí mismo.
+   *
+   * Sin cajón: son cinco datos y se corrigen mirándolos. Manda solo los campos
+   * del formulario; la ruta deja como están los que no vienen.
+   */
+  async function guardar(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const datos = Object.fromEntries(new FormData(e.currentTarget).entries());
+    setGuardando(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/os/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...datos, id: cliente.id }),
+      });
+      const r = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(r.error ?? 'No se pudo guardar.');
+        return;
+      }
+      setEditando(false);
+      router.refresh();
+    } catch {
+      setError('No se pudo guardar.');
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  /* Un cliente sin un solo pedido ni una cotización enviada no se puede
+     activar a mano: lo que lo activa es que entre trabajo. */
+  const puedeCambiarEstado = cliente.activa || cliente.pedidos > 0 || cliente.cotizaciones > 0;
+  const textoEstado = cliente.activa
+    ? 'Activo'
+    : cliente.pedidos === 0 && cliente.cotizaciones === 0
+      ? 'Inactivo · sin trabajo cargado'
+      : 'Inactivo';
+
   return (
     <>
       <section className="os-panel">
-        <div className="os-panel-top">
-          <h2>
-            Datos
-            {!cliente.activa && (
-              <span className="os-sello-estado os-gris os-titulo-sello">
-                {cliente.pedidos === 0 && cliente.cotizaciones === 0
-                  ? 'Inactivo · sin trabajo cargado'
-                  : 'Inactivo'}
-              </span>
-            )}
-          </h2>
-          {/* Dos grupos rotulados y no cinco botones en fila: tres son sobre lo
-              que el cliente ve en su portal y dos sobre el cliente en el
-              sistema, y juntos se leían como una sola lista de cosas que hacer
-              acá. Los del cliente van contra el margen derecho. */}
-          <div className="os-cliente-acciones">
-            <div className="os-cliente-acciones-bloque">
-              <span className="os-cliente-acciones-rotulo">Portal</span>
-              {/* El enlace del portal vive con el cliente: es suyo y es lo que
-                  se le manda cuando pregunta cómo viene. */}
-              {cliente.token ? (
-                <div className="os-portal-acciones">
-                  <a
-                    className="os-boton"
-                    href={`${PORTAL}/${cliente.token}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Ver portal
-                  </a>
-                  <CopyLink url={`${PORTAL}/${cliente.token}`} texto="Copiar enlace" />
-                  {/* Un interruptor y no dos botones: lo que se lee de un
-                      vistazo es en qué estado está, y cambiarlo es un toque. El
-                      color lo dice antes que el texto. */}
-                  <button
-                    className={`os-boton os-boton-marcado os-sello-estado ${
-                      cliente.informesVisibles ? 'os-verde' : 'os-rojo'
-                    }`}
-                    aria-pressed={cliente.informesVisibles}
-                    disabled={cambiandoInformes}
-                    onClick={cambiarInformes}
-                    title={
-                      cliente.informesVisibles
-                        ? 'Tocar para que el cliente vea "Ver informe" con el aviso Próximamente, sin poder abrirlos.'
-                        : 'Tocar para que el cliente pueda abrir los informes desde su portal.'
-                    }
-                  >
-                    {cambiandoInformes
-                      ? '…'
-                      : cliente.informesVisibles
-                        ? 'Informes a la vista'
-                        : 'Informes: próximamente'}
-                  </button>
-                </div>
-              ) : (
-                <span className="os-tabla-flojo">sin portal</span>
-              )}
-            </div>
+        {/* Los datos fiscales con su propio título, como los contactos debajo:
+            son las partes de la tarjeta. El lápiz los vuelve campos ahí mismo. */}
+        <div className="os-panel-top os-cliente-subtitulo os-empresa-top">
+          <h2>Empresa</h2>
+        </div>
 
-            <div className="os-cliente-acciones-bloque os-cliente-acciones-suyas">
-              <span className="os-cliente-acciones-rotulo">Cliente</span>
-              <div className="os-portal-acciones">
-                <button className="os-boton" onClick={() => setEditando(true)}>
-                  Editar
-                </button>
-                {/* Un cliente sin un solo pedido ni una cotización enviada no se
-                    puede activar a mano: lo que lo activa es que entre trabajo. */}
-                {(cliente.activa || cliente.pedidos > 0 || cliente.cotizaciones > 0) && (
-                  <button className="os-boton" disabled={tocando} onClick={cambiarEstado}>
-                    {tocando ? '…' : cliente.activa ? 'Desactivar' : 'Activar'}
-                  </button>
-                )}
-              </div>
+        {editando ? (
+          <form
+            className="os-panel-cuerpo os-cliente-datos os-cliente-datos-tres os-cliente-edita"
+            onSubmit={guardar}
+          >
+            <Campo rotulo="Nombre" nombre="nombre" valor={cliente.nombre} requerido />
+            <Campo rotulo="Razón social" nombre="razonSocial" valor={cliente.razonSocial} />
+            <Campo rotulo="CUIT" nombre="cuit" valor={cliente.cuit} />
+            <label className="os-cliente-dato">
+              <span className="os-dato-rotulo">Condición IVA</span>
+              <select
+                className="os-campo"
+                name="condicionIva"
+                defaultValue={cliente.condicionIva ?? ''}
+              >
+                <option value="">Sin definir</option>
+                {CONDICIONES_IVA.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Campo
+              rotulo="Dirección fiscal"
+              nombre="direccionFiscal"
+              valor={cliente.direccionFiscal}
+            />
+            <Campo rotulo="Rubro" nombre="rubro" valor={cliente.rubro} />
+            <div className="os-portal-acciones os-cliente-datos-acciones">
+              <button className="os-boton os-boton-firme" type="submit" disabled={guardando}>
+                {guardando ? 'Guardando…' : 'Guardar'}
+              </button>
+              <button
+                className="os-boton"
+                type="button"
+                disabled={guardando}
+                onClick={() => {
+                  setEditando(false);
+                  setError(null);
+                }}
+              >
+                Cancelar
+              </button>
             </div>
+            {error && <p className="os-form-error os-campo-entero">{error}</p>}
+          </form>
+        ) : (
+          <div className="os-panel-cuerpo os-cliente-datos os-cliente-datos-tres">
+            <Dato rotulo="Razón social" valor={cliente.razonSocial} />
+            <Dato rotulo="CUIT" valor={cliente.cuit} />
+            <Dato rotulo="Condición IVA" valor={cliente.condicionIva} />
+            <Dato rotulo="Dirección fiscal" valor={cliente.direccionFiscal} />
+            <Dato rotulo="Rubro" valor={cliente.rubro} />
           </div>
-        </div>
+        )}
 
-        <div className="os-panel-cuerpo os-cliente-datos">
-          <Dato rotulo="Razón social" valor={cliente.razonSocial} />
-          <Dato rotulo="CUIT" valor={cliente.cuit} />
-          <Dato rotulo="Condición IVA" valor={cliente.condicionIva} />
-          <Dato rotulo="Rubro" valor={cliente.rubro} />
-          <Dato rotulo="Dirección fiscal" valor={cliente.direccionFiscal} />
-        </div>
+        {/* El portal, entre la empresa y sus contactos: lo que el cliente ve y
+            el enlace que se le manda. */}
+        {/* Una fila con dos lados: a la izquierda lo del cliente (si está
+            activo y editarlo), a la derecha lo de su portal. */}
+        <section className="os-cliente-portal os-cliente-fila">
+          <div className="os-cliente-fila-lado">
+            <h2>Cliente</h2>
+            {/* Activo o inactivo con palabras y su punto de color; se cambia
+                tocándolo, como el estado de los informes. */}
+            <Desplegable
+              valor={cliente.activa ? 'activo' : 'inactivo'}
+              opciones={[
+                { valor: 'activo', texto: 'Activo', color: 'os-verde' },
+                {
+                  valor: 'inactivo',
+                  texto: cliente.activa ? 'Inactivo' : textoEstado,
+                  color: 'os-gris',
+                },
+              ]}
+              alElegir={(v) => {
+                if ((v === 'activo') !== cliente.activa) cambiarEstado();
+              }}
+              deshabilitado={tocando || !puedeCambiarEstado}
+              etiqueta={
+                puedeCambiarEstado
+                  ? 'Si el cliente está activo'
+                  : 'Se activa solo cuando entra un pedido o sale una cotización.'
+              }
+            />
+            {!editando && (
+              <button className="os-boton" onClick={() => setEditando(true)}>
+                Editar cliente
+              </button>
+            )}
+          </div>
+
+          <div className="os-cliente-fila-lado os-cliente-fila-derecha">
+            <h2>Portal</h2>
+            {cliente.token ? (
+              <>
+                {/* Si el cliente puede abrir los informes desde su portal. */}
+                <Desplegable
+                  valor={cliente.informesVisibles ? 'vista' : 'proximamente'}
+                  opciones={[
+                    { valor: 'vista', texto: 'Informes a la vista', color: 'os-verde' },
+                    { valor: 'proximamente', texto: 'Informes: próximamente', color: 'os-rojo' },
+                  ]}
+                  alElegir={(v) => {
+                    if ((v === 'vista') !== cliente.informesVisibles) cambiarInformes();
+                  }}
+                  deshabilitado={cambiandoInformes}
+                  etiqueta="Si el cliente ve los informes en su portal"
+                />
+                <a
+                  className="os-boton"
+                  href={`${PORTAL}/${cliente.token}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Ver portal
+                </a>
+                <CopyLink url={`${PORTAL}/${cliente.token}`} texto="Copiar enlace" />
+              </>
+            ) : (
+              <span className="os-tabla-flojo">sin portal</span>
+            )}
+          </div>
+        </section>
+        {children}
       </section>
-
-      {editando && <Cajon cliente={cliente} alCerrar={() => setEditando(false)} />}
     </>
   );
 }

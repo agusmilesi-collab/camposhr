@@ -13,8 +13,9 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import Opciones from '@/app/os/Opciones';
+import Desplegable from '@/app/os/Desplegable';
 
 export function useGuardar(id: string) {
   const router = useRouter();
@@ -107,6 +108,16 @@ export function Largo({
   fila?: boolean;
 }) {
   const { guardar, error } = useGuardar(id);
+  /* El campo crece con lo que tiene adentro: con alto fijo, el mail del
+     cliente se leía cortado y había que desplazarse adentro de la caja. */
+  const caja = useRef<HTMLTextAreaElement>(null);
+  const ajustar = () => {
+    const t = caja.current;
+    if (!t) return;
+    t.style.height = 'auto';
+    t.style.height = `${t.scrollHeight + 2}px`;
+  };
+  useEffect(ajustar, []);
   return (
     <div className={`os-ficha-dato os-ficha-dato-ancho${fila ? ' os-ficha-dato-fila' : ''}`}>
       <div className="os-ficha-rotulo">{rotulo}</div>
@@ -115,10 +126,12 @@ export function Largo({
             cliente, el campo más largo del pedido, y entraba en 181 px de los
             385 que tenía al lado. */}
         <textarea
+          ref={caja}
           className="os-campo os-campo-parrafo"
           rows={4}
           maxLength={4000}
           defaultValue={valor ?? ''}
+          onInput={ajustar}
           placeholder={ayuda}
           onBlur={(e) => {
             if (e.target.value !== (valor ?? '')) guardar(campo, e.target.value || null);
@@ -153,24 +166,20 @@ export function Lista({
     <div className="os-ficha-dato">
       <div className="os-ficha-rotulo">{rotulo}</div>
       <div className="os-ficha-valor">
-        <select
-          className="os-campo"
-          value={puesto}
-          onChange={async (e) => {
+        {/* El desplegable del OS y no el del navegador: se elige y se guarda
+            en el acto, y es el mismo que usan Entrevistas y el resto. */}
+        <Desplegable
+          valor={puesto}
+          opciones={[{ valor: '', texto: vacio }, ...opciones]}
+          vacio={vacio}
+          etiqueta={rotulo}
+          alElegir={async (v) => {
             const antes = puesto;
-            setPuesto(e.target.value);
-            const ok = await guardar(campo, e.target.value || null);
+            setPuesto(v);
+            const ok = await guardar(campo, v || null);
             if (!ok) setPuesto(antes);
           }}
-          aria-label={rotulo}
-        >
-          <option value="">{vacio}</option>
-          {opciones.map((o) => (
-            <option key={o.valor} value={o.valor}>
-              {o.texto}
-            </option>
-          ))}
-        </select>
+        />
         {error && <p className="os-form-error">{error}</p>}
       </div>
     </div>
@@ -327,64 +336,66 @@ export function Estado({
     if (!ok) setValor(antes);
   }
 
-  if (valor !== abierto) {
-    return (
-      <div className="os-pedido-cierre">
-        <p className="os-pedido-cerrado">
-          {valor}. No aparece al cargar candidatos.
-        </p>
-        <button
-          type="button"
-          className="os-boton"
-          disabled={guardando}
-          onClick={() => poner(abierto)}
-        >
-          Volver a abrir
-        </button>
-        {error && <p className="os-form-error">{error}</p>}
-      </div>
-    );
-  }
-
+  /* Un campo más de la búsqueda: el estado con su sello y, al lado, el botón
+     que lo cambia. Cerrar pide confirmación abajo, en el mismo campo. */
+  const cerrado = valor !== abierto;
   return (
-    <div className="os-pedido-cierre">
-      {confirmar ? (
-        <>
-          <p className="os-pedido-aviso">
-            {pendientes > 0
-              ? `Quedan ${pendientes} ${
-                  pendientes === 1 ? 'evaluación sin entregar' : 'evaluaciones sin entregar'
-                }. Cerrarlo lo saca del selector de alta; las que están en curso siguen su camino.`
-              : 'Deja de ofrecerse al cargar candidatos. Se puede volver a abrir.'}
-          </p>
-          <div className="os-agregar-pie">
-            <button
-              type="button"
-              className="os-boton os-boton-firme"
-              disabled={guardando}
-              onClick={() => poner('Finalizado')}
-            >
-              Finalizado
-            </button>
+    <div className="os-ficha-dato">
+      <div className="os-ficha-rotulo">Estado</div>
+      <div className="os-ficha-valor">
+        <div className="os-pedido-estado-fila">
+          <span className={`os-sello-estado ${cerrado ? 'os-gris' : 'os-verde'}`}>{valor}</span>
+          {cerrado ? (
             <button
               type="button"
               className="os-boton"
               disabled={guardando}
-              onClick={() => poner('Cancelado')}
+              onClick={() => poner(abierto)}
             >
-              Cancelado
+              Volver a abrir
             </button>
-            <button type="button" className="os-boton" onClick={() => setConfirmar(false)}>
-              Dejarlo abierto
-            </button>
+          ) : (
+            !confirmar && (
+              <button type="button" className="os-boton" onClick={() => setConfirmar(true)}>
+                Cerrar el pedido
+              </button>
+            )
+          )}
+        </div>
+        {!cerrado && confirmar && (
+          <div className="os-pedido-cierre">
+            <p className="os-pedido-aviso">
+              {pendientes > 0
+                ? `Quedan ${pendientes} ${
+                    pendientes === 1 ? 'evaluación sin entregar' : 'evaluaciones sin entregar'
+                  }. Cerrarlo lo saca del selector de alta; las que están en curso siguen su camino.`
+                : 'Deja de ofrecerse al cargar candidatos. Se puede volver a abrir.'}
+            </p>
+            <div className="os-agregar-pie">
+              <button
+                type="button"
+                className="os-boton os-boton-firme"
+                disabled={guardando}
+                onClick={() => poner('Finalizado')}
+              >
+                Finalizado
+              </button>
+              <button
+                type="button"
+                className="os-boton"
+                disabled={guardando}
+                onClick={() => poner('Cancelado')}
+              >
+                Cancelado
+              </button>
+              <button type="button" className="os-boton" onClick={() => setConfirmar(false)}>
+                Dejarlo abierto
+              </button>
+            </div>
           </div>
-        </>
-      ) : (
-        <button type="button" className="os-boton" onClick={() => setConfirmar(true)}>
-          Cerrar el pedido
-        </button>
-      )}
-      {error && <p className="os-form-error">{error}</p>}
+        )}
+        {error && <p className="os-form-error">{error}</p>}
+      </div>
     </div>
   );
 }

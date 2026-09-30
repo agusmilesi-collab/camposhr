@@ -10213,3 +10213,10 @@ a.cq-btn {
     border-bottom: 1px solid var(--line-soft);
   }
 }
+
+/* El ejemplo de cada pregunta del alcance del puesto: debajo y en cursiva,
+   para comparar y no para leer primero. */
+.pedir-si-no-t small.pedir-ejemplo {
+  font-style: italic;
+  opacity: 0.85;
+}

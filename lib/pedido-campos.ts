@@ -41,6 +41,17 @@ export const FAMILIAS = [
 export const SENIORITY = ['Junior', 'Semi Senior', 'Senior', 'Jefatura', 'Dirección'];
 
 /**
+ * Cómo se muestra un nivel: "Semi Senior" se escribe "Semi Sr".
+ *
+ * Solo cambia lo que se lee. En la base sigue guardado "Semi Senior", que es
+ * el valor que traen los pedidos de Airtable: renombrarlo partiría en dos los
+ * conteos por nivel.
+ */
+export function nivelCorto(nivel: string): string {
+  return nivel === 'Semi Senior' ? 'Semi Sr' : nivel;
+}
+
+/**
  * Una pregunta del pedido: la columna, cómo se lee y qué se puede contestar.
  *
  * `ayudas` va en el mismo orden que `opciones` y dice qué significa cada una.

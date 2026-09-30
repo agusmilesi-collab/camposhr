@@ -18,10 +18,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Bateria from '../../psicotecnicos/Bateria';
-import Abrir from '../../pedidos/Abrir';
 import type { BateriaOpcion, Opcion } from '../../psicotecnicos/Agregar';
-import { ABIERTO } from '@/lib/pedido-campos';
-import { diasDesde, fecha, haceCuanto } from '@/lib/hora';
+import { ABIERTO, nivelCorto } from '@/lib/pedido-campos';
+import { fecha, fechaCorta } from '@/lib/hora';
 import type { Pedido } from '@/lib/pedidos-tipos';
 import { loQueFalta } from '@/lib/pedidos-tipos';
 
@@ -30,18 +29,12 @@ function Avance({ p }: { p: Pedido }) {
   if (p.candidatos === 0) {
     return <span className="os-dato-falta">sin candidatos</span>;
   }
-  const parte = Math.round((p.entregados / p.candidatos) * 100);
-  const listo = p.entregados === p.candidatos;
+  /* El número solo, sin barra: en una fila baja la barra no agregaba nada que
+     "1 de 3" no diga. */
   return (
     <span className="os-avance" title={`${p.entregados} de ${p.candidatos} entregados`}>
       <span className="os-avance-texto">
         {p.entregados} de {p.candidatos}
-      </span>
-      <span className="os-avance-barra" aria-hidden="true">
-        <span
-          className={`os-avance-parte${listo ? ' completa' : ''}`}
-          style={{ width: `${parte}%` }}
-        />
       </span>
     </span>
   );
@@ -93,6 +86,16 @@ function Filas({ pedidos, cerrados = false }: { pedidos: Pedido[]; cerrados?: bo
   return (
     <div className="os-tabla-marco">
       <table className="os-tabla os-tabla-trabajo os-tabla-pedidos">
+        {/* Anchos por columna y en proporción: sin ellos cada celda medía su
+            contenido en un renglón, y en una ventana normal las de la derecha
+            quedaban fuera del marco. Lo que no entra se corta con puntos. */}
+        <colgroup>
+          {/* Los mismos anchos en abiertos y cerrados: las dos tablas van una
+              debajo de la otra y sus columnas tienen que caer alineadas. */}
+          {[41, 12, 12, 12, 9, 14].map((w, i) => (
+            <col key={i} style={{ width: `${w}%` }} />
+          ))}
+        </colgroup>
         <thead>
           <tr>
             <th>Puesto</th>
@@ -115,23 +118,27 @@ function Filas({ pedidos, cerrados = false }: { pedidos: Pedido[]; cerrados?: bo
                 <Bateria codigo={p.bateria} conBenziger={p.conBenziger} />
               </td>
               <td data-campo="Nivel">
-                {p.seniority ?? <span className="os-dato-falta">sin definir</span>}
+                {p.seniority ? (
+                  nivelCorto(p.seniority)
+                ) : (
+                  <span className="os-dato-falta">sin definir</span>
+                )}
               </td>
               {/* La fecha ubica el pedido en el mes; el "hace" dice sin contar
                   si ya lleva demasiado abierto. Reabierto, la que vale es la de
                   la reapertura, y se dice: la solicitud en curso es la nueva. */}
               <td data-campo="Pedido el">
-                {fecha(p.fechaPedido) ?? <span className="os-dato-falta">sin fecha</span>}
+                {/* En un renglón: la fecha y si se reabrió. En tres, la fila
+                    crecía al triple por este solo dato. */}
+                {fechaCorta(p.fechaPedido) ?? <span className="os-dato-falta">sin fecha</span>}
                 {p.reabierto && (
-                  <div
+                  <span
                     className="os-tabla-flojo"
                     title={`Se pidió por primera vez el ${fecha(p.fechaOriginal) ?? 'sin fecha'}.`}
                   >
-                    reabierto
-                  </div>
-                )}
-                {p.fechaPedido && (
-                  <div className="os-tabla-flojo">{haceCuanto(diasDesde(p.fechaPedido))}</div>
+                    {' '}
+                    · reabierto
+                  </span>
                 )}
               </td>
               <td data-campo="Avance">
@@ -193,9 +200,6 @@ export default function Pedidos({
         ) : (
           <Filas pedidos={abiertos} />
         )}
-        <div className="os-panel-cuerpo">
-          <Abrir empresas={empresas} baterias={baterias} empresaFija={empresaId} />
-        </div>
       </section>
 
       {/* Con ancla: desde el tablero de psicotécnicos se llega hasta acá para

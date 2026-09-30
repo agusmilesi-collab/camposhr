@@ -17,7 +17,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { queHace, type Contacto } from '@/lib/contactos-tipos';
+import type { Contacto } from '@/lib/contactos-tipos';
+import Whatsapp from '../../psicotecnicos/Whatsapp';
 
 /** Una fila en edición, o la que se está dando de alta. */
 type Borrador = {
@@ -121,7 +122,7 @@ export default function Contactos({
           <input
             className="os-campo"
             type="tel"
-            placeholder="Teléfono"
+            placeholder="WhatsApp"
             value={b.telefono}
             onChange={(e) => setBorrador({ ...b, telefono: e.target.value })}
           />
@@ -164,19 +165,14 @@ export default function Contactos({
   }
 
   return (
-    <section className="os-panel os-panel-separado">
+    /* Va adentro de la tarjeta de datos de la empresa, como su segunda parte:
+       quién pide y quién paga es un dato más del cliente. */
+    <section className="os-cliente-contactos">
       <div className="os-panel-top">
         <h2>Contactos</h2>
-        <span className="os-columna-monto">
-          {contactos.length === 0
-            ? 'ninguno cargado'
-            : contactos.length === 1
-              ? '1 persona'
-              : `${contactos.length} personas`}
-        </span>
         {!borrador && (
           <button className="os-boton" onClick={() => setBorrador(VACIO)}>
-            Agregar
+            Agregar contacto
           </button>
         )}
       </div>
@@ -196,39 +192,63 @@ export default function Contactos({
           borrador?.id === c.id ? (
             <div key={c.id}>{formulario(borrador)}</div>
           ) : (
-            <div className="os-contacto" key={c.id}>
-              <div className="os-contacto-quien">
-                <span className="os-contacto-nombre">{c.nombre}</span>
-                {c.cargo && <span className="os-tabla-flojo">{c.cargo}</span>}
-              </div>
-
-              <div className="os-contacto-datos">
-                {c.email ? (
-                  <a href={`mailto:${c.email}`}>{c.email}</a>
-                ) : (
-                  <span
-                    className="os-dato-falta"
-                    title="Sin mail no le llega la confirmación de lo que pide."
-                  >
-                    sin mail
-                  </span>
-                )}
-                {c.telefono && <span className="os-tabla-flojo">{c.telefono}</span>}
-              </div>
-
-              <span className="os-contacto-hace">{queHace(c)}</span>
+            <div className="os-contacto os-contacto-fila" key={c.id}>
+              {/* Todo en un renglón: nombre, cargo, mail, WhatsApp y qué hace. */}
+              <span className="os-contacto-nombre">{c.nombre}</span>
+              <span className="os-tabla-flojo">{c.cargo ?? ''}</span>
+              {c.email ? (
+                <a className="os-contacto-mail" href={`mailto:${c.email}`}>
+                  {c.email}
+                </a>
+              ) : (
+                <span
+                  className="os-dato-falta"
+                  title="Sin mail no le llega la confirmación de lo que pide."
+                >
+                  sin mail
+                </span>
+              )}
+              {/* El teléfono del contacto es su WhatsApp: con el enlace, se le
+                  escribe de un toque, como al candidato. */}
+              {c.telefono ? <Whatsapp telefono={c.telefono} /> : <span />}
 
               <div className="os-contacto-acciones">
-                <button className="os-boton" onClick={() => setBorrador(desde(c))}>
-                  Editar
+                {/* Íconos y no palabras: son dos acciones por renglón, y con
+                    texto se llevaban un tercio de la fila. Lo que hacen lo
+                    dicen al pasar el mouse y al lector de pantalla. */}
+                <button
+                  className="os-boton os-boton-icono"
+                  onClick={() => setBorrador(desde(c))}
+                  title="Editar"
+                  aria-label={`Editar a ${c.nombre}`}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M4 20h4L19 9l-4-4L4 16v4ZM14 6l4 4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
                 <button
-                  className="os-boton"
+                  className="os-boton os-boton-icono"
                   disabled={guardando}
                   onClick={() => mandar({ id: c.id, baja: true })}
-                  title="Deja de estar entre los que se eligen. Las facturas viejas lo conservan."
+                  title="Dar de baja: deja de estar entre los que se eligen. Las facturas viejas lo conservan."
+                  aria-label={`Dar de baja a ${c.nombre}`}
                 >
-                  Dar de baja
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 11v5M13.5 11v5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
               </div>
             </div>

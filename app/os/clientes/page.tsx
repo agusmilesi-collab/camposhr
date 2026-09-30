@@ -19,7 +19,7 @@ export default async function Clientes() {
       nota={`${clientes.length} clientes`}
       cuentas={cuentas}
     >
-      <div className="os-encabezado">
+      <div className="os-encabezado os-encabezado-junto">
         <h1>Clientes</h1>
       </div>
 

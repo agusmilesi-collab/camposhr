@@ -49,7 +49,13 @@ async function insertar<T>(tabla: string, fila: Record<string, unknown>): Promis
 }
 
 export type EmpresaOpcion = { id: string; nombre: string };
-export type BateriaOpcion = { id: string; codigo: string; nombre: string };
+export type BateriaOpcion = {
+  id: string;
+  codigo: string;
+  nombre: string;
+  /** Qué toma: de acá se sabe si lleva análisis discursivo. */
+  tests?: string[] | null;
+};
 export type PedidoOpcion = {
   id: string;
   puesto: string;
@@ -71,7 +77,7 @@ export async function empresas(): Promise<EmpresaOpcion[]> {
 export async function baterias(): Promise<BateriaOpcion[]> {
   return select<BateriaOpcion>(
     'baterias',
-    'select=id,codigo,nombre&order=codigo.asc',
+    'select=id,codigo,nombre,tests&order=codigo.asc',
     CACHE_PSICOTECNICOS
   );
 }
