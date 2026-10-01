@@ -49,7 +49,7 @@ export {
  */
 import { ETAPAS_ENTREVISTADO, type Marcha } from '@/lib/facturas-tipos';
 import { cortes, mesesDelAnio } from '@/lib/monotributo';
-import { esDePsicotecnicos, esDeServicios } from '@/lib/facturas-tipos';
+import { esDelCentro, esDePsicotecnicos, esDeServicios } from '@/lib/facturas-tipos';
 
 type FilaEmisor = {
   id: string;
@@ -309,12 +309,16 @@ export async function marchaMonotributo(hoy = new Date()): Promise<Marcha[]> {
         // evaluación pero es de un candidato que sí está en el comprobante.
         const suma = (cuales: Factura[]) =>
           cuales.reduce((n, f) => n + (f.importe ?? 0), 0);
-        const psico = delMes.filter(esDePsicotecnicos);
-        const servicios = delMes.filter(esDeServicios);
+        /* El alquiler de consultorios sale aparte: por sus renglones es de
+           servicios, pero es otro trabajo y en la barra se lee como tal. */
+        const centro = delMes.filter(esDelCentro);
+        const psico = delMes.filter((f) => !esDelCentro(f) && esDePsicotecnicos(f));
+        const servicios = delMes.filter((f) => !esDelCentro(f) && esDeServicios(f));
         return {
           ...m,
           psico: suma(psico),
           servicios: suma(servicios),
+          centro: suma(centro),
           total: suma(delMes),
         };
       }),

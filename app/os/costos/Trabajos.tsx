@@ -91,14 +91,26 @@ function repartoDe(t: Trabajo, equipo: string[]) {
   });
 }
 
-const COLUMNAS = ['Cliente', 'Trabajo', 'Cotizado', 'Facturado', 'Costo', 'Resultado', 'Margen'];
+/* Facturado al final: la fila se lee de lo que se vendió a lo que quedó
+   (cotizado, costo, resultado, margen), y la factura es lo que pasa después. */
+const COLUMNAS = [
+  'Cliente',
+  'Trabajo',
+  'Fecha',
+  'Cotizado',
+  'Costo',
+  'Resultado',
+  'Margen',
+  'Facturado',
+];
 const MEDIDAS = columnas(COLUMNAS, {
   Cliente: 150,
-  Trabajo: 280,
-  Cotizado: 130,
-  Facturado: 130,
+  Trabajo: 190,
+  Fecha: 125,
+  Cotizado: 160,
   Costo: 130,
   Resultado: 140,
+  Facturado: 130,
 });
 
 export default function Trabajos({
@@ -165,15 +177,11 @@ export default function Trabajos({
                     <td className="os-tabla-recorta" data-campo="Trabajo" title={t.concepto}>
                       {t.concepto}
                     </td>
+                    {/* Cuándo lo aprobó el cliente: es la fecha con la que el
+                        trabajo entra en el mes que le corresponde. */}
+                    <td data-campo="Fecha">{formatoFecha(t.fecha)}</td>
                     <td className="os-tabla-num" data-campo="Cotizado">
                       {formatoImporte(t.cotizado, t.moneda)}
-                    </td>
-                    <td className="os-tabla-num" data-campo="Facturado">
-                      {t.facturado === 0 ? (
-                        <span className="os-dato-falta">sin facturar</span>
-                      ) : (
-                        formatoImporte(t.facturado)
-                      )}
                     </td>
                     {/* El costo abre su cajón: en la fila va la suma, y el
                         detalle de los gastos está a un clic. */}
@@ -205,6 +213,13 @@ export default function Trabajos({
                       data-campo="Margen"
                     >
                       {margen === null ? '—' : `${Math.round(margen)}%`}
+                    </td>
+                    <td className="os-tabla-num" data-campo="Facturado">
+                      {t.facturado === 0 ? (
+                        <span className="os-dato-falta">sin facturar</span>
+                      ) : (
+                        formatoImporte(t.facturado)
+                      )}
                     </td>
                   </tr>
 
