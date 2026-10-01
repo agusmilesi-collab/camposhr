@@ -11100,3 +11100,13 @@ a.cq-btn {
 .pedir-tarjeta.pedir-inactiva {
   background: #fbfaf8;
 }
+
+/* "← Volver" como enlace, igual que como botón. */
+a.pedir-volver-link {
+  text-decoration: none;
+}
+
+/* La primera pregunta pierde su margen de abajo dentro de la fila. */
+.pedir-titulo-fila .pedir-pregunta-grande {
+  margin-bottom: 0;
+}

@@ -86,6 +86,15 @@ function diaCorto(iso: string): string {
 
 const dolares = (n: number) => `USD ${new Intl.NumberFormat('es-AR').format(n)}`;
 
+/** El "← Volver" arriba a la derecha, a la altura del título del bloque. */
+function Atras({ alVolver }: { alVolver: () => void }) {
+  return (
+    <button type="button" className="pedir-volver-link" onClick={alVolver}>
+      ← Volver
+    </button>
+  );
+}
+
 export default function Pedido({
   token,
   empresa,
@@ -181,6 +190,16 @@ export default function Pedido({
      ya dice su precio por candidato, y el total recién se define con la
      cantidad de gente. */
   const conResumen = ultimo;
+
+  /**
+   * Volver un paso: en el primero deshace la respuesta a "¿Para qué búsqueda
+   * es?", y en los otros vuelve al anterior.
+   */
+  function atras() {
+    setError(null);
+    if (indice === 0) setModo(null);
+    else setPaso(pasos[indice - 1].clave);
+  }
 
   /** Pasar al paso siguiente, si lo de este está completo. */
   function seguir() {
@@ -389,9 +408,6 @@ export default function Pedido({
   return (
     <main className="pedir">
       <header className="pedir-top">
-        <a className="pedir-volver" href={`/p/${token}`}>
-          ← {empresa}
-        </a>
         <h1>Pedir una evaluación</h1>
       </header>
 
@@ -432,7 +448,14 @@ export default function Pedido({
                 <section className="pedir-bloque">
                   {!modo && (
                     <>
-                      <h2 className="pedir-pregunta-grande">¿Para qué búsqueda es?</h2>
+                      {/* Antes de contestar, "Volver" lleva al portal: es el
+                          mismo lugar del "Volver" de los demás pasos. */}
+                      <div className="pedir-titulo-fila">
+                        <h2 className="pedir-pregunta-grande">¿Para qué búsqueda es?</h2>
+                        <a className="pedir-volver-link" href={`/p/${token}`}>
+                          ← Volver
+                        </a>
+                      </div>
                       {/* Todas a la vista, las en curso y las ya entregadas: el
                     cliente no sabe en qué estado está cada una, sabe qué puesto
                     está cubriendo. Por eso cada tarjeta dice el puesto, cuándo
@@ -478,6 +501,7 @@ export default function Pedido({
                       {/* La pregunta con el "Volver" a su derecha, en la misma línea. */}
                       <div className="pedir-titulo-fila pedir-cual">
                         <p className="pedir-pregunta-t">¿A qué búsqueda querés sumar candidatos?</p>
+                        <Atras alVolver={atras} />
                       </div>
                       {/* Una sola lista, las activas primero y después las
                           inactivas. Cada tarjeta dice su estado con el punto y
@@ -540,6 +564,7 @@ export default function Pedido({
                 <section className="pedir-bloque">
                   <div className="pedir-titulo-fila">
                     <h2>El puesto</h2>
+                    <Atras alVolver={atras} />
                   </div>
                   <input
                     className="pedir-input"
@@ -630,7 +655,10 @@ export default function Pedido({
               {actual === 'evaluacion' && (
                 <>
                   <section className="pedir-bloque">
-                    <h2>Elegir evaluación</h2>
+                    <div className="pedir-titulo-fila">
+                      <h2>Elegir evaluación</h2>
+                      <Atras alVolver={atras} />
+                    </div>
                     <div className="pedir-baterias">
                       {alcance.baterias.map((b) => (
                         <button
@@ -820,7 +848,10 @@ export default function Pedido({
               {/* Los CV se sueltan de a varios: es lo que el cliente ya tiene en la
               mano, y de cada uno sale un candidato con lo que el archivo traiga. */}
               <section className="pedir-bloque">
-                <h2>Los candidatos</h2>
+                <div className="pedir-titulo-fila">
+                  <h2>Los candidatos</h2>
+                  <Atras alVolver={atras} />
+                </div>
 
                 <div
                   className="pedir-soltar"
@@ -921,32 +952,6 @@ export default function Pedido({
         {/* Atrás y siguiente, al pie de la tarjeta: en el último paso el
             botón es el de mandar, que está en el resumen. */}
         <div className="pedir-navegar">
-          {/* En el primer paso, ya contestada la pregunta, "Volver" la deshace:
-              el mismo botón que "Atrás" en los otros pasos. */}
-          {indice === 0 && modo && (
-            <button
-              type="button"
-              className="btn-sec"
-              onClick={() => {
-                setModo(null);
-                setError(null);
-              }}
-            >
-              ← Volver
-            </button>
-          )}
-          {indice > 0 && (
-            <button
-              type="button"
-              className="btn-sec"
-              onClick={() => {
-                setError(null);
-                setPaso(pasos[indice - 1].clave);
-              }}
-            >
-              ← Atrás
-            </button>
-          )}
           {!ultimo && (
             <button type="button" className="btn-primario" onClick={seguir}>
               Próximo paso
