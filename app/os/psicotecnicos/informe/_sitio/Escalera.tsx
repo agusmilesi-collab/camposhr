@@ -63,7 +63,9 @@ export default function Escalera({ inf }: { inf: Informe }) {
 
   /* Hasta dónde llega con los años: la banda de maduración que lo contiene,
      leída a los 50, que es donde la curva ya se aplanó. */
-  const futuro = d.punto ? estratoDeEscalon(horizonteEn(bandaDelPotencial(d.punto.edad, d.punto.dias), 50)).romano : null;
+  const futuro = d.punto
+    ? estratoDeEscalon(horizonteEn(bandaDelPotencial(d.punto.edad, d.punto.dias), 50)).romano
+    : null;
 
   const numero = (r: string | null) => (r ? NIVELES.findIndex((e) => e.romano === r) + 1 : 0);
   const alcanza = hoy && delPuesto ? numero(hoy) - numero(delPuesto) : null;
@@ -73,45 +75,54 @@ export default function Escalera({ inf }: { inf: Informe }) {
       <p className="sitio-escalera-intro">
         {/* Qué se está mirando, antes de la escalera: sin esto los escalones se
             leen como una calificación de la persona. */}
-        Cuanto más arriba, más lejos en el tiempo hay que ver para hacer bien ese trabajo.
-        No es cuánto sabe ni cuánto se esfuerza: es qué tan grande puede ser el problema
-        que maneja sin que se le desarme.
+        La escalera ordena el trabajo en cinco niveles de complejidad. Cada nivel se define por el
+        horizonte de sus decisiones: el tiempo que pasa hasta que se puede verificar si una decisión
+        fue correcta, desde algunos meses en el primer nivel hasta varios años en el quinto. El
+        análisis ubica a la persona en el nivel más alto en el que hoy puede decidir con autonomía,
+        lo compara con el que exige el puesto y estima hasta dónde puede crecer esa capacidad con
+        los años.
       </p>
 
       <ol className="sitio-niveles">
-        {NIVELES.slice().reverse().map((e) => {
-          const info = COMO_SE_LLAMA[e.romano];
-          const mecanismo = PREGUNTAS.find((p) => p.estrato === numero(e.romano));
-          const marcas = [
-            delPuesto === e.romano ? { clave: 'puesto', texto: 'Lo que pide el puesto' } : null,
-            hoy === e.romano ? { clave: 'hoy', texto: 'Puede hoy' } : null,
-            futuro === e.romano && futuro !== hoy
-              ? { clave: 'futuro', texto: 'Podría llegar con los años' }
-              : null,
-          ].filter(Boolean) as { clave: string; texto: string }[];
+        {NIVELES.slice()
+          .reverse()
+          .map((e) => {
+            const info = COMO_SE_LLAMA[e.romano];
+            const mecanismo = PREGUNTAS.find((p) => p.estrato === numero(e.romano));
+            const marcas = [
+              delPuesto === e.romano ? { clave: 'puesto', texto: 'Lo que pide el puesto' } : null,
+              hoy === e.romano ? { clave: 'hoy', texto: 'Puede hoy' } : null,
+              futuro === e.romano && futuro !== hoy
+                ? { clave: 'futuro', texto: 'Podría llegar con los años' }
+                : null,
+            ].filter(Boolean) as { clave: string; texto: string }[];
 
-          return (
-            <li
-              key={e.romano}
-              className={`sitio-nivel${marcas.length ? ' marcado' : ''}`}
-              data-nivel={e.romano}
-            >
-              <div className="sitio-nivel-cuerpo">
-                <h4>{info.nombre}</h4>
-                <p className="sitio-nivel-que">{mecanismo?.simple}</p>
-                <p className="sitio-nivel-ej">{info.ejemplo}</p>
-              </div>
-              <div className="sitio-nivel-lado">
-                <span className="sitio-nivel-plazo">{plazoDe(e)}</span>
-                {marcas.map((m) => (
-                  <span key={m.clave} className={`sitio-donde ${m.clave}`}>
-                    {m.texto}
-                  </span>
-                ))}
-              </div>
-            </li>
-          );
-        })}
+            return (
+              <li
+                key={e.romano}
+                className={`sitio-nivel${marcas.length ? ' marcado' : ''}`}
+                data-nivel={e.romano}
+              >
+                <div className="sitio-nivel-cuerpo">
+                  <h4>{info.nombre}</h4>
+                  {/* A qué puestos se parece, entre paréntesis debajo del nombre:
+                    completa el título, y lo que sigue explica el trabajo. */}
+                  <p className="sitio-nivel-ej">
+                    ({info.ejemplo.replace(/\.$/, '')} ·{' '}
+                    {plazoDe(e).charAt(0).toLowerCase() + plazoDe(e).slice(1)})
+                  </p>
+                  <p className="sitio-nivel-que">{mecanismo?.simple}</p>
+                </div>
+                <div className="sitio-nivel-lado">
+                  {marcas.map((m) => (
+                    <span key={m.clave} className={`sitio-donde ${m.clave}`}>
+                      {m.texto}
+                    </span>
+                  ))}
+                </div>
+              </li>
+            );
+          })}
       </ol>
 
       {/* Lo que hay que contestar, escrito. La escalera lo muestra, pero quien
@@ -128,11 +139,11 @@ export default function Escalera({ inf }: { inf: Informe }) {
 
       {d.punto && futuro && (
         <p className="sitio-escalera-nota">
-          Esa capacidad crece con los años y lo hace por caminos regulares. Por la edad de
-          la persona ({d.punto.edad} años) y por el alcance de lo que hoy maneja
-          ({enPalabras(d.punto.dias)}), alrededor de los 50 estaría en condiciones de
-          manejar trabajo del nivel «{COMO_SE_LLAMA[futuro]?.nombre.toLowerCase()}». Es un
-          ritmo probable y no una carrera dictaminada.
+          Esa capacidad crece con los años y lo hace por caminos regulares. Por la edad de la
+          persona ({d.punto.edad} años) y por el alcance de lo que hoy maneja (
+          {enPalabras(d.punto.dias)}), alrededor de los 50 estaría en condiciones de manejar trabajo
+          del nivel «{COMO_SE_LLAMA[futuro]?.nombre.toLowerCase()}». Es un ritmo probable y no una
+          carrera dictaminada.
         </p>
       )}
 
@@ -163,13 +174,6 @@ export default function Escalera({ inf }: { inf: Informe }) {
             ))}
         </div>
       )}
-
-      {/* De dónde sale: el instrumento, nombrado una vez y al pie. */}
-      <p className="sitio-fuente">
-        Sale del análisis discursivo sobre cinco minutos del relato de la persona, según el
-        modelo de niveles de trabajo de Elliott Jaques. El detalle técnico está en
-        Indicadores.
-      </p>
     </div>
   );
 }

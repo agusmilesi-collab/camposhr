@@ -16284,3 +16284,559 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 .os-pestanas-fila .copiar {
   margin-bottom: 8px;
 }
+
+/* La recomendación en dos columnas: los cuatro niveles apilados a la
+   izquierda y la fundamentación a la derecha, con el campo estirado hasta el
+   alto de los cuatro botones. */
+.os-conclusion-dos {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 22px;
+  align-items: stretch;
+}
+
+.os-conclusion-izq {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.os-conclusion-dos .os-conclusion-niveles {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.os-conclusion-dos .os-conclusion-notas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.os-conclusion-dos .os-conclusion-notas textarea.os-campo {
+  flex: 1;
+  min-height: 0;
+  resize: none;
+}
+
+@media (max-width: 760px) {
+  .os-conclusion-dos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-conclusion-dos .os-conclusion-notas textarea.os-campo {
+    min-height: 120px;
+  }
+}
+
+/* Las dos columnas arrancan a la misma altura: sin márgenes propios arriba. */
+.os-conclusion-dos .os-conclusion-notas,
+.os-conclusion-dos .os-conclusion-izq {
+  margin: 0;
+}
+
+.os-conclusion-dos .os-dato-rotulo {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* La columna de la fundamentación lleva el botón de firmar justo debajo del
+   campo, contra el margen derecho, con el aviso de cambios a su izquierda. */
+.os-conclusion-der {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.os-conclusion-der .os-conclusion-notas {
+  flex: 1;
+}
+
+.os-conclusion-firma {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+  gap: 12px;
+}
+
+.os-conclusion-firma {
+  flex-direction: row;
+}
+
+.os-conclusion-firma .os-boton {
+  order: 2;
+}
+
+/* Los tests administrados en una sola fila, de ancho completo debajo de las
+   dos columnas. */
+.os-conclusion-pie {
+  grid-column: 1 / -1;
+}
+
+.os-conclusion-tests {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px 22px;
+  overflow-x: auto;
+}
+
+.os-conclusion-tests .os-dato-rotulo {
+  flex: none;
+  margin-right: 4px;
+}
+
+.os-conclusion-tests .os-sello-estado {
+  flex: none;
+}
+
+/* El campo mide exactamente lo mismo que los cuatro niveles: la columna de
+   la fundamentación se reparte en la grilla, el campo en la fila de los
+   niveles y el botón de firmar en la fila de abajo, fuera de esa medida. */
+.os-conclusion-dos {
+  grid-template-rows: auto auto;
+  row-gap: 10px;
+}
+
+.os-conclusion-der {
+  display: contents;
+}
+
+.os-conclusion-dos .os-conclusion-izq {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.os-conclusion-dos .os-conclusion-notas {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.os-conclusion-dos .os-conclusion-firma {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+@media (max-width: 760px) {
+  .os-conclusion-dos .os-conclusion-izq,
+  .os-conclusion-dos .os-conclusion-notas,
+  .os-conclusion-dos .os-conclusion-firma {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+
+/* "Quitar la recomendación" justo debajo de los niveles, en la fila del botón
+   de firmar. */
+.os-conclusion-dos > .os-agregar-mas-datos {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+  align-self: start;
+  margin-top: 0;
+}
+
+@media (max-width: 760px) {
+  .os-conclusion-dos > .os-agregar-mas-datos {
+    grid-row: auto;
+  }
+}
+
+/* "Tests administrados" en su renglón y los tests en el de abajo, todos en
+   una fila. */
+.os-conclusion-tests {
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+
+.os-conclusion-tests .os-dato-rotulo {
+  flex-basis: 100%;
+  margin-right: 0;
+}
+
+/* ---------- La primera hoja del informe (OnePager.tsx) ----------
+   El resumen ejecutivo como una carilla A4 blanca con sombra, del alto de la
+   hoja impresa: lo que no entra queda cortado y se avisa debajo. El resto del
+   informe sigue seguido, sin carillas. */
+.os-onepager {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin: 8px 0 32px;
+}
+
+.os-onepager-hoja {
+  width: 210mm;
+  max-width: 100%;
+  height: 297mm;
+  padding: 16mm 15mm;
+  overflow: hidden;
+  background: #fff;
+  color: #16202b;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
+}
+
+.os-onepager-hoja.se-pasa {
+  outline: 2px solid var(--os-rojo);
+  outline-offset: 2px;
+}
+
+.os-onepager-aviso {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--os-rojo);
+}
+
+/* Dentro de la carilla, letra de hoja y aire de papel: el formato sitio está
+   pensado para pantalla (títulos grandes, mucho espacio entre bloques, la
+   fundamentación en serif grande), y así el one pager no entraba en una hoja.
+   Son los tamaños del PDF. */
+.os-onepager-hoja {
+  font-size: 10.5pt;
+  line-height: 1.45;
+}
+
+.os-onepager-hoja .sitio-cabecera {
+  padding-top: 0;
+}
+
+.os-onepager-hoja .sitio-cabecera .inf-encabezado {
+  margin-bottom: 14px;
+}
+
+.os-onepager-hoja .sitio-seccion {
+  padding-top: 0;
+}
+
+.os-onepager-hoja .sitio-seccion-top {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+}
+
+.os-onepager-hoja .sitio-numero,
+.os-onepager-hoja .sitio-seccion-top h2 {
+  font-size: 1.1rem;
+}
+
+.os-onepager-hoja .sitio-caja {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.os-onepager-hoja .sitio-sub {
+  margin: 16px 0 6px;
+  font-size: 0.62rem;
+}
+
+.os-onepager-hoja .sitio-caja p,
+.os-onepager-hoja .inf-nivel p {
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.os-onepager-hoja .sitio-cita p {
+  font-family: inherit;
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+}
+
+.os-onepager-hoja .sitio-firma {
+  margin-top: 18px;
+}
+
+.os-onepager-hoja .sitio-trazo {
+  height: 52px;
+}
+
+.os-onepager-hoja .sitio-confidencial {
+  margin-top: 12px !important;
+  padding-top: 8px;
+  font-size: 0.68rem !important;
+  line-height: 1.4 !important;
+}
+
+/* El rótulo de la fundamentación con la cuenta de caracteres a la derecha. */
+.os-fundamento-rotulo {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.os-fundamento-cuenta {
+  font-variant-numeric: tabular-nums;
+}
+
+.os-fundamento-cuenta.lleno {
+  color: var(--os-rojo);
+  opacity: 1 !important;
+  font-weight: 600;
+}
+
+/* Los milímetros que faltaban: márgenes de hoja como los del PDF y menos aire
+   en la marca y en el nombre. */
+.os-onepager-hoja {
+  padding: 12mm 14mm;
+}
+
+.os-onepager-hoja .inf-marca {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+}
+
+.os-onepager-hoja .inf-encabezado h1 {
+  margin-bottom: 6px;
+  font-size: 1.5rem;
+}
+
+.os-onepager-hoja .inf-nota {
+  margin: 6px 0 0;
+}
+
+/* Todo el one pager sobre la misma línea: la del título de la sección y su
+   contenido, a 46 px del margen. La marca, el nombre y los datos se corren a
+   esa línea; el número de la sección queda colgado a la izquierda. */
+.os-onepager-hoja.os-onepager-hoja .sitio-cabecera {
+  padding-left: 46px;
+}
+
+.os-onepager-hoja.os-onepager-hoja .sitio-caja {
+  padding: 0 0 0 46px;
+}
+
+/* La confidencialidad, en letra bien chica: es la nota legal del pie. */
+.os-onepager-hoja.os-onepager-hoja .sitio-confidencial {
+  font-size: 0.6rem !important;
+  line-height: 1.4 !important;
+}
+
+/* El número de la sección y su línea arrancan también en el margen del one
+   pager, como todo lo demás. */
+.os-onepager-hoja.os-onepager-hoja .sitio-seccion-top {
+  margin-left: 46px;
+}
+
+/* Los datos de la persona, un poco más chicos y más juntos. */
+.os-onepager-hoja.os-onepager-hoja .inf-datos p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.38;
+}
+
+/* La nota del nivel de ajuste, del mismo tamaño que la confidencialidad: las
+   dos son aclaraciones del documento y no lo que se viene a leer. */
+.os-onepager-hoja.os-onepager-hoja .inf-nota {
+  font-size: 0.6rem;
+  line-height: 1.4;
+}
+
+/* Más aire entre la fundamentación y la firma de quien la escribió. */
+.os-onepager-hoja.os-onepager-hoja .sitio-firma {
+  margin-top: 34px;
+}
+
+/* El renglón que se ganó al juntar el resumen en un párrafo va al aire de la
+   firma. */
+.os-onepager-hoja.os-onepager-hoja .sitio-firma {
+  margin-top: 48px;
+}
+
+/* "La evaluación": dos filas de a dos y la última de a tres, sobre una grilla
+   de seis. En la fila de tres el rótulo va arriba del valor, porque al lado
+   no entra en un tercio del panel. */
+.os-ficha-datos-dos.os-ficha-datos-dos-tres {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.os-ficha-datos-dos-tres .os-ficha-dato {
+  grid-column: span 3;
+}
+
+.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 3) {
+  grid-column: span 2;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  border-bottom: 0;
+}
+
+.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 3) .os-ficha-rotulo {
+  min-width: 0;
+}
+
+/* La fila de arriba de la de tres vuelve a llevar su raya de abajo. */
+.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(4),
+.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(5) {
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+@media (max-width: 900px) {
+  .os-ficha-datos-dos.os-ficha-datos-dos-tres {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-ficha-datos-dos-tres .os-ficha-dato,
+  .os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 3) {
+    grid-column: auto;
+  }
+}
+
+/* La fila de tres pasa al medio: del tercero al quinto dato van de a tres,
+   con el rótulo arriba; los dos primeros y los dos últimos, de a dos. */
+.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 3) {
+  grid-column: span 3;
+  grid-template-columns: 132px 1fr;
+  gap: normal;
+}
+
+.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(n + 3):nth-child(-n + 5) {
+  grid-column: span 2;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+
+.os-ficha-datos-dos-tres .os-ficha-dato {
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .os-ficha-datos-dos-tres .os-ficha-dato:nth-child(n + 3):nth-child(-n + 5),
+  .os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 3) {
+    grid-column: auto;
+  }
+}
+
+/* Aire entre la última fila de datos y el borde de abajo de la tarjeta. */
+.os-ficha-datos.os-ficha-datos-aire {
+  padding-bottom: 14px;
+}
+
+/* "La evaluación", pareja: todos los datos con la misma forma (rótulo arriba,
+   valor abajo), el mismo relleno y las mismas rayas, sobre una grilla de seis
+   que se reparte en filas de dos, tres y dos. Mezclar rótulos al costado y
+   arriba dejaba cada fila con otra alineación. */
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato,
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 3),
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(n + 3):nth-child(-n + 5) {
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 6px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--os-linea-suave);
+  box-shadow: 1px 0 0 var(--os-linea-suave);
+}
+
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.os-ficha-datos-dos-tres .os-ficha-valor {
+  min-width: 0;
+}
+
+/* El cargo de quien lo pidió va en el mismo renglón que el nombre y se corta
+   si no entra, en vez de bajar a medias. */
+.os-ficha-datos-dos-tres .os-dato-al-lado {
+  white-space: nowrap;
+}
+
+/* La fila de tres es la primera (solicitud, quién lo pidió, batería); las
+   otras dos van de a dos. */
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato {
+  grid-column: span 3;
+}
+
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(-n + 3) {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato,
+  .os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(-n + 3) {
+    grid-column: auto;
+  }
+}
+
+/* Del cuarto en adelante, de a dos (pisa la regla vieja que les daba un
+   tercio a los del medio). */
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(n + 4) {
+  grid-column: span 3;
+}
+
+@media (max-width: 900px) {
+  .os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(n + 4) {
+    grid-column: auto;
+  }
+}
+
+/* Seis datos: dos filas de a tres, todas iguales. */
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato,
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(n + 4),
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(-n + 3) {
+  grid-column: span 2;
+}
+
+.os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+
+/* La fecha de la entrevista con la modalidad al lado. */
+.os-entrevista-dato {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato,
+  .os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(n + 4),
+  .os-ficha-datos-dos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(-n + 3) {
+    grid-column: auto;
+  }
+}
+
+/* Factura: el importe arriba, a todo el ancho, y facturado y cobrado juntos
+   en la fila de abajo, con el rótulo arriba como en Evaluación. */
+.os-ficha-datos.os-ficha-datos-factura {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.os-ficha-datos-factura .os-ficha-dato {
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 6px;
+  padding: 14px 18px;
+}
+
+.os-ficha-datos-factura .os-ficha-dato:first-child {
+  grid-column: 1 / -1;
+}
+
+.os-ficha-datos-factura .os-ficha-dato:nth-child(2) {
+  box-shadow: 1px 0 0 var(--os-linea-suave);
+}
+
+.os-ficha-datos-factura .os-ficha-dato:nth-child(n + 2) {
+  border-bottom: 0;
+}
+
+/* Filas más bajas en Evaluación y Factura: menos relleno y rótulo y valor
+   más juntos. */
+.os-ficha-datos.os-ficha-datos-dos-tres .os-ficha-dato,
+.os-ficha-datos.os-ficha-datos-dos-tres .os-ficha-dato:nth-last-child(-n + 3),
+.os-ficha-datos.os-ficha-datos-dos-tres .os-ficha-dato:nth-child(n + 3):nth-child(-n + 5),
+.os-ficha-datos.os-ficha-datos-factura .os-ficha-dato {
+  padding: 9px 18px;
+  gap: 2px;
+}
+
+/* La modalidad es texto corrido al lado de la fecha, sin separación de más. */
+.os-entrevista-dato {
+  display: inline;
+}
