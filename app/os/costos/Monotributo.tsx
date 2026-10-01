@@ -143,10 +143,11 @@ function Escala({ e }: { e: Marcha }) {
 
         <Barras meses={e.meses} />
 
-        <p className="os-form-nota">
-          Sobre lo emitido en el OS. {e.enDolares > 0 && 'No entra lo facturado en dólares. '}
-          Las facturas anteriores suman recién cuando se carguen.
-        </p>
+        {/* Del aviso queda solo lo que cambia el número: los dólares no entran
+            en el monotributo, así que sin esa línea el total no cierra. */}
+        {e.enDolares > 0 && (
+          <p className="os-form-nota">No entra lo facturado en dólares.</p>
+        )}
         {error && <p className="os-form-error">{error}</p>}
       </div>
     </section>
@@ -201,7 +202,9 @@ function Barras({ meses }: { meses: Marcha['meses'] }) {
                 ? undefined
                 : `${m.etiqueta}: psicotécnicos ${formatoImporte(
                     m.psico
-                  )}, Campos HR ${formatoImporte(m.servicios)}`
+                  )}, Campos HR ${formatoImporte(m.servicios)}, consultorios ${formatoImporte(
+                    m.centro
+                  )}`
             }
           >
             <span className="os-mes-monto">{corto(m.total)}</span>
@@ -217,6 +220,13 @@ function Barras({ meses }: { meses: Marcha['meses'] }) {
                       cartel es propio y no el `title` del navegador, que tarda
                       un segundo en salir y no se cambia al pasar de un tramo al
                       otro sin salir de la barra. */}
+                  {m.centro > 0 && (
+                    <div
+                      className="os-mes-lleno centro"
+                      style={{ height: alto(m.centro) }}
+                      data-detalle={`Consultorios · ${formatoImporte(m.centro)}`}
+                    />
+                  )}
                   {m.servicios > 0 && (
                     <div
                       className="os-mes-lleno servicios"
@@ -245,6 +255,9 @@ function Barras({ meses }: { meses: Marcha['meses'] }) {
         </span>
         <span className="os-referencia">
           <i className="os-referencia-color servicios" /> Campos HR
+        </span>
+        <span className="os-referencia">
+          <i className="os-referencia-color centro" /> Consultorios
         </span>
       </p>
     </>

@@ -15,6 +15,8 @@ import { empresas as listarEmpresas } from '@/lib/altas';
 import Monotributo from './Monotributo';
 import { Facturado, OtraFactura } from './Servicios';
 import Trabajos, { type Trabajo } from './Trabajos';
+import MesAMes, { type MesDeServicios } from './MesAMes';
+import { mesesDelAnio } from '@/lib/monotributo';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
@@ -95,6 +97,24 @@ export default async function Costos() {
 
 
 
+  /**
+   * El año en barras: cada trabajo cae entero en el mes en que se aprobó, con
+   * lo que costó hacerlo.
+   *
+   * El gasto va al mes del trabajo y no al mes en que se hizo: un ciclo que se
+   * aprobó en julio se sigue gastando en agosto y en septiembre, y con la fecha
+   * del gasto esos meses mostraban un costo sin ningún ingreso al lado. Lo que
+   * la barra contesta es qué dejó cada trabajo, no qué se pagó cada mes.
+   */
+  const mesesDeServicios: MesDeServicios[] = mesesDelAnio(new Date()).map((m) => {
+    const delMes = ganadas.filter((c) => c.fecha.slice(0, 7) === m.clave);
+    return {
+      ...m,
+      aprobado: delMes.reduce((n, c) => n + c.importe, 0),
+      costo: delMes.reduce((n, c) => n + deLa(c.id).reduce((s, x) => s + x.importe, 0), 0),
+    };
+  });
+
   const total = resultadoDe(
     ganadas.reduce((n, c) => n + c.importe, 0),
     ganadas.reduce((n, c) => n + deLa(c.id).reduce((m, x) => m + x.importe, 0), 0)
@@ -141,6 +161,8 @@ export default async function Costos() {
       </div>
 
       <Trabajos trabajos={trabajos} equipo={socios} />
+
+      <MesAMes meses={mesesDeServicios} />
 
       <OtraFactura
         emisoras={emisoras}

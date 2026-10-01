@@ -69,6 +69,16 @@ export const esDeServicios = (f: Factura) =>
 
 export const esDePsicotecnicos = (f: Factura) => !esDeServicios(f);
 
+/**
+ * Las del Centro: las que van a un inquilino y no a una empresa.
+ *
+ * Por sus renglones son de servicios, porque no cubren ninguna evaluación, pero
+ * son otro trabajo: el alquiler del consultorio. Se separan solo para mirarlas,
+ * así que `esDeServicios` sigue diciendo lo mismo que siempre y ninguna pantalla
+ * de las que parten la caja en dos se queda sin ellas.
+ */
+export const esDelCentro = (f: Factura) => f.inquilinoId !== null;
+
 export type Factura = {
   id: string;
   numero: number | null;
@@ -125,6 +135,8 @@ export type Marcha = {
     psico: number;
     /** Lo facturado por servicios de Campos HR: un ciclo, una estructura. */
     servicios: number;
+    /** Lo facturado por el alquiler de consultorios del Centro. */
+    centro: number;
     total: number;
   }[];
 };
