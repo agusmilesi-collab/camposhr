@@ -173,12 +173,12 @@ export default function Pedido({
   const pasos = (
     !esExistente
       ? [
-          { clave: 'busqueda', texto: 'La búsqueda' },
+          { clave: 'busqueda', texto: 'El puesto' },
           { clave: 'evaluacion', texto: 'La evaluación' },
           { clave: 'candidatos', texto: 'Los candidatos' },
         ]
       : [
-          { clave: 'busqueda', texto: 'La búsqueda' },
+          { clave: 'busqueda', texto: 'El puesto' },
           { clave: 'candidatos', texto: 'Los candidatos' },
         ]
   ) as { clave: typeof paso; texto: string }[];
@@ -204,7 +204,7 @@ export default function Pedido({
   /** Pasar al paso siguiente, si lo de este está completo. */
   function seguir() {
     if (actual === 'busqueda' && !modo) {
-      setError('Elegí si es una búsqueda nueva o una que ya pedimos.');
+      setError('Elegí si ya evaluamos gente para este puesto.');
       return;
     }
     if (actual === 'busqueda' && esNueva && !puesto.trim()) {
@@ -212,7 +212,7 @@ export default function Pedido({
       return;
     }
     if (actual === 'busqueda' && esExistente && !elegida) {
-      setError('Elegí a qué búsqueda sumás candidatos.');
+      setError('Elegí a qué puesto sumás candidatos.');
       return;
     }
     setError(null);
@@ -235,8 +235,8 @@ export default function Pedido({
     const f: string[] = [];
     if (esNueva && !puesto.trim()) f.push('el puesto');
     if (!contacto) f.push('quién hace el pedido');
-    if (!modo) f.push('elegir la búsqueda');
-    else if (esExistente && !elegida) f.push('elegir la búsqueda');
+    if (!modo) f.push('elegir el puesto');
+    else if (esExistente && !elegida) f.push('elegir el puesto');
     const gente = filas.filter((x) => x.nombre.trim());
     if (gente.length === 0) f.push('al menos un candidato');
     if (gente.some((x) => !x.telefono.trim() && !x.mail.trim()))
@@ -451,7 +451,7 @@ export default function Pedido({
                       {/* Antes de contestar, "Volver" lleva al portal: es el
                           mismo lugar del "Volver" de los demás pasos. */}
                       <div className="pedir-titulo-fila">
-                        <h2 className="pedir-pregunta-grande">¿Para qué búsqueda es?</h2>
+                        <h2 className="pedir-pregunta-grande">¿Para qué puesto es?</h2>
                         <a className="pedir-volver-link" href={`/p/${token}`}>
                           ← Volver
                         </a>
@@ -472,8 +472,8 @@ export default function Pedido({
                             setError(null);
                           }}
                         >
-                          <span className="pedir-tarjeta-t">Es una búsqueda nueva</span>
-                          <span className="pedir-tarjeta-d">Nunca la evaluamos</span>
+                          <span className="pedir-tarjeta-t">Primera evaluación para este puesto</span>
+                          <span className="pedir-tarjeta-d">Lo cargás desde cero</span>
                         </button>
                         <button
                           type="button"
@@ -486,11 +486,11 @@ export default function Pedido({
                           }}
                           disabled={busquedas.length === 0}
                         >
-                          <span className="pedir-tarjeta-t">Es una búsqueda que ya pedimos</span>
+                          <span className="pedir-tarjeta-t">Ya evaluamos gente para este puesto</span>
                           <span className="pedir-tarjeta-d">
                             {busquedas.length === 0
                               ? 'Todavía no hay ninguna'
-                              : 'Sumar candidatos a un puesto que ya evaluamos'}
+                              : 'Sumás candidatos a ese puesto'}
                           </span>
                         </button>
                       </div>
@@ -500,7 +500,7 @@ export default function Pedido({
                     <>
                       {/* La pregunta con el "Volver" a su derecha, en la misma línea. */}
                       <div className="pedir-titulo-fila pedir-cual">
-                        <p className="pedir-pregunta-t">¿A qué búsqueda querés sumar candidatos?</p>
+                        <p className="pedir-pregunta-t">¿A qué puesto querés sumar candidatos?</p>
                         <Atras alVolver={atras} />
                       </div>
                       {/* Una sola lista, las activas primero y después las
@@ -533,7 +533,7 @@ export default function Pedido({
                               {/* El estado, último en la tarjeta. */}
                               <span className="pedir-estado">
                                 <span className={`pedir-punto${activa ? ' activa' : ''}`} />
-                                {activa ? 'Activa' : 'Inactiva'}
+                                {activa ? 'Activo' : 'Inactivo'}
                               </span>
                             </button>
                           );
@@ -546,9 +546,9 @@ export default function Pedido({
                   {esExistente && (entregadas.length > 0 || elegida) && (
                     <p className="pedir-ayuda pedir-ayuda-junta">
                       {entregadas.length > 0 &&
-                        'Si sumás candidatos a una búsqueda inactiva, la volvemos a abrir con la misma evaluación. '}
+                        'Si sumás candidatos a un puesto inactivo, lo volvemos a abrir con la misma evaluación. '}
                       {elegida &&
-                        `Se evalúan con ${elegida.bateria ?? 'la batería de esa búsqueda'}${
+                        `Se evalúan con ${elegida.bateria ?? 'la batería de ese puesto'}${
                           elegida.conBenziger ? ' más la evaluación de perfil' : ''
                         }, que es lo acordado para ese puesto.`}
                     </p>
