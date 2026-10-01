@@ -371,15 +371,20 @@ export default function Pedido({
   if (hecho) {
     return (
       <main className="pedir">
+        {/* La confirmación: qué entró y qué pasa ahora. No promete un mail de
+            confirmación, porque todavía no se manda ninguno. */}
         <div className="pedir-listo">
+          <span className="pedir-listo-ok" aria-hidden="true">
+            ✓
+          </span>
           <h1>Pedido recibido</h1>
-          <p>{hecho}</p>
-          <p className="pedir-listo-n">
-            Lo tomamos y coordinamos las entrevistas. Ya aparece en el listado de tu portal.
-            {contactos.find((c) => c.id === contacto)?.email
-              ? ` Te mandamos la confirmación a ${contactos.find((c) => c.id === contacto)?.email}.`
-              : ''}
-          </p>
+          <p className="pedir-listo-resumen">{hecho}</p>
+          <ol className="pedir-listo-pasos">
+            <li>Asignamos una evaluadora.</li>
+            <li>Contactamos a cada candidato para coordinar la entrevista.</li>
+            <li>Cuando el informe está listo, aparece en tu portal.</li>
+          </ol>
+          <p className="pedir-listo-n">El pedido ya figura en tu portal.</p>
           <div className="pedir-acciones">
             <a className="btn-primario" href={`/p/${token}`}>
               Volver al portal
@@ -395,9 +400,12 @@ export default function Pedido({
                 setDescripcion('');
                 setComentarios('');
                 setPerfil({});
+                setModo(null);
+                setBusqueda('');
+                setPaso('busqueda');
               }}
             >
-              Cargar otro
+              Cargar otro pedido
             </button>
           </div>
         </div>

@@ -16020,6 +16020,14 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   gap: 8px;
 }
 
+/* El de los informes mide siempre lo que pide su texto más largo, "Informes:
+   próximamente": midiendo lo elegido, cambiaba de ancho al cambiarlo y corría
+   los botones de al lado. */
+.os-cliente-fila-derecha .os-desplegable,
+.os-cliente-fila-derecha .os-desplegable-boton {
+  width: 220px;
+}
+
 @media (max-width: 760px) {
   .os-cliente-fila,
   .os-cliente-fila-lado {
@@ -16839,4 +16847,16 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 /* La modalidad es texto corrido al lado de la fecha, sin separación de más. */
 .os-entrevista-dato {
   display: inline;
+}
+
+/* El aviso de asignar evaluadora en Hoy: fondo rojo claro, para que se
+   distinga de las tarjetas de trabajo como algo que todavía no es de nadie. */
+.os-mini.os-mini-asignar {
+  cursor: default;
+  background: color-mix(in srgb, var(--os-rojo) 10%, var(--os-panel, #fff));
+  border-color: color-mix(in srgb, var(--os-rojo) 30%, transparent);
+}
+
+.os-mini-asignar .os-enlace {
+  font-size: 0.72rem;
 }

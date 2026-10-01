@@ -119,6 +119,17 @@ export default async function Inicio() {
     .filter((s) => s.dias >= DIAS_SEGUIMIENTO)
     .sort((a, b) => b.dias - a.dias);
 
+  /* Los que entraron sin evaluadora, para el aviso de Hoy: quiénes son y de
+     qué clientes, que es lo que decide a quién se le da cada uno. */
+  const sinDueña = enCurso.filter((e) => !e.evaluadora);
+  const sinAsignar = sinDueña.length
+    ? {
+        cuantos: sinDueña.length,
+        nombres: sinDueña.map((e) => e.nombre),
+        clientes: [...new Set(sinDueña.map((e) => e.empresa).filter(Boolean))].slice(0, 3) as string[],
+      }
+    : null;
+
   const cuentas = await cuentasDeLaBarra();
 
   return (
@@ -134,7 +145,7 @@ export default async function Inicio() {
             Ver el pipeline
           </Link>
         </div>
-        {mios.length === 0 && seguimientos.length === 0 ? (
+        {mios.length === 0 && seguimientos.length === 0 && !sinAsignar ? (
           <p className="os-vacio">
             {yo.alcance === 'todo'
               ? 'No hay evaluaciones abiertas.'
@@ -146,6 +157,7 @@ export default async function Inicio() {
             citasDeHoy={citasDeHoy}
             conEvaluadora={yo.alcance === 'todo'}
             seguimientos={seguimientos}
+            sinAsignar={sinAsignar}
           />
         )}
       </section>
