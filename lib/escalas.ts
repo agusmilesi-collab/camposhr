@@ -7,6 +7,20 @@
  * dejaba la pantalla diciendo el corte viejo.
  */
 
+/**
+ * Hasta cuánto puede pesar un indicador dentro de su competencia.
+ *
+ * Diez y no cinco: en Capacidad intelectual el Raven tiene que llevarse dos
+ * tercios del puntaje, y con tope cinco eso obligaba a bajar a los otros hasta
+ * el borde de apagarlos para conseguir la proporción. Con diez, una relación de
+ * seis a uno se escribe tal cual.
+ *
+ * Vive acá y no en `competencias.ts` por lo mismo que el resto de este archivo:
+ * lo necesitan el motor y la pantalla, y esa otra arrastra `potencial.ts`, que
+ * es de servidor.
+ */
+export const PESO_MAXIMO = 10;
+
 /** Bajo, medio o alto. Null cuando el dato no está cargado. */
 export type Nivel = 1 | 2 | 3 | null;
 
@@ -58,6 +72,20 @@ export type Escala =
 export function conDireccion(e: Escala, mayorEsMejor: boolean | undefined): Escala {
   if (e.forma !== 'umbral' || mayorEsMejor === undefined) return e;
   return { ...e, mayorEsMejor };
+}
+
+/**
+ * Un indicador sin punto medio: el rasgo está a favor o en contra.
+ *
+ * Se escribe con las dos bandas de arriba pegadas, así que un valor cae en alto
+ * o cae en bajo y nunca en el medio. Lo que la psicóloga lee como "positivo o
+ * negativo" y no como "alto, medio o bajo" es exactamente esto.
+ */
+export function esBinaria(e: Escala | null | undefined): boolean {
+  if (!e) return false;
+  return e.forma === 'umbral'
+    ? e.alto === e.medio
+    : e.alto[0] === e.medio[0] && e.alto[1] === e.medio[1];
 }
 
 /** Los números de una escala, en el orden en que se guardan y se editan. */
@@ -114,7 +142,7 @@ export function reglaDeBanda(
     const corte = num[cual];
     return e.mayorEsMejor ? `desde ${esc(corte)}` : `hasta ${esc(corte)}`;
   }
-  if (cual === 2) return 'fuera de las dos bandas';
+  if (cual === 2) return esBinaria(e) ? 'fuera de ese rango' : 'fuera de las dos bandas';
   const [d, h] = cual === 0 ? [num[0], num[1]] : [num[2], num[3]];
   return d === h ? `exactamente ${esc(d)}` : `entre ${esc(d)} y ${esc(h)}`;
 }

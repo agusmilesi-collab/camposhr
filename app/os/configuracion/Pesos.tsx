@@ -21,9 +21,9 @@
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { columnas } from '../psicotecnicos/piezas';
-import { comoNumero, reglaDeBanda, type Escala } from '@/lib/escalas';
+import { esBinaria, PESO_MAXIMO, reglaDeBanda, type Escala } from '@/lib/escalas';
 
-const MAXIMO = 5;
+const MAXIMO = PESO_MAXIMO;
 
 /**
  * Un corte como se escribe en su casilla.
@@ -76,7 +76,7 @@ function aportes(pesos: number[]): number[] | null {
   return enteros;
 }
 
-const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Rasgo', 'Peso', 'Aporte'];
+const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Peso', 'Aporte'];
 
 /* Medidos en pantalla contra el contenido más largo de cada columna, más los 28
    px de padding de la celda. Sin anchos declarados, cada competencia repartía
@@ -93,10 +93,9 @@ const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Rasgo', 'P
 const MEDIDAS = columnas(COLUMNAS, {
   Indicador: 168,
   'Qué mide': 214,
-  Alto: 182,
-  Medio: 182,
-  Bajo: 136,
-  Rasgo: 124,
+  Alto: 216,
+  Medio: 216,
+  Bajo: 200,
   Peso: 88,
   Aporte: 92,
 });
@@ -328,55 +327,45 @@ export default function Pesos({
   }
 
   /**
-   * Si estar por encima del corte es positivo o negativo.
+   * "desde" o "hasta", que además da vuelta la dirección.
    *
-   * Hay índices donde pasar el corte es un hallazgo bueno y otros donde es lo
-   * contrario, y hay casos donde eso depende del puesto: por eso se elige acá y
-   * no queda fijo en el código. Los que esperan una banda no lo tienen, porque
-   * desviarse para cualquiera de los dos lados es peor.
+   * Hacia dónde es mejor no es una propiedad del índice sino del criterio con
+   * el que se lo lee, y por eso se puede mover. Era una columna aparte con un
+   * botón que decía positivo o negativo, y eso chocaba con las bandas: la misma
+   * fila tenía "positivo" en dos lugares queriendo decir cosas distintas. La
+   * palabra que hay que cambiar es esta, así que el interruptor es ella misma.
    */
-  function mejor(i: Indicador) {
-    const escala = escalaDe(i);
-    if (escala?.forma !== 'umbral') {
-      return (
-        <td className="os-tabla-flojo" data-campo="Rasgo">
-          {/* Sin dirección que elegir: la banda no tiene un "hacia arriba", y
-              el que compara dos índices tampoco tiene umbral. */}
-          <span className="os-banda-nula" title={escala ? 'Lo esperable es la banda' : undefined}>
-            {escala ? 'banda' : '—'}
-          </span>
-        </td>
-      );
-    }
-    // Invertido respecto del código: el botón se marca solo, sin una etiqueta
-    // al lado que en esta columna no entra.
+  function giro(i: Indicador, e: Escala & { forma: 'umbral' }) {
     const movida =
-      i.escalaFabrica?.forma === 'umbral' && escala.mayorEsMejor !== i.escalaFabrica.mayorEsMejor;
+      i.escalaFabrica?.forma === 'umbral' && e.mayorEsMejor !== i.escalaFabrica.mayorEsMejor;
     return (
-      <td data-campo="Rasgo">
-        <button
-          type="button"
-          className={`os-mejor os-sello-estado ${escala.mayorEsMejor ? 'os-verde' : 'os-rojo'}${
-            movida ? ' os-mejor-movido' : ''
-          }`}
-          aria-pressed={escala.mayorEsMejor}
-          title={
-            (escala.mayorEsMejor
-              ? 'Estar por encima del corte es positivo.'
-              : 'Estar por encima del corte es negativo.') +
-            (movida ? ' Invertido respecto de lo original.' : '') +
-            ' Apretá para darlo vuelta.'
-          }
-          onClick={() => invertir(i)}
-        >
-          {escala.mayorEsMejor ? 'positivo' : 'negativo'}
-        </button>
-      </td>
+      <button
+        type="button"
+        className={`os-giro${movida ? ' os-giro-movido' : ''}`}
+        aria-pressed={e.mayorEsMejor}
+        title={
+          (e.mayorEsMejor
+            ? 'Cuanto más alto, mejor: estar por encima del corte suma.'
+            : 'Cuanto más bajo, mejor: estar por encima del corte descuenta.') +
+          (movida ? ' Invertido respecto de lo original.' : '') +
+          ' Apretá para darlo vuelta.'
+        }
+        onClick={() => invertir(i)}
+      >
+        {e.mayorEsMejor ? 'desde' : 'hasta'}
+      </button>
     );
   }
 
-  /** Una casilla de corte, con su número editable. */
-  function casilla(i: Indicador, n: number, etiqueta: string) {
+  /**
+   * Una casilla de corte, con su número editable.
+   *
+   * `espejo` es el otro índice que guarda el mismo número: en un binario las
+   * dos bandas de arriba son la misma, y se muestra una sola casilla. Sin esto,
+   * escribir en la que se ve dejaba la otra con el número viejo y el indicador
+   * estrenaba un punto medio que nadie quiso.
+   */
+  function casilla(i: Indicador, n: number, etiqueta: string, espejo?: number) {
     const e = i.escala as Escala;
     const texto = cortes[i.clave]?.[n] ?? '';
     const roto = deCaja(texto, e) === null;
@@ -395,6 +384,7 @@ export default function Pesos({
             setCortes((c) => {
               const lista = [...(c[i.clave] ?? [])];
               lista[n] = ev.target.value;
+              if (espejo !== undefined) lista[espejo] = ev.target.value;
               return { ...c, [i.clave]: lista };
             })
           }
@@ -410,6 +400,40 @@ export default function Pesos({
   }
 
   /**
+   * Un indicador sin punto medio: cae en positivo o cae en negativo.
+   *
+   * Se lee del código y no de lo que está escrito en las casillas: si saliera
+   * de los números que se están tipeando, borrar un dígito le cambiaría la
+   * forma a la fila mientras se escribe.
+   */
+  function sinMedio(i: Indicador): boolean {
+    return i.reglas ? i.reglas[1] === 'no se usa' : esBinaria(i.escalaFabrica);
+  }
+
+  /** Qué tiene que pasar para que un binario dé positivo, con sus casillas. */
+  function condicionPositiva(i: Indicador) {
+    const e = escalaDe(i);
+    if (!e) return <>{i.reglas?.[0] ?? ''}</>;
+    const etiqueta = (n: number) => `${i.nombre}, corte ${n + 1}`;
+    if (e.forma === 'umbral') {
+      return (
+        <>
+          {giro(i, e)}
+          {casilla(i, 0, etiqueta(0), 1)}
+        </>
+      );
+    }
+    return (
+      <>
+        <span className="os-banda-palabra">entre</span>
+        {casilla(i, 0, etiqueta(0), 2)}
+        <span className="os-banda-palabra">y</span>
+        {casilla(i, 1, etiqueta(1), 3)}
+      </>
+    );
+  }
+
+  /**
    * La celda de una banda: alto, medio o bajo.
    *
    * La de abajo no lleva campos. No tiene números propios: es todo lo que no
@@ -418,22 +442,25 @@ export default function Pesos({
    */
   function banda(i: Indicador, cual: 0 | 1 | 2) {
     const nombre = ['Alto', 'Medio', 'Bajo'][cual];
+    // Verde, ámbar y rojo según lo que valga la banda: la tabla se lee de
+    // costado, y el color dice antes que el número si caer ahí suma o resta.
+    const tono = ['os-banda-alta', 'os-banda-media', 'os-banda-baja'][cual];
     const e = escalaDe(i);
     if (!e || cual === 2) {
       const texto = reglaDeBanda(e, numerosDe(i) ?? undefined, cual, i.reglas ?? undefined);
       return (
-        <td className="os-tabla-flojo os-banda-regla" data-campo={nombre}>
+        <td className={`os-tabla-flojo os-banda-regla ${tono}`} data-campo={nombre}>
           {texto === 'no se usa' ? <span className="os-banda-nula">no se usa</span> : texto}
         </td>
       );
     }
     const etiqueta = (n: number) => `${nombre} de ${i.nombre}, corte ${n + 1}`;
     return (
-      <td data-campo={nombre}>
+      <td className={tono} data-campo={nombre}>
         <span className="os-banda-celda">
           {e.forma === 'umbral' ? (
             <>
-              <span className="os-banda-palabra">{e.mayorEsMejor ? 'desde' : 'hasta'}</span>
+              {giro(i, e)}
               {casilla(i, cual, etiqueta(cual))}
             </>
           ) : (
@@ -449,43 +476,46 @@ export default function Pesos({
     );
   }
 
+  /**
+   * Las tres columnas de bandas de una fila, según cómo se lea el indicador.
+   *
+   * Los que tienen tres bandas ocupan las tres columnas. Los binarios ocupan
+   * dos: la condición positiva toma el lugar de alto y medio, y la negativa el
+   * de bajo. Antes las dos primeras mostraban el mismo intervalo repetido, o
+   * una decía "no se usa": la tabla prometía un punto medio que la cuenta nunca
+   * da, y había que corregir dos veces el mismo número.
+   */
+  function bandasDe(i: Indicador, rotulada: boolean) {
+    if (!sinMedio(i)) {
+      return (
+        <>
+          {banda(i, 0)}
+          {banda(i, 1)}
+          {banda(i, 2)}
+        </>
+      );
+    }
+    const e = escalaDe(i);
+    const contra = reglaDeBanda(e, numerosDe(i) ?? undefined, 2, i.reglas ?? undefined);
+    return (
+      <>
+        <td className="os-banda-alta" colSpan={2} data-campo="Positivo">
+          <span className="os-banda-celda">
+            {rotulada && <span className="os-banda-sello os-banda-si">positivo</span>}
+            {condicionPositiva(i)}
+          </span>
+        </td>
+        <td className="os-tabla-flojo os-banda-regla os-banda-baja" data-campo="Negativo">
+          {rotulada && <span className="os-banda-sello os-banda-no">negativo</span>}
+          {rotulada ? ' ' : ''}
+          {contra}
+        </td>
+      </>
+    );
+  }
+
   return (
     <>
-      {/* Cómo se llega al número, arriba y no al pie: es la primera pregunta
-          de quien abre esta pantalla, y sin la respuesta las tres columnas de
-          bandas se leen como tres datos sueltos. */}
-      <section className="os-panel">
-        <div className="os-panel-top">
-          <h2>Cómo sale el puntaje</h2>
-        </div>
-        <div className="os-panel-cuerpo">
-          <ol className="os-pasos-calculo">
-            <li>
-              <strong>Cada indicador cae en una banda.</strong> Se mira su valor en el protocolo
-              y se ve en cuál de las tres entra, según los cortes de esta pantalla.
-            </li>
-            <li>
-              <strong>La banda vale un número.</strong> Alto cien, medio cincuenta, bajo cero. No
-              hay valores intermedios: un indicador aporta uno de esos tres.
-            </li>
-            <li>
-              <strong>La competencia es el promedio.</strong> Se suman los aportes multiplicados
-              por su peso y se divide por la suma de los pesos. Un indicador sin dato queda
-              afuera del promedio, y con dos o más sin dato la competencia sale sin puntaje.
-            </li>
-            <li>
-              <strong>Ese promedio es la aguja.</strong> Va de 0 a 100 y el informe lo nombra
-              Bajo hasta 34, Adecuado hasta 64, Alto hasta 79 y Sobresaliente desde 80.
-            </li>
-          </ol>
-          <p className="os-form-nota">
-            Un ejemplo con cinco indicadores donde el de peso 2 sale alto, dos de peso 1 salen
-            medio y otros dos de peso 1 salen bajo: (2×100 + 1×50 + 1×50 + 1×0 + 1×0) ÷ 6 = 50,
-            que se informa como Adecuado.
-          </p>
-        </div>
-      </section>
-
       {/* El índice: dos hojas de nueve competencias cada una, y la que hay que
           corregir está casi siempre a media pantalla de distancia. */}
       <section className="os-panel" id={ARRIBA}>
@@ -493,7 +523,7 @@ export default function Pesos({
           <h2>Índice</h2>
         </div>
         <div className="os-panel-cuerpo">
-          <nav className="os-indice" aria-label="Competencias por test">
+          <nav className="os-indice os-indice-tests" aria-label="Competencias por test">
             {hojas.map((h, n) => (
               <div key={h.test} className="os-indice-item">
                 <a className="os-indice-area" href={`#${anclaDe(h.test)}`}>
@@ -536,6 +566,11 @@ export default function Pesos({
             const suyos = c.indicadores.map((i) => pesos[i.clave] ?? 0);
             const total = suyos.reduce((n, p) => n + p, 0);
             const parte = aportes(suyos);
+            // Una competencia entera de indicadores binarios no tiene banda del
+            // medio: el encabezado lo dice de una vez y las filas no repiten el
+            // rótulo. Anunciar "Medio 50" arriba de una columna vacía en las seis
+            // filas prometía un punto medio que en esa competencia no existe.
+            const todosBinarios = c.indicadores.every((i) => sinMedio(i));
             return (
               <section
                 className="os-panel os-indice-panel"
@@ -565,17 +600,28 @@ export default function Pesos({
                       <tr>
                         <th>Indicador</th>
                         <th>Qué mide</th>
-                        <th>
-                          Alto <span className="os-banda-vale">100</span>
-                        </th>
-                        <th>
-                          Medio <span className="os-banda-vale">50</span>
-                        </th>
-                        <th>
-                          Bajo <span className="os-banda-vale">0</span>
-                        </th>
-                        {/* Qué rasgo es pasar el corte: uno bueno o uno malo. */}
-                        <th>Rasgo</th>
+                        {todosBinarios ? (
+                          <>
+                            <th colSpan={2} className="os-banda-alta">
+                              Positivo <span className="os-banda-vale">100</span>
+                            </th>
+                            <th className="os-banda-baja">
+                              Negativo <span className="os-banda-vale">0</span>
+                            </th>
+                          </>
+                        ) : (
+                          <>
+                            <th className="os-banda-alta">
+                              Alto <span className="os-banda-vale">100</span>
+                            </th>
+                            <th className="os-banda-media">
+                              Medio <span className="os-banda-vale">50</span>
+                            </th>
+                            <th className="os-banda-baja">
+                              Bajo <span className="os-banda-vale">0</span>
+                            </th>
+                          </>
+                        )}
                         <th className="os-tabla-num">Peso</th>
                         <th className="os-tabla-num">Aporte</th>
                       </tr>
@@ -599,10 +645,7 @@ export default function Pesos({
                             <td className="os-tabla-flojo os-mide" data-campo="Qué mide">
                               {i.mide}
                             </td>
-                            {banda(i, 0)}
-                            {banda(i, 1)}
-                            {banda(i, 2)}
-                            {mejor(i)}
+                            {bandasDe(i, !todosBinarios)}
                             <td className="os-tabla-num" data-campo="Peso">
                               <div className="os-peso-celda">
                                 <input
@@ -635,7 +678,7 @@ export default function Pesos({
                         ruta rechaza al guardar. */}
                     <tfoot>
                       <tr>
-                        <td colSpan={6}>Suma de la competencia</td>
+                        <td colSpan={5}>Suma de la competencia</td>
                         <td className="os-tabla-num" data-campo="Peso">
                           {total}
                         </td>
@@ -658,19 +701,6 @@ export default function Pesos({
 
       <section className="os-panel">
         <div className="os-panel-cuerpo">
-          <p className="os-form-nota">
-            El aporte es la parte del puntaje de la competencia que se lleva cada indicador, y
-            los de una competencia suman cien: el pie de cada tabla lo muestra. Un indicador en
-            cero sigue apareciendo en el detalle del informe y no entra al promedio; una
-            competencia entera en cero se rechaza, porque saldría sin puntaje en todos los
-            informes.
-          </p>
-          <p className="os-form-nota">
-            Los indicadores que comparan dos índices entre sí, como GHR : PHR o FC : CF + C, no
-            tienen número que mover: la banda sale de cuál de los dos es mayor y por eso su fila
-            va escrita y no en casillas.
-          </p>
-
           {(tocado || cortesTocados) && !cambiado && (
             <div className="os-barra-acciones">
               <button
