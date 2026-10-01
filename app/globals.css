@@ -10691,3 +10691,151 @@ a.cq-btn {
     grid-row: auto;
   }
 }
+
+/* El formulario de pedido y el perfil del puesto, con el mismo ancho que el
+   portal (880 px, `.wrap`): al pasar de una pantalla a la otra el contenido
+   arranca en el mismo lugar. El resumen se angosta para que entre al lado. */
+.pedir {
+  max-width: 880px;
+}
+
+.pedir-cuerpo {
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 24px;
+}
+
+.pedir-cuerpo.pedir-cuerpo-solo,
+.pedir-tabs,
+.pedir-stepper {
+  max-width: none;
+}
+
+/* Un título de bloque con el "← Volver" a la derecha, en la misma línea. */
+.pedir-titulo-fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pedir-titulo-fila .pedir-volver-link {
+  justify-self: auto;
+  flex: none;
+}
+
+/* La pregunta de búsqueda ya pedida: el tamaño grande y la raya pasan a la
+   fila, que ahora lleva también el "Volver". */
+.pedir-titulo-fila.pedir-cual .pedir-pregunta-t {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pedir-titulo-fila.pedir-cual {
+  margin-top: 0;
+}
+
+/* El resumen mide lo suyo y acompaña al desplazarse, salvo en el primer paso:
+   ahí la tarjeta de la búsqueda y el resumen terminan a la misma altura. */
+.pedir-cuerpo {
+  align-items: start;
+}
+
+.pedir-resumen {
+  position: sticky;
+  top: 24px;
+  display: block;
+}
+
+.pedir-resumen-caja {
+  flex: none;
+}
+
+.pedir-resumen-caja .pedir-enviar {
+  margin-top: 8px;
+}
+
+.pedir-cuerpo.pedir-cuerpo-parejo {
+  align-items: stretch;
+}
+
+.pedir-cuerpo-parejo .pedir-resumen {
+  position: static;
+  display: flex;
+  flex-direction: column;
+}
+
+.pedir-cuerpo-parejo .pedir-resumen-caja {
+  flex: 1;
+}
+
+.pedir-cuerpo-parejo .pedir-resumen-caja .pedir-enviar {
+  margin-top: auto;
+}
+
+/* El estado de cada búsqueda: punto verde si está activa, gris si no. */
+.pedir-punto {
+  display: inline-block;
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #b5b0a6;
+  vertical-align: 0.08em;
+}
+
+.pedir-punto.activa {
+  background: #3f8a55;
+}
+
+/* La referencia de los dos puntos, arriba de la lista. */
+.pedir-referencia {
+  display: flex;
+  align-items: center;
+  margin: 12px 0 2px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pedir-referencia .pedir-punto + .pedir-punto,
+.pedir-referencia .pedir-punto:not(:first-child) {
+  margin-left: 18px;
+}
+
+/* El estado dentro de la tarjeta, antes de la fecha: punto y palabra. */
+.pedir-tarjeta-d .pedir-estado {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.pedir-tarjeta-d .pedir-estado .pedir-punto {
+  margin-right: 6px;
+}
+
+/* El estado en su propio renglón, al final de la tarjeta. */
+.pedir-tarjeta > .pedir-estado {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.pedir-tarjeta > .pedir-estado .pedir-punto {
+  margin-right: 6px;
+}
+
+/* En las tarjetas de búsquedas, los renglones de datos más juntos. */
+.pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta {
+  gap: 3px;
+}
+
+.pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta-t {
+  margin-bottom: 4px;
+}
