@@ -347,20 +347,13 @@ export default function Test({
             {n}
           </button>
         ))}
-      </div>
-
-      <footer className="rv-pie">
-        <span className="rv-suave">
-          {sinResponder.length === 0
-            ? 'Respondiste las 36.'
-            : `Te faltan ${sinResponder.length}: ${sinResponder.slice(0, 12).join(', ')}${
-                sinResponder.length > 12 ? '…' : ''
-              }`}
-        </span>
-        <button className="rv-boton rv-firme" onClick={() => setConfirmando(true)}>
+        {/* Entregar cierra la tira, en el hueco que dejan las treinta y seis:
+            es el final del recorrido y se lee como tal. Blanco y no firme,
+            porque el que se toca en cada lámina es "Siguiente". */}
+        <button className="rv-boton rv-entregar" onClick={() => setConfirmando(true)}>
           Entregar
         </button>
-      </footer>
+      </div>
 
       {confirmando && (
         <div className="rv-confirmar" role="dialog" aria-modal="true" aria-labelledby="rv-confirmar-titulo">
