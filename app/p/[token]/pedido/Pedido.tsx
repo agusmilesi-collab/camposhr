@@ -34,6 +34,7 @@ import { AVISO_HORIZONTE, PREGUNTAS, UNIDADES, type Unidad } from '@/lib/potenci
 import type { Alcance } from '@/lib/precio-portal';
 import type { Contacto } from '@/lib/contactos-tipos';
 import type { Pregunta } from '@/lib/pedido-campos';
+import Elegir from './Elegir';
 
 /** El color de la pastilla de cada batería, el mismo de la página de precios. */
 function colorDeBateria(codigo: string): string {
@@ -112,7 +113,12 @@ export default function Pedido({
   const [busqueda, setBusqueda] = useState('');
   /** Si ya contestó la primera pregunta, y qué. */
   const [modo, setModo] = useState<'nueva' | 'existente' | null>(null);
-  const [contacto, setContacto] = useState(contactos[0]?.id ?? '');
+  /**
+   * Quién hace el pedido, de los contactos que cargó Campos HR con "pide
+   * evaluaciones": el cliente no se da de alta solo. Obligatorio, porque a esa
+   * persona le llega la confirmación. Con uno solo ya queda elegido.
+   */
+  const [contacto, setContacto] = useState(contactos.length === 1 ? contactos[0].id : '');
   const [puesto, setPuesto] = useState('');
   /* Por defecto, la Batería 2 con la evaluación de perfil: es la que más se
      pide. Se busca por su nombre y no por su lugar en la lista. */
@@ -209,6 +215,7 @@ export default function Pedido({
   const faltan = useMemo(() => {
     const f: string[] = [];
     if (esNueva && !puesto.trim()) f.push('el puesto');
+    if (!contacto) f.push('quién hace el pedido');
     if (!modo) f.push('elegir la búsqueda');
     else if (esExistente && !elegida) f.push('elegir la búsqueda');
     const gente = filas.filter((x) => x.nombre.trim());
@@ -216,7 +223,7 @@ export default function Pedido({
     if (gente.some((x) => !x.telefono.trim() && !x.mail.trim()))
       f.push('un teléfono o un mail de cada candidato');
     return f;
-  }, [modo, esNueva, esExistente, puesto, filas, elegida]);
+  }, [modo, esNueva, esExistente, puesto, filas, elegida, contacto]);
 
   function cambiar(id: number, cambio: Partial<Fila>) {
     setFilas((f) => f.map((x) => (x.id === id ? { ...x, ...cambio } : x)));
@@ -318,7 +325,7 @@ export default function Pedido({
           }
         }
       }
-      if (contacto) cuerpo.set('contactoId', contacto);
+      cuerpo.set('contactoId', contacto);
       cuerpo.set('comentarios', comentarios.trim());
 
       filas
@@ -415,26 +422,6 @@ export default function Pedido({
         onSubmit={enviar}
       >
         <div className="pedir-campos">
-          {actual === 'busqueda' && contactos.length > 0 && (
-            <section className="pedir-bloque">
-              <h2>Quién lo pide</h2>
-              <p className="pedir-ayuda">
-                A esa persona le llega la confirmación y con ella coordinamos.
-              </p>
-              <select
-                className="pedir-select"
-                value={contacto}
-                onChange={(e) => setContacto(e.target.value)}
-              >
-                {contactos.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.cargo ? `${c.nombre} · ${c.cargo}` : c.nombre}
-                  </option>
-                ))}
-              </select>
-            </section>
-          )}
-
           {actual === 'busqueda' && (
             <>
               {/* Las búsquedas se muestran y no se recuerdan: nadie sabe de memoria
@@ -502,7 +489,9 @@ export default function Pedido({
                             <button
                               type="button"
                               key={b.id}
-                              className={`pedir-tarjeta${busqueda === b.id ? ' pedir-elegida' : ''}`}
+                              className={`pedir-tarjeta${activa ? '' : ' pedir-inactiva'}${
+                                busqueda === b.id ? ' pedir-elegida' : ''
+                              }`}
                               onClick={() => setBusqueda(b.id)}
                             >
                               <span className="pedir-tarjeta-t">{b.puesto}</span>
@@ -516,15 +505,6 @@ export default function Pedido({
                                 ]
                                   .filter(Boolean)
                                   .join(' · ')}
-                              </span>
-                              <span className="pedir-tarjeta-d">
-                                {activa
-                                  ? b.candidatos.length === 0
-                                    ? 'Sin candidatos todavía'
-                                    : `${b.candidatos.filter((c) => c.tieneInforme).length} de ${
-                                        b.candidatos.length
-                                      } entregados`
-                                  : `${b.candidatos.length} ${b.candidatos.length === 1 ? 'evaluado' : 'evaluados'}`}
                               </span>
                               {/* El estado, último en la tarjeta. */}
                               <span className="pedir-estado">
@@ -1027,6 +1007,30 @@ export default function Pedido({
                     ? ` La evaluación de perfil está fijada en dólares y se factura en pesos, al dólar tarjeta del día en que se emite la factura. Hoy está ${cotizacion(alcance.dolar)}.`
                     : ''}
                 </p>
+
+                {/* Quién lo envía, al final y junto al botón: es el momento de
+                    firmar el pedido, y el cliente arranca directo por la
+                    búsqueda. Solo las personas que cargó Campos HR. */}
+                <div className="pedir-firma">
+                  <span className="pedir-firma-t">Enviar como</span>
+                  <Elegir
+                    valor={contacto}
+                    vacio={contactos.length === 0 ? 'No hay personas cargadas' : 'Elegí tu nombre'}
+                    etiqueta="Quién envía el pedido"
+                    opciones={contactos.map((c) => ({ valor: c.id, texto: c.nombre }))}
+                    alElegir={(v) => {
+                      setContacto(v);
+                      setError(null);
+                    }}
+                  />
+                  <span className="pedir-firma-n">Le llega la confirmación del pedido.</span>
+                  {contactos.length === 0 && (
+                    <p className="pedir-error">
+                      Todavía no tenés personas habilitadas para pedir evaluaciones. Escribinos y te
+                      damos de alta.
+                    </p>
+                  )}
+                </div>
 
                 {error && <p className="pedir-error">{error}</p>}
                 {/* Lo que falta se dice recién en el último paso: antes todavía no

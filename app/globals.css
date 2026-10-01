@@ -10839,3 +10839,264 @@ a.cq-btn {
 .pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta-t {
   margin-bottom: 4px;
 }
+
+
+/* El desplegable del portal, con más presencia: blanco, más alto, con su
+   propia flecha y un halo al enfocarlo. La flecha del navegador cambia de un
+   sistema a otro y se veía pegada al borde. */
+.pedir-select {
+  appearance: none;
+  height: 48px;
+  padding: 0 44px 0 16px;
+  font-size: 0.98rem;
+  font-weight: 500;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%231b2027' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 12px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pedir-select:hover {
+  border-color: #b9b4aa;
+}
+
+.pedir-select:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(27, 32, 39, 0.1);
+}
+
+/* Sin nada elegido, el texto de invitación va apagado. */
+.pedir-select:has(option[value='']:checked) {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* ---------- El desplegable propio del portal (Elegir.tsx) ----------
+   Un botón con lo elegido y la lista debajo, con el estilo de las tarjetas
+   del formulario y no la del sistema operativo. */
+.pedir-elegir {
+  position: relative;
+}
+
+.pedir-elegir-boton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 50px;
+  padding: 0 16px 0 18px;
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: var(--ink);
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pedir-elegir-boton:hover:not(:disabled) {
+  border-color: #b9b4aa;
+}
+
+.pedir-elegir-boton:focus-visible,
+.pedir-elegir.abierta .pedir-elegir-boton {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(27, 32, 39, 0.08);
+}
+
+.pedir-elegir-boton.vacio {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.pedir-elegir-boton:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.pedir-elegir-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* La flecha, dibujada con dos bordes: gira al abrir. */
+.pedir-elegir-flecha {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-right: 1.6px solid var(--ink);
+  border-bottom: 1.6px solid var(--ink);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease, margin 0.15s ease;
+}
+
+.pedir-elegir.abierta .pedir-elegir-flecha {
+  margin-top: 4px;
+  transform: rotate(-135deg);
+}
+
+.pedir-elegir-lista {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(27, 32, 39, 0.12);
+  animation: pedir-aparece 0.15s ease;
+}
+
+.pedir-elegir-opcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pedir-elegir-opcion small {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.pedir-elegir-opcion.foco {
+  background: #f4f1eb;
+}
+
+.pedir-elegir-opcion.elegida {
+  font-weight: 600;
+}
+
+.pedir-elegir-tilde {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+
+/* El desplegable de quién pide no ocupa el ancho del bloque: un nombre entra
+   holgado en 340 px, y a todo el ancho se leía como un campo de texto. */
+.pedir-elegir {
+  width: 100%;
+  max-width: 340px;
+}
+
+/* "Enviar como", al pie del resumen y arriba del botón. El desplegable toma
+   el ancho del resumen; la lista se abre hacia arriba si abajo no entra. */
+.pedir-firma {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.pedir-firma-t {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pedir-firma-n {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.pedir-firma .pedir-elegir {
+  max-width: none;
+}
+
+.pedir-firma .pedir-elegir-boton {
+  height: 42px;
+  font-size: 0.9rem;
+}
+
+/* Campos más bajos en todo el portal: con diez de alto arriba y abajo cada
+   campo parecía un bloque, y el formulario se estiraba sin decir más. */
+.pedir-input:not(.pedir-area),
+.pedir-select {
+  height: 38px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.pedir-area {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.pedir-elegir-boton {
+  height: 40px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+}
+
+.pedir-firma .pedir-elegir-boton {
+  height: 36px;
+  padding: 0 12px 0 14px;
+  font-size: 0.88rem;
+}
+
+.pedir-elegir-opcion {
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
+/* Las tarjetas de búsquedas, un tercio más bajas: menos relleno, renglones
+   pegados y el contenido arriba aunque la vecina sea más alta. */
+.pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta {
+  gap: 1px;
+  padding: 10px 14px;
+  align-content: start;
+  line-height: 1.3;
+}
+
+.pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta-t {
+  margin-bottom: 2px;
+  font-size: 0.94rem;
+}
+
+.pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta-d {
+  font-size: 0.8rem;
+}
+
+.pedir-tarjeta > .pedir-estado {
+  margin-top: 3px;
+  font-size: 0.78rem;
+}
+
+/* El nombre del puesto reserva siempre dos renglones: si entra en uno, el
+   segundo queda vacío y la batería y el estado caen a la misma altura en
+   todas las tarjetas. Si no entra en dos, se corta con puntos. */
+.pedir-tarjetas:not(.pedir-dos) .pedir-tarjeta-t {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  min-height: calc(2 * 1.3em);
+  line-height: 1.3;
+}
+
+/* Las búsquedas inactivas, con el fondo más claro que las activas. */
+.pedir-tarjeta.pedir-inactiva {
+  background: #fbfaf8;
+}

@@ -151,6 +151,13 @@ export async function POST(req: Request) {
       )[0]
     : undefined;
 
+  /* Quién pide es obligatorio y sale de los contactos que cargó Campos HR:
+     el cliente no se da de alta solo. Un id que no es de esta empresa es lo
+     mismo que no haber elegido. */
+  if (!quienPide) {
+    return NextResponse.json({ error: 'Elegí quién hace el pedido.' }, { status: 400 });
+  }
+
   /**
    * Los candidatos, que pueden ser varios.
    *
@@ -190,6 +197,8 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+
+  const pide = quienPide;
 
   /** La búsqueda que ya existe, si el cliente eligió una. Tiene que ser suya. */
   const suyo = pedidoId
@@ -254,7 +263,7 @@ export async function POST(req: Request) {
           notas:
             [
               descripcion,
-              quienPide ? `Lo pidió ${quienPide.nombre}.` : '',
+              pide ? `Lo pidió ${pide.nombre}.` : '',
               comentarios,
             ]
               .filter(Boolean)
@@ -262,7 +271,7 @@ export async function POST(req: Request) {
           origen: 'portal',
           // Quién lo pidió queda en el pedido y no solo en las notas: el
           // informe lo nombra debajo de la empresa.
-          solicitanteId: quienPide?.id ?? null,
+          solicitanteId: pide?.id ?? null,
         },
           perfil,
           nivelDelPuesto
