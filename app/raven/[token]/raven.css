@@ -464,3 +464,42 @@
   font-size: 0.86rem !important;
   color: #46505c;
 }
+
+/* El paso que se interpone entre el botón y la entrega.
+   Entregar cierra el test para siempre y el botón está al lado de "Siguiente":
+   un candidato lo tocó por error con dos láminas hechas y su evaluación quedó
+   con 2 sobre 36. El cartel dice cuántas le faltan, porque la cuenta del pie
+   puede estar fuera de la vista cuando la lámina es alta. */
+.rv-confirmar {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(26, 29, 33, 0.45);
+}
+
+.rv-confirmar-caja {
+  width: min(420px, 100%);
+  padding: 24px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(26, 29, 33, 0.25);
+}
+
+.rv-confirmar-caja h2 {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* El botón de volver atrás primero y a la izquierda: es el que elige quien
+   llegó hasta acá por error, que es para quien está hecho este cartel. */
+.rv-confirmar-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}

@@ -55,6 +55,11 @@ export default function Test({
   const [respuestas, setRespuestas] = useState(iniciales);
   const [restan, setRestan] = useState(restanInicial);
   const [entregado, setEntregado] = useState(false);
+  /* Entregar cierra el test para siempre, y el botón vive al lado de
+     "Siguiente". Un candidato lo tocó por error con dos láminas hechas y su
+     evaluación quedó con 2 sobre 36. Desde el 1/10/2026 hay un paso en el
+     medio que dice cuántas quedan sin responder. */
+  const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cerrando = useRef(false);
   // El instante en que se acaba, medido con el reloj de pared de esta máquina.
@@ -352,14 +357,68 @@ export default function Test({
                 sinResponder.length > 12 ? '…' : ''
               }`}
         </span>
-        <button className="rv-boton rv-firme" onClick={terminar}>
+        <button className="rv-boton rv-firme" onClick={() => setConfirmando(true)}>
           Entregar
         </button>
       </footer>
 
+      {confirmando && (
+        <div className="rv-confirmar" role="dialog" aria-modal="true" aria-labelledby="rv-confirmar-titulo">
+          <div className="rv-confirmar-caja">
+            <h2 id="rv-confirmar-titulo">¿Entregar el test?</h2>
+            {sinResponder.length === 0 ? (
+              <p>Respondiste las 36 láminas.</p>
+            ) : (
+              <>
+                <p>
+                  Te quedan <strong>{sinResponder.length} láminas sin responder</strong> de las 36.
+                  {sinResponder.length === 1
+                    ? ` Es la ${sinResponder[0]}.`
+                    : ` Son la ${sinResponder.slice(0, 8).join(', ')}${sinResponder.length > 8 ? ' y otras más' : ''}.`}
+                </p>
+                {/* El tiempo que queda es lo que decide si conviene volver: con
+                    cuarenta minutos por delante, entregar con la mitad sin
+                    hacer es casi siempre un error. */}
+                <p>{queda(restan)}</p>
+              </>
+            )}
+            <p className="rv-suave">
+              Una vez entregado no vas a poder volver atrás ni seguir respondiendo.
+            </p>
+            <div className="rv-confirmar-botones">
+              <button className="rv-boton" onClick={() => setConfirmando(false)} autoFocus>
+                Seguir respondiendo
+              </button>
+              <button
+                className="rv-boton rv-firme"
+                onClick={() => {
+                  setConfirmando(false);
+                  terminar();
+                }}
+              >
+                Sí, entregar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {error && <p className="rv-error">{error}</p>}
     </main>
   );
+}
+
+/**
+ * Cuánto tiempo le queda, dicho para decidir y no para cronometrar.
+ *
+ * En minutos redondos: lo que la persona necesita saber antes de entregar es si
+ * le alcanza para seguir, y "41:52" obliga a hacer esa cuenta ella misma.
+ */
+function queda(segundos: number): string {
+  if (segundos < 60) return 'Queda menos de un minuto de reloj.';
+  const minutos = Math.round(segundos / 60);
+  if (minutos === 1) return 'Queda un minuto de reloj.';
+  return `Todavía quedan ${minutos} minutos de reloj para responderlas.`;
 }
 
 /** El reloj, que se puede ocultar sin dejar de correr. */
