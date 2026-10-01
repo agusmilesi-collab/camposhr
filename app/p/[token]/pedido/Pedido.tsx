@@ -85,15 +85,6 @@ function diaCorto(iso: string): string {
 
 const dolares = (n: number) => `USD ${new Intl.NumberFormat('es-AR').format(n)}`;
 
-/** El "← Volver" que deshace la primera respuesta y vuelve a la pregunta. */
-function Volver({ alVolver }: { alVolver: () => void }) {
-  return (
-    <button type="button" className="pedir-volver-link" onClick={alVolver}>
-      ← Volver
-    </button>
-  );
-}
-
 export default function Pedido({
   token,
   empresa,
@@ -180,9 +171,10 @@ export default function Pedido({
   const actual = pasos.some((x) => x.clave === paso) ? paso : 'busqueda';
   const indice = pasos.findIndex((x) => x.clave === actual);
   const ultimo = indice === pasos.length - 1;
-  /* El resumen se muestra cuando ya dice algo: desde el segundo paso, o en el
-     primero si eligió una búsqueda que ya pedimos, que trae su evaluación. */
-  const conResumen = actual !== 'busqueda' || (esExistente && Boolean(elegida));
+  /* El resumen va en el último paso, el de los candidatos: antes cada batería
+     ya dice su precio por candidato, y el total recién se define con la
+     cantidad de gente. */
+  const conResumen = ultimo;
 
   /** Pasar al paso siguiente, si lo de este está completo. */
   function seguir() {
@@ -394,10 +386,6 @@ export default function Pedido({
           ← {empresa}
         </a>
         <h1>Pedir una evaluación</h1>
-        <p className="pedir-bajada">
-          Con el puesto y los candidatos alcanza. Lo demás ayuda a afinar la recomendación y se
-          puede completar después.
-        </p>
       </header>
 
       {/* Los pasos, con su número: el cliente ve en qué orden va y cuánto le
@@ -420,7 +408,12 @@ export default function Pedido({
         ))}
       </ol>
 
-      <form className={`pedir-cuerpo${conResumen ? '' : ' pedir-cuerpo-solo'}`} onSubmit={enviar}>
+      <form
+        className={`pedir-cuerpo${conResumen ? '' : ' pedir-cuerpo-solo'}${
+          actual === 'busqueda' ? ' pedir-cuerpo-parejo' : ''
+        }`}
+        onSubmit={enviar}
+      >
         <div className="pedir-campos">
           {actual === 'busqueda' && contactos.length > 0 && (
             <section className="pedir-bloque">
@@ -494,74 +487,54 @@ export default function Pedido({
                     </>
                   )}
                   {esExistente && (
-                    <Volver
-                      alVolver={() => {
-                        setModo(null);
-                        setError(null);
-                      }}
-                    />
-                  )}
-
-                  {esExistente && (
                     <>
-                      <p className="pedir-pregunta-t pedir-cual">¿A qué búsqueda querés sumar candidatos?</p>
-                      {abiertas.length > 0 && (
-                        <h3 className="pedir-subtitulo pedir-subtitulo-primero">En curso</h3>
-                      )}
-                      <div className="pedir-tarjetas">
-                        {abiertas.map((b) => (
-                          <button
-                            type="button"
-                            key={b.id}
-                            className={`pedir-tarjeta${busqueda === b.id ? ' pedir-elegida' : ''}`}
-                            onClick={() => setBusqueda(b.id)}
-                          >
-                            <span className="pedir-tarjeta-t">{b.puesto}</span>
-                            <span className="pedir-tarjeta-d">
-                              {[
-                                b.fecha ? `Pedida el ${diaCorto(b.fecha)}` : null,
-                                b.candidatos.length === 0
-                                  ? 'sin candidatos todavía'
-                                  : `${b.candidatos.filter((c) => c.tieneInforme).length} de ${
-                                      b.candidatos.length
-                                    } entregados`,
-                              ]
-                                .filter(Boolean)
-                                .join(' · ')}
-                            </span>
-                          </button>
-                        ))}
+                      {/* La pregunta con el "Volver" a su derecha, en la misma línea. */}
+                      <div className="pedir-titulo-fila pedir-cual">
+                        <p className="pedir-pregunta-t">¿A qué búsqueda querés sumar candidatos?</p>
                       </div>
-
-                      {entregadas.length > 0 && (
-                        <>
-                          <h3 className="pedir-subtitulo">Ya entregadas</h3>
-                          <div className="pedir-tarjetas">
-                            {entregadas.map((b) => (
-                              <button
-                                type="button"
-                                key={b.id}
-                                className={`pedir-tarjeta pedir-cerrada${
-                                  busqueda === b.id ? ' pedir-elegida' : ''
-                                }`}
-                                onClick={() => setBusqueda(b.id)}
-                              >
-                                <span className="pedir-tarjeta-t">{b.puesto}</span>
-                                <span className="pedir-tarjeta-d">
-                                  {[
-                                    b.fecha ? `Pedida el ${diaCorto(b.fecha)}` : null,
-                                    `${b.candidatos.length} ${
-                                      b.candidatos.length === 1 ? 'evaluado' : 'evaluados'
-                                    }`,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(' · ')}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
+                      {/* Una sola lista, las activas primero y después las
+                          inactivas. Cada tarjeta dice su estado con el punto y
+                          la palabra: verde activa, gris inactiva. */}
+                      <div className="pedir-tarjetas">
+                        {[...abiertas, ...entregadas].map((b) => {
+                          const activa = b.estado !== 'Finalizado';
+                          return (
+                            <button
+                              type="button"
+                              key={b.id}
+                              className={`pedir-tarjeta${busqueda === b.id ? ' pedir-elegida' : ''}`}
+                              onClick={() => setBusqueda(b.id)}
+                            >
+                              <span className="pedir-tarjeta-t">{b.puesto}</span>
+                              {/* La batería con su sigla y la fecha al lado: "B3 + bzg · 30/9/26". */}
+                              <span className="pedir-tarjeta-d">
+                                {[
+                                  b.bateria
+                                    ? `${b.bateria.replace(/^Bater[ií]a\s*/i, 'B')}${b.conBenziger ? ' + bzg' : ''}`
+                                    : 'Batería a confirmar',
+                                  b.fecha ? diaCorto(b.fecha) : null,
+                                ]
+                                  .filter(Boolean)
+                                  .join(' · ')}
+                              </span>
+                              <span className="pedir-tarjeta-d">
+                                {activa
+                                  ? b.candidatos.length === 0
+                                    ? 'Sin candidatos todavía'
+                                    : `${b.candidatos.filter((c) => c.tieneInforme).length} de ${
+                                        b.candidatos.length
+                                      } entregados`
+                                  : `${b.candidatos.length} ${b.candidatos.length === 1 ? 'evaluado' : 'evaluados'}`}
+                              </span>
+                              {/* El estado, último en la tarjeta. */}
+                              <span className="pedir-estado">
+                                <span className={`pedir-punto${activa ? ' activa' : ''}`} />
+                                {activa ? 'Activa' : 'Inactiva'}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </>
                   )}
                   {/* Qué pasa con la búsqueda elegida, en un solo texto: si está
@@ -569,7 +542,7 @@ export default function Pedido({
                   {esExistente && (entregadas.length > 0 || elegida) && (
                     <p className="pedir-ayuda pedir-ayuda-junta">
                       {entregadas.length > 0 &&
-                        'Si sumás candidatos a una búsqueda ya entregada, la volvemos a abrir con la misma evaluación. '}
+                        'Si sumás candidatos a una búsqueda inactiva, la volvemos a abrir con la misma evaluación. '}
                       {elegida &&
                         `Se evalúan con ${elegida.bateria ?? 'la batería de esa búsqueda'}${
                           elegida.conBenziger ? ' más la evaluación de perfil' : ''
@@ -585,13 +558,9 @@ export default function Pedido({
             <>
               {actual === 'busqueda' && (
                 <section className="pedir-bloque">
-                  <Volver
-                    alVolver={() => {
-                      setModo(null);
-                      setError(null);
-                    }}
-                  />
-                  <h2>El puesto</h2>
+                  <div className="pedir-titulo-fila">
+                    <h2>El puesto</h2>
+                  </div>
                   <input
                     className="pedir-input"
                     value={puesto}
@@ -972,6 +941,20 @@ export default function Pedido({
         {/* Atrás y siguiente, al pie de la tarjeta: en el último paso el
             botón es el de mandar, que está en el resumen. */}
         <div className="pedir-navegar">
+          {/* En el primer paso, ya contestada la pregunta, "Volver" la deshace:
+              el mismo botón que "Atrás" en los otros pasos. */}
+          {indice === 0 && modo && (
+            <button
+              type="button"
+              className="btn-sec"
+              onClick={() => {
+                setModo(null);
+                setError(null);
+              }}
+            >
+              ← Volver
+            </button>
+          )}
           {indice > 0 && (
             <button
               type="button"
@@ -1052,13 +1035,17 @@ export default function Pedido({
                   <p className="pedir-falta">Falta {faltan.join(', ')}.</p>
                 )}
 
-                <button
-                  type="submit"
-                  className="btn-primario pedir-enviar"
-                  disabled={enviando || faltan.length > 0}
-                >
-                  {enviando ? 'Enviando…' : 'Enviar el pedido'}
-                </button>
+                {/* El botón de mandar aparece en el paso de los candidatos: antes no
+                    hay qué mandar. */}
+                {ultimo && (
+                  <button
+                    type="submit"
+                    className="btn-primario pedir-enviar"
+                    disabled={enviando || faltan.length > 0}
+                  >
+                    {enviando ? 'Enviando…' : 'Enviar el pedido'}
+                  </button>
+                )}
               </div>
             </aside>
           </>
