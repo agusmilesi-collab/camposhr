@@ -245,6 +245,7 @@ export default function Tablero({
   citasDeHoy,
   conEvaluadora,
   seguimientos = [],
+  sinAsignar = null,
 }: {
   filas: Evaluacion[];
   /**
@@ -258,6 +259,14 @@ export default function Tablero({
   conEvaluadora: boolean;
   /** Las propuestas que hay que seguir hoy. */
   seguimientos?: Seguimiento[];
+  /**
+   * Los candidatos que entraron sin evaluadora, para el aviso de Hoy.
+   *
+   * Llegan solos desde el portal del cliente y quedan en "Sin asignar" hasta
+   * que alguien los reparte. El círculo de la barra los cuenta, pero en Inicio
+   * no se veían: repartir es trabajo del día, así que va en Hoy y lo ven todas.
+   */
+  sinAsignar?: { cuantos: number; nombres: string[]; clientes: string[] } | null;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -389,10 +398,33 @@ export default function Tablero({
                 <span className="os-columna-monto">
                   {suyas.length +
                     (c.clave === 'hoy'
-                      ? seguimientos.filter((s) => !seguidas.includes(s.id)).length
+                      ? seguimientos.filter((s) => !seguidas.includes(s.id)).length +
+                        (sinAsignar && sinAsignar.cuantos > 0 ? 1 : 0)
                       : 0)}
                 </span>
               </div>
+              {/* Asignar evaluadora: arriba de todo en Hoy, mientras haya
+                  candidatos sin dueña. Lleva a la columna donde se reparten. */}
+              {c.clave === 'hoy' && sinAsignar && sinAsignar.cuantos > 0 && (
+                <article className="os-mini os-mini-asignar">
+                  <div className="os-mini-cuerpo">
+                    <span className="os-mini-nombre">Asignar evaluadora</span>
+                    <span className="os-mini-detalle">
+                      {sinAsignar.nombres.length > 3
+                        ? `${sinAsignar.nombres.slice(0, 3).join(', ')} y ${
+                            sinAsignar.nombres.length - 3
+                          } más`
+                        : sinAsignar.nombres.join(', ')}
+                      {sinAsignar.clientes.length > 0 && ` · ${sinAsignar.clientes.join(', ')}`}
+                    </span>
+                  </div>
+                  <div className="os-mini-pie">
+                    <Link className="os-enlace" href="/os/psicotecnicos/entrevistas">
+                      Repartir
+                    </Link>
+                  </div>
+                </article>
+              )}
               {c.clave === 'hoy' &&
                 seguimientos
                   .filter((s) => !seguidas.includes(s.id))
@@ -449,7 +481,11 @@ export default function Tablero({
                 />
               ))}
               {suyas.length === 0 &&
-                !(c.clave === 'hoy' && seguimientos.some((s) => !seguidas.includes(s.id))) && (
+                !(
+                  c.clave === 'hoy' &&
+                  (seguimientos.some((s) => !seguidas.includes(s.id)) ||
+                    (sinAsignar?.cuantos ?? 0) > 0)
+                ) && (
                   <p className="os-columna-vacia">{c.vacio}</p>
                 )}
             </div>
