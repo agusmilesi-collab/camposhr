@@ -232,6 +232,28 @@
   margin: 12px 0;
 }
 
+/* Moverse entre láminas es lo que se hace treinta y cinco veces, así que esos
+   dos botones van pintados y el de entregar no. */
+.rv-pasos .rv-boton {
+  border-color: #2b4468;
+  background: #2b4468;
+  color: #f6f5f2;
+}
+
+.rv-pasos .rv-boton:hover:not(:disabled) {
+  border-color: #2b4468;
+  background: #2b4468;
+  opacity: 0.88;
+}
+
+/* En la primera lámina no hay anterior y en la última no hay siguiente: el
+   botón se apaga del todo, sin el azul que invita a tocarlo. */
+.rv-pasos .rv-boton:disabled {
+  border-color: #e4e7ec;
+  background: #e4e7ec;
+  color: #a8adb5;
+}
+
 .rv-boton {
   padding: 9px 18px;
   border: 1px solid #d8d5d0;
@@ -255,9 +277,22 @@
 }
 
 /* La tira de las treinta y seis: dónde está y qué le falta. */
+/* Veinte por fila: las treinta y seis más las cuatro que ocupa Entregar hacen
+   cuarenta, que son dos filas justas. El botón queda al final del recorrido, en
+   el hueco que dejan las láminas.
+
+   Pegada al fondo de la pantalla: con la lámina y sus ocho opciones arriba, en
+   una pantalla baja la tira quedaba abajo del todo y había que bajar para
+   verla. La persona no sabía en qué lámina estaba ni cómo entregar sin
+   buscarlo. Pegada, está siempre a la vista y sigue dejando pasar el contenido
+   por detrás. */
 .rv-tira {
+  position: sticky;
+  bottom: 0;
+  padding: 10px 0 14px;
+  background: #f6f5f2;
   display: grid;
-  grid-template-columns: repeat(18, minmax(0, 1fr));
+  grid-template-columns: repeat(20, minmax(0, 1fr));
   gap: 4px;
   padding-top: 16px;
   border-top: 1px solid #e4e2de;
@@ -276,9 +311,12 @@
 
 /* Respondida: se llena. Sin responder queda hueca, que es lo que se busca al
    final del test. */
+/* La contestada en gris oscuro: la tira se mira de reojo para saber qué falta,
+   y un relleno claro sobre un fondo claro no se distingue de un vistazo. */
 .rv-paso.hecha {
-  background: #d9d5cf;
-  color: #1a1d21;
+  border-color: #585e66;
+  background: #585e66;
+  color: #fff;
 }
 
 .rv-paso.aca {
@@ -287,12 +325,18 @@
   font-weight: 700;
 }
 
-.rv-pie {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 20px;
+/* En la que está parado y ya contestada, el borde negro sobre el gris oscuro
+   se pierde: se separa con un halo claro entre los dos. */
+.rv-paso.aca.hecha {
+  box-shadow: 0 0 0 2px #f6f4f1 inset;
+}
+
+.rv-entregar {
+  grid-column: span 4;
+  height: 100%;
+  padding: 0 6px;
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
 
 .rv-enlace {
@@ -331,6 +375,15 @@
 
   .rv-tira {
     grid-template-columns: repeat(9, minmax(0, 1fr));
+  }
+
+  /* Con nueve por fila las treinta y seis cierran solas, así que el botón toma
+     la fila que sigue entera: con cuatro columnas quedaría en una punta. */
+  .rv-entregar {
+    grid-column: 1 / -1;
+    height: auto;
+    padding: 10px;
+    margin-top: 4px;
   }
 }
 
