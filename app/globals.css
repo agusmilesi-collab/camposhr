@@ -11183,3 +11183,17 @@ a.pedir-volver-link {
 .pedir-listo .pedir-acciones {
   margin-top: 24px;
 }
+
+/* "Ver informe" con la forma de la pastilla de facturación de al lado (mismo
+   ancho, alto, letra y bordes redondos) y el azul oscuro de siempre: las dos
+   columnas se leen como un par. */
+.c-informe .btn-informe {
+  width: 92px;
+  height: auto;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
