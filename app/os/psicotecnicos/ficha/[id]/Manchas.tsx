@@ -347,13 +347,27 @@ export default function Manchas({
                   <Simple
                     valor={f.localizacion}
                     opciones={LOCALIZACION}
-                    onCambio={(v) => cambiar(f.id, { localizacion: v })}
+                    /* Una respuesta que toma la mancha entera está en el área 1
+                       de esa lámina, siempre: no hay dos maneras de tomarla
+                       entera. Lo pone el sistema al elegir la localización, así
+                       la evaluadora no escribe el mismo 1 veinte veces por
+                       protocolo. Lo puede corregir a mano igual. */
+                    onCambio={(v) =>
+                      cambiar(f.id, {
+                        localizacion: v,
+                        ...(v?.startsWith('W') && !f.n_localizacion ? { n_localizacion: '1' } : {}),
+                      })
+                    }
                     etiqueta="Localización y DQ"
                   />
                 </td>
                 <td>
                   <input
                     className="os-campo os-campo-corto"
+                    /* Sin la clave, el campo no muestra el 1 que pone la regla
+                       de arriba: es un campo sin control y su valor inicial se
+                       fija al montarse. */
+                    key={`${f.id}-${f.n_localizacion ?? ''}`}
                     defaultValue={f.n_localizacion ?? ''}
                     onBlur={(e) => cambiar(f.id, { n_localizacion: e.target.value })}
                     aria-label="Número de localización"

@@ -50,6 +50,16 @@ export type SumarioCrudo = Record<string, Record<string, unknown>>;
 // número fijo por lectura: la banda de Afr, que depende del estilo, y el piso
 // de WDA%, que no dispara una lectura propia sino que parte en dos la de XA%
 // bajo.
+/**
+ * Qué parte de R tiene que llevar Zf.
+ *
+ * Por debajo del 40 % el esfuerzo de organización es bajo y por encima del 55 %
+ * es alto. El piso lo movieron las psicólogas del 30 % al 40 % el 30/9/2026.
+ * Vive acá porque lo usan la lectura del informe y la banda que pinta la hoja.
+ */
+const ZF_BAJO = 0.4;
+const ZF_ALTO = 0.55;
+
 const WDA_ACEPTABLE = 0.8;
 const AFR_BANDA: Record<string, [number, number]> = {
   Introversivo: [0.53, 0.78],
@@ -863,7 +873,10 @@ export const TEXTOS = {
   'psv-alto': {
     area: 'Cómo procesa la información',
     indice: 'PSV',
-    corte: { op: 'mayor', valor: 2, decimales: 0 },
+    // En Rorschach lo esperable es PSV por debajo de 2, así que un 2 ya está
+    // elevado. En Zulliger cualquier PSV por encima de cero lo está. Las dos
+    // reglas las definieron las psicólogas el 30/9/2026.
+    corte: { op: 'mayor', valor: 1, decimales: 0 },
     zulliger: {
       corte: { op: 'mayor', valor: 0, decimales: 0 },
       dice: [
@@ -891,7 +904,7 @@ export const TEXTOS = {
   'zf-bajo': {
     area: 'Cómo procesa la información',
     indice: 'Zf',
-    cuando: 'menos del 30 % de R, y el Raven no dio bajo',
+    cuando: 'menos del 40 % de R, y el Raven no dio bajo',
     zulliger: {
       aplica: false,
       dice: [
@@ -2495,9 +2508,14 @@ export function corteDe(
   test: TestDeManchas = 'Rorschach'
 ): number {
   const t = TEXTOS[clave] as Redaccion;
-  const base = (test === 'Zulliger' ? t.zulliger?.corte : undefined) ?? t.corte;
+  const propio = test === 'Zulliger' ? t.zulliger?.corte : undefined;
+  const base = propio ?? t.corte;
   if (!base) return NaN;
-  const suyo = cortes[test === 'Zulliger' ? `zulliger:${clave}` : clave] ?? cortes[clave];
+  /* El corte movido del Rorschach no vale para una lectura que tiene el suyo en
+     Zulliger. PSV corta en 2 en Rorschach y en 0 en Zulliger: cuando alguien
+     movió el de Rorschach a 1, el Zulliger se quedó con ese 1 y un PSV de 1
+     dejó de marcarse, que es lo contrario de lo que dice la norma de Zdunic. */
+  const suyo = cortes[test === 'Zulliger' ? `zulliger:${clave}` : clave] ?? (propio ? undefined : cortes[clave]);
   return typeof suyo === 'number' && Number.isFinite(suyo) ? suyo : base.valor;
 }
 
@@ -2569,6 +2587,46 @@ const DIF_EA_ES_ZULLIGER: Banda = {
   decimales: 1,
   techoSinAviso: true,
 };
+
+/**
+ * La banda de R, la cantidad de respuestas.
+ *
+ * No sale de los cortes de las lecturas: el diccionario no tiene una lectura de
+ * R, y sin embargo la hoja necesita decir si el protocolo es corto, esperable o
+ * productivo. Los cortes son los mismos con los que R puntúa en el velocímetro.
+ *
+ * `techoSinAviso` porque pasarse por arriba es un hallazgo bueno: un protocolo
+ * largo habla de productividad, no de un problema. La hoja lo marca con la
+ * flecha hacia arriba y lo deja en verde. Lo pidieron las psicólogas el
+ * 30/9/2026, con el caso de un Zulliger de R 12.
+ */
+export function bandaDeR(test: TestDeManchas): Banda {
+  const [minimo, maximo] = test === 'Zulliger' ? [9, 11] : [17, 28];
+  return { indice: 'R', minimo, maximo, decimales: 0, techoSinAviso: true };
+}
+
+/**
+ * La banda de Zf, que se mide contra la cantidad de respuestas.
+ *
+ * Zf no tiene un número fijo esperado: lo que importa es qué parte de las
+ * respuestas implicaron organizar el material. Por eso la banda se arma con R,
+ * como la de Afr se arma con el estilo, y la calcula la ficha en vez de salir
+ * del diccionario.
+ *
+ * Por debajo del 40 % de R el esfuerzo de organización es bajo, corte que
+ * definieron las psicólogas el 30/9/2026. Por encima del 55 % es alto, y eso es
+ * favorable: se marca con la flecha y sin el rojo.
+ */
+export function bandaDeZf(r: number): Banda | null {
+  if (!Number.isFinite(r) || r <= 0) return null;
+  return {
+    indice: 'Zf',
+    minimo: r * ZF_BAJO,
+    maximo: r * ZF_ALTO,
+    decimales: 0,
+    techoSinAviso: true,
+  };
+}
 
 /**
  * Qué se espera de cada índice, por su nombre.
@@ -2942,10 +3000,10 @@ export function leer(
   }
 
   const zf = n(s, 'procesamiento', 'Zf');
-  if (zf < r * 0.3 && !ravenBajo) {
+  if (zf < r * ZF_BAJO && !ravenBajo) {
     // El diccionario pide omitir este indicador cuando el Raven dio bajo.
     sumar('zf-bajo', `Zf ${zf}`);
-  } else if (zf > r * 0.55) {
+  } else if (zf > r * ZF_ALTO) {
     sumar('zf-alto', `Zf ${zf}`);
   }
 

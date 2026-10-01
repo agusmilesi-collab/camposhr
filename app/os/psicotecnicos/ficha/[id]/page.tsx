@@ -32,7 +32,7 @@ import Cabecera from '../../informe/_sitio/Cabecera';
 import '../../informe/_sitio/sitio.css';
 import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
-import { bandaDeAfr, bandasDeLaHoja } from '@/lib/redacciones';
+import { bandaDeAfr, bandaDeR, bandaDeZf, bandasDeLaHoja } from '@/lib/redacciones';
 import Discursivo from './Discursivo';
 import Whatsapp from '../../Whatsapp';
 import Editar from './Editar';
@@ -444,7 +444,16 @@ function SumarioEstructural({ f, rige }: { f: Ficha; rige: Regulacion }) {
   // La proporción afectiva no existe en Zulliger: el motor no la calcula y su
   // banda no tiene dónde pintarse.
   const afr = test === 'Zulliger' ? null : bandaDeAfr(typeof estilo === 'string' ? estilo : 'Ambigual');
-  const bandas = { ...bandasDeLaHoja(rige.cortes, test), ...(afr ? { Afr: afr } : {}) };
+  // R y Zf se miden contra la cantidad de respuestas, así que su banda se arma
+  // acá y no sale del diccionario, igual que la de Afr.
+  const r = (s.crudo as { cabecera?: { R?: unknown } } | null)?.cabecera?.R;
+  const zf = typeof r === 'number' ? bandaDeZf(r) : null;
+  const bandas = {
+    ...bandasDeLaHoja(rige.cortes, test),
+    ...(afr ? { Afr: afr } : {}),
+    ...(zf ? { Zf: zf } : {}),
+    R: bandaDeR(test),
+  };
 
   return texto ? <SumarioTexto texto={texto} bandas={bandas} /> : null;
 }
