@@ -3942,22 +3942,24 @@ button.os-enlace-peligro:hover {
 
 .os-kanban-mini .os-columna {
   min-height: 120px;
-  max-height: 460px;
-  overflow-y: auto;
+  /* Sin techo y sin desplazamiento propio: el backlog con diez evaluaciones
+     dejaba ocho escondidas detrás de una barra que casi no se ve, y la primera
+     pantalla del día es justamente la lista de lo que hay para hacer. La página
+     se desplaza entera, que es lo que la persona ya hace. */
   /*
-   * Abajo queda el lugar de una tarjeta más, vacío.
+   * Abajo queda el lugar de media tarjeta, vacío.
    *
    * Con el alto justo de lo que hay adentro, la columna llena se leía como
-   * llena: no se veía dónde entra la que se está arrastrando. El hueco es
-   * literal, una tarjeta (80 px medidos en pantalla) más el espacio que la
-   * separaría de la anterior (7 px), y sale del padding y no de una caja vacía
+   * llena: no se veía dónde entra la que se está arrastrando. Media alcanza
+   * para que se vea el hueco, y una entera dejaba las tres columnas con una
+   * franja vacía que no decía nada. Sale del padding y no de una caja vacía
    * porque no hay nada que dibujar ahí.
    *
    * Los 16 px son el aire propio del borde: con el mismo de los costados, la
    * última tarjeta quedaba apoyada contra el fondo de la columna y las dos
    * líneas se leían como una sola.
    */
-  --os-lugar-libre: 87px;
+  --os-lugar-libre: 44px;
   padding: 10px 10px calc(16px + var(--os-lugar-libre));
   gap: 7px;
 }
@@ -4196,11 +4198,17 @@ button.os-enlace-peligro:hover {
 }
 
 .os-manchas-pie .os-calcular {
-  margin-left: auto;
   margin-top: 0;
-  align-items: flex-end;
-  text-align: right;
+  align-items: flex-start;
+  text-align: left;
   max-width: 520px;
+}
+
+/* Agregar queda contra el borde derecho aunque sea lo único del renglón: antes
+   del protocolo entero, calcular el sumario no está, y sin este empuje el
+   botón se corría solo a la izquierda. */
+.os-manchas-pie .os-manchas-agregar {
+  margin-left: auto;
 }
 
 /* La fila del filtro: el selector y el aviso de lo que queda afuera. */

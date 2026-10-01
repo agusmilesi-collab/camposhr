@@ -124,6 +124,44 @@ export default function Manchas({
       ? LAMINA
       : LAMINA.filter((o) => o.v.startsWith('Z') === esZulliger);
 
+  /*
+   * Hasta cuatro respuestas por lámina.
+   *
+   * Es el tope con el que se administra: pasadas cuatro, al candidato se le
+   * pasa a la lámina siguiente. Sin el tope, tocar "Agregar respuesta" de más
+   * dejaba siete filas de la misma lámina y el protocolo salía con un reparto
+   * que nadie tomó.
+   */
+  const TOPE_POR_LAMINA = 4;
+  const cuantasEn = (lamina: string | null) =>
+    lamina === null ? 0 : vista.filter((f) => f.lamina === lamina).length;
+
+  /* La lámina donde cae la próxima respuesta: la de la última cargada mientras
+     tenga lugar, y si no la que sigue. Null cuando ya no hay ninguna con
+     lugar, que es cuando el protocolo está completo. */
+  const laminaSiguiente = (() => {
+    const ultimaCargada = [...vista].reverse().find((f) => f.lamina)?.lamina ?? null;
+    const desde = ultimaCargada
+      ? laminas.findIndex((o) => o.v === ultimaCargada)
+      : 0;
+    if (desde < 0) return ultimaCargada;
+    for (let i = desde; i < laminas.length; i++) {
+      if (cuantasEn(laminas[i].v) < TOPE_POR_LAMINA) return laminas[i].v;
+    }
+    return null;
+  })();
+
+  /*
+   * Calcular el sumario aparece recién con la última lámina codificada.
+   *
+   * El protocolo se toma entero y después se codifica: un sumario calculado a
+   * mitad de camino sale con todas las proporciones corridas y parece bueno,
+   * porque nada avisa que faltan láminas. Se espera a la X en Rorschach y a la
+   * Z3 en Zulliger, que son las últimas de cada test.
+   */
+  const ultima = esZulliger === null ? null : esZulliger ? 'Z3' : 'X';
+  const protocoloEntero = ultima !== null && vista.some((f) => f.lamina === ultima);
+
   /**
    * Qué láminas se le ofrecen a una fila.
    *
@@ -220,10 +258,11 @@ export default function Manchas({
    */
   function agregar() {
     const siguiente = Math.max(0, ...vista.map((f) => f.n_respuesta ?? 0)) + 1;
-    /* La lámina de la última respuesta, o la primera del test si no hay
-       ninguna: una respuesta nueva casi siempre es de la misma lámina que la
+    /* La lámina de la última respuesta, o la que sigue si esa ya llegó a su
+       tope: una respuesta nueva casi siempre es de la misma lámina que la
        anterior, y arrancar en blanco obliga a elegirla veintidós veces. */
-    const lamina = [...vista].reverse().find((f) => f.lamina)?.lamina ?? laminas[0]?.v ?? null;
+    const lamina = laminaSiguiente;
+    if (lamina === null) return;
     const provisorio = `nueva-${siguiente}-${vista.length}`;
     const fila = {
       id: provisorio,
@@ -440,17 +479,30 @@ export default function Manchas({
       </div>
 
       {/* Cargar una respuesta más y cerrar el protocolo son los dos finales
-          posibles de esta grilla: van en el mismo renglón, uno en cada punta. */}
+          posibles de esta grilla: van en el mismo renglón, uno en cada punta.
+
+          Calcular va del lado de la primera columna y agregar del lado de la
+          última, que es donde termina de escribirse cada fila: la mano viene
+          de ahí. */}
       <div className="os-barra-acciones os-manchas-pie">
-        {/* Sin apagarse mientras guarda: la fila ya está en pantalla y se
+        {protocoloEntero && <Calcular evaluacionId={evaluacionId} />}
+        {/* Pintado, porque es el que se toca veinticinco veces por protocolo;
+            calcular el sumario se toca una sola vez, al final.
+
+            Sin apagarse mientras guarda: la fila ya está en pantalla y se
             pueden cargar dos seguidas sin esperar a la primera. */}
-        <button className="os-boton" onClick={agregar}>
+        <button
+          className="os-boton os-boton-azul os-manchas-agregar"
+          onClick={agregar}
+          disabled={laminaSiguiente === null}
+          title={
+            laminaSiguiente === null
+              ? `El protocolo llegó a ${TOPE_POR_LAMINA} respuestas en todas las láminas.`
+              : `La próxima respuesta entra en la lámina ${laminaSiguiente}.`
+          }
+        >
           Agregar respuesta
         </button>
-        <span className="os-columna-monto">
-          {vista.length === 1 ? '1 respuesta' : `${vista.length} respuestas`}
-        </span>
-        {vista.length > 0 && <Calcular evaluacionId={evaluacionId} />}
       </div>
       </div>
     </>

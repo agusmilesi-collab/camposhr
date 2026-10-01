@@ -48,7 +48,7 @@ export default function Calcular({ evaluacionId }: { evaluacionId: string }) {
 
   return (
     <div className="os-calcular">
-      <button className="os-boton os-boton-firme" disabled={trabajando} onClick={calcular}>
+      <button className="os-boton" disabled={trabajando} onClick={calcular}>
         {trabajando ? 'Calculando…' : 'Calcular sumario'}
       </button>
 
