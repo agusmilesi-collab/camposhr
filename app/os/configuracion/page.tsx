@@ -45,8 +45,6 @@ const QUE_HACE: Record<string, string> = {
   baterias: 'Qué se le toma a la persona y qué recibe el cliente, con el precio de cada batería.',
   baremos:
     'Dónde corta cada rango del Raven. Cambia el rango que se nombra en el informe y el puntaje de habilidad cognitiva.',
-  ponderaciones:
-    'Dónde corta cada indicador entre bajo, medio y alto, y cuánto pesa dentro de su competencia. De acá sale el puntaje que marca el velocímetro de cada una en el informe.',
   redacciones:
     'Lo que el informe escribe cuando una lectura se dispara. Cuándo entra cada una lo decide su índice y su corte.',
   potencial:

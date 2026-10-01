@@ -1918,6 +1918,9 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   transform: none;
 }
 
+/* El resultado en azul y el gasto en ámbar los pinta el gráfico del año, más
+   abajo en esta hoja: es la misma pregunta y por eso los mismos colores. */
+
 /* Los dos trabajos, cada uno con su color: el azul es el del pipeline, que es
    con el que se ven las etapas y las baterías; el violeta, lo demás. */
 .os-mes-lleno.psico {
@@ -1926,6 +1929,13 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 
 .os-mes-lleno.servicios {
   background: var(--os-violeta);
+}
+
+/* El alquiler de consultorios: es otro trabajo y no una parte de Campos HR, así
+   que lleva su color. */
+.os-mes-lleno.centro,
+.os-referencia-color.centro {
+  background: var(--os-arcilla);
 }
 
 /* Los dos gráficos de la ficha de un inquilino: las horas que usó y lo que se
@@ -1939,8 +1949,10 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   background: var(--os-azul);
 }
 
-/* Una línea del color del panel entre los dos tramos: pegados, el corte se
+/* Una línea del color del panel entre tramo y tramo: pegados, el corte se
    pierde cuando la barra es chica. */
+.os-mes-lleno.centro + .os-mes-lleno.servicios,
+.os-mes-lleno.centro + .os-mes-lleno.psico,
 .os-mes-lleno.servicios + .os-mes-lleno.psico {
   border-top: 2px solid var(--os-panel);
 }
@@ -2582,6 +2594,56 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 
 .os-indice-hijo:hover {
   color: var(--os-azul-fuerte);
+}
+
+/* ---------- Índice del velocímetro ----------
+   Acá son dos tarjetas y no siete: con la medida del diccionario quedaban
+   angostas contra el borde izquierdo, con medio panel vacío al lado y nombres
+   como "Capacidad intelectual" partidos en dos renglones. Se reparten el ancho
+   en partes iguales y así cada competencia entra en un renglón. */
+.os-indice-tests {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.os-indice-tests .os-indice-item {
+  padding: 16px 18px 18px;
+  border-radius: 10px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+/* La tarjeta entera responde al puntero, no solo el renglón del título: lo que
+   se va a clickear es el test, y el nombre es un blanco de dos palabras. */
+.os-indice-tests .os-indice-item:hover {
+  border-color: var(--os-azul);
+  background: var(--os-panel);
+}
+
+.os-indice-tests .os-indice-area {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* El número de competencias, en pastilla: suelto contra el borde derecho se
+   leía como un resto de la maqueta y no como la cuenta del test. */
+.os-indice-tests .os-indice-cuenta {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--os-hover);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--os-tinta-media);
+}
+
+.os-indice-tests .os-indice-hijos {
+  margin-top: 12px;
+  padding-top: 12px;
+  column-gap: 20px;
+}
+
+.os-indice-tests .os-indice-hijo {
+  font-size: 0.8rem;
+  line-height: 1.85;
 }
 
 /* ---------- El área, y adentro sus índices ----------
@@ -12171,6 +12233,126 @@ textarea.os-papel-campo {
   color: var(--os-tinta-media);
 }
 
+/* "desde" y "hasta" son el interruptor de la dirección: se leen como parte de
+   la frase y el subrayado punteado es lo único que avisa que se pueden
+   apretar. Con un botón aparte en su propia columna había que cruzar la tabla
+   para cambiar una palabra que ya estaba escrita acá. */
+.os-giro {
+  padding: 1px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  color: var(--os-tinta-media);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.os-giro:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+
+/* Dada vuelta respecto del código: se marca en la palabra misma, que es lo que
+   se movió. */
+.os-giro-movido {
+  color: var(--os-ambar);
+  text-decoration-color: var(--os-ambar);
+}
+
+/* Positivo y negativo, las dos bandas de un indicador binario.
+   En pastilla y no en texto corrido: la fila de un binario se tiene que
+   distinguir de un vistazo de la de uno que sí tiene punto medio. */
+.os-banda-sello {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.os-banda-si {
+  background: color-mix(in srgb, var(--os-verde) 14%, transparent);
+  color: var(--os-verde);
+}
+
+.os-banda-no {
+  background: color-mix(in srgb, var(--os-rojo) 12%, transparent);
+  color: var(--os-rojo);
+}
+
+/* Las tres bandas, teñidas por lo que valen: verde cien, ámbar cincuenta, rojo
+   cero. Son dieciocho tablas de ocho columnas y el color dice de un vistazo,
+   antes de leer el número, si caer ahí suma o resta. El fondo va apenas
+   insinuado: lo que tiene que resaltar es el corte que se está por mover, no la
+   columna entera. */
+.os-tabla-fija td.os-banda-alta,
+.os-tabla-fija th.os-banda-alta {
+  background: color-mix(in srgb, var(--os-verde) 7%, transparent);
+  color: var(--os-verde);
+}
+
+.os-tabla-fija td.os-banda-media,
+.os-tabla-fija th.os-banda-media {
+  background: color-mix(in srgb, var(--os-ambar) 8%, transparent);
+  color: var(--os-ambar);
+}
+
+.os-tabla-fija td.os-banda-baja,
+.os-tabla-fija th.os-banda-baja {
+  background: color-mix(in srgb, var(--os-rojo) 7%, transparent);
+  color: var(--os-rojo);
+}
+
+/* Lo que va escrito adentro toma el color de su banda: la palabra del corte, el
+   botón que la da vuelta y la cuenta del encabezado. El número que se edita no,
+   que se lee en su campo y en tinta. */
+.os-banda-alta .os-banda-palabra,
+.os-banda-alta .os-giro,
+.os-banda-alta .os-corte-unidad,
+.os-banda-alta .os-banda-vale {
+  color: var(--os-verde);
+}
+
+.os-banda-media .os-banda-palabra,
+.os-banda-media .os-giro,
+.os-banda-media .os-corte-unidad,
+.os-banda-media .os-banda-vale {
+  color: var(--os-ambar);
+}
+
+.os-banda-baja .os-banda-palabra,
+.os-banda-baja .os-giro,
+.os-banda-baja .os-corte-unidad,
+.os-banda-baja .os-banda-vale {
+  color: var(--os-rojo);
+}
+
+.os-banda-alta .os-banda-vale,
+.os-banda-media .os-banda-vale,
+.os-banda-baja .os-banda-vale {
+  background: var(--os-panel);
+}
+
+/* La marca de invertido manda sobre el color de la banda: lo que dice es que
+   ese corte se movió, y eso se pierde si la palabra toma el verde de su
+   columna. */
+.os-banda-alta .os-giro-movido,
+.os-banda-media .os-giro-movido,
+.os-banda-baja .os-giro-movido {
+  color: var(--os-ambar);
+}
+
+/* Una banda que el indicador no usa, dentro de una columna teñida: sigue siendo
+   la ausencia de dato y no el color de la banda. */
+.os-banda-alta .os-banda-nula,
+.os-banda-media .os-banda-nula,
+.os-banda-baja .os-banda-nula {
+  color: var(--os-suave);
+}
+
 /* Una banda que el indicador no usa: EB no tiene medio, se es ambigual o no. */
 .os-banda-nula {
   color: var(--os-suave);
@@ -12212,7 +12394,7 @@ textarea.os-papel-campo {
 }
 
 .os-velocimetro-marco > .os-tabla {
-  min-width: 1140px;
+  min-width: 1080px;
 }
 
 /* Qué mide y el nombre del indicador se leen enteros: recortados con puntos

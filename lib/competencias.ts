@@ -29,12 +29,13 @@ import {
   conDireccion,
   nivelPorEscala,
   numerosDe,
+  PESO_MAXIMO,
   reglaDeBanda,
   type Escala,
   type Nivel,
 } from '@/lib/escalas';
 
-export { numerosDe, comoNumero, reglaDeBanda, conDireccion, type Escala };
+export { numerosDe, comoNumero, reglaDeBanda, conDireccion, PESO_MAXIMO, type Escala };
 
 
 /**
@@ -510,7 +511,8 @@ const PSV: Indicador = {
   nombre: 'PSV',
   formula: 'PSV',
   mide: 'Flexibilidad frente a la perseveración',
-  // El corte que rige en el diccionario, movido por ellas a 1.
+  // El mismo corte que en el diccionario: en Rorschach lo esperable es PSV por
+  // debajo de 2. En Zulliger el indicador lleva el suyo, en cero.
   escala: binario(1, false),
   valor: (s) => num(s, 'codigos_especiales', 'PSV') ?? num(s, 'procesamiento', 'PSV'),
 };
@@ -761,13 +763,15 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         nombre: 'Zf',
         formula: 'Zf contra R',
         mide: 'Esfuerzo de organización',
-        reglas: ['más del 55 % de R', 'entre el 30 % y el 55 % de R', 'menos del 30 % de R'],
+        // El piso lo movieron las psicólogas del 30 % al 40 % el 30/9/2026, y es
+        // el mismo que dispara la lectura del informe y pinta la hoja.
+        reglas: ['más del 55 % de R', 'entre el 40 % y el 55 % de R', 'menos del 40 % de R'],
         nivel: (s) => {
           const zf = num(s, 'procesamiento', 'Zf');
           const r = num(s, 'cabecera', 'R');
           if (zf === null || r === null || r === 0) return null;
           if (zf > r * 0.55) return 3;
-          return zf < r * 0.3 ? 1 : 2;
+          return zf < r * 0.4 ? 1 : 2;
         },
       },
       ZD,
@@ -1036,8 +1040,7 @@ export function cortesDeCompetenciasValidos(
   return limpios;
 }
 
-/** Hasta cuánto puede pesar un indicador. */
-export const PESO_MAXIMO = 5;
+
 
 /**
  * Lo guardado, si sirve para calcular; null si no.
