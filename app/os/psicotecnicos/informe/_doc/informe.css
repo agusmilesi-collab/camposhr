@@ -1951,3 +1951,122 @@
      margen del texto. */
   margin: 0 0 -4px 20px;
 }
+
+/* Los niveles que no se eligieron, en una línea chica debajo del elegido:
+   ícono apagado y nombre, como referencia de la escala. */
+.inf-niveles-otros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inf-nivel-chico {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: var(--suave, #6b675f);
+}
+
+.inf-nivel-chico .inf-nivel-icono {
+  width: 18px;
+  height: 18px;
+  background: #c9c4ba;
+}
+
+.inf-nivel-chico .inf-nivel-icono svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* Los otros tres niveles, del mismo ancho: tres columnas iguales debajo del
+   elegido, cada uno con su color en el ícono, el borde y un fondo apenas
+   tinto, como las tarjetas grandes pero chicas. */
+.inf-niveles-otros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.inf-nivel-chico {
+  padding: 6px 10px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.inf-nivel-chico.verde {
+  border-color: rgba(55, 128, 74, 0.3);
+  background: rgba(55, 128, 74, 0.05);
+}
+.inf-nivel-chico.azul {
+  border-color: rgba(67, 100, 143, 0.3);
+  background: rgba(67, 100, 143, 0.05);
+}
+.inf-nivel-chico.ambar {
+  border-color: rgba(169, 119, 34, 0.3);
+  background: rgba(169, 119, 34, 0.05);
+}
+.inf-nivel-chico.rojo {
+  border-color: rgba(140, 59, 59, 0.3);
+  background: rgba(140, 59, 59, 0.05);
+}
+
+.inf-nivel-chico.verde .inf-nivel-icono {
+  background: var(--verde);
+}
+.inf-nivel-chico.azul .inf-nivel-icono {
+  background: #43648f;
+}
+.inf-nivel-chico.ambar .inf-nivel-icono {
+  background: var(--ambar);
+}
+.inf-nivel-chico.rojo .inf-nivel-icono {
+  background: var(--rojo);
+}
+
+.inf-nivel-chico .inf-nivel-icono {
+  flex: none;
+}
+
+/* Los otros tres niveles, en gris y del mismo ancho: acompañan como escala
+   sin competir con el elegido. Sin borde ni fondo, ícono y texto apagados. */
+.inf-nivel-chico,
+.inf-nivel-chico.verde,
+.inf-nivel-chico.azul,
+.inf-nivel-chico.ambar,
+.inf-nivel-chico.rojo {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--suave, #6b675f);
+}
+
+.inf-nivel-chico.verde .inf-nivel-icono,
+.inf-nivel-chico.azul .inf-nivel-icono,
+.inf-nivel-chico.ambar .inf-nivel-icono,
+.inf-nivel-chico.rojo .inf-nivel-icono {
+  background: #c9c4ba;
+}
+
+/* Los otros tres niveles como tarjetas invisibles: tres columnas iguales, sin
+   borde ni fondo, con ícono y texto centrados en cada una. */
+.inf-niveles-otros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.inf-nivel-chico,
+.inf-nivel-chico.verde,
+.inf-nivel-chico.azul,
+.inf-nivel-chico.ambar,
+.inf-nivel-chico.rojo {
+  justify-content: center;
+  text-align: center;
+  padding: 6px 4px;
+}

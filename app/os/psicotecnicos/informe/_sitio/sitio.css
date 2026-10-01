@@ -1014,3 +1014,118 @@
 .sitio-desplegable[open] > summary {
   margin-bottom: 22px;
 }
+
+/*
+ * La escalera se angosta hacia arriba.
+ *
+ * Antes iban todos del mismo ancho, para que no pareciera que un nivel pesa
+ * más que otro. Ahora el ancho dice otra cosa, y lo dice escrito al costado:
+ * cuánta gente llega a cada escalón. La base, hacer el trabajo del día, es
+ * ancha porque llega casi todo el mundo; cada escalón de arriba es más angosto
+ * porque llega menos gente. Centrados, se leen como una escalera que sube.
+ */
+.sitio-niveles {
+  justify-items: center;
+}
+
+.sitio-nivel {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.sitio-nivel[data-nivel='V'] {
+  width: 60%;
+}
+.sitio-nivel[data-nivel='IV'] {
+  width: 70%;
+}
+.sitio-nivel[data-nivel='III'] {
+  width: 80%;
+}
+.sitio-nivel[data-nivel='II'] {
+  width: 90%;
+}
+.sitio-nivel[data-nivel='I'] {
+  width: 100%;
+}
+
+/* Cuánta gente llega: arriba del plazo, en versalita chica. */
+.sitio-nivel-cuantos {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--suave);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .sitio-nivel[data-nivel] {
+    width: 100%;
+  }
+}
+
+/* Los escalones alineados al margen derecho: el borde derecho queda parejo y
+   la escalera sube hacia la derecha, como una escalera de verdad. */
+.sitio-niveles {
+  justify-items: end;
+}
+
+/* Todos los escalones del mismo alto, el de la tarjeta más alta: una escalera
+   sube de a pasos iguales. */
+.sitio-niveles {
+  grid-auto-rows: 1fr;
+}
+
+.sitio-nivel {
+  align-content: center;
+}
+
+/* La introducción de la escalera en gris medio: es la explicación de cómo
+   leerla, y el protagonismo es de la escalera y de la conclusión. */
+.sitio-escalera-intro {
+  color: var(--tinta-media);
+}
+
+/* La escalera entre dos rayas grises, con aire arriba y abajo: se lee como un
+   bloque aparte de la introducción y de la conclusión que le sigue. */
+.sitio-niveles {
+  margin: 22px 0 28px;
+  padding: 24px 0;
+  border-top: 1px solid var(--linea);
+  border-bottom: 1px solid var(--linea);
+}
+
+/* La introducción de la escalera con el interlineado más apretado. */
+.sitio-escalera-intro {
+  line-height: 1.45 !important;
+}
+
+/* La introducción en el gris de las aclaraciones: el medio de antes se leía
+   casi como el negro del texto. */
+.sitio-caja .sitio-escalera-intro,
+.sitio-escalera-intro {
+  color: var(--suave) !important;
+}
+
+/* Las tres marcas del mismo tamaño: ancho fijo, el de la más larga
+   ("Podría llegar con los años"), con el texto centrado. */
+.sitio-donde {
+  width: 186px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* El ejemplo de puestos, ahora entre paréntesis pegado al nombre, y la
+   descripción del trabajo debajo con un poco de aire. */
+.sitio-nivel-ej {
+  margin: 0 0 4px !important;
+}
+
+/* Una raya gris debajo del ejemplo entre paréntesis: separa el nombre del
+   nivel de la descripción del trabajo. */
+.sitio-nivel-ej {
+  margin: 0 0 8px !important;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--linea-suave);
+}

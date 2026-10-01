@@ -1,12 +1,6 @@
 import type { Informe } from '@/lib/informe';
 import { bandaDe, bandasDe } from '@/lib/exigencia';
-import {
-  CONFIDENCIALIDAD,
-  CUADRANTES,
-  FIRMAS,
-  NIVELES,
-  NOTA_AJUSTE,
-} from '@/lib/informe-textos';
+import { CONFIDENCIALIDAD, CUADRANTES, FIRMAS, NIVELES, NOTA_AJUSTE } from '@/lib/informe-textos';
 import { firmaEnDatos } from '@/lib/firmas';
 import Listas from '../_doc/Listas';
 import { Desglose } from '../_doc/Interno';
@@ -61,6 +55,11 @@ async function Firma({ inf }: { inf: Informe }) {
   );
 }
 
+/** "a, b y c": una lista dicha en castellano. */
+function enLista(xs: string[]): string {
+  return xs.length <= 1 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`;
+}
+
 export type Seccion = {
   /** El ancla de la dirección y el destino del índice. */
   id: string;
@@ -80,7 +79,7 @@ export function seccionesDe(
    * cliente, y corrige sobre eso. En el portal no se pasa, y las listas salen
    * como texto.
    */
-  editar?: string
+  editar?: string,
 ): Seccion[] {
   const secciones: Seccion[] = [];
 
@@ -94,33 +93,41 @@ export function seccionesDe(
     titulo: 'Conclusiones',
     cuerpo: (
       <>
-        {/* Los cuatro niveles con su color, como en el documento: quien lee
-            ve la escala entera y dónde cae la persona dentro de ella. Con uno
-            solo, "ajuste alto" no dice contra qué. */}
-        <div className="inf-semaforo">
-          {NIVELES.map((nv) => {
-            const elegido = inf.nivel?.clave === nv.clave;
-            return (
-              <article
-                key={nv.clave}
-                className={`inf-nivel ${nv.color}${elegido ? ' elegido' : ''}`}
-                aria-current={elegido ? 'true' : undefined}
-              >
-                <IconoNivel clave={nv.clave} />
-                <div>
-                  <h3>{nv.titulo}</h3>
-                  <p>{nv.texto}</p>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-        <p className="inf-nota">{NOTA_AJUSTE}</p>
+        {/* El nivel elegido grande, con su texto, y los otros tres en una
+            línea chica debajo: quien lee ve dónde cae la persona y la escala
+            entera, sin que las cuatro tarjetas completas se lleven media hoja
+            del one pager. Sin nivel elegido van los cuatro en la línea. */}
+        {(() => {
+          const elegido = NIVELES.find((nv) => nv.clave === inf.nivel?.clave);
+          const otros = NIVELES.filter((nv) => nv.clave !== elegido?.clave);
+          return (
+            <>
+              {elegido && (
+                <article className={`inf-nivel ${elegido.color} elegido`} aria-current="true">
+                  <IconoNivel clave={elegido.clave} />
+                  <div>
+                    <h3>{elegido.titulo}</h3>
+                    <p>{elegido.texto}</p>
+                  </div>
+                </article>
+              )}
+              {/* Los otros niveles, en prosa al final de la nota: dicen que
+                  es una escala y dónde está parada la persona, sin ocupar
+                  una línea de tarjetas. */}
+              <p className="inf-nota">
+                {NOTA_AJUSTE}{' '}
+                {elegido
+                  ? `Los otros niveles de la escala son ${enLista(otros.map((nv) => nv.titulo.toLowerCase()))}.`
+                  : `La escala tiene cuatro niveles: ${enLista(otros.map((nv) => nv.titulo.toLowerCase()))}.`}
+              </p>
+            </>
+          );
+        })()}
 
         <h3 className="sitio-sub">Resumen</h3>
-        {inf.resumen.map((t, i) => (
-          <p key={i}>{t}</p>
-        ))}
+        {/* Un solo párrafo, sin punto y aparte: es el resumen del one pager y
+            se lee de corrido. */}
+        {inf.resumen.length > 0 && <p>{inf.resumen.join(' ')}</p>}
 
         {/* Lo que escribió la evaluadora se destaca del resto: es la única
             parte del informe que dice "yo la entrevisté y esto me parece", y
@@ -145,9 +152,7 @@ export function seccionesDe(
      de mayor a menor, así la pregunta "en qué es fuerte y en qué no" se
      contesta mirando y sin recorrer nueve números. La pista lleva marcados los
      cortes de las bandas, que son los que le dan sentido al número. */
-  const ordenadas = inf.competencias
-    .slice()
-    .sort((a, b) => (b.puntaje ?? -1) - (a.puntaje ?? -1));
+  const ordenadas = inf.competencias.slice().sort((a, b) => (b.puntaje ?? -1) - (a.puntaje ?? -1));
   const cortes = bandasDe(inf.exigencia)
     .filter((b) => b.desde > 0)
     .map((b) => b.desde);
@@ -157,15 +162,12 @@ export function seccionesDe(
     titulo: 'Competencias evaluadas',
     cuerpo:
       inf.competencias.length === 0 ? (
-        <p className="sitio-vacio">
-          Sin sumario cargado no se pueden calcular las competencias.
-        </p>
+        <p className="sitio-vacio">Sin sumario cargado no se pueden calcular las competencias.</p>
       ) : (
         <>
           {inf.protocoloCorto && (
             <p className="sitio-aviso">
-              Las competencias que salen del test de manchas van sin puntaje:{' '}
-              {inf.protocoloCorto}.
+              Las competencias que salen del test de manchas van sin puntaje: {inf.protocoloCorto}.
             </p>
           )}
 
@@ -185,7 +187,7 @@ export function seccionesDe(
                       backgroundImage: cortes
                         .map(
                           (x) =>
-                            `linear-gradient(90deg, transparent ${x}%, var(--linea) ${x}%, var(--linea) calc(${x}% + 1px), transparent calc(${x}% + 1px))`
+                            `linear-gradient(90deg, transparent ${x}%, var(--linea) ${x}%, var(--linea) calc(${x}% + 1px), transparent calc(${x}% + 1px))`,
                         )
                         .join(', '),
                     }}
@@ -308,9 +310,7 @@ export function seccionesDe(
               return (
                 <div
                   key={q.clave}
-                  className={
-                    manda ? `inf-cuadrante ${q.clave} manda` : `inf-cuadrante ${q.clave}`
-                  }
+                  className={manda ? `inf-cuadrante ${q.clave} manda` : `inf-cuadrante ${q.clave}`}
                 >
                   <span className="inf-cuadrante-rotulo">
                     {manda ? 'Predominante' : 'Cuadrante'}
@@ -333,8 +333,8 @@ export function seccionesDe(
             </div>
           ))}
           <p className="sitio-fuente">
-            Sale del BZG Thinking Styles Assessment (BTSA), el cuestionario de perfil de
-            pensamiento que administra el estudio bajo licencia.
+            Sale del BZG Thinking Styles Assessment (BTSA), el cuestionario de perfil de pensamiento
+            que administra el estudio bajo licencia.
           </p>
         </>
       ),

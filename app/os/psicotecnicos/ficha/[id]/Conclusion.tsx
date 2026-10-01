@@ -29,6 +29,13 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { CONCLUSIONES } from '@/lib/informe-textos';
 
+/**
+ * El largo máximo de la fundamentación. Va en la primera hoja del informe,
+ * el one pager, que tiene que entrar en una carilla con la firma y la nota de
+ * confidencialidad: más largo, las empuja a la segunda hoja.
+ */
+const TOPE_FUNDAMENTO = 700;
+
 export default function Conclusion({
   id,
   recomendacion,
@@ -87,61 +94,101 @@ export default function Conclusion({
           se elige apretando el que corresponde y dice exactamente lo que el
           informe va a decir. Lo que se guarda sigue siendo el valor del
           pipeline, que es lo que ya está cargado y lo que lee el portal. */}
-      <div className="os-conclusion-niveles">
-        {CONCLUSIONES.map(({ valor: v, nivel }) => {
-          const puesto = valor === v;
-          return (
-            <button
-              key={v}
-              type="button"
-              className={`os-nivel-opcion ${nivel.color}${puesto ? ' puesta' : ''}`}
-              aria-pressed={puesto}
-              onClick={() => {
-                // Volver a apretar el que ya está puesto lo saca: una
-                // evaluación puede volver a quedar sin cerrar.
-                setValor(puesto ? '' : v);
-                setHecho(false);
-              }}
-            >
-              {/* Solo el título: el texto de cada nivel está abajo, en el
+      {/* Dos columnas: los cuatro niveles apilados a la izquierda y la
+          fundamentación a la derecha, con el campo del alto de los cuatro. */}
+      <div className="os-conclusion-dos">
+        <div className="os-conclusion-izq">
+          {/* Un rótulo como el de la fundamentación: así el campo de la
+              derecha arranca a la altura del primer nivel. */}
+          <span className="os-dato-rotulo">Nivel de ajuste</span>
+          <div className="os-conclusion-niveles">
+            {CONCLUSIONES.map(({ valor: v, nivel }) => {
+              const puesto = valor === v;
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  className={`os-nivel-opcion ${nivel.color}${puesto ? ' puesta' : ''}`}
+                  aria-pressed={puesto}
+                  onClick={() => {
+                    // Volver a apretar el que ya está puesto lo saca: una
+                    // evaluación puede volver a quedar sin cerrar.
+                    setValor(puesto ? '' : v);
+                    setHecho(false);
+                  }}
+                >
+                  {/* Solo el título: el texto de cada nivel está abajo, en el
                   informe, y repetirlo acá alargaba la columna sin agregar. */}
-              <span className="os-nivel-titulo">{nivel.titulo}</span>
-            </button>
-          );
-        })}
-      </div>
-      {/* Explícito además del segundo toque: que volver a apretar el nivel lo
+                  <span className="os-nivel-titulo">{nivel.titulo}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Explícito además del segundo toque: que volver a apretar el nivel lo
           saca no se adivina, y había evaluaciones que quedaban con una
           recomendación que nadie podía quitar. */}
-      {valor && (
-        <button
-          type="button"
-          className="os-agregar-mas-datos"
-          onClick={() => {
-            setValor('');
-            setHecho(false);
-          }}
-        >
-          Quitar la recomendación
-        </button>
-      )}
-
-      <label className="os-conclusion-notas">
-        <span className="os-dato-rotulo">
-          Fundamentación <em>· por qué elegiste ese nivel, en primera persona</em>
-        </span>
-        <textarea
-          className="os-campo"
-          value={texto}
-          rows={4}
-          maxLength={4000}
-          placeholder="Es lo primero que el cliente lee, y va con tu firma. Contá por qué llegaste a esa recomendación: qué viste, qué te convenció y qué te dejó dudando."
-          onChange={(e) => {
-            setTexto(e.target.value);
-            setHecho(false);
-          }}
-        />
-      </label>
+        {valor && (
+          <button
+            type="button"
+            className="os-agregar-mas-datos"
+            onClick={() => {
+              setValor('');
+              setHecho(false);
+            }}
+          >
+            Quitar la recomendación
+          </button>
+        )}
+        <div className="os-conclusion-der">
+          <label className="os-conclusion-notas">
+            <span className="os-dato-rotulo os-fundamento-rotulo">
+              <span>
+                Fundamentación <em>· por qué elegiste ese nivel, en primera persona</em>
+              </span>
+              {/* Lo que queda de lugar: la fundamentación va en la primera
+                  hoja del informe, que es de una sola carilla. */}
+              <em
+                className={`os-fundamento-cuenta${texto.length >= TOPE_FUNDAMENTO ? ' lleno' : ''}`}
+              >
+                {texto.length} / {TOPE_FUNDAMENTO}
+              </em>
+            </span>
+            <textarea
+              className="os-campo"
+              value={texto}
+              rows={4}
+              maxLength={TOPE_FUNDAMENTO}
+              placeholder="Es lo primero que el cliente lee, y va con tu firma. Contá por qué llegaste a esa recomendación: qué viste, qué te convenció y qué te dejó dudando."
+              onChange={(e) => {
+                setTexto(e.target.value);
+                setHecho(false);
+              }}
+            />
+          </label>
+          {/* Firmar, inmediatamente debajo de lo que se escribe. */}
+          <div className="os-conclusion-firma">
+            <button
+              className="os-boton os-boton-firme"
+              type="button"
+              onClick={cargar}
+              disabled={guardando || sinCambios}
+            >
+              {guardando ? 'Guardando…' : quitando ? 'Guardar sin recomendación' : 'Firmar informe'}
+            </button>
+            {error ? (
+              <span className="os-form-error">{error}</span>
+            ) : hecho ? (
+              <span className="os-form-ok">
+                {valor ? 'Informe firmado.' : 'Guardado sin recomendación.'}
+              </span>
+            ) : (
+              !sinCambios && <span className="os-columna-monto">Hay cambios sin cargar.</span>
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="os-conclusion-pie">
         {/* Lo que se le tomó, a la izquierda del botón: antes de generar el
@@ -151,21 +198,6 @@ export default function Conclusion({
             <span className="os-dato-rotulo">Tests administrados</span>
             {children}
           </div>
-        )}
-        <button
-          className="os-boton os-boton-firme"
-          type="button"
-          onClick={cargar}
-          disabled={guardando || sinCambios}
-        >
-          {guardando ? 'Guardando…' : quitando ? 'Guardar sin recomendación' : 'Firmar informe'}
-        </button>
-        {error ? (
-          <span className="os-form-error">{error}</span>
-        ) : hecho ? (
-          <span className="os-form-ok">{valor ? 'Informe firmado.' : 'Guardado sin recomendación.'}</span>
-        ) : (
-          !sinCambios && <span className="os-columna-monto">Hay cambios sin cargar.</span>
         )}
       </div>
     </div>

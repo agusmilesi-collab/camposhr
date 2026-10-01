@@ -26,6 +26,7 @@ import Entregar from './Entregar';
 import Benziger from './Benziger';
 import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
+import OnePager from './OnePager';
 import { Faltantes } from '../../informe/_doc/Interno';
 import { seccionesDe } from '../../informe/_sitio/secciones';
 import Cabecera from '../../informe/_sitio/Cabecera';
@@ -39,11 +40,7 @@ import Editar from './Editar';
 import type { PedidoOpcion } from '../../Agregar';
 import { pedidosAbiertos } from '@/lib/altas';
 import Hoja from '../../entrevista/[id]/Hoja';
-import {
-  llevaDiscursivo,
-  nivelesQueRigen,
-  TEST as TEST_DISCURSIVO,
-} from '@/lib/discursivo';
+import { llevaDiscursivo, nivelesQueRigen, TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 import { tieneTexto } from '@/lib/texto-rico';
 import BenzigerHoja from './BenzigerHoja';
@@ -146,8 +143,8 @@ function Falta({ texto = 'sin cargar' }: { texto?: string }) {
 function SinDatos({ que }: { que: string }) {
   return (
     <p className="os-vacio">
-      No hay {que} cargado para esta persona. La tabla existe y la pantalla la lee;
-      lo que falta es migrar el dato, que todavía vive en Airtable.
+      No hay {que} cargado para esta persona. La tabla existe y la pantalla la lee; lo que falta es
+      migrar el dato, que todavía vive en Airtable.
     </p>
   );
 }
@@ -165,12 +162,15 @@ function SinDatos({ que }: { que: string }) {
 function Bloque({
   titulo,
   dos,
+  clase,
   accion,
   children,
 }: {
   titulo: string;
   /** En dos columnas: para el bloque largo, que si no es una tira. */
   dos?: boolean;
+  /** Una clase más para la grilla de datos, cuando un bloque reparte distinto. */
+  clase?: string;
   /** Lo que se le hace al bloque entero, contra el borde derecho. */
   accion?: React.ReactNode;
   children: React.ReactNode;
@@ -181,7 +181,11 @@ function Bloque({
         <h2>{titulo}</h2>
         {accion && <span className="os-panel-accion">{accion}</span>}
       </div>
-      <div className={`os-ficha-datos${dos ? ' os-ficha-datos-dos' : ''}`}>{children}</div>
+      <div
+        className={`os-ficha-datos${dos ? ' os-ficha-datos-dos' : ''}${clase ? ` ${clase}` : ''}`}
+      >
+        {children}
+      </div>
     </section>
   );
 }
@@ -202,7 +206,7 @@ function Datos({
   // El perfil puede ser de dos cuadrantes, con uno que manda o los dos parejos.
   const perfil = nombrePerfil(
     f.benziger?.cuadrante_preferente ?? [],
-    f.benziger?.cuadrantes_parejos === true
+    f.benziger?.cuadrantes_parejos === true,
   );
 
   return (
@@ -212,6 +216,7 @@ function Datos({
           bloque acomoda sus datos de a pares. */}
       <Bloque
         titulo="La persona"
+        clase="os-ficha-datos-aire"
         dos
         accion={
           <Editar
@@ -274,9 +279,7 @@ function Datos({
           {f.raven?.raw !== null && f.raven?.raw !== undefined ? (
             <>
               {f.raven.raw} de 36
-              {f.raven.resultado && (
-                <span className="os-dato-al-lado">{f.raven.resultado}</span>
-              )}
+              {f.raven.resultado && <span className="os-dato-al-lado">{f.raven.resultado}</span>}
             </>
           ) : (
             <Falta texto="sin puntaje" />
@@ -306,9 +309,7 @@ function Datos({
         {/* La edad en su propio renglón, frente a la evaluadora: la columna
             derecha tenía una fila menos que la izquierda y el bloque quedaba
             desparejo, con la edad colgada al lado de la fecha. */}
-        <Dato rotulo="Edad">
-          {enAños(c.edad) || <Falta texto="sin fecha de nacimiento" />}
-        </Dato>
+        <Dato rotulo="Edad">{enAños(c.edad) || <Falta texto="sin fecha de nacimiento" />}</Dato>
       </Bloque>
 
       {/* La evaluación y la factura, una al lado de la otra: la primera es lo
@@ -320,47 +321,50 @@ function Datos({
             el intercalado de las dos columnas: a la izquierda qué se le tomó y
             cuándo entró y salió el trabajo, a la derecha en qué anda y cómo se
             la vio. */}
-        <Bloque titulo="La evaluación" dos>
+        {/* Seis datos en dos filas de a tres: arriba cuándo, quién lo pidió y
+            con qué batería; abajo en qué anda, cuándo se subió y la entrevista
+            con su modalidad. */}
+        <Bloque titulo="Evaluación" dos clase="os-ficha-datos-dos-tres">
+          <Dato rotulo="Solicitud">
+            {fechaHora(c.fecha_ingreso) ?? <Falta texto="sin fecha" />}
+          </Dato>
+          {/* Quién del cliente pidió la evaluación: es el contacto del pedido y
+              el mismo que sale en el encabezado del informe. Se carga en el
+              pedido, que es de donde viene. */}
+          <Dato rotulo="Solicitado por">
+            {c.pedidos?.solicitante ? (
+              <>{c.pedidos.solicitante.nombre}</>
+            ) : (
+              <Falta texto="sin indicar" />
+            )}
+          </Dato>
           <Dato rotulo="Batería">
-            <Bateria
-              codigo={c.pedidos?.baterias?.codigo ?? null}
-              conBenziger={llevaBenziger(f)}
-            />
+            <Bateria codigo={c.pedidos?.baterias?.codigo ?? null} conBenziger={llevaBenziger(f)} />
           </Dato>
           <Dato rotulo="Estado">
             <Etapa id={id} etapa={c.estado} />
           </Dato>
-          <Dato rotulo="Solicitud">{fechaHora(c.fecha_ingreso) ?? <Falta texto="sin fecha" />}</Dato>
           <Dato rotulo="Entrevista">
-            {fechaHora(c.fecha_entrevista) ?? <Falta texto="sin agendar" />}
+            {/* La fecha y, al lado, la modalidad en la misma letra: es lo que
+                dice qué hay que preparar, la sala o el enlace. */}
+            <span className="os-entrevista-dato">
+              {fechaHora(c.fecha_entrevista) ?? <Falta texto="sin agendar" />}
+              {c.modalidad && ` · ${c.modalidad}`}
+            </span>
           </Dato>
+
           {/* Es la fecha en que se subió al portal: la sella el paso a Entregado,
               que es lo que hace ese botón. Se llamaba "Entrega" y no se sabía si
               era cuándo se prometió o cuándo salió. */}
           <Dato rotulo="Subido al portal">
             {fechaHora(c.fecha_entrega) ?? <Falta texto="todavía no" />}
           </Dato>
-          {/* La modalidad con el color del tablero: ámbar presencial, verde
-              online. Es lo que dice qué hay que preparar, la sala o el enlace. */}
-          <Dato rotulo="Modalidad">
-            {c.modalidad ? (
-              <span
-                className={`os-modalidad ${
-                  c.modalidad === 'Presencial' ? 'os-modalidad-sala' : 'os-modalidad-enlace'
-                }`}
-              >
-                {c.modalidad}
-              </span>
-            ) : (
-              <Falta texto="sin definir" />
-            )}
-          </Dato>
         </Bloque>
 
         {/* La plata se lee acá y se opera en Facturación: el comprobante junta
             varios candidatos de un cliente, así que la decisión de qué entra en
             cuál no se puede tomar desde la ficha de uno solo. */}
-        <Bloque titulo="La factura">
+        <Bloque titulo="Factura" clase="os-ficha-datos-factura">
           <Dato rotulo="Importe">
             {precio ? formatoImporte(precio) : <Falta texto="la batería no tiene precio" />}
           </Dato>
@@ -387,7 +391,7 @@ function Datos({
         </Bloque>
       </div>
 
-      <Bloque titulo="El ingreso">
+      <Bloque titulo="Ingreso y Seguimiento">
         <Dato rotulo="Seguimiento" ancho>
           <Ingreso
             id={c.id}
@@ -399,7 +403,6 @@ function Datos({
           />
         </Dato>
       </Bloque>
-
     </>
   );
 }
@@ -443,7 +446,8 @@ function SumarioEstructural({ f, rige }: { f: Ficha; rige: Regulacion }) {
     ?.estilo;
   // La proporción afectiva no existe en Zulliger: el motor no la calcula y su
   // banda no tiene dónde pintarse.
-  const afr = test === 'Zulliger' ? null : bandaDeAfr(typeof estilo === 'string' ? estilo : 'Ambigual');
+  const afr =
+    test === 'Zulliger' ? null : bandaDeAfr(typeof estilo === 'string' ? estilo : 'Ambigual');
   // R y Zf se miden contra la cantidad de respuestas, así que su banda se arma
   // acá y no sale del diccionario, igual que la de Afr.
   const r = (s.crudo as { cabecera?: { R?: unknown } } | null)?.cabecera?.R;
@@ -543,8 +547,7 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
       // Su marca es el escalón: mientras no esté ubicado, el capítulo de
       // potencial no sale y el informe está incompleto sin decirlo acá.
       estados.push({ test: 'Análisis discursivo', puesto: Boolean(f.discursivo?.nivel) });
-    }
-    else if (t === TEST_COMPETENCIAS) {
+    } else if (t === TEST_COMPETENCIAS) {
       // Su marca es lo escrito, que se carga en la hoja de la entrevista: sin
       // eso, el capítulo cualitativo del informe se arma sin lo único que la
       // entrevista aporta.
@@ -554,11 +557,19 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
   if (f.benziger) estados.push({ test: 'Benziger', puesto: Boolean(f.benziger.cuadrantes) });
 
   if (estados.length === 0) return null;
+  /* Cómo se nombra cada test en esta lista, más corto que en la batería. El
+     nombre de la batería no se toca: el cierre de la entrevista busca los
+     tests por ese nombre exacto. */
+  const CORTO: Record<string, string> = {
+    [TEST_COMPETENCIAS]: 'Entrevista',
+    'Análisis discursivo': 'Potencial',
+    'Gráfico 2 personas': 'Gráfico 2P',
+  };
   return (
     <>
       {estados.map((e) => (
         <span key={e.test} className={`os-sello-estado ${e.puesto ? 'os-verde' : 'os-rojo'}`}>
-          {e.test}
+          {CORTO[e.test] ?? e.test}
         </span>
       ))}
     </>
@@ -663,73 +674,98 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
           cruzándola de arriba abajo, que se ve como una raya y no como un
           corte. */}
       <section className="os-panel os-panel-informe">
-      <div className="os-generar">
-        <h2>El informe</h2>
-        <div className="os-generar-acciones">
-          <Link
-            className="os-boton"
-            href={`/os/psicotecnicos/informe/${c.id}?descargar=1`}
-            target="_blank"
-          >
-            Descargar PDF
-          </Link>
-          {/* Entregar va con el resto de las acciones y no al pie: al final de
+        <div className="os-generar">
+          <h2>El informe</h2>
+          <div className="os-generar-acciones">
+            <Link
+              className="os-boton"
+              href={`/os/psicotecnicos/informe/${c.id}?descargar=1`}
+              target="_blank"
+            >
+              Descargar PDF
+            </Link>
+            {/* Entregar va con el resto de las acciones y no al pie: al final de
               un documento largo hay que bajar hasta el fondo para apretarlo, y
               es la acción que cierra la evaluación. */}
-          {c.estado === 'Por analizar' && (
-            <Entregar id={c.id} recomendacion={c.recomendacion} />
-          )}
-          {/* El portal del cliente, para ver ahí mismo cómo le queda. Sin
+            {c.estado === 'Por analizar' && <Entregar id={c.id} recomendacion={c.recomendacion} />}
+            {/* El portal del cliente, para ver ahí mismo cómo le queda. Sin
               token no hay portal: se carga en la ficha de la empresa. */}
-          {portal ? (
-            <Link className="os-boton" href={portal} target="_blank">
-              Ver portal
-            </Link>
-          ) : (
-            <span className="os-boton os-boton-apagado" title="Esta empresa todavía no tiene portal.">
-              Ver portal
-            </span>
-          )}
+            {portal ? (
+              <Link className="os-boton" href={portal} target="_blank">
+                Ver portal
+              </Link>
+            ) : (
+              <span
+                className="os-boton os-boton-apagado"
+                title="Esta empresa todavía no tiene portal."
+              >
+                Ver portal
+              </span>
+            )}
+          </div>
         </div>
-      </div>
       </section>
 
       <section className="os-panel os-panel-informe os-panel-hoja">
-      <div className="os-informe-marco">
-        {/* Lo que va a ver el cliente, y en el mismo lugar donde se corrige.
+        <div className="os-informe-marco">
+          {/* Lo que va a ver el cliente, y en el mismo lugar donde se corrige.
             Antes acá se revisaba el documento y el cliente leía otra cosa: dos
             formas del mismo informe, y la evaluadora no veía la que se entrega.
 
             El molde nuevo corre por ahora solo en la empresa de prueba, igual
             que en el portal; para el resto sigue el documento, sin los
             indicadores, que están en sus propias pestañas. */}
-        {comoSitio ? (
-          <>
-            <Faltantes inf={informe} />
-            <div className="sitio sitio-secciones-ficha">
-              {/* Los mismos datos con los que abre el informe del cliente: sin
+          {comoSitio ? (
+            <>
+              <Faltantes inf={informe} />
+              <div className="sitio sitio-secciones-ficha">
+                {/* Los mismos datos con los que abre el informe del cliente: sin
                   ellos, acá no se ve para qué puesto ni con qué fecha sale. */}
-              <Cabecera inf={informe} />
-              {seccionesDe(informe, c.id).map((s, i) => (
-                <section key={s.id} className="sitio-seccion">
-                  <header className="sitio-seccion-top">
-                    <span className="sitio-numero">{String(i + 1).padStart(2, '0')}</span>
-                    <div>
-                      <h2>{s.titulo}</h2>
-                      {s.bajada && <p>{s.bajada}</p>}
-                    </div>
-                  </header>
-                  <div className="sitio-caja">{s.cuerpo}</div>
-                </section>
-              ))}
-            </div>
-          </>
-        ) : (
-          <Documento inf={informe} interno editar={c.id} parte="trabajo" />
-        )}
-      </div>
+                {/* La primera hoja, el one pager, como carilla A4: los datos y
+                  las conclusiones hasta la confidencialidad. Lo que sigue va
+                  seguido debajo, sin carillas. */}
+                {(() => {
+                  const todas = seccionesDe(informe, c.id);
+                  const [primera, ...resto] = todas;
+                  return (
+                    <>
+                      {primera && (
+                        <OnePager>
+                          <Cabecera inf={informe} />
+                          <section className="sitio-seccion">
+                            <header className="sitio-seccion-top">
+                              <span className="sitio-numero">01</span>
+                              <div>
+                                <h2>{primera.titulo}</h2>
+                                {primera.bajada && <p>{primera.bajada}</p>}
+                              </div>
+                            </header>
+                            <div className="sitio-caja">{primera.cuerpo}</div>
+                          </section>
+                        </OnePager>
+                      )}
+                      {resto.map((s, i) => (
+                        <section key={s.id} className="sitio-seccion">
+                          <header className="sitio-seccion-top">
+                            <span className="sitio-numero">{String(i + 2).padStart(2, '0')}</span>
+                            <div>
+                              <h2>{s.titulo}</h2>
+                              {s.bajada && <p>{s.bajada}</p>}
+                            </div>
+                          </header>
+                          <div className="sitio-caja">{s.cuerpo}</div>
+                        </section>
+                      ))}
+                    </>
+                  );
+                })()}
+              </div>
+            </>
+          ) : (
+            <Documento inf={informe} interno editar={c.id} parte="trabajo" />
+          )}
+        </div>
       </section>
-
     </>
   );
 }
@@ -756,7 +792,6 @@ export default async function FichaPagina({
       .catch(() => [] as string[]),
   ]);
   if (!ficha) notFound();
-
 
   // Las pestañas que se fueron siguen apareciendo en direcciones guardadas:
   // caen donde ahora vive lo suyo. `sumario` en la codificación y
@@ -794,23 +829,23 @@ export default async function FichaPagina({
           enfrente, con la herramienta de cada test a un clic; el camino de
           vuelta ya existía y este es el de ida. */}
       <div className="os-pestanas-fila">
-      <nav className="os-pestanas">
-        {pestanas.map((p) => {
-          const n = p.cuantos(ficha);
-          const texto = p.clave === 'manchas' ? (proyectivo ?? p.texto) : p.texto;
-          return (
-            <Link
-              key={p.clave}
-              href={`/os/psicotecnicos/ficha/${params.id}?ver=${p.clave}&desde=${volverA}`}
-              className={`os-pestana${ver === p.clave ? ' activa' : ''}`}
-              aria-current={ver === p.clave ? 'page' : undefined}
-            >
-              {texto}
-              {n > 0 && <span className="os-pestana-cuenta">{n}</span>}
-            </Link>
-          );
-        })}
-      </nav>
+        <nav className="os-pestanas">
+          {pestanas.map((p) => {
+            const n = p.cuantos(ficha);
+            const texto = p.clave === 'manchas' ? (proyectivo ?? p.texto) : p.texto;
+            return (
+              <Link
+                key={p.clave}
+                href={`/os/psicotecnicos/ficha/${params.id}?ver=${p.clave}&desde=${volverA}`}
+                className={`os-pestana${ver === p.clave ? ' activa' : ''}`}
+                aria-current={ver === p.clave ? 'page' : undefined}
+              >
+                {texto}
+                {n > 0 && <span className="os-pestana-cuenta">{n}</span>}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
       {ver === 'datos' && (
@@ -824,10 +859,9 @@ export default async function FichaPagina({
         <>
           {desajuste && (
             <div className="os-aviso">
-              La batería dice {desajuste.bateria} y lo cargado es un{' '}
-              {desajuste.cargado}. Uno de los dos está mal: o el protocolo se
-              codificó en la ficha equivocada, o el pedido entró con otra
-              batería.
+              La batería dice {desajuste.bateria} y lo cargado es un {desajuste.cargado}. Uno de los
+              dos está mal: o el protocolo se codificó en la ficha equivocada, o el pedido entró con
+              otra batería.
             </div>
           )}
           {/* El sumario calculado va arriba de la codificación: es lo que la
