@@ -19,6 +19,11 @@
   --linea-suave: #efede8;
   --verde: #37804a;
   --ambar: #a97722;
+  /* El nivel "con alertas": naranja, entre el ámbar y el rojo del bajo: avisa un
+     riesgo y no una duda. */
+  --alerta: #c06a1c;
+  /* El nivel "bajo", en rojo pleno: es el no. */
+  --bajo: #c42026;
   --naranja: #c1591a;
   --rojo: #8c3b3b;
   --azul: #43648f;
@@ -64,6 +69,25 @@
 .inf-pendientes ul {
   margin: 6px 0 4px;
   padding-left: 18px;
+}
+
+.inf-revisar {
+  border-color: var(--ambar);
+  background: #fbf6ec;
+}
+
+.inf-revisar strong {
+  color: var(--ambar);
+}
+
+.inf-revisar-grupo {
+  margin-top: 10px;
+}
+
+.inf-revisar-tipo {
+  display: block;
+  font-weight: 600;
+  color: var(--tinta);
 }
 
 .inf-pendientes-nota {
@@ -341,16 +365,16 @@
   background: rgba(55, 128, 74, 0.05);
 }
 .inf-nivel.ambar {
-  border-color: rgba(169, 119, 34, 0.3);
-  background: rgba(169, 119, 34, 0.05);
+  border-color: rgba(192, 106, 28, 0.3);
+  background: rgba(192, 106, 28, 0.05);
 }
 .inf-nivel.azul {
-  border-color: rgba(67, 100, 143, 0.3);
-  background: rgba(67, 100, 143, 0.05);
+  border-color: rgba(127, 143, 58, 0.3);
+  background: rgba(127, 143, 58, 0.05);
 }
 .inf-nivel.rojo {
-  border-color: rgba(140, 59, 59, 0.3);
-  background: rgba(140, 59, 59, 0.05);
+  border-color: rgba(196, 32, 38, 0.3);
+  background: rgba(196, 32, 38, 0.05);
 }
 
 /* El texto es lo que se apaga, no el color: así el borde sigue diciendo de qué
@@ -379,12 +403,12 @@
   background: rgba(55, 128, 74, 0.11);
 }
 .inf-nivel.elegido.ambar {
-  border-color: var(--ambar);
-  background: rgba(169, 119, 34, 0.11);
+  border-color: var(--alerta);
+  background: rgba(192, 106, 28, 0.11);
 }
 .inf-nivel.elegido.azul {
-  border-color: #43648f;
-  background: rgba(67, 100, 143, 0.11);
+  border-color: #7f8f3a;
+  background: rgba(127, 143, 58, 0.11);
 }
 
 /* El círculo del ícono, del color del nivel. Apagado en los que no son el
@@ -393,21 +417,21 @@
   background: var(--verde);
 }
 .inf-nivel.azul .inf-nivel-icono {
-  background: #43648f;
+  background: #7f8f3a;
 }
 .inf-nivel.ambar .inf-nivel-icono {
-  background: var(--ambar);
+  background: var(--alerta);
 }
 .inf-nivel.rojo .inf-nivel-icono {
-  background: var(--rojo);
+  background: var(--bajo);
 }
 
 .inf-nivel:not(.elegido) .inf-nivel-icono {
   opacity: 0.34;
 }
 .inf-nivel.elegido.rojo {
-  border-color: var(--rojo);
-  background: rgba(140, 59, 59, 0.11);
+  border-color: var(--bajo);
+  background: rgba(196, 32, 38, 0.11);
 }
 
 /* Al imprimir, los fondos de color se descartan salvo que el navegador tenga
@@ -500,7 +524,7 @@
    Eran tres listas seguidas, con tres títulos que empezaban con las mismas dos
    palabras: al pasar la vista no se veía dónde terminaba uno y empezaba el
    otro. Cada uno lleva ahora el color con el que se lee su nivel, el mismo de
-   los velocímetros: verde lo que está por encima, azul lo que responde, naranja
+   los velocímetros: verde lo que está por encima, oliva lo que responde, naranja
    lo que hay que acompañar. */
 .inf-grupo {
   --color: var(--azul);
@@ -527,7 +551,7 @@
 
 
 .inf-grupo.destacado { --color: var(--verde); }
-.inf-grupo.esperado { --color: var(--azul); }
+.inf-grupo.esperado { --color: #7f8f3a; }
 .inf-grupo.desarrollar { --color: var(--naranja); }
 
 .inf-grupo header {
@@ -596,6 +620,17 @@
   border: 1px solid var(--linea-suave);
   border-radius: 10px;
   background: var(--papel);
+}
+
+/* El título de la card, en el mismo rótulo chico de los subtítulos del
+   informe (Resumen, Fundamentación). */
+.inf-escala-titulo {
+  margin: 0 0 10px !important;
+  font-size: 0.7rem !important;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--suave) !important;
 }
 
 .inf-escala-barra {
@@ -1001,6 +1036,12 @@
   font-weight: 700;
 }
 
+/* El nombre en negrita solo en el predominante: los otros tres van con peso
+   normal, así el que manda se distingue sin leer el rótulo. */
+.inf-cuadrante:not(.manda) h3 {
+  font-weight: 400;
+}
+
 .inf-cuadrante.FI {
   grid-area: 1 / 1;
 }
@@ -1100,8 +1141,50 @@
   color: var(--suave);
 }
 
+.inf-rotulo-preferente.inf-predominante,
+.inf-subtitulo.inf-predominante,
+.sitio-sub.inf-predominante {
+  color: var(--azul);
+}
+
 .inf-rotulo-preferente + .inf-bloque .inf-subtitulo {
   margin-top: 4px;
+}
+
+/* Cómo conducir a la persona, al pie del plan de incorporación: el tema a la
+   izquierda y la pauta a la derecha, para que el líder vaya directo al que
+   busca. En angosto el tema pasa arriba. */
+.inf-conducir {
+  margin: 10px 0 0;
+}
+
+.inf-conducir > div {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 18px;
+  padding: 10px 0;
+  border-top: 1px solid var(--linea-suave);
+}
+
+.inf-conducir > div:first-child {
+  border-top: none;
+}
+
+.inf-conducir dt {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.inf-conducir dd {
+  margin: 0;
+  color: var(--tinta-media);
+}
+
+@media (max-width: 640px) {
+  .inf-conducir > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
 }
 
 /* ── Cierre ───────────────────────────────────────────────────────────── */
@@ -1135,8 +1218,9 @@
 }
 
 @media print {
-  .inf-pendientes {
-    display: none;
+  .inf-pendientes,
+  .inf-revisar {
+    display: none !important;
   }
 
   /**
@@ -1753,6 +1837,13 @@
   color: var(--rojo);
 }
 
+/* De qué test sale el texto. Va antes del índice y en azul, que no es ni el
+   verde ni el rojo de las bandas: dice de dónde, no cómo dio. */
+.inf-origen {
+  background: color-mix(in srgb, #2f5f8a 12%, transparent);
+  color: #2f5f8a;
+}
+
 /* Sin banda con la que comparar: se dice de dónde salió y no se pinta, que es
    la misma regla que sigue la hoja. */
 .inf-respaldo-neutro {
@@ -2004,29 +2095,29 @@
   background: rgba(55, 128, 74, 0.05);
 }
 .inf-nivel-chico.azul {
-  border-color: rgba(67, 100, 143, 0.3);
-  background: rgba(67, 100, 143, 0.05);
+  border-color: rgba(127, 143, 58, 0.3);
+  background: rgba(127, 143, 58, 0.05);
 }
 .inf-nivel-chico.ambar {
-  border-color: rgba(169, 119, 34, 0.3);
-  background: rgba(169, 119, 34, 0.05);
+  border-color: rgba(192, 106, 28, 0.3);
+  background: rgba(192, 106, 28, 0.05);
 }
 .inf-nivel-chico.rojo {
-  border-color: rgba(140, 59, 59, 0.3);
-  background: rgba(140, 59, 59, 0.05);
+  border-color: rgba(196, 32, 38, 0.3);
+  background: rgba(196, 32, 38, 0.05);
 }
 
 .inf-nivel-chico.verde .inf-nivel-icono {
   background: var(--verde);
 }
 .inf-nivel-chico.azul .inf-nivel-icono {
-  background: #43648f;
+  background: #7f8f3a;
 }
 .inf-nivel-chico.ambar .inf-nivel-icono {
-  background: var(--ambar);
+  background: var(--alerta);
 }
 .inf-nivel-chico.rojo .inf-nivel-icono {
-  background: var(--rojo);
+  background: var(--bajo);
 }
 
 .inf-nivel-chico .inf-nivel-icono {
@@ -2080,6 +2171,16 @@
   padding: 8px 0 4px;
 }
 
+/* El plan va sin recuadro: es un capítulo propio y sus tramos ya tienen su
+   línea de separación. Con el recuadro alrededor se leía como una tarjeta
+   suelta y no como el capítulo. */
+.inf-grupo:has(.inf-plan) {
+  padding-left: 0;
+  padding-right: 0;
+  border: none;
+  background: none;
+}
+
 .inf-plan-intro {
   margin: 0 0 12px;
   font-size: 0.82rem;
@@ -2112,4 +2213,53 @@
 .inf-edita-tramo {
   height: 32px;
   font-size: 0.78rem;
+}
+
+/* En el documento, los tramos del plan con la letra de los subtítulos del
+   capítulo, la misma de "Entorno en el que rinde". */
+.inf-grupo .inf-plan-tramo h3 {
+  font-size: 1.04rem;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+/* Editar el texto del capítulo Benziger. El botón va arriba a la derecha,
+   como el de las listas; el formulario, un campo por párrafo con su nombre. */
+.inf-bzg-edita {
+  position: relative;
+}
+
+.inf-bzg-barra {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.inf-bzg-campo {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.inf-bzg-campo span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.inf-bzg-campo textarea {
+  width: 100%;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.5;
+}
+
+@media print {
+  .inf-bzg-barra {
+    display: none !important;
+  }
 }

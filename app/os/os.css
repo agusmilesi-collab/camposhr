@@ -5444,19 +5444,19 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
 .os-nivel-opcion.verde {
   --punto-nivel: #37804a;
 }
-/* El de "aspectos a desarrollar" es azul y no una variante del verde: es el
-   nivel que se elige más seguido, y en el semáforo del informe ya sale así. */
+/* El de "aspectos a desarrollar" es verde oliva, el mismo de la banda
+   Adecuado: así el nivel y la escala de competencias usan un solo semáforo. */
 .os-nivel-opcion.azul {
-  --punto-nivel: #43648f;
+  --punto-nivel: #7f8f3a;
 }
 .os-nivel-opcion.ambar {
-  --punto-nivel: #a97722;
+  --punto-nivel: #c06a1c;
 }
 .os-nivel-opcion.naranja {
   --punto-nivel: #c1591a;
 }
 .os-nivel-opcion.rojo {
-  --punto-nivel: #8c3b3b;
+  --punto-nivel: #c42026;
 }
 
 .os-nivel-titulo {
@@ -5480,20 +5480,20 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
   background: rgba(55, 128, 74, 0.05);
 }
 .os-nivel-opcion.azul {
-  border-color: rgba(67, 100, 143, 0.32);
-  background: rgba(67, 100, 143, 0.05);
+  border-color: rgba(127, 143, 58, 0.32);
+  background: rgba(127, 143, 58, 0.05);
 }
 .os-nivel-opcion.ambar {
-  border-color: rgba(169, 119, 34, 0.3);
-  background: rgba(169, 119, 34, 0.04);
+  border-color: rgba(192, 106, 28, 0.3);
+  background: rgba(192, 106, 28, 0.04);
 }
 .os-nivel-opcion.naranja {
   border-color: rgba(193, 89, 26, 0.3);
   background: rgba(193, 89, 26, 0.04);
 }
 .os-nivel-opcion.rojo {
-  border-color: rgba(140, 59, 59, 0.3);
-  background: rgba(140, 59, 59, 0.04);
+  border-color: rgba(196, 32, 38, 0.3);
+  background: rgba(196, 32, 38, 0.04);
 }
 
 .os-nivel-opcion:hover {
@@ -5521,16 +5521,16 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
   background: rgba(55, 128, 74, 0.11);
 }
 .os-nivel-opcion.puesta.ambar {
-  border-color: var(--os-ambar);
-  background: rgba(169, 119, 34, 0.1);
+  border-color: #c06a1c;
+  background: rgba(192, 106, 28, 0.1);
 }
 .os-nivel-opcion.puesta.naranja {
   border-color: #c1591a;
   background: rgba(193, 89, 26, 0.1);
 }
 .os-nivel-opcion.puesta.rojo {
-  border-color: var(--os-rojo);
-  background: rgba(140, 59, 59, 0.1);
+  border-color: #c42026;
+  background: rgba(196, 32, 38, 0.1);
 }
 
 /* El fundamento ocupa el alto de la columna de niveles. */
@@ -16872,4 +16872,126 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 .os-lectura-tramo .os-desplegable,
 .os-lectura-tramo .os-desplegable-boton {
   width: 210px;
+}
+
+/* ── Configuración → Benziger ─────────────────────────────────────────────
+   Un campo por renglón y a todo el ancho: son párrafos que se leen enteros.
+   El título de cada campo va en azul, que es lo que se busca al recorrer la
+   pantalla; debajo, en gris, de qué página del material oficial sale. */
+.os-bzg .os-panel-cuerpo {
+  display: grid;
+  gap: 18px;
+}
+
+.os-bzg-campo {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.os-bzg-rotulo {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.os-bzg-titulo {
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: var(--os-azul);
+}
+
+.os-bzg-fuente {
+  font-size: 0.74rem;
+  color: var(--os-suave);
+}
+
+.os-bzg-campo textarea.os-campo {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.os-bzg .os-indice-nombre-titulo {
+  color: var(--os-azul);
+}
+
+/* El resto del informe en la misma hoja que la primera (EnHojas.tsx): toma
+   todas las reglas de letra y aire de `.os-onepager-hoja`, pero sin alto fijo
+   ni recorte, porque su largo depende de la persona. Entre capítulos, aire de
+   capítulo. */
+.os-onepager-hoja.os-onepager-resto {
+  height: auto;
+  overflow: visible;
+}
+
+/* Entre una sección y la siguiente, el triple de aire que dentro de una: en
+   pantalla corren seguidas y el corte tiene que verse. Al imprimir no aplica,
+   que cada una arranca en hoja nueva. */
+.os-onepager-resto .sitio-seccion + .sitio-seccion {
+  margin-top: 84px;
+}
+
+/* Con el informe en hojas, el panel no lleva fondo: las hojas ya son el papel,
+   y el blanco del panel alrededor se leía como una hoja más grande detrás. */
+.os-panel-hoja:has(.sitio-secciones-ficha),
+.os-panel-hoja:has(.sitio-secciones-ficha) .os-informe-marco {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Los avisos de quien firma, dentro de la card del informe y debajo de los
+   botones. Sin avisos no queda la caja vacía. */
+.os-panel-informe .os-informe-avisos {
+  padding-top: 0;
+  padding-bottom: 28px;
+}
+
+/* El último aviso cierra contra el borde de la card, con el mismo aire que
+   tiene arriba entre los botones y el aviso. */
+.os-panel-informe .os-informe-avisos > :last-child {
+  margin-bottom: 0;
+}
+
+.os-panel-informe .os-informe-avisos:empty {
+  display: none;
+}
+
+/* El cuadrante predominante del Benziger es el dato del capítulo: va con la
+   misma letra que los títulos de sección (grosor, color y sin versalitas),
+   un poco más chica para no competir con el título del capítulo. */
+.os-onepager-hoja .sitio-sub.inf-predominante {
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  text-transform: none;
+  color: var(--tinta);
+}
+
+/* Con el informe en hojas, la card de acciones mide lo mismo que la hoja y su
+   texto arranca donde arranca el de la hoja: se lee como la tapa del informe
+   que tiene abajo y no como un panel más ancho que lo encuadra. */
+.os-panel-informe.os-panel-a-hoja {
+  width: 210mm;
+  max-width: 100%;
+  /* Los paneles van alineados a la izquierda con 1000 de ancho y la hoja va
+     centrada adentro del suyo: la card se corre lo mismo para quedar justo
+     encima de la hoja. */
+  margin-left: max(0px, calc((min(1000px, 100%) - 210mm) / 2));
+}
+
+.os-panel-a-hoja .os-generar,
+.os-panel-a-hoja .os-panel-cuerpo {
+  padding-left: 15mm;
+  padding-right: 15mm;
+}
+
+/* En la hoja, el rótulo de los tramos del plan mide lo mismo que los demás
+   subtítulos de la hoja (`.os-onepager-hoja .sitio-sub`). */
+.os-onepager-hoja.os-onepager-hoja .inf-grupo .inf-plan-tramo h3 {
+  font-size: 0.62rem;
 }

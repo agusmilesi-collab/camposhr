@@ -28,7 +28,8 @@ export type ClaveDeAjuste =
   | 'competencias_cortes'
   | 'competencias_direccion'
   | 'discursivo_niveles'
-  | 'discursivo_conclusiones';
+  | 'discursivo_conclusiones'
+  | 'benziger_cuadrantes';
 
 type Fila = { clave: string; valor: unknown };
 

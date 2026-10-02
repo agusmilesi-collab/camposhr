@@ -26,10 +26,8 @@ import Entregar from './Entregar';
 import Benziger from './Benziger';
 import Etapa from './Etapa';
 import Documento from '../../informe/_doc/Documento';
-import OnePager from './OnePager';
-import { Faltantes } from '../../informe/_doc/Interno';
-import { seccionesDe } from '../../informe/_sitio/secciones';
-import Cabecera from '../../informe/_sitio/Cabecera';
+import EnHojas from '../../informe/_sitio/EnHojas';
+import { Faltantes, Revisar } from '../../informe/_doc/Interno';
 import '../../informe/_sitio/sitio.css';
 import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
@@ -673,7 +671,7 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
           otro panel. Pintar una franja adentro de un panel dejaba el borde
           cruzándola de arriba abajo, que se ve como una raya y no como un
           corte. */}
-      <section className="os-panel os-panel-informe">
+      <section className={`os-panel os-panel-informe${comoSitio ? ' os-panel-a-hoja' : ''}`}>
         <div className="os-generar">
           <h2>El informe</h2>
           <div className="os-generar-acciones">
@@ -704,6 +702,15 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
             )}
           </div>
         </div>
+        {/* Los avisos de quien firma van en la card del informe, al lado de
+            los botones de descargar y entregar, que es donde se decide. Debajo
+            quedan solo las hojas, lo mismo que recibe el cliente. */}
+        {comoSitio && (
+          <div className="os-panel-cuerpo os-informe-avisos">
+            <Faltantes inf={informe} />
+            <Revisar inf={informe} />
+          </div>
+        )}
       </section>
 
       <section className="os-panel os-panel-informe os-panel-hoja">
@@ -717,49 +724,7 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
             indicadores, que están en sus propias pestañas. */}
           {comoSitio ? (
             <>
-              <Faltantes inf={informe} />
-              <div className="sitio sitio-secciones-ficha">
-                {/* Los mismos datos con los que abre el informe del cliente: sin
-                  ellos, acá no se ve para qué puesto ni con qué fecha sale. */}
-                {/* La primera hoja, el one pager, como carilla A4: los datos y
-                  las conclusiones hasta la confidencialidad. Lo que sigue va
-                  seguido debajo, sin carillas. */}
-                {(() => {
-                  const todas = seccionesDe(informe, c.id);
-                  const [primera, ...resto] = todas;
-                  return (
-                    <>
-                      {primera && (
-                        <OnePager>
-                          <Cabecera inf={informe} />
-                          <section className="sitio-seccion">
-                            <header className="sitio-seccion-top">
-                              <span className="sitio-numero">01</span>
-                              <div>
-                                <h2>{primera.titulo}</h2>
-                                {primera.bajada && <p>{primera.bajada}</p>}
-                              </div>
-                            </header>
-                            <div className="sitio-caja">{primera.cuerpo}</div>
-                          </section>
-                        </OnePager>
-                      )}
-                      {resto.map((s, i) => (
-                        <section key={s.id} className="sitio-seccion">
-                          <header className="sitio-seccion-top">
-                            <span className="sitio-numero">{String(i + 2).padStart(2, '0')}</span>
-                            <div>
-                              <h2>{s.titulo}</h2>
-                              {s.bajada && <p>{s.bajada}</p>}
-                            </div>
-                          </header>
-                          <div className="sitio-caja">{s.cuerpo}</div>
-                        </section>
-                      ))}
-                    </>
-                  );
-                })()}
-              </div>
+              <EnHojas inf={informe} editar={c.id} />
             </>
           ) : (
             <Documento inf={informe} interno editar={c.id} parte="trabajo" />

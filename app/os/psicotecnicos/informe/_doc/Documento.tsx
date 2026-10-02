@@ -1,6 +1,8 @@
 import { bandaDe, bandasDe } from '@/lib/exigencia';
 import { EscalaBandas, IconoNivel, Velocimetro, tono } from './piezas';
-import type { Informe } from '@/lib/informe';
+import BenzigerLecturas from './BenzigerLecturas';
+import EditarBenziger from './EditarBenziger';
+import { parrafoBenziger, type Informe } from '@/lib/informe';
 import {
   CONFIDENCIALIDAD,
   CUADRANTES,
@@ -15,7 +17,7 @@ import Listas from './Listas';
 import { Encabezado, Marca, Pie } from './Marco';
 import { firmaEnDatos } from '@/lib/firmas';
 import Crudo from './Crudo';
-import { Desglose, Faltantes } from './Interno';
+import { Desglose, Faltantes, Revisar } from './Interno';
 import './informe.css';
 
 function Capitulo({
@@ -134,6 +136,9 @@ export default async function Documento({
   return (
     <article className={marco ? 'inf' : 'inf-cuerpo'} data-parte={parte}>
       {interno && <Faltantes inf={inf} />}
+      {/* Solo en la ficha, que es donde se firma: la vista para imprimir también
+          es interna, pero de ahí sale el PDF que se entrega. */}
+      {interno && editar && <Revisar inf={inf} />}
 
       {/* La marca y quién es, salvo en el portal, que las dibuja una vez
           para las tres pestañas. */}
@@ -277,32 +282,14 @@ export default async function Documento({
             lista={lista}
             items={dichos}
             intervenida={inf.intervenidas.includes(lista)}
-            vacio="Sin registros en este grupo."
+            vacio={`No posee características con ${titulo.toLowerCase()}.`}
             // El respaldo va solo donde va el botón de editar: es de quien
             // firma el informe, no del cliente que lo lee.
             respaldos={editar ? inf.respaldos : undefined}
+            origen={inf.proyectivo ?? undefined}
             grupo={{ clave, titulo, sub }}
           />
         ))}
-      </Capitulo>
-      )}
-
-      {/* ── Plan de incorporación ────────────────────────────────────── */}
-      {va('fundamentos') && (
-      <Capitulo
-        numero={num()}
-        titulo="Plan de incorporación"
-        sub="Primeros 90 días, para su líder"
-      >
-        <Listas
-          id={editar}
-          lista="recomendaciones"
-          items={inf.recomendaciones.map((r) => r.texto)}
-          tramos={inf.recomendaciones.map((r) => r.tramo)}
-          intervenida={inf.intervenidas.includes('recomendaciones')}
-          vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
-          respaldos={editar ? inf.respaldos : undefined}
-        />
       </Capitulo>
       )}
 
@@ -337,23 +324,26 @@ export default async function Documento({
             <Cerebro adulto={inf.benziger.adulto} joven={inf.benziger.joven} />
           </div>
 
-          {inf.benziger.preferentes.length > 0 && (
-            <p className="inf-rotulo-preferente">
-              {inf.benziger.preferentes.length === 1
-                ? 'Cuadrante predominante'
-                : 'Cuadrantes predominantes'}
-            </p>
+          {/* Un solo cuadrante: el primero que marcó la evaluadora. Lo que dice
+              de la persona va acá, porque es parte de lo que sostiene la
+              decisión; cómo conducirla va en el plan de incorporación. */}
+          {inf.benziger.preferentes[0] && inf.benziger.textos && (
+            <EditarBenziger id={editar} parrafos={inf.benziger.parrafos} editado={inf.benziger.editado}>
+              <p className="inf-rotulo-preferente inf-predominante">Cuadrante predominante</p>
+              <div className="inf-bloque">
+                <h3 className="inf-subtitulo inf-predominante">{inf.benziger.preferentes[0].nombre}</h3>
+                <p>
+                {parrafoBenziger(inf.benziger, 'comoEs')}
+                {editar && (
+                  <span className="inf-respaldo inf-origen">
+                    {inf.benziger.editado.comoEs ? 'Benziger · reescrito' : inf.benziger.textos.comoEsFuente}
+                  </span>
+                )}
+              </p>
+              </div>
+              <BenzigerLecturas inf={inf} editar={editar} rotulo="inf-subtitulo" />
+            </EditarBenziger>
           )}
-          {inf.benziger.preferentes.map((q) => (
-            <div key={q.clave} className="inf-bloque">
-              <h3 className="inf-subtitulo">{q.nombre}</h3>
-              <ul className="inf-lista">
-                {q.caracteristicas.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
         </Capitulo>
       )}
 
@@ -475,6 +465,48 @@ export default async function Documento({
 
           </div>
         </Capitulo>
+      )}
+
+      {/* ── Plan de incorporación ────────────────────────────────────────
+          Va después de todo lo que sostiene la decisión: es lo que el líder
+          necesita si la persona entra, un agregado y no un fundamento. */}
+      {va('fundamentos') && (
+      <Capitulo
+        numero={num()}
+        titulo="Plan de incorporación"
+        sub="Primeros 90 días, para su líder, en caso de que la persona ingrese"
+      >
+        <Listas
+          id={editar}
+          lista="recomendaciones"
+          items={inf.recomendaciones.map((r) => r.texto)}
+          tramos={inf.recomendaciones.map((r) => r.tramo)}
+          intervenida={inf.intervenidas.includes('recomendaciones')}
+          vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
+          respaldos={editar ? inf.respaldos : undefined}
+          origen={inf.proyectivo ?? undefined}
+        />
+        {/* Del Benziger: cómo conducir a la persona según su cuadrante
+            predominante. Va separado de las recomendaciones de arriba, que
+            salen de las manchas y van por tramo; estas son por tema y valen
+            para toda la relación. */}
+        {inf.benziger?.textos && inf.benziger.textos.conducir.length > 0 && (
+          <div className="inf-bloque">
+            <h3 className="inf-subtitulo">Cómo conducir a esta persona</h3>
+            <dl className="inf-conducir">
+              {inf.benziger.textos.conducir.map((c) => (
+                <div key={c.rotulo}>
+                  <dt>{c.rotulo}</dt>
+                  <dd>
+                    {c.texto}
+                    {editar && <span className="inf-respaldo inf-origen">{c.fuente}</span>}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
+      </Capitulo>
       )}
 
       {/* ── Técnicas ───────────────────────────────────────────────────

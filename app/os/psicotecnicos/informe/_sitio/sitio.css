@@ -51,6 +51,11 @@
   --linea-suave: #efede8;
   --verde: #37804a;
   --ambar: #a97722;
+  /* El nivel "con alertas": naranja, entre el ámbar y el rojo del bajo: avisa un
+     riesgo y no una duda. */
+  --alerta: #c06a1c;
+  /* El nivel "bajo", en rojo pleno: es el no. */
+  --bajo: #c42026;
   /* La paleta es la misma del documento y tiene que estar entera: las piezas
      que se comparten (los grupos del análisis, el velocímetro, las tablas)
      piden estas variables por nombre, y la que falta no se ve como un error
@@ -383,6 +388,15 @@
   color: var(--suave);
 }
 
+/* El plan de incorporación va sin recuadro: sus tramos ya tienen su línea de
+   separación, y adentro de la caja se leía como una tarjeta más. */
+.sitio-caja:has(.inf-plan) {
+  padding-left: 0;
+  padding-right: 0;
+  border: none;
+  background: none;
+}
+
 .sitio-caja > .sitio-sub:first-child {
   margin-top: 0;
 }
@@ -703,8 +717,11 @@
 
 /* La respuesta a lo que la escalera plantea. En cuerpo un poco mayor y con
    aire arriba, sin recuadro: lo que la destaca es que está sola. */
+/* La conclusión abre el capítulo: sin aire arriba, y con el mismo aire que
+   la separa de la explicación que sigue. */
 .sitio-escalera-cierre {
-  margin-top: 20px !important;
+  margin-top: 0 !important;
+  margin-bottom: 16px !important;
   font-size: 1.02rem !important;
   line-height: 1.6 !important;
   font-weight: 500;
@@ -719,9 +736,8 @@
 .sitio-escalera-aviso {
   margin-top: 18px !important;
   padding: 12px 14px;
-  border-left: 3px solid #b98a2e;
   background: #fbf6ec;
-  border-radius: 0 8px 8px 0;
+  border-radius: 8px;
   font-size: 0.92rem !important;
   line-height: 1.6 !important;
 }
@@ -787,7 +803,7 @@
    misma persona y hay que ver que son varias, no que cada una es un párrafo
    aparte. */
 .sitio .inf-grupo li {
-  margin-bottom: 9px;
+  margin-bottom: 4px;
 }
 
 /* La nota del semáforo es una aclaración al pie, no un párrafo: en pantalla
@@ -1128,4 +1144,318 @@
   margin: 0 0 8px !important;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--linea-suave);
+}
+
+/* ── La descarga con la forma de la pestaña Informe (EnHojas.tsx) ──────────
+   La primera hoja ya está medida como A4 en pantalla; al imprimir pierde la
+   sombra y el alto fijo (los márgenes los pone la página) y termina con un
+   salto, así lo que sigue arranca en hoja nueva. Lo que es de quien firma no se
+   imprime: el aviso de que la hoja se pasa y los botones de editar. */
+/* La descarga en hojas. Los márgenes son los de la carilla de pantalla
+   (16 y 15 mm) y no los 20 y 18 del documento clásico: con esos el texto se
+   angostaba, cortaba más renglones y el one pager se pasaba a una segunda hoja
+   por una oración.
+
+   El logo y la web van al pie de todas las hojas menos la primera, que ya los
+   tiene arriba en grande. Son cajas de margen de la página: un elemento fijo
+   del documento no sabe en qué hoja cae. */
+@page hoja {
+  size: A4;
+  margin: 16mm 15mm;
+
+  @bottom-left {
+    content: 'Campos HR';
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 11pt;
+    color: #16202b;
+    vertical-align: middle;
+  }
+
+  @bottom-right {
+    content: 'www.camposhr.com';
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 7.5pt;
+    letter-spacing: 0.04em;
+    color: #6b7785;
+    vertical-align: middle;
+  }
+}
+
+@page hoja:first {
+  @bottom-left {
+    content: none;
+  }
+
+  @bottom-right {
+    content: none;
+  }
+}
+
+@media print {
+  .sitio-secciones-ficha {
+    page: hoja;
+    padding: 0;
+  }
+
+  .sitio-secciones-ficha .os-onepager {
+    display: block;
+    margin: 0;
+  }
+
+  .sitio-secciones-ficha .os-onepager-hoja {
+    width: auto;
+    height: auto;
+    padding: 0;
+    overflow: visible;
+    box-shadow: none;
+    outline: none;
+  }
+
+  /* La primera hoja es una sola, siempre: del alto del área imprimible y lo que
+     sobre se corta, como en la carilla de pantalla, que es donde se avisa. */
+  .sitio-secciones-ficha .os-onepager:first-child .os-onepager-hoja {
+    height: 264mm;
+    overflow: hidden;
+    break-after: page;
+  }
+
+  /* Cada capítulo en hoja nueva. */
+  .sitio-secciones-ficha .os-onepager-resto .sitio-seccion {
+    break-before: page;
+  }
+
+  .sitio-secciones-ficha .os-onepager-resto .sitio-seccion:first-child {
+    break-before: auto;
+  }
+
+  .sitio-secciones-ficha .os-onepager-resto .sitio-seccion + .sitio-seccion {
+    margin-top: 0;
+  }
+
+  .os-onepager-aviso,
+  .inf-edita-barra,
+  .inf-grupo-top-der {
+    display: none !important;
+  }
+
+  /* Dentro de un capítulo el texto corre seguido. Un bloque grande que no se
+     deja partir salta entero a la hoja siguiente y deja media hoja en blanco
+     atrás; solo se protegen las piezas de pocos renglones y los títulos, que
+     no pueden quedar solos al pie. */
+  .sitio-secciones-ficha .inf-grupo,
+  .sitio-secciones-ficha .inf-competencia,
+  .sitio-secciones-ficha .inf-benziger,
+  .sitio-secciones-ficha .inf-nivel,
+  .sitio-secciones-ficha .inf-hoja-bloque,
+  .sitio-secciones-ficha .sitio-caja {
+    break-inside: auto;
+  }
+
+  .sitio-seccion-top,
+  .sitio-secciones-ficha h3,
+  .sitio-secciones-ficha h4 {
+    break-after: avoid;
+  }
+
+  .inf-conducir > div,
+  .inf-plan-tramo li,
+  .sitio-secciones-ficha li {
+    break-inside: avoid;
+  }
+
+  /* La escalera en bloque y no en grilla: como grilla Chrome la mandaba
+     entera a la hoja siguiente y dejaba la anterior con la introducción sola.
+     En bloque se parte entre escalones, nunca adentro de uno. */
+  .sitio-secciones-ficha .sitio-niveles {
+    display: block;
+  }
+
+  .sitio-secciones-ficha .sitio-nivel {
+    margin-left: auto;
+  }
+
+  .sitio-secciones-ficha .sitio-nivel + .sitio-nivel {
+    margin-top: 6px;
+  }
+}
+
+/* En el portal se baja lo mismo que se lee: las secciones del sitio, sin el
+   índice ni la barra, y solo las partes elegidas. Hasta el 2/10/2026 se
+   imprimía el documento de siempre, que tiene otra forma. */
+@media print {
+  .sitio .sitio-hoja {
+    display: block !important;
+  }
+
+  .sitio .sitio-indice,
+  .sitio .sitio-imprimible {
+    display: none !important;
+  }
+
+  .sitio .sitio-cuerpo {
+    display: block;
+  }
+
+  .sitio .sitio-seccion[data-parte] {
+    display: none;
+  }
+
+  .sitio[data-imprimir~='recomendacion'] .sitio-seccion[data-parte='recomendacion'],
+  .sitio[data-imprimir~='fundamentos'] .sitio-seccion[data-parte='fundamentos'],
+  .sitio[data-imprimir~='indicadores'] .sitio-seccion[data-parte='indicadores'] {
+    display: block;
+  }
+
+  /* Cada parte arranca en hoja nueva: la primera sección de fundamentos y la
+     de indicadores. */
+  .sitio .sitio-seccion[data-parte='recomendacion'] ~ .sitio-seccion[data-parte='fundamentos'][data-abre],
+  .sitio .sitio-seccion[data-parte='indicadores'] {
+    break-before: page;
+  }
+}
+
+/* Los velocímetros de a dos y con el anillo al costado: la tarjeta es ancha,
+   y con el anillo arriba quedaba un hueco a cada lado del texto. Al lado, el
+   nombre, la banda y qué mide se leen de corrido junto al número. */
+.sitio .inf-competencias {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sitio .inf-competencia {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  column-gap: 16px;
+  align-items: start;
+  padding: 14px 18px 14px 12px;
+  text-align: left;
+}
+
+.sitio .inf-competencia .inf-gauge-caja {
+  grid-row: 1 / 4;
+  align-self: center;
+}
+
+.sitio .inf-competencia h3 {
+  margin: 8px 0 0;
+}
+
+@media (max-width: 560px) {
+  .sitio .inf-competencias {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Los tramos del plan (Primera semana, Días 1 a 30…) con el mismo rótulo que
+   los subtítulos de la sección, como "Entorno en el que rinde": son partes de
+   un bloque y no títulos de otro color. */
+.sitio .inf-grupo .inf-plan-tramo h3 {
+  margin: 0 0 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+/*
+ * La escalera con la escala de color de la pirámide del documento clásico.
+ *
+ * Cada escalón va relleno de azul, más claro arriba y más pleno abajo, como se
+ * lee la pirámide en el informe que ya conocen los clientes. Sin bordes de
+ * color: el color está en el relleno. Los escalones marcados (lo que pide el
+ * puesto, lo que puede hoy, hasta dónde llega) van con el relleno más fuerte,
+ * así la marca se ve antes de leer el rótulo.
+ */
+.sitio-nivel {
+  --tono: var(--azul);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.sitio-nivel[data-nivel='V'] {
+  --tono: color-mix(in srgb, var(--azul) 30%, #fff);
+}
+.sitio-nivel[data-nivel='IV'] {
+  --tono: color-mix(in srgb, var(--azul) 45%, #fff);
+}
+.sitio-nivel[data-nivel='III'] {
+  --tono: color-mix(in srgb, var(--azul) 62%, #fff);
+}
+.sitio-nivel[data-nivel='II'] {
+  --tono: color-mix(in srgb, var(--azul) 80%, #fff);
+}
+.sitio-nivel[data-nivel='I'] {
+  --tono: var(--azul);
+}
+
+.sitio-nivel:not(.marcado) {
+  background: color-mix(in srgb, var(--tono) 10%, #fff) !important;
+  border-color: transparent !important;
+}
+
+.sitio-nivel.marcado {
+  background: color-mix(in srgb, var(--tono) 26%, #fff) !important;
+  border-color: transparent !important;
+}
+
+.sitio-nivel.marcado h4 {
+  color: color-mix(in srgb, var(--azul) 70%, var(--tinta));
+}
+
+/* El contenido de cada escalón contra el margen derecho, que es el borde
+   donde se alinean todos, y cada dato en un solo renglón: el nombre, a qué
+   puestos se parece con su plazo, y qué clase de trabajo es. Partidos en dos
+   renglones, los cinco escalones tenían alturas distintas y la escalera se
+   leía despareja.
+
+   Para que entren, el escalón crece hasta lo que pide su renglón más largo y
+   nunca baja del ancho que le toca por su altura. Los mínimos están medidos
+   para que el renglón más largo de arriba (la conducción del negocio) entre
+   sin que ese escalón quede más ancho que el de abajo: si se alarga un texto
+   en Configuración, hay que volver a mirar la escalera. Las marcas (lo que pide el puesto, lo que puede hoy, hasta
+   dónde llega) van en su propio renglón arriba, del mismo lado. */
+.sitio-niveles .sitio-nivel {
+  grid-template-columns: minmax(0, 1fr);
+  /* Todos miden lo mismo de alto: el contenido va centrado, así el aire que
+     sobra se reparte arriba y abajo y no queda todo arriba. */
+  align-content: center;
+  width: max-content;
+  max-width: 100%;
+}
+
+.sitio-niveles .sitio-nivel[data-nivel='V'] {
+  min-width: 82%;
+}
+.sitio-niveles .sitio-nivel[data-nivel='IV'] {
+  min-width: 86.5%;
+}
+.sitio-niveles .sitio-nivel[data-nivel='III'] {
+  min-width: 91%;
+}
+.sitio-niveles .sitio-nivel[data-nivel='II'] {
+  min-width: 95.5%;
+}
+.sitio-niveles .sitio-nivel[data-nivel='I'] {
+  min-width: 100%;
+}
+
+.sitio-nivel-lado {
+  order: -1;
+  flex-direction: row;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.sitio-nivel-lado:empty {
+  display: none;
+}
+
+.sitio-nivel-cuerpo {
+  text-align: right;
+}
+
+.sitio-nivel-cuerpo h4,
+.sitio-nivel-cuerpo p {
+  white-space: nowrap;
 }
