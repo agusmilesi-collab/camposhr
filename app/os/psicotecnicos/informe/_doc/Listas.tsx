@@ -325,6 +325,16 @@ export default function Listas({
     );
   }
 
+  /* Un grupo del análisis sin ítems no sale en el informe, tampoco en la
+     ficha: queda un botón chico para cargarle algo, que no se imprime. */
+  if (!editando && grupo && items.length === 0) {
+    return id ? (
+      <button type="button" className="os-boton inf-grupo-agregar" onClick={abrir}>
+        Agregar {grupo.titulo.toLowerCase()}
+      </button>
+    ) : null;
+  }
+
   if (!editando) {
     return envuelto(
       items.length === 0 ? (

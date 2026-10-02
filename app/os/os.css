@@ -16544,10 +16544,14 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   line-height: 1.45;
 }
 
+/* La fundamentación en la serif del portal, que la separa de lo que arma el
+   sistema: es lo único de la hoja escrito por quien firma. Más chica que en el
+   portal, para que la hoja siga entrando en una carilla. */
 .os-onepager-hoja .sitio-cita p {
-  font-family: inherit;
-  font-size: 0.9rem !important;
-  line-height: 1.5 !important;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-size: 1.08rem !important;
+  line-height: 1.3 !important;
 }
 
 .os-onepager-hoja .sitio-firma {
@@ -16994,4 +16998,11 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
    subtítulos de la hoja (`.os-onepager-hoja .sitio-sub`). */
 .os-onepager-hoja.os-onepager-hoja .inf-grupo .inf-plan-tramo h3 {
   font-size: 0.62rem;
+}
+
+/* Entre el resumen y la fundamentación, un poco más de aire que entre los
+   demás subtítulos de la hoja: ahí cambia quién habla, del sistema a quien
+   firma. */
+.os-onepager-hoja.os-onepager-hoja .sitio-cita .sitio-sub {
+  margin-top: 26px;
 }

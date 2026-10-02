@@ -226,6 +226,9 @@ export function seccionesDe(
        documento, así que las dos pantallas no se pueden separar. */
     cuerpo: (
       <div className="sitio-grupos">
+        {/* Un grupo sin ítems no sale: un título con "no posee" abajo ocupa
+            lugar sin decir nada. `Listas` lo resuelve, y en la ficha deja un
+            botón para cargarle algo. */}
         {grupos.map((g) => (
           <Listas
             key={g.clave}

@@ -2263,3 +2263,16 @@
     display: none !important;
   }
 }
+
+/* El botón que reemplaza a un grupo del análisis vacío, en la ficha. */
+.inf-grupo-agregar {
+  display: block;
+  margin: 0 0 22px;
+  border-style: dashed;
+}
+
+@media print {
+  .inf-grupo-agregar {
+    display: none !important;
+  }
+}
