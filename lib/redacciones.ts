@@ -3344,7 +3344,12 @@ export function leer(
     sumar('adjd-positivo', dd(d, adjd));
   } else if (adjd === -1) {
     sumar('adjd-menos-uno', dd(d, adjd));
-  } else {
+  } else if (adjd < -1) {
+    // Solo con el ajustado también negativo la sobrecarga es de su
+    // funcionamiento, que es lo que dice el texto. Hasta el 2/10/2026 esto era
+    // un `else` y atrapaba AdjD 0 con D negativo: la tensión del momento salía
+    // escrita como instalada, contradiciendo dos renglones más abajo a
+    // "d-menor-que-adjd", que es la lectura de ese caso.
     sumar('adjd-sobrecarga', dd(d, adjd));
   }
 
@@ -3416,6 +3421,17 @@ const ESPERADAS = new Set([
   'eb-ambigual',
   'eb-extratensivo',
   'afr-bajo',
+  // Las tres dicen que el índice está dentro de lo esperado, y salían en
+  // "necesidad de desarrollo" porque una lectura sin grupo cae ahí. El cliente
+  // leía "criterio de realidad adecuado" bajo "conviene acompañar" (2/10/2026).
+  'xa-wda-ok',
+  'p-ok',
+  'ghr-alto',
+  // Mismo caso, visto al armar el resumen de la primera hoja: salían como
+  // "requieren atención" una autoimagen realista y una buena capacidad de
+  // elaborar lo que recibe.
+  'h-mayor',
+  'complejidad-alta',
 ]);
 
 export function senalDe(l: Lectura): Senal {

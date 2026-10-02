@@ -34,6 +34,49 @@ export function Faltantes({ inf }: { inf: Informe }) {
 }
 
 /**
+ * Lo que choca, para revisar antes de firmar.
+ *
+ * En ámbar y no en rojo: no falta nada, el informe puede salir así. Es un
+ * llamado a mirar, y la decisión es de quien firma. Agrupado por tipo, porque
+ * se resuelven en lugares distintos: el nivel en Conclusiones, las lecturas
+ * editando la lista o explicándolas en la fundamentación.
+ */
+const TITULO_DEL_AVISO = {
+  nivel: 'El nivel de ajuste contra el resto del informe',
+  lecturas: 'Lecturas del protocolo que se contradicen',
+  benziger: 'El Rorschach contra el Benziger',
+  perfil: 'Si el perfil del Benziger es natural o adaptado',
+} as const;
+
+export function Revisar({ inf }: { inf: Informe }) {
+  if (inf.avisos.length === 0) return null;
+  const tipos = (['nivel', 'lecturas', 'benziger', 'perfil'] as const).filter((t) =>
+    inf.avisos.some((a) => a.tipo === t)
+  );
+  return (
+    <aside className="inf-pendientes inf-revisar">
+      <strong>Revisar antes de firmar:</strong>
+      {tipos.map((t) => (
+        <div key={t} className="inf-revisar-grupo">
+          <span className="inf-revisar-tipo">{TITULO_DEL_AVISO[t]}</span>
+          <ul>
+            {inf.avisos
+              .filter((a) => a.tipo === t)
+              .map((a) => (
+                <li key={a.texto}>{a.texto}</li>
+              ))}
+          </ul>
+        </div>
+      ))}
+      <span className="inf-pendientes-nota">
+        Se puede sacar una lectura editando su lista, o explicar el punto en la fundamentación. Este
+        aviso no se imprime.
+      </span>
+    </aside>
+  );
+}
+
+/**
  * De dónde sale cada puntaje.
  *
  * Está para revisar contra casos reales las dos cosas que se decidieron acá y

@@ -42,7 +42,7 @@ export const TRAMOS: { clave: Tramo; titulo: string; fijo: string }[] = [
   },
   {
     clave: 'siempre',
-    titulo: 'Durante toda la relación',
+    titulo: 'Durante toda la relación laboral',
     fijo: 'Sostener la reunión individual, aunque sea una vez por mes.',
   },
 ];

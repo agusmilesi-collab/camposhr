@@ -75,15 +75,20 @@ export function IconoNivel({ clave }: { clave: string }) {
  * y se ve más ancho.
  */
 export function EscalaBandas({ exigencia }: { exigencia: Exigencia }) {
+  // Degradado continuo: cada color pleno en el centro de su tramo y la mezcla
+  // entre uno y otro, así la escala se lee como un recorrido de rojo a verde y
+  // no como cinco cajas. Las puntas quedan plenas hasta el borde.
   const tramos = tramosDe(exigencia).map((t, i, todos) => {
     const hasta = i === todos.length - 1 ? 100 : todos[i + 1].desde;
-    return `rgb(${t.rgb.join(', ')}) ${t.desde}% ${hasta}%`;
+    const medio = i === 0 ? 0 : i === todos.length - 1 ? 100 : (t.desde + hasta) / 2;
+    return `rgb(${t.rgb.join(', ')}) ${medio}%`;
   });
 
   const bandas = bandasDe(exigencia).slice().reverse();
 
   return (
     <div className="inf-escala-bandas">
+      <p className="inf-escala-titulo">Escala de puntajes</p>
       <span
         className="inf-escala-barra"
         style={{ backgroundImage: `linear-gradient(90deg, ${tramos.join(', ')})` }}

@@ -72,6 +72,19 @@ export default function Escalera({ inf }: { inf: Informe }) {
 
   return (
     <div className="sitio-escalera">
+      {/* La respuesta primero: si le alcanza o no para el puesto. Es lo que
+          el cliente viene a buscar, y la escalera y su explicación vienen
+          después, como respaldo. */}
+      {alcanza !== null && (
+        <p className="sitio-escalera-cierre">
+          {alcanza === 0
+            ? 'El trabajo que esta persona puede manejar hoy es del mismo tamaño que el que el puesto le va a pedir.'
+            : alcanza > 0
+              ? 'El trabajo que esta persona puede manejar hoy es más grande que el que el puesto le va a pedir. Va a poder con el puesto, y conviene tener en cuenta que le puede quedar chico en cuanto lo domine.'
+              : 'El trabajo que el puesto pide es más grande que el que esta persona puede manejar hoy. Entrar igual es posible, y en ese caso hay que acompañarla de cerca en las decisiones que abran más de un camino.'}
+        </p>
+      )}
+
       <p className="sitio-escalera-intro">
         {/* Qué se está mirando, antes de la escalera: sin esto los escalones se
             leen como una calificación de la persona. */}
@@ -124,18 +137,6 @@ export default function Escalera({ inf }: { inf: Informe }) {
             );
           })}
       </ol>
-
-      {/* Lo que hay que contestar, escrito. La escalera lo muestra, pero quien
-          lee un informe quiere leerlo dicho. */}
-      {alcanza !== null && (
-        <p className="sitio-escalera-cierre">
-          {alcanza === 0
-            ? 'El trabajo que esta persona puede manejar hoy es del mismo tamaño que el que el puesto le va a pedir.'
-            : alcanza > 0
-              ? 'El trabajo que esta persona puede manejar hoy es más grande que el que el puesto le va a pedir. Va a poder con el puesto, y conviene tener en cuenta que le puede quedar chico en cuanto lo domine.'
-              : 'El trabajo que el puesto pide es más grande que el que esta persona puede manejar hoy. Entrar igual es posible, y en ese caso hay que acompañarla de cerca en las decisiones que abran más de un camino.'}
-        </p>
-      )}
 
       {d.punto && futuro && (
         <p className="sitio-escalera-nota">

@@ -7,6 +7,7 @@ import Ponderaciones from './Ponderaciones';
 import Redacciones from './Redacciones';
 import Potencial from './Potencial';
 import Exigencia from './Exigencia';
+import Benziger from './Benziger';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,7 @@ const PESTANAS = [
   { clave: 'redacciones', texto: 'Redacciones' },
   { clave: 'potencial', texto: 'Potencial' },
   { clave: 'exigencia', texto: 'Exigencia' },
+  { clave: 'benziger', texto: 'Benziger' },
 ];
 
 const QUE_HACE: Record<string, string> = {
@@ -95,6 +97,7 @@ export default async function Configuracion({
       {ver === 'redacciones' && <Redacciones />}
       {ver === 'potencial' && <Potencial />}
       {ver === 'exigencia' && <Exigencia />}
+      {ver === 'benziger' && <Benziger />}
     </Shell>
   );
 }

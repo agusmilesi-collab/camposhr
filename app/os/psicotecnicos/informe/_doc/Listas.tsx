@@ -47,6 +47,7 @@ export default function Listas({
   respaldos,
   grupo,
   tramos,
+  origen,
 }: {
   /**
    * La evaluación, cuando la lista se puede editar.
@@ -83,6 +84,14 @@ export default function Listas({
    * incorporación y sale agrupada por tramo en vez de numerada.
    */
   tramos?: Tramo[];
+  /**
+   * De qué test sale la lista ("Rorschach", "Zulliger"), para quien evalúa.
+   *
+   * Sale al lado de cada ítem y solo en la ficha, igual que el índice: el plan
+   * de incorporación junta pautas de las manchas y del Benziger, y la
+   * psicóloga tiene que poder ver cuál es cuál antes de firmar.
+   */
+  origen?: string;
 }) {
   const plan = Boolean(tramos);
   const router = useRouter();
@@ -260,8 +269,10 @@ export default function Listas({
    * los mismos colores que la hoja del sumario.
    */
   const sello = (texto: string) => {
-    const r = respaldos?.[texto];
-    if (!r) return null;
+    if (!respaldos) return null;
+    const r = respaldos[texto];
+    const test = origen ? <span className="inf-respaldo inf-origen">{origen}</span> : null;
+    if (!r) return test;
     const clase =
       r.dentro === null ? 'inf-respaldo-neutro' : r.dentro ? 'inf-respaldo-dentro' : 'inf-respaldo-fuera';
     // Hay lecturas que ya traen el índice adentro del valor ("W:M 9:3",
@@ -269,12 +280,15 @@ export default function Listas({
     // sellos como "W:M W:M 9:3".
     const etiqueta = /[a-zA-Z]/.test(r.valor) ? r.valor : `${r.indice} ${r.valor}`;
     return (
-      <span
-        className={`inf-respaldo ${clase}`}
-        title={r.esperado ? `${r.indice} esperado: ${r.esperado}` : `Sale de ${r.indice}`}
-      >
-        {etiqueta}
-      </span>
+      <>
+        {test}
+        <span
+          className={`inf-respaldo ${clase}`}
+          title={r.esperado ? `${r.indice} esperado: ${r.esperado}` : `Sale de ${r.indice}`}
+        >
+          {etiqueta}
+        </span>
+      </>
     );
   };
 
@@ -289,7 +303,6 @@ export default function Listas({
   if (!editando && plan && items.length > 0) {
     return envuelto(
       <div className="inf-plan">
-        <p className="inf-plan-intro">Si ingresa, estos son los pasos para su líder directo.</p>
         {TRAMOS.map((t) => {
           const suyos = items.filter((_, i) => tramos![i] === t.clave);
           if (suyos.length === 0 && t.clave !== 'noventa') return null;

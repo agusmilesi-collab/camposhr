@@ -1,13 +1,15 @@
-import type { Informe } from '@/lib/informe';
-import { bandaDe, bandasDe } from '@/lib/exigencia';
+import { parrafoBenziger, type Informe } from '@/lib/informe';
+import { bandaDe } from '@/lib/exigencia';
 import { CONFIDENCIALIDAD, CUADRANTES, FIRMAS, NIVELES, NOTA_AJUSTE } from '@/lib/informe-textos';
 import { firmaEnDatos } from '@/lib/firmas';
 import Listas from '../_doc/Listas';
 import { Desglose } from '../_doc/Interno';
-import { EscalaBandas, IconoNivel, tono } from '../_doc/piezas';
+import { EscalaBandas, IconoNivel, Velocimetro, tono } from '../_doc/piezas';
 import Cerebro from '../_doc/Cerebro';
 import Crudo from '../_doc/Crudo';
 import Escalera from './Escalera';
+import BenzigerLecturas from '../_doc/BenzigerLecturas';
+import EditarBenziger from '../_doc/EditarBenziger';
 
 /**
  * El informe del cliente, partido en secciones que se navegan.
@@ -148,14 +150,10 @@ export function seccionesDe(
   });
 
   /* ── Competencias ───────────────────────────────────────────────────
-     Nueve puntajes se comparan, no se leen de a uno: van en barras y ordenados
-     de mayor a menor, así la pregunta "en qué es fuerte y en qué no" se
-     contesta mirando y sin recorrer nueve números. La pista lleva marcados los
-     cortes de las bandas, que son los que le dan sentido al número. */
+     Un velocímetro por competencia, ordenados de mayor a menor: así la
+     pregunta "en qué es fuerte y en qué no" se contesta mirando. Cada anillo
+     lleva marcados los cortes de las bandas, que le dan sentido al número. */
   const ordenadas = inf.competencias.slice().sort((a, b) => (b.puntaje ?? -1) - (a.puntaje ?? -1));
-  const cortes = bandasDe(inf.exigencia)
-    .filter((b) => b.desde > 0)
-    .map((b) => b.desde);
 
   secciones.push({
     id: 'competencias',
@@ -171,50 +169,19 @@ export function seccionesDe(
             </p>
           )}
 
-          <div className="sitio-comps">
+          {/* Los velocímetros del documento: son lo que el cliente reconoce del
+              informe impreso, y la descarga sale de esta misma sección. */}
+          <div className="inf-competencias">
             {ordenadas.map((c) => (
-              <article key={c.nombre} className="sitio-comp">
-                <div className="sitio-comp-quien">
-                  <h3>{c.nombre}</h3>
-                  <p>{c.mide}</p>
-                </div>
-                <div className="sitio-comp-medida">
-                  <div
-                    className="sitio-pista"
-                    /* Los cortes de las bandas, dibujados sobre la pista: sin
-                       ellos el largo de la barra no dice en qué banda cayó. */
-                    style={{
-                      backgroundImage: cortes
-                        .map(
-                          (x) =>
-                            `linear-gradient(90deg, transparent ${x}%, var(--linea) ${x}%, var(--linea) calc(${x}% + 1px), transparent calc(${x}% + 1px))`,
-                        )
-                        .join(', '),
-                    }}
-                  >
-                    {c.puntaje !== null && (
-                      <span
-                        className="sitio-relleno"
-                        style={{
-                          width: `${c.puntaje}%`,
-                          background: tono(c.puntaje, 1, inf.exigencia),
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div className="sitio-comp-cifra">
-                    {c.puntaje === null ? (
-                      <span className="sitio-sin">sin datos</span>
-                    ) : (
-                      <>
-                        <strong style={{ color: tono(c.puntaje, 1, inf.exigencia) }}>
-                          {c.puntaje}
-                        </strong>
-                        <span>{bandaDe(c.puntaje, inf.exigencia)}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
+              <article key={c.nombre} className="inf-competencia">
+                <Velocimetro puntaje={c.puntaje} exigencia={inf.exigencia} />
+                <h3>{c.nombre}</h3>
+                {c.puntaje !== null && (
+                  <span className="inf-banda-texto" style={{ color: tono(c.puntaje, 1, inf.exigencia) }}>
+                    {bandaDe(c.puntaje, inf.exigencia)}
+                  </span>
+                )}
+                <p className="inf-mide">{c.mide}</p>
               </article>
             ))}
           </div>
@@ -266,30 +233,13 @@ export function seccionesDe(
             lista={g.lista}
             items={g.items}
             intervenida={inf.intervenidas.includes(g.lista)}
-            vacio="Sin registros en este grupo."
+            vacio={`No posee características con ${g.titulo.toLowerCase()}.`}
             respaldos={editar ? inf.respaldos : undefined}
+            origen={inf.proyectivo ?? undefined}
             grupo={{ clave: g.clave, titulo: g.titulo, sub: g.sub }}
           />
         ))}
       </div>
-    ),
-  });
-
-  /* ── Plan de incorporación ──────────────────────────────────────────────────── */
-  secciones.push({
-    id: 'lider',
-    titulo: 'Plan de incorporación',
-    bajada: 'Primeros 90 días, para su líder',
-    cuerpo: (
-      <Listas
-        id={editar}
-        lista="recomendaciones"
-        items={inf.recomendaciones.map((r) => r.texto)}
-        tramos={inf.recomendaciones.map((r) => r.tramo)}
-        intervenida={inf.intervenidas.includes('recomendaciones')}
-        vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
-        respaldos={editar ? inf.respaldos : undefined}
-      />
     ),
   });
 
@@ -323,20 +273,29 @@ export function seccionesDe(
             })}
             <Cerebro adulto={inf.benziger.adulto} joven={inf.benziger.joven} />
           </div>
-          {inf.benziger.preferentes.map((q) => (
-            <div key={q.clave} className="sitio-preferente">
-              <h3 className="sitio-sub">{q.nombre}</h3>
-              <ul className="sitio-lista">
-                {q.caracteristicas.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
+          {/* Un solo cuadrante, el primero que marcó la evaluadora, y solo
+              lo que dice de la persona: cómo conducirla va en el plan de
+              incorporación. */}
+          {inf.benziger.preferentes[0] && inf.benziger.textos && (
+            <EditarBenziger id={editar} parrafos={inf.benziger.parrafos} editado={inf.benziger.editado}>
+            <div className="sitio-preferente">
+              <h3 className="sitio-sub inf-predominante">
+                Cuadrante predominante · {inf.benziger.preferentes[0].nombre}
+              </h3>
+              <p>
+                {parrafoBenziger(inf.benziger, 'comoEs')}
+                {editar && (
+                  <span className="inf-respaldo inf-origen">
+                    {inf.benziger.editado.comoEs ? 'Benziger · reescrito' : inf.benziger.textos.comoEsFuente}
+                  </span>
+                )}
+              </p>
+              {/* Fortaleza, debilidad y entorno: el mismo componente que el
+                  documento clásico. */}
+              <BenzigerLecturas inf={inf} editar={editar} rotulo="sitio-sub" />
             </div>
-          ))}
-          <p className="sitio-fuente">
-            Sale del BZG Thinking Styles Assessment (BTSA), el cuestionario de perfil de pensamiento
-            que administra el estudio bajo licencia.
-          </p>
+            </EditarBenziger>
+          )}
         </>
       ),
     });
@@ -351,6 +310,47 @@ export function seccionesDe(
       cuerpo: <Escalera inf={inf} />,
     });
   }
+
+  /* ── Plan de incorporación ──────────────────────────────────────────────────
+     Después de todo lo que sostiene la decisión: es lo que el líder necesita
+     si la persona entra, un agregado y no un fundamento. */
+  secciones.push({
+    id: 'lider',
+    titulo: 'Plan de incorporación',
+    bajada: 'Primeros 90 días, para su líder, en caso de que la persona ingrese',
+    cuerpo: (
+      <>
+        <Listas
+          id={editar}
+          lista="recomendaciones"
+          items={inf.recomendaciones.map((r) => r.texto)}
+          tramos={inf.recomendaciones.map((r) => r.tramo)}
+          intervenida={inf.intervenidas.includes('recomendaciones')}
+          vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
+          respaldos={editar ? inf.respaldos : undefined}
+          origen={inf.proyectivo ?? undefined}
+        />
+        {/* Del Benziger, por tema y para toda la relación: va separado de
+            las recomendaciones de las manchas, que van por tramo. */}
+        {inf.benziger?.textos && inf.benziger.textos.conducir.length > 0 && (
+          <>
+            <h3 className="sitio-sub">Cómo conducir a esta persona</h3>
+            <dl className="inf-conducir">
+              {inf.benziger.textos.conducir.map((c) => (
+                <div key={c.rotulo}>
+                  <dt>{c.rotulo}</dt>
+                  <dd>
+                    {c.texto}
+                    {editar && <span className="inf-respaldo inf-origen">{c.fuente}</span>}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </>
+        )}
+      </>
+    ),
+  });
 
   /* ── Técnicas ───────────────────────────────────────────────────────
      Con qué se la evaluó. Es su propia sección y va antes de los números: se

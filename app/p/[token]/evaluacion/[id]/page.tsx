@@ -99,7 +99,16 @@ export default async function InformeDelPortal({
             numero: String(i + 1).padStart(2, '0'),
           }))}
           cuerpo={secciones.map((s, i) => (
-            <section key={s.id} id={s.id} className="sitio-seccion">
+            <section
+              key={s.id}
+              id={s.id}
+              className="sitio-seccion"
+              // A qué parte de la descarga pertenece: la recomendación es la
+              // primera hoja, los datos son los indicadores y el resto son los
+              // fundamentos. `data-abre` marca la que empieza su parte.
+              data-parte={i === 0 ? 'recomendacion' : s.id === 'datos' ? 'indicadores' : 'fundamentos'}
+              data-abre={i === 1 ? '' : undefined}
+            >
               {/* El número, el título y qué se contesta ahí: es lo que separa una
                   sección de la anterior cuando todo es texto. */}
               <header className="sitio-seccion-top">

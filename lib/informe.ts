@@ -36,6 +36,8 @@ import {
   estratoDeDiscurso,
   estratoPorNumero,
 } from '@/lib/potencial';
+import { ESTRATOS as ESTRATOS_DEL_MODELO } from '@/lib/potencial';
+import { revisar, type Aviso } from '@/lib/coherencia';
 import {
   conclusionesValidas,
   llevaDiscursivo,
@@ -51,7 +53,26 @@ import {
   type NivelAjuste,
 } from '@/lib/informe-textos';
 import { leerBenziger } from '@/lib/benziger-lectura';
+import { adaptacionDe, debilidadDe, entornoDe, fortalezaDe } from '@/lib/benziger-contexto';
+
+/** Un modo del perfil adulto: su puntaje, su banda y las tareas que dependen de él. */
+type ModoDelPerfil = {
+  clave: string;
+  nombre: string;
+  puntaje: number | null;
+  banda: string | null;
+  tareas: string;
+  fuente: string;
+};
 import type { Cuatro } from '@/lib/benziger-perfil';
+import {
+  CAMPOS_DE_CONDUCCION,
+  TEXTOS_BENZIGER,
+  benzigerQueRige,
+  benzigerValidos,
+  type CampoBenziger,
+  type TextosDeCuadrante,
+} from '@/lib/benziger-textos';
 
 /**
  * El informe de selección, armado desde lo que está cargado.
@@ -147,6 +168,18 @@ function planDe(
     }
     return [];
   });
+}
+
+/** Los párrafos del capítulo Benziger que la evaluadora puede reescribir. */
+export const PARRAFOS_BENZIGER = ['comoEs', 'fortaleza', 'debilidad', 'entorno'] as const;
+export type ParrafoBenziger = (typeof PARRAFOS_BENZIGER)[number];
+
+/** El párrafo que sale: lo reescrito si lo hay, si no lo calculado. */
+export function parrafoBenziger(
+  bz: { parrafos: Record<ParrafoBenziger, string | null>; editado: Partial<Record<ParrafoBenziger, string>> },
+  k: ParrafoBenziger
+): string | null {
+  return bz.editado[k] ?? bz.parrafos[k];
 }
 
 /** Las cuatro listas del informe que la evaluadora puede tocar. */
@@ -257,11 +290,36 @@ export type Informe = {
    */
   intervenidas: ListaDelInforme[];
   benziger: {
+    /**
+     * El cuadrante que sale como predominante: el primero que marcó la
+     * evaluadora, y uno solo aunque haya marcado dos (M p. 43: cada persona
+     * tiene una sola preferencia natural).
+     */
     preferentes: Cuadrante[];
+    /** Qué se dice de la persona y cómo conducirla, con lo que rige. Null si no se eligió cuadrante. */
+    textos: {
+      comoEs: string;
+      /** De dónde sale, para la etiqueta que ve quien evalúa. */
+      comoEsFuente: string;
+      /** Los renglones del manual para el líder; un campo vaciado en Configuración no sale. */
+      conducir: { rotulo: string; texto: string; fuente: string }[];
+    } | null;
     /** Los cuatro totales del perfil adulto, que es el que se grafica. */
     adulto: Cuatro | null;
     /** El perfil joven, que en el gráfico va punteado. */
     joven: Cuatro | null;
+    /** En qué entorno rinde, del nivel de extraversión del adulto (`lib/benziger-contexto.ts`). */
+    entorno: { estilo: string; nivel: number; texto: string; fuente: string } | null;
+    /** El modo predominante y su diagonal, con banda y tareas. Null sin predominante. */
+    fortaleza: ModoDelPerfil | null;
+    debilidad: ModoDelPerfil | null;
+    /**
+     * Los cuatro párrafos del capítulo como los arma el sistema (null el que
+     * no sale), y lo que la evaluadora reescribió para esta persona. Lo
+     * reescrito pisa lo calculado; una clave ausente es "usá lo calculado".
+     */
+    parrafos: Record<ParrafoBenziger, string | null>;
+    editado: Partial<Record<ParrafoBenziger, string>>;
   } | null;
   raven: { raw: number; resultado: string } | null;
   /**
@@ -364,6 +422,13 @@ export type Informe = {
   };
   /** Lo que no estaba cargado y por eso no salió en el informe. */
   faltantes: Faltante[];
+  /**
+   * Lo que choca y conviene mirar antes de firmar (`lib/coherencia.ts`).
+   *
+   * Es de quien evalúa, como los faltantes: se dibuja en la ficha y no se
+   * imprime. El sistema no corrige nada, solo lo marca.
+   */
+  avisos: Aviso[];
 };
 
 /**
@@ -401,49 +466,116 @@ function mesYAnio(iso: string | null): string {
 }
 
 /**
- * Las dos oraciones del resumen.
+ * Qué pesa más entre lo que hay que desarrollar, para elegir los riesgos del
+ * resumen.
  *
- * Es lo que la evaluación dio, dicho en dos frases: la primera nombra dos o
- * tres cosas que se destacan, y si no se destaca nada se apoya en lo que dio
- * dentro de lo esperado; la segunda nombra lo que más le va a demandar al
- * líder, que son las lecturas a desarrollar que además traen recomendación.
+ * El diccionario no tiene un orden de gravedad: sus lecturas van por área. Sin
+ * este orden el resumen tomaba las tres primeras del diccionario, y en un
+ * protocolo con sobrecarga nombraba la localización y dejaba afuera lo más
+ * serio. Va de lo que más compromete el desempeño a lo que menos: los recursos
+ * frente a la tensión, la lectura de la realidad, el descontrol, la forma de
+ * procesar y lo interpersonal. Lo que no está acá va después, en el orden del
+ * diccionario.
  *
- * **Lo arma el motor con las mismas lecturas que el resto del informe**, sin
- * modelo de lenguaje de por medio: son frases escritas, elegidas por los
- * índices que dieron fuera o dentro de banda. Va antes de la fundamentación
- * porque son dos cosas distintas: esto es lo que se vio, y la fundamentación es
- * por qué se recomienda lo que se recomienda.
+ * Es un borrador del 2/10/2026 para que lo corrijan las psicólogas.
  */
-function armarResumen(
-  lecturas: Lectura[],
-  destacadas: Lectura[],
-  esperadas: Lectura[]
-): string[] {
-  const aFavor = (destacadas.length ? destacadas : esperadas).slice(0, 3);
-  // Lo que le va a demandar al líder son las recomendaciones, no los índices:
-  // el informe no nombra códigos, y al líder le sirve saber qué hacer.
-  const pesan = sinRepetir(
-    lecturas.filter((l) => senalDe(l) === 'desarrollar' && l.recomienda).map((l) => l.recomienda)
-  ).slice(0, 3);
+const GRAVEDAD = [
+  // Recursos frente a la tensión.
+  'adjd-sobrecarga',
+  'complejidad-alta-sin-recursos',
+  'ea-bajo',
+  'adjd-menos-uno',
+  'd-menor-que-adjd',
+  // Lectura de la realidad y del pensamiento.
+  'x-menos-alto',
+  'xa-bajo',
+  'xa-medio-wda-bajo',
+  'm-menos-alto',
+  'alog-presente',
+  'dr-presente',
+  // Descontrol y oposición.
+  'fc-descarga-intensa',
+  'c-pura-alta',
+  'cop-bajo-ag-alto',
+  's-muy-alto',
+  'c-prima-alta',
+  // Forma de procesar la información.
+  'dqv-w-alto',
+  'dqv-d-alto',
+  'dqvmas-w-alto',
+  'dqv-alto',
+  'zd-bajo',
+  'lambda-alto',
+  'w-m-alto',
+  // Lo interpersonal.
+  'phr-mayor-que-ghr',
+  'aislamiento-muy-alto',
+  'cop-cero-ag-bajo',
+  'sumt-cero',
+  'per-alto',
+  'fd-presente',
+];
 
-  const enumerar = (xs: string[]) =>
-    xs.length <= 1 ? (xs[0] ?? '') : `${xs.slice(0, -1).join('; ')}; y ${xs[xs.length - 1]}`;
+/**
+ * Las dos oraciones del resumen, que van en la primera hoja.
+ *
+ * La primera hoja es la que lee quien decide la contratación, así que dice dos
+ * cosas: qué se destaca y qué pesa en contra para el puesto. Lo que el líder
+ * tiene que hacer va en el plan de incorporación y no acá.
+ *
+ * **Lo arma el motor, sin modelo de lenguaje**: pega la primera frase del "qué
+ * dice" de lecturas ya escritas, elegidas por los índices.
+ *
+ * - **Lo que se destaca** sale solo del grupo destacado. Hasta el 2/10/2026, si
+ *   no había nada destacado, tomaba lo que dio dentro de lo esperado y lo
+ *   presentaba igual como "se destacan": el cliente leía como fortaleza un
+ *   "criterio de realidad adecuado", que es lo esperable.
+ * - **Lo que requiere atención** son las tres lecturas a desarrollar más
+ *   graves según `GRAVEDAD`. No dice "para el puesto": el motor no compara la
+ *   lectura contra lo que el puesto pide, eso lo hace quien firma.
+ *
+ * Va antes de la fundamentación porque son dos cosas distintas: esto es lo que
+ * se vio, y la fundamentación es por qué se recomienda lo que se recomienda.
+ */
+function armarResumen(lecturas: Lectura[], destacadas: Lectura[]): string[] {
+  const aFavor = destacadas.slice(0, 3);
 
-  /** La primera frase alcanza para nombrar el aspecto: el resto lo desarrolla. */
-  const enMinuscula = (t: string) => {
-    const primera = t.split('. ')[0].replace(/\.$/, '');
-    return primera.charAt(0).toLowerCase() + primera.slice(1);
+  const rango = (l: Lectura) => {
+    const i = GRAVEDAD.indexOf(l.clave);
+    return i === -1 ? GRAVEDAD.length : i;
   };
+  const enContra = lecturas
+    .filter((l) => senalDe(l) === 'desarrollar' && l.dice)
+    .map((l, orden) => ({ l, orden }))
+    .sort((x, y) => rango(x.l) - rango(y.l) || x.orden - y.orden)
+    .map((x) => x.l)
+    // Uno por área: sin esto, en la mitad de los protocolos los tres lugares
+    // se iban en el estrés (sobrecarga, recursos limitados y tensión del
+    // momento), y además dos de ellos leídos juntos parecían contradecirse.
+    .filter((l, i, todas) => todas.findIndex((o) => o.area === l.area) === i)
+    .slice(0, 3);
+
+  /**
+   * Cada aspecto va como su propia oración, con la primera frase de su texto.
+   *
+   * Los textos del diccionario ya son oraciones completas: metidos en una
+   * enumeración después de "son:" quedaban dos verbos encadenados ("los
+   * aspectos son: sus recursos son limitados"). El encabezado solo dice
+   * cuántos son, y lo que sigue se lee como está escrito.
+   */
+  const primera = (t: string) => t.split('. ')[0].replace(/\.$/, '');
+  const CUANTOS = ['', 'un aspecto', 'dos aspectos', 'tres aspectos'];
+  const oraciones = (ls: Lectura[]) => ls.map((l) => `${primera(l.dice)}.`).join(' ');
 
   const destaca = aFavor.length
-    ? `Se destacan los siguientes aspectos: ${enumerar(aFavor.map((l) => enMinuscula(l.dice)))}.`
+    ? `Se ${aFavor.length === 1 ? 'destaca' : 'destacan'} ${CUANTOS[aFavor.length]}. ${oraciones(aFavor)}`
     : 'No se registran aspectos por encima de lo esperado en las competencias evaluadas.';
 
-  const demanda = pesan.length
-    ? `Su líder directo deberá prestar especial atención a ${enumerar(pesan.map(enMinuscula))}.`
-    : 'No se registran aspectos que demanden una gestión particular de su líder directo.';
+  const pesa = enContra.length
+    ? `${enContra.length === 1 ? 'Requiere' : 'Requieren'} atención ${CUANTOS[enContra.length]}. ${oraciones(enContra)}`
+    : 'No se registran aspectos fuera de lo esperado que requieran una gestión particular.';
 
-  return [destaca, demanda];
+  return [destaca, pesa];
 }
 
 /**
@@ -524,6 +656,8 @@ export type Regulacion = {
   conclusiones: Record<string, string>;
   /** En qué tramo del plan de incorporación va cada lectura, si se movió. */
   tramos: Record<string, Tramo>;
+  /** Los textos de los cuadrantes del Benziger, si se reescribieron. */
+  benziger: Record<string, Partial<TextosDeCuadrante>>;
   /** Los perfiles de exigencia guardados. El informe usa el que le toque. */
   exigencias: Exigencia[];
 };
@@ -538,11 +672,12 @@ const DE_FABRICA: Regulacion = {
   niveles: {},
   conclusiones: {},
   tramos: {},
+  benziger: {},
   exigencias: [EXIGENCIA_DE_FABRICA],
 };
 
 export async function loQueRige(): Promise<Regulacion> {
-  const [r, p, t, c, k, dir, n, cl, tr, x] = await Promise.all([
+  const [r, p, t, c, k, dir, n, cl, tr, bz, x] = await Promise.all([
     ajuste('raven_rangos'),
     ajuste('competencias_pesos'),
     ajuste('redacciones_textos'),
@@ -552,6 +687,7 @@ export async function loQueRige(): Promise<Regulacion> {
     ajuste('discursivo_niveles'),
     ajuste('discursivo_conclusiones'),
     ajuste('redacciones_tramos'),
+    ajuste('benziger_cuadrantes'),
     exigenciasGuardadas(),
   ]);
   return {
@@ -564,6 +700,7 @@ export async function loQueRige(): Promise<Regulacion> {
     niveles: nivelesValidos(n) ?? {},
     conclusiones: conclusionesValidas(cl) ?? {},
     tramos: tramosValidos(tr, Object.keys(TEXTOS)) ?? {},
+    benziger: benzigerValidos(bz) ?? {},
     exigencias: x.length > 0 ? x : [EXIGENCIA_DE_FABRICA],
   };
 }
@@ -595,6 +732,7 @@ function tieneAlgo(c: Cuatro | null): boolean {
 export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
   const { rangos, pesos, textos, cortes, cortesCompetencias, niveles, exigencias } = rige;
   const direcciones = rige.direcciones;
+  const benzigerMovidos = rige.benziger ?? {};
 
   const c = f.cabecera;
   /**
@@ -715,11 +853,35 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
       )
     : [];
 
-  const preferentes = CUADRANTES.filter((q) =>
-    (f.benziger?.cuadrante_preferente ?? []).includes(q.clave)
-  );
+  // Uno solo, el primero que se marcó. El arreglo guarda el orden en que la
+  // evaluadora los eligió, y el primero es el que manda.
+  const primero = f.benziger?.cuadrante_preferente?.[0];
+  const preferentes = CUADRANTES.filter((q) => q.clave === primero);
+  const textosBenziger = preferentes[0]
+    ? (() => {
+        const clave = preferentes[0].clave;
+        const suyos = benzigerQueRige(clave, benzigerMovidos);
+        // La fuente vale mientras el texto sea el original: reescrito en
+        // Configuración, ya no es lo que dice esa página.
+        const fuente = (c: CampoBenziger) =>
+          `Benziger ${clave} · ${
+            benzigerMovidos[clave]?.[c] !== undefined && benzigerMovidos[clave]?.[c] !== TEXTOS_BENZIGER[clave].textos[c]
+              ? 'reescrito'
+              : TEXTOS_BENZIGER[clave].fuentes[c].split(/\. (?=[A-Z"])/)[0]
+          }`;
+        return {
+          comoEs: suyos.comoEs,
+          comoEsFuente: fuente('comoEs'),
+          conducir: CAMPOS_DE_CONDUCCION.map((c) => ({
+            rotulo: c.rotulo,
+            texto: suyos[c.clave],
+            fuente: fuente(c.clave),
+          })).filter((c) => c.texto),
+        };
+      })()
+    : null;
 
-  return {
+  const inf: Informe = {
     nombre: c.personas?.nombre ?? 'Sin nombre',
     empresa: c.pedidos?.empresas?.nombre ?? null,
     puesto: c.pedidos?.puesto ?? null,
@@ -736,7 +898,7 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     nivel: nivelDeConclusion(c.recomendacion),
     competencias,
     protocoloCorto: corto,
-    resumen: armarResumen(lecturas, destacadas, esperadas),
+    resumen: armarResumen(lecturas, destacadas),
     fundamentacion: (c.recomendacion_notas ?? '')
       .split(/\n\s*\n|\n/)
       .map((t) => t.trim())
@@ -767,7 +929,40 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     // Benziger cargado a medias, sin ningún cuadrante, dibujaba el cerebro sin
     // una sola figura adentro y con los cuatro títulos alrededor: el cliente
     // leía "estilos de pensamiento predominantes" sobre un gráfico vacío.
-    benziger: hayBenziger ? { preferentes, adulto, joven } : null,
+    benziger: hayBenziger
+      ? {
+          preferentes,
+          textos: textosBenziger,
+          adulto,
+          joven,
+          ...(() => {
+            const entorno = entornoDe(bz?.alerta.adulto ?? null);
+            const fortaleza = preferentes[0] ? fortalezaDe(preferentes[0].clave, adulto) : null;
+            const debilidad = preferentes[0] ? debilidadDe(preferentes[0].clave, adulto) : null;
+            // Lo que reescribió la evaluadora para esta persona, en la misma
+            // columna que las listas (`informe_listas.benziger`).
+            const suyo = (c.informe_listas as any)?.benziger;
+            const editado: Partial<Record<ParrafoBenziger, string>> = {};
+            if (suyo && typeof suyo === 'object') {
+              for (const k of PARRAFOS_BENZIGER) {
+                if (typeof suyo[k] === 'string') editado[k] = suyo[k];
+              }
+            }
+            return {
+              entorno,
+              fortaleza,
+              debilidad,
+              parrafos: {
+                comoEs: textosBenziger?.comoEs ?? null,
+                fortaleza: fortaleza ? `Rinde en: ${fortaleza.tareas}.` : null,
+                debilidad: debilidad ? `Le exigen más esfuerzo: ${debilidad.tareas}.` : null,
+                entorno: entorno?.texto ?? null,
+              },
+              editado,
+            };
+          })(),
+        }
+      : null,
     // Solo si la evaluadora lo ubicó: la pirámide sin un escalón marcado no
     // dice nada, y el capítulo entero es esa marca.
     exigencia,
@@ -867,7 +1062,32 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
         .sort((a, b) => a.lamina - b.lamina),
     },
     faltantes,
+    avisos: [],
   };
+
+  // Lo que choca, con lo mismo que lee el cliente: las bandas con la exigencia
+  // de este informe y el potencial contado como lo cuenta la escalera.
+  const romanoANumero = (r: string | null | undefined) =>
+    r ? ESTRATOS_DEL_MODELO.slice(0, 5).findIndex((e) => e.romano === r) + 1 : 0;
+  const hoy = inf.discursivo?.detalle?.romano;
+  const delPuesto = inf.discursivo?.puesto?.romano;
+  const conPuntaje = inf.competencias.filter((x) => x.puntaje !== null);
+  inf.avisos = revisar({
+    nivel: inf.nivel?.clave ?? null,
+    bajas: conPuntaje.filter((x) => bandaDe(x.puntaje, inf.exigencia) === 'Bajo').map((x) => x.nombre),
+    conPuntaje: conPuntaje.length,
+    alcanza: hoy && delPuesto ? romanoANumero(hoy) - romanoANumero(delPuesto) : null,
+    lecturas,
+    cuadrante: preferentes[0]?.clave ?? null,
+  });
+  // Si el perfil adulto puede ser adaptado: es para quien firma, que lo
+  // explora con la persona, y no una afirmación para el cliente.
+  if (bz) {
+    for (const texto of adaptacionDe(preferentes[0]?.clave ?? null, bz.filas, bz.alerta)) {
+      inf.avisos.push({ tipo: 'perfil', texto });
+    }
+  }
+  return inf;
 }
 
 export { bandaDe, porArea };

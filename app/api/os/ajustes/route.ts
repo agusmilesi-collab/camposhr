@@ -10,6 +10,7 @@ import { cortesDeCompetenciasValidos, direccionesValidas, pesosValidos } from '@
 import { TEXTOS, cortesValidos, textosValidos } from '@/lib/redacciones';
 import { tramosValidos } from '@/lib/plan-incorporacion';
 import { conclusionesValidas, nivelesValidos } from '@/lib/discursivo';
+import { benzigerValidos } from '@/lib/benziger-textos';
 
 export const runtime = 'nodejs';
 
@@ -33,6 +34,8 @@ const MOTIVO = {
     'Cada nivel tiene que ser uno de los cuatro que existen, con textos de hasta 2000 caracteres, y ninguno puede quedarse sin su resumen.',
   discursivo_conclusiones:
     'Cada conclusión tiene que ser uno de los casos que existen, con texto, y sin huecos que el sistema no sepa llenar: solo {estrato}, {siguiente} y {edad}.',
+  benziger_cuadrantes:
+    'Cada texto tiene que ser de uno de los cuatro cuadrantes, de hasta 2000 caracteres, y ninguno puede quedarse sin "Cómo es".',
 };
 export const dynamic = 'force-dynamic';
 
@@ -77,6 +80,7 @@ export async function POST(req: Request) {
     'competencias_direccion',
     'discursivo_niveles',
     'discursivo_conclusiones',
+    'benziger_cuadrantes',
   ];
   if (!CLAVES.includes(clave)) {
     return NextResponse.json({ ok: false, motivo: 'Ajuste desconocido.' }, { status: 400 });
@@ -124,7 +128,9 @@ export async function POST(req: Request) {
                   ? nivelesValidos(valor)
                   : clave === 'discursivo_conclusiones'
                     ? conclusionesValidas(valor)
-                    : textosValidos(valor);
+                    : clave === 'benziger_cuadrantes'
+                      ? benzigerValidos(valor)
+                      : textosValidos(valor);
   if (!limpios) {
     return NextResponse.json(
       {

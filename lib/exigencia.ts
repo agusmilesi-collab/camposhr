@@ -104,16 +104,16 @@ export function cortesValidos(c: {
 const COLOR: Record<Banda | 'MuyBajo', [number, number, number]> = {
   Sobresaliente: [58, 122, 74],
   Alto: [110, 163, 118],
-  Adecuado: [67, 100, 143],
+  Adecuado: [127, 143, 58],
   Bajo: [193, 89, 26],
-  MuyBajo: [140, 59, 59],
+  MuyBajo: [196, 32, 38],
 };
 
 /**
  * El color que le toca a un puntaje con esta exigencia.
  *
  * Sale de la banda y no de un número fijo, así que sigue a los cortes: con una
- * exigencia más baja, el 30 pasa a ser Adecuado y se pinta de azul. Con los
+ * exigencia más baja, el 30 pasa a ser Adecuado y se pinta de oliva. Con los
  * tramos escritos a mano ese 30 salía naranja al lado de la palabra Adecuado.
  */
 export function colorDe(puntaje: number, e: Exigencia = DE_FABRICA): [number, number, number] {
