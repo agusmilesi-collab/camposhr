@@ -132,6 +132,13 @@ export async function middleware(req: NextRequest) {
   if (host === CLIENT_HOST) {
     if (pathname.startsWith('/p/')) return NextResponse.next();
     if (ESTATICOS_DEL_PORTAL.test(pathname)) return NextResponse.next();
+    // Lo que el portal manda desde el navegador: el pedido, la lectura del CV y
+    // el perfil del puesto. Sin esto el cliente llegaba hasta "Enviar el
+    // pedido" y recibía este mismo "No autorizado". Cada ruta valida el token
+    // de su portal, así que abrirlas acá no abre nada más.
+    if (pathname === '/api/pedidos' || pathname.startsWith('/api/portal/')) {
+      return NextResponse.next();
+    }
     const m = pathname.match(TOKEN);
     if (m) {
       const dest = url.clone();
