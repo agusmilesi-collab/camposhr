@@ -865,9 +865,9 @@ export const TEXTOS = {
       'En lo práctico se le arma el problema, por impulsividad: emprende, pero la ejecución no le sale.',
     ],
     recomienda: [
-      'Podría desempeñarse mucho mejor en tareas rutinarias, donde no deba tomar decisiones.',
-      'Ubicarla en tareas rutinarias, sin decisiones a su cargo.',
-      'Darle trabajo de rutina, donde no tenga que decidir sobre la marcha.',
+      'Asignarle tareas con pasos definidos y revisar en conjunto cómo las va a ejecutar antes de que empiece, para evitar que resuelva por impulso.',
+      'Darle tareas con un procedimiento claro y repasar juntos el plan de ejecución antes de arrancar, así no resuelve por impulso.',
+      'Antes de que ejecute, pedirle que cuente paso a paso cómo lo va a hacer, y priorizar las tareas que tienen un procedimiento definido.',
     ],
   },
   'psv-alto': {
@@ -1081,9 +1081,9 @@ export const TEXTOS = {
       'Su lectura de la realidad se aparta lo suficiente como para generar respuestas desajustadas y roce en el intercambio con los demás.',
     ],
     recomienda: [
-      'Conviene considerar si lo que el puesto necesita se sostiene con este nivel de interpretación de los datos, porque puede traer roce con otros y caída de productividad.',
-      'Evaluar si el puesto tolera este nivel de interpretación propia, porque puede traer conflicto con otros y caída del rendimiento.',
-      'Considerar cuánta interpretación personal admite la tarea, ya que este grado puede afectar el vínculo con el equipo y los resultados.',
+      'Después de cada consigna importante, pedirle que diga con sus palabras qué entendió y cómo lo va a resolver, para corregir a tiempo lo que interprete distinto de lo pedido.',
+      'Pedirle que explique cómo entendió cada pedido antes de avanzar, y ajustar en el momento lo que haya interpretado distinto.',
+      'Antes de que actúe, repasar con él cómo leyó la situación, para alinearla con lo que el puesto espera.',
     ],
   },
   'xu-alto': {

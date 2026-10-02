@@ -16860,3 +16860,16 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 .os-mini-asignar .os-enlace {
   font-size: 0.72rem;
 }
+
+/* El tramo del plan de incorporación de cada lectura, a la derecha de su
+   cabeza: el rótulo y el desplegable en la misma línea que el corte. */
+.os-lectura-tramo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.os-lectura-tramo .os-desplegable,
+.os-lectura-tramo .os-desplegable-boton {
+  width: 210px;
+}

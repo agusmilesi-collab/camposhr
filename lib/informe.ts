@@ -25,6 +25,8 @@ import {
 } from '@/lib/competencias';
 import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
+import { TEXTOS } from '@/lib/redacciones';
+import { tramoDe, tramosValidos, esTramo, type PasoDelPlan, type Tramo } from '@/lib/plan-incorporacion';
 import { DE_FABRICA as EXIGENCIA_DE_FABRICA, type Exigencia } from '@/lib/exigencia';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
 import {
@@ -112,6 +114,41 @@ function sinRepetir(textos: string[]): string[] {
   return salida;
 }
 
+/**
+ * El plan de incorporación: cada recomendación con el tramo de su lectura.
+ *
+ * Lo guardado por la evaluadora manda. Puede venir con su tramo, que es como
+ * se guarda desde que existe el plan, o como texto suelto, que es como se
+ * guardaba antes: ahí el tramo se busca por el texto entre las lecturas, y si
+ * lo reescribió y ya no aparece, va a "Durante toda la relación", que no le
+ * promete al líder un plazo que nadie eligió.
+ */
+function planDe(
+  guardada: unknown,
+  calculada: string[],
+  lecturas: Lectura[],
+  movidos: Record<string, Tramo>
+): PasoDelPlan[] {
+  const porTexto = new Map<string, Tramo>();
+  for (const l of lecturas) {
+    if (l.recomienda && !porTexto.has(l.recomienda)) {
+      porTexto.set(l.recomienda, tramoDe(l.clave, movidos));
+    }
+  }
+  const delTexto = (texto: string): PasoDelPlan => ({
+    texto,
+    tramo: porTexto.get(texto) ?? 'siempre',
+  });
+  if (!Array.isArray(guardada)) return calculada.map(delTexto);
+  return guardada.flatMap((x): PasoDelPlan[] => {
+    if (typeof x === 'string') return [delTexto(x)];
+    if (x && typeof x === 'object' && typeof x.texto === 'string' && esTramo(x.tramo)) {
+      return [{ texto: x.texto, tramo: x.tramo }];
+    }
+    return [];
+  });
+}
+
 /** Las cuatro listas del informe que la evaluadora puede tocar. */
 export const LISTAS_DEL_INFORME = [
   'recomendaciones',
@@ -177,7 +214,13 @@ export type Informe = {
    * con el resumen del motor, que es lo que se puede afirmar sin ella.
    */
   fundamentacion: string[];
-  recomendaciones: string[];
+  /**
+   * El plan de incorporación: cada recomendación al líder con su tramo.
+   *
+   * Sale de las lecturas, y el tramo de la lectura que la disparó. Si la
+   * evaluadora reescribió la lista, manda lo suyo con el tramo que eligió.
+   */
+  recomendaciones: PasoDelPlan[];
   analisis: {
     destacadas: string[];
     esperadas: string[];
@@ -479,6 +522,8 @@ export type Regulacion = {
   niveles: Record<string, Partial<TextoDeNivel>>;
   /** Las conclusiones del potencial, si se reescribieron. */
   conclusiones: Record<string, string>;
+  /** En qué tramo del plan de incorporación va cada lectura, si se movió. */
+  tramos: Record<string, Tramo>;
   /** Los perfiles de exigencia guardados. El informe usa el que le toque. */
   exigencias: Exigencia[];
 };
@@ -492,11 +537,12 @@ const DE_FABRICA: Regulacion = {
   direcciones: {},
   niveles: {},
   conclusiones: {},
+  tramos: {},
   exigencias: [EXIGENCIA_DE_FABRICA],
 };
 
 export async function loQueRige(): Promise<Regulacion> {
-  const [r, p, t, c, k, dir, n, cl, x] = await Promise.all([
+  const [r, p, t, c, k, dir, n, cl, tr, x] = await Promise.all([
     ajuste('raven_rangos'),
     ajuste('competencias_pesos'),
     ajuste('redacciones_textos'),
@@ -505,6 +551,7 @@ export async function loQueRige(): Promise<Regulacion> {
     ajuste('competencias_direccion'),
     ajuste('discursivo_niveles'),
     ajuste('discursivo_conclusiones'),
+    ajuste('redacciones_tramos'),
     exigenciasGuardadas(),
   ]);
   return {
@@ -516,6 +563,7 @@ export async function loQueRige(): Promise<Regulacion> {
     direcciones: direccionesValidas(dir) ?? {},
     niveles: nivelesValidos(n) ?? {},
     conclusiones: conclusionesValidas(cl) ?? {},
+    tramos: tramosValidos(tr, Object.keys(TEXTOS)) ?? {},
     exigencias: x.length > 0 ? x : [EXIGENCIA_DE_FABRICA],
   };
 }
@@ -695,9 +743,11 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
       .filter(Boolean),
     // El líder recibe cada recomendación una sola vez, aunque dos índices
     // distintos lleven a lo mismo.
-    recomendaciones: elegir(
-      'recomendaciones',
-      sinRepetir(lecturas.map((l) => l.recomienda).filter(Boolean))
+    recomendaciones: planDe(
+      guardadas.recomendaciones,
+      sinRepetir(lecturas.map((l) => l.recomienda).filter(Boolean)),
+      lecturas,
+      rige.tramos ?? {}
     ),
     analisis: {
       destacadas: elegir('destacadas', destacadas.map((l) => l.dice)),

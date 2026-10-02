@@ -2070,3 +2070,46 @@
   text-align: center;
   padding: 6px 4px;
 }
+
+/* ── Plan de incorporación ─────────────────────────────────────────────
+   Las recomendaciones al líder, tramo por tramo. Cada tramo con su título en
+   el azul del grupo, lo propio de la persona con su punto, y al final el punto
+   fijo del tramo, igual para todos, en gris y sin punto de color: el foco es
+   lo que salió de la evaluación. */
+.inf-plan {
+  padding: 8px 0 4px;
+}
+
+.inf-plan-intro {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  color: var(--suave);
+}
+
+.inf-plan-tramo {
+  padding: 11px 0 12px;
+  border-top: 1px solid var(--linea-suave);
+}
+
+.inf-plan-tramo h3 {
+  margin: 0 0 8px;
+  font-size: 0.86rem;
+}
+
+.inf-grupo li.inf-plan-fijo {
+  color: var(--suave);
+}
+
+.inf-grupo li.inf-plan-fijo::before {
+  background: var(--linea);
+}
+
+/* Editando el plan, cada renglón lleva su tramo entre el agarre y el texto. */
+.inf-edita-lista li:has(.inf-edita-tramo) {
+  grid-template-columns: 20px 180px 1fr 26px;
+}
+
+.inf-edita-tramo {
+  height: 32px;
+  font-size: 0.78rem;
+}

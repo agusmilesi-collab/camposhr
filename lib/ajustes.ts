@@ -24,6 +24,7 @@ export type ClaveDeAjuste =
   | 'competencias_pesos'
   | 'redacciones_textos'
   | 'redacciones_cortes'
+  | 'redacciones_tramos'
   | 'competencias_cortes'
   | 'competencias_direccion'
   | 'discursivo_niveles'

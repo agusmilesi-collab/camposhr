@@ -1,6 +1,7 @@
 import Textos, { type Renglon } from './Textos';
 import { TEXTOS, corteDe, cuandoDe, type ClaveDeTexto, type Redaccion } from '@/lib/redacciones';
 import { loQueRige } from '@/lib/informe';
+import { TRAMO_DE_FABRICA, tramoDe } from '@/lib/plan-incorporacion';
 
 /**
  * Lo que el informe escribe para cada lectura, y contra qué número entra.
@@ -63,6 +64,8 @@ export default async function Redacciones() {
         recomiendaZFabrica: tres(t.zulliger?.recomienda),
         corte: corteDeTest('Rorschach'),
         corteZ: corteDeTest('Zulliger'),
+        tramo: tramoDe(clave, rige.tramos),
+        tramoFabrica: TRAMO_DE_FABRICA[clave] ?? 'siempre',
       };
     }
   );
@@ -70,7 +73,11 @@ export default async function Redacciones() {
   return (
     <Textos
       renglones={renglones}
-      tocado={Object.keys(escritos).length > 0 || Object.keys(cortes).length > 0}
+      tocado={
+        Object.keys(escritos).length > 0 ||
+        Object.keys(cortes).length > 0 ||
+        Object.keys(rige.tramos).length > 0
+      }
     />
   );
 }

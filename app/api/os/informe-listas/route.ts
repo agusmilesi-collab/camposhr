@@ -5,6 +5,7 @@ import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
 import { LISTAS_DEL_INFORME, type ListaDelInforme } from '@/lib/informe';
+import { esTramo } from '@/lib/plan-incorporacion';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -48,11 +49,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, motivo: 'Lista desconocida.' }, { status: 400 });
   }
   const volver = items === null;
+  /* El plan de incorporación guarda cada renglón con su tramo; las otras tres
+     listas, el texto solo. */
+  const conTramo = lista === 'recomendaciones';
+  const textoDe = (x: any): string => (conTramo ? x?.texto : x);
   if (!volver) {
-    if (!Array.isArray(items) || items.some((t) => typeof t !== 'string')) {
+    const valido = (x: any) =>
+      conTramo
+        ? x && typeof x === 'object' && typeof x.texto === 'string' && esTramo(x.tramo)
+        : typeof x === 'string';
+    if (!Array.isArray(items) || !items.every(valido)) {
       return NextResponse.json({ ok: false, motivo: 'Ítems inválidos.' }, { status: 400 });
     }
-    if (items.some((t: string) => t.length > LARGO)) {
+    if (items.some((x: any) => textoDe(x).length > LARGO)) {
       return NextResponse.json(
         { ok: false, motivo: `Ningún ítem puede pasar de ${LARGO} caracteres.` },
         { status: 400 }
@@ -91,7 +100,12 @@ export async function POST(req: Request) {
 
   const guardadas: Record<string, unknown> = { ...(fila.informe_listas ?? {}) };
   if (volver) delete guardadas[lista as ListaDelInforme];
-  else guardadas[lista as ListaDelInforme] = (items as string[]).map((t) => t.trim()).filter(Boolean);
+  else
+    guardadas[lista as ListaDelInforme] = conTramo
+      ? (items as { texto: string; tramo: string }[])
+          .map((x) => ({ texto: x.texto.trim(), tramo: x.tramo }))
+          .filter((x) => x.texto)
+      : (items as string[]).map((t) => t.trim()).filter(Boolean);
 
   const res = await fetch(`${url}/rest/v1/evaluaciones?id=eq.${id}`, {
     method: 'PATCH',

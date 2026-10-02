@@ -22,6 +22,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ListaDelInforme, Respaldo } from '@/lib/informe';
 import { estirar } from '../../piezas';
+import { TRAMOS, type Tramo } from '@/lib/plan-incorporacion';
 
 /**
  * Un ítem del borrador.
@@ -30,7 +31,7 @@ import { estirar } from '../../piezas';
  * en cada arrastre, y con ella React reusaría el renglón equivocado, que es
  * además contra qué se compara para animar el movimiento.
  */
-type Item = { id: number; texto: string };
+type Item = { id: number; texto: string; tramo?: Tramo };
 
 /** Cuánto dura el reacomodo de los renglones. */
 const ANIMACION = 190;
@@ -45,6 +46,7 @@ export default function Listas({
   vacio,
   respaldos,
   grupo,
+  tramos,
 }: {
   /**
    * La evaluación, cuando la lista se puede editar.
@@ -76,7 +78,13 @@ export default function Listas({
    * mismo lado que el estado que ese botón abre.
    */
   grupo?: { clave: string; titulo: string; sub: string };
+  /**
+   * El tramo de cada ítem, en el mismo orden: con esto la lista es el plan de
+   * incorporación y sale agrupada por tramo en vez de numerada.
+   */
+  tramos?: Tramo[];
 }) {
+  const plan = Boolean(tramos);
   const router = useRouter();
   const [editando, setEditando] = useState(false);
   const [borrador, setBorrador] = useState<Item[]>([]);
@@ -100,12 +108,16 @@ export default function Listas({
    */
   const antes = useRef(new Map<number, number>());
 
-  function envolver(textos: string[]): Item[] {
-    return textos.map((texto) => ({ id: numerador.current++, texto }));
+  function envolver(textos: string[], suyos?: Tramo[]): Item[] {
+    return textos.map((texto, i) => ({
+      id: numerador.current++,
+      texto,
+      ...(plan ? { tramo: suyos?.[i] ?? 'siempre' } : {}),
+    }));
   }
 
   function abrir() {
-    setBorrador(envolver(items.length ? items : ['']));
+    setBorrador(items.length ? envolver(items, tramos) : envolver(['']));
     setError(null);
     setEditando(true);
   }
@@ -170,7 +182,7 @@ export default function Listas({
     setMovido(hasta);
   }
 
-  async function mandar(cuerpo: string[] | null) {
+  async function mandar(cuerpo: string[] | { texto: string; tramo: Tramo }[] | null) {
     setGuardando(true);
     setError(null);
     try {
@@ -266,6 +278,40 @@ export default function Listas({
     );
   };
 
+  /**
+   * El plan de incorporación, tramo por tramo.
+   *
+   * Primero lo que salió de la evaluación y al final de cada tramo su punto
+   * fijo, más apagado: el foco es lo propio de la persona. Un tramo sin nada
+   * propio no sale, salvo el de los días 31 a 90, que es el único que habla de
+   * soltar y el diccionario casi no tiene lecturas para eso.
+   */
+  if (!editando && plan && items.length > 0) {
+    return envuelto(
+      <div className="inf-plan">
+        <p className="inf-plan-intro">Si ingresa, estos son los pasos para su líder directo.</p>
+        {TRAMOS.map((t) => {
+          const suyos = items.filter((_, i) => tramos![i] === t.clave);
+          if (suyos.length === 0 && t.clave !== 'noventa') return null;
+          return (
+            <section className="inf-plan-tramo" key={t.clave}>
+              <h3>{t.titulo}</h3>
+              <ul>
+                {suyos.map((texto, i) => (
+                  <li key={i}>
+                    {texto}
+                    {sello(texto)}
+                  </li>
+                ))}
+                <li className="inf-plan-fijo">{t.fijo}</li>
+              </ul>
+            </section>
+          );
+        })}
+      </div>
+    );
+  }
+
   if (!editando) {
     return envuelto(
       items.length === 0 ? (
@@ -356,6 +402,28 @@ export default function Listas({
             <span className="inf-edita-agarre" aria-hidden="true">
               ⠿
             </span>
+            {/* En el plan, cada renglón dice en qué tramo va: cambiarlo acá
+                lo mueve de tramo en el informe. */}
+            {plan && (
+              <select
+                className="os-campo inf-edita-tramo"
+                value={item.tramo ?? 'siempre'}
+                aria-label="Tramo del plan"
+                onChange={(ev) =>
+                  setBorrador((lista) =>
+                    lista.map((x) =>
+                      x.id === item.id ? { ...x, tramo: ev.target.value as Tramo } : x
+                    )
+                  )
+                }
+              >
+                {TRAMOS.map((t) => (
+                  <option key={t.clave} value={t.clave}>
+                    {t.titulo}
+                  </option>
+                ))}
+              </select>
+            )}
             <textarea
               className="inf-edita-texto"
               value={item.texto}
@@ -393,7 +461,10 @@ export default function Listas({
           type="button"
           className="os-boton"
           onClick={() =>
-            setBorrador((lista) => [...lista, { id: numerador.current++, texto: '' }])
+            setBorrador((lista) => [
+              ...lista,
+              { id: numerador.current++, texto: '', ...(plan ? { tramo: 'siempre' as Tramo } : {}) },
+            ])
           }
         >
           Sumar un ítem
@@ -422,7 +493,15 @@ export default function Listas({
             type="button"
             className="os-boton os-boton-firme"
             disabled={guardando}
-            onClick={() => mandar(borrador.map((x) => x.texto.trim()).filter(Boolean))}
+            onClick={() =>
+              mandar(
+                plan
+                  ? borrador
+                      .map((x) => ({ texto: x.texto.trim(), tramo: x.tramo ?? 'siempre' }))
+                      .filter((x) => x.texto)
+                  : borrador.map((x) => x.texto.trim()).filter(Boolean)
+              )
+            }
           >
             {guardando ? 'Guardando…' : 'Guardar'}
           </button>

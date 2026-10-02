@@ -880,6 +880,30 @@ sea introversiva (0,53 a 0,78), ambigual (0,53 a 0,83) o extratensiva (0,60 a
 el 28/8/2026 quedaba sin pintar en la hoja por depender del estilo; con el
 estilo a mano se puede pintar sin que la hoja y el informe se contradigan.
 
+## Las recomendaciones al líder son un plan de incorporación
+
+Desde el 2/10/2026 la sección se llama "Plan de incorporación · Primeros 90
+días, para su líder" y sale en cuatro tramos: Primera semana, Días 1 a 30,
+Días 31 a 90 y Durante toda la relación (`lib/plan-incorporacion.ts`). El
+criterio y la clasificación de cada lectura están en
+`docs/plan-incorporacion.md`.
+
+**El tramo es de la lectura, no de cada redacción**: las tres formas dicen lo
+mismo. Lo de fábrica está en `TRAMO_DE_FABRICA` y se mueve desde
+Configuración → Redacciones, que guarda la diferencia en `redacciones_tramos`.
+Una lectura sin clasificar va a "Durante toda la relación", que no le promete
+al líder un plazo que nadie eligió.
+
+**El foco es lo que sale de la evaluación.** Cada tramo tiene un solo punto
+fijo, igual para todos, que va al final y en gris. Un tramo sin nada propio no
+sale, salvo el de los días 31 a 90: es el único que habla de soltar y el
+diccionario casi no tiene lecturas para eso.
+
+**Lo que guarda la evaluadora lleva su tramo** (`{ texto, tramo }` en
+`informe_listas.recomendaciones`). Lo guardado antes como texto suelto busca
+su tramo por el texto entre las lecturas, y si lo reescribió va a "Durante
+toda la relación".
+
 ## Las cuatro listas del informe las puede escribir la evaluadora
 
 Recomendaciones al líder, Desarrollo destacado, Desarrollo esperado y Necesidad

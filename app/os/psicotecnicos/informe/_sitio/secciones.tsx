@@ -275,17 +275,18 @@ export function seccionesDe(
     ),
   });
 
-  /* ── Para su líder ──────────────────────────────────────────────────── */
+  /* ── Plan de incorporación ──────────────────────────────────────────────────── */
   secciones.push({
     id: 'lider',
-    titulo: 'Recomendaciones para su líder directo',
+    titulo: 'Plan de incorporación',
+    bajada: 'Primeros 90 días, para su líder',
     cuerpo: (
       <Listas
         id={editar}
         lista="recomendaciones"
-        items={inf.recomendaciones}
+        items={inf.recomendaciones.map((r) => r.texto)}
+        tramos={inf.recomendaciones.map((r) => r.tramo)}
         intervenida={inf.intervenidas.includes('recomendaciones')}
-        numerada
         vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
         respaldos={editar ? inf.respaldos : undefined}
       />
