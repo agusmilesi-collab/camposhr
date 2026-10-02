@@ -48,6 +48,11 @@ const RECOMENDACIONES: Record<
   string,
   { texto: string; clase: string; orden: number }
 > = {
+  'Ajuste alto':                       { texto: 'Ajuste alto',      clase: 'green',  orden: 0 },
+  'Ajuste con aspectos a desarrollar': { texto: 'A desarrollar',    clase: 'amber',  orden: 1 },
+  'Ajuste con alertas':                { texto: 'Con alertas',      clase: 'orange', orden: 2 },
+  'Ajuste bajo':                       { texto: 'Ajuste bajo',      clase: 'red',    orden: 3 },
+
   'Apto':                   { texto: 'Apto',             clase: 'green',  orden: 0 },
   'Apto con observaciones': { texto: 'Apto con obs.',    clase: 'amber',  orden: 1 },
   'Apto con alertas':       { texto: 'Apto con alertas', clase: 'orange', orden: 2 },

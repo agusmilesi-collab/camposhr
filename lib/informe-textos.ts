@@ -55,24 +55,44 @@ export const NIVELES: NivelAjuste[] = [
 ];
 
 /**
- * Con qué valor se guarda cada nivel.
+ * Con qué valor se guarda cada nivel: con su propio nombre.
  *
- * En la base la conclusión sigue diciendo "Apto", "Apto con observaciones",
- * "Apto con alertas" y "No apto": es lo que ya está cargado y lo que leen el
- * portal y el pipeline. Lo que cambia es cómo se nombra en pantalla, que pasa a
- * ser el nombre del nivel de ajuste, para que la psicóloga elija exactamente lo
- * que el informe va a decir.
+ * Hasta el 2/10/2026 la base guardaba "Apto", "Apto con observaciones", "Apto
+ * con alertas" y "No apto" mientras la pantalla y el informe decían "Ajuste
+ * alto", "Ajuste con aspectos a desarrollar", "Ajuste con alertas" y "Ajuste
+ * bajo". Un dato que se guarda con un nombre y se muestra con otro obliga a
+ * traducir en cada lectura, y cualquiera que mire la tabla ve algo distinto de
+ * lo que firmó la psicóloga.
  */
-export const CONCLUSIONES: { valor: string; nivel: NivelAjuste }[] = [
-  { valor: 'Apto', nivel: NIVELES[0] },
-  { valor: 'Apto con observaciones', nivel: NIVELES[1] },
-  { valor: 'Apto con alertas', nivel: NIVELES[2] },
-  { valor: 'No apto', nivel: NIVELES[3] },
-];
+export const CONCLUSIONES: { valor: string; nivel: NivelAjuste }[] = NIVELES.map((nivel) => ({
+  valor: nivel.titulo,
+  nivel,
+}));
+
+/**
+ * Los nombres con los que se guardaba antes.
+ *
+ * Las evaluaciones de la base se migraron, pero las que todavía se leen de
+ * Airtable siguen trayendo los viejos, y los dos juegos de "Encaja" vivieron un
+ * tiempo en el sistema. Se entienden al leer; no se escriben más.
+ */
+const NOMBRES_VIEJOS: Record<string, number> = {
+  Apto: 0,
+  'Encaja con el puesto': 0,
+  'Apto con observaciones': 1,
+  'Encaja, con desarrollo': 1,
+  'Apto con alertas': 2,
+  'No apto': 3,
+  'Encaja si cambia el puesto': 3,
+};
 
 /** Cómo se llama en pantalla lo que está guardado. */
 export function nivelDeConclusion(valor: string | null): NivelAjuste | null {
-  return valor ? (CONCLUSIONES.find((c) => c.valor === valor)?.nivel ?? null) : null;
+  if (!valor) return null;
+  const propio = CONCLUSIONES.find((c) => c.valor === valor)?.nivel;
+  if (propio) return propio;
+  const viejo = NOMBRES_VIEJOS[valor];
+  return viejo === undefined ? null : NIVELES[viejo];
 }
 
 /** El pie del semáforo. */

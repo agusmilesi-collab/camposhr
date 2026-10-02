@@ -321,6 +321,8 @@ const CAMPOS_EDITABLES = {
   recomendacion: {
     id: F.recomendacion,
     opciones: [
+      // Las de Airtable, que todavía trae los nombres viejos. Lo que se guarda
+      // en Supabase son los cuatro niveles de ajuste, con su propio nombre.
       'Apto',
       'Apto con observaciones',
       'Apto con alertas',

@@ -104,13 +104,19 @@ export const SECCION_DE_ETAPA: Record<string, Seccion> = Object.fromEntries(
  * está cerrado y no pide nada.
  */
 /**
- * El color de cada recomendación.
+ * El color de cada nivel de ajuste.
  *
- * Verde lo que pasa, ámbar lo que pasa con reparos, rojo lo que no. Los cuatro
- * de "Encaja" son del segundo juego de dimensiones, el que mide capacidad
- * contra demanda del puesto.
+ * Los cuatro primeros son los que se guardan desde el 2/10/2026, con el mismo
+ * nombre que sale en el informe. Los demás son los nombres con los que se
+ * guardaba antes, y siguen acá porque las fichas que todavía se leen de
+ * Airtable los traen.
  */
 export const COLOR_RECOMENDACION: Record<string, string> = {
+  'Ajuste alto': 'os-verde',
+  'Ajuste con aspectos a desarrollar': 'os-azul',
+  'Ajuste con alertas': 'os-ambar',
+  'Ajuste bajo': 'os-rojo',
+
   Apto: 'os-verde',
   'Apto con observaciones': 'os-ambar',
   'Apto con alertas': 'os-ambar',

@@ -258,7 +258,7 @@ export async function datosDelHub(): Promise<DataHub> {
   // Cierra sin reserva el que sale apto liso o encaja con el puesto: todo lo
   // demás le pone una condición al cliente, que es donde el informe sirve.
   const sinReserva = cerrados.filter((f) =>
-    ['Apto', 'Encaja con el puesto'].includes(f.recomendacion as string)
+    ['Ajuste alto', 'Apto', 'Encaja con el puesto'].includes(f.recomendacion as string)
   ).length;
 
   const porEmpresa = contar(filas, (f) => f.pedidos?.empresas?.nombre);
