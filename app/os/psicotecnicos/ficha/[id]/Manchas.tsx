@@ -125,26 +125,29 @@ export default function Manchas({
       : LAMINA.filter((o) => o.v.startsWith('Z') === esZulliger);
 
   /*
-   * Hasta cuatro respuestas por lámina.
+   * Hasta cuatro respuestas por lámina, al cargar.
    *
    * Es el tope con el que se administra: pasadas cuatro, al candidato se le
-   * pasa a la lámina siguiente. Sin el tope, tocar "Agregar respuesta" de más
+   * pasa a la lámina siguiente. Sin esto, tocar "Agregar respuesta" de más
    * dejaba siete filas de la misma lámina y el protocolo salía con un reparto
    * que nadie tomó.
+   *
+   * **Rige para la fila que se agrega, no para las que ya están.** Hay once
+   * protocolos cargados con cinco respuestas en una lámina y son válidos: se
+   * siguen viendo, se siguen editando y el selector de cada fila deja elegir
+   * la lámina que haga falta.
    */
   const TOPE_POR_LAMINA = 4;
   const cuantasEn = (lamina: string | null) =>
     lamina === null ? 0 : vista.filter((f) => f.lamina === lamina).length;
 
   /* La lámina donde cae la próxima respuesta: la de la última cargada mientras
-     tenga lugar, y si no la que sigue. Null cuando ya no hay ninguna con
-     lugar, que es cuando el protocolo está completo. */
+     tenga lugar, y si no la primera que siga con lugar. Null cuando ya no queda
+     ninguna, que es cuando el protocolo está completo. */
   const laminaSiguiente = (() => {
-    const ultimaCargada = [...vista].reverse().find((f) => f.lamina)?.lamina ?? null;
-    const desde = ultimaCargada
-      ? laminas.findIndex((o) => o.v === ultimaCargada)
-      : 0;
-    if (desde < 0) return ultimaCargada;
+    const ultima = [...vista].reverse().find((f) => f.lamina)?.lamina ?? null;
+    const desde = ultima ? laminas.findIndex((o) => o.v === ultima) : 0;
+    if (desde < 0) return ultima;
     for (let i = desde; i < laminas.length; i++) {
       if (cuantasEn(laminas[i].v) < TOPE_POR_LAMINA) return laminas[i].v;
     }
@@ -181,7 +184,12 @@ export default function Manchas({
     if (!base) return laminas;
     const donde = laminas.findIndex((o) => o.v === base);
     if (donde < 0) return laminas;
-    const ofrecidas = [laminas[donde], laminas[donde + 1]].filter(Boolean) as Opcion[];
+    /* La anterior, la propia y la siguiente. La anterior está porque el tope de
+       cuatro empuja la fila nueva a la lámina que sigue, y sin ella volver
+       atrás un paso obligaba a abrir "Mostrar todas". */
+    const ofrecidas = [laminas[donde - 1], laminas[donde], laminas[donde + 1]].filter(
+      Boolean
+    ) as Opcion[];
     // La previa también, cuando la fila todavía está vacía: es la que se repite.
     if (propia === null && previa && !ofrecidas.some((o) => o.v === previa)) {
       const p = laminas.find((o) => o.v === previa);
@@ -497,7 +505,7 @@ export default function Manchas({
           disabled={laminaSiguiente === null}
           title={
             laminaSiguiente === null
-              ? `El protocolo llegó a ${TOPE_POR_LAMINA} respuestas en todas las láminas.`
+              ? `Las láminas llegaron a ${TOPE_POR_LAMINA} respuestas. Para una más, cambiá la lámina en la fila.`
               : `La próxima respuesta entra en la lámina ${laminaSiguiente}.`
           }
         >
