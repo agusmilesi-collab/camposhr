@@ -182,6 +182,20 @@ type Indicador = {
    */
   peso?: number;
   /**
+   * Hasta cuánto puede aportar cuando cae en su mejor banda.
+   *
+   * Las psicólogas definieron el 30/9/2026 una categoría más: "dentro de lo
+   * esperable", que vale 50 y no 100. La llevan los indicadores que avisan de
+   * algo cuando se disparan y que, cuando están en rango, no dicen que la
+   * persona tenga un recurso: dicen que no apareció nada. No tener un rasgo en
+   * contra dejó de puntuar como tener un recurso a favor.
+   *
+   * Los de capacidad no lo llevan y siguen llegando a 100: EA, D / AdjD,
+   * Contenidos H, GHR : PHR, P, Zf, R, el Raven y los que comparan dos índices
+   * entre sí, donde ganar la comparación sí es un hallazgo.
+   */
+  techo?: 50;
+  /**
    * El número que se compara contra la escala.
    *
    * Va junto con `escala`: con los dos, la banda la resuelve el motor y los
@@ -224,8 +238,15 @@ function nivelDe(
   ctx: Contexto
 ): Nivel {
   const escala = e ?? i.escala;
-  if (escala && i.valor) return nivelPorEscala(i.valor(s, ctx), escala, n ?? numerosDe(escala));
-  return i.nivel ? i.nivel(s, ctx) : null;
+  const bruto =
+    escala && i.valor
+      ? nivelPorEscala(i.valor(s, ctx), escala, n ?? numerosDe(escala))
+      : i.nivel
+        ? i.nivel(s, ctx)
+        : null;
+  // "Dentro de lo esperable" es la banda de arriba de un indicador de alarma, y
+  // vale lo mismo que un medio: el techo lo pone lo que la persona tiene.
+  return i.techo === 50 && bruto === 3 ? 2 : bruto;
 }
 
 // ── Indicadores compartidos por los dos protocolos ─────────────────────────
@@ -264,6 +285,7 @@ const dentroDe = (desde: number, hasta: number, decimales?: number): Escala => (
 });
 
 const FD: Indicador = {
+  techo: 50,
   nombre: 'Fd',
   formula: 'Fd',
   mide: 'Autonomía frente a necesidad de apoyo',
@@ -305,6 +327,7 @@ const AISLAMIENTO: Indicador = {
 };
 
 const EGOCENTRISMO: Indicador = {
+  techo: 50,
   nombre: 'Índice de egocentrismo',
   formula: '(3r + (2)) ÷ R',
   // Alto es negativo; dentro del rango o bajo, positivo. Por eso es binario y
@@ -328,6 +351,7 @@ const FC_CF: Indicador = {
 };
 
 const M_Y: Indicador = {
+  techo: 50,
   nombre: 'm + Y',
   formula: 'm + SumY',
   mide: 'Nivel de tensión interna y ansiedad',
@@ -352,6 +376,36 @@ const COP_AG: Indicador = {
     if (cop >= 2 && (ag ?? 0) <= 1) return 3;
     if (cop >= 1) return 2;
     return 1;
+  },
+};
+
+/**
+ * DQ+: las respuestas que integran dos partes de la lámina.
+ *
+ * Es esfuerzo activo de organizar, no de describir. Lo sumaron a Proactividad
+ * el 2/10/2026, junto con Zf: la competencia tenía tres indicadores que se
+ * contradecían entre sí, y con seis los flojos pesan la mitad.
+ */
+const DQ_MAS: Indicador = {
+  nombre: 'DQ+',
+  formula: 'DQ+',
+  mide: 'Esfuerzo de integración',
+  escala: { forma: 'umbral', mayorEsMejor: true, alto: 5, medio: 2 },
+  valor: (s) => num(s, 'localizacion', 'DQ_mas') ?? num(s, 'procesamiento', 'DQ+'),
+};
+
+/** Zf en Proactividad: cuántas respuestas implican organizar el material. */
+const ZF: Indicador = {
+  nombre: 'Zf',
+  formula: 'Zf contra R',
+  mide: 'Esfuerzo de organización',
+  reglas: ['más del 55 % de R', 'entre el 40 % y el 55 % de R', 'menos del 40 % de R'],
+  nivel: (s) => {
+    const zf = num(s, 'procesamiento', 'Zf');
+    const r = num(s, 'cabecera', 'R');
+    if (zf === null || r === null || r === 0) return null;
+    if (zf > r * 0.55) return 3;
+    return zf < r * 0.4 ? 1 : 2;
   },
 };
 
@@ -397,6 +451,7 @@ const W_M: Indicador = {
 };
 
 const ZD: Indicador = {
+  techo: 50,
   nombre: 'Zd',
   formula: 'Zd',
   mide: 'Esfuerzo organizativo',
@@ -418,6 +473,7 @@ const MA_MP: Indicador = {
 };
 
 const XA_WDA: Indicador = {
+  techo: 50,
   nombre: 'XA% / WDA%',
   formula: 'el menor de XA% y WDA%',
   mide: 'Ajuste perceptual y lectura de la realidad',
@@ -432,6 +488,7 @@ const XA_WDA: Indicador = {
 };
 
 const X_MENOS: Indicador = {
+  techo: 50,
   nombre: 'X−%',
   formula: 'X−%',
   mide: 'Distorsión perceptual',
@@ -440,6 +497,7 @@ const X_MENOS: Indicador = {
 };
 
 const M_MENOS: Indicador = {
+  techo: 50,
   nombre: 'M−',
   formula: 'M−',
   mide: 'Distorsión en la lectura de los otros',
@@ -470,6 +528,7 @@ const POPULARES: Indicador = {
 };
 
 const AFR: Indicador = {
+  techo: 50,
   nombre: 'Afr',
   formula: 'Afr contra la banda de su estilo',
   mide: 'Disposición a involucrarse con lo emocional',
@@ -484,6 +543,7 @@ const AFR: Indicador = {
 };
 
 const INTELECTUALIZACION: Indicador = {
+  techo: 50,
   nombre: 'Índice de intelectualización',
   formula: '2AB + (Art + Ay)',
   mide: 'Distancia intelectual frente a la emoción',
@@ -492,6 +552,7 @@ const INTELECTUALIZACION: Indicador = {
 };
 
 const C_PRIMA: Indicador = {
+  techo: 50,
   nombre: "C'",
   formula: "SumC'",
   mide: 'Inhibición o restricción emocional',
@@ -500,6 +561,7 @@ const C_PRIMA: Indicador = {
 };
 
 const VAGAS: Indicador = {
+  techo: 50,
   nombre: 'Vagas',
   formula: 'DQv',
   mide: 'Grado de desorganización frente a la experiencia',
@@ -508,6 +570,7 @@ const VAGAS: Indicador = {
 };
 
 const PSV: Indicador = {
+  techo: 50,
   nombre: 'PSV',
   formula: 'PSV',
   mide: 'Flexibilidad frente a la perseveración',
@@ -531,6 +594,7 @@ const RAVEN: Indicador = {
 };
 
 const T: Indicador = {
+  techo: 50,
   nombre: 'T',
   formula: 'SumT',
   mide: 'Disposición al contacto afectivo',
@@ -625,6 +689,7 @@ const POTENCIAL: Indicador = {
 
 /** Afr por debajo de la banda de su estilo; por encima no descuenta. */
 const AFR_PISO: Indicador = {
+  techo: 50,
   nombre: 'Afr',
   formula: 'Afr contra el piso de la banda de su estilo',
   mide: 'Disposición a involucrarse con lo emocional',
@@ -674,6 +739,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         nombre: 'Lambda',
         formula: 'Lambda',
         mide: 'Estilo de afrontamiento y simplificación',
+        techo: 50,
         escala: dentroDe(0.3, 0.99, 2),
         valor: (s) => num(s, 'cabecera', 'Lambda'),
       },
@@ -731,6 +797,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         nombre: 'CDI',
         formula: 'CDI',
         mide: 'Inhabilidad social',
+        techo: 50,
         // La constelación positiva (cuatro o cinco) es lo negativo.
         escala: binario(3, false),
         valor: (s) => constelacion(s, 'CDI'),
@@ -751,6 +818,8 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         escala: { forma: 'umbral', mayorEsMejor: true, alto: 29, medio: 17 },
         valor: (s) => num(s, 'cabecera', 'R'),
       },
+      DQ_MAS,
+      ZF,
     ],
   },
   {
@@ -759,22 +828,9 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     indicadores: [
       XA_WDA,
       X_MENOS,
-      {
-        nombre: 'Zf',
-        formula: 'Zf contra R',
-        mide: 'Esfuerzo de organización',
-        // El piso lo movieron las psicólogas del 30 % al 40 % el 30/9/2026, y es
-        // el mismo que dispara la lectura del informe y pinta la hoja.
-        reglas: ['más del 55 % de R', 'entre el 40 % y el 55 % de R', 'menos del 40 % de R'],
-        nivel: (s) => {
-          const zf = num(s, 'procesamiento', 'Zf');
-          const r = num(s, 'cabecera', 'R');
-          if (zf === null || r === null || r === 0) return null;
-          if (zf > r * 0.55) return 3;
-          return zf < r * 0.4 ? 1 : 2;
-        },
-      },
-      ZD,
+      // Zd y Zf salieron de acá y quedaron en una sola competencia cada uno,
+      // Autogestión y Proactividad: contados dos veces, quien organiza mal
+      // perdía puntos en las dos (decidido el 30/9/2026).
       PSV,
       RAVEN,
     ],
@@ -812,6 +868,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         nombre: 'Lambda',
         formula: 'Lambda',
         mide: 'Estilo de afrontamiento y simplificación',
+        techo: 50,
         // La banda del Zulliger, con el techo que ellas movieron a 0,80.
         escala: dentroDe(0.29, 0.8, 2),
         valor: (s) => num(s, 'cabecera', 'Lambda'),
@@ -849,7 +906,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         valor: (s) => num(s, 'control_estres', 'dif_EA_es'),
       },
       { ...INTELECTUALIZACION, escala: binario(1, false) },
-      FC_CF,
+      // Lo mismo que el aislamiento: en Zulliger es "dentro de lo esperable".
+      { ...FC_CF, techo: 50 as const },
       C_PRIMA,
       { ...VAGAS, escala: binario(0, false) },
       M_Y,
@@ -861,7 +919,9 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
     indicadores: [
       GHR_PHR,
       CONTENIDOS_H,
-      AISLAMIENTO,
+      // En Zulliger ellas lo escribieron como "dentro de lo esperable", y en
+      // Rorschach como positivo.
+      { ...AISLAMIENTO, techo: 50 as const },
       { ...M_MENOS, escala: binario(0, false) },
       POPULARES,
       COP_AG,
@@ -881,6 +941,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         escala: { forma: 'umbral', mayorEsMejor: true, alto: 12, medio: 9 },
         valor: (s) => num(s, 'cabecera', 'R'),
       },
+      DQ_MAS,
+      ZF,
     ],
   },
   {
@@ -911,10 +973,85 @@ export function claveDePeso(test: string, competencia: string, indicador: string
 }
 
 /** Lo que pesa cada indicador en el código. */
+/**
+ * Cuánto pesa cada indicador dentro de su competencia.
+ *
+ * Definidos con las psicólogas entre el 30/9 y el 2/10/2026, a partir de tres
+ * cosas: qué apoyo tiene el índice en la literatura, cuánto acompaña al resto de
+ * su competencia sobre los 73 protocolos cargados, y qué tan estable es en un
+ * protocolo corto. Ninguno pesa 0: ellas decidieron que todos cuenten.
+ *
+ * Están todos juntos y no al lado de cada indicador porque lo que se decide no
+ * es el peso sino el reparto: un 3 no dice nada hasta saber contra qué otros
+ * está. Se mueven desde Configuración sin tocar esto.
+ */
+const PESOS: Record<string, Record<string, Record<string, number>>> = {
+  Rorschach: {
+    'Autogestión': { Lambda: 3, Zd: 3, 'W : M': 2, Dd: 2, EB: 1, T: 1 },
+    'Control emocional': {
+      EA: 3,
+      'D / AdjD': 3,
+      'm + Y': 2,
+      'FC : CF + C': 2,
+      "C'": 1,
+      'Índice de intelectualización': 1,
+      Vagas: 1,
+    },
+    'Habilidad interpersonal': {
+      'GHR : PHR': 3,
+      'Contenidos H': 3,
+      CDI: 2,
+      P: 2,
+      'COP / AG': 1,
+      'Índice de aislamiento': 1,
+      Afr: 1,
+      'M−': 1,
+      'Índice de egocentrismo': 1,
+    },
+    'Proactividad': { 'Ma : Mp': 2, R: 2, 'DQ+': 2, Zf: 2, Fd: 1 },
+    'Capacidad intelectual': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
+    'Liderazgo': {
+      Potencial: 3,
+      W: 2,
+      'GHR : PHR': 1,
+      'H : (H) + Hd + (Hd)': 1,
+      EB: 1,
+      'Contenidos H': 1,
+      Afr: 1,
+    },
+  },
+  Zulliger: {
+    'Autogestión': { Lambda: 3, 'W : M': 2, Dd: 2, T: 1, EB: 1 },
+    'Control emocional': {
+      EA: 3,
+      'EA − es': 3,
+      'FC : CF + C': 2,
+      Vagas: 2,
+      'Índice de intelectualización': 1,
+      "C'": 1,
+      'm + Y': 1,
+    },
+    'Habilidad interpersonal': {
+      'GHR : PHR': 3,
+      'Contenidos H': 3,
+      'COP / AG': 2,
+      P: 2,
+      'Índice de aislamiento': 1,
+      'M−': 1,
+      'Índice de egocentrismo': 1,
+    },
+    'Proactividad': { Fd: 2, R: 2, 'DQ+': 2, Zf: 2, 'Ma : Mp': 1 },
+    'Capacidad intelectual': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
+  },
+};
+
 export const PESOS_DE_FABRICA: Record<string, number> = Object.fromEntries(
   Object.entries(HOJAS).flatMap(([test, hoja]) =>
     hoja.flatMap((c) =>
-      c.indicadores.map((i) => [claveDePeso(test, c.competencia, i.nombre), i.peso ?? 1])
+      c.indicadores.map((i) => [
+        claveDePeso(test, c.competencia, i.nombre),
+        PESOS[test]?.[c.competencia]?.[i.nombre] ?? i.peso ?? 1,
+      ])
     )
   )
 );
@@ -1271,7 +1408,11 @@ export function calcularCompetencias(
         mide: i.mide,
         nivel: leer(s),
         corte: comoSeLee(i, n, e),
-        peso: ctx.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ?? i.peso ?? 1,
+        peso:
+          ctx.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ??
+          PESOS[test]?.[c.competencia]?.[i.nombre] ??
+          i.peso ??
+          1,
         datos: i.datosDe ? i.datosDe(ctx) : leidoPor(s, leer),
       };
     });
