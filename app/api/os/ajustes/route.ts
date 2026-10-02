@@ -6,12 +6,9 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { rangosValidos } from '@/lib/raven';
-import {
-  cortesDeCompetenciasValidos,
-  direccionesValidas,
-  pesosValidos,
-} from '@/lib/competencias';
-import { cortesValidos, textosValidos } from '@/lib/redacciones';
+import { cortesDeCompetenciasValidos, direccionesValidas, pesosValidos } from '@/lib/competencias';
+import { TEXTOS, cortesValidos, textosValidos } from '@/lib/redacciones';
+import { tramosValidos } from '@/lib/plan-incorporacion';
 import { conclusionesValidas, nivelesValidos } from '@/lib/discursivo';
 
 export const runtime = 'nodejs';
@@ -26,6 +23,8 @@ const MOTIVO = {
     'Cada texto tiene que ser de una lectura que exista y de hasta 1200 caracteres, y ninguna lectura puede quedarse sin lo que dice.',
   redacciones_cortes:
     'Cada corte tiene que ser un número de una lectura que entre contra un número fijo. Las que dependen del estilo o de la cantidad de respuestas no se mueven desde acá.',
+  redacciones_tramos:
+    'Cada lectura tiene que existir y su tramo tiene que ser uno de los cuatro del plan de incorporación.',
   competencias_cortes:
     'Cada corte tiene que ser un número de un indicador que corte por umbral, y el de alto tiene que quedar del lado que le corresponde al de medio.',
   competencias_direccion:
@@ -73,6 +72,7 @@ export async function POST(req: Request) {
     'competencias_pesos',
     'redacciones_textos',
     'redacciones_cortes',
+    'redacciones_tramos',
     'competencias_cortes',
     'competencias_direccion',
     'discursivo_niveles',
@@ -114,22 +114,24 @@ export async function POST(req: Request) {
         ? pesosValidos(valor)
         : clave === 'redacciones_cortes'
           ? cortesValidos(valor)
-          : clave === 'competencias_cortes'
-            ? cortesDeCompetenciasValidos(valor)
-            : clave === 'competencias_direccion'
-              ? direccionesValidas(valor)
-              : clave === 'discursivo_niveles'
-                ? nivelesValidos(valor)
-                : clave === 'discursivo_conclusiones'
-                  ? conclusionesValidas(valor)
-                  : textosValidos(valor);
+          : clave === 'redacciones_tramos'
+            ? tramosValidos(valor, Object.keys(TEXTOS))
+            : clave === 'competencias_cortes'
+              ? cortesDeCompetenciasValidos(valor)
+              : clave === 'competencias_direccion'
+                ? direccionesValidas(valor)
+                : clave === 'discursivo_niveles'
+                  ? nivelesValidos(valor)
+                  : clave === 'discursivo_conclusiones'
+                    ? conclusionesValidas(valor)
+                    : textosValidos(valor);
   if (!limpios) {
     return NextResponse.json(
       {
         ok: false,
         motivo: MOTIVO[clave as keyof typeof MOTIVO],
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -142,7 +144,7 @@ export async function POST(req: Request) {
   if (!res.ok) {
     return NextResponse.json(
       { ok: false, motivo: `No se pudo guardar (${res.status}).` },
-      { status: 400 }
+      { status: 400 },
     );
   }
 

@@ -33,6 +33,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
+import Desplegable from '@/app/os/Desplegable';
+import { TRAMOS, type Tramo } from '@/lib/plan-incorporacion';
 
 export type Corte = {
   op: 'menor' | 'mayor';
@@ -69,6 +71,9 @@ export type Renglon = Campos & {
   corte: Corte | null;
   /** El del Zulliger, cuando las normas de ese test cortan en otro número. */
   corteZ: Corte | null;
+  /** En qué tramo del plan de incorporación va su recomendación, y el de fábrica. */
+  tramo: Tramo;
+  tramoFabrica: Tramo;
 };
 
 /**
@@ -165,6 +170,11 @@ export default function Textos({
     return numero;
   }, [renglones]);
 
+  const tramosPuestos = useMemo(
+    () => Object.fromEntries(renglones.map((r) => [r.clave, r.tramo])) as Record<string, Tramo>,
+    [renglones]
+  );
+  const [tramos, setTramos] = useState<Record<string, Tramo>>(tramosPuestos);
   const [textos, setTextos] = useState<Record<string, Campos>>(puestos);
   const [cortes, setCortes] = useState<Record<string, string>>(cortesPuestos);
   const [filtro, setFiltro] = useState('');
@@ -188,12 +198,13 @@ export default function Textos({
   // Guardar vuelve a dibujar del servidor, pero eso no reinicia el estado de un
   // componente de cliente: sin esto, volver a lo de fábrica dejaba en pantalla
   // los textos que se acababan de borrar.
-  const firma = JSON.stringify([puestos, cortesPuestos]);
+  const firma = JSON.stringify([puestos, cortesPuestos, tramosPuestos]);
   const [ultima, setUltima] = useState(firma);
   if (ultima !== firma) {
     setUltima(firma);
     setTextos(puestos);
     setCortes(cortesPuestos);
+    setTramos(tramosPuestos);
   }
 
   /** Dos listas de formas de decirlo son la misma si dicen lo mismo en orden. */
@@ -205,7 +216,8 @@ export default function Textos({
       !igual(textos[r.clave].recomienda, r.recomienda) ||
       !igual(textos[r.clave].recomiendaZ, r.recomiendaZ) ||
       (r.corte && cortes[r.clave] !== cortesPuestos[r.clave]) ||
-      (r.corteZ && cortes[`zulliger:${r.clave}`] !== cortesPuestos[`zulliger:${r.clave}`])
+      (r.corteZ && cortes[`zulliger:${r.clave}`] !== cortesPuestos[`zulliger:${r.clave}`]) ||
+      tramos[r.clave] !== r.tramo
   );
   const cambiado = sinGuardar.length > 0;
 
@@ -266,7 +278,7 @@ export default function Textos({
    * Sin diferencias se manda null, que borra la clave: guardar un objeto vacío
    * dejaría una fila diciendo "acá hay algo movido" cuando no hay nada.
    */
-  async function guardar(deTextos: unknown, deCortes: unknown) {
+  async function guardar(deTextos: unknown, deCortes: unknown, deTramos: unknown) {
     const algo = (v: unknown) =>
       v && typeof v === 'object' && Object.keys(v).length > 0 ? v : null;
     setGuardando(true);
@@ -274,6 +286,7 @@ export default function Textos({
     try {
       await mandar('redacciones_textos', algo(deTextos));
       await mandar('redacciones_cortes', algo(deCortes));
+      await mandar('redacciones_tramos', algo(deTramos));
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo guardar.');
@@ -300,6 +313,15 @@ export default function Textos({
         if (!igual(lleno(suyo[cual]), lleno(fabrica))) uno[cual] = lleno(suyo[cual]);
       }
       if (uno.dice || uno.recomienda || uno.diceZ || uno.recomiendaZ) d[r.clave] = uno;
+    }
+    return d;
+  }
+
+  /** Los tramos que quedaron distintos del que trae el código. */
+  function tramosMovidos() {
+    const d: Record<string, Tramo> = {};
+    for (const r of renglones) {
+      if (tramos[r.clave] !== r.tramoFabrica) d[r.clave] = tramos[r.clave];
     }
     return d;
   }
@@ -535,6 +557,34 @@ export default function Textos({
                           <span className="os-rama-cuando">{r.cuando}</span>
                         )}
                         <span className="os-lectura-marcas">
+                          {/* El tramo del plan de incorporación, solo en las
+                              lecturas que recomiendan algo: sin recomendación
+                              no hay renglón que ubicar. */}
+                          {[...textos[r.clave].recomienda, ...textos[r.clave].recomiendaZ].some(
+                            (t) => t.trim()
+                          ) && (
+                            <span className="os-lectura-tramo">
+                              <span className="os-rama-cuando">Tramo</span>
+                              <Desplegable
+                                valor={tramos[r.clave]}
+                                opciones={TRAMOS.map((t) => ({ valor: t.clave, texto: t.titulo }))}
+                                alElegir={(v) =>
+                                  setTramos((x) => ({ ...x, [r.clave]: v as Tramo }))
+                                }
+                                etiqueta={`Tramo del plan de incorporación de ${r.indice}`}
+                              />
+                            </span>
+                          )}
+                          {tramos[r.clave] !== r.tramoFabrica && (
+                            <span
+                              className="os-dato-falta"
+                              title={`Original: ${
+                                TRAMOS.find((t) => t.clave === r.tramoFabrica)?.titulo
+                              }`}
+                            >
+                              tramo movido
+                            </span>
+                          )}
                           {movido && (
                             <span
                               className="os-dato-falta"
@@ -588,7 +638,7 @@ export default function Textos({
               <button
                 className="os-boton"
                 disabled={guardando}
-                onClick={() => guardar(null, null)}
+                onClick={() => guardar(null, null, null)}
                 title="Borra lo que se escribió y deja los textos y los cortes originales"
               >
                 Volver a los originales
@@ -631,6 +681,7 @@ export default function Textos({
             onClick={() => {
               setTextos(puestos);
               setCortes(cortesPuestos);
+              setTramos(tramosPuestos);
             }}
           >
             Deshacer
@@ -638,7 +689,7 @@ export default function Textos({
           <button
             className="os-boton os-boton-azul"
             disabled={guardando || rotos.length > 0}
-            onClick={() => guardar(diferencias(), cortesMovidos())}
+            onClick={() => guardar(diferencias(), cortesMovidos(), tramosMovidos())}
           >
             {guardando ? 'Guardando…' : 'Guardar los cambios'}
           </button>

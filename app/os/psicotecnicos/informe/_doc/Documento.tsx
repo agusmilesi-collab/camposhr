@@ -287,15 +287,19 @@ export default async function Documento({
       </Capitulo>
       )}
 
-      {/* ── Recomendaciones al líder ────────────────────────────────────── */}
+      {/* ── Plan de incorporación ────────────────────────────────────── */}
       {va('fundamentos') && (
-      <Capitulo numero={num()} titulo="Recomendaciones para su líder directo">
+      <Capitulo
+        numero={num()}
+        titulo="Plan de incorporación"
+        sub="Primeros 90 días, para su líder"
+      >
         <Listas
           id={editar}
           lista="recomendaciones"
-          items={inf.recomendaciones}
+          items={inf.recomendaciones.map((r) => r.texto)}
+          tramos={inf.recomendaciones.map((r) => r.tramo)}
           intervenida={inf.intervenidas.includes('recomendaciones')}
-          numerada
           vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
           respaldos={editar ? inf.respaldos : undefined}
         />
