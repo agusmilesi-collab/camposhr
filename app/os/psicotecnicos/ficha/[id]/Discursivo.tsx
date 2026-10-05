@@ -376,7 +376,7 @@ export default function Discursivo({
         <div className="os-competencias-cabeza">
           <h4 className="os-competencias-titulo">Potencial de desarrollo</h4>
           <span
-            className={`os-sello-estado os-test-estado ${tomado ? 'os-verde' : 'os-gris'}`}
+            className={`os-sello-estado os-test-estado ${tomado ? 'os-verde' : 'os-rojo'}`}
           >
             {tomado ? 'Administrado' : 'No administrado'}
           </span>

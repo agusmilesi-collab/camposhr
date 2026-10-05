@@ -97,6 +97,7 @@ type Fila = {
   } | null;
   evaluadoras: { nombre: string } | null;
   pedido_id: string | null;
+  baja_el: string | null;
   pedidos: {
     puesto: string;
     con_benziger: boolean | null;
@@ -108,7 +109,7 @@ type Fila = {
 const CAMPOS =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'bender_administrado,grafico_2_personas_administrado,benziger_administrado,con_benziger,' +
-  'recomendacion,informe_path,' +
+  'recomendacion,informe_path,baja_el,' +
   'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,tablero,prioridad,' +
   'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
   'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo))';
@@ -162,6 +163,7 @@ export async function listar(): Promise<Evaluacion[]> {
     tablero: esColumnaTablero(f.tablero) ? f.tablero : null,
     prioridad: esPrioridad(f.prioridad) ? f.prioridad : null,
     prueba: /^distribuidora andina/i.test(f.pedidos?.empresas?.nombre ?? ''),
+    baja: f.baja_el,
   }));
 }
 

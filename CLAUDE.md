@@ -1239,6 +1239,20 @@ trabajo: que se entregue un informe no revive un pedido que alguien canceló.
 El botón de reabrir está para lo que el cierre automático no puede saber: el
 cliente pide sumar a alguien a una búsqueda que ya se había dado por terminada.
 
+## Darse de baja no es una etapa
+
+`evaluaciones.baja_el` guarda el día en que la persona se dio de baja del
+proceso (`supabase/evaluacion-baja.sql`). Se marca y se deshace desde el cajón
+de "Editar datos y CV", al lado de eliminar (`app/os/psicotecnicos/Baja.tsx`,
+ruta `/api/os/baja`).
+
+**Es una marca y no una etapa**: la etapa sigue diciendo hasta dónde llegó la
+evaluación, que puede ser antes o después de la entrevista. Con la marca puesta
+la evaluación sale de los tableros y del aviso de sin asignar y se lee en
+Entregados (`visiblesEn`), no entra a la cola de facturación, el portal la
+muestra en entregados como "Baja" con facturación "NC" (no corresponde), y no
+deja el pedido abierto: si el resto se entregó, el pedido se cierra.
+
 ## Cerrar no es borrar
 
 Un pedido y un cliente se **cierran** cuando terminaron: siguen enteros y dejan

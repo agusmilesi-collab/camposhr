@@ -22,6 +22,8 @@ export type FilaEntregada = {
   informe: string | null;
   /** Cobro de esa evaluación, resuelto a un solo estado (ver lib/cobro.ts). */
   cobro: EstadoCobro;
+  /** Se dio de baja del proceso: no hay informe que abrir. */
+  baja?: boolean;
 };
 
 type Clave = 'fecha' | 'pedido' | 'candidato' | 'evaluadora' | 'reco' | 'cobro';
@@ -208,7 +210,9 @@ export default function TablaEntregados({
               fila pase de "Próximamente" a abrir. */}
           {conInforme && (
             <span className="c-informe" data-label="Informe">
-              {f.informe ? (
+              {f.baja ? (
+                <span className="dash">—</span>
+              ) : f.informe ? (
                 <a
                   className="btn-informe"
                   href={f.informe}

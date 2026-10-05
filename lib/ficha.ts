@@ -81,6 +81,8 @@ export type Cabecera = {
    * antes del 3/10/2026: ahí vale el del pedido.
    */
   solicitante?: { nombre: string; cargo: string | null } | null;
+    /** El día en que se dio de baja del proceso; null si sigue. */
+    baja_el?: string | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
     puesto: string;
@@ -338,7 +340,7 @@ const CAMPOS_CABECERA =
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'recomendacion,recomendacion_notas,informe_path,entrevista_competencias,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
-  'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,' +
+  'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,baja_el,' +
   'personas(nombre,email,telefono,cv_path,fecha_nacimiento),evaluadoras(nombre),' +
   'solicitante:contactos!solicitante_id(nombre,cargo),' +
   'pedidos(puesto,con_benziger,exigencia_id,estrato_puesto,time_span_dias,complejidad,' +

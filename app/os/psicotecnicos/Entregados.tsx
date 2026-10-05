@@ -83,7 +83,7 @@ function corto(titulo: string): string {
  * la ficha) no se ordenan: su contenido es un botón, no un dato.
  */
 const CLAVE: Record<string, (e: Evaluacion) => string | number> = {
-  Fecha: (e) => e.fechaEntrega ?? '',
+  Fecha: (e) => e.baja ?? e.fechaEntrega ?? '',
   Candidato: (e) => e.nombre.toLocaleLowerCase('es'),
   Empresa: (e) => e.empresa.toLocaleLowerCase('es'),
   Puesto: (e) => e.puesto.toLocaleLowerCase('es'),
@@ -138,7 +138,10 @@ function Fila({ e }: { e: Evaluacion }) {
         else router.push(ficha);
       }}
     >
-      <td data-campo="Fecha">{fechaCorta(e.fechaEntrega) ?? <Falta texto="sin fecha" />}</td>
+      {/* De una baja, el día en que se dio de baja: es cuando terminó. */}
+      <td data-campo="Fecha">
+        {fechaCorta(e.baja ?? e.fechaEntrega) ?? <Falta texto="sin fecha" />}
+      </td>
       <td data-campo="Candidato" className="os-tabla-nombre">
         {ficha ? (
           <Link className="os-fila-nombre" href={ficha}>
@@ -164,7 +167,9 @@ function Fila({ e }: { e: Evaluacion }) {
       {/* El nivel de ajuste que firmó la evaluadora, con el color con que sale
           en el informe: es lo primero que se pregunta de una evaluación vieja. */}
       <td data-campo="Nivel" className="os-tabla-recorta" title={nivel?.titulo}>
-        {nivel ? (
+        {e.baja ? (
+          <span className="os-nivel-tag os-gris">Baja</span>
+        ) : nivel ? (
           <span className={`os-nivel-tag os-${nivel.color}`}>{corto(nivel.titulo)}</span>
         ) : (
           <Falta texto="sin nivel" />
@@ -174,7 +179,9 @@ function Fila({ e }: { e: Evaluacion }) {
           lee y no se toca: el seguimiento se prende desde la ficha, donde
           están la fecha de ingreso que lo agenda y lo que contó la empresa. */}
       <td data-campo="Seguimiento">
-        {enSeguimiento ? (
+        {e.baja ? (
+          <span className="os-tabla-flojo">—</span>
+        ) : enSeguimiento ? (
           <Cuenta al={e.seguimientoAl} ingreso={e.ingreso} />
         ) : (
           <span className="os-sello-estado os-gris">Sin seguir</span>

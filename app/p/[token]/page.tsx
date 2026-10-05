@@ -257,7 +257,8 @@ export default async function Portal({ params }: { params: { token: string } }) 
   const entregados: Entregado[] = busquedas
     .flatMap((b) =>
       b.candidatos
-        .filter((c) => yaEntregada(c.estado))
+        // Las bajas también: ya terminaron, y es donde el cliente las busca.
+        .filter((c) => yaEntregada(c.estado) || c.baja)
         .map((c) => ({ cand: c, puesto: b.puesto, fechaPedido: b.fecha }))
     )
     .sort(
@@ -270,7 +271,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
   // sus encabezados: acá se le pasa cada fila ya resuelta.
   const filasEntregadas: FilaEntregada[] = entregados.map(
     ({ cand: c, puesto, fechaPedido }) => {
-      const r = c.recomendacion
+      const r = c.baja
+        ? { texto: 'Baja', clase: 'gray', orden: 5 }
+        : c.recomendacion
         ? RECOMENDACIONES[c.recomendacion] ?? {
             texto: c.recomendacion,
             clase: 'gray',
@@ -295,7 +298,11 @@ export default async function Portal({ params }: { params: { token: string } }) 
         // Con los informes apagados no se arma ningún enlace: la columna sale
         // igual, con "Ver informe" en todas las filas y el aviso de que llega
         // próximamente, y no hay dirección que probar. Ver `informesVisibles`.
-        informe: !informesVisibles
+        baja: Boolean(c.baja),
+        // De una baja no hay informe.
+        informe: c.baja
+          ? null
+          : !informesVisibles
           ? null
           : deSupabase
             ? c.tieneInforme
@@ -323,7 +330,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
   const sinAsignar = busquedas
     .map((b) => ({
       ...b,
-      candidatos: b.candidatos.filter((c) => !yaEntregada(c.estado) && !c.evaluadora),
+      candidatos: b.candidatos.filter(
+        (c) => !yaEntregada(c.estado) && !c.evaluadora && !c.baja
+      ),
     }))
     .filter((b) => b.candidatos.length > 0);
   const cuantosSinAsignar = sinAsignar.reduce((n, b) => n + b.candidatos.length, 0);
@@ -331,7 +340,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
   const enCurso = busquedas
     .map((b) => ({
       ...b,
-      candidatos: b.candidatos.filter((c) => !yaEntregada(c.estado) && c.evaluadora),
+      candidatos: b.candidatos.filter(
+        (c) => !yaEntregada(c.estado) && c.evaluadora && !c.baja
+      ),
     }))
     .filter((b, i) => b.candidatos.length > 0 || busquedas[i].candidatos.length === 0)
     .sort(
@@ -466,7 +477,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
           {entregados.length > 0 && (
             <>
               <div className="group-sep">
-                <span>Informes entregados ({filasEntregadas.length})</span>
+                <span>
+                  Informes entregados ({filasEntregadas.filter((f) => !f.baja).length})
+                </span>
               </div>
               <article className="card">
                 <TablaEntregados

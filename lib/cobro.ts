@@ -27,7 +27,7 @@ import { ETAPAS_ENTREVISTADO } from './facturas-tipos';
  */
 export const COBRO_PUBLICADO = false;
 
-export type EstadoCobro = 'pagado' | 'impago' | 'sin-facturar' | 'sin-dato';
+export type EstadoCobro = 'pagado' | 'impago' | 'sin-facturar' | 'sin-dato' | 'nc';
 
 export const COBROS: Record<
   EstadoCobro,
@@ -37,6 +37,7 @@ export const COBROS: Record<
   impago:         { texto: 'Impago',       clase: 'red',   detalle: 'Facturado, sin cobrar' },
   'sin-facturar': { texto: 'Sin facturar', clase: 'gray',  detalle: 'Todavía sin facturar' },
   'sin-dato':     { texto: '—',            clase: 'gray',  detalle: 'Sin cargar' },
+  nc:             { texto: 'NC',           clase: 'gray',  detalle: 'No corresponde: se dio de baja del proceso' },
 };
 
 /** Del cobro pendiente al cobrado: lo que falta plata primero. */
@@ -45,9 +46,12 @@ export const ORDEN_COBRO: Record<EstadoCobro, number> = {
   impago: 1,
   pagado: 2,
   'sin-dato': 3,
+  nc: 4,
 };
 
 export function cobro(c: Candidato): EstadoCobro {
+  // Quien se dio de baja no se factura: no corresponde.
+  if (c.baja) return 'nc';
   // Antes de que se tome la entrevista no hay nada que facturar, así que
   // tampoco hay nada que decir: "sin facturar" en un candidato que recién
   // entró se lee como algo pendiente y no lo es.

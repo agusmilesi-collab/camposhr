@@ -11310,3 +11310,9 @@ a.pedir-volver-link {
   font-weight: 400;
   color: var(--muted);
 }
+
+/* La baja, en la columna de recomendación: gris, porque no hubo informe. */
+.reco-tag.gray {
+  color: #5f5d58;
+  background: #e7e5e0;
+}

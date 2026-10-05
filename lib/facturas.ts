@@ -231,6 +231,7 @@ type FilaFacturable = {
   fecha_entrega: string | null;
   benziger_administrado: boolean | null;
   con_benziger: boolean | null;
+  baja_el: string | null;
   personas: { nombre: string } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
@@ -256,7 +257,7 @@ export async function listarAFacturar(): Promise<Facturable[]> {
   const [evaluaciones, renglones, enOrdenes, precios, cambio] = await Promise.all([
     select<FilaFacturable>(
       'evaluaciones',
-      'select=id,estado,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,' +
+      'select=id,estado,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,baja_el,' +
         'personas(nombre),evaluadoras(nombre),' +
         'pedidos(puesto,empresa_id,fecha_pedido,con_benziger,empresas(nombre),' +
         'baterias(id,codigo,nombre))' +
@@ -302,7 +303,12 @@ export async function listarAFacturar(): Promise<Facturable[]> {
   // inventados y existen para que un cliente vea el portal (`lib/portal-ejemplo.ts`).
   return evaluaciones
     .filter(
-      (e) => !facturadas.has(e.id) && e.pedidos && !esEmpresaEjemplo(e.pedidos.empresas?.nombre)
+      (e) =>
+        !facturadas.has(e.id) &&
+        e.pedidos &&
+        !esEmpresaEjemplo(e.pedidos.empresas?.nombre) &&
+        // Quien se dio de baja no se factura: no corresponde.
+        !e.baja_el
     )
     .map((e) => {
       const pedido = e.pedidos!;
