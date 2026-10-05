@@ -253,6 +253,7 @@ function GrupoCliente({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [abierto, setAbierto] = useState(false);
+  const [seguroSinFactura, setSeguroSinFactura] = useState(false);
 
   // Quién factura: la dueña de la cola. Cada pestaña es de una evaluadora y
   // lo que está ahí lo factura ella, mire quien mire; si la cola no dice de
@@ -438,7 +439,7 @@ function GrupoCliente({
           {seleccion.length} de {pendientes.length}
         </span>
         <span>
-          <span className="os-dato-rotulo">Suma</span>
+          <span className="os-dato-rotulo">Total</span>
           {formatoImporte(total)}
         </span>
         {seleccion.some((p) => p.benziger !== null) && (
@@ -447,34 +448,54 @@ function GrupoCliente({
             {(pendientes.find((p) => p.dolar)?.dolar ?? 0).toLocaleString('es-AR')}
           </span>
         )}
+        {/* Los dos botones en el mismo renglón que la suma, a la derecha: lo
+            que se va a facturar y el botón que lo factura se leen juntos.
+            Con el formulario abierto no van, que ya tiene los suyos. */}
+        {!abierto && (
+          <span className="os-resumen-acciones">
+            {error && <span className="os-form-error">{error}</span>}
+            <button
+              className="os-boton os-boton-firme"
+              disabled={seleccion.length === 0}
+              onClick={() => setAbierto(true)}
+              title={seleccion.length === 0 ? 'Seleccioná al menos una evaluación.' : undefined}
+            >
+              {seleccion.length === 0 ? 'Facturar' : `Facturar ${seleccion.length}`}
+            </button>
+            {/* Sin factura va en dos toques: está al lado de "Facturar" y lo
+                que hace saca a esas personas de la cola. */}
+            {seguroSinFactura ? (
+              <>
+                <button
+                  className="os-boton os-boton-peligro"
+                  autoFocus
+                  disabled={enviando}
+                  onClick={async () => {
+                    await sinFactura();
+                    setSeguroSinFactura(false);
+                  }}
+                >
+                  {enviando ? 'Guardando…' : 'Sí, sin factura'}
+                </button>
+                <button className="os-boton" disabled={enviando} onClick={() => setSeguroSinFactura(false)}>
+                  No
+                </button>
+              </>
+            ) : (
+              <button
+                className="os-boton"
+                disabled={seleccion.length === 0 || enviando}
+                onClick={() => setSeguroSinFactura(true)}
+                title="Sale de la cola y queda en Sin cobrar, sin emitir factura"
+              >
+                Sin factura
+              </button>
+            )}
+          </span>
+        )}
       </div>
 
-      {!abierto ? (
-        <div className="os-panel-cuerpo os-form-pie">
-          <button
-            className="os-boton os-boton-firme"
-            disabled={seleccion.length === 0}
-            onClick={() => setAbierto(true)}
-          >
-            {seleccion.length === 0 ? 'Facturar' : `Facturar ${seleccion.length}`}
-          </button>
-          {error && <p className="os-form-error">{error}</p>}
-          {seleccion.length === 0 && (
-            <p className="os-form-nota">Seleccioná al menos una evaluación.</p>
-          )}
-          {/* En la otra punta: es la excepción, y pegado a "Facturar" se
-              apretaba por error. */}
-          <button
-            className="os-boton"
-            style={{ marginLeft: 'auto' }}
-            disabled={seleccion.length === 0 || enviando}
-            onClick={sinFactura}
-            title="Sale de la cola y queda en Sin cobrar, sin emitir factura"
-          >
-            {enviando ? 'Guardando…' : 'Sin factura'}
-          </button>
-        </div>
-      ) : (
+      {!abierto ? null : (
         <form className="os-form os-form-factura os-panel-cuerpo" onSubmit={emitir}>
           {/* A quién se le factura, tal como va a salir en el comprobante.
               Lo que falta se dice acá y en ámbar: sin CUIT o sin condición
@@ -733,7 +754,7 @@ export function Emitidas({
                 {sinCobrar.length === 1 ? '1 factura' : `${sinCobrar.length} facturas`}
               </span>
               <span>
-                <span className="os-dato-rotulo">Suma</span>
+                <span className="os-dato-rotulo">Total</span>
                 {formatoImporte(pendiente)}
               </span>
             </div>
