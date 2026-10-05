@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { randomBytes } from 'node:crypto';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
-import { insert, select } from '@/lib/supabase';
+import { insert, patch, select } from '@/lib/supabase';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
-import { esTestConLaminas } from '@/lib/laminas';
+import { esTestConLaminas, TESTS } from '@/lib/laminas';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -40,6 +40,27 @@ export async function POST(req: Request) {
   const test = datos?.test;
   if (typeof id !== 'string' || !UUID.test(id) || typeof test !== 'string' || !esTestConLaminas(test)) {
     return NextResponse.json({ ok: false, motivo: 'Pedido inválido.' }, { status: 400 });
+  }
+
+  // Con `lamina`, no se pide un enlace: se le dice a la pantalla de la persona
+  // cuál tiene que mostrar. Si no hay ningún enlace vigente no cambia nada, y
+  // por eso la pantalla de codificación puede mandarlo sin preguntar antes.
+  if (datos.lamina !== undefined) {
+    const n = Number(datos.lamina);
+    if (!Number.isInteger(n) || n < 1 || n > TESTS[test].laminas) {
+      return NextResponse.json({ ok: false, motivo: 'Lámina inválida.' }, { status: 400 });
+    }
+    try {
+      await patch(
+        'laminas_enlaces',
+        `evaluacion_id=eq.${id}&test=eq.${test}&vence_at=gt.${new Date().toISOString()}`,
+        { lamina: n }
+      );
+      return NextResponse.json({ ok: true });
+    } catch (e) {
+      console.error('laminas-link, lámina:', e);
+      return NextResponse.json({ ok: false, motivo: 'No se pudo avisar.' }, { status: 500 });
+    }
   }
 
   try {

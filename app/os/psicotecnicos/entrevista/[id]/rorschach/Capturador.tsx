@@ -1148,6 +1148,21 @@ export default function Capturador({
     } satisfies Aviso);
   }, [lamina]);
 
+  /* Y la que tiene que ver en su propia máquina, cuando se le mandó el enlace:
+     eso pasa en la encuesta, donde señala con su cursor. Va por el servidor
+     porque el canal de arriba no sale de este navegador. Si no hay enlace
+     vigente la ruta no cambia nada, así que no hace falta saberlo acá. */
+  useEffect(() => {
+    if (fase !== 'encuesta') return;
+    const n = ORDEN.indexOf(lamina) + 1;
+    if (n < 1) return;
+    fetch('/api/os/laminas-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ evaluacionId, test: 'rorschach', lamina: n }),
+    }).catch(() => {});
+  }, [lamina, fase]);
+
   useEffect(() => {
     for (const n of [siguienteDe(lamina), anterior]) {
       if (n && CARGADAS.includes(n)) new window.Image().src = archivoDe(n);
@@ -2002,7 +2017,11 @@ export default function Capturador({
             <LinkLaminas
               href={`/os/laminas/rorschach?de=${evaluacionId}`}
               clase="os-boton os-boton-fila"
-              paraCandidato={{ evaluacionId, test: 'rorschach' }}
+              paraCandidato={{
+                evaluacionId,
+                test: 'rorschach',
+                lamina: ORDEN.indexOf(lamina) + 1,
+              }}
             />
           )}
           {/* Entrevistando, la lámina va en miniatura y no grande. Quien la

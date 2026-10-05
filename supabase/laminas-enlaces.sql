@@ -34,3 +34,9 @@ create table if not exists public.os_intentos (
 );
 create index if not exists os_intentos_creado_idx on public.os_intentos (creado_at desc);
 alter table public.os_intentos enable row level security;
+
+-- Qué lámina tiene que estar viendo la persona. La escribe la pantalla de
+-- codificación cada vez que la evaluadora pasa de lámina, y la pantalla de la
+-- persona la consulta cada segundo y medio: son dos máquinas, y el aviso entre
+-- pestañas que mueve las dos pantallas de la evaluadora no llega de una a otra.
+alter table public.laminas_enlaces add column if not exists lamina integer;
