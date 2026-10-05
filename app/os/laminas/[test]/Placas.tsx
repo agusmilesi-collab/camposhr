@@ -31,7 +31,20 @@ const COLOR = '#000000';
 type Punto = { x: number; y: number; t: number };
 type Trazo = { puntos: Punto[] };
 
-export default function Placas({ test, total }: { test: string; total: number }) {
+export default function Placas({
+  test,
+  total,
+  fuente,
+}: {
+  test: string;
+  total: number;
+  /**
+   * De dónde salen las imágenes. Por defecto, de la ruta del OS, que pide
+   * sesión; la persona evaluada entra con un token y las suyas salen de otra.
+   */
+  fuente?: string;
+}) {
+  const origen = fuente ?? `/api/os/lamina/${test}`;
   const [lamina, setLamina] = useState(1);
   const canvas = useRef<HTMLCanvasElement>(null);
   const puntero = useRef<SVGSVGElement>(null);
@@ -231,14 +244,14 @@ export default function Placas({ test, total }: { test: string; total: number })
     <div className="pl">
       <div className="pl-escena">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="pl-placa" src={`/api/os/lamina/${test}/${lamina}`} alt={`Lámina ${lamina}`} />
+        <img className="pl-placa" src={`${origen}/${lamina}`} alt={`Lámina ${lamina}`} />
       </div>
 
       {/* La siguiente se pide mientras se habla de la actual: son archivos de
           hasta tres megas y el hueco en blanco al pasar se ve del otro lado. */}
       {lamina < total && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img className="pl-oculta" src={`/api/os/lamina/${test}/${lamina + 1}`} alt="" aria-hidden />
+        <img className="pl-oculta" src={`${origen}/${lamina + 1}`} alt="" aria-hidden />
       )}
 
       <canvas ref={canvas} className="pl-lienzo" />

@@ -78,9 +78,11 @@ const RUTAS_DE_PRESENTACIONES = /^\/(presentaciones|pres)(\/|$)/;
 
 // Lo que responde la persona evaluada vive en el host principal, porque es el
 // destino de los códigos QR y de los enlaces que se le mandan: el cuestionario
-// en /c/<empresa>, el ciclo de encuentros en /ciclo/<empresa> y el test de
-// Raven en /raven/<token>, cada uno con su endpoint de guardado.
-const RUTAS_PUBLICAS = /^\/(c|l|ciclo|api\/cuestionario|api\/ciclo|api\/raven)\/|^\/raven(\/|$)/;
+// en /c/<empresa>, el ciclo de encuentros en /ciclo/<empresa>, el test de
+// Raven en /raven/<token> y las láminas del Rorschach en /laminas/<token>,
+// cada uno con su endpoint.
+const RUTAS_PUBLICAS =
+  /^\/(c|l|ciclo|laminas|api\/cuestionario|api\/ciclo|api\/raven|api\/laminas)\/|^\/raven(\/|$)/;
 
 export async function middleware(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase();
