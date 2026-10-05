@@ -10,12 +10,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import CopyLink from '@/app/informes/CopyLink';
 import Desplegable from '@/app/os/Desplegable';
 import { CONDICIONES, leyendaIva } from '@/lib/clientes-tipos';
 import type { Cliente } from '@/lib/clientes';
 
-const PORTAL = 'https://clientes.camposhr.com';
 
 /** Un valor que falta se ve como que falta, no como un renglón vacío. */
 function Dato({ rotulo, valor }: { rotulo: string; valor: string | null }) {
@@ -164,6 +162,13 @@ export default function Ficha({
             son las partes de la tarjeta. El lápiz los vuelve campos ahí mismo. */}
         <div className="os-panel-top os-cliente-subtitulo os-empresa-top">
           <h2>Empresa</h2>
+          {/* Editar va a la derecha del título, como "Agregar contacto" en
+              los contactos: es una acción sobre la tarjeta entera. */}
+          {!editando && (
+            <button className="os-boton" onClick={() => setEditando(true)}>
+              Editar empresa
+            </button>
+          )}
         </div>
 
         {editando ? (
@@ -239,55 +244,41 @@ export default function Ficha({
               valor={cliente.exigeOrdenCompra ? 'La exige en la factura' : 'No la exige'}
             />
             <Dato rotulo="Rubro" valor={cliente.rubro} />
-          </div>
-        )}
-
-        {/* El portal, entre la empresa y sus contactos: lo que el cliente ve y
-            el enlace que se le manda. */}
-        {/* Una fila con dos lados: a la izquierda lo del cliente (si está
-            activo y editarlo), a la derecha lo de su portal. */}
-        <section className="os-cliente-portal os-cliente-fila">
-          <div className="os-cliente-fila-lado">
-            <h2>Cliente</h2>
-            {/* Activo o inactivo con palabras y su punto de color; se cambia
-                tocándolo, como el estado de los informes. */}
-            <Desplegable
-              valor={cliente.activa ? 'activo' : 'inactivo'}
-              opciones={[
-                { valor: 'activo', texto: 'Activo', color: 'os-verde' },
-                {
-                  valor: 'inactivo',
-                  texto: cliente.activa ? 'Inactivo' : textoEstado,
-                  color: 'os-gris',
-                },
-              ]}
-              alElegir={(v) => {
-                if ((v === 'activo') !== cliente.activa) cambiarEstado();
-              }}
-              deshabilitado={tocando || !puedeCambiarEstado}
-              etiqueta={
-                puedeCambiarEstado
-                  ? 'Si el cliente está activo'
-                  : 'Se activa solo cuando entra un pedido o sale una cotización.'
-              }
-            />
-            {!editando && (
-              <button className="os-boton" onClick={() => setEditando(true)}>
-                Editar cliente
-              </button>
-            )}
-          </div>
-
-          <div className="os-cliente-fila-lado os-cliente-fila-derecha">
-            <h2>Portal</h2>
-            {cliente.token ? (
-              <>
-                {/* Si el cliente puede abrir los informes desde su portal. */}
+            {/* Si se está trabajando con este cliente, como un dato más de la
+                empresa. Se cambia tocándolo, como el estado de los informes. */}
+            <div className="os-cliente-dato">
+              <span className="os-dato-rotulo">Estado</span>
+              <Desplegable
+                valor={cliente.activa ? 'activo' : 'inactivo'}
+                opciones={[
+                  { valor: 'activo', texto: 'Activo', color: 'os-verde' },
+                  {
+                    valor: 'inactivo',
+                    texto: cliente.activa ? 'Inactivo' : textoEstado,
+                    color: 'os-gris',
+                  },
+                ]}
+                alElegir={(v) => {
+                  if ((v === 'activo') !== cliente.activa) cambiarEstado();
+                }}
+                deshabilitado={tocando || !puedeCambiarEstado}
+                etiqueta={
+                  puedeCambiarEstado
+                    ? 'Si el cliente está activo'
+                    : 'Se activa solo cuando entra un pedido o sale una cotización.'
+                }
+              />
+            </div>
+            {/* Si el cliente puede abrir los informes desde su portal, como un
+                dato más de la empresa y con el mismo trato que el estado. */}
+            {cliente.token && (
+              <div className="os-cliente-dato">
+                <span className="os-dato-rotulo">Informes en el portal</span>
                 <Desplegable
                   valor={cliente.informesVisibles ? 'vista' : 'proximamente'}
                   opciones={[
-                    { valor: 'vista', texto: 'Informes a la vista', color: 'os-verde' },
-                    { valor: 'proximamente', texto: 'Informes: próximamente', color: 'os-rojo' },
+                    { valor: 'vista', texto: 'A la vista', color: 'os-verde' },
+                    { valor: 'proximamente', texto: 'Próximamente', color: 'os-rojo' },
                   ]}
                   alElegir={(v) => {
                     if ((v === 'vista') !== cliente.informesVisibles) cambiarInformes();
@@ -295,21 +286,11 @@ export default function Ficha({
                   deshabilitado={cambiandoInformes}
                   etiqueta="Si el cliente ve los informes en su portal"
                 />
-                <a
-                  className="os-boton"
-                  href={`${PORTAL}/${cliente.token}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Ver portal
-                </a>
-                <CopyLink url={`${PORTAL}/${cliente.token}`} texto="Copiar enlace" />
-              </>
-            ) : (
-              <span className="os-tabla-flojo">sin portal</span>
+              </div>
             )}
           </div>
-        </section>
+        )}
+
         {children}
       </section>
     </>

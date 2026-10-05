@@ -94,7 +94,21 @@ export default async function ClientePagina({
           </nav>
           {/* Nuevo pedido a la altura de las pestañas, del lado derecho: es lo
               que se hace apenas entra el mail del cliente. */}
-          <Abrir empresas={empresas} baterias={baterias} empresaFija={params.id} />
+          <span className="os-pestanas-acciones">
+            {/* Ver el portal al lado de Nuevo pedido: son las dos cosas que se
+                hacen del lado del cliente. */}
+            {cliente.token && (
+              <a
+                className="os-boton"
+                href={`https://clientes.camposhr.com/${cliente.token}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Ver portal
+              </a>
+            )}
+            <Abrir empresas={empresas} baterias={baterias} empresaFija={params.id} />
+          </span>
         </div>
 
         {/* Quién pide y quién paga, que son dos personas distintas casi siempre.
