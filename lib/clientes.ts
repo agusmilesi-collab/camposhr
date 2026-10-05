@@ -31,6 +31,8 @@ export type PedidoDelCliente = {
   reabierto: string | null;
   fechaOriginal: string | null;
   evaluaciones: number;
+  /** Cuántos candidatos están en proceso: sin informe entregado y sin baja. */
+  enProceso: number;
 };
 
 export type Cliente = {
@@ -106,7 +108,7 @@ type FilaEmpresa = {
     estado: string | null;
     fecha_pedido: string | null;
     reabierto_el: string | null;
-    evaluaciones: { id: string }[];
+    evaluaciones: { id: string; estado: string | null; baja_el: string | null }[];
   }[];
   cotizaciones: { id: string; estado: string | null }[];
 };
@@ -114,7 +116,7 @@ type FilaEmpresa = {
 const CAMPOS =
   'id,nombre,razon_social,cuit,condicion_iva,email_facturacion,contacto,' +
   'direccion_fiscal,exige_orden_compra,rubro,tamano,notas,token_portal,informes_visibles,activa,' +
-  'pedidos(id,puesto,estado,fecha_pedido,reabierto_el,evaluaciones(id)),cotizaciones(id,estado)';
+  'pedidos(id,puesto,estado,fecha_pedido,reabierto_el,evaluaciones(id,estado,baja_el)),cotizaciones(id,estado)';
 
 export async function listarClientes(): Promise<Cliente[]> {
   const [enSupabase, conToken] = await Promise.all([
@@ -158,12 +160,13 @@ export async function listarClientes(): Promise<Cliente[]> {
     // que se reparte es el de la base donde viven los datos.
     token: e.token_portal ?? tokensPorClave.get(claveEmpresa(e.nombre)) ?? null,
     informesVisibles: e.informes_visibles !== false,
+    // Activo es tener algo en curso: un pedido abierto, o una cotización que
+    // espera respuesta (Enviada) o cuyo trabajo se está haciendo (Aprobada).
+    // Una Entregada es un trabajo terminado y ya no lo mantiene activo.
     activa:
       e.activa !== false &&
       ((e.pedidos ?? []).some((p) => p.estado === 'En curso') ||
-        (e.cotizaciones ?? []).some(
-          (c) => c.estado === 'Enviada' || c.estado === 'Aprobada' || c.estado === 'Entregada'
-        )),
+        (e.cotizaciones ?? []).some((c) => c.estado === 'Enviada' || c.estado === 'Aprobada')),
     pedidos: e.pedidos?.length ?? 0,
     susPedidos: (e.pedidos ?? [])
       .map((p) => ({
@@ -174,6 +177,9 @@ export async function listarClientes(): Promise<Cliente[]> {
         reabierto: p.reabierto_el,
         fechaOriginal: p.fecha_pedido,
         evaluaciones: p.evaluaciones?.length ?? 0,
+        enProceso: (p.evaluaciones ?? []).filter(
+          (v) => !v.baja_el && v.estado !== 'Entregado' && v.estado !== 'Seguimiento'
+        ).length,
       }))
       .sort((a, b) => (b.fecha ?? '').localeCompare(a.fecha ?? '')),
     evaluaciones: (e.pedidos ?? []).reduce((n, p) => n + (p.evaluaciones?.length ?? 0), 0),

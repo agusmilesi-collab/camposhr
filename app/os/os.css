@@ -17374,3 +17374,14 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 .os-cliente-datos-tres:not(.os-cliente-edita) > :nth-child(-n + 2) {
   margin-bottom: 12px;
 }
+
+/* Clientes: un poco más de alto por fila y más aire entre el encabezado y el
+   primer cliente. */
+.os-tabla.os-tabla-clientes tbody td {
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+.os-tabla.os-tabla-clientes tbody tr:first-child td {
+  padding-top: 16px;
+}
