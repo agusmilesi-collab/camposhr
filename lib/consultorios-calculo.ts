@@ -769,3 +769,76 @@ export function grillaDeUnaSala(
   }
   return { horas, celdas };
 }
+
+// ------------------------------------------------- la semana tipo, para ofrecer
+
+/** Cuántos días hacia adelante se miran las reservas para armar la semana tipo. */
+export const DIAS_DE_LA_SEMANA_TIPO = 28;
+
+/**
+ * Qué horas de cada sala se pueden ofrecer como banda fija.
+ *
+ * Es lo que se le muestra a quien pregunta por alquilar: una semana de lunes a
+ * viernes por sala, cada hora libre u ocupada, sin fechas y sin nombres. Quien
+ * alquila toma una banda ("los martes de 14 a 18"), así que la pregunta no es
+ * qué hay libre el martes 13: es qué martes está libre siempre.
+ *
+ * **Una hora está ocupada por dos caminos.** Porque la cubre un contrato
+ * vigente, o porque en los próximos 28 días está reservada dos veces o más. El
+ * segundo camino existe porque el calendario deja repetir una reserva todas las
+ * semanas sin crear contrato, y esa hora está tan tomada como la otra. Una
+ * reserva de una sola fecha no la ocupa: es una hora suelta, y el martes
+ * siguiente la sala vuelve a estar libre.
+ *
+ * Las claves son `espacio|dia|hora`, con lunes en 0.
+ */
+export function semanaTipo(
+  espacios: Espacio[],
+  aperturasDe: Apertura[],
+  contratos: Contrato[],
+  reservas: Pick<Reserva, 'espacio_id' | 'fecha' | 'desde_hora' | 'hasta_hora'>[],
+  hoy: string
+): { horas: number[]; dias: number[]; celdas: Record<string, 'libre' | 'ocupada' | 'cerrada'> } {
+  const propias = aperturasDe.filter((a) => espacios.some((e) => e.id === a.espacio_id));
+  if (propias.length === 0) return { horas: [], dias: [], celdas: {} };
+  const abre = Math.min(...propias.map((a) => hora(a.desde_hora)));
+  const cierra = Math.max(...propias.map((a) => hora(a.hasta_hora)));
+  const horas: number[] = [];
+  for (let h = abre; h < cierra; h++) horas.push(h);
+  const dias = [...new Set(propias.map((a) => a.dia_semana))].sort((a, b) => a - b);
+
+  const veces = new Map<string, number>();
+  for (const r of reservas) {
+    const d = diaSemanaDe(r.fecha);
+    for (let h = hora(r.desde_hora); h < hora(r.hasta_hora); h++) {
+      const clave = `${r.espacio_id}|${d}|${h}`;
+      veces.set(clave, (veces.get(clave) ?? 0) + 1);
+    }
+  }
+  const vigentes = contratos.filter(
+    (c) => c.vigente_desde <= hoy && (c.vigente_hasta === null || c.vigente_hasta >= hoy)
+  );
+
+  const celdas: Record<string, 'libre' | 'ocupada' | 'cerrada'> = {};
+  for (const espacio of espacios) {
+    for (const d of dias) {
+      const apertura = propias.find((a) => a.espacio_id === espacio.id && a.dia_semana === d);
+      for (const h of horas) {
+        const clave = `${espacio.id}|${d}|${h}`;
+        if (!apertura || h < hora(apertura.desde_hora) || h >= hora(apertura.hasta_hora)) {
+          celdas[clave] = 'cerrada';
+          continue;
+        }
+        const conContrato = vigentes.some(
+          (c) =>
+            c.espacio_id === espacio.id &&
+            c.dia_semana === d &&
+            h >= hora(c.desde_hora) &&
+            h < hora(c.hasta_hora)
+        );
+        celdas[clave] = conContrato || (veces.get(clave) ?? 0) >= 2 ? 'ocupada' : 'libre';
+      }
+    }
+  }
+  return { horas, dias, celdas };
+}
