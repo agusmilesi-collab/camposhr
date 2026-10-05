@@ -2002,6 +2002,7 @@ export default function Capturador({
             <LinkLaminas
               href={`/os/laminas/rorschach?de=${evaluacionId}`}
               clase="os-boton os-boton-fila"
+              paraCandidato={{ evaluacionId, test: 'rorschach' }}
             />
           )}
           {/* Entrevistando, la lámina va en miniatura y no grande. Quien la

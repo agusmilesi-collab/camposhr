@@ -7,8 +7,9 @@
  * que va a administrar. Es la misma dirección del botón de al lado: acá se
  * copia en vez de abrirse.
  *
- * El enlace pide sesión del OS, así que no sirve para mandárselo a la persona
- * evaluada: ella ve las láminas por la pantalla compartida.
+ * Esa dirección pide sesión del OS, así que no sirve para la persona evaluada.
+ * Cuando el enlace es para ella (`paraCandidato`), se pide uno con token, que
+ * abre sin clave y vence al día.
  *
  * **Copiado se dice en el mismo botón**, tres segundos, y no en un aviso al
  * lado: el botón vive en una celda de la fila de acciones, y un segundo
@@ -22,16 +23,30 @@ export default function LinkLaminas({
   numero,
   /** Para que entre en la fila donde lo usen, con la altura de sus vecinos. */
   clase = 'os-boton',
+  paraCandidato,
 }: {
   href: string;
   numero?: number;
   clase?: string;
+  /** Para quién es: con esto se copia el enlace con token y no el del OS. */
+  paraCandidato?: { evaluacionId: string; test: string };
 }) {
   const [copiado, setCopiado] = useState(false);
 
   async function copiar() {
     try {
-      await navigator.clipboard.writeText(new URL(href, window.location.origin).toString());
+      let enlace = new URL(href, window.location.origin).toString();
+      if (paraCandidato) {
+        const res = await fetch('/api/os/laminas-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(paraCandidato),
+        });
+        const r = await res.json().catch(() => null);
+        if (!r?.ok) return;
+        enlace = r.enlace;
+      }
+      await navigator.clipboard.writeText(enlace);
       setCopiado(true);
       setTimeout(() => setCopiado(false), 3000);
     } catch {

@@ -34,7 +34,13 @@ export default function Entrar({
           autoFocus
           required
         />
-        {searchParams.error && <p className="os-entrar-error">La clave no es esa.</p>}
+        {searchParams.error === '2' ? (
+          <p className="os-entrar-error">
+            Hubo demasiados intentos fallidos. Probá de nuevo en quince minutos.
+          </p>
+        ) : (
+          searchParams.error && <p className="os-entrar-error">La clave no es esa.</p>
+        )}
         <button className="os-entrar-boton" type="submit">
           Entrar
         </button>

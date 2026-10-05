@@ -27,7 +27,14 @@ export const DURACION = 60 * 60 * 24 * 30;
 
 /** La huella que viaja en la cookie. Web Crypto, así corre en el middleware. */
 export async function huella(clave: string): Promise<string> {
-  const datos = new TextEncoder().encode(`campos-os:${clave}`);
+  // Con `OS_SECRETO` cargado, la huella lleva además un valor que solo conoce
+  // el servidor. La clave del equipo es corta: sin esto, quien quiera entrar no
+  // necesita ni pasar por la pantalla de ingreso, le alcanza con calcular la
+  // huella de cada clave posible y probarlas como cookie.
+  const secreto = process.env.OS_SECRETO;
+  const datos = new TextEncoder().encode(
+    secreto ? `campos-os:${secreto}:${clave}` : `campos-os:${clave}`
+  );
   const hash = await crypto.subtle.digest('SHA-256', datos);
   return Array.from(new Uint8Array(hash))
     .map((b) => b.toString(16).padStart(2, '0'))
