@@ -152,6 +152,7 @@ type FilaOrdenGuardada = {
   total: string | number;
   empresas: { nombre: string; razon_social: string | null } | null;
   solicitante: { nombre: string; cargo: string | null } | null;
+  pedidos: { solicitante: { nombre: string; cargo: string | null } | null } | null;
   orden_items: {
     posicion: number;
     concepto: string;
@@ -170,6 +171,7 @@ export async function verOrden(clave: string): Promise<Orden | null> {
     'ordenes_compra',
     'select=id,numero,token,fecha,total,empresas(nombre,razon_social),' +
       'solicitante:contactos!solicitante_id(nombre,cargo),' +
+      'pedidos(solicitante:contactos!solicitante_id(nombre,cargo)),' +
       'orden_items(posicion,concepto,detalle,nota,importe,evaluaciones(pagado))' +
       `&${filtro}&limit=1`
   );
@@ -182,7 +184,11 @@ export async function verOrden(clave: string): Promise<Orden | null> {
     token: o.token,
     fecha: o.fecha,
     cliente: o.empresas?.razon_social ?? o.empresas?.nombre ?? 'sin cliente',
-    solicitantes: o.solicitante?.nombre ? [conCargo(o.solicitante)] : [],
+    // El de la orden y, si no quedó guardado, el del pedido: al pedido se le
+    // puede cargar quién lo pidió después de que la orden ya existe.
+    solicitantes: [o.solicitante ?? o.pedidos?.solicitante ?? null]
+      .filter((x): x is { nombre: string; cargo: string | null } => Boolean(x?.nombre))
+      .map(conCargo),
     estado: items.length > 0 && pagas ? 'Pagado' : 'Pendiente de pago',
     referencia: null,
     filas: items.map((i) => ({
