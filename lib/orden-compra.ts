@@ -225,6 +225,28 @@ export async function ordenesQueCubren(
   };
 }
 
+/**
+ * El número de orden de cada evaluación, de un saque.
+ *
+ * Para la lista de facturas: lo que va sin factura se nombra por su orden de
+ * compra, y pedirlas de a una factura serían tantas consultas como filas.
+ */
+export async function ordenPorEvaluacion(evaluacionIds: string[]): Promise<Map<string, string>> {
+  const ids = [...new Set(evaluacionIds.filter((x) => UUID.test(x)))];
+  const mapa = new Map<string, string>();
+  // De a tandas: los ids viajan en la dirección de la consulta.
+  for (let i = 0; i < ids.length; i += 100) {
+    const filas = await select<{ evaluacion_id: string; ordenes_compra: { numero: number } | null }>(
+      'orden_items',
+      `select=evaluacion_id,ordenes_compra(numero)&evaluacion_id=in.(${ids.slice(i, i + 100).join(',')})`
+    );
+    for (const f of filas) {
+      if (f.ordenes_compra) mapa.set(f.evaluacion_id, String(f.ordenes_compra.numero).padStart(4, '0'));
+    }
+  }
+  return mapa;
+}
+
 // ------------------------------------------------------- la forma vieja
 
 /**
