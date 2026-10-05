@@ -1,15 +1,17 @@
 import Link from 'next/link';
 import Shell from '../../Shell';
-import { AFacturar, Emitidas } from './Facturacion';
+import { AFacturar, Anuladas, Emitidas } from './Facturacion';
 import {
-  formatoImporte,
   listarAFacturar,
   listarEmisoras,
   listarFacturas,
+  notasDeCredito,
 } from '@/lib/facturas';
-import { esDePsicotecnicos, totalDe } from '@/lib/facturas-tipos';
+import { esDePsicotecnicos, type Fiscal } from '@/lib/facturas-tipos';
+import { select } from '@/lib/supabase';
 import { equipo, esMia, quienSoy } from '@/lib/identidad';
 import { cuentasDeLaBarra } from '../datos';
+import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,11 +36,12 @@ export default async function Facturacion({
 }: {
   searchParams?: { ver?: string };
 }) {
-  const [yo, miembros, pendientes, facturas, emisoras, cuentas] = await Promise.all([
+  const [yo, miembros, pendientes, facturas, notas, emisoras, cuentas] = await Promise.all([
     quienSoy(),
     equipo(),
     listarAFacturar(),
     listarFacturas(),
+    notasDeCredito(),
     listarEmisoras(),
     cuentasDeLaBarra(),
   ]);
@@ -72,11 +75,77 @@ export default async function Facturacion({
   const sinCobrar = vivas.filter((f) => f.cobradaAt === null);
 
   const cobradas = vivas.filter((f) => f.cobradaAt !== null);
+  // Las que se anularon con nota de crédito. Sus renglones ya soltaron a las
+  // personas, así que no se reconocen como "de psicotécnicos": se toman por
+  // tener nota.
+  const anuladas = facturas.filter((f) => f.estado === 'anulada' && notas[f.id]);
+
+  /**
+   * El número de factura que le sigue a cada emisora, para proponerlo.
+   *
+   * Es el más alto que tiene anotado más uno, contando solo las de verdad: las
+   * que van sin factura no tienen número y las de homologación llevan otra
+   * numeración. Sin ninguna anotada no se propone nada, que inventar un 1 es
+   * peor que dejar el campo vacío.
+   */
+  // Los datos fiscales de los clientes que están en la cola, para verlos al
+  // facturar sin ir a buscar la ficha de cada uno.
+  const enCola = [...new Set(pendientes.map((p) => p.empresaId))];
+  const filasFiscales =
+    enCola.length > 0
+      ? await select<{
+          id: string;
+          razon_social: string | null;
+          cuit: string | null;
+          condicion_iva: string | null;
+          direccion_fiscal: string | null;
+          email_facturacion: string | null;
+          exige_orden_compra: boolean;
+        }>(
+          'empresas',
+          'select=id,razon_social,cuit,condicion_iva,direccion_fiscal,email_facturacion,exige_orden_compra' +
+            `&id=in.(${enCola.join(',')})`
+        ).catch(() => [])
+      : [];
+  const fiscales: Record<string, Fiscal> = {};
+  for (const e of filasFiscales) {
+    fiscales[e.id] = {
+      razonSocial: e.razon_social,
+      cuit: e.cuit,
+      condicionIva: e.condicion_iva,
+      domicilio: e.direccion_fiscal,
+      correo: e.email_facturacion,
+      exigeOrdenCompra: e.exige_orden_compra,
+    };
+  }
+
+  const numeros: Record<string, number[]> = {};
+  for (const f of facturas) {
+    if (f.numero === null || f.sinComprobante || f.ambiente === 'homologacion') continue;
+    if (f.estado === 'anulada' || esEmpresaDePrueba(f.cliente)) continue;
+    (numeros[f.emisorId] ??= []).push(f.numero);
+  }
+  // Un número muy por encima de los demás es uno mal cargado (hay un 585586
+  // que vino de Airtable, dos números pegados) y no el último de la serie:
+  // proponer el que le sigue llevaría la numeración a cualquier lado.
+  const siguientes: Record<string, number> = {};
+  for (const [emisor, suyos] of Object.entries(numeros)) {
+    const deMayorAMenor = [...suyos].sort((a, b) => b - a);
+    const ultimo = deMayorAMenor.find((n, i) => {
+      const anterior = deMayorAMenor[i + 1];
+      return anterior === undefined || n - anterior < 1000;
+    });
+    if (ultimo !== undefined) siguientes[emisor] = ultimo + 1;
+  }
 
   const PESTANAS = [
     ...colas.map((c) => ({ clave: c.clave, texto: `${c.nombre} a facturar`, cuenta: c.filas.length })),
     { clave: 'sin-cobrar', texto: 'Sin cobrar', cuenta: sinCobrar.length },
     { clave: 'cobrado', texto: 'Cobrado', cuenta: cobradas.length },
+    // Solo cuando hay alguna: es la excepción y no una parte del circuito.
+    ...(anuladas.length > 0
+      ? [{ clave: 'anuladas', texto: 'Anuladas', cuenta: anuladas.length }]
+      : []),
   ];
 
   /**
@@ -90,10 +159,6 @@ export default async function Facturacion({
     : porDefecto;
   const cola = colas.find((c) => c.clave === ver);
 
-  const aFacturar = mias.reduce((n, p) => n + totalDe(p), 0);
-  const porCobrar = sinCobrar.reduce((n, f) => n + (f.importe ?? 0), 0);
-  const cobrado = cobradas.reduce((n, f) => n + (f.importe ?? 0), 0);
-
   return (
     <Shell
       titulo="Facturación"
@@ -103,36 +168,6 @@ export default async function Facturacion({
     >
       <div className="os-encabezado">
         <h1>Facturación</h1>
-        <p>
-          Una evaluación entra en la cola en cuanto se tomó la entrevista, sin esperar al
-          informe. Cada una factura lo suyo; lo emitido lo miran las dos.
-        </p>
-      </div>
-
-      <div className="os-cifras">
-        <div className="os-cifra">
-          <div className="os-cifra-rotulo">Para facturar</div>
-          <div className="os-cifra-valor">{formatoImporte(aFacturar)}</div>
-          <div className="os-cifra-pie">
-            {mias.length} {mias.length === 1 ? 'evaluación' : 'evaluaciones'}
-            {yo.alcance === 'todo' ? ' de las dos.' : ' tuyas.'}
-          </div>
-        </div>
-        <div className="os-cifra">
-          <div className="os-cifra-rotulo">Por cobrar</div>
-          <div className="os-cifra-valor">{formatoImporte(porCobrar)}</div>
-          <div className="os-cifra-pie">{sinCobrar.length} facturas sin marcar cobro.</div>
-        </div>
-        <div className="os-cifra">
-          <div className="os-cifra-rotulo">Cobrado</div>
-          <div className="os-cifra-valor">{formatoImporte(cobrado)}</div>
-          <div className="os-cifra-pie">De las dos, desde siempre.</div>
-        </div>
-        <div className="os-cifra">
-          <div className="os-cifra-rotulo">Emitidas</div>
-          <div className="os-cifra-valor">{vivas.length}</div>
-          <div className="os-cifra-pie">Sin contar las anuladas.</div>
-        </div>
       </div>
 
       <nav className="os-pestanas">
@@ -153,12 +188,15 @@ export default async function Facturacion({
         <AFacturar
           pendientes={cola.filas}
           emisoras={emisoras}
+          siguientes={siguientes}
+          fiscales={fiscales}
           quien={yo.nombre}
           conRotulo={false}
         />
       )}
       {ver === 'sin-cobrar' && <Emitidas facturas={vivas} solo="sin-cobrar" />}
       {ver === 'cobrado' && <Emitidas facturas={vivas} solo="cobrado" />}
+      {ver === 'anuladas' && <Anuladas facturas={anuladas} notas={notas} />}
     </Shell>
   );
 }

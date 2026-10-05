@@ -170,7 +170,7 @@ export default function TablaEntregados({
     <div className="tabla entregados">
       <div className={`tr th${conCobro ? '' : ' sin-cobro'}${conInforme ? '' : ' sin-informe'}`}>
         {COLUMNAS.map(({ clave, titulo }) => cabecera(clave, titulo))}
-        {conInforme && <span>Informe</span>}
+        {conInforme && <span className="c-informe">Informe</span>}
         {conCobro && cabecera('cobro', 'Facturación')}
       </div>
 
@@ -192,8 +192,7 @@ export default function TablaEntregados({
           <span className="c-reco" data-label="Recomendación">
             {f.recoTexto ? (
               <>
-                <i className={`dot ${f.recoClase}`} />
-                <span className="reco-txt" title={f.recoCompleta ?? undefined}>
+                <span className={`reco-tag ${f.recoClase}`} title={f.recoCompleta ?? undefined}>
                   {f.recoTexto}
                 </span>
               </>

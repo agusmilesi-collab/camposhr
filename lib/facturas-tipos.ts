@@ -28,9 +28,16 @@ export type Emisora = {
   razonSocial: string;
   nombreFantasia: string | null;
   cuit: string | null;
+  /** El de web services, con el que el OS le pide el CAE a ARCA. */
   puntoVenta: number | null;
+  /** El de Comprobantes en Línea, para las que emite por ahí y anota acá. */
+  puntoVentaManual: number | null;
+  /** Contra qué ARCA factura: en producción el número lo pone ARCA. */
+  ambiente: 'homologacion' | 'produccion';
   domicilio: string | null;
   inicioActividades: string | null;
+  /** "Exento" o el número: lo exige impreso la factura. */
+  ingresosBrutos: string | null;
   condicionIva: string;
   /** La del monotributo, para saber cuánto falta para pasarse del tope. */
   categoria: string | null;
@@ -152,6 +159,22 @@ export type Marcha = {
   }[];
 };
 
+/**
+ * Los datos fiscales de un cliente, como los pide una factura.
+ *
+ * Se muestran al facturar, antes de generar nada: con el CUIT o la condición
+ * frente al IVA sin cargar, ARCA rechaza la factura, y enterarse ahí es
+ * enterarse tarde.
+ */
+export type Fiscal = {
+  razonSocial: string | null;
+  cuit: string | null;
+  condicionIva: string | null;
+  domicilio: string | null;
+  correo: string | null;
+  exigeOrdenCompra: boolean;
+};
+
 /** Una evaluación con la entrevista tomada y sin comprobante. */
 export type Facturable = {
   evaluacionId: string;
@@ -165,6 +188,11 @@ export type Facturable = {
   bateriaNombre: string | null;
   fechaEntrevista: string | null;
   fechaEntrega: string | null;
+  /**
+   * La orden de compra en la que entró esta persona, que nace cuando se la
+   * carga. Null en las cargadas antes de que existieran las órdenes.
+   */
+  orden: { id: string; numero: string } | null;
   /** El de la batería a la fecha del pedido, no el de hoy. */
   precio: number | null;
   conBenziger: boolean;

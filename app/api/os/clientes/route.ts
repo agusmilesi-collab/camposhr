@@ -83,6 +83,10 @@ export async function POST(req: Request) {
     ...campo('email_facturacion', 'emailFacturacion', texto('emailFacturacion')),
     ...campo('contacto', 'contacto', texto('contacto')),
     ...campo('direccion_fiscal', 'direccionFiscal', texto('direccionFiscal')),
+    // Viene de un desplegable ("si" o "no"); si no viene, queda como estaba.
+    ...(datos.exigeOrdenCompra === undefined
+      ? {}
+      : { exige_orden_compra: datos.exigeOrdenCompra === 'si' || datos.exigeOrdenCompra === true }),
     ...campo('rubro', 'rubro', texto('rubro')),
     ...campo(
       'tamano',

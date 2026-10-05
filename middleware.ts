@@ -112,6 +112,24 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // --- El OS vive en su host y en ningún otro ---
+  // La puerta está en la rama de os.camposhr.com. Las pantallas de /os se
+  // sirven desde la misma aplicación en todos los hosts, así que por tools o
+  // por el dominio principal se abrían sin clave. Desde cualquier otro host
+  // se mandan al del OS, que es el que pide la clave.
+  if (host !== OS_HOST && (pathname === '/os' || pathname.startsWith('/os/'))) {
+    return NextResponse.redirect(`https://${OS_HOST}${pathname}${url.search}`, 307);
+  }
+  // Lo mismo con lo que esas pantallas le piden al servidor. Casi todas las
+  // rutas revisan la sesión por su cuenta, pero no todas, y fuera del host
+  // del OS no hay ninguna pantalla que las use.
+  if (host !== OS_HOST && pathname.startsWith('/api/os/')) {
+    return new NextResponse('No autorizado.', {
+      status: 404,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    });
+  }
+
   // --- Los inquilinos del Centro ---
   // La puerta la vuelve a revisar cada pantalla con la cookie firmada: acá se
   // resuelve el ruteo y se saca de la vista todo lo que no es de ellos.

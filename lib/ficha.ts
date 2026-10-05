@@ -76,6 +76,11 @@ export type Cabecera = {
     /** La fecha es de la persona y no cambia; la edad se congela por evaluación. */
     fecha_nacimiento: string | null;
   } | null;
+  /**
+   * Quién de la empresa cargó a este candidato. Null en los que se cargaron
+   * antes del 3/10/2026: ahí vale el del pedido.
+   */
+  solicitante?: { nombre: string; cargo: string | null } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
     puesto: string;
@@ -282,12 +287,28 @@ export type FacturaDe = {
   punto_venta: number | null;
   fecha: string;
   cobrada_at: string | null;
+  /** Se cobra sin factura: no hay comprobante, el papel es la orden de compra. */
+  sin_comprobante: boolean;
+  /** El número del recibo de pago, que se pone al marcar el cobro. */
+  recibo_pago_numero: number | null;
+  /** Lo que esta persona pesa dentro de la factura: su renglón y su adicional. */
+  importe: number | null;
+};
+
+/** La orden de compra en la que entró esta persona, que nace al cargarla. */
+export type OrdenDe = {
+  id: string;
+  numero: string;
+  /** Lo suyo dentro de la orden, que puede cubrir a varias personas. */
+  importe: number | null;
 };
 
 export type Ficha = {
   cabecera: Cabecera;
   /** Null si todavía no entró en ninguna factura. */
   factura: FacturaDe | null;
+  /** Null en las personas cargadas antes de que existieran las órdenes. */
+  orden: OrdenDe | null;
   /** El precio que regía el día del pedido, no el de hoy. */
   precio: number | null;
   manchas: Mancha[];
@@ -319,8 +340,9 @@ const CAMPOS_CABECERA =
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
   'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,' +
   'personas(nombre,email,telefono,cv_path,fecha_nacimiento),evaluadoras(nombre),' +
+  'solicitante:contactos!solicitante_id(nombre,cargo),' +
   'pedidos(puesto,con_benziger,exigencia_id,estrato_puesto,time_span_dias,complejidad,' +
-  'solicitante:contactos(nombre,cargo),empresas(nombre,token_portal),' +
+  'solicitante:contactos!solicitante_id(nombre,cargo),empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';
 
 /** Null si no existe, para que la pantalla conteste 404 en vez de romperse. */
@@ -397,10 +419,61 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
 
   // La factura se busca por el renglón: es lo que dice en qué comprobante
   // entró esta persona, y no la tilde de la evaluación, que es un espejo.
-  const renglones = await select<{ facturas: FacturaDe | null }>(
+  const renglones = await select<{
+    facturas: (Omit<FacturaDe, 'importe'> & { recibo_numero: number | null }) | null;
+  }>(
     'factura_items',
-    `select=facturas(id,numero,punto_venta,fecha,cobrada_at)&evaluacion_id=eq.${id}&limit=1`
+    'select=facturas(id,numero,punto_venta,fecha,cobrada_at,sin_comprobante,recibo_pago_numero,recibo_numero)' +
+      `&evaluacion_id=eq.${id}&limit=1`
   ).catch(() => []);
+  const deFactura = renglones[0]?.facturas ?? null;
+
+  // Lo suyo dentro de esa factura: su renglón, más el adicional, que va en un
+  // renglón aparte y sin evaluación, y se reconoce por llevar su nombre.
+  let factura: FacturaDe | null = null;
+  if (deFactura) {
+    const items = await select<{
+      evaluacion_id: string | null;
+      descripcion: string;
+      importe: string | number | null;
+    }>(
+      'factura_items',
+      `select=evaluacion_id,descripcion,importe&factura_id=eq.${deFactura.id}`
+    ).catch(() => []);
+    const nombre = cabecera.personas?.nombre?.trim();
+    const suyos = items.filter(
+      (i) => i.evaluacion_id === id || (nombre && i.evaluacion_id === null && i.descripcion.endsWith(`, ${nombre}`))
+    );
+    const conImporte = suyos.filter((i) => i.importe !== null);
+    factura = {
+      ...deFactura,
+      importe: conImporte.length > 0 ? conImporte.reduce((n, i) => n + Number(i.importe), 0) : null,
+    };
+  }
+
+  // La orden de compra en la que entró, con lo suyo adentro.
+  const enOrden = await select<{
+    importe: string | number | null;
+    ordenes_compra: { id: string; numero: number } | null;
+  }>('orden_items', `select=importe,ordenes_compra(id,numero)&evaluacion_id=eq.${id}`).catch(() => []);
+  const laOrden = enOrden.find((o) => o.ordenes_compra)?.ordenes_compra ?? null;
+  // Las primeras órdenes se hicieron desde la fila "sin factura" y guardaron
+  // su número ahí: se abren por el identificador de esa fila.
+  const orden: OrdenDe | null = laOrden
+    ? {
+        id: laOrden.id,
+        numero: String(laOrden.numero).padStart(4, '0'),
+        importe: enOrden.some((o) => o.importe !== null)
+          ? enOrden.reduce((n, o) => n + (Number(o.importe) || 0), 0)
+          : null,
+      }
+    : deFactura?.sin_comprobante && deFactura.recibo_numero
+      ? {
+          id: deFactura.id,
+          numero: String(deFactura.recibo_numero).padStart(4, '0'),
+          importe: factura?.importe ?? null,
+        }
+      : null;
 
   // Los hermanos de este candidato, por orden de entrada: su posición es lo que
   // corre las formas de decir cada lectura en el informe.
@@ -414,7 +487,8 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
   return {
     cabecera,
     ordenEnPedido: Math.max(0, hermanos.findIndex((h) => h.id === id)),
-    factura: renglones[0]?.facturas ?? null,
+    factura,
+    orden,
     precio,
     manchas,
     sumario: sumarios[0] ?? null,

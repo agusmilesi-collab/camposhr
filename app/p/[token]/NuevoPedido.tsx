@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import OrdenGracias from '@/app/_components/OrdenGracias';
+import type { Orden } from '@/lib/orden-compra-tipos';
 import { useRouter } from 'next/navigation';
 import type { BateriaDelPortal } from '@/lib/baterias';
 import type { Busqueda } from '@/lib/airtable';
@@ -55,6 +57,8 @@ export default function NuevoPedido({
   const [abierto, setAbierto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [hecho, setHecho] = useState<{ texto: string; guardado: boolean } | null>(null);
+  /** La orden de compra de lo que se acaba de cargar, si se pudo generar. */
+  const [orden, setOrden] = useState<Orden | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState(NUEVA);
   const [filas, setFilas] = useState<Fila[]>([{ id: 0 }]);
@@ -105,6 +109,7 @@ export default function NuevoPedido({
       const data = await r.json();
       if (!r.ok) throw new Error(data?.error ?? 'No se pudo enviar el pedido.');
       setHecho({ texto: data.resumen as string, guardado: Boolean(data.guardado) });
+      setOrden((data.orden as Orden | null) ?? null);
       form.reset();
       setFilas([{ id: 0 }]);
       setProxima(1);
@@ -147,7 +152,27 @@ export default function NuevoPedido({
           </button>
         </div>
 
-        {hecho ? (
+        {hecho && orden ? (
+          <div className="cajon-body">
+            {/* Con orden, la confirmación es la orden: lo que se pidió, cuánto
+                sale y qué sigue. */}
+            <OrdenGracias orden={orden} pdf={`/api/portal/orden/${orden.token}`}>
+              <button
+                type="button"
+                className="og-boton og-boton-claro"
+                onClick={() => {
+                  setHecho(null);
+                  setOrden(null);
+                }}
+              >
+                Cargar otro
+              </button>
+              <button type="button" className="og-boton og-boton-claro" onClick={cerrar}>
+                Cerrar
+              </button>
+            </OrdenGracias>
+          </div>
+        ) : hecho ? (
           <div className="cajon-body">
             {/* Guardado y sin guardar no pueden decir lo mismo: el segundo caso
                 es el prototipo sin token de escritura, y prometer que lo tomamos

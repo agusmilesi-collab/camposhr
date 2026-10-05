@@ -1,8 +1,10 @@
+import { hoyIso } from '@/lib/hora';
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { select } from '@/lib/supabase';
 import { crearCandidato, crearPedido } from '@/lib/altas';
+import { crearOrden } from '@/lib/orden-compra';
 import { empresaDelToken } from '@/lib/portal-supabase';
 import { esDemo, NOMBRE_DEMO } from '@/lib/portal-demo';
 import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
@@ -259,7 +261,7 @@ export async function POST(req: Request) {
           seniority: null,
           // La fecha la pone el servidor: no viaja en el formulario, así que el
           // pedido no puede quedar fechado en otro día.
-          fechaPedido: new Date().toISOString().slice(0, 10),
+          fechaPedido: hoyIso(),
           notas:
             [
               descripcion,
@@ -280,8 +282,9 @@ export async function POST(req: Request) {
 
     // De a uno y no todos a la vez: cada candidato sube su CV, y si algo falla
     // en el tercero los dos primeros ya quedaron cargados en vez de perderse.
+    const cargadas: string[] = [];
     for (const g of gente) {
-      await crearCandidato({
+      const evaluacion = await crearCandidato({
         pedidoId: pedidoDestino,
         nombre: g.nombre,
         email: g.mail || null,
@@ -289,12 +292,26 @@ export async function POST(req: Request) {
         evaluadoraId: null,
         origen: 'portal',
         cv: g.cv,
+        // Lo que se eligió en "Enviar como", en cada candidato: el pedido puede
+        // haberlo abierto otra persona.
+        solicitanteId: pide?.id ?? null,
       });
+      cargadas.push(evaluacion.id);
+    }
+
+    // La orden de compra de esta carga: lo que acaban de pedir y cuánto sale.
+    // Va detrás de un try porque es un paso de más: si falla, los candidatos
+    // ya entraron y el pedido se confirma igual, sin la orden.
+    let orden = null;
+    try {
+      orden = await crearOrden(cargadas, 'portal');
+    } catch (e) {
+      console.error('[orden de compra]', e);
     }
 
     revalidateTag(CACHE_PSICOTECNICOS);
     revalidateTag(CACHE_CLIENTES);
-    return NextResponse.json({ resumen: base, guardado: true });
+    return NextResponse.json({ resumen: base, guardado: true, orden });
   } catch (e) {
     console.error('[alta de pedido]', e);
     return NextResponse.json(

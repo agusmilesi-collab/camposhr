@@ -326,12 +326,12 @@ function Datos({
           <Dato rotulo="Solicitud">
             {fechaHora(c.fecha_ingreso) ?? <Falta texto="sin fecha" />}
           </Dato>
-          {/* Quién del cliente pidió la evaluación: es el contacto del pedido y
-              el mismo que sale en el encabezado del informe. Se carga en el
-              pedido, que es de donde viene. */}
+          {/* Quién del cliente pidió la evaluación: el que cargó a este
+              candidato, y si no se sabe, el que pidió el pedido. Es el mismo
+              que sale en el encabezado del informe. */}
           <Dato rotulo="Solicitado por">
-            {c.pedidos?.solicitante ? (
-              <>{c.pedidos.solicitante.nombre}</>
+            {(c.solicitante ?? c.pedidos?.solicitante) ? (
+              <>{(c.solicitante ?? c.pedidos!.solicitante)!.nombre}</>
             ) : (
               <Falta texto="sin indicar" />
             )}
@@ -363,12 +363,45 @@ function Datos({
             varios candidatos de un cliente, así que la decisión de qué entra en
             cuál no se puede tomar desde la ficha de uno solo. */}
         <Bloque titulo="Factura" clase="os-ficha-datos-factura">
+          {/* Cuatro datos, de a dos: lo que sale esta persona y los tres
+              papeles del circuito, cada uno con su número y su enlace. La
+              orden de compra (OC) nace al cargarla, la factura (FC) al
+              terminar la entrevista y el recibo al cobrar. */}
           <Dato rotulo="Importe">
-            {precio ? formatoImporte(precio) : <Falta texto="la batería no tiene precio" />}
+            {(() => {
+              const importe = f.factura?.importe ?? f.orden?.importe ?? precio;
+              return importe ? (
+                formatoImporte(importe)
+              ) : (
+                <Falta texto="la batería no tiene precio" />
+              );
+            })()}
           </Dato>
-          <Dato rotulo="Facturado">
-            {f.factura ? (
-              <Link className="os-ficha-enlace" href="/os/psicotecnicos/facturacion">
+          <Dato rotulo="OC">
+            {f.orden ? (
+              <Link
+                className="os-ficha-enlace"
+                href={`/os/psicotecnicos/facturacion/orden/${f.orden.id}`}
+                target="_blank"
+                title="Abrir la orden de compra"
+              >
+                #{f.orden.numero}
+              </Link>
+            ) : (
+              <span className="os-sello-estado os-rojo">No</span>
+            )}
+          </Dato>
+          <Dato rotulo="FC">
+            {f.factura?.sin_comprobante ? (
+              // Se cobra sin factura: no hay comprobante que abrir.
+              <span className="os-sello-estado os-gris">Sin factura</span>
+            ) : f.factura ? (
+              <Link
+                className="os-ficha-enlace"
+                href={`/os/psicotecnicos/facturacion/comprobante/${f.factura.id}`}
+                target="_blank"
+                title="Abrir la factura"
+              >
                 {numeroDe({ numero: f.factura.numero, puntoVenta: f.factura.punto_venta })}
                 <span className="os-dato-al-lado">{fechaCorta(f.factura.fecha)}</span>
               </Link>
@@ -379,9 +412,19 @@ function Datos({
               <span className="os-sello-estado os-rojo">No</span>
             )}
           </Dato>
-          <Dato rotulo="Cobrado">
+          <Dato rotulo="Pago">
             {f.factura?.cobrada_at ? (
-              <span className="os-sello-estado os-verde">{fechaCorta(f.factura.cobrada_at)}</span>
+              <Link
+                className="os-ficha-enlace"
+                href={`/os/psicotecnicos/facturacion/recibo-pago/${f.factura.id}`}
+                target="_blank"
+                title="Abrir el recibo de pago"
+              >
+                {f.factura.recibo_pago_numero
+                  ? `#${String(f.factura.recibo_pago_numero).padStart(4, '0')}`
+                  : 'Cobrado'}
+                <span className="os-dato-al-lado">{fechaCorta(f.factura.cobrada_at)}</span>
+              </Link>
             ) : (
               <span className="os-sello-estado os-rojo">No</span>
             )}
@@ -617,13 +660,10 @@ async function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulaci
           nombre={f.cabecera.personas?.nombre ?? null}
           fecha={fecha(f.cabecera.fecha_entrevista ?? f.cabecera.fecha_ingreso)}
           empresa={f.cabecera.pedidos?.empresas?.nombre ?? null}
-          solicitante={
-            f.cabecera.pedidos?.solicitante
-              ? [f.cabecera.pedidos.solicitante.nombre, f.cabecera.pedidos.solicitante.cargo]
-                  .filter(Boolean)
-                  .join(' · ')
-              : null
-          }
+          solicitante={(() => {
+            const s = f.cabecera.solicitante ?? f.cabecera.pedidos?.solicitante;
+            return s ? [s.nombre, s.cargo].filter(Boolean).join(' · ') : null;
+          })()}
           puesto={f.cabecera.pedidos?.puesto ?? null}
           niveles={nivelesQueRigen(rige.niveles).map((n) => ({
             nombre: n.nombre,

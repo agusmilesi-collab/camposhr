@@ -276,3 +276,19 @@ export function diaDeLaSemana(iso: string | null): string | null {
   const dia = new Intl.DateTimeFormat('es-AR', { timeZone: ZONA, weekday: 'long' }).format(d);
   return dia.charAt(0).toUpperCase() + dia.slice(1);
 }
+
+/**
+ * El día de hoy en Argentina, como "2026-10-05".
+ *
+ * `new Date().toISOString()` da el día en UTC: desde las 21:00 de acá ya es
+ * mañana. En un comprobante eso es la fecha de emisión corrida un día, y el
+ * último día del mes, corrida de mes.
+ */
+export function hoyIso(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: ZONA,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+}

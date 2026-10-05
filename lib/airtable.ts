@@ -115,6 +115,11 @@ export type Candidato = {
    *  está facturada, lo pagado no aplica. `null` = todavía sin cargar. */
   facturado: boolean | null;
   pagado: boolean | null;
+  /**
+   * Quién de la empresa lo cargó, cuando no es quien abrió el pedido. Null en
+   * lo demás y en lo que sigue en Airtable.
+   */
+  cargadoPor?: string | null;
 };
 
 export type Busqueda = {
@@ -134,6 +139,11 @@ export type Busqueda = {
    */
   bateria: string | null;
   conBenziger: boolean;
+  /**
+   * Quién de la empresa pidió la búsqueda (`pedidos.solicitante_id`). Null en
+   * lo que sigue en Airtable, que no lo trae, y en los pedidos sin solicitante.
+   */
+  solicitante?: string | null;
 };
 
 export type DatosCliente = {

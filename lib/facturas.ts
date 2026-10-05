@@ -49,6 +49,7 @@ export {
  */
 import { ETAPAS_ENTREVISTADO, type Marcha } from '@/lib/facturas-tipos';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
+import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { cortes, mesesDelAnio } from '@/lib/monotributo';
 import { esDelCentro, esDePsicotecnicos, esDeServicios } from '@/lib/facturas-tipos';
 
@@ -58,8 +59,11 @@ type FilaEmisor = {
   razon_social: string;
   nombre_fantasia: string | null;
   punto_venta: number | null;
+  punto_venta_manual: number | null;
+  ambiente: 'homologacion' | 'produccion';
   domicilio: string | null;
   inicio_actividades: string | null;
+  ingresos_brutos: string | null;
   condicion_iva: string;
   categoria: string | null;
   evaluadoras: { nombre: string } | null;
@@ -107,7 +111,7 @@ const numeroOno = (x: string | number | null) => (x === null ? null : Number(x))
 export async function listarEmisoras(): Promise<Emisora[]> {
   const filas = await select<FilaEmisor>(
     'emisores',
-    'select=id,cuit,razon_social,nombre_fantasia,punto_venta,domicilio,inicio_actividades,' +
+    'select=id,cuit,razon_social,nombre_fantasia,punto_venta,punto_venta_manual,ambiente,domicilio,inicio_actividades,ingresos_brutos,' +
       'condicion_iva,categoria,evaluadoras(nombre)&activo=eq.true&order=razon_social',
     CACHE_COMERCIAL
   );
@@ -118,8 +122,11 @@ export async function listarEmisoras(): Promise<Emisora[]> {
     nombreFantasia: f.nombre_fantasia,
     cuit: f.cuit,
     puntoVenta: f.punto_venta,
+    puntoVentaManual: f.punto_venta_manual,
+    ambiente: f.ambiente,
     domicilio: f.domicilio,
     inicioActividades: f.inicio_actividades,
+    ingresosBrutos: f.ingresos_brutos,
     condicionIva: f.condicion_iva,
     categoria: f.categoria,
   }));
@@ -134,10 +141,38 @@ export async function listarFacturas(): Promise<Factura[]> {
       'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(personas(nombre),pedidos(puesto)))' +
-      '&order=fecha.desc,numero.desc',
+      // Solo facturas. Las notas de crédito viven en la misma tabla y no son
+      // trabajo cobrado ni por cobrar: se llega a ellas desde la factura que
+      // anulan.
+      '&cbte_tipo=eq.11&order=fecha.desc,numero.desc',
     CACHE_COMERCIAL
   );
   return filas.map(armarFactura);
+}
+
+/**
+ * Las notas de crédito, por la factura que anula cada una.
+ *
+ * Para la lista de anuladas: de cada factura anulada hace falta saber con qué
+ * nota se anuló y poder abrirla.
+ */
+export async function notasDeCredito(): Promise<
+  Record<string, { id: string; numero: number | null; puntoVenta: number | null; fecha: string }>
+> {
+  const filas = await select<{
+    id: string;
+    anula_id: string;
+    numero: number | null;
+    punto_venta: number | null;
+    fecha: string;
+  }>(
+    'facturas',
+    'select=id,anula_id,numero,punto_venta,fecha&cbte_tipo=eq.13&anula_id=not.is.null&estado=eq.emitida',
+    CACHE_COMERCIAL
+  );
+  return Object.fromEntries(
+    filas.map((f) => [f.anula_id, { id: f.id, numero: f.numero, puntoVenta: f.punto_venta, fecha: f.fecha }])
+  );
 }
 
 /** Una sola, para el comprobante. */
@@ -218,7 +253,7 @@ type FilaFacturable = {
  */
 export async function listarAFacturar(): Promise<Facturable[]> {
   const etapas = ETAPAS_ENTREVISTADO.map((e) => `"${e}"`).join(',');
-  const [evaluaciones, renglones, precios, cambio] = await Promise.all([
+  const [evaluaciones, renglones, enOrdenes, precios, cambio] = await Promise.all([
     select<FilaFacturable>(
       'evaluaciones',
       'select=id,estado,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,' +
@@ -237,6 +272,13 @@ export async function listarAFacturar(): Promise<Facturable[]> {
       'select=evaluacion_id&evaluacion_id=not.is.null',
       CACHE_COMERCIAL
     ),
+    // En qué orden de compra entró cada persona, para tenerla a mano al
+    // facturar: es el papel que el cliente ya recibió por ese trabajo.
+    select<{ evaluacion_id: string | null; ordenes_compra: { id: string; numero: number } | null }>(
+      'orden_items',
+      'select=evaluacion_id,ordenes_compra(id,numero)&evaluacion_id=not.is.null',
+      [CACHE_COMERCIAL, CACHE_PSICOTECNICOS]
+    ),
     select<Precio>(
       'bateria_precios',
       'select=id,bateria_id,precio,desde,quien&order=desde.desc',
@@ -246,6 +288,15 @@ export async function listarAFacturar(): Promise<Facturable[]> {
   ]);
 
   const facturadas = new Set(renglones.map((r) => r.evaluacion_id));
+  const ordenDe = new Map<string, { id: string; numero: string }>();
+  for (const o of enOrdenes) {
+    if (o.evaluacion_id && o.ordenes_compra) {
+      ordenDe.set(o.evaluacion_id, {
+        id: o.ordenes_compra.id,
+        numero: String(o.ordenes_compra.numero).padStart(4, '0'),
+      });
+    }
+  }
 
   // La empresa del portal de muestra no se factura: sus candidatos son
   // inventados y existen para que un cliente vea el portal (`lib/portal-ejemplo.ts`).
@@ -274,6 +325,7 @@ export async function listarAFacturar(): Promise<Facturable[]> {
         bateriaNombre: pedido.baterias?.nombre ?? null,
         fechaEntrevista: e.fecha_entrevista,
         fechaEntrega: e.fecha_entrega,
+        orden: ordenDe.get(e.id) ?? null,
         precio,
         conBenziger,
         benziger,
@@ -297,8 +349,13 @@ export async function marchaMonotributo(hoy = new Date()): Promise<Marcha[]> {
   const [emisoras, facturas] = await Promise.all([listarEmisoras(), listarFacturas()]);
   // Las de homologación tienen CAE pero son de prueba, y las que van con
   // recibo no son facturas: ninguna de las dos entra en lo facturado.
+  // Tampoco lo de la empresa de prueba, que es donde se ensaya todo esto.
   const emitidas = facturas.filter(
-    (f) => f.estado === 'emitida' && f.ambiente !== 'homologacion' && !f.sinComprobante
+    (f) =>
+      f.estado === 'emitida' &&
+      f.ambiente !== 'homologacion' &&
+      !f.sinComprobante &&
+      !esEmpresaDePrueba(f.cliente)
   );
   const { mes, anio, doce } = cortes(hoy);
   const meses = mesesDelAnio(hoy);

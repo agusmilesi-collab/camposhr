@@ -17,7 +17,8 @@ import { useMemo, useState } from 'react';
 import Bateria from '../Bateria';
 import { columnas } from '../piezas';
 import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
-import { fechaCorta } from '@/lib/hora';
+import { enumerar, faltaParaEmitir, faltaParaFacturarle, leyendaIva } from '@/lib/clientes-tipos';
+import { fechaCorta, hoyIso } from '@/lib/hora';
 import {
   formatoFecha,
   formatoImporte,
@@ -27,6 +28,7 @@ import {
   type Emisora,
   type Facturable,
   type Factura,
+  type Fiscal,
 } from '@/lib/facturas-tipos';
 
 /**
@@ -37,7 +39,7 @@ import {
  * mueve nada de lugar. La tilde no tiene columna propia: va con el nombre, que
  * además es lo que se está tildando.
  */
-const COLUMNAS = ['Candidato', 'Puesto', 'Batería', 'Entrevista', 'Etapa', 'Importe'];
+const COLUMNAS = ['Candidato', 'Puesto', 'Batería', 'Entrevista', 'Etapa', 'Orden', 'Importe'];
 
 /**
  * Lo que pide cada columna acá, medido en pantalla sobre el contenido y el
@@ -54,6 +56,8 @@ const PROPIOS = {
   'Batería': 96,
   Entrevista: 108,
   Etapa: 112,
+  /* El número de la orden de compra, "#0004". */
+  Orden: 84,
   Importe: 130,
 };
 const MEDIDAS = columnas(COLUMNAS, PROPIOS);
@@ -80,17 +84,35 @@ const COLUMNAS_EMITIDAS = [
 const PROPIOS_EMITIDAS = {
   Fecha: 116,
   'Número': 120,
-  Emisora: 136,
-  Cliente: 160,
+  /* "Lorena Campos" entra entera; el cliente cede, que casi todos son cortos. */
+  Emisora: 140,
+  Cliente: 140,
   /* Entra "3 evaluaciones" con el chevron al lado: con los 112 de antes el
      rótulo se cortaba en puntos suspensivos apenas la celda pasó a ser botón. */
-  Cubre: 148,
-  Cobro: 136,
+  Cubre: 156,
+  /* Entran la fecha con el botón del recibo al lado, o "Sí, cobrada" con
+     "No". Medido en pantalla: piden 148 px más los 28 del relleno de la celda.
+     El del recibo es un ícono y no la palabra: con la palabra hacían falta 207,
+     y esa plata salía del cliente y del importe, que se cortaban. */
+  Cobro: 194,
+  Importe: 134,
   /* La columna de la acción mide lo que mide "Quitar", y no los 166 de las
      tablas del pipeline, que llevaban botones de dos palabras. */
   '': 96,
 };
 const MEDIDAS_EMITIDAS = columnas(COLUMNAS_EMITIDAS, PROPIOS_EMITIDAS);
+
+/** Las de las anuladas: la factura, y la nota de crédito que la anuló. */
+const COLUMNAS_ANULADAS = ['Fecha', 'Factura', 'Emisora', 'Cliente', 'Importe', 'Nota de crédito', 'Anulada el'];
+const MEDIDAS_ANULADAS = columnas(COLUMNAS_ANULADAS, {
+  Fecha: 116,
+  Factura: 130,
+  Emisora: 140,
+  Cliente: 180,
+  Importe: 134,
+  'Nota de crédito': 150,
+  'Anulada el': 120,
+});
 
 
 /**
@@ -113,7 +135,7 @@ async function mandar(cuerpo: unknown) {
   return datos;
 }
 
-const hoy = () => new Date().toISOString().slice(0, 10);
+const hoy = hoyIso;
 
 /** A cuántas personas cubre una factura, sin contar los adicionales. */
 const cubre = (f: Factura) => f.renglones.filter((r) => r.evaluacionId !== null).length;
@@ -136,11 +158,17 @@ function importeDe(f: Factura, r: Factura['renglones'][number]): number | null {
 export function AFacturar({
   pendientes,
   emisoras,
+  siguientes = {},
+  fiscales = {},
   quien,
   conRotulo = true,
 }: {
   pendientes: Facturable[];
   emisoras: Emisora[];
+  /** El número de factura que le sigue a cada emisora, por su identificador. */
+  siguientes?: Record<string, number>;
+  /** Los datos fiscales de cada cliente de la cola, por su identificador. */
+  fiscales?: Record<string, Fiscal>;
   quien: string;
   /** El rótulo "Para facturar" sobra cuando lo dice la pestaña de arriba. */
   conRotulo?: boolean;
@@ -174,6 +202,8 @@ export function AFacturar({
           empresaId={empresaId}
           pendientes={suyas}
           emisoras={emisoras}
+          siguientes={siguientes}
+          fiscal={fiscales[empresaId]}
           quien={quien}
         />
       ))}
@@ -185,11 +215,15 @@ function GrupoCliente({
   empresaId,
   pendientes,
   emisoras,
+  siguientes,
+  fiscal,
   quien,
 }: {
   empresaId: string;
   pendientes: Facturable[];
   emisoras: Emisora[];
+  siguientes: Record<string, number>;
+  fiscal?: Fiscal;
   quien: string;
 }) {
   const router = useRouter();
@@ -198,8 +232,33 @@ function GrupoCliente({
   const [error, setError] = useState<string | null>(null);
   const [abierto, setAbierto] = useState(false);
 
-  // Quién factura: si quien mira es una de ellas, la suya viene puesta.
-  const propia = emisoras.find((e) => e.nombre.includes(quien) || quien.includes(e.nombre));
+  // Quién factura: la dueña de la cola. Cada pestaña es de una evaluadora y
+  // lo que está ahí lo factura ella, mire quien mire; si la cola no dice de
+  // quién es, la de quien está mirando.
+  const duenia = pendientes[0]?.evaluadora ?? '';
+  const propia =
+    emisoras.find((e) => duenia !== '' && duenia.includes(e.nombre)) ??
+    emisoras.find((e) => e.nombre.includes(quien) || quien.includes(e.nombre));
+  const [emisorId, setEmisorId] = useState(propia?.id ?? '');
+  const elegida = emisoras.find((e) => e.id === emisorId);
+  // En producción la factura se le pide a ARCA, que pone el número, con el
+  // punto de venta de web services. Si no, se está anotando una que salió por
+  // Comprobantes en Línea: va su punto de venta de ahí y el número que sigue.
+  const porArca = elegida?.ambiente === 'produccion';
+  const puntoPropuesto = porArca ? elegida?.puntoVenta : elegida?.puntoVentaManual;
+  const numeroPropuesto = porArca || !elegida ? undefined : siguientes[elegida.id];
+
+  // Lo que falta para que la factura salga completa. Con algo faltando no se
+  // genera: una factura sin el CUIT o el domicilio del cliente no cumple, y
+  // ARCA rechaza la que no trae su condición frente al IVA.
+  const faltaCliente = faltaParaFacturarle({
+    razonSocial: fiscal?.razonSocial,
+    cuit: fiscal?.cuit,
+    condicionIva: fiscal?.condicionIva,
+    domicilio: fiscal?.domicilio,
+  });
+  const faltaEmisora = elegida ? faltaParaEmitir(elegida) : [];
+  const incompleta = faltaCliente.length > 0 || faltaEmisora.length > 0;
   const seleccion = pendientes.filter((p) => elegidas.includes(p.evaluacionId));
   const total = seleccion.reduce((n, p) => n + totalDe(p), 0);
 
@@ -227,8 +286,10 @@ function GrupoCliente({
   }
 
   /**
-   * Sin factura: un toque. Queda en Sin cobrar como cualquier otra, y en vez
-   * de un comprobante se baja el recibo, que es lo que se le manda al cliente.
+   * Sin factura: un toque. Sale de la cola y queda en Sin cobrar como cualquier
+   * otra. No genera ningún papel: el cliente ya tiene la orden de compra, que
+   * nació cuando se cargaron los candidatos, y se puede volver a bajar desde la
+   * fila.
    *
    * La emisora no se pregunta: es la de quien tomó la evaluación, que es de
    * quien es el cobro.
@@ -240,7 +301,7 @@ function GrupoCliente({
     setEnviando(true);
     setError(null);
     try {
-      const r = await mandar({
+      await mandar({
         accion: 'nueva',
         sinComprobante: true,
         emisorId: emisora.id,
@@ -249,9 +310,6 @@ function GrupoCliente({
         evaluaciones: elegidas,
       });
       router.refresh();
-      // La ruta lo manda como adjunto: el navegador lo baja y la pantalla
-      // se queda donde está.
-      if (r?.id) window.location.assign(`/api/os/recibo/${r.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar.');
     } finally {
@@ -322,6 +380,23 @@ function GrupoCliente({
                     {p.etapa}
                   </span>
                 </td>
+                <td data-campo="Orden">
+                  {/* La orden de compra en la que entró: el papel que el
+                      cliente ya tiene por este trabajo. Se abre aparte, para
+                      mirarla sin perder lo tildado. */}
+                  {p.orden ? (
+                    <a
+                      className="os-tabla-enlace"
+                      href={`/os/psicotecnicos/facturacion/orden/${p.orden.id}`}
+                      target="_blank"
+                      title="Abrir la orden de compra"
+                    >
+                      #{p.orden.numero}
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </td>
                 <td className="os-tabla-num" data-campo="Importe">
                   {p.precio === null ? (
                     <span className="os-dato-falta">sin precio</span>
@@ -337,7 +412,7 @@ function GrupoCliente({
 
       <div className="os-resumen-linea">
         <span>
-          <span className="os-dato-rotulo">Tildadas</span>
+          <span className="os-dato-rotulo">Seleccionadas</span>
           {seleccion.length} de {pendientes.length}
         </span>
         <span>
@@ -363,7 +438,7 @@ function GrupoCliente({
           </button>
           {error && <p className="os-form-error">{error}</p>}
           {seleccion.length === 0 && (
-            <p className="os-form-nota">Tildá al menos una evaluación.</p>
+            <p className="os-form-nota">Seleccioná al menos una evaluación.</p>
           )}
           {/* En la otra punta: es la excepción, y pegado a "Facturar" se
               apretaba por error. */}
@@ -372,17 +447,67 @@ function GrupoCliente({
             style={{ marginLeft: 'auto' }}
             disabled={seleccion.length === 0 || enviando}
             onClick={sinFactura}
-            title="Sale de la cola, queda en Sin cobrar y se baja el recibo"
+            title="Sale de la cola y queda en Sin cobrar, sin emitir factura"
           >
-            {enviando ? 'Generando el recibo…' : 'Sin factura'}
+            {enviando ? 'Guardando…' : 'Sin factura'}
           </button>
         </div>
       ) : (
         <form className="os-form os-form-factura os-panel-cuerpo" onSubmit={emitir}>
+          {/* A quién se le factura, tal como va a salir en el comprobante.
+              Lo que falta se dice acá y en ámbar: sin CUIT o sin condición
+              frente al IVA, ARCA la rechaza. */}
+          <div className="os-fiscal">
+            <div className="os-fiscal-top">
+              <span className="os-etiqueta-campo">Datos fiscales del cliente</span>
+              <a
+                className="os-tabla-enlace"
+                href={`/os/clientes/${empresaId}`}
+                target="_blank"
+                title="Abrir la ficha del cliente para corregirlos"
+              >
+                Editar en su ficha
+              </a>
+            </div>
+            <dl>
+              <DatoFiscal rotulo="Razón social" valor={fiscal?.razonSocial} />
+              <DatoFiscal rotulo="CUIT" valor={cuitLindo(fiscal?.cuit)} />
+              <DatoFiscal rotulo="Condición frente al IVA" valor={leyendaIva(fiscal?.condicionIva)} />
+              <DatoFiscal rotulo="Domicilio" valor={fiscal?.domicilio} />
+              {/* El correo no frena la factura: es a dónde se manda, no un
+                  dato del comprobante. */}
+              <div>
+                <dt>Correo de facturación</dt>
+                <dd>{fiscal?.correo ? fiscal.correo : <span className="os-fiscal-opcional">sin cargar</span>}</dd>
+              </div>
+              <div>
+                <dt>Orden de compra propia</dt>
+                <dd>{fiscal?.exigeOrdenCompra ? 'La exige en la factura' : 'No la exige'}</dd>
+              </div>
+            </dl>
+            {faltaCliente.length > 0 && (
+              <p className="os-fiscal-falta">
+                No se le puede facturar todavía: falta {enumerar(faltaCliente)}. Se carga en su
+                ficha.
+              </p>
+            )}
+            {faltaEmisora.length > 0 && (
+              <p className="os-fiscal-falta">
+                A {elegida?.nombre} le falta {enumerar(faltaEmisora)} para poder emitir.
+              </p>
+            )}
+          </div>
+
           <div className="os-form-campos">
             <div className="os-campo-bloque os-tramo-2">
               <label className="os-etiqueta-campo">Quién factura</label>
-              <select className="os-campo" name="emisorId" required defaultValue={propia?.id ?? ''}>
+              <select
+                className="os-campo"
+                name="emisorId"
+                required
+                value={emisorId}
+                onChange={(ev) => setEmisorId(ev.target.value)}
+              >
                 <option value="" disabled>
                   Elegir
                 </option>
@@ -395,30 +520,53 @@ function GrupoCliente({
             </div>
             <div className="os-campo-bloque os-tramo-1">
               <label className="os-etiqueta-campo">Punto de venta</label>
+              {/* La clave hace que el campo vuelva a su valor propuesto al
+                  cambiar de emisora: sin ella quedaba el de la anterior. */}
               <input
+                key={`pv-${emisorId}`}
                 className="os-campo"
                 name="puntoVenta"
                 type="number"
                 min="1"
-                defaultValue=""
+                defaultValue={puntoPropuesto ?? ''}
                 placeholder="—"
+                required
               />
             </div>
             <div className="os-campo-bloque os-tramo-1">
               <label className="os-etiqueta-campo">Número</label>
-              <input className="os-campo" name="numero" type="number" min="1" placeholder="589" />
+              <input
+                key={`n-${emisorId}`}
+                className="os-campo"
+                name="numero"
+                type="number"
+                min="1"
+                defaultValue={numeroPropuesto ?? ''}
+                placeholder={porArca ? 'lo pone ARCA' : '—'}
+                // Anotando una que salió por Comprobantes en Línea, el número
+                // es parte de la factura. Por ARCA lo pone ARCA.
+                required={!porArca}
+              />
             </div>
             <div className="os-campo-bloque os-tramo-2">
               <label className="os-etiqueta-campo">Fecha</label>
               <input className="os-campo" name="fecha" type="date" required defaultValue={hoy()} />
             </div>
             <div className="os-campo-bloque os-tramo-2">
-              <label className="os-etiqueta-campo">Orden de compra</label>
+              {/* La del cliente, no la nuestra: la orden de compra de Campos
+                  HR ya está, es la de la columna "Orden". Esta es el número
+                  que algunos clientes dan y exigen ver en la factura. */}
+              <label className="os-etiqueta-campo">Orden de compra del cliente</label>
               <input
                 className="os-campo"
                 name="ordenCompra"
                 maxLength={60}
-                placeholder="Si el cliente la exige"
+                // A quien la exige no se le factura sin ella: no paga la
+                // factura que no la trae impresa.
+                required={Boolean(fiscal?.exigeOrdenCompra)}
+                placeholder={
+                  fiscal?.exigeOrdenCompra ? 'Este cliente la exige' : 'Si el cliente dio la suya'
+                }
               />
             </div>
             <div className="os-campo-bloque os-tramo-4">
@@ -435,13 +583,20 @@ function GrupoCliente({
           </div>
 
           <p className="os-form-nota">
-            El importe sale de las evaluaciones tildadas: {formatoImporte(total)}. Si hay orden
-            de compra, se agrega al final del concepto. Con el número vacío, el CAE se pide
-            después desde el comprobante.
+            El importe sale de las evaluaciones seleccionadas: {formatoImporte(total)}. Si el cliente
+            dio su orden de compra, se agrega al final del concepto.{' '}
+            {porArca
+              ? 'El número lo pone ARCA: se pide desde la factura, con el botón "Pedir CAE".'
+              : 'El número propuesto es el que sigue al último anotado; cambialo si no coincide con el de Comprobantes en Línea.'}
           </p>
 
           <div className="os-form-pie">
-            <button className="os-boton os-boton-firme" type="submit" disabled={enviando}>
+            <button
+              className="os-boton os-boton-firme"
+              type="submit"
+              disabled={enviando || incompleta}
+              title={incompleta ? 'Faltan datos fiscales: están marcados arriba' : undefined}
+            >
               {enviando ? 'Guardando…' : 'Generar la factura'}
             </button>
             <button className="os-boton" type="button" onClick={() => setAbierto(false)}>
@@ -452,6 +607,19 @@ function GrupoCliente({
         </form>
       )}
     </section>
+  );
+}
+
+const cuitLindo = (c: string | null | undefined) =>
+  c && c.length === 11 ? `${c.slice(0, 2)}-${c.slice(2, 10)}-${c.slice(10)}` : c;
+
+/** Un dato fiscal del cliente; el que falta se dice y no se deja en blanco. */
+function DatoFiscal({ rotulo, valor }: { rotulo: string; valor: string | null | undefined }) {
+  return (
+    <div>
+      <dt>{rotulo}</dt>
+      <dd>{valor ? valor : <span className="os-dato-falta">sin cargar</span>}</dd>
+    </div>
   );
 }
 
@@ -471,11 +639,22 @@ export function Emitidas({
   /** Qué mitad mostrar, cuando cada una vive en su pestaña. */
   solo?: 'sin-cobrar' | 'cobrado';
 }) {
-  const sinCobrar = solo === 'cobrado' ? [] : facturas.filter((f) => !f.cobradaAt);
-  const cobradas = solo === 'sin-cobrar' ? [] : facturas.filter((f) => f.cobradaAt);
+  // El buscador, como el de Entregados: con cincuenta cobradas, encontrar la
+  // de un candidato era recorrer la lista abriendo "Cubre" fila por fila.
+  const [busca, setBusca] = useState('');
+  const buscado = llano(busca.trim());
+  const todas =
+    solo === 'cobrado'
+      ? facturas.filter((f) => f.cobradaAt)
+      : solo === 'sin-cobrar'
+        ? facturas.filter((f) => !f.cobradaAt)
+        : facturas;
+  const visibles = buscado ? todas.filter((f) => llano(textoDe(f)).includes(buscado)) : todas;
+  const sinCobrar = solo === 'cobrado' ? [] : visibles.filter((f) => !f.cobradaAt);
+  const cobradas = solo === 'sin-cobrar' ? [] : visibles.filter((f) => f.cobradaAt);
   const pendiente = sinCobrar.reduce((n, f) => n + (f.importe ?? 0), 0);
 
-  if (sinCobrar.length === 0 && cobradas.length === 0) {
+  if (todas.length === 0) {
     return (
       <>
         {!solo && <div className="os-rotulo-bloque">Facturado</div>}
@@ -494,6 +673,28 @@ export function Emitidas({
 
   return (
     <>
+      <div className="os-barra-acciones os-barra-filtro">
+        <input
+          className="os-campo os-buscador"
+          type="search"
+          value={busca}
+          onChange={(ev) => setBusca(ev.target.value)}
+          placeholder="Buscar por candidato, cliente, puesto, emisora o número"
+          aria-label="Buscar en lo facturado"
+        />
+        {buscado && (
+          <span className="os-columna-monto">
+            {visibles.length === 1 ? '1 resultado' : `${visibles.length} resultados`}
+          </span>
+        )}
+      </div>
+
+      {buscado && visibles.length === 0 && (
+        <div className="os-panel">
+          <p className="os-vacio">Nada coincide con “{busca.trim()}”.</p>
+        </div>
+      )}
+
       {sinCobrar.length > 0 && (
         <>
           {!solo && <div className="os-rotulo-bloque">Facturado y sin cobrar</div>}
@@ -523,6 +724,35 @@ export function Emitidas({
       )}
     </>
   );
+}
+
+/**
+ * Lo que se escribe en el buscador se compara contra esto: lo que se ve en la
+ * fila y también quiénes están adentro, que es por lo que más se busca y en la
+ * fila no se ve hasta abrirla.
+ */
+function textoDe(f: Factura): string {
+  return [
+    f.cliente,
+    f.emisora,
+    f.sinComprobante ? 'sin factura' : numeroDe(f),
+    f.concepto,
+    f.ordenCompra,
+    ...f.renglones.flatMap((r) => [r.persona, r.puesto, r.descripcion]),
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/**
+ * Saca tildes y pasa a minúsculas, igual que en Entregados: sin esto, un
+ * apellido con tilde no aparece si se lo escribe sin ella.
+ */
+function llano(t: string): string {
+  return t
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('es');
 }
 
 /**
@@ -570,7 +800,7 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
                 <a
                   className="os-tabla-enlace"
                   // La que va sin factura no tiene comprobante que abrir: lo
-                  // que hay para mirar o volver a mandar es su recibo.
+                  // que hay para mirar o volver a mandar es su orden de compra.
                   href={
                     f.sinComprobante
                       ? `/api/os/recibo/${f.id}`
@@ -578,7 +808,7 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
                   }
                   target="_blank"
                 >
-                  {f.sinComprobante ? 'Recibo' : numeroDe(f)}
+                  {f.sinComprobante ? 'Sin factura' : numeroDe(f)}
                 </a>
               </td>
               <td className="os-tabla-recorta" data-campo="Emisora">
@@ -632,10 +862,23 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
                 )}
               </td>
               <td data-campo="Cobro">
-                <Cobro id={f.id} cobradaAt={f.cobradaAt} />
+                {/* Un borrador todavía no es una factura: primero el CAE. */}
+                {f.estado === 'borrador' || f.estado === 'rechazada' ? (
+                  <a href={`/os/psicotecnicos/facturacion/comprobante/${f.id}`} target="_blank">
+                    Falta el CAE
+                  </a>
+                ) : (
+                  <Cobro id={f.id} cobradaAt={f.cobradaAt} />
+                )}
               </td>
               <td className="os-tabla-accion" data-campo=" ">
-                <BorrarFactura id={f.id} numero={numeroDe(f)} />
+                {/* La que ARCA autorizó no se quita: existe en ARCA, se borre
+                    de acá o no. Se anula con una nota de crédito. */}
+                {f.cae ? (
+                  <AnularFactura id={f.id} numero={numeroDe(f)} cobrada={Boolean(f.cobradaAt)} />
+                ) : (
+                  <BorrarFactura id={f.id} numero={numeroDe(f)} />
+                )}
               </td>
             </tr>
 
@@ -689,15 +932,41 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
 export function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null }) {
   const router = useRouter();
   const [tocando, setTocando] = useState(false);
+  /** El primer toque pregunta; el segundo hace. */
+  const [seguro, setSeguro] = useState(false);
 
   async function cambiar(valor: string | null) {
     setTocando(true);
     try {
       await mandar({ accion: 'cobro', id, cobradaAt: valor });
       router.refresh();
+      // Al cobrar se baja el recibo de pago, que es lo que se le manda al
+      // cliente. La ruta lo entrega como adjunto y la pantalla no se mueve.
+      if (valor !== null) window.location.assign(`/api/os/recibo-pago/${id}`);
     } finally {
       setTocando(false);
+      setSeguro(false);
     }
+  }
+
+  // Se confirma en los dos sentidos. Marcar el cobro genera un recibo con
+  // número, y un toque de más en una fila equivocada le daba recibo a quien no
+  // pagó; desmarcarlo saca la plata de lo cobrado.
+  if (seguro) {
+    return (
+      <span className="os-cobro-confirma">
+        <button
+          className="os-boton os-boton-firme"
+          disabled={tocando}
+          onClick={() => cambiar(cobradaAt ? null : hoy())}
+        >
+          {tocando ? '…' : cobradaAt ? 'Sí, sin cobrar' : 'Sí, cobrada'}
+        </button>
+        <button className="os-boton" disabled={tocando} onClick={() => setSeguro(false)}>
+          No
+        </button>
+      </span>
+    );
   }
 
   // Los dos estados son el mismo botón, que alterna: cobrada muestra la fecha
@@ -705,25 +974,37 @@ export function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null 
   // lado de un botón se lee como otra cosa y no queda a la misma altura.
   if (cobradaAt) {
     return (
-      <button
-        className="os-boton os-boton-marcado os-sello-estado os-verde"
-        disabled={tocando}
-        title="Cobrada. Tocar para volver a dejarla sin cobrar."
-        onClick={() => cambiar(null)}
-      >
-        {formatoFecha(cobradaAt)}
-      </button>
+      <span className="os-cobro-confirma">
+        <button
+          className="os-boton os-boton-marcado os-sello-estado os-verde"
+          title="Cobrada. Tocar para volver a dejarla sin cobrar."
+          onClick={() => setSeguro(true)}
+        >
+          {formatoFecha(cobradaAt)}
+        </button>
+        <a
+          className="os-boton os-boton-icono"
+          href={`/api/os/recibo-pago/${id}`}
+          title="Bajar el recibo de pago"
+          aria-label="Bajar el recibo de pago"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 4v11" />
+            <path d="m7.5 11 4.5 4.5L16.5 11" />
+            <path d="M5 19.5h14" />
+          </svg>
+        </a>
+      </span>
     );
   }
 
   return (
     <button
       className="os-boton os-boton-marcado os-sello-estado os-gris"
-      disabled={tocando}
       title="Todavía sin cobrar. Tocar para marcar que entró la plata."
-      onClick={() => cambiar(hoy())}
+      onClick={() => setSeguro(true)}
     >
-      {tocando ? '…' : 'Sin cobrar'}
+      Sin cobrar
     </button>
   );
 }
@@ -757,6 +1038,161 @@ export function BorrarFactura({ id, numero }: { id: string; numero: string }) {
     >
       {borrando ? 'Quitando…' : 'Confirmar'}
     </button>
+  );
+}
+
+/**
+ * Anula una factura con CAE, emitiendo su nota de crédito.
+ *
+ * En dos toques, como "Quitar", y con más razón: lo que hace no se deshace.
+ * La nota de crédito queda emitida en ARCA y la factura deja de valer. Cuando
+ * sale bien se abre la nota, que es lo que hay que mandarle al cliente.
+ *
+ * Una cobrada no se anula: primero se desmarca el cobro.
+ */
+function AnularFactura({ id, numero, cobrada }: { id: string; numero: string; cobrada: boolean }) {
+  const router = useRouter();
+  const [seguro, setSeguro] = useState(false);
+  const [anulando, setAnulando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (cobrada) {
+    return (
+      <button
+        className="os-boton"
+        disabled
+        title="Está cobrada. Para anularla, primero desmarcá el cobro."
+      >
+        Anular
+      </button>
+    );
+  }
+  if (!seguro) {
+    return (
+      <>
+        <button
+          className="os-boton"
+          onClick={() => {
+            setError(null);
+            setSeguro(true);
+          }}
+          title={`Anular la factura ${numero} con una nota de crédito`}
+        >
+          Anular
+        </button>
+        {error && <div className="os-anular-error">{error}</div>}
+      </>
+    );
+  }
+  return (
+    <button
+      className="os-boton os-boton-peligro"
+      disabled={anulando}
+      title="Emite una nota de crédito en ARCA. No se deshace."
+      onBlur={() => !anulando && setSeguro(false)}
+      onClick={async () => {
+        setAnulando(true);
+        try {
+          const r = await mandar({ accion: 'anular', id });
+          router.refresh();
+          if (r?.notaId) {
+            window.open(`/os/psicotecnicos/facturacion/comprobante/${r.notaId}`, '_blank');
+          }
+        } catch (e) {
+          setError(e instanceof Error ? e.message : 'No se pudo anular.');
+        } finally {
+          setAnulando(false);
+          setSeguro(false);
+        }
+      }}
+    >
+      {anulando ? 'Anulando…' : 'Confirmar'}
+    </button>
+  );
+}
+
+/** Una nota de crédito, con lo que hace falta para nombrarla y abrirla. */
+export type NotaDeCredito = { id: string; numero: number | null; puntoVenta: number | null; fecha: string };
+
+/**
+ * Las facturas anuladas, cada una con la nota de crédito que la anuló.
+ *
+ * Están aparte porque ya no son plata por cobrar ni cobrada, pero los dos
+ * papeles hay que poder encontrarlos: el cliente puede pedir de nuevo la nota,
+ * y el contador las dos.
+ */
+export function Anuladas({
+  facturas,
+  notas,
+}: {
+  facturas: Factura[];
+  notas: Record<string, NotaDeCredito>;
+}) {
+  return (
+    <div className="os-panel">
+      <div className="os-tabla-marco">
+        <table className="os-tabla os-tabla-trabajo os-tabla-fija">
+          <colgroup>
+            {MEDIDAS_ANULADAS.map((m, i) => (
+              <col key={i} style={{ width: m }} />
+            ))}
+          </colgroup>
+          <thead>
+            <tr>
+              {COLUMNAS_ANULADAS.map((c) => (
+                <th key={c} className={c === 'Importe' ? 'os-tabla-num' : undefined}>
+                  {c}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {facturas.map((f) => {
+              const nota = notas[f.id];
+              return (
+                <tr key={f.id}>
+                  <td data-campo="Fecha">{formatoFecha(f.fecha)}</td>
+                  <td className="os-tabla-nombre" data-campo="Factura">
+                    <a
+                      className="os-tabla-enlace"
+                      href={`/os/psicotecnicos/facturacion/comprobante/${f.id}`}
+                      target="_blank"
+                    >
+                      {numeroDe(f)}
+                    </a>
+                  </td>
+                  <td className="os-tabla-recorta" data-campo="Emisora">
+                    {f.emisora}
+                  </td>
+                  <td className="os-tabla-recorta" data-campo="Cliente">
+                    {f.cliente}
+                  </td>
+                  <td className="os-tabla-num" data-campo="Importe">
+                    {f.importe === null ? '—' : formatoImporte(f.importe)}
+                  </td>
+                  <td data-campo="Nota de crédito">
+                    {nota ? (
+                      <a
+                        className="os-tabla-enlace"
+                        href={`/os/psicotecnicos/facturacion/comprobante/${nota.id}`}
+                        target="_blank"
+                      >
+                        {numeroDe({ numero: nota.numero, puntoVenta: nota.puntoVenta })}
+                      </a>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                  <td className="os-tabla-flojo" data-campo="Anulada el">
+                    {nota ? formatoFecha(nota.fecha) : '—'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 

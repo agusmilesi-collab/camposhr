@@ -1,9 +1,11 @@
+import { hoyIso } from '@/lib/hora';
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { crearCandidato, crearEmpresa, crearPedido } from '@/lib/altas';
+import { crearOrden } from '@/lib/orden-compra';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 
@@ -76,7 +78,7 @@ async function altaPedido(
     conBenziger: texto('conBenziger') === 'si',
     familia: texto('familia') || null,
     seniority: texto('seniority') || null,
-    fechaPedido: texto('fechaPedido') || new Date().toISOString().slice(0, 10),
+    fechaPedido: texto('fechaPedido') || hoyIso(),
     notas: texto('notas') || null,
     origen: 'interno',
   });
@@ -136,6 +138,14 @@ async function altaCandidato(
     origen: 'interno',
     cv,
   });
+
+  // Toda carga genera su orden de compra, también la que hace el equipo: así
+  // todo trabajo tiene su papel. Si falla, el candidato ya entró.
+  try {
+    await crearOrden([evaluacion.id], 'os');
+  } catch (e) {
+    console.error('[orden de compra]', e);
+  }
 
   await anotarAcceso({
     quien,
