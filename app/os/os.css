@@ -7473,12 +7473,34 @@ html[data-os-tema='oscuro'] .os-bz-cerebro {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 22px;
-  padding: 10px 18px;
-  border-top: 2px solid var(--os-azul);
+  /* El aire va entre la tabla y la raya, no entre la raya y el texto: la raya
+     es del resumen y se lee pegada a él. Del color del botón de facturar. */
+  margin-top: 10px;
+  padding: 8px 18px 10px;
+  border-top: 1px solid var(--os-activo);
   border-bottom: 1px solid var(--os-linea-suave);
   background: var(--os-panel);
   font-size: 0.86rem;
   font-variant-numeric: tabular-nums;
+}
+
+.os-resumen-linea {
+  align-items: center;
+}
+
+/* "Facturar" un octavo más ancho que lo que pide su texto: es el botón del
+   renglón y al lado de "Sin factura" medía casi lo mismo. */
+.os-resumen-acciones .os-boton-firme {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Los botones del resumen, contra el margen derecho. */
+.os-resumen-acciones {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .os-resumen-linea .os-dato-rotulo {
