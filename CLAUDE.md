@@ -1326,3 +1326,49 @@ de quién leyó qué. Desarrollado en `CAMPOS OS/SPECS-arquitectura.md`.
 ## Dónde se lee todo lo demás
 
 `CAMPOS OS/LEEME.md` abre las especificaciones del sistema.
+
+## La factura se pide a ARCA desde el comprobante
+
+`lib/arca/`. El alta de una factura no llama a ARCA: queda guardada, y el CAE
+se pide después con el botón "Pedir CAE a ARCA" de la banda del comprobante
+(acción `arca` de `/api/os/facturas`). Separadas, una factura que ARCA rechaza
+no se pierde: queda con su detalle y el motivo, y se vuelve a pedir.
+
+**El botón sale solo si la factura no tiene número.** Con número ya es una que
+salió por Comprobantes en Línea y se anotó acá; pedirle CAE sería emitirla dos
+veces. Por eso los formularios de carga manual arrancan con el punto de venta
+vacío: el de web services y el de Comprobantes en Línea son distintos.
+
+**Cada emisora tiene su ambiente** (`emisores.ambiente`). En homologación solo
+se emite a la empresa de prueba, el comprobante sale con la marca PRUEBA y la
+factura no cuenta para el monotributo. Pasar a producción es cambiar esa
+columna y cargar `punto_venta` con el habilitado para web services.
+
+**El certificado y la clave van en variables de entorno**, en base64 y por
+CUIT: `ARCA_CERT_<cuit>` y `ARCA_KEY_<cuit>` los de homologación,
+`ARCA_CERT_PROD_<cuit>` y `ARCA_KEY_PROD_<cuit>` los de producción. Los
+archivos viven en `~/Documents/camposhr-privado/arca/`, nunca en el repo.
+
+**El ticket de acceso vive en `arca_tickets`.** Dura doce horas y ARCA no da
+otro mientras siga vigente; en Vercel el disco no llega a la llamada siguiente.
+
+**El número se reserva en la base antes de llamar**, y si la llamada se corta
+se le pregunta a ARCA por ese comprobante antes de soltarlo.
+
+**Una factura con CAE no se borra.** Se anula con nota de crédito, que todavía
+no está hecha en el OS: se hace por Comprobantes en Línea.
+
+## Lo que se cobra sin factura es una fila de `facturas`
+
+Botón "Sin factura" de la cola. Crea una factura con `sin_comprobante` en
+verdadero y baja un recibo en PDF (`/api/os/recibo/<id>`, dibujado con
+`pdf-lib`). Recorre el mismo camino que cualquier otra, sin cobrar y cobrado,
+pero no lleva número ni CAE, no se le pide nada a ARCA y no entra en la cuenta
+del monotributo.
+
+## El concepto de una factura es "Perfil <puesto>, <persona>"
+
+`conceptoDe` en `lib/facturas-tipos.ts`. El formulario lo trae escrito y se
+puede cambiar; la orden de compra se agrega al final. El adicional va en su
+renglón, "Adicional BTSA, <persona>". En el papel del cliente no figuran ni
+"evaluación psicotécnica" ni la batería ni la fecha de entrega del informe.

@@ -8,5 +8,5 @@ export const dynamic = 'force-dynamic';
  * descarga el cliente sean el mismo papel.
  */
 export default function Pagina({ params }: { params: { id: string } }) {
-  return <Comprobante id={params.id} />;
+  return <Comprobante id={params.id} puedeEmitir />;
 }

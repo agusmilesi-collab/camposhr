@@ -101,6 +101,17 @@ export type Factura = {
   notas: string | null;
   cae: string | null;
   caeVenceEl: string | null;
+  /**
+   * Contra qué ARCA se autorizó. Null en las que se anotaron a mano. Una de
+   * homologación tiene un CAE que no vale: no es un ingreso.
+   */
+  ambiente: 'homologacion' | 'produccion' | null;
+  /**
+   * Se cobra con un recibo y sin factura. Recorre el mismo camino (sin cobrar,
+   * cobrado) pero no es un comprobante fiscal: no lleva número ni CAE y no
+   * cuenta para el monotributo.
+   */
+  sinComprobante: boolean;
   renglones: Renglon[];
 };
 
@@ -161,6 +172,23 @@ export type Facturable = {
   benziger: number | null;
   dolar: number | null;
 };
+
+/**
+ * Cómo se nombra en la factura el trabajo hecho sobre una persona:
+ * "Perfil Jefe de Depósito, Nahuel Ibarra".
+ *
+ * Es lo que el cliente busca al recibirla: por qué puesto y por quién le están
+ * cobrando. Vive acá porque lo escriben los dos lados: el formulario lo propone
+ * y la ruta lo usa cuando el formulario llega sin concepto.
+ */
+export function conceptoDe(f: Pick<Facturable, 'puesto' | 'candidato'>): string {
+  return `Perfil ${f.puesto.trim()}, ${f.candidato.trim()}`;
+}
+
+/** El concepto que se propone para una factura: uno por persona, en orden. */
+export function conceptoPorDefecto(fs: Pick<Facturable, 'puesto' | 'candidato'>[]): string {
+  return fs.map(conceptoDe).join(' · ');
+}
 
 /** Lo que sale de una evaluación: la batería más el adicional que corresponda. */
 export function totalDe(f: Pick<Facturable, 'precio' | 'benziger'>): number {

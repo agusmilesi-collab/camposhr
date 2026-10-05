@@ -48,6 +48,7 @@ export {
  * usa; la constante vive allá porque también la lee el navegador.
  */
 import { ETAPAS_ENTREVISTADO, type Marcha } from '@/lib/facturas-tipos';
+import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { cortes, mesesDelAnio } from '@/lib/monotributo';
 import { esDelCentro, esDePsicotecnicos, esDeServicios } from '@/lib/facturas-tipos';
 
@@ -82,6 +83,8 @@ type FilaFactura = {
   notas: string | null;
   cae: string | null;
   cae_vence_el: string | null;
+  ambiente: Factura['ambiente'];
+  sin_comprobante: boolean;
   emisores: { razon_social: string; evaluadoras: { nombre: string } | null } | null;
   empresas: { nombre: string } | null;
   inquilinos: { nombre: string } | null;
@@ -127,7 +130,7 @@ export async function listarFacturas(): Promise<Factura[]> {
   const filas = await select<FilaFactura>(
     'facturas',
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
-      'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,' +
+      'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(personas(nombre),pedidos(puesto)))' +
@@ -142,7 +145,7 @@ export async function verFactura(id: string): Promise<Factura | null> {
   const filas = await select<FilaFactura>(
     'facturas',
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
-      'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,' +
+      'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(personas(nombre),pedidos(puesto)))' +
@@ -172,6 +175,8 @@ function armarFactura(f: FilaFactura): Factura {
     notas: f.notas,
     cae: f.cae,
     caeVenceEl: f.cae_vence_el,
+    ambiente: f.ambiente,
+    sinComprobante: f.sin_comprobante,
     renglones: (f.factura_items ?? []).map((r) => ({
       id: r.id,
       evaluacionId: r.evaluacion_id,
@@ -242,8 +247,12 @@ export async function listarAFacturar(): Promise<Facturable[]> {
 
   const facturadas = new Set(renglones.map((r) => r.evaluacion_id));
 
+  // La empresa del portal de muestra no se factura: sus candidatos son
+  // inventados y existen para que un cliente vea el portal (`lib/portal-ejemplo.ts`).
   return evaluaciones
-    .filter((e) => !facturadas.has(e.id) && e.pedidos)
+    .filter(
+      (e) => !facturadas.has(e.id) && e.pedidos && !esEmpresaEjemplo(e.pedidos.empresas?.nombre)
+    )
     .map((e) => {
       const pedido = e.pedidos!;
       const suyos = precios.filter((p) => p.bateria_id === pedido.baterias?.id);
@@ -286,7 +295,11 @@ export async function listarAFacturar(): Promise<Facturable[]> {
  */
 export async function marchaMonotributo(hoy = new Date()): Promise<Marcha[]> {
   const [emisoras, facturas] = await Promise.all([listarEmisoras(), listarFacturas()]);
-  const emitidas = facturas.filter((f) => f.estado === 'emitida');
+  // Las de homologación tienen CAE pero son de prueba, y las que van con
+  // recibo no son facturas: ninguna de las dos entra en lo facturado.
+  const emitidas = facturas.filter(
+    (f) => f.estado === 'emitida' && f.ambiente !== 'homologacion' && !f.sinComprobante
+  );
   const { mes, anio, doce } = cortes(hoy);
   const meses = mesesDelAnio(hoy);
 
