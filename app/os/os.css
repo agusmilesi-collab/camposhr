@@ -17294,37 +17294,9 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   gap: 6px;
 }
 
-/* El estado de los informes del portal, con el mismo trato que el estado del
-   cliente: sin fondo ni borde, solo el punto, el texto y la flecha. */
-.os-cliente-pagina .os-cliente-fila .os-desplegable,
-.os-cliente-pagina .os-cliente-fila .os-desplegable-boton {
-  width: auto;
-  min-width: 0;
-}
-.os-cliente-pagina .os-cliente-fila .os-desplegable-boton {
-  height: auto;
-  padding: 0;
-  border: none;
-  background: transparent;
-  gap: 6px;
-}
-
-/* La fila del portal ocupa todo el ancho: el título y el estado de los
-   informes a la izquierda, ver y copiar el enlace contra el margen derecho. */
-.os-cliente-pagina .os-cliente-portal .os-cliente-fila-lado {
-  flex: 1;
-}
-.os-portal-enlace {
-  display: inline-flex;
-  gap: 10px;
-  margin-left: auto;
-}
-
-/* Los cuatro botones de la tarjeta del cliente (editar la empresa, ver y
-   copiar el enlace del portal, agregar un contacto) miden lo mismo: el ancho
-   que pide "Agregar contacto", que es el texto más largo. */
-.os-cliente-pagina .os-portal-enlace .os-boton,
-.os-cliente-pagina .os-portal-enlace .copiar,
+/* Los botones de las cabeceras de la tarjeta del cliente ("Editar empresa" y
+   "Agregar contacto") miden lo mismo: el ancho que pide "Agregar contacto",
+   que es el texto más largo. */
 .os-cliente-pagina .os-panel-top > .os-boton {
   width: 140px;
   min-width: 0;
