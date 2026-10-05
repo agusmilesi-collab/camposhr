@@ -1334,9 +1334,10 @@ se pide después con el botón "Pedir CAE a ARCA" de la banda del comprobante
 (acción `arca` de `/api/os/facturas`). Separadas, una factura que ARCA rechaza
 no se pierde: queda con su detalle y el motivo, y se vuelve a pedir.
 
-**El botón sale solo si la factura no tiene número.** Con número ya es una que
-salió por Comprobantes en Línea y se anotó acá; pedirle CAE sería emitirla dos
-veces. Por eso los formularios de carga manual arrancan con el punto de venta
+**El botón sale si la factura no tiene número, o si quedó en `borrador`.** Con
+número y `emitida` ya es una que salió por Comprobantes en Línea y se anotó
+acá; pedirle CAE sería emitirla dos veces. En `borrador` con número es la que
+se cortó a medio emitir, y pedir el CAE de nuevo es cómo se recupera. Por eso los formularios de carga manual arrancan con el punto de venta
 vacío: el de web services y el de Comprobantes en Línea son distintos.
 
 **Cada emisora tiene su ambiente** (`emisores.ambiente`). En homologación solo
@@ -1357,6 +1358,47 @@ se le pregunta a ARCA por ese comprobante antes de soltarlo.
 
 **Una factura con CAE no se borra.** Se anula con nota de crédito, que todavía
 no está hecha en el OS: se hace por Comprobantes en Línea.
+
+## Volver a pedir el CAE nunca emite dos veces
+
+`lib/arca/emitir.ts`. Entre que ARCA autoriza y el OS guarda el CAE puede
+cortarse todo (la función de Vercel dura 60 segundos y el SDK no tiene tiempo
+límite). La factura queda en `borrador`, con número reservado y sin CAE, y no
+se sabe en qué quedó. Por eso:
+
+- **Lo primero que hace un pedido es averiguar** (`averiguar`): si la fila
+  tiene número y `solicitud` y no tiene CAE, se le pregunta a ARCA. Si la
+  tiene, se guarda su CAE y no se pide nada. Solo si no la tiene se suelta el
+  número y se sigue. Lo mismo con una nota de crédito a medio hacer.
+- **`averiguar` mira primero el último autorizado.** `getVoucherInfo` devuelve
+  vacío tanto si el comprobante no existe como si ARCA falló; confundirlos es
+  soltar un número que está autorizado.
+- **La reserva del número es condicional** (`escribirSi`, con
+  `numero=is.null&cae=is.null`): dos pedidos sobre la misma factura no salen
+  los dos. `patch` no sirve para esto porque no dice cuántas filas tocó.
+- **La que se le va a pedir a ARCA nace en `borrador`** (emisora en producción
+  y sin número). Como `emitida` contaba para el monotributo y se podía cobrar
+  antes de existir.
+- **No se quita** una factura de producción con CAE ni una a medio emitir, y
+  no existe la acción que cambiaba el estado a mano.
+
+**Con una emisora en producción no se prueba la emisión**: cada pedido de CAE
+es una factura real, también desde el dev local, que usa la misma base. Las
+pruebas van con una emisora en homologación y la empresa de prueba.
+
+## El día de un comprobante es el de Argentina
+
+`hoyIso()` de `lib/hora.ts`, nunca `new Date().toISOString().slice(0, 10)`:
+Vercel corre en UTC y desde las 21:00 de acá ya es mañana. En un comprobante
+eso es la fecha de emisión corrida un día, y el último día del mes, de mes.
+
+## El OS solo responde en su host
+
+`middleware.ts`. La puerta de la clave está en la rama de os.camposhr.com, pero
+las pantallas de `/os` las sirve la misma aplicación en todos los hosts: por
+tools.camposhr.com se abrían sin clave. Desde cualquier otro host `/os/*`
+redirige al del OS y `/api/os/*` contesta 404. Una pantalla nueva del equipo va
+bajo `/os`; lo que tiene que abrir alguien de afuera va en otra ruta, con token.
 
 ## Lo que se cobra sin factura es una fila de `facturas`
 
