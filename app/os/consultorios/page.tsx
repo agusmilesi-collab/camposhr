@@ -197,15 +197,13 @@ export default async function Consultorios({
   const dirSala = (id: string | null) =>
     `/os/consultorios?ver=semana&mes=${mes}${id ? `&sala=${id}` : ''}`;
 
-  // La disponibilidad para quien pregunta por alquilar se abre sin la clave
-  // del OS: el enlace se manda por WhatsApp a alguien que todavía no tiene
-  // cuenta en ningún lado. Va por el dominio principal y no por
-  // centro.camposhr.com, que al 5/10/2026 no está dado de alta en Vercel y
-  // contesta 404.
+  // La disponibilidad para quien pregunta por alquilar vive en el host de los
+  // inquilinos, que es el que se abre sin la clave del OS: el enlace se manda
+  // por WhatsApp a alguien que todavía no tiene cuenta en ningún lado.
   const host = headers().get('host') ?? '';
   const dirOferta = host.startsWith('localhost')
     ? '/centro/disponibilidad'
-    : 'https://camposhr.com/centro/disponibilidad';
+    : 'https://centro.camposhr.com/centro/disponibilidad';
 
   return (
     <Shell
