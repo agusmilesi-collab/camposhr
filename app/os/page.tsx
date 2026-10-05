@@ -59,7 +59,7 @@ export default async function Inicio() {
    * columnas. Lo entregado no entra: un informe que se subió al portal ya está
    * listo, y se mira en Entregados.
    */
-  const enCurso = evaluaciones.filas.filter((e) => ABIERTAS.has(e.etapa));
+  const enCurso = evaluaciones.filas.filter((e) => ABIERTAS.has(e.etapa) && !e.baja);
 
   const abiertas = cotizaciones.filter((c) => ABIERTOS.includes(c.estado));
   const nombres = miembros.map((m) => m.nombre);

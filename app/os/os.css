@@ -17188,3 +17188,85 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   color: var(--os-rojo);
   white-space: normal;
 }
+
+/* Arriba de los datos de la persona: la pastilla de baja, si se dio de baja,
+   y el botón de editar, en fila. */
+.os-persona-acciones {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* La baja ya marcada, o su confirmación: el sello y los botones en la misma
+   fila que "Editar datos y CV". */
+.os-baja {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.os-baja-tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--os-tinta-media, #555);
+}
+
+.os-baja-texto {
+  max-width: 340px;
+  font-size: 0.78rem;
+  color: var(--os-tinta-media);
+}
+
+/* Eliminar el candidato, en el pie del cajón: un botón rojo del tamaño de los
+   demás y no un enlace, porque es lo único de esa pantalla que no se deshace y
+   tiene que verse. */
+.os-boton.os-borrar-candidato {
+  height: 36px;
+  padding: 0 18px;
+  font-size: 0.86rem;
+}
+
+/* La baja en la columna de nivel: gris, porque no hubo informe que la mida. */
+.os-nivel-tag.os-gris {
+  color: #5f5d58;
+  background: #e7e5e0;
+}
+
+/* El pie del cajón del candidato: "Se dio de baja" y "Eliminar candidato" en
+   una fila. Los textos de confirmación ocupan su propio renglón arriba de los
+   botones. */
+.os-cajon-riesgo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.os-cajon-riesgo > p,
+.os-cajon-riesgo .os-baja-texto {
+  flex-basis: 100%;
+  max-width: none;
+}
+
+.os-cajon-riesgo .os-form-pie {
+  margin: 0;
+}
+
+.os-cajon-riesgo.os-cajon-riesgo {
+  justify-content: flex-start;
+}
+
+/* Los dos botones del pie con el mismo alto y la misma letra. */
+.os-cajon-riesgo > .os-boton,
+.os-cajon-riesgo .os-baja .os-boton {
+  height: 36px;
+  padding: 0 18px;
+  font-size: 0.86rem;
+  margin: 0;
+}

@@ -30,14 +30,18 @@ const CERRADAS = new Set(['Entregado', 'Seguimiento']);
 
 /** Sin dueño y todavía abierta: es lo que hay que repartir. */
 export function sinDuena(f: Evaluacion): boolean {
-  return !f.evaluadora && !CERRADAS.has(f.etapa);
+  return !f.evaluadora && !CERRADAS.has(f.etapa) && !f.baja;
 }
 
 export function visiblesEn(filas: Evaluacion[], seccion: Seccion, yo: Miembro): Evaluacion[] {
   const etapas = new Set<string>(seccion.etapas);
   const cerrada = seccion.etapas.every((e) => CERRADAS.has(e));
   return filas.filter((f) =>
-    sinDuena(f)
+    // Una baja ya no es trabajo de nadie: sale de los tableros y queda en
+    // Entregados, que es donde se consulta lo que terminó.
+    f.baja
+      ? seccion.ruta === 'entregados'
+      : sinDuena(f)
       ? seccion.ruta === 'entrevistas'
       : etapas.has(f.etapa) && (cerrada || f.evaluadora) && esMia(f.evaluadora, yo)
   );

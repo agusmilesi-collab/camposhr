@@ -217,25 +217,31 @@ function Datos({
         clase="os-ficha-datos-aire"
         dos
         accion={
-          <Editar
-            datos={{
-              id,
-              origen: 'supabase',
-              nombre: c.personas?.nombre ?? '',
-              empresa: c.pedidos?.empresas?.nombre ?? '',
-              puesto: c.pedidos?.puesto ?? '',
-              pedidoId: c.pedido_id,
-              email: c.personas?.email ?? null,
-              telefono: c.personas?.telefono ?? null,
-              evaluadora: c.evaluadoras?.nombre ?? null,
-              etapa: c.estado,
-              fechaEntrevista: c.fecha_entrevista,
-              modalidad: c.modalidad,
-              tieneCv: Boolean(c.personas?.cv_path),
-            }}
-            pedidos={pedidos}
-            evaluadoras={evaluadoras}
-          />
+          <span className="os-persona-acciones">
+            {/* La baja se marca adentro del cajón; acá solo se avisa que la
+                persona ya no está en el proceso. */}
+            {c.baja_el && <span className="os-baja-tag">Baja · {fechaCorta(c.baja_el)}</span>}
+            <Editar
+              datos={{
+                id,
+                origen: 'supabase',
+                nombre: c.personas?.nombre ?? '',
+                empresa: c.pedidos?.empresas?.nombre ?? '',
+                puesto: c.pedidos?.puesto ?? '',
+                pedidoId: c.pedido_id,
+                email: c.personas?.email ?? null,
+                telefono: c.personas?.telefono ?? null,
+                evaluadora: c.evaluadoras?.nombre ?? null,
+                etapa: c.estado,
+                fechaEntrevista: c.fecha_entrevista,
+                modalidad: c.modalidad,
+                tieneCv: Boolean(c.personas?.cv_path),
+                baja: c.baja_el ?? null,
+              }}
+              pedidos={pedidos}
+              evaluadoras={evaluadoras}
+            />
+          </span>
         }
       >
         <Dato rotulo="Empresa">{c.pedidos?.empresas?.nombre ?? <Falta texto="sin empresa" />}</Dato>

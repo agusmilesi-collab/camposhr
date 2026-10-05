@@ -156,10 +156,18 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
       if (e.ravenMedida?.raw !== null && e.ravenMedida?.raw !== undefined) {
         return <span className="os-sello-estado os-test-estado os-verde">Administrado</span>;
       }
-      const r = SELLO_RAVEN[e.raven];
+      /* Como todos los tests de la lista: administrado o no. En qué anda el
+         enlace (sin mandar, sin abrir, respondiendo) queda al pasar el mouse
+         y en el bloque de abajo, que es donde se manda y se sigue. */
+      if (e.raven === 'terminado') {
+        return <span className="os-sello-estado os-test-estado os-verde">Administrado</span>;
+      }
       return (
-        <span className={`os-sello-estado os-test-estado ${r.color}`} title={r.detalle}>
-          {r.texto}
+        <span
+          className="os-sello-estado os-test-estado os-rojo"
+          title={SELLO_RAVEN[e.raven].detalle}
+        >
+          No administrado
         </span>
       );
     }
@@ -169,7 +177,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
          potencial, y decir "Administrado" antes escondería lo que falta. */
       const tomado = Boolean(e.competencias) && (!conDiscursivo || potencialTomado);
       return (
-        <span className={`os-sello-estado os-test-estado ${tomado ? 'os-verde' : 'os-gris'}`}>
+        <span className={`os-sello-estado os-test-estado ${tomado ? 'os-verde' : 'os-rojo'}`}>
           {tomado ? 'Administrado' : 'No administrado'}
         </span>
       );

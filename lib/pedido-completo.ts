@@ -23,7 +23,7 @@ import { ABIERTO } from '@/lib/pedido-campos';
 type Fila = {
   id: string;
   estado: string;
-  evaluaciones: { estado: string | null }[];
+  evaluaciones: { estado: string | null; baja_el: string | null }[];
 };
 
 /** Las etapas en las que el informe ya salió. */
@@ -57,7 +57,7 @@ async function revisar(evaluacionId: string): Promise<string | null> {
 
   const filas = await select<Fila>(
     'pedidos',
-    `select=id,estado,evaluaciones(estado)&id=eq.${pedidoId}&limit=1`
+    `select=id,estado,evaluaciones(estado,baja_el)&id=eq.${pedidoId}&limit=1`
   );
   const p = filas[0];
   if (!p) return null;
@@ -66,8 +66,12 @@ async function revisar(evaluacionId: string): Promise<string | null> {
   if (p.estado !== ABIERTO && p.estado !== 'Finalizado') return null;
 
   const evaluaciones = p.evaluaciones ?? [];
+  // Quien se dio de baja ya no espera informe: no deja el pedido abierto. Pero
+  // si todos se dieron de baja la búsqueda no terminó, sigue esperando a
+  // alguien que la complete.
+  const entregada = (e: { estado: string | null }) => Boolean(e.estado && ENTREGADAS.has(e.estado));
   const terminado =
-    evaluaciones.length > 0 && evaluaciones.every((e) => e.estado && ENTREGADAS.has(e.estado));
+    evaluaciones.some(entregada) && evaluaciones.every((e) => entregada(e) || e.baja_el);
   const debeSer = terminado ? 'Finalizado' : ABIERTO;
   if (p.estado === debeSer) return null;
 

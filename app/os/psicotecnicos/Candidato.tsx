@@ -17,6 +17,7 @@
  * sacárselo la trae de vuelta.
  */
 
+import Baja from './Baja';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
@@ -49,6 +50,8 @@ export type DatosDelCandidato = {
   modalidad?: string | null;
   /** Si la persona ya tiene el CV guardado. */
   tieneCv: boolean;
+  /** El día en que se dio de baja del proceso, si se dio. */
+  baja?: string | null;
 };
 
 export default function Candidato({
@@ -344,6 +347,9 @@ export default function Candidato({
 
           {editable && (
             <div className="os-cajon-riesgo">
+              {/* Darse de baja deja el registro; eliminar lo borra. Las dos
+                  van juntas porque las dos sacan a la persona del proceso. */}
+              {!confirmando && <Baja id={e.id} nombre={e.nombre} baja={e.baja ?? null} />}
               {confirmando ? (
                 <>
                   <p>
@@ -371,10 +377,10 @@ export default function Candidato({
               ) : (
                 <button
                   type="button"
-                  className="os-enlace-boton os-enlace-peligro"
+                  className="os-boton os-boton-peligro os-borrar-candidato"
                   onClick={() => setConfirmando(true)}
                 >
-                  Borrar el candidato
+                  Eliminar candidato
                 </button>
               )}
             </div>

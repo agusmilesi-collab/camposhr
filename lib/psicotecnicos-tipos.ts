@@ -270,4 +270,10 @@ export type Evaluacion = {
   /** La prioridad fijada a mano. Null: la que dan los días de espera. */
   prioridad: Prioridad | null;
   prueba: boolean;
+  /**
+   * El día en que la persona se dio de baja del proceso, si se dio. Es una
+   * marca y no una etapa: la etapa sigue diciendo hasta dónde llegó. Con baja,
+   * la evaluación sale de los tableros y se lee en Entregados.
+   */
+  baja?: string | null;
 };

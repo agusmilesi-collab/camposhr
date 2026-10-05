@@ -120,6 +120,8 @@ export type Candidato = {
    * lo demás y en lo que sigue en Airtable.
    */
   cargadoPor?: string | null;
+  /** El día en que se dio de baja del proceso, si se dio. */
+  baja?: string | null;
 };
 
 export type Busqueda = {
