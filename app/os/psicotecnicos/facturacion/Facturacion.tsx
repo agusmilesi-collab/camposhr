@@ -82,25 +82,36 @@ const COLUMNAS_EMITIDAS = [
  * busca la fila.
  */
 const PROPIOS_EMITIDAS = {
-  Fecha: 116,
-  'Número': 120,
-  /* "Lorena Campos" entra entera; el cliente cede, que casi todos son cortos. */
-  Emisora: 140,
-  Cliente: 140,
-  /* Entra "3 evaluaciones" con el chevron al lado: con los 112 de antes el
-     rótulo se cortaba en puntos suspensivos apenas la celda pasó a ser botón. */
-  Cubre: 156,
-  /* Entran la fecha con el botón del recibo al lado, o "Sí, cobrada" con
-     "No". Medido en pantalla: piden 148 px más los 28 del relleno de la celda.
-     El del recibo es un ícono y no la palabra: con la palabra hacían falta 207,
-     y esa plata salía del cliente y del importe, que se cortaban. */
-  Cobro: 194,
-  Importe: 134,
-  /* La columna de la acción mide lo que mide "Quitar", y no los 166 de las
-     tablas del pipeline, que llevaban botones de dos palabras. */
-  '': 96,
+  /* "05/10/26", entera aun con la pantalla angosta. */
+  Fecha: 96,
+  'Número': 106,
+  /* Solo el nombre: son dos, y el apellido es el mismo. */
+  Emisora: 90,
+  /* El cliente se queda con lo que soltaron la emisora y el hueco que había
+     entre "Cubre" y el importe. */
+  Cliente: 112,
+  /* Entra "6 evaluaciones" con el chevron al lado. */
+  Cubre: 150,
+  Importe: 132,
+  /* Entran "Marcar como cobrado", la fecha con el botón del recibo al lado, o
+     "Sí, cobrada" con "No". */
+  Cobro: 174,
+  /* Entran "Emitir NC" y, al lado, el ícono de quitar. */
+  '': 124,
 };
 const MEDIDAS_EMITIDAS = columnas(COLUMNAS_EMITIDAS, PROPIOS_EMITIDAS);
+/* En Cobrado la celda del cobro lleva la fecha y el ícono del recibo, que
+   piden menos que "Marcar como cobrado". Lo que sobra va al número, que ahí
+   suele ser una orden de compra, y al cliente. */
+const MEDIDAS_COBRADAS = columnas(COLUMNAS_EMITIDAS, {
+  ...PROPIOS_EMITIDAS,
+  'Número': 104,
+  Emisora: 88,
+  Cliente: 120,
+  Cubre: 150,
+  Importe: 134,
+  Cobro: 168,
+});
 
 /** Las de las anuladas: la factura, y la nota de crédito que la anuló. */
 const COLUMNAS_ANULADAS = ['Fecha', 'Factura', 'Emisora', 'Cliente', 'Importe', 'Nota de crédito', 'Anulada el'];
@@ -136,6 +147,17 @@ async function mandar(cuerpo: unknown) {
 }
 
 const hoy = hoyIso;
+
+/** "Lorena" de "Lorena Campos". Lo que no es un nombre va como está. */
+function nombreDe(emisora: string): string {
+  return emisora.startsWith('sin ') ? emisora : emisora.split(' ')[0];
+}
+
+/** "05/10/26": la fecha entera en el menor ancho, para las tablas. */
+function fechaBreve(iso: string | null): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? '');
+  return m ? `${m[3]}/${m[2]}/${m[1].slice(2)}` : '—';
+}
 
 /** A cuántas personas cubre una factura, sin contar los adicionales. */
 const cubre = (f: Factura) => f.renglones.filter((r) => r.evaluacionId !== null).length;
@@ -633,9 +655,12 @@ function DatoFiscal({ rotulo, valor }: { rotulo: string; valor: string | null | 
  */
 export function Emitidas({
   facturas,
+  ordenes = {},
   solo,
 }: {
   facturas: Factura[];
+  /** Cómo se nombra cada una de las que van sin factura: "OC #0065". */
+  ordenes?: Record<string, string>;
   /** Qué mitad mostrar, cuando cada una vive en su pestaña. */
   solo?: 'sin-cobrar' | 'cobrado';
 }) {
@@ -649,7 +674,9 @@ export function Emitidas({
       : solo === 'sin-cobrar'
         ? facturas.filter((f) => !f.cobradaAt)
         : facturas;
-  const visibles = buscado ? todas.filter((f) => llano(textoDe(f)).includes(buscado)) : todas;
+  const visibles = buscado
+    ? todas.filter((f) => llano(`${textoDe(f)} ${ordenes[f.id] ?? ''}`).includes(buscado))
+    : todas;
   const sinCobrar = solo === 'cobrado' ? [] : visibles.filter((f) => !f.cobradaAt);
   const cobradas = solo === 'sin-cobrar' ? [] : visibles.filter((f) => f.cobradaAt);
   const pendiente = sinCobrar.reduce((n, f) => n + (f.importe ?? 0), 0);
@@ -699,7 +726,7 @@ export function Emitidas({
         <>
           {!solo && <div className="os-rotulo-bloque">Facturado y sin cobrar</div>}
           <div className="os-panel">
-            <TablaEmitidas facturas={sinCobrar} />
+            <TablaEmitidas facturas={sinCobrar} ordenes={ordenes} />
             <div className="os-resumen-linea">
               <span>
                 <span className="os-dato-rotulo">Sin cobrar</span>
@@ -718,7 +745,7 @@ export function Emitidas({
         <>
           {!solo && <div className="os-rotulo-bloque">Cobrado</div>}
           <div className="os-panel">
-            <TablaEmitidas facturas={cobradas} />
+            <TablaEmitidas facturas={cobradas} ordenes={ordenes} medidas={MEDIDAS_COBRADAS} />
           </div>
         </>
       )}
@@ -763,7 +790,15 @@ function llano(t: string): string {
  * comprobante de cada factura en otra pestaña. Ahora la fila se despliega y los
  * nombres quedan debajo, con su puesto y lo que se cobró por cada uno.
  */
-function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
+function TablaEmitidas({
+  facturas,
+  ordenes,
+  medidas = MEDIDAS_EMITIDAS,
+}: {
+  facturas: Factura[];
+  ordenes: Record<string, string>;
+  medidas?: string[];
+}) {
   const [abierta, setAbierta] = useState<string | null>(null);
 
   return (
@@ -771,7 +806,7 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
       <table className="os-tabla os-tabla-trabajo os-tabla-fija">
         <colgroup>
           {COLUMNAS_EMITIDAS.map((c, i) => (
-            <col key={c} style={{ width: MEDIDAS_EMITIDAS[i] }} />
+            <col key={c} style={{ width: medidas[i] }} />
           ))}
         </colgroup>
         <thead>
@@ -795,7 +830,7 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
             return (
             <Fragmento key={f.id}>
             <tr>
-              <td data-campo="Fecha">{formatoFecha(f.fecha)}</td>
+              <td className="os-tabla-fecha" data-campo="Fecha">{fechaBreve(f.fecha)}</td>
               <td className="os-tabla-nombre" data-campo="Número">
                 <a
                   className="os-tabla-enlace"
@@ -808,11 +843,11 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
                   }
                   target="_blank"
                 >
-                  {f.sinComprobante ? 'Sin factura' : numeroDe(f)}
+                  {f.sinComprobante ? ordenes[f.id] ?? 'Sin factura' : numeroDe(f)}
                 </a>
               </td>
               <td className="os-tabla-recorta" data-campo="Emisora">
-                {f.emisora}
+                {nombreDe(f.emisora)}
               </td>
               <td className="os-tabla-recorta" data-campo="Cliente">
                 {f.cliente}
@@ -874,11 +909,23 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
               <td className="os-tabla-accion" data-campo=" ">
                 {/* La que ARCA autorizó no se quita: existe en ARCA, se borre
                     de acá o no. Se anula con una nota de crédito. */}
-                {f.cae ? (
-                  <AnularFactura id={f.id} numero={numeroDe(f)} cobrada={Boolean(f.cobradaAt)} />
-                ) : (
-                  <BorrarFactura id={f.id} numero={numeroDe(f)} />
-                )}
+                {/* El botón está en todas las filas, para que se sepa dónde
+                    vive; solo se puede apretar en las que tienen CAE. */}
+                <AnularFactura
+                  id={f.id}
+                  numero={numeroDe(f)}
+                  cobrada={Boolean(f.cobradaAt)}
+                  noSePuede={
+                    f.cae
+                      ? null
+                      : f.sinComprobante
+                        ? 'Va con orden de compra y sin factura: no hay comprobante que anular.'
+                        : f.numero === null
+                          ? 'Todavía no tiene CAE: no hace falta nota de crédito, se quita.'
+                          : 'Esta factura no se emitió desde el OS. Su nota de crédito se hace en Comprobantes en Línea.'
+                  }
+                />
+                {!f.cae && <BorrarFactura id={f.id} numero={numeroDe(f)} />}
               </td>
             </tr>
 
@@ -956,13 +1003,13 @@ export function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null 
     return (
       <span className="os-cobro-confirma">
         <button
-          className="os-boton os-boton-firme"
+          className="os-boton os-boton-menudo os-boton-firme"
           disabled={tocando}
           onClick={() => cambiar(cobradaAt ? null : hoy())}
         >
-          {tocando ? '…' : cobradaAt ? 'Sí, sin cobrar' : 'Sí, cobrada'}
+          {tocando ? '…' : cobradaAt ? 'Sí, quitar' : 'Sí, cobrada'}
         </button>
-        <button className="os-boton" disabled={tocando} onClick={() => setSeguro(false)}>
+        <button className="os-boton os-boton-menudo" disabled={tocando} onClick={() => setSeguro(false)}>
           No
         </button>
       </span>
@@ -980,7 +1027,7 @@ export function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null 
           title="Cobrada. Tocar para volver a dejarla sin cobrar."
           onClick={() => setSeguro(true)}
         >
-          {formatoFecha(cobradaAt)}
+          {fechaBreve(cobradaAt)}
         </button>
         <a
           className="os-boton os-boton-icono"
@@ -1000,11 +1047,11 @@ export function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null 
 
   return (
     <button
-      className="os-boton os-boton-marcado os-sello-estado os-gris"
+      className="os-boton os-boton-marcado os-boton-menudo"
       title="Todavía sin cobrar. Tocar para marcar que entró la plata."
       onClick={() => setSeguro(true)}
     >
-      Sin cobrar
+      Marcar como cobrado
     </button>
   );
 }
@@ -1014,30 +1061,72 @@ export function BorrarFactura({ id, numero }: { id: string; numero: string }) {
   const [borrando, setBorrando] = useState(false);
   const [seguro, setSeguro] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
+  // En reposo es un ícono y no un botón con texto: está en todas las filas y
+  // es lo que menos se usa. Recién al tocarlo aparece la palabra.
   if (!seguro) {
     return (
-      <button className="os-boton" onClick={() => setSeguro(true)} title={`Quitar la factura ${numero}`}>
-        Quitar
+      <button
+        className="os-boton os-boton-icono os-quitar"
+        onClick={() => {
+          setError(null);
+          setSeguro(true);
+        }}
+        title={`Quitar la factura ${numero}`}
+        aria-label={`Quitar la factura ${numero}`}
+      >
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+          <path
+            d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8h5.8l.6-8M6.8 7v3.5M9.2 7v3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </button>
     );
   }
 
+  // La confirmación dice qué va a pasar y trae cómo arrepentirse. Si se sale
+  // de ahí sin tocar nada, vuelve sola al ícono.
   return (
-    <button
-      className="os-boton os-boton-peligro"
-      disabled={borrando}
-      onClick={async () => {
-        setBorrando(true);
-        try {
-          await mandar({ accion: 'borrar', id });
-          router.refresh();
-        } finally {
-          setBorrando(false);
-        }
+    <span
+      className="os-quitar-seguro"
+      onBlur={(e) => {
+        if (!borrando && !e.currentTarget.contains(e.relatedTarget)) setSeguro(false);
       }}
     >
-      {borrando ? 'Quitando…' : 'Confirmar'}
-    </button>
+      {error && <span className="os-anular-error">{error}</span>}
+      <button
+        className="os-boton os-boton-menudo os-quitar-no"
+        disabled={borrando}
+        onClick={() => setSeguro(false)}
+      >
+        Cancelar
+      </button>
+      <button
+        className="os-boton os-boton-menudo os-boton-peligro"
+        autoFocus
+        disabled={borrando}
+        onClick={async () => {
+          setBorrando(true);
+          setError(null);
+          try {
+            await mandar({ accion: 'borrar', id });
+            router.refresh();
+          } catch (e) {
+            setError(e instanceof Error ? e.message : 'No se pudo quitar.');
+          } finally {
+            setBorrando(false);
+          }
+        }}
+      >
+        {borrando ? 'Quitando…' : 'Quitar'}
+      </button>
+    </span>
   );
 }
 
@@ -1050,35 +1139,46 @@ export function BorrarFactura({ id, numero }: { id: string; numero: string }) {
  *
  * Una cobrada no se anula: primero se desmarca el cobro.
  */
-function AnularFactura({ id, numero, cobrada }: { id: string; numero: string; cobrada: boolean }) {
+function AnularFactura({
+  id,
+  numero,
+  cobrada,
+  noSePuede = null,
+}: {
+  id: string;
+  numero: string;
+  cobrada: boolean;
+  /** Por qué esta fila no admite nota de crédito; null si la admite. */
+  noSePuede?: string | null;
+}) {
   const router = useRouter();
   const [seguro, setSeguro] = useState(false);
   const [anulando, setAnulando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (cobrada) {
+  if (noSePuede || cobrada) {
     return (
-      <button
-        className="os-boton"
-        disabled
-        title="Está cobrada. Para anularla, primero desmarcá el cobro."
-      >
-        Anular
-      </button>
+      // El motivo va en un envoltorio: un botón apagado no muestra su leyenda
+      // al apuntarlo.
+      <span title={noSePuede ?? 'Está cobrada. Para anularla, primero desmarcá el cobro.'}>
+        <button className="os-boton os-boton-menudo" disabled>
+          Emitir NC
+        </button>
+      </span>
     );
   }
   if (!seguro) {
     return (
       <>
         <button
-          className="os-boton"
+          className="os-boton os-boton-menudo"
           onClick={() => {
             setError(null);
             setSeguro(true);
           }}
           title={`Anular la factura ${numero} con una nota de crédito`}
         >
-          Anular
+          Emitir NC
         </button>
         {error && <div className="os-anular-error">{error}</div>}
       </>
@@ -1106,7 +1206,7 @@ function AnularFactura({ id, numero, cobrada }: { id: string; numero: string; co
         }
       }}
     >
-      {anulando ? 'Anulando…' : 'Confirmar'}
+      {anulando ? 'Emitiendo…' : 'Sí, emitir nota'}
     </button>
   );
 }
@@ -1151,7 +1251,7 @@ export function Anuladas({
               const nota = notas[f.id];
               return (
                 <tr key={f.id}>
-                  <td data-campo="Fecha">{formatoFecha(f.fecha)}</td>
+                  <td className="os-tabla-fecha" data-campo="Fecha">{fechaBreve(f.fecha)}</td>
                   <td className="os-tabla-nombre" data-campo="Factura">
                     <a
                       className="os-tabla-enlace"
@@ -1162,7 +1262,7 @@ export function Anuladas({
                     </a>
                   </td>
                   <td className="os-tabla-recorta" data-campo="Emisora">
-                    {f.emisora}
+                    {nombreDe(f.emisora)}
                   </td>
                   <td className="os-tabla-recorta" data-campo="Cliente">
                     {f.cliente}

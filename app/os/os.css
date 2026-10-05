@@ -3409,6 +3409,40 @@ button.os-enlace-peligro:hover {
   color: #fff;
 }
 
+/* Quitar una factura. En reposo, un ícono gris que se pone rojo al apuntarlo;
+   al tocarlo, la confirmación con su salida al lado. */
+.os-boton.os-quitar {
+  border-color: transparent;
+  background: transparent;
+  color: var(--os-tinta-media);
+  opacity: 0.6;
+}
+
+.os-boton.os-quitar:hover:not(:disabled) {
+  border-color: rgba(140, 59, 59, 0.3);
+  background: rgba(140, 59, 59, 0.07);
+  color: var(--os-rojo);
+  opacity: 1;
+}
+
+.os-quitar-seguro {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Mientras se confirma, la celda es solo de la confirmación: con "Emitir NC"
+   al lado no entraban los tres y "Cancelar" salía cortado. */
+.os-tabla-accion:has(.os-quitar-seguro) > :not(.os-quitar-seguro) {
+  display: none;
+}
+
+.os-boton.os-quitar-no {
+  border-color: transparent;
+  background: transparent;
+  color: var(--os-tinta-media);
+}
+
 /* Al apuntarlo se aclara, pero sigue rojo: sin repetir acá el fondo y el borde
    se los ponía el hover de `.os-boton`, que pesa lo mismo y es de fondo claro,
    y la letra blanca del botón quedaba ilegible sobre él. */
@@ -3543,6 +3577,13 @@ button.os-enlace-peligro:hover {
      tarjeta propone hacer. */
   border-color: var(--os-linea);
   color: var(--os-tinta-media);
+}
+
+/* Los botones de una fila de tabla que se repiten en todas: más chicos, para
+   que no pesen más que los datos. */
+.os-boton.os-boton-menudo {
+  padding: 4px 9px;
+  font-size: 0.76rem;
 }
 
 .os-boton-marcado:hover:not(:disabled) {
@@ -9893,6 +9934,14 @@ html[data-os-tema='oscuro'] .os-bz-cerebro {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* La fecha no se recorta nunca: "05/1…" no dice nada. Si la columna queda
+   justa, usa el aire de su derecha antes que cortarse. */
+.os-tabla-fija td.os-tabla-fecha {
+  overflow: visible;
+  text-overflow: clip;
+  padding-right: 4px;
 }
 
 .os-tabla-fija .os-tabla-nombre {

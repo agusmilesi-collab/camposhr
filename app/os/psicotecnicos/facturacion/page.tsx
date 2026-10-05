@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Shell from '../../Shell';
+import { ordenPorEvaluacion } from '@/lib/orden-compra';
 import { AFacturar, Anuladas, Emitidas } from './Facturacion';
 import {
   listarAFacturar,
@@ -73,6 +74,18 @@ export default async function Facturacion({
    */
   const vivas = facturas.filter((f) => f.estado !== 'anulada' && esDePsicotecnicos(f));
   const sinCobrar = vivas.filter((f) => f.cobradaAt === null);
+
+  // Lo que va sin factura se nombra por su orden de compra, que es el papel
+  // que sí tiene. Pueden ser varias: una por cada carga de candidatos.
+  const sinFactura = vivas.filter((f) => f.sinComprobante);
+  const ordenDe = await ordenPorEvaluacion(
+    sinFactura.flatMap((f) => f.renglones.map((r) => r.evaluacionId ?? ''))
+  );
+  const ordenes: Record<string, string> = {};
+  for (const f of sinFactura) {
+    const numeros = [...new Set(f.renglones.map((r) => ordenDe.get(r.evaluacionId ?? '')).filter(Boolean))].sort();
+    if (numeros.length > 0) ordenes[f.id] = `OC ${numeros.map((n) => `#${n}`).join(', ')}`;
+  }
 
   const cobradas = vivas.filter((f) => f.cobradaAt !== null);
   // Las que se anularon con nota de crédito. Sus renglones ya soltaron a las
@@ -194,8 +207,8 @@ export default async function Facturacion({
           conRotulo={false}
         />
       )}
-      {ver === 'sin-cobrar' && <Emitidas facturas={vivas} solo="sin-cobrar" />}
-      {ver === 'cobrado' && <Emitidas facturas={vivas} solo="cobrado" />}
+      {ver === 'sin-cobrar' && <Emitidas facturas={vivas} ordenes={ordenes} solo="sin-cobrar" />}
+      {ver === 'cobrado' && <Emitidas facturas={vivas} ordenes={ordenes} solo="cobrado" />}
       {ver === 'anuladas' && <Anuladas facturas={anuladas} notas={notas} />}
     </Shell>
   );
