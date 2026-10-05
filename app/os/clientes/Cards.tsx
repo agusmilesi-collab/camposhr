@@ -5,7 +5,7 @@
  *
  * Antes era una tabla de datos de facturación: razón social, CUIT, IVA. Eso es
  * lo que se necesita el día que se factura, y no lo que se busca al entrar, que
- * es el cliente: cuántos pedidos tiene abiertos y cómo vienen. La ficha
+ * es el cliente: cuánta gente tiene en curso y cómo viene. La ficha
  * muestra eso y el resto está adentro.
  *
  * **Entrar a un cliente es entrar a sus pedidos.** Los pedidos dejaron de ser
@@ -21,7 +21,8 @@ import { diasDesde, fechaCorta, haceCuanto } from '@/lib/hora';
 import type { Cliente } from '@/lib/clientes';
 
 /**
- * El peso de un cliente: su parte de todas las evaluaciones, en porcentaje.
+ * La contribución de un cliente: su parte de todas las evaluaciones, en
+ * porcentaje.
  * Por debajo del uno se dice así, porque "0 %" parece que no tiene ninguna.
  */
 function peso(suyas: number, total: number): string {
@@ -30,13 +31,13 @@ function peso(suyas: number, total: number): string {
   return p < 1 ? '<1 %' : `${Math.round(p)} %`;
 }
 
-/** Cuántos pedidos tiene abiertos y cuánta gente hay adentro. */
+/**
+ * Cuánta gente tiene en proceso: candidatos sin informe entregado y sin baja.
+ * Los ya entregados de un pedido que sigue abierto no cuentan, porque para
+ * ellos el trabajo terminó.
+ */
 function enCurso(c: Cliente) {
-  const abiertos = c.susPedidos.filter((p) => p.estado === 'En curso');
-  return {
-    abiertos: abiertos.length,
-    gente: abiertos.reduce((n, p) => n + p.evaluaciones, 0),
-  };
+  return { gente: c.susPedidos.reduce((n, p) => n + p.enProceso, 0) };
 }
 
 export default function Cards({ clientes }: { clientes: Cliente[] }) {
@@ -91,7 +92,7 @@ function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
       <div className="os-tabla-marco">
         <table className="os-tabla os-tabla-clientes">
           <colgroup>
-            {[40, 21, 11, 13, 15].map((w, i) => (
+            {[46, 24, 14, 16].map((w, i) => (
               <col key={i} style={{ width: `${w}%` }} />
             ))}
           </colgroup>
@@ -99,14 +100,13 @@ function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
             <tr>
               <th>Cliente</th>
               <th>Último pedido</th>
-              <th className="os-tabla-num">Pedidos abiertos</th>
-              <th className="os-tabla-num">Candidatos en curso</th>
-              <th className="os-tabla-num">Peso</th>
+              <th className="os-tabla-num">En curso</th>
+              <th className="os-tabla-num">Contribución</th>
             </tr>
           </thead>
           <tbody>
             {clientes.map((c) => {
-              const { abiertos, gente } = enCurso(c);
+              const { gente } = enCurso(c);
               return (
                 <tr key={c.id ?? c.nombre} className={c.activa ? '' : 'os-fila-apagada'}>
                   <td data-campo="Cliente">
@@ -141,17 +141,14 @@ function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
                       <span className="os-tabla-flojo">—</span>
                     )}
                   </td>
-                  <td data-campo="Pedidos abiertos" className="os-tabla-num">
-                    <strong className={abiertos === 0 ? 'os-tabla-flojo' : ''}>{abiertos}</strong>
-                  </td>
-                  <td data-campo="Candidatos en curso" className="os-tabla-num">
+                  <td data-campo="En curso" className="os-tabla-num">
                     <strong className={gente === 0 ? 'os-tabla-flojo' : ''}>{gente}</strong>
                   </td>
                   {/* Qué parte de todas las evaluaciones hechas son de este
                       cliente: cuánto pesa en el trabajo. El número de
                       evaluaciones queda al pasar el mouse. */}
                   <td
-                    data-campo="Peso"
+                    data-campo="Contribución"
                     className="os-tabla-num"
                     title={`${c.evaluaciones} de ${total} evaluaciones`}
                   >

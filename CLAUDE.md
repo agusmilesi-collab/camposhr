@@ -1217,7 +1217,8 @@ activos hasta que se migren.
 
 **Activo son dos cosas a la vez y las dos tienen que darse**: la marca de la
 base, que es la decisión de alguien, y que haya trabajo **en curso**, o sea un
-pedido abierto o una cotización que salió y todavía no se perdió. La marca nace
+pedido abierto o una cotización Enviada (espera respuesta) o Aprobada (el
+trabajo se está haciendo). Una Entregada es un trabajo terminado. La marca nace
 en verdadero y nadie la toca, así que sola decía que estaba activo un cliente al
 que nunca se le hizo nada.
 
