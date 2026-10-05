@@ -35,6 +35,7 @@ export default function Placas({
   test,
   total,
   fuente,
+  seguir,
 }: {
   test: string;
   total: number;
@@ -43,6 +44,12 @@ export default function Placas({
    * sesión; la persona evaluada entra con un token y las suyas salen de otra.
    */
   fuente?: string;
+  /**
+   * A quién preguntarle qué lámina mostrar. Es para la pantalla de la persona
+   * evaluada, que está en otra máquina: el canal entre pestañas no le llega,
+   * así que consulta al servidor lo que marcó la evaluadora.
+   */
+  seguir?: string;
 }) {
   const origen = fuente ?? `/api/os/lamina/${test}`;
   const [lamina, setLamina] = useState(1);
@@ -134,6 +141,45 @@ export default function Placas({
       c.close();
     };
   }, [ir]);
+
+  /**
+   * Seguir a la evaluadora desde otra máquina.
+   *
+   * Se mueve solo cuando lo que dice el servidor **cambia**, y no cada vez que
+   * difiere de lo que se muestra: la persona puede haber pasado de lámina por
+   * su cuenta, y volver a ponerle la anterior cada segundo y medio se lo
+   * impediría. La evaluadora manda en cuanto pasa a otra.
+   */
+  useEffect(() => {
+    if (!seguir) return;
+    let ultima: number | null = null;
+    let vivo = true;
+    const preguntar = async () => {
+      try {
+        const res = await fetch(seguir, { cache: 'no-store' });
+        if (!res.ok) return;
+        const r: { lamina: number | null } = await res.json();
+        if (!vivo || r.lamina === null || r.lamina === ultima) return;
+        ultima = r.lamina;
+        if (r.lamina !== laminaAhora.current) ir(r.lamina, false);
+      } catch {
+        // Se corta la red un momento: la vuelta siguiente lo resuelve.
+      }
+    };
+    preguntar();
+    const reloj = window.setInterval(preguntar, 1500);
+    // Al volver a la pestaña no se espera al reloj, que el navegador frena
+    // mientras está atrás.
+    const alVolver = () => {
+      if (document.visibilityState === 'visible') preguntar();
+    };
+    document.addEventListener('visibilitychange', alVolver);
+    return () => {
+      vivo = false;
+      window.clearInterval(reloj);
+      document.removeEventListener('visibilitychange', alVolver);
+    };
+  }, [seguir, ir]);
 
   // Las flechas del teclado mueven la lámina: durante la administración las
   // manos están en otra cosa y buscar un botón chico con el mouse se nota.

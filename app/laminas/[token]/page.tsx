@@ -13,9 +13,9 @@ export const metadata = { title: 'Láminas — Campos HR', robots: { index: fals
  * con un token en vez de la clave del equipo: en la encuesta la persona señala
  * dónde vio cada cosa, y para eso necesita la lámina con su propio cursor.
  *
- * No se mueve sola con la pantalla de codificación: ese aviso viaja entre
- * pestañas de un mismo navegador y acá hay dos máquinas. La persona pasa de
- * lámina cuando la evaluadora se lo pide.
+ * Sigue a la pantalla de codificación preguntándole al servidor: el aviso que
+ * mueve las dos pantallas de la evaluadora viaja entre pestañas de un mismo
+ * navegador, y acá hay dos máquinas.
  */
 export default async function Laminas({ params }: { params: { token: string } }) {
   const test = await testDelToken(params.token);
@@ -29,5 +29,12 @@ export default async function Laminas({ params }: { params: { token: string } })
       </main>
     );
   }
-  return <Placas test={test} total={TESTS[test].laminas} fuente={`/api/laminas/${params.token}`} />;
+  return (
+    <Placas
+      test={test}
+      total={TESTS[test].laminas}
+      fuente={`/api/laminas/${params.token}`}
+      seguir={`/api/laminas/${params.token}/estado`}
+    />
+  );
 }

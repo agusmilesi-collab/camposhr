@@ -29,7 +29,7 @@ export default function LinkLaminas({
   numero?: number;
   clase?: string;
   /** Para quién es: con esto se copia el enlace con token y no el del OS. */
-  paraCandidato?: { evaluacionId: string; test: string };
+  paraCandidato?: { evaluacionId: string; test: string; lamina?: number };
 }) {
   const [copiado, setCopiado] = useState(false);
 
@@ -40,11 +40,24 @@ export default function LinkLaminas({
         const res = await fetch('/api/os/laminas-link', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(paraCandidato),
+          body: JSON.stringify({
+            evaluacionId: paraCandidato.evaluacionId,
+            test: paraCandidato.test,
+          }),
         });
         const r = await res.json().catch(() => null);
         if (!r?.ok) return;
         enlace = r.enlace;
+        // El enlace nace sin lámina marcada: se le pone la que la evaluadora
+        // tiene adelante, para que la persona no abra en la primera cuando la
+        // encuesta ya va por la cuarta.
+        if (paraCandidato.lamina) {
+          fetch('/api/os/laminas-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(paraCandidato),
+          }).catch(() => {});
+        }
       }
       await navigator.clipboard.writeText(enlace);
       setCopiado(true);
