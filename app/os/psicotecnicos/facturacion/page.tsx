@@ -59,11 +59,22 @@ export default async function Facturacion({
    * caja del estudio y lo miran las dos, partido por si entró la plata.
    */
   const evaluadoras = miembros.filter((m) => m.evaluadora);
-  const colas = evaluadoras.map((m) => ({
+  /**
+   * Cada evaluadora ve solo lo suyo: su cola, y lo que ella emitió, cobró o
+   * anuló. La pestaña de la otra no existe para ella. Quien ve todo (Agustín)
+   * sigue viendo las dos colas y la caja entera.
+   *
+   * Se compara por el nombre de pila, que es como se nombra a cada una en las
+   * colas y en la emisora de cada factura.
+   */
+  const soloDe = yo.alcance !== 'todo' && yo.evaluadora ? yo.evaluadora.split(' ')[0] : null;
+  const esSuya = (emisora: string) => soloDe === null || emisora.split(' ')[0] === soloDe;
+  const todasLasColas = evaluadoras.map((m) => ({
     clave: (m.evaluadora ?? m.nombre).split(' ')[0].toLowerCase(),
     nombre: (m.evaluadora ?? m.nombre).split(' ')[0],
     filas: pendientes.filter((p) => (p.evaluadora ?? '').includes(m.evaluadora ?? '\u0000')),
   }));
+  const colas = todasLasColas.filter((c) => soloDe === null || c.nombre === soloDe);
   /**
    * Las de psicotécnicos: las que cubren evaluaciones, más las que llegaron sin
    * renglones y hay que completar.
@@ -72,7 +83,9 @@ export default async function Facturacion({
    * trabajo. Se reconocen por los renglones y no por una marca: un comprobante
    * de psicotécnicos siempre lleva sus candidatos adentro.
    */
-  const vivas = facturas.filter((f) => f.estado !== 'anulada' && esDePsicotecnicos(f));
+  const vivas = facturas.filter(
+    (f) => f.estado !== 'anulada' && esDePsicotecnicos(f) && esSuya(f.emisora)
+  );
   const sinCobrar = vivas.filter((f) => f.cobradaAt === null);
 
   // Lo que va sin factura se nombra por su orden de compra, que es el papel
@@ -91,7 +104,9 @@ export default async function Facturacion({
   // Las que se anularon con nota de crédito. Sus renglones ya soltaron a las
   // personas, así que no se reconocen como "de psicotécnicos": se toman por
   // tener nota.
-  const anuladas = facturas.filter((f) => f.estado === 'anulada' && notas[f.id]);
+  const anuladas = facturas.filter(
+    (f) => f.estado === 'anulada' && notas[f.id] && esSuya(f.emisora)
+  );
 
   /**
    * El número de factura que le sigue a cada emisora, para proponerlo.
