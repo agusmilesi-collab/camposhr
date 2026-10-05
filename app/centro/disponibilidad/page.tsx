@@ -5,6 +5,8 @@ import {
   DIAS_DE_LA_SEMANA_TIPO,
   hoyISO,
   listarEspacios,
+  mesLargo,
+  periodoDe,
   aperturas as leerAperturas,
   reservasEntre,
   semanaTipo,
@@ -46,8 +48,8 @@ export default async function Disponibilidad() {
     <main className="centro-cuerpo centro-oferta">
       <h1 className="centro-titulo">Centro Integral Santiago</h1>
       <p className="centro-bajada">
-        Santiago 1269, Rosario. Estas son las horas libres de cada consultorio para alquilar
-        todas las semanas, de lunes a viernes.
+        Santiago 1269, Rosario. Disponibilidad de {mesLargo(periodoDe(hoy))}: las horas libres de
+        cada consultorio para alquilar todas las semanas, de lunes a viernes.
       </p>
       <p className="centro-oferta-leyenda">
         <span>
