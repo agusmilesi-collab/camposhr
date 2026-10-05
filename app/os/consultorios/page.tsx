@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { headers } from 'next/headers';
 import Shell from '../Shell';
 import { quienSoy } from '@/lib/identidad';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
@@ -196,6 +197,14 @@ export default async function Consultorios({
   const dirSala = (id: string | null) =>
     `/os/consultorios?ver=semana&mes=${mes}${id ? `&sala=${id}` : ''}`;
 
+  // La disponibilidad para quien pregunta por alquilar vive en el host de los
+  // inquilinos, que es el que se abre sin la clave del OS: el enlace se manda
+  // por WhatsApp a alguien que todavía no tiene cuenta en ningún lado.
+  const host = headers().get('host') ?? '';
+  const dirOferta = host.startsWith('localhost')
+    ? '/centro/disponibilidad'
+    : 'https://centro.camposhr.com/centro/disponibilidad';
+
   return (
     <Shell
       titulo="Consultorios"
@@ -291,6 +300,12 @@ export default async function Consultorios({
                     </Link>
                   </span>
                 )}
+                {/* Sin nombres y sin fechas: las horas que se pueden ofrecer como
+                    banda fija. Abre aparte porque es una pantalla para mostrar
+                    o para mandar, no para trabajar. */}
+                <a className="os-boton" href={dirOferta} target="_blank" rel="noreferrer">
+                  Disponibilidad para alquilar
+                </a>
                 <span className="os-nav-grupo">
                   <Link
                     className="os-nav-flecha"

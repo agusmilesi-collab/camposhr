@@ -911,3 +911,94 @@
   font-weight: 600;
   white-space: nowrap;
 }
+
+/**
+ * La disponibilidad para quien pregunta por alquilar.
+ *
+ * Es la única pantalla de esta zona sin barra lateral, porque quien la abre no
+ * tiene cuenta: ocupa las dos columnas de `.centro`.
+ */
+.centro-oferta {
+  grid-column: 1 / -1;
+  max-width: 1080px;
+}
+
+.centro-oferta-salas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.centro-oferta-salas .centro-panel {
+  margin: 0;
+}
+
+.centro-oferta-cuenta {
+  color: var(--verde);
+  font-weight: 600;
+  font-size: 0.84rem;
+  margin: -6px 0 10px;
+}
+
+.centro-oferta-incluye {
+  color: var(--suave);
+  font-size: 0.8rem;
+  margin: 10px 0 0;
+}
+
+.centro-semana {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  table-layout: fixed;
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.centro-semana th {
+  font-weight: 500;
+  color: var(--suave);
+  padding: 0 0 2px;
+}
+
+.centro-semana th:first-child {
+  width: 52px;
+  white-space: nowrap;
+  text-align: right;
+  padding-right: 5px;
+}
+
+.centro-semana td {
+  height: 22px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.centro-semana .libre {
+  background: #e4e1da;
+}
+
+.centro-semana .ocupada {
+  background: #8fb0d9;
+}
+
+.centro-semana .cerrada {
+  background: transparent;
+}
+
+.centro-oferta-leyenda {
+  display: flex;
+  gap: 16px;
+  color: var(--tinta-media);
+  font-size: 0.82rem;
+  margin: 0 0 16px;
+}
+
+.centro-oferta-leyenda i {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  vertical-align: -2px;
+  margin-right: 6px;
+}
