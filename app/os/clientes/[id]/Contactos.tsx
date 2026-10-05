@@ -182,9 +182,8 @@ export default function Contactos({
 
         {contactos.length === 0 && !borrador && (
           <p className="os-vacio">
-            Todavía no hay nadie cargado. Hace falta al menos quien pide las
-            evaluaciones: es quien elige el portal al cargar un pedido y quien
-            recibe la confirmación.
+            Todavía no hay nadie cargado. Hace falta al menos quien pide las evaluaciones: es quien
+            elige el portal al cargar un pedido y quien recibe la confirmación.
           </p>
         )}
 
@@ -211,6 +210,28 @@ export default function Contactos({
               {/* El teléfono del contacto es su WhatsApp: con el enlace, se le
                   escribe de un toque, como al candidato. */}
               {c.telefono ? <Whatsapp telefono={c.telefono} /> : <span />}
+
+              {/* Qué hace cada uno, de solo lectura: se cambia con el lápiz,
+                  en la edición del contacto. */}
+              <span className="os-contacto-roles">
+                <span className="os-contacto-chequeo">
+                  <span className={`os-chequeo-caja${c.pide ? ' si' : ''}`} aria-hidden="true">
+                    {c.pide ? '✓' : ''}
+                  </span>
+                  <span className="os-oculto">{c.pide ? '' : 'No '}</span>
+                  Solicita
+                </span>
+                <span className="os-contacto-chequeo">
+                  <span
+                    className={`os-chequeo-caja${c.facturacion ? ' si' : ''}`}
+                    aria-hidden="true"
+                  >
+                    {c.facturacion ? '✓' : ''}
+                  </span>
+                  <span className="os-oculto">{c.facturacion ? '' : 'No '}</span>
+                  Recibe factura
+                </span>
+              </span>
 
               <div className="os-contacto-acciones">
                 {/* Íconos y no palabras: son dos acciones por renglón, y con
@@ -252,7 +273,7 @@ export default function Contactos({
                 </button>
               </div>
             </div>
-          )
+          ),
         )}
       </div>
     </section>
