@@ -1,0 +1,214 @@
+/* La confirmación del pedido, para pantalla. Una tarjeta angosta sobre el
+   papel del sitio: en el teléfono ocupa todo el ancho y en la computadora
+   queda centrada, del ancho de un teléfono grande. Todo cuelga de
+   `.orden-gracias` porque las hojas de estilo son globales. */
+
+.orden-gracias {
+  --og-tinta: #16202b;
+  --og-clara: #f6f5f2;
+  --og-papel: #f2f0ec;
+  --og-media: #46505c;
+  --og-gris: #7b7770;
+  --og-linea: #e2ded6;
+  --og-punto: #b9b4aa;
+  --og-verde: #4a7856;
+  --og-verde-suave: #e6efe8;
+
+  min-height: 100vh;
+  padding: 28px 16px 56px;
+  background: var(--og-papel);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--og-tinta);
+  -webkit-font-smoothing: antialiased;
+}
+
+.orden-gracias .og-tarjeta {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 26px 24px 22px;
+  background: #fff;
+  border: 1px solid var(--og-linea);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(22, 32, 43, 0.07);
+}
+
+.orden-gracias p { margin: 0; }
+.orden-gracias em { font-style: normal; color: var(--og-gris); }
+
+.orden-gracias .og-marca {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 22px;
+  line-height: 1;
+  text-align: center;
+  color: var(--og-tinta);
+}
+
+/* ------------------------------------------------------ la confirmación */
+.orden-gracias .og-cabeza {
+  padding: 26px 0 26px;
+  text-align: center;
+  border-bottom: 1px solid var(--og-linea);
+}
+.orden-gracias .og-tilde {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--og-verde-suave);
+  color: var(--og-verde);
+}
+.orden-gracias .og-tilde svg { width: 30px; height: 30px; }
+.orden-gracias .og-cabeza h1 {
+  margin: 0 0 8px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1;
+}
+.orden-gracias .og-cabeza p {
+  max-width: 280px;
+  margin: 0 auto;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--og-gris);
+}
+
+/* ----------------------------------------------------------- los bloques */
+.orden-gracias .og-bloque {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--og-linea);
+}
+.orden-gracias h2 {
+  color: var(--og-tinta);
+  margin: 0 0 12px;
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.orden-gracias h2 span { color: var(--og-gris); margin-left: 3px; }
+
+/* Los datos en dos columnas, rótulo a la izquierda y valor a la derecha: en
+   una pantalla angosta se lee mejor que el rótulo pegado al valor. */
+.orden-gracias dl { margin: 0; }
+.orden-gracias dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+.orden-gracias dt { color: var(--og-gris); white-space: nowrap; }
+.orden-gracias dd { margin: 0; text-align: right; color: var(--og-media); }
+
+.orden-gracias .og-fila + .og-fila { margin-top: 9px; }
+.orden-gracias .og-linea {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.orden-gracias .og-concepto { font-size: 13.5px; line-height: 1.3; color: var(--og-media); }
+.orden-gracias .og-puntos {
+  flex: 1;
+  min-width: 16px;
+  border-bottom: 1.5px dotted var(--og-punto);
+  transform: translateY(-3px);
+}
+.orden-gracias .og-importe {
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.orden-gracias .og-sub { font-size: 11.5px; line-height: 1.3; color: var(--og-gris); }
+/* La aclaración del dólar, en un recuadro: cambia cuánto se termina pagando,
+   y como letra chica al pie del detalle pasaba de largo. */
+.orden-gracias .og-nota {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--og-papel);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--og-media);
+}
+
+.orden-gracias .og-totales { border-bottom: 0; padding-bottom: 6px; }
+.orden-gracias .og-totales .og-concepto { color: var(--og-gris); }
+.orden-gracias .og-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding: 0 18px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--og-tinta);
+  color: var(--og-clara);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.orden-gracias .og-total span:last-child { font-size: 17px; }
+
+.orden-gracias .og-condiciones {
+  border-bottom: 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--og-media);
+}
+
+/* Qué pasa ahora, numerado: son pasos y van en ese orden. */
+.orden-gracias .og-sigue {
+  border-top: 1px solid var(--og-linea);
+  border-bottom: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--og-media);
+}
+.orden-gracias .og-sigue ol { margin: 0; padding-left: 18px; }
+.orden-gracias .og-sigue li::marker { color: var(--og-gris); }
+
+/* ------------------------------------------------------------ los botones */
+.orden-gracias .og-acciones {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+}
+.orden-gracias .og-boton {
+  /* También es un `button` ("Cargar otro pedido"): sin esto trae el borde y
+     la tipografía del navegador. */
+  width: 100%;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  height: 50px;
+  border-radius: 999px;
+  background: var(--og-tinta);
+  color: var(--og-clara);
+  font-size: 14.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.orden-gracias .og-boton-claro {
+  background: transparent;
+  color: var(--og-tinta);
+  border: 1px solid var(--og-linea);
+}
+
+.orden-gracias .og-pie {
+  padding-top: 20px;
+  text-align: center;
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--og-gris);
+}
+
+@media (max-width: 480px) {
+  .orden-gracias { padding: 0; background: #fff; }
+  .orden-gracias .og-tarjeta { border: 0; border-radius: 0; box-shadow: none; padding: 22px 20px 28px; }
+}

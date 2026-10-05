@@ -6,9 +6,11 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { listarAFacturar } from '@/lib/facturas';
-import { ESTADOS_FACTURA, conceptoDe, conceptoPorDefecto, totalDe } from '@/lib/facturas-tipos';
+import { conceptoDe, conceptoPorDefecto, totalDe } from '@/lib/facturas-tipos';
 import { CATEGORIAS_SERVICIOS } from '@/lib/monotributo';
-import { emitirEnArca } from '@/lib/arca/emitir';
+import { anularConNotaDeCredito, emitirEnArca } from '@/lib/arca/emitir';
+import { guardarPdfDeFactura } from '@/lib/factura-archivo';
+import { enumerar, faltaParaEmitir, faltaParaFacturarle } from '@/lib/clientes-tipos';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -167,11 +169,91 @@ export async function POST(req: Request) {
         const base = escrito || porDefecto;
         const concepto =
           ordenCompra && !base.includes(ordenCompra)
-            ? `${base} · Orden de compra ${ordenCompra}`
+            ? `${base} · Orden de compra del cliente ${ordenCompra}`
             : base;
         // Con una sola persona, el texto que pidió el cliente es también el del
         // renglón: si no, la factura diría dos cosas distintas por lo mismo.
         const propio = escrito && escrito !== porDefecto && entran.length === 1 ? escrito : null;
+
+        // El control de verdad está acá y no solo en el formulario. A una
+        // factura no le puede faltar ningún dato de los que la norma exige del
+        // cliente ni de quien emite, y a quien exige su orden de compra no se
+        // le factura sin ella. No rige para lo que va sin factura, que no es
+        // un comprobante.
+        // Con la emisora en producción y sin número, la factura se le va a
+        // pedir a ARCA: hasta que la autorice es un borrador.
+        let porArca = false;
+        if (!sinComprobante) {
+          const { url, key } = config();
+          const leer = async <T,>(camino: string): Promise<T | undefined> => {
+            const res = await fetch(`${url}/rest/v1/${camino}`, {
+              headers: { apikey: key, Authorization: `Bearer ${key}` },
+              cache: 'no-store',
+            });
+            return res.ok ? ((await res.json()) as T[])[0] : undefined;
+          };
+          const [empresa, emisor] = await Promise.all([
+            leer<{
+              nombre: string;
+              razon_social: string | null;
+              cuit: string | null;
+              condicion_iva: string | null;
+              direccion_fiscal: string | null;
+              exige_orden_compra: boolean;
+            }>(
+              'empresas?select=nombre,razon_social,cuit,condicion_iva,direccion_fiscal,exige_orden_compra' +
+                `&id=eq.${empresaId}&limit=1`
+            ),
+            leer<{
+              cuit: string | null;
+              domicilio: string | null;
+              inicio_actividades: string | null;
+              ingresos_brutos: string | null;
+              ambiente: string | null;
+            }>(
+              `emisores?select=cuit,domicilio,inicio_actividades,ingresos_brutos,ambiente&id=eq.${emisorId}&limit=1`
+            ),
+          ]);
+          porArca = emisor?.ambiente === 'produccion' && numero === null;
+          const faltaCliente = faltaParaFacturarle({
+            razonSocial: empresa?.razon_social,
+            cuit: empresa?.cuit,
+            condicionIva: empresa?.condicion_iva,
+            domicilio: empresa?.direccion_fiscal,
+          });
+          if (faltaCliente.length > 0) {
+            return NextResponse.json(
+              {
+                error: `No se puede facturar: a ${empresa?.nombre ?? 'ese cliente'} le falta ${enumerar(faltaCliente)}. Se carga en su ficha.`,
+              },
+              { status: 400 }
+            );
+          }
+          const faltaEmisora = faltaParaEmitir({
+            cuit: emisor?.cuit,
+            domicilio: emisor?.domicilio,
+            inicioActividades: emisor?.inicio_actividades,
+            ingresosBrutos: emisor?.ingresos_brutos,
+          });
+          if (faltaEmisora.length > 0) {
+            return NextResponse.json(
+              { error: `No se puede facturar: a la emisora le falta ${enumerar(faltaEmisora)}.` },
+              { status: 400 }
+            );
+          }
+          if (puntoVenta === null) {
+            return NextResponse.json(
+              { error: 'Falta el punto de venta de la factura.' },
+              { status: 400 }
+            );
+          }
+          if (!ordenCompra && empresa?.exige_orden_compra) {
+            return NextResponse.json(
+              { error: 'Este cliente exige su orden de compra en la factura. Cargala antes de generarla.' },
+              { status: 400 }
+            );
+          }
+        }
 
         const factura = await escribir('facturas', 'POST', {
           origen: 'os',
@@ -185,11 +267,10 @@ export async function POST(req: Request) {
           concepto,
           orden_compra: ordenCompra,
           notas: String(datos.notas ?? '').trim() || null,
-          estado: sinComprobante
-            ? 'emitida'
-            : ESTADOS_FACTURA.includes(datos.estado)
-              ? datos.estado
-              : 'emitida',
+          // La que se le va a pedir a ARCA todavía no salió por ningún lado:
+          // es un borrador hasta que la autorice. Como emitida contaba para
+          // el monotributo y se le podía marcar el cobro antes de existir.
+          estado: porArca ? 'borrador' : 'emitida',
           sin_comprobante: sinComprobante,
           cobrada_at: FECHA.test(datos.cobradaAt ?? '') ? datos.cobradaAt : null,
           // La cotización queda congelada en la factura: el mes que viene el
@@ -283,7 +364,29 @@ export async function POST(req: Request) {
         if (cobradaAt !== null && !FECHA.test(cobradaAt)) {
           return NextResponse.json({ error: 'La fecha de cobro no es válida.' }, { status: 400 });
         }
+        // Se cobra lo que se emitió. Un borrador, una rechazada, una anulada
+        // o una nota de crédito no tienen qué cobrar, y marcarlas les daba
+        // un recibo de pago numerado. Desmarcar se puede siempre.
+        if (cobradaAt !== null) {
+          const f = await leerFactura(id);
+          if (!f) return NextResponse.json({ error: 'Esa factura no existe.' }, { status: 404 });
+          if (f.cbte_tipo !== 11 || f.estado !== 'emitida') {
+            return NextResponse.json(
+              { error: 'Solo se marca el cobro de una factura emitida.' },
+              { status: 409 }
+            );
+          }
+        }
         await escribir(`facturas?id=eq.${id}`, 'PATCH', { cobrada_at: cobradaAt });
+        // Al cobrar se le pone número al recibo de pago, si todavía no tiene.
+        // Desmarcar no lo borra: ese recibo ya pudo haberse entregado.
+        if (cobradaAt !== null) {
+          try {
+            await escribir('rpc/asignar_recibo_pago', 'POST', { factura: id });
+          } catch (e) {
+            console.error('facturas, recibo de pago:', e);
+          }
+        }
         const cubiertas = await evaluacionesDe(id);
         if (cubiertas) {
           await escribir(`evaluaciones?id=in.(${cubiertas})`, 'PATCH', {
@@ -449,36 +552,91 @@ export async function POST(req: Request) {
         });
         refrescar();
         if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
-        const cubiertas = await evaluacionesDe(id);
-        if (cubiertas) {
-          await escribir(`evaluaciones?id=in.(${cubiertas})`, 'PATCH', {
-            numero_factura: String(r.numero),
-          });
+        // Autorizada. Lo que sigue es accesorio: si falla, la factura está
+        // emitida igual y la respuesta no puede decir "no se pudo guardar".
+        try {
+          // Su PDF, con los tres ejemplares.
+          await guardarPdfDeFactura(id);
+          const cubiertas = await evaluacionesDe(id);
+          if (cubiertas) {
+            await escribir(`evaluaciones?id=in.(${cubiertas})`, 'PATCH', {
+              numero_factura: String(r.numero),
+            });
+          }
+        } catch (e) {
+          console.error('facturas, después del CAE:', e);
         }
         return NextResponse.json(r);
       }
 
-      case 'estado': {
-        const { id, estado } = datos;
-        if (!UUID.test(id ?? '') || !ESTADOS_FACTURA.includes(estado)) {
-          return NextResponse.json({ error: 'Estado inválido.' }, { status: 400 });
+      /**
+       * Anular una factura con CAE, con una nota de crédito por el total.
+       * Todo lo que decide está en `lib/arca/emitir.ts`.
+       */
+      case 'anular': {
+        const { id } = datos;
+        if (!UUID.test(id ?? '')) {
+          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
         }
-        await escribir(`facturas?id=eq.${id}`, 'PATCH', { estado });
+        const r = await anularConNotaDeCredito(id, yo.nombre);
         await anotarAcceso({
           quien: yo.nombre,
           accion: 'escritura',
           recurso: 'factura',
           recursoId: id,
-          detalle: { estado },
+          detalle: r.ok
+            ? { anulada: true, nota_de_credito: r.numero, cae: r.cae, ambiente: r.ambiente }
+            : { anulada: false, motivo: r.error },
         });
         refrescar();
-        return NextResponse.json({ ok: true });
+        if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
+        // La nota de crédito también es un comprobante: se guarda su PDF.
+        try {
+          await guardarPdfDeFactura(r.notaId);
+        } catch (e) {
+          console.error('facturas, PDF de la nota:', e);
+        }
+        return NextResponse.json(r);
       }
 
       case 'borrar': {
         const { id } = datos;
         if (!UUID.test(id ?? '')) {
           return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        }
+        // Una factura autorizada por ARCA existe en ARCA, se quite de acá o
+        // no: borrarla dejaría a esas personas otra vez en la cola y a la
+        // evaluadora con una factura emitida que el sistema ya no conoce. Se
+        // anula con una nota de crédito. Las de homologación sí se quitan: su
+        // CAE no vale.
+        const f = await leerFactura(id);
+        // Sin poder leerla no se borra: borrar a ciegas es justo lo que este
+        // control vino a impedir.
+        if (!f) return NextResponse.json({ error: 'Esa factura no existe.' }, { status: 404 });
+        if (f.cbte_tipo !== 11) {
+          return NextResponse.json({ error: 'Una nota de crédito no se quita.' }, { status: 409 });
+        }
+        if (f.ambiente === 'produccion' && f.cae) {
+          return NextResponse.json(
+            { error: 'Esa factura tiene CAE: no se quita, se anula con una nota de crédito.' },
+            { status: 409 }
+          );
+        }
+        // Con número reservado y sin CAE no se sabe si ARCA la autorizó:
+        // borrarla ahí es perder una factura que quizá existe.
+        if (f.ambiente === 'produccion' && f.numero !== null && f.solicitud !== null) {
+          return NextResponse.json(
+            {
+              error:
+                'Esa factura quedó a medio emitir. Abrila y apretá Pedir CAE: averigua en qué quedó, y después se puede quitar.',
+            },
+            { status: 409 }
+          );
+        }
+        // Una de prueba que se anuló arrastra su nota de crédito, que apunta
+        // a ella: se va primero.
+        if (f.ambiente === 'homologacion') {
+          await escribir(`facturas?anula_id=eq.${id}&ambiente=eq.homologacion`, 'DELETE');
         }
         // Los renglones se van con la factura por la clave foránea, y las
         // evaluaciones vuelven a la cola: si la factura no existe, nadie las
@@ -510,6 +668,26 @@ export async function POST(req: Request) {
     console.error('facturas:', e);
     return NextResponse.json({ error: 'No se pudo guardar.' }, { status: 500 });
   }
+}
+
+type Leida = {
+  cae: string | null;
+  ambiente: string | null;
+  numero: number | null;
+  estado: string;
+  cbte_tipo: number;
+  solicitud: unknown;
+};
+
+/** Lo que hay que saber de una factura antes de tocarla. Tira error si la lectura falla. */
+async function leerFactura(id: string): Promise<Leida | undefined> {
+  const { url, key } = config();
+  const res = await fetch(
+    `${url}/rest/v1/facturas?select=cae,ambiente,numero,estado,cbte_tipo,solicitud&id=eq.${id}&limit=1`,
+    { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' }
+  );
+  if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
+  return ((await res.json()) as Leida[])[0];
 }
 
 /** Los ids de las evaluaciones que entraron en una factura, listos para `in.()`. */

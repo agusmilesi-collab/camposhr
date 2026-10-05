@@ -17,7 +17,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { CONDICIONES_IVA } from '@/lib/clientes-tipos';
+import { CONDICIONES } from '@/lib/clientes-tipos';
 import type { Cliente } from '@/lib/clientes';
 import { fechaCorta } from '@/lib/hora';
 
@@ -153,9 +153,11 @@ export default function Cajon({
                 defaultValue={v(cliente?.condicionIva)}
               >
                 <option value="">Sin definir</option>
-                {CONDICIONES_IVA.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                {/* Se elige por la leyenda que fija ARCA, que es la que sale
+                    impresa en la factura. */}
+                {CONDICIONES.map((c) => (
+                  <option key={c.valor} value={c.valor}>
+                    {c.leyenda}
                   </option>
                 ))}
               </select>

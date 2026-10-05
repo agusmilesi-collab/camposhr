@@ -1,0 +1,321 @@
+/* La factura: la hoja de la orden de compra con lo que hace que un comprobante
+   se reconozca como tal. Una A4 a 96 puntos por pulgada, con los mismos
+   márgenes y la misma banda de la orden. Todo cuelga de `.factura-ch`. */
+
+.factura-ch {
+  --fc-tinta: #16202b;
+  --fc-clara: #f6f5f2;
+  --fc-papel: #f2f0ec;
+  --fc-media: #46505c;
+  --fc-gris: #7b7770;
+  --fc-linea: #e2ded6;
+  --fc-punto: #b9b4aa;
+
+  min-height: 100vh;
+  padding: 32px 16px 64px;
+  background: #d9d6cf;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--fc-tinta);
+  -webkit-font-smoothing: antialiased;
+}
+.factura-ch p { margin: 0; }
+.factura-ch em { font-style: normal; color: var(--fc-gris); }
+.factura-ch b { font-weight: 600; }
+
+.factura-ch .fc-hoja {
+  position: relative;
+  width: 794px;
+  min-height: 1123px;
+  margin: 0 auto;
+  /* Cada ejemplar en su hoja al imprimir. */
+  break-after: page;
+  background: #fff;
+  box-shadow: 0 2px 18px rgba(22, 32, 43, 0.14);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Los tres ejemplares, uno debajo del otro, separados como hojas sueltas. */
+.factura-ch .fc-hoja + .fc-hoja { margin-top: 28px; }
+
+/* ---------------------------------------------------------------- la marca */
+.factura-ch .fc-banda {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 44px 75px 30px;
+  background: var(--fc-papel);
+}
+.factura-ch .fc-marca {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 48px;
+  line-height: 1;
+}
+/* "Original", centrado contra el borde de arriba de la hoja. */
+.factura-ch .fc-original {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  /* En su sello, con el borde redondeado. */
+  padding: 3px 10px 3px 12px;
+  border: 1px solid var(--fc-punto);
+  border-radius: 999px;
+  font-size: 8.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fc-gris);
+}
+.factura-ch .fc-sitio {
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fc-gris);
+}
+
+.factura-ch .fc-cuerpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 34px 75px 0;
+}
+
+/* ------------------------------------------------- qué comprobante es */
+.factura-ch .fc-titulo {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--fc-linea);
+}
+/* La letra con su código: es lo primero que busca quien recibe una factura. */
+.factura-ch .fc-letra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.factura-ch .fc-letra b {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 11px;
+  background: var(--fc-tinta);
+  color: var(--fc-clara);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1;
+}
+.factura-ch .fc-letra span {
+  font-size: 7.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fc-gris);
+}
+.factura-ch .fc-titulo-datos { align-self: start; padding-top: 4px; }
+.factura-ch .fc-titulo h1 {
+  margin: 0 0 6px;
+  font-size: 18.5px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+/* Solo los datos: la letra C también es un `b`, y con la tinta encima de
+   su recuadro oscuro no se veía. */
+.factura-ch .fc-titulo-datos b { color: var(--fc-tinta); }
+/* El segundo dato del renglón, separado del primero. */
+.factura-ch .fc-sep { margin-left: 16px; }
+.factura-ch .fc-titulo p,
+.factura-ch .fc-periodo p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--fc-media);
+}
+.factura-ch .fc-periodo { align-self: start; padding-top: 6px; text-align: right; }
+
+/* ------------------------------------------- quién emite y a quién */
+.factura-ch .fc-partes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 22px 0 24px;
+  border-bottom: 1px solid var(--fc-linea);
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--fc-media);
+}
+.factura-ch .fc-partes h2 {
+  margin: 0 0 6px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fc-gris);
+}
+.factura-ch .fc-partes b { font-size: 13px; color: var(--fc-tinta); }
+.factura-ch .fc-partes p + p b { font-size: inherit; }
+
+/* ------------------------------------------------------------- la tabla */
+.factura-ch .fc-tabla {
+  width: 100%;
+  margin-top: 22px;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+.factura-ch .fc-tabla th {
+  padding: 9px 10px;
+  background: var(--fc-papel);
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  /* La hoja del OS pone sus encabezados en mayúsculas; acá van como en el
+     comprobante. */
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--fc-tinta);
+}
+.factura-ch .fc-tabla th:first-child { border-radius: 8px 0 0 8px; }
+.factura-ch .fc-tabla th:last-child { border-radius: 0 8px 8px 0; }
+.factura-ch .fc-tabla td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--fc-linea);
+  color: var(--fc-media);
+  vertical-align: top;
+}
+.factura-ch .fc-tabla .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.factura-ch .fc-tabla td:first-child { color: var(--fc-tinta); }
+.factura-ch .fc-tabla td:last-child { color: var(--fc-tinta); font-weight: 600; }
+
+/* Empuja los totales al pie de la hoja, como en el comprobante. */
+.factura-ch .fc-estira { flex: 1; min-height: 14px; }
+
+/* ----------------------------------------------------------- los totales */
+.factura-ch .fc-totales { font-variant-numeric: tabular-nums; }
+.factura-ch .fc-linea {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 13px;
+  color: var(--fc-gris);
+}
+.factura-ch .fc-linea b { font-size: 12.5px; color: var(--fc-tinta); white-space: nowrap; }
+.factura-ch .fc-puntos {
+  flex: 1;
+  min-width: 24px;
+  border-bottom: 1.5px dotted var(--fc-punto);
+  transform: translateY(-3px);
+}
+.factura-ch .fc-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding: 0 24px;
+  height: 54px;
+  border-radius: 11px;
+  background: var(--fc-tinta);
+  color: var(--fc-clara);
+  font-size: 16px;
+  font-weight: 600;
+}
+.factura-ch .fc-total span:last-child { font-size: 17.5px; }
+
+/* ---------------------------------------------------------------- el CAE */
+.factura-ch .fc-pie {
+  display: grid;
+  grid-template-columns: 84px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 0 18px;
+}
+.factura-ch .fc-qr {
+  width: 84px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--fc-punto);
+  border-radius: 8px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--fc-gris);
+}
+.factura-ch .fc-arca { font-size: 9.5px; line-height: 1.5; color: var(--fc-gris); }
+.factura-ch .fc-arca-logo { width: 190px; margin-bottom: 9px; }
+.factura-ch .fc-arca-logo svg { display: block; width: 100%; height: auto; }
+.factura-ch .fc-arca b { display: block; margin-bottom: 2px; font-size: 12.5px; color: var(--fc-tinta); }
+.factura-ch .fc-cae { text-align: right; font-size: 11.5px; line-height: 1.8; }
+.factura-ch .fc-cae b { color: var(--fc-tinta); }
+
+/* El pie: solo el sitio, a la derecha. */
+.factura-ch .fc-firma {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 0 75px;
+  padding: 16px 0 44px;
+  border-top: 1px solid var(--fc-linea);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fc-gris);
+}
+.factura-ch .fc-firma i { font-style: normal; margin: 0 7px; }
+
+/* El QR ya generado ocupa el lugar del recuadro punteado. */
+.factura-ch .fc-qr.fc-qr-listo { border: 0; display: block; }
+.factura-ch .fc-qr.fc-qr-listo svg { width: 100%; height: 100%; display: block; }
+
+/* La de homologación tiene CAE y se ve como una factura: la marca es lo único
+   que impide mandarla por error. */
+.factura-ch .fc-hoja.prueba::after {
+  content: 'PRUEBA';
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-24deg);
+  font-size: 130px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(140, 59, 59, 0.06);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Debajo de la hoja, para volver: no es parte del papel. */
+.factura-ch .fc-bajar {
+  width: 794px;
+  max-width: 100%;
+  margin: 0 auto 14px;
+  text-align: right;
+}
+.factura-ch .fc-bajar a {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--fc-tinta);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.factura-ch .fc-volver {
+  width: 794px;
+  max-width: 100%;
+  margin: 14px auto 0;
+  font-size: 12px;
+  color: var(--fc-gris);
+}
+.factura-ch .fc-volver a { color: inherit; }
+
+@media print {
+  .factura-ch { padding: 0; background: #fff; }
+  .factura-ch .fc-hoja { box-shadow: none; }
+  .factura-ch .fc-hoja + .fc-hoja { margin-top: 0; }
+  .factura-ch .fc-volver, .factura-ch .fc-bajar { display: none; }
+  @page { size: A4; margin: 0; }
+}

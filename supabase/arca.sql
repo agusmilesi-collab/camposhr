@@ -62,3 +62,10 @@ where nombre = 'Distribuidora Andina' and condicion_iva is null;
 -- quien está exenta y quien está en el régimen simplificado. Se carga con el
 -- resto de lo fiscal de cada emisora, fuera del repositorio.
 alter table public.emisores add column if not exists ingresos_brutos text;
+
+-- ------------------------------------------- el punto de venta de siempre
+-- Cada emisora tiene dos puntos de venta: el de web services (`punto_venta`),
+-- con el que factura el OS contra ARCA, y el de Comprobantes en Línea, con el
+-- que venía facturando a mano. Mientras siga anotando en el OS las que emite
+-- por ahí, el formulario le propone ese y el número que sigue.
+alter table public.emisores add column if not exists punto_venta_manual integer;

@@ -48,19 +48,21 @@ const RECOMENDACIONES: Record<
   string,
   { texto: string; clase: string; orden: number }
 > = {
-  'Ajuste alto':                       { texto: 'Ajuste alto',      clase: 'green',  orden: 0 },
-  'Ajuste con aspectos a desarrollar': { texto: 'A desarrollar',    clase: 'amber',  orden: 1 },
-  'Ajuste con alertas':                { texto: 'Con alertas',      clase: 'orange', orden: 2 },
-  'Ajuste bajo':                       { texto: 'Ajuste bajo',      clase: 'red',    orden: 3 },
+  // Los mismos nombres cortos y colores que la tabla de Entregados del OS: el
+  // nivel en una o dos palabras, y el color con que sale en el informe.
+  'Ajuste alto':                       { texto: 'Alto',          clase: 'green', orden: 0 },
+  'Ajuste con aspectos a desarrollar': { texto: 'A desarrollar', clase: 'blue',  orden: 1 },
+  'Ajuste con alertas':                { texto: 'Alertas',       clase: 'amber', orden: 2 },
+  'Ajuste bajo':                       { texto: 'Bajo',          clase: 'red',   orden: 3 },
 
-  'Apto':                   { texto: 'Apto',             clase: 'green',  orden: 0 },
-  'Apto con observaciones': { texto: 'Apto con obs.',    clase: 'amber',  orden: 1 },
-  'Apto con alertas':       { texto: 'Apto con alertas', clase: 'orange', orden: 2 },
-  'No apto':                { texto: 'No apto',          clase: 'red',    orden: 3 },
+  'Apto':                   { texto: 'Alto',          clase: 'green', orden: 0 },
+  'Apto con observaciones': { texto: 'A desarrollar', clase: 'blue',  orden: 1 },
+  'Apto con alertas':       { texto: 'Alertas',       clase: 'amber', orden: 2 },
+  'No apto':                { texto: 'Bajo',          clase: 'red',   orden: 3 },
 
-  'Encaja con el puesto':            { texto: 'Encaja',           clase: 'green',  orden: 0 },
-  'Encaja, con desarrollo':          { texto: 'Con desarrollo',   clase: 'amber',  orden: 1 },
-  'Encaja si cambia el puesto':      { texto: 'Cambia el puesto', clase: 'orange', orden: 2 },
+  'Encaja con el puesto':            { texto: 'Alto',          clase: 'green', orden: 0 },
+  'Encaja, con desarrollo':          { texto: 'A desarrollar', clase: 'blue',  orden: 1 },
+  'Encaja si cambia el puesto':      { texto: 'Bajo',          clase: 'red',   orden: 3 },
   'Sin puesto contra el cual medir': { texto: 'Sin puesto',       clase: 'gray',   orden: 4 },
 };
 
@@ -168,7 +170,10 @@ function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
   const estimada = !c.fechaEntrega && Boolean(fen);
   return (
     <div className={`tr${conCobro ? '' : ' sin-cobro'}`}>
-      <span className="c-name">{c.nombre}</span>
+      <span className="c-name">
+        {c.nombre}
+        {c.cargadoPor && <small className="c-cargado">Cargado por {c.cargadoPor}</small>}
+      </span>
       <span className="c-estado" data-label="Estado">
         <i className={`dot ${e.clase}`} />
         {e.texto}
@@ -309,10 +314,24 @@ export default async function Portal({ params }: { params: { token: string } }) 
   // Las búsquedas se leen como el pipeline: arriba lo que falta empezar y abajo
   // lo que está por salir, que es el orden en que se pregunta por ellas. Antes
   // salían por fecha de pedido y las etapas quedaban intercaladas.
+  /**
+   * Lo que el cliente cargó y todavía no tiene evaluadora.
+   *
+   * Va en su propio bloque, arriba: es lo que acaba de pedir, y mezclado con lo
+   * que ya se está evaluando no se veía que todavía nadie lo había tomado.
+   */
+  const sinAsignar = busquedas
+    .map((b) => ({
+      ...b,
+      candidatos: b.candidatos.filter((c) => !yaEntregada(c.estado) && !c.evaluadora),
+    }))
+    .filter((b) => b.candidatos.length > 0);
+  const cuantosSinAsignar = sinAsignar.reduce((n, b) => n + b.candidatos.length, 0);
+
   const enCurso = busquedas
     .map((b) => ({
       ...b,
-      candidatos: b.candidatos.filter((c) => !yaEntregada(c.estado)),
+      candidatos: b.candidatos.filter((c) => !yaEntregada(c.estado) && c.evaluadora),
     }))
     .filter((b, i) => b.candidatos.length > 0 || busquedas[i].candidatos.length === 0)
     .sort(
@@ -400,8 +419,26 @@ export default async function Portal({ params }: { params: { token: string } }) 
               corriendo arriba y lo que ya se entregó abajo. Con la cuenta al
               lado: cuántas búsquedas hay abiertas y cuántos informes se
               entregaron es lo primero que se pregunta al abrir el portal. */}
-          {enCurso.length > 0 && (
+          {sinAsignar.length > 0 && (
             <div className="group-sep primera">
+              <span>Candidatos sin asignar ({cuantosSinAsignar})</span>
+            </div>
+          )}
+
+          {sinAsignar.map((b: Busqueda) => (
+            <article className="card" key={`sin-${b.id}`}>
+              <CabezaDeBusqueda b={b} />
+              <div className="tabla">
+                <Encabezado conCobro={conCobro} />
+                {ordenar(b.candidatos).map((c) => (
+                  <FilaCandidato c={c} conCobro={conCobro} key={c.id} />
+                ))}
+              </div>
+            </article>
+          ))}
+
+          {enCurso.length > 0 && (
+            <div className={`group-sep${sinAsignar.length > 0 ? '' : ' primera'}`}>
               <span>Informes en curso ({informesEnCurso})</span>
             </div>
           )}
@@ -410,12 +447,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
             const cands = ordenar(b.candidatos);
             return (
               <article className="card" key={b.id}>
-                <div className="card-head">
-                  <h2>{b.puesto}</h2>
-                  {/* La fecha de solicitud, entre paréntesis y sin rótulo: en
-                      una lista de búsquedas, una fecha ahí sólo puede ser esa. */}
-                  {b.fecha && <span className="card-fecha">({fecha(b.fecha)})</span>}
-                </div>
+                <CabezaDeBusqueda b={b} />
 
                 {cands.length === 0 ? (
                   <p className="empty">Sin candidatos asignados todavía.</p>
@@ -485,5 +517,26 @@ export default async function Portal({ params }: { params: { token: string } }) 
         </div>
       </footer>
     </>
+  );
+}
+
+/**
+ * El título de una búsqueda: el puesto, la fecha en que se pidió y quién la
+ * pidió.
+ *
+ * La fecha va entre paréntesis y sin rótulo: en una lista de búsquedas, una
+ * fecha ahí sólo puede ser esa. Quién la pidió sí lleva rótulo, porque del
+ * lado del cliente varias personas cargan pedidos y es lo primero que se
+ * pregunta cuando alguien no reconoce una búsqueda.
+ */
+function CabezaDeBusqueda({ b }: { b: Busqueda }) {
+  return (
+    <div className="card-head">
+      <h2>{b.puesto}</h2>
+      {b.fecha && <span className="card-fecha">({fecha(b.fecha)})</span>}
+      {b.solicitante && (
+        <span className="card-solicitante">Solicitado por {b.solicitante}</span>
+      )}
+    </div>
   );
 }

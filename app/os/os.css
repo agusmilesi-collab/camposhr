@@ -12069,7 +12069,10 @@ textarea.os-papel-campo {
  */
 .os-ficha-par {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  /* Mitad y mitad: la evaluación de un lado y la factura del otro. Estuvo en
+     dos tercios y uno mientras la factura tenía tres datos; con cuatro, en un
+     tercio no entraban de a dos. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   align-items: stretch;
 }
@@ -16826,15 +16829,13 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   padding: 14px 18px;
 }
 
-.os-ficha-datos-factura .os-ficha-dato:first-child {
-  grid-column: 1 / -1;
-}
-
-.os-ficha-datos-factura .os-ficha-dato:nth-child(2) {
+/* Cuatro datos en dos filas de a dos: la línea del medio a la derecha de los
+   impares, y sin línea debajo de la última fila. */
+.os-ficha-datos-factura .os-ficha-dato:nth-child(odd) {
   box-shadow: 1px 0 0 var(--os-linea-suave);
 }
 
-.os-ficha-datos-factura .os-ficha-dato:nth-child(n + 2) {
+.os-ficha-datos-factura .os-ficha-dato:nth-child(n + 3) {
   border-bottom: 0;
 }
 
@@ -17005,4 +17006,136 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
    firma. */
 .os-onepager-hoja.os-onepager-hoja .sitio-cita .sitio-sub {
   margin-top: 26px;
+}
+
+/* El nivel de ajuste en Entregados: una pastilla llena del color del nivel,
+   el mismo que sale en el informe, con la letra en blanco. Todas del mismo
+   ancho, así la columna se recorre como una sola. */
+.os-nivel-tag {
+  display: inline-flex;
+  justify-content: center;
+  width: 104px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: #fff;
+  background: var(--punto);
+}
+
+/* Una fila de tabla que se toca entera y abre su ficha. El nombre adentro es
+   el enlace de verdad, sin subrayado, para el teclado y otra pestaña. */
+.os-fila-clic {
+  cursor: pointer;
+}
+
+.os-tabla .os-fila-nombre.os-fila-nombre {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Los niveles con los mismos colores que en el portal del cliente: fondo
+   claro y la letra en el color del nivel. "A desarrollar" va en verde oliva,
+   porque es un apto y es la mayoría, y "Alto" con el fondo más cargado para
+   que se distinga de un vistazo. */
+.os-nivel-tag.os-verde { --nivel: #2e8b57; }
+.os-nivel-tag.os-azul  { --nivel: #7a8a2c; }
+.os-nivel-tag.os-ambar { --nivel: #c98a0c; }
+.os-nivel-tag.os-rojo  { --nivel: #c0392b; }
+.os-nivel-tag.os-verde,
+.os-nivel-tag.os-azul,
+.os-nivel-tag.os-ambar,
+.os-nivel-tag.os-rojo {
+  color: color-mix(in srgb, var(--nivel) 85%, #000);
+  background: color-mix(in srgb, var(--nivel) 16%, #fff);
+}
+.os-nivel-tag.os-verde {
+  color: #1d5c38;
+  background: color-mix(in srgb, #2e8b57 34%, #fff);
+}
+
+/* El cobro y su segundo botón (confirmar, o bajar el recibo), en un renglón. */
+.os-cobro-confirma {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* El botón de bajar el recibo, que es un ícono: cuadrado, del alto de sus
+   vecinos. Se nombra con `.os-cobro-confirma` adelante para no pisar a nadie
+   que ya use un botón de ícono. */
+.os-cobro-confirma .os-boton-icono {
+  width: 30px;
+  height: 30px;
+  min-height: 0;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.os-cobro-confirma .os-boton-icono svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Los datos fiscales del cliente, arriba del formulario de la factura: un
+   recuadro apagado con seis datos en tres columnas, rótulo arriba y valor
+   abajo. Es para leer, no para llenar, y por eso no se parece a los campos. */
+.os-fiscal {
+  /* El formulario es una grilla de seis columnas: sin esto el recuadro ocupaba
+     una sola y los datos quedaban apilados letra por letra. */
+  grid-column: 1 / -1;
+  margin-bottom: 4px;
+  padding: 12px 16px 14px;
+  border: 1px solid var(--os-linea-suave);
+  border-radius: 10px;
+  background: var(--os-panel-2);
+}
+.os-fiscal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+}
+.os-fiscal dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 22px;
+  margin: 0;
+}
+.os-fiscal dt {
+  font-size: 0.74rem;
+  color: var(--os-suave);
+}
+.os-fiscal dd {
+  margin: 1px 0 0;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .os-fiscal dl { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Lo que frena la factura, dicho debajo de los datos y en el rojo del sistema. */
+.os-fiscal-falta {
+  margin: 12px 0 0;
+  font-size: 0.86rem;
+  color: var(--os-rojo);
+}
+/* Un dato que falta y no frena nada va apagado, no en ámbar. */
+.os-fiscal-opcional { color: var(--os-suave); }
+
+/* Por qué ARCA no dejó anular, debajo del botón: en la celda no entra en un
+   renglón y tiene que poder leerse entero. */
+.os-anular-error {
+  margin-top: 4px;
+  font-size: 0.74rem;
+  line-height: 1.3;
+  color: var(--os-rojo);
+  white-space: normal;
 }

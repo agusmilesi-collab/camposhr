@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import CopyLink from '@/app/informes/CopyLink';
 import Desplegable from '@/app/os/Desplegable';
-import { CONDICIONES_IVA } from '@/lib/clientes-tipos';
+import { CONDICIONES, leyendaIva } from '@/lib/clientes-tipos';
 import type { Cliente } from '@/lib/clientes';
 
 const PORTAL = 'https://clientes.camposhr.com';
@@ -182,9 +182,11 @@ export default function Ficha({
                 defaultValue={cliente.condicionIva ?? ''}
               >
                 <option value="">Sin definir</option>
-                {CONDICIONES_IVA.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                {/* Se elige por la leyenda que fija ARCA, que es la que sale
+                    impresa en la factura. */}
+                {CONDICIONES.map((c) => (
+                  <option key={c.valor} value={c.valor}>
+                    {c.leyenda}
                   </option>
                 ))}
               </select>
@@ -194,6 +196,19 @@ export default function Ficha({
               nombre="direccionFiscal"
               valor={cliente.direccionFiscal}
             />
+            {/* Hay clientes que dan su propia orden de compra y no pagan la
+                factura que no la trae. Marcado acá, Facturación la pide. */}
+            <label className="os-cliente-dato">
+              <span className="os-dato-rotulo">Orden de compra propia</span>
+              <select
+                className="os-campo"
+                name="exigeOrdenCompra"
+                defaultValue={cliente.exigeOrdenCompra ? 'si' : 'no'}
+              >
+                <option value="no">No la exige</option>
+                <option value="si">La exige en la factura</option>
+              </select>
+            </label>
             <Campo rotulo="Rubro" nombre="rubro" valor={cliente.rubro} />
             <div className="os-portal-acciones os-cliente-datos-acciones">
               <button className="os-boton os-boton-firme" type="submit" disabled={guardando}>
@@ -217,8 +232,12 @@ export default function Ficha({
           <div className="os-panel-cuerpo os-cliente-datos os-cliente-datos-tres">
             <Dato rotulo="Razón social" valor={cliente.razonSocial} />
             <Dato rotulo="CUIT" valor={cliente.cuit} />
-            <Dato rotulo="Condición IVA" valor={cliente.condicionIva} />
+            <Dato rotulo="Condición IVA" valor={leyendaIva(cliente.condicionIva)} />
             <Dato rotulo="Dirección fiscal" valor={cliente.direccionFiscal} />
+            <Dato
+              rotulo="Orden de compra propia"
+              valor={cliente.exigeOrdenCompra ? 'La exige en la factura' : 'No la exige'}
+            />
             <Dato rotulo="Rubro" valor={cliente.rubro} />
           </div>
         )}

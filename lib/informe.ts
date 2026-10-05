@@ -887,11 +887,11 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     puesto: c.pedidos?.puesto ?? null,
     evaluadora: c.evaluadoras?.nombre ?? null,
     cuando: c.fecha_entrevista ? fechaLarga(c.fecha_entrevista) : mesYAnio(c.fecha_ingreso),
-    solicitante: c.pedidos?.solicitante
-      ? c.pedidos.solicitante.cargo
-        ? `${c.pedidos.solicitante.nombre} · ${c.pedidos.solicitante.cargo}`
-        : c.pedidos.solicitante.nombre
-      : null,
+    // El que cargó a este candidato, y si no se sabe, el que pidió el pedido.
+    solicitante: (() => {
+      const s = c.solicitante ?? c.pedidos?.solicitante;
+      return s ? (s.cargo ? `${s.nombre} · ${s.cargo}` : s.nombre) : null;
+    })(),
     edad: c.edad,
     bateria: c.pedidos?.baterias?.codigo ?? null,
     proyectivo: proyectivoDe(f),

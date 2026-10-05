@@ -43,8 +43,11 @@ body {
   font-size: 15px;
 }
 
+/* 1024 de contenido más los 24 de margen de cada lado. Con 832 la tabla de
+   informes entregados, que lleva siete columnas, recortaba el pedido y el
+   candidato en casi todas las filas. */
 .wrap {
-  max-width: 880px;
+  max-width: 1072px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -11196,4 +11199,114 @@ a.pedir-volver-link {
   font-size: 0.72rem;
   font-weight: 600;
   line-height: 1.3;
+}
+
+/* La recomendación de cada entregado: una pastilla llena del color del nivel,
+   con la letra en blanco, igual que en la tabla de Entregados del OS. Todas del
+   mismo ancho, como las de facturación de al lado. */
+.reco-tag {
+  display: inline-flex;
+  justify-content: center;
+  width: 104px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: #fff;
+  background: var(--st-gray);
+}
+/* El color del nivel, pero en un fondo claro y con la letra en ese mismo
+   color, como la pastilla de facturación de al lado: en la tabla llena del
+   portal, cuatro colores plenos pesaban más que el resto de la fila. */
+.reco-tag.green { --nivel: #2e8b57; }
+.reco-tag.blue  { --nivel: #7a8a2c; } /* verde oliva: es un apto, cerca del verde de Alto */
+.reco-tag.amber { --nivel: #c98a0c; }
+.reco-tag.red   { --nivel: #c0392b; }
+.reco-tag.green,
+.reco-tag.blue,
+.reco-tag.amber,
+.reco-tag.red {
+  color: color-mix(in srgb, var(--nivel) 85%, #000);
+  background: color-mix(in srgb, var(--nivel) 16%, #fff);
+}
+
+/* "Ver informe" en un tono claro y con la letra oscura: las pastillas llenas
+   de color son de la recomendación, y el botón tiene que leerse como otra
+   cosa, no como un quinto nivel. */
+.c-informe .btn-informe {
+  color: var(--ink);
+  background: #dde3ea;
+  border-color: #dde3ea;
+}
+.c-informe .btn-informe:hover {
+  background: #cdd5df;
+  border-color: #cdd5df;
+}
+
+/* Informe y facturación, juntas y separadas de lo que dice el informe por una
+   línea: la recomendación es el resultado, y lo que sigue es qué hacer con él
+   (abrirlo, pagarlo). La columna del botón mide el botón más el aire de la
+   línea, así el botón queda pegado a la pastilla de facturación. La de la
+   recomendación mide su pastilla, y lo que sobra va primero al pedido, que es
+   el texto más largo de la fila. */
+.tabla.entregados .tr {
+  grid-template-columns:
+    52px minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 0.95fr) 116px 106px 96px;
+}
+.tabla.entregados .tr.sin-cobro {
+  grid-template-columns:
+    52px minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 0.95fr) 116px 106px;
+}
+.tabla.entregados .c-informe {
+  position: relative;
+  padding-left: 14px;
+}
+.tabla.entregados .c-informe::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -9px;
+  bottom: -9px;
+  border-left: 1px solid var(--line);
+}
+.tabla.entregados .tr.th .c-informe::before {
+  top: -5px;
+  bottom: -5px;
+}
+@media (max-width: 620px) {
+  .tabla.entregados .c-informe {
+    padding-left: 0;
+  }
+  .tabla.entregados .c-informe::before {
+    content: none;
+  }
+}
+
+/* "Alto" con el fondo más cargado que los otros tres niveles: es el mejor
+   resultado y el menos frecuente, y al lado de "A desarrollar", que también es
+   un apto y es la mayoría, tiene que distinguirse de un vistazo. Lleno y con
+   letra blanca pesaba demasiado en la fila. */
+.reco-tag.green {
+  color: #1d5c38;
+  background: color-mix(in srgb, #2e8b57 34%, #fff);
+}
+
+/* Quién pidió la búsqueda, a la derecha del título: es un dato de la búsqueda
+   y no del puesto, así que va apartado y en gris. */
+.card-solicitante {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Quién cargó a ese candidato, debajo del nombre y en gris, cuando no es quien
+   abrió el pedido (ese ya está en el título de la búsqueda). */
+.c-cargado {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--muted);
 }

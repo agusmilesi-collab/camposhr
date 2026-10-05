@@ -27,9 +27,11 @@
  */
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { Evaluacion } from '@/lib/psicotecnicos';
 import { fechaCorta } from '@/lib/hora';
+import { NIVELES, nivelDeConclusion } from '@/lib/informe-textos';
 import { Cuenta, Falta, columnas } from './piezas';
 
 /** El color con el que se reconoce cada respuesta sin leerla. */
@@ -51,12 +53,27 @@ const COLUMNAS = [
   'Candidato',
   'Empresa',
   'Puesto',
-  'Evaluadora',
-  'Ficha',
+  'Eval.',
+  'Nivel',
   'Seguimiento',
   'Cómo le fue',
 ];
-const MEDIDAS = columnas(COLUMNAS);
+/* El nivel va en una o dos palabras, sin "Ajuste", que ya lo dice el rótulo:
+   mide lo que pide la pastilla de "A desarrollar". La fecha mide lo que pide
+   "30/10/26" más el padding, y la evaluadora va como "Eval." y mide lo que
+   pide "Lorena": lo que sobraba de las dos pasa al candidato, que es el nombre
+   que más se recortaba. */
+const MEDIDAS = columnas(COLUMNAS, { Nivel: 140, Fecha: 94, Candidato: 180, 'Eval.': 90 });
+
+/**
+ * El nivel en una o dos palabras: "Alto", "A desarrollar", "Alertas", "Bajo".
+ * El nombre entero queda en el título de la celda.
+ */
+function corto(titulo: string): string {
+  if (/aspectos a desarrollar/i.test(titulo)) return 'A desarrollar';
+  const t = titulo.replace(/^Ajuste (con )?/, '');
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
 
 /**
  * Con qué se ordena cada columna.
@@ -70,7 +87,12 @@ const CLAVE: Record<string, (e: Evaluacion) => string | number> = {
   Candidato: (e) => e.nombre.toLocaleLowerCase('es'),
   Empresa: (e) => e.empresa.toLocaleLowerCase('es'),
   Puesto: (e) => e.puesto.toLocaleLowerCase('es'),
-  Evaluadora: (e) => (e.evaluadora ?? '').toLocaleLowerCase('es'),
+  'Eval.': (e) => (e.evaluadora ?? '').toLocaleLowerCase('es'),
+  // Del más alto al más bajo, y lo que no tiene nivel al final.
+  Nivel: (e) => {
+    const n = nivelDeConclusion(e.recomendacion);
+    return n ? NIVELES.indexOf(n) : NIVELES.length;
+  },
   // Primero lo que vence antes, y lo que no está en seguimiento al final.
   Seguimiento: (e) => (e.etapa === 'Seguimiento' ? e.seguimientoAl ?? '9998' : '9999'),
   'Cómo le fue': (e) => e.seguimientoResultado ?? '',
@@ -78,7 +100,7 @@ const CLAVE: Record<string, (e: Evaluacion) => string | number> = {
 
 /** Lo que se escribe en el buscador se compara contra esto. */
 function textoDe(e: Evaluacion): string {
-  return [e.nombre, e.empresa, e.puesto, e.evaluadora ?? '']
+  return [e.nombre, e.empresa, e.puesto, e.evaluadora ?? '', e.recomendacion ?? '']
     .join(' ')
     .toLocaleLowerCase('es');
 }
@@ -97,13 +119,34 @@ function llano(t: string): string {
 }
 
 function Fila({ e }: { e: Evaluacion }) {
+  const router = useRouter();
   const enSeguimiento = e.etapa === 'Seguimiento';
+  const nivel = nivelDeConclusion(e.recomendacion);
+  /* La fila entera lleva a la ficha, en vez de un botón en su propia columna:
+     es lo único que se hace desde acá. La ficha y no el informe, porque desde
+     ahí se llega al informe con un clic y además a todo lo que lo sostiene. El
+     nombre sigue siendo un enlace, para el teclado y para abrirla en otra
+     pestaña. Las que siguen en Airtable no tienen ficha y no se tocan. */
+  const ficha = e.origen === 'supabase' ? `/os/psicotecnicos/ficha/${e.id}?desde=entregados` : null;
 
   return (
-    <tr>
+    <tr
+      className={ficha ? 'os-fila-clic' : undefined}
+      onClick={(ev) => {
+        if (!ficha || (ev.target as HTMLElement).closest('a')) return;
+        if (ev.metaKey || ev.ctrlKey) window.open(ficha, '_blank');
+        else router.push(ficha);
+      }}
+    >
       <td data-campo="Fecha">{fechaCorta(e.fechaEntrega) ?? <Falta texto="sin fecha" />}</td>
       <td data-campo="Candidato" className="os-tabla-nombre">
-        {e.nombre}
+        {ficha ? (
+          <Link className="os-fila-nombre" href={ficha}>
+            {e.nombre}
+          </Link>
+        ) : (
+          e.nombre
+        )}
       </td>
       {/* Empresa y puesto en columnas propias: se ordena y se lee por cliente,
           y la fila queda en un renglón como todas las del sistema. */}
@@ -115,22 +158,16 @@ function Fila({ e }: { e: Evaluacion }) {
       </td>
       {/* Solo el nombre de pila: son dos y las dos se apellidan Campos, así que
           el apellido no distingue nada y le comía ancho a la empresa. */}
-      <td data-campo="Evaluadora" className="os-tabla-flojo" title={e.evaluadora ?? undefined}>
+      <td data-campo="Eval." className="os-tabla-flojo" title={e.evaluadora ?? undefined}>
         {e.evaluadora ? e.evaluadora.split(' ')[0] : <Falta texto="sin asignar" />}
       </td>
-      {/* La ficha y no el informe: desde ahí se llega al informe con un clic y
-          además a todo lo que lo sostiene, que es lo que se viene a consultar
-          cuando alguien pregunta por una evaluación vieja. */}
-      <td data-campo="Ficha">
-        {e.origen === 'supabase' ? (
-          <Link
-            className="os-boton os-boton-firme"
-            href={`/os/psicotecnicos/ficha/${e.id}?desde=entregados`}
-          >
-            Ver ficha
-          </Link>
+      {/* El nivel de ajuste que firmó la evaluadora, con el color con que sale
+          en el informe: es lo primero que se pregunta de una evaluación vieja. */}
+      <td data-campo="Nivel" className="os-tabla-recorta" title={nivel?.titulo}>
+        {nivel ? (
+          <span className={`os-nivel-tag os-${nivel.color}`}>{corto(nivel.titulo)}</span>
         ) : (
-          <Falta texto="fuera del sistema" />
+          <Falta texto="sin nivel" />
         )}
       </td>
       {/* Cuánto queda para los noventa días, o que todavía no hay reloj. Se

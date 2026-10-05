@@ -14,6 +14,7 @@
  * aparecen después, de a uno.
  */
 
+import { hoyIso } from '@/lib/hora';
 import 'server-only';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
@@ -230,6 +231,11 @@ export type CandidatoNuevo = {
   evaluadoraId: string | null;
   origen: 'interno' | 'portal';
   cv?: File | null;
+  /**
+   * Quién de la empresa cargó a este candidato. Un pedido lo arranca una
+   * persona y después le suman candidatos otras; null es "el del pedido".
+   */
+  solicitanteId?: string | null;
 };
 
 /**
@@ -271,7 +277,8 @@ export async function crearCandidato(c: CandidatoNuevo): Promise<{ id: string }>
     evaluadora_id: c.evaluadoraId,
     estado: c.evaluadoraId ? 'Por citar' : 'Sin asignar',
     mensaje: c.evaluadoraId ? 'Sin contactar' : null,
-    fecha_ingreso: new Date().toISOString().slice(0, 10),
+    fecha_ingreso: hoyIso(),
+    solicitante_id: c.solicitanteId ?? null,
   });
 
   // Un candidato nuevo en un pedido que se había cerrado lo vuelve a abrir: un

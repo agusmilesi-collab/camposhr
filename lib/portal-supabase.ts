@@ -26,6 +26,7 @@ type FilaPedido = {
   reabierto_el: string | null;
   con_benziger: boolean | null;
   baterias: { codigo: string } | null;
+  solicitante: { nombre: string } | null;
   evaluaciones: {
     id: string;
     estado: string;
@@ -37,15 +38,17 @@ type FilaPedido = {
     facturado: boolean | null;
     pagado: boolean | null;
     personas: { nombre: string } | null;
+    solicitante: { nombre: string } | null;
     evaluadoras: { nombre: string } | null;
   }[];
 };
 
 const CAMPOS =
   'id,puesto,estado,familia,seniority,fecha_pedido,reabierto_el,con_benziger,' +
-  'baterias(codigo),' +
+  'baterias(codigo),solicitante:contactos!solicitante_id(nombre),' +
   'evaluaciones(id,estado,fecha_entrevista,fecha_entrega,modalidad,recomendacion,' +
-  'informe_path,facturado,pagado,personas(nombre),evaluadoras(nombre))';
+  'informe_path,facturado,pagado,personas(nombre),evaluadoras(nombre),' +
+  'solicitante:contactos!solicitante_id(nombre))';
 
 /**
  * Hasta dónde llegó el cobro de cada evaluación, leído de las facturas.
@@ -154,12 +157,19 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
     fecha: p.reabierto_el ?? p.fecha_pedido,
     bateria: p.baterias?.codigo ?? null,
     conBenziger: p.con_benziger === true,
+    solicitante: p.solicitante?.nombre ?? null,
     candidatos: (p.evaluaciones ?? []).map(
       (e): Candidato => ({
         id: e.id,
         nombre: e.personas?.nombre ?? 'Sin nombre',
         estado: e.estado,
         evaluadora: e.evaluadoras?.nombre ?? null,
+        // Solo cuando lo cargó alguien distinto de quien abrió el pedido: si es
+        // la misma persona, ya lo dice el título de la búsqueda.
+        cargadoPor:
+          e.solicitante?.nombre && e.solicitante.nombre !== p.solicitante?.nombre
+            ? e.solicitante.nombre
+            : null,
         fechaEntrevista: e.fecha_entrevista,
         fechaEntrega: e.fecha_entrega,
         modalidad: e.modalidad,

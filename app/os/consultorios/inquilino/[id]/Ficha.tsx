@@ -16,6 +16,7 @@
  */
 
 import Link from 'next/link';
+import { CONDICIONES } from '@/lib/clientes-tipos';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -526,10 +527,11 @@ export default function Ficha({
                 name="condicionIva"
                 defaultValue={i.condicion_iva ?? 'Consumidor Final'}
               >
-                <option>Consumidor Final</option>
-                <option>Monotributo</option>
-                <option>Responsable Inscripto</option>
-                <option>Exento</option>
+                {CONDICIONES.map((c) => (
+                  <option key={c.valor} value={c.valor}>
+                    {c.leyenda}
+                  </option>
+                ))}
               </select>
             </label>
             <div className="os-ficha-tildes">

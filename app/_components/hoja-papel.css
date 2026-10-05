@@ -1,0 +1,205 @@
+/* La orden de compra en pantalla. Una hoja A4 a 96 puntos por pulgada: 794 por
+   1123 píxeles, con los mismos 56 puntos de margen del PDF (75 px). Todo
+   cuelga de `.orden-compra` porque las hojas de estilo son globales. */
+
+.orden-compra {
+  --oc-tinta: #16202b;
+  --oc-clara: #f6f5f2;
+  --oc-papel: #f2f0ec;
+  --oc-media: #46505c;
+  --oc-gris: #7b7770;
+  --oc-linea: #e2ded6;
+  --oc-punto: #b9b4aa;
+
+  min-height: 100vh;
+  padding: 32px 16px 64px;
+  background: #d9d6cf;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--oc-tinta);
+}
+
+.orden-compra .oc-hoja {
+  position: relative;
+  width: 794px;
+  min-height: 1123px;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 2px 18px rgba(22, 32, 43, 0.14);
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------------------- la marca */
+.orden-compra .oc-banda {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 40px 75px 30px;
+  background: var(--oc-papel);
+}
+.orden-compra .oc-marca {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 48px;
+  line-height: 1;
+  color: var(--oc-tinta);
+}
+.orden-compra .oc-bajada {
+  font-size: 9px;
+  line-height: 1.22;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--oc-gris);
+}
+/* En un renglón, con un punto medio entre frase y frase. */
+.orden-compra .oc-bajada i {
+  font-style: normal;
+  margin: 0 7px;
+}
+/* A la derecha, apoyada en la misma línea donde apoyan las letras del
+   logotipo. */
+.orden-compra .oc-donde {
+  text-align: right;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--oc-gris);
+}
+/* La dirección del sitio: mayúsculas bien abiertas, como en la papelería. */
+.orden-compra .oc-sitio {
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--oc-gris);
+}
+
+/* --------------------------------------------------------------- el cuerpo */
+.orden-compra .oc-cuerpo {
+  flex: 1;
+  padding: 40px 75px 0;
+}
+.orden-compra p { margin: 0; }
+.orden-compra em { font-style: normal; color: var(--oc-gris); }
+
+/* Una sola columna: el título, a quién va y después la fecha y el estado. */
+.orden-compra .oc-datos {
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--oc-linea);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--oc-media);
+}
+.orden-compra .oc-datos h1 {
+  margin: 0 0 8px;
+  font-size: 18.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--oc-tinta);
+}
+.orden-compra .oc-datos h1 span { color: var(--oc-gris); margin-left: 4px; }
+.orden-compra .oc-quien { margin: 2px 0 10px; }
+.orden-compra .oc-rotulo { color: var(--oc-gris); }
+.orden-compra .oc-cliente {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--oc-tinta);
+}
+
+.orden-compra .oc-detalle { padding: 22px 0 18px; border-bottom: 1px solid var(--oc-linea); }
+.orden-compra .oc-detalle h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+/* Dos renglones por ítem, el concepto y debajo sobre quién, con poco aire
+   entre uno y otro: son renglones de una misma lista. */
+.orden-compra .oc-fila + .oc-fila { margin-top: 6px; }
+
+/* El concepto, los puntos que llevan la vista y el importe, en un renglón. */
+.orden-compra .oc-linea {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.orden-compra .oc-concepto { font-size: 12.5px; line-height: 1.35; color: var(--oc-media); }
+.orden-compra .oc-puntos {
+  flex: 1;
+  min-width: 24px;
+  border-bottom: 1.5px dotted var(--oc-punto);
+  transform: translateY(-3px);
+}
+.orden-compra .oc-importe {
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.orden-compra .oc-sub { font-size: 10.5px; line-height: 1.25; color: var(--oc-gris); }
+/* Lo que aclara a varios renglones a la vez, dicho una sola vez. */
+.orden-compra .oc-nota { margin-top: 10px; font-size: 10.5px; color: var(--oc-gris); }
+
+.orden-compra .oc-totales { padding-top: 26px; }
+.orden-compra .oc-subtotal { font-size: 14px; color: var(--oc-gris); }
+.orden-compra .oc-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 22px;
+  padding: 0 24px;
+  height: 54px;
+  border-radius: 11px;
+  background: var(--oc-tinta);
+  color: var(--oc-clara);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.orden-compra .oc-total span:last-child { font-size: 17.5px; }
+
+.orden-compra .oc-pago {
+  /* El de abajo es para la orden larga, que llena la hoja: sin él, la forma
+     de pago quedaba apoyada en la línea del pie. */
+  padding: 30px 0 34px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--oc-media);
+}
+
+/* ------------------------------------------------------------------ el pie */
+.orden-compra .oc-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 75px;
+  padding: 16px 0 44px;
+  border-top: 1px solid var(--oc-linea);
+  font-size: 10.5px;
+  color: var(--oc-gris);
+}
+
+/* La forma de pago a la izquierda y la aclaración a la derecha, en un renglón. */
+.orden-compra .oc-pago-linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  margin-bottom: 4px;
+}
+.orden-compra .oc-pago-linea b {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--oc-tinta);
+}
+
+/* Lo que va por encima de la hoja y no es parte del papel: el aviso de que
+   una factura todavía no tiene CAE, con su botón. Del ancho de la hoja. */
+.orden-compra .oc-arriba {
+  width: 794px;
+  max-width: 100%;
+  margin: 0 auto 16px;
+}
+
+@media print {
+  .orden-compra .oc-arriba { display: none; }
+  .orden-compra { padding: 0; background: #fff; }
+  .orden-compra .oc-hoja { box-shadow: none; }
+  @page { size: A4; margin: 0; }
+}

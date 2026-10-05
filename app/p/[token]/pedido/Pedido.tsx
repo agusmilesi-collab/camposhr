@@ -35,6 +35,8 @@ import type { Alcance } from '@/lib/precio-portal';
 import type { Contacto } from '@/lib/contactos-tipos';
 import type { Pregunta } from '@/lib/pedido-campos';
 import Elegir from './Elegir';
+import OrdenGracias from '@/app/_components/OrdenGracias';
+import type { Orden } from '@/lib/orden-compra-tipos';
 
 /** El color de la pastilla de cada batería, el mismo de la página de precios. */
 function colorDeBateria(codigo: string): string {
@@ -152,6 +154,8 @@ export default function Pedido({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
+  /** La orden de compra de lo que se acaba de cargar, si se pudo generar. */
+  const [orden, setOrden] = useState<Orden | null>(null);
   const soltar = useRef<HTMLInputElement>(null);
   /** El alcance del puesto, para llevar la vista hasta él al elegir una batería que lo pide. */
   const alcanceRef = useRef<HTMLDivElement>(null);
@@ -360,12 +364,44 @@ export default function Pedido({
       const data = await r.json();
       if (!r.ok) throw new Error(data?.error ?? 'No se pudo enviar el pedido.');
       setHecho(data.resumen as string);
+      setOrden((data.orden as Orden | null) ?? null);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo enviar el pedido.');
     } finally {
       setEnviando(false);
     }
+  }
+
+  /** Deja el formulario como recién abierto, para cargar otro. */
+  const empezarDeNuevo = () => {
+    setHecho(null);
+    setFilas([vacia(0)]);
+    setProxima(1);
+    setPuesto('');
+    setDescripcion('');
+    setComentarios('');
+    setPerfil({});
+    setModo(null);
+    setBusqueda('');
+    setPaso('busqueda');
+    setOrden(null);
+  };
+
+  // Con orden, la confirmación es la orden: el gracias, lo que se pidió, cuánto
+  // sale y qué sigue. Sin ella (no se pudo generar) queda la de siempre.
+  if (hecho && orden) {
+    return (
+      <OrdenGracias
+        orden={orden}
+        pdf={`/api/portal/orden/${orden.token}`}
+        volver={`/p/${token}`}
+      >
+        <button type="button" className="og-boton og-boton-claro" onClick={empezarDeNuevo}>
+          Cargar otro pedido
+        </button>
+      </OrdenGracias>
+    );
   }
 
   if (hecho) {
@@ -389,22 +425,7 @@ export default function Pedido({
             <a className="btn-primario" href={`/p/${token}`}>
               Volver al portal
             </a>
-            <button
-              type="button"
-              className="btn-sec"
-              onClick={() => {
-                setHecho(null);
-                setFilas([vacia(0)]);
-                setProxima(1);
-                setPuesto('');
-                setDescripcion('');
-                setComentarios('');
-                setPerfil({});
-                setModo(null);
-                setBusqueda('');
-                setPaso('busqueda');
-              }}
-            >
+            <button type="button" className="btn-sec" onClick={empezarDeNuevo}>
               Cargar otro pedido
             </button>
           </div>

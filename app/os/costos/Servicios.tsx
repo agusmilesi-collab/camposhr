@@ -23,6 +23,7 @@ import {
   type Emisora,
   type Factura,
 } from '@/lib/facturas-tipos';
+import { hoyIso } from '@/lib/hora';
 import { Cobro, BorrarFactura } from '@/app/os/psicotecnicos/facturacion/Facturacion';
 import { columnas } from '@/app/os/psicotecnicos/piezas';
 
@@ -38,7 +39,7 @@ const MEDIDAS = columnas(COLUMNAS, {
   '': 96,
 });
 
-const hoy = () => new Date().toISOString().slice(0, 10);
+const hoy = hoyIso;
 
 async function mandar(cuerpo: unknown) {
   const res = await fetch('/api/os/facturas', {
