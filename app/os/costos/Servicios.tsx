@@ -240,7 +240,7 @@ export function OtraFactura({
               name="puntoVenta"
               type="number"
               min="1"
-              defaultValue={propia?.puntoVenta ?? ''}
+              defaultValue=""
               placeholder="—"
             />
           </div>

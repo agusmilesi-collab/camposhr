@@ -21,6 +21,7 @@ import { fechaCorta } from '@/lib/hora';
 import {
   formatoFecha,
   formatoImporte,
+  conceptoPorDefecto,
   numeroDe,
   totalDe,
   type Emisora,
@@ -90,6 +91,7 @@ const PROPIOS_EMITIDAS = {
   '': 96,
 };
 const MEDIDAS_EMITIDAS = columnas(COLUMNAS_EMITIDAS, PROPIOS_EMITIDAS);
+
 
 /**
  * Dónde empieza la columna que se abre.
@@ -224,6 +226,39 @@ function GrupoCliente({
     }
   }
 
+  /**
+   * Sin factura: un toque. Queda en Sin cobrar como cualquier otra, y en vez
+   * de un comprobante se baja el recibo, que es lo que se le manda al cliente.
+   *
+   * La emisora no se pregunta: es la de quien tomó la evaluación, que es de
+   * quien es el cobro.
+   */
+  async function sinFactura() {
+    const duenia = seleccion[0]?.evaluadora ?? '';
+    const emisora = emisoras.find((e) => duenia.includes(e.nombre)) ?? propia ?? emisoras[0];
+    if (!emisora) return;
+    setEnviando(true);
+    setError(null);
+    try {
+      const r = await mandar({
+        accion: 'nueva',
+        sinComprobante: true,
+        emisorId: emisora.id,
+        empresaId,
+        fecha: hoy(),
+        evaluaciones: elegidas,
+      });
+      router.refresh();
+      // La ruta lo manda como adjunto: el navegador lo baja y la pantalla
+      // se queda donde está.
+      if (r?.id) window.location.assign(`/api/os/recibo/${r.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo guardar.');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
   return (
     <section className="os-panel">
       <div className="os-panel-top">
@@ -318,7 +353,7 @@ function GrupoCliente({
       </div>
 
       {!abierto ? (
-        <div className="os-panel-cuerpo">
+        <div className="os-panel-cuerpo os-form-pie">
           <button
             className="os-boton os-boton-firme"
             disabled={seleccion.length === 0}
@@ -326,9 +361,21 @@ function GrupoCliente({
           >
             {seleccion.length === 0 ? 'Facturar' : `Facturar ${seleccion.length}`}
           </button>
+          {error && <p className="os-form-error">{error}</p>}
           {seleccion.length === 0 && (
             <p className="os-form-nota">Tildá al menos una evaluación.</p>
           )}
+          {/* En la otra punta: es la excepción, y pegado a "Facturar" se
+              apretaba por error. */}
+          <button
+            className="os-boton"
+            style={{ marginLeft: 'auto' }}
+            disabled={seleccion.length === 0 || enviando}
+            onClick={sinFactura}
+            title="Sale de la cola, queda en Sin cobrar y se baja el recibo"
+          >
+            {enviando ? 'Generando el recibo…' : 'Sin factura'}
+          </button>
         </div>
       ) : (
         <form className="os-form os-form-factura os-panel-cuerpo" onSubmit={emitir}>
@@ -353,7 +400,7 @@ function GrupoCliente({
                 name="puntoVenta"
                 type="number"
                 min="1"
-                defaultValue={propia?.puntoVenta ?? ''}
+                defaultValue=""
                 placeholder="—"
               />
             </div>
@@ -376,18 +423,21 @@ function GrupoCliente({
             </div>
             <div className="os-campo-bloque os-tramo-4">
               <label className="os-etiqueta-campo">Concepto</label>
+              {/* Viene escrito con el puesto y la persona de cada tildada, y
+                  se puede cambiar: hay clientes que piden otro texto. */}
               <input
                 className="os-campo"
                 name="concepto"
-                maxLength={200}
-                placeholder="Evaluaciones psicotécnicas"
+                maxLength={400}
+                defaultValue={conceptoPorDefecto(seleccion)}
               />
             </div>
           </div>
 
           <p className="os-form-nota">
-            El importe sale de las evaluaciones tildadas: {formatoImporte(total)}. Todavía no se
-            pide el CAE a ARCA, así que el comprobante sale con la marca de muestra.
+            El importe sale de las evaluaciones tildadas: {formatoImporte(total)}. Si hay orden
+            de compra, se agrega al final del concepto. Con el número vacío, el CAE se pide
+            después desde el comprobante.
           </p>
 
           <div className="os-form-pie">
@@ -519,10 +569,16 @@ function TablaEmitidas({ facturas }: { facturas: Factura[] }) {
               <td className="os-tabla-nombre" data-campo="Número">
                 <a
                   className="os-tabla-enlace"
-                  href={`/os/psicotecnicos/facturacion/comprobante/${f.id}`}
+                  // La que va sin factura no tiene comprobante que abrir: lo
+                  // que hay para mirar o volver a mandar es su recibo.
+                  href={
+                    f.sinComprobante
+                      ? `/api/os/recibo/${f.id}`
+                      : `/os/psicotecnicos/facturacion/comprobante/${f.id}`
+                  }
                   target="_blank"
                 >
-                  {numeroDe(f)}
+                  {f.sinComprobante ? 'Recibo' : numeroDe(f)}
                 </a>
               </td>
               <td className="os-tabla-recorta" data-campo="Emisora">

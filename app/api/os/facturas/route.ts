@@ -6,11 +6,14 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { listarAFacturar } from '@/lib/facturas';
-import { ESTADOS_FACTURA, totalDe } from '@/lib/facturas-tipos';
+import { ESTADOS_FACTURA, conceptoDe, conceptoPorDefecto, totalDe } from '@/lib/facturas-tipos';
 import { CATEGORIAS_SERVICIOS } from '@/lib/monotributo';
+import { emitirEnArca } from '@/lib/arca/emitir';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// Pedir el CAE son tres idas a ARCA, y la primera del día suma el ticket.
+export const maxDuration = 60;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
@@ -53,10 +56,10 @@ function refrescar() {
  * adicional Benziger al dólar del día. Lo que el formulario manda es qué entra
  * y con qué número sale, no cuánto sale.
  *
- * **No llama a ARCA.** No hay certificados cargados y, antes de eso, falta la
- * cuenta por persona que pide `SPECS-facturacion.md`. Cuando eso exista, la
- * emisión escribe en esta misma fila el CAE que devuelva, y el comprobante deja
- * de salir con la marca de muestra.
+ * **El alta no llama a ARCA; el CAE se pide aparte**, con la acción `arca`,
+ * sobre una factura que ya está guardada en borrador. Separadas, una factura
+ * que ARCA rechaza no se pierde: queda con su detalle y el motivo, y se vuelve
+ * a pedir cuando se corrigió lo que faltaba.
  */
 export async function POST(req: Request) {
   if (hayPuerta()) {
@@ -92,8 +95,12 @@ export async function POST(req: Request) {
           return NextResponse.json({ error: 'La fecha no es válida.' }, { status: 400 });
         }
 
+        // Con recibo y sin factura: el mismo alta, sin número ni punto de
+        // venta, que son de un comprobante fiscal y acá no hay ninguno.
+        const sinComprobante = datos.sinComprobante === true;
+
         const numero =
-          datos.numero === '' || datos.numero === null || datos.numero === undefined
+          sinComprobante || datos.numero === '' || datos.numero === null || datos.numero === undefined
             ? null
             : Number(datos.numero);
         if (numero !== null && (!Number.isInteger(numero) || numero < 1)) {
@@ -104,7 +111,7 @@ export async function POST(req: Request) {
         }
 
         const puntoVenta =
-          datos.puntoVenta === '' || datos.puntoVenta === null || datos.puntoVenta === undefined
+          sinComprobante || datos.puntoVenta === '' || datos.puntoVenta === null || datos.puntoVenta === undefined
             ? null
             : Number(datos.puntoVenta);
 
@@ -150,6 +157,22 @@ export async function POST(req: Request) {
         const total = entran.reduce((n, e) => n + totalDe(e), 0);
         const dolar = entran.find((e) => e.benziger !== null)?.dolar ?? null;
 
+        // El concepto sale de las evaluaciones, en el orden en que están en la
+        // cola, y se puede pisar: hay clientes que piden otro texto. La orden
+        // de compra va adentro del concepto además de en su renglón, porque es
+        // ahí donde el cliente la busca para aprobar el pago.
+        const porDefecto = conceptoPorDefecto(entran);
+        const escrito = String(datos.concepto ?? '').trim();
+        const ordenCompra = String(datos.ordenCompra ?? '').trim() || null;
+        const base = escrito || porDefecto;
+        const concepto =
+          ordenCompra && !base.includes(ordenCompra)
+            ? `${base} · Orden de compra ${ordenCompra}`
+            : base;
+        // Con una sola persona, el texto que pidió el cliente es también el del
+        // renglón: si no, la factura diría dos cosas distintas por lo mismo.
+        const propio = escrito && escrito !== porDefecto && entran.length === 1 ? escrito : null;
+
         const factura = await escribir('facturas', 'POST', {
           origen: 'os',
           emisor_id: emisorId,
@@ -159,10 +182,15 @@ export async function POST(req: Request) {
           fecha,
           imp_total: total,
           moneda: 'PES',
-          concepto: String(datos.concepto ?? '').trim() || 'Evaluaciones psicotécnicas',
-          orden_compra: String(datos.ordenCompra ?? '').trim() || null,
+          concepto,
+          orden_compra: ordenCompra,
           notas: String(datos.notas ?? '').trim() || null,
-          estado: ESTADOS_FACTURA.includes(datos.estado) ? datos.estado : 'emitida',
+          estado: sinComprobante
+            ? 'emitida'
+            : ESTADOS_FACTURA.includes(datos.estado)
+              ? datos.estado
+              : 'emitida',
+          sin_comprobante: sinComprobante,
           cobrada_at: FECHA.test(datos.cobradaAt ?? '') ? datos.cobradaAt : null,
           // La cotización queda congelada en la factura: el mes que viene el
           // dólar es otro y el comprobante tiene que seguir explicando su total.
@@ -178,14 +206,10 @@ export async function POST(req: Request) {
           renglones.push({
             factura_id: factura.id,
             evaluacion_id: e.evaluacionId,
-            descripcion: `Evaluación psicotécnica · ${e.candidato} · ${e.puesto}`,
-            detalle: [
-              e.bateria,
-              e.bateriaNombre,
-              e.fechaEntrega ? `informe entregado el ${formatoDia(e.fechaEntrega)}` : null,
-            ]
-              .filter(Boolean)
-              .join(' · '),
+            descripcion: propio ?? conceptoDe(e),
+            // Sin segunda línea: la batería y la fecha de entrega son datos
+            // del trabajo interno, y en el papel del cliente no van.
+            detalle: null,
             cantidad: 1,
             precio_unitario: e.precio,
             importe: e.precio,
@@ -198,7 +222,7 @@ export async function POST(req: Request) {
               // Escrito y no omitido porque PostgREST rechaza un alta en lote
               // donde los objetos no tienen exactamente las mismas claves.
               evaluacion_id: null,
-              descripcion: `Adicional Benziger · ${e.candidato}`,
+              descripcion: `Adicional BTSA, ${e.candidato}`,
               detalle:
                 dolar === null
                   ? 'USD 40'
@@ -244,7 +268,7 @@ export async function POST(req: Request) {
           accion: 'escritura',
           recurso: 'factura',
           recursoId: factura.id,
-          detalle: { alta: true, numero, total, evaluaciones: pedidas.length },
+          detalle: { alta: true, numero, total, evaluaciones: pedidas.length, sinComprobante },
         });
         refrescar();
         return NextResponse.json({ ok: true, id: factura.id });
@@ -343,7 +367,9 @@ export async function POST(req: Request) {
           cotizacion_id: UUID.test(datos.cotizacionId ?? '') ? datos.cotizacionId : null,
           orden_compra: String(datos.ordenCompra ?? '').trim() || null,
           notas: String(datos.notas ?? '').trim() || null,
-          estado: 'emitida',
+          // En borrador cuando el CAE se va a pedir desde acá; emitida cuando
+          // se está anotando una que ya salió por Comprobantes en Línea.
+          estado: datos.estado === 'borrador' ? 'borrador' : 'emitida',
           quien: yo.nombre,
         });
 
@@ -401,6 +427,37 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
 
+      /**
+       * Pedir el CAE. Todo lo que decide el comprobante está en
+       * `lib/arca/emitir.ts`; acá se anota quién lo pidió y se pasa el número
+       * a las evaluaciones, que es lo que mira el pipeline.
+       */
+      case 'arca': {
+        const { id } = datos;
+        if (!UUID.test(id ?? '')) {
+          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        }
+        const r = await emitirEnArca(id);
+        await anotarAcceso({
+          quien: yo.nombre,
+          accion: 'escritura',
+          recurso: 'factura',
+          recursoId: id,
+          detalle: r.ok
+            ? { arca: 'autorizada', ambiente: r.ambiente, numero: r.numero, cae: r.cae }
+            : { arca: 'sin autorizar', motivo: r.error },
+        });
+        refrescar();
+        if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
+        const cubiertas = await evaluacionesDe(id);
+        if (cubiertas) {
+          await escribir(`evaluaciones?id=in.(${cubiertas})`, 'PATCH', {
+            numero_factura: String(r.numero),
+          });
+        }
+        return NextResponse.json(r);
+      }
+
       case 'estado': {
         const { id, estado } = datos;
         if (!UUID.test(id ?? '') || !ESTADOS_FACTURA.includes(estado)) {
@@ -453,11 +510,6 @@ export async function POST(req: Request) {
     console.error('facturas:', e);
     return NextResponse.json({ error: 'No se pudo guardar.' }, { status: 500 });
   }
-}
-
-function formatoDia(iso: string): string {
-  const [a, m, d] = iso.slice(0, 10).split('-');
-  return d && m && a ? `${d}/${m}/${a}` : iso;
 }
 
 /** Los ids de las evaluaciones que entraron en una factura, listos para `in.()`. */
