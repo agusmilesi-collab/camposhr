@@ -14,6 +14,8 @@ import { useRouter } from 'next/navigation';
 export default function PedirCae({ id }: { id: string }) {
   const router = useRouter();
   const [pidiendo, setPidiendo] = useState(false);
+  /** El primer toque pregunta; el segundo emite. */
+  const [seguro, setSeguro] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function pedir() {
@@ -32,14 +34,29 @@ export default function PedirCae({ id }: { id: string }) {
       setError('No se pudo llegar al servidor. No se sabe si se emitió: recargá antes de reintentar.');
     } finally {
       setPidiendo(false);
+      setSeguro(false);
     }
   }
 
   return (
     <>
-      <button type="button" className="pedir" onClick={pedir} disabled={pidiendo}>
-        {pidiendo ? 'Pidiendo el CAE…' : 'Pedir CAE a ARCA'}
-      </button>
+      {/* En dos toques: lo que sale de acá es una factura en ARCA, que no se
+          borra ni se corrige. Se anula con una nota de crédito. */}
+      {seguro ? (
+        <>
+          <span className="pregunta">¿Emitir esta factura en ARCA? Después no se borra ni se corrige.</span>
+          <button type="button" className="pedir" onClick={pedir} disabled={pidiendo}>
+            {pidiendo ? 'Pidiendo el CAE…' : 'Sí, emitir'}
+          </button>
+          <button type="button" className="pedir pedir-no" onClick={() => setSeguro(false)} disabled={pidiendo}>
+            No
+          </button>
+        </>
+      ) : (
+        <button type="button" className="pedir" onClick={() => setSeguro(true)}>
+          Pedir CAE a ARCA
+        </button>
+      )}
       {error && <div className="motivo">{error}</div>}
     </>
   );

@@ -22,6 +22,7 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import type { Emisora } from '@/lib/facturas-tipos';
 import { pesos } from './acciones';
+import { BorrarFactura } from '@/app/os/psicotecnicos/facturacion/Facturacion';
 
 export type Facturable = {
   id: string;
@@ -102,6 +103,8 @@ export default function Facturar({
   const [propios, setElegidos] = useState<string[]>(pendientes.map((p) => p.id));
   const elegidos = seleccion ?? propios;
   const [enviando, setEnviando] = useState(false);
+  /** El primer toque pregunta; el segundo factura. */
+  const [seguro, setSeguro] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
 
@@ -144,10 +147,17 @@ export default function Facturar({
         setError(r.motivo ?? 'No se pudo facturar.');
         return;
       }
+      const una = r.facturas.length === 1;
+      // Con la emisora en producción lo que se hizo es prepararlas: salen de
+      // verdad cuando se le pide el CAE a cada una, desde su comprobante.
       setHecho(
-        r.facturas.length === 1
-          ? `Factura emitida a ${r.facturas[0].inquilino}.`
-          : `${r.facturas.length} facturas emitidas.`
+        r.faltaCae
+          ? una
+            ? `Factura de ${r.facturas[0].inquilino} preparada. Falta pedirle el CAE desde su comprobante.`
+            : `${r.facturas.length} facturas preparadas. Falta pedirle el CAE a cada una desde su comprobante.`
+          : una
+            ? `Factura anotada a ${r.facturas[0].inquilino}.`
+            : `${r.facturas.length} facturas anotadas.`
       );
       setNumero('');
       empezar(() => router.refresh());
@@ -155,6 +165,7 @@ export default function Facturar({
       setError('No se pudo facturar.');
     } finally {
       setEnviando(false);
+      setSeguro(false);
     }
   }
 
@@ -257,19 +268,35 @@ export default function Facturar({
                 />
               </label>
 
-              <button
-                className="os-boton os-boton-firme"
-                type="button"
-                onClick={facturar}
-                disabled={enviando || entran.length === 0}
-              >
-                {enviando
-                  ? 'Facturando…'
-                  : entran.length > 1
-                    ? `Facturar a ${entran.length}`
-                    : 'Facturar'}
-              </button>
+              {!seguro && (
+                <button
+                  className="os-boton os-boton-firme"
+                  type="button"
+                  onClick={() => setSeguro(true)}
+                  disabled={enviando || entran.length === 0}
+                >
+                  {entran.length > 1 ? `Facturar a ${entran.length}` : 'Facturar'}
+                </button>
+              )}
             </div>
+
+            {/* En dos toques, y diciendo quién factura, a cuántos y por cuánto:
+                de un toque salían trece facturas con la emisora que estaba
+                puesta por defecto. */}
+            {seguro && (
+              <div className="os-facturar-confirma">
+                <span>
+                  ¿Facturar a <b>{entran.length === 1 ? entran[0].nombre : `${entran.length} personas`}</b> por{' '}
+                  <b>{pesos(total)}</b> con <b>{emisoraElegida?.nombre ?? 'sin emisora'}</b>?
+                </span>
+                <button className="os-boton os-boton-firme" type="button" onClick={facturar} disabled={enviando}>
+                  {enviando ? 'Facturando…' : 'Sí, facturar'}
+                </button>
+                <button className="os-boton" type="button" onClick={() => setSeguro(false)} disabled={enviando}>
+                  No
+                </button>
+              </div>
+            )}
 
             {entran.length > 1 && numero.trim() !== '' && (
               <p className="os-form-nota">
@@ -300,7 +327,9 @@ export default function Facturar({
                   <span className="os-dato-falta">
                     {f.periodo ?? '—'} · {f.emisor} ·{' '}
                     {f.numero === null
-                      ? 'sin número'
+                      ? f.estado === 'borrador'
+                        ? 'falta el CAE'
+                        : 'sin número'
                       : `${String(f.puntoVenta ?? 0).padStart(5, '0')}-${String(f.numero).padStart(8, '0')}`}{' '}
                     · {dia(f.fecha)}
                   </span>
@@ -313,6 +342,11 @@ export default function Facturar({
                 >
                   Comprobante
                 </Link>
+                {/* La que todavía no pasó por ARCA se puede quitar: sus cargos
+                    vuelven a la cola del mes. */}
+                {f.estado === 'borrador' && (
+                  <BorrarFactura id={f.id} numero={`de ${f.inquilino}`} />
+                )}
               </div>
             ))}
           </div>

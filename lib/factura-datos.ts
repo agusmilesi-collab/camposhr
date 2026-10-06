@@ -179,6 +179,49 @@ type Vinculado = { id: string; numero: number | null; punto_venta: number | null
  * Los datos de una factura o una nota de crédito. Null si no existe o si es de
  * las que van sin factura, que no tienen comprobante.
  */
+/**
+ * El alquiler del mes en un renglón, con el total de horas.
+ *
+ * La factura de un consultorio guarda un renglón por cada vez que se usó
+ * ("Consultorio 4, 08:00 a 16:00"), porque así cada cargo queda atado a su
+ * factura y no se cobra dos veces. En el papel ese detalle no hace falta: va
+ * "Servicios 72 horas octubre 2026" y el importe (redacción que eligió
+ * Agustín el 6/10/2026). Lo que no es un turno con horario
+ * (un cargo suelto) sigue en su propio renglón.
+ */
+function resumirAlquiler(
+  renglones: { id: string; descripcion: string; importe: number | null }[],
+  concepto: string | null
+): { id: string; texto: string; importe: number | null }[] {
+  const HORARIO = /(\d{1,2}):(\d{2}) a (\d{1,2}):(\d{2})/;
+  let horas = 0;
+  let importe = 0;
+  const sueltos: { id: string; texto: string; importe: number | null }[] = [];
+  for (const r of renglones) {
+    const m = HORARIO.exec(r.descripcion);
+    const dura = m ? Number(m[3]) + Number(m[4]) / 60 - (Number(m[1]) + Number(m[2]) / 60) : 0;
+    if (dura > 0) {
+      horas += dura;
+      importe += r.importe ?? 0;
+    } else {
+      sueltos.push({ id: r.id, texto: r.descripcion, importe: r.importe });
+    }
+  }
+  if (horas === 0) return sueltos;
+  const cuantas = horas.toLocaleString('es-AR', { maximumFractionDigits: 2 });
+  // El mes sale del concepto guardado ("… octubre de 2026" o "… octubre 2026").
+  const m = /([a-záéíóú]+)(?: de)? (\d{4})\s*$/i.exec(concepto ?? '');
+  const mes = m ? `${m[1].toLowerCase()} ${m[2]}` : '';
+  return [
+    {
+      id: 'alquiler',
+      texto: `Servicios ${cuantas} ${horas === 1 ? 'hora' : 'horas'}${mes ? ` ${mes}` : ''}`,
+      importe: Math.round(importe * 100) / 100,
+    },
+    ...sueltos,
+  ];
+}
+
 export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const factura = await verFactura(id);
@@ -291,9 +334,11 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
       ordenesNuestras: ordenes.map((o) => o.numero),
     },
     renglones:
-      factura.renglones.length > 0
-        ? factura.renglones.map((r) => ({ id: r.id, texto: r.descripcion, importe: r.importe }))
-        : [{ id: 'unico', texto: factura.concepto ?? 'Servicios profesionales', importe: total }],
+      factura.renglones.length === 0
+        ? [{ id: 'unico', texto: factura.concepto ?? 'Servicios profesionales', importe: total }]
+        : factura.inquilinoId
+          ? resumirAlquiler(factura.renglones, factura.concepto)
+          : factura.renglones.map((r) => ({ id: r.id, texto: r.descripcion, importe: r.importe })),
     total,
     cae: factura.cae,
     caeVence: factura.caeVenceEl ? formatoFecha(factura.caeVenceEl) : null,
