@@ -4,7 +4,7 @@ import { CONFIDENCIALIDAD, CUADRANTES, FIRMAS, NIVELES, NOTA_AJUSTE } from '@/li
 import { firmaEnDatos } from '@/lib/firmas';
 import Listas from '../_doc/Listas';
 import { Desglose } from '../_doc/Interno';
-import { EscalaBandas, IconoNivel, Velocimetro, tono } from '../_doc/piezas';
+import { EscalaBandas, IconoNivel, RadarCompetencias, Velocimetro, tono } from '../_doc/piezas';
 import Cerebro from '../_doc/Cerebro';
 import Crudo from '../_doc/Crudo';
 import Escalera from './Escalera';
@@ -57,10 +57,13 @@ async function Firma({ inf }: { inf: Informe }) {
   );
 }
 
-/** "a, b y c": una lista dicha en castellano. */
-function enLista(xs: string[]): string {
-  return xs.length <= 1 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`;
-}
+/** Cómo se nombra cada nivel adentro de la nota, donde "ajuste" ya está dicho. */
+const ETIQUETA_CORTA: Record<string, string> = {
+  alto: 'Alto',
+  desarrollar: 'A desarrollar',
+  alertas: 'Con alertas',
+  bajo: 'Bajo',
+};
 
 export type Seccion = {
   /** El ancla de la dirección y el destino del índice. */
@@ -118,9 +121,18 @@ export function seccionesDe(
                   una línea de tarjetas. */}
               <p className="inf-nota">
                 {NOTA_AJUSTE}{' '}
-                {elegido
-                  ? `Los otros niveles de la escala son ${enLista(otros.map((nv) => nv.titulo.toLowerCase()))}.`
-                  : `La escala tiene cuatro niveles: ${enLista(otros.map((nv) => nv.titulo.toLowerCase()))}.`}
+                {elegido ? 'Otros niveles:' : 'Niveles:'}{' '}
+                {/* Cada nivel en su etiqueta, del color con que se lo pinta
+                    cuando es el elegido: la escala se reconoce sin leerla. */}
+                {otros.map((nv, i) => (
+                  <span key={nv.clave}>
+                    {i > 0 && (i === otros.length - 1 ? ' y ' : ', ')}
+                    <span className={`inf-nivel-tag ${nv.color}`}>
+                      {ETIQUETA_CORTA[nv.clave] ?? nv.titulo}
+                    </span>
+                  </span>
+                ))}
+                .
               </p>
             </>
           );
@@ -171,6 +183,8 @@ export function seccionesDe(
 
           {/* Los velocímetros del documento: son lo que el cliente reconoce del
               informe impreso, y la descarga sale de esta misma sección. */}
+          <RadarCompetencias competencias={inf.competencias} exigencia={inf.exigencia} />
+
           <div className="inf-competencias">
             {ordenadas.map((c) => (
               <article key={c.nombre} className="inf-competencia">

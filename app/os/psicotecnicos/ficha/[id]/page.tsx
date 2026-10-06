@@ -694,7 +694,9 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
 
   return (
     <>
-      <section className="os-panel os-cierre os-informe-cierre os-panel-informe">
+      <section
+        className={`os-panel os-cierre os-informe-cierre os-panel-informe${comoSitio ? ' os-panel-a-hoja' : ''}`}
+      >
         <div className="os-panel-top">
           <h2>Recomendación</h2>
         </div>
@@ -705,6 +707,10 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
           <Conclusion id={c.id} recomendacion={c.recomendacion} notas={c.recomendacion_notas}>
             <TestsDeLaBateria f={f} />
           </Conclusion>
+          {/* Lo que conviene revisar antes de firmar va con la recomendación:
+              es donde se elige el nivel de ajuste, que es lo que esos avisos
+              ponen en duda. */}
+          {comoSitio && <Revisar inf={informe} />}
         </div>
       </section>
 
@@ -751,10 +757,9 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
         {/* Los avisos de quien firma van en la card del informe, al lado de
             los botones de descargar y entregar, que es donde se decide. Debajo
             quedan solo las hojas, lo mismo que recibe el cliente. */}
-        {comoSitio && (
+        {comoSitio && informe.faltantes.length > 0 && (
           <div className="os-panel-cuerpo os-informe-avisos">
             <Faltantes inf={informe} />
-            <Revisar inf={informe} />
           </div>
         )}
       </section>
