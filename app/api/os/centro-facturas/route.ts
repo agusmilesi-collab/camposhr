@@ -15,9 +15,10 @@ import { quienSoy } from '@/lib/identidad';
  * lote la numeración es correlativa desde el número que se escribe una sola
  * vez: pedir trece números a mano es donde aparecen los saltos.
  *
- * **No llama a ARCA**, igual que la facturación de psicotécnicos: no hay
- * certificados cargados. El OS registra el comprobante con su número y lo
- * imprime; el día que ARCA esté, el número y el CAE vienen de ahí.
+ * **No llama a ARCA.** Como en psicotécnicos, el alta deja la factura guardada
+ * y el CAE se pide después, desde el comprobante de cada una. Con la emisora
+ * en producción y sin número nace en `borrador`; con número es una que ya
+ * salió por Comprobantes en Línea y se está anotando.
  *
  * **Un cargo entra en una sola factura.** El renglón guarda de qué movimiento
  * salió, y la cola los saltea: sin eso, dos personas cerrando el mes a la vez
@@ -138,6 +139,17 @@ export async function POST(req: Request) {
       );
     }
 
+    // Con la emisora en producción y sin número, la factura se le va a pedir
+    // a ARCA: hasta que la autorice es un borrador. Como `emitida` contaba
+    // para el monotributo sin existir.
+    const { url, key } = config();
+    const resEmisor = await fetch(`${url}/rest/v1/emisores?select=ambiente&id=eq.${emisorId}&limit=1`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      cache: 'no-store',
+    });
+    const [emisora]: { ambiente: string | null }[] = resEmisor.ok ? await resEmisor.json() : [];
+    const faltaCae = emisora?.ambiente === 'produccion' && numero === null;
+
     const yo = await quienSoy();
     const hechas: { id: string; inquilino: string; numero: number | null }[] = [];
 
@@ -154,8 +166,8 @@ export async function POST(req: Request) {
         doc_nro: i.cuit,
         imp_total: i.total,
         moneda: 'PES',
-        concepto: `Alquiler de consultorio · ${periodoLindo(periodo)}`,
-        estado: 'emitida',
+        concepto: `Servicios ${periodoLindo(periodo).replace(' de ', ' ')}`,
+        estado: faltaCae ? 'borrador' : 'emitida',
         quien: yo.nombre,
       });
 
@@ -188,7 +200,7 @@ export async function POST(req: Request) {
     });
 
     refrescar();
-    return NextResponse.json({ ok: true, facturas: hechas });
+    return NextResponse.json({ ok: true, facturas: hechas, faltaCae });
   } catch (e) {
     return NextResponse.json(
       { ok: false, motivo: e instanceof Error ? e.message : 'No se pudo facturar.' },

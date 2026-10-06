@@ -15586,6 +15586,16 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   border-top: 1px solid var(--os-linea-suave);
 }
 
+/* La pregunta antes de facturar: quién, a cuántos y por cuánto. */
+.os-facturar-confirma {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+
 .os-facturar-datos .os-campo-bloque {
   min-width: 150px;
 }

@@ -48,6 +48,9 @@ function refrescar() {
   revalidateTag(CACHE_COMERCIAL);
   revalidateTag(CACHE_CLIENTES);
   revalidateTag(CACHE_PSICOTECNICOS);
+  // Las facturas del Centro se leen con esta etiqueta: al quitar una, sus
+  // cargos tienen que volver a la cola del mes.
+  revalidateTag('consultorios');
 }
 
 /**
