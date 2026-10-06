@@ -8,7 +8,7 @@ import { quienSoy } from '@/lib/identidad';
 import { listarAFacturar } from '@/lib/facturas';
 import { conceptoDe, conceptoPorDefecto, totalDe } from '@/lib/facturas-tipos';
 import { CATEGORIAS_SERVICIOS } from '@/lib/monotributo';
-import { anularConNotaDeCredito, emitirEnArca } from '@/lib/arca/emitir';
+import { anularConNotaDeCredito, emitirEnArca, probarConexion } from '@/lib/arca/emitir';
 import { guardarPdfDeFactura } from '@/lib/factura-archivo';
 import { enumerar, faltaParaEmitir, faltaParaFacturarle } from '@/lib/clientes-tipos';
 
@@ -597,6 +597,21 @@ export async function POST(req: Request) {
           console.error('facturas, PDF de la nota:', e);
         }
         return NextResponse.json(r);
+      }
+
+      /**
+       * Probar la conexión de una emisora con ARCA sin emitir nada: es solo
+       * lectura. Para antes de pasarla a producción.
+       */
+      case 'probar-arca': {
+        const { emisorId } = datos;
+        const puntoVenta = Number(datos.puntoVenta);
+        if (!UUID.test(emisorId ?? '') || !Number.isInteger(puntoVenta) || puntoVenta < 1) {
+          return NextResponse.json({ error: 'Falta la emisora o el punto de venta.' }, { status: 400 });
+        }
+        const ambiente = datos.ambiente === 'produccion' ? 'produccion' : 'homologacion';
+        const r = await probarConexion(emisorId, ambiente, puntoVenta);
+        return NextResponse.json(r, { status: r.ok ? 200 : 502 });
       }
 
       case 'borrar': {

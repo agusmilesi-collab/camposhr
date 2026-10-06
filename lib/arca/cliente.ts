@@ -41,6 +41,11 @@ export function arcaDe(cuit: string, ambiente: Ambiente): Arca {
     cert: dePem(cert),
     key: dePem(key),
     production: ambiente === 'produccion',
+    // Los servidores de producción de ARCA negocian la conexión con una clave
+    // más corta de la que acepta Node por defecto, y la rechaza ("dh key too
+    // small"). El SDK trae un agente que la admite; apagado, en producción no
+    // se llega ni a pedir el ticket. Homologación anda igual con él.
+    useHttpsAgent: true,
     ticketStorage: new TicketsEnSupabase(cuit, ambiente),
   });
 }
