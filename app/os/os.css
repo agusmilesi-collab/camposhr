@@ -3579,6 +3579,27 @@ button.os-enlace-peligro:hover {
   color: var(--os-tinta-media);
 }
 
+/* La celda del cobro y la de la acción son botones: no se recortan con puntos
+   suspensivos ni se meten debajo de la de al lado. Con menos relleno entran
+   en pantallas más angostas. */
+.os-tabla-fija td[data-campo='Cobro'] {
+  padding-right: 6px;
+  text-overflow: clip;
+}
+
+.os-tabla-fija td[data-campo='Cobro'] .os-boton-menudo,
+.os-tabla-fija td.os-tabla-accion .os-boton-menudo {
+  padding-left: 7px;
+  padding-right: 7px;
+}
+
+/* La fecha de cobro: en verde y sin el punto, para que entre con el botón
+   del recibo al lado. Si fue en efectivo lo dice la leyenda al apuntarla. */
+.os-boton.os-cobrada {
+  color: var(--os-verde);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Al elegir cómo entró la plata son tres botones: si no entran en la
    columna, bajan a un segundo renglón en vez de cortarse. */
 .os-tabla-fija td:has(.os-cobro-elige) {

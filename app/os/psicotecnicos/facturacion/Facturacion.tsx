@@ -83,35 +83,26 @@ const COLUMNAS_EMITIDAS = [
  */
 const PROPIOS_EMITIDAS = {
   /* "05/10/26", entera aun con la pantalla angosta. */
-  Fecha: 96,
+  Fecha: 94,
   'Número': 106,
   /* Solo el nombre: son dos, y el apellido es el mismo. */
-  Emisora: 90,
-  /* El cliente se queda con lo que soltaron la emisora y el hueco que había
-     entre "Cubre" y el importe. */
+  Emisora: 88,
   Cliente: 112,
   /* Entra "6 evaluaciones" con el chevron al lado. */
-  Cubre: 150,
-  Importe: 132,
-  /* Entran "Marcar como cobrado", la fecha con el botón del recibo al lado, o
-     "Sí, cobrada" con "No". */
-  Cobro: 174,
-  /* Entran "Emitir NC" y, al lado, el ícono de quitar. */
-  '': 124,
+  Cubre: 146,
+  /* Con "$" y no "ARS": esos píxeles los necesitan las dos columnas de
+     botones, que no se pueden recortar. */
+  Importe: 110,
+  /* Entran enteros "Marcar como cobrado" y la fecha con "· efvo." y el botón
+     del recibo. Medido con la tabla en 900 px, que es donde se pisaban con
+     "Emitir NC": piden 165 y 122 px. */
+  Cobro: 194,
+  '': 138,
 };
 const MEDIDAS_EMITIDAS = columnas(COLUMNAS_EMITIDAS, PROPIOS_EMITIDAS);
-/* En Cobrado la celda del cobro lleva la fecha y el ícono del recibo, que
-   piden menos que "Marcar como cobrado". Lo que sobra va al número, que ahí
-   suele ser una orden de compra, y al cliente. */
-const MEDIDAS_COBRADAS = columnas(COLUMNAS_EMITIDAS, {
-  ...PROPIOS_EMITIDAS,
-  'Número': 104,
-  Emisora: 88,
-  Cliente: 120,
-  Cubre: 150,
-  Importe: 134,
-  Cobro: 168,
-});
+/* Cobrado usa las mismas: con "· efvo." la celda del cobro pide lo mismo que
+   "Marcar como cobrado". */
+const MEDIDAS_COBRADAS = MEDIDAS_EMITIDAS;
 
 /** Las de las anuladas: la factura, y la nota de crédito que la anuló. */
 const COLUMNAS_ANULADAS = ['Fecha', 'Factura', 'Emisora', 'Cliente', 'Importe', 'Nota de crédito', 'Anulada el'];
@@ -914,7 +905,9 @@ function TablaEmitidas({
                 {f.importe === null ? (
                   <span className="os-dato-falta">falta</span>
                 ) : (
-                  formatoImporte(f.importe, f.moneda === 'DOL' ? 'USD' : 'ARS')
+                  f.moneda === 'DOL'
+                    ? formatoImporte(f.importe, 'USD')
+                    : `$ ${Math.round(f.importe).toLocaleString('es-AR')}`
                 )}
               </td>
               <td data-campo="Cobro">
@@ -1084,12 +1077,11 @@ export function Cobro({
     return (
       <span className="os-cobro-confirma">
         <button
-          className="os-boton os-boton-marcado os-sello-estado os-verde"
+          className="os-boton os-boton-marcado os-boton-menudo os-cobrada"
           title={`Cobrada, ${formaPago === 'efectivo' ? 'en efectivo' : 'por transferencia'}. Tocar para corregirla o quitar el cobro.`}
           onClick={() => setSeguro(true)}
         >
           {fechaBreve(cobradaAt)}
-          {formaPago === 'efectivo' ? ' · efvo.' : ''}
         </button>
         <a
           className="os-boton os-boton-icono"
