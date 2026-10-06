@@ -35,20 +35,27 @@ import 'server-only';
 import { insert, select, patch } from '@/lib/supabase';
 import { arcaDe, tieneCertificado, type Ambiente } from '@/lib/arca/cliente';
 import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
-import { condicionArca, enumerar, faltaParaEmitir, faltaParaFacturarle } from '@/lib/clientes-tipos';
+import {
+  condicionArca,
+  condicionDelInquilino,
+  documentoDelReceptor,
+  enumerar,
+  faltaParaEmitir,
+  faltaParaFacturarle,
+} from '@/lib/clientes-tipos';
 import { hoyIso } from '@/lib/hora';
 
 const FACTURA_C = 11;
 const NOTA_DE_CREDITO_C = 13;
 const CONCEPTO_SERVICIOS = 2;
-const DOC_CUIT = 80;
-const DOC_SIN_IDENTIFICAR = 99;
 
 type Servicio = ReturnType<typeof arcaDe>['electronicBillingService'];
 
 type Receptor = {
   nombre: string;
   cuit: string | null;
+  /** Solo en los inquilinos del Centro: con qué se los identifica sin CUIT. */
+  dni?: string | null;
   condicion_iva: string | null;
 };
 
@@ -232,7 +239,7 @@ export async function emitirEnArca(facturaId: string): Promise<Emision> {
       'imp_total,moneda,servicio_desde,servicio_hasta,vence_pago,' +
       'emisores(cuit,punto_venta,ambiente,domicilio,inicio_actividades,ingresos_brutos),' +
       'empresas(nombre,razon_social,cuit,condicion_iva,direccion_fiscal),' +
-      'inquilinos(nombre,cuit,condicion_iva)' +
+      'inquilinos(nombre,cuit,dni,condicion_iva)' +
       `&id=eq.${facturaId}&limit=1`
   );
   const f = filas[0];
@@ -267,12 +274,16 @@ export async function emitirEnArca(facturaId: string): Promise<Emision> {
       'Esta emisora todavía factura contra el ARCA de prueba, que solo admite a Distribuidora Andina.'
     );
   }
-  const condicion = condicionArca(receptor.condicion_iva);
+  // Un inquilino sin CUIT es consumidor final, lo diga su ficha o no. A una
+  // empresa la condición se le exige cargada.
+  const condicionIva = f.empresas ? receptor.condicion_iva : condicionDelInquilino(receptor);
+  const condicion = condicionArca(condicionIva);
   if (!condicion) {
     return fallo(`Falta la condición frente al IVA de ${receptor.nombre}. Se carga en su ficha.`);
   }
-  const cuitReceptor = (receptor.cuit ?? '').replace(/\D/g, '');
-  if (cuitReceptor.length !== 11 && receptor.condicion_iva !== 'Consumidor Final') {
+  // El CUIT, o el DNI si es un inquilino sin CUIT. Ver `documentoDelReceptor`.
+  const documento = documentoDelReceptor(receptor);
+  if (documento.rotulo !== 'CUIT' && condicionIva !== 'Consumidor Final') {
     return fallo(`Falta el CUIT de ${receptor.nombre}. Se carga en su ficha.`);
   }
   // El mismo control del alta, repetido acá: las facturas de servicios no
@@ -390,8 +401,8 @@ export async function emitirEnArca(facturaId: string): Promise<Emision> {
     PtoVta: puntoVenta,
     CbteTipo: FACTURA_C,
     Concepto: CONCEPTO_SERVICIOS,
-    DocTipo: cuitReceptor.length === 11 ? DOC_CUIT : DOC_SIN_IDENTIFICAR,
-    DocNro: cuitReceptor.length === 11 ? Number(cuitReceptor) : 0,
+    DocTipo: documento.tipo,
+    DocNro: Number(documento.numero),
     CbteDesde: numero,
     CbteHasta: numero,
     CbteFch: compacta(f.fecha),

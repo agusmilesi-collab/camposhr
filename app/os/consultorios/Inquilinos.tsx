@@ -264,17 +264,22 @@ export default function Inquilinos({
           </table>
         )}
 
-        {facturacion && inquilinos.length > 0 && (
-          <Facturar
-            cola={facturacion.cola}
-            emisoras={facturacion.emisoras}
-            facturas={facturacion.facturas}
-            periodo={periodo}
-            hoy={hoy}
-            seleccion={aFacturar}
-          />
-        )}
       </div>
+
+      {/* Fuera del panel de la tabla y no adentro: son dos paneles propios
+          ("Facturar el mes" y "Facturas emitidas"), y metidos en el de arriba
+          quedaban pegados a la última fila y entre sí, sin el aire que separa
+          a un panel del siguiente. */}
+      {facturacion && inquilinos.length > 0 && (
+        <Facturar
+          cola={facturacion.cola}
+          emisoras={facturacion.emisoras}
+          facturas={facturacion.facturas}
+          periodo={periodo}
+          hoy={hoy}
+          seleccion={aFacturar}
+        />
+      )}
 
       <div className="os-panel">
         <div className="os-panel-top">

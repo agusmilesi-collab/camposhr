@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { CACHE_COMERCIAL } from '@/lib/etiquetas';
 import { aFacturarDelCentro, periodoLindo } from '@/lib/facturas-centro';
+import { documentoDelReceptor } from '@/lib/clientes-tipos';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 
@@ -163,7 +164,10 @@ export async function POST(req: Request) {
         punto_venta: puntoVenta,
         fecha,
         periodo,
-        doc_nro: i.cuit,
+        // El CUIT si lo tiene; si no, el DNI, que es con lo que se factura a
+        // un consumidor final. Es lo mismo que después se le manda a ARCA.
+        doc_tipo: documentoDelReceptor(i).tipo,
+        doc_nro: documentoDelReceptor(i).numero,
         imp_total: i.total,
         moneda: 'PES',
         concepto: `Servicios ${periodoLindo(periodo).replace(' de ', ' ')}`,

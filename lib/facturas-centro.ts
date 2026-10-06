@@ -32,6 +32,8 @@ export type InquilinoAFacturar = {
   nombre: string;
   razonSocial: string | null;
   cuit: string | null;
+  /** Con qué se lo identifica cuando no tiene CUIT. */
+  dni: string | null;
   condicionIva: string | null;
   /** Los cargos de ese período que todavía no entraron en ninguna factura. */
   cargos: CargoPendiente[];
@@ -43,6 +45,7 @@ type FilaInquilino = {
   nombre: string;
   razon_social: string | null;
   cuit: string | null;
+  dni: string | null;
   condicion_iva: string | null;
   activo: boolean;
 };
@@ -82,7 +85,7 @@ export async function aFacturarDelCentro(periodo: string): Promise<InquilinoAFac
   const [inquilinos, movimientos, renglones] = await Promise.all([
     select<FilaInquilino>(
       'inquilinos',
-      'select=id,nombre,razon_social,cuit,condicion_iva,activo&order=nombre.asc',
+      'select=id,nombre,razon_social,cuit,dni,condicion_iva,activo&order=nombre.asc',
       CACHE_COMERCIAL
     ),
     select<FilaMovimiento>(
@@ -117,6 +120,7 @@ export async function aFacturarDelCentro(periodo: string): Promise<InquilinoAFac
         nombre: i.nombre,
         razonSocial: i.razon_social,
         cuit: i.cuit,
+        dni: i.dni,
         condicionIva: i.condicion_iva,
         cargos,
         total: cargos.reduce((n, c) => n + c.importe, 0),

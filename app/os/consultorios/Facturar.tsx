@@ -28,6 +28,7 @@ export type Facturable = {
   id: string;
   nombre: string;
   cuit: string | null;
+  dni?: string | null;
   total: number;
   cargos: { id: string; fecha: string; importe: number; detalle: string | null }[];
 };
@@ -109,6 +110,14 @@ export default function Facturar({
   const [hecho, setHecho] = useState<string | null>(null);
 
   const emisoraElegida = emisoras.find((e) => e.id === emisor) ?? null;
+  // Lo mismo que en la facturación de psicotécnicos: en producción la factura
+  // se le pide a ARCA, que pone el número, con el punto de venta de web
+  // services de la emisora. Es la misma numeración para las dos pantallas, así
+  // que una factura del Centro y una de psicotécnicos no pueden llevar el mismo
+  // número: el que sigue lo dice ARCA al autorizar cada una.
+  const porArca = emisoraElegida?.ambiente === 'produccion';
+  const puntoDeVenta =
+    (porArca ? emisoraElegida?.puntoVenta : emisoraElegida?.puntoVentaManual) ?? null;
   const entran = pendientes
     .filter((p) => elegidos.includes(p.id))
     .map((p) =>
@@ -137,7 +146,7 @@ export default function Facturar({
           periodo,
           fecha,
           numero: numero.trim() === '' ? null : Number(numero),
-          puntoVenta: emisoraElegida?.puntoVenta ?? null,
+          puntoVenta: puntoDeVenta,
           inquilinos: elegidos,
           cargos: cargosElegidos ?? null,
         }),
@@ -219,7 +228,12 @@ export default function Facturar({
                   <span className="os-facturar-quien">
                     <b>{p.nombre}</b>
                     <span className="os-dato-falta">
-                      {p.cuit ? `CUIT ${p.cuit}` : 'Sin CUIT cargado'} · {p.cargos.length}{' '}
+                      {p.cuit
+                        ? `CUIT ${p.cuit}`
+                        : p.dni
+                          ? `Consumidor final · DNI ${p.dni}`
+                          : 'Consumidor final, sin documento cargado'}{' '}
+                      · {p.cargos.length}{' '}
                       {p.cargos.length === 1 ? 'cargo' : 'cargos'}
                     </span>
                   </span>
@@ -228,9 +242,13 @@ export default function Facturar({
               ))}
             </div>
 
-            <div className="os-facturar-datos">
+            {/* Sin la lista arriba, la raya y el aire que la separan de los
+                campos quedaban como una franja vacía. */}
+            <div
+              className={`os-facturar-datos${soloInquilino || seleccion ? ' os-facturar-datos-solos' : ''}`}
+            >
               <label className="os-campo-bloque">
-                <span className="os-etiqueta-campo">Factura</span>
+                <span className="os-etiqueta-campo">Quién factura</span>
                 <select
                   className="os-campo"
                   value={emisor}
@@ -242,6 +260,17 @@ export default function Facturar({
                     </option>
                   ))}
                 </select>
+              </label>
+
+              <label className="os-campo-bloque">
+                <span className="os-etiqueta-campo">Punto de venta</span>
+                {/* No se escribe: es el de la emisora elegida, y cambia con ella. */}
+                <input
+                  className="os-campo"
+                  value={puntoDeVenta === null ? '' : String(puntoDeVenta).padStart(5, '0')}
+                  placeholder="—"
+                  readOnly
+                />
               </label>
 
               <label className="os-campo-bloque">
@@ -264,7 +293,7 @@ export default function Facturar({
                   min="1"
                   value={numero}
                   onChange={(e) => setNumero(e.target.value)}
-                  placeholder="Sin número"
+                  placeholder={porArca ? 'lo pone ARCA' : 'Sin número'}
                 />
               </label>
 
