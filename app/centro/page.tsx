@@ -6,6 +6,7 @@ import {
   escalaVigente,
   hoyISO,
   listarEspacios,
+  puedeAlquilar,
   aperturas as leerAperturas,
   reservasEntre,
   sumarDias,
@@ -38,7 +39,9 @@ export default async function Centro() {
     escalaVigente(hoy),
   ]);
 
-  const activos = espacios.filter((e) => e.activo);
+  // Solo las salas que se le ofrecen a esta persona: una sala reservada para
+  // algunos no existe para el resto, ni libre ni ocupada.
+  const activos = espacios.filter((e) => puedeAlquilar(e, yo.id));
   const sinNombres = reservas.map((r) => ({
     id: r.id,
     espacio_id: r.espacio_id,

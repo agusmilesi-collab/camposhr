@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
 import { inquilinoDeLaSesion } from '@/lib/centro-sesion';
 import {
+  contratos as leerContratos,
   DIAS_CORTOS,
+  horasSemanalesTotales,
   diaSemanaDe,
   hora,
   hoyISO,
@@ -16,6 +18,8 @@ import {
   sumarDias,
 } from '@/lib/consultorios';
 import { facturasDelCentro } from '@/lib/facturas-centro';
+import { DIA_DE_RENOVAR, renovacionDe } from '@/lib/renovaciones';
+import Renovar from './Renovar';
 import Barra from '../Barra';
 
 export const dynamic = 'force-dynamic';
@@ -64,21 +68,32 @@ type Tarjeta = {
  * hay forma de que diga "registramos tu pago" sobre un pago que después se
  * borró, ni de que una factura salga sin su novedad.
  */
-export default async function Inicio() {
+export default async function Inicio({ searchParams }: { searchParams: { hoy?: string } }) {
   const yo = await inquilinoDeLaSesion();
   if (!yo) redirect('/centro/entrar');
 
-  const hoy = hoyISO();
+  // Fuera de producción el día se puede fingir con `?hoy=2026-10-25`, para
+  // mirar cómo queda la pantalla un día que todavía no llegó. Publicado, el
+  // día es siempre el de hoy.
+  const fingido =
+    process.env.NODE_ENV !== 'production' && /^\d{4}-\d{2}-\d{2}$/.test(searchParams.hoy ?? '')
+      ? (searchParams.hoy as string)
+      : null;
+  const hoy = fingido ?? hoyISO();
   const manana = sumarDias(hoy, 1);
   const hasta = sumarDias(hoy, 7);
   const desde = sumarDias(hoy, -DIAS_EN_HOY);
   const mesAnterior = mesCorrido(periodoDe(hoy), -1);
 
-  const [facturas, movimientos, reservas, espacios] = await Promise.all([
+  const proximoMes = mesCorrido(periodoDe(hoy), 1);
+
+  const [facturas, movimientos, reservas, espacios, contratos, renovacion] = await Promise.all([
     facturasDelCentro(yo.id),
     movimientosDe(yo.id),
     reservasDe(yo.id),
     listarEspacios(),
+    leerContratos(),
+    renovacionDe(yo.id, proximoMes),
   ]);
   const salaDe = (id: string) => espacios.find((e) => e.id === id)?.nombre ?? 'Sala';
 
@@ -121,6 +136,15 @@ export default async function Inicio() {
       })),
   ].sort((a, b) => b.fecha.localeCompare(a.fecha));
 
+  /*
+   * La renovación: desde el 25, y solo a quien tiene horas fijas.
+   *
+   * Sin bandas no hay nada que renovar: quien viene por horas sueltas las
+   * reserva cuando las necesita. Las horas son las de sus contratos vigentes.
+   */
+  const horasFijas = horasSemanalesTotales(contratos, yo.id, hoy);
+  const preguntaRenovar = Number(hoy.slice(8, 10)) >= DIA_DE_RENOVAR && horasFijas > 0;
+
   const columnas: { titulo: string; vacio: string; tarjetas: Tarjeta[] }[] = [
     {
       titulo: 'Hoy',
@@ -130,7 +154,7 @@ export default async function Inicio() {
           ? [
               {
                 clave: 'pagar',
-                titulo: `Tenés ${mesLargo(mesAnterior).split(' ')[0]} para pagar`,
+                titulo: `Pagar ${mesLargo(mesAnterior).split(' ')[0]}`,
                 detalle:
                   aPagar > saldoAnterior ? 'Ya lleva recargo' : 'Hasta el 10, sin recargo',
                 dato: pesos(aPagar),
@@ -167,9 +191,19 @@ export default async function Inicio() {
             <section className="centro-columna" key={c.titulo}>
               <header>
                 <h2>{c.titulo}</h2>
-                <span>{c.tarjetas.length}</span>
+                <span>{c.tarjetas.length + (c.titulo === 'Hoy' && preguntaRenovar ? 1 : 0)}</span>
               </header>
-              {c.tarjetas.length === 0 && <p className="centro-columna-vacia">{c.vacio}</p>}
+              {c.titulo === 'Hoy' && preguntaRenovar && (
+                <Renovar
+                  mes={mesLargo(proximoMes).split(' ')[0]}
+                  horas={horasFijas}
+                  respuesta={renovacion?.respuesta ?? null}
+                  nota={renovacion?.nota ?? null}
+                />
+              )}
+              {c.tarjetas.length === 0 && !(c.titulo === 'Hoy' && preguntaRenovar) && (
+                <p className="centro-columna-vacia">{c.vacio}</p>
+              )}
               {c.tarjetas.map((t) => (
                 <article className={`centro-tarjeta${t.aviso ? ' aviso' : ''}`} key={t.clave}>
                   <div className="centro-tarjeta-top">

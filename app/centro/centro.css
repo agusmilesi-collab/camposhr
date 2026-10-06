@@ -1377,3 +1377,86 @@
     padding-bottom: 14px;
   }
 }
+
+/**
+ * La tarjeta de la renovación. Mide lo mismo que las demás mientras muestra los
+ * tres botones; al abrir el renglón para escribir, crece lo que haga falta.
+ */
+.centro-tarjeta.centro-renovar.abierta {
+  height: auto;
+  gap: 8px;
+}
+
+.centro-renovar-botones {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+}
+
+.centro-renovar-botones button {
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.centro-renovar-botones button:hover:not(:disabled) {
+  border-color: var(--suave);
+}
+
+.centro-renovar-botones button.firme {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: #f6f5f2;
+}
+
+.centro-renovar-botones button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.centro-renovar-nota {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 0.84rem;
+  resize: vertical;
+}
+
+/* El botón de cambiar la respuesta es un botón y no un enlace: sin esto trae
+   la tipografía del navegador. */
+button.centro-abrir {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/*
+ * Para que todas las tarjetas del tablero midan lo mismo, cada renglón es uno
+ * solo: el título y el detalle se cortan con puntos suspensivos en vez de
+ * bajar a un segundo renglón. Con el alto fijo y un título en dos renglones,
+ * los botones se salían por abajo y se montaban sobre la tarjeta siguiente.
+ */
+.centro-tarjeta-top b,
+.centro-tarjeta > small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.centro-tarjeta {
+  overflow: hidden;
+}

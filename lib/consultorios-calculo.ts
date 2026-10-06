@@ -16,8 +16,23 @@ export type Espacio = {
   categoria: Categoria;
   orden: number;
   activo: boolean;
+  /**
+   * Quién puede alquilarla. Null es todos; con una lista, solo esos inquilinos
+   * la ven y la reservan. El equipo la ve siempre en el calendario del OS.
+   */
+  permitidos?: string[] | null;
   incluye: { id: string; texto: string }[];
 };
+
+/** Si la sala se le ofrece a todos los inquilinos, y no solo a algunos. */
+export function esParaTodos(e: Espacio): boolean {
+  return e.permitidos === null || e.permitidos === undefined;
+}
+
+/** Si ese inquilino puede ver y reservar la sala. */
+export function puedeAlquilar(e: Espacio, inquilinoId: string): boolean {
+  return e.activo && (esParaTodos(e) || (e.permitidos as string[]).includes(inquilinoId));
+}
 
 export type Tarifa = {
   espacio_id: string;

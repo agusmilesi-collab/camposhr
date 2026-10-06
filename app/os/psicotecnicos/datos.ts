@@ -15,6 +15,7 @@ import { DIAS_SEGUIMIENTO, listarCotizaciones } from '@/lib/cotizaciones';
 import { diasEntre } from '@/lib/comercial-tipos';
 import { diaDe, hoy as diaDeHoy } from '@/lib/hora';
 import { comprobantesSinRegistrar } from '@/lib/comprobantes-pago';
+import { renovacionesPorAtender } from '@/lib/renovaciones';
 
 /**
  * Qué ve cada quien, por sección.
@@ -123,7 +124,7 @@ async function cuantoHayHoy(filas: Evaluacion[]): Promise<number> {
 
   const comprobantes =
     yo.nombre.startsWith('Lucila') || yo.alcance === 'todo'
-      ? (await comprobantesSinRegistrar()).length
+      ? (await comprobantesSinRegistrar()).length + (await renovacionesPorAtender()).length
       : 0;
 
   return enHoy + seguimientos + sinAsignar + comprobantes;

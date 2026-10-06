@@ -13,6 +13,7 @@ import { listarEvaluaciones } from '@/lib/psicotecnicos';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 import { comprobantesSinRegistrar, loQueDebe } from '@/lib/comprobantes-pago';
 import { mesLargo } from '@/lib/consultorios-calculo';
+import { renovacionesPorAtender } from '@/lib/renovaciones';
 
 /** Las etapas de una evaluación que todavía pide trabajo. */
 const ABIERTAS = new Set(['Sin asignar', 'Por citar', 'Por entrevistar', 'Por analizar']);
@@ -155,6 +156,23 @@ export default async function Inicio() {
       )
     : [];
 
+  /**
+   * Lo que contestaron los inquilinos sobre renovar sus horas, cuando pide
+   * hacer algo: quien no sigue deja horas para vender, y quien quiere cambiar
+   * pide mover bandas. Lo ven las mismas personas que los comprobantes.
+   */
+  const renovaciones =
+    yo.nombre.startsWith('Lucila') || yo.alcance === 'todo'
+      ? (await renovacionesPorAtender()).map((r) => ({
+          id: r.id,
+          inquilinoId: r.inquilino_id,
+          inquilino: r.inquilino,
+          mes: mesLargo(r.periodo).split(' ')[0],
+          respuesta: r.respuesta,
+          nota: r.nota,
+        }))
+      : [];
+
   const cuentas = await cuentasDeLaBarra();
 
   return (
@@ -170,7 +188,7 @@ export default async function Inicio() {
             Ver el pipeline
           </Link>
         </div>
-        {mios.length === 0 && seguimientos.length === 0 && !sinAsignar && comprobantes.length === 0 ? (
+        {mios.length === 0 && seguimientos.length === 0 && !sinAsignar && comprobantes.length === 0 && renovaciones.length === 0 ? (
           <p className="os-vacio">
             {yo.alcance === 'todo'
               ? 'No hay evaluaciones abiertas.'
@@ -184,6 +202,7 @@ export default async function Inicio() {
             seguimientos={seguimientos}
             sinAsignar={sinAsignar}
             comprobantes={comprobantes}
+            renovaciones={renovaciones}
           />
         )}
       </section>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { comprobantePorId, darPorRegistrados, loQueDebe } from '@/lib/comprobantes-pago';
+import { darPorVista } from '@/lib/renovaciones';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
@@ -82,6 +83,18 @@ export async function POST(req: Request) {
           cache: 'no-store',
         });
         if (!res.ok) return mal(`Supabase respondió ${res.status}.`);
+        break;
+      }
+
+      // Quién puede alquilar la sala: `null` la abre a todos, una lista la deja
+      // solo para esos inquilinos.
+      case 'espacio-permitidos': {
+        const id = String(datos?.id ?? '');
+        if (!UUID.test(id)) return mal('Espacio inválido.');
+        const lista: string[] | null = Array.isArray(datos?.permitidos)
+          ? [...new Set((datos.permitidos as unknown[]).filter((x): x is string => typeof x === 'string' && UUID.test(x)))]
+          : null;
+        await patch('espacios', `id=eq.${id}`, { permitidos: lista });
         break;
       }
 
@@ -563,6 +576,15 @@ export async function POST(req: Request) {
         }
         await darPorRegistrados(comprobante.inquilino_id, comprobante.periodo);
         extra = { registrado: debe.total };
+        break;
+      }
+
+      // El equipo ya atendió lo que un inquilino contestó sobre renovar sus
+      // horas: el aviso se va de Inicio. No cambia ninguna banda.
+      case 'renovacion-vista': {
+        const id = String(datos?.id ?? '');
+        if (!UUID.test(id)) return mal('Aviso inválido.');
+        await darPorVista(id);
         break;
       }
 
