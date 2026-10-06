@@ -24,8 +24,9 @@ export * from '@/lib/orden-compra-tipos';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TOKEN = /^oc_[A-Za-z0-9_-]{16,40}$/;
 
-const conCargo = (s: { nombre: string; cargo: string | null }) =>
-  s.cargo ? `${s.nombre.trim()}, ${s.cargo.trim()}` : s.nombre.trim();
+// Solo el nombre, sin el puesto (pedido de Agustín, 6/10/2026): en el papel
+// alcanza con saber quién lo pidió.
+const conCargo = (s: { nombre: string; cargo: string | null }) => s.nombre.trim();
 
 /**
  * La aclaración del adicional, que se cobra en dólares.
