@@ -18046,3 +18046,23 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   padding: 10px;
   align-content: space-between;
 }
+
+/* La tarjeta de alta no se pasa de su columna. El selector de pedido mide lo
+   que pide su opción más larga ("Federada Salud · Asesor comercial canal
+   individuos") y, como elemento de grilla, empujaba a todos los campos fuera
+   de la tarjeta cuando la columna es angosta. Con la columna en minmax(0, 1fr)
+   cada campo se achica al ancho de la tarjeta y el texto largo se recorta. */
+.os-agregar-abierto {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.os-agregar-abierto > *,
+.os-agregar-abierto .os-campo {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.os-agregar-abierto .os-agregar-pie > * {
+  min-width: 0;
+}

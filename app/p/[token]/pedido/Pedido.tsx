@@ -1057,7 +1057,6 @@ export default function Pedido({
                       setError(null);
                     }}
                   />
-                  <span className="pedir-firma-n">Le llega la confirmación del pedido.</span>
                   {contactos.length === 0 && (
                     <p className="pedir-error">
                       Todavía no tenés personas habilitadas para pedir evaluaciones. Escribinos y te
