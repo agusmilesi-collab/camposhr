@@ -13,7 +13,7 @@
  * escribió y los acontecimientos del último año.
  */
 
-import Cerebro from '../../informe/_doc/Cerebro';
+import CerebroRombos from '../../informe/_doc/CerebroRombos';
 import Ampliable from './Ampliable';
 import type { Lectura } from '@/lib/benziger-lectura';
 import type { Cruz, Cuatro } from '@/lib/benziger-perfil';
@@ -196,7 +196,7 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
                   titulo="Gráfico del Benziger"
                   grande={
                     <div className="os-bz-cerebro os-bz-cerebro-grande">
-                      <Cerebro adulto={adulto} joven={joven} fondo={false} escalaFina />
+                      <CerebroRombos adulto={adulto} joven={joven} fondo={false} escalaFina />
                       <div className="inf-referencia-perfil">
                         <span className="inf-ref adulto">Adulto</span>
                         <span className="inf-ref joven">Adolescente</span>
@@ -204,7 +204,7 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
                     </div>
                   }
                 >
-                  <Cerebro adulto={adulto} joven={joven} fondo={false} escalaFina />
+                  <CerebroRombos adulto={adulto} joven={joven} fondo={false} escalaFina />
                 </Ampliable>
                 {/* La referencia al pie, como en cualquier gráfico: arriba
                     separaba el título del dibujo que nombra. */}

@@ -323,7 +323,11 @@ export default async function Documento({
                 </div>
               );
             })}
-            <Cerebro adulto={inf.benziger.adulto} joven={inf.benziger.joven} />
+            <Cerebro
+              adulto={inf.benziger.adulto}
+              joven={inf.benziger.joven}
+              preferentes={inf.benziger.preferentes.map((q) => q.clave)}
+            />
           </div>
 
           {/* Un solo cuadrante: el primero que marcó la evaluadora. Lo que dice

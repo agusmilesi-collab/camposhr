@@ -5581,7 +5581,7 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
   --punto-nivel: #7f8f3a;
 }
 .os-nivel-opcion.ambar {
-  --punto-nivel: #c06a1c;
+  --punto-nivel: #dba800;
 }
 .os-nivel-opcion.naranja {
   --punto-nivel: #c1591a;
@@ -5615,8 +5615,8 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
   background: rgba(127, 143, 58, 0.05);
 }
 .os-nivel-opcion.ambar {
-  border-color: rgba(192, 106, 28, 0.3);
-  background: rgba(192, 106, 28, 0.04);
+  border-color: rgba(219, 168, 0, 0.3);
+  background: rgba(219, 168, 0, 0.04);
 }
 .os-nivel-opcion.naranja {
   border-color: rgba(193, 89, 26, 0.3);
@@ -5652,8 +5652,8 @@ html[data-os-tema='oscuro'] .os-mapa-llena {
   background: rgba(55, 128, 74, 0.11);
 }
 .os-nivel-opcion.puesta.ambar {
-  border-color: #c06a1c;
-  background: rgba(192, 106, 28, 0.1);
+  border-color: #dba800;
+  background: rgba(219, 168, 0, 0.1);
 }
 .os-nivel-opcion.puesta.naranja {
   border-color: #c1591a;
@@ -18126,4 +18126,11 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   display: flex;
   gap: 8px;
   margin-top: 6px;
+}
+
+/* En la hoja, la introducción de la escalera mide lo que la nota de
+   confidencialidad de la primera página. */
+.os-onepager-hoja.os-onepager-hoja .sitio-escalera .sitio-escalera-intro {
+  font-size: 0.6rem !important;
+  line-height: 1.4 !important;
 }

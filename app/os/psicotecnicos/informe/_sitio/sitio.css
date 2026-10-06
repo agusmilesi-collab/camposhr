@@ -51,9 +51,9 @@
   --linea-suave: #efede8;
   --verde: #37804a;
   --ambar: #a97722;
-  /* El nivel "con alertas": naranja, entre el ámbar y el rojo del bajo: avisa un
-     riesgo y no una duda. */
-  --alerta: #c06a1c;
+  /* El nivel "con alertas": amarillo, la luz del medio del semáforo, entre el
+     oliva de "a desarrollar" y el rojo del bajo. */
+  --alerta: #dba800;
   /* El nivel "bajo", en rojo pleno: es el no. */
   --bajo: #c42026;
   /* La paleta es la misma del documento y tiene que estar entera: las piezas
@@ -725,6 +725,43 @@
   font-size: 1.02rem !important;
   line-height: 1.6 !important;
   font-weight: 500;
+}
+
+/* Con el color de su respuesta: los mismos cuatro del nivel de ajuste, en un
+   recuadro con el borde entero de ese color, como la tarjeta del nivel. Con
+   aire arriba, que el recuadro quedaba pegado al título del capítulo. */
+.sitio-escalera-cierre.verde,
+.sitio-escalera-cierre.azul,
+.sitio-escalera-cierre.ambar,
+.sitio-escalera-cierre.rojo {
+  padding: 10px 14px;
+  border: 2px solid;
+  border-radius: 10px;
+  margin-top: 16px !important;
+  margin-bottom: 8px !important;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.sitio-escalera-cierre.verde {
+  border-color: var(--verde);
+  background: rgba(55, 128, 74, 0.09);
+}
+.sitio-escalera-cierre.azul {
+  border-color: #7f8f3a;
+  background: rgba(127, 143, 58, 0.1);
+}
+.sitio-escalera-cierre.ambar {
+  border-color: var(--alerta);
+  background: rgba(219, 168, 0, 0.11);
+}
+.sitio-escalera-cierre.rojo {
+  border-color: var(--bajo);
+  background: rgba(196, 32, 38, 0.08);
+}
+
+.sitio-escalera-otros {
+  margin-top: 0 !important;
+  margin-bottom: 16px !important;
 }
 
 .sitio-escalera-nota {
@@ -1458,4 +1495,270 @@
 .sitio-nivel-cuerpo h4,
 .sitio-nivel-cuerpo p {
   white-space: nowrap;
+}
+
+
+/* ── La pirámide del potencial ────────────────────────────────────────── */
+/*
+ * Cinco escalones apilados a la derecha y, a la izquierda de cada uno, su
+ * franja de texto. La franja llega hasta el eje de la pirámide y pasa por
+ * detrás del escalón: a la derecha del eje no hay nada.
+ *
+ * Las cinco filas miden lo mismo, porque el ancho de cada escalón sale de su
+ * lugar en la pila y no de su altura: con filas desparejas los lados dejarían
+ * de caer sobre una recta.
+ */
+.sitio-piramide {
+  --piramide: 330px;
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 6px;
+  margin: 28px 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.sitio-piramide .sitio-escalon {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.sitio-piramide .sitio-escalon::before {
+  content: '';
+  position: absolute;
+  inset: 0 calc(var(--piramide) / 2) 0 0;
+  border-radius: 5px 0 0 5px;
+  background: color-mix(in srgb, var(--azul) 7%, var(--hoja));
+}
+
+.sitio-piramide .sitio-escalon > * {
+  position: relative;
+}
+
+.sitio-escalon-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px 0 0 5px;
+  background: color-mix(in srgb, var(--azul) 38%, var(--hoja));
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sitio-escalon-texto {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  /* A la derecha, hasta donde llega el escalón en su base: los de arriba
+     son angostos y dejan más lugar para el texto que los de abajo. */
+  padding: 7px calc(var(--piramide) * (1 + var(--abajo)) / 2 + 10px) 7px 12px;
+  text-align: left;
+}
+
+.sitio-piramide .sitio-escalon-texto h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--tinta-media);
+}
+
+.sitio-piramide .sitio-escalon-texto p {
+  margin: 0;
+}
+
+.sitio-piramide .sitio-escalon-texto .sitio-escalon-ej {
+  font-size: 0.68rem !important;
+  line-height: 1.35 !important;
+  color: var(--suave);
+}
+
+.sitio-piramide .sitio-escalon-texto .sitio-escalon-que {
+  font-size: 0.78rem !important;
+  line-height: 1.35 !important;
+  color: var(--tinta-media);
+}
+
+.sitio-escalon-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 7px;
+}
+
+/* Las marcas, del ancho de su texto: en la escalera anterior medían todas lo
+   mismo porque iban apiladas en una columna. */
+.sitio-piramide .sitio-donde {
+  display: inline-block;
+  width: auto;
+  font-size: 0.66rem;
+  padding: 1px 8px;
+}
+
+/* El escalón: un trapecio recortado del ancho entero de la pirámide, pegado
+   al borde derecho de su fila. */
+.sitio-piramide .sitio-escalon-cara {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--piramide);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: color-mix(in srgb, var(--azul) 30%, var(--hoja));
+  clip-path: polygon(
+    calc(50% - var(--arriba) * 50%) 0,
+    calc(50% + var(--arriba) * 50%) 0,
+    calc(50% + var(--abajo) * 50%) 100%,
+    calc(50% - var(--abajo) * 50%) 100%
+  );
+}
+
+/* La marca escrita adentro del escalón, en blanco sobre su color. La de
+   "podría llegar" va más apagada y en cursiva: es una estimación. */
+.sitio-escalon-marca {
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sitio-escalon-marca.futuro {
+  font-weight: 500;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Los escalones con marca pesan más: el del puesto, intermedio; el que la
+   persona puede hoy, pleno. Si coinciden manda el de hoy, que va después. */
+.sitio-piramide .sitio-escalon[class*='es-']::before {
+  background: color-mix(in srgb, var(--azul) 15%, var(--hoja));
+}
+
+.sitio-piramide .sitio-escalon[class*='es-'] h4 {
+  color: var(--tinta);
+}
+
+.sitio-escalon.es-futuro .sitio-escalon-cara,
+.sitio-escalon.es-futuro .sitio-escalon-num {
+  background: color-mix(in srgb, var(--azul) 50%, var(--hoja));
+}
+
+.sitio-escalon.es-puesto .sitio-escalon-cara,
+.sitio-escalon.es-puesto .sitio-escalon-num {
+  background: color-mix(in srgb, var(--azul) 68%, var(--hoja));
+}
+
+.sitio-escalon.es-hoy .sitio-escalon-cara,
+.sitio-escalon.es-hoy .sitio-escalon-num {
+  background: var(--azul);
+}
+
+@media (max-width: 640px) {
+  .sitio-piramide {
+    --piramide: 130px;
+  }
+}
+
+/* La introducción de la escalera, en la letra de la nota de confidencialidad
+   de la primera página: es una aclaración de método y no texto del informe. */
+.sitio-escalera .sitio-escalera-intro {
+  font-size: 0.78rem !important;
+  line-height: 1.5 !important;
+  color: var(--suave) !important;
+}
+
+@media print {
+  .sitio-piramide .sitio-escalon::before,
+  .sitio-escalon-num,
+  .sitio-escalon-cara {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* Los niveles sin marca van apagados en azul y no en gris: son la escala de
+   fondo, y en el mismo color de la pirámide se leen como parte del dibujo en
+   lugar de competir con los niveles donde caen el puesto y la persona. */
+.sitio-piramide .sitio-escalon:not([class*='es-']) .sitio-escalon-texto h4,
+.sitio-piramide .sitio-escalon:not([class*='es-']) .sitio-escalon-texto .sitio-escalon-que {
+  color: color-mix(in srgb, var(--azul) 62%, var(--hoja));
+}
+
+/* El resultado del potencial, en la tarjeta del nivel de ajuste: con aire
+   arriba contra el título del capítulo y poco abajo, que le sigue la línea de
+   los otros resultados. */
+.sitio-escalera .sitio-escalera-nivel {
+  margin: 28px 0 8px;
+}
+
+/* Los niveles sin marca, todavía más atrás: franja casi blanca, escalón y
+   número pálidos y texto claro. Lo que tiene que leerse primero son los dos
+   niveles marcados. */
+.sitio-piramide .sitio-escalon:not([class*='es-'])::before {
+  background: color-mix(in srgb, var(--azul) 4%, var(--hoja));
+}
+
+.sitio-piramide .sitio-escalon:not([class*='es-']) .sitio-escalon-cara {
+  background: color-mix(in srgb, var(--azul) 15%, var(--hoja));
+}
+
+.sitio-piramide .sitio-escalon:not([class*='es-']) .sitio-escalon-num {
+  background: color-mix(in srgb, var(--azul) 20%, var(--hoja));
+}
+
+.sitio-piramide .sitio-escalon:not([class*='es-']) .sitio-escalon-texto h4,
+.sitio-piramide .sitio-escalon:not([class*='es-']) .sitio-escalon-texto .sitio-escalon-que {
+  color: color-mix(in srgb, var(--azul) 58%, var(--hoja));
+}
+
+/* Los dos marcados, en dos azules plenos y distintos: el de la persona en el
+   azul del informe y el del puesto en uno más oscuro. Con el puesto en un
+   azul intermedio se leía como un nivel a medio apagar. */
+.sitio-piramide .sitio-escalon[class*='es-']::before {
+  background: color-mix(in srgb, var(--azul) 18%, var(--hoja));
+}
+
+.sitio-piramide .sitio-escalon.es-puesto .sitio-escalon-cara,
+.sitio-piramide .sitio-escalon.es-puesto .sitio-escalon-num {
+  background: color-mix(in srgb, var(--azul) 55%, var(--tinta));
+}
+
+.sitio-piramide .sitio-escalon.es-hoy .sitio-escalon-cara,
+.sitio-piramide .sitio-escalon.es-hoy .sitio-escalon-num {
+  background: var(--azul);
+}
+
+/* Y la marca escrita adentro, más grande. */
+.sitio-piramide .sitio-escalon-marca {
+  font-size: 0.8rem;
+}
+
+.sitio-piramide .sitio-escalon-marca.futuro {
+  font-size: 0.68rem;
+}
+
+/* Las etiquetas de los otros resultados, todas del ancho de la más larga
+   ("Dos o más niveles por debajo") y con el texto centrado. */
+.sitio-escalera-otros .inf-nivel-tag {
+  min-width: 27ch;
+  text-align: center;
+}
+
+/* Lo mismo en la primera página: las etiquetas de los otros niveles de ajuste
+   miden lo que la más larga ("A desarrollar"). */
+.sitio-otros-niveles .inf-nivel-tag {
+  min-width: 13ch;
+  text-align: center;
 }

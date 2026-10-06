@@ -1,0 +1,167 @@
+/**
+ * El gráfico del Benziger con escala de rombos, para la pestaña de la ficha.
+ *
+ * Es el dibujo que tuvo también el informe hasta el 6/10/2026, cuando el
+ * informe pasó a `Cerebro`, con fondo redondo. En la ficha se quedó este: ahí
+ * el gráfico es chico, va sin el cerebro de fondo y con la escala en los
+ * cuatro ejes, y la evaluadora ya lo lee así.
+ *
+ *
+ * El cerebro de fondo, cuatro ejes que salen de su centro hacia las esquinas,
+ * el perfil adulto en línea llena y el joven punteado.
+ *
+ * El perfil joven se dibuja multiplicado por cuatro, que es lo que hace la
+ * plataforma de Benziger con el mismo dato. Se dedujo midiendo los vértices de
+ * veinte gráficos suyos contra los valores del PDF: el cociente entre la escala
+ * del joven y la del adulto dio 4,000 en todos, con error menor al 0,1 %.
+ * Sin ese factor las dos figuras no son comparables, porque el cuestionario
+ * joven se responde sobre menos ítems y su polígono queda hundido contra el
+ * centro.
+ *
+ * Los cuatro ejes llevan su escala, cada cuarenta puntos, y dos rombos
+ * concéntricos marcan los mismos tramos. Cada cuarenta y no cada veinte porque
+ * son cuatro ejes: con seis marcas por eje eran veinticuatro números encima del
+ * dibujo. Van corridos a un costado, hacia afuera, porque escritos sobre el eje
+ * los tapan la línea del perfil y el punto del vértice.
+ *
+ * Va en SVG y no como imagen porque los valores cambian en cada persona, y
+ * porque así se imprime nítido en cualquier tamaño.
+ */
+
+import type { Cuatro } from '@/lib/benziger-perfil';
+
+const MAXIMO = 120;
+const ANILLOS = [40, 80, 120];
+/* En chico, sin el dibujo de fondo, entran las marcas intermedias y el vértice
+   se ubica sin contar a ojo entre un anillo y el siguiente. */
+const ANILLOS_FINOS = [20, 40, 60, 80, 100, 120];
+
+/** Lo que la plataforma de Benziger le hace al perfil joven antes de dibujarlo. */
+const ESCALA_JOVEN = 4;
+
+/**
+ * Hasta dónde se dibuja un valor que se pasa de la escala.
+ *
+ * La plataforma no recorta: con 126 en el adulto el vértice queda más afuera de
+ * la punta del eje. Acá se corta recién en el borde del lienzo, porque recortar
+ * en 120 aplastaría contra el anillo exterior a todo joven de 30 para arriba,
+ * que es corriente, y dos personas distintas dibujarían la misma figura.
+ */
+const TOPE = 145;
+/** Medio lienzo: el centro queda en (0,0) y los ejes salen a las esquinas. */
+const R = 190;
+
+/** Hacia dónde apunta cada cuadrante, en unidades del lienzo. */
+const DIRECCION: Record<keyof Cuatro, { x: number; y: number }> = {
+  FI: { x: -1, y: -1 },
+  FD: { x: 1, y: -1 },
+  BI: { x: -1, y: 1 },
+  BD: { x: 1, y: 1 },
+};
+
+const ORDEN: (keyof Cuatro)[] = ['FI', 'FD', 'BD', 'BI'];
+
+function punto(clave: keyof Cuatro, valor: number) {
+  const d = DIRECCION[clave];
+  const largo = (Math.min(valor, TOPE) / MAXIMO) * R;
+  return { x: d.x * largo, y: d.y * largo };
+}
+
+function trazar(valores: (clave: keyof Cuatro) => number): string {
+  return ORDEN.map((k) => {
+    const p = punto(k, valores(k));
+    return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+  }).join(' ');
+}
+
+function poligono(v: Cuatro, factor = 1): string | null {
+  if (ORDEN.some((k) => v[k] === null || v[k] === undefined)) return null;
+  return trazar((k) => (v[k] as number) * factor);
+}
+
+export default function CerebroRombos({
+  adulto,
+  joven,
+  fondo = true,
+  escalaFina = false,
+}: {
+  adulto: Cuatro | null;
+  joven: Cuatro | null;
+  /**
+   * El dibujo del cerebro detrás del perfil.
+   *
+   * En el informe ubica cada cuadrante sobre la parte del cerebro que nombra.
+   * En la ficha el gráfico mide doscientos píxeles y ahí el dibujo es una
+   * mancha gris debajo de las líneas, así que va sin él.
+   */
+  fondo?: boolean;
+  /** Marcas cada veinte puntos en lugar de cada cuarenta. */
+  escalaFina?: boolean;
+}) {
+  const trazoAdulto = adulto ? poligono(adulto) : null;
+  const trazoJoven = joven ? poligono(joven, ESCALA_JOVEN) : null;
+  const anillos = escalaFina ? ANILLOS_FINOS : ANILLOS;
+
+  return (
+    <svg className="inf-cerebro inf-cerebro-rombos" viewBox="-230 -230 460 460" role="img" aria-label="Perfil Benziger">
+      {fondo && (
+        <image
+          href="/informe/cerebro.png"
+          x="-215"
+          y="-215"
+          width="430"
+          height="430"
+          className="inf-cerebro-fondo"
+          preserveAspectRatio="xMidYMid meet"
+        />
+      )}
+
+      {/* La guía vertical, que separa izquierdo de derecho. La horizontal la
+          dibuja el contenedor: cruza el capítulo entero, de margen a margen. */}
+      <line x1="0" y1="-215" x2="0" y2="215" className="inf-eje-guia" />
+
+      {anillos.filter((v) => v < MAXIMO).map((v) => (
+        <polygon key={v} points={trazar(() => v)} className="inf-anillo" />
+      ))}
+
+      {ORDEN.map((clave) => {
+        const d = DIRECCION[clave];
+        return (
+          <line key={clave} x1="0" y1="0" x2={d.x * R} y2={d.y * R} className="inf-eje" />
+        );
+      })}
+
+      {/* La escala de los cuatro ejes. El número se corre a un costado, en la
+          perpendicular del eje y siempre girando para el mismo lado, y lleva un
+          halo del color de la hoja por si algo lo cruza igual. */}
+      {ORDEN.map((clave) => {
+        const d = DIRECCION[clave];
+        return anillos.map((v) => {
+          const p = punto(clave, v);
+          return (
+            <text
+              key={`${clave}-${v}`}
+              x={p.x + d.x * 13}
+              y={p.y + 4}
+              className="inf-escala"
+              textAnchor="middle"
+            >
+              {v}
+            </text>
+          );
+        });
+      })}
+
+      {trazoJoven && <polygon points={trazoJoven} className="inf-perfil-joven" />}
+      {trazoAdulto && <polygon points={trazoAdulto} className="inf-perfil-adulto" />}
+
+      {/* Los cuatro valores del adulto, marcados sobre la línea del perfil. */}
+      {trazoAdulto &&
+        adulto &&
+        ORDEN.map((k) => {
+          const p = punto(k, adulto[k] as number);
+          return <circle key={k} cx={p.x} cy={p.y} r="5.5" className="inf-vertice" />;
+        })}
+    </svg>
+  );
+}

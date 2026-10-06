@@ -119,20 +119,19 @@ export function seccionesDe(
               {/* Los otros niveles, en prosa al final de la nota: dicen que
                   es una escala y dónde está parada la persona, sin ocupar
                   una línea de tarjetas. */}
-              <p className="inf-nota">
+              <p className="inf-nota sitio-otros-niveles">
                 {NOTA_AJUSTE}{' '}
                 {elegido ? 'Otros niveles:' : 'Niveles:'}{' '}
                 {/* Cada nivel en su etiqueta, del color con que se lo pinta
                     cuando es el elegido: la escala se reconoce sin leerla. */}
                 {otros.map((nv, i) => (
                   <span key={nv.clave}>
-                    {i > 0 && (i === otros.length - 1 ? ' y ' : ', ')}
+                    {i > 0 && ' '}
                     <span className={`inf-nivel-tag ${nv.color}`}>
                       {ETIQUETA_CORTA[nv.clave] ?? nv.titulo}
                     </span>
                   </span>
                 ))}
-                .
               </p>
             </>
           );
@@ -288,7 +287,11 @@ export function seccionesDe(
                 </div>
               );
             })}
-            <Cerebro adulto={inf.benziger.adulto} joven={inf.benziger.joven} />
+            <Cerebro
+              adulto={inf.benziger.adulto}
+              joven={inf.benziger.joven}
+              preferentes={inf.benziger.preferentes.map((q) => q.clave)}
+            />
           </div>
           {/* Un solo cuadrante, el primero que marcó la evaluadora, y solo
               lo que dice de la persona: cómo conducirla va en el plan de
