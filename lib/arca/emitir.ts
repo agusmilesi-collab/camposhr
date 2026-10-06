@@ -189,6 +189,42 @@ async function averiguar(
 
 const espera = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+export type Prueba =
+  | { ok: true; ambiente: Ambiente; puntoVenta: number; ultimaFactura: number; ultimaNota: number; puntos: unknown }
+  | { ok: false; error: string };
+
+/**
+ * Probar la conexión de una emisora con ARCA, sin emitir nada.
+ *
+ * Pide el ticket con su certificado y pregunta el último comprobante de su
+ * punto de venta. Si las tres cosas del trámite están bien (certificado,
+ * relación con el servicio de facturación y punto de venta de web services),
+ * contesta un número; si falta alguna, ARCA dice cuál. Es solo lectura: sirve
+ * para pasar a una emisora a producción sabiendo que su primera factura no va
+ * a fallar por el trámite.
+ */
+export async function probarConexion(
+  emisorId: string,
+  ambiente: Ambiente,
+  puntoVenta: number
+): Promise<Prueba> {
+  const [e] = await select<{ cuit: string | null }>('emisores', `select=cuit&id=eq.${emisorId}&limit=1`);
+  if (!e?.cuit) return { ok: false, error: 'La emisora no tiene CUIT cargado.' };
+  if (!tieneCertificado(e.cuit, ambiente)) {
+    return { ok: false, error: `Falta el certificado de ${ambiente} de esta emisora.` };
+  }
+  try {
+    const arca = arcaDe(e.cuit, ambiente).electronicBillingService;
+    const ultimaFactura = await ultimoDe(arca, puntoVenta, FACTURA_C);
+    const ultimaNota = await ultimoDe(arca, puntoVenta, NOTA_DE_CREDITO_C);
+    // La lista de puntos de venta es un dato de más: si falla, la prueba vale igual.
+    const puntos = await arca.getSalesPoints().catch((x: unknown) => `no se pudo listar: ${String(x)}`);
+    return { ok: true, ambiente, puntoVenta, ultimaFactura, ultimaNota, puntos };
+  } catch (x) {
+    return { ok: false, error: x instanceof Error ? x.message : String(x) };
+  }
+}
+
 export async function emitirEnArca(facturaId: string): Promise<Emision> {
   const filas = await select<Fila>(
     'facturas',
