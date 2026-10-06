@@ -226,13 +226,12 @@ export function totalDe(f: Pick<Facturable, 'precio' | 'benziger'>): number {
 }
 
 /**
- * El número como se lee: "0001-00000589" cuando hay punto de venta, y el
- * número solo mientras no lo haya. Los puntos de venta se cargan cuando se
- * tramiten los certificados, y hasta entonces mostrar "0000-" sería inventar
- * un dato que nadie confirmó.
+ * El número como se lee en el comprobante: "00003-00000789", punto de venta y
+ * número. El número solo cuando no se sabe el punto de venta: mostrar
+ * "00000-" sería inventar un dato que nadie confirmó.
  */
 export function numeroDe(f: Pick<Factura, 'numero' | 'puntoVenta'>): string {
   if (f.numero === null) return 'sin número';
   const n = String(f.numero).padStart(8, '0');
-  return f.puntoVenta === null ? String(f.numero) : `${String(f.puntoVenta).padStart(4, '0')}-${n}`;
+  return f.puntoVenta === null ? String(f.numero) : `${String(f.puntoVenta).padStart(5, '0')}-${n}`;
 }

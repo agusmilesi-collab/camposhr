@@ -90,7 +90,11 @@ type FilaFactura = {
   cae_vence_el: string | null;
   ambiente: Factura['ambiente'];
   sin_comprobante: boolean;
-  emisores: { razon_social: string; evaluadoras: { nombre: string } | null } | null;
+  emisores: {
+    razon_social: string;
+    punto_venta_manual?: number | null;
+    evaluadoras: { nombre: string } | null;
+  } | null;
   empresas: { nombre: string } | null;
   inquilinos: { nombre: string } | null;
   factura_items: {
@@ -139,7 +143,7 @@ export async function listarFacturas(): Promise<Factura[]> {
     'facturas',
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
-      'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
+      'emisores(razon_social,punto_venta_manual,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(personas(nombre),pedidos(puesto)))' +
       // Solo facturas. Las notas de crédito viven en la misma tabla y no son
@@ -182,7 +186,7 @@ export async function verFactura(id: string): Promise<Factura | null> {
     'facturas',
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
-      'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
+      'emisores(razon_social,punto_venta_manual,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(personas(nombre),pedidos(puesto)))' +
       `&id=eq.${id}&limit=1`
@@ -194,7 +198,12 @@ function armarFactura(f: FilaFactura): Factura {
   return {
     id: f.id,
     numero: f.numero,
-    puntoVenta: f.punto_venta,
+    // Las que cargaron las evaluadoras a mano no guardaron el punto de venta.
+    // Sin CAE son de Comprobantes en Línea, así que va el que la emisora usa
+    // ahí: con eso el número se lee entero, "00003-00000789".
+    puntoVenta:
+      f.punto_venta ??
+      (f.numero !== null && !f.cae && !f.sin_comprobante ? f.emisores?.punto_venta_manual ?? null : null),
     fecha: f.fecha,
     emisorId: f.emisor_id,
     emisora: f.emisores?.evaluadoras?.nombre ?? f.emisores?.razon_social ?? 'sin emisora',

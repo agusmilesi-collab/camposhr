@@ -81,32 +81,31 @@ const COLUMNAS_EMITIDAS = [
  * 24/8/26" adentro. Y el cliente entra entero, que acá es el dato por el que se
  * busca la fila.
  */
-const PROPIOS_EMITIDAS = {
-  /* "05/10/26", entera aun con la pantalla angosta. */
-  Fecha: 94,
-  'Número': 106,
-  /* Solo el nombre: son dos, y el apellido es el mismo. */
+/* Anchos fijos, en píxeles, para todo menos el cliente: cada columna mide lo
+   que pide su dato más largo y el cliente se queda con todo lo demás. Repartir
+   en proporción le daba aire a las columnas de botones (quedaba un hueco entre
+   el recibo y "Emitir NC") mientras el nombre de la empresa se recortaba. */
+const ANCHOS_EMITIDAS: Record<string, number> = {
+  /* "05/10/26". */
+  Fecha: 80,
+  /* "00003-00000789", entero. */
+  'Número': 142,
+  /* Solo el nombre; el ancho lo pide el rótulo "Emisora". */
   Emisora: 88,
-  Cliente: 112,
-  /* Entra "6 evaluaciones" con el chevron al lado. */
-  Cubre: 146,
-  /* Con "$" y no "ARS": esos píxeles los necesitan las dos columnas de
-     botones, que no se pueden recortar. */
-  Importe: 110,
-  /* Entran enteros "Marcar como cobrado" y la fecha con "· efvo." y el botón
-     del recibo. Medido con la tabla en 900 px, que es donde se pisaban con
-     "Emitir NC": piden 165 y 122 px. */
-  Cobro: 194,
-  '': 138,
+  /* "10 candid." con la flecha al lado. */
+  Cubre: 124,
+  /* Con "$" y no "ARS": "$ 1.484.460". */
+  Importe: 112,
+  /* "Marcar cobro", o la fecha con el botón del recibo al lado. */
+  Cobro: 134,
+  /* "Emitir NC" y el ícono de quitar. */
+  '': 128,
 };
-const MEDIDAS_EMITIDAS = columnas(COLUMNAS_EMITIDAS, PROPIOS_EMITIDAS);
-/* Cobrado usa las mismas: con "· efvo." la celda del cobro pide lo mismo que
-   "Marcar como cobrado". */
-const MEDIDAS_COBRADAS = MEDIDAS_EMITIDAS;
+
 
 /** Las de las anuladas: la factura, y la nota de crédito que la anuló. */
 const COLUMNAS_ANULADAS = ['Fecha', 'Factura', 'Emisora', 'Cliente', 'Importe', 'Nota de crédito', 'Anulada el'];
-const MEDIDAS_ANULADAS = columnas(COLUMNAS_ANULADAS, {
+const PROPIOS_ANULADAS = {
   Fecha: 116,
   Factura: 130,
   Emisora: 140,
@@ -114,7 +113,7 @@ const MEDIDAS_ANULADAS = columnas(COLUMNAS_ANULADAS, {
   Importe: 134,
   'Nota de crédito': 150,
   'Anulada el': 120,
-});
+};
 
 
 /**
@@ -124,7 +123,7 @@ const MEDIDAS_ANULADAS = columnas(COLUMNAS_ANULADAS, {
  * de antes le dan a la fila de abajo el mismo ancho de columna, y el árbol
  * arranca justo debajo del botón que lo abrió.
  */
-const ANTES_DE_CUBRE = COLUMNAS_EMITIDAS.indexOf('Cubre');
+
 
 async function mandar(cuerpo: unknown) {
   const res = await fetch('/api/os/facturas', {
@@ -669,10 +668,16 @@ export function Emitidas({
   facturas,
   ordenes = {},
   solo,
+  sinEmisora = false,
 }: {
   facturas: Factura[];
   /** Cómo se nombra cada una de las que van sin factura: "OC #0065". */
   ordenes?: Record<string, string>;
+  /**
+   * Sin la columna de la emisora: cuando quien mira es una evaluadora, todo
+   * lo que ve es suyo y la columna diría lo mismo en cada fila.
+   */
+  sinEmisora?: boolean;
   /** Qué mitad mostrar, cuando cada una vive en su pestaña. */
   solo?: 'sin-cobrar' | 'cobrado';
 }) {
@@ -738,7 +743,7 @@ export function Emitidas({
         <>
           {!solo && <div className="os-rotulo-bloque">Facturado y sin cobrar</div>}
           <div className="os-panel">
-            <TablaEmitidas facturas={sinCobrar} ordenes={ordenes} />
+            <TablaEmitidas facturas={sinCobrar} ordenes={ordenes} sinEmisora={sinEmisora} />
             <div className="os-resumen-linea">
               <span>
                 <span className="os-dato-rotulo">Sin cobrar</span>
@@ -757,7 +762,7 @@ export function Emitidas({
         <>
           {!solo && <div className="os-rotulo-bloque">Cobrado</div>}
           <div className="os-panel">
-            <TablaEmitidas facturas={cobradas} ordenes={ordenes} medidas={MEDIDAS_COBRADAS} />
+            <TablaEmitidas facturas={cobradas} ordenes={ordenes} sinEmisora={sinEmisora} />
           </div>
         </>
       )}
@@ -805,25 +810,28 @@ function llano(t: string): string {
 function TablaEmitidas({
   facturas,
   ordenes,
-  medidas = MEDIDAS_EMITIDAS,
+  sinEmisora = false,
 }: {
   facturas: Factura[];
   ordenes: Record<string, string>;
-  medidas?: string[];
+  sinEmisora?: boolean;
 }) {
+  // Las columnas que van. Sin la de la emisora, lo suyo se lo lleva el cliente.
+  const cols = sinEmisora ? COLUMNAS_EMITIDAS.filter((c) => c !== 'Emisora') : COLUMNAS_EMITIDAS;
+  const antesDeCubre = cols.indexOf('Cubre');
   const [abierta, setAbierta] = useState<string | null>(null);
 
   return (
     <div className="os-tabla-marco">
       <table className="os-tabla os-tabla-trabajo os-tabla-fija">
         <colgroup>
-          {COLUMNAS_EMITIDAS.map((c, i) => (
-            <col key={c} style={{ width: medidas[i] }} />
+          {cols.map((c) => (
+            <col key={c} style={ANCHOS_EMITIDAS[c] ? { width: ANCHOS_EMITIDAS[c] } : undefined} />
           ))}
         </colgroup>
         <thead>
           <tr>
-            {COLUMNAS_EMITIDAS.map((c) => (
+            {cols.map((c) => (
               <th
                 key={c}
                 className={
@@ -858,9 +866,11 @@ function TablaEmitidas({
                   {f.sinComprobante ? ordenes[f.id] ?? 'Sin factura' : numeroDe(f)}
                 </a>
               </td>
-              <td className="os-tabla-recorta" data-campo="Emisora">
-                {nombreDe(f.emisora)}
-              </td>
+              {!sinEmisora && (
+                <td className="os-tabla-recorta" data-campo="Emisora">
+                  {nombreDe(f.emisora)}
+                </td>
+              )}
               <td className="os-tabla-recorta" data-campo="Cliente">
                 {f.cliente}
               </td>
@@ -879,7 +889,9 @@ function TablaEmitidas({
                     onClick={() => setAbierta(cajon ? null : f.id)}
                     title={cajon ? 'Tocar para cerrar' : 'Tocar para ver a quiénes cubre'}
                   >
-                    {cuantas} {cuantas === 1 ? 'evaluación' : 'evaluaciones'}
+                    {/* Abreviado y de ancho fijo: con "1" o con "10", las flechas
+                        de todas las filas quedan en la misma vertical. */}
+                    <span className="os-cubre-cuantos">{cuantas} candid.</span>
                     {/* Un chevron dibujado y no el carácter ▸: el glifo cambia
                         de tamaño y de línea de base según la tipografía, y acá
                         tiene que girar sin moverse. */}
@@ -924,7 +936,11 @@ function TablaEmitidas({
                 {/* La que ARCA autorizó no se quita: existe en ARCA, se borre
                     de acá o no. Se anula con una nota de crédito. */}
                 {/* El botón está en todas las filas, para que se sepa dónde
-                    vive; solo se puede apretar en las que tienen CAE. */}
+                    vive; solo se puede apretar en las que tienen CAE. Van
+                    adentro de un envoltorio: con la celda misma en fila, su
+                    alto no seguía al de la fila y la raya de abajo quedaba
+                    partida. */}
+                <span className="os-accion-fila">
                 <AnularFactura
                   id={f.id}
                   numero={numeroDe(f)}
@@ -940,23 +956,31 @@ function TablaEmitidas({
                   }
                 />
                 {!f.cae && <BorrarFactura id={f.id} numero={numeroDe(f)} />}
+                </span>
               </td>
             </tr>
 
             {cajon && (
               <tr className="os-fila-abierta os-fila-cubre">
-                <td colSpan={ANTES_DE_CUBRE} />
-                <td colSpan={COLUMNAS_EMITIDAS.length - ANTES_DE_CUBRE}>
+                <td colSpan={antesDeCubre} />
+                <td colSpan={cols.length - antesDeCubre}>
                   <ul className="os-cubre-lista">
-                    {f.renglones.map((r) => (
-                      <li key={r.id} className={r.persona ? undefined : 'os-cubre-extra'}>
+                    {enArbol(f.renglones).map(({ r, sub }) => (
+                      <li
+                        key={r.id}
+                        className={
+                          [r.persona ? '' : 'os-cubre-extra', sub ? 'os-cubre-sub' : ''].join(' ').trim() ||
+                          undefined
+                        }
+                      >
                         {/* El nombre sale de la evaluación cuando está: las
                             facturas de Airtable dicen "Evaluación psicotécnica"
                             a secas y ahí manda la descripción. El puesto va
                             pegado y no en su propia columna: son la misma cosa,
                             quién es y de qué. */}
                         <span className="os-cubre-quien">
-                          {r.persona ?? r.descripcion}
+                          {/* Debajo de su candidato el nombre sobra: va solo qué es. */}
+                          {r.persona ?? (sub ? r.descripcion.split(',')[0] : r.descripcion)}
                           {r.puesto && <span className="os-cubre-puesto"> · {r.puesto}</span>}
                         </span>
                         <span className="os-cubre-importe">
@@ -987,6 +1011,34 @@ function TablaEmitidas({
       </table>
     </div>
   );
+}
+
+/**
+ * Los renglones de una factura en el orden en que se leen: cada candidato y,
+ * debajo, sus adicionales.
+ *
+ * El adicional ("Adicional BTSA, Jose Luis Alfaro") es un renglón aparte que
+ * no guarda de quién es: se reconoce por el nombre con que termina. El que no
+ * coincide con ningún candidato queda al final, en el primer nivel.
+ */
+function enArbol<R extends { persona: string | null; descripcion: string }>(
+  renglones: R[]
+): { r: R; sub: boolean }[] {
+  const personas = renglones.filter((r) => r.persona);
+  const extras = renglones.filter((r) => !r.persona);
+  const usados = new Set<R>();
+  const orden: { r: R; sub: boolean }[] = [];
+  for (const p of personas) {
+    orden.push({ r: p, sub: false });
+    for (const e of extras) {
+      if (!usados.has(e) && e.descripcion.trim().endsWith(`, ${p.persona}`)) {
+        usados.add(e);
+        orden.push({ r: e, sub: true });
+      }
+    }
+  }
+  for (const e of extras) if (!usados.has(e)) orden.push({ r: e, sub: false });
+  return orden;
 }
 
 /** Marcar el cobro, o deshacerlo si se marcó de más. */
@@ -1105,7 +1157,7 @@ export function Cobro({
       title="Todavía sin cobrar. Tocar para marcar que entró la plata."
       onClick={() => setSeguro(true)}
     >
-      Marcar como cobrado
+      Marcar cobro
     </button>
   );
 }
@@ -1278,22 +1330,27 @@ export type NotaDeCredito = { id: string; numero: number | null; puntoVenta: num
 export function Anuladas({
   facturas,
   notas,
+  sinEmisora = false,
 }: {
   facturas: Factura[];
   notas: Record<string, NotaDeCredito>;
+  /** Sin la columna de la emisora, igual que en las otras dos listas. */
+  sinEmisora?: boolean;
 }) {
+  const cols = sinEmisora ? COLUMNAS_ANULADAS.filter((c) => c !== 'Emisora') : COLUMNAS_ANULADAS;
+  const medidas = columnas(cols, PROPIOS_ANULADAS);
   return (
     <div className="os-panel">
       <div className="os-tabla-marco">
         <table className="os-tabla os-tabla-trabajo os-tabla-fija">
           <colgroup>
-            {MEDIDAS_ANULADAS.map((m, i) => (
+            {medidas.map((m, i) => (
               <col key={i} style={{ width: m }} />
             ))}
           </colgroup>
           <thead>
             <tr>
-              {COLUMNAS_ANULADAS.map((c) => (
+              {cols.map((c) => (
                 <th key={c} className={c === 'Importe' ? 'os-tabla-num' : undefined}>
                   {c}
                 </th>
@@ -1315,9 +1372,11 @@ export function Anuladas({
                       {numeroDe(f)}
                     </a>
                   </td>
-                  <td className="os-tabla-recorta" data-campo="Emisora">
-                    {nombreDe(f.emisora)}
-                  </td>
+                  {!sinEmisora && (
+                    <td className="os-tabla-recorta" data-campo="Emisora">
+                      {nombreDe(f.emisora)}
+                    </td>
+                  )}
                   <td className="os-tabla-recorta" data-campo="Cliente">
                     {f.cliente}
                   </td>
