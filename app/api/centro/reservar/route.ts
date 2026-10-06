@@ -7,6 +7,7 @@ import {
   hora,
   hoyISO,
   listarEspacios,
+  puedeAlquilar,
   reservasEntre,
 } from '@/lib/consultorios';
 import { anotarAcceso } from '@/lib/accesos';
@@ -68,7 +69,9 @@ export async function POST(req: Request) {
     reservasEntre(fecha, fecha),
   ]);
   const espacio = espacios.find((e) => e.id === espacioId);
-  if (!espacio || !espacio.activo) return mal('Esa sala no está disponible.');
+  // La misma respuesta para una sala que no existe, una fuera de alquiler y
+  // una que no se le ofrece a esta persona: no hace falta decirle cuál es.
+  if (!espacio || !puedeAlquilar(espacio, yo.id)) return mal('Esa sala no está disponible.');
 
   // Lunes es 0 y el domingo queda en 6, que ninguna sala tiene cargado.
   const diaSemana = (new Date(`${fecha}T12:00:00-03:00`).getDay() + 6) % 7;

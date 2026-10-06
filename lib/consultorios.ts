@@ -42,7 +42,7 @@ export async function listarEspacios(): Promise<Espacio[]> {
     Omit<Espacio, 'incluye'> & { espacio_incluye: { id: string; texto: string; orden: number }[] }
   >(
     'espacios',
-    'select=id,nombre,tipo,categoria,orden,activo,espacio_incluye(id,texto,orden)&order=orden.asc',
+    'select=id,nombre,tipo,categoria,orden,activo,permitidos,espacio_incluye(id,texto,orden)&order=orden.asc',
     'consultorios'
   );
   return filas.map((e) => ({

@@ -3,6 +3,7 @@ import {
   contratos as leerContratos,
   DIAS_CORTOS,
   DIAS_DE_LA_SEMANA_TIPO,
+  esParaTodos,
   hoyISO,
   listarEspacios,
   mesLargo,
@@ -40,8 +41,9 @@ export default async function Disponibilidad() {
     leerContratos(),
     reservasEntre(hoy, sumarDias(hoy, DIAS_DE_LA_SEMANA_TIPO - 1)),
   ]);
-  // Las salas fuera de alquiler no se ofrecen.
-  const salas = espacios.filter((e) => e.activo);
+  // Las salas fuera de alquiler no se ofrecen, y tampoco las que se alquilan
+  // solo a quienes se elige: esta página la abre cualquiera.
+  const salas = espacios.filter((e) => e.activo && esParaTodos(e));
   const { horas, dias, celdas } = semanaTipo(salas, aperturas, contratos, reservas, hoy);
 
   return (

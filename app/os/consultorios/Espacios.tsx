@@ -24,7 +24,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import type { Apertura, Espacio, Tarifa } from '@/lib/consultorios-calculo';
+import type { Apertura, Espacio, Inquilino, Tarifa } from '@/lib/consultorios-calculo';
 import { mandar } from './acciones';
 
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -87,7 +87,10 @@ export default function Espacios({
   aperturas,
   escalas,
   hoy,
+  inquilinos = [],
 }: {
+  /** Para elegir quién puede alquilar una sala que no es para todos. */
+  inquilinos?: Inquilino[];
   espacios: Espacio[];
   aperturas: Apertura[];
   escalas: Tarifa[];
@@ -100,6 +103,12 @@ export default function Espacios({
   const [desde, setDesde] = useState('');
   const [borrador, setBorrador] = useState<Tarifa[] | null>(null);
   const [guardando, setGuardando] = useState(false);
+  /**
+   * La sala a la que se le está eligiendo quién puede alquilarla, y los
+   * tildados mientras no se guarda. Null en `quienes` es "todos".
+   */
+  const [eligiendo, setEligiendo] = useState<string | null>(null);
+  const [quienes, setQuienes] = useState<string[] | null>(null);
   const rige = horarioQueRige(aperturas);
   const [horarioTodas, setHorarioTodas] = useState(rige);
 
@@ -146,6 +155,23 @@ export default function Espacios({
     const r = await mandar({ accion: 'incluye-quitar', id });
     if (!r.ok) return setError(r.motivo ?? 'No se pudo quitar.');
     setError(null);
+    router.refresh();
+  }
+
+  function elegirQuienes(e: Espacio) {
+    if (eligiendo === e.id) return setEligiendo(null);
+    setEligiendo(e.id);
+    setQuienes(e.permitidos ?? null);
+  }
+
+  async function guardarQuienes() {
+    if (!eligiendo) return;
+    setGuardando(true);
+    const r = await mandar({ accion: 'espacio-permitidos', id: eligiendo, permitidos: quienes });
+    setGuardando(false);
+    if (!r.ok) return setError(r.motivo ?? 'No se pudo guardar.');
+    setError(null);
+    setEligiendo(null);
     router.refresh();
   }
 
@@ -428,9 +454,95 @@ export default function Espacios({
                   </td>
                 ))}
               </tr>
+
+              <tr>
+                <th>Quién puede alquilar</th>
+                {espacios.map((e) => (
+                  <td key={e.id}>
+                    {/* Dice cómo está y se toca para cambiarlo, igual que el
+                        interruptor de arriba. La lista se abre debajo de la
+                        tabla: quince nombres no entran en una celda. */}
+                    <button
+                      type="button"
+                      className="os-boton os-boton-quienes"
+                      onClick={() => elegirQuienes(e)}
+                      aria-expanded={eligiendo === e.id}
+                    >
+                      {e.permitidos == null
+                        ? 'Todos'
+                        : e.permitidos.length === 0
+                          ? 'Nadie'
+                          : `Solo ${e.permitidos.length}`}
+                    </button>
+                  </td>
+                ))}
+              </tr>
             </tbody>
           </table>
         </div>
+
+        {eligiendo && (
+          <div className="os-quienes">
+            <div className="os-quienes-top">
+              <b>Quién puede alquilar {espacios.find((e) => e.id === eligiendo)?.nombre}</b>
+              <span className="os-panel-nota">
+                En el calendario del OS la sala se ve siempre. Esto decide a qué inquilinos se les
+                ofrece en su pantalla de reservar.
+              </span>
+            </div>
+            <label className="os-quienes-fila">
+              <input
+                type="radio"
+                checked={quienes === null}
+                onChange={() => setQuienes(null)}
+              />
+              Todos los inquilinos
+            </label>
+            <label className="os-quienes-fila">
+              <input
+                type="radio"
+                checked={quienes !== null}
+                onChange={() => setQuienes(quienes ?? [])}
+              />
+              Solo quienes elija
+            </label>
+            {quienes !== null && (
+              <div className="os-quienes-lista">
+                {inquilinos
+                  .filter((i) => i.activo || quienes.includes(i.id))
+                  .map((i) => (
+                    <label className="os-quienes-fila" key={i.id}>
+                      <input
+                        type="checkbox"
+                        checked={quienes.includes(i.id)}
+                        onChange={() =>
+                          setQuienes(
+                            quienes.includes(i.id)
+                              ? quienes.filter((x) => x !== i.id)
+                              : [...quienes, i.id]
+                          )
+                        }
+                      />
+                      {i.nombre}
+                    </label>
+                  ))}
+              </div>
+            )}
+            <div className="os-quienes-pie">
+              <button
+                type="button"
+                className="os-boton os-boton-firme"
+                onClick={guardarQuienes}
+                disabled={guardando}
+              >
+                {guardando ? 'Guardando…' : 'Guardar'}
+              </button>
+              <button type="button" className="os-boton" onClick={() => setEligiendo(null)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Escrito para alguien que nunca alquiló acá: la escala se entiende
             con un ejemplo y no con la palabra "tramo". */}

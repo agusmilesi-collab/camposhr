@@ -18072,3 +18072,58 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 .os-agregar-abierto .os-agregar-pie > * {
   min-width: 0;
 }
+
+/**
+ * Quién puede alquilar una sala, en Configuración de Consultorios.
+ *
+ * El botón de la celda es un `os-boton` más bajo, del alto del interruptor de
+ * la fila de arriba. La lista se abre debajo de la tabla, en columnas: son los
+ * inquilinos del Centro y en una sola columna se llevaban media pantalla.
+ */
+.os-boton.os-boton-quienes {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 0.76rem;
+}
+
+.os-quienes {
+  display: grid;
+  gap: 8px;
+  margin: 14px 20px 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--os-linea);
+  border-radius: 10px;
+  background: var(--os-panel-2);
+  font-size: 0.84rem;
+}
+
+.os-quienes-top {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.os-quienes-top .os-panel-nota {
+  margin: 0;
+  padding: 0;
+}
+
+.os-quienes-fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.os-quienes-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 6px 16px;
+  padding: 8px 0 2px 24px;
+}
+
+.os-quienes-pie {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}

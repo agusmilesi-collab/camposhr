@@ -371,7 +371,13 @@ export default async function Consultorios({
       )}
 
       {ver === 'espacios' && (
-        <Espacios espacios={espacios} aperturas={aperturas} escalas={todasLasEscalas} hoy={hoy} />
+        <Espacios
+          espacios={espacios}
+          aperturas={aperturas}
+          escalas={todasLasEscalas}
+          hoy={hoy}
+          inquilinos={inquilinos}
+        />
       )}
     </Shell>
   );

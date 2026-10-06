@@ -249,6 +249,7 @@ export default function Tablero({
   seguimientos = [],
   sinAsignar = null,
   comprobantes = [],
+  renovaciones = [],
 }: {
   filas: Evaluacion[];
   /**
@@ -286,6 +287,19 @@ export default function Tablero({
     mes: string;
     /** Lo que debe de ese mes: contra esto se compara el papel. */
     debe: number;
+  }[];
+  /**
+   * Los inquilinos que contestaron que no renuevan o que quieren cambiar sus
+   * horas para el mes que viene. Las bandas las mueve el equipo: la tarjeta
+   * avisa, lleva a la ficha y se va cuando alguien la da por atendida.
+   */
+  renovaciones?: {
+    id: string;
+    inquilinoId: string;
+    inquilino: string;
+    mes: string;
+    respuesta: 'si' | 'no' | 'cambiar';
+    nota: string | null;
   }[];
 }) {
   const router = useRouter();
@@ -340,6 +354,25 @@ export default function Tablero({
       setError(e instanceof Error && e.message ? e.message : 'No se pudo registrar el pago.');
     }
   }
+
+  const [atendidas, setAtendidas] = useState<string[]>([]);
+
+  async function atendida(id: string) {
+    setAtendidas((xs) => [...xs, id]);
+    try {
+      const res = await fetch('/api/os/consultorios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion: 'renovacion-vista', id }),
+      });
+      if (!res.ok) throw new Error();
+      empezar(() => router.refresh());
+    } catch {
+      setAtendidas((xs) => xs.filter((x) => x !== id));
+      setError('No se pudo guardar.');
+    }
+  }
+  const porRenovar = renovaciones.filter((r) => !atendidas.includes(r.id));
 
   /** Lo cambiado en pantalla que el servidor todavía no confirmó. */
   const [movidas, setMovidas] = useState<Record<string, Partial<Evaluacion>>>({});
@@ -448,7 +481,8 @@ export default function Tablero({
                     (c.clave === 'hoy'
                       ? seguimientos.filter((s) => !seguidas.includes(s.id)).length +
                         (sinAsignar && sinAsignar.cuantos > 0 ? 1 : 0) +
-                        comprobantes.filter((k) => !pagados.includes(k.id)).length
+                        comprobantes.filter((k) => !pagados.includes(k.id)).length +
+                        porRenovar.length
                       : 0)}
                 </span>
               </div>
@@ -547,6 +581,34 @@ export default function Tablero({
                     </article>
                   ))}
               {c.clave === 'hoy' &&
+                porRenovar.map((r) => (
+                  <article key={r.id} className="os-mini os-mini-seguimiento os-mini-comprobante">
+                    <div className="os-mini-cuerpo">
+                      <span className="os-mini-comprobante-top">
+                        <span className="os-mini-nombre">{r.inquilino}</span>
+                        <span className="os-mini-importe">{r.mes}</span>
+                      </span>
+                      <span className="os-mini-detalle" title={r.nota ?? undefined}>
+                        {r.respuesta === 'no'
+                          ? 'No renueva sus horas'
+                          : `Quiere cambiar horas: ${r.nota ?? ''}`}
+                      </span>
+                    </div>
+                    <div className="os-mini-acciones">
+                      <Link className="os-boton" href={`/os/consultorios/inquilino/${r.inquilinoId}`}>
+                        Ver ficha
+                      </Link>
+                      <button
+                        type="button"
+                        className="os-boton os-boton-firme"
+                        onClick={() => atendida(r.id)}
+                      >
+                        Listo
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              {c.clave === 'hoy' &&
                 seguimientos
                   .filter((s) => !seguidas.includes(s.id))
                   .map((s) => (
@@ -606,7 +668,8 @@ export default function Tablero({
                   c.clave === 'hoy' &&
                   (seguimientos.some((s) => !seguidas.includes(s.id)) ||
                     (sinAsignar?.cuantos ?? 0) > 0 ||
-                    comprobantes.some((k) => !pagados.includes(k.id)))
+                    comprobantes.some((k) => !pagados.includes(k.id)) ||
+                    porRenovar.length > 0)
                 ) && (
                   <p className="os-columna-vacia">{c.vacio}</p>
                 )}
