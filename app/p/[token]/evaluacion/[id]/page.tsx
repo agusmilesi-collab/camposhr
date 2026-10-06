@@ -7,7 +7,7 @@ import EnHojas from '@/app/os/psicotecnicos/informe/_sitio/EnHojas';
 import BarraHojas from './BarraHojas';
 import Partes from './Partes';
 import { Encabezado, Marca, Pie } from '@/app/os/psicotecnicos/informe/_doc/Marco';
-import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
+import { informeEnHojas } from '@/lib/empresa-prueba';
 import { esPortalEjemplo } from '@/lib/portal-ejemplo';
 /* La hoja A4 del informe (`os-onepager-*`) está definida en la hoja de estilos
    del OS. Va primero, como en el OS, porque varias de sus reglas esperan que
@@ -71,7 +71,11 @@ export default async function InformeDelPortal({
    * informe que cambia de forma entre dos candidatos de la misma búsqueda es
    * un informe que hay que volver a explicar.
    */
-  const comoSitio = esEmpresaDePrueba(datos.empresa);
+  /* El informe de muestra, el que se le enseña a quien pregunta por los
+     precios, sigue con las tres pestañas: lleva una banda que avisa que la
+     persona es inventada, y falta resolver cómo sale esa banda en el PDF del
+     informe en hojas. */
+  const comoSitio = !muestra && informeEnHojas(datos.empresa);
 
   return (
     <main className="sitio-pagina">

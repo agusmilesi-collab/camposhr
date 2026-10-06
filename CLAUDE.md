@@ -960,8 +960,11 @@ dejaron en vez de volar de vuelta al lugar del que salió.
 
 ## El informe del cliente es una página, y el PDF es otra cosa
 
-**Por ahora corre solo en Distribuidora Andina**, que es la empresa de prueba
-(`lib/empresa-prueba.ts`). El molde se está afinando ahí y el resto de los
+**Desde el 6/10/2026 corre para todos los clientes** (`INFORME_EN_HOJAS_PARA_TODOS`
+en `lib/empresa-prueba.ts`; en falso vuelve a correr solo en Distribuidora
+Andina). El informe de muestra del portal sigue con las tres pestañas. Lo que
+sigue cuenta cómo fue la prueba: hasta ese día corría solo en Distribuidora
+Andina, que es la empresa de prueba. El molde se está afinando ahí y el resto de los
 clientes sigue con el informe que ya conocen, en tres pestañas, hasta que
 Agustín lo dé por bueno: un informe que cambia de forma entre dos candidatos de
 la misma búsqueda es un informe que hay que volver a explicar. El interruptor

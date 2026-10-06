@@ -3,7 +3,7 @@ import { armarInforme } from '@/lib/informe';
 import Documento from '../_doc/Documento';
 import Imprimir from './Imprimir';
 import EnHojas from '../_sitio/EnHojas';
-import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
+import { informeEnHojas } from '@/lib/empresa-prueba';
 import '../_sitio/sitio.css';
 
 export const dynamic = 'force-dynamic';
@@ -37,7 +37,7 @@ export default async function InformePagina({
   return (
     <main className="inf-suelto">
       {searchParams.descargar === '1' && <Imprimir />}
-      {esEmpresaDePrueba(inf.empresa) ? <EnHojas inf={inf} descarga /> : <Documento inf={inf} interno />}
+      {informeEnHojas(inf.empresa) ? <EnHojas inf={inf} descarga /> : <Documento inf={inf} interno />}
     </main>
   );
 }
