@@ -265,6 +265,11 @@
 
 
 .centro-cuerpo {
+  /* El ancho se declara: es un ítem de la grilla de `.centro` y con los
+     márgenes en auto se encoge hasta su contenido, así que una pantalla con
+     una tabla corta salía más angosta que la de al lado. */
+  width: 100%;
+  box-sizing: border-box;
   max-width: 860px;
   margin: 0 auto;
   padding: 20px 18px 60px;
@@ -1001,4 +1006,374 @@
   border-radius: 4px;
   vertical-align: -2px;
   margin-right: 6px;
+}
+
+/* La caja donde se deja el comprobante de la transferencia. Punteada siempre y
+   no solo al arrastrar: acá el archivo es lo único que se hace, y en el
+   teléfono no hay arrastre que la haga aparecer. */
+.centro-soltar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 22px 16px;
+  border: 1.5px dashed var(--linea);
+  border-radius: 11px;
+  background: var(--panel-2);
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.centro-soltar span {
+  color: var(--suave);
+  font-size: 0.8rem;
+}
+
+.centro-soltar:hover,
+.centro-soltar.encima {
+  border-color: var(--azul);
+  background: #eef3f9;
+}
+
+.centro-soltar-error {
+  color: var(--rojo);
+}
+
+.centro-soltar + .centro-lista,
+.centro-soltar-error + .centro-lista {
+  margin-top: 8px;
+}
+
+.centro-item a {
+  color: var(--azul-fuerte);
+}
+
+/* Las dos pestañas de la cuenta: el mes en curso y los anteriores. */
+.centro-pestanas {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 16px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.centro-pestanas a {
+  padding: 8px 14px;
+  color: var(--tinta-media);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.centro-pestanas a.activa {
+  color: var(--tinta);
+  border-bottom-color: var(--tinta);
+}
+
+.centro-volver {
+  margin: 0 0 10px;
+  font-size: 0.86rem;
+}
+
+.centro-volver a,
+.centro-anteriores a {
+  color: var(--azul-fuerte);
+}
+
+.centro-bajar {
+  color: var(--azul-fuerte);
+  white-space: nowrap;
+}
+
+.centro-abrir + .centro-abrir {
+  margin-left: 10px;
+}
+
+.centro-debe {
+  color: var(--rojo);
+  white-space: nowrap;
+}
+
+/* A dónde se transfiere. El CBU y el alias en letra de ancho fijo: se copian
+   a mano en la aplicación del banco y un cero de más es otra cuenta. */
+.centro-cbu {
+  display: grid;
+  /* Dos columnas: cinco renglones de dos palabras dejaban medio panel en
+     blanco a la derecha. */
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 24px;
+  margin: 12px 0 0;
+  font-size: 0.88rem;
+}
+
+.centro-cbu div {
+  display: flex;
+  gap: 10px;
+}
+
+.centro-cbu dt {
+  flex: none;
+  width: 64px;
+  color: var(--suave);
+}
+
+.centro-cbu dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+}
+
+/* La flecha que abre el detalle de un mes anterior. Es un botón con la forma
+   de un texto: el mes sigue leyéndose como la primera celda de su renglón. */
+.centro-desplegar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.centro-desplegar span {
+  display: inline-block;
+  width: 10px;
+  color: var(--suave);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 0.15s;
+}
+
+.centro-desplegar.abierto span {
+  transform: rotate(90deg);
+}
+
+.centro-desplegado > td {
+  padding: 4px 0 14px 18px;
+  background: var(--panel-2);
+}
+
+.centro-desplegado .centro-resumen {
+  font-size: 0.8rem;
+}
+
+/* El rótulo de una columna de números va del mismo lado que los números.
+   Hay que nombrarlo con la tabla delante: `.centro-resumen th` alinea a la
+   izquierda y pesa más que `.centro-num` sola, así que el rótulo quedaba en
+   una punta de la columna y sus valores en la otra. */
+.centro-resumen th.centro-num {
+  text-align: right;
+}
+
+/* En los meses anteriores el rótulo "Mes" arranca donde arranca el nombre del
+   mes, pasada la flecha (10 de la flecha más 8 de separación). */
+.centro-anteriores > thead th:first-child {
+  padding-left: 26px;
+}
+
+/* Aire entre el importe, que termina contra la derecha de su columna, y la
+   factura, que arranca contra la izquierda de la suya: pegados se leían como
+   un solo dato. */
+.centro-anteriores > thead th:nth-child(4),
+.centro-anteriores > tbody > tr:not(.centro-desplegado) > td:nth-child(4) {
+  padding-left: 36px;
+}
+
+/* Descargar, como botón: una píldora con su flecha. Como enlace subrayado se
+   perdía entre los números de la fila. */
+.centro-abrir {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--tinta);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.centro-abrir::before {
+  content: '↗';
+  color: var(--azul);
+  font-weight: 600;
+}
+
+.centro-abrir:hover {
+  border-color: var(--azul);
+  background: #eef3f9;
+}
+
+.centro-abrir + .centro-abrir {
+  margin-left: 6px;
+}
+
+/* Cómo quedó un mes anterior: pagado en verde, lo que falta en rojo. */
+.centro-estado {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #e6f0e8;
+  color: var(--verde);
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.centro-estado.debe {
+  background: #f6e7e7;
+  color: var(--rojo);
+}
+
+/* Dos paneles lado a lado, del mismo alto. En el teléfono vuelven a apilarse. */
+.centro-dos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.centro-dos > .centro-panel {
+  margin-bottom: 0;
+}
+
+@media (max-width: 700px) {
+  .centro-dos {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .centro-cbu {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* El final de un renglón de pagos: el botón del recibo y, a su derecha, el importe. */
+.centro-item-fin {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+/* El mes no se parte en dos renglones ni se centra: es un botón, y el
+   navegador centra el texto de los botones. */
+.centro-desplegar {
+  white-space: nowrap;
+  text-align: left;
+}
+
+/**
+ * El tablero del inicio del inquilino: tres columnas con tarjetas, como el de
+ * Inicio en el OS. Las columnas miden lo mismo y llegan a la misma altura; en
+ * el teléfono se apilan, con Hoy arriba.
+ */
+.centro-cuerpo.centro-cuerpo-ancho {
+  max-width: 1080px;
+}
+
+.centro-tablero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.centro-columna {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 160px;
+  padding: 12px 12px 28px;
+  background: var(--panel-2);
+  border: 1px solid var(--linea);
+  border-radius: 13px;
+}
+
+.centro-columna header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 2px 2px;
+}
+
+.centro-columna h2 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.centro-columna header span {
+  color: var(--suave);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.centro-columna-vacia {
+  margin: 18px 0 0;
+  text-align: center;
+  color: var(--suave);
+  font-size: 0.84rem;
+}
+
+.centro-tarjeta {
+  /* Todas del mismo alto, tengan botón o no: una columna con tarjetas de tres
+     medidas se lee despareja. Lo de arriba queda arriba y el botón abajo. */
+  box-sizing: border-box;
+  height: 104px;
+  align-content: space-between;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: 9px;
+  font-size: 0.86rem;
+}
+
+
+.centro-tarjeta-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.centro-tarjeta-top b {
+  font-weight: 600;
+}
+
+.centro-tarjeta-top span {
+  flex: none;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.centro-tarjeta small {
+  color: var(--suave);
+  font-size: 0.78rem;
+}
+
+.centro-tarjeta .centro-abrir {
+  justify-self: start;
+}
+
+@media (max-width: 760px) {
+  .centro-tablero {
+    grid-template-columns: 1fr;
+  }
+
+  .centro-columna {
+    min-height: 0;
+    padding-bottom: 14px;
+  }
 }

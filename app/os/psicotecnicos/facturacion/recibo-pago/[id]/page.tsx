@@ -16,7 +16,7 @@ export default async function Recibo({ params }: { params: { id: string } }) {
   return (
     <HojaPapel
       orden={recibo.papel}
-      forma={formaDelRecibo(recibo.papel, recibo.pagadoEl, recibo.comprobante)}
+      forma={formaDelRecibo(recibo.papel, recibo.pagadoEl, recibo.comprobante, recibo.formaPago)}
     />
   );
 }

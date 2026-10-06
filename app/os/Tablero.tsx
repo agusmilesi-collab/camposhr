@@ -50,6 +50,8 @@ import {
 import { soloHora } from '@/lib/hora';
 import Desplegable from '@/app/os/Desplegable';
 
+const pesos = (n: number) => `$ ${Math.round(n).toLocaleString('es-AR')}`;
+
 /** Lo que elige el desplegable para volver al cálculo por antigüedad. */
 const AUTOMATICA = 'por-espera';
 
@@ -246,6 +248,7 @@ export default function Tablero({
   conEvaluadora,
   seguimientos = [],
   sinAsignar = null,
+  comprobantes = [],
 }: {
   filas: Evaluacion[];
   /**
@@ -267,6 +270,23 @@ export default function Tablero({
    * no se veían: repartir es trabajo del día, así que va en Hoy y lo ven todas.
    */
   sinAsignar?: { cuantos: number; nombres: string[]; clientes: string[] } | null;
+  /**
+   * Los comprobantes de transferencia que subieron los inquilinos del Centro y
+   * esperan que se registre el pago.
+   *
+   * Van en Hoy porque la plata ya salió de la cuenta de la persona: mientras el
+   * pago no esté registrado, su cuenta le sigue mostrando la deuda. La tarjeta
+   * se va sola cuando se registra el pago de ese mes.
+   */
+  comprobantes?: {
+    id: string;
+    inquilinoId: string;
+    inquilino: string;
+    periodo: string;
+    mes: string;
+    /** Lo que debe de ese mes: contra esto se compara el papel. */
+    debe: number;
+  }[];
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -290,6 +310,34 @@ export default function Tablero({
     } catch {
       setSeguidas((xs) => xs.filter((x) => x !== id));
       setError('No se pudo guardar el seguimiento.');
+    }
+  }
+
+  /**
+   * Dar por pagado un comprobante, en dos toques.
+   *
+   * El primero arma el botón con el importe escrito y el segundo registra: un
+   * pago es plata en la cuenta de alguien, y un toque de más en el teléfono no
+   * puede ser un recibo emitido.
+   */
+  const [porPagar, setPorPagar] = useState<string | null>(null);
+  const [pagados, setPagados] = useState<string[]>([]);
+
+  async function pagado(id: string) {
+    setPorPagar(null);
+    setPagados((xs) => [...xs, id]);
+    try {
+      const res = await fetch('/api/os/consultorios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion: 'comprobante-pagado', id }),
+      });
+      const r = await res.json().catch(() => null);
+      if (!res.ok || !r?.ok) throw new Error(r?.motivo);
+      empezar(() => router.refresh());
+    } catch (e) {
+      setPagados((xs) => xs.filter((x) => x !== id));
+      setError(e instanceof Error && e.message ? e.message : 'No se pudo registrar el pago.');
     }
   }
 
@@ -399,7 +447,8 @@ export default function Tablero({
                   {suyas.length +
                     (c.clave === 'hoy'
                       ? seguimientos.filter((s) => !seguidas.includes(s.id)).length +
-                        (sinAsignar && sinAsignar.cuantos > 0 ? 1 : 0)
+                        (sinAsignar && sinAsignar.cuantos > 0 ? 1 : 0) +
+                        comprobantes.filter((k) => !pagados.includes(k.id)).length
                       : 0)}
                 </span>
               </div>
@@ -425,6 +474,78 @@ export default function Tablero({
                   </div>
                 </article>
               )}
+              {c.clave === 'hoy' &&
+                comprobantes
+                  .filter((k) => !pagados.includes(k.id))
+                  .map((k) => (
+                    <article key={k.id} className="os-mini os-mini-seguimiento os-mini-comprobante">
+                      {/* Arriba, quién y cuánto: el importe a la derecha y con
+                          cifras parejas, que es lo que se compara contra el
+                          papel. */}
+                      <div className="os-mini-cuerpo">
+                        <span className="os-mini-comprobante-top">
+                          <span className="os-mini-nombre">{k.inquilino}</span>
+                          <span className="os-mini-importe">{pesos(k.debe)}</span>
+                        </span>
+                        {/* Cuando el papel dice otro importe, el pago se carga
+                            a mano en la ficha, que deja escribir cuánto entró.
+                            Va en el renglón de la descripción y no en uno
+                            propio: con una franja más, esta tarjeta era más
+                            alta que todas las del tablero. */}
+                        <span className="os-mini-comprobante-top">
+                          <span className="os-mini-detalle" title={k.mes}>
+                            Subió comprobante de pago
+                          </span>
+                          <Link
+                            className="os-enlace os-mini-otro"
+                            href={`/os/consultorios/inquilino/${k.inquilinoId}?periodo=${k.periodo}`}
+                          >
+                            No coincide
+                          </Link>
+                        </span>
+                      </div>
+                      {/* Dos botones del mismo ancho: mirar el papel y dar el
+                          pago por recibido. Al confirmar siguen siendo dos, en
+                          el mismo lugar: cancelar donde estaba mirar, y
+                          confirmar donde estaba marcar. */}
+                      <div className="os-mini-acciones">
+                        {porPagar === k.id ? (
+                          <>
+                            <button type="button" className="os-boton" onClick={() => setPorPagar(null)}>
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              className="os-boton os-boton-firme"
+                              onClick={() => pagado(k.id)}
+                            >
+                              {/* Sin el importe: en media tarjeta no entra, y ya está
+                                  escrito arriba, en la misma tarjeta. */}
+                              Confirmar
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <a
+                              className="os-boton"
+                              href={`/api/os/centro-comprobante/${k.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Ver comprobante
+                            </a>
+                            <button
+                              type="button"
+                              className="os-boton os-boton-firme"
+                              onClick={() => setPorPagar(k.id)}
+                            >
+                              {k.debe > 0 ? 'Marcar pagado' : 'Quitar aviso'}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </article>
+                  ))}
               {c.clave === 'hoy' &&
                 seguimientos
                   .filter((s) => !seguidas.includes(s.id))
@@ -484,7 +605,8 @@ export default function Tablero({
                 !(
                   c.clave === 'hoy' &&
                   (seguimientos.some((s) => !seguidas.includes(s.id)) ||
-                    (sinAsignar?.cuantos ?? 0) > 0)
+                    (sinAsignar?.cuantos ?? 0) > 0 ||
+                    comprobantes.some((k) => !pagados.includes(k.id)))
                 ) && (
                   <p className="os-columna-vacia">{c.vacio}</p>
                 )}

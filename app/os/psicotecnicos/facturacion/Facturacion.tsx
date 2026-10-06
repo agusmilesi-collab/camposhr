@@ -924,7 +924,7 @@ function TablaEmitidas({
                     Falta el CAE
                   </a>
                 ) : (
-                  <Cobro id={f.id} cobradaAt={f.cobradaAt} />
+                  <Cobro id={f.id} cobradaAt={f.cobradaAt} formaPago={f.formaPago} />
                 )}
               </td>
               <td className="os-tabla-accion" data-campo=" ">
@@ -997,16 +997,24 @@ function TablaEmitidas({
 }
 
 /** Marcar el cobro, o deshacerlo si se marcó de más. */
-export function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null }) {
+export function Cobro({
+  id,
+  cobradaAt,
+  formaPago = null,
+}: {
+  id: string;
+  cobradaAt: string | null;
+  formaPago?: 'transferencia' | 'efectivo' | null;
+}) {
   const router = useRouter();
   const [tocando, setTocando] = useState(false);
   /** El primer toque pregunta; el segundo hace. */
   const [seguro, setSeguro] = useState(false);
 
-  async function cambiar(valor: string | null) {
+  async function cambiar(valor: string | null, forma?: 'transferencia' | 'efectivo') {
     setTocando(true);
     try {
-      await mandar({ accion: 'cobro', id, cobradaAt: valor });
+      await mandar({ accion: 'cobro', id, cobradaAt: valor, formaPago: forma });
       router.refresh();
       // Al cobrar se baja el recibo de pago, que es lo que se le manda al
       // cliente. La ruta lo entrega como adjunto y la pantalla no se mueve.
@@ -1019,17 +1027,49 @@ export function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null 
 
   // Se confirma en los dos sentidos. Marcar el cobro genera un recibo con
   // número, y un toque de más en una fila equivocada le daba recibo a quien no
-  // pagó; desmarcarlo saca la plata de lo cobrado.
+  // pagó; desmarcarlo saca la plata de lo cobrado. Al marcar, la confirmación
+  // es elegir cómo entró la plata, que es lo que va a decir el recibo.
   if (seguro) {
+    const otra = formaPago === 'efectivo' ? 'transferencia' : 'efectivo';
     return (
-      <span className="os-cobro-confirma">
-        <button
-          className="os-boton os-boton-menudo os-boton-firme"
-          disabled={tocando}
-          onClick={() => cambiar(cobradaAt ? null : hoy())}
-        >
-          {tocando ? '…' : cobradaAt ? 'Sí, quitar' : 'Sí, cobrada'}
-        </button>
+      <span className="os-cobro-confirma os-cobro-elige">
+        {cobradaAt ? (
+          <>
+            <button
+              className="os-boton os-boton-menudo os-boton-firme"
+              disabled={tocando}
+              onClick={() => cambiar(null)}
+            >
+              {tocando ? '…' : 'Quitar cobro'}
+            </button>
+            {/* La misma fecha, con la otra forma de pago: corrige el recibo
+                sin desmarcar y volver a marcar. */}
+            <button
+              className="os-boton os-boton-menudo"
+              disabled={tocando}
+              onClick={() => cambiar(cobradaAt, otra)}
+            >
+              {otra === 'efectivo' ? 'Fue en efectivo' : 'Fue transferencia'}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              className="os-boton os-boton-menudo os-boton-firme"
+              disabled={tocando}
+              onClick={() => cambiar(hoy(), 'transferencia')}
+            >
+              {tocando ? '…' : 'Transferencia'}
+            </button>
+            <button
+              className="os-boton os-boton-menudo os-boton-firme"
+              disabled={tocando}
+              onClick={() => cambiar(hoy(), 'efectivo')}
+            >
+              Efectivo
+            </button>
+          </>
+        )}
         <button className="os-boton os-boton-menudo" disabled={tocando} onClick={() => setSeguro(false)}>
           No
         </button>
@@ -1045,10 +1085,11 @@ export function Cobro({ id, cobradaAt }: { id: string; cobradaAt: string | null 
       <span className="os-cobro-confirma">
         <button
           className="os-boton os-boton-marcado os-sello-estado os-verde"
-          title="Cobrada. Tocar para volver a dejarla sin cobrar."
+          title={`Cobrada, ${formaPago === 'efectivo' ? 'en efectivo' : 'por transferencia'}. Tocar para corregirla o quitar el cobro.`}
           onClick={() => setSeguro(true)}
         >
           {fechaBreve(cobradaAt)}
+          {formaPago === 'efectivo' ? ' · efvo.' : ''}
         </button>
         <a
           className="os-boton os-boton-icono"

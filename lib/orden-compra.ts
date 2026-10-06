@@ -357,7 +357,7 @@ export async function ordenDeFactura(facturaId: string): Promise<Orden | null> {
  */
 export async function reciboDePago(
   facturaId: string
-): Promise<{ papel: Orden; pagadoEl: string; comprobante: string | null } | null> {
+): Promise<{ papel: Orden; pagadoEl: string; comprobante: string | null; formaPago: string | null } | null> {
   if (!UUID.test(facturaId)) return null;
   const f = await verFactura(facturaId);
   if (!f || !f.cobradaAt) return null;
@@ -366,10 +366,11 @@ export async function reciboDePago(
     select<{
       recibo_pago_numero: number | null;
       recibo_numero: number | null;
+      forma_pago: string | null;
       empresas: { razon_social: string | null } | null;
     }>(
       'facturas',
-      `select=recibo_pago_numero,recibo_numero,empresas(razon_social)&id=eq.${f.id}&limit=1`
+      `select=recibo_pago_numero,recibo_numero,forma_pago,empresas(razon_social)&id=eq.${f.id}&limit=1`
     ),
     select<FilaSolicitante>(
       'factura_items',
@@ -406,6 +407,7 @@ export async function reciboDePago(
   return {
     pagadoEl: f.cobradaAt,
     comprobante,
+    formaPago: extra?.forma_pago ?? null,
     papel: {
       id: f.id,
       numero: extra?.recibo_pago_numero ? String(extra.recibo_pago_numero).padStart(4, '0') : null,

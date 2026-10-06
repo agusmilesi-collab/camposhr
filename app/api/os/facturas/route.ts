@@ -380,7 +380,11 @@ export async function POST(req: Request) {
             );
           }
         }
-        await escribir(`facturas?id=eq.${id}`, 'PATCH', { cobrada_at: cobradaAt });
+        // Cómo entró la plata, que es lo que dice el recibo. Al desmarcar se
+        // borra: el próximo cobro puede entrar de otra forma.
+        const formaPago =
+          cobradaAt === null ? null : datos.formaPago === 'efectivo' ? 'efectivo' : 'transferencia';
+        await escribir(`facturas?id=eq.${id}`, 'PATCH', { cobrada_at: cobradaAt, forma_pago: formaPago });
         // Al cobrar se le pone número al recibo de pago, si todavía no tiene.
         // Desmarcar no lo borra: ese recibo ya pudo haberse entregado.
         if (cobradaAt !== null) {
