@@ -33,16 +33,23 @@ export default function EnHojas({
   /** Cada capítulo en su propia hoja en pantalla, como sale impreso. */
   porHojas?: boolean;
 }) {
-  const [primera, ...resto] = seccionesDe(inf, editar).filter((s) => !(descarga && s.id === 'datos'));
+  /* Fuera de la ficha, una sección que no tiene nada para quien lee no sale:
+     quedaba el título con la hoja en blanco debajo. */
+  const [primera, ...resto] = seccionesDe(inf, editar).filter(
+    (s) => !(descarga && s.id === 'datos') && !(s.vacia && !editar)
+  );
 
   /* En qué hojas va el resto. En la ficha, todo en una sola hoja larga, que es
      cómoda para revisar y corregir de corrido. Con `porHojas`, cada capítulo
      en la suya, como sale impreso; las técnicas usadas no abren hoja y van
-     debajo del capítulo anterior, igual que en el PDF. */
+     debajo del capítulo anterior, igual que en el PDF. Tampoco abre hoja una
+     sección de un renglón, ni la que le sigue: juntas llenan una. */
   const numeradas = resto.map((s, i) => ({ s, n: i + 2 }));
   const grupos: (typeof numeradas)[] = [];
   for (const item of numeradas) {
-    const abreHoja = porHojas ? item.s.id !== 'tecnicas' || grupos.length === 0 : grupos.length === 0;
+    const anterior = grupos[grupos.length - 1]?.slice(-1)[0];
+    const sigueDeCorrido = item.s.id === 'tecnicas' || item.s.corta || anterior?.s.corta;
+    const abreHoja = grupos.length === 0 || (porHojas && !sigueDeCorrido);
     if (abreHoja) grupos.push([item]);
     else grupos[grupos.length - 1].push(item);
   }
@@ -74,7 +81,12 @@ export default function EnHojas({
           {grupos.map((grupo) => (
             <div key={grupo[0].s.id} className="os-onepager-hoja os-onepager-resto">
               {grupo.map(({ s, n }) => (
-                <section key={s.id} className="sitio-seccion" data-seccion={s.id}>
+                <section
+                  key={s.id}
+                  className="sitio-seccion"
+                  data-seccion={s.id}
+                  data-corta={s.corta ? '' : undefined}
+                >
                   <header className="sitio-seccion-top">
                     <span className="sitio-numero">{String(n).padStart(2, '0')}</span>
                     <div>
