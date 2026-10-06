@@ -130,7 +130,8 @@ export function formaDeOrden(orden: Orden): FormaDelPapel {
 export function formaDelRecibo(
   papel: Orden,
   pagadoEl: string,
-  comprobante: string | null
+  comprobante: string | null,
+  formaPago: string | null = null
 ): FormaDelPapel {
   return {
     titulo: 'Recibo de pago',
@@ -144,7 +145,9 @@ export function formaDelRecibo(
     cierre: {
       titulo: 'Pago',
       lineas: [
-        { rotulo: 'Forma de pago', texto: 'Transferencia bancaria.' },
+        // Se elige al marcar el cobro; sin dato es transferencia, que es como
+        // entraron todos los anteriores.
+        { rotulo: 'Forma de pago', texto: formaPago === 'efectivo' ? 'Efectivo.' : 'Transferencia bancaria.' },
         { rotulo: 'Estado', texto: 'Pagado. No queda saldo pendiente por este trabajo.' },
       ],
     },

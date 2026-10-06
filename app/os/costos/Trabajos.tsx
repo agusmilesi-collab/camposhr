@@ -330,7 +330,7 @@ export default function Trabajos({
                                     {formatoImporte(f.importe ?? 0)}
                                   </span>
                                   <span className="os-gasto-baja">
-                                    <Cobro id={f.id} cobradaAt={f.cobradaAt} />
+                                    <Cobro id={f.id} cobradaAt={f.cobradaAt} formaPago={f.formaPago} />
                                     <BorrarFactura id={f.id} numero={numeroDe(f)} />
                                   </span>
                                 </div>

@@ -140,6 +140,7 @@ export default function Ficha({
   periodo,
   hoy,
   facturacion,
+  comprobantes,
 }: {
   inquilino: Inquilino;
   espacios: Espacio[];
@@ -162,6 +163,8 @@ export default function Ficha({
     emisoras: Emisora[];
     facturas: FacturaEmitida[];
   };
+  /** Los comprobantes de transferencia que la persona subió para este mes. */
+  comprobantes?: { id: string; nombre: string; created_at: string }[];
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -946,6 +949,33 @@ export default function Ficha({
             >
               Registrar un pago
             </button>
+          </div>
+        )}
+
+        {/* Lo que la persona subió desde su cuenta. Es un aviso con el papel
+            adjunto y no un pago: se abre, se mira contra el banco y recién
+            entonces se registra con el botón de arriba. */}
+        {comprobantes && comprobantes.length > 0 && (
+          <div className="os-panel-pie">
+            <span className="os-panel-nota">
+              {comprobantes.length === 1 ? 'Subió un comprobante:' : `Subió ${comprobantes.length} comprobantes:`}
+            </span>
+            {comprobantes.map((c) => (
+              <a
+                key={c.id}
+                className="os-boton"
+                href={`/api/os/centro-comprobante/${c.id}`}
+                target="_blank"
+                rel="noreferrer"
+                title={c.nombre}
+              >
+                {new Intl.DateTimeFormat('es-AR', {
+                  timeZone: 'America/Argentina/Cordoba',
+                  day: '2-digit',
+                  month: '2-digit',
+                }).format(new Date(c.created_at))}
+              </a>
+            ))}
           </div>
         )}
 

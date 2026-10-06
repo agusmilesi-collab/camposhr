@@ -320,15 +320,27 @@ export function mesLargo(periodo: string): string {
 }
 
 /**
- * El recargo por pagar tarde, como manda el documento de convivencia: 15% del
- * 11 al 20 y 25% del 21 en adelante, sobre el mes que se está pagando.
+ * El recargo por pagar tarde: 15% del 11 al 20 y 25% del 21 en adelante.
+ *
+ * **Cada mes se paga a mes vencido, del 1 al 10 del mes siguiente.** Septiembre
+ * se paga del 1 al 10 de octubre, y los plazos del recargo se cuentan sobre ese
+ * mes: el 15 de octubre, septiembre lleva 15%. Mientras el mes corre no debe
+ * nada, y pasado el mes de pago el recargo queda en 25%.
+ *
+ * Hasta el 6/10/2026 se contaba sobre el mismo mes que se alquilaba, y un mes
+ * pagado al mes siguiente no llevaba recargo nunca. Se cambió junto con la
+ * pestaña "Mes a pagar" de la cuenta del inquilino, que aparece el día 1 con el
+ * mes que acaba de cerrar.
  *
  * Devuelve el porcentaje, no el importe: quién lo aplica y sobre qué saldo es
  * una decisión de la pantalla, porque un pago parcial no arrastra el recargo
  * del total.
  */
 export function recargoDelDia(fecha: string, periodo: string): number {
-  if (periodoDe(fecha) !== periodo) return 0;
+  const mesDePago = mesCorrido(periodoDe(periodo), 1);
+  const mesDeLaFecha = periodoDe(fecha);
+  if (mesDeLaFecha < mesDePago) return 0;
+  if (mesDeLaFecha > mesDePago) return 25;
   const dia = Number(fecha.slice(8, 10));
   if (dia <= 10) return 0;
   if (dia <= 20) return 15;

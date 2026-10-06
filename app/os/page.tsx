@@ -11,6 +11,8 @@ import { diasEntre } from '@/lib/comercial-tipos';
 import { diaDe, hoy as diaDeHoy } from '@/lib/hora';
 import { listarEvaluaciones } from '@/lib/psicotecnicos';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
+import { comprobantesSinRegistrar, loQueDebe } from '@/lib/comprobantes-pago';
+import { mesLargo } from '@/lib/consultorios-calculo';
 
 /** Las etapas de una evaluación que todavía pide trabajo. */
 const ABIERTAS = new Set(['Sin asignar', 'Por citar', 'Por entrevistar', 'Por analizar']);
@@ -130,6 +132,29 @@ export default async function Inicio() {
       }
     : null;
 
+  /**
+   * Los comprobantes de transferencia que subieron los inquilinos del Centro y
+   * todavía no tienen su pago registrado. Entran solos a Hoy.
+   *
+   * Los ve Lucila, que es quien lleva la cuenta del Centro y firma los
+   * recibos, y quien tiene alcance `todo`, que ve el conjunto en todo el OS.
+   * Para Lorena sería un aviso de un trabajo que no le toca.
+   */
+  const comprobantes = yo.nombre.startsWith('Lucila') || yo.alcance === 'todo'
+    ? await Promise.all(
+        (await comprobantesSinRegistrar()).map(async (c) => ({
+          id: c.id,
+          inquilinoId: c.inquilino_id,
+          inquilino: c.inquilino,
+          periodo: c.periodo,
+          mes: mesLargo(c.periodo),
+          // Contra esto se compara el papel: lo que debe de ese mes, con el
+          // recargo del día en que lo subió.
+          debe: (await loQueDebe(c)).total,
+        }))
+      )
+    : [];
+
   const cuentas = await cuentasDeLaBarra();
 
   return (
@@ -145,7 +170,7 @@ export default async function Inicio() {
             Ver el pipeline
           </Link>
         </div>
-        {mios.length === 0 && seguimientos.length === 0 && !sinAsignar ? (
+        {mios.length === 0 && seguimientos.length === 0 && !sinAsignar && comprobantes.length === 0 ? (
           <p className="os-vacio">
             {yo.alcance === 'todo'
               ? 'No hay evaluaciones abiertas.'
@@ -158,6 +183,7 @@ export default async function Inicio() {
             conEvaluadora={yo.alcance === 'todo'}
             seguimientos={seguimientos}
             sinAsignar={sinAsignar}
+            comprobantes={comprobantes}
           />
         )}
       </section>

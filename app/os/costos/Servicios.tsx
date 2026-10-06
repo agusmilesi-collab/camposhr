@@ -123,7 +123,7 @@ export function Facturado({ facturas }: { facturas: Factura[] }) {
                   )}
                 </td>
                 <td data-campo="Cobro">
-                  <Cobro id={f.id} cobradaAt={f.cobradaAt} />
+                  <Cobro id={f.id} cobradaAt={f.cobradaAt} formaPago={f.formaPago} />
                 </td>
                 <td className="os-tabla-accion" data-campo=" ">
                   <BorrarFactura id={f.id} numero={numeroDe(f)} />

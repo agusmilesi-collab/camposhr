@@ -79,6 +79,7 @@ type FilaFactura = {
   inquilino_id: string | null;
   concepto: string | null;
   orden_compra: string | null;
+  forma_pago?: 'transferencia' | 'efectivo' | null;
   cotizacion_id: string | null;
   imp_total: string | number | null;
   moneda: string;
@@ -137,7 +138,7 @@ export async function listarFacturas(): Promise<Factura[]> {
   const filas = await select<FilaFactura>(
     'facturas',
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
-      'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
+      'imp_total,moneda,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(personas(nombre),pedidos(puesto)))' +
@@ -180,7 +181,7 @@ export async function verFactura(id: string): Promise<Factura | null> {
   const filas = await select<FilaFactura>(
     'facturas',
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
-      'imp_total,moneda,estado,cobrada_at,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
+      'imp_total,moneda,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(personas(nombre),pedidos(puesto)))' +
@@ -207,6 +208,7 @@ function armarFactura(f: FilaFactura): Factura {
     moneda: f.moneda,
     estado: f.estado,
     cobradaAt: f.cobrada_at,
+    formaPago: f.forma_pago ?? null,
     notas: f.notas,
     cae: f.cae,
     caeVenceEl: f.cae_vence_el,

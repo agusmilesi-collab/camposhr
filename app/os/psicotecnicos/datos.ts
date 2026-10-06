@@ -11,6 +11,10 @@ import {
 } from '@/lib/altas';
 import { equipo, esMia, quienSoy, type Miembro } from '@/lib/identidad';
 import { CLIENTE_POR_DEFECTO, COOKIE_EMPRESA, TODAS } from '@/lib/filtro-empresa';
+import { DIAS_SEGUIMIENTO, listarCotizaciones } from '@/lib/cotizaciones';
+import { diasEntre } from '@/lib/comercial-tipos';
+import { diaDe, hoy as diaDeHoy } from '@/lib/hora';
+import { comprobantesSinRegistrar } from '@/lib/comprobantes-pago';
 
 /**
  * Qué ve cada quien, por sección.
@@ -60,21 +64,70 @@ function empresaElegida(empresas: string[]): string {
 }
 
 /**
- * El único número de la barra lateral: lo que está sin repartir.
+ * Los dos números de la barra lateral, y los dos reclaman algo.
  *
  * Antes llevaba uno por sección y era una foto del sistema: cuántas entrevistas
  * hay, cuántos informes se entregaron, cuánto falta facturar. Todos ciertos y
  * ninguno pedía nada, y entre cuatro números el que sí pide algo no se
  * distinguía.
  *
- * Queda el que reclama: un candidato entró y no lo tomó nadie. Sale en rojo, lo
- * ve el equipo entero (repartir es trabajo de todas) y desaparece cuando no hay
- * ninguno, que es lo normal.
+ * Quedan dos. En Entrevistas, lo que está sin repartir: un candidato entró y no
+ * lo tomó nadie; lo ve el equipo entero. En Inicio, cuántas cosas hay en la
+ * columna Hoy de quien mira: desde cualquier pantalla se ve que entró algo para
+ * hoy (un comprobante, una entrevista, una propuesta por seguir) sin tener que
+ * volver a Inicio a fijarse.
  */
 export async function cuentasDeLaBarra(): Promise<Record<string, number>> {
   const { filas } = await listarEvaluaciones();
-  return avisoDeReparto(filas);
+  const hoy = await cuantoHayHoy(filas).catch((e) => {
+    // La barra no puede tumbar la pantalla que se estaba abriendo.
+    console.error('barra: no se pudo contar lo de hoy', e);
+    return 0;
+  });
+  return { ...avisoDeReparto(filas), ...(hoy > 0 ? { '/os': hoy } : {}) };
 }
+
+/**
+ * Cuántas tarjetas tiene la columna Hoy de Inicio para quien mira.
+ *
+ * **Son las mismas reglas que arma `app/os/page.tsx` para dibujar esa columna,
+ * y tienen que seguir siéndolo**: un número que no coincide con lo que se ve al
+ * entrar no sirve. Lo que entra: las evaluaciones propias puestas en Hoy o con
+ * entrevista hoy sin tomar, las propuestas que hay que seguir, el aviso de
+ * candidatos sin evaluadora (uno, sean los que sean) y los comprobantes de los
+ * inquilinos del Centro que esperan su pago.
+ */
+async function cuantoHayHoy(filas: Evaluacion[]): Promise<number> {
+  const [yo, cotizaciones] = await Promise.all([quienSoy(), listarCotizaciones()]);
+  const dia = diaDeHoy();
+
+  const enCurso = filas.filter((e) => ABIERTAS_DE_INICIO.has(e.etapa) && !e.baja);
+  const mias =
+    yo.alcance === 'todo'
+      ? enCurso
+      : enCurso.filter((p) => (yo.evaluadora ? (p.evaluadora ?? '').includes(yo.evaluadora) : false));
+  const enHoy = mias.filter(
+    (e) =>
+      e.tablero === 'hoy' ||
+      (diaDe(e.fechaEntrevista) === dia && (e.etapa === 'Por citar' || e.etapa === 'Por entrevistar'))
+  ).length;
+
+  const seguimientos = cotizaciones.filter(
+    (c) => c.estado === 'Enviada' && diasEntre(c.seguimientoEl ?? c.fecha, dia) >= DIAS_SEGUIMIENTO
+  ).length;
+
+  const sinAsignar = enCurso.some((e) => !e.evaluadora) ? 1 : 0;
+
+  const comprobantes =
+    yo.nombre.startsWith('Lucila') || yo.alcance === 'todo'
+      ? (await comprobantesSinRegistrar()).length
+      : 0;
+
+  return enHoy + seguimientos + sinAsignar + comprobantes;
+}
+
+/** Las etapas que todavía piden trabajo: las que entran al tablero de Inicio. */
+const ABIERTAS_DE_INICIO = new Set(['Sin asignar', 'Por citar', 'Por entrevistar', 'Por analizar']);
 
 /** Dónde se muestra: la sección que tiene la columna de sin asignar. */
 export const SIN_ASIGNAR = '/os/psicotecnicos/entrevistas';

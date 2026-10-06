@@ -18,6 +18,8 @@ import Ficha from './Ficha';
 import { aFacturarDelCentro, facturasDelCentro } from '@/lib/facturas-centro';
 import { listarEmisoras } from '@/lib/facturas';
 
+import { comprobantesDe } from '@/lib/comprobantes-pago';
+
 export const dynamic = 'force-dynamic';
 
 /**
@@ -48,7 +50,7 @@ export default async function InquilinoFicha({
     ? (searchParams.periodo as string)
     : periodoDe(hoy);
 
-  const [espacios, contratos, movimientos, reservas, cola, emisoras, facturasSuyas] =
+  const [espacios, contratos, movimientos, reservas, cola, emisoras, facturasSuyas, comprobantes] =
     await Promise.all([
       listarEspacios(),
       leerContratos(),
@@ -57,6 +59,7 @@ export default async function InquilinoFicha({
       aFacturarDelCentro(periodo),
       listarEmisoras(),
       facturasDelCentro(params.id),
+      comprobantesDe(params.id),
     ]);
 
   /**
@@ -105,6 +108,7 @@ export default async function InquilinoFicha({
         periodo={periodo}
         hoy={hoy}
         facturacion={{ cola, emisoras, facturas: facturasSuyas }}
+        comprobantes={comprobantes.filter((c) => c.periodo === periodo)}
       />
 
     </Shell>

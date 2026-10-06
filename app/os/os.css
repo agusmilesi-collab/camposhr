@@ -3579,6 +3579,19 @@ button.os-enlace-peligro:hover {
   color: var(--os-tinta-media);
 }
 
+/* Al elegir cómo entró la plata son tres botones: si no entran en la
+   columna, bajan a un segundo renglón en vez de cortarse. */
+.os-tabla-fija td:has(.os-cobro-elige) {
+  white-space: normal;
+  overflow: visible;
+}
+
+.os-cobro-elige {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 /* Los botones de una fila de tabla que se repiten en todas: más chicos, para
    que no pesen más que los datos. */
 .os-boton.os-boton-menudo {
@@ -17892,4 +17905,67 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
    descargan o entregan. */
 .os-panel-informe.os-panel-a-hoja:has(> .os-generar) + .os-panel-informe {
   margin-top: 10px;
+}
+
+/**
+ * La tarjeta de un comprobante de pago, en la columna Hoy de Inicio.
+ *
+ * Es la misma tarjeta chica del tablero con tres franjas: quién y cuánto, los
+ * dos botones, y la salida para cuando el papel dice otro importe. Los botones
+ * miden lo mismo y ocupan el ancho entero, así la tarjeta queda pareja a los
+ * dos lados; son `os-boton` como en el resto del OS, más bajos porque acá
+ * viven dentro de una tarjeta y no al pie de un panel.
+ */
+.os-mini.os-mini-comprobante {
+  gap: 8px;
+  padding: 10px;
+}
+
+.os-mini-comprobante-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.os-mini-importe {
+  flex: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-mini-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.os-mini-acciones .os-boton {
+  height: 28px;
+  padding: 0 6px;
+  font-size: 0.74rem;
+  min-width: 0;
+}
+
+.os-mini-comprobante .os-mini-otro {
+  flex: none;
+  font-size: 0.7rem;
+  color: var(--os-suave);
+}
+
+/*
+ * Todas las tarjetas del tablero de Inicio miden lo mismo.
+ *
+ * Una evaluación, una entrevista de hoy, una propuesta por seguir y un
+ * comprobante traen distinta cantidad de cosas, y cada una con su alto la
+ * columna se leía despareja. El alto es el de la más alta, la del comprobante
+ * con sus dos botones; en las demás, lo de arriba queda arriba y el pie abajo.
+ */
+.os-kanban-mini .os-mini {
+  box-sizing: border-box;
+  height: 96px;
+  padding: 10px;
+  align-content: space-between;
 }

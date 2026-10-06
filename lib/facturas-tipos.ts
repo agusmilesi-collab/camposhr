@@ -105,6 +105,8 @@ export type Factura = {
   moneda: string;
   estado: EstadoFactura;
   cobradaAt: string | null;
+  /** Cómo entró la plata. Null es transferencia. */
+  formaPago: 'transferencia' | 'efectivo' | null;
   notas: string | null;
   cae: string | null;
   caeVenceEl: string | null;

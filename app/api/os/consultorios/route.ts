@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { revalidateTag } from 'next/cache';
+import { comprobantePorId, darPorRegistrados, loQueDebe } from '@/lib/comprobantes-pago';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
@@ -515,6 +516,52 @@ export async function POST(req: Request) {
           detalle,
           quien: yo.nombre,
         });
+        // El comprobante que la persona subió para este mes ya cumplió: deja
+        // de avisar en Inicio.
+        await darPorRegistrados(inquilinoId, periodo);
+        break;
+      }
+
+      /*
+       * Dar por pagado lo que avisa un comprobante, desde la tarjeta de Inicio.
+       *
+       * Quien aprieta ya abrió el papel y vio que el importe coincide con el de
+       * la tarjeta, así que acá no se pregunta nada: se registra el saldo de
+       * ese mes, con el recargo del día en que la persona subió el comprobante.
+       * El importe se vuelve a calcular y no se toma de la pantalla, que pudo
+       * haber quedado abierta mientras alguien cargaba otro pago.
+       *
+       * Con el pago registrado, el recibo queda para bajar en la cuenta del
+       * inquilino sin que nadie se lo mande.
+       */
+      case 'comprobante-pagado': {
+        const comprobante = await comprobantePorId(String(datos?.id ?? ''));
+        if (!comprobante) return mal('Ese comprobante ya no espera un pago.');
+        const debe = await loQueDebe(comprobante);
+        if (debe.total > 0) {
+          if (debe.recargo > 0) {
+            await insert('movimientos', {
+              inquilino_id: comprobante.inquilino_id,
+              tipo: 'recargo',
+              fecha: debe.fecha,
+              periodo: comprobante.periodo,
+              importe: debe.recargo,
+              detalle: 'Recargo por pago fuera de término',
+              quien: yo.nombre,
+            });
+          }
+          await insert('movimientos', {
+            inquilino_id: comprobante.inquilino_id,
+            tipo: 'pago',
+            fecha: debe.fecha,
+            periodo: comprobante.periodo,
+            importe: debe.total,
+            detalle: 'Transferencia',
+            quien: yo.nombre,
+          });
+        }
+        await darPorRegistrados(comprobante.inquilino_id, comprobante.periodo);
+        extra = { registrado: debe.total };
         break;
       }
 

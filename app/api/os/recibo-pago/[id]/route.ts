@@ -28,9 +28,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   if (!recibo) {
     return NextResponse.json({ error: 'Ese cobro no está marcado.' }, { status: 404 });
   }
-  const { papel, pagadoEl, comprobante } = recibo;
+  const { papel, pagadoEl, comprobante, formaPago } = recibo;
 
-  const forma = formaDelRecibo(papel, pagadoEl, comprobante);
+  const forma = formaDelRecibo(papel, pagadoEl, comprobante, formaPago);
 
   return new NextResponse(Buffer.from(await pdfDeOrden(papel, forma)), {
     headers: {
