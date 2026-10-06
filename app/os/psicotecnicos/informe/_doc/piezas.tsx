@@ -316,9 +316,20 @@ export function Velocimetro({
 export function RadarCompetencias({
   competencias,
   exigencia,
+  medianas = null,
 }: {
   competencias: { nombre: string; puntaje: number | null }[];
   exigencia: Exigencia;
+  /**
+   * La mediana de cada competencia entre todas las personas evaluadas.
+   *
+   * Va punteada y en turquesa, por debajo del perfil: dice dónde cae la mitad
+   * de quienes pasaron por la misma evaluación, que es contra qué se lee si un
+   * puntaje es mucho o poco. En turquesa por lo mismo que el perfil
+   * adolescente del Benziger: es una referencia y no toma ninguno de los
+   * colores con los que se nombran las bandas.
+   */
+  medianas?: { porCompetencia: Record<string, number>; casos: number } | null;
 }) {
   const R = 118;
   const RENGLON = 13;
@@ -361,7 +372,20 @@ export function RadarCompetencias({
     .map((b) => b.desde)
     .filter((v) => v > 0);
 
+  const mediana = (i: number) => medianas?.porCompetencia[competencias[i].nombre] ?? null;
+  const conMediana = competencias.filter((_, i) => mediana(i) !== null).length;
+  const hayMediana = Boolean(medianas) && conMediana >= 3;
+
   return (
+    <>
+    {hayMediana && (
+      <div className="inf-referencia-perfil inf-radar-referencia">
+        <span className="inf-ref adulto">Esta persona</span>
+        <span className="inf-ref joven">
+          Mediana de las {medianas!.casos} personas evaluadas por Campos HR
+        </span>
+      </div>
+    )}
     <svg
       className="inf-radar"
       viewBox="-250 -185 500 370"
@@ -379,6 +403,16 @@ export function RadarCompetencias({
         return <line key={c.nombre} x1="0" y1="0" x2={p.x} y2={p.y} className="inf-radar-eje" />;
       })}
 
+      {hayMediana && <polygon points={trazar(mediana)} className="inf-radar-mediana" />}
+      {/* Los puntos de la mediana, plenos sobre su área: marcan en qué valor cae
+          en cada eje, que sobre el borde del área sola había que adivinarlo. */}
+      {hayMediana &&
+        competencias.map((c, i) => {
+          const v = mediana(i);
+          if (v === null) return null;
+          const p = punto(i, v);
+          return <circle key={c.nombre} cx={p.x} cy={p.y} r="2.8" className="inf-radar-mediana-punto" />;
+        })}
       <polygon points={trazar((i) => competencias[i].puntaje)} className="inf-radar-perfil" />
 
       {competencias.map((c, i) => {
@@ -389,7 +423,7 @@ export function RadarCompetencias({
             key={c.nombre}
             cx={p.x}
             cy={p.y}
-            r="5"
+            r="3.6"
             className="inf-radar-vertice"
             style={{ fill: tono(c.puntaje, 1, exigencia) }}
           />
@@ -426,5 +460,6 @@ export function RadarCompetencias({
         );
       })}
     </svg>
+    </>
   );
 }

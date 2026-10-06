@@ -25,6 +25,7 @@ import {
 } from '@/lib/competencias';
 import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
+import { medianasDeCompetencias, type Medianas } from '@/lib/competencias-mediana';
 import { TEXTOS } from '@/lib/redacciones';
 import { tramoDe, tramosValidos, esTramo, type PasoDelPlan, type Tramo } from '@/lib/plan-incorporacion';
 import { DE_FABRICA as EXIGENCIA_DE_FABRICA, type Exigencia } from '@/lib/exigencia';
@@ -224,6 +225,11 @@ export type Informe = {
    */
   edad: number | null;
   competencias: Competencia[];
+  /**
+   * La mediana de cada competencia entre todas las personas evaluadas, para el
+   * radar. Null cuando todavía no hay casos suficientes o no se pudo calcular.
+   */
+  medianas: Medianas | null;
   /**
    * Con qué exigencia se nombran esos puntajes.
    *
@@ -631,7 +637,26 @@ function respaldosDe(
 export async function armarInforme(id: string): Promise<Informe | null> {
   const ficha = await fichaDe(id);
   if (!ficha) return null;
+  /* La mediana de las competencias está hecha y apagada (6/10/2026): por
+     ahora el radar sale solo con el perfil de la persona. Prenderla es pasar
+     `await medianasQueRigen(rige)` como tercer argumento, acá y en la pestaña
+     Informe de la ficha. */
   return desdeFicha(ficha, await loQueRige());
+}
+
+/**
+ * Las medianas para el radar, sin que un fallo tumbe el informe.
+ *
+ * Es un agregado de todas las evaluaciones y el informe es de una sola: si esa
+ * lectura falla, el radar sale sin la comparación y el resto no se entera.
+ */
+export async function medianasQueRigen(rige: Regulacion): Promise<Medianas | null> {
+  try {
+    return await medianasDeCompetencias(rige);
+  } catch (error) {
+    console.error('No se pudieron calcular las medianas de competencias', error);
+    return null;
+  }
 }
 
 /**
@@ -729,7 +754,11 @@ function tieneAlgo(c: Cuatro | null): boolean {
   return Boolean(c && Object.values(c).some((v) => v !== null && v !== undefined));
 }
 
-export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
+export function desdeFicha(
+  f: Ficha,
+  rige: Regulacion = DE_FABRICA,
+  medianas: Medianas | null = null
+): Informe {
   const { rangos, pesos, textos, cortes, cortesCompetencias, niveles, exigencias } = rige;
   const direcciones = rige.direcciones;
   const benzigerMovidos = rige.benziger ?? {};
@@ -897,6 +926,7 @@ export function desdeFicha(f: Ficha, rige: Regulacion = DE_FABRICA): Informe {
     proyectivo: proyectivoDe(f),
     nivel: nivelDeConclusion(c.recomendacion),
     competencias,
+    medianas,
     protocoloCorto: corto,
     resumen: armarResumen(lecturas, destacadas),
     fundamentacion: (c.recomendacion_notas ?? '')
