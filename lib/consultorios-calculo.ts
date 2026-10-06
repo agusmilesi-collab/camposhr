@@ -107,6 +107,8 @@ export type Inquilino = {
   normas_version: string | null;
   normas_aceptadas_at: string | null;
   /** Los datos fiscales: son los que salen impresos en la factura del alquiler. */
+  /** Solo dígitos. Identifica a la persona en la factura cuando no tiene CUIT. */
+  dni?: string | null;
   cuit: string | null;
   razon_social: string | null;
   condicion_iva: string | null;

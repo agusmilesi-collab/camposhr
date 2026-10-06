@@ -314,6 +314,7 @@ export async function POST(req: Request) {
         if (typeof datos?.matriculaVence === 'string')
           cambios.matricula_vence = FECHA.test(datos.matriculaVence) ? datos.matriculaVence : null;
         // Los datos fiscales, que son los que salen en la factura del alquiler.
+        if (typeof datos?.dni === 'string') cambios.dni = datos.dni.replace(/\D/g, '') || null;
         if (typeof datos?.cuit === 'string')
           cambios.cuit = datos.cuit.replace(/\D/g, '') || null;
         if (typeof datos?.razonSocial === 'string')

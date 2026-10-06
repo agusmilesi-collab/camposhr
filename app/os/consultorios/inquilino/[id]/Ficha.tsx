@@ -359,6 +359,7 @@ export default function Ficha({
       correo: String(d.get('correo') ?? ''),
       telefono: String(d.get('telefono') ?? ''),
       matricula: String(d.get('matricula') ?? ''),
+      dni: String(d.get('dni') ?? ''),
       cuit: String(d.get('cuit') ?? ''),
       razonSocial: String(d.get('razonSocial') ?? ''),
       condicionIva: String(d.get('condicionIva') ?? ''),
@@ -498,6 +499,17 @@ export default function Ficha({
                 name="matricula"
                 autoComplete="off"
                 defaultValue={i.matricula ?? ''}
+              />
+            </label>
+            <label className="os-etiqueta-campo">
+              DNI
+              <input
+                className="os-campo os-campo-suave"
+                name="dni"
+                autoComplete="off"
+                inputMode="numeric"
+                placeholder="Sin cargar"
+                defaultValue={i.dni ?? ''}
               />
             </label>
             {/* Los datos fiscales: son los que salen impresos en la factura del
