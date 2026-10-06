@@ -27,8 +27,11 @@ import { comprobantesSinRegistrar } from '@/lib/comprobantes-pago';
  *
  * **Lo que ya tiene dueño sale para su dueña**, y esas son las otras tres
  * columnas: citar, agendar y analizar muestran lo de quien mira (o todo, si
- * tiene alcance `todo`). Lo entregado no se reparte, así que sale por su etapa
- * como siempre.
+ * tiene alcance `todo`).
+ *
+ * **Lo entregado lo ve el equipo entero**, sea de quien sea: ahí no hay trabajo
+ * que repartir, se va a consultar, y la consulta llega por el candidato o por
+ * el cliente sin saber cuál de las dos lo evaluó.
  */
 const CERRADAS = new Set(['Entregado', 'Seguimiento']);
 
@@ -47,7 +50,7 @@ export function visiblesEn(filas: Evaluacion[], seccion: Seccion, yo: Miembro): 
       ? seccion.ruta === 'entregados'
       : sinDuena(f)
       ? seccion.ruta === 'entrevistas'
-      : etapas.has(f.etapa) && (cerrada || f.evaluadora) && esMia(f.evaluadora, yo)
+      : etapas.has(f.etapa) && (cerrada || (f.evaluadora && esMia(f.evaluadora, yo)))
   );
 }
 
