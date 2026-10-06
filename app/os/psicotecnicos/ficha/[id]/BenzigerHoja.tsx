@@ -14,6 +14,7 @@
  */
 
 import Cerebro from '../../informe/_doc/Cerebro';
+import Ampliable from './Ampliable';
 import type { Lectura } from '@/lib/benziger-lectura';
 import type { Cruz, Cuatro } from '@/lib/benziger-perfil';
 import { INFO, PERFILES, type Perfil } from '@/lib/perfiles';
@@ -144,6 +145,9 @@ function totales(l: Lectura, titulo: string): Cuatro | null {
   return PERFILES.some((p) => fila.valores[p] !== null) ? fila.valores : null;
 }
 
+/** Las tres que siempre están arriba; el tiempo libre, cuando cuenta, abajo. */
+const ORDEN_CRUCES = ['Trabajo', 'Total adulto', 'Total joven', 'Tiempo libre'];
+
 export default function BenzigerHoja({ l }: { l: Lectura }) {
   const { alerta, emocional, estres } = l;
   /* El mismo gráfico que sale en el informe, acá al lado de los números que lo
@@ -173,16 +177,35 @@ export default function BenzigerHoja({ l }: { l: Lectura }) {
         <div className="os-bz-columna os-bz-ancha os-bz-corte-izq">
           <h3 className="os-hoja-titulo">Cruces</h3>
           <div className="os-bz-cruces-fila">
-            <div className="os-bz-cruces">
-              {l.cruces.map((c) => (
-                <CruzVista key={c.titulo} c={c} />
-              ))}
+            {/* Trabajo, total adulto y total joven en la primera fila, que
+                están siempre. El tiempo libre solo entra cuando la persona lo
+                pasa haciendo lo que quiere, y entonces va abajo, en una fila
+                propia. */}
+            <div className="os-bz-cruces os-bz-cruces-tres">
+              {ORDEN_CRUCES.map((t) => l.cruces.find((c) => c.titulo === t))
+                .filter((c): c is NonNullable<typeof c> => Boolean(c))
+                .map((c) => (
+                  <CruzVista key={c.titulo} c={c} />
+                ))}
             </div>
 
             {(adulto || joven) && (
               <div className="os-bz-cerebro">
                 <h4 className="os-hoja-subtitulo">Gráfico</h4>
-                <Cerebro adulto={adulto} joven={joven} fondo={false} escalaFina />
+                <Ampliable
+                  titulo="Gráfico del Benziger"
+                  grande={
+                    <div className="os-bz-cerebro os-bz-cerebro-grande">
+                      <Cerebro adulto={adulto} joven={joven} fondo={false} escalaFina />
+                      <div className="inf-referencia-perfil">
+                        <span className="inf-ref adulto">Adulto</span>
+                        <span className="inf-ref joven">Adolescente</span>
+                      </div>
+                    </div>
+                  }
+                >
+                  <Cerebro adulto={adulto} joven={joven} fondo={false} escalaFina />
+                </Ampliable>
                 {/* La referencia al pie, como en cualquier gráfico: arriba
                     separaba el título del dibujo que nombra. */}
                 <div className="inf-referencia-perfil">

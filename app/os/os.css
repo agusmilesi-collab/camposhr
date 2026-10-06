@@ -17064,6 +17064,7 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   margin-left: max(0px, calc((min(1000px, 100%) - 210mm) / 2));
 }
 
+.os-panel-a-hoja .os-panel-top,
 .os-panel-a-hoja .os-generar,
 .os-panel-a-hoja .os-panel-cuerpo {
   padding-left: 15mm;
@@ -17406,4 +17407,90 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 
 .os-tabla.os-tabla-clientes tbody tr:first-child td {
   padding-top: 16px;
+}
+
+/* Las cruces del Benziger de a tres: Trabajo, Total adulto y Total joven
+   arriba, y el Tiempo libre, cuando cuenta, abajo a la izquierda. */
+.os-bz-cruces.os-bz-cruces-tres {
+  grid-template-columns: repeat(3, minmax(148px, 1fr));
+}
+
+/* El gráfico en línea con las tres cruces de arriba, no centrado en el alto
+   de las dos filas: el tiempo libre, cuando está, queda solo abajo. */
+.os-bz-cruces-fila:has(.os-bz-cruces-tres) {
+  align-items: flex-start;
+}
+
+/* El gráfico del Benziger se toca para verlo en grande (`Ampliable.tsx`). */
+.os-ampliable {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.os-ampliado {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(22, 32, 43, 0.55);
+  cursor: zoom-out;
+}
+
+.os-ampliado-caja {
+  position: relative;
+  width: min(640px, 100%);
+  padding: 28px 28px 20px;
+  border-radius: 14px;
+  background: var(--os-panel);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  cursor: default;
+}
+
+.os-ampliado-cerrar {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  border: 0;
+  background: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--os-suave);
+  cursor: pointer;
+}
+
+.os-bz-cerebro.os-bz-cerebro-grande {
+  width: 100%;
+}
+
+.os-bz-cerebro-grande .inf-cerebro {
+  width: 100%;
+  max-width: none;
+}
+
+/* La advertencia adentro del panel Recomendación: separada de los tests
+   administrados, que le quedan justo arriba, y sin el margen de abajo que trae
+   para cuando va seguida de la hoja. */
+.os-informe-cierre .os-panel-cuerpo > .inf-revisar {
+  margin-top: 24px;
+  margin-bottom: 0;
+}
+
+/* La card "El informe" va apoyada sobre la hoja: redondeada arriba, como
+   cualquier panel, y recta abajo, que es el lado que da a la hoja. */
+.os-panel-informe.os-panel-a-hoja:has(> .os-generar) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Y la hoja queda cerca de su card: veinticinco píxeles las separaban como a
+   dos paneles sin relación, y son la barra de acciones y lo que esas acciones
+   descargan o entregan. */
+.os-panel-informe.os-panel-a-hoja:has(> .os-generar) + .os-panel-informe {
+  margin-top: 10px;
 }
