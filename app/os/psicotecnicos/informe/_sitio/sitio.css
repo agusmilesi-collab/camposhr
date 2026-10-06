@@ -1242,7 +1242,10 @@
   .sitio-secciones-ficha .os-onepager-hoja {
     width: auto;
     height: auto;
-    padding: 0;
+    /* Dos píxeles de aire a los costados: lo que llega justo hasta el borde
+       del área imprimible sale recortado, y a las tarjetas con borde de color
+       se les comía la mitad del canto derecho. */
+    padding: 0 2px;
     overflow: visible;
     box-shadow: none;
     outline: none;
@@ -1269,6 +1272,12 @@
     margin-top: 0;
   }
 
+  /* Con una hoja por capítulo, el salto lo pone la hoja y no la sección, que
+     es la primera de la suya. */
+  .sitio-secciones-ficha .os-onepager-por-hojas .os-onepager-resto + .os-onepager-resto {
+    break-before: page;
+  }
+
   .os-onepager-aviso,
   .inf-edita-barra,
   .inf-grupo-top-der {
@@ -1280,7 +1289,6 @@
      atrás; solo se protegen las piezas de pocos renglones y los títulos, que
      no pueden quedar solos al pie. */
   .sitio-secciones-ficha .inf-grupo,
-  .sitio-secciones-ficha .inf-competencia,
   .sitio-secciones-ficha .inf-benziger,
   .sitio-secciones-ficha .inf-nivel,
   .sitio-secciones-ficha .inf-hoja-bloque,
@@ -1298,6 +1306,17 @@
   .inf-plan-tramo li,
   .sitio-secciones-ficha li {
     break-inside: avoid;
+  }
+
+  /* La tarjeta de una competencia tampoco se parte: es una pieza chica, y
+     partida quedaba el marco vacío al pie de una hoja y el velocímetro con su
+     texto en la siguiente. Con el radar arriba el capítulo ya no entra en una
+     hoja, así que el corte cae siempre entre dos filas de tarjetas. */
+  .sitio-secciones-ficha .inf-competencia,
+  .sitio-secciones-ficha .inf-radar,
+  .sitio-secciones-ficha .inf-escala-bandas {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   /* La escalera en bloque y no en grilla: como grilla Chrome la mandaba
@@ -1761,4 +1780,94 @@
 .sitio-otros-niveles .inf-nivel-tag {
   min-width: 13ch;
   text-align: center;
+}
+
+/* ── Competencias evaluadas, en una sola hoja al imprimir ─────────────── */
+/*
+ * En pantalla el capítulo corre hacia abajo sin límite: el radar grande y las
+ * tarjetas de a dos, con el anillo al costado. Impreso así ocupaba una hoja y
+ * un tercio, y la segunda quedaba con dos tarjetas y la escala.
+ *
+ * Al imprimir se compacta para que el radar, las tarjetas y la escala entren
+ * juntos: el radar más chico, las tarjetas de a tres con el anillo arriba y
+ * más chico, y la letra un punto menor. Con seis competencias entra en una
+ * hoja; con nueve son tres filas y la escala pasa a la siguiente.
+ */
+@media print {
+  .sitio-secciones-ficha .inf-radar {
+    max-width: 450px;
+    margin-bottom: 10px;
+  }
+
+  .sitio-secciones-ficha .inf-competencias {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .sitio-secciones-ficha .inf-competencia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 10px 12px;
+    text-align: center;
+  }
+
+  .sitio-secciones-ficha .inf-competencia .inf-gauge-caja {
+    width: 84px;
+    height: 84px;
+  }
+
+  .sitio-secciones-ficha .inf-competencia .inf-gauge-numero.inf-gauge-numero-anillo {
+    font-size: 1.5rem;
+  }
+
+  .sitio-secciones-ficha .inf-competencia .inf-gauge-escala {
+    font-size: 0.46rem;
+  }
+
+  .sitio-secciones-ficha .inf-competencia h3 {
+    margin: 6px 0 0;
+    font-size: 0.8rem;
+  }
+
+  .sitio-secciones-ficha .inf-competencia .inf-mide {
+    margin-top: 4px;
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .sitio-secciones-ficha .inf-escala-bandas {
+    margin-top: 10px;
+  }
+}
+
+/* Las técnicas usadas no arrancan hoja: son cuatro renglones y quedaban solos
+   en la última. Siguen debajo del plan de incorporación si entran enteras, y
+   si no entran pasan completas a la hoja siguiente, nunca partidas. */
+@media print {
+  .sitio-secciones-ficha .os-onepager-resto .sitio-seccion[data-seccion='tecnicas'] {
+    break-before: auto;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-top: 48px;
+  }
+
+  .sitio-secciones-ficha .os-onepager-resto .sitio-seccion[data-seccion='tecnicas'] .sitio-caja {
+    break-inside: avoid;
+  }
+}
+
+/* ── Una hoja por capítulo, en pantalla ───────────────────────────────── */
+/* Cada capítulo en su hoja A4, separadas por el fondo, como se ven las
+   páginas de un PDF. La hoja mide por lo menos una carilla; un capítulo más
+   largo la estira, que en pantalla no hay dónde cortarlo sin partir un
+   párrafo. */
+@media screen {
+  .os-onepager.os-onepager-por-hojas {
+    gap: 28px;
+  }
+
+  .os-onepager-por-hojas .os-onepager-hoja.os-onepager-resto {
+    min-height: 297mm;
+  }
 }

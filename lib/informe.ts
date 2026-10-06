@@ -919,7 +919,10 @@ export function desdeFicha(
     // El que cargó a este candidato, y si no se sabe, el que pidió el pedido.
     solicitante: (() => {
       const s = c.solicitante ?? c.pedidos?.solicitante;
-      return s ? (s.cargo ? `${s.nombre} · ${s.cargo}` : s.nombre) : null;
+      /* Solo el nombre, sin el puesto: el informe circula reenviado y el
+         cargo de quien lo pidió es un dato de la empresa que no hace falta
+         para leerlo. Es lo mismo que se decidió para la orden de compra. */
+      return s ? s.nombre : null;
     })(),
     edad: c.edad,
     bateria: c.pedidos?.baterias?.codigo ?? null,
