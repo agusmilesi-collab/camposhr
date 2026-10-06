@@ -3,13 +3,16 @@ import { armarInforme } from '@/lib/informe';
 import { datosClienteDeSupabase } from '@/lib/portal-supabase';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import Documento from '@/app/os/psicotecnicos/informe/_doc/Documento';
-import Sitio from '@/app/os/psicotecnicos/informe/_sitio/Sitio';
-import { seccionesDe } from '@/app/os/psicotecnicos/informe/_sitio/secciones';
-import Cabecera from '@/app/os/psicotecnicos/informe/_sitio/Cabecera';
+import EnHojas from '@/app/os/psicotecnicos/informe/_sitio/EnHojas';
+import BarraHojas from './BarraHojas';
 import Partes from './Partes';
 import { Encabezado, Marca, Pie } from '@/app/os/psicotecnicos/informe/_doc/Marco';
 import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { esPortalEjemplo } from '@/lib/portal-ejemplo';
+/* La hoja A4 del informe (`os-onepager-*`) está definida en la hoja de estilos
+   del OS. Va primero, como en el OS, porque varias de sus reglas esperan que
+   las del informe vengan después. */
+import '@/app/os/os.css';
 import '@/app/os/psicotecnicos/informe/_sitio/sitio.css';
 import './portal-informe.css';
 
@@ -54,7 +57,13 @@ export default async function InformeDelPortal({
   const muestra = esPortalEjemplo(params.token);
 
   /*
-   * El informe como sitio corre por ahora solo en la empresa de prueba.
+   * El informe en hojas corre por ahora solo en la empresa de prueba.
+   *
+   * Es lo mismo que la evaluadora ve en la pestaña Informe de su ficha y lo
+   * mismo que se descarga desde el OS: una primera carilla con las
+   * conclusiones y el resto seguido debajo. Hasta el 6/10/2026 acá iba otra
+   * forma del mismo informe, con índice al costado (`Sitio.tsx`), y lo que el
+   * cliente leía no era lo que se había revisado.
    *
    * Es un molde nuevo y se está afinando con Distribuidora Andina, que es la
    * empresa inventada para eso. Los clientes de verdad siguen con el informe
@@ -63,7 +72,6 @@ export default async function InformeDelPortal({
    * un informe que hay que volver a explicar.
    */
   const comoSitio = esEmpresaDePrueba(datos.empresa);
-  const secciones = comoSitio ? seccionesDe(inf) : [];
 
   return (
     <main className="sitio-pagina">
@@ -89,54 +97,18 @@ export default async function InformeDelPortal({
           mismo informe partido en tres profundidades, y no hay nada que ir a
           buscar al cambiar de pestaña. */}
       {comoSitio ? (
-        <Sitio
-          volver={`/${params.token}`}
-          muestra={muestra}
-          cabecera={<Cabecera inf={inf} />}
-        indice={secciones.map((s, i) => ({
-            id: s.id,
-            titulo: s.titulo,
-            numero: String(i + 1).padStart(2, '0'),
-          }))}
-          cuerpo={secciones.map((s, i) => (
-            <section
-              key={s.id}
-              id={s.id}
-              className="sitio-seccion"
-              // A qué parte de la descarga pertenece: la recomendación es la
-              // primera hoja, los datos son los indicadores y el resto son los
-              // fundamentos. `data-abre` marca la que empieza su parte.
-              data-parte={i === 0 ? 'recomendacion' : s.id === 'datos' ? 'indicadores' : 'fundamentos'}
-              data-abre={i === 1 ? '' : undefined}
-            >
-              {/* El número, el título y qué se contesta ahí: es lo que separa una
-                  sección de la anterior cuando todo es texto. */}
-              <header className="sitio-seccion-top">
-                <span className="sitio-numero">{String(i + 1).padStart(2, '0')}</span>
-                <div>
-                  <h2>{s.titulo}</h2>
-                  {s.bajada && <p>{s.bajada}</p>}
-                </div>
-              </header>
-              {/* El contenido va en blanco sobre el papel: sin eso las secciones
-                  se leen como un solo texto largo. */}
-              <div className="sitio-caja">{s.cuerpo}</div>
-            </section>
-          ))}
-          documento={
-            <>
-              <div className="sitio-parte" data-parte="recomendacion">
-                <Documento inf={inf} parte="recomendacion" />
-              </div>
-              <div className="sitio-parte" data-parte="fundamentos">
-                <Documento inf={inf} parte="fundamentos" />
-              </div>
-              <div className="sitio-parte" data-parte="indicadores">
-                <Documento inf={inf} parte="indicadores" />
-              </div>
-            </>
-          }
-        />
+        /* Un `.sitio` alrededor de todo: de ahí salen los colores de la
+           barra, y la barra se queda pegada arriba mientras se recorre el
+           informe porque su caja es la del informe entero. */
+        <div className="sitio pinf-portal">
+          <BarraHojas volver={`/${params.token}`} />
+          {/* El mismo componente de la pestaña Informe de la ficha y de la
+              descarga del OS, sin los indicadores ni los controles de quien
+              firma. */}
+          <div className="pinf-hojas">
+            <EnHojas inf={inf} descarga porHojas />
+          </div>
+        </div>
       ) : (
         <Partes
           volver={`/${params.token}`}

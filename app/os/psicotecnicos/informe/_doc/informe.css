@@ -2493,3 +2493,30 @@
     display: none !important;
   }
 }
+
+/* Al imprimir, la tarjeta del nivel elegido va sin sombra. Chrome dibuja la
+   sombra de una caja con fondo traslúcido como una imagen: en el PDF salía un
+   rectángulo gris detrás de la tarjeta, y la hoja, que recorta lo que se pasa
+   de su borde, le comía el canto derecho. El fondo va además en color pleno,
+   que es el mismo tono ya mezclado con el blanco de la hoja. */
+@media print {
+  .inf-nivel,
+  .inf-nivel.elegido {
+    box-shadow: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .inf-nivel.elegido.verde {
+    background: #e9f1eb;
+  }
+  .inf-nivel.elegido.azul {
+    background: #f1f3e9;
+  }
+  .inf-nivel.elegido.ambar {
+    background: #fbf5e3;
+  }
+  .inf-nivel.elegido.rojo {
+    background: #f9e7e7;
+  }
+}

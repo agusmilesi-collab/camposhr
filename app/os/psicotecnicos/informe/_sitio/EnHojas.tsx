@@ -17,17 +17,35 @@ import { seccionesDe } from './secciones';
  *
  * `descarga` saca los indicadores: la tabla de datos es para revisar en la
  * ficha y no va en lo que se le entrega al cliente.
+ *
+ * `porHojas` es para el portal: el cliente lee el informe partido en hojas,
+ * una por capítulo, que es como lo va a recibir si lo baja.
  */
 export default function EnHojas({
   inf,
   editar,
   descarga,
+  porHojas = false,
 }: {
   inf: Informe;
   editar?: string;
   descarga?: boolean;
+  /** Cada capítulo en su propia hoja en pantalla, como sale impreso. */
+  porHojas?: boolean;
 }) {
   const [primera, ...resto] = seccionesDe(inf, editar).filter((s) => !(descarga && s.id === 'datos'));
+
+  /* En qué hojas va el resto. En la ficha, todo en una sola hoja larga, que es
+     cómoda para revisar y corregir de corrido. Con `porHojas`, cada capítulo
+     en la suya, como sale impreso; las técnicas usadas no abren hoja y van
+     debajo del capítulo anterior, igual que en el PDF. */
+  const numeradas = resto.map((s, i) => ({ s, n: i + 2 }));
+  const grupos: (typeof numeradas)[] = [];
+  for (const item of numeradas) {
+    const abreHoja = porHojas ? item.s.id !== 'tecnicas' || grupos.length === 0 : grupos.length === 0;
+    if (abreHoja) grupos.push([item]);
+    else grupos[grupos.length - 1].push(item);
+  }
   return (
     <div className="sitio sitio-secciones-ficha">
       {/* La primera hoja, el one pager, como carilla A4: los datos y las
@@ -51,22 +69,24 @@ export default function EnHojas({
       {/* El resto, en la misma hoja: el mismo ancho, la misma letra y el mismo
           aire que la primera. No tiene alto fijo porque su largo depende de la
           persona; al imprimir, cada capítulo arranca en hoja nueva. */}
-      {resto.length > 0 && (
-        <div className="os-onepager">
-          <div className="os-onepager-hoja os-onepager-resto">
-            {resto.map((s, i) => (
-              <section key={s.id} className="sitio-seccion">
-                <header className="sitio-seccion-top">
-                  <span className="sitio-numero">{String(i + 2).padStart(2, '0')}</span>
-                  <div>
-                    <h2>{s.titulo}</h2>
-                    {s.bajada && <p>{s.bajada}</p>}
-                  </div>
-                </header>
-                <div className="sitio-caja">{s.cuerpo}</div>
-              </section>
-            ))}
-          </div>
+      {grupos.length > 0 && (
+        <div className={`os-onepager${porHojas ? ' os-onepager-por-hojas' : ''}`}>
+          {grupos.map((grupo) => (
+            <div key={grupo[0].s.id} className="os-onepager-hoja os-onepager-resto">
+              {grupo.map(({ s, n }) => (
+                <section key={s.id} className="sitio-seccion" data-seccion={s.id}>
+                  <header className="sitio-seccion-top">
+                    <span className="sitio-numero">{String(n).padStart(2, '0')}</span>
+                    <div>
+                      <h2>{s.titulo}</h2>
+                      {s.bajada && <p>{s.bajada}</p>}
+                    </div>
+                  </header>
+                  <div className="sitio-caja">{s.cuerpo}</div>
+                </section>
+              ))}
+            </div>
+          ))}
         </div>
       )}
     </div>

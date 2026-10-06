@@ -264,3 +264,27 @@
     break-before: auto;
   }
 }
+
+
+/* ── El informe en hojas, del lado del cliente ────────────────────────── */
+/* Con aire abajo de la barra y al pie, como cualquier documento en pantalla. */
+.pinf-hojas {
+  padding: 24px 16px 64px;
+}
+
+/* El aviso de que la primera hoja se pasa de una carilla y su recuadro rojo
+   son de quien escribe el informe: le dicen que acorte la fundamentación. El
+   cliente no los ve. */
+.pinf-hojas .os-onepager-aviso {
+  display: none;
+}
+
+.pinf-hojas .os-onepager-hoja.se-pasa {
+  outline: none;
+}
+
+@media print {
+  .pinf-hojas {
+    padding: 0;
+  }
+}
