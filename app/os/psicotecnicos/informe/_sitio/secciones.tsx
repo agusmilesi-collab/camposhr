@@ -73,6 +73,19 @@ export type Seccion = {
   /** Una línea que dice qué se contesta ahí. */
   bajada?: string;
   cuerpo: React.ReactNode;
+  /**
+   * La sección dice un renglón y nada más: no merece hoja propia.
+   *
+   * Pasa en los informes a los que les falta un dato (sin sumario no hay
+   * competencias que mostrar). Con una hoja por capítulo, ese renglón quedaba
+   * solo en una hoja en blanco.
+   */
+  corta?: boolean;
+  /**
+   * No tiene nada que mostrarle a quien lee: solo los controles de quien
+   * firma. Fuera de la ficha no sale, que sería un título sin nada debajo.
+   */
+  vacia?: boolean;
 };
 
 export function seccionesDe(
@@ -169,6 +182,7 @@ export function seccionesDe(
   secciones.push({
     id: 'competencias',
     titulo: 'Competencias evaluadas',
+    corta: inf.competencias.length === 0,
     cuerpo:
       inf.competencias.length === 0 ? (
         <p className="sitio-vacio">Sin sumario cargado no se pueden calcular las competencias.</p>
@@ -237,6 +251,7 @@ export function seccionesDe(
   secciones.push({
     id: 'trabajo',
     titulo: 'Análisis cualitativo de las competencias',
+    vacia: grupos.every((g) => g.items.length === 0),
     /* Cada grupo lo dibuja `Listas`: su recuadro, su título en el color de la
        banda, sus viñetas del mismo color y, en la ficha, el botón de editar y
        el índice que respalda cada oración. Es el mismo componente que dibuja el
@@ -341,6 +356,7 @@ export function seccionesDe(
   secciones.push({
     id: 'lider',
     titulo: 'Plan de incorporación',
+    corta: inf.recomendaciones.length === 0 && !(inf.benziger?.textos?.conducir.length ?? 0),
     bajada: 'Primeros 90 días, para su líder, en caso de que la persona ingrese',
     cuerpo: (
       <>

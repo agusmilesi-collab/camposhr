@@ -1871,3 +1871,18 @@
     min-height: 297mm;
   }
 }
+
+/* Una sección de un renglón no arranca hoja al imprimir, ni la que le sigue:
+   en un informe al que le falta el sumario, "Competencias evaluadas" es una
+   línea y quedaba sola en una hoja en blanco. */
+@media print {
+  .sitio-secciones-ficha .os-onepager-resto .sitio-seccion[data-corta],
+  .sitio-secciones-ficha .os-onepager-resto .sitio-seccion[data-corta] + .sitio-seccion {
+    break-before: auto;
+    margin-top: 48px;
+  }
+
+  .sitio-secciones-ficha .os-onepager-resto .sitio-seccion[data-corta]:first-child {
+    margin-top: 0;
+  }
+}
