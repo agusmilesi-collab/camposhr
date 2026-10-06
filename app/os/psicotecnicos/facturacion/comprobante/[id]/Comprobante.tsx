@@ -167,7 +167,7 @@ export default async function Comprobante({
                     <b>{d.cliente.razonSocial}</b>
                   </p>
                   <p>
-                    <em>CUIT:</em> {d.cliente.cuit}
+                    <em>{d.cliente.documento.rotulo}:</em> {d.cliente.documento.valor}
                   </p>
                   <p>
                     <em>Condición frente al IVA:</em> {d.cliente.condicionIva}

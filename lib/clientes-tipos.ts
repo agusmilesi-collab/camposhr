@@ -91,3 +91,45 @@ export function enumerar(xs: string[]): string {
   if (xs.length <= 1) return xs.join('');
   return `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`;
 }
+
+/** Los tipos de documento de ARCA que se usan al facturar. */
+export const DOC_CUIT = 80;
+export const DOC_DNI = 96;
+export const DOC_SIN_IDENTIFICAR = 99;
+
+/**
+ * Con qué documento se identifica a quien recibe la factura.
+ *
+ * El CUIT si lo tiene. Si no, el DNI: es el caso de los inquilinos del Centro,
+ * que son personas a las que se les factura como consumidor final y a ninguna
+ * le hace falta la factura a su CUIT. Sin ninguno de los dos va "sin
+ * identificar", que ARCA admite para un consumidor final por debajo de su tope.
+ *
+ * La usan la emisión, que es la que le habla a ARCA, y el alta de la factura y
+ * el comprobante, que tienen que mostrar lo mismo que se mandó.
+ */
+export function documentoDelReceptor(r: {
+  cuit?: string | null;
+  dni?: string | null;
+}): { tipo: number; numero: string; rotulo: 'CUIT' | 'DNI' | null } {
+  const cuit = (r.cuit ?? '').replace(/\D/g, '');
+  if (cuit.length === 11) return { tipo: DOC_CUIT, numero: cuit, rotulo: 'CUIT' };
+  const dni = (r.dni ?? '').replace(/\D/g, '');
+  if (dni.length >= 7 && dni.length <= 8) return { tipo: DOC_DNI, numero: dni, rotulo: 'DNI' };
+  return { tipo: DOC_SIN_IDENTIFICAR, numero: '0', rotulo: null };
+}
+
+/**
+ * La condición frente al IVA de un inquilino del Centro.
+ *
+ * Sin CUIT cargado es consumidor final, esté escrito en su ficha o no: es lo
+ * que son, y pedir que alguien lo cargue en trece fichas era la manera de que
+ * la primera factura del mes saliera rechazada.
+ */
+export function condicionDelInquilino(i: {
+  cuit?: string | null;
+  condicion_iva?: string | null;
+}): string | null {
+  if (i.condicion_iva) return i.condicion_iva;
+  return (i.cuit ?? '').replace(/\D/g, '').length === 11 ? null : 'Consumidor Final';
+}

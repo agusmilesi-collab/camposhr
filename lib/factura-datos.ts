@@ -12,7 +12,7 @@ import 'server-only';
 import { verFactura } from '@/lib/facturas';
 import { select } from '@/lib/supabase';
 import { formatoFecha } from '@/lib/facturas-tipos';
-import { leyendaIva } from '@/lib/clientes-tipos';
+import { condicionDelInquilino, documentoDelReceptor, leyendaIva } from '@/lib/clientes-tipos';
 import { ordenesQueCubren } from '@/lib/orden-compra';
 
 /**
@@ -121,6 +121,8 @@ export type DatosFactura = {
     nombre: string;
     razonSocial: string;
     cuit: string;
+    /** El documento con su rótulo: "CUIT" o, en un inquilino sin CUIT, "DNI". */
+    documento: { rotulo: string; valor: string };
     condicionIva: string;
     domicilio: string;
     /** La orden de compra que dio el cliente, si dio una. */
@@ -156,6 +158,7 @@ type FilaCliente = {
   nombre: string;
   razon_social: string | null;
   cuit: string | null;
+  dni?: string | null;
   direccion_fiscal?: string | null;
   domicilio_fiscal?: string | null;
   condicion_iva: string | null;
@@ -244,7 +247,7 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
     factura.inquilinoId
       ? select<FilaCliente>(
           'inquilinos',
-          `select=nombre,razon_social,cuit,condicion_iva,domicilio_fiscal&id=eq.${factura.inquilinoId}&limit=1`
+          `select=nombre,razon_social,cuit,dni,condicion_iva,domicilio_fiscal&id=eq.${factura.inquilinoId}&limit=1`
         )
       : Promise.resolve([]),
     select<FilaAutorizado>(
@@ -262,6 +265,11 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
 
   const emisor = emisores[0];
   const cliente = clientes[0] ?? inquilinos[0];
+  const delReceptor = documentoDelReceptor(cliente ?? {});
+  const documentoCliente =
+    delReceptor.rotulo === 'DNI'
+      ? { rotulo: 'DNI', valor: Number(delReceptor.numero).toLocaleString('es-AR') }
+      : { rotulo: 'CUIT', valor: cuitLindo(cliente?.cuit) };
   const autorizado = autorizados[0];
   const esNota = autorizado?.cbte_tipo === 13;
   const conCae = Boolean(factura.cae);
@@ -328,7 +336,13 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
       nombre: factura.cliente,
       razonSocial: cliente?.razon_social ?? cliente?.nombre ?? factura.cliente,
       cuit: cuitLindo(cliente?.cuit),
-      condicionIva: leyendaIva(cliente?.condicion_iva) ?? '—',
+      // Con qué documento va: el CUIT, o el DNI de un inquilino que no lo
+      // tiene. Es el mismo que se le manda a ARCA.
+      documento: documentoCliente,
+      condicionIva:
+        leyendaIva(
+          factura.inquilinoId && cliente ? condicionDelInquilino(cliente) : cliente?.condicion_iva
+        ) ?? '—',
       domicilio: cliente?.direccion_fiscal ?? cliente?.domicilio_fiscal ?? '—',
       ordenPropia: factura.ordenCompra,
       ordenesNuestras: ordenes.map((o) => o.numero),

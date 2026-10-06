@@ -265,7 +265,7 @@ export async function pdfDeFactura(d: DatosFactura): Promise<Uint8Array> {
       'Cliente',
       d.cliente.razonSocial,
       [
-        ['CUIT:', d.cliente.cuit],
+        [`${d.cliente.documento.rotulo}:`, d.cliente.documento.valor],
         ['Condición frente al IVA:', d.cliente.condicionIva],
         ['Domicilio:', d.cliente.domicilio],
         ['Condición de venta:', 'Transferencia bancaria'],
