@@ -219,7 +219,11 @@ export default async function Documento({
               </p>
             )}
 
-            <RadarCompetencias competencias={inf.competencias} exigencia={inf.exigencia} />
+            <RadarCompetencias
+              competencias={inf.competencias}
+              exigencia={inf.exigencia}
+              medianas={inf.medianas}
+            />
 
             <div className="inf-competencias">
               {inf.competencias.map((c) => {

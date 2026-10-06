@@ -548,15 +548,56 @@
 
 .inf-radar-perfil {
   fill: var(--azul);
-  fill-opacity: 0.16;
-  stroke: var(--azul);
-  stroke-width: 2.5;
+  fill-opacity: 0.42;
+  stroke: none;
   stroke-linejoin: round;
+}
+
+/* La mediana de todas las personas evaluadas: un área celeste llena, por
+   debajo del perfil. */
+.inf-radar-mediana {
+  /* El celeste del radar de shadcn (su `--chart-1`), más transparente que
+     allá para que el perfil de la persona se lea encima. */
+  fill: #8ec5ff;
+  fill-opacity: 0.35;
+  stroke: none;
+}
+
+.inf-radar-mediana-punto {
+  fill: #8ec5ff;
+  stroke: var(--hoja);
+  stroke-width: 1;
+}
+
+/* En la leyenda, la mediana va como una mancha del color del área y no como
+   una raya punteada, que es como se dibuja en el radar. */
+/* Y la persona igual: su perfil es un área azul sin borde. */
+.inf-radar-referencia .inf-ref.adulto::before {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 3px;
+  background: var(--azul);
+  opacity: 0.6;
+}
+
+.inf-radar-referencia .inf-ref.joven::before {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 3px;
+  background: #8ec5ff;
+  opacity: 0.55;
+}
+
+.inf-radar-referencia {
+  justify-content: center;
+  margin-bottom: 4px;
 }
 
 .inf-radar-vertice {
   stroke: var(--hoja);
-  stroke-width: 2;
+  stroke-width: 1.5;
 }
 
 .inf-radar-rotulo {
@@ -1229,11 +1270,26 @@
    donde se pisan, cuánto coinciden, que con dos líneas huecas había que
    deducirlo. */
 .inf-perfil-adulto {
+  /* Sin borde, como el radar de competencias: el perfil es el área. */
   fill: var(--azul);
-  fill-opacity: 0.16;
-  stroke: var(--azul);
-  stroke-width: 2.5;
-  stroke-linejoin: round;
+  fill-opacity: 0.28;
+  stroke: none;
+}
+
+/* En la leyenda, el adulto va como una mancha del color de su área. */
+.inf-referencia-perfil .inf-ref.adulto::before {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 3px;
+  background: var(--azul);
+  opacity: 0.45;
+}
+
+/* Y el adolescente, una raya fina y llena, que es como se dibuja. */
+.inf-referencia-perfil:not(.inf-radar-referencia) .inf-ref.joven::before {
+  border-top: 1px solid var(--turquesa);
+  opacity: 0.6;
 }
 
 .inf-vertice-joven {
@@ -1244,11 +1300,14 @@
    con las guías grises del gráfico, y no toma prestado ninguno de los colores
    con los que se leen las competencias, que sí dicen si algo está bien o mal.
    El perfil adolescente es de cuándo, no de cuánto. */
+/* El adolescente, solo el contorno, fino y sin relleno: es la referencia y el
+   adulto es el dato. Con las dos áreas llenas, donde se pisaban quedaba una
+   mancha más oscura que el propio adulto. */
 .inf-perfil-joven {
   fill: none;
   stroke: var(--turquesa);
-  stroke-width: 2;
-  stroke-dasharray: 6 4;
+  stroke-width: 1;
+  stroke-opacity: 0.6;
   stroke-linejoin: round;
 }
 
@@ -1274,12 +1333,17 @@
 
 .inf-cerebro-rombos .inf-perfil-adulto {
   fill: none;
+  stroke: var(--azul);
   stroke-width: 3;
+  stroke-linejoin: round;
 }
 
 .inf-cerebro-rombos .inf-perfil-joven {
+  fill: none;
+  stroke: var(--turquesa);
   stroke-width: 3;
   stroke-dasharray: 9 7;
+  stroke-linejoin: round;
 }
 
 /* El rótulo de lo que sigue: el cuadrante que resultó predominante. */
@@ -1387,6 +1451,9 @@
   .inf-nivel,
   .inf-perfil-adulto,
   .inf-perfil-joven,
+  .inf-radar-mediana,
+  .inf-radar-mediana-punto,
+  .inf-radar-perfil,
   .inf-escala-bandas,
   .inf-escala-barra,
   .inf-grupo,

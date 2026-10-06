@@ -182,7 +182,11 @@ export function seccionesDe(
 
           {/* Los velocímetros del documento: son lo que el cliente reconoce del
               informe impreso, y la descarga sale de esta misma sección. */}
-          <RadarCompetencias competencias={inf.competencias} exigencia={inf.exigencia} />
+          <RadarCompetencias
+              competencias={inf.competencias}
+              exigencia={inf.exigencia}
+              medianas={inf.medianas}
+            />
 
           <div className="inf-competencias">
             {ordenadas.map((c) => (

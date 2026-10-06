@@ -121,9 +121,11 @@ export default function Cerebro({
           dibuja el contenedor: cruza el capítulo entero, de margen a margen. */}
       <line x1="0" y1="-215" x2="0" y2="215" className="inf-eje-guia" />
 
-      {/* Los cuatro ejes, del centro al borde del círculo. */}
+      {/* Los cuatro ejes, del centro hasta un poco más allá del círculo de 120:
+          cortados justo en el borde se leían como radios del círculo y no como
+          ejes que lo atraviesan. */}
       {ORDEN.map((k) => {
-        const [x, y] = punto(k, MAXIMO);
+        const [x, y] = punto(k, MAXIMO + 9);
         return <line key={k} x1="0" y1="0" x2={x} y2={y} className="inf-eje" />;
       })}
 
@@ -133,7 +135,7 @@ export default function Cerebro({
       {trazoJoven &&
         ORDEN.map((k) => {
           const [x, y] = punto(k, numero(joven, k)! * ESCALA_JOVEN);
-          return <circle key={k} cx={x} cy={y} r="3.5" className="inf-vertice inf-vertice-joven" />;
+          return <circle key={k} cx={x} cy={y} r="2.8" className="inf-vertice inf-vertice-joven" />;
         })}
       {trazoAdulto &&
         ORDEN.map((k) => {
