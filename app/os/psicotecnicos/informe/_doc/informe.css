@@ -19,9 +19,9 @@
   --linea-suave: #efede8;
   --verde: #37804a;
   --ambar: #a97722;
-  /* El nivel "con alertas": naranja, entre el ámbar y el rojo del bajo: avisa un
-     riesgo y no una duda. */
-  --alerta: #c06a1c;
+  /* El nivel "con alertas": amarillo, la luz del medio del semáforo, entre el
+     oliva de "a desarrollar" y el rojo del bajo. */
+  --alerta: #dba800;
   /* El nivel "bajo", en rojo pleno: es el no. */
   --bajo: #c42026;
   --naranja: #c1591a;
@@ -370,8 +370,8 @@
   background: rgba(55, 128, 74, 0.05);
 }
 .inf-nivel.ambar {
-  border-color: rgba(192, 106, 28, 0.3);
-  background: rgba(192, 106, 28, 0.05);
+  border-color: rgba(219, 168, 0, 0.3);
+  background: rgba(219, 168, 0, 0.05);
 }
 .inf-nivel.azul {
   border-color: rgba(127, 143, 58, 0.3);
@@ -404,9 +404,11 @@
   background: rgba(127, 143, 58, 0.1);
 }
 .inf-nivel-tag.ambar {
-  color: var(--alerta);
-  border-color: rgba(192, 106, 28, 0.35);
-  background: rgba(192, 106, 28, 0.09);
+  /* Más oscuro que el amarillo del nivel: como letra, el pleno no se lee
+     sobre la hoja. */
+  color: #8a6a00;
+  border-color: rgba(219, 168, 0, 0.35);
+  background: rgba(219, 168, 0, 0.09);
 }
 .inf-nivel-tag.rojo {
   color: var(--bajo);
@@ -441,7 +443,7 @@
 }
 .inf-nivel.elegido.ambar {
   border-color: var(--alerta);
-  background: rgba(192, 106, 28, 0.11);
+  background: rgba(219, 168, 0, 0.11);
 }
 .inf-nivel.elegido.azul {
   border-color: #7f8f3a;
@@ -1097,8 +1099,7 @@
   left: 0;
   right: 0;
   top: 50%;
-  border-top: 1.4px dashed var(--suave);
-  opacity: 0.7;
+  border-top: 1px solid var(--linea);
   pointer-events: none;
 }
 
@@ -1170,7 +1171,7 @@
 /* El dibujo del cerebro es la referencia de dónde queda cada cuadrante, no el
    dato: va más claro que las líneas del perfil. */
 .inf-cerebro-fondo {
-  opacity: 0.3;
+  opacity: 0.2;
 }
 
 .inf-eje {
@@ -1181,27 +1182,35 @@
 /* La guía vertical, que separa izquierdo de derecho. La horizontal la dibuja
    el contenedor, porque cruza más allá del gráfico. */
 .inf-eje-guia {
-  stroke: var(--suave);
-  stroke-width: 1.4;
-  stroke-dasharray: 4 4;
-  opacity: 0.7;
+  stroke: var(--linea);
+  stroke-width: 1;
 }
 
-/* Los rombos de referencia, uno cada treinta puntos. El de ciento veinte
-   cierra el gráfico y va lleno. */
+/* El valor de cada cuadrante, al lado de su vértice y con halo, porque la
+   línea del otro perfil puede pasarle por debajo. */
+.inf-valor {
+  font-size: 15px;
+  font-weight: 700;
+  fill: var(--azul);
+  font-variant-numeric: tabular-nums;
+  paint-order: stroke;
+  stroke: var(--hoja);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+/* Los círculos de la escala, uno cada veinte puntos. */
 .inf-anillo {
   fill: none;
-  stroke: var(--suave);
+  stroke: var(--linea);
   stroke-width: 1;
-  stroke-dasharray: 3 5;
-  opacity: 0.3;
 }
 
 /* La escala va sobre el eje y el perfil puede cruzarla, así que el número se
    dibuja con un halo del color de la hoja. */
 .inf-escala {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 500;
   fill: var(--suave);
   paint-order: stroke;
   stroke: var(--hoja);
@@ -1216,11 +1225,19 @@
   stroke-width: 2;
 }
 
+/* Las dos figuras van llenas y traslúcidas: se ve el área de cada perfil y,
+   donde se pisan, cuánto coinciden, que con dos líneas huecas había que
+   deducirlo. */
 .inf-perfil-adulto {
-  fill: none;
+  fill: var(--azul);
+  fill-opacity: 0.16;
   stroke: var(--azul);
-  stroke-width: 3;
+  stroke-width: 2.5;
   stroke-linejoin: round;
+}
+
+.inf-vertice-joven {
+  fill: var(--turquesa);
 }
 
 /* En turquesa: contra el azul del adulto se distingue de una, no se confunde
@@ -1230,9 +1247,39 @@
 .inf-perfil-joven {
   fill: none;
   stroke: var(--turquesa);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  stroke-linejoin: round;
+}
+
+/* El gráfico de rombos de la pestaña Benziger de la ficha: conserva el trazo
+   que tenía antes de que el informe pasara al fondo redondo. */
+.inf-cerebro-rombos .inf-eje-guia {
+  stroke: var(--suave);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 4;
+  opacity: 0.7;
+}
+
+.inf-cerebro-rombos .inf-anillo {
+  stroke: var(--suave);
+  stroke-dasharray: 3 5;
+  opacity: 0.3;
+}
+
+.inf-cerebro-rombos .inf-escala {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.inf-cerebro-rombos .inf-perfil-adulto {
+  fill: none;
+  stroke-width: 3;
+}
+
+.inf-cerebro-rombos .inf-perfil-joven {
   stroke-width: 3;
   stroke-dasharray: 9 7;
-  stroke-linejoin: round;
 }
 
 /* El rótulo de lo que sigue: el cuadrante que resultó predominante. */
@@ -2202,8 +2249,8 @@
   background: rgba(127, 143, 58, 0.05);
 }
 .inf-nivel-chico.ambar {
-  border-color: rgba(192, 106, 28, 0.3);
-  background: rgba(192, 106, 28, 0.05);
+  border-color: rgba(219, 168, 0, 0.3);
+  background: rgba(219, 168, 0, 0.05);
 }
 .inf-nivel-chico.rojo {
   border-color: rgba(196, 32, 38, 0.3);
