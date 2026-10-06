@@ -11904,6 +11904,9 @@ textarea.os-papel-campo {
 .os-hub-personas > .os-panel {
   display: flex;
   flex-direction: column;
+  /* Un panel que sigue a otro trae margen arriba: en la grilla, eso bajaba la
+     segunda ficha dieciocho píxeles respecto de la primera. */
+  margin-top: 0;
 }
 
 .os-hub-personas > .os-panel > .os-panel-cuerpo {
@@ -11951,6 +11954,392 @@ textarea.os-papel-campo {
 .os-hub-sub {
   display: block;
   margin-top: 16px;
+}
+
+/* Las piezas del protocolo son cuatro: en tres columnas quedaba una sola en el
+   segundo renglón. */
+.os-hub-cuatro {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .os-hub-cuatro {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.os-hub-entregas {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--os-linea-suave);
+}
+
+.os-hub-meses {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  height: 104px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-hub-meses li {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.os-hub-mes-n {
+  height: 14px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-hub-mes-columna {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 44px;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-hub-mes-columna > span {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--os-azul);
+}
+
+.os-hub-mes-nombre {
+  font-size: 0.7rem;
+  color: var(--os-suave);
+}
+
+/**
+ * La pestaña de candidatos del data hub.
+ *
+ * Los tonos se definen una vez y los usan los puntos del hemiciclo, los tramos
+ * de las barras partidas y las muestras de la leyenda. La conclusión es una
+ * escala ordenada, así que va de azul a rojo; los cuadrantes y los estilos son
+ * categorías sin orden.
+ */
+.os-hub-tono-alto {
+  --tono: var(--os-azul-fuerte);
+}
+.os-hub-tono-medio {
+  --tono: color-mix(in srgb, var(--os-azul) 45%, var(--os-panel));
+}
+.os-hub-tono-alerta {
+  --tono: var(--os-ambar);
+}
+.os-hub-tono-bajo {
+  --tono: var(--os-rojo);
+}
+.os-hub-tono-a {
+  --tono: var(--os-azul);
+}
+.os-hub-tono-b {
+  --tono: var(--os-arcilla);
+}
+.os-hub-tono-c {
+  --tono: var(--os-violeta);
+}
+.os-hub-tono-d {
+  --tono: var(--os-verde);
+}
+.os-hub-tono-neutro {
+  --tono: color-mix(in srgb, var(--os-gris) 55%, var(--os-panel));
+}
+
+.os-hub-hemiciclo {
+  display: grid;
+  gap: 14px;
+}
+
+.os-hub-hemiciclo svg {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.os-hub-hemiciclo circle {
+  fill: var(--tono);
+}
+
+.os-hub-hemiciclo-total {
+  fill: var(--os-tinta);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.os-hub-hemiciclo-unidad {
+  fill: var(--os-suave);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.os-hub-leyenda {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.84rem;
+}
+
+.os-hub-leyenda li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) 30px 44px;
+  align-items: center;
+  gap: 10px;
+}
+
+.os-hub-muestra {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tono);
+}
+
+.os-hub-leyenda-parte {
+  text-align: right;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--os-suave);
+}
+
+/* La leyenda de las barras partidas: en un renglón y sin cifras. */
+.os-hub-leyenda-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 0.76rem;
+  color: var(--os-tinta-media);
+}
+
+.os-hub-leyenda-fila li {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.os-hub-apiladas,
+.os-hub-tiras {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-hub-apiladas li,
+.os-hub-tiras li {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) 28px;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+}
+
+.os-hub-apilada {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+}
+
+.os-hub-apilada > span {
+  flex-basis: 0;
+  min-width: 3px;
+  border-radius: 3px;
+  background: var(--tono);
+}
+
+.os-hub-tira {
+  position: relative;
+  display: block;
+  height: 18px;
+  border-bottom: 1px solid var(--os-linea);
+}
+
+.os-hub-tira-punto {
+  position: absolute;
+  top: 5px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--os-azul);
+  opacity: 0.45;
+}
+
+.os-hub-tira-centro {
+  position: absolute;
+  top: 0;
+  bottom: -1px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--os-tinta);
+}
+
+.os-hub-tira-n {
+  margin-left: 4px;
+  font-size: 0.74rem;
+  color: var(--os-suave);
+}
+
+.os-hub-tiras-eje > span:nth-child(2) {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--os-suave);
+}
+
+.os-hub-curvas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 26px 30px;
+}
+
+.os-hub-curva {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.os-hub-curva figcaption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.os-hub-curva-nombre {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.os-hub-curva-mediana {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-hub-curva svg {
+  display: block;
+  width: 100%;
+}
+
+.os-hub-curva-area {
+  fill: color-mix(in srgb, var(--os-azul) 16%, transparent);
+}
+
+.os-hub-curva-linea {
+  fill: none;
+  stroke: var(--os-azul);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.os-hub-curva-eje {
+  stroke: var(--os-linea);
+  stroke-width: 1;
+}
+
+.os-hub-curva-mitad {
+  fill: var(--os-azul-fuerte);
+}
+
+.os-hub-curva-marca {
+  stroke: var(--os-tinta-media);
+  stroke-width: 1;
+  opacity: 0.3;
+}
+
+.os-hub-curva-centro {
+  stroke: var(--os-tinta);
+  stroke-width: 1.5;
+}
+
+.os-hub-curva-rotulo {
+  fill: var(--os-suave);
+  font-size: 9px;
+}
+
+/* Los cruces llevan seis columnas de números: necesitan más ancho que un
+   reparto, así que van de a uno por renglón hasta pantallas grandes. */
+.os-hub-anchos {
+  grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+  grid-auto-rows: auto;
+}
+
+.os-hub-mapa-caja {
+  overflow-x: auto;
+}
+
+.os-hub-mapa {
+  width: 100%;
+  /* Fija: las columnas de números se reparten lo que deja el nombre del grupo,
+     en vez de empujar la tabla fuera del panel. */
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-hub-mapa thead th {
+  padding: 0 2px 6px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+  vertical-align: bottom;
+  color: var(--os-suave);
+}
+
+.os-hub-mapa thead th:first-child {
+  width: 30%;
+}
+
+.os-hub-mapa thead th:first-child,
+.os-hub-mapa tbody th {
+  padding-right: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-weight: 400;
+}
+
+.os-hub-mapa td {
+  padding: 7px 2px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--os-azul) var(--carga, 0%), transparent);
+}
+
+.os-hub-mapa .os-hub-mapa-n {
+  width: 30px;
+  background: none;
+  font-weight: 400;
+  color: var(--os-suave);
+}
+
+.os-hub-mapa .os-hub-mapa-vacia {
+  background: none;
+  font-weight: 400;
+  color: var(--os-suave);
 }
 
 /* ---------- Facturación ---------- */

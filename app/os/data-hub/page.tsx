@@ -1,7 +1,9 @@
+import Link from 'next/link';
 import Shell from '../Shell';
 import { quienSoy } from '@/lib/identidad';
-import { datosDelHub, type PorEvaluadora, type Reparto } from '@/lib/data-hub';
-import { enDias } from '@/lib/hora';
+import { datosDelHub, type PorEvaluadora } from '@/lib/data-hub';
+import { Barras, Eje, Panel } from './piezas';
+import Candidatos, { Hemiciclo, TONO_CONCLUSION, filasPara } from './Candidatos';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
@@ -18,61 +20,45 @@ export const dynamic = 'force-dynamic';
  * alcanza dice cuántos faltan en lugar de mostrarse igual.
  */
 
-function Barras({ datos, vacio }: { datos: Reparto; vacio: string }) {
-  if (datos.length === 0) return <p className="os-vacio">{vacio}</p>;
-  const tope = Math.max(...datos.map((d) => d.n));
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+/**
+ * Las entregas de cada mes, en columnas.
+ *
+ * El tope es el mismo en todas las fichas: con cada una medida contra su propio
+ * mes más alto, dos columnas iguales de alto querrían decir cantidades
+ * distintas según la ficha en la que estén.
+ */
+function Meses({ datos, tope }: { datos: PorEvaluadora['porMes']; tope: number }) {
+  if (datos.length === 0) return <p className="os-vacio">Todavía no entregó ninguna.</p>;
   return (
-    <ul className="os-hub-barras">
-      {datos.map((d) => (
-        <li key={d.nombre}>
-          <span className="os-hub-barra-nombre" title={d.nombre}>
-            {d.nombre}
+    <ol className="os-hub-meses">
+      {datos.map((m) => (
+        <li
+          key={m.mes}
+          title={`${m.n} entregadas en ${MESES[Number(m.mes.slice(5)) - 1]} de ${m.mes.slice(0, 4)}`}
+        >
+          <span className="os-hub-mes-n">{m.n === 0 ? '' : m.n}</span>
+          <span className="os-hub-mes-columna">
+            {m.n > 0 && <span style={{ height: `${(m.n / tope) * 100}%` }} />}
           </span>
-          <span className="os-hub-barra">
-            <span style={{ width: `${(d.n / tope) * 100}%` }} />
-          </span>
-          <span className="os-hub-barra-n">{d.n}</span>
+          <span className="os-hub-mes-nombre">{MESES[Number(m.mes.slice(5)) - 1]}</span>
         </li>
       ))}
-    </ul>
-  );
-}
-
-function Panel({
-  titulo,
-  nota,
-  children,
-}: {
-  titulo: string;
-  nota?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="os-panel">
-      <div className="os-panel-top">
-        <h2>{titulo}</h2>
-        {nota && <span className="os-columna-monto">{nota}</span>}
-      </div>
-      <div className="os-panel-cuerpo">{children}</div>
-    </section>
-  );
-}
-
-/** Un eje del tablero, con su título y lo que agrupa. */
-function Eje({ titulo, bajada, children }: { titulo: string; bajada: string; children: React.ReactNode }) {
-  return (
-    <section className="os-hub-eje">
-      <div className="os-hub-eje-top">
-        <h2>{titulo}</h2>
-        <p>{bajada}</p>
-      </div>
-      {children}
-    </section>
+    </ol>
   );
 }
 
 /** La ficha de una evaluadora: sus números, no los del sistema. */
-function FichaEvaluadora({ e }: { e: PorEvaluadora }) {
+function FichaEvaluadora({
+  e,
+  topeMes,
+  filas,
+}: {
+  e: PorEvaluadora;
+  topeMes: number;
+  filas: number;
+}) {
   return (
     <section className="os-panel os-hub-persona">
       <div className="os-panel-top">
@@ -130,19 +116,43 @@ function FichaEvaluadora({ e }: { e: PorEvaluadora }) {
           </div>
         </div>
 
+        <div className="os-hub-conclusiones os-hub-entregas">
+          <span className="os-hub-rotulo">Entregas por mes</span>
+          <Meses datos={e.porMes} tope={topeMes} />
+        </div>
+
         <div className="os-hub-conclusiones">
           <span className="os-hub-rotulo">Cómo cierra sus informes</span>
-          <Barras datos={e.conclusiones} vacio="Todavía no cerró ninguno." />
+          <Hemiciclo
+            datos={e.conclusiones}
+            tonos={TONO_CONCLUSION}
+            unidad="informes"
+            filas={filas}
+          />
         </div>
       </div>
     </section>
   );
 }
 
-export default async function DataHub() {
+/** Las pestañas del tablero: de quién son los números que se miran. */
+const PESTANAS = [
+  { clave: 'evaluadoras', texto: 'Evaluadoras' },
+  { clave: 'candidatos', texto: 'Candidatos' },
+] as const;
+
+export default async function DataHub({ searchParams }: { searchParams: { ver?: string } }) {
+  const pedida = searchParams.ver ?? '';
+  const ver = PESTANAS.some((p) => p.clave === pedida) ? pedida : 'evaluadoras';
+
   const [yo, d] = await Promise.all([quienSoy(), datosDelHub()]);
 
   const cuentas = await cuentasDeLaBarra();
+  // Las fichas se comparan una al lado de la otra: mismo tope y mismas filas.
+  const filasHemiciclo = filasPara(
+    Math.max(0, ...d.evaluadoras.map((e) => e.conclusiones.reduce((a, c) => a + c.n, 0))),
+  );
+  const topeMes = Math.max(1, ...d.evaluadoras.flatMap((e) => e.porMes.map((m) => m.n)));
 
   return (
     <Shell titulo="Data hub" identidad={yo.nombre} cuentas={cuentas} ancho>
@@ -155,248 +165,204 @@ export default async function DataHub() {
         </p>
       </div>
 
-      {/* Los cuatro que contestan cómo va el negocio. Van arriba y solos: si hay
+      <nav className="os-pestanas">
+        {PESTANAS.map((p) => (
+          <Link
+            key={p.clave}
+            href={`/os/data-hub?ver=${p.clave}`}
+            className={`os-pestana${ver === p.clave ? ' activa' : ''}`}
+            aria-current={ver === p.clave ? 'page' : undefined}
+          >
+            {p.texto}
+          </Link>
+        ))}
+      </nav>
+
+      {ver === 'evaluadoras' && (
+        <>
+          {/* Los cuatro que contestan cómo va el negocio. Van arriba y solos: si hay
           que bajar para encontrarlos, el resto del tablero los tapa. */}
-      <div className="os-hub-tapa">
-        <div className="os-hub-kpi">
-          <span className="os-hub-rotulo">Entregadas</span>
-          <span className="os-hub-valor">{d.entregadas}</span>
-          <span className="os-hub-n">de {d.total} evaluaciones cargadas</span>
-        </div>
-        <div className="os-hub-kpi">
-          <span className="os-hub-rotulo">El informe pone condiciones</span>
-          <span className="os-hub-valor">
-            {d.discriminacion.cerrados === 0 ? (
-              <span className="os-dato-falta">sin cerrar</span>
-            ) : (
-              <>
-                {Math.round((d.discriminacion.conReserva / d.discriminacion.cerrados) * 100)}
-                <em> %</em>
-              </>
-            )}
-          </span>
-          <span className="os-hub-n">
-            {d.discriminacion.cerrados === 0
-              ? 'todavía no hay informes cerrados'
-              : `${d.discriminacion.conReserva} de ${d.discriminacion.cerrados} · el resto cierra en un sí liso`}
-          </span>
-        </div>
-        <div className="os-hub-kpi">
-          <span className="os-hub-rotulo">Del cliente más grande</span>
-          <span className="os-hub-valor">
-            {d.concentracion.delMayor === null ? (
-              <span className="os-dato-falta">sin datos</span>
-            ) : (
-              <>
-                {d.concentracion.delMayor}
-                <em> %</em>
-              </>
-            )}
-          </span>
-          <span className="os-hub-n">
-            {d.concentracion.nombreMayor
-              ? `${d.concentracion.nombreMayor} · ${d.concentracion.clientes} clientes en total`
-              : 'sin clientes cargados'}
-          </span>
-        </div>
-        <div className="os-hub-kpi">
-          <span className="os-hub-rotulo">Clientes que repiten</span>
-          <span className="os-hub-valor">{d.concentracion.repiten}</span>
-          <span className="os-hub-n">pidieron más de una búsqueda</span>
-        </div>
-      </div>
-
-      <Eje
-        titulo="Cada evaluadora"
-        bajada="Volumen, tiempos y criterio de cierre. Los tiempos son medianas: una evaluación que se atrasó por el cliente no le mueve el número."
-      >
-        {d.evaluadoras.length === 0 ? (
-          <section className="os-panel">
-            <p className="os-vacio">Ninguna evaluación tiene evaluadora asignada.</p>
-          </section>
-        ) : (
-          <div className="os-hub-personas">
-            {d.evaluadoras.map((e) => (
-              <FichaEvaluadora key={e.nombre} e={e} />
-            ))}
+          <div className="os-hub-tapa">
+            <div className="os-hub-kpi">
+              <span className="os-hub-rotulo">Entregadas</span>
+              <span className="os-hub-valor">{d.entregadas}</span>
+              <span className="os-hub-n">de {d.total} evaluaciones cargadas</span>
+            </div>
+            <div className="os-hub-kpi">
+              <span className="os-hub-rotulo">El informe pone condiciones</span>
+              <span className="os-hub-valor">
+                {d.discriminacion.cerrados === 0 ? (
+                  <span className="os-dato-falta">sin cerrar</span>
+                ) : (
+                  <>
+                    {Math.round((d.discriminacion.conReserva / d.discriminacion.cerrados) * 100)}
+                    <em> %</em>
+                  </>
+                )}
+              </span>
+              <span className="os-hub-n">
+                {d.discriminacion.cerrados === 0
+                  ? 'todavía no hay informes cerrados'
+                  : `${d.discriminacion.conReserva} de ${d.discriminacion.cerrados} · el resto cierra en un sí liso`}
+              </span>
+            </div>
+            <div className="os-hub-kpi">
+              <span className="os-hub-rotulo">Del cliente más grande</span>
+              <span className="os-hub-valor">
+                {d.concentracion.delMayor === null ? (
+                  <span className="os-dato-falta">sin datos</span>
+                ) : (
+                  <>
+                    {d.concentracion.delMayor}
+                    <em> %</em>
+                  </>
+                )}
+              </span>
+              <span className="os-hub-n">
+                {d.concentracion.nombreMayor
+                  ? `${d.concentracion.nombreMayor} · ${d.concentracion.clientes} clientes en total`
+                  : 'sin clientes cargados'}
+              </span>
+            </div>
+            <div className="os-hub-kpi">
+              <span className="os-hub-rotulo">Clientes que repiten</span>
+              <span className="os-hub-valor">{d.concentracion.repiten}</span>
+              <span className="os-hub-n">pidieron más de una búsqueda</span>
+            </div>
           </div>
-        )}
-      </Eje>
 
-      <Eje
-        titulo="Qué tan completo está el protocolo"
-        bajada="Cuántas evaluaciones tienen cada pieza cargada. Lo que falta acá es lo que después no se puede medir en ningún lado."
-      >
-        <div className="os-hub-dos">
-          {d.completitud.map((c) => (
-            <Panel key={c.pieza} titulo={c.pieza} nota={c.de === 0 ? 'no corresponde' : `${c.hechas} de ${c.de}`}>
-              {c.de === 0 ? (
-                <p className="os-vacio">Ningún pedido lo pide.</p>
-              ) : (
-                <>
-                  <span className="os-hub-barra">
-                    <span
-                      className={c.hechas >= c.de ? 'completa' : undefined}
-                      style={{ width: `${Math.min(100, (c.hechas / c.de) * 100)}%` }}
-                    />
-                  </span>
-                  <span className="os-hub-n">
-                    {c.hechas >= c.de
-                      ? 'completo'
-                      : `faltan ${c.de - c.hechas}`}
-                  </span>
-                </>
-              )}
-            </Panel>
-          ))}
-        </div>
-      </Eje>
-
-      <Eje
-        titulo="Qué se pide"
-        bajada="Con qué llegan los clientes. Es lo que dice qué batería conviene tener afilada y para qué puestos se vende de verdad."
-      >
-        <div className="os-hub-dos">
-          <Panel titulo="Familia de puesto" nota={`${d.total} evaluaciones`}>
-            <Barras datos={d.pedido.porFamilia} vacio="Ningún pedido tiene familia cargada." />
-          </Panel>
-          <Panel titulo="Nivel del puesto">
-            <Barras datos={d.pedido.porNivel} vacio="Ningún pedido tiene nivel cargado." />
-          </Panel>
-          <Panel titulo="Batería">
-            <Barras datos={d.pedido.porBateria} vacio="Ningún pedido tiene batería." />
-          </Panel>
-          <Panel
-            titulo="Con Benziger"
-            nota={`${d.pedido.conBenziger.con} de ${d.pedido.conBenziger.con + d.pedido.conBenziger.sin}`}
+          <Eje
+            titulo="Cada evaluadora"
+            bajada="Volumen, tiempos y criterio de cierre. Los tiempos son medianas: una evaluación que se atrasó por el cliente no le mueve el número."
           >
-            <Barras
-              datos={[
-                { nombre: 'Lo lleva', n: d.pedido.conBenziger.con },
-                { nombre: 'No lo lleva', n: d.pedido.conBenziger.sin },
-              ].filter((x) => x.n > 0)}
-              vacio="Sin pedidos cargados."
-            />
-          </Panel>
-          <Panel titulo="Por cliente">
-            <Barras datos={d.pedido.porEmpresa} vacio="Sin empresas cargadas." />
-          </Panel>
-          <Panel titulo="Entregas por mes" nota={`${d.entregadas} en total`}>
-            <Barras
-              datos={d.pedido.entregasPorMes.map((m) => ({ nombre: m.mes, n: m.n }))}
-              vacio="Todavía no se entregó ninguna."
-            />
-          </Panel>
-        </div>
-      </Eje>
-
-      <Eje
-        titulo="Los candidatos"
-        bajada="Cómo es la gente que se presenta a estos puestos. Con casos suficientes, esto pasa a ser el baremo de la casa: un puntaje se lee contra quienes se presentan y no solo contra la literatura."
-      >
-        <div className="os-hub-dos">
-          <Panel
-            titulo="Raven"
-            nota={
-              d.candidatos.raven.mediana === null
-                ? 'sin puntajes'
-                : `mediana ${d.candidatos.raven.mediana} de percentil · ${d.candidatos.raven.n} casos`
-            }
-          >
-            <Barras datos={d.candidatos.raven.reparto} vacio="Nadie tiene el Raven puntuado." />
-            {d.candidatos.raven.mejores.length > 0 && (
-              <>
-                <span className="os-hub-rotulo os-hub-sub">Los más altos</span>
-                <ul className="os-hub-ranking">
-                  {d.candidatos.raven.mejores.map((r, i) => (
-                    <li key={r.nombre}>
-                      <span className="os-hub-puesto">{i + 1}</span>
-                      <span className="os-hub-barra-nombre">{r.nombre}</span>
-                      <span className="os-hub-barra">
-                        <span style={{ width: `${r.percentil}%` }} />
-                      </span>
-                      <span className="os-hub-barra-n">{r.percentil}</span>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </Panel>
-
-          <Panel titulo="Cómo cierran los informes" nota="conclusión final">
-            <Barras datos={d.candidatos.conclusiones} vacio="Todavía no hay informes cerrados." />
-          </Panel>
-
-          <Panel titulo="Cuadrante Benziger" nota="el preferente de cada uno">
-            <Barras datos={d.candidatos.cuadrantes} vacio="Todavía no hay perfiles cargados." />
-          </Panel>
-
-          {/* La mediana de cada competencia sobre los evaluados: es el baremo
-              propio, y hoy es lo que no existe. */}
-          <Panel
-            titulo="Competencias"
-            nota={
-              d.candidatos.competencias.length === 0
-                ? 'sin sumarios'
-                : `mediana sobre ${d.candidatos.competencias[0].n} ${
-                    d.candidatos.competencias[0].n === 1 ? 'evaluado' : 'evaluados'
-                  }`
-            }
-          >
-            {d.candidatos.competencias.length === 0 ? (
-              <p className="os-vacio">Hace falta al menos un sumario cargado.</p>
+            {d.evaluadoras.length === 0 ? (
+              <section className="os-panel">
+                <p className="os-vacio">Ninguna evaluación tiene evaluadora asignada.</p>
+              </section>
             ) : (
-              <ul className="os-hub-barras">
-                {d.candidatos.competencias.map((c) => (
-                  <li key={c.nombre}>
-                    <span className="os-hub-barra-nombre" title={`sobre ${c.n} casos`}>
-                      {c.nombre}
-                    </span>
-                    <span className="os-hub-barra">
-                      <span style={{ width: `${c.mediana ?? 0}%` }} />
-                    </span>
-                    <span className="os-hub-barra-n">{c.mediana ?? '—'}</span>
-                  </li>
+              <div className="os-hub-personas">
+                {d.evaluadoras.map((e) => (
+                  <FichaEvaluadora key={e.nombre} e={e} topeMes={topeMes} filas={filasHemiciclo} />
                 ))}
-              </ul>
+              </div>
             )}
-          </Panel>
-        </div>
-      </Eje>
+          </Eje>
 
-      <Eje
-        titulo="Lo que todavía no se puede medir"
-        bajada="El acierto de una evaluación se mide cruzando lo que se recomendó contra cómo le fue a la persona a los noventa días de entrar. Ese dato se carga en la ficha, y es lo único que separa al sistema de poder decir si acierta."
-      >
-        <section className="os-panel">
-          <div className="os-panel-cuerpo">
-            <ul className="os-hub-pendientes">
-              {d.pendientes.map((p) => {
-                const listo = p.hoy >= p.hacenFalta;
-                return (
-                  <li key={p.medida}>
-                    <div className="os-hub-pend-top">
-                      <span className="os-hub-pend-nombre">{p.medida}</span>
-                      <span className={`os-sello-estado ${listo ? 'os-verde' : 'os-ambar'}`}>
-                        {listo ? 'ya se puede' : `faltan ${p.hacenFalta - p.hoy}`}
+          <Eje
+            titulo="Qué tan completo está el protocolo"
+            bajada="Cuántas evaluaciones tienen cada pieza cargada. Lo que falta acá es lo que después no se puede medir en ningún lado."
+          >
+            <div className="os-hub-dos os-hub-cuatro">
+              {d.completitud.map((c) => (
+                <Panel
+                  key={c.pieza}
+                  titulo={c.pieza}
+                  nota={c.de === 0 ? 'no corresponde' : `${c.hechas} de ${c.de}`}
+                >
+                  {c.de === 0 ? (
+                    <p className="os-vacio">Ningún pedido lo pide.</p>
+                  ) : (
+                    <>
+                      <span className="os-hub-barra">
+                        <span
+                          className={c.hechas >= c.de ? 'completa' : undefined}
+                          style={{
+                            width: `${Math.min(100, (c.hechas / c.de) * 100)}%`,
+                          }}
+                        />
                       </span>
-                    </div>
-                    <span className="os-hub-barra">
-                      <span
-                        className={listo ? 'completa' : undefined}
-                        style={{ width: `${Math.min(100, (p.hoy / p.hacenFalta) * 100)}%` }}
-                      />
-                    </span>
-                    <span className="os-hub-n">
-                      {p.hoy} de {p.hacenFalta} · {p.porque}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </section>
-      </Eje>
+                      <span className="os-hub-n">
+                        {c.hechas >= c.de ? 'completo' : `faltan ${c.de - c.hechas}`}
+                      </span>
+                    </>
+                  )}
+                </Panel>
+              ))}
+            </div>
+          </Eje>
+
+          <Eje
+            titulo="Qué se pide"
+            bajada="Con qué llegan los clientes. Es lo que dice qué batería conviene tener afilada y para qué puestos se vende de verdad."
+          >
+            <div className="os-hub-dos">
+              <Panel titulo="Familia de puesto" nota={`${d.total} evaluaciones`}>
+                <Barras datos={d.pedido.porFamilia} vacio="Ningún pedido tiene familia cargada." />
+              </Panel>
+              <Panel titulo="Nivel del puesto">
+                <Barras datos={d.pedido.porNivel} vacio="Ningún pedido tiene nivel cargado." />
+              </Panel>
+              <Panel titulo="Batería">
+                <Barras datos={d.pedido.porBateria} vacio="Ningún pedido tiene batería." />
+              </Panel>
+              <Panel
+                titulo="Con Benziger"
+                nota={`${d.pedido.conBenziger.con} de ${d.pedido.conBenziger.con + d.pedido.conBenziger.sin}`}
+              >
+                <Barras
+                  datos={[
+                    { nombre: 'Lo lleva', n: d.pedido.conBenziger.con },
+                    { nombre: 'No lo lleva', n: d.pedido.conBenziger.sin },
+                  ].filter((x) => x.n > 0)}
+                  vacio="Sin pedidos cargados."
+                />
+              </Panel>
+              <Panel titulo="Por cliente">
+                <Barras datos={d.pedido.porEmpresa} vacio="Sin empresas cargadas." />
+              </Panel>
+              <Panel titulo="Entregas por mes" nota={`${d.entregadas} en total`}>
+                <Barras
+                  datos={d.pedido.entregasPorMes.map((m) => ({
+                    nombre: m.mes,
+                    n: m.n,
+                  }))}
+                  vacio="Todavía no se entregó ninguna."
+                />
+              </Panel>
+            </div>
+          </Eje>
+        </>
+      )}
+
+      {ver === 'candidatos' && <Candidatos d={d} />}
+
+      {ver === 'evaluadoras' && (
+        <Eje
+          titulo="Lo que todavía no se puede medir"
+          bajada="El acierto de una evaluación se mide cruzando lo que se recomendó contra cómo le fue a la persona a los noventa días de entrar. Ese dato se carga en la ficha, y es lo único que separa al sistema de poder decir si acierta."
+        >
+          <section className="os-panel">
+            <div className="os-panel-cuerpo">
+              <ul className="os-hub-pendientes">
+                {d.pendientes.map((p) => {
+                  const listo = p.hoy >= p.hacenFalta;
+                  return (
+                    <li key={p.medida}>
+                      <div className="os-hub-pend-top">
+                        <span className="os-hub-pend-nombre">{p.medida}</span>
+                        <span className={`os-sello-estado ${listo ? 'os-verde' : 'os-ambar'}`}>
+                          {listo ? 'ya se puede' : `faltan ${p.hacenFalta - p.hoy}`}
+                        </span>
+                      </div>
+                      <span className="os-hub-barra">
+                        <span
+                          className={listo ? 'completa' : undefined}
+                          style={{
+                            width: `${Math.min(100, (p.hoy / p.hacenFalta) * 100)}%`,
+                          }}
+                        />
+                      </span>
+                      <span className="os-hub-n">
+                        {p.hoy} de {p.hacenFalta} · {p.porque}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </section>
+        </Eje>
+      )}
     </Shell>
   );
 }

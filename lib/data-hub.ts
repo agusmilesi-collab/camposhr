@@ -33,9 +33,9 @@ import type { SumarioCrudo } from '@/lib/redacciones';
 const CAMPOS =
   'id,estado,recomendacion,ingreso,seguimiento_resultado,benziger_administrado,con_benziger,' +
   'fecha_ingreso,fecha_entrevista,fecha_entrega,evaluadoras(nombre),' +
-  'raven(raw,percentil),personas(nombre),' +
+  'raven(raw,percentil),personas(nombre,fecha_nacimiento),' +
   'benziger(cuadrante_preferente,cuadrantes_parejos),' +
-  'pedidos(puesto,familia,seniority,con_benziger,empresas(nombre),baterias(codigo,tests))';
+  'pedidos(puesto,familia,seniority,con_benziger,puesto_problemas,estrato_puesto,empresas(nombre),baterias(codigo,tests))';
 
 /**
  * A quién le corresponde el Benziger: lo pidió el pedido, se le pidió a esta
@@ -60,19 +60,21 @@ type Fila = {
   fecha_entrega: string | null;
   evaluadoras: { nombre: string } | null;
   raven: { raw: number | null; percentil: number | null } | null;
-  personas: { nombre: string } | null;
+  personas: { nombre: string; fecha_nacimiento: string | null } | null;
   benziger: { cuadrante_preferente: string[] | null; cuadrantes_parejos: boolean | null } | null;
   pedidos: {
     puesto: string;
     familia: string | null;
     seniority: string | null;
     con_benziger: boolean | null;
+    puesto_problemas: string | null;
+    estrato_puesto: string | null;
     empresas: { nombre: string } | null;
     baterias: { codigo: string; tests: string[] | null } | null;
   } | null;
 };
 
-type SumarioFila = { evaluacion_id: string; crudo: SumarioCrudo | null };
+type SumarioFila = { evaluacion_id: string; crudo: SumarioCrudo | null; estilo: string | null };
 type ManchaFila = { evaluacion_id: string; test: string | null };
 
 export type Reparto = { nombre: string; n: number }[];
@@ -86,8 +88,10 @@ export type PorEvaluadora = {
   analisis: { mediana: number | null; n: number };
   /** Días de la solicitud a la entrega: lo que ve el cliente. */
   total: { mediana: number | null; n: number };
-  /** Cómo cierra: el reparto de sus conclusiones. */
+  /** Cómo cierra: el reparto de sus conclusiones, de la que menos condiciones pone a la que más. */
   conclusiones: Reparto;
+  /** Cuántas entregó cada mes. Los meses son los mismos para todas, así se comparan. */
+  porMes: { mes: string; n: number }[];
   /** Cuántas de las suyas tienen el seguimiento hecho. */
   seguimientos: number;
 };
@@ -131,6 +135,55 @@ export type Pendiente = {
   porque: string;
 };
 
+/**
+ * Una tabla de doble entrada: un grupo por fila y una medida por columna.
+ *
+ * Cada celda lleva su propio `n`, porque no todas las filas tienen todas las
+ * medidas: Liderazgo solo sale del Rorschach, así que en una familia evaluada
+ * con Zulliger esa celda se calcula sobre menos gente que las demás.
+ */
+export type Cruce = {
+  columnas: string[];
+  filas: { nombre: string; n: number; celdas: { valor: number | null; n: number }[] }[];
+  /** Los grupos que no llegan al mínimo de casos y por eso no tienen fila. */
+  afuera: Reparto;
+};
+
+/** Cómo se reparte un puntaje de 0 a 100 entre los evaluados. */
+export type Distribucion = {
+  nombre: string;
+  n: number;
+  mediana: number | null;
+  /** Entre estos dos valores cae la mitad central de los evaluados. */
+  p25: number | null;
+  p75: number | null;
+  valores: number[];
+};
+
+/**
+ * Lo que se puede cruzar hoy de los candidatos.
+ *
+ * Todo es descriptivo: dice cómo es la gente que se presenta a cada tipo de
+ * puesto y cómo cierra su informe. Qué perfil rinde mejor en el puesto no se
+ * puede decir, porque no hay ningún seguimiento cargado.
+ */
+export type Fit = {
+  cobertura: { pieza: string; hechas: number; de: number }[];
+  distribuciones: Distribucion[];
+  competenciaPorFamilia: Cruce;
+  competenciaPorNivel: Cruce;
+  conclusiones: Reparto;
+  conclusionPorFamilia: Cruce;
+  conclusionPorNivel: Cruce;
+  ravenPorNivel: Distribucion[];
+  cuadrantes: Reparto;
+  cuadrantePorFamilia: Cruce;
+  estilos: Reparto;
+  estiloPorFamilia: Cruce;
+  /** Los datos que harían falta para medir el ajuste y cuántos hay cargados. */
+  faltantes: { pieza: string; hechas: number; de: number; paraQue: string }[];
+};
+
 export type DataHub = {
   total: number;
   entregadas: number;
@@ -151,6 +204,7 @@ export type DataHub = {
     conclusiones: Reparto;
     cuadrantes: Reparto;
     competencias: Competencia[];
+    fit: Fit;
   };
   pendientes: Pendiente[];
 };
@@ -196,7 +250,7 @@ function rangoRaven(p: number): string {
 export async function datosDelHub(): Promise<DataHub> {
   let [filas, sumarios, manchas] = await Promise.all([
     select<Fila>('evaluaciones', `select=${CAMPOS}&order=fecha_ingreso.desc`, CACHE_PSICOTECNICOS),
-    select<SumarioFila>('sumario_exner', 'select=evaluacion_id,crudo', CACHE_PSICOTECNICOS),
+    select<SumarioFila>('sumario_exner', 'select=evaluacion_id,crudo,estilo', CACHE_PSICOTECNICOS),
     select<ManchaFila>('rorschach_respuestas', 'select=evaluacion_id,test', CACHE_PSICOTECNICOS),
   ]);
 
@@ -207,6 +261,9 @@ export async function datosDelHub(): Promise<DataHub> {
   const entregadas = filas.filter((f) => f.fecha_entrega);
 
   // ── Por evaluadora ──────────────────────────────────────────────────────
+  const mesesConEntregas = [
+    ...new Set(entregadas.map((f) => (f.fecha_entrega as string).slice(0, 7))),
+  ].sort();
   const nombres = [...new Set(filas.map((f) => f.evaluadoras?.nombre).filter(Boolean))] as string[];
   const evaluadoras: PorEvaluadora[] = nombres
     .map((nombre) => {
@@ -224,7 +281,14 @@ export async function datosDelHub(): Promise<DataHub> {
         enCurso: suyas.length - cerradas.length,
         analisis: { mediana: mediana(analisis), n: analisis.length },
         total: { mediana: mediana(total), n: total.length },
-        conclusiones: contar(suyas, (f) => f.recomendacion),
+        conclusiones: enOrden(
+          contar(suyas, (f) => f.recomendacion).filter((c) => CONCLUSIONES.includes(c.nombre)),
+          CONCLUSIONES
+        ),
+        porMes: mesesConEntregas.map((mes) => ({
+          mes,
+          n: cerradas.filter((f) => (f.fecha_entrega as string).startsWith(mes)).length,
+        })),
         seguimientos: suyas.filter((f) => f.seguimiento_resultado).length,
       };
     })
@@ -339,6 +403,7 @@ export async function datosDelHub(): Promise<DataHub> {
         .map(([nombre, n]) => ({ nombre, n }))
         .sort((a, b) => b.n - a.n),
       competencias: medianasDeCompetencias(filas, sumarios, manchas),
+      fit: fitDe(filas, sumarios, manchas),
     },
     pendientes: pendientesDe(filas),
   };
@@ -357,13 +422,31 @@ function medianasDeCompetencias(
   sumarios: SumarioFila[],
   manchas: ManchaFila[]
 ): Competencia[] {
+  const juntadas = new Map<string, number[]>();
+  for (const puntajes of puntajesPorEvaluacion(filas, sumarios, manchas).values()) {
+    for (const [nombre, puntaje] of puntajes) {
+      juntadas.set(nombre, [...(juntadas.get(nombre) ?? []), puntaje]);
+    }
+  }
+
+  return [...juntadas.entries()]
+    .map(([nombre, xs]) => ({ nombre, mediana: mediana(xs), n: xs.length }))
+    .sort((a, b) => (b.mediana ?? 0) - (a.mediana ?? 0));
+}
+
+/** Los puntajes de competencias de cada evaluación que tiene sumario. */
+function puntajesPorEvaluacion(
+  filas: Fila[],
+  sumarios: SumarioFila[],
+  manchas: ManchaFila[]
+): Map<string, Map<string, number>> {
   const porEvaluacion = new Map(sumarios.map((s) => [s.evaluacion_id, s.crudo]));
   const testDe = new Map<string, string>();
   for (const m of manchas) {
     if (m.test && !testDe.has(m.evaluacion_id)) testDe.set(m.evaluacion_id, m.test);
   }
 
-  const juntadas = new Map<string, number[]>();
+  const salida = new Map<string, Map<string, number>>();
   for (const f of filas) {
     const crudo = porEvaluacion.get(f.id);
     if (!crudo) continue;
@@ -372,15 +455,223 @@ function medianasDeCompetencias(
       testDe.get(f.id) ??
       (f.pedidos?.baterias?.tests ?? []).find((t) => t === 'Rorschach' || t === 'Zulliger') ??
       null;
+    const suyos = new Map<string, number>();
     for (const c of calcularCompetencias(crudo, { ravenPercentil: f.raven?.percentil ?? null }, proyectivo)) {
-      if (c.puntaje === null) continue;
-      juntadas.set(c.nombre, [...(juntadas.get(c.nombre) ?? []), c.puntaje]);
+      if (c.puntaje !== null) suyos.set(c.nombre, c.puntaje);
     }
+    if (suyos.size > 0) salida.set(f.id, suyos);
   }
+  return salida;
+}
 
-  return [...juntadas.entries()]
-    .map(([nombre, xs]) => ({ nombre, mediana: mediana(xs), n: xs.length }))
-    .sort((a, b) => (b.mediana ?? 0) - (a.mediana ?? 0));
+/**
+ * Con menos casos que estos, un grupo no tiene fila en los cruces.
+ *
+ * No sale de ninguna tabla estadística: es el piso debajo del cual la mediana
+ * de un grupo es la descripción de dos o tres personas con nombre y apellido.
+ */
+const MINIMO_POR_GRUPO = 5;
+
+const NIVELES = ['Junior', 'Semi Senior', 'Senior', 'Jefatura', 'Dirección'];
+const COMPETENCIAS = [
+  'Autogestión',
+  'Control emocional',
+  'Habilidad interpersonal',
+  'Proactividad',
+  'Capacidad intelectual',
+  'Liderazgo',
+];
+/** De la que menos condiciones pone a la que más. */
+const CONCLUSIONES = [
+  'Ajuste alto',
+  'Ajuste con aspectos a desarrollar',
+  'Ajuste con alertas',
+  'Ajuste bajo',
+];
+const CUADRANTES = ['FI', 'FD', 'BI', 'BD', 'Más de uno'];
+const ESTILOS = ['Introversivo', 'Ambigual', 'Extratensivo'];
+
+function percentil(xs: number[], p: number): number | null {
+  if (xs.length === 0) return null;
+  const o = [...xs].sort((a, b) => a - b);
+  const i = (o.length - 1) * p;
+  const abajo = Math.floor(i);
+  const v = o[abajo] + (o[Math.min(abajo + 1, o.length - 1)] - o[abajo]) * (i - abajo);
+  return Math.round(v);
+}
+
+function distribucion(nombre: string, valores: number[]): Distribucion {
+  return {
+    nombre,
+    n: valores.length,
+    mediana: mediana(valores),
+    p25: percentil(valores, 0.25),
+    p75: percentil(valores, 0.75),
+    valores: [...valores].sort((a, b) => a - b),
+  };
+}
+
+/** Los grupos en el orden pedido o, sin orden, del más numeroso al menos. */
+function agrupar<T>(casos: T[], grupoDe: (c: T) => string | null | undefined, orden?: string[]) {
+  const grupos = new Map<string, T[]>();
+  for (const c of casos) {
+    const g = grupoDe(c);
+    if (!g) continue;
+    grupos.set(g, [...(grupos.get(g) ?? []), c]);
+  }
+  const lista = [...grupos.entries()].sort((a, b) =>
+    orden ? orden.indexOf(a[0]) - orden.indexOf(b[0]) : b[1].length - a[1].length
+  );
+  return {
+    adentro: lista.filter(([, cs]) => cs.length >= MINIMO_POR_GRUPO),
+    afuera: lista
+      .filter(([, cs]) => cs.length < MINIMO_POR_GRUPO)
+      .map(([nombre, cs]) => ({ nombre, n: cs.length })),
+  };
+}
+
+/** La mediana de cada medida dentro de cada grupo. */
+function cruceDeMedianas<T>(
+  casos: T[],
+  grupoDe: (c: T) => string | null | undefined,
+  columnas: string[],
+  valorDe: (c: T, columna: string) => number | null | undefined,
+  orden?: string[]
+): Cruce {
+  const { adentro, afuera } = agrupar(casos, grupoDe, orden);
+  return {
+    columnas,
+    filas: adentro.map(([nombre, cs]) => ({
+      nombre,
+      n: cs.length,
+      celdas: columnas.map((col) => {
+        const xs = cs.map((c) => valorDe(c, col)).filter((v): v is number => typeof v === 'number');
+        const m = mediana(xs);
+        return { valor: m === null ? null : Math.round(m), n: xs.length };
+      }),
+    })),
+    afuera,
+  };
+}
+
+/** Cuántos de cada grupo caen en cada categoría. */
+function cruceDeCuentas<T>(
+  casos: T[],
+  grupoDe: (c: T) => string | null | undefined,
+  columnas: string[],
+  categoriaDe: (c: T) => string | null | undefined,
+  orden?: string[]
+): Cruce {
+  const conCategoria = casos.filter((c) => columnas.includes(categoriaDe(c) ?? ''));
+  const { adentro, afuera } = agrupar(conCategoria, grupoDe, orden);
+  return {
+    columnas,
+    filas: adentro.map(([nombre, cs]) => ({
+      nombre,
+      n: cs.length,
+      celdas: columnas.map((col) => ({
+        valor: cs.filter((c) => categoriaDe(c) === col).length,
+        n: cs.length,
+      })),
+    })),
+    afuera,
+  };
+}
+
+function enOrden(reparto: Reparto, orden: string[]): Reparto {
+  return [...reparto].sort((a, b) => orden.indexOf(a.nombre) - orden.indexOf(b.nombre));
+}
+
+function fitDe(filas: Fila[], sumarios: SumarioFila[], manchas: ManchaFila[]): Fit {
+  const puntajes = puntajesPorEvaluacion(filas, sumarios, manchas);
+  const estiloDe = new Map(sumarios.map((s) => [s.evaluacion_id, s.estilo]));
+
+  const familia = (f: Fila) => f.pedidos?.familia;
+  const nivel = (f: Fila) => f.pedidos?.seniority;
+  const conclusion = (f: Fila) => f.recomendacion;
+  // Quien tiene dos cuadrantes preferentes no es de ninguno de los dos.
+  const cuadrante = (f: Fila) => {
+    const q = f.benziger?.cuadrante_preferente ?? [];
+    return q.length === 0 ? null : q.length === 1 ? q[0] : 'Más de uno';
+  };
+  const estilo = (f: Fila) => estiloDe.get(f.id);
+  const raven = (f: Fila) => f.raven?.percentil;
+
+  const conPuntajes = filas.filter((f) => puntajes.has(f.id));
+  const puntajeDe = (f: Fila, competencia: string) => puntajes.get(f.id)?.get(competencia);
+  const conRaven = filas.filter((f) => typeof raven(f) === 'number');
+  const porNivel = agrupar(conRaven, nivel, NIVELES);
+
+  return {
+    cobertura: [
+      { pieza: 'Competencias medidas', hechas: conPuntajes.length, de: filas.length },
+      { pieza: 'Raven puntuado', hechas: conRaven.length, de: filas.length },
+      { pieza: 'Benziger leído', hechas: filas.filter(cuadrante).length, de: filas.length },
+      {
+        pieza: 'Las tres juntas',
+        hechas: filas.filter((f) => puntajes.has(f.id) && typeof raven(f) === 'number' && cuadrante(f))
+          .length,
+        de: filas.length,
+      },
+    ],
+    distribuciones: COMPETENCIAS.map((c) =>
+      distribucion(
+        c,
+        conPuntajes.map((f) => puntajeDe(f, c)).filter((v): v is number => typeof v === 'number')
+      )
+    ).filter((d) => d.n > 0),
+    competenciaPorFamilia: cruceDeMedianas(conPuntajes, familia, COMPETENCIAS, puntajeDe),
+    competenciaPorNivel: cruceDeMedianas(conPuntajes, nivel, COMPETENCIAS, puntajeDe, NIVELES),
+    conclusiones: enOrden(
+      contar(filas, conclusion).filter((c) => CONCLUSIONES.includes(c.nombre)),
+      CONCLUSIONES
+    ),
+    conclusionPorFamilia: cruceDeCuentas(filas, familia, CONCLUSIONES, conclusion),
+    conclusionPorNivel: cruceDeCuentas(filas, nivel, CONCLUSIONES, conclusion, NIVELES),
+    ravenPorNivel: porNivel.adentro.map(([nombre, cs]) =>
+      distribucion(
+        nombre,
+        cs.map((f) => raven(f) as number)
+      )
+    ),
+    cuadrantes: enOrden(contar(filas, cuadrante), CUADRANTES),
+    cuadrantePorFamilia: cruceDeCuentas(filas, familia, CUADRANTES, cuadrante),
+    estilos: enOrden(contar(filas, estilo), ESTILOS),
+    estiloPorFamilia: cruceDeCuentas(filas, familia, ESTILOS, estilo),
+    faltantes: [
+      {
+        pieza: 'Contexto del puesto',
+        hechas: filas.filter((f) => f.pedidos?.puesto_problemas).length,
+        de: filas.length,
+        paraQue:
+          'Qué problemas resuelve el puesto, con cuánta presión y con qué jefe. Es contra lo que se compara el perfil.',
+      },
+      {
+        pieza: 'Estrato del puesto',
+        hechas: filas.filter((f) => f.pedidos?.estrato_puesto).length,
+        de: filas.length,
+        paraQue: 'Permite comparar el potencial de la persona con la complejidad del puesto.',
+      },
+      {
+        pieza: 'Si la empresa la tomó',
+        hechas: filas.filter((f) => f.ingreso !== null).length,
+        de: filas.filter((f) => f.fecha_entrega).length,
+        paraQue: 'Dice si el cliente decide en la misma dirección que el informe.',
+      },
+      {
+        pieza: 'Seguimiento a los noventa días',
+        hechas: filas.filter((f) => f.seguimiento_resultado).length,
+        de: filas.filter((f) => f.ingreso === true).length,
+        paraQue: 'Es el único dato que dice si el informe acertó.',
+      },
+      {
+        pieza: 'Fecha de nacimiento',
+        hechas: filas.filter((f) => f.personas?.fecha_nacimiento).length,
+        de: filas.length,
+        paraQue: 'El Raven y el potencial se leen distinto según la edad.',
+      },
+    ],
+  };
 }
 
 /**
