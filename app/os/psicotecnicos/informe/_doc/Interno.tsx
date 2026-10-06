@@ -55,7 +55,12 @@ export function Revisar({ inf }: { inf: Informe }) {
   );
   return (
     <aside className="inf-pendientes inf-revisar">
-      <strong>Revisar antes de firmar:</strong>
+      {/* Plegada, con la cuenta a la vista: el título dice que hay algo para
+          mirar y cuánto, y el detalle se abre cuando se lo va a revisar. */}
+      <details>
+      <summary>
+        <strong>{inf.avisos.length === 1 ? "Advertencia" : "Advertencias"}</strong> ({inf.avisos.length})
+      </summary>
       {tipos.map((t) => (
         <div key={t} className="inf-revisar-grupo">
           <span className="inf-revisar-tipo">{TITULO_DEL_AVISO[t]}</span>
@@ -72,6 +77,7 @@ export function Revisar({ inf }: { inf: Informe }) {
         Se puede sacar una lectura editando su lista, o explicar el punto en la fundamentación. Este
         aviso no se imprime.
       </span>
+      </details>
     </aside>
   );
 }

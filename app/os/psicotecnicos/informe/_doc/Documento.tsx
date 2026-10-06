@@ -1,5 +1,5 @@
 import { bandaDe, bandasDe } from '@/lib/exigencia';
-import { EscalaBandas, IconoNivel, Velocimetro, tono } from './piezas';
+import { EscalaBandas, IconoNivel, RadarCompetencias, Velocimetro, tono } from './piezas';
 import BenzigerLecturas from './BenzigerLecturas';
 import EditarBenziger from './EditarBenziger';
 import { parrafoBenziger, type Informe } from '@/lib/informe';
@@ -218,6 +218,8 @@ export default async function Documento({
                 {inf.protocoloCorto}.
               </p>
             )}
+
+            <RadarCompetencias competencias={inf.competencias} exigencia={inf.exigencia} />
 
             <div className="inf-competencias">
               {inf.competencias.map((c) => {
