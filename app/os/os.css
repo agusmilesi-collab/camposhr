@@ -2145,8 +2145,21 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   color: var(--os-azul);
 }
 
-.os-cubre-abre.abierto .os-cubre-flecha {
+/* Cerrada apunta hacia abajo, que es hacia donde se abre el detalle; abierta,
+   hacia arriba. */
+.os-cubre-flecha {
   transform: rotate(90deg);
+}
+
+.os-cubre-abre.abierto .os-cubre-flecha {
+  transform: rotate(-90deg);
+}
+
+/* Lo que mide "10 candid.": así la flecha no se corre con la cantidad. */
+.os-cubre-cuantos {
+  display: inline-block;
+  min-width: 8ch;
+  text-align: left;
 }
 
 /**
@@ -2189,11 +2202,13 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   height: 15px;
   border-left: 1px solid var(--os-linea);
   border-bottom: 1px solid var(--os-linea);
-  border-bottom-left-radius: 7px;
+  /* En ángulo recto, sin redondear. */
 }
 
-/* El tronco sigue hasta el codo siguiente, y en el último renglón se corta. */
-.os-cubre-lista > li:not(:last-child)::after {
+/* El tronco sigue hasta el codo del candidato siguiente, y se corta cuando ya
+   no hay otro: lo que venga debajo en segundo nivel cuelga de su candidato, no
+   del tronco. */
+.os-cubre-lista > li:has(~ li:not(.os-cubre-sub))::after {
   content: '';
   position: absolute;
   left: 7px;
@@ -2201,6 +2216,20 @@ html[data-os-lateral='compacta'] .os-pie-quien {
   bottom: 0;
   width: 1px;
   background: var(--os-linea);
+}
+
+/* El adicional, un nivel adentro de su candidato, con su propio codo. Si
+   después viene otro candidato, el tronco lo atraviesa entero. */
+.os-cubre-lista > li.os-cubre-sub {
+  padding-left: 48px;
+}
+
+.os-cubre-lista > li.os-cubre-sub::before {
+  left: 31px;
+}
+
+.os-cubre-lista > li.os-cubre-sub:has(~ li:not(.os-cubre-sub))::after {
+  top: 0;
 }
 
 .os-cubre-quien {
@@ -3433,8 +3462,26 @@ button.os-enlace-peligro:hover {
 
 /* Mientras se confirma, la celda es solo de la confirmación: con "Emitir NC"
    al lado no entraban los tres y "Cancelar" salía cortado. */
-.os-tabla-accion:has(.os-quitar-seguro) > :not(.os-quitar-seguro) {
+.os-tabla-accion:has(.os-quitar-seguro) > :not(.os-quitar-seguro),
+.os-accion-fila:has(.os-quitar-seguro) > :not(.os-quitar-seguro) {
   display: none;
+}
+
+/* Los botones de la acción en fila, sin sacar a la celda de la tabla: una
+   celda en `flex` no mide lo que su fila, y con filas de dos renglones la
+   raya de abajo le quedaba más arriba que a las demás. */
+.os-tabla td.os-tabla-accion:has(.os-accion-fila) {
+  display: table-cell;
+  vertical-align: middle;
+  /* Un poco más que las demás celdas: el tacho quedaba pegado al borde. */
+  padding-right: 20px;
+}
+
+.os-accion-fila {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .os-boton.os-quitar-no {
@@ -3578,6 +3625,15 @@ button.os-enlace-peligro:hover {
   border-color: var(--os-linea);
   color: var(--os-tinta-media);
 }
+
+/* El número completo, "00003-00000789", en cifras parejas y un punto más
+   chico: es el dato más largo de la fila y no se puede recortar. */
+.os-tabla-fija td[data-campo='Número'] {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  padding-right: 8px;
+}
+
 
 /* La celda del cobro y la de la acción son botones: no se recortan con puntos
    suspensivos ni se meten debajo de la de al lado. Con menos relleno entran

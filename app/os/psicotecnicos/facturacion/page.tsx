@@ -222,9 +222,9 @@ export default async function Facturacion({
           conRotulo={false}
         />
       )}
-      {ver === 'sin-cobrar' && <Emitidas facturas={vivas} ordenes={ordenes} solo="sin-cobrar" />}
-      {ver === 'cobrado' && <Emitidas facturas={vivas} ordenes={ordenes} solo="cobrado" />}
-      {ver === 'anuladas' && <Anuladas facturas={anuladas} notas={notas} />}
+      {ver === 'sin-cobrar' && <Emitidas facturas={vivas} ordenes={ordenes} solo="sin-cobrar" sinEmisora={soloDe !== null} />}
+      {ver === 'cobrado' && <Emitidas facturas={vivas} ordenes={ordenes} solo="cobrado" sinEmisora={soloDe !== null} />}
+      {ver === 'anuladas' && <Anuladas facturas={anuladas} notas={notas} sinEmisora={soloDe !== null} />}
     </Shell>
   );
 }
