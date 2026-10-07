@@ -11293,24 +11293,6 @@ a.pedir-volver-link {
   background: color-mix(in srgb, #2e8b57 34%, #fff);
 }
 
-/* Quién pidió la búsqueda, a la derecha del título: es un dato de la búsqueda
-   y no del puesto, así que va apartado y en gris. */
-.card-solicitante {
-  margin-left: auto;
-  font-size: 0.78rem;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-/* Quién cargó a ese candidato, debajo del nombre y en gris, cuando no es quien
-   abrió el pedido (ese ya está en el título de la búsqueda). */
-.c-cargado {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: var(--muted);
-}
-
 /* La baja, en la columna de recomendación: gris, porque no hubo informe. */
 .reco-tag.gray {
   color: #5f5d58;
