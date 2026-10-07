@@ -1442,7 +1442,7 @@ botón de enviar no se ofrece. Son cinco correos:
 | --- | --- | --- |
 | Orden de compra | Sola, al cargar candidatos | `lib/correo-orden.ts` |
 | Entrevista agendada | Sola, al quedar en Por entrevistar con día y modalidad | `lib/correo-avisos.ts` |
-| Informe listo | Sola, al entregar, con el enlace al portal | `lib/correo-avisos.ts` |
+| Informe listo | **Apagado** (`AVISA_INFORME`): los informes todavía se entregan por fuera del OS | `lib/correo-avisos.ts` |
 | Factura | **Con el botón del comprobante**, en dos toques | `lib/correo-factura.ts` |
 | Recibo de pago | Solo, al confirmar el cobro | `lib/correo-factura.ts` |
 
