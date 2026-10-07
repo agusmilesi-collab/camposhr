@@ -1,6 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
 import QRCode from 'qrcode';
 import PedirCae from './PedirCae';
+import EnviarFactura from './EnviarFactura';
+import { envioDeFactura } from '@/lib/correo-factura';
 import { SITIO } from '@/lib/orden-compra-tipos';
 import { LOGO_ARCA } from '@/lib/marcas/arca';
 import { verFactura } from '@/lib/facturas';
@@ -61,6 +63,9 @@ export default async function Comprobante({
   // cortó a medio emitir, y pedir el CAE de nuevo es cómo se recupera.
   const seEmite =
     puedeEmitir && !d.conCae && (d.sinNumero || d.estado === 'borrador') && d.estado !== 'anulada' && !d.esNota;
+  // Mandarla por correo, solo desde el OS y solo la que es un comprobante de
+  // verdad: con CAE y sin anular.
+  const envio = puedeEmitir && d.conCae && d.estado !== 'anulada' ? await envioDeFactura(d.id) : null;
   const qr = d.qr
     ? await QRCode.toString(d.qr, { type: 'svg', margin: 0, errorCorrectionLevel: 'M' })
     : null;
@@ -90,6 +95,8 @@ export default async function Comprobante({
           el sistema y no tiene validez fiscal.
         </div>
       )}
+
+      {envio && <EnviarFactura id={d.id} envio={envio} />}
 
       <div className="factura-ch">
         <p className="fc-bajar">

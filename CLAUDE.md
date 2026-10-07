@@ -1432,3 +1432,25 @@ del monotributo.
 puede cambiar; la orden de compra se agrega al final. El adicional va en su
 renglón, "Adicional BTSA, <persona>". En el papel del cliente no figuran ni
 "evaluación psicotécnica" ni la batería ni la fecha de entrega del informe.
+
+## El correo sale por Resend, y en local se desvía
+
+`lib/correo.ts`, con `fetch` y sin SDK. Sin `RESEND_API_KEY` no sale nada y el
+botón de enviar no se ofrece. Son dos avisos:
+
+- **La orden de compra sale sola** al solicitante cuando se cargan candidatos
+  (`lib/correo-orden.ts`). Si esa persona no tiene correo, no se le manda a
+  otro contacto por las dudas.
+- **La factura la manda alguien con el botón del comprobante**
+  (`lib/correo-factura.ts`, acción `enviar`), en dos toques y viendo a quién
+  va: los contactos marcados "Recibe la factura" que tengan correo. Una
+  anulada no se manda.
+
+**La respuesta del cliente cae en la evaluadora** (`evaluadoras.email`): la
+del candidato en la orden, la emisora en la factura. El dominio no recibe
+correo. Las direcciones están en la base y no acá, que el repositorio es
+público.
+
+**`CORREO_SOLO_A` va en `.env.local` y nunca en Vercel.** Desvía todo lo que
+salga a esa dirección. Local usa la misma base que producción: sin eso, cargar
+un candidato de prueba le escribe a un cliente real.

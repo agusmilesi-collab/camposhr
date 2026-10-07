@@ -87,6 +87,11 @@
 .cbte .aviso .pregunta { margin-left: 14px; font-weight: 600; }
 .cbte .aviso .pedir-no { margin-left: 8px; background: transparent; color: #fff; }
 
+/* El envío por correo no es una advertencia: va en el color de los botones. */
+.cbte .aviso.aviso-envio { background: #16202b; }
+.cbte .aviso.aviso-envio .pedir { color: #16202b; }
+.cbte .aviso.aviso-envio .pedir-no { color: #fff; }
+
 .cbte .cabeza {
   display: grid;
   grid-template-columns: 1fr 78px 1fr;
