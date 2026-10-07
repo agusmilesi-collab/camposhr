@@ -54,6 +54,36 @@ export function precioA(precios: Precio[], fecha?: string | null): number | null
   return vigente ? Number(vigente.precio) : null;
 }
 
+/**
+ * La fecha que decide qué precio paga un candidato: el día en que se cargó.
+ *
+ * No la del pedido (decisión de Agustín, 7/10/2026): una búsqueda queda
+ * abierta meses y se le siguen sumando candidatos, y con la fecha del pedido
+ * uno cargado en octubre pagaba el precio de julio. Los que vinieron de
+ * Airtable no guardaron cuándo se cargaron: para esos va el día de la
+ * entrevista, que es lo más cercano, y recién sin entrevista el del pedido.
+ *
+ * La usan la cola de facturación y la orden de compra, así los dos papeles
+ * dicen el mismo importe.
+ */
+export function fechaDePrecio(c: {
+  fechaIngreso: string | null | undefined;
+  fechaEntrevista: string | null | undefined;
+  fechaPedido: string | null | undefined;
+}): string | null {
+  if (c.fechaIngreso) return c.fechaIngreso.slice(0, 10);
+  if (c.fechaEntrevista) {
+    // La entrevista tiene hora: el día es el de Argentina, no el de UTC.
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Argentina/Cordoba',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(c.fechaEntrevista));
+  }
+  return c.fechaPedido ? c.fechaPedido.slice(0, 10) : null;
+}
+
 /** El próximo aumento ya cargado, si hay uno con fecha futura. */
 export function proximo(precios: Precio[]): Precio | null {
   const hoy = new Date().toISOString().slice(0, 10);
