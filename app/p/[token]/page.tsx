@@ -67,6 +67,9 @@ const RECOMENDACIONES: Record<
 };
 
 const TZ = 'America/Argentina/Buenos_Aires';
+
+/** Los estados de un pedido que ya no espera candidatos. */
+const CERRADOS = new Set(['Finalizado', 'Cancelado']);
 const SOLO_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -344,7 +347,13 @@ export default async function Portal({ params }: { params: { token: string } }) 
         (c) => !yaEntregada(c.estado) && c.evaluadora && !c.baja
       ),
     }))
-    .filter((b, i) => b.candidatos.length > 0 || busquedas[i].candidatos.length === 0)
+    // Un pedido sin candidatos se muestra mientras espera al primero, pero no
+    // si ya se cerró o se canceló: ahí no está en curso.
+    .filter(
+      (b, i) =>
+        b.candidatos.length > 0 ||
+        (busquedas[i].candidatos.length === 0 && !CERRADOS.has(busquedas[i].estado))
+    )
     .sort(
       (a, b) => etapaDe(a) - etapaDe(b) || (b.fecha ?? '').localeCompare(a.fecha ?? '')
     );
