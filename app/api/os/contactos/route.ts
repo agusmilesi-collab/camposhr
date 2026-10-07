@@ -88,15 +88,23 @@ export async function POST(req: Request) {
     telefono: texto('telefono'),
     pide: Boolean(datos.pide),
     facturacion: Boolean(datos.facturacion),
+    recibe_orden: Boolean(datos.recibeOrden),
+    recibe_entrevista: Boolean(datos.recibeEntrevista),
+    recibe_informe: Boolean(datos.recibeInforme),
+    recibe_todo: Boolean(datos.recibeTodo),
   };
 
-  // Ni pide ni factura es un contacto que no hace nada: no se guarda así.
-  if (!fila.pide && !fila.facturacion) {
+  // Ni pide ni recibe nada es un contacto que no hace nada: no se guarda así.
+  const recibeAlgo = fila.facturacion || fila.recibe_orden || fila.recibe_entrevista || fila.recibe_informe;
+  if (!fila.pide && !recibeAlgo) {
     return NextResponse.json(
-      { error: 'Marcá si pide evaluaciones, si recibe la factura, o las dos.' },
+      { error: 'Marcá si pide evaluaciones o qué correos recibe.' },
       { status: 400 }
     );
   }
+  // Quien no pide nada solo puede recibir lo de los demás: sin esa marca
+  // quedaría tildado para recibir y no le llegaría nunca nada.
+  if (!fila.pide && recibeAlgo) fila.recibe_todo = true;
 
   const res = id
     ? await fetch(`${url}/rest/v1/contactos?id=eq.${encodeURIComponent(id)}`, {

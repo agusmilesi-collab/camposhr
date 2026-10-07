@@ -2,15 +2,15 @@
  * La orden de compra, por correo, a quien la pidió.
  *
  * Sale sola cuando se cargan candidatos, del portal o del OS: es el mismo
- * contenido que la pantalla de confirmación, con el PDF adjunto. Va a quien
- * figura como solicitante de la orden y, si la orden no lo tiene, al del
- * pedido. **Si esa persona no tiene correo cargado, no sale nada**: no se le
- * manda a otro contacto de la empresa por las dudas.
+ * contenido que la pantalla de confirmación, con el PDF adjunto. A quién va lo
+ * decide la ficha del cliente (`lib/correo-destinos.ts`): a quien la pidió, con
+ * copia a los contactos que reciben todo lo de la empresa.
  */
 
 import 'server-only';
 import { patch, select } from '@/lib/supabase';
 import { direcciones, enviarCorreo, escapar, type Envio } from '@/lib/correo';
+import { destinosDe } from '@/lib/correo-destinos';
 import { archivoDeOrden, pdfDeOrden } from '@/lib/orden-pdf';
 import {
   CONDICIONES,
@@ -23,16 +23,14 @@ import {
 
 const PORTAL = 'https://clientes.camposhr.com';
 
-type Quien = { nombre: string; email: string | null } | null;
-
-async function aQuien(ordenId: string): Promise<Quien> {
-  const [o] = await select<{ solicitante: Quien; pedidos: { solicitante: Quien } | null }>(
-    'ordenes_compra',
-    'select=solicitante:contactos!solicitante_id(nombre,email),' +
-      'pedidos(solicitante:contactos!solicitante_id(nombre,email))' +
-      `&id=eq.${ordenId}&limit=1`
-  );
-  return o?.solicitante ?? o?.pedidos?.solicitante ?? null;
+async function aQuien(ordenId: string) {
+  const [o] = await select<{
+    empresa_id: string;
+    solicitante_id: string | null;
+    pedidos: { solicitante_id: string | null } | null;
+  }>('ordenes_compra', `select=empresa_id,solicitante_id,pedidos(solicitante_id)&id=eq.${ordenId}&limit=1`);
+  if (!o) return null;
+  return destinosDe('orden', o.empresa_id, [o.solicitante_id ?? o.pedidos?.solicitante_id]);
 }
 
 /**
@@ -54,7 +52,7 @@ async function quienResponde(ordenId: string): Promise<string[]> {
   return suyas.length > 0 ? suyas : direcciones(todas.map((e) => e.email));
 }
 
-function cuerpo(orden: Orden, nombre: string) {
+function cuerpo(orden: Orden, nombre: string | null) {
   const personas = [...new Set(orden.filas.map((f) => f.detalle).filter(Boolean))];
   const cuantas = personas.length === 1 ? '1 candidato' : `${personas.length} candidatos`;
   const titulo = `Orden de compra #${orden.numero}`;
@@ -66,7 +64,7 @@ function cuerpo(orden: Orden, nombre: string) {
   const importe = (n: number | null) => (n === null ? 'A confirmar' : pesosDeOrden(n));
 
   const texto = [
-    `Hola ${nombre}:`,
+    nombre ? `Hola ${nombre}:` : 'Hola:',
     '',
     entrada,
     '',
@@ -92,7 +90,7 @@ function cuerpo(orden: Orden, nombre: string) {
 <div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:Helvetica,Arial,sans-serif;color:#16202b;">
   <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;margin-bottom:24px;">Campos HR</div>
   <div style="background:#ffffff;padding:28px 28px 24px;">
-    <p style="font-size:15px;line-height:1.5;margin:0 0 12px;">Hola ${escapar(nombre)}:</p>
+    <p style="font-size:15px;line-height:1.5;margin:0 0 12px;">${nombre ? `Hola ${escapar(nombre)}:` : 'Hola:'}</p>
     <p style="font-size:15px;line-height:1.5;margin:0;">${escapar(entrada)}</p>
     <p style="${rotulo}">${escapar(titulo)}</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -138,11 +136,12 @@ export async function avisarOrden(orden: Orden | null): Promise<Envio | null> {
   if (!orden?.numero) return null;
   try {
     const quien = await aQuien(orden.id);
-    if (!quien?.email) return { ok: false, motivo: 'sin destinatario' };
+    if (!quien || quien.para.length === 0) return { ok: false, motivo: 'sin destinatario' };
 
     const envio = await enviarCorreo({
-      para: [quien.email],
-      ...cuerpo(orden, quien.nombre.trim().split(/\s+/)[0]),
+      para: quien.para,
+      copia: quien.copia,
+      ...cuerpo(orden, quien.nombre),
       adjuntos: [{ nombre: archivoDeOrden(orden), bytes: await pdfDeOrden(orden) }],
       responderA: await quienResponde(orden.id).catch(() => []),
       clave: `orden-${orden.id}`,

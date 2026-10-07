@@ -11,13 +11,17 @@
  * evaluación desde el portal recibe la confirmación de su solicitud, así que un
  * contacto sin mail queda marcado, sin bloquear nada.
  *
- * Se edita en la misma fila y no en un cajón: son cuatro datos y dos marcas, y
+ * **Qué correos recibe cada uno se tilda acá** (orden de compra, entrevista
+ * agendada, informe listo, factura con su recibo), y si recibe solo lo que pidió
+ * él o también lo de los demás. La regla está en `lib/correo-destinos.ts`.
+ *
+ * Se edita en la misma fila y no en un cajón: son cuatro datos y unas marcas, y
  * abrir una ventana para cambiar un teléfono es más trabajo que el cambio.
  */
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import type { Contacto } from '@/lib/contactos-tipos';
+import { AVISOS, type Contacto } from '@/lib/contactos-tipos';
 import Whatsapp from '../../psicotecnicos/Whatsapp';
 
 /** Una fila en edición, o la que se está dando de alta. */
@@ -29,6 +33,10 @@ type Borrador = {
   telefono: string;
   pide: boolean;
   facturacion: boolean;
+  recibeOrden: boolean;
+  recibeEntrevista: boolean;
+  recibeInforme: boolean;
+  recibeTodo: boolean;
 };
 
 const VACIO: Borrador = {
@@ -37,8 +45,14 @@ const VACIO: Borrador = {
   cargo: '',
   email: '',
   telefono: '',
+  // Quien pide un candidato recibe sus avisos y su factura. Lo que cambia de
+  // un cliente a otro se destilda acá.
   pide: true,
-  facturacion: false,
+  facturacion: true,
+  recibeOrden: true,
+  recibeEntrevista: true,
+  recibeInforme: true,
+  recibeTodo: false,
 };
 
 function desde(c: Contacto): Borrador {
@@ -50,6 +64,10 @@ function desde(c: Contacto): Borrador {
     telefono: c.telefono ?? '',
     pide: c.pide,
     facturacion: c.facturacion,
+    recibeOrden: c.recibeOrden,
+    recibeEntrevista: c.recibeEntrevista,
+    recibeInforme: c.recibeInforme,
+    recibeTodo: c.recibeTodo,
   };
 }
 
@@ -137,13 +155,33 @@ export default function Contactos({
             />
             Pide evaluaciones
           </label>
+        </div>
+
+        {/* Qué correos le llegan. Cada cliente lo reparte distinto: compras
+            recibe solo las facturas, recursos humanos pide y se entera. */}
+        <div className="os-contacto-marcas">
+          <span className="os-contacto-rotulo">Recibe por correo</span>
+          {AVISOS.map((a) => (
+            <label className="os-contacto-marca" key={a.campo}>
+              <input
+                type="checkbox"
+                checked={b[a.campo]}
+                onChange={(e) => setBorrador({ ...b, [a.campo]: e.target.checked })}
+              />
+              {a.texto}
+            </label>
+          ))}
+        </div>
+        <div className="os-contacto-marcas">
+          {/* Quien no pide nada solo puede recibir lo de los demás. */}
           <label className="os-contacto-marca">
             <input
               type="checkbox"
-              checked={b.facturacion}
-              onChange={(e) => setBorrador({ ...b, facturacion: e.target.checked })}
+              checked={b.recibeTodo || !b.pide}
+              disabled={!b.pide}
+              onChange={(e) => setBorrador({ ...b, recibeTodo: e.target.checked })}
             />
-            Recibe la factura
+            También lo de los candidatos que piden otros de la empresa
           </label>
         </div>
 
@@ -221,16 +259,24 @@ export default function Contactos({
                   <span className="os-oculto">{c.pide ? '' : 'No '}</span>
                   Solicita
                 </span>
-                <span className="os-contacto-chequeo">
-                  <span
-                    className={`os-chequeo-caja${c.facturacion ? ' si' : ''}`}
-                    aria-hidden="true"
-                  >
-                    {c.facturacion ? '✓' : ''}
+                {/* Qué correos le llegan, un tilde por cada uno, y si recibe
+                    también lo que piden los demás de su empresa. */}
+                {[
+                  ...AVISOS.map((a) => ({ si: c[a.campo], texto: a.fila, titulo: `Recibe por correo: ${a.texto}` })),
+                  {
+                    si: c.recibeTodo,
+                    texto: 'De todos',
+                    titulo: 'Recibe también lo de los candidatos que piden otros de la empresa',
+                  },
+                ].map((m) => (
+                  <span className="os-contacto-chequeo" key={m.texto} title={m.titulo}>
+                    <span className={`os-chequeo-caja${m.si ? ' si' : ''}`} aria-hidden="true">
+                      {m.si ? '✓' : ''}
+                    </span>
+                    <span className="os-oculto">{m.si ? '' : 'No '}</span>
+                    {m.texto}
                   </span>
-                  <span className="os-oculto">{c.facturacion ? '' : 'No '}</span>
-                  Recibe factura
-                </span>
+                ))}
               </span>
 
               <div className="os-contacto-acciones">
