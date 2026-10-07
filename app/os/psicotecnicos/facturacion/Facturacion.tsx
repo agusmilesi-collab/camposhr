@@ -1224,10 +1224,12 @@ export function BorrarFactura({ id, numero }: { id: string; numero: string }) {
           setError(null);
           try {
             await mandar({ accion: 'borrar', id });
+            // Sigue diciendo "Quitando…" hasta que la lista se vuelve a
+            // dibujar sin esta fila: si el botón volvía a su estado normal
+            // antes, parecía que no había pasado nada.
             router.refresh();
           } catch (e) {
             setError(e instanceof Error ? e.message : 'No se pudo quitar.');
-          } finally {
             setBorrando(false);
           }
         }}
