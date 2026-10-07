@@ -3462,8 +3462,11 @@ button.os-enlace-peligro:hover {
 
 /* Mientras se confirma, la celda es solo de la confirmación: con "Emitir NC"
    al lado no entraban los tres y "Cancelar" salía cortado. */
-.os-tabla-accion:has(.os-quitar-seguro) > :not(.os-quitar-seguro),
-.os-accion-fila:has(.os-quitar-seguro) > :not(.os-quitar-seguro) {
+/* Con `>`: la confirmación tiene que ser hija directa. Sin él, en la tabla de
+   facturas la regla de la celda escondía el envoltorio entero, con la
+   confirmación adentro, y al tocar el tacho desaparecía todo. */
+.os-tabla-accion:has(> .os-quitar-seguro) > :not(.os-quitar-seguro),
+.os-accion-fila:has(> .os-quitar-seguro) > :not(.os-quitar-seguro) {
   display: none;
 }
 
