@@ -100,16 +100,14 @@ export async function avisarSiCorresponde(evaluacionId: string): Promise<void> {
           `La entrevista de ${persona} para el puesto ${puesto} ` +
           `${otraVez ? 'se reprogramó' : 'quedó agendada'} para el ${cuando(e.fecha_entrevista)}, ` +
           `modalidad ${e.modalidad.toLowerCase()}.`;
-        const sigue = 'Cuando el informe esté en tu portal te llega otro correo.';
         const envio = await enviarCorreo({
           para: d.para,
           copia: d.copia,
           asunto: `Entrevista ${otraVez ? 'reprogramada' : 'agendada'}: ${persona} · ${puesto}`,
-          texto: [saludo, '', frase, '', sigue, '', 'Campos HR · www.camposhr.com'].join('\n'),
+          texto: [saludo, '', frase, '', 'Campos HR · www.camposhr.com'].join('\n'),
           html: hoja(
             `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n` +
-              `    <p style="${PARRAFO}">${escapar(frase)}</p>\n` +
-              `    <p style="${PARRAFO}margin:0;color:#7a756b;">${escapar(sigue)}</p>`
+              `    <p style="${PARRAFO}margin:0;">${escapar(frase)}</p>`
           ),
           responderA,
           clave: `entrevista-${e.id}-${new Date(e.fecha_entrevista).getTime()}`,
