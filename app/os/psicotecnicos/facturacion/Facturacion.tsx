@@ -93,13 +93,15 @@ const ANCHOS_EMITIDAS: Record<string, number> = {
   /* Solo el nombre; el ancho lo pide el rótulo "Emisora". */
   Emisora: 88,
   /* "10 candid." con la flecha al lado. */
-  Cubre: 124,
+  Cubre: 118,
   /* Con "$" y no "ARS": "$ 1.484.460". */
   Importe: 112,
   /* "Marcar cobro", o la fecha con el botón del recibo al lado. */
   Cobro: 134,
   /* "Emitir NC" y el ícono de quitar. */
-  '': 128,
+  /* Medido: 113 de los dos botones más el relleno de la celda. Con menos,
+     el tacho quedaba contra el borde y asomaban puntos suspensivos. */
+  '': 144,
 };
 
 
@@ -1211,7 +1213,7 @@ export function BorrarFactura({ id, numero }: { id: string; numero: string }) {
         disabled={borrando}
         onClick={() => setSeguro(false)}
       >
-        Cancelar
+        No
       </button>
       <button
         className="os-boton os-boton-menudo os-boton-peligro"
