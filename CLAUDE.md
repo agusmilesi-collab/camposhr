@@ -1436,21 +1436,38 @@ renglón, "Adicional BTSA, <persona>". En el papel del cliente no figuran ni
 ## El correo sale por Resend, y en local se desvía
 
 `lib/correo.ts`, con `fetch` y sin SDK. Sin `RESEND_API_KEY` no sale nada y el
-botón de enviar no se ofrece. Son dos avisos:
+botón de enviar no se ofrece. Son cinco correos:
 
-- **La orden de compra sale sola** al solicitante cuando se cargan candidatos
-  (`lib/correo-orden.ts`). Si esa persona no tiene correo, no se le manda a
-  otro contacto por las dudas.
-- **La factura la manda alguien con el botón del comprobante**
-  (`lib/correo-factura.ts`, acción `enviar`), en dos toques y viendo a quién
-  va: los contactos marcados "Recibe la factura" que tengan correo. Una
-  anulada no se manda.
+| Correo | Cuándo | Dónde |
+| --- | --- | --- |
+| Orden de compra | Sola, al cargar candidatos | `lib/correo-orden.ts` |
+| Entrevista agendada | Sola, al quedar en Por entrevistar con día y modalidad | `lib/correo-avisos.ts` |
+| Informe listo | Sola, al entregar, con el enlace al portal | `lib/correo-avisos.ts` |
+| Factura | **Con el botón del comprobante**, en dos toques | `lib/correo-factura.ts` |
+| Recibo de pago | Solo, al confirmar el cobro | `lib/correo-factura.ts` |
+
+**A quién va cada uno lo decide la ficha del cliente, contacto por contacto**
+(`lib/correo-destinos.ts`). Cada contacto tilda qué recibe y si recibe solo lo
+de los candidatos que pidió él o también lo de los demás de su empresa
+(`recibe_todo`). Va a quien pidió y el resto en copia. Así compras recibe todas
+las facturas sin pedir nada, y recursos humanos pide y se entera sin recibir
+facturas. Quien no recibe ese aviso, o no tiene correo, no lo recibe: no se le
+manda a otro por las dudas.
+
+**Cada aviso sale una vez.** Lo guardan `evaluaciones.aviso_entrevista_fecha`
+(para qué fecha se avisó: si cambia, sale de nuevo y dice "se reprogramó"),
+`evaluaciones.aviso_informe_at` y `facturas.recibo_enviado_at`. Los de la
+evaluación miran cómo quedó después de guardar y no qué se tocó, así que da lo
+mismo agendar con el botón, arrastrando o desde la ficha, y llevar la tarjeta
+ida y vuelta no manda nada. Para volver a probar uno hay que vaciar esa columna.
+
+**La factura no sale sola** porque una mandada a quien no era no se retira. Una
+anulada no se manda.
 
 **La respuesta del cliente cae en la evaluadora** (`evaluadoras.email`): la
-del candidato en la orden, la emisora en la factura. El dominio no recibe
-correo. Las direcciones están en la base y no acá, que el repositorio es
-público.
+del candidato, o la que emitió la factura. El dominio no recibe correo. Las
+direcciones están en la base y no acá, que el repositorio es público.
 
 **`CORREO_SOLO_A` va en `.env.local` y nunca en Vercel.** Desvía todo lo que
-salga a esa dirección. Local usa la misma base que producción: sin eso, cargar
-un candidato de prueba le escribe a un cliente real.
+salga a esa dirección. Local usa la misma base que producción: sin eso, agendar
+una entrevista de prueba le escribe a un cliente real.

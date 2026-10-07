@@ -1,13 +1,16 @@
 /**
- * La factura, por correo, a quien la paga.
+ * La factura y el recibo de pago, por correo.
  *
- * **No sale sola: la manda alguien con un botón** (decisión de Agustín,
- * 7/10/2026). Una factura mandada a una dirección equivocada no se puede
- * retirar, así que antes de mandarla hay que ver a quién va.
+ * **La factura no sale sola: la manda alguien con un botón** (decisión de
+ * Agustín, 7/10/2026). Una factura mandada a una dirección equivocada no se
+ * puede retirar, así que antes de mandarla hay que ver a quién va.
  *
- * Va a los contactos del cliente marcados "Recibe la factura" que tengan
- * correo, más el correo de facturación de la empresa si está cargado. La
- * respuesta le cae a la evaluadora que la emitió.
+ * **El recibo de pago sí sale solo**, al confirmar el cobro, a los mismos que
+ * la factura: ya se vio a quién iba cuando se la mandó.
+ *
+ * A quién van lo decide la ficha del cliente (`lib/correo-destinos.ts`): a
+ * quien pidió esos candidatos, si recibe facturas, y a los que reciben las de
+ * toda la empresa, como compras. La respuesta le cae a la evaluadora que emitió.
  */
 
 import 'server-only';
@@ -16,9 +19,12 @@ import { direcciones, enviarCorreo, escapar, hayCorreo } from '@/lib/correo';
 import { datosDeFactura, type DatosFactura } from '@/lib/factura-datos';
 import { pdfParaBajar } from '@/lib/factura-archivo';
 import { pesosDeOrden } from '@/lib/orden-compra-tipos';
+import { formaDelRecibo, reciboDePago } from '@/lib/orden-compra';
+import { archivoDeOrden, pdfDeOrden } from '@/lib/orden-pdf';
+import { PARRAFO, destinosDe, hoja, type Destinos } from '@/lib/correo-destinos';
 
 export type EnvioDeFactura = {
-  /** A quién va si se manda ahora. Vacío es que no hay a quién. */
+  /** A quién va si se manda ahora, con los que van en copia. Vacío es que no hay a quién. */
   para: string[];
   /** Cuándo salió la última vez, y a quién. */
   enviadaAt: string | null;
@@ -32,24 +38,33 @@ type Fila = {
   estado: string;
   enviada_at: string | null;
   enviada_a: string[] | null;
+  recibo_enviado_at: string | null;
   empresas: { email_facturacion: string | null } | null;
   emisores: { evaluadoras: { email: string | null } | null } | null;
+  factura_items: {
+    evaluaciones: { solicitante_id: string | null; pedidos: { solicitante_id: string | null } | null } | null;
+  }[];
 };
 
-async function leer(id: string) {
+async function leer(id: string): Promise<{ f: Fila; destinos: Destinos } | null> {
   const [f] = await select<Fila>(
     'facturas',
-    'select=empresa_id,estado,enviada_at,enviada_a,empresas(email_facturacion),' +
-      `emisores(evaluadoras(email))&id=eq.${id}&limit=1`
+    'select=empresa_id,estado,enviada_at,enviada_a,recibo_enviado_at,empresas(email_facturacion),' +
+      'emisores(evaluadoras(email)),factura_items(evaluaciones(solicitante_id,pedidos(solicitante_id)))' +
+      `&id=eq.${id}&limit=1`
   );
   if (!f) return null;
-  const contactos = f.empresa_id
-    ? await select<{ nombre: string; email: string | null }>(
-        'contactos',
-        `select=nombre,email&empresa_id=eq.${f.empresa_id}&facturacion=is.true&activo=is.true&order=nombre.asc`
-      )
-    : [];
-  return { f, contactos };
+  const pidieron = f.factura_items.map(
+    (i) => i.evaluaciones?.solicitante_id ?? i.evaluaciones?.pedidos?.solicitante_id
+  );
+  const d = await destinosDe('factura', f.empresa_id, pidieron);
+  // El correo de facturación de la empresa, si está cargado, va siempre.
+  const fijo = direcciones([f.empresas?.email_facturacion]).filter((x) => !d.para.includes(x));
+  const destinos =
+    d.para.length === 0
+      ? { ...d, para: fijo }
+      : { ...d, copia: [...new Set([...d.copia, ...fijo])] };
+  return { f, destinos };
 }
 
 /** Lo que la pantalla necesita para ofrecer el botón y decir a quién va. */
@@ -57,7 +72,7 @@ export async function envioDeFactura(id: string): Promise<EnvioDeFactura | null>
   const d = await leer(id);
   if (!d) return null;
   return {
-    para: direcciones([...d.contactos.map((c) => c.email), d.f.empresas?.email_facturacion]),
+    para: [...d.destinos.para, ...d.destinos.copia],
     enviadaAt: d.f.enviada_at,
     enviadaA: d.f.enviada_a ?? [],
     prendido: hayCorreo(),
@@ -141,27 +156,21 @@ export async function enviarFactura(id: string): Promise<ResultadoDeEnvio> {
   }
   if (!hayCorreo()) return { ok: false, error: 'El envío de correo no está configurado en este ambiente.' };
 
-  const para = direcciones([
-    ...datos.contactos.map((c) => c.email),
-    datos.f.empresas?.email_facturacion,
-  ]);
+  const { para, copia, nombre } = datos.destinos;
   if (para.length === 0) {
     return {
       ok: false,
       error:
-        'El cliente no tiene a quién mandársela: cargale el correo a un contacto marcado "Recibe la factura" en su ficha.',
+        'No hay a quién mandársela: en la ficha del cliente, tildale "Factura y recibo de pago" a un contacto con correo.',
     };
   }
 
   const pdf = await pdfParaBajar(id);
   if (!pdf) return { ok: false, error: 'No se pudo armar el PDF de la factura.' };
 
-  // Con un solo contacto se lo saluda por el nombre; con varios, a ninguno.
-  const conCorreo = datos.contactos.filter((c) => c.email);
-  const nombre = conCorreo.length === 1 ? conCorreo[0].nombre.trim().split(/\s+/)[0] : null;
-
   const envio = await enviarCorreo({
     para,
+    copia,
     ...cuerpo(d, nombre),
     adjuntos: [{ nombre: pdf.nombre, bytes: pdf.bytes }],
     responderA: [datos.f.emisores?.evaluadoras?.email ?? ''],
@@ -177,4 +186,48 @@ export async function enviarFactura(id: string): Promise<ResultadoDeEnvio> {
     enviada_a: envio.a,
   }).catch((e) => console.error('[correo de factura] salió y no se pudo anotar', e));
   return { ok: true, a: envio.a };
+}
+
+/**
+ * Manda el recibo de pago, una sola vez, al confirmar el cobro.
+ *
+ * No tira: el cobro ya quedó marcado cuando esto corre. Desmarcar y volver a
+ * marcar no lo manda de nuevo.
+ */
+export async function avisarRecibo(id: string): Promise<void> {
+  try {
+    if (!hayCorreo()) return;
+    const [datos, recibo] = await Promise.all([leer(id), reciboDePago(id)]);
+    if (!datos || !recibo || datos.f.recibo_enviado_at) return;
+    const { para, copia, nombre } = datos.destinos;
+    if (para.length === 0) return;
+
+    const { papel, pagadoEl, comprobante, formaPago } = recibo;
+    const forma = formaDelRecibo(papel, pagadoEl, comprobante, formaPago);
+    const titulo = `Recibo de pago${papel.numero ? ` #${papel.numero}` : ''}`;
+    const entrada =
+      `Registramos el pago de ${pesosDeOrden(papel.total)}` +
+      // Contra qué se pagó: la factura y, detrás, sus órdenes de compra.
+      (comprobante ? `, correspondiente a ${/^Órdenes/.test(comprobante) ? 'las' : 'la'} ${comprobante}` : '') +
+      '. El recibo va adjunto en PDF.';
+    const saludo = nombre ? `Hola ${nombre}:` : 'Hola:';
+
+    const envio = await enviarCorreo({
+      para,
+      copia,
+      asunto: `${titulo} · Campos HR`,
+      texto: [saludo, '', entrada, '', 'Campos HR · www.camposhr.com'].join('\n'),
+      html: hoja(
+        `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n    <p style="${PARRAFO}margin:0;">${escapar(entrada)}</p>`
+      ),
+      adjuntos: [{ nombre: archivoDeOrden(papel, forma.archivo), bytes: await pdfDeOrden(papel, forma) }],
+      responderA: [datos.f.emisores?.evaluadoras?.email ?? ''],
+      clave: `recibo-${id}`,
+    });
+    if (envio.ok) {
+      await patch('facturas', `id=eq.${id}`, { recibo_enviado_at: new Date().toISOString() });
+    }
+  } catch (e) {
+    console.error('[correo de recibo]', e);
+  }
 }

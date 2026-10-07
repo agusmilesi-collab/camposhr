@@ -10,7 +10,7 @@ import { conceptoDe, conceptoPorDefecto, totalDe } from '@/lib/facturas-tipos';
 import { CATEGORIAS_SERVICIOS } from '@/lib/monotributo';
 import { anularConNotaDeCredito, emitirEnArca, probarConexion } from '@/lib/arca/emitir';
 import { guardarPdfDeFactura } from '@/lib/factura-archivo';
-import { enviarFactura } from '@/lib/correo-factura';
+import { avisarRecibo, enviarFactura } from '@/lib/correo-factura';
 import { enumerar, faltaParaEmitir, faltaParaFacturarle } from '@/lib/clientes-tipos';
 
 export const runtime = 'nodejs';
@@ -401,6 +401,9 @@ export async function POST(req: Request) {
             pagado: cobradaAt !== null,
           });
         }
+        // El recibo de pago le llega por correo a quien recibió la factura.
+        // Una sola vez, y no tira.
+        if (cobradaAt !== null) await avisarRecibo(id);
         await anotarAcceso({
           quien: yo.nombre,
           accion: 'escritura',

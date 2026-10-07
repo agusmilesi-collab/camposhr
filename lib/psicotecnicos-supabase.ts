@@ -22,6 +22,7 @@ import {
 } from '@/lib/psicotecnicos-tipos';
 import { siEstaTodoTomado } from '@/lib/entrevista-completa';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
+import { avisarSiCorresponde } from '@/lib/correo-avisos';
 import { llevaBenziger } from '@/lib/benziger';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -296,5 +297,11 @@ export async function guardarCampos(
   // la búsqueda terminó. Va después de escribir: mira cómo quedó, no cómo
   // estaba.
   if ('estado' in fila) await ajustarPedidoDe(id);
+
+  // Agendar la entrevista o entregar el informe le avisa por correo a quien
+  // pidió el candidato. Mira cómo quedó la evaluación, sale una vez y no tira.
+  if ('estado' in fila || 'fecha_entrevista' in fila || 'modalidad' in fila) {
+    await avisarSiCorresponde(id);
+  }
   return { ok: true };
 }

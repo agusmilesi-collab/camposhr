@@ -12,7 +12,9 @@ import type { Contacto } from '@/lib/contactos-tipos';
 export async function contactosDe(empresaId: string): Promise<Contacto[]> {
   return select<Contacto>(
     'contactos',
-    `select=id,nombre,cargo,email,telefono,pide,facturacion,activo` +
+    // Los nombres de la base, con el alias que usa la aplicación.
+    `select=id,nombre,cargo,email,telefono,pide,facturacion,activo,` +
+      `recibeOrden:recibe_orden,recibeEntrevista:recibe_entrevista,recibeInforme:recibe_informe,recibeTodo:recibe_todo` +
       `&empresa_id=eq.${encodeURIComponent(empresaId)}&activo=is.true&order=nombre.asc`,
     CACHE_CLIENTES
   ).catch(() => []);

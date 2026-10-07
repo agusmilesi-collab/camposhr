@@ -18137,3 +18137,15 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   font-size: 0.6rem !important;
   line-height: 1.4 !important;
 }
+
+/* El rótulo de las marcas de un contacto: "Recibe por correo". */
+.os-contacto-rotulo {
+  font-size: 0.82rem;
+  color: var(--os-tinta-media);
+}
+
+/* Con seis tildes en la fila del contacto, van más juntos y el nombre, el
+   cargo y el mail ceden ancho antes que ellos. */
+.os-contacto-fila .os-contacto-roles {
+  gap: 10px;
+}
