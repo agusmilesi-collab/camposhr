@@ -20,6 +20,17 @@ import { enviarCorreo, escapar, hayCorreo } from '@/lib/correo';
 import { BOTON, PARRAFO, destinosDe, hoja } from '@/lib/correo-destinos';
 
 const PORTAL = 'https://clientes.camposhr.com';
+
+/**
+ * El aviso de informe listo está apagado (Agustín, 7/10/2026).
+ *
+ * Los informes todavía se hacen por fuera del OS y se mandan a mano; el portal
+ * dice "próximamente" donde iría el informe. Avisar con un enlace ahí sería
+ * mandar al cliente a una página vacía. Se prende el día que los informes del
+ * OS sean los que se entregan. Mientras tanto no se anota nada como avisado:
+ * al prenderlo hay que marcar antes lo ya entregado, o salen todos juntos.
+ */
+const AVISA_INFORME: boolean = false;
 const ZONA = 'America/Argentina/Cordoba';
 
 type Fila = {
@@ -112,7 +123,12 @@ export async function avisarSiCorresponde(evaluacionId: string): Promise<void> {
     // El informe: entregado, que es cuando aparece en el portal, y sin haberlo
     // avisado. Sin portal no hay a dónde mandar a leerlo y no se avisa.
     const token = e.pedidos.empresas?.token_portal;
-    if ((e.estado === 'Entregado' || e.estado === 'Seguimiento') && !e.aviso_informe_at && token) {
+    if (
+      AVISA_INFORME &&
+      (e.estado === 'Entregado' || e.estado === 'Seguimiento') &&
+      !e.aviso_informe_at &&
+      token
+    ) {
       const d = await destinosDe('informe', e.pedidos.empresa_id, pidio);
       if (d.para.length > 0) {
         const enlace = `${PORTAL}/${token}/evaluacion/${e.id}`;
