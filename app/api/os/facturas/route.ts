@@ -631,7 +631,9 @@ export async function POST(req: Request) {
         // evaluadora con una factura emitida que el sistema ya no conoce. Se
         // anula con una nota de crédito. Las de homologación sí se quitan: su
         // CAE no vale.
-        const f = await leerFactura(id);
+        // Las dos lecturas juntas: cada ida a la base son unos 250 ms, y de a
+        // una el botón tardaba varios segundos en contestar.
+        const [f, ids] = await Promise.all([leerFactura(id), evaluacionesDe(id)]);
         // Sin poder leerla no se borra: borrar a ciegas es justo lo que este
         // control vino a impedir.
         if (!f) return NextResponse.json({ error: 'Esa factura no existe.' }, { status: 404 });
@@ -663,22 +665,23 @@ export async function POST(req: Request) {
         // Los renglones se van con la factura por la clave foránea, y las
         // evaluaciones vuelven a la cola: si la factura no existe, nadie las
         // cubrió.
-        const ids = await evaluacionesDe(id);
         await escribir(`facturas?id=eq.${id}`, 'DELETE');
-        if (ids) {
-          await escribir(`evaluaciones?id=in.(${ids})`, 'PATCH', {
-            facturado: false,
-            pagado: false,
-            numero_factura: null,
-          });
-        }
-        await anotarAcceso({
-          quien: yo.nombre,
-          accion: 'escritura',
-          recurso: 'factura',
-          recursoId: id,
-          detalle: { borrada: true },
-        });
+        await Promise.all([
+          ids
+            ? escribir(`evaluaciones?id=in.(${ids})`, 'PATCH', {
+                facturado: false,
+                pagado: false,
+                numero_factura: null,
+              })
+            : null,
+          anotarAcceso({
+            quien: yo.nombre,
+            accion: 'escritura',
+            recurso: 'factura',
+            recursoId: id,
+            detalle: { borrada: true },
+          }),
+        ]);
         refrescar();
         return NextResponse.json({ ok: true });
       }
