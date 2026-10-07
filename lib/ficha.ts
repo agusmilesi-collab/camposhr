@@ -1,3 +1,5 @@
+import { hoyIso } from '@/lib/hora';
+import { fechaDePrecio } from '@/lib/baterias-precios';
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
@@ -414,7 +416,13 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       'bateria_precios',
       `select=precio,desde&bateria_id=eq.${bateriaId}&order=desde.desc`
     ).catch(() => []);
-    const dia = (cabecera.fecha_ingreso ?? new Date().toISOString()).slice(0, 10);
+    // La misma fecha que usan la cola de facturación y la orden de compra.
+    const dia =
+      fechaDePrecio({
+        fechaIngreso: cabecera.fecha_ingreso,
+        fechaEntrevista: cabecera.fecha_entrevista,
+        fechaPedido: null,
+      }) ?? hoyIso();
     const vigente = historia.find((h) => h.desde <= dia);
     precio = vigente ? Number(vigente.precio) : null;
   }

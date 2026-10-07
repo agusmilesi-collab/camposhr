@@ -13,7 +13,7 @@
 import 'server-only';
 import { randomBytes } from 'node:crypto';
 import { insert, select } from '@/lib/supabase';
-import { BENZIGER_USD, dolarTarjeta, precioA, type Precio } from '@/lib/baterias-precios';
+import { BENZIGER_USD, dolarTarjeta, fechaDePrecio, precioA, type Precio } from '@/lib/baterias-precios';
 import { llevaBenziger } from '@/lib/benziger';
 import { verFactura } from '@/lib/facturas';
 import { conceptoDe } from '@/lib/facturas-tipos';
@@ -50,6 +50,8 @@ type FilaCarga = {
   con_benziger: boolean | null;
   benziger_administrado: boolean | null;
   solicitante_id: string | null;
+  fecha_ingreso: string | null;
+  fecha_entrevista: string | null;
   personas: { nombre: string } | null;
   pedidos: {
     id: string;
@@ -84,7 +86,7 @@ export async function crearOrden(
   const [cargas, cambio] = await Promise.all([
     select<FilaCarga>(
       'evaluaciones',
-      'select=id,con_benziger,benziger_administrado,solicitante_id,personas(nombre),' +
+      'select=id,con_benziger,benziger_administrado,solicitante_id,fecha_ingreso,fecha_entrevista,personas(nombre),' +
         'pedidos(id,puesto,empresa_id,fecha_pedido,con_benziger,solicitante_id,baterias(id))' +
         `&id=in.(${ids.join(',')})`
     ),
@@ -116,7 +118,14 @@ export async function crearOrden(
       concepto: `Perfil ${p.puesto.trim()}`,
       detalle: nombre,
       nota: null,
-      importe: precioA(suyos, p.fecha_pedido),
+      importe: precioA(
+        suyos,
+        fechaDePrecio({
+          fechaIngreso: c.fecha_ingreso,
+          fechaEntrevista: c.fecha_entrevista,
+          fechaPedido: p.fecha_pedido,
+        })
+      ),
     });
     if (llevaBenziger(c)) {
       items.push({

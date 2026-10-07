@@ -24,7 +24,7 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { CACHE_COMERCIAL, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import { BENZIGER_USD, dolarTarjeta, precioA, type Precio } from '@/lib/baterias-precios';
+import { BENZIGER_USD, dolarTarjeta, fechaDePrecio, precioA, type Precio } from '@/lib/baterias-precios';
 import { llevaBenziger } from '@/lib/benziger';
 import type { Emisora, Factura, Facturable } from '@/lib/facturas-tipos';
 
@@ -238,6 +238,7 @@ function armarFactura(f: FilaFactura): Factura {
 type FilaFacturable = {
   id: string;
   estado: string;
+  fecha_ingreso: string | null;
   fecha_entrevista: string | null;
   fecha_entrega: string | null;
   benziger_administrado: boolean | null;
@@ -258,9 +259,9 @@ type FilaFacturable = {
 /**
  * Lo que está para facturar: entrevista tomada y sin comprobante.
  *
- * El precio no sale de la batería de hoy sino de su historia a la fecha del
- * pedido, igual que en la ficha: un aumento de esta semana no cambia lo que
- * valió una evaluación de marzo. El adicional Benziger se pesifica al dólar
+ * El precio no sale de la batería de hoy sino de su historia a la fecha en que
+ * se cargó el candidato (`fechaDePrecio`): un aumento de esta semana no cambia
+ * lo que valió una evaluación de marzo. El adicional Benziger se pesifica al dólar
  * tarjeta del día, y recién se congela cuando la factura se emite.
  */
 export async function listarAFacturar(): Promise<Facturable[]> {
@@ -268,7 +269,7 @@ export async function listarAFacturar(): Promise<Facturable[]> {
   const [evaluaciones, renglones, enOrdenes, precios, cambio] = await Promise.all([
     select<FilaFacturable>(
       'evaluaciones',
-      'select=id,estado,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,baja_el,' +
+      'select=id,estado,fecha_ingreso,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,baja_el,' +
         'personas(nombre),evaluadoras(nombre),' +
         'pedidos(puesto,empresa_id,fecha_pedido,con_benziger,empresas(nombre),' +
         'baterias(id,codigo,nombre))' +
@@ -324,7 +325,14 @@ export async function listarAFacturar(): Promise<Facturable[]> {
     .map((e) => {
       const pedido = e.pedidos!;
       const suyos = precios.filter((p) => p.bateria_id === pedido.baterias?.id);
-      const precio = precioA(suyos, pedido.fecha_pedido ?? e.fecha_entrevista);
+      const precio = precioA(
+        suyos,
+        fechaDePrecio({
+          fechaIngreso: e.fecha_ingreso,
+          fechaEntrevista: e.fecha_entrevista,
+          fechaPedido: pedido.fecha_pedido,
+        })
+      );
       // El Benziger se cobra cuando el pedido lo pidió, cuando se le pidió a
       // esta persona o cuando se administró: las tres significan que ese
       // trabajo se hizo.
