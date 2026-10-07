@@ -10,6 +10,7 @@ import { conceptoDe, conceptoPorDefecto, totalDe } from '@/lib/facturas-tipos';
 import { CATEGORIAS_SERVICIOS } from '@/lib/monotributo';
 import { anularConNotaDeCredito, emitirEnArca, probarConexion } from '@/lib/arca/emitir';
 import { guardarPdfDeFactura } from '@/lib/factura-archivo';
+import { enviarFactura } from '@/lib/correo-factura';
 import { enumerar, faltaParaEmitir, faltaParaFacturarle } from '@/lib/clientes-tipos';
 
 export const runtime = 'nodejs';
@@ -573,6 +574,28 @@ export async function POST(req: Request) {
         } catch (e) {
           console.error('facturas, después del CAE:', e);
         }
+        return NextResponse.json(r);
+      }
+
+      /**
+       * Mandarle la factura por correo al cliente. La manda alguien con el
+       * botón del comprobante, nunca sale sola: ver `lib/correo-factura.ts`.
+       */
+      case 'enviar': {
+        const { id } = datos;
+        if (!UUID.test(id ?? '')) {
+          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        }
+        const r = await enviarFactura(id);
+        await anotarAcceso({
+          quien: yo.nombre,
+          accion: 'escritura',
+          recurso: 'factura',
+          recursoId: id,
+          detalle: r.ok ? { correo: 'enviada', a: r.a } : { correo: 'sin enviar', motivo: r.error },
+        });
+        if (!r.ok) return NextResponse.json({ error: r.error }, { status: 422 });
+        refrescar();
         return NextResponse.json(r);
       }
 

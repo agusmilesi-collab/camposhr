@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { crearCandidato, crearEmpresa, crearPedido } from '@/lib/altas';
 import { crearOrden } from '@/lib/orden-compra';
+import { avisarOrden } from '@/lib/correo-orden';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 
@@ -142,7 +143,8 @@ async function altaCandidato(
   // Toda carga genera su orden de compra, también la que hace el equipo: así
   // todo trabajo tiene su papel. Si falla, el candidato ya entró.
   try {
-    await crearOrden([evaluacion.id], 'os');
+    // Le llega por correo a quien pidió la búsqueda, igual que la del portal.
+    await avisarOrden(await crearOrden([evaluacion.id], 'os'));
   } catch (e) {
     console.error('[orden de compra]', e);
   }
