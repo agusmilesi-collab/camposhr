@@ -51,7 +51,8 @@ const VACIO: Borrador = {
   facturacion: true,
   recibeOrden: true,
   recibeEntrevista: true,
-  recibeInforme: true,
+  // El aviso de informe está apagado: nace destildado hasta que se prenda.
+  recibeInforme: false,
   recibeTodo: false,
 };
 
