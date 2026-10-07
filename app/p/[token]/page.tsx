@@ -173,10 +173,7 @@ function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
   const estimada = !c.fechaEntrega && Boolean(fen);
   return (
     <div className={`tr${conCobro ? '' : ' sin-cobro'}`}>
-      <span className="c-name">
-        {c.nombre}
-        {c.cargadoPor && <small className="c-cargado">Cargado por {c.cargadoPor}</small>}
-      </span>
+      <span className="c-name">{c.nombre}</span>
       <span className="c-estado" data-label="Estado">
         <i className={`dot ${e.clase}`} />
         {e.texto}
@@ -543,22 +540,15 @@ export default async function Portal({ params }: { params: { token: string } }) 
 }
 
 /**
- * El título de una búsqueda: el puesto, la fecha en que se pidió y quién la
- * pidió.
- *
- * La fecha va entre paréntesis y sin rótulo: en una lista de búsquedas, una
- * fecha ahí sólo puede ser esa. Quién la pidió sí lleva rótulo, porque del
- * lado del cliente varias personas cargan pedidos y es lo primero que se
- * pregunta cuando alguien no reconoce una búsqueda.
+ * El título de una búsqueda: el puesto y la fecha en que se pidió, entre
+ * paréntesis y sin rótulo: en una lista de búsquedas, una fecha ahí sólo puede
+ * ser esa. Quién la pidió no va: el cliente lo sabe, y lo dice el informe.
  */
 function CabezaDeBusqueda({ b }: { b: Busqueda }) {
   return (
     <div className="card-head">
       <h2>{b.puesto}</h2>
       {b.fecha && <span className="card-fecha">({fecha(b.fecha)})</span>}
-      {b.solicitante && (
-        <span className="card-solicitante">Solicitado por {b.solicitante}</span>
-      )}
     </div>
   );
 }
