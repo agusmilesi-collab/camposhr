@@ -32,6 +32,8 @@ export async function POST(req: Request) {
   const cambios: Record<string, boolean> = {};
   if (typeof datos.recibeEntrevista === 'boolean') cambios.recibe_entrevista = datos.recibeEntrevista;
   if (typeof datos.recibeInforme === 'boolean') cambios.recibe_informe = datos.recibeInforme;
+  if (typeof datos.recibeFactura === 'boolean') cambios.recibe_factura = datos.recibeFactura;
+  if (typeof datos.recibeRecibo === 'boolean') cambios.recibe_recibo = datos.recibeRecibo;
   if (Object.keys(cambios).length === 0) {
     return NextResponse.json({ error: 'No hay nada que guardar.' }, { status: 400 });
   }

@@ -52,7 +52,11 @@ type Fila = {
   }[];
 };
 
-async function leer(id: string): Promise<{ f: Fila; destinos: Destinos } | null> {
+async function leer(
+  id: string,
+  /** La factura y su recibo se eligen por separado en el portal. */
+  aviso: 'factura' | 'recibo' = 'factura'
+): Promise<{ f: Fila; destinos: Destinos } | null> {
   const [f] = await select<Fila>(
     'facturas',
     'select=empresa_id,estado,enviada_at,enviada_a,recibo_enviado_at,empresas(email_facturacion,portal_proveedores),' +
@@ -63,7 +67,7 @@ async function leer(id: string): Promise<{ f: Fila; destinos: Destinos } | null>
   const pidieron = f.factura_items.map(
     (i) => i.evaluaciones?.solicitante_id ?? i.evaluaciones?.pedidos?.solicitante_id
   );
-  const d = await destinosDe('factura', f.empresa_id, pidieron);
+  const d = await destinosDe(aviso, f.empresa_id, pidieron);
   // El correo de facturación de la empresa, si está cargado, va siempre.
   const fijo = direcciones([f.empresas?.email_facturacion]).filter((x) => !d.para.includes(x));
   const destinos =
@@ -227,7 +231,7 @@ export async function enviarTrasElCae(id: string): Promise<CorreoTrasElCae> {
 export async function avisarRecibo(id: string): Promise<void> {
   try {
     if (!hayCorreo()) return;
-    const [datos, recibo] = await Promise.all([leer(id), reciboDePago(id)]);
+    const [datos, recibo] = await Promise.all([leer(id, 'recibo'), reciboDePago(id)]);
     if (!datos || !recibo || datos.f.recibo_enviado_at) return;
     const { para, copia, nombre } = datos.destinos;
     if (para.length === 0) return;
