@@ -28,7 +28,6 @@ import {
   horasSemanalesTotales,
   mesLargo,
   periodoDe,
-  recargoDelDia,
   saldoDe,
   type Contrato,
   type Inquilino,
@@ -75,7 +74,6 @@ export default function Inquilinos({
   const [fuera, setFuera] = useState<string[]>([]);
   const aFacturar = conCargos.filter((id) => !fuera.includes(id));
 
-  const pct = recargoDelDia(hoy, periodo);
   const delMes = movimientos.filter((m) => m.periodo === periodo);
 
   const filas = inquilinos.map((i) => {
@@ -128,27 +126,6 @@ export default function Inquilinos({
   return (
     <>
       {error && <p className="os-form-error">{error}</p>}
-
-      {/* Chicas, como las del calendario. */}
-      <div className="os-cifras os-cifras-finas">
-        <div className="os-cifra">
-          <div className="os-cifra-rotulo">Facturado</div>
-          <div className="os-cifra-valor">{pesos(total.cargos)}</div>
-          <div className="os-cifra-pie">{mesLargo(periodo)}</div>
-        </div>
-        <div className="os-cifra">
-          <div className="os-cifra-rotulo">Cobrado</div>
-          <div className="os-cifra-valor">{pesos(total.pagos)}</div>
-          <div className="os-cifra-pie">{filas.filter((f) => f.pagos > 0).length} pagos</div>
-        </div>
-        <div className="os-cifra">
-          <div className="os-cifra-rotulo">Por cobrar</div>
-          <div className="os-cifra-valor">{pesos(total.saldo)}</div>
-          <div className="os-cifra-pie">
-            {pct > 0 ? `Hoy corre ${pct}% de recargo` : 'Dentro del plazo, sin recargo'}
-          </div>
-        </div>
-      </div>
 
       <div className="os-panel">
         <div className="os-panel-top">
