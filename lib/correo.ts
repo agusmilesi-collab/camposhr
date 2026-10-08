@@ -6,11 +6,18 @@
  * este volumen, firma con el dominio y no corta la cuenta por ver entrar a un
  * servidor.
  *
- * Cuatro variables, y solo la primera es obligatoria:
+ * **De parte de quién sale depende de qué es** (`REMITENTES`): lo del trabajo
+ * (la orden de compra, la entrevista agendada, el informe) sale de pedidos@, y
+ * lo de la plata (la factura, el recibo de pago) de facturacion@. Así el
+ * cliente distingue de un vistazo lo operativo de lo administrativo y compras
+ * puede filtrar las facturas por remitente. Son direcciones del dominio
+ * verificado en Resend; no hace falta que exista la casilla, porque la
+ * respuesta va a la evaluadora.
+ *
+ * Tres variables, y solo la primera es obligatoria:
  *
  *   RESEND_API_KEY       la clave. **Sin ella no se manda nada** y el resto del
  *                        sistema sigue igual: `enviarCorreo` contesta "apagado".
- *   CORREO_REMITENTE     de parte de quién. Tiene que ser del dominio verificado.
  *   CORREO_RESPONDER_A   a dónde cae la respuesta del cliente cuando el correo no
  *                        dice a quién. Lo normal es que lo diga: cada aviso
  *                        responde a la evaluadora de ese trabajo
@@ -22,12 +29,17 @@
 
 import 'server-only';
 
-const REMITENTE = 'Campos HR <facturacion@camposhr.com>';
+const REMITENTES = {
+  pedidos: 'Campos HR <pedidos@camposhr.com>',
+  facturacion: 'Campos HR <facturacion@camposhr.com>',
+} as const;
 const DIRECCION = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/;
 
 export type Adjunto = { nombre: string; bytes: Uint8Array };
 
 export type Correo = {
+  /** De qué casilla sale: lo del trabajo, o lo de la plata. */
+  de: keyof typeof REMITENTES;
   para: string[];
   copia?: string[];
   asunto: string;
@@ -87,7 +99,7 @@ export async function enviarCorreo(c: Correo): Promise<Envio> {
         'Idempotency-Key': c.clave.slice(0, 256),
       },
       body: JSON.stringify({
-        from: process.env.CORREO_REMITENTE || REMITENTE,
+        from: REMITENTES[c.de],
         to: para,
         ...(copia.length > 0 ? { cc: copia } : {}),
         ...(responderA.length > 0 ? { reply_to: responderA } : {}),

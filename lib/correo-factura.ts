@@ -169,6 +169,7 @@ export async function enviarFactura(id: string): Promise<ResultadoDeEnvio> {
   if (!pdf) return { ok: false, error: 'No se pudo armar el PDF de la factura.' };
 
   const envio = await enviarCorreo({
+    de: 'facturacion',
     para,
     copia,
     ...cuerpo(d, nombre),
@@ -213,6 +214,7 @@ export async function avisarRecibo(id: string): Promise<void> {
     const saludo = nombre ? `Hola ${nombre}:` : 'Hola:';
 
     const envio = await enviarCorreo({
+      de: 'facturacion',
       para,
       copia,
       asunto: `${titulo} · Campos HR`,

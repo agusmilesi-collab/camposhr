@@ -1446,6 +1446,11 @@ botón de enviar no se ofrece. Son cinco correos:
 | Factura | **Con el botón del comprobante**, en dos toques | `lib/correo-factura.ts` |
 | Recibo de pago | Solo, al confirmar el cobro | `lib/correo-factura.ts` |
 
+**De quién sale depende de qué es** (`REMITENTES` en `lib/correo.ts`): la
+orden de compra, la entrevista y el informe salen de `pedidos@camposhr.com`; la
+factura y el recibo de pago, de `facturacion@camposhr.com`. Un correo nuevo
+tiene que decir de cuál de las dos sale (`de`).
+
 **A quién va cada uno lo decide la ficha del cliente, contacto por contacto**
 (`lib/correo-destinos.ts`). Cada contacto tilda qué recibe y si recibe solo lo
 de los candidatos que pidió él o también lo de los demás de su empresa

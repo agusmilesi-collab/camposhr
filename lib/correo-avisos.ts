@@ -101,6 +101,7 @@ export async function avisarSiCorresponde(evaluacionId: string): Promise<void> {
           `${otraVez ? 'se reprogramó' : 'quedó agendada'} para el ${cuando(e.fecha_entrevista)}, ` +
           `modalidad ${e.modalidad.toLowerCase()}.`;
         const envio = await enviarCorreo({
+          de: 'pedidos',
           para: d.para,
           copia: d.copia,
           asunto: `Entrevista ${otraVez ? 'reprogramada' : 'agendada'}: ${persona} · ${puesto}`,
@@ -133,6 +134,7 @@ export async function avisarSiCorresponde(evaluacionId: string): Promise<void> {
         const saludo = d.nombre ? `Hola ${d.nombre}:` : 'Hola:';
         const frase = `El informe de ${persona} para el puesto ${puesto} ya está en tu portal. Desde ahí se lee y se descarga en PDF.`;
         const envio = await enviarCorreo({
+          de: 'pedidos',
           para: d.para,
           copia: d.copia,
           asunto: `Informe listo: ${persona} · ${puesto}`,
