@@ -11303,73 +11303,108 @@ a.pedir-volver-link {
 
 .pedir-avisos {
   display: grid;
-  gap: 8px;
 }
 
-/* Un enlace y no un botón: es algo que casi nadie toca, y con forma de botón
-   compite con el de enviar el pedido. */
+/* Un renglón con su flecha y no un botón: es algo que casi nadie toca, y con
+   forma de botón compite con el de enviar el pedido. */
 .pedir-avisos-abrir {
-  justify-self: start;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 2px;
   border: 0;
   background: none;
   font: inherit;
   font-size: 0.8rem;
   color: var(--muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
   cursor: pointer;
+  transition: color 0.15s ease;
 }
 
-.pedir-avisos-abrir:hover {
+.pedir-avisos-abrir:hover,
+.pedir-avisos.abierta .pedir-avisos-abrir {
   color: var(--ink);
 }
 
-.pedir-avisos-cuerpo {
-  display: grid;
-  gap: 8px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
+/* La misma flecha del desplegable de arriba, más chica: gira al abrir. */
+.pedir-avisos-flecha {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  margin-right: 4px;
+  border-right: 1.4px solid currentColor;
+  border-bottom: 1.4px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease, margin 0.15s ease;
 }
 
-.pedir-avisos-t {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--muted);
-  overflow-wrap: anywhere;
+.pedir-avisos.abierta .pedir-avisos-flecha {
+  margin-top: 3px;
+  transform: rotate(-135deg);
+}
+
+/* Sin caja: los renglones cuelgan del título, separados por una raya fina. */
+.pedir-avisos-cuerpo {
+  display: grid;
+  animation: pedir-avisos-entra 0.16s ease;
+}
+
+@keyframes pedir-avisos-entra {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
 }
 
 .pedir-avisos-marca {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 0.86rem;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 2px;
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  background: none;
+  font: inherit;
+  font-size: 0.84rem;
   color: var(--ink);
+  text-align: left;
   cursor: pointer;
 }
 
-.pedir-avisos-marca input {
-  margin-top: 3px;
-  accent-color: var(--ink);
+.pedir-avisos-marca:disabled {
+  cursor: default;
 }
 
-.pedir-avisos-n {
-  margin: 0;
-  min-height: 1.1em;
+/* Verde es que le llega; rojo, que no. */
+.pedir-avisos-punto {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--st-rojo);
+  transition: background 0.15s ease;
+}
+
+.pedir-avisos-punto.si {
+  background: #3f8a55;
+}
+
+.pedir-avisos-que {
+  flex: 1;
+}
+
+.pedir-avisos-estado {
   font-size: 0.76rem;
   color: var(--muted);
 }
 
-/* La ciudad del candidato, debajo de su nombre y en gris. */
-.c-ciudad {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 400;
+.pedir-avisos-n {
+  margin: 0;
+  padding: 6px 2px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 0.74rem;
   color: var(--muted);
-}
-
-/* La fila del candidato con la ciudad: cuatro campos en lugar de tres. */
-.pedir-tres.pedir-cuatro {
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  overflow-wrap: anywhere;
 }
