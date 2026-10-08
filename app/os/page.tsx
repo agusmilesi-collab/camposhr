@@ -170,6 +170,7 @@ export default async function Inicio() {
           mes: mesLargo(r.periodo).split(' ')[0],
           respuesta: r.respuesta,
           nota: r.nota,
+          feriados: r.feriados.map((f) => `${Number(f.slice(8, 10))}/${Number(f.slice(5, 7))}`),
         }))
       : [];
 

@@ -25,3 +25,10 @@ create table if not exists public.renovaciones (
 );
 
 alter table public.renovaciones enable row level security;
+
+-- Los feriados del mes que renueva en los que igual quiere usar su sala.
+--
+-- El Centro cierra los feriados, así que por defecto esas fechas no se
+-- reservan. Quien quiere trabajar ese día lo tilda al renovar, y esas horas se
+-- le suman al mes. Vacío es lo normal: no usa ninguno.
+alter table public.renovaciones add column if not exists feriados date[] not null default '{}';

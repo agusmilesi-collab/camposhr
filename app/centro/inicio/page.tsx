@@ -3,6 +3,7 @@ import { inquilinoDeLaSesion } from '@/lib/centro-sesion';
 import {
   contratos as leerContratos,
   DIAS_CORTOS,
+  finDeMes,
   horasSemanalesTotales,
   diaSemanaDe,
   hora,
@@ -19,6 +20,7 @@ import {
 } from '@/lib/consultorios';
 import { facturasDelCentro } from '@/lib/facturas-centro';
 import { DIA_DE_RENOVAR, renovacionDe } from '@/lib/renovaciones';
+import { feriadosEntre } from '@/lib/feriados';
 import Renovar from './Renovar';
 import Barra from '../Barra';
 
@@ -95,6 +97,7 @@ export default async function Inicio({ searchParams }: { searchParams: { hoy?: s
     leerContratos(),
     renovacionDe(yo.id, proximoMes),
   ]);
+  const feriadosProximos = await feriadosEntre(proximoMes, finDeMes(proximoMes));
   const salaDe = (id: string) => espacios.find((e) => e.id === id)?.nombre ?? 'Sala';
 
   const deReserva = (r: (typeof reservas)[number], conDia: boolean): Tarjeta => ({
@@ -144,6 +147,27 @@ export default async function Inicio({ searchParams }: { searchParams: { hoy?: s
    */
   const horasFijas = horasSemanalesTotales(contratos, yo.id, hoy);
   const preguntaRenovar = Number(hoy.slice(8, 10)) >= DIA_DE_RENOVAR && horasFijas > 0;
+
+  /*
+   * Los feriados del mes que viene que caen en un día en que tiene horas.
+   *
+   * El Centro cierra los feriados, y por eso se le avisa al renovar: ese día
+   * su sala no se reserva, salvo que diga que la quiere igual. Los de los
+   * días en que no viene no se le muestran, que no le cambian nada.
+   */
+  const mios = contratos.filter(
+    (c) => c.inquilino_id === yo.id && (c.vigente_hasta === null || c.vigente_hasta >= proximoMes)
+  );
+  const feriadosSuyos = feriadosProximos
+    .map((f) => ({
+      fecha: f.fecha,
+      nombre: f.nombre,
+      dia: diaCorto(f.fecha),
+      horas: mios
+        .filter((c) => c.dia_semana === diaSemanaDe(f.fecha))
+        .reduce((n, c) => n + (hora(c.hasta_hora) - hora(c.desde_hora)), 0),
+    }))
+    .filter((f) => f.horas > 0);
 
   const columnas: { titulo: string; vacio: string; tarjetas: Tarjeta[] }[] = [
     {
@@ -199,6 +223,8 @@ export default async function Inicio({ searchParams }: { searchParams: { hoy?: s
                   horas={horasFijas}
                   respuesta={renovacion?.respuesta ?? null}
                   nota={renovacion?.nota ?? null}
+                  feriados={feriadosSuyos}
+                  tildados={renovacion?.feriados ?? []}
                 />
               )}
               {c.tarjetas.length === 0 && !(c.titulo === 'Hoy' && preguntaRenovar) && (

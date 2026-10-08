@@ -27,6 +27,8 @@ export default function Renovar({
   horas,
   respuesta,
   nota,
+  feriados = [],
+  tildados = [],
 }: {
   /** El mes que se renueva, escrito: "noviembre". */
   mes: string;
@@ -34,11 +36,16 @@ export default function Renovar({
   horas: number;
   respuesta: Respuesta | null;
   nota: string | null;
+  /** Los feriados del mes que viene que caen en sus días. */
+  feriados?: { fecha: string; nombre: string; dia: string; horas: number }[];
+  /** Los que ya dijo que quiere usar. */
+  tildados?: string[];
 }) {
   const router = useRouter();
   const [editando, setEditando] = useState(false);
   const [cambiando, setCambiando] = useState(false);
   const [texto, setTexto] = useState(nota ?? '');
+  const [usa, setUsa] = useState<string[]>(tildados);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +56,7 @@ export default function Renovar({
       const res = await fetch('/api/centro/renovar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ respuesta: r, nota: texto }),
+        body: JSON.stringify({ respuesta: r, nota: texto, feriados: usa }),
       });
       const d = await res.json().catch(() => null);
       if (!res.ok || !d?.ok) {
@@ -69,7 +76,10 @@ export default function Renovar({
   const contestada = respuesta !== null && !cambiando;
 
   return (
-    <article className={`centro-tarjeta centro-renovar${editando ? ' abierta' : ''}`}>
+    // Con feriados la tarjeta crece: hay que poder leerlos y tildarlos.
+    <article
+      className={`centro-tarjeta centro-renovar${editando || feriados.length > 0 ? ' abierta' : ''}`}
+    >
       <div className="centro-tarjeta-top">
         <b>{contestada ? DICHO[respuesta as Respuesta] : `¿Renovás ${mes}?`}</b>
         <span>{horas} h por semana</span>
@@ -81,6 +91,37 @@ export default function Renovar({
             : `Para ${mes}`
           : 'Tus mismas horas, un mes más'}
       </small>
+
+      {/* El aviso de los feriados. El Centro cierra esos días, así que su
+          sala no se reserva; quien quiere trabajar igual lo tilda y esas horas
+          se le suman al mes. Contestado, dice cuáles eligió. */}
+      {feriados.length > 0 && respuesta !== 'no' && (
+        <div className="centro-renovar-feriados">
+          <span>
+            {feriados.length === 1 ? `En ${mes} hay un feriado` : `En ${mes} hay feriados`} en tus
+            días. El Centro cierra los feriados.
+            {!contestada && ' Si querés usar tu consultorio igual, tildalo y se te suman esas horas.'}
+          </span>
+          {feriados.map((f) => (
+            <label key={f.fecha}>
+              <input
+                type="checkbox"
+                checked={usa.includes(f.fecha)}
+                disabled={contestada || enviando}
+                onChange={() =>
+                  setUsa((xs) => (xs.includes(f.fecha) ? xs.filter((x) => x !== f.fecha) : [...xs, f.fecha]))
+                }
+              />
+              <span>
+                <b>{f.dia}</b> · {f.nombre}
+                <small>
+                  {usa.includes(f.fecha) ? `Lo usás: se suman ${f.horas} h` : `${f.horas} h que no se reservan`}
+                </small>
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
 
       {error && <small className="centro-soltar-error">{error}</small>}
 
