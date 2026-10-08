@@ -18179,3 +18179,170 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 .os-contacto-fila .os-contacto-roles {
   gap: 10px;
 }
+
+/* ---- Contactos del cliente: dos listas, quién solicita y quién paga ---- */
+
+/* Nombre, cargo, mail, WhatsApp, los tildes y las acciones. */
+.os-contacto.os-ctc-fila {
+  grid-template-columns:
+    minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 0.9fr)
+    auto 84px;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+/* La columna de los botones mide lo mismo en la cabecera, que no los tiene:
+   si fuera `auto`, los rótulos quedarían corridos respecto de sus tildes. */
+.os-ctc-fila > .os-contacto-acciones {
+  justify-self: end;
+}
+
+.os-ctc-fila > * {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-ctc-fila > .os-contacto-acciones,
+.os-ctc-fila > .os-ctc-tildes {
+  overflow: visible;
+}
+
+/* Una columna por tilde, del mismo ancho en la cabecera y en cada fila: así
+   los rótulos van una sola vez y cada tilde cae debajo del suyo. La raya
+   separa pedir de recibir, que son dos preguntas distintas. */
+.os-ctc-tildes {
+  display: grid;
+  grid-template-columns: 62px 1px repeat(4, 74px);
+  column-gap: 6px;
+  align-items: center;
+  justify-items: center;
+}
+
+.os-ctc-raya {
+  align-self: stretch;
+  width: 1px;
+  background: var(--os-linea);
+}
+
+.os-ctc-tilde {
+  display: inline-flex;
+  align-items: center;
+  cursor: default;
+}
+
+/* La cabecera: los rótulos de las columnas y, encima de los cuatro de correo,
+   a qué grupo pertenecen. */
+.os-contacto.os-ctc-cabeza {
+  padding: 14px 0 4px;
+  align-items: end;
+}
+
+.os-ctc-cabeza .os-ctc-tildes {
+  grid-template-rows: auto auto;
+  row-gap: 3px;
+}
+
+.os-ctc-cabeza .os-ctc-raya {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+
+.os-ctc-col,
+.os-ctc-sobre {
+  font-size: 0.7rem;
+  color: var(--os-suave);
+  white-space: nowrap;
+}
+
+.os-ctc-col {
+  grid-row: 2;
+}
+
+.os-ctc-sobre {
+  grid-column: 3 / -1;
+  grid-row: 1;
+  justify-self: stretch;
+  text-align: center;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  border-bottom: 1px solid var(--os-linea-suave);
+  padding-bottom: 3px;
+}
+
+/* La cabecera no es una fila más: sin raya entre ella y el primer contacto. */
+.os-ctc-cabeza + .os-contacto {
+  border-top: 0;
+}
+
+/* La segunda lista, con su título separado de la primera. */
+.os-cliente-contactos .os-panel-top.os-ctc-segunda {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+
+/* Ocupa el ancho de los tildes de la lista de arriba (62 + 1 + 4 × 74 y sus
+   cinco separaciones de 6), para que nombre, cargo y mail caigan en la misma
+   vertical en las dos listas. */
+.os-ctc-nota {
+  width: 389px;
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--os-suave);
+}
+
+/* El formulario: una pregunta por renglón, con su rótulo delante. */
+.os-ctc-grupos {
+  display: grid;
+  gap: 10px;
+}
+
+.os-ctc-grupo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+}
+
+.os-ctc-rotulo {
+  flex: 0 0 130px;
+  font-size: 0.78rem;
+  color: var(--os-suave);
+}
+
+@media (max-width: 760px) {
+  .os-contacto.os-ctc-fila {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .os-ctc-cabeza {
+    display: none;
+  }
+  /* Sin cabecera, cada tilde lleva su rótulo al lado. */
+  .os-ctc-fila > .os-ctc-tildes {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    justify-items: start;
+  }
+  .os-ctc-raya {
+    display: none;
+  }
+  .os-ctc-tilde::after {
+    content: attr(data-rotulo);
+    margin-left: 5px;
+    font-size: 0.78rem;
+    color: var(--os-tinta-media);
+  }
+  .os-ctc-rotulo {
+    flex-basis: 100%;
+  }
+  .os-ctc-nota {
+    grid-column: 1 / -1;
+    width: auto;
+    text-align: left;
+  }
+}

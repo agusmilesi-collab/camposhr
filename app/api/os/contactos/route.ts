@@ -95,16 +95,17 @@ export async function POST(req: Request) {
   };
 
   // Ni pide ni recibe nada es un contacto que no hace nada: no se guarda así.
-  const recibeAlgo = fila.facturacion || fila.recibe_orden || fila.recibe_entrevista || fila.recibe_informe;
-  if (!fila.pide && !recibeAlgo) {
+  const recibeAvisos = fila.recibe_orden || fila.recibe_entrevista || fila.recibe_informe;
+  if (!fila.pide && !fila.facturacion && !recibeAvisos) {
     return NextResponse.json(
-      { error: 'Marcá si pide evaluaciones o qué correos recibe.' },
+      { error: 'Marcá si solicita evaluaciones, si es responsable de compras o qué avisos recibe.' },
       { status: 400 }
     );
   }
   // Quien no pide nada solo puede recibir lo de los demás: sin esa marca
-  // quedaría tildado para recibir y no le llegaría nunca nada.
-  if (!fila.pide && recibeAlgo) fila.recibe_todo = true;
+  // quedaría tildado para recibir y no le llegaría nunca nada. Y sin avisos
+  // tildados la marca no dice nada.
+  fila.recibe_todo = recibeAvisos && (fila.recibe_todo || !fila.pide);
 
   const res = id
     ? await fetch(`${url}/rest/v1/contactos?id=eq.${encodeURIComponent(id)}`, {

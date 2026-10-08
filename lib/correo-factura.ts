@@ -8,9 +8,9 @@
  * **El recibo de pago sí sale solo**, al confirmar el cobro, a los mismos que
  * la factura: ya se vio a quién iba cuando se la mandó.
  *
- * A quién van lo decide la ficha del cliente (`lib/correo-destinos.ts`): a
- * quien pidió esos candidatos, si recibe facturas, y a los que reciben las de
- * toda la empresa, como compras. La respuesta le cae a la evaluadora que emitió.
+ * A quién van lo decide la ficha del cliente (`lib/correo-destinos.ts`): al
+ * responsable de compras y, si el cliente no tiene ninguno, a quien pidió esos
+ * candidatos. La respuesta le cae a la evaluadora que emitió.
  */
 
 import 'server-only';
@@ -161,7 +161,7 @@ export async function enviarFactura(id: string): Promise<ResultadoDeEnvio> {
     return {
       ok: false,
       error:
-        'No hay a quién mandársela: en la ficha del cliente, tildale "Factura y recibo de pago" a un contacto con correo.',
+        'No hay a quién mandársela: el cliente no tiene responsable de compras con correo, y quien solicitó el candidato tampoco lo tiene cargado.',
     };
   }
 
