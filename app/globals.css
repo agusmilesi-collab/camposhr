@@ -11490,3 +11490,97 @@ a.pedir-volver-link {
   border-color: #e5e2db;
   border-radius: 8px;
 }
+
+/* ---- Notificaciones del pedido, condensadas: una casilla por aviso ----
+   La casilla va en pastel, como las etiquetas de codificación del OS: verde
+   claro con su tilde si le llega, rojo claro y vacía si no. El rojo es propio
+   y no el de esas etiquetas, que tira a rosa (pedido de Agustín). Van de a dos
+   por renglón. */
+.pedir-firma .pedir-avisos {
+  margin-top: 6px;
+  gap: 5px;
+}
+
+.pedir-avisos .pedir-avisos-titulo {
+  padding: 0;
+  font-size: 0.74rem;
+}
+
+.pedir-avisos-etiquetas {
+  display: grid;
+  /* De a dos donde entran; en el panel angosto del pedido, una debajo de la
+     otra, que "Fecha de entrevista" no entra en media columna. */
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 3px 10px;
+}
+
+.pedir-avisos-etiqueta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pedir-avisos-etiqueta:disabled {
+  cursor: default;
+}
+
+.pedir-avisos-cuadro {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  background: #ffc4bd;
+  color: #1c1c1c;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: background 0.12s ease;
+}
+
+.pedir-avisos-etiqueta.si .pedir-avisos-cuadro {
+  background: #d1f7c4;
+}
+
+.pedir-avisos-etiqueta:hover:not(:disabled) .pedir-avisos-cuadro {
+  box-shadow: 0 0 0 1px rgba(22, 32, 43, 0.35);
+}
+
+/* Con aire arriba y abajo: pegada a las casillas se leía como una sexta, y
+   pegada a "Falta al menos un candidato" como parte de ese aviso. */
+.pedir-avisos .pedir-avisos-n {
+  padding: 12px 0 8px;
+  border-top: 0;
+  font-size: 0.7rem;
+}
+
+/* El título de las notificaciones, con el estado del guardado a la derecha:
+   ocupa siempre un renglón, diga lo que diga. */
+.pedir-avisos .pedir-avisos-titulo {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pedir-avisos-guardado {
+  white-space: nowrap;
+}
+
+/* El correo, en un solo renglón: uno largo se corta con puntos suspensivos en
+   vez de bajar y empujar el botón. */
+.pedir-avisos .pedir-avisos-n {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
