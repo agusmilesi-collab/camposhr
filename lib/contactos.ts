@@ -10,14 +10,28 @@ import type { Contacto } from '@/lib/contactos-tipos';
  * conserven a quién se le mandaron, y dejan de estar entre los que se eligen.
  */
 export async function contactosDe(empresaId: string): Promise<Contacto[]> {
-  return select<Contacto>(
+  type Fila = Omit<Contacto, 'recibeFactura' | 'recibeRecibo'> & {
+    recibeFactura: boolean | null;
+    recibeRecibo: boolean | null;
+  };
+  const filas = await select<Fila>(
     'contactos',
     // Los nombres de la base, con el alias que usa la aplicación.
     `select=id,nombre,cargo,email,telefono,pide,facturacion,activo,` +
-      `recibeOrden:recibe_orden,recibeEntrevista:recibe_entrevista,recibeInforme:recibe_informe,recibeTodo:recibe_todo` +
+      `recibeOrden:recibe_orden,recibeEntrevista:recibe_entrevista,recibeInforme:recibe_informe,recibeTodo:recibe_todo,` +
+      `recibeFactura:recibe_factura,recibeRecibo:recibe_recibo` +
       `&empresa_id=eq.${encodeURIComponent(empresaId)}&activo=is.true&order=nombre.asc`,
     CACHE_CLIENTES
-  ).catch(() => []);
+  ).catch(() => [] as Fila[]);
+  // La factura y el recibo, mientras la persona no eligió: los recibe si su
+  // empresa no tiene un responsable de compras al que mandárselos. Es la
+  // misma cuenta que hace el envío (`lib/correo-destinos.ts`).
+  const hayCompras = filas.some((c) => c.facturacion && c.email);
+  return filas.map((c) => ({
+    ...c,
+    recibeFactura: c.recibeFactura ?? !hayCompras,
+    recibeRecibo: c.recibeRecibo ?? !hayCompras,
+  }));
 }
 
 /** Los que piden evaluaciones, que son los que el portal ofrece. */

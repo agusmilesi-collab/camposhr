@@ -11408,3 +11408,50 @@ a.pedir-volver-link {
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+
+/* Aire entre el desplegable de "Enviar como" y "Configurar notificaciones":
+   pegados, el renglón de avisos se leía como parte del desplegable. */
+.pedir-firma .pedir-avisos {
+  margin-top: 10px;
+}
+
+/* La casilla de cada aviso: tilde en verde si le llega, cruz en rojo si no. */
+.pedir-avisos-caja {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--st-rojo);
+  border-radius: 4px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--st-rojo);
+  background: #fff;
+}
+.pedir-avisos-caja.si {
+  border-color: var(--st-verde);
+  background: var(--st-verde);
+  color: #fff;
+}
+
+/* Las notificaciones van siempre a la vista: un título chico y los renglones,
+   sin flecha ni animación de entrada. */
+.pedir-avisos-titulo {
+  padding: 6px 2px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pedir-avisos .pedir-avisos-cuerpo {
+  animation: none;
+}
+
+/* Destildada, la casilla queda vacía y gris: sin cruz ni rojo, que se leían
+   como un error y no como "no lo quiero". */
+.pedir-avisos .pedir-avisos-caja:not(.si) {
+  border-color: #b9b4aa;
+  color: transparent;
+}

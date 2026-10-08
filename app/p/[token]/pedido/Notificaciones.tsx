@@ -8,17 +8,18 @@
  * el informe está listo. Se guarda al tildar, en su contacto, y vale para todos
  * sus pedidos: son las mismas marcas que el equipo ve en la ficha del cliente.
  *
- * Va plegado: la mayoría no lo toca nunca, y abierto empujaría el botón de
- * enviar fuera de la vista. Y liviano: un renglón con su flecha, y adentro un
- * punto de color por aviso en lugar de casillas (pedido de Agustín, 8/10/2026).
+ * Va siempre a la vista, sin desplegar (pedido de Agustín, 8/10/2026): son
+ * cuatro renglones, y plegado nadie se enteraba de que podía elegir.
  */
 
 import { useState } from 'react';
 import type { Contacto } from '@/lib/contactos-tipos';
 
 const AVISOS = [
-  { campo: 'recibeEntrevista', texto: 'Fecha de la entrevista' },
-  { campo: 'recibeInforme', texto: 'Informe listo' },
+  { campo: 'recibeEntrevista', texto: 'Fecha de la entrevista', dePlata: false },
+  { campo: 'recibeInforme', texto: 'Informe listo', dePlata: false },
+  { campo: 'recibeFactura', texto: 'Factura', dePlata: true },
+  { campo: 'recibeRecibo', texto: 'Recibo de pago', dePlata: true },
 ] as const;
 
 type Campo = (typeof AVISOS)[number]['campo'];
@@ -34,12 +35,19 @@ export default function Notificaciones({
   /** El contacto elegido en "Enviar como". */
   elegido: string;
 }) {
-  const [abierto, setAbierto] = useState(false);
   // Lo que cada persona tiene tildado, para todas: si se cambia de nombre y se
   // vuelve, lo recién guardado sigue ahí sin volver a pedir la página.
   const [marcas, setMarcas] = useState<Record<string, Marcas>>(() =>
     Object.fromEntries(
-      contactos.map((c) => [c.id, { recibeEntrevista: c.recibeEntrevista, recibeInforme: c.recibeInforme }])
+      contactos.map((c) => [
+        c.id,
+        {
+          recibeEntrevista: c.recibeEntrevista,
+          recibeInforme: c.recibeInforme,
+          recibeFactura: c.recibeFactura,
+          recibeRecibo: c.recibeRecibo,
+        },
+      ])
     )
   );
   const [estado, setEstado] = useState<'quieto' | 'guardando' | 'guardado' | 'error'>('quieto');
@@ -68,52 +76,48 @@ export default function Notificaciones({
   }
 
   return (
-    <div className={`pedir-avisos${abierto ? ' abierta' : ''}`}>
-      <button
-        type="button"
-        className="pedir-avisos-abrir"
-        aria-expanded={abierto}
-        onClick={() => setAbierto(!abierto)}
-      >
-        Configurar notificaciones
-        <span className="pedir-avisos-flecha" aria-hidden="true" />
-      </button>
+    <div className="pedir-avisos">
+      <span className="pedir-avisos-titulo">Notificaciones por correo</span>
 
-      {abierto && (
-        <div className="pedir-avisos-cuerpo">
-          {quien.email ? (
-            <>
-              {/* Un punto y no una casilla: verde es que le llega, rojo es
-                  que no. Se cambia tocando el renglón. */}
-              {AVISOS.map((a) => (
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={suyas[a.campo]}
-                  className="pedir-avisos-marca"
-                  key={a.campo}
-                  disabled={estado === 'guardando'}
-                  onClick={() => cambiar(a.campo, !suyas[a.campo])}
+      <div className="pedir-avisos-cuerpo">
+        {quien.email ? (
+          <>
+            {/* Una casilla: tildada si le llega, vacía si no. Se cambia
+                tocando el renglón. */}
+            {/* Al responsable de compras la factura y el recibo le llegan
+                siempre: no son algo que pueda apagar desde acá. */}
+            {AVISOS.filter((a) => !(a.dePlata && quien.facturacion)).map((a) => (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={suyas[a.campo]}
+                className="pedir-avisos-marca"
+                key={a.campo}
+                disabled={estado === 'guardando'}
+                onClick={() => cambiar(a.campo, !suyas[a.campo])}
+              >
+                <span
+                  className={`pedir-avisos-caja${suyas[a.campo] ? ' si' : ''}`}
+                  aria-hidden="true"
                 >
-                  <span className={`pedir-avisos-punto${suyas[a.campo] ? ' si' : ''}`} aria-hidden="true" />
-                  <span className="pedir-avisos-que">{a.texto}</span>
-                  <span className="pedir-avisos-estado">{suyas[a.campo] ? 'Sí' : 'No'}</span>
-                </button>
-              ))}
-              <p className="pedir-avisos-n" aria-live="polite">
-                {estado === 'error'
-                  ? 'No se pudo guardar. Probá de nuevo.'
-                  : `${estado === 'guardado' ? 'Guardado. ' : ''}Llegan a ${quien.email}.`}
-              </p>
-            </>
-          ) : (
-            <p className="pedir-avisos-n">
-              No tenemos tu correo cargado, así que no podemos mandarte avisos. Escribinos y lo
-              sumamos.
+                  {suyas[a.campo] ? '✓' : ''}
+                </span>
+                <span className="pedir-avisos-que">{a.texto}</span>
+              </button>
+            ))}
+            <p className="pedir-avisos-n" aria-live="polite">
+              {estado === 'error'
+                ? 'No se pudo guardar. Probá de nuevo.'
+                : `${estado === 'guardado' ? 'Guardado. ' : ''}Llegan a ${quien.email}.`}
             </p>
-          )}
-        </div>
-      )}
+          </>
+        ) : (
+          <p className="pedir-avisos-n">
+            No tenemos tu correo cargado, así que no podemos mandarte avisos. Escribinos y lo
+            sumamos.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

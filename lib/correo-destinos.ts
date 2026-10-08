@@ -7,9 +7,10 @@
  *   quien solicita. Cada contacto tilda cuáles recibe y si recibe solo lo de
  *   los candidatos que pidió él o también lo que piden los demás. Va a quien
  *   pidió, y los que reciben lo de todos van en copia.
- * - **La factura y el recibo de pago** son del responsable de compras. Si la
- *   empresa tiene uno o más, van solo a ellos. **Si no tiene ninguno, van a
- *   quien solicitó el candidato.**
+ * - **La factura y el recibo de pago** son del responsable de compras. **Si la
+ *   empresa no tiene ninguno, van a quien solicitó el candidato.** Y quien
+ *   solicita puede elegir en el portal, cada uno por separado: recibirlos
+ *   aunque haya compras (va en copia) o no recibirlos aunque no la haya.
  *
  * Quien no tiene correo cargado no recibe nada, y no se le manda a otro por
  * las dudas.
@@ -19,9 +20,9 @@ import 'server-only';
 import { select } from '@/lib/supabase';
 import { direcciones } from '@/lib/correo';
 
-export type Aviso = 'orden' | 'entrevista' | 'informe' | 'factura';
+export type Aviso = 'orden' | 'entrevista' | 'informe' | 'factura' | 'recibo';
 
-const COLUMNA: Record<Exclude<Aviso, 'factura'>, string> = {
+const COLUMNA: Record<Exclude<Aviso, 'factura' | 'recibo'>, string> = {
   orden: 'recibe_orden',
   entrevista: 'recibe_entrevista',
   informe: 'recibe_informe',
@@ -52,7 +53,8 @@ export async function destinosDe(
   const contactos = (
     await select<Fila>(
       'contactos',
-      'select=id,nombre,email,recibe_todo,facturacion,recibe_orden,recibe_entrevista,recibe_informe' +
+      'select=id,nombre,email,recibe_todo,facturacion,recibe_orden,recibe_entrevista,recibe_informe,' +
+        'recibe_factura,recibe_recibo' +
         `&empresa_id=eq.${empresaId}&activo=is.true&order=nombre.asc`
     )
   ).filter((c) => direcciones([c.email]).length > 0);
@@ -66,11 +68,16 @@ export async function destinosDe(
     };
   };
 
-  // La factura y el recibo son de compras. Sin responsable de compras, van a
-  // quien solicitó el candidato, tenga los avisos que tenga tildados.
-  if (aviso === 'factura') {
+  // La factura y el recibo son de compras. Quien solicitó el candidato los
+  // recibe si lo eligió en el portal; mientras no eligió, los recibe solo si
+  // no hay responsable de compras. Con compras, quien solicitó va en copia.
+  if (aviso === 'factura' || aviso === 'recibo') {
     const compras = contactos.filter((c) => c.facturacion);
-    return armar(compras.length > 0 ? compras : contactos.filter((c) => pidieron.has(c.id)));
+    const marca = aviso === 'factura' ? 'recibe_factura' : 'recibe_recibo';
+    const suyos = contactos.filter(
+      (c) => pidieron.has(c.id) && !c.facturacion && ((c[marca] as boolean | null) ?? compras.length === 0)
+    );
+    return compras.length > 0 ? armar(compras, suyos) : armar(suyos);
   }
 
   const col = COLUMNA[aviso];

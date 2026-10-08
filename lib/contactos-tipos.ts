@@ -38,6 +38,14 @@ export type Contacto = {
    * esto recibe solo lo de los que pidió él.
    */
   recibeTodo: boolean;
+  /**
+   * Si quien solicita recibe la factura de sus candidatos, y su recibo de
+   * pago. Lo elige la persona en el portal. Mientras no eligió vale la regla
+   * de siempre: la recibe si su empresa no tiene responsable de compras.
+   * `contactosDe` ya lo entrega resuelto, por eso acá no hay null.
+   */
+  recibeFactura: boolean;
+  recibeRecibo: boolean;
   activo: boolean;
 };
 
