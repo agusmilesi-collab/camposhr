@@ -26,7 +26,7 @@ import { select } from '@/lib/supabase';
 import { CACHE_COMERCIAL, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { BENZIGER_USD, dolarTarjeta, fechaDePrecio, precioA, type Precio } from '@/lib/baterias-precios';
 import { llevaBenziger } from '@/lib/benziger';
-import type { Emisora, Factura, Facturable } from '@/lib/facturas-tipos';
+import type { Emisora, Factura, Facturable, Fiscal } from '@/lib/facturas-tipos';
 
 export {
   ESTADOS_FACTURA,
@@ -267,8 +267,80 @@ type FilaFacturable = {
  * lo que valió una evaluación de marzo. El adicional Benziger se pesifica al dólar
  * tarjeta del día, y recién se congela cuando la factura se emite.
  */
-export async function listarAFacturar(): Promise<Facturable[]> {
+/**
+ * Los datos fiscales de los clientes que se van a facturar, para verlos al
+ * facturar sin ir a buscar la ficha de cada uno.
+ */
+export async function fiscalesDe(empresaIds: string[]): Promise<Record<string, Fiscal>> {
+  const ids = [...new Set(empresaIds)].filter(Boolean);
+  if (ids.length === 0) return {};
+  const filas = await select<{
+    id: string;
+    razon_social: string | null;
+    cuit: string | null;
+    condicion_iva: string | null;
+    direccion_fiscal: string | null;
+    email_facturacion: string | null;
+    exige_orden_compra: boolean;
+  }>(
+    'empresas',
+    'select=id,razon_social,cuit,condicion_iva,direccion_fiscal,email_facturacion,exige_orden_compra' +
+      `&id=in.(${ids.join(',')})`
+  ).catch(() => []);
+  const fiscales: Record<string, Fiscal> = {};
+  for (const e of filas) {
+    fiscales[e.id] = {
+      razonSocial: e.razon_social,
+      cuit: e.cuit,
+      condicionIva: e.condicion_iva,
+      domicilio: e.direccion_fiscal,
+      correo: e.email_facturacion,
+      exigeOrdenCompra: e.exige_orden_compra,
+    };
+  }
+  return fiscales;
+}
+
+/**
+ * El número de factura que le sigue a cada emisora, para proponerlo.
+ *
+ * Es el más alto que tiene anotado más uno, contando solo las de verdad: las
+ * que van sin factura no tienen número y las de homologación llevan otra
+ * numeración. Sin ninguna anotada no se propone nada, que inventar un 1 es
+ * peor que dejar el campo vacío.
+ */
+export function siguientesNumeros(facturas: Factura[]): Record<string, number> {
+  const numeros: Record<string, number[]> = {};
+  for (const f of facturas) {
+    if (f.numero === null || f.sinComprobante || f.ambiente === 'homologacion') continue;
+    if (f.estado === 'anulada' || esEmpresaDePrueba(f.cliente)) continue;
+    (numeros[f.emisorId] ??= []).push(f.numero);
+  }
+  // Un número muy por encima de los demás es uno mal cargado (hay un 585586
+  // que vino de Airtable, dos números pegados) y no el último de la serie:
+  // proponer el que le sigue llevaría la numeración a cualquier lado.
+  const siguientes: Record<string, number> = {};
+  for (const [emisor, suyos] of Object.entries(numeros)) {
+    const deMayorAMenor = [...suyos].sort((a, b) => b - a);
+    const ultimo = deMayorAMenor.find((n, i) => {
+      const anterior = deMayorAMenor[i + 1];
+      return anterior === undefined || n - anterior < 1000;
+    });
+    if (ultimo !== undefined) siguientes[emisor] = ultimo + 1;
+  }
+  return siguientes;
+}
+
+export async function listarAFacturar(
+  /**
+   * Una sola evaluación, sin mirar su etapa: la hoja de entrevista ofrece
+   * facturarla apenas está tomada la entrevista por competencias, aunque la
+   * evaluación todavía no haya cambiado de etapa.
+   */
+  soloId?: string
+): Promise<Facturable[]> {
   const etapas = ETAPAS_ENTREVISTADO.map((e) => `"${e}"`).join(',');
+  const filtro = soloId ? `id=eq.${encodeURIComponent(soloId)}` : `estado=in.(${etapas})`;
   const [evaluaciones, renglones, enOrdenes, precios, cambio] = await Promise.all([
     select<FilaFacturable>(
       'evaluaciones',
@@ -276,7 +348,7 @@ export async function listarAFacturar(): Promise<Facturable[]> {
         'personas(nombre),evaluadoras(nombre),' +
         'pedidos(puesto,empresa_id,fecha_pedido,con_benziger,empresas(nombre),' +
         'baterias(id,codigo,nombre))' +
-        `&estado=in.(${etapas})&order=fecha_entrevista.desc`,
+        `&${filtro}&order=fecha_entrevista.desc`,
       // Con las dos etiquetas: una evaluación entra en esta cola cuando se le
       // toma la entrevista, que se marca desde Psicotécnicos. Con la etiqueta
       // comercial sola, el candidato aparecía para facturar recién cuando algo

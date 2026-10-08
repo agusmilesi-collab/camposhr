@@ -18436,3 +18436,9 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja {
 button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   box-shadow: inset 0 0 0 1px var(--os-tinta);
 }
+
+/* Lo de facturar desplegado desde la hoja de entrevista, separado de la
+   tarjeta de cierre de arriba. */
+#hoja-facturar > :first-child {
+  margin-top: 14px;
+}
