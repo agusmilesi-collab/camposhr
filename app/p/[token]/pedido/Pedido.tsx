@@ -563,7 +563,15 @@ export default function Pedido({
                               className={`pedir-tarjeta${activa ? '' : ' pedir-inactiva'}${
                                 busqueda === b.id ? ' pedir-elegida' : ''
                               }`}
-                              onClick={() => setBusqueda(b.id)}
+                              /* Elegir el puesto ya contesta la pregunta: pasa
+                                 solo a los candidatos, y si se equivocó tiene
+                                 Volver. */
+                              onClick={() => {
+                                setBusqueda(b.id);
+                                setError(null);
+                                setPaso('candidatos');
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
                             >
                               <span className="pedir-tarjeta-t">{b.puesto}</span>
                               {/* La batería con su sigla y la fecha al lado: "B3 + bzg · 30/9/26". */}
@@ -1025,7 +1033,10 @@ export default function Pedido({
         {/* Atrás y siguiente, al pie de la tarjeta: en el último paso el
             botón es el de mandar, que está en el resumen. */}
         <div className="pedir-navegar">
-          {!ultimo && (
+          {/* Sin botón donde la respuesta es tocar una tarjeta: antes de elegir
+              si es un puesto nuevo, y al elegir a qué puesto se suman
+              candidatos, que ya avanza solo. */}
+          {!ultimo && !(actual === 'busqueda' && (!modo || esExistente)) && (
             <button type="button" className="btn-primario" onClick={seguir}>
               Próximo paso
             </button>
