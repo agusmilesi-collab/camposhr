@@ -274,6 +274,13 @@ export async function emitirEnArca(facturaId: string): Promise<Emision> {
       'Esta emisora todavía factura contra el ARCA de prueba, que solo admite a Distribuidora Andina.'
     );
   }
+  // Y al revés: contra el ARCA real no se emite a la empresa de prueba. Sería
+  // una factura de verdad, con CAE, a nombre de un cliente que no existe.
+  if (ambiente === 'produccion' && esEmpresaDePrueba(receptor.nombre)) {
+    return fallo(
+      `${receptor.nombre} es la empresa de prueba y esta emisora factura contra el ARCA real: no se emite.`
+    );
+  }
   // Un inquilino sin CUIT es consumidor final, lo diga su ficha o no. A una
   // empresa la condición se le exige cargada.
   const condicionIva = f.empresas ? receptor.condicion_iva : condicionDelInquilino(receptor);

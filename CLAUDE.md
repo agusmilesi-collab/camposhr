@@ -1443,7 +1443,7 @@ botón de enviar no se ofrece. Son cinco correos:
 | Orden de compra | Sola, al cargar candidatos | `lib/correo-orden.ts` |
 | Entrevista agendada | Sola, al quedar en Por entrevistar con día y modalidad | `lib/correo-avisos.ts` |
 | Informe listo | **Apagado** (`AVISA_INFORME`): los informes todavía se entregan por fuera del OS | `lib/correo-avisos.ts` |
-| Factura | **Con el botón del comprobante**, en dos toques | `lib/correo-factura.ts` |
+| Factura | Sola, al autorizarse con CAE; el mismo botón pide el CAE y la manda | `lib/correo-factura.ts` |
 | Recibo de pago | Solo, al confirmar el cobro | `lib/correo-factura.ts` |
 
 **De quién sale depende de qué es** (`REMITENTES` en `lib/correo.ts`): la
@@ -1473,8 +1473,18 @@ evaluación miran cómo quedó después de guardar y no qué se tocó, así que 
 mismo agendar con el botón, arrastrando o desde la ficha, y llevar la tarjeta
 ida y vuelta no manda nada. Para volver a probar uno hay que vaciar esa columna.
 
-**La factura no sale sola** porque una mandada a quien no era no se retira. Una
-anulada no se manda.
+**La factura sale sola al pedir el CAE** (`enviarTrasElCae`): es un solo botón,
+"Pedir CAE y enviar", que antes de emitir dice a quién va. Desde el comprobante
+se puede reenviar. Una anulada no se manda, y una de homologación tampoco.
+
+**Salvo al cliente que la recibe por su portal de proveedores**
+(`empresas.portal_proveedores`, "Entrega de facturas" en su ficha): a ese no se
+le manda sola. El comprobante dice que hay que descargarla y cargarla ahí, y
+deja el correo como salida de más. Si el correo no sale (no hay a quién, o el
+proveedor lo rechaza), la factura queda emitida igual y la pantalla lo dice.
+
+**Contra el ARCA real no se emite a la empresa de prueba**: sería una factura
+de verdad a nombre de un cliente que no existe.
 
 **La respuesta del cliente cae en la evaluadora** (`evaluadoras.email`): la
 del candidato, o la que emitió la factura. El dominio no recibe correo. Las

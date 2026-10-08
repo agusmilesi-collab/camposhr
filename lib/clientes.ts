@@ -50,6 +50,11 @@ export type Cliente = {
    * ese número no la paga, así que al facturarle el campo es obligatorio.
    */
   exigeOrdenCompra: boolean;
+  /**
+   * Recibe las facturas por su portal de proveedores y no por correo: la
+   * factura no se le manda sola, se descarga y se carga ahí a mano.
+   */
+  portalProveedores: boolean;
   rubro: string | null;
   tamano: number | null;
   notas: string | null;
@@ -93,6 +98,7 @@ type FilaEmpresa = {
   cuit: string | null;
   condicion_iva: string | null;
   exige_orden_compra?: boolean | null;
+  portal_proveedores?: boolean | null;
   email_facturacion: string | null;
   contacto: string | null;
   direccion_fiscal: string | null;
@@ -115,7 +121,7 @@ type FilaEmpresa = {
 
 const CAMPOS =
   'id,nombre,razon_social,cuit,condicion_iva,email_facturacion,contacto,' +
-  'direccion_fiscal,exige_orden_compra,rubro,tamano,notas,token_portal,informes_visibles,activa,' +
+  'direccion_fiscal,exige_orden_compra,portal_proveedores,rubro,tamano,notas,token_portal,informes_visibles,activa,' +
   'pedidos(id,puesto,estado,fecha_pedido,reabierto_el,evaluaciones(id,estado,baja_el)),cotizaciones(id,estado)';
 
 export async function listarClientes(): Promise<Cliente[]> {
@@ -150,6 +156,7 @@ export async function listarClientes(): Promise<Cliente[]> {
     contacto: e.contacto,
     direccionFiscal: e.direccion_fiscal,
     exigeOrdenCompra: Boolean(e.exige_orden_compra),
+    portalProveedores: Boolean(e.portal_proveedores),
     rubro: e.rubro,
     tamano: e.tamano,
     notas: e.notas,
@@ -203,6 +210,7 @@ export async function listarClientes(): Promise<Cliente[]> {
       contacto: null,
       direccionFiscal: null,
       exigeOrdenCompra: false,
+      portalProveedores: false,
       rubro: null,
       tamano: null,
       notas: null,

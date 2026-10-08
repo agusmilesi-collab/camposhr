@@ -91,6 +91,8 @@
 .cbte .aviso.aviso-envio { background: #16202b; }
 .cbte .aviso.aviso-envio .pedir { color: #16202b; }
 .cbte .aviso.aviso-envio .pedir-no { color: #fff; }
+/* El de descargar es un enlace con la misma forma que los botones. */
+.cbte .aviso a.pedir { display: inline-block; text-decoration: none; }
 
 .cbte .cabeza {
   display: grid;

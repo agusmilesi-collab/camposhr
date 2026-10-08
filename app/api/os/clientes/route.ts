@@ -87,6 +87,9 @@ export async function POST(req: Request) {
     ...(datos.exigeOrdenCompra === undefined
       ? {}
       : { exige_orden_compra: datos.exigeOrdenCompra === 'si' || datos.exigeOrdenCompra === true }),
+    ...(datos.portalProveedores === undefined
+      ? {}
+      : { portal_proveedores: datos.portalProveedores === 'si' || datos.portalProveedores === true }),
     ...campo('rubro', 'rubro', texto('rubro')),
     ...campo(
       'tamano',
