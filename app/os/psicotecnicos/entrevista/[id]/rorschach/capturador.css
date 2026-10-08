@@ -341,6 +341,22 @@
   line-height: 1.2;
 }
 
+/* La pregunta de los determinantes, debajo de lo que vio y antes de la
+   calidad: el campo ocupa el ancho de la tarjeta para escribir la respuesta
+   entera sin que se corte. */
+.os-ror-caracteristica {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.os-ror-caracteristica textarea {
+  width: 100%;
+  resize: vertical;
+  font-size: 17px;
+}
+
 /* Las locaciones van en su propio renglón, debajo de lo que se vio: al lado
    del texto se leían como una palabra más de la respuesta. */
 .os-ror-dq-area {

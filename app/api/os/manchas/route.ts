@@ -99,6 +99,9 @@ function limpiar(campos: Record<string, unknown>): Record<string, unknown> | Fal
       // notas: es el dato de la primera instancia y lo que se lee en la
       // segunda para preguntarle dónde lo vio.
       case 'verbalizacion':
+      // Qué de la mancha le hizo ver eso, dicho en la encuesta: la ayuda para
+      // codificar los determinantes.
+      case 'caracteristica':
       case 'observacion': {
         if (valor !== null && typeof valor !== 'string') {
           return { ok: false, motivo: `${campo} es texto.` };

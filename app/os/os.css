@@ -4353,6 +4353,23 @@ button.os-enlace-peligro:hover {
   max-width: 520px;
 }
 
+/* Lo que contestó en la encuesta sobre qué de la mancha le hizo ver eso,
+   debajo de los determinantes de la fila. Va chico y en dos renglones como
+   mucho: es una ayuda para elegir y no puede ensanchar la columna, que tiene
+   el ancho fijo de la grilla. El texto entero queda en el `title`. */
+.os-mancha-caracteristica {
+  margin: 4px 0 0;
+  max-width: 220px;
+  color: var(--os-suave);
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* Agregar queda contra el borde derecho aunque sea lo único del renglón: antes
    del protocolo entero, calcular el sumario no está, y sin este empuje el
    botón se corría solo a la izquierda. */
