@@ -214,6 +214,20 @@ export default function Ficha({
                 <option value="si">La exige en la factura</option>
               </select>
             </label>
+            {/* Hay clientes que no reciben la factura por correo: hay que
+                cargarla en su portal de proveedores. Marcado acá, la factura
+                no se les manda sola al pedir el CAE. */}
+            <label className="os-cliente-dato">
+              <span className="os-dato-rotulo">Entrega de facturas</span>
+              <select
+                className="os-campo"
+                name="portalProveedores"
+                defaultValue={cliente.portalProveedores ? 'si' : 'no'}
+              >
+                <option value="no">Por correo</option>
+                <option value="si">Por su portal de proveedores</option>
+              </select>
+            </label>
             <Campo rotulo="Rubro" nombre="rubro" valor={cliente.rubro} />
             <div className="os-portal-acciones os-cliente-datos-acciones">
               <button className="os-boton os-boton-firme" type="submit" disabled={guardando}>
@@ -242,6 +256,10 @@ export default function Ficha({
             <Dato
               rotulo="Orden de compra propia"
               valor={cliente.exigeOrdenCompra ? 'La exige en la factura' : 'No la exige'}
+            />
+            <Dato
+              rotulo="Entrega de facturas"
+              valor={cliente.portalProveedores ? 'Por su portal de proveedores' : 'Por correo'}
             />
             <Dato rotulo="Rubro" valor={cliente.rubro} />
             {/* Si se está trabajando con este cliente, como un dato más de la

@@ -10,7 +10,7 @@ import { conceptoDe, conceptoPorDefecto, totalDe } from '@/lib/facturas-tipos';
 import { CATEGORIAS_SERVICIOS } from '@/lib/monotributo';
 import { anularConNotaDeCredito, emitirEnArca, probarConexion } from '@/lib/arca/emitir';
 import { guardarPdfDeFactura } from '@/lib/factura-archivo';
-import { avisarRecibo, enviarFactura } from '@/lib/correo-factura';
+import { avisarRecibo, enviarFactura, enviarTrasElCae, type CorreoTrasElCae } from '@/lib/correo-factura';
 import { enumerar, faltaParaEmitir, faltaParaFacturarle } from '@/lib/clientes-tipos';
 
 export const runtime = 'nodejs';
@@ -577,12 +577,30 @@ export async function POST(req: Request) {
         } catch (e) {
           console.error('facturas, después del CAE:', e);
         }
-        return NextResponse.json(r);
+        // Y sale por correo, que es el mismo botón: salvo que el cliente la
+        // reciba por su portal de proveedores. Las de homologación no se
+        // mandan, que no son facturas.
+        let correo: CorreoTrasElCae | null = null;
+        if (r.ambiente === 'produccion') {
+          correo = await enviarTrasElCae(id);
+          await anotarAcceso({
+            quien: yo.nombre,
+            accion: 'escritura',
+            recurso: 'factura',
+            recursoId: id,
+            detalle:
+              correo.que === 'enviada'
+                ? { correo: 'enviada', a: correo.a, sola: true }
+                : { correo: correo.que, ...(correo.que === 'sin enviar' ? { motivo: correo.motivo } : {}) },
+          });
+          refrescar();
+        }
+        return NextResponse.json({ ...r, correo });
       }
 
       /**
-       * Mandarle la factura por correo al cliente. La manda alguien con el
-       * botón del comprobante, nunca sale sola: ver `lib/correo-factura.ts`.
+       * Mandarle la factura por correo al cliente, a mano: para reenviarla, o
+       * para la que no salió sola al pedir el CAE. Ver `lib/correo-factura.ts`.
        */
       case 'enviar': {
         const { id } = datos;

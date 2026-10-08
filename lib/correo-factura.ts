@@ -1,9 +1,13 @@
 /**
  * La factura y el recibo de pago, por correo.
  *
- * **La factura no sale sola: la manda alguien con un botón** (decisión de
- * Agustín, 7/10/2026). Una factura mandada a una dirección equivocada no se
- * puede retirar, así que antes de mandarla hay que ver a quién va.
+ * **La factura sale sola al pedir el CAE** (decisión de Agustín, 8/10/2026):
+ * es un solo botón, que antes de emitir dice a quién va. Después se puede
+ * reenviar desde el comprobante.
+ *
+ * **Salvo que el cliente la reciba por su portal de proveedores**
+ * (`empresas.portal_proveedores`): a esos no se les manda sola, porque hay que
+ * descargarla y cargarla a mano en ese portal.
  *
  * **El recibo de pago sí sale solo**, al confirmar el cobro, a los mismos que
  * la factura: ya se vio a quién iba cuando se la mandó.
@@ -31,6 +35,8 @@ export type EnvioDeFactura = {
   enviadaA: string[];
   /** Falso mientras el sistema no tenga la clave de Resend. */
   prendido: boolean;
+  /** El cliente la recibe por su portal de proveedores: no sale sola. */
+  portal: boolean;
 };
 
 type Fila = {
@@ -39,17 +45,21 @@ type Fila = {
   enviada_at: string | null;
   enviada_a: string[] | null;
   recibo_enviado_at: string | null;
-  empresas: { email_facturacion: string | null } | null;
+  empresas: { email_facturacion: string | null; portal_proveedores: boolean | null } | null;
   emisores: { evaluadoras: { email: string | null } | null } | null;
   factura_items: {
     evaluaciones: { solicitante_id: string | null; pedidos: { solicitante_id: string | null } | null } | null;
   }[];
 };
 
-async function leer(id: string): Promise<{ f: Fila; destinos: Destinos } | null> {
+async function leer(
+  id: string,
+  /** La factura y su recibo se eligen por separado en el portal. */
+  aviso: 'factura' | 'recibo' = 'factura'
+): Promise<{ f: Fila; destinos: Destinos } | null> {
   const [f] = await select<Fila>(
     'facturas',
-    'select=empresa_id,estado,enviada_at,enviada_a,recibo_enviado_at,empresas(email_facturacion),' +
+    'select=empresa_id,estado,enviada_at,enviada_a,recibo_enviado_at,empresas(email_facturacion,portal_proveedores),' +
       'emisores(evaluadoras(email)),factura_items(evaluaciones(solicitante_id,pedidos(solicitante_id)))' +
       `&id=eq.${id}&limit=1`
   );
@@ -57,7 +67,7 @@ async function leer(id: string): Promise<{ f: Fila; destinos: Destinos } | null>
   const pidieron = f.factura_items.map(
     (i) => i.evaluaciones?.solicitante_id ?? i.evaluaciones?.pedidos?.solicitante_id
   );
-  const d = await destinosDe('factura', f.empresa_id, pidieron);
+  const d = await destinosDe(aviso, f.empresa_id, pidieron);
   // El correo de facturación de la empresa, si está cargado, va siempre.
   const fijo = direcciones([f.empresas?.email_facturacion]).filter((x) => !d.para.includes(x));
   const destinos =
@@ -76,6 +86,7 @@ export async function envioDeFactura(id: string): Promise<EnvioDeFactura | null>
     enviadaAt: d.f.enviada_at,
     enviadaA: d.f.enviada_a ?? [],
     prendido: hayCorreo(),
+    portal: Boolean(d.f.empresas?.portal_proveedores),
   };
 }
 
@@ -190,6 +201,28 @@ export async function enviarFactura(id: string): Promise<ResultadoDeEnvio> {
 }
 
 /**
+ * Lo que pasa con el correo al autorizarse la factura: sale sola, salvo que el
+ * cliente la reciba por su portal de proveedores. No tira nunca: la factura ya
+ * está emitida cuando esto corre.
+ */
+export type CorreoTrasElCae =
+  | { que: 'enviada'; a: string[] }
+  | { que: 'portal' }
+  | { que: 'sin enviar'; motivo: string };
+
+export async function enviarTrasElCae(id: string): Promise<CorreoTrasElCae> {
+  try {
+    const datos = await leer(id);
+    if (datos?.f.empresas?.portal_proveedores) return { que: 'portal' };
+    const r = await enviarFactura(id);
+    return r.ok ? { que: 'enviada', a: r.a } : { que: 'sin enviar', motivo: r.error };
+  } catch (e) {
+    console.error('[correo de factura] tras el CAE', e);
+    return { que: 'sin enviar', motivo: 'No se pudo mandar el correo.' };
+  }
+}
+
+/**
  * Manda el recibo de pago, una sola vez, al confirmar el cobro.
  *
  * No tira: el cobro ya quedó marcado cuando esto corre. Desmarcar y volver a
@@ -198,7 +231,7 @@ export async function enviarFactura(id: string): Promise<ResultadoDeEnvio> {
 export async function avisarRecibo(id: string): Promise<void> {
   try {
     if (!hayCorreo()) return;
-    const [datos, recibo] = await Promise.all([leer(id), reciboDePago(id)]);
+    const [datos, recibo] = await Promise.all([leer(id, 'recibo'), reciboDePago(id)]);
     if (!datos || !recibo || datos.f.recibo_enviado_at) return;
     const { para, copia, nombre } = datos.destinos;
     if (para.length === 0) return;

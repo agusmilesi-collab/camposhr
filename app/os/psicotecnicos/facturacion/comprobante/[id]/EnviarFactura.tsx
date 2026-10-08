@@ -51,6 +51,26 @@ export default function EnviarFactura({ id, envio }: { id: string; envio: EnvioD
     ? `Enviada el ${cuando(envio.enviadaAt)} a ${envio.enviadaA.join(', ')}.`
     : null;
 
+  // El cliente que la recibe por su portal de proveedores: lo que hay que
+  // hacer es descargarla y cargarla ahí. El correo queda como salida de más,
+  // en dos toques, por si alguien de ese cliente la pide.
+  if (envio.portal && !seguro) {
+    return (
+      <div className="aviso aviso-envio">
+        <b>Este cliente recibe las facturas por su portal de proveedores.</b>{' '}
+        {ya ?? 'No se le mandó por correo.'} Descargala y cargala ahí.
+        <a className="pedir" href={`/api/os/factura-pdf/${id}`}>
+          Descargar PDF
+        </a>
+        {envio.prendido && envio.para.length > 0 && (
+          <button type="button" className="pedir pedir-no" onClick={() => setSeguro(true)}>
+            {ya ? 'Reenviar por correo' : 'Enviar por correo igual'}
+          </button>
+        )}
+        {error && <div className="motivo">{error}</div>}
+      </div>
+    );
+  }
   if (!envio.prendido) return null;
   if (envio.para.length === 0) {
     return (

@@ -63,9 +63,11 @@ export default async function Comprobante({
   // cortó a medio emitir, y pedir el CAE de nuevo es cómo se recupera.
   const seEmite =
     puedeEmitir && !d.conCae && (d.sinNumero || d.estado === 'borrador') && d.estado !== 'anulada' && !d.esNota;
-  // Mandarla por correo, solo desde el OS y solo la que es un comprobante de
-  // verdad: con CAE y sin anular.
-  const envio = puedeEmitir && d.conCae && d.estado !== 'anulada' ? await envioDeFactura(d.id) : null;
+  // A quién va por correo. Se averigua antes de emitir, para que el botón que
+  // pide el CAE diga a quién le va a llegar, y después, para reenviarla.
+  const destino =
+    puedeEmitir && d.estado !== 'anulada' && (d.conCae || seEmite) ? await envioDeFactura(d.id) : null;
+  const envio = d.conCae ? destino : null;
   const qr = d.qr
     ? await QRCode.toString(d.qr, { type: 'svg', margin: 0, errorCorrectionLevel: 'M' })
     : null;
@@ -77,7 +79,15 @@ export default async function Comprobante({
           <b>Factura sin CAE.</b> Es la factura como la tiene anotada el OS: sirve para revisar
           el detalle, no es el comprobante de ARCA.
           {d.motivo && <div className="motivo">ARCA la rechazó: {d.motivo}</div>}
-          {seEmite && <PedirCae id={d.id} />}
+          {seEmite && (
+            <PedirCae
+              id={d.id}
+              para={destino?.prendido ? destino.para : []}
+              portal={Boolean(destino?.portal)}
+              // Las de prueba no se mandan: no son facturas.
+              seManda={Boolean(destino?.prendido) && !d.dePrueba}
+            />
+          )}
         </div>
       )}
       {d.anuladaPor && (
