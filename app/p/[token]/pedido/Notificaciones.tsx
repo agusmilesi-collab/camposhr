@@ -9,15 +9,16 @@
  * sus pedidos: son las mismas marcas que el equipo ve en la ficha del cliente.
  *
  * Va plegado: la mayoría no lo toca nunca, y abierto empujaría el botón de
- * enviar fuera de la vista.
+ * enviar fuera de la vista. Y liviano: un renglón con su flecha, y adentro un
+ * punto de color por aviso en lugar de casillas (pedido de Agustín, 8/10/2026).
  */
 
 import { useState } from 'react';
 import type { Contacto } from '@/lib/contactos-tipos';
 
 const AVISOS = [
-  { campo: 'recibeEntrevista', texto: 'La fecha de la entrevista, cuando se agenda' },
-  { campo: 'recibeInforme', texto: 'El aviso de que el informe está listo' },
+  { campo: 'recibeEntrevista', texto: 'Fecha de la entrevista' },
+  { campo: 'recibeInforme', texto: 'Informe listo' },
 ] as const;
 
 type Campo = (typeof AVISOS)[number]['campo'];
@@ -67,7 +68,7 @@ export default function Notificaciones({
   }
 
   return (
-    <div className="pedir-avisos">
+    <div className={`pedir-avisos${abierto ? ' abierta' : ''}`}>
       <button
         type="button"
         className="pedir-avisos-abrir"
@@ -75,32 +76,38 @@ export default function Notificaciones({
         onClick={() => setAbierto(!abierto)}
       >
         Configurar notificaciones
+        <span className="pedir-avisos-flecha" aria-hidden="true" />
       </button>
 
       {abierto && (
         <div className="pedir-avisos-cuerpo">
           {quien.email ? (
             <>
-              <p className="pedir-avisos-t">Quiero recibir por correo:</p>
+              {/* Un punto y no una casilla: verde es que le llega, rojo es
+                  que no. Se cambia tocando el renglón. */}
               {AVISOS.map((a) => (
-                <label className="pedir-avisos-marca" key={a.campo}>
-                  <input
-                    type="checkbox"
-                    checked={suyas[a.campo]}
-                    disabled={estado === 'guardando'}
-                    onChange={(e) => cambiar(a.campo, e.target.checked)}
-                  />
-                  {a.texto}
-                </label>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={suyas[a.campo]}
+                  className="pedir-avisos-marca"
+                  key={a.campo}
+                  disabled={estado === 'guardando'}
+                  onClick={() => cambiar(a.campo, !suyas[a.campo])}
+                >
+                  <span className={`pedir-avisos-punto${suyas[a.campo] ? ' si' : ''}`} aria-hidden="true" />
+                  <span className="pedir-avisos-que">{a.texto}</span>
+                  <span className="pedir-avisos-estado">{suyas[a.campo] ? 'Sí' : 'No'}</span>
+                </button>
               ))}
               <p className="pedir-avisos-n" aria-live="polite">
                 {estado === 'error'
                   ? 'No se pudo guardar. Probá de nuevo.'
-                  : `${estado === 'guardado' ? 'Guardado. ' : ''}Llegan a ${quien.email} y vale para todos tus pedidos.`}
+                  : `${estado === 'guardado' ? 'Guardado. ' : ''}Llegan a ${quien.email}.`}
               </p>
             </>
           ) : (
-            <p className="pedir-avisos-t">
+            <p className="pedir-avisos-n">
               No tenemos tu correo cargado, así que no podemos mandarte avisos. Escribinos y lo
               sumamos.
             </p>
