@@ -1451,13 +1451,20 @@ orden de compra, la entrevista y el informe salen de `pedidos@camposhr.com`; la
 factura y el recibo de pago, de `facturacion@camposhr.com`. Un correo nuevo
 tiene que decir de cuál de las dos sale (`de`).
 
-**A quién va cada uno lo decide la ficha del cliente, contacto por contacto**
-(`lib/correo-destinos.ts`). Cada contacto tilda qué recibe y si recibe solo lo
-de los candidatos que pidió él o también lo de los demás de su empresa
-(`recibe_todo`). Va a quien pidió y el resto en copia. Así compras recibe todas
-las facturas sin pedir nada, y recursos humanos pide y se entera sin recibir
-facturas. Quien no recibe ese aviso, o no tiene correo, no lo recibe: no se le
-manda a otro por las dudas.
+**A quién va cada uno lo decide la ficha del cliente**
+(`lib/correo-destinos.ts`), que tiene dos listas porque son dos preguntas:
+
+- **Quién solicita.** Pedir y recibir avisos van en columnas separadas. Cada
+  contacto tilda qué avisos recibe (orden, entrevista, informe) y si recibe solo
+  lo de los candidatos que pidió él o también lo de los demás (`recibe_todo`).
+  El aviso va a quien pidió y los que reciben lo de todos van en copia.
+- **Responsable de compras** (`facturacion`). Recibe las facturas y los recibos
+  de pago de toda la empresa. **Si la empresa no tiene ninguno, van a quien
+  solicitó el candidato**, y la lista vacía lo dice. La factura no es un tilde
+  de quien solicita.
+
+Quien no tiene correo cargado no recibe nada: no se le manda a otro por las
+dudas.
 
 **Cada aviso sale una vez.** Lo guardan `evaluaciones.aviso_entrevista_fecha`
 (para qué fecha se avisó: si cambia, sale de nuevo y dice "se reprogramó"),

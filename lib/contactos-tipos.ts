@@ -22,7 +22,10 @@ export type Contacto = {
   telefono: string | null;
   /** Pide evaluaciones. Es quien figura en el portal al cargar un pedido. */
   pide: boolean;
-  /** Recibe por correo la factura y su recibo de pago. */
+  /**
+   * Es responsable de compras: recibe las facturas y los recibos de pago de
+   * toda la empresa. Si la empresa no tiene ninguno, van a quien solicitó.
+   */
   facturacion: boolean;
   /** Recibe por correo la orden de compra, al cargar candidatos. */
   recibeOrden: boolean;
@@ -43,21 +46,17 @@ export function comoSeLlama(c: Contacto): string {
   return c.cargo ? `${c.nombre} · ${c.cargo}` : c.nombre;
 }
 
-/** Los correos que se le pueden mandar, en el orden en que pasan. */
+/**
+ * Los avisos que recibe quien solicita, en el orden en que pasan.
+ *
+ * La factura no está acá: no se tilda por aviso, la recibe el responsable de
+ * compras (`facturacion`) y, si no hay ninguno, quien solicitó el candidato.
+ */
 export const AVISOS = [
-  { campo: 'recibeOrden', texto: 'Orden de compra', fila: 'Orden', corto: 'orden' },
-  { campo: 'recibeEntrevista', texto: 'Entrevista agendada', fila: 'Entrevista', corto: 'entrevista' },
-  { campo: 'recibeInforme', texto: 'Informe listo', fila: 'Informe', corto: 'informe' },
-  { campo: 'facturacion', texto: 'Factura y recibo de pago', fila: 'Factura', corto: 'factura' },
+  { campo: 'recibeOrden', texto: 'Orden de compra', fila: 'Orden' },
+  { campo: 'recibeEntrevista', texto: 'Entrevista agendada', fila: 'Entrevista' },
+  { campo: 'recibeInforme', texto: 'Informe listo', fila: 'Informe' },
 ] as const;
-
-/** Qué recibe por correo, en una línea: "orden, informe, factura · de toda la empresa". */
-export function queRecibe(c: Contacto): string {
-  const cuales = AVISOS.filter((a) => c[a.campo]).map((a) => a.corto);
-  if (cuales.length === 0) return 'Sin correos';
-  const todos = cuales.length === AVISOS.length ? 'todo' : cuales.join(', ');
-  return c.recibeTodo ? `${todos} · de toda la empresa` : todos;
-}
 
 /** Qué hace, dicho para leer de un vistazo. */
 export function queHace(c: Contacto): string {

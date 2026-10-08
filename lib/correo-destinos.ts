@@ -1,17 +1,18 @@
 /**
  * A quién le llega cada correo del sistema.
  *
- * Lo decide la ficha del cliente, contacto por contacto: cada uno tilda qué
- * recibe (orden de compra, entrevista agendada, informe listo, factura con su
- * recibo) y si recibe solo lo de los candidatos que pidió él o también lo que
- * piden los demás de su empresa.
+ * Lo decide la ficha del cliente, que separa dos cosas:
  *
- * Con eso salen los casos que hay: quien pide y se entera de todo lo suyo;
- * compras, que no pide nada y recibe todas las facturas; recursos humanos, que
- * pide y se entera sin recibir facturas; y una gerencia en copia de todo.
+ * - **Los avisos** (orden de compra, entrevista agendada, informe listo) son de
+ *   quien solicita. Cada contacto tilda cuáles recibe y si recibe solo lo de
+ *   los candidatos que pidió él o también lo que piden los demás. Va a quien
+ *   pidió, y los que reciben lo de todos van en copia.
+ * - **La factura y el recibo de pago** son del responsable de compras. Si la
+ *   empresa tiene uno o más, van solo a ellos. **Si no tiene ninguno, van a
+ *   quien solicitó el candidato.**
  *
- * **El correo va a quien pidió, y el resto va en copia.** Si quien pidió no
- * recibe ese aviso, o no tiene correo, va a los que sí.
+ * Quien no tiene correo cargado no recibe nada, y no se le manda a otro por
+ * las dudas.
  */
 
 import 'server-only';
@@ -20,12 +21,10 @@ import { direcciones } from '@/lib/correo';
 
 export type Aviso = 'orden' | 'entrevista' | 'informe' | 'factura';
 
-const COLUMNA: Record<Aviso, string> = {
+const COLUMNA: Record<Exclude<Aviso, 'factura'>, string> = {
   orden: 'recibe_orden',
   entrevista: 'recibe_entrevista',
   informe: 'recibe_informe',
-  // La factura y el recibo de pago van juntos: quien paga recibe los dos.
-  factura: 'facturacion',
 };
 
 export type Destinos = {
@@ -35,10 +34,13 @@ export type Destinos = {
   nombre: string | null;
 };
 
-type Fila = { id: string; nombre: string; email: string | null; recibe_todo: boolean } & Record<
-  string,
-  unknown
->;
+type Fila = {
+  id: string;
+  nombre: string;
+  email: string | null;
+  recibe_todo: boolean;
+  facturacion: boolean;
+} & Record<string, unknown>;
 
 export async function destinosDe(
   aviso: Aviso,
@@ -47,23 +49,35 @@ export async function destinosDe(
   solicitanteIds: (string | null | undefined)[]
 ): Promise<Destinos> {
   if (!empresaId) return { para: [], copia: [], nombre: null };
-  const col = COLUMNA[aviso];
-  const contactos = await select<Fila>(
-    'contactos',
-    `select=id,nombre,email,recibe_todo,${col}&empresa_id=eq.${empresaId}&activo=is.true&${col}=is.true&order=nombre.asc`
-  );
-  const conCorreo = contactos.filter((c) => direcciones([c.email]).length > 0);
+  const contactos = (
+    await select<Fila>(
+      'contactos',
+      'select=id,nombre,email,recibe_todo,facturacion,recibe_orden,recibe_entrevista,recibe_informe' +
+        `&empresa_id=eq.${empresaId}&activo=is.true&order=nombre.asc`
+    )
+  ).filter((c) => direcciones([c.email]).length > 0);
   const pidieron = new Set(solicitanteIds.filter(Boolean));
-  const suyos = conCorreo.filter((c) => pidieron.has(c.id));
-  const enCopia = conCorreo.filter((c) => !pidieron.has(c.id) && c.recibe_todo);
-
-  const primeros = suyos.length > 0 ? suyos : enCopia;
-  const para = direcciones(primeros.map((c) => c.email));
-  return {
-    para,
-    copia: suyos.length > 0 ? direcciones(enCopia.map((c) => c.email)).filter((x) => !para.includes(x)) : [],
-    nombre: primeros.length === 1 ? primeros[0].nombre.trim().split(/\s+/)[0] : null,
+  const armar = (primeros: Fila[], enCopia: Fila[] = []): Destinos => {
+    const para = direcciones(primeros.map((c) => c.email));
+    return {
+      para,
+      copia: direcciones(enCopia.map((c) => c.email)).filter((x) => !para.includes(x)),
+      nombre: primeros.length === 1 ? primeros[0].nombre.trim().split(/\s+/)[0] : null,
+    };
   };
+
+  // La factura y el recibo son de compras. Sin responsable de compras, van a
+  // quien solicitó el candidato, tenga los avisos que tenga tildados.
+  if (aviso === 'factura') {
+    const compras = contactos.filter((c) => c.facturacion);
+    return armar(compras.length > 0 ? compras : contactos.filter((c) => pidieron.has(c.id)));
+  }
+
+  const col = COLUMNA[aviso];
+  const reciben = contactos.filter((c) => c[col] === true);
+  const suyos = reciben.filter((c) => pidieron.has(c.id));
+  const deTodos = reciben.filter((c) => !pidieron.has(c.id) && c.recibe_todo);
+  return suyos.length > 0 ? armar(suyos, deTodos) : armar(deTodos);
 }
 
 /** El molde de todos los correos: la marca, una tarjeta blanca y el pie. */
