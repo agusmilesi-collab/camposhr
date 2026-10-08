@@ -11306,3 +11306,65 @@ a.pedir-volver-link {
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: 10px;
 }
+
+/* ---- Pedido del portal: qué avisos quiere recibir quien lo envía ---- */
+
+.pedir-avisos {
+  display: grid;
+  gap: 8px;
+}
+
+/* Un enlace y no un botón: es algo que casi nadie toca, y con forma de botón
+   compite con el de enviar el pedido. */
+.pedir-avisos-abrir {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.pedir-avisos-abrir:hover {
+  color: var(--ink);
+}
+
+.pedir-avisos-cuerpo {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.pedir-avisos-t {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.pedir-avisos-marca {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.86rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pedir-avisos-marca input {
+  margin-top: 3px;
+  accent-color: var(--ink);
+}
+
+.pedir-avisos-n {
+  margin: 0;
+  min-height: 1.1em;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
