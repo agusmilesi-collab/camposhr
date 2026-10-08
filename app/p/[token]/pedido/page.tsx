@@ -5,6 +5,7 @@ import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
 import { alcanceYPrecios } from '@/lib/precio-portal';
 import { quienesPiden } from '@/lib/contactos';
 import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
+import { select } from '@/lib/supabase';
 import Pedido from './Pedido';
 
 export const dynamic = 'force-dynamic';
@@ -38,9 +39,18 @@ export default async function PedirEvaluacion({ params }: { params: { token: str
     : ((await datosClienteDeSupabase(params.token)) ?? (await getDatosCliente(params.token)));
   if (!datos) notFound();
 
-  const [alcance, contactos] = await Promise.all([
+  const [alcance, contactos, ciudades] = await Promise.all([
     alcanceYPrecios(),
     empresa ? quienesPiden(empresa.id) : Promise.resolve([]),
+    // Las ciudades que ya usó, para ofrecerlas en cada candidato.
+    empresa?.pedido_con_ciudad
+      ? select<{ ciudad: string }>(
+          'evaluaciones',
+          `select=ciudad,pedidos!inner(empresa_id)&pedidos.empresa_id=eq.${empresa.id}&ciudad=not.is.null`
+        )
+          .then((f) => [...new Set(f.map((x) => x.ciudad.trim()).filter(Boolean))].sort())
+          .catch(() => [] as string[])
+      : Promise.resolve([] as string[]),
   ]);
 
   return (
@@ -53,6 +63,7 @@ export default async function PedirEvaluacion({ params }: { params: { token: str
       delPuesto={DEL_PUESTO}
       delJefe={DEL_JEFE}
       conCiudad={empresa?.pedido_con_ciudad === true}
+      ciudades={ciudades}
     />
   );
 }
