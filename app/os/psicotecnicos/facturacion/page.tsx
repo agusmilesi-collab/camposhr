@@ -3,16 +3,16 @@ import Shell from '../../Shell';
 import { ordenPorEvaluacion } from '@/lib/orden-compra';
 import { AFacturar, Anuladas, Emitidas } from './Facturacion';
 import {
+  fiscalesDe,
+  siguientesNumeros,
   listarAFacturar,
   listarEmisoras,
   listarFacturas,
   notasDeCredito,
 } from '@/lib/facturas';
-import { esDePsicotecnicos, type Fiscal } from '@/lib/facturas-tipos';
-import { select } from '@/lib/supabase';
+import { esDePsicotecnicos } from '@/lib/facturas-tipos';
 import { equipo, esMia, quienSoy } from '@/lib/identidad';
 import { cuentasDeLaBarra } from '../datos';
-import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,63 +108,8 @@ export default async function Facturacion({
     (f) => f.estado === 'anulada' && notas[f.id] && esSuya(f.emisora)
   );
 
-  /**
-   * El número de factura que le sigue a cada emisora, para proponerlo.
-   *
-   * Es el más alto que tiene anotado más uno, contando solo las de verdad: las
-   * que van sin factura no tienen número y las de homologación llevan otra
-   * numeración. Sin ninguna anotada no se propone nada, que inventar un 1 es
-   * peor que dejar el campo vacío.
-   */
-  // Los datos fiscales de los clientes que están en la cola, para verlos al
-  // facturar sin ir a buscar la ficha de cada uno.
-  const enCola = [...new Set(pendientes.map((p) => p.empresaId))];
-  const filasFiscales =
-    enCola.length > 0
-      ? await select<{
-          id: string;
-          razon_social: string | null;
-          cuit: string | null;
-          condicion_iva: string | null;
-          direccion_fiscal: string | null;
-          email_facturacion: string | null;
-          exige_orden_compra: boolean;
-        }>(
-          'empresas',
-          'select=id,razon_social,cuit,condicion_iva,direccion_fiscal,email_facturacion,exige_orden_compra' +
-            `&id=in.(${enCola.join(',')})`
-        ).catch(() => [])
-      : [];
-  const fiscales: Record<string, Fiscal> = {};
-  for (const e of filasFiscales) {
-    fiscales[e.id] = {
-      razonSocial: e.razon_social,
-      cuit: e.cuit,
-      condicionIva: e.condicion_iva,
-      domicilio: e.direccion_fiscal,
-      correo: e.email_facturacion,
-      exigeOrdenCompra: e.exige_orden_compra,
-    };
-  }
-
-  const numeros: Record<string, number[]> = {};
-  for (const f of facturas) {
-    if (f.numero === null || f.sinComprobante || f.ambiente === 'homologacion') continue;
-    if (f.estado === 'anulada' || esEmpresaDePrueba(f.cliente)) continue;
-    (numeros[f.emisorId] ??= []).push(f.numero);
-  }
-  // Un número muy por encima de los demás es uno mal cargado (hay un 585586
-  // que vino de Airtable, dos números pegados) y no el último de la serie:
-  // proponer el que le sigue llevaría la numeración a cualquier lado.
-  const siguientes: Record<string, number> = {};
-  for (const [emisor, suyos] of Object.entries(numeros)) {
-    const deMayorAMenor = [...suyos].sort((a, b) => b - a);
-    const ultimo = deMayorAMenor.find((n, i) => {
-      const anterior = deMayorAMenor[i + 1];
-      return anterior === undefined || n - anterior < 1000;
-    });
-    if (ultimo !== undefined) siguientes[emisor] = ultimo + 1;
-  }
+  const fiscales = await fiscalesDe(pendientes.map((p) => p.empresaId));
+  const siguientes = siguientesNumeros(facturas);
 
   const PESTANAS = [
     ...colas.map((c) => ({ clave: c.clave, texto: `${c.nombre} a facturar`, cuenta: c.filas.length })),

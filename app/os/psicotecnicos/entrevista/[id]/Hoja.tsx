@@ -1,6 +1,15 @@
 import Link from 'next/link';
 import { entrevistaDe, type Entrevista } from '@/lib/entrevista';
 import Tomada from './Tomada';
+import Facturar, { LUGAR_FACTURAR } from './Facturar';
+import {
+  fiscalesDe,
+  listarAFacturar,
+  listarEmisoras,
+  listarFacturas,
+  siguientesNumeros,
+} from '@/lib/facturas';
+import { quienSoy } from '@/lib/identidad';
 import { TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 import Enlace from './Enlace';
@@ -110,6 +119,28 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
   const potencialTomado =
     e.horizonteDias !== null &&
     [1, 2, 3, 4].every((n) => typeof e.complejidad?.[String(n)] === 'boolean');
+
+  /*
+   * Facturar, apenas está administrada la entrevista por competencias: el
+   * trabajo ya se hizo. Solo si todavía no se facturó (si ya está en una
+   * factura, `listarAFacturar` no la devuelve) y no se dio de baja.
+   */
+  const competenciasTomada = Boolean(e.competencias) && (!conDiscursivo || potencialTomado);
+  const [pendiente] = competenciasTomada ? await listarAFacturar(e.id) : [];
+  const facturar = pendiente
+    ? await Promise.all([
+        listarEmisoras(),
+        listarFacturas(),
+        fiscalesDe([pendiente.empresaId]),
+        quienSoy(),
+      ]).then(([emisoras, facturas, fiscales, yo]) => ({
+        pendiente,
+        emisoras,
+        siguientes: siguientesNumeros(facturas),
+        fiscal: fiscales[pendiente.empresaId],
+        quien: yo.nombre,
+      }))
+    : null;
   const tests = todos.filter((t) => t !== TEST_DISCURSIVO);
 
   /**
@@ -444,8 +475,11 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         </p>
         <div className="os-entrevista-botones">
           {e.estado === 'Por entrevistar' && <Tomada id={e.id} />}
+          {facturar && <Facturar {...facturar} />}
         </div>
       </section>
+      {/* Acá se despliega lo de facturar, a lo ancho de la hoja. */}
+      <div id={LUGAR_FACTURAR} />
     </>
   );
 }
