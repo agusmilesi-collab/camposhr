@@ -52,6 +52,7 @@ export default async function PedirEvaluacion({ params }: { params: { token: str
       contactos={contactos}
       delPuesto={DEL_PUESTO}
       delJefe={DEL_JEFE}
+      conCiudad={empresa?.pedido_con_ciudad === true}
     />
   );
 }

@@ -80,7 +80,13 @@ export async function POST(req: Request) {
    * fecha del día. O una nueva, y entonces vienen el puesto y la batería.
    */
   const pedidoId = texto('pedidoId');
-  const puesto = texto('puesto');
+  // Los clientes que piden la misma búsqueda en varias ciudades mandan la
+  // ciudad aparte, y va al final del nombre del pedido: "Cardiólogo Bariloche".
+  const ciudad = texto('ciudad').slice(0, 60);
+  const puesto =
+    ciudad && (empresa as { pedido_con_ciudad?: boolean }).pedido_con_ciudad
+      ? `${texto('puesto')} ${ciudad}`
+      : texto('puesto');
   const bateria = texto('bateria');
   const descripcion = texto('descripcion');
   const comentarios = texto('comentarios');
