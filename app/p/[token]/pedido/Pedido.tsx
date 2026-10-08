@@ -55,10 +55,12 @@ type Fila = {
   cv: File | null;
   /** De qué archivo salieron los datos, para poder decirlo. */
   desdeCv: boolean;
+  /** Para qué ciudad se lo evalúa, en los clientes que la piden. */
+  ciudad: string;
 };
 
 function vacia(id: number): Fila {
-  return { id, nombre: '', telefono: '', mail: '', cv: null, desdeCv: false };
+  return { id, nombre: '', telefono: '', mail: '', cv: null, desdeCv: false, ciudad: '' };
 }
 
 const pesos = (n: number) =>
@@ -116,8 +118,8 @@ export default function Pedido({
   delPuesto: Pregunta[];
   delJefe: Pregunta[];
   /**
-   * Si el cliente pide la misma búsqueda en varias ciudades (Federada): suma un
-   * campo Ciudad al puesto nuevo, y la ciudad va al final del nombre.
+   * Si el cliente pide el mismo puesto para varias ciudades (Federada): cada
+   * candidato lleva su ciudad, que se muestra al lado del puesto.
    */
   conCiudad?: boolean;
 }) {
@@ -138,11 +140,7 @@ export default function Pedido({
    */
   const [contacto, setContacto] = useState(contactos.length === 1 ? contactos[0].id : '');
   const [puesto, setPuesto] = useState('');
-  const [ciudad, setCiudad] = useState('');
-  /** El nombre con que queda el pedido nuevo: el puesto y, si va, la ciudad. */
-  const nombreNuevo = [puesto.trim(), conCiudad ? ciudad.trim() : '']
-    .filter(Boolean)
-    .join(' ');
+
   /* Por defecto, la Batería 2 con la evaluación de perfil: es la que más se
      pide. Se busca por su nombre y no por su lugar en la lista. */
   const [bateria, setBateria] = useState(
@@ -225,10 +223,7 @@ export default function Pedido({
     }
     if (actual === 'busqueda' && esNueva && !puesto.trim()) {
       setError('Falta el puesto.');
-      return;
-    }
-    if (actual === 'busqueda' && esNueva && conCiudad && !ciudad.trim()) {
-      setError('Falta la ciudad.');
+
       return;
     }
     if (actual === 'busqueda' && esExistente && !elegida) {
@@ -254,7 +249,7 @@ export default function Pedido({
   const faltan = useMemo(() => {
     const f: string[] = [];
     if (esNueva && !puesto.trim()) f.push('el puesto');
-    if (esNueva && conCiudad && !ciudad.trim()) f.push('la ciudad');
+
     if (!contacto) f.push('quién hace el pedido');
     if (!modo) f.push('elegir el puesto');
     else if (esExistente && !elegida) f.push('elegir el puesto');
@@ -262,8 +257,9 @@ export default function Pedido({
     if (gente.length === 0) f.push('al menos un candidato');
     if (gente.some((x) => !x.telefono.trim() && !x.mail.trim()))
       f.push('un teléfono o un mail de cada candidato');
+    if (conCiudad && gente.some((x) => !x.ciudad.trim())) f.push('la ciudad de cada candidato');
     return f;
-  }, [modo, esNueva, esExistente, puesto, ciudad, conCiudad, filas, elegida, contacto]);
+  }, [modo, esNueva, esExistente, puesto, conCiudad, filas, elegida, contacto]);
 
   function cambiar(id: number, cambio: Partial<Fila>) {
     setFilas((f) => f.map((x) => (x.id === id ? { ...x, ...cambio } : x)));
@@ -347,7 +343,6 @@ export default function Pedido({
       if (esExistente) cuerpo.set('pedidoId', busqueda);
       else {
         cuerpo.set('puesto', puesto.trim());
-        if (conCiudad) cuerpo.set('ciudad', ciudad.trim());
         cuerpo.set('bateria', bateria);
         cuerpo.set('benziger', benziger ? 'si' : '');
         cuerpo.set('descripcion', descripcion.trim());
@@ -376,6 +371,7 @@ export default function Pedido({
           cuerpo.set(`telefono-${i}`, f.telefono.trim());
           cuerpo.set(`mail-${i}`, f.mail.trim());
           if (f.cv) cuerpo.set(`cv-${i}`, f.cv);
+          if (conCiudad) cuerpo.set(`ciudad-${i}`, f.ciudad.trim());
         });
 
       const r = await fetch('/api/pedidos', { method: 'POST', body: cuerpo });
@@ -397,7 +393,6 @@ export default function Pedido({
     setFilas([vacia(0)]);
     setProxima(1);
     setPuesto('');
-    setCiudad('');
     setDescripcion('');
     setComentarios('');
     setPerfil({});
@@ -622,39 +617,13 @@ export default function Pedido({
                     <h2>El puesto</h2>
                     <Atras alVolver={atras} />
                   </div>
-                  {conCiudad ? (
-                    /* El mismo puesto se pide para varias ciudades: la ciudad
-                       va aparte y se suma al nombre del pedido. */
-                    <div className="pedir-puesto-ciudad">
-                      <input
-                        className="pedir-input"
-                        value={puesto}
-                        maxLength={120}
-                        placeholder="Cardiólogo"
-                        aria-label="Puesto"
-                        onChange={(e) => setPuesto(e.target.value)}
-                      />
-                      <input
-                        className="pedir-input"
-                        value={ciudad}
-                        maxLength={60}
-                        placeholder="Ciudad"
-                        aria-label="Ciudad"
-                        onChange={(e) => setCiudad(e.target.value)}
-                      />
-                    </div>
-                  ) : (
-                    <input
-                      className="pedir-input"
-                      value={puesto}
-                      maxLength={120}
-                      placeholder="Jefe de Depósito"
-                      onChange={(e) => setPuesto(e.target.value)}
-                    />
-                  )}
-                  {conCiudad && nombreNuevo && (
-                    <p className="pedir-nota">El pedido queda como “{nombreNuevo}”.</p>
-                  )}
+                  <input
+                    className="pedir-input"
+                    value={puesto}
+                    maxLength={120}
+                    placeholder="Jefe de Depósito"
+                    onChange={(e) => setPuesto(e.target.value)}
+                  />
                   <textarea
                     className="pedir-input pedir-area"
                     rows={3}
@@ -976,7 +945,7 @@ export default function Pedido({
                         </button>
                       )}
                     </div>
-                    <div className="pedir-tres">
+                    <div className={`pedir-tres${conCiudad ? ' pedir-cuatro' : ''}`}>
                       <input
                         className="pedir-input"
                         placeholder="Nombre y apellido"
@@ -999,6 +968,17 @@ export default function Pedido({
                         maxLength={120}
                         onChange={(e) => cambiar(f.id, { mail: e.target.value })}
                       />
+                      {/* El mismo puesto se pide para varias ciudades: cada
+                          candidato dice para cuál. */}
+                      {conCiudad && (
+                        <input
+                          className="pedir-input"
+                          placeholder="Ciudad"
+                          value={f.ciudad}
+                          maxLength={60}
+                          onChange={(e) => cambiar(f.id, { ciudad: e.target.value })}
+                        />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1054,7 +1034,7 @@ export default function Pedido({
               <div className="pedir-resumen-caja">
                 <h2>Tu pedido</h2>
                 <div className="pedir-linea">
-                  <span>{esNueva ? nombreNuevo || 'Puesto nuevo' : elegida?.puesto}</span>
+                  <span>{esNueva ? puesto.trim() || 'Puesto nuevo' : elegida?.puesto}</span>
                 </div>
                 <div className="pedir-linea">
                   <span>{laBateria?.codigo ?? 'Sin batería'}</span>

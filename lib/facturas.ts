@@ -49,6 +49,7 @@ export {
  */
 import { ETAPAS_ENTREVISTADO, type Marcha } from '@/lib/facturas-tipos';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
+import { puestoConCiudad } from '@/lib/pedido-campos';
 import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { cortes, mesesDelAnio } from '@/lib/monotributo';
 import { esDelCentro, esDePsicotecnicos, esDeServicios } from '@/lib/facturas-tipos';
@@ -104,6 +105,7 @@ type FilaFactura = {
     detalle: string | null;
     importe: string | number | null;
     evaluaciones: {
+      ciudad: string | null;
       personas: { nombre: string } | null;
       pedidos: { puesto: string } | null;
     } | null;
@@ -145,7 +147,7 @@ export async function listarFacturas(): Promise<Factura[]> {
       'imp_total,moneda,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,punto_venta_manual,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
-      'evaluaciones(personas(nombre),pedidos(puesto)))' +
+      'evaluaciones(ciudad,personas(nombre),pedidos(puesto)))' +
       // Solo facturas. Las notas de crédito viven en la misma tabla y no son
       // trabajo cobrado ni por cobrar: se llega a ellas desde la factura que
       // anulan.
@@ -188,7 +190,7 @@ export async function verFactura(id: string): Promise<Factura | null> {
       'imp_total,moneda,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,punto_venta_manual,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
-      'evaluaciones(personas(nombre),pedidos(puesto)))' +
+      'evaluaciones(ciudad,personas(nombre),pedidos(puesto)))' +
       `&id=eq.${id}&limit=1`
   );
   return filas[0] ? armarFactura(filas[0]) : null;
@@ -230,7 +232,7 @@ function armarFactura(f: FilaFactura): Factura {
       detalle: r.detalle,
       importe: numeroOno(r.importe),
       persona: r.evaluaciones?.personas?.nombre ?? null,
-      puesto: r.evaluaciones?.pedidos?.puesto ?? null,
+      puesto: puestoConCiudad(r.evaluaciones?.pedidos?.puesto, r.evaluaciones?.ciudad) || null,
     })),
   };
 }
@@ -244,6 +246,7 @@ type FilaFacturable = {
   benziger_administrado: boolean | null;
   con_benziger: boolean | null;
   baja_el: string | null;
+  ciudad: string | null;
   personas: { nombre: string } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
@@ -269,7 +272,7 @@ export async function listarAFacturar(): Promise<Facturable[]> {
   const [evaluaciones, renglones, enOrdenes, precios, cambio] = await Promise.all([
     select<FilaFacturable>(
       'evaluaciones',
-      'select=id,estado,fecha_ingreso,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,baja_el,' +
+      'select=id,estado,fecha_ingreso,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,baja_el,ciudad,' +
         'personas(nombre),evaluadoras(nombre),' +
         'pedidos(puesto,empresa_id,fecha_pedido,con_benziger,empresas(nombre),' +
         'baterias(id,codigo,nombre))' +
@@ -341,7 +344,7 @@ export async function listarAFacturar(): Promise<Facturable[]> {
       return {
         evaluacionId: e.id,
         candidato: e.personas?.nombre ?? 'sin nombre',
-        puesto: pedido.puesto,
+        puesto: puestoConCiudad(pedido.puesto, e.ciudad),
         empresaId: pedido.empresa_id,
         cliente: pedido.empresas?.nombre ?? 'sin cliente',
         evaluadora: e.evaluadoras?.nombre ?? null,

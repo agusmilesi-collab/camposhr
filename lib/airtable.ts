@@ -122,6 +122,8 @@ export type Candidato = {
   cargadoPor?: string | null;
   /** El día en que se dio de baja del proceso, si se dio. */
   baja?: string | null;
+  /** Para qué ciudad se lo evalúa, en los clientes que la piden. */
+  ciudad?: string | null;
 };
 
 export type Busqueda = {

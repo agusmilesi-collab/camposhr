@@ -1,4 +1,5 @@
 import 'server-only';
+import { puestoConCiudad } from '@/lib/pedido-campos';
 import { enlaceDelAudio } from '@/lib/audio-discurso';
 import type { EstadoRaven } from '@/lib/raven-estado';
 import { duracionDeSesion } from '@/lib/raven';
@@ -51,6 +52,7 @@ type Fila = {
   } | null;
   evaluadoras: { nombre: string } | null;
   pedido_id: string | null;
+  ciudad: string | null;
   pedidos: {
     puesto: string;
     estrato_puesto: number | null;
@@ -161,7 +163,7 @@ const CAMPOS =
   'grafico_2_personas_administrado,' +
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'personas(nombre,email,telefono,fecha_nacimiento),evaluadoras(nombre),' +
-  'pedido_id,pedidos(puesto,con_benziger,estrato_puesto,empresas(nombre),baterias(codigo,nombre,tests))';
+  'pedido_id,ciudad,pedidos(puesto,con_benziger,estrato_puesto,empresas(nombre),baterias(codigo,nombre,tests))';
 
 /**
  * Los tests en el orden que eligió quien toma la entrevista.
@@ -248,7 +250,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     email: f.personas?.email ?? null,
     telefono: f.personas?.telefono ?? null,
     nacimiento: f.personas?.fecha_nacimiento ?? null,
-    puesto: f.pedidos?.puesto ?? null,
+    puesto: puestoConCiudad(f.pedidos?.puesto, f.ciudad) || null,
     pedidoId: f.pedido_id,
     estratoPuesto: f.pedidos?.estrato_puesto ?? null,
     empresa: f.pedidos?.empresas?.nombre ?? null,

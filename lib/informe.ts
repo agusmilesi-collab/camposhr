@@ -25,6 +25,7 @@ import {
 } from '@/lib/competencias';
 import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
+import { puestoConCiudad } from '@/lib/pedido-campos';
 import { medianasDeCompetencias, type Medianas } from '@/lib/competencias-mediana';
 import { TEXTOS } from '@/lib/redacciones';
 import { tramoDe, tramosValidos, esTramo, type PasoDelPlan, type Tramo } from '@/lib/plan-incorporacion';
@@ -913,7 +914,7 @@ export function desdeFicha(
   const inf: Informe = {
     nombre: c.personas?.nombre ?? 'Sin nombre',
     empresa: c.pedidos?.empresas?.nombre ?? null,
-    puesto: c.pedidos?.puesto ?? null,
+    puesto: puestoConCiudad(c.pedidos?.puesto, c.ciudad) || null,
     evaluadora: c.evaluadoras?.nombre ?? null,
     cuando: c.fecha_entrevista ? fechaLarga(c.fecha_entrevista) : mesYAnio(c.fecha_ingreso),
     // El que cargó a este candidato, y si no se sabe, el que pidió el pedido.

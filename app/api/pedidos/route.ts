@@ -6,6 +6,7 @@ import { select } from '@/lib/supabase';
 import { crearCandidato, crearPedido } from '@/lib/altas';
 import { crearOrden } from '@/lib/orden-compra';
 import { avisarOrden } from '@/lib/correo-orden';
+import { avisarPedidoNuevo } from '@/lib/correo-equipo';
 import { empresaDelToken } from '@/lib/portal-supabase';
 import { esDemo, NOMBRE_DEMO } from '@/lib/portal-demo';
 import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
@@ -80,13 +81,10 @@ export async function POST(req: Request) {
    * fecha del día. O una nueva, y entonces vienen el puesto y la batería.
    */
   const pedidoId = texto('pedidoId');
-  // Los clientes que piden la misma búsqueda en varias ciudades mandan la
-  // ciudad aparte, y va al final del nombre del pedido: "Cardiólogo Bariloche".
-  const ciudad = texto('ciudad').slice(0, 60);
-  const puesto =
-    ciudad && (empresa as { pedido_con_ciudad?: boolean }).pedido_con_ciudad
-      ? `${texto('puesto')} ${ciudad}`
-      : texto('puesto');
+  const puesto = texto('puesto');
+  // Los clientes que piden el mismo puesto para varias ciudades mandan la de
+  // cada candidato; las demás empresas no la tienen y se ignora.
+  const conCiudad = Boolean((empresa as { pedido_con_ciudad?: boolean }).pedido_con_ciudad);
   const bateria = texto('bateria');
   const descripcion = texto('descripcion');
   const comentarios = texto('comentarios');
@@ -174,7 +172,13 @@ export async function POST(req: Request) {
    * hasta que no haya más nombre. Uno sin nombre no es un candidato a medias,
    * es una fila que quedó vacía y se descarta.
    */
-  const gente: { nombre: string; telefono: string; mail: string; cv: File | null }[] = [];
+  const gente: {
+    nombre: string;
+    telefono: string;
+    mail: string;
+    cv: File | null;
+    ciudad: string | null;
+  }[] = [];
   for (let i = 0; i < 40; i++) {
     const nombre = texto(`nombre-${i}`);
     if (!nombre) continue;
@@ -184,6 +188,7 @@ export async function POST(req: Request) {
       telefono: texto(`telefono-${i}`),
       mail: texto(`mail-${i}`),
       cv: adjunto instanceof File && adjunto.size > 0 ? adjunto : null,
+      ciudad: conCiudad ? texto(`ciudad-${i}`).slice(0, 60) || null : null,
     });
   }
 
@@ -196,6 +201,13 @@ export async function POST(req: Request) {
       {
         error: `Falta un teléfono o un mail de ${sinContacto.nombre}: es por donde se lo cita.`,
       },
+      { status: 400 }
+    );
+  }
+  const sinCiudad = conCiudad && gente.find((g) => !g.ciudad);
+  if (sinCiudad) {
+    return NextResponse.json(
+      { error: `Falta la ciudad de ${sinCiudad.nombre}.` },
       { status: 400 }
     );
   }
@@ -299,6 +311,7 @@ export async function POST(req: Request) {
         evaluadoraId: null,
         origen: 'portal',
         cv: g.cv,
+        ciudad: g.ciudad,
         // Lo que se eligió en "Enviar como", en cada candidato: el pedido puede
         // haberlo abierto otra persona.
         solicitanteId: pide?.id ?? null,
@@ -317,6 +330,8 @@ export async function POST(req: Request) {
     }
     // Y a quien la pidió le llega por correo, con el PDF. No tira.
     await avisarOrden(orden);
+    // Y a las evaluadoras, que entró un pedido: llega sin dueña. No tira.
+    await avisarPedidoNuevo(cargadas);
 
     revalidateTag(CACHE_PSICOTECNICOS);
     revalidateTag(CACHE_CLIENTES);

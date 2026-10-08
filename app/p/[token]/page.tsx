@@ -1,4 +1,5 @@
 import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
+import { puestoConCiudad } from '@/lib/pedido-campos';
 import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
 import { datosClienteDeSupabase, vaPorAirtable } from '@/lib/portal-supabase';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
@@ -173,7 +174,12 @@ function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
   const estimada = !c.fechaEntrega && Boolean(fen);
   return (
     <div className={`tr${conCobro ? '' : ' sin-cobro'}`}>
-      <span className="c-name">{c.nombre}</span>
+      <span className="c-name">
+        {c.nombre}
+        {/* La ciudad para la que se lo evalúa, en los clientes que piden el
+            mismo puesto para varias: el título de la tarjeta es el puesto. */}
+        {c.ciudad && <small className="c-ciudad">{c.ciudad}</small>}
+      </span>
       <span className="c-estado" data-label="Estado">
         <i className={`dot ${e.clase}`} />
         {e.texto}
@@ -259,7 +265,11 @@ export default async function Portal({ params }: { params: { token: string } }) 
       b.candidatos
         // Las bajas también: ya terminaron, y es donde el cliente las busca.
         .filter((c) => yaEntregada(c.estado) || c.baja)
-        .map((c) => ({ cand: c, puesto: b.puesto, fechaPedido: b.fecha }))
+        .map((c) => ({
+          cand: c,
+          puesto: puestoConCiudad(b.puesto, c.ciudad),
+          fechaPedido: b.fecha,
+        }))
     )
     .sort(
       (a, b) =>

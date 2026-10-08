@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { puestoConCiudad } from '@/lib/pedido-campos';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Shell from '../../../Shell';
@@ -227,7 +228,7 @@ function Datos({
                 origen: 'supabase',
                 nombre: c.personas?.nombre ?? '',
                 empresa: c.pedidos?.empresas?.nombre ?? '',
-                puesto: c.pedidos?.puesto ?? '',
+                puesto: puestoConCiudad(c.pedidos?.puesto, c.ciudad),
                 pedidoId: c.pedido_id,
                 email: c.personas?.email ?? null,
                 telefono: c.personas?.telefono ?? null,
@@ -260,10 +261,10 @@ function Datos({
           {c.pedidos?.puesto ? (
             c.pedido_id ? (
               <Link className="os-ficha-enlace" href={`/os/pedidos/${c.pedido_id}`}>
-                {c.pedidos.puesto}
+                {puestoConCiudad(c.pedidos.puesto, c.ciudad)}
               </Link>
             ) : (
-              c.pedidos.puesto
+              puestoConCiudad(c.pedidos.puesto, c.ciudad)
             )
           ) : (
             <Falta texto="sin puesto" />
@@ -670,7 +671,7 @@ async function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulaci
             const s = f.cabecera.solicitante ?? f.cabecera.pedidos?.solicitante;
             return s ? [s.nombre, s.cargo].filter(Boolean).join(' · ') : null;
           })()}
-          puesto={f.cabecera.pedidos?.puesto ?? null}
+          puesto={puestoConCiudad(f.cabecera.pedidos?.puesto, f.cabecera.ciudad) || null}
           niveles={nivelesQueRigen(rige.niveles).map((n) => ({
             nombre: n.nombre,
             romano: n.romano,
@@ -835,7 +836,8 @@ export default async function FichaPagina({
       <div className="os-encabezado">
         <h1>{nombre}</h1>
         <p>
-          {c.pedidos?.empresas?.nombre ?? 'Sin empresa'} · {c.pedidos?.puesto ?? 'Sin puesto'}
+          {c.pedidos?.empresas?.nombre ?? 'Sin empresa'} ·{' '}
+          {puestoConCiudad(c.pedidos?.puesto, c.ciudad) || 'Sin puesto'}
         </p>
       </div>
 

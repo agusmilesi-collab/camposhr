@@ -11299,14 +11299,6 @@ a.pedir-volver-link {
   background: #e7e5e0;
 }
 
-/* El puesto y la ciudad en una fila, para los clientes que piden la misma
-   búsqueda en varias ciudades. */
-.pedir-puesto-ciudad {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 10px;
-}
-
 /* ---- Pedido del portal: qué avisos quiere recibir quien lo envía ---- */
 
 .pedir-avisos {
@@ -11367,4 +11359,17 @@ a.pedir-volver-link {
   min-height: 1.1em;
   font-size: 0.76rem;
   color: var(--muted);
+}
+
+/* La ciudad del candidato, debajo de su nombre y en gris. */
+.c-ciudad {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* La fila del candidato con la ciudad: cuatro campos en lugar de tres. */
+.pedir-tres.pedir-cuatro {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
 }
