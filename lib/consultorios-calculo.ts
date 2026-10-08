@@ -55,6 +55,16 @@ export type Cierre = {
   desde_hora: string | null;
   hasta_hora: string | null;
   motivo: string;
+  /**
+   * Es un feriado y no un cierre cargado a mano.
+   *
+   * **Un feriado cierra lo que está libre, no lo reservado.** El Centro no abre
+   * los feriados, pero quien quiere usar su sala ese día puede: lo dice al
+   * renovar el mes, y esa hora queda reservada y a la vista. Un cierre común
+   * tapa también lo reservado, que es lo que corresponde cuando la sala no se
+   * puede usar.
+   */
+  feriado?: boolean;
 };
 
 export type Reserva = {
@@ -457,7 +467,7 @@ export function armarGrilla(
             (c.espacio_id === null || c.espacio_id === espacio.id) &&
             (c.desde_hora === null || (h >= hora(c.desde_hora) && h < hora(c.hasta_hora as string)))
         );
-        if (cierre) {
+        if (cierre && !cierre.feriado) {
           celdas[clave] = { estado: 'cerrado', motivo: cierre.motivo, cierreId: cierre.id };
           continue;
         }
@@ -476,7 +486,11 @@ export function armarGrilla(
               reservaId: r.id,
               inquilinoId: r.inquilino_id,
             }
-          : { estado: 'libre' };
+          : cierre
+            ? // Feriado y sin reservar: cerrado, sin identificador porque no hay
+              // un cierre cargado que se pueda reabrir.
+              { estado: 'cerrado', motivo: cierre.motivo }
+            : { estado: 'libre' };
       }
     }
   }
@@ -537,7 +551,7 @@ export function grillaDeUnDia(
           (c.espacio_id === null || c.espacio_id === espacio.id) &&
           (c.desde_hora === null || (h >= hora(c.desde_hora) && h < hora(c.hasta_hora as string)))
       );
-      if (cierre) {
+      if (cierre && !cierre.feriado) {
         celdas[clave] = { estado: 'cerrada' };
         continue;
       }
@@ -550,7 +564,9 @@ export function grillaDeUnDia(
       );
       celdas[clave] = r
         ? { estado: r.inquilino_id === miId ? 'mia' : 'tomada', reservaId: r.id }
-        : { estado: 'libre' };
+        : cierre
+          ? { estado: 'cerrada' }
+          : { estado: 'libre' };
     }
   }
   return { horas, celdas };
@@ -676,13 +692,14 @@ export function medirOcupacion(
       const apertura = suyas.find((a) => a.dia_semana === d);
       if (!apertura) continue;
       for (let h = hora(apertura.desde_hora); h < hora(apertura.hasta_hora); h++) {
-        const cerrada = cierres.some(
+        const tapan = cierres.filter(
           (c) =>
             (c.espacio_id === null || c.espacio_id === espacio.id) &&
             c.fecha === fecha &&
             (c.desde_hora === null || (h >= hora(c.desde_hora) && h < hora(c.hasta_hora as string)))
         );
-        if (cerrada) continue;
+        if (tapan.some((c) => !c.feriado)) continue;
+        const enFeriado = tapan.length > 0;
         const vendida = reservas.some(
           (r) =>
             r.espacio_id === espacio.id &&
@@ -690,6 +707,9 @@ export function medirOcupacion(
             h >= hora(r.desde_hora) &&
             h < hora(r.hasta_hora)
         );
+        // Un feriado sin reservar no es una hora que no se vendió: el Centro
+        // estaba cerrado. Reservada, cuenta como cualquier otra.
+        if (enFeriado && !vendida) continue;
         for (const [mapa, clave] of [
           [porHora, h],
           [porDia, d],
@@ -780,7 +800,7 @@ export function grillaDeUnaSala(
           c.fecha === fecha &&
           (c.desde_hora === null || (h >= hora(c.desde_hora) && h < hora(c.hasta_hora as string)))
       );
-      if (cierre) {
+      if (cierre && !cierre.feriado) {
         celdas[clave] = { estado: 'cerrada' };
         continue;
       }
@@ -793,7 +813,9 @@ export function grillaDeUnaSala(
       );
       celdas[clave] = r
         ? { estado: r.inquilino_id === miId ? 'mia' : 'tomada', reservaId: r.id }
-        : { estado: 'libre' };
+        : cierre
+          ? { estado: 'cerrada' }
+          : { estado: 'libre' };
     }
   }
   return { horas, celdas };

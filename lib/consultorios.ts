@@ -23,6 +23,7 @@
 import 'server-only';
 
 import { select } from '@/lib/supabase';
+import { feriadosEntre } from '@/lib/feriados';
 import type {
   Apertura,
   Cierre,
@@ -97,12 +98,33 @@ export async function aperturas(): Promise<Apertura[]> {
   );
 }
 
+/**
+ * Lo que cierra el Centro entre dos fechas: los cierres cargados a mano y los
+ * feriados, que nadie carga. Los feriados van como un cierre de todo el Centro
+ * y de todo el día, marcados para que las grillas los traten distinto (ver
+ * `Cierre.feriado`).
+ */
 export async function cierresEntre(desde: string, hasta: string): Promise<Cierre[]> {
-  return select<Cierre>(
-    'cierres',
-    `select=id,espacio_id,fecha,desde_hora,hasta_hora,motivo&fecha=gte.${desde}&fecha=lte.${hasta}&order=fecha.asc`,
-    'consultorios'
-  );
+  const [cargados, feriados] = await Promise.all([
+    select<Cierre>(
+      'cierres',
+      `select=id,espacio_id,fecha,desde_hora,hasta_hora,motivo&fecha=gte.${desde}&fecha=lte.${hasta}&order=fecha.asc`,
+      'consultorios'
+    ),
+    feriadosEntre(desde, hasta),
+  ]);
+  return [
+    ...cargados,
+    ...feriados.map((f) => ({
+      id: `feriado-${f.fecha}`,
+      espacio_id: null,
+      fecha: f.fecha,
+      desde_hora: null,
+      hasta_hora: null,
+      motivo: `Feriado: ${f.nombre}`,
+      feriado: true,
+    })),
+  ];
 }
 
 export async function reservasEntre(desde: string, hasta: string): Promise<Reserva[]> {

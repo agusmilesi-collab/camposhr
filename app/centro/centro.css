@@ -1460,3 +1460,36 @@ button.centro-abrir {
 .centro-tarjeta {
   overflow: hidden;
 }
+
+/* Los feriados del mes que renueva, dentro de la tarjeta de la renovación. */
+.centro-renovar-feriados {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  font-size: 0.8rem;
+  color: var(--tinta-media);
+}
+
+.centro-renovar-feriados label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--tinta);
+  cursor: pointer;
+}
+
+.centro-renovar-feriados label input {
+  margin-top: 3px;
+}
+
+.centro-renovar-feriados label small {
+  display: block;
+  white-space: normal;
+}
+
+/* Abierta, la tarjeta deja bajar de renglón: el texto del aviso es largo. */
+.centro-tarjeta.centro-renovar.abierta > small {
+  white-space: normal;
+}

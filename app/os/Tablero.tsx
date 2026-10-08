@@ -300,6 +300,8 @@ export default function Tablero({
     mes: string;
     respuesta: 'si' | 'no' | 'cambiar';
     nota: string | null;
+    /** Los feriados en los que igual quiere su sala, ya escritos: "23/11". */
+    feriados?: string[];
   }[];
 }) {
   const router = useRouter();
@@ -591,7 +593,14 @@ export default function Tablero({
                       <span className="os-mini-detalle" title={r.nota ?? undefined}>
                         {r.respuesta === 'no'
                           ? 'No renueva sus horas'
-                          : `Quiere cambiar horas: ${r.nota ?? ''}`}
+                          : [
+                              r.respuesta === 'cambiar' ? `Quiere cambiar horas: ${r.nota ?? ''}` : null,
+                              r.feriados && r.feriados.length > 0
+                                ? `Usa su sala el feriado del ${r.feriados.join(' y ')}`
+                                : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
                       </span>
                     </div>
                     <div className="os-mini-acciones">

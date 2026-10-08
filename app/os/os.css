@@ -14674,7 +14674,6 @@ textarea.os-campo-bateria {
  */
 .os-agenda-ocupado {
   background: hsl(var(--tono, 210) 46% 92%);
-  box-shadow: inset 3px 0 0 hsl(var(--tono, 210) 42% 52%);
 }
 
 .os-agenda-ocupado .os-agenda-quien {
@@ -14697,7 +14696,6 @@ textarea.os-campo-bateria {
 
 html[data-os-tema='oscuro'] .os-agenda-ocupado {
   background: hsl(var(--tono, 210) 26% 24%);
-  box-shadow: inset 3px 0 0 hsl(var(--tono, 210) 45% 58%);
 }
 
 html[data-os-tema='oscuro'] .os-agenda-ocupado .os-agenda-quien {
