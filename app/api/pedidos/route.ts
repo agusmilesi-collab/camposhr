@@ -6,6 +6,7 @@ import { select } from '@/lib/supabase';
 import { crearCandidato, crearPedido } from '@/lib/altas';
 import { crearOrden } from '@/lib/orden-compra';
 import { avisarOrden } from '@/lib/correo-orden';
+import { avisarPedidoNuevo } from '@/lib/correo-equipo';
 import { empresaDelToken } from '@/lib/portal-supabase';
 import { esDemo, NOMBRE_DEMO } from '@/lib/portal-demo';
 import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
@@ -329,6 +330,8 @@ export async function POST(req: Request) {
     }
     // Y a quien la pidió le llega por correo, con el PDF. No tira.
     await avisarOrden(orden);
+    // Y a las evaluadoras, que entró un pedido: llega sin dueña. No tira.
+    await avisarPedidoNuevo(cargadas);
 
     revalidateTag(CACHE_PSICOTECNICOS);
     revalidateTag(CACHE_CLIENTES);
