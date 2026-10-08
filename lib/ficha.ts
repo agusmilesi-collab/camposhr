@@ -143,6 +143,8 @@ export type Mancha = {
   posicion: string | null;
   /** Lo que anotó la evaluadora sobre esta respuesta. */
   observacion: string | null;
+  /** Qué característica de la mancha le hizo ver eso, según dijo en la encuesta. */
+  caracteristica: string | null;
 };
 
 export type Sumario = Record<string, unknown> & { evaluacion_id: string };

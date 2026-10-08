@@ -291,6 +291,7 @@ export default function Manchas({
       verbalizacion: null,
       posicion: null,
       observacion: null,
+      caracteristica: null,
     } satisfies Mancha;
 
     setSucio(true);
@@ -427,6 +428,14 @@ export default function Manchas({
                     onCambio={(v) => cambiar(f.id, { determinantes: v })}
                     etiqueta="Determinantes"
                   />
+                  {/* Lo que contestó en la encuesta a qué de la mancha le hizo
+                      ver eso: es de donde salen los determinantes, así que va
+                      debajo de ellos y no en otra columna. */}
+                  {f.caracteristica && (
+                    <p className="os-mancha-caracteristica" title={f.caracteristica}>
+                      {f.caracteristica}
+                    </p>
+                  )}
                 </td>
                 <td>
                   <Simple

@@ -604,6 +604,8 @@ export type YaEnLaFicha = {
   verbalizacion: string | null;
   /** Cómo sostuvo la lámina al darla. */
   posicion: string | null;
+  /** Qué de la mancha le hizo ver eso, dicho en la encuesta. */
+  caracteristica: string | null;
 };
 
 /** Un objeto de la respuesta: qué es, dónde cae y qué calidad tiene ahí. */
@@ -658,6 +660,11 @@ type Respuesta = {
   verbalizacion: string | null;
   /** Cómo sostuvo la lámina al darla. */
   posicion: string | null;
+  /**
+   * Qué característica de la mancha le hizo ver eso, según lo que contestó en
+   * la encuesta. Es la ayuda para codificar los determinantes en la ficha.
+   */
+  caracteristica: string;
 };
 
 /** '4' para D4, '26' para DdS26, '4+7' cuando integra dos. W va sin número. */
@@ -756,6 +763,8 @@ export default function Capturador({
     partida?: boolean;
     /** La calidad formal que eligió ella, cuando la respuesta no está en la tabla. */
     fq?: string | null;
+    /** Lo que contestó a qué de la mancha le hizo ver eso. */
+    caracteristica?: string;
   } | null>(null);
   const [respuestas, setRespuestas] = useState<Respuesta[]>([]);
   /**
@@ -981,6 +990,7 @@ export default function Capturador({
       observacion: r.observacion ?? '',
       verbalizacion: r.verbalizacion,
       posicion: r.posicion,
+      caracteristica: r.caracteristica ?? '',
     }));
 
   /**
@@ -1005,6 +1015,7 @@ export default function Capturador({
               contenidos: nueva.contenidos,
               popular: nueva.popular,
               observacion: nueva.observacion || null,
+              caracteristica: nueva.caracteristica || null,
               z,
             }
           : r
@@ -1017,13 +1028,14 @@ export default function Capturador({
         contenidos: nueva.contenidos,
         popular: nueva.popular,
         observacion: nueva.observacion || null,
+        caracteristica: nueva.caracteristica || null,
         z,
       });
       if (!bien) setAviso('No se pudo guardar esa corrección. Probá de nuevo.');
     };
     // La nota se escribe letra por letra: se espera a que pare de escribir.
     clearTimeout(enEspera.current[id]);
-    if ('observacion' in campos) {
+    if ('observacion' in campos || 'caracteristica' in campos) {
       enEspera.current[id] = setTimeout(guardar, 600);
       return;
     }
@@ -1283,6 +1295,7 @@ export default function Capturador({
         id: tomada?.id,
         verbalizacion: tomada?.verbalizacion ?? null,
         posicion: tomada?.posicion ?? null,
+        caracteristica: pendiente?.caracteristica?.trim() ?? '',
       },
     ]);
     setTrozos([]);
@@ -1342,6 +1355,7 @@ export default function Capturador({
         id: tomada?.id,
         verbalizacion: tomada?.verbalizacion ?? (h ? null : dijo.trim() || null),
         posicion: tomada?.posicion ?? null,
+        caracteristica: pendiente?.caracteristica?.trim() ?? '',
       },
     ]);
     setDijo('');
@@ -1428,6 +1442,7 @@ export default function Capturador({
         observacion: null,
         verbalizacion: texto,
         posicion,
+        caracteristica: null,
       },
     ]);
     setProximo(n + 1);
@@ -1620,6 +1635,7 @@ export default function Capturador({
             // el protocolo escrito sigue siendo la fuente, y esto es lo que le
             // permite completar en la ficha los cinco campos que faltan.
             observacion: [r.dijo, r.observacion].filter(Boolean).join(' · ') || null,
+            caracteristica: r.caracteristica || null,
             origen: 'captura',
             determinantes: [],
             cc_ee: [],
@@ -1656,6 +1672,7 @@ export default function Capturador({
         observacion: r.observacion || null,
         verbalizacion: r.verbalizacion,
         posicion: r.posicion,
+        caracteristica: r.caracteristica || null,
       })),
     ]);
     setProximo((n) => n + cuantas);
@@ -1975,6 +1992,16 @@ export default function Capturador({
                 </div>
                 {/* La observación cruza las dos columnas: a lo ancho entra en
                     dos renglones lo que en media fila pedía cinco. */}
+                <div className="os-ror-detalle-nota">
+                  <span className="os-dato-rotulo">Qué de la mancha le hizo ver eso</span>
+                  <textarea
+                    className="os-campo os-ror-observacion"
+                    value={r.caracteristica}
+                    onChange={(e) => onCambio({ caracteristica: e.target.value })}
+                    placeholder="Lo que contestó en la encuesta"
+                    rows={2}
+                  />
+                </div>
                 <div className="os-ror-detalle-nota">
                   <span className="os-dato-rotulo">Observación</span>
                   <textarea
@@ -2594,6 +2621,25 @@ export default function Capturador({
                     : pendiente.h?.respuesta ?? dijo.trim()}
                   <span className="os-ror-dq-area">{areasPendientes.join(' + ')}</span>
                 </p>
+                {/* La pregunta de la encuesta sobre los determinantes: se hace
+                    recién marcada la locación y la palabra, que es cuando la
+                    persona todavía tiene delante lo que vio. Lo que contesta es
+                    la ayuda para codificar forma, color, sombreado y movimiento
+                    en la ficha. */}
+                <label className="os-ror-caracteristica">
+                  <span className="os-dato-rotulo">
+                    ¿Qué característica de la mancha te hizo parecer que sea eso?
+                  </span>
+                  <textarea
+                    className="os-campo"
+                    value={pendiente.caracteristica ?? ''}
+                    onChange={(e) =>
+                      setPendiente((p) => (p ? { ...p, caracteristica: e.target.value } : p))
+                    }
+                    placeholder="Lo que contesta, con sus palabras"
+                    rows={2}
+                  />
+                </label>
                 {/* Fuera de tabla la Tabla A no propone calidad formal, y sin
                     elegirla acá la respuesta llegaba vacía a la tabla de abajo.
                     Son dos: ordinaria y superior salen de estar en la tabla.
