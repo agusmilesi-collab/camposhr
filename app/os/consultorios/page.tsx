@@ -11,7 +11,6 @@ import {
   diasHabilesDelMes,
   escalaVigente,
   escalas,
-  hora,
   hoyISO,
   listarEspacios,
   listarInquilinos,
@@ -55,10 +54,6 @@ const PESTANAS = [
 ];
 
 const QUE_HACE: Record<string, string> = {
-  semana:
-    'Arrastrá sobre las horas libres para reservar o cerrar la sala. Tocá lo reservado para liberarlo, y lo cerrado para volver a abrirlo.',
-  inquilinos:
-    'Quién alquila, con su legajo y su cuenta del mes. Sin matrícula vigente no se puede reservar, como dice el documento de convivencia.',
   finanzas:
     'Lo que entra, lo que sale y qué queda. Abajo, contra qué decidir: quién sostiene el mes y qué horas están vacías.',
 };
@@ -166,29 +161,6 @@ export default async function Consultorios({
   const enPantalla = salaPedida ? activos.filter((e) => e.id === salaPedida) : activos;
   const sala = salaPedida ? activos.find((e) => e.id === salaPedida) : null;
 
-  // La ocupación de lo que se está mirando, sala por sala: horas reservadas
-  // sobre horas abiertas. Es el número del negocio y va antes que la grilla.
-  // Se cuenta sobre los días que se muestran, que en el mes son semanas
-  // enteras: contar solo los del mes daba un número que no cerraba con la
-  // grilla de al lado.
-  const ocupacion = enPantalla.map((e) => {
-    const suyas = aperturas.filter((a) => a.espacio_id === e.id);
-    const abiertas = dias.reduce((n, f) => {
-      const d = (new Date(`${f}T12:00:00-03:00`).getDay() + 6) % 7;
-      const a = suyas.find((x) => x.dia_semana === d);
-      return n + (a ? hora(a.hasta_hora) - hora(a.desde_hora) : 0);
-    }, 0);
-    const vendidas = reservas
-      .filter((r) => r.espacio_id === e.id)
-      .reduce((n, r) => n + (hora(r.hasta_hora) - hora(r.desde_hora)), 0);
-    return {
-      espacio: e,
-      abiertas,
-      vendidas,
-      pct: abiertas > 0 ? Math.round((vendidas / abiertas) * 100) : 0,
-    };
-  });
-
   // La sala elegida viaja en todas las direcciones del calendario: cambiar de
   // mes no puede devolver a la vista de las cinco.
   const conSala = salaPedida ? `&sala=${salaPedida}` : '';
@@ -243,20 +215,6 @@ export default async function Consultorios({
 
       {ver === 'semana' && enPantalla.length > 0 && (
         <>
-          {/* En un renglón cada una: cinco tarjetas altas se llevaban un cuarto
-              de la pantalla antes de que empezara el calendario. */}
-          <div className="os-cifras os-cifras-chicas">
-            {ocupacion.map((o) => (
-              <div className="os-cifra" key={o.espacio.id}>
-                <div className="os-cifra-rotulo">{o.espacio.nombre}</div>
-                <div className="os-cifra-valor">{o.pct}%</div>
-                <div className="os-cifra-pie">
-                  {o.vendidas}/{o.abiertas} h
-                </div>
-              </div>
-            ))}
-          </div>
-
           <div className="os-panel os-panel-calendario">
             <div className="os-agenda-top">
               <div className="os-agenda-semana">
