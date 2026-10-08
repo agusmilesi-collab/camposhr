@@ -996,13 +996,15 @@ export default function Pedido({
                           desplegable que arranca en la de siempre y ofrece
                           las que el cliente ya usó, o una nueva a mano. */}
                       {conCiudad && (
-                        <Elegir
+                        <label className="pedir-locacion">
+                          <span className="pedir-locacion-t">Locación / Sucursal</span>
+                          <Elegir
                           valor={f.otraCiudad ? OTRA : f.ciudad || CIUDAD_BASE}
                           opciones={[
                             ...[CIUDAD_BASE, ...ciudades.filter((c) => c !== CIUDAD_BASE)].map(
-                              (c) => ({ valor: c, texto: `Puesto en ${c}` })
+                              (c) => ({ valor: c, texto: c })
                             ),
-                            { valor: OTRA, texto: 'Otra ciudad' },
+                            { valor: OTRA, texto: 'Otra locación' },
                           ]}
                           alElegir={(v) =>
                             cambiar(
@@ -1012,14 +1014,15 @@ export default function Pedido({
                                 : { otraCiudad: false, ciudad: v }
                             )
                           }
-                          vacio="Ciudad del puesto"
-                          etiqueta="Ciudad del puesto"
-                        />
+                          vacio="Elegí la locación"
+                          etiqueta="Locación o sucursal del puesto"
+                          />
+                        </label>
                       )}
                       {conCiudad && f.otraCiudad && (
                         <input
                           className="pedir-input"
-                          placeholder="Ciudad del puesto"
+                          placeholder="Escribí la locación o sucursal"
                           value={f.ciudad}
                           maxLength={60}
                           autoFocus

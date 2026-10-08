@@ -10,7 +10,9 @@
  * - **La factura y el recibo de pago** son del responsable de compras. **Si la
  *   empresa no tiene ninguno, van a quien solicitó el candidato.** Y quien
  *   solicita puede elegir en el portal, cada uno por separado: recibirlos
- *   aunque haya compras (va en copia) o no recibirlos aunque no la haya.
+ *   aunque haya compras (va en copia) o no recibirlos aunque no la haya. El
+ *   responsable de compras recibe la factura siempre; el recibo, mientras no
+ *   lo apague.
  *
  * Quien no tiene correo cargado no recibe nada, y no se le manda a otro por
  * las dudas.
@@ -72,10 +74,16 @@ export async function destinosDe(
   // recibe si lo eligió en el portal; mientras no eligió, los recibe solo si
   // no hay responsable de compras. Con compras, quien solicitó va en copia.
   if (aviso === 'factura' || aviso === 'recibo') {
-    const compras = contactos.filter((c) => c.facturacion);
+    const todosCompras = contactos.filter((c) => c.facturacion);
+    // La factura le llega siempre a compras; el recibo, salvo que lo apague.
+    const compras =
+      aviso === 'recibo' ? todosCompras.filter((c) => c.recibe_recibo !== false) : todosCompras;
     const marca = aviso === 'factura' ? 'recibe_factura' : 'recibe_recibo';
     const suyos = contactos.filter(
-      (c) => pidieron.has(c.id) && !c.facturacion && ((c[marca] as boolean | null) ?? compras.length === 0)
+      (c) =>
+        pidieron.has(c.id) &&
+        !c.facturacion &&
+        ((c[marca] as boolean | null) ?? todosCompras.length === 0)
     );
     return compras.length > 0 ? armar(compras, suyos) : armar(suyos);
   }
