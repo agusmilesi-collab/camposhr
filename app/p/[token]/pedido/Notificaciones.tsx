@@ -95,7 +95,7 @@ export default function Notificaciones({
         {quien.email ? (
           <>
             {/* Una casilla por aviso, del color de las etiquetas de
-                codificación: verde con su tilde si le llega, roja y vacía si
+                codificación: verde con su tilde si le llega, roja con una cruz si
                 no. Se cambia tocando el renglón. Al responsable de compras la
                 factura le llega siempre: se ve tildada y no se puede destildar
                 desde acá. El recibo sí lo puede apagar. */}
@@ -121,7 +121,7 @@ export default function Notificaciones({
                     onClick={() => cambiar(a.campo, !suyas[a.campo])}
                   >
                     <span className="pedir-avisos-cuadro" aria-hidden="true">
-                      {si ? '✓' : ''}
+                      {si ? '✓' : '✕'}
                     </span>
                     {a.texto}
                   </button>

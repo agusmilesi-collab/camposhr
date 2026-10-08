@@ -92,14 +92,27 @@ export async function POST(req: Request) {
     recibe_entrevista: Boolean(datos.recibeEntrevista),
     recibe_informe: Boolean(datos.recibeInforme),
     recibe_todo: Boolean(datos.recibeTodo),
+  } as Record<string, unknown> & {
+    pide: boolean;
+    facturacion: boolean;
+    recibe_orden: boolean;
+    recibe_entrevista: boolean;
+    recibe_informe: boolean;
+    recibe_todo: boolean;
   };
+  // La factura y el recibo solo si vienen: sin tocarlos siguen en null, que es
+  // "lo que le corresponde según haya o no responsable de compras".
+  if (typeof datos.recibeFactura === 'boolean') fila.recibe_factura = datos.recibeFactura;
+  if (typeof datos.recibeRecibo === 'boolean') fila.recibe_recibo = datos.recibeRecibo;
 
   // Ni pide ni recibe nada es un contacto que no hace nada: no se guarda así.
   const recibeAvisos = fila.recibe_orden || fila.recibe_entrevista || fila.recibe_informe;
   if (!fila.pide && !fila.facturacion && !recibeAvisos) {
     return NextResponse.json(
-      { error: 'Marcá si solicita evaluaciones, si es responsable de compras o qué avisos recibe.' },
-      { status: 400 }
+      {
+        error: 'Marcá si solicita evaluaciones, si es responsable de compras o qué avisos recibe.',
+      },
+      { status: 400 },
     );
   }
   // Quien no pide nada solo puede recibir lo de los demás: sin esa marca

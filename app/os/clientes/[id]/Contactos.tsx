@@ -16,8 +16,10 @@
  * La misma persona puede estar en las dos. La regla de a quién va cada correo
  * está en `lib/correo-destinos.ts`.
  *
- * Se edita en la misma fila y no en un cajón: son cuatro datos y unas marcas, y
- * abrir una ventana para cambiar un teléfono es más trabajo que el cambio.
+ * Las marcas se tildan en la fila misma y se guardan al tocarlas; el lápiz abre
+ * solo los datos (nombre, cargo, mail y WhatsApp), en la misma fila y no en un
+ * cajón: abrir una ventana para cambiar un teléfono es más trabajo que el
+ * cambio.
  */
 
 import { useRouter } from 'next/navigation';
@@ -81,19 +83,43 @@ function desde(c: Contacto): Borrador {
   };
 }
 
-const recibeAvisos = (c: { recibeOrden: boolean; recibeEntrevista: boolean; recibeInforme: boolean }) =>
-  c.recibeOrden || c.recibeEntrevista || c.recibeInforme;
+const recibeAvisos = (c: {
+  recibeOrden: boolean;
+  recibeEntrevista: boolean;
+  recibeInforme: boolean;
+}) => c.recibeOrden || c.recibeEntrevista || c.recibeInforme;
 
-/** Un tilde de solo lectura, en su columna. Se cambia con el lápiz. */
-function Tilde({ si, que, rotulo }: { si: boolean; que: string; rotulo: string }) {
+/** Un tilde en su columna: se cambia tocándolo y se guarda en el acto. */
+function Tilde({
+  si,
+  que,
+  rotulo,
+  alCambiar,
+  deshabilitado = false,
+}: {
+  si: boolean;
+  que: string;
+  rotulo: string;
+  alCambiar: () => void;
+  deshabilitado?: boolean;
+}) {
   return (
     // El rótulo viaja para el teléfono, donde no hay cabecera de columnas.
-    <span className="os-ctc-tilde" title={`${si ? '' : 'No '}${que}`} data-rotulo={rotulo}>
+    <button
+      type="button"
+      role="switch"
+      aria-checked={si}
+      className="os-ctc-tilde"
+      title={`${si ? '' : 'No '}${que}`}
+      data-rotulo={rotulo}
+      disabled={deshabilitado}
+      onClick={alCambiar}
+    >
       <span className={`os-chequeo-caja${si ? ' si' : ''}`} aria-hidden="true">
-        {si ? '✓' : ''}
+        {si ? '✓' : '✕'}
       </span>
       <span className="os-oculto">{`${si ? '' : 'No '}${que}`}</span>
-    </span>
+    </button>
   );
 }
 
@@ -135,6 +161,47 @@ export default function Contactos({
   const [lista, setLista] = useState<'solicita' | 'compras'>('solicita');
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * Las marcas recién tocadas, mientras el servidor vuelve a dibujar: el tilde
+   * cambia al tocarlo y no un segundo después.
+   */
+  const [tocadas, setTocadas] = useState<Record<string, Partial<Contacto>>>({});
+  const vista = (c: Contacto): Contacto => ({ ...c, ...tocadas[c.id] });
+
+  /** Cambiar una marca desde la fila: se guarda con el resto de sus datos. */
+  async function marcar(
+    c: Contacto,
+    cambio: Partial<
+      Pick<
+        Contacto,
+        | 'pide'
+        | 'facturacion'
+        | 'recibeOrden'
+        | 'recibeEntrevista'
+        | 'recibeInforme'
+        | 'recibeTodo'
+        | 'recibeFactura'
+        | 'recibeRecibo'
+      >
+    >,
+  ) {
+    const antes = tocadas[c.id];
+    setTocadas((t) => ({ ...t, [c.id]: { ...t[c.id], ...cambio } }));
+    setError(null);
+    try {
+      const res = await fetch('/api/os/contactos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ empresaId, ...desde(vista(c)), ...cambio }),
+      });
+      const r = await res.json().catch(() => ({ error: 'Sin respuesta.' }));
+      if (!res.ok) throw new Error(r.error ?? 'No se pudo guardar.');
+      router.refresh();
+    } catch (e) {
+      setTocadas((t) => ({ ...t, [c.id]: antes ?? {} }));
+      setError(e instanceof Error ? e.message : 'No se pudo guardar.');
+    }
+  }
 
   async function mandar(cuerpo: Record<string, unknown>) {
     setGuardando(true);
@@ -205,54 +272,6 @@ export default function Contactos({
           />
         </div>
 
-        {/* Tres preguntas, una por renglón: qué hace, qué le llega, y si
-            además es quien paga. */}
-        <div className="os-ctc-grupos">
-          <div className="os-ctc-grupo">
-            <span className="os-ctc-rotulo">Qué hace</span>
-            <label className="os-contacto-marca">
-              <input
-                type="checkbox"
-                checked={b.pide}
-                onChange={(e) => setBorrador({ ...b, pide: e.target.checked })}
-              />
-              Solicita evaluaciones
-            </label>
-            <label className="os-contacto-marca">
-              <input
-                type="checkbox"
-                checked={b.facturacion}
-                onChange={(e) => setBorrador({ ...b, facturacion: e.target.checked })}
-              />
-              Es responsable de compras: recibe las facturas y los recibos de pago
-            </label>
-          </div>
-
-          <div className="os-ctc-grupo">
-            <span className="os-ctc-rotulo">Recibe por correo</span>
-            {AVISOS.map((a) => (
-              <label className="os-contacto-marca" key={a.campo}>
-                <input
-                  type="checkbox"
-                  checked={b[a.campo]}
-                  onChange={(e) => setBorrador({ ...b, [a.campo]: e.target.checked })}
-                />
-                {a.texto}
-              </label>
-            ))}
-            {/* Quien no pide nada solo puede recibir lo de los demás. */}
-            <label className="os-contacto-marca">
-              <input
-                type="checkbox"
-                checked={recibeAvisos(b) && (b.recibeTodo || !b.pide)}
-                disabled={!b.pide || !recibeAvisos(b)}
-                onChange={(e) => setBorrador({ ...b, recibeTodo: e.target.checked })}
-              />
-              También de los candidatos que piden otros
-            </label>
-          </div>
-        </div>
-
         <div className="os-contacto-acciones">
           <button
             className="os-boton os-boton-azul"
@@ -270,21 +289,17 @@ export default function Contactos({
     );
   }
 
-  /** Nombre, cargo, mail y WhatsApp: lo mismo en las dos listas. */
+  /**
+   * Nombre y WhatsApp: lo mismo en las dos listas. El cargo y el mail no van
+   * en la tabla, que es para ver quién recibe qué; se ven y se corrigen con el
+   * lápiz.
+   */
   function datos(c: Contacto) {
     return (
       <>
-        <span className="os-contacto-nombre">{c.nombre}</span>
-        <span className="os-tabla-flojo">{c.cargo ?? ''}</span>
-        {c.email ? (
-          <a className="os-contacto-mail" href={`mailto:${c.email}`}>
-            {c.email}
-          </a>
-        ) : (
-          <span className="os-dato-falta" title="Sin mail no le llega ningún correo.">
-            sin mail
-          </span>
-        )}
+        <span className="os-contacto-nombre" title={[c.cargo, c.email].filter(Boolean).join(' · ')}>
+          {c.nombre}
+        </span>
         {/* El teléfono del contacto es su WhatsApp: con el enlace, se le
             escribe de un toque, como al candidato. */}
         {c.telefono ? <Whatsapp telefono={c.telefono} /> : <span />}
@@ -310,8 +325,9 @@ export default function Contactos({
 
   // Quien pide o recibe algún aviso va arriba; quien paga, abajo. La misma
   // persona puede estar en las dos.
-  const solicitan = contactos.filter((c) => c.pide || recibeAvisos(c));
-  const compras = contactos.filter((c) => c.facturacion);
+  const todos = contactos.map(vista);
+  const solicitan = todos.filter((c) => c.pide || recibeAvisos(c));
+  const compras = todos.filter((c) => c.facturacion);
 
   return (
     /* Va adentro de la tarjeta de datos de la empresa, como su segunda parte:
@@ -329,6 +345,7 @@ export default function Contactos({
 
       <div className="os-panel-cuerpo">
         {borrador?.id === null && lista === 'solicita' && formulario(borrador)}
+        {!borrador && error && <p className="os-form-error">{error}</p>}
 
         {solicitan.length === 0 && !(borrador && lista === 'solicita') && (
           <p className="os-vacio">
@@ -343,10 +360,9 @@ export default function Contactos({
           <div className="os-contacto os-ctc-fila os-ctc-cabeza" aria-hidden="true">
             <span />
             <span />
-            <span />
-            <span />
             <span className="os-ctc-tildes">
               <span className="os-ctc-col">Solicita</span>
+              <span className="os-ctc-col">Compras</span>
               <span className="os-ctc-raya" />
               <span className="os-ctc-sobre">Recibe por correo</span>
               {AVISOS.map((a) => (
@@ -354,6 +370,8 @@ export default function Contactos({
                   {a.fila}
                 </span>
               ))}
+              <span className="os-ctc-col">Factura</span>
+              <span className="os-ctc-col">Recibo</span>
               <span className="os-ctc-col">De todos</span>
             </span>
             <span />
@@ -367,7 +385,18 @@ export default function Contactos({
             <div className="os-contacto os-ctc-fila" key={c.id}>
               {datos(c)}
               <span className="os-ctc-tildes">
-                <Tilde si={c.pide} que="solicita evaluaciones" rotulo="Solicita" />
+                <Tilde
+                  si={c.pide}
+                  que="solicita evaluaciones"
+                  rotulo="Solicita"
+                  alCambiar={() => marcar(c, { pide: !c.pide })}
+                />
+                <Tilde
+                  si={c.facturacion}
+                  que="es responsable de compras: recibe las facturas y los recibos de pago"
+                  rotulo="Compras"
+                  alCambiar={() => marcar(c, { facturacion: !c.facturacion })}
+                />
                 <span className="os-ctc-raya" />
                 {AVISOS.map((a) => (
                   <Tilde
@@ -375,12 +404,37 @@ export default function Contactos({
                     que={`recibe por correo: ${a.texto.toLowerCase()}`}
                     rotulo={a.fila}
                     key={a.campo}
+                    alCambiar={() => marcar(c, { [a.campo]: !c[a.campo] })}
                   />
                 ))}
+                {/* La factura y el recibo, las mismas marcas que la persona
+                    elige en el portal. Al responsable de compras la factura le
+                    llega siempre: ahí no se toca. */}
+                <Tilde
+                  si={c.facturacion || c.recibeFactura}
+                  que={
+                    c.facturacion
+                      ? 'recibe la factura siempre, por ser responsable de compras'
+                      : 'recibe por correo: la factura'
+                  }
+                  rotulo="Factura"
+                  deshabilitado={c.facturacion}
+                  alCambiar={() => marcar(c, { recibeFactura: !c.recibeFactura })}
+                />
+                <Tilde
+                  si={c.recibeRecibo}
+                  que="recibe por correo: el recibo de pago"
+                  rotulo="Recibo"
+                  alCambiar={() => marcar(c, { recibeRecibo: !c.recibeRecibo })}
+                />
+                {/* Quien no pide nada recibe siempre lo de todos, y sin avisos
+                    tildados la marca no dice nada: ahí no se toca. */}
                 <Tilde
                   si={c.recibeTodo && recibeAvisos(c)}
                   que="recibe también lo de los candidatos que piden otros"
                   rotulo="De todos"
+                  deshabilitado={!c.pide || !recibeAvisos(c)}
+                  alCambiar={() => marcar(c, { recibeTodo: !c.recibeTodo })}
                 />
               </span>
               <div className="os-contacto-acciones">
