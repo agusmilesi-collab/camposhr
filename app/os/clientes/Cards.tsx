@@ -92,7 +92,7 @@ function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
       <div className="os-tabla-marco">
         <table className="os-tabla os-tabla-clientes">
           <colgroup>
-            {[46, 24, 14, 16].map((w, i) => (
+            {[38, 22, 12, 14, 14].map((w, i) => (
               <col key={i} style={{ width: `${w}%` }} />
             ))}
           </colgroup>
@@ -102,6 +102,7 @@ function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
               <th>Último pedido</th>
               <th className="os-tabla-num">En curso</th>
               <th className="os-tabla-num">Contribución</th>
+              <th className="os-tabla-num">Portal</th>
             </tr>
           </thead>
           <tbody>
@@ -155,6 +156,22 @@ function Grilla({ clientes, vacio }: { clientes: Cliente[]; vacio: string }) {
                     <strong className={c.evaluaciones === 0 ? 'os-tabla-flojo' : ''}>
                       {peso(c.evaluaciones, total)}
                     </strong>
+                  </td>
+                  {/* El portal del cliente, en otra pestaña: se mira para ver lo
+                      mismo que ve el cliente antes de contestarle. */}
+                  <td data-campo="Portal" className="os-tabla-num">
+                    {c.token ? (
+                      <a
+                        className="os-boton os-ver-portal"
+                        href={`https://clientes.camposhr.com/${c.token}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Ver portal
+                      </a>
+                    ) : (
+                      <span className="os-tabla-flojo">—</span>
+                    )}
                   </td>
                 </tr>
               );
