@@ -10,6 +10,7 @@
  * salió cada persona, y ahí la capa de servicios deja de servir para algo.
  */
 
+import { puestoConCiudad } from '@/lib/pedido-campos';
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { diasDesde, habilesDesde } from '@/lib/hora';
@@ -99,6 +100,7 @@ type Fila = {
   evaluadoras: { nombre: string } | null;
   pedido_id: string | null;
   baja_el: string | null;
+  ciudad: string | null;
   pedidos: {
     puesto: string;
     con_benziger: boolean | null;
@@ -110,7 +112,7 @@ type Fila = {
 const CAMPOS =
   'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'bender_administrado,grafico_2_personas_administrado,benziger_administrado,con_benziger,' +
-  'recomendacion,informe_path,baja_el,' +
+  'recomendacion,informe_path,baja_el,ciudad,' +
   'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,tablero,prioridad,' +
   'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
   'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo))';
@@ -128,7 +130,7 @@ export async function listar(): Promise<Evaluacion[]> {
     origen: 'supabase' as const,
     nombre: f.personas?.nombre ?? 'Sin nombre',
     empresa: f.pedidos?.empresas?.nombre ?? 'Sin empresa',
-    puesto: f.pedidos?.puesto ?? 'Sin puesto',
+    puesto: puestoConCiudad(f.pedidos?.puesto, f.ciudad) || 'Sin puesto',
     pedidoId: f.pedido_id,
     bateria: f.pedidos?.baterias?.codigo ?? null,
     // Lo pidió el pedido o se le tomó igual: las dos cosas quieren decir que

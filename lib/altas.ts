@@ -236,6 +236,8 @@ export type CandidatoNuevo = {
    * persona y después le suman candidatos otras; null es "el del pedido".
    */
   solicitanteId?: string | null;
+  /** Para qué ciudad se lo evalúa, en los clientes que la piden. */
+  ciudad?: string | null;
 };
 
 /**
@@ -279,6 +281,7 @@ export async function crearCandidato(c: CandidatoNuevo): Promise<{ id: string }>
     mensaje: c.evaluadoraId ? 'Sin contactar' : null,
     fecha_ingreso: hoyIso(),
     solicitante_id: c.solicitanteId ?? null,
+    ciudad: c.ciudad ?? null,
   });
 
   // Un candidato nuevo en un pedido que se había cerrado lo vuelve a abrir: un

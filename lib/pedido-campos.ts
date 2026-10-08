@@ -180,3 +180,16 @@ export const CAMPOS_PEDIDO = [
   ...DEL_PUESTO.map((p) => p.campo),
   ...DEL_JEFE.map((p) => p.campo),
 ];
+
+/**
+ * El puesto de un candidato, con la ciudad para la que se lo evalúa si la
+ * tiene: "Cardiólogo Bariloche". La ciudad es de cada candidato
+ * (`evaluaciones.ciudad`) y la cargan los clientes que piden el mismo puesto
+ * para varias ciudades; el pedido sigue siendo uno solo.
+ */
+export function puestoConCiudad(
+  puesto: string | null | undefined,
+  ciudad: string | null | undefined
+): string {
+  return [puesto?.trim(), ciudad?.trim()].filter(Boolean).join(' ');
+}
