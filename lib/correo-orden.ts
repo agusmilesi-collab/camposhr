@@ -139,6 +139,7 @@ export async function avisarOrden(orden: Orden | null): Promise<Envio | null> {
     if (!quien || quien.para.length === 0) return { ok: false, motivo: 'sin destinatario' };
 
     const envio = await enviarCorreo({
+      de: 'pedidos',
       para: quien.para,
       copia: quien.copia,
       ...cuerpo(orden, quien.nombre),
