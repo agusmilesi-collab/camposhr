@@ -97,11 +97,11 @@ export default function Notificaciones({
             {/* Una casilla por aviso, del color de las etiquetas de
                 codificación: verde con su tilde si le llega, roja y vacía si
                 no. Se cambia tocando el renglón. Al responsable de compras la
-                factura y el recibo le llegan siempre: se ven tildadas y no se
-                pueden destildar desde acá. */}
+                factura le llega siempre: se ve tildada y no se puede destildar
+                desde acá. El recibo sí lo puede apagar. */}
             <div className="pedir-avisos-etiquetas">
               {AVISOS.map((a) => {
-                const fija = a.dePlata && quien.facturacion;
+                const fija = a.campo === 'recibeFactura' && quien.facturacion;
                 const si = fija || suyas[a.campo];
                 return (
                   <button

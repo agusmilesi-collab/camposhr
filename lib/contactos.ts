@@ -30,7 +30,8 @@ export async function contactosDe(empresaId: string): Promise<Contacto[]> {
   return filas.map((c) => ({
     ...c,
     recibeFactura: c.recibeFactura ?? !hayCompras,
-    recibeRecibo: c.recibeRecibo ?? !hayCompras,
+    // Al responsable de compras el recibo le llega mientras no lo apague.
+    recibeRecibo: c.recibeRecibo ?? (c.facturacion ? true : !hayCompras),
   }));
 }
 

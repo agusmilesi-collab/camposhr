@@ -11584,3 +11584,19 @@ a.pedir-volver-link {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* La locación del puesto en la fila del candidato, con su rótulo arriba: así
+   el desplegable dice solo la ciudad. Los campos de al lado se alinean abajo,
+   a la altura del desplegable. */
+.pedir-tres.pedir-sin-mail.con-ciudad {
+  align-items: end;
+}
+.pedir-locacion {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.pedir-locacion-t {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
