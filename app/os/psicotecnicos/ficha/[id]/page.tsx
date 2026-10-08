@@ -640,7 +640,7 @@ async function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulaci
   // evaluadora la escucha, vuelve sobre un tramo y recién ahí elige el modo.
   const audio = f.discursivo?.audio_path ? await enlaceDelAudio(id) : null;
   return (
-    <section className="os-panel os-informe-cierre">
+    <section className="os-panel os-informe-cierre os-panel-potencial">
       <div className="os-panel-top">
         <h2>Potencial de desarrollo</h2>
       </div>

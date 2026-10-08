@@ -104,11 +104,19 @@ body:has(.os) {
   top: 0;
   align-self: start;
   height: 100vh;
+  /* La altura que de verdad se ve: en el teléfono 100vh incluye la barra del
+     navegador, y el pie (quién trabaja, el tema) quedaba debajo de ella. */
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--os-panel);
   border-right: 1px solid var(--os-linea);
-  overflow: hidden;
+  /* Si no entra entera, la barra se desplaza sola: con hidden, en una pantalla
+     baja o en el teléfono el selector de quién trabaja quedaba cortado y no
+     había forma de llegar a él. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /**
@@ -1173,6 +1181,13 @@ a.os-tarjeta:hover {
     width: 252px;
     transform: translateX(-100%);
     transition: transform 0.18s ease;
+    /* Flotando sobre la página, la barra se desplaza ella misma: con la altura
+       del contenido y sin desplazamiento, en un teléfono el selector de quién
+       trabaja quedaba debajo del borde de la pantalla. */
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
   }
 
   html[data-os-menu='abierta'] .os-lateral {
@@ -18136,6 +18151,21 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 .os-onepager-hoja.os-onepager-hoja .sitio-escalera .sitio-escalera-intro {
   font-size: 0.6rem !important;
   line-height: 1.4 !important;
+}
+
+/* La pestaña Potencial con ancho fijo: estirada a lo ancho de una pantalla
+   grande, las descripciones de cada estrato quedaban en un renglón largo que
+   costaba leer. En pantallas más chicas se achica con la ventana. */
+.os-panel.os-panel-potencial {
+  width: 1100px;
+  max-width: 100%;
+}
+
+/* "Ver portal" en cada fila de clientes: chico, para no agrandar la fila. */
+.os-tabla-clientes .os-boton.os-ver-portal {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 0.76rem;
 }
 
 /* El rótulo de las marcas de un contacto: "Recibe por correo". */
