@@ -106,6 +106,11 @@ export type EmpresaDelPortal = {
   informes_visibles: boolean;
   /** De qué base sale el portal de este cliente. */
   portal_desde_airtable: boolean;
+  /**
+   * Si pide la misma búsqueda en varias ciudades: el formulario de pedido suma
+   * un campo Ciudad y la agrega al nombre del pedido ("Cardiólogo Bariloche").
+   */
+  pedido_con_ciudad?: boolean;
 };
 
 export async function empresaDelToken(token: string): Promise<EmpresaDelPortal | null> {
@@ -113,7 +118,7 @@ export async function empresaDelToken(token: string): Promise<EmpresaDelPortal |
   const t = encodeURIComponent(token);
   const filas = await select<EmpresaDelPortal>(
     'empresas',
-    'select=id,nombre,informes_visibles,portal_desde_airtable' +
+    'select=id,nombre,informes_visibles,portal_desde_airtable,pedido_con_ciudad' +
       `&or=(token_portal.eq.${t},token_portal_anterior.eq.${t})&limit=1`
   );
   return filas[0] ?? null;

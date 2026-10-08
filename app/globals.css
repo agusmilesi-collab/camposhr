@@ -11298,3 +11298,11 @@ a.pedir-volver-link {
   color: #5f5d58;
   background: #e7e5e0;
 }
+
+/* El puesto y la ciudad en una fila, para los clientes que piden la misma
+   búsqueda en varias ciudades. */
+.pedir-puesto-ciudad {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 10px;
+}
