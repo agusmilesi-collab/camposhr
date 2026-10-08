@@ -55,12 +55,36 @@ type Fila = {
   cv: File | null;
   /** De qué archivo salieron los datos, para poder decirlo. */
   desdeCv: boolean;
-  /** Para qué ciudad se lo evalúa, en los clientes que la piden. */
+  /**
+   * Para qué ciudad es el puesto, en los clientes que la piden. Vacía es la
+   * ciudad de siempre (`CIUDAD_BASE`).
+   */
   ciudad: string;
+  /** Si eligió "Otra ciudad" y la escribe a mano. */
+  otraCiudad: boolean;
 };
 
+/** La ciudad que el desplegable propone de entrada. */
+const CIUDAD_BASE = 'Rosario';
+/** El valor de "Otra ciudad" en el desplegable. */
+const OTRA = '__otra';
+
 function vacia(id: number): Fila {
-  return { id, nombre: '', telefono: '', mail: '', cv: null, desdeCv: false, ciudad: '' };
+  return {
+    id,
+    nombre: '',
+    telefono: '',
+    mail: '',
+    cv: null,
+    desdeCv: false,
+    ciudad: '',
+    otraCiudad: false,
+  };
+}
+
+/** La ciudad que va con el candidato: la elegida, la escrita o la de siempre. */
+function ciudadDe(f: Fila): string {
+  return f.otraCiudad ? f.ciudad.trim() : f.ciudad || CIUDAD_BASE;
 }
 
 const pesos = (n: number) =>
@@ -109,6 +133,7 @@ export default function Pedido({
   delPuesto,
   delJefe,
   conCiudad = false,
+  ciudades = [],
 }: {
   token: string;
   empresa: string;
@@ -122,6 +147,8 @@ export default function Pedido({
    * candidato lleva su ciudad, que se muestra al lado del puesto.
    */
   conCiudad?: boolean;
+  /** Las ciudades que este cliente ya usó, para ofrecerlas en el desplegable. */
+  ciudades?: string[];
 }) {
   const router = useRouter();
   /**
@@ -256,8 +283,8 @@ export default function Pedido({
     const gente = filas.filter((x) => x.nombre.trim());
     if (gente.length === 0) f.push('al menos un candidato');
     if (gente.some((x) => !x.telefono.trim() && !x.mail.trim()))
-      f.push('un teléfono o un mail de cada candidato');
-    if (conCiudad && gente.some((x) => !x.ciudad.trim())) f.push('la ciudad de cada candidato');
+      f.push('el teléfono de cada candidato');
+    if (conCiudad && gente.some((x) => !ciudadDe(x))) f.push('la ciudad de cada candidato');
     return f;
   }, [modo, esNueva, esExistente, puesto, conCiudad, filas, elegida, contacto]);
 
@@ -371,7 +398,7 @@ export default function Pedido({
           cuerpo.set(`telefono-${i}`, f.telefono.trim());
           cuerpo.set(`mail-${i}`, f.mail.trim());
           if (f.cv) cuerpo.set(`cv-${i}`, f.cv);
-          if (conCiudad) cuerpo.set(`ciudad-${i}`, f.ciudad.trim());
+          if (conCiudad) cuerpo.set(`ciudad-${i}`, ciudadDe(f));
         });
 
       const r = await fetch('/api/pedidos', { method: 'POST', body: cuerpo });
@@ -945,7 +972,7 @@ export default function Pedido({
                         </button>
                       )}
                     </div>
-                    <div className={`pedir-tres${conCiudad ? ' pedir-cuatro' : ''}`}>
+                    <div className={`pedir-tres pedir-sin-mail${conCiudad ? ' con-ciudad' : ''}`}>
                       <input
                         className="pedir-input"
                         placeholder="Nombre y apellido"
@@ -960,22 +987,42 @@ export default function Pedido({
                         maxLength={40}
                         onChange={(e) => cambiar(f.id, { telefono: e.target.value })}
                       />
-                      <input
-                        className="pedir-input"
-                        type="email"
-                        placeholder="Mail"
-                        value={f.mail}
-                        maxLength={120}
-                        onChange={(e) => cambiar(f.id, { mail: e.target.value })}
-                      />
+                      {/* Sin campo de mail: era un paso más para el cliente y
+                          al candidato se lo cita por teléfono. Si el CV trae
+                          el mail, viaja igual. */}
                       {/* El mismo puesto se pide para varias ciudades: cada
                           candidato dice para cuál. */}
+                      {/* La ciudad del puesto, no la de la persona: un
+                          desplegable que arranca en la de siempre y ofrece
+                          las que el cliente ya usó, o una nueva a mano. */}
                       {conCiudad && (
+                        <Elegir
+                          valor={f.otraCiudad ? OTRA : f.ciudad || CIUDAD_BASE}
+                          opciones={[
+                            ...[CIUDAD_BASE, ...ciudades.filter((c) => c !== CIUDAD_BASE)].map(
+                              (c) => ({ valor: c, texto: `Puesto en ${c}` })
+                            ),
+                            { valor: OTRA, texto: 'Otra ciudad' },
+                          ]}
+                          alElegir={(v) =>
+                            cambiar(
+                              f.id,
+                              v === OTRA
+                                ? { otraCiudad: true, ciudad: '' }
+                                : { otraCiudad: false, ciudad: v }
+                            )
+                          }
+                          vacio="Ciudad del puesto"
+                          etiqueta="Ciudad del puesto"
+                        />
+                      )}
+                      {conCiudad && f.otraCiudad && (
                         <input
                           className="pedir-input"
-                          placeholder="Ciudad"
+                          placeholder="Ciudad del puesto"
                           value={f.ciudad}
                           maxLength={60}
+                          autoFocus
                           onChange={(e) => cambiar(f.id, { ciudad: e.target.value })}
                         />
                       )}
