@@ -11600,3 +11600,21 @@ a.pedir-volver-link {
   font-size: 0.72rem;
   color: var(--muted);
 }
+
+/* Apagada: fondo blanco y borde del azul de los botones principales, con la
+   cruz del mismo color, igual que en el OS.
+   El rojo se leía como un error y no como "no lo quiero". */
+.pedir-avisos-etiqueta:not(.si) .pedir-avisos-cuadro {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--ink);
+  color: var(--ink);
+}
+
+/* El borde de la casilla apagada, al revés: liviano de entrada y marcado al
+   pasar el mouse, igual que en el OS. */
+.pedir-avisos-etiqueta:not(.si) .pedir-avisos-cuadro {
+  box-shadow: inset 0 0 0 1px rgba(22, 32, 43, 0.35);
+}
+.pedir-avisos-etiqueta:not(.si):hover:not(:disabled) .pedir-avisos-cuadro {
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
