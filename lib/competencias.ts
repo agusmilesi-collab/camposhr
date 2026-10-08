@@ -388,10 +388,20 @@ const COP_AG: Indicador = {
  */
 const DQ_MAS: Indicador = {
   nombre: 'DQ+',
-  formula: 'DQ+',
+  formula: 'DQ+ ÷ R',
   mide: 'Esfuerzo de integración',
-  escala: { forma: 'umbral', mayorEsMejor: true, alto: 5, medio: 2 },
-  valor: (s) => num(s, 'localizacion', 'DQ_mas') ?? num(s, 'procesamiento', 'DQ+'),
+  /* Como parte de las respuestas y no como cuenta: contado a secas, un
+     protocolo de diez respuestas y uno de treinta no se podían comparar, y
+     sacar una respuesta movía el indicador de banda. Un cuarto de las
+     respuestas integrando dos partes de la lámina es mucho; una de cada diez,
+     poco. */
+  escala: { forma: 'umbral', mayorEsMejor: true, alto: 0.25, medio: 0.1, decimales: 2, porcentaje: true },
+  valor: (s) => {
+    const dq = num(s, 'localizacion', 'DQ_mas') ?? num(s, 'procesamiento', 'DQ+');
+    const r = num(s, 'cabecera', 'R');
+    if (dq === null || r === null || r === 0) return null;
+    return dq / r;
+  },
 };
 
 /** Zf en Proactividad: cuántas respuestas implican organizar el material. */
@@ -1040,7 +1050,9 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       'M−': 1,
       'Índice de egocentrismo': 1,
     },
-    'Proactividad': { Fd: 2, R: 2, 'DQ+': 2, Zf: 2, 'Ma : Mp': 1 },
+    // R pesa menos acá que en Rorschach: con diez respuestas, una sola lo
+    // cambia de banda, y es el indicador que más movía el puntaje.
+    'Proactividad': { Fd: 2, 'DQ+': 2, Zf: 2, R: 1, 'Ma : Mp': 1 },
     'Capacidad intelectual': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
   },
 };
