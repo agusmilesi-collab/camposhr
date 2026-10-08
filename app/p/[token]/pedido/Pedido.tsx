@@ -33,6 +33,7 @@ import type { Busqueda } from '@/lib/airtable';
 import { AVISO_HORIZONTE, PREGUNTAS, UNIDADES, type Unidad } from '@/lib/potencial';
 import type { Alcance } from '@/lib/precio-portal';
 import type { Contacto } from '@/lib/contactos-tipos';
+import Notificaciones from './Notificaciones';
 import type { Pregunta } from '@/lib/pedido-campos';
 import Elegir from './Elegir';
 import OrdenGracias from '@/app/_components/OrdenGracias';
@@ -1112,6 +1113,9 @@ export default function Pedido({
                       setError(null);
                     }}
                   />
+                  {/* Con el nombre elegido, la persona decide qué avisos quiere
+                      recibir por correo. */}
+                  {contacto && <Notificaciones token={token} contactos={contactos} elegido={contacto} />}
                   {contactos.length === 0 && (
                     <p className="pedir-error">
                       Todavía no tenés personas habilitadas para pedir evaluaciones. Escribinos y te
