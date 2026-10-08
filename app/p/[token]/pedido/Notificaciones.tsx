@@ -4,20 +4,22 @@
  * Qué avisos quiere recibir por correo quien envía el pedido.
  *
  * Aparece debajo de "Enviar como", cuando la persona eligió su nombre: es ella
- * la que decide si quiere el correo con la fecha de la entrevista y el de que
- * el informe está listo. Se guarda al tildar, en su contacto, y vale para todos
- * sus pedidos: son las mismas marcas que el equipo ve en la ficha del cliente.
+ * la que decide qué correos quiere: la orden de compra, la fecha de la
+ * entrevista, el informe terminado, la factura y el recibo de pago. Se guarda
+ * al tildar, en su contacto, y vale para todos sus pedidos: son las mismas
+ * marcas que el equipo ve en la ficha del cliente.
  *
  * Va siempre a la vista, sin desplegar (pedido de Agustín, 8/10/2026): son
- * cuatro renglones, y plegado nadie se enteraba de que podía elegir.
+ * cinco renglones, y plegado nadie se enteraba de que podía elegir.
  */
 
 import { useState } from 'react';
 import type { Contacto } from '@/lib/contactos-tipos';
 
 const AVISOS = [
-  { campo: 'recibeEntrevista', texto: 'Fecha de la entrevista', dePlata: false },
-  { campo: 'recibeInforme', texto: 'Informe listo', dePlata: false },
+  { campo: 'recibeOrden', texto: 'Orden de compra', dePlata: false },
+  { campo: 'recibeEntrevista', texto: 'Fecha de entrevista', dePlata: false },
+  { campo: 'recibeInforme', texto: 'Informe terminado', dePlata: false },
   { campo: 'recibeFactura', texto: 'Factura', dePlata: true },
   { campo: 'recibeRecibo', texto: 'Recibo de pago', dePlata: true },
 ] as const;
@@ -42,6 +44,7 @@ export default function Notificaciones({
       contactos.map((c) => [
         c.id,
         {
+          recibeOrden: c.recibeOrden,
           recibeEntrevista: c.recibeEntrevista,
           recibeInforme: c.recibeInforme,
           recibeFactura: c.recibeFactura,
@@ -77,39 +80,55 @@ export default function Notificaciones({
 
   return (
     <div className="pedir-avisos">
-      <span className="pedir-avisos-titulo">Notificaciones por correo</span>
+      {/* El estado del guardado va acá, al lado del título, y no en la línea
+          de abajo: ahí el texto cambiaba de largo, pasaba a dos renglones y
+          el botón de enviar se movía con cada tilde. */}
+      <span className="pedir-avisos-titulo">
+        Notificaciones por correo
+        <span className="pedir-avisos-guardado" aria-live="polite">
+          {estado === 'guardado' && 'Guardado'}
+          {estado === 'error' && 'No se guardó'}
+        </span>
+      </span>
 
       <div className="pedir-avisos-cuerpo">
         {quien.email ? (
           <>
-            {/* Una casilla: tildada si le llega, vacía si no. Se cambia
-                tocando el renglón. */}
-            {/* Al responsable de compras la factura y el recibo le llegan
-                siempre: no son algo que pueda apagar desde acá. */}
-            {AVISOS.filter((a) => !(a.dePlata && quien.facturacion)).map((a) => (
-              <button
-                type="button"
-                role="switch"
-                aria-checked={suyas[a.campo]}
-                className="pedir-avisos-marca"
-                key={a.campo}
-                disabled={estado === 'guardando'}
-                onClick={() => cambiar(a.campo, !suyas[a.campo])}
-              >
-                <span
-                  className={`pedir-avisos-caja${suyas[a.campo] ? ' si' : ''}`}
-                  aria-hidden="true"
-                >
-                  {suyas[a.campo] ? '✓' : ''}
-                </span>
-                <span className="pedir-avisos-que">{a.texto}</span>
-              </button>
-            ))}
-            <p className="pedir-avisos-n" aria-live="polite">
-              {estado === 'error'
-                ? 'No se pudo guardar. Probá de nuevo.'
-                : `${estado === 'guardado' ? 'Guardado. ' : ''}Llegan a ${quien.email}.`}
-            </p>
+            {/* Una casilla por aviso, del color de las etiquetas de
+                codificación: verde con su tilde si le llega, roja y vacía si
+                no. Se cambia tocando el renglón. Al responsable de compras la
+                factura y el recibo le llegan siempre: se ven tildadas y no se
+                pueden destildar desde acá. */}
+            <div className="pedir-avisos-etiquetas">
+              {AVISOS.map((a) => {
+                const fija = a.dePlata && quien.facturacion;
+                const si = fija || suyas[a.campo];
+                return (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={si}
+                    className={`pedir-avisos-etiqueta${si ? ' si' : ''}`}
+                    key={a.campo}
+                    disabled={fija || estado === 'guardando'}
+                    title={
+                      fija
+                        ? 'Te llega siempre, por ser responsable de compras'
+                        : si
+                          ? 'Te llega por correo. Tocá para dejar de recibirlo'
+                          : 'No te llega. Tocá para recibirlo por correo'
+                    }
+                    onClick={() => cambiar(a.campo, !suyas[a.campo])}
+                  >
+                    <span className="pedir-avisos-cuadro" aria-hidden="true">
+                      {si ? '✓' : ''}
+                    </span>
+                    {a.texto}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="pedir-avisos-n">Llegan a {quien.email}</p>
           </>
         ) : (
           <p className="pedir-avisos-n">

@@ -30,6 +30,7 @@ export async function POST(req: Request) {
   }
 
   const cambios: Record<string, boolean> = {};
+  if (typeof datos.recibeOrden === 'boolean') cambios.recibe_orden = datos.recibeOrden;
   if (typeof datos.recibeEntrevista === 'boolean') cambios.recibe_entrevista = datos.recibeEntrevista;
   if (typeof datos.recibeInforme === 'boolean') cambios.recibe_informe = datos.recibeInforme;
   if (typeof datos.recibeFactura === 'boolean') cambios.recibe_factura = datos.recibeFactura;
