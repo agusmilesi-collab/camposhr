@@ -566,9 +566,12 @@ export default async function Portal({ params }: { params: { token: string } }) 
 function CabezaDeBusqueda({ b }: { b: Busqueda }) {
   return (
     <div className="card-head">
-      <h2>{b.puesto}</h2>
-      {/* En el portal de un grupo, de qué empresa es la búsqueda. */}
-      {b.empresaNombre && <span className="card-empresa">{b.empresaNombre}</span>}
+      {/* En el portal de un grupo, de qué empresa es la búsqueda: va en el
+          título, detrás del puesto. */}
+      <h2>
+        {b.puesto}
+        {b.empresaNombre ? ` · ${b.empresaNombre}` : ''}
+      </h2>
       {b.fecha && <span className="card-fecha">({fecha(b.fecha)})</span>}
     </div>
   );
