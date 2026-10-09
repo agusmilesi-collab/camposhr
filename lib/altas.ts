@@ -245,6 +245,11 @@ export type CandidatoNuevo = {
   solicitanteId?: string | null;
   /** Para qué ciudad se lo evalúa, en los clientes que la piden. */
   ciudad?: string | null;
+  /**
+   * Si el cliente lo marcó como de prioridad alta al cargarlo. Entra con la
+   * prioridad fijada, y el equipo la puede cambiar desde Inicio.
+   */
+  prioridadAlta?: boolean;
 };
 
 /**
@@ -293,6 +298,8 @@ export async function crearCandidato(c: CandidatoNuevo): Promise<{ id: string }>
     fecha_ingreso: hoyIso(),
     solicitante_id: c.solicitanteId ?? null,
     ciudad: c.ciudad ?? null,
+    // Null es "la que le toca por espera" (`prioridadPorDefecto`).
+    prioridad: c.prioridadAlta ? 'alta' : null,
   });
 
   // Un candidato nuevo en un pedido que se había cerrado lo vuelve a abrir: un

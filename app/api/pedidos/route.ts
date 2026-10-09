@@ -209,6 +209,8 @@ export async function POST(req: Request) {
     mail: string;
     cv: File | null;
     ciudad: string | null;
+    /** Si el cliente lo marcó como de prioridad alta. */
+    prioridadAlta: boolean;
   }[] = [];
   for (let i = 0; i < 40; i++) {
     let nombre = texto(`nombre-${i}`);
@@ -233,6 +235,7 @@ export async function POST(req: Request) {
       mail: texto(`mail-${i}`),
       cv: adjunto instanceof File && adjunto.size > 0 ? adjunto : null,
       ciudad: conCiudad ? texto(`ciudad-${i}`).slice(0, 60) || null : null,
+      prioridadAlta: texto(`prioridad-${i}`) === 'alta',
     });
   }
 
@@ -380,6 +383,7 @@ export async function POST(req: Request) {
         origen: 'portal',
         cv: g.cv,
         ciudad: g.ciudad,
+        prioridadAlta: g.prioridadAlta,
         // Lo que se eligió en "Enviar como", en cada candidato: el pedido puede
         // haberlo abierto otra persona.
         solicitanteId: pide?.id ?? null,

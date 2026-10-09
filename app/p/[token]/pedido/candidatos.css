@@ -46,3 +46,54 @@
   border: 0;
   cursor: pointer;
 }
+
+/* "Prioridad alta" de cada candidato: un interruptor chico con su rótulo en
+   gris, a la izquierda y debajo de los campos. Apagado casi no se ve, que es
+   lo que corresponde a algo que se usa pocas veces; prendido, el riel y el
+   rótulo toman el color de la tinta. */
+.pedir-prioridad {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  justify-self: start;
+  margin-top: 8px;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.pedir-prioridad-riel {
+  flex: none;
+  width: 26px;
+  height: 15px;
+  padding: 2px;
+  border-radius: 999px;
+  background: #d9d5cc;
+  transition: background 0.15s ease;
+}
+
+.pedir-prioridad-perilla {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.pedir-prioridad.si {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.pedir-prioridad.si .pedir-prioridad-riel {
+  background: var(--ink);
+}
+
+.pedir-prioridad.si .pedir-prioridad-perilla {
+  transform: translateX(11px);
+}
