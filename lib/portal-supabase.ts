@@ -27,6 +27,7 @@ type FilaPedido = {
   fecha_pedido: string | null;
   reabierto_el: string | null;
   con_benziger: boolean | null;
+  descriptivo_nombre: string | null;
   baterias: { codigo: string } | null;
   solicitante: { nombre: string } | null;
   evaluaciones: {
@@ -48,7 +49,7 @@ type FilaPedido = {
 };
 
 const CAMPOS =
-  'id,puesto,estado,familia,seniority,fecha_pedido,reabierto_el,con_benziger,' +
+  'id,puesto,estado,familia,seniority,fecha_pedido,reabierto_el,con_benziger,descriptivo_nombre,' +
   'baterias(codigo),solicitante:contactos!solicitante_id(nombre),' +
   'evaluaciones(id,estado,fecha_entrevista,fecha_entrega,modalidad,recomendacion,' +
   'informe_path,facturado,pagado,baja_el,ciudad,personas(nombre),evaluadoras(nombre),' +
@@ -195,6 +196,7 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
     fecha: p.reabierto_el ?? p.fecha_pedido,
     bateria: p.baterias?.codigo ?? null,
     conBenziger: p.con_benziger === true,
+    descriptivo: p.descriptivo_nombre ?? null,
     solicitante: p.solicitante?.nombre ?? null,
     ...(enGrupo ? { empresaId: p.empresa_id, empresaNombre: nombreDe.get(p.empresa_id) } : {}),
     candidatos: (p.evaluaciones ?? []).map(

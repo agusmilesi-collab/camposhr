@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { select } from '@/lib/supabase';
 import { crearCandidato, crearPedido } from '@/lib/altas';
+import { MAX_DESCRIPTIVO, subirDescriptivo } from '@/lib/descriptivo';
 import { crearOrden } from '@/lib/orden-compra';
 import { avisarOrden } from '@/lib/correo-orden';
 import { empresasDelGrupo } from '@/lib/grupo';
@@ -258,6 +259,18 @@ export async function POST(req: Request) {
     );
   }
 
+  /* El descriptivo de puesto, si lo adjuntaron: es opcional, en un pedido
+     nuevo y al sumarle candidatos a uno que ya existe. */
+  const adjuntoPuesto = form.get('descriptivo');
+  const descriptivoPuesto =
+    adjuntoPuesto instanceof File && adjuntoPuesto.size > 0 ? adjuntoPuesto : null;
+  if (descriptivoPuesto && descriptivoPuesto.size > MAX_DESCRIPTIVO) {
+    return NextResponse.json(
+      { error: 'El descriptivo de puesto supera los 10 MB.' },
+      { status: 400 }
+    );
+  }
+
   const pide = quienPide;
 
   /** La búsqueda que ya existe, si el cliente eligió una. Tiene que ser suya. */
@@ -337,6 +350,10 @@ export async function POST(req: Request) {
           nivelDelPuesto
         )
       ).id;
+
+    // El descriptivo se cuelga del pedido. No tira: si falla, el pedido entra
+    // igual.
+    if (descriptivoPuesto) await subirDescriptivo(pedidoDestino, descriptivoPuesto);
 
     // De a uno y no todos a la vez: cada candidato sube su CV, y si algo falla
     // en el tercero los dos primeros ya quedaron cargados en vez de perderse.

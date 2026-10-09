@@ -144,6 +144,11 @@ export type Busqueda = {
   bateria: string | null;
   conBenziger: boolean;
   /**
+   * Cómo se llama el descriptivo de puesto que ya tiene cargado, si tiene.
+   * No viene en lo que sigue en Airtable.
+   */
+  descriptivo?: string | null;
+  /**
    * Quién de la empresa pidió la búsqueda (`pedidos.solicitante_id`). Null en
    * lo que sigue en Airtable, que no lo trae, y en los pedidos sin solicitante.
    */

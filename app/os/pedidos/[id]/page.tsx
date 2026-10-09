@@ -279,6 +279,20 @@ export default async function FichaPedido({
               ayuda="Lo que dice el mail: contexto, urgencia, a quién reporta."
               fila
             />
+            {/* El descriptivo de puesto que adjuntó el cliente desde su portal.
+                El enlace se firma al tocarlo (`/api/os/descriptivo`). */}
+            <div className="os-ficha-dato os-ficha-dato-ancho os-ficha-dato-fila">
+              <div className="os-ficha-rotulo">Descriptivo de puesto</div>
+              <div className="os-ficha-valor">
+                {pedido.descriptivo ? (
+                  <a href={`/api/os/descriptivo/${pedido.id}`} target="_blank" rel="noreferrer">
+                    {pedido.descriptivo}
+                  </a>
+                ) : (
+                  'El cliente no lo adjuntó'
+                )}
+              </div>
+            </div>
             <Largo
               id={pedido.id}
               campo="contexto"

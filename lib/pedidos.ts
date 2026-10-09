@@ -34,6 +34,7 @@ type Fila = {
   reabierto_el: string | null;
   notas: string | null;
   contexto: string | null;
+  descriptivo_nombre: string | null;
   empresas: { nombre: string } | null;
   baterias: { codigo: string } | null;
   evaluaciones: {
@@ -62,7 +63,7 @@ type Fila = {
 
 const CAMPOS =
   'id,puesto,empresa_id,bateria_id,con_benziger,exigencia_id,solicitante_id,familia,seniority,estado,' +
-  'fecha_pedido,reabierto_el,notas,contexto,puesto_problemas,puesto_presion,' +
+  'fecha_pedido,reabierto_el,notas,contexto,descriptivo_nombre,puesto_problemas,puesto_presion,' +
   'puesto_interaccion,puesto_estabilidad,puesto_contacto_jefe,' +
   'puesto_innovacion,jefe_estilo,jefe_paciencia,jefe_emociones,' +
   'time_span_dias,complejidad,estrato_puesto,' +
@@ -94,6 +95,7 @@ function armar(f: Fila): Pedido {
     fechaOriginal: f.fecha_pedido,
     notas: f.notas,
     contexto: f.contexto,
+    descriptivo: f.descriptivo_nombre,
     candidatos: evaluaciones.length,
     entregados: evaluaciones.filter((e) => e.estado && CERRADAS.has(e.estado)).length,
     gente: evaluaciones.map((e) => ({

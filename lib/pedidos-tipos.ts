@@ -44,6 +44,8 @@ export type Pedido = {
   fechaOriginal: string | null;
   notas: string | null;
   contexto: string | null;
+  /** Cómo se llama el descriptivo de puesto que adjuntó el cliente, si adjuntó. */
+  descriptivo: string | null;
   /** Cuántas evaluaciones cuelgan del pedido y cuántas ya se entregaron. */
   candidatos: number;
   entregados: number;

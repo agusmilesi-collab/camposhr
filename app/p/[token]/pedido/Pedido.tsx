@@ -120,6 +120,70 @@ function diaCorto(iso: string): string {
 
 const dolares = (n: number) => `USD ${new Intl.NumberFormat('es-AR').format(n)}`;
 
+/**
+ * Dónde se adjunta el descriptivo de puesto: se toca para elegirlo o se le
+ * suelta el archivo encima. Es uno solo y es opcional. Con uno cargado dice
+ * cuál es y deja sacarlo.
+ */
+function Descriptivo({
+  archivo,
+  yaCargado,
+  alCambiar,
+}: {
+  archivo: File | null;
+  /** El que ese puesto ya tiene de un pedido anterior, si tiene. */
+  yaCargado?: string | null;
+  alCambiar: (archivo: File | null) => void;
+}) {
+  const elegir = useRef<HTMLInputElement>(null);
+  return (
+    <div
+      className="pedir-soltar pedir-descriptivo"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        alCambiar(e.dataTransfer.files[0] ?? null);
+      }}
+      onClick={() => elegir.current?.click()}
+    >
+      <input
+        ref={elegir}
+        type="file"
+        hidden
+        onChange={(e) => {
+          alCambiar(e.target.files?.[0] ?? null);
+          // Vaciado, elegir de nuevo el mismo archivo vuelve a avisar.
+          e.target.value = '';
+        }}
+      />
+      {archivo ? (
+        <>
+          <span className="pedir-soltar-t">{archivo.name}</span>
+          <button
+            type="button"
+            className="pedir-sacar pedir-descriptivo-sacar"
+            onClick={(e) => {
+              e.stopPropagation();
+              alCambiar(null);
+            }}
+          >
+            Sacar
+          </button>
+        </>
+      ) : (
+        <>
+          <span className="pedir-soltar-t">Soltá acá el descriptivo de puesto</span>
+          <span className="pedir-soltar-d">
+            {yaCargado
+              ? `Este puesto ya tiene uno cargado (${yaCargado}). Si subís otro, lo reemplaza.`
+              : 'PDF, Word o el formato en que lo tengas. Es opcional.'}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
 /** El "← Volver" arriba a la derecha, a la altura del título del bloque. */
 function Atras({ alVolver }: { alVolver: () => void }) {
   return (
@@ -190,6 +254,8 @@ export default function Pedido({
   const [benziger, setBenziger] = useState(true);
   const [descripcion, setDescripcion] = useState('');
   const [comentarios, setComentarios] = useState('');
+  /** El descriptivo de puesto, si lo adjuntan. Es opcional. */
+  const [descriptivo, setDescriptivo] = useState<File | null>(null);
   const [perfil, setPerfil] = useState<Record<string, string>>({});
   const [verPerfil, setVerPerfil] = useState(false);
   /* El nivel de trabajo del puesto, solo en las baterías que llevan análisis de
@@ -419,6 +485,7 @@ export default function Pedido({
       }
       cuerpo.set('contactoId', contacto);
       cuerpo.set('comentarios', comentarios.trim());
+      if (descriptivo) cuerpo.set('descriptivo', descriptivo);
 
       filas
         .filter((f) => f.nombre.trim())
@@ -452,6 +519,7 @@ export default function Pedido({
     setPuesto('');
     setDescripcion('');
     setComentarios('');
+    setDescriptivo(null);
     setPerfil({});
     setModo(null);
     setBusqueda('');
@@ -735,6 +803,13 @@ export default function Pedido({
                       preguntas se abren adentro. */}
                   <div className="pedir-perfil-caja">
                     <h3 className="pedir-perfil-titulo">Perfil del puesto</h3>
+                    {/* Primero el descriptivo que la empresa ya tiene escrito,
+                        y después las nueve preguntas. Ninguno de los dos frena
+                        el pedido. */}
+                    <p className="pedir-ayuda">
+                      Si la empresa tiene un descriptivo de puesto, adjuntalo.
+                    </p>
+                    <Descriptivo archivo={descriptivo} alCambiar={setDescriptivo} />
                     <p className="pedir-ayuda">
                       Nueve preguntas de opción múltiple. Con ellas, la recomendación considera las
                       condiciones del puesto además del perfil de la persona.{' '}
@@ -1126,6 +1201,20 @@ export default function Pedido({
                   </button>
                 )}
               </section>
+
+              {/* Al sumar candidatos a un puesto que ya se pidió, el descriptivo
+                  se puede adjuntar acá. En un pedido nuevo va en el primer
+                  paso, con el perfil del puesto. */}
+              {esExistente && (
+                <section className="pedir-bloque">
+                  <h2>Descriptivo de puesto</h2>
+                  <Descriptivo
+                    archivo={descriptivo}
+                    yaCargado={elegida?.descriptivo}
+                    alCambiar={setDescriptivo}
+                  />
+                </section>
+              )}
 
               <section className="pedir-bloque">
                 <h2>Algo más que quieras avisarnos</h2>
