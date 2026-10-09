@@ -11618,3 +11618,13 @@ a.pedir-volver-link {
 .pedir-avisos-etiqueta:not(.si):hover:not(:disabled) .pedir-avisos-cuadro {
   box-shadow: inset 0 0 0 1px var(--ink);
 }
+
+/* En el teléfono, entregados vuelve a la grilla de dos columnas (nombre y
+   botón arriba, el resto debajo): el ancho de columnas de la computadora,
+   escrito más abajo en la hoja, le ganaba y desarmaba la fila. */
+@media (max-width: 620px) {
+  .tabla.entregados .tr,
+  .tabla.entregados .tr.sin-cobro {
+    grid-template-columns: 1fr auto;
+  }
+}
