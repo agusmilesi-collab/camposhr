@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { select } from '@/lib/supabase';
 import { crearCandidato, crearPedido } from '@/lib/altas';
+import { partesDelNombre } from '@/lib/personas';
 import { MAX_DESCRIPTIVO, subirDescriptivo } from '@/lib/descriptivo';
 import { crearOrden } from '@/lib/orden-compra';
 import { avisarOrden } from '@/lib/correo-orden';
@@ -210,10 +211,20 @@ export async function POST(req: Request) {
     ciudad: string | null;
   }[] = [];
   for (let i = 0; i < 40; i++) {
-    const nombre = texto(`nombre-${i}`);
+    let nombre = texto(`nombre-${i}`);
     if (!nombre) continue;
     const adjunto = form.get(`cv-${i}`);
-    const apellido = texto(`apellido-${i}`);
+    let apellido = texto(`apellido-${i}`);
+    // Un formulario abierto desde antes de que el apellido tuviera su campo
+    // manda todo en el nombre ("Gastón Álvarez"): se parte acá, en vez de
+    // rechazar un pedido al que quien lo carga no le puede agregar el campo.
+    if (!apellido) {
+      const partes = partesDelNombre(nombre);
+      if (partes.apellido) {
+        nombre = partes.nombres;
+        apellido = partes.apellido;
+      }
+    }
     gente.push({
       nombre,
       apellido,
