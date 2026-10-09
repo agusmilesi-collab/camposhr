@@ -399,7 +399,12 @@ export async function POST(req: Request) {
     // Y a quien la pidió le llega por correo, con el PDF. No tira.
     await avisarOrden(orden);
     // Y a las evaluadoras, que entró un pedido: llega sin dueña. No tira.
-    await avisarPedidoNuevo(cargadas);
+    // Con lo que el cliente escribió: la descripción, si el pedido es nuevo, y
+    // sus comentarios.
+    await avisarPedidoNuevo(cargadas, {
+      descripcion: suyo ? '' : descripcion,
+      comentarios,
+    });
 
     revalidateTag(CACHE_PSICOTECNICOS);
     revalidateTag(CACHE_CLIENTES);
