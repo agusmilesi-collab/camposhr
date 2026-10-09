@@ -46,6 +46,7 @@ import {
   prioridadDe,
   type ColumnaTablero,
   type Prioridad,
+  columnaDelTablero,
 } from '@/lib/psicotecnicos-tipos';
 import { soloHora } from '@/lib/hora';
 import Desplegable from '@/app/os/Desplegable';
@@ -65,10 +66,11 @@ const COLUMNAS: { clave: ColumnaTablero; titulo: string; vacio: string }[] = [
  * En qué columna cae una tarjeta.
  *
  * Lo que tiene entrevista hoy va a Hoy aunque nadie lo haya arrastrado: la hora
- * ya está acordada con la persona. Sin columna guardada, backlog.
+ * ya está acordada con la persona. Sin columna guardada, lo que hay que citar
+ * también va a Hoy y el resto al backlog (`columnaDelTablero`).
  */
 function columnaDe(e: Evaluacion, hoy: Set<string>): ColumnaTablero {
-  return hoy.has(e.id) ? 'hoy' : e.tablero ?? 'backlog';
+  return hoy.has(e.id) ? 'hoy' : columnaDelTablero(e);
 }
 
 /**

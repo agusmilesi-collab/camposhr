@@ -162,6 +162,25 @@ export function esColumnaTablero(x: unknown): x is ColumnaTablero {
   return typeof x === 'string' && (COLUMNAS_TABLERO as readonly string[]).includes(x);
 }
 
+/**
+ * En qué columna está una evaluación mientras nadie la haya arrastrado.
+ *
+ * **Lo que hay que citar entra solo a Hoy.** Citar es escribirle a la persona
+ * y no se deja para después: mientras está en el backlog nadie la llama y la
+ * búsqueda del cliente no arranca. Es un punto de partida y no una traba: si
+ * la evaluadora la arrastra a otra columna, queda donde la puso. Agendada
+ * vuelve al backlog por sí sola, porque ya no hay nada que hacer hoy con ella.
+ *
+ * La usan el tablero de Inicio y el contador de la barra (`cuantoHayHoy`),
+ * que tienen que decir lo mismo.
+ */
+export function columnaDelTablero(e: {
+  tablero: ColumnaTablero | null;
+  etapa: string;
+}): ColumnaTablero {
+  return e.tablero ?? (e.etapa === 'Por citar' ? 'hoy' : 'backlog');
+}
+
 /** Las tres prioridades, de la que más apura a la que menos. */
 export const PRIORIDADES = ['alta', 'media', 'baja'] as const;
 
