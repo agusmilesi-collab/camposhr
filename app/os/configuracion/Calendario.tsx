@@ -4,6 +4,10 @@ import { conexiones, hayGoogle } from '@/lib/google-calendario';
 /**
  * Quién tiene su Google Calendar conectado.
  *
+ * La misma conexión sirve para agendar al candidato en sus contactos
+ * (`lib/google-contactos.ts`); una conexión anterior a ese permiso lo dice y
+ * ofrece "Sumar contactos", que vuelve a pasar por Google.
+ *
  * **Cada una se conecta desde su propia computadora.** El permiso lo da la
  * cuenta de Google que esté abierta en ese navegador: apretar "Conectar" en la
  * fila de otra pone las entrevistas de ella en el calendario de quien apretó.
@@ -69,8 +73,10 @@ export default async function Calendario({ resultado }: { resultado?: string }) 
                         <span className="os-tabla-flojo">Sin conectar</span>
                       ) : c.caida ? (
                         'Google dejó de aceptar el permiso: hay que volver a conectar'
+                      ) : c.contactos ? (
+                        'Conectado, con contactos'
                       ) : (
-                        'Conectado'
+                        'Conectado, sin el permiso de contactos: al escribirle a un candidato no se lo agenda'
                       )}
                     </td>
                     <td data-campo="Cuenta de Google">
@@ -80,6 +86,17 @@ export default async function Calendario({ resultado }: { resultado?: string }) 
                       {c && !c.caida ? (
                         <form method="post" action="/api/os/google/desconectar">
                           <input type="hidden" name="evaluadora" value={ev.id} />
+                          {/* Una conexión de antes del permiso de contactos se
+                              completa volviendo a pasar por Google: no hace
+                              falta cortarla primero. */}
+                          {!c.contactos && listo && (
+                            <a
+                              className="os-boton os-boton-firme"
+                              href={`/api/os/google/conectar?evaluadora=${ev.id}`}
+                            >
+                              Sumar contactos
+                            </a>
+                          )}{' '}
                           <button type="submit" className="os-boton">
                             Desconectar
                           </button>
@@ -104,7 +121,9 @@ export default async function Calendario({ resultado }: { resultado?: string }) 
       <p className="os-form-nota">
         Cada una aprieta Conectar desde su computadora, con su cuenta de Google abierta en ese
         navegador: el permiso lo da la cuenta que esté abierta. El sistema solo crea, mueve y
-        borra los eventos de sus entrevistas.
+        borra los eventos de sus entrevistas, y agenda como contacto al candidato cuando se le
+        escribe por WhatsApp desde la tarjeta de Por citar. No lee ni modifica los contactos que
+        ya existen.
       </p>
     </>
   );

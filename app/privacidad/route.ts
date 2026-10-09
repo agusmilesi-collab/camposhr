@@ -4,7 +4,7 @@
  * Existe porque Google la pide para pasar la aplicación de "Prueba" a
  * producción: su dirección va cargada en la pantalla de consentimiento. Dice
  * qué recibe el OS cuando una evaluadora conecta su calendario
- * (`lib/google-calendario.ts`) y qué hace con eso; si cambia el permiso que se
+ * (`lib/google-calendario.ts`, `lib/google-contactos.ts`) y qué hace con eso; si cambia el permiso que se
  * pide, cambia este texto.
  *
  * Se sirve como documento entero y no como pantalla de la aplicación, para que
@@ -108,12 +108,12 @@ const HTML = `<!DOCTYPE html>
 
     <div class="punto">
       <h2>Qué datos de Google usa</h2>
-      <p>Cuando una integrante del equipo conecta su cuenta de Google, Campos OS recibe su dirección de correo y un permiso para ver y editar los eventos de su Google Calendar.</p>
+      <p>Cuando una integrante del equipo conecta su cuenta de Google, Campos OS recibe su dirección de correo, un permiso para ver y editar los eventos de su Google Calendar y un permiso sobre sus contactos de Google.</p>
     </div>
 
     <div class="punto">
       <h2>Para qué los usa</h2>
-      <p>Para crear, mover y borrar en ese calendario los eventos de las entrevistas que la persona agenda en Campos OS, y para crear la sala de Google Meet de las entrevistas en línea. Campos OS no lee, modifica ni borra otros eventos del calendario.</p>
+      <p>Para crear, mover y borrar en ese calendario los eventos de las entrevistas que la persona agenda en Campos OS, y para crear la sala de Google Meet de las entrevistas en línea. Campos OS no lee, modifica ni borra otros eventos del calendario. El permiso de contactos se usa únicamente para crear el contacto de la persona a entrevistar (nombre, teléfono, correo y empresa) cuando la integrante del equipo le escribe para coordinar la entrevista. Campos OS no lee, modifica ni borra los contactos que ya existen en la cuenta.</p>
     </div>
 
     <div class="punto">

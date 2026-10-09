@@ -48,7 +48,7 @@ export async function GET(req: Request) {
   try {
     const canje = await canjear(codigo, url.origin);
     if (!canje.ok) return volver(canje.motivo);
-    await guardarConexion(evaluadora, canje.refresh, canje.cuenta);
+    await guardarConexion(evaluadora, canje.refresh, canje.cuenta, canje.contactos);
     await anotarAcceso({
       accion: 'escritura',
       recurso: 'google_calendario',
