@@ -799,7 +799,7 @@ export default function Pedido({
                   {/* El perfil del puesto en su propio recuadro, con título: el
                       descriptivo y las nueve preguntas, a la vista. */}
                   <div className="pedir-perfil-caja">
-                    <h3 className="pedir-perfil-titulo">Perfil del puesto</h3>
+                    <h3 className="pedir-perfil-titulo">Perfil del puesto (opcional y recomendado)</h3>
                     {/* Primero el descriptivo que la empresa ya tiene escrito,
                         y después las nueve preguntas. Ninguno de los dos frena
                         el pedido. */}
@@ -807,11 +807,6 @@ export default function Pedido({
                       Si la empresa tiene un descriptivo de puesto, adjuntalo.
                     </p>
                     <Descriptivo archivo={descriptivo} alCambiar={setDescriptivo} />
-                    <p className="pedir-ayuda">
-                      Nueve preguntas de opción múltiple. Con ellas, la recomendación considera las
-                      condiciones del puesto además del perfil de la persona.{' '}
-                      <strong className="pedir-destacado">Es opcional y sugerido.</strong>
-                    </p>
                     {/* Las preguntas van abiertas, sin botón que las despliegue:
                         escondidas detrás de un botón no se contestaban. */}
                       <div className="pedir-perfil">
