@@ -11645,3 +11645,28 @@ a.pedir-volver-link {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* En el portal de un grupo de empresas, de cuál es cada búsqueda: una etiqueta
+   al lado del puesto. */
+.card-empresa {
+  flex: none;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* "¿Para qué empresa es?": las empresas del grupo, todas en un renglón. En el
+   teléfono, una debajo de la otra. */
+.pedir-tarjetas.pedir-empresas {
+  grid-template-columns: repeat(var(--pedir-empresas, 3), minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .pedir-tarjetas.pedir-empresas {
+    grid-template-columns: 1fr;
+  }
+}

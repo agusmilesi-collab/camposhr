@@ -6,6 +6,7 @@ import { select } from '@/lib/supabase';
 import { crearCandidato, crearPedido } from '@/lib/altas';
 import { crearOrden } from '@/lib/orden-compra';
 import { avisarOrden } from '@/lib/correo-orden';
+import { empresasDelGrupo } from '@/lib/grupo';
 import { avisarPedidoNuevo } from '@/lib/correo-equipo';
 import { empresaDelToken } from '@/lib/portal-supabase';
 import { esDemo, NOMBRE_DEMO } from '@/lib/portal-demo';
@@ -68,9 +69,33 @@ export async function POST(req: Request) {
 
   // El enlace de prueba no tiene su empresa en Supabase, así que sus pedidos
   // caen en la de prueba: es lo mismo que hacía antes contra Airtable.
-  const empresa = esDemo(token) ? await empresaDePrueba() : await empresaDelToken(token);
-  if (!empresa) {
+  const delEnlace = esDemo(token) ? await empresaDePrueba() : await empresaDelToken(token);
+  if (!delEnlace) {
     return NextResponse.json({ error: 'No disponible.' }, { status: 404 });
+  }
+
+  /**
+   * Para qué empresa es el pedido.
+   *
+   * Casi siempre la del enlace. En un grupo de empresas (`lib/grupo.ts`) el
+   * portal es uno solo y quien pide elige para cuál: el pedido, su orden de
+   * compra y su factura son de esa. Solo vale una empresa del mismo grupo: con
+   * cualquier otro identificador el pedido no entra.
+   */
+  const grupo = await empresasDelGrupo(delEnlace.id);
+  const paraCual = texto('empresaId');
+  let empresa: typeof delEnlace = delEnlace;
+  if (paraCual && paraCual !== delEnlace.id) {
+    const otra = grupo.includes(paraCual)
+      ? (
+          await select<{ id: string; nombre: string; pedido_con_ciudad?: boolean }>(
+            'empresas',
+            `select=id,nombre,pedido_con_ciudad&id=eq.${encodeURIComponent(paraCual)}&limit=1`
+          )
+        )[0]
+      : undefined;
+    if (!otra) return NextResponse.json({ error: 'Esa empresa no es de este portal.' }, { status: 404 });
+    empresa = otra as typeof delEnlace;
   }
 
   /**
@@ -146,14 +171,15 @@ export async function POST(req: Request) {
     estratoPuesto: unico ? ESTRATOS.findIndex((e) => e.romano === unico.romano) + 1 : null,
   };
 
-  /** Quién lo pidió, del lado del cliente. Tiene que ser de esa empresa. */
+  /** Quién lo pidió, del lado del cliente. Tiene que ser de esa empresa, o de
+   *  su grupo: ahí las personas están cargadas una vez y piden para todas. */
   const contactoId = texto('contactoId');
   const quienPide = contactoId
     ? (
         await select<{ id: string; nombre: string; email: string | null }>(
           'contactos',
           `select=id,nombre,email&id=eq.${encodeURIComponent(contactoId)}` +
-            `&empresa_id=eq.${empresa.id}&limit=1`
+            `&empresa_id=in.(${grupo.join(',')})&activo=is.true&limit=1`
         )
       )[0]
     : undefined;

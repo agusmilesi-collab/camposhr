@@ -127,7 +127,8 @@ function Atras({ alVolver }: { alVolver: () => void }) {
 export default function Pedido({
   token,
   empresa,
-  busquedas,
+  empresas = [],
+  busquedas: todasLasBusquedas,
   alcance,
   contactos,
   delPuesto,
@@ -137,6 +138,12 @@ export default function Pedido({
 }: {
   token: string;
   empresa: string;
+  /**
+   * Las empresas del grupo, cuando el portal es de varias del mismo dueño
+   * (Macro Agro, JHB, Campo Simple): lo primero que se contesta es para cuál
+   * es el pedido, porque cada una factura lo suyo. Vacío en el resto.
+   */
+  empresas?: { id: string; nombre: string }[];
   busquedas: Busqueda[];
   alcance: Alcance;
   contactos: Contacto[];
@@ -203,6 +210,15 @@ export default function Pedido({
    * final los candidatos.
    */
   const [paso, setPaso] = useState<'busqueda' | 'evaluacion' | 'candidatos'>('busqueda');
+
+  /** Para qué empresa del grupo es. Sin grupo no se pregunta. */
+  const enGrupo = empresas.length > 1;
+  const [paraCual, setParaCual] = useState('');
+  const laEmpresa = empresas.find((e) => e.id === paraCual) ?? null;
+  // Elegida la empresa, las búsquedas que se ofrecen son las suyas.
+  const busquedas = enGrupo
+    ? todasLasBusquedas.filter((b) => b.empresaId === paraCual)
+    : todasLasBusquedas;
 
   const abiertas = busquedas.filter((b) => b.estado !== 'Finalizado');
   const entregadas = busquedas.filter((b) => b.estado === 'Finalizado');
@@ -367,6 +383,7 @@ export default function Pedido({
     try {
       const cuerpo = new FormData();
       cuerpo.set('token', token);
+      if (enGrupo) cuerpo.set('empresaId', paraCual);
       if (esExistente) cuerpo.set('pedidoId', busqueda);
       else {
         cuerpo.set('puesto', puesto.trim());
@@ -516,15 +533,55 @@ export default function Pedido({
                   corresponde a esa respuesta, con un "Volver" para cambiarla. */}
               {(!modo || esExistente) && (
                 <section className="pedir-bloque">
-                  {!modo && (
+                  {/* En un grupo de empresas, lo primero es para cuál es: cada
+                      una factura sus candidatos. Con una sola no se pregunta. */}
+                  {!modo && enGrupo && !laEmpresa && (
                     <>
-                      {/* Antes de contestar, "Volver" lleva al portal: es el
-                          mismo lugar del "Volver" de los demás pasos. */}
                       <div className="pedir-titulo-fila">
-                        <h2 className="pedir-pregunta-grande">¿Para qué puesto es?</h2>
+                        <h2 className="pedir-pregunta-grande">¿Para qué empresa es?</h2>
                         <a className="pedir-volver-link" href={`/p/${token}`}>
                           ← Volver
                         </a>
+                      </div>
+                      {/* Todas en un renglón: son pocas y se eligen de un vistazo. */}
+                      <div
+                        className="pedir-tarjetas pedir-empresas"
+                        style={{ '--pedir-empresas': empresas.length } as React.CSSProperties}
+                      >
+                        {empresas.map((e) => (
+                          <button
+                            type="button"
+                            className="pedir-tarjeta"
+                            key={e.id}
+                            onClick={() => {
+                              setParaCual(e.id);
+                              setBusqueda('');
+                              setError(null);
+                            }}
+                          >
+                            <span className="pedir-tarjeta-t">{e.nombre}</span>
+                            <span className="pedir-tarjeta-d">Se factura a su nombre</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {!modo && (!enGrupo || laEmpresa) && (
+                    <>
+                      {/* Antes de contestar, "Volver" lleva al portal: es el
+                          mismo lugar del "Volver" de los demás pasos. En un
+                          grupo vuelve a la pregunta de la empresa. */}
+                      <div className="pedir-titulo-fila">
+                        <h2 className="pedir-pregunta-grande">
+                          ¿Para qué puesto es{laEmpresa ? `, en ${laEmpresa.nombre}` : ''}?
+                        </h2>
+                        {laEmpresa ? (
+                          <Atras alVolver={() => setParaCual('')} />
+                        ) : (
+                          <a className="pedir-volver-link" href={`/p/${token}`}>
+                            ← Volver
+                          </a>
+                        )}
                       </div>
                       {/* Todas a la vista, las en curso y las ya entregadas: el
                     cliente no sabe en qué estado está cada una, sabe qué puesto
@@ -1083,6 +1140,12 @@ export default function Pedido({
             <aside className="pedir-resumen">
               <div className="pedir-resumen-caja">
                 <h2>Tu pedido</h2>
+                {/* Para qué empresa del grupo es: a su nombre sale todo. */}
+                {laEmpresa && (
+                  <div className="pedir-linea">
+                    <span>{laEmpresa.nombre}</span>
+                  </div>
+                )}
                 <div className="pedir-linea">
                   <span>{esNueva ? puesto.trim() || 'Puesto nuevo' : elegida?.puesto}</span>
                 </div>

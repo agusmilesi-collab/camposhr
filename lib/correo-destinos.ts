@@ -22,6 +22,7 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { direcciones } from '@/lib/correo';
+import { empresasDelGrupo } from '@/lib/grupo';
 
 export type Aviso = 'orden' | 'entrevista' | 'informe' | 'factura' | 'recibo';
 
@@ -44,6 +45,7 @@ type Fila = {
   email: string | null;
   recibe_todo: boolean;
   facturacion: boolean;
+  empresa_id: string;
 } & Record<string, unknown>;
 
 export async function destinosDe(
@@ -53,14 +55,20 @@ export async function destinosDe(
   solicitanteIds: (string | null | undefined)[]
 ): Promise<Destinos> {
   if (!empresaId) return { para: [], copia: [], nombre: null };
+  // En un grupo de empresas quien pide está cargado en la que lo encabeza, y
+  // pide para cualquiera: se buscan las personas de todo el grupo. Lo de la
+  // plata no se comparte: responsable de compras es solo el de esta empresa.
+  const grupo = await empresasDelGrupo(empresaId);
   const contactos = (
     await select<Fila>(
       'contactos',
       'select=id,nombre,email,recibe_todo,facturacion,recibe_orden,recibe_entrevista,recibe_informe,' +
-        'recibe_factura,recibe_recibo' +
-        `&empresa_id=eq.${empresaId}&activo=is.true&order=nombre.asc`
+        'recibe_factura,recibe_recibo,empresa_id' +
+        `&empresa_id=in.(${grupo.join(',')})&activo=is.true&order=nombre.asc`
     )
-  ).filter((c) => direcciones([c.email]).length > 0);
+  )
+    .filter((c) => direcciones([c.email]).length > 0)
+    .map((c): Fila => ({ ...c, facturacion: c.facturacion && c.empresa_id === empresaId }));
   const pidieron = new Set(solicitanteIds.filter(Boolean));
   const armar = (primeros: Fila[], enCopia: Fila[] = []): Destinos => {
     const para = direcciones(primeros.map((c) => c.email));
