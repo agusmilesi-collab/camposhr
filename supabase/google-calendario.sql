@@ -42,6 +42,12 @@ alter table public.evaluaciones add column if not exists calendario_huella      
 alter table public.evaluaciones add column if not exists enlace_meet              text;
 alter table public.evaluaciones add column if not exists aviso_candidato_fecha    timestamptz;
 
+-- Con qué modalidad se le avisó. Si el día queda igual y la entrevista pasa de
+-- online a presencial, o al revés, el correo sale de nuevo: cambió por dónde
+-- entra. Vacía en un aviso ya anotado significa "la que tenga", que es lo que
+-- deja el bloque de abajo.
+alter table public.evaluaciones add column if not exists aviso_candidato_modalidad text;
+
 -- Las entrevistas que ya estaban agendadas el día que esto se publica quedan
 -- anotadas como avisadas: esas personas ya coordinaron con la evaluadora, y sin
 -- esto el primer guardado que las toque (corregir un teléfono) les mandaría

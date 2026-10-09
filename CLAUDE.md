@@ -1507,8 +1507,10 @@ que los avisos por correo.
 **Si la entrevista es online, el evento nace con una sala de Meet**
 (`evaluaciones.enlace_meet`). Se ve en la tarjeta de Agendadas y se le manda al
 candidato con el día y la hora (`lib/correo-candidato.ts`, desde
-`entrevistas@camposhr.com`), una vez por fecha
-(`evaluaciones.aviso_candidato_fecha`). Reprogramar conserva la sala. En una
+`entrevistas@camposhr.com`), una vez por fecha y modalidad
+(`evaluaciones.aviso_candidato_fecha` y `aviso_candidato_modalidad`).
+Reprogramar conserva la sala, y pasar de online a presencial el mismo día
+vuelve a escribirle, porque cambió por dónde entra. En una
 presencial el correo dice la dirección del consultorio (`lib/consultorio.ts`)
 y no depende de Google. Una online sin calendario conectado no le escribe al
 candidato: no hay enlace que mandar.
