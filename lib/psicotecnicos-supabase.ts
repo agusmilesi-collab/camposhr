@@ -24,6 +24,7 @@ import {
 import { siEstaTodoTomado } from '@/lib/entrevista-completa';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
 import { avisarSiCorresponde } from '@/lib/correo-avisos';
+import { entrevistaAlDia } from '@/lib/entrevista-agendada';
 import { llevaBenziger } from '@/lib/benziger';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -75,6 +76,7 @@ type Fila = {
   estado: string;
   mensaje: string | null;
   modalidad: string | null;
+  enlace_meet: string | null;
   fecha_ingreso: string | null;
   fecha_entrevista: string | null;
   fecha_entrega: string | null;
@@ -110,7 +112,7 @@ type Fila = {
 };
 
 const CAMPOS =
-  'id,estado,mensaje,modalidad,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
+  'id,estado,mensaje,modalidad,enlace_meet,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'bender_administrado,grafico_2_personas_administrado,benziger_administrado,con_benziger,' +
   'recomendacion,informe_path,baja_el,ciudad,' +
   'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,tablero,prioridad,' +
@@ -142,6 +144,7 @@ export async function listar(): Promise<Evaluacion[]> {
     etapa: f.estado,
     mensaje: f.mensaje,
     modalidad: f.modalidad,
+    enlaceMeet: f.enlace_meet,
     fechaIngreso: f.fecha_ingreso,
     fechaEntrevista: f.fecha_entrevista,
     fechaEntrega: f.fecha_entrega,
@@ -304,6 +307,18 @@ export async function guardarCampos(
   // pidió el candidato. Mira cómo quedó la evaluación, sale una vez y no tira.
   if ('estado' in fila || 'fecha_entrevista' in fila || 'modalidad' in fila) {
     await avisarSiCorresponde(id);
+  }
+
+  // Y lo mismo hacia el otro lado: el evento en el calendario de la evaluadora
+  // y, si es online, el correo al candidato con el enlace. Acá también cuenta
+  // de quién es la evaluación, porque el evento está en el calendario de una.
+  if (
+    'estado' in fila ||
+    'fecha_entrevista' in fila ||
+    'modalidad' in fila ||
+    'evaluadora_id' in fila
+  ) {
+    await entrevistaAlDia(id);
   }
   return { ok: true };
 }

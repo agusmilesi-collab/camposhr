@@ -8,7 +8,9 @@
  *
  * **De parte de quién sale depende de qué es** (`REMITENTES`): lo del trabajo
  * (la orden de compra, la entrevista agendada, el informe) sale de pedidos@, y
- * lo de la plata (la factura, el recibo de pago) de facturacion@. Así el
+ * lo de la plata (la factura, el recibo de pago) de facturacion@. Lo que se le
+ * escribe al candidato (el día, la hora y el enlace de su entrevista) sale de
+ * entrevistas@: a él nadie le hizo un pedido. Así el
  * cliente distingue de un vistazo lo operativo de lo administrativo y compras
  * puede filtrar las facturas por remitente. Son direcciones del dominio
  * verificado en Resend; no hace falta que exista la casilla, porque la
@@ -32,13 +34,14 @@ import 'server-only';
 const REMITENTES = {
   pedidos: 'Campos HR <pedidos@camposhr.com>',
   facturacion: 'Campos HR <facturacion@camposhr.com>',
+  entrevistas: 'Campos HR <entrevistas@camposhr.com>',
 } as const;
 const DIRECCION = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/;
 
 export type Adjunto = { nombre: string; bytes: Uint8Array };
 
 export type Correo = {
-  /** De qué casilla sale: lo del trabajo, o lo de la plata. */
+  /** De qué casilla sale: lo del trabajo, lo de la plata, o lo del candidato. */
   de: keyof typeof REMITENTES;
   para: string[];
   copia?: string[];

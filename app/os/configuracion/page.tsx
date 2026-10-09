@@ -8,6 +8,7 @@ import Redacciones from './Redacciones';
 import Potencial from './Potencial';
 import Exigencia from './Exigencia';
 import Benziger from './Benziger';
+import Calendario from './Calendario';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +42,7 @@ const PESTANAS = [
   { clave: 'potencial', texto: 'Potencial' },
   { clave: 'exigencia', texto: 'Exigencia' },
   { clave: 'benziger', texto: 'Benziger' },
+  { clave: 'calendario', texto: 'Calendario' },
 ];
 
 const QUE_HACE: Record<string, string> = {
@@ -49,6 +51,8 @@ const QUE_HACE: Record<string, string> = {
     'Dónde corta cada rango del Raven. Cambia el rango que se nombra en el informe y el puntaje de habilidad cognitiva.',
   redacciones:
     'Lo que el informe escribe cuando una lectura se dispara. Cuándo entra cada una lo decide su índice y su corte.',
+  calendario:
+    'Cada evaluadora conecta su Google Calendar una vez. Desde ahí, agendar una entrevista en el OS la pone en su calendario, reprogramarla la mueve y darla de baja la saca. Si es online, se crea la sala de Meet y el candidato recibe por correo el día, la hora y el enlace.',
   potencial:
     'Los cuatro estratos del análisis discursivo: qué complejidad de trabajo puede abordar quien está en cada uno y qué exige el nivel siguiente. Es lo que arma el capítulo de potencial del informe.',
 };
@@ -56,7 +60,7 @@ const QUE_HACE: Record<string, string> = {
 export default async function Configuracion({
   searchParams,
 }: {
-  searchParams: { ver?: string };
+  searchParams: { ver?: string; google?: string };
 }) {
   const yo = await quienSoy();
   const pedida = searchParams.ver ?? '';
@@ -98,6 +102,7 @@ export default async function Configuracion({
       {ver === 'potencial' && <Potencial />}
       {ver === 'exigencia' && <Exigencia />}
       {ver === 'benziger' && <Benziger />}
+      {ver === 'calendario' && <Calendario resultado={searchParams.google} />}
     </Shell>
   );
 }

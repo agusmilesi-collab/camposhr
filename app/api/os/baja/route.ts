@@ -6,6 +6,7 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
 import { hoy } from '@/lib/hora';
+import { entrevistaAlDia } from '@/lib/entrevista-agendada';
 
 export const runtime = 'nodejs';
 
@@ -58,6 +59,9 @@ export async function POST(req: Request) {
   }
 
   await ajustarPedidoDe(id);
+  // Quien se dio de baja no tiene entrevista: el evento sale del calendario.
+  // Si la baja se deshace y la fecha sigue adelante, vuelve.
+  await entrevistaAlDia(id);
   await anotarAcceso({
     accion: 'escritura',
     recurso: 'evaluacion',
