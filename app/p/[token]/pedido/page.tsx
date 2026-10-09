@@ -57,6 +57,7 @@ export default async function PedirEvaluacion({ params }: { params: { token: str
     <Pedido
       token={params.token}
       empresa={datos.empresa}
+      empresas={datos.empresas ?? []}
       busquedas={datos.busquedas}
       alcance={alcance}
       contactos={contactos}

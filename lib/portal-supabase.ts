@@ -1,4 +1,5 @@
 import 'server-only';
+import { empresasDelGrupo } from '@/lib/grupo';
 import { select } from '@/lib/supabase';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import type { Busqueda, Candidato, DatosCliente } from '@/lib/airtable';
@@ -18,6 +19,7 @@ const TOKEN_VALIDO = /^[A-Za-z0-9_-]{6,128}$/;
 
 type FilaPedido = {
   id: string;
+  empresa_id: string;
   puesto: string;
   estado: string | null;
   familia: string | null;
@@ -140,13 +142,42 @@ export async function vaPorAirtable(token: string): Promise<boolean> {
   return Boolean(empresa?.portal_desde_airtable);
 }
 
+/**
+ * Las empresas que se ven desde el portal de esta: ella sola, o todas las de
+ * su grupo con la que lo encabeza primera.
+ */
+export async function empresasDelPortal(
+  empresaId: string
+): Promise<{ id: string; nombre: string; informesVisibles: boolean }[]> {
+  const ids = await empresasDelGrupo(empresaId);
+  const filas = await select<{
+    id: string;
+    nombre: string;
+    grupo_id: string | null;
+    informes_visibles: boolean | null;
+  }>('empresas', `select=id,nombre,grupo_id,informes_visibles&id=in.(${ids.join(',')})&order=nombre.asc`);
+  // Una empresa suelta no tiene `grupo_id` y queda sola; en un grupo va
+  // primero la que lo encabeza, que tampoco lo tiene.
+  return [...filas.filter((e) => !e.grupo_id), ...filas.filter((e) => e.grupo_id)].map((e) => ({
+    id: e.id,
+    nombre: e.nombre,
+    informesVisibles: e.informes_visibles !== false,
+  }));
+}
+
 export async function datosClienteDeSupabase(token: string): Promise<DatosCliente | null> {
   const empresa = await empresaDelToken(token);
   if (!empresa) return null;
 
+  // En un grupo de empresas el portal es uno solo: cualquiera de sus enlaces
+  // abre lo de todas, y cada búsqueda dice de cuál es (`lib/grupo.ts`).
+  const grupo = await empresasDelPortal(empresa.id);
+  const enGrupo = grupo.length > 1;
+  const nombreDe = new Map(grupo.map((e) => [e.id, e.nombre]));
+
   const pedidos = await select<FilaPedido>(
     'pedidos',
-    `select=${CAMPOS}&empresa_id=eq.${empresa.id}&order=fecha_pedido.desc`
+    `select=${CAMPOS},empresa_id&empresa_id=in.(${grupo.map((e) => e.id).join(',')})&order=fecha_pedido.desc`
   );
 
   const cobros = await cobrosDe(
@@ -165,6 +196,7 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
     bateria: p.baterias?.codigo ?? null,
     conBenziger: p.con_benziger === true,
     solicitante: p.solicitante?.nombre ?? null,
+    ...(enGrupo ? { empresaId: p.empresa_id, empresaNombre: nombreDe.get(p.empresa_id) } : {}),
     candidatos: (p.evaluaciones ?? []).map(
       (e): Candidato => ({
         id: e.id,
@@ -199,11 +231,22 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
     ),
   }));
 
+  // Juntas las de cada empresa, en el orden del grupo; adentro de cada una
+  // siguen por fecha, que es como vinieron.
+  if (enGrupo) {
+    const lugar = new Map(grupo.map((e, i) => [e.id, i]));
+    busquedas.sort((a, b) => (lugar.get(a.empresaId ?? '') ?? 0) - (lugar.get(b.empresaId ?? '') ?? 0));
+  }
+
   return {
-    empresa: empresa.nombre,
+    // El portal de un grupo lleva el nombre de la empresa que lo encabeza.
+    empresa: enGrupo ? grupo[0].nombre : empresa.nombre,
+    ...(enGrupo ? { empresas: grupo.map(({ id, nombre }) => ({ id, nombre })) } : {}),
     empresaId: null,
     busquedas,
-    informesVisibles: empresa.informes_visibles !== false,
+    // El portal de un grupo es uno solo, así que la regla también: manda la de
+    // la empresa que lo encabeza, entre por el enlace que entre.
+    informesVisibles: enGrupo ? grupo[0].informesVisibles : empresa.informes_visibles !== false,
   };
 }
 

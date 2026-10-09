@@ -148,10 +148,22 @@ export type Busqueda = {
    * lo que sigue en Airtable, que no lo trae, y en los pedidos sin solicitante.
    */
   solicitante?: string | null;
+  /**
+   * De qué empresa es, cuando el portal es de un grupo de empresas
+   * (`lib/grupo.ts`): las mismas personas piden para varias, y cada búsqueda
+   * dice para cuál es. Sin grupo no viene.
+   */
+  empresaId?: string;
+  empresaNombre?: string;
 };
 
 export type DatosCliente = {
   empresa: string;
+  /**
+   * Las empresas del grupo, con la que lo encabeza primera. Viene solo cuando
+   * el portal es de un grupo: es lo que se ofrece en "¿Para qué empresa es?".
+   */
+  empresas?: { id: string; nombre: string }[];
   /** ID del registro en Airtable. Lo usa lib/servicios.ts para saber qué
    *  documentos tiene este cliente además de las evaluaciones. */
   empresaId: string | null;

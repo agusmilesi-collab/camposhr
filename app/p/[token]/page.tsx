@@ -267,7 +267,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
         .filter((c) => yaEntregada(c.estado) || c.baja)
         .map((c) => ({
           cand: c,
-          puesto: puestoConCiudad(b.puesto, c.ciudad),
+          // En el portal de un grupo, el puesto dice de qué empresa es.
+          puesto:
+            puestoConCiudad(b.puesto, c.ciudad) + (b.empresaNombre ? ` · ${b.empresaNombre}` : ''),
           fechaPedido: b.fecha,
         }))
     )
@@ -558,6 +560,8 @@ function CabezaDeBusqueda({ b }: { b: Busqueda }) {
   return (
     <div className="card-head">
       <h2>{b.puesto}</h2>
+      {/* En el portal de un grupo, de qué empresa es la búsqueda. */}
+      {b.empresaNombre && <span className="card-empresa">{b.empresaNombre}</span>}
       {b.fecha && <span className="card-fecha">({fecha(b.fecha)})</span>}
     </div>
   );

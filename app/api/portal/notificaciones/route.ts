@@ -1,3 +1,4 @@
+import { empresasDelGrupo } from '@/lib/grupo';
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { empresaDelToken } from '@/lib/portal-supabase';
@@ -39,7 +40,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'No hay nada que guardar.' }, { status: 400 });
   }
 
-  const filtro = `id=eq.${contactoId}&empresa_id=eq.${empresa.id}&activo=is.true`;
+  // De esa empresa o de su grupo: quien pide está cargado una sola vez.
+  const grupo = await empresasDelGrupo(empresa.id);
+  const filtro = `id=eq.${contactoId}&empresa_id=in.(${grupo.join(',')})&activo=is.true`;
   try {
     const [suyo] = await select<{ id: string }>('contactos', `select=id&${filtro}&limit=1`);
     if (!suyo) return NextResponse.json({ error: 'No se pudo guardar.' }, { status: 404 });

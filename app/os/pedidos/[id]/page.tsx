@@ -17,7 +17,7 @@ import {
 import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
 import { fechaCorta } from '@/lib/hora';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
-import { contactosDe } from '@/lib/contactos';
+import { contactosDelGrupo } from '@/lib/contactos';
 import { Benziger, Borrar, Estado, Fecha, Largo, Lista, Pregunta, Texto } from './Editar';
 import NivelDeTrabajo from './NivelDeTrabajo';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
@@ -103,7 +103,8 @@ export default async function FichaPedido({
   /* Quién puede figurar como solicitante: las personas del cliente. El informe
      lo nombra debajo de la empresa, así que se elige acá y una sola vez para
      toda la búsqueda. */
-  const contactos = await contactosDe(pedido.empresaId);
+  // En un grupo de empresas, las personas están cargadas en la que lo encabeza.
+  const contactos = await contactosDelGrupo(pedido.empresaId);
 
   const porDefecto = exigencias.find((e) => e.predeterminada) ?? null;
 
