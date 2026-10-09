@@ -109,8 +109,9 @@ function mover(cambio: () => void): void {
  * El orden de cada columna es el de su urgencia, y cada una la mide distinto.
  *
  * Sin asignar y Por citar, por lo que esperan desde que se las pidió; Por
- * analizar, por lo que esperan desde la entrevista; las agendadas, por cuándo
- * caen, que es como se mira una agenda.
+ * analizar, primero las de prioridad alta y después por lo que esperan desde
+ * la entrevista; las agendadas, por cuándo caen, que es como se mira una
+ * agenda.
  *
  * **Por citar mide desde la solicitud y no desde la entrevista a propósito.**
  * Ahí la fecha se está cargando en ese momento, y midiendo contra ella la
@@ -128,8 +129,12 @@ function ordenar(filas: Evaluacion[], etapa: EtapaTablero): Evaluacion[] {
     etapa === 'Por analizar'
       ? (x: Evaluacion) => x.dias ?? x.diasEsperando ?? -1
       : (x: Evaluacion) => x.diasSolicitud ?? x.diasEsperando ?? -1;
+  // En Por analizar, las de prioridad alta van arriba de todo: es la columna
+  // donde se elige qué informe escribir primero. Entre ellas, y entre las
+  // demás, sigue mandando la espera.
+  const alta = (x: Evaluacion) => (etapa === 'Por analizar' && prioridadDe(x) === 'alta' ? 0 : 1);
   return [...filas].sort(
-    (a, b) => espera(b) - espera(a) || a.nombre.localeCompare(b.nombre)
+    (a, b) => alta(a) - alta(b) || espera(b) - espera(a) || a.nombre.localeCompare(b.nombre)
   );
 }
 
