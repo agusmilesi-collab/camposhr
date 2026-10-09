@@ -35,6 +35,7 @@ export default async function Laminas({ params }: { params: { token: string } })
       total={TESTS[test].laminas}
       fuente={`/api/laminas/${params.token}`}
       seguir={`/api/laminas/${params.token}/estado`}
+      senalar={`/api/laminas/${params.token}/trazo`}
     />
   );
 }

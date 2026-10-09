@@ -59,6 +59,7 @@ import {
 } from '@/lib/laminas-sincro';
 import Toma, { NOMBRE_POSICION, siguienteGiro } from './Toma';
 import LinkLaminas from '@/app/os/psicotecnicos/entrevista/[id]/LinkLaminas';
+import { TrazosSenalados, useSenal } from './Senalado';
 
 /**
  * Qué distingue a cada calidad evolutiva, en una línea.
@@ -1175,6 +1176,10 @@ export default function Capturador({
     }).catch(() => {});
   }, [lamina, fase]);
 
+  /* Lo que la persona está señalando en su pantalla: se pregunta solo en la
+     encuesta, que es cuando señala, y se pinta sobre cada mapa. */
+  const senal = useSenal(fase === 'encuesta', evaluacionId);
+
   useEffect(() => {
     for (const n of [siguienteDe(lamina), anterior]) {
       if (n && CARGADAS.includes(n)) new window.Image().src = archivoDe(n);
@@ -2238,6 +2243,8 @@ export default function Capturador({
                     />
                   );
                 })}
+                {/* Lo que la persona está señalando ahora en su pantalla. */}
+                <TrazosSenalados fuente={senal} lamina={ORDEN.indexOf(lamina) + 1} />
               </svg>
               {grupo.map((a) => {
                 const c = puesto(lamina, a, AREAS[lamina]?.[a] ?? []);
