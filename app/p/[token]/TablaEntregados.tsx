@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { COBROS, ORDEN_COBRO, type EstadoCobro } from '@/lib/cobro';
+import './entregados-empresa.css';
 
 /** Una fila ya resuelta por el servidor: acá solo se ordena y se dibuja. */
 export type FilaEntregada = {
@@ -10,6 +11,11 @@ export type FilaEntregada = {
   fechaOrden: string;
   fechaTexto: string | null;
   puesto: string;
+  /**
+   * De qué empresa es el pedido, en el portal de un grupo de empresas. Con
+   * alguna fila que la traiga, la tabla suma la columna Empresa.
+   */
+  empresa?: string | null;
   nombre: string;
   evaluadora: string | null;
   /** Texto corto de la recomendación (el largo va en el título). */
@@ -26,7 +32,7 @@ export type FilaEntregada = {
   baja?: boolean;
 };
 
-type Clave = 'fecha' | 'pedido' | 'candidato' | 'evaluadora' | 'reco' | 'cobro';
+type Clave = 'fecha' | 'pedido' | 'empresa' | 'candidato' | 'evaluadora' | 'reco' | 'cobro';
 
 /** Las que se dibujan antes del informe. La facturación va después, al final
  *  de la fila: es un dato administrativo y no tiene que meterse entre lo que el
@@ -34,6 +40,7 @@ type Clave = 'fecha' | 'pedido' | 'candidato' | 'evaluadora' | 'reco' | 'cobro';
 const COLUMNAS: { clave: Clave; titulo: string }[] = [
   { clave: 'fecha', titulo: 'Fecha' },
   { clave: 'pedido', titulo: 'Pedido' },
+  { clave: 'empresa', titulo: 'Empresa' },
   { clave: 'candidato', titulo: 'Candidato' },
   { clave: 'evaluadora', titulo: 'Evaluadora' },
   { clave: 'reco', titulo: 'Recomendación' },
@@ -44,6 +51,7 @@ const COLUMNAS: { clave: Clave; titulo: string }[] = [
 const ARRANCA_ASC: Record<Clave, boolean> = {
   fecha: false,
   pedido: true,
+  empresa: true,
   candidato: true,
   evaluadora: true,
   reco: true,
@@ -58,6 +66,8 @@ function comparar(a: FilaEntregada, b: FilaEntregada, col: Clave): number {
       return texto(a.fechaOrden).localeCompare(texto(b.fechaOrden));
     case 'pedido':
       return a.puesto.localeCompare(b.puesto, 'es');
+    case 'empresa':
+      return texto(a.empresa ?? null).localeCompare(texto(b.empresa ?? null), 'es');
     case 'candidato':
       return a.nombre.localeCompare(b.nombre, 'es');
     case 'evaluadora':
@@ -91,6 +101,12 @@ export default function TablaEntregados({
    * informes entregados, recorrer la tabla con la vista ya no alcanza.
    */
   const [busca, setBusca] = useState('');
+  /** La columna Empresa sale solo en el portal de un grupo de empresas. */
+  const conEmpresa = filas.some((f) => f.empresa);
+  const columnas = COLUMNAS.filter((c) => c.clave !== 'empresa' || conEmpresa);
+  const variantes = `${conEmpresa ? ' con-empresa' : ''}${conCobro ? '' : ' sin-cobro'}${
+    conInforme ? '' : ' sin-informe'
+  }`;
   /** La fila cuyo "Ver informe" se tocó sin informe: muestra "Próximamente" un momento. */
   const [avisando, setAvisando] = useState<string | null>(null);
   const [orden, setOrden] = useState<{ col: Clave; asc: boolean }>({
@@ -105,7 +121,9 @@ export default function TablaEntregados({
   const pedido = plano(busca.trim());
   const encontradas = pedido
     ? filas.filter((f) =>
-        plano([f.nombre, f.puesto, f.evaluadora ?? '', f.recoCompleta ?? ''].join(' ')).includes(
+        plano(
+          [f.nombre, f.puesto, f.empresa ?? '', f.evaluadora ?? '', f.recoCompleta ?? ''].join(' ')
+        ).includes(
           pedido
         )
       )
@@ -170,23 +188,25 @@ export default function TablaEntregados({
       </div>
 
     <div className="tabla entregados">
-      <div className={`tr th${conCobro ? '' : ' sin-cobro'}${conInforme ? '' : ' sin-informe'}`}>
-        {COLUMNAS.map(({ clave, titulo }) => cabecera(clave, titulo))}
+      <div className={`tr th${variantes}`}>
+        {columnas.map(({ clave, titulo }) => cabecera(clave, titulo))}
         {conInforme && <span className="c-informe">Informe</span>}
         {conCobro && cabecera('cobro', 'Facturación')}
       </div>
 
       {ordenadas.map((f) => (
-        <div
-          className={`tr${conCobro ? '' : ' sin-cobro'}${conInforme ? '' : ' sin-informe'}`}
-          key={f.id}
-        >
+        <div className={`tr${variantes}`} key={f.id}>
           <span className="c-fecha" data-label="Fecha">
             {f.fechaTexto ?? <span className="dash">—</span>}
           </span>
           <span className="c-pedido" data-label="Pedido">
             {f.puesto}
           </span>
+          {conEmpresa && (
+            <span className="c-empresa" data-label="Empresa">
+              {f.empresa ?? <span className="dash">—</span>}
+            </span>
+          )}
           <span className="c-name">{f.nombre}</span>
           <span className="c-evaluadora" data-label="Evaluadora">
             {f.evaluadora ?? <span className="dash">—</span>}

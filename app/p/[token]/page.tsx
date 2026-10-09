@@ -224,7 +224,13 @@ function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
 }
 
 /** Una fila de la tabla de entregados: el candidato con los datos del pedido. */
-type Entregado = { cand: Candidato; puesto: string; fechaPedido: string | null };
+type Entregado = {
+  cand: Candidato;
+  puesto: string;
+  /** De qué empresa es, en el portal de un grupo. */
+  empresa: string | null;
+  fechaPedido: string | null;
+};
 
 export default async function Portal({ params }: { params: { token: string } }) {
   const demo = esDemo(params.token);
@@ -267,9 +273,9 @@ export default async function Portal({ params }: { params: { token: string } }) 
         .filter((c) => yaEntregada(c.estado) || c.baja)
         .map((c) => ({
           cand: c,
-          // En el portal de un grupo, el puesto dice de qué empresa es.
-          puesto:
-            puestoConCiudad(b.puesto, c.ciudad) + (b.empresaNombre ? ` · ${b.empresaNombre}` : ''),
+          puesto: puestoConCiudad(b.puesto, c.ciudad),
+          // En el portal de un grupo, de qué empresa es: va en su columna.
+          empresa: b.empresaNombre ?? null,
           fechaPedido: b.fecha,
         }))
     )
@@ -282,7 +288,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
   // La tabla de entregados se ordena en el navegador, apretando cualquiera de
   // sus encabezados: acá se le pasa cada fila ya resuelta.
   const filasEntregadas: FilaEntregada[] = entregados.map(
-    ({ cand: c, puesto, fechaPedido }) => {
+    ({ cand: c, puesto, empresa, fechaPedido }) => {
       const r = c.baja
         ? { texto: 'Baja', clase: 'gray', orden: 5 }
         : c.recomendacion
@@ -297,6 +303,7 @@ export default async function Portal({ params }: { params: { token: string } }) 
         fechaOrden: fechaPedido ?? '',
         fechaTexto: fecha(fechaPedido),
         puesto,
+        empresa,
         nombre: c.nombre,
         evaluadora: c.evaluadora,
         recoTexto: r?.texto ?? null,
