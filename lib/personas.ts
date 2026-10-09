@@ -46,6 +46,63 @@ export function apellidoDe(completo: string): string {
   return p.slice(corte).join(' ');
 }
 
+/**
+ * Parte un nombre completo en nombres y apellido, sin adivinar más de lo
+ * necesario.
+ *
+ * Los candidatos llegan cargados de dos formas: "Azul Casaccia" y "Molinari,
+ * Abril". **La coma decide**: si la hay, lo de adelante es el apellido y lo de
+ * atrás los nombres, que es como lo escribe quien ordena por apellido. Sin
+ * coma, el apellido es la última palabra con sus partículas (`apellidoDe`).
+ *
+ * `pila` es el primer nombre, para saludar: tomar la primera palabra del campo
+ * daba "Hola Molinari" en los cargados con coma.
+ */
+export function partesDelNombre(completo: string): {
+  nombres: string;
+  apellido: string;
+  pila: string;
+} {
+  const limpio = completo.trim().replace(/\s+/g, ' ');
+  const coma = limpio.indexOf(',');
+  let nombres: string;
+  let apellido: string;
+  if (coma !== -1) {
+    apellido = limpio.slice(0, coma).trim();
+    nombres = limpio.slice(coma + 1).replace(/,/g, ' ').trim();
+  } else if (!limpio.includes(' ')) {
+    nombres = limpio;
+    apellido = '';
+  } else {
+    apellido = apellidoDe(limpio);
+    nombres = limpio.slice(0, limpio.length - apellido.length).trim();
+  }
+  if (!nombres) [nombres, apellido] = [apellido, ''];
+  return { nombres, apellido, pila: nombres.split(' ')[0] ?? '' };
+}
+
+/**
+ * Las partes del nombre de una persona guardada.
+ *
+ * Las que se cargaron con los dos campos traen `nombre_pila` y `apellido`, y
+ * eso es lo que vale: lo escribió alguien. Las anteriores tienen solo el
+ * nombre completo y se parten con `partesDelNombre`, que es una deducción.
+ */
+export function partesDePersona(p: {
+  nombre: string;
+  nombre_pila?: string | null;
+  apellido?: string | null;
+}): { nombres: string; apellido: string; pila: string } {
+  const nombres = (p.nombre_pila ?? '').trim();
+  if (!nombres) return partesDelNombre(p.nombre);
+  return { nombres, apellido: (p.apellido ?? '').trim(), pila: nombres.split(/\s+/)[0] };
+}
+
+/** El nombre completo como se muestra, armado desde los dos campos. */
+export function nombreYApellido(nombres: string, apellido: string): string {
+  return `${nombres.trim()} ${apellido.trim()}`.replace(/\s+/g, ' ').trim();
+}
+
 /** Compara dos nombres completos por su apellido. */
 export function porApellidoSuelto(a: string, b: string): number {
   const clave = (n: string) => `${apellidoDe(n)} ${n}`.toLocaleLowerCase('es');

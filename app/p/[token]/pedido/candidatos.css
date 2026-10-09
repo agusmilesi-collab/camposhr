@@ -1,0 +1,25 @@
+/*
+ * La fila de un candidato en el pedido del portal, con el nombre y el apellido
+ * en campos separados.
+ *
+ * Va en su propio archivo y no en `globals.css`, junto al formulario que la
+ * usa. Cambia las columnas de `.pedir-tres.pedir-sin-mail`: nombre, apellido
+ * y teléfono en un renglón, o de a dos en los clientes que piden la ciudad.
+ */
+.pedir-tres.pedir-sin-mail.con-apellido {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* Con la ciudad son cuatro datos, y en un renglón cada campo quedaba de cien
+   píxeles: un nombre compuesto no entraba. Van de a dos: nombre y apellido
+   arriba, teléfono y ciudad abajo. */
+.pedir-tres.pedir-sin-mail.con-apellido.con-ciudad {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@media (max-width: 1000px) {
+  .pedir-tres.pedir-sin-mail.con-apellido,
+  .pedir-tres.pedir-sin-mail.con-apellido.con-ciudad {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

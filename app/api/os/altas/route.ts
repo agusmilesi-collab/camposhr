@@ -106,6 +106,7 @@ async function altaCandidato(
 ) {
   const pedidoId = texto('pedidoId');
   const nombre = texto('nombre');
+  const apellido = texto('apellido');
   const email = texto('email');
   const telefono = texto('telefono');
 
@@ -114,6 +115,9 @@ async function altaCandidato(
   }
   if (!nombre) {
     return NextResponse.json({ error: 'Falta el nombre.' }, { status: 400 });
+  }
+  if (!apellido) {
+    return NextResponse.json({ error: 'Falta el apellido.' }, { status: 400 });
   }
   if (!telefono && !email) {
     // Es la misma regla del portal: sin una de las dos no se puede citar.
@@ -133,6 +137,7 @@ async function altaCandidato(
   const evaluacion = await crearCandidato({
     pedidoId,
     nombre,
+    apellido,
     email: email || null,
     telefono: telefono || null,
     evaluadoraId: UUID.test(evaluadoraId) ? evaluadoraId : null,
@@ -154,7 +159,7 @@ async function altaCandidato(
     accion: 'escritura',
     recurso: 'evaluacion',
     recursoId: evaluacion.id,
-    detalle: { nombre, pedido_id: pedidoId, alta: 'interna', con_cv: Boolean(cv) },
+    detalle: { nombre: `${nombre} ${apellido}`, pedido_id: pedidoId, alta: 'interna', con_cv: Boolean(cv) },
   });
 
   revalidateTag(CACHE_CLIENTES);

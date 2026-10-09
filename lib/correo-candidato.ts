@@ -36,6 +36,7 @@ import { patch, select } from '@/lib/supabase';
 import { enviarCorreo, escapar, hayCorreo } from '@/lib/correo';
 import { BOTON, PARRAFO, hoja } from '@/lib/correo-destinos';
 import { CONSULTORIO, CONSULTORIO_MAPA } from '@/lib/consultorio';
+import { partesDelNombre, partesDePersona } from '@/lib/personas';
 
 const ZONA = 'America/Argentina/Cordoba';
 
@@ -56,7 +57,12 @@ type Fila = {
   aviso_candidato_fecha: string | null;
   aviso_candidato_modalidad: string | null;
   confirmar_token: string | null;
-  personas: { nombre: string; email: string | null } | null;
+  personas: {
+    nombre: string;
+    nombre_pila: string | null;
+    apellido: string | null;
+    email: string | null;
+  } | null;
   evaluadoras: { nombre: string; email: string | null; telefono: string | null } | null;
   pedidos: { puesto: string; baterias: { duracion_min: number | null } | null } | null;
 };
@@ -196,6 +202,8 @@ export function icsDeLaEntrevista(d: ParaCalendario, uid: string): string {
 
 export type DatosCorreoCandidato = {
   nombre: string;
+  /** Con qué nombre se lo saluda. Sin esto se deduce del nombre completo. */
+  pila?: string;
   puesto: string | null;
   /** El nombre de la evaluadora. */
   con: string | null;
@@ -230,7 +238,7 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
 } {
   const { online, confirmar } = d;
   const pasoA = online ? 'pasó a ser por videollamada' : 'pasó a ser presencial';
-  const pila = d.nombre.trim().split(/\s+/)[0];
+  const pila = d.pila ?? partesDelNombre(d.nombre).pila;
   const puesto = d.puesto?.trim();
   const con = d.con?.trim();
   const saludo = pila ? `Hola ${pila}:` : 'Hola:';
@@ -332,7 +340,7 @@ export async function avisarAlCandidato(evaluacionId: string): Promise<void> {
       'evaluaciones',
       'select=id,estado,modalidad,fecha_entrevista,baja_el,enlace_meet,aviso_candidato_fecha,' +
         'aviso_candidato_modalidad,confirmar_token,' +
-        'personas(nombre,email),evaluadoras(nombre,email,telefono),pedidos(puesto,baterias(duracion_min))' +
+        'personas(nombre,nombre_pila,apellido,email),evaluadoras(nombre,email,telefono),pedidos(puesto,baterias(duracion_min))' +
         `&id=eq.${evaluacionId}&limit=1`
     );
     if (
@@ -373,6 +381,7 @@ export async function avisarAlCandidato(evaluacionId: string): Promise<void> {
       para: [e.personas.email],
       ...armarCorreoCandidato({
         nombre: e.personas.nombre,
+        pila: partesDePersona(e.personas).pila,
         puesto: e.pedidos?.puesto ?? null,
         con: e.evaluadoras?.nombre ?? null,
         whatsapp: e.evaluadoras?.telefono ?? null,

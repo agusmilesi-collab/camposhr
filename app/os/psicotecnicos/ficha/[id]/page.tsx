@@ -227,6 +227,8 @@ function Datos({
                 id,
                 origen: 'supabase',
                 nombre: c.personas?.nombre ?? '',
+                nombrePila: c.personas?.nombre_pila ?? null,
+                apellido: c.personas?.apellido ?? null,
                 empresa: c.pedidos?.empresas?.nombre ?? '',
                 puesto: puestoConCiudad(c.pedidos?.puesto, c.ciudad),
                 pedidoId: c.pedido_id,

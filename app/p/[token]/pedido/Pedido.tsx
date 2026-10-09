@@ -38,6 +38,8 @@ import type { Pregunta } from '@/lib/pedido-campos';
 import Elegir from './Elegir';
 import OrdenGracias from '@/app/_components/OrdenGracias';
 import type { Orden } from '@/lib/orden-compra-tipos';
+import { partesDelNombre } from '@/lib/personas';
+import './candidatos.css';
 
 /** El color de la pastilla de cada batería, el mismo de la página de precios. */
 function colorDeBateria(codigo: string): string {
@@ -49,7 +51,9 @@ const MAXIMO = 12;
 
 type Fila = {
   id: number;
+  /** El nombre, sin el apellido. */
   nombre: string;
+  apellido: string;
   telefono: string;
   mail: string;
   cv: File | null;
@@ -73,6 +77,7 @@ function vacia(id: number): Fila {
   return {
     id,
     nombre: '',
+    apellido: '',
     telefono: '',
     mail: '',
     cv: null,
@@ -298,6 +303,7 @@ export default function Pedido({
     else if (esExistente && !elegida) f.push('elegir el puesto');
     const gente = filas.filter((x) => x.nombre.trim());
     if (gente.length === 0) f.push('al menos un candidato');
+    if (gente.some((x) => !x.apellido.trim())) f.push('el apellido de cada candidato');
     if (gente.some((x) => !x.telefono.trim() && !x.mail.trim()))
       f.push('el teléfono de cada candidato');
     if (conCiudad && gente.some((x) => !ciudadDe(x))) f.push('la ciudad de cada candidato');
@@ -328,13 +334,19 @@ export default function Pedido({
       const { leidos } = (await r.json()) as {
         leidos: { nombre: string; mail: string; telefono: string }[];
       };
-      return archivos.map((cv, i) => ({
+      // El lector devuelve el nombre entero: se reparte en los dos campos y
+      // queda a la vista, para que quien carga lo corrija si cortó mal.
+      return archivos.map((cv, i) => {
+        const partes = partesDelNombre(leidos[i]?.nombre ?? '');
+        return {
         cv,
         desdeCv: true,
-        nombre: leidos[i]?.nombre ?? '',
+        nombre: partes.nombres,
+        apellido: partes.apellido,
         mail: leidos[i]?.mail ?? '',
         telefono: leidos[i]?.telefono ?? '',
-      }));
+        };
+      });
     } catch {
       // Si la lectura falla, los archivos se adjuntan igual y los datos se
       // escriben: quedarse sin poder cargar sería peor que escribir tres campos.
@@ -412,6 +424,7 @@ export default function Pedido({
         .filter((f) => f.nombre.trim())
         .forEach((f, i) => {
           cuerpo.set(`nombre-${i}`, f.nombre.trim());
+          cuerpo.set(`apellido-${i}`, f.apellido.trim());
           cuerpo.set(`telefono-${i}`, f.telefono.trim());
           cuerpo.set(`mail-${i}`, f.mail.trim());
           if (f.cv) cuerpo.set(`cv-${i}`, f.cv);
@@ -1029,13 +1042,23 @@ export default function Pedido({
                         </button>
                       )}
                     </div>
-                    <div className={`pedir-tres pedir-sin-mail${conCiudad ? ' con-ciudad' : ''}`}>
+                    <div className={`pedir-tres pedir-sin-mail con-apellido${conCiudad ? ' con-ciudad' : ''}`}>
                       <input
                         className="pedir-input"
-                        placeholder="Nombre y apellido"
+                        placeholder="Nombre"
                         value={f.nombre}
-                        maxLength={120}
+                        maxLength={80}
                         onChange={(e) => cambiar(f.id, { nombre: e.target.value })}
+                      />
+                      {/* El apellido aparte: con los dos en un campo, unos
+                          escribían "Abril Molinari" y otros "Molinari, Abril",
+                          y no había forma de saber cuál era cuál. */}
+                      <input
+                        className="pedir-input"
+                        placeholder="Apellido"
+                        value={f.apellido}
+                        maxLength={80}
+                        onChange={(e) => cambiar(f.id, { apellido: e.target.value })}
                       />
                       <input
                         className="pedir-input"

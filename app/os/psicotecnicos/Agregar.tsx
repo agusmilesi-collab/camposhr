@@ -37,6 +37,7 @@
  * tres campos en la columna, ocho en el cajón.
  */
 
+import { partesDelNombre } from '@/lib/personas';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import PedidoNuevo from './PedidoNuevo';
@@ -115,6 +116,7 @@ export default function Agregar({
   const [error, setError] = useState<string | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
   const nombre = useRef<HTMLInputElement>(null);
+  const apellido = useRef<HTMLInputElement>(null);
   const telefono = useRef<HTMLInputElement>(null);
   const email = useRef<HTMLInputElement>(null);
   const cv = useRef<HTMLInputElement>(null);
@@ -238,8 +240,14 @@ export default function Agregar({
             : null
       );
 
-      if (nombre.current && !nombre.current.value && leido.nombre) {
-        nombre.current.value = leido.nombre;
+      // El lector devuelve el nombre entero; se reparte en los dos campos
+      // con la regla de `partesDelNombre` y queda a la vista para corregir.
+      if (leido.nombre && nombre.current && apellido.current) {
+        const partes = partesDelNombre(leido.nombre);
+        if (!nombre.current.value && !apellido.current.value) {
+          nombre.current.value = partes.nombres;
+          apellido.current.value = partes.apellido;
+        }
       }
       if (telefono.current && !telefono.current.value && leido.telefono) {
         telefono.current.value = leido.telefono;
@@ -299,7 +307,9 @@ export default function Agregar({
       form.reset();
       setArchivo('');
       setAviso(null);
-      setHecho(`${String(datos.get('nombre') ?? '').trim()} quedó cargada.`);
+      setHecho(
+        `${String(datos.get('nombre') ?? '').trim()} ${String(datos.get('apellido') ?? '').trim()} quedó cargada.`
+      );
       nombre.current?.focus();
       empezar(() => router.refresh());
     } catch {
@@ -392,9 +402,21 @@ export default function Agregar({
           className="os-campo"
           name="nombre"
           required
-          maxLength={120}
-          placeholder="Nombre y apellido"
-          aria-label="Nombre y apellido"
+          maxLength={80}
+          placeholder="Nombre"
+          aria-label="Nombre"
+        />
+
+        {/* El apellido en su campo: es lo que deja saludar por el nombre y
+            agendar el contacto bien, sin deducir dónde corta cada uno. */}
+        <input
+          ref={apellido}
+          className="os-campo"
+          name="apellido"
+          required
+          maxLength={80}
+          placeholder="Apellido"
+          aria-label="Apellido"
         />
 
         <input

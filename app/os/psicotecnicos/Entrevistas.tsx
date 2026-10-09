@@ -49,6 +49,7 @@ import Bateria from './Bateria';
 import Desplegable from '@/app/os/Desplegable';
 import Whatsapp from './Whatsapp';
 import { esDireccion } from '@/lib/direccion';
+import { partesDePersona } from '@/lib/personas';
 
 type EtapaTablero = 'Sin asignar' | 'Por citar' | 'Por entrevistar' | 'Por analizar';
 
@@ -253,7 +254,7 @@ function Tarjeta({
                 telefono={e.telefono}
                 className="os-tarjeta-telefono"
                 mensaje={
-                  `Hola ${e.nombre.trim().split(/\s+/)[0]}, mi nombre es ${e.evaluadora}. ` +
+                  `Hola ${partesDePersona({ nombre: e.nombre, nombre_pila: e.nombrePila, apellido: e.apellido }).pila}, mi nombre es ${e.evaluadora}. ` +
                   `Me comunico para coordinar la entrevista de psicotécnico para ${e.empresa}.`
                 }
                 // Y de paso la agenda en los contactos de Google de la
