@@ -96,12 +96,13 @@ export default function Notificaciones({
           <>
             {/* Una casilla por aviso, del color de las etiquetas de
                 codificación: verde con su tilde si le llega, roja con una cruz si
-                no. Se cambia tocando el renglón. Al responsable de compras la
-                factura le llega siempre: se ve tildada y no se puede destildar
-                desde acá. El recibo sí lo puede apagar. */}
+                no. Se cambia tocando el renglón. La factura no se puede
+                destildar cuando le llega sí o sí: al responsable de compras, y
+                a quien solicita en una empresa sin responsable de compras. El
+                recibo sí se puede apagar siempre. */}
             <div className="pedir-avisos-etiquetas">
               {AVISOS.map((a) => {
-                const fija = a.campo === 'recibeFactura' && quien.facturacion;
+                const fija = a.campo === 'recibeFactura' && quien.facturaFija;
                 const si = fija || suyas[a.campo];
                 return (
                   <button
@@ -113,7 +114,9 @@ export default function Notificaciones({
                     disabled={fija || estado === 'guardando'}
                     title={
                       fija
-                        ? 'Te llega siempre, por ser responsable de compras'
+                        ? quien.facturacion
+                          ? 'Te llega siempre, por ser responsable de compras'
+                          : 'Te llega siempre: tu empresa no tiene un responsable de compras cargado, y la factura hay que mandársela a alguien'
                         : si
                           ? 'Te llega por correo. Tocá para dejar de recibirlo'
                           : 'No te llega. Tocá para recibirlo por correo'

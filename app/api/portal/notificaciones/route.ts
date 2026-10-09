@@ -43,7 +43,9 @@ export async function POST(req: Request) {
   try {
     const [suyo] = await select<{ id: string }>('contactos', `select=id&${filtro}&limit=1`);
     if (!suyo) return NextResponse.json({ error: 'No se pudo guardar.' }, { status: 404 });
-    await patch('contactos', filtro, cambios);
+    // Queda sellado que eligió: lo que tilde acá ya no lo pisa ningún valor
+    // por defecto (`supabase/contactos-avisos-por-defecto.sql`).
+    await patch('contactos', filtro, { ...cambios, avisos_elegidos_at: new Date().toISOString() });
   } catch (e) {
     console.error('[notificaciones del portal]', e);
     return NextResponse.json({ error: 'No se pudo guardar. Probá de nuevo.' }, { status: 502 });

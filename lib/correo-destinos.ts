@@ -10,9 +10,10 @@
  * - **La factura y el recibo de pago** son del responsable de compras. **Si la
  *   empresa no tiene ninguno, van a quien solicitó el candidato.** Y quien
  *   solicita puede elegir en el portal, cada uno por separado: recibirlos
- *   aunque haya compras (va en copia) o no recibirlos aunque no la haya. El
- *   responsable de compras recibe la factura siempre; el recibo, mientras no
- *   lo apague.
+ *   recibirlos en copia cuando hay compras, y apagar el recibo cuando no la
+ *   hay. **La factura no se puede apagar si no hay compras**: a alguien hay
+ *   que mandársela. El responsable de compras recibe la factura siempre; el
+ *   recibo, mientras no lo apague.
  *
  * Quien no tiene correo cargado no recibe nada, y no se le manda a otro por
  * las dudas.
@@ -70,9 +71,14 @@ export async function destinosDe(
     };
   };
 
-  // La factura y el recibo son de compras. Quien solicitó el candidato los
-  // recibe si lo eligió en el portal; mientras no eligió, los recibe solo si
-  // no hay responsable de compras. Con compras, quien solicitó va en copia.
+  // La factura y el recibo son de compras. Con compras, quien solicitó el
+  // candidato los recibe en copia si lo eligió en el portal.
+  //
+  // Sin compras no es lo mismo para los dos (Agustín, 9/10/2026):
+  // - **La factura le llega a quien solicitó sí o sí**, haya tildado lo que
+  //   haya tildado: a alguien hay que mandársela.
+  // - El recibo lo puede apagar: muchas veces es esa misma persona la que
+  //   avisa que pagó, y ya lo sabe.
   if (aviso === 'factura' || aviso === 'recibo') {
     const todosCompras = contactos.filter((c) => c.facturacion);
     // La factura le llega siempre a compras; el recibo, salvo que lo apague.
@@ -83,7 +89,9 @@ export async function destinosDe(
       (c) =>
         pidieron.has(c.id) &&
         !c.facturacion &&
-        ((c[marca] as boolean | null) ?? todosCompras.length === 0)
+        (todosCompras.length === 0
+          ? aviso === 'factura' || c.recibe_recibo !== false
+          : c[marca] === true)
     );
     return compras.length > 0 ? armar(compras, suyos) : armar(suyos);
   }
