@@ -10,9 +10,13 @@
  *   Google conectado no hay enlace y el correo no sale: una confirmación de
  *   videollamada sin por dónde entrar no le sirve a nadie.
  *
- * **Sale una vez por fecha**, igual que el aviso al cliente:
- * `evaluaciones.aviso_candidato_fecha` guarda para qué fecha se avisó. Si la
- * entrevista se reprograma sale de nuevo y lo dice; la sala es la misma.
+ * **Sale una vez por fecha y modalidad**, igual que el aviso al cliente:
+ * `evaluaciones.aviso_candidato_fecha` guarda para qué fecha se avisó y
+ * `aviso_candidato_modalidad` con qué modalidad. Si la entrevista se reprograma
+ * sale de nuevo y lo dice; la sala es la misma. Si el día queda igual y cambia
+ * la modalidad también sale: quien tenía el enlace necesita la dirección, y al
+ * revés. Un aviso anotado sin modalidad (los de antes de que existiera la
+ * columna) vale para la que tenga.
  *
  * La respuesta del candidato cae en la evaluadora, que es con quien coordinó.
  */
@@ -33,6 +37,7 @@ type Fila = {
   baja_el: string | null;
   enlace_meet: string | null;
   aviso_candidato_fecha: string | null;
+  aviso_candidato_modalidad: string | null;
   personas: { nombre: string; email: string | null } | null;
   evaluadoras: { nombre: string; email: string | null } | null;
   pedidos: { puesto: string } | null;
@@ -59,6 +64,7 @@ export async function avisarAlCandidato(evaluacionId: string): Promise<void> {
     const [e] = await select<Fila>(
       'evaluaciones',
       'select=id,estado,modalidad,fecha_entrevista,baja_el,enlace_meet,aviso_candidato_fecha,' +
+        'aviso_candidato_modalidad,' +
         'personas(nombre,email),evaluadoras(nombre,email),pedidos(puesto)' +
         `&id=eq.${evaluacionId}&limit=1`
     );
@@ -69,20 +75,30 @@ export async function avisarAlCandidato(evaluacionId: string): Promise<void> {
       (e.modalidad !== 'Presencial' && !(e.modalidad === 'Online' && e.enlace_meet)) ||
       !e.fecha_entrevista ||
       !e.personas?.email ||
-      new Date(e.fecha_entrevista).getTime() <= Date.now() ||
-      mismoMomento(e.fecha_entrevista, e.aviso_candidato_fecha)
+      new Date(e.fecha_entrevista).getTime() <= Date.now()
     ) {
       return;
     }
+    const mismaFecha = mismoMomento(e.fecha_entrevista, e.aviso_candidato_fecha);
+    const mismaModalidad =
+      !e.aviso_candidato_modalidad || e.aviso_candidato_modalidad === e.modalidad;
+    if (mismaFecha && mismaModalidad) return;
 
+    // Tres correos distintos: el primero, el de otra fecha y el de la misma
+    // fecha con otra modalidad. Si cambian las dos cosas manda la fecha, que es
+    // lo que la persona tiene que volver a anotar; el lugar va siempre abajo.
     const otraVez = Boolean(e.aviso_candidato_fecha);
+    const soloModalidad = mismaFecha && !mismaModalidad;
+    const pasoA = e.modalidad === 'Online' ? 'pasó a ser por videollamada' : 'pasó a ser presencial';
     const pila = e.personas.nombre.trim().split(/\s+/)[0];
     const puesto = e.pedidos?.puesto?.trim();
     const con = e.evaluadoras?.nombre?.trim();
     const saludo = pila ? `Hola ${pila}:` : 'Hola:';
-    const frase =
-      `Tu entrevista con Campos HR${puesto ? ` para el puesto ${puesto}` : ''} ` +
-      `${otraVez ? 'se reprogramó' : 'quedó agendada'} para el ${cuando(e.fecha_entrevista)}, hora de Argentina.`;
+    const frase = soloModalidad
+      ? `Tu entrevista con Campos HR${puesto ? ` para el puesto ${puesto}` : ''} ${pasoA}. ` +
+        `Se mantiene el ${cuando(e.fecha_entrevista)}, hora de Argentina.`
+      : `Tu entrevista con Campos HR${puesto ? ` para el puesto ${puesto}` : ''} ` +
+        `${otraVez ? 'se reprogramó' : 'quedó agendada'} para el ${cuando(e.fecha_entrevista)}, hora de Argentina.`;
     const online = e.modalidad === 'Online' && e.enlace_meet ? e.enlace_meet : null;
     const como = online
       ? `Es por videollamada de Google Meet${con ? `, con ${con}` : ''}. ` +
@@ -93,7 +109,7 @@ export async function avisarAlCandidato(evaluacionId: string): Promise<void> {
     const envio = await enviarCorreo({
       de: 'entrevistas',
       para: [e.personas.email],
-      asunto: `Tu entrevista con Campos HR${otraVez ? ' se reprogramó' : ''}: ${cuando(e.fecha_entrevista)}`,
+      asunto: `Tu entrevista con Campos HR${soloModalidad ? ` ${pasoA}` : otraVez ? ' se reprogramó' : ''}: ${cuando(e.fecha_entrevista)}`,
       texto: [saludo, '', frase, '', como, ...(online ? [online] : []), '', cambio, '', 'Campos HR · www.camposhr.com'].join('\n'),
       html: hoja(
         `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n` +
@@ -111,7 +127,10 @@ export async function avisarAlCandidato(evaluacionId: string): Promise<void> {
       clave: `candidato-${e.id}-${new Date(e.fecha_entrevista).getTime()}-${online ? 'online' : 'presencial'}`,
     });
     if (envio.ok) {
-      await patch('evaluaciones', `id=eq.${e.id}`, { aviso_candidato_fecha: e.fecha_entrevista });
+      await patch('evaluaciones', `id=eq.${e.id}`, {
+        aviso_candidato_fecha: e.fecha_entrevista,
+        aviso_candidato_modalidad: e.modalidad,
+      });
     }
   } catch (err) {
     console.error('[correo] no se pudo avisar al candidato', err);
