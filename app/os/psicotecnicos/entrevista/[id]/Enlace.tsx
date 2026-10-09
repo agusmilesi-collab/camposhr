@@ -29,11 +29,14 @@ export default function Enlace({
   id,
   enlace,
   meet = null,
+  confirmo = false,
 }: {
   id: string;
   enlace: string | null;
   /** La sala de Meet creada al agendar, si la entrevista es online y existe. */
   meet?: string | null;
+  /** Si el candidato tocó "Confirmar asistencia" en el correo. */
+  confirmo?: boolean;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -72,9 +75,9 @@ export default function Enlace({
         <a className="os-boton os-boton-firme" href={meet} target="_blank" rel="noreferrer">
           Entrar a la videollamada
         </a>
-        <a className="os-enlace-boton" href={meet} target="_blank" rel="noreferrer">
-          {meet.replace(/^https?:\/\//, '')}
-        </a>
+        <span className={`os-sello-estado ${confirmo ? 'os-verde' : 'os-gris'}`}>
+          {confirmo ? 'Confirmó asistencia' : 'Sin confirmar'}
+        </span>
       </span>
     );
   }
