@@ -294,7 +294,11 @@ export default function Pedido({
     : todasLasBusquedas;
 
   const abiertas = busquedas.filter((b) => b.estado !== 'Finalizado');
-  const entregadas = busquedas.filter((b) => b.estado === 'Finalizado');
+  // Las inactivas van por abecedario: se buscan por el nombre del puesto, y
+  // ordenadas por fecha había que leerlas todas para encontrar una.
+  const entregadas = busquedas
+    .filter((b) => b.estado === 'Finalizado')
+    .sort((a, b) => a.puesto.localeCompare(b.puesto, 'es', { sensitivity: 'base' }));
   const elegida = modo === 'existente' ? (busquedas.find((b) => b.id === busqueda) ?? null) : null;
   const esNueva = modo === 'nueva';
   const esExistente = modo === 'existente';
@@ -714,8 +718,9 @@ export default function Pedido({
                         <Atras alVolver={atras} />
                       </div>
                       {/* Una sola lista, las activas primero y después las
-                          inactivas. Cada tarjeta dice su estado con el punto y
-                          la palabra: verde activa, gris inactiva. */}
+                          inactivas, que arrancan en su propia fila y van por
+                          abecedario. Cada tarjeta dice su estado con el punto
+                          y la palabra: verde activa, gris inactiva. */}
                       <div className="pedir-tarjetas">
                         {[...abiertas, ...entregadas].map((b) => {
                           const activa = b.estado !== 'Finalizado';
@@ -726,6 +731,7 @@ export default function Pedido({
                               className={`pedir-tarjeta${activa ? '' : ' pedir-inactiva'}${
                                 busqueda === b.id ? ' pedir-elegida' : ''
                               }`}
+                              style={b.id === entregadas[0]?.id ? { gridColumnStart: 1 } : undefined}
                               /* Elegir el puesto ya contesta la pregunta: pasa
                                  solo a los candidatos, y si se equivocó tiene
                                  Volver. */
