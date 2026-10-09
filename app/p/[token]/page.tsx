@@ -177,8 +177,15 @@ function FilaCandidato({ c, conCobro }: { c: Candidato; conCobro: boolean }) {
       <span className="c-name">
         {c.nombre}
         {/* La ciudad para la que se lo evalúa, en los clientes que piden el
-            mismo puesto para varias: el título de la tarjeta es el puesto. */}
-        {c.ciudad && <small className="c-ciudad">{c.ciudad}</small>}
+            mismo puesto para varias: el título de la tarjeta es el puesto. Va
+            en el mismo renglón del nombre, entre paréntesis y con su letra
+            chica y gris: en un renglón propio duplicaba el alto de cada fila. */}
+        {c.ciudad && (
+          <small className="c-ciudad" style={{ display: 'inline' }}>
+            {' '}
+            ({c.ciudad})
+          </small>
+        )}
       </span>
       <span className="c-estado" data-label="Estado">
         <i className={`dot ${e.clase}`} />
