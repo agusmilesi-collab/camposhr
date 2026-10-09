@@ -1583,6 +1583,19 @@ y otro enlace serían dos para la misma entrevista.
 clave de `evaluaciones` a `evaluadoras` deja ambiguos los embeds y la API
 contesta 300 a todo lo que une esas dos tablas.
 
+**Al citar, el WhatsApp de la tarjeta abre con la presentación escrita y
+agenda al candidato.** El enlace lleva el mensaje ("Hola Azul, mi nombre es…",
+`mensaje` en `Whatsapp.tsx`) y completa el 54 9 de los números cargados sin
+país. De paso llama a `/api/os/google/contacto`, que crea el contacto en la
+cuenta de Google de la evaluadora de esa evaluación (`lib/google-contactos.ts`:
+nombre y apellido, teléfono, correo, y "Candidato" de la empresa). Solo crea, y
+anota en `google_contactos` cuál hizo para no repetirlo. Pide el permiso
+`contacts` en la misma conexión del calendario (`google_calendario.contactos`
+dice si esa conexión lo dio; las anteriores ofrecen "Sumar contactos" en
+Configuración). Necesita la People API activada en el proyecto de Google
+Cloud. SQL en `supabase/google-contactos.sql`. Si cambia lo que se hace con los
+contactos, cambia el texto de `/privacidad`.
+
 **Cada una conecta desde su computadora**: el permiso lo da la cuenta de Google
 abierta en ese navegador. Las credenciales son `GOOGLE_CLIENT_ID` y
 `GOOGLE_CLIENT_SECRET`; sin ellas no pasa nada y el resto sigue igual. En

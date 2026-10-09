@@ -9,25 +9,39 @@
  * de `public/` sumaría una petición por cada teléfono de una lista.
  */
 
-/** El número sin nada que no sea un dígito, que es como lo quiere `wa.me`. */
-function soloDigitos(telefono: string): string {
-  return telefono.replace(/\D/g, '');
+/**
+ * El número como lo quiere `wa.me`: solo dígitos y con el código de país.
+ *
+ * Muchos teléfonos se cargan como se dicen acá, con la característica y sin el
+ * país ("3415 47-0805"). Son diez dígitos, y sin el 54 9 adelante WhatsApp
+ * abre "el número no existe". Uno que ya trae el país se deja como está.
+ */
+function paraWhatsapp(telefono: string): string {
+  const digitos = telefono.replace(/\D/g, '').replace(/^0+/, '');
+  return digitos.length === 10 ? `549${digitos}` : digitos;
 }
 
 export default function Whatsapp({
   telefono,
   className,
+  mensaje,
+  alTocar,
 }: {
   telefono: string;
   className?: string;
+  /** Con qué texto abre la conversación, ya escrito y sin mandar. */
+  mensaje?: string;
+  /** Algo que hacer de paso cuando se abre la conversación. Solo desde un componente de cliente. */
+  alTocar?: () => void;
 }) {
   return (
     <a
       className={`os-whatsapp${className ? ` ${className}` : ''}`}
-      href={`https://wa.me/${soloDigitos(telefono)}`}
+      href={`https://wa.me/${paraWhatsapp(telefono)}${mensaje ? `?text=${encodeURIComponent(mensaje)}` : ''}`}
       target="_blank"
       rel="noreferrer"
       title="Escribir por WhatsApp"
+      onClick={alTocar}
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path

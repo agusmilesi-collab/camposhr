@@ -41,9 +41,12 @@ const TOKEN = 'https://oauth2.googleapis.com/token';
 const REVOCAR = 'https://oauth2.googleapis.com/revoke';
 const EVENTOS = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 const PERMISO_EVENTOS = 'https://www.googleapis.com/auth/calendar.events';
-// Los eventos del calendario, y el correo de la cuenta para mostrar cuál se
-// conectó. Nada más: no se leen contactos ni otros calendarios.
-const ALCANCE = `${PERMISO_EVENTOS} openid email`;
+// Crear contactos: es lo que deja agendar al candidato cuando la evaluadora le
+// escribe por WhatsApp (`lib/google-contactos.ts`). El sistema solo crea.
+const PERMISO_CONTACTOS = 'https://www.googleapis.com/auth/contacts';
+// Los eventos del calendario, los contactos, y el correo de la cuenta para
+// mostrar cuál se conectó. Nada más: no se leen otros calendarios.
+const ALCANCE = `${PERMISO_EVENTOS} ${PERMISO_CONTACTOS} openid email`;
 
 export const hayGoogle = () =>
   Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
@@ -68,7 +71,7 @@ export function urlDeAutorizacion(origen: string, estado: string): string {
 }
 
 export type Canje =
-  | { ok: true; refresh: string; cuenta: string | null }
+  | { ok: true; refresh: string; cuenta: string | null; contactos: boolean }
   | { ok: false; motivo: 'fallo' | 'sin-permiso' };
 
 /** Cambia el código que trae la vuelta por el permiso duradero. */
@@ -96,7 +99,14 @@ export async function canjear(codigo: string, origen: string): Promise<Canje> {
     if (t.refresh_token) await revocar(t.refresh_token);
     return { ok: false, motivo: 'sin-permiso' };
   }
-  return { ok: true, refresh: t.refresh_token, cuenta: cuentaDe(t.id_token) };
+  // El de contactos es opcional: si lo destilda, el calendario anda igual y
+  // lo único que no pasa es agendar al candidato.
+  return {
+    ok: true,
+    refresh: t.refresh_token,
+    cuenta: cuentaDe(t.id_token),
+    contactos: (t.scope ?? '').split(' ').includes(PERMISO_CONTACTOS),
+  };
 }
 
 /** El correo de la cuenta, que viaja adentro del `id_token`. */
@@ -122,7 +132,8 @@ async function revocar(token: string): Promise<void> {
 export async function guardarConexion(
   evaluadoraId: string,
   refresh: string,
-  cuenta: string | null
+  cuenta: string | null,
+  contactos = false
 ): Promise<void> {
   await upsert(
     'google_calendario',
@@ -130,6 +141,7 @@ export async function guardarConexion(
       evaluadora_id: evaluadoraId,
       refresh_token: refresh,
       cuenta,
+      contactos,
       conectado_el: new Date().toISOString(),
       caida_el: null,
     },
@@ -165,26 +177,35 @@ export type Conexion = {
   cuenta: string | null;
   /** Google rechazó el permiso: hay que volver a conectar. */
   caida: boolean;
+  /** Dio también el permiso de contactos. Las conexiones viejas no lo tienen. */
+  contactos: boolean;
 };
 
 /** Quiénes tienen el calendario conectado. Nunca devuelve el permiso. */
 export async function conexiones(): Promise<Conexion[]> {
-  const filas = await select<{ evaluadora_id: string; cuenta: string | null; caida_el: string | null }>(
+  const filas = await select<{
+    evaluadora_id: string;
+    cuenta: string | null;
+    caida_el: string | null;
+    contactos: boolean | null;
+  }>(
     'google_calendario',
-    'select=evaluadora_id,cuenta,caida_el'
+    'select=evaluadora_id,cuenta,caida_el,contactos'
   );
   return filas.map((f) => ({
     evaluadoraId: f.evaluadora_id,
     cuenta: f.cuenta,
     caida: Boolean(f.caida_el),
+    contactos: f.contactos === true,
   }));
 }
 
 /**
- * La llave de una hora para escribir en el calendario de esa evaluadora, o
+ * La llave de una hora para escribir en la cuenta de esa evaluadora (su
+ * calendario y, si dio el permiso, sus contactos), o
  * null si no lo conectó o si Google ya no acepta su permiso.
  */
-async function accesoDe(evaluadoraId: string | null): Promise<string | null> {
+export async function accesoDe(evaluadoraId: string | null): Promise<string | null> {
   if (!evaluadoraId) return null;
   const [fila] = await select<{ refresh_token: string; caida_el: string | null }>(
     'google_calendario',

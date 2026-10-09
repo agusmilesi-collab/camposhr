@@ -245,7 +245,29 @@ function Tarjeta({
         <div className="os-tarjeta-trabajo">
           <div className="os-tarjeta-linea">
             {e.telefono ? (
-              <Whatsapp telefono={e.telefono} className="os-tarjeta-telefono" />
+              /* Al citar, la conversación abre con la presentación ya
+                 escrita: quién es, para qué escribe y de parte de qué empresa.
+                 Queda en el cuadro de WhatsApp sin mandar, para que la
+                 evaluadora la ajuste si hace falta. */
+              <Whatsapp
+                telefono={e.telefono}
+                className="os-tarjeta-telefono"
+                mensaje={
+                  `Hola ${e.nombre.trim().split(/\s+/)[0]}, mi nombre es ${e.evaluadora}. ` +
+                  `Me comunico para coordinar la entrevista de psicotécnico para ${e.empresa}.`
+                }
+                // Y de paso la agenda en los contactos de Google de la
+                // evaluadora, para que en su teléfono la conversación tenga
+                // nombre. Va por detrás y no espera: WhatsApp se abre igual.
+                alTocar={() => {
+                  fetch('/api/os/google/contacto', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: e.id }),
+                    keepalive: true,
+                  }).catch(() => null);
+                }}
+              />
             ) : (
               <span className="os-dato-falta">sin teléfono</span>
             )}
