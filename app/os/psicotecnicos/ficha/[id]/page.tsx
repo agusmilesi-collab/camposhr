@@ -38,6 +38,7 @@ import Whatsapp from '../../Whatsapp';
 import Editar from './Editar';
 import type { PedidoOpcion } from '../../Agregar';
 import { pedidosAbiertos } from '@/lib/altas';
+import Dpt from './Dpt';
 import Hoja from '../../entrevista/[id]/Hoja';
 import { llevaDiscursivo, nivelesQueRigen, TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
@@ -108,6 +109,9 @@ const PESTANAS: Pestana[] = [
     cuantos: (f) => (f.discursivo?.nivel ? 1 : 0),
     va: (f) => llevaDiscursivo(f.cabecera.pedidos?.baterias?.tests),
   },
+  // El descriptivo del puesto de trabajo: lo que se sabe del puesto, que vive
+  // en el pedido. Justo antes del informe, que es cuando se lo consulta.
+  { clave: 'dpt', texto: 'DPT', cuantos: () => 0 },
   { clave: 'informe', texto: 'Informe', cuantos: (f) => (f.cabecera.recomendacion ? 1 : 0) },
 ];
 
@@ -908,6 +912,13 @@ export default async function FichaPagina({
       {/* Sin panel alrededor: trae sus propias tarjetas, igual que Benziger y
           Tests. Envuelto, los dos paneles de adentro quedaban sobre un tercer
           fondo blanco y el conjunto se leía como una sola mancha. */}
+      {ver === 'dpt' && (
+        <Dpt
+          pedidoId={c.pedido_id ?? null}
+          ciudad={c.ciudad ?? null}
+          solicitante={(c.solicitante ?? c.pedidos?.solicitante)?.nombre ?? null}
+        />
+      )}
       {ver === 'informe' && <Informe f={ficha} rige={rige} />}
     </Shell>
   );
