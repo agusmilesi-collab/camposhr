@@ -257,7 +257,6 @@ export default function Pedido({
   /** El descriptivo de puesto, si lo adjuntan. Es opcional. */
   const [descriptivo, setDescriptivo] = useState<File | null>(null);
   const [perfil, setPerfil] = useState<Record<string, string>>({});
-  const [verPerfil, setVerPerfil] = useState(false);
   /* El nivel de trabajo del puesto, solo en las baterías que llevan análisis de
      potencial: el plazo de la tarea más larga y las cinco preguntas. */
   const [spanCantidad, setSpanCantidad] = useState('');
@@ -357,7 +356,6 @@ export default function Pedido({
   const porCandidato =
     (laBateria?.precio ?? 0) + (conBenziger && benzigerPesos ? benzigerPesos : 0);
   const total = porCandidato * cuantos;
-  const perfilCargado = Object.values(perfil).filter(Boolean).length;
 
   /** Lo que hay que completar antes de poder mandar, dicho como falta. */
   const faltan = useMemo(() => {
@@ -799,8 +797,7 @@ export default function Pedido({
                   />
 
                   {/* El perfil del puesto en su propio recuadro, con título: el
-                      texto y el botón se leen como una sola cosa, y las nueve
-                      preguntas se abren adentro. */}
+                      descriptivo y las nueve preguntas, a la vista. */}
                   <div className="pedir-perfil-caja">
                     <h3 className="pedir-perfil-titulo">Perfil del puesto</h3>
                     {/* Primero el descriptivo que la empresa ya tiene escrito,
@@ -815,17 +812,8 @@ export default function Pedido({
                       condiciones del puesto además del perfil de la persona.{' '}
                       <strong className="pedir-destacado">Es opcional y sugerido.</strong>
                     </p>
-                    <button
-                      type="button"
-                      className="pedir-abrir"
-                      onClick={() => setVerPerfil((v) => !v)}
-                    >
-                      {verPerfil ? 'Cerrar' : 'Completar el perfil del puesto'}
-                      {perfilCargado > 0 && (
-                        <span className="pedir-cuenta">{perfilCargado} de 9</span>
-                      )}
-                    </button>
-                    {verPerfil && (
+                    {/* Las preguntas van abiertas, sin botón que las despliegue:
+                        escondidas detrás de un botón no se contestaban. */}
                       <div className="pedir-perfil">
                         {[
                           { titulo: 'Del puesto', preguntas: delPuesto },
@@ -870,7 +858,6 @@ export default function Pedido({
                           </div>
                         ))}
                       </div>
-                    )}
                   </div>
                 </section>
               )}
