@@ -51,9 +51,11 @@ const SOLICITA: Borrador = {
   telefono: '',
   pide: true,
   facturacion: false,
+  // Por defecto le llegan la orden de compra y la factura (que nace tildada
+  // en la base). La fecha de entrevista, el informe y el recibo nacen
+  // apagados: los prende la persona en el portal.
   recibeOrden: true,
-  recibeEntrevista: true,
-  // El aviso de informe está apagado: nace destildado hasta que se prenda.
+  recibeEntrevista: false,
   recibeInforme: false,
   recibeTodo: false,
 };
@@ -408,17 +410,20 @@ export default function Contactos({
                   />
                 ))}
                 {/* La factura y el recibo, las mismas marcas que la persona
-                    elige en el portal. Al responsable de compras la factura le
-                    llega siempre: ahí no se toca. */}
+                    elige en el portal. La factura no se toca cuando llega sí o
+                    sí: al responsable de compras, y a quien solicita si la
+                    empresa no tiene ninguno. */}
                 <Tilde
-                  si={c.facturacion || c.recibeFactura}
+                  si={c.facturaFija || c.recibeFactura}
                   que={
                     c.facturacion
                       ? 'recibe la factura siempre, por ser responsable de compras'
-                      : 'recibe por correo: la factura'
+                      : c.facturaFija
+                        ? 'recibe la factura siempre: no hay responsable de compras y a alguien hay que mandársela'
+                        : 'recibe por correo: la factura'
                   }
                   rotulo="Factura"
-                  deshabilitado={c.facturacion}
+                  deshabilitado={c.facturaFija}
                   alCambiar={() => marcar(c, { recibeFactura: !c.recibeFactura })}
                 />
                 <Tilde

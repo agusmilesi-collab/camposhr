@@ -46,6 +46,11 @@ export type Contacto = {
    */
   recibeFactura: boolean;
   recibeRecibo: boolean;
+  /**
+   * La factura le llega sí o sí y no se puede destildar: es responsable de
+   * compras, o su empresa no tiene ninguno y a alguien hay que mandársela.
+   */
+  facturaFija: boolean;
   activo: boolean;
 };
 

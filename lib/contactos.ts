@@ -10,7 +10,7 @@ import type { Contacto } from '@/lib/contactos-tipos';
  * conserven a quién se le mandaron, y dejan de estar entre los que se eligen.
  */
 export async function contactosDe(empresaId: string): Promise<Contacto[]> {
-  type Fila = Omit<Contacto, 'recibeFactura' | 'recibeRecibo'> & {
+  type Fila = Omit<Contacto, 'recibeFactura' | 'recibeRecibo' | 'facturaFija'> & {
     recibeFactura: boolean | null;
     recibeRecibo: boolean | null;
   };
@@ -23,13 +23,16 @@ export async function contactosDe(empresaId: string): Promise<Contacto[]> {
       `&empresa_id=eq.${encodeURIComponent(empresaId)}&activo=is.true&order=nombre.asc`,
     CACHE_CLIENTES
   ).catch(() => [] as Fila[]);
-  // La factura y el recibo, mientras la persona no eligió: los recibe si su
-  // empresa no tiene un responsable de compras al que mandárselos. Es la
-  // misma cuenta que hace el envío (`lib/correo-destinos.ts`).
+  // La factura y el recibo dependen de si la empresa tiene un responsable de
+  // compras al que mandárselos. Es la misma cuenta que hace el envío
+  // (`lib/correo-destinos.ts`).
   const hayCompras = filas.some((c) => c.facturacion && c.email);
   return filas.map((c) => ({
     ...c,
-    recibeFactura: c.recibeFactura ?? !hayCompras,
+    // Sin compras la factura le llega a quien solicita sí o sí: no depende de
+    // lo que haya tildado, y las pantallas no la dejan destildar.
+    facturaFija: c.facturacion || !hayCompras,
+    recibeFactura: hayCompras ? c.recibeFactura === true : true,
     // Al responsable de compras el recibo le llega mientras no lo apague.
     recibeRecibo: c.recibeRecibo ?? (c.facturacion ? true : !hayCompras),
   }));
