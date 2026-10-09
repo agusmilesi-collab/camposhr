@@ -1519,7 +1519,9 @@ una entrevista de prueba le escribe a un cliente real.
 ## La entrevista agendada va al Google Calendar de la evaluadora
 
 `lib/google-calendario.ts`, con `fetch` y sin SDK. Cada evaluadora autoriza su
-cuenta una vez en Configuración → **Calendario** y el permiso queda en
+cuenta una vez en Configuración → **Google** (la pestaña se llama así porque
+la misma conexión sirve para el calendario y los contactos; en la dirección
+sigue siendo `?ver=calendario`) y el permiso queda en
 `google_calendario`. Desde ahí, después de cada guardado que toque la fecha, la
 modalidad, la etapa, la evaluadora o la baja, `entrevistaAlDia`
 (`lib/entrevista-agendada.ts`) deja el calendario como dice la evaluación:

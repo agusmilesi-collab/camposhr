@@ -128,7 +128,7 @@ const HTML = `<!DOCTYPE html>
 
     <div class="punto">
       <h2>Cómo se retira el permiso</h2>
-      <p>Desde Campos OS, en Configuración → Calendario → Desconectar, o desde la cuenta de Google en <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>. Al desconectar, Campos OS borra el permiso guardado.</p>
+      <p>Desde Campos OS, en Configuración → Google → Desconectar, o desde la cuenta de Google en <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>. Al desconectar, Campos OS borra el permiso guardado.</p>
     </div>
 
     <div class="punto">

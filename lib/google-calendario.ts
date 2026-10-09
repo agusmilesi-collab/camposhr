@@ -2,7 +2,7 @@
  * La entrevista agendada, en el Google Calendar de la evaluadora.
  *
  * Cada evaluadora autoriza una vez su cuenta de Google (Configuración,
- * pestaña Calendario). Con ese permiso guardado, el sistema escribe en su
+ * pestaña Google). Con ese permiso guardado, el sistema escribe en su
  * calendario sin que ella esté: agendar crea el evento, reprogramar lo mueve,
  * y dar de baja, sacar la fecha o devolver la tarjeta a Por citar lo borra.
  * Si la evaluación pasa a otra evaluadora, el evento se borra del calendario
