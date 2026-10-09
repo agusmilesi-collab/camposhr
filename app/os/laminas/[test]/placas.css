@@ -11,6 +11,12 @@
   overflow: hidden;
   background: #1a1a1a;
   cursor: none;
+  /* En el celular, arrastrar el dedo dibuja: sin esto el navegador lo toma
+     como desplazar o agrandar la página. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .pl-escena {
@@ -118,4 +124,33 @@
   z-index: 30;
   will-change: transform;
   transition: opacity 0.15s ease;
+  opacity: 0;
+}
+
+/* El aviso de girar el teléfono: solo en la pantalla de la persona evaluada,
+   en un celular parado, donde la lámina ocupa un tercio de la pantalla. */
+.pl-girar {
+  display: none;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  .pl-girar {
+    display: block;
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    margin: 0;
+    padding: 8px 14px;
+    width: max-content;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+    background: rgba(20, 20, 20, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    color: #f2f2f2;
+    font: 13px/1.3 system-ui, sans-serif;
+    pointer-events: none;
+  }
 }
