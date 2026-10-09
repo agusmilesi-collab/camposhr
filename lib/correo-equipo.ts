@@ -8,6 +8,12 @@
  * Solo lo que entra por el portal. Lo que carga el equipo desde el OS no avisa:
  * quien lo cargó ya lo sabe.
  *
+ * Lleva lo que el cliente escribió al pedir, en un solo bloque con el nombre
+ * que tiene en la ficha del pedido, "Qué pidió el cliente": la descripción del
+ * puesto, si el pedido es nuevo, y lo que puso en "Algo más que quieras
+ * avisarnos". Ahí viene la urgencia y el motivo de la búsqueda, que es lo que
+ * decide a quién se le asigna y para cuándo.
+ *
  * Lleva el nombre de cada candidato y ningún otro dato suyo: el teléfono, el
  * correo y el CV se miran en el OS, con sesión.
  */
@@ -32,8 +38,26 @@ type Fila = {
   } | null;
 };
 
+/** Un bloque de texto del cliente, con su rótulo arriba y sus saltos de línea. */
+function bloque(rotulo: string, cuerpo: string): string {
+  return (
+    `    <p style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7a756b;margin:20px 0 6px;">` +
+    `${escapar(rotulo)}</p>\n` +
+    `    <p style="${PARRAFO}padding:12px 14px;background:#f7f4ec;">` +
+    `${escapar(cuerpo).replace(/\r?\n/g, '<br>')}</p>\n`
+  );
+}
+
 /** No tira: los candidatos ya entraron cuando esto corre. */
-export async function avisarPedidoNuevo(evaluacionIds: string[]): Promise<void> {
+export async function avisarPedidoNuevo(
+  evaluacionIds: string[],
+  /**
+   * Lo que el cliente escribió en esta carga. La descripción viene solo en un
+   * pedido nuevo; los comentarios, también al sumar candidatos a uno que ya
+   * existía.
+   */
+  escrito: { descripcion?: string; comentarios?: string } = {}
+): Promise<void> {
   try {
     if (!hayCorreo() || evaluacionIds.length === 0) return;
     const [filas, evaluadoras] = await Promise.all([
@@ -66,6 +90,9 @@ export async function avisarPedidoNuevo(evaluacionIds: string[]): Promise<void> 
       (pedido.baterias?.nombre ? `, con ${pedido.baterias.nombre}` : '') +
       (pidio ? `. Lo pidió ${pidio}.` : '.');
     const sigue = 'Están sin asignar, en la primera columna de Entrevistas.';
+    const loQuePidio = [escrito.descripcion?.trim(), escrito.comentarios?.trim()]
+      .filter(Boolean)
+      .join('\n\n');
 
     await enviarCorreo({
       de: 'pedidos',
@@ -74,6 +101,7 @@ export async function avisarPedidoNuevo(evaluacionIds: string[]): Promise<void> 
       texto: [
         frase,
         '',
+        ...(loQuePidio ? ['Qué pidió el cliente', loQuePidio, ''] : []),
         nombres.length === 1 ? 'Candidato' : 'Candidatos',
         ...nombres.map((n) => `- ${n}`),
         '',
@@ -83,6 +111,7 @@ export async function avisarPedidoNuevo(evaluacionIds: string[]): Promise<void> 
       ].join('\n'),
       html: hoja(
         `    <p style="${PARRAFO}">${escapar(frase)}</p>\n` +
+          (loQuePidio ? bloque('Qué pidió el cliente', loQuePidio) : '') +
           `    <p style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7a756b;margin:20px 0 6px;">` +
           `${nombres.length === 1 ? 'Candidato' : 'Candidatos'}</p>\n` +
           `    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px;">` +
