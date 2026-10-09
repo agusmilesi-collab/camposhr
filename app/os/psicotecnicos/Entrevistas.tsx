@@ -43,7 +43,7 @@ import { flushSync } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import type { Evaluacion } from '@/lib/psicotecnicos';
-import { COLOR_ETAPA, COLOR_RECOMENDACION } from '@/lib/psicotecnicos-tipos';
+import { COLOR_ETAPA, COLOR_RECOMENDACION, prioridadDe } from '@/lib/psicotecnicos-tipos';
 import { cuandoCae, desdeInput, haceCuanto, paraInput } from '@/lib/hora';
 import Bateria from './Bateria';
 import Desplegable from '@/app/os/Desplegable';
@@ -207,6 +207,14 @@ function Tarjeta({
         <div className="os-tarjeta-concepto">
           {e.empresa} · {e.puesto}
         </div>
+        {/* La prioridad alta, la misma que muestra el tablero de Inicio: la
+            fijada a mano o la que dan los días de espera. Solo la alta: media
+            y baja en todas las tarjetas serían un sello más que no pide nada. */}
+        {prioridadDe(e) === 'alta' && (
+          <div className="os-tarjeta-concepto">
+            <span className="os-sello-estado os-rojo">Prioridad alta</span>
+          </div>
+        )}
       </Link>
 
       {!e.evaluadora && (
