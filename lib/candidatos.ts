@@ -15,6 +15,7 @@ import { select } from '@/lib/supabase';
 import { subirCv } from '@/lib/altas';
 import { quitarDelCalendario } from '@/lib/google-calendario';
 import { esDireccion } from '@/lib/direccion';
+import { nombreYApellido } from '@/lib/personas';
 
 const BUCKET = 'psicotecnicos';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -68,7 +69,9 @@ async function actual(id: string): Promise<Actual | null> {
 }
 
 export type CandidatoEditado = {
+  /** El nombre, sin el apellido. */
   nombre: string;
+  apellido: string;
   email: string | null;
   telefono: string | null;
   pedidoId: string;
@@ -93,6 +96,7 @@ const MODALIDADES = ['Presencial', 'Online'];
 export async function editarCandidato(id: string, c: CandidatoEditado): Promise<Resultado> {
   if (!UUID.test(id)) return { ok: false, motivo: 'Identificador inválido.' };
   if (!c.nombre) return { ok: false, motivo: 'Falta el nombre.' };
+  if (!c.apellido) return { ok: false, motivo: 'Falta el apellido.' };
   if (!c.telefono && !c.email) {
     // Es la misma regla del alta: sin una de las dos no se puede citar.
     return { ok: false, motivo: 'Hace falta un teléfono o un correo para poder citarla.' };
@@ -103,7 +107,10 @@ export async function editarCandidato(id: string, c: CandidatoEditado): Promise<
   if (!fila) return { ok: false, motivo: 'Esa evaluación no existe.' };
 
   const persona: Record<string, unknown> = {
-    nombre: c.nombre,
+    // El completo para mostrar, y las dos partes en sus columnas.
+    nombre: nombreYApellido(c.nombre, c.apellido),
+    nombre_pila: c.nombre.trim(),
+    apellido: c.apellido.trim(),
     email: c.email,
     telefono: c.telefono,
   };

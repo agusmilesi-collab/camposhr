@@ -834,6 +834,31 @@ build entero con un "Invalid hook call" que no nombra el archivo culpable. Es la
 misma razón por la que existen `lib/comercial-tipos.ts` y
 `lib/clientes-tipos.ts`.
 
+## El nombre y el apellido se cargan en campos separados
+
+Los tres formularios donde entra o se corrige un candidato (el pedido del
+portal, "Agregar candidato" del OS y el cajón "Editar datos y CV") piden nombre
+y apellido por separado, y los dos son obligatorios. Con un solo campo unos
+escribían "Abril Molinari" y otros "Molinari, Abril", y el saludo salía "Hola
+Molinari". Una convención de escritura no se puede transmitir ni auditar; dos
+campos sí (decisión de Agustín, 9/10/2026).
+
+**`personas.nombre` sigue guardando el nombre completo** ("Abril Molinari"),
+que es lo que leen el tablero, la ficha, el informe, los correos y las
+facturas: ninguno cambió. Las partes van además en `personas.nombre_pila` y
+`personas.apellido` (`supabase/personas-apellido.sql`), y las usa lo que
+necesita una sola: el saludo del WhatsApp y del correo, la página de confirmar
+y el contacto de Google. Se leen con `partesDePersona` (`lib/personas.ts`).
+
+**Las personas cargadas antes tienen las dos columnas vacías.** Para ellas
+`partesDePersona` cae en `partesDelNombre`, que deduce: con coma, apellido
+adelante; sin coma, la última palabra con sus partículas. Es una deducción y
+se equivoca con los apellidos dobles; se corrige abriendo "Editar datos y CV",
+que propone el nombre partido y lo guarda en las dos columnas.
+
+El lector de CV devuelve el nombre entero: los formularios lo reparten en los
+dos campos con esa misma regla y lo dejan a la vista para corregir.
+
 ## El tablero de la home no es el pipeline
 
 `app/os/Tablero.tsx`, en Inicio. Tres columnas: Backlog, Hoy y En curso. Viven

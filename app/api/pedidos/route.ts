@@ -199,7 +199,10 @@ export async function POST(req: Request) {
    * es una fila que quedó vacía y se descarta.
    */
   const gente: {
+    /** El nombre solo; `completo` lleva también el apellido. */
     nombre: string;
+    apellido: string;
+    completo: string;
     telefono: string;
     mail: string;
     cv: File | null;
@@ -209,8 +212,11 @@ export async function POST(req: Request) {
     const nombre = texto(`nombre-${i}`);
     if (!nombre) continue;
     const adjunto = form.get(`cv-${i}`);
+    const apellido = texto(`apellido-${i}`);
     gente.push({
       nombre,
+      apellido,
+      completo: `${nombre} ${apellido}`.trim(),
       telefono: texto(`telefono-${i}`),
       mail: texto(`mail-${i}`),
       cv: adjunto instanceof File && adjunto.size > 0 ? adjunto : null,
@@ -221,11 +227,18 @@ export async function POST(req: Request) {
   if (gente.length === 0) {
     return NextResponse.json({ error: 'Cargá al menos un candidato.' }, { status: 400 });
   }
+  const sinApellido = gente.find((g) => !g.apellido);
+  if (sinApellido) {
+    return NextResponse.json(
+      { error: `Falta el apellido de ${sinApellido.nombre}.` },
+      { status: 400 }
+    );
+  }
   const sinContacto = gente.find((g) => !g.telefono && !g.mail);
   if (sinContacto) {
     return NextResponse.json(
       {
-        error: `Falta un teléfono o un mail de ${sinContacto.nombre}: es por donde se lo cita.`,
+        error: `Falta un teléfono o un mail de ${sinContacto.completo}: es por donde se lo cita.`,
       },
       { status: 400 }
     );
@@ -233,7 +246,7 @@ export async function POST(req: Request) {
   const sinCiudad = conCiudad && gente.find((g) => !g.ciudad);
   if (sinCiudad) {
     return NextResponse.json(
-      { error: `Falta la ciudad de ${sinCiudad.nombre}.` },
+      { error: `Falta la ciudad de ${sinCiudad.completo}.` },
       { status: 400 }
     );
   }
@@ -284,7 +297,7 @@ export async function POST(req: Request) {
 
   const conCv = gente.filter((g) => g.cv).length;
   const base =
-    `${gente.length === 1 ? gente[0].nombre : `${gente.length} candidatos`} para ` +
+    `${gente.length === 1 ? gente[0].completo : `${gente.length} candidatos`} para ` +
     `${suyo ? suyo.puesto : puesto}, con ${suyo?.baterias?.codigo ?? elegida?.codigo}` +
     (conBenziger && !suyo ? ' y la evaluación de perfil' : '') +
     (conCv ? ` y ${conCv === 1 ? 'el CV adjunto' : `${conCv} CV adjuntos`}` : '') +
@@ -332,6 +345,7 @@ export async function POST(req: Request) {
       const evaluacion = await crearCandidato({
         pedidoId: pedidoDestino,
         nombre: g.nombre,
+        apellido: g.apellido,
         email: g.mail || null,
         telefono: g.telefono || null,
         evaluadoraId: null,

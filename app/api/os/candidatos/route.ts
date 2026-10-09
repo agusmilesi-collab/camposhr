@@ -80,6 +80,7 @@ export async function POST(req: Request) {
 
     const r = await editarCandidato(id, {
       nombre: texto('nombre'),
+      apellido: texto('apellido'),
       email: texto('email') || null,
       telefono: texto('telefono') || null,
       pedidoId: texto('pedidoId'),
@@ -104,7 +105,7 @@ export async function POST(req: Request) {
       accion: 'escritura',
       recurso: 'evaluacion',
       recursoId: id,
-      detalle: { nombre: texto('nombre'), con_cv: Boolean(cv), edicion: 'tablero' },
+      detalle: { nombre: `${texto('nombre')} ${texto('apellido')}`.trim(), con_cv: Boolean(cv), edicion: 'tablero' },
     });
 
     revalidateTag(CACHE_CLIENTES);

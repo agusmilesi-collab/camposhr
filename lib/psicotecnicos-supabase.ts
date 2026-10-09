@@ -97,6 +97,8 @@ type Fila = {
   prioridad: string | null;
   personas: {
     nombre: string;
+    nombre_pila: string | null;
+    apellido: string | null;
     email: string | null;
     telefono: string | null;
     cv_path: string | null;
@@ -118,7 +120,7 @@ const CAMPOS =
   'bender_administrado,grafico_2_personas_administrado,benziger_administrado,con_benziger,' +
   'recomendacion,informe_path,baja_el,ciudad,' +
   'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,tablero,prioridad,' +
-  'personas(nombre,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
+  'personas(nombre,nombre_pila,apellido,email,telefono,cv_path),evaluadoras(nombre),pedido_id,' +
   'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo))';
 
 export async function listar(): Promise<Evaluacion[]> {
@@ -133,6 +135,8 @@ export async function listar(): Promise<Evaluacion[]> {
     id: f.id,
     origen: 'supabase' as const,
     nombre: f.personas?.nombre ?? 'Sin nombre',
+    nombrePila: f.personas?.nombre_pila ?? null,
+    apellido: f.personas?.apellido ?? null,
     empresa: f.pedidos?.empresas?.nombre ?? 'Sin empresa',
     puesto: puestoConCiudad(f.pedidos?.puesto, f.ciudad) || 'Sin puesto',
     pedidoId: f.pedido_id,

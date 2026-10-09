@@ -14,6 +14,7 @@
  * aparecen después, de a uno.
  */
 
+import { nombreYApellido } from '@/lib/personas';
 import { hoyIso } from '@/lib/hora';
 import 'server-only';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
@@ -225,7 +226,13 @@ export async function crearPedido(
 
 export type CandidatoNuevo = {
   pedidoId: string;
+  /** El nombre, sin el apellido. */
   nombre: string;
+  /**
+   * El apellido, en su propio campo. Los formularios piden los dos por
+   * separado: partir después un nombre completo es adivinar.
+   */
+  apellido: string;
   email: string | null;
   telefono: string | null;
   evaluadoraId: string | null;
@@ -262,7 +269,11 @@ export async function crearCandidato(c: CandidatoNuevo): Promise<{ id: string }>
 
   const persona = await insertar<{ id: string }>('personas', {
     empresa_id: pedido.empresa_id,
-    nombre: c.nombre,
+    // `nombre` guarda el completo, que es lo que muestran todas las
+    // pantallas; las dos partes van además en sus columnas.
+    nombre: nombreYApellido(c.nombre, c.apellido),
+    nombre_pila: c.nombre.trim(),
+    apellido: c.apellido.trim(),
     email: c.email,
     telefono: c.telefono,
     origen: c.origen,

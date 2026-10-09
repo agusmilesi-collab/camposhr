@@ -29,6 +29,7 @@ import { revalidateTag } from 'next/cache';
 import { patch, select } from '@/lib/supabase';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { escapar } from '@/lib/correo';
+import { partesDePersona } from '@/lib/personas';
 import { VISTA_PREVIA, calendarioDeLaEntrevista, icsDeLaEntrevista } from '@/lib/correo-candidato';
 
 export const runtime = 'nodejs';
@@ -44,7 +45,7 @@ type Fila = {
   fecha_entrevista: string | null;
   enlace_meet: string | null;
   asistencia_confirmada_el: string | null;
-  personas: { nombre: string } | null;
+  personas: { nombre: string; nombre_pila?: string | null; apellido?: string | null } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: { baterias: { duracion_min: number | null } | null } | null;
 };
@@ -67,7 +68,7 @@ async function buscar(token: string): Promise<Fila | null> {
   }
   const filas = await select<Fila>(
     'evaluaciones',
-    'select=id,estado,baja_el,fecha_entrevista,enlace_meet,asistencia_confirmada_el,personas(nombre),evaluadoras(nombre),pedidos(baterias(duracion_min))' +
+    'select=id,estado,baja_el,fecha_entrevista,enlace_meet,asistencia_confirmada_el,personas(nombre,nombre_pila,apellido),evaluadoras(nombre),pedidos(baterias(duracion_min))' +
       `&confirmar_token=eq.${token}&limit=1`
   );
   return filas[0] ?? null;
@@ -145,7 +146,7 @@ const noEsta = () =>
 
 /** "Listo, Lucía. Tu asistencia está confirmada": con el nombre, que es a quien se le contesta. */
 function listo(e: Fila): string {
-  const pila = e.personas?.nombre.trim().split(/\s+/)[0] ?? '';
+  const pila = partesDePersona(e.personas ?? { nombre: '' }).pila;
   return pila ? `Listo, ${pila}. Tu asistencia está confirmada` : 'Listo. Tu asistencia está confirmada';
 }
 

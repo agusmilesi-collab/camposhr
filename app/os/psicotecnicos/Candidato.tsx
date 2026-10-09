@@ -25,6 +25,7 @@ import { COLOR_ETAPA, RUTA, type Origen } from '@/lib/psicotecnicos-tipos';
 import type { PedidoOpcion } from './Agregar';
 import SoltarArchivo from '@/app/os/SoltarArchivo';
 import { paraInput } from '@/lib/hora';
+import { partesDePersona } from '@/lib/personas';
 
 /**
  * Lo que el cajón necesita saber del candidato.
@@ -37,7 +38,11 @@ export type DatosDelCandidato = {
   id: string;
   /** De qué lado vive esta fila. Decide a dónde va un guardado. */
   origen: Origen;
+  /** El nombre completo, como se muestra. */
   nombre: string;
+  /** Las dos partes, si la persona ya las tiene cargadas por separado. */
+  nombrePila?: string | null;
+  apellido?: string | null;
   empresa: string;
   puesto: string;
   pedidoId: string | null;
@@ -68,6 +73,7 @@ export default function Candidato({
   enLaFicha?: boolean;
   onCerrar: () => void;
 }) {
+  const partes = partesDePersona({ nombre: e.nombre, nombre_pila: e.nombrePila, apellido: e.apellido });
   const router = useRouter();
   const [, empezar] = useTransition();
   const [enviando, setEnviando] = useState(false);
@@ -197,17 +203,34 @@ export default function Candidato({
                 </select>
               </div>
 
-              <div className="os-campo-bloque os-campo-entero">
+              {/* Nombre y apellido en campos separados. A quien se cargó
+                  cuando era un solo campo se lo propone partido, para
+                  revisarlo y guardarlo bien de una vez. */}
+              <div className="os-campo-bloque">
                 <label className="os-etiqueta-campo" htmlFor="nombre">
-                  Nombre y apellido
+                  Nombre
                 </label>
                 <input
                   className="os-campo"
                   id="nombre"
                   name="nombre"
                   required
-                  maxLength={120}
-                  defaultValue={e.nombre}
+                  maxLength={80}
+                  defaultValue={partes.nombres}
+                />
+              </div>
+
+              <div className="os-campo-bloque">
+                <label className="os-etiqueta-campo" htmlFor="apellido">
+                  Apellido
+                </label>
+                <input
+                  className="os-campo"
+                  id="apellido"
+                  name="apellido"
+                  required
+                  maxLength={80}
+                  defaultValue={partes.apellido}
                 />
               </div>
 
