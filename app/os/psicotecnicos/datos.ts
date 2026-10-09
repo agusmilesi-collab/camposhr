@@ -1,7 +1,7 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { listarEvaluaciones, type Evaluacion } from '@/lib/psicotecnicos';
-import { SECCIONES, type Seccion } from '@/lib/psicotecnicos-tipos';
+import { SECCIONES, columnaDelTablero, type Seccion } from '@/lib/psicotecnicos-tipos';
 import { anotarAcceso } from '@/lib/accesos';
 import {
   baterias as listarBaterias,
@@ -96,8 +96,8 @@ export async function cuentasDeLaBarra(): Promise<Record<string, number>> {
  *
  * **Son las mismas reglas que arma `app/os/page.tsx` para dibujar esa columna,
  * y tienen que seguir siéndolo**: un número que no coincide con lo que se ve al
- * entrar no sirve. Lo que entra: las evaluaciones propias puestas en Hoy o con
- * entrevista hoy sin tomar, las propuestas que hay que seguir, el aviso de
+ * entrar no sirve. Lo que entra: las evaluaciones propias puestas en Hoy, las
+ * que hay que citar y nadie movió, las que tienen entrevista hoy sin tomar, las propuestas que hay que seguir, el aviso de
  * candidatos sin evaluadora (uno, sean los que sean) y los comprobantes de los
  * inquilinos del Centro que esperan su pago.
  */
@@ -112,7 +112,7 @@ async function cuantoHayHoy(filas: Evaluacion[]): Promise<number> {
       : enCurso.filter((p) => (yo.evaluadora ? (p.evaluadora ?? '').includes(yo.evaluadora) : false));
   const enHoy = mias.filter(
     (e) =>
-      e.tablero === 'hoy' ||
+      columnaDelTablero(e) === 'hoy' ||
       (diaDe(e.fechaEntrevista) === dia && (e.etapa === 'Por citar' || e.etapa === 'Por entrevistar'))
   ).length;
 

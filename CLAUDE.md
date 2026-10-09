@@ -845,9 +845,13 @@ Existe porque la lista "Psicotécnicos en curso" decía lo mismo todos los días
 era el estado del pipeline y no el del trabajo, y con una evaluación abierta en
 la mano lo que hace falta saber es qué agarrar cuando esa termine.
 
-**Sin columna guardada, una evaluación está en el backlog.** La columna se
-escribe solo al arrastrar, así lo que entra aparece sin que nadie lo mueva. Hoy
-es una elección deliberada: lo que se sacó del backlog para hacer en el día.
+**Sin columna guardada, una evaluación está en el backlog, salvo que haya que
+citarla: esa entra sola a Hoy** (`columnaDelTablero` en
+`lib/psicotecnicos-tipos.ts`, que comparten el tablero y el contador de la
+barra). Citar es escribirle a la persona y no se deja para después. La columna
+se escribe solo al arrastrar: una por citar que la evaluadora mueve queda donde
+la puso, y agendada vuelve al backlog. Para el resto, Hoy sigue siendo una
+elección deliberada: lo que se sacó del backlog para hacer en el día.
 
 **Lo agendado para hoy entra solo en Hoy, y sale pintado.** Una entrevista es
 una cita a una hora: no se elige cuándo hacerla, así que su tarjeta va a esa
