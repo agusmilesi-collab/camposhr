@@ -440,7 +440,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         {(e.modalidad === 'Online' || e.enlace || e.enlaceMeet) && (
           <div className="os-entrevista-videollamada">
             <span className="os-dato-rotulo">Videollamada</span>
-            <Enlace id={e.id} enlace={e.enlace} meet={e.modalidad === 'Online' ? e.enlaceMeet : null} />
+            <Enlace id={e.id} enlace={e.enlace} meet={e.modalidad === 'Online' ? e.enlaceMeet : null} confirmo={e.confirmo} />
           </div>
         )}
       </section>

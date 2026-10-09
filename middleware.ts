@@ -80,9 +80,10 @@ const RUTAS_DE_PRESENTACIONES = /^\/(presentaciones|pres)(\/|$)/;
 // destino de los códigos QR y de los enlaces que se le mandan: el cuestionario
 // en /c/<empresa>, el ciclo de encuentros en /ciclo/<empresa>, el test de
 // Raven en /raven/<token> y las láminas del Rorschach en /laminas/<token>,
-// cada uno con su endpoint.
+// cada uno con su endpoint. Y /confirmar/<token>, el botón del correo de la
+// entrevista online.
 const RUTAS_PUBLICAS =
-  /^\/(c|l|ciclo|laminas|api\/cuestionario|api\/ciclo|api\/raven|api\/laminas)\/|^\/raven(\/|$)/;
+  /^\/(c|l|ciclo|laminas|confirmar|api\/cuestionario|api\/ciclo|api\/raven|api\/laminas)\/|^\/raven(\/|$)/;
 
 export async function middleware(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase();

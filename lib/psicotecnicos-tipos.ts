@@ -226,6 +226,8 @@ export type Evaluacion = {
   modalidad: string | null;
   /** La sala de Meet de una entrevista online, si el calendario de la evaluadora está conectado. */
   enlaceMeet?: string | null;
+  /** El candidato confirmó la asistencia desde el correo de la entrevista online. */
+  confirmo?: boolean;
   fechaIngreso: string | null;
   fechaEntrevista: string | null;
   fechaEntrega: string | null;

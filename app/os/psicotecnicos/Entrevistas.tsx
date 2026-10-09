@@ -352,20 +352,7 @@ function Tarjeta({
             {/* La modalidad como pastilla de color: ámbar presencial, verde
                 online. Es lo que cambia lo que hay que preparar (la sala o el
                 enlace), y en gris al lado de la fecha se leía al final. */}
-            {/* Con la sala de Meet ya creada, la pastilla es la puerta: se
-                entra a la videollamada desde la tarjeta, sin ir a buscar el
-                enlace al calendario. */}
-            {e.modalidad === 'Online' && e.enlaceMeet ? (
-              <a
-                className="os-modalidad os-modalidad-enlace os-modalidad-meet"
-                href={e.enlaceMeet}
-                target="_blank"
-                rel="noreferrer"
-                title="Abrir la sala de Meet"
-              >
-                Online · Meet
-              </a>
-            ) : e.modalidad ? (
+            {e.modalidad ? (
               <span
                 className={`os-modalidad ${
                   e.modalidad === 'Presencial' ? 'os-modalidad-sala' : 'os-modalidad-enlace'
@@ -375,6 +362,21 @@ function Tarjeta({
               </span>
             ) : (
               <span className="os-dato-falta">sin definir</span>
+            )}
+            {/* Solo en las online, que son las que llevan el botón de
+                confirmar en el correo: en una presencial "sin confirmar" diría
+                que falta algo que nadie le pidió. */}
+            {e.modalidad === 'Online' && e.enlaceMeet && (
+              <span
+                className={`os-sello-estado ${e.confirmo ? 'os-verde' : 'os-gris'}`}
+                title={
+                  e.confirmo
+                    ? 'Confirmó la asistencia desde el correo.'
+                    : 'Todavía no tocó "Confirmar asistencia" en el correo.'
+                }
+              >
+                {e.confirmo ? 'Confirmó' : 'Sin confirmar'}
+              </span>
             )}
           </div>
           {/* Lleva a la hoja en vez de dar la entrevista por tomada: la

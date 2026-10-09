@@ -78,6 +78,7 @@ type Fila = {
   mensaje: string | null;
   modalidad: string | null;
   enlace_meet: string | null;
+  asistencia_confirmada_el: string | null;
   fecha_ingreso: string | null;
   fecha_entrevista: string | null;
   fecha_entrega: string | null;
@@ -113,7 +114,7 @@ type Fila = {
 };
 
 const CAMPOS =
-  'id,estado,mensaje,modalidad,enlace_meet,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
+  'id,estado,mensaje,modalidad,enlace_meet,asistencia_confirmada_el,fecha_ingreso,fecha_entrevista,fecha_entrega,' +
   'bender_administrado,grafico_2_personas_administrado,benziger_administrado,con_benziger,' +
   'recomendacion,informe_path,baja_el,ciudad,' +
   'ingreso,seguimiento_al,seguimiento_resultado,facturado,pagado,tablero,prioridad,' +
@@ -146,6 +147,7 @@ export async function listar(): Promise<Evaluacion[]> {
     mensaje: f.mensaje,
     modalidad: f.modalidad,
     enlaceMeet: f.enlace_meet,
+    confirmo: Boolean(f.asistencia_confirmada_el),
     fechaIngreso: f.fecha_ingreso,
     fechaEntrevista: f.fecha_entrevista,
     fechaEntrega: f.fecha_entrega,

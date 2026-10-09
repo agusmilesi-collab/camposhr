@@ -1527,17 +1527,53 @@ crea el evento, lo mueve o lo borra. Mira cómo quedó y no qué se tocó, igual
 que los avisos por correo.
 
 **Si la entrevista es online, el evento nace con una sala de Meet**
-(`evaluaciones.enlace_meet`). Se ve en la tarjeta de Agendadas y en la ficha
-(pestaña Entrevista, "Videollamada", donde reemplaza al campo para pegar un
-enlace a mano, que queda para la online sin calendario conectado), y se le manda al
+(`evaluaciones.enlace_meet`). Se entra desde la ficha (pestaña Entrevista,
+"Videollamada", donde el botón reemplaza al campo para pegar un enlace a mano,
+que queda para la online sin calendario conectado); en la tarjeta de Agendadas
+la modalidad es solo la etiqueta. Y se le manda al
 candidato con el día y la hora (`lib/correo-candidato.ts`, desde
 `entrevistas@camposhr.com`), una vez por fecha y modalidad
 (`evaluaciones.aviso_candidato_fecha` y `aviso_candidato_modalidad`).
 Reprogramar conserva la sala, y pasar de online a presencial el mismo día
 vuelve a escribirle, porque cambió por dónde entra. En una
-presencial el correo dice la dirección del consultorio (`lib/consultorio.ts`)
-y no depende de Google. Una online sin calendario conectado no le escribe al
+presencial el correo dice la dirección del consultorio (`lib/consultorio.ts`),
+con un botón que abre la ficha del lugar en Google Maps (`CONSULTORIO_MAPA`,
+un enlace fijo: el mapa dibujado dentro del correo pide una clave paga de
+Google), y no depende de Google Calendar. Una online sin calendario conectado no le escribe al
 candidato: no hay enlace que mandar.
+
+**El correo de la online pide confirmar la asistencia.** Google Meet no manda
+su invitación porque el correo sale de acá, así que arriba del botón de entrar
+va "Confirmar asistencia", que abre `camposhr.com/confirmar/<token>`
+(`app/confirmar/[token]/route.ts`, token en `evaluaciones.confirmar_token`).
+Para la persona es un solo toque: la página abre directo en "Listo, Lucía. Tu
+asistencia está confirmada" con el tilde verde y manda la confirmación por detrás. La confirmación va en un POST
+que dispara el navegador y no en la apertura del enlace, porque los servicios
+de correo abren los enlaces para revisarlos y dejarían todas confirmadas. Queda en
+`asistencia_confirmada_el`, se ve como "Confirmó" o "Sin confirmar" en la
+tarjeta de Agendadas y en la ficha, y se borra si la entrevista cambia de
+fecha. A la evaluadora no se le manda correo: con verlo en el OS alcanza
+(decisión de Agustín, 9/10/2026). SQL en `supabase/entrevista-confirmacion.sql`.
+
+**El correo al candidato da el WhatsApp de su evaluadora**, con el ícono, en
+la última línea ("Por cualquier duda, escribile…") (`evaluadoras.telefono`, SQL en
+`supabase/evaluadoras-telefono.sql`). El ícono es `public/correo/whatsapp.png`
+y el correo lo pide siempre a camposhr.com: Gmail no dibuja SVG ni imágenes
+incrustadas, y una imagen de localhost no carga en ninguna casilla.
+No hay pantalla que lo edite: se carga en la base, igual que su correo. Sin
+número cargado, el correo solo ofrece responder.
+
+**El candidato tiene "Agregar a mi Google Calendar"** en las dos modalidades
+(`calendarioDeLaEntrevista` en `lib/correo-candidato.ts`). En la presencial
+va en el correo, al lado del mapa; en la online va en la página que se abre al
+confirmar, debajo del tilde, como un solo botón "Agregar a mi calendario"
+(`/confirmar/<token>?agendar=1`): en un iPhone o iPad baja la entrevista como
+archivo .ics, que abre su calendario, y en el resto lleva a Google Calendar.
+`?ics=1` fuerza el archivo. El de Google es un enlace que
+abre su calendario con el día, la duración de la batería y el Meet o la
+dirección ya cargados. Confirmar no le agenda nada, y no se lo suma como
+invitado al evento de la evaluadora porque Google le mandaría su propia
+invitación, que es el segundo correo que se quiso evitar.
 
 **Al conectar entran las entrevistas ya agendadas para adelante, y a esos
 candidatos no se les escribe** (`ponerAlDia`): ya coordinaron cómo se conectan
