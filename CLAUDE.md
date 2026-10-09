@@ -521,21 +521,22 @@ normalizaron el 25/8/2026.
 `protocoloAlcanza()` en `lib/competencias.ts`. Las competencias que salen del
 test de manchas se calculan solo si el protocolo puede sostenerlas: menos de
 catorce respuestas en Rorschach (la regla de Exner, por debajo no se interpreta
-y se vuelve a tomar), menos de seis en Zulliger, o Lambda por encima de uno.
+y se vuelve a tomar) o menos de ocho en Zulliger (el mínimo que usan las
+psicólogas; estuvo en seis hasta el 9/10/2026).
 
-**Lambda alto es el corte que importa y el que faltaba.** Pasado uno el estilo
-es evitativo: la persona simplifica lo que ve, y los indicadores de emoción y de
-vínculo quedan vacíos porque el protocolo no los muestra, no porque el rasgo no
-esté. Sin ese corte, la ausencia de indicadores negativos se leía como un buen
-resultado.
+**Lambda alto no frena.** Entre agosto y el 9/10/2026 un Lambda por encima de
+0,99 dejaba las competencias sin puntaje, con el argumento de que en un
+protocolo evitativo los indicadores quedan vacíos porque el protocolo no los
+muestra. Las psicólogas lo sacaron: el estilo evitativo es un dato sobre cómo
+la persona enfrenta la carga emocional y no invalida el resto. Lambda cuenta
+como indicador de Autogestión y la lectura `lambda-alto` lo dice en el informe.
+Medido sobre 16 protocolos evitativos que ellas informaron a mano, sin el freno
+el motor cae en su misma banda en 88 % de los casos en Control emocional y da
+Alto en 2 de 16 contra 1 de 16 de ellas.
 
-Se vio comparando contra los informes escritos a mano: en un protocolo con
-Lambda 1,4 el motor daba 67 en habilidad interpersonal y 100 en proactividad,
-mientras la psicóloga escribía que las habilidades interpersonales estaban por
-debajo de lo esperado. El mismo motor, contra un protocolo de veintiuna
-respuestas y Lambda normal, coincidió con ella en las cinco competencias, todas
-en la misma banda. De cuarenta y dos protocolos migrados, cinco caen bajo el
-corte.
+**Un indicador en nivel bajo vale 25 y no 0** (`VALOR`, desde el 9/10/2026, por
+decisión de ellas): fuera de rango resta, pero no anula. El piso de toda
+competencia es 25.
 
 **Y el informe dice por qué.** "Sin datos" a secas invita a pensar que se
 olvidaron de cargar algo; lo que pasa es que lo cargado no permite afirmar nada,

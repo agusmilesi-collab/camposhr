@@ -606,7 +606,7 @@ export default function Pesos({
                               Positivo <span className="os-banda-vale">100</span>
                             </th>
                             <th className="os-banda-baja">
-                              Negativo <span className="os-banda-vale">0</span>
+                              Negativo <span className="os-banda-vale">25</span>
                             </th>
                           </>
                         ) : (
@@ -618,7 +618,7 @@ export default function Pesos({
                               Medio <span className="os-banda-vale">50</span>
                             </th>
                             <th className="os-banda-baja">
-                              Bajo <span className="os-banda-vale">0</span>
+                              Bajo <span className="os-banda-vale">25</span>
                             </th>
                           </>
                         )}

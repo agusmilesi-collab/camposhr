@@ -600,11 +600,16 @@ export const TEXTOS = {
    * bajo esfuerzo mental, y dicho así en un informe de selección se lee como
    * un juicio sobre la persona más que como algo accionable. Definido por las
    * psicólogas el 10/9/2026.
+   *
+   * **Desde el 9/10/2026 no se dispara.** Las psicólogas la sacaron del
+   * informe: con D alto lo que se lee es cómo dan W y Dd, que tienen sus
+   * propias lecturas. Queda escrita para que un texto guardado con esta clave
+   * siga siendo válido.
    */
   'd-alto': {
     area: 'Cómo procesa la información',
     indice: 'D',
-    cuando: 'D por encima del 60 % de las localizaciones (Zulliger: más de 6)',
+    cuando: 'No se informa: con D alto se lee cómo dan W y Dd',
     dice: [''],
     recomienda: [
       'Cuando sea necesario profundizar en una situación, brindarle ayuda para mirar más allá de la información evidente y considerar otros datos relevantes antes de avanzar.',
@@ -2328,7 +2333,7 @@ export const TEXTOS = {
     indice: 'EA',
     corte: { op: 'mayor', valor: 11, decimales: 0, ademas: 'con AdjD positivo' },
     zulliger: {
-      corte: { op: 'mayor', valor: 5, decimales: 0 },
+      corte: { op: 'mayor', valor: 5, decimales: 0, ademas: 'con EA − es desde −1,5' },
       dice: [
         'Cuenta con herramientas sólidas para enfrentar situaciones de tensión elevada, suficientes para mantener el control emocional.',
         'Dispone de herramientas sólidas para sostener situaciones de tensión elevada y mantener el control emocional.',
@@ -2345,7 +2350,7 @@ export const TEXTOS = {
   'ea-adecuado': {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
-    cuando: 'entre los dos cortes de EA, con AdjD en cero',
+    cuando: 'entre los dos cortes de EA, con AdjD en cero (Zulliger: con EA − es desde −1,5)',
     zulliger: {
       dice: [
         'Las herramientas para enfrentar situaciones de tensión elevada se encuentran dentro del rango esperado: puede tolerar situaciones tensas y responder adecuadamente.',
@@ -2668,6 +2673,10 @@ export function bandasPorIndice(
     else b.maximo = b.maximo === null ? v : Math.min(b.maximo, v);
     porIndice[indice] = b;
   }
+  /* EA por encima de su banda son más herramientas de las esperadas, que es un
+     hallazgo a favor: va con la flecha y sin el rojo, en los dos tests. Lo
+     pidieron las psicólogas el 9/10/2026 con un Zulliger de EA 5,5. */
+  if (porIndice.EA) porIndice.EA.techoSinAviso = true;
   return porIndice;
 }
 
@@ -2924,10 +2933,9 @@ export function leer(
       } else if (w > 5) {
         sumar('w-alto', marca);
       }
+      // D por encima de lo esperado no se informa: ver `d-alto`.
       if (dLoc < 3) {
         sumar('d-bajo', marca);
-      } else if (dLoc > 6) {
-        sumar('d-alto', marca);
       }
       if (ddLoc > 2) {
         sumar('dd-alto', `Dd ${ddLoc}`);
@@ -2953,12 +2961,9 @@ export function leer(
         // a favor: la lectura lo dice y no recomienda nada.
         sumar('w-alto', marca);
       }
+      // D por encima de lo esperado no se informa: ver `d-alto`.
       if (!dOk && dPct < 0.6) {
         sumar('d-bajo', marca);
-      } else if (!dOk && dPct > 0.6) {
-        // D por encima de lo esperado también se informa en Rorschach, como en
-        // Zulliger: se queda en lo evidente y no profundiza.
-        sumar('d-alto', marca);
       }
       if (!ddOk) {
         sumar('dd-alto', `Dd ${ddLoc}`);
@@ -3353,12 +3358,21 @@ export function leer(
     sumar('adjd-sobrecarga', dd(d, adjd));
   }
 
+  /* EA dice cuántas herramientas tiene la persona; si le alcanzan lo dice otra
+     cuenta, que compara esas herramientas con la tensión que registra. En
+     Rorschach es AdjD y en Zulliger la diferencia EA − es. Por eso las dos
+     lecturas que afirman que el control alcanza piden las dos cosas.
+     Hasta el 9/10/2026 en Zulliger se miraba AdjD, que ahí no existe y llega
+     en cero: "ea-adecuado" salía con cualquier EA − es y "ea-alto" no salía
+     nunca. Lo marcaron las psicólogas ese día. */
   const ea = n(s, 'control_estres', 'EA');
+  const alcanza =
+    test === 'Zulliger' ? n(s, 'control_estres', 'dif_EA_es') >= c('adjd-sobrecarga') : null;
   if (ea < c('ea-bajo')) {
     sumar('ea-bajo', `EA ${dec(ea)}`);
-  } else if (ea > c('ea-alto') && adjd > 0) {
+  } else if (ea > c('ea-alto') && (alcanza ?? adjd > 0)) {
     sumar('ea-alto', `EA ${dec(ea)}`);
-  } else if (ea >= c('ea-bajo') && ea <= c('ea-alto') && adjd === 0) {
+  } else if (ea >= c('ea-bajo') && ea <= c('ea-alto') && (alcanza ?? adjd === 0)) {
     sumar('ea-adecuado', `EA ${dec(ea)}`);
   }
 
@@ -3404,7 +3418,6 @@ export function porArea(lecturas: Lectura[]): { area: string; lecturas: Lectura[
 export type Senal = 'destacada' | 'esperada' | 'desarrollar';
 
 const DESTACADAS = new Set([
-  'localizacion-ok',
   'w-alto',
   'zf-alto',
   'adjd-positivo',
@@ -3415,6 +3428,9 @@ const DESTACADAS = new Set([
 ]);
 
 const ESPERADAS = new Set([
+  // W, D y Dd dentro de su rango es lo esperado y no una fortaleza: salía en
+  // "desarrollo destacado" y las psicólogas la pasaron acá el 9/10/2026.
+  'localizacion-ok',
   'd-adjd-cero',
   'ea-adecuado',
   'eb-introversivo',

@@ -478,7 +478,7 @@ const COMPETENCIAS = [
   'Control emocional',
   'Habilidad interpersonal',
   'Proactividad',
-  'Capacidad intelectual',
+  'Habilidad cognitiva',
   'Liderazgo',
 ];
 /** De la que menos condiciones pone a la que más. */

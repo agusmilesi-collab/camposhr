@@ -612,7 +612,7 @@ function respaldosDe(
     const comparable = banda && Number.isFinite(numero);
     const dentro = comparable
       ? (banda.minimo === null || numero >= banda.minimo) &&
-        (banda.maximo === null || numero <= banda.maximo)
+        (banda.maximo === null || numero <= banda.maximo || banda.techoSinAviso === true)
       : null;
 
     const n = (x: number) => x.toFixed(banda?.decimales ?? 0).replace('.', ',');

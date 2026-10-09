@@ -16,9 +16,10 @@
  * cinco competencias y el Rorschach seis: Liderazgo no está en la lista y queda
  * como estaba, a la espera de que digan si sigue.
  *
- * **El Raven es un indicador más de Capacidad intelectual**, junto con los
- * índices del protocolo. Hasta el 17/9/2026 era una competencia aparte,
- * Habilidad cognitiva, que salía solo de él.
+ * **El Raven es un indicador más de Habilidad cognitiva**, junto con los
+ * índices del protocolo. Hasta el 17/9/2026 la competencia salía solo de él.
+ * Entre el 17/9 y el 9/10/2026 se llamó Capacidad intelectual: las psicólogas
+ * eligieron Habilidad cognitiva, que es el nombre de sus informes y abarca más.
  */
 
 import { bandaDeAfr, hEsperado, pEsperado, type SumarioCrudo } from '@/lib/redacciones';
@@ -41,17 +42,24 @@ export { numerosDe, comoNumero, reglaDeBanda, conDireccion, PESO_MAXIMO, type Es
 /**
  * Cuánto vale cada nivel en la escala de salida.
  *
- * Bajo cero, medio cincuenta, alto cien. El puntaje de la competencia es el
- * promedio de sus indicadores, cada uno por su peso.
+ * Bajo veinticinco, medio cincuenta, alto cien. El puntaje de la competencia es
+ * el promedio de sus indicadores, cada uno por su peso.
+ *
+ * **El bajo vale 25 y no 0 desde el 9/10/2026**, por decisión de las
+ * psicólogas: un indicador fuera de rango resta, pero no anula. Con cero, tres
+ * indicadores fuera de rango sobre seis mandaban la competencia a la banda baja
+ * aunque los otros tres estuvieran perfectos. Medido contra 73 informes
+ * escritos por ellas: la coincidencia de banda pasó de 48 % a 62 % y la
+ * diferencia media de 11,2 a 6,0 puntos. El piso de toda competencia es 25.
  *
  * **Antes había dos tablas de conversión copiadas de las hojas de cálculo** y
  * hacían tres cosas raras, las tres medidas: quien tenía todos los indicadores
  * en medio sacaba 70, que se informa como Alto; quien los tenía todos en bajo
  * sacaba 30, así que el piso no era cero; y solo existían once resultados
  * posibles, en saltos de cinco y diez puntos. Con el promedio, todo en medio da
- * cincuenta y todo en bajo da cero.
+ * cincuenta.
  */
-const VALOR: Record<1 | 2 | 3, number> = { 1: 0, 2: 50, 3: 100 };
+const VALOR: Record<1 | 2 | 3, number> = { 1: 25, 2: 50, 3: 100 };
 
 export type Contexto = {
   /** Percentil del Raven, de 0 a 100. Null si no rindió. */
@@ -833,7 +841,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     ],
   },
   {
-    competencia: 'Capacidad intelectual',
+    competencia: 'Habilidad cognitiva',
     mide: MIDE.intelectual,
     indicadores: [
       XA_WDA,
@@ -956,7 +964,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
     ],
   },
   {
-    competencia: 'Capacidad intelectual',
+    competencia: 'Habilidad cognitiva',
     mide: MIDE.intelectual,
     indicadores: [XA_WDA, X_MENOS, { ...PSV, escala: binario(0, false) }, RAVEN],
   },
@@ -1019,7 +1027,7 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       'Índice de egocentrismo': 1,
     },
     'Proactividad': { 'Ma : Mp': 2, R: 2, 'DQ+': 2, Zf: 2, Fd: 1 },
-    'Capacidad intelectual': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
+    'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
     'Liderazgo': {
       Potencial: 3,
       W: 2,
@@ -1053,7 +1061,7 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
     // R pesa menos acá que en Rorschach: con diez respuestas, una sola lo
     // cambia de banda, y es el indicador que más movía el puntaje.
     'Proactividad': { Fd: 2, 'DQ+': 2, Zf: 2, R: 1, 'Ma : Mp': 1 },
-    'Capacidad intelectual': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
+    'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
   },
 };
 
@@ -1345,31 +1353,10 @@ function rangoRaven(raw: number, rangos?: Rango[]): string | undefined {
  * Cuántas respuestas hacen falta para que el protocolo diga algo.
  *
  * En Rorschach son catorce, que es la regla de Exner: por debajo el protocolo
- * no se interpreta y se vuelve a tomar. En Zulliger son tres láminas y lo
- * esperable son seis a doce respuestas, así que el piso es seis.
+ * no se interpreta y se vuelve a tomar. En Zulliger el mínimo es ocho, que es
+ * el que usan las psicólogas (corregido por ellas el 9/10/2026; estaba en seis).
  */
-const R_MINIMO: Record<string, number> = { Rorschach: 14, Zulliger: 6 };
-
-/**
- * Desde qué Lambda el protocolo deja de poder afirmar lo que no aparece.
- *
- * Lambda es la proporción de respuestas de forma pura. Pasado uno, el estilo es
- * evitativo: la persona simplifica lo que ve y los indicadores de emoción y de
- * vínculo quedan vacíos **porque el protocolo no los muestra**, no porque el
- * rasgo no esté.
- *
- * Sin este corte, la ausencia de indicadores negativos se leía como un buen
- * resultado. Se vio comparando contra los informes escritos a mano: en un
- * protocolo con Lambda 1,4 el motor daba 67 en habilidad interpersonal y 100 en
- * proactividad, mientras la psicóloga escribía que las habilidades
- * interpersonales estaban por debajo de lo esperado. El mismo motor, contra un
- * protocolo de veintiuna respuestas y Lambda normal, coincidió con ella en las
- * cinco competencias.
- */
-// El mismo corte con el que el diccionario nombra el estilo evitativo: lo
-// esperado llega hasta 0,99 y de ahí para arriba el protocolo simplifica.
-// Definido por las psicólogas el 9/9/2026.
-const LAMBDA_MAXIMO = 0.99;
+const R_MINIMO: Record<string, number> = { Rorschach: 14, Zulliger: 8 };
 
 /**
  * Si el protocolo alcanza para puntuar competencias, y si no, por qué no.
@@ -1377,6 +1364,16 @@ const LAMBDA_MAXIMO = 0.99;
  * Es lo primero que hay que mirar: un protocolo que no alcanza no da un puntaje
  * malo, da un puntaje que no significa nada, y esos son los que se leen como si
  * significaran algo.
+ *
+ * **Lambda alto ya no frena.** Hasta el 9/10/2026 un Lambda por encima de 0,99
+ * dejaba las competencias sin puntaje. Las psicólogas lo sacaron: el estilo
+ * evitativo es un dato sobre cómo la persona enfrenta la carga emocional y no
+ * invalida el resto del protocolo. Lambda sigue contando como indicador de
+ * Autogestión y la lectura `lambda-alto` lo sigue diciendo en el informe.
+ * Medido sobre los 16 protocolos evitativos que ellas informaron a mano: sin el
+ * freno el motor cae en la misma banda que ellas en 88 % de los casos en
+ * Control emocional y en 75 % en Habilidad interpersonal, y da Alto en 2 de 16
+ * contra 1 de 16 de ellas, así que no infla.
  */
 export function protocoloAlcanza(
   s: SumarioCrudo,
@@ -1389,13 +1386,6 @@ export function protocoloAlcanza(
     return {
       alcanza: false,
       motivo: `el protocolo tiene ${r} respuestas y el mínimo para ${test} es ${minimo}`,
-    };
-  }
-  const lambda = num(s, 'cabecera', 'Lambda');
-  if (lambda !== null && lambda > LAMBDA_MAXIMO) {
-    return {
-      alcanza: false,
-      motivo: `Lambda ${String(lambda).replace('.', ',')}: el protocolo es evitativo y lo que no aparece no se puede leer como ausente`,
     };
   }
   return { alcanza: true };
@@ -1429,9 +1419,9 @@ export function calcularCompetencias(
       };
     });
 
-    // Con el protocolo corto o evitativo no se puntúa ninguna: el número
-    // saldría de indicadores que están en cero porque el protocolo no los
-    // muestra, y eso se lee al revés de lo que pasa.
+    // Con el protocolo corto no se puntúa ninguna: el número saldría de
+    // indicadores que están en cero porque el protocolo no los muestra, y eso
+    // se lee al revés de lo que pasa.
     if (!base.alcanza) {
       return {
         nombre: c.competencia,
