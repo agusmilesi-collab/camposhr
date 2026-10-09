@@ -1562,7 +1562,9 @@ que los avisos por correo.
 "Azul Casaccia · Macro Agro · B2 + bzg · Online" (`tituloDe`). Es lo que la
 evaluadora lee en la grilla del calendario sin abrir el evento; el puesto, el
 teléfono y el enlace a la ficha van en la descripción. El título entra en la
-huella, así que un cambio de batería o de modalidad actualiza el evento.
+huella, así que un cambio de batería o de modalidad actualiza el evento. En la
+online, el enlace de Meet va además escrito en el lugar y en la descripción
+del evento.
 
 **Si la entrevista es online, el evento nace con una sala de Meet**
 (`evaluaciones.enlace_meet`). Se entra desde la ficha (pestaña Entrevista,

@@ -327,10 +327,19 @@ function huellaDe(e: Fila): string {
     minutosDe(e),
     esOnline(e) ? '' : CONSULTORIO,
     tituloDe(e),
+    // El enlace de Meet escrito en el evento: está en la huella para que los
+    // eventos de antes de que se escribiera lo reciban.
+    esOnline(e) ? 'meet-escrito' : '',
   ].join('|');
 }
 
-function cuerpoDe(e: Fila): Record<string, unknown> {
+/**
+ * `meet` es el enlace de la sala, cuando la entrevista es online y ya existe.
+ * Va escrito en el lugar y en la descripción además del botón de Meet que
+ * pone Google: en la grilla y en el teléfono el botón no siempre se ve, y el
+ * enlace escrito se puede copiar para pasárselo al candidato.
+ */
+function cuerpoDe(e: Fila, meet: string | null = null): Record<string, unknown> {
   const inicio = new Date(e.fecha_entrevista as string);
   const fin = new Date(inicio.getTime() + minutosDe(e) * 60_000);
   const puesto = e.pedidos?.puesto?.trim() ?? '';
@@ -338,6 +347,7 @@ function cuerpoDe(e: Fila): Record<string, unknown> {
   const renglones = [
     [puesto, empresa].filter(Boolean).join(' · '),
     e.modalidad ? `Modalidad: ${e.modalidad}` : '',
+    meet ? `Meet: ${meet}` : '',
     e.personas?.telefono ? `Teléfono: ${e.personas.telefono}` : '',
     e.personas?.email ? `Correo: ${e.personas.email}` : '',
     '',
@@ -348,9 +358,10 @@ function cuerpoDe(e: Fila): Record<string, unknown> {
     description: renglones.filter((r, n) => r !== '' || n === renglones.length - 2).join('\n'),
     start: { dateTime: inicio.toISOString(), timeZone: ZONA },
     end: { dateTime: fin.toISOString(), timeZone: ZONA },
-    // El lugar va solo en la presencial. En la online se vacía, por si la
-    // entrevista cambió de modalidad y el evento lo traía.
-    location: e.modalidad === 'Presencial' ? CONSULTORIO : '',
+    // El lugar es el consultorio en la presencial y el enlace de Meet en la
+    // online. Sin ninguno de los dos se vacía, por si la entrevista cambió de
+    // modalidad y el evento traía el anterior.
+    location: e.modalidad === 'Presencial' ? CONSULTORIO : meet ?? '',
     // Un evento que ella borró a mano queda "cancelado" del lado de Google:
     // si después se reprograma en el OS, vuelve a aparecer.
     status: 'confirmed',
@@ -446,7 +457,7 @@ export async function sincronizarCalendario(evaluacionId: string): Promise<void>
     let evento: Evento | null = null;
     if (e.calendario_evento_id) {
       const cuerpo = {
-        ...cuerpoDe(e),
+        ...cuerpoDe(e, esOnline(e) ? e.enlace_meet : null),
         // La sala se pide solo si falta y se saca si la entrevista dejó de
         // ser online. Reprogramar no la toca: el enlace que ya tiene el
         // candidato sigue sirviendo.
@@ -472,11 +483,19 @@ export async function sincronizarCalendario(evaluacionId: string): Promise<void>
       if (!evento) return;
     }
 
+    // La sala recién creada trae su enlace en la respuesta: hasta acá el
+    // evento no podía decirlo, así que se escribe en una segunda pasada.
+    const meet = esOnline(e) ? evento.hangoutLink ?? e.enlace_meet ?? null : null;
+    if (meet && meet !== e.enlace_meet) {
+      const { description, location } = cuerpoDe(e, meet);
+      await llamar(acceso, 'PATCH', evento.id, { description, location });
+    }
+
     await patch('evaluaciones', `id=eq.${e.id}`, {
       calendario_evento_id: evento.id,
       calendario_evaluadora_id: e.evaluadora_id,
       calendario_huella: huella,
-      enlace_meet: esOnline(e) ? evento.hangoutLink ?? e.enlace_meet ?? null : null,
+      enlace_meet: meet,
     });
   } catch (err) {
     console.error('[google] no se pudo sincronizar el calendario', err);
