@@ -17,6 +17,7 @@ import { BENZIGER_USD, dolarTarjeta, fechaDePrecio, precioA, type Precio } from 
 import { llevaBenziger } from '@/lib/benziger';
 import { verFactura } from '@/lib/facturas';
 import { conceptoDe } from '@/lib/facturas-tipos';
+import { puestoConCiudad } from '@/lib/pedido-campos';
 import { REFERENCIA_EN_LA_HOJA, type FilaOrden, type Orden } from '@/lib/orden-compra-tipos';
 
 export * from '@/lib/orden-compra-tipos';
@@ -169,7 +170,7 @@ type FilaOrdenGuardada = {
     detalle: string | null;
     nota: string | null;
     importe: string | number | null;
-    evaluaciones: { pagado: boolean | null } | null;
+    evaluaciones: { pagado: boolean | null; ciudad: string | null } | null;
   }[];
 };
 
@@ -182,7 +183,7 @@ export async function verOrden(clave: string): Promise<Orden | null> {
     'select=id,numero,token,fecha,total,empresas(nombre,razon_social),' +
       'solicitante:contactos!solicitante_id(nombre,cargo),' +
       'pedidos(solicitante:contactos!solicitante_id(nombre,cargo)),' +
-      'orden_items(posicion,concepto,detalle,nota,importe,evaluaciones(pagado))' +
+      'orden_items(posicion,concepto,detalle,nota,importe,evaluaciones(pagado,ciudad))' +
       `&${filtro}&limit=1`
   );
   if (!o) return null;
@@ -202,7 +203,13 @@ export async function verOrden(clave: string): Promise<Orden | null> {
     estado: items.length > 0 && pagas ? 'Pagado' : 'Pendiente de pago',
     referencia: null,
     filas: items.map((i) => ({
-      concepto: i.concepto,
+      // En los clientes que piden el mismo puesto para varias ciudades, el
+      // renglón del perfil dice para cuál es: "Perfil Cardiólogo Bariloche".
+      // Se lee de la evaluación y no se guarda en el renglón, así una ciudad
+      // corregida después también corrige el papel.
+      concepto: i.concepto.startsWith('Perfil ')
+        ? puestoConCiudad(i.concepto, i.evaluaciones?.ciudad)
+        : i.concepto,
       detalle: i.detalle ?? '',
       nota: i.nota ?? '',
       importe: i.importe === null ? null : Number(i.importe),
