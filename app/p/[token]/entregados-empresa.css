@@ -1,0 +1,53 @@
+/*
+ * La columna Empresa de la tabla de entregados, que sale solo en el portal de
+ * un grupo de empresas (Macro Agro, JHB, Campo Simple): cada pedido dice de
+ * cuál es en su propia columna, y no pegado al puesto.
+ *
+ * Va en su archivo, junto a la tabla que la usa. Los anchos son los de la
+ * tabla de siempre con una columna más, entre el pedido y el candidato.
+ */
+.tabla.entregados .c-empresa {
+  min-width: 0;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 621px) {
+  .tabla.entregados .tr.con-empresa {
+    grid-template-columns:
+      52px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.95fr)
+      116px 106px 96px;
+  }
+  .tabla.entregados .tr.con-empresa.sin-cobro {
+    grid-template-columns:
+      52px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.95fr)
+      116px 106px;
+  }
+  .tabla.entregados .tr.con-empresa.sin-informe {
+    grid-template-columns:
+      52px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.95fr)
+      116px 96px;
+  }
+  .tabla.entregados .tr.con-empresa.sin-informe.sin-cobro {
+    grid-template-columns:
+      52px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.95fr)
+      116px;
+  }
+  .tabla.entregados .c-empresa {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* En el teléfono va en su renglón, con el rótulo delante, como el pedido. */
+@media (max-width: 620px) {
+  .tabla.entregados .c-empresa {
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .tabla.entregados .c-empresa[data-label]::before {
+    content: attr(data-label) ': ';
+    color: var(--muted);
+  }
+}
