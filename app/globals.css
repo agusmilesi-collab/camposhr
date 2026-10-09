@@ -11628,3 +11628,20 @@ a.pedir-volver-link {
     grid-template-columns: 1fr auto;
   }
 }
+
+/* En el teléfono, el pedido en una sola columna: el ancho fijo del resumen,
+   escrito más abajo en la hoja que el corte de mil píxeles, le ganaba y
+   dejaba el formulario y el resumen apretados lado a lado. La fila del
+   candidato pasa a un campo por renglón. */
+@media (max-width: 1000px) {
+  .pedir-cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pedir-resumen {
+    position: static;
+  }
+  .pedir-tres.pedir-sin-mail,
+  .pedir-tres.pedir-sin-mail.con-ciudad {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
