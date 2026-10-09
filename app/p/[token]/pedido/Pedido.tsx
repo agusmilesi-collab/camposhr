@@ -66,6 +66,8 @@ type Fila = {
   ciudad: string;
   /** Si eligió "Otra ciudad" y la escribe a mano. */
   otraCiudad: boolean;
+  /** Si el cliente necesita a este candidato antes que a los demás. */
+  prioridadAlta: boolean;
 };
 
 /** La ciudad que el desplegable propone de entrada. */
@@ -84,6 +86,7 @@ function vacia(id: number): Fila {
     desdeCv: false,
     ciudad: '',
     otraCiudad: false,
+    prioridadAlta: false,
   };
 }
 
@@ -494,6 +497,7 @@ export default function Pedido({
           cuerpo.set(`mail-${i}`, f.mail.trim());
           if (f.cv) cuerpo.set(`cv-${i}`, f.cv);
           if (conCiudad) cuerpo.set(`ciudad-${i}`, ciudadDe(f));
+          if (f.prioridadAlta) cuerpo.set(`prioridad-${i}`, 'alta');
         });
 
       const r = await fetch('/api/pedidos', { method: 'POST', body: cuerpo });
@@ -1167,6 +1171,23 @@ export default function Pedido({
                         />
                       )}
                     </div>
+                    {/* Si este candidato va antes que los demás: es de cada
+                        uno y no del pedido, porque en la misma carga puede
+                        haber uno que apura y otro que no. Un interruptor chico
+                        y apagado de entrada: es la excepción, y con un Sí/No
+                        en cada fila pesaba tanto como el nombre. */}
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={f.prioridadAlta}
+                      className={`pedir-prioridad${f.prioridadAlta ? ' si' : ''}`}
+                      onClick={() => cambiar(f.id, { prioridadAlta: !f.prioridadAlta })}
+                    >
+                      <span className="pedir-prioridad-riel" aria-hidden="true">
+                        <span className="pedir-prioridad-perilla" />
+                      </span>
+                      Prioridad alta
+                    </button>
                   </div>
                 ))}
 
@@ -1205,7 +1226,7 @@ export default function Pedido({
                   rows={3}
                   maxLength={2000}
                   value={comentarios}
-                  placeholder="Urgencias, disponibilidad de los candidatos, lo que sea."
+                  placeholder="Alguna aclaración o comentario"
                   onChange={(e) => setComentarios(e.target.value)}
                 />
               </section>
