@@ -23,6 +23,7 @@
  * `GOOGLE_CLIENT_SECRET`; sin ellas no se hace nada y el resto sigue igual.
  */
 
+import { llevaBenziger } from '@/lib/benziger';
 import 'server-only';
 import { patch, select, upsert } from '@/lib/supabase';
 import { CONSULTORIO } from '@/lib/consultorio';
@@ -251,18 +252,23 @@ type Fila = {
   calendario_evaluadora_id: string | null;
   calendario_huella: string | null;
   enlace_meet: string | null;
+  con_benziger: boolean | null;
+  benziger_administrado: boolean | null;
   personas: { nombre: string; telefono: string | null; email: string | null } | null;
   pedidos: {
     puesto: string;
+    con_benziger: boolean | null;
     empresas: { nombre: string } | null;
-    baterias: { duracion_min: number | null } | null;
+    baterias: { codigo: string | null; duracion_min: number | null } | null;
   } | null;
 };
 
 const CAMPOS =
   'id,estado,modalidad,fecha_entrevista,baja_el,evaluadora_id,' +
   'calendario_evento_id,calendario_evaluadora_id,calendario_huella,enlace_meet,' +
-  'personas(nombre,telefono,email),pedidos(puesto,empresas(nombre),baterias(duracion_min))';
+  'con_benziger,benziger_administrado,' +
+  'personas(nombre,telefono,email),' +
+  'pedidos(puesto,con_benziger,empresas(nombre),baterias(codigo,duracion_min))';
 
 /** Las etapas en las que todavía no hay entrevista, aunque haya quedado una fecha. */
 const SIN_ENTREVISTA = new Set(['Sin asignar', 'Por citar']);
@@ -274,6 +280,39 @@ const minutosDe = (e: Fila) => {
   const m = e.pedidos?.baterias?.duracion_min;
   return typeof m === 'number' && m > 0 ? m : DURACION_MIN;
 };
+
+/** "Batería 2" -> "B2", como en las tarjetas del OS; una que no sea de esas va tal cual. */
+const BATERIA_CORTA: Record<string, string> = {
+  'Batería 1': 'B1',
+  'Batería 2': 'B2',
+  'Batería 3': 'B3',
+};
+
+/** "B2 + bzg": qué hay que tomarle, con el Benziger si lo lleva. */
+function bateriaDe(e: Fila): string {
+  const codigo = e.pedidos?.baterias?.codigo?.trim() ?? '';
+  const corta = BATERIA_CORTA[codigo] ?? codigo;
+  const bzg = llevaBenziger(e) ? 'bzg' : '';
+  return [corta, bzg].filter(Boolean).join(' + ');
+}
+
+/**
+ * El título del evento: "Azul Casaccia · Macro Agro · B2 + bzg · Online".
+ *
+ * Es lo que la evaluadora lee en la grilla de su calendario sin abrir nada:
+ * quién es, de qué cliente, qué batería tiene que preparar y si es en el
+ * consultorio o por videollamada. El puesto sigue en la descripción.
+ */
+function tituloDe(e: Fila): string {
+  return [
+    e.personas?.nombre?.trim() || 'Candidato',
+    e.pedidos?.empresas?.nombre?.trim() ?? '',
+    bateriaDe(e),
+    e.modalidad ?? '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
 
 /** Lo que el evento dice. Si esto no cambió, no hay nada que mandarle a Google. */
 function huellaDe(e: Fila): string {
@@ -287,13 +326,13 @@ function huellaDe(e: Fila): string {
     e.pedidos?.empresas?.nombre ?? '',
     minutosDe(e),
     esOnline(e) ? '' : CONSULTORIO,
+    tituloDe(e),
   ].join('|');
 }
 
 function cuerpoDe(e: Fila): Record<string, unknown> {
   const inicio = new Date(e.fecha_entrevista as string);
   const fin = new Date(inicio.getTime() + minutosDe(e) * 60_000);
-  const persona = e.personas?.nombre?.trim() || 'Candidato';
   const puesto = e.pedidos?.puesto?.trim() ?? '';
   const empresa = e.pedidos?.empresas?.nombre?.trim() ?? '';
   const renglones = [
@@ -305,7 +344,7 @@ function cuerpoDe(e: Fila): Record<string, unknown> {
     `Ficha: ${OS}/os/psicotecnicos/ficha/${e.id}?ver=entrevista`,
   ];
   return {
-    summary: `Entrevista: ${persona}${puesto ? ` · ${puesto}` : ''}`,
+    summary: tituloDe(e),
     description: renglones.filter((r, n) => r !== '' || n === renglones.length - 2).join('\n'),
     start: { dateTime: inicio.toISOString(), timeZone: ZONA },
     end: { dateTime: fin.toISOString(), timeZone: ZONA },
