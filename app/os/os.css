@@ -1116,6 +1116,13 @@ a.os-fila:hover {
   color: var(--os-verde);
 }
 
+/* La pastilla de una entrevista online con sala creada es un enlace: lleva a
+   la videollamada. */
+.os-modalidad.os-modalidad-meet {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .os-tarjetas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

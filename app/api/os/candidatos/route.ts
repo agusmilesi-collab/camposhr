@@ -7,6 +7,7 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { borrarCandidato, editarCandidato } from '@/lib/candidatos';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
+import { entrevistaAlDia } from '@/lib/entrevista-agendada';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -67,6 +68,10 @@ export async function POST(req: Request) {
       cv,
     });
     if (!r.ok) return NextResponse.json(r, { status: 400 });
+
+    // Desde acá se cambian la evaluadora, la fecha y la modalidad: el
+    // calendario y el correo al candidato miran cómo quedó.
+    await entrevistaAlDia(id);
 
     const yo = await quienSoy();
     await anotarAcceso({

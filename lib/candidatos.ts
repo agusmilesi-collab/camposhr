@@ -13,6 +13,7 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { subirCv } from '@/lib/altas';
+import { quitarDelCalendario } from '@/lib/google-calendario';
 
 const BUCKET = 'psicotecnicos';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -187,6 +188,10 @@ export async function borrarCandidato(
       `select=nombre,cv_path&id=eq.${fila.persona_id}&limit=1`
     )
   )[0];
+
+  // Antes de borrar: después no queda dónde leer qué evento era ni en el
+  // calendario de quién estaba.
+  await quitarDelCalendario(id);
 
   const { url, key } = config();
   const cabeceras = { apikey: key, Authorization: `Bearer ${key}` };

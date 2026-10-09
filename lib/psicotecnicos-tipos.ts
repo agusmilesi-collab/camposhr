@@ -224,6 +224,8 @@ export type Evaluacion = {
   etapa: string;
   mensaje: string | null;
   modalidad: string | null;
+  /** La sala de Meet de una entrevista online, si el calendario de la evaluadora está conectado. */
+  enlaceMeet?: string | null;
   fechaIngreso: string | null;
   fechaEntrevista: string | null;
   fechaEntrega: string | null;

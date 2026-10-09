@@ -314,7 +314,20 @@ function Tarjeta({
             {/* La modalidad como pastilla de color: ámbar presencial, verde
                 online. Es lo que cambia lo que hay que preparar (la sala o el
                 enlace), y en gris al lado de la fecha se leía al final. */}
-            {e.modalidad ? (
+            {/* Con la sala de Meet ya creada, la pastilla es la puerta: se
+                entra a la videollamada desde la tarjeta, sin ir a buscar el
+                enlace al calendario. */}
+            {e.modalidad === 'Online' && e.enlaceMeet ? (
+              <a
+                className="os-modalidad os-modalidad-enlace os-modalidad-meet"
+                href={e.enlaceMeet}
+                target="_blank"
+                rel="noreferrer"
+                title="Abrir la sala de Meet"
+              >
+                Online · Meet
+              </a>
+            ) : e.modalidad ? (
               <span
                 className={`os-modalidad ${
                   e.modalidad === 'Presencial' ? 'os-modalidad-sala' : 'os-modalidad-enlace'

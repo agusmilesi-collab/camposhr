@@ -1493,3 +1493,38 @@ direcciones están en la base y no acá, que el repositorio es público.
 **`CORREO_SOLO_A` va en `.env.local` y nunca en Vercel.** Desvía todo lo que
 salga a esa dirección. Local usa la misma base que producción: sin eso, agendar
 una entrevista de prueba le escribe a un cliente real.
+
+## La entrevista agendada va al Google Calendar de la evaluadora
+
+`lib/google-calendario.ts`, con `fetch` y sin SDK. Cada evaluadora autoriza su
+cuenta una vez en Configuración → **Calendario** y el permiso queda en
+`google_calendario`. Desde ahí, después de cada guardado que toque la fecha, la
+modalidad, la etapa, la evaluadora o la baja, `entrevistaAlDia`
+(`lib/entrevista-agendada.ts`) deja el calendario como dice la evaluación:
+crea el evento, lo mueve o lo borra. Mira cómo quedó y no qué se tocó, igual
+que los avisos por correo.
+
+**Si la entrevista es online, el evento nace con una sala de Meet**
+(`evaluaciones.enlace_meet`). Se ve en la tarjeta de Agendadas y se le manda al
+candidato con el día y la hora (`lib/correo-candidato.ts`, desde
+`entrevistas@camposhr.com`), una vez por fecha
+(`evaluaciones.aviso_candidato_fecha`). Reprogramar conserva la sala. En una
+presencial el correo dice la dirección del consultorio (`lib/consultorio.ts`)
+y no depende de Google. Una online sin calendario conectado no le escribe al
+candidato: no hay enlace que mandar.
+
+**Al conectar entran las entrevistas ya agendadas para adelante, y a esos
+candidatos no se les escribe** (`ponerAlDia`): ya coordinaron cómo se conectan
+y otro enlace serían dos para la misma entrevista.
+
+**`calendario_evaluadora_id` va sin clave foránea a propósito.** Una segunda
+clave de `evaluaciones` a `evaluadoras` deja ambiguos los embeds y la API
+contesta 300 a todo lo que une esas dos tablas.
+
+**Cada una conecta desde su computadora**: el permiso lo da la cuenta de Google
+abierta en ese navegador. Las credenciales son `GOOGLE_CLIENT_ID` y
+`GOOGLE_CLIENT_SECRET`; sin ellas no pasa nada y el resto sigue igual. En
+Google Cloud la aplicación tiene que estar "En producción": en "Prueba" el
+permiso vence a los siete días. El bloque del evento dura lo que dice la
+batería del pedido (`baterias.duracion_min`, Configuración → Baterías), y dos
+horas si no la tiene cargada.
