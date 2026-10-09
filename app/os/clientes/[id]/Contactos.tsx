@@ -163,6 +163,8 @@ export default function Contactos({
   const [lista, setLista] = useState<'solicita' | 'compras'>('solicita');
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Qué contactos tienen sus datos desplegados, por lista. */
+  const [abiertos, setAbiertos] = useState<Record<string, boolean>>({});
   /**
    * Las marcas recién tocadas, mientras el servidor vuelve a dibujar: el tilde
    * cambia al tocarlo y no un segundo después.
@@ -296,16 +298,56 @@ export default function Contactos({
    * en la tabla, que es para ver quién recibe qué; se ven y se corrigen con el
    * lápiz.
    */
-  function datos(c: Contacto) {
+  /**
+   * El nombre, con la flecha que despliega sus datos.
+   *
+   * En la fila van el nombre, el puesto y los tildes, que es lo que se mira y
+   * se toca. El mail y el WhatsApp se consultan de vez en cuando: quedan
+   * detrás de la flecha, en un renglón debajo (pedido de Agustín, 9/10/2026).
+   */
+  function datos(c: Contacto, donde: 'solicita' | 'compras') {
+    const clave = `${donde}-${c.id}`;
+    const abierto = Boolean(abiertos[clave]);
     return (
-      <>
-        <span className="os-contacto-nombre" title={[c.cargo, c.email].filter(Boolean).join(' · ')}>
-          {c.nombre}
+      <button
+        type="button"
+        className={`os-ctc-desplegar${abierto ? ' abierto' : ''}`}
+        aria-expanded={abierto}
+        title={abierto ? 'Ocultar sus datos' : 'Ver mail y WhatsApp'}
+        onClick={() => setAbiertos((m) => ({ ...m, [clave]: !abierto }))}
+      >
+        <span className="os-ctc-flecha" aria-hidden="true" />
+        <span className="os-contacto-nombre">{c.nombre}</span>
+        {/* El puesto va a la vista, al lado del nombre: dice quién es. */}
+        {c.cargo && <span className="os-ctc-cargo">{c.cargo}</span>}
+      </button>
+    );
+  }
+
+  /** Mail y WhatsApp, en el renglón que se abre debajo del nombre. */
+  function detalle(c: Contacto, donde: 'solicita' | 'compras') {
+    if (!abiertos[`${donde}-${c.id}`]) return null;
+    return (
+      <div className="os-ctc-detalle">
+        <span>
+          <span className="os-ctc-detalle-r">Mail</span>
+          {c.email ? (
+            <a className="os-contacto-mail" href={`mailto:${c.email}`}>
+              {c.email}
+            </a>
+          ) : (
+            <span className="os-dato-falta" title="Sin mail no le llega ningún correo.">
+              sin mail
+            </span>
+          )}
         </span>
-        {/* El teléfono del contacto es su WhatsApp: con el enlace, se le
-            escribe de un toque, como al candidato. */}
-        {c.telefono ? <Whatsapp telefono={c.telefono} /> : <span />}
-      </>
+        <span>
+          <span className="os-ctc-detalle-r">WhatsApp</span>
+          {/* El teléfono del contacto es su WhatsApp: con el enlace, se le
+              escribe de un toque, como al candidato. */}
+          {c.telefono ? <Whatsapp telefono={c.telefono} /> : <span className="os-dato-falta">sin cargar</span>}
+        </span>
+      </div>
     );
   }
 
@@ -361,12 +403,11 @@ export default function Contactos({
              rótulo repetido en cada fila no se leía ninguno. */
           <div className="os-contacto os-ctc-fila os-ctc-cabeza" aria-hidden="true">
             <span />
-            <span />
             <span className="os-ctc-tildes">
               <span className="os-ctc-col">Solicita</span>
               <span className="os-ctc-col">Compras</span>
               <span className="os-ctc-raya" />
-              <span className="os-ctc-sobre">Recibe por correo</span>
+              <span className="os-ctc-sobre">Notificaciones por correo</span>
               {AVISOS.map((a) => (
                 <span className="os-ctc-col" key={a.campo}>
                   {a.fila}
@@ -385,7 +426,7 @@ export default function Contactos({
             <div key={c.id}>{formulario(borrador as Borrador)}</div>
           ) : (
             <div className="os-contacto os-ctc-fila" key={c.id}>
-              {datos(c)}
+              {datos(c, 'solicita')}
               <span className="os-ctc-tildes">
                 <Tilde
                   si={c.pide}
@@ -457,6 +498,7 @@ export default function Contactos({
                   {TACHO}
                 </button>
               </div>
+              {detalle(c, 'solicita')}
             </div>
           ),
         )}
@@ -487,7 +529,7 @@ export default function Contactos({
             <div key={c.id}>{formulario(borrador as Borrador)}</div>
           ) : (
             <div className="os-contacto os-ctc-fila os-ctc-fila-compras" key={c.id}>
-              {datos(c)}
+              {datos(c, 'compras')}
               <span className="os-ctc-nota">Recibe las facturas y los recibos de pago</span>
               <div className="os-contacto-acciones">
                 {editar(c, 'compras')}
@@ -511,6 +553,7 @@ export default function Contactos({
                   {TACHO}
                 </button>
               </div>
+              {detalle(c, 'compras')}
             </div>
           ),
         )}
