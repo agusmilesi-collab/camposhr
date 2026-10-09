@@ -23,3 +23,26 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* El descriptivo de puesto: la misma caja punteada de los CV, más baja porque
+   es un solo archivo y es opcional. Con uno cargado, el "Sacar" va debajo del
+   nombre y centrado. */
+.pedir-soltar.pedir-descriptivo {
+  padding: 16px;
+}
+
+/* Dentro del recuadro del perfil, que ya es color papel, la caja va blanca. */
+.pedir-perfil-caja .pedir-soltar.pedir-descriptivo {
+  background: #fff;
+}
+
+.pedir-descriptivo .pedir-soltar-t {
+  overflow-wrap: anywhere;
+}
+
+.pedir-sacar.pedir-descriptivo-sacar {
+  margin: 0 auto;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
