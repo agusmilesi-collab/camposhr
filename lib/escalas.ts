@@ -10,7 +10,7 @@
 /**
  * Hasta cuánto puede pesar un indicador dentro de su competencia.
  *
- * Diez y no cinco: en Capacidad intelectual el Raven tiene que llevarse dos
+ * Diez y no cinco: en Habilidad cognitiva el Raven tiene que llevarse dos
  * tercios del puntaje, y con tope cinco eso obligaba a bajar a los otros hasta
  * el borde de apagarlos para conseguir la proporción. Con diez, una relación de
  * seis a uno se escribe tal cual.

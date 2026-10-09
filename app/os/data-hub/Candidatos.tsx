@@ -60,7 +60,7 @@ const CON_CORTE: Record<string, string> = {
   'Control emocional': 'Control emo\u00adcional',
   'Habilidad interpersonal': 'Inter\u00adpersonal',
   Proactividad: 'Pro\u00adactividad',
-  'Capacidad intelectual': 'Inte\u00adlectual',
+  'Habilidad cognitiva': 'Cogni\u00adtiva',
   Liderazgo: 'Lide\u00adrazgo',
   Introversivo: 'Intro\u00adversivo',
   Extratensivo: 'Extra\u00adtensivo',
@@ -535,7 +535,7 @@ export default function Candidatos({ d }: { d: DataHub }) {
       </Eje>
 
       <Eje
-        titulo="Capacidad intelectual"
+        titulo="Habilidad cognitiva"
         bajada="El percentil del Raven de cada persona. Abajo, por nivel del puesto: cada punto es una persona y la marca vertical es la mediana del nivel."
       >
         <div className="os-hub-dos">
