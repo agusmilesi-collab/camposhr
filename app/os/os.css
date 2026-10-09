@@ -18442,3 +18442,16 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
 #hoja-facturar > :first-child {
   margin-top: 14px;
 }
+
+/* En el teléfono, cada pendiente en dos renglones: el texto con su tilde
+   arriba y la fecha, quién y el estado abajo. En uno solo, los controles se
+   llevaban el ancho y el texto quedaba en una columna de una letra. */
+@media (max-width: 760px) {
+  .os-pendiente {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .os-pendiente-texto {
+    flex: 1 1 calc(100% - 40px);
+  }
+}
