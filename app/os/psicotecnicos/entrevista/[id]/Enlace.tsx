@@ -14,12 +14,27 @@
  * Cuando hay uno cargado, lo que se ve es el botón para entrar. El campo
  * aparece al tocar "Cambiar": lo que se hace todos los días es entrar, no
  * editar.
+ *
+ * **Si al agendar se creó una sala de Meet, se muestra esa y no se edita.** Es
+ * la que recibió el candidato por correo y la que está en el calendario de la
+ * evaluadora: un enlace pegado a mano al lado serían dos puertas para la misma
+ * entrevista. El campo queda para la online sin calendario conectado, que no
+ * tiene sala propia.
  */
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
-export default function Enlace({ id, enlace }: { id: string; enlace: string | null }) {
+export default function Enlace({
+  id,
+  enlace,
+  meet = null,
+}: {
+  id: string;
+  enlace: string | null;
+  /** La sala de Meet creada al agendar, si la entrevista es online y existe. */
+  meet?: string | null;
+}) {
   const router = useRouter();
   const [, empezar] = useTransition();
   const [valor, setValor] = useState(enlace ?? '');
@@ -49,6 +64,19 @@ export default function Enlace({ id, enlace }: { id: string; enlace: string | nu
     } catch {
       setError('No se pudo guardar.');
     }
+  }
+
+  if (meet) {
+    return (
+      <span className="os-entrevista-enlace">
+        <a className="os-boton os-boton-firme" href={meet} target="_blank" rel="noreferrer">
+          Entrar a la videollamada
+        </a>
+        <a className="os-enlace-boton" href={meet} target="_blank" rel="noreferrer">
+          {meet.replace(/^https?:\/\//, '')}
+        </a>
+      </span>
+    );
   }
 
   if (!editando && enlace) {

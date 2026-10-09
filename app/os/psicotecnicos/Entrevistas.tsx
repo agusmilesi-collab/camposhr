@@ -21,10 +21,11 @@
  * forma de corregir un reparto sin entrar a la ficha.
  *
  * La etapa se cambia arrastrando, como en el reparto. Con una regla que no es
- * de la pantalla sino del trabajo: **a Agendadas no se entra sin fecha y sin
- * modalidad**. Una entrevista agendada sin día es lo mismo que una sin agendar,
- * y a la persona hay que decirle cuándo y dónde. Lo cumplen los dos caminos, el
- * botón y el arrastre, contra la misma función.
+ * de la pantalla sino del trabajo: **a Agendadas no se entra sin fecha, sin
+ * modalidad y sin el correo del candidato**. Una entrevista agendada sin día es
+ * lo mismo que una sin agendar, y a la persona hay que decirle cuándo y dónde:
+ * eso le llega por correo. Lo cumplen los dos caminos, el botón y el arrastre,
+ * contra la misma función.
  *
  * Cada columna tiene su tarjeta porque en cada una se mira otra cosa: al citar,
  * el teléfono y si ya se la contactó; agendada, cuándo cae y si es presencial;
@@ -47,6 +48,7 @@ import { cuandoCae, desdeInput, haceCuanto, paraInput } from '@/lib/hora';
 import Bateria from './Bateria';
 import Desplegable from '@/app/os/Desplegable';
 import Whatsapp from './Whatsapp';
+import { esDireccion } from '@/lib/direccion';
 
 type EtapaTablero = 'Sin asignar' | 'Por citar' | 'Por entrevistar' | 'Por analizar';
 
@@ -64,14 +66,21 @@ const COLUMNAS: { etapa: EtapaTablero; titulo: string; vacio: string }[] = [
  *
  * No es una regla de la pantalla sino del trabajo: una entrevista agendada sin
  * día es lo mismo que una sin agendar, y a la persona hay que decirle cuándo y
- * dónde. Vale para los dos caminos, el botón y el arrastre, así que se decide
- * en un solo lugar.
+ * dónde. Eso se le dice por correo (el día, la hora y el enlace de Meet o la
+ * dirección del consultorio), así que sin correo tampoco se agenda: quedaba
+ * agendada y la persona no se enteraba. Vale para los dos caminos, el botón y
+ * el arrastre, así que se decide en un solo lugar. El servidor repite la parte
+ * del correo en `guardarCampos`.
  */
 function faltaParaAgendar(e: Evaluacion): string | null {
-  const falta = [!e.fechaEntrevista && 'la fecha', !e.modalidad && 'la modalidad'].filter(
-    Boolean
-  ) as string[];
-  return falta.length > 0 ? falta.join(' y ') : null;
+  const falta = [
+    !e.fechaEntrevista && 'la fecha',
+    !e.modalidad && 'la modalidad',
+    !esDireccion(e.email) && 'el correo del candidato',
+  ].filter(Boolean) as string[];
+  if (falta.length === 0) return null;
+  if (falta.length === 1) return falta[0];
+  return `${falta.slice(0, -1).join(', ')} y ${falta[falta.length - 1]}`;
 }
 
 /**
@@ -141,6 +150,7 @@ function Tarjeta({
   onArrastrar,
   onSoltar,
   onGuardar,
+  onCorreo,
   onEtapa,
   onAsignar,
 }: {
@@ -156,6 +166,8 @@ function Tarjeta({
   onArrastrar: (ev: React.DragEvent) => void;
   onSoltar: () => void;
   onGuardar: (campo: string, valor: unknown) => void;
+  /** Carga el correo de la persona, que es de ella y no de la evaluación. */
+  onCorreo: (correo: string) => void;
   onEtapa: (etapa: EtapaTablero) => void;
   onAsignar: (evaluadora: string) => void;
 }) {
@@ -289,6 +301,32 @@ function Tarjeta({
               />
             </span>
           </div>
+          {/* El correo se pide acá solo cuando falta: la psicóloga ya arregló
+              el día por WhatsApp y está por agendar, y mandarla a la ficha a
+              cargarlo era salir de la tarjeta por un dato. Con el correo
+              cargado el renglón no existe y la tarjeta queda como siempre.
+              Guarda al salir del campo o con Enter, como la fecha. */}
+          {!esDireccion(e.email) && (
+            <div className="os-tarjeta-linea">
+              <input
+                className="os-control-suave os-citar-correo"
+                type="email"
+                inputMode="email"
+                autoComplete="off"
+                placeholder="Correo del candidato"
+                defaultValue={e.email ?? ''}
+                disabled={ocupada}
+                onBlur={(ev) => {
+                  const correo = ev.target.value.trim();
+                  if (correo && correo !== (e.email ?? '')) onCorreo(correo);
+                }}
+                onKeyDown={(ev) => {
+                  if (ev.key === 'Enter') ev.currentTarget.blur();
+                }}
+                aria-label={`Correo de ${e.nombre}`}
+              />
+            </div>
+          )}
           <button
             className="os-boton os-boton-firme os-tarjeta-accion"
             disabled={ocupada || falta !== null}
@@ -462,6 +500,50 @@ export default function Entrevistas({
   }
 
   /**
+   * Carga el correo del candidato desde la tarjeta.
+   *
+   * Va por la ruta de los candidatos y no por la de la evaluación: el correo
+   * es de la persona. Se muestra cargado enseguida para que el botón "Agendar"
+   * se prenda sin esperar la vuelta del servidor.
+   */
+  async function guardarCorreo(id: string, escrito: string) {
+    setError(null);
+    const correo = escrito.trim().toLowerCase();
+    if (!esDireccion(correo)) {
+      setError('Ese correo no se entiende. Revisá que esté completo.');
+      return;
+    }
+
+    const volver = () =>
+      setMovidas((m) => {
+        const { [id]: _, ...resto } = m;
+        return resto;
+      });
+
+    setTrabajando(id);
+    setMovidas((m) => ({ ...m, [id]: { ...m[id], email: correo } }));
+    try {
+      const form = new FormData();
+      form.set('id', id);
+      form.set('solo', 'email');
+      form.set('email', correo);
+      const res = await fetch('/api/os/candidatos', { method: 'POST', body: form });
+      const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
+      if (!r.ok) {
+        volver();
+        setError(r.motivo ?? 'No se pudo guardar.');
+        return;
+      }
+      empezar(() => router.refresh());
+    } catch {
+      volver();
+      setError('No se pudo guardar.');
+    } finally {
+      setTrabajando(null);
+    }
+  }
+
+  /**
    * Le da la evaluación a alguien, y con eso la saca de Sin asignar.
    *
    * Asignar mueve a Por citar, que es el primer trabajo de quien la recibe;
@@ -525,7 +607,7 @@ export default function Entrevistas({
     if (!fila.evaluadora) return;
 
     // La única regla del tablero, y no es de la pantalla: es la misma condición
-    // que apaga el botón "Agendar".
+    // que apaga el botón "Agendar" (fecha, modalidad y correo del candidato).
     if (etapa === 'Por entrevistar') {
       const falta = faltaParaAgendar(fila);
       if (falta) {
@@ -623,6 +705,7 @@ export default function Entrevistas({
                   }}
                   onSoltar={() => setArrastrando(null)}
                   onGuardar={(campo, valor) => guardar(e.id, campo, valor)}
+                  onCorreo={(correo) => guardarCorreo(e.id, correo)}
                   onEtapa={(etapa) => cambiarEtapa(e.id, etapa)}
                   onAsignar={(quien) => asignar(e.id, quien)}
                 />

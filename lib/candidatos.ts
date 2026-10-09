@@ -14,6 +14,7 @@ import 'server-only';
 import { select } from '@/lib/supabase';
 import { subirCv } from '@/lib/altas';
 import { quitarDelCalendario } from '@/lib/google-calendario';
+import { esDireccion } from '@/lib/direccion';
 
 const BUCKET = 'psicotecnicos';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -159,6 +160,28 @@ export async function editarCandidato(id: string, c: CandidatoEditado): Promise<
   if (Object.keys(evaluacion).length > 0) {
     await patch('evaluaciones', `id=eq.${id}`, evaluacion);
   }
+  return { ok: true };
+}
+
+/**
+ * Carga el correo de la persona, y nada más.
+ *
+ * Es lo que pide la tarjeta de Por citar cuando el correo no vino en el CV:
+ * sin él no se agenda, porque el aviso con el día, la hora y el enlace o la
+ * dirección no tiene a dónde ir. Va aparte de `editarCandidato`, que guarda la
+ * ficha entera: mandar desde la tarjeta el nombre, el pedido y la evaluadora
+ * para tocar un solo dato pisaría lo que otra persona haya corregido mientras
+ * tanto.
+ */
+export async function guardarCorreo(id: string, correo: string): Promise<Resultado> {
+  if (!UUID.test(id)) return { ok: false, motivo: 'Identificador inválido.' };
+  const email = correo.trim().toLowerCase();
+  if (!esDireccion(email)) return { ok: false, motivo: 'Ese correo no se entiende.' };
+
+  const fila = await actual(id);
+  if (!fila) return { ok: false, motivo: 'Esa evaluación no existe.' };
+
+  await patch('personas', `id=eq.${fila.persona_id}`, { email });
   return { ok: true };
 }
 

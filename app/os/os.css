@@ -7486,6 +7486,15 @@ html[data-os-tema='oscuro'] .os-bz-cerebro {
   min-width: 0;
 }
 
+/* El correo que falta para agendar: un renglón entero, porque una dirección no
+   entra al lado de nada, y con el cursor de escribir en vez de la mano que
+   llevan los otros controles suaves. */
+.os-citar-correo {
+  flex: 1 1 100%;
+  min-width: 0;
+  cursor: text;
+}
+
 /* El calendario del navegador, del tono del resto en vez del negro que trae. */
 .os-control-suave::-webkit-calendar-picker-indicator {
   opacity: 0.45;

@@ -4,7 +4,7 @@ import { revalidateTag } from 'next/cache';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
-import { borrarCandidato, editarCandidato } from '@/lib/candidatos';
+import { borrarCandidato, editarCandidato, guardarCorreo } from '@/lib/candidatos';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { entrevistaAlDia } from '@/lib/entrevista-agendada';
@@ -45,6 +45,31 @@ export async function POST(req: Request) {
   const cv = adjunto instanceof File && adjunto.size > 0 ? adjunto : null;
   if (cv && cv.size > MAX_CV) {
     return NextResponse.json({ ok: false, motivo: 'El CV supera los 10 MB.' }, { status: 400 });
+  }
+
+  // La tarjeta de Por citar manda el correo solo, que es lo único que le falta
+  // para agendar: el resto de la ficha no viaja y no se toca.
+  if (texto('solo') === 'email') {
+    try {
+      const r = await guardarCorreo(id, texto('email'));
+      if (!r.ok) return NextResponse.json(r, { status: 400 });
+
+      const yo = await quienSoy();
+      await anotarAcceso({
+        quien: yo.nombre,
+        accion: 'escritura',
+        recurso: 'evaluacion',
+        recursoId: id,
+        detalle: { edicion: 'correo para agendar' },
+      });
+
+      revalidateTag(CACHE_CLIENTES);
+      revalidateTag(CACHE_PSICOTECNICOS);
+      return NextResponse.json({ ok: true });
+    } catch (e) {
+      console.error('candidatos:', e);
+      return NextResponse.json({ ok: false, motivo: 'No se pudo guardar.' }, { status: 500 });
+    }
   }
 
   try {

@@ -30,13 +30,13 @@
  */
 
 import 'server-only';
+import { DIRECCION } from '@/lib/direccion';
 
 const REMITENTES = {
   pedidos: 'Campos HR <pedidos@camposhr.com>',
   facturacion: 'Campos HR <facturacion@camposhr.com>',
   entrevistas: 'Campos HR <entrevistas@camposhr.com>',
 } as const;
-const DIRECCION = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/;
 
 export type Adjunto = { nombre: string; bytes: Uint8Array };
 
