@@ -1558,6 +1558,12 @@ modalidad, la etapa, la evaluadora o la baja, `entrevistaAlDia`
 crea el evento, lo mueve o lo borra. Mira cómo quedó y no qué se tocó, igual
 que los avisos por correo.
 
+**El título del evento dice quién, de qué cliente, qué batería y cómo**:
+"Azul Casaccia · Macro Agro · B2 + bzg · Online" (`tituloDe`). Es lo que la
+evaluadora lee en la grilla del calendario sin abrir el evento; el puesto, el
+teléfono y el enlace a la ficha van en la descripción. El título entra en la
+huella, así que un cambio de batería o de modalidad actualiza el evento.
+
 **Si la entrevista es online, el evento nace con una sala de Meet**
 (`evaluaciones.enlace_meet`). Se entra desde la ficha (pestaña Entrevista,
 "Videollamada", donde el botón reemplaza al campo para pegar un enlace a mano,
