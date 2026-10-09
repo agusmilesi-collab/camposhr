@@ -26,6 +26,7 @@ import { ajustarPedidoDe } from '@/lib/pedido-completo';
 import { avisarSiCorresponde } from '@/lib/correo-avisos';
 import { entrevistaAlDia } from '@/lib/entrevista-agendada';
 import { llevaBenziger } from '@/lib/benziger';
+import { esDireccion } from '@/lib/direccion';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -221,6 +222,28 @@ export async function guardarCampos(
       return { ok: false, motivo: 'Esa prioridad no existe.' };
     }
     fila[columna] = valor === '' ? null : valor;
+  }
+
+  /**
+   * No se agenda sin el correo del candidato.
+   *
+   * Agendar le escribe a la persona el día, la hora y el enlace de Meet o la
+   * dirección del consultorio: sin correo quedaba agendada y sin enterarse. La
+   * tarjeta ya lo pide antes de dejar agendar; esto es la misma regla del lado
+   * del servidor, para cualquier pantalla que mueva la etapa.
+   *
+   * Solo frena la entrada a la etapa. Una que ya estaba agendada sin correo
+   * se sigue pudiendo reprogramar y guardar.
+   */
+  if (fila.estado === 'Por entrevistar') {
+    const previas = await select<{ estado: string; personas: { email: string | null } | null }>(
+      'evaluaciones',
+      `select=estado,personas(email)&id=eq.${id}&limit=1`
+    );
+    const antes = previas[0];
+    if (antes && antes.estado !== 'Por entrevistar' && !esDireccion(antes.personas?.email)) {
+      return { ok: false, motivo: 'Falta el correo del candidato.' };
+    }
   }
 
   /**

@@ -414,12 +414,32 @@ recuadros.
 **Cuando el archivo viaja en un formulario, el soltado se mete en el `<input
 file>`** con un `DataTransfer`: si no, queda leído y se pierde al guardar.
 
-## Para agendar hacen falta fecha y modalidad
+## Para agendar hacen falta fecha, modalidad y el correo del candidato
 
 `faltaParaAgendar` en `Entrevistas.tsx`, y la cumplen los dos caminos: el botón
 "Agendar" queda apagado y el arrastre a Agendadas se rechaza con el motivo. Una
 entrevista agendada sin día es lo mismo que una sin agendar, y a la persona hay
-que decirle cuándo y dónde.
+que decirle cuándo y dónde. Eso se le dice por correo (el día, la hora y el
+enlace de Meet o la dirección del consultorio), así que el correo es la tercera
+condición en las dos modalidades: cuando no venía en el CV, la entrevista
+quedaba agendada y el candidato no recibía nada. Una dirección mal escrita
+cuenta como faltante (`esDireccion` en `lib/direccion.ts`, el mismo patrón con
+el que `lib/correo.ts` filtra a quién le manda).
+
+**El correo que falta se carga en la misma tarjeta de Por citar.** La psicóloga
+ya arregló el día por WhatsApp y está por agendar: el campo aparece solo cuando
+la persona no tiene correo y guarda al salir o con Enter. Va a
+`/api/os/candidatos` con `solo=email` (`guardarCorreo` en `lib/candidatos.ts`),
+porque el correo es de la persona (`personas.email`) y no de la evaluación, y
+solo viaja ese dato: mandar la ficha entera desde la tarjeta pisaría lo que
+otra persona haya corregido mientras tanto.
+
+**El servidor repite la regla** en `guardarCampos`
+(`lib/psicotecnicos-supabase.ts`): un pedido que lleva la evaluación a "Por
+entrevistar" desde otra etapa se rechaza con "Falta el correo del candidato."
+si la persona no lo tiene. Frena la entrada a la etapa y nada más: una
+entrevista agendada sin correo antes de esta regla se reprograma igual, porque
+`Cuando.tsx` guarda la fecha y no mueve la etapa.
 
 **Por citar se ordena por lo que espera desde la solicitud, no desde la
 entrevista.** Ahí la fecha se está cargando en ese momento: midiendo contra
@@ -427,10 +447,12 @@ ella, la tarjeta saltaba de lugar apenas se elegía el día y había que ir a
 buscarla a otra parte de la columna para terminar de completarla. Lo que la
 mueve de verdad es agendarla, que la cambia de columna.
 
-**Y la fecha se puede cambiar desde la ficha** (`Cuando.tsx`, pestaña
-Entrevista): las entrevistas se reprograman, y hasta ahora eso obligaba a
-volver al tablero a buscar la tarjeta. Va detrás de "Reprogramar" y no como
-campo abierto, porque es el dato que más se lee del encabezado.
+**Y la fecha y la modalidad se pueden cambiar desde la ficha** (`Cuando.tsx` y
+`Modalidad.tsx`, pestaña Entrevista): las entrevistas se reprograman y a veces
+pasan de presencial a online, y hacerlo obligaba a volver al tablero a buscar
+la tarjeta. Van detrás de "Reprogramar" y "Cambiar" y no como campos abiertos,
+porque son los datos que más se leen del encabezado. Cambiar la modalidad de
+una agendada crea o saca la sala de Meet y le vuelve a escribir al candidato.
 
 ## El Raven de la hoja se mira solo
 
@@ -1505,7 +1527,9 @@ crea el evento, lo mueve o lo borra. Mira cómo quedó y no qué se tocó, igual
 que los avisos por correo.
 
 **Si la entrevista es online, el evento nace con una sala de Meet**
-(`evaluaciones.enlace_meet`). Se ve en la tarjeta de Agendadas y se le manda al
+(`evaluaciones.enlace_meet`). Se ve en la tarjeta de Agendadas y en la ficha
+(pestaña Entrevista, "Videollamada", donde reemplaza al campo para pegar un
+enlace a mano, que queda para la online sin calendario conectado), y se le manda al
 candidato con el día y la hora (`lib/correo-candidato.ts`, desde
 `entrevistas@camposhr.com`), una vez por fecha y modalidad
 (`evaluaciones.aviso_candidato_fecha` y `aviso_candidato_modalidad`).

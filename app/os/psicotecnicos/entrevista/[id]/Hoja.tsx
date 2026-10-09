@@ -18,6 +18,7 @@ import Papel from './Papel';
 import LinkLaminas from './LinkLaminas';
 import HojaBender from './HojaBender';
 import Cuando from './Cuando';
+import Modalidad from './Modalidad';
 import Marca from './Marca';
 import Raven from './Raven';
 import RavenPuntaje from '../../ficha/[id]/Raven';
@@ -395,7 +396,7 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
         </div>
         <div>
           <span className="os-dato-rotulo">Modalidad</span>
-          <span className="os-dato-valor">{e.modalidad ?? 'Sin definir'}</span>
+          <Modalidad id={e.id} modalidad={e.modalidad} />
         </div>
         <div>
           <span className="os-dato-rotulo">Batería</span>
@@ -436,10 +437,10 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
             dos filas de tres. Aparece solo si la entrevista es online, y si
             quedó un enlace cargado de cuando lo era se sigue mostrando:
             esconder un dato que alguien puso es la forma de perderlo. */}
-        {(e.modalidad === 'Online' || e.enlace) && (
+        {(e.modalidad === 'Online' || e.enlace || e.enlaceMeet) && (
           <div className="os-entrevista-videollamada">
             <span className="os-dato-rotulo">Videollamada</span>
-            <Enlace id={e.id} enlace={e.enlace} />
+            <Enlace id={e.id} enlace={e.enlace} meet={e.modalidad === 'Online' ? e.enlaceMeet : null} />
           </div>
         )}
       </section>

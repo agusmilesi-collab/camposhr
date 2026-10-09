@@ -32,6 +32,7 @@ type Fila = {
   modalidad: string | null;
   fecha_entrevista: string | null;
   enlace_entrevista: string | null;
+  enlace_meet: string | null;
   proyectivo_administrado: boolean;
   bender_administrado: boolean;
   bender_observaciones: string | null;
@@ -81,8 +82,10 @@ export type Entrevista = {
   evaluadora: string | null;
   cuando: string | null;
   modalidad: string | null;
-  /** El enlace de la videollamada, cuando la entrevista es online. */
+  /** El enlace de la videollamada que alguien pegó a mano. */
   enlace: string | null;
+  /** La sala de Meet que se creó sola al agendar, la que recibió el candidato. */
+  enlaceMeet: string | null;
   bateria: string | null;
   bateriaNombre: string | null;
   /** Los tests de la batería, en el orden en que están declarados. */
@@ -157,7 +160,7 @@ export type Entrevista = {
 };
 
 const CAMPOS =
-  'id,estado,modalidad,fecha_entrevista,enlace_entrevista,' +
+  'id,estado,modalidad,fecha_entrevista,enlace_entrevista,enlace_meet,' +
   'proyectivo_administrado,bender_administrado,bender_observaciones,bender_nombre,' +
   'benziger_administrado,con_benziger,orden_tests,entrevista_competencias,' +
   'grafico_2_personas_administrado,' +
@@ -258,6 +261,7 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     cuando: f.fecha_entrevista,
     modalidad: f.modalidad,
     enlace: f.enlace_entrevista,
+    enlaceMeet: f.enlace_meet,
     bateria: f.pedidos?.baterias?.codigo ?? null,
     bateriaNombre: f.pedidos?.baterias?.nombre ?? null,
     tests: ordenar(f.pedidos?.baterias?.tests ?? [], f.orden_tests),
