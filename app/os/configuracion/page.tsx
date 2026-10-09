@@ -42,7 +42,7 @@ const PESTANAS = [
   { clave: 'potencial', texto: 'Potencial' },
   { clave: 'exigencia', texto: 'Exigencia' },
   { clave: 'benziger', texto: 'Benziger' },
-  { clave: 'calendario', texto: 'Calendario' },
+  { clave: 'calendario', texto: 'Google' },
 ];
 
 const QUE_HACE: Record<string, string> = {
