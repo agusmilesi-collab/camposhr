@@ -192,21 +192,6 @@ export async function middleware(req: NextRequest) {
     const entrando =
       pathname === '/os/entrar' || pathname === '/api/os/entrar' || pathname === '/entrar';
     const conSesion = hayPuerta() ? await sesionValida(req) : true;
-    // Lo que el OS escribe lo manda una pantalla del OS. La cookie de sesión
-    // viaja también desde los otros subdominios, así que un pedido de escritura
-    // que nace en otro sitio se rechaza aunque la traiga.
-    const origen = req.headers.get('origin');
-    if (
-      pathname.startsWith('/api/os/') &&
-      !['GET', 'HEAD', 'OPTIONS'].includes(req.method) &&
-      origen &&
-      origen !== `https://${OS_HOST}`
-    ) {
-      return new NextResponse('No autorizado.', {
-        status: 403,
-        headers: { 'content-type': 'text/plain; charset=utf-8' },
-      });
-    }
     // Quien ya entró al OS y viene rebotado del hub no vuelve a escribir la
     // clave: se le deja la misma sesión para todos los subdominios y sigue.
     const destinoHub = url.searchParams.get('destino') ?? '';

@@ -1491,8 +1491,12 @@ embeben la matriz o el cuestionario lo piden.
 
 Una ruta de `/api` que escribe y no es para gente de afuera revisa la sesión
 por su cuenta (`sinSesion`), porque el host principal no pide nada: así están
-`/api/encuentros` y `/api/guion`. Y `/api/os/*` rechaza las escrituras cuyo
-`Origin` no sea el del OS.
+`/api/encuentros` y `/api/guion`.
+
+El `Origin` no sirve para filtrar escrituras: el sitio manda
+`Referrer-Policy: no-referrer`, y con eso el navegador pone `Origin: null` en
+todo POST, también en los propios. Se probó el 13/10/2026 y dejó a todo el
+equipo sin poder entrar ni guardar.
 
 ## Lo que se cobra sin factura es una fila de `facturas`
 
