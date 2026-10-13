@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
-import { cookies } from 'next/headers';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { anotarAcceso } from '@/lib/accesos';
 import { CC_EE, CONTENIDOS, DETERMINANTES, FQ, LAMINA, LOCALIZACION, POSICION } from '@/lib/rorschach';
 
@@ -137,7 +137,7 @@ function config() {
 async function conSesion(): Promise<boolean> {
   if (!hayPuerta()) return true;
   const clave = process.env.OS_CLAVE as string;
-  const cookie = cookies().get(COOKIE)?.value;
+  const cookie = await cookieDelOs();
   return Boolean(cookie && igual(cookie, await huella(clave)));
 }
 

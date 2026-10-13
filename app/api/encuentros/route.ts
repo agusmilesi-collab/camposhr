@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { crearEncuentro } from '@/lib/ciclo';
 import crypto from 'node:crypto';
-import { cookies } from 'next/headers';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 
 /**
  * Alta de un encuentro: un cliente que va a recorrer un ciclo.
@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
 async function sinSesion(): Promise<boolean> {
   if (!hayPuerta()) return false;
   const clave = process.env.OS_CLAVE as string;
-  const cookie = cookies().get(COOKIE)?.value;
+  const cookie = await cookieDelOs();
   return !cookie || !igual(cookie, await huella(clave));
 }
 

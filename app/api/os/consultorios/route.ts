@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { comprobantePorId, darPorRegistrados, loQueDebe } from '@/lib/comprobantes-pago';
 import { darPorVista } from '@/lib/renovaciones';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
 import { insert, patch } from '@/lib/supabase';
@@ -43,7 +43,7 @@ const HORA = /^\d{2}:\d{2}(:\d{2})?$/;
 async function conSesion(): Promise<boolean> {
   if (!hayPuerta()) return true;
   const clave = process.env.OS_CLAVE as string;
-  const cookie = cookies().get(COOKIE)?.value;
+  const cookie = await cookieDelOs();
   return Boolean(cookie && igual(cookie, await huella(clave)));
 }
 

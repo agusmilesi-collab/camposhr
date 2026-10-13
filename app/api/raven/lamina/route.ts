@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { sesionPorToken } from '@/lib/raven-test';
 import { esPruebaDeRaven } from '@/lib/laminas-enlace';
 import { OPCIONES, RAVEN_MAXIMO } from '@/lib/raven';
@@ -103,6 +103,6 @@ async function conSesionDelOs(req: Request): Promise<boolean> {
   const interno = host.startsWith('os.') || host.startsWith('localhost') || host.startsWith('127.0.0.1');
   if (!hayPuerta()) return interno;
   const clave = process.env.OS_CLAVE as string;
-  const cookie = cookies().get(COOKIE)?.value;
+  const cookie = await cookieDelOs();
   return interno && Boolean(cookie) && igual(cookie as string, await huella(clave));
 }

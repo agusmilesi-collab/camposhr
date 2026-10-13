@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { randomBytes } from 'node:crypto';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { insert, patch, select } from '@/lib/supabase';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
@@ -89,7 +89,7 @@ async function sinEvaluacion(
 export async function POST(req: Request) {
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
-    const cookie = cookies().get(COOKIE)?.value;
+    const cookie = await cookieDelOs();
     if (!cookie || !igual(cookie, await huella(clave))) {
       return NextResponse.json({ ok: false, motivo: 'Sin sesión.' }, { status: 401 });
     }

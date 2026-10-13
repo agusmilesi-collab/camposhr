@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { esTestConLaminas, leerLamina } from '@/lib/laminas';
 
 export const runtime = 'nodejs';
@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request, { params }: { params: { test: string; n: string } }) {
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
-    const cookie = cookies().get(COOKIE)?.value;
+    const cookie = await cookieDelOs();
     if (!cookie || !igual(cookie, await huella(clave))) {
       return new NextResponse('Sin sesión.', { status: 401 });
     }

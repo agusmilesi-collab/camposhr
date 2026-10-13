@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
-import { cookies } from 'next/headers';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
 import { esNivel } from '@/lib/discursivo';
@@ -30,7 +30,7 @@ function parrafo(v: unknown): string | null {
 export async function POST(req: Request) {
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
-    const cookie = cookies().get(COOKIE)?.value;
+    const cookie = await cookieDelOs();
     if (!cookie || !igual(cookie, await huella(clave))) {
       return NextResponse.json({ ok: false, motivo: 'Sin sesión.' }, { status: 401 });
     }

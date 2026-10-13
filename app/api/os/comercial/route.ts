@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { CACHE_CLIENTES, CACHE_COMERCIAL } from '@/lib/etiquetas';
-import { cookies } from 'next/headers';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { ESTADOS, TIPOS_COSTO } from '@/lib/cotizaciones';
 import { esObjecion } from '@/lib/comercial-tipos';
 import { slugDeEmpresa } from '@/lib/empresa-slug';
@@ -104,7 +104,7 @@ async function quienPago(valor: unknown): Promise<string | null> {
 export async function POST(req: Request) {
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
-    const cookie = cookies().get(COOKIE)?.value;
+    const cookie = await cookieDelOs();
     if (!cookie || !igual(cookie, await huella(clave))) {
       return NextResponse.json({ error: 'Sin sesión.' }, { status: 401 });
     }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { ESTADOS } from '@/lib/pendientes-tipos';
 
 export const runtime = 'nodejs';
@@ -24,7 +24,7 @@ function config() {
 async function conSesion(): Promise<boolean> {
   if (!hayPuerta()) return true;
   const clave = process.env.OS_CLAVE as string;
-  const cookie = cookies().get(COOKIE)?.value;
+  const cookie = await cookieDelOs();
   return Boolean(cookie && igual(cookie, await huella(clave)));
 }
 

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { guardarGuion } from '@/lib/guion';
 import { charlaPorToken } from '@/lib/presentaciones';
-import { cookies } from 'next/headers';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 
 /**
  * El guion del expositor de una presentación.
@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
 async function sinSesion(): Promise<boolean> {
   if (!hayPuerta()) return false;
   const clave = process.env.OS_CLAVE as string;
-  const cookie = cookies().get(COOKIE)?.value;
+  const cookie = await cookieDelOs();
   return !cookie || !igual(cookie, await huella(clave));
 }
 

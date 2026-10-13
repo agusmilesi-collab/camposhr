@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
 
@@ -22,7 +22,7 @@ const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 async function conSesion(): Promise<boolean> {
   if (!hayPuerta()) return true;
   const clave = process.env.OS_CLAVE as string;
-  const cookie = cookies().get(COOKIE)?.value;
+  const cookie = await cookieDelOs();
   return Boolean(cookie && igual(cookie, await huella(clave)));
 }
 
