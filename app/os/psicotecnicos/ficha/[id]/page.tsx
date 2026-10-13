@@ -293,6 +293,11 @@ function Datos({
               {f.raven.raw} de 36
               {f.raven.resultado && <span className="os-dato-al-lado">{f.raven.resultado}</span>}
             </>
+          ) : typeof f.raven?.corto === 'number' ? (
+            <>
+              {f.raven.corto} de 12
+              <span className="os-dato-al-lado">serie corta</span>
+            </>
           ) : (
             <Falta texto="sin puntaje" />
           )}
@@ -597,7 +602,10 @@ function TestsDeLaBateria({ f }: { f: Ficha }) {
     } else if (t === 'Gráfico 2 personas') {
       estados.push({ test: t, puesto: c.grafico_2_personas_administrado });
     } else if (t === 'Raven') {
-      estados.push({ test: t, puesto: f.raven?.raw !== null && f.raven?.raw !== undefined });
+      estados.push({
+        test: t,
+        puesto: typeof f.raven?.raw === 'number' || typeof f.raven?.corto === 'number',
+      });
     } else if (t === TEST_DISCURSIVO) {
       // Su marca es el escalón: mientras no esté ubicado, el capítulo de
       // potencial no sale y el informe está incompleto sin decirlo acá.

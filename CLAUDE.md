@@ -538,6 +538,18 @@ Alto en 2 de 16 contra 1 de 16 de ellas.
 decisión de ellas): fuera de rango resta, pero no anula. El piso de toda
 competencia es 25.
 
+**Todo velocímetro va de 25 a 100, se haya medido con lo que se haya medido**
+(`aEscala` y `maximoDe`, 13/10/2026). El promedio se lleva del tramo que va de
+25 al máximo que pueden dar los indicadores de esa persona, al tramo de 25 a
+100. Sin eso el máximo dependía del test y de qué tuviera cargado: Autogestión
+no pasaba de 71 en Rorschach ni de 78 en Zulliger. Un indicador "dentro de lo
+esperable" sigue aportando la mitad que un recurso.
+
+**Si lo que hay para medir pesa menos de la mitad de la competencia, sale sin
+puntaje y dice qué falta.** Es el caso de Habilidad cognitiva sin el Raven de
+36 láminas: quedan tres indicadores de alarma, y en rango darían 100 sin haber
+medido razonamiento.
+
 **Y el informe dice por qué.** "Sin datos" a secas invita a pensar que se
 olvidaron de cargar algo; lo que pasa es que lo cargado no permite afirmar nada,
 y eso es una información distinta.

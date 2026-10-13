@@ -67,6 +67,13 @@ export type Contexto = {
   /** Aciertos sobre las treinta y seis láminas. Null si no rindió. */
   ravenRaw?: number | null;
   /**
+   * Aciertos sobre las 12 láminas de la serie corta, si rindió esa.
+   *
+   * Se tomó a perfiles comerciales y operativos hasta octubre de 2026 y ya no
+   * se toma. Solo cuenta cuando no hay puntaje del Raven de 36.
+   */
+  ravenCorto?: number | null;
+  /**
    * Los cortes del Raven que rigen, si se movieron desde Sistema.
    *
    * La habilidad cognitiva sale del rango en el que cae el puntaje, así que
@@ -253,9 +260,12 @@ function nivelDe(
   ctx: Contexto
 ): Nivel {
   const escala = e ?? i.escala;
+  // Con escala y sin valor, el indicador puede traer otra forma de leerse:
+  // es el Raven, que sin puntaje sobre 36 se lee por la serie corta.
+  const valor = escala && i.valor ? i.valor(s, ctx) : null;
   const bruto =
-    escala && i.valor
-      ? nivelPorEscala(i.valor(s, ctx), escala, n ?? numerosDe(escala))
+    escala && i.valor && (valor !== null || !i.nivel)
+      ? nivelPorEscala(valor, escala, n ?? numerosDe(escala))
       : i.nivel
         ? i.nivel(s, ctx)
         : null;
@@ -640,17 +650,31 @@ const RAVEN: Indicador = {
   mide: 'Razonamiento abstracto',
   escala: { forma: 'umbral', mayorEsMejor: true, alto: 31, medio: 21 },
   valor: (_s, ctx) => ctx?.ravenRaw ?? null,
+  /* Sin el Raven de 36, la serie corta entra por escalón: hasta 7 aciertos
+     bajo y de 8 a 12 medio, con los 12 aportando 75. No hay conversión válida
+     de 12 a 36 láminas, así que los escalones salen de lo que las psicólogas
+     pusieron en Habilidad cognitiva a las trece personas que la rindieron: 30 a
+     45 con 6 o 7, 45 a 60 con 8 a 11, y 75 con 12. Con una prueba tan corta
+     nadie llega al nivel alto. */
+  nivel: (_s, ctx) => {
+    const corto = ctx?.ravenCorto;
+    if (typeof corto !== 'number') return null;
+    return corto <= 7 ? 1 : 2;
+  },
   /* De 25 a 30 aciertos sigue siendo nivel medio y aporta 75: las psicólogas
      pidieron el 13/10/2026 distinguir a quien queda cerca del nivel alto. Con
      tres escalones, 21 y 30 aciertos recibían lo mismo, y medido contra sus
      informes el sistema quedaba entre 10 y 15 puntos por debajo en ese tramo. */
   aporte: (_s, ctx) => {
     const raw = ctx?.ravenRaw;
-    return typeof raw === 'number' && raw >= RAVEN_MEDIO_ALTO && raw <= 30 ? 75 : null;
+    if (typeof raw === 'number') return raw >= RAVEN_MEDIO_ALTO && raw <= 30 ? 75 : null;
+    return ctx?.ravenCorto === 12 ? 75 : null;
   },
   datosDe: (ctx) =>
     ctx.ravenRaw === null || ctx.ravenRaw === undefined
-      ? undefined
+      ? typeof ctx.ravenCorto === 'number'
+        ? `Raven serie corta ${ctx.ravenCorto} de 12`
+        : undefined
       : `Raven ${ctx.ravenRaw} de 36` +
         (ctx.ravenPercentil === null ? '' : ` · percentil ${Math.round(ctx.ravenPercentil * 10) / 10}`),
 };
@@ -956,10 +980,9 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         nombre: 'EA − es',
         formula: 'EA − es',
         mide: 'Tolerancia al estrés',
-        // En la lista de las psicólogas del 13/10/2026 figura como "dentro de
-        // lo esperable", que valdría 50. No está aplicado: con ese techo
-        // Control emocional en Zulliger no puede pasar de 62 y nunca llega a
-        // Alto. Espera que lo confirmen viendo esa consecuencia.
+        // "Dentro de lo esperable" y no positivo: lo escribieron así las
+        // psicólogas el 13/10/2026.
+        techo: 50,
         // Hasta −1,5 es lo esperado; por debajo, la demanda supera al recurso.
         escala: binario(-1.5, true, 1),
         valor: (s) => num(s, 'control_estres', 'dif_EA_es'),
@@ -1069,8 +1092,13 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       'Índice de egocentrismo': 1,
     },
     // DQ+ y Zf quedan en cero desde el 13/10/2026: las psicólogas no los
-    // usaban al puntuar Proactividad a mano, y sin ellos el motor cae en su
-    // misma banda en 42 de 73 informes contra 38. Siguen en el desglose.
+    // usaban al puntuar Proactividad a mano. Siguen en el desglose.
+    //
+    // Sale alta: promedia 75 y dos de cada tres personas caen en Alto, porque
+    // Ma : Mp da positivo en casi todos. Hay una propuesta medida y sin
+    // aplicar, a la espera de que ellas la confirmen: Ma : Mp como "dentro de
+    // lo esperable", R con peso 4 y DQ+ con peso 1 (promedio 65, Alto en 34 de
+    // 93 contra 29 de 73 de ellas).
     'Proactividad': { 'Ma : Mp': 2, R: 2, 'DQ+': 0, Zf: 0, Fd: 1 },
     'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
     'Liderazgo': {
@@ -1103,8 +1131,6 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       'M−': 1,
       'Índice de egocentrismo': 1,
     },
-    // R pesa menos acá que en Rorschach: con diez respuestas, una sola lo
-    // cambia de banda, y es el indicador que más movía el puntaje.
     'Proactividad': { Fd: 2, 'DQ+': 0, Zf: 0, R: 1, 'Ma : Mp': 1 },
     'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
   },
@@ -1321,6 +1347,8 @@ export type Competencia = {
     valor?: string;
     /** Lo que aporta al promedio cuando no es lo que vale su nivel. */
     aporte?: number | null;
+    /** Si es de los "dentro de lo esperable", que llegan a 50 y no a 100. */
+    techo?: boolean;
   }[];
 };
 
@@ -1438,6 +1466,40 @@ export function protocoloAlcanza(
   return { alcanza: true };
 }
 
+/**
+ * El promedio más alto que pueden dar esos indicadores.
+ *
+ * Uno "dentro de lo esperable" llega a 50 y uno de capacidad a 100, así que el
+ * máximo depende de cuántos hay de cada clase y de cuánto pesan: cambia con el
+ * test, y con que la persona tenga o no el Raven o el potencial cargados.
+ */
+function maximoDe(puntuados: { peso: number; techo: boolean }[]): number {
+  const pesos = puntuados.reduce((n, r) => n + r.peso, 0);
+  if (pesos === 0) return VALOR[3];
+  return puntuados.reduce((n, r) => n + r.peso * (r.techo ? VALOR[2] : VALOR[3]), 0) / pesos;
+}
+
+/**
+ * El promedio llevado a la escala del informe, de 25 a 100.
+ *
+ * **Todo velocímetro llega a 100, se haya medido con lo que se haya medido**
+ * (decisión de Agustín, 13/10/2026). Sin esto el máximo de cada competencia
+ * dependía de sus indicadores: Autogestión no pasaba de 71 en Rorschach ni de
+ * 78 en Zulliger, y dos personas con todo en su mejor nivel recibían números
+ * distintos según el test. El piso sigue siendo 25, que es lo que vale un
+ * indicador en bajo, y entre el piso y el máximo se reparte en proporción.
+ *
+ * La regla de las psicólogas del 30/9 no cambia: uno "dentro de lo esperable"
+ * sigue aportando la mitad que un recurso. Lo que cambia es contra qué se mide
+ * el total. Medido contra 73 informes escritos a mano, la coincidencia de banda
+ * pasa de 63 % a 68 %.
+ */
+function aEscala(bruto: number, maximo: number): number {
+  const piso = VALOR[1];
+  if (maximo <= piso) return bruto;
+  return piso + ((bruto - piso) * (100 - piso)) / (maximo - piso);
+}
+
 export function calcularCompetencias(
   s: SumarioCrudo,
   ctx: Contexto,
@@ -1464,6 +1526,7 @@ export function calcularCompetencias(
           1,
         datos: i.datosDe ? i.datosDe(ctx) : leidoPor(s, leer),
         aporte: i.aporte ? i.aporte(s, ctx) : null,
+        techo: i.techo === 50,
       };
     });
 
@@ -1498,15 +1561,27 @@ export function calcularCompetencias(
     // El que falta queda afuera del promedio: no suma ni divide. Antes contaba
     // como medio, que es inventarle un valor al dato que no está.
     const pesos = puntuados.reduce((n, r) => n + r.peso, 0);
-    const puntaje =
-      pesos === 0
-        ? null
-        : Math.round(
-            puntuados.reduce(
-              (n, r) => n + r.peso * (r.aporte ?? VALOR[r.nivel as 1 | 2 | 3]),
-              0
-            ) / pesos
-          );
+
+    // Si lo que hay para medir pesa menos de la mitad de la competencia, no se
+    // puntúa. El caso que lo pide es Habilidad cognitiva sin el Raven: quedan
+    // tres indicadores de alarma, y con los tres en rango la escala de abajo
+    // la llevaría a 100 sin haber medido razonamiento.
+    const pesoTotal = cuentan.reduce((n, r) => n + r.peso, 0);
+    if (pesos * 2 < pesoTotal) {
+      const falta = cuentan.filter((r) => r.nivel === null).map((r) => r.indicador);
+      return {
+        nombre: c.competencia,
+        mide: c.mide,
+        puntaje: null,
+        motivo: `falta ${falta.join(' y ')}, que es más de la mitad de esta competencia`,
+        renglones,
+      };
+    }
+
+    const bruto =
+      puntuados.reduce((n, r) => n + r.peso * (r.aporte ?? VALOR[r.nivel as 1 | 2 | 3]), 0) /
+      pesos;
+    const puntaje = pesos === 0 ? null : Math.round(aEscala(bruto, maximoDe(puntuados)));
 
     return {
       nombre: c.competencia,

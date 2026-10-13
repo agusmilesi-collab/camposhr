@@ -329,7 +329,8 @@ export type Informe = {
     parrafos: Record<ParrafoBenziger, string | null>;
     editado: Partial<Record<ParrafoBenziger, string>>;
   } | null;
-  raven: { raw: number; resultado: string } | null;
+  /** `corto` es la serie de 12 láminas: cuando viene, `raw` es null. */
+  raven: { raw: number | null; corto: number | null; resultado: string } | null;
   /**
    * Hasta qué nivel de rol puede llegar, si se cargó.
    *
@@ -784,7 +785,8 @@ export function desdeFicha(
   if (!sumario) faltantes.push({ que: 'El sumario del test de manchas', donde: 'la pestaña de codificación' });
 
   const ravenResultado = f.raven?.resultado ?? '';
-  if (f.raven?.raw === null || f.raven?.raw === undefined) {
+  const sinRaven36 = f.raven?.raw === null || f.raven?.raw === undefined;
+  if (sinRaven36 && typeof f.raven?.corto !== 'number') {
     faltantes.push({ que: 'El puntaje del Raven', donde: 'la hoja de la entrevista' });
   }
 
@@ -869,6 +871,7 @@ export function desdeFicha(
         {
           ravenPercentil: f.raven?.percentil ?? null,
           ravenRaw: f.raven?.raw ?? null,
+          ravenCorto: f.raven?.corto ?? null,
           /* El estrato del potencial alimenta un indicador de Liderazgo, así
              que viaja como el Raven: lo carga la evaluadora y no sale del
              sumario. */
@@ -1069,8 +1072,8 @@ export function desdeFicha(
         }
       : null,
     raven:
-      f.raven?.raw !== null && f.raven?.raw !== undefined
-        ? { raw: f.raven.raw, resultado: f.raven.resultado ?? '' }
+      f.raven && (typeof f.raven.raw === 'number' || typeof f.raven.corto === 'number')
+        ? { raw: f.raven.raw, corto: f.raven.corto ?? null, resultado: f.raven.resultado ?? '' }
         : null,
     // La misma condición que la sección: una técnica sin un solo resultado no
     // se puede declarar como usada.

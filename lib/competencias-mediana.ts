@@ -55,9 +55,9 @@ export async function medianasDeCompetencias(rige: Regulacion): Promise<Medianas
       'select=evaluacion_id,crudo',
       CACHE_PSICOTECNICOS
     ),
-    select<{ evaluacion_id: string; raw: number | null; percentil: number | null }>(
+    select<{ evaluacion_id: string; raw: number | null; corto: number | null; percentil: number | null }>(
       'raven',
-      'select=evaluacion_id,raw,percentil',
+      'select=evaluacion_id,raw,corto,percentil',
       CACHE_PSICOTECNICOS
     ),
     select<{ evaluacion_id: string; nivel: string | null; discurso_celda: string | null }>(
@@ -91,6 +91,7 @@ export async function medianasDeCompetencias(rige: Regulacion): Promise<Medianas
       {
         ravenPercentil: raven?.percentil ?? null,
         ravenRaw: raven?.raw ?? null,
+        ravenCorto: raven?.corto ?? null,
         potencial: discursivo
           ? { nivel: discursivo.nivel, celda: discursivo.discurso_celda }
           : null,

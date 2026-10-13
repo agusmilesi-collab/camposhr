@@ -89,7 +89,11 @@ export default function Crudo({ inf }: { inf: Informe }) {
               <tbody>
                 <tr>
                   <th scope="row">Respuestas correctas</th>
-                  <td className="inf-crudo-num">{inf.raven.raw} de 36</td>
+                  <td className="inf-crudo-num">
+                    {inf.raven.raw !== null
+                      ? `${inf.raven.raw} de 36`
+                      : `${inf.raven.corto} de 12 (serie corta)`}
+                  </td>
                 </tr>
                 <tr>
                   <th scope="row">Resultado</th>

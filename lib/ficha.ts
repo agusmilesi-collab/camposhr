@@ -166,6 +166,8 @@ export type Benziger = {
 };
 export type Raven = {
   raw: number | null;
+  /** Aciertos sobre 12 de la serie corta, que ya no se toma. Ver `supabase/raven-corto.sql`. */
+  corto: number | null;
   percentil: number | null;
   desvios: number | null;
   resultado: string | null;
@@ -384,7 +386,7 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
       ),
       select<Raven>(
         'raven',
-        `select=raw,percentil,desvios,resultado,origen,duracion_segundos&evaluacion_id=eq.${id}`,
+        `select=raw,corto,percentil,desvios,resultado,origen,duracion_segundos&evaluacion_id=eq.${id}`,
         CACHE_PSICOTECNICOS
       ),
       select<SesionRaven>(
