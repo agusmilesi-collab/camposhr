@@ -4,6 +4,7 @@ import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { anotarAcceso } from '@/lib/accesos';
+import { benzigerAlDiaEnOrdenes } from '@/lib/orden-compra';
 import { ABIERTO, CAMPOS_PEDIDO, ESTADOS_PEDIDO, type EstadoPedido } from '@/lib/pedido-campos';
 
 export const runtime = 'nodejs';
@@ -136,6 +137,10 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+
+  // El Benziger sumado o quitado después de la carga también va a las órdenes
+  // de compra que ya existen de ese pedido.
+  if ('con_benziger' in fila) await benzigerAlDiaEnOrdenes({ pedidoId: id });
 
   await anotarAcceso({
     accion: 'escritura',

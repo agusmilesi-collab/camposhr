@@ -13,6 +13,7 @@
 import { puestoConCiudad } from '@/lib/pedido-campos';
 import 'server-only';
 import { select } from '@/lib/supabase';
+import { benzigerAlDiaEnOrdenes } from '@/lib/orden-compra';
 import { diasDesde, habilesDesde } from '@/lib/hora';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import {
@@ -322,6 +323,10 @@ export async function guardarCampos(
   if (!res.ok) {
     return { ok: false, motivo: `Supabase respondió ${res.status}: ${await res.text()}` };
   }
+
+  // Un Benziger administrado se cobra aunque el pedido no lo llevara: la orden
+  // de compra de ese candidato suma o pierde el adicional.
+  if ('benziger_administrado' in fila) await benzigerAlDiaEnOrdenes({ evaluacionId: id });
 
   // Marcar el último test como administrado cierra la entrevista sola. No pasa
   // si el cambio fue de etapa: mover a mano ya dice a dónde va.

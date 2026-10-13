@@ -12,7 +12,7 @@
 
 import 'server-only';
 import { randomBytes } from 'node:crypto';
-import { insert, select } from '@/lib/supabase';
+import { insert, patch, select } from '@/lib/supabase';
 import { BENZIGER_USD, dolarTarjeta, fechaDePrecio, precioA, type Precio } from '@/lib/baterias-precios';
 import { llevaBenziger } from '@/lib/benziger';
 import { verFactura } from '@/lib/facturas';
@@ -23,6 +23,7 @@ import { REFERENCIA_EN_LA_HOJA, type FilaOrden, type Orden } from '@/lib/orden-c
 export * from '@/lib/orden-compra-tipos';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ADICIONAL = 'Adicional BTSA';
 const TOKEN = /^oc_[A-Za-z0-9_-]{16,40}$/;
 
 // Solo el nombre, sin el puesto (pedido de Agustín, 6/10/2026): en el papel
@@ -131,9 +132,9 @@ export async function crearOrden(
     if (llevaBenziger(c)) {
       items.push({
         evaluacion_id: c.id,
-        concepto: 'Adicional BTSA',
+        concepto: ADICIONAL,
         detalle: nombre,
-        nota: notaDelDolar('Adicional BTSA', BENZIGER_USD, cambio?.valor ?? null),
+        nota: notaDelDolar(ADICIONAL, BENZIGER_USD, cambio?.valor ?? null),
         importe: cambio ? Math.round(BENZIGER_USD * cambio.valor) : null,
       });
     }
@@ -153,6 +154,133 @@ export async function crearOrden(
     await insert('orden_items', { ...item, orden_id: orden.id, posicion: i });
   }
   return verOrden(orden.id);
+}
+
+type ItemAlDia = {
+  id: string;
+  orden_id: string;
+  evaluacion_id: string;
+  posicion: number;
+  concepto: string;
+  detalle: string | null;
+  ordenes_compra: { dolar_tarjeta: string | number | null } | null;
+};
+
+/**
+ * Pone al día el adicional del Benziger en las órdenes ya creadas.
+ *
+ * La orden guarda sus renglones al crearse, y el Benziger se puede sumar
+ * después: la casilla del pedido, o el tilde de que se administró en la
+ * entrevista. Sin esto la orden quedaba con el perfil solo y no coincidía con
+ * lo que se iba a facturar. Va en los dos sentidos: si se destilda, el
+ * renglón se va.
+ *
+ * El adicional se pesifica al dólar que la orden ya tenía guardado, que es el
+ * de su fecha de emisión y el que nombra su nota; solo si no tenía ninguno se
+ * usa el de hoy.
+ *
+ * **No toca lo ya facturado.** La factura fijó lo que se cobró, y una orden
+ * que cambia después diría otra cosa que el comprobante.
+ *
+ * No tira: se llama después de guardar, y un error acá no puede hacer que el
+ * guardado parezca fallido.
+ */
+export async function benzigerAlDiaEnOrdenes(
+  de: { pedidoId: string } | { evaluacionId: string }
+): Promise<void> {
+  try {
+    const filtro =
+      'pedidoId' in de
+        ? UUID.test(de.pedidoId) && `pedido_id=eq.${de.pedidoId}`
+        : UUID.test(de.evaluacionId) && `id=eq.${de.evaluacionId}`;
+    if (!filtro) return;
+    const evaluaciones = await select<{
+      id: string;
+      con_benziger: boolean | null;
+      benziger_administrado: boolean | null;
+      pedidos: { con_benziger: boolean | null } | null;
+    }>('evaluaciones', `select=id,con_benziger,benziger_administrado,pedidos(con_benziger)&${filtro}`);
+    if (evaluaciones.length === 0) return;
+    const ids = evaluaciones.map((e) => e.id).join(',');
+    const [items, facturadas] = await Promise.all([
+      select<ItemAlDia>(
+        'orden_items',
+        'select=id,orden_id,evaluacion_id,posicion,concepto,detalle,ordenes_compra(dolar_tarjeta)' +
+          `&evaluacion_id=in.(${ids})`
+      ),
+      select<{ evaluacion_id: string }>(
+        'factura_items',
+        `select=evaluacion_id&evaluacion_id=in.(${ids})`
+      ),
+    ]);
+    const yaFacturada = new Set(facturadas.map((f) => f.evaluacion_id));
+
+    const tocadas = new Set<string>();
+    let hoy: Awaited<ReturnType<typeof dolarTarjeta>> | undefined;
+    for (const e of evaluaciones) {
+      if (yaFacturada.has(e.id)) continue;
+      const suyos = items.filter((i) => i.evaluacion_id === e.id);
+      const perfil = suyos.find((i) => i.concepto.startsWith('Perfil '));
+      const adicional = suyos.find((i) => i.concepto === ADICIONAL);
+      // Sin renglón de perfil no hay orden de las que nacen con la carga.
+      if (!perfil) continue;
+      const lleva = llevaBenziger(e);
+
+      if (lleva && !adicional) {
+        let cotizacion = Number(perfil.ordenes_compra?.dolar_tarjeta) || null;
+        if (!cotizacion) {
+          hoy ??= await dolarTarjeta();
+          cotizacion = hoy?.valor ?? null;
+          if (cotizacion) {
+            await patch('ordenes_compra', `id=eq.${perfil.orden_id}`, { dolar_tarjeta: cotizacion });
+          }
+        }
+        // Justo debajo de su perfil: los que venían después bajan un lugar.
+        const delaOrden = await select<{ id: string; posicion: number }>(
+          'orden_items',
+          `select=id,posicion&orden_id=eq.${perfil.orden_id}&posicion=gt.${perfil.posicion}`
+        );
+        for (const i of delaOrden) {
+          await patch('orden_items', `id=eq.${i.id}`, { posicion: i.posicion + 1 });
+        }
+        await insert('orden_items', {
+          orden_id: perfil.orden_id,
+          evaluacion_id: e.id,
+          posicion: perfil.posicion + 1,
+          concepto: ADICIONAL,
+          detalle: perfil.detalle,
+          nota: notaDelDolar(ADICIONAL, BENZIGER_USD, cotizacion),
+          importe: cotizacion ? Math.round(BENZIGER_USD * cotizacion) : null,
+        });
+        tocadas.add(perfil.orden_id);
+      } else if (!lleva && adicional) {
+        const res = await fetch(
+          `${process.env.SUPABASE_URL}/rest/v1/orden_items?id=eq.${adicional.id}`,
+          {
+            method: 'DELETE',
+            headers: {
+              apikey: process.env.SUPABASE_SERVICE_KEY as string,
+              Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+            },
+            cache: 'no-store',
+          }
+        );
+        if (res.ok) tocadas.add(adicional.orden_id);
+      }
+    }
+
+    for (const ordenId of tocadas) {
+      const suyos = await select<{ importe: string | number | null }>(
+        'orden_items',
+        `select=importe&orden_id=eq.${ordenId}`
+      );
+      await patch('ordenes_compra', `id=eq.${ordenId}`, {
+        total: suyos.reduce((n, i) => n + (Number(i.importe) || 0), 0),
+      });
+    }
+  } catch (e) {
+    console.error('benzigerAlDiaEnOrdenes', e);
+  }
 }
 
 type FilaOrdenGuardada = {
