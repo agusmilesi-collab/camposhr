@@ -192,6 +192,32 @@ type EmpresaPortal = {
 };
 
 /**
+ * Los enlaces de portal que Supabase reconoce, el de ahora y el anterior.
+ *
+ * Si la consulta falla devuelve vacío: sin poder comprobarlo, un enlace de
+ * Airtable no abre.
+ */
+async function tokensVigentes(): Promise<Set<string>> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) return new Set();
+  try {
+    const r = await fetch(
+      `${url.replace(/\/$/, '')}/rest/v1/empresas?select=token_portal,token_portal_anterior`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' }
+    );
+    if (!r.ok) return new Set();
+    const filas: { token_portal: string | null; token_portal_anterior: string | null }[] =
+      await r.json();
+    return new Set(
+      filas.flatMap((f) => [f.token_portal, f.token_portal_anterior]).filter((t): t is string => !!t)
+    );
+  } catch {
+    return new Set();
+  }
+}
+
+/**
  * Empresas que tienen portal (campo Token portal cargado). Se piden sólo los
  * campos de la lista blanca por ID (no por nombre), así el token vive en
  * Airtable y dar de alta un cliente es llenar el campo. Tope de 100 empresas.
@@ -212,6 +238,11 @@ async function getEmpresasConToken(): Promise<EmpresaPortal[]> {
     return [];
   }
 
+  // Un enlace de Airtable vale solo mientras Supabase lo siga reconociendo
+  // (`empresas.token_portal_anterior`). Es lo que permite darlo de baja sin
+  // escribir en Airtable: se borra esa columna y el enlace deja de abrir.
+  const vigentes = await tokensVigentes();
+
   const out: EmpresaPortal[] = [];
   for (const r of res.records ?? []) {
     // La empresa de prueba queda afuera del listado de accesos siempre. El
@@ -222,6 +253,7 @@ async function getEmpresasConToken(): Promise<EmpresaPortal[]> {
     const f = r.fields ?? {};
     const tok = f[F_EMPRESA_TOKEN];
     if (typeof tok !== 'string' || !TOKEN_VALIDO.test(tok)) continue;
+    if (!vigentes.has(tok)) continue;
     out.push({
       id: r.id,
       nombre: f[F_EMPRESA.nombre] ?? 'Cliente',
