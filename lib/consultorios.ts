@@ -161,6 +161,10 @@ export async function movimientos(periodo?: string): Promise<Movimiento[]> {
   return filas.map((m) => ({ ...m, importe: Number(m.importe) }));
 }
 
+// El id llega de la dirección y va a parar al filtro de la consulta: uno que
+// no tenga forma de id podría agregarle condiciones.
+const ID_VALIDO = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Una persona sola, para su pantalla.
  *
@@ -169,6 +173,7 @@ export async function movimientos(periodo?: string): Promise<Movimiento[]> {
  * cincuenta para quedarse con una es trabajo que crece con el tiempo.
  */
 export async function inquilinoPorId(id: string): Promise<Inquilino | null> {
+  if (!ID_VALIDO.test(id)) return null;
   const filas = await select<Inquilino>(
     'inquilinos',
     'select=id,nombre,correo,telefono,activo,hash,matricula,matricula_vence,dni_archivo,' +
@@ -186,6 +191,7 @@ export async function inquilinoPorId(id: string): Promise<Inquilino | null> {
  * son horas que soltó y no ocupó.
  */
 export async function reservasDe(inquilinoId: string): Promise<Reserva[]> {
+  if (!ID_VALIDO.test(inquilinoId)) return [];
   return select<Reserva>(
     'reservas',
     `select=id,espacio_id,inquilino_id,fecha,desde_hora,hasta_hora,origen,estado,importe,inquilinos(nombre)` +
@@ -195,6 +201,7 @@ export async function reservasDe(inquilinoId: string): Promise<Reserva[]> {
 
 /** Su cuenta entera, de todos los meses: el saldo que se arrastra sale de acá. */
 export async function movimientosDe(inquilinoId: string): Promise<Movimiento[]> {
+  if (!ID_VALIDO.test(inquilinoId)) return [];
   const filas = await select<Movimiento>(
     'movimientos',
     'select=id,inquilino_id,tipo,fecha,periodo,importe,reserva_id,detalle,quien' +

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { guardarGuion } from '@/lib/guion';
 import { charlaPorToken } from '@/lib/presentaciones';
+import { cookies } from 'next/headers';
+import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 
 /**
  * El guion del expositor de una presentación.
@@ -12,7 +14,20 @@ import { charlaPorToken } from '@/lib/presentaciones';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/**
+ * La sesión del equipo se comprueba acá además del middleware: esta ruta
+ * también responde en el host principal, donde el middleware no pide nada.
+ */
+async function sinSesion(): Promise<boolean> {
+  if (!hayPuerta()) return false;
+  const clave = process.env.OS_CLAVE as string;
+  const cookie = cookies().get(COOKIE)?.value;
+  return !cookie || !igual(cookie, await huella(clave));
+}
+
 export async function PUT(req: Request, { params }: { params: { token: string } }) {
+  if (await sinSesion()) return new NextResponse('Sin sesión.', { status: 401 });
+
   if (!charlaPorToken(params.token)) {
     return new NextResponse('No existe', { status: 404 });
   }

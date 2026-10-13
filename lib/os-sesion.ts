@@ -22,6 +22,36 @@ export function hayPuerta(): boolean {
   return Boolean(process.env.OS_CLAVE);
 }
 
+/**
+ * El hub de herramientas pide la misma sesión que el OS.
+ *
+ * Ahí viven los enlaces de portal de cada cliente, las cotizaciones y lo que
+ * respondió cada persona en los cuestionarios: con la puerta solo en el host
+ * del OS, todo eso se abría sin clave desde el de al lado.
+ */
+export const HOST_TOOLS = 'tools.camposhr.com';
+
+/**
+ * A dónde se vuelve después de entrar: una pantalla del OS o una del hub.
+ *
+ * Cualquier otra cosa cae en la home. Sin esto, un enlace armado desde afuera
+ * podría usar la puerta para redirigir a otro sitio.
+ */
+export function destinoPermitido(destino: string): string {
+  if (destino.startsWith(`https://${HOST_TOOLS}/`)) return destino;
+  return destino.startsWith('/os') ? destino : '/os';
+}
+
+/**
+ * El dominio de la cookie de sesión.
+ *
+ * En producción vale para todos los subdominios, que es lo que hace que entrar
+ * al OS alcance para el hub. En local no lleva dominio.
+ */
+export function dominioDeCookie(host: string): string | undefined {
+  return host.toLowerCase().split(':')[0].endsWith('camposhr.com') ? '.camposhr.com' : undefined;
+}
+
 /** Treinta días: se entra desde la misma máquina todos los días. */
 export const DURACION = 60 * 60 * 24 * 30;
 

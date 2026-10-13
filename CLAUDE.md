@@ -1480,6 +1480,20 @@ tools.camposhr.com se abrían sin clave. Desde cualquier otro host `/os/*`
 redirige al del OS y `/api/os/*` contesta 404. Una pantalla nueva del equipo va
 bajo `/os`; lo que tiene que abrir alguien de afuera va en otra ruta, con token.
 
+## El hub pide la sesión del OS
+
+`middleware.ts`, rama de tools.camposhr.com. Todo el hub pide la cookie del OS,
+que se emite para `.camposhr.com` y por eso vale en los dos hosts. Sin sesión
+abren solo `/pres/<token>` y los archivos que una presentación necesita para
+pintarse (`ESTATICOS_DEL_HUB`); un `.html` de `public/` no abre. Antes de una
+charla hay que entrar al OS en la computadora que proyecta: las placas que
+embeben la matriz o el cuestionario lo piden.
+
+Una ruta de `/api` que escribe y no es para gente de afuera revisa la sesión
+por su cuenta (`sinSesion`), porque el host principal no pide nada: así están
+`/api/encuentros` y `/api/guion`. Y `/api/os/*` rechaza las escrituras cuyo
+`Origin` no sea el del OS.
+
 ## Lo que se cobra sin factura es una fila de `facturas`
 
 Botón "Sin factura" de la cola. Crea una factura con `sin_comprobante` en

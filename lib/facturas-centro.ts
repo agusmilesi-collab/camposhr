@@ -159,6 +159,7 @@ type FilaFacturaCentro = {
 
 /** Las facturas del Centro, de la más nueva a la más vieja. */
 export async function facturasDelCentro(inquilinoId?: string): Promise<FacturaDelCentro[]> {
+  if (inquilinoId && !/^[0-9a-f-]{36}$/i.test(inquilinoId)) return [];
   const filtro = inquilinoId ? `&inquilino_id=eq.${inquilinoId}` : '&inquilino_id=not.is.null';
   const filas = await select<FilaFacturaCentro>(
     'facturas',

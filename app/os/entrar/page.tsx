@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { hayPuerta } from '@/lib/os-sesion';
+import { destinoPermitido, hayPuerta } from '@/lib/os-sesion';
 
 export const metadata = { title: 'Campos OS', robots: { index: false, follow: false } };
 
@@ -13,7 +13,7 @@ export default function Entrar({
 }: {
   searchParams: { error?: string; destino?: string };
 }) {
-  const destino = searchParams.destino?.startsWith('/os') ? searchParams.destino : '/os';
+  const destino = destinoPermitido(searchParams.destino ?? '/os');
   if (!hayPuerta()) redirect(destino);
 
   return (

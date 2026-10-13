@@ -127,6 +127,12 @@ export async function POST(req: Request) {
     }
 
     if (accion === 'responder') {
+      // Quien responde sin haber mandado "empezar" rendía sin límite de tiempo:
+      // el reloj arranca con la primera respuesta que llegue.
+      if (!s.iniciado_at) {
+        s.iniciado_at = new Date().toISOString();
+        await patch(s.id, { iniciado_at: s.iniciado_at });
+      }
       if (seAcabo(s)) {
         await cerrar(s, 'tiempo');
         return NextResponse.json({ ok: false, motivo: 'Se terminó el tiempo.' }, { status: 409 });

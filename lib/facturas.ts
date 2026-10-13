@@ -182,8 +182,13 @@ export async function notasDeCredito(): Promise<
   );
 }
 
+// El id llega de la dirección y va a parar al filtro de la consulta: uno que
+// no tenga forma de id podría agregarle condiciones.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** Una sola, para el comprobante. */
 export async function verFactura(id: string): Promise<Factura | null> {
+  if (!UUID.test(id)) return null;
   const filas = await select<FilaFactura>(
     'facturas',
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +

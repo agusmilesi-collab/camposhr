@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
+import { COOKIE, DURACION, HOST_TOOLS, dominioDeCookie, hayPuerta, huella, igual } from '@/lib/os-sesion';
 
 /**
  * Ruteo por host. Cuatro zonas:
@@ -33,7 +33,7 @@ const CLIENT_HOST = 'clientes.camposhr.com';
 // La zona de los inquilinos del Centro Integral Santiago. El día que se compre
 // centrointegralsantiago.com se suma acá y no cambia nada más.
 const CENTRO_HOSTS = ['centro.camposhr.com'];
-const TOOLS_HOST = 'tools.camposhr.com';
+const TOOLS_HOST = HOST_TOOLS;
 const OS_HOST = 'os.camposhr.com';
 // Prototipo de interfaz del hub. Vive en public/v2/ y se ve en su propio
 // subdominio o en <host>/v2. No tiene datos reales ni acciones conectadas.
@@ -44,6 +44,11 @@ const TOOLS_V2_HOST = 'toolsversion2.camposhr.com';
 // `public/` también viven las cotizaciones, las presentaciones y los informes
 // del hub, que no tienen por qué servirse desde el host del cliente.
 const ESTATICOS_DEL_PORTAL = /^\/informe\//;
+
+// Lo que el hub sirve sin sesión: los archivos que una presentación necesita
+// para pintarse (hojas de estilo, imágenes, tipografías). Los `.html` de
+// `public/` quedan afuera a propósito, porque ahí hubo un informe.
+const ESTATICOS_DEL_HUB = /\.(css|js|png|jpe?g|webp|gif|svg|ico|woff2?|ttf|otf|mp3|mp4|webm)$/i;
 
 const TOKEN = /^\/([A-Za-z0-9_-]+)\/?$/;
 const TOKEN_EN_P = /^\/p\/([A-Za-z0-9_-]+)\/?$/;
@@ -186,7 +191,43 @@ export async function middleware(req: NextRequest) {
     // si `OS_CLAVE` está cargada: mientras se prueba el sistema, no lo está.
     const entrando =
       pathname === '/os/entrar' || pathname === '/api/os/entrar' || pathname === '/entrar';
-    if (hayPuerta() && !entrando && !(await sesionValida(req))) {
+    const conSesion = hayPuerta() ? await sesionValida(req) : true;
+    // Lo que el OS escribe lo manda una pantalla del OS. La cookie de sesión
+    // viaja también desde los otros subdominios, así que un pedido de escritura
+    // que nace en otro sitio se rechaza aunque la traiga.
+    const origen = req.headers.get('origin');
+    if (
+      pathname.startsWith('/api/os/') &&
+      !['GET', 'HEAD', 'OPTIONS'].includes(req.method) &&
+      origen &&
+      origen !== `https://${OS_HOST}`
+    ) {
+      return new NextResponse('No autorizado.', {
+        status: 403,
+        headers: { 'content-type': 'text/plain; charset=utf-8' },
+      });
+    }
+    // Quien ya entró al OS y viene rebotado del hub no vuelve a escribir la
+    // clave: se le deja la misma sesión para todos los subdominios y sigue.
+    const destinoHub = url.searchParams.get('destino') ?? '';
+    if (
+      hayPuerta() &&
+      conSesion &&
+      (pathname === '/entrar' || pathname === '/os/entrar') &&
+      destinoHub.startsWith(`https://${TOOLS_HOST}/`)
+    ) {
+      const res = NextResponse.redirect(destinoHub, 307);
+      res.cookies.set(COOKIE, req.cookies.get(COOKIE)?.value ?? '', {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: true,
+        path: '/',
+        maxAge: DURACION,
+        domain: dominioDeCookie(host),
+      });
+      return res;
+    }
+    if (hayPuerta() && !entrando && !conSesion) {
       const dest = url.clone();
       dest.pathname = '/os/entrar';
       dest.searchParams.set('destino', pathname === '/' ? '/os' : pathname);
@@ -214,15 +255,32 @@ export async function middleware(req: NextRequest) {
   if (host === TOOLS_HOST) {
     const mudado = testMudado(pathname);
     if (mudado) return NextResponse.redirect(`https://${OS_HOST}${mudado}`, 307);
-    if (pathname === '/') {
-      const dest = url.clone();
-      dest.pathname = '/index.html';
-      return NextResponse.rewrite(dest);
-    }
+    // La presentación de una charla abre con su token, sin sesión: es lo que
+    // se proyecta en la sala.
     const pr = pathname.match(PRESENTACION);
     if (pr) {
       const dest = url.clone();
       dest.pathname = `/pres/${pr[1]}.html`;
+      return NextResponse.rewrite(dest);
+    }
+    // Todo lo demás del hub pide la sesión del OS: los enlaces de portal, las
+    // cotizaciones, los cuestionarios, la base de charlas y los guiones.
+    if (hayPuerta() && !ESTATICOS_DEL_HUB.test(pathname) && !(await sesionValida(req))) {
+      if (pathname.startsWith('/api/')) {
+        return new NextResponse('Sin sesión.', {
+          status: 401,
+          headers: { 'content-type': 'text/plain; charset=utf-8' },
+        });
+      }
+      const vuelta = `https://${TOOLS_HOST}${pathname}${url.search}`;
+      return NextResponse.redirect(
+        `https://${OS_HOST}/entrar?destino=${encodeURIComponent(vuelta)}`,
+        307
+      );
+    }
+    if (pathname === '/') {
+      const dest = url.clone();
+      dest.pathname = '/index.html';
       return NextResponse.rewrite(dest);
     }
     return NextResponse.next();

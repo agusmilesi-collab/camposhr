@@ -131,7 +131,12 @@ export async function listarPedidos(): Promise<Pedido[]> {
   return filas.map(armar);
 }
 
+// El id llega de la dirección y va a parar al filtro de la consulta: uno que
+// no tenga forma de id podría agregarle condiciones.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function leerPedido(id: string): Promise<Pedido | null> {
+  if (!UUID.test(id)) return null;
   const filas = await select<Fila>(
     'pedidos',
     `select=${CAMPOS}&id=eq.${id}`,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { COOKIE, DURACION, huella, igual } from '@/lib/os-sesion';
+import { COOKIE, DURACION, destinoPermitido, dominioDeCookie, huella, igual } from '@/lib/os-sesion';
 import { insert } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
@@ -42,12 +42,41 @@ async function fallidos(minutos: number, ip?: string): Promise<number> {
   return Number(res.headers.get('content-range')?.split('/')[1] ?? 0) || 0;
 }
 
+/**
+ * Saca un intento ya anotado: el de quien entró bien, o el que llegó frenado.
+ * Si no se borrara el frenado, seguir probando alargaría el freno para siempre.
+ */
+async function desanotar(id: string | undefined) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!id || !url || !key) return;
+  try {
+    await fetch(`${url}/rest/v1/os_intentos?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      cache: 'no-store',
+    });
+  } catch (e) {
+    console.error('entrar, desanotar:', e);
+  }
+}
+
 export async function POST(req: Request) {
   const datos = await req.formData();
   const clave = String(datos.get('clave') ?? '');
   const destino = String(datos.get('destino') ?? '/os');
   const esperada = process.env.OS_CLAVE;
   const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'sin-ip';
+
+  // El intento se anota antes de contar, y se cuenta con él adentro. Contando
+  // primero y anotando después, cien pedidos mandados juntos leían todos "menos
+  // de cinco" antes de que se anotara ninguno, y el tope no frenaba nada.
+  let anotado: string | undefined;
+  try {
+    anotado = (await insert<{ id: string }>('os_intentos', { ip }))?.id;
+  } catch (e) {
+    console.error('entrar, anotar:', e);
+  }
 
   // El tope se mira antes de comparar la clave: frenado, ni la correcta entra,
   // que es lo que hace que seguir probando no sirva.
@@ -56,7 +85,8 @@ export async function POST(req: Request) {
       fallidos(POR_DIRECCION.minutos, ip),
       fallidos(EN_TOTAL.minutos),
     ]);
-    if (suyos >= POR_DIRECCION.cuantos || todos >= EN_TOTAL.cuantos) {
+    if (suyos > POR_DIRECCION.cuantos || todos > EN_TOTAL.cuantos) {
+      await desanotar(anotado);
       return NextResponse.redirect(
         new URL(`/os/entrar?error=2&destino=${encodeURIComponent(destino)}`, req.url),
         303
@@ -70,27 +100,24 @@ export async function POST(req: Request) {
 
   const ok = Boolean(esperada) && clave.length > 0 && clave === esperada;
   if (!ok) {
-    try {
-      await insert('os_intentos', { ip });
-    } catch (e) {
-      console.error('entrar, anotar:', e);
-    }
     return NextResponse.redirect(
       new URL(`/os/entrar?error=1&destino=${encodeURIComponent(destino)}`, req.url),
       303
     );
   }
 
-  // El destino se limita a rutas del propio OS: sin esto, un enlace armado
-  // desde afuera podría usar esta puerta para redirigir a otro sitio.
-  const limpio = destino.startsWith('/os') ? destino : '/os';
-  const res = NextResponse.redirect(new URL(limpio, req.url), 303);
+  await desanotar(anotado);
+
+  // El destino se limita al OS y al hub: sin esto, un enlace armado desde
+  // afuera podría usar esta puerta para redirigir a otro sitio.
+  const res = NextResponse.redirect(new URL(destinoPermitido(destino), req.url), 303);
   res.cookies.set(COOKIE, await huella(esperada as string), {
     httpOnly: true,
     sameSite: 'lax',
     secure: true,
     path: '/',
     maxAge: DURACION,
+    domain: dominioDeCookie(req.headers.get('host') ?? ''),
   });
   return res;
 }

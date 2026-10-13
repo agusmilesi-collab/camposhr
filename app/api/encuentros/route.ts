@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { crearEncuentro } from '@/lib/ciclo';
 import crypto from 'node:crypto';
+import { cookies } from 'next/headers';
+import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 
 /**
  * Alta de un encuentro: un cliente que va a recorrer un ciclo.
@@ -13,7 +15,20 @@ import crypto from 'node:crypto';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/**
+ * La sesión del equipo se comprueba acá además del middleware: esta ruta
+ * también responde en el host principal, donde el middleware no pide nada.
+ */
+async function sinSesion(): Promise<boolean> {
+  if (!hayPuerta()) return false;
+  const clave = process.env.OS_CLAVE as string;
+  const cookie = cookies().get(COOKIE)?.value;
+  return !cookie || !igual(cookie, await huella(clave));
+}
+
 export async function POST(req: Request) {
+  if (await sinSesion()) return new NextResponse('Sin sesión.', { status: 401 });
+
   let datos: { empresa?: unknown; cicloId?: unknown };
   try {
     datos = await req.json();
