@@ -119,5 +119,15 @@ export async function POST(req: Request) {
     maxAge: DURACION,
     domain: dominioDeCookie(req.headers.get('host') ?? ''),
   });
+  // Y la misma sesión, sin dominio. Quien entró antes de que la cookie valiera
+  // para todos los subdominios tiene guardada una de este host solo; si la
+  // clave cambió, esa quedó vieja, el navegador la manda primero y la puerta
+  // volvía a pedir la clave para siempre. Escribirla de nuevo la pisa.
+  if (dominioDeCookie(req.headers.get('host') ?? '')) {
+    res.headers.append(
+      'set-cookie',
+      `${COOKIE}=${await huella(esperada as string)}; Path=/; Max-Age=${DURACION}; HttpOnly; Secure; SameSite=Lax`
+    );
+  }
   return res;
 }

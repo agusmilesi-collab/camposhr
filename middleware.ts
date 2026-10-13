@@ -327,9 +327,10 @@ export async function middleware(req: NextRequest) {
 async function sesionValida(req: NextRequest): Promise<boolean> {
   const clave = process.env.OS_CLAVE;
   if (!clave) return false;
-  const cookie = req.cookies.get(COOKIE)?.value;
-  if (!cookie) return false;
-  return igual(cookie, await huella(clave));
+  // Puede haber dos con el mismo nombre, la de este host y la de todos los
+  // subdominios: alcanza con que una sea la buena.
+  const esperada = await huella(clave);
+  return req.cookies.getAll(COOKIE).some((c) => igual(c.value, esperada));
 }
 
 export const config = {
