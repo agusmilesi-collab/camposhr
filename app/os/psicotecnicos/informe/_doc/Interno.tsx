@@ -140,7 +140,9 @@ export function Desglose({
                   ? r.valor
                     ? '—'
                     : 'sin dato'
-                  : ['bajo', 'medio', 'alto'][r.nivel - 1];
+                  : r.aporte != null
+                    ? `medio alto · ${r.aporte}`
+                    : ['bajo', 'medio', 'alto'][r.nivel - 1];
               return (
                 <tr key={r.indicador}>
                   <td>

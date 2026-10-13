@@ -787,6 +787,22 @@ function bloqueGrillas(s: any) {
   return L;
 }
 
+/**
+ * El texto guardado del sumario, con el estilo si le falta.
+ *
+ * La hoja se guarda escrita al calcular, así que un Rorschach calculado antes
+ * del 13/10/2026 no trae el renglón del estilo. Se lo agrega al mostrarlo, en
+ * el mismo lugar donde lo escribe el motor, para no tener que recalcular cada
+ * protocolo.
+ */
+export function textoDelSumario(crudo: unknown): string | undefined {
+  const c = crudo as { texto?: string; control_estres?: { estilo?: unknown } } | null;
+  const texto = c?.texto;
+  const estilo = c?.control_estres?.estilo;
+  if (!texto || typeof estilo !== 'string' || !estilo || texto.includes('**Estilo**')) return texto;
+  return texto.replace(/^(.*\*\*Adj D\*\* `[^`]*`.*)$/m, `$1${SEP}**Estilo** \`${estilo}\``);
+}
+
 export function formatearSumario(s: any): string {
   return s.meta.layout === 'zdunic' ? formatearZdunic(s) : formatearExner(s);
 }
@@ -907,7 +923,9 @@ function formatearExner(s: any) {
   // La resta EA−Adj es no va en la hoja del Rorschach: lo que se lee es Adj D,
   // que es esa diferencia ya convertida a puntaje. Pedido de las psicólogas
   // (8/9/2026). Se sigue calculando, porque de ella sale Adj D.
-  L.push([kv('Adj es', n0(ce.Adj_es)), kv('Adj D', sg(ce.AdjD))].join(SEP));
+  // El estilo va escrito, como en la hoja del Zulliger: EB trae los dos
+  // números y había que deducirlo. Pedido de las psicólogas (9/10/2026).
+  L.push([kv('Adj es', n0(ce.Adj_es)), kv('Adj D', sg(ce.AdjD)), kv('Estilo', ce.estilo)].join(SEP));
   L.push(CORTE);
   L.push([
     kv('FM', det.FM), kv('m', det.m),

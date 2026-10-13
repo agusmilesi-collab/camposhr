@@ -225,6 +225,13 @@ type Indicador = {
    * la regla de cada banda escrita, para que la pantalla la muestre igual.
    */
   nivel?: (s: SumarioCrudo, ctx: Contexto) => Nivel;
+  /**
+   * Cuánto aporta, cuando no es lo que vale su nivel.
+   *
+   * Lo usa el Raven para el tramo de 25 a 30 aciertos, que queda en el nivel
+   * medio y aporta 75 en vez de 50. Null es "lo que valga el nivel".
+   */
+  aporte?: (s: SumarioCrudo, ctx: Contexto) => number | null;
   /** Qué dice cada banda, de alto a bajo, cuando no hay escala numérica. */
   reglas?: [string, string, string];
   /**
@@ -338,10 +345,11 @@ const EGOCENTRISMO: Indicador = {
   techo: 50,
   nombre: 'Índice de egocentrismo',
   formula: '(3r + (2)) ÷ R',
-  // Alto es negativo; dentro del rango o bajo, positivo. Por eso es binario y
-  // no una banda: quedarse corto no descuenta.
+  // En Rorschach, alto o bajo es negativo y dentro del rango es lo esperable
+  // (psicólogas, 13/10/2026; el piso es el del diccionario). En Zulliger solo
+  // el alto descuenta, y por eso ahí lleva su escala binaria.
   mide: 'Foco en sí mismo frente al registro del entorno',
-  escala: binario(0.55, false, 2),
+  escala: dentroDe(0.33, 0.55, 2),
   valor: (s) => num(s, 'autopercepcion', 'Ego'),
 };
 
@@ -369,6 +377,28 @@ const M_Y: Indicador = {
     const y = num(s, 'determinantes', 'SumY') ?? num(s, 'determinantes', 'Y');
     if (m === null && y === null) return null;
     return (m ?? 0) + (y ?? 0);
+  },
+};
+
+/**
+ * m e Y en Rorschach, cada una contra su tope.
+ *
+ * Lo esperable es m hasta 2 e Y hasta 1; con cualquiera de las dos pasada, el
+ * indicador da negativo. Hasta el 13/10/2026 se sumaban y se cortaba en 2, que
+ * dejaba pasar una Y de 2 sin m. Definido por las psicólogas ese día. En
+ * Zulliger sigue la suma, que es como lo escribieron para ese test.
+ */
+const M_Y_RORSCHACH: Indicador = {
+  techo: 50,
+  nombre: 'm + Y',
+  formula: 'm y SumY, cada una contra su tope',
+  mide: 'Nivel de tensión interna y ansiedad',
+  reglas: ['m hasta 2 e Y hasta 1', 'no se usa', 'm por encima de 2 o Y por encima de 1'],
+  nivel: (s) => {
+    const m = num(s, 'determinantes', 'm');
+    const y = num(s, 'determinantes', 'SumY') ?? num(s, 'determinantes', 'Y');
+    if (m === null && y === null) return null;
+    return (m ?? 0) > 2 || (y ?? 0) > 1 ? 1 : 3;
   },
 };
 
@@ -574,7 +604,9 @@ const C_PRIMA: Indicador = {
   nombre: "C'",
   formula: "SumC'",
   mide: 'Inhibición o restricción emocional',
-  escala: binario(2, false),
+  // El corte del diccionario: en Rorschach aumentado es más de 4. El Zulliger
+  // lleva el suyo.
+  escala: binario(4, false),
   valor: (s) => num(s, 'afectos', 'SumC_prima') ?? num(s, 'determinantes', 'SumC_prima'),
 };
 
@@ -583,7 +615,8 @@ const VAGAS: Indicador = {
   nombre: 'Vagas',
   formula: 'DQv',
   mide: 'Grado de desorganización frente a la experiencia',
-  escala: binario(2, false),
+  // Con una sola respuesta vaga ya es negativo, en los dos tests (13/10/2026).
+  escala: binario(0, false),
   valor: (s) => num(s, 'procesamiento', 'DQv') ?? num(s, 'localizacion', 'DQv'),
 };
 
@@ -598,12 +631,23 @@ const PSV: Indicador = {
   valor: (s) => num(s, 'codigos_especiales', 'PSV') ?? num(s, 'procesamiento', 'PSV'),
 };
 
+/** Desde cuántos aciertos el nivel medio del Raven aporta 75 en vez de 50. */
+const RAVEN_MEDIO_ALTO = 25;
+
 const RAVEN: Indicador = {
   nombre: 'Raven',
   formula: 'aciertos sobre 36 láminas',
   mide: 'Razonamiento abstracto',
   escala: { forma: 'umbral', mayorEsMejor: true, alto: 31, medio: 21 },
   valor: (_s, ctx) => ctx?.ravenRaw ?? null,
+  /* De 25 a 30 aciertos sigue siendo nivel medio y aporta 75: las psicólogas
+     pidieron el 13/10/2026 distinguir a quien queda cerca del nivel alto. Con
+     tres escalones, 21 y 30 aciertos recibían lo mismo, y medido contra sus
+     informes el sistema quedaba entre 10 y 15 puntos por debajo en ese tramo. */
+  aporte: (_s, ctx) => {
+    const raw = ctx?.ravenRaw;
+    return typeof raw === 'number' && raw >= RAVEN_MEDIO_ALTO && raw <= 30 ? 75 : null;
+  },
   datosDe: (ctx) =>
     ctx.ravenRaw === null || ctx.ravenRaw === undefined
       ? undefined
@@ -705,22 +749,6 @@ const POTENCIAL: Indicador = {
   },
 };
 
-/** Afr por debajo de la banda de su estilo; por encima no descuenta. */
-const AFR_PISO: Indicador = {
-  techo: 50,
-  nombre: 'Afr',
-  formula: 'Afr contra el piso de la banda de su estilo',
-  mide: 'Disposición a involucrarse con lo emocional',
-  reglas: ['desde el piso de la banda de su estilo', 'no se usa', 'por debajo del piso'],
-  nivel: (s) => {
-    const afr = num(s, 'afectos', 'Afr');
-    const estilo = s.control_estres?.estilo;
-    const banda = typeof estilo === 'string' ? bandaDeAfr(estilo) : null;
-    if (afr === null || banda?.minimo == null) return null;
-    return afr >= banda.minimo ? 3 : 1;
-  },
-};
-
 /** W sobre el total de localizaciones, con sus tres bandas. */
 const W_LOCALIZACION: Indicador = {
   nombre: 'W',
@@ -776,19 +804,25 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         nombre: 'EA',
         formula: 'EA',
         mide: 'Recursos disponibles para afrontar demandas',
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 9, medio: 7, decimales: 1 },
+        // Alta por encima de 11, media de 7 a 11 y baja por debajo de 7, que
+        // son los cortes del diccionario. EA va de a medios puntos.
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 11.5, medio: 7, decimales: 1 },
         valor: (s) => num(s, 'control_estres', 'EA'),
       },
       {
         nombre: 'D / AdjD',
         formula: 'D y AdjD',
         mide: 'Tolerancia al estrés, inmediata y sostenida',
-        reglas: ['D y AdjD en cero o más', 'AdjD en cero o más, D negativo', 'AdjD negativo'],
+        // Por encima de cero es alta, en cero media y por debajo baja
+        // (13/10/2026). Hasta ese día los dos en cero ya contaban como alta.
+        // Con AdjD en cero o más y D negativo queda en media: la tensión es
+        // del momento y la capacidad habitual alcanza.
+        reglas: ['D y AdjD por encima de cero', 'AdjD en cero o más, sin que los dos sean positivos', 'AdjD negativo'],
         nivel: (s) => {
           const d = num(s, 'control_estres', 'D');
           const adj = num(s, 'control_estres', 'AdjD');
           if (d === null || adj === null) return null;
-          if (adj >= 0 && d >= 0) return 3;
+          if (adj > 0 && d > 0) return 3;
           if (adj >= 0) return 2;
           return 1;
         },
@@ -797,7 +831,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       FC_CF,
       C_PRIMA,
       VAGAS,
-      M_Y,
+      M_Y_RORSCHACH,
     ],
   },
   {
@@ -870,7 +904,9 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       H_CONTRA_RESTO,
       POTENCIAL,
       CONTENIDOS_H,
-      AFR_PISO,
+      // Fuera de la banda para cualquiera de los dos lados es negativo. Hasta
+      // el 13/10/2026 solo descontaba por debajo.
+      AFR,
     ],
   },
 ];
@@ -912,13 +948,18 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         nombre: 'EA',
         formula: 'EA',
         mide: 'Recursos disponibles para afrontar demandas',
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 5, medio: 3, decimales: 1 },
+        // Alta por encima de 5, media de 3 a 5 y baja por debajo de 3.
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 5.5, medio: 3, decimales: 1 },
         valor: (s) => num(s, 'control_estres', 'EA'),
       },
       {
         nombre: 'EA − es',
         formula: 'EA − es',
         mide: 'Tolerancia al estrés',
+        // En la lista de las psicólogas del 13/10/2026 figura como "dentro de
+        // lo esperable", que valdría 50. No está aplicado: con ese techo
+        // Control emocional en Zulliger no puede pasar de 62 y nunca llega a
+        // Alto. Espera que lo confirmen viendo esa consecuencia.
         // Hasta −1,5 es lo esperado; por debajo, la demanda supera al recurso.
         escala: binario(-1.5, true, 1),
         valor: (s) => num(s, 'control_estres', 'dif_EA_es'),
@@ -926,8 +967,9 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       { ...INTELECTUALIZACION, escala: binario(1, false) },
       // Lo mismo que el aislamiento: en Zulliger es "dentro de lo esperable".
       { ...FC_CF, techo: 50 as const },
-      C_PRIMA,
-      { ...VAGAS, escala: binario(0, false) },
+      // C' se espera de 0 a 1 en el Zulliger, que es el corte del diccionario.
+      { ...C_PRIMA, escala: binario(1, false) },
+      VAGAS,
       M_Y,
     ],
   },
@@ -997,7 +1039,7 @@ export function claveDePeso(test: string, competencia: string, indicador: string
  * Definidos con las psicólogas entre el 30/9 y el 2/10/2026, a partir de tres
  * cosas: qué apoyo tiene el índice en la literatura, cuánto acompaña al resto de
  * su competencia sobre los 73 protocolos cargados, y qué tan estable es en un
- * protocolo corto. Ninguno pesa 0: ellas decidieron que todos cuenten.
+ * protocolo corto. Los únicos en 0 son DQ+ y Zf en Proactividad.
  *
  * Están todos juntos y no al lado de cada indicador porque lo que se decide no
  * es el peso sino el reparto: un 3 no dice nada hasta saber contra qué otros
@@ -1026,7 +1068,10 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       'M−': 1,
       'Índice de egocentrismo': 1,
     },
-    'Proactividad': { 'Ma : Mp': 2, R: 2, 'DQ+': 2, Zf: 2, Fd: 1 },
+    // DQ+ y Zf quedan en cero desde el 13/10/2026: las psicólogas no los
+    // usaban al puntuar Proactividad a mano, y sin ellos el motor cae en su
+    // misma banda en 42 de 73 informes contra 38. Siguen en el desglose.
+    'Proactividad': { 'Ma : Mp': 2, R: 2, 'DQ+': 0, Zf: 0, Fd: 1 },
     'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
     'Liderazgo': {
       Potencial: 3,
@@ -1060,7 +1105,7 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
     },
     // R pesa menos acá que en Rorschach: con diez respuestas, una sola lo
     // cambia de banda, y es el indicador que más movía el puntaje.
-    'Proactividad': { Fd: 2, 'DQ+': 2, Zf: 2, R: 1, 'Ma : Mp': 1 },
+    'Proactividad': { Fd: 2, 'DQ+': 0, Zf: 0, R: 1, 'Ma : Mp': 1 },
     'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
   },
 };
@@ -1274,6 +1319,8 @@ export type Competencia = {
      * que está bien.
      */
     valor?: string;
+    /** Lo que aporta al promedio cuando no es lo que vale su nivel. */
+    aporte?: number | null;
   }[];
 };
 
@@ -1416,6 +1463,7 @@ export function calcularCompetencias(
           i.peso ??
           1,
         datos: i.datosDe ? i.datosDe(ctx) : leidoPor(s, leer),
+        aporte: i.aporte ? i.aporte(s, ctx) : null,
       };
     });
 
@@ -1454,7 +1502,10 @@ export function calcularCompetencias(
       pesos === 0
         ? null
         : Math.round(
-            puntuados.reduce((n, r) => n + r.peso * VALOR[r.nivel as 1 | 2 | 3], 0) / pesos
+            puntuados.reduce(
+              (n, r) => n + r.peso * (r.aporte ?? VALOR[r.nivel as 1 | 2 | 3]),
+              0
+            ) / pesos
           );
 
     return {

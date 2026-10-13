@@ -43,6 +43,7 @@ import Hoja from '../../entrevista/[id]/Hoja';
 import { llevaDiscursivo, nivelesQueRigen, TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 import { tieneTexto } from '@/lib/texto-rico';
+import { textoDelSumario } from '@/lib/exner';
 import BenzigerHoja from './BenzigerHoja';
 import { leerBenziger } from '@/lib/benziger-lectura';
 import Bateria from '../../Bateria';
@@ -482,7 +483,7 @@ function SumarioEstructural({ f, rige }: { f: Ficha; rige: Regulacion }) {
 
   // El texto lo arma el propio motor, con el orden y las abreviaturas de la
   // hoja de sumario: se muestra tal cual en vez de rearmarlo acá.
-  const texto = (s.crudo as { texto?: string } | null)?.texto;
+  const texto = textoDelSumario(s.crudo);
 
   // La banda de cada indicador sale de los mismos cortes con los que el motor
   // elige las lecturas del informe, así que la hoja no puede pintar de verde un

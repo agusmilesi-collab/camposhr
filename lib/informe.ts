@@ -28,6 +28,7 @@ import { ajuste } from '@/lib/ajustes';
 import { puestoConCiudad } from '@/lib/pedido-campos';
 import { medianasDeCompetencias, type Medianas } from '@/lib/competencias-mediana';
 import { TEXTOS } from '@/lib/redacciones';
+import { textoDelSumario } from '@/lib/exner';
 import { tramoDe, tramosValidos, esTramo, type PasoDelPlan, type Tramo } from '@/lib/plan-incorporacion';
 import { DE_FABRICA as EXIGENCIA_DE_FABRICA, type Exigencia } from '@/lib/exigencia';
 import { exigenciasGuardadas } from '@/lib/exigencias-datos';
@@ -1075,7 +1076,7 @@ export function desdeFicha(
     // se puede declarar como usada.
     tecnicas: tecnicas(c.pedidos?.baterias?.codigo ?? null, hayBenziger),
     crudo: {
-      sumario: (f.sumario?.crudo as { texto?: string } | null)?.texto ?? null,
+      sumario: textoDelSumario(f.sumario?.crudo) ?? null,
       protocolo: f.manchas.map((m) => ({
         lamina: m.lamina ?? '—',
         n: m.n_respuesta,
