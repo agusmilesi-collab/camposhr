@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { getDatosCliente } from '@/lib/airtable';
 import {
@@ -9,13 +7,10 @@ import {
   INFORMES_PRUEBA,
 } from '@/lib/portal-demo';
 import { informeDe } from '@/lib/servicios';
+import { leerDocumento } from '@/lib/documentos-portal';
 import { empresaDelToken } from '@/lib/portal-supabase';
 
 export const dynamic = 'force-dynamic';
-
-/** Los informes viven al lado de los documentos del portal, fuera de `public/`.
- *  Ver la nota en lib/servicios.ts. */
-const CARPETA = path.join(process.cwd(), 'documentos');
 
 /**
  * Enlace "Ver informe" del portal: clientes.camposhr.com/<token>/informe/<id>.
@@ -69,12 +64,8 @@ export async function GET(
   const archivo = informeDe(datos.empresaId, cand.nombre);
   if (!archivo) return noEncontrado();
 
-  let html: string;
-  try {
-    html = await readFile(path.join(CARPETA, archivo), 'utf8');
-  } catch {
-    return noEncontrado();
-  }
+  const html = await leerDocumento(archivo);
+  if (html === null) return noEncontrado();
 
   return new NextResponse(html, {
     headers: {

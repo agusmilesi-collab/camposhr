@@ -7,13 +7,10 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['pdfjs-dist'],
   },
-  // Los documentos de los clientes se leen del disco en tiempo de pedido y no
-  // están en /public, así que hay que decirle a Next que los suba: lo que no
-  // se importa desde el código no viaja al paquete de la función.
+  // Lo que no se importa desde el código no viaja al paquete de la función, así
+  // que hay que decirle a Next que lo suba.
   outputFileTracingIncludes: {
-    '/p/[token]/doc/[archivo]': ['./documentos/**/*'],
-    '/p/[token]/informe/[id]': ['./documentos/**/*'],
-    // Y el worker del lector de PDF, por la misma razón: pdfjs lo carga en
+    // El worker del lector de PDF: pdfjs lo carga en
     // tiempo de ejecución armando la ruta con una cadena, así que el rastreo de
     // Next no lo ve y no lo sube. En el servidor de desarrollo está porque se
     // lee de node_modules; en la función desplegada faltaba, y la lectura moría

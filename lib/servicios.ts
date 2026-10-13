@@ -9,16 +9,18 @@
  * La clave es el ID de la empresa en Airtable y no el token del portal: el
  * token es el secreto que da acceso, y esto se lee en el listado de accesos.
  *
- * **Dónde viven los documentos.** Como archivos de este repositorio, en
- * `documentos/<cliente>/`, y a propósito fuera de `public/`: lo que está en
- * `public/` lo sirve Next a cualquiera que tenga la dirección, sin pasar por
- * el token. La ruta `app/p/[token]/doc/[archivo]/route.ts` los lee del disco y
- * los entrega recién después de comprobar que el token pertenece a la empresa
- * dueña del documento.
+ * **Dónde viven los documentos.** En el bucket privado, en
+ * `portal-documentos/<cliente>/` (ver `lib/documentos-portal.ts`). No van al
+ * repositorio, que es público, ni a `public/`, que Next sirve a cualquiera que
+ * tenga la dirección. La ruta `app/p/[token]/doc/[archivo]/route.ts` los pide
+ * al bucket y los entrega recién después de comprobar que el token pertenece
+ * a la empresa dueña del documento.
  *
- * Documento nuevo = copiar el HTML a `documentos/<cliente>/`, sumar su entrada
- * acá y desplegar. Un documento declarado sin su archivo devuelve 404, así que
- * las dos cosas van juntas.
+ * Documento nuevo = copiar el HTML a
+ * `~/Documents/camposhr-privado/documentos/<cliente>/`, subirlo con
+ * `node scripts/subir-documentos-portal.mjs <esa carpeta documentos>`, sumar
+ * su entrada acá y desplegar. Un documento declarado sin su archivo devuelve
+ * 404, así que las dos cosas van juntas.
  */
 export type Documento = {
   /** Texto del botón. Corto: son tres en una línea. */
@@ -27,7 +29,7 @@ export type Documento = {
   detalle: string;
   /** Parte final de la dirección: /p/<token>/doc/<slug>. */
   slug: string;
-  /** Ruta del archivo dentro de `documentos/`. */
+  /** Ruta del archivo dentro de `portal-documentos/`, en el bucket. */
   archivo: string;
   /** La dirección ya armada, que necesita el token del portal. */
   href?: string;
@@ -70,7 +72,7 @@ const SERVICIOS: Record<string, Servicio[]> = {
 /**
  * Informes individuales escritos, por empresa.
  *
- * Viven al lado de los otros documentos, en `documentos/<carpeta>/`, y se
+ * Viven al lado de los otros documentos, en `portal-documentos/<carpeta>/`, y se
  * sirven por la misma puerta: `/p/<token>/informe/<id>`, con el candidato
  * resuelto contra los pedidos de la empresa dueña del token.
  *

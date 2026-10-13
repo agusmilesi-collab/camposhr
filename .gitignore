@@ -10,9 +10,10 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 .env*
 
-# Los documentos de clientes viven en `documentos/`, versionados con el resto
-# del repositorio y servidos sólo contra el token del portal. Nunca en
-# `public/`, que Next entrega a cualquiera. Ver lib/servicios.ts.
+# Los documentos de clientes no van al repositorio, que es público: viven en
+# el bucket privado y se sirven sólo contra el token del portal. La copia de
+# trabajo está en ~/Documents/camposhr-privado/documentos. Ver lib/servicios.ts.
+documentos/
 
 
 # Las migraciones con datos de personas reales no van al repositorio, que es
