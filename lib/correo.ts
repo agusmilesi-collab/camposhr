@@ -55,6 +55,11 @@ export type Correo = {
    */
   responderA?: string[];
   /**
+   * Cuántos minutos después tiene que salir. La espera la hace Resend: el
+   * servidor entrega el correo ahora y no se queda esperando.
+   */
+  enMinutos?: number;
+  /**
    * Lo que hace que el mismo aviso no salga dos veces: Resend descarta un
    * segundo envío con la misma clave durante 24 horas.
    */
@@ -107,6 +112,9 @@ export async function enviarCorreo(c: Correo): Promise<Envio> {
         ...(copia.length > 0 ? { cc: copia } : {}),
         ...(responderA.length > 0 ? { reply_to: responderA } : {}),
         subject: c.asunto,
+        ...(c.enMinutos && c.enMinutos > 0
+          ? { scheduled_at: new Date(Date.now() + c.enMinutos * 60_000).toISOString() }
+          : {}),
         html: c.html,
         text: c.texto,
         attachments: (c.adjuntos ?? []).map((a) => ({

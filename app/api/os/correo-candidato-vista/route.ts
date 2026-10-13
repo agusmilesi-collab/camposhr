@@ -8,6 +8,7 @@
  *
  *   ?modalidad=online | presencial      (online si no se dice)
  *   ?tipo=nuevo | reprogramado | modalidad
+ *   ?correo=bzg                        (las indicaciones del Benziger)
  *   ?whatsapp=no                        (la evaluadora sin número cargado)
  *
  * No lee ni escribe la base, y el botón de confirmar abre la página real con
@@ -16,6 +17,7 @@
  */
 
 import { VISTA_PREVIA, armarCorreoCandidato } from '@/lib/correo-candidato';
+import { armarCorreoBzg } from '@/lib/correo-bzg';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,7 +27,13 @@ export function GET(req: Request) {
   const online = q.get('modalidad') !== 'presencial';
   const tipo = q.get('tipo');
 
-  const c = armarCorreoCandidato({
+  const c = q.get('correo') === 'bzg'
+    ? armarCorreoBzg({
+        pila: 'Lucía',
+        con: 'Lorena Campos',
+        fecha: VISTA_PREVIA.fecha(),
+      })
+    : armarCorreoCandidato({
     nombre: VISTA_PREVIA.nombre,
     puesto: 'Cajera de sucursal',
     empresa: 'Distribuidora Andina',

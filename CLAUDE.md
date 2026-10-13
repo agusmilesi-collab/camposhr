@@ -1596,6 +1596,16 @@ candidato: no hay enlace que mandar.
 un lápiz (no birome), porque parte de los tests se hace dibujando. En la presencial no va:
 el papel y el lápiz los pone la evaluadora.
 
+**A quien lleva Benziger le llega un segundo correo, "Indicaciones BZG"**
+(`lib/correo-bzg.ts`), tres minutos después del de la entrevista: que va a
+recibir el cuestionario desde la plataforma de Benziger (con su asunto
+textual, "Bienvenido a su evaluación BZG"), que lo complete
+antes de la entrevista, con el día y la hora, y que tres preguntas se redactan. Lo firma la evaluadora. La espera la hace
+Resend (`enMinutos` en `enviarCorreo`, que manda `scheduled_at`). Sale una vez
+por evaluación (`evaluaciones.aviso_bzg_el`, `supabase/aviso-bzg.sql`) y no
+sale si el Benziger ya está tomado. Vista previa:
+`/api/os/correo-candidato-vista?correo=bzg`.
+
 **El correo de la online pide confirmar la asistencia.** Google Meet no manda
 su invitación porque el correo sale de acá, así que arriba del botón de entrar
 va "Confirmar asistencia", que abre `camposhr.com/confirmar/<token>`

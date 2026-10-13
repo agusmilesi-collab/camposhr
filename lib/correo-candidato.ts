@@ -35,8 +35,9 @@ import { randomBytes } from 'node:crypto';
 import { patch, select } from '@/lib/supabase';
 import { enviarCorreo, escapar, hayCorreo } from '@/lib/correo';
 import { BOTON, PARRAFO, hoja } from '@/lib/correo-destinos';
-import { CONSULTORIO, CONSULTORIO_MAPA } from '@/lib/consultorio';
+import { CONSULTORIO, CONSULTORIO_CON_TIMBRE, CONSULTORIO_MAPA } from '@/lib/consultorio';
 import { partesDelNombre, partesDePersona } from '@/lib/personas';
+import { avisarBzg } from '@/lib/correo-bzg';
 
 const ZONA = 'America/Argentina/Cordoba';
 
@@ -175,7 +176,7 @@ function lugarYDetalle(d: ParaCalendario): { donde: string; detalle: string } {
     donde: d.online ?? `${CONSULTORIO}, Santa Fe, Argentina`,
     detalle: d.online
       ? `Videollamada de Google Meet${con ? ` con ${con}` : ''}: ${d.online}`
-      : `Entrevista presencial${con ? ` con ${con}` : ''} en ${CONSULTORIO}. Cómo llegar: ${CONSULTORIO_MAPA}`,
+      : `Entrevista presencial${con ? ` con ${con}` : ''} en ${CONSULTORIO_CON_TIMBRE}. Cómo llegar: ${CONSULTORIO_MAPA}`,
   };
 }
 
@@ -295,7 +296,7 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
   const whatsapp = (con && d.whatsapp?.trim()) || null;
   const numero = whatsapp ? whatsapp.replace(/\D/g, '') : '';
   const quien = con ? `Te entrevista ${con}` : 'La entrevista es';
-  const donde = online ? 'por Google Meet.' : `en ${CONSULTORIO}.`;
+  const donde = online ? 'por Google Meet.' : `en ${CONSULTORIO_CON_TIMBRE}.`;
   const como = `${quien} ${donde}`;
   // El nombre de la evaluadora en negrita: es a quien la persona va a ver.
   const comoHtml = con
@@ -446,6 +447,9 @@ export async function avisarAlCandidato(evaluacionId: string): Promise<void> {
         // Otra fecha es otra entrevista que confirmar.
         ...(mismaFecha ? {} : { asistencia_confirmada_el: null }),
       });
+      // A quien lleva Benziger, tres minutos después le llegan sus
+      // indicaciones. Una vez por evaluación; lo decide `avisarBzg`.
+      await avisarBzg(e.id);
     }
   } catch (err) {
     console.error('[correo] no se pudo avisar al candidato', err);
