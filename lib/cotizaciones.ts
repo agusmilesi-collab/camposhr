@@ -57,17 +57,20 @@ export type Cotizacion = {
   objecion: Objecion | null;
   /** La última vez que se siguió, cuando ya se siguió alguna. */
   seguimientoEl: string | null;
+  /** El día en que se repartió entre los socios lo que dejó. Nulo si no se repartió. */
+  repartidoEl: string | null;
 };
 
-type Fila = Omit<Cotizacion, 'importe' | 'empresaId' | 'seguimientoEl'> & {
+type Fila = Omit<Cotizacion, 'importe' | 'empresaId' | 'seguimientoEl' | 'repartidoEl'> & {
   importe: string | number;
   empresa_id: string | null;
   seguimiento_el: string | null;
+  repartido_el: string | null;
 };
 
 const CAMPOS =
   'id,empresa_id,cliente,concepto,importe,moneda,version,estado,fecha,token,archivo,nota,motivo,' +
-  'objecion,seguimiento_el';
+  'objecion,seguimiento_el,repartido_el';
 
 function armar(f: Fila): Cotizacion {
   return {
@@ -86,6 +89,7 @@ function armar(f: Fila): Cotizacion {
     motivo: f.motivo,
     objecion: f.objecion,
     seguimientoEl: f.seguimiento_el,
+    repartidoEl: f.repartido_el,
   };
 }
 

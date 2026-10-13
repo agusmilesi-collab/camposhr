@@ -8,8 +8,10 @@ import {
   listarAFacturar,
   listarEmisoras,
   listarFacturas,
+  marchaMonotributo,
   notasDeCredito,
 } from '@/lib/facturas';
+import Monotributo from '@/app/os/costos/Monotributo';
 import { esDePsicotecnicos } from '@/lib/facturas-tipos';
 import { equipo, esMia, quienSoy } from '@/lib/identidad';
 import { cuentasDeLaBarra } from '../datos';
@@ -37,7 +39,7 @@ export default async function Facturacion({
 }: {
   searchParams?: { ver?: string };
 }) {
-  const [yo, miembros, pendientes, facturas, notas, emisoras, cuentas] = await Promise.all([
+  const [yo, miembros, pendientes, facturas, notas, emisoras, cuentas, marcha] = await Promise.all([
     quienSoy(),
     equipo(),
     listarAFacturar(),
@@ -45,6 +47,7 @@ export default async function Facturacion({
     notasDeCredito(),
     listarEmisoras(),
     cuentasDeLaBarra(),
+    marchaMonotributo(),
   ]);
 
   // Lo de quien mira, para la cifra de arriba: Agustín ve las dos colas.
@@ -111,14 +114,18 @@ export default async function Facturacion({
   const fiscales = await fiscalesDe(pendientes.map((p) => p.empresaId));
   const siguientes = siguientesNumeros(facturas);
 
-  const PESTANAS = [
+  const PESTANAS: { clave: string; texto: string; cuenta?: number }[] = [
     ...colas.map((c) => ({ clave: c.clave, texto: `${c.nombre} a facturar`, cuenta: c.filas.length })),
-    { clave: 'sin-cobrar', texto: 'Sin cobrar', cuenta: sinCobrar.length },
+    { clave: 'sin-cobrar', texto: 'A cobrar', cuenta: sinCobrar.length },
     { clave: 'cobrado', texto: 'Cobrado', cuenta: cobradas.length },
     // Solo cuando hay alguna: es la excepción y no una parte del circuito.
     ...(anuladas.length > 0
       ? [{ clave: 'anuladas', texto: 'Anuladas', cuenta: anuladas.length }]
       : []),
+    // La marcha del monotributo no se filtra por quien mira: las dos categorías
+    // se ven juntas, porque una cerca del tope cambia con cuál conviene
+    // facturar lo que sigue.
+    { clave: 'monotributo', texto: 'Monotributo' },
   ];
 
   /**
@@ -152,7 +159,7 @@ export default async function Facturacion({
             aria-current={ver === p.clave ? 'page' : undefined}
           >
             {p.texto}
-            <span className="os-pestana-cuenta">{p.cuenta}</span>
+            {p.cuenta !== undefined && <span className="os-pestana-cuenta">{p.cuenta}</span>}
           </Link>
         ))}
       </nav>
@@ -169,6 +176,7 @@ export default async function Facturacion({
       )}
       {ver === 'sin-cobrar' && <Emitidas facturas={vivas} ordenes={ordenes} solo="sin-cobrar" sinEmisora={soloDe !== null} />}
       {ver === 'cobrado' && <Emitidas facturas={vivas} ordenes={ordenes} solo="cobrado" sinEmisora={soloDe !== null} />}
+      {ver === 'monotributo' && <Monotributo emisoras={marcha} />}
       {ver === 'anuladas' && <Anuladas facturas={anuladas} notas={notas} sinEmisora={soloDe !== null} />}
     </Shell>
   );

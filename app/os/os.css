@@ -1752,6 +1752,7 @@ html[data-os-lateral='compacta'] .os-pie-quien {
    lo que lo dice antes de que se lea el rótulo. */
 .os-panel + .os-rotulo-seccion,
 .os-cifras + .os-rotulo-seccion,
+.os-kanban + .os-rotulo-seccion,
 .os-monotributo + .os-rotulo-seccion {
   margin-top: 58px;
 }
@@ -2076,6 +2077,19 @@ html[data-os-lateral='compacta'] .os-pie-quien {
 .os-costo-abre span {
   font-size: 0.7rem;
   color: var(--os-suave);
+}
+
+/* La flecha a la izquierda del cliente: abre la fila entera, así que el nombre
+   va sin el subrayado punteado que marcaba al importe como botón. */
+.os-costo-abre.os-costo-abre-fila {
+  max-width: 100%;
+  border-bottom: 0;
+  font-weight: inherit;
+}
+
+.os-costo-abre.os-costo-abre-fila span {
+  font-size: 0.95rem;
+  color: var(--os-azul-fuerte);
 }
 
 /**
@@ -7744,13 +7758,38 @@ html[data-os-tema='oscuro'] .os-bz-cerebro {
 }
 
 /* Lo que le toca a cada uno, debajo de los gastos del trabajo. */
-.os-reparto {
-  margin-top: 18px;
+/* El botón que abre el alta de un gasto, debajo del último. */
+.os-gasto-sumar {
+  padding: 10px 0 0 18px;
 }
 
-.os-reparto > .os-dato-rotulo {
-  display: block;
+/* El reparto va en su propio recuadro: los gastos son lo que se carga y esto
+   es lo que resulta de ellos. Con el mismo fondo se leía como más gastos. */
+.os-reparto {
+  margin-top: 22px;
+  padding: 14px 18px 8px;
+  border: 1px solid var(--os-linea);
+  border-radius: 8px;
+  background: var(--os-panel);
+}
+
+.os-reparto-cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 6px;
+}
+
+.os-reparto .os-gasto:last-child {
+  border-bottom: 0;
+}
+
+/* Ya se repartió: en verde, que en el OS es el del sí. */
+.os-boton.os-boton-repartido {
+  border-color: var(--os-verde);
+  color: var(--os-verde);
+  background: transparent;
 }
 
 /* Nombre, su parte, lo que puso y lo que cobra. */

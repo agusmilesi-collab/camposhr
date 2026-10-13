@@ -346,6 +346,27 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
 
+      /* Marcar que lo que dejó un trabajo ya se repartió, o deshacerlo. Se
+         guarda el día y no un sí o no: es lo que se va a querer saber
+         después. */
+      case 'repartido': {
+        const { id } = datos;
+        if (!UUID.test(id ?? '')) {
+          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        }
+        const repartidoEl = datos.repartido ? hoy() : null;
+        await escribir(`cotizaciones?id=eq.${id}`, 'PATCH', { repartido_el: repartidoEl });
+        await anotarAcceso({
+          quien: yo.nombre,
+          accion: 'escritura',
+          recurso: 'cotizacion',
+          recursoId: id,
+          detalle: { repartido_el: repartidoEl },
+        });
+        revalidateTag(CACHE_COMERCIAL);
+        return NextResponse.json({ ok: true });
+      }
+
       case 'borrarCosto': {
         const { id } = datos;
         if (!UUID.test(id ?? '')) {

@@ -25,7 +25,7 @@ import { formatoImporte, type Factura } from '@/lib/facturas-tipos';
 import { formatoFecha } from '@/lib/comercial-tipos';
 import { columnas } from '@/app/os/psicotecnicos/piezas';
 import { Cobro, BorrarFactura } from '@/app/os/psicotecnicos/facturacion/Facturacion';
-import { BorrarCosto, ImporteCosto, NuevoCosto, QuienPago } from './Costos';
+import { BorrarCosto, ImporteCosto, NuevoCosto, QuienPago, Repartido } from './Costos';
 import { numeroDe } from '@/lib/facturas-tipos';
 
 /** Lo que la pantalla ya resolvió para cada trabajo. */
@@ -36,6 +36,8 @@ export type Trabajo = {
   fecha: string;
   moneda: string;
   cotizado: number;
+  /** El día en que se repartió lo que dejó. Nulo si todavía no. */
+  repartidoEl: string | null;
   facturado: number;
   cobrado: number;
   costo: number;
@@ -133,6 +135,20 @@ export default function Trabajos({
     );
   }
 
+  const total = trabajos.reduce(
+    (n, t) => {
+      const ingreso = t.facturado > 0 ? t.facturado : t.cotizado;
+      return {
+        cotizado: n.cotizado + t.cotizado,
+        costo: n.costo + t.costo,
+        ingreso: n.ingreso + ingreso,
+        resultado: n.resultado + ingreso - t.costo,
+        facturado: n.facturado + t.facturado,
+      };
+    },
+    { cotizado: 0, costo: 0, ingreso: 0, resultado: 0, facturado: 0 }
+  );
+
   return (
     <div className="os-panel">
       <div className="os-tabla-marco">
@@ -171,8 +187,22 @@ export default function Trabajos({
               return (
                 <Fragmento key={t.id}>
                   <tr>
+                    {/* La flecha abre el detalle del trabajo: los gastos, el
+                        reparto y las facturas. */}
                     <td className="os-tabla-nombre" data-campo="Cliente">
-                      {t.cliente}
+                      <button
+                        type="button"
+                        className={`os-costo-abre os-costo-abre-fila${cajon ? ' abierto' : ''}`}
+                        onClick={() => setAbierto(cajon ? null : t.id)}
+                        title={
+                          t.gastos.length === 0
+                            ? 'Sin gastos cargados. Tocar para sumar uno.'
+                            : `${t.gastos.length} gastos. Tocar para verlos.`
+                        }
+                      >
+                        <span aria-hidden="true">{cajon ? '▾' : '▸'}</span>
+                        {t.cliente}
+                      </button>
                     </td>
                     <td className="os-tabla-recorta" data-campo="Trabajo" title={t.concepto}>
                       {t.concepto}
@@ -183,22 +213,8 @@ export default function Trabajos({
                     <td className="os-tabla-num" data-campo="Cotizado">
                       {formatoImporte(t.cotizado, t.moneda)}
                     </td>
-                    {/* El costo abre su cajón: en la fila va la suma, y el
-                        detalle de los gastos está a un clic. */}
                     <td className="os-tabla-num" data-campo="Costo">
-                      <button
-                        type="button"
-                        className={`os-costo-abre${cajon ? ' abierto' : ''}`}
-                        onClick={() => setAbierto(cajon ? null : t.id)}
-                        title={
-                          t.gastos.length === 0
-                            ? 'Sin gastos cargados. Tocar para sumar uno.'
-                            : `${t.gastos.length} gastos. Tocar para verlos.`
-                        }
-                      >
-                        {formatoImporte(t.costo, t.moneda)}
-                        <span aria-hidden="true">{cajon ? '▾' : '▸'}</span>
-                      </button>
+                      {formatoImporte(t.costo, t.moneda)}
                     </td>
                     <td
                       className={`os-tabla-num${resultado < 0 ? ' os-resultado-rojo' : ''}`}
@@ -256,7 +272,10 @@ export default function Trabajos({
                                 pegado a los gastos porque es su consecuencia:
                                 quien puso plata la recupera acá. */}
                             <div className="os-reparto">
-                              <span className="os-dato-rotulo">Reparto</span>
+                              <div className="os-reparto-cabeza">
+                                <span className="os-dato-rotulo">Reparto</span>
+                                <Repartido id={t.id} repartidoEl={t.repartidoEl} />
+                              </div>
                               {ingresoDelReparto(t).monto === 0 && t.costo === 0 ? (
                                 <p className="os-panel-nota">
                                   Sin ingreso y sin gastos: todavía no hay nada que repartir.
@@ -345,6 +364,37 @@ export default function Trabajos({
               );
             })}
           </tbody>
+          {/* La suma de cada columna, con la misma cuenta que las filas: el
+              resultado de cada trabajo se mide contra lo facturado, o contra
+              lo cotizado mientras no haya factura. */}
+          <tfoot>
+            <tr>
+              <td colSpan={3}>Total</td>
+              <td className="os-tabla-num" data-campo="Cotizado">
+                {formatoImporte(total.cotizado)}
+              </td>
+              <td className="os-tabla-num" data-campo="Costo">
+                {formatoImporte(total.costo)}
+              </td>
+              <td
+                className={`os-tabla-num${total.resultado < 0 ? ' os-resultado-rojo' : ''}`}
+                data-campo="Resultado"
+              >
+                {formatoImporte(total.resultado)}
+              </td>
+              <td
+                className={`os-tabla-num${total.resultado < 0 ? ' os-resultado-rojo' : ''}`}
+                data-campo="Margen"
+              >
+                {total.ingreso === 0
+                  ? '—'
+                  : `${Math.round((total.resultado / total.ingreso) * 100)}%`}
+              </td>
+              <td className="os-tabla-num" data-campo="Facturado">
+                {formatoImporte(total.facturado)}
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>

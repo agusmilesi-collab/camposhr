@@ -38,16 +38,11 @@ async function mandar(cuerpo: unknown) {
 export default function Monotributo({ emisoras }: { emisoras: Marcha[] }) {
   if (emisoras.length === 0) return null;
   return (
-    <>
-      {/* "Psicotécnicos" y no "Monotributo": lo que se ve es lo que factura
-          cada una, y el monotributo es contra qué se lo mide. */}
-      <div className="os-rotulo-seccion">Psicotécnicos</div>
-      <div className="os-monotributo">
-        {emisoras.map((e) => (
-          <Escala key={e.emisorId} e={e} />
-        ))}
-      </div>
-    </>
+    <div className="os-monotributo">
+      {emisoras.map((e) => (
+        <Escala key={e.emisorId} e={e} />
+      ))}
+    </div>
   );
 }
 

@@ -10,6 +10,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { formatoFecha } from '@/lib/comercial-tipos';
 import Desplegable from '@/app/os/Desplegable';
 
 /* En el desplegable va el nombre de pila: "Lucila Campos" no entra en el ancho
@@ -38,6 +39,50 @@ async function mandar(cuerpo: unknown) {
   return datos;
 }
 
+/**
+ * Si lo que dejó el trabajo ya se repartió.
+ *
+ * La cuenta del reparto se hace sola; esto dice si las transferencias
+ * salieron. Tocarlo de nuevo lo deshace.
+ */
+export function Repartido({ id, repartidoEl }: { id: string; repartidoEl: string | null }) {
+  const router = useRouter();
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function alternar() {
+    setGuardando(true);
+    setError(null);
+    try {
+      await mandar({ accion: 'repartido', id, repartido: repartidoEl === null });
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo guardar.');
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <>
+      {error && <span className="os-form-error">{error}</span>}
+      <button
+        type="button"
+        className={`os-boton${repartidoEl === null ? ' os-boton-marcado' : ' os-boton-repartido'}`}
+        onClick={alternar}
+        disabled={guardando}
+        title={
+          repartidoEl === null
+            ? 'Tocar cuando las transferencias ya salieron.'
+            : 'Tocar para volver a dejarlo sin repartir.'
+        }
+      >
+        {repartidoEl === null ? 'Sin repartir' : `✓ Repartido el ${formatoFecha(repartidoEl)}`}
+      </button>
+    </>
+  );
+}
+
 export function NuevoCosto({
   cotizacionId,
   equipo,
@@ -52,6 +97,9 @@ export function NuevoCosto({
   /* Quién pagó viaja aparte del formulario: el desplegable del OS es un botón
      con su lista, no un campo del navegador. */
   const [pagadoPor, setPagadoPor] = useState('');
+  /* El formulario se abre con un botón: siempre a la vista, ocupaba un renglón
+     entero en cada trabajo para algo que se usa de vez en cuando. */
+  const [abierto, setAbierto] = useState(false);
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -63,6 +111,7 @@ export function NuevoCosto({
       await mandar({ accion: 'costo', cotizacionId, ...datos, pagadoPor });
       form.reset();
       setPagadoPor('');
+      setAbierto(false);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar.');
@@ -71,13 +120,23 @@ export function NuevoCosto({
     }
   }
 
+  if (!abierto) {
+    return (
+      <div className="os-gasto-sumar">
+        <button type="button" className="os-boton" onClick={() => setAbierto(true)}>
+          + Sumar gasto
+        </button>
+      </div>
+    );
+  }
+
   /* Los campos caen en las mismas columnas que los gastos de arriba: lo que se
      escribe queda debajo de lo que va a ser. */
   return (
     <form className="os-form os-gasto os-gasto-pagado os-gasto-alta" onSubmit={enviar}>
       <div className="os-campo-bloque">
         <label className="os-etiqueta-campo">Concepto</label>
-        <input className="os-campo" name="concepto" required maxLength={160} placeholder="Honorarios de la psicóloga" />
+        <input className="os-campo" name="concepto" required maxLength={160} placeholder="Honorarios de la psicóloga" autoFocus />
       </div>
       {/* Quién puso la plata: al repartir, ese gasto se le devuelve antes de
           partir lo que queda. Sin elegir queda a cuenta del estudio. */}
@@ -113,6 +172,16 @@ export function NuevoCosto({
       <div className="os-campo-bloque os-campo-boton">
         <button className="os-boton os-boton-firme" type="submit" disabled={enviando}>
           {enviando ? 'Guardando…' : 'Sumar'}
+        </button>
+      </div>
+      <div className="os-campo-entero">
+        <button
+          type="button"
+          className="os-boton"
+          onClick={() => setAbierto(false)}
+          disabled={enviando}
+        >
+          Cancelar
         </button>
       </div>
       {error && <p className="os-form-error os-campo-entero">{error}</p>}

@@ -1086,6 +1086,16 @@ desde ahí los trae igual, que es el documento completo.
 
 ## El monotributo se mira contra los últimos doce meses
 
+**Costos dejó de ser una pantalla el 13/10/2026.** Lo que este apartado llama
+"Costos" hoy vive en dos lados: el monotributo es la pestaña **Monotributo** de
+Facturación (`?ver=monotributo`, la ven todos y muestra a todas las emisoras), y
+los servicios de Campos HR (trabajos, gastos, reparto, mes a mes y sus facturas)
+están en **Cotizaciones**, debajo del embudo, bajo el rótulo "Realizados"
+(`app/os/cotizaciones/ServiciosCamposHR.tsx`). Los componentes siguen en
+`app/os/costos/` y `/os/costos` redirige a la pestaña. Las cuatro cifras de
+arriba son ahora la fila "Total" de la tabla de trabajos, y el reparto de cada
+trabajo se marca como hecho con su fecha (`cotizaciones.repartido_el`).
+
 `lib/monotributo.ts`, y se ve en **Costos**: no es una tarea del día sino la
 salud del año. Facturación resuelve qué se emite y qué se cobra; en Costos se
 mira qué deja el trabajo y hasta dónde se puede facturar sin cambiar de régimen.
