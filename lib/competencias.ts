@@ -518,6 +518,12 @@ const ZD: Indicador = {
 };
 
 const MA_MP: Indicador = {
+  /* "Dentro de lo esperable" desde el 13/10/2026: que la persona no tienda a
+     lo pasivo es que no apareció un rasgo en contra. Contado como recurso daba
+     positivo en 35 de 47 Rorschach y en 45 de 46 Zulliger, y con eso dos de
+     cada tres personas caían en Alto en Proactividad. Las psicólogas lo habían
+     escrito como positivo: es decisión nuestra, a reconfirmar con ellas. */
+  techo: 50,
   nombre: 'Ma : Mp',
   formula: 'Ma contra Mp',
   mide: 'Tendencia activa frente a pasiva',
@@ -1091,15 +1097,13 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       'M−': 1,
       'Índice de egocentrismo': 1,
     },
-    // DQ+ y Zf quedan en cero desde el 13/10/2026: las psicólogas no los
-    // usaban al puntuar Proactividad a mano. Siguen en el desglose.
-    //
-    // Sale alta: promedia 75 y dos de cada tres personas caen en Alto, porque
-    // Ma : Mp da positivo en casi todos. Hay una propuesta medida y sin
-    // aplicar, a la espera de que ellas la confirmen: Ma : Mp como "dentro de
-    // lo esperable", R con peso 4 y DQ+ con peso 1 (promedio 65, Alto en 34 de
-    // 93 contra 29 de 73 de ellas).
-    'Proactividad': { 'Ma : Mp': 2, R: 2, 'DQ+': 0, Zf: 0, Fd: 1 },
+    // Rehecha el 13/10/2026, igual en los dos tests. Los dos recursos, R y
+    // DQ+, llevan más de la mitad del peso: con Fd y Ma : Mp como "dentro de
+    // lo esperable", sin recursos con peso la persona promedio caía en Alto.
+    // Zf queda en cero, que medido iba al revés que los puntajes de ellas.
+    // Sobre 93 protocolos da Alto en 35; ellas lo dieron en 29 de 73. El error
+    // medio contra sus informes baja de 16 a 11 puntos.
+    'Proactividad': { R: 4, Fd: 3, 'Ma : Mp': 2, 'DQ+': 2, Zf: 0 },
     'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
     'Liderazgo': {
       Potencial: 3,
@@ -1112,7 +1116,10 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
     },
   },
   Zulliger: {
-    'Autogestión': { Lambda: 3, 'W : M': 2, Dd: 2, T: 1, EB: 1 },
+    // W : M baja a 1 y T sube a 3 (13/10/2026): en Zulliger W : M da negativo
+    // en 39 de 46 personas y no distingue a nadie, y T sí. Contra los informes
+    // de ellas, los casos a más de 20 puntos bajan de 8 a 3.
+    'Autogestión': { Lambda: 3, T: 3, 'W : M': 1, Dd: 1, EB: 1 },
     'Control emocional': {
       EA: 3,
       'EA − es': 3,
@@ -1131,7 +1138,7 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       'M−': 1,
       'Índice de egocentrismo': 1,
     },
-    'Proactividad': { Fd: 2, 'DQ+': 0, Zf: 0, R: 1, 'Ma : Mp': 1 },
+    'Proactividad': { R: 4, Fd: 3, 'Ma : Mp': 2, 'DQ+': 2, Zf: 0 },
     'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
   },
 };
