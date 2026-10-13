@@ -15,7 +15,7 @@
  * OS y detrás de su sesión.
  */
 
-import { ICONO_WHATSAPP, VISTA_PREVIA, armarCorreoCandidato } from '@/lib/correo-candidato';
+import { VISTA_PREVIA, armarCorreoCandidato } from '@/lib/correo-candidato';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,6 +28,7 @@ export function GET(req: Request) {
   const c = armarCorreoCandidato({
     nombre: VISTA_PREVIA.nombre,
     puesto: 'Cajera de sucursal',
+    empresa: 'Distribuidora Andina',
     con: 'Lorena Campos',
     whatsapp: q.get('whatsapp') === 'no' ? null : '+54 9 3416 40-2533',
     fecha: VISTA_PREVIA.fecha(),
@@ -39,9 +40,9 @@ export function GET(req: Request) {
   });
 
   const asunto = `<div style="font:13px Helvetica,Arial,sans-serif;color:#555;background:#fff;padding:10px 24px;border-bottom:1px solid #ddd;">Asunto: <strong>${c.asunto}</strong></div>`;
-  // El ícono se pide a esta misma máquina: el del sitio publicado no existe
-  // hasta que se publica.
-  const html = c.html.split(ICONO_WHATSAPP).join('/correo/whatsapp.png');
+  // Los íconos se piden a esta misma máquina: los del sitio publicado no
+  // existen hasta que se publican.
+  const html = c.html.split('https://camposhr.com/correo/').join('/correo/');
   return new Response(html.replace(/<body([^>]*)>/, `<body$1>${asunto}`), {
     headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },
   });

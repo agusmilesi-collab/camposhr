@@ -64,7 +64,11 @@ type Fila = {
     email: string | null;
   } | null;
   evaluadoras: { nombre: string; email: string | null; telefono: string | null } | null;
-  pedidos: { puesto: string; baterias: { duracion_min: number | null } | null } | null;
+  pedidos: {
+    puesto: string;
+    empresas: { nombre: string } | null;
+    baterias: { duracion_min: number | null } | null;
+  } | null;
 };
 
 /** "martes 14 de octubre a las 10:30 hs", en la hora de acá. */
@@ -93,6 +97,19 @@ export const ICONO_WHATSAPP = 'https://camposhr.com/correo/whatsapp.png';
 
 /** El gris de lo que acompaña: la hora de Argentina y la línea de las dudas, al pie. */
 const GRIS = '#7a756b';
+
+/** El ícono de cámara del botón de entrar (`public/correo/video.png`), con el mismo criterio. */
+export const ICONO_VIDEO = 'https://camposhr.com/correo/video.png';
+
+/**
+ * El botón de entrar a la videollamada: a todo el ancho, un quinto más alto
+ * que los demás y con su ícono. Es lo
+ * que la persona busca el día de la entrevista, con el correo abierto en el
+ * teléfono, y tiene que ser lo más fácil de tocar.
+ */
+const BOTON_ENTRAR =
+  BOTON.replace('display:inline-block', 'display:block').replace('padding:12px 20px', 'padding:16px 20px') +
+  'text-align:center;';
 
 /** El botón secundario: mismo tamaño que los otros, sin relleno. */
 const BOTON_CALENDARIO =
@@ -205,6 +222,8 @@ export type DatosCorreoCandidato = {
   /** Con qué nombre se lo saluda. Sin esto se deduce del nombre completo. */
   pila?: string;
   puesto: string | null;
+  /** La empresa que busca: el candidato se postuló a ella, no a Campos HR. */
+  empresa?: string | null;
   /** El nombre de la evaluadora. */
   con: string | null;
   /** Su WhatsApp, si está cargado (`evaluadoras.telefono`). */
@@ -240,13 +259,21 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
   const pasoA = online ? 'pasó a ser por videollamada' : 'pasó a ser presencial';
   const pila = d.pila ?? partesDelNombre(d.nombre).pila;
   const puesto = d.puesto?.trim();
+  const empresa = d.empresa?.trim();
+  // " para el puesto Cajera de sucursal en Distribuidora Andina": con el
+  // puesto solo, quien se postuló a varias búsquedas no sabía de cuál era.
+  const paraQue = puesto
+    ? ` para el puesto ${puesto}${empresa ? ` en ${empresa}` : ''}`
+    : empresa
+      ? ` para ${empresa}`
+      : '';
   const con = d.con?.trim();
   const saludo = pila ? `Hola ${pila}:` : 'Hola:';
   const frase =
     d.tipo === 'modalidad'
-      ? `Tu entrevista con Campos HR${puesto ? ` para el puesto ${puesto}` : ''} ${pasoA}. ` +
+      ? `Tu entrevista con Campos HR${paraQue} ${pasoA}. ` +
         `Se mantiene el ${cuando(d.fecha)}, hora de Argentina.`
-      : `Tu entrevista con Campos HR${puesto ? ` para el puesto ${puesto}` : ''} ` +
+      : `Tu entrevista con Campos HR${paraQue} ` +
         `${d.tipo === 'reprogramado' ? 'se reprogramó' : 'quedó agendada'} para el ${cuando(d.fecha)}, hora de Argentina.`;
   // En el correo dibujado, el día y la hora van en su propio renglón, en
   // negrita y más grandes: es lo que la persona busca al abrirlo y lo que
@@ -254,8 +281,8 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
   // puntos y lo presenta. El texto plano conserva la oración entera.
   const entrada =
     d.tipo === 'modalidad'
-      ? `Tu entrevista con Campos HR${puesto ? ` para el puesto ${puesto}` : ''} ${pasoA}. Se mantiene el día y la hora:`
-      : `Tu entrevista con Campos HR${puesto ? ` para el puesto ${puesto}` : ''} ` +
+      ? `Tu entrevista con Campos HR${paraQue} ${pasoA}. Se mantiene el día y la hora:`
+      : `Tu entrevista con Campos HR${paraQue} ` +
         `${d.tipo === 'reprogramado' ? 'se reprogramó' : 'quedó agendada'} para:`;
   const dia = cuando(d.fecha);
   const fraseHtml =
@@ -269,9 +296,11 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
   const numero = whatsapp ? whatsapp.replace(/\D/g, '') : '';
   const quien = con ? `Te entrevista ${con}` : 'La entrevista es';
   const donde = online ? 'por Google Meet.' : `en ${CONSULTORIO}.`;
-  const entrar = 'Se entra con este enlace desde una computadora con cámara y micrófono:';
-  const como =
-    `${quien} ${donde}` + (online ? ` ${entrar}` : '');
+  const como = `${quien} ${donde}`;
+  // El nombre de la evaluadora en negrita: es a quien la persona va a ver.
+  const comoHtml = con
+    ? escapar(como).replace(escapar(con), `<strong>${escapar(con)}</strong>`)
+    : escapar(como);
   // El número dibujado: el ícono y el enlace que abre el chat.
   const numeroHtml = whatsapp
     ? `<a href="https://wa.me/${numero}" style="color:${GRIS};white-space:nowrap;">` +
@@ -281,12 +310,15 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
   // Va al pie, que es donde la persona busca a quién escribirle.
   const pila2 = con ? con.split(/\s+/)[0] : '';
   const cambio = whatsapp
-    ? `Por cualquier duda, escribile por WhatsApp a ${pila2} al ${whatsapp}, o respondé este correo.`
+    ? `Por cualquier duda, escribile por WhatsApp a ${pila2} al ${whatsapp}.`
     : 'Por cualquier duda, respondé este correo.';
   const cambioHtml = whatsapp
-    ? `Por cualquier duda, escribile por WhatsApp a ${escapar(pila2)} al ${numeroHtml}, o respondé este correo.`
+    ? `Por cualquier duda, escribile por WhatsApp a ${escapar(pila2)} al ${numeroHtml}.`
     : escapar(cambio);
   const pedido = 'Confirmá que vas a estar:';
+  // Solo en la online: parte de los tests se hace dibujando, y en el
+  // consultorio el papel y el lápiz los pone la evaluadora.
+  const materiales = 'Tené a mano dos hojas blancas lisas y un lápiz (no birome).';
 
   const calendario = calendarioDeLaEntrevista(d);
   // En la presencial el del calendario va al lado del mapa. En la online no
@@ -302,6 +334,7 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
       frase,
       '',
       ...(confirmar ? [`${pedido} ${confirmar}`, ''] : []),
+      ...(online ? [materiales, ''] : []),
       como,
       ...(online ? [online] : [`Cómo llegar: ${CONSULTORIO_MAPA}`]),
       ...(online ? [] : [`Agregar a tu Google Calendar: ${calendario}`]),
@@ -320,11 +353,20 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
             // que se usa el día de la entrevista (por dónde se entra).
             `    <div style="border-top:1px solid #e3ded4;margin:0 0 26px;font-size:0;line-height:0;">&nbsp;</div>\n`
           : '') +
-        `    <p style="${PARRAFO}">${escapar(como)}</p>\n` +
+        `    <p style="${PARRAFO}">${comoHtml}</p>\n` +
+        // Lo que tiene que tener a mano, justo arriba del botón de entrar, en
+        // negrita y más grande que el texto: sin eso la entrevista no se puede
+        // tomar, y en letra común se pasaba de largo. Un poco más chica que el
+        // día y la hora, para que entre en un renglón en una computadora.
         (online
-          ? `    <p style="${PARRAFO}margin-bottom:36px;"><a href="${escapar(online)}" style="${BOTON}">Entrar a la videollamada</a></p>\n`
+          ? `    <p style="font-size:17px;line-height:1.3;font-weight:bold;margin:24px 0 18px;">${escapar(materiales)}</p>\n`
+          : '') +
+        (online
+          ? `    <p style="${PARRAFO}margin-bottom:36px;"><a href="${escapar(online)}" style="${BOTON_ENTRAR}">` +
+            `<img src="${ICONO_VIDEO}" width="18" height="18" alt="" style="vertical-align:-4px;border:0;margin-right:8px;">` +
+            `Entrar a la videollamada</a></p>\n`
           : `    <p style="${PARRAFO}margin-bottom:36px;"><a href="${escapar(CONSULTORIO_MAPA)}" style="${BOTON}">Ver en Google Maps</a>${botonCalendario}</p>\n`) +
-        `    <p style="${PARRAFO}margin:0;color:${GRIS};">${cambioHtml}</p>`
+        `    <p style="${PARRAFO}margin:0;font-size:14px;color:${GRIS};">${cambioHtml}</p>`
     ),
   };
 }
@@ -340,7 +382,7 @@ export async function avisarAlCandidato(evaluacionId: string): Promise<void> {
       'evaluaciones',
       'select=id,estado,modalidad,fecha_entrevista,baja_el,enlace_meet,aviso_candidato_fecha,' +
         'aviso_candidato_modalidad,confirmar_token,' +
-        'personas(nombre,nombre_pila,apellido,email),evaluadoras(nombre,email,telefono),pedidos(puesto,baterias(duracion_min))' +
+        'personas(nombre,nombre_pila,apellido,email),evaluadoras(nombre,email,telefono),pedidos(puesto,empresas(nombre),baterias(duracion_min))' +
         `&id=eq.${evaluacionId}&limit=1`
     );
     if (
@@ -383,6 +425,7 @@ export async function avisarAlCandidato(evaluacionId: string): Promise<void> {
         nombre: e.personas.nombre,
         pila: partesDePersona(e.personas).pila,
         puesto: e.pedidos?.puesto ?? null,
+        empresa: e.pedidos?.empresas?.nombre ?? null,
         con: e.evaluadoras?.nombre ?? null,
         whatsapp: e.evaluadoras?.telefono ?? null,
         fecha: e.fecha_entrevista,

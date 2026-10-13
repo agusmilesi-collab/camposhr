@@ -268,7 +268,7 @@ export async function POST(req: Request) {
   const pesado = gente.find((g) => g.cv && g.cv.size > MAX_CV);
   if (pesado) {
     return NextResponse.json(
-      { error: `El CV de ${pesado.nombre} supera los 10 MB.` },
+      { error: `El CV de ${pesado.completo} supera los 10 MB.` },
       { status: 400 }
     );
   }

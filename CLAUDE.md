@@ -1592,6 +1592,10 @@ un enlace fijo: el mapa dibujado dentro del correo pide una clave paga de
 Google), y no depende de Google Calendar. Una online sin calendario conectado no le escribe al
 candidato: no hay enlace que mandar.
 
+**El correo de la online avisa qué tener a mano**: dos hojas blancas lisas y
+un lápiz (no birome), porque parte de los tests se hace dibujando. En la presencial no va:
+el papel y el lápiz los pone la evaluadora.
+
 **El correo de la online pide confirmar la asistencia.** Google Meet no manda
 su invitación porque el correo sale de acá, así que arriba del botón de entrar
 va "Confirmar asistencia", que abre `camposhr.com/confirmar/<token>`
