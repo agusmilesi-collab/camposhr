@@ -1,6 +1,8 @@
 /**
- * Publica una cotización: copia el HTML de la propuesta a public/q/<token>.html
- * y le agrega lo que necesita para vivir en la web.
+ * Publica una cotización: le agrega al HTML de la propuesta lo que necesita
+ * para vivir en la web y la sube al bucket privado, en cotizaciones/<token>.html.
+ * No queda en el repositorio, que es público. Una copia va a
+ * ~/Documents/camposhr-privado/cotizaciones/.
  *
  *   node scripts/publicar-cotizacion.mjs <html-origen> <token>
  *
@@ -17,6 +19,7 @@
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { homedir } from 'node:os';
 
 const [origen, tokenArg] = process.argv.slice(2);
 
@@ -126,7 +129,7 @@ ${B_FIN}`;
 }
 
 const rutaOrigen = resolve(origen);
-const rutaDestino = resolve(process.cwd(), 'public', 'q', `${tokenArg}.html`);
+const rutaDestino = resolve(homedir(), 'Documents', 'camposhr-privado', 'cotizaciones', `${tokenArg}.html`);
 
 let html = await readFile(rutaOrigen, 'utf8');
 
@@ -179,6 +182,31 @@ poner(B, B_FIN, bloqueFin, (b) => {
 await mkdir(dirname(rutaDestino), { recursive: true });
 await writeFile(rutaDestino, html, 'utf8');
 
-console.log(`Publicada: public/q/${tokenArg}.html`);
+// Sube al bucket: desde ahí la sirve app/q/[token]/route.ts, sin desplegar.
+const env = Object.fromEntries(
+  (await readFile(new URL('../.env.local', import.meta.url), 'utf8'))
+    .split('\n')
+    .filter((l) => /^[A-Z_]+=/.test(l))
+    .map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1).replace(/^["']|["']$/g, '')])
+);
+const subida = await fetch(
+  `${env.SUPABASE_URL.replace(/\/$/, '')}/storage/v1/object/psicotecnicos/cotizaciones/${tokenArg}.html`,
+  {
+    method: 'POST',
+    headers: {
+      apikey: env.SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+      'content-type': 'text/html; charset=utf-8',
+      'x-upsert': 'true',
+    },
+    body: html,
+  }
+);
+if (!subida.ok) {
+  console.error(`No se pudo subir: ${subida.status} ${await subida.text()}`);
+  process.exit(1);
+}
+
+console.log(`Publicada: ${rutaDestino}`);
 console.log(`Enlace:    https://camposhr.com/q/${tokenArg}`);
-console.log('Falta sumar la fila en data/cotizaciones.json y hacer deploy.');
+console.log('Falta cargarla en el OS, en Cotizaciones, con ese enlace.');

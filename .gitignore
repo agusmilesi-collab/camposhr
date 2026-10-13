@@ -24,3 +24,7 @@ supabase/migrar-*.sql
 
 # Los .pyc de los programas de láminas
 scripts/__pycache__/
+
+# Las cotizaciones se sirven desde el bucket privado. Ver app/q/[token]/route.ts.
+public/q/
+data/cotizaciones.json

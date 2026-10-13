@@ -26,7 +26,8 @@ import { COOKIE, DURACION, HOST_TOOLS, dominioDeCookie, hayPuerta, huella, igual
  *  camposhr.com (y www)   -> site comercial.
  *     La raíz muestra la home; las herramientas viejas y los enlaces de portal
  *     redirigen a su subdominio nuevo. Acá viven también las cotizaciones que
- *     se mandan al cliente: /q/<token> sirve su documento.
+ *     se mandan al cliente: /q/<token> sirve su documento, desde el bucket
+ *     privado (app/q/[token]/route.ts).
  */
 
 const CLIENT_HOST = 'clientes.camposhr.com';
@@ -67,10 +68,6 @@ function testMudado(pathname: string): string | null {
   return TESTS_MUDADOS[limpio] ?? null;
 }
 
-// Cotización enviada a un cliente: /q/<token> -> el documento estático que vive
-// en public/q/<token>.html. El token es secreto y la página lleva noindex.
-const COTIZACION = /^\/q\/([A-Za-z0-9_-]{6,128})\/?$/;
-
 // Presentación de un encuentro: /pres/<token> -> el archivo estático que vive
 // en public/pres/<token>.html. Mismo criterio que las cotizaciones: el token es
 // secreto y la presentación lleva noindex.
@@ -101,12 +98,6 @@ export async function middleware(req: NextRequest) {
     if (pathname === '/') {
       const dest = url.clone();
       dest.pathname = '/index.html';
-      return NextResponse.rewrite(dest);
-    }
-    const q = pathname.match(COTIZACION);
-    if (q) {
-      const dest = url.clone();
-      dest.pathname = `/q/${q[1]}.html`;
       return NextResponse.rewrite(dest);
     }
     const pr = pathname.match(PRESENTACION);
@@ -274,14 +265,6 @@ export async function middleware(req: NextRequest) {
   // --- Host principal: el site comercial ---
   // El cuestionario público vive acá (es el destino de los QR).
   if (RUTAS_PUBLICAS.test(pathname)) return NextResponse.next();
-
-  // Cotización del cliente: URL limpia sobre el archivo estático.
-  const q = pathname.match(COTIZACION);
-  if (q) {
-    const dest = url.clone();
-    dest.pathname = `/q/${q[1]}.html`;
-    return NextResponse.rewrite(dest);
-  }
 
   // Raíz -> home comercial.
   if (pathname === '/') {

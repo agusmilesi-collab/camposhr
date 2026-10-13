@@ -5,13 +5,10 @@
  * interés y todavía no se mandó nada, Enviada cuando la propuesta está del lado
  * del cliente, Aprobada cuando se cerró y Perdida cuando no.
  *
- * **El índice vive en Supabase; el documento sigue siendo un archivo.** La
- * propuesta que abre el cliente es un HTML estático en `public/q/<token>.html`,
- * servido por una dirección secreta. Lo que se mudó a la base es el seguimiento:
- * cambiar "enviada" por "aprobada" no puede costar un despliegue.
- *
- * El índice viejo quedó en `data/cotizaciones.json`, ya migrado y sin uso. Ver
- * `supabase/comercial.sql` y `supabase/comercial-semilla.sql`.
+ * **El índice vive en Supabase; el documento es un archivo del bucket privado.**
+ * La propuesta que abre el cliente es un HTML en `cotizaciones/<token>.html`,
+ * servido por una dirección secreta (`app/q/[token]/route.ts`). Ni el documento
+ * ni su enlace van al repositorio, que es público. Ver `supabase/comercial.sql`.
  */
 
 import 'server-only';
