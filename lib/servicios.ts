@@ -40,6 +40,21 @@ export type Servicio = {
   documentos: Documento[];
 };
 
+/**
+ * La misma empresa, con su id de Supabase.
+ *
+ * Las listas de abajo están declaradas por el id de Airtable, que es de cuando
+ * el portal salía de ahí. El portal de una empresa migrada resuelve su enlace
+ * contra Supabase y trae ese otro id: sin esta equivalencia sus documentos no
+ * aparecían, y la dirección de cada uno contestaba 404.
+ */
+const EN_SUPABASE: Record<string, string> = {
+  // Laruso
+  'f7c073d4-9571-484f-9119-0022930c0b14': 'recW8hxy0qYGOEOt3',
+};
+
+const clave = (empresaId: string) => EN_SUPABASE[empresaId] ?? empresaId;
+
 const SERVICIOS: Record<string, Servicio[]> = {
   // Laruso SRL
   recW8hxy0qYGOEOt3: [
@@ -123,7 +138,7 @@ export function informeDe(
   nombre: string
 ): string | null {
   if (!empresaId) return null;
-  const cliente = INFORMES[empresaId];
+  const cliente = INFORMES[clave(empresaId)];
   if (!cliente) return null;
   const s = slug(nombre);
   return cliente.personas.includes(s) ? `${cliente.carpeta}/${s}.html` : null;
@@ -136,7 +151,7 @@ export function serviciosDe(
   token: string
 ): Servicio[] {
   if (!empresaId) return [];
-  const servicios = SERVICIOS[empresaId];
+  const servicios = SERVICIOS[clave(empresaId)];
   if (!servicios) return [];
 
   return servicios.map((sv) => ({
@@ -157,7 +172,7 @@ export function serviciosDe(
  * abrir el documento de otro aunque adivine el slug.
  */
 export function archivoDe(empresaId: string, slug: string): string | null {
-  for (const sv of SERVICIOS[empresaId] ?? []) {
+  for (const sv of SERVICIOS[clave(empresaId)] ?? []) {
     const d = sv.documentos.find((x) => x.slug === slug);
     if (d) return d.archivo;
   }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { listarClientesConToken } from '@/lib/airtable';
+import { empresaDelToken } from '@/lib/portal-supabase';
 import { archivoDe } from '@/lib/servicios';
 import { leerDocumento } from '@/lib/documentos-portal';
 
@@ -20,8 +20,7 @@ export async function GET(
   _req: Request,
   { params }: { params: { token: string; archivo: string } }
 ) {
-  const clientes = await listarClientesConToken();
-  const empresaId = clientes.find((c) => c.token === params.token)?.empresaId;
+  const empresaId = (await empresaDelToken(params.token))?.id;
   if (!empresaId) return noEncontrado();
 
   const archivo = archivoDe(empresaId, params.archivo);

@@ -1,7 +1,7 @@
 import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
 import { puestoConCiudad } from '@/lib/pedido-campos';
 import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
-import { datosClienteDeSupabase, vaPorAirtable } from '@/lib/portal-supabase';
+import { datosClienteDeSupabase, empresaDelToken, vaPorAirtable } from '@/lib/portal-supabase';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import NuevoPedido from './NuevoPedido';
@@ -262,7 +262,12 @@ export default async function Portal({ params }: { params: { token: string } }) 
   const baterias = await bateriasDelPortal();
 
   // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
-  const servicios = serviciosDe(empresaId, params.token);
+  // El portal que sale de Supabase no trae el id de Airtable: la empresa se
+  // busca por su enlace, que es lo que tienen los dos.
+  const servicios = serviciosDe(
+    empresaId ?? (demo ? null : ((await empresaDelToken(params.token))?.id ?? null)),
+    params.token
+  );
 
   // La facturación se publica donde el dato es cierto: en las empresas ya
   // migradas sale de las facturas emitidas en el OS. En las que siguen en
