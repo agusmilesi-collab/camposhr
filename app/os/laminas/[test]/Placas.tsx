@@ -194,6 +194,37 @@ export default function Placas({
     };
   }, [seguir, ir]);
 
+  /* El enlace que se copió desde Herramientas no cuelga de ninguna evaluación:
+     la lámina se la marca esta pantalla, que es la que maneja la evaluadora. El
+     token quedó guardado en este navegador al copiarlo. Abierta desde la
+     pantalla de codificación no: ahí la lámina la marca ella. */
+  useEffect(() => {
+    if (deCandidato) return;
+    if (new URLSearchParams(window.location.search).get('de')) return;
+    const clave = `laminas-enlace-${test}`;
+    const avisar = () => {
+      let token: string | null = null;
+      try {
+        token = window.localStorage.getItem(clave);
+      } catch {
+        return;
+      }
+      if (!token) return;
+      fetch('/api/os/laminas-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test, token, lamina: laminaAhora.current }),
+      }).catch(() => {});
+    };
+    avisar();
+    // Si el enlace se copia con esta pantalla ya abierta, se entera igual.
+    const alCopiar = (e: StorageEvent) => {
+      if (e.key === clave) avisar();
+    };
+    window.addEventListener('storage', alCopiar);
+    return () => window.removeEventListener('storage', alCopiar);
+  }, [lamina, test, deCandidato]);
+
   // Las flechas del teclado mueven la lámina: durante la administración las
   // manos están en otra cosa y buscar un botón chico con el mouse se nota.
   // En la pantalla de la persona evaluada no: la lámina la pasa la evaluadora.

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { sesionPorToken } from '@/lib/raven-test';
+import { esPruebaDeRaven } from '@/lib/laminas-enlace';
 import { OPCIONES, RAVEN_MAXIMO } from '@/lib/raven';
 
 export const runtime = 'nodejs';
@@ -19,7 +20,8 @@ export const dynamic = 'force-dynamic';
  * derechos y una lámina que circula deja de servir para quien ya la vio.
  *
  * La otra puerta es la sesión del OS, para la vista de prueba: el equipo mira
- * el test como lo ve el candidato sin que exista ninguna sesión de Raven.
+ * el test como lo ve el candidato sin que exista ninguna sesión de Raven. Y la
+ * tercera, el enlace de prueba que se copia desde Herramientas (`lm_...`).
  *
  * Son recortes del escaneo y no dibujos. Vectorizarlas se probó y se descartó:
  * el trazo copia también los defectos del papel, y el escaneo es de 124 DPI, o
@@ -49,7 +51,9 @@ export async function GET(req: Request) {
   if (!archivo) return new NextResponse('No existe esa parte.', { status: 404 });
 
   const entra = token
-    ? Boolean(await sesionPorToken(token))
+    ? token.startsWith('lm_')
+      ? await esPruebaDeRaven(token)
+      : Boolean(await sesionPorToken(token))
     : await conSesionDelOs(req);
   if (!entra) return new NextResponse('Sin sesión.', { status: 401 });
 

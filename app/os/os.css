@@ -1137,6 +1137,60 @@ a.os-tarjeta:hover {
   transform: translateY(-1px);
 }
 
+/* La tarjeta que además lleva un botón: va al pie, sobre la tarjeta y no
+   adentro, porque la tarjeta entera es un enlace. */
+.os-tarjeta-con-link {
+  position: relative;
+  display: grid;
+}
+
+.os-tarjeta-con-link > .os-boton {
+  position: absolute;
+  bottom: 16px;
+  left: 18px;
+}
+
+/* El lugar del botón, para que el texto no le quede debajo. */
+.os-tarjeta-con-link > .os-tarjeta {
+  padding-bottom: 56px;
+}
+
+.os-tarjeta-icono {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--os-tinta-media);
+}
+
+/* Las de Herramientas: el dibujo al lado del título y un renglón de texto,
+   para que entren todas sin desplazar la pantalla. */
+.os-tarjetas-bajas .os-tarjeta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 12px;
+  align-content: start;
+  padding: 14px 16px;
+}
+
+.os-tarjetas-bajas .os-tarjeta-icono {
+  grid-row: 1 / span 2;
+  margin: 1px 0 0;
+}
+
+.os-tarjetas-bajas .os-tarjeta p {
+  margin-top: 3px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.os-tarjetas-bajas .os-tarjeta-con-link > .os-tarjeta {
+  padding-bottom: 50px;
+}
+
+.os-tarjetas-bajas .os-tarjeta-con-link > .os-boton {
+  bottom: 12px;
+  left: 16px;
+}
+
 .os-tarjeta h3 {
   font-size: 0.98rem;
   font-weight: 600;
@@ -14518,6 +14572,8 @@ textarea.os-campo-bateria {
   grid-template-columns: 260px minmax(0, 1fr);
   gap: 26px;
   align-items: start;
+  /* El panel no trae relleno: sin esto los mandos tocaban el borde. */
+  padding: 4px 18px 18px;
 }
 
 @media (max-width: 900px) {

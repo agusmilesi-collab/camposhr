@@ -30,3 +30,18 @@ export async function laminaDelToken(token: string): Promise<{ lamina: number | 
   );
   return filas[0] ? { lamina: filas[0].lamina } : null;
 }
+
+/**
+ * Si ese token abre la vista de prueba del Raven.
+ *
+ * Se copia desde Herramientas para mostrarle el test a alguien de afuera: abre
+ * las 36 láminas sin sesión del OS, no guarda ninguna respuesta y vence al día.
+ */
+export async function esPruebaDeRaven(token: string): Promise<boolean> {
+  if (!TOKEN.test(token)) return false;
+  const filas = await select<{ token: string }>(
+    'laminas_enlaces',
+    `select=token&token=eq.${token}&test=eq.raven&vence_at=gt.${new Date().toISOString()}&limit=1`
+  );
+  return Boolean(filas[0]);
+}

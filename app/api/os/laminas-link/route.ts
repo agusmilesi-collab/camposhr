@@ -5,7 +5,7 @@ import { COOKIE, hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { insert, patch, select } from '@/lib/supabase';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
-import { esTestConLaminas, TESTS } from '@/lib/laminas';
+import { esTestConLaminas, TESTS, type TestConLaminas } from '@/lib/laminas';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,6 +17,66 @@ function base(req: Request): string {
   const host = (req.headers.get('host') ?? '').toLowerCase();
   if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) return `http://${host}`;
   return 'https://camposhr.com';
+}
+
+const TOKEN = /^lm_[A-Za-z0-9_-]{16,40}$/;
+
+/**
+ * El enlace que se copia desde Herramientas, sin ninguna evaluación abierta.
+ *
+ * No hay evaluación de la que colgarlo, así que quien lo pidió guarda el token
+ * en su navegador y lo manda de vuelta: para recibir el mismo enlace mientras
+ * siga vigente, y para marcarle la lámina desde su pantalla de láminas.
+ */
+async function sinEvaluacion(
+  req: Request,
+  test: TestConLaminas | 'raven',
+  datos: { token?: unknown; lamina?: unknown }
+) {
+  const token = typeof datos.token === 'string' && TOKEN.test(datos.token) ? datos.token : null;
+  // La vista de prueba del Raven vive en la dirección del test, no en la de
+  // las láminas, y la maneja quien la abre: no sigue a ninguna otra pantalla.
+  const enlaceDe = (t: string) =>
+    test === 'raven' ? `${base(req)}/raven/${t}` : `${base(req)}/laminas/${t}`;
+  try {
+    if (datos.lamina !== undefined) {
+      const n = Number(datos.lamina);
+      if (test === 'raven' || !token || !Number.isInteger(n) || n < 1 || n > TESTS[test].laminas) {
+        return NextResponse.json({ ok: false, motivo: 'Pedido inválido.' }, { status: 400 });
+      }
+      await patch(
+        'laminas_enlaces',
+        `token=eq.${token}&evaluacion_id=is.null&test=eq.${test}&vence_at=gt.${new Date().toISOString()}`,
+        { lamina: n }
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    if (token) {
+      const vigentes = await select<{ token: string }>(
+        'laminas_enlaces',
+        `select=token&token=eq.${token}&evaluacion_id=is.null&test=eq.${test}` +
+          `&vence_at=gt.${new Date(Date.now() + 60 * 60 * 1000).toISOString()}&limit=1`
+      );
+      if (vigentes[0]) {
+        return NextResponse.json({ ok: true, token, enlace: enlaceDe(token) });
+      }
+    }
+
+    const nuevo = `lm_${randomBytes(16).toString('base64url')}`;
+    await insert('laminas_enlaces', { token: nuevo, test });
+    const yo = await quienSoy();
+    await anotarAcceso({
+      quien: yo.nombre,
+      accion: 'escritura',
+      recurso: 'laminas_enlace',
+      detalle: { test, desde: 'herramientas' },
+    });
+    return NextResponse.json({ ok: true, token: nuevo, enlace: enlaceDe(nuevo) });
+  } catch (e) {
+    console.error('laminas-link, sin evaluación:', e);
+    return NextResponse.json({ ok: false, motivo: 'No se pudo generar el enlace.' }, { status: 500 });
+  }
 }
 
 /**
@@ -38,7 +98,14 @@ export async function POST(req: Request) {
   const datos = await req.json().catch(() => null);
   const id = datos?.evaluacionId;
   const test = datos?.test;
-  if (typeof id !== 'string' || !UUID.test(id) || typeof test !== 'string' || !esTestConLaminas(test)) {
+  // El Raven entra solo por acá y solo sin evaluación: es el enlace de la
+  // vista de prueba. El que rinde un candidato sale de su hoja de entrevista.
+  if (test === 'raven' && id === undefined) return sinEvaluacion(req, 'raven', datos);
+  if (typeof test !== 'string' || !esTestConLaminas(test)) {
+    return NextResponse.json({ ok: false, motivo: 'Pedido inválido.' }, { status: 400 });
+  }
+  if (id === undefined) return sinEvaluacion(req, test, datos);
+  if (typeof id !== 'string' || !UUID.test(id)) {
     return NextResponse.json({ ok: false, motivo: 'Pedido inválido.' }, { status: 400 });
   }
 

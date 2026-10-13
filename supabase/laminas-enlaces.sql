@@ -40,3 +40,8 @@ alter table public.os_intentos enable row level security;
 -- persona la consulta cada segundo y medio: son dos máquinas, y el aviso entre
 -- pestañas que mueve las dos pantallas de la evaluadora no llega de una a otra.
 alter table public.laminas_enlaces add column if not exists lamina integer;
+
+-- El enlace también se copia desde Herramientas, donde no hay ninguna
+-- evaluación abierta: ese nace sin evaluación, y la lámina se la marca la
+-- pantalla de láminas del navegador que lo generó.
+alter table public.laminas_enlaces alter column evaluacion_id drop not null;

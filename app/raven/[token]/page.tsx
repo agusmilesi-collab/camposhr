@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import Test from './Test';
 import { seAcabo, segundosRestantes, sesionPorToken } from '@/lib/raven-test';
+import { esPruebaDeRaven } from '@/lib/laminas-enlace';
+import { MINUTOS } from '@/lib/raven';
 import './raven.css';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +20,13 @@ export const metadata = {
 };
 
 export default async function RavenPagina({ params }: { params: { token: string } }) {
+  // El enlace de prueba que se copia desde Herramientas: el mismo test, sin
+  // guardar nada. El token va para que las láminas abran sin sesión del OS.
+  if (params.token.startsWith('lm_')) {
+    if (!(await esPruebaDeRaven(params.token))) notFound();
+    return <Test token={params.token} respuestas={{}} restan={MINUTOS * 60} empezado={false} prueba />;
+  }
+
   const s = await sesionPorToken(params.token);
   if (!s) notFound();
 

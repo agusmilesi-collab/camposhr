@@ -1161,12 +1161,12 @@ export default function Capturador({
     } satisfies Aviso);
   }, [lamina]);
 
-  /* Y la que tiene que ver en su propia máquina, cuando se le mandó el enlace:
-     eso pasa en la encuesta, donde señala con su cursor. Va por el servidor
-     porque el canal de arriba no sale de este navegador. Si no hay enlace
-     vigente la ruta no cambia nada, así que no hace falta saberlo acá. */
+  /* Y la que tiene que ver en su propia máquina, cuando se le mandó el enlace.
+     Va por el servidor porque el canal de arriba no sale de este navegador, y
+     en las dos instancias: el enlace también se manda entrevistando, cuando la
+     persona no ve bien la pantalla compartida. Si no hay enlace vigente la
+     ruta no cambia nada, así que no hace falta saberlo acá. */
   useEffect(() => {
-    if (fase !== 'encuesta') return;
     const n = ORDEN.indexOf(lamina) + 1;
     if (n < 1) return;
     fetch('/api/os/laminas-link', {
@@ -2088,6 +2088,18 @@ export default function Capturador({
                   Abrir las láminas
                 </button>
               )}
+              {/* La dirección de esa pestaña pide la clave del OS: copiada de
+                  la barra y mandada a la persona, no le abre. La que se le
+                  manda sale de este botón, con token y sin clave. */}
+              <LinkLaminas
+                href={`/os/laminas/rorschach?de=${evaluacionId}`}
+                clase="os-boton os-boton-fila"
+                paraCandidato={{
+                  evaluacionId,
+                  test: 'rorschach',
+                  lamina: ORDEN.indexOf(lamina) + 1,
+                }}
+              />
                 {/* Cómo sostuvo la lámina, en un botón que la va girando un
                     cuarto por vez. Debajo de la pantalla del candidato porque
                     es lo que gira: la miniatura de al lado gira con él, así que
