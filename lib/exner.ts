@@ -92,7 +92,9 @@ const ZEST_RORSCHACH: Record<number, number | null> = {
  * ZULLIGER — verificado contra la hoja de sumario estructural de Zdunic:
  *   · Localización es W / D / W+D / Dd / S — usa W, NO G
  *   · Controles trae solo "EA − es": no hay D, ni Adj D, ni Adj es, ni EBPer
- *   · Afectos no tiene Afr ni CP
+ *   · Afectos no tiene Afr. CP sí va: es la variable 5 de Afectos en el manual
+ *     (pág. 86), y lo pidieron las psicólogas el 13/10/2026. Se marca en la
+ *     columna CC.EE de cada respuesta, igual que en Rorschach
  *   · Procesamiento no tiene ninguna línea Z, y la grilla de codificación no
  *     tiene columna de Pje Z: la dimensión Z no existe en el test
  *   · No hay bloque de constelaciones
@@ -128,7 +130,7 @@ export const PERFILES: Record<string, Perfil> = {
     afr: null,
     convierteD: false,
     muestraEBPer: false,
-    muestraCP: false,
+    muestraCP: true,
     csBlends: 'solo_json',
     constelaciones: [],
     layout: 'zdunic',
@@ -821,7 +823,7 @@ function formatearZdunic(s: any) {
   L.push(`### Afectos`);
   L.push([kv('FC:CF+C', `${af.FC}:${af.CF + af.C_puro}`), kv('C pura', af.C_puro), kv('Cn', af.Cn)].join(SEP));
   L.push([kv("SumC':SumPondC", `${af.SumC_prima}:${t2(af.WSumC)}`)].join(SEP));
-  L.push([kv('S', af.S)].join(SEP));
+  L.push([kv('CP', n0(af.CP)), kv('S', af.S)].join(SEP));
   L.push([kv('Complej:R', `${af.Blends}:${cab.R}`)].join(SEP));
 
   L.push(`### Interpersonal`);

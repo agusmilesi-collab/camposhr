@@ -116,6 +116,7 @@ export const TRAMO_DE_FABRICA: Record<string, Tramo> = {
   'c-pura-alta': 'siempre',
   's-muy-alto': 'siempre',
   's-alto': 'siempre',
+  'cp-presente': 'siempre',
   'sumt-alto': 'siempre',
   'v-presente': 'siempre',
   'ego-bajo': 'siempre',

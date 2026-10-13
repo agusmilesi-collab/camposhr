@@ -1656,6 +1656,29 @@ export const TEXTOS = {
       'Evitar la confrontación directa y mantener reglas firmes y consistentes, que es lo que le permite flexibilizar.',
     ],
   },
+  /**
+   * CP: color proyectado, la persona ve color en una zona que no lo tiene.
+   *
+   * No tiene corte: alcanza con que aparezca uno. El manual de Zulliger lo
+   * lee como un estilo de contacto emocional superficial (Afectos, pág. 86).
+   * Lo pidieron las psicólogas el 13/10/2026, y va con lo que hay que
+   * desarrollar. Vale igual para los dos tests.
+   */
+  'cp-presente': {
+    area: 'Cómo maneja lo que siente',
+    indice: 'CP',
+    cuando: 'Aparece al menos un CP',
+    dice: [
+      'Su estilo de contacto emocional tiende a ser superficial: le cuesta el acercamiento auténtico con las personas cuando el puesto lo requiere.',
+      'Tiende a un contacto emocional superficial con los demás, y eso limita el acercamiento auténtico que algunos puestos exigen.',
+      'Se vincula desde un contacto emocional superficial, y le cuesta el acercamiento auténtico cuando el puesto lo pide.',
+    ],
+    recomienda: [
+      'Señalarle en qué situaciones del puesto hace falta un acercamiento auténtico con el otro, y darle una devolución después de cada una.',
+      'Acordar con la persona qué conversaciones del puesto piden escuchar al otro en profundidad, y revisar con ella cómo resultó cada una.',
+      'Marcarle las situaciones en las que el puesto pide involucrarse con lo que le pasa al otro, y conversar después cómo le fue.',
+    ],
+  },
   's-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'S',
@@ -3205,6 +3228,13 @@ export function leer(
     sumar('s-muy-alto', `S ${sBlanco}`);
   } else if (sBlanco > c('s-alto')) {
     sumar('s-alto', `S ${sBlanco}`);
+  }
+
+  /* CP no tiene corte: alcanza con que aparezca uno. Pedido de las psicólogas
+     del 13/10/2026. */
+  const cp = n(s, 'afectos', 'CP');
+  if (cp > 0) {
+    sumar('cp-presente', `CP ${cp}`);
   }
 
   /* S− contra el total de S: se espera menos de la mitad. Sin S no hay nada
