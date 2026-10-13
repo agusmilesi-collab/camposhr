@@ -330,7 +330,11 @@ async function sesionValida(req: NextRequest): Promise<boolean> {
   // Puede haber dos con el mismo nombre, la de este host y la de todos los
   // subdominios: alcanza con que una sea la buena.
   const esperada = await huella(clave);
-  return req.cookies.getAll(COOKIE).some((c) => igual(c.value, esperada));
+  return (req.headers.get('cookie') ?? '')
+    .split(';')
+    .map((c) => c.trim())
+    .filter((c) => c.startsWith(`${COOKIE}=`))
+    .some((c) => igual(c.slice(COOKIE.length + 1), esperada));
 }
 
 export const config = {
