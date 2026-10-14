@@ -1655,9 +1655,10 @@ vendedor del día hábil anterior), la manda en `MonCotiz` con `CanMisMonExt`
 en N (se cobra en pesos al cambio) y la guarda en `facturas.mon_cotiz` y
 `mon_cotiz_fecha`. El comprobante, el PDF y el correo la indican, que es lo
 que exige la orden de compra de Cofco. La nota de crédito de una factura en
-dólares va en dólares y con la misma cotización. **Esto no se probó contra
-ARCA**: las dos emisoras están en producción y no hay certificado de
-homologación cargado; la primera en dólares hay que mirarla.
+dólares va en dólares y con la misma cotización. **Probado en producción el
+14/10/2026**: la primera factura C en DOL (Lorena, 00004-00000005, USD 80 a
+Cofco) salió con CAE a la primera, con la cotización 1.512,50 del 13/10 que
+dio ARCA.
 
 **Para el monotributo, la factura en dólares cuenta pasada a pesos con esa
 cotización** (`enPesos` en `marchaDelMonotributo`). Sin cotización guardada
