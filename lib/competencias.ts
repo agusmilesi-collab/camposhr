@@ -591,6 +591,19 @@ const POPULARES: Indicador = {
   },
 };
 
+/** El del Zulliger, contra sus cinco populares posibles y no la tabla del Rorschach. */
+const POPULARES_ZULLIGER: Indicador = {
+  ...POPULARES,
+  formula: 'P contra lo esperado en Zulliger (3 a 4)',
+  nivel: (s) => {
+    const p = num(s, 'procesamiento', 'P') ?? num(s, 'calidad_formal', 'P');
+    if (p === null) return null;
+    const [minimo, maximo] = pEsperado(0, 'Zulliger');
+    if (p > maximo) return 3;
+    return p < minimo ? 1 : 2;
+  },
+};
+
 const AFR: Indicador = {
   techo: 50,
   nombre: 'Afr',
@@ -667,13 +680,15 @@ const RAVEN: Indicador = {
     if (typeof corto !== 'number') return null;
     return corto <= 7 ? 1 : 2;
   },
-  /* De 25 a 30 aciertos sigue siendo nivel medio y aporta 75: las psicólogas
+  /* De 25 a 30 aciertos sigue siendo nivel medio y aporta 58: las psicólogas
      pidieron el 13/10/2026 distinguir a quien queda cerca del nivel alto. Con
-     tres escalones, 21 y 30 aciertos recibían lo mismo, y medido contra sus
-     informes el sistema quedaba entre 10 y 15 puntos por debajo en ese tramo. */
+     75, que se eligió antes de llevar la escala de 25 a 100, la competencia
+     salía en 79 (Alto) donde ellas ponen 60, y era la mitad de los desvíos de
+     Habilidad cognitiva. Con 58 sale en 64 y en ese tramo de veinte personas
+     queda a 0,3 puntos de ellas en promedio (medido el 14/10/2026). */
   aporte: (_s, ctx) => {
     const raw = ctx?.ravenRaw;
-    if (typeof raw === 'number') return raw >= RAVEN_MEDIO_ALTO && raw <= 30 ? 75 : null;
+    if (typeof raw === 'number') return raw >= RAVEN_MEDIO_ALTO && raw <= 30 ? 58 : null;
     return ctx?.ravenCorto === 12 ? 75 : null;
   },
   datosDe: (ctx) =>
@@ -1012,7 +1027,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       // Rorschach como positivo.
       { ...AISLAMIENTO, techo: 50 as const },
       { ...M_MENOS, escala: binario(0, false) },
-      POPULARES,
+      POPULARES_ZULLIGER,
       COP_AG,
       { ...EGOCENTRISMO, escala: binario(0.56, false, 2) },
     ],

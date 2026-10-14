@@ -1,6 +1,6 @@
 # Velocímetro: lo que se decidió distinto a las psicólogas y lo que falta
 
-Estado al 13/10/2026. Sale de comparar el motor contra 73 informes que Lucila y
+Estado al 14/10/2026. Sale de comparar el motor contra 73 informes que Lucila y
 Lorena escribieron a mano, y de sus respuestas del 9/10 y del 13/10.
 
 Los nombres de las personas que se mencionan como pendientes están fuera de
@@ -9,11 +9,11 @@ este repositorio, que es público:
 
 ## Dónde estamos
 
-| Medida | 8/10/2026 | 13/10/2026 |
+| Medida | 8/10/2026 | 14/10/2026 |
 | --- | --- | --- |
-| Puntajes en la misma banda que sus informes | 48 % | 71 % (275 de 387) |
-| Diferencia media con sus puntajes | 11,2 puntos | 4,1 puntos |
-| Diferencias de más de 20 puntos | sin medir | 24 de 387 |
+| Puntajes en la misma banda que sus informes | 48 % | 72 % (279 de 387) |
+| Diferencia media con sus puntajes | 11,2 puntos | 4,0 puntos |
+| Diferencias de más de 20 puntos | sin medir | 22 de 387 |
 
 Banda es Bajo (menos de 35), Medio (35 a 64) o Alto (65 o más).
 
@@ -51,7 +51,7 @@ hay que reconfirmar con ella.
 | # | Lo que escribió | Lo que se hizo | Por qué |
 | --- | --- | --- | --- |
 | 3 | Los velocímetros tienen que llegar a 100 y el máximo no puede cambiar con el test. No eligió cómo | El promedio se lleva del tramo de 25 a su máximo posible, al tramo de 25 a 100, en las seis competencias | Es la única forma de cumplirlo sin deshacer su regla del 30/9 ("dentro de lo esperable" vale 50) |
-| 4 | Raven en tres bandas (0 a 20, 21 a 30, 31 a 36), y aparte "considerar puntajes intermedios cerca del 25 y del 30" | De 25 a 30 aciertos sigue en medio y aporta 75 | Con tres bandas, 21 y 30 aciertos recibían lo mismo. El corte en 25 es lectura nuestra de su frase |
+| 4 | Raven en tres bandas (0 a 20, 21 a 30, 31 a 36), y aparte "considerar puntajes intermedios cerca del 25 y del 30" | De 25 a 30 aciertos sigue en medio y aporta 58: la competencia sale en 64, contra 57 de 21 a 24 aciertos | Con tres bandas, 21 y 30 aciertos recibían lo mismo. El corte en 25 es lectura nuestra de su frase. Con 75 salía en 79 (Alto) donde ellas ponen 60; con 58 queda a 0,3 puntos de ellas en las veinte personas de ese tramo |
 | 5 | D y AdjD: mayor que 0 alta, igual a 0 media, menor que 0 baja | Alta con los dos por encima de 0, baja con AdjD negativo, **media en el resto** | No dice qué hacer con AdjD en 0 o más y D negativo. Se dejó en media porque ella definió AdjD como la capacidad habitual |
 | 6 | m + Y: "si Y > 1 y m > 2 serán negativo" | En Rorschach, negativo con **cualquiera de las dos** pasada | Se leyó "y" como cada una por su lado. En Zulliger sigue la suma |
 | 7 | Su lista pone Zf y Zd en Capacidad intelectual de Rorschach | No vuelven | El 30/9 se sacaron de ahí con ellas para no contarlos dos veces. La lista parece una versión anterior |
@@ -90,9 +90,23 @@ hay que reconfirmar con ella.
   con cada peso. Volver a medir con más informes antes de tocarlo.
 - **Autogestión en Rorschach quedó como estaba.** Ninguna combinación de pesos
   mejora cuando se la prueba con un informe que no se usó para ajustarla.
-- **Unos 20 puntajes a más de 10 puntos sin explicar**, entre Habilidad
-  cognitiva y Habilidad interpersonal. Puede ser criterio de entrevista o algún
-  error de carga.
+- **Habilidad cognitiva e interpersonal, revisadas caso por caso (14/10/2026).**
+  En cognitiva, once de los diecinueve desvíos eran el aporte del Raven de 25 a
+  30 aciertos, ya corregido (punto 4). Lo que queda es variación de ellas: con
+  30 aciertos pusieron 60, 65, 70 y 75. En interpersonal no hay un indicador
+  que lo explique: siete Zulliger con el mismo perfil dan 64 en el sistema y
+  ellas les pusieron 50, 60 y 70. Mover pesos no mejora la coincidencia.
+- **Populares en Zulliger, resuelto el 14/10/2026.** Se medía P con la tabla
+  del Rorschach (de 4 a 6 con menos de 17 respuestas), pero el Zulliger tiene
+  cinco populares en total según su tabla de calidad formal (lámina I: W
+  insecto y D1 hoja; lámina II: ninguna; lámina III: D1 mariposa, D2 y D3
+  persona). Salían con P bajo 32 de 46 personas, y el informe les decía que
+  "no ven las cosas como la mayoría". Ahora lo esperado en Zulliger es de 3 a
+  4, en el velocímetro y en el diccionario (`pEsperado`): sale bajo uno de cada
+  tres, como en el Rorschach, y 5 es alto. La coincidencia con ellas no cambia
+  (279 de 387); Habilidad interpersonal en Zulliger sube 2 puntos en promedio.
+  Hay dos protocolos con 6 populares, que en Zulliger no puede pasar: es un
+  error de carga a revisar.
 - **Seis informes de la carpeta no se pudieron comparar**: cuatro personas
   tienen la recomendación cargada y no el protocolo, y dos no están en la base.
 - **Los dos documentos enviados el 9/10** ("Auditoría del sistema" y "Respuesta

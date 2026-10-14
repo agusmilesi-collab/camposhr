@@ -92,8 +92,17 @@ function dd(d: number, adjd: number): string {
   return `D ${conSigno(d, 0)} · AdjD ${conSigno(adjd, 0)}`;
 }
 
-/** Populares esperadas según la cantidad de respuestas del protocolo. */
-export function pEsperado(r: number): [number, number] {
+/**
+ * Populares esperadas según la cantidad de respuestas del protocolo.
+ *
+ * El Zulliger tiene cinco populares en total (lámina I: W insecto y D1 hoja;
+ * lámina II: ninguna; lámina III: D1 mariposa, D2 y D3 persona), así que la
+ * tabla del Rorschach no le sirve: con menos de 17 respuestas pedía de 4 a 6, y
+ * 32 de 46 protocolos salían por debajo. De 3 a 4 deja bajo a uno de cada tres,
+ * como en el Rorschach, y 5 queda como alto (decidido el 14/10/2026).
+ */
+export function pEsperado(r: number, test: string = 'Rorschach'): [number, number] {
+  if (test === 'Zulliger') return [3, 4];
   if (r < 17) return [4, 6];
   if (r <= 28) return [5, 7];
   return [6, 9];
@@ -1122,7 +1131,7 @@ export const TEXTOS = {
   'p-bajo': {
     area: 'Cómo interpreta lo que ve',
     indice: 'P',
-    cuando: 'menos de lo esperado para la cantidad de respuestas',
+    cuando: 'menos de lo esperado para la cantidad de respuestas (Zulliger: menos de 3)',
     zulliger: {
       dice: [
         'No ve las cosas como la mayoría. Podría tener dificultad de adaptación si su tarea implica atenerse a lo que ya está pautado, y podría funcionar bien en tareas donde se privilegie la capacidad creativa.',
@@ -1149,7 +1158,7 @@ export const TEXTOS = {
   'p-alto': {
     area: 'Cómo interpreta lo que ve',
     indice: 'P',
-    cuando: 'más de lo esperado para la cantidad de respuestas',
+    cuando: 'más de lo esperado para la cantidad de respuestas (Zulliger: más de 4)',
     zulliger: {
       dice: [
         'Se esfuerza por cumplir con lo que piensa que los demás esperan. Es buen indicador para tareas rutinarias y para funcionar con apego a lo convencional.',
@@ -3099,7 +3108,7 @@ export function leer(
   }
 
   const p = n(s, 'procesamiento', 'P', n(s, 'calidad_formal', 'P'));
-  const [pMin, pMax] = pEsperado(r);
+  const [pMin, pMax] = pEsperado(r, test);
   if (p < pMin) {
     sumar('p-bajo', `P ${p}`);
   } else if (p > pMax) {
