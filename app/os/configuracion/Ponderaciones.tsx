@@ -1,12 +1,74 @@
-import Pesos, { type Hoja } from './Pesos';
+import Pesos, { type Hoja, type Casos } from './Pesos';
 import {
   HOJAS,
   PESOS_DE_FABRICA,
+  calcularCompetencias,
   claveDePeso,
   conDireccion,
   numerosDe,
 } from '@/lib/competencias';
 import { loQueRige } from '@/lib/informe';
+import { select } from '@/lib/supabase';
+import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
+import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
+import type { SumarioCrudo } from '@/lib/redacciones';
+
+type SumarioFila = { evaluacion_id: string; crudo: SumarioCrudo | null };
+type RavenFila = { evaluacion_id: string; raw: number | null; corto: number | null };
+type EvaluacionFila = { id: string; pedidos: { empresas: { nombre: string } | null } | null };
+
+/**
+ * En qué nivel cae cada indicador en los protocolos cargados, con los pesos y
+ * cortes que rigen.
+ *
+ * Es la comprobación de cada corte: un indicador que deja a 36 de 47 en bajo
+ * describe al corte y no a la gente, y uno que nunca cambia de nivel no
+ * aporta nada al número. Sin esta columna, mover un corte era adivinar qué
+ * hacía con los protocolos reales (14/10/2026). La empresa de muestra queda
+ * afuera, como en el data hub.
+ */
+async function casosPorIndicador(rige: Awaited<ReturnType<typeof loQueRige>>): Promise<Record<string, Casos>> {
+  const [sumarios, ravens, evaluaciones] = await Promise.all([
+    select<SumarioFila>('sumario_exner', 'select=evaluacion_id,crudo', CACHE_PSICOTECNICOS),
+    select<RavenFila>('raven', 'select=evaluacion_id,raw,corto', CACHE_PSICOTECNICOS),
+    select<EvaluacionFila>('evaluaciones', 'select=id,pedidos(empresas(nombre))', CACHE_PSICOTECNICOS),
+  ]);
+  const deMuestra = new Set(
+    evaluaciones.filter((e) => esEmpresaEjemplo(e.pedidos?.empresas?.nombre)).map((e) => e.id)
+  );
+  const raven = new Map(ravens.map((r) => [r.evaluacion_id, r]));
+  const casos: Record<string, Casos> = {};
+  for (const s of sumarios) {
+    if (!s.crudo || deMuestra.has(s.evaluacion_id)) continue;
+    const meta = (s.crudo as { meta?: { test?: string } }).meta;
+    const test = meta?.test === 'Zulliger' ? 'Zulliger' : 'Rorschach';
+    const r = raven.get(s.evaluacion_id);
+    const competencias = calcularCompetencias(
+      s.crudo,
+      {
+        ravenPercentil: null,
+        ravenRaw: r?.raw ?? null,
+        ravenCorto: r?.corto ?? null,
+        rangos: rige.rangos,
+        pesos: rige.pesos,
+        cortesCompetencias: rige.cortesCompetencias,
+        direcciones: rige.direcciones,
+      },
+      test
+    );
+    for (const c of competencias) {
+      for (const renglon of c.renglones) {
+        const clave = claveDePeso(test, c.nombre, renglon.indicador);
+        const suyo = (casos[clave] ??= { alto: 0, medio: 0, bajo: 0, sin: 0 });
+        if (renglon.nivel === 3) suyo.alto++;
+        else if (renglon.nivel === 2) suyo.medio++;
+        else if (renglon.nivel === 1) suyo.bajo++;
+        else suyo.sin++;
+      }
+    }
+  }
+  return casos;
+}
 
 /**
  * El velocímetro: dónde corta cada indicador y cuánto pesa en su competencia.
@@ -33,6 +95,7 @@ export default async function Ponderaciones() {
   const movidos = rige.pesos;
   const cortes = rige.cortesCompetencias;
   const direcciones = rige.direcciones;
+  const casos = await casosPorIndicador(rige);
 
   const hojas: Hoja[] = Object.entries(HOJAS).map(([test, hoja]) => ({
     test,
@@ -56,6 +119,7 @@ export default async function Ponderaciones() {
           cortesFabrica: i.escala ? numerosDe(i.escala) : [],
           peso: movidos[clave] ?? PESOS_DE_FABRICA[clave],
           fabrica: PESOS_DE_FABRICA[clave],
+          casos: casos[clave] ?? { alto: 0, medio: 0, bajo: 0, sin: 0 },
         };
       }),
     })),

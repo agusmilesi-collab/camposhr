@@ -25,6 +25,7 @@
 
 import { llevaBenziger } from '@/lib/benziger';
 import 'server-only';
+import { cifrar, descifrar } from '@/lib/cifrado';
 import { patch, select, upsert } from '@/lib/supabase';
 import { CONSULTORIO } from '@/lib/consultorio';
 
@@ -140,7 +141,8 @@ export async function guardarConexion(
     'google_calendario',
     {
       evaluadora_id: evaluadoraId,
-      refresh_token: refresh,
+      // Cifrado: con este permiso se escribe en su cuenta. Ver lib/cifrado.ts.
+      refresh_token: cifrar(refresh),
       cuenta,
       contactos,
       conectado_el: new Date().toISOString(),
@@ -163,7 +165,7 @@ export async function desconectar(evaluadoraId: string): Promise<void> {
     `select=refresh_token&evaluadora_id=eq.${evaluadoraId}&limit=1`
   );
   if (!fila) return;
-  await revocar(fila.refresh_token);
+  await revocar(descifrar(fila.refresh_token));
   const url = (process.env.SUPABASE_URL ?? '').replace(/\/$/, '');
   const key = process.env.SUPABASE_SERVICE_KEY ?? '';
   await fetch(`${url}/rest/v1/google_calendario?evaluadora_id=eq.${evaluadoraId}`, {
@@ -218,7 +220,7 @@ export async function accesoDe(evaluadoraId: string | null): Promise<string | nu
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      refresh_token: fila.refresh_token,
+      refresh_token: descifrar(fila.refresh_token),
       client_id: process.env.GOOGLE_CLIENT_ID ?? '',
       client_secret: process.env.GOOGLE_CLIENT_SECRET ?? '',
       grant_type: 'refresh_token',

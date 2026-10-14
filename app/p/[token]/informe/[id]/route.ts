@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getDatosCliente } from '@/lib/airtable';
 import {
   datosDemo,
   esDemo,
@@ -8,7 +7,7 @@ import {
 } from '@/lib/portal-demo';
 import { informeDe } from '@/lib/servicios';
 import { leerDocumento } from '@/lib/documentos-portal';
-import { empresaDelToken } from '@/lib/portal-supabase';
+import { datosClienteDeSupabase, empresaDelToken } from '@/lib/portal-supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,13 +46,12 @@ export async function GET(
     });
   }
 
-  // El enlace de una empresa migrada abre su portal de Supabase, así que el
-  // interruptor de los informes manda también acá: mientras esté apagado esta
-  // dirección no existe. Ver `informesVisibles`.
+  // El interruptor de los informes manda también acá: mientras esté apagado
+  // esta dirección no existe. Ver `informesVisibles`.
   const empresa = await empresaDelToken(params.token);
-  if (empresa && !empresa.informes_visibles) return noEncontrado();
+  if (!empresa || !empresa.informes_visibles) return noEncontrado();
 
-  const datos = await getDatosCliente(params.token);
+  const datos = await datosClienteDeSupabase(params.token);
   if (!datos) return noEncontrado();
 
   const cand = datos.busquedas
@@ -61,7 +59,7 @@ export async function GET(
     .find((c) => c.id === params.id && c.estado === 'Entregado');
   if (!cand) return noEncontrado();
 
-  const archivo = informeDe(datos.empresaId, cand.nombre);
+  const archivo = informeDe(empresa.id, cand.nombre);
   if (!archivo) return noEncontrado();
 
   const html = await leerDocumento(archivo);

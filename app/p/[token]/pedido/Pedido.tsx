@@ -29,7 +29,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Busqueda } from '@/lib/airtable';
+import type { Busqueda } from '@/lib/portal-tipos';
 import { AVISO_HORIZONTE, PREGUNTAS, UNIDADES, type Unidad } from '@/lib/potencial';
 import type { Alcance } from '@/lib/precio-portal';
 import type { Contacto } from '@/lib/contactos-tipos';

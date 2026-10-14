@@ -22,8 +22,8 @@
  * eligieron Habilidad cognitiva, que es el nombre de sus informes y abarca más.
  */
 
-import { bandaDeAfr, hEsperado, pEsperado, type SumarioCrudo } from '@/lib/redacciones';
-import { percentilDe, puntajesPorRango, rangoDe, type Rango } from '@/lib/raven';
+import { bandaDeAfr, bandaDeWM, hEsperado, pEsperado, type SumarioCrudo } from '@/lib/redacciones';
+import { type Rango } from '@/lib/raven';
 import {
   comoNumero,
   conDireccion,
@@ -235,8 +235,8 @@ type Indicador = {
   /**
    * Cuánto aporta, cuando no es lo que vale su nivel.
    *
-   * Lo usa el Raven para el tramo de 25 a 30 aciertos, que queda en el nivel
-   * medio y aporta 75 en vez de 50. Null es "lo que valga el nivel".
+   * Lo usa el Raven, que entra en línea continua por aciertos y no por
+   * escalón. Null es "lo que valga el nivel".
    */
   aporte?: (s: SumarioCrudo, ctx: Contexto) => number | null;
   /** Qué dice cada banda, de alto a bajo, cuando no hay escala numérica. */
@@ -337,6 +337,8 @@ const GHR_PHR: Indicador = {
   nivel: (s) => {
     const g = num(s, 'interpersonal', 'GHR');
     const p = num(s, 'interpersonal', 'PHR');
+    // Sin ninguna respuesta humana es bajo, no "sin dato": no registrar lo
+    // humano es en sí un indicador (Lorena, 14/10/2026).
     if (g === null || p === null) return null;
     return g > p ? 3 : 1;
   },
@@ -383,6 +385,8 @@ const FC_CF: Indicador = {
     const fc = num(s, 'afectos', 'FC');
     if (fc === null) return null;
     const descarga = (num(s, 'afectos', 'CF') ?? 0) + (num(s, 'afectos', 'C_puro') ?? 0);
+    // Sin ninguna respuesta de color es bajo, no "sin dato": evitar el color
+    // es evitar lo emocional (Lorena, 14/10/2026).
     return fc > descarga ? 3 : 1;
   },
 };
@@ -501,21 +505,28 @@ const EB: Indicador = {
 };
 
 /**
- * W : M, que se espera exactamente en el doble.
+ * W : M contra la banda de su estilo, la misma que lee el diccionario
+ * (`bandaDeWM`): introversivo 0,8 a 1,5; ambigual 1,3 a 2; extratensivo 1,3 a
+ * 3; Zulliger exactamente 2. Hasta el 14/10/2026 exigía exactamente 2 en los
+ * dos tests, y el texto del informe decía una cosa y el velocímetro otra.
  *
  * Con M en cero la razón no existe y la lectura es la peor: la organización
  * mental no aparece.
  */
 const W_M: Indicador = {
   nombre: 'W : M',
-  formula: 'W ÷ M',
+  formula: 'W ÷ M contra la banda de su estilo',
   mide: 'Organización mental',
-  reglas: ['W igual al doble de M', 'no se usa', 'W distinto del doble de M'],
+  reglas: ['dentro de la banda de su estilo', 'no se usa', 'fuera de la banda, o sin M'],
   nivel: (s) => {
     const m = num(s, 'determinantes', 'M');
     const w = global(s);
     if (m === null || w === null) return null;
-    return m > 0 && w / m === 2 ? 3 : 1;
+    if (m === 0) return 1;
+    const estilo = s.control_estres?.estilo;
+    const [piso, techo] = bandaDeWM(s.meta?.test === 'Zulliger' ? 'Zulliger' : 'Rorschach', typeof estilo === 'string' ? estilo : undefined);
+    const razon = w / m;
+    return razon >= piso && razon <= techo ? 3 : 1;
   },
 };
 
@@ -558,7 +569,10 @@ const XA_WDA: Indicador = {
     const xa = num(s, 'calidad_formal', 'XA_pct');
     const wda = num(s, 'calidad_formal', 'WDA_pct');
     if (xa === null && wda === null) return null;
-    return Math.min(xa ?? 1, wda ?? 1);
+    // Si falta uno, se lee el otro: faltar no es acertar todo.
+    if (xa === null) return wda;
+    if (wda === null) return xa;
+    return Math.min(xa, wda);
   },
 };
 
@@ -671,8 +685,38 @@ const PSV: Indicador = {
   valor: (s) => num(s, 'codigos_especiales', 'PSV') ?? num(s, 'procesamiento', 'PSV'),
 };
 
-/** Desde cuántos aciertos el nivel medio del Raven aporta 75 en vez de 50. */
-const RAVEN_MEDIO_ALTO = 25;
+/**
+ * Cuánto aporta cada cantidad de aciertos del Raven, en línea continua.
+ *
+ * Las anclas salen de lo que las psicólogas pusieron en Habilidad cognitiva a
+ * 52 personas con Raven de 36 (medido el 14/10/2026): 8 aciertos valía 25 a
+ * 35, 20 valía 45 a 50, 23 a 27 valía 60, 30 valía 70 y 31 valía 80. Entre
+ * anclas se interpola. Hasta ese día entraba en escalones (hasta 20 aciertos
+ * 25, de 21 a 24 50, de 25 a 30 58, desde 31 100): 5 aciertos y 20 recibían lo
+ * mismo, y entre 30 y 31 la competencia saltaba 36 puntos por una lámina.
+ *
+ * Es por aciertos y no por percentil del manual: su criterio sigue a los
+ * aciertos, y el baremo español comprime el tramo alto (28 aciertos ya es
+ * percentil 94). El percentil se sigue mostrando al lado.
+ */
+const ANCLAS_RAVEN: [number, number][] = [
+  [0, 25],
+  [8, 25],
+  [20, 42],
+  [27, 57],
+  [30, 65],
+  [36, 100],
+];
+
+function aporteDeRaven(raw: number): number {
+  const r = Math.max(0, Math.min(36, raw));
+  for (let k = 1; k < ANCLAS_RAVEN.length; k++) {
+    const [x0, y0] = ANCLAS_RAVEN[k - 1];
+    const [x1, y1] = ANCLAS_RAVEN[k];
+    if (r <= x1) return Math.round((y0 + ((r - x0) * (y1 - y0)) / (x1 - x0)) * 10) / 10;
+  }
+  return 100;
+}
 
 const RAVEN: Indicador = {
   imprescindible: true,
@@ -692,15 +736,11 @@ const RAVEN: Indicador = {
     if (typeof corto !== 'number') return null;
     return corto <= 7 ? 1 : 2;
   },
-  /* De 25 a 30 aciertos sigue siendo nivel medio y aporta 58: las psicólogas
-     pidieron el 13/10/2026 distinguir a quien queda cerca del nivel alto. Con
-     75, que se eligió antes de llevar la escala de 25 a 100, la competencia
-     salía en 79 (Alto) donde ellas ponen 60, y era la mitad de los desvíos de
-     Habilidad cognitiva. Con 58 sale en 64 y en ese tramo de veinte personas
-     queda a 0,3 puntos de ellas en promedio (medido el 14/10/2026). */
+  /* El nivel (bajo, medio, alto) nombra el rango; lo que suma es la curva. La
+     serie corta sigue por escalón: no hay conversión válida de 12 a 36. */
   aporte: (_s, ctx) => {
     const raw = ctx?.ravenRaw;
-    if (typeof raw === 'number') return raw >= RAVEN_MEDIO_ALTO && raw <= 30 ? 58 : null;
+    if (typeof raw === 'number') return aporteDeRaven(raw);
     return ctx?.ravenCorto === 12 ? 75 : null;
   },
   datosDe: (ctx) =>
@@ -1035,8 +1075,8 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         escala: { forma: 'umbral', mayorEsMejor: true, alto: 12, medio: 9 },
         valor: (s) => num(s, 'cabecera', 'R'),
       },
+      // Zf no existe en el Zulliger, que no tiene puntaje Z.
       DQ_MAS,
-      ZF,
     ],
   },
   {
@@ -1142,7 +1182,7 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       'M−': 1,
       'Índice de egocentrismo': 1,
     },
-    'Proactividad': { R: 4, Fd: 3, 'Ma : Mp': 2, 'DQ+': 2, Zf: 0 },
+    'Proactividad': { R: 4, Fd: 3, 'Ma : Mp': 2, 'DQ+': 2 },
     'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
   },
 };
@@ -1366,78 +1406,6 @@ export type Competencia = {
 };
 
 /**
- * La habilidad cognitiva es el Raven, y hay que traerla a la misma escala.
- *
- * No la miden las manchas, así que no está en ninguna de las dos hojas: entra
- * con lo que resolvió del Raven. El informe muestra nueve competencias con un
- * número de 0 a 100 cada una, y si esta trajera el percentil crudo serían ocho
- * números de una clase y uno de otra, con la misma cara.
- *
- * **El rango sale de `lib/raven.ts` y no se decide acá.** Ahí están los cinco
- * rangos del equipo, que cortan por aciertos, y son los que la ficha ya muestra
- * y los que quedan guardados en el resultado. Este archivo llegó a tener sus
- * propios cortes, por percentil, y con eso el mismo informe le daba dos rangos
- * distintos a la misma persona: veintisiete aciertos son Rango III por el corte
- * del equipo y salían Rango II por el del percentil.
- *
- * **La cuenta no es una regla de tres, en ninguno de sus dos pasos.** El rango
- * decide qué tramo de la escala le toca, y adentro del tramo se interpola por
- * percentil y no por aciertos: esa es la corrección que hay que hacer porque
- * las láminas no valen lo mismo, y las últimas son mucho más difíciles que las
- * primeras.
- */
-
-/**
- * Qué tramo de la escala le toca a cada rango del Raven.
- *
- * **El rango normal llega hasta 72 y no hasta 64, así que su mitad de arriba
- * cae en la banda Alto.** Es decisión de Agustín, del 24/8/2026, y el motivo es
- * que el rango normal abarca diez de los treinta y seis aciertos posibles y la
- * mitad de los candidatos: resolver treinta láminas y resolver veintiuna caen
- * las dos ahí, y no son el mismo desempeño. Con el tope en 64, para que la
- * habilidad cognitiva saliera Alto había que sacar treinta y uno, que es uno de
- * cada dieciséis candidatos.
- *
- * Por eso el desglose puede mostrar Rango III al lado de la banda Alto, y no es
- * una contradicción: el rango es lo que dice el test y la banda es dónde cae la
- * persona en la escala del informe.
- *
- * Los tramos se tocan sin huecos ni saltos: el último acierto de un rango da el
- * número justo anterior al primero del siguiente.
- */
-const BANDA_POR_RANGO: Record<string, [number, number]> = {
-  I: [86, 100],
-  II: [73, 85],
-  III: [35, 72],
-  IV: [18, 34],
-  V: [0, 17],
-};
-
-/** Los aciertos del Raven, llevados a la escala de 0 a 100 del informe. */
-export function puntajeDeRaven(raw: number, rangos?: Rango[]): number | null {
-  const rango = rangoDe(raw, rangos);
-  if (!rango) return null;
-
-  const banda = BANDA_POR_RANGO[rango.numeral];
-  const tramo = puntajesPorRango(rangos).get(rango.numeral);
-  if (!banda || !tramo) return null;
-
-  const piso = percentilDe(tramo.desde);
-  const techo = percentilDe(tramo.hasta);
-  const suyo = percentilDe(raw);
-  if (piso === null || techo === null || suyo === null) return null;
-
-  const dentro = techo > piso ? (suyo - piso) / (techo - piso) : 0;
-  return Math.round(banda[0] + dentro * (banda[1] - banda[0]));
-}
-
-/** Cómo se nombra el rango en el que cayó. */
-function rangoRaven(raw: number, rangos?: Rango[]): string | undefined {
-  const r = rangoDe(raw, rangos);
-  return r ? `Rango ${r.numeral} · ${r.nombre.toLowerCase()}` : undefined;
-}
-
-/**
  * Cuántas respuestas hacen falta para que el protocolo diga algo.
  *
  * En Rorschach son catorce, que es la regla de Exner: por debajo el protocolo
@@ -1480,11 +1448,14 @@ export function protocoloAlcanza(
 }
 
 /**
- * El promedio más alto que pueden dar esos indicadores.
+ * El promedio más alto que puede dar esa competencia.
  *
  * Uno "dentro de lo esperable" llega a 50 y uno de capacidad a 100, así que el
  * máximo depende de cuántos hay de cada clase y de cuánto pesan: cambia con el
- * test, y con que la persona tenga o no el Raven o el potencial cargados.
+ * test. **Se calcula sobre todos los indicadores que cuentan, tengan dato o
+ * no** (14/10/2026): calculado sobre los presentes, a quien le faltaba un
+ * recurso se le estiraba más el resto, y dos personas con los mismos niveles
+ * en lo que sí tenían recibían números distintos.
  */
 function maximoDe(puntuados: { peso: number; techo: boolean }[]): number {
   const pesos = puntuados.reduce((n, r) => n + r.peso, 0);
@@ -1592,7 +1563,7 @@ export function calcularCompetencias(
     const bruto =
       puntuados.reduce((n, r) => n + r.peso * (r.aporte ?? VALOR[r.nivel as 1 | 2 | 3]), 0) /
       pesos;
-    const puntaje = pesos === 0 ? null : Math.round(aEscala(bruto, maximoDe(puntuados)));
+    const puntaje = pesos === 0 ? null : Math.round(aEscala(bruto, maximoDe(cuentan)));
 
     return {
       nombre: c.competencia,

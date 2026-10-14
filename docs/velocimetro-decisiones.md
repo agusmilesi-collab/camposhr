@@ -11,9 +11,9 @@ este repositorio, que es público:
 
 | Medida | 8/10/2026 | 14/10/2026 |
 | --- | --- | --- |
-| Puntajes en la misma banda que sus informes | 48 % | 72 % (279 de 387) |
-| Diferencia media con sus puntajes | 11,2 puntos | 4,0 puntos |
-| Diferencias de más de 20 puntos | sin medir | 22 de 387 |
+| Puntajes en la misma banda que sus informes | 48 % | 72 % (280 de 387) |
+| Diferencia media con sus puntajes | 11,2 puntos | 3,9 puntos |
+| Diferencias de más de 20 puntos | sin medir | 27 de 387 |
 
 Banda es Bajo (menos de 35), Medio (35 a 64) o Alto (65 o más).
 
@@ -69,6 +69,26 @@ hay que reconfirmar con ella.
 - **Cada competencia tiene un indicador imprescindible** (hoy, el Raven). Sin
   él no hay puntaje y el informe dice cuál falta; sin cualquier otro se calcula
   con los que hay. Reemplaza a "sin más de la mitad del peso".
+- **El Raven entra en línea continua por aciertos (14/10/2026).** Anclas en
+  8, 20, 27, 30 y 36 aciertos (25, 42, 57, 65, 100), tomadas de lo que ellas
+  pusieron a 52 personas. Antes eran cuatro escalones: 5 y 20 aciertos daban lo
+  mismo, y de 30 a 31 la competencia saltaba 36 puntos. Habilidad cognitiva
+  pasó de 51 a 57 coincidencias de 66, y de 12 a 26 valores distintos.
+- **W : M con la banda del estilo**, la misma del diccionario (14/10/2026).
+  Exigía exactamente 2; 15 de 44 Rorschach están en banda y 6 en exactamente 2.
+- **Sin respuestas humanas o sin color, GHR : PHR y FC : CF + C dan bajo.**
+  Se probó dejarlos sin dato y Lorena lo corrigió el mismo día (14/10/2026):
+  no registrar lo humano y evitar el color son indicadores en sí.
+- **El máximo de cada competencia es fijo** por test y pesos, no por lo que
+  cada persona tiene cargado (14/10/2026). Sobre los protocolos cargados no
+  cambia ningún número; evita que falte un recurso y se estire el resto.
+- **Se probó anclar el 50 y no reescalar, y se descartó** (14/10/2026): la
+  coincidencia caía a 67 % y 66 %, y Alto quedaba por debajo del 10 % en
+  Autogestión y Control emocional, donde ellas lo dan seguido.
+- **Zulliger más alto que Rorschach, revisado.** Ellas mismas puntúan más
+  Autogestión a los candidatos de Zulliger (58,7 contra 47,7): es en parte su
+  criterio y no solo la cuenta. Lo que queda como sobreestimación es Control
+  emocional en Zulliger: 60,6 del sistema contra 54,6 de ellas.
 - **El potencial de Jaques salió de Liderazgo** (14/10/2026, decisión de
   Agustín; ellas lo habían puesto el 17/9 con peso 3). Mide el alcance y el
   plazo del trabajo que la persona sostiene; Liderazgo pregunta por conducir
@@ -119,6 +139,8 @@ hay que reconfirmar con ella.
   error de carga a revisar.
 - **Seis informes de la carpeta no se pudieron comparar**: cuatro personas
   tienen la recomendación cargada y no el protocolo, y dos no están en la base.
+- **Control emocional en Zulliger** sobreestima 6 puntos. Candidato a revisar:
+  FC : CF + C y EA − es, que son 5 de 13 del peso.
 - **Los dos documentos enviados el 9/10** ("Auditoría del sistema" y "Respuesta
   a Lorena") dicen que dos protocolos quedaban sin puntaje por ser Rorschach
   cortos. Eran Zulliger y el sistema siempre los puntuó: el error fue de la

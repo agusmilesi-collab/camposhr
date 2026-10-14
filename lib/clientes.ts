@@ -1,18 +1,12 @@
 /**
  * Los clientes, con lo que hace falta para facturarles y para llamarlos.
  *
- * La tabla de verdad es `public.empresas`. Los que todavía no se migraron
- * viven en Airtable y se listan igual, marcados, porque una pantalla de
- * clientes a la que le faltan la mitad de los clientes no sirve para nada.
- *
- * Lo que se carga de ahora en adelante nace en Supabase.
+ * La tabla es `public.empresas`.
  */
 
 import 'server-only';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { select } from '@/lib/supabase';
-import { listarClientesConToken } from '@/lib/airtable';
-import { claveEmpresa } from '@/lib/os';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 
 export type PedidoDelCliente = {
@@ -125,7 +119,7 @@ const CAMPOS =
   'pedidos(id,puesto,estado,fecha_pedido,reabierto_el,evaluaciones(id,estado,baja_el)),cotizaciones(id,estado)';
 
 export async function listarClientes(): Promise<Cliente[]> {
-  const [enSupabase, conToken] = await Promise.all([
+  const [enSupabase] = await Promise.all([
     select<FilaEmpresa>(
       'empresas',
       // Vienen los dos: los inactivos se muestran aparte, no se esconden. Un
@@ -136,10 +130,7 @@ export async function listarClientes(): Promise<Cliente[]> {
       // pedido dejaba la grilla diciendo lo de antes hasta los cinco minutos.
       [CACHE_CLIENTES, CACHE_PSICOTECNICOS]
     ).catch(() => [] as FilaEmpresa[]),
-    listarClientesConToken().catch(() => []),
   ]);
-
-  const tokensPorClave = new Map(conToken.map((c) => [claveEmpresa(c.nombre), c.token]));
 
   const clientes: Cliente[] = enSupabase
     // La empresa de la muestra no es un cliente: existe para enseñarle el portal
@@ -160,12 +151,7 @@ export async function listarClientes(): Promise<Cliente[]> {
     rubro: e.rubro,
     tamano: e.tamano,
     notas: e.notas,
-    // El de Supabase primero. Hasta el 26/8/2026 mandaba el de Airtable, con
-    // el argumento de que era el que el cliente ya tenía en la mano, y por eso
-    // el enlace que se copiaba de acá abría el portal anterior. Los dos abren
-    // la misma empresa y muestran lo mismo (ver `empresaDelToken`), así que el
-    // que se reparte es el de la base donde viven los datos.
-    token: e.token_portal ?? tokensPorClave.get(claveEmpresa(e.nombre)) ?? null,
+    token: e.token_portal,
     informesVisibles: e.informes_visibles !== false,
     // Activo es tener algo en curso: un pedido abierto, o una cotización que
     // espera respuesta (Enviada) o cuyo trabajo se está haciendo (Aprobada).
@@ -194,38 +180,6 @@ export async function listarClientes(): Promise<Cliente[]> {
     // cliente.
     cotizaciones: (e.cotizaciones ?? []).filter((c) => c.estado && c.estado !== 'Lead').length,
     }));
-
-  // Los de Airtable que todavía no existen de este lado.
-  const yaEstan = new Set(clientes.map((c) => claveEmpresa(c.nombre)));
-  for (const c of conToken) {
-    if (yaEstan.has(claveEmpresa(c.nombre))) continue;
-    clientes.push({
-      id: null,
-      origen: 'airtable',
-      nombre: c.nombre,
-      razonSocial: null,
-      cuit: null,
-      condicionIva: null,
-      emailFacturacion: null,
-      contacto: null,
-      direccionFiscal: null,
-      exigeOrdenCompra: false,
-      portalProveedores: false,
-      rubro: null,
-      tamano: null,
-      notas: null,
-      token: c.token,
-      informesVisibles: true,
-      // De los de Airtable el OS no ve un solo pedido, así que por la misma
-      // regla que los demás no tienen trabajo en curso. Aparecen entre los
-      // inactivos hasta que se migren, que es lo que son para este sistema.
-      activa: false,
-      pedidos: 0,
-      susPedidos: [],
-      evaluaciones: 0,
-      cotizaciones: 0,
-    });
-  }
 
   return clientes.sort((a, b) => a.nombre.localeCompare(b.nombre));
 }

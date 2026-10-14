@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { datosClienteDeSupabase, empresaDelToken } from '@/lib/portal-supabase';
-import { getDatosCliente } from '@/lib/airtable';
-import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
+import { datosDemoReales, esDemo } from '@/lib/portal-demo';
 import { alcanceYPrecios } from '@/lib/precio-portal';
 import { quienesPiden } from '@/lib/contactos';
 import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
@@ -34,9 +33,7 @@ export default async function PedirEvaluacion({ params }: { params: { token: str
   const demo = esDemo(params.token);
   const empresa = demo ? null : await empresaDelToken(params.token);
 
-  const datos = demo
-    ? await datosDemoConAirtable()
-    : ((await datosClienteDeSupabase(params.token)) ?? (await getDatosCliente(params.token)));
+  const datos = demo ? await datosDemoReales() : await datosClienteDeSupabase(params.token);
   if (!datos) notFound();
 
   const [alcance, contactos, ciudades] = await Promise.all([

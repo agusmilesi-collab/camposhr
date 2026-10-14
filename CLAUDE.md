@@ -558,6 +558,31 @@ lo que esa batería no midió sale debajo de los velocímetros como "no incluida
 la batería contratada, requiere X". Hoy es Habilidad cognitiva sin Raven. Un
 pedido sin batería cargada responde todo, como antes.
 
+**El Raven entra en línea continua por aciertos** (`ANCLAS_RAVEN`, desde el
+14/10/2026): 8 aciertos aportan 25, 20 aportan 42, 27 aportan 57, 30 aportan
+65 y 36 aportan 100, con interpolación entre anclas. Las anclas salen de lo que
+las psicólogas pusieron a 52 personas. Antes entraba en cuatro escalones y 5
+aciertos valían lo mismo que 20. El nivel (bajo, medio, alto) sigue nombrando
+el rango; lo que suma es la curva.
+
+**El máximo de cada competencia se calcula sobre todos sus indicadores, tengan
+dato o no** (`maximoDe(cuentan)`): calculado sobre los presentes, a quien le
+faltaba un recurso se le estiraba más el resto.
+
+**W : M se lee con la banda de su estilo** (`bandaDeWM` en `lib/redacciones.ts`),
+la misma del diccionario. Exigía exactamente 2 y el texto del informe decía
+otra cosa en 9 de 44 Rorschach.
+
+**Sin respuestas humanas, GHR : PHR da bajo; sin color, FC : CF + C da bajo.**
+No es dato que falta: no registrar lo humano y evitar el color son indicadores
+en sí (Lorena, 14/10/2026). El mismo día se había pasado a "sin dato" y se
+volvió atrás.
+
+**Configuración → Velocímetro muestra, por indicador, cuántos protocolos caen
+en cada nivel con lo que rige** (columna Protocolos, `casosPorIndicador` en
+`Ponderaciones.tsx`). Es la comprobación del corte: uno que deja a 36 de 47 en
+bajo describe al corte y no a la gente.
+
 **El potencial de Jaques no es indicador de ninguna competencia** (desde el
 14/10/2026; estaba en Liderazgo con peso 3). Mide el alcance y el plazo del
 trabajo que la persona sostiene, y Liderazgo pregunta por conducir personas.

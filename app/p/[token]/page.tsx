@@ -1,7 +1,7 @@
-import { getDatosCliente, type Busqueda, type Candidato } from '@/lib/airtable';
+import type { Busqueda, Candidato } from '@/lib/portal-tipos';
 import { puestoConCiudad } from '@/lib/pedido-campos';
-import { datosDemoConAirtable, esDemo } from '@/lib/portal-demo';
-import { datosClienteDeSupabase, empresaDelToken, vaPorAirtable } from '@/lib/portal-supabase';
+import { datosDemoReales, esDemo } from '@/lib/portal-demo';
+import { datosClienteDeSupabase, empresaDelToken } from '@/lib/portal-supabase';
 import TablaEntregados, { type FilaEntregada } from './TablaEntregados';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
 import NuevoPedido from './NuevoPedido';
@@ -241,19 +241,8 @@ type Entregado = {
 
 export default async function Portal({ params }: { params: { token: string } }) {
   const demo = esDemo(params.token);
-  // El enlace se resuelve primero contra Supabase, que es donde viven las
-  // empresas ya migradas, y después contra Airtable, que es donde siguen las
-  // demás. Un token existe en uno de los dos, nunca en los dos.
-  //
-  // Mientras el OS se termina, las evaluadoras siguen cargando en Airtable: los
-  // clientes marcados leen de ahí, que es donde está su trabajo al día. Se
-  // apaga por cliente, cuando el suyo pase a llevarse en el OS.
-  const porAirtable = demo ? false : await vaPorAirtable(params.token);
-  const deSupabase =
-    demo || porAirtable ? null : await datosClienteDeSupabase(params.token);
-  const datos = demo
-    ? await datosDemoConAirtable()
-    : (deSupabase ?? (await getDatosCliente(params.token)));
+  const deSupabase = demo ? null : await datosClienteDeSupabase(params.token);
+  const datos = demo ? await datosDemoReales() : deSupabase;
   if (!datos) return <Acceso />;
 
   const { empresa, empresaId, busquedas, informesVisibles } = datos;
@@ -262,17 +251,14 @@ export default async function Portal({ params }: { params: { token: string } }) 
   const baterias = await bateriasDelPortal();
 
   // Los documentos del trabajo de estructura, si el cliente lo tiene contratado.
-  // El portal que sale de Supabase no trae el id de Airtable: la empresa se
-  // busca por su enlace, que es lo que tienen los dos.
+  // La lectura del portal no trae el id de la empresa: se busca por su enlace.
   const servicios = serviciosDe(
     empresaId ?? (demo ? null : ((await empresaDelToken(params.token))?.id ?? null)),
     params.token
   );
 
-  // La facturación se publica donde el dato es cierto: en las empresas ya
-  // migradas sale de las facturas emitidas en el OS. En las que siguen en
-  // Airtable son dos tildes que nadie carga, y publicarlas le diría "sin
-  // facturar" a informes ya cobrados. Ver la nota en lib/cobro.ts.
+  // La facturación sale de las facturas emitidas en el OS. Ver la nota en
+  // lib/cobro.ts.
   const conCobro = COBRO_PUBLICADO || demo || Boolean(deSupabase);
 
   // Los informes ya entregados salen de la tarjeta de su búsqueda y se juntan
@@ -322,10 +308,8 @@ export default async function Portal({ params }: { params: { token: string } }) 
         recoCompleta: c.recomendacion,
         recoClase: r?.clase ?? 'gray',
         recoOrden: r?.orden ?? 9,
-        // De dónde sale el informe depende de dónde vive la evaluación. En
-        // Supabase se arma con los datos cargados y se muestra en su página; en
-        // Airtable es un archivo escrito a mano, y en el cliente de prueba
-        // manda la tilde que trae la tabla.
+        // El informe se arma con los datos cargados y se muestra en su página;
+        // en el cliente de prueba manda la tilde que trae la tabla.
         // Con los informes apagados no se arma ningún enlace: la columna sale
         // igual, con "Ver informe" en todas las filas y el aviso de que llega
         // próximamente, y no hay dirección que probar. Ver `informesVisibles`.

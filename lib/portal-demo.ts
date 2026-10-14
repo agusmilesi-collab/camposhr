@@ -1,21 +1,23 @@
 /**
  * Cliente de prueba del portal y del armado de informes, con datos inventados.
  *
- * Es la única empresa sobre la que se puede probar sin tocar Airtable ni
- * exponer candidatos reales. Funciona igual en local y en el sitio desplegado,
+ * Es la única empresa sobre la que se puede probar sin exponer candidatos
+ * reales. Funciona igual en local y en el sitio desplegado,
  * porque es donde se mira cómo quedó una pantalla antes de mostrársela a un
  * cliente de verdad.
  *
  * El token es aleatorio como el de cualquier cliente, y no un nombre adivinable:
  * lo que hay del otro lado son datos inventados, pero el formulario de alta
- * escribe en Airtable y una dirección que se puede tipear a mano es una puerta
+ * escribe en la base y una dirección que se puede tipear a mano es una puerta
  * abierta a que alguien cargue basura.
  *
  * Los cinco pedidos cubren a propósito los estados que el portal sabe mostrar:
  * candidato por citar, por entrevistar, por analizar, en seguimiento y entregado
  * con informe, más una búsqueda todavía sin candidatos.
  */
-import { getDatosClientePorEmpresa, type DatosCliente } from './airtable';
+import { select } from './supabase';
+import { datosClienteDeSupabase } from './portal-supabase';
+import type { DatosCliente } from './portal-tipos';
 
 /**
  * Viene de `PORTAL_DEMO_TOKEN` y no está escrito acá: el repositorio es
@@ -24,9 +26,8 @@ import { getDatosClientePorEmpresa, type DatosCliente } from './airtable';
  */
 export const TOKEN_DEMO = process.env.PORTAL_DEMO_TOKEN ?? '';
 
-/** La empresa gemela en Airtable, cargada el 13/8/2026. No tiene "Token portal"
- *  a propósito: sin token no figura en el listado de accesos ni se abre desde
- *  clientes.camposhr.com. Es donde caen los pedidos que se cargan probando. */
+/** Identificador de la demo inventada. No es una empresa de la base: los
+ *  pedidos que se cargan probando caen en Distribuidora Andina. */
 export const EMPRESA_DEMO = 'recX2DYWlVzjLoAXT';
 
 /**
@@ -200,21 +201,27 @@ export function datosDemo(): DatosCliente {
 }
 
 /**
- * Lo inventado más lo que haya cargado en Airtable para la empresa de prueba.
+ * Lo inventado más lo que haya cargado en Supabase para la empresa de prueba.
  *
- * Los pedidos que entran por el formulario van a Airtable, así que sin esto se
- * cargarían y no se verían. Van primero, que es donde el que está probando los
- * busca. Si Airtable no responde, quedan los inventados y la pantalla no se
- * cae por una prueba.
+ * Los pedidos que entran por el formulario del portal de prueba caen en
+ * Distribuidora Andina (`app/api/pedidos`), así que sin esto se cargarían y no
+ * se verían. Van primero, que es donde el que está probando los busca. Si la
+ * base no responde, quedan los inventados y la pantalla no se cae por una
+ * prueba.
  */
-export async function datosDemoConAirtable(): Promise<DatosCliente> {
+export async function datosDemoReales(): Promise<DatosCliente> {
   const base = datosDemo();
   try {
-    const real = await getDatosClientePorEmpresa(EMPRESA_DEMO);
+    const filas = await select<{ token_portal: string | null }>(
+      'empresas',
+      `select=token_portal&nombre=ilike.${encodeURIComponent(NOMBRE_DEMO)}*&limit=1`
+    );
+    const token = filas[0]?.token_portal;
+    const real = token ? await datosClienteDeSupabase(token) : null;
     if (!real) return base;
     return {
       empresa: base.empresa,
-      empresaId: EMPRESA_DEMO,
+      empresaId: base.empresaId,
       informesVisibles: true,
       busquedas: [...real.busquedas, ...base.busquedas],
     };

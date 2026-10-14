@@ -56,6 +56,19 @@ function deCaja(t: string, e: Escala): number | null {
  * que repartir y la competencia queda sin puntaje: eso se devuelve como null y
  * la tabla lo dice.
  */
+/**
+ * "15 · 28 · 4": cuántos protocolos caen en alto, medio y bajo con lo que
+ * rige. En un indicador binario no hay medio y se omite. Los que no tienen
+ * el dato van aparte, porque no dicen nada del corte.
+ */
+function casosDe(i: Indicador, binario: boolean): string {
+  const c = i.casos;
+  const total = c.alto + c.medio + c.bajo;
+  if (total === 0) return c.sin > 0 ? `sin dato en ${c.sin}` : '—';
+  const partes = binario ? [c.alto, c.bajo] : [c.alto, c.medio, c.bajo];
+  return partes.join(' · ') + (c.sin > 0 ? ` (sin dato ${c.sin})` : '');
+}
+
 function aportes(pesos: number[]): number[] | null {
   const total = pesos.reduce((n, p) => n + p, 0);
   if (total === 0) return null;
@@ -76,7 +89,7 @@ function aportes(pesos: number[]): number[] | null {
   return enteros;
 }
 
-const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Peso', 'Aporte'];
+const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Protocolos', 'Peso', 'Aporte'];
 
 /* Medidos en pantalla contra el contenido más largo de cada columna, más los 28
    px de padding de la celda. Sin anchos declarados, cada competencia repartía
@@ -93,6 +106,8 @@ const COLUMNAS = ['Indicador', 'Qué mide', 'Alto', 'Medio', 'Bajo', 'Peso', 'Ap
 const MEDIDAS = columnas(COLUMNAS, {
   Indicador: 168,
   'Qué mide': 214,
+  // "47 · 0 · 0" con su rótulo de tres palabras.
+  Protocolos: 128,
   Alto: 216,
   Medio: 216,
   Bajo: 200,
@@ -130,7 +145,11 @@ export type Indicador = {
   cortesFabrica: number[];
   peso: number;
   fabrica: number;
+  /** En qué nivel cae en los protocolos cargados, con lo que rige. */
+  casos: Casos;
 };
+
+export type Casos = { alto: number; medio: number; bajo: number; sin: number };
 
 export type Hoja = {
   test: string;
@@ -622,6 +641,14 @@ export default function Pesos({
                             </th>
                           </>
                         )}
+                        {/* La comprobación del corte: cuántos protocolos
+                            caen en cada nivel con lo que rige. Alto, medio y
+                            bajo en ese orden, el mismo de las columnas de la
+                            izquierda; en una competencia binaria, solo alto y
+                            bajo. */}
+                        <th className="os-tabla-num" title="Cuántos protocolos cargados caen en cada nivel: alto · medio · bajo">
+                          Protocolos
+                        </th>
                         <th className="os-tabla-num">Peso</th>
                         <th className="os-tabla-num">Aporte</th>
                       </tr>
@@ -646,6 +673,9 @@ export default function Pesos({
                               {i.mide}
                             </td>
                             {bandasDe(i, !todosBinarios)}
+                            <td className="os-tabla-num os-tabla-flojo" data-campo="Protocolos">
+                              {casosDe(i, sinMedio(i))}
+                            </td>
                             <td className="os-tabla-num" data-campo="Peso">
                               <div className="os-peso-celda">
                                 <input
@@ -678,7 +708,7 @@ export default function Pesos({
                         ruta rechaza al guardar. */}
                     <tfoot>
                       <tr>
-                        <td colSpan={5}>Suma de la competencia</td>
+                        <td colSpan={6}>Suma de la competencia</td>
                         <td className="os-tabla-num" data-campo="Peso">
                           {total}
                         </td>

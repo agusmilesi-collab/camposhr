@@ -2,7 +2,7 @@ import 'server-only';
 import { empresasDelGrupo } from '@/lib/grupo';
 import { select } from '@/lib/supabase';
 import { yaEntregada } from '@/lib/psicotecnicos-tipos';
-import type { Busqueda, Candidato, DatosCliente } from '@/lib/airtable';
+import type { Busqueda, Candidato, DatosCliente } from '@/lib/portal-tipos';
 
 /**
  * Los datos del portal, para las empresas que ya viven en Supabase.
@@ -126,21 +126,6 @@ export async function empresaDelToken(token: string): Promise<EmpresaDelPortal |
       `&or=(token_portal.eq.${t},token_portal_anterior.eq.${t})&limit=1`
   );
   return filas[0] ?? null;
-}
-
-/**
- * Si el portal de este cliente sale de Airtable.
- *
- * Las evaluadoras siguen cargando ahí mientras el OS se termina, así que el
- * cliente tiene que ver lo que ellas actualizan y no lo que hay en el OS, que
- * se llena de a ratos para probar. Vale para los dos enlaces de esa empresa: el
- * que tenía guardado y el que generó la base.
- *
- * Se apaga por cliente, cuando su trabajo pase a llevarse en el OS.
- */
-export async function vaPorAirtable(token: string): Promise<boolean> {
-  const empresa = await empresaDelToken(token);
-  return Boolean(empresa?.portal_desde_airtable);
 }
 
 /**

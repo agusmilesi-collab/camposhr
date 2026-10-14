@@ -61,6 +61,22 @@ const ZF_BAJO = 0.4;
 const ZF_ALTO = 0.55;
 
 const WDA_ACEPTABLE = 0.8;
+/**
+ * Entre qué valores se espera W dividido M, por estilo (Exner). En Zulliger
+ * se espera exactamente el doble. La usan el diccionario y el velocímetro:
+ * hasta el 14/10/2026 el velocímetro exigía exactamente 2 en los dos tests y el
+ * texto del mismo informe leía la banda, y se contradecían en 9 de 44
+ * Rorschach.
+ */
+export const BANDA_WM: Record<string, [number, number]> = {
+  Introversivo: [0.8, 1.5],
+  Ambigual: [1.3, 2],
+  Extratensivo: [1.3, 3],
+};
+export function bandaDeWM(test: string, estilo: string | undefined): [number, number] {
+  return test === 'Zulliger' ? [2, 2] : (BANDA_WM[estilo ?? ''] ?? BANDA_WM.Ambigual);
+}
+
 const AFR_BANDA: Record<string, [number, number]> = {
   Introversivo: [0.53, 0.78],
   Ambigual: [0.53, 0.83],
@@ -3059,15 +3075,9 @@ export function leer(
    * las psicólogas el 15/9/2026.
    */
   const mTotal = n(s, 'determinantes', 'M');
-  const BANDA_WM: Record<string, [number, number]> = {
-    Introversivo: [0.8, 1.5],
-    Ambigual: [1.3, 2],
-    Extratensivo: [1.3, 3],
-  };
   if (mTotal) {
     const razon = w / mTotal;
-    const [piso, techo] =
-      test === 'Zulliger' ? [2, 2] : (BANDA_WM[estilo] ?? BANDA_WM.Ambigual);
+    const [piso, techo] = bandaDeWM(test, estilo);
     const marca = `W:M ${w}:${mTotal}`;
     if (razon > techo) {
       sumar('w-m-alto', marca);

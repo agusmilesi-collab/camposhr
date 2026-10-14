@@ -5,7 +5,7 @@ import OrdenGracias from '@/app/_components/OrdenGracias';
 import type { Orden } from '@/lib/orden-compra-tipos';
 import { useRouter } from 'next/navigation';
 import type { BateriaDelPortal } from '@/lib/baterias';
-import type { Busqueda } from '@/lib/airtable';
+import type { Busqueda } from '@/lib/portal-tipos';
 
 /**
  * Alta de pedido desde el portal del cliente.

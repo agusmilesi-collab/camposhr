@@ -1,4 +1,4 @@
-import type { Candidato } from './airtable';
+import type { Candidato } from './portal-tipos';
 import { ETAPAS_ENTREVISTADO } from './facturas-tipos';
 
 /**

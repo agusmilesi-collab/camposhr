@@ -1,4 +1,5 @@
-import { listarClientesConToken } from '@/lib/airtable';
+import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
+import { select } from '@/lib/supabase';
 import { NOMBRE_DEMO, TOKEN_DEMO } from '@/lib/portal-demo';
 import CopyLink from './CopyLink';
 
@@ -7,7 +8,17 @@ export const dynamic = 'force-dynamic';
 const BASE_PORTAL = 'https://clientes.camposhr.com';
 
 export default async function Informes() {
-  const clientes = await listarClientesConToken();
+  // Los enlaces vigentes de cada empresa. La de prueba va aparte, abajo, con su
+  // enlace propio; la muestra pública no es un cliente.
+  const clientes = (
+    await select<{ nombre: string; token: string | null }>(
+      'empresas',
+      'select=nombre,token:token_portal&token_portal=not.is.null&order=nombre.asc'
+    ).catch(() => [])
+  ).filter(
+    (c): c is { nombre: string; token: string } =>
+      Boolean(c.token) && !esEmpresaEjemplo(c.nombre) && !c.nombre.startsWith(NOMBRE_DEMO)
+  );
 
   const filas = clientes
     .map((c) => ({
@@ -22,7 +33,7 @@ export default async function Informes() {
   // desplegado: es donde se mira cómo quedó una pantalla antes de mostrársela a
   // un cliente. Va último y con su sello, que alcanza para no confundirlo con
   // una empresa.
-  filas.push({
+  if (TOKEN_DEMO) filas.push({
     nombre: NOMBRE_DEMO,
     token: TOKEN_DEMO,
     url: `${BASE_PORTAL}/${TOKEN_DEMO}`,
