@@ -437,18 +437,25 @@ const EGOCENTRISMO: Indicador = {
   valor: (s) => num(s, 'autopercepcion', 'Ego'),
 };
 
+/**
+ * Dentro de lo esperable cuando FC supera a CF + C por uno o por dos (Lorena,
+ * 14/10/2026). CF + C igual o mayor que FC es descarga; FC por más de dos es
+ * control excesivo. Hasta ese día, cualquier FC mayor contaba como recurso.
+ */
 const FC_CF: Indicador = {
+  techo: 50,
   nombre: 'FC : CF + C',
-  formula: 'FC contra CF + C pura',
+  formula: 'FC menos CF + C pura',
   mide: 'Capacidad de regulación emocional',
-  reglas: ['FC mayor que CF + C', 'no se usa', 'CF + C igual o mayor que FC'],
+  reglas: ['FC mayor que CF + C por uno o por dos', 'no se usa', 'CF + C igual o mayor que FC, o FC mayor por más de dos'],
   nivel: (s) => {
     const fc = num(s, 'afectos', 'FC');
     if (fc === null) return null;
     const descarga = (num(s, 'afectos', 'CF') ?? 0) + (num(s, 'afectos', 'C_puro') ?? 0);
     // Sin ninguna respuesta de color es bajo, no "sin dato": evitar el color
     // es evitar lo emocional (Lorena, 14/10/2026).
-    return fc > descarga ? 3 : 1;
+    const diferencia = fc - descarga;
+    return diferencia >= 1 && diferencia <= 2 ? 3 : 1;
   },
 };
 
@@ -626,12 +633,11 @@ const ZD: Indicador = {
 };
 
 const MA_MP: Indicador = {
-  /* "Dentro de lo esperable" desde el 13/10/2026: que la persona no tienda a
-     lo pasivo es que no apareció un rasgo en contra. Contado como recurso daba
-     positivo en 35 de 47 Rorschach y en 45 de 46 Zulliger, y con eso dos de
-     cada tres personas caían en Alto en Proactividad. Las psicólogas lo habían
-     escrito como positivo: es decisión nuestra, a reconfirmar con ellas. */
-  techo: 50,
+  /* Positivo, como lo escribieron las psicólogas: Mp por encima de Ma + 1 es
+     negativo y lo contrario es un recurso. Del 13 al 14/10/2026 fue "dentro de
+     lo esperable" porque daba positivo en casi todos; Lorena lo reconfirmó como
+     positivo el 14/10, y medido contra sus informes coincide más así (Rorschach
+     16 de 30 en la misma banda contra 15; Zulliger 22 de 42 contra 14). */
   nombre: 'Ma : Mp',
   formula: 'Ma contra Mp',
   mide: 'Tendencia activa frente a pasiva',
@@ -838,21 +844,37 @@ const RAVEN: Indicador = {
         (ctx.ravenPercentil === null ? '' : ` · percentil ${Math.round(ctx.ravenPercentil * 10) / 10}`),
 };
 
+/**
+ * T en 0 o en 1 es lo esperable: en la norma argentina el 47 % no da ninguna
+ * (Lunazzi, 2006: media 0,71 y desvío 0,80), aprobada por Lorena el
+ * 14/10/2026. Con Exner, distinto de 1 era negativo y salían 33 de 48.
+ */
 const T: Indicador = {
   techo: 50,
   nombre: 'T',
   formula: 'SumT',
   mide: 'Disposición al contacto afectivo',
-  escala: dentroDe(1, 1),
+  escala: dentroDe(0, 1),
   valor: (s) => num(s, 'determinantes', 'SumT') ?? num(s, 'determinantes', 'T'),
 };
 
-/** Dd sobre el total de localizaciones: aumentado es negativo. */
+/**
+ * Dd sobre el total de localizaciones: aumentado es negativo.
+ *
+ * "Dentro de lo esperable" desde el 14/10/2026, en los dos tests: Lorena lo
+ * confirmó con un caso real ("el Dd cero es dentro de lo esperable, aumentar
+ * el velocímetro de autogestión por eso no tiene sentido"), y Zdunic dice lo
+ * mismo (p. 87: lo preocupante es que aumenten).
+ */
 const DD: Indicador = {
+  techo: 50,
   nombre: 'Dd',
   formula: 'Dd ÷ (W + D + Dd)',
   mide: 'Priorización',
-  escala: binario(0.05, false, 2, true),
+  // Hasta el 11 % de las localizaciones, que es lo que dan los argentinos no
+  // pacientes (Lunazzi y otros, 506 casos: W 37,9 %, D 51,4 %, Dd 11,1 %),
+  // aprobado por Lorena el 14/10/2026. Con Exner era el 5 %.
+  escala: binario(0.11, false, 2, true),
   valor: (s) => {
     const w = global(s);
     const d = num(s, 'procesamiento', 'D');
@@ -944,7 +966,9 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         nombre: 'Lambda',
         formula: 'Lambda',
         mide: 'Estilo de afrontamiento y simplificación',
-        techo: 50,
+        // Recurso y no "dentro de lo esperable" desde el 14/10/2026 (Lorena):
+        // simplificar en la medida justa es una capacidad. Sin esto el único
+        // recurso de Autogestión era W : M y nadie podía llegar a Alto.
         escala: dentroDe(0.3, 0.99, 2),
         valor: (s) => num(s, 'cabecera', 'Lambda'),
       },
@@ -963,9 +987,12 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         nombre: 'EA',
         formula: 'EA',
         mide: 'Recursos disponibles para afrontar demandas',
-        // Alta por encima de 11, media de 7 a 11 y baja por debajo de 7, que
-        // son los cortes del diccionario. EA va de a medios puntos.
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 11.5, medio: 7, decimales: 1 },
+        // Norma argentina (Lunazzi, 2006: 506 no pacientes, media 6,06 y
+        // desvío 2,73), aprobada por Lorena el 14/10/2026: baja por debajo de
+        // una desviación (3,3) y alta por encima de una (8,8). EA va de a medios
+        // puntos, así que queda baja por debajo de 3,5 y alta desde 9. Con los
+        // cortes de Exner (7 y 11,5) salían bajos 35 de 48 Rorschach.
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 9, medio: 3.5, decimales: 1 },
         valor: (s) => num(s, 'control_estres', 'EA'),
       },
       {
@@ -1083,7 +1110,9 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         nombre: 'Lambda',
         formula: 'Lambda',
         mide: 'Estilo de afrontamiento y simplificación',
-        techo: 50,
+        // Recurso y no "dentro de lo esperable" desde el 14/10/2026 (Lorena):
+        // simplificar en la medida justa es una capacidad. Sin esto el único
+        // recurso de Autogestión era W : M y nadie podía llegar a Alto.
         // La banda del Zulliger, con el techo que ellas movieron a 0,80.
         escala: dentroDe(0.29, 0.8, 2),
         valor: (s) => num(s, 'cabecera', 'Lambda'),
@@ -1091,6 +1120,7 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       EB,
       W_M,
       {
+        techo: 50,
         nombre: 'Dd',
         formula: 'Dd',
         mide: 'Priorización',
@@ -1230,24 +1260,27 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       'Índice de intelectualización': 1,
       Vagas: 1,
     },
+    // En el orden de importancia que dio Lorena el 14/10/2026: GHR : PHR,
+    // COP / AG, contenidos H, CDI, aislamiento, egocentrismo, P, M− y Afr,
+    // ninguno en cero. Los números son nuestros. Contra sus informes, la misma
+    // banda pasa de 13 a 16 de 30 y el error medio de 9,7 a 8,9 puntos.
     'Habilidad interpersonal': {
-      'GHR : PHR': 3,
-      'Contenidos H': 3,
-      CDI: 2,
+      'GHR : PHR': 5,
+      'COP / AG': 4,
+      'Contenidos H': 4,
+      CDI: 3,
+      'Índice de aislamiento': 2,
+      'Índice de egocentrismo': 2,
       P: 2,
-      'COP / AG': 1,
-      'Índice de aislamiento': 1,
-      Afr: 1,
       'M−': 1,
-      'Índice de egocentrismo': 1,
+      Afr: 1,
     },
-    // Rehecha el 13/10/2026, igual en los dos tests. Los dos recursos, R y
-    // DQ+, llevan más de la mitad del peso: con Fd y Ma : Mp como "dentro de
-    // lo esperable", sin recursos con peso la persona promedio caía en Alto.
-    // Zf queda en cero, que medido iba al revés que los puntajes de ellas.
-    // Sobre 93 protocolos da Alto en 35; ellas lo dieron en 29 de 73. El error
-    // medio contra sus informes baja de 16 a 11 puntos.
-    'Proactividad': { R: 4, Fd: 3, 'Ma : Mp': 2, 'DQ+': 2, Zf: 0 },
+    // Los tres que definió Lorena (Fd, Ma : Mp y R), reconfirmados el
+    // 14/10/2026. DQ+ queda en cero: con Ma : Mp como recurso ya no hace falta
+    // para que la persona promedio no caiga en Alto, y sin él la misma banda
+    // que sus informes pasa de 16 a 18 de 30. Zf sigue en cero, que medido iba
+    // al revés que los puntajes de ellas.
+    'Proactividad': { R: 4, Fd: 3, 'Ma : Mp': 2, 'DQ+': 0, Zf: 0 },
     'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
     'Liderazgo': {
       W: 2,
@@ -1573,16 +1606,23 @@ export function protocoloAlcanza(
  * en lo que sí tenían recibían números distintos.
  */
 function maximoDe(puntuados: { peso: number; techo: boolean }[]): number {
-  const pesos = puntuados.reduce((n, r) => n + r.peso, 0);
-  if (pesos === 0) return VALOR[3];
-  return puntuados.reduce((n, r) => n + r.peso * (r.techo ? VALOR[2] : VALOR[3]), 0) / pesos;
+  // Desde el 14/10/2026 lo "dentro de lo esperable" no se estira: una persona
+  // sin nada en contra y sin ningún recurso queda en 50, Adecuado (Lorena y
+  // Agustín). Del 13 al 14/10 todo velocímetro llegaba a 100, y quien tenía
+  // todo en rango sin un solo recurso salía Sobresaliente.
+  void puntuados;
+  return VALOR[3];
 }
 
 /**
  * El promedio llevado a la escala del informe, de 25 a 100.
  *
+ * Desde el 14/10/2026 `maximoDe` devuelve siempre 100 y esto no estira nada:
+ * una competencia llega a 100 solo con todos sus recursos en su mejor nivel, y
+ * con todo "dentro de lo esperable" queda en 50. Lo que sigue es la historia.
+ *
  * **Todo velocímetro llega a 100, se haya medido con lo que se haya medido**
- * (decisión de Agustín, 13/10/2026). Sin esto el máximo de cada competencia
+ * (decisión de Agustín, 13/10/2026, reemplazada el 14/10). Sin esto el máximo de cada competencia
  * dependía de sus indicadores: Autogestión no pasaba de 71 en Rorschach ni de
  * 78 en Zulliger, y dos personas con todo en su mejor nivel recibían números
  * distintos según el test. El piso sigue siendo 25, que es lo que vale un

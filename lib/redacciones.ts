@@ -62,7 +62,9 @@ const ZF_ALTO = 0.55;
 
 const WDA_ACEPTABLE = 0.8;
 /**
- * Entre qué valores se espera W dividido M, por estilo (Exner). En Zulliger
+ * Entre qué valores se espera W dividido M, por estilo. Son los de Exner y los
+ * mismos que trae el material de Rorschach Archives of Argentina (Paso 4, W : M,
+ * "Proporción de aspiraciones"), que Lorena confirmó el 14/10/2026. En Zulliger
  * se espera el doble, con medio punto de tolerancia. La usan el diccionario y el velocímetro:
  * hasta el 14/10/2026 el velocímetro exigía exactamente 2 en los dos tests y el
  * texto del mismo informe leía la banda, y se contradecían en 9 de 44
@@ -81,10 +83,16 @@ export function bandaDeWM(test: string, estilo: string | undefined): [number, nu
   return test === 'Zulliger' ? [1.5, 2.5] : (BANDA_WM[estilo ?? ''] ?? BANDA_WM.Ambigual);
 }
 
+/**
+ * Afr esperado: de 0,34 a 0,78 para cualquier estilo, la media argentina más y
+ * menos una desviación (Lunazzi, 2006: 506 no pacientes, media 0,56 y desvío
+ * 0,22), aprobada por Lorena el 14/10/2026. Con las bandas de Exner por estilo
+ * (de 0,53 a 0,89) quedaban afuera 36 de 47 Rorschach.
+ */
 const AFR_BANDA: Record<string, [number, number]> = {
-  Introversivo: [0.53, 0.78],
-  Ambigual: [0.53, 0.83],
-  Extratensivo: [0.6, 0.89],
+  Introversivo: [0.34, 0.78],
+  Ambigual: [0.34, 0.78],
+  Extratensivo: [0.34, 0.78],
 };
 
 /** Un número del sumario, buscado en las secciones donde puede estar. */
@@ -438,7 +446,7 @@ export const TEXTOS = {
   'dd-alto': {
     area: 'Cómo procesa la información',
     indice: 'Dd',
-    cuando: 'Dd por encima del 5 % de las localizaciones (Zulliger: más de 2)',
+    cuando: 'Dd por encima del 11 % de las localizaciones (Zulliger: más de 2)',
     zulliger: {
       dice: [
         'Le preocupa mucho la exactitud y tiene miedo a cometer errores, y por eso se fija en cuestiones que para otros pueden ser insignificantes. Este indicador puede mostrar falta de autoconfianza.',
@@ -1777,7 +1785,10 @@ export const TEXTOS = {
   'sumt-cero': {
     area: 'Cómo maneja lo que siente',
     indice: 'SumT',
-    corte: { op: 'menor', valor: 1, decimales: 0 },
+    // T en 0 es esperable también en Rorschach desde el 14/10/2026: el 47 % de
+    // los argentinos no pacientes no da ninguna (Lunazzi, 2006). Con el corte
+    // en cero la lectura queda escrita y no sale, igual que en Zulliger.
+    corte: { op: 'menor', valor: 0, decimales: 0 },
     // En Zulliger T=0 es la norma: la lectura queda escrita por si alguna vez
     // se decide informarla, y hoy no sale.
     zulliger: {
@@ -2367,7 +2378,8 @@ export const TEXTOS = {
   'ea-bajo': {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
-    corte: { op: 'menor', valor: 7, decimales: 0 },
+    // Norma argentina (Lunazzi, 2006), la misma que el velocímetro.
+    corte: { op: 'menor', valor: 3.5, decimales: 1 },
     zulliger: {
       corte: { op: 'menor', valor: 3, decimales: 0 },
       dice: [
@@ -2391,7 +2403,7 @@ export const TEXTOS = {
   'ea-alto': {
     area: 'Cuánta exigencia sostiene',
     indice: 'EA',
-    corte: { op: 'mayor', valor: 11, decimales: 0, ademas: 'con AdjD positivo' },
+    corte: { op: 'mayor', valor: 8.5, decimales: 1, ademas: 'con AdjD positivo' },
     zulliger: {
       corte: { op: 'mayor', valor: 5, decimales: 0, ademas: 'con EA − es desde −1,5' },
       dice: [
@@ -3013,7 +3025,9 @@ export function leer(
       const CERCA = 0.05;
       const wOk = Math.abs(wPct - 0.35) <= CERCA;
       const dOk = Math.abs(dPct - 0.6) <= CERCA;
-      const ddOk = ddPct <= 0.05;
+      // Hasta el 11 %: norma argentina (Lunazzi y otros, 506 no pacientes),
+      // la misma que el velocímetro desde el 14/10/2026.
+      const ddOk = ddPct <= 0.11;
       if (!wOk && wPct < 0.35 && dLoc) {
         sumar('w-bajo', marca);
       } else if (!wOk && wPct > 0.35) {
@@ -3260,7 +3274,7 @@ export function leer(
   }
 
   const afr = n(s, 'afectos', 'Afr');
-  const bandaAfr = AFR_BANDA[estilo] ?? [0.53, 0.83];
+  const bandaAfr = AFR_BANDA[estilo] ?? [0.34, 0.78];
   if (afr < bandaAfr[0]) {
     sumar('afr-bajo', dec(afr));
   } else if (afr > bandaAfr[1]) {

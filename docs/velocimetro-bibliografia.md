@@ -60,5 +60,9 @@ probabilidad de actuar la agresión; p. 57 y 58).
 
 ## Rorschach
 
+| Indicador | Corte del motor | Fuente |
+| --- | --- | --- |
+| W : M | por estilo: introversivo 0,8 a 1,5; ambigual 1,3 a 2; extratensivo 1,3 a 3 | Rorschach Archives of Argentina, material de circulación restringida, Paso 4 "W : M (Proporción de aspiraciones)". Coincide con Exner. Lo mandó Lorena el 14/10/2026 |
+
 Pendiente: las páginas de Exner y Sendín que usan las psicólogas, para citar
-cada corte de la hoja del Rorschach de la misma forma.
+el resto de los cortes de la hoja del Rorschach de la misma forma.
