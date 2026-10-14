@@ -39,6 +39,8 @@ import Editar from './Editar';
 import type { PedidoOpcion } from '../../Agregar';
 import { pedidosAbiertos } from '@/lib/altas';
 import Dpt from './Dpt';
+import Solicitante, { type ContactoOpcion } from './Solicitante';
+import { contactosDelGrupo } from '@/lib/contactos';
 import Hoja from '../../entrevista/[id]/Hoja';
 import { llevaDiscursivo, nivelesQueRigen, TEST as TEST_DISCURSIVO } from '@/lib/discursivo';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
@@ -199,11 +201,14 @@ function Datos({
   id,
   pedidos,
   evaluadoras,
+  contactos,
 }: {
   f: Ficha;
   id: string;
   pedidos: PedidoOpcion[];
   evaluadoras: string[];
+  /** Las personas del cliente que pueden figurar como solicitante. */
+  contactos: ContactoOpcion[];
 }) {
   const c = f.cabecera;
   const precio = f.precio;
@@ -347,12 +352,20 @@ function Datos({
           </Dato>
           {/* Quién del cliente pidió la evaluación: el que cargó a este
               candidato, y si no se sabe, el que pidió el pedido. Es el mismo
-              que sale en el encabezado del informe. */}
+              que sale en el encabezado del informe, y se corrige acá: el que
+              carga por el portal no siempre es el que pidió. Si el contacto
+              elegido se dio de baja ya no está en la lista, y se muestra su
+              nombre como dato fijo. */}
           <Dato rotulo="Solicitado por">
-            {(c.solicitante ?? c.pedidos?.solicitante) ? (
-              <>{(c.solicitante ?? c.pedidos!.solicitante)!.nombre}</>
+            {c.solicitante_id && !contactos.some((x) => x.id === c.solicitante_id) ? (
+              <>{c.solicitante?.nombre ?? <Falta texto="contacto dado de baja" />}</>
             ) : (
-              <Falta texto="sin indicar" />
+              <Solicitante
+                id={id}
+                valor={c.solicitante_id ?? null}
+                delPedido={c.pedidos?.solicitante?.nombre ?? null}
+                contactos={contactos}
+              />
             )}
           </Dato>
           <Dato rotulo="Batería">
@@ -825,6 +838,15 @@ export default async function FichaPagina({
   ]);
   if (!ficha) notFound();
 
+  // Las personas del cliente (y de su grupo), para elegir quién pidió la
+  // evaluación desde la pestaña Datos.
+  const empresaId = ficha.cabecera.pedidos?.empresa_id ?? null;
+  const contactos: ContactoOpcion[] = empresaId
+    ? await contactosDelGrupo(empresaId)
+        .then((cs) => cs.map(({ id, nombre, cargo }) => ({ id, nombre, cargo })))
+        .catch(() => [])
+    : [];
+
   // Las pestañas que se fueron siguen apareciendo en direcciones guardadas:
   // caen donde ahora vive lo suyo. `sumario` en la codificación y
   // `recomendacion` en el informe, que es donde se carga la conclusión.
@@ -882,7 +904,13 @@ export default async function FichaPagina({
       </div>
 
       {ver === 'datos' && (
-        <Datos f={ficha} id={params.id} pedidos={pedidos} evaluadoras={evaluadoras} />
+        <Datos
+          f={ficha}
+          id={params.id}
+          pedidos={pedidos}
+          evaluadoras={evaluadoras}
+          contactos={contactos}
+        />
       )}
       {/* La hoja con la que se toma la entrevista, la misma que se abre desde
           la lista de entrevistas. Sin panel alrededor: trae sus propias

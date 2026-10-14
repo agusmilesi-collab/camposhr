@@ -85,6 +85,8 @@ export type Cabecera = {
    * antes del 3/10/2026: ahí vale el del pedido.
    */
   solicitante?: { nombre: string; cargo: string | null } | null;
+  /** El identificador de ese contacto, para poder cambiarlo desde la ficha. */
+  solicitante_id?: string | null;
     /** El día en que se dio de baja del proceso; null si sigue. */
     baja_el?: string | null;
     /** Para qué ciudad se lo evalúa, en los clientes que la piden. */
@@ -92,6 +94,8 @@ export type Cabecera = {
   evaluadoras: { nombre: string } | null;
   pedidos: {
     puesto: string;
+    /** De qué cliente es el pedido: de ahí salen los contactos que pueden figurar como solicitante. */
+    empresa_id?: string | null;
     /** Si el pedido lleva Benziger, que no está en ninguna batería. */
     con_benziger: boolean | null;
     /** Con qué exigencia se leen los puntajes de todo el pedido. */
@@ -350,10 +354,10 @@ const CAMPOS_CABECERA =
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'recomendacion,recomendacion_notas,informe_path,entrevista_competencias,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
-  'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,baja_el,ciudad,' +
+  'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,baja_el,ciudad,solicitante_id,' +
   'personas(nombre,nombre_pila,apellido,email,telefono,cv_path,fecha_nacimiento),evaluadoras(nombre),' +
   'solicitante:contactos!solicitante_id(nombre,cargo),' +
-  'pedidos(puesto,con_benziger,exigencia_id,estrato_puesto,time_span_dias,complejidad,' +
+  'pedidos(puesto,empresa_id,con_benziger,exigencia_id,estrato_puesto,time_span_dias,complejidad,' +
   'solicitante:contactos!solicitante_id(nombre,cargo),empresas(nombre,token_portal),' +
   'baterias(id,codigo,nombre,tests))';
 

@@ -71,6 +71,8 @@ const COLUMNA: Record<string, string> = {
   seguimientoNotas: 'seguimiento_notas',
   tablero: 'tablero',
   prioridad: 'prioridad',
+  // Quién del cliente pidió esta evaluación (un contacto). Null es "el del pedido".
+  solicitante: 'solicitante_id',
 };
 
 type Fila = {
