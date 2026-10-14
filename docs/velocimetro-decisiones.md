@@ -62,10 +62,20 @@ hay que reconfirmar con ella.
 
 ### Reglas nuevas que ella no pidió
 
-- **Sin medición suficiente, sin puntaje.** Si los indicadores con dato pesan
-  menos de la mitad de la competencia, sale sin puntaje y dice qué falta. El
-  caso es Habilidad cognitiva sin Raven: con tres indicadores de alarma en
-  rango daría 100 sin haber medido razonamiento.
+- **La batería decide qué competencias llevan número (14/10/2026).** La
+  escala y las preguntas son siempre las mismas; lo que la batería no midió
+  sale debajo de los velocímetros como "no incluida en la batería contratada,
+  requiere X". Hoy es Habilidad cognitiva sin Raven.
+- **Cada competencia tiene un indicador imprescindible** (hoy, el Raven). Sin
+  él no hay puntaje y el informe dice cuál falta; sin cualquier otro se calcula
+  con los que hay. Reemplaza a "sin más de la mitad del peso".
+- **El potencial de Jaques salió de Liderazgo** (14/10/2026, decisión de
+  Agustín; ellas lo habían puesto el 17/9 con peso 3). Mide el alcance y el
+  plazo del trabajo que la persona sostiene; Liderazgo pregunta por conducir
+  personas, y sus otros seis indicadores hablan de eso. El potencial tiene su
+  capítulo propio. Liderazgo se puntúa en toda batería con Rorschach y
+  significa lo mismo en la estándar y en la ejecutiva. **Avisarle a Lorena.**
+
 - **Raven de 12 láminas por escalón.** Hasta 7 aciertos bajo, de 8 a 11 medio,
   y 12 aporta 75. Los escalones salen de lo que ellas mismas pusieron en
   Habilidad cognitiva a las trece personas que lo rindieron. Ya no se toma, así

@@ -545,10 +545,23 @@ competencia es 25.
 no pasaba de 71 en Rorschach ni de 78 en Zulliger. Un indicador "dentro de lo
 esperable" sigue aportando la mitad que un recurso.
 
-**Si lo que hay para medir pesa menos de la mitad de la competencia, sale sin
-puntaje y dice qué falta.** Es el caso de Habilidad cognitiva sin el Raven de
-36 láminas: quedan tres indicadores de alarma, y en rango darían 100 sin haber
-medido razonamiento.
+**Cada competencia declara su indicador imprescindible, y sin él no se
+puntúa** (`imprescindible: true`, desde el 14/10/2026): hoy, el Raven en
+Habilidad cognitiva. Si falta ese, sale "falta X, sin el que esta competencia
+no se puntúa"; si falta cualquier otro, se calcula con los que hay. Reemplaza a
+la regla "sin más de la mitad del peso no se puntúa", que dependía de los pesos
+y no de qué mide cada indicador.
+
+**La batería decide qué competencias llevan número** (`competenciaIncluida` en
+`lib/baterias-contenido.ts`). La escala y las preguntas son siempre las mismas;
+lo que esa batería no midió sale debajo de los velocímetros como "no incluida en
+la batería contratada, requiere X". Hoy es Habilidad cognitiva sin Raven. Un
+pedido sin batería cargada responde todo, como antes.
+
+**El potencial de Jaques no es indicador de ninguna competencia** (desde el
+14/10/2026; estaba en Liderazgo con peso 3). Mide el alcance y el plazo del
+trabajo que la persona sostiene, y Liderazgo pregunta por conducir personas.
+Tiene su capítulo propio en el informe, que sale solo con análisis discursivo.
 
 **Y el informe dice por qué.** "Sin datos" a secas invita a pensar que se
 olvidaron de cargar algo; lo que pasa es que lo cargado no permite afirmar nada,

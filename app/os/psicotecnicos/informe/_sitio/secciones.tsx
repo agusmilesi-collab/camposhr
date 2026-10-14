@@ -218,6 +218,11 @@ export function seccionesDe(
           </div>
 
           <EscalaBandas exigencia={inf.exigencia} />
+          {inf.noIncluidas.length > 0 && (
+            <p className="sitio-aviso">
+              {inf.noIncluidas.map((c) => `${c.nombre}: no incluida en la batería contratada, requiere ${c.requiere}.`).join(' ')}
+            </p>
+          )}
         </>
       ),
   });

@@ -24,7 +24,6 @@
 
 import { bandaDeAfr, hEsperado, pEsperado, type SumarioCrudo } from '@/lib/redacciones';
 import { percentilDe, puntajesPorRango, rangoDe, type Rango } from '@/lib/raven';
-import { ESTRATOS } from '@/lib/potencial';
 import {
   comoNumero,
   conDireccion,
@@ -83,8 +82,9 @@ export type Contexto = {
   /**
    * El estrato del potencial y su franja, del análisis discursivo.
    *
-   * Lo carga la evaluadora escuchando el discurso, así que no está en el
-   * sumario: viaja por acá, como el Raven.
+   * Hoy ningún indicador lo lee: salió de Liderazgo el 14/10/2026 y tiene su
+   * capítulo propio en el informe. Sigue viajando por acá por si vuelve a
+   * entrar en alguna competencia.
    */
   potencial?: { nivel: string | null; celda: string | null } | null;
   /**
@@ -241,6 +241,17 @@ type Indicador = {
   aporte?: (s: SumarioCrudo, ctx: Contexto) => number | null;
   /** Qué dice cada banda, de alto a bajo, cuando no hay escala numérica. */
   reglas?: [string, string, string];
+  /**
+   * Sin este indicador la competencia no se puntúa.
+   *
+   * Es el que mide de frente lo que la competencia pregunta: hoy, el Raven en
+   * Habilidad cognitiva. Si falta, el número que saldría del resto describe
+   * otra cosa con el mismo nombre. Si falta cualquier otro, se calcula igual
+   * con los que hay (decidido el 14/10/2026; hasta ese día regía "sin más de la
+   * mitad del peso no se puntúa", que dependía de los pesos y no de qué mide
+   * cada indicador).
+   */
+  imprescindible?: true;
   /**
    * Qué se calcula, en la notación del sumario.
    *
@@ -664,6 +675,7 @@ const PSV: Indicador = {
 const RAVEN_MEDIO_ALTO = 25;
 
 const RAVEN: Indicador = {
+  imprescindible: true,
   nombre: 'Raven',
   formula: 'aciertos sobre 36 láminas',
   mide: 'Razonamiento abstracto',
@@ -767,30 +779,6 @@ const H_CONTRA_RESTO: Indicador = {
       (num(s, 'autopercepcion', 'Hd') ?? 0) +
       (num(s, 'autopercepcion', 'Hd_paren') ?? 0);
     return hPura > resto ? 3 : 1;
-  },
-};
-
-/**
- * El estrato del potencial, del análisis discursivo.
- *
- * Positivo desde el nivel 2 alto: Especialista en su franja alta, o cualquier
- * estrato por encima. Lo dijeron el 17/9/2026. La franja la carga la evaluadora
- * junto con el estrato; sin estrato cargado el indicador no puntúa, que es
- * distinto de puntuar bajo.
- */
-const POTENCIAL: Indicador = {
-  nombre: 'Potencial',
-  formula: 'el estrato del análisis discursivo',
-  mide: 'Hasta dónde puede llegar el nivel de trabajo que sostiene',
-  reglas: ['nivel 2 en su franja alta, o un estrato por encima', 'no se usa', 'por debajo de eso'],
-  nivel: (_s, ctx) => {
-    const nombre = ctx.potencial?.nivel;
-    if (!nombre) return null;
-    const orden = ESTRATOS.findIndex((e) => e.nombre === nombre);
-    if (orden < 0) return null;
-    // Los estratos van del 0 (Operativo) para arriba: el 1 es el nivel 2.
-    if (orden > 1) return 3;
-    return orden === 1 && ctx.potencial?.celda === 'A' ? 3 : 1;
   },
 };
 
@@ -936,9 +924,8 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     /**
      * Liderazgo lo definieron el 17/9/2026, después que las otras cinco.
      *
-     * Va solo en Rorschach: dos de sus indicadores (Afr y el potencial) no
-     * existen en un Zulliger, que no tiene proporción afectiva ni se toma con
-     * análisis discursivo.
+     * Va solo en Rorschach: Afr no existe en un Zulliger, que no tiene
+     * proporción afectiva.
      */
     competencia: 'Liderazgo',
     mide: 'Visión global frente al foco en el detalle. Gestión de personas. Capacidad de decisión.',
@@ -947,7 +934,10 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
       W_LOCALIZACION,
       EB,
       H_CONTRA_RESTO,
-      POTENCIAL,
+      // El potencial de Jaques salió de acá el 14/10/2026: mide el alcance y el
+      // plazo del trabajo que la persona sostiene, y Liderazgo pregunta por
+      // conducir personas. Tiene su propio capítulo en el informe. Estaba desde
+      // el 17/9 con peso 3, y en 42 de 47 informes no estaba cargado.
       CONTENIDOS_H,
       // Fuera de la banda para cualquiera de los dos lados es negativo. Hasta
       // el 13/10/2026 solo descontaba por debajo.
@@ -1121,7 +1111,6 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
     'Proactividad': { R: 4, Fd: 3, 'Ma : Mp': 2, 'DQ+': 2, Zf: 0 },
     'Habilidad cognitiva': { Raven: 8, 'X−%': 2, 'XA% / WDA%': 1, PSV: 1 },
     'Liderazgo': {
-      Potencial: 3,
       W: 2,
       'GHR : PHR': 1,
       'H : (H) + Hd + (Hd)': 1,
@@ -1371,6 +1360,8 @@ export type Competencia = {
     aporte?: number | null;
     /** Si es de los "dentro de lo esperable", que llegan a 50 y no a 100. */
     techo?: boolean;
+    /** Si sin él la competencia no se puntúa. */
+    imprescindible?: boolean;
   }[];
 };
 
@@ -1549,6 +1540,7 @@ export function calcularCompetencias(
         datos: i.datosDe ? i.datosDe(ctx) : leidoPor(s, leer),
         aporte: i.aporte ? i.aporte(s, ctx) : null,
         techo: i.techo === 50,
+        imprescindible: i.imprescindible === true,
       };
     });
 
@@ -1584,18 +1576,15 @@ export function calcularCompetencias(
     // como medio, que es inventarle un valor al dato que no está.
     const pesos = puntuados.reduce((n, r) => n + r.peso, 0);
 
-    // Si lo que hay para medir pesa menos de la mitad de la competencia, no se
-    // puntúa. El caso que lo pide es Habilidad cognitiva sin el Raven: quedan
-    // tres indicadores de alarma, y con los tres en rango la escala de abajo
-    // la llevaría a 100 sin haber medido razonamiento.
-    const pesoTotal = cuentan.reduce((n, r) => n + r.peso, 0);
-    if (pesos * 2 < pesoTotal) {
-      const falta = cuentan.filter((r) => r.nivel === null).map((r) => r.indicador);
+    // Sin el indicador imprescindible no hay puntaje, y el informe dice cuál
+    // falta: Habilidad cognitiva sin el Raven.
+    const faltaClave = cuentan.find((r) => r.imprescindible && r.nivel === null);
+    if (faltaClave) {
       return {
         nombre: c.competencia,
         mide: c.mide,
         puntaje: null,
-        motivo: `falta ${falta.join(' y ')}, que es más de la mitad de esta competencia`,
+        motivo: `falta ${faltaClave.indicador}, sin el que esta competencia no se puntúa`,
         renglones,
       };
     }

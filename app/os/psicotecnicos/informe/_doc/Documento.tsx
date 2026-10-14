@@ -246,6 +246,13 @@ export default async function Documento({
               })}
             </div>
             <EscalaBandas exigencia={inf.exigencia} />
+            {/* Lo que esta batería no midió se nombra sin número: la pregunta
+                existe, y el cliente ve qué le falta para tenerla respondida. */}
+            {inf.noIncluidas.length > 0 && (
+              <p className="inf-nota-protocolo">
+                {inf.noIncluidas.map((c) => `${c.nombre}: no incluida en la batería contratada, requiere ${c.requiere}.`).join(' ')}
+              </p>
+            )}
           </>
         )}
       </Capitulo>

@@ -27,6 +27,7 @@ import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
 import { puestoConCiudad } from '@/lib/pedido-campos';
 import { medianasDeCompetencias, type Medianas } from '@/lib/competencias-mediana';
+import { competenciaIncluida, REQUIERE } from '@/lib/baterias-contenido';
 import { TEXTOS } from '@/lib/redacciones';
 import { textoDelSumario } from '@/lib/exner';
 import { tramoDe, tramosValidos, esTramo, type PasoDelPlan, type Tramo } from '@/lib/plan-incorporacion';
@@ -227,6 +228,14 @@ export type Informe = {
    */
   edad: number | null;
   competencias: Competencia[];
+  /**
+   * Las que esta batería no mide, con el test que les falta.
+   *
+   * Van listadas debajo de los velocímetros, sin número: el cliente ve que la
+   * pregunta existe y qué batería la responde. Vacío en los pedidos sin
+   * batería cargada.
+   */
+  noIncluidas: { nombre: string; requiere: string }[];
   /**
    * La mediana de cada competencia entre todas las personas evaluadas, para el
    * radar. Null cuando todavía no hay casos suficientes o no se pudo calcular.
@@ -865,7 +874,8 @@ export function desdeFicha(
   const hayBenziger = Boolean(
     f.benziger && (tieneAlgo(adulto) || tieneAlgo(joven) || f.benziger.cuadrante_preferente?.length)
   );
-  const competencias = sumario
+  const testsDeLaBateria = f.cabecera.pedidos?.baterias?.tests ?? null;
+  const calculadas = sumario
     ? calcularCompetencias(
         sumario,
         {
@@ -886,6 +896,11 @@ export function desdeFicha(
         proyectivoDe(f)
       )
     : [];
+  // Solo las que la batería midió llevan número. Las otras se nombran aparte.
+  const competencias = calculadas.filter((c) => competenciaIncluida(c.nombre, testsDeLaBateria));
+  const noIncluidas = calculadas
+    .filter((c) => !competenciaIncluida(c.nombre, testsDeLaBateria))
+    .map((c) => ({ nombre: c.nombre, requiere: REQUIERE[c.nombre].frase }));
 
   // Uno solo, el primero que se marcó. El arreglo guarda el orden en que la
   // evaluadora los eligió, y el primero es el que manda.
@@ -934,6 +949,7 @@ export function desdeFicha(
     proyectivo: proyectivoDe(f),
     nivel: nivelDeConclusion(c.recomendacion),
     competencias,
+    noIncluidas,
     medianas,
     protocoloCorto: corto,
     resumen: armarResumen(lecturas, destacadas),

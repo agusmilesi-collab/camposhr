@@ -126,3 +126,26 @@ export function contenidoValido(
     entregables: salidas.filter((n) => entregables.includes(n)),
   };
 }
+
+/**
+ * Qué competencias responde una batería, según los tests que toma.
+ *
+ * El informe muestra siempre la misma escala y las mismas preguntas, pero
+ * solo pone número a las que esa batería midió. Lo que no midió sale como "no
+ * incluida en esta batería", con el test que le falta (decidido el
+ * 14/10/2026). Hoy es Habilidad cognitiva sin Raven. Liderazgo se puntúa en
+ * toda batería con Rorschach: el potencial de Jaques dejó de ser indicador
+ * suyo ese mismo día y va en su capítulo propio.
+ *
+ * Sin batería cargada (pedidos viejos) se responde todo, como antes.
+ */
+export const REQUIERE: Record<string, { test: string; frase: string }> = {
+  'Habilidad cognitiva': { test: 'Raven', frase: 'el test de Raven' },
+};
+
+export function competenciaIncluida(competencia: string, tests: string[] | null | undefined): boolean {
+  if (!tests) return true;
+  const r = REQUIERE[competencia];
+  return !r || tests.includes(r.test);
+}
+
