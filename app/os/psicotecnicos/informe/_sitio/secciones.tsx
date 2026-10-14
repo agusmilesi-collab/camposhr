@@ -414,11 +414,32 @@ export function seccionesDe(
     id: 'tecnicas',
     titulo: 'Técnicas de evaluación utilizadas',
     cuerpo: (
-      <ul className="sitio-lista">
-        {inf.tecnicas.map((t) => (
-          <li key={t}>{t}</li>
-        ))}
-      </ul>
+      <>
+        <ul className="sitio-lista">
+          {inf.tecnicas.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+        {/* Con qué normas se lee el test de manchas: las mismas que usa el
+            velocímetro (`lib/competencias.ts`). Si cambian allá, cambian acá. */}
+        {inf.proyectivo === 'Rorschach' && (
+          <p className="sitio-normas">
+            El Rorschach se codificó con el Sistema Comprehensivo de Exner. Para
+            interpretarlo se usan las normas argentinas de adultos no pacientes
+            (Lunazzi y otros, 2007, sobre 506 casos) en los recursos disponibles
+            (EA), la respuesta afectiva (Afr), la necesidad de contacto (T), la
+            atención al detalle (Dd) y la eficiencia en el procesamiento (Zd). En
+            el resto de los índices se usan las normas de Exner.
+          </p>
+        )}
+        {inf.proyectivo === 'Zulliger' && (
+          <p className="sitio-normas">
+            El Zulliger se codificó con el Sistema Comprehensivo y se interpreta
+            con las normas de Zdunic para selección de personal en la Argentina,
+            sobre 500 protocolos tomados en Buenos Aires.
+          </p>
+        )}
+      </>
     ),
   });
 

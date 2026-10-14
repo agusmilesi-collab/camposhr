@@ -84,15 +84,15 @@ export function bandaDeWM(test: string, estilo: string | undefined): [number, nu
 }
 
 /**
- * Afr esperado: de 0,34 a 0,78 para cualquier estilo, la media argentina más y
- * menos una desviación (Lunazzi, 2006: 506 no pacientes, media 0,56 y desvío
- * 0,22), aprobada por Lorena el 14/10/2026. Con las bandas de Exner por estilo
+ * Afr esperado: de 0,35 a 0,79 para cualquier estilo, la media argentina más y
+ * menos una desviación (Lunazzi y otros, 2007, JPA 89 S1: 506 no pacientes,
+ * media 0,57 y desvío 0,22), aprobada por Lorena el 14/10/2026. Con las bandas de Exner por estilo
  * (de 0,53 a 0,89) quedaban afuera 36 de 47 Rorschach.
  */
 const AFR_BANDA: Record<string, [number, number]> = {
-  Introversivo: [0.34, 0.78],
-  Ambigual: [0.34, 0.78],
-  Extratensivo: [0.34, 0.78],
+  Introversivo: [0.35, 0.79],
+  Ambigual: [0.35, 0.79],
+  Extratensivo: [0.35, 0.79],
 };
 
 /** Un número del sumario, buscado en las secciones donde puede estar. */
@@ -373,7 +373,8 @@ export const TEXTOS = {
   'zd-bajo': {
     area: 'Cómo procesa la información',
     indice: 'Zd',
-    corte: { op: 'menor', valor: -3, decimales: 1 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'menor', valor: -4, decimales: 1 },
     zulliger: {
       aplica: false,
       dice: [
@@ -3274,7 +3275,7 @@ export function leer(
   }
 
   const afr = n(s, 'afectos', 'Afr');
-  const bandaAfr = AFR_BANDA[estilo] ?? [0.34, 0.78];
+  const bandaAfr = AFR_BANDA[estilo] ?? [0.35, 0.79];
   if (afr < bandaAfr[0]) {
     sumar('afr-bajo', dec(afr));
   } else if (afr > bandaAfr[1]) {

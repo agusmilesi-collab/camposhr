@@ -628,7 +628,11 @@ const ZD: Indicador = {
   nombre: 'Zd',
   formula: 'Zd',
   mide: 'Esfuerzo organizativo',
-  escala: dentroDe(-3, 3, 1),
+  // Norma argentina (Lunazzi y otros, 2007, JPA 89 S1, 506 no pacientes):
+  // media −0,60 y desvío 3,65, esperable de −4,0 a +3,0 (Zd va de a medios
+  // puntos). Con el ±3 de Exner, en la muestra argentina quedaba afuera el
+  // 39 % (12 % por encima y 27 % por debajo).
+  escala: dentroDe(-4, 3, 1),
   valor: (s) => num(s, 'procesamiento', 'Zd'),
 };
 
@@ -988,7 +992,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         formula: 'EA',
         mide: 'Recursos disponibles para afrontar demandas',
         // Norma argentina (Lunazzi, 2006: 506 no pacientes, media 6,06 y
-        // desvío 2,73), aprobada por Lorena el 14/10/2026: baja por debajo de
+        // desvío 2,73; el artículo de 2007 da 6,01 y 2,75), aprobada por Lorena el 14/10/2026: baja por debajo de
         // una desviación (3,3) y alta por encima de una (8,8). EA va de a medios
         // puntos, así que queda baja por debajo de 3,5 y alta desde 9. Con los
         // cortes de Exner (7 y 11,5) salían bajos 35 de 48 Rorschach.
