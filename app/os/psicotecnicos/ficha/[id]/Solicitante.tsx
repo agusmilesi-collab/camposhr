@@ -72,10 +72,8 @@ export default function Solicitante({
       valor: DEL_PEDIDO,
       texto: delPedido ? `El del pedido (${delPedido})` : 'Sin indicar',
     },
-    ...contactos.map((c) => ({
-      valor: c.id,
-      texto: c.cargo ? `${c.nombre} · ${c.cargo}` : c.nombre,
-    })),
+    // Solo el nombre: con el cargo la opción no entraba en la celda.
+    ...contactos.map((c) => ({ valor: c.id, texto: c.nombre })),
   ];
 
   // Un contacto dado de baja no está en la lista: se muestra igual, con su

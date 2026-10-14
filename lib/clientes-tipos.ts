@@ -133,3 +133,32 @@ export function condicionDelInquilino(i: {
   if (i.condicion_iva) return i.condicion_iva;
   return (i.cuit ?? '').replace(/\D/g, '').length === 11 ? null : 'Consumidor Final';
 }
+
+/**
+ * El rubro del cliente, de una lista cerrada.
+ *
+ * Una sola categoría por empresa, por lo que hace y no por lo que vende a
+ * quién: cada empresa cae en una y en una sola, y "Otro" recoge lo que no
+ * entra en ninguna. Es lo que permite contar clientes por rubro.
+ */
+export const RUBROS = [
+  'Agro y agroindustria',
+  'Industria y manufactura',
+  'Construcción e inmobiliaria',
+  'Comercio y distribución',
+  'Transporte y logística',
+  'Energía, minería y servicios públicos',
+  'Tecnología y software',
+  'Servicios financieros y seguros',
+  'Servicios profesionales',
+  'Salud',
+  'Educación',
+  'Hotelería, gastronomía y turismo',
+  'Medios, entretenimiento y cultura',
+  'Sector público y organizaciones sin fines de lucro',
+  'Otro',
+] as const;
+
+export function esRubro(x: string): boolean {
+  return (RUBROS as readonly string[]).includes(x);
+}

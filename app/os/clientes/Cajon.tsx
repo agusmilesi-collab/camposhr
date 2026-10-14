@@ -17,7 +17,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { CONDICIONES } from '@/lib/clientes-tipos';
+import { CONDICIONES, RUBROS } from '@/lib/clientes-tipos';
 import type { Cliente } from '@/lib/clientes';
 import { fechaCorta } from '@/lib/hora';
 
@@ -207,13 +207,17 @@ export default function Cajon({
               <label className="os-etiqueta-campo" htmlFor="rubro">
                 Rubro
               </label>
-              <input
-                className="os-campo"
-                id="rubro"
-                name="rubro"
-                maxLength={120}
-                defaultValue={v(cliente?.rubro)}
-              />
+              <select className="os-campo" id="rubro" name="rubro" defaultValue={v(cliente?.rubro)}>
+                <option value="">Sin cargar</option>
+                {cliente?.rubro && !(RUBROS as readonly string[]).includes(cliente.rubro) && (
+                  <option value={cliente.rubro}>{cliente.rubro}</option>
+                )}
+                {RUBROS.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="os-campo-bloque">

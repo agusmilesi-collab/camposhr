@@ -872,9 +872,17 @@ export default async function FichaPagina({
 
       <div className="os-encabezado">
         <h1>{nombre}</h1>
+        {/* El cliente lleva a su ficha: desde acá se va a ver quién pide y
+            cómo se le factura. */}
         <p>
-          {c.pedidos?.empresas?.nombre ?? 'Sin empresa'} ·{' '}
-          {puestoConCiudad(c.pedidos?.puesto, c.ciudad) || 'Sin puesto'}
+          {c.pedidos?.empresa_id ? (
+            <Link className="os-ficha-enlace" href={`/os/clientes/${c.pedidos.empresa_id}`}>
+              {c.pedidos.empresas?.nombre ?? 'Sin empresa'}
+            </Link>
+          ) : (
+            c.pedidos?.empresas?.nombre ?? 'Sin empresa'
+          )}{' '}
+          · {puestoConCiudad(c.pedidos?.puesto, c.ciudad) || 'Sin puesto'}
         </p>
       </div>
 

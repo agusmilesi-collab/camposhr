@@ -6,6 +6,7 @@ import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { slugDeEmpresa as slug } from '@/lib/empresa-slug';
+import { esRubro } from '@/lib/clientes-tipos';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -70,6 +71,25 @@ export async function POST(req: Request) {
    * Los informes se prenden y se apagan igual, y también nacen prendidos: es el
    * valor por omisión de la columna, así que en un alta no hace falta mandarlo.
    */
+  // El rubro es de la lista cerrada; vacío es "sin cargar". Uno cargado antes
+  // de la lista se acepta mientras sea el que ya tiene guardado: el formulario
+  // lo ofrece para no perderlo, y cualquier otro texto se rechaza.
+  const rubro = texto('rubro');
+  if (rubro && !esRubro(rubro)) {
+    const guardado = id
+      ? await fetch(`${url}/rest/v1/empresas?select=rubro&id=eq.${encodeURIComponent(id)}&limit=1`, {
+          headers: { apikey: key, Authorization: `Bearer ${key}` },
+          cache: 'no-store',
+        })
+          .then((r) => (r.ok ? r.json() : []))
+          .then((f: { rubro: string | null }[]) => f[0]?.rubro ?? null)
+          .catch(() => null)
+      : null;
+    if (rubro !== guardado) {
+      return NextResponse.json({ error: 'Ese rubro no está en la lista.' }, { status: 400 });
+    }
+  }
+
   const fila = {
     nombre,
     slug: slug(nombre),

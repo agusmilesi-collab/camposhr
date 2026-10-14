@@ -11,7 +11,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Desplegable from '@/app/os/Desplegable';
-import { CONDICIONES, leyendaIva } from '@/lib/clientes-tipos';
+import { CONDICIONES, leyendaIva, RUBROS } from '@/lib/clientes-tipos';
 import type { Cliente } from '@/lib/clientes';
 
 
@@ -228,7 +228,22 @@ export default function Ficha({
                 <option value="si">Por su portal de proveedores</option>
               </select>
             </label>
-            <Campo rotulo="Rubro" nombre="rubro" valor={cliente.rubro} />
+            {/* De la lista cerrada. Un rubro cargado antes de la lista, que no
+                está en ella, se ofrece igual para no perderlo al guardar. */}
+            <label className="os-cliente-dato">
+              <span className="os-dato-rotulo">Rubro</span>
+              <select className="os-campo" name="rubro" defaultValue={cliente.rubro ?? ''}>
+                <option value="">Sin cargar</option>
+                {cliente.rubro && !(RUBROS as readonly string[]).includes(cliente.rubro) && (
+                  <option value={cliente.rubro}>{cliente.rubro}</option>
+                )}
+                {RUBROS.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="os-portal-acciones os-cliente-datos-acciones">
               <button className="os-boton os-boton-firme" type="submit" disabled={guardando}>
                 {guardando ? 'Guardando…' : 'Guardar'}
