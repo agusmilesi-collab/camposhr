@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
  * vigente no sale nada, porque el material tiene derechos. La otra puerta, la
  * del equipo, es `/api/os/lamina`.
  */
-export async function GET(req: Request, { params }: { params: { token: string; n: string } }) {
+export async function GET(req: Request, props: { params: Promise<{ token: string; n: string }> }) {
+  const params = await props.params;
   const test = await testDelToken(params.token);
   if (!test) return new NextResponse('El enlace venció.', { status: 401 });
 

@@ -93,7 +93,7 @@ async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
     // El Raven suele ser el último de la batería: si con esto quedó tomado
     // todo, la evaluación pasa sola a Por analizar.
     await siEstaTodoTomado(s.evaluacion_id);
-    revalidateTag(CACHE_PSICOTECNICOS);
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   }
 
   await anotarAcceso({

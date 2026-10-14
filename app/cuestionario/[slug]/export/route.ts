@@ -10,10 +10,8 @@ export const dynamic = 'force-dynamic';
  * Exporta las respuestas de una empresa en CSV, para armar los informes.
  * Una fila por persona, con los cuatro puntajes abiertos.
  */
-export async function GET(
-  _req: Request,
-  { params }: { params: { slug: string } }
-) {
+export async function GET(_req: Request, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) return new NextResponse('Empresa no encontrada', { status: 404 });
 

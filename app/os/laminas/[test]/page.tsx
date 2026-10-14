@@ -12,12 +12,14 @@ export const dynamic = 'force-dynamic';
  * evaluada, y la barra lateral con los nombres de los otros candidatos no
  * puede estar ahí.
  */
-export function generateMetadata({ params }: { params: { test: string } }) {
+export async function generateMetadata(props: { params: Promise<{ test: string }> }) {
+  const params = await props.params;
   const t = esTestConLaminas(params.test) ? TESTS[params.test].nombre : 'Láminas';
   return { title: `${t} — Campos OS` };
 }
 
-export default function Laminas({ params }: { params: { test: string } }) {
+export default async function Laminas(props: { params: Promise<{ test: string }> }) {
+  const params = await props.params;
   if (!esTestConLaminas(params.test)) notFound();
   return <Placas test={params.test} total={TESTS[params.test].laminas} />;
 }

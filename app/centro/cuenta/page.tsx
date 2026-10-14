@@ -65,7 +65,8 @@ function horasDelDetalle(detalle: string | null): number {
   return m ? Number(m[2]) - Number(m[1]) : 0;
 }
 
-export default async function Cuenta({ searchParams }: { searchParams: { ver?: string } }) {
+export default async function Cuenta(props: { searchParams: Promise<{ ver?: string }> }) {
+  const searchParams = await props.searchParams;
   const yo = await inquilinoDeLaSesion();
   if (!yo) redirect('/centro/entrar');
 

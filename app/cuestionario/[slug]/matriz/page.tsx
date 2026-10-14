@@ -24,13 +24,14 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function MatrizEmpresa({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: { placa?: string; solo?: string; tema?: string };
-}) {
+export default async function MatrizEmpresa(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<{ placa?: string; solo?: string; tema?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 

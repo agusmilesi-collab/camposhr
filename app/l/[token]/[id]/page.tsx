@@ -10,11 +10,12 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function PlaybookDelEquipo({
-  params,
-}: {
-  params: { token: string; id: string };
-}) {
+export default async function PlaybookDelEquipo(
+  props: {
+    params: Promise<{ token: string; id: string }>;
+  }
+) {
+  const params = await props.params;
   const lider = await getLiderPorToken(params.token);
   if (!lider) notFound();
 

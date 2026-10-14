@@ -32,7 +32,8 @@ type Fila = {
  * recibió, y eso no lo puede decir quien la mandó. Siempre se filtra por la
  * persona de la cookie firmada: el pago de otro no existe para quien pregunta.
  */
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const yo = await inquilinoDeLaSesion();
   if (!yo) return NextResponse.json({ error: 'Sin sesión.' }, { status: 401 });
 

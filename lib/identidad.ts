@@ -72,7 +72,7 @@ export async function equipo(): Promise<Miembro[]> {
 
 /** Quién mira. Un nombre que ya no está en el equipo cae al de por defecto. */
 export async function quienSoy(): Promise<Miembro> {
-  const guardado = cookies().get(COOKIE_IDENTIDAD)?.value;
+  const guardado = (await cookies()).get(COOKIE_IDENTIDAD)?.value;
   const nombre = guardado ? decodeURIComponent(guardado) : '';
   const miembros = await equipo();
   return (

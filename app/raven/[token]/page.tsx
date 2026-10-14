@@ -19,7 +19,8 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function RavenPagina({ params }: { params: { token: string } }) {
+export default async function RavenPagina(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   // El enlace de prueba que se copia desde Herramientas: el mismo test, sin
   // guardar nada. El token va para que las láminas abran sin sesión del OS.
   if (params.token.startsWith('lm_')) {

@@ -66,7 +66,7 @@ export async function POST(req: Request) {
       recursoId: id,
       detalle: { bytes: archivo.size, nombre: archivo.name },
     });
-    revalidateTag(CACHE_PSICOTECNICOS);
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
     return NextResponse.json({ ok: true, nombre: r.nombre });
   } catch (e) {
     console.error('discurso-audio:', e);
@@ -93,6 +93,6 @@ export async function DELETE(req: Request) {
     recurso: 'discurso',
     recursoId: id,
   });
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   return NextResponse.json({ ok: true });
 }

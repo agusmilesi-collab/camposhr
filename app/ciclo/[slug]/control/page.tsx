@@ -23,13 +23,14 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function ControlDelCiclo({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: { k?: string };
-}) {
+export default async function ControlDelCiclo(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<{ k?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   // Sin caché: quien dicta toca un botón y su pantalla cambia en el acto.
   const ciclo = await resolverCiclo(params.slug, true);
   if (!ciclo) notFound();

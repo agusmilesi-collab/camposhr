@@ -164,7 +164,7 @@ export async function POST(req: Request) {
     detalle: { nombre, alta: !id },
   });
 
-  revalidateTag(CACHE_CLIENTES);
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
 
     return NextResponse.json({ ok: true, id: creado?.id });
 }
@@ -240,6 +240,6 @@ export async function DELETE(req: Request) {
     detalle: { nombre: borrado.nombre, borrado: true },
   });
 
-  revalidateTag(CACHE_CLIENTES);
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
   return NextResponse.json({ ok: true });
 }

@@ -29,7 +29,8 @@ export const metadata = {
  * contra el contexto donde va a entrar y no solo en abstracto, se ofrece y se
  * explica, y se puede saltear.
  */
-export default async function PedirEvaluacion({ params }: { params: { token: string } }) {
+export default async function PedirEvaluacion(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const demo = esDemo(params.token);
   const empresa = demo ? null : await empresaDelToken(params.token);
 

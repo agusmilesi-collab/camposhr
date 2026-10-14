@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     detalle: { fila: id, cambios },
   });
 
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
 
     return NextResponse.json({ ok: true });
 }

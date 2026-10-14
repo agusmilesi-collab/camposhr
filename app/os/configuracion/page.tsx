@@ -57,11 +57,12 @@ const QUE_HACE: Record<string, string> = {
     'Los cuatro estratos del análisis discursivo: qué complejidad de trabajo puede abordar quien está en cada uno y qué exige el nivel siguiente. Es lo que arma el capítulo de potencial del informe.',
 };
 
-export default async function Configuracion({
-  searchParams,
-}: {
-  searchParams: { ver?: string; google?: string };
-}) {
+export default async function Configuracion(
+  props: {
+    searchParams: Promise<{ ver?: string; google?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const yo = await quienSoy();
   const pedida = searchParams.ver ?? '';
   const ver = PESTANAS.some((p) => p.clave === pedida) ? pedida : 'baterias';

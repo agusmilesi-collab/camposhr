@@ -180,7 +180,7 @@ export async function POST(req: Request) {
     recurso: 'sumario_exner',
     detalle: { evaluacion: id, test: sumario.meta.test, R: sumario.cabecera.R },
   });
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
 
   return NextResponse.json({
     ok: true,

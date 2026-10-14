@@ -18,7 +18,8 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request, { params }: { params: { slug: string } }) {
+export async function POST(req: Request, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const ciclo = await resolverCiclo(params.slug, true);
   if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
 

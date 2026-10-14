@@ -11,10 +11,8 @@ import { actividadesDelCiclo, aportesDeEn, resolverCiclo } from '@/lib/ciclo';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET(
-  req: Request,
-  { params }: { params: { slug: string } }
-) {
+export async function GET(req: Request, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
 

@@ -648,7 +648,7 @@ export async function POST(req: Request) {
     return mal(e instanceof Error ? e.message : 'No se pudo guardar.');
   }
 
-  revalidateTag('consultorios');
+  revalidateTag('consultorios', { expire: 0 });
   await anotarAcceso({
     accion: 'escritura',
     recurso: 'consultorios',

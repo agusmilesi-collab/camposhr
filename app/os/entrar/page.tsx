@@ -8,11 +8,12 @@ export const metadata = { title: 'Campos OS', robots: { index: false, follow: fa
  *
  * Sin `OS_CLAVE` cargada no hay nada que pedir, así que manda derecho adentro.
  */
-export default function Entrar({
-  searchParams,
-}: {
-  searchParams: { error?: string; destino?: string };
-}) {
+export default async function Entrar(
+  props: {
+    searchParams: Promise<{ error?: string; destino?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const destino = destinoPermitido(searchParams.destino ?? '/os');
   if (!hayPuerta()) redirect(destino);
 

@@ -53,23 +53,24 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function Proyeccion({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: {
-    placa?: string;
-    clave?: string;
-    vista?: string;
-    prueba?: string;
-    repite?: string;
-    /** En la vista que rota: de qué tramo son las respuestas que se muestran. */
-    de?: string;
-    largo?: string;
-    forma?: string;
-  };
-}) {
+export default async function Proyeccion(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<{
+      placa?: string;
+      clave?: string;
+      vista?: string;
+      prueba?: string;
+      repite?: string;
+      /** En la vista que rota: de qué tramo son las respuestas que se muestran. */
+      de?: string;
+      largo?: string;
+      forma?: string;
+    }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) notFound();
   const { empresa, corrida } = ciclo;

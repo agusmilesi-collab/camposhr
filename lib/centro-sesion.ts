@@ -18,7 +18,7 @@ import { select } from '@/lib/supabase';
 import type { Inquilino } from '@/lib/consultorios-calculo';
 
 export async function inquilinoDeLaSesion(): Promise<Inquilino | null> {
-  const cookie = cookies().get(COOKIE)?.value;
+  const cookie = (await cookies()).get(COOKIE)?.value;
   const id = idDeLaCookie(cookie);
   if (!id) return null;
   const filas = await select<Inquilino>(

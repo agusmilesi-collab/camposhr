@@ -142,7 +142,8 @@ function cuantoFalta(fecha: string): string {
   return `Hace ${-faltan} días`;
 }
 
-export default async function Charla({ params }: { params: { token: string } }) {
+export default async function Charla(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const charla = charlaPorToken(params.token);
   if (!charla) notFound();
 

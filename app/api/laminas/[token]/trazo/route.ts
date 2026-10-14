@@ -14,7 +14,8 @@ export const dynamic = 'force-dynamic';
  * Lo manda su pantalla mientras dibuja, y una vez más vacío cuando el último
  * trazo se borró. Pisa lo anterior: lo que se guarda es lo que está a la vista.
  */
-export async function POST(req: Request, { params }: { params: { token: string } }) {
+export async function POST(req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const test = await testDelToken(params.token);
   if (!test || !esTestConLaminas(test)) {
     return NextResponse.json({ ok: false }, { status: 401 });

@@ -12,7 +12,8 @@ export const metadata = { title: 'Pedido recibido — Campos HR' };
  * dirección es para mirarla y corregirla sin tener que cargar un pedido cada
  * vez.
  */
-export default async function Gracias({ params }: { params: { id: string } }) {
+export default async function Gracias(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const orden = await ordenPorId(params.id);
   if (!orden) notFound();
   return (

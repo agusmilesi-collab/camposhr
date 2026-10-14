@@ -16,7 +16,8 @@ export const dynamic = 'force-dynamic';
  *
  * Solo existe para lo cobrado: sin pago no hay de qué dar recibo.
  */
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
     const cookie = await cookieDelOs();

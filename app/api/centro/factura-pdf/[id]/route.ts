@@ -13,7 +13,8 @@ export const dynamic = 'force-dynamic';
  * contra la persona de la cookie firmada: con el identificador solo, cambiarlo
  * en la dirección bajaría la factura de otro.
  */
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const yo = await inquilinoDeLaSesion();
   if (!yo) return NextResponse.json({ error: 'Sin sesión.' }, { status: 401 });
 

@@ -32,11 +32,12 @@ type Fila = {
   baterias: { tests: string[] | null } | null;
 } & Record<string, unknown>;
 
-export default async function CompletarPuesto({
-  params,
-}: {
-  params: { token: string; id: string };
-}) {
+export default async function CompletarPuesto(
+  props: {
+    params: Promise<{ token: string; id: string }>;
+  }
+) {
+  const params = await props.params;
   const empresa = await empresaDelToken(params.token);
   if (!empresa) notFound();
 

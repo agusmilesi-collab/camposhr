@@ -9,11 +9,12 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function CuestionarioPublico({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function CuestionarioPublico(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 

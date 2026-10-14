@@ -22,10 +22,8 @@ const MAX_ASISTENTES = 400;
 const MAX_FOTO = 3 * 1024 * 1024; // 3 MB
 const FOTO_TIPOS = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
-export async function POST(
-  req: Request,
-  { params }: { params: { slug: string } }
-) {
+export async function POST(req: Request, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
   const { empresa, corrida } = ciclo;

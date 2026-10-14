@@ -141,7 +141,8 @@ const PESTANAS = [
   { clave: 'candidatos', texto: 'Candidatos' },
 ] as const;
 
-export default async function DataHub({ searchParams }: { searchParams: { ver?: string } }) {
+export default async function DataHub(props: { searchParams: Promise<{ ver?: string }> }) {
+  const searchParams = await props.searchParams;
   const pedida = searchParams.ver ?? '';
   const ver = PESTANAS.some((p) => p.clave === pedida) ? pedida : 'evaluadoras';
 

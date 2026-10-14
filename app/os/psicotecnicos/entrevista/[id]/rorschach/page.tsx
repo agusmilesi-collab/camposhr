@@ -19,13 +19,14 @@ export const dynamic = 'force-dynamic';
  * lo que la persona ve. Lo que se le muestra a ella es `/os/laminas/rorschach`,
  * que es la lámina sola.
  */
-export default async function CodificarRorschach({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { lamina?: string };
-}) {
+export default async function CodificarRorschach(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ lamina?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const yo = await quienSoy();
   const e = await entrevistaDe(params.id);
   if (!e) notFound();

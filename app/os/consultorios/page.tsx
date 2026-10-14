@@ -72,11 +72,12 @@ function mesLargo(iso: string): string {
   );
 }
 
-export default async function Consultorios({
-  searchParams,
-}: {
-  searchParams: { ver?: string; semana?: string; mes?: string; periodo?: string; sala?: string };
-}) {
+export default async function Consultorios(
+  props: {
+    searchParams: Promise<{ ver?: string; semana?: string; mes?: string; periodo?: string; sala?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const yo = await quienSoy();
   const cuentas = await cuentasDeLaBarra();
   const pedida = searchParams.ver ?? '';
@@ -172,7 +173,7 @@ export default async function Consultorios({
   // La disponibilidad para quien pregunta por alquilar vive en el host de los
   // inquilinos, que es el que se abre sin la clave del OS: el enlace se manda
   // por WhatsApp a alguien que todavía no tiene cuenta en ningún lado.
-  const host = headers().get('host') ?? '';
+  const host = (await headers()).get('host') ?? '';
   const dirOferta = host.startsWith('localhost')
     ? '/centro/disponibilidad'
     : 'https://centro.camposhr.com/centro/disponibilidad';

@@ -32,11 +32,12 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = { robots: { index: false, follow: false } };
 
-export default async function InformeDelPortal({
-  params,
-}: {
-  params: { token: string; id: string };
-}) {
+export default async function InformeDelPortal(
+  props: {
+    params: Promise<{ token: string; id: string }>;
+  }
+) {
+  const params = await props.params;
   const datos = await datosClienteDeSupabase(params.token);
   if (!datos) notFound();
 

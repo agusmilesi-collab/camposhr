@@ -10,8 +10,9 @@ export const metadata = { title: 'Orden de compra — Campos OS' };
  * (`/api/os/recibo/<id>` para el equipo, `/api/portal/orden/<token>` para él);
  * acá está la misma hoja en HTML, que es donde se decide el diseño.
  */
-export default async function Orden({ params }: { params: { id: string } }) {
-  const orden = await ordenPorId(params.id);
-  if (!orden) notFound();
-  return <HojaPapel orden={orden} />;
+export default async function Orden(props: { params: Promise<{ id: string }> }) {
+ const params = await props.params;
+ const orden = await ordenPorId(params.id);
+ if (!orden) notFound();
+ return <HojaPapel orden={orden} />;
 }

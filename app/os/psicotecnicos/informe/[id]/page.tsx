@@ -20,18 +20,20 @@ export const dynamic = 'force-dynamic';
  * interruptor que la pestaña, así que lo que se revisa es lo que se baja. Los
  * demás clientes siguen bajando el documento de siempre.
  */
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const inf = await armarInforme(params.id);
   return { title: inf ? `${inf.nombre} — Informe psicotécnico` : 'Informe' };
 }
 
-export default async function InformePagina({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { descargar?: string };
-}) {
+export default async function InformePagina(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ descargar?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const inf = await armarInforme(params.id);
   if (!inf) notFound();
   return (

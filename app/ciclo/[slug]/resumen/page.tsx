@@ -33,13 +33,14 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function Resumen({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: { a?: string };
-}) {
+export default async function Resumen(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<{ a?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) notFound();
   const { corrida } = ciclo;

@@ -34,11 +34,12 @@ function contar<T extends string>(claves: T[]): Map<T, number> {
   return m;
 }
 
-export default async function Informes({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function Informes(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 

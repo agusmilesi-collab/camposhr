@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic';
  * `public/`: ahí el enlace quedaba escrito en el nombre del archivo, y el
  * repositorio es público.
  */
-export async function GET(_req: Request, { params }: { params: { token: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const html = await leerCotizacion(params.token);
   if (html === null) {
     return new NextResponse('No encontrado.', {

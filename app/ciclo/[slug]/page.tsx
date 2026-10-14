@@ -18,11 +18,12 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function CicloAsistente({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function CicloAsistente(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) notFound();
   const { empresa, corrida } = ciclo;

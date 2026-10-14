@@ -144,8 +144,8 @@ export async function POST(req: Request) {
           recursoId: id,
           detalle: { estado, motivo: motivo ?? null, objecion },
         });
-        revalidateTag(CACHE_CLIENTES);
-        revalidateTag(CACHE_COMERCIAL);
+        revalidateTag(CACHE_CLIENTES, { expire: 0 });
+        revalidateTag(CACHE_COMERCIAL, { expire: 0 });
                 return NextResponse.json({ ok: true });
       }
 
@@ -169,7 +169,7 @@ export async function POST(req: Request) {
           recursoId: id,
           detalle: { seguimiento_el: dia },
         });
-        revalidateTag(CACHE_COMERCIAL);
+        revalidateTag(CACHE_COMERCIAL, { expire: 0 });
         return NextResponse.json({ ok: true });
       }
 
@@ -203,8 +203,8 @@ export async function POST(req: Request) {
           recursoId: fila.id,
           detalle: { alta: true, cliente: empresa.nombre, empresaId: empresa.id, importe },
         });
-        revalidateTag(CACHE_CLIENTES);
-        revalidateTag(CACHE_COMERCIAL);
+        revalidateTag(CACHE_CLIENTES, { expire: 0 });
+        revalidateTag(CACHE_COMERCIAL, { expire: 0 });
                 return NextResponse.json({ ok: true, id: fila.id });
       }
 
@@ -264,8 +264,8 @@ export async function POST(req: Request) {
           recursoId: id,
           detalle: { edicion: true, cliente: empresa.nombre, concepto, importe },
         });
-        revalidateTag(CACHE_CLIENTES);
-        revalidateTag(CACHE_COMERCIAL);
+        revalidateTag(CACHE_CLIENTES, { expire: 0 });
+        revalidateTag(CACHE_COMERCIAL, { expire: 0 });
         return NextResponse.json({ ok: true });
       }
 
@@ -296,8 +296,8 @@ export async function POST(req: Request) {
           recursoId: fila.id,
           detalle: { cotizacion_id: cotizacionId, importe },
         });
-        revalidateTag(CACHE_CLIENTES);
-        revalidateTag(CACHE_COMERCIAL);
+        revalidateTag(CACHE_CLIENTES, { expire: 0 });
+        revalidateTag(CACHE_COMERCIAL, { expire: 0 });
                 return NextResponse.json({ ok: true, id: fila.id });
       }
 
@@ -320,8 +320,8 @@ export async function POST(req: Request) {
           recursoId: id,
           detalle: { importe },
         });
-        revalidateTag(CACHE_CLIENTES);
-        revalidateTag(CACHE_COMERCIAL);
+        revalidateTag(CACHE_CLIENTES, { expire: 0 });
+        revalidateTag(CACHE_COMERCIAL, { expire: 0 });
         return NextResponse.json({ ok: true });
       }
 
@@ -341,8 +341,8 @@ export async function POST(req: Request) {
           recursoId: id,
           detalle: { pagado_por: pagadoPor },
         });
-        revalidateTag(CACHE_CLIENTES);
-        revalidateTag(CACHE_COMERCIAL);
+        revalidateTag(CACHE_CLIENTES, { expire: 0 });
+        revalidateTag(CACHE_COMERCIAL, { expire: 0 });
         return NextResponse.json({ ok: true });
       }
 
@@ -363,7 +363,7 @@ export async function POST(req: Request) {
           recursoId: id,
           detalle: { repartido_el: repartidoEl },
         });
-        revalidateTag(CACHE_COMERCIAL);
+        revalidateTag(CACHE_COMERCIAL, { expire: 0 });
         return NextResponse.json({ ok: true });
       }
 
@@ -380,8 +380,8 @@ export async function POST(req: Request) {
           recursoId: id,
           detalle: { borrado: true },
         });
-        revalidateTag(CACHE_CLIENTES);
-        revalidateTag(CACHE_COMERCIAL);
+        revalidateTag(CACHE_CLIENTES, { expire: 0 });
+        revalidateTag(CACHE_COMERCIAL, { expire: 0 });
                 return NextResponse.json({ ok: true });
       }
 

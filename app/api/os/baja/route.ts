@@ -68,8 +68,8 @@ export async function POST(req: Request) {
     detalle: { fila: id, baja: baja ? 'se dio de baja' : 'vuelve al proceso' },
   });
 
-  revalidateTag(CACHE_PSICOTECNICOS);
-  revalidateTag(CACHE_CLIENTES);
-  revalidateTag(CACHE_COMERCIAL);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
+  revalidateTag(CACHE_COMERCIAL, { expire: 0 });
   return NextResponse.json({ ok: true, baja: filas[0].baja_el });
 }

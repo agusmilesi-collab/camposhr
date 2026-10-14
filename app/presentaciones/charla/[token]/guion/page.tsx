@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
  * placa. La primera vez aparece cargado con las notas que trae el deck, para
  * corregir sobre algo en vez de arrancar de cero.
  */
-export default async function Guion({ params }: { params: { token: string } }) {
+export default async function Guion(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const guion = await guionDe(params.token);
   if (!guion) notFound();
 

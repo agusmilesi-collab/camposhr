@@ -56,9 +56,9 @@ async function escribir(camino: string, cuerpo: unknown) {
 }
 
 function refrescar() {
-  revalidateTag(CACHE_COMERCIAL);
+  revalidateTag(CACHE_COMERCIAL, { expire: 0 });
   // La ficha del inquilino lee los movimientos con esta etiqueta.
-  revalidateTag('consultorios');
+  revalidateTag('consultorios', { expire: 0 });
 }
 
 export async function POST(req: Request) {

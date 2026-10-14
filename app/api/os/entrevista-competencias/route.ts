@@ -94,6 +94,6 @@ export async function POST(req: Request) {
     // volver a leerlo.
     detalle: { largo: texto ? texto.length : 0 },
   });
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   return NextResponse.json({ ok: true });
 }

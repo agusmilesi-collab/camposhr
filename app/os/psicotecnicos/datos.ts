@@ -61,8 +61,8 @@ export function visiblesEn(filas: Evaluacion[], seccion: Seccion, yo: Miembro): 
  * Uno que ya no aparece en los datos no puede dejar la pantalla vacía para
  * siempre: se cae a mostrar todo.
  */
-function empresaElegida(empresas: string[]): string {
-  const guardada = cookies().get(COOKIE_EMPRESA)?.value;
+async function empresaElegida(empresas: string[]): Promise<string> {
+  const guardada = (await cookies()).get(COOKIE_EMPRESA)?.value;
   const elegida = guardada ? decodeURIComponent(guardada) : CLIENTE_POR_DEFECTO;
   return elegida === TODAS || !empresas.includes(elegida) ? TODAS : elegida;
 }
@@ -168,7 +168,7 @@ export async function cargar() {
     a.localeCompare(b)
   );
 
-  const empresa = empresaElegida(empresas);
+  const empresa = await empresaElegida(empresas);
 
   const todas = empresa === TODAS ? crudas : crudas.filter((f) => f.empresa === empresa);
   const ocultas = crudas.length - todas.length;

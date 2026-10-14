@@ -149,8 +149,8 @@ export async function POST(req: Request) {
     detalle: fila,
   });
 
-  revalidateTag(CACHE_PSICOTECNICOS);
-  revalidateTag(CACHE_CLIENTES);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
 
   return NextResponse.json({ ok: true });
 }
@@ -228,8 +228,8 @@ export async function DELETE(req: Request) {
     detalle: { borrado: borrado.puesto },
   });
 
-  revalidateTag(CACHE_PSICOTECNICOS);
-  revalidateTag(CACHE_CLIENTES);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
 
   return NextResponse.json({ ok: true });
 }

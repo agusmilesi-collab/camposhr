@@ -19,10 +19,8 @@ export const dynamic = 'force-dynamic';
  * estar en estado Entregado, y su informe tiene que estar escrito. Si falla
  * cualquiera responde 404, sin decir cuál.
  */
-export async function GET(
-  _req: Request,
-  { params }: { params: { token: string; id: string } }
-) {
+export async function GET(_req: Request, props: { params: Promise<{ token: string; id: string }> }) {
+  const params = await props.params;
   // El cliente de prueba tiene sus propios informes, escritos como archivos
   // estáticos o generados en el momento. Ver lib/portal-demo.ts.
   if (esDemo(params.token)) {

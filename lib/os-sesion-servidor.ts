@@ -13,7 +13,7 @@ import { headers } from 'next/headers';
 import { COOKIE, huella, igual } from '@/lib/os-sesion';
 
 export async function cookieDelOs(): Promise<string | undefined> {
-  const todas = (headers().get('cookie') ?? '')
+  const todas = ((await headers()).get('cookie') ?? '')
     .split(';')
     .map((c) => c.trim())
     .filter((c) => c.startsWith(`${COOKIE}=`))

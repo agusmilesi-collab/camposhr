@@ -15,7 +15,8 @@ export function generateStaticParams() {
   return SECCIONES.map((s) => ({ etapa: s.ruta }));
 }
 
-export default async function EtapaPagina({ params }: { params: { etapa: string } }) {
+export default async function EtapaPagina(props: { params: Promise<{ etapa: string }> }) {
+  const params = await props.params;
   const seccion = SECCION_DE_RUTA[params.etapa];
   if (!seccion) notFound();
 

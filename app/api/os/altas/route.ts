@@ -92,9 +92,9 @@ async function altaPedido(
     detalle: { puesto, empresa_id: empresaId, alta: 'interna' },
   });
 
-  revalidateTag(CACHE_CLIENTES);
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
 
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
 
     return NextResponse.json({ ok: true, id: pedido.id });
 }
@@ -162,9 +162,9 @@ async function altaCandidato(
     detalle: { nombre: `${nombre} ${apellido}`, pedido_id: pedidoId, alta: 'interna', con_cv: Boolean(cv) },
   });
 
-  revalidateTag(CACHE_CLIENTES);
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
 
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
 
     return NextResponse.json({ ok: true, id: evaluacion.id });
 }

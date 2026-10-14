@@ -63,8 +63,8 @@ export async function POST(req: Request) {
         detalle: { edicion: 'correo para agendar' },
       });
 
-      revalidateTag(CACHE_CLIENTES);
-      revalidateTag(CACHE_PSICOTECNICOS);
+      revalidateTag(CACHE_CLIENTES, { expire: 0 });
+      revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
       return NextResponse.json({ ok: true });
     } catch (e) {
       console.error('candidatos:', e);
@@ -108,8 +108,8 @@ export async function POST(req: Request) {
       detalle: { nombre: `${texto('nombre')} ${texto('apellido')}`.trim(), con_cv: Boolean(cv), edicion: 'tablero' },
     });
 
-    revalidateTag(CACHE_CLIENTES);
-    revalidateTag(CACHE_PSICOTECNICOS);
+    revalidateTag(CACHE_CLIENTES, { expire: 0 });
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('candidatos:', e);
@@ -150,8 +150,8 @@ export async function DELETE(req: Request) {
       detalle: { nombre: r.nombre, desde: 'tablero' },
     });
 
-    revalidateTag(CACHE_CLIENTES);
-    revalidateTag(CACHE_PSICOTECNICOS);
+    revalidateTag(CACHE_CLIENTES, { expire: 0 });
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
     return NextResponse.json({ ok: true, nombre: r.nombre });
   } catch (e) {
     console.error('candidatos:', e);

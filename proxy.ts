@@ -87,7 +87,7 @@ const RUTAS_DE_PRESENTACIONES = /^\/(presentaciones|pres)(\/|$)/;
 const RUTAS_PUBLICAS =
   /^\/(c|l|ciclo|laminas|confirmar|api\/cuestionario|api\/ciclo|api\/raven|api\/laminas)\/|^\/raven(\/|$)/;
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase();
   const url = req.nextUrl;
   const { pathname } = url;

@@ -11,7 +11,8 @@ export const metadata = {
 };
 
 /** Un documento de la base, tal como está escrito en el repo. */
-export default async function Documento({ params }: { params: { ruta: string[] } }) {
+export default async function Documento(props: { params: Promise<{ ruta: string[] }> }) {
+  const params = await props.params;
   const doc = await leerKb(params.ruta.join('/'));
   if (!doc) notFound();
 

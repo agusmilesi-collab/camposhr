@@ -239,7 +239,8 @@ type Entregado = {
   fechaPedido: string | null;
 };
 
-export default async function Portal({ params }: { params: { token: string } }) {
+export default async function Portal(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const demo = esDemo(params.token);
   const deSupabase = demo ? null : await datosClienteDeSupabase(params.token);
   const datos = demo ? await datosDemoReales() : deSupabase;

@@ -107,7 +107,7 @@ export async function POST(req: Request) {
       recursoId: clave,
       detalle: { vuelve: 'a los valores de fábrica' },
     });
-    revalidateTag(CACHE_PSICOTECNICOS);
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
     return NextResponse.json({ ok: true });
   }
 
@@ -163,6 +163,6 @@ export async function POST(req: Request) {
       ? { cortes: limpios.map((r) => `${r.numeral}:${r.desde}`).join(' ') }
       : { cambiadas: Object.keys(limpios).join(' ') },
   });
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   return NextResponse.json({ ok: true });
 }

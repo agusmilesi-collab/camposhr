@@ -11,7 +11,8 @@ export const dynamic = 'force-dynamic';
  * evaluadora no haya pasado de lámina desde que se generó el enlace, y ahí la
  * pantalla se queda donde está.
  */
-export async function GET(_req: Request, { params }: { params: { token: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const estado = await laminaDelToken(params.token);
   if (!estado) return NextResponse.json({ vencido: true }, { status: 401 });
   return NextResponse.json(

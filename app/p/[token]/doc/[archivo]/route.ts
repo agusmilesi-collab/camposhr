@@ -18,8 +18,9 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   _req: Request,
-  { params }: { params: { token: string; archivo: string } }
+  props: { params: Promise<{ token: string; archivo: string }> }
 ) {
+  const params = await props.params;
   const empresaId = (await empresaDelToken(params.token))?.id;
   if (!empresaId) return noEncontrado();
 

@@ -12,13 +12,14 @@ export const metadata = {
 /** El cuestionario se responde desde el host público, no desde tools. */
 const BASE_PUBLICA = 'https://camposhr.com';
 
-export default async function QrEmpresa({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: { v?: string; placa?: string };
-}) {
+export default async function QrEmpresa(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<{ v?: string; placa?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 

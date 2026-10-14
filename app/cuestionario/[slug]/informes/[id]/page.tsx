@@ -10,11 +10,12 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function PlaybookPersona({
-  params,
-}: {
-  params: { slug: string; id: string };
-}) {
+export default async function PlaybookPersona(
+  props: {
+    params: Promise<{ slug: string; id: string }>;
+  }
+) {
+  const params = await props.params;
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 

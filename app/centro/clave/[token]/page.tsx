@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
  * antemano que un enlace es válido convierte esta dirección en un probador de
  * enlaces ajenos.
  */
-export default function PonerClave({ params }: { params: { token: string } }) {
-  return <Clave token={params.token} />;
+export default async function PonerClave(props: { params: Promise<{ token: string }> }) {
+ const params = await props.params;
+ return <Clave token={params.token} />;
 }

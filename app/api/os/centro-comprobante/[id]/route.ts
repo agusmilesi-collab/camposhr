@@ -7,7 +7,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /** El comprobante que subió un inquilino, para que lo abra el equipo. */
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
     const cookie = await cookieDelOs();

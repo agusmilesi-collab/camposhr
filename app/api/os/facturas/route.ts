@@ -46,12 +46,12 @@ async function escribir(camino: string, metodo: string, cuerpo?: unknown) {
 }
 
 function refrescar() {
-  revalidateTag(CACHE_COMERCIAL);
-  revalidateTag(CACHE_CLIENTES);
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_COMERCIAL, { expire: 0 });
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   // Las facturas del Centro se leen con esta etiqueta: al quitar una, sus
   // cargos tienen que volver a la cola del mes.
-  revalidateTag('consultorios');
+  revalidateTag('consultorios', { expire: 0 });
 }
 
 /**

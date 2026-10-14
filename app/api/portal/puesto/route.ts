@@ -119,7 +119,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'No se pudo guardar.' }, { status: 500 });
   }
 
-  revalidateTag(CACHE_PSICOTECNICOS);
-  revalidateTag(CACHE_CLIENTES);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
   return NextResponse.json({ ok: true });
 }

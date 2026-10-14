@@ -53,6 +53,6 @@ export async function POST(req: Request) {
     console.error('[notificaciones del portal]', e);
     return NextResponse.json({ error: 'No se pudo guardar. Probá de nuevo.' }, { status: 502 });
   }
-  revalidateTag(CACHE_CLIENTES);
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
   return NextResponse.json({ ok: true });
 }

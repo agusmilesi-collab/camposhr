@@ -23,7 +23,7 @@ export type Sitio = { top: number; left: number; lado: 'derecha' | 'izquierda'; 
 export function useBurbuja(
   ancla: () => DOMRect | null,
   cerrar: () => void
-): { caja: RefObject<HTMLDivElement>; sitio: Sitio | null } {
+): { caja: RefObject<HTMLDivElement | null>; sitio: Sitio | null } {
   const caja = useRef<HTMLDivElement>(null);
   const [sitio, setSitio] = useState<Sitio | null>(null);
 

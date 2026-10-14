@@ -15,7 +15,8 @@ export const dynamic = 'force-dynamic';
  * lo están recorriendo: el día del encuentro se abren y se cierran las
  * actividades desde esta misma pantalla.
  */
-export default async function Ciclo({ params }: { params: { ciclo: string } }) {
+export default async function Ciclo(props: { params: Promise<{ ciclo: string }> }) {
+  const params = await props.params;
   const datos = charlasDelCiclo(params.ciclo);
   if (!datos) notFound();
 

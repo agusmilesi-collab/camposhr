@@ -15,12 +15,13 @@ export const dynamic = 'force-dynamic';
  * contra un identificador que venga en la dirección: con la dirección sola,
  * cambiar el id mostraría la factura de otro.
  */
-export default async function FacturaDelInquilino({ params }: { params: { id: string } }) {
-  const yo = await inquilinoDeLaSesion();
-  if (!yo) redirect('/centro/entrar');
+export default async function FacturaDelInquilino(props: { params: Promise<{ id: string }> }) {
+ const params = await props.params;
+ const yo = await inquilinoDeLaSesion();
+ if (!yo) redirect('/centro/entrar');
 
-  const factura = await verFactura(params.id);
-  if (!factura || factura.inquilinoId !== yo.id) notFound();
+ const factura = await verFactura(params.id);
+ if (!factura || factura.inquilinoId !== yo.id) notFound();
 
-  return <Comprobante id={params.id} />;
+ return <Comprobante id={params.id} />;
 }

@@ -218,7 +218,7 @@ export async function PUT(req: Request) {
     recurso: 'rorschach',
     detalle: { evaluacion, alta: fila?.id },
   });
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   return NextResponse.json({ ok: true, fila });
 }
 
@@ -266,7 +266,7 @@ export async function POST(req: Request) {
   }
 
   await anotarAcceso({ accion: 'escritura', recurso: 'rorschach', detalle: { fila: id, campos: limpio } });
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   return NextResponse.json({ ok: true });
 }
 
@@ -296,6 +296,6 @@ export async function DELETE(req: Request) {
   }
 
   await anotarAcceso({ accion: 'escritura', recurso: 'rorschach', detalle: { baja: id } });
-  revalidateTag(CACHE_PSICOTECNICOS);
+  revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   return NextResponse.json({ ok: true });
 }

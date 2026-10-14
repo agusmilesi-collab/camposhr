@@ -25,7 +25,8 @@ async function sinSesion(): Promise<boolean> {
   return !cookie || !igual(cookie, await huella(clave));
 }
 
-export async function PUT(req: Request, { params }: { params: { token: string } }) {
+export async function PUT(req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   if (await sinSesion()) return new NextResponse('Sin sesión.', { status: 401 });
 
   if (!charlaPorToken(params.token)) {

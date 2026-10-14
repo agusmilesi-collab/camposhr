@@ -13,7 +13,8 @@ export const dynamic = 'force-dynamic';
  * al dibujar vence a los cinco minutos, y la ficha del pedido queda abierta
  * mucho más que eso.
  */
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
     const cookie = await cookieDelOs();

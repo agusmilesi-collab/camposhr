@@ -26,11 +26,12 @@ export const metadata = {
  * playbook de cada persona de su equipo. Nada más: ni otros equipos, ni la
  * pantalla interna del cuestionario.
  */
-export default async function EquipoDelLider({
-  params,
-}: {
-  params: { token: string };
-}) {
+export default async function EquipoDelLider(
+  props: {
+    params: Promise<{ token: string }>;
+  }
+) {
+  const params = await props.params;
   const lider = await getLiderPorToken(params.token);
   if (!lider) notFound();
 

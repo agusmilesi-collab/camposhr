@@ -23,13 +23,14 @@ export const metadata = {
 /** El asistente entra desde el host público, no desde tools. */
 const BASE_PUBLICA = 'https://camposhr.com';
 
-export default async function QrDelCiclo({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: { placa?: string; destino?: string };
-}) {
+export default async function QrDelCiclo(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<{ placa?: string; destino?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) notFound();
   const { empresa, corrida } = ciclo;

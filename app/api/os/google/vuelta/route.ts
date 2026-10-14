@@ -40,7 +40,7 @@ export async function GET(req: Request) {
   // Apretó "Cancelar" en la pantalla de Google.
   if (url.searchParams.get('error')) return volver('rechazado');
 
-  const [estado, evaluadora] = (cookies().get('google_estado')?.value ?? '').split(':');
+  const [estado, evaluadora] = ((await cookies()).get('google_estado')?.value ?? '').split(':');
   const codigo = url.searchParams.get('code');
   if (!estado || !evaluadora || !codigo || url.searchParams.get('state') !== estado) {
     return volver('fallo');

@@ -26,13 +26,14 @@ export const dynamic = 'force-dynamic';
  * Arriba, quién es y con qué se le factura; abajo, lo que pidió, abierto y
  * cerrado.
  */
-export default async function ClientePagina({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { ver?: string };
-}) {
+export default async function ClientePagina(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ ver?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [yo, clientes, pedidos, empresas, baterias, contactos] = await Promise.all([
     quienSoy(),
     listarClientes(),

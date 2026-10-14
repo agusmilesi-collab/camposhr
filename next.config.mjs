@@ -4,9 +4,7 @@ const nextConfig = {
   // aparte. Empaquetado por Next, ese archivo no queda donde la librería lo
   // busca y la lectura falla; declarado como externo se carga desde
   // node_modules, que es donde está.
-  experimental: {
-    serverComponentsExternalPackages: ['pdfjs-dist'],
-  },
+  serverExternalPackages: ['pdfjs-dist'],
   // Lo que no se importa desde el código no viaja al paquete de la función, así
   // que hay que decirle a Next que lo suba.
   outputFileTracingIncludes: {

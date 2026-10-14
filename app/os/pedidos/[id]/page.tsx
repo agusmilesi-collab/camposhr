@@ -84,13 +84,14 @@ const PESTANAS = [
   { clave: 'potencial', texto: 'Potencial' },
 ] as const;
 
-export default async function FichaPedido({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { ver?: string };
-}) {
+export default async function FichaPedido(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ ver?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [yo, pedido, baterias, cambio, exigencias] = await Promise.all([
     quienSoy(),
     leerPedido(params.id),

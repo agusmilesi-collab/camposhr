@@ -104,7 +104,7 @@ export async function POST(req: Request) {
       detalle: { cuadrantes, parejos, con_informe: r.conInforme, leido: Boolean(leido) },
     });
 
-    revalidateTag(CACHE_PSICOTECNICOS);
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
     return NextResponse.json({ ok: true, leido: Boolean(leido) });
   } catch (e) {
     console.error('benziger:', e);

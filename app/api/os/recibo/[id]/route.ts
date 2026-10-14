@@ -17,7 +17,8 @@ export const dynamic = 'force-dynamic';
  *
  * El cliente la baja por otra puerta, con su token: `/api/portal/orden/<token>`.
  */
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
     const cookie = await cookieDelOs();

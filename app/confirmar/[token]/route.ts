@@ -176,7 +176,8 @@ const agendar = (token: string) =>
 const vigente = (e: Fila | null): e is Fila =>
   Boolean(e && !e.baja_el && e.estado === 'Por entrevistar' && e.fecha_entrevista);
 
-export async function GET(req: Request, { params }: { params: { token: string } }) {
+export async function GET(req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const e = await buscar(params.token);
   if (!vigente(e)) return noEsta();
   // El botón "Agregar a mi calendario". En un iPhone o un iPad baja la
@@ -233,14 +234,15 @@ export async function GET(req: Request, { params }: { params: { token: string } 
   );
 }
 
-export async function POST(_req: Request, { params }: { params: { token: string } }) {
+export async function POST(_req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const e = await buscar(params.token);
   if (!vigente(e)) return noEsta();
   if (!e.asistencia_confirmada_el && e.id) {
     await patch('evaluaciones', `id=eq.${e.id}`, {
       asistencia_confirmada_el: new Date().toISOString(),
     });
-    revalidateTag(CACHE_PSICOTECNICOS);
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   }
   return pagina(
     listo(e),

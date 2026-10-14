@@ -102,10 +102,8 @@ function publica(a: Actividad, datos: Record<string, string> = {}) {
   };
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: { slug: string } }
-) {
+export async function GET(req: Request, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const parametros = new URL(req.url).searchParams;
 
   // `total=1` lo pide sólo el panel de quien dicta, y es el único que necesita

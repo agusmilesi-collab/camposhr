@@ -34,11 +34,12 @@ export const dynamic = 'force-dynamic';
  * hay que marcar nada, y por eso no depende de que el informe esté escrito: se
  * factura el trabajo hecho.
  */
-export default async function Facturacion({
-  searchParams,
-}: {
-  searchParams?: { ver?: string };
-}) {
+export default async function Facturacion(
+  props: {
+    searchParams?: Promise<{ ver?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [yo, miembros, pendientes, facturas, notas, emisoras, cuentas, marcha] = await Promise.all([
     quienSoy(),
     equipo(),

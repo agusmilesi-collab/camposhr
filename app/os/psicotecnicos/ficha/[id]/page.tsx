@@ -587,9 +587,9 @@ function BenzigerVista({ f, id }: { f: Ficha; id: string }) {
  * producción y el botón no serviría para probar: ahí se queda en la misma
  * máquina, que es donde está el portal de prueba.
  */
-function portalDe(token: string | null): string | null {
+async function portalDe(token: string | null): Promise<string | null> {
   if (!token) return null;
-  const host = (headers().get('host') ?? '').toLowerCase();
+  const host = ((await headers()).get('host') ?? '').toLowerCase();
   const local = host.startsWith('localhost') || host.startsWith('127.0.0.1');
   return local ? `/p/${token}` : `https://clientes.camposhr.com/${token}`;
 }
@@ -713,10 +713,10 @@ async function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulaci
   );
 }
 
-function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
+async function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
   const c = f.cabecera;
   const informe = desdeFicha(f, rige);
-  const portal = portalDe(c.pedidos?.empresas?.token_portal ?? null);
+  const portal = await portalDe(c.pedidos?.empresas?.token_portal ?? null);
   /* El molde nuevo del informe corre por ahora solo en la empresa de prueba,
      igual que en el portal: acá se ve lo mismo que va a ver ese cliente. */
   const comoSitio = informeEnHojas(c.pedidos?.empresas?.nombre);
@@ -815,13 +815,14 @@ function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
   );
 }
 
-export default async function FichaPagina({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { ver?: string; desde?: string };
-}) {
+export default async function FichaPagina(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ ver?: string; desde?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   // Los pedidos abiertos y las evaluadoras son para el cajón que corrige los
   // datos del alta, que se abre desde la pestaña Datos.
   const [yo, ficha, cuentas, rige, pedidos, evaluadoras] = await Promise.all([

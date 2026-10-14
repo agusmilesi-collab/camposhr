@@ -70,7 +70,8 @@ type Tarjeta = {
  * hay forma de que diga "registramos tu pago" sobre un pago que después se
  * borró, ni de que una factura salga sin su novedad.
  */
-export default async function Inicio({ searchParams }: { searchParams: { hoy?: string } }) {
+export default async function Inicio(props: { searchParams: Promise<{ hoy?: string }> }) {
+  const searchParams = await props.searchParams;
   const yo = await inquilinoDeLaSesion();
   if (!yo) redirect('/centro/entrar');
 

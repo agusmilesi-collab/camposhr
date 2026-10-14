@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
  * Si tiene CAE, es el archivo que se guardó al autorizarla. Si no, se arma en
  * el momento con lo que hay anotado.
  */
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
     const cookie = await cookieDelOs();

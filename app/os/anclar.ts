@@ -37,8 +37,8 @@ export function anfitrion(): Element | null {
 
 export function useAnclaje(
   abierta: boolean,
-  boton: RefObject<HTMLElement>,
-  lista: RefObject<HTMLElement>,
+  boton: RefObject<HTMLElement | null>,
+  lista: RefObject<HTMLElement | null>,
   cerrar: () => void,
   /** Lo mínimo que mide la lista, para decidir si entra abajo o va arriba. */
   altoMaximo = ALTO_MAXIMO

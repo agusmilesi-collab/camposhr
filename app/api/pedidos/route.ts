@@ -410,8 +410,8 @@ export async function POST(req: Request) {
       comentarios,
     });
 
-    revalidateTag(CACHE_PSICOTECNICOS);
-    revalidateTag(CACHE_CLIENTES);
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
+    revalidateTag(CACHE_CLIENTES, { expire: 0 });
     return NextResponse.json({ resumen: base, guardado: true, orden });
   } catch (e) {
     console.error('[alta de pedido]', e);

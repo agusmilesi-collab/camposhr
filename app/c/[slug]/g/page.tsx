@@ -14,11 +14,12 @@ export const metadata = {
  * Variante extendida: las 8 placas de perfil más las 4 de generaciones,
  * y pide el líder al que reporta la persona. De acá salen los informes.
  */
-export default async function CuestionarioGeneraciones({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function CuestionarioGeneraciones(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) notFound();
 

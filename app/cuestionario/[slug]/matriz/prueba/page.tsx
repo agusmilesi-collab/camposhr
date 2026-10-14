@@ -28,13 +28,14 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function MatrizDePrueba({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: { n?: string };
-}) {
+export default async function MatrizDePrueba(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<{ n?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   if (process.env.NODE_ENV === 'production') notFound();
 
   const empresa = await getEmpresaPorSlug(params.slug);

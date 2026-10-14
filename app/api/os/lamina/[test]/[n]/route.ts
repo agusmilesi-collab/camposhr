@@ -13,7 +13,8 @@ export const dynamic = 'force-dynamic';
  * entre láminas, y una fila por cada una llenaría el registro sin decir nada
  * que no diga la evaluación misma.
  */
-export async function GET(req: Request, { params }: { params: { test: string; n: string } }) {
+export async function GET(req: Request, props: { params: Promise<{ test: string; n: string }> }) {
+  const params = await props.params;
   if (hayPuerta()) {
     const clave = process.env.OS_CLAVE as string;
     const cookie = await cookieDelOs();

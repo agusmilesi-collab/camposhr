@@ -33,13 +33,14 @@ export const dynamic = 'force-dynamic';
  * Acá cada persona tiene su dirección y su pantalla: qué alquila, cómo le fue
  * mes a mes, la cuenta del mes que se elija y el resumen que se le manda.
  */
-export default async function InquilinoFicha({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { periodo?: string };
-}) {
+export default async function InquilinoFicha(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ periodo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const yo = await quienSoy();
   const cuentas = await cuentasDeLaBarra();
   const inquilino = await inquilinoPorId(params.id);

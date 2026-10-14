@@ -74,7 +74,7 @@ export async function POST(req: Request) {
       recursoId: id,
       detalle: { baja: true },
     });
-    revalidateTag(CACHE_CLIENTES);
+    revalidateTag(CACHE_CLIENTES, { expire: 0 });
     return NextResponse.json({ ok: true });
   }
 
@@ -146,6 +146,6 @@ export async function POST(req: Request) {
     recursoId: guardado?.id ?? id,
     detalle: { nombre, alta: !id },
   });
-  revalidateTag(CACHE_CLIENTES);
+  revalidateTag(CACHE_CLIENTES, { expire: 0 });
   return NextResponse.json({ ok: true, id: guardado?.id ?? id });
 }

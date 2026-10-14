@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
  * orden. Es el enlace del botón de la pantalla de confirmación, y el que va a
  * ir en el correo.
  */
-export async function GET(_req: Request, { params }: { params: { token: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   // Solo por token: con el identificador entra el equipo, por la ruta del OS.
   const orden = params.token.startsWith('oc_') ? await verOrden(params.token) : null;
   if (!orden) return NextResponse.json({ error: 'Esa orden no existe.' }, { status: 404 });

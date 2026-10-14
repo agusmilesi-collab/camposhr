@@ -74,7 +74,7 @@ export async function POST(req: Request) {
       detalle: { nombre: archivo.name, bytes: archivo.size },
     });
 
-    revalidateTag(CACHE_PSICOTECNICOS);
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
     return NextResponse.json({ ok: true, nombre: archivo.name });
   } catch (e) {
     console.error('grafico:', e);

@@ -14,6 +14,7 @@ export const dynamic = 'force-dynamic';
  * La pantalla de codificación (`/rorschach`) sigue colgando de acá: esa sí se
  * abre suelta, para tener las láminas de un lado y la grilla del otro.
  */
-export default function EntrevistaVieja({ params }: { params: { id: string } }) {
-  redirect(`/os/psicotecnicos/ficha/${params.id}?ver=entrevista`);
+export default async function EntrevistaVieja(props: { params: Promise<{ id: string }> }) {
+ const params = await props.params;
+ redirect(`/os/psicotecnicos/ficha/${params.id}?ver=entrevista`);
 }

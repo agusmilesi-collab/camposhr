@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       detalle: { laminas: cuantas, bytes: archivo.size },
     });
 
-    revalidateTag(CACHE_PSICOTECNICOS);
+    revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
     return NextResponse.json({ ok: true, cuantas });
   } catch (e) {
     console.error('bender:', e);

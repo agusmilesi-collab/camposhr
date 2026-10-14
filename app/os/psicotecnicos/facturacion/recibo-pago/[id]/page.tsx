@@ -10,7 +10,8 @@ export const metadata = { title: 'Recibo de pago — Campos OS' };
  * la forma del recibo; el PDF que se le manda al cliente sale de
  * `/api/os/recibo-pago/<id>`.
  */
-export default async function Recibo({ params }: { params: { id: string } }) {
+export default async function Recibo(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const recibo = await reciboDePago(params.id);
   if (!recibo) notFound();
   return (

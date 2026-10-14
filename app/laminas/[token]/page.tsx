@@ -17,7 +17,8 @@ export const metadata = { title: 'Láminas — Campos HR', robots: { index: fals
  * mueve las dos pantallas de la evaluadora viaja entre pestañas de un mismo
  * navegador, y acá hay dos máquinas.
  */
-export default async function Laminas({ params }: { params: { token: string } }) {
+export default async function Laminas(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const test = await testDelToken(params.token);
   if (!test) {
     return (

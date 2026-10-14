@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
  * el portal del inquilino: una sola hoja, para que lo que ve el equipo y lo que
  * descarga el cliente sean el mismo papel.
  */
-export default function Pagina({ params }: { params: { id: string } }) {
-  return <Comprobante id={params.id} puedeEmitir />;
+export default async function Pagina(props: { params: Promise<{ id: string }> }) {
+ const params = await props.params;
+ return <Comprobante id={params.id} puedeEmitir />;
 }
