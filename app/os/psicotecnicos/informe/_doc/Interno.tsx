@@ -16,6 +16,25 @@ import type { Informe } from '@/lib/informe';
  * Esto no se lee: es un informe al que le faltan datos, y el ámbar lo hacía
  * pasar por una advertencia más de las que el documento ya tiene.
  */
+
+/**
+ * Cuánto se movería el puntaje con un dato codificado distinto, dicho como
+ * consecuencia: "bajaría hasta 81 con un dato distinto en Lambda, W : M o T".
+ * El puntaje que se muestra es el que da el protocolo tal como está cargado.
+ */
+function cuantoSeMueve(
+  puntaje: number,
+  m: { abajo: number; arriba: number; borde: string[] }
+): string {
+  const hacia = [
+    m.abajo > 0 && `bajaría hasta ${puntaje - m.abajo}`,
+    m.arriba > 0 && `subiría hasta ${puntaje + m.arriba}`,
+  ].filter(Boolean).join(' o ');
+  const b = m.borde;
+  const datos = b.length > 1 ? `${b.slice(0, -1).join(', ')} o ${b[b.length - 1]}` : b[0];
+  return `${hacia} con un dato distinto en ${datos}`;
+}
+
 export function Faltantes({ inf }: { inf: Informe }) {
   if (inf.faltantes.length === 0) return null;
   return (
@@ -82,6 +101,67 @@ export function Revisar({ inf }: { inf: Informe }) {
   );
 }
 
+
+type CompetenciaDelInforme = Informe['competencias'][number];
+
+/** Cuánto se movería el puntaje con un dato distinto, o null si no se mueve. */
+export function margenDe(c: CompetenciaDelInforme): string | null {
+  if (c.puntaje === null || !c.margen) return null;
+  if (c.margen.abajo === 0 && c.margen.arriba === 0) return null;
+  return cuantoSeMueve(c.puntaje, c.margen);
+}
+
+/**
+ * Los indicadores de una competencia con su nivel, peso y corte.
+ *
+ * En tabla y no en lista: es lo que la evaluadora mira cuando el cliente
+ * pregunta de dónde sale un puntaje, así que los índices del protocolo tienen
+ * que caer siempre en el mismo lugar del renglón.
+ */
+export function TablaDeIndicadores({ c }: { c: CompetenciaDelInforme }) {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Indicador</th>
+          <th>Del protocolo</th>
+          <th>Nivel</th>
+          <th>Peso</th>
+          <th>Dónde corta</th>
+        </tr>
+      </thead>
+      <tbody>
+        {c.renglones.map((r) => {
+          // El Raven no escalona: lo que trae del protocolo es su
+          // percentil, y esa es la columna donde hay que buscarlo.
+          const nivel =
+            r.nivel === null
+              ? r.valor
+                ? '—'
+                : 'sin dato'
+              : r.aporte != null
+                ? `medio alto · ${r.aporte}`
+                : ['bajo', 'medio', 'alto'][r.nivel - 1];
+          return (
+            <tr key={r.indicador}>
+              <td>
+                <b>{r.indicador}</b>
+                <em>{r.mide}</em>
+              </td>
+              <td className="inf-desglose-datos">{r.datos ?? r.valor ?? '—'}</td>
+              <td className="inf-desglose-nivel" data-nivel={r.nivel ?? 'falta'}>
+                {nivel}
+              </td>
+              <td className="inf-desglose-peso">{r.peso === 1 ? '' : `×${r.peso}`}</td>
+              <td className="inf-desglose-corte">{r.corte}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
 /**
  * De dónde sale cada puntaje.
  *
@@ -106,12 +186,9 @@ export function Desglose({
   if (!inf.competencias.some((c) => c.renglones.length > 1)) return null;
   const Marco = suelto ? 'div' : 'details';
   return (
-<Marco className="inf-desglose">
+<Marco className={suelto ? 'inf-desglose inf-desglose-suelto' : 'inf-desglose'}>
     {!suelto && <summary>Cómo se calculó cada competencia</summary>}
     {suelto && <h3 className="inf-subtitulo">Cómo se calculó cada competencia</h3>}
-    {/* En tabla y no en lista: es lo que la evaluadora mira cuando el
-        cliente pregunta de dónde sale un puntaje, así que los índices del
-        protocolo tienen que caer siempre en el mismo lugar del renglón. */}
     {inf.competencias.map((c) => (
       <div key={c.nombre} className="inf-desglose-comp">
         <h4>
@@ -119,47 +196,10 @@ export function Desglose({
           <span>
             {c.puntaje === null ? 'sin puntaje' : `${c.puntaje} de 100`}
             {c.referencia && ` · ${c.referencia}`}
+            {margenDe(c) && ` · ${margenDe(c)}`}
           </span>
         </h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Indicador</th>
-              <th>Del protocolo</th>
-              <th>Nivel</th>
-              <th>Peso</th>
-              <th>Dónde corta</th>
-            </tr>
-          </thead>
-          <tbody>
-            {c.renglones.map((r) => {
-              // El Raven no escalona: lo que trae del protocolo es su
-              // percentil, y esa es la columna donde hay que buscarlo.
-              const nivel =
-                r.nivel === null
-                  ? r.valor
-                    ? '—'
-                    : 'sin dato'
-                  : r.aporte != null
-                    ? `medio alto · ${r.aporte}`
-                    : ['bajo', 'medio', 'alto'][r.nivel - 1];
-              return (
-                <tr key={r.indicador}>
-                  <td>
-                    <b>{r.indicador}</b>
-                    <em>{r.mide}</em>
-                  </td>
-                  <td className="inf-desglose-datos">{r.datos ?? r.valor ?? '—'}</td>
-                  <td className="inf-desglose-nivel" data-nivel={r.nivel ?? 'falta'}>
-                    {nivel}
-                  </td>
-                  <td className="inf-desglose-peso">{r.peso === 1 ? '' : `×${r.peso}`}</td>
-                  <td className="inf-desglose-corte">{r.corte}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <TablaDeIndicadores c={c} />
       </div>
     ))}
     <span className="inf-pendientes-nota">Tampoco se imprime.</span>

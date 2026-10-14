@@ -183,6 +183,66 @@ function leidoPor(s: SumarioCrudo, nivel: (s: SumarioCrudo) => Nivel): string | 
   return partes.length > 0 ? partes.join(' · ') : undefined;
 }
 
+/**
+ * Qué índices del sumario leyó un indicador, con su sección y su valor.
+ *
+ * Como `leidoPor`, pero guarda la sección: para mover un dato hay que saber
+ * dónde está, y "D" existe en control_estres y en procesamiento.
+ */
+function leidosCon(s: SumarioCrudo, nivel: (s: SumarioCrudo) => Nivel): [string, string, number][] {
+  const vistos: [string, string, number][] = [];
+  const espia = new Proxy(s, {
+    get(sumario, seccion) {
+      const bloque = sumario[seccion as string];
+      if (typeof seccion !== 'string' || bloque === null || typeof bloque !== 'object') return bloque;
+      return new Proxy(bloque, {
+        get(datos, clave) {
+          const v = datos[clave as string];
+          if (typeof clave === 'string' && typeof v === 'number') vistos.push([seccion, clave, v]);
+          return v;
+        },
+      });
+    },
+  });
+  try {
+    nivel(espia);
+  } catch {
+    return [];
+  }
+  return vistos;
+}
+
+/**
+ * Los niveles a los que llegaría un indicador si uno solo de los datos que
+ * lee se moviera una unidad.
+ *
+ * La unidad es una respuesta: en una cuenta (R, M, SumT) es 1; en lo que va
+ * de a medios puntos (EA) es 0,5; en una proporción (XA%, Lambda, Afr) es
+ * una respuesta sobre R. Devuelve solo los niveles distintos del actual.
+ */
+function nivelesVecinos(
+  s: SumarioCrudo,
+  leer: (s: SumarioCrudo) => Nivel,
+  actual: Nivel
+): Set<Nivel> {
+  const vecinos = new Set<Nivel>();
+  if (actual === null) return vecinos;
+  const r = num(s, 'cabecera', 'R') ?? 20;
+  const unidad = (v: number) => (Number.isInteger(v) ? 1 : Number.isInteger(v * 2) ? 0.5 : 1 / r);
+  const vistos = new Map<string, [string, string, number]>();
+  for (const l of leidosCon(s, leer)) vistos.set(`${l[0]}.${l[1]}`, l);
+  for (const [seccion, clave, v] of vistos.values()) {
+    for (const signo of [-1, 1]) {
+      const movido = v + signo * unidad(v);
+      if (movido < 0 && v >= 0) continue;
+      const copia: SumarioCrudo = { ...s, [seccion]: { ...(s[seccion] as object), [clave]: movido } };
+      const otro = leer(copia);
+      if (otro !== null && otro !== actual) vecinos.add(otro);
+    }
+  }
+  return vecinos;
+}
+
 type Indicador = {
   nombre: string;
   mide: string;
@@ -337,9 +397,10 @@ const GHR_PHR: Indicador = {
   nivel: (s) => {
     const g = num(s, 'interpersonal', 'GHR');
     const p = num(s, 'interpersonal', 'PHR');
-    // Sin ninguna respuesta humana es bajo, no "sin dato": no registrar lo
-    // humano es en sí un indicador (Lorena, 14/10/2026).
-    if (g === null || p === null) return null;
+    // Con menos de tres respuestas de representación humana el índice no se
+    // interpreta (Zdunic, cap. 7, p. 90; es la misma regla de Exner). Que
+    // falten humanos lo dice Contenidos H, que sí puntúa bajo.
+    if (g === null || p === null || g + p < 3) return null;
     return g > p ? 3 : 1;
   },
 };
@@ -351,7 +412,7 @@ const GHR_PHR_TRES: Indicador = {
   nivel: (s) => {
     const g = num(s, 'interpersonal', 'GHR');
     const p = num(s, 'interpersonal', 'PHR');
-    if (g === null || p === null) return null;
+    if (g === null || p === null || g + p < 3) return null;
     return g > p ? 3 : g === p ? 2 : 1;
   },
 };
@@ -369,8 +430,8 @@ const EGOCENTRISMO: Indicador = {
   nombre: 'Índice de egocentrismo',
   formula: '(3r + (2)) ÷ R',
   // En Rorschach, alto o bajo es negativo y dentro del rango es lo esperable
-  // (psicólogas, 13/10/2026; el piso es el del diccionario). En Zulliger solo
-  // el alto descuenta, y por eso ahí lleva su escala binaria.
+  // (psicólogas, 13/10/2026; el piso es el del diccionario). En Zulliger la
+  // banda es de 0,33 a 0,56 (Zdunic, cap. 7, p. 94).
   mide: 'Foco en sí mismo frente al registro del entorno',
   escala: dentroDe(0.33, 0.55, 2),
   valor: (s) => num(s, 'autopercepcion', 'Ego'),
@@ -388,6 +449,21 @@ const FC_CF: Indicador = {
     // Sin ninguna respuesta de color es bajo, no "sin dato": evitar el color
     // es evitar lo emocional (Lorena, 14/10/2026).
     return fc > descarga ? 3 : 1;
+  },
+};
+
+const FC_CF_ZULLIGER: Indicador = {
+  techo: 50,
+  nombre: 'FC : CF + C',
+  formula: 'C pura y CF + C',
+  mide: 'Capacidad de regulación emocional',
+  reglas: ['sin C pura y CF + C hasta 2', 'no se usa', 'alguna C pura, o CF + C por encima de 2'],
+  nivel: (s) => {
+    const fc = num(s, 'afectos', 'FC');
+    const cf = num(s, 'afectos', 'CF');
+    const c = num(s, 'afectos', 'C_puro');
+    if (fc === null && cf === null && c === null) return null;
+    return (c ?? 0) === 0 && (cf ?? 0) + (c ?? 0) <= 2 ? 3 : 1;
   },
 };
 
@@ -490,7 +566,17 @@ const M: Indicador = {
   valor: (s) => num(s, 'determinantes', 'M'),
 };
 
-/** El estilo del EB: solo el introversivo juega a favor. */
+/**
+ * El estilo del EB.
+ *
+ * **Pesa 0 desde el 14/10/2026: sigue en el desglose y no entra al promedio.**
+ * Exner no establece que un estilo sea mejor que otro (introversivo,
+ * extratensivo y ambigual son formas distintas de resolver, no niveles), y
+ * no interpreta el estilo con EA por debajo de 4 ni con Lambda por encima de
+ * 0,99. Contado como mérito del introversivo daba bajo a 35 de 47 Rorschach
+ * y a 41 de 46 Zulliger, donde con tres láminas el EA mediano es 3 y casi
+ * todos salen ambiguales. La lectura del estilo sigue en el informe.
+ */
 const EB: Indicador = {
   nombre: 'EB',
   formula: 'el estilo del EB',
@@ -507,7 +593,7 @@ const EB: Indicador = {
 /**
  * W : M contra la banda de su estilo, la misma que lee el diccionario
  * (`bandaDeWM`): introversivo 0,8 a 1,5; ambigual 1,3 a 2; extratensivo 1,3 a
- * 3; Zulliger exactamente 2. Hasta el 14/10/2026 exigía exactamente 2 en los
+ * 3; Zulliger de 1,5 a 2,5. Hasta el 14/10/2026 exigía exactamente 2 en los
  * dos tests, y el texto del informe decía una cosa y el velocímetro otra.
  *
  * Con M en cero la razón no existe y la lectura es la peor: la organización
@@ -616,10 +702,10 @@ const POPULARES: Indicador = {
   },
 };
 
-/** El del Zulliger, contra sus cinco populares posibles y no la tabla del Rorschach. */
+/** El del Zulliger, con la norma de Zdunic y no la tabla del Rorschach. */
 const POPULARES_ZULLIGER: Indicador = {
   ...POPULARES,
-  formula: 'P contra lo esperado en Zulliger (3 a 4)',
+  formula: 'P contra lo esperado en Zulliger (2 a 4)',
   nivel: (s) => {
     const p = num(s, 'procesamiento', 'P') ?? num(s, 'calidad_formal', 'P');
     if (p === null) return null;
@@ -799,7 +885,7 @@ const CONTENIDOS_H: Indicador = {
       (num(s, 'autopercepcion', 'H_paren') ?? 0) +
       (num(s, 'autopercepcion', 'Hd') ?? 0) +
       (num(s, 'autopercepcion', 'Hd_paren') ?? 0);
-    const [minimo, maximo] = hEsperado(r, estilo);
+    const [minimo, maximo] = hEsperado(r, estilo, s.meta?.test === 'Zulliger' ? 'Zulliger' : 'Rorschach');
     if (humanos > maximo) return 3;
     return humanos < minimo ? 1 : 2;
   },
@@ -1039,8 +1125,13 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         valor: (s) => num(s, 'control_estres', 'dif_EA_es'),
       },
       { ...INTELECTUALIZACION, escala: binario(1, false) },
-      // Lo mismo que el aislamiento: en Zulliger es "dentro de lo esperable".
-      { ...FC_CF, techo: 50 as const },
+      // En Zulliger lo normal es CF por encima de FC: con dos láminas
+      // cromáticas y nueve respuestas, FC tiene mediana 0 (hasta 1), CF 2
+      // (de 1 a 2) y C pura 0 (Zdunic, Apéndice f, p. 204 y 205). Exigir FC
+      // mayor que CF + C dejaba bajo a la persona mediana. Lo esperable es
+      // que no haya C pura y que CF + C no pase de 2; fuera de eso, bajo
+      // (14/10/2026).
+      FC_CF_ZULLIGER,
       // C' se espera de 0 a 1 en el Zulliger, que es el corte del diccionario.
       { ...C_PRIMA, escala: binario(1, false) },
       VAGAS,
@@ -1059,7 +1150,10 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
       { ...M_MENOS, escala: binario(0, false) },
       POPULARES_ZULLIGER,
       COP_AG,
-      { ...EGOCENTRISMO, escala: binario(0.56, false, 2) },
+      // De 0,33 a 0,56 para los dos lados (Zdunic, cap. 7, p. 94: el
+      // disminuido también importa, y es desfavorable en tareas de riesgo).
+      // Hasta el 14/10/2026 solo descontaba el alto.
+      { ...EGOCENTRISMO, escala: dentroDe(0.33, 0.56, 2) },
     ],
   },
   {
@@ -1076,7 +1170,12 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         valor: (s) => num(s, 'cabecera', 'R'),
       },
       // Zf no existe en el Zulliger, que no tiene puntaje Z.
-      DQ_MAS,
+      // DQ+ con los cortes del Zulliger: de 2 a 4 es lo esperable y 5 o más
+      // es alto (mediana 3, percentiles 25 y 75 en 2 y 5; Zdunic, Apéndice f,
+      // p. 204). Como proporción de R, con 9 a 11 respuestas: 2 DQ+ son del
+      // 18 % al 22 %, y 5 son del 45 % al 56 %. Con el corte del Rorschach
+      // (alto desde 25 %) la persona mediana salía alta (14/10/2026).
+      { ...DQ_MAS, escala: { forma: 'umbral', mayorEsMejor: true, alto: 0.45, medio: 0.18, decimales: 2, porcentaje: true } },
     ],
   },
   {
@@ -1113,7 +1212,7 @@ export function claveDePeso(test: string, competencia: string, indicador: string
  * Definidos con las psicólogas entre el 30/9 y el 2/10/2026, a partir de tres
  * cosas: qué apoyo tiene el índice en la literatura, cuánto acompaña al resto de
  * su competencia sobre los 73 protocolos cargados, y qué tan estable es en un
- * protocolo corto. Los únicos en 0 son DQ+ y Zf en Proactividad.
+ * protocolo corto. El único en 0 es EB, por lo que dice Exner del estilo (ver `EB`).
  *
  * Están todos juntos y no al lado de cada indicador porque lo que se decide no
  * es el peso sino el reparto: un 3 no dice nada hasta saber contra qué otros
@@ -1121,7 +1220,7 @@ export function claveDePeso(test: string, competencia: string, indicador: string
  */
 const PESOS: Record<string, Record<string, Record<string, number>>> = {
   Rorschach: {
-    'Autogestión': { Lambda: 3, Zd: 3, 'W : M': 2, Dd: 2, EB: 1, T: 1 },
+    'Autogestión': { Lambda: 3, Zd: 3, 'W : M': 2, Dd: 2, EB: 0, T: 1 },
     'Control emocional': {
       EA: 3,
       'D / AdjD': 3,
@@ -1154,7 +1253,7 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
       W: 2,
       'GHR : PHR': 1,
       'H : (H) + Hd + (Hd)': 1,
-      EB: 1,
+      EB: 0,
       'Contenidos H': 1,
       Afr: 1,
     },
@@ -1163,7 +1262,7 @@ const PESOS: Record<string, Record<string, Record<string, number>>> = {
     // W : M baja a 1 y T sube a 3 (13/10/2026): en Zulliger W : M da negativo
     // en 39 de 46 personas y no distingue a nadie, y T sí. Contra los informes
     // de ellas, los casos a más de 20 puntos bajan de 8 a 3.
-    'Autogestión': { Lambda: 3, T: 3, 'W : M': 1, Dd: 1, EB: 1 },
+    'Autogestión': { Lambda: 3, T: 3, 'W : M': 1, Dd: 1, EB: 0 },
     'Control emocional': {
       EA: 3,
       'EA − es': 3,
@@ -1273,7 +1372,9 @@ function comoSeLee(i: Indicador, n: number[] | undefined, e?: Escala): string {
     reglaDeBanda(e ?? i.escala, n, cual, i.reglas)
   );
   const partes = bandas
-    .map((regla, cual) => [regla, ['alto', 'medio', 'bajo'][cual]] as const)
+    // Los "dentro de lo esperable" no llegan a alto: en su banda de arriba valen
+    // un medio, y así lo dice el nivel del renglón.
+    .map((regla, cual) => [regla, [i.techo === 50 ? 'medio (lo esperable)' : 'alto', 'medio', 'bajo'][cual]] as const)
     .filter(([regla], cual) => regla && regla !== 'no se usa' && !(cual === 1 && regla === bandas[0]))
     .map(([regla, banda]) => `${regla} ${banda}`);
   return partes.join('; ');
@@ -1375,6 +1476,20 @@ export type Competencia = {
    * para afirmar nada.
    */
   motivo?: string;
+  /**
+   * Cuánto podría moverse el puntaje si una sola respuesta cambiara de
+   * codificación en los indicadores que están al borde de un corte.
+   *
+   * Un número solo se lee como exacto, y no lo es: un índice que cae a una
+   * respuesta de distancia del corte puede caer del otro lado con otra
+   * codificadora. Se mide moviendo cada dato que el indicador leyó en una
+   * unidad (una respuesta en los que son cuenta, una respuesta sobre R en
+   * los que son proporción) y recalculando con el nivel que daría. `abajo` y
+   * `arriba` son el cambio más grande hacia cada lado entre esos movimientos,
+   * de a uno por vez; `borde` dice qué indicadores están en esa situación.
+   * Null cuando no hay puntaje.
+   */
+  margen: { abajo: number; arriba: number; borde: string[] } | null;
   /** Cada indicador con su nivel y su peso, para revisar de dónde sale el número. */
   renglones: {
     indicador: string;
@@ -1523,6 +1638,7 @@ export function calcularCompetencias(
         nombre: c.competencia,
         mide: c.mide,
         puntaje: null,
+        margen: null,
         motivo: base.motivo,
         renglones,
       };
@@ -1539,6 +1655,7 @@ export function calcularCompetencias(
         nombre: c.competencia,
         mide: c.mide,
         puntaje: null,
+        margen: null,
         renglones,
       };
     }
@@ -1555,20 +1672,65 @@ export function calcularCompetencias(
         nombre: c.competencia,
         mide: c.mide,
         puntaje: null,
+        margen: null,
         motivo: `falta ${faltaClave.indicador}, sin el que esta competencia no se puntúa`,
         renglones,
       };
     }
 
-    const bruto =
-      puntuados.reduce((n, r) => n + r.peso * (r.aporte ?? VALOR[r.nivel as 1 | 2 | 3]), 0) /
-      pesos;
-    const puntaje = pesos === 0 ? null : Math.round(aEscala(bruto, maximoDe(cuentan)));
+    const maximo = maximoDe(cuentan);
+    const puntajeDe = (lista: { peso: number; nivel: Nivel; aporte?: number | null }[]) => {
+      const p = lista.reduce((n, r) => n + r.peso, 0);
+      if (p === 0) return null;
+      const b = lista.reduce((n, r) => n + r.peso * (r.aporte ?? VALOR[r.nivel as 1 | 2 | 3]), 0) / p;
+      return Math.round(aEscala(b, maximo));
+    };
+    const puntaje = puntajeDe(puntuados);
+
+    // El margen: cada indicador al borde, movido de a uno, y lo que haría con
+    // el puntaje. El Raven no tiene borde porque entra en línea continua: se
+    // mueve un acierto para cada lado.
+    let margen: Competencia['margen'] = null;
+    if (puntaje !== null) {
+      let min = puntaje;
+      let max = puntaje;
+      const borde: string[] = [];
+      c.indicadores.forEach((i, k) => {
+        const r = renglones[k];
+        if (r.peso === 0 || r.nivel === null) return;
+        const otros = puntuados.filter((x) => x !== r);
+        const alternativas: { nivel: Nivel; aporte?: number | null }[] = [];
+        if (i === RAVEN && typeof ctx.ravenRaw === 'number') {
+          for (const d of [-1, 1]) {
+            const raw = ctx.ravenRaw + d;
+            if (raw < 0 || raw > 36) continue;
+            alternativas.push({ nivel: r.nivel, aporte: aporteDeRaven(raw) });
+          }
+        } else if (!i.datosDe) {
+          const n = cortesQueRigen(test, c.competencia, i, ctx.cortesCompetencias);
+          const e = escalaQueRige(test, c.competencia, i, ctx.direcciones);
+          for (const v of nivelesVecinos(s, (sum) => nivelDe(i, sum, n, e, ctx), r.nivel)) {
+            alternativas.push({ nivel: v, aporte: null });
+          }
+        }
+        let tocado = false;
+        for (const a of alternativas) {
+          const p = puntajeDe([...otros, { peso: r.peso, nivel: a.nivel, aporte: a.aporte }]);
+          if (p === null || p === puntaje) continue;
+          tocado = true;
+          if (p < min) min = p;
+          if (p > max) max = p;
+        }
+        if (tocado) borde.push(i.nombre);
+      });
+      margen = { abajo: puntaje - min, arriba: max - puntaje, borde };
+    }
 
     return {
       nombre: c.competencia,
       mide: c.mide,
       puntaje,
+      margen,
       renglones,
     };
   });

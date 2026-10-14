@@ -332,6 +332,9 @@ function huellaDe(e: Fila): string {
     // El enlace de Meet escrito en el evento: está en la huella para que los
     // eventos de antes de que se escribiera lo reciban.
     esOnline(e) ? 'meet-escrito' : '',
+    // El color por modalidad: está en la huella para que los eventos de antes
+    // de que se pintaran lo reciban.
+    'color',
   ].join('|');
 }
 
@@ -364,6 +367,11 @@ function cuerpoDe(e: Fila, meet: string | null = null): Record<string, unknown> 
     // online. Sin ninguno de los dos se vacía, por si la entrevista cambió de
     // modalidad y el evento traía el anterior.
     location: e.modalidad === 'Presencial' ? CONSULTORIO : meet ?? '',
+    // Color del evento en la grilla: la presencial va en rojo (11, "Tomate")
+    // y la online en celeste (7, "Pavo real"). Son los ids fijos de la paleta
+    // de eventos de Google; se mandan siempre, así un cambio de modalidad
+    // pisa el color anterior.
+    colorId: e.modalidad === 'Presencial' ? '11' : '7',
     // Un evento que ella borró a mano queda "cancelado" del lado de Google:
     // si después se reprograma en el OS, vuelve a aparecer.
     status: 'confirmed',

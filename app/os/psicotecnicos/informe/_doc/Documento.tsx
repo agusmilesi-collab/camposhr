@@ -240,6 +240,11 @@ export default async function Documento({
                         {banda}
                       </span>
                     )}
+                    {inf.percentiles[c.nombre] && (
+                      <span className="inf-percentil">
+                        Supera al {inf.percentiles[c.nombre].percentil} % de los<br />evaluados con este test
+                      </span>
+                    )}
                     <p className="inf-mide">{c.mide}</p>
                   </article>
                 );

@@ -31,7 +31,7 @@ import EnHojas from '../../informe/_sitio/EnHojas';
 import { Faltantes, Revisar } from '../../informe/_doc/Interno';
 import '../../informe/_sitio/sitio.css';
 import { informeEnHojas } from '@/lib/empresa-prueba';
-import { desdeFicha, llevaBenziger, loQueRige, type Regulacion } from '@/lib/informe';
+import { desdeFicha, llevaBenziger, loQueRige, medianasQueRigen, type Regulacion } from '@/lib/informe';
 import { bandaDeAfr, bandaDeR, bandaDeZf, bandasDeLaHoja } from '@/lib/redacciones';
 import Discursivo from './Discursivo';
 import Whatsapp from '../../Whatsapp';
@@ -715,7 +715,7 @@ async function Potencial({ f, id, rige }: { f: Ficha; id: string; rige: Regulaci
 
 async function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
   const c = f.cabecera;
-  const informe = desdeFicha(f, rige);
+  const informe = desdeFicha(f, rige, await medianasQueRigen(rige));
   const portal = await portalDe(c.pedidos?.empresas?.token_portal ?? null);
   /* El molde nuevo del informe corre por ahora solo en la empresa de prueba,
      igual que en el portal: acá se ve lo mismo que va a ver ese cliente. */

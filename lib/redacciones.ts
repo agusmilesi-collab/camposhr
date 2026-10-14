@@ -63,7 +63,7 @@ const ZF_ALTO = 0.55;
 const WDA_ACEPTABLE = 0.8;
 /**
  * Entre qué valores se espera W dividido M, por estilo (Exner). En Zulliger
- * se espera exactamente el doble. La usan el diccionario y el velocímetro:
+ * se espera el doble, con medio punto de tolerancia. La usan el diccionario y el velocímetro:
  * hasta el 14/10/2026 el velocímetro exigía exactamente 2 en los dos tests y el
  * texto del mismo informe leía la banda, y se contradecían en 9 de 44
  * Rorschach.
@@ -74,7 +74,11 @@ export const BANDA_WM: Record<string, [number, number]> = {
   Extratensivo: [1.3, 3],
 };
 export function bandaDeWM(test: string, estilo: string | undefined): [number, number] {
-  return test === 'Zulliger' ? [2, 2] : (BANDA_WM[estilo ?? ''] ?? BANDA_WM.Ambigual);
+  // Zulliger: "que W sea el doble de M" (Zdunic, cap. 7, p. 88), sin
+  // tolerancia escrita. Con W de 2 a 5 y M de 1 a 3, exigir exactamente 2
+  // dejaba afuera a 3:2 y a 5:2. Medio punto de tolerancia es decisión
+  // nuestra (14/10/2026).
+  return test === 'Zulliger' ? [1.5, 2.5] : (BANDA_WM[estilo ?? ''] ?? BANDA_WM.Ambigual);
 }
 
 const AFR_BANDA: Record<string, [number, number]> = {
@@ -111,21 +115,29 @@ function dd(d: number, adjd: number): string {
 /**
  * Populares esperadas según la cantidad de respuestas del protocolo.
  *
- * El Zulliger tiene cinco populares en total (lámina I: W insecto y D1 hoja;
+ * El Zulliger tiene cinco áreas populares (lámina I: W insecto y D1 hoja;
  * lámina II: ninguna; lámina III: D1 mariposa, D2 y D3 persona), así que la
  * tabla del Rorschach no le sirve: con menos de 17 respuestas pedía de 4 a 6, y
- * 32 de 46 protocolos salían por debajo. De 3 a 4 deja bajo a uno de cada tres,
- * como en el Rorschach, y 5 queda como alto (decidido el 14/10/2026).
+ * 32 de 46 protocolos salían por debajo. Lo esperado es de 2 a 4: mediana 3,
+ * percentiles 25 y 75 en 2 y 4 (Zdunic, Apéndice f, p. 204 a 207 (500 protocolos de selección, Buenos Aires 2010 y 2011)).
  */
 export function pEsperado(r: number, test: string = 'Rorschach'): [number, number] {
-  if (test === 'Zulliger') return [3, 4];
+  if (test === 'Zulliger') return [2, 4];
   if (r < 17) return [4, 6];
   if (r <= 28) return [5, 7];
   return [6, 9];
 }
 
-/** Contenidos humanos esperados, por cantidad de respuestas y estilo. */
-export function hEsperado(r: number, estilo: string): [number, number] {
+/**
+ * Contenidos humanos esperados, por cantidad de respuestas y estilo (Exner).
+ *
+ * En Zulliger no depende del estilo: la suma de H, (H), Hd y (Hd) tiene
+ * mediana 3 y percentiles 25 y 75 en 2 y 4 (Zdunic, Apéndice f, p. 204 a 207 (500 protocolos de selección, Buenos Aires 2010 y 2011)).
+ * Hasta el 14/10/2026 se usaba el escalón de Exner para menos de 17
+ * respuestas, que pedía de 4 a 6 a los introversivos.
+ */
+export function hEsperado(r: number, estilo: string, test: string = 'Rorschach'): [number, number] {
+  if (test === 'Zulliger') return [2, 4];
   if (r < 17) return estilo === 'Introversivo' ? [4, 6] : [2, 4];
   if (r <= 27) {
     if (estilo === 'Introversivo') return [5, 8];
@@ -453,7 +465,7 @@ export const TEXTOS = {
   'd-bajo': {
     area: 'Cómo procesa la información',
     indice: 'D',
-    cuando: 'D por debajo del 60 % de las localizaciones (Zulliger: menos de 3)',
+    cuando: 'D por debajo del 60 % de las localizaciones (Zulliger: menos de 2)',
     dice: [
       'Se le puede perder de vista algún detalle que para la mayoría de las personas es obvio de ver.',
       'Puede pasar por alto algún dato que para la mayoría está a la vista.',
@@ -1528,7 +1540,7 @@ export const TEXTOS = {
   'fc-control-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'FC:CF+C',
-    cuando: 'sin descarga, o FC más del triple de CF+C',
+    cuando: 'sin descarga, o FC más del triple de CF+C (Zulliger: sin descarga y FC de 2 o más)',
     zulliger: {
       dice: [
         'Controla sus descargas más de lo esperado: casi nunca se afloja al manejar emociones, porque desconfía de mostrarlas, y expresar lo que siente le cuesta.',
@@ -1546,7 +1558,7 @@ export const TEXTOS = {
   'fc-descarga-intensa': {
     area: 'Cómo maneja lo que siente',
     indice: 'FC:CF+C',
-    cuando: 'CF+C supera a FC por más de 2',
+    cuando: 'CF+C supera a FC por más de 2 (Zulliger: CF+C de 4 o más)',
     zulliger: {
       dice: [
         'Se expresa con mucha intensidad, y el control emocional le falla, con lo cual da impresión de impulsividad.',
@@ -1564,7 +1576,7 @@ export const TEXTOS = {
   'fc-descarga': {
     area: 'Cómo maneja lo que siente',
     indice: 'FC:CF+C',
-    cuando: 'CF+C supera a FC por uno o dos',
+    cuando: 'CF+C supera a FC por uno o dos (Zulliger: CF+C de 3, o alguna C pura)',
     zulliger: {
       dice: [
         'Puede tratarse de una persona frontal, capaz de mostrarse tal como es, sin filtros.',
@@ -3220,6 +3232,19 @@ export function leer(
      Definido por las psicólogas el 10/9/2026. */
   if (fc === 0 && descarga === 0) {
     sumar('fc-todo-cero', 'FC:CF+C 0:0');
+  } else if (test === 'Zulliger') {
+    /* En Zulliger lo normal es CF por encima de FC: FC tiene mediana 0 y CF
+       mediana 2, con C pura en 0 (Zdunic, Apéndice f, p. 204 y 205). Leer
+       "descarga" cuando CF supera a FC describiría a la persona mediana. La
+       descarga es CF + C de 3 o alguna C pura; intensa, CF + C de 4 o más
+       (14/10/2026, la misma regla que el velocímetro). */
+    if (descarga === 0 && fc >= 2) {
+      sumar('fc-control-alto', `${fc}:${descarga}`);
+    } else if (descarga >= 4) {
+      sumar('fc-descarga-intensa', `${fc}:${descarga}`);
+    } else if (descarga === 3 || cpuro >= 1) {
+      sumar('fc-descarga', `${fc}:${descarga}`);
+    }
   } else if (descarga === 0 || (descarga && fc > descarga * 3)) {
     sumar('fc-control-alto', `${fc}:${descarga}`);
   } else if (descarga > fc) {
@@ -3363,7 +3388,7 @@ export function leer(
   const hd = n(s, 'autopercepcion', 'Hd');
   const hdParen = n(s, 'autopercepcion', 'Hd_paren');
   const humanos = hPura + hParen + hd + hdParen;
-  const [, hMax] = hEsperado(r, estilo);
+  const [, hMax] = hEsperado(r, estilo, test);
   if (humanos > hMax) {
     sumar('humanos-alto', `H total ${humanos}`, cop >= 1 ? 'humanos-alto-cop' : null);
   }

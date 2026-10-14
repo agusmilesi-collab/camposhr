@@ -87,14 +87,30 @@ export default function EnHojas({
                   data-seccion={s.id}
                   data-corta={s.corta ? '' : undefined}
                 >
-                  <header className="sitio-seccion-top">
-                    <span className="sitio-numero">{String(n).padStart(2, '0')}</span>
-                    <div>
-                      <h2>{s.titulo}</h2>
-                      {s.bajada && <p>{s.bajada}</p>}
-                    </div>
-                  </header>
-                  <div className="sitio-caja">{s.cuerpo}</div>
+                  {s.plegable ? (
+                    /* En lugar del título va el botón que la abre; el título
+                       queda para el índice. */
+                    <details className="sitio-plegable">
+                      <summary className="sitio-seccion-top">
+                        <span className="sitio-numero">{String(n).padStart(2, '0')}</span>
+                        <div>
+                          <span className="sitio-plegable-boton">{s.bajada ?? s.titulo}</span>
+                        </div>
+                      </summary>
+                      <div className="sitio-caja">{s.cuerpo}</div>
+                    </details>
+                  ) : (
+                    <>
+                      <header className="sitio-seccion-top">
+                        <span className="sitio-numero">{String(n).padStart(2, '0')}</span>
+                        <div>
+                          <h2>{s.titulo}</h2>
+                          {s.bajada && <p>{s.bajada}</p>}
+                        </div>
+                      </header>
+                      <div className="sitio-caja">{s.cuerpo}</div>
+                    </>
+                  )}
                 </section>
               ))}
             </div>

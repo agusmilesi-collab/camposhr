@@ -4,6 +4,7 @@ import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
 import { calcularCompetencias } from '@/lib/competencias';
 import type { SumarioCrudo } from '@/lib/redacciones';
 import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
+import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import type { Regulacion } from '@/lib/informe';
 
 /**
@@ -38,7 +39,30 @@ export type Medianas = {
   porCompetencia: Record<string, number>;
   /** Cuántas personas aportaron al menos un puntaje. */
   casos: number;
+  /**
+   * Todos los puntajes, por test y por competencia, ordenados de menor a
+   * mayor. Es lo que permite decir en qué percentil cae una persona entre los
+   * candidatos evaluados con su mismo test (14/10/2026).
+   */
+  porTest: Record<string, Record<string, number[]>>;
 };
+
+/**
+ * Qué porcentaje de esos puntajes queda por debajo de uno dado.
+ *
+ * Los empates cuentan la mitad: así quien tiene el valor mediano sale en el
+ * percentil 50 y no en el 30 porque hubo muchos iguales.
+ */
+export function percentilEntre(valores: number[], p: number): number {
+  if (valores.length === 0) return 50;
+  let menores = 0;
+  let iguales = 0;
+  for (const v of valores) {
+    if (v < p) menores++;
+    else if (v === p) iguales++;
+  }
+  return Math.round((100 * (menores + iguales / 2)) / valores.length);
+}
 
 /** Con menos casos que estos, una mediana es el puntaje de alguien en particular. */
 const MINIMO_DE_CASOS = 10;
@@ -77,15 +101,28 @@ export async function medianasDeCompetencias(rige: Regulacion): Promise<Medianas
   const evaluacionDe = new Map(evaluaciones.map((e) => [e.id, e]));
 
   const puntajes: Record<string, number[]> = {};
+  const porTest: Record<string, Record<string, number[]>> = { Rorschach: {}, Zulliger: {} };
   let casos = 0;
 
   for (const s of sumarios) {
     const e = evaluacionDe.get(s.evaluacion_id);
-    if (!s.crudo || !e || esEmpresaDePrueba(e.pedidos?.empresas?.nombre)) continue;
+    // Ni la empresa de prueba ni la de muestra del portal: sus fichas son
+    // inventadas y moverían la distribución.
+    if (!s.crudo || !e) continue;
+    if (esEmpresaDePrueba(e.pedidos?.empresas?.nombre) || esEmpresaEjemplo(e.pedidos?.empresas?.nombre)) continue;
 
     const raven = ravenDe.get(s.evaluacion_id);
     const discursivo = discursivoDe.get(s.evaluacion_id);
     const tests = e.pedidos?.baterias?.tests ?? [];
+    // El test sale del protocolo y no de la batería: una persona puede tener
+    // cargado un Zulliger con una batería que dice Rorschach.
+    const meta = (s.crudo as { meta?: { test?: string } }).meta;
+    const test =
+      meta?.test === 'Zulliger' || meta?.test === 'Rorschach'
+        ? meta.test
+        : tests.includes('Zulliger')
+          ? 'Zulliger'
+          : 'Rorschach';
     const calculadas = calcularCompetencias(
       s.crudo,
       {
@@ -100,13 +137,14 @@ export async function medianasDeCompetencias(rige: Regulacion): Promise<Medianas
         cortesCompetencias: rige.cortesCompetencias,
         direcciones: rige.direcciones,
       },
-      tests.includes('Zulliger') ? 'Zulliger' : 'Rorschach'
+      test
     );
 
     let aporto = false;
     for (const c of calculadas) {
       if (c.puntaje === null) continue;
       (puntajes[c.nombre] ??= []).push(c.puntaje);
+      (porTest[test][c.nombre] ??= []).push(c.puntaje);
       aporto = true;
     }
     if (aporto) casos++;
@@ -123,5 +161,6 @@ export async function medianasDeCompetencias(rige: Regulacion): Promise<Medianas
       orden.length % 2 ? orden[medio] : (orden[medio - 1] + orden[medio]) / 2
     );
   }
-  return { porCompetencia, casos };
+  for (const t of Object.values(porTest)) for (const v of Object.values(t)) v.sort((a, b) => a - b);
+  return { porCompetencia, casos, porTest };
 }

@@ -1558,6 +1558,15 @@
   background: var(--papel);
 }
 
+/* En la sección de indicadores del informe en hojas va como el resto de la
+   sección: sobre blanco y sin recuadro. */
+.inf-desglose.inf-desglose-suelto {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
 .inf-desglose summary {
   cursor: pointer;
   font-weight: 600;
@@ -2163,6 +2172,93 @@
   max-width: 420px;
 }
 
+/* Cada competencia con sus indicadores, en la ficha. Sin recuadros ni líneas
+   entre una y otra: las separa el aire. */
+.inf-comp-bloque {
+  padding: 22px 0 18px;
+}
+
+.inf-comp-bloque:first-child {
+  border-top: 0;
+  padding-top: 8px;
+}
+
+.inf-desglose .inf-comp-cabeza {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-desglose .inf-comp-cabeza span {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+/* Qué mide y las notas: a todo el ancho, chico y gris, con la misma letra.
+   Entre el nombre y la tabla hay un solo escalón. */
+.inf-comp-sub {
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--suave);
+}
+
+/* Condensada: renglones bajos y letra de interlineado corto. */
+.inf-comp-bloque table {
+  margin-top: 10px;
+  line-height: 1.35;
+}
+
+.inf-comp-bloque th {
+  padding-bottom: 4px;
+}
+
+.inf-comp-bloque td {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.inf-comp-bloque td em {
+  font-size: 0.68rem;
+  line-height: 1.3;
+}
+
+/* Las 36 respuestas del Raven en dos renglones de dieciocho. */
+.inf-crudo-raven {
+  width: auto;
+}
+
+.inf-crudo-raven td {
+  min-width: 2em;
+  padding: 4px 4px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.inf-crudo-raven td[data-correcta='true'] {
+  background: #e3f1e4;
+  color: #1f5f24;
+}
+
+.inf-crudo-raven td[data-correcta='false'] {
+  background: #f9e3e1;
+  color: #9b2c22;
+}
+
+.inf-crudo-raven td[data-correcta] {
+  border: 2px solid var(--fondo, #fff);
+  font-weight: 600;
+}
+
+.inf-crudo-raven small {
+  display: block;
+  font-size: 0.62rem;
+  color: var(--suave);
+}
+
 /* La codificación del protocolo tiene diez columnas y renglones cortos. */
 .inf-crudo-protocolo {
   font-size: 0.74rem;
@@ -2518,5 +2614,25 @@
   }
   .inf-nivel.elegido.rojo {
     background: #f9e7e7;
+  }
+}
+
+/* Debajo del puntaje: en qué lugar queda entre los evaluados con el mismo
+   test. Chico y apagado: el número es lo que se lee primero; esto lo acompaña. */
+.inf-percentil {
+  display: block;
+  font-size: 0.58rem;
+  line-height: 1.3;
+  opacity: 0.72;
+  margin-top: 2px;
+}
+
+
+/* En el teléfono los dieciocho de cada renglón no entran: la tabla se desliza de
+   costado sin correr el resto de la página. */
+@media (max-width: 560px) {
+  .inf-crudo-raven {
+    display: block;
+    overflow-x: auto;
   }
 }

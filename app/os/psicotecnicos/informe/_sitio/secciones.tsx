@@ -3,7 +3,6 @@ import { bandaDe } from '@/lib/exigencia';
 import { CONFIDENCIALIDAD, CUADRANTES, FIRMAS, NIVELES, NOTA_AJUSTE } from '@/lib/informe-textos';
 import { firmaEnDatos } from '@/lib/firmas';
 import Listas from '../_doc/Listas';
-import { Desglose } from '../_doc/Interno';
 import { EscalaBandas, IconoNivel, RadarCompetencias, Velocimetro, tono } from '../_doc/piezas';
 import Cerebro from '../_doc/Cerebro';
 import Crudo from '../_doc/Crudo';
@@ -86,6 +85,11 @@ export type Seccion = {
    * firma. Fuera de la ficha no sale, que sería un título sin nada debajo.
    */
   vacia?: boolean;
+  /**
+   * Cerrada hasta que alguien toca el título: es respaldo y no lectura de
+   * corrido. El título mismo abre y cierra, sin un botón aparte.
+   */
+  plegable?: boolean;
 };
 
 export function seccionesDe(
@@ -210,6 +214,11 @@ export function seccionesDe(
                 {c.puntaje !== null && (
                   <span className="inf-banda-texto" style={{ color: tono(c.puntaje, 1, inf.exigencia) }}>
                     {bandaDe(c.puntaje, inf.exigencia)}
+                  </span>
+                )}
+                {inf.percentiles[c.nombre] && (
+                  <span className="inf-percentil">
+                    Supera al {inf.percentiles[c.nombre].percentil} % de los<br />evaluados con este test
                   </span>
                 )}
                 <p className="inf-mide">{c.mide}</p>
@@ -420,17 +429,14 @@ export function seccionesDe(
   secciones.push({
     id: 'datos',
     titulo: 'Indicadores',
-    bajada: 'Los valores medidos, sin interpretación',
+    bajada: 'Click para ver indicadores',
+    plegable: true,
     cuerpo: (
-      <details className="sitio-desplegable">
-        <summary>Cómo se calculó: ver todos los valores</summary>
         <div className="sitio-crudo">
-          <Crudo inf={inf} />
-          {/* De dónde sale cada puntaje: es del equipo y no del cliente, así
-              que va solo en la ficha, y adentro de este mismo desplegable. */}
-          {editar && <Desglose inf={inf} suelto />}
+          {/* En la ficha, cada competencia con los indicadores de los que
+              sale su puntaje. Es del equipo y no del cliente. */}
+          <Crudo inf={inf} conIndicadores={Boolean(editar)} />
         </div>
-      </details>
     ),
   });
 

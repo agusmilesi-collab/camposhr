@@ -26,7 +26,7 @@ import {
 import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
 import { puestoConCiudad } from '@/lib/pedido-campos';
-import { medianasDeCompetencias, type Medianas } from '@/lib/competencias-mediana';
+import { medianasDeCompetencias, percentilEntre, type Medianas } from '@/lib/competencias-mediana';
 import { competenciaIncluida, REQUIERE } from '@/lib/baterias-contenido';
 import { TEXTOS } from '@/lib/redacciones';
 import { textoDelSumario } from '@/lib/exner';
@@ -241,6 +241,12 @@ export type Informe = {
    * radar. Null cuando todavía no hay casos suficientes o no se pudo calcular.
    */
   medianas: Medianas | null;
+  /**
+   * En qué percentil cae cada puntaje entre los candidatos evaluados con el
+   * mismo test, y sobre cuántos. Vacío cuando no hay comparación o hay menos
+   * de treinta casos: "más alto que el 70 %" sobre doce personas no dice nada.
+   */
+  percentiles: Record<string, { percentil: number; casos: number }>;
   /**
    * Con qué exigencia se nombran esos puntajes.
    *
@@ -649,11 +655,10 @@ function respaldosDe(
 export async function armarInforme(id: string): Promise<Informe | null> {
   const ficha = await fichaDe(id);
   if (!ficha) return null;
-  /* La mediana de las competencias está hecha y apagada (6/10/2026): por
-     ahora el radar sale solo con el perfil de la persona. Prenderla es pasar
-     `await medianasQueRigen(rige)` como tercer argumento, acá y en la pestaña
-     Informe de la ficha. */
-  return desdeFicha(ficha, await loQueRige());
+  const rige = await loQueRige();
+  /* La comparación con los demás candidatos alimenta el percentil de cada
+     competencia. La mediana en el radar sigue apagada (6/10/2026). */
+  return desdeFicha(ficha, rige, await medianasQueRigen(rige));
 }
 
 /**
@@ -766,11 +771,17 @@ function tieneAlgo(c: Cuatro | null): boolean {
   return Boolean(c && Object.values(c).some((v) => v !== null && v !== undefined));
 }
 
+/** Desde cuántos candidatos con el mismo test se informa el percentil. */
+const MINIMO_PARA_PERCENTIL = 30;
+
 export function desdeFicha(
   f: Ficha,
   rige: Regulacion = DE_FABRICA,
-  medianas: Medianas | null = null
+  comparacion: Medianas | null = null
 ): Informe {
+  // La mediana del radar quedó apagada el 6/10/2026; lo que se usa de la
+  // comparación es la distribución, para el percentil de cada competencia.
+  const medianas: Medianas | null = null;
   const { rangos, pesos, textos, cortes, cortesCompetencias, niveles, exigencias } = rige;
   const direcciones = rige.direcciones;
   const benzigerMovidos = rige.benziger ?? {};
@@ -901,6 +912,13 @@ export function desdeFicha(
   const noIncluidas = calculadas
     .filter((c) => !competenciaIncluida(c.nombre, testsDeLaBateria))
     .map((c) => ({ nombre: c.nombre, requiere: REQUIERE[c.nombre].frase }));
+  const percentiles: Informe['percentiles'] = {};
+  const distribucion = comparacion?.porTest[proyectivoDe(f) === 'Zulliger' ? 'Zulliger' : 'Rorschach'];
+  for (const c of competencias) {
+    const valores = distribucion?.[c.nombre];
+    if (c.puntaje === null || !valores || valores.length < MINIMO_PARA_PERCENTIL) continue;
+    percentiles[c.nombre] = { percentil: percentilEntre(valores, c.puntaje), casos: valores.length };
+  }
 
   // Uno solo, el primero que se marcó. El arreglo guarda el orden en que la
   // evaluadora los eligió, y el primero es el que manda.
@@ -950,6 +968,7 @@ export function desdeFicha(
     nivel: nivelDeConclusion(c.recomendacion),
     competencias,
     noIncluidas,
+    percentiles,
     medianas,
     protocoloCorto: corto,
     resumen: armarResumen(lecturas, destacadas),

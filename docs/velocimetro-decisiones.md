@@ -89,6 +89,45 @@ hay que reconfirmar con ella.
   Autogestión a los candidatos de Zulliger (58,7 contra 47,7): es en parte su
   criterio y no solo la cuenta. Lo que queda como sobreestimación es Control
   emocional en Zulliger: 60,6 del sistema contra 54,6 de ellas.
+- **La coincidencia con los informes a mano deja de ser la meta (14/10/2026,
+  noche).** Para un mismo perfil de indicadores ellas pusieron bandas
+  distintas en 28 de 67 grupos, con 4,5 puntos de desvío dentro de la misma
+  evaluadora; Lorena y Lucila promedian igual (54,2 y 55,8). El techo de
+  coincidencia para cualquier sistema que dé siempre lo mismo al mismo perfil
+  es 89 %. Estamos en 73 %. De acá en adelante se mide el sistema: regresión
+  antes de publicar, margen por competencia y percentil propio en el informe.
+- **EB fuera del promedio (14/10/2026, noche).** Pesa 0 en Autogestión y en
+  Liderazgo; sigue en el desglose y como lectura del informe. Exner no
+  establece que un estilo sea mejor que otro y no interpreta el estilo con EA
+  por debajo de 4. Contado como mérito del introversivo daba bajo a 35 de 47
+  Rorschach y a 41 de 46 Zulliger. Mueve 138 puntajes: Autogestión +4 en
+  promedio (8 cambian de banda), Liderazgo +2,5 (14 cambian). Con esto
+  Autogestión queda 4,5 puntos arriba de ellas y Liderazgo 8,6: lo resuelven
+  los cortes (pregunta 1 a Lorena) y recurso o esperable (pregunta 2).
+- **Zulliger con las normas de Zdunic (14/10/2026, noche).** Agustín escaneó
+  el Apéndice f (500 protocolos de selección, Buenos Aires). Lo esperable es
+  el tramo entre los percentiles 25 y 75. Cambiaron cuatro cosas: populares
+  de 2 a 4 (ayer se había puesto 3 a 4 con nuestros datos); contenidos humanos
+  de 2 a 4 para todos los estilos (se usaba la tabla de Exner, que pedía 4 a 6
+  a los introversivos); DQ+ de 2 a 4 esperable y 5 o más alto (con el corte
+  del Rorschach la persona mediana salía alta); y FC : CF + C, donde en
+  Zulliger lo normal es CF por encima de FC (FC mediana 0, CF 2): la descarga
+  es C pura o CF + C de 3 o más, en el velocímetro y en el diccionario. Los
+  otros doce cortes ya coincidían. Efecto: Control emocional +7 en 22
+  Zulliger, Interpersonal +4,7 en 13, Proactividad −11 en 21. Coincidencia
+  71 % (278 de 389), que ya no es la meta.
+- **Zulliger con el capítulo 7 de Zdunic (14/10/2026, noche).** Tres cambios
+  más, con cita: GHR : PHR no se interpreta con menos de 3 entre los dos
+  (p. 90; que falten humanos lo dice Contenidos H), egocentrismo con banda de
+  0,33 a 0,56 en los dos sentidos (p. 94), y W : M de 1,5 a 2,5 ("que W sea el
+  doble de M", p. 88; el medio punto de tolerancia es nuestro). EB en 0 queda
+  citado (p. 74). Diferencias que quedan anotadas: EA − es (el libro dice es
+  alta con menos de −1; ellas anotaron hasta −1,5) y XA% (libro 0,80; ellas
+  0,78 en Configuración). Efecto: Interpersonal −9 en 35, Autogestión +19 en
+  8. Cada corte del Zulliger con su página: `docs/velocimetro-bibliografia.md`.
+- **Lo que está en los libros no se pregunta.** Cada corte tiene que tener su
+  fuente (autor y página) o el criterio de ellas firmado como tal. Falta armar
+  esa bibliografía del motor con los libros que tengan ellas.
 - **El potencial de Jaques salió de Liderazgo** (14/10/2026, decisión de
   Agustín; ellas lo habían puesto el 17/9 con peso 3). Mide el alcance y el
   plazo del trabajo que la persona sostiene; Liderazgo pregunta por conducir

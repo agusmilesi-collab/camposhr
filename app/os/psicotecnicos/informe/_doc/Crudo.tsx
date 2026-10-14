@@ -11,6 +11,9 @@ import {
 } from '@/lib/potencial';
 import Progreso from './Progreso';
 import Hoja from './Hoja';
+import { margenDe, TablaDeIndicadores } from './Interno';
+import { tono } from './piezas';
+import { CLAVE } from '@/lib/raven-test';
 
 /**
  * El respaldo: los valores medidos, sin interpretar y sin colores.
@@ -21,24 +24,71 @@ import Hoja from './Hoja';
  * informe, el Raven, el Benziger, el potencial, la codificación del protocolo y
  * el sumario estructural entero.
  */
-export default function Crudo({ inf }: { inf: Informe }) {
+export default function Crudo({
+  inf,
+  conIndicadores = false,
+}: {
+  inf: Informe;
+  /**
+   * Cada competencia con los indicadores de los que sale su puntaje, en un
+   * solo bloque. Es del equipo y no del cliente: solo en la ficha.
+   */
+  conIndicadores?: boolean;
+}) {
   return (
     <>
-        <p>
-          Lo que sigue son los números de esta evaluación. Cada uno está dicho con la
-          escala en la que se mide y con lo que se considera esperable, así se puede
-          leer sin volver a los capítulos anteriores.
-        </p>
-
         {inf.competencias.length > 0 && (
           <>
             <h3 className="inf-subtitulo">Competencias</h3>
+            {conIndicadores ? (
+              <div className="inf-desglose inf-desglose-suelto">
+                {inf.competencias.map((c) => {
+                  const p = inf.percentiles[c.nombre];
+                  const margen = margenDe(c);
+                  return (
+                    <section key={c.nombre} className="inf-comp-bloque">
+                      {/* Arriba el nombre, el puntaje y la banda de corrido. Debajo, a todo el ancho y con una
+                          sola letra chica, qué mide y las notas. Con divs y no
+                          párrafos, que en el sitio llevan su propia letra. */}
+                      <h4 className="inf-comp-cabeza">
+                        {c.nombre}
+                        {c.puntaje === null ? (
+                          <span> · sin puntaje</span>
+                        ) : (
+                          <>
+                            <span> · {c.puntaje} de 100 · </span>
+                            <span style={{ color: tono(c.puntaje, 1, inf.exigencia) }}>
+                              {bandaDe(c.puntaje, inf.exigencia)}
+                            </span>
+                          </>
+                        )}
+                      </h4>
+                      <div className="inf-comp-sub">{c.mide}</div>
+                      {(p || c.referencia || margen) && (
+                        <div className="inf-comp-sub">
+                          {[
+                            p && `Supera al ${p.percentil} % de los evaluados`,
+                            c.referencia,
+                            margen && margen[0].toUpperCase() + margen.slice(1),
+                          ]
+                            .filter(Boolean)
+                            .join('. ')}
+                          .
+                        </div>
+                      )}
+                      {c.renglones.length > 0 && <TablaDeIndicadores c={c} />}
+                    </section>
+                  );
+                })}
+              </div>
+            ) : (
             <table className="inf-crudo">
               <thead>
                 <tr>
                   <th>Competencia</th>
                   <th className="inf-crudo-num">Puntaje</th>
                   <th>Banda</th>
+                  <th>Entre los evaluados</th>
                   <th>Qué mide</th>
                 </tr>
               </thead>
@@ -50,11 +100,17 @@ export default function Crudo({ inf }: { inf: Informe }) {
                       {c.puntaje === null ? '—' : `${c.puntaje} de 100`}
                     </td>
                     <td>{c.puntaje === null ? 'sin puntaje' : bandaDe(c.puntaje, inf.exigencia)}</td>
+                    <td>
+                      {inf.percentiles[c.nombre]
+                        ? `supera al ${inf.percentiles[c.nombre].percentil} %`
+                        : '—'}
+                    </td>
                     <td className="inf-crudo-mide">{c.mide}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            )}
             {/* Dónde corta cada banda en este informe. Se lee con la
                 exigencia del pedido, así que el mismo 40 puede caer en dos
                 bandas distintas en dos búsquedas: sin los cortes escritos, la
@@ -105,6 +161,42 @@ export default function Crudo({ inf }: { inf: Informe }) {
               Test de Matrices Progresivas de Raven, escala general, sin límite de
               ayuda y con tiempo tomado.
             </p>
+          </>
+        )}
+
+        {inf.crudo.raven.length > 0 && (
+          <>
+            <h3 className="inf-subtitulo inf-subtitulo-sigue">Respuestas del Raven</h3>
+            <p className="inf-crudo-nota">
+              Qué opción eligió en cada una de las 36 láminas.
+            </p>
+            {/* De a dieciocho láminas por renglón: las 36 entran en dos renglones.
+                Arriba de cada opción, chico, el número de lámina. */}
+            <table className="inf-crudo inf-crudo-raven">
+              <tbody>
+                {[0, 18]
+                  .map((desde) => inf.crudo.raven.slice(desde, desde + 18))
+                  .filter((tramo) => tramo.length > 0)
+                  .map((tramo) => (
+                    <tr key={tramo[0].lamina}>
+                      {tramo.map((r) => (
+                        <td
+                          key={r.lamina}
+                          // Corregida solo en la ficha: al cliente no le llega
+                          // cuáles son las correctas, porque con su opción al
+                          // lado sería publicar la clave.
+                          data-correcta={
+                            conIndicadores ? String(CLAVE[r.lamina] === r.opcion) : undefined
+                          }
+                        >
+                          <small>{r.lamina}</small>
+                          {r.opcion}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </>
         )}
 
@@ -237,33 +329,6 @@ export default function Crudo({ inf }: { inf: Informe }) {
         )}
           </>
         )}
-        {inf.crudo.raven.length > 0 && (
-          <>
-            <h3 className="inf-subtitulo">Respuestas del Raven</h3>
-            <p className="inf-crudo-nota">
-              Qué opción eligió en cada una de las 36 láminas. Cuáles son las correctas
-              no se publica: son las mismas 36 en todas las evaluaciones, y una clave
-              que circula deja al test sin poder volver a usarse.
-            </p>
-            <table className="inf-crudo inf-crudo-items">
-              <thead>
-                <tr>
-                  <th>Lámina</th>
-                  <th className="inf-crudo-num">Opción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inf.crudo.raven.map((r) => (
-                  <tr key={r.lamina}>
-                    <td>{r.lamina}</td>
-                    <td className="inf-crudo-num">{r.opcion}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        )}
-
         {inf.crudo.protocolo.length > 0 && (
           <>
             <h3 className="inf-subtitulo">

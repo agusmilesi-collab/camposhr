@@ -583,6 +583,53 @@ en cada nivel con lo que rige** (columna Protocolos, `casosPorIndicador` en
 `Ponderaciones.tsx`). Es la comprobación del corte: uno que deja a 36 de 47 en
 bajo describe al corte y no a la gente.
 
+**Antes de publicar un cambio del motor se corre la prueba de regresión**:
+`node regresion.mjs` en `~/Documents/camposhr-privado/velocimetro/` (los
+protocolos son datos de personas y no van en este repositorio). Compara el
+motor del repo contra las entradas congeladas y lo esperado, y lista qué
+puntajes movió y cuántos cambian de banda. Si lo que movió es lo buscado,
+`node regresion.mjs aceptar` congela el estado nuevo. Un cambio que mueve
+números sin que nadie lo haya buscado es un error, aunque compile.
+
+**Cada competencia lleva su margen** (`Competencia.margen`, 14/10/2026):
+cuánto podría moverse el puntaje si una sola respuesta estuviera codificada
+distinto en un indicador al borde de su corte. Se calcula moviendo cada dato
+que el indicador leyó en una unidad (una respuesta; 0,5 en EA; una respuesta
+sobre R en las proporciones) y recalculando con el nivel que daría, de a uno.
+**Lo ve solo la evaluadora**, en el desglose de la ficha ("podría ir de 35 a
+49, al borde: Zd, T"): el cliente no lo ve (decisión de Agustín, 14/10/2026).
+Es para que ella sepa qué puntaje revisar antes de firmar.
+
+**Y su percentil entre los evaluados con el mismo test** (`Informe.percentiles`,
+desde `medianasDeCompetencias`, que guarda la distribución por test y toma el
+test del protocolo y no de la batería). Sale desde 30 casos ("Supera al 70 %
+de los 47 evaluados con este test"). Es lo que hace que un 64 signifique lo
+mismo en Rorschach y en Zulliger. La mediana en el radar sigue apagada.
+
+**Los cortes del Zulliger citan a Zdunic** (Apéndice f, Estadísticos
+descriptivos, p. 203 a 207: 500 protocolos de selección, Buenos Aires 2010 y
+2011). La tabla transcripta está en `camposhr-privado/velocimetro/zdunic-normas.json`
+(el libro tiene derechos; acá va solo el corte con su cita). Lo esperable es
+el tramo entre los percentiles 25 y 75: populares de 2 a 4, contenidos humanos
+de 2 a 4 sin distinguir estilo, DQ+ de 2 a 4 (5 o más es alto), y en FC : CF +
+C lo normal es CF por encima de FC (FC mediana 0, CF 2, C pura 0): la descarga
+es C pura o CF + C de 3 o más, en el velocímetro y en el diccionario. R, Lambda,
+EA, Dd, T, C', intelectualización, PSV, DQv, egocentrismo, aislamiento y XA%
+ya coincidían con esos percentiles. Nuestros 46 Zulliger se parecen a los 500
+de Zdunic en casi todo; nuestras evaluadoras codifican menos DQ+ y más FC que
+esa muestra.
+
+**Cada corte tiene su fuente en `docs/velocimetro-bibliografia.md`**: autor y
+página, o el criterio de las psicólogas escrito como tal. Al mover un corte se
+actualiza ahí. El Zulliger está completo (Zdunic, cap. 7 y Apéndice f); el
+Rorschach espera las páginas de Exner y Sendín.
+
+**EB pesa 0** (14/10/2026): Exner no establece que un estilo sea mejor que otro
+ni interpreta el estilo con EA por debajo de 4. Sigue en el desglose y como
+lectura del informe. Lo que está en los libros se aplica y se avisa; lo que los
+libros no resuelven (qué norma aplica a esta población, qué es recurso y qué es
+esperable) se les pregunta.
+
 **El potencial de Jaques no es indicador de ninguna competencia** (desde el
 14/10/2026; estaba en Liderazgo con peso 3). Mide el alcance y el plazo del
 trabajo que la persona sostiene, y Liderazgo pregunta por conducir personas.
