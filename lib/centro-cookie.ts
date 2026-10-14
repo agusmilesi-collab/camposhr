@@ -5,9 +5,15 @@
  * donde no hay `node:crypto`: acá solo se usa Web Crypto, que existe en los dos
  * lados.
  *
- * La cookie lleva el identificador de la persona y una firma. Sin firma, quien
- * la edite entra como cualquier otro: el identificador es público en cuanto se
- * mira el navegador, así que lo que hace de secreto es `CENTRO_SECRETO`.
+ * La cookie lleva el identificador de la persona, hasta cuándo vale y una
+ * firma. Sin firma, quien la edite entra como cualquier otro: el identificador
+ * es público en cuanto se mira el navegador, así que lo que hace de secreto es
+ * `CENTRO_SECRETO`.
+ *
+ * **Vence y se corta al cambiar la contraseña.** La firma cubre también la
+ * fecha y la huella de la contraseña guardada. Antes la cookie era el
+ * identificador firmado y nada más: una copia servía para siempre, y cambiar
+ * la contraseña no la invalidaba.
  *
  * **Falla cerrada.** Sin esa variable no hay sesión válida, y la zona del
  * inquilino queda inaccesible en vez de abrirse sin puerta como hace el OS
@@ -33,20 +39,41 @@ async function firmar(texto: string, secreto: string): Promise<string> {
     .join('');
 }
 
-export async function armarCookie(inquilinoId: string, secreto: string): Promise<string> {
-  return `${inquilinoId}.${await firmar(inquilinoId, secreto)}`;
+const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** `hash` es la contraseña guardada de esa persona, tal como está en la base. */
+export async function armarCookie(
+  inquilinoId: string,
+  hash: string | null,
+  secreto: string
+): Promise<string> {
+  const vence = Math.floor(Date.now() / 1000) + DURACION;
+  return `${inquilinoId}.${vence}.${await firmar(`${inquilinoId}.${vence}.${hash ?? ''}`, secreto)}`;
 }
 
-/** El identificador de quien mira, o null si la cookie no está firmada por acá. */
-export async function deLaCookie(valor: string | undefined, secreto: string | undefined): Promise<string | null> {
-  if (!valor || !secreto) return null;
-  const corte = valor.lastIndexOf('.');
-  if (corte < 1) return null;
-  const id = valor.slice(0, corte);
-  const firma = valor.slice(corte + 1);
-  const esperada = await firmar(id, secreto);
-  if (firma.length !== esperada.length) return null;
+/**
+ * De quién dice ser la cookie, si todavía no venció. No prueba nada: la firma
+ * se comprueba después, con `firmaValida`, cuando ya se leyó su contraseña.
+ */
+export function idDeLaCookie(valor: string | undefined): string | null {
+  const [id, vence, firma] = (valor ?? '').split('.');
+  if (!id || !vence || !firma || !ID.test(id)) return null;
+  if (!/^\d{9,12}$/.test(vence) || Number(vence) < Date.now() / 1000) return null;
+  return id;
+}
+
+/** Si la cookie la firmó este servidor para esa persona, con esa contraseña. */
+export async function firmaValida(
+  valor: string | undefined,
+  hash: string | null,
+  secreto: string | undefined
+): Promise<boolean> {
+  if (!valor || !secreto) return false;
+  const [id, vence, firma] = valor.split('.');
+  if (!id || !vence || !firma) return false;
+  const esperada = await firmar(`${id}.${vence}.${hash ?? ''}`, secreto);
+  if (firma.length !== esperada.length) return false;
   let dif = 0;
   for (let i = 0; i < firma.length; i++) dif |= firma.charCodeAt(i) ^ esperada.charCodeAt(i);
-  return dif === 0 ? id : null;
+  return dif === 0;
 }

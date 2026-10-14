@@ -13,12 +13,13 @@
 import 'server-only';
 
 import { cookies } from 'next/headers';
-import { COOKIE, deLaCookie } from '@/lib/centro-cookie';
+import { COOKIE, firmaValida, idDeLaCookie } from '@/lib/centro-cookie';
 import { select } from '@/lib/supabase';
 import type { Inquilino } from '@/lib/consultorios-calculo';
 
 export async function inquilinoDeLaSesion(): Promise<Inquilino | null> {
-  const id = await deLaCookie(cookies().get(COOKIE)?.value, process.env.CENTRO_SECRETO);
+  const cookie = cookies().get(COOKIE)?.value;
+  const id = idDeLaCookie(cookie);
   if (!id) return null;
   const filas = await select<Inquilino>(
     'inquilinos',
@@ -26,8 +27,11 @@ export async function inquilinoDeLaSesion(): Promise<Inquilino | null> {
       `matricula_archivo,llave_entregada,normas_version,normas_aceptadas_at&id=eq.${id}`
   );
   const yo = filas[0];
+  // La firma lleva adentro la contraseña guardada: cambiarla corta las
+  // sesiones abiertas con la anterior.
+  if (!yo || !(await firmaValida(cookie, yo.hash ?? null, process.env.CENTRO_SECRETO))) return null;
   // Una baja deja de entrar en el acto, sin esperar a que venza la cookie.
-  return yo && yo.activo ? yo : null;
+  return yo.activo ? yo : null;
 }
 
 /**

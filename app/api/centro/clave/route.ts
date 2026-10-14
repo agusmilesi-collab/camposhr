@@ -57,8 +57,9 @@ export async function POST(req: Request) {
     );
   }
 
+  const hash = await guardarClave(clave);
   await patch('inquilinos', `id=eq.${yo.id}`, {
-    hash: await guardarClave(clave),
+    hash,
     alta_token: null,
     alta_vence: null,
     normas_version: NORMAS_VERSION,
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
   });
 
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(COOKIE, await armarCookie(yo.id, secreto), {
+  res.cookies.set(COOKIE, await armarCookie(yo.id, hash, secreto), {
     httpOnly: true,
     sameSite: 'lax',
     secure: true,
