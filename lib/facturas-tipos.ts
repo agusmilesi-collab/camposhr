@@ -70,9 +70,15 @@ export type Renglon = {
  * llegaron incompletas de Airtable, y se leían como servicios porque "todos sus
  * renglones son sin evaluación" también es cierto cuando no hay ninguno. Van
  * con las de psicotécnicos, que es donde se las puede completar.
+ *
+ * La factura en dólares del Benziger tampoco lleva evaluación en sus renglones
+ * (son el adicional de personas que ya cubre su factura en pesos), pero es de
+ * psicotécnicos: la delata `hermanaId`, que la une a la de pesos.
  */
 export const esDeServicios = (f: Factura) =>
-  f.renglones.length > 0 && f.renglones.every((r) => r.evaluacionId === null);
+  f.hermanaId === null &&
+  f.renglones.length > 0 &&
+  f.renglones.every((r) => r.evaluacionId === null);
 
 export const esDePsicotecnicos = (f: Factura) => !esDeServicios(f);
 
