@@ -64,5 +64,31 @@ probabilidad de actuar la agresión; p. 57 y 58).
 | --- | --- | --- |
 | W : M | por estilo: introversivo 0,8 a 1,5; ambigual 1,3 a 2; extratensivo 1,3 a 3 | Rorschach Archives of Argentina, material de circulación restringida, Paso 4 "W : M (Proporción de aspiraciones)". Coincide con Exner. Lo mandó Lorena el 14/10/2026 |
 
-Pendiente: las páginas de Exner y Sendín que usan las psicólogas, para citar
-el resto de los cortes de la hoja del Rorschach de la misma forma.
+Norma argentina: Lunazzi, H. A. y otros (2007). *Rorschach Comprehensive System
+Data for a Sample of 506 Adult Nonpatients From Argentina*. Journal of
+Personality Assessment, 89(S1), S7-S12 (tabla 5). Codificada con la Tabla A de
+Exner, igual que nuestros protocolos. Corte: la media más y menos un desvío.
+Aprobada por Lorena el 14/10/2026.
+
+| Indicador | Media ± desvío | Corte del motor |
+| --- | --- | --- |
+| EA | 6,01 ± 2,75 | bajo por debajo de 3,5, alto desde 9 |
+| Afr | 0,57 ± 0,22 | de 0,35 a 0,79, cualquier estilo |
+| SumT | 0,71 ± 0,82 | 0 o 1 esperable |
+| Dd | 2,07 de 18,65 localizaciones (11 %) | hasta 11 % |
+| Zd | −0,60 ± 3,65 | de −4 a +3 |
+| XA% / WDA% | 0,81 ± 0,11 / 0,83 ± 0,10 | desde 0,70 |
+| X−% | 0,18 ± 0,11 | hasta 0,29 |
+| P | 5,35 ± 1,65 | de 4 a 7, cualquier R |
+| Egocentrismo | 0,41 ± 0,15 | de 0,26 a 0,56 |
+| Aislamiento | 0,17 ± 0,13 | hasta 0,30 (muy alto, más de 0,43) |
+| Intelectualización | 1,76 ± 2,12 | hasta 3 |
+| SumC' | 1,69 ± 1,46 | hasta 3 |
+| DQv | 1,32 ± 1,47 | hasta 2 |
+| m / SumY | 1,17 ± 1,21 / 1,18 ± 1,29 | m hasta 2, Y hasta 2 |
+| PSV | 0,12 ± 0,41 | 0 |
+| R | 18,71 ± 4,88 | alto desde 24; menos de 14 no se interpreta |
+
+Siguen con Exner: GHR : PHR, COP / AG y CDI (reglas de interpretación), M− y
+Fd (la norma da el mismo corte), Lambda (distribución muy asimétrica: media
+0,56, mediana 0,40) y contenidos H (el rango cambia con R y estilo).

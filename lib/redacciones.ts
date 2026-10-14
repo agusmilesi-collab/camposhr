@@ -131,9 +131,10 @@ function dd(d: number, adjd: number): string {
  */
 export function pEsperado(r: number, test: string = 'Rorschach'): [number, number] {
   if (test === 'Zulliger') return [2, 4];
-  if (r < 17) return [4, 6];
-  if (r <= 28) return [5, 7];
-  return [6, 9];
+  // Rorschach: norma argentina (Lunazzi y otros, 2007), 5,35 ± 1,65, de 4 a 7
+  // para cualquier R. Hasta el 14/10/2026 seguía la tabla de Exner por R.
+  void r;
+  return [4, 7];
 }
 
 /**
@@ -927,7 +928,8 @@ export const TEXTOS = {
     // En Rorschach lo esperable es PSV por debajo de 2, así que un 2 ya está
     // elevado. En Zulliger cualquier PSV por encima de cero lo está. Las dos
     // reglas las definieron las psicólogas el 30/9/2026.
-    corte: { op: 'mayor', valor: 1, decimales: 0 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'mayor', valor: 0, decimales: 0 },
     zulliger: {
       corte: { op: 'mayor', valor: 0, decimales: 0 },
       dice: [
@@ -1086,7 +1088,8 @@ export const TEXTOS = {
   'xa-bajo': {
     area: 'Cómo interpreta lo que ve',
     indice: 'XA%',
-    corte: { op: 'menor', valor: 0.8, decimales: 2 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'menor', valor: 0.7, decimales: 2 },
     zulliger: {
       dice: [
         'Le puede costar percibir las situaciones como las percibe la mayoría, de modo que su interpretación de una consigna puede no coincidir con lo que se le pidió.',
@@ -1113,8 +1116,10 @@ export const TEXTOS = {
   'x-menos-alto': {
     area: 'Cómo interpreta lo que ve',
     indice: 'X−%',
-    corte: { op: 'mayor', valor: 0.25, decimales: 2 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'mayor', valor: 0.29, decimales: 2 },
     zulliger: {
+      corte: { op: 'mayor', valor: 0.25, decimales: 2 },
       dice: [
         'Se aparta de lo convencional en un grado que puede traer signos de desadaptación en el ambiente laboral: resulta difícil de entender y aparecen dificultades claras en la comunicación.',
         'Se aparta de lo convencional en un grado que puede traer signos de desadaptación en el trabajo: resulta difícil de entender y aparecen dificultades claras en la comunicación.',
@@ -1410,7 +1415,8 @@ export const TEXTOS = {
   'intelectualizacion-alta': {
     area: 'Cómo decide y cómo piensa',
     indice: 'Intelectualización',
-    corte: { op: 'mayor', valor: 5, decimales: 0 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'mayor', valor: 3, decimales: 0 },
     zulliger: {
       corte: { op: 'mayor', valor: 1, decimales: 0 },
       dice: [
@@ -1756,7 +1762,8 @@ export const TEXTOS = {
   'c-prima-alta': {
     area: 'Cómo maneja lo que siente',
     indice: "C'",
-    corte: { op: 'mayor', valor: 4, decimales: 0 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'mayor', valor: 3, decimales: 0 },
     zulliger: {
       /* C' se espera de 0 a 1 en el Zulliger, contra el corte del Rorschach.
          Definido por las psicólogas el 10/9/2026. */
@@ -1874,7 +1881,8 @@ export const TEXTOS = {
   'y-alto': {
     area: 'Cómo maneja lo que siente',
     indice: 'Y',
-    corte: { op: 'mayor', valor: 1, decimales: 0 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'mayor', valor: 2, decimales: 0 },
     zulliger: {
       /* Y se espera de 0 a 2 en el Zulliger, contra el corte del Rorschach.
          Definido por las psicólogas el 10/9/2026. */
@@ -1895,8 +1903,10 @@ export const TEXTOS = {
   'ego-bajo': {
     area: 'Cómo se ve a sí mismo',
     indice: 'Ego',
-    corte: { op: 'menor', valor: 0.33, decimales: 2 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'menor', valor: 0.26, decimales: 2 },
     zulliger: {
+      corte: { op: 'menor', valor: 0.33, decimales: 2 },
       dice: [
         'Presenta cierta dificultad para tomarse como centro de interés, y puede aparecer una tendencia al decaimiento anímico por falta de autoestima. Es desfavorable en puestos con tareas de riesgo, como vigilancia, conducción o manipulación de materiales peligrosos, porque al no cuidarse su exposición es mayor.',
         'Le cuesta tomarse como centro de interés, y esa falta de autoestima puede derivar en decaimiento anímico. En puestos con tareas de riesgo, como vigilancia, conducción o manipulación de materiales peligrosos, su exposición es mayor porque no se cuida.',
@@ -1922,7 +1932,8 @@ export const TEXTOS = {
   'ego-alto': {
     area: 'Cómo se ve a sí mismo',
     indice: 'Ego',
-    corte: { op: 'mayor', valor: 0.55, decimales: 2 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'mayor', valor: 0.56, decimales: 2 },
     zulliger: {
       corte: { op: 'mayor', valor: 0.56, decimales: 2 },
       dice: [
@@ -2090,8 +2101,11 @@ export const TEXTOS = {
   'aislamiento-muy-alto': {
     area: 'Cómo se relaciona',
     indice: 'Índice de aislamiento',
-    corte: { op: 'mayor', valor: 0.33, decimales: 2 },
+    // Norma argentina (Lunazzi y otros, 2007): media 0,17 y desvío 0,13; muy
+    // alto es más de dos desvíos.
+    corte: { op: 'mayor', valor: 0.43, decimales: 2 },
     zulliger: {
+      corte: { op: 'mayor', valor: 0.33, decimales: 2 },
       dice: [
         'Consigue apenas contactos significativos.',
         'Las relaciones con algún peso son muy pocas.',
@@ -2117,7 +2131,8 @@ export const TEXTOS = {
   'aislamiento-alto': {
     area: 'Cómo se relaciona',
     indice: 'Índice de aislamiento',
-    corte: { op: 'mayor', valor: 0.25, decimales: 2 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
+    corte: { op: 'mayor', valor: 0.3, decimales: 2 },
     zulliger: {
       corte: { op: 'mayor', valor: 0.34, decimales: 2 },
       dice: [

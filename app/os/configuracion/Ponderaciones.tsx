@@ -120,6 +120,7 @@ export default async function Ponderaciones() {
           peso: movidos[clave] ?? PESOS_DE_FABRICA[clave],
           fabrica: PESOS_DE_FABRICA[clave],
           casos: casos[clave] ?? { alto: 0, medio: 0, bajo: 0, sin: 0 },
+          esperable: i.techo === 50,
         };
       }),
     })),

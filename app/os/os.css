@@ -18856,3 +18856,42 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
 .os-factura-detalle-apagada {
   opacity: 0.5;
 }
+
+/* El manual del velocímetro, en Herramientas: listas de lectura y una tabla
+   por competencia, con aire entre una y otra. */
+.os-manual ul {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.55;
+}
+
+.os-manual li {
+  margin-bottom: 10px;
+}
+
+.os-manual-competencia {
+  margin-top: 22px;
+}
+
+.os-manual-competencia:first-of-type {
+  margin-top: 4px;
+}
+
+.os-manual-competencia h3 {
+  margin: 0 0 2px;
+  font-size: 1rem;
+}
+
+.os-manual-mide {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--os-suave, #8a8a82);
+}
+
+/* Un indicador "dentro de lo esperable": en su mejor banda vale 50 y no 100,
+   aunque la cabecera de la columna diga 100. Ámbar, el color de lo que vale
+   cincuenta. */
+.os-banda-esperable {
+  background: color-mix(in srgb, var(--os-ambar) 14%, transparent);
+  color: var(--os-ambar);
+}

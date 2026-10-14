@@ -147,6 +147,11 @@ export type Indicador = {
   fabrica: number;
   /** En qué nivel cae en los protocolos cargados, con lo que rige. */
   casos: Casos;
+  /**
+   * "Dentro de lo esperable": en su mejor banda vale 50 y no 100. La cabecera
+   * de la tabla dice 100 para la columna, así que la fila lo aclara.
+   */
+  esperable: boolean;
 };
 
 export type Casos = { alto: number; medio: number; bajo: number; sin: number };
@@ -477,6 +482,11 @@ export default function Pesos({
     return (
       <td className={tono} data-campo={nombre}>
         <span className="os-banda-celda">
+          {cual === 0 && i.esperable && (
+            <span className="os-banda-sello os-banda-esperable" title="Dentro de lo esperable: en rango vale 50 y no 100">
+              esperable · 50
+            </span>
+          )}
           {e.forma === 'umbral' ? (
             <>
               {giro(i, e)}
@@ -520,7 +530,13 @@ export default function Pesos({
       <>
         <td className="os-banda-alta" colSpan={2} data-campo="Positivo">
           <span className="os-banda-celda">
-            {rotulada && <span className="os-banda-sello os-banda-si">positivo</span>}
+            {i.esperable ? (
+              <span className="os-banda-sello os-banda-esperable" title="Dentro de lo esperable: en rango vale 50 y no 100">
+                esperable · 50
+              </span>
+            ) : (
+              rotulada && <span className="os-banda-sello os-banda-si">positivo</span>
+            )}
             {condicionPositiva(i)}
           </span>
         </td>

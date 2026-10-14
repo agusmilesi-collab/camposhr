@@ -67,6 +67,13 @@ const DIBUJOS = {
       <path d="M12 3v6M12 15v6M3 12h6M15 12h6M5.6 5.6l4.3 4.3M14.1 14.1l4.3 4.3M18.4 5.6l-4.3 4.3M9.9 14.1l-4.3 4.3" />
     </>
   ),
+  // Un libro abierto: el manual.
+  libro: (
+    <>
+      <path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z" />
+      <path d="M12 6v13" />
+    </>
+  ),
   caja: (
     <>
       <rect x="3" y="8" width="18" height="12" rx="2" />
@@ -132,6 +139,12 @@ const FICHAS: Ficha[] = [
     detalle: 'El portal como lo ve un cliente.',
     href: `https://clientes.camposhr.com/${TOKEN_DEMO}`,
     icono: 'ventana',
+  },
+  {
+    titulo: 'Manual del velocímetro',
+    detalle: 'Cómo se calcula cada competencia y con qué normas.',
+    href: '/os/herramientas/manual',
+    icono: 'libro',
   },
   {
     titulo: 'Rueda de emociones',

@@ -501,12 +501,14 @@ const M_Y_RORSCHACH: Indicador = {
   nombre: 'm + Y',
   formula: 'm y SumY, cada una contra su tope',
   mide: 'Nivel de tensión interna y ansiedad',
-  reglas: ['m hasta 2 e Y hasta 1', 'no se usa', 'm por encima de 2 o Y por encima de 1'],
+  // Norma argentina (Lunazzi y otros, 2007): m 1,17 ± 1,21 e Y 1,18 ± 1,29,
+  // así que m hasta 2 e Y hasta 2. Con Exner, Y hasta 1.
+  reglas: ['m hasta 2 e Y hasta 2', 'no se usa', 'm por encima de 2 o Y por encima de 2'],
   nivel: (s) => {
     const m = num(s, 'determinantes', 'm');
     const y = num(s, 'determinantes', 'SumY') ?? num(s, 'determinantes', 'Y');
     if (m === null && y === null) return null;
-    return (m ?? 0) > 2 || (y ?? 0) > 1 ? 1 : 3;
+    return (m ?? 0) > 2 || (y ?? 0) > 2 ? 1 : 3;
   },
 };
 
@@ -961,6 +963,18 @@ const MIDE = {
 
 // ── Rorschach ──────────────────────────────────────────────────────────────
 
+/**
+ * Los cortes del Rorschach siguen la norma argentina (Lunazzi y otros, 2007,
+ * JPA 89 S1: 506 adultos no pacientes, codificados con la tabla de Exner):
+ * la media más y menos un desvío. Aprobado el 14/10/2026. Por eso varios
+ * indicadores compartidos llevan acá su escala propia: intelectualización
+ * hasta 3, C' hasta 3, vagas hasta 2, aislamiento hasta 0,30, egocentrismo de
+ * 0,26 a 0,56, XA% / WDA% desde 0,70, X−% hasta 0,29, PSV en 0, R alto desde
+ * 24. Quedan con Exner GHR : PHR, COP / AG, CDI, M−, Fd, Lambda y contenidos H:
+ * en M− y Fd la norma da el mismo corte; en Lambda la media no sirve para
+ * cortar; en contenidos H el rango cambia con R y estilo; los otros tres son
+ * reglas de interpretación.
+ */
 const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }[] = [
   {
     competencia: 'Autogestión',
@@ -1017,10 +1031,10 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
           return 1;
         },
       },
-      INTELECTUALIZACION,
+      { ...INTELECTUALIZACION, escala: binario(3, false) },
       FC_CF,
-      C_PRIMA,
-      VAGAS,
+      { ...C_PRIMA, escala: binario(3, false) },
+      { ...VAGAS, escala: binario(2, false) },
       M_Y_RORSCHACH,
     ],
   },
@@ -1030,7 +1044,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     indicadores: [
       GHR_PHR,
       CONTENIDOS_H,
-      AISLAMIENTO,
+      { ...AISLAMIENTO, escala: binario(0.3, false, 2) },
       AFR,
       M_MENOS,
       POPULARES,
@@ -1044,7 +1058,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         escala: binario(3, false),
         valor: (s) => constelacion(s, 'CDI'),
       },
-      EGOCENTRISMO,
+      { ...EGOCENTRISMO, escala: dentroDe(0.26, 0.56, 2) },
     ],
   },
   {
@@ -1057,7 +1071,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         nombre: 'R',
         formula: 'R',
         mide: 'Nivel general de productividad e iniciativa de respuesta',
-        escala: { forma: 'umbral', mayorEsMejor: true, alto: 29, medio: 17 },
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 24, medio: 14 },
         valor: (s) => num(s, 'cabecera', 'R'),
       },
       DQ_MAS,
@@ -1068,12 +1082,12 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     competencia: 'Habilidad cognitiva',
     mide: MIDE.intelectual,
     indicadores: [
-      XA_WDA,
-      X_MENOS,
+      { ...XA_WDA, escala: binario(0.7, true, 2, true) },
+      { ...X_MENOS, escala: binario(0.29, false, 2, true) },
       // Zd y Zf salieron de acá y quedaron en una sola competencia cada uno,
       // Autogestión y Proactividad: contados dos veces, quien organiza mal
       // perdía puntos en las dos (decidido el 30/9/2026).
-      PSV,
+      { ...PSV, escala: binario(0, false) },
       RAVEN,
     ],
   },
@@ -1802,3 +1816,54 @@ export { bandaDe, bandasDe, type Banda } from '@/lib/exigencia';
  * bandas (`EscalaBandas`, en `Documento.tsx`), para que el número no quede
  * solo.
  */
+
+/**
+ * Lo que el manual de las evaluadoras muestra de cada competencia.
+ *
+ * Sale de las mismas hojas, pesos y cortes que usa `calcularCompetencias`, con
+ * lo guardado en Configuración encima: si mañana se mueve un corte, el manual
+ * lo dice sin que nadie lo reescriba.
+ */
+export type IndicadorDelManual = {
+  nombre: string;
+  mide: string;
+  peso: number;
+  /** recurso llega a 100; esperable llega a 50; sin peso no cuenta. */
+  clase: 'recurso' | 'esperable' | 'sin peso';
+  corte: string;
+  imprescindible: boolean;
+};
+
+export function manualDe(
+  test: 'Rorschach' | 'Zulliger',
+  rige: {
+    pesos?: Record<string, number>;
+    cortesCompetencias?: Record<string, number[]>;
+    direcciones?: Record<string, boolean>;
+  } = {}
+): { competencia: string; mide: string; indicadores: IndicadorDelManual[] }[] {
+  return HOJAS[test].map((c) => ({
+    competencia: c.competencia,
+    mide: c.mide,
+    indicadores: c.indicadores.map((i) => {
+      const peso =
+        rige.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ??
+        PESOS[test]?.[c.competencia]?.[i.nombre] ??
+        i.peso ??
+        1;
+      const n = cortesQueRigen(test, c.competencia, i, rige.cortesCompetencias);
+      const e = escalaQueRige(test, c.competencia, i, rige.direcciones);
+      return {
+        nombre: i.nombre,
+        mide: i.mide,
+        peso,
+        clase: peso === 0 ? 'sin peso' : i.techo === 50 ? 'esperable' : 'recurso',
+        corte: i === RAVEN ? 'por aciertos, en línea continua' : comoSeLee(i, n, e),
+        imprescindible: i.imprescindible === true,
+      };
+    }),
+  }));
+}
+
+/** Cuántas respuestas hacen falta en cada test para que se puntúe. */
+export const RESPUESTAS_MINIMAS = R_MINIMO;
