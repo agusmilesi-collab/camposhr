@@ -90,6 +90,24 @@ export default async function Comprobante({
           )}
         </div>
       )}
+      {/* Las dos facturas del mismo trabajo se enlazan: con el Benziger en
+          dólares salen dos comprobantes, y el navegador abre una sola
+          pestaña. Desde cualquiera se llega a la otra. */}
+      {d.hermana && !d.esNota && (
+        <div className="aviso">
+          <b>{d.hermana.moneda === 'DOL' ? 'Este trabajo tiene además una factura en dólares' : 'Esta es la factura en dólares de un trabajo'}.</b>{' '}
+          <a href={`/os/psicotecnicos/facturacion/comprobante/${d.hermana.id}`}>
+            {d.hermana.moneda === 'DOL' ? 'Factura en dólares' : 'Factura en pesos'}
+            {d.hermana.numero ? ` N° ${d.hermana.numero}` : ''}
+            {d.hermana.total !== null
+              ? ` por ${d.hermana.moneda === 'DOL' ? 'USD' : '$'} ${d.hermana.total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              : ''}
+          </a>
+          {d.hermana.moneda === 'DOL'
+            ? ', con el Benziger. Las dos se piden a ARCA por separado.'
+            : ', con las baterías.'}
+        </div>
+      )}
       {d.anuladaPor && (
         <div className="aviso">
           <b>Factura anulada.</b> La anuló la{' '}

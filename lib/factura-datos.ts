@@ -142,8 +142,11 @@ export type DatosFactura = {
    * comprobante como pide el cliente. Null hasta que tenga CAE.
    */
   cotizacion: { valor: string; fecha: string | null } | null;
-  /** En una factura en dólares, la factura en pesos de la que es el adicional. */
-  hermana: { id: string; numero: string } | null;
+  /**
+   * La otra factura del mismo trabajo: en una en dólares, la de pesos de la
+   * que es el adicional; en una en pesos, la de dólares con el Benziger.
+   */
+  hermana: { id: string; numero: string; moneda: 'PES' | 'DOL'; total: number | null } | null;
   cae: string | null;
   caeVence: string | null;
   conCae: boolean;
@@ -191,6 +194,7 @@ type FilaAutorizado = {
   mon_cotiz_fecha?: string | null;
 };
 type Vinculado = { id: string; numero: number | null; punto_venta: number | null; fecha: string };
+type VinculadoHermana = Vinculado & { moneda: string; imp_total: string | number | null };
 
 /**
  * Los datos de una factura o una nota de crédito. Null si no existe o si es de
@@ -313,9 +317,16 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
         .map((r) => r.evaluacion_id ?? r.evaluacion_anulada_id)
         .filter((x): x is string => Boolean(x))
     ),
+    // Hacia la de pesos por `hermana_id`; hacia la de dólares, al revés.
     factura.hermanaId
-      ? select<Vinculado>('facturas', `select=id,numero,punto_venta,fecha&id=eq.${factura.hermanaId}&limit=1`)
-      : Promise.resolve([] as Vinculado[]),
+      ? select<VinculadoHermana>(
+          'facturas',
+          `select=id,numero,punto_venta,fecha,moneda,imp_total&id=eq.${factura.hermanaId}&limit=1`
+        )
+      : select<VinculadoHermana>(
+          'facturas',
+          `select=id,numero,punto_venta,fecha,moneda,imp_total&hermana_id=eq.${id}&estado=neq.anulada&limit=1`
+        ),
   ]);
 
   const dia = formatoFecha(factura.fecha);
@@ -376,7 +387,15 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
             fecha: autorizado.mon_cotiz_fecha ? formatoFecha(autorizado.mon_cotiz_fecha) : null,
           }
         : null,
-    hermana: hermana ? { id: hermana.id, numero: largo(hermana) } : null,
+    hermana: hermana
+      ? {
+          id: hermana.id,
+          // Sin número todavía (borrador) va vacío: "00004-sin número" no es un número.
+          numero: hermana.numero === null ? '' : largo(hermana),
+          moneda: hermana.moneda === 'DOL' ? 'DOL' : 'PES',
+          total: hermana.imp_total === null ? null : Number(hermana.imp_total),
+        }
+      : null,
     renglones:
       factura.renglones.length === 0
         ? [{ id: 'unico', texto: factura.concepto ?? 'Servicios profesionales', importe: total }]

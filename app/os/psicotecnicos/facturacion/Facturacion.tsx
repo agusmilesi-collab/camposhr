@@ -321,9 +321,10 @@ function GrupoCliente({
       });
       setAbierto(false);
       router.refresh();
+      // Una sola pestaña: el navegador bloquea la segunda ventana de un mismo
+      // clic. La factura en dólares se abre desde el comprobante de la de
+      // pesos, que la enlaza arriba.
       if (r?.id) window.open(`/os/psicotecnicos/facturacion/comprobante/${r.id}`, '_blank');
-      // La segunda factura, en dólares, se abre también: son dos papeles.
-      if (r?.dolaresId) window.open(`/os/psicotecnicos/facturacion/comprobante/${r.dolaresId}`, '_blank');
       if (r?.sinDolares) {
         setError('La factura en pesos se generó, pero la de dólares (el Benziger) no. Hay que cargarla aparte.');
       }
