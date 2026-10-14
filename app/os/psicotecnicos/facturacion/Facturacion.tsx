@@ -22,6 +22,7 @@ import { fechaCorta, hoyIso } from '@/lib/hora';
 import {
   formatoFecha,
   formatoImporte,
+  conceptoDe,
   conceptoPorDefecto,
   numeroDe,
   totalDe,
@@ -764,33 +765,40 @@ function GrupoCliente({
                 {seleccion.some((p) => p.benziger !== null)
                   ? ` (incluye ${seleccion.filter((p) => p.benziger !== null).length} Benziger pesificado)`
                   : ''}
-                . Concepto: {conceptoPorDefecto(seleccion)}
-                {oc.trim() ? (
-                  <>
-                    {' · '}Orden de compra del cliente <b>{oc.trim()}</b>
-                  </>
-                ) : (
-                  <>
-                    {' · '}
-                    <span className="os-dato-falta">orden de compra del cliente sin cargar</span>
-                  </>
-                )}
+                . Renglones:{' '}
+                {seleccion.map((p, i) => (
+                  <span key={p.evaluacionId}>
+                    {i > 0 ? ' · ' : ''}
+                    {conceptoDe(p)}
+                    {oc.trim() ? (
+                      <>
+                        {' · Orden de compra '}
+                        <b>{oc.trim()}</b>
+                      </>
+                    ) : (
+                      <span className="os-dato-falta"> · orden de compra sin cargar</span>
+                    )}
+                  </span>
+                ))}
                 .
               </li>
               {enDolares.length > 0 && (
                 <li>
-                  <b>Factura en dólares</b> por {formatoImporte(totalUsd, 'USD')}. Concepto:{' '}
-                  {enDolares.map((p) => `Adicional BTSA, ${p.candidato}`).join(' · ')}
-                  {ocUsd.trim() ? (
-                    <>
-                      {' · '}Orden de compra del cliente <b>{ocUsd.trim()}</b>
-                    </>
-                  ) : (
-                    <>
-                      {' · '}
-                      <span className="os-dato-falta">orden de compra del cliente sin cargar</span>
-                    </>
-                  )}
+                  <b>Factura en dólares</b> por {formatoImporte(totalUsd, 'USD')}. Renglones:{' '}
+                  {enDolares.map((p, i) => (
+                    <span key={p.evaluacionId}>
+                      {i > 0 ? ' · ' : ''}
+                      Adicional BTSA, {p.candidato}
+                      {ocUsd.trim() ? (
+                        <>
+                          {' · Orden de compra '}
+                          <b>{ocUsd.trim()}</b>
+                        </>
+                      ) : (
+                        <span className="os-dato-falta"> · orden de compra sin cargar</span>
+                      )}
+                    </span>
+                  ))}
                   .
                 </li>
               )}

@@ -353,12 +353,16 @@ export async function POST(req: Request) {
 
         // Un renglón por evaluación, más uno por cada adicional Benziger: en el
         // comprobante son dos conceptos distintos y con dos precios distintos.
+        // La orden de compra del cliente va en el texto de cada renglón, que es
+        // donde el cliente la busca en el papel (Producto / Servicio).
+        const conOrden = (texto: string, oc: string | null) =>
+          oc ? `${texto} · Orden de compra ${oc}` : texto;
         const renglones: Record<string, unknown>[] = [];
         for (const e of entran) {
           renglones.push({
             factura_id: factura.id,
             evaluacion_id: e.evaluacionId,
-            descripcion: propio ?? conceptoDe(e),
+            descripcion: conOrden(propio ?? conceptoDe(e), ordenCompra),
             // Sin segunda línea: la batería y la fecha de entrega son datos
             // del trabajo interno, y en el papel del cliente no van.
             detalle: null,
@@ -374,7 +378,7 @@ export async function POST(req: Request) {
               // Escrito y no omitido porque PostgREST rechaza un alta en lote
               // donde los objetos no tienen exactamente las mismas claves.
               evaluacion_id: null,
-              descripcion: `Adicional BTSA, ${e.candidato}`,
+              descripcion: conOrden(`Adicional BTSA, ${e.candidato}`, ordenCompra),
               detalle: e.benzigerAcordado
                 ? 'Precio acordado'
                 : dolar === null
@@ -451,7 +455,7 @@ export async function POST(req: Request) {
                 // El mismo renglón que lleva el adicional en una factura en
                 // pesos. Sin segunda línea: la moneda y la cotización las
                 // dice el comprobante en sus totales.
-                descripcion: `Adicional BTSA, ${e.candidato}`,
+                descripcion: conOrden(`Adicional BTSA, ${e.candidato}`, ocUsd),
                 detalle: null,
                 cantidad: 1,
                 precio_unitario: e.benzigerUsd,

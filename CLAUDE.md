@@ -1674,6 +1674,11 @@ puede cambiar; la orden de compra se agrega al final. El adicional va en su
 renglón, "Adicional BTSA, <persona>". En el papel del cliente no figuran ni
 "evaluación psicotécnica" ni la batería ni la fecha de entrega del informe.
 
+**La orden de compra del cliente va en el texto de cada renglón** ("Perfil
+Analista, Luisina Perlo · Orden de compra 4503396844"), que es la columna
+Producto / Servicio donde el cliente la busca (Agustín, 14/10/2026). Además
+sigue en el bloque del cliente y al final del concepto.
+
 ## El correo sale por Resend, y en local se desvía
 
 `lib/correo.ts`, con `fetch` y sin SDK. Sin `RESEND_API_KEY` no sale nada y el
