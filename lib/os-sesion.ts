@@ -78,3 +78,58 @@ export function igual(a: string, b: string): boolean {
   for (let i = 0; i < a.length; i++) dif |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return dif === 0;
 }
+
+/**
+ * El navegador que ya entró una vez.
+ *
+ * El tope general de intentos frena a quien prueba claves cambiando de
+ * dirección en cada intento, pero mientras corre deja afuera también al
+ * equipo, y cualquiera podía provocarlo a propósito errando treinta veces. Un
+ * navegador que alguna vez entró bien lleva esta marca y no cuenta para ese
+ * tope: sigue frenado por el de su dirección, como todos.
+ *
+ * La marca no abre nada por sí sola: solo dice que este navegador ya supo la
+ * clave alguna vez. Va firmada con `OS_SECRETO` y no con la clave, así que
+ * cambiar la clave no la invalida, que es justo cuando el equipo vuelve a
+ * pasar por la puerta.
+ */
+export const COOKIE_CONOCIDO = 'os_conocido';
+
+/** Un año: es una marca del navegador, no una sesión. */
+export const DURACION_CONOCIDO = 60 * 60 * 24 * 365;
+
+async function firma(texto: string): Promise<string | null> {
+  const secreto = process.env.OS_SECRETO;
+  if (!secreto) return null;
+  const clave = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secreto),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sello = await crypto.subtle.sign('HMAC', clave, new TextEncoder().encode(`conocido:${texto}`));
+  return Array.from(new Uint8Array(sello))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/** Una marca nueva: un número al azar y su firma. Sin `OS_SECRETO` no hay marca. */
+export async function marcaDeConocido(): Promise<string | null> {
+  const id = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  const sello = await firma(id);
+  return sello ? `${id}.${sello}` : null;
+}
+
+/** Si alguna de las marcas que mandó el navegador es auténtica. */
+export async function esConocido(valores: string[]): Promise<boolean> {
+  for (const valor of valores) {
+    const [id, sello] = valor.split('.');
+    if (!id || !sello || !/^[0-9a-f]{32}$/.test(id)) continue;
+    const esperado = await firma(id);
+    if (esperado && igual(sello, esperado)) return true;
+  }
+  return false;
+}

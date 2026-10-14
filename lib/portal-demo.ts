@@ -17,7 +17,12 @@
  */
 import { getDatosClientePorEmpresa, type DatosCliente } from './airtable';
 
-export const TOKEN_DEMO = 'v_1n30O2pkFt0ZiGdclgp0dx12fSiq0v';
+/**
+ * Viene de `PORTAL_DEMO_TOKEN` y no está escrito acá: el repositorio es
+ * público, y escrito acá cualquiera podía abrir el portal de prueba y cargarle
+ * pedidos. Sin la variable no hay portal de prueba.
+ */
+export const TOKEN_DEMO = process.env.PORTAL_DEMO_TOKEN ?? '';
 
 /** La empresa gemela en Airtable, cargada el 13/8/2026. No tiene "Token portal"
  *  a propósito: sin token no figura en el listado de accesos ni se abre desde
@@ -43,7 +48,7 @@ export const NOMBRE_DEMO = 'Distribuidora Andina';
 export const NOMBRE_DEMO_PORTAL = `${NOMBRE_DEMO} (prueba)`;
 
 export function esDemo(token: string): boolean {
-  return token === TOKEN_DEMO;
+  return TOKEN_DEMO.length >= 20 && token === TOKEN_DEMO;
 }
 
 export function datosDemo(): DatosCliente {

@@ -42,21 +42,31 @@ export default async function Centro() {
   // Solo las salas que se le ofrecen a esta persona: una sala reservada para
   // algunos no existe para el resto, ni libre ni ocupada.
   const activos = espacios.filter((e) => puedeAlquilar(e, yo.id));
-  const sinNombres = reservas.map((r) => ({
-    id: r.id,
-    espacio_id: r.espacio_id,
-    inquilino_id: r.inquilino_id,
-    fecha: r.fecha,
-    desde_hora: r.desde_hora,
-    hasta_hora: r.hasta_hora,
-    origen: r.origen,
-    estado: r.estado,
-    importe: r.inquilino_id === yo.id ? r.importe : null,
-    // Solo de lo propio: cuándo se creó la reserva de otro no es asunto de
-    // quien mira, y de acá sale si todavía se puede deshacer.
-    created_at: r.inquilino_id === yo.id ? r.created_at : undefined,
-    inquilinos: null,
-  }));
+  // De una reserva ajena tampoco viajan su id ni el de quien la hizo: con el id
+  // de inquilino se podía seguir a una misma persona por toda la grilla, y los
+  // ids de reserva son los que aceptan las rutas que liberan y cobran.
+  const sinNombres = reservas.map((r, i) => {
+    const mia = r.inquilino_id === yo.id;
+    return {
+      id: mia ? r.id : `ajena-${i}`,
+      espacio_id: r.espacio_id,
+      inquilino_id: mia ? r.inquilino_id : '',
+      fecha: r.fecha,
+      desde_hora: r.desde_hora,
+      hasta_hora: r.hasta_hora,
+      origen: r.origen,
+      estado: r.estado,
+      importe: mia ? r.importe : null,
+      // Solo de lo propio: cuándo se creó la reserva de otro no es asunto de
+      // quien mira, y de acá sale si todavía se puede deshacer.
+      created_at: mia ? r.created_at : undefined,
+      inquilinos: null,
+    };
+  });
+  // La pantalla usa los contratos para contar las horas fijas propias: los de
+  // los demás (quién, qué sala, a qué hora y por cuánto) no tienen por qué
+  // llegar al navegador.
+  const misContratos = contratos.filter((c) => c.inquilino_id === yo.id);
 
   return (
     <>
@@ -83,7 +93,7 @@ export default async function Centro() {
           aperturas={aperturas}
           cierres={cierres}
           reservas={sinNombres}
-          contratos={contratos}
+          contratos={misContratos}
           tarifas={escala.tarifas}
           miId={yo.id}
           hoy={hoy}

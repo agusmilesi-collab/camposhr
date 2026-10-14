@@ -29,6 +29,20 @@ const nextConfig = {
         { key: 'X-Content-Type-Options', value: 'nosniff' },
       ],
     },
+    // Ninguna página se deja meter dentro de un marco de otro sitio: así no se
+    // puede montar una página ajena que muestre el OS o el portal por debajo y
+    // haga apretar un botón sin que se vea. Los subdominios propios sí, porque
+    // el hub y el OS se embeben entre ellos.
+    //
+    // El ciclo queda afuera: sus placas se embeben en las presentaciones, y
+    // esas se abren también como archivo suelto desde la computadora, que no
+    // es un sitio que se pueda nombrar acá.
+    {
+      source: '/((?!ciclo/).*)',
+      headers: [
+        { key: 'Content-Security-Policy', value: "frame-ancestors 'self' https://*.camposhr.com" },
+      ],
+    },
   ],
 };
 export default nextConfig;

@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
-import { COOKIE, DURACION, destinoPermitido, dominioDeCookie, huella, igual } from '@/lib/os-sesion';
+import {
+  COOKIE,
+  COOKIE_CONOCIDO,
+  DURACION,
+  DURACION_CONOCIDO,
+  destinoPermitido,
+  dominioDeCookie,
+  esConocido,
+  huella,
+  marcaDeConocido,
+} from '@/lib/os-sesion';
 import { insert } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
@@ -19,9 +29,11 @@ export const runtime = 'nodejs';
  * quien cambia de dirección en cada intento. Con el general, recorrer todas
  * las claves lleva semanas en vez de minutos, y queda anotado.
  *
- * El costo es que, mientras alguien esté probando, el equipo tampoco puede
- * entrar desde un navegador nuevo. Quien ya entró no se entera: su sesión
- * dura un mes y no pasa por acá.
+ * El general no cuenta para un navegador que ya entró alguna vez
+ * (`COOKIE_CONOCIDO`): sin eso, cualquiera podía errar treinta veces a
+ * propósito y dejar al equipo sin poder entrar durante una hora. Mientras
+ * alguien esté probando, el que queda afuera es solo el navegador que nunca
+ * entró.
  */
 const POR_DIRECCION = { cuantos: 5, minutos: 15 };
 const EN_TOTAL = { cuantos: 30, minutos: 60 };
@@ -61,6 +73,15 @@ async function desanotar(id: string | undefined) {
   }
 }
 
+/** Todas las cookies con ese nombre: puede haber más de una, con y sin dominio. */
+function cookiesLlamadas(req: Request, nombre: string): string[] {
+  return (req.headers.get('cookie') ?? '')
+    .split(';')
+    .map((c) => c.trim())
+    .filter((c) => c.startsWith(`${nombre}=`))
+    .map((c) => decodeURIComponent(c.slice(nombre.length + 1)));
+}
+
 export async function POST(req: Request) {
   const datos = await req.formData();
   const clave = String(datos.get('clave') ?? '');
@@ -81,9 +102,10 @@ export async function POST(req: Request) {
   // El tope se mira antes de comparar la clave: frenado, ni la correcta entra,
   // que es lo que hace que seguir probando no sirva.
   try {
+    const conocido = await esConocido(cookiesLlamadas(req, COOKIE_CONOCIDO));
     const [suyos, todos] = await Promise.all([
       fallidos(POR_DIRECCION.minutos, ip),
-      fallidos(EN_TOTAL.minutos),
+      conocido ? Promise.resolve(0) : fallidos(EN_TOTAL.minutos),
     ]);
     if (suyos > POR_DIRECCION.cuantos || todos > EN_TOTAL.cuantos) {
       await desanotar(anotado);
@@ -123,6 +145,16 @@ export async function POST(req: Request) {
   // para todos los subdominios tiene guardada una de este host solo; si la
   // clave cambió, esa quedó vieja, el navegador la manda primero y la puerta
   // volvía a pedir la clave para siempre. Escribirla de nuevo la pisa.
+  const marca = await marcaDeConocido();
+  if (marca) {
+    res.cookies.set(COOKIE_CONOCIDO, marca, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: true,
+      path: '/api/os/entrar',
+      maxAge: DURACION_CONOCIDO,
+    });
+  }
   if (dominioDeCookie(req.headers.get('host') ?? '')) {
     res.headers.append(
       'set-cookie',
