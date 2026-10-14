@@ -1,4 +1,5 @@
 import 'server-only';
+import { tipoPermitido } from '@/lib/archivos-permitidos';
 import { patch, select } from '@/lib/supabase';
 
 /**
@@ -34,18 +35,19 @@ function config(): { url: string; key: string } {
  */
 export async function subirDescriptivo(pedidoId: string, archivo: File): Promise<boolean> {
   try {
+    const permitido = tipoPermitido(archivo.name);
+    if (!permitido) {
+      console.error('descriptivo: tipo de archivo no aceptado', archivo.name);
+      return false;
+    }
     const { url, key } = config();
-    const ext = (archivo.name.includes('.') ? (archivo.name.split('.').pop() ?? '') : '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .slice(0, 8);
-    const ruta = `descriptivos/${pedidoId}${ext ? `.${ext}` : ''}`;
+    const ruta = `descriptivos/${pedidoId}.${permitido.ext}`;
     const res = await fetch(`${url}/storage/v1/object/${BUCKET}/${ruta}`, {
       method: 'POST',
       headers: {
         apikey: key,
         Authorization: `Bearer ${key}`,
-        'Content-Type': archivo.type || 'application/octet-stream',
+        'Content-Type': permitido.tipo,
         'x-upsert': 'true',
       },
       body: new Uint8Array(await archivo.arrayBuffer()),

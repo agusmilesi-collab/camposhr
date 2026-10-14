@@ -17,6 +17,7 @@
 import { nombreYApellido } from '@/lib/personas';
 import { hoyIso } from '@/lib/hora';
 import 'server-only';
+import { tipoPermitido } from '@/lib/archivos-permitidos';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
 import { select } from '@/lib/supabase';
@@ -336,15 +337,19 @@ async function actualizarPersona(id: string, campos: Record<string, unknown>) {
  */
 export async function subirCv(personaId: string, cv: File): Promise<string | null> {
   try {
+    const permitido = tipoPermitido(cv.name);
+    if (!permitido) {
+      console.error('cv: tipo de archivo no aceptado', cv.name);
+      return null;
+    }
     const { url, key } = config();
-    const ext = (cv.name.split('.').pop() ?? 'pdf').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const ruta = `cv/${personaId}.${ext || 'pdf'}`;
+    const ruta = `cv/${personaId}.${permitido.ext}`;
     const res = await fetch(`${url}/storage/v1/object/${BUCKET}/${ruta}`, {
       method: 'POST',
       headers: {
         apikey: key,
         Authorization: `Bearer ${key}`,
-        'Content-Type': cv.type || 'application/octet-stream',
+        'Content-Type': permitido.tipo,
         'x-upsert': 'true',
       },
       body: new Uint8Array(await cv.arrayBuffer()),
