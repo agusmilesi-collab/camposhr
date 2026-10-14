@@ -9,6 +9,14 @@ import { ABIERTO } from '@/lib/pedido-campos';
 import Ficha from './Ficha';
 import Pedidos from './Pedidos';
 import Contactos from './Contactos';
+import PreciosAcordados, { type ConceptoDePrecio } from './PreciosAcordados';
+import {
+  BENZIGER_USD,
+  acuerdosDe,
+  baterias as bateriasConPrecio,
+  precioA,
+} from '@/lib/baterias-precios';
+import { hoy } from '@/lib/hora';
 import Abrir from '../../pedidos/Abrir';
 import { contactosDe } from '@/lib/contactos';
 import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
@@ -50,6 +58,23 @@ export default async function ClientePagina(
   const abiertos = suyos.filter((p) => p.estado === ABIERTO);
 
   const cuentas = await cuentasDeLaBarra();
+
+  // Los precios acordados con este cliente (licitaciones), contra la lista
+  // general de hoy: se leen solo en Datos, que es donde se muestran.
+  const ver0 = searchParams.ver === 'pedidos' ? 'pedidos' : 'datos';
+  const [conPrecio, acuerdos] =
+    ver0 === 'datos'
+      ? await Promise.all([bateriasConPrecio(), acuerdosDe([params.id])])
+      : [[], []];
+  const conceptos: ConceptoDePrecio[] = [
+    ...conPrecio.map((b) => ({
+      bateriaId: b.id,
+      nombre: b.codigo,
+      lista: precioA(b.precios),
+      listaEnDolares: false,
+    })),
+    { bateriaId: null, nombre: 'Adicional Benziger', lista: BENZIGER_USD, listaEnDolares: true },
+  ];
 
   /* Dos pestañas: los datos del cliente (empresa, portal, contactos) y sus
      pedidos. Lo que no sea "pedidos" cae en datos. */
@@ -116,9 +141,17 @@ export default async function ClientePagina(
           Va en la misma tarjeta que los datos de la empresa: se lee al llamar
           o al facturar, y se mira más seguido que el CUIT. */}
         {ver === 'datos' && (
-          <Ficha cliente={cliente}>
-            <Contactos empresaId={params.id} contactos={contactos} />
-          </Ficha>
+          <>
+            <Ficha cliente={cliente}>
+              <Contactos empresaId={params.id} contactos={contactos} />
+            </Ficha>
+            <PreciosAcordados
+              empresaId={params.id}
+              conceptos={conceptos}
+              acuerdos={acuerdos}
+              hoy={hoy()}
+            />
+          </>
         )}
 
         {ver === 'pedidos' && (

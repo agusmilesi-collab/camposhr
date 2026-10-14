@@ -141,7 +141,9 @@ function Escala({ e }: { e: Marcha }) {
         {/* Del aviso queda solo lo que cambia el número: los dólares no entran
             en el monotributo, así que sin esa línea el total no cierra. */}
         {e.enDolares > 0 && (
-          <p className="os-form-nota">No entra lo facturado en dólares.</p>
+          <p className="os-form-nota">
+            No entra lo facturado en dólares sin cotización guardada ({e.enDolares}).
+          </p>
         )}
         {error && <p className="os-form-error">{error}</p>}
       </div>

@@ -132,6 +132,18 @@ export type DatosFactura = {
   };
   renglones: { id: string; texto: string; importe: number | null }[];
   total: number;
+  /** 'PES' o 'DOL'. En dólares, los importes de arriba son dólares. */
+  moneda: string;
+  /** "USD" o "$", para escribir delante de cada importe. */
+  signo: string;
+  /**
+   * En una factura en dólares, la cotización con la que ARCA la autorizó
+   * (BNA divisa vendedor del día hábil anterior), para indicarla en el
+   * comprobante como pide el cliente. Null hasta que tenga CAE.
+   */
+  cotizacion: { valor: string; fecha: string | null } | null;
+  /** En una factura en dólares, la factura en pesos de la que es el adicional. */
+  hermana: { id: string; numero: string } | null;
   cae: string | null;
   caeVence: string | null;
   conCae: boolean;
@@ -175,6 +187,8 @@ type FilaAutorizado = {
   vence_pago: string | null;
   anula_id: string | null;
   sin_comprobante: boolean;
+  mon_cotiz?: string | number | null;
+  mon_cotiz_fecha?: string | null;
 };
 type Vinculado = { id: string; numero: number | null; punto_venta: number | null; fecha: string };
 
@@ -253,7 +267,7 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
     select<FilaAutorizado>(
       'facturas',
       'select=ambiente,cbte_tipo,doc_tipo,doc_nro,estado,respuesta,servicio_desde,servicio_hasta,' +
-        `vence_pago,anula_id,sin_comprobante&id=eq.${id}&limit=1`
+        `vence_pago,anula_id,sin_comprobante,mon_cotiz,mon_cotiz_fecha&id=eq.${id}&limit=1`
     ),
     // A quién cubre: la evaluación del renglón o, en una anulada, la que
     // cubría antes de soltarla.
@@ -284,7 +298,7 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
   // punto de venta a la vista no parece una factura.
   const puntoVenta = factura.puntoVenta ?? (conCae ? null : emisor?.punto_venta_manual ?? null);
 
-  const [[facturaAnulada], [notaQueAnula], { ordenes }] = await Promise.all([
+  const [[facturaAnulada], [notaQueAnula], { ordenes }, [hermana]] = await Promise.all([
     esNota && autorizado?.anula_id
       ? select<Vinculado>('facturas', `select=id,numero,punto_venta,fecha&id=eq.${autorizado.anula_id}&limit=1`)
       : Promise.resolve([] as Vinculado[]),
@@ -299,6 +313,9 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
         .map((r) => r.evaluacion_id ?? r.evaluacion_anulada_id)
         .filter((x): x is string => Boolean(x))
     ),
+    factura.hermanaId
+      ? select<Vinculado>('facturas', `select=id,numero,punto_venta,fecha&id=eq.${factura.hermanaId}&limit=1`)
+      : Promise.resolve([] as Vinculado[]),
   ]);
 
   const dia = formatoFecha(factura.fecha);
@@ -347,6 +364,19 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
       ordenPropia: factura.ordenCompra,
       ordenesNuestras: ordenes.map((o) => o.numero),
     },
+    moneda: factura.moneda,
+    signo: factura.moneda === 'DOL' ? 'USD' : '$',
+    cotizacion:
+      factura.moneda === 'DOL' && autorizado?.mon_cotiz
+        ? {
+            valor: Number(autorizado.mon_cotiz).toLocaleString('es-AR', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 4,
+            }),
+            fecha: autorizado.mon_cotiz_fecha ? formatoFecha(autorizado.mon_cotiz_fecha) : null,
+          }
+        : null,
+    hermana: hermana ? { id: hermana.id, numero: largo(hermana) } : null,
     renglones:
       factura.renglones.length === 0
         ? [{ id: 'unico', texto: factura.concepto ?? 'Servicios profesionales', importe: total }]

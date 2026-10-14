@@ -24,7 +24,15 @@
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { CACHE_COMERCIAL, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import { BENZIGER_USD, dolarTarjeta, fechaDePrecio, precioA, type Precio } from '@/lib/baterias-precios';
+import {
+  BENZIGER_USD,
+  acuerdosDe,
+  benzigerParaCliente,
+  dolarTarjeta,
+  fechaDePrecio,
+  precioParaCliente,
+  type Precio,
+} from '@/lib/baterias-precios';
 import { llevaBenziger } from '@/lib/benziger';
 import type { Emisora, Factura, Facturable, Fiscal } from '@/lib/facturas-tipos';
 
@@ -84,6 +92,8 @@ type FilaFactura = {
   cotizacion_id: string | null;
   imp_total: string | number | null;
   moneda: string;
+  mon_cotiz?: string | number | null;
+  hermana_id?: string | null;
   estado: Factura['estado'];
   cobrada_at: string | null;
   notas: string | null;
@@ -144,7 +154,7 @@ export async function listarFacturas(): Promise<Factura[]> {
   const filas = await select<FilaFactura>(
     'facturas',
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
-      'imp_total,moneda,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
+      'imp_total,moneda,mon_cotiz,hermana_id,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,punto_venta_manual,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(ciudad,personas(nombre),pedidos(puesto)))' +
@@ -192,7 +202,7 @@ export async function verFactura(id: string): Promise<Factura | null> {
   const filas = await select<FilaFactura>(
     'facturas',
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
-      'imp_total,moneda,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
+      'imp_total,moneda,mon_cotiz,hermana_id,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,punto_venta_manual,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
       'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
       'evaluaciones(ciudad,personas(nombre),pedidos(puesto)))' +
@@ -222,6 +232,8 @@ function armarFactura(f: FilaFactura): Factura {
     cotizacionId: f.cotizacion_id,
     importe: numeroOno(f.imp_total),
     moneda: f.moneda,
+    monCotiz: numeroOno(f.mon_cotiz ?? null),
+    hermanaId: f.hermana_id ?? null,
     estado: f.estado,
     cobradaAt: f.cobrada_at,
     formaPago: f.forma_pago ?? null,
@@ -252,6 +264,8 @@ type FilaFacturable = {
   con_benziger: boolean | null;
   baja_el: string | null;
   ciudad: string | null;
+  oc_cliente?: string | null;
+  oc_cliente_usd?: string | null;
   personas: { nombre: string } | null;
   evaluadoras: { nombre: string } | null;
   pedidos: {
@@ -259,7 +273,7 @@ type FilaFacturable = {
     empresa_id: string;
     fecha_pedido: string | null;
     con_benziger: boolean | null;
-    empresas: { nombre: string } | null;
+    empresas: { nombre: string; benziger_en_dolares?: boolean | null } | null;
     baterias: { id: string; codigo: string; nombre: string } | null;
   } | null;
 };
@@ -287,9 +301,10 @@ export async function fiscalesDe(empresaIds: string[]): Promise<Record<string, F
     direccion_fiscal: string | null;
     email_facturacion: string | null;
     exige_orden_compra: boolean;
+    benziger_en_dolares: boolean | null;
   }>(
     'empresas',
-    'select=id,razon_social,cuit,condicion_iva,direccion_fiscal,email_facturacion,exige_orden_compra' +
+    'select=id,razon_social,cuit,condicion_iva,direccion_fiscal,email_facturacion,exige_orden_compra,benziger_en_dolares' +
       `&id=in.(${ids.join(',')})`
   ).catch(() => []);
   const fiscales: Record<string, Fiscal> = {};
@@ -301,6 +316,7 @@ export async function fiscalesDe(empresaIds: string[]): Promise<Record<string, F
       domicilio: e.direccion_fiscal,
       correo: e.email_facturacion,
       exigeOrdenCompra: e.exige_orden_compra,
+      benzigerEnDolares: Boolean(e.benziger_en_dolares),
     };
   }
   return fiscales;
@@ -346,12 +362,12 @@ export async function listarAFacturar(
 ): Promise<Facturable[]> {
   const etapas = ETAPAS_ENTREVISTADO.map((e) => `"${e}"`).join(',');
   const filtro = soloId ? `id=eq.${encodeURIComponent(soloId)}` : `estado=in.(${etapas})`;
-  const [evaluaciones, renglones, enOrdenes, precios, cambio] = await Promise.all([
+  const [evaluaciones, renglones, enOrdenes, precios, acuerdos, cambio] = await Promise.all([
     select<FilaFacturable>(
       'evaluaciones',
       'select=id,estado,fecha_ingreso,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,baja_el,ciudad,' +
-        'personas(nombre),evaluadoras(nombre),' +
-        'pedidos(puesto,empresa_id,fecha_pedido,con_benziger,empresas(nombre),' +
+        'oc_cliente,oc_cliente_usd,personas(nombre),evaluadoras(nombre),' +
+        'pedidos(puesto,empresa_id,fecha_pedido,con_benziger,empresas(nombre,benziger_en_dolares),' +
         'baterias(id,codigo,nombre))' +
         `&${filtro}&order=fecha_entrevista.desc`,
       // Con las dos etiquetas: una evaluación entra en esta cola cuando se le
@@ -377,6 +393,9 @@ export async function listarAFacturar(
       'select=id,bateria_id,precio,desde,quien&order=desde.desc',
       CACHE_COMERCIAL
     ),
+    // Los precios acordados por cliente (licitaciones), que pisan la lista
+    // general mientras rigen.
+    acuerdosDe(),
     dolarTarjeta(),
   ]);
 
@@ -405,19 +424,24 @@ export async function listarAFacturar(
     .map((e) => {
       const pedido = e.pedidos!;
       const suyos = precios.filter((p) => p.bateria_id === pedido.baterias?.id);
-      const precio = precioA(
-        suyos,
-        fechaDePrecio({
-          fechaIngreso: e.fecha_ingreso,
-          fechaEntrevista: e.fecha_entrevista,
-          fechaPedido: pedido.fecha_pedido,
-        })
-      );
+      const delCliente = acuerdos.filter((a) => a.empresa_id === pedido.empresa_id);
+      const dia = fechaDePrecio({
+        fechaIngreso: e.fecha_ingreso,
+        fechaEntrevista: e.fecha_entrevista,
+        fechaPedido: pedido.fecha_pedido,
+      });
+      const { precio, acordado } = precioParaCliente(suyos, delCliente, pedido.baterias?.id, dia);
       // El Benziger se cobra cuando el pedido lo pidió, cuando se le pidió a
       // esta persona o cuando se administró: las tres significan que ese
       // trabajo se hizo.
       const conBenziger = llevaBenziger(e);
-      const benziger = conBenziger && cambio ? Math.round(BENZIGER_USD * cambio.valor) : null;
+      const bzg = conBenziger
+        ? benzigerParaCliente(delCliente, cambio?.valor ?? null, dia)
+        : { importe: null, acordado: false };
+      // Al cliente que lo paga en dólares, el Benziger de la lista (en
+      // dólares) no se le pesifica: sale en una segunda factura, en dólares.
+      // Uno acordado en pesos ya está en pesos y va en la misma factura.
+      const aparte = conBenziger && !bzg.acordado && Boolean(pedido.empresas?.benziger_en_dolares);
       return {
         evaluacionId: e.id,
         candidato: e.personas?.nombre ?? 'sin nombre',
@@ -432,9 +456,15 @@ export async function listarAFacturar(
         fechaEntrega: e.fecha_entrega,
         orden: ordenDe.get(e.id) ?? null,
         precio,
+        acordado,
         conBenziger,
-        benziger,
+        benziger: aparte ? null : bzg.importe,
+        benzigerAcordado: bzg.acordado,
+        benzigerAparte: aparte,
+        benzigerUsd: aparte ? BENZIGER_USD : null,
         dolar: cambio?.valor ?? null,
+        ocCliente: e.oc_cliente?.trim() || null,
+        ocClienteUsd: e.oc_cliente_usd?.trim() || null,
       };
     });
 }
@@ -466,7 +496,14 @@ export async function marchaMonotributo(hoy = new Date()): Promise<Marcha[]> {
   const meses = mesesDelAnio(hoy);
 
   return emisoras.map((e) => {
-    const suyas = emitidas.filter((f) => f.emisorId === e.id && f.moneda !== 'DOL');
+    // Una factura en dólares cuenta para el monotributo pasada a pesos con la
+    // cotización con la que ARCA la autorizó, que es como la mira ARCA. Sin
+    // cotización guardada no se puede sumar, y se dice cuántas quedaron afuera.
+    const enPesos = (f: Factura): number =>
+      f.moneda === 'DOL' ? (f.importe ?? 0) * (f.monCotiz ?? 0) : f.importe ?? 0;
+    const suyas = emitidas
+      .filter((f) => f.emisorId === e.id && (f.moneda !== 'DOL' || f.monCotiz))
+      .map((f) => ({ ...f, importe: enPesos(f) }));
     const suma = (desde: string) =>
       suyas.filter((f) => f.fecha >= desde).reduce((n, f) => n + (f.importe ?? 0), 0);
     return {
@@ -476,7 +513,7 @@ export async function marchaMonotributo(hoy = new Date()): Promise<Marcha[]> {
       mes: suma(mes),
       anio: suma(anio),
       doce: suma(doce),
-      enDolares: emitidas.filter((f) => f.emisorId === e.id && f.moneda === 'DOL').length,
+      enDolares: emitidas.filter((f) => f.emisorId === e.id && f.moneda === 'DOL' && !f.monCotiz).length,
       meses: meses.map((m) => {
         const delMes = suyas.filter((f) => f.fecha.slice(0, 7) === m.clave);
         // Una factura es de psicotécnicos si cubre alguna evaluación. Se mira

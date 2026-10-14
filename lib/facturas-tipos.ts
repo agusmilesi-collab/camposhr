@@ -103,6 +103,13 @@ export type Factura = {
   cotizacionId: string | null;
   importe: number | null;
   moneda: string;
+  /**
+   * En una factura en dólares, la cotización con la que ARCA la autorizó
+   * (BNA divisa vendedor). Es lo que la pasa a pesos para el monotributo.
+   */
+  monCotiz: number | null;
+  /** En una factura en dólares, la factura en pesos de la que es el adicional. */
+  hermanaId: string | null;
   estado: EstadoFactura;
   cobradaAt: string | null;
   /** Cómo entró la plata. Null es transferencia. */
@@ -175,6 +182,8 @@ export type Fiscal = {
   domicilio: string | null;
   correo: string | null;
   exigeOrdenCompra: boolean;
+  /** El Benziger se le factura en dólares, en una factura aparte. */
+  benzigerEnDolares: boolean;
 };
 
 /** Una evaluación con la entrevista tomada y sin comprobante. */
@@ -197,10 +206,31 @@ export type Facturable = {
   orden: { id: string; numero: string } | null;
   /** El de la batería a la fecha del pedido, no el de hoy. */
   precio: number | null;
+  /** Si el precio sale de un acuerdo con el cliente y no de la lista general. */
+  acordado: boolean;
   conBenziger: boolean;
-  /** El adicional ya pesificado, cuando hay cotización. */
+  /**
+   * El adicional ya pesificado, cuando hay cotización. Null si no lleva
+   * Benziger, si no hay cotización, o si va aparte en dólares.
+   */
   benziger: number | null;
+  /** Si el Benziger está acordado en pesos con el cliente: no depende del dólar. */
+  benzigerAcordado: boolean;
+  /**
+   * El Benziger sale en una segunda factura, en dólares: el cliente lo paga
+   * así (`empresas.benziger_en_dolares`). Entonces `benziger` va null y
+   * `benzigerUsd` trae los dólares de ese renglón.
+   */
+  benzigerAparte: boolean;
+  benzigerUsd: number | null;
   dolar: number | null;
+  /**
+   * La orden de compra que dio el cliente por esta evaluación, guardada en
+   * ella: la de la factura en pesos y, si el Benziger va aparte, la de la
+   * factura en dólares. El formulario las propone con las tildadas.
+   */
+  ocCliente: string | null;
+  ocClienteUsd: string | null;
 };
 
 /**

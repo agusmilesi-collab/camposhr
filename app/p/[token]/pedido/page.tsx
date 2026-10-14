@@ -38,7 +38,8 @@ export default async function PedirEvaluacion(props: { params: Promise<{ token: 
   if (!datos) notFound();
 
   const [alcance, contactos, ciudades] = await Promise.all([
-    alcanceYPrecios(),
+    // Con la empresa: si tiene precios acordados, ve los suyos.
+    alcanceYPrecios(empresa?.id ?? null),
     empresa ? quienesPiden(empresa.id) : Promise.resolve([]),
     // Las ciudades que ya usó, para ofrecerlas en cada candidato.
     empresa?.pedido_con_ciudad

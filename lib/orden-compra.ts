@@ -13,7 +13,15 @@
 import 'server-only';
 import { randomBytes } from 'node:crypto';
 import { insert, patch, select } from '@/lib/supabase';
-import { BENZIGER_USD, dolarTarjeta, fechaDePrecio, precioA, type Precio } from '@/lib/baterias-precios';
+import {
+  BENZIGER_USD,
+  acuerdosDe,
+  benzigerParaCliente,
+  dolarTarjeta,
+  fechaDePrecio,
+  precioParaCliente,
+  type Precio,
+} from '@/lib/baterias-precios';
 import { llevaBenziger } from '@/lib/benziger';
 import { verFactura } from '@/lib/facturas';
 import { conceptoDe } from '@/lib/facturas-tipos';
@@ -63,6 +71,7 @@ type FilaCarga = {
     con_benziger: boolean | null;
     solicitante_id: string | null;
     baterias: { id: string } | null;
+    empresas?: { benziger_en_dolares: boolean | null } | null;
   } | null;
 };
 
@@ -89,7 +98,7 @@ export async function crearOrden(
     select<FilaCarga>(
       'evaluaciones',
       'select=id,con_benziger,benziger_administrado,solicitante_id,fecha_ingreso,fecha_entrevista,personas(nombre),' +
-        'pedidos(id,puesto,empresa_id,fecha_pedido,con_benziger,solicitante_id,baterias(id))' +
+        'pedidos(id,puesto,empresa_id,fecha_pedido,con_benziger,solicitante_id,baterias(id),empresas(benziger_en_dolares))' +
         `&id=in.(${ids.join(',')})`
     ),
     dolarTarjeta(),
@@ -102,40 +111,51 @@ export async function crearOrden(
 
   const pedido = enOrden[0].pedidos!;
   const baterias = [...new Set(enOrden.map((c) => c.pedidos!.baterias?.id).filter(Boolean))];
-  const precios =
+  const [precios, acuerdos] = await Promise.all([
     baterias.length > 0
-      ? await select<Precio>(
+      ? select<Precio>(
           'bateria_precios',
           `select=id,bateria_id,precio,desde,quien&bateria_id=in.(${baterias.join(',')})&order=desde.desc`
         )
-      : [];
+      : Promise.resolve([] as Precio[]),
+    // Lo acordado con este cliente (licitación), que pisa la lista general.
+    acuerdosDe([pedido.empresa_id]),
+  ]);
 
   const items: Record<string, unknown>[] = [];
   for (const c of enOrden) {
     const p = c.pedidos!;
     const nombre = c.personas?.nombre?.trim() ?? 'sin nombre';
     const suyos = precios.filter((x) => x.bateria_id === p.baterias?.id);
+    const dia = fechaDePrecio({
+      fechaIngreso: c.fecha_ingreso,
+      fechaEntrevista: c.fecha_entrevista,
+      fechaPedido: p.fecha_pedido,
+    });
+    const { precio, acordado } = precioParaCliente(suyos, acuerdos, p.baterias?.id, dia);
     items.push({
       evaluacion_id: c.id,
       concepto: `Perfil ${p.puesto.trim()}`,
       detalle: nombre,
-      nota: null,
-      importe: precioA(
-        suyos,
-        fechaDePrecio({
-          fechaIngreso: c.fecha_ingreso,
-          fechaEntrevista: c.fecha_entrevista,
-          fechaPedido: p.fecha_pedido,
-        })
-      ),
+      nota: acordado ? 'Precio acordado.' : null,
+      importe: precio,
     });
     if (llevaBenziger(c)) {
+      const bzg = benzigerParaCliente(acuerdos, cambio?.valor ?? null, dia);
       items.push({
         evaluacion_id: c.id,
         concepto: ADICIONAL,
         detalle: nombre,
-        nota: notaDelDolar(ADICIONAL, BENZIGER_USD, cambio?.valor ?? null),
-        importe: cambio ? Math.round(BENZIGER_USD * cambio.valor) : null,
+        // Acordado en pesos no depende del dólar, así que la nota del dólar
+        // diría algo que no es. Y al cliente que lo paga en dólares se le
+        // factura en dólares, en una factura aparte: la orden lo dice.
+        nota: bzg.acordado
+          ? 'Precio acordado.'
+          : p.empresas?.benziger_en_dolares
+            ? `${ADICIONAL}: USD ${BENZIGER_USD}, que se facturan en dólares en una factura aparte.` +
+              (cambio ? ` El importe de esta orden usa como referencia ${REFERENCIA_EN_LA_HOJA} ($ ${cambio.valor.toLocaleString('es-AR')}).` : '')
+            : notaDelDolar(ADICIONAL, BENZIGER_USD, cambio?.valor ?? null),
+        importe: bzg.importe,
       });
     }
   }

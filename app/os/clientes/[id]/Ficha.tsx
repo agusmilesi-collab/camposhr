@@ -228,6 +228,20 @@ export default function Ficha({
                 <option value="si">Por su portal de proveedores</option>
               </select>
             </label>
+            {/* Hay clientes que pagan el Benziger en dólares (Cofco, por su
+                licitación): sale en una segunda factura, en dólares, en vez
+                de pesificado dentro de la factura en pesos. */}
+            <label className="os-cliente-dato">
+              <span className="os-dato-rotulo">Benziger</span>
+              <select
+                className="os-campo"
+                name="benzigerEnDolares"
+                defaultValue={cliente.benzigerEnDolares ? 'si' : 'no'}
+              >
+                <option value="no">Pesificado, en la misma factura</option>
+                <option value="si">En dólares, en una factura aparte</option>
+              </select>
+            </label>
             {/* De la lista cerrada. Un rubro cargado antes de la lista, que no
                 está en ella, se ofrece igual para no perderlo al guardar. */}
             <label className="os-cliente-dato">
@@ -275,6 +289,12 @@ export default function Ficha({
             <Dato
               rotulo="Entrega de facturas"
               valor={cliente.portalProveedores ? 'Por su portal de proveedores' : 'Por correo'}
+            />
+            <Dato
+              rotulo="Benziger"
+              valor={
+                cliente.benzigerEnDolares ? 'En dólares, en una factura aparte' : 'Pesificado, en la misma factura'
+              }
             />
             <Dato rotulo="Rubro" valor={cliente.rubro} />
             {/* Si se está trabajando con este cliente, como un dato más de la

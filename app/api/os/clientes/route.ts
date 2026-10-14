@@ -110,6 +110,9 @@ export async function POST(req: Request) {
     ...(datos.portalProveedores === undefined
       ? {}
       : { portal_proveedores: datos.portalProveedores === 'si' || datos.portalProveedores === true }),
+    ...(datos.benzigerEnDolares === undefined
+      ? {}
+      : { benziger_en_dolares: datos.benzigerEnDolares === 'si' || datos.benzigerEnDolares === true }),
     ...campo('rubro', 'rubro', texto('rubro')),
     ...campo(
       'tamano',

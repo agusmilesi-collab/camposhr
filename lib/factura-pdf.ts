@@ -313,7 +313,7 @@ export async function pdfDeFactura(d: DatosFactura): Promise<Uint8Array> {
     };
     cabeza();
     // Hasta dónde puede bajar la tabla: debajo van los totales, el CAE y el pie.
-    const PISO = 232;
+    const PISO = d.moneda === 'DOL' ? 250 : 232;
     for (const r of d.renglones) {
       const partes = partir(r.texto, normal, 8.6, T.cantidad - 46 - T.texto);
       const alto = 13.5 + partes.length * 12.4;
@@ -328,7 +328,7 @@ export async function pdfDeFactura(d: DatosFactura): Promise<Uint8Array> {
       }
       y -= 16.5;
       partes.forEach((t, i) => texto(t, T.texto, y - i * 12.4, 8.6));
-      const importe = r.importe === null ? '—' : pesos(r.importe);
+      const importe = r.importe === null ? '—' : `${d.signo} ${pesos(r.importe)}`;
       texto('1,00', T.cantidad, y, 8.6, { color: media, derecha: true });
       texto('unidades', T.unidad, y, 8.6, { color: media });
       texto(importe, T.precio, y, 8.6, { color: media, derecha: true });
@@ -353,12 +353,22 @@ export async function pdfDeFactura(d: DatosFactura): Promise<Uint8Array> {
       texto(valor, DER, en, 9.4, { fuente: negra, derecha: true });
       puntos(IZQ + ancho(rotulo, 9.75) + 7.5, DER - ancho(valor, 9.4, negra) - 7.5, en);
     };
-    lineaTotal('Subtotal', `$ ${pesos(d.total)}`, 213.5);
-    lineaTotal('Importe otros tributos', `$ ${pesos(0)}`, 195.5);
+    // En dólares va además el tipo de cambio, que el cliente exige ver.
+    if (d.moneda === 'DOL') {
+      lineaTotal(
+        'Moneda: Dólar estadounidense',
+        d.cotizacion
+          ? `Cotización $ ${d.cotizacion.valor}${d.cotizacion.fecha ? ` (BNA, ${d.cotizacion.fecha})` : ''}`
+          : 'Cotización: la fija ARCA',
+        231.5
+      );
+    }
+    lineaTotal('Subtotal', `${d.signo} ${pesos(d.total)}`, 213.5);
+    lineaTotal('Importe otros tributos', `${d.signo} ${pesos(0)}`, 195.5);
     const BARRA = 40.5;
     hoja.drawSvgPath(redondo(0, 0, ANCHO, BARRA, 8.25), { x: IZQ, y: 142 + BARRA, color: tinta });
     texto('Importe total', IZQ + 18, 142 + BARRA / 2 - 4.2, 12, { fuente: negra, color: clara });
-    texto(`$ ${pesos(d.total)}`, DER - 18, 142 + BARRA / 2 - 4.6, 13.1, {
+    texto(`${d.signo} ${pesos(d.total)}`, DER - 18, 142 + BARRA / 2 - 4.6, 13.1, {
       fuente: negra,
       color: clara,
       derecha: true,

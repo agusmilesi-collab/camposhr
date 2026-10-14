@@ -358,7 +358,14 @@ export default function Pedido({
   const cuantos = filas.filter((f) => f.nombre.trim()).length || 1;
   const laBateria = alcance.baterias.find((b) => b.codigo === (elegida?.bateria ?? bateria));
   const conBenziger = esNueva ? benziger : Boolean(elegida?.conBenziger);
-  const benzigerPesos = alcance.dolar ? alcance.benzigerUsd * alcance.dolar : null;
+  // Acordado en pesos con este cliente, o los dólares de la lista pesificados
+  // a hoy. Con acuerdo, nada de lo que sigue habla del dólar.
+  const bzgAcordado = alcance.benzigerAcordado !== null;
+  const benzigerPesos = bzgAcordado
+    ? alcance.benzigerAcordado
+    : alcance.dolar
+      ? alcance.benzigerUsd * alcance.dolar
+      : null;
 
   const porCandidato =
     (laBateria?.precio ?? 0) + (conBenziger && benzigerPesos ? benzigerPesos : 0);
@@ -1041,8 +1048,10 @@ export default function Pedido({
                         conversión de hoy al lado: el cliente tiene que saber
                         que hasta la factura el precio sigue dolarizado. */}
                         <span className="pedir-suma-precio">
-                          {dolares(alcance.benzigerUsd)} por candidato
-                          {benzigerPesos && (
+                          {bzgAcordado
+                            ? `${pesos(benzigerPesos as number)} por candidato`
+                            : `${dolares(alcance.benzigerUsd)} por candidato`}
+                          {!bzgAcordado && benzigerPesos && (
                             <span className="pedir-suma-n">
                               Hoy son {pesos(benzigerPesos)}, al dólar tarjeta de{' '}
                               {cotizacion(alcance.dolar as number)}. Se factura en pesos, al del día
@@ -1278,8 +1287,8 @@ export default function Pedido({
                   <div className="pedir-linea">
                     <span>Cuestionario de perfil</span>
                     <span>
-                      {dolares(alcance.benzigerUsd)}
-                      {benzigerPesos && (
+                      {bzgAcordado ? pesos(benzigerPesos as number) : dolares(alcance.benzigerUsd)}
+                      {!bzgAcordado && benzigerPesos && (
                         <span className="pedir-linea-pesos">{pesos(benzigerPesos)}</span>
                       )}
                     </span>
@@ -1298,7 +1307,7 @@ export default function Pedido({
 
                 {/* Qué parte del total está dolarizada: hasta que se emite la
                 factura, esos dólares valen lo que valga el dólar ese día. */}
-                {conBenziger && (
+                {conBenziger && !bzgAcordado && (
                   <div className="pedir-linea pedir-linea-usd">
                     <span>De ese total, en dólares</span>
                     <span>{dolares(alcance.benzigerUsd * cuantos)}</span>
@@ -1306,8 +1315,10 @@ export default function Pedido({
                 )}
 
                 <p className="pedir-resumen-n">
-                  Precios de hoy, sin IVA.
-                  {conBenziger && alcance.dolar
+                  {laBateria?.acordado || bzgAcordado
+                    ? 'Precios acordados con tu empresa, sin IVA.'
+                    : 'Precios de hoy, sin IVA.'}
+                  {conBenziger && !bzgAcordado && alcance.dolar
                     ? ` La evaluación de perfil está fijada en dólares y se factura en pesos, al dólar tarjeta del día en que se emite la factura. Hoy está ${cotizacion(alcance.dolar)}.`
                     : ''}
                 </p>

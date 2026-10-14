@@ -148,6 +148,33 @@ export async function POST(req: Request) {
             { status: 400 }
           );
         }
+        // Una factura lleva una sola orden de compra del cliente: si las
+        // elegidas traen órdenes distintas, o una la tiene y otra no, no van
+        // juntas. La pantalla lo frena; acá se repite por si llega igual.
+        const distintas = (valores: (string | null)[]) =>
+          [...new Set(valores.map((v) => v?.trim() || ''))];
+        const ocs = distintas(entran.map((e) => e.ocCliente));
+        if (ocs.some(Boolean) && ocs.length > 1) {
+          return NextResponse.json(
+            {
+              error: `Las evaluaciones elegidas tienen órdenes de compra del cliente distintas (${ocs
+                .map((o) => o || 'sin cargar')
+                .join(', ')}). Va una factura por orden.`,
+            },
+            { status: 400 }
+          );
+        }
+        const ocsUsd = distintas(entran.filter((e) => e.benzigerAparte).map((e) => e.ocClienteUsd));
+        if (ocsUsd.some(Boolean) && ocsUsd.length > 1) {
+          return NextResponse.json(
+            {
+              error: `Los Benziger elegidos tienen órdenes de compra del cliente distintas (${ocsUsd
+                .map((o) => o || 'sin cargar')
+                .join(', ')}). Va una factura en dólares por orden.`,
+            },
+            { status: 400 }
+          );
+        }
         const sinPrecio = entran.filter((e) => e.precio === null);
         if (sinPrecio.length > 0) {
           return NextResponse.json(
@@ -163,6 +190,25 @@ export async function POST(req: Request) {
         const total = entran.reduce((n, e) => n + totalDe(e), 0);
         const dolar = entran.find((e) => e.benziger !== null)?.dolar ?? null;
 
+        // Lo que va aparte, en dólares: el Benziger del cliente que lo paga
+        // así. Es una segunda factura C en moneda DOL, con un renglón de
+        // USD 40 por candidato, que ARCA autoriza con la cotización del BNA.
+        const enDolares = sinComprobante ? [] : entran.filter((e) => e.benzigerAparte);
+        const totalUsd = enDolares.reduce((n, e) => n + (e.benzigerUsd ?? 0), 0);
+        const numeroDolares =
+          enDolares.length === 0 ||
+          datos.numeroDolares === '' ||
+          datos.numeroDolares === null ||
+          datos.numeroDolares === undefined
+            ? null
+            : Number(datos.numeroDolares);
+        if (numeroDolares !== null && (!Number.isInteger(numeroDolares) || numeroDolares < 1)) {
+          return NextResponse.json(
+            { error: 'El número de la factura en dólares tiene que ser entero.' },
+            { status: 400 }
+          );
+        }
+
         // El concepto sale de las evaluaciones, en el orden en que están en la
         // cola, y se puede pisar: hay clientes que piden otro texto. La orden
         // de compra va adentro del concepto además de en su renglón, porque es
@@ -170,6 +216,8 @@ export async function POST(req: Request) {
         const porDefecto = conceptoPorDefecto(entran);
         const escrito = String(datos.concepto ?? '').trim();
         const ordenCompra = String(datos.ordenCompra ?? '').trim() || null;
+        // La de la factura en dólares, cuando el cliente manda una aparte.
+        const ordenCompraDolares = String(datos.ordenCompraDolares ?? '').trim() || null;
         const base = escrito || porDefecto;
         const concepto =
           ordenCompra && !base.includes(ordenCompra)
@@ -219,6 +267,25 @@ export async function POST(req: Request) {
             ),
           ]);
           porArca = emisor?.ambiente === 'produccion' && numero === null;
+          // Anotando a mano, la de dólares también tiene su número, y es otro.
+          if (!porArca && enDolares.length > 0 && numeroDolares === null) {
+            return NextResponse.json(
+              { error: 'Falta el número de la factura en dólares (la del Benziger).' },
+              { status: 400 }
+            );
+          }
+          // Cofco manda una orden de compra (su "nota de pedido") por la factura en pesos y otra por
+          // la de dólares: cada factura lleva la suya, y a quien la exige no
+          // se le emite la de dólares sin ella.
+          if (enDolares.length > 0 && !ordenCompraDolares && empresa?.exige_orden_compra) {
+            return NextResponse.json(
+              {
+                error:
+                  'Este cliente exige su orden de compra en la factura: falta la de la factura en dólares (la del Benziger).',
+              },
+              { status: 400 }
+            );
+          }
           const faltaCliente = faltaParaFacturarle({
             razonSocial: empresa?.razon_social,
             cuit: empresa?.cuit,
@@ -308,8 +375,9 @@ export async function POST(req: Request) {
               // donde los objetos no tienen exactamente las mismas claves.
               evaluacion_id: null,
               descripcion: `Adicional BTSA, ${e.candidato}`,
-              detalle:
-                dolar === null
+              detalle: e.benzigerAcordado
+                ? 'Precio acordado'
+                : dolar === null
                   ? 'USD 40'
                   : `USD 40 al dólar tarjeta de hoy ($ ${dolar.toLocaleString('es-AR')})`,
               cantidad: 1,
@@ -341,11 +409,73 @@ export async function POST(req: Request) {
           );
         }
 
+        // La segunda factura, en dólares, con el Benziger de cada candidato.
+        // Nace unida a la de pesos (`hermana_id`): son dos comprobantes por
+        // el mismo trabajo. Sus renglones van sin evaluación, como el
+        // adicional en la factura en pesos: la persona ya está cubierta por
+        // la de pesos y el índice único es por evaluación.
+        let dolaresId: string | null = null;
+        if (enDolares.length > 0 && totalUsd > 0) {
+          // El concepto se arma como el de cualquier factura: un concepto
+          // por persona, unidos con el punto, y la orden del cliente al final.
+          const ocUsd = ordenCompraDolares ?? ordenCompra;
+          const conceptoUsd =
+            enDolares.map((e) => `Adicional BTSA, ${e.candidato.trim()}`).join(' · ') +
+            (ocUsd ? ` · Orden de compra del cliente ${ocUsd}` : '');
+          try {
+            const segunda = await escribir('facturas', 'POST', {
+              origen: 'os',
+              emisor_id: emisorId,
+              empresa_id: empresaId,
+              numero: numeroDolares,
+              punto_venta: puntoVenta,
+              fecha,
+              imp_total: totalUsd,
+              moneda: 'DOL',
+              hermana_id: factura.id,
+              concepto: conceptoUsd,
+              orden_compra: ocUsd,
+              notas: null,
+              estado: porArca ? 'borrador' : 'emitida',
+              sin_comprobante: false,
+              cobrada_at: null,
+              quien: yo.nombre,
+            });
+            dolaresId = segunda.id;
+            await escribir(
+              'factura_items',
+              'POST',
+              enDolares.map((e) => ({
+                factura_id: segunda.id,
+                evaluacion_id: null,
+                // El mismo renglón que lleva el adicional en una factura en
+                // pesos. Sin segunda línea: la moneda y la cotización las
+                // dice el comprobante en sus totales.
+                descripcion: `Adicional BTSA, ${e.candidato}`,
+                detalle: null,
+                cantidad: 1,
+                precio_unitario: e.benzigerUsd,
+                importe: e.benzigerUsd,
+              }))
+            );
+          } catch (e) {
+            // La de pesos ya está y vale: se dice que la de dólares no salió,
+            // en vez de deshacer las dos. Se carga a mano desde la de pesos.
+            console.error('facturas, la de dólares:', e);
+            if (dolaresId) await escribir(`facturas?id=eq.${dolaresId}`, 'DELETE').catch(() => {});
+            dolaresId = null;
+          }
+        }
+
         // La tilde de cobro de la evaluación sigue existiendo y la mira el
         // pipeline: se marca acá para que las dos pantallas digan lo mismo.
         await escribir(`evaluaciones?id=in.(${pedidas.join(',')})`, 'PATCH', {
           facturado: true,
           numero_factura: numero === null ? null : String(numero),
+          // Las órdenes de compra del cliente quedan en la evaluación, que es
+          // de donde el formulario las propone la próxima vez.
+          ...(ordenCompra ? { oc_cliente: ordenCompra } : {}),
+          ...(ordenCompraDolares ? { oc_cliente_usd: ordenCompraDolares } : {}),
         });
 
         await anotarAcceso({
@@ -353,10 +483,22 @@ export async function POST(req: Request) {
           accion: 'escritura',
           recurso: 'factura',
           recursoId: factura.id,
-          detalle: { alta: true, numero, total, evaluaciones: pedidas.length, sinComprobante },
+          detalle: {
+            alta: true,
+            numero,
+            total,
+            evaluaciones: pedidas.length,
+            sinComprobante,
+            ...(enDolares.length > 0 ? { enDolares: dolaresId, totalUsd } : {}),
+          },
         });
         refrescar();
-        return NextResponse.json({ ok: true, id: factura.id });
+        return NextResponse.json({
+          ok: true,
+          id: factura.id,
+          dolaresId,
+          sinDolares: enDolares.length > 0 && dolaresId === null,
+        });
       }
 
       case 'cobro': {

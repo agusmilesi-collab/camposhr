@@ -234,9 +234,9 @@ export default async function Comprobante({
                       <td>{r.texto}</td>
                       <td className="num">1,00</td>
                       <td>unidades</td>
-                      <td className="num">{r.importe === null ? '—' : pesos(r.importe)}</td>
+                      <td className="num">{r.importe === null ? '—' : `${d.signo} ${pesos(r.importe)}`}</td>
                       <td className="num">0,00</td>
-                      <td className="num">{r.importe === null ? '—' : pesos(r.importe)}</td>
+                      <td className="num">{r.importe === null ? '—' : `${d.signo} ${pesos(r.importe)}`}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -246,19 +246,33 @@ export default async function Comprobante({
 
               {/* ------------------------------------------------------ los totales */}
               <section className="fc-totales">
+                {/* En dólares, el comprobante dice la moneda y el tipo de
+                    cambio con el que ARCA lo autorizó: el cliente lo exige
+                    para pagar al cambio del día anterior al pago. */}
+                {d.moneda === 'DOL' && (
+                  <div className="fc-linea">
+                    <span>Moneda: Dólar estadounidense</span>
+                    <span className="fc-puntos" />
+                    <b>
+                      {d.cotizacion
+                        ? `Cotización $ ${d.cotizacion.valor}${d.cotizacion.fecha ? ` (BNA divisa vendedor, ${d.cotizacion.fecha})` : ''}`
+                        : 'Cotización: la fija ARCA al autorizar'}
+                    </b>
+                  </div>
+                )}
                 <div className="fc-linea">
                   <span>Subtotal</span>
                   <span className="fc-puntos" />
-                  <b>$ {pesos(d.total)}</b>
+                  <b>{d.signo} {pesos(d.total)}</b>
                 </div>
                 <div className="fc-linea">
                   <span>Importe otros tributos</span>
                   <span className="fc-puntos" />
-                  <b>$ {pesos(0)}</b>
+                  <b>{d.signo} {pesos(0)}</b>
                 </div>
                 <div className="fc-total">
                   <span>Importe total</span>
-                  <span>$ {pesos(d.total)}</span>
+                  <span>{d.signo} {pesos(d.total)}</span>
                 </div>
               </section>
 

@@ -49,6 +49,12 @@ export type Cliente = {
    * factura no se le manda sola, se descarga y se carga ahí a mano.
    */
   portalProveedores: boolean;
+  /**
+   * El adicional Benziger se le factura en dólares, en una factura aparte,
+   * en vez de pesificado dentro de la factura en pesos (Cofco, por su
+   * licitación). Un Benziger acordado en pesos no va aparte.
+   */
+  benzigerEnDolares: boolean;
   rubro: string | null;
   tamano: number | null;
   notas: string | null;
@@ -93,6 +99,7 @@ type FilaEmpresa = {
   condicion_iva: string | null;
   exige_orden_compra?: boolean | null;
   portal_proveedores?: boolean | null;
+  benziger_en_dolares?: boolean | null;
   email_facturacion: string | null;
   contacto: string | null;
   direccion_fiscal: string | null;
@@ -115,7 +122,7 @@ type FilaEmpresa = {
 
 const CAMPOS =
   'id,nombre,razon_social,cuit,condicion_iva,email_facturacion,contacto,' +
-  'direccion_fiscal,exige_orden_compra,portal_proveedores,rubro,tamano,notas,token_portal,informes_visibles,activa,' +
+  'direccion_fiscal,exige_orden_compra,portal_proveedores,benziger_en_dolares,rubro,tamano,notas,token_portal,informes_visibles,activa,' +
   'pedidos(id,puesto,estado,fecha_pedido,reabierto_el,evaluaciones(id,estado,baja_el)),cotizaciones(id,estado)';
 
 export async function listarClientes(): Promise<Cliente[]> {
@@ -148,6 +155,7 @@ export async function listarClientes(): Promise<Cliente[]> {
     direccionFiscal: e.direccion_fiscal,
     exigeOrdenCompra: Boolean(e.exige_orden_compra),
     portalProveedores: Boolean(e.portal_proveedores),
+    benzigerEnDolares: Boolean(e.benziger_en_dolares),
     rubro: e.rubro,
     tamano: e.tamano,
     notas: e.notas,

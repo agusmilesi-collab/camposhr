@@ -72,6 +72,7 @@ type Fila = {
   fecha: string;
   imp_total: string | number | null;
   moneda: string;
+  mon_cotiz: string | number | null;
   servicio_desde: string | null;
   servicio_hasta: string | null;
   vence_pago: string | null;
@@ -236,7 +237,7 @@ export async function emitirEnArca(facturaId: string): Promise<Emision> {
   const filas = await select<Fila>(
     'facturas',
     'select=id,estado,cae,cbte_tipo,numero,punto_venta,ambiente,solicitud,sin_comprobante,fecha,' +
-      'imp_total,moneda,servicio_desde,servicio_hasta,vence_pago,' +
+      'imp_total,moneda,mon_cotiz,servicio_desde,servicio_hasta,vence_pago,' +
       'emisores(cuit,punto_venta,ambiente,domicilio,inicio_actividades,ingresos_brutos),' +
       'empresas(nombre,razon_social,cuit,condicion_iva,direccion_fiscal),' +
       'inquilinos(nombre,cuit,dni,condicion_iva)' +
@@ -321,7 +322,9 @@ export async function emitirEnArca(facturaId: string): Promise<Emision> {
 
   const total = Number(f.imp_total ?? 0);
   if (!(total > 0)) return fallo('La factura no tiene importe.');
-  if (f.moneda !== 'PES') return fallo('Por ahora solo se emite en pesos.');
+  if (f.moneda !== 'PES' && f.moneda !== 'DOL') {
+    return fallo('Solo se emite en pesos o en dólares.');
+  }
 
   // El período y el vencimiento de pago son el día de la factura, que es como
   // las vienen emitiendo en Comprobantes en Línea: se factura un trabajo ya
@@ -332,6 +335,30 @@ export async function emitirEnArca(facturaId: string): Promise<Emision> {
   const vencePago = f.vence_pago ?? dia;
 
   const arca = arcaDe(emisor.cuit, ambiente).electronicBillingService;
+
+  // En dólares, la cotización la fija ARCA: la del BNA (divisa vendedor) del
+  // día hábil anterior, que se le pide a ARCA mismo y no se inventa. Queda en
+  // la factura para que el comprobante siga explicando su total y para
+  // pasarla a pesos en la cuenta del monotributo. `CanMisMonExt` en N: el
+  // cliente paga en pesos al cambio, no en dólares billete.
+  let cotizacion: { valor: number; fecha: string } | null = null;
+  if (f.moneda === 'DOL') {
+    try {
+      const q: any = await arca.getQuotation('DOL');
+      const valor = Number(q?.resultGet?.monCotiz);
+      const fch = String(q?.resultGet?.fchCotiz ?? '');
+      if (!(valor > 0)) {
+        return fallo(
+          `ARCA no dio la cotización del dólar${q?.errors?.length ? `: ${q.errors.map((e: any) => e.msg).join(' · ')}` : ''}. No se emitió nada.`,
+          502
+        );
+      }
+      cotizacion = { valor, fecha: /^\d{8}$/.test(fch) ? aIso(fch) : f.fecha.slice(0, 10) };
+    } catch (e) {
+      console.error('arca cotización:', e);
+      return fallo('ARCA no contestó la cotización del dólar. No se emitió nada.', 502);
+    }
+  }
 
   const guardar = async (
     numero: number,
@@ -422,8 +449,9 @@ export async function emitirEnArca(facturaId: string): Promise<Emision> {
     FchServDesde: compacta(desde),
     FchServHasta: compacta(hasta),
     FchVtoPago: compacta(vencePago),
-    MonId: 'PES',
-    MonCotiz: 1,
+    MonId: f.moneda,
+    MonCotiz: cotizacion ? cotizacion.valor : 1,
+    ...(cotizacion ? { CanMisMonExt: 'N' } : {}),
     CondicionIVAReceptorId: condicion,
   };
 
@@ -443,6 +471,7 @@ export async function emitirEnArca(facturaId: string): Promise<Emision> {
       servicio_desde: desde,
       servicio_hasta: hasta,
       vence_pago: vencePago,
+      ...(cotizacion ? { mon_cotiz: cotizacion.valor, mon_cotiz_fecha: cotizacion.fecha } : {}),
       solicitud,
       respuesta: null,
     });
@@ -527,6 +556,8 @@ type FilaAnulable = {
   condicion_iva_receptor: number | null;
   servicio_desde: string | null;
   servicio_hasta: string | null;
+  moneda: string | null;
+  mon_cotiz: string | number | null;
   emisores: { cuit: string | null } | null;
 };
 
@@ -566,7 +597,7 @@ export async function anularConNotaDeCredito(facturaId: string, quien: string): 
     'facturas',
     'select=id,estado,cae,cbte_tipo,numero,punto_venta,fecha,imp_total,ambiente,cobrada_at,' +
       'sin_comprobante,emisor_id,empresa_id,inquilino_id,doc_tipo,doc_nro,condicion_iva_receptor,' +
-      'servicio_desde,servicio_hasta,emisores(cuit)' +
+      'servicio_desde,servicio_hasta,moneda,mon_cotiz,emisores(cuit)' +
       `&id=eq.${facturaId}&limit=1`
   );
   if (!f) return noAnula('Esa factura no existe.', 404);
@@ -707,8 +738,11 @@ export async function anularConNotaDeCredito(facturaId: string, quien: string): 
     FchServDesde: compacta(f.servicio_desde ?? f.fecha),
     FchServHasta: compacta(f.servicio_hasta ?? f.fecha),
     FchVtoPago: compacta(hoy),
-    MonId: 'PES',
-    MonCotiz: 1,
+    // La nota va en la moneda de la factura y con la misma cotización: deja
+    // en cero exactamente lo que la factura dijo.
+    MonId: f.moneda ?? 'PES',
+    MonCotiz: f.moneda === 'DOL' ? Number(f.mon_cotiz ?? 0) || 1 : 1,
+    ...(f.moneda === 'DOL' ? { CanMisMonExt: 'N' } : {}),
     CondicionIVAReceptorId: f.condicion_iva_receptor,
     CbtesAsoc: [
       {
@@ -740,7 +774,8 @@ export async function anularConNotaDeCredito(facturaId: string, quien: string): 
       doc_nro: f.doc_nro,
       condicion_iva_receptor: f.condicion_iva_receptor,
       imp_total: total,
-      moneda: 'PES',
+      moneda: f.moneda ?? 'PES',
+      mon_cotiz: f.moneda === 'DOL' ? f.mon_cotiz : null,
       concepto:
         `Anulación de la Factura C ${String(f.punto_venta).padStart(5, '0')}-` +
         `${String(f.numero).padStart(8, '0')}`,

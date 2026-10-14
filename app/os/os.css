@@ -18744,3 +18744,105 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   font-size: 0.82rem;
   color: var(--os-suave);
 }
+
+/* ---------------------------------------------------------------------------
+   Precios acordados con un cliente (ficha del cliente, pestaña Datos).
+   Una tabla chica de un concepto por fila y un formulario de cuatro campos.
+   --------------------------------------------------------------------------- */
+.os-acuerdos-nota {
+  margin: 0 0 12px;
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: var(--os-suave);
+}
+
+.os-acuerdos {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.os-acuerdos-lista {
+  color: var(--os-suave);
+}
+
+.os-acuerdos-vigencia {
+  font-size: 0.83rem;
+  color: var(--os-suave);
+}
+
+.os-acuerdos-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-linea);
+}
+
+.os-acuerdos-form .os-boton {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.os-acuerdos-form .os-precio-nota {
+  grid-column: 1 / -1;
+}
+
+.os-acuerdos .os-precio-fila,
+.os-panel-cuerpo > .os-precio-historia .os-precio-fila {
+  align-items: center;
+}
+
+@media (max-width: 760px) {
+  .os-acuerdos-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* El detalle de lo que va a salir, en el formulario de facturar: una lista
+   de comprobantes con su importe y su orden de compra. */
+.os-factura-detalle {
+  grid-column: 1 / -1;
+}
+
+.os-factura-detalle-titulo {
+  margin: 0 0 4px;
+  color: var(--os-tinta);
+  font-weight: 600;
+}
+
+.os-factura-detalle ol {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+
+.os-factura-detalle li {
+  margin: 0 0 4px;
+}
+
+.os-factura-detalle li b {
+  color: var(--os-tinta);
+}
+
+.os-factura-detalle p {
+  margin: 0;
+}
+
+/* La orden de compra del cliente, debajo de la nuestra en la cola. */
+.os-oc-cliente {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--os-suave);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Una fila es un renglón, pero la orden del cliente tiene diez cifras y la
+   columna es angosta: acá se permite la segunda línea en vez de cortarla. */
+.os-tabla-fija td:has(> .os-oc-cliente) {
+  white-space: normal;
+}
+
+.os-importe-usd {
+  color: var(--os-azul);
+}

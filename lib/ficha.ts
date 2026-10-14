@@ -1,5 +1,5 @@
 import { hoyIso } from '@/lib/hora';
-import { fechaDePrecio } from '@/lib/baterias-precios';
+import { acuerdosDe, fechaDePrecio, precioParaCliente } from '@/lib/baterias-precios';
 import 'server-only';
 import { select } from '@/lib/supabase';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
@@ -424,19 +424,24 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
   const bateriaId = cabecera.pedidos?.baterias?.id;
   let precio: number | null = null;
   if (bateriaId) {
-    const historia = await select<{ precio: number; desde: string }>(
-      'bateria_precios',
-      `select=precio,desde&bateria_id=eq.${bateriaId}&order=desde.desc`
-    ).catch(() => []);
-    // La misma fecha que usan la cola de facturación y la orden de compra.
+    const empresaId = cabecera.pedidos?.empresa_id ?? null;
+    const [historia, acuerdos] = await Promise.all([
+      select<{ id: string; bateria_id: string; precio: number; desde: string; quien: string | null }>(
+        'bateria_precios',
+        `select=id,bateria_id,precio,desde,quien&bateria_id=eq.${bateriaId}&order=desde.desc`
+      ).catch(() => []),
+      // Lo acordado con el cliente (licitación) pisa la lista general.
+      empresaId ? acuerdosDe([empresaId]) : Promise.resolve([]),
+    ]);
+    // La misma fecha y la misma regla que usan la cola de facturación y la
+    // orden de compra.
     const dia =
       fechaDePrecio({
         fechaIngreso: cabecera.fecha_ingreso,
         fechaEntrevista: cabecera.fecha_entrevista,
         fechaPedido: null,
       }) ?? hoyIso();
-    const vigente = historia.find((h) => h.desde <= dia);
-    precio = vigente ? Number(vigente.precio) : null;
+    precio = precioParaCliente(historia, acuerdos, bateriaId, dia).precio;
   }
 
   // La factura se busca por el renglón: es lo que dice en qué comprobante

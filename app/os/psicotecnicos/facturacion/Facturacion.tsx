@@ -245,6 +245,15 @@ function GrupoCliente({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [abierto, setAbierto] = useState(false);
+  // Las órdenes de compra del cliente se leen mientras se escriben: el
+  // detalle de lo que va a salir las muestra antes de generar nada.
+  const [oc, setOc] = useState('');
+  const [ocUsd, setOcUsd] = useState('');
+  /** El valor que comparten todas, o vacío si difieren o falta: se escribe a mano. */
+  const comun = (valores: (string | null)[]) => {
+    const distintos = [...new Set(valores.map((v) => v?.trim() || ''))];
+    return distintos.length === 1 ? distintos[0] : '';
+  };
   const [seguroSinFactura, setSeguroSinFactura] = useState(false);
 
   // Quién factura: la dueña de la cola. Cada pestaña es de una evaluadora y
@@ -276,6 +285,26 @@ function GrupoCliente({
   const incompleta = faltaCliente.length > 0 || faltaEmisora.length > 0;
   const seleccion = pendientes.filter((p) => elegidas.includes(p.evaluacionId));
   const total = seleccion.reduce((n, p) => n + totalDe(p), 0);
+  const todasElegidas = seleccion.length === pendientes.length;
+  // Lo que sale aparte, en dólares: el Benziger del cliente que lo paga así.
+  // Es una segunda factura, con su propio número y su propia orden de compra del cliente.
+  const enDolares = seleccion.filter((p) => p.benzigerAparte);
+  const totalUsd = enDolares.reduce((n, p) => n + (p.benzigerUsd ?? 0), 0);
+  /**
+   * Una factura lleva una sola orden de compra del cliente. Si las tildadas
+   * traen órdenes distintas (o una la tiene y otra no), no van juntas: va
+   * una factura por orden. Lo mismo para la factura en dólares.
+   */
+  const ordenesDe = (valores: (string | null)[]) =>
+    [...new Set(valores.map((v) => v?.trim() || 'sin cargar'))];
+  const mezcla = ordenesDe(seleccion.map((p) => p.ocCliente)).filter((v) => v !== 'sin cargar').length > 0
+    ? ordenesDe(seleccion.map((p) => p.ocCliente))
+    : [];
+  const mezclaUsd =
+    ordenesDe(enDolares.map((p) => p.ocClienteUsd)).filter((v) => v !== 'sin cargar').length > 0
+      ? ordenesDe(enDolares.map((p) => p.ocClienteUsd))
+      : [];
+  const ordenesMezcladas = mezcla.length > 1 || mezclaUsd.length > 1;
 
   async function emitir(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -293,6 +322,11 @@ function GrupoCliente({
       setAbierto(false);
       router.refresh();
       if (r?.id) window.open(`/os/psicotecnicos/facturacion/comprobante/${r.id}`, '_blank');
+      // La segunda factura, en dólares, se abre también: son dos papeles.
+      if (r?.dolaresId) window.open(`/os/psicotecnicos/facturacion/comprobante/${r.dolaresId}`, '_blank');
+      if (r?.sinDolares) {
+        setError('La factura en pesos se generó, pero la de dólares (el Benziger) no. Hay que cargarla aparte.');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar.');
     } finally {
@@ -336,8 +370,31 @@ function GrupoCliente({
     <section className="os-panel">
       <div className="os-panel-top">
         <h2>{pendientes[0].cliente}</h2>
-        <span className="os-enlace">
-          {pendientes.length} {pendientes.length === 1 ? 'evaluación' : 'evaluaciones'}
+        <span className="os-panel-enlaces">
+          {/* Que el importe no sale de la lista general se dice acá, una vez
+              por cliente: es lo que explica por qué este grupo tiene otros
+              números que el de al lado. */}
+          {pendientes.some((p) => p.acordado || p.benzigerAcordado) && (
+            <span className="os-sello-estado os-azul" title="Este cliente tiene precios acordados (licitación)">
+              Precios acordados
+            </span>
+          )}
+          <span className="os-enlace">
+            {pendientes.length} {pendientes.length === 1 ? 'evaluación' : 'evaluaciones'}
+          </span>
+          {/* Con todas marcadas, el botón las suelta; si falta alguna, las
+              marca a todas. Así una sola acción sirve para los dos casos. */}
+          {pendientes.length > 1 && (
+            <button
+              type="button"
+              className="os-enlace-boton"
+              onClick={() =>
+                setElegidas(todasElegidas ? [] : pendientes.map((p) => p.evaluacionId))
+              }
+            >
+              {todasElegidas ? 'Deseleccionar todas' : 'Seleccionar todas'}
+            </button>
+          )}
         </span>
       </div>
 
@@ -411,12 +468,31 @@ function GrupoCliente({
                   ) : (
                     '—'
                   )}
+                  {/* La del cliente, guardada en la evaluación: es la que va
+                      impresa en la factura. En dólares, la de la segunda. */}
+                  {p.ocCliente && (
+                    <span className="os-oc-cliente" title="Orden de compra del cliente, factura en pesos">
+                      OC {p.ocCliente}
+                    </span>
+                  )}
+                  {p.ocClienteUsd && (
+                    <span className="os-oc-cliente" title="Orden de compra del cliente, factura en dólares">
+                      OC USD {p.ocClienteUsd}
+                    </span>
+                  )}
                 </td>
                 <td className="os-tabla-num" data-campo="Importe">
                   {p.precio === null ? (
                     <span className="os-dato-falta">sin precio</span>
                   ) : (
                     formatoImporte(totalDe(p))
+                  )}
+                  {/* El Benziger que va en la segunda factura, en dólares: no
+                      está sumado arriba porque es otro comprobante. */}
+                  {p.benzigerAparte && p.benzigerUsd !== null && (
+                    <span className="os-oc-cliente os-importe-usd" title="Benziger: en una factura aparte, en dólares">
+                      + USD {p.benzigerUsd} aparte
+                    </span>
                   )}
                 </td>
               </tr>
@@ -434,7 +510,17 @@ function GrupoCliente({
           <span className="os-dato-rotulo">Total</span>
           {formatoImporte(total)}
         </span>
-        {seleccion.some((p) => p.benziger !== null) && (
+        {/* Lo que va en la segunda factura, en dólares. No entra en el total
+            en pesos: son dos comprobantes. */}
+        {enDolares.length > 0 && (
+          <span title="El Benziger de este cliente se factura en dólares, en una factura aparte">
+            <span className="os-dato-rotulo">Aparte, en dólares</span>
+            {formatoImporte(totalUsd, 'USD')}
+          </span>
+        )}
+        {/* Solo si algún Benziger de lo tildado se pesifica al dólar: el
+            acordado en pesos no depende de la cotización. */}
+        {seleccion.some((p) => p.benziger !== null && !p.benzigerAcordado) && (
           <span>
             <span className="os-dato-rotulo">Dólar tarjeta</span>${' '}
             {(pendientes.find((p) => p.dolar)?.dolar ?? 0).toLocaleString('es-AR')}
@@ -446,11 +532,29 @@ function GrupoCliente({
         {!abierto && (
           <span className="os-resumen-acciones">
             {error && <span className="os-form-error">{error}</span>}
+            {ordenesMezcladas && (
+              <span className="os-form-error">
+                Órdenes de compra del cliente distintas ({(mezcla.length > 1 ? mezcla : mezclaUsd).join(', ')}):
+                va una factura por orden.
+              </span>
+            )}
             <button
               className="os-boton os-boton-firme"
-              disabled={seleccion.length === 0}
-              onClick={() => setAbierto(true)}
-              title={seleccion.length === 0 ? 'Seleccioná al menos una evaluación.' : undefined}
+              disabled={seleccion.length === 0 || ordenesMezcladas}
+              onClick={() => {
+                // Las órdenes de compra guardadas en las tildadas, si todas
+                // traen la misma. Si no, el campo queda vacío y se escribe.
+                setOc(comun(seleccion.map((p) => p.ocCliente)));
+                setOcUsd(comun(enDolares.map((p) => p.ocClienteUsd)));
+                setAbierto(true);
+              }}
+              title={
+                seleccion.length === 0
+                  ? 'Seleccioná al menos una evaluación.'
+                  : ordenesMezcladas
+                    ? 'Las tildadas tienen órdenes de compra del cliente distintas: tildá las de una sola orden.'
+                    : undefined
+              }
             >
               {seleccion.length === 0 ? 'Facturar' : `Facturar ${seleccion.length}`}
             </button>
@@ -596,6 +700,8 @@ function GrupoCliente({
                 className="os-campo"
                 name="ordenCompra"
                 maxLength={60}
+                value={oc}
+                onChange={(ev) => setOc(ev.target.value)}
                 // A quien la exige no se le factura sin ella: no paga la
                 // factura que no la trae impresa.
                 required={Boolean(fiscal?.exigeOrdenCompra)}
@@ -604,6 +710,33 @@ function GrupoCliente({
                 }
               />
             </div>
+            {/* La segunda factura, en dólares, con el Benziger. Cofco manda
+                una orden de compra por cada factura, así que la de dólares
+                lleva la suya; y anotando a mano, también su propio número. */}
+            {enDolares.length > 0 && (
+              <>
+                {!porArca && (
+                  <div className="os-campo-bloque os-tramo-1">
+                    <label className="os-etiqueta-campo">Número (factura en USD)</label>
+                    <input className="os-campo" name="numeroDolares" type="number" min="1" required />
+                  </div>
+                )}
+                <div className="os-campo-bloque os-tramo-2">
+                  <label className="os-etiqueta-campo">Orden de compra del cliente (factura en USD)</label>
+                  <input
+                    className="os-campo"
+                    name="ordenCompraDolares"
+                    maxLength={60}
+                    value={ocUsd}
+                    onChange={(ev) => setOcUsd(ev.target.value)}
+                    required={Boolean(fiscal?.exigeOrdenCompra)}
+                    placeholder={
+                      fiscal?.exigeOrdenCompra ? 'La orden de compra del Benziger' : 'Si el cliente dio una aparte'
+                    }
+                  />
+                </div>
+              </>
+            )}
             <div className="os-campo-bloque os-tramo-4">
               <label className="os-etiqueta-campo">Concepto</label>
               {/* Viene escrito con el puesto y la persona de cada tildada, y
@@ -617,13 +750,56 @@ function GrupoCliente({
             </div>
           </div>
 
-          <p className="os-form-nota">
-            El importe sale de las evaluaciones seleccionadas: {formatoImporte(total)}. Si el cliente
-            dio su orden de compra, se agrega al final del concepto.{' '}
-            {porArca
-              ? 'El número lo pone ARCA: se pide desde la factura, con el botón "Pedir CAE".'
-              : 'El número propuesto es el que sigue al último anotado; cambialo si no coincide con el de Comprobantes en Línea.'}
-          </p>
+          {/* Qué va a salir, comprobante por comprobante, con su importe y su
+              orden de compra: es lo que se mira antes de apretar el botón. Los
+              importes salen de las evaluaciones tildadas, no de lo escrito. */}
+          <div className="os-form-nota os-factura-detalle">
+            <p className="os-factura-detalle-titulo">Se va a generar:</p>
+            <ol>
+              {/* Cada factura con el concepto tal como va a salir impreso:
+                  el de siempre, más la orden del cliente al final. */}
+              <li>
+                <b>Factura en pesos</b> por {formatoImporte(total)}
+                {seleccion.some((p) => p.benziger !== null)
+                  ? ` (incluye ${seleccion.filter((p) => p.benziger !== null).length} Benziger pesificado)`
+                  : ''}
+                . Concepto: {conceptoPorDefecto(seleccion)}
+                {oc.trim() ? (
+                  <>
+                    {' · '}Orden de compra del cliente <b>{oc.trim()}</b>
+                  </>
+                ) : (
+                  <>
+                    {' · '}
+                    <span className="os-dato-falta">orden de compra del cliente sin cargar</span>
+                  </>
+                )}
+                .
+              </li>
+              {enDolares.length > 0 && (
+                <li>
+                  <b>Factura en dólares</b> por {formatoImporte(totalUsd, 'USD')}. Concepto:{' '}
+                  {enDolares.map((p) => `Adicional BTSA, ${p.candidato}`).join(' · ')}
+                  {ocUsd.trim() ? (
+                    <>
+                      {' · '}Orden de compra del cliente <b>{ocUsd.trim()}</b>
+                    </>
+                  ) : (
+                    <>
+                      {' · '}
+                      <span className="os-dato-falta">orden de compra del cliente sin cargar</span>
+                    </>
+                  )}
+                  .
+                </li>
+              )}
+            </ol>
+            <p>
+              {porArca
+                ? 'Los números los pone ARCA: se piden desde cada factura, con el botón "Pedir CAE".'
+                : 'El número propuesto es el que sigue al último anotado; cambialo si no coincide con el de Comprobantes en Línea.'}
+            </p>
+          </div>
 
           <div className="os-form-pie">
             <button

@@ -1603,6 +1603,70 @@ verdadero y baja un recibo en PDF (`/api/os/recibo/<id>`, dibujado con
 pero no lleva número ni CAE, no se le pide nada a ARCA y no entra en la cuenta
 del monotributo.
 
+## Un cliente puede tener precios acordados, con vigencia
+
+`empresa_precios` (`supabase/precios-por-cliente.sql`), se cargan en la ficha
+del cliente, pestaña Datos, panel "Precios acordados". Existen por las
+licitaciones: Lorena presentó precios en Cofco y se respetan el plazo que fija
+la licitación aunque la lista general suba en el medio.
+
+**Mientras rige, el acuerdo pisa a la lista general; vencido, el cliente
+vuelve solo a la lista.** `precioParaCliente` en `lib/baterias-precios.ts`
+resuelve: acuerdo vigente a la fecha que decide el precio (`fechaDePrecio`,
+el día en que se cargó el candidato), y si no hay, `bateria_precios`. Lo usan
+los cuatro lugares que calculan un precio, y tienen que seguir usándolo: la
+cola de facturación (`lib/facturas.ts`), la orden de compra
+(`lib/orden-compra.ts`), la ficha (`lib/ficha.ts`) y el portal del cliente
+(`lib/precio-portal.ts`, que recibe la empresa). Un acuerdo con `hasta` nula
+rige hasta que se cargue otro o se saque.
+
+**El Benziger acordado va en pesos** (`bateria_id` nula). En la lista general
+está en dólares al dólar tarjeta del día; una licitación lo fija en pesos, y
+entonces el renglón de la factura, la orden y el portal dicen "precio
+acordado" en vez de la cotización. Sin fila de Benziger, el cliente sigue
+pagándolo en dólares aunque tenga las baterías acordadas.
+
+Cada fila de la cola lleva `acordado` y `benzigerAcordado`: el grupo del
+cliente muestra "Precios acordados" y la nota del dólar sale solo si algún
+Benziger tildado se pesifica.
+
+## A quien paga el Benziger en dólares se le factura en dólares, aparte
+
+`empresas.benziger_en_dolares` (`supabase/benziger-en-dolares.sql`), en la
+ficha del cliente como "Benziger: en dólares, en una factura aparte". Hoy lo
+tiene solo Cofco: su licitación fija el Benziger en USD 40 y manda **una orden
+de compra (lo que Cofco llama "nota de pedido") por la factura en pesos y
+otra por la de dólares** (decisión de
+Agustín, 14/10/2026). El resto sigue como antes: pesificado al dólar tarjeta
+dentro de la factura en pesos. Un Benziger acordado en pesos
+(`empresa_precios`) no va aparte.
+
+**Al facturar salen dos comprobantes.** La factura en pesos lleva solo las
+baterías; a la vez nace una factura C en moneda `DOL` (`facturas.moneda`),
+unida a la de pesos por `facturas.hermana_id`, con un renglón de USD 40 por
+candidato y su propia orden de compra del cliente (`ordenCompraDolares` en el formulario;
+y su propio número si se anota a mano). Sus renglones van sin evaluación,
+como el adicional en la de pesos. Si la de dólares no se puede guardar, la de
+pesos queda igual y la pantalla lo dice.
+
+**La cotización la fija ARCA.** `emitirEnArca` acepta `DOL`: antes de pedir
+el CAE le pide a ARCA la cotización (`getQuotation('DOL')`, BNA divisa
+vendedor del día hábil anterior), la manda en `MonCotiz` con `CanMisMonExt`
+en N (se cobra en pesos al cambio) y la guarda en `facturas.mon_cotiz` y
+`mon_cotiz_fecha`. El comprobante, el PDF y el correo la indican, que es lo
+que exige la orden de compra de Cofco. La nota de crédito de una factura en
+dólares va en dólares y con la misma cotización. **Esto no se probó contra
+ARCA**: las dos emisoras están en producción y no hay certificado de
+homologación cargado; la primera en dólares hay que mirarla.
+
+**Para el monotributo, la factura en dólares cuenta pasada a pesos con esa
+cotización** (`enPesos` en `marchaDelMonotributo`). Sin cotización guardada
+queda afuera y la pantalla dice cuántas.
+
+**El recibo de pago de la factura en dólares no se genera**: `reciboDePago`
+arma el papel desde las evaluaciones de los renglones, y la de dólares no
+tiene ninguna. Se marca cobrada igual.
+
 ## El concepto de una factura es "Perfil <puesto>, <persona>"
 
 `conceptoDe` en `lib/facturas-tipos.ts`. El formulario lo trae escrito y se

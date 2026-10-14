@@ -97,15 +97,23 @@ function cuerpo(d: DatosFactura, nombre: string | null) {
     ? `Va adjunta la nota de crédito C N° ${d.numeroLargo} de ${d.emisor.razonSocial}, del ${d.fecha}` +
       (d.anula ? `, que anula la factura N° ${d.anula.numero}.` : '.')
     : `Va adjunta la factura C N° ${d.numeroLargo} de ${d.emisor.razonSocial}, emitida el ${d.fecha} a nombre de ${d.cliente.razonSocial}.`;
+  // En dólares, el importe se escribe en dólares y se dice la cotización.
+  const enMoneda = (n: number) =>
+    d.moneda === 'DOL'
+      ? `USD ${n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : pesosDeOrden(n);
   const datos: [string, string][] = d.esNota
-    ? [['Importe', pesosDeOrden(d.total)]]
+    ? [['Importe', enMoneda(d.total)]]
     : [
-        ['Importe', pesosDeOrden(d.total)],
+        ['Importe', enMoneda(d.total)],
+        ...(d.moneda === 'DOL' && d.cotizacion
+          ? ([['Cotización', `$ ${d.cotizacion.valor} (BNA divisa vendedor)`]] as [string, string][])
+          : []),
         ['Vencimiento del pago', d.vencePago],
         ['Forma de pago', 'Transferencia bancaria'],
         ...(d.cliente.ordenPropia ? ([['Orden de compra', d.cliente.ordenPropia]] as [string, string][]) : []),
       ];
-  const importe = (n: number | null) => (n === null ? '' : pesosDeOrden(n));
+  const importe = (n: number | null) => (n === null ? '' : enMoneda(n));
 
   const texto = [
     saludo,

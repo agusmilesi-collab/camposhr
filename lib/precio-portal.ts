@@ -3,9 +3,11 @@ import { RESPALDO, type BateriaDelPortal } from '@/lib/baterias';
 import { llevaDiscursivo } from '@/lib/discursivo';
 import {
   BENZIGER_USD,
+  acuerdosDe,
+  acuerdoVigente,
   baterias as leerBaterias,
   dolarTarjeta,
-  precioA,
+  precioParaCliente,
 } from '@/lib/baterias-precios';
 
 /**
@@ -24,10 +26,17 @@ import {
  * y se pesifica al dólar tarjeta del día en que se emite la factura, así que lo
  * que el portal muestra es el valor de hoy y se dice: el definitivo es el del
  * día de la factura.
+ *
+ * **Un cliente con precios acordados ve los suyos.** Con `empresaId`, lo que
+ * tenga acordado y vigente hoy (`empresa_precios`, una licitación) pisa la
+ * lista general, batería por batería; y si el Benziger está acordado en
+ * pesos, sale ese importe y no los dólares.
  */
 export type BateriaConPrecio = BateriaDelPortal & {
   /** Por candidato, en pesos. Null si esa batería no tiene precio cargado. */
   precio: number | null;
+  /** Si el precio es el acordado con este cliente y no el de la lista. */
+  acordado: boolean;
 };
 
 export type Alcance = {
@@ -47,11 +56,20 @@ export type Alcance = {
    * viene de afuera.
    */
   dolar: number | null;
+  /**
+   * El Benziger acordado con este cliente, en pesos. Null si paga el de la
+   * lista, en dólares: entonces rigen `benzigerUsd` y `dolar`.
+   */
+  benzigerAcordado: number | null;
 };
 
-export async function alcanceYPrecios(): Promise<Alcance> {
+export async function alcanceYPrecios(empresaId?: string | null): Promise<Alcance> {
   try {
-    const [filas, cambio] = await Promise.all([leerBaterias(), dolarTarjeta()]);
+    const [filas, cambio, acuerdos] = await Promise.all([
+      leerBaterias(),
+      dolarTarjeta(),
+      empresaId ? acuerdosDe([empresaId]) : Promise.resolve([]),
+    ]);
 
     // Una batería sin sus dos textos no se puede ofrecer: el cliente elegiría a
     // ciegas. Si no queda ninguna, se muestra el respaldo.
@@ -65,19 +83,24 @@ export async function alcanceYPrecios(): Promise<Alcance> {
         // Lo que decide si al cliente se le piden los datos del potencial: que
         // la batería incluya el análisis discursivo.
         conPotencial: llevaDiscursivo(b.tests),
-        precio: precioA(b.precios),
+        ...precioParaCliente(b.precios, acuerdos, b.id),
       }));
 
+    const bzg = acuerdoVigente(acuerdos, null);
     return {
-      baterias: listas.length ? listas : RESPALDO.map((b) => ({ ...b, precio: null })),
+      baterias: listas.length
+        ? listas
+        : RESPALDO.map((b) => ({ ...b, precio: null, acordado: false })),
       benzigerUsd: BENZIGER_USD,
       dolar: cambio?.valor ?? null,
+      benzigerAcordado: bzg ? Number(bzg.precio) : null,
     };
   } catch {
     return {
-      baterias: RESPALDO.map((b) => ({ ...b, precio: null })),
+      baterias: RESPALDO.map((b) => ({ ...b, precio: null, acordado: false })),
       benzigerUsd: BENZIGER_USD,
       dolar: null,
+      benzigerAcordado: null,
     };
   }
 }
