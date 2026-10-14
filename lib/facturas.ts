@@ -114,6 +114,7 @@ type FilaFactura = {
     descripcion: string;
     detalle: string | null;
     importe: string | number | null;
+    adicional_de?: string | null;
     evaluaciones: {
       ciudad: string | null;
       personas: { nombre: string } | null;
@@ -156,7 +157,7 @@ export async function listarFacturas(): Promise<Factura[]> {
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,mon_cotiz,hermana_id,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,punto_venta_manual,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
-      'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
+      'factura_items(id,evaluacion_id,adicional_de,descripcion,detalle,importe,' +
       'evaluaciones(ciudad,personas(nombre),pedidos(puesto)))' +
       // Solo facturas. Las notas de crédito viven en la misma tabla y no son
       // trabajo cobrado ni por cobrar: se llega a ellas desde la factura que
@@ -164,7 +165,7 @@ export async function listarFacturas(): Promise<Factura[]> {
       '&cbte_tipo=eq.11&order=fecha.desc,numero.desc',
     CACHE_COMERCIAL
   );
-  return filas.map(armarFactura);
+  return conAdicionales(filas.map(armarFactura));
 }
 
 /**
@@ -204,11 +205,11 @@ export async function verFactura(id: string): Promise<Factura | null> {
     'select=id,numero,punto_venta,fecha,emisor_id,empresa_id,inquilino_id,concepto,orden_compra,cotizacion_id,' +
       'imp_total,moneda,mon_cotiz,hermana_id,estado,cobrada_at,forma_pago,notas,cae,cae_vence_el,ambiente,sin_comprobante,' +
       'emisores(razon_social,punto_venta_manual,evaluadoras(nombre)),empresas(nombre),inquilinos(nombre),' +
-      'factura_items(id,evaluacion_id,descripcion,detalle,importe,' +
+      'factura_items(id,evaluacion_id,adicional_de,descripcion,detalle,importe,' +
       'evaluaciones(ciudad,personas(nombre),pedidos(puesto)))' +
       `&id=eq.${id}&limit=1`
   );
-  return filas[0] ? armarFactura(filas[0]) : null;
+  return filas[0] ? (await conAdicionales([armarFactura(filas[0])]))[0] : null;
 }
 
 function armarFactura(f: FilaFactura): Factura {
@@ -250,8 +251,45 @@ function armarFactura(f: FilaFactura): Factura {
       importe: numeroOno(r.importe),
       persona: r.evaluaciones?.personas?.nombre ?? null,
       puesto: puestoConCiudad(r.evaluaciones?.pedidos?.puesto, r.evaluaciones?.ciudad) || null,
+      adicionalDe: r.adicional_de ?? null,
     })),
   };
+}
+
+/**
+ * Les pone nombre y puesto a los renglones de adicional, que no traen la
+ * evaluación embebida (`adicional_de` va sin clave foránea, ver
+ * `supabase/factura-items-adicional-de.sql`). Una sola consulta para todas.
+ */
+async function conAdicionales(facturas: Factura[]): Promise<Factura[]> {
+  const ids = [
+    ...new Set(
+      facturas.flatMap((f) => f.renglones.filter((r) => !r.persona && r.adicionalDe).map((r) => r.adicionalDe as string))
+    ),
+  ];
+  if (ids.length === 0) return facturas;
+  const filas = await select<{
+    id: string;
+    ciudad: string | null;
+    personas: { nombre: string } | null;
+    pedidos: { puesto: string } | null;
+  }>('evaluaciones', `select=id,ciudad,personas(nombre),pedidos(puesto)&id=in.(${ids.join(',')})`, CACHE_COMERCIAL).catch(
+    () => []
+  );
+  const por = new Map(filas.map((e) => [e.id, e]));
+  return facturas.map((f) => ({
+    ...f,
+    renglones: f.renglones.map((r) => {
+      const e = !r.persona && r.adicionalDe ? por.get(r.adicionalDe) : undefined;
+      return e
+        ? {
+            ...r,
+            persona: e.personas?.nombre ?? r.persona,
+            puesto: puestoConCiudad(e.pedidos?.puesto, e.ciudad) || r.puesto,
+          }
+        : r;
+    }),
+  }));
 }
 
 type FilaFacturable = {

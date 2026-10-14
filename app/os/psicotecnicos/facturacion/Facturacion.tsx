@@ -152,8 +152,16 @@ function fechaBreve(iso: string | null): string {
   return m ? `${m[3]}/${m[2]}/${m[1].slice(2)}` : '—';
 }
 
-/** A cuántas personas cubre una factura, sin contar los adicionales. */
-const cubre = (f: Factura) => f.renglones.filter((r) => r.evaluacionId !== null).length;
+/**
+ * A cuántas personas cubre una factura, sin contar los adicionales. En la
+ * factura en dólares todos los renglones son adicionales: ahí se cuentan las
+ * personas de las que son.
+ */
+const cubre = (f: Factura) => {
+  const propias = f.renglones.filter((r) => r.evaluacionId !== null).length;
+  if (propias > 0) return propias;
+  return new Set(f.renglones.map((r) => r.adicionalDe).filter(Boolean)).size;
+};
 
 /**
  * Cuánto se cobró por un renglón.

@@ -59,6 +59,13 @@ export type Renglon = {
    */
   persona: string | null;
   puesto: string | null;
+  /**
+   * En el renglón de un adicional (Benziger), la evaluación de la que es: el
+   * renglón no lleva `evaluacionId` porque la persona ya está cubierta por
+   * otro, acá o en su factura en pesos. Es lo que deja listar a quién cubre
+   * la factura en dólares.
+   */
+  adicionalDe: string | null;
 };
 
 /**

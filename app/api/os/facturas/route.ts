@@ -362,6 +362,7 @@ export async function POST(req: Request) {
           renglones.push({
             factura_id: factura.id,
             evaluacion_id: e.evaluacionId,
+            adicional_de: null,
             descripcion: conOrden(propio ?? conceptoDe(e), ordenCompra),
             // Sin segunda línea: la batería y la fecha de entrega son datos
             // del trabajo interno, y en el papel del cliente no van.
@@ -378,6 +379,7 @@ export async function POST(req: Request) {
               // Escrito y no omitido porque PostgREST rechaza un alta en lote
               // donde los objetos no tienen exactamente las mismas claves.
               evaluacion_id: null,
+              adicional_de: e.evaluacionId,
               descripcion: conOrden(`Adicional BTSA, ${e.candidato}`, ordenCompra),
               detalle: e.benzigerAcordado
                 ? 'Precio acordado'
@@ -452,6 +454,7 @@ export async function POST(req: Request) {
               enDolares.map((e) => ({
                 factura_id: segunda.id,
                 evaluacion_id: null,
+                adicional_de: e.evaluacionId,
                 // El mismo renglón que lleva el adicional en una factura en
                 // pesos. Sin segunda línea: la moneda y la cotización las
                 // dice el comprobante en sus totales.
