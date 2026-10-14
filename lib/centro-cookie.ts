@@ -22,8 +22,13 @@
 
 export const COOKIE = 'centro_sesion';
 
-/** Treinta días: se entra desde el mismo teléfono todas las semanas. */
-export const DURACION = 60 * 60 * 24 * 30;
+/**
+ * Noventa días. Es la red para la sesión que quedó abierta sin que nadie se
+ * diera cuenta (la computadora del consultorio, un teléfono perdido): para el
+ * caso conocido está cambiar la contraseña, que corta todas las sesiones en el
+ * acto. Pide la contraseña unas cuatro veces por año y no hace falta enlace.
+ */
+export const DURACION = 60 * 60 * 24 * 90;
 
 async function firmar(texto: string, secreto: string): Promise<string> {
   const clave = await crypto.subtle.importKey(
