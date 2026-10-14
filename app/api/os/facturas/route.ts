@@ -851,6 +851,14 @@ export async function POST(req: Request) {
         // Los renglones se van con la factura por la clave foránea, y las
         // evaluaciones vuelven a la cola: si la factura no existe, nadie las
         // cubrió.
+        // La factura en dólares del mismo trabajo se va con la de pesos: sin
+        // ella no tiene a quién cobrarle. Solo si tampoco salió de acá (sin
+        // número ni CAE); una que ya se pidió a ARCA se mira aparte. Primero
+        // ella: al borrar la de pesos, la clave foránea le vacía el vínculo
+        // y ya no se la encuentra.
+        await escribir(`facturas?hermana_id=eq.${id}&cae=is.null&numero=is.null`, 'DELETE').catch((e) =>
+          console.error('facturas, borrar la hermana:', e)
+        );
         await escribir(`facturas?id=eq.${id}`, 'DELETE');
         await Promise.all([
           ids
