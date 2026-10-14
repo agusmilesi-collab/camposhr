@@ -1649,6 +1649,19 @@ y su propio número si se anota a mano). Sus renglones van sin evaluación,
 como el adicional en la de pesos. Si la de dólares no se puede guardar, la de
 pesos queda igual y la pantalla lo dice.
 
+**Las dos pueden salir por separado.** Cofco manda la orden de compra de
+cada una cuando quiere (la del Benziger de Cordera llegó sola). El detalle
+"Se va a generar" del formulario lleva una tilde por factura (`emitirPesos`,
+`emitirDolares`), y la persona **sigue en la cola hasta que salieron las
+dos**: `Facturable.pendiente` dice qué falta, y la fila muestra "Pesos
+facturados (N°)" o "Benziger facturado (N°)" por lo que ya salió. Lo sabe por
+`factura_items.adicional_de` (de quién es cada renglón de adicional, sin
+clave foránea para no romper los embeds). Solo la de dólares nace sin
+`hermana_id` si la de pesos no existe todavía; `esDeServicios` la reconoce
+como de psicotécnicos por `adicionalDe`. La tilde `facturado` de la
+evaluación se marca con la factura en pesos, que es la que cubre a la
+persona.
+
 **La cotización la fija ARCA.** `emitirEnArca` acepta `DOL`: antes de pedir
 el CAE le pide a ARCA la cotización (`getQuotation('DOL')`, BNA divisa
 vendedor del día hábil anterior), la manda en `MonCotiz` con `CanMisMonExt`

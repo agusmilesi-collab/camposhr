@@ -292,6 +292,8 @@ async function conAdicionales(facturas: Factura[]): Promise<Factura[]> {
   }));
 }
 
+type FacturaDeRenglon = { id: string; numero: number | null; punto_venta: number | null; estado: string };
+
 type FilaFacturable = {
   id: string;
   estado: string;
@@ -400,7 +402,7 @@ export async function listarAFacturar(
 ): Promise<Facturable[]> {
   const etapas = ETAPAS_ENTREVISTADO.map((e) => `"${e}"`).join(',');
   const filtro = soloId ? `id=eq.${encodeURIComponent(soloId)}` : `estado=in.(${etapas})`;
-  const [evaluaciones, renglones, enOrdenes, precios, acuerdos, cambio] = await Promise.all([
+  const [evaluaciones, renglones, adicionales, enOrdenes, precios, acuerdos, cambio] = await Promise.all([
     select<FilaFacturable>(
       'evaluaciones',
       'select=id,estado,fecha_ingreso,fecha_entrevista,fecha_entrega,benziger_administrado,con_benziger,baja_el,ciudad,' +
@@ -414,9 +416,16 @@ export async function listarAFacturar(
       // del lado comercial invalidaba la lista, o a los cinco minutos.
       [CACHE_COMERCIAL, CACHE_PSICOTECNICOS]
     ),
-    select<{ evaluacion_id: string | null }>(
+    select<{ evaluacion_id: string | null; facturas: FacturaDeRenglon | null }>(
       'factura_items',
-      'select=evaluacion_id&evaluacion_id=not.is.null',
+      'select=evaluacion_id,facturas(id,numero,punto_venta,estado)&evaluacion_id=not.is.null',
+      CACHE_COMERCIAL
+    ),
+    // Los Benziger ya facturados en dólares, por candidato: con el Benziger
+    // aparte, la persona sigue en la cola hasta que salieron las dos facturas.
+    select<{ adicional_de: string | null; facturas: (FacturaDeRenglon & { moneda: string }) | null }>(
+      'factura_items',
+      'select=adicional_de,facturas(id,numero,punto_venta,estado,moneda)&adicional_de=not.is.null',
       CACHE_COMERCIAL
     ),
     // En qué orden de compra entró cada persona, para tenerla a mano al
@@ -438,6 +447,18 @@ export async function listarAFacturar(
   ]);
 
   const facturadas = new Set(renglones.map((r) => r.evaluacion_id));
+  const numeroCorto = (f: FacturaDeRenglon) =>
+    f.numero === null ? 'sin número' : `${String(f.punto_venta ?? 0).padStart(5, '0')}-${String(f.numero).padStart(8, '0')}`;
+  const pesosDe = new Map<string, { id: string; numero: string }>();
+  for (const r of renglones) {
+    if (r.evaluacion_id && r.facturas) pesosDe.set(r.evaluacion_id, { id: r.facturas.id, numero: numeroCorto(r.facturas) });
+  }
+  const bzgEnDolaresDe = new Map<string, { id: string; numero: string }>();
+  for (const a of adicionales) {
+    if (a.adicional_de && a.facturas && a.facturas.moneda === 'DOL' && a.facturas.estado !== 'anulada') {
+      bzgEnDolaresDe.set(a.adicional_de, { id: a.facturas.id, numero: numeroCorto(a.facturas) });
+    }
+  }
   const ordenDe = new Map<string, { id: string; numero: string }>();
   for (const o of enOrdenes) {
     if (o.evaluacion_id && o.ordenes_compra) {
@@ -453,7 +474,6 @@ export async function listarAFacturar(
   return evaluaciones
     .filter(
       (e) =>
-        !facturadas.has(e.id) &&
         e.pedidos &&
         !esEmpresaEjemplo(e.pedidos.empresas?.nombre) &&
         // Quien se dio de baja no se factura: no corresponde.
@@ -480,6 +500,9 @@ export async function listarAFacturar(
       // dólares) no se le pesifica: sale en una segunda factura, en dólares.
       // Uno acordado en pesos ya está en pesos y va en la misma factura.
       const aparte = conBenziger && !bzg.acordado && Boolean(pedido.empresas?.benziger_en_dolares);
+      const pesosFacturada = pesosDe.get(e.id) ?? null;
+      const benzigerFacturado = aparte ? bzgEnDolaresDe.get(e.id) ?? null : null;
+      const pendiente = { pesos: !facturadas.has(e.id), dolares: aparte && !benzigerFacturado };
       return {
         evaluacionId: e.id,
         candidato: e.personas?.nombre ?? 'sin nombre',
@@ -503,8 +526,13 @@ export async function listarAFacturar(
         dolar: cambio?.valor ?? null,
         ocCliente: e.oc_cliente?.trim() || null,
         ocClienteUsd: e.oc_cliente_usd?.trim() || null,
+        pendiente,
+        pesosFacturada,
+        benzigerFacturado,
       };
-    });
+    })
+    // Sigue en la cola mientras le falte alguna de las dos facturas.
+    .filter((f) => f.pendiente.pesos || f.pendiente.dolares);
 }
 
 /**

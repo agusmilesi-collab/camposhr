@@ -1,20 +1,37 @@
-import { NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
-import { CACHE_CLIENTES, CACHE_COMERCIAL, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
-import { hayPuerta, huella, igual } from '@/lib/os-sesion';
-import { cookieDelOs } from '@/lib/os-sesion-servidor';
-import { anotarAcceso } from '@/lib/accesos';
-import { quienSoy } from '@/lib/identidad';
-import { listarAFacturar } from '@/lib/facturas';
-import { conceptoDe, conceptoPorDefecto, totalDe } from '@/lib/facturas-tipos';
-import { CATEGORIAS_SERVICIOS } from '@/lib/monotributo';
-import { anularConNotaDeCredito, emitirEnArca, probarConexion } from '@/lib/arca/emitir';
-import { guardarPdfDeFactura } from '@/lib/factura-archivo';
-import { avisarRecibo, enviarFactura, enviarTrasElCae, type CorreoTrasElCae } from '@/lib/correo-factura';
-import { enumerar, faltaParaEmitir, faltaParaFacturarle } from '@/lib/clientes-tipos';
+import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
+import {
+  CACHE_CLIENTES,
+  CACHE_COMERCIAL,
+  CACHE_PSICOTECNICOS,
+} from "@/lib/etiquetas";
+import { hayPuerta, huella, igual } from "@/lib/os-sesion";
+import { cookieDelOs } from "@/lib/os-sesion-servidor";
+import { anotarAcceso } from "@/lib/accesos";
+import { quienSoy } from "@/lib/identidad";
+import { listarAFacturar } from "@/lib/facturas";
+import { conceptoDe, conceptoPorDefecto, totalDe } from "@/lib/facturas-tipos";
+import { CATEGORIAS_SERVICIOS } from "@/lib/monotributo";
+import {
+  anularConNotaDeCredito,
+  emitirEnArca,
+  probarConexion,
+} from "@/lib/arca/emitir";
+import { guardarPdfDeFactura } from "@/lib/factura-archivo";
+import {
+  avisarRecibo,
+  enviarFactura,
+  enviarTrasElCae,
+  type CorreoTrasElCae,
+} from "@/lib/correo-factura";
+import {
+  enumerar,
+  faltaParaEmitir,
+  faltaParaFacturarle,
+} from "@/lib/clientes-tipos";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 // Pedir el CAE son tres idas a ARCA, y la primera del día suma el ticket.
 export const maxDuration = 60;
 
@@ -24,7 +41,7 @@ const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 function config() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY;
-  if (!url || !key) throw new Error('Falta la configuración de Supabase.');
+  if (!url || !key) throw new Error("Falta la configuración de Supabase.");
   return { url, key };
 }
 
@@ -35,14 +52,14 @@ async function escribir(camino: string, metodo: string, cuerpo?: unknown) {
     headers: {
       apikey: key,
       Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      Prefer: metodo === 'POST' ? 'return=representation' : 'return=minimal',
+      "Content-Type": "application/json",
+      Prefer: metodo === "POST" ? "return=representation" : "return=minimal",
     },
     body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
-    cache: 'no-store',
+    cache: "no-store",
   });
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
-  return metodo === 'POST' ? (await res.json())[0] : null;
+  return metodo === "POST" ? (await res.json())[0] : null;
 }
 
 function refrescar() {
@@ -51,7 +68,7 @@ function refrescar() {
   revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
   // Las facturas del Centro se leen con esta etiqueta: al quitar una, sus
   // cargos tienen que volver a la cola del mes.
-  revalidateTag('consultorios', { expire: 0 });
+  revalidateTag("consultorios", { expire: 0 });
 }
 
 /**
@@ -72,7 +89,7 @@ export async function POST(req: Request) {
     const clave = process.env.OS_CLAVE as string;
     const cookie = await cookieDelOs();
     if (!cookie || !igual(cookie, await huella(clave))) {
-      return NextResponse.json({ error: 'Sin sesión.' }, { status: 401 });
+      return NextResponse.json({ error: "Sin sesión." }, { status: 401 });
     }
   }
 
@@ -80,25 +97,34 @@ export async function POST(req: Request) {
   try {
     datos = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Cuerpo inválido.' }, { status: 400 });
+    return NextResponse.json({ error: "Cuerpo inválido." }, { status: 400 });
   }
 
   const yo = await quienSoy();
 
   try {
     switch (datos?.accion) {
-      case 'nueva': {
+      case "nueva": {
         const { emisorId, empresaId } = datos;
-        if (!UUID.test(emisorId ?? '')) {
-          return NextResponse.json({ error: 'Falta quién factura.' }, { status: 400 });
+        if (!UUID.test(emisorId ?? "")) {
+          return NextResponse.json(
+            { error: "Falta quién factura." },
+            { status: 400 },
+          );
         }
-        if (!UUID.test(empresaId ?? '')) {
-          return NextResponse.json({ error: 'Falta el cliente.' }, { status: 400 });
+        if (!UUID.test(empresaId ?? "")) {
+          return NextResponse.json(
+            { error: "Falta el cliente." },
+            { status: 400 },
+          );
         }
 
-        const fecha = String(datos.fecha ?? '');
+        const fecha = String(datos.fecha ?? "");
         if (!FECHA.test(fecha)) {
-          return NextResponse.json({ error: 'La fecha no es válida.' }, { status: 400 });
+          return NextResponse.json(
+            { error: "La fecha no es válida." },
+            { status: 400 },
+          );
         }
 
         // Con recibo y sin factura: el mismo alta, sin número ni punto de
@@ -106,28 +132,36 @@ export async function POST(req: Request) {
         const sinComprobante = datos.sinComprobante === true;
 
         const numero =
-          sinComprobante || datos.numero === '' || datos.numero === null || datos.numero === undefined
+          sinComprobante ||
+          datos.numero === "" ||
+          datos.numero === null ||
+          datos.numero === undefined
             ? null
             : Number(datos.numero);
         if (numero !== null && (!Number.isInteger(numero) || numero < 1)) {
           return NextResponse.json(
-            { error: 'El número de comprobante tiene que ser entero.' },
-            { status: 400 }
+            { error: "El número de comprobante tiene que ser entero." },
+            { status: 400 },
           );
         }
 
         const puntoVenta =
-          sinComprobante || datos.puntoVenta === '' || datos.puntoVenta === null || datos.puntoVenta === undefined
+          sinComprobante ||
+          datos.puntoVenta === "" ||
+          datos.puntoVenta === null ||
+          datos.puntoVenta === undefined
             ? null
             : Number(datos.puntoVenta);
 
         const pedidas: string[] = Array.isArray(datos.evaluaciones)
-          ? datos.evaluaciones.filter((x: unknown) => typeof x === 'string' && UUID.test(x))
+          ? datos.evaluaciones.filter(
+              (x: unknown) => typeof x === "string" && UUID.test(x),
+            )
           : [];
         if (pedidas.length === 0) {
           return NextResponse.json(
-            { error: 'Hay que elegir al menos una evaluación.' },
-            { status: 400 }
+            { error: "Hay que elegir al menos una evaluación." },
+            { status: 400 },
           );
         }
 
@@ -137,53 +171,88 @@ export async function POST(req: Request) {
         const entran = cola.filter((c) => pedidas.includes(c.evaluacionId));
         if (entran.length !== pedidas.length) {
           return NextResponse.json(
-            { error: 'Alguna evaluación ya está facturada. Recargá la pantalla.' },
-            { status: 409 }
+            {
+              error:
+                "Alguna evaluación ya está facturada. Recargá la pantalla.",
+            },
+            { status: 409 },
           );
         }
         // Un comprobante es de un solo cliente: el receptor es uno.
         if (entran.some((e) => e.empresaId !== empresaId)) {
           return NextResponse.json(
-            { error: 'No se puede facturar a dos clientes en el mismo comprobante.' },
-            { status: 400 }
+            {
+              error:
+                "No se puede facturar a dos clientes en el mismo comprobante.",
+            },
+            { status: 400 },
           );
+        }
+        // Qué se emite: con el Benziger en dólares son dos comprobantes y
+        // pueden salir por separado (Cofco manda una orden de compra por cada
+        // uno, y no siempre juntas). Lo que no se emite ahora queda en la cola.
+        const emitirPesos = sinComprobante || datos.emitirPesos !== false;
+        const emitirDolares = !sinComprobante && datos.emitirDolares !== false;
+        if (!emitirPesos && !emitirDolares) {
+          return NextResponse.json(
+            { error: "Hay que emitir al menos una de las dos facturas." },
+            { status: 400 },
+          );
+        }
+        if (emitirPesos) {
+          const yaEnPesos = entran.filter((e) => !e.pendiente.pesos);
+          if (yaEnPesos.length > 0) {
+            return NextResponse.json(
+              {
+                error: `${yaEnPesos.map((e) => e.candidato).join(", ")} ya ${yaEnPesos.length === 1 ? "tiene" : "tienen"} su factura en pesos: a esa persona solo le falta la de dólares.`,
+              },
+              { status: 409 },
+            );
+          }
         }
         // Una factura lleva una sola orden de compra del cliente: si las
         // elegidas traen órdenes distintas, o una la tiene y otra no, no van
         // juntas. La pantalla lo frena; acá se repite por si llega igual.
-        const distintas = (valores: (string | null)[]) =>
-          [...new Set(valores.map((v) => v?.trim() || ''))];
+        const distintas = (valores: (string | null)[]) => [
+          ...new Set(valores.map((v) => v?.trim() || "")),
+        ];
         const ocs = distintas(entran.map((e) => e.ocCliente));
-        if (ocs.some(Boolean) && ocs.length > 1) {
+        if (emitirPesos && ocs.some(Boolean) && ocs.length > 1) {
           return NextResponse.json(
             {
               error: `Las evaluaciones elegidas tienen órdenes de compra del cliente distintas (${ocs
-                .map((o) => o || 'sin cargar')
-                .join(', ')}). Va una factura por orden.`,
+                .map((o) => o || "sin cargar")
+                .join(", ")}). Va una factura por orden.`,
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
-        const ocsUsd = distintas(entran.filter((e) => e.benzigerAparte).map((e) => e.ocClienteUsd));
-        if (ocsUsd.some(Boolean) && ocsUsd.length > 1) {
+        const ocsUsd = distintas(
+          entran
+            .filter((e) => e.benzigerAparte && e.pendiente.dolares)
+            .map((e) => e.ocClienteUsd),
+        );
+        if (emitirDolares && ocsUsd.some(Boolean) && ocsUsd.length > 1) {
           return NextResponse.json(
             {
               error: `Los Benziger elegidos tienen órdenes de compra del cliente distintas (${ocsUsd
-                .map((o) => o || 'sin cargar')
-                .join(', ')}). Va una factura en dólares por orden.`,
+                .map((o) => o || "sin cargar")
+                .join(", ")}). Va una factura en dólares por orden.`,
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
-        const sinPrecio = entran.filter((e) => e.precio === null);
+        const sinPrecio = emitirPesos
+          ? entran.filter((e) => e.precio === null)
+          : [];
         if (sinPrecio.length > 0) {
           return NextResponse.json(
             {
               error: `Falta el precio de la batería de ${sinPrecio
                 .map((e) => e.candidato)
-                .join(', ')}. Se carga en Sistema → Baterías.`,
+                .join(", ")}. Se carga en Sistema → Baterías.`,
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -193,19 +262,38 @@ export async function POST(req: Request) {
         // Lo que va aparte, en dólares: el Benziger del cliente que lo paga
         // así. Es una segunda factura C en moneda DOL, con un renglón de
         // USD 40 por candidato, que ARCA autoriza con la cotización del BNA.
-        const enDolares = sinComprobante ? [] : entran.filter((e) => e.benzigerAparte);
-        const totalUsd = enDolares.reduce((n, e) => n + (e.benzigerUsd ?? 0), 0);
+        const enDolares = emitirDolares
+          ? entran.filter((e) => e.benzigerAparte && e.pendiente.dolares)
+          : [];
+        const totalUsd = enDolares.reduce(
+          (n, e) => n + (e.benzigerUsd ?? 0),
+          0,
+        );
+        if (!emitirPesos && enDolares.length === 0) {
+          return NextResponse.json(
+            {
+              error:
+                "Ninguna de las elegidas tiene un Benziger en dólares pendiente de facturar.",
+            },
+            { status: 400 },
+          );
+        }
         const numeroDolares =
           enDolares.length === 0 ||
-          datos.numeroDolares === '' ||
+          datos.numeroDolares === "" ||
           datos.numeroDolares === null ||
           datos.numeroDolares === undefined
             ? null
             : Number(datos.numeroDolares);
-        if (numeroDolares !== null && (!Number.isInteger(numeroDolares) || numeroDolares < 1)) {
+        if (
+          numeroDolares !== null &&
+          (!Number.isInteger(numeroDolares) || numeroDolares < 1)
+        ) {
           return NextResponse.json(
-            { error: 'El número de la factura en dólares tiene que ser entero.' },
-            { status: 400 }
+            {
+              error: "El número de la factura en dólares tiene que ser entero.",
+            },
+            { status: 400 },
           );
         }
 
@@ -214,10 +302,11 @@ export async function POST(req: Request) {
         // de compra va adentro del concepto además de en su renglón, porque es
         // ahí donde el cliente la busca para aprobar el pago.
         const porDefecto = conceptoPorDefecto(entran);
-        const escrito = String(datos.concepto ?? '').trim();
-        const ordenCompra = String(datos.ordenCompra ?? '').trim() || null;
+        const escrito = String(datos.concepto ?? "").trim();
+        const ordenCompra = String(datos.ordenCompra ?? "").trim() || null;
         // La de la factura en dólares, cuando el cliente manda una aparte.
-        const ordenCompraDolares = String(datos.ordenCompraDolares ?? '').trim() || null;
+        const ordenCompraDolares =
+          String(datos.ordenCompraDolares ?? "").trim() || null;
         const base = escrito || porDefecto;
         const concepto =
           ordenCompra && !base.includes(ordenCompra)
@@ -225,7 +314,10 @@ export async function POST(req: Request) {
             : base;
         // Con una sola persona, el texto que pidió el cliente es también el del
         // renglón: si no, la factura diría dos cosas distintas por lo mismo.
-        const propio = escrito && escrito !== porDefecto && entran.length === 1 ? escrito : null;
+        const propio =
+          escrito && escrito !== porDefecto && entran.length === 1
+            ? escrito
+            : null;
 
         // El control de verdad está acá y no solo en el formulario. A una
         // factura no le puede faltar ningún dato de los que la norma exige del
@@ -237,10 +329,10 @@ export async function POST(req: Request) {
         let porArca = false;
         if (!sinComprobante) {
           const { url, key } = config();
-          const leer = async <T,>(camino: string): Promise<T | undefined> => {
+          const leer = async <T>(camino: string): Promise<T | undefined> => {
             const res = await fetch(`${url}/rest/v1/${camino}`, {
               headers: { apikey: key, Authorization: `Bearer ${key}` },
-              cache: 'no-store',
+              cache: "no-store",
             });
             return res.ok ? ((await res.json()) as T[])[0] : undefined;
           };
@@ -253,8 +345,8 @@ export async function POST(req: Request) {
               direccion_fiscal: string | null;
               exige_orden_compra: boolean;
             }>(
-              'empresas?select=nombre,razon_social,cuit,condicion_iva,direccion_fiscal,exige_orden_compra' +
-                `&id=eq.${empresaId}&limit=1`
+              "empresas?select=nombre,razon_social,cuit,condicion_iva,direccion_fiscal,exige_orden_compra" +
+                `&id=eq.${empresaId}&limit=1`,
             ),
             leer<{
               cuit: string | null;
@@ -263,27 +355,34 @@ export async function POST(req: Request) {
               ingresos_brutos: string | null;
               ambiente: string | null;
             }>(
-              `emisores?select=cuit,domicilio,inicio_actividades,ingresos_brutos,ambiente&id=eq.${emisorId}&limit=1`
+              `emisores?select=cuit,domicilio,inicio_actividades,ingresos_brutos,ambiente&id=eq.${emisorId}&limit=1`,
             ),
           ]);
-          porArca = emisor?.ambiente === 'produccion' && numero === null;
+          porArca = emisor?.ambiente === "produccion" && numero === null;
           // Anotando a mano, la de dólares también tiene su número, y es otro.
           if (!porArca && enDolares.length > 0 && numeroDolares === null) {
             return NextResponse.json(
-              { error: 'Falta el número de la factura en dólares (la del Benziger).' },
-              { status: 400 }
+              {
+                error:
+                  "Falta el número de la factura en dólares (la del Benziger).",
+              },
+              { status: 400 },
             );
           }
           // Cofco manda una orden de compra (su "nota de pedido") por la factura en pesos y otra por
           // la de dólares: cada factura lleva la suya, y a quien la exige no
           // se le emite la de dólares sin ella.
-          if (enDolares.length > 0 && !ordenCompraDolares && empresa?.exige_orden_compra) {
+          if (
+            enDolares.length > 0 &&
+            !ordenCompraDolares &&
+            empresa?.exige_orden_compra
+          ) {
             return NextResponse.json(
               {
                 error:
-                  'Este cliente exige su orden de compra en la factura: falta la de la factura en dólares (la del Benziger).',
+                  "Este cliente exige su orden de compra en la factura: falta la de la factura en dólares (la del Benziger).",
               },
-              { status: 400 }
+              { status: 400 },
             );
           }
           const faltaCliente = faltaParaFacturarle({
@@ -295,9 +394,9 @@ export async function POST(req: Request) {
           if (faltaCliente.length > 0) {
             return NextResponse.json(
               {
-                error: `No se puede facturar: a ${empresa?.nombre ?? 'ese cliente'} le falta ${enumerar(faltaCliente)}. Se carga en su ficha.`,
+                error: `No se puede facturar: a ${empresa?.nombre ?? "ese cliente"} le falta ${enumerar(faltaCliente)}. Se carga en su ficha.`,
               },
-              { status: 400 }
+              { status: 400 },
             );
           }
           const faltaEmisora = faltaParaEmitir({
@@ -308,111 +407,127 @@ export async function POST(req: Request) {
           });
           if (faltaEmisora.length > 0) {
             return NextResponse.json(
-              { error: `No se puede facturar: a la emisora le falta ${enumerar(faltaEmisora)}.` },
-              { status: 400 }
+              {
+                error: `No se puede facturar: a la emisora le falta ${enumerar(faltaEmisora)}.`,
+              },
+              { status: 400 },
             );
           }
           if (puntoVenta === null) {
             return NextResponse.json(
-              { error: 'Falta el punto de venta de la factura.' },
-              { status: 400 }
+              { error: "Falta el punto de venta de la factura." },
+              { status: 400 },
             );
           }
-          if (!ordenCompra && empresa?.exige_orden_compra) {
+          if (emitirPesos && !ordenCompra && empresa?.exige_orden_compra) {
             return NextResponse.json(
-              { error: 'Este cliente exige su orden de compra en la factura. Cargala antes de generarla.' },
-              { status: 400 }
+              {
+                error:
+                  "Este cliente exige su orden de compra en la factura. Cargala antes de generarla.",
+              },
+              { status: 400 },
             );
           }
         }
 
-        const factura = await escribir('facturas', 'POST', {
-          origen: 'os',
-          emisor_id: emisorId,
-          empresa_id: empresaId,
-          numero,
-          punto_venta: puntoVenta,
-          fecha,
-          imp_total: total,
-          moneda: 'PES',
-          concepto,
-          orden_compra: ordenCompra,
-          notas: String(datos.notas ?? '').trim() || null,
-          // La que se le va a pedir a ARCA todavía no salió por ningún lado:
-          // es un borrador hasta que la autorice. Como emitida contaba para
-          // el monotributo y se le podía marcar el cobro antes de existir.
-          estado: porArca ? 'borrador' : 'emitida',
-          sin_comprobante: sinComprobante,
-          cobrada_at: FECHA.test(datos.cobradaAt ?? '') ? datos.cobradaAt : null,
-          // La cotización queda congelada en la factura: el mes que viene el
-          // dólar es otro y el comprobante tiene que seguir explicando su total.
-          dolar_tarjeta: dolar,
-          dolar_fecha: dolar === null ? null : new Date().toISOString(),
-          quien: yo.nombre,
-        });
-
-        // Un renglón por evaluación, más uno por cada adicional Benziger: en el
-        // comprobante son dos conceptos distintos y con dos precios distintos.
         // La orden de compra del cliente va en el texto de cada renglón, que es
         // donde el cliente la busca en el papel (Producto / Servicio).
         const conOrden = (texto: string, oc: string | null) =>
           oc ? `${texto} · Orden de compra ${oc}` : texto;
-        const renglones: Record<string, unknown>[] = [];
-        for (const e of entran) {
-          renglones.push({
-            factura_id: factura.id,
-            evaluacion_id: e.evaluacionId,
-            adicional_de: null,
-            descripcion: conOrden(propio ?? conceptoDe(e), ordenCompra),
-            // Sin segunda línea: la batería y la fecha de entrega son datos
-            // del trabajo interno, y en el papel del cliente no van.
-            detalle: null,
-            cantidad: 1,
-            precio_unitario: e.precio,
-            importe: e.precio,
-          });
-          if (e.benziger !== null) {
-            renglones.push({
-              factura_id: factura.id,
-              // `evaluacion_id` en null y no ausente: el índice único es por
-              // evaluación y el adicional es un segundo renglón de la misma.
-              // Escrito y no omitido porque PostgREST rechaza un alta en lote
-              // donde los objetos no tienen exactamente las mismas claves.
-              evaluacion_id: null,
-              adicional_de: e.evaluacionId,
-              descripcion: conOrden(`Adicional BTSA, ${e.candidato}`, ordenCompra),
-              detalle: e.benzigerAcordado
-                ? 'Precio acordado'
-                : dolar === null
-                  ? 'USD 40'
-                  : `USD 40 al dólar tarjeta de hoy ($ ${dolar.toLocaleString('es-AR')})`,
-              cantidad: 1,
-              precio_unitario: e.benziger,
-              importe: e.benziger,
-            });
-          }
-        }
 
-        try {
-          await escribir('factura_items', 'POST', renglones);
-        } catch (e) {
-          // Sin renglones la factura no dice a quién cubre, que es justamente
-          // lo que esta pantalla vino a resolver. Se deshace el alta.
-          await escribir(`facturas?id=eq.${factura.id}`, 'DELETE');
-          // El choque esperable es el índice único por evaluación; cualquier
-          // otro error se dice como es, porque atribuirlo a una doble factura
-          // manda a buscar el problema donde no está.
-          const texto = e instanceof Error ? e.message : '';
-          const duplicada = texto.includes('23505') || texto.includes('duplicate key');
-          console.error('facturas renglones:', texto);
-          return NextResponse.json(
-            {
-              error: duplicada
-                ? 'Alguna evaluación ya está en otra factura. No se guardó nada.'
-                : 'No se pudieron guardar los renglones. No se guardó nada.',
-            },
-            { status: duplicada ? 409 : 500 }
-          );
+        let factura: { id: string } | null = null;
+        if (emitirPesos) {
+          const pesos: { id: string } = await escribir("facturas", "POST", {
+            origen: "os",
+            emisor_id: emisorId,
+            empresa_id: empresaId,
+            numero,
+            punto_venta: puntoVenta,
+            fecha,
+            imp_total: total,
+            moneda: "PES",
+            concepto,
+            orden_compra: ordenCompra,
+            notas: String(datos.notas ?? "").trim() || null,
+            // La que se le va a pedir a ARCA todavía no salió por ningún lado:
+            // es un borrador hasta que la autorice. Como emitida contaba para
+            // el monotributo y se le podía marcar el cobro antes de existir.
+            estado: porArca ? "borrador" : "emitida",
+            sin_comprobante: sinComprobante,
+            cobrada_at: FECHA.test(datos.cobradaAt ?? "")
+              ? datos.cobradaAt
+              : null,
+            // La cotización queda congelada en la factura: el mes que viene el
+            // dólar es otro y el comprobante tiene que seguir explicando su total.
+            dolar_tarjeta: dolar,
+            dolar_fecha: dolar === null ? null : new Date().toISOString(),
+            quien: yo.nombre,
+          });
+
+          // Un renglón por evaluación, más uno por cada adicional Benziger: en el
+          // comprobante son dos conceptos distintos y con dos precios distintos.
+          const renglones: Record<string, unknown>[] = [];
+          for (const e of entran) {
+            renglones.push({
+              factura_id: pesos.id,
+              evaluacion_id: e.evaluacionId,
+              adicional_de: null,
+              descripcion: conOrden(propio ?? conceptoDe(e), ordenCompra),
+              // Sin segunda línea: la batería y la fecha de entrega son datos
+              // del trabajo interno, y en el papel del cliente no van.
+              detalle: null,
+              cantidad: 1,
+              precio_unitario: e.precio,
+              importe: e.precio,
+            });
+            if (e.benziger !== null) {
+              renglones.push({
+                factura_id: pesos.id,
+                // `evaluacion_id` en null y no ausente: el índice único es por
+                // evaluación y el adicional es un segundo renglón de la misma.
+                // Escrito y no omitido porque PostgREST rechaza un alta en lote
+                // donde los objetos no tienen exactamente las mismas claves.
+                evaluacion_id: null,
+                adicional_de: e.evaluacionId,
+                descripcion: conOrden(
+                  `Adicional BTSA, ${e.candidato}`,
+                  ordenCompra,
+                ),
+                detalle: e.benzigerAcordado
+                  ? "Precio acordado"
+                  : dolar === null
+                    ? "USD 40"
+                    : `USD 40 al dólar tarjeta de hoy ($ ${dolar.toLocaleString("es-AR")})`,
+                cantidad: 1,
+                precio_unitario: e.benziger,
+                importe: e.benziger,
+              });
+            }
+          }
+
+          try {
+            await escribir("factura_items", "POST", renglones);
+          } catch (e) {
+            // Sin renglones la factura no dice a quién cubre, que es justamente
+            // lo que esta pantalla vino a resolver. Se deshace el alta.
+            await escribir(`facturas?id=eq.${pesos.id}`, "DELETE");
+            // El choque esperable es el índice único por evaluación; cualquier
+            // otro error se dice como es, porque atribuirlo a una doble factura
+            // manda a buscar el problema donde no está.
+            const texto = e instanceof Error ? e.message : "";
+            const duplicada =
+              texto.includes("23505") || texto.includes("duplicate key");
+            console.error("facturas renglones:", texto);
+            return NextResponse.json(
+              {
+                error: duplicada
+                  ? "Alguna evaluación ya está en otra factura. No se guardó nada."
+                  : "No se pudieron guardar los renglones. No se guardó nada.",
+              },
+              { status: duplicada ? 409 : 500 },
+            );
+          }
+          factura = pesos;
         }
 
         // La segunda factura, en dólares, con el Benziger de cada candidato.
@@ -426,31 +541,34 @@ export async function POST(req: Request) {
           // por persona, unidos con el punto, y la orden del cliente al final.
           const ocUsd = ordenCompraDolares ?? ordenCompra;
           const conceptoUsd =
-            enDolares.map((e) => `Adicional BTSA, ${e.candidato.trim()}`).join(' · ') +
-            (ocUsd ? ` · Orden de compra del cliente ${ocUsd}` : '');
+            enDolares
+              .map((e) => `Adicional BTSA, ${e.candidato.trim()}`)
+              .join(" · ") +
+            (ocUsd ? ` · Orden de compra del cliente ${ocUsd}` : "");
           try {
-            const segunda = await escribir('facturas', 'POST', {
-              origen: 'os',
+            const segunda = await escribir("facturas", "POST", {
+              origen: "os",
               emisor_id: emisorId,
               empresa_id: empresaId,
               numero: numeroDolares,
               punto_venta: puntoVenta,
               fecha,
               imp_total: totalUsd,
-              moneda: 'DOL',
-              hermana_id: factura.id,
+              moneda: "DOL",
+              // Unida a la de pesos: la que sale ahora, o la que ya salió.
+              hermana_id: factura?.id ?? entran[0]?.pesosFacturada?.id ?? null,
               concepto: conceptoUsd,
               orden_compra: ocUsd,
               notas: null,
-              estado: porArca ? 'borrador' : 'emitida',
+              estado: porArca ? "borrador" : "emitida",
               sin_comprobante: false,
               cobrada_at: null,
               quien: yo.nombre,
             });
             dolaresId = segunda.id;
             await escribir(
-              'factura_items',
-              'POST',
+              "factura_items",
+              "POST",
               enDolares.map((e) => ({
                 factura_id: segunda.id,
                 evaluacion_id: null,
@@ -463,22 +581,38 @@ export async function POST(req: Request) {
                 cantidad: 1,
                 precio_unitario: e.benzigerUsd,
                 importe: e.benzigerUsd,
-              }))
+              })),
             );
           } catch (e) {
             // La de pesos ya está y vale: se dice que la de dólares no salió,
             // en vez de deshacer las dos. Se carga a mano desde la de pesos.
-            console.error('facturas, la de dólares:', e);
-            if (dolaresId) await escribir(`facturas?id=eq.${dolaresId}`, 'DELETE').catch(() => {});
+            console.error("facturas, la de dólares:", e);
+            if (dolaresId)
+              await escribir(`facturas?id=eq.${dolaresId}`, "DELETE").catch(
+                () => {},
+              );
             dolaresId = null;
+            // Si era lo único que se pedía, no hay nada que haya salido bien.
+            if (!factura) {
+              return NextResponse.json(
+                { error: "No se pudo generar la factura en dólares." },
+                { status: 500 },
+              );
+            }
           }
         }
 
         // La tilde de cobro de la evaluación sigue existiendo y la mira el
         // pipeline: se marca acá para que las dos pantallas digan lo mismo.
-        await escribir(`evaluaciones?id=in.(${pedidas.join(',')})`, 'PATCH', {
-          facturado: true,
-          numero_factura: numero === null ? null : String(numero),
+        // La tilde se marca cuando sale la factura en pesos, que es la que cubre
+        // a la persona; la de dólares sola no la saca de la cola.
+        await escribir(`evaluaciones?id=in.(${pedidas.join(",")})`, "PATCH", {
+          ...(factura
+            ? {
+                facturado: true,
+                numero_factura: numero === null ? null : String(numero),
+              }
+            : {}),
           // Las órdenes de compra del cliente quedan en la evaluación, que es
           // de donde el formulario las propone la próxima vez.
           ...(ordenCompra ? { oc_cliente: ordenCompra } : {}),
@@ -487,9 +621,9 @@ export async function POST(req: Request) {
 
         await anotarAcceso({
           quien: yo.nombre,
-          accion: 'escritura',
-          recurso: 'factura',
-          recursoId: factura.id,
+          accion: "escritura",
+          recurso: "factura",
+          recursoId: factura?.id ?? dolaresId ?? undefined,
           detalle: {
             alta: true,
             numero,
@@ -502,51 +636,70 @@ export async function POST(req: Request) {
         refrescar();
         return NextResponse.json({
           ok: true,
-          id: factura.id,
+          // Lo que se abre: la de pesos, o la de dólares cuando salió sola.
+          id: factura?.id ?? dolaresId,
           dolaresId,
           sinDolares: enDolares.length > 0 && dolaresId === null,
         });
       }
 
-      case 'cobro': {
+      case "cobro": {
         const { id } = datos;
-        if (!UUID.test(id ?? '')) {
-          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        if (!UUID.test(id ?? "")) {
+          return NextResponse.json(
+            { error: "Identificador inválido." },
+            { status: 400 },
+          );
         }
-        const cobradaAt = datos.cobradaAt === null ? null : String(datos.cobradaAt ?? '');
+        const cobradaAt =
+          datos.cobradaAt === null ? null : String(datos.cobradaAt ?? "");
         if (cobradaAt !== null && !FECHA.test(cobradaAt)) {
-          return NextResponse.json({ error: 'La fecha de cobro no es válida.' }, { status: 400 });
+          return NextResponse.json(
+            { error: "La fecha de cobro no es válida." },
+            { status: 400 },
+          );
         }
         // Se cobra lo que se emitió. Un borrador, una rechazada, una anulada
         // o una nota de crédito no tienen qué cobrar, y marcarlas les daba
         // un recibo de pago numerado. Desmarcar se puede siempre.
         if (cobradaAt !== null) {
           const f = await leerFactura(id);
-          if (!f) return NextResponse.json({ error: 'Esa factura no existe.' }, { status: 404 });
-          if (f.cbte_tipo !== 11 || f.estado !== 'emitida') {
+          if (!f)
             return NextResponse.json(
-              { error: 'Solo se marca el cobro de una factura emitida.' },
-              { status: 409 }
+              { error: "Esa factura no existe." },
+              { status: 404 },
+            );
+          if (f.cbte_tipo !== 11 || f.estado !== "emitida") {
+            return NextResponse.json(
+              { error: "Solo se marca el cobro de una factura emitida." },
+              { status: 409 },
             );
           }
         }
         // Cómo entró la plata, que es lo que dice el recibo. Al desmarcar se
         // borra: el próximo cobro puede entrar de otra forma.
         const formaPago =
-          cobradaAt === null ? null : datos.formaPago === 'efectivo' ? 'efectivo' : 'transferencia';
-        await escribir(`facturas?id=eq.${id}`, 'PATCH', { cobrada_at: cobradaAt, forma_pago: formaPago });
+          cobradaAt === null
+            ? null
+            : datos.formaPago === "efectivo"
+              ? "efectivo"
+              : "transferencia";
+        await escribir(`facturas?id=eq.${id}`, "PATCH", {
+          cobrada_at: cobradaAt,
+          forma_pago: formaPago,
+        });
         // Al cobrar se le pone número al recibo de pago, si todavía no tiene.
         // Desmarcar no lo borra: ese recibo ya pudo haberse entregado.
         if (cobradaAt !== null) {
           try {
-            await escribir('rpc/asignar_recibo_pago', 'POST', { factura: id });
+            await escribir("rpc/asignar_recibo_pago", "POST", { factura: id });
           } catch (e) {
-            console.error('facturas, recibo de pago:', e);
+            console.error("facturas, recibo de pago:", e);
           }
         }
         const cubiertas = await evaluacionesDe(id);
         if (cubiertas) {
-          await escribir(`evaluaciones?id=in.(${cubiertas})`, 'PATCH', {
+          await escribir(`evaluaciones?id=in.(${cubiertas})`, "PATCH", {
             pagado: cobradaAt !== null,
           });
         }
@@ -555,8 +708,8 @@ export async function POST(req: Request) {
         if (cobradaAt !== null) await avisarRecibo(id);
         await anotarAcceso({
           quien: yo.nombre,
-          accion: 'escritura',
-          recurso: 'factura',
+          accion: "escritura",
+          recurso: "factura",
           recursoId: id,
           detalle: { cobrada_at: cobradaAt },
         });
@@ -577,73 +730,85 @@ export async function POST(req: Request) {
        * recalcula desde las evaluaciones tildadas, porque hay de dónde; en
        * estas no hay nada que calcular: lo que se factura es lo que se acordó.
        */
-      case 'suelta': {
+      case "suelta": {
         const { emisorId, empresaId } = datos;
-        if (!UUID.test(emisorId ?? '') || !UUID.test(empresaId ?? '')) {
+        if (!UUID.test(emisorId ?? "") || !UUID.test(empresaId ?? "")) {
           return NextResponse.json(
-            { error: 'Falta quién factura o a quién.' },
-            { status: 400 }
+            { error: "Falta quién factura o a quién." },
+            { status: 400 },
           );
         }
-        const fecha = String(datos.fecha ?? '');
+        const fecha = String(datos.fecha ?? "");
         if (!FECHA.test(fecha)) {
-          return NextResponse.json({ error: 'La fecha no es válida.' }, { status: 400 });
+          return NextResponse.json(
+            { error: "La fecha no es válida." },
+            { status: 400 },
+          );
         }
-        const concepto = String(datos.concepto ?? '').trim();
+        const concepto = String(datos.concepto ?? "").trim();
         if (concepto.length < 3) {
           return NextResponse.json(
-            { error: 'Escribí qué se está facturando.' },
-            { status: 400 }
+            { error: "Escribí qué se está facturando." },
+            { status: 400 },
           );
         }
         const importe = Number(datos.importe);
         if (!Number.isFinite(importe) || importe <= 0) {
-          return NextResponse.json({ error: 'El importe no es válido.' }, { status: 400 });
+          return NextResponse.json(
+            { error: "El importe no es válido." },
+            { status: 400 },
+          );
         }
         const numero =
-          datos.numero === '' || datos.numero === null || datos.numero === undefined
+          datos.numero === "" ||
+          datos.numero === null ||
+          datos.numero === undefined
             ? null
             : Number(datos.numero);
         if (numero !== null && (!Number.isInteger(numero) || numero < 1)) {
           return NextResponse.json(
-            { error: 'El número de comprobante tiene que ser entero.' },
-            { status: 400 }
+            { error: "El número de comprobante tiene que ser entero." },
+            { status: 400 },
           );
         }
         const puntoVenta =
-          datos.puntoVenta === '' || datos.puntoVenta === null || datos.puntoVenta === undefined
+          datos.puntoVenta === "" ||
+          datos.puntoVenta === null ||
+          datos.puntoVenta === undefined
             ? null
             : Number(datos.puntoVenta);
 
-        const factura = await escribir('facturas', 'POST', {
-          origen: 'os',
+        const factura = await escribir("facturas", "POST", {
+          origen: "os",
           emisor_id: emisorId,
           empresa_id: empresaId,
           numero,
           punto_venta: puntoVenta,
           fecha,
           imp_total: importe,
-          moneda: 'PES',
+          moneda: "PES",
           concepto,
           // De qué trabajo es: es lo que deja cruzar lo cobrado con lo que ese
           // trabajo costó. Sin cotización la factura entra igual.
-          cotizacion_id: UUID.test(datos.cotizacionId ?? '') ? datos.cotizacionId : null,
-          orden_compra: String(datos.ordenCompra ?? '').trim() || null,
-          notas: String(datos.notas ?? '').trim() || null,
+          cotizacion_id: UUID.test(datos.cotizacionId ?? "")
+            ? datos.cotizacionId
+            : null,
+          orden_compra: String(datos.ordenCompra ?? "").trim() || null,
+          notas: String(datos.notas ?? "").trim() || null,
           // En borrador cuando el CAE se va a pedir desde acá; emitida cuando
           // se está anotando una que ya salió por Comprobantes en Línea.
-          estado: datos.estado === 'borrador' ? 'borrador' : 'emitida',
+          estado: datos.estado === "borrador" ? "borrador" : "emitida",
           quien: yo.nombre,
         });
 
         // Un renglón, con lo mismo que el concepto: el comprobante necesita
         // decir qué se cobra, y sin renglones sale en blanco.
-        await escribir('factura_items', 'POST', [
+        await escribir("factura_items", "POST", [
           {
             factura_id: factura.id,
             evaluacion_id: null,
             descripcion: concepto,
-            detalle: String(datos.detalle ?? '').trim() || null,
+            detalle: String(datos.detalle ?? "").trim() || null,
             cantidad: 1,
             precio_unitario: importe,
             importe,
@@ -652,8 +817,8 @@ export async function POST(req: Request) {
 
         await anotarAcceso({
           quien: yo.nombre,
-          accion: 'escritura',
-          recurso: 'factura',
+          accion: "escritura",
+          recurso: "factura",
           recursoId: factura.id,
           detalle: { suelta: true, concepto, importe },
         });
@@ -669,20 +834,34 @@ export async function POST(req: Request) {
        * muebles, así que un prestador de servicios no puede estar ahí: se
        * rechazan acá y no solo en el desplegable.
        */
-      case 'categoria': {
+      case "categoria": {
         const { emisorId, categoria } = datos;
-        if (!UUID.test(emisorId ?? '')) {
-          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        if (!UUID.test(emisorId ?? "")) {
+          return NextResponse.json(
+            { error: "Identificador inválido." },
+            { status: 400 },
+          );
         }
-        const letra = categoria === null || categoria === '' ? null : String(categoria).toUpperCase();
-        if (letra !== null && !CATEGORIAS_SERVICIOS.some((c) => c.letra === letra)) {
-          return NextResponse.json({ error: 'Esa categoría no existe.' }, { status: 400 });
+        const letra =
+          categoria === null || categoria === ""
+            ? null
+            : String(categoria).toUpperCase();
+        if (
+          letra !== null &&
+          !CATEGORIAS_SERVICIOS.some((c) => c.letra === letra)
+        ) {
+          return NextResponse.json(
+            { error: "Esa categoría no existe." },
+            { status: 400 },
+          );
         }
-        await escribir(`emisores?id=eq.${emisorId}`, 'PATCH', { categoria: letra });
+        await escribir(`emisores?id=eq.${emisorId}`, "PATCH", {
+          categoria: letra,
+        });
         await anotarAcceso({
           quien: yo.nombre,
-          accion: 'escritura',
-          recurso: 'emisor',
+          accion: "escritura",
+          recurso: "emisor",
           recursoId: emisorId,
           detalle: { categoria: letra },
         });
@@ -695,23 +874,32 @@ export async function POST(req: Request) {
        * `lib/arca/emitir.ts`; acá se anota quién lo pidió y se pasa el número
        * a las evaluaciones, que es lo que mira el pipeline.
        */
-      case 'arca': {
+      case "arca": {
         const { id } = datos;
-        if (!UUID.test(id ?? '')) {
-          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        if (!UUID.test(id ?? "")) {
+          return NextResponse.json(
+            { error: "Identificador inválido." },
+            { status: 400 },
+          );
         }
         const r = await emitirEnArca(id);
         await anotarAcceso({
           quien: yo.nombre,
-          accion: 'escritura',
-          recurso: 'factura',
+          accion: "escritura",
+          recurso: "factura",
           recursoId: id,
           detalle: r.ok
-            ? { arca: 'autorizada', ambiente: r.ambiente, numero: r.numero, cae: r.cae }
-            : { arca: 'sin autorizar', motivo: r.error },
+            ? {
+                arca: "autorizada",
+                ambiente: r.ambiente,
+                numero: r.numero,
+                cae: r.cae,
+              }
+            : { arca: "sin autorizar", motivo: r.error },
         });
         refrescar();
-        if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
+        if (!r.ok)
+          return NextResponse.json({ error: r.error }, { status: r.status });
         // Autorizada. Lo que sigue es accesorio: si falla, la factura está
         // emitida igual y la respuesta no puede decir "no se pudo guardar".
         try {
@@ -719,28 +907,33 @@ export async function POST(req: Request) {
           await guardarPdfDeFactura(id);
           const cubiertas = await evaluacionesDe(id);
           if (cubiertas) {
-            await escribir(`evaluaciones?id=in.(${cubiertas})`, 'PATCH', {
+            await escribir(`evaluaciones?id=in.(${cubiertas})`, "PATCH", {
               numero_factura: String(r.numero),
             });
           }
         } catch (e) {
-          console.error('facturas, después del CAE:', e);
+          console.error("facturas, después del CAE:", e);
         }
         // Y sale por correo, que es el mismo botón: salvo que el cliente la
         // reciba por su portal de proveedores. Las de homologación no se
         // mandan, que no son facturas.
         let correo: CorreoTrasElCae | null = null;
-        if (r.ambiente === 'produccion') {
+        if (r.ambiente === "produccion") {
           correo = await enviarTrasElCae(id);
           await anotarAcceso({
             quien: yo.nombre,
-            accion: 'escritura',
-            recurso: 'factura',
+            accion: "escritura",
+            recurso: "factura",
             recursoId: id,
             detalle:
-              correo.que === 'enviada'
-                ? { correo: 'enviada', a: correo.a, sola: true }
-                : { correo: correo.que, ...(correo.que === 'sin enviar' ? { motivo: correo.motivo } : {}) },
+              correo.que === "enviada"
+                ? { correo: "enviada", a: correo.a, sola: true }
+                : {
+                    correo: correo.que,
+                    ...(correo.que === "sin enviar"
+                      ? { motivo: correo.motivo }
+                      : {}),
+                  },
           });
           refrescar();
         }
@@ -751,20 +944,26 @@ export async function POST(req: Request) {
        * Mandarle la factura por correo al cliente, a mano: para reenviarla, o
        * para la que no salió sola al pedir el CAE. Ver `lib/correo-factura.ts`.
        */
-      case 'enviar': {
+      case "enviar": {
         const { id } = datos;
-        if (!UUID.test(id ?? '')) {
-          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        if (!UUID.test(id ?? "")) {
+          return NextResponse.json(
+            { error: "Identificador inválido." },
+            { status: 400 },
+          );
         }
         const r = await enviarFactura(id);
         await anotarAcceso({
           quien: yo.nombre,
-          accion: 'escritura',
-          recurso: 'factura',
+          accion: "escritura",
+          recurso: "factura",
           recursoId: id,
-          detalle: r.ok ? { correo: 'enviada', a: r.a } : { correo: 'sin enviar', motivo: r.error },
+          detalle: r.ok
+            ? { correo: "enviada", a: r.a }
+            : { correo: "sin enviar", motivo: r.error },
         });
-        if (!r.ok) return NextResponse.json({ error: r.error }, { status: 422 });
+        if (!r.ok)
+          return NextResponse.json({ error: r.error }, { status: 422 });
         refrescar();
         return NextResponse.json(r);
       }
@@ -773,28 +972,37 @@ export async function POST(req: Request) {
        * Anular una factura con CAE, con una nota de crédito por el total.
        * Todo lo que decide está en `lib/arca/emitir.ts`.
        */
-      case 'anular': {
+      case "anular": {
         const { id } = datos;
-        if (!UUID.test(id ?? '')) {
-          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        if (!UUID.test(id ?? "")) {
+          return NextResponse.json(
+            { error: "Identificador inválido." },
+            { status: 400 },
+          );
         }
         const r = await anularConNotaDeCredito(id, yo.nombre);
         await anotarAcceso({
           quien: yo.nombre,
-          accion: 'escritura',
-          recurso: 'factura',
+          accion: "escritura",
+          recurso: "factura",
           recursoId: id,
           detalle: r.ok
-            ? { anulada: true, nota_de_credito: r.numero, cae: r.cae, ambiente: r.ambiente }
+            ? {
+                anulada: true,
+                nota_de_credito: r.numero,
+                cae: r.cae,
+                ambiente: r.ambiente,
+              }
             : { anulada: false, motivo: r.error },
         });
         refrescar();
-        if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
+        if (!r.ok)
+          return NextResponse.json({ error: r.error }, { status: r.status });
         // La nota de crédito también es un comprobante: se guarda su PDF.
         try {
           await guardarPdfDeFactura(r.notaId);
         } catch (e) {
-          console.error('facturas, PDF de la nota:', e);
+          console.error("facturas, PDF de la nota:", e);
         }
         return NextResponse.json(r);
       }
@@ -803,21 +1011,32 @@ export async function POST(req: Request) {
        * Probar la conexión de una emisora con ARCA sin emitir nada: es solo
        * lectura. Para antes de pasarla a producción.
        */
-      case 'probar-arca': {
+      case "probar-arca": {
         const { emisorId } = datos;
         const puntoVenta = Number(datos.puntoVenta);
-        if (!UUID.test(emisorId ?? '') || !Number.isInteger(puntoVenta) || puntoVenta < 1) {
-          return NextResponse.json({ error: 'Falta la emisora o el punto de venta.' }, { status: 400 });
+        if (
+          !UUID.test(emisorId ?? "") ||
+          !Number.isInteger(puntoVenta) ||
+          puntoVenta < 1
+        ) {
+          return NextResponse.json(
+            { error: "Falta la emisora o el punto de venta." },
+            { status: 400 },
+          );
         }
-        const ambiente = datos.ambiente === 'produccion' ? 'produccion' : 'homologacion';
+        const ambiente =
+          datos.ambiente === "produccion" ? "produccion" : "homologacion";
         const r = await probarConexion(emisorId, ambiente, puntoVenta);
         return NextResponse.json(r, { status: r.ok ? 200 : 502 });
       }
 
-      case 'borrar': {
+      case "borrar": {
         const { id } = datos;
-        if (!UUID.test(id ?? '')) {
-          return NextResponse.json({ error: 'Identificador inválido.' }, { status: 400 });
+        if (!UUID.test(id ?? "")) {
+          return NextResponse.json(
+            { error: "Identificador inválido." },
+            { status: 400 },
+          );
         }
         // Una factura autorizada por ARCA existe en ARCA, se quite de acá o
         // no: borrarla dejaría a esas personas otra vez en la cola y a la
@@ -826,34 +1045,54 @@ export async function POST(req: Request) {
         // CAE no vale.
         // Las dos lecturas juntas: cada ida a la base son unos 250 ms, y de a
         // una el botón tardaba varios segundos en contestar.
-        const [f, ids] = await Promise.all([leerFactura(id), evaluacionesDe(id)]);
+        const [f, ids] = await Promise.all([
+          leerFactura(id),
+          evaluacionesDe(id),
+        ]);
         // Sin poder leerla no se borra: borrar a ciegas es justo lo que este
         // control vino a impedir.
-        if (!f) return NextResponse.json({ error: 'Esa factura no existe.' }, { status: 404 });
-        if (f.cbte_tipo !== 11) {
-          return NextResponse.json({ error: 'Una nota de crédito no se quita.' }, { status: 409 });
-        }
-        if (f.ambiente === 'produccion' && f.cae) {
+        if (!f)
           return NextResponse.json(
-            { error: 'Esa factura tiene CAE: no se quita, se anula con una nota de crédito.' },
-            { status: 409 }
+            { error: "Esa factura no existe." },
+            { status: 404 },
+          );
+        if (f.cbte_tipo !== 11) {
+          return NextResponse.json(
+            { error: "Una nota de crédito no se quita." },
+            { status: 409 },
+          );
+        }
+        if (f.ambiente === "produccion" && f.cae) {
+          return NextResponse.json(
+            {
+              error:
+                "Esa factura tiene CAE: no se quita, se anula con una nota de crédito.",
+            },
+            { status: 409 },
           );
         }
         // Con número reservado y sin CAE no se sabe si ARCA la autorizó:
         // borrarla ahí es perder una factura que quizá existe.
-        if (f.ambiente === 'produccion' && f.numero !== null && f.solicitud !== null) {
+        if (
+          f.ambiente === "produccion" &&
+          f.numero !== null &&
+          f.solicitud !== null
+        ) {
           return NextResponse.json(
             {
               error:
-                'Esa factura quedó a medio emitir. Abrila y apretá Pedir CAE: averigua en qué quedó, y después se puede quitar.',
+                "Esa factura quedó a medio emitir. Abrila y apretá Pedir CAE: averigua en qué quedó, y después se puede quitar.",
             },
-            { status: 409 }
+            { status: 409 },
           );
         }
         // Una de prueba que se anuló arrastra su nota de crédito, que apunta
         // a ella: se va primero.
-        if (f.ambiente === 'homologacion') {
-          await escribir(`facturas?anula_id=eq.${id}&ambiente=eq.homologacion`, 'DELETE');
+        if (f.ambiente === "homologacion") {
+          await escribir(
+            `facturas?anula_id=eq.${id}&ambiente=eq.homologacion`,
+            "DELETE",
+          );
         }
         // Los renglones se van con la factura por la clave foránea, y las
         // evaluaciones vuelven a la cola: si la factura no existe, nadie las
@@ -863,13 +1102,14 @@ export async function POST(req: Request) {
         // número ni CAE); una que ya se pidió a ARCA se mira aparte. Primero
         // ella: al borrar la de pesos, la clave foránea le vacía el vínculo
         // y ya no se la encuentra.
-        await escribir(`facturas?hermana_id=eq.${id}&cae=is.null&numero=is.null`, 'DELETE').catch((e) =>
-          console.error('facturas, borrar la hermana:', e)
-        );
-        await escribir(`facturas?id=eq.${id}`, 'DELETE');
+        await escribir(
+          `facturas?hermana_id=eq.${id}&cae=is.null&numero=is.null`,
+          "DELETE",
+        ).catch((e) => console.error("facturas, borrar la hermana:", e));
+        await escribir(`facturas?id=eq.${id}`, "DELETE");
         await Promise.all([
           ids
-            ? escribir(`evaluaciones?id=in.(${ids})`, 'PATCH', {
+            ? escribir(`evaluaciones?id=in.(${ids})`, "PATCH", {
                 facturado: false,
                 pagado: false,
                 numero_factura: null,
@@ -877,8 +1117,8 @@ export async function POST(req: Request) {
             : null,
           anotarAcceso({
             quien: yo.nombre,
-            accion: 'escritura',
-            recurso: 'factura',
+            accion: "escritura",
+            recurso: "factura",
             recursoId: id,
             detalle: { borrada: true },
           }),
@@ -888,11 +1128,14 @@ export async function POST(req: Request) {
       }
 
       default:
-        return NextResponse.json({ error: 'Acción desconocida.' }, { status: 400 });
+        return NextResponse.json(
+          { error: "Acción desconocida." },
+          { status: 400 },
+        );
     }
   } catch (e) {
-    console.error('facturas:', e);
-    return NextResponse.json({ error: 'No se pudo guardar.' }, { status: 500 });
+    console.error("facturas:", e);
+    return NextResponse.json({ error: "No se pudo guardar." }, { status: 500 });
   }
 }
 
@@ -910,7 +1153,10 @@ async function leerFactura(id: string): Promise<Leida | undefined> {
   const { url, key } = config();
   const res = await fetch(
     `${url}/rest/v1/facturas?select=cae,ambiente,numero,estado,cbte_tipo,solicitud&id=eq.${id}&limit=1`,
-    { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' }
+    {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      cache: "no-store",
+    },
   );
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
   return ((await res.json()) as Leida[])[0];
@@ -921,9 +1167,12 @@ async function evaluacionesDe(facturaId: string): Promise<string> {
   const { url, key } = config();
   const res = await fetch(
     `${url}/rest/v1/factura_items?select=evaluacion_id&factura_id=eq.${facturaId}&evaluacion_id=not.is.null`,
-    { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' }
+    {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      cache: "no-store",
+    },
   );
-  if (!res.ok) return '';
+  if (!res.ok) return "";
   const filas: { evaluacion_id: string }[] = await res.json();
-  return filas.map((f) => f.evaluacion_id).join(',');
+  return filas.map((f) => f.evaluacion_id).join(",");
 }

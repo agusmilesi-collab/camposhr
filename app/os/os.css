@@ -18846,3 +18846,13 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
 .os-importe-usd {
   color: var(--os-azul);
 }
+
+/* El detalle de lo que se va a generar: cada factura con su tilde. */
+.os-factura-detalle-tilde {
+  margin: 0 8px 0 0;
+  vertical-align: -1px;
+}
+
+.os-factura-detalle-apagada {
+  opacity: 0.5;
+}

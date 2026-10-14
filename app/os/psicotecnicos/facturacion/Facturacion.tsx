@@ -258,6 +258,10 @@ function GrupoCliente({
   // detalle de lo que va a salir las muestra antes de generar nada.
   const [oc, setOc] = useState('');
   const [ocUsd, setOcUsd] = useState('');
+  // Qué factura sale ahora. Con el Benziger en dólares son dos y pueden salir
+  // por separado: lo que no se emite queda en la cola.
+  const [emitirPesos, setEmitirPesos] = useState(true);
+  const [emitirDolares, setEmitirDolares] = useState(true);
   /** El valor que comparten todas, o vacío si difieren o falta: se escribe a mano. */
   const comun = (valores: (string | null)[]) => {
     const distintos = [...new Set(valores.map((v) => v?.trim() || ''))];
@@ -297,8 +301,9 @@ function GrupoCliente({
   const todasElegidas = seleccion.length === pendientes.length;
   // Lo que sale aparte, en dólares: el Benziger del cliente que lo paga así.
   // Es una segunda factura, con su propio número y su propia orden de compra del cliente.
-  const enDolares = seleccion.filter((p) => p.benzigerAparte);
+  const enDolares = seleccion.filter((p) => p.benzigerAparte && p.pendiente.dolares);
   const totalUsd = enDolares.reduce((n, p) => n + (p.benzigerUsd ?? 0), 0);
+  const enPesos = seleccion.filter((p) => p.pendiente.pesos);
   /**
    * Una factura lleva una sola orden de compra del cliente. Si las tildadas
    * traen órdenes distintas (o una la tiene y otra no), no van juntas: va
@@ -306,8 +311,8 @@ function GrupoCliente({
    */
   const ordenesDe = (valores: (string | null)[]) =>
     [...new Set(valores.map((v) => v?.trim() || 'sin cargar'))];
-  const mezcla = ordenesDe(seleccion.map((p) => p.ocCliente)).filter((v) => v !== 'sin cargar').length > 0
-    ? ordenesDe(seleccion.map((p) => p.ocCliente))
+  const mezcla = ordenesDe(enPesos.map((p) => p.ocCliente)).filter((v) => v !== 'sin cargar').length > 0
+    ? ordenesDe(enPesos.map((p) => p.ocCliente))
     : [];
   const mezclaUsd =
     ordenesDe(enDolares.map((p) => p.ocClienteUsd)).filter((v) => v !== 'sin cargar').length > 0
@@ -327,6 +332,8 @@ function GrupoCliente({
         ...datos,
         empresaId,
         evaluaciones: elegidas,
+        emitirPesos,
+        emitirDolares,
       });
       setAbierto(false);
       router.refresh();
@@ -492,14 +499,36 @@ function GrupoCliente({
                   )}
                 </td>
                 <td className="os-tabla-num" data-campo="Importe">
-                  {p.precio === null ? (
+                  {!p.pendiente.pesos && p.pesosFacturada ? (
+                    /* Ya salió su factura en pesos: queda en la cola solo por
+                       el Benziger en dólares. */
+                    <a
+                      className="os-oc-cliente"
+                      href={`/os/psicotecnicos/facturacion/comprobante/${p.pesosFacturada.id}`}
+                      target="_blank"
+                      title="Abrir su factura en pesos"
+                    >
+                      Pesos facturados ({p.pesosFacturada.numero})
+                    </a>
+                  ) : p.precio === null ? (
                     <span className="os-dato-falta">sin precio</span>
                   ) : (
                     formatoImporte(totalDe(p))
                   )}
                   {/* El Benziger que va en la segunda factura, en dólares: no
-                      está sumado arriba porque es otro comprobante. */}
-                  {p.benzigerAparte && p.benzigerUsd !== null && (
+                      está sumado arriba porque es otro comprobante. Si ya
+                      salió, se dice con su número. */}
+                  {p.benzigerAparte && p.benzigerFacturado && (
+                    <a
+                      className="os-oc-cliente"
+                      href={`/os/psicotecnicos/facturacion/comprobante/${p.benzigerFacturado.id}`}
+                      target="_blank"
+                      title="Abrir su factura en dólares"
+                    >
+                      Benziger facturado ({p.benzigerFacturado.numero})
+                    </a>
+                  )}
+                  {p.benzigerAparte && p.pendiente.dolares && p.benzigerUsd !== null && (
                     <span className="os-oc-cliente os-importe-usd" title="Benziger: en una factura aparte, en dólares">
                       + USD {p.benzigerUsd} aparte
                     </span>
@@ -554,8 +583,10 @@ function GrupoCliente({
               onClick={() => {
                 // Las órdenes de compra guardadas en las tildadas, si todas
                 // traen la misma. Si no, el campo queda vacío y se escribe.
-                setOc(comun(seleccion.map((p) => p.ocCliente)));
+                setOc(comun(enPesos.map((p) => p.ocCliente)));
                 setOcUsd(comun(enDolares.map((p) => p.ocClienteUsd)));
+                setEmitirPesos(enPesos.length > 0);
+                setEmitirDolares(enDolares.length > 0);
                 setAbierto(true);
               }}
               title={
@@ -714,7 +745,7 @@ function GrupoCliente({
                 onChange={(ev) => setOc(ev.target.value)}
                 // A quien la exige no se le factura sin ella: no paga la
                 // factura que no la trae impresa.
-                required={Boolean(fiscal?.exigeOrdenCompra)}
+                required={Boolean(fiscal?.exigeOrdenCompra) && emitirPesos}
                 placeholder={
                   fiscal?.exigeOrdenCompra ? 'Este cliente la exige' : 'Si el cliente dio la suya'
                 }
@@ -723,7 +754,7 @@ function GrupoCliente({
             {/* La segunda factura, en dólares, con el Benziger. Cofco manda
                 una orden de compra por cada factura, así que la de dólares
                 lleva la suya; y anotando a mano, también su propio número. */}
-            {enDolares.length > 0 && (
+            {enDolares.length > 0 && emitirDolares && (
               <>
                 {!porArca && (
                   <div className="os-campo-bloque os-tramo-1">
@@ -739,7 +770,7 @@ function GrupoCliente({
                     maxLength={60}
                     value={ocUsd}
                     onChange={(ev) => setOcUsd(ev.target.value)}
-                    required={Boolean(fiscal?.exigeOrdenCompra)}
+                    required={Boolean(fiscal?.exigeOrdenCompra) && emitirDolares}
                     placeholder={
                       fiscal?.exigeOrdenCompra ? 'La orden de compra del Benziger' : 'Si el cliente dio una aparte'
                     }
@@ -767,8 +798,19 @@ function GrupoCliente({
             <p className="os-factura-detalle-titulo">Se va a generar:</p>
             <ol>
               {/* Cada factura con el concepto tal como va a salir impreso:
-                  el de siempre, más la orden del cliente al final. */}
-              <li>
+                  el de siempre, más la orden del cliente al final. Con tilde,
+                  porque con el Benziger en dólares pueden salir por separado. */}
+              {enPesos.length > 0 && (
+              <li className={emitirPesos ? undefined : 'os-factura-detalle-apagada'}>
+                {enDolares.length > 0 && (
+                  <input
+                    type="checkbox"
+                    className="os-factura-detalle-tilde"
+                    checked={emitirPesos}
+                    onChange={(ev) => setEmitirPesos(ev.target.checked)}
+                    aria-label="Emitir la factura en pesos"
+                  />
+                )}
                 <b>Factura en pesos</b> por {formatoImporte(total)}
                 {seleccion.some((p) => p.benziger !== null)
                   ? ` (incluye ${seleccion.filter((p) => p.benziger !== null).length} Benziger pesificado)`
@@ -790,8 +832,18 @@ function GrupoCliente({
                 ))}
                 .
               </li>
+              )}
               {enDolares.length > 0 && (
-                <li>
+                <li className={emitirDolares ? undefined : 'os-factura-detalle-apagada'}>
+                  {enPesos.length > 0 && (
+                    <input
+                      type="checkbox"
+                      className="os-factura-detalle-tilde"
+                      checked={emitirDolares}
+                      onChange={(ev) => setEmitirDolares(ev.target.checked)}
+                      aria-label="Emitir la factura en dólares"
+                    />
+                  )}
                   <b>Factura en dólares</b> por {formatoImporte(totalUsd, 'USD')}. Renglones:{' '}
                   {enDolares.map((p, i) => (
                     <span key={p.evaluacionId}>
@@ -822,7 +874,7 @@ function GrupoCliente({
             <button
               className="os-boton os-boton-firme"
               type="submit"
-              disabled={enviando || incompleta}
+              disabled={enviando || incompleta || (!emitirPesos && !emitirDolares)}
               title={incompleta ? 'Faltan datos fiscales: están marcados arriba' : undefined}
             >
               {enviando ? 'Guardando…' : 'Generar la factura'}

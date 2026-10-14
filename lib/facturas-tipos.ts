@@ -85,7 +85,7 @@ export type Renglon = {
 export const esDeServicios = (f: Factura) =>
   f.hermanaId === null &&
   f.renglones.length > 0 &&
-  f.renglones.every((r) => r.evaluacionId === null);
+  f.renglones.every((r) => r.evaluacionId === null && r.adicionalDe === null);
 
 export const esDePsicotecnicos = (f: Factura) => !esDeServicios(f);
 
@@ -244,6 +244,17 @@ export type Facturable = {
    */
   ocCliente: string | null;
   ocClienteUsd: string | null;
+  /**
+   * Qué parte de esta persona falta facturar. Con el Benziger en dólares son
+   * dos comprobantes y pueden salir en momentos distintos (Cofco manda la
+   * orden de compra de cada uno por separado): la fila se queda en la cola
+   * hasta que salieron los dos.
+   */
+  pendiente: { pesos: boolean; dolares: boolean };
+  /** La factura en pesos que ya la cubre, cuando solo falta la de dólares. */
+  pesosFacturada: { id: string; numero: string } | null;
+  /** La factura en dólares que ya lleva su Benziger, cuando solo falta la de pesos. */
+  benzigerFacturado: { id: string; numero: string } | null;
 };
 
 /**
@@ -263,8 +274,13 @@ export function conceptoPorDefecto(fs: Pick<Facturable, 'puesto' | 'candidato'>[
   return fs.map(conceptoDe).join(' · ');
 }
 
-/** Lo que sale de una evaluación: la batería más el adicional que corresponda. */
-export function totalDe(f: Pick<Facturable, 'precio' | 'benziger'>): number {
+/**
+ * Lo que sale de una evaluación en la factura en pesos: la batería más el
+ * adicional pesificado. Cero si su factura en pesos ya salió y solo falta la
+ * de dólares.
+ */
+export function totalDe(f: Pick<Facturable, 'precio' | 'benziger' | 'pendiente'>): number {
+  if (!f.pendiente.pesos) return 0;
   return (f.precio ?? 0) + (f.benziger ?? 0);
 }
 
