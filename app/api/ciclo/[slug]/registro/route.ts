@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { subirSelfie } from '@/lib/supabase';
-import { camposDeRegistro, crearAsistente, resolverCiclo } from '@/lib/ciclo';
+import { camposDeRegistro, crearAsistente, listarAsistentes, resolverCiclo } from '@/lib/ciclo';
 
 /**
  * Alta de un asistente. Se hace una sola vez por ciclo, no por encuentro.
@@ -12,7 +12,15 @@ import { camposDeRegistro, crearAsistente, resolverCiclo } from '@/lib/ciclo';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/**
+ * Cuántas personas entran a un mismo encuentro. Los grupos son de treinta o
+ * cuarenta; el tope está para que nadie pueda llenar la grilla de caras ni el
+ * bucket mandando registros en bucle desde afuera.
+ */
+const MAX_ASISTENTES = 400;
+
 const MAX_FOTO = 3 * 1024 * 1024; // 3 MB
+const FOTO_TIPOS = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
 export async function POST(
   req: Request,
@@ -21,6 +29,9 @@ export async function POST(
   const ciclo = await resolverCiclo(params.slug);
   if (!ciclo) return new NextResponse('Ciclo no encontrado', { status: 404 });
   const { empresa, corrida } = ciclo;
+  if ((await listarAsistentes(corrida.id)).length >= MAX_ASISTENTES) {
+    return new NextResponse('El encuentro ya no admite más registros', { status: 429 });
+  }
 
   let form: FormData;
   try {
@@ -57,7 +68,8 @@ export async function POST(
   let fotoPath: string | null = null;
   const foto = form.get('foto');
   if (foto instanceof File && foto.size > 0) {
-    if (foto.size > MAX_FOTO || !foto.type.startsWith('image/')) {
+    // Solo fotos: otro tipo de imagen (un SVG, por ejemplo) puede llevar código.
+    if (foto.size > MAX_FOTO || !FOTO_TIPOS.includes(foto.type)) {
       return new NextResponse('Foto inválida', { status: 400 });
     }
     try {

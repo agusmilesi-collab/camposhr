@@ -15,6 +15,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const MAX_FOTO = 3 * 1024 * 1024; // 3 MB
+const FOTO_TIPOS = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
 type RespuestaCruda =
   | { tipo: 'descriptiva'; valor: unknown }
@@ -59,6 +60,47 @@ function puntuar(respuestas: RespuestaCruda[]) {
   return { likert, checklist };
 }
 
+/**
+ * Cuántas respuestas por hora acepta una empresa. Una sala entera responde en
+ * diez minutos y no llega a cien; el tope está para que nadie llene la base
+ * mandando respuestas en bucle desde afuera.
+ */
+const MAX_POR_HORA = 400;
+
+async function respuestasDeLaUltimaHora(empresaId: string): Promise<number> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) return 0;
+  const desde = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const res = await fetch(
+    `${url}/rest/v1/respuestas?select=id&empresa_id=eq.${empresaId}&created_at=gt.${desde}`,
+    {
+      method: 'HEAD',
+      headers: { apikey: key, Authorization: `Bearer ${key}`, Prefer: 'count=exact' },
+      cache: 'no-store',
+    }
+  );
+  return Number(res.headers.get('content-range')?.split('/')[1] ?? 0) || 0;
+}
+
+/**
+ * Lo que se guarda de cada respuesta: el tipo y lo elegido, y nada más. Se
+ * guardaba tal como llegaba, y cada elemento podía traer campos de cualquier
+ * tamaño.
+ */
+function normalizar(respuestas: RespuestaCruda[]) {
+  return respuestas.map((r) =>
+    r.tipo === 'descriptiva'
+      ? { tipo: r.tipo, valor: Number(r.valor) }
+      : {
+          tipo: r.tipo,
+          seleccion: (Array.isArray(r.seleccion) ? r.seleccion : [])
+            .map((n) => Number(n))
+            .filter((n) => Number.isInteger(n) && n >= 0 && n < 100),
+        }
+  );
+}
+
 export async function POST(
   req: Request,
   { params }: { params: { slug: string } }
@@ -66,6 +108,9 @@ export async function POST(
   const empresa = await getEmpresaPorSlug(params.slug);
   if (!empresa) {
     return new NextResponse('Empresa no encontrada', { status: 404 });
+  }
+  if ((await respuestasDeLaUltimaHora(empresa.id)) >= MAX_POR_HORA) {
+    return new NextResponse('Demasiadas respuestas en la última hora', { status: 429 });
   }
 
   let form: FormData;
@@ -182,7 +227,8 @@ export async function POST(
   let fotoPath: string | null = asistente?.foto_path ?? null;
   const foto = form.get('foto');
   if (foto instanceof File && foto.size > 0) {
-    if (foto.size > MAX_FOTO || !foto.type.startsWith('image/')) {
+    // Solo fotos: otro tipo de imagen (un SVG, por ejemplo) puede llevar código.
+    if (foto.size > MAX_FOTO || !FOTO_TIPOS.includes(foto.type)) {
       return new NextResponse('Foto inválida', { status: 400 });
     }
     try {
@@ -204,7 +250,7 @@ export async function POST(
       likert,
       checklist,
       totales: resultado.totales,
-      detalle: { respuestas: datos.respuestas, autopercepcion },
+      detalle: { respuestas: normalizar(datos.respuestas as RespuestaCruda[]), autopercepcion },
       perfiles: resultado.perfiles,
       resultado: resultado.tipo,
       eje_x: resultado.ejeX,
