@@ -70,11 +70,24 @@ export async function guardarPdfDeFactura(id: string): Promise<string | null> {
 /**
  * El PDF de una factura para bajar: el guardado si existe, y si no, uno armado
  * en el momento.
+ *
+ * Con `soloOriginal`, una sola hoja por factura, armada en el momento con los
+ * mismos datos: es lo que piden los portales de proveedores que leen un
+ * comprobante por archivo.
  */
-export async function pdfParaBajar(id: string): Promise<{ bytes: Uint8Array; nombre: string } | null> {
+export async function pdfParaBajar(
+  id: string,
+  soloOriginal = false
+): Promise<{ bytes: Uint8Array; nombre: string } | null> {
   const d = await datosDeFactura(id);
   if (!d) return null;
   const nombre = archivoDeFactura(d);
+  if (soloOriginal) {
+    return {
+      bytes: await pdfDeFactura(d, ['Original']),
+      nombre: nombre.replace(/\.pdf$/i, '') + ' original.pdf',
+    };
+  }
   const [fila] = await select<{ pdf_path: string | null }>('facturas', `select=pdf_path&id=eq.${id}&limit=1`);
   if (fila?.pdf_path) {
     const { url, key } = config();

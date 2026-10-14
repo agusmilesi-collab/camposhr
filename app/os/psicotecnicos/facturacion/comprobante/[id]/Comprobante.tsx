@@ -343,7 +343,9 @@ export default async function Comprobante({
         <p className="fc-volver">
           {d.numeroLargo} · {d.cliente.nombre} ·{' '}
           <a href="/os/psicotecnicos/facturacion">volver a Facturación</a> ·{' '}
-          <a href={`/api/os/factura-pdf/${d.id}`}>bajar el PDF</a> con los tres ejemplares
+          <a href={`/api/os/factura-pdf/${d.id}`}>bajar el PDF</a> con los tres ejemplares ·{' '}
+          <a href={`/api/os/factura-pdf/${d.id}?ejemplar=original`}>solo el original</a> (una hoja,
+          para portales de proveedores)
         </p>
       </div>
     </div>

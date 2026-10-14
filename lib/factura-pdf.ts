@@ -23,7 +23,7 @@ import { INSTRUMENT_SERIF } from '@/lib/fuentes/instrument-serif';
 import { INTER_NORMAL, INTER_SEMINEGRA } from '@/lib/fuentes/inter';
 import { LOGO_ARCA } from '@/lib/marcas/arca';
 import { SITIO } from '@/lib/orden-compra-tipos';
-import { EJEMPLARES, type DatosFactura } from '@/lib/factura-datos';
+import { EJEMPLARES, type DatosFactura, type Ejemplar } from '@/lib/factura-datos';
 
 const pesos = (n: number) =>
   n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -78,7 +78,15 @@ export function archivoDeFactura(d: DatosFactura): string {
   return `${nombre}.pdf`;
 }
 
-export async function pdfDeFactura(d: DatosFactura): Promise<Uint8Array> {
+/**
+ * `ejemplares` deja pedir menos de los tres: un portal de proveedores que
+ * lee una factura por archivo (Cofco) se confunde con tres hojas, y ahí va
+ * solo el original.
+ */
+export async function pdfDeFactura(
+  d: DatosFactura,
+  ejemplares: readonly Ejemplar[] = EJEMPLARES
+): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
   const ALTO = 841.89;
@@ -105,7 +113,7 @@ export async function pdfDeFactura(d: DatosFactura): Promise<Uint8Array> {
   // El QR se arma una vez: es el mismo en los tres ejemplares.
   const qr = d.qr ? QRCode.create(d.qr, { errorCorrectionLevel: 'M' }) : null;
 
-  for (const ejemplar of EJEMPLARES) {
+  for (const ejemplar of ejemplares) {
     let hoja: PDFPage = pdf.addPage([ANCHO_HOJA, ALTO]);
 
     const ancho = (t: string, cuerpo: number, fuente: PDFFont = normal) =>
