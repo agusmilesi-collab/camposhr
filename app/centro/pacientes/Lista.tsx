@@ -7,6 +7,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { enlaceWhatsapp } from '@/lib/whatsapp';
 
 type Fila = {
   id: string;
@@ -108,7 +109,22 @@ export default function Lista({ pacientes }: { pacientes: Fila[] }) {
                 <Link href={`/centro/pacientes/${p.id}`} className="centro-pacientes-nombre">
                   {p.apellido ? `${p.apellido}, ${p.nombre}` : p.nombre}
                 </Link>
-                <span className="centro-pacientes-dato">{p.telefono ?? ''}</span>
+                <span className="centro-pacientes-dato">
+                  {p.telefono && enlaceWhatsapp(p.telefono) ? (
+                    <a
+                      href={enlaceWhatsapp(p.telefono) as string}
+                      className="centro-whatsapp"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Escribirle por WhatsApp"
+                    >
+                      <img src="/correo/whatsapp.png" alt="" aria-hidden="true" />
+                      {p.telefono}
+                    </a>
+                  ) : (
+                    p.telefono ?? ''
+                  )}
+                </span>
                 <span className="centro-pacientes-dato">
                   {p.consultas === 0
                     ? 'Sin consultas'

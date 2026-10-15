@@ -697,6 +697,49 @@
   margin-bottom: 0;
 }
 
+/* La tarjeta de una reserva con sus horas: crece lo que haga falta y lista
+   hora por hora a quién atiende, o "libre" para ir a anotarlo. */
+.centro-tarjeta.con-horas {
+  height: auto;
+  min-height: 104px;
+}
+
+.centro-tarjeta-horas {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 6px 0 0;
+  border-top: 1px solid var(--linea-suave);
+  font-size: 0.8rem;
+}
+
+.centro-tarjeta-horas li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  line-height: 1.5;
+}
+
+.centro-tarjeta-horas li > span {
+  font-variant-numeric: tabular-nums;
+  color: var(--suave);
+}
+
+.centro-tarjeta-horas li a {
+  color: var(--tinta);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.centro-tarjeta-horas li.libre a {
+  color: var(--suave);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.centro-tarjeta-horas li a:hover {
+  text-decoration: underline;
+}
+
 /* Pacientes: la lista y la ficha. */
 .centro-pacientes-lista {
   list-style: none;
@@ -732,6 +775,27 @@
   color: var(--suave);
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;
+}
+
+/* El teléfono como enlace a WhatsApp: el logo a la izquierda, el número en
+   gris, y verde al pasar por encima. */
+.centro-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.centro-whatsapp img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.centro-whatsapp:hover {
+  color: #1f8a4c;
 }
 
 /* La ficha, densa: un renglón por campo, rótulo a la izquierda en versalita
@@ -788,6 +852,19 @@
   text-overflow: ellipsis;
 }
 
+/* Nacimiento lleva una tercera columna con la edad calculada. */
+.centro-ficha-filas label.con-edad {
+  grid-template-columns: 150px auto minmax(0, 1fr);
+}
+.centro-ficha-filas label.con-edad .centro-ficha-valor {
+  width: auto;
+}
+.centro-ficha-edad {
+  font-style: normal;
+  font-size: 0.82rem;
+  color: var(--suave);
+  white-space: nowrap;
+}
 .centro-ficha-valor {
   box-sizing: border-box;
   width: 100%;
@@ -1062,10 +1139,27 @@
 }
 
 .centro-agenda-ficha {
-  font-size: 0.74rem;
+  width: 32px;
+  height: 32px;
   color: var(--azul);
   text-decoration: none;
-  border-bottom: 1px solid var(--linea);
+}
+
+.centro-agenda-ficha svg {
+  width: 22px;
+  height: 22px;
+}
+
+.centro-agenda-ficha:hover {
+  color: var(--azul-fuerte);
+}
+
+/* Sin ficha: el mismo dibujo en gris claro, sin enlace ni reacción al mouse. */
+.centro-agenda-ficha.sin-ficha,
+.centro-agenda-ficha.sin-ficha:hover {
+  color: #c4bfb6;
+  background: transparent;
+  cursor: default;
 }
 
 .centro-agenda-horas li .centro-agenda-nota {

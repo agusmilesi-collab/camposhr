@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { inquilinoDeLaSesion } from '@/lib/centro-sesion';
 import {
@@ -21,6 +22,7 @@ import {
 import { facturasDelCentro } from '@/lib/facturas-centro';
 import { DIA_DE_RENOVAR, renovacionDe } from '@/lib/renovaciones';
 import { feriadosEntre } from '@/lib/feriados';
+import { turnosDe } from '@/lib/turnos';
 import Renovar from './Renovar';
 import Barra from '../Barra';
 
@@ -54,6 +56,8 @@ type Tarjeta = {
   enlace?: { href: string; texto: string; afuera?: boolean };
   /** Un aviso se pinta distinto de una reserva: pide mirar algo. */
   aviso?: boolean;
+  /** Hora por hora de la reserva: a quién atiende, o libre. */
+  horas?: { hora: number; paciente: string | null; fichaId: string | null }[];
 };
 
 /**
@@ -90,22 +94,35 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
 
   const proximoMes = mesCorrido(periodoDe(hoy), 1);
 
-  const [facturas, movimientos, reservas, espacios, contratos, renovacion] = await Promise.all([
+  const [facturas, movimientos, reservas, espacios, contratos, renovacion, turnos] = await Promise.all([
     facturasDelCentro(yo.id),
     movimientosDe(yo.id),
     reservasDe(yo.id),
     listarEspacios(),
     leerContratos(),
     renovacionDe(yo.id, proximoMes),
+    // A quién atiende lo ve solo la persona: en modo mirar no se trae.
+    yo.mirando ? Promise.resolve([]) : turnosDe(yo.id, hoy, hasta),
   ]);
   const feriadosProximos = await feriadosEntre(proximoMes, finDeMes(proximoMes));
   const salaDe = (id: string) => espacios.find((e) => e.id === id)?.nombre ?? 'Sala';
 
+  // Cada hora de la reserva con su paciente, si lo anotó en Mis turnos. La
+  // tarjeta deja de ser "Consultorio 2, 10 a 13" y pasa a decir a quién ve.
+  const horasDe = (r: (typeof reservas)[number]) =>
+    yo.mirando
+      ? undefined
+      : Array.from({ length: hora(r.hasta_hora) - hora(r.desde_hora) }, (_, i) => {
+          const h = hora(r.desde_hora) + i;
+          const t = turnos.find((x) => x.fecha === r.fecha && Number(x.desde_hora.slice(0, 2)) === h);
+          return { hora: h, paciente: t?.paciente ?? null, fichaId: t?.paciente_id ?? null };
+        });
   const deReserva = (r: (typeof reservas)[number], conDia: boolean): Tarjeta => ({
     clave: r.id,
     titulo: salaDe(r.espacio_id),
     detalle: `${conDia ? `${diaCorto(r.fecha)} · ` : ''}${r.desde_hora.slice(0, 5)} a ${r.hasta_hora.slice(0, 5)}`,
     dato: `${hora(r.hasta_hora) - hora(r.desde_hora)} h`,
+    horas: horasDe(r),
   });
   const proximas = reservas.filter((r) => r.fecha >= hoy && r.fecha <= hasta);
 
@@ -232,12 +249,31 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                 <p className="centro-columna-vacia">{c.vacio}</p>
               )}
               {c.tarjetas.map((t) => (
-                <article className={`centro-tarjeta${t.aviso ? ' aviso' : ''}`} key={t.clave}>
+                <article
+                  className={`centro-tarjeta${t.aviso ? ' aviso' : ''}${t.horas ? ' con-horas' : ''}`}
+                  key={t.clave}
+                >
                   <div className="centro-tarjeta-top">
                     <b>{t.titulo}</b>
                     {t.dato && <span>{t.dato}</span>}
                   </div>
                   {t.detalle && <small>{t.detalle}</small>}
+                  {t.horas && (
+                    <ul className="centro-tarjeta-horas">
+                      {t.horas.map((x) => (
+                        <li key={x.hora} className={x.paciente ? undefined : 'libre'}>
+                          <span>{String(x.hora).padStart(2, '0')}:00</span>
+                          {x.paciente ? (
+                            <Link href={x.fichaId ? `/centro/pacientes/${x.fichaId}` : '/centro/turnos'}>
+                              {x.paciente}
+                            </Link>
+                          ) : (
+                            <Link href="/centro/turnos">libre</Link>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   {t.enlace && (
                     <a
                       className="centro-bajar centro-abrir"

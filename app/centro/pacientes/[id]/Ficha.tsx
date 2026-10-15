@@ -43,7 +43,6 @@ const DATOS: { campo: keyof Paciente; rotulo: string; tipo?: string }[] = [
   { campo: 'cobertura', rotulo: 'Obra social o prepaga' },
   { campo: 'derivado_por', rotulo: 'Derivado por' },
   { campo: 'afiliado', rotulo: 'Número de afiliado' },
-  { campo: 'contacto_emergencia', rotulo: 'Contacto de emergencia' },
 ];
 
 const ANTECEDENTES: { campo: keyof Paciente; rotulo: string; pista: string }[] = [
@@ -140,9 +139,7 @@ export default function Ficha({
         </Link>
       </p>
       <h1 className="centro-titulo">{titulo}</h1>
-      <p className="centro-bajada">
-        {[anios, p.cobertura].filter(Boolean).join(' · ') || 'Ficha sin datos todavía.'}
-      </p>
+      {p.cobertura && <p className="centro-bajada">{p.cobertura}</p>}
       {error && <p className="centro-error">{error}</p>}
 
       {/* Datos y antecedentes en un solo panel, denso: un renglón por campo,
@@ -153,7 +150,7 @@ export default function Ficha({
         <h3 className="centro-ficha-sub">Datos</h3>
         <div className="centro-ficha-filas centro-ficha-filas-dos">
           {DATOS.map((d) => (
-            <label key={d.campo}>
+            <label key={d.campo} className={d.campo === 'fecha_nacimiento' && anios ? 'con-edad' : undefined}>
               <span>{d.rotulo}</span>
               <input
                 className="centro-ficha-valor"
@@ -162,6 +159,8 @@ export default function Ficha({
                 onChange={(e) => setP({ ...p, [d.campo]: e.target.value })}
                 onBlur={() => guardarCampo(d.campo)}
               />
+              {/* La edad, calculada, al lado de la fecha de nacimiento. */}
+              {d.campo === 'fecha_nacimiento' && anios && <em className="centro-ficha-edad">{anios}</em>}
             </label>
           ))}
         </div>

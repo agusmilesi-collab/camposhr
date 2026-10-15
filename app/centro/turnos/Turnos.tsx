@@ -131,11 +131,33 @@ export default function Turnos({
                 }}
                 disabled={guardando === k}
               />
-              {guardado.get(k)?.pacienteId && !borrador[k] && (
-                <Link href={`/centro/pacientes/${guardado.get(k)?.pacienteId}`} className="centro-agenda-ficha" title="Abrir la ficha">
-                  ficha
-                </Link>
-              )}
+              {/* La ficha del paciente, como ícono: una tarjeta con la
+                  persona. En azul y con enlace cuando el turno está atado a
+                  una ficha; en gris, sin enlace, cuando no. */}
+              {(() => {
+                const fichaId = !borrador[k] ? guardado.get(k)?.pacienteId : undefined;
+                const dibujo = (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="14" rx="2.5" />
+                    <circle cx="9" cy="11" r="2.2" />
+                    <path d="M5.5 16.5c.6-1.8 1.9-2.7 3.5-2.7s2.9.9 3.5 2.7M14.5 10h4M14.5 13.5h4" />
+                  </svg>
+                );
+                return fichaId ? (
+                  <Link
+                    href={`/centro/pacientes/${fichaId}`}
+                    className="centro-icono centro-agenda-ficha"
+                    title="Abrir la ficha"
+                    aria-label={`Abrir la ficha de ${v.paciente}`}
+                  >
+                    {dibujo}
+                  </Link>
+                ) : (
+                  <span className="centro-icono centro-agenda-ficha sin-ficha" title="Sin ficha" aria-hidden="true">
+                    {dibujo}
+                  </span>
+                );
+              })()}
               <input
                 className="centro-agenda-nota"
                 placeholder="Nota"
@@ -158,11 +180,6 @@ export default function Turnos({
   return (
     <main className="centro-cuerpo">
       <h1 className="centro-titulo">Mis turnos</h1>
-      <p className="centro-bajada">
-        Tus horas reservadas, una por renglón. Escribí a quién atendés en cada una; se guarda solo.
-        Si el nombre es el de una ficha de Pacientes, el turno queda atado a ella. Lo que no está
-        reservado no aparece: se reserva primero en Reservar.
-      </p>
       {error && <p className="centro-error">{error}</p>}
 
       <datalist id="centro-pacientes">
