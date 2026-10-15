@@ -23,6 +23,13 @@
 export const COOKIE = 'centro_sesion';
 
 /**
+ * La marca de que quien mira es alguien del equipo, entrado con un pase desde
+ * el OS y no con la contraseña de la persona. Con esta cookie la zona se ve
+ * igual pero no escribe: ni reserva, ni suelta, ni renueva, ni anota turnos.
+ */
+export const COOKIE_MIRANDO = 'centro_mirando';
+
+/**
  * Noventa días. Es la red para la sesión que quedó abierta sin que nadie se
  * diera cuenta (la computadora del consultorio, un teléfono perdido): para el
  * caso conocido está cambiar la contraseña, que corta todas las sesiones en el
@@ -54,6 +61,33 @@ export async function armarCookie(
 ): Promise<string> {
   const vence = Math.floor(Date.now() / 1000) + DURACION;
   return `${inquilinoId}.${vence}.${await firmar(`${inquilinoId}.${vence}.${hash ?? ''}`, secreto)}`;
+}
+
+/** Cuánto vive un pase: lo que tarda en abrirse la pestaña. */
+const PASE_SEGUNDOS = 120;
+
+/**
+ * El pase para ver la pantalla de un inquilino desde el OS. Va en la dirección
+ * (`/centro/ver/<pase>`), porque el OS y el Centro son hosts distintos y una
+ * cookie no cruza. Firmado con el mismo secreto que la sesión y con un prefijo
+ * propio, así un pase nunca vale como cookie ni al revés.
+ */
+export async function armarPase(inquilinoId: string, secreto: string): Promise<string> {
+  const vence = Math.floor(Date.now() / 1000) + PASE_SEGUNDOS;
+  return `${inquilinoId}.${vence}.${await firmar(`pase.${inquilinoId}.${vence}`, secreto)}`;
+}
+
+/** De quién es el pase, si la firma es de este servidor y no venció. */
+export async function idDelPase(pase: string | undefined, secreto: string | undefined): Promise<string | null> {
+  if (!pase || !secreto) return null;
+  const [id, vence, firma] = pase.split('.');
+  if (!id || !vence || !firma || !ID.test(id)) return null;
+  if (!/^\d{9,12}$/.test(vence) || Number(vence) < Date.now() / 1000) return null;
+  const esperada = await firmar(`pase.${id}.${vence}`, secreto);
+  if (firma.length !== esperada.length) return null;
+  let dif = 0;
+  for (let i = 0; i < firma.length; i++) dif |= firma.charCodeAt(i) ^ esperada.charCodeAt(i);
+  return dif === 0 ? id : null;
 }
 
 /**

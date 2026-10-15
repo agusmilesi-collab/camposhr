@@ -36,6 +36,9 @@ const REMITENTES = {
   pedidos: 'Campos HR <pedidos@camposhr.com>',
   facturacion: 'Campos HR <facturacion@camposhr.com>',
   entrevistas: 'Campos HR <entrevistas@camposhr.com>',
+  /** Lo del Centro Integral Santiago (el enlace para la contraseña de un
+   *  inquilino) sale con el nombre del Centro: el inquilino no conoce a Campos HR. */
+  centro: 'Centro Integral Santiago <centro@camposhr.com>',
 } as const;
 
 export type Adjunto = { nombre: string; bytes: Uint8Array };

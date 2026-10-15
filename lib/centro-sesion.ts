@@ -13,12 +13,17 @@
 import 'server-only';
 
 import { cookies } from 'next/headers';
-import { COOKIE, firmaValida, idDeLaCookie } from '@/lib/centro-cookie';
+import { COOKIE, COOKIE_MIRANDO, firmaValida, idDeLaCookie } from '@/lib/centro-cookie';
 import { select } from '@/lib/supabase';
 import type { Inquilino } from '@/lib/consultorios-calculo';
 
-export async function inquilinoDeLaSesion(): Promise<Inquilino | null> {
-  const cookie = (await cookies()).get(COOKIE)?.value;
+/** La persona de la sesión, y si quien mira es del equipo (entró con un pase). */
+export type Sesion = Inquilino & { mirando: boolean };
+
+export async function inquilinoDeLaSesion(): Promise<Sesion | null> {
+  const jar = await cookies();
+  const cookie = jar.get(COOKIE)?.value;
+  const mirando = jar.get(COOKIE_MIRANDO)?.value === '1';
   const id = idDeLaCookie(cookie);
   if (!id) return null;
   const filas = await select<Inquilino>(
@@ -31,7 +36,22 @@ export async function inquilinoDeLaSesion(): Promise<Inquilino | null> {
   // sesiones abiertas con la anterior.
   if (!yo || !(await firmaValida(cookie, yo.hash ?? null, process.env.CENTRO_SECRETO))) return null;
   // Una baja deja de entrar en el acto, sin esperar a que venza la cookie.
-  return yo.activo ? yo : null;
+  return yo.activo ? { ...yo, mirando } : null;
+}
+
+/**
+ * La sesión que puede escribir: la de la persona misma. Quien mira desde el
+ * OS ve todo y no toca nada. Las rutas que escriben pasan por acá.
+ */
+export async function inquilinoQueEscribe(): Promise<
+  { yo: Sesion } | { error: { motivo: string; status: number } }
+> {
+  const yo = await inquilinoDeLaSesion();
+  if (!yo) return { error: { motivo: 'Sin sesión.', status: 401 } };
+  if (yo.mirando) {
+    return { error: { motivo: 'Estás mirando la pantalla desde el OS: acá no se puede cambiar nada.', status: 403 } };
+  }
+  return { yo };
 }
 
 /**

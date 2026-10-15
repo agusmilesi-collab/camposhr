@@ -24,6 +24,7 @@ import {
 } from '@/lib/consultorios';
 import Calendario from './Calendario';
 import Inquilinos from './Inquilinos';
+import { renovacionesDe } from '@/lib/renovaciones';
 import Espacios from './Espacios';
 import Finanzas from './Finanzas';
 import { aFacturarDelCentro, facturasDelCentro } from '@/lib/facturas-centro';
@@ -128,6 +129,7 @@ export default async function Consultorios(
     movimientos,
     todasLasEscalas,
     gastos,
+    renovaciones,
   ] = await Promise.all([
     listarEspacios(),
     leerAperturas(),
@@ -147,6 +149,9 @@ export default async function Consultorios(
     ver === 'inquilinos' || ver === 'finanzas' ? leerMovimientos() : Promise.resolve([]),
     ver === 'espacios' ? escalas() : Promise.resolve([]),
     ver === 'finanzas' ? leerGastos() : Promise.resolve([]),
+    ver === 'inquilinos'
+      ? renovacionesDe(mesCorrido(periodoDe(hoy), 1))
+      : Promise.resolve({} as Awaited<ReturnType<typeof renovacionesDe>>),
   ]);
 
   // Lo que hay para facturar del mes y lo ya emitido: solo en su pestaña, que
@@ -311,6 +316,7 @@ export default async function Consultorios(
           periodo={periodo}
           hoy={hoy}
           facturacion={{ cola, emisoras, facturas: facturasCentro }}
+          renovaciones={renovaciones}
         />
       )}
 

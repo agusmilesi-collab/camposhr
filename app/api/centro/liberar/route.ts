@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { inquilinoDeLaSesion } from '@/lib/centro-sesion';
+import { inquilinoQueEscribe } from '@/lib/centro-sesion';
 import {
   deshacerReserva,
   DIAS_PARA_SOLTAR,
@@ -31,8 +31,11 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * pueden liberar con el motivo escrito.
  */
 export async function POST(req: Request) {
-  const yo = await inquilinoDeLaSesion();
-  if (!yo) return NextResponse.json({ ok: false, motivo: 'Sin sesión.' }, { status: 401 });
+  const sesion = await inquilinoQueEscribe();
+  if ('error' in sesion) {
+    return NextResponse.json({ ok: false, motivo: sesion.error.motivo }, { status: sesion.error.status });
+  }
+  const yo = sesion.yo;
 
   const datos = await req.json().catch(() => null);
   const id = String(datos?.id ?? '');

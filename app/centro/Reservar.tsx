@@ -107,13 +107,25 @@ export default function Reservar({
    * sin los huecos del principio las columnas de la primera semana caerían
    * bajo el nombre del día equivocado.
    */
-  const semanas: (string | null)[][] = [];
+  const enteras: (string | null)[][] = [];
   for (const d of dias) {
     const col = diaSemanaDe(d);
-    if (semanas.length === 0 || col <= semanas[semanas.length - 1].findLastIndex((x) => x !== null))
-      semanas.push(Array<string | null>(DIAS_DE_LA_SEMANA).fill(null));
-    semanas[semanas.length - 1][col] = d;
+    if (enteras.length === 0 || col <= enteras[enteras.length - 1].findLastIndex((x) => x !== null))
+      enteras.push(Array<string | null>(DIAS_DE_LA_SEMANA).fill(null));
+    enteras[enteras.length - 1][col] = d;
   }
+  /**
+   * Sin los días que no se ofrecen: la primera semana arranca hoy y la última
+   * termina donde termina la ventana. Mostrar el lunes y el martes ya pasados
+   * como columnas vacías era ofrecer días en los que no se puede reservar, y
+   * se leían como si estuvieran libres. Cada semana guarda en qué columna
+   * empieza, para que el nombre del día siga siendo el correcto.
+   */
+  const semanas = enteras.map((semana) => {
+    const col0 = semana.findIndex((x) => x !== null);
+    const colN = semana.findLastIndex((x) => x !== null);
+    return { col0, dias: semana.slice(col0, colN + 1) };
+  });
 
   /**
    * Qué sala se mira: una, o **todas** juntas.
@@ -444,15 +456,17 @@ export default function Reservar({
              por sala; con una elegida, la semana queda en seis columnas y
              entra en un teléfono. */
           <div className="centro-semanas">
-            {semanas.map((semana, k) => (
+            {semanas.map(({ col0, dias: semana }, k) => (
               <div className="centro-marco" key={k}>
                 <table className={`centro-mes${todas ? ' centro-mes-salas' : ''}`}>
                   <thead>
                     <tr>
                       <th className="centro-hora" />
-                      {semana.map((d, col) => (
-                        <th key={col} colSpan={mirando.length} className="centro-dia-cab">
-                          {d ? `${DIAS_CORTOS[col]} ${corta(d).dia}/${corta(d).mesN}` : DIAS_CORTOS[col]}
+                      {semana.map((d, i) => (
+                        <th key={i} colSpan={mirando.length} className="centro-dia-cab">
+                          {d
+                            ? `${DIAS_CORTOS[col0 + i]} ${corta(d).dia}/${corta(d).mesN}`
+                            : DIAS_CORTOS[col0 + i]}
                         </th>
                       ))}
                     </tr>

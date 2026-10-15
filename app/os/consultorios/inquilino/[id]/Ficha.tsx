@@ -335,6 +335,21 @@ export default function Ficha({
     requestAnimationFrame(() => setImprimiendo('recibo'));
   }
 
+  async function verSuPantalla() {
+    // La pestaña se abre en el clic y se le pone la dirección después: abierta
+    // tras esperar al servidor, el navegador la toma por ventana emergente y
+    // la bloquea.
+    const pestana = window.open('', '_blank');
+    const r = await mandar({ accion: 'inquilino-ver', id: i.id });
+    if (!r.ok || !r.enlace) {
+      pestana?.close();
+      return setError(r.motivo ?? 'No se pudo abrir su pantalla.');
+    }
+    setError(null);
+    if (pestana) pestana.location.href = r.enlace;
+    else window.location.href = r.enlace;
+  }
+
   async function generarEnlace() {
     const r = await mandar({ accion: 'inquilino-enlace', id: i.id });
     if (!r.ok || !r.enlace) return setError(r.motivo ?? 'No se pudo generar el enlace.');
@@ -582,6 +597,14 @@ export default function Ficha({
                     WhatsApp. "Dar acceso" y "Restablecer clave" nombraban la
                     consecuencia, no la acción, y no se sabía qué esperar. */}
                 Copiar enlace
+              </button>
+              <button
+                className="os-boton"
+                type="button"
+                onClick={verSuPantalla}
+                title="Abre la zona del inquilino como la ve esta persona, solo para mirar"
+              >
+                Ver su pantalla
               </button>
             </div>
           </div>

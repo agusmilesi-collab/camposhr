@@ -8,6 +8,7 @@ import { quienSoy } from '@/lib/identidad';
 import { anotarAcceso } from '@/lib/accesos';
 import { insert, patch } from '@/lib/supabase';
 import { HORAS_DEL_ENLACE, tokenDeAlta } from '@/lib/centro-acceso';
+import { armarPase } from '@/lib/centro-cookie';
 import {
   DIAS_CORTOS,
   contratos as leerContratos,
@@ -355,6 +356,20 @@ export async function POST(req: Request) {
           ? `http://${host}`
           : 'https://centro.camposhr.com';
         extra = { enlace: `${base}/centro/clave/${token}` };
+        break;
+      }
+
+      case 'inquilino-ver': {
+        // Ver la pantalla de esa persona tal como la ve ella, sin su
+        // contraseña: un pase firmado de dos minutos que abre la zona del
+        // inquilino en modo mirar (se ve todo, no se escribe nada).
+        const id = String(datos?.id ?? '');
+        if (!UUID.test(id)) return mal('Inquilino inválido.');
+        const secreto = process.env.CENTRO_SECRETO;
+        if (!secreto) return mal('El acceso del Centro no está configurado.', 503);
+        const host = req.headers.get('host') ?? '';
+        const base = host.startsWith('localhost') ? `http://${host}` : 'https://centro.camposhr.com';
+        extra = { enlace: `${base}/centro/ver/${await armarPase(id, secreto)}` };
         break;
       }
 

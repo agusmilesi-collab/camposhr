@@ -64,8 +64,11 @@ export default function Clave({ token }: { token: string }) {
         <label className="centro-fila" style={{ margin: '8px 0 14px', fontSize: '0.86rem' }}>
           <input type="checkbox" name="acepta" required />
           <span>
-            Leí y acepto las normas de convivencia del Centro: se paga toda hora
-            reservada, el alquiler se abona del 1 al 10, y solo se usa la sala
+            Leí y acepto las{' '}
+            <a href="/centro/normas" target="_blank" rel="noreferrer" className="centro-enlace-texto">
+              normas de convivencia del Centro
+            </a>
+            : se paga toda hora reservada, el alquiler se abona del 1 al 10, y solo se usa la sala
             reservada en el horario reservado.
           </span>
         </label>

@@ -635,15 +635,602 @@
   line-height: 1.1;
 }
 
+/* Entrar y poner la contraseña no llevan barra lateral: el bloque cruza las
+   dos columnas de la grilla, si no cae en los 252 px de la barra. */
 .centro-entrar {
+  grid-column: 1 / -1;
+  width: 100%;
   max-width: 360px;
   margin: 12vh auto 0;
   padding: 0 18px;
 }
 
+/* Acá la marca es nombre y dirección, uno debajo del otro. */
+.centro-entrar .centro-marca {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 0;
+  min-height: 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.3rem;
+}
+
+.centro-entrar .centro-marca span {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 0.8rem;
+  color: var(--suave);
+}
+
 .centro-entrar .centro-campo {
   width: 100%;
   margin-bottom: 10px;
+}
+
+/* El manual: un índice de enlaces arriba y una tarjeta por sección. */
+.centro-manual-indice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0 0 18px;
+  font-size: 0.86rem;
+}
+
+.centro-manual-indice a {
+  color: var(--azul);
+  text-decoration: none;
+  border-bottom: 1px solid var(--linea);
+}
+
+.centro-manual-seccion {
+  scroll-margin-top: 16px;
+}
+
+.centro-manual-seccion p {
+  margin: 0 0 8px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+.centro-manual-seccion p:last-child {
+  margin-bottom: 0;
+}
+
+/* Pacientes: la lista y la ficha. */
+.centro-pacientes-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.centro-pacientes-lista li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+  align-items: baseline;
+  padding: 9px 0;
+  border-top: 1px solid var(--linea-suave);
+  font-size: 0.9rem;
+}
+
+.centro-pacientes-lista li:first-child {
+  border-top: 0;
+}
+
+.centro-pacientes-nombre {
+  color: var(--tinta);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.centro-pacientes-nombre:hover {
+  text-decoration: underline;
+}
+
+.centro-pacientes-dato {
+  color: var(--suave);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* La ficha, densa: un renglón por campo, rótulo a la izquierda en versalita
+   chica y el valor a la derecha, sin borde hasta que se toca. Una sola
+   columna y un solo nivel de tarjeta; lo que agrupa es el subtítulo. */
+.centro-ficha-sub {
+  margin: 12px 0 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.centro-ficha-sub:first-of-type {
+  margin-top: 4px;
+}
+
+.centro-ficha-filas {
+  display: grid;
+  gap: 0;
+}
+
+/* Los datos cortos van en dos columnas: once renglones de un dato chico cada
+   uno dejaban media pantalla vacía a la derecha. Los antecedentes siguen a
+   una, porque son texto. */
+.centro-ficha-filas-dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+}
+
+.centro-ficha-filas-dos label:nth-child(2) {
+  border-top: 0;
+}
+
+.centro-ficha-filas label {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  border-top: 1px solid var(--linea-suave);
+}
+
+.centro-ficha-filas label:first-child {
+  border-top: 0;
+}
+
+.centro-ficha-filas label > span {
+  font-size: 0.78rem;
+  color: var(--suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.centro-ficha-valor {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 3px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.86rem;
+  color: var(--tinta);
+  min-width: 0;
+}
+
+.centro-ficha-valor::placeholder {
+  color: var(--suave);
+  opacity: 0.7;
+}
+
+.centro-ficha-valor:hover {
+  border-color: var(--linea);
+}
+
+.centro-ficha-valor:focus {
+  outline: none;
+  border-color: var(--azul);
+  background: var(--panel-2);
+}
+
+.centro-ficha-texto {
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.centro-ficha-filas .centro-ficha-texto {
+  align-self: start;
+  margin: 3px 0;
+}
+
+.centro-evolucion-nueva {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.centro-evolucion-nueva textarea {
+  grid-column: 2;
+}
+
+.centro-evolucion-nueva button {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.centro-evoluciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.centro-evoluciones li {
+  padding: 10px 0;
+  border-top: 1px solid var(--linea-suave);
+}
+
+.centro-evoluciones li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.centro-evolucion-fecha {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--azul-fuerte);
+  margin-bottom: 4px;
+}
+
+.centro-evolucion-texto {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+/* Fecha a la izquierda y las acciones a la derecha, en el mismo renglón. */
+.centro-evolucion-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.centro-evolucion-acciones {
+  display: flex;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--suave);
+  white-space: nowrap;
+}
+
+/* Un botón de ícono: 16 px de trazo, gris hasta que se pasa por encima. */
+.centro-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--suave);
+  cursor: pointer;
+}
+
+.centro-icono svg {
+  width: 16px;
+  height: 16px;
+}
+
+.centro-icono:hover {
+  color: var(--tinta);
+  background: var(--panel-2);
+}
+
+.centro-evolucion-acciones {
+  align-items: center;
+  gap: 4px;
+}
+
+.centro-evolucion-acciones .centro-enlace-texto {
+  font-size: 0.78rem;
+  color: var(--suave);
+}
+
+.centro-evolucion-acciones .centro-enlace-texto:hover {
+  color: var(--azul);
+}
+
+.centro-evolucion-editar {
+  display: grid;
+  gap: 8px;
+}
+
+@media (max-width: 860px) {
+  .centro-ficha-filas label {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+  .centro-ficha-filas-dos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .centro-ficha-filas-dos label:nth-child(2) {
+    border-top: 1px solid var(--linea-suave);
+  }
+  .centro-pacientes-lista li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .centro-evolucion-nueva {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .centro-evolucion-nueva textarea,
+  .centro-evolucion-nueva button {
+    grid-column: 1;
+  }
+}
+
+/* La banda de quien mira desde el OS: fija arriba, color de aviso. */
+.centro-mirando {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 8px 18px;
+  background: #a97722;
+  color: #fff;
+  font-size: 0.84rem;
+  text-align: center;
+}
+
+/* Mis turnos: un panel por día y adentro una fila por hora reservada, con la
+   hora, la sala y los dos campos escribibles. Los campos van sin borde hasta
+   que se tocan: la agenda se lee como lista y se escribe como lista. */
+.centro-agenda-dia h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.centro-agenda-hoy {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--azul);
+}
+
+.centro-agenda-pasado {
+  opacity: 0.75;
+}
+
+.centro-agenda-horas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.centro-agenda-horas li {
+  display: grid;
+  grid-template-columns: 48px 64px minmax(0, 1.4fr) auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 4px 0;
+  border-top: 1px solid var(--linea-suave);
+  font-size: 0.88rem;
+}
+
+.centro-agenda-horas li:first-child {
+  border-top: 0;
+}
+
+.centro-agenda-hora {
+  font-variant-numeric: tabular-nums;
+  color: var(--tinta);
+}
+
+.centro-agenda-sala {
+  font-size: 0.78rem;
+  color: var(--suave);
+  white-space: nowrap;
+}
+
+.centro-agenda-paciente,
+.centro-agenda-nota {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  font: inherit;
+  color: var(--tinta);
+}
+
+.centro-agenda-nota {
+  font-size: 0.82rem;
+  color: var(--tinta-media);
+}
+
+.centro-agenda-paciente::placeholder {
+  color: var(--suave);
+  font-style: italic;
+}
+
+.centro-agenda-horas li.con-turno .centro-agenda-paciente {
+  font-weight: 600;
+}
+
+.centro-agenda-paciente:hover,
+.centro-agenda-nota:hover {
+  border-color: var(--linea);
+}
+
+.centro-agenda-paciente:focus,
+.centro-agenda-nota:focus {
+  outline: none;
+  border-color: var(--azul);
+  background: var(--panel);
+}
+
+.centro-agenda-ficha {
+  font-size: 0.74rem;
+  color: var(--azul);
+  text-decoration: none;
+  border-bottom: 1px solid var(--linea);
+}
+
+.centro-agenda-horas li .centro-agenda-nota {
+  grid-column: 5;
+}
+
+.centro-agenda-seccion {
+  margin: 26px 0 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+@media (max-width: 860px) {
+  .centro-agenda-horas li {
+    grid-template-columns: 44px 56px minmax(0, 1fr) auto;
+  }
+  .centro-agenda-horas li .centro-agenda-nota {
+    grid-column: 2 / -1;
+    padding-top: 0;
+  }
+}
+
+/* Las normas en una hoja de papel, como el informe de los psicotécnicos
+   (`.os-onepager-hoja`): A4 de ancho, blanca, con sombra, letra de hoja. Alta
+   lo que haga falta: es un documento, no una carilla. */
+.centro-cuerpo-hoja {
+  max-width: none;
+  display: grid;
+  justify-items: center;
+}
+
+.centro-hoja {
+  width: 210mm;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 16mm 15mm 18mm;
+  background: #fff;
+  color: var(--tinta);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
+  font-size: 10.5pt;
+  line-height: 1.45;
+}
+
+@media (max-width: 860px) {
+  .centro-hoja {
+    padding: 22px 18px 26px;
+  }
+}
+
+.centro-hoja-membrete {
+  padding-bottom: 12px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.centro-hoja-marca {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.centro-hoja-direccion {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.centro-hoja-titulo {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.9rem;
+  line-height: 1.15;
+  margin: 0 0 4px;
+}
+
+.centro-hoja-version {
+  margin: 0 0 34px;
+  font-size: 0.8rem;
+  color: var(--suave);
+}
+
+.centro-hoja-articulo {
+  scroll-margin-top: 16px;
+}
+
+.centro-hoja-articulo + .centro-hoja-articulo {
+  margin-top: 34px;
+}
+
+/* El artículo: el número grande y claro a la izquierda y el título al lado,
+   con una línea fina debajo, como el capítulo del informe. */
+.centro-hoja-articulo-top {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: baseline;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.centro-hoja-numero {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #c9c4ba;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.centro-hoja-articulo-top h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+/* Las normas: numeradas 1.1, 1.2, con el número en su propia columna, alineado
+   bajo el número del artículo. */
+.centro-normas-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--tinta-media);
+}
+
+.centro-normas-lista li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  margin-bottom: 7px;
+  scroll-margin-top: 16px;
+}
+
+.centro-normas-numero {
+  font-variant-numeric: tabular-nums;
+  color: var(--suave);
+}
+
+.centro-hoja-cierre {
+  margin: 40px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--linea);
+  font-size: 0.86rem;
+  color: var(--suave);
+}
+
+/* Las capturas: a lo ancho de la tarjeta, con borde, una debajo de otra. */
+.centro-manual-captura {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 12px;
+  border: 1px solid var(--linea);
+  border-radius: 9px;
+}
+
+/* Un botón que se lee como enlace: para pasar de entrar a pedir el enlace. */
+.centro-enlace-texto {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--azul);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .centro-referencias {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { inquilinoDeLaSesion } from '@/lib/centro-sesion';
+import { inquilinoDeLaSesion, inquilinoQueEscribe } from '@/lib/centro-sesion';
 import { enlaceDelComprobante, guardarComprobante } from '@/lib/comprobantes-pago';
 
 export const runtime = 'nodejs';
@@ -14,8 +14,9 @@ const FECHA = /^\d{4}-\d{2}-01$/;
  * que venga del navegador. No registra ningún pago: eso lo hace el equipo.
  */
 export async function POST(req: Request) {
-  const yo = await inquilinoDeLaSesion();
-  if (!yo) return NextResponse.json({ ok: false, motivo: 'Sin sesión.' }, { status: 401 });
+  const sesion = await inquilinoQueEscribe();
+  if ('error' in sesion) return NextResponse.json({ ok: false, motivo: sesion.error.motivo }, { status: sesion.error.status });
+  const yo = sesion.yo;
 
   const datos = await req.formData().catch(() => null);
   const archivo = datos?.get('archivo');

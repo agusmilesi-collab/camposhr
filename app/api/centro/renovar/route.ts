@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { inquilinoDeLaSesion } from '@/lib/centro-sesion';
+import { inquilinoQueEscribe } from '@/lib/centro-sesion';
 import {
   contratos as leerContratos,
   diaSemanaDe,
@@ -21,8 +21,11 @@ export const dynamic = 'force-dynamic';
  * persona: es la de la cookie firmada.
  */
 export async function POST(req: Request) {
-  const yo = await inquilinoDeLaSesion();
-  if (!yo) return NextResponse.json({ ok: false, motivo: 'Sin sesión.' }, { status: 401 });
+  const sesion = await inquilinoQueEscribe();
+  if ('error' in sesion) {
+    return NextResponse.json({ ok: false, motivo: sesion.error.motivo }, { status: sesion.error.status });
+  }
+  const yo = sesion.yo;
 
   const datos = await req.json().catch(() => null);
   const respuesta = String(datos?.respuesta ?? '') as Respuesta;

@@ -19,10 +19,9 @@ import { useRouter } from 'next/navigation';
  * Las secciones, agrupadas como en el OS: lo suelto arriba y lo demás bajo su
  * rótulo.
  *
- * **Mis turnos y Pacientes todavía no existen.** Están en la barra porque es lo
- * que se viene (la agenda de la consulta y las fichas), y verlas ahí es lo que
- * hace que alguien pregunte por ellas. Cada una abre su pantalla, que dice que
- * se está construyendo en vez de dar un 404.
+ * Mis turnos y Pacientes existen desde el 15/10/2026: la agenda de la consulta
+ * y las fichas con historia clínica. Son de la persona, no del Centro: en modo
+ * mirar desde el OS no se abren.
  */
 const NAV: { grupo?: string; items: { href: string; texto: string; icono: React.ReactNode }[] }[] = [
   {
@@ -90,6 +89,28 @@ const NAV: { grupo?: string; items: { href: string; texto: string; icono: React.
           <>
             <path d="M6 2.5h8l5 5v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-17a2 2 0 0 1 2-2z" />
             <path d="M14 2.5v5h5M8.5 13h7M8.5 17h4" />
+          </>
+        ),
+      },
+      {
+        href: '/centro/normas',
+        texto: 'Normas',
+        // Una hoja con una tilde: lo que se firmó.
+        icono: (
+          <>
+            <path d="M6 2.5h8l5 5v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-17a2 2 0 0 1 2-2z" />
+            <path d="M14 2.5v5h5M8.5 15l2.5 2.5 5-5" />
+          </>
+        ),
+      },
+      {
+        href: '/centro/manual',
+        texto: 'Manual',
+        // Un libro abierto.
+        icono: (
+          <>
+            <path d="M12 6.5c-1.5-1.5-4-2-8-2v14c4 0 6.5.5 8 2 1.5-1.5 4-2 8-2v-14c-4 0-6.5.5-8 2z" />
+            <path d="M12 6.5v14" />
           </>
         ),
       },

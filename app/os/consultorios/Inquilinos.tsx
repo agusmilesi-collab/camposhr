@@ -33,6 +33,7 @@ import {
   type Inquilino,
   type Movimiento,
 } from '@/lib/consultorios-calculo';
+import { DIA_DE_RENOVAR, type Renovacion } from '@/lib/renovaciones-tipos';
 import { mandar, pesos } from './acciones';
 import Facturar, { type Facturable, type FacturaEmitida } from './Facturar';
 import type { Emisora } from '@/lib/facturas-tipos';
@@ -44,12 +45,15 @@ export default function Inquilinos({
   periodo,
   hoy,
   facturacion,
+  renovaciones,
 }: {
   inquilinos: Inquilino[];
   contratos: Contrato[];
   movimientos: Movimiento[];
   periodo: string;
   hoy: string;
+  /** Qué contestó cada uno sobre el mes que viene, por id de inquilino. */
+  renovaciones: Record<string, Renovacion>;
   /**
    * Lo que hace falta para facturar el mes.
    *
@@ -75,6 +79,26 @@ export default function Inquilinos({
   const aFacturar = conCargos.filter((id) => !fuera.includes(id));
 
   const delMes = movimientos.filter((m) => m.periodo === periodo);
+
+  /**
+   * El mes que viene: qué contestó cada uno desde que el sistema pregunta.
+   *
+   * Antes del día de renovar no se muestra "sin respuesta": todavía no se le
+   * preguntó a nadie. Y a quien no tiene horas fijas no se le pregunta, así
+   * que tampoco tiene estado.
+   */
+  const preguntando = Number(hoy.slice(8, 10)) >= DIA_DE_RENOVAR;
+  const RENOVACION: Record<Renovacion['respuesta'], { texto: string; punto: string }> = {
+    si: { texto: 'Confirmó', punto: 'var(--os-verde)' },
+    no: { texto: 'No sigue', punto: 'var(--os-rojo)' },
+    cambiar: { texto: 'Cambia', punto: 'var(--os-ambar)' },
+  };
+  const mesQueViene = (id: string, horas: number) => {
+    const r = renovaciones[id];
+    if (r) return { ...RENOVACION[r.respuesta], titulo: r.nota ?? undefined };
+    if (preguntando && horas > 0) return { texto: 'Sin respuesta', punto: 'var(--os-gris)', titulo: undefined };
+    return null;
+  };
 
   const filas = inquilinos.map((i) => {
     const suyosDelMes = delMes.filter((m) => m.inquilino_id === i.id);
@@ -170,18 +194,54 @@ export default function Inquilinos({
                 reclamarle, y el teléfono se necesita recién al abrirlo. */}
             <colgroup>
               {facturacion && <col style={{ width: '4%' }} />}
-              <col style={{ width: facturacion ? '32%' : '36%' }} />
-              <col style={{ width: '12%' }} />
-              <col style={{ width: '18%' }} />
+              <col style={{ width: facturacion ? '26%' : '30%' }} />
+              <col style={{ width: '10%' }} />
+              <col style={{ width: '14%' }} />
               <col style={{ width: '16%' }} />
-              <col style={{ width: '18%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '16%' }} />
             </colgroup>
             <thead>
               <tr>
-                {/* La tilde dice a quién se le emite factura este mes. */}
-                {facturacion && <th />}
+                {/* La tilde dice a quién se le emite factura este mes. La de
+                    la cabecera los tilda o destilda a todos de una vez, y se
+                    muestra a medias cuando hay de los dos. Centrada en línea
+                    porque `.os-tabla th` alinea a la izquierda y le gana a la
+                    clase. */}
+                {facturacion && (
+                  <th className="os-tabla-tilde" style={{ textAlign: 'center' }}>
+                    {conCargos.length > 0 && (
+                      <input
+                        type="checkbox"
+                        aria-label={
+                          aFacturar.length === conCargos.length
+                            ? 'Deseleccionar a todos'
+                            : 'Seleccionar a todos'
+                        }
+                        title={
+                          aFacturar.length === conCargos.length
+                            ? 'Deseleccionar a todos'
+                            : 'Seleccionar a todos'
+                        }
+                        checked={aFacturar.length === conCargos.length}
+                        ref={(el) => {
+                          if (el)
+                            el.indeterminate =
+                              aFacturar.length > 0 && aFacturar.length < conCargos.length;
+                        }}
+                        onChange={() =>
+                          setFuera(aFacturar.length === conCargos.length ? [...conCargos] : [])
+                        }
+                      />
+                    )}
+                  </th>
+                )}
                 <th>Nombre</th>
                 <th className="os-tabla-num">Horas</th>
+                {/* Qué contestó sobre el mes que viene: el clic de Inicio
+                    queda a la vista, y "sin respuesta" dice a quién escribirle
+                    antes del 1. */}
+                <th>Mes que viene</th>
                 <th className="os-tabla-num">Reservas</th>
                 <th className="os-tabla-num">Pagos</th>
                 <th className="os-tabla-num">Saldo</th>
@@ -222,6 +282,22 @@ export default function Inquilinos({
                     </Link>
                   </td>
                   <td className="os-tabla-num">{f.horas > 0 ? `${f.horas} h` : '—'}</td>
+                  <td>
+                    {(() => {
+                      const e = mesQueViene(f.i.id, f.horas);
+                      return e ? (
+                        <span
+                          className="os-sello-estado"
+                          style={{ '--punto': e.punto } as React.CSSProperties}
+                          title={e.titulo}
+                        >
+                          {e.texto}
+                        </span>
+                      ) : (
+                        '—'
+                      );
+                    })()}
+                  </td>
                   <td className="os-tabla-num">{f.cargos > 0 ? pesos(f.cargos) : '—'}</td>
                   <td className="os-tabla-num">{f.pagos > 0 ? pesos(f.pagos) : '—'}</td>
                   <td className="os-tabla-num">{f.saldo === 0 ? 'Al día' : pesos(f.saldo)}</td>
@@ -232,6 +308,7 @@ export default function Inquilinos({
                 <td>
                   <strong>Total</strong>
                 </td>
+                <td />
                 <td />
                 <td className="os-tabla-num">{pesos(total.cargos)}</td>
                 <td className="os-tabla-num">{pesos(total.pagos)}</td>

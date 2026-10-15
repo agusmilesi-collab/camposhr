@@ -92,6 +92,11 @@ export async function proxy(req: NextRequest) {
   const url = req.nextUrl;
   const { pathname } = url;
 
+  // --- Los crons de Vercel ---
+  // Llegan al dominio del despliegue, no a un host nuestro, y cada ruta revisa
+  // `CRON_SECRET` por su cuenta. Sin esto caían en la rama del host principal.
+  if (pathname.startsWith('/api/cron/')) return NextResponse.next();
+
   // --- Desarrollo local: todas las zonas conviven en localhost ---
   // Sin esto, las rutas de tools redirigen al subdominio y no se pueden probar.
   if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) {

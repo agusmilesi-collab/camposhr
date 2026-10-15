@@ -46,5 +46,6 @@ export function tokenDeAlta(): string {
  *  así que tiene que sobrevivir a que lo lean al otro día. */
 export const HORAS_DEL_ENLACE = 48;
 
-/** La versión del documento de convivencia que se acepta al entrar. */
-export const NORMAS_VERSION = '2024-03';
+/** La versión del documento de convivencia que se acepta al entrar. El texto
+ *  vive en `app/centro/normas/contenido.ts`; al cambiarlo se sube esto. */
+export const NORMAS_VERSION = '2026-10';

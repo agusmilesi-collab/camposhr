@@ -9,21 +9,8 @@ import { patch, select, upsert } from '@/lib/supabase';
  * la respuesta pide hacer algo. Ver `supabase/renovaciones.sql`.
  */
 
-/** Desde qué día del mes se pregunta por el mes siguiente. */
-export const DIA_DE_RENOVAR = 25;
-
-export type Respuesta = 'si' | 'no' | 'cambiar';
-
-export type Renovacion = {
-  id: string;
-  inquilino_id: string;
-  periodo: string;
-  respuesta: Respuesta;
-  nota: string | null;
-  /** Los feriados de ese mes en los que igual quiere usar su sala. */
-  feriados: string[];
-  respondido_at: string;
-};
+import { DIA_DE_RENOVAR, type Renovacion, type Respuesta } from '@/lib/renovaciones-tipos';
+export { DIA_DE_RENOVAR, type Renovacion, type Respuesta } from '@/lib/renovaciones-tipos';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -58,6 +45,15 @@ export async function responderRenovacion(
     'inquilino_id,periodo',
     false
   );
+}
+
+/** Las respuestas de un mes, por inquilino: para la columna "Mes que viene". */
+export async function renovacionesDe(periodo: string): Promise<Record<string, Renovacion>> {
+  const filas = await select<Renovacion>(
+    'renovaciones',
+    `select=id,inquilino_id,periodo,respuesta,nota,feriados,respondido_at&periodo=eq.${periodo}`
+  );
+  return Object.fromEntries(filas.map((r) => [r.inquilino_id, r]));
 }
 
 /**

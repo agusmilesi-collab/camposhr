@@ -8,9 +8,10 @@ export const runtime = 'nodejs';
 /**
  * Poner la contraseña con el enlace de un solo uso.
  *
- * El mismo camino sirve para el alta y para restablecerla: las propietarias
- * generan el enlace desde el OS y lo mandan por WhatsApp, porque camposhr.com no
- * tiene correo saliente.
+ * El mismo camino sirve para el alta y para restablecerla. El enlace llega de
+ * dos maneras: el inquilino lo pide desde la pantalla de entrar y le va por
+ * correo (`/api/centro/recuperar`), o las propietarias lo generan desde el OS
+ * y lo mandan por WhatsApp.
  *
  * **El enlace se quema al usarse** y vence a las 48 horas. Uno que quedara
  * vivo en un chat sería una llave permanente a la cuenta de esa persona.
