@@ -100,8 +100,12 @@ export default function Turnos({
     router.refresh();
   }
 
-  const Dia = ({ fecha }: { fecha: string }) => (
-    <section className={`centro-panel centro-agenda-dia${fecha < hoy ? ' centro-agenda-pasado' : ''}`}>
+  // Una función que devuelve el bloque del día, y no un componente definido
+  // acá adentro: un componente creado en cada render es para React uno nuevo
+  // cada vez, y desmonta los campos con cada tecla. Así el campo perdía el
+  // foco al primer carácter y nunca llegaba a guardar.
+  const dia = (fecha: string) => (
+    <section key={fecha} className={`centro-panel centro-agenda-dia${fecha < hoy ? ' centro-agenda-pasado' : ''}`}>
       <h2>
         {larga(fecha)}
         {fecha === hoy && <span className="centro-agenda-hoy">hoy</span>}
@@ -174,16 +178,12 @@ export default function Turnos({
           </p>
         </div>
       )}
-      {proximas.map((f) => (
-        <Dia key={f} fecha={f} />
-      ))}
+      {proximas.map((f) => dia(f))}
 
       {pasadas.length > 0 && (
         <>
           <h2 className="centro-agenda-seccion">Última semana</h2>
-          {pasadas.reverse().map((f) => (
-            <Dia key={f} fecha={f} />
-          ))}
+          {pasadas.reverse().map((f) => dia(f))}
         </>
       )}
     </main>
