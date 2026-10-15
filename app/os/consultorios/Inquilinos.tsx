@@ -25,35 +25,32 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
-  horasSemanalesTotales,
   mesLargo,
   periodoDe,
   saldoDe,
-  type Contrato,
+  hora,
+  type Reserva,
   type Inquilino,
   type Movimiento,
 } from '@/lib/consultorios-calculo';
-import { DIA_DE_RENOVAR, type Renovacion } from '@/lib/renovaciones-tipos';
 import { mandar, pesos } from './acciones';
 import Facturar, { type Facturable, type FacturaEmitida } from './Facturar';
 import type { Emisora } from '@/lib/facturas-tipos';
 
 export default function Inquilinos({
   inquilinos,
-  contratos,
+  reservas,
   movimientos,
   periodo,
   hoy,
   facturacion,
-  renovaciones,
 }: {
   inquilinos: Inquilino[];
-  contratos: Contrato[];
+  /** Las reservas activas del mes que se mira: de ahí salen las horas. */
+  reservas: Reserva[];
   movimientos: Movimiento[];
   periodo: string;
   hoy: string;
-  /** Qué contestó cada uno sobre el mes que viene, por id de inquilino. */
-  renovaciones: Record<string, Renovacion>;
   /**
    * Lo que hace falta para facturar el mes.
    *
@@ -80,31 +77,18 @@ export default function Inquilinos({
 
   const delMes = movimientos.filter((m) => m.periodo === periodo);
 
-  /**
-   * El mes que viene: qué contestó cada uno desde que el sistema pregunta.
-   *
-   * Antes del día de renovar no se muestra "sin respuesta": todavía no se le
-   * preguntó a nadie. Y a quien no tiene horas fijas no se le pregunta, así
-   * que tampoco tiene estado.
-   */
-  const preguntando = Number(hoy.slice(8, 10)) >= DIA_DE_RENOVAR;
-  const RENOVACION: Record<Renovacion['respuesta'], { texto: string; punto: string }> = {
-    si: { texto: 'Confirmó', punto: 'var(--os-verde)' },
-    no: { texto: 'No sigue', punto: 'var(--os-rojo)' },
-    cambiar: { texto: 'Cambia', punto: 'var(--os-ambar)' },
-  };
-  const mesQueViene = (id: string, horas: number) => {
-    const r = renovaciones[id];
-    if (r) return { ...RENOVACION[r.respuesta], titulo: r.nota ?? undefined };
-    if (preguntando && horas > 0) return { texto: 'Sin respuesta', punto: 'var(--os-gris)', titulo: undefined };
-    return null;
-  };
 
-  const filas = inquilinos.map((i) => {
+  // Solo los activos: quien dejó el Centro está en Configuración, en
+  // "Ex inquilinos", y desde ahí se vuelve a prender.
+  const filas = inquilinos.filter((i) => i.activo).map((i) => {
     const suyosDelMes = delMes.filter((m) => m.inquilino_id === i.id);
     return {
       i,
-      horas: horasSemanalesTotales(contratos, i.id, hoy),
+      // Las horas del mes: lo reservado y activo en ese período, fijo o
+      // suelto. Hasta el 15/10/2026 eran las horas fijas por semana.
+      horas: reservas
+        .filter((r) => r.inquilino_id === i.id)
+        .reduce((n, r) => n + (hora(r.hasta_hora) - hora(r.desde_hora)), 0),
       cargos: suyosDelMes.filter((m) => m.tipo === 'cargo').reduce((n, m) => n + m.importe, 0),
       pagos: suyosDelMes.filter((m) => m.tipo === 'pago').reduce((n, m) => n + m.importe, 0),
       saldo: saldoDe(suyosDelMes),
@@ -193,13 +177,15 @@ export default function Inquilinos({
                 8/9/2026: acá se mira la lista para saber a quién hay que
                 reclamarle, y el teléfono se necesita recién al abrirlo. */}
             <colgroup>
-              {facturacion && <col style={{ width: '4%' }} />}
-              <col style={{ width: facturacion ? '26%' : '30%' }} />
-              <col style={{ width: '10%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '16%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '16%' }} />
+              {/* Las de números llevan ancho fijo, lo que pide su importe más
+                  largo; el nombre se queda con el resto. En porcentajes, al
+                  achicar la ventana los importes se cortaban con puntos. */}
+              {facturacion && <col style={{ width: 64 }} />}
+              <col />
+              <col style={{ width: 156 }} />
+              <col style={{ width: 112 }} />
+              <col style={{ width: 112 }} />
+              <col style={{ width: 112 }} />
             </colgroup>
             <thead>
               <tr>
@@ -209,47 +195,22 @@ export default function Inquilinos({
                     porque `.os-tabla th` alinea a la izquierda y le gana a la
                     clase. */}
                 {facturacion && (
-                  <th className="os-tabla-tilde" style={{ textAlign: 'center' }}>
-                    {conCargos.length > 0 && (
-                      <input
-                        type="checkbox"
-                        aria-label={
-                          aFacturar.length === conCargos.length
-                            ? 'Deseleccionar a todos'
-                            : 'Seleccionar a todos'
-                        }
-                        title={
-                          aFacturar.length === conCargos.length
-                            ? 'Deseleccionar a todos'
-                            : 'Seleccionar a todos'
-                        }
-                        checked={aFacturar.length === conCargos.length}
-                        ref={(el) => {
-                          if (el)
-                            el.indeterminate =
-                              aFacturar.length > 0 && aFacturar.length < conCargos.length;
-                        }}
-                        onChange={() =>
-                          setFuera(aFacturar.length === conCargos.length ? [...conCargos] : [])
-                        }
-                      />
-                    )}
+                  <th className="os-tabla-tilde" style={{ textAlign: 'center' }} title="Facturar">
+                    FC
                   </th>
                 )}
                 <th>Nombre</th>
-                <th className="os-tabla-num">Horas</th>
-                {/* Qué contestó sobre el mes que viene: el clic de Inicio
-                    queda a la vista, y "sin respuesta" dice a quién escribirle
-                    antes del 1. */}
-                <th>Mes que viene</th>
-                <th className="os-tabla-num">Reservas</th>
+                <th className="os-tabla-num" title="Las horas reservadas en el mes, fijas y sueltas">
+                  Horas del mes
+                </th>
+                <th className="os-tabla-num">Importe</th>
                 <th className="os-tabla-num">Pagos</th>
                 <th className="os-tabla-num">Saldo</th>
               </tr>
             </thead>
             <tbody>
               {filas.map((f) => (
-                <tr key={f.i.id} className={f.i.activo ? undefined : 'os-cerrado-fila'}>
+                <tr key={f.i.id}>
                   {facturacion && (
                     <td className="os-tabla-tilde">
                       {conCargos.includes(f.i.id) ? (
@@ -281,35 +242,47 @@ export default function Inquilinos({
                       {f.i.nombre}
                     </Link>
                   </td>
-                  <td className="os-tabla-num">{f.horas > 0 ? `${f.horas} h` : '—'}</td>
-                  <td>
-                    {(() => {
-                      const e = mesQueViene(f.i.id, f.horas);
-                      return e ? (
-                        <span
-                          className="os-sello-estado"
-                          style={{ '--punto': e.punto } as React.CSSProperties}
-                          title={e.titulo}
-                        >
-                          {e.texto}
-                        </span>
-                      ) : (
-                        '—'
-                      );
-                    })()}
-                  </td>
-                  <td className="os-tabla-num">{f.cargos > 0 ? pesos(f.cargos) : '—'}</td>
-                  <td className="os-tabla-num">{f.pagos > 0 ? pesos(f.pagos) : '—'}</td>
+                  <td className="os-tabla-num">{f.horas} h</td>
+                  <td className="os-tabla-num">{pesos(f.cargos)}</td>
+                  <td className="os-tabla-num">{pesos(f.pagos)}</td>
                   <td className="os-tabla-num">{f.saldo === 0 ? 'Al día' : pesos(f.saldo)}</td>
                 </tr>
               ))}
               <tr>
-                {facturacion && <td />}
+                {/* La tilde de todos va abajo, al lado del total: es lo que se
+                    toca al cerrar el mes, cuando ya se repasó la lista. */}
+                {facturacion && (
+                  <td className="os-tabla-tilde">
+                  {conCargos.length > 0 && (
+                    <input
+                      type="checkbox"
+                      aria-label={
+                        aFacturar.length === conCargos.length
+                          ? 'Deseleccionar a todos'
+                          : 'Seleccionar a todos'
+                      }
+                      title={
+                        aFacturar.length === conCargos.length
+                          ? 'Deseleccionar a todos'
+                          : 'Seleccionar a todos'
+                      }
+                      checked={aFacturar.length === conCargos.length}
+                      ref={(el) => {
+                        if (el)
+                          el.indeterminate =
+                            aFacturar.length > 0 && aFacturar.length < conCargos.length;
+                      }}
+                      onChange={() =>
+                        setFuera(aFacturar.length === conCargos.length ? [...conCargos] : [])
+                      }
+                    />
+                  )}
+                  </td>
+                )}
                 <td>
                   <strong>Total</strong>
                 </td>
-                <td />
-                <td />
+                <td className="os-tabla-num">{filas.reduce((n, f) => n + f.horas, 0)} h</td>
                 <td className="os-tabla-num">{pesos(total.cargos)}</td>
                 <td className="os-tabla-num">{pesos(total.pagos)}</td>
                 <td className="os-tabla-num">{pesos(total.saldo)}</td>

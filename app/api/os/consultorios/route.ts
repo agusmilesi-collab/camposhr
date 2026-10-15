@@ -322,7 +322,8 @@ export async function POST(req: Request) {
         if (!UUID.test(id)) return mal('Inquilino inválido.');
         const cambios: Record<string, unknown> = {};
         if (typeof datos?.nombre === 'string') cambios.nombre = datos.nombre.trim();
-        if (typeof datos?.correo === 'string') cambios.correo = datos.correo.trim().toLowerCase();
+        // Vacío va como null: el índice único del correo rechaza dos vacíos.
+        if (typeof datos?.correo === 'string') cambios.correo = datos.correo.trim().toLowerCase() || null;
         if (typeof datos?.telefono === 'string') cambios.telefono = datos.telefono.trim() || null;
         if (typeof datos?.matricula === 'string') cambios.matricula = datos.matricula.trim() || null;
         if (typeof datos?.matriculaVence === 'string')
@@ -402,10 +403,13 @@ export async function POST(req: Request) {
         const espacio = espacios.find((e) => e.id === espacioId);
         if (!espacio) return mal('Esa sala no existe.');
         const horas = hora(hastaHora) - hora(desdeHora);
-        // El tramo sale del volumen que ya tiene contratado, y nunca es menor
-        // al de esta reserva: quien toma cuatro horas sueltas entra en el tramo
-        // de cuatro aunque no tenga contrato.
-        const tramo = Math.max(horasSemanalesTotales(todosLosContratos, inquilinoId, fecha), horas);
+        // Una hora suelta se cobra a precio de hora suelta: el tramo es el de
+        // esta reserva sola, tenga o no contrato (decisión de Agustín,
+        // 15/10/2026). Solo la banda fija entra al tramo de lo contratado.
+        const tramo =
+          origen === 'contrato'
+            ? Math.max(horasSemanalesTotales(todosLosContratos, inquilinoId, fecha), horas)
+            : horas;
         const cotizacion = cotizar(escala.tarifas, espacio.id, tramo);
         const importe = cotizacion ? cotizacion.precioHora * horas : null;
 

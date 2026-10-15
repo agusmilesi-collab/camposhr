@@ -18,7 +18,7 @@
 import Link from 'next/link';
 import { CONDICIONES } from '@/lib/clientes-tipos';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DIAS_CORTOS,
@@ -169,7 +169,6 @@ export default function Ficha({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
-  const [enlace, setEnlace] = useState<string | null>(null);
   const [cobrando, setCobrando] = useState(false);
   /** Qué movimiento está esperando confirmación para borrarse. */
   const [porBorrar, setPorBorrar] = useState<string | null>(null);
@@ -335,37 +334,17 @@ export default function Ficha({
     requestAnimationFrame(() => setImprimiendo('recibo'));
   }
 
-  async function verSuPantalla() {
-    // La pestaña se abre en el clic y se le pone la dirección después: abierta
-    // tras esperar al servidor, el navegador la toma por ventana emergente y
-    // la bloquea.
-    const pestana = window.open('', '_blank');
-    const r = await mandar({ accion: 'inquilino-ver', id: i.id });
-    if (!r.ok || !r.enlace) {
-      pestana?.close();
-      return setError(r.motivo ?? 'No se pudo abrir su pantalla.');
-    }
-    setError(null);
-    if (pestana) pestana.location.href = r.enlace;
-    else window.location.href = r.enlace;
-  }
-
-  async function generarEnlace() {
-    const r = await mandar({ accion: 'inquilino-enlace', id: i.id });
-    if (!r.ok || !r.enlace) return setError(r.motivo ?? 'No se pudo generar el enlace.');
-    setError(null);
-    setEnlace(r.enlace);
-    try {
-      await navigator.clipboard.writeText(r.enlace);
-    } catch {
-      // Si el navegador no deja copiar, el enlace igual queda a la vista.
-    }
-    router.refresh();
-  }
-
-  async function editar(ev: React.FormEvent<HTMLFormElement>) {
-    ev.preventDefault();
-    const d = new FormData(ev.currentTarget);
+  /**
+   * Los datos se guardan solos al salir de cada campo o al tocar una tilde, y
+   * solo si algo cambió desde la última vez: sin botón de Guardar, que se
+   * olvidaba (15/10/2026).
+   */
+  const ultimoGuardado = useRef<string | null>(null);
+  async function guardarDatos(form: HTMLFormElement) {
+    const d = new FormData(form);
+    const huella = JSON.stringify([...d.entries()]);
+    if (huella === ultimoGuardado.current) return;
+    ultimoGuardado.current = huella;
     setGuardando(true);
     const r = await mandar({
       accion: 'inquilino-editar',
@@ -382,7 +361,10 @@ export default function Ficha({
       activo: d.get('activo') === 'on',
     });
     setGuardando(false);
-    if (!r.ok) return setError(r.motivo ?? 'No se pudo guardar.');
+    if (!r.ok) {
+      ultimoGuardado.current = null;
+      return setError(r.motivo ?? 'No se pudo guardar.');
+    }
     setError(null);
     router.refresh();
   }
@@ -478,7 +460,19 @@ export default function Ficha({
             caracteres, y las dos tildes quedaban colgadas al costado de la
             fecha. Acá cada campo mide un tercio y las tildes tienen su
             renglón. */}
-        <form autoComplete="off" onSubmit={editar}>
+        <form
+          autoComplete="off"
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            guardarDatos(ev.currentTarget);
+          }}
+          onBlur={(ev) => guardarDatos(ev.currentTarget)}
+          onChange={(ev) => {
+            const t = ev.target as HTMLElement;
+            if (t instanceof HTMLSelectElement || (t instanceof HTMLInputElement && t.type === 'checkbox'))
+              guardarDatos(ev.currentTarget);
+          }}
+        >
           <div className="os-ficha-campos">
             <label className="os-etiqueta-campo">
               Nombre
@@ -575,38 +569,6 @@ export default function Ficha({
               </label>
             </div>
 
-            {/* Los botones son la cuarta columna y no un pie: al pie, entre la
-                fila de campos y ellos quedaba una franja vacía del ancho del
-                panel, y "Guardar" caía lejos de lo último que se escribió. */}
-            <div className="os-ficha-acciones">
-              <button className="os-boton os-boton-firme" type="submit" disabled={guardando}>
-                {guardando ? 'Guardando…' : 'Guardar'}
-              </button>
-              <button
-                className="os-boton"
-                type="button"
-                onClick={generarEnlace}
-                title={
-                  i.hash
-                    ? 'Genera un enlace de un solo uso para que vuelva a poner su contraseña'
-                    : 'Genera un enlace de un solo uso para que ponga su contraseña y entre al sistema'
-                }
-              >
-                {/* Un solo rótulo para los dos casos, y el que dice lo que
-                    pasa al tocarlo: el enlace queda copiado y se manda por
-                    WhatsApp. "Dar acceso" y "Restablecer clave" nombraban la
-                    consecuencia, no la acción, y no se sabía qué esperar. */}
-                Copiar enlace
-              </button>
-              <button
-                className="os-boton"
-                type="button"
-                onClick={verSuPantalla}
-                title="Abre la zona del inquilino como la ve esta persona, solo para mirar"
-              >
-                Ver su pantalla
-              </button>
-            </div>
           </div>
         </form>
 
@@ -615,14 +577,8 @@ export default function Ficha({
           {i.normas_aceptadas_at
             ? `versión ${i.normas_version ?? 'sin número'}, el ${dia(i.normas_aceptadas_at.slice(0, 10))}`
             : 'ninguna todavía'}
-          .
+          . {guardando ? 'Guardando…' : 'Los datos se guardan al salir de cada campo.'}
         </p>
-
-        {enlace && (
-          <p className="os-panel-nota">
-            Enlace copiado, vale 48 horas y una sola vez: <code>{enlace}</code>
-          </p>
-        )}
       </div>
 
       <div className="os-panel">

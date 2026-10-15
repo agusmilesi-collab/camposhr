@@ -33,7 +33,6 @@ import {
   fechasRepetidas,
   finDeMes,
   hora,
-  horasSemanalesTotales,
   porSemanas,
   tonosPorInquilino,
   type Apertura,
@@ -46,6 +45,7 @@ import {
 } from '@/lib/consultorios-calculo';
 import Burbuja from './Burbuja';
 import { mandar, pesos } from './acciones';
+import './agenda.css';
 
 type Elegida = { espacioId: string; fecha: string; desde: number };
 type Abierta =
@@ -152,7 +152,14 @@ export default function Calendario({
   // El color de cada persona. Se arma una vez para toda la grilla: por celda
   // sería recorrer la lista de inquilinos ochocientas veces.
   const tonos = tonosPorInquilino(inquilinos);
-  const semanas = vista === 'mes' ? porSemanas(ancla) : [ancla];
+  // El sábado va solo si Configuración abre alguna de estas salas ese día:
+  // cerrado para todas, es una columna gris que le saca ancho a las otras.
+  const conSabado = aperturas.some(
+    (a) => a.dia_semana === 5 && espacios.some((e) => e.id === a.espacio_id)
+  );
+  const semanas = (vista === 'mes' ? porSemanas(ancla) : [ancla]).map((dias) =>
+    conSabado ? dias : dias.filter((d) => diaSemanaDe(d) !== 5)
+  );
 
   /**
    * Cuánto se vendió de una semana, sobre lo que el Centro abrió.
@@ -247,11 +254,8 @@ export default function Calendario({
   const fechas = elegida ? fechasRepetidas(elegida.fecha, repetirHasta, repetir) : [];
   const cotizacion =
     elegida && espacio && quien && quien !== 'nueva'
-      ? cotizar(
-          tarifas,
-          espacio.id,
-          Math.max(horasSemanalesTotales(contratos, quien, elegida.fecha), cantidad)
-        )
+      ? // A precio de hora suelta: el tramo es el de esta reserva sola.
+        cotizar(tarifas, espacio.id, cantidad)
       : null;
   const importe = cotizacion ? cotizacion.precioHora * cantidad : null;
   const total = importe === null ? null : importe * fechas.length;

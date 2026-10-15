@@ -22,6 +22,7 @@
  * fecha y deja la anterior intacta.
  */
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { Apertura, Espacio, Inquilino, Tarifa } from '@/lib/consultorios-calculo';
@@ -172,6 +173,15 @@ export default function Espacios({
     if (!r.ok) return setError(r.motivo ?? 'No se pudo guardar.');
     setError(null);
     setEligiendo(null);
+    router.refresh();
+  }
+
+  // Quien dejó el Centro: desde acá se lo vuelve a prender y vuelve a
+  // Inquilinos con su cuenta y su historia.
+  async function reactivar(id: string) {
+    const r = await mandar({ accion: 'inquilino-editar', id, activo: true });
+    if (!r.ok) return setError(r.motivo ?? 'No se pudo reactivar.');
+    setError(null);
     router.refresh();
   }
 
@@ -735,6 +745,42 @@ export default function Espacios({
           </p>
         )}
       </div>
+
+      {/* Los que ya no alquilan. No están en Inquilinos para que esa tabla
+          sea la del mes; acá se los encuentra, se abre su ficha y se los
+          vuelve a activar si vuelven. */}
+      {inquilinos.some((i) => !i.activo) && (
+        <div className="os-panel">
+          <div className="os-panel-top">
+            <h2>
+              Ex inquilinos{' '}
+              <span className="os-panel-cuenta">
+                · {inquilinos.filter((i) => !i.activo).length}
+              </span>
+            </h2>
+          </div>
+          <table className="os-tabla">
+            <tbody>
+              {inquilinos
+                .filter((i) => !i.activo)
+                .map((i) => (
+                  <tr key={i.id}>
+                    <td>
+                      <Link className="os-enlace-nombre" href={`/os/consultorios/inquilino/${i.id}`}>
+                        {i.nombre}
+                      </Link>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button className="os-boton" type="button" onClick={() => reactivar(i.id)}>
+                        Volver a activar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }

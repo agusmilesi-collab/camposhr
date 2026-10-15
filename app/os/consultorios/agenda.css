@@ -1,0 +1,11 @@
+/*
+ * Ajustes de la grilla de consultorios que no viven en `os.css`: ese archivo
+ * lo edita otra sesión y acá no se toca.
+ *
+ * La línea entre salas: un poco más marcada que la grilla de las horas
+ * (`--os-linea` en vez de `--os-linea-suave`), pero más clara que el corte
+ * entre días, que sigue siendo el más oscuro.
+ */
+.os-agenda-celda {
+  border-color: var(--os-linea);
+}
