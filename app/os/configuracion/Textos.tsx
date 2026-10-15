@@ -397,7 +397,7 @@ export default function Textos({
       <div className="os-diccionarios" role="radiogroup" aria-label="Test que se está editando">
         {(
           [
-            ['Rorschach', 'Diez láminas, cortes de Exner'],
+            ['Rorschach', 'Diez láminas, normas argentinas'],
             ['Zulliger', `Tres láminas, ${cortesPropios} cortes propios`],
           ] as const
         ).map(([t, pie]) => (

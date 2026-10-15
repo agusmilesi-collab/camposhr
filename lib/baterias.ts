@@ -49,7 +49,7 @@ export const RESPALDO: BateriaDelPortal[] = [
   {
     codigo: 'Batería 2',
     queIncluye:
-      'Evaluación psicotécnica con test proyectivo completo (Rorschach, Sistema Comprehensivo de Exner) más tests cognitivos y de estilo de pensamiento.',
+      'Evaluación psicotécnica con test proyectivo completo (Rorschach, Sistema Comprehensivo con las tablas argentinas de calidad formal) más tests cognitivos y de estilo de pensamiento.',
     paraQuien: 'Perfiles de liderazgo y claves de la organización',
     minutos: 180,
     conPotencial: false,

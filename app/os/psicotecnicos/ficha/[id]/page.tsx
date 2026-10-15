@@ -493,8 +493,8 @@ function SumarioEstructural({ f, rige }: { f: Ficha; rige: Regulacion }) {
     return (
       <p className="os-vacio">
         {f.manchas.length > 0
-          ? 'Todavía no se calculó el sumario. Se arma con el motor Exner sobre la codificación de arriba.'
-          : 'El sumario se arma con el motor Exner sobre la codificación, que todavía está vacía.'}
+          ? 'Todavía no se calculó el sumario. Se arma con el motor del Sistema Comprehensivo sobre la codificación de arriba.'
+          : 'El sumario se arma con el motor del Sistema Comprehensivo sobre la codificación, que todavía está vacía.'}
       </p>
     );
   }

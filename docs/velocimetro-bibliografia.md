@@ -60,6 +60,16 @@ probabilidad de actuar la agresión; p. 57 y 58).
 
 ## Rorschach
 
+Codificación: Sistema Comprehensivo. Calidad formal, desde el 15/10/2026 por
+decisión de Lorena: Lunazzi, H. A. (2019). *Tablas argentinas de calidad formal
+(FQ) en 1179 no pacientes. Sistema Comprehensivo Rorschach*. Facultad de
+Psicología, Universidad Nacional de La Plata. Hasta ese día se codificaba con
+la Tabla A de Exner. El capturador propone la calidad formal con las tablas
+de Lunazzi (`lib/rorschach-tabla-a.ts`), salvo en VII D6 y VIII D4, que
+siguen con Exner: el libro imprime en VII D6 la lista de VIII D6, y en VIII D4
+le faltan 18 respuestas de Exner. Consultado a la UNLP el 15/10/2026. El informe dice una u otra según la fecha de
+entrega (`CALIDAD_FORMAL_LUNAZZI_DESDE` en `lib/informe.ts`).
+
 | Indicador | Corte del motor | Fuente |
 | --- | --- | --- |
 | W : M | por estilo: introversivo 0,8 a 1,5; ambigual 1,3 a 2; extratensivo 1,3 a 3 | Rorschach Archives of Argentina, material de circulación restringida, Paso 4 "W : M (Proporción de aspiraciones)". Coincide con Exner. Lo mandó Lorena el 14/10/2026 |

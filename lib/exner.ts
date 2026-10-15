@@ -104,7 +104,7 @@ const ZEST_RORSCHACH: Record<number, number | null> = {
 export const PERFILES: Record<string, Perfil> = {
   Rorschach: {
     nombre: 'Rorschach',
-    normas: 'Exner Comprehensive System — 10 láminas (Sendín)',
+    normas: 'Sistema Comprehensivo, 10 láminas; calidad formal con las tablas argentinas de Lunazzi (2019)',
     laminas: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'],
     globalTag: 'W',
     zest: ZEST_RORSCHACH,

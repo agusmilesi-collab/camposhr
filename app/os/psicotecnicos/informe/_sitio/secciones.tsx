@@ -424,12 +424,13 @@ export function seccionesDe(
             velocímetro (`lib/competencias.ts`). Si cambian allá, cambian acá. */}
         {inf.proyectivo === 'Rorschach' && (
           <p className="sitio-normas">
-            El Rorschach se codificó con el Sistema Comprehensivo de Exner. Para
-            interpretarlo se usan las normas argentinas de adultos no pacientes
-            (Lunazzi y otros, 2007, sobre 506 casos) en los recursos disponibles
-            (EA), la respuesta afectiva (Afr), la necesidad de contacto (T), la
-            atención al detalle (Dd) y la eficiencia en el procesamiento (Zd). En
-            el resto de los índices se usan las normas de Exner.
+            {inf.calidadFormalLunazzi
+              ? 'El Rorschach se codificó con el Sistema Comprehensivo y las tablas argentinas de calidad formal (Lunazzi, 2019, sobre 1.179 adultos no pacientes).'
+              : 'El Rorschach se codificó con el Sistema Comprehensivo de Exner.'}{' '}
+            Para interpretarlo se usan las normas argentinas de adultos no
+            pacientes (Lunazzi y otros, 2007, sobre 506 casos). Siete índices
+            siguen con las normas de Exner: GHR : PHR, COP / AG, CDI, M−, Fd,
+            Lambda y contenidos H.
           </p>
         )}
         {inf.proyectivo === 'Zulliger' && (

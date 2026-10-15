@@ -36,6 +36,7 @@ import {
   esPopular,
   familiaDe,
   plano,
+  type Cambio,
   type Hallazgo,
 } from '@/lib/rorschach-tabla-a';
 import {
@@ -124,6 +125,14 @@ const FQ_FUERA_DE_TABLA = FQ.filter((o) => o.v === 'U' || o.v === '-');
  * este número y nada más.
  */
 const TOPE_POR_LAMINA = 4;
+
+/** Lo que dice cada flecha del libro de Lunazzi, al pasar el mouse. */
+const CAMBIOS: Record<Cambio, string> = {
+  '↑': 'Lunazzi le sube la calidad un nivel respecto de Exner',
+  '↓': 'Lunazzi le baja la calidad un nivel respecto de Exner',
+  '↑↑': 'Lunazzi le sube la calidad dos niveles respecto de Exner',
+  '↓↓': 'Lunazzi le baja la calidad dos niveles respecto de Exner',
+};
 
 
 /**
@@ -2781,7 +2790,17 @@ export default function Capturador({
                   >
                     {h.calidad}
                   </span>
-                  <span className="os-ror-opcion-texto">{h.respuesta}</span>
+                  <span className="os-ror-opcion-texto">
+                    {h.respuesta}
+                    {/* La flecha del libro de Lunazzi: cuánto cambió la calidad
+                        respecto de Exner. Al lado del texto y no adentro,
+                        porque el texto es lo que se guarda en el protocolo. */}
+                    {h.cambio && (
+                      <span className="os-ror-opcion-cambio" title={CAMBIOS[h.cambio]}>
+                        {h.cambio}
+                      </span>
+                    )}
+                  </span>
                   <span className="os-ror-opcion-area">{h.area}</span>
                 </button>
               ))}

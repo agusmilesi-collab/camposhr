@@ -552,6 +552,15 @@
   opacity: 0.6;
 }
 
+/* La flecha de Lunazzi va pegada al texto, más chica y sin color propio: es
+   un dato sobre la respuesta, y el color ya lo usa la calidad formal. */
+.os-ror-opcion-cambio {
+  margin-left: 4px;
+  font-size: 11px;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
 /* Los códigos se reconocen por su color, el mismo que tienen en la tabla de
    codificación de la ficha: es la misma respuesta antes y después de pasarla, y
    con dos paletas habría que volver a aprender cuál es cuál. El fondo lo pone

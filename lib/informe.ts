@@ -174,6 +174,13 @@ function planDe(
   });
 }
 
+/**
+ * Desde qué entrega la calidad formal del Rorschach sale de las tablas
+ * argentinas de Lunazzi (2019) y no de la Tabla A de Exner. Lo que se entregó
+ * antes, incluido el mismo 15/10/2026, se codificó con Exner.
+ */
+export const CALIDAD_FORMAL_LUNAZZI_DESDE = '2026-10-16';
+
 /** Los párrafos del capítulo Benziger que la evaluadora puede reescribir. */
 export const PARRAFOS_BENZIGER = ['comoEs', 'fortaleza', 'debilidad', 'entorno'] as const;
 export type ParrafoBenziger = (typeof PARRAFOS_BENZIGER)[number];
@@ -303,6 +310,14 @@ export type Informe = {
    * las competencias, en vez de repetirlo en cada una.
    */
   protocoloCorto: string | null;
+  /**
+   * Si la calidad formal se codificó con las tablas argentinas de Lunazzi.
+   *
+   * Lorena lo decidió el 15/10/2026: hasta ese día se codificaba con la Tabla A
+   * de Exner, y un informe ya entregado tiene que seguir diciendo con qué tabla
+   * se codificó. Se mira la entrega porque no se guarda cuándo se codificó.
+   */
+  calidadFormalLunazzi: boolean;
 
   /**
    * Cuáles de esas cuatro listas dejó escritas la evaluadora.
@@ -971,6 +986,7 @@ export function desdeFicha(
     percentiles,
     medianas,
     protocoloCorto: corto,
+    calidadFormalLunazzi: !c.fecha_entrega || c.fecha_entrega >= CALIDAD_FORMAL_LUNAZZI_DESDE,
     resumen: armarResumen(lecturas, destacadas),
     fundamentacion: (c.recomendacion_notas ?? '')
       .split(/\n\s*\n|\n/)

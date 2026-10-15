@@ -37,8 +37,12 @@ export default async function Manual() {
         <div className="os-panel-cuerpo">
         <ul>
           <li>
-            <strong>Rorschach.</strong> Se codifica con el Sistema Comprehensivo y la tabla de
-            calidad formal de Exner. Los cortes siguen la norma argentina de adultos no pacientes
+            <strong>Rorschach.</strong> Se codifica con el Sistema Comprehensivo y, desde el
+            15/10/2026, con las tablas argentinas de calidad formal (Lunazzi, 2019, 1.179 adultos
+            no pacientes). El capturador propone la calidad formal con esas tablas, salvo en VII
+            D6 y VIII D4, que siguen con Exner porque el libro tiene errores en esas dos áreas.
+            Los protocolos anteriores se codificaron con la Tabla A de Exner. Los cortes siguen
+            la norma argentina de adultos no pacientes
             (Lunazzi y otros, 2007, 506 casos): la media más y menos un desvío. Siete índices
             siguen con Exner: GHR : PHR, COP / AG y CDI, porque su corte es una regla de
             interpretación; M− y Fd, porque la norma argentina da el mismo corte; Lambda, porque

@@ -34,7 +34,7 @@ export const PROYECTIVOS = ['Rorschach', 'Zulliger'];
 export const ANALISIS_DISCURSIVO = 'Análisis discursivo (Elliot Jaques)';
 
 export const TESTS: TestDeBateria[] = [
-  { nombre: 'Rorschach', marca: true, que: 'Manchas, diez láminas. Sostiene el sumario Exner completo.' },
+  { nombre: 'Rorschach', marca: true, que: 'Manchas, diez láminas. Sostiene el sumario estructural completo.' },
   { nombre: 'Zulliger', marca: true, que: 'Manchas, tres láminas. Más corto, para baterías básicas.' },
   { nombre: 'Bender', marca: true, que: 'Copia de nueve figuras. Madurez visomotora.' },
   { nombre: 'Gráfico 2 personas', marca: true, que: 'Dibujo. Vínculo y esquema corporal.' },

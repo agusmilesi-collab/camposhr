@@ -1,6 +1,37 @@
 # Velocímetro: lo que se decidió distinto a las psicólogas y lo que falta
 
-Estado al 14/10/2026. Sale de comparar el motor contra 73 informes que Lucila y
+## Versión 1.0, congelada el 15/10/2026
+
+Publicada en `0a1cb1d`. Desde acá no se ajustan pesos ni cortes contra los
+informes a mano: con 30 a 43 informes por test y decenas de índices probados,
+una correlación puede salir por azar.
+
+| Índice | Valor | Cómo se mide |
+| --- | --- | --- |
+| Confianza metodológica | 100 | Cada corte con fuente citada (`velocimetro-bibliografia.md`) |
+| Coincidencia de puntajes | 67 % (263 de 393) | Misma banda que sus informes; 9,4 puntos de diferencia por persona |
+| Coincidencia de redacciones | 78 % (821 de 1.054) | Lecturas de sus informes que el sistema propone, por concepto |
+
+**Cómo se cierra:**
+
+1. Los próximos 10 informes los puntúan Lorena y Lucila por separado, antes de
+   abrir el velocímetro.
+2. Se comparan tres pares: entre ellas y el sistema contra cada una.
+3. Si el sistema coincide con cada una tanto como ellas entre sí, no se ajusta
+   más. Solo se miran los casos a más de 15 puntos de las dos.
+4. A los 90 días de cada ingreso se le pregunta al cliente cómo le fue a quien
+   contrató, y se cruza con los puntajes.
+
+**Falta decidir:** dónde anotan el puntaje a ciegas (planilla o campo en el OS)
+y cómo se pide el dato de los 90 días (puede ir con el tramo `noventa` de
+`lib/plan-incorporacion.ts`). Y si el corte de Fd en Zulliger del 10/9 era a
+propósito: desde el 15/10 sale desde 1.
+
+Lo que sigue es la historia hasta la versión 1.0.
+
+## Estado al 14/10/2026
+
+Sale de comparar el motor contra 73 informes que Lucila y
 Lorena escribieron a mano, y de sus respuestas del 9/10 y del 13/10.
 
 Los nombres de las personas que se mencionan como pendientes están fuera de
