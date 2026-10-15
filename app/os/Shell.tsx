@@ -178,6 +178,17 @@ function Reloj() {
   );
 }
 
+/**
+ * Lo último que mandó el servidor, para la pantalla de carga.
+ *
+ * Mientras llega la sección nueva se dibuja la barra sin datos propios
+ * (`loading.tsx`), y sin esto el aviso rojo y la foto de quien mira se apagaban
+ * un instante en cada cambio de sección. Vive en el módulo y no en estado
+ * porque cada pantalla monta su propio Shell.
+ */
+let ultimasCuentas: Record<string, number> | undefined;
+let ultimaIdentidad = '';
+
 /** Todos los destinos de la barra, para saber si alguno da exacto. */
 const DESTINOS = NAV.flatMap((g) => g.items.map((i) => i.href));
 
@@ -215,14 +226,22 @@ export default function Shell({
    * no se distinguía.
    */
   cuentas?: Record<string, number>;
-  /** Con quién se está trabajando. Ver lib/identidad.ts. */
-  identidad: string;
+  /**
+   * Con quién se está trabajando. Ver lib/identidad.ts. Solo la pantalla de
+   * carga lo omite, y entonces vale el último que llegó.
+   */
+  identidad?: string;
   /** Sin el ancho de lectura: para una tabla, que necesita todo el espacio. */
   ancho?: boolean;
   children: React.ReactNode;
 }) {
   const ruta = usePathname() ?? '/os';
   const [menu, setMenu] = useState(false);
+
+  if (cuentas) ultimasCuentas = cuentas;
+  else cuentas = ultimasCuentas;
+  if (identidad) ultimaIdentidad = identidad;
+  else identidad = ultimaIdentidad;
 
   // El cajón del teléfono se cierra solo al cambiar de sección.
   useEffect(() => {
@@ -308,8 +327,8 @@ export default function Shell({
 
         <div className="os-pie">
           <div className="os-pie-quien">
-            <QuienMira nombre={identidad} soloFoto />
-            <Identidad actual={identidad} />
+            {identidad && <QuienMira nombre={identidad} soloFoto />}
+            {identidad && <Identidad actual={identidad} />}
           </div>
           <button type="button" className="os-boton-pie" onClick={cambiarTema}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -147,6 +147,9 @@ export default function Candidato({
         // cola de la que se vino, y con replace para que "atrás" no la reabra.
         const desde = new URLSearchParams(window.location.search).get('desde');
         router.replace(`/os/psicotecnicos/${desde ?? RUTA['Sin asignar']}`);
+        // La lista puede estar recordada de hace menos de 30 segundos
+        // (`staleTimes` en next.config.mjs) y mostraría a quien se acaba de borrar.
+        router.refresh();
       } else {
         empezar(() => router.refresh());
       }

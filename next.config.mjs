@@ -5,6 +5,14 @@ const nextConfig = {
   // busca y la lectura falla; declarado como externo se carga desde
   // node_modules, que es donde está.
   serverExternalPackages: ['pdfjs-dist'],
+  // Una sección ya abierta se vuelve a mostrar sin ir al servidor si se la
+  // visitó hace menos de 30 segundos: ir y volver entre Entrevistas y
+  // Entregados es instantáneo. Guardar algo llama a router.refresh(), que
+  // descarta lo recordado, así que lo propio se ve al momento; lo que cambie
+  // otra persona puede tardar hasta 30 segundos en aparecer.
+  experimental: {
+    staleTimes: { dynamic: 30 },
+  },
   // Lo que no se importa desde el código no viaja al paquete de la función, así
   // que hay que decirle a Next que lo suba.
   outputFileTracingIncludes: {

@@ -18895,3 +18895,27 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   background: color-mix(in srgb, var(--os-ambar) 14%, transparent);
   color: var(--os-ambar);
 }
+
+/* La pantalla de carga de una sección (psicotecnicos/[etapa]/loading.tsx):
+   renglones grises donde van a caer las filas. */
+.os-esqueleto {
+  display: grid;
+  gap: 10px;
+}
+
+.os-esqueleto-fila {
+  height: 44px;
+  border-radius: 10px;
+  background: var(--os-linea-suave);
+  animation: os-esqueleto-pulso 1.2s ease-in-out infinite;
+}
+
+@keyframes os-esqueleto-pulso {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

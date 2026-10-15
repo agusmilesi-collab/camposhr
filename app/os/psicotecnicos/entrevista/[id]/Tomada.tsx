@@ -32,6 +32,9 @@ export default function Tomada({ id }: { id: string }) {
         return;
       }
       router.push('/os/psicotecnicos/entrevistas');
+      // El tablero puede estar recordado de hace menos de 30 segundos
+      // (`staleTimes` en next.config.mjs), con la tarjeta todavía en su columna vieja.
+      router.refresh();
     } catch {
       setError('No se pudo guardar.');
       setTrabajando(false);
