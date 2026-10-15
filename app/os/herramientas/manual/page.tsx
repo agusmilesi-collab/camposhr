@@ -84,7 +84,8 @@ export default async function Manual() {
                 b.desde === 0 ? `${b.nombre} por debajo de ${exigencia.adecuado}` : `${b.nombre} de ${b.desde} a ${b.hasta}`
               )
               .join('; ')}
-            .
+            . Los cortes de 35 y 65 siguen a Hogan Assessment Systems (HPI Career Report, 2009,
+            p. 6), que llama promedio a lo que cae entre los percentiles 35 y 65.
           </li>
         </ul>
         </div>

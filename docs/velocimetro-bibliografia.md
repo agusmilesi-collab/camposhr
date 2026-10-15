@@ -23,8 +23,8 @@ apéndice. La tabla del apéndice está transcripta en
 | Lambda | esperable de 0,29 a 0,80 | 0,50 (0,29 y 0,80) | 74 |
 | EB | peso 0, queda como lectura | "No existen valores que en sí mismos sean mejores o peores, indican un estilo personal" | 74 |
 | EA | medio desde 3, alto desde 5,5 | 4 (3 y 5) | 76 |
-| EA − es | esperable desde −1,5 | es alta cuando EA − es es menor que −1. **Las psicólogas anotaron "hasta −1,5" al margen y el motor usa eso**: con −1,5 el libro ya habla de es alta | 77 |
-| XA% / WDA% | esperable desde 0,78 | mayores que 0,80 (percentil 25 del apéndice: 0,78). **El 0,78 lo fijaron las psicólogas en Configuración** | 78 |
+| EA − es | recurso desde el 15/10/2026: alto cuando EA supera a es, medio de −1,5 a 0, bajo por debajo de −1,5 | es alta cuando EA − es es menor que −1. **Las psicólogas anotaron "hasta −1,5" al margen y el motor usa eso**: con −1,5 el libro ya habla de es alta | 77 |
+| XA% / WDA% | recurso desde el 15/10/2026: alto desde 0,92 (percentil 75 del apéndice), medio desde 0,78, bajo por debajo | mayores que 0,80 (percentil 25 del apéndice: 0,78). **El 0,78 lo fijaron las psicólogas en Configuración** | 78 |
 | X−% | esperable hasta 0,25 | menor que 0,25 | 79 |
 | P | esperable de 2 a 4 | 3 (2 y 4). Las cinco populares: lámina I W insecto y D1 hoja; II ninguna; III D3 y D2 persona, D1 mariposa. "Es significativa la ausencia de respuestas populares" | 57 y 79 |
 | Ma : Mp | esperable salvo Mp mayor que Ma + 1 | "Es desaconsejable que aparezca Mp mayor que Ma + 1" | 81 y 82 |
@@ -77,7 +77,7 @@ Aprobada por Lorena el 14/10/2026.
 | SumT | 0,71 ± 0,82 | 0 o 1 esperable |
 | Dd | 2,07 de 18,65 localizaciones (11 %) | hasta 11 % |
 | Zd | −0,60 ± 3,65 | de −4 a +3 |
-| XA% / WDA% | 0,81 ± 0,11 / 0,83 ± 0,10 | desde 0,70 |
+| XA% / WDA% | 0,81 ± 0,11 / 0,83 ± 0,10 | recurso: alto desde 0,92 (media + 1 desvío), medio desde 0,70 |
 | X−% | 0,18 ± 0,11 | hasta 0,29 |
 | P | 5,35 ± 1,65 | de 4 a 7, cualquier R |
 | Egocentrismo | 0,41 ± 0,15 | de 0,26 a 0,56 |
@@ -108,3 +108,19 @@ tres aciertos menos que nuestra población.
 | Rangos I a V | desde 35, 31, 21, 11 y 0 aciertos | corte que usa el equipo; frecuencia contada sobre los 81 casos |
 | Aporte a Habilidad cognitiva | en línea continua por aciertos (8 vale 25, 20 vale 42, 27 vale 57, 30 vale 65, 36 vale 100) | **criterio de las psicólogas**, calibrado con lo que pusieron a 52 personas |
 | Serie corta (12 láminas) | hasta 7 bajo, de 8 a 12 medio, 12 vale 75 | **criterio de las psicólogas**, con 13 personas; no hay baremo de la serie corta |
+
+## Escala de bandas
+
+Bajo por debajo de 35, Adecuado de 35 a 64, Alto de 65 en adelante, la que
+rige en la exigencia Estándar. Fuente de los cortes de 35 y 65: Hogan
+Assessment Systems (2009), *HPI Career Report*, informe de muestra, p. 6:
+"High scorers are above the 65th percentile. Average Scores are between the
+35th and 65th percentile. Low scores are below the 35th percentile."
+<http://www.hoganassessments.com/sites/default/files/HPI-Career%20Report-UK%20English%20Sample.pdf>
+
+Hogan corta percentiles, y el puntaje del velocímetro no es un percentil: es el
+promedio ponderado de los indicadores. Lo que se toma de Hogan es la regla de
+llamar promedio al tercio central. El corte de Sobresaliente es de las
+psicólogas. La escala que propusieron ellas (Bajo por debajo de 50,
+Sobresaliente desde 80) se midió el 15/10/2026: con ella la misma banda que sus
+informes baja de 67 % a 46 %, y quedó la actual.

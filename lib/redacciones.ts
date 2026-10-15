@@ -305,12 +305,12 @@ export const TEXTOS = {
     dice: [
       'Intenta captar todo, sin discriminar entre información relevante y accesoria. No se le escapa nada, y corre el riesgo de llenarse de datos que no sirven para resolver el problema: el pensamiento queda sobrecargado de información accesoria y eso puede hacer caer su eficacia.',
       'Toma todo lo que llega sin separar lo que sirve de lo que sobra. No pierde detalle, y al mismo tiempo junta más datos de los que el problema necesita, lo que le puede restar eficacia.',
-      'Registra la información sin filtrarla, y al momento de resolver queda con un volumen de datos que excede lo que la situación pide. Eso puede enlentecer su respuesta.',
+      'Registra cada dato que tiene delante sin separar lo relevante de lo accesorio. Nada se le pasa por alto, pero se expone a cargarse de información que no aporta a la solución del problema. Con el pensamiento saturado de lo accesorio, su eficacia puede bajar.',
     ],
     recomienda: [
       'Brindarle ayuda para separar la información relevante de la accesoria, para que cuando tenga que resolver algo rápido pueda hacerlo sin impulsividad.',
       'Brindarle acompañamiento para distinguir lo central de lo accesorio, para que las decisiones rápidas no le salgan apuradas.',
-      'Marcarle cuáles son los datos que definen la decisión, para que resolver rápido no le implique resolver sin criterio.',
+      'Ayudarle a diferenciar los datos relevantes de los accesorios, de modo que pueda actuar sin impulsividad en los momentos en que deba resolver rápido.',
     ],
   },
   'lambda-alto': {
@@ -324,7 +324,7 @@ export const TEXTOS = {
       dice: [
         'Simplifica demasiado sus percepciones y deja los afectos fuera de la lectura de las situaciones, con lo cual puede perder algún dato de información. Puede fallar la permeabilidad a las emociones y la empatía.',
         'Reduce demasiado lo que percibe y deja los afectos afuera al leer las situaciones, con lo cual algún dato se le puede escapar. La permeabilidad emocional y la empatía le pueden fallar.',
-        'Simplifica en exceso su lectura de las situaciones y no toma en cuenta los afectos, de modo que puede perder información. Registrar lo emocional y ponerse en el lugar del otro le cuesta.',
+        'Al leer las situaciones deja los afectos de lado y simplifica en exceso lo que percibe, por lo que puede perder algún dato. Es posible que fallen su permeabilidad a las emociones y su empatía.',
       ],
       recomienda: [
         'En situaciones con carga emocional, indicarle con claridad en qué aspectos debe enfocarse.',
@@ -351,8 +351,8 @@ export const TEXTOS = {
       aplica: false,
       dice: [
         'Analiza la información con mucho más detalle que la mayoría: rastrea, revisa y gasta energía extra para no equivocarse. Cuando la presión externa aprieta, esa manera de decidir le puede fallar.',
-        'Dedica al examen de los datos más tiempo del que la tarea pide, por temor a errar. Bajo apuro, ese mismo cuidado le complica la decisión.',
-        'Explora la información con un nivel de detalle superior al esperado. Por miedo a equivocarse revisa de más, y con presión encima eso le entorpece el resolver.',
+        'Revisa los datos con un nivel de detalle muy superior al de la mayoría y destina energía extra a rastrearlos, por temor a equivocarse. Ante presión externa, esa forma de decidir puede fallarle.',
+        'Por miedo a cometer un error, explora y repasa la información mucho más a fondo que la mayoría, con un gasto de energía adicional. Si la presión externa aumenta, su manera de decidir le puede fallar.',
       ],
       recomienda: [
         'Darle indicaciones concretas que le acoten dónde mirar, y quedar disponible para sus consultas, sobre todo al decidir.',
@@ -363,12 +363,12 @@ export const TEXTOS = {
     dice: [
       'Analiza la información de manera muy meticulosa: dedica más esfuerzo y energía que la mayoría a rastrear y explorar datos, por temor a equivocarse. Bajo presión externa, eso puede hacer fallar la toma de decisiones.',
       'Analiza la información con mucho más detalle que la mayoría: rastrea, vuelve sobre los datos y gasta energía extra en no equivocarse. Cuando la presión externa aprieta, esa manera de decidir le puede fallar.',
-      'Dedica al examen de los datos más tiempo y más esfuerzo del que la tarea pide, por temor a errar. Bajo apuro, ese mismo cuidado le complica la decisión.',
+      'Por temor a equivocarse, rastrea y explora los datos con una minuciosidad que le exige más esfuerzo y energía que a la mayoría. Si hay presión externa, su toma de decisiones puede fallar por ese motivo.',
     ],
     recomienda: [
       'Dar indicaciones claras y concretas que le permitan enfocarse en lo importante, y mostrar apertura a consultas para calmar su temor a cometer errores, sobre todo al decidir.',
       'Darle consignas concretas que le acoten dónde mirar, y dejar abierta la consulta para que el miedo a equivocarse no le trabe la decisión.',
-      'Delimitarle qué hay que revisar y qué no, y estar disponible para responderle dudas, sobre todo en el momento de decidir.',
+      'Delimitarle con indicaciones claras y concretas en qué enfocarse, y estar disponible para responderle consultas, así se calma su temor a cometer errores, en especial a la hora de decidir.',
     ],
   },
   'zd-bajo': {
@@ -380,7 +380,7 @@ export const TEXTOS = {
       aplica: false,
       dice: [
         'Recorre el entorno de manera apresurada: junta menos datos de los necesarios y decide antes de que aparezcan todos los puntos clave. Por eso puede cometer más errores.',
-        'Explora la información sin detenerse lo suficiente y resuelve con una parte de los datos. Esa prisa le hace pasar por alto puntos que después pesan.',
+        'Explora la información con apuro y reúne menos datos de los que hacen falta, de modo que resuelve sin esperar a que surjan todos los puntos clave. Eso puede llevarle a cometer más errores.',
         'Su rastreo de los datos es rápido e incompleto, y decide antes de tener el cuadro entero, con más margen de error del esperable.',
       ],
       recomienda: [
@@ -391,7 +391,7 @@ export const TEXTOS = {
     },
     dice: [
       'Examina el entorno de manera poco cuidadosa: hace un rastreo apresurado, no llega a recoger datos suficientes y decide antes de que aparezcan todos los puntos clave. Puede cometer más errores por responder antes de procesar toda la información disponible.',
-      'Recorre el entorno de manera apresurada: junta menos datos de los necesarios y resuelve antes de que aparezcan todos los elementos en juego. Por eso puede errar más de lo esperable.',
+      'Procesa la información con rapidez, aunque por lo general de forma incompleta o superficial: reúne menos datos de los suficientes y toma la decisión sin esperar a que surjan todos los puntos clave.',
       'Explora la información sin detenerse lo suficiente y decide con una parte de los datos. Esa prisa le hace pasar por alto puntos que después pesan en el resultado.',
     ],
     recomienda: [
@@ -424,7 +424,7 @@ export const TEXTOS = {
     recomienda: [
       'Darle información de contexto que le permita generar mayor visión de conjunto.',
       'Darle el contexto de la situación para que pueda componer la mirada completa.',
-      'Aportarle el marco general de lo que está pasando, porque por su cuenta no lo va a construir.',
+      'Ofrecerle información sobre el marco en que ocurre la situación, para que gane una visión de conjunto más amplia.',
     ],
   },
   'w-alto': {
@@ -464,7 +464,7 @@ export const TEXTOS = {
     dice: [
       'Revisa de manera minuciosa para evitar errores, y al fijarse en aspectos poco relevantes pierde la visión de conjunto: se fija en lo que la mayoría no mira y deja de lado datos obvios.',
       'Controla cada detalle para no equivocarse, y al detenerse en aspectos menores pierde el conjunto: mira lo que casi nadie mira y deja pasar lo evidente.',
-      'Su revisión es minuciosa hasta en lo que no hace falta. Al poner el foco en lo pequeño, se le escapan los datos centrales de la situación.',
+      'Para evitar errores, su revisión es minuciosa. Repara en aspectos poco relevantes que la mayoría no mira, y al hacerlo descuida los datos obvios y pierde la visión de conjunto.',
     ],
     recomienda: [
       'Brindarle ayuda en la priorización de los aspectos centrales de la tarea, para que no se detenga en detalles poco relevantes.',
@@ -514,13 +514,13 @@ export const TEXTOS = {
     cuando: 'W:M por debajo del piso de su estilo',
     dice: [
       'Aparece una tendencia cautelosa, por autoestima baja o por falta de energía. Puede necesitar la motivación de otros para desarrollar todo su potencial.',
-      'Se maneja con cautela, y detrás puede haber una autoestima baja o poca energía disponible. Para dar todo lo que puede necesita el empuje de otros.',
+      'Se maneja con cautela, a causa de una autoestima baja o de poca energía disponible. Es posible que necesite el empuje de otros para dar todo lo que puede.',
       'Su modo de encarar las tareas es cauteloso. Puede deberse a una autoestima baja o a falta de energía, y por eso rinde más cuando alguien le brinda motivación.',
     ],
     recomienda: [
       'Reconocerle los avances y proponerle objetivos alcanzables, para que la cautela no le impida mostrar lo que puede hacer.',
       'Marcarle lo que hace bien y darle metas cortas, así se anima a tomar más.',
-      'Brindarle sostén con devoluciones frecuentes, que es lo que le permite ocupar el lugar que puede.',
+      'Valorarle cada avance y plantearle metas que pueda alcanzar, de modo que su cautela no le impida mostrar de qué es capaz.',
     ],
   },
   'dqv-alto': {
@@ -531,7 +531,7 @@ export const TEXTOS = {
       corte: { op: 'mayor', valor: 0, decimales: 0 },
       dice: [
         'Aparece un indicador de impulsividad: puede resolver de manera poco reflexiva.',
-        'Se detecta impulsividad al resolver, con decisiones que no pasan por la reflexión.',
+        'Muestra un indicador de impulsividad, por lo que es posible que resuelva con escasa reflexión.',
         'Se detecta impulsividad en su modo de resolver, con decisiones poco elaboradas.',
       ],
       recomienda: [
@@ -569,7 +569,7 @@ export const TEXTOS = {
     dice: [
       'Su pensamiento puede estar teñido por el pesimismo: es probable que tenga expectativas negativas sobre sus propios emprendimientos.',
       'Aparece una mirada pesimista sobre lo propio, con expectativas negativas respecto de lo que emprende.',
-      'Tiende a esperar que lo suyo salga mal, y eso le resta entusiasmo en lo que empieza.',
+      'Puede pensar con una mirada pesimista, y es probable que anticipe que sus propios emprendimientos van a salir mal.',
     ],
     recomienda: [
       'Mostrarle los avances concretos de su trabajo, para sostener la motivación cuando la expectativa propia juega en contra.',
@@ -590,7 +590,7 @@ export const TEXTOS = {
     dice: [
       'Puede tener dificultades para comunicarse con los demás: sus ideas se despliegan con una impulsividad que le cuesta controlar, y eso influye en cómo interactúa.',
       'Le cuesta controlar la impulsividad con la que salen sus ideas, y eso se le nota en el intercambio con los demás.',
-      'Sus ideas salen antes de estar ordenadas, y eso le complica la comunicación.',
+      'Sus ideas surgen con una impulsividad que le resulta difícil controlar, lo que incide en su forma de relacionarse con los demás. Por eso puede costarle comunicarse.',
     ],
     recomienda: [
       'Proponerle tomarse unos segundos antes de responder y ordenar sus ideas, para favorecer intercambios más claros.',
@@ -611,7 +611,7 @@ export const TEXTOS = {
     dice: [
       'Aparece el uso de una lógica que sale de lo convencional, propia de una forma de pensar relajada y simplista. Puede verse alterada su capacidad de organización.',
       'Razona por fuera de lo convencional, de un modo simplificado, y eso puede afectarle la organización.',
-      'Su forma de razonar se apoya en atajos que no siempre se sostienen, y eso le complica organizarse.',
+      'Su razonamiento se apoya en una lógica poco convencional, que responde a un modo de pensar relajado y simplista. Es posible que su capacidad de organización se vea alterada.',
     ],
     recomienda: [
       'No asignarle decisiones que dependan de su propio criterio sin revisión.',
@@ -661,7 +661,7 @@ export const TEXTOS = {
     recomienda: [
       'Cuando sea necesario profundizar en una situación, brindarle ayuda para mirar más allá de la información evidente y considerar otros datos relevantes antes de avanzar.',
       'Ante una situación que pida profundidad, darle orientación para que mire más allá de lo evidente antes de decidir.',
-      'Pedirle que busque los datos que no están a la vista antes de avanzar, cuando la situación lo requiera.',
+      'Ayudarle a considerar otros datos relevantes, más allá de lo evidente, antes de avanzar, en los casos en que haga falta profundizar en una situación.',
     ],
   },
   /**
@@ -718,7 +718,7 @@ export const TEXTOS = {
     dice: [
       'Puede considerar los estímulos de manera integral y tiene una buena capacidad para elaborarlos.',
       'Toma la información de manera integral y la elabora bien.',
-      'Procesa lo que recibe de forma completa, integrando sus partes.',
+      'Es capaz de abordar los estímulos como un todo y cuenta con buena capacidad para elaborarlos.',
     ],
     recomienda: [''],
   },
@@ -734,7 +734,7 @@ export const TEXTOS = {
     recomienda: [
       'Brindarle acompañamiento en situaciones de mucha información simultánea, con ayuda para ordenar por prioridades.',
       'Brindarle ayuda para priorizar cuando la situación trae mucha información junta.',
-      'Bajarle la cantidad de frentes abiertos a la vez, y ordenar en conjunto qué va primero.',
+      'Ofrecerle acompañamiento cuando le llegue mucha información a la vez, y ayudarle a ordenar qué va primero.',
     ],
   },
   /**
@@ -751,7 +751,7 @@ export const TEXTOS = {
     dice: [
       'Aparece una ambivalencia afectiva que le provoca sufrimiento, y cierta tendencia a decaídas del ánimo.',
       'Convive con sentimientos encontrados que le pesan, y por momentos el ánimo le decae.',
-      'Los afectos se le mezclan de un modo que le cuesta sostener, y eso se le nota en el ánimo.',
+      'Los afectos se le mezclan de un modo ambivalente que le genera sufrimiento, y muestra cierta tendencia a que el ánimo le decaiga.',
     ],
     recomienda: [
       'Darle aliento para colaborar con su estado de ánimo y su motivación.',
@@ -846,7 +846,7 @@ export const TEXTOS = {
     dice: [
       'Logra comprender como la mayoría de las personas, haciendo un uso adecuado del criterio de realidad. La comprensión de la información del entorno es correcta.',
       'Interpreta la información del entorno como lo hace la mayoría, con un criterio de realidad adecuado.',
-      'Entiende lo que pasa a su alrededor del mismo modo que la mayoría de las personas.',
+      'Entiende lo que pasa a su alrededor del mismo modo que la mayoría de las personas: aplica bien el criterio de realidad y capta correctamente la información del entorno.',
     ],
     recomienda: [''],
   },
@@ -883,8 +883,8 @@ export const TEXTOS = {
     cuando: 'DQv/+ presente con W por encima de lo esperado',
     dice: [
       'Es probable que impresione como una persona emprendedora, pero que al seguir sus ideas las situaciones se compliquen en vez de solucionarse. Se ponen en evidencia errores de evaluación que pueden ser significativos.',
-      'Da la impresión de ser una persona emprendedora, y sin embargo sus ideas tienden a complicar las situaciones en vez de resolverlas, por errores de evaluación que pueden pesar.',
-      'Impresiona como una persona emprendedora, pero lo que propone suele complicar la situación: hay errores de evaluación de por medio.',
+      'Probablemente dé la impresión de ser una persona emprendedora, aunque cuando se siguen sus ideas las situaciones se compliquen en lugar de resolverse. Quedan a la vista errores de evaluación que pueden pesar de manera significativa.',
+      'Lo probable es que transmita una imagen emprendedora, pero que la situación se complique en vez de resolverse cuando se avanza con lo que propone. Muestra errores de evaluación, y pueden ser importantes.',
     ],
     recomienda: [
       'Revisar en conjunto sus propuestas antes de ponerlas en marcha, para detectar los errores de evaluación a tiempo.',
@@ -898,13 +898,13 @@ export const TEXTOS = {
     cuando: 'DQv presente con W por encima de lo esperado',
     dice: [
       'Poco confiable en puestos de conducción: quiere organizar y planificar, pero lo hace mal. Podría funcionar bien en trabajos donde estén limitadas las posibilidades de tomar decisiones por cuenta propia.',
-      'En puestos de conducción no es confiable: intenta organizar y planificar, y lo hace mal. Rinde mejor donde las decisiones propias estén acotadas.',
-      'Quiere planificar y organizar pero lo resuelve mal, así que conducir no es su lugar: funciona mejor con las decisiones acotadas.',
+      'En puestos de conducción resulta poco confiable: intenta organizar y planificar, y lo hace mal. Podría rendir bien donde las decisiones por cuenta propia estén acotadas.',
+      'Quiere planificar y organizar, pero lo resuelve mal, por lo que ofrece poca confianza al frente de un equipo. Podría desempeñarse bien en tareas con un margen limitado de decisión propia.',
     ],
     recomienda: [
       'Asignarle funciones con lineamientos claros y supervisión cercana, evitando roles que requieran decisiones autónomas o liderazgo de equipos. Puede desempeñarse mejor en tareas operativas con procesos definidos.',
       'Darle tareas con lineamientos claros y seguimiento cercano, sin decisiones autónomas ni equipos a cargo.',
-      'Asignarle tareas operativas de proceso definido, con supervisión cercana y sin gente a cargo.',
+      'Asignarle tareas operativas de proceso definido, donde puede rendir mejor, con pautas claras y supervisión cercana, y evitar los puestos que pidan decidir de forma autónoma o tener gente a cargo.',
     ],
   },
   'dqv-d-alto': {
@@ -913,8 +913,8 @@ export const TEXTOS = {
     cuando: 'DQv presente con D por encima de lo esperado',
     dice: [
       'Es poco hábil para resolver cuestiones prácticas y concretas, porque es vulnerable a desplegar conductas impulsivas. Puede ser una persona muy emprendedora, y aun así no estar en condiciones de ejecutar correctamente la tarea.',
-      'Le cuesta resolver lo práctico y concreto: aparecen conductas impulsivas. Puede tener un perfil emprendedor y aun así no llegar a ejecutar bien.',
-      'En lo práctico se le arma el problema, por impulsividad: emprende, pero la ejecución no le sale.',
+      'Le cuesta resolver lo práctico y concreto: hay vulnerabilidad a que despliegue conductas impulsivas. Puede tener un perfil muy emprendedor y aun así no llegar a ejecutar bien la tarea.',
+      'En lo práctico y concreto muestra poca habilidad, dada su vulnerabilidad a reacciones impulsivas. Puede mostrar mucho empuje emprendedor sin estar en condiciones de ejecutar correctamente la tarea.',
     ],
     recomienda: [
       'Asignarle tareas con pasos definidos y revisar en conjunto cómo las va a ejecutar antes de que empiece, para evitar que resuelva por impulso.',
@@ -934,8 +934,8 @@ export const TEXTOS = {
       corte: { op: 'mayor', valor: 0, decimales: 0 },
       dice: [
         'Le puede costar cambiar de idea y sostiene su postura aun cuando le muestren otra.',
-        'Moverse de una idea le cuesta: mantiene su postura aunque le presenten otra.',
-        'Cambiar de posición le resulta difícil: mantiene su idea aunque aparezcan otras.',
+        'Moverse de una idea le puede costar: mantiene su postura aunque le presenten otra.',
+        'Cambiar de posición puede resultarle difícil: mantiene su idea aunque le planteen una distinta.',
       ],
       recomienda: [
         'Mostrarle datos o información concreta que le permitan flexibilizar sus ideas.',
@@ -945,8 +945,8 @@ export const TEXTOS = {
     },
     dice: [
       'Las preocupaciones pueden interferir en su proceso cognitivo, y eso se nota en el día a día como cierta rigidez para flexibilizarse.',
-      'Las preocupaciones le ocupan el pensamiento, y eso se ve en el día a día como dificultad para cambiar de posición.',
-      'Aparece una rigidez en el modo de pensar: lo que le preocupa le ocupa lugar y le cuesta moverse de ahí.',
+      'Le cuesta mover el foco de atención de un tema a otro, y en el día a día eso se ve como cierta rigidez para adaptarse.',
+      'En lo cotidiano se observa cierta rigidez, que proviene de la dificultad para desplazar su atención de un foco a otro.',
     ],
     recomienda: [
       'Brindarle acompañamiento en los cambios, de modo que no los atraviese en soledad, y darle información y datos concretos para que logre flexibilizar.',
@@ -962,13 +962,13 @@ export const TEXTOS = {
       aplica: false,
       dice: [
         'Trabaja poco la información que recibe y no toma la iniciativa de buscar más.',
-        'El esfuerzo que dedica a elaborar los datos es escaso, y esperar que salga a buscarlos por su cuenta no da resultado.',
+        'El esfuerzo que dedica a elaborar los datos que recibe es escaso, y no sale por su cuenta a buscar más.',
         'Procesa lo que recibe con poco esfuerzo y no toma la iniciativa de ampliar la información.',
       ],
       recomienda: [
         'Fijarle objetivos concretos y revisarlos cada tanto para sostener su nivel de actividad.',
-        'Ponerle metas puntuales con fechas de revisión, porque la iniciativa propia no le alcanza.',
-        'Darle objetivos definidos y momentos pautados de revisión, así el ritmo no depende de su iniciativa.',
+        'Ponerle metas puntuales con fechas de revisión, para mantener su nivel de actividad.',
+        'Darle objetivos definidos y momentos pautados de revisión, de modo que se sostenga su ritmo de trabajo.',
       ],
     },
     dice: [
@@ -979,7 +979,7 @@ export const TEXTOS = {
     recomienda: [
       'Definir objetivos concretos y hacer seguimiento periódico para sostener su nivel de actividad.',
       'Fijarle objetivos concretos y revisarlos cada tanto para sostener el nivel de actividad.',
-      'Marcarle metas puntuales con seguimiento periódico, porque el impulso propio no le alcanza.',
+      'Marcarle metas puntuales con seguimiento periódico, para sostener su ritmo de actividad.',
     ],
   },
   'zf-alto': {
@@ -1020,7 +1020,7 @@ export const TEXTOS = {
     dice: [
       'Tiende a comprometerse con asignaciones sin revisar antes si cuenta con los recursos para llevarlas adelante en tiempo y forma. Le cuesta decir que no puede o poner un límite.',
       'Acepta asignaciones sin chequear antes si tiene los recursos para cumplirlas en tiempo y forma. Le cuesta poner un límite o decir que no puede.',
-      'Se compromete con más de lo que puede sostener, porque no evalúa de antemano con qué cuenta. Decir que no le resulta difícil.',
+      'Suele asumir compromisos sin evaluar de antemano si dispone de lo necesario para cumplirlos en tiempo y forma. Le resulta difícil decir que no puede o marcar un límite.',
     ],
     recomienda: [
       'Antes de asignarle una tarea nueva, chequear en conjunto si realmente tiene con qué responder, porque va a tender a aceptar todo.',
@@ -1036,18 +1036,18 @@ export const TEXTOS = {
       dice: [
         'La percepción es generalmente apropiada en las situaciones obvias y tiende a no serlo en otras circunstancias. Ahí despliega una visión diferente a la de la mayoría de las personas.',
         'Percibe apropiadamente en las situaciones obvias y tiende a no hacerlo en las demás, donde despliega una visión diferente a la de la mayoría.',
-        'Frente a lo evidente su percepción es correcta; en las circunstancias menos claras se aparta de la lectura común.',
+        'Frente a lo evidente su percepción suele ser correcta; en las circunstancias menos claras tiende a dejar de serlo, y ahí se aparta de la lectura que hace la mayoría.',
       ],
       recomienda: [
         'Dar consignas claras y hacer chequeos breves de interpretación en las situaciones ambiguas, para alinear criterios antes de que decida o avance.',
         'Dar consignas claras y hacer chequeos breves de interpretación en las situaciones ambiguas, antes de que decida o avance.',
-        'En los casos poco definidos, alinear criterios con una consulta corta antes de que actúe.',
+        'En los casos poco definidos, dar consignas claras y alinear criterios con una consulta corta sobre cómo interpretó la situación, antes de que decida o actúe.',
       ],
     },
     dice: [
       'Su percepción es apropiada en las situaciones obvias, y puede no serlo en otras circunstancias.',
       'Interpreta bien lo evidente, y en las situaciones menos claras su lectura puede apartarse de la de los demás.',
-      'Frente a lo obvio percibe como el resto; cuando la situación se vuelve ambigua, su interpretación toma un rumbo propio.',
+      'Frente a lo obvio percibe como el resto; cuando la situación deja de ser evidente, puede que su percepción ya no resulte apropiada.',
     ],
     recomienda: [
       'En situaciones complejas, darle apoyo para validar su interpretación antes de avanzar.',
@@ -1134,7 +1134,7 @@ export const TEXTOS = {
     dice: [
       'Aparece un apartamiento de lo convencional que puede aumentar el comportamiento desajustado frente a lo que la situación exige, y con eso las dificultades de comunicación con el entorno.',
       'Se aleja de lo convencional en un grado que puede volver su conducta poco ajustada a lo que la situación pide, y eso complica la comunicación con el entorno.',
-      'Su lectura de la realidad se aparta lo suficiente como para generar respuestas desajustadas y roce en el intercambio con los demás.',
+      'Su lectura de la realidad se aparta de lo convencional en una medida que puede aumentar las respuestas desajustadas a lo que la situación exige y, con ellas, las dificultades para comunicarse con los demás.',
     ],
     recomienda: [
       'Después de cada consigna importante, pedirle que diga con sus palabras qué entendió y cómo lo va a resolver, para corregir a tiempo lo que interprete distinto de lo pedido.',
@@ -1162,7 +1162,7 @@ export const TEXTOS = {
     dice: [
       'Marcada tendencia a ver las cosas desde su propio punto de vista, con reticencia a sumarse a visiones más convencionales. Si el entorno no ejerce presión para que se ajuste, no es relevante; si hay exigencia fuerte de ajustarse a lo ya definido, el riesgo de conflicto sube.',
       'Ve las cosas desde su propio ángulo y se resiste a adoptar la mirada más convencional. Si el entorno no le exige ajustarse, no trae problema; si la exigencia de seguir lo definido es fuerte, sube el riesgo de conflicto.',
-      'Sostiene una mirada propia y no se pliega fácil a la versión compartida. En contextos flexibles funciona bien, y en los que piden apego estricto a lo pautado puede chocar.',
+      'Sostiene con fuerza una mirada propia y no se pliega fácil a la versión compartida. En contextos que no le exigen ajustarse, eso no incide; en los que piden apego estricto a lo pautado, aumenta la probabilidad de que choque con otros.',
     ],
     recomienda: [
       'Marcarle qué cosas se hacen de una manera establecida y sin modificaciones por más que las vea distinto, y dónde sí puede poner su impronta.',
@@ -1226,8 +1226,8 @@ export const TEXTOS = {
     zulliger: {
       dice: [
         'Prefiere usar el pensamiento para resolver los problemas y mantiene sus emociones en segundo plano. Puede sentir más comodidad en tareas donde no necesite interactuar con otros, y puede dar una impresión de seriedad o retraimiento. Sostiene un buen nivel de concentración durante períodos largos y piensa antes de actuar. Puede preferir la comunicación escrita a la hablada.',
-        'Resuelve pensando y deja las emociones en segundo plano. Siente más comodidad en tareas sin demasiada interacción y puede dar una impresión de seriedad o reserva. Sostiene la concentración durante períodos largos, piensa antes de actuar y puede preferir escribir a hablar.',
-        'Su vía para resolver es el pensamiento, con la emoción corrida del centro. El trabajo sin mucho intercambio le resulta más cómodo, puede dar impresión de distancia, se concentra por largo rato y prefiere la comunicación escrita.',
+        'Resuelve pensando y deja las emociones en segundo plano. Puede encontrar más comodidad en tareas sin demasiada interacción y puede dar una impresión de seriedad o reserva. Sostiene la concentración durante períodos largos, piensa antes de actuar y puede preferir escribir a hablar.',
+        'Su vía para resolver es el pensamiento, dejando la emoción en un lugar secundario. Puede resultarle más cómodo el trabajo sin necesidad de interactuar con otros y dar una impresión de distancia o seriedad. Se concentra bien por largo rato, piensa antes de actuar y puede inclinarse por la comunicación escrita antes que por la hablada.',
       ],
     },
     dice: [
@@ -1245,13 +1245,13 @@ export const TEXTOS = {
       dice: [
         'Usa el ensayo y el error para resolver los problemas. Puede ser más emocional e incluir sus afectos al hacer evaluaciones. Prefiere tareas con interacción con otros, le gusta el cambio y la acción, y prefiere resolver de manera rápida.',
         'Resuelve probando y corrigiendo. Puede ser más emocional y sumar sus afectos al evaluar. Prefiere tareas con contacto con otros, le atraen el cambio y la acción, y resuelve rápido.',
-        'Su forma de resolver pasa por el ensayo. Los afectos entran en sus evaluaciones, elige el trabajo con gente, se mueve bien en el cambio y tiende a decidir con velocidad.',
+        'Su forma de resolver pasa por el ensayo y el error. Puede ser más emocional y dejar que sus afectos entren en sus evaluaciones; elige el trabajo con gente, disfruta del cambio y la acción, y prefiere decidir con rapidez.',
       ],
     },
     dice: [
       'Mezcla los sentimientos con sus decisiones. El contacto con los demás y el procesamiento de la emoción son prioritarios, y el control de esas descargas queda en segundo plano. Usa el ensayo y el error.',
       'Sus sentimientos participan de la decisión. Prioriza el contacto con los demás y el procesamiento de la emoción, deja el control de esas descargas en segundo plano y avanza probando.',
-      'Decide con los afectos puestos en juego. El intercambio con otros y lo que siente pesan en la resolución, y el método es el de probar y corregir.',
+      'Decide con los afectos puestos en juego. El intercambio con otros y procesar lo que siente tienen prioridad, mientras que controlar esas descargas pasa a un segundo término; el método es el de probar y corregir.',
     ],
     recomienda: [
       'Al decidir o resolver un problema, brindarle acompañamiento para que distinga la carga emocional que le provoca la situación, y con ese registro llegue a resoluciones mejores.',
@@ -1272,15 +1272,15 @@ export const TEXTOS = {
     },
     dice: [
       'A veces resuelve dejando de lado la emoción y centrándose en las ideas, y otras veces sus afectos influyen en la evaluación. Al no tener un estilo definido, la decisión le puede llevar más tiempo y resultar menos previsible.',
-      'A veces decide desde las ideas dejando la emoción afuera, y otras veces sus afectos entran en la evaluación. Sin un estilo fijo, la decisión le lleva más tiempo y resulta menos anticipable.',
-      'Alterna entre resolver con la cabeza y resolver con lo que siente. Esa falta de un modo estable le agrega tiempo a la decisión y la vuelve difícil de prever.',
+      'A veces decide desde las ideas dejando la emoción afuera, y otras veces sus afectos entran en la evaluación. Sin un estilo fijo, la decisión puede llevarle más tiempo y resultar menos anticipable.',
+      'Alterna entre resolver con las ideas, dejando la emoción de lado, y resolver con sus afectos influyendo en la evaluación. Como no tiene un modo estable, puede tardar más en decidir y ser menos previsible.',
     ],
     recomienda: [''],
   },
   'a-p-pasivo-cuadruple': {
     area: 'Cómo decide y cómo piensa',
     indice: 'a:p',
-    cuando: 'p cuatro veces a o más',
+    cuando: 'un lado cuatro veces el otro o más',
     zulliger: {
       dice: [
         'Sostiene sus pensamientos con firmeza y le cuesta mucho revisar su punto de vista o incorporar formas nuevas de trabajar.',
@@ -1295,8 +1295,8 @@ export const TEXTOS = {
     },
     dice: [
       'Tiende a aferrarse a sus pensamientos, le cuesta cambiar de punto de vista y aprender pautas nuevas de funcionamiento.',
-      'Se aferra a lo que piensa: cambiar de punto de vista o incorporar formas nuevas de trabajar le cuesta mucho.',
-      'Sus ideas quedan fijas y le resulta muy difícil revisarlas o adoptar pautas distintas de las que ya tiene.',
+      'Tiende a aferrarse a lo que piensa: cambiar de punto de vista o incorporar formas nuevas de trabajar le cuesta.',
+      'Muestra tendencia a sostener sus ideas con apego, y le resulta costoso revisarlas o adoptar pautas distintas de funcionamiento.',
     ],
     recomienda: [
       'Promover la revisión de sus ideas y la incorporación de otras miradas antes de definir acciones.',
@@ -1307,23 +1307,23 @@ export const TEXTOS = {
   'a-p-pasivo-triple': {
     area: 'Cómo decide y cómo piensa',
     indice: 'a:p',
-    cuando: 'p tres veces a o más',
+    cuando: 'un lado tres veces el otro o más',
     zulliger: {
       dice: [
         'Sus ideas son excesivamente rígidas: va a ser muy difícil alterar tanto sus opiniones como sus actitudes.',
         'Sus ideas son excesivamente rígidas: alterar sus opiniones y sus actitudes va a ser muy difícil.',
-        'Sostiene sus ideas con mucha rigidez, y mover tanto lo que opina como su actitud costará bastante.',
+        'Sostiene sus ideas con excesiva rigidez, y mover tanto lo que opina como su actitud va a resultar muy difícil.',
       ],
       recomienda: [
         'Si se requiere que siga lo pautado, darle apoyo para ver las situaciones a través de información concreta y de datos.',
         'Si se requiere que siga lo pautado, darle apoyo para leer las situaciones a través de datos e información concreta.',
-        'Presentarle información específica como vía para que revise su posición.',
+        'Cuando haga falta que se ajuste a lo pautado, brindarle apoyo con información específica y datos para que interprete las situaciones.',
       ],
     },
     dice: [
       'Tiende a oponerse a los cambios: le cuesta bastante cambiar de punto de vista y aprender pautas nuevas.',
       'Se resiste a los cambios: revisar su punto de vista o aprender una pauta nueva le demanda bastante.',
-      'Frente a un cambio tiende a oponerse, y modificar su posición o incorporar otra forma de hacer las cosas le cuesta.',
+      'Frente a un cambio tiende a oponerse, y modificar su posición o incorporar otra forma de hacer las cosas le cuesta bastante.',
     ],
     recomienda: [
       'Mostrarle información concreta con datos, para que pueda considerar otro punto de vista.',
@@ -1355,7 +1355,7 @@ export const TEXTOS = {
     recomienda: [
       'Diseñar un camino de aprendizaje por etapas, para ir generando autonomía paso a paso.',
       'Armar un recorrido de aprendizaje por etapas para que gane autonomía de a poco.',
-      'Darle responsabilidades crecientes, de menor a mayor, para que construya autonomía paso a paso.',
+      'Proponerle un aprendizaje organizado en etapas, de modo que su autonomía se vaya construyendo de manera gradual.',
     ],
   },
   'ma-mp-pasivo-fuerte': {
@@ -1366,7 +1366,7 @@ export const TEXTOS = {
       dice: [
         'Suele esperar que otros le indiquen lo que tiene que hacer, y usa sus recursos para evitar enfrentar los problemas.',
         'Suele esperar que otros le indiquen qué hacer, y usa sus recursos para no enfrentar los problemas.',
-        'Aguarda la indicación ajena y destina su energía a evitar los problemas en lugar de abordarlos.',
+        'Por lo general aguarda que otros le digan qué hacer, y destina sus recursos a no tener que enfrentar los problemas.',
       ],
       recomienda: [
         'Asignarle responsabilidades claras para favorecer la toma de iniciativa.',
@@ -1376,13 +1376,13 @@ export const TEXTOS = {
     },
     dice: [
       'Evita la responsabilidad y la toma de decisiones, y recurre a la fantasía para negar los aspectos incómodos de la realidad. Eso conlleva cierta dependencia de que otros resuelvan.',
-      'Esquiva la responsabilidad y la decisión, y recurre a la fantasía para no ver lo que le incomoda de la realidad. Eso le genera dependencia de que otros resuelvan.',
-      'Deja en manos ajenas lo que hay que decidir y se apoya en la imaginación para negar lo incómodo. El resultado es que espera la solución de otro.',
+      'Esquiva la responsabilidad y la decisión, y recurre a la fantasía para no ver lo que le incomoda de la realidad. Eso trae aparejada cierta dependencia de que otros resuelvan.',
+      'Rehúye las decisiones y la responsabilidad, y se apoya en la fantasía para negar lo que de la realidad le resulta incómodo. De ahí surge cierta dependencia de que otros le resuelvan.',
     ],
     recomienda: [
       'Darle lineamientos claros y promover que asuma de a poco la responsabilidad sobre sus decisiones, evitando resolverle lo que puede abordar por su cuenta.',
       'Darle lineamientos precisos y que vaya asumiendo de a poco la decisión, sin resolverle lo que puede hacer por su cuenta.',
-      'Fijar con claridad qué le corresponde decidir y sostener que lo haga, evitando tomar su lugar.',
+      'Establecer pautas claras y alentar que se haga cargo gradualmente de sus decisiones, sin ocupar su lugar en aquello que puede encarar por su cuenta.',
     ],
   },
   'ma-mp-pasivo': {
@@ -1397,8 +1397,8 @@ export const TEXTOS = {
       ],
       recomienda: [
         'Pedirle que defina acciones concretas frente a cada situación, en especial cuando la exigencia sube.',
-        'Cuando la carga sube, pedirle pasos y fechas concretas para que la idea baje a la acción.',
-        'Traducir cada situación en acciones puntuales, sobre todo en los momentos de mayor demanda.',
+        'Cuando la carga sube, pedirle que establezca pasos concretos para cada situación.',
+        'Ante cada situación, y sobre todo en los momentos de mayor demanda, solicitarle que precise las acciones concretas a seguir.',
       ],
     },
     dice: [
@@ -1408,8 +1408,8 @@ export const TEXTOS = {
     ],
     recomienda: [
       'Darle apoyo para enfocar las situaciones en acciones concretas, sobre todo en los momentos de mayor exigencia.',
-      'Pedirle que defina acciones concretas frente a cada situación, en especial cuando la exigencia sube.',
-      'Pedirle pasos concretos y plazos cuando la carga aumenta, para que no quede en el plano de la idea.',
+      'Ayudarle a traducir las situaciones en acciones concretas, en especial cuando la exigencia sube.',
+      'Ofrecerle apoyo, sobre todo cuando la carga aumenta, para que oriente cada situación hacia pasos concretos.',
     ],
   },
   'intelectualizacion-alta': {
@@ -1422,7 +1422,7 @@ export const TEXTOS = {
       dice: [
         'Procesa las emociones como si fueran pensamientos. En el desempeño laboral concreto, puede tener dificultades para mantener la estabilidad emocional cuando se incrementan las tensiones, internas o externas.',
         'Procesa las emociones como si fueran pensamientos. En el trabajo concreto, puede costarle mantener la estabilidad emocional cuando la tensión aumenta, venga de adentro o de afuera.',
-        'Convierte lo que siente en razonamiento, y cuando la tensión crece le cuesta sostener la estabilidad emocional en el desempeño.',
+        'Convierte lo que siente en razonamiento. En su desempeño cotidiano en el trabajo, cuando crecen las tensiones, sean propias o del entorno, puede tener problemas para sostener la estabilidad emocional.',
       ],
       recomienda: [
         'Darle apoyo para distinguir entre lo que siente y lo que piensa en las situaciones de tensión, para que pueda responder con mayor claridad y estabilidad emocional.',
@@ -1432,13 +1432,13 @@ export const TEXTOS = {
     },
     dice: [
       'Procesa las emociones como si fueran pensamientos. Con eso neutraliza su efecto, y a la vez tiende a distorsionar las situaciones, con lo cual las soluciones pierden eficacia. Se vuelve más vulnerable cuando la situación sube de intensidad.',
-      'Convierte lo que siente en razonamiento. Así le baja intensidad al afecto, y a la vez deforma la lectura de la situación, con lo que la solución pierde eficacia. Cuando la intensidad sube, aumenta su vulnerabilidad.',
-      'Trata las emociones como si fueran ideas. Eso neutraliza su efecto y deforma la situación, y las respuestas que salen de ahí funcionan peor. A mayor tensión, mayor vulnerabilidad.',
+      'Convierte lo que siente en razonamiento. Así le baja intensidad al afecto, y a la vez tiende a deformar la lectura de la situación, con lo que la solución pierde eficacia. Cuando la intensidad sube, aumenta su vulnerabilidad.',
+      'Trata las emociones como si fueran ideas. Eso neutraliza su efecto, pero también tiende a desfigurar la situación, y las respuestas que salen de ahí funcionan peor. A mayor tensión, mayor vulnerabilidad.',
     ],
     recomienda: [
       'Brindarle apoyo en el registro de sus emociones, y darle lugar para procesarlas y encontrar respuestas más eficientes.',
       'Trabajar el registro de lo que siente y darle lugar para procesarlo, para que sus respuestas ganen eficacia.',
-      'Darle apoyo para poner nombre a lo que le pasa antes de resolver, así la solución no sale solo del razonamiento.',
+      'Acompañar a la persona a registrar lo que le pasa y ofrecerle espacio para procesarlo, de modo que llegue a respuestas más eficientes.',
     ],
   },
   'm-menos-alto': {
@@ -1472,24 +1472,24 @@ export const TEXTOS = {
     zulliger: {
       dice: [
         'Le cuesta registrar sus propias necesidades.',
-        'Sus propias necesidades no le llegan al registro.',
-        'Sus necesidades le pasan desapercibidas.',
+        'Registrar lo que necesita le resulta difícil.',
+        'Tiene dificultad para darse cuenta de sus propias necesidades.',
       ],
       recomienda: [
         'En la reunión individual, preguntarle de forma directa qué necesita para trabajar bien, porque es probable que no lo pida por iniciativa propia.',
         'Preguntarle con regularidad qué le hace falta para hacer bien su trabajo, porque no suele pedirlo.',
-        'Abrir en cada reunión individual un momento para que diga qué necesita, y darle lugar para atenderlo.',
+        'Reservar en la reunión individual un espacio para consultarle de manera directa qué le hace falta para trabajar bien, dado que es probable que no lo plantee por iniciativa propia.',
       ],
     },
     dice: [
       'Se le dificulta tomar registro de sus propias necesidades.',
       'Le cuesta registrar sus propias necesidades.',
-      'No llega a tomar nota de sus propias necesidades.',
+      'Tomar conciencia de sus propias necesidades le resulta difícil.',
     ],
     recomienda: [
       'En la reunión individual, preguntarle de forma directa qué necesita para trabajar bien, porque es probable que no lo pida por iniciativa propia.',
       'Preguntarle con regularidad qué le hace falta para hacer bien su trabajo, porque no suele pedirlo.',
-      'Abrir en cada reunión individual un momento para que diga qué necesita, y darle lugar para atenderlo.',
+      'Dedicar en las reuniones individuales un momento a preguntarle directamente qué necesita para trabajar bien, ya que probablemente no lo pida por su cuenta.',
     ],
   },
   'fm-alto': {
@@ -1502,7 +1502,7 @@ export const TEXTOS = {
       corte: { op: 'mayor', valor: 2, decimales: 0 },
       dice: [
         'Sus necesidades sin resolver le generan un malestar interno alto que se traduce en tensión, y puede afectarle la atención, la concentración y el descanso.',
-        'Carga una tensión interna elevada que nace de lo que necesita y no atiende, con impacto posible en cómo se concentra y cómo duerme.',
+        'Carga un malestar interno elevado que nace de necesidades sin resolver y que se expresa como tensión, con impacto posible en su atención, en cómo se concentra y en cómo descansa.',
         'El malestar por lo que necesita y no resuelve le sube la tensión, con impacto posible en cómo se concentra y cómo descansa.',
       ],
       recomienda: [
@@ -1514,7 +1514,7 @@ export const TEXTOS = {
     dice: [
       'Está con el malestar interno elevado por sus propias necesidades, y eso se manifiesta como tensión: puede afectar la atención, la concentración y el sueño.',
       'Sus propias necesidades le están generando un malestar interno alto, que se traduce en tensión: puede afectarle la atención, la concentración y el sueño.',
-      'Carga con una tensión interna elevada que viene de necesidades no resueltas, y eso se le nota en la concentración, en la atención y en el descanso.',
+      'El malestar interno que le provocan sus propias necesidades está elevado y se expresa como tensión, que puede repercutir en su concentración, en su atención y en cómo duerme.',
     ],
     recomienda: [
       'Darle apoyo para ordenar prioridades cuando se incrementa la carga de trabajo.',
@@ -1533,7 +1533,7 @@ export const TEXTOS = {
       dice: [
         'Hay circunstancias externas que le están generando un impacto importante: atraviesa una situación estresante.',
         'Algo de su situación actual le genera molestia considerable y viene de afuera.',
-        'Está atravesando un momento de tensión cuya causa está en el entorno y no en sus propias características.',
+        'Está atravesando un momento estresante, en el que las circunstancias externas le provocan un impacto importante.',
       ],
       recomienda: [
         'Abrir una conversación para preguntarle si necesita algo de la empresa o de su jefe para trabajar con más tranquilidad.',
@@ -1560,7 +1560,7 @@ export const TEXTOS = {
       dice: [
         'Controla sus descargas más de lo esperado: casi nunca se afloja al manejar emociones, porque desconfía de mostrarlas, y expresar lo que siente le cuesta.',
         'Su control sobre la expresión del afecto es mayor al habitual. Mostrarse le genera desconfianza y por eso rara vez suelta lo que siente.',
-        'Sostiene un control estricto sobre lo que muestra. La expresión abierta del afecto le genera desconfianza y la evita.',
+        'Sostiene sobre sus emociones un control mayor que el esperado y pocas veces lo relaja. Desconfía de mostrar lo que siente, y expresarlo le resulta difícil.',
       ],
     },
     dice: [
@@ -1583,7 +1583,7 @@ export const TEXTOS = {
     },
     dice: [
       'Tiende a expresarse de manera intensa, y eso da impresión de impulsividad por la dificultad de control emocional.',
-      'Se expresa con intensidad, y eso da impresión de impulsividad porque el control emocional le falla.',
+      'Tiende a manifestarse con intensidad, y la dificultad para controlar sus emociones hace que eso se perciba como impulsividad.',
       'Sus manifestaciones son intensas y quedan poco moduladas, lo que se lee como impulsividad.',
     ],
     recomienda: [''],
@@ -1595,8 +1595,8 @@ export const TEXTOS = {
     zulliger: {
       dice: [
         'Puede tratarse de una persona frontal, capaz de mostrarse tal como es, sin filtros.',
-        'Se muestra de manera frontal, tal como es, sin poner filtros.',
-        'Se muestra de manera directa y sin filtro, tal como es.',
+        'Es posible que sea una persona frontal, que se muestra tal como es, sin poner filtros.',
+        'Puede ser alguien directo, capaz de mostrarse sin filtro y tal como es.',
       ],
       recomienda: [
         'Desde el inicio, marcarle los límites que se esperan, por ejemplo en el manejo de información o en el contacto con clientes.',
@@ -1670,14 +1670,14 @@ export const TEXTOS = {
       aplica: false,
       dice: [
         'Las situaciones con carga emocional le resultan estimulantes y en ellas puede sentir que su productividad es mayor.',
-        'En los contextos emocionalmente cargados se activa, y ahí es donde más rinde.',
+        'Encuentra estímulo en los contextos con carga emocional, y en ellos puede tener la sensación de que produce más.',
         'Se moviliza con lo emocional, y en esas situaciones siente que rinde más.',
       ],
     },
     dice: [
       'Las situaciones con carga emocional le resultan estimulantes, y en ellas puede sentir que su productividad es mayor.',
       'Las situaciones con carga emocional le resultan estimulantes y en ellas puede sentir que su productividad es mayor.',
-      'Frente a los contextos emocionalmente cargados se activa, y ahí rinde más.',
+      'Frente a los contextos emocionalmente cargados se activa, y ahí puede percibir que rinde más.',
     ],
     recomienda: [''],
   },
@@ -1727,7 +1727,7 @@ export const TEXTOS = {
     ],
     recomienda: [
       'Señalarle en qué situaciones del puesto hace falta un acercamiento auténtico con el otro, y darle una devolución después de cada una.',
-      'Acordar con la persona qué conversaciones del puesto piden escuchar al otro en profundidad, y revisar con ella cómo resultó cada una.',
+      'Indicarle qué situaciones del puesto requieren un acercamiento genuino con el otro, y hacerle una devolución al terminar cada una.',
       'Marcarle las situaciones en las que el puesto pide involucrarse con lo que le pasa al otro, y conversar después cómo le fue.',
     ],
   },
@@ -1770,8 +1770,8 @@ export const TEXTOS = {
       corte: { op: 'mayor', valor: 1, decimales: 0 },
       dice: [
         'Al no hacer las descargas ni los intercambios emocionales esperados, aumenta su tensión interna y se favorece la derivación de esa tensión al cuerpo.',
-        'Al no hacer las descargas ni los intercambios emocionales esperados, su tensión interna sube y esa tensión se deriva al cuerpo.',
-        'Retiene lo que debería descargar en el intercambio con otros, la tensión interna crece y termina expresándose en el cuerpo.',
+        'Como no realiza las descargas ni los intercambios emocionales esperables, su tensión interna crece, lo que facilita que esa tensión se derive al cuerpo.',
+        'Deja sin hacer las descargas e intercambios emocionales que se esperan, con lo cual la tensión interna aumenta y se favorece que termine expresándose en el cuerpo.',
       ],
       recomienda: [
         'Darle espacios donde pueda abrirse emocionalmente y sienta apoyo y escucha.',
@@ -1803,13 +1803,13 @@ export const TEXTOS = {
       aplica: false,
       dice: [
         'Cuida su distancia con los demás y no se acerca más allá de lo necesario.',
-        'La cercanía emocional le resulta incómoda y se maneja con reserva en el trato.',
-        'Sostiene el contacto en un plano formal y esquiva la intimidad emocional.',
+        'Mantiene distancia con los demás y se acerca solo lo necesario.',
+        'En el trato preserva su distancia y no va más allá de la cercanía que hace falta.',
       ],
       recomienda: [
         'Sostener un trato respetuoso de su distancia, con un espacio definido para cuando necesite consultar.',
         'Dejarle un canal claro para pedir ayuda, sin empujar el acercamiento.',
-        'Evaluar cuánta cercanía exige el puesto antes de pedirle más contacto del que elige.',
+        'Respetar en el trato la distancia que elige y dejarle definido un espacio para cuando necesite hacer una consulta.',
       ],
     },
     dice: [
@@ -1820,7 +1820,7 @@ export const TEXTOS = {
     recomienda: [
       'Ver cuánta cercanía emocional pide el puesto. Conviene no forzarla y respetar la distancia que prefiere, dejando una vía por la cual pueda pedir apoyo cuando lo necesite.',
       'Medir cuánta cercanía pide el puesto. Conviene respetar la distancia que elige y dejar abierta una vía para que pida apoyo.',
-      'No forzar el acercamiento y dejarle un canal claro por donde pedir ayuda cuando la necesite.',
+      'Evaluar qué grado de cercanía emocional requiere el puesto. Es preferible no forzar el acercamiento, respetar la distancia que elige y dejarle un canal claro para pedir ayuda cuando la necesite.',
     ],
   },
   'sumt-alto': {
@@ -1843,7 +1843,7 @@ export const TEXTOS = {
     dice: [
       'Necesita más cercanía y contacto que lo habitual: tiende a sentir más soledad y a depender de la presencia afectiva de otros.',
       'Precisa más contacto y cercanía que lo habitual: siente soledad con facilidad y depende de la presencia afectiva de otros.',
-      'Necesita más proximidad que la mayoría, y la falta de contacto le pesa.',
+      'Requiere más proximidad y contacto que la mayoría. Tiende a experimentar más soledad y a quedar dependiente de la presencia afectiva de los demás.',
     ],
     recomienda: [
       'Adoptar un estilo de conducción cercano, que le dé contención.',
@@ -1870,7 +1870,7 @@ export const TEXTOS = {
     dice: [
       'Cuando se autoevalúa lo hace de manera severa: pocas veces está conforme con su propio desempeño, y se exige mucho.',
       'Se juzga con dureza: rara vez queda conforme con lo que hizo y se exige mucho.',
-      'Su autoevaluación es severa. Le cuesta quedar conforme con su propio desempeño.',
+      'Su autoevaluación es severa: en general no queda conforme con su propio desempeño, y se pone exigencias altas.',
     ],
     recomienda: [
       'Evitar sumarle exigencia externa, porque ya se exige por dentro.',
@@ -1889,14 +1889,14 @@ export const TEXTOS = {
       corte: { op: 'mayor', valor: 2, decimales: 0 },
       dice: [
         'Atraviesa una situación que le genera tensión y que vive como desbordante. Buena parte de ese malestar es reactivo y va a ceder cuando se resuelvan las circunstancias que lo provocan.',
-        'Está bajo una tensión que excede sus recursos. El malestar responde a lo que está pasando y debería bajar cuando eso se resuelva.',
-        'La situación actual excede lo que puede manejar, con un malestar que depende de esas circunstancias y no de su funcionamiento habitual.',
+        'La tensión que le provoca la situación que atraviesa la vive como desbordante. Gran parte del malestar es una reacción a esas circunstancias y va a disminuir cuando se resuelvan.',
+        'Siente desbordante la tensión del momento que atraviesa. Su malestar es, en buena parte, reactivo a las circunstancias, y va a ceder una vez que estas se resuelvan.',
       ],
     },
     dice: [
       'Está atravesando una situación que le genera tensión y que vive como desbordante. Buena parte de ese malestar es reactivo y va a ceder si se resuelven las circunstancias que lo provocan.',
       'Atraviesa una situación que le genera tensión y que vive como desbordante. Buena parte de ese malestar es reactivo y va a ceder cuando se resuelvan las circunstancias que lo provocan.',
-      'Está bajo una tensión que excede sus recursos. El malestar responde a lo que está pasando y debería bajar cuando eso se resuelva.',
+      'Vive como desbordante la tensión que le genera la situación actual. En buena medida, ese malestar responde a lo que está pasando y va a bajar cuando se resuelvan las circunstancias que lo provocan.',
     ],
     recomienda: [''],
   },
@@ -1920,13 +1920,13 @@ export const TEXTOS = {
     },
     dice: [
       'No se toma como foco de atención en el grado suficiente: tiene una imagen desvalorizada de sí y no confía en sus recursos, con lo cual se puede dejar influenciar por los demás.',
-      'No se pone en foco lo suficiente: tiene una imagen desvalorizada y desconfía de sus recursos, con lo cual se deja influir por los demás.',
+      'No se pone en foco lo suficiente: tiene una imagen desvalorizada y desconfía de sus recursos, con lo cual puede dejarse influir por los demás.',
       'Se considera menos de lo que corresponde y no confía en lo que tiene, y por eso queda expuesto a la influencia ajena.',
     ],
     recomienda: [
       'Alentar y reconocer su desempeño, para fomentar su autoestima.',
       'Reconocer lo que hace bien, para que su autoestima crezca.',
-      'Señalarle sus logros de manera explícita, porque por su cuenta no se los adjudica.',
+      'Darle aliento y señalarle de manera explícita sus logros, para fortalecer su autoestima.',
     ],
   },
   'ego-alto': {
@@ -1954,8 +1954,8 @@ export const TEXTOS = {
     ],
     recomienda: [
       'En instancias de negociación puede necesitar asistencia: mostrarle datos que le permitan considerar una visión distinta de la suya.',
-      'En una negociación va a necesitar apoyo: mostrarle datos que le permitan considerar una visión distinta de la suya.',
-      'Al negociar, acercarle información que sostenga el punto de vista del otro, porque por su cuenta no lo va a incorporar.',
+      'En una negociación puede precisar ayuda: mostrarle datos que le abran la posibilidad de considerar otra visión.',
+      'Cuando haya que negociar, puede hacer falta darle asistencia, con información que le permita tener en cuenta un punto de vista diferente del propio.',
     ],
   },
   'reflejos-presentes': {
@@ -1966,7 +1966,7 @@ export const TEXTOS = {
       dice: [
         'Necesita que le reafirmen su valor constantemente. Con buenos recursos, eso puede funcionar como motor para conseguir logros.',
         'Necesita reafirmación permanente de su valor. Cuando cuenta con buenos recursos, eso puede funcionar como motor para conseguir logros.',
-        'Requiere confirmación permanente de lo que vale, y cuando cuenta con recursos, esa necesidad le sirve de impulso para conseguir resultados.',
+        'Requiere confirmación constante de lo que vale. Si dispone de buenos recursos, esa necesidad puede servirle de impulso para alcanzar logros.',
       ],
     },
     dice: [
@@ -2028,14 +2028,14 @@ export const TEXTOS = {
     zulliger: {
       dice: [
         'La agresividad forma parte natural de su modo de relacionarse, y tiene más propensión a manifestarla.',
-        'La agresividad aparece como un componente habitual de su modo de vincularse.',
-        'El componente agresivo aparece con naturalidad en sus relaciones.',
+        'La agresividad aparece como un componente natural de su modo de vincularse, y tiene más inclinación a manifestarla.',
+        'El componente agresivo aparece con naturalidad en sus relaciones, y tiene una mayor propensión a expresarlo.',
       ],
     },
     dice: [
       'La agresividad es un componente natural de sus relaciones, y tiene más propensión a manifestar conductas de ese tipo.',
       'La agresividad forma parte natural de su modo de relacionarse, y tiene más propensión a manifestarla.',
-      'En su manera de vincularse la agresividad está presente como un componente habitual.',
+      'En su manera de vincularse la agresividad está presente como un componente natural, y muestra más propensión a expresar conductas agresivas.',
     ],
     recomienda: [''],
   },
@@ -2047,7 +2047,7 @@ export const TEXTOS = {
       dice: [
         'Buena parte de su intercambio con los demás pasa por actitudes agresivas, que usa como defensa ante un ambiente que vive como hostil.',
         'Se vincula sobre todo desde la agresión, que le sirve de resguardo frente a un entorno que percibe amenazante.',
-        'Su intercambio con otros está marcado por la agresión, como respuesta defensiva a un ambiente que siente en contra.',
+        'Una parte importante de su intercambio con otros está marcada por actitudes agresivas, que emplea para defenderse de un ambiente que siente hostil.',
       ],
     },
     dice: [
@@ -2149,7 +2149,7 @@ export const TEXTOS = {
     dice: [
       'Tiene una implicación menor a la habitual en las interacciones, y puede preferir trabajar de manera independiente.',
       'Participa menos de lo habitual en el intercambio con otros y puede preferir trabajar por su cuenta.',
-      'Su implicación en las relaciones es menor a la esperada, con inclinación al trabajo independiente.',
+      'Su implicación en las relaciones es menor a la esperada, y puede inclinarse por el trabajo independiente.',
     ],
     recomienda: [
       'Conviene que la mayoría de sus tareas sean asignaciones individuales.',
@@ -2165,8 +2165,8 @@ export const TEXTOS = {
       corte: { op: 'mayor', valor: 1, decimales: 0 },
       dice: [
         'Cuando siente un cuestionamiento puede defenderse justificándose. También puede tener un estilo avasallante, tratando de imponer su idea.',
-        'Cuando vive algo como un cuestionamiento se justifica, y puede pasar a un estilo avasallante, imponiendo su idea.',
-        'Ante lo que vive como cuestionamiento se justifica, y puede pasar a imponer su punto de vista por sobre el del otro.',
+        'Cuando vive algo como un cuestionamiento puede justificarse para defenderse. Además, puede mostrar un estilo avasallante, imponiendo su idea.',
+        'Ante lo que vive como cuestionamiento puede responder con justificaciones para defenderse. Por otra parte, puede tener un estilo avasallante y buscar imponer su punto de vista.',
       ],
       recomienda: [
         'Ser concreto en los pedidos y en las consultas, para evitar que los reciba como un cuestionamiento.',
@@ -2177,7 +2177,7 @@ export const TEXTOS = {
     dice: [
       'Cuando siente un cuestionamiento puede reaccionar a la defensiva para justificarse.',
       'Ante lo que siente como un cuestionamiento, puede ponerse a la defensiva para justificarse.',
-      'Cuando cree que se le cuestiona algo, responde defendiéndose y explicando.',
+      'Cuando cree que se le cuestiona algo, puede responder defendiéndose y dando explicaciones para justificarse.',
     ],
     recomienda: [
       'Hacerle las consultas y los pedidos de forma concreta, para que no los reciba como un cuestionamiento.',
@@ -2190,18 +2190,21 @@ export const TEXTOS = {
     indice: 'Fd',
     corte: { op: 'mayor', valor: 0, decimales: 0 },
     zulliger: {
-      /* FD se espera de 0 a 2 en el Zulliger, contra el corte del Rorschach.
-         Definido por las psicólogas el 10/9/2026. */
-      corte: { op: 'mayor', valor: 2, decimales: 0 },
+      /* Fd se espera en 0 también en el Zulliger (Zdunic, p. 56 y 91: "suelen
+         darlas personas dependientes"; percentil 75 del apéndice: 0), igual
+         que en el velocímetro. Del 10/9 al 15/10/2026 cortaba en más de 2,
+         con el rango de FD (forma dimensión), que es otro índice: la lectura
+         casi no salía y las psicólogas la escribían en 23 informes. */
+      corte: { op: 'mayor', valor: 0, decimales: 0 },
       dice: [
         'El indicador de dependencia está aumentado. Por un lado, cuando se compromete con la empresa se mantiene estable en sus compromisos y se subordina sin mayores conflictos. Por otro, puede necesitar a alguien cerca que supervise sus tareas y le dé seguridad.',
         'El indicador de dependencia está por encima de lo esperado. Por un lado, una vez que se compromete con la empresa sostiene sus compromisos y se subordina sin mayores conflictos. Por otro, puede necesitar a alguien cerca que supervise su tarea y le dé seguridad.',
-        'Su nivel de dependencia está por encima de lo esperado. Eso le da estabilidad en el compromiso una vez que se involucra con la empresa, y a la vez le genera necesidad de supervisión cercana para sentir seguridad.',
+        'Su nivel de dependencia está por encima de lo esperado. Cuando se involucra con la empresa, mantiene estables sus compromisos y acepta subordinarse sin mayores conflictos. Al mismo tiempo, puede necesitar cerca a alguien que supervise su trabajo y le brinde seguridad.',
       ],
       recomienda: [
         'Mostrarle el camino y brindarle acompañamiento al tomar decisiones, porque tiende a quedar a la espera de indicaciones o de que otros decidan.',
-        'Indicarle los pasos y darle respaldo cuando tenga que decidir, porque va a quedar a la espera de indicaciones.',
-        'Marcarle el rumbo y darle sostén en las decisiones, ya que por su cuenta espera que otro defina.',
+        'Indicarle los pasos y darle respaldo cuando tenga que decidir, porque tiende a esperar indicaciones o a que otros tomen la decisión.',
+        'Marcarle el rumbo y darle sostén en las decisiones, ya que suele quedarse esperando que le indiquen qué hacer o que otro decida.',
       ],
     },
     dice: [
@@ -2269,8 +2272,8 @@ export const TEXTOS = {
     },
     dice: [
       'Tiene una visión poco realista de sí y de los demás: le puede costar ver tanto las fortalezas como las debilidades, propias y ajenas.',
-      'Su visión de sí y de los demás es poco realista: le cuesta ver tanto las fortalezas como las debilidades, propias y ajenas.',
-      'No logra una imagen ajustada de sí ni de los otros, y por eso se le escapan tanto los méritos como los defectos.',
+      'Su visión de sí y de los demás es poco realista: puede costarle ver tanto las fortalezas como las debilidades, propias y ajenas.',
+      'La imagen que tiene de sí y de los otros es poco ajustada a la realidad, y puede resultarle difícil reconocer tanto los méritos como los defectos, propios y ajenos.',
     ],
     recomienda: [
       'Cuando se le marque un error, hacerlo con información concreta para que le resulte más fácil registrarlo.',
@@ -2295,14 +2298,14 @@ export const TEXTOS = {
       cuando: 'EA − es de −1,5 para arriba',
       dice: [
         'Tolera bien la tensión cotidiana. Haría falta un estrés intenso, prolongado o inesperado para que sus controles fallaran de manera significativa.',
-        'Las exigencias del día a día no le desbordan el control, y solo una tensión fuerte o sostenida lo pondría en riesgo.',
+        'Las exigencias del día a día no le desbordan el control, y solo una tensión fuerte, sostenida o imprevista podría hacerlo fallar de manera significativa.',
         'Sostiene sin dificultad la tensión habitual, y solo una situación fuera de lo común pondría en riesgo su control.',
       ],
     },
     dice: [
       'Tolera de manera adecuada las tensiones del día a día. Solo ante un estrés intenso, prolongado o inesperado podrían fallar los controles de manera significativa.',
       'Tolera bien las tensiones cotidianas. Solo un estrés intenso, prolongado o inesperado podría hacer fallar sus controles de manera significativa.',
-      'Las exigencias del día a día no le desbordan los controles. Haría falta una tensión fuerte o sostenida para que eso ocurra.',
+      'Maneja de forma adecuada las exigencias del día a día. Para que sus controles fallaran de manera significativa haría falta una tensión fuerte, sostenida o imprevista.',
     ],
     recomienda: [''],
   },
@@ -2316,14 +2319,14 @@ export const TEXTOS = {
       aplica: false,
       dice: [
         'Su control y su tolerancia al estrés están por encima de lo común: dispone de más recursos de los esperados para manejar la tensión y responder a lo que se le pide.',
-        'Cuenta con recursos de control muy por encima del promedio, que le permiten sostener tensión sin que caiga su rendimiento.',
+        'Cuenta con un control y una tolerancia al estrés superiores a lo común, con más recursos de los esperados para manejar la tensión y responder a lo que se le pide.',
         'Maneja la tensión con holgura: tiene más herramientas de las esperables para responder a lo que se le pide.',
       ],
     },
     dice: [
       'Tiene una capacidad de control y de tolerancia al estrés fuera de lo común: cuenta con muchos más recursos de lo esperado para manejar sus tensiones y responder a las demandas.',
       'Su capacidad de control y de tolerancia al estrés está por encima de lo común: dispone de muchos más recursos de lo esperado para manejar la tensión y responder a las demandas.',
-      'Cuenta con recursos de control muy por encima del promedio, lo que le permite sostener tensión y responder sin que le afecte el rendimiento.',
+      'Sus recursos de control y su tolerancia al estrés son fuera de lo común: tiene muchos más de los esperados para manejar las tensiones y responder a lo que se le exige.',
     ],
     recomienda: [''],
   },
@@ -2377,7 +2380,7 @@ export const TEXTOS = {
       recomienda: [
         'Evitar asignarle tareas con alto nivel de presión sostenida y ofrecer apoyo cercano en las situaciones de mayor exigencia.',
         'No asignarle tareas con presión sostenida, y darle acompañamiento cercano cuando la exigencia sube.',
-        'No asignarle posiciones de presión continua y darle apoyo cercano en los momentos exigentes.',
+        'Evitar darle tareas que impliquen presión continua y elevada, y brindarle apoyo cercano en los momentos de mayor exigencia.',
       ],
     },
     dice: [
@@ -3183,9 +3186,16 @@ export function leer(
 
   const a = n(s, 'ideacion', 'a');
   const pas = n(s, 'ideacion', 'p');
-  if (a && pas >= a * 4) {
+  // Rigidez: que un lado triplique al otro, para cualquiera de los dos lados
+  // ("ninguno triplica al otro", Zdunic, cap. 7). Con el lado chico en 0
+  // cuenta como triple desde 3 y como cuádruple desde 4. Hasta el 15/10/2026
+  // solo miraba p sobre a: las psicólogas escribían la lectura en 20
+  // informes y el sistema la proponía en 2, casi todos con a de 3 a 6 y p en 0.
+  const mayor = Math.max(a, pas);
+  const menor = Math.min(a, pas);
+  if (mayor >= Math.max(menor * 4, 4)) {
     sumar('a-p-pasivo-cuadruple', `a:p ${a}:${pas}`);
-  } else if (a && pas >= a * 3) {
+  } else if (mayor >= Math.max(menor * 3, 3)) {
     sumar('a-p-pasivo-triple', `a:p ${a}:${pas}`);
   } else if (pas > a + 1) {
     sumar('a-p-pasivo', `a:p ${a}:${pas}`);

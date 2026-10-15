@@ -657,12 +657,16 @@ const MA_MP: Indicador = {
 };
 
 const XA_WDA: Indicador = {
-  techo: 50,
   nombre: 'XA% / WDA%',
   formula: 'el menor de XA% y WDA%',
   mide: 'Ajuste perceptual y lectura de la realidad',
-  // El corte es el que rige en el diccionario, movido por ellas a 0,78.
-  escala: binario(0.78, true, 2, true),
+  // Recurso desde el 15/10/2026, aprobado por Lorena: por encima de lo
+  // esperable es una lectura de la realidad más ajustada que la de la mayoría.
+  // Alto desde 0,92, que es la media más un desvío en la norma argentina
+  // (0,81 ± 0,11; Lunazzi y otros, 2007) y el percentil 75 de Zdunic (p. 205).
+  // El piso es el que rige en el diccionario: 0,78 en Zulliger, movido por
+  // ellas, y 0,70 en Rorschach.
+  escala: { forma: 'umbral', mayorEsMejor: true, alto: 0.92, medio: 0.78, decimales: 2, porcentaje: true },
   valor: (s) => {
     const xa = num(s, 'calidad_formal', 'XA_pct');
     const wda = num(s, 'calidad_formal', 'WDA_pct');
@@ -1081,7 +1085,7 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
     competencia: 'Habilidad cognitiva',
     mide: MIDE.intelectual,
     indicadores: [
-      { ...XA_WDA, escala: binario(0.7, true, 2, true) },
+      { ...XA_WDA, escala: { forma: 'umbral', mayorEsMejor: true, alto: 0.92, medio: 0.7, decimales: 2, porcentaje: true } },
       { ...X_MENOS, escala: binario(0.29, false, 2, true) },
       // Zd y Zf salieron de acá y quedaron en una sola competencia cada uno,
       // Autogestión y Proactividad: contados dos veces, quien organiza mal
@@ -1164,11 +1168,12 @@ const ZULLIGER: { competencia: string; mide: string; indicadores: Indicador[] }[
         nombre: 'EA − es',
         formula: 'EA − es',
         mide: 'Tolerancia al estrés',
-        // "Dentro de lo esperable" y no positivo: lo escribieron así las
-        // psicólogas el 13/10/2026.
-        techo: 50,
-        // Hasta −1,5 es lo esperado; por debajo, la demanda supera al recurso.
-        escala: binario(-1.5, true, 1),
+        // Recurso desde el 15/10/2026, aprobado por Lorena, igual que D y
+        // AdjD en Rorschach: alto cuando EA supera a es (los recursos sobran
+        // para la demanda), medio de −1,5 a 0 y bajo por debajo de −1,5, que
+        // es donde la demanda supera al recurso (Zdunic, p. 77, con el margen
+        // que anotaron las psicólogas). Del 13 al 15/10 era esperable.
+        escala: { forma: 'umbral', mayorEsMejor: true, alto: 0.5, medio: -1.5, decimales: 1 },
         valor: (s) => num(s, 'control_estres', 'dif_EA_es'),
       },
       { ...INTELECTUALIZACION, escala: binario(1, false) },

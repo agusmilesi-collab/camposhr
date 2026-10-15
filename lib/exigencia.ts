@@ -33,7 +33,8 @@ export type Banda = 'Sobresaliente' | 'Alto' | 'Adecuado' | 'Bajo';
  * Es la que venía en el código. Los dos cortes de arriba los puso la psicóloga.
  * El de abajo sigue a Hogan Assessments, el estándar de evaluación de
  * personalidad para selección: llama bajo a lo que cae debajo del percentil 35
- * y alto a lo que pasa el 65, con todo el medio como promedio. Antes cortaba en
+ * y alto a lo que pasa el 65, con todo el medio como promedio (HPI Career
+ * Report, 2009, p. 6; cita y enlace en docs/velocimetro-bibliografia.md). Antes cortaba en
  * 50, y ahí la mitad exacta de la escala caía en el borde de Adecuado y
  * cualquier ruido la empujaba a Bajo.
  */
