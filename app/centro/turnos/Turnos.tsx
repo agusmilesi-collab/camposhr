@@ -158,18 +158,6 @@ export default function Turnos({
                   </span>
                 );
               })()}
-              <input
-                className="centro-agenda-nota"
-                placeholder="Nota"
-                value={v.nota}
-                aria-label="Nota"
-                onChange={(e) => escribir(fecha, h, { nota: e.target.value })}
-                onBlur={() => guardar(fecha, h)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                }}
-                disabled={guardando === k}
-              />
             </li>
           );
         })}

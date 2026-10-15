@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { inquilinoQueEscribe } from '@/lib/centro-sesion';
 import { hora, reservasDe } from '@/lib/consultorios';
-import { borrarTurno, guardarTurno } from '@/lib/turnos';
+import { borrarTurno, guardarTurno, marcarAsistencia } from '@/lib/turnos';
 import { nombreCompleto, pacientesDe } from '@/lib/pacientes';
 
 export const runtime = 'nodejs';
@@ -65,5 +65,17 @@ export async function DELETE(req: Request) {
   const v = await validar(req);
   if ('error' in v) return v.error;
   await borrarTurno(v.yo.id, v.fecha, v.h);
+  return NextResponse.json({ ok: true });
+}
+
+/** Si el paciente vino: true, false, o null para desmarcar. */
+export async function PATCH(req: Request) {
+  const sesion = await inquilinoQueEscribe();
+  if ('error' in sesion) return mal(sesion.error.motivo, sesion.error.status);
+  const datos = await req.json().catch(() => null);
+  const id = String(datos?.id ?? '');
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return mal('Turno inválido.');
+  const asistio = datos?.asistio === true ? true : datos?.asistio === false ? false : null;
+  await marcarAsistencia(sesion.yo.id, id, asistio);
   return NextResponse.json({ ok: true });
 }

@@ -64,6 +64,8 @@ export async function POST(req: Request) {
   if (hastaHora <= desdeHora) return mal('La hora de fin va después de la de inicio.');
   // Nadie reserva para atrás: la hora ya pasó y el cargo saldría igual.
   if (fecha < hoy) return mal('Esa fecha ya pasó.');
+  // El mes que viene se abre el 1: antes renuevan quienes tienen horas fijas.
+  if (fecha.slice(0, 7) > hoy.slice(0, 7)) return mal('Ese mes se abre el 1: todavía no se reserva.');
 
   const [espacios, aperturas, cierres, reservas] = await Promise.all([
     listarEspacios(),

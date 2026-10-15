@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { guardarClave, NORMAS_VERSION } from '@/lib/centro-acceso';
+import { guardarClave } from '@/lib/centro-acceso';
 import { armarCookie, COOKIE, DURACION } from '@/lib/centro-cookie';
 import { patch, select } from '@/lib/supabase';
 
@@ -28,19 +28,12 @@ export async function POST(req: Request) {
   const datos = await req.json().catch(() => null);
   const token = String(datos?.token ?? '');
   const clave = String(datos?.clave ?? '');
-  const acepta = Boolean(datos?.acepta);
   if (!/^[A-Za-z0-9_-]{10,200}$/.test(token)) {
     return NextResponse.json({ ok: false, motivo: 'El enlace no es válido.' }, { status: 400 });
   }
   if (clave.length < 8) {
     return NextResponse.json(
       { ok: false, motivo: 'La contraseña tiene que tener al menos 8 caracteres.' },
-      { status: 400 }
-    );
-  }
-  if (!acepta) {
-    return NextResponse.json(
-      { ok: false, motivo: 'Hay que aceptar las normas de convivencia para entrar.' },
       { status: 400 }
     );
   }
@@ -63,8 +56,6 @@ export async function POST(req: Request) {
     hash,
     alta_token: null,
     alta_vence: null,
-    normas_version: NORMAS_VERSION,
-    normas_aceptadas_at: new Date().toISOString(),
   });
 
   const res = NextResponse.json({ ok: true });

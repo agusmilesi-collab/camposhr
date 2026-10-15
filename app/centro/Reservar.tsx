@@ -31,7 +31,6 @@ import {
   MINUTOS_PARA_DESHACER,
   grillaDeUnaSala,
   hora,
-  horasSemanalesTotales,
   sumarDias,
   type Apertura,
   type Cierre,
@@ -39,6 +38,9 @@ import {
   type Espacio,
   type Reserva,
   type Tarifa,
+  mesLargo,
+  mesCorrido,
+  periodoDe,
 } from '@/lib/consultorios-calculo';
 
 function pesos(n: number): string {
@@ -94,8 +96,11 @@ export default function Reservar({
   // Los días del próximo mes en que el Centro abre: el domingo no se ofrece,
   // porque ofrecerlo para tocarlo es ofrecer un error.
   const dias: string[] = [];
+  // Y hasta fin de mes: el que viene se abre el 1, cuando terminaron de
+  // renovar quienes tienen horas fijas y se sabe qué queda libre.
   for (let i = 0; i < 35 && dias.length < 28; i++) {
     const d = sumarDias(hoy, i);
+    if (d.slice(0, 7) > hoy.slice(0, 7)) break;
     if (diaSemanaDe(d) < DIAS_DE_LA_SEMANA) dias.push(d);
   }
 
@@ -115,17 +120,10 @@ export default function Reservar({
     enteras[enteras.length - 1][col] = d;
   }
   /**
-   * Sin los días que no se ofrecen: la primera semana arranca hoy y la última
-   * termina donde termina la ventana. Mostrar el lunes y el martes ya pasados
-   * como columnas vacías era ofrecer días en los que no se puede reservar, y
-   * se leían como si estuvieran libres. Cada semana guarda en qué columna
-   * empieza, para que el nombre del día siga siendo el correcto.
+   * Las semanas enteras, de lunes a sábado: los días ya pasados de la primera
+   * van como columnas vacías, así todas las semanas tienen la misma forma y
+   * la del medio no cambia de ancho (pedido de Agustín, 15/10/2026).
    */
-  const semanas = enteras.map((semana) => {
-    const col0 = semana.findIndex((x) => x !== null);
-    const colN = semana.findLastIndex((x) => x !== null);
-    return { col0, dias: semana.slice(col0, colN + 1) };
-  });
 
   /**
    * Qué sala se mira: una, o **todas** juntas.
@@ -154,16 +152,30 @@ export default function Reservar({
   }));
   const horas = [...new Set(grillas.flatMap((g) => g.horas))].sort((a, b) => a - b);
 
+  /**
+   * El sábado va solo si alguna sala abre algún sábado de la ventana: una
+   * columna entera en gris no dice nada y le saca ancho a los otros cinco.
+   */
+  const conSabado = dias.some(
+    (d) =>
+      diaSemanaDe(d) === 5 &&
+      grillas.some((g) =>
+        Object.entries(g.celdas).some(([k, c]) => k.startsWith(d) && c.estado !== 'cerrada')
+      )
+  );
+  const semanas = enteras.map((semana) => ({
+    col0: 0,
+    dias: conSabado ? semana : semana.slice(0, 5),
+  }));
+
   const espacio = espacios.find((e) => e.id === elegida?.salaId) ?? null;
   const cantidad = elegida ? hasta - elegida.desde : 0;
 
   const cotizacion =
     elegida && espacio
-      ? cotizar(
-          tarifas,
-          espacio.id,
-          Math.max(horasSemanalesTotales(contratos, miId, elegida.fecha), cantidad)
-        )
+      ? // A precio de hora suelta: el tramo es el de esta reserva, sin
+        // contar las horas fijas que tenga contratadas.
+        cotizar(tarifas, espacio.id, cantidad)
       : null;
   const importe = cotizacion ? cotizacion.precioHora * cantidad : null;
 
@@ -308,7 +320,7 @@ export default function Reservar({
             setError(null);
           }}
         >
-          Todas
+          Todos
         </button>
         {espacios.map((e) => (
           <button
@@ -322,7 +334,7 @@ export default function Reservar({
               setError(null);
             }}
           >
-            {e.tipo === 'sum' ? 'SUM' : e.nombre.replace('Consultorio ', 'Cons. ')}
+            {e.tipo === 'sum' ? 'SUM' : e.nombre}
           </button>
         ))}
       </div>
@@ -493,7 +505,12 @@ export default function Reservar({
                         {semana.map((d, col) =>
                           mirando.map((e) => {
                             if (!d)
-                              return <td key={`${col}|${e.id}`} className="centro-celda centro-fuera" />;
+                              return (
+                                <td
+                                  key={`${col}|${e.id}`}
+                                  className={`centro-celda centro-fuera${e.id === mirando[0].id ? ' centro-corte' : ''}`}
+                                />
+                              );
                             const g = grillas.find((x) => x.espacio.id === e.id);
                             const celda = g?.celdas[`${d}|${h}`];
                             const estado = celda?.estado ?? 'cerrada';
@@ -558,9 +575,8 @@ export default function Reservar({
             ))}
           </div>
         )}
-                {/* Dos estados y no tres: para quien busca un hueco, tomada por otro
-            y cerrada por mantenimiento son lo mismo. Cuál de las dos es lo dice
-            el rótulo de la celda al pasar por encima. */}
+                {/* Tres estados: ocupada por otro, cerrada (no abre o mantenimiento) y
+            lo propio. Cerrada va rayada para que no se confunda con ocupada. */}
         <div className="centro-referencias">
           <span className="centro-referencia">
             <span className="centro-color mia" /> Tuya
@@ -568,8 +584,17 @@ export default function Reservar({
           <span className="centro-referencia">
             <span className="centro-color tomada" /> Ocupada
           </span>
+          <span className="centro-referencia">
+            <span className="centro-color cerrada" /> Cerrada
+          </span>
           <span className="centro-referencia">Lo blanco está libre.</span>
         </div>
+        {/* Por qué la grilla termina con el mes. */}
+        <p className="centro-nota">
+          {mesLargo(mesCorrido(periodoDe(hoy), 1)).split(' ')[0].replace(/^./, (c) => c.toUpperCase())} se
+          abre el 1: hasta fin de mes renuevan quienes tienen horas fijas, y recién ahí se sabe qué
+          queda libre.
+        </p>
       </div>
 
     </>

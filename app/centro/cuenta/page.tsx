@@ -6,7 +6,6 @@ import {
   hora,
   hoyISO,
   listarEspacios,
-  mesCorrido,
   mesLargo,
   movimientos as leerMovimientos,
   periodoDe,
@@ -74,34 +73,38 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
   /*
    * Tres pestañas, y la del medio aparece y desaparece:
    *
-   *   Reservas mes en curso   lo que va usando este mes, que todavía no se paga.
-   *   Mes a pagar             el mes que acaba de cerrar, con su factura, los
-   *                           plazos, a dónde transferir y dónde dejar el
-   *                           comprobante. Aparece el día 1 y se va cuando ese
-   *                           mes queda pagado.
-   *   Meses anteriores        para consultar y abrir los papeles.
+   *   Este mes            las horas del mes que corre, lo que se debe con su
+   *                       recargo, la factura, los plazos, a dónde transferir
+   *                       y dónde dejar el comprobante. Como el mes se paga
+   *                       por adelantado, reservar y pagar hablan del mismo
+   *                       mes y van en una sola pestaña (eran dos hasta el
+   *                       15/10/2026, cuando se pagaba a mes vencido).
+   *   Meses anteriores    para consultar y abrir los papeles.
    *
-   * Cada mes se paga a mes vencido, del 1 al 10 del siguiente.
+   * Si arrastra un mes anterior sin pagar, se avisa arriba y el comprobante
+   * se sube para ese mes: lo atrasado se paga antes que lo de este mes.
    */
   const mesActual = periodoDe(hoy);
-  const mesAnterior = mesCorrido(mesActual, -1);
 
   const todos = await leerMovimientos();
   const mios = todos.filter((m) => m.inquilino_id === yo.id);
-  const saldoAnterior = saldoDe(mios.filter((m) => m.periodo === mesAnterior));
-  const hayQuePagar = saldoAnterior > 0;
-  /** Lo que sale hoy pagar el mes anterior, con el recargo que corra. */
-  const aPagarHoy = Math.round(saldoAnterior * (1 + recargoDelDia(hoy, mesAnterior) / 100));
+  const conDeuda = [...new Set(mios.map((m) => m.periodo).filter((x): x is string => Boolean(x)))]
+    .filter((p) => p <= mesActual && saldoDe(mios.filter((m) => m.periodo === p)) > 0)
+    .sort();
+  const mesAPagar = conDeuda[0] ?? mesActual;
+  const saldoAPagar = saldoDe(mios.filter((m) => m.periodo === mesAPagar));
+  const hayQuePagar = saldoAPagar > 0;
+  /** Lo que sale hoy pagar ese mes, con el recargo que corra. */
+  const aPagarHoy = Math.round(saldoAPagar * (1 + recargoDelDia(hoy, mesAPagar) / 100));
 
-  const vista: 'reservas' | 'pagar' | 'anteriores' =
-    searchParams.ver === 'anteriores'
-      ? 'anteriores'
-      : searchParams.ver === 'pagar' && hayQuePagar
-        ? 'pagar'
-        : 'reservas';
+  const vista: 'mes' | 'anteriores' = searchParams.ver === 'anteriores' ? 'anteriores' : 'mes';
   const enLista = vista === 'anteriores';
-  /** El mes del que hablan los paneles: el que se paga, o el que corre. */
-  const periodo = vista === 'pagar' ? mesAnterior : mesActual;
+  /** El mes del que hablan los paneles: el que corre. */
+  const periodo = mesActual;
+  /** Un mes anterior que todavía debe algo. */
+  const deudaVieja = hayQuePagar && mesAPagar < mesActual;
+  // El nombre del mes solo, para las pestañas: "octubre" y no "octubre de 2026".
+  const soloMes = (p: string) => mesLargo(p).split(' de ')[0];
 
   const finDeMes = new Date(Number(periodo.slice(0, 4)), Number(periodo.slice(5, 7)), 0);
   const hasta = `${periodo.slice(0, 8)}${String(finDeMes.getDate()).padStart(2, '0')}`;
@@ -204,7 +207,7 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
     minute: '2-digit',
   });
   const subidos = (await comprobantesDe(yo.id))
-    .filter((c) => c.periodo === periodo)
+    .filter((c) => c.periodo === mesAPagar)
     .map((c) => ({
       id: c.id,
       nombre: c.nombre,
@@ -217,7 +220,7 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
       <main className="centro-cuerpo">
         <h1 className="centro-titulo">Tu cuenta</h1>
         <p className="centro-bajada">
-          Cada mes se paga del 1 al 10 del mes siguiente. Del 11 al 20 lleva 15% de recargo y del 21
+          Cada mes se paga por adelantado, del 1 al 10. Del 11 al 20 lleva 15% de recargo y del 21
           en adelante, 25%.
         </p>
 
@@ -226,17 +229,9 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
               pantalla que ya visitó, y acá eso es ver una pestaña de antes de
               que se registrara o se borrara un pago. Cada toque vuelve a
               preguntarle al servidor. */}
-          <a className={vista === 'reservas' ? 'activa' : undefined} href="/centro/cuenta">
-            Reservas mes en curso
+          <a className={vista === 'mes' ? 'activa' : undefined} href="/centro/cuenta">
+            Este mes ({soloMes(mesActual)})
           </a>
-          {hayQuePagar && (
-            <a
-              className={vista === 'pagar' ? 'activa' : undefined}
-              href="/centro/cuenta?ver=pagar"
-            >
-              Mes a pagar
-            </a>
-          )}
           <a
             className={vista === 'anteriores' ? 'activa' : undefined}
             href="/centro/cuenta?ver=anteriores"
@@ -288,53 +283,44 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
         ) : (
           <>
             {/* Lo que debe y la factura de eso, lado a lado: son el mismo dato
-                dicho dos veces, el número y su papel. */}
-            <div
-              className={
-                (vista === 'pagar' && facturas.length > 0) || (vista === 'reservas' && hayQuePagar)
-                  ? 'centro-dos'
-                  : undefined
-              }
-            >
+                dicho dos veces, el número y su papel. Si arrastra un mes sin
+                pagar, va al lado, porque se paga antes. */}
+            <div className={facturas.length > 0 || deudaVieja ? 'centro-dos' : undefined}>
               <div className="centro-panel">
                 <h2>{mesLargo(periodo)}</h2>
-                {vista === 'pagar' ? (
+                {saldo > 0 ? (
                   <>
                     <div className="centro-saldo">{pesos(Math.round(saldo * (1 + pct / 100)))}</div>
                     <p className="centro-nota">
                       {pct > 0
                         ? `Son ${pesos(saldo)} más ${pct}% de recargo por pagar después del 10.`
-                        : 'Hasta el 10 se paga sin recargo.'}
+                        : 'Se paga por adelantado: hasta el 10, sin recargo.'}
                     </p>
                   </>
                 ) : (
                   <>
                     <div className="centro-saldo">{pesos(cargos)}</div>
                     <p className="centro-nota">
-                      Es lo reservado hasta hoy. Se paga del 1 al 10 de{' '}
-                      {mesLargo(mesCorrido(mesActual, 1)).split(' ')[0]}.
+                      {cargos > 0
+                        ? 'Es lo reservado hasta hoy, y está pagado.'
+                        : 'Todavía no reservaste nada este mes.'}
                     </p>
                   </>
                 )}
               </div>
 
-              {/* El mes que hay que pagar, al lado del que corre: el que entra
-                  a mirar sus reservas se entera acá de que tiene un pago
-                  pendiente, sin tener que abrir la otra pestaña para saberlo. */}
-              {vista === 'reservas' && hayQuePagar && (
+              {deudaVieja && (
                 <div className="centro-panel">
-                  <h2>{mesLargo(mesAnterior)}, para pagar</h2>
+                  <h2>{mesLargo(mesAPagar)}, pendiente</h2>
                   <div className="centro-saldo">{pesos(aPagarHoy)}</div>
                   <p className="centro-nota">
-                    {aPagarHoy > saldoAnterior
-                      ? 'Ya lleva recargo por pagar después del 10. '
-                      : 'Hasta el 10 se paga sin recargo. '}
-                    <a href="/centro/cuenta?ver=pagar">Ver el mes a pagar</a>
+                    Ya lleva recargo por pagar fuera de plazo, y va antes que este mes.{' '}
+                    <a href="#pagar">Ver cómo se paga</a>
                   </p>
                 </div>
               )}
 
-              {vista === 'pagar' && facturas.length > 0 && (
+              {facturas.length > 0 && (
                 <div className="centro-panel">
                   <h2>{facturas.length === 1 ? 'La factura del mes' : 'Las facturas del mes'}</h2>
                   <div className="centro-facturas">
@@ -465,10 +451,10 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
               </div>
             )}
 
-            {/* El cierre, con la cuenta hecha: horas, consumos, pagos y saldo. Solo
-            en el mes a pagar: en el que corre todavía no hay nada que cerrar, y
-            el total ya está al pie de la tabla de horas. */}
-            {vista === 'pagar' && (
+            {/* La cuenta hecha: horas, pagos y saldo, con lo que sale pagar en
+            cada plazo. Solo cuando hay algo cargado: sin movimientos, el cero
+            ya está arriba. */}
+            {delMes.length > 0 && (
               <div className="centro-panel">
                 <table className="centro-cierre">
                   <tbody>
@@ -489,7 +475,7 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
                   </tbody>
                 </table>
 
-                {vista === 'pagar' && saldo > 0 && (
+                {saldo > 0 && (
                   <table className="centro-cierre centro-plazos">
                     <tbody>
                       <tr>
@@ -510,8 +496,8 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
               </div>
             )}
 
-            {vista === 'pagar' && (
-              <div className="centro-panel">
+            {(hayQuePagar || delMes.length > 0) && (
+              <div className="centro-panel" id="pagar">
                 <h2>Cómo se paga</h2>
                 <p className="centro-nota" style={{ marginTop: 0 }}>
                   Efectivo o transferencia. Cuando transferís, dejá el comprobante acá abajo: Lorena
@@ -544,7 +530,8 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
                     Estos datos son de prueba: todavía no transfieras a esta cuenta.
                   </p>
                 )}
-                <Comprobante periodo={periodo} mes={mesLargo(periodo)} subidos={subidos} />
+                {/* El comprobante va al mes que se paga primero: el atrasado si lo hay. */}
+                <Comprobante periodo={mesAPagar} mes={mesLargo(mesAPagar)} subidos={subidos} />
               </div>
             )}
           </>

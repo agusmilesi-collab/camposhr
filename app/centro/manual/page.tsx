@@ -44,6 +44,7 @@ export default async function Manual() {
                 alt={c.alt}
                 title={c.alt}
                 loading="lazy"
+                style={c.ancho ? { maxWidth: c.ancho } : undefined}
               />
             ))}
           </section>

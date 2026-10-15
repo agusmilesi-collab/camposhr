@@ -1,11 +1,9 @@
 'use client';
 
 /**
- * La contraseña y la aceptación de las normas, en un solo paso.
- *
- * Las normas se aceptan acá porque es el único momento en que se sabe que la
- * persona las tuvo delante. Queda registrada la versión y la fecha, que es lo
- * que reemplaza a la firma en papel.
+ * La contraseña, y nada más. Las normas se leen y se aceptan adentro, desde
+ * la tarjeta de Inicio: hasta el 15/10/2026 se aceptaban acá, antes de poder
+ * leerlas completas.
  */
 
 import { useRouter } from 'next/navigation';
@@ -26,7 +24,7 @@ export default function Clave({ token }: { token: string }) {
     const res = await fetch('/api/centro/clave', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, clave: d.get('clave'), acepta: d.get('acepta') === 'on' }),
+      body: JSON.stringify({ token, clave: d.get('clave') }),
     });
     const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
     setGuardando(false);
@@ -61,17 +59,6 @@ export default function Clave({ token }: { token: string }) {
           minLength={8}
           required
         />
-        <label className="centro-fila" style={{ margin: '8px 0 14px', fontSize: '0.86rem' }}>
-          <input type="checkbox" name="acepta" required />
-          <span>
-            Leí y acepto las{' '}
-            <a href="/centro/normas" target="_blank" rel="noreferrer" className="centro-enlace-texto">
-              normas de convivencia del Centro
-            </a>
-            : se paga toda hora reservada, el alquiler se abona del 1 al 10, y solo se usa la sala
-            reservada en el horario reservado.
-          </span>
-        </label>
         <button className="centro-boton centro-ancho" type="submit" disabled={guardando}>
           {guardando ? 'Guardando…' : 'Guardar y entrar'}
         </button>

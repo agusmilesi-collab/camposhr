@@ -45,6 +45,18 @@
   align-items: start;
 }
 
+/* La fecha y la hora, fijas arriba a la derecha de la pantalla. */
+.centro-reloj {
+  position: fixed;
+  top: 14px;
+  right: 22px;
+  z-index: 5;
+  font-size: 0.78rem;
+  color: var(--suave);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .centro-lateral {
   position: sticky;
   top: 0;
@@ -370,8 +382,9 @@
 
 /* El día se separa de los de al lado, que si no las cuatro salas de un martes
    se leen pegadas a las del miércoles. */
+/* El corte entre días: mismo grosor que la grilla, más oscuro. */
 .centro-mes-salas .centro-corte {
-  border-left: 2px solid var(--linea);
+  border-left: 1px solid #a9a39a;
 }
 
 .centro-mes-salas {
@@ -379,7 +392,7 @@
 }
 
 .centro-dia-cab {
-  border-left: 2px solid var(--linea);
+  border-left: 1px solid #a9a39a;
 }
 
 .centro-salas-cab th {
@@ -392,9 +405,9 @@
 
 /* Una columna sin día: la ventana arranca hoy, así que la primera semana tiene
    vacíos los días que ya pasaron. */
+/* Un día ya pasado: en gris como lo ocupado, para que no se lea como libre. */
 .centro-fuera {
-  background: transparent;
-  border-color: transparent;
+  background: #ece9e3;
 }
 
 /**
@@ -499,7 +512,9 @@
 
 .centro-celda {
   height: 34px;
-  border: 1px solid var(--linea-suave);
+  /* La línea se ve también sobre lo gris: con la suave, las celdas cerradas
+     u ocupadas se fundían en una mancha sin horas. */
+  border: 1px solid #d3cec5;
   border-right: none;
   text-align: center;
   padding: 0 2px;
@@ -544,9 +559,14 @@
  * encima: para el que mira no cambia nada, y dos grises parecidos obligaban a
  * compararlos para descubrir que ninguno sirve.
  */
-.centro-tomada,
+/* Tres grises: pasado (casi fondo), cerrado (claro y rayado: no hay sala) y
+   reservado por otro (el más firme: alguien lo tiene). */
+.centro-tomada {
+  background: #ece9e3;
+  color: #8d887f;
+}
 .centro-cerrada {
-  background: #d9d5ce;
+  background: repeating-linear-gradient(135deg, #e3dfd8 0 4px, #d6d1c9 4px 5px);
   color: #8d887f;
 }
 
@@ -1077,7 +1097,7 @@
 
 .centro-agenda-horas li {
   display: grid;
-  grid-template-columns: 48px 64px minmax(0, 1.4fr) auto minmax(0, 1fr);
+  grid-template-columns: 48px 64px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
   padding: 4px 0;
@@ -1212,6 +1232,54 @@
   }
 }
 
+/* La cabecera de la ficha del paciente: el nombre y, a la derecha, volver. */
+.centro-ficha-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.centro-ficha-cabecera .centro-titulo {
+  margin: 0;
+}
+.centro-ficha-cabecera .centro-ficha-volver {
+  padding: 7px 14px;
+  font-size: 0.86rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* La tabla de precios dentro del artículo de precio y pago. */
+.centro-hoja-precios {
+  margin: 10px 0 4px 34px;
+}
+.centro-hoja-precios-titulo {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  color: var(--tinta-media);
+}
+.centro-hoja-precios .centro-resumen td.centro-num,
+.centro-hoja-precios .centro-resumen th.centro-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* El pie de la hoja de normas con el botón de aceptar. */
+.centro-hoja-aceptar {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linea);
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+.centro-hoja-aceptar p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--tinta-media);
+}
+
 .centro-hoja-membrete {
   padding-bottom: 12px;
   margin-bottom: 28px;
@@ -1317,6 +1385,25 @@
 }
 
 /* Un botón que se lee como enlace: para pasar de entrar a pedir el enlace. */
+/* La tilde de aceptar las normas: la casilla y el texto en la misma fila,
+   el texto al lado y no debajo. */
+.centro-acepto {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 8px 0 14px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  cursor: pointer;
+}
+.centro-acepto input {
+  margin-top: 3px;
+  flex: none;
+}
+.centro-acepto span {
+  flex: 1;
+}
+
 .centro-enlace-texto {
   background: none;
   border: 0;
@@ -1353,7 +1440,10 @@
 }
 
 .centro-color.tomada {
-  background: #d9d5ce;
+  background: #ece9e3;
+}
+.centro-color.cerrada {
+  background: repeating-linear-gradient(135deg, #e3dfd8 0 3px, #d6d1c9 3px 4px);
 }
 
 /**
@@ -1661,11 +1751,11 @@
 }
 
 .centro-semana .libre {
-  background: #e4e1da;
+  background: #d4e8d4;
 }
 
 .centro-semana .ocupada {
-  background: #8fb0d9;
+  background: #f3dcdc;
 }
 
 .centro-semana .cerrada {
@@ -2066,6 +2156,60 @@
 .centro-tarjeta.centro-renovar.abierta {
   height: auto;
   gap: 8px;
+}
+
+/* Una notificación (normas, manual, pago, factura, recibo) va en azul muy
+   claro: se distingue de los turnos, que van en blanco. */
+.centro-tarjeta.aviso {
+  background: color-mix(in srgb, var(--azul) 8%, var(--panel));
+  border-color: color-mix(in srgb, var(--azul) 22%, var(--linea));
+}
+
+/* El circulito de asistencia del turno: gris sin marcar, verde si vino, rojo
+   si no vino. */
+.centro-asistencia {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  padding: 0;
+  border: 2px solid var(--linea);
+  border-radius: 50%;
+  background: var(--panel);
+  cursor: pointer;
+}
+.centro-asistencia:hover {
+  border-color: var(--suave);
+}
+.centro-asistencia.vino {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+.centro-asistencia.no-vino {
+  background: var(--rojo);
+  border-color: var(--rojo);
+}
+.centro-asistencia:disabled {
+  opacity: 0.6;
+}
+
+/* El botón de una tarjeta de Inicio: ancho completo y en el azul oscuro del
+   sistema, el mismo para "Ver cómo se paga", "Leer las normas" y los papeles. */
+.centro-tarjeta-boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--tinta);
+  color: #f6f5f2;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.centro-tarjeta-boton:hover {
+  background: var(--azul-fuerte);
 }
 
 .centro-renovar-botones {

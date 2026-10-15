@@ -133,13 +133,14 @@ export default function Ficha({
 
   return (
     <main className="centro-cuerpo">
-      <p className="centro-nota" style={{ margin: '0 0 6px' }}>
-        <Link href="/centro/pacientes" className="centro-bajar">
+      {/* El nombre arriba de todo y el volver a la derecha, en la misma línea;
+          la cobertura ya está en la ficha, no hace falta repetirla acá. */}
+      <div className="centro-ficha-cabecera">
+        <h1 className="centro-titulo">{titulo}</h1>
+        <Link href="/centro/pacientes" className="centro-boton centro-boton-suave centro-ficha-volver">
           ← Pacientes
         </Link>
-      </p>
-      <h1 className="centro-titulo">{titulo}</h1>
-      {p.cobertura && <p className="centro-bajada">{p.cobertura}</p>}
+      </div>
       {error && <p className="centro-error">{error}</p>}
 
       {/* Datos y antecedentes en un solo panel, denso: un renglón por campo,

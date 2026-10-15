@@ -53,7 +53,12 @@ export async function crearReserva(p: Pedido): Promise<{ ok: true } | { ok: fals
   if (!espacio) return { ok: false, motivo: 'Esa sala no existe.' };
 
   const horas = hora(p.hastaHora) - hora(p.desdeHora);
-  const tramo = Math.max(horasSemanalesTotales(contratos, p.inquilinoId, p.fecha), horas);
+  // La suelta va a precio de suelta: su tramo es el de esta reserva sola. Solo
+  // la banda fija entra al tramo de lo contratado.
+  const tramo =
+    (p.origen ?? 'suelta') === 'contrato'
+      ? Math.max(horasSemanalesTotales(contratos, p.inquilinoId, p.fecha), horas)
+      : horas;
   const { cotizar } = await import('@/lib/consultorios-calculo');
   const cotizacion = cotizar(escala.tarifas, espacio.id, tramo);
   const importe = cotizacion ? cotizacion.precioHora * horas : null;

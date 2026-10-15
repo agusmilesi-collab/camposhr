@@ -14,6 +14,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 /**
  * Las secciones, agrupadas como en el OS: lo suelto arriba y lo demás bajo su
@@ -92,6 +93,12 @@ const NAV: { grupo?: string; items: { href: string; texto: string; icono: React.
           </>
         ),
       },
+    ],
+  },
+  {
+    // Lo que se lee y no se usa: aparte de lo que se opera.
+    grupo: 'Documentos',
+    items: [
       {
         href: '/centro/normas',
         texto: 'Normas',
@@ -118,6 +125,27 @@ const NAV: { grupo?: string; items: { href: string; texto: string; icono: React.
   },
 ];
 
+/**
+ * La fecha y la hora, arriba a la derecha, como en el OS. Se pinta recién en
+ * el navegador: el servidor no sabe qué hora es en la pantalla de quien mira.
+ */
+function Reloj() {
+  const [ahora, setAhora] = useState<Date | null>(null);
+  useEffect(() => {
+    setAhora(new Date());
+    const t = setInterval(() => setAhora(new Date()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+  if (!ahora) return <span className="centro-reloj" />;
+  const fecha = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).format(ahora);
+  const hora = new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }).format(ahora);
+  return (
+    <span className="centro-reloj">
+      {fecha.charAt(0).toUpperCase() + fecha.slice(1)} · {hora}
+    </span>
+  );
+}
+
 export default function Barra({ nombre, donde }: { nombre: string; donde: string }) {
   const router = useRouter();
 
@@ -128,6 +156,8 @@ export default function Barra({ nombre, donde }: { nombre: string; donde: string
   }
 
   return (
+    <>
+      <Reloj />
     <aside className="centro-lateral">
       <div className="centro-marca">
         {/* Las iniciales del Centro y no las de quien entró: el sello es la
@@ -188,5 +218,6 @@ export default function Barra({ nombre, donde }: { nombre: string; donde: string
         </button>
       </div>
     </aside>
+    </>
   );
 }

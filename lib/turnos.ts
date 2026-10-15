@@ -6,7 +6,7 @@
  * Ver `supabase/centro-turnos.sql`.
  */
 import 'server-only';
-import { select, upsert } from '@/lib/supabase';
+import { patch, select, upsert } from '@/lib/supabase';
 
 export type Turno = {
   id: string;
@@ -18,6 +18,8 @@ export type Turno = {
   nota: string | null;
   /** La ficha, cuando el nombre coincide con un paciente cargado. */
   paciente_id: string | null;
+  /** Si vino: null hasta que se marca desde Inicio. */
+  asistio: boolean | null;
   updated_at: string;
 };
 
@@ -27,7 +29,7 @@ export async function turnosDe(inquilinoId: string, desde: string, hasta: string
   if (!ID_VALIDO.test(inquilinoId)) return [];
   return select<Turno>(
     'centro_turnos',
-    `select=id,inquilino_id,fecha,desde_hora,paciente,nota,paciente_id,updated_at&inquilino_id=eq.${inquilinoId}` +
+    `select=id,inquilino_id,fecha,desde_hora,paciente,nota,paciente_id,asistio,updated_at&inquilino_id=eq.${inquilinoId}` +
       `&fecha=gte.${desde}&fecha=lte.${hasta}&order=fecha.asc,desde_hora.asc`
   );
 }
@@ -63,6 +65,16 @@ export async function guardarTurno(a: {
     },
     'inquilino_id,fecha,desde_hora'
   );
+}
+
+/** Marca si el paciente vino, no vino, o vuelve a sin marcar. Solo sobre un
+ *  turno propio: el filtro lleva el inquilino además del id. */
+export async function marcarAsistencia(inquilinoId: string, id: string, asistio: boolean | null): Promise<void> {
+  if (!ID_VALIDO.test(inquilinoId) || !ID_VALIDO.test(id)) return;
+  await patch('centro_turnos', `id=eq.${id}&inquilino_id=eq.${inquilinoId}`, {
+    asistio,
+    updated_at: new Date().toISOString(),
+  });
 }
 
 export async function borrarTurno(inquilinoId: string, fecha: string, hora: number): Promise<void> {

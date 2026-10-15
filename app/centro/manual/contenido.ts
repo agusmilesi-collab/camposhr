@@ -19,6 +19,9 @@ export type Captura = {
   archivo: string;
   /** Qué muestra, para quien no la ve. */
   alt: string;
+  /** Ancho máximo en píxeles, para una captura chica (una tarjeta) que no
+   *  tiene que estirarse al ancho de la hoja. */
+  ancho?: number;
 };
 
 export type Seccion = {
@@ -37,12 +40,12 @@ export const SECCIONES: Seccion[] = [
     parrafos: [
       'Se entra con tu correo y una contraseña que elegís vos.',
       `Para elegirla, o si te la olvidaste, tocá "¿Olvidaste tu contraseña?" en la pantalla de entrar. Te llega un correo con un enlace que vale ${HORAS_DEL_ENLACE} horas y se usa una sola vez.`,
-      'Al elegir la contraseña aceptás las normas de convivencia del Centro, que están completas en Normas.',
+      'La primera vez que entrás, en Inicio te espera una tarjeta para leer las normas de convivencia y aceptarlas. Hasta aceptarlas no podés reservar. Ahí también está el enlace a este manual.',
     ],
     capturas: [
       { archivo: 'entrar.jpg', alt: 'La pantalla de entrar: correo, contraseña y el enlace "¿Olvidaste tu contraseña?".' },
       { archivo: 'olvidaste.jpg', alt: 'El pedido del enlace: se escribe el correo y se toca "Mandarme el enlace".' },
-      { archivo: 'clave.jpg', alt: 'La pantalla del enlace: se elige la contraseña, se repite y se aceptan las normas.' },
+      { archivo: 'clave.jpg', alt: 'La pantalla del enlace: se elige la contraseña y se repite.' },
     ],
   },
   {
@@ -72,8 +75,9 @@ export const SECCIONES: Seccion[] = [
     id: 'precio',
     titulo: 'Cuánto sale',
     parrafos: [
-      'El precio por hora depende de cuántas horas por semana alquilás en total y de la sala.',
-      'Hay tramos de 1, 4, 8, 12, 16 y 20 horas semanales. Se paga el precio del último tramo que alcanzás: con 10 horas, el de 8.',
+      'El precio por hora depende de la sala y de las horas fijas por semana que tenés contratadas.',
+      'Hay tramos de 1, 4, 8, 12, 16 y 20 horas semanales. Se paga el precio del último tramo que alcanzás: con 10 horas fijas, el de 8.',
+      'Una hora suelta se cobra a precio de hora suelta, tengas o no horas fijas: 1 hora al precio del tramo de 1 a 3, 6 seguidas al precio de 4 a 7. Sumar sueltas no cambia el precio de tus horas fijas.',
       'La escala vigente se ve en Reservar, al elegir las horas.',
     ],
   },
@@ -81,13 +85,13 @@ export const SECCIONES: Seccion[] = [
     id: 'pagar',
     titulo: 'Pagar',
     parrafos: [
-      'El alquiler se abona del 1 al 10 del mes siguiente al que usaste.',
+      'El alquiler se abona por adelantado, del 1 al 10 del mes que usás.',
       'Del 11 al 20 lleva un recargo del 15 %. Después del 20, del 25 %.',
       'En Mi cuenta ves cada hora usada con su día, sala y precio, lo que pagaste y el saldo, con los tres plazos ya calculados.',
       'Cuando se registra tu pago, aparece en Inicio y en Mi cuenta, con el recibo.',
     ],
     capturas: [
-      { archivo: 'cuenta.jpg', alt: 'Mi cuenta: el mes en curso, el mes a pagar con su recargo y las horas usadas.' },
+      { archivo: 'cuenta.jpg', alt: 'Mi cuenta: el mes con lo que se debe y su recargo, las horas usadas, los plazos y cómo se paga.' },
       { archivo: 'inicio.jpg', alt: 'Inicio: lo de hoy, lo de mañana y los próximos días, con el aviso del mes a pagar.' },
     ],
   },
@@ -99,6 +103,9 @@ export const SECCIONES: Seccion[] = [
       'Podés seguir igual, cambiar las horas o avisar que no seguís, hasta el último día del mes.',
       'Si no contestás, seguís con las mismas horas: el día 1 se generan las reservas y el cargo del mes.',
       'Los feriados el Centro cierra y no se reservan ni se cobran. Si querés usar la sala un feriado, lo elegís al renovar.',
+    ],
+    capturas: [
+      { archivo: 'renovar.jpg', alt: 'Inicio desde el 25: la pregunta de si renovás el mes que viene, con Sí, No y Editar horas.', ancho: 360 },
     ],
   },
   {
@@ -112,6 +119,10 @@ export const SECCIONES: Seccion[] = [
       'La historia clínica es una entrada por consulta, con fecha y texto. Cada entrada se puede editar o borrar.',
       'Si en Mis turnos escribís el nombre tal como está en la ficha, el turno queda atado a ella y desde la agenda abrís la historia.',
       'Lo que anotás en Mis turnos y Pacientes lo ves solo vos. El Centro no accede, ni siquiera desde el OS.',
+    ],
+    capturas: [
+      { archivo: 'turnos.jpg', alt: 'Mis turnos: un renglón por hora reservada, con la sala, el paciente, el ícono de su ficha y la nota.' },
+      { archivo: 'paciente.jpg', alt: 'La ficha de un paciente: datos, antecedentes y la historia clínica por consulta.' },
     ],
   },
 ];

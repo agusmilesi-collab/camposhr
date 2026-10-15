@@ -24,6 +24,8 @@ import { DIA_DE_RENOVAR, renovacionDe } from '@/lib/renovaciones';
 import { feriadosEntre } from '@/lib/feriados';
 import { turnosDe } from '@/lib/turnos';
 import Renovar from './Renovar';
+import Asistencia from './Asistencia';
+import { NORMAS_VERSION } from '@/lib/centro-acceso';
 import Barra from '../Barra';
 
 export const dynamic = 'force-dynamic';
@@ -56,8 +58,10 @@ type Tarjeta = {
   enlace?: { href: string; texto: string; afuera?: boolean };
   /** Un aviso se pinta distinto de una reserva: pide mirar algo. */
   aviso?: boolean;
-  /** Hora por hora de la reserva: a quién atiende, o libre. */
+  /** Hora por hora de la reserva: a quién atiende, o libre. Solo en modo mirar. */
   horas?: { hora: number; paciente: string | null; fichaId: string | null }[];
+  /** La tarjeta es un turno: lleva el circulito de si vino. */
+  turno?: { id: string; asistio: boolean | null };
 };
 
 /**
@@ -90,7 +94,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
   const manana = sumarDias(hoy, 1);
   const hasta = sumarDias(hoy, 7);
   const desde = sumarDias(hoy, -DIAS_EN_HOY);
-  const mesAnterior = mesCorrido(periodoDe(hoy), -1);
+  const mesActual = periodoDe(hoy);
 
   const proximoMes = mesCorrido(periodoDe(hoy), 1);
 
@@ -117,18 +121,81 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
           const t = turnos.find((x) => x.fecha === r.fecha && Number(x.desde_hora.slice(0, 2)) === h);
           return { hora: h, paciente: t?.paciente ?? null, fichaId: t?.paciente_id ?? null };
         });
-  const deReserva = (r: (typeof reservas)[number], conDia: boolean): Tarjeta => ({
-    clave: r.id,
-    titulo: salaDe(r.espacio_id),
-    detalle: `${conDia ? `${diaCorto(r.fecha)} · ` : ''}${r.desde_hora.slice(0, 5)} a ${r.hasta_hora.slice(0, 5)}`,
-    dato: `${hora(r.hasta_hora) - hora(r.desde_hora)} h`,
-    horas: horasDe(r),
-  });
-  const proximas = reservas.filter((r) => r.fecha >= hoy && r.fecha <= hasta);
+  /**
+   * Las tarjetas de una reserva: una por paciente anotado en Mis turnos, con
+   * su hora, la sala, el circulito de si vino y el botón a la ficha; y una
+   * más, si quedan horas sin anotar, para ir a anotarlas. En modo mirar desde
+   * el OS no hay pacientes: sale la reserva sola.
+   */
+  const deReserva = (r: (typeof reservas)[number], conDia: boolean): Tarjeta[] => {
+    const cuando = conDia ? `${diaCorto(r.fecha)} · ` : '';
+    if (yo.mirando) {
+      return [
+        {
+          clave: r.id,
+          titulo: salaDe(r.espacio_id),
+          detalle: `${cuando}${r.desde_hora.slice(0, 5)} a ${r.hasta_hora.slice(0, 5)}`,
+          dato: `${hora(r.hasta_hora) - hora(r.desde_hora)} h`,
+        },
+      ];
+    }
+    const horas = horasDe(r) ?? [];
+    const conPaciente = horas.filter((x) => x.paciente);
+    const libres = horas.filter((x) => !x.paciente);
+    const tarjetas: Tarjeta[] = conPaciente.map((x) => {
+      const t = turnos.find((y) => y.fecha === r.fecha && Number(y.desde_hora.slice(0, 2)) === x.hora);
+      return {
+        clave: `${r.id}|${x.hora}`,
+        titulo: x.paciente as string,
+        detalle: `${cuando}${String(x.hora).padStart(2, '0')}:00 · ${salaDe(r.espacio_id)}`,
+        turno: t ? { id: t.id, asistio: t.asistio } : undefined,
+        enlace: x.fichaId
+          ? { href: `/centro/pacientes/${x.fichaId}`, texto: 'Ver la ficha' }
+          : { href: '/centro/turnos', texto: 'Ver en Mis turnos' },
+      };
+    });
+    if (libres.length > 0) {
+      tarjetas.push({
+        clave: `${r.id}|libres`,
+        titulo: salaDe(r.espacio_id),
+        detalle: `${cuando}Sin anotar: ${libres.map((x) => `${x.hora}:00`).join(', ')}`,
+        dato: `${libres.length} h`,
+        enlace: { href: '/centro/turnos', texto: 'Anotar turnos' },
+      });
+    }
+    return tarjetas;
+  };
+  /**
+   * Las reservas pegadas de la misma sala y el mismo día van en una tarjeta:
+   * quien reservó de 10 a 13 y después sumó de 13 a 19 tiene una mañana y una
+   * tarde seguidas, no dos reservas. Se unen cuando una termina donde empieza
+   * la otra; con un hueco en el medio siguen separadas.
+   */
+  const unidas = (lista: typeof reservas) => {
+    const ordenadas = [...lista].sort(
+      (a, b) => a.fecha.localeCompare(b.fecha) || a.espacio_id.localeCompare(b.espacio_id) || a.desde_hora.localeCompare(b.desde_hora)
+    );
+    const salida: typeof reservas = [];
+    for (const r of ordenadas) {
+      const u = salida[salida.length - 1];
+      if (u && u.fecha === r.fecha && u.espacio_id === r.espacio_id && u.hasta_hora === r.desde_hora) {
+        salida[salida.length - 1] = { ...u, hasta_hora: r.hasta_hora };
+      } else {
+        salida.push({ ...r });
+      }
+    }
+    return salida;
+  };
+  const proximas = unidas(reservas.filter((r) => r.fecha >= hoy && r.fecha <= hasta));
 
-  // Lo que debe del mes que cerró, con el recargo que corra hoy.
-  const saldoAnterior = saldoDe(movimientos.filter((m) => m.periodo === mesAnterior));
-  const aPagar = Math.round(saldoAnterior * (1 + recargoDelDia(hoy, mesAnterior) / 100));
+  // Lo que debe, con el recargo que corra hoy: el mes se paga por adelantado,
+  // y si arrastra uno anterior, ese va primero.
+  const conDeuda = [...new Set(movimientos.map((m) => m.periodo).filter((x): x is string => Boolean(x)))]
+    .filter((p) => p <= mesActual && saldoDe(movimientos.filter((m) => m.periodo === p)) > 0)
+    .sort();
+  const mesAPagar = conDeuda[0] ?? mesActual;
+  const saldoAPagar = saldoDe(movimientos.filter((m) => m.periodo === mesAPagar));
+  const aPagar = Math.round(saldoAPagar * (1 + recargoDelDia(hoy, mesAPagar) / 100));
 
   const avisos: (Tarjeta & { fecha: string })[] = [
     // Solo las emitidas: un borrador todavía no es una factura, y una anulada
@@ -165,6 +232,9 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
    */
   const horasFijas = horasSemanalesTotales(contratos, yo.id, hoy);
   const preguntaRenovar = Number(hoy.slice(8, 10)) >= DIA_DE_RENOVAR && horasFijas > 0;
+  // Las normas: la primera vez que entra y cada vez que cambian de versión.
+  const pideNormas = yo.normas_version !== NORMAS_VERSION;
+  const extrasDeHoy = preguntaRenovar ? 1 : 0;
 
   /*
    * Los feriados del mes que viene que caen en un día en que tiene horas.
@@ -192,32 +262,54 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
       titulo: 'Hoy',
       vacio: 'Nada para hoy',
       tarjetas: [
+        // Los pacientes del día van primero: es lo que se mira al llegar.
+        ...proximas.filter((r) => r.fecha === hoy).flatMap((r) => deReserva(r, false)),
+        // Las normas y el manual, mientras falte aceptar la versión vigente:
+        // la primera vez que entra y cada vez que cambian. El botón de
+        // aceptar está al pie de la hoja de normas, para que llegue al final.
+        ...(pideNormas
+          ? [
+              {
+                clave: 'normas',
+                titulo: yo.normas_aceptadas_at ? 'Las normas y condiciones cambiaron' : 'Normas de convivencia',
+                detalle: 'Leelas y aceptalas al final para poder reservar',
+                enlace: { href: '/centro/normas', texto: 'Leer las normas' },
+                aviso: true,
+              },
+              {
+                clave: 'manual',
+                titulo: 'Manual del sistema',
+                detalle: 'Cómo se reserva, se paga y se renueva',
+                enlace: { href: '/centro/manual', texto: 'Leer el manual' },
+                aviso: true,
+              },
+            ]
+          : []),
         ...(aPagar > 0
           ? [
               {
                 clave: 'pagar',
-                titulo: `Pagar ${mesLargo(mesAnterior).split(' ')[0]}`,
+                titulo: `Pagar ${mesLargo(mesAPagar).split(' ')[0]}`,
                 detalle:
-                  aPagar > saldoAnterior ? 'Ya lleva recargo' : 'Hasta el 10, sin recargo',
+                  aPagar > saldoAPagar ? 'Ya lleva recargo' : 'Hasta el 10, sin recargo',
                 dato: pesos(aPagar),
-                enlace: { href: '/centro/cuenta?ver=pagar', texto: 'Ver cómo se paga' },
+                enlace: { href: '/centro/cuenta#pagar', texto: 'Ver cómo se paga' },
                 aviso: true,
               },
             ]
           : []),
         ...avisos,
-        ...proximas.filter((r) => r.fecha === hoy).map((r) => deReserva(r, false)),
       ],
     },
     {
       titulo: 'Mañana',
       vacio: 'Sin reservas',
-      tarjetas: proximas.filter((r) => r.fecha === manana).map((r) => deReserva(r, false)),
+      tarjetas: proximas.filter((r) => r.fecha === manana).flatMap((r) => deReserva(r, false)),
     },
     {
       titulo: 'Próximos días',
       vacio: 'Sin reservas',
-      tarjetas: proximas.filter((r) => r.fecha > manana).map((r) => deReserva(r, true)),
+      tarjetas: proximas.filter((r) => r.fecha > manana).flatMap((r) => deReserva(r, true)),
     },
   ];
 
@@ -233,7 +325,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
             <section className="centro-columna" key={c.titulo}>
               <header>
                 <h2>{c.titulo}</h2>
-                <span>{c.tarjetas.length + (c.titulo === 'Hoy' && preguntaRenovar ? 1 : 0)}</span>
+                <span>{c.tarjetas.length + (c.titulo === 'Hoy' ? extrasDeHoy : 0)}</span>
               </header>
               {c.titulo === 'Hoy' && preguntaRenovar && (
                 <Renovar
@@ -245,7 +337,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                   tildados={renovacion?.feriados ?? []}
                 />
               )}
-              {c.tarjetas.length === 0 && !(c.titulo === 'Hoy' && preguntaRenovar) && (
+              {c.tarjetas.length === 0 && !(c.titulo === 'Hoy' && extrasDeHoy > 0) && (
                 <p className="centro-columna-vacia">{c.vacio}</p>
               )}
               {c.tarjetas.map((t) => (
@@ -256,6 +348,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                   <div className="centro-tarjeta-top">
                     <b>{t.titulo}</b>
                     {t.dato && <span>{t.dato}</span>}
+                    {t.turno && <Asistencia id={t.turno.id} asistio={t.turno.asistio} />}
                   </div>
                   {t.detalle && <small>{t.detalle}</small>}
                   {t.horas && (
@@ -276,7 +369,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                   )}
                   {t.enlace && (
                     <a
-                      className="centro-bajar centro-abrir"
+                      className="centro-tarjeta-boton"
                       href={t.enlace.href}
                       {...(t.enlace.afuera ? { target: '_blank', rel: 'noreferrer' } : {})}
                     >

@@ -55,11 +55,11 @@ export default async function Disponibilidad() {
       </p>
       <p className="centro-oferta-leyenda">
         <span>
-          <i style={{ background: '#e4e1da' }} />
+          <i style={{ background: '#d4e8d4' }} />
           Libre
         </span>
         <span>
-          <i style={{ background: '#8fb0d9' }} />
+          <i style={{ background: '#f3dcdc' }} />
           Ocupada
         </span>
       </p>
