@@ -406,7 +406,7 @@ export async function POST(req: Request) {
         // al de esta reserva: quien toma cuatro horas sueltas entra en el tramo
         // de cuatro aunque no tenga contrato.
         const tramo = Math.max(horasSemanalesTotales(todosLosContratos, inquilinoId, fecha), horas);
-        const cotizacion = cotizar(escala.tarifas, espacio.categoria, tramo);
+        const cotizacion = cotizar(escala.tarifas, espacio.id, tramo);
         const importe = cotizacion ? cotizacion.precioHora * horas : null;
 
         // Una fecha ocupada no cancela las demás: se guardan las que entran y
