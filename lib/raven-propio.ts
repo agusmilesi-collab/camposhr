@@ -6,8 +6,9 @@ import { RANGOS, rangoDe, type Rango } from '@/lib/raven';
 /**
  * Qué tan raro es cada rango del Raven entre nuestros propios candidatos.
  *
- * El manual trae su baremo, hecho sobre población española que rinde casi tres
- * puntos menos que la que evalúa Campos HR. Decirle a un cliente que su
+ * El baremo que rige se armó con los 81 Raven propios del 14/10/2026. El del
+ * manual, hecho sobre población española, rinde tres aciertos menos que la que
+ * evalúa Campos HR. Decirle a un cliente que su
  * candidato está en el 5 % superior sirve si ese 5 % es del universo del que
  * salen sus candidatos, y no de otro.
  *
@@ -28,7 +29,7 @@ export const META = 200;
 export type Propio = {
   /** Cuántos Raven propios hay cargados. */
   casos: number;
-  /** Aciertos promedio, para comparar contra los 18,19 del manual. */
+  /** Aciertos promedio, para comparar contra los 21,23 del baremo que rige. */
   media: number | null;
   /** Cuántos cayeron en cada rango, por numeral. */
   porRango: Record<string, number>;

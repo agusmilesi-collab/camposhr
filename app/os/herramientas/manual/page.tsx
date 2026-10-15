@@ -34,6 +34,7 @@ export default async function Manual() {
         <div className="os-panel-top">
           <h2>1. Qué normas usa cada test</h2>
         </div>
+        <div className="os-panel-cuerpo">
         <ul>
           <li>
             <strong>Rorschach.</strong> Se codifica con el Sistema Comprehensivo y la tabla de
@@ -53,12 +54,14 @@ export default async function Manual() {
             línea continua. Sin Raven, Habilidad cognitiva no lleva número.
           </li>
         </ul>
+        </div>
       </div>
 
       <div className="os-panel os-manual">
         <div className="os-panel-top">
           <h2>2. Qué significa el número</h2>
         </div>
+        <div className="os-panel-cuerpo">
         <ul>
           <li>
             Cada indicador cae en un nivel: <strong>bajo vale 25</strong>,{' '}
@@ -84,6 +87,7 @@ export default async function Manual() {
             .
           </li>
         </ul>
+        </div>
       </div>
 
       {(['Rorschach', 'Zulliger'] as const).map((test) => (
@@ -91,12 +95,13 @@ export default async function Manual() {
           <div className="os-panel-top">
             <h2>3. Las competencias en {test}</h2>
           </div>
+          <div className="os-panel-cuerpo">
           {manualDe(test, rige).map((c) => (
             <section key={c.competencia} className="os-manual-competencia">
               <h3>{c.competencia}</h3>
-              <p className="os-panel-nota">{c.mide}</p>
+              <p className="os-manual-que-mide">{c.mide}</p>
               <div className="os-tabla-marco">
-                <table className="os-tabla">
+                <table className="os-tabla os-manual-tabla">
                   <thead>
                     <tr>
                       <th>Indicador</th>
@@ -122,6 +127,7 @@ export default async function Manual() {
               </div>
             </section>
           ))}
+          </div>
         </div>
       ))}
 
@@ -129,6 +135,7 @@ export default async function Manual() {
         <div className="os-panel-top">
           <h2>4. Antes de firmar</h2>
         </div>
+        <div className="os-panel-cuerpo">
         <ul>
           <li>
             En la pestaña Informe de la ficha, tocar <strong>Click para ver indicadores</strong>.
@@ -144,12 +151,14 @@ export default async function Manual() {
             otras normas.
           </li>
         </ul>
+        </div>
       </div>
 
       <div className="os-panel os-manual">
         <div className="os-panel-top">
           <h2>5. Cuándo una competencia no lleva número</h2>
         </div>
+        <div className="os-panel-cuerpo">
         <ul>
           <li>
             <strong>Protocolo corto:</strong> con menos de {RESPUESTAS_MINIMAS.Rorschach} respuestas
@@ -164,12 +173,14 @@ export default async function Manual() {
             que falta, en lugar de dar un número apoyado en la mitad del protocolo.
           </li>
         </ul>
+        </div>
       </div>
 
       <div className="os-panel os-manual">
         <div className="os-panel-top">
           <h2>6. Si no están de acuerdo con un puntaje</h2>
         </div>
+        <div className="os-panel-cuerpo">
         <ul>
           <li>
             Mandarle a Agustín el nombre de la persona, la competencia, el puntaje que pondrían y
@@ -181,6 +192,7 @@ export default async function Manual() {
             mismo error.
           </li>
         </ul>
+        </div>
       </div>
     </Shell>
   );

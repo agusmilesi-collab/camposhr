@@ -18896,6 +18896,27 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   color: var(--os-ambar);
 }
 
+/* Las tablas del manual: mismas columnas en todas las competencias y el texto
+   largo de "dónde corta" partido en renglones, sin salirse del panel. */
+.os-manual-tabla {
+  table-layout: fixed;
+}
+
+.os-manual-tabla th:nth-child(1) { width: 30%; }
+.os-manual-tabla th:nth-child(2) { width: 18%; }
+.os-manual-tabla th:nth-child(3) { width: 8%; }
+
+.os-manual-tabla td {
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+.os-manual-que-mide {
+  margin: 0 0 8px;
+  font-size: 0.86rem;
+  color: var(--os-suave, #8a8a82);
+}
+
 /* La pantalla de carga de una sección (psicotecnicos/[etapa]/loading.tsx):
    renglones grises donde van a caer las filas. */
 .os-esqueleto {

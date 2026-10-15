@@ -92,3 +92,19 @@ Aprobada por Lorena el 14/10/2026.
 Siguen con Exner: GHR : PHR, COP / AG y CDI (reglas de interpretación), M− y
 Fd (la norma da el mismo corte), Lambda (distribución muy asimétrica: media
 0,56, mediana 0,40) y contenidos H (el rango cambia con R y estilo).
+
+## Raven
+
+Matrices Progresivas de Raven, 36 láminas. Baremo propio de Campos HR: los 81
+Raven cargados al 14/10/2026, sin las empresas de prueba. Media 21,23
+aciertos, desvío 6,10, mínimo 6 y máximo 34. El percentil es el del modelo
+normal con esa media y ese desvío (`lib/raven.ts`). Reemplaza al baremo
+español del manual (Tabla S5, Escala Superior, N=727, media 18,19), que rinde
+tres aciertos menos que nuestra población.
+
+| Parte | Corte | Fuente |
+| --- | --- | --- |
+| Percentil | modelo normal, media 21,23 y desvío 6,10 | baremo propio, 81 casos |
+| Rangos I a V | desde 35, 31, 21, 11 y 0 aciertos | corte que usa el equipo; frecuencia contada sobre los 81 casos |
+| Aporte a Habilidad cognitiva | en línea continua por aciertos (8 vale 25, 20 vale 42, 27 vale 57, 30 vale 65, 36 vale 100) | **criterio de las psicólogas**, calibrado con lo que pusieron a 52 personas |
+| Serie corta (12 láminas) | hasta 7 bajo, de 8 a 12 medio, 12 vale 75 | **criterio de las psicólogas**, con 13 personas; no hay baremo de la serie corta |

@@ -793,9 +793,8 @@ const PSV: Indicador = {
  * 25, de 21 a 24 50, de 25 a 30 58, desde 31 100): 5 aciertos y 20 recibían lo
  * mismo, y entre 30 y 31 la competencia saltaba 36 puntos por una lámina.
  *
- * Es por aciertos y no por percentil del manual: su criterio sigue a los
- * aciertos, y el baremo español comprime el tramo alto (28 aciertos ya es
- * percentil 94). El percentil se sigue mostrando al lado.
+ * Es por aciertos y no por percentil: su criterio sigue a los aciertos, y el
+ * percentil comprime el tramo alto. El percentil se sigue mostrando al lado.
  */
 const ANCLAS_RAVEN: [number, number][] = [
   [0, 25],

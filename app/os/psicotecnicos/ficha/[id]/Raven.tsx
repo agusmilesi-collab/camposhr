@@ -22,6 +22,8 @@
 
 import {
   calcularRaven,
+  DESVIO,
+  MEDIA,
   duracion,
   puntajesPorRango,
   RANGOS,
@@ -216,8 +218,8 @@ export default function Raven({
                 Desvíos {d > 0 ? '+' : ''}
                 {coma(d)}.
               </strong>{' '}
-              {coma(Math.abs(d))} {d < 0 ? 'por debajo' : 'por encima'} del promedio de 18,19
-              aciertos, y cada desvío son 6,32.
+              {coma(Math.abs(d))} {d < 0 ? 'por debajo' : 'por encima'} del promedio de {String(MEDIA).replace('.', ',')}
+              aciertos de los candidatos de Campos HR, y cada desvío son {String(DESVIO).replace('.', ',')}.
             </p>
           </>
         ) : (

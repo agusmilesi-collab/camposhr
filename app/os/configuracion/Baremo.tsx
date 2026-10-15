@@ -39,7 +39,7 @@ export default function Baremo({
   casos: number;
   /** Cuántos hacen falta para dejar de estimar. */
   meta: number;
-  /** Aciertos promedio de los nuestros, contra los 18,19 del manual. */
+  /** Aciertos promedio de los nuestros, contra los 21,23 del baremo que rige. */
   media: number | null;
   /** Qué tan raro es cada rango entre los nuestros, por numeral. */
   frecuencia: Record<string, string>;
@@ -176,10 +176,9 @@ export default function Baremo({
             La columna de la izquierda es la que rige y la de la derecha se cuenta sola: cada
             Raven que se carga entra en ella y la corrige. Nuestra población promedia{' '}
             {media === null ? 'todavía sin datos' : `${String(media).replace('.', ',')} aciertos`}{' '}
-            contra los 18,19 del manual, que está hecho sobre población española.
-            {casos < meta
-              ? ` Al llegar a ${meta} casos la contada reemplaza a la que rige, cambiando estos números a mano en lib/raven.ts.`
-              : ` Ya hay ${meta} casos: la contada se puede pasar a la que rige, cambiando estos números a mano en lib/raven.ts.`}
+            contra los 21,23 de los 81 casos con que se armó el baremo que rige (14/10/2026).
+            Cuando la contada se separe de la que rige, se cambian estos números a mano en
+            lib/raven.ts.
           </p>
         </div>
 
