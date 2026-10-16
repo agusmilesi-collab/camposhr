@@ -28,6 +28,7 @@ import {
   type Opcion,
 } from '@/lib/rorschach';
 import type { Mancha } from '@/lib/ficha';
+import { areasDe, Z } from '@/lib/rorschach-tabla-a';
 import Calcular from './Calcular';
 import Codigo from './Codigo';
 import { Multiple, Simple } from './Celdas';
@@ -55,26 +56,56 @@ function Tilde({ puesto, onCambio }: { puesto: boolean; onCambio: (v: boolean) =
   );
 }
 
-function Numero({
-  valor,
-  onCambio,
-  paso,
-}: {
-  valor: number | null;
-  onCambio: (v: string) => void;
-  paso?: string;
-}) {
-  return (
-    <input
-      className="os-campo os-campo-numero"
-      type="number"
-      step={paso}
-      defaultValue={valor ?? ''}
-      onBlur={(e) => onCambio(e.target.value)}
-      aria-label="Número"
-    />
-  );
+/*
+ * Las opciones de Nº loc. y de Pje Z, para elegir con el mouse.
+ *
+ * Las psicólogas los escribían a mano y pidieron que se abran como el resto de
+ * las celdas (16/10/2026). Los dos salen de la Tabla A de la lámina: el número
+ * de las áreas que tiene y los cuatro valores de Z que da.
+ */
+const TONO_NUMERO = 'grayLight2';
+const opcion = (v: string): Opcion => ({ v, c: TONO_NUMERO });
+const porNumero = (a: string, b: string) => Number(a) - Number(b);
+
+/**
+ * Los números de área que admite una localización en esa lámina.
+ *
+ * W y WS son siempre el 1. D y DS comparten la numeración de las áreas comunes
+ * (DS5 en la II, pero también "5 + 3"), y lo mismo Dd y DdS, que suman el 99 de
+ * las áreas que la tabla no tiene. El Zulliger no tiene Tabla A cargada: ahí
+ * van del 1 al 9 para D y del 21 al 40 para Dd, que cubren lo cargado hasta
+ * hoy.
+ */
+function numerosDeLoc(lamina: string | null, localizacion: string | null): Opcion[] {
+  const familia = (localizacion ?? '').replace(/[o+v/]+$/, '').replace('S', '');
+  if (familia === 'W') return [opcion('1')];
+  const areas = lamina ? areasDe(lamina) : [];
+  const zulliger = !areas.length;
+  const de = (dd: boolean) => {
+    if (zulliger) {
+      const [desde, hasta] = dd ? [21, 40] : [1, 9];
+      return Array.from({ length: hasta - desde + 1 }, (_, i) => String(desde + i));
+    }
+    return areas
+      .filter((a) => a !== 'W' && a.startsWith('Dd') === dd)
+      .map((a) => a.replace(/^\D+/, ''));
+  };
+  const lista =
+    familia === 'D' ? de(false) : familia === 'Dd' ? [...de(true), '99'] : [...de(false), ...de(true), '99'];
+  return [...new Set(lista)].sort(porNumero).map(opcion);
 }
+
+/** Los valores de Z de la lámina; sin lámina, los de todas. */
+function valoresZ(lamina: string | null): Opcion[] {
+  const fuente = lamina && Z[lamina] ? [Z[lamina]] : Object.values(Z);
+  const valores = fuente.flatMap((z) => [z.ZW, z.ZA, z.ZD, z.ZS]).map(String);
+  return [...new Set(valores)].sort(porNumero).map(opcion);
+}
+const TODOS_Z = valoresZ(null);
+
+/** "1 + 3", "1+3 " y "1+3" son la misma combinación de áreas. */
+const partesDeLoc = (v: string | null) =>
+  (v ?? '').split('+').map((x) => x.trim()).filter(Boolean);
 
 export default function Manchas({
   evaluacionId,
@@ -410,15 +441,15 @@ export default function Manchas({
                   />
                 </td>
                 <td>
-                  <input
-                    className="os-campo os-campo-corto"
-                    /* Sin la clave, el campo no muestra el 1 que pone la regla
-                       de arriba: es un campo sin control y su valor inicial se
-                       fija al montarse. */
-                    key={`${f.id}-${f.n_localizacion ?? ''}`}
-                    defaultValue={f.n_localizacion ?? ''}
-                    onBlur={(e) => cambiar(f.id, { n_localizacion: e.target.value })}
-                    aria-label="Número de localización"
+                  {/* Varias áreas a la vez se eligen una por una y se guardan
+                      como "1+3", que es como se venían escribiendo. */}
+                  <Multiple
+                    valores={partesDeLoc(f.n_localizacion)}
+                    opciones={numerosDeLoc(f.lamina, f.localizacion)}
+                    onCambio={(v) =>
+                      cambiar(f.id, { n_localizacion: v.length ? [...v].sort(porNumero).join('+') : null })
+                    }
+                    etiqueta="Número de localización"
                   />
                 </td>
                 <td>
@@ -463,7 +494,14 @@ export default function Manchas({
                   {esZulliger ? (
                     <Tilde puesto={Boolean(f.sl)} onCambio={(v) => cambiar(f.id, { sl: v })} />
                   ) : (
-                    <Numero valor={f.z} paso="0.5" onCambio={(v) => cambiar(f.id, { z: v })} />
+                    <Simple
+                      valor={f.z === null ? null : String(f.z)}
+                      opciones={valoresZ(f.lamina)}
+                      todas={TODOS_Z}
+                      onCambio={(v) => cambiar(f.id, { z: v })}
+                      etiqueta="Puntaje Z"
+                      buscable={false}
+                    />
                   )}
                 </td>
                 <td>
