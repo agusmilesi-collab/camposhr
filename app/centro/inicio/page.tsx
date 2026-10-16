@@ -18,6 +18,8 @@ import {
   reservasDe,
   saldoDe,
   sumarDias,
+  horasPrevistas,
+  MESES_PREVISTOS,
 } from '@/lib/consultorios';
 import { facturasDelCentro } from '@/lib/facturas-centro';
 import { DIA_DE_RENOVAR, renovacionDe } from '@/lib/renovaciones';
@@ -64,6 +66,10 @@ type Tarjeta = {
   horas?: { hora: number; paciente: string | null; fichaId: string | null }[];
   /** La tarjeta es un turno: lleva el circulito de si vino. */
   turno?: { id: string; asistio: boolean | null };
+  /** La hora de la tarjeta, para ordenar las de hoy. */
+  hora?: number;
+  /** Un turno de hoy cuya hora ya pasó: va al final y apagado. */
+  pasada?: boolean;
 };
 
 /**
@@ -108,7 +114,10 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
     leerContratos(),
     renovacionDe(yo.id, proximoMes),
     // A quién atiende lo ve solo la persona: en modo mirar no se trae.
-    yo.mirando ? Promise.resolve([]) : turnosDe(yo.id, hoy, hasta),
+    // Hasta donde llegan las horas previstas, y no solo la semana: para
+    // encontrar los turnos que quedaron sin sala (anotados sobre una hora
+    // prevista que después no se renovó, o sobre una hora que se soltó).
+    yo.mirando ? Promise.resolve([]) : turnosDe(yo.id, hoy, finDeMes(mesCorrido(periodoDe(hoy), MESES_PREVISTOS))),
   ]);
   const feriadosProximos = await feriadosEntre(proximoMes, finDeMes(proximoMes));
   const salaDe = (id: string) => espacios.find((e) => e.id === id)?.nombre ?? 'Sala';
@@ -149,17 +158,19 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
       return {
         clave: `${r.id}|${x.hora}`,
         titulo: x.paciente as string,
+        hora: x.hora,
         detalle: `${cuando}${String(x.hora).padStart(2, '0')}:00 · ${salaDe(r.espacio_id)}`,
         turno: t ? { id: t.id, asistio: t.asistio } : undefined,
         enlace: x.fichaId
           ? { href: `/centro/pacientes/${x.fichaId}`, texto: 'Ver la ficha' }
-          : { href: '/centro/turnos', texto: 'Ver en Mis turnos' },
+          : { href: '/centro/turnos', texto: 'Ver en Turnos' },
       };
     });
     if (libres.length > 0) {
       tarjetas.push({
         clave: `${r.id}|libres`,
         titulo: salaDe(r.espacio_id),
+        hora: libres[libres.length - 1].hora,
         detalle: `${cuando}Sin anotar: ${libres.map((x) => `${x.hora}:00`).join(', ')}`,
         dato: `${libres.length} h`,
         enlace: { href: '/centro/turnos', texto: 'Anotar turnos' },
@@ -189,6 +200,15 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
     return salida;
   };
   const proximas = unidas(reservas.filter((r) => r.fecha >= hoy && r.fecha <= hasta));
+  /** Los turnos de acá en adelante que no caen en ninguna reserva activa ni
+   *  en una hora fija prevista por el contrato. */
+  const topePrevisto = finDeMes(mesCorrido(periodoDe(hoy), MESES_PREVISTOS));
+  const feriadosPrevistos = await feriadosEntre(hoy, topePrevisto);
+  const previstas = horasPrevistas(contratos, yo.id, mesCorrido(periodoDe(hoy), 1), topePrevisto, feriadosPrevistos.map((f) => f.fecha));
+  const cubre = (fecha: string, h: number) =>
+    reservas.some((r) => r.fecha === fecha && hora(r.desde_hora) <= h && h < hora(r.hasta_hora)) ||
+    previstas.some((p) => p.fecha === fecha && hora(p.desde_hora) <= h && h < hora(p.hasta_hora));
+  const huerfanos = turnos.filter((t) => t.fecha >= hoy && !cubre(t.fecha, Number(t.desde_hora.slice(0, 2))));
 
   // Lo que debe, con el recargo que corra hoy: el mes se paga por adelantado,
   // y si arrastra uno anterior, ese va primero.
@@ -259,13 +279,41 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
     }))
     .filter((f) => f.horas > 0);
 
+  /** La hora de reloj de ahora en Argentina, para saber qué turno ya pasó. */
+  const horaAhora = Number(
+    new Intl.DateTimeFormat('es-AR', { hour: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date())
+  );
+  const deHoy = proximas
+    .filter((r) => r.fecha === hoy)
+    .flatMap((r) => deReserva(r, false))
+    .map((t) => ({ ...t, pasada: t.hora !== undefined && t.hora + 1 <= horaAhora }));
+
   const columnas: { titulo: string; vacio: string; tarjetas: Tarjeta[] }[] = [
     {
       titulo: 'Hoy',
       vacio: 'Nada para hoy',
       tarjetas: [
-        // Los pacientes del día van primero: es lo que se mira al llegar.
-        ...proximas.filter((r) => r.fecha === hoy).flatMap((r) => deReserva(r, false)),
+        // Un turno anotado sobre una hora que ya no está reservada (se anotó
+        // sobre una hora prevista y el mes no se renovó igual, o la hora se
+        // soltó): hay que reubicarlo, y se avisa acá.
+        ...(huerfanos.length > 0
+          ? [
+              {
+                clave: 'huerfanos',
+                titulo: huerfanos.length === 1 ? 'Un turno sin sala' : `${huerfanos.length} turnos sin sala`,
+                detalle: huerfanos
+                  .slice(0, 3)
+                  .map((t) => `${diaCorto(t.fecha)} ${t.desde_hora.slice(0, 5)} ${t.paciente}`)
+                  .join(' · '),
+                enlace: { href: '/centro/turnos', texto: 'Reubicarlos en Turnos' },
+                aviso: true,
+                urgente: true,
+              },
+            ]
+          : []),
+        // Los pacientes del día van primero: es lo que se mira al llegar. Los
+        // turnos cuya hora ya pasó bajan al final de la columna, apagados.
+        ...deHoy.filter((t) => !t.pasada),
         // Las normas y el manual, mientras falte aceptar la versión vigente:
         // la primera vez que entra y cada vez que cambian. El botón de
         // aceptar está al pie de la hoja de normas, para que llegue al final.
@@ -275,14 +323,14 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                 clave: 'normas',
                 titulo: yo.normas_aceptadas_at ? 'Las normas y condiciones cambiaron' : 'Normas de convivencia',
                 detalle: 'Leelas y aceptalas al final para poder reservar',
-                enlace: { href: '/centro/normas', texto: 'Leer las normas' },
+                enlace: { href: '/centro/documentos?ver=normas', texto: 'Leer las normas' },
                 aviso: true,
               },
               {
                 clave: 'manual',
                 titulo: 'Manual del sistema',
                 detalle: 'Cómo se reserva, se paga y se renueva',
-                enlace: { href: '/centro/manual', texto: 'Leer el manual' },
+                enlace: { href: '/centro/documentos?ver=manual', texto: 'Leer el manual' },
                 aviso: true,
               },
             ]
@@ -302,6 +350,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
             ]
           : []),
         ...avisos,
+        ...deHoy.filter((t) => t.pasada),
       ],
     },
     {
@@ -345,7 +394,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
               )}
               {c.tarjetas.map((t) => (
                 <article
-                  className={`centro-tarjeta${t.aviso ? ' aviso' : ''}${t.urgente ? ' urgente' : ''}${t.horas ? ' con-horas' : ''}`}
+                  className={`centro-tarjeta${t.aviso ? ' aviso' : ''}${t.urgente ? ' urgente' : ''}${t.horas ? ' con-horas' : ''}${t.pasada ? ' pasada' : ''}`}
                   key={t.clave}
                 >
                   <div className="centro-tarjeta-top">

@@ -38,6 +38,7 @@
  * píxeles sobre trescientos sesenta se come el calendario.
  */
 .centro {
+  position: relative;
   display: grid;
   /* Los mismos 252 que la del OS: es la misma barra vista desde el otro lado
      del mostrador, y con dos anchos distintos se leen como dos sistemas. */
@@ -47,8 +48,10 @@
 
 /* La fecha y la hora, fijas arriba a la derecha de la pantalla. */
 .centro-reloj {
-  position: fixed;
-  top: 14px;
+  /* Absoluto y no fijo: se va con la página al bajar, en vez de quedarse
+     flotando sobre lo que se lee. */
+  position: absolute;
+  top: 12px;
   right: 22px;
   z-index: 5;
   font-size: 0.78rem;
@@ -284,7 +287,9 @@
   box-sizing: border-box;
   max-width: 860px;
   margin: 0 auto;
-  padding: 20px 18px 60px;
+  /* Arriba deja lugar al reloj fijo de la esquina: con 20 se pisaba con lo
+     primero de la pantalla cuando la ventana es angosta. */
+  padding: 44px 18px 60px;
 }
 
 .centro-titulo {
@@ -772,7 +777,7 @@
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1.2fr) auto;
   gap: 10px;
   align-items: center;
-  padding: 9px 0;
+  padding: 4px 0;
   border-top: 1px solid var(--linea-suave);
   font-size: 0.9rem;
 }
@@ -802,14 +807,11 @@
 .centro-pacientes-lista li.inactivo .centro-pacientes-dato {
   color: #b5b0a7;
 }
-.centro-pacientes-inactivos {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  color: var(--tinta-media);
-  white-space: nowrap;
-  cursor: pointer;
+/* El primer inactivo abre el bloque de abajo con una línea más marcada. */
+.centro-pacientes-lista li.inactivo.primero {
+  border-top: 1px solid var(--linea);
+  margin-top: 4px;
+  padding-top: 7px;
 }
 
 /* El interruptor de activo: la pastilla con el punto, verde cuando está. */
@@ -1248,6 +1250,11 @@
 }
 
 /* ------------------------------------------------ Mis turnos, calendario */
+/* El calendario usa todo el ancho que haya: cinco columnas con nombres de
+   pacientes no entran en los 860 de las demás pantallas. */
+.centro-cuerpo-calendario {
+  max-width: none;
+}
 .centro-cal-top {
   display: flex;
   align-items: center;
@@ -1285,6 +1292,11 @@
 .centro-cal-nav button + button {
   border-left: 1px solid var(--linea);
 }
+/* Las dos opciones miden lo mismo: es una píldora de dos mitades. */
+.centro-cal-vistas button {
+  min-width: 78px;
+  text-align: center;
+}
 .centro-cal-vistas button.activa {
   background: var(--tinta);
   color: #f6f5f2;
@@ -1293,8 +1305,10 @@
 .centro-cal-vistas button:not(.activa):hover {
   background: var(--panel-2);
 }
+/* Sin recorte: el desplegable de pacientes cuelga por fuera de la celda y un
+   `overflow` acá lo escondía. */
 .centro-cal-marco {
-  overflow-x: auto;
+  overflow: visible;
 }
 .centro-cal-semana,
 .centro-cal-mes {
@@ -1352,6 +1366,12 @@
   font-size: 0.84rem;
   color: var(--tinta);
 }
+/* Sin la flecha del navegador en el campo con sugerencias: las sugerencias
+   igual aparecen al escribir, y la flecha rompía la pastilla del mes. */
+.centro-cal-paciente::-webkit-calendar-picker-indicator {
+  display: none !important;
+  opacity: 0;
+}
 .centro-cal-paciente::placeholder {
   color: #b5b0a7;
   font-style: italic;
@@ -1393,7 +1413,9 @@
 /* El mes: cada día es una celda alta con sus horas reservadas adentro. */
 .centro-cal-dia {
   vertical-align: top;
-  height: 92px;
+  /* El alto lo fija el día con más horas del mes (`--cal-filas`), así todas
+     las filas miden lo mismo y el mes no se lee a saltos. */
+  height: calc(30px + var(--cal-filas, 3) * 21px);
   padding: 4px;
   border: 1px solid var(--linea-suave);
 }
@@ -1423,11 +1445,110 @@
   display: grid;
   gap: 1px;
 }
+/* El desplegable propio de pacientes, colgado del renglón de la hora. El
+   renglón y el día que lo tienen abierto suben por encima de los demás: si
+   no, las horas y los días que siguen se dibujaban encima de la lista. */
+.centro-cal-dia-horas li {
+  position: relative;
+}
+.centro-cal-dia-horas li.abierta {
+  z-index: 30;
+}
+.centro-cal-dia.abierta {
+  position: relative;
+  z-index: 30;
+}
+.centro-sugerencias {
+  position: absolute;
+  top: 100%;
+  left: 21px;
+  right: 0;
+  z-index: 20;
+  margin: 2px 0 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(22, 32, 43, 0.12);
+  min-width: 180px;
+}
+.centro-cal-dia-horas.grande .centro-sugerencias {
+  left: 24px;
+}
+.centro-sugerencias li {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  color: var(--tinta);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* El anotado va como la opción marcada, en azul claro, con la cruz al lado. */
+.centro-sugerencias li.actual {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: default;
+  background: color-mix(in srgb, var(--azul) 12%, var(--panel));
+  color: var(--azul-fuerte);
+}
+.centro-sugerencias li.actual + li {
+  margin-top: 2px;
+}
+/* La cruz para sacar el turno: sutil, en un circulito del color del sistema. */
+.centro-sug-quitar {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--linea);
+  border-radius: 50%;
+  background: var(--panel-2);
+  color: var(--azul-fuerte);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.centro-sug-quitar:hover {
+  border-color: var(--tinta);
+  color: var(--tinta);
+}
+.centro-sugerencias li.marcada {
+  background: color-mix(in srgb, var(--azul) 12%, var(--panel));
+  color: var(--azul-fuerte);
+}
 .centro-cal-dia-horas li {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr);
+  gap: 3px;
   align-items: center;
   font-size: 0.74rem;
+}
+/* El ícono de la ficha va adentro de la pastilla, a la izquierda del nombre:
+   así la pastilla mide lo mismo que la franja gris de una hora no reservada. */
+.centro-cal-dia-horas li .centro-cal-ficha-chica {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  z-index: 1;
+}
+.centro-cal-dia-horas li .centro-cal-ficha-chica svg {
+  width: 14px;
+  height: 14px;
+}
+.centro-cal-dia-horas li .centro-cal-ficha-chica.vacia {
+  display: none;
+}
+.centro-cal-dia-horas li:has(.centro-cal-ficha-chica:not(.vacia)) .centro-cal-paciente.chica {
+  padding-left: 22px;
 }
 .centro-cal-dia-horas li > span {
   color: var(--suave);
@@ -1439,6 +1560,107 @@
   font-size: 0.74rem;
   border-radius: 4px;
 }
+/* La semana: cinco casilleros altos, con letra de lectura y el ícono de la
+   ficha al lado de cada paciente. */
+.centro-cal-mes-semana .centro-cal-dia {
+  height: 420px;
+  padding: 8px 5px;
+}
+.centro-cal-dia-numero.fijo {
+  cursor: default;
+  font-size: 0.84rem;
+  margin-bottom: 4px;
+}
+.centro-cal-dia-numero .centro-agenda-hoy {
+  margin-left: 6px;
+}
+.centro-cal-dia.pasado .centro-cal-dia-numero.fijo {
+  color: #b5b0a7;
+}
+.centro-cal-dia-vacio {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  color: #b5b0a7;
+  font-style: italic;
+}
+.centro-cal-dia-horas.grande {
+  gap: 3px;
+}
+.centro-cal-dia-horas.grande li {
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 4px;
+  font-size: 0.8rem;
+}
+.centro-cal-dia-horas.grande li .centro-cal-ficha-chica {
+  left: 28px;
+  width: 16px;
+  height: 16px;
+}
+.centro-cal-dia-horas.grande li .centro-cal-ficha-chica svg {
+  width: 16px;
+  height: 16px;
+}
+.centro-cal-dia-horas.grande li:has(.centro-cal-ficha-chica:not(.vacia)) .centro-cal-paciente.chica {
+  padding-left: 26px;
+}
+/* Una hora del día sin reserva: la hora apagada y una franja gris en vez del
+   campo, que no se puede anotar nada ahí. */
+.centro-cal-dia-horas li.sin-reserva > span {
+  color: #c9c4bb;
+}
+.centro-cal-dia-horas li.sin-reserva i {
+  display: block;
+  height: 26px;
+  border-radius: 4px;
+  background: #efece7;
+  /* En la semana la franja ocupa el lugar del ícono y del campo. */
+  grid-column: 2 / -1;
+}
+.centro-cal-dia-horas.grande .centro-cal-paciente.chica {
+  height: 26px;
+  padding: 0 8px;
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+}
+
+.centro-cal-ficha-chica {
+  color: var(--azul);
+}
+
+/* Cada hora es una pastilla de color, en el mes y en la semana: azul claro
+   con paciente, gris si está libre. Así se lee de lejos sin leer nombres. */
+.centro-cal-dia-horas li .centro-cal-paciente.chica {
+  background: color-mix(in srgb, var(--azul) 14%, var(--panel));
+  color: var(--azul-fuerte);
+  border-radius: 5px;
+  padding: 0 6px;
+}
+.centro-cal-dia-horas li.libre .centro-cal-paciente.chica {
+  background: color-mix(in srgb, var(--verde) 24%, var(--panel));
+  color: color-mix(in srgb, var(--verde) 75%, var(--tinta));
+}
+.centro-cal-dia-horas li.libre .centro-cal-paciente.chica::placeholder {
+  color: color-mix(in srgb, var(--verde) 80%, var(--tinta));
+  font-style: italic;
+}
+.centro-cal-dia-horas li .centro-cal-paciente.chica:focus {
+  background: var(--panel);
+}
+
+/* Una hora fija prevista (mes que viene, proyectada del contrato): rayada,
+   porque todavía no es una reserva. */
+.centro-cal-dia-horas li.prevista .centro-cal-paciente.chica {
+  background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgba(22, 32, 43, 0.06) 5px 6px);
+}
+/* Un turno sin sala: la pastilla en rojo claro. */
+.centro-cal-dia-horas li.huerfano .centro-cal-paciente.chica {
+  background: color-mix(in srgb, var(--rojo) 10%, var(--panel)) !important;
+  color: var(--rojo) !important;
+}
+.centro-cal-aviso {
+  margin: 0 0 10px;
+}
+
 .centro-cal-dia-horas li:not(.libre) .centro-cal-paciente.chica {
   font-weight: 600;
 }
@@ -1505,6 +1727,47 @@
   margin-top: 14px;
   padding-top: 10px;
   border-top: 1px solid var(--linea);
+}
+
+/* La cuenta del paciente: el costo a la izquierda, los totales a la derecha. */
+.centro-cuenta-costo {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.centro-cuenta-costo label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--suave);
+}
+.centro-cuenta-costo .centro-campo {
+  width: 160px;
+}
+.centro-cuenta-totales {
+  display: flex;
+  gap: 22px;
+  margin: 0;
+}
+.centro-cuenta-totales dt {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+.centro-cuenta-totales dd {
+  margin: 2px 0 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.centro-cuenta-totales .debe dd {
+  color: var(--rojo);
+}
+.centro-resumen tr.centro-cuenta-debe td:first-child {
+  color: var(--rojo);
 }
 
 /* La cabecera de la ficha del paciente: el nombre y, a la derecha, volver. */
@@ -2440,6 +2703,11 @@
   border-color: color-mix(in srgb, var(--azul) 22%, var(--linea));
 }
 
+/* Un turno de hoy que ya pasó: apagado, al final de la columna. */
+.centro-tarjeta.pasada {
+  opacity: 0.55;
+}
+
 /* Una deuda con recargo: la tarjeta en rojo claro. */
 .centro-tarjeta.aviso.urgente {
   background: color-mix(in srgb, var(--rojo) 7%, var(--panel));
@@ -2624,4 +2892,142 @@ button.centro-abrir {
   padding: 2px 0 0;
   font-size: 0.8rem;
   color: var(--suave);
+}
+
+/* Con el panel ancho, la sala tiene lugar para su nombre entero. */
+.centro-cal-agenda .centro-agenda-horas li {
+  grid-template-columns: 52px 104px minmax(0, 1fr) auto;
+}
+
+/* Teléfono. La barra ya pasaba a ser la fila de arriba (las reglas de 860 de
+   más arriba), pero la grilla seguía en dos columnas y el cuerpo caía en la
+   segunda, de 138 px en un teléfono. Acá queda una sola columna. */
+@media (max-width: 860px) {
+  .centro {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* El reloj de la esquina se pisaba con la fila de la barra, y el teléfono
+     ya muestra la hora arriba. */
+  .centro-reloj {
+    display: none;
+  }
+
+  .centro-cuerpo {
+    padding-top: 16px;
+  }
+
+  .centro-lateral {
+    overflow: visible;
+  }
+
+  /* Seis entradas no entran en una mano: la fila se desplaza de costado, sin
+     barra de desplazamiento a la vista. */
+  .centro-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .centro-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .centro-menu-item {
+    padding: 8px 9px;
+    font-size: 0.84rem;
+    gap: 7px;
+  }
+}
+
+@media (max-width: 620px) {
+  /* Queda el sello y se va el nombre: el lugar ya se sabe cuál es. */
+  .centro-marca-texto {
+    display: none;
+  }
+
+  .centro-boton-pie span {
+    display: none;
+  }
+
+  .centro-boton-pie {
+    padding: 8px;
+  }
+}
+
+/* Teléfono: la semana de Turnos, un día debajo del otro. Cinco columnas de
+   nombres no entran en 390 px (quedaba "T." por Tito Perussi); una sola, con
+   sus trece horas, se lee entera. El mes queda en grilla, más chico. */
+@media (max-width: 620px) {
+  .centro-cal-top {
+    flex-wrap: wrap;
+  }
+
+  .centro-cal-mes-semana tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .centro-cal-mes-semana td.centro-cal-dia {
+    display: block;
+    height: auto;
+    padding: 6px 8px 8px;
+    border-radius: 8px;
+  }
+
+  .centro-cal-mes:not(.centro-cal-mes-semana) {
+    font-size: 0.72rem;
+  }
+
+  .centro-cal-mes:not(.centro-cal-mes-semana) .centro-cal-dia {
+    padding: 3px 2px;
+  }
+
+  .centro-cal-mes:not(.centro-cal-mes-semana) .centro-cal-dia-horas li {
+    font-size: 0.66rem;
+  }
+
+  .centro-cal-mes:not(.centro-cal-mes-semana) .centro-cal-ficha-chica {
+    display: none;
+  }
+
+  /* En Mi cuenta, el precio de la hora cede: el importe de la fila ya lo
+     lleva, y con seis columnas la última quedaba cortada. */
+  .centro-resumen-horas th:nth-child(5),
+  .centro-resumen-horas tbody td:nth-child(5),
+  .centro-resumen-horas tfoot td:nth-child(3) {
+    display: none;
+  }
+
+  .centro-ficha-filas label {
+    grid-template-columns: 104px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  /* En el mes del teléfono la hora cede su columna al nombre: con 60 px por
+     día quedaba una letra de cada paciente. */
+  .centro-cal-mes:not(.centro-cal-mes-semana) .centro-cal-dia-horas li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .centro-cal-mes:not(.centro-cal-mes-semana) .centro-cal-dia-horas li > span:first-child {
+    display: none;
+  }
+
+  .centro-cal-mes:not(.centro-cal-mes-semana) .centro-cal-paciente {
+    padding: 0 3px;
+  }
+
+  /* La fecha de nacimiento con la edad al lado entraba justo y la edad se
+     salía del panel. */
+  .centro-ficha-filas label.con-edad {
+    grid-template-columns: 104px auto minmax(0, 1fr);
+  }
+
+  .centro-ficha-edad {
+    font-size: 0.74rem;
+  }
 }

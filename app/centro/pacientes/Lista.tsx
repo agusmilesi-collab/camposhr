@@ -32,14 +32,13 @@ export default function Lista({ pacientes }: { pacientes: Fila[] }) {
   const [guardando, setGuardando] = useState(false);
   const [alta, setAlta] = useState(false);
 
-  const [conInactivos, setConInactivos] = useState(false);
   const [cambiando, setCambiando] = useState<string | null>(null);
-  const inactivos = pacientes.filter((p) => !p.activo).length;
 
   const q = busca.trim().toLowerCase();
+  // Los activos primero y los inactivos debajo, cada grupo en su orden.
   const visibles = pacientes
-    .filter((p) => conInactivos || p.activo)
-    .filter((p) => !q || `${p.apellido} ${p.nombre} ${p.telefono ?? ''}`.toLowerCase().includes(q));
+    .filter((p) => !q || `${p.apellido} ${p.nombre} ${p.telefono ?? ''}`.toLowerCase().includes(q))
+    .sort((a, b) => Number(b.activo) - Number(a.activo));
 
   /** Activo o no, desde la lista: una ficha inactiva no se ofrece al anotar
    *  turnos ni cuenta, pero no se borra. */
@@ -80,10 +79,6 @@ export default function Lista({ pacientes }: { pacientes: Fila[] }) {
   return (
     <main className="centro-cuerpo">
       <h1 className="centro-titulo">Pacientes</h1>
-      <p className="centro-bajada">
-        Las fichas de tu consulta: datos, antecedentes y la historia clínica de cada uno. Las ves
-        solo vos.
-      </p>
       {error && <p className="centro-error">{error}</p>}
 
       <div className="centro-fila" style={{ marginBottom: 14 }}>
@@ -94,12 +89,6 @@ export default function Lista({ pacientes }: { pacientes: Fila[] }) {
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
         />
-        {inactivos > 0 && (
-          <label className="centro-pacientes-inactivos">
-            <input type="checkbox" checked={conInactivos} onChange={(e) => setConInactivos(e.target.checked)} />
-            Ver inactivos ({inactivos})
-          </label>
-        )}
         <button type="button" className="centro-boton" onClick={() => setAlta((v) => !v)}>
           {alta ? 'Cerrar' : 'Nuevo paciente'}
         </button>
@@ -131,8 +120,13 @@ export default function Lista({ pacientes }: { pacientes: Fila[] }) {
           </p>
         ) : (
           <ul className="centro-pacientes-lista">
-            {visibles.map((p) => (
-              <li key={p.id} className={p.activo ? undefined : 'inactivo'}>
+            {visibles.map((p, i) => (
+              <li
+                key={p.id}
+                className={
+                  p.activo ? undefined : `inactivo${i > 0 && visibles[i - 1].activo ? ' primero' : ''}`
+                }
+              >
                 <Link href={`/centro/pacientes/${p.id}`} className="centro-pacientes-nombre">
                   {p.apellido ? `${p.apellido}, ${p.nombre}` : p.nombre}
                 </Link>

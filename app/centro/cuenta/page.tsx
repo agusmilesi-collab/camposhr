@@ -334,7 +334,7 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
               {consumos.length === 0 ? (
                 <p className="centro-nota">Este mes no usaste el Centro.</p>
               ) : (
-                <table className="centro-resumen">
+                <table className="centro-resumen centro-resumen-horas">
                   <thead>
                     <tr>
                       <th>Día</th>
@@ -480,16 +480,12 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
                     <dd>{CUENTA_DEL_CENTRO.banco}</dd>
                   </div>
                   <div>
-                    <dt>CBU</dt>
-                    <dd>{CUENTA_DEL_CENTRO.cbu}</dd>
+                    <dt>CVU</dt>
+                    <dd>{CUENTA_DEL_CENTRO.cvu}</dd>
                   </div>
                   <div>
                     <dt>Alias</dt>
                     <dd>{CUENTA_DEL_CENTRO.alias}</dd>
-                  </div>
-                  <div>
-                    <dt>CUIT</dt>
-                    <dd>{CUENTA_DEL_CENTRO.cuit}</dd>
                   </div>
                 </dl>
                 {CUENTA_DEL_CENTRO.dePrueba && (

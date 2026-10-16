@@ -20,6 +20,9 @@ export type Turno = {
   paciente_id: string | null;
   /** Si vino: null hasta que se marca desde Inicio. */
   asistio: boolean | null;
+  /** Si pagó esa consulta, y cuánto se cobró el día que se marcó. */
+  pagado: boolean;
+  cobrado: number | null;
   updated_at: string;
 };
 
@@ -29,7 +32,7 @@ export async function turnosDe(inquilinoId: string, desde: string, hasta: string
   if (!ID_VALIDO.test(inquilinoId)) return [];
   return select<Turno>(
     'centro_turnos',
-    `select=id,inquilino_id,fecha,desde_hora,paciente,nota,paciente_id,asistio,updated_at&inquilino_id=eq.${inquilinoId}` +
+    `select=id,inquilino_id,fecha,desde_hora,paciente,nota,paciente_id,asistio,pagado,cobrado,updated_at&inquilino_id=eq.${inquilinoId}` +
       `&fecha=gte.${desde}&fecha=lte.${hasta}&order=fecha.asc,desde_hora.asc`
   );
 }
@@ -65,6 +68,27 @@ export async function guardarTurno(a: {
     },
     'inquilino_id,fecha,desde_hora'
   );
+}
+
+/** Los turnos de un paciente, del más nuevo al más viejo: su cuenta. */
+export async function turnosDelPaciente(inquilinoId: string, pacienteId: string): Promise<Turno[]> {
+  if (!ID_VALIDO.test(inquilinoId) || !ID_VALIDO.test(pacienteId)) return [];
+  return select<Turno>(
+    'centro_turnos',
+    `select=id,inquilino_id,fecha,desde_hora,paciente,nota,paciente_id,asistio,pagado,cobrado,updated_at` +
+      `&inquilino_id=eq.${inquilinoId}&paciente_id=eq.${pacienteId}&order=fecha.desc,desde_hora.desc`
+  );
+}
+
+/** Marca si la consulta se pagó. Pagada, congela el importe del día; sin
+ *  pagar, lo suelta. Solo sobre un turno propio. */
+export async function marcarPago(inquilinoId: string, id: string, pagado: boolean, importe: number | null): Promise<void> {
+  if (!ID_VALIDO.test(inquilinoId) || !ID_VALIDO.test(id)) return;
+  await patch('centro_turnos', `id=eq.${id}&inquilino_id=eq.${inquilinoId}`, {
+    pagado,
+    cobrado: pagado ? importe : null,
+    updated_at: new Date().toISOString(),
+  });
 }
 
 /** Marca si el paciente vino, no vino, o vuelve a sin marcar. Solo sobre un

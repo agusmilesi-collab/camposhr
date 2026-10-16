@@ -27,6 +27,8 @@ export type Paciente = {
   alergias: string | null;
   notas: string | null;
   activo: boolean;
+  /** El costo de la consulta, para la cuenta del paciente. */
+  precio_consulta: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -59,6 +61,7 @@ export const CAMPOS_PACIENTE = [
   'medicacion',
   'alergias',
   'notas',
+  'precio_consulta',
 ] as const;
 export type CampoPaciente = (typeof CAMPOS_PACIENTE)[number];
 

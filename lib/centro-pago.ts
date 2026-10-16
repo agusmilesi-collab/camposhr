@@ -1,15 +1,12 @@
 /**
- * A dónde transfiere el inquilino el alquiler.
- *
- * **Son datos de prueba.** Los de verdad se cargan acá cuando Lucila los pase;
- * mientras tanto la pantalla los muestra con el aviso de que no sirven para
- * transferir, así nadie manda plata a una cuenta que no existe.
+ * A dónde transfiere el inquilino el alquiler: la cuenta de Lucila, cargada
+ * el 16/10/2026. Es un CVU (Mercado Pago), así que la pantalla lo rotula
+ * como CVU y no como CBU. Sin CUIT: no hace falta para transferir por alias.
  */
 export const CUENTA_DEL_CENTRO = {
-  titular: 'Lucila Campos',
-  banco: 'Banco de prueba',
-  cbu: '0000000000000000000000',
-  alias: 'CENTRO.PRUEBA.ALIAS',
-  cuit: '00-00000000-0',
-  dePrueba: true,
+  titular: 'Lucila Graciela Campos',
+  banco: 'Mercado Pago',
+  cvu: '0000003100000497384944',
+  alias: 'santiago1269',
+  dePrueba: false,
 };

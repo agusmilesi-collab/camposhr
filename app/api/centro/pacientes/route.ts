@@ -27,6 +27,8 @@ function limpiar(datos: Record<string, unknown>): Partial<Record<CampoPaciente, 
     r[c] = v ? v.slice(0, c === 'antecedentes' || c === 'medicacion' || c === 'notas' || c === 'motivo_consulta' ? 4000 : 200) : null;
   }
   if (r.fecha_nacimiento && !FECHA.test(r.fecha_nacimiento)) delete r.fecha_nacimiento;
+  if (r.precio_consulta !== undefined && r.precio_consulta !== null && !/^\d+(\.\d{1,2})?$/.test(r.precio_consulta))
+    delete r.precio_consulta;
   return r;
 }
 

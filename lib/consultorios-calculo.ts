@@ -891,3 +891,40 @@ export function semanaTipo(
   }
   return { horas, dias, celdas };
 }
+
+/** Cuántos meses adelante se proyectan las horas fijas para anotar turnos. */
+export const MESES_PREVISTOS = 3;
+
+/**
+ * Las horas fijas de un inquilino proyectadas sobre un tramo de fechas, como
+ * si el contrato se renovara: una franja por día de contrato, sin feriados.
+ *
+ * Es lo que deja anotar turnos para los meses que vienen antes de que el
+ * día 1 se generen las reservas de verdad. Las reservas se guardan por fecha
+ * y hora, así que cuando llegan, los turnos ya coinciden. Si la persona no
+ * renueva o cambia horas, los turnos sobre horas que desaparecen quedan
+ * huérfanos y se avisa en Inicio.
+ */
+export function horasPrevistas(
+  contratos: Contrato[],
+  inquilinoId: string,
+  desde: string,
+  hasta: string,
+  feriados: string[]
+): { fecha: string; desde_hora: string; hasta_hora: string; espacio_id: string }[] {
+  const salida: { fecha: string; desde_hora: string; hasta_hora: string; espacio_id: string }[] = [];
+  const suyos = contratos.filter((c) => c.inquilino_id === inquilinoId);
+  if (suyos.length === 0) return salida;
+  for (let f = desde; f <= hasta; f = sumarDias(f, 1)) {
+    if (feriados.includes(f)) continue;
+    const dia = diaSemanaDe(f);
+    for (const c of suyos) {
+      if (c.dia_semana !== dia) continue;
+      if (c.vigente_desde > f) continue;
+      // Un contrato con fin ya fijado no se proyecta más allá de su fin.
+      if (c.vigente_hasta !== null && c.vigente_hasta < f) continue;
+      salida.push({ fecha: f, desde_hora: c.desde_hora, hasta_hora: c.hasta_hora, espacio_id: c.espacio_id });
+    }
+  }
+  return salida;
+}

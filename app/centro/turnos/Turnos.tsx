@@ -12,7 +12,7 @@
  */
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   DIAS_CORTOS,
   diaSemanaDe,
@@ -25,7 +25,15 @@ import {
 
 const DIAS_LARGOS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-type Reserva = { id: string; fecha: string; desde: string; hasta: string; sala: string };
+type Reserva = {
+  id: string;
+  fecha: string;
+  desde: string;
+  hasta: string;
+  sala: string;
+  /** Hora fija de un mes que viene, proyectada del contrato: se confirma el 1. */
+  prevista?: boolean;
+};
 type Turno = { fecha: string; hora: number; paciente: string; pacienteId: string | null };
 
 /** El lunes de la semana de una fecha. */
@@ -55,30 +63,73 @@ export default function Turnos({
   const [error, setError] = useState<string | null>(null);
   /** Lo escrito y todavía no guardado, por "fecha|hora". */
   const [borrador, setBorrador] = useState<Record<string, string>>({});
+  /**
+   * Lo ya guardado que el servidor todavía no devolvió: entre el guardado y
+   * el redibujo pasan unos cientos de milisegundos, y sin esto el campo
+   * volvía a mostrar el nombre anterior en el medio (un parpadeo). Se vacía
+   * cuando llegan los turnos nuevos.
+   */
+  const [recien, setRecien] = useState<Record<string, string>>({});
+  useEffect(() => {
+    setRecien({});
+  }, [turnos]);
   const [guardando, setGuardando] = useState<string | null>(null);
+  /** El campo que tiene las sugerencias abiertas ("fecha|hora") y cuál está
+   *  marcada con el teclado. Es un desplegable propio: el del navegador no se
+   *  puede pintar y quedaba fuera de lugar en la pastilla del mes. */
+  const [abierto, setAbierto] = useState<string | null>(null);
+  const [marcada, setMarcada] = useState(0);
 
   const clave = (fecha: string, h: number) => `${fecha}|${h}`;
   const guardado = new Map(turnos.map((t) => [clave(t.fecha, t.hora), t]));
 
   /** La sala de cada hora reservada, por "fecha|hora". */
   const reservada = new Map<string, string>();
+  /** Las horas previstas (proyectadas del contrato), por "fecha|hora". */
+  const prevista = new Set<string>();
   for (const r of reservas) {
-    for (let h = horaDe(r.desde); h < horaDe(r.hasta); h++) reservada.set(clave(r.fecha, h), r.sala);
+    for (let h = horaDe(r.desde); h < horaDe(r.hasta); h++) {
+      reservada.set(clave(r.fecha, h), r.sala);
+      if (r.prevista) prevista.add(clave(r.fecha, h));
+    }
   }
 
   function valorDe(fecha: string, h: number): string {
     const k = clave(fecha, h);
-    return borrador[k] ?? guardado.get(k)?.paciente ?? '';
+    return borrador[k] ?? recien[k] ?? guardado.get(k)?.paciente ?? '';
   }
 
   function escribir(fecha: string, h: number, paciente: string) {
     setBorrador((prev) => ({ ...prev, [clave(fecha, h)]: paciente }));
+    setAbierto(clave(fecha, h));
+    setMarcada(0);
+  }
+
+  /** Las fichas que coinciden con lo escrito, hasta seis; sin escribir, las
+   *  primeras seis. */
+  function sugerenciasPara(valor: string): string[] {
+    const q = valor.trim().toLowerCase();
+    return pacientes.filter((n) => !q || n.toLowerCase().includes(q)).slice(0, 6);
+  }
+
+  /** Elegir una sugerencia: se escribe y se guarda en el acto. */
+  function elegir(fecha: string, h: number, nombre: string) {
+    const k = clave(fecha, h);
+    setAbierto(null);
+    setBorrador((prev) => ({ ...prev, [k]: nombre }));
+    // El guardado lee el borrador: se espera al dibujo siguiente.
+    setTimeout(() => guardarCon(fecha, h, nombre), 0);
   }
 
   async function guardar(fecha: string, h: number) {
     const k = clave(fecha, h);
     const b = borrador[k];
     if (b === undefined) return;
+    await guardarCon(fecha, h, b);
+  }
+
+  async function guardarCon(fecha: string, h: number, b: string) {
+    const k = clave(fecha, h);
     const paciente = b.trim();
     const olvidar = () =>
       setBorrador((prev) => {
@@ -97,6 +148,7 @@ export default function Turnos({
     const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
     setGuardando(null);
     if (!r.ok) return setError(r.motivo ?? 'No se pudo guardar.');
+    setRecien((prev) => ({ ...prev, [k]: paciente }));
     olvidar();
     router.refresh();
   }
@@ -125,11 +177,13 @@ export default function Turnos({
 
   const mover = (n: number) =>
     setAncla(vista === 'semana' ? sumarDias(ancla, 7 * n) : mesCorrido(periodo, n));
+  const hayPrevistas = [...prevista].some((k) => k.startsWith(vista === 'semana' ? semana[0].slice(0, 7) : periodo.slice(0, 7)));
 
   // ----------------------------------------------------------- una celda
   const fichaDe = (fecha: string, h: number) => {
     const k = clave(fecha, h);
-    return borrador[k] === undefined ? guardado.get(k)?.pacienteId : undefined;
+    // Mientras lo recién guardado espera el redibujo, el ícono viejo no vale.
+    return borrador[k] === undefined && recien[k] === undefined ? guardado.get(k)?.pacienteId : undefined;
   };
   const dibujoFicha = (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -170,16 +224,176 @@ export default function Turnos({
     );
   };
 
-  return (
-    <main className="centro-cuerpo centro-cuerpo-ancho">
-      <h1 className="centro-titulo">Mis turnos</h1>
-      {error && <p className="centro-error">{error}</p>}
+  /**
+   * Un día como casillero de calendario: el día arriba y debajo sus horas
+   * reservadas, cada una con el campo del paciente. Es la misma celda en la
+   * semana (cinco casilleros altos, con el ícono de la ficha) y en el mes
+   * (la grilla entera, más chica). Lo no reservado no se dibuja: no tiene sala.
+   */
+  const celdaDia = (f: string, grande: boolean) => {
+    const delMes = grande || f.slice(0, 7) === periodo.slice(0, 7);
+    // Un turno anotado sobre una hora que ya no está reservada (huérfano)
+    // igual se muestra, en rojo, para borrarlo o pasarlo a otra hora.
+    const huerfanas = [...guardado.keys()]
+      .filter((k) => k.startsWith(f) && !reservada.has(k))
+      .map((k) => Number(k.split('|')[1]));
+    const reservadas = [...new Set([...reservada.keys()].filter((k) => k.startsWith(f)).map((k) => Number(k.split('|')[1])).concat(huerfanas))]
+      .sort((x, y) => x - y);
+    // En la semana van todas las horas del día, de 8 a 20, y las que no están
+    // reservadas se ven apagadas: así se lee el día entero y no solo lo que
+    // hay. En el mes, solo las reservadas, que el casillero es chico.
+    const horasDia = grande
+      ? [...new Set(Array.from({ length: 13 }, (_, i) => 8 + i).concat(reservadas.filter((h) => h < 8 || h > 20)))].sort((x, y) => x - y)
+      : reservadas;
+    return (
+      <td
+        key={f}
+        className={`centro-cal-dia${delMes ? '' : ' otro-mes'}${f === hoy ? ' hoy' : ''}${f < hoy ? ' pasado' : ''}${abierto?.startsWith(f) ? ' abierta' : ''}`}
+      >
+        {grande ? (
+          <div className="centro-cal-dia-numero fijo">
+            {DIAS_LARGOS[diaSemanaDe(f)]} {diaNumero(f)}
+            {f === hoy && <span className="centro-agenda-hoy">Hoy</span>}
+          </div>
+        ) : (
+          /* El número abre la semana de ese día. */
+          <button
+            type="button"
+            className="centro-cal-dia-numero"
+            onClick={() => {
+              setAncla(f);
+              setVista('semana');
+            }}
+            title="Ver la semana"
+          >
+            {diaNumero(f)}
+            {f === hoy && <span className="centro-agenda-hoy">Hoy</span>}
+          </button>
+        )}
+        {horasDia.length === 0 ? null : (
+          <ul className={`centro-cal-dia-horas${grande ? ' grande' : ''}`}>
+            {horasDia.map((h) => {
+              const v = valorDe(f, h);
+              const k = clave(f, h);
+              const fichaId = fichaDe(f, h);
+              if (!reservada.has(k) && !guardado.has(k)) {
+                return (
+                  <li key={h} className="sin-reserva" title="Sin reserva">
+                    <span>{String(h).padStart(2, '0')}</span>
+                    <i />
+                  </li>
+                );
+              }
+              return (
+                <li
+                  key={h}
+                  className={`${v ? '' : 'libre'}${prevista.has(k) ? ' prevista' : ''}${!reservada.has(k) ? ' huerfano' : ''}${abierto === k ? ' abierta' : ''}`.trim() || undefined}
+                  title={
+                    !reservada.has(k)
+                      ? 'Esta hora ya no está reservada: borrá el nombre o anotalo en otra hora'
+                      : prevista.has(k)
+                        ? `${reservada.get(k)} · hora fija prevista, se confirma el 1`
+                        : undefined
+                  }
+                >
+                  <span title={reservada.get(k)}>{String(h).padStart(2, '0')}</span>
+                  {(fichaId ? (
+                      <Link href={`/centro/pacientes/${fichaId}`} className="centro-cal-ficha-chica" title="Abrir la ficha">
+                        {dibujoFicha}
+                      </Link>
+                    ) : (
+                      <span className="centro-cal-ficha-chica vacia" />
+                    ))}
+                  <input
+                    className="centro-cal-paciente chica"
+                    autoComplete="off"
+                    placeholder="Libre"
+                    value={v}
+                    title={reservada.get(k)}
+                    aria-label={`Paciente de las ${h}:00 del ${f}`}
+                    onChange={(e) => escribir(f, h, e.target.value)}
+                    onFocus={() => {
+                      setAbierto(k);
+                      setMarcada(0);
+                    }}
+                    onBlur={() => {
+                      setAbierto(null);
+                      guardar(f, h);
+                    }}
+                    onKeyDown={(e) => {
+                      const lista = abierto === k ? sugerenciasPara(v).filter((n) => n !== v.trim()) : [];
+                      if (e.key === 'ArrowDown' && lista.length) {
+                        e.preventDefault();
+                        setMarcada((m) => (m + 1) % lista.length);
+                      } else if (e.key === 'ArrowUp' && lista.length) {
+                        e.preventDefault();
+                        setMarcada((m) => (m - 1 + lista.length) % lista.length);
+                      } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (lista.length && v.trim() && lista[marcada] !== v) elegir(f, h, lista[marcada]);
+                        else (e.target as HTMLInputElement).blur();
+                      } else if (e.key === 'Escape') {
+                        setAbierto(null);
+                      }
+                    }}
+                    disabled={guardando === k}
+                  />
+                  {abierto === k && (v.trim() !== '' || sugerenciasPara(v).length > 0) && (
+                    <ul className="centro-sugerencias" role="listbox">
+                      {/* Primero el que está anotado, con la cruz para sacarlo:
+                          un turno se borra desde acá y no vaciando el campo. */}
+                      {v.trim() !== '' && (
+                        <li className="actual" onMouseDown={(e) => e.preventDefault()}>
+                          <span>{v.trim()}</span>
+                          <button
+                            type="button"
+                            className="centro-sug-quitar"
+                            title="Borrar el turno"
+                            aria-label="Borrar el turno"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setAbierto(null);
+                              setBorrador((prev) => ({ ...prev, [k]: '' }));
+                              setTimeout(() => guardarCon(f, h, ''), 0);
+                            }}
+                          >
+                            ×
+                          </button>
+                        </li>
+                      )}
+                      {sugerenciasPara(v).filter((n) => n !== v.trim()).map((n, i) => (
+                        <li
+                          key={n}
+                          role="option"
+                          aria-selected={i === marcada}
+                          className={i === marcada ? 'marcada' : undefined}
+                          // mousedown y no click: el click llega después del
+                          // blur, que ya cerró la lista.
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            elegir(f, h, n);
+                          }}
+                          onMouseEnter={() => setMarcada(i)}
+                        >
+                          {n}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </td>
+    );
+  };
 
-      <datalist id="centro-pacientes">
-        {pacientes.map((p) => (
-          <option key={p} value={p} />
-        ))}
-      </datalist>
+  return (
+    <main className="centro-cuerpo centro-cuerpo-ancho centro-cuerpo-calendario">
+      <h1 className="centro-titulo">Turnos</h1>
+      {error && <p className="centro-error">{error}</p>}
 
       <div className="centro-panel centro-cal">
         <div className="centro-cal-top">
@@ -207,72 +421,33 @@ export default function Turnos({
           </div>
         </div>
 
-        {vista === 'semana' ? (
-          /* La semana se lee por lo que hay reservado: un bloque por día y
-             adentro una fila por hora con sala. Lo que no está reservado no
-             se dibuja, que no tiene sala; un día sin horas lo dice en una
-             línea. Es la misma lista que la agenda de Inicio. */
-          <div className="centro-cal-agenda">
-            {semana.map((f) => {
-              const horasDia = [...reservada.keys()]
-                .filter((k) => k.startsWith(f))
-                .map((k) => Number(k.split('|')[1]))
-                .sort((x, y) => x - y);
-              return (
-                <section
-                  key={f}
-                  className={`centro-agenda-dia${f < hoy ? ' centro-agenda-pasado' : ''}${horasDia.length === 0 ? ' sin-horas' : ''}`}
-                >
-                  <h2>
-                    {DIAS_LARGOS[diaSemanaDe(f)]} {diaNumero(f)}
-                    {f === hoy && <span className="centro-agenda-hoy">Hoy</span>}
-                  </h2>
-                  {horasDia.length === 0 ? (
-                    <p className="centro-agenda-vacio">Sin horas reservadas</p>
-                  ) : (
-                    <ul className="centro-agenda-horas">
-                      {horasDia.map((h) => {
-                        const k = clave(f, h);
-                        const v = valorDe(f, h);
-                        const fichaId = fichaDe(f, h);
-                        return (
-                          <li key={k} className={v ? 'con-turno' : undefined}>
-                            <span className="centro-agenda-hora">{String(h).padStart(2, '0')}:00</span>
-                            <span className="centro-agenda-sala">{reservada.get(k)}</span>
-                            <input
-                              className="centro-agenda-paciente"
-                              list="centro-pacientes"
-                              placeholder="Libre"
-                              value={v}
-                              aria-label={`Paciente de las ${h}:00 del ${f}`}
-                              onChange={(e) => escribir(f, h, e.target.value)}
-                              onBlur={() => guardar(f, h)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                              }}
-                              disabled={guardando === k}
-                            />
-                            {fichaId ? (
-                              <Link href={`/centro/pacientes/${fichaId}`} className="centro-agenda-ficha" title="Abrir la ficha">
-                                {dibujoFicha}
-                              </Link>
-                            ) : (
-                              <span className="centro-agenda-ficha sin-ficha" aria-hidden="true">
-                                {dibujoFicha}
-                              </span>
-                            )}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </section>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="centro-cal-marco">
-            <table className="centro-cal-mes">
+        {hayPrevistas && (
+          <p className="centro-nota centro-cal-aviso">
+            Las horas rayadas son tus horas fijas del mes que viene, previstas por tu contrato: podés
+            anotar turnos ahí. Se confirman el 1, cuando se generan las reservas.
+          </p>
+        )}
+
+        <div className="centro-cal-marco">
+          {vista === 'semana' ? (
+            <table className="centro-cal-mes centro-cal-mes-semana">
+              <tbody>
+                <tr>{semana.map((f) => celdaDia(f, true))}</tr>
+              </tbody>
+            </table>
+          ) : (
+            <table
+              className="centro-cal-mes"
+              style={
+                {
+                  // Todos los días del mismo alto: el del día con más horas.
+                  '--cal-filas': Math.max(
+                    3,
+                    ...semanasDelMes.flat().map((f) => [...reservada.keys()].filter((k) => k.startsWith(f)).length)
+                  ),
+                } as React.CSSProperties
+              }
+            >
               <thead>
                 <tr>
                   {semanasDelMes[0].map((f) => (
@@ -282,64 +457,12 @@ export default function Turnos({
               </thead>
               <tbody>
                 {semanasDelMes.map((dias) => (
-                  <tr key={dias[0]}>
-                    {dias.map((f) => {
-                      const delMes = f.slice(0, 7) === periodo.slice(0, 7);
-                      const todas = [...reservada.keys()]
-                        .filter((k) => k.startsWith(f))
-                        .map((k) => Number(k.split('|')[1]))
-                        .sort((a, b) => a - b);
-                      return (
-                        <td
-                          key={f}
-                          className={`centro-cal-dia${delMes ? '' : ' otro-mes'}${f === hoy ? ' hoy' : ''}${f < hoy ? ' pasado' : ''}`}
-                        >
-                          {/* El número abre la semana de ese día. */}
-                          <button
-                            type="button"
-                            className="centro-cal-dia-numero"
-                            onClick={() => {
-                              setAncla(f);
-                              setVista('semana');
-                            }}
-                            title="Ver la semana"
-                          >
-                            {diaNumero(f)}
-                          </button>
-                          {todas.length > 0 && (
-                            <ul className="centro-cal-dia-horas">
-                              {todas.map((h) => {
-                                const v = valorDe(f, h);
-                                return (
-                                  <li key={h} className={v ? undefined : 'libre'}>
-                                    <span>{h}</span>
-                                    <input
-                                      className="centro-cal-paciente chica"
-                                      list="centro-pacientes"
-                                      placeholder="Libre"
-                                      value={v}
-                                      aria-label={`Paciente de las ${h}:00 del ${f}`}
-                                      onChange={(e) => escribir(f, h, e.target.value)}
-                                      onBlur={() => guardar(f, h)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                                      }}
-                                      disabled={guardando === clave(f, h)}
-                                    />
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
+                  <tr key={dias[0]}>{dias.map((f) => celdaDia(f, false))}</tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </main>
   );

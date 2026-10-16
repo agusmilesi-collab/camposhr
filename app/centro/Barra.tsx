@@ -45,7 +45,7 @@ const NAV: { grupo?: string; items: { href: string; texto: string; icono: React.
     items: [
       {
         href: '/centro/turnos',
-        texto: 'Mis turnos',
+        texto: 'Turnos',
         // Un reloj: son horas con una persona del otro lado.
         icono: (
           <>
@@ -93,31 +93,14 @@ const NAV: { grupo?: string; items: { href: string; texto: string; icono: React.
           </>
         ),
       },
-    ],
-  },
-  {
-    // Lo que se lee y no se usa: aparte de lo que se opera.
-    grupo: 'Documentos',
-    items: [
       {
-        href: '/centro/normas',
-        texto: 'Normas',
-        // Una hoja con una tilde: lo que se firmó.
+        href: '/centro/documentos',
+        texto: 'Documentos',
+        // Dos hojas: las normas y el manual, en una pantalla con pestañas.
         icono: (
           <>
-            <path d="M6 2.5h8l5 5v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-17a2 2 0 0 1 2-2z" />
-            <path d="M14 2.5v5h5M8.5 15l2.5 2.5 5-5" />
-          </>
-        ),
-      },
-      {
-        href: '/centro/manual',
-        texto: 'Manual',
-        // Un libro abierto.
-        icono: (
-          <>
-            <path d="M12 6.5c-1.5-1.5-4-2-8-2v14c4 0 6.5.5 8 2 1.5-1.5 4-2 8-2v-14c-4 0-6.5.5-8 2z" />
-            <path d="M12 6.5v14" />
+            <path d="M8 2.5h7l4 4v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2z" />
+            <path d="M15 2.5v4h4M6 7.5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h9" />
           </>
         ),
       },

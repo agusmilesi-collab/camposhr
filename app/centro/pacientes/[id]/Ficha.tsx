@@ -11,6 +11,7 @@
  *                  en el lugar.
  */
 import Link from 'next/link';
+import Cuenta, { type TurnoCuenta } from './Cuenta';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { Evolucion, Paciente } from '@/lib/pacientes';
@@ -57,10 +58,15 @@ export default function Ficha({
   paciente,
   evoluciones,
   hoy,
+  vista,
+  turnos,
 }: {
   paciente: Paciente;
   evoluciones: Evolucion[];
   hoy: string;
+  /** Qué pestaña se mira: la ficha, la historia clínica o la cuenta. */
+  vista: 'ficha' | 'historia' | 'cuenta';
+  turnos: TurnoCuenta[];
 }) {
   const router = useRouter();
   const [p, setP] = useState(paciente);
@@ -143,6 +149,24 @@ export default function Ficha({
       </div>
       {error && <p className="centro-error">{error}</p>}
 
+      {/* Tres pestañas, como Mi cuenta: lo que es la persona, lo que pasó en
+          cada consulta y lo que pagó. */}
+      <nav className="centro-pestanas">
+        <a className={vista === 'ficha' ? 'activa' : undefined} href={`/centro/pacientes/${p.id}`}>
+          Ficha
+        </a>
+        <a className={vista === 'historia' ? 'activa' : undefined} href={`/centro/pacientes/${p.id}?ver=historia`}>
+          Historia clínica
+        </a>
+        <a className={vista === 'cuenta' ? 'activa' : undefined} href={`/centro/pacientes/${p.id}?ver=cuenta`}>
+          Pagos
+        </a>
+      </nav>
+
+      {vista === 'cuenta' && <Cuenta pacienteId={p.id} precio={p.precio_consulta} turnos={turnos} hoy={hoy} />}
+
+      {vista === 'ficha' && (
+      <>
       {/* Datos y antecedentes en un solo panel, denso: un renglón por campo,
           rótulo a la izquierda y valor a la derecha, letra chica. Es una
           ficha para consultar de un vistazo, no un formulario para llenar. */}
@@ -187,7 +211,10 @@ export default function Ficha({
           Se guarda al salir de cada campo.
         </p>
       </section>
+      </>
+      )}
 
+      {vista === 'historia' && (
       <section className="centro-panel">
         <h2>Historia clínica</h2>
         <form className="centro-evolucion-nueva" onSubmit={agregar}>
@@ -307,6 +334,7 @@ export default function Ficha({
           </ol>
         )}
       </section>
+      )}
     </main>
   );
 }
