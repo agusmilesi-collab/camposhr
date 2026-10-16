@@ -46,9 +46,12 @@ export async function PATCH(req: Request) {
   const datos = (await req.json().catch(() => null)) ?? {};
   const id = String(datos.id ?? '');
   if (!UUID.test(id)) return mal('Paciente inválido.');
-  const limpio = limpiar(datos);
+  const limpio: ReturnType<typeof limpiar> & { activo?: boolean } = limpiar(datos);
   if ('nombre' in limpio && !limpio.nombre) return mal('El nombre no puede quedar vacío.');
   if ('apellido' in limpio && limpio.apellido === null) limpio.apellido = '';
+  // Activo o dado de baja: una ficha inactiva no se ofrece al anotar turnos.
+  if (typeof datos.activo === 'boolean') limpio.activo = datos.activo;
+  if (Object.keys(limpio).length === 0) return mal('No vino ningún cambio.');
   await guardarPaciente(sesion.yo.id, id, limpio);
   return NextResponse.json({ ok: true });
 }

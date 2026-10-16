@@ -219,10 +219,6 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
       <Barra nombre={yo.nombre} donde="/centro/cuenta" />
       <main className="centro-cuerpo">
         <h1 className="centro-titulo">Tu cuenta</h1>
-        <p className="centro-bajada">
-          Cada mes se paga por adelantado, del 1 al 10. Del 11 al 20 lleva 15% de recargo y del 21
-          en adelante, 25%.
-        </p>
 
         <nav className="centro-pestanas">
           {/* Enlaces comunes y no `Link`: el navegador guarda medio minuto la
@@ -282,35 +278,13 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
           </div>
         ) : (
           <>
-            {/* Lo que debe y la factura de eso, lado a lado: son el mismo dato
-                dicho dos veces, el número y su papel. Si arrastra un mes sin
-                pagar, va al lado, porque se paga antes. */}
-            <div className={facturas.length > 0 || deudaVieja ? 'centro-dos' : undefined}>
-              <div className="centro-panel">
-                <h2>{mesLargo(periodo)}</h2>
-                {saldo > 0 ? (
-                  <>
-                    <div className="centro-saldo">{pesos(Math.round(saldo * (1 + pct / 100)))}</div>
-                    <p className="centro-nota">
-                      {pct > 0
-                        ? `Son ${pesos(saldo)} más ${pct}% de recargo por pagar después del 10.`
-                        : 'Se paga por adelantado: hasta el 10, sin recargo.'}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div className="centro-saldo">{pesos(cargos)}</div>
-                    <p className="centro-nota">
-                      {cargos > 0
-                        ? 'Es lo reservado hasta hoy, y está pagado.'
-                        : 'Todavía no reservaste nada este mes.'}
-                    </p>
-                  </>
-                )}
-              </div>
-
+            {/* Un mes anterior sin pagar y la factura del mes, lado a lado. El
+                importe de este mes no va acá: está al pie de la tabla de
+                horas, con su recargo y el saldo a pagar hoy. */}
+            {(facturas.length > 0 || deudaVieja) && (
+            <div className={facturas.length > 0 && deudaVieja ? 'centro-dos' : undefined}>
               {deudaVieja && (
-                <div className="centro-panel">
+                <div className="centro-panel centro-panel-deuda">
                   <h2>{mesLargo(mesAPagar)}, pendiente</h2>
                   <div className="centro-saldo">{pesos(aPagarHoy)}</div>
                   <p className="centro-nota">
@@ -348,6 +322,7 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
                 </div>
               )}
             </div>
+            )}
 
             {/* El mismo detalle que las propietarias bajan en PDF, leído en
             pantalla: qué día, en qué sala, de qué hora a qué hora, cuántas
@@ -407,6 +382,39 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
                   dice el documento de convivencia.
                 </p>
               )}
+
+              {/* La cuenta del mes, debajo de las horas: los pagos, el recargo
+                  que corre por la fecha de hoy y lo que hay que pagar. */}
+              {delMes.length > 0 && (
+                <table className="centro-cierre centro-cierre-pie">
+                  <tbody>
+                    <tr>
+                      <td>Pagos registrados</td>
+                      <td className="centro-num">− {pesos(pagos)}</td>
+                    </tr>
+                    {saldo > 0 && (
+                      <tr>
+                        <td>
+                          {pct === 0
+                            ? 'Sin recargo: estamos antes del 10'
+                            : pct === 15
+                              ? 'Recargo del 15 % por pagar entre el 11 y el 20'
+                              : 'Recargo del 25 % por pagar después del 20'}
+                        </td>
+                        <td className="centro-num">{pesos(Math.round((saldo * pct) / 100))}</td>
+                      </tr>
+                    )}
+                    <tr className="centro-total">
+                      <td>
+                        {saldo < 0 ? 'A favor' : saldo === 0 ? 'Saldo del mes' : `Saldo a pagar hoy (${dia(hoy)})`}
+                      </td>
+                      <td className="centro-num">
+                        {pesos(saldo > 0 ? Math.round(saldo * (1 + pct / 100)) : Math.abs(saldo))}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              )}
             </div>
 
             {delMes.some((m) => m.tipo !== 'cargo') && (
@@ -454,47 +462,6 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
             {/* La cuenta hecha: horas, pagos y saldo, con lo que sale pagar en
             cada plazo. Solo cuando hay algo cargado: sin movimientos, el cero
             ya está arriba. */}
-            {delMes.length > 0 && (
-              <div className="centro-panel">
-                <table className="centro-cierre">
-                  <tbody>
-                    <tr>
-                      <td>Horas usadas · {horasDelMes} h</td>
-                      <td className="centro-num">{pesos(cargos)}</td>
-                    </tr>
-                    <tr>
-                      <td>Pagos registrados</td>
-                      <td className="centro-num">− {pesos(pagos)}</td>
-                    </tr>
-                    <tr className="centro-total">
-                      <td>
-                        {saldo < 0 ? 'A favor' : saldo === 0 ? 'Saldo del mes' : 'Saldo a pagar'}
-                      </td>
-                      <td className="centro-num">{pesos(Math.abs(saldo))}</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                {saldo > 0 && (
-                  <table className="centro-cierre centro-plazos">
-                    <tbody>
-                      <tr>
-                        <td>Pagando hasta el 10</td>
-                        <td className="centro-num">{pesos(saldo)}</td>
-                      </tr>
-                      <tr>
-                        <td>Del 11 al 20, con 15 %</td>
-                        <td className="centro-num">{pesos(Math.round(saldo * 1.15))}</td>
-                      </tr>
-                      <tr>
-                        <td>Del 21 en adelante, con 25 %</td>
-                        <td className="centro-num">{pesos(Math.round(saldo * 1.25))}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            )}
 
             {(hayQuePagar || delMes.length > 0) && (
               <div className="centro-panel" id="pagar">

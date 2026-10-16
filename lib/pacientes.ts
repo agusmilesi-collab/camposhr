@@ -69,11 +69,13 @@ export function nombreCompleto(p: Pick<Paciente, 'nombre' | 'apellido'>): string
   return [p.apellido, p.nombre].filter((x) => x && x.trim()).join(', ');
 }
 
-export async function pacientesDe(inquilinoId: string): Promise<Paciente[]> {
+/** Las fichas de la persona. Por defecto las activas; con `todos`, también
+ *  las dadas de baja, que es lo que lista la pantalla de Pacientes. */
+export async function pacientesDe(inquilinoId: string, todos = false): Promise<Paciente[]> {
   if (!ID_VALIDO.test(inquilinoId)) return [];
   return select<Paciente>(
     'centro_pacientes',
-    `select=${COLUMNAS}&inquilino_id=eq.${inquilinoId}&activo=eq.true&order=apellido.asc,nombre.asc`
+    `select=${COLUMNAS}&inquilino_id=eq.${inquilinoId}${todos ? '' : '&activo=eq.true'}&order=apellido.asc,nombre.asc`
   );
 }
 
@@ -97,7 +99,7 @@ export async function crearPaciente(
 export async function guardarPaciente(
   inquilinoId: string,
   id: string,
-  datos: Partial<Record<CampoPaciente, string | null>>
+  datos: Partial<Record<CampoPaciente, string | null>> & { activo?: boolean }
 ): Promise<void> {
   if (!ID_VALIDO.test(inquilinoId) || !ID_VALIDO.test(id)) return;
   await patch('centro_pacientes', `id=eq.${id}&inquilino_id=eq.${inquilinoId}`, {

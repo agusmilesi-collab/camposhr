@@ -14,6 +14,7 @@ type Fila = {
   nombre: string;
   apellido: string;
   telefono: string | null;
+  activo: boolean;
   consultas: number;
   ultima: string | null;
 };
@@ -31,10 +32,30 @@ export default function Lista({ pacientes }: { pacientes: Fila[] }) {
   const [guardando, setGuardando] = useState(false);
   const [alta, setAlta] = useState(false);
 
+  const [conInactivos, setConInactivos] = useState(false);
+  const [cambiando, setCambiando] = useState<string | null>(null);
+  const inactivos = pacientes.filter((p) => !p.activo).length;
+
   const q = busca.trim().toLowerCase();
-  const visibles = q
-    ? pacientes.filter((p) => `${p.apellido} ${p.nombre} ${p.telefono ?? ''}`.toLowerCase().includes(q))
-    : pacientes;
+  const visibles = pacientes
+    .filter((p) => conInactivos || p.activo)
+    .filter((p) => !q || `${p.apellido} ${p.nombre} ${p.telefono ?? ''}`.toLowerCase().includes(q));
+
+  /** Activo o no, desde la lista: una ficha inactiva no se ofrece al anotar
+   *  turnos ni cuenta, pero no se borra. */
+  async function activar(p: Fila, activo: boolean) {
+    setCambiando(p.id);
+    setError(null);
+    const res = await fetch('/api/centro/pacientes', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: p.id, activo }),
+    });
+    const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
+    setCambiando(null);
+    if (!r.ok) return setError(r.motivo ?? 'No se pudo guardar.');
+    router.refresh();
+  }
 
   async function crear(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
@@ -73,6 +94,12 @@ export default function Lista({ pacientes }: { pacientes: Fila[] }) {
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
         />
+        {inactivos > 0 && (
+          <label className="centro-pacientes-inactivos">
+            <input type="checkbox" checked={conInactivos} onChange={(e) => setConInactivos(e.target.checked)} />
+            Ver inactivos ({inactivos})
+          </label>
+        )}
         <button type="button" className="centro-boton" onClick={() => setAlta((v) => !v)}>
           {alta ? 'Cerrar' : 'Nuevo paciente'}
         </button>
@@ -105,7 +132,7 @@ export default function Lista({ pacientes }: { pacientes: Fila[] }) {
         ) : (
           <ul className="centro-pacientes-lista">
             {visibles.map((p) => (
-              <li key={p.id}>
+              <li key={p.id} className={p.activo ? undefined : 'inactivo'}>
                 <Link href={`/centro/pacientes/${p.id}`} className="centro-pacientes-nombre">
                   {p.apellido ? `${p.apellido}, ${p.nombre}` : p.nombre}
                 </Link>
@@ -130,6 +157,18 @@ export default function Lista({ pacientes }: { pacientes: Fila[] }) {
                     ? 'Sin consultas'
                     : `${p.consultas} ${p.consultas === 1 ? 'consulta' : 'consultas'} · última ${fecha(p.ultima as string)}`}
                 </span>
+                <button
+                  type="button"
+                  className={`centro-activo${p.activo ? ' si' : ''}`}
+                  role="switch"
+                  aria-checked={p.activo}
+                  title={p.activo ? 'Activo. Tocá para darlo de baja' : 'Inactivo. Tocá para volver a activarlo'}
+                  onClick={() => activar(p, !p.activo)}
+                  disabled={cambiando === p.id}
+                >
+                  <i />
+                  {p.activo ? 'Activo' : 'Inactivo'}
+                </button>
               </li>
             ))}
           </ul>

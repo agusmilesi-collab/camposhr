@@ -58,6 +58,8 @@ type Tarjeta = {
   enlace?: { href: string; texto: string; afuera?: boolean };
   /** Un aviso se pinta distinto de una reserva: pide mirar algo. */
   aviso?: boolean;
+  /** Un aviso en rojo: una deuda que ya lleva recargo. */
+  urgente?: boolean;
   /** Hora por hora de la reserva: a quién atiende, o libre. Solo en modo mirar. */
   horas?: { hora: number; paciente: string | null; fichaId: string | null }[];
   /** La tarjeta es un turno: lleva el circulito de si vino. */
@@ -295,6 +297,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                 dato: pesos(aPagar),
                 enlace: { href: '/centro/cuenta#pagar', texto: 'Ver cómo se paga' },
                 aviso: true,
+                urgente: aPagar > saldoAPagar,
               },
             ]
           : []),
@@ -342,7 +345,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
               )}
               {c.tarjetas.map((t) => (
                 <article
-                  className={`centro-tarjeta${t.aviso ? ' aviso' : ''}${t.horas ? ' con-horas' : ''}`}
+                  className={`centro-tarjeta${t.aviso ? ' aviso' : ''}${t.urgente ? ' urgente' : ''}${t.horas ? ' con-horas' : ''}`}
                   key={t.clave}
                 >
                   <div className="centro-tarjeta-top">

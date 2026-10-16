@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { inquilinoDeLaSesion } from '@/lib/centro-sesion';
-import { hoyISO, listarEspacios, reservasDe, sumarDias } from '@/lib/consultorios';
+import { finDeMes, hoyISO, listarEspacios, mesCorrido, periodoDe, reservasDe } from '@/lib/consultorios';
 import { pacientesDe as nombresUsados, turnosDe } from '@/lib/turnos';
 import { nombreCompleto, pacientesDe } from '@/lib/pacientes';
 import Barra from '../Barra';
@@ -8,10 +8,6 @@ import Turnos from './Turnos';
 
 export const dynamic = 'force-dynamic';
 
-/** Cuántos días hacia adelante se agenda: las mismas cinco semanas de Reservar. */
-const DIAS_ADELANTE = 35;
-/** Y una semana para atrás, para ver a quién se atendió y no perder la nota. */
-const DIAS_ATRAS = 7;
 
 /**
  * Mis turnos: la agenda de la consulta adentro de las horas reservadas.
@@ -25,8 +21,9 @@ export default async function MisTurnos() {
   if (!yo) redirect('/centro/entrar');
 
   const hoy = hoyISO();
-  const desde = sumarDias(hoy, -DIAS_ATRAS);
-  const hasta = sumarDias(hoy, DIAS_ADELANTE);
+  // Del mes anterior al que viene: lo que el calendario deja recorrer.
+  const desde = mesCorrido(periodoDe(hoy), -1);
+  const hasta = finDeMes(mesCorrido(periodoDe(hoy), 1));
 
   const [reservas, espacios, turnos, usados, fichas] = await Promise.all([
     reservasDe(yo.id),
@@ -75,7 +72,6 @@ export default async function MisTurnos() {
           fecha: t.fecha,
           hora: Number(t.desde_hora.slice(0, 2)),
           paciente: t.paciente,
-          nota: t.nota,
           pacienteId: t.paciente_id,
         }))}
         pacientes={pacientes}

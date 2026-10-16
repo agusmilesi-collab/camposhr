@@ -769,9 +769,9 @@
 
 .centro-pacientes-lista li {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1.2fr);
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1.2fr) auto;
   gap: 10px;
-  align-items: baseline;
+  align-items: center;
   padding: 9px 0;
   border-top: 1px solid var(--linea-suave);
   font-size: 0.9rem;
@@ -795,6 +795,67 @@
   color: var(--suave);
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;
+}
+
+/* Una ficha inactiva se lee apagada, pero sigue ahí. */
+.centro-pacientes-lista li.inactivo .centro-pacientes-nombre,
+.centro-pacientes-lista li.inactivo .centro-pacientes-dato {
+  color: #b5b0a7;
+}
+.centro-pacientes-inactivos {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--tinta-media);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* El interruptor de activo: la pastilla con el punto, verde cuando está. */
+.centro-activo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--suave);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.centro-activo i {
+  position: relative;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--linea);
+  transition: background 0.15s;
+}
+.centro-activo i::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.15s;
+}
+.centro-activo.si i {
+  background: var(--verde);
+}
+.centro-activo.si i::after {
+  left: 14px;
+}
+.centro-activo.si {
+  color: var(--tinta-media);
+}
+.centro-activo:disabled {
+  opacity: 0.5;
 }
 
 /* El teléfono como enlace a WhatsApp: el logo a la izquierda, el número en
@@ -1186,6 +1247,202 @@
   grid-column: 5;
 }
 
+/* ------------------------------------------------ Mis turnos, calendario */
+.centro-cal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.centro-cal-top h2 {
+  margin: 0;
+}
+.centro-cal-controles {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.centro-cal-vistas,
+.centro-cal-nav {
+  display: inline-flex;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.centro-cal-vistas button,
+.centro-cal-nav button {
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  background: var(--panel);
+  color: var(--tinta-media);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.centro-cal-vistas button + button,
+.centro-cal-nav button + button {
+  border-left: 1px solid var(--linea);
+}
+.centro-cal-vistas button.activa {
+  background: var(--tinta);
+  color: #f6f5f2;
+}
+.centro-cal-nav button:hover,
+.centro-cal-vistas button:not(.activa):hover {
+  background: var(--panel-2);
+}
+.centro-cal-marco {
+  overflow-x: auto;
+}
+.centro-cal-semana,
+.centro-cal-mes {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.84rem;
+}
+.centro-cal-semana th,
+.centro-cal-mes th {
+  padding: 6px 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--suave);
+  border-bottom: 1px solid var(--linea);
+  text-align: center;
+}
+.centro-cal-semana th.hoy,
+.centro-cal-dia.hoy .centro-cal-dia-numero {
+  color: var(--azul);
+}
+.centro-cal-semana th.pasado {
+  color: #b5b0a7;
+}
+.centro-cal-semana th.centro-cal-hora {
+  width: 52px;
+  text-align: right;
+  padding-right: 8px;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+  border-bottom: 1px solid var(--linea-suave);
+  font-variant-numeric: tabular-nums;
+}
+.centro-cal-celda {
+  position: relative;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--linea-suave);
+}
+.centro-cal-celda.fuera {
+  background: #ece9e3;
+}
+.centro-cal-paciente {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 0 26px 0 8px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--tinta);
+}
+.centro-cal-paciente::placeholder {
+  color: #b5b0a7;
+  font-style: italic;
+}
+.centro-cal-celda.con-turno .centro-cal-paciente {
+  font-weight: 600;
+}
+.centro-cal-paciente:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--azul);
+  background: var(--panel);
+}
+.centro-cal-ficha {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--azul);
+}
+.centro-cal-ficha svg {
+  width: 18px;
+  height: 18px;
+}
+.centro-cal-sala {
+  position: absolute;
+  right: 5px;
+  top: 1px;
+  font-size: 0.58rem;
+  color: #b5b0a7;
+  pointer-events: none;
+}
+.centro-cal-ficha {
+  top: auto;
+  bottom: 3px;
+  transform: none;
+}
+/* El mes: cada día es una celda alta con sus horas reservadas adentro. */
+.centro-cal-dia {
+  vertical-align: top;
+  height: 92px;
+  padding: 4px;
+  border: 1px solid var(--linea-suave);
+}
+.centro-cal-dia.otro-mes {
+  background: #f7f5f1;
+}
+.centro-cal-dia.otro-mes .centro-cal-dia-numero {
+  color: #b5b0a7;
+}
+.centro-cal-dia-numero {
+  border: 0;
+  background: transparent;
+  padding: 0 2px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--tinta-media);
+  cursor: pointer;
+}
+.centro-cal-dia-numero:hover {
+  text-decoration: underline;
+}
+.centro-cal-dia-horas {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+}
+.centro-cal-dia-horas li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  font-size: 0.74rem;
+}
+.centro-cal-dia-horas li > span {
+  color: var(--suave);
+  font-variant-numeric: tabular-nums;
+}
+.centro-cal-paciente.chica {
+  height: 20px;
+  padding: 0 4px;
+  font-size: 0.74rem;
+  border-radius: 4px;
+}
+.centro-cal-dia-horas li:not(.libre) .centro-cal-paciente.chica {
+  font-weight: 600;
+}
+
 .centro-agenda-seccion {
   margin: 26px 0 10px;
   font-size: 0.72rem;
@@ -1230,6 +1487,24 @@
   .centro-hoja {
     padding: 22px 18px 26px;
   }
+}
+
+/* Un mes anterior sin pagar: la tarjeta en rojo claro, que es un aviso y no
+   un dato más. */
+.centro-panel.centro-panel-deuda {
+  background: color-mix(in srgb, var(--rojo) 7%, var(--panel));
+  border-color: color-mix(in srgb, var(--rojo) 35%, var(--linea));
+}
+.centro-panel-deuda .centro-saldo {
+  color: var(--rojo);
+}
+
+/* La cuenta al pie de la tabla de horas: separada por una línea, sin panel
+   propio. */
+.centro-cierre-pie {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--linea);
 }
 
 /* La cabecera de la ficha del paciente: el nombre y, a la derecha, volver. */
@@ -2165,6 +2440,15 @@
   border-color: color-mix(in srgb, var(--azul) 22%, var(--linea));
 }
 
+/* Una deuda con recargo: la tarjeta en rojo claro. */
+.centro-tarjeta.aviso.urgente {
+  background: color-mix(in srgb, var(--rojo) 7%, var(--panel));
+  border-color: color-mix(in srgb, var(--rojo) 35%, var(--linea));
+}
+.centro-tarjeta.aviso.urgente .centro-tarjeta-top span {
+  color: var(--rojo);
+}
+
 /* El circulito de asistencia del turno: gris sin marcar, verde si vino, rojo
    si no vino. */
 .centro-asistencia {
@@ -2317,4 +2601,27 @@ button.centro-abrir {
 /* Abierta, la tarjeta deja bajar de renglón: el texto del aviso es largo. */
 .centro-tarjeta.centro-renovar.abierta > small {
   white-space: normal;
+}
+
+/* Mis turnos, vista Semana: un bloque por día, uno debajo del otro. */
+.centro-cal-agenda {
+  display: grid;
+  gap: 14px;
+}
+
+.centro-cal-agenda .centro-agenda-dia h2 {
+  margin: 0 0 4px;
+  font-size: 0.92rem;
+}
+
+.centro-cal-agenda .centro-agenda-dia.sin-horas h2 {
+  color: var(--suave);
+  font-weight: 500;
+}
+
+.centro-agenda-vacio {
+  margin: 0;
+  padding: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--suave);
 }

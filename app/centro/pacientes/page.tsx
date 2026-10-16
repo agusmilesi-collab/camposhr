@@ -33,7 +33,7 @@ export default async function Pacientes() {
     );
   }
 
-  const [pacientes, consultas] = await Promise.all([pacientesDe(yo.id), consultasPorPaciente(yo.id)]);
+  const [pacientes, consultas] = await Promise.all([pacientesDe(yo.id, true), consultasPorPaciente(yo.id)]);
 
   return (
     <>
@@ -44,6 +44,7 @@ export default async function Pacientes() {
           nombre: p.nombre,
           apellido: p.apellido,
           telefono: p.telefono,
+          activo: p.activo,
           consultas: consultas[p.id]?.cantidad ?? 0,
           ultima: consultas[p.id]?.ultima ?? null,
         }))}
