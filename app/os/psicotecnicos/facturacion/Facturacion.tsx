@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * La cola de facturación y lo ya emitido.
@@ -12,13 +12,18 @@
  * Abajo están las emitidas, que ven las dos. Cada una abre su comprobante.
  */
 
-import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
-import Bateria from '../Bateria';
-import { columnas } from '../piezas';
-import { COLOR_ETAPA } from '@/lib/psicotecnicos-tipos';
-import { enumerar, faltaParaEmitir, faltaParaFacturarle, leyendaIva } from '@/lib/clientes-tipos';
-import { fechaCorta, hoyIso } from '@/lib/hora';
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import Bateria from "../Bateria";
+import { columnas } from "../piezas";
+import { COLOR_ETAPA } from "@/lib/psicotecnicos-tipos";
+import {
+  enumerar,
+  faltaParaEmitir,
+  faltaParaFacturarle,
+  leyendaIva,
+} from "@/lib/clientes-tipos";
+import { fechaCorta, hoyIso } from "@/lib/hora";
 import {
   formatoFecha,
   formatoImporte,
@@ -30,7 +35,7 @@ import {
   type Facturable,
   type Factura,
   type Fiscal,
-} from '@/lib/facturas-tipos';
+} from "@/lib/facturas-tipos";
 
 /**
  * Las columnas, con los anchos que declara `piezas.tsx`.
@@ -40,7 +45,15 @@ import {
  * mueve nada de lugar. La tilde no tiene columna propia: va con el nombre, que
  * además es lo que se está tildando.
  */
-const COLUMNAS = ['Candidato', 'Puesto', 'Batería', 'Entrevista', 'Etapa', 'Orden', 'Importe'];
+const COLUMNAS = [
+  "Candidato",
+  "Puesto",
+  "Batería",
+  "Entrevista",
+  "Etapa",
+  "Orden",
+  "Importe",
+];
 
 /**
  * Lo que pide cada columna acá, medido en pantalla sobre el contenido y el
@@ -54,7 +67,7 @@ const COLUMNAS = ['Candidato', 'Puesto', 'Batería', 'Entrevista', 'Etapa', 'Ord
 const PROPIOS = {
   Candidato: 176,
   Puesto: 156,
-  'Batería': 96,
+  Batería: 96,
   Entrevista: 108,
   Etapa: 112,
   /* El número de la orden de compra, "#0004". */
@@ -65,14 +78,14 @@ const MEDIDAS = columnas(COLUMNAS, PROPIOS);
 
 /** Las de lo ya facturado, que miden lo mismo: las dos tablas se apilan. */
 const COLUMNAS_EMITIDAS = [
-  'Fecha',
-  'Número',
-  'Emisora',
-  'Cliente',
-  'Cubre',
-  'Importe',
-  'Cobro',
-  '',
+  "Fecha",
+  "Número",
+  "Emisora",
+  "Cliente",
+  "Cubre",
+  "Importe",
+  "Cobro",
+  "",
 ];
 /**
  * Lo mismo para la tabla de lo facturado.
@@ -90,7 +103,7 @@ const ANCHOS_EMITIDAS: Record<string, number> = {
   /* "05/10/26". */
   Fecha: 80,
   /* "00003-00000789", entero. */
-  'Número': 142,
+  Número: 142,
   /* Solo el nombre; el ancho lo pide el rótulo "Emisora". */
   Emisora: 88,
   /* "10 candid." con la flecha al lado. */
@@ -102,22 +115,28 @@ const ANCHOS_EMITIDAS: Record<string, number> = {
   /* "Emitir NC" y el ícono de quitar. */
   /* Medido: 113 de los dos botones más el relleno de la celda. Con menos,
      el tacho quedaba contra el borde y asomaban puntos suspensivos. */
-  '': 144,
+  "": 144,
 };
 
-
 /** Las de las anuladas: la factura, y la nota de crédito que la anuló. */
-const COLUMNAS_ANULADAS = ['Fecha', 'Factura', 'Emisora', 'Cliente', 'Importe', 'Nota de crédito', 'Anulada el'];
+const COLUMNAS_ANULADAS = [
+  "Fecha",
+  "Factura",
+  "Emisora",
+  "Cliente",
+  "Importe",
+  "Nota de crédito",
+  "Anulada el",
+];
 const PROPIOS_ANULADAS = {
   Fecha: 116,
   Factura: 130,
   Emisora: 140,
   Cliente: 180,
   Importe: 134,
-  'Nota de crédito': 150,
-  'Anulada el': 120,
+  "Nota de crédito": 150,
+  "Anulada el": 120,
 };
-
 
 /**
  * Dónde empieza la columna que se abre.
@@ -127,15 +146,14 @@ const PROPIOS_ANULADAS = {
  * arranca justo debajo del botón que lo abrió.
  */
 
-
 async function mandar(cuerpo: unknown) {
-  const res = await fetch('/api/os/facturas', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch("/api/os/facturas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(cuerpo),
   });
-  const datos = await res.json().catch(() => ({ error: 'Sin respuesta.' }));
-  if (!res.ok) throw new Error(datos.error ?? 'No se pudo guardar.');
+  const datos = await res.json().catch(() => ({ error: "Sin respuesta." }));
+  if (!res.ok) throw new Error(datos.error ?? "No se pudo guardar.");
   return datos;
 }
 
@@ -143,13 +161,13 @@ const hoy = hoyIso;
 
 /** "Lorena" de "Lorena Campos". Lo que no es un nombre va como está. */
 function nombreDe(emisora: string): string {
-  return emisora.startsWith('sin ') ? emisora : emisora.split(' ')[0];
+  return emisora.startsWith("sin ") ? emisora : emisora.split(" ")[0];
 }
 
 /** "05/10/26": la fecha entera en el menor ancho, para las tablas. */
 function fechaBreve(iso: string | null): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? '');
-  return m ? `${m[3]}/${m[2]}/${m[1].slice(2)}` : '—';
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? "");
+  return m ? `${m[3]}/${m[2]}/${m[1].slice(2)}` : "—";
 }
 
 /**
@@ -172,7 +190,7 @@ const cubre = (f: Factura) => {
  * dos o más no hay forma de repartirlo, y ahí el renglón va sin cifra en vez de
  * mostrar una inventada.
  */
-function importeDe(f: Factura, r: Factura['renglones'][number]): number | null {
+function importeDe(f: Factura, r: Factura["renglones"][number]): number | null {
   if (r.importe !== null) return r.importe;
   return f.renglones.length === 1 ? f.importe : null;
 }
@@ -203,14 +221,17 @@ export function AFacturar({
       if (suyas) suyas.push(p);
       else m.set(p.empresaId, [p]);
     }
-    return [...m.entries()].sort((a, b) => a[1][0].cliente.localeCompare(b[1][0].cliente, 'es'));
+    return [...m.entries()].sort((a, b) =>
+      a[1][0].cliente.localeCompare(b[1][0].cliente, "es"),
+    );
   }, [pendientes]);
 
   if (pendientes.length === 0) {
     return (
       <div className="os-panel">
         <p className="os-vacio">
-          No hay nada para facturar. Cada evaluación aparece acá en cuanto se toma la entrevista.
+          No hay nada para facturar. Cada evaluación aparece acá en cuanto se
+          toma la entrevista.
         </p>
       </div>
     );
@@ -250,40 +271,45 @@ function GrupoCliente({
   quien: string;
 }) {
   const router = useRouter();
-  const [elegidas, setElegidas] = useState<string[]>(pendientes.map((p) => p.evaluacionId));
+  const [elegidas, setElegidas] = useState<string[]>(
+    pendientes.map((p) => p.evaluacionId),
+  );
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [abierto, setAbierto] = useState(false);
   // Las órdenes de compra del cliente se leen mientras se escriben: el
   // detalle de lo que va a salir las muestra antes de generar nada.
-  const [oc, setOc] = useState('');
-  const [ocUsd, setOcUsd] = useState('');
+  const [oc, setOc] = useState("");
+  const [ocUsd, setOcUsd] = useState("");
   // Qué factura sale ahora. Con el Benziger en dólares son dos y pueden salir
   // por separado: lo que no se emite queda en la cola.
   const [emitirPesos, setEmitirPesos] = useState(true);
   const [emitirDolares, setEmitirDolares] = useState(true);
   /** El valor que comparten todas, o vacío si difieren o falta: se escribe a mano. */
   const comun = (valores: (string | null)[]) => {
-    const distintos = [...new Set(valores.map((v) => v?.trim() || ''))];
-    return distintos.length === 1 ? distintos[0] : '';
+    const distintos = [...new Set(valores.map((v) => v?.trim() || ""))];
+    return distintos.length === 1 ? distintos[0] : "";
   };
   const [seguroSinFactura, setSeguroSinFactura] = useState(false);
 
   // Quién factura: la dueña de la cola. Cada pestaña es de una evaluadora y
   // lo que está ahí lo factura ella, mire quien mire; si la cola no dice de
   // quién es, la de quien está mirando.
-  const duenia = pendientes[0]?.evaluadora ?? '';
+  const duenia = pendientes[0]?.evaluadora ?? "";
   const propia =
-    emisoras.find((e) => duenia !== '' && duenia.includes(e.nombre)) ??
+    emisoras.find((e) => duenia !== "" && duenia.includes(e.nombre)) ??
     emisoras.find((e) => e.nombre.includes(quien) || quien.includes(e.nombre));
-  const [emisorId, setEmisorId] = useState(propia?.id ?? '');
+  const [emisorId, setEmisorId] = useState(propia?.id ?? "");
   const elegida = emisoras.find((e) => e.id === emisorId);
   // En producción la factura se le pide a ARCA, que pone el número, con el
   // punto de venta de web services. Si no, se está anotando una que salió por
   // Comprobantes en Línea: va su punto de venta de ahí y el número que sigue.
-  const porArca = elegida?.ambiente === 'produccion';
-  const puntoPropuesto = porArca ? elegida?.puntoVenta : elegida?.puntoVentaManual;
-  const numeroPropuesto = porArca || !elegida ? undefined : siguientes[elegida.id];
+  const porArca = elegida?.ambiente === "produccion";
+  const puntoPropuesto = porArca
+    ? elegida?.puntoVenta
+    : elegida?.puntoVentaManual;
+  const numeroPropuesto =
+    porArca || !elegida ? undefined : siguientes[elegida.id];
 
   // Lo que falta para que la factura salga completa. Con algo faltando no se
   // genera: una factura sin el CUIT o el domicilio del cliente no cumple, y
@@ -301,7 +327,9 @@ function GrupoCliente({
   const todasElegidas = seleccion.length === pendientes.length;
   // Lo que sale aparte, en dólares: el Benziger del cliente que lo paga así.
   // Es una segunda factura, con su propio número y su propia orden de compra del cliente.
-  const enDolares = seleccion.filter((p) => p.benzigerAparte && p.pendiente.dolares);
+  const enDolares = seleccion.filter(
+    (p) => p.benzigerAparte && p.pendiente.dolares,
+  );
   const totalUsd = enDolares.reduce((n, p) => n + (p.benzigerUsd ?? 0), 0);
   const enPesos = seleccion.filter((p) => p.pendiente.pesos);
   /**
@@ -309,13 +337,18 @@ function GrupoCliente({
    * traen órdenes distintas (o una la tiene y otra no), no van juntas: va
    * una factura por orden. Lo mismo para la factura en dólares.
    */
-  const ordenesDe = (valores: (string | null)[]) =>
-    [...new Set(valores.map((v) => v?.trim() || 'sin cargar'))];
-  const mezcla = ordenesDe(enPesos.map((p) => p.ocCliente)).filter((v) => v !== 'sin cargar').length > 0
-    ? ordenesDe(enPesos.map((p) => p.ocCliente))
-    : [];
+  const ordenesDe = (valores: (string | null)[]) => [
+    ...new Set(valores.map((v) => v?.trim() || "sin cargar")),
+  ];
+  const mezcla =
+    ordenesDe(enPesos.map((p) => p.ocCliente)).filter((v) => v !== "sin cargar")
+      .length > 0
+      ? ordenesDe(enPesos.map((p) => p.ocCliente))
+      : [];
   const mezclaUsd =
-    ordenesDe(enDolares.map((p) => p.ocClienteUsd)).filter((v) => v !== 'sin cargar').length > 0
+    ordenesDe(enDolares.map((p) => p.ocClienteUsd)).filter(
+      (v) => v !== "sin cargar",
+    ).length > 0
       ? ordenesDe(enDolares.map((p) => p.ocClienteUsd))
       : [];
   const ordenesMezcladas = mezcla.length > 1 || mezclaUsd.length > 1;
@@ -328,7 +361,7 @@ function GrupoCliente({
     setError(null);
     try {
       const r = await mandar({
-        accion: 'nueva',
+        accion: "nueva",
         ...datos,
         empresaId,
         evaluaciones: elegidas,
@@ -340,12 +373,18 @@ function GrupoCliente({
       // Una sola pestaña: el navegador bloquea la segunda ventana de un mismo
       // clic. La factura en dólares se abre desde el comprobante de la de
       // pesos, que la enlaza arriba.
-      if (r?.id) window.open(`/os/psicotecnicos/facturacion/comprobante/${r.id}`, '_blank');
+      if (r?.id)
+        window.open(
+          `/os/psicotecnicos/facturacion/comprobante/${r.id}`,
+          "_blank",
+        );
       if (r?.sinDolares) {
-        setError('La factura en pesos se generó, pero la de dólares (el Benziger) no. Hay que cargarla aparte.');
+        setError(
+          "La factura en pesos se generó, pero la de dólares (el Benziger) no. Hay que cargarla aparte.",
+        );
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo guardar.');
+      setError(err instanceof Error ? err.message : "No se pudo guardar.");
     } finally {
       setEnviando(false);
     }
@@ -361,14 +400,15 @@ function GrupoCliente({
    * quien es el cobro.
    */
   async function sinFactura() {
-    const duenia = seleccion[0]?.evaluadora ?? '';
-    const emisora = emisoras.find((e) => duenia.includes(e.nombre)) ?? propia ?? emisoras[0];
+    const duenia = seleccion[0]?.evaluadora ?? "";
+    const emisora =
+      emisoras.find((e) => duenia.includes(e.nombre)) ?? propia ?? emisoras[0];
     if (!emisora) return;
     setEnviando(true);
     setError(null);
     try {
       await mandar({
-        accion: 'nueva',
+        accion: "nueva",
         sinComprobante: true,
         emisorId: emisora.id,
         empresaId,
@@ -377,7 +417,7 @@ function GrupoCliente({
       });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo guardar.');
+      setError(err instanceof Error ? err.message : "No se pudo guardar.");
     } finally {
       setEnviando(false);
     }
@@ -392,12 +432,16 @@ function GrupoCliente({
               por cliente: es lo que explica por qué este grupo tiene otros
               números que el de al lado. */}
           {pendientes.some((p) => p.acordado || p.benzigerAcordado) && (
-            <span className="os-sello-estado os-azul" title="Este cliente tiene precios acordados (licitación)">
+            <span
+              className="os-sello-estado os-azul"
+              title="Este cliente tiene precios acordados (licitación)"
+            >
               Precios acordados
             </span>
           )}
           <span className="os-enlace">
-            {pendientes.length} {pendientes.length === 1 ? 'evaluación' : 'evaluaciones'}
+            {pendientes.length}{" "}
+            {pendientes.length === 1 ? "evaluación" : "evaluaciones"}
           </span>
           {/* Con todas marcadas, el botón las suelta; si falta alguna, las
               marca a todas. Así una sola acción sirve para los dos casos. */}
@@ -406,10 +450,12 @@ function GrupoCliente({
               type="button"
               className="os-enlace-boton"
               onClick={() =>
-                setElegidas(todasElegidas ? [] : pendientes.map((p) => p.evaluacionId))
+                setElegidas(
+                  todasElegidas ? [] : pendientes.map((p) => p.evaluacionId),
+                )
               }
             >
-              {todasElegidas ? 'Deseleccionar todas' : 'Seleccionar todas'}
+              {todasElegidas ? "Deseleccionar todas" : "Seleccionar todas"}
             </button>
           )}
         </span>
@@ -428,7 +474,10 @@ function GrupoCliente({
                   los números. A la izquierda, el rótulo y su columna quedaban
                   en puntas opuestas y no se leía cuál encabezaba cuál. */}
               {COLUMNAS.map((c) => (
-                <th key={c} className={c === 'Importe' ? 'os-tabla-num' : undefined}>
+                <th
+                  key={c}
+                  className={c === "Importe" ? "os-tabla-num" : undefined}
+                >
                   {c}
                 </th>
               ))}
@@ -450,7 +499,7 @@ function GrupoCliente({
                         setElegidas((xs) =>
                           ev.target.checked
                             ? [...xs, p.evaluacionId]
-                            : xs.filter((x) => x !== p.evaluacionId)
+                            : xs.filter((x) => x !== p.evaluacionId),
                         )
                       }
                     />
@@ -462,10 +511,12 @@ function GrupoCliente({
                   <Bateria codigo={p.bateria} conBenziger={p.conBenziger} />
                 </td>
                 <td className="os-tabla-flojo" data-campo="Entrevista">
-                  {fechaCorta(p.fechaEntrevista) ?? '—'}
+                  {fechaCorta(p.fechaEntrevista) ?? "—"}
                 </td>
                 <td data-campo="Etapa">
-                  <span className={`os-sello-estado ${COLOR_ETAPA[p.etapa] ?? 'os-gris'}`}>
+                  <span
+                    className={`os-sello-estado ${COLOR_ETAPA[p.etapa] ?? "os-gris"}`}
+                  >
                     {p.etapa}
                   </span>
                 </td>
@@ -483,17 +534,23 @@ function GrupoCliente({
                       #{p.orden.numero}
                     </a>
                   ) : (
-                    '—'
+                    "—"
                   )}
                   {/* La del cliente, guardada en la evaluación: es la que va
                       impresa en la factura. En dólares, la de la segunda. */}
                   {p.ocCliente && (
-                    <span className="os-oc-cliente" title="Orden de compra del cliente, factura en pesos">
+                    <span
+                      className="os-oc-cliente"
+                      title="Orden de compra del cliente, factura en pesos"
+                    >
                       OC {p.ocCliente}
                     </span>
                   )}
                   {p.ocClienteUsd && (
-                    <span className="os-oc-cliente" title="Orden de compra del cliente, factura en dólares">
+                    <span
+                      className="os-oc-cliente"
+                      title="Orden de compra del cliente, factura en dólares"
+                    >
                       OC USD {p.ocClienteUsd}
                     </span>
                   )}
@@ -528,11 +585,16 @@ function GrupoCliente({
                       Benziger facturado ({p.benzigerFacturado.numero})
                     </a>
                   )}
-                  {p.benzigerAparte && p.pendiente.dolares && p.benzigerUsd !== null && (
-                    <span className="os-oc-cliente os-importe-usd" title="Benziger: en una factura aparte, en dólares">
-                      + USD {p.benzigerUsd} aparte
-                    </span>
-                  )}
+                  {p.benzigerAparte &&
+                    p.pendiente.dolares &&
+                    p.benzigerUsd !== null && (
+                      <span
+                        className="os-oc-cliente os-importe-usd"
+                        title="Benziger: en una factura aparte, en dólares"
+                      >
+                        + USD {p.benzigerUsd} aparte
+                      </span>
+                    )}
                 </td>
               </tr>
             ))}
@@ -554,15 +616,17 @@ function GrupoCliente({
         {enDolares.length > 0 && (
           <span title="El Benziger de este cliente se factura en dólares, en una factura aparte">
             <span className="os-dato-rotulo">Aparte, en dólares</span>
-            {formatoImporte(totalUsd, 'USD')}
+            {formatoImporte(totalUsd, "USD")}
           </span>
         )}
         {/* Solo si algún Benziger de lo tildado se pesifica al dólar: el
             acordado en pesos no depende de la cotización. */}
         {seleccion.some((p) => p.benziger !== null && !p.benzigerAcordado) && (
           <span>
-            <span className="os-dato-rotulo">Dólar tarjeta</span>${' '}
-            {(pendientes.find((p) => p.dolar)?.dolar ?? 0).toLocaleString('es-AR')}
+            <span className="os-dato-rotulo">Dólar tarjeta</span>${" "}
+            {(pendientes.find((p) => p.dolar)?.dolar ?? 0).toLocaleString(
+              "es-AR",
+            )}
           </span>
         )}
         {/* Los dos botones en el mismo renglón que la suma, a la derecha: lo
@@ -573,8 +637,9 @@ function GrupoCliente({
             {error && <span className="os-form-error">{error}</span>}
             {ordenesMezcladas && (
               <span className="os-form-error">
-                Órdenes de compra del cliente distintas ({(mezcla.length > 1 ? mezcla : mezclaUsd).join(', ')}):
-                va una factura por orden.
+                Órdenes de compra del cliente distintas (
+                {(mezcla.length > 1 ? mezcla : mezclaUsd).join(", ")}): va una
+                factura por orden.
               </span>
             )}
             <button
@@ -591,13 +656,15 @@ function GrupoCliente({
               }}
               title={
                 seleccion.length === 0
-                  ? 'Seleccioná al menos una evaluación.'
+                  ? "Seleccioná al menos una evaluación."
                   : ordenesMezcladas
-                    ? 'Las tildadas tienen órdenes de compra del cliente distintas: tildá las de una sola orden.'
+                    ? "Las tildadas tienen órdenes de compra del cliente distintas: tildá las de una sola orden."
                     : undefined
               }
             >
-              {seleccion.length === 0 ? 'Facturar' : `Facturar ${seleccion.length}`}
+              {seleccion.length === 0
+                ? "Facturar"
+                : `Facturar ${seleccion.length}`}
             </button>
             {/* Sin factura va en dos toques: está al lado de "Facturar" y lo
                 que hace saca a esas personas de la cola. */}
@@ -612,9 +679,13 @@ function GrupoCliente({
                     setSeguroSinFactura(false);
                   }}
                 >
-                  {enviando ? 'Guardando…' : 'Sí, sin factura'}
+                  {enviando ? "Guardando…" : "Sí, sin factura"}
                 </button>
-                <button className="os-boton" disabled={enviando} onClick={() => setSeguroSinFactura(false)}>
+                <button
+                  className="os-boton"
+                  disabled={enviando}
+                  onClick={() => setSeguroSinFactura(false)}
+                >
                   No
                 </button>
               </>
@@ -633,13 +704,18 @@ function GrupoCliente({
       </div>
 
       {!abierto ? null : (
-        <form className="os-form os-form-factura os-panel-cuerpo" onSubmit={emitir}>
+        <form
+          className="os-form os-form-factura os-panel-cuerpo"
+          onSubmit={emitir}
+        >
           {/* A quién se le factura, tal como va a salir en el comprobante.
               Lo que falta se dice acá y en ámbar: sin CUIT o sin condición
               frente al IVA, ARCA la rechaza. */}
           <div className="os-fiscal">
             <div className="os-fiscal-top">
-              <span className="os-etiqueta-campo">Datos fiscales del cliente</span>
+              <span className="os-etiqueta-campo">
+                Datos fiscales del cliente
+              </span>
               <a
                 className="os-tabla-enlace"
                 href={`/os/clientes/${empresaId}`}
@@ -652,28 +728,42 @@ function GrupoCliente({
             <dl>
               <DatoFiscal rotulo="Razón social" valor={fiscal?.razonSocial} />
               <DatoFiscal rotulo="CUIT" valor={cuitLindo(fiscal?.cuit)} />
-              <DatoFiscal rotulo="Condición frente al IVA" valor={leyendaIva(fiscal?.condicionIva)} />
+              <DatoFiscal
+                rotulo="Condición frente al IVA"
+                valor={leyendaIva(fiscal?.condicionIva)}
+              />
               <DatoFiscal rotulo="Domicilio" valor={fiscal?.domicilio} />
               {/* El correo no frena la factura: es a dónde se manda, no un
                   dato del comprobante. */}
               <div>
                 <dt>Correo de facturación</dt>
-                <dd>{fiscal?.correo ? fiscal.correo : <span className="os-fiscal-opcional">sin cargar</span>}</dd>
+                <dd>
+                  {fiscal?.correo ? (
+                    fiscal.correo
+                  ) : (
+                    <span className="os-fiscal-opcional">sin cargar</span>
+                  )}
+                </dd>
               </div>
               <div>
                 <dt>Orden de compra propia</dt>
-                <dd>{fiscal?.exigeOrdenCompra ? 'La exige en la factura' : 'No la exige'}</dd>
+                <dd>
+                  {fiscal?.exigeOrdenCompra
+                    ? "La exige en la factura"
+                    : "No la exige"}
+                </dd>
               </div>
             </dl>
             {faltaCliente.length > 0 && (
               <p className="os-fiscal-falta">
-                No se le puede facturar todavía: falta {enumerar(faltaCliente)}. Se carga en su
-                ficha.
+                No se le puede facturar todavía: falta {enumerar(faltaCliente)}.
+                Se carga en su ficha.
               </p>
             )}
             {faltaEmisora.length > 0 && (
               <p className="os-fiscal-falta">
-                A {elegida?.nombre} le falta {enumerar(faltaEmisora)} para poder emitir.
+                A {elegida?.nombre} le falta {enumerar(faltaEmisora)} para poder
+                emitir.
               </p>
             )}
           </div>
@@ -708,7 +798,7 @@ function GrupoCliente({
                 name="puntoVenta"
                 type="number"
                 min="1"
-                defaultValue={puntoPropuesto ?? ''}
+                defaultValue={puntoPropuesto ?? ""}
                 placeholder="—"
                 required
               />
@@ -721,8 +811,8 @@ function GrupoCliente({
                 name="numero"
                 type="number"
                 min="1"
-                defaultValue={numeroPropuesto ?? ''}
-                placeholder={porArca ? 'lo pone ARCA' : '—'}
+                defaultValue={numeroPropuesto ?? ""}
+                placeholder={porArca ? "lo pone ARCA" : "—"}
                 // Anotando una que salió por Comprobantes en Línea, el número
                 // es parte de la factura. Por ARCA lo pone ARCA.
                 required={!porArca}
@@ -730,13 +820,21 @@ function GrupoCliente({
             </div>
             <div className="os-campo-bloque os-tramo-2">
               <label className="os-etiqueta-campo">Fecha</label>
-              <input className="os-campo" name="fecha" type="date" required defaultValue={hoy()} />
+              <input
+                className="os-campo"
+                name="fecha"
+                type="date"
+                required
+                defaultValue={hoy()}
+              />
             </div>
             <div className="os-campo-bloque os-tramo-2">
               {/* La del cliente, no la nuestra: la orden de compra de Campos
                   HR ya está, es la de la columna "Orden". Esta es el número
                   que algunos clientes dan y exigen ver en la factura. */}
-              <label className="os-etiqueta-campo">Orden de compra del cliente</label>
+              <label className="os-etiqueta-campo">
+                Orden de compra del cliente
+              </label>
               <input
                 className="os-campo"
                 name="ordenCompra"
@@ -747,7 +845,9 @@ function GrupoCliente({
                 // factura que no la trae impresa.
                 required={Boolean(fiscal?.exigeOrdenCompra) && emitirPesos}
                 placeholder={
-                  fiscal?.exigeOrdenCompra ? 'Este cliente la exige' : 'Si el cliente dio la suya'
+                  fiscal?.exigeOrdenCompra
+                    ? "Este cliente la exige"
+                    : "Si el cliente dio la suya"
                 }
               />
             </div>
@@ -758,21 +858,35 @@ function GrupoCliente({
               <>
                 {!porArca && (
                   <div className="os-campo-bloque os-tramo-1">
-                    <label className="os-etiqueta-campo">Número (factura en USD)</label>
-                    <input className="os-campo" name="numeroDolares" type="number" min="1" required />
+                    <label className="os-etiqueta-campo">
+                      Número (factura en USD)
+                    </label>
+                    <input
+                      className="os-campo"
+                      name="numeroDolares"
+                      type="number"
+                      min="1"
+                      required
+                    />
                   </div>
                 )}
                 <div className="os-campo-bloque os-tramo-2">
-                  <label className="os-etiqueta-campo">Orden de compra del cliente (factura en USD)</label>
+                  <label className="os-etiqueta-campo">
+                    Orden de compra del cliente (factura en USD)
+                  </label>
                   <input
                     className="os-campo"
                     name="ordenCompraDolares"
                     maxLength={60}
                     value={ocUsd}
                     onChange={(ev) => setOcUsd(ev.target.value)}
-                    required={Boolean(fiscal?.exigeOrdenCompra) && emitirDolares}
+                    required={
+                      Boolean(fiscal?.exigeOrdenCompra) && emitirDolares
+                    }
                     placeholder={
-                      fiscal?.exigeOrdenCompra ? 'La orden de compra del Benziger' : 'Si el cliente dio una aparte'
+                      fiscal?.exigeOrdenCompra
+                        ? "La orden de compra del Benziger"
+                        : "Si el cliente dio una aparte"
                     }
                   />
                 </div>
@@ -801,40 +915,53 @@ function GrupoCliente({
                   el de siempre, más la orden del cliente al final. Con tilde,
                   porque con el Benziger en dólares pueden salir por separado. */}
               {enPesos.length > 0 && (
-              <li className={emitirPesos ? undefined : 'os-factura-detalle-apagada'}>
-                {enDolares.length > 0 && (
-                  <input
-                    type="checkbox"
-                    className="os-factura-detalle-tilde"
-                    checked={emitirPesos}
-                    onChange={(ev) => setEmitirPesos(ev.target.checked)}
-                    aria-label="Emitir la factura en pesos"
-                  />
-                )}
-                <b>Factura en pesos</b> por {formatoImporte(total)}
-                {seleccion.some((p) => p.benziger !== null)
-                  ? ` (incluye ${seleccion.filter((p) => p.benziger !== null).length} Benziger pesificado)`
-                  : ''}
-                . Renglones:{' '}
-                {seleccion.map((p, i) => (
-                  <span key={p.evaluacionId}>
-                    {i > 0 ? ' · ' : ''}
-                    {conceptoDe(p)}
-                    {oc.trim() ? (
-                      <>
-                        {' · Orden de compra '}
-                        <b>{oc.trim()}</b>
-                      </>
-                    ) : (
-                      <span className="os-dato-falta"> · orden de compra sin cargar</span>
-                    )}
-                  </span>
-                ))}
-                .
-              </li>
+                <li
+                  className={
+                    emitirPesos ? undefined : "os-factura-detalle-apagada"
+                  }
+                >
+                  {enDolares.length > 0 && (
+                    <input
+                      type="checkbox"
+                      className="os-factura-detalle-tilde"
+                      checked={emitirPesos}
+                      onChange={(ev) => setEmitirPesos(ev.target.checked)}
+                      aria-label="Emitir la factura en pesos"
+                    />
+                  )}
+                  <b>Factura en pesos</b> por {formatoImporte(total)}
+                  {seleccion.some((p) => p.benziger !== null)
+                    ? ` (incluye ${seleccion.filter((p) => p.benziger !== null).length} Benziger pesificado)`
+                    : ""}
+                  . Renglones:{" "}
+                  {seleccion.map((p, i) => (
+                    <span key={p.evaluacionId}>
+                      {i > 0 ? " · " : ""}
+                      {conceptoDe(p)}
+                      {oc.trim() ? (
+                        <>
+                          {" · Orden de compra "}
+                          <b>{oc.trim()}</b>
+                        </>
+                      ) : (
+                        fiscal?.exigeOrdenCompra && (
+                          <span className="os-dato-falta">
+                            {" "}
+                            · orden de compra sin cargar
+                          </span>
+                        )
+                      )}
+                    </span>
+                  ))}
+                  .
+                </li>
               )}
               {enDolares.length > 0 && (
-                <li className={emitirDolares ? undefined : 'os-factura-detalle-apagada'}>
+                <li
+                  className={
+                    emitirDolares ? undefined : "os-factura-detalle-apagada"
+                  }
+                >
                   {enPesos.length > 0 && (
                     <input
                       type="checkbox"
@@ -844,18 +971,24 @@ function GrupoCliente({
                       aria-label="Emitir la factura en dólares"
                     />
                   )}
-                  <b>Factura en dólares</b> por {formatoImporte(totalUsd, 'USD')}. Renglones:{' '}
+                  <b>Factura en dólares</b> por{" "}
+                  {formatoImporte(totalUsd, "USD")}. Renglones:{" "}
                   {enDolares.map((p, i) => (
                     <span key={p.evaluacionId}>
-                      {i > 0 ? ' · ' : ''}
+                      {i > 0 ? " · " : ""}
                       Adicional BTSA, {p.candidato}
                       {ocUsd.trim() ? (
                         <>
-                          {' · Orden de compra '}
+                          {" · Orden de compra "}
                           <b>{ocUsd.trim()}</b>
                         </>
                       ) : (
-                        <span className="os-dato-falta"> · orden de compra sin cargar</span>
+                        fiscal?.exigeOrdenCompra && (
+                          <span className="os-dato-falta">
+                            {" "}
+                            · orden de compra sin cargar
+                          </span>
+                        )
                       )}
                     </span>
                   ))}
@@ -866,7 +999,7 @@ function GrupoCliente({
             <p>
               {porArca
                 ? 'Los números los pone ARCA: se piden desde cada factura, con el botón "Pedir CAE".'
-                : 'El número propuesto es el que sigue al último anotado; cambialo si no coincide con el de Comprobantes en Línea.'}
+                : "El número propuesto es el que sigue al último anotado; cambialo si no coincide con el de Comprobantes en Línea."}
             </p>
           </div>
 
@@ -874,12 +1007,22 @@ function GrupoCliente({
             <button
               className="os-boton os-boton-firme"
               type="submit"
-              disabled={enviando || incompleta || (!emitirPesos && !emitirDolares)}
-              title={incompleta ? 'Faltan datos fiscales: están marcados arriba' : undefined}
+              disabled={
+                enviando || incompleta || (!emitirPesos && !emitirDolares)
+              }
+              title={
+                incompleta
+                  ? "Faltan datos fiscales: están marcados arriba"
+                  : undefined
+              }
             >
-              {enviando ? 'Guardando…' : 'Generar la factura'}
+              {enviando ? "Guardando…" : "Generar la factura"}
             </button>
-            <button className="os-boton" type="button" onClick={() => setAbierto(false)}>
+            <button
+              className="os-boton"
+              type="button"
+              onClick={() => setAbierto(false)}
+            >
               Cancelar
             </button>
             {error && <p className="os-form-error">{error}</p>}
@@ -891,14 +1034,24 @@ function GrupoCliente({
 }
 
 const cuitLindo = (c: string | null | undefined) =>
-  c && c.length === 11 ? `${c.slice(0, 2)}-${c.slice(2, 10)}-${c.slice(10)}` : c;
+  c && c.length === 11
+    ? `${c.slice(0, 2)}-${c.slice(2, 10)}-${c.slice(10)}`
+    : c;
 
 /** Un dato fiscal del cliente; el que falta se dice y no se deja en blanco. */
-function DatoFiscal({ rotulo, valor }: { rotulo: string; valor: string | null | undefined }) {
+function DatoFiscal({
+  rotulo,
+  valor,
+}: {
+  rotulo: string;
+  valor: string | null | undefined;
+}) {
   return (
     <div>
       <dt>{rotulo}</dt>
-      <dd>{valor ? valor : <span className="os-dato-falta">sin cargar</span>}</dd>
+      <dd>
+        {valor ? valor : <span className="os-dato-falta">sin cargar</span>}
+      </dd>
     </div>
   );
 }
@@ -926,23 +1079,27 @@ export function Emitidas({
    */
   sinEmisora?: boolean;
   /** Qué mitad mostrar, cuando cada una vive en su pestaña. */
-  solo?: 'sin-cobrar' | 'cobrado';
+  solo?: "sin-cobrar" | "cobrado";
 }) {
   // El buscador, como el de Entregados: con cincuenta cobradas, encontrar la
   // de un candidato era recorrer la lista abriendo "Cubre" fila por fila.
-  const [busca, setBusca] = useState('');
+  const [busca, setBusca] = useState("");
   const buscado = llano(busca.trim());
   const todas =
-    solo === 'cobrado'
+    solo === "cobrado"
       ? facturas.filter((f) => f.cobradaAt)
-      : solo === 'sin-cobrar'
+      : solo === "sin-cobrar"
         ? facturas.filter((f) => !f.cobradaAt)
         : facturas;
   const visibles = buscado
-    ? todas.filter((f) => llano(`${textoDe(f)} ${ordenes[f.id] ?? ''}`).includes(buscado))
+    ? todas.filter((f) =>
+        llano(`${textoDe(f)} ${ordenes[f.id] ?? ""}`).includes(buscado),
+      )
     : todas;
-  const sinCobrar = solo === 'cobrado' ? [] : visibles.filter((f) => !f.cobradaAt);
-  const cobradas = solo === 'sin-cobrar' ? [] : visibles.filter((f) => f.cobradaAt);
+  const sinCobrar =
+    solo === "cobrado" ? [] : visibles.filter((f) => !f.cobradaAt);
+  const cobradas =
+    solo === "sin-cobrar" ? [] : visibles.filter((f) => f.cobradaAt);
   const pendiente = sinCobrar.reduce((n, f) => n + (f.importe ?? 0), 0);
 
   if (todas.length === 0) {
@@ -951,11 +1108,11 @@ export function Emitidas({
         {!solo && <div className="os-rotulo-bloque">Facturado</div>}
         <div className="os-panel">
           <p className="os-vacio">
-            {solo === 'sin-cobrar'
-              ? 'No queda nada por cobrar.'
-              : solo === 'cobrado'
-                ? 'Todavía no se cobró ninguna.'
-                : 'Todavía no hay ninguna factura.'}
+            {solo === "sin-cobrar"
+              ? "No queda nada por cobrar."
+              : solo === "cobrado"
+                ? "Todavía no se cobró ninguna."
+                : "Todavía no hay ninguna factura."}
           </p>
         </div>
       </>
@@ -975,7 +1132,9 @@ export function Emitidas({
         />
         {buscado && (
           <span className="os-columna-monto">
-            {visibles.length === 1 ? '1 resultado' : `${visibles.length} resultados`}
+            {visibles.length === 1
+              ? "1 resultado"
+              : `${visibles.length} resultados`}
           </span>
         )}
       </div>
@@ -988,13 +1147,21 @@ export function Emitidas({
 
       {sinCobrar.length > 0 && (
         <>
-          {!solo && <div className="os-rotulo-bloque">Facturado y sin cobrar</div>}
+          {!solo && (
+            <div className="os-rotulo-bloque">Facturado y sin cobrar</div>
+          )}
           <div className="os-panel">
-            <TablaEmitidas facturas={sinCobrar} ordenes={ordenes} sinEmisora={sinEmisora} />
+            <TablaEmitidas
+              facturas={sinCobrar}
+              ordenes={ordenes}
+              sinEmisora={sinEmisora}
+            />
             <div className="os-resumen-linea">
               <span>
                 <span className="os-dato-rotulo">Sin cobrar</span>
-                {sinCobrar.length === 1 ? '1 factura' : `${sinCobrar.length} facturas`}
+                {sinCobrar.length === 1
+                  ? "1 factura"
+                  : `${sinCobrar.length} facturas`}
               </span>
               <span>
                 <span className="os-dato-rotulo">Total</span>
@@ -1009,7 +1176,11 @@ export function Emitidas({
         <>
           {!solo && <div className="os-rotulo-bloque">Cobrado</div>}
           <div className="os-panel">
-            <TablaEmitidas facturas={cobradas} ordenes={ordenes} sinEmisora={sinEmisora} />
+            <TablaEmitidas
+              facturas={cobradas}
+              ordenes={ordenes}
+              sinEmisora={sinEmisora}
+            />
           </div>
         </>
       )}
@@ -1026,13 +1197,13 @@ function textoDe(f: Factura): string {
   return [
     f.cliente,
     f.emisora,
-    f.sinComprobante ? 'sin factura' : numeroDe(f),
+    f.sinComprobante ? "sin factura" : numeroDe(f),
     f.concepto,
     f.ordenCompra,
     ...f.renglones.flatMap((r) => [r.persona, r.puesto, r.descripcion]),
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 }
 
 /**
@@ -1041,9 +1212,9 @@ function textoDe(f: Factura): string {
  */
 function llano(t: string): string {
   return t
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('es');
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es");
 }
 
 /**
@@ -1064,8 +1235,10 @@ function TablaEmitidas({
   sinEmisora?: boolean;
 }) {
   // Las columnas que van. Sin la de la emisora, lo suyo se lo lleva el cliente.
-  const cols = sinEmisora ? COLUMNAS_EMITIDAS.filter((c) => c !== 'Emisora') : COLUMNAS_EMITIDAS;
-  const antesDeCubre = cols.indexOf('Cubre');
+  const cols = sinEmisora
+    ? COLUMNAS_EMITIDAS.filter((c) => c !== "Emisora")
+    : COLUMNAS_EMITIDAS;
+  const antesDeCubre = cols.indexOf("Cubre");
   const [abierta, setAbierta] = useState<string | null>(null);
 
   return (
@@ -1073,7 +1246,12 @@ function TablaEmitidas({
       <table className="os-tabla os-tabla-trabajo os-tabla-fija">
         <colgroup>
           {cols.map((c) => (
-            <col key={c} style={ANCHOS_EMITIDAS[c] ? { width: ANCHOS_EMITIDAS[c] } : undefined} />
+            <col
+              key={c}
+              style={
+                ANCHOS_EMITIDAS[c] ? { width: ANCHOS_EMITIDAS[c] } : undefined
+              }
+            />
           ))}
         </colgroup>
         <thead>
@@ -1082,10 +1260,14 @@ function TablaEmitidas({
               <th
                 key={c}
                 className={
-                  c === '' ? 'os-tabla-accion' : c === 'Importe' ? 'os-tabla-num' : undefined
+                  c === ""
+                    ? "os-tabla-accion"
+                    : c === "Importe"
+                      ? "os-tabla-num"
+                      : undefined
                 }
               >
-                {c || ' '}
+                {c || " "}
               </th>
             ))}
           </tr>
@@ -1095,163 +1277,196 @@ function TablaEmitidas({
             const cuantas = cubre(f);
             const cajon = abierta === f.id;
             return (
-            <Fragmento key={f.id}>
-            <tr>
-              <td className="os-tabla-fecha" data-campo="Fecha">{fechaBreve(f.fecha)}</td>
-              <td className="os-tabla-nombre" data-campo="Número">
-                <a
-                  className="os-tabla-enlace"
-                  // La que va sin factura no tiene comprobante que abrir: lo
-                  // que hay para mirar o volver a mandar es su orden de compra.
-                  href={
-                    f.sinComprobante
-                      ? `/api/os/recibo/${f.id}`
-                      : `/os/psicotecnicos/facturacion/comprobante/${f.id}`
-                  }
-                  target="_blank"
-                >
-                  {f.sinComprobante ? ordenes[f.id] ?? 'Sin factura' : numeroDe(f)}
-                </a>
-              </td>
-              {!sinEmisora && (
-                <td className="os-tabla-recorta" data-campo="Emisora">
-                  {nombreDe(f.emisora)}
-                </td>
-              )}
-              <td className="os-tabla-recorta" data-campo="Cliente">
-                {f.cliente}
-              </td>
-              <td className="os-tabla-recorta" data-campo="Cubre">
-                {/* Se cuentan personas y no renglones: el adicional Benziger es
+              <Fragmento key={f.id}>
+                <tr>
+                  <td className="os-tabla-fecha" data-campo="Fecha">
+                    {fechaBreve(f.fecha)}
+                  </td>
+                  <td className="os-tabla-nombre" data-campo="Número">
+                    <a
+                      className="os-tabla-enlace"
+                      // La que va sin factura no tiene comprobante que abrir: lo
+                      // que hay para mirar o volver a mandar es su orden de compra.
+                      href={
+                        f.sinComprobante
+                          ? `/api/os/recibo/${f.id}`
+                          : `/os/psicotecnicos/facturacion/comprobante/${f.id}`
+                      }
+                      target="_blank"
+                    >
+                      {f.sinComprobante
+                        ? (ordenes[f.id] ?? "Sin factura")
+                        : numeroDe(f)}
+                    </a>
+                  </td>
+                  {!sinEmisora && (
+                    <td className="os-tabla-recorta" data-campo="Emisora">
+                      {nombreDe(f.emisora)}
+                    </td>
+                  )}
+                  <td className="os-tabla-recorta" data-campo="Cliente">
+                    {f.cliente}
+                  </td>
+                  <td className="os-tabla-recorta" data-campo="Cubre">
+                    {/* Se cuentan personas y no renglones: el adicional Benziger es
                     un renglón más de alguien que ya está. */}
-                {cuantas === 0 ? (
-                  /* Sin renglones no se sabe a quién cubre: son las que llegaron
+                    {cuantas === 0 ? (
+                      /* Sin renglones no se sabe a quién cubre: son las que llegaron
                      incompletas de Airtable, y el ámbar dice que falta cargarlo. */
-                  f.concepto ?? <span className="os-dato-falta">sin detalle</span>
-                ) : (
-                  <button
-                    type="button"
-                    className={`os-cubre-abre${cajon ? ' abierto' : ''}`}
-                    aria-expanded={cajon}
-                    onClick={() => setAbierta(cajon ? null : f.id)}
-                    title={cajon ? 'Tocar para cerrar' : 'Tocar para ver a quiénes cubre'}
-                  >
-                    {/* Abreviado y de ancho fijo: con "1" o con "10", las flechas
+                      (f.concepto ?? (
+                        <span className="os-dato-falta">sin detalle</span>
+                      ))
+                    ) : (
+                      <button
+                        type="button"
+                        className={`os-cubre-abre${cajon ? " abierto" : ""}`}
+                        aria-expanded={cajon}
+                        onClick={() => setAbierta(cajon ? null : f.id)}
+                        title={
+                          cajon
+                            ? "Tocar para cerrar"
+                            : "Tocar para ver a quiénes cubre"
+                        }
+                      >
+                        {/* Abreviado y de ancho fijo: con "1" o con "10", las flechas
                         de todas las filas quedan en la misma vertical. */}
-                    <span className="os-cubre-cuantos">{cuantas} candid.</span>
-                    {/* Un chevron dibujado y no el carácter ▸: el glifo cambia
+                        <span className="os-cubre-cuantos">
+                          {cuantas} candid.
+                        </span>
+                        {/* Un chevron dibujado y no el carácter ▸: el glifo cambia
                         de tamaño y de línea de base según la tipografía, y acá
                         tiene que girar sin moverse. */}
-                    <svg
-                      className="os-cubre-flecha"
-                      viewBox="0 0 12 12"
-                      aria-hidden="true"
-                      focusable="false"
-                    >
-                      <path
-                        d="M4 2.5 L8 6 L4 9.5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                        <svg
+                          className="os-cubre-flecha"
+                          viewBox="0 0 12 12"
+                          aria-hidden="true"
+                          focusable="false"
+                        >
+                          <path
+                            d="M4 2.5 L8 6 L4 9.5"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </td>
+                  <td className="os-tabla-num" data-campo="Importe">
+                    {f.importe === null ? (
+                      <span className="os-dato-falta">falta</span>
+                    ) : f.moneda === "DOL" ? (
+                      formatoImporte(f.importe, "USD")
+                    ) : (
+                      `$ ${Math.round(f.importe).toLocaleString("es-AR")}`
+                    )}
+                  </td>
+                  <td data-campo="Cobro">
+                    {/* Un borrador todavía no es una factura: primero el CAE. */}
+                    {f.estado === "borrador" || f.estado === "rechazada" ? (
+                      <a
+                        href={`/os/psicotecnicos/facturacion/comprobante/${f.id}`}
+                        target="_blank"
+                      >
+                        Falta el CAE
+                      </a>
+                    ) : (
+                      <Cobro
+                        id={f.id}
+                        cobradaAt={f.cobradaAt}
+                        formaPago={f.formaPago}
                       />
-                    </svg>
-                  </button>
-                )}
-              </td>
-              <td className="os-tabla-num" data-campo="Importe">
-                {f.importe === null ? (
-                  <span className="os-dato-falta">falta</span>
-                ) : (
-                  f.moneda === 'DOL'
-                    ? formatoImporte(f.importe, 'USD')
-                    : `$ ${Math.round(f.importe).toLocaleString('es-AR')}`
-                )}
-              </td>
-              <td data-campo="Cobro">
-                {/* Un borrador todavía no es una factura: primero el CAE. */}
-                {f.estado === 'borrador' || f.estado === 'rechazada' ? (
-                  <a href={`/os/psicotecnicos/facturacion/comprobante/${f.id}`} target="_blank">
-                    Falta el CAE
-                  </a>
-                ) : (
-                  <Cobro id={f.id} cobradaAt={f.cobradaAt} formaPago={f.formaPago} />
-                )}
-              </td>
-              <td className="os-tabla-accion" data-campo=" ">
-                {/* La que ARCA autorizó no se quita: existe en ARCA, se borre
+                    )}
+                  </td>
+                  <td className="os-tabla-accion" data-campo=" ">
+                    {/* La que ARCA autorizó no se quita: existe en ARCA, se borre
                     de acá o no. Se anula con una nota de crédito. */}
-                {/* El botón está en todas las filas, para que se sepa dónde
+                    {/* El botón está en todas las filas, para que se sepa dónde
                     vive; solo se puede apretar en las que tienen CAE. Van
                     adentro de un envoltorio: con la celda misma en fila, su
                     alto no seguía al de la fila y la raya de abajo quedaba
                     partida. */}
-                <span className="os-accion-fila">
-                <AnularFactura
-                  id={f.id}
-                  numero={numeroDe(f)}
-                  cobrada={Boolean(f.cobradaAt)}
-                  noSePuede={
-                    f.cae
-                      ? null
-                      : f.sinComprobante
-                        ? 'Va con orden de compra y sin factura: no hay comprobante que anular.'
-                        : f.numero === null
-                          ? 'Todavía no tiene CAE: no hace falta nota de crédito, se quita.'
-                          : 'Esta factura no se emitió desde el OS. Su nota de crédito se hace en Comprobantes en Línea.'
-                  }
-                />
-                {!f.cae && <BorrarFactura id={f.id} numero={numeroDe(f)} />}
-                </span>
-              </td>
-            </tr>
-
-            {cajon && (
-              <tr className="os-fila-abierta os-fila-cubre">
-                <td colSpan={antesDeCubre} />
-                <td colSpan={cols.length - antesDeCubre}>
-                  <ul className="os-cubre-lista">
-                    {enArbol(f.renglones).map(({ r, sub }) => (
-                      <li
-                        key={r.id}
-                        className={
-                          [r.persona ? '' : 'os-cubre-extra', sub ? 'os-cubre-sub' : ''].join(' ').trim() ||
-                          undefined
+                    <span className="os-accion-fila">
+                      <AnularFactura
+                        id={f.id}
+                        numero={numeroDe(f)}
+                        cobrada={Boolean(f.cobradaAt)}
+                        noSePuede={
+                          f.cae
+                            ? null
+                            : f.sinComprobante
+                              ? "Va con orden de compra y sin factura: no hay comprobante que anular."
+                              : f.numero === null
+                                ? "Todavía no tiene CAE: no hace falta nota de crédito, se quita."
+                                : "Esta factura no se emitió desde el OS. Su nota de crédito se hace en Comprobantes en Línea."
                         }
-                      >
-                        {/* El nombre sale de la evaluación cuando está: las
+                      />
+                      {!f.cae && (
+                        <BorrarFactura id={f.id} numero={numeroDe(f)} />
+                      )}
+                    </span>
+                  </td>
+                </tr>
+
+                {cajon && (
+                  <tr className="os-fila-abierta os-fila-cubre">
+                    <td colSpan={antesDeCubre} />
+                    <td colSpan={cols.length - antesDeCubre}>
+                      <ul className="os-cubre-lista">
+                        {enArbol(f.renglones).map(({ r, sub }) => (
+                          <li
+                            key={r.id}
+                            className={
+                              [
+                                r.persona ? "" : "os-cubre-extra",
+                                sub ? "os-cubre-sub" : "",
+                              ]
+                                .join(" ")
+                                .trim() || undefined
+                            }
+                          >
+                            {/* El nombre sale de la evaluación cuando está: las
                             facturas de Airtable dicen "Evaluación psicotécnica"
                             a secas y ahí manda la descripción. El puesto va
                             pegado y no en su propia columna: son la misma cosa,
                             quién es y de qué. */}
-                        <span className="os-cubre-quien">
-                          {/* Debajo de su candidato el nombre sobra: va solo qué es. */}
-                          {r.persona ?? (sub ? r.descripcion.split(',')[0] : r.descripcion)}
-                          {r.puesto && <span className="os-cubre-puesto"> · {r.puesto}</span>}
-                        </span>
-                        <span className="os-cubre-importe">
-                          {importeDe(f, r) === null ? (
-                            <span
-                              className="os-dato-flojo"
-                              title="La factura no reparte su importe entre los renglones."
-                            >
-                              —
+                            <span className="os-cubre-quien">
+                              {/* Debajo de su candidato el nombre sobra: va solo qué es. */}
+                              {r.persona ??
+                                (sub
+                                  ? r.descripcion.split(",")[0]
+                                  : r.descripcion)}
+                              {r.puesto && (
+                                <span className="os-cubre-puesto">
+                                  {" "}
+                                  · {r.puesto}
+                                </span>
+                              )}
                             </span>
-                          ) : (
-                            formatoImporte(
-                              importeDe(f, r) as number,
-                              f.moneda === 'DOL' ? 'USD' : 'ARS'
-                            )
-                          )}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </td>
-              </tr>
-            )}
-            </Fragmento>
+                            <span className="os-cubre-importe">
+                              {importeDe(f, r) === null ? (
+                                <span
+                                  className="os-dato-flojo"
+                                  title="La factura no reparte su importe entre los renglones."
+                                >
+                                  —
+                                </span>
+                              ) : (
+                                formatoImporte(
+                                  importeDe(f, r) as number,
+                                  f.moneda === "DOL" ? "USD" : "ARS",
+                                )
+                              )}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                )}
+              </Fragmento>
             );
           })}
         </tbody>
@@ -1269,7 +1484,7 @@ function TablaEmitidas({
  * coincide con ningún candidato queda al final, en el primer nivel.
  */
 function enArbol<R extends { persona: string | null; descripcion: string }>(
-  renglones: R[]
+  renglones: R[],
 ): { r: R; sub: boolean }[] {
   const personas = renglones.filter((r) => r.persona);
   const extras = renglones.filter((r) => !r.persona);
@@ -1296,17 +1511,20 @@ export function Cobro({
 }: {
   id: string;
   cobradaAt: string | null;
-  formaPago?: 'transferencia' | 'efectivo' | null;
+  formaPago?: "transferencia" | "efectivo" | null;
 }) {
   const router = useRouter();
   const [tocando, setTocando] = useState(false);
   /** El primer toque pregunta; el segundo hace. */
   const [seguro, setSeguro] = useState(false);
 
-  async function cambiar(valor: string | null, forma?: 'transferencia' | 'efectivo') {
+  async function cambiar(
+    valor: string | null,
+    forma?: "transferencia" | "efectivo",
+  ) {
     setTocando(true);
     try {
-      await mandar({ accion: 'cobro', id, cobradaAt: valor, formaPago: forma });
+      await mandar({ accion: "cobro", id, cobradaAt: valor, formaPago: forma });
       router.refresh();
       // Al cobrar se baja el recibo de pago, que es lo que se le manda al
       // cliente. La ruta lo entrega como adjunto y la pantalla no se mueve.
@@ -1322,7 +1540,7 @@ export function Cobro({
   // pagó; desmarcarlo saca la plata de lo cobrado. Al marcar, la confirmación
   // es elegir cómo entró la plata, que es lo que va a decir el recibo.
   if (seguro) {
-    const otra = formaPago === 'efectivo' ? 'transferencia' : 'efectivo';
+    const otra = formaPago === "efectivo" ? "transferencia" : "efectivo";
     return (
       <span className="os-cobro-confirma os-cobro-elige">
         {cobradaAt ? (
@@ -1332,7 +1550,7 @@ export function Cobro({
               disabled={tocando}
               onClick={() => cambiar(null)}
             >
-              {tocando ? '…' : 'Quitar cobro'}
+              {tocando ? "…" : "Quitar cobro"}
             </button>
             {/* La misma fecha, con la otra forma de pago: corrige el recibo
                 sin desmarcar y volver a marcar. */}
@@ -1341,7 +1559,7 @@ export function Cobro({
               disabled={tocando}
               onClick={() => cambiar(cobradaAt, otra)}
             >
-              {otra === 'efectivo' ? 'Fue en efectivo' : 'Fue transferencia'}
+              {otra === "efectivo" ? "Fue en efectivo" : "Fue transferencia"}
             </button>
           </>
         ) : (
@@ -1349,20 +1567,24 @@ export function Cobro({
             <button
               className="os-boton os-boton-menudo os-boton-firme"
               disabled={tocando}
-              onClick={() => cambiar(hoy(), 'transferencia')}
+              onClick={() => cambiar(hoy(), "transferencia")}
             >
-              {tocando ? '…' : 'Transferencia'}
+              {tocando ? "…" : "Transferencia"}
             </button>
             <button
               className="os-boton os-boton-menudo os-boton-firme"
               disabled={tocando}
-              onClick={() => cambiar(hoy(), 'efectivo')}
+              onClick={() => cambiar(hoy(), "efectivo")}
             >
               Efectivo
             </button>
           </>
         )}
-        <button className="os-boton os-boton-menudo" disabled={tocando} onClick={() => setSeguro(false)}>
+        <button
+          className="os-boton os-boton-menudo"
+          disabled={tocando}
+          onClick={() => setSeguro(false)}
+        >
           No
         </button>
       </span>
@@ -1377,7 +1599,7 @@ export function Cobro({
       <span className="os-cobro-confirma">
         <button
           className="os-boton os-boton-marcado os-boton-menudo os-cobrada"
-          title={`Cobrada, ${formaPago === 'efectivo' ? 'en efectivo' : 'por transferencia'}. Tocar para corregirla o quitar el cobro.`}
+          title={`Cobrada, ${formaPago === "efectivo" ? "en efectivo" : "por transferencia"}. Tocar para corregirla o quitar el cobro.`}
           onClick={() => setSeguro(true)}
         >
           {fechaBreve(cobradaAt)}
@@ -1388,7 +1610,15 @@ export function Cobro({
           title="Bajar el recibo de pago"
           aria-label="Bajar el recibo de pago"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M12 4v11" />
             <path d="m7.5 11 4.5 4.5L16.5 11" />
             <path d="M5 19.5h14" />
@@ -1449,7 +1679,8 @@ export function BorrarFactura({ id, numero }: { id: string; numero: string }) {
     <span
       className="os-quitar-seguro"
       onBlur={(e) => {
-        if (!borrando && !e.currentTarget.contains(e.relatedTarget)) setSeguro(false);
+        if (!borrando && !e.currentTarget.contains(e.relatedTarget))
+          setSeguro(false);
       }}
     >
       {error && <span className="os-anular-error">{error}</span>}
@@ -1468,18 +1699,18 @@ export function BorrarFactura({ id, numero }: { id: string; numero: string }) {
           setBorrando(true);
           setError(null);
           try {
-            await mandar({ accion: 'borrar', id });
+            await mandar({ accion: "borrar", id });
             // Sigue diciendo "Quitando…" hasta que la lista se vuelve a
             // dibujar sin esta fila: si el botón volvía a su estado normal
             // antes, parecía que no había pasado nada.
             router.refresh();
           } catch (e) {
-            setError(e instanceof Error ? e.message : 'No se pudo quitar.');
+            setError(e instanceof Error ? e.message : "No se pudo quitar.");
             setBorrando(false);
           }
         }}
       >
-        {borrando ? 'Quitando…' : 'Quitar'}
+        {borrando ? "Quitando…" : "Quitar"}
       </button>
     </span>
   );
@@ -1515,7 +1746,11 @@ function AnularFactura({
     return (
       // El motivo va en un envoltorio: un botón apagado no muestra su leyenda
       // al apuntarlo.
-      <span title={noSePuede ?? 'Está cobrada. Para anularla, primero desmarcá el cobro.'}>
+      <span
+        title={
+          noSePuede ?? "Está cobrada. Para anularla, primero desmarcá el cobro."
+        }
+      >
         <button className="os-boton os-boton-menudo" disabled>
           Emitir NC
         </button>
@@ -1548,26 +1783,34 @@ function AnularFactura({
       onClick={async () => {
         setAnulando(true);
         try {
-          const r = await mandar({ accion: 'anular', id });
+          const r = await mandar({ accion: "anular", id });
           router.refresh();
           if (r?.notaId) {
-            window.open(`/os/psicotecnicos/facturacion/comprobante/${r.notaId}`, '_blank');
+            window.open(
+              `/os/psicotecnicos/facturacion/comprobante/${r.notaId}`,
+              "_blank",
+            );
           }
         } catch (e) {
-          setError(e instanceof Error ? e.message : 'No se pudo anular.');
+          setError(e instanceof Error ? e.message : "No se pudo anular.");
         } finally {
           setAnulando(false);
           setSeguro(false);
         }
       }}
     >
-      {anulando ? 'Emitiendo…' : 'Sí, emitir nota'}
+      {anulando ? "Emitiendo…" : "Sí, emitir nota"}
     </button>
   );
 }
 
 /** Una nota de crédito, con lo que hace falta para nombrarla y abrirla. */
-export type NotaDeCredito = { id: string; numero: number | null; puntoVenta: number | null; fecha: string };
+export type NotaDeCredito = {
+  id: string;
+  numero: number | null;
+  puntoVenta: number | null;
+  fecha: string;
+};
 
 /**
  * Las facturas anuladas, cada una con la nota de crédito que la anuló.
@@ -1586,7 +1829,9 @@ export function Anuladas({
   /** Sin la columna de la emisora, igual que en las otras dos listas. */
   sinEmisora?: boolean;
 }) {
-  const cols = sinEmisora ? COLUMNAS_ANULADAS.filter((c) => c !== 'Emisora') : COLUMNAS_ANULADAS;
+  const cols = sinEmisora
+    ? COLUMNAS_ANULADAS.filter((c) => c !== "Emisora")
+    : COLUMNAS_ANULADAS;
   const medidas = columnas(cols, PROPIOS_ANULADAS);
   return (
     <div className="os-panel">
@@ -1600,7 +1845,10 @@ export function Anuladas({
           <thead>
             <tr>
               {cols.map((c) => (
-                <th key={c} className={c === 'Importe' ? 'os-tabla-num' : undefined}>
+                <th
+                  key={c}
+                  className={c === "Importe" ? "os-tabla-num" : undefined}
+                >
                   {c}
                 </th>
               ))}
@@ -1611,7 +1859,9 @@ export function Anuladas({
               const nota = notas[f.id];
               return (
                 <tr key={f.id}>
-                  <td className="os-tabla-fecha" data-campo="Fecha">{fechaBreve(f.fecha)}</td>
+                  <td className="os-tabla-fecha" data-campo="Fecha">
+                    {fechaBreve(f.fecha)}
+                  </td>
                   <td className="os-tabla-nombre" data-campo="Factura">
                     <a
                       className="os-tabla-enlace"
@@ -1630,7 +1880,7 @@ export function Anuladas({
                     {f.cliente}
                   </td>
                   <td className="os-tabla-num" data-campo="Importe">
-                    {f.importe === null ? '—' : formatoImporte(f.importe)}
+                    {f.importe === null ? "—" : formatoImporte(f.importe)}
                   </td>
                   <td data-campo="Nota de crédito">
                     {nota ? (
@@ -1639,14 +1889,17 @@ export function Anuladas({
                         href={`/os/psicotecnicos/facturacion/comprobante/${nota.id}`}
                         target="_blank"
                       >
-                        {numeroDe({ numero: nota.numero, puntoVenta: nota.puntoVenta })}
+                        {numeroDe({
+                          numero: nota.numero,
+                          puntoVenta: nota.puntoVenta,
+                        })}
                       </a>
                     ) : (
-                      '—'
+                      "—"
                     )}
                   </td>
                   <td className="os-tabla-flojo" data-campo="Anulada el">
-                    {nota ? formatoFecha(nota.fecha) : '—'}
+                    {nota ? formatoFecha(nota.fecha) : "—"}
                   </td>
                 </tr>
               );
