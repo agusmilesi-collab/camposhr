@@ -5,6 +5,8 @@
  */
 
 import 'server-only';
+import { laVe } from '@/lib/empresa-prueba';
+import { quienSoy } from '@/lib/identidad';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { select } from '@/lib/supabase';
 import { CACHE_CLIENTES, CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
@@ -126,7 +128,7 @@ const CAMPOS =
   'pedidos(id,puesto,estado,fecha_pedido,reabierto_el,evaluaciones(id,estado,baja_el)),cotizaciones(id,estado)';
 
 export async function listarClientes(): Promise<Cliente[]> {
-  const [enSupabase] = await Promise.all([
+  const [enSupabase, yo] = await Promise.all([
     select<FilaEmpresa>(
       'empresas',
       // Vienen los dos: los inactivos se muestran aparte, no se esconden. Un
@@ -137,12 +139,14 @@ export async function listarClientes(): Promise<Cliente[]> {
       // pedido dejaba la grilla diciendo lo de antes hasta los cinco minutos.
       [CACHE_CLIENTES, CACHE_PSICOTECNICOS]
     ).catch(() => [] as FilaEmpresa[]),
+    quienSoy(),
   ]);
 
   const clientes: Cliente[] = enSupabase
     // La empresa de la muestra no es un cliente: existe para enseñarle el portal
-    // a quien pregunta por los precios. En la grilla se leía como uno más.
-    .filter((e) => !esEmpresaEjemplo(e.nombre))
+    // a quien pregunta por los precios. En la grilla se leía como uno más. La
+    // de prueba la ve solo quien ve todo.
+    .filter((e) => !esEmpresaEjemplo(e.nombre) && laVe(yo.alcance, e.nombre))
     .map((e) => ({
     id: e.id,
     origen: 'supabase' as const,

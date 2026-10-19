@@ -18,6 +18,8 @@ import { nombreYApellido } from '@/lib/personas';
 import { hoyIso } from '@/lib/hora';
 import 'server-only';
 import { tipoPermitido } from '@/lib/archivos-permitidos';
+import { laVe } from '@/lib/empresa-prueba';
+import { quienSoy } from '@/lib/identidad';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { ajustarPedidoDe } from '@/lib/pedido-completo';
 import { select } from '@/lib/supabase';
@@ -73,8 +75,10 @@ export async function empresas(): Promise<EmpresaOpcion[]> {
     CACHE_CLIENTES
   );
   // La empresa de la muestra no se ofrece: no se le carga trabajo, se le
-  // enseña el portal a quien pregunta por los precios.
-  return filas.filter((f) => !esEmpresaEjemplo(f.nombre));
+  // enseña el portal a quien pregunta por los precios. La de prueba, solo a
+  // quien ve todo.
+  const { alcance } = await quienSoy();
+  return filas.filter((f) => !esEmpresaEjemplo(f.nombre) && laVe(alcance, f.nombre));
 }
 
 export async function baterias(): Promise<BateriaOpcion[]> {
@@ -122,8 +126,9 @@ async function pedidosDeEstado(estado: string): Promise<PedidoOpcion[]> {
     )}&order=fecha_pedido.desc`,
     CACHE_PSICOTECNICOS
   );
+  const { alcance } = await quienSoy();
   return filas
-    .filter((f) => !esEmpresaEjemplo(f.empresas?.nombre))
+    .filter((f) => !esEmpresaEjemplo(f.empresas?.nombre) && laVe(alcance, f.empresas?.nombre))
     .map((f) => ({
       id: f.id,
       puesto: f.puesto,

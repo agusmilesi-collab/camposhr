@@ -13,6 +13,18 @@ export function esEmpresaDePrueba(nombre: string | null | undefined): boolean {
 }
 
 /**
+ * Si quien mira puede ver esta empresa en las listas del OS.
+ *
+ * La de prueba la ve solo quien ve todo, que hoy es Agustín (19/10/2026): ahí
+ * se arma la versión 2.0 con candidatos copiados de casos reales, y en el
+ * tablero de las evaluadoras se leían como trabajo pendiente. Las demás
+ * empresas las ve cualquiera. Abrir una ficha por su dirección no se frena.
+ */
+export function laVe(alcance: 'todo' | 'propio', nombre: string | null | undefined): boolean {
+  return alcance === 'todo' || !esEmpresaDePrueba(nombre);
+}
+
+/**
  * El informe en hojas, para todos los clientes.
  *
  * Hasta el 6/10/2026 el molde nuevo del informe (una carilla de conclusiones

@@ -1,4 +1,5 @@
 import 'server-only';
+import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { select } from '@/lib/supabase';
 import { CACHE_PSICOTECNICOS } from '@/lib/etiquetas';
@@ -255,8 +256,11 @@ export async function datosDelHub(): Promise<DataHub> {
   ]);
 
   // La empresa de la muestra queda afuera de todas las cuentas: sus tres fichas
-  // son inventadas y moverían los promedios del negocio.
-  filas = filas.filter((f) => !esEmpresaEjemplo(f.pedidos?.empresas?.nombre));
+  // son inventadas y moverían los promedios del negocio. La de prueba también,
+  // para todos: sus candidatos son copias de casos reales y contarían dos veces.
+  filas = filas.filter(
+    (f) => !esEmpresaEjemplo(f.pedidos?.empresas?.nombre) && !esEmpresaDePrueba(f.pedidos?.empresas?.nombre)
+  );
 
   const entregadas = filas.filter((f) => f.fecha_entrega);
 

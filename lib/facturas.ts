@@ -58,7 +58,8 @@ export {
 import { ETAPAS_ENTREVISTADO, type Marcha } from '@/lib/facturas-tipos';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { puestoConCiudad } from '@/lib/pedido-campos';
-import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
+import { esEmpresaDePrueba, laVe } from '@/lib/empresa-prueba';
+import { quienSoy } from '@/lib/identidad';
 import { cortes, mesesDelAnio } from '@/lib/monotributo';
 import { esDelCentro, esDePsicotecnicos, esDeServicios } from '@/lib/facturas-tipos';
 
@@ -471,11 +472,15 @@ export async function listarAFacturar(
 
   // La empresa del portal de muestra no se factura: sus candidatos son
   // inventados y existen para que un cliente vea el portal (`lib/portal-ejemplo.ts`).
+  // La de prueba entra en la cola solo para quien ve todo; pedida por su id
+  // (la hoja de entrevista) entra siempre.
+  const { alcance } = await quienSoy();
   return evaluaciones
     .filter(
       (e) =>
         e.pedidos &&
         !esEmpresaEjemplo(e.pedidos.empresas?.nombre) &&
+        (Boolean(soloId) || laVe(alcance, e.pedidos.empresas?.nombre)) &&
         // Quien se dio de baja no se factura: no corresponde.
         !e.baja_el
     )
