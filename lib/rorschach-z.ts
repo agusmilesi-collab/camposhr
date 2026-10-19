@@ -31,7 +31,7 @@
  */
 
 import { ADYACENTES, CONTENIDAS } from './rorschach-areas.ts';
-import { familiaDe, Z } from './rorschach-tabla-a.ts';
+import { areasDe, familiaDe, Z } from './rorschach-tabla-a.ts';
 
 export type TipoZ = 'ZW' | 'ZA' | 'ZD' | 'ZS';
 
@@ -185,4 +185,52 @@ export function puntajeZ(lamina: string, s: Situacion): Veredicto {
   // Cuando dan varias, se toma la más alta y se anota una sola Z por respuesta.
   const orden = [...candidatos].sort((a, b) => b.valor - a.valor);
   return { z: orden[0], otros: orden.slice(1), aConfirmar };
+}
+
+/**
+ * El Z de una fila de la ficha, que no tiene las áreas trazadas: sale de la
+ * lámina, la localización con su DQ y el número de localización ("3+1").
+ *
+ * Devuelve el valor, null si la respuesta no lleva Z, o undefined cuando no se
+ * puede saber y lo decide la evaluadora. Eso pasa con un Dd99 o un número que
+ * no está en la Tabla A de esa lámina en una respuesta con DQ+: sin el área
+ * no se sabe si los objetos están juntos o separados, que es lo que separa ZA
+ * de ZD. En el Zulliger no hay Z.
+ *
+ * El contenido no entra: la relación significativa entre objetos la dice el
+ * DQ+, y elegido el DQ el Z queda decidido. Un DQ+ en una sola área es de
+ * objetos que están en esa misma área, y por eso adyacentes: ZA (las dos
+ * personas del D1 de la III dan ZA 3.0). Pedido de las psicólogas el
+ * 19/10/2026.
+ */
+export function zDeLaFicha(
+  lamina: string | null,
+  localizacion: string | null,
+  nLocalizacion: string | null
+): number | null | undefined {
+  if (!lamina || !Z[lamina]) return undefined;
+  if (!localizacion) return null;
+  const dq = dqDe(localizacion);
+  if (localizacion.startsWith('W')) return puntajeZ(lamina, { areas: ['W'], localizacion }).z?.valor ?? null;
+  if (dq !== '+') return null;
+
+  const familia = localizacion.replace(/(v\/\+|o|v|\+)$/, '');
+  const conocidas = new Set(areasDe(lamina));
+  const numeros = (nLocalizacion ?? '').split('+').map((x) => x.trim()).filter(Boolean);
+  if (!numeros.length) return undefined;
+  const areas: string[] = [];
+  for (const n of numeros) {
+    // DS5 es el D5 con su blanco: el área se busca con la S y sin ella.
+    const candidatas = [`${familia}${n}`, `${familia.replace('S', '')}${n}`, `D${n}`, `Dd${n}`, `DdS${n}`];
+    const area = candidatas.find((a) => conocidas.has(a));
+    if (!area) return undefined;
+    areas.push(area);
+  }
+  const distintas = areasDistintas(lamina, areas);
+  if (distintas.length >= 2) return puntajeZ(lamina, { areas: distintas, localizacion }).z?.valor ?? null;
+  // Una sola área: los objetos están dentro de ella, juntos. ZA, o ZS si el
+  // blanco se integra con la tinta y vale más.
+  const v = Z[lamina];
+  const conBlanco = llevaEspacio(localizacion) && !distintas.every(esEspacio);
+  return Math.max(v.ZA, conBlanco ? v.ZS : 0);
 }

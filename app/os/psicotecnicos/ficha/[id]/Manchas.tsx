@@ -30,6 +30,7 @@ import {
 import type { Mancha } from '@/lib/ficha';
 import { areasDe, Z } from '@/lib/rorschach-tabla-a';
 import { CAMPOS_HR, conRepresentacionHumana } from '@/lib/representacion-humana';
+import { zDeLaFicha } from '@/lib/rorschach-z';
 import Calcular from './Calcular';
 import Codigo from './Codigo';
 import { Multiple, Simple } from './Celdas';
@@ -237,6 +238,13 @@ export default function Manchas({
     return ofrecidas.length ? ofrecidas : laminas;
   }
 
+  /** Si el Z de la fila falta y el sistema no lo puede poner: lo elige ella. */
+  const zAMano = (f: Mancha) =>
+    !esZulliger &&
+    f.z === null &&
+    Boolean(f.localizacion) &&
+    zDeLaFicha(f.lamina, f.localizacion, f.n_localizacion) === undefined;
+
   async function pedir(init: RequestInit & { url?: string }): Promise<any> {
     setError(null);
     setOcupado(true);
@@ -280,6 +288,14 @@ export default function Manchas({
     const fila = vista.find((f) => f.id === id);
     if (fila && CAMPOS_HR.some((c) => c in campos)) {
       campos = { ...campos, cc_ee: conRepresentacionHumana({ ...fila, ...(campos as object) }) };
+    }
+    /* El Z también lo pone el sistema, con la lámina, la localización y su
+       número (`zDeLaFicha`). Cuando no lo puede saber, como en un Dd99 con
+       DQ+, deja el que haya y lo elige ella. */
+    if (fila && ['lamina', 'localizacion', 'n_localizacion'].some((c) => c in campos)) {
+      const junta = { ...fila, ...(campos as Partial<Mancha>) };
+      const z = zDeLaFicha(junta.lamina, junta.localizacion, junta.n_localizacion);
+      if (z !== undefined && z !== fila.z) campos = { ...campos, z };
     }
     setSucio(true);
     setLocales(vista.map((f) => (f.id === id ? { ...f, ...(campos as object) } : f)));
@@ -504,7 +520,23 @@ export default function Manchas({
                 <td>
                   <Tilde puesto={Boolean(f.popular)} onCambio={(v) => cambiar(f.id, { popular: v })} />
                 </td>
-                <td>
+                {/* Cuando el sistema no puede poner el Z (un Dd99 con DQ+: sin el
+                    área no sabe si los objetos están juntos o separados), la
+                    celda se pinta hasta que ella lo elija. Pedido de Agustín,
+                    19/10/2026. Es un estilo en línea y no una clase porque el
+                    fondo es el mismo ámbar del resto del OS. */}
+                <td
+                  style={
+                    zAMano(f)
+                      ? { background: 'color-mix(in srgb, var(--os-ambar) 22%, transparent)' }
+                      : undefined
+                  }
+                  title={
+                    zAMano(f)
+                      ? 'El Z de esta respuesta no sale solo: elegilo a mano.'
+                      : undefined
+                  }
+                >
                   {esZulliger ? (
                     <Tilde puesto={Boolean(f.sl)} onCambio={(v) => cambiar(f.id, { sl: v })} />
                   ) : (

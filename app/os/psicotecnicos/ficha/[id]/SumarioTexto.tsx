@@ -155,8 +155,31 @@ function esAncho(p: Par): boolean {
   return p.rotulo.length > 9 || p.valor.includes('=') || Boolean(p.nota);
 }
 
+/** Las bandas de cada número de una razón, por rótulo. Hoy, W:D:Dd. */
+type Partes = Record<string, Banda[]>;
+
 /** El valor de un par, con el fondo pintado si su índice tiene banda. */
-function Valor({ p, bandas }: { p: Par; bandas: Record<string, Banda> }) {
+function Valor({ p, bandas, partes }: { p: Par; bandas: Record<string, Banda>; partes: Partes }) {
+  /* Una razón con banda por número se pinta de a uno, y cada número es su
+     propia píldora: lo que se quiere ver es cuál de los tres se salió. */
+  const porNumero = partes[p.rotulo];
+  const numeros = p.valor.split(':');
+  if (porNumero && numeros.length === porNumero.length) {
+    return (
+      <span className="os-hoja-razon">
+        {numeros.map((v, i) => (
+          <span key={i}>
+            {i > 0 && ':'}
+            <Valor
+              p={{ rotulo: '·', valor: v, nota: '' }}
+              bandas={{ '·': porNumero[i] }}
+              partes={{}}
+            />
+          </span>
+        ))}
+      </span>
+    );
+  }
   const e = estadoDe(p, bandas);
   return (
     <span className={`os-hoja-valor${e ? ` ${e.clase}` : ''}`} title={e?.title}>
@@ -166,7 +189,15 @@ function Valor({ p, bandas }: { p: Par; bandas: Record<string, Banda> }) {
   );
 }
 
-function Bloque({ b, bandas }: { b: Bloque; bandas: Record<string, Banda> }) {
+function Bloque({
+  b,
+  bandas,
+  partes = {},
+}: {
+  b: Bloque;
+  bandas: Record<string, Banda>;
+  partes?: Partes;
+}) {
   return (
     <section className="os-hoja-bloque">
       <h3 className="os-hoja-titulo">{b.titulo}</h3>
@@ -179,7 +210,7 @@ function Bloque({ b, bandas }: { b: Bloque; bandas: Record<string, Banda> }) {
                 {linea.pares.map((p, j) => (
                   <div key={j} className="os-hoja-par">
                     <span className="os-hoja-rotulo">{p.rotulo}</span>
-                    <Valor p={p} bandas={bandas} />
+                    <Valor p={p} bandas={bandas} partes={partes} />
                   </div>
                 ))}
               </div>
@@ -197,7 +228,7 @@ function Bloque({ b, bandas }: { b: Bloque; bandas: Record<string, Banda> }) {
                 .join(' ')}
             >
               <span className="os-hoja-rotulo">{p.rotulo}</span>
-              <Valor p={p} bandas={bandas} />
+              <Valor p={p} bandas={bandas} partes={partes} />
               {p.nota && <span className="os-hoja-nota">{p.nota}</span>}
             </div>
           ));
@@ -255,10 +286,13 @@ function Constelaciones({ b, detalles }: { b: Bloque; detalles: Bloque[] }) {
 export default function SumarioTexto({
   texto,
   bandas,
+  partes = {},
 }: {
   texto: string;
   /** La banda esperada de cada índice, por rótulo de la hoja. Ver `bandasDeLaHoja`. */
   bandas: Record<string, Banda>;
+  /** Las razones que se pintan número por número. Ver `bandasDeLocalizacion`. */
+  partes?: Partes;
 }) {
   const bloques: Bloque[] = [];
   const encabezado: Par[][] = [];
@@ -322,7 +356,7 @@ export default function SumarioTexto({
         >
           {fila.map((titulo) => {
             const b = porTitulo.get(titulo);
-            return b ? <Bloque key={titulo} b={b} bandas={bandas} /> : null;
+            return b ? <Bloque key={titulo} b={b} bandas={bandas} partes={partes} /> : null;
           })}
         </div>
       ))}

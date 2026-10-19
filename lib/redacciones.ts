@@ -749,9 +749,9 @@ export const TEXTOS = {
     indice: 'Color cromático con acromático o sombreado',
     cuando: 'Alguna respuesta combina color cromático con acromático o sombreado',
     dice: [
-      'Aparece una ambivalencia afectiva que le provoca sufrimiento, y cierta tendencia a decaídas del ánimo.',
-      'Convive con sentimientos encontrados que le pesan, y por momentos el ánimo le decae.',
-      'Los afectos se le mezclan de un modo ambivalente que le genera sufrimiento, y muestra cierta tendencia a que el ánimo le decaiga.',
+      'Muestra confusión emocional y una ambivalencia afectiva que le provoca sufrimiento, con cierta tendencia a decaídas del ánimo.',
+      'Le cuesta distinguir lo que siente: convive con sentimientos encontrados que le hacen sufrir, y por momentos el ánimo le decae.',
+      'Presenta confusión en sus emociones y una ambivalencia afectiva que le genera sufrimiento, y muestra cierta tendencia a que el ánimo le decaiga.',
     ],
     recomienda: [
       'Darle aliento para colaborar con su estado de ánimo y su motivación.',
@@ -2696,6 +2696,52 @@ const DIF_EA_ES_ZULLIGER: Banda = {
  * flecha hacia arriba y lo deja en verde. Lo pidieron las psicólogas el
  * 30/9/2026, con el caso de un Zulliger de R 12.
  */
+/**
+ * Las bandas de W, D y Dd, en el orden en que la hoja escribe W:D:Dd.
+ *
+ * Van en cantidad de respuestas para que la hoja compare cada número tal como
+ * lo muestra. En Rorschach lo esperado es una parte del total de
+ * localizaciones (W del 30 al 40 %, D del 55 al 65 %, Dd hasta el 11 %), así
+ * que la banda se arma con ese total; en Zulliger son cantidades fijas (W de 2
+ * a 5, D de 3 a 6, Dd hasta 2). Son los mismos cortes con los que se eligen
+ * las lecturas de localización, que salen de acá.
+ *
+ * D por encima de lo esperado no se informa (ver `d-alto`): lleva la flecha y
+ * no el rojo. Lo pidió la psicóloga el 16/10/2026, para ver en la hoja cuál de
+ * los tres se salió.
+ */
+export function bandasDeLocalizacion(
+  w: number,
+  d: number,
+  dd: number,
+  test: TestDeManchas
+): [Banda, Banda, Banda] | null {
+  if (test === 'Zulliger') {
+    return [
+      { indice: 'W', minimo: 2, maximo: 5, decimales: 0 },
+      { indice: 'D', minimo: 3, maximo: 6, decimales: 0, techoSinAviso: true },
+      { indice: 'Dd', minimo: null, maximo: 2, decimales: 0 },
+    ];
+  }
+  const total = w + d + dd;
+  if (!total) return null;
+  const parte = (indice: string, desde: number | null, hasta: number | null, techoSinAviso?: true): Banda => ({
+    indice: `${indice} (${desde === null ? 'hasta ' : `${desde * 100} a `}${(hasta as number) * 100} % de ${total})`,
+    minimo: desde === null ? null : desde * total,
+    maximo: hasta === null ? null : hasta * total,
+    decimales: 1,
+    ...(techoSinAviso ? { techoSinAviso } : {}),
+  });
+  return [parte('W', 0.3, 0.4), parte('D', 0.55, 0.65, true), parte('Dd', null, 0.11)];
+}
+
+/** De qué lado de su banda cae un valor. */
+function ladoDe(v: number, b: Banda): 'dentro' | 'arriba' | 'abajo' {
+  if (b.maximo !== null && v > b.maximo + 1e-9) return 'arriba';
+  if (b.minimo !== null && v < b.minimo - 1e-9) return 'abajo';
+  return 'dentro';
+}
+
 export function bandaDeR(test: TestDeManchas): Banda {
   const [minimo, maximo] = test === 'Zulliger' ? [9, 11] : [17, 28];
   return { indice: 'R', minimo, maximo, decimales: 0, techoSinAviso: true };
@@ -2802,6 +2848,14 @@ export function bandasDeLaHoja(
   for (const [indice, banda] of Object.entries(porIndice)) {
     for (const rotulo of ROTULOS_DE_HOJA[indice] ?? []) porRotulo[rotulo] = banda;
   }
+  /* La mezcla color-sombreado no tiene corte movible: una sola ya dispara la
+     lectura `color-mixto`, así que en la hoja va en rojo desde 1. */
+  porRotulo['Mezclas col-somb'] = {
+    indice: 'Mezclas color-sombreado',
+    minimo: null,
+    maximo: 0,
+    decimales: 0,
+  };
   if (test === 'Zulliger') {
     // El piso lo pone la lectura de sobrecarga, con el corte que rija; el techo
     // y que no alarme salen de la banda escrita.
@@ -3007,63 +3061,38 @@ export function leer(
   const ddLoc = n(s, 'procesamiento', 'Dd', n(s, 'localizacion', 'Dd'));
   const totalLoc = w + dLoc + ddLoc;
   if (totalLoc) {
-    const wPct = w / totalLoc;
-    const dPct = dLoc / totalLoc;
-    const ddPct = ddLoc / totalLoc;
     const marca = `W:D:Dd ${w}:${dLoc}:${ddLoc}`;
 
-    /* En el Zulliger la localización se mide por cantidad y no por porcentaje.
-       Lo esperado son W de 2 a 5, D de 3 a 6 y Dd de 0 a 2: son tres láminas y
-       diez respuestas contra las veintipico del Rorschach, así que la
-       proporción sobre el total dice poco y lo que importa es cuántas de cada
-       una hubo. Alto es por encima del techo del rango y bajo por debajo del
-       piso. Definido por las psicólogas el 10/9/2026. */
-    if (test === 'Zulliger') {
-      if (w < 2) {
-        sumar('w-bajo', marca);
-      } else if (w > 5) {
-        sumar('w-alto', marca);
-      }
-      // D por encima de lo esperado no se informa: ver `d-alto`.
-      if (dLoc < 3) {
-        sumar('d-bajo', marca);
-      }
-      if (ddLoc > 2) {
-        sumar('dd-alto', `Dd ${ddLoc}`);
-      }
-      if (w >= 2 && w <= 5 && dLoc >= 3 && dLoc <= 6 && ddLoc <= 2) {
-        sumar('localizacion-ok', marca);
-      }
-    } else {
-      /* Cada componente tiene una sola lectura, y las tres bandas no se pisan.
-         Lo esperado es W cerca del 35 %, D cerca del 60 % y Dd hasta el 5 %;
-         "cerca" es cinco puntos para cada lado. Antes W bajo cortaba en 35 % y
-         W alto en 50 %, así que un protocolo con W en 34,8 % salía a la vez
-         como W bajo y como localización correcta: el mismo código dos veces con
-         porcentajes distintos, que es lo que pidieron sacar el 17/9/2026. */
-      const CERCA = 0.05;
-      const wOk = Math.abs(wPct - 0.35) <= CERCA;
-      const dOk = Math.abs(dPct - 0.6) <= CERCA;
-      // Hasta el 11 %: norma argentina (Lunazzi y otros, 506 no pacientes),
-      // la misma que el velocímetro desde el 14/10/2026.
-      const ddOk = ddPct <= 0.11;
-      if (!wOk && wPct < 0.35 && dLoc) {
-        sumar('w-bajo', marca);
-      } else if (!wOk && wPct > 0.35) {
-        // Por encima de lo esperado la visión global está elevada, y eso juega
-        // a favor: la lectura lo dice y no recomienda nada.
-        sumar('w-alto', marca);
-      }
-      // D por encima de lo esperado no se informa: ver `d-alto`.
-      if (!dOk && dPct < 0.6) {
-        sumar('d-bajo', marca);
-      }
-      if (!ddOk) {
-        sumar('dd-alto', `Dd ${ddLoc}`);
-      }
-      if (wOk && dOk && ddOk) {
-        sumar('localizacion-ok', marca);
-      }
+    /* Las bandas son las de la hoja (`bandasDeLocalizacion`). En el Zulliger
+       la localización se mide por cantidad y no por porcentaje: son tres
+       láminas y diez respuestas contra las veintipico del Rorschach. Definido
+       por las psicólogas el 10/9/2026. En Rorschach, W cerca del 35 %, D cerca
+       del 60 % y Dd hasta el 11 % (norma argentina, Lunazzi y otros, 506 no
+       pacientes, la misma que el velocímetro desde el 14/10/2026). "Cerca" es
+       cinco puntos para cada lado: antes W bajo cortaba en 35 % y W alto en
+       50 %, y un protocolo con W en 34,8 % salía a la vez como W bajo y como
+       localización correcta (17/9/2026). */
+    const [bW, bD, bDd] = bandasDeLocalizacion(w, dLoc, ddLoc, test) as [Banda, Banda, Banda];
+    const ladoW = ladoDe(w, bW);
+    const ladoD = ladoDe(dLoc, bD);
+    const ladoDd = ladoDe(ddLoc, bDd);
+    // En Rorschach, sin ninguna D no hay con qué decir que faltan globales.
+    if (ladoW === 'abajo' && (test === 'Zulliger' || dLoc)) {
+      sumar('w-bajo', marca);
+    } else if (ladoW === 'arriba') {
+      // Por encima de lo esperado la visión global está elevada, y eso juega
+      // a favor: la lectura lo dice y no recomienda nada.
+      sumar('w-alto', marca);
+    }
+    // D por encima de lo esperado no se informa: ver `d-alto`.
+    if (ladoD === 'abajo') {
+      sumar('d-bajo', marca);
+    }
+    if (ladoDd === 'arriba') {
+      sumar('dd-alto', `Dd ${ddLoc}`);
+    }
+    if (ladoW === 'dentro' && ladoD === 'dentro' && ladoDd === 'dentro') {
+      sumar('localizacion-ok', marca);
     }
   }
 

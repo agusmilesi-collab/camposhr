@@ -32,7 +32,7 @@ import { Faltantes, Revisar } from '../../informe/_doc/Interno';
 import '../../informe/_sitio/sitio.css';
 import { informeEnHojas } from '@/lib/empresa-prueba';
 import { desdeFicha, llevaBenziger, loQueRige, medianasQueRigen, type Regulacion } from '@/lib/informe';
-import { bandaDeAfr, bandaDeR, bandaDeZf, bandasDeLaHoja } from '@/lib/redacciones';
+import { bandaDeAfr, bandaDeR, bandaDeZf, bandasDeLocalizacion, bandasDeLaHoja } from '@/lib/redacciones';
 import Discursivo from './Discursivo';
 import Whatsapp from '../../Whatsapp';
 import Editar from './Editar';
@@ -548,7 +548,18 @@ function SumarioEstructural({ f, rige }: { f: Ficha; rige: Regulacion }) {
     R: bandaDeR(test),
   };
 
-  return texto ? <SumarioTexto texto={texto} bandas={bandas} /> : null;
+  // W:D:Dd se pinta número por número: cada uno tiene su banda y la razón
+  // entera no se compara contra nada. Lo pidió la psicóloga el 16/10/2026.
+  const proc = (s.crudo as { procesamiento?: { global?: unknown; D?: unknown; Dd?: unknown } } | null)
+    ?.procesamiento;
+  const loc =
+    typeof proc?.global === 'number' && typeof proc.D === 'number' && typeof proc.Dd === 'number'
+      ? bandasDeLocalizacion(proc.global, proc.D, proc.Dd, test)
+      : null;
+
+  return texto ? (
+    <SumarioTexto texto={texto} bandas={bandas} partes={loc ? { 'W:D:Dd': loc } : undefined} />
+  ) : null;
 }
 
 /**

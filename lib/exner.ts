@@ -131,7 +131,9 @@ export const PERFILES: Record<string, Perfil> = {
     convierteD: false,
     muestraEBPer: false,
     muestraCP: true,
-    csBlends: 'solo_json',
+    // Visible desde el 19/10/2026: la hoja de Zdunic no la trae, pero las
+    // psicólogas la leen en Afectos y alimenta la lectura `color-mixto`.
+    csBlends: 'visible',
     constelaciones: [],
     layout: 'zdunic',
   },
@@ -840,7 +842,7 @@ function formatearZdunic(s: any) {
   L.push([kv('FC:CF+C', `${af.FC}:${af.CF + af.C_puro}`), kv('C pura', af.C_puro), kv('Cn', af.Cn)].join(SEP));
   L.push([kv("SumC':SumPondC", `${af.SumC_prima}:${t2(af.WSumC)}`)].join(SEP));
   L.push([kv('CP', n0(af.CP)), kv('S', af.S)].join(SEP));
-  L.push([kv('Complej:R', `${af.Blends}:${cab.R}`)].join(SEP));
+  L.push([kv('Complej:R', `${af.Blends}:${cab.R}`), kv('Mezclas col-somb', af.CS_Blends)].join(SEP));
 
   L.push(`### Interpersonal`);
   L.push([
