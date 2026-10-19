@@ -5,6 +5,7 @@ import { hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { anotarAcceso } from '@/lib/accesos';
 import { CC_EE, CONTENIDOS, DETERMINANTES, FQ, LAMINA, LOCALIZACION, POSICION } from '@/lib/rorschach';
+import { CAMPOS_HR, conRepresentacionHumana } from '@/lib/representacion-humana';
 
 export const runtime = 'nodejs';
 
@@ -193,6 +194,8 @@ export async function PUT(req: Request) {
   if ('ok' in limpio) return NextResponse.json(limpio, { status: 400 });
 
   const test = await testDe(cfg, evaluacion, limpio.lamina);
+  // La respuesta capturada en la encuesta entra con sus contenidos y su FQ.
+  if (CAMPOS_HR.some((c) => c in limpio)) limpio.cc_ee = conRepresentacionHumana(limpio as never);
 
   const res = await fetch(`${cfg.url}/rest/v1/rorschach_respuestas`, {
     method: 'POST',
@@ -245,6 +248,18 @@ export async function POST(req: Request) {
      viejo sostiene el error en la columna con la que se elige la norma. */
   if (typeof limpio.lamina === 'string' && limpio.lamina) {
     limpio.test = limpio.lamina.startsWith('Z') ? 'Zulliger' : 'Rorschach';
+  }
+
+  /* GHR y PHR los pone el sistema (`lib/representacion-humana.ts`): un cambio
+     en algo de lo que dependen se cruza con el resto de la fila guardada y la
+     lista de códigos especiales viaja con el que corresponde. */
+  if (CAMPOS_HR.some((c) => c in limpio)) {
+    const actual = await fetch(
+      `${cfg.url}/rest/v1/rorschach_respuestas?select=${CAMPOS_HR.join(',')}&id=eq.${id}`,
+      { headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` }, cache: 'no-store' }
+    ).catch(() => null);
+    const [fila] = actual?.ok ? await actual.json().catch(() => []) : [];
+    if (fila) limpio.cc_ee = conRepresentacionHumana({ ...fila, ...limpio });
   }
 
   const res = await fetch(`${cfg.url}/rest/v1/rorschach_respuestas?id=eq.${id}`, {

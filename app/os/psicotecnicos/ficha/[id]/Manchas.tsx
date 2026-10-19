@@ -29,6 +29,7 @@ import {
 } from '@/lib/rorschach';
 import type { Mancha } from '@/lib/ficha';
 import { areasDe, Z } from '@/lib/rorschach-tabla-a';
+import { CAMPOS_HR, conRepresentacionHumana } from '@/lib/representacion-humana';
 import Calcular from './Calcular';
 import Codigo from './Codigo';
 import { Multiple, Simple } from './Celdas';
@@ -267,6 +268,12 @@ export default function Manchas({
 
   async function cambiar(id: string, campos: Record<string, unknown>) {
     const antes = vista;
+    /* GHR y PHR se recalculan acá para que la celda cambie en el acto; el
+       servidor hace la misma cuenta al guardar, que es la que vale. */
+    const fila = vista.find((f) => f.id === id);
+    if (fila && CAMPOS_HR.some((c) => c in campos)) {
+      campos = { ...campos, cc_ee: conRepresentacionHumana({ ...fila, ...(campos as object) }) };
+    }
     setSucio(true);
     setLocales(vista.map((f) => (f.id === id ? { ...f, ...(campos as object) } : f)));
 
