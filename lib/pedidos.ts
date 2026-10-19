@@ -52,6 +52,7 @@ type Fila = {
   puesto_estabilidad: string | null;
   puesto_contacto_jefe: string | null;
   puesto_innovacion: string | null;
+  puesto_a_cargo: string | null;
   jefe_estilo: string | null;
   jefe_paciencia: string | null;
   jefe_emociones: string | null;
@@ -65,7 +66,7 @@ const CAMPOS =
   'id,puesto,empresa_id,bateria_id,con_benziger,exigencia_id,solicitante_id,familia,seniority,estado,' +
   'fecha_pedido,reabierto_el,notas,contexto,descriptivo_nombre,puesto_problemas,puesto_presion,' +
   'puesto_interaccion,puesto_estabilidad,puesto_contacto_jefe,' +
-  'puesto_innovacion,jefe_estilo,jefe_paciencia,jefe_emociones,' +
+  'puesto_innovacion,puesto_a_cargo,jefe_estilo,jefe_paciencia,jefe_emociones,' +
   'time_span_dias,complejidad,estrato_puesto,' +
   'empresas(nombre),baterias(codigo),evaluaciones(id,estado,fecha_entrevista,fecha_entrega,recomendacion,evaluadoras(nombre),personas(nombre))';
 
@@ -113,6 +114,7 @@ function armar(f: Fila): Pedido {
     puesto_estabilidad: f.puesto_estabilidad,
     puesto_contacto_jefe: f.puesto_contacto_jefe,
     puesto_innovacion: f.puesto_innovacion,
+    puesto_a_cargo: f.puesto_a_cargo,
     jefe_estilo: f.jefe_estilo,
     jefe_paciencia: f.jefe_paciencia,
     jefe_emociones: f.jefe_emociones,

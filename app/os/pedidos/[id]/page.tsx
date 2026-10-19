@@ -33,7 +33,7 @@ export const dynamic = 'force-dynamic';
  *
  * Tres bloques, en el orden en que se completa un pedido: la búsqueda (lo que
  * se sabe apenas entra el mail), el encargo (lo que se acordó cobrar) y cómo
- * es el puesto (las nueve preguntas que se le hacen al cliente para poder
+ * es el puesto (las diez preguntas que se le hacen al cliente para poder
  * escribir un informe del puesto y no uno genérico).
  *
  * Los campos son los de la tabla Pedidos de Airtable. Falta la JD adjunta, que
@@ -74,7 +74,7 @@ function Bloque({
  * Las pestañas del pedido.
  *
  * Datos es lo que se completa apenas entra el pedido y lo que se consulta
- * después; el perfil son las nueve escalas que se contestan con el cliente; el
+ * después; el perfil son las diez escalas que se contestan con el cliente; el
  * potencial va solo si la batería incluye el análisis discursivo, porque es
  * contra lo que se compara el estrato de cada candidato.
  */

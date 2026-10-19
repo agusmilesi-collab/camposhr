@@ -7,7 +7,7 @@
  * suelto es un cambio que se pierde. La fila queda apagada un instante
  * mientras viaja, y si falla vuelve al valor anterior con el motivo al pie.
  *
- * Las nueve preguntas de puesto y jefe son tres opciones cada una, en botones
+ * Las diez preguntas de puesto y jefe son tres opciones cada una, en botones
  * del mismo ancho: elegir es un toque y las tres se leen juntas, que es como
  * se contesta cuando el cliente las va diciendo por teléfono.
  */
@@ -256,7 +256,7 @@ export function Benziger({
 }
 
 /**
- * Una de las nueve preguntas: tres opciones, todas del mismo ancho.
+ * Una de las diez preguntas: tres opciones, todas del mismo ancho.
  *
  * Volver a tocar la elegida la borra: es la única forma de dejar en blanco una
  * pregunta que se contestó por error, sin sumarle un cuarto botón a cada una.

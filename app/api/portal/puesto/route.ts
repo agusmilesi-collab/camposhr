@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   )[0];
   if (!suyo) return NextResponse.json({ error: 'Esa búsqueda no existe.' }, { status: 404 });
 
-  /* Las nueve escalas: una opción válida se guarda, vacío la borra y
+  /* Las diez escalas: una opción válida se guarda, vacío la borra y
      cualquier otra cosa se ignora. */
   const fila: Record<string, unknown> = {};
   const perfil = (datos.perfil ?? {}) as Record<string, unknown>;

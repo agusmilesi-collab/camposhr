@@ -8,7 +8,7 @@ import { fechaCorta } from '@/lib/hora';
  * DPT: el descriptivo del puesto de trabajo, dentro de la ficha de la persona.
  *
  * Junta en una pestaña todo lo que se sabe del puesto para el que se la
- * evalúa: lo que pidió el cliente, el descriptivo que adjuntó, las nueve
+ * evalúa: lo que pidió el cliente, el descriptivo que adjuntó, las diez
  * respuestas del perfil del puesto y de quien lo conduce, y el nivel de trabajo
  * cuando la batería lo lleva. Todo eso vive en el pedido, y para leerlo había
  * que salir de la ficha y abrir el pedido en otra pantalla.

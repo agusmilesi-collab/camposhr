@@ -3,7 +3,7 @@
 /**
  * El formulario del perfil del puesto que completa el cliente.
  *
- * Las mismas nueve escalas del formulario de pedido, y el alcance del puesto
+ * Las mismas diez escalas del formulario de pedido, y el alcance del puesto
  * (plazo y cinco preguntas) solo cuando la batería lleva análisis de
  * potencial. Se escribe en el idioma del cliente: sin estratos ni nombres del
  * modelo, con lo que significa cada opción y un ejemplo en cada pregunta.

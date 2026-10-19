@@ -66,6 +66,7 @@ export type Pedido = {
   puesto_estabilidad: string | null;
   puesto_contacto_jefe: string | null;
   puesto_innovacion: string | null;
+  puesto_a_cargo: string | null;
   jefe_estilo: string | null;
   jefe_paciencia: string | null;
   jefe_emociones: string | null;
@@ -83,7 +84,7 @@ export type Pedido = {
 };
 
 /**
- * Cuántas de las nueve preguntas de puesto y jefe están contestadas.
+ * Cuántas de las diez preguntas de puesto y jefe están contestadas.
  *
  * Son las que describen contra qué se mide a la persona, y sin ellas el informe
  * sale genérico. Se contestan con el cliente por teléfono, casi nunca el mismo

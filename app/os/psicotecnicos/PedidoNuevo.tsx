@@ -11,7 +11,7 @@
  * cuando llega el mail del cliente, con todo lo que ese mail dice adelante: no
  * hay un campo que se conteste tan poco como para esconderlo.
  *
- * Lo que no está acá son las nueve preguntas de puesto y jefe, que describen
+ * Lo que no está acá son las diez preguntas de puesto y jefe, que describen
  * contra qué se mide a la persona. Se contestan con el cliente al teléfono y
  * viven en la ficha del pedido, que es donde se las lee juntas.
  */

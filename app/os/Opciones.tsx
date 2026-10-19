@@ -29,7 +29,7 @@ export default function Opciones<T extends string | boolean | null>({
   /**
    * `ayuda` es qué significa esa opción, y va debajo de su nombre.
    *
-   * Lo usan las nueve preguntas del pedido, que la evaluadora le hace al
+   * Lo usan las diez preguntas del pedido, que la evaluadora le hace al
    * cliente por teléfono: "problemas mixtos" o "equipo fijo" se entienden
    * distinto en cada empresa, y la definición tiene que estar a la vista y no
    * detrás de pasar el mouse por encima. Con ayudas la botonera deja de ser una

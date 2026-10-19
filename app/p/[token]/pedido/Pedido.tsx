@@ -20,7 +20,7 @@
  *    teléfono que el archivo traiga. Es lo que ya tenía en la mano.
  * 3. **Solo tres cosas son obligatorias**: para qué búsqueda, el nombre de cada
  *    candidato y una forma de contactarlo. Todo lo demás se puede saltear.
- * 4. **El perfil del puesto se ofrece y se explica.** Son nueve preguntas de
+ * 4. **El perfil del puesto se ofrece y se explica.** Son diez preguntas de
  *    tocar, no de escribir, y es lo que permite medir a la persona contra el
  *    lugar donde va a entrar. Se carga una vez por búsqueda.
  * 5. **El total está siempre a la vista**, y cambia al elegir. Una decisión de
@@ -814,11 +814,11 @@ export default function Pedido({
                   />
 
                   {/* El perfil del puesto en su propio recuadro, con título: el
-                      descriptivo y las nueve preguntas, a la vista. */}
+                      descriptivo y las diez preguntas, a la vista. */}
                   <div className="pedir-perfil-caja">
                     <h3 className="pedir-perfil-titulo">Perfil del puesto (opcional y recomendado)</h3>
                     {/* Primero el descriptivo que la empresa ya tiene escrito,
-                        y después las nueve preguntas. Ninguno de los dos frena
+                        y después las diez preguntas. Ninguno de los dos frena
                         el pedido. */}
                     <p className="pedir-ayuda">
                       Si la empresa tiene un descriptivo de puesto, adjuntalo.

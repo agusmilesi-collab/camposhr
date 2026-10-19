@@ -5,7 +5,7 @@
  * Psicotécnicos). Si allá se agrega una opción, se agrega acá: la base guarda
  * texto libre justamente para no pedir un DDL por cada cambio de lista.
  *
- * Las nueve preguntas de puesto y jefe describen contra qué se mide a la
+ * Las diez preguntas de puesto y jefe describen contra qué se mide a la
  * persona. No son datos administrativos: son lo que separa un informe del
  * puesto de un informe genérico, y por eso viven en el pedido y no en cada
  * evaluación.
@@ -29,6 +29,9 @@ export const CERRADO: EstadoPedido = 'Finalizado';
 
 export const FAMILIAS = [
   'Comercial / Ventas',
+  // Separada de Comercial el 19/10/2026: atender consultas y reclamos de quien
+  // ya es cliente no es vender, y en el data hub las dos se leían como una.
+  'Atención al cliente / Reclamos',
   'Administración / Contable / Finanzas',
   'Operaciones / Producción / Logística',
   'IT / Sistemas / Tecnología',
@@ -131,6 +134,18 @@ export const DEL_PUESTO: Pregunta[] = [
       'Hay un procedimiento y se sigue.',
       'Se puede proponer dentro de lo pautado.',
       'Se espera que traiga ideas nuevas.',
+    ],
+  },
+  // Sumada el 19/10/2026: es lo que dice cuánto Liderazgo pide el puesto, la
+  // única competencia del informe que ninguna otra pregunta cubría.
+  {
+    campo: 'puesto_a_cargo',
+    rotulo: 'Personas a cargo',
+    opciones: ['Nadie', 'De 1 a 5 personas', '6 o más personas'],
+    ayudas: [
+      'No le reporta nadie.',
+      'Le reportan entre una y cinco personas.',
+      'Le reportan seis o más, directamente o a través de otros jefes.',
     ],
   },
 ];
