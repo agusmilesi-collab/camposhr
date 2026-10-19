@@ -60,6 +60,16 @@ export type Cabecera = {
   seguimiento_al: string | null;
   seguimiento_resultado: string | null;
   seguimiento_notas: string | null;
+  /** El correo de los noventa días: cuándo salió y a quién, o cuándo no tuvo a quién. */
+  seguimiento_enviado_el: string | null;
+  seguimiento_recordado_el: string | null;
+  seguimiento_sin_destino_el: string | null;
+  seguimiento_respondio: string | null;
+  /** Lo que contestaron desde el enlace (`lib/seguimiento-preguntas.ts`). */
+  seguimiento_sigue: string | null;
+  seguimiento_desempeno: string | null;
+  seguimiento_recontrataria: string | null;
+  seguimiento_respondido_el: string | null;
   /**
    * Qué edad tenía el día de la entrevista, congelada.
    *
@@ -354,7 +364,9 @@ const CAMPOS_CABECERA =
   'grafico_2_personas_nombre,grafico_2_personas_observaciones,' +
   'recomendacion,recomendacion_notas,informe_path,entrevista_competencias,' +
   'facturado,pagado,numero_factura,ingreso,fecha_ingreso_empresa,informe_listas,' +
-  'seguimiento_al,seguimiento_resultado,seguimiento_notas,edad,con_benziger,baja_el,ciudad,solicitante_id,' +
+  'seguimiento_al,seguimiento_resultado,seguimiento_notas,seguimiento_enviado_el,seguimiento_recordado_el,seguimiento_sin_destino_el,' +
+  'seguimiento_respondio,seguimiento_sigue,seguimiento_desempeno,seguimiento_recontrataria,seguimiento_respondido_el,' +
+  'edad,con_benziger,baja_el,ciudad,solicitante_id,' +
   'personas(nombre,nombre_pila,apellido,email,telefono,cv_path,fecha_nacimiento),evaluadoras(nombre),' +
   'solicitante:contactos!solicitante_id(nombre,cargo),' +
   'pedidos(puesto,empresa_id,con_benziger,exigencia_id,estrato_puesto,time_span_dias,complejidad,' +

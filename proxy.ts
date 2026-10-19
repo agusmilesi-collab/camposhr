@@ -83,9 +83,9 @@ const RUTAS_DE_PRESENTACIONES = /^\/(presentaciones|pres)(\/|$)/;
 // en /c/<empresa>, el ciclo de encuentros en /ciclo/<empresa>, el test de
 // Raven en /raven/<token> y las láminas del Rorschach en /laminas/<token>,
 // cada uno con su endpoint. Y /confirmar/<token>, el botón del correo de la
-// entrevista online.
+// entrevista online, y /seguimiento/<token>, las preguntas de los noventa días.
 const RUTAS_PUBLICAS =
-  /^\/(c|l|ciclo|laminas|confirmar|api\/cuestionario|api\/ciclo|api\/raven|api\/laminas)\/|^\/raven(\/|$)/;
+  /^\/(c|l|ciclo|laminas|confirmar|seguimiento|api\/cuestionario|api\/ciclo|api\/raven|api\/laminas)\/|^\/raven(\/|$)/;
 
 export async function proxy(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase();

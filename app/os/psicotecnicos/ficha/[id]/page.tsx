@@ -473,6 +473,22 @@ function Datos({
             seguimientoAl={c.seguimiento_al}
             resultado={c.seguimiento_resultado}
             notas={c.seguimiento_notas}
+            correo={{
+              enviado: c.seguimiento_enviado_el,
+              recordado: c.seguimiento_recordado_el,
+              sinDestino: c.seguimiento_sin_destino_el,
+              a: c.seguimiento_respondio,
+            }}
+            respuestas={
+              c.seguimiento_respondido_el
+                ? {
+                    el: c.seguimiento_respondido_el,
+                    sigue: c.seguimiento_sigue,
+                    desempeno: c.seguimiento_desempeno,
+                    recontrataria: c.seguimiento_recontrataria,
+                  }
+                : null
+            }
           />
         </Dato>
       </Bloque>

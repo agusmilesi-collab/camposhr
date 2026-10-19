@@ -16,6 +16,13 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import Desplegable from '@/app/os/Desplegable';
+import { PREGUNTAS_SEGUIMIENTO } from '@/lib/seguimiento-preguntas';
+
+/** "12 de enero", para las fechas del correo de los noventa días. */
+const diaYMes = (iso: string) =>
+  new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'long', timeZone: 'America/Argentina/Cordoba' }).format(
+    new Date(iso.length === 10 ? `${iso}T12:00:00` : iso)
+  );
 
 /**
  * Los dos desplegables miden lo mismo.
@@ -60,6 +67,8 @@ export default function Ingreso({
   seguimientoAl,
   resultado,
   notas,
+  correo,
+  respuestas,
 }: {
   id: string;
   ingreso: boolean | null;
@@ -67,6 +76,15 @@ export default function Ingreso({
   seguimientoAl: string | null;
   resultado: string | null;
   notas: string | null;
+  /** El correo de los noventa días (`lib/seguimiento.ts`). */
+  correo: { enviado: string | null; recordado: string | null; sinDestino: string | null; a: string | null };
+  /** Lo que contestaron desde el enlace del correo, si contestaron. */
+  respuestas: {
+    el: string;
+    sigue: string | null;
+    desempeno: string | null;
+    recontrataria: string | null;
+  } | null;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -227,6 +245,48 @@ export default function Ingreso({
           />
         </span>
       </div>
+
+      {/* El correo de los noventa días: qué pasó con la pregunta. Lo que
+          contestaron queda arriba en "Cómo le fue" y "Qué dijeron"; acá va
+          el detalle de las tres respuestas y quién las dio. */}
+      {trabaja && seguimientoAl && (
+        <div className="os-seguimiento-fila">
+          <span className="os-dato-rotulo">Correo a los 90 días</span>
+          {respuestas ? (
+            <span>
+              Contestaron el {diaYMes(respuestas.el)}
+              {correo.a ? ` (se le escribió a ${correo.a})` : ''}:{' '}
+              {PREGUNTAS_SEGUIMIENTO.map((p) => {
+                const v =
+                  p.campo === 'seguimiento_sigue'
+                    ? respuestas.sigue
+                    : p.campo === 'seguimiento_desempeno'
+                    ? respuestas.desempeno
+                    : respuestas.recontrataria;
+                return `${p.rotulo}: ${v ?? 'sin dato'}`;
+              }).join(' · ')}
+            </span>
+          ) : correo.enviado ? (
+            <span>
+              Salió el {diaYMes(correo.enviado)}
+              {correo.a ? ` a ${correo.a}` : ''}
+              {correo.recordado
+                ? `, y el recordatorio el ${diaYMes(correo.recordado)}`
+                : '. Si no contestan, a los 7 días sale un recordatorio'}
+              . Todavía no contestaron.
+            </span>
+          ) : correo.sinDestino ? (
+            <span className="os-vence">
+              No hay a quién preguntarle: falta quién pidió la búsqueda, o un contacto del cliente que reciba lo de
+              todos los candidatos. Se vuelve a intentar cada día.
+            </span>
+          ) : (
+            <span className="os-suave">
+              Sale solo el {diaYMes(seguimientoAl)}, a quien pidió la búsqueda.
+            </span>
+          )}
+        </div>
+      )}
 
       {error && <p className="os-form-error">{error}</p>}
     </div>

@@ -24,9 +24,9 @@ import { select } from '@/lib/supabase';
 import { direcciones } from '@/lib/correo';
 import { empresasDelGrupo } from '@/lib/grupo';
 
-export type Aviso = 'orden' | 'entrevista' | 'informe' | 'factura' | 'recibo';
+export type Aviso = 'orden' | 'entrevista' | 'informe' | 'factura' | 'recibo' | 'seguimiento';
 
-const COLUMNA: Record<Exclude<Aviso, 'factura' | 'recibo'>, string> = {
+const COLUMNA: Record<Exclude<Aviso, 'factura' | 'recibo' | 'seguimiento'>, string> = {
   orden: 'recibe_orden',
   entrevista: 'recibe_entrevista',
   informe: 'recibe_informe',
@@ -102,6 +102,15 @@ export async function destinosDe(
           : c[marca] === true)
     );
     return compras.length > 0 ? armar(compras, suyos) : armar(suyos);
+  }
+
+  // El seguimiento a los noventa días pregunta cómo le va a alguien que ya
+  // trabaja ahí: lo sabe quien lo pidió. Sin esa persona, los que reciben lo
+  // de todos los candidatos (Agustín, 19/10/2026). No tiene tilde propio: es
+  // una pregunta, no un aviso que se pueda apagar.
+  if (aviso === 'seguimiento') {
+    const suyos = contactos.filter((c) => pidieron.has(c.id));
+    return suyos.length > 0 ? armar(suyos) : armar(contactos.filter((c) => c.recibe_todo));
   }
 
   const col = COLUMNA[aviso];
