@@ -71,8 +71,8 @@ costaron y conviene no deshacer:
 - **Se escribe para buscar**, en todas menos Lámina: determinantes tiene
   veintiocho opciones y contenidos más de treinta. Filtra por lo que el código
   empieza y después por lo que contiene, así "F" propone F antes que FMa.
-- **La lámina sigue el orden del protocolo.** En cada fila se ofrecen dos: la de
-  la respuesta anterior y la siguiente. El protocolo se toma en orden y no se
+- **La lámina sigue el orden del protocolo.** En cada fila se ofrecen dos: la más
+  avanzada a la que llegó el protocolo y la siguiente, nunca una anterior. El protocolo se toma en orden y no se
   vuelve, así que ofrecer las diez es ofrecer ocho maneras de equivocarse. Al
   pie queda "Mostrar todas" para las excepciones, y con la primera respuesta ya
   cargada desaparecen las del otro test: un protocolo es de Rorschach o de

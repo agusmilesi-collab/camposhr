@@ -173,13 +173,22 @@ export default function Manchas({
   const cuantasEn = (lamina: string | null) =>
     lamina === null ? 0 : vista.filter((f) => f.lamina === lamina).length;
 
-  /* La lámina donde cae la próxima respuesta: la de la última cargada mientras
-     tenga lugar, y si no la primera que siga con lugar. Null cuando ya no queda
+  /**
+   * La lámina más avanzada entre las primeras `hasta` filas, por su posición.
+   *
+   * Es hasta dónde llegó el protocolo, y no la lámina de la última fila: una
+   * fila cargada fuera de orden (una IV después de las V) hacía que todo lo
+   * que seguía se ofreciera desde la IV, y la VI quedaba escondida en
+   * "Mostrar todas" (Lorena, 19/10/2026).
+   */
+  const alcanzadaHasta = (hasta: number): number =>
+    Math.max(-1, ...vista.slice(0, hasta).map((f) => laminas.findIndex((o) => o.v === f.lamina)));
+
+  /* La lámina donde cae la próxima respuesta: la más avanzada mientras tenga
+     lugar, y si no la primera que siga con lugar. Null cuando ya no queda
      ninguna, que es cuando el protocolo está completo. */
   const laminaSiguiente = (() => {
-    const ultima = [...vista].reverse().find((f) => f.lamina)?.lamina ?? null;
-    const desde = ultima ? laminas.findIndex((o) => o.v === ultima) : 0;
-    if (desde < 0) return ultima;
+    const desde = Math.max(0, alcanzadaHasta(vista.length));
     for (let i = desde; i < laminas.length; i++) {
       if (cuantasEn(laminas[i].v) < TOPE_POR_LAMINA) return laminas[i].v;
     }
@@ -202,7 +211,7 @@ export default function Manchas({
    *
    * El protocolo se toma en orden: se dan las respuestas de la lámina I, se
    * pasa a la II y no se vuelve. Así que en cada fila lo único que puede pasar
-   * es repetir la lámina de la respuesta anterior o pasar a la siguiente, y
+   * es repetir la lámina a la que se llegó o pasar a la siguiente, y
    * ofrecer las diez es ofrecer ocho maneras de equivocarse.
    *
    * La lámina que la fila ya tiene entra siempre, para que una respuesta vieja
@@ -210,24 +219,22 @@ export default function Manchas({
    * todas": las excepciones existen y no se las puede dejar sin salida.
    */
   function laminasDe(i: number): Opcion[] {
-    const previa = i > 0 ? (vista[i - 1].lamina ?? null) : null;
     const propia = vista[i].lamina ?? null;
-    const base = propia ?? previa ?? laminas[0]?.v ?? null;
-    if (!base) return laminas;
-    const donde = laminas.findIndex((o) => o.v === base);
-    if (donde < 0) return laminas;
-    /* La anterior, la propia y la siguiente. La anterior está porque el tope de
-       cuatro empuja la fila nueva a la lámina que sigue, y sin ella volver
-       atrás un paso obligaba a abrir "Mostrar todas". */
-    const ofrecidas = [laminas[donde - 1], laminas[donde], laminas[donde + 1]].filter(
+    /* Se ofrecen la más avanzada de las filas de arriba y la siguiente. La
+       anterior no: el protocolo no vuelve atrás, y ofrecerla dejó a Lorena una
+       IV después de tres V con un solo toque mal dado (19/10/2026). Volver
+       atrás queda en "Mostrar todas", que es lo que es: una excepción. */
+    const alcanzada = alcanzadaHasta(i);
+    const donde = alcanzada >= 0 ? alcanzada : Math.max(0, laminas.findIndex((o) => o.v === propia));
+    const ofrecidas = [laminas[donde], laminas[donde + 1]].filter(
       Boolean
     ) as Opcion[];
-    // La previa también, cuando la fila todavía está vacía: es la que se repite.
-    if (propia === null && previa && !ofrecidas.some((o) => o.v === previa)) {
-      const p = laminas.find((o) => o.v === previa);
-      if (p) ofrecidas.unshift(p);
+    // La propia también, aunque esté fuera de orden: si no, la fila no se ve.
+    if (propia && !ofrecidas.some((o) => o.v === propia)) {
+      const p = laminas.find((o) => o.v === propia);
+      if (p) ofrecidas.push(p);
     }
-    return ofrecidas;
+    return ofrecidas.length ? ofrecidas : laminas;
   }
 
   async function pedir(init: RequestInit & { url?: string }): Promise<any> {
