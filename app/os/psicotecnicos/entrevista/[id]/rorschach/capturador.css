@@ -618,7 +618,7 @@
  * renglón: con 24px, "N° rta" se partía en dos y "P" quedaba pegado al de al
  * lado, y la fila se leía como si las columnas estuvieran corridas. El sobrante
  * se lo reparten las dos de texto libre, que son lo que de verdad crece: lo que
- * dijo la persona y los contenidos.
+ * dijo la persona, los determinantes y los contenidos.
  */
 .os-ror-fila-datos {
   display: grid;
@@ -627,7 +627,7 @@
      al apretar la cruz la columna crecía, les robaba ancho a las de texto y la
      fila dejaba de coincidir con sus rótulos. */
   grid-template-columns:
-    64px minmax(0, 1.5fr) 150px 104px 64px minmax(0, 1fr) 56px 80px 92px;
+    64px minmax(0, 1.5fr) 150px 104px minmax(0, 1fr) 64px 56px minmax(0, 1fr) 92px;
   gap: 10px;
   align-items: center;
   font-size: 13px;
@@ -1722,4 +1722,28 @@ input.os-ror-dichas-texto:focus {
    deciden sobre la respuesta entera. */
 .os-ror-trozos-fuera {
   margin-right: auto;
+}
+
+/*
+ * Las áreas marcadas del objeto en curso, cada una con su cruz para sacarla.
+ * Van como texto y no como botón con fondo: es el mismo renglón que el de los
+ * objetos ya cargados, y una caja por área lo corría de lugar.
+ */
+.os-ror-area-quitar {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0 2px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.os-ror-area-quitar span {
+  opacity: 0.45;
+}
+.os-ror-area-quitar:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.os-ror-area-quitar:hover span {
+  opacity: 1;
 }

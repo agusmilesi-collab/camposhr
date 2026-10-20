@@ -106,3 +106,18 @@ export function Multiple({
     </div>
   );
 }
+
+/** Un sí o no de la fila: par, popular. */
+export function Tilde({ puesto, onCambio }: { puesto: boolean; onCambio: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      className={`os-check${puesto ? ' puesto' : ''}`}
+      onClick={() => onCambio(!puesto)}
+      aria-pressed={puesto}
+      aria-label={puesto ? 'Sí' : 'No'}
+    >
+      ✓
+    </button>
+  );
+}

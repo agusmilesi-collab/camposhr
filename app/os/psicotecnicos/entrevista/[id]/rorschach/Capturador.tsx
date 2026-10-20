@@ -45,8 +45,8 @@ import {
   localizacionesPosibles,
   rotuloDe,
 } from '@/lib/rorschach-sugerencias';
-import { Multiple, Simple } from '@/app/os/psicotecnicos/ficha/[id]/Celdas';
-import { CONTENIDOS, FQ, GIRO, LOCALIZACION, POSICION, tonoDe } from '@/lib/rorschach';
+import { Multiple, Simple, Tilde } from '@/app/os/psicotecnicos/ficha/[id]/Celdas';
+import { CONTENIDOS, DETERMINANTES, FQ, GIRO, LOCALIZACION, POSICION, tonoDe } from '@/lib/rorschach';
 import Codigo from '@/app/os/psicotecnicos/ficha/[id]/Codigo';
 import { areasDistintas, localizacionFinal, puntajeZ } from '@/lib/rorschach-z';
 import { CARGADAS, ORDEN, siguienteDe } from '@/lib/rorschach-laminas';
@@ -605,6 +605,10 @@ export type YaEnLaFicha = {
   localizacion: string | null;
   n_localizacion: string | null;
   fq: string | null;
+  determinantes: string[] | null;
+  par: boolean | null;
+  /** Las áreas marcadas, tal cual. Nula en las filas cargadas antes. */
+  areas?: string[] | null;
   contenidos: string[] | null;
   popular: boolean | null;
   z: number | null;
@@ -651,6 +655,13 @@ function peorFq(fqs: (string | null)[]): string | null {
 type Respuesta = {
   n: number;
   /**
+   * Identidad de la respuesta en esta pantalla, mientras todavía no tiene
+   * fila en la base. El número cambia al borrar y el objeto cambia con cada
+   * edición, así que ninguno de los dos sirve para saber a qué alta le
+   * contestó el servidor.
+   */
+  clave?: string;
+  /**
    * La fila que esta respuesta actualiza, si venía tomada de la primera
    * instancia. Sin esto se guardaría una fila nueva y la tomada quedaría
    * duplicada y sin locación.
@@ -662,6 +673,10 @@ type Respuesta = {
   extrapolada: boolean;
   fq: string | null;
   localizacion: string | null;
+  /** Qué de la mancha determinó la respuesta: forma, movimiento, color. */
+  determinantes: string[];
+  /** Par: lo tilda la psicóloga, el sistema no lo deduce. */
+  par: boolean;
   contenidos: string[];
   popular: boolean;
   /** Nota libre de la evaluadora sobre esta respuesta. */
@@ -688,6 +703,8 @@ type Respuesta = {
  * la localización.
  */
 function areasDeLaFicha(r: YaEnLaFicha): string[] {
+  // Guardadas tal cual se marcaron: Dd99 no dice cuáles se integraron.
+  if (r.areas && r.areas.length > 0) return r.areas;
   const familia = (r.localizacion ?? '').replace(/(v\/\+|o|v|\+)$/, '') || 'Dd';
   const numeros = (r.n_localizacion ?? '')
     .split('+')
@@ -776,6 +793,13 @@ export default function Capturador({
     /** Lo que contestó a qué de la mancha le hizo ver eso. */
     caracteristica?: string;
   } | null>(null);
+  /**
+   * Lo que contestó a qué de la mancha le hizo ver eso, mientras se vuelve a
+   * los objetos o a la búsqueda. Vive en `pendiente`, y volver lo vaciaba: lo
+   * escrito durante la encuesta se perdía por corregir un objeto. Se devuelve
+   * al campo cuando la respuesta se vuelve a elegir y se suelta al cerrarla.
+   */
+  const [caracteristicaEnEspera, setCaracteristicaEnEspera] = useState('');
   const [respuestas, setRespuestas] = useState<Respuesta[]>([]);
   /**
    * Qué fila está pidiendo confirmación para borrarse.
@@ -995,6 +1019,8 @@ export default function Capturador({
       extrapolada: false,
       fq: r.fq,
       localizacion: r.localizacion,
+      determinantes: r.determinantes ?? [],
+      par: r.par ?? false,
       contenidos: r.contenidos ?? [],
       popular: r.popular ?? false,
       observacion: r.observacion ?? '',
@@ -1022,6 +1048,8 @@ export default function Capturador({
               ...r,
               localizacion: nueva.localizacion,
               fq: nueva.fq,
+              determinantes: nueva.determinantes,
+              par: nueva.par,
               contenidos: nueva.contenidos,
               popular: nueva.popular,
               observacion: nueva.observacion || null,
@@ -1035,6 +1063,8 @@ export default function Capturador({
       const bien = await guardarCelda(id, {
         localizacion: nueva.localizacion,
         fq: nueva.fq,
+        determinantes: nueva.determinantes,
+        par: nueva.par,
         contenidos: nueva.contenidos,
         popular: nueva.popular,
         observacion: nueva.observacion || null,
@@ -1288,6 +1318,7 @@ export default function Capturador({
    * trataba partir la respuesta.
    */
   function cerrarPartida(dq: string | null) {
+    setCaracteristicaEnEspera('');
     if (trozos.length === 0) return;
     const tomada = ubicando ? suyas.find((v) => v.id === ubicando) ?? null : null;
     const areas = [...new Set(trozos.flatMap((t) => t.areas))];
@@ -1298,11 +1329,14 @@ export default function Capturador({
       ...rs,
       {
         n: tomada?.n_respuesta ?? proximo + rs.length,
+        clave: crypto.randomUUID(),
         dijo: tomada?.verbalizacion ?? trozos.map((t) => t.texto).join(' · '),
         areas,
         extrapolada: trozos.some((t) => t.fueraDeTabla),
         fq: peorFq(trozos.map((t) => t.fq)),
         localizacion: dq ?? (locs.length === 1 ? locs[0] : null),
+        determinantes: tomada?.determinantes ?? [],
+        par: tomada?.par ?? false,
         contenidos,
         popular: trozos.some((t) => t.popular),
         observacion: '',
@@ -1320,6 +1354,7 @@ export default function Capturador({
   }
 
   function tomar(h: Hallazgo | null, dq: string | null) {
+    setCaracteristicaEnEspera('');
     /**
      * El área la marca ella en el mapa, y el renglón elegido no la cambia.
      *
@@ -1349,6 +1384,7 @@ export default function Capturador({
         /* La tomada conserva su número: se lo dio la primera instancia y el
            orden de las respuestas es el orden en que el candidato las dijo. */
         n: tomada?.n_respuesta ?? proximo + rs.length,
+        clave: crypto.randomUUID(),
         // Elegido un renglón, la respuesta es la de la tabla y no lo que quedó
         // escrito: con un solo campo, lo escrito es lo que se tipeó para
         // encontrarla, y apretar "escarabajo" después de escribir "esca"
@@ -1360,6 +1396,8 @@ export default function Capturador({
         // La que se eligió al cargar; si no se tocó y el área admite una sola,
         // esa. Con varias y sin elegir queda pendiente para la fila.
         localizacion: dq ?? (locs.length === 1 ? locs[0] : null),
+        determinantes: tomada?.determinantes ?? [],
+        par: tomada?.par ?? false,
         contenidos: contenidoSugerido(respuesta),
         popular: esPopular(lamina, areas[0], respuesta),
         observacion: '',
@@ -1402,7 +1440,6 @@ export default function Capturador({
        respuesta es lo que evita que los números queden entremezclados. */
     const lugar = (l: string | null) => ORDEN.indexOf(l ?? '');
     const n = proximoNumero;
-    const corridas = enLaFicha.filter((r) => lugar(r.lamina) > lugar(lamina));
     const res = await fetch('/api/os/manchas', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -1431,10 +1468,7 @@ export default function Capturador({
       setAviso('No se pudo guardar esa respuesta. Probá de nuevo antes de seguir.');
       return;
     }
-    // Las de las láminas que siguen corren un lugar.
-    for (const r of corridas) {
-      await guardarCelda(r.id, { n_respuesta: (r.n_respuesta ?? 0) + 1 });
-    }
+    // Las de las láminas que siguen ya las corrió el servidor al recontar.
     anotandoAhora.current = false;
     setAnotando(false);
     setEnLaFicha((f) => [
@@ -1450,6 +1484,8 @@ export default function Capturador({
         localizacion: null,
         n_localizacion: null,
         fq: null,
+        determinantes: [],
+        par: false,
         contenidos: [],
         popular: false,
         z: null,
@@ -1460,6 +1496,7 @@ export default function Capturador({
       },
     ]);
     setProximo(n + 1);
+    aplicarNumeros(cuerpo.numeros);
     setTomando('');
     setPosicion('^');
     setAviso(null);
@@ -1470,6 +1507,20 @@ export default function Capturador({
   };
 
   /** Guarda una celda de una respuesta que ya está en la ficha. */
+  /**
+   * Los números que dejó el servidor después de un alta o una baja.
+   *
+   * El protocolo lo recuenta él (`renumerar` en la ruta), así que la pantalla
+   * no calcula a quién le toca correrse: toma lo que quedó escrito.
+   */
+  function aplicarNumeros(numeros: Record<string, number> | null | undefined) {
+    if (!numeros) return;
+    setEnLaFicha((f) =>
+      f.map((r) => (numeros[r.id] ? { ...r, n_respuesta: numeros[r.id] } : r))
+    );
+    setProximo(Object.keys(numeros).length + 1);
+  }
+
   async function guardarCelda(id: string, campos: Record<string, unknown>) {
     const res = await fetch('/api/os/manchas', {
       method: 'POST',
@@ -1494,18 +1545,16 @@ export default function Capturador({
    * cuenta el sumario: dejando el hueco, el protocolo pasa a decir que hubo una
    * respuesta que nadie dio. Se corrigen todas las posteriores, que son las
    * únicas que se corren.
+   *
+   * La fila sale de la pantalla en el acto y la base se corrige después: con
+   * la pantalla esperando a la base, la fila volvía a verse entera mientras se
+   * renumeraban una por una las posteriores, y recién al final desaparecía. Si
+   * el borrado falla, la ficha vuelve a como estaba. El número definitivo lo
+   * pone el servidor, que recuenta el protocolo entero.
    */
   async function borrarTomada(id: string, n: number) {
     setBorrando(null);
-    const posteriores = enLaFicha.filter((r) => (r.n_respuesta ?? 0) > n);
-    const res = await fetch(`/api/os/manchas?id=${id}`, { method: 'DELETE' });
-    if (!res.ok) {
-      setAviso('No se pudo borrar esa respuesta. Probá de nuevo.');
-      return;
-    }
-    for (const r of posteriores) {
-      await guardarCelda(r.id, { n_respuesta: (r.n_respuesta ?? 0) - 1 });
-    }
+    const antes = enLaFicha;
     setEnLaFicha((f) =>
       f
         .filter((r) => r.id !== id)
@@ -1515,6 +1564,16 @@ export default function Capturador({
     );
     setProximo((p) => Math.max(1, p - 1));
     setAviso(null);
+    const res = await fetch(`/api/os/manchas?id=${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      setEnLaFicha(antes);
+      setProximo((p) => p + 1);
+      setAviso('No se pudo borrar esa respuesta. Probá de nuevo.');
+      return;
+    }
+    const cuerpo = await res.json().catch(() => null);
+    if (cuerpo?.numeros) aplicarNumeros(cuerpo.numeros);
+    else setAviso('Se borró, pero no se pudo renumerar el protocolo. Recargá la página.');
   }
 
   /**
@@ -1552,6 +1611,7 @@ export default function Capturador({
       const sinCodificar = {
         localizacion: null,
         n_localizacion: null,
+        areas: null,
         fq: null,
         contenidos: [],
         popular: false,
@@ -1567,6 +1627,8 @@ export default function Capturador({
     }
     setAbiertas((ns) => ns.filter((n) => n !== r.n));
     setPendiente(null);
+    // Lo que contestó en la encuesta vuelve con ella al campo de escribir.
+    setCaracteristicaEnEspera(r.caracteristica ?? '');
     setAviso(null);
     /* Con el id puesto antes del dibujo, el efecto que arranca la respuesta en
        curso la encuentra ya elegida y no pisa lo que se deja cargado acá. */
@@ -1595,14 +1657,51 @@ export default function Capturador({
    * Se toma al vuelo mientras la persona habla, así que una fila puede salir
    * mal: el área equivocada, o una respuesta que después ella misma retira. Sin
    * renumerar quedaría un hueco (24, 26, 27) y el número tiene que ser
-   * correlativo de todo el protocolo, que es lo que cuenta el sumario. Estas
-   * respuestas todavía no están en la ficha, así que corregirlas acá no toca
-   * nada de lo guardado.
+   * correlativo de todo el protocolo, que es lo que cuenta el sumario.
+   *
+   * Como cada respuesta se guarda al codificarla, sacarla también toca la
+   * base: la que nació acá se borra, y la que venía tomada de la entrevista
+   * pierde la codificación y vuelve a las respuestas por ubicar, con lo que
+   * dijo el candidato intacto.
    */
   function borrar(n: number) {
+    const sale = respuestas.find((r) => r.n === n);
     setRespuestas((rs) =>
       rs.filter((r) => r.n !== n).map((r, i) => ({ ...r, n: proximo + i }))
     );
+    if (!sale) return;
+    const id = idDe(sale);
+    if (!id) return;
+    void (async () => {
+      if (guardadoEnCurso.current) await guardadoEnCurso.current;
+      const res = sale.id
+        ? await fetch('/api/os/manchas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id,
+              campos: {
+                localizacion: null,
+                n_localizacion: null,
+                areas: null,
+                fq: null,
+                contenidos: [],
+                determinantes: [],
+                popular: false,
+                par: false,
+                z: null,
+              },
+            }),
+          }).catch(() => null)
+        : await fetch(`/api/os/manchas?id=${id}`, { method: 'DELETE' }).catch(() => null);
+      if (!res?.ok) {
+        setAviso('No se pudo sacar esa respuesta de la ficha. Probá de nuevo.');
+        return;
+      }
+      if (sale.clave) idsGuardados.current.delete(sale.clave);
+      const cuerpo = await res.json().catch(() => null);
+      aplicarNumeros(cuerpo?.numeros);
+    })();
   }
 
   function zDe(r: Respuesta) {
@@ -1619,48 +1718,160 @@ export default function Capturador({
    * números del pie: irse sin guardar perdería lo capturado de esta lámina, y
    * nadie espera que apretar "IV" tire lo que acaba de anotar.
    */
+  /** Lo que se guarda de una respuesta codificada en esta pantalla. */
+  function camposDe(r: Respuesta) {
+    return {
+      lamina: lamina,
+      n_respuesta: r.n,
+      // La ficha guarda el número del área y la letra va en la
+      // localización: D1 es localizacion 'Do' con n_localizacion '1'. W
+      // no tiene número.
+      n_localizacion: localizacionFinal(lamina, r.areas).numero,
+      areas: r.areas,
+      localizacion: r.localizacion,
+      fq: r.fq,
+      contenidos: r.contenidos,
+      popular: r.popular,
+      z: zDe(r).z?.valor ?? null,
+      // Lo que dijo va como observación y no como verbalización guardada:
+      // el protocolo escrito sigue siendo la fuente, y esto es lo que le
+      // permite completar en la ficha los cinco campos que faltan.
+      observacion: [r.dijo, r.observacion].filter(Boolean).join(' · ') || null,
+      caracteristica: r.caracteristica || null,
+      origen: 'captura',
+      determinantes: r.determinantes,
+      cc_ee: [],
+      par: r.par,
+      agc: false,
+      sl: false,
+    };
+  }
+
+  /**
+   * Las filas que ya les dio el servidor a las respuestas de esta pantalla,
+   * por su clave. Se anota apenas vuelve el alta, antes de que el estado se
+   * redibuje, para que el guardado siguiente la actualice y no dé otra de alta.
+   */
+  const idsGuardados = useRef(new Map<string, string>());
+  const idDe = (r: Respuesta) => r.id ?? (r.clave ? idsGuardados.current.get(r.clave) : undefined);
+
+  /** La lista vigente, para el guardado que corre por detrás. */
+  const respuestasAhora = useRef(respuestas);
+  respuestasAhora.current = respuestas;
+  const guardadoEnCurso = useRef<Promise<number> | null>(null);
+  const guardarOtraVez = useRef(false);
+  /** Si hay algo codificado que todavía no llegó a la base. */
+  const [sinGuardar, setSinGuardar] = useState(false);
+
+  /**
+   * Manda a la base todo lo codificado en esta lámina.
+   *
+   * Lo codificado se guardaba recién al pasar de lámina: una recarga o la
+   * pestaña cerrada se llevaba la lámina entera, y así se perdió una
+   * codificación hecha con la persona delante. Ahora corre por detrás cada vez
+   * que algo cambia. Una sola corrida a la vez: si cambia algo mientras corre,
+   * se repite al terminar con la lista nueva. Devuelve cuántas fallaron.
+   */
+  function guardarTodo(): Promise<number> {
+    if (guardadoEnCurso.current) {
+      guardarOtraVez.current = true;
+      return guardadoEnCurso.current;
+    }
+    const corrida = (async () => {
+      let mal = 0;
+      do {
+        guardarOtraVez.current = false;
+        mal = 0;
+        for (const r of respuestasAhora.current) {
+          /* La que venía tomada de la primera instancia ya tiene su fila, con
+             lo que dijo el candidato adentro: se le completa la codificación.
+             Guardar una nueva dejaría dos, la tomada sin locación y la
+             codificada sin verbalización, y el número de respuesta repetido. */
+          const id = idDe(r);
+          const res = await fetch('/api/os/manchas', {
+            method: id ? 'POST' : 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...(id ? { id } : { evaluacionId }),
+              // Con la fila ya creada, el número lo lleva el servidor, que
+              // recuenta el protocolo en cada alta y baja: mandarlo de nuevo
+              // pisaría ese recuento con el que tenía esta pantalla.
+              campos: id ? { ...camposDe(r), n_respuesta: undefined } : camposDe(r),
+            }),
+          }).catch(() => null);
+          if (!res?.ok) {
+            mal++;
+            continue;
+          }
+          if (!id && r.clave) {
+            const cuerpo = await res.json().catch(() => null);
+            const nuevo = cuerpo?.fila?.id;
+            if (nuevo) idsGuardados.current.set(r.clave, nuevo);
+          }
+        }
+      } while (guardarOtraVez.current);
+      guardadoEnCurso.current = null;
+      setSinGuardar(mal > 0);
+      return mal;
+    })();
+    guardadoEnCurso.current = corrida;
+    return corrida;
+  }
+
+  useEffect(() => {
+    if (respuestas.length === 0) return;
+    setSinGuardar(true);
+    const espera = window.setTimeout(() => void guardarTodo(), 600);
+    return () => window.clearTimeout(espera);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [respuestas]);
+
+  /**
+   * Vuelve a leer de la base lo que está guardado.
+   *
+   * La pantalla leía las respuestas una sola vez, al abrirse, y cambiar de
+   * lámina no vuelve al servidor: lo corregido en la ficha, o en otra pestaña,
+   * no aparecía, y al volver a una lámina se veía como estaba al abrir. Las que
+   * nacieron acá y siguen en la lista de lo que se codifica no se suman, que si
+   * no se verían dos veces.
+   */
+  async function releer() {
+    const res = await fetch(`/api/os/manchas?evaluacion=${evaluacionId}`, { cache: 'no-store' }).catch(
+      () => null
+    );
+    const cuerpo = res?.ok ? await res.json().catch(() => null) : null;
+    if (!Array.isArray(cuerpo?.filas)) return;
+    const filas = cuerpo.filas as YaEnLaFicha[];
+    const deAca = new Set(
+      respuestasAhora.current.filter((r) => !r.id).map(idDe).filter(Boolean)
+    );
+    setEnLaFicha(filas.filter((f) => !deAca.has(f.id)));
+    setProximo(Math.max(0, ...filas.map((f) => f.n_respuesta ?? 0)) + 1);
+  }
+
+  useEffect(() => {
+    const alVolver = () => {
+      if (document.visibilityState === 'visible') void releer();
+    };
+    document.addEventListener('visibilitychange', alVolver);
+    return () => document.removeEventListener('visibilitychange', alVolver);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* Cerrar o recargar con algo sin guardar pide confirmación. */
+  useEffect(() => {
+    if (!sinGuardar) return;
+    const avisar = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', avisar);
+    return () => window.removeEventListener('beforeunload', avisar);
+  }, [sinGuardar]);
+
   async function guardar(destino: string | null = siguienteDe(lamina)) {
     setGuardando(true);
     setAviso(null);
-    let mal = 0;
-    for (const r of respuestas) {
-      /* La que venía tomada de la primera instancia ya tiene su fila, con lo
-         que dijo el candidato adentro: se le completa la codificación. Guardar
-         una nueva dejaría dos, la tomada sin locación y la codificada sin
-         verbalización, y el número de respuesta repetido. */
-      const res = await fetch('/api/os/manchas', {
-        method: r.id ? 'POST' : 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...(r.id ? { id: r.id } : { evaluacionId }),
-          campos: {
-            lamina: lamina,
-            n_respuesta: r.n,
-            // La ficha guarda el número del área y la letra va en la
-            // localización: D1 es localizacion 'Do' con n_localizacion '1'. W
-            // no tiene número.
-            n_localizacion: localizacionFinal(lamina, r.areas).numero,
-            localizacion: r.localizacion,
-            fq: r.fq,
-            contenidos: r.contenidos,
-            popular: r.popular,
-            z: zDe(r).z?.valor ?? null,
-            // Lo que dijo va como observación y no como verbalización guardada:
-            // el protocolo escrito sigue siendo la fuente, y esto es lo que le
-            // permite completar en la ficha los cinco campos que faltan.
-            observacion: [r.dijo, r.observacion].filter(Boolean).join(' · ') || null,
-            caracteristica: r.caracteristica || null,
-            origen: 'captura',
-            determinantes: [],
-            cc_ee: [],
-            par: false,
-            agc: false,
-            sl: false,
-          },
-        }),
-      });
-      if (!res.ok) mal++;
-    }
+    // Lo pendiente del guardado de fondo, y una pasada más con lo último.
+    if (guardadoEnCurso.current) await guardadoEnCurso.current;
+    const mal = respuestas.length > 0 ? await guardarTodo() : 0;
     setGuardando(false);
     if (mal > 0) {
       setAviso(`Quedaron ${mal} respuestas sin pasar. Miralo antes de seguir.`);
@@ -1670,16 +1881,19 @@ export default function Capturador({
     // preguntarle al servidor: pasa a verse en la lista de arriba y la
     // numeración sigue de ahí.
     const cuantas = respuestas.length;
-    const actualizadas = new Set(respuestas.map((r) => r.id).filter(Boolean));
+    const actualizadas = new Set(respuestas.map(idDe).filter(Boolean));
     setEnLaFicha((f) => [
       ...f.filter((v) => !actualizadas.has(v.id)),
       ...respuestas.map((r) => ({
-        id: r.id ?? `nueva-${r.n}`,
+        id: idDe(r) ?? `nueva-${r.n}`,
         n_respuesta: r.n,
         lamina,
         localizacion: r.localizacion,
         n_localizacion: localizacionFinal(lamina, r.areas).numero,
+        areas: r.areas,
         fq: r.fq,
+        determinantes: r.determinantes,
+        par: r.par,
         contenidos: r.contenidos,
         popular: r.popular,
         z: zDe(r).z?.valor ?? null,
@@ -1705,6 +1919,7 @@ export default function Capturador({
       });
       setLamina(sigue);
       setAviso(null);
+      void releer();
       // La dirección se acomoda sin navegar: recargar tiene que abrir la
       // lámina en la que se estaba, y volver a pedirle la página al servidor
       // costaba medio segundo por cada cambio.
@@ -1850,11 +2065,22 @@ export default function Capturador({
                   onElegir={(v) => onCambio({ localizacion: v })}
                   etiqueta="Localización y DQ"
                   buscable={false}
-                  // Sin elegir muestra la familia que ya sale del área ("D…"),
-                  // no un guion: lo que falta es la calidad evolutiva, y un
-                  // hueco vacío se lee como si faltara también la localización.
-                  vacio={`${final.familia}…`}
+                  // La localización ya está en la columna de al lado: acá va
+                  // solo la calidad evolutiva. Se guarda igual el código entero.
+                  mostrar={(v) => v.match(/(v\/\+|o|v|\+)$/)?.[0] ?? v}
+                  vacio="—"
                 />
+                {/* Los determinantes salen de lo que contesta en la encuesta,
+                    que es cuando se codifican: el mismo selector de la ficha,
+                    para no tener que ir a completarlos allá. */}
+                <span className="os-ror-dato os-ror-contenidos">
+                  <Multiple
+                    valores={r.determinantes}
+                    opciones={DETERMINANTES}
+                    onCambio={(v) => onCambio({ determinantes: v })}
+                    etiqueta="Determinantes"
+                  />
+                </span>
                 {/* La Tabla A propone la calidad formal, y se puede cambiar:
                     la misma respuesta dicha de dos maneras no siempre vale
                     igual, y esa lectura es de la evaluadora. Fuera de tabla la
@@ -1871,6 +2097,9 @@ export default function Capturador({
                     buscable={false}
                   />
                 </span>
+                <span className="os-ror-dato">
+                  <Tilde puesto={r.par} onCambio={(v) => onCambio({ par: v })} />
+                </span>
                 {/* Lo que propone el diccionario de palabras entra acá y
                     se corrige: una palabra suelta no dice el contenido, que
                     depende de a qué pertenece lo que la persona vio. */}
@@ -1882,10 +2111,9 @@ export default function Capturador({
                     etiqueta="Contenidos"
                   />
                 </span>
-                <span className="os-ror-dato">{r.popular ? 'P' : ''}</span>
-                <span className="os-ror-dato os-ror-z">
-                  {v.z ? `${v.z.tipo} ${v.z.valor}` : '—'}
-                </span>
+                {/* Popular y Z no van en columna: los calcula el sistema y
+                    nadie los toca acá. El Z con su porqué está en el detalle
+                    (✎), y los dos se ven en la tabla de la ficha. */}
                 {/* Los dos botones de la fila, en una columna sola: abrir el
                     detalle y borrar. El borrado se confirma como en el resto
                     del OS, partiéndose en "Sí, borrar" y "No", porque no se
@@ -2186,6 +2414,7 @@ export default function Capturador({
                     onClick={() => {
                       setFase('encuesta');
                       setTomando('');
+                      void releer();
                     }}
                   >
                     <span className="os-ror-tab-paso">2</span>
@@ -2541,8 +2770,26 @@ export default function Capturador({
                         }
                         aria-label={`Objeto ${trozos.length + 1}`}
                       />
+                      {/* Cada área marcada se saca con su cruz. Tocarla de nuevo
+                          en la lámina también la desmarca, pero entre varias
+                          chicas y superpuestas no se encuentra cuál es. */}
                       <span className="os-ror-trozo-area">
-                        {puestas.length > 0 ? puestas.join(' + ') : '—'}
+                        {puestas.length > 0
+                          ? puestas.map((a, i) => (
+                              <span key={a}>
+                                {i > 0 && ' + '}
+                                <button
+                                  type="button"
+                                  className="os-ror-area-quitar"
+                                  onClick={() => alternar(a)}
+                                  title={`Quitar ${a}`}
+                                  aria-label={`Quitar ${a}`}
+                                >
+                                  {a} <span aria-hidden="true">×</span>
+                                </button>
+                              </span>
+                            ))
+                          : '—'}
                       </span>
                       {/* Los lugares de la calidad y de la cruz, vacíos: sin
                           ellos el área de este renglón queda corrida respecto
@@ -2587,7 +2834,7 @@ export default function Capturador({
                         disabled={trozos.length === 0}
                         onClick={() => {
                           setPartiendo(false);
-                          setPendiente({ h: null, partida: true });
+                          setPendiente({ h: null, partida: true, caracteristica: caracteristicaEnEspera });
                         }}
                       >
                         Terminar la respuesta {enCurso?.n_respuesta}
@@ -2728,6 +2975,7 @@ export default function Capturador({
                     className="os-boton os-boton-fila"
                     onClick={() => {
                       if (pendiente.partida) setPartiendo(true);
+                      setCaracteristicaEnEspera(pendiente.caracteristica ?? '');
                       setPendiente(null);
                     }}
                   >
@@ -2782,7 +3030,7 @@ export default function Capturador({
                   key={`${h.area}-${h.respuesta}-${i}`}
                   type="button"
                   className="os-ror-opcion"
-                  onClick={() => (partiendo ? sumarTrozo(h) : setPendiente({ h }))}
+                  onClick={() => (partiendo ? sumarTrozo(h) : setPendiente({ h, caracteristica: caracteristicaEnEspera }))}
                 >
                   <span
                     className="os-ror-fq"
@@ -2832,7 +3080,7 @@ export default function Capturador({
                       ? 'Marcá primero en la mancha dónde lo vio'
                       : undefined
                   }
-                  onClick={() => setPendiente({ h: null })}
+                  onClick={() => setPendiente({ h: null, caracteristica: caracteristicaEnEspera })}
                 >
                   {puestas.length === 0
                     ? 'Marcá dónde lo vio para cargarla'
@@ -2867,11 +3115,11 @@ export default function Capturador({
             <span>N° rta</span>
             <span>Respuesta</span>
             <span>N° loc.</span>
-            <span>Loc. + DQ</span>
+            <span>DQ</span>
+            <span>Determinantes</span>
             <span>FQ</span>
+            <span>Par</span>
             <span>Contenidos</span>
-            <span>P</span>
-            <span>Pje Z</span>
             {/* La última columna lleva los tres botones de la fila: abrir lo
                 de abajo, la nota y el borrado. */}
             <span>Acciones</span>

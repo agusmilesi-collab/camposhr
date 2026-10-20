@@ -51,8 +51,8 @@ export default async function CodificarRorschach(
   // cambiar de lámina no vuelve a preguntar.
   const yaEstan = await select<YaEnLaFicha>(
     'rorschach_respuestas',
-    `select=id,n_respuesta,lamina,localizacion,n_localizacion,fq,contenidos,popular,z,` +
-      `observacion,verbalizacion,posicion` +
+    `select=id,n_respuesta,lamina,localizacion,n_localizacion,areas,fq,determinantes,par,contenidos,popular,z,` +
+      `observacion,verbalizacion,posicion,caracteristica` +
       `&evaluacion_id=eq.${params.id}&order=n_respuesta`
   );
   const desde = Math.max(0, ...yaEstan.map((r) => r.n_respuesta ?? 0)) + 1;

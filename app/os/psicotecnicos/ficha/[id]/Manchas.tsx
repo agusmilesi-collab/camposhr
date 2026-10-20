@@ -33,7 +33,7 @@ import { CAMPOS_HR, conRepresentacionHumana } from '@/lib/representacion-humana'
 import { zDeLaFicha } from '@/lib/rorschach-z';
 import Calcular from './Calcular';
 import Codigo from './Codigo';
-import { Multiple, Simple } from './Celdas';
+import { Multiple, Simple, Tilde } from './Celdas';
 
 /** Una etiqueta con el color que le toca a ese código. */
 function Chip({ valor, opciones }: { valor: string; opciones: Opcion[] }) {
@@ -41,20 +41,6 @@ function Chip({ valor, opciones }: { valor: string; opciones: Opcion[] }) {
     <span className="os-chip" style={{ background: tonoDe(opciones, valor) }}>
       {valor}
     </span>
-  );
-}
-
-function Tilde({ puesto, onCambio }: { puesto: boolean; onCambio: (v: boolean) => void }) {
-  return (
-    <button
-      type="button"
-      className={`os-check${puesto ? ' puesto' : ''}`}
-      onClick={() => onCambio(!puesto)}
-      aria-pressed={puesto}
-      aria-label={puesto ? 'Sí' : 'No'}
-    >
-      ✓
-    </button>
   );
 }
 

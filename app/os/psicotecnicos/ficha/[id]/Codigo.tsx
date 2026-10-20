@@ -73,6 +73,11 @@ export default function Codigo({
   /** Antes de este valor, la grilla empieza una fila nueva. */
   nuevaFilaAntesDe,
   /**
+   * Qué parte del código elegido dibuja el botón, cuando la otra ya está a la
+   * vista en la columna de al lado. La lista sigue mostrando el código entero.
+   */
+  mostrar,
+  /**
    * La lista completa, cuando lo que se ofrece es un recorte.
    *
    * En las láminas se ofrecen las dos que siguen en el protocolo, que es lo que
@@ -89,6 +94,7 @@ export default function Codigo({
   buscable?: boolean;
   ancho?: number;
   vacio?: string;
+  mostrar?: (valor: string) => string;
   comoAgregar?: boolean;
   porFila?: number;
   sinVacio?: boolean;
@@ -275,7 +281,7 @@ export default function Codigo({
         title={etiqueta}
         aria-label={etiqueta}
       >
-        {comoAgregar ? '+' : (valor ?? vacio)}
+        {comoAgregar ? '+' : valor ? (mostrar ? mostrar(valor) : valor) : vacio}
       </button>
 
       {abierta && anfitrion() && createPortal(desplegada, anfitrion() as Element)}
