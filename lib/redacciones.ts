@@ -2639,6 +2639,41 @@ export function cuandoDe(clave: ClaveDeTexto, cortes: Cortes = {}): string {
 }
 
 /**
+ * La regla que dispara una lectura en un test, escrita y con su sentido.
+ *
+ * Es `cuandoDe` con el test: el Zulliger tiene sus propios cortes y su propio
+ * índice en algunas lecturas, y la pestaña Análisis tiene que decir la regla
+ * con la que se leyó ese protocolo y no la del Rorschach. `op` dice para qué
+ * lado entra: por arriba es alto y por abajo es bajo. Null cuando la lectura
+ * no tiene corte y su condición está escrita a mano.
+ */
+export function reglaDe(
+  clave: ClaveDeTexto,
+  cortes: Cortes = {},
+  test: TestDeManchas = 'Rorschach'
+): { indice: string; cuando: string; op: 'mayor' | 'menor' | null } {
+  const t = TEXTOS[clave] as Redaccion;
+  const propio = test === 'Zulliger' ? t.zulliger : undefined;
+  const indice = propio?.indice ?? t.indice;
+  const corte = propio?.corte ?? t.corte;
+  if (!corte) {
+    /* La condición escrita a mano trae la del Zulliger entre paréntesis
+       ("más de 5 (Zulliger: más de 4)"): se deja solo la del test que rige. */
+    const escrita = propio?.cuando ?? t.cuando ?? '';
+    const zul = escrita.match(/\s*\(Zulliger: ([^)]*)\)/);
+    const cuando = zul ? (test === 'Zulliger' ? zul[1] : escrita.replace(zul[0], '')) : escrita;
+    return { indice, cuando, op: null };
+  }
+  const lado = corte.op === 'menor' ? 'menos de' : 'más de';
+  const cola = corte.ademas ? `, ${corte.ademas}` : '';
+  return {
+    indice,
+    cuando: `${lado} ${numeroDeCorte(corte, corteDe(clave, cortes, test))}${cola}`,
+    op: corte.op,
+  };
+}
+
+/**
  * La banda esperada de cada índice de la hoja, con los cortes que rigen.
  *
  * Se arma con las mismas lecturas que escribe el informe, así que la pantalla

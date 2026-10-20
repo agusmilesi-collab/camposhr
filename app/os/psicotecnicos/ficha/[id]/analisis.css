@@ -1,0 +1,54 @@
+/* La pestaña Análisis: fortalezas y debilidades lado a lado. */
+.os-fd {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.os-fd > .os-panel {
+  margin: 0;
+}
+@media (max-width: 760px) {
+  .os-fd {
+    grid-template-columns: 1fr;
+  }
+}
+
+.os-fd-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.os-fd-item {
+  padding: 12px 0;
+}
+.os-fd-item + .os-fd-item {
+  border-top: 1px solid var(--os-linea-suave);
+}
+.os-fd-item p {
+  margin: 0;
+}
+
+/* El valor, lo esperado y el lado: es lo primero que se lee. */
+.os-fd-regla {
+  font-size: 0.92rem;
+}
+.os-fd-lado {
+  font-weight: 600;
+}
+.os-fd-fuerte .os-fd-lado {
+  color: var(--os-verde);
+}
+.os-fd-debil .os-fd-lado {
+  color: var(--os-rojo);
+}
+
+.os-fd-dice {
+  margin-top: 4px !important;
+  line-height: 1.45;
+}
+.os-fd-fuente {
+  margin-top: 6px !important;
+  font-size: 0.8rem;
+  color: var(--os-suave);
+}

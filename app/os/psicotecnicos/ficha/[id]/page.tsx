@@ -39,6 +39,7 @@ import Editar from './Editar';
 import type { PedidoOpcion } from '../../Agregar';
 import { pedidosAbiertos } from '@/lib/altas';
 import Dpt from './Dpt';
+import Analisis from './Analisis';
 import Solicitante, { type ContactoOpcion } from './Solicitante';
 import { contactosDelGrupo } from '@/lib/contactos';
 import Hoja from '../../entrevista/[id]/Hoja';
@@ -115,6 +116,9 @@ const PESTANAS: Pestana[] = [
   // El descriptivo del puesto de trabajo: lo que se sabe del puesto, que vive
   // en el pedido. Justo antes del informe, que es cuando se lo consulta.
   { clave: 'dpt', texto: 'DPT', cuantos: () => 0 },
+  // Fortalezas y debilidades con la regla de cada una: lo que la evaluadora
+  // revisa antes de abrir el informe.
+  { clave: 'analisis', texto: 'Análisis', cuantos: () => 0 },
   { clave: 'informe', texto: 'Informe', cuantos: (f) => (f.cabecera.recomendacion ? 1 : 0) },
 ];
 
@@ -1031,6 +1035,7 @@ export default async function FichaPagina(
           solicitante={(c.solicitante ?? c.pedidos?.solicitante)?.nombre ?? null}
         />
       )}
+      {ver === 'analisis' && <Analisis inf={desdeFicha(ficha, rige)} />}
       {ver === 'informe' && <Informe f={ficha} rige={rige} />}
     </Shell>
   );

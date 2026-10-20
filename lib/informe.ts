@@ -5,6 +5,7 @@ import {
   leer,
   porArea,
   bandaDeAfr,
+  bandaDeZf,
   bandasPorIndice,
   senalDe,
   textosValidos,
@@ -28,7 +29,7 @@ import { ajuste } from '@/lib/ajustes';
 import { puestoConCiudad } from '@/lib/pedido-campos';
 import { medianasDeCompetencias, percentilEntre, type Medianas } from '@/lib/competencias-mediana';
 import { competenciaIncluida, REQUIERE } from '@/lib/baterias-contenido';
-import { TEXTOS } from '@/lib/redacciones';
+import { TEXTOS, reglaDe, pEsperado, hEsperado, bandasDeLocalizacion, type ClaveDeTexto } from '@/lib/redacciones';
 import { textoDelSumario } from '@/lib/exner';
 import { tramoDe, tramosValidos, esTramo, type PasoDelPlan, type Tramo } from '@/lib/plan-incorporacion';
 import { DE_FABRICA as EXIGENCIA_DE_FABRICA, type Exigencia } from '@/lib/exigencia';
@@ -111,6 +112,28 @@ export type Respaldo = {
   dentro: boolean | null;
   /** Qué se esperaba, escrito: "de 0,30 a 0,80". Para el título del sello. */
   esperado: string | null;
+};
+
+/**
+ * Una lectura del protocolo con la regla que la disparó, para la pestaña Análisis.
+ *
+ * Todo sale del diccionario y de los cortes que rigen, sin interpretar nada:
+ * el índice, el valor que dio, lo esperado para ese test y para qué lado se
+ * salió. `lado` es null cuando la regla no dice si es por arriba o por abajo
+ * (una combinación de índices escrita a mano).
+ */
+export type Analizada = {
+  clave: string;
+  senal: 'destacada' | 'esperada' | 'desarrollar';
+  area: string;
+  indice: string;
+  valor: string;
+  dice: string;
+  /** La condición con la que entra la lectura: "más de 4". */
+  regla: string;
+  /** Lo esperado para ese índice en ese test: "de 9 a 11". Null si no hay banda. */
+  esperado: string | null;
+  lado: 'alto' | 'bajo' | null;
 };
 
 /**
@@ -306,6 +329,8 @@ export type Informe = {
    * lo correcto: ya no es lo que dijo la codificación.
    */
   respaldos: Record<string, Respaldo>;
+  /** Las lecturas con su regla, para la pestaña Análisis de la ficha. */
+  analizadas: Analizada[];
   /**
    * Por qué las competencias del proyectivo van sin puntaje, si es el caso.
    *
@@ -670,6 +695,84 @@ function respaldosDe(
   return salida;
 }
 
+/**
+ * Cada lectura con su regla y lo esperado, para la pestaña Análisis.
+ *
+ * Lo esperado sale de la misma banda que pinta la hoja (`bandasPorIndice`,
+ * Afr por estilo, P y H por R y estilo). El lado sale del corte: una lectura
+ * que entra "más de" es alta y una que entra "menos de" es baja. Sin corte se
+ * toma del nombre de la regla (`p-alto`, `lambda-bajo`), que es como está
+ * escrita en el diccionario.
+ */
+function analizadasDe(
+  lecturas: Lectura[],
+  cortes: Cortes,
+  test: TestDeManchas,
+  estilo: string,
+  r: number
+): Analizada[] {
+  const bandas = bandasPorIndice(cortes, test);
+  const fijas: Record<string, [number, number]> = {
+    P: pEsperado(r, test),
+    H: hEsperado(r, estilo, test),
+  };
+  return lecturas.map((l) => {
+    const regla = reglaDe(l.clave as ClaveDeTexto, cortes, test);
+    // W, D y Dd se miden contra el total de localizaciones, que viene en el valor.
+    const loc = l.valor.match(/^W:D:Dd (\d+):(\d+):(\d+)$/);
+    const deLoc = loc
+      ? bandasDeLocalizacion(Number(loc[1]), Number(loc[2]), Number(loc[3]), test)?.[
+          ['W', 'D', 'Dd'].indexOf(regla.indice)
+        ]
+      : undefined;
+    const banda =
+      deLoc ??
+      (l.indice === 'Afr'
+        ? bandaDeAfr(estilo)
+        : regla.indice === 'Zf'
+          ? bandaDeZf(r)
+          : bandas[regla.indice]);
+    const n = (x: number) => x.toFixed(banda?.decimales ?? 0).replace('.', ',').replace('-', '−');
+    /* En Rorschach la banda de localización es una parte del total: se dice
+       como la escribe la hoja ("30 a 40 % de 18"), que es la regla que la
+       dispara. La condición escrita en el diccionario quedó de antes. */
+    const enPorcentaje = deLoc?.indice.match(/\((.*)\)/)?.[1] ?? null;
+    if (enPorcentaje) regla.cuando = '';
+    const esperado = enPorcentaje
+      ? enPorcentaje
+      : fijas[l.indice]
+      ? `de ${fijas[l.indice][0]} a ${fijas[l.indice][1]}`
+      : !banda
+        ? null
+        : banda.minimo !== null && banda.maximo !== null
+          ? banda.minimo === banda.maximo
+            ? `exactamente ${n(banda.minimo)}`
+            : `de ${n(banda.minimo)} a ${n(banda.maximo)}`
+          : banda.minimo !== null
+            ? `${n(banda.minimo)} o más`
+            : banda.maximo === 0
+              ? 'en cero'
+              : `hasta ${n(banda.maximo as number)}`;
+    const lado =
+      regla.op === 'mayor' || /-alt[oa]\b/.test(l.clave)
+        ? 'alto'
+        : regla.op === 'menor' || /-baj[oa]\b/.test(l.clave)
+          ? 'bajo'
+          : null;
+    return {
+      clave: l.clave,
+      senal: senalDe(l),
+      area: l.area,
+      indice: regla.indice,
+      valor: l.valor,
+      dice: l.dice,
+      regla: regla.cuando,
+      esperado,
+      lado,
+    };
+  });
+}
+
 export async function armarInforme(id: string): Promise<Informe | null> {
   const ficha = await fichaDe(id);
   if (!ficha) return null;
@@ -1019,6 +1122,15 @@ export function desdeFicha(
       typeof sumario?.control_estres?.estilo === 'string'
         ? (sumario.control_estres.estilo as string)
         : 'Ambigual'
+    ),
+    analizadas: analizadasDe(
+      lecturas,
+      cortes,
+      proyectivoDe(f) === 'Zulliger' ? 'Zulliger' : 'Rorschach',
+      typeof sumario?.control_estres?.estilo === 'string'
+        ? (sumario.control_estres.estilo as string)
+        : 'Ambigual',
+      Number(sumario?.cabecera?.R) || 0
     ),
     intervenidas: LISTAS_DEL_INFORME.filter((k) => Array.isArray(guardadas[k])),
     // La sección sale si hay algo que mostrar, y no por existir la fila. Un
