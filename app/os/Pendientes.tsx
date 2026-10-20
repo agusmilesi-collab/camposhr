@@ -44,6 +44,7 @@ import {
   COLOR_ESTADO,
   ESTADOS,
   estaVencida,
+  DIAS_DE_LA_SEMANA,
   type Estado,
   type Pendiente,
 } from '@/lib/pendientes-tipos';
@@ -130,7 +131,12 @@ function Linea({
         </button>
       )}
 
-      <span className="os-pendiente-texto">{p.texto}</span>
+      <span className="os-pendiente-texto">
+        {p.texto}
+        {p.repite_dia !== null && (
+          <span className="os-pendiente-repite"> · cada {DIAS_DE_LA_SEMANA[p.repite_dia]}</span>
+        )}
+      </span>
 
       {!p.para_reunion && (
         <>

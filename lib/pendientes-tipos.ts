@@ -36,6 +36,11 @@ export type Pendiente = {
   vence: string | null;
   /** Dónde va en la lista de la reunión. Null: al final, por antigüedad. */
   orden: number | null;
+  /**
+   * El día de la semana en que la tarea vuelve (0 domingo a 6 sábado). Null:
+   * no se repite. Ver `alDia` en `lib/pendientes.ts`.
+   */
+  repite_dia: number | null;
   created_at: string;
 };
 
@@ -62,3 +67,6 @@ export function estaVencida(
   return p.estado !== 'Hecha' && Boolean(p.vence) && (p.vence as string) < hoy;
 }
 
+
+/** Cómo se dice el día en que vuelve una tarea semanal. */
+export const DIAS_DE_LA_SEMANA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
