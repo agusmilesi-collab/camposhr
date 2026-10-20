@@ -9,6 +9,7 @@ import Crudo from '../_doc/Crudo';
 import Escalera from './Escalera';
 import BenzigerLecturas from '../_doc/BenzigerLecturas';
 import EditarBenziger from '../_doc/EditarBenziger';
+import EditarResumen from '../_doc/EditarResumen';
 
 /**
  * El informe del cliente, partido en secciones que se navegan.
@@ -157,7 +158,9 @@ export function seccionesDe(
         <h3 className="sitio-sub">Resumen</h3>
         {/* Un solo párrafo, sin punto y aparte: es el resumen del one pager y
             se lee de corrido. */}
-        {inf.resumen.length > 0 && <p>{inf.resumen.join(' ')}</p>}
+        <EditarResumen id={editar} texto={inf.resumen.join(' ')} editado={inf.resumenEditado}>
+          {inf.resumen.length > 0 && <p>{inf.resumen.join(' ')}</p>}
+        </EditarResumen>
 
         {/* Lo que escribió la evaluadora se destaca del resto: es la única
             parte del informe que dice "yo la entrevisté y esto me parece", y

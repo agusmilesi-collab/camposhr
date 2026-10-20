@@ -96,6 +96,13 @@ export function nivelDeConclusion(valor: string | null): NivelAjuste | null {
 }
 
 /** El pie del semáforo. */
+/**
+ * El largo máximo del resumen reescrito a mano. Va en la primera hoja con la
+ * fundamentación, que tiene el mismo tope: más largo, empuja la firma a la
+ * segunda hoja.
+ */
+export const TOPE_RESUMEN = 700;
+
 export const NOTA_AJUSTE =
   'El nivel de ajuste considera las competencias evaluadas y el estilo de trabajo en relación al rol, pudiendo verse influido por el contexto organizacional, el estilo de liderazgo y la dinámica del equipo.';
 

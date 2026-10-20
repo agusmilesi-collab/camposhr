@@ -17288,6 +17288,9 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
 
 .os-fundamento-cuenta {
   font-variant-numeric: tabular-nums;
+  /* "0 / 700" va entero en un renglón: el rótulo de al lado es el que se parte. */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .os-fundamento-cuenta.lleno {

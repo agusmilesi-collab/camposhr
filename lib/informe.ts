@@ -266,9 +266,12 @@ export type Informe = {
    * Qué dio la evaluación, en dos frases que arma el motor.
    *
    * Sale de las mismas lecturas que el resto del informe y no de un modelo de
-   * lenguaje: son frases escritas, elegidas por los índices.
+   * lenguaje: son frases escritas, elegidas por los índices. Si la
+   * evaluadora lo reescribió, es su párrafo y no se recalcula.
    */
   resumen: string[];
+  /** Si el resumen es el que escribió la evaluadora y no el del motor. */
+  resumenEditado: boolean;
   /**
    * Por qué se recomienda ese nivel, escrito por la evaluadora.
    *
@@ -867,6 +870,9 @@ export function desdeFicha(
    * un arreglo y no si tiene largo.
    */
   const guardadas = (c.informe_listas ?? {}) as Partial<Record<ListaDelInforme, string[]>>;
+  // El resumen reescrito por la evaluadora: un párrafo solo, guardado como texto.
+  const resumenSuyo: string | null =
+    typeof (c.informe_listas as any)?.resumen === 'string' ? (c.informe_listas as any).resumen : null;
   const elegir = (clave: ListaDelInforme, calculada: string[]): string[] => {
     const suya = guardadas[clave];
     return Array.isArray(suya) ? suya.filter((t) => typeof t === 'string') : calculada;
@@ -987,7 +993,8 @@ export function desdeFicha(
     medianas,
     protocoloCorto: corto,
     calidadFormalLunazzi: !c.fecha_entrega || c.fecha_entrega >= CALIDAD_FORMAL_LUNAZZI_DESDE,
-    resumen: armarResumen(lecturas, destacadas),
+    resumen: resumenSuyo !== null ? [resumenSuyo] : armarResumen(lecturas, destacadas),
+    resumenEditado: resumenSuyo !== null,
     fundamentacion: (c.recomendacion_notas ?? '')
       .split(/\n\s*\n|\n/)
       .map((t) => t.trim())

@@ -6,6 +6,7 @@ import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { anotarAcceso } from '@/lib/accesos';
 import { LISTAS_DEL_INFORME, PARRAFOS_BENZIGER, type ListaDelInforme } from '@/lib/informe';
 import { esTramo } from '@/lib/plan-incorporacion';
+import { TOPE_RESUMEN } from '@/lib/informe-textos';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,7 +52,9 @@ export async function POST(req: Request) {
   /* El capítulo Benziger no es una lista: son cuatro párrafos con nombre
      (`PARRAFOS_BENZIGER`), y se guardan solo los que la evaluadora cambió. */
   const esBenziger = lista === 'benziger';
-  if (!esBenziger && !LISTAS_DEL_INFORME.includes(lista)) {
+  /* El resumen tampoco: es un párrafo solo, y se guarda como texto. */
+  const esResumen = lista === 'resumen';
+  if (!esBenziger && !esResumen && !LISTAS_DEL_INFORME.includes(lista)) {
     return NextResponse.json({ ok: false, motivo: 'Lista desconocida.' }, { status: 400 });
   }
   const volver = items === null;
@@ -73,11 +76,22 @@ export async function POST(req: Request) {
       );
     }
   }
+  if (esResumen && !volver) {
+    if (typeof items !== 'string' || !items.trim()) {
+      return NextResponse.json({ ok: false, motivo: 'El resumen no puede quedar vacío.' }, { status: 400 });
+    }
+    if (items.trim().length > TOPE_RESUMEN) {
+      return NextResponse.json(
+        { ok: false, motivo: `El resumen no puede pasar de ${TOPE_RESUMEN} caracteres.` },
+        { status: 400 }
+      );
+    }
+  }
   /* El plan de incorporación guarda cada renglón con su tramo; las otras tres
      listas, el texto solo. */
   const conTramo = lista === 'recomendaciones';
   const textoDe = (x: any): string => (conTramo ? x?.texto : x);
-  if (!volver && !esBenziger) {
+  if (!volver && !esBenziger && !esResumen) {
     const valido = (x: any) =>
       conTramo
         ? x && typeof x === 'object' && typeof x.texto === 'string' && esTramo(x.tramo)
@@ -124,6 +138,7 @@ export async function POST(req: Request) {
 
   const guardadas: Record<string, unknown> = { ...(fila.informe_listas ?? {}) };
   if (volver) delete guardadas[lista as string];
+  else if (esResumen) guardadas.resumen = (items as string).trim();
   else if (esBenziger) {
     // Un párrafo vacío no se guarda: vuelve a lo calculado. Para que un
     // párrafo no salga, se lo saca desde Configuración.
@@ -160,7 +175,7 @@ export async function POST(req: Request) {
     detalle: {
       fila: id,
       lista,
-      items: volver ? 'vuelve a lo calculado' : esBenziger ? Object.keys(items).length : (items as string[]).length,
+      items: volver ? 'vuelve a lo calculado' : esResumen ? 1 : esBenziger ? Object.keys(items).length : (items as string[]).length,
     },
   });
 
