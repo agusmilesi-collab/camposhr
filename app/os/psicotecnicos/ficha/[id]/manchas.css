@@ -1,0 +1,60 @@
+/*
+ * El desplegable de cada fila de la tabla de codificación: el triángulo al
+ * lado de la lámina y, debajo de la fila, lo que dijo la persona en la
+ * respuesta y en la encuesta.
+ */
+.os-mancha-lamina {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.os-mancha-desplegar {
+  border: 0;
+  background: none;
+  padding: 2px 4px;
+  font-size: 12px;
+  color: var(--os-suave);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.os-mancha-desplegar.abierta {
+  transform: rotate(90deg);
+}
+.os-mancha-desplegar:hover {
+  color: inherit;
+}
+
+.os-mancha-detalle td {
+  padding-top: 10px;
+  padding-bottom: 14px;
+}
+.os-mancha-detalle dl {
+  margin: 0 0 0 30px;
+  display: flex;
+  align-items: baseline;
+  gap: 40px;
+  min-width: 0;
+}
+/* Los tres en un renglón: cada uno con su rótulo delante, y el texto que no
+   entra se corta con puntos suspensivos y se lee entero al pasar el mouse. */
+.os-mancha-detalle dl > div {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+.os-mancha-detalle dt {
+  flex: none;
+  color: var(--os-suave);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.os-mancha-detalle dd {
+  margin: 0;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -16,7 +16,8 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { useRef, useState, useTransition } from 'react';
+import { Fragment, useRef, useState, useTransition } from 'react';
+import './manchas.css';
 import {
   CC_EE,
   CONTENIDOS,
@@ -120,6 +121,8 @@ export default function Manchas({
   // Lo que llega del servidor manda salvo mientras hay algo sin confirmar: sin
   // esto, cada refresco pisaría lo que se acaba de tipear.
   const [sucio, setSucio] = useState(false);
+  /** Las filas con el texto de la toma a la vista, por id. */
+  const [abiertas, setAbiertas] = useState<string[]>([]);
   const vista = sucio ? locales : filas;
 
   /*
@@ -412,8 +415,28 @@ export default function Manchas({
           </thead>
           <tbody>
             {vista.map((f, i) => (
-              <tr key={f.id}>
+              <Fragment key={f.id}>
+              <tr>
                 <td>
+                  <span className="os-mancha-lamina">
+                  {/* Lo que dijo la persona y lo que contestó en la encuesta se
+                      abren debajo de la fila: son de donde sale la
+                      codificación, pero leídos todo el tiempo ensanchan la
+                      grilla y la parten en renglones de distinto alto. */}
+                  <button
+                    type="button"
+                    className={`os-mancha-desplegar${abiertas.includes(f.id) ? ' abierta' : ''}`}
+                    onClick={() =>
+                      setAbiertas((a) =>
+                        a.includes(f.id) ? a.filter((x) => x !== f.id) : [...a, f.id]
+                      )
+                    }
+                    aria-expanded={abiertas.includes(f.id)}
+                    aria-label={`Ver lo que dijo en la respuesta ${f.n_respuesta ?? ''}`}
+                    title="Respuesta y encuesta"
+                  >
+                    ▸
+                  </button>
                   {/* En "Mostrar todas" van las trece y no las del test que se
                       dedujo: si el protocolo arrancó con la lámina del test
                       equivocado, este es el único lugar desde donde se
@@ -429,6 +452,7 @@ export default function Manchas({
                     sinVacio
                     nuevaFilaAntesDe="Z1"
                   />
+                  </span>
                 </td>
                 <td>
                   {/* El número no se escribe: lo pone el sistema, correlativo
@@ -475,14 +499,6 @@ export default function Manchas({
                     onCambio={(v) => cambiar(f.id, { determinantes: v })}
                     etiqueta="Determinantes"
                   />
-                  {/* Lo que contestó en la encuesta a qué de la mancha le hizo
-                      ver eso: es de donde salen los determinantes, así que va
-                      debajo de ellos y no en otra columna. */}
-                  {f.caracteristica && (
-                    <p className="os-mancha-caracteristica" title={f.caracteristica}>
-                      {f.caracteristica}
-                    </p>
-                  )}
                 </td>
                 <td>
                   <Simple
@@ -560,6 +576,29 @@ export default function Manchas({
                   </button>
                 </td>
               </tr>
+              {abiertas.includes(f.id) && (
+                <tr className="os-mancha-detalle">
+                  <td colSpan={13}>
+                    <dl>
+                      <div>
+                        <dt>Respuesta</dt>
+                        <dd title={f.verbalizacion ?? undefined}>{f.verbalizacion || '—'}</dd>
+                      </div>
+                      <div>
+                        <dt>Encuesta</dt>
+                        <dd title={f.caracteristica ?? undefined}>{f.caracteristica || '—'}</dd>
+                      </div>
+                      {f.observacion && f.observacion !== f.verbalizacion && (
+                        <div>
+                          <dt>Observación</dt>
+                          <dd title={f.observacion}>{f.observacion}</dd>
+                        </div>
+                      )}
+                    </dl>
+                  </td>
+                </tr>
+              )}
+              </Fragment>
             ))}
           </tbody>
         </table>

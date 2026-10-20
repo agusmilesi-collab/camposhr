@@ -1014,7 +1014,9 @@ export default function Capturador({
     .map((r) => ({
       n: r.n_respuesta ?? 0,
       id: r.id,
-      dijo: r.verbalizacion ?? '',
+      // La codificada acá sin pasar por la entrevista guarda lo que dijo como
+      // observación (ver `camposDe`): sin esto la fila se veía sin texto.
+      dijo: r.verbalizacion ?? r.observacion ?? '',
       areas: areasDeLaFicha(r),
       extrapolada: false,
       fq: r.fq,
@@ -1518,6 +1520,19 @@ export default function Capturador({
     setEnLaFicha((f) =>
       f.map((r) => (numeros[r.id] ? { ...r, n_respuesta: numeros[r.id] } : r))
     );
+    // Y las que se están codificando: sin esto, una respuesta nueva de la I
+    // con el protocolo lleno se veía con el número del final.
+    setRespuestas((rs) => {
+      let cambio = false;
+      const nuevas = rs.map((r) => {
+        const id = idDe(r);
+        const n = id ? numeros[id] : undefined;
+        if (!n || n === r.n) return r;
+        cambio = true;
+        return { ...r, n };
+      });
+      return cambio ? nuevas : rs;
+    });
     setProximo(Object.keys(numeros).length + 1);
   }
 
@@ -1807,6 +1822,7 @@ export default function Capturador({
             const cuerpo = await res.json().catch(() => null);
             const nuevo = cuerpo?.fila?.id;
             if (nuevo) idsGuardados.current.set(r.clave, nuevo);
+            aplicarNumeros(cuerpo?.numeros);
           }
         }
       } while (guardarOtraVez.current);
