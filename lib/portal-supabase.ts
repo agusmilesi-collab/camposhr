@@ -44,6 +44,8 @@ type FilaPedido = {
     solicitante: { nombre: string } | null;
     baja_el: string | null;
     ciudad: string | null;
+    ingreso: boolean | null;
+    fecha_ingreso_empresa: string | null;
     evaluadoras: { nombre: string } | null;
   }[];
 };
@@ -52,7 +54,8 @@ const CAMPOS =
   'id,puesto,estado,familia,seniority,fecha_pedido,reabierto_el,con_benziger,descriptivo_nombre,' +
   'baterias(codigo),solicitante:contactos!solicitante_id(nombre),' +
   'evaluaciones(id,estado,fecha_entrevista,fecha_entrega,modalidad,recomendacion,' +
-  'informe_path,facturado,pagado,baja_el,ciudad,personas(nombre),evaluadoras(nombre),' +
+  'informe_path,facturado,pagado,baja_el,ciudad,ingreso,fecha_ingreso_empresa,' +
+  'personas(nombre),evaluadoras(nombre),' +
   'solicitante:contactos!solicitante_id(nombre))';
 
 /**
@@ -192,6 +195,8 @@ export async function datosClienteDeSupabase(token: string): Promise<DatosClient
         evaluadora: e.evaluadoras?.nombre ?? null,
         baja: e.baja_el,
         ciudad: e.ciudad,
+        ingreso: e.ingreso,
+        fechaIngresoEmpresa: e.fecha_ingreso_empresa,
         // Solo cuando lo cargó alguien distinto de quien abrió el pedido: si es
         // la misma persona, ya lo dice el título de la búsqueda.
         cargadoPor:

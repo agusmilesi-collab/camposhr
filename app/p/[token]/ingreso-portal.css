@@ -1,0 +1,175 @@
+/*
+ * Las dos columnas de ingreso de la tabla de entregados: si la persona entró a
+ * trabajar y desde cuándo. Las carga el cliente desde su portal.
+ *
+ * Van al final de la fila, después de la facturación: son lo último que pasa
+ * con un candidato. Los anchos son los de la tabla de siempre con dos columnas
+ * más, y lo que ocupan sale de las de texto, que ya se cortan con puntos.
+ */
+
+/* Las dos opciones del mismo ancho: con el ancho de su palabra, "No" se veía
+   más grande que "Sí". */
+.ingreso-par {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.ingreso-op {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--muted);
+  box-sizing: border-box;
+  width: 34px;
+  padding: 4px 0;
+  text-align: center;
+  cursor: pointer;
+  line-height: 1.3;
+}
+.ingreso-op + .ingreso-op {
+  border-left: 1px solid var(--line);
+}
+.ingreso-op:hover:not(:disabled) {
+  color: var(--ink-soft);
+  background: #f4f2ee;
+}
+.ingreso-op:disabled {
+  cursor: progress;
+}
+/* Los colores de las pastillas de la tabla: verde el sí, gris el no. Un "no"
+   no es un mal resultado, es que eligieron a otra persona. */
+.ingreso-op.si {
+  color: #1d5c38;
+  background: color-mix(in srgb, #2e8b57 26%, #fff);
+}
+.ingreso-op.no {
+  color: #5f5d58;
+  background: #e7e5e0;
+}
+
+.c-ingreso.con-error .ingreso-par {
+  border-color: #c0392b;
+}
+
+.ingreso-fecha {
+  font: inherit;
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  padding: 3px 6px;
+  width: 100%;
+  min-width: 0;
+  cursor: pointer;
+}
+.ingreso-fecha:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+.ingreso-fecha::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  margin-left: 2px;
+}
+
+/* El portal, un poco más ancho que el resto del sitio: con las columnas de
+   ingreso, la tabla de entregados lleva nueve y en 1024 no entraban. */
+.wrap.wrap-portal {
+  max-width: 1200px;
+}
+
+/* Un título que no entra en su columna se corta con puntos, y no se pisa con
+   el de al lado; entero queda al pasar el cursor. La flecha de orden no se
+   corta nunca. */
+.tabla.entregados .tr.th > span {
+  min-width: 0;
+}
+.tabla.entregados .th-orden {
+  max-width: 100%;
+}
+.tabla.entregados .th-texto {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tabla.entregados .th-flecha {
+  flex-shrink: 0;
+}
+
+/* Una línea antes del ingreso, como la que separa la recomendación del
+   informe: lo que sigue ya no es la entrega sino qué pasó después. La columna
+   mide el par de botones más el aire de la línea. */
+.tabla.entregados .c-ingreso {
+  position: relative;
+  padding-left: 14px;
+}
+.tabla.entregados .c-ingreso::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -9px;
+  bottom: -9px;
+  border-left: 1px solid var(--line);
+}
+.tabla.entregados .tr.th .c-ingreso::before {
+  top: -5px;
+  bottom: -5px;
+}
+
+@media (min-width: 621px) {
+  .tabla.entregados .tr.con-ingreso {
+    grid-template-columns:
+      52px minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 0.95fr) 116px 106px 96px 98px 124px;
+  }
+  .tabla.entregados .tr.con-ingreso.sin-cobro {
+    grid-template-columns:
+      52px minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 0.95fr) 116px 106px 98px 124px;
+  }
+  .tabla.entregados .tr.con-ingreso.con-empresa {
+    grid-template-columns:
+      52px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.95fr)
+      116px 106px 96px 98px 124px;
+  }
+  .tabla.entregados .tr.con-ingreso.con-empresa.sin-cobro {
+    grid-template-columns:
+      52px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.95fr)
+      116px 106px 98px 124px;
+  }
+}
+
+/* En el teléfono, cada una en su renglón con el rótulo delante, como la
+   facturación. */
+@media (max-width: 620px) {
+  .tabla.entregados .c-ingreso,
+  .tabla.entregados .c-fecha-ingreso {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+  }
+  .tabla.entregados .c-ingreso {
+    padding-left: 0;
+  }
+  .tabla.entregados .c-ingreso[data-label]::before,
+  .tabla.entregados .c-fecha-ingreso[data-label]::before {
+    content: attr(data-label) ':';
+    color: var(--muted);
+    /* En el teléfono el ::before es el rótulo, no la línea. */
+    position: static;
+    border: 0;
+  }
+  .ingreso-fecha {
+    width: auto;
+    font-size: 16px;
+  }
+}

@@ -328,6 +328,8 @@ export default async function Portal(props: { params: Promise<{ token: string }>
               ? `/p/${params.token}/informe/${c.id}`
               : null,
         cobro: cobro(c),
+        ingreso: c.ingreso ?? null,
+        fechaIngreso: c.fechaIngresoEmpresa ?? null,
       };
     }
   );
@@ -383,7 +385,7 @@ export default async function Portal(props: { params: Promise<{ token: string }>
   return (
     <>
       <header className="top">
-        <div className="wrap top-inner">
+        <div className="wrap wrap-portal top-inner">
           <div className="brand">
             Campos HR <span>· Portal Clientes</span>
           </div>
@@ -393,7 +395,7 @@ export default async function Portal(props: { params: Promise<{ token: string }>
         </div>
       </header>
 
-      <main className="wrap">
+      <main className="wrap wrap-portal">
         <section className="head head-cliente">
           <div>
             <div className="eyebrow">Estado de evaluaciones</div>
@@ -508,6 +510,9 @@ export default async function Portal(props: { params: Promise<{ token: string }>
                   filas={filasEntregadas}
                   conCobro={conCobro}
                   conInforme
+                  // Lo carga el cliente y se guarda en su evaluación: solo en
+                  // las empresas de Supabase, no en el portal de muestra.
+                  ingresoCon={deSupabase ? params.token : undefined}
                 />
               </article>
             </>

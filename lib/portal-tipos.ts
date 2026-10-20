@@ -23,6 +23,12 @@ export type Candidato = {
   baja?: string | null;
   /** Para qué ciudad se lo evalúa, en los clientes que la piden. */
   ciudad?: string | null;
+  /**
+   * Si entró a trabajar, y desde cuándo. Lo carga el cliente desde la tabla de
+   * entregados, o el equipo desde la ficha: son las mismas columnas.
+   */
+  ingreso?: boolean | null;
+  fechaIngresoEmpresa?: string | null;
 };
 
 export type Busqueda = {

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { COBROS, ORDEN_COBRO, type EstadoCobro } from '@/lib/cobro';
 import './entregados-empresa.css';
+import './ingreso-portal.css';
 
 /** Una fila ya resuelta por el servidor: acá solo se ordena y se dibuja. */
 export type FilaEntregada = {
@@ -30,7 +31,114 @@ export type FilaEntregada = {
   cobro: EstadoCobro;
   /** Se dio de baja del proceso: no hay informe que abrir. */
   baja?: boolean;
+  /** Si entró a trabajar: true, false o null (todavía no lo dijeron). */
+  ingreso?: boolean | null;
+  /** Desde cuándo trabaja, en ISO (aaaa-mm-dd). */
+  fechaIngreso?: string | null;
 };
+
+/**
+ * Si la persona entró a trabajar y desde cuándo, en dos celdas.
+ *
+ * Lo carga el cliente con dos clics y reemplaza la planilla de ingresos que
+ * se le mandaba por correo. Cada cambio se guarda solo, sin botón de guardar:
+ * es una tabla que se completa de corrido. Tocar de nuevo la respuesta marcada
+ * la borra, que es como se corrige un clic equivocado.
+ */
+function CeldasIngreso({ token, fila }: { token: string; fila: FilaEntregada }) {
+  const [ingreso, setIngreso] = useState<boolean | null>(fila.ingreso ?? null);
+  const [fecha, setFecha] = useState<string>(fila.fechaIngreso ?? '');
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState(false);
+
+  async function guardar(cambio: { ingreso: boolean | null; fecha?: string | null }) {
+    const antes = { ingreso, fecha };
+    setIngreso(cambio.ingreso);
+    if (cambio.ingreso !== true) setFecha('');
+    else if (cambio.fecha !== undefined) setFecha(cambio.fecha ?? '');
+    setGuardando(true);
+    setError(false);
+    try {
+      const res = await fetch('/api/portal/ingreso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, id: fila.id, ...cambio }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setIngreso(antes.ingreso);
+      setFecha(antes.fecha);
+      setError(true);
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  if (fila.baja) {
+    return (
+      <>
+        <span className="c-ingreso" data-label="Ingresó">
+          <span className="dash">—</span>
+        </span>
+        <span className="c-fecha-ingreso" data-label="Fecha de ingreso" />
+      </>
+    );
+  }
+
+  const opcion = (valor: boolean, texto: string) => (
+    <button
+      type="button"
+      className={`ingreso-op${ingreso === valor ? (valor ? ' si' : ' no') : ''}`}
+      aria-pressed={ingreso === valor}
+      disabled={guardando}
+      onClick={() => guardar({ ingreso: ingreso === valor ? null : valor })}
+    >
+      {texto}
+    </button>
+  );
+
+  return (
+    <>
+      <span
+        className={`c-ingreso${error ? ' con-error' : ''}`}
+        data-label="Ingresó"
+        title={error ? 'No se pudo guardar. Probá de nuevo.' : undefined}
+      >
+        <span className="ingreso-par" role="group" aria-label={`¿${fila.nombre} ingresó?`}>
+          {opcion(true, 'Sí')}
+          {opcion(false, 'No')}
+        </span>
+      </span>
+      <span className="c-fecha-ingreso" data-label="Fecha de ingreso">
+        {/* El campo está siempre, con su calendario: elegir la fecha ya dice
+            que ingresó, así que marca el Sí sola. Con un No queda apagado. */}
+        <input
+          type="date"
+          className="ingreso-fecha"
+          value={fecha}
+          disabled={guardando || ingreso === false}
+          aria-label={`Fecha de ingreso de ${fila.nombre}`}
+          // Tocar cualquier parte del campo abre el calendario, y no solo
+          // el ícono: es como se elige la fecha.
+          onClick={(e) => {
+            try {
+              e.currentTarget.showPicker();
+            } catch {
+              /* Safari viejo no lo tiene: queda el campo de siempre. */
+            }
+          }}
+          onChange={(e) => {
+            const v = e.target.value;
+            // El navegador manda vacío mientras la fecha está a medio
+            // escribir: solo se guarda una completa, o el borrado entero.
+            if (v === '' && ingreso !== true) return;
+            if (v === '' || /^\d{4}-\d{2}-\d{2}$/.test(v)) guardar({ ingreso: true, fecha: v || null });
+          }}
+        />
+      </span>
+    </>
+  );
+}
 
 type Clave = 'fecha' | 'pedido' | 'empresa' | 'candidato' | 'evaluadora' | 'reco' | 'cobro';
 
@@ -83,6 +191,7 @@ export default function TablaEntregados({
   filas,
   conCobro = false,
   conInforme = true,
+  ingresoCon,
 }: {
   filas: FilaEntregada[];
   /** La columna de facturación, mientras no se publique (ver lib/cobro.ts). */
@@ -92,6 +201,11 @@ export default function TablaEntregados({
    * cuando los informes se entregan por otro lado.
    */
   conInforme?: boolean;
+  /**
+   * El token del portal, cuando el cliente puede cargar quién ingresó. Sin
+   * él no salen las dos columnas: el portal de muestra no guarda nada.
+   */
+  ingresoCon?: string;
 }) {
   /**
    * Lo escrito en el buscador.
@@ -106,7 +220,7 @@ export default function TablaEntregados({
   const columnas = COLUMNAS.filter((c) => c.clave !== 'empresa' || conEmpresa);
   const variantes = `${conEmpresa ? ' con-empresa' : ''}${conCobro ? '' : ' sin-cobro'}${
     conInforme ? '' : ' sin-informe'
-  }`;
+  }${ingresoCon ? ' con-ingreso' : ''}`;
   /** La fila cuyo "Ver informe" se tocó sin informe: muestra "Próximamente" un momento. */
   const [avisando, setAvisando] = useState<string | null>(null);
   const [orden, setOrden] = useState<{ col: Clave; asc: boolean }>({
@@ -152,10 +266,11 @@ export default function TablaEntregados({
       >
         <button
           type="button"
+          title={titulo}
           className={`th-orden${activa ? ' th-orden-activa' : ''}`}
           onClick={() => alClic(clave)}
         >
-          {titulo}
+          <span className="th-texto">{titulo}</span>
           <span className="th-flecha" aria-hidden="true">
             {activa ? (orden.asc ? '↑' : '↓') : '↕'}
           </span>
@@ -190,8 +305,22 @@ export default function TablaEntregados({
     <div className="tabla entregados">
       <div className={`tr th${variantes}`}>
         {columnas.map(({ clave, titulo }) => cabecera(clave, titulo))}
-        {conInforme && <span className="c-informe">Informe</span>}
+        {conInforme && (
+          <span className="c-informe" title="Informe">
+            <span className="th-texto">Informe</span>
+          </span>
+        )}
         {conCobro && cabecera('cobro', 'Facturación')}
+        {ingresoCon && (
+          <>
+            <span className="c-ingreso" title="Ingresó">
+              <span className="th-texto">Ingresó</span>
+            </span>
+            <span className="c-fecha-ingreso" title="Fecha de ingreso">
+              <span className="th-texto">Fecha de ingreso</span>
+            </span>
+          </>
+        )}
       </div>
 
       {ordenadas.map((f) => (
@@ -208,8 +337,10 @@ export default function TablaEntregados({
             </span>
           )}
           <span className="c-name">{f.nombre}</span>
-          <span className="c-evaluadora" data-label="Evaluadora">
-            {f.evaluadora ?? <span className="dash">—</span>}
+          {/* Solo el nombre: son dos evaluadoras con el mismo apellido, y el
+              completo se cortaba con puntos. Entero queda al pasar el cursor. */}
+          <span className="c-evaluadora" data-label="Evaluadora" title={f.evaluadora ?? undefined}>
+            {f.evaluadora?.split(' ')[0] ?? <span className="dash">—</span>}
           </span>
           <span className="c-reco" data-label="Recomendación">
             {f.recoTexto ? (
@@ -270,6 +401,7 @@ export default function TablaEntregados({
               </span>
             </span>
           )}
+          {ingresoCon && <CeldasIngreso token={ingresoCon} fila={f} />}
         </div>
       ))}
 
