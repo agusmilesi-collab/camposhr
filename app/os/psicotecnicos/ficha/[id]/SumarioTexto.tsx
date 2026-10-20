@@ -155,8 +155,11 @@ function esAncho(p: Par): boolean {
   return p.rotulo.length > 9 || p.valor.includes('=') || Boolean(p.nota);
 }
 
-/** Las bandas de cada número de una razón, por rótulo. Hoy, W:D:Dd. */
-type Partes = Record<string, Banda[]>;
+/**
+ * Las bandas de cada número de una razón, por rótulo: W:D:Dd, a:p y GHR:PHR.
+ * Un número sin banda (null) sale sin pintar.
+ */
+type Partes = Record<string, (Banda | null)[]>;
 
 /** El valor de un par, con el fondo pintado si su índice tiene banda. */
 function Valor({ p, bandas, partes }: { p: Par; bandas: Record<string, Banda>; partes: Partes }) {
@@ -172,7 +175,7 @@ function Valor({ p, bandas, partes }: { p: Par; bandas: Record<string, Banda>; p
             {i > 0 && ':'}
             <Valor
               p={{ rotulo: '·', valor: v, nota: '' }}
-              bandas={{ '·': porNumero[i] }}
+              bandas={porNumero[i] ? { '·': porNumero[i] as Banda } : {}}
               partes={{}}
             />
           </span>

@@ -32,7 +32,7 @@ import { Faltantes, Revisar } from '../../informe/_doc/Interno';
 import '../../informe/_sitio/sitio.css';
 import { informeEnHojas } from '@/lib/empresa-prueba';
 import { desdeFicha, llevaBenziger, loQueRige, medianasQueRigen, type Regulacion } from '@/lib/informe';
-import { bandaDeAfr, bandaDeR, bandaDeZf, bandasDeLocalizacion, bandasDeLaHoja } from '@/lib/redacciones';
+import { bandaDeAfr, bandaDeR, bandaDeZf, bandasDeLocalizacion, bandasDeLaHoja, type Banda } from '@/lib/redacciones';
 import Discursivo from './Discursivo';
 import Whatsapp from '../../Whatsapp';
 import Editar from './Editar';
@@ -557,9 +557,48 @@ function SumarioEstructural({ f, rige }: { f: Ficha; rige: Regulacion }) {
       ? bandasDeLocalizacion(proc.global, proc.D, proc.Dd, test)
       : null;
 
-  return texto ? (
-    <SumarioTexto texto={texto} bandas={bandas} partes={loc ? { 'W:D:Dd': loc } : undefined} />
-  ) : null;
+  /* a:p y GHR:PHR se leen uno contra el otro: el número que se pasa se marca
+     con la flecha. En a:p, que uno pase el doble del otro va en rojo (rigidez,
+     de cualquiera de los dos lados). En GHR:PHR, GHR por arriba va en verde y
+     PHR por arriba en rojo. Pedido de las psicólogas el 20/10/2026. */
+  const crudo = s.crudo as {
+    ideacion?: { a?: unknown; p?: unknown };
+    interpersonal?: { GHR?: unknown; PHR?: unknown };
+  } | null;
+  const contra = (
+    x: unknown,
+    y: unknown,
+    nombres: [string, string],
+    tope: (otro: number) => number,
+    bueno: [boolean, boolean]
+  ): (Banda | null)[] | null => {
+    if (typeof x !== 'number' || typeof y !== 'number') return null;
+    const banda = (i: 0 | 1, otro: number): Banda => ({
+      indice: `${nombres[i]} frente a ${nombres[1 - i]} ${otro}`,
+      minimo: null,
+      maximo: tope(otro),
+      decimales: 0,
+      ...(bueno[i] ? { techoSinAviso: true } : {}),
+    });
+    if (x > tope(y)) return [banda(0, y), null];
+    if (y > tope(x)) return [null, banda(1, x)];
+    return null;
+  };
+  const ap = contra(crudo?.ideacion?.a, crudo?.ideacion?.p, ['a', 'p'], (o) => o * 2, [false, false]);
+  const ghr = contra(
+    crudo?.interpersonal?.GHR,
+    crudo?.interpersonal?.PHR,
+    ['GHR', 'PHR'],
+    (o) => o,
+    [true, false]
+  );
+  const partes = {
+    ...(loc ? { 'W:D:Dd': loc } : {}),
+    ...(ap ? { 'a:p': ap } : {}),
+    ...(ghr ? { 'GHR:PHR': ghr } : {}),
+  };
+
+  return texto ? <SumarioTexto texto={texto} bandas={bandas} partes={partes} /> : null;
 }
 
 /**

@@ -1762,8 +1762,10 @@ export const TEXTOS = {
   'c-prima-alta': {
     area: 'Cómo maneja lo que siente',
     indice: "C'",
-    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro.
-    corte: { op: 'mayor', valor: 3, decimales: 0 },
+    // Norma argentina (Lunazzi y otros, 2007), la misma que el velocímetro:
+    // aumentado es más de 4, y 4 está dentro de lo esperado. Cortaba en 3 y
+    // leía como elevado un C' de 4 (corregido por las psicólogas el 20/10/2026).
+    corte: { op: 'mayor', valor: 4, decimales: 0 },
     zulliger: {
       /* C' se espera de 0 a 1 en el Zulliger, contra el corte del Rorschach.
          Definido por las psicólogas el 10/9/2026. */
@@ -2706,9 +2708,10 @@ const DIF_EA_ES_ZULLIGER: Banda = {
  * a 5, D de 3 a 6, Dd hasta 2). Son los mismos cortes con los que se eligen
  * las lecturas de localización, que salen de acá.
  *
- * D por encima de lo esperado no se informa (ver `d-alto`): lleva la flecha y
- * no el rojo. Lo pidió la psicóloga el 16/10/2026, para ver en la hoja cuál de
- * los tres se salió.
+ * W y D por encima de lo esperado llevan la flecha y no el rojo: W alta es
+ * visión global, una fortaleza (20/10/2026), y D alta no se informa (ver
+ * `d-alto`). La psicóloga pidió el 16/10/2026 ver en la hoja cuál de los tres
+ * se salió.
  */
 export function bandasDeLocalizacion(
   w: number,
@@ -2718,7 +2721,7 @@ export function bandasDeLocalizacion(
 ): [Banda, Banda, Banda] | null {
   if (test === 'Zulliger') {
     return [
-      { indice: 'W', minimo: 2, maximo: 5, decimales: 0 },
+      { indice: 'W', minimo: 2, maximo: 5, decimales: 0, techoSinAviso: true },
       { indice: 'D', minimo: 3, maximo: 6, decimales: 0, techoSinAviso: true },
       { indice: 'Dd', minimo: null, maximo: 2, decimales: 0 },
     ];
@@ -2726,13 +2729,15 @@ export function bandasDeLocalizacion(
   const total = w + d + dd;
   if (!total) return null;
   const parte = (indice: string, desde: number | null, hasta: number | null, techoSinAviso?: true): Banda => ({
-    indice: `${indice} (${desde === null ? 'hasta ' : `${desde * 100} a `}${(hasta as number) * 100} % de ${total})`,
+    indice: `${indice} (${desde === null ? 'hasta ' : `${Math.round(desde * 100)} a `}${Math.round((hasta as number) * 100)} % de ${total})`,
     minimo: desde === null ? null : desde * total,
     maximo: hasta === null ? null : hasta * total,
     decimales: 1,
     ...(techoSinAviso ? { techoSinAviso } : {}),
   });
-  return [parte('W', 0.3, 0.4), parte('D', 0.55, 0.65, true), parte('Dd', null, 0.11)];
+  // W por arriba es visión global, una fortaleza: flecha y sin rojo, como D.
+  // Pedido de las psicólogas el 20/10/2026.
+  return [parte('W', 0.3, 0.4, true), parte('D', 0.55, 0.65, true), parte('Dd', null, 0.11)];
 }
 
 /** De qué lado de su banda cae un valor. */
@@ -3568,6 +3573,9 @@ const DESTACADAS = new Set([
   'cop-alto-ag-bajo',
   'humanos-alto',
   'afr-alto',
+  // Más populares que lo esperado: se esfuerza por responder a lo que supone
+  // que se espera de su parte. Pedido de las psicólogas el 20/10/2026.
+  'p-alto',
 ]);
 
 const ESPERADAS = new Set([
