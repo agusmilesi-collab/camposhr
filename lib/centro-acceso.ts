@@ -48,4 +48,4 @@ export const HORAS_DEL_ENLACE = 48;
 
 /** La versión del documento de convivencia que se acepta al entrar. El texto
  *  vive en `app/centro/normas/contenido.ts`; al cambiarlo se sube esto. */
-export const NORMAS_VERSION = '2026-10';
+export const NORMAS_VERSION = '2026-10-20';

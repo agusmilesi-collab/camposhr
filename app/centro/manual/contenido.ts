@@ -96,7 +96,7 @@ export const SECCIONES: Seccion[] = [
     titulo: 'Cuánto sale',
     parrafos: [
       'El precio por hora depende de la sala y de las horas fijas por semana que tenés contratadas.',
-      'Hay tramos de 1, 4, 8, 12, 16 y 20 horas semanales. Se paga el precio del último tramo que alcanzás: con 10 horas fijas, el de 8.',
+      'Hay tramos de 1, 4, 8, 12 y 16 horas semanales. Se paga el precio del último tramo que alcanzás: con 10 horas fijas, el de 8.',
       'Una hora suelta se cobra a precio de hora suelta, tengas o no horas fijas: 1 hora al precio del tramo de 1 a 3, 6 seguidas al precio de 4 a 7. Sumar sueltas no cambia el precio de tus horas fijas.',
       'La escala vigente está en Documentos, dentro de las normas, y en Reservar la ves al elegir las horas.',
     ],

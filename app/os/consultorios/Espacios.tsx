@@ -31,7 +31,7 @@ import { mandar } from './acciones';
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 /** Los tramos de la escala, en horas por semana. */
-const TRAMOS = [1, 4, 8, 12, 16, 20];
+const TRAMOS = [1, 4, 8, 12, 16];
 
 /**
  * Cómo se nombra cada tramo.

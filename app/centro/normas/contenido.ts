@@ -54,7 +54,7 @@ export const NORMAS: Bloque[] = [
     titulo: 'Precio y pago',
     items: [
       'Se abona por hora reservada siempre, sin excepciones, en consultorios y SUM. Si el paciente, consultante o cliente no acudió, el profesional abona de todos modos.',
-      'Cuantas más horas fijas por semana contratás, más barata sale cada hora. Los tramos son de 1 a 3, de 4 a 7, de 8 a 11, de 12 a 15, de 16 a 19 y de 20 o más horas por semana. Tus horas fijas te ubican en un tramo, y todas se cobran al precio de ese tramo en la sala que usás. Ejemplo: con 10 horas fijas pagás cada hora al precio del tramo de 8 a 11.',
+      'Cuantas más horas fijas por semana contratás, más barata sale cada hora. Los tramos son de 1 a 3, de 4 a 7, de 8 a 11, de 12 a 15 y de 16 o más horas por semana. Tus horas fijas te ubican en un tramo, y todas se cobran al precio de ese tramo en la sala que usás. Ejemplo: con 10 horas fijas pagás cada hora al precio del tramo de 8 a 11.',
       'Una hora suelta se cobra a precio de hora suelta, tengas o no horas fijas: según cuántas horas seguidas reservás ese día. 1 hora, al precio del tramo de 1 a 3; 5 horas seguidas, al precio del tramo de 4 a 7. Las horas sueltas no cambian el precio de tus horas fijas ni suman para cambiar de tramo.',
       'Los valores se actualizan cuatro veces al año, en enero, abril, julio y octubre, según la inflación. Cada reserva conserva el precio que tenía al hacerse.',
       'Cada mes se paga por adelantado, del 1 al 10 del mismo mes. Entre el 11 y el 20 lleva un 15 % de recargo; del 21 en adelante, un 25 %. El sistema muestra el importe al día y cuánto pasa a costar después de cada plazo.',

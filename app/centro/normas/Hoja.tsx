@@ -3,7 +3,7 @@ import { escalaVigente, listarEspacios } from '@/lib/consultorios';
 import { hoyISO } from '@/lib/consultorios-calculo';
 import { NORMAS, NORMAS_FECHA } from './contenido';
 
-/** Cómo se nombra cada tramo en la tabla: "4 a 7", y el último "20 o más". */
+/** Cómo se nombra cada tramo en la tabla: "4 a 7", y el último "16 o más". */
 function nombreDelTramo(desde: number, siguiente: number | undefined): string {
   return siguiente === undefined ? `${desde} o más` : desde === siguiente - 1 ? `${desde}` : `${desde} a ${siguiente - 1}`;
 }
