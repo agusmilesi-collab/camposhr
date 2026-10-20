@@ -171,6 +171,15 @@ export function puntajeZ(lamina: string, s: Situacion): Veredicto {
     );
   }
 
+  // -- ZA dentro de una sola área: con DQ+ los objetos están en esa misma área,
+  // y por eso juntos (las dos personas del D1 de la III dan ZA 3.0). Es la
+  // regla de las psicólogas del 19/10/2026, la misma de `zDeLaFicha`; sin esto
+  // la encuesta y la ficha daban distinto para la misma respuesta.
+  // Fuera de la tabla (Dd99) no se sabe dónde caen: lo decide ella.
+  if (!loc?.startsWith('W') && dq === '+' && distintas.length === 1 && distintas[0] !== 'Dd99') {
+    candidatos.push({ tipo: 'ZA', valor: valores.ZA, porque: `objetos juntos dentro de ${distintas[0]}` });
+  }
+
   // -- ZS: el blanco junto con la tinta. La W ya es tinta; una respuesta solo
   // en el blanco no integra nada.
   const esW = Boolean(loc && loc.startsWith('W'));
@@ -233,4 +242,29 @@ export function zDeLaFicha(
   const v = Z[lamina];
   const conBlanco = llevaEspacio(localizacion) && !distintas.every(esEspacio);
   return Math.max(v.ZA, conBlanco ? v.ZS : 0);
+}
+
+/**
+ * El Z que pone el sistema a una respuesta guardada, con lo que haya de ella.
+ *
+ * Con las áreas marcadas en la lámina (las respuestas codificadas en la
+ * encuesta) sale de ellas, que dicen exactamente qué se integró; sin ellas,
+ * de la localización y su número, como en la ficha. Undefined cuando no se
+ * puede saber y lo elige la evaluadora; null cuando la respuesta no lleva Z.
+ * Lo usan la ruta al guardar, la ficha y la encuesta: una sola cuenta para las
+ * tres.
+ */
+export function zAutomatico(
+  lamina: string | null,
+  localizacion: string | null,
+  nLocalizacion: string | null,
+  areas?: string[] | null
+): number | null | undefined {
+  if (!lamina || !Z[lamina]) return undefined;
+  if (areas && areas.length > 0) {
+    if (!localizacion) return null;
+    if (dqDe(localizacion) === '+' && areas.includes('Dd99')) return undefined;
+    return puntajeZ(lamina, { areas, localizacion }).z?.valor ?? null;
+  }
+  return zDeLaFicha(lamina, localizacion, nLocalizacion);
 }

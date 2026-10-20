@@ -6,6 +6,7 @@ import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { anotarAcceso } from '@/lib/accesos';
 import { CC_EE, CONTENIDOS, DETERMINANTES, FQ, LAMINA, LOCALIZACION, POSICION } from '@/lib/rorschach';
 import { CAMPOS_HR, conRepresentacionHumana } from '@/lib/representacion-humana';
+import { zAutomatico } from '@/lib/rorschach-z';
 
 export const runtime = 'nodejs';
 
@@ -158,6 +159,35 @@ async function conSesion(): Promise<boolean> {
   return Boolean(cookie && igual(cookie, await huella(clave)));
 }
 
+/** Los campos de los que sale el Z. */
+const CAMPOS_Z = ['lamina', 'localizacion', 'n_localizacion', 'areas'] as const;
+
+/**
+ * Pone el Z que da el sistema cuando cambia algo de lo que depende.
+ *
+ * Se calcula acá, al guardar, y no en cada pantalla: la encuesta y la ficha
+ * contaban cada una a su manera y la misma respuesta quedaba con Z en una y
+ * sin Z en la otra. Si no se puede saber (un Dd99 con DQ+), queda el que vino,
+ * que es el que eligió la evaluadora. Un Z elegido a mano, sin tocar lo demás,
+ * no se recalcula.
+ */
+function conZ(fila: Record<string, unknown>, limpio: Record<string, unknown>) {
+  if (!CAMPOS_Z.some((c) => c in limpio)) return;
+  const junta = { ...fila, ...limpio } as {
+    lamina?: string | null;
+    localizacion?: string | null;
+    n_localizacion?: string | null;
+    areas?: string[] | null;
+  };
+  const z = zAutomatico(
+    junta.lamina ?? null,
+    junta.localizacion ?? null,
+    junta.n_localizacion ?? null,
+    junta.areas
+  );
+  if (z !== undefined) limpio.z = z;
+}
+
 /**
  * Vuelve a numerar el protocolo entero, de 1 en adelante, y devuelve el número
  * que quedó en cada fila.
@@ -298,6 +328,7 @@ export async function PUT(req: Request) {
   if ('ok' in limpio) return NextResponse.json(limpio, { status: 400 });
 
   const test = await testDe(cfg, evaluacion, limpio.lamina);
+  conZ({}, limpio);
   // La respuesta capturada en la encuesta entra con sus contenidos y su FQ.
   if (CAMPOS_HR.some((c) => c in limpio)) limpio.cc_ee = conRepresentacionHumana(limpio as never);
 
@@ -353,6 +384,15 @@ export async function POST(req: Request) {
      áreas que se marcaron en la lámina: si quedaran, el Z se seguiría
      calculando con las viejas. */
   if ('n_localizacion' in limpio && !('areas' in limpio)) limpio.areas = null;
+
+  if (CAMPOS_Z.some((c) => c in limpio)) {
+    const actual = await fetch(
+      `${cfg.url}/rest/v1/rorschach_respuestas?select=${CAMPOS_Z.join(',')}&id=eq.${id}`,
+      { headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` }, cache: 'no-store' }
+    ).catch(() => null);
+    const [fila] = actual?.ok ? await actual.json().catch(() => []) : [];
+    if (fila) conZ(fila, limpio);
+  }
 
   /* Corregir la lámina corrige el test: la fila pasa de una lámina romana a una
      Z cuando el protocolo se empezó con la lámina que no era, y dejar el test

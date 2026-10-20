@@ -18,6 +18,7 @@
 import { useRouter } from 'next/navigation';
 import { Fragment, useRef, useState, useTransition } from 'react';
 import './manchas.css';
+import PalabrasFq from './PalabrasFq';
 import {
   CC_EE,
   CONTENIDOS,
@@ -31,7 +32,7 @@ import {
 import type { Mancha } from '@/lib/ficha';
 import { areasDe, Z } from '@/lib/rorschach-tabla-a';
 import { CAMPOS_HR, conRepresentacionHumana } from '@/lib/representacion-humana';
-import { zDeLaFicha } from '@/lib/rorschach-z';
+import { zAutomatico } from '@/lib/rorschach-z';
 import Calcular from './Calcular';
 import Codigo from './Codigo';
 import { Multiple, Simple, Tilde } from './Celdas';
@@ -232,7 +233,7 @@ export default function Manchas({
     !esZulliger &&
     f.z === null &&
     Boolean(f.localizacion) &&
-    zDeLaFicha(f.lamina, f.localizacion, f.n_localizacion) === undefined;
+    zAutomatico(f.lamina, f.localizacion, f.n_localizacion, f.areas) === undefined;
 
   async function pedir(init: RequestInit & { url?: string }): Promise<any> {
     setError(null);
@@ -279,11 +280,14 @@ export default function Manchas({
       campos = { ...campos, cc_ee: conRepresentacionHumana({ ...fila, ...(campos as object) }) };
     }
     /* El Z también lo pone el sistema, con la lámina, la localización y su
-       número (`zDeLaFicha`). Cuando no lo puede saber, como en un Dd99 con
+       número, o con las áreas marcadas en la encuesta (`zAutomatico`). Cuando no lo puede saber, como en un Dd99 con
        DQ+, deja el que haya y lo elige ella. */
     if (fila && ['lamina', 'localizacion', 'n_localizacion'].some((c) => c in campos)) {
       const junta = { ...fila, ...(campos as Partial<Mancha>) };
-      const z = zDeLaFicha(junta.lamina, junta.localizacion, junta.n_localizacion);
+      // N° loc. corregido a mano: las áreas de la encuesta dejan de valer (la
+      // ruta las borra), así que la cuenta va sin ellas.
+      const areas = 'n_localizacion' in campos ? null : junta.areas;
+      const z = zAutomatico(junta.lamina, junta.localizacion, junta.n_localizacion, areas);
       if (z !== undefined && z !== fila.z) campos = { ...campos, z };
     }
     setSucio(true);
@@ -506,6 +510,15 @@ export default function Manchas({
                     opciones={FQ}
                     onCambio={(v) => cambiar(f.id, { fq: v })}
                     etiqueta="Calidad formal"
+                    pie={(elegir) => (
+                      <PalabrasFq
+                        lamina={f.lamina}
+                        localizacion={f.localizacion}
+                        nLocalizacion={f.n_localizacion}
+                        areas={f.areas}
+                        elegir={elegir}
+                      />
+                    )}
                   />
                 </td>
                 <td>

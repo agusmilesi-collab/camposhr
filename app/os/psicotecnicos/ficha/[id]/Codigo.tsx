@@ -20,7 +20,7 @@
  * panel, y en la última fila no se vería ninguna opción.
  */
 
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { anfitrion, useAnclaje } from '@/app/os/anclar';
 import { tonoDe, type Opcion } from '@/lib/rorschach';
@@ -78,6 +78,11 @@ export default function Codigo({
    */
   mostrar,
   /**
+   * Algo más al pie de la lista, con la función de elegir: la FQ lo usa para
+   * ofrecer las palabras de la Tabla A del área.
+   */
+  pie,
+  /**
    * La lista completa, cuando lo que se ofrece es un recorte.
    *
    * En las láminas se ofrecen las dos que siguen en el protocolo, que es lo que
@@ -95,6 +100,7 @@ export default function Codigo({
   ancho?: number;
   vacio?: string;
   mostrar?: (valor: string) => string;
+  pie?: (elegir: (v: string) => void) => ReactNode;
   comoAgregar?: boolean;
   porFila?: number;
   sinVacio?: boolean;
@@ -250,6 +256,7 @@ export default function Codigo({
           Mostrar todas
         </button>
       )}
+      {pie?.(elegir)}
     </span>
   );
 

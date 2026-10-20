@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 /**
  * Las dos celdas de códigos del protocolo, las mismas en la ficha y en la
  * pantalla de captura.
@@ -30,6 +32,7 @@ export function Simple({
   nuevaFilaAntesDe,
   todas,
   vacio,
+  pie,
 }: {
   valor: string | null;
   opciones: Opcion[];
@@ -42,6 +45,7 @@ export function Simple({
   nuevaFilaAntesDe?: string;
   todas?: Opcion[];
   vacio?: string;
+  pie?: (elegir: (v: string) => void) => ReactNode;
 }) {
   return (
     <span className="os-celda-select">
@@ -57,6 +61,7 @@ export function Simple({
         nuevaFilaAntesDe={nuevaFilaAntesDe}
         todas={todas}
         vacio={vacio}
+        pie={pie}
       />
     </span>
   );

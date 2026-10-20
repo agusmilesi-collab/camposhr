@@ -143,6 +143,8 @@ export type Mancha = {
   n_respuesta: number | null;
   localizacion: string | null;
   n_localizacion: string | null;
+  /** Las áreas marcadas en la encuesta; nula en lo cargado a mano. */
+  areas?: string[] | null;
   determinantes: string[] | null;
   fq: string | null;
   par: boolean | null;
@@ -389,10 +391,13 @@ export async function fichaDe(id: string): Promise<Ficha | null> {
     discursivos,
   ] = await Promise.all([
       select<Cabecera>('evaluaciones', `select=${CAMPOS_CABECERA}&id=eq.${id}`),
+      // Sin caché: la tabla de codificación guarda celda por celda y se vuelve a
+      // dibujar del servidor después de cada cambio. Con la lectura guardada,
+      // ese redibujo llegaba con el valor de antes y la celda volvía atrás
+      // (elegir U y verla volver a "-"), aunque la base ya tuviera el nuevo.
       select<Mancha>(
         'rorschach_respuestas',
-        `select=*&evaluacion_id=eq.${id}&order=n_respuesta.asc`,
-        CACHE_PSICOTECNICOS
+        `select=*&evaluacion_id=eq.${id}&order=n_respuesta.asc`
       ),
       select<Sumario>('sumario_exner', `select=*&evaluacion_id=eq.${id}`, CACHE_PSICOTECNICOS),
       select<Benziger>(

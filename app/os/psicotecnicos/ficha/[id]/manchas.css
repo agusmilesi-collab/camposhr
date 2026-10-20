@@ -58,3 +58,62 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/*
+ * Las palabras de la Tabla A al pie del selector de FQ: la calidad en su
+ * columna y la palabra al lado, en una lista que se desplaza sin agrandar el
+ * desplegable más allá de la pantalla.
+ */
+.os-palabras-fq {
+  display: block;
+  width: 340px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--os-linea-suave);
+}
+.os-palabras-fq-titulo {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--os-suave);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.os-palabras-fq-lista {
+  display: block;
+  max-height: 260px;
+  overflow-y: auto;
+  margin-top: 6px;
+}
+.os-palabras-fq-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 5px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.os-palabras-fq-item:hover {
+  background: var(--os-linea-suave);
+}
+.os-palabras-fq-calidad {
+  flex: none;
+  width: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+.os-palabras-fq-texto {
+  flex: 1;
+  min-width: 0;
+}
+.os-palabras-fq-area {
+  flex: none;
+  color: var(--os-suave);
+  font-size: 12px;
+}
