@@ -1957,3 +1957,27 @@
   opacity: 0.88;
 }
 
+
+/* El segundo "Descargar PDF" de la pestaña Informe, debajo de la última hoja
+   y alineado con su borde derecho: es una fila más de la grilla de las hojas,
+   con su mismo ancho. Azul como el botón de los indicadores. No se imprime. */
+.os-onepager-pie {
+  display: flex;
+  justify-content: flex-end;
+  width: 210mm;
+  max-width: 100%;
+  margin-top: 6px;
+}
+.os .os-onepager-pie a.os-boton-pie-pdf {
+  background: #2b4468;
+  border-color: #2b4468;
+  color: #fff;
+}
+.os .os-onepager-pie a.os-boton-pie-pdf:hover {
+  opacity: 0.88;
+}
+@media print {
+  .os-onepager-pie {
+    display: none !important;
+  }
+}

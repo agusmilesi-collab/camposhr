@@ -874,7 +874,21 @@ async function Informe({ f, rige }: { f: Ficha; rige: Regulacion }) {
             indicadores, que están en sus propias pestañas. */}
           {comoSitio ? (
             <>
-              <EnHojas inf={informe} editar={c.id} />
+              {/* Otra vez al pie: quien terminó de revisar el informe está
+                  abajo, y el botón de arriba queda a toda una página. */}
+              <EnHojas
+                inf={informe}
+                editar={c.id}
+                pie={
+                  <Link
+                    className="os-boton os-boton-pie-pdf"
+                    href={`/os/psicotecnicos/informe/${c.id}?descargar=1`}
+                    target="_blank"
+                  >
+                    Descargar PDF
+                  </Link>
+                }
+              />
             </>
           ) : (
             <Documento inf={informe} interno editar={c.id} parte="trabajo" />

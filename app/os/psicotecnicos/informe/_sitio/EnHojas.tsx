@@ -26,12 +26,19 @@ export default function EnHojas({
   editar,
   descarga,
   porHojas = false,
+  pie,
 }: {
   inf: Informe;
   editar?: string;
   descarga?: boolean;
   /** Cada capítulo en su propia hoja en pantalla, como sale impreso. */
   porHojas?: boolean;
+  /**
+   * Lo que va debajo de la última hoja, alineado con su borde: en la ficha,
+   * el segundo "Descargar PDF". Va dentro de la misma grilla que las hojas
+   * para medir lo mismo que ellas.
+   */
+  pie?: React.ReactNode;
 }) {
   /* Fuera de la ficha, una sección que no tiene nada para quien lee no sale:
      quedaba el título con la hoja en blanco debajo. */
@@ -115,6 +122,7 @@ export default function EnHojas({
               ))}
             </div>
           ))}
+          {pie && <div className="os-onepager-pie">{pie}</div>}
         </div>
       )}
     </div>
