@@ -2510,14 +2510,6 @@
   font-size: 0.86rem;
 }
 
-.inf-grupo li.inf-plan-fijo {
-  color: var(--suave);
-}
-
-.inf-grupo li.inf-plan-fijo::before {
-  background: var(--linea);
-}
-
 /* Editando el plan, cada renglón lleva su tramo entre el agarre y el texto. */
 .inf-edita-lista li:has(.inf-edita-tramo) {
   grid-template-columns: 20px 180px 1fr 26px;

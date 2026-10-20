@@ -1044,7 +1044,8 @@ Una lectura sin clasificar va a "Durante toda la relación", que no le promete
 al líder un plazo que nadie eligió.
 
 **El foco es lo que sale de la evaluación.** Cada tramo tiene un solo punto
-fijo, igual para todos, que va al final y en gris. Un tramo sin nada propio no
+fijo, igual para todos, que va al final con la misma letra y el mismo color
+que los demás. Un tramo sin nada propio no
 sale, salvo el de los días 31 a 90: es el único que habla de soltar y el
 diccionario casi no tiene lecturas para eso.
 
