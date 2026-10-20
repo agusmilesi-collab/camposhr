@@ -13,7 +13,6 @@
 
 import 'server-only';
 import { select } from '@/lib/supabase';
-import { CACHE_COMERCIAL } from '@/lib/etiquetas';
 import type { Estado, Objecion } from '@/lib/comercial-tipos';
 
 export {
@@ -90,13 +89,19 @@ function armar(f: Fila): Cotizacion {
   };
 }
 
-/** Todas, de la más reciente a la más vieja. */
+/**
+ * Todas, de la más reciente a la más vieja.
+ *
+ * **Sin caché.** Con la etiqueta, la tarjeta recién editada volvía a mostrar
+ * lo de antes: el embudo se redibuja apenas se guarda y a veces le llegaba la
+ * copia vieja, y quien había corregido la nota creía que no se había guardado
+ * (20/10/2026). Son pocas filas y la pantalla se abre para trabajarlas.
+ */
 export async function listarCotizaciones(): Promise<Cotizacion[]> {
   try {
     const filas = await select<Fila>(
       'cotizaciones',
-      `select=${CAMPOS}&order=fecha.desc,created_at.desc`,
-      CACHE_COMERCIAL
+      `select=${CAMPOS}&order=fecha.desc,created_at.desc`
     );
     return filas.map(armar);
   } catch {
@@ -135,8 +140,8 @@ export async function listarCostos(): Promise<Costo[]> {
       pagado_por: string | null;
     }>(
       'costos',
-      'select=id,cotizacion_id,concepto,importe,tipo,fecha,nota,pagado_por&order=fecha.desc',
-      CACHE_COMERCIAL
+      // Sin caché, por lo mismo que las cotizaciones.
+      'select=id,cotizacion_id,concepto,importe,tipo,fecha,nota,pagado_por&order=fecha.desc'
     );
     return filas.map((f) => ({
       id: f.id,
