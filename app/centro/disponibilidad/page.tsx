@@ -3,6 +3,7 @@ import {
   contratos as leerContratos,
   DIAS_CORTOS,
   DIAS_DE_LA_SEMANA_TIPO,
+  escalaVigente,
   esParaTodos,
   hoyISO,
   listarEspacios,
@@ -26,8 +27,9 @@ export const metadata: Metadata = {
  *
  * **Se abre sin sesión.** Es la respuesta a "¿qué tenés libre?", y quien lo
  * pregunta todavía no es inquilino. Por eso de acá no sale nada que no se le
- * diría por teléfono: qué hora de qué sala está libre. Ni nombres, ni precios,
- * ni fechas; las reservas se reducen a libre u ocupada antes de dibujar.
+ * diría por teléfono: qué hora de qué sala está libre y cuánto sale la hora
+ * según cuántas se alquilan por semana. Ni nombres ni fechas; las reservas se
+ * reducen a libre u ocupada antes de dibujar.
  *
  * Muestra la semana tipo y no el mes: se alquila por banda fija, y una hora
  * libre este martes pero tomada los otros tres no es una hora para ofrecer.
@@ -35,11 +37,12 @@ export const metadata: Metadata = {
  */
 export default async function Disponibilidad() {
   const hoy = hoyISO();
-  const [espacios, aperturas, contratos, reservas] = await Promise.all([
+  const [espacios, aperturas, contratos, reservas, escala] = await Promise.all([
     listarEspacios(),
     leerAperturas(),
     leerContratos(),
     reservasEntre(hoy, sumarDias(hoy, DIAS_DE_LA_SEMANA_TIPO - 1)),
+    escalaVigente(hoy),
   ]);
   // Las salas fuera de alquiler no se ofrecen, y tampoco las que se alquilan
   // solo a quienes se elige: esta página la abre cualquiera.
@@ -105,6 +108,42 @@ export default async function Disponibilidad() {
                   ))}
                 </tbody>
               </table>
+              {(() => {
+                /* La escala vigente de esta sala: cuantas más horas por semana,
+                   más barata la hora. Cada renglón va hasta el que sigue, igual
+                   que en Configuración. */
+                const suyas = escala.tarifas
+                  .filter((t) => t.espacio_id === sala.id)
+                  .sort((a, b) => a.horas_semana_desde - b.horas_semana_desde);
+                if (suyas.length === 0) return null;
+                return (
+                  <table className="centro-oferta-precios">
+                    <thead>
+                      <tr>
+                        <th>Horas por semana</th>
+                        <th>Precio por hora</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {suyas.map((t, i) => {
+                        const sigue = suyas[i + 1]?.horas_semana_desde;
+                        return (
+                          <tr key={t.horas_semana_desde}>
+                            <td>
+                              {sigue === undefined
+                                ? `${t.horas_semana_desde} o más`
+                                : sigue - 1 === t.horas_semana_desde
+                                  ? `${t.horas_semana_desde}`
+                                  : `${t.horas_semana_desde} a ${sigue - 1}`}
+                            </td>
+                            <td>$ {t.precio_hora.toLocaleString('es-AR')}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                );
+              })()}
               {sala.incluye.length > 0 && (
                 <p className="centro-oferta-incluye">
                   {sala.incluye.map((i) => i.texto).join(' · ')}

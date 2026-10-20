@@ -2254,6 +2254,29 @@
   margin: -6px 0 10px;
 }
 
+/* La escala de precios de cada sala, debajo de su semana. */
+.centro-oferta-precios {
+  width: 100%;
+  margin-top: 14px;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.centro-oferta-precios th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--suave);
+  font-size: 0.75rem;
+  padding: 0 0 4px;
+}
+.centro-oferta-precios th:last-child,
+.centro-oferta-precios td:last-child {
+  text-align: right;
+}
+.centro-oferta-precios td {
+  padding: 4px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
 .centro-oferta-incluye {
   color: var(--suave);
   font-size: 0.8rem;
