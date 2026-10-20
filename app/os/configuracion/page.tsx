@@ -35,7 +35,9 @@ export const dynamic = 'force-dynamic';
  */
 
 const PESTANAS = [
-  { clave: 'baterias', texto: 'Baterías' },
+  // Se llama Precios desde el 20/10/2026: además de las baterías tiene los
+  // otros servicios de la página de precios. La dirección sigue `baterias`.
+  { clave: 'baterias', texto: 'Precios' },
   { clave: 'baremos', texto: 'Raven' },
   { clave: 'ponderaciones', texto: 'Velocímetro' },
   { clave: 'redacciones', texto: 'Redacciones' },
@@ -46,7 +48,8 @@ const PESTANAS = [
 ];
 
 const QUE_HACE: Record<string, string> = {
-  baterias: 'Qué se le toma a la persona y qué recibe el cliente, con el precio de cada batería.',
+  baterias:
+    'Qué se le toma a la persona y qué recibe el cliente, con el precio de cada batería. Abajo, los precios de coaching, entrevistas y referencias.',
   baremos:
     'Dónde corta cada rango del Raven. Cambia el rango que se nombra en el informe y el puntaje de habilidad cognitiva.',
   redacciones:

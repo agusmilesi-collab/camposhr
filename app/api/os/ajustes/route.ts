@@ -11,6 +11,7 @@ import { TEXTOS, cortesValidos, textosValidos } from '@/lib/redacciones';
 import { tramosValidos } from '@/lib/plan-incorporacion';
 import { conclusionesValidas, nivelesValidos } from '@/lib/discursivo';
 import { benzigerValidos } from '@/lib/benziger-textos';
+import { preciosDeServiciosValidos } from '@/lib/precios-servicios';
 
 export const runtime = 'nodejs';
 
@@ -36,6 +37,7 @@ const MOTIVO = {
     'Cada conclusión tiene que ser uno de los casos que existen, con texto, y sin huecos que el sistema no sepa llenar: solo {estrato}, {siguiente} y {edad}.',
   benziger_cuadrantes:
     'Cada texto tiene que ser de uno de los cuatro cuadrantes, de hasta 2000 caracteres, y ninguno puede quedarse sin "Cómo es".',
+  servicios_precios: 'Cada precio tiene que ser un número entero de pesos, mayor que cero.',
 };
 export const dynamic = 'force-dynamic';
 
@@ -81,6 +83,7 @@ export async function POST(req: Request) {
     'discursivo_niveles',
     'discursivo_conclusiones',
     'benziger_cuadrantes',
+    'servicios_precios',
   ];
   if (!CLAVES.includes(clave)) {
     return NextResponse.json({ ok: false, motivo: 'Ajuste desconocido.' }, { status: 400 });
@@ -130,7 +133,9 @@ export async function POST(req: Request) {
                     ? conclusionesValidas(valor)
                     : clave === 'benziger_cuadrantes'
                       ? benzigerValidos(valor)
-                      : textosValidos(valor);
+                      : clave === 'servicios_precios'
+                        ? preciosDeServiciosValidos(valor)
+                        : textosValidos(valor);
   if (!limpios) {
     return NextResponse.json(
       {

@@ -7,6 +7,9 @@ import {
 } from '@/lib/baterias-precios';
 import Precio from './Precio';
 import Bateria from './Bateria';
+import ServiciosPrecios from './ServiciosPrecios';
+import './servicios-precios.css';
+import { SERVICIOS_CON_PRECIO, preciosDeServicios } from '@/lib/precios-servicios';
 
 /**
  * Las baterías: qué incluye cada una, cuánto dura y cuánto sale.
@@ -29,7 +32,11 @@ import Bateria from './Bateria';
 
 
 export default async function Baterias() {
-  const [baterias, cambio] = await Promise.all([leerBaterias(), dolarTarjeta()]);
+  const [baterias, cambio, servicios] = await Promise.all([
+    leerBaterias(),
+    dolarTarjeta(),
+    preciosDeServicios(),
+  ]);
 
   const pesos = (n: number) =>
     new Intl.NumberFormat('es-AR', {
@@ -102,6 +109,10 @@ export default async function Baterias() {
           </section>
         ))}
       </div>
+
+      <ServiciosPrecios
+        filas={SERVICIOS_CON_PRECIO.map((s) => ({ ...s, rige: servicios[s.clave] }))}
+      />
     </>
   );
 }

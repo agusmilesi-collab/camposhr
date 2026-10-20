@@ -1,0 +1,19 @@
+/* Los precios de los otros servicios, debajo de las baterías. */
+.os-servicios-precios {
+  margin-top: 20px;
+}
+.os-servicios-precios .os-tabla {
+  width: 100%;
+  margin-top: 10px;
+}
+.os-servicios-precios .os-servicios-precio {
+  width: 130px;
+  text-align: right;
+}
+.os-servicios-precios-pie {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}

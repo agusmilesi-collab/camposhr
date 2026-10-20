@@ -4,7 +4,8 @@ import { tiempoDeEntrega } from '@/lib/tiempo-entrega';
 import { Equipo, IconoWhatsapp, Pestanas, pesos } from './piezas';
 import { IgualarTarjetas } from './IgualarTarjetas';
 import { Servicio } from './Servicio';
-import { COACHING, DEVOLUCION, ENTREVISTAS } from './servicios';
+import { COACHING, ENTREVISTAS, type Servicio as DatosDelServicio } from './servicios';
+import { preciosDeServicios } from '@/lib/precios-servicios';
 
 export const dynamic = 'force-dynamic';
 
@@ -117,14 +118,31 @@ export default async function Precios(
   }
 ) {
   const searchParams = await props.searchParams;
-  const servicio =
-    searchParams?.servicio === 'coaching'
-      ? COACHING
-      : searchParams?.servicio === 'entrevistas'
-        ? ENTREVISTAS
-        : null;
   const activa =
-    servicio === COACHING ? 'coaching' : servicio === ENTREVISTAS ? 'entrevistas' : 'psicotecnicos';
+    searchParams?.servicio === 'coaching'
+      ? 'coaching'
+      : searchParams?.servicio === 'entrevistas'
+        ? 'entrevistas'
+        : 'psicotecnicos';
+  // Los precios de los servicios que no son baterías se editan en
+  // Configuración → Precios; lo escrito en `servicios.ts` es el de fábrica.
+  const precios = await preciosDeServicios();
+  const DEVOLUCION = precios.devolucion;
+  const conPrecios = (d: DatosDelServicio, pestana: string): DatosDelServicio => ({
+    ...d,
+    tarjetas: d.tarjetas.map((t) => ({
+      ...t,
+      monto:
+        (t.codigo === 'Devolución' ? precios.devolucion : precios[`${pestana}:${t.codigo}`]) ??
+        t.monto,
+    })),
+  });
+  const servicio =
+    activa === 'coaching'
+      ? conPrecios(COACHING, 'coaching')
+      : activa === 'entrevistas'
+        ? conPrecios(ENTREVISTAS, 'entrevistas')
+        : null;
 
   const [{ baterias, benzigerUsd, dolar }, detalle, plazo] = await Promise.all([
     alcanceYPrecios(),

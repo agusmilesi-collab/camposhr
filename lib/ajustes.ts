@@ -29,7 +29,8 @@ export type ClaveDeAjuste =
   | 'competencias_direccion'
   | 'discursivo_niveles'
   | 'discursivo_conclusiones'
-  | 'benziger_cuadrantes';
+  | 'benziger_cuadrantes'
+  | 'servicios_precios';
 
 type Fila = { clave: string; valor: unknown };
 
