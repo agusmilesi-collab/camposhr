@@ -1,0 +1,20 @@
+/* La pantalla de evaluaciones sin solicitante: una tabla por empresa. */
+.os-ss-ayuda {
+  color: var(--os-texto-suave, inherit);
+  opacity: 0.8;
+  margin: 0 0 18px;
+  max-width: 70ch;
+}
+.os-sin-solicitante-empresa {
+  margin-bottom: 26px;
+}
+.os-sin-solicitante-empresa h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  margin: 0 0 8px;
+}
+.os-sin-solicitante-empresa td[data-campo='Solicitó'] {
+  width: 260px;
+}
