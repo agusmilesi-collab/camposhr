@@ -417,33 +417,11 @@ export function seccionesDe(
     id: 'tecnicas',
     titulo: 'Técnicas de evaluación utilizadas',
     cuerpo: (
-      <>
-        <ul className="sitio-lista">
-          {inf.tecnicas.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-        {/* Con qué normas se lee el test de manchas: las mismas que usa el
-            velocímetro (`lib/competencias.ts`). Si cambian allá, cambian acá. */}
-        {inf.proyectivo === 'Rorschach' && (
-          <p className="sitio-normas">
-            {inf.calidadFormalLunazzi
-              ? 'El Rorschach se codificó con el Sistema Comprehensivo y las tablas argentinas de calidad formal (Lunazzi, 2019, sobre 1.179 adultos no pacientes).'
-              : 'El Rorschach se codificó con el Sistema Comprehensivo de Exner.'}{' '}
-            Para interpretarlo se usan las normas argentinas de adultos no
-            pacientes (Lunazzi y otros, 2007, sobre 506 casos). Siete índices
-            siguen con las normas de Exner: GHR : PHR, COP / AG, CDI, M−, Fd,
-            Lambda y contenidos H.
-          </p>
-        )}
-        {inf.proyectivo === 'Zulliger' && (
-          <p className="sitio-normas">
-            El Zulliger se codificó con el Sistema Comprehensivo y se interpreta
-            con las normas de Zdunic para selección de personal en la Argentina,
-            sobre 500 protocolos tomados en Buenos Aires.
-          </p>
-        )}
-      </>
+      <ul className="sitio-lista">
+        {inf.tecnicas.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
     ),
   });
 
