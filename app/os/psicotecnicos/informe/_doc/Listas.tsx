@@ -271,7 +271,9 @@ export default function Listas({
   const sello = (texto: string) => {
     if (!respaldos) return null;
     const r = respaldos[texto];
-    const test = origen ? <span className="inf-respaldo inf-origen">{origen}</span> : null;
+    // El Raven no sale del proyectivo: su texto lleva su propio test.
+    const deDonde = r?.indice === 'Raven' ? 'Raven' : origen;
+    const test = deDonde ? <span className="inf-respaldo inf-origen">{deDonde}</span> : null;
     if (!r) return test;
     const clase =
       r.dentro === null ? 'inf-respaldo-neutro' : r.dentro ? 'inf-respaldo-dentro' : 'inf-respaldo-fuera';
