@@ -706,6 +706,8 @@ function areasDeLaFicha(r: YaEnLaFicha): string[] {
   // Guardadas tal cual se marcaron: Dd99 no dice cuáles se integraron.
   if (r.areas && r.areas.length > 0) return r.areas;
   const familia = (r.localizacion ?? '').replace(/(v\/\+|o|v|\+)$/, '') || 'Dd';
+  // La W lleva el 1 de la mancha entera, que no es el D1.
+  if (familia === 'W' || familia === 'WS') return [familia];
   const numeros = (r.n_localizacion ?? '')
     .split('+')
     .map((n) => n.trim())
@@ -1751,7 +1753,7 @@ export default function Capturador({
       n_respuesta: r.n,
       // La ficha guarda el número del área y la letra va en la
       // localización: D1 es localizacion 'Do' con n_localizacion '1'. W
-      // no tiene número.
+      // lleva siempre el 1.
       n_localizacion: localizacionFinal(lamina, r.areas).numero,
       areas: r.areas,
       localizacion: r.localizacion,

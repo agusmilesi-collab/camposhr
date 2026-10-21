@@ -90,7 +90,8 @@ export function areasDistintas(lamina: string, areas: string[]): string[] {
  * La ficha lleva un solo código por respuesta, y lo definieron las psicólogas
  * el 10/9/2026:
  *
- *   · Si alguna es W, la respuesta es W, sin número: las demás quedan adentro.
+ *   · Si alguna es W, la respuesta es W con el número 1: las demás quedan
+ *     adentro. La mancha entera es siempre el área 1 (psicólogas, 21/10/2026).
  *   · Si son todas D, es D con los números sumados ("3+1").
  *   · Si se mezclan D con Dd, o hay alguna que no está estandarizada, es Dd99.
  *
@@ -106,12 +107,13 @@ export function localizacionFinal(
   const numeroDe = (a: string) => a.replace(/^(WS?|D?d?S?)/, '') || null;
   if (distintas.length <= 1) {
     const a = distintas[0] ?? areas[0] ?? 'Dd99';
-    return { familia: familiaDe(a), numero: numeroDe(a) };
+    const familia = familiaDe(a);
+    return { familia, numero: familia === 'W' || familia === 'WS' ? '1' : numeroDe(a) };
   }
   const conS = distintas.some(esEspacio);
   const familias = distintas.map(familiaDe);
   if (familias.some((f) => f === 'W' || f === 'WS')) {
-    return { familia: conS ? 'WS' : 'W', numero: null };
+    return { familia: conS ? 'WS' : 'W', numero: '1' };
   }
   if (familias.every((f) => f === 'D' || f === 'DS')) {
     return {
