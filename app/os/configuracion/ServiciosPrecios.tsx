@@ -54,6 +54,7 @@ export default function ServiciosPrecios({
   proximoIpc,
   ultimoIpc,
   sinIpc,
+  proximoAjuste,
   tramos,
   hoy,
 }: {
@@ -65,6 +66,8 @@ export default function ServiciosPrecios({
   ultimoIpc: AjustePorIpc | null;
   /** El ajuste que ya tocaba y no se aplicó porque falta un mes del IPC. */
   sinIpc: string | null;
+  /** Cuándo toca el próximo ajuste trimestral. */
+  proximoAjuste: string;
   tramos: TramoDePrecios[];
   /** Hoy en Argentina, del servidor, para el valor inicial de la fecha. */
   hoy: string;
@@ -87,7 +90,9 @@ export default function ServiciosPrecios({
   }, [huella]);
 
   const cambiado = filas.some((f) => valores[f.clave] !== String(f.rige)) || desde !== hoy;
-  const movido = filas.some((f) => f.rige !== f.deFabrica);
+  // Hay algo cargado a mano: el ajuste por IPC también mueve el precio, pero
+  // no hay nada guardado que borrar.
+  const movido = tramos.length > 0;
 
   async function mandar(valor: { tramos: TramoDePrecios[] } | null) {
     setGuardando(true);
@@ -145,9 +150,12 @@ export default function ServiciosPrecios({
           por el INDEC, redondeado a $ 5.000. Un precio cargado a mano rige desde la fecha que se
           elige y los ajustes siguientes parten de él.
         </p>
-        {ultimoIpc && (
+        {(ultimoIpc || !proximoIpc) && (
           <p className="os-columna-nota">
-            Último ajuste: {dia(ultimoIpc.desde)}, {ipcTexto(ultimoIpc)}.
+            {ultimoIpc && <>Último ajuste: {dia(ultimoIpc.desde)}, {ipcTexto(ultimoIpc)}. </>}
+            {!proximoIpc && !sinIpc && (
+              <>Próximo ajuste: {dia(proximoAjuste)}, con el IPC que esté publicado ese día.</>
+            )}
           </p>
         )}
         {sinIpc && (

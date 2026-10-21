@@ -78,7 +78,9 @@ export function preciosDeServiciosValidos(valor: unknown): { tramos: TramoDePrec
   const crudo = valor as Record<string, unknown>;
   if (!('tramos' in crudo)) {
     const precios = preciosValidos(crudo);
-    return precios ? { tramos: [{ desde: DESDE_SIEMPRE, precios }] } : null;
+    if (!precios) return null;
+    // Sin nada distinto del de fábrica no hay tramo: es como no haber guardado.
+    return { tramos: Object.keys(precios).length ? [{ desde: DESDE_SIEMPRE, precios }] : [] };
   }
   if (!Array.isArray(crudo.tramos) || crudo.tramos.length > 50) return null;
   const tramos: TramoDePrecios[] = [];

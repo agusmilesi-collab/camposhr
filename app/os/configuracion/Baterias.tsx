@@ -121,6 +121,7 @@ export default async function Baterias() {
         proximoIpc={servicios.proximo?.ajuste ?? null}
         ultimoIpc={servicios.ajustes.at(-1) ?? null}
         sinIpc={servicios.sinIpc}
+        proximoAjuste={servicios.proximoAjuste}
         tramos={servicios.tramos}
         hoy={hoyIso()}
       />
