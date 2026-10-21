@@ -74,6 +74,13 @@ const DIBUJOS = {
       <path d="M12 6v13" />
     </>
   ),
+  // Una hoja con renglones y la marca de calidad al costado de cada uno.
+  hoja: (
+    <>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M8 8h.01M11 8h6M8 12h.01M11 12h6M8 16h.01M11 16h6" />
+    </>
+  ),
   caja: (
     <>
       <rect x="3" y="8" width="18" height="12" rx="2" />
@@ -109,6 +116,12 @@ const FICHAS: Ficha[] = [
     detalle: 'Las 10 láminas a pantalla completa.',
     href: '/os/laminas/rorschach',
     icono: 'manchas',
+  },
+  {
+    titulo: 'Calidad formal del Rorschach',
+    detalle: 'Las tablas de Lunazzi, una lámina por hoja.',
+    href: '/os/herramientas/calidad-formal',
+    icono: 'hoja',
   },
   {
     titulo: 'Zulliger',
