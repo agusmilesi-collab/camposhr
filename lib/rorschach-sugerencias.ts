@@ -106,7 +106,10 @@ const ESCRITAS: [RegExp, string[]][] = [
   [/(sangre)/, ['Bl']],
   [/(paisaje|isla|monta[ñn]a|colina|roca|cueva|precipicio|ca[ñn][óo]n|bah[íi]a|volc[áa]n|cima|acantilado|desierto|cr[áa]ter)/, ['Ls']],
   [/(mapa|australia|cabo \(geo)/, ['Ge']],
-  [/(nube|niebla|bruma|nieve|hielo|tornado|cielo|ola|agua|tierra|lluvia)/, ['Cl']],
+  // Cl es solo la nube; la niebla, el agua y el resto de la naturaleza son Na
+  // (Exner). Corregido por las psicólogas el 21/10/2026: "una ola" salía Cl.
+  [/(nube)/, ['Cl']],
+  [/(niebla|bruma|nieve|hielo|tornado|tormenta|cielo|ola|agua|mar|oc[ée]ano|r[íi]o|lago|lluvia|tierra|sol|luna|estrella|planeta|arco ?[íi]ris|noche|rel[áa]mpago|rayo)/, ['Na']],
   [/(fuego|explosi[óo]n|humo)/, ['Fi']],
   [/([áa]rbol|planta|flor|hoja|helecho|bosque|vegetaci[óo]n|follaje|arbusto|matorral|abeto|champi[ñn][óo]n|ra[íi]z|semilla|cactus|hierbajos|coral|di[ée]nte de le[óo]n)/, ['Bt']],
   [/(sombrero|vestido|capa|abrigo|falda|casco|botas|zapato|capote|gorro|corbata|babero|tocado|disfraz|corona)/, ['Cg']],
