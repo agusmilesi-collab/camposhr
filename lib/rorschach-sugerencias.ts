@@ -96,11 +96,11 @@ export function fqDeLaFicha(calidad: CalidadFormal): string {
  * marcado como propuesto y la evaluadora lo confirma. Se busca de lo más
  * específico a lo más general, porque "cara de pájaro" es Ad y no A.
  */
-const REGLAS: [RegExp, string[]][] = [
+const ESCRITAS: [RegExp, string[]][] = [
   [/^(cara|cabeza|orejas?|hocico|garras?|pinzas?|patas?|alas?|pico|cuernos?|astas|rabo|cola|aleta)s? (de |del )?(animal|p[áa]jaro|perro|gato|lobo|oso|tigre|zorro|vaca|conejo|rat[óo]n|insecto|bicho|caballo|cabra|cerdo|pez|tortuga|mapache|hormiga|[áa]guila|pato|reptil)/, ['Ad']],
   [/^(cara|cabeza|manos?|dedos?|piernas?|pies|nariz|boca|ojos?|labios|pelo|barba|pecho|nalgas|pulgar)/, ['Hd']],
-  [/(monstruo|demonio|diablo|bruja|fantasma|[áa]ngel|dr[áa]cula|elfo|duende|gremlin|alien[íi]gena|medusa|pegaso|g[áa]rgola|dibujos animados|antropom[óo]rfic)/, ['(H)']],
-  [/(figuras? humanas?|hombre|mujer|chicas|bailarin|acr[óo]bata|cantantes|remero|persona|gente|brujas)/, ['H']],
+  [/(monstruo|demonio|diablo|bruja|fantasma|[áa]ngel|dr[áa]cula|elfo|duende|gremlin|alien[íi]gena|medusa|pegaso|g[áa]rgola|dibujos animados|antropom[óo]rfic[oa]s?)/, ['(H)']],
+  [/(figuras? humanas?|hombre|mujer|chicas|bailarin[ae]?s?|acr[óo]bata|cantantes|remero|persona|gente|brujas)/, ['H']],
   [/(radiograf[íi]a)/, ['Xy']],
   [/(anatom[íi]a|pulmones|pelvis|costilla|v[ée]rtebra|cerebro|coraz[óo]n|ri[ñn][óo]n|esqueleto|hueso|calavera|cr[áa]neo|m[ée]dula|espina|est[óo]mago|disco|[úu]lcera|diente|columna)/, ['An']],
   [/(sangre)/, ['Bl']],
@@ -111,7 +111,7 @@ const REGLAS: [RegExp, string[]][] = [
   [/([áa]rbol|planta|flor|hoja|helecho|bosque|vegetaci[óo]n|follaje|arbusto|matorral|abeto|champi[ñn][óo]n|ra[íi]z|semilla|cactus|hierbajos|coral|di[ée]nte de le[óo]n)/, ['Bt']],
   [/(sombrero|vestido|capa|abrigo|falda|casco|botas|zapato|capote|gorro|corbata|babero|tocado|disfraz|corona)/, ['Cg']],
   [/(l[áa]mpara|jarr[óa]n|florero|cuenco|taz[óo]n|olla|cacerola|alfombra|manta|felpudo|jaula|urna|candelabro|silla|mesa|estufa|lavadora|puerta|campana|farol|linterna)/, ['Hh']],
-  [/(nave espacial|cohete|avi[óo]n|robot|platillo|helic[óo]ptero|tren|coche|barco|submarino|taladr|ascensor|prensa|par(qu[íi]metro)|antena)/, ['Sc']],
+  [/(nave espacial|cohete|avi[óo]n|robot|platillo|helic[óo]ptero|tren|coche|barco|submarino|taladros?|ascensor|prensa|par(qu[íi]metro)|antena)/, ['Sc']],
   [/(escultura|estatua|adorno|dibujo|pintura|dise[ñn]o|arte|emblema|insignia|escudo|blas[óo]n|t[óo]tem|m[áa]scara|hebilla|joya|abanico|candelabro)/, ['Art']],
   [/(t[óo]tem|sarc[óo]fago|momia|arte chino|casa china|buda)/, ['Ay']],
   [/(pene|vagina|cl[íi]toris|senos?|pechos?|nalgas|labios vaginales|esperma|sexo)/, ['Sx']],
@@ -119,6 +119,23 @@ const REGLAS: [RegExp, string[]][] = [
   [/(sangre|explosi[óo]n|bomba)/, ['Ex']],
   [/(murci[ée]lago|mariposa|insecto|bicho|araña|escarabajo|abeja|avispa|hormiga|mosca|mosquito|libélula|polilla|langosta|cangrejo|pulga|grillo|cienpi[ée]s|ameba|gorila|babuino|p[áa]jaro|[áa]guila|cuervo|lechuza|pato|gallina|pez|rana|tortuga|serpiente|caim[áa]n|dragón|perro|gato|oso|lobo|conejo|vaca|cerdo|rat[óo]n|ardilla|foca|simio|roedor|animal|pulpo|medusa)/, ['A']],
 ];
+
+/**
+ * Las reglas, buscando palabras enteras.
+ *
+ * Escritas como están buscaban el pedazo en cualquier parte del texto, y "ola"
+ * aparecía dentro de "volando": "dos perros volando" salía Cl en vez de A
+ * (20/10/2026). Cada palabra tiene que empezar y terminar donde empieza y
+ * termina una palabra de la respuesta; se le acepta el plural.
+ */
+const REGLAS: [RegExp, string[]][] = ESCRITAS.map(([regla, contenidos]) => {
+  const alPrincipio = regla.source.startsWith('^');
+  const cuerpo = alPrincipio ? regla.source.slice(1) : regla.source;
+  return [
+    new RegExp(`${alPrincipio ? '^' : '(?:^|[^a-z0-9])'}(?:${cuerpo})(?:e?s)?(?=$|[^a-z0-9])`),
+    contenidos,
+  ];
+});
 
 export function contenidoSugerido(respuesta: string): string[] {
   const r = plano(respuesta);
