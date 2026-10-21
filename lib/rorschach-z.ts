@@ -1,29 +1,25 @@
 /**
  * Cuándo una respuesta recibe puntaje Z, y cuál.
  *
- * Las situaciones, como las definieron las psicólogas (el 10/9/2026 cambiaron
- * quién decide la integración: ya no es un tilde, es el DQ):
+ * Las reglas son las de la hoja de resumen de las psicólogas (21/10/2026):
  *
- *   ZW  respuesta W con DQ+ o DQo. Las W con vaga adentro (DQv y DQv/+) no
- *       reciben Z: una respuesta vaga no organiza nada.
- *   ZA  respuesta con DQ+ (W, D o Dd) sobre dos o más áreas **adyacentes**,
- *       las que se tocan.
- *   ZD  lo mismo sobre áreas **distantes**.
- *   ZS  el blanco junto con la tinta: en una W con DQo o DQ+ (WSo también
- *       puntúa), o en cualquier respuesta con DQ+.
+ *   ZW  respuesta W con DQ+, DQo o DQv/+.
+ *   ZA  áreas que se tocan, en W, D o Dd con DQ+ o DQv/+. Dentro de una W
+ *       todo se toca: la W+ y la Wv/+ compiten entre ZW y ZA.
+ *   ZD  áreas que no se tocan, solo en D o Dd con DQ+ o DQv/+. Una W nunca da
+ *       ZD.
+ *   ZS  el blanco integrado con la tinta: WSo, y cualquier S con DQ+ o DQv/+.
  *
- * **La relación significativa la asegura el DQ+.** Una Do o una Ddo con dos
- * áreas marcadas son dos partes nombradas sin relación, y no llevan Z. Por eso
- * no hay nada que tildar: elegido el DQ, el Z sale solo.
+ * No llevan Z las respuestas vagas (DQv), ni Do ni Ddo: la relación entre
+ * objetos la dice el DQ, y elegido el DQ el Z sale solo.
  *
- * Lo importante de ZS, y es lo que más se presta a error: una respuesta ubicada
- * solo en el blanco NO recibe ZS por ser S. "Una cara en el blanco" es S y nada
- * más; "una cara donde el blanco son los ojos y la tinta el resto" integra las
- * dos cosas y ahí sí hay ZS.
+ * Lo que más se presta a error con ZS: una respuesta ubicada solo en el blanco
+ * no integra nada. "Una cara en el blanco" es S y nada más; "una cara donde el
+ * blanco son los ojos y la tinta el resto" integra las dos cosas y ahí hay ZS.
  *
  * Adyacente o distante lo dice la lámina, no quien codifica: sale de
  * `ADYACENTES`, medido sobre la geometría de las áreas. Cuando dan varios, se
- * anota uno solo, el más alto.
+ * anota uno solo, el de mayor puntaje.
  *
  * Los valores salen del encabezado de cada lámina del cuadernillo y están en
  * `Z`, dentro de `rorschach-tabla-a.ts`, para las diez. Los de la I son ZW 1.0,
@@ -136,27 +132,31 @@ export function puntajeZ(lamina: string, s: Situacion): Veredicto {
   if (!valores) return { z: null, otros: [], aConfirmar: ['No están cargados los valores de Z de esta lámina.'] };
 
   const candidatos: Candidato[] = [];
-
-  // -- ZW: la respuesta toma la mancha entera y no es vaga.
   const loc = s.localizacion;
-  if (loc && loc.startsWith('W')) {
-    const dq = dqDe(loc);
-    if (dq === 'o' || dq === '+') {
-      candidatos.push({ tipo: 'ZW', valor: valores.ZW, porque: `${loc}: W con DQ${dq}` });
-    }
-    // Wv y Wv/+ no puntúan: las dos llevan vaga adentro, y una respuesta vaga
-    // no organiza nada. Por eso el corte es "tiene v" y no "es exactamente v".
+  const dq = loc ? dqDe(loc) : null;
+  const esW = Boolean(loc && loc.startsWith('W'));
+  // DQ+ y DQv/+ son objetos en relación: los dos pueden llevar ZA, ZD y ZS.
+  const enRelacion = dq === '+' || dq === 'v/+';
+
+  // -- ZW: la respuesta toma la mancha entera y no es vaga sola (Wv).
+  if (esW && (dq === 'o' || enRelacion)) {
+    candidatos.push({ tipo: 'ZW', valor: valores.ZW, porque: `${loc}: W con DQ${dq}` });
   }
 
-  // -- ZA y ZD: la relación la asegura el DQ+.
-  const dq = loc ? dqDe(loc) : null;
+  // -- ZA en una W: los objetos están dentro de la mancha entera y se tocan.
+  // Nunca ZD: la W no tiene partes separadas.
+  if (esW && enRelacion) {
+    candidatos.push({ tipo: 'ZA', valor: valores.ZA, porque: `${loc}: objetos en relación dentro de la W` });
+  }
+
+  // -- ZA y ZD en D y Dd, según si las áreas se tocan.
   const distintas = areasDistintas(lamina, s.areas);
-  if (distintas.length >= 2 && !loc) {
+  if (!esW && distintas.length >= 2 && !loc) {
     aConfirmar.push(
-      `Marcaste ${distintas.join(' y ')}. Con DQ+ hay ZA o ZD; con DQo o vaga, no hay Z.`
+      `Marcaste ${distintas.join(' y ')}. Con DQ+ o v/+ hay ZA o ZD; con DQo o vaga, no hay Z.`
     );
   }
-  if (distintas.length >= 2 && dq === '+') {
+  if (!esW && enRelacion && distintas.length >= 2) {
     let hayDistante = false;
     const pares: string[] = [];
     for (let i = 0; i < distintas.length; i++) {
@@ -173,21 +173,19 @@ export function puntajeZ(lamina: string, s: Situacion): Veredicto {
     );
   }
 
-  // -- ZA dentro de una sola área: con DQ+ los objetos están en esa misma área,
-  // y por eso juntos (las dos personas del D1 de la III dan ZA 3.0). Es la
-  // regla de las psicólogas del 19/10/2026, la misma de `zDeLaFicha`; sin esto
-  // la encuesta y la ficha daban distinto para la misma respuesta.
+  // -- ZA dentro de una sola área: los objetos en relación están en esa misma
+  // área, y por eso juntos (las dos personas del D1 de la III dan ZA 3.0). Es
+  // la regla de las psicólogas del 19/10/2026, la misma de `zDeLaFicha`.
   // Fuera de la tabla (Dd99) no se sabe dónde caen: lo decide ella.
-  if (!loc?.startsWith('W') && dq === '+' && distintas.length === 1 && distintas[0] !== 'Dd99') {
+  if (!esW && enRelacion && distintas.length === 1 && distintas[0] !== 'Dd99') {
     candidatos.push({ tipo: 'ZA', valor: valores.ZA, porque: `objetos juntos dentro de ${distintas[0]}` });
   }
 
   // -- ZS: el blanco junto con la tinta. La W ya es tinta; una respuesta solo
   // en el blanco no integra nada.
-  const esW = Boolean(loc && loc.startsWith('W'));
   const conEspacio = s.areas.some(esEspacio) || (loc ? llevaEspacio(loc) : false);
   const conTinta = esW || s.areas.some((a) => !esEspacio(a));
-  if (conEspacio && conTinta && (dq === '+' || (esW && dq === 'o'))) {
+  if (conEspacio && conTinta && (enRelacion || (esW && dq === 'o'))) {
     candidatos.push({ tipo: 'ZS', valor: valores.ZS, porque: 'el blanco se integra con la tinta' });
   }
 
@@ -223,7 +221,7 @@ export function zDeLaFicha(
   if (!localizacion) return null;
   const dq = dqDe(localizacion);
   if (localizacion.startsWith('W')) return puntajeZ(lamina, { areas: ['W'], localizacion }).z?.valor ?? null;
-  if (dq !== '+') return null;
+  if (dq !== '+' && dq !== 'v/+') return null;
 
   const familia = localizacion.replace(/(v\/\+|o|v|\+)$/, '');
   const conocidas = new Set(areasDe(lamina));
@@ -265,7 +263,8 @@ export function zAutomatico(
   if (!lamina || !Z[lamina]) return undefined;
   if (areas && areas.length > 0) {
     if (!localizacion) return null;
-    if (dqDe(localizacion) === '+' && areas.includes('Dd99')) return undefined;
+    const dq = dqDe(localizacion);
+    if ((dq === '+' || dq === 'v/+') && areas.includes('Dd99')) return undefined;
     return puntajeZ(lamina, { areas, localizacion }).z?.valor ?? null;
   }
   return zDeLaFicha(lamina, localizacion, nLocalizacion);

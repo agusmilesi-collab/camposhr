@@ -637,12 +637,14 @@ type Trozo = {
 };
 
 /**
- * De peor a mejor. El FQ de una respuesta partida es el de su peor palabra.
+ * De peor a mejor. El FQ de una respuesta partida es el de su peor palabra, y
+ * sin forma está por debajo de todos: un objeto sin forma deja la respuesta
+ * sin forma (psicólogas, 21/10/2026).
  *
  * Definido por las psicólogas el 10/9/2026: si una parte cae en una locación
  * donde lo que dijo no se parece a nada, la respuesta entera arrastra eso.
  */
-const RANGO_FQ = ['-', 'U', 'O', '+'];
+const RANGO_FQ = ['none', '-', 'U', 'O', '+'];
 
 function peorFq(fqs: (string | null)[]): string | null {
   const puestos = fqs.filter((f): f is string => Boolean(f));
