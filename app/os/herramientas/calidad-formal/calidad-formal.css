@@ -29,50 +29,13 @@
   color: var(--os-suave);
 }
 
-/* ── Índice y buscador, pegados arriba al bajar ───────────────────────── */
-.os-cf-barra {
-  position: sticky;
-  top: 0;
-  z-index: 5;
+/* ── Título con el buscador ───────────────────────────────────────────── */
+.os-cf-encabezado {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  margin: 0 -4px 10px;
-  padding: 10px 4px;
-  background: var(--os-fondo);
-  border-bottom: 1px solid var(--os-linea);
-}
-.os-cf-indice {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.os-cf-indice a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 40px;
-  height: 32px;
-  padding: 0 8px;
-  border: 1px solid var(--os-linea);
-  border-radius: 999px;
-  background: var(--os-panel);
-  color: var(--os-tinta);
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s;
-}
-.os-cf-indice a:hover {
-  background: var(--os-activo);
-  border-color: var(--os-activo);
-  color: var(--os-activo-tinta);
-}
-.os-cf-indice a[data-vacia='si'] {
-  opacity: 0.35;
-  pointer-events: none;
 }
 .os-cf-buscador {
   display: flex;
@@ -87,6 +50,86 @@
   font-size: 13px;
   color: var(--os-suave);
   white-space: nowrap;
+}
+
+/* ── Índice, fijo arriba al bajar ─────────────────────────────────────────
+   Dos renglones con rótulo a la izquierda y el mismo ancho: las once de
+   lámina (Todas y de la I a la X) y las áreas de la elegida en dos filas
+   iguales. Todos los botones de un renglón miden lo mismo. */
+.os-cf-barra {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 0 14px;
+  padding: 12px 0 14px;
+  background: var(--os-fondo);
+  border-bottom: 1px solid var(--os-linea);
+}
+.os-cf-indice {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px 12px;
+}
+.os-cf-indice-rotulo {
+  padding-top: 9px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--os-suave);
+}
+.os-cf-indice-laminas {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 6px;
+}
+.os-cf-indice-areas {
+  display: grid;
+  gap: 6px;
+}
+.os-cf-indice button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 4px;
+  border: 1px solid var(--os-linea);
+  border-radius: 999px;
+  background: var(--os-panel);
+  color: var(--os-tinta);
+  font-family: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.os-cf-indice-laminas button {
+  height: 34px;
+  font-size: 13px;
+}
+.os-cf-indice-areas button {
+  height: 28px;
+  font-size: 12px;
+  background: var(--os-panel-2);
+  color: var(--os-tinta-media);
+}
+.os-cf-indice button:hover {
+  background: var(--os-hover);
+  color: var(--os-tinta);
+}
+.os-cf-indice button[aria-pressed='true'],
+.os-cf-indice button[aria-pressed='true']:hover {
+  background: var(--os-activo);
+  border-color: var(--os-activo);
+  color: var(--os-activo-tinta);
+}
+/* Sin lámina elegida, la que está en pantalla lleva solo el borde marcado. */
+.os-cf-indice-laminas button[aria-current='true'] {
+  border-color: var(--os-tinta);
+}
+.os-cf-indice-laminas button[data-vacia='si'] {
+  opacity: 0.35;
+  pointer-events: none;
 }
 
 .os-cf-leyenda {
@@ -111,7 +154,7 @@
   gap: 22px;
 }
 .os-cf-lamina {
-  scroll-margin-top: 70px;
+  scroll-margin-top: 110px;
   padding: 22px 24px 24px;
 }
 .os-cf-lamina-top {
@@ -176,6 +219,7 @@
   column-gap: 28px;
 }
 .os-cf-area {
+  scroll-margin-top: 120px;
   break-inside: avoid;
   margin: 0 0 18px;
 }
@@ -213,6 +257,7 @@
   padding: 0;
 }
 .os-cf-area li {
+  break-inside: avoid;
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -234,13 +279,22 @@
     align-items: flex-start;
     gap: 14px;
   }
+  .os-cf-indice {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .os-cf-indice-rotulo {
+    padding-top: 0;
+  }
+  .os-cf-indice-laminas {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
   .os-cf-buscador {
     width: 100%;
   }
   .os-cf-buscador .os-campo {
     flex: 1;
-    max-width: none;
     width: auto;
+    max-width: none;
   }
 }
 
