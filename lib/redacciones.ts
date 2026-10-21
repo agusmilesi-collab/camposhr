@@ -3581,8 +3581,12 @@ export function leer(
   const ea = n(s, 'control_estres', 'EA');
   const alcanza =
     test === 'Zulliger' ? n(s, 'control_estres', 'dif_EA_es') >= c('adjd-sobrecarga') : null;
+  // Con D y AdjD en cero o más, el EA bajo no se informa: el candidato tiene
+  // herramientas suficientes para la tensión que registra (psicólogas,
+  // 21/10/2026). Solo en Rorschach, que es donde están D y AdjD.
+  const controlAlcanza = test === 'Rorschach' && d >= 0 && adjd >= 0;
   if (ea < c('ea-bajo')) {
-    sumar('ea-bajo', `EA ${dec(ea)}`);
+    if (!controlAlcanza) sumar('ea-bajo', `EA ${dec(ea)}`);
   } else if (ea > c('ea-alto') && (alcanza ?? adjd > 0)) {
     sumar('ea-alto', `EA ${dec(ea)}`);
   } else if (ea >= c('ea-bajo') && ea <= c('ea-alto') && (alcanza ?? adjd === 0)) {

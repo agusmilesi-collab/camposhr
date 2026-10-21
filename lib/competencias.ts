@@ -247,6 +247,12 @@ type Indicador = {
   nombre: string;
   mide: string;
   /**
+   * Cuándo este indicador, si da bajo, no entra al promedio en ese protocolo,
+   * por lo que dice otro índice. El EA bajo con D y AdjD en cero o más
+   * (21/10/2026).
+   */
+  bajoNoCuentaSi?: (s: SumarioCrudo) => boolean;
+  /**
    * Cuánto pesa dentro de su competencia. Uno si no dice nada.
    *
    * Dos para el indicador que mide de frente lo que la competencia define, uno
@@ -1015,6 +1021,14 @@ const RORSCHACH: { competencia: string; mide: string; indicadores: Indicador[] }
         // cortes de Exner (7 y 11,5) salían bajos 35 de 48 Rorschach.
         escala: { forma: 'umbral', mayorEsMejor: true, alto: 9, medio: 3.5, decimales: 1 },
         valor: (s) => num(s, 'control_estres', 'EA'),
+        // Regla de las psicólogas del 21/10/2026: con D y AdjD en cero o más
+        // el candidato tiene con qué afrontar la tensión, y un EA bajo no se
+        // tiene en cuenta. Solo el bajo: un EA medio o alto sigue sumando.
+        bajoNoCuentaSi: (s) => {
+          const d = num(s, 'control_estres', 'D');
+          const adj = num(s, 'control_estres', 'AdjD');
+          return d !== null && adj !== null && d >= 0 && adj >= 0;
+        },
       },
       {
         nombre: 'D / AdjD',
@@ -1675,16 +1689,19 @@ export function calcularCompetencias(
       const n = cortesQueRigen(test, c.competencia, i, ctx.cortesCompetencias);
       const e = escalaQueRige(test, c.competencia, i, ctx.direcciones);
       const leer = (sumario: SumarioCrudo) => nivelDe(i, sumario, n, e, ctx);
+      const nivel = leer(s);
       return {
         indicador: i.nombre,
         mide: i.mide,
-        nivel: leer(s),
+        nivel,
         corte: comoSeLee(i, n, e),
         peso:
-          ctx.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ??
-          PESOS[test]?.[c.competencia]?.[i.nombre] ??
-          i.peso ??
-          1,
+          nivel === 1 && i.bajoNoCuentaSi?.(s)
+            ? 0
+            : (ctx.pesos?.[claveDePeso(test, c.competencia, i.nombre)] ??
+              PESOS[test]?.[c.competencia]?.[i.nombre] ??
+              i.peso ??
+              1),
         datos: i.datosDe ? i.datosDe(ctx) : leidoPor(s, leer),
         aporte: i.aporte ? i.aporte(s, ctx) : null,
         techo: i.techo === 50,
