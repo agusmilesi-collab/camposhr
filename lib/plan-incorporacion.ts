@@ -74,6 +74,7 @@ export const TRAMO_DE_FABRICA: Record<string, Tramo> = {
   'dqv-d-alto': 'semana',
   // Días 1 a 30: controles que dejan de hacer falta con la práctica.
   'lambda-bajo': 'mes',
+  'raven-bajo': 'mes',
   'zd-bajo': 'mes',
   'w-bajo': 'mes',
   'dd-alto': 'mes',

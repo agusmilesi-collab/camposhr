@@ -427,6 +427,36 @@ export const TEXTOS = {
       'Ofrecerle información sobre el marco en que ocurre la situación, para que gane una visión de conjunto más amplia.',
     ],
   },
+  // El Raven, por el rango que dio. Pedido de las psicólogas el 21/10/2026:
+  // va en el desarrollo según corresponda, y el bajo lleva la recomendación
+  // de aprender desde la práctica.
+  'raven-alto': {
+    area: 'Cómo procesa la información',
+    indice: 'Raven',
+    cuando: 'Raven en el rango I o II',
+    dice: [
+      'Su razonamiento para resolver problemas nuevos está por encima del término medio: identifica la regla que ordena una situación y la aplica a casos que no vio antes.',
+    ],
+    recomienda: [''],
+  },
+  'raven-medio': {
+    area: 'Cómo procesa la información',
+    indice: 'Raven',
+    cuando: 'Raven en el rango III',
+    dice: ['Su razonamiento para resolver problemas nuevos está dentro del término medio.'],
+    recomienda: [''],
+  },
+  'raven-bajo': {
+    area: 'Cómo procesa la información',
+    indice: 'Raven',
+    cuando: 'Raven en el rango IV o V',
+    dice: [
+      'Su razonamiento para resolver problemas nuevos está por debajo del término medio: le cuesta más deducir una regla a partir de información abstracta.',
+    ],
+    recomienda: [
+      'Aprende con más facilidad desde la práctica: conviene que la inducción y la capacitación se apoyen en tareas concretas y ejemplos.',
+    ],
+  },
   'w-alto': {
     area: 'Cómo procesa la información',
     indice: 'W',
@@ -3563,6 +3593,18 @@ export function leer(
     sumar('d-menor-que-adjd', dd(d, adjd));
   }
 
+  // ── El Raven ───────────────────────────────────────────────────────────────
+  // Va al final para no desplazar del resumen a las lecturas del proyectivo.
+  // Sin medición no se dice nada.
+  const numeral = ravenRango.match(/^Rango (I{1,3}|IV|V)\b/)?.[1];
+  if (numeral === 'I' || numeral === 'II') {
+    sumar('raven-alto', ravenRango);
+  } else if (numeral === 'III') {
+    sumar('raven-medio', ravenRango);
+  } else if (numeral === 'IV' || numeral === 'V') {
+    sumar('raven-bajo', ravenRango);
+  }
+
   return salida;
 }
 
@@ -3601,6 +3643,7 @@ export function porArea(lecturas: Lectura[]): { area: string; lecturas: Lectura[
 export type Senal = 'destacada' | 'esperada' | 'desarrollar';
 
 const DESTACADAS = new Set([
+  'raven-alto',
   'w-alto',
   'zf-alto',
   'adjd-positivo',
@@ -3617,6 +3660,7 @@ const ESPERADAS = new Set([
   // W, D y Dd dentro de su rango es lo esperado y no una fortaleza: salía en
   // "desarrollo destacado" y las psicólogas la pasaron acá el 9/10/2026.
   'localizacion-ok',
+  'raven-medio',
   'd-adjd-cero',
   'ea-adecuado',
   'eb-introversivo',
