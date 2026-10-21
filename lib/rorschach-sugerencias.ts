@@ -120,7 +120,7 @@ const ESCRITAS: [RegExp, string[]][] = [
   [/(pene|vagina|cl[íi]toris|senos?|pechos?|nalgas|labios vaginales|esperma|sexo)/, ['Sx']],
   [/(comida|pastel|mel[óo]n|carne|calabaza|huevo|gamba|langostino|bonito|bacalao)/, ['Fd']],
   [/(sangre|explosi[óo]n|bomba)/, ['Ex']],
-  [/(murci[ée]lago|mariposa|insecto|bicho|araña|escarabajo|abeja|avispa|hormiga|mosca|mosquito|libélula|polilla|langosta|cangrejo|pulga|grillo|cienpi[ée]s|ameba|gorila|babuino|p[áa]jaro|[áa]guila|cuervo|lechuza|pato|gallina|pez|rana|tortuga|serpiente|caim[áa]n|dragón|perro|gato|oso|lobo|conejo|vaca|cerdo|rat[óo]n|ardilla|foca|simio|roedor|animal|pulpo|medusa)/, ['A']],
+  [/(murci[ée]lago|mariposa|insecto|bicho|araña|escarabajo|abeja|avispa|hormiga|mosca|mosquito|libélula|polilla|langosta|cangrejo|pulga|grillo|ci[en]mpi[ée]s|cucaracha|gusano|oruga|larva|garrapata|piojo|chinche|termita|luciérnaga|saltamontes|mantis|vaquita|abejorro|cascarudo|alacrán|escorpi[óo]n|tarántula|lombriz|caracol|ameba|gorila|babuino|p[áa]jaro|[áa]guila|cuervo|lechuza|pato|gallina|pez|rana|tortuga|serpiente|caim[áa]n|dragón|perro|gato|oso|lobo|conejo|vaca|cerdo|rat[óo]n|ardilla|foca|simio|roedor|animal|pulpo|medusa)/, ['A']],
 ];
 
 /**
@@ -132,8 +132,11 @@ const ESCRITAS: [RegExp, string[]][] = [
  * termina una palabra de la respuesta; se le acepta el plural.
  */
 const REGLAS: [RegExp, string[]][] = ESCRITAS.map(([regla, contenidos]) => {
-  const alPrincipio = regla.source.startsWith('^');
-  const cuerpo = alPrincipio ? regla.source.slice(1) : regla.source;
+  // La respuesta se compara sin tildes (`plano`), así que la regla también:
+  // escrita "araña" o "libélula" no encontraba nunca la palabra (21/10/2026).
+  const fuente = regla.source.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const alPrincipio = fuente.startsWith('^');
+  const cuerpo = alPrincipio ? fuente.slice(1) : fuente;
   return [
     new RegExp(`${alPrincipio ? '^' : '(?:^|[^a-z0-9])'}(?:${cuerpo})(?:e?s)?(?=$|[^a-z0-9])`),
     contenidos,
