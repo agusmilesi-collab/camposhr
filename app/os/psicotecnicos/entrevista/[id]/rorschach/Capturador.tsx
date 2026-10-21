@@ -974,6 +974,17 @@ export default function Capturador({
     .map((r, i) => ({ ...r, n: i + 1, nProtocolo: r.n }));
 
   /**
+   * Cuántas respuestas lleva el protocolo entero, sumando todas las láminas.
+   *
+   * Va al lado del título de la lámina: con menos de catorce el Rorschach no se
+   * interpreta (ocho en Zulliger), y la evaluadora tiene que saber durante la
+   * toma si le conviene pedir más.
+   */
+  const totalDelProtocolo =
+    enLaFicha.filter((r) => r.verbalizacion).length +
+    respuestas.filter((r) => !r.id && r.verbalizacion).length;
+
+  /**
    * Cuál se está codificando: la elegida, o la primera que falte ubicar.
    *
    * Se codifica de a una. Mostrar las tres pendientes obligaba a elegir en cada
@@ -2566,6 +2577,7 @@ export default function Capturador({
                 guardando={anotando}
                 llena={laminaLlena}
                 tomadas={dichasDeLaLamina}
+                total={totalDelProtocolo}
                 onCorregir={corregir}
                 onBorrar={borrarTomada}
                 borrando={borrando}

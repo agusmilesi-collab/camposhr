@@ -34,6 +34,7 @@ export default function Toma({
   guardando,
   llena,
   tomadas,
+  total,
   onCorregir,
   onBorrar,
   borrando,
@@ -60,6 +61,8 @@ export default function Toma({
     texto: string;
     posicion: string | null;
   }[];
+  /** Cuántas respuestas lleva el protocolo, sumando todas las láminas. */
+  total?: number;
   /** Corregir lo escrito: se toma al vuelo y una palabra puede salir mal. */
   onCorregir?: (id: string, texto: string) => void;
   /** Sacar una respuesta entera. Lo que sigue se renumera. */
@@ -73,8 +76,17 @@ export default function Toma({
       {/* Lo que va diciendo, arriba del campo. Sin esto hay que acordarse de
           memoria de lo que ya dio en esta lámina, que es justo lo que no se
           puede hacer mientras se escucha la respuesta que sigue. */}
-      {tomadas && tomadas.length > 0 && (
-        <p className="os-ror-dichas-titulo">Respuestas lámina {lamina}</p>
+      {/* El título sale también en una lámina sin respuestas si el protocolo
+          ya tiene alguna: el total se tiene que ver en cada lámina. */}
+      {((tomadas && tomadas.length > 0) || (total ?? 0) > 0) && (
+        <p className="os-ror-dichas-titulo">
+          Respuestas lámina {lamina}
+          {total !== undefined && (
+            <span className="os-ror-dichas-total">
+              {total} {total === 1 ? 'respuesta' : 'respuestas'} en total
+            </span>
+          )}
+        </p>
       )}
       {tomadas && tomadas.length > 0 && (
         <ol className="os-ror-dichas">

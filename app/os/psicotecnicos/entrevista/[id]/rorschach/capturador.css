@@ -39,6 +39,12 @@
   padding: 14px 18px 16px;
 }
 
+/* Entrevistando va con `hidden`, pero el `display` de `.os-panel` le gana al
+   del navegador y quedaba una tarjeta blanca vacía debajo de la toma. */
+.os-ror-capturadas[hidden] {
+  display: none;
+}
+
 .os-ror-capturadas .os-ror-criterios {
   order: 999;
 }
@@ -1450,6 +1456,14 @@
   font-weight: 600;
   color: var(--os-tinta);
   letter-spacing: -0.01em;
+}
+
+/* Cuántas lleva el protocolo entero, al lado del título de la lámina. */
+.os-ror-dichas-total {
+  margin-left: 14px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--os-suave);
 }
 
 .os-ror-dichas {
