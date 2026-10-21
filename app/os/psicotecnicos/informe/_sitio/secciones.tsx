@@ -346,6 +346,13 @@ export function seccionesDe(
                   </span>
                 )}
               </p>
+              {/* El segundo cuadrante, si lo marcó: una frase, sin conducción. */}
+              {inf.benziger.secundario && (
+                <p>
+                  {inf.benziger.secundario.texto}
+                  {editar && <span className="inf-respaldo inf-origen">{inf.benziger.secundario.fuente}</span>}
+                </p>
+              )}
               {/* Fortaleza, debilidad y entorno: el mismo componente que el
                   documento clásico. */}
               <BenzigerLecturas inf={inf} editar={editar} rotulo="sitio-sub" />

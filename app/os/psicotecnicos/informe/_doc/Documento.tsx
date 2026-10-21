@@ -362,6 +362,13 @@ export default async function Documento({
                   </span>
                 )}
               </p>
+              {/* El segundo cuadrante, si lo marcó: una frase, sin conducción. */}
+              {inf.benziger.secundario && (
+                <p>
+                  {inf.benziger.secundario.texto}
+                  {editar && <span className="inf-respaldo inf-origen">{inf.benziger.secundario.fuente}</span>}
+                </p>
+              )}
               </div>
               <BenzigerLecturas inf={inf} editar={editar} rotulo="inf-subtitulo" />
             </EditarBenziger>

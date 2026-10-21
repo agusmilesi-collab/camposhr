@@ -362,6 +362,12 @@ export type Informe = {
      * tiene una sola preferencia natural).
      */
     preferentes: Cuadrante[];
+    /**
+     * El segundo cuadrante que marcó la evaluadora, en una frase: la primera
+     * oración de su "cómo es". Con `parejos` comparte la preferencia en igual
+     * medida con el primero. Cómo conducirla sigue saliendo solo del primero.
+     */
+    secundario: { cuadrante: Cuadrante; parejos: boolean; texto: string; fuente: string } | null;
     /** Qué se dice de la persona y cómo conducirla, con lo que rige. Null si no se eligió cuadrante. */
     textos: {
       comoEs: string;
@@ -1072,6 +1078,31 @@ export function desdeFicha(
       })()
     : null;
 
+  const segundo = f.benziger?.cuadrante_preferente?.[1];
+  const secundario = (() => {
+    const q = CUADRANTES.find((x) => x.clave === segundo);
+    if (!q || !preferentes[0] || q.clave === preferentes[0].clave) return null;
+    const comoEs = benzigerQueRige(q.clave, benzigerMovidos).comoEs.trim();
+    const oracion = (comoEs.match(/^.+?\.(?=\s|$)/)?.[0] ?? comoEs).trim();
+    if (!oracion) return null;
+    const parejos = Boolean(f.benziger?.cuadrantes_parejos);
+    const nombre = q.nombre.toLowerCase();
+    const inicio = parejos
+      ? `Comparte la preferencia en igual medida con el ${nombre}`
+      : `Como cuadrante secundario aparece el ${nombre}`;
+    const editadoComoEs =
+      benzigerMovidos[q.clave]?.comoEs !== undefined &&
+      benzigerMovidos[q.clave]?.comoEs !== TEXTOS_BENZIGER[q.clave].textos.comoEs;
+    return {
+      cuadrante: q,
+      parejos,
+      texto: `${inicio}. ${oracion}`,
+      fuente: `Benziger ${q.clave} · ${
+        editadoComoEs ? 'reescrito' : TEXTOS_BENZIGER[q.clave].fuentes.comoEs.split(/\. (?=[A-Z"])/)[0]
+      }`,
+    };
+  })();
+
   const inf: Informe = {
     nombre: c.personas?.nombre ?? 'Sin nombre',
     empresa: c.pedidos?.empresas?.nombre ?? null,
@@ -1140,6 +1171,7 @@ export function desdeFicha(
     benziger: hayBenziger
       ? {
           preferentes,
+          secundario,
           textos: textosBenziger,
           adulto,
           joven,
