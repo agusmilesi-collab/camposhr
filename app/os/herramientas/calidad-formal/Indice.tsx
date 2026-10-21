@@ -5,6 +5,32 @@ import { useEffect, useRef, useState } from 'react';
 type Lamina = { lamina: string; areas: string[] };
 
 /**
+ * Cuántas columnas lleva un renglón de botones para que sus filas queden
+ * parejas. Entran tantos botones como permite el ancho con su mínimo, con al
+ * menos `filas` filas, y la cantidad se reparte por igual: 29 áreas en un
+ * ancho donde entran 14 van en tres filas de 10 y no en 14 + 14 + 1.
+ */
+function useColumnas(cantidad: number, minimo: number, filas: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [columnas, setColumnas] = useState(Math.ceil(cantidad / filas));
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const medir = () => {
+      const hueco = 6;
+      const entran = Math.max(1, Math.floor((el.clientWidth + hueco) / (minimo + hueco)));
+      const n = Math.max(filas, Math.ceil(cantidad / entran));
+      setColumnas(Math.max(1, Math.ceil(cantidad / n)));
+    };
+    medir();
+    const visto = new ResizeObserver(medir);
+    visto.observe(el);
+    return () => visto.disconnect();
+  }, [cantidad, minimo, filas]);
+  return { ref, estilo: { gridTemplateColumns: `repeat(${columnas}, minmax(0, 1fr))` } };
+}
+
+/**
  * El índice: las diez láminas y, debajo, las áreas de la que está elegida.
  *
  * Tocar una lámina deja en pantalla solo esa lámina, y tocar un área deja solo
@@ -63,11 +89,15 @@ export default function Indice({ laminas }: { laminas: Lamina[] }) {
   }, []);
 
   const areas = laminas.find((l) => l.lamina === activa)?.areas ?? [];
+  // Once en la fila de láminas (Todas y de la I a la X); las áreas en dos
+  // filas iguales como mínimo.
+  const deLaminas = useColumnas(laminas.length + 1, 64, 1);
+  const deAreas = useColumnas(areas.length, 58, 2);
 
   return (
     <nav className="os-cf-indice" aria-label="Láminas y áreas">
       <span className="os-cf-indice-rotulo">Lámina</span>
-      <div className="os-cf-indice-laminas">
+      <div className="os-cf-indice-laminas" ref={deLaminas.ref} style={deLaminas.estilo}>
         <button type="button" className="os-cf-todas" aria-pressed={!elegida} onClick={verTodas}>
           Todas
         </button>
@@ -85,12 +115,8 @@ export default function Indice({ laminas }: { laminas: Lamina[] }) {
         ))}
       </div>
       <span className="os-cf-indice-rotulo">Área</span>
-      {/* En dos filas con la misma cantidad, la primera con la mitad
-          redondeada para arriba, y del mismo ancho que la fila de láminas. */}
-      <div
-        className="os-cf-indice-areas"
-        style={{ gridTemplateColumns: `repeat(${Math.max(1, Math.ceil(areas.length / 2))}, minmax(0, 1fr))` }}
-      >
+      {/* Del mismo ancho que la fila de láminas, en filas parejas. */}
+      <div className="os-cf-indice-areas" ref={deAreas.ref} style={deAreas.estilo}>
         {areas.map((a, i) => {
           const id = `${activa}-${i}`;
           return (

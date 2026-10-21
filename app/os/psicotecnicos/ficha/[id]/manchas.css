@@ -152,3 +152,10 @@
   border: 1px dashed var(--os-linea-suave);
   color: var(--os-suave);
 }
+
+/* Calcular sumario y la tabla de calidad formal, juntos a la izquierda. */
+.os-manchas-pie-izq {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}

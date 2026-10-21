@@ -655,7 +655,22 @@ export default function Manchas({
           última, que es donde termina de escribirse cada fila: la mano viene
           de ahí. */}
       <div className="os-barra-acciones os-manchas-pie">
-        {protocoloEntero && <Calcular evaluacionId={evaluacionId} />}
+        <div className="os-manchas-pie-izq">
+          {protocoloEntero && <Calcular evaluacionId={evaluacionId} />}
+          {/* Las tablas de calidad formal, para consultar mientras se
+              codifica: en otra pestaña, así no se pierde la grilla. Solo en
+              el Rorschach, que es el que tiene las tablas. */}
+          {esZulliger !== true && (
+            <a
+              className="os-boton"
+              href="/os/herramientas/calidad-formal"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Tabla de calidad formal
+            </a>
+          )}
+        </div>
         {/* Pintado, porque es el que se toca veinticinco veces por protocolo;
             calcular el sumario se toca una sola vez, al final.
 

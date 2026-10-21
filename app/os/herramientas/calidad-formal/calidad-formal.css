@@ -78,11 +78,9 @@
   text-transform: uppercase;
   color: var(--os-suave);
 }
-.os-cf-indice-laminas {
-  display: grid;
-  grid-template-columns: repeat(11, minmax(0, 1fr));
-  gap: 6px;
-}
+/* Las columnas las pone el índice según el ancho (`useColumnas`), así las
+   filas quedan parejas y ningún botón baja de su mínimo. */
+.os-cf-indice-laminas,
 .os-cf-indice-areas {
   display: grid;
   gap: 6px;
@@ -105,6 +103,7 @@
 }
 .os-cf-indice-laminas button {
   height: 34px;
+  padding: 0 10px;
   font-size: 13px;
 }
 .os-cf-indice-areas button {
@@ -284,9 +283,6 @@
   }
   .os-cf-indice-rotulo {
     padding-top: 0;
-  }
-  .os-cf-indice-laminas {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
   .os-cf-buscador {
     width: 100%;
