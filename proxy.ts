@@ -185,8 +185,12 @@ export async function proxy(req: NextRequest) {
     }
     // La puerta va antes del ruteo y no adentro de cada pantalla. Existe solo
     // si `OS_CLAVE` está cargada: mientras se prueba el sistema, no lo está.
+    // Los íconos del OS van sin sesión: el teléfono los pide al guardar el acceso.
     const entrando =
-      pathname === '/os/entrar' || pathname === '/api/os/entrar' || pathname === '/entrar';
+      pathname === '/os/entrar' ||
+      pathname === '/api/os/entrar' ||
+      pathname === '/entrar' ||
+      /^\/os\/(apple-)?icon(\.\w+)?$/.test(pathname);
     const conSesion = hayPuerta() ? await sesionValida(req) : true;
     // Quien ya entró al OS y viene rebotado del hub no vuelve a escribir la
     // clave: se le deja la misma sesión para todos los subdominios y sigue.
