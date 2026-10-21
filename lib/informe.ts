@@ -1038,7 +1038,18 @@ export function desdeFicha(
       )
     : [];
   // Solo las que la batería midió llevan número. Las otras se nombran aparte.
-  const competencias = calculadas.filter((c) => competenciaIncluida(c.nombre, testsDeLaBateria));
+  // Un puntaje puesto a mano para esta evaluación (`informe_listas.puntajes`,
+  // { "Control emocional": 55 }) pisa el calculado. Es por caso: no toca el
+  // motor ni a ningún otro candidato.
+  const aMano = (f.cabecera.informe_listas as any)?.puntajes as Record<string, unknown> | undefined;
+  const competencias = calculadas
+    .filter((c) => competenciaIncluida(c.nombre, testsDeLaBateria))
+    .map((c) => {
+      const n = aMano?.[c.nombre];
+      return typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 100
+        ? { ...c, puntaje: n, margen: null, motivo: undefined }
+        : c;
+    });
   const noIncluidas = calculadas
     .filter((c) => !competenciaIncluida(c.nombre, testsDeLaBateria))
     .map((c) => ({ nombre: c.nombre, requiere: REQUIERE[c.nombre].frase }));
