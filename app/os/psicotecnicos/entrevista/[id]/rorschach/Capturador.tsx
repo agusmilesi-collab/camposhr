@@ -620,6 +620,8 @@ export type YaEnLaFicha = {
   posicion: string | null;
   /** Qué de la mancha le hizo ver eso, dicho en la encuesta. */
   caracteristica: string | null;
+  /** Los objetos en que se separó, si se separó. */
+  objetos?: Trozo[] | null;
 };
 
 /** Un objeto de la respuesta: qué es, dónde cae y qué calidad tiene ahí. */
@@ -683,6 +685,8 @@ type Respuesta = {
   popular: boolean;
   /** Nota libre de la evaluadora sobre esta respuesta. */
   observacion: string;
+  /** Los objetos en que se separó, cada uno con su área. Null si no se separó. */
+  objetos?: Trozo[] | null;
   /** Lo que dijo el candidato, textual, si venía tomado. */
   verbalizacion: string | null;
   /** Cómo sostuvo la lámina al darla. */
@@ -904,6 +908,11 @@ export default function Capturador({
   /** Si la respuesta en curso se está codificando por partes. */
   const [partiendo, setPartiendo] = useState(false);
   /**
+   * La W que se marcó antes de separar: es la localización de la respuesta
+   * entera, aunque cada objeto tenga su área (psicólogas, 21/10/2026).
+   */
+  const [general, setGeneral] = useState<string[]>([]);
+  /**
    * Los objetos con que se cerró cada respuesta separada, por su id.
    *
    * La ficha guarda la respuesta cerrada (las áreas juntas y la peor calidad) y
@@ -1044,6 +1053,7 @@ export default function Capturador({
       verbalizacion: r.verbalizacion,
       posicion: r.posicion,
       caracteristica: r.caracteristica ?? '',
+      objetos: r.objetos ?? null,
     }));
 
   /**
@@ -1338,7 +1348,7 @@ export default function Capturador({
     setCaracteristicaEnEspera('');
     if (trozos.length === 0) return;
     const tomada = ubicando ? suyas.find((v) => v.id === ubicando) ?? null : null;
-    const areas = [...new Set(trozos.flatMap((t) => t.areas))];
+    const areas = [...new Set([...general, ...trozos.flatMap((t) => t.areas)])];
     const contenidos = [...new Set(trozos.flatMap((t) => t.contenidos))];
     if (tomada) setPartidas((p) => ({ ...p, [tomada.id]: trozos }));
     const locs = localizacionesPosibles(lamina, areas);
@@ -1357,6 +1367,7 @@ export default function Capturador({
         contenidos,
         popular: trozos.some((t) => t.popular),
         observacion: '',
+        objetos: trozos,
         id: tomada?.id,
         verbalizacion: tomada?.verbalizacion ?? null,
         posicion: tomada?.posicion ?? null,
@@ -1364,6 +1375,7 @@ export default function Capturador({
       },
     ]);
     setTrozos([]);
+    setGeneral([]);
     setDijo('');
     setPuestas([]);
     setPendiente(null);
@@ -1633,7 +1645,7 @@ export default function Capturador({
    */
   async function volverACodificar(r: Respuesta, guardada: boolean) {
     if (!puedeVolver(r, guardada)) return;
-    const objetos = r.id ? partidas[r.id] : undefined;
+    const objetos = (r.id ? partidas[r.id] : undefined) ?? (r.objetos?.length ? r.objetos : undefined);
     if (!r.id) {
       borrar(r.n);
     } else if (guardada) {
@@ -1646,6 +1658,7 @@ export default function Capturador({
         contenidos: [],
         popular: false,
         z: null,
+        objetos: null,
       };
       if (!(await guardarCelda(id, sinCodificar))) {
         setAviso('No se pudo volver a esa respuesta. Probá de nuevo.');
@@ -1665,6 +1678,7 @@ export default function Capturador({
     if (r.id) setUbicando(r.id);
     if (objetos) {
       setTrozos(objetos);
+      setGeneral(r.areas.filter((a) => a === 'W' || a === 'WS'));
       setPartiendo(true);
       setDijo('');
       setPuestas([]);
@@ -1758,6 +1772,7 @@ export default function Capturador({
       // lleva siempre el 1.
       n_localizacion: localizacionFinal(lamina, r.areas).numero,
       areas: r.areas,
+      objetos: r.objetos ?? null,
       localizacion: r.localizacion,
       fq: r.fq,
       contenidos: r.contenidos,
@@ -2699,6 +2714,7 @@ export default function Capturador({
                       className="os-boton os-boton-fila os-ror-partir"
                       onClick={() => {
                         setPartiendo(true);
+                        setGeneral(puestas.filter((a) => a === 'W' || a === 'WS'));
                         setDijo('');
                         setPuestas([]);
                       }}
@@ -2712,6 +2728,7 @@ export default function Capturador({
                       className="os-boton os-boton-fila os-ror-partir"
                       onClick={() => {
                         setPartiendo(false);
+                        setGeneral([]);
                         setTrozos([]);
                         setDijo(enCurso?.verbalizacion ?? '');
                         setPuestas([]);
@@ -2832,7 +2849,10 @@ export default function Capturador({
                     {trozos.length > 0 && (
                       <p className="os-ror-vacio">
                         La respuesta va a quedar en{' '}
-                        {[...new Set(trozos.flatMap((t) => t.areas))].join(' + ')}, con la calidad{' '}
+                        {general.length > 0
+                          ? `${general.join(' + ')} (cada objeto con su área)`
+                          : [...new Set(trozos.flatMap((t) => t.areas))].join(' + ')}
+                        , con la calidad{' '}
                         {peorFq(trozos.map((t) => t.fq)) ?? 'a mano'}.
                       </p>
                     )}

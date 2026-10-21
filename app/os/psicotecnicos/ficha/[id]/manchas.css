@@ -25,24 +25,13 @@
   color: inherit;
 }
 
+/* El desplegable con el mismo fondo que la fila bajo el mouse. */
+.os-tabla tbody tr.os-mancha-detalle {
+  background: var(--os-panel-2);
+}
 .os-mancha-detalle td {
   padding-top: 10px;
   padding-bottom: 14px;
-}
-.os-mancha-detalle dl {
-  margin: 0 0 0 30px;
-  display: flex;
-  align-items: baseline;
-  gap: 40px;
-  min-width: 0;
-}
-/* Los tres en un renglón: cada uno con su rótulo delante, y el texto que no
-   entra se corta con puntos suspensivos y se lee entero al pasar el mouse. */
-.os-mancha-detalle dl > div {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  min-width: 0;
 }
 .os-mancha-detalle dt {
   flex: none;
@@ -54,9 +43,6 @@
 .os-mancha-detalle dd {
   margin: 0;
   font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /*
@@ -116,4 +102,53 @@
   flex: none;
   color: var(--os-suave);
   font-size: 12px;
+}
+
+/* Dos columnas iguales, con el rótulo arriba de cada texto: arriba lo que dijo
+   y la encuesta, abajo los objetos y la observación. */
+.os-mancha-detalle dl {
+  margin: 0 0 0 30px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 48px;
+  max-width: 1100px;
+}
+.os-mancha-detalle dl > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.os-mancha-detalle dl > div dd {
+  line-height: 1.45;
+}
+
+/* Los objetos de una respuesta separada, uno por renglón. */
+.os-mancha-objetos ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.os-mancha-objetos li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.os-mancha-objetos li + li {
+  margin-top: 6px;
+}
+.os-mancha-objeto-texto {
+  min-width: 90px;
+  margin-right: 4px;
+}
+.os-mancha-objetos .os-chip {
+  min-width: 40px;
+  height: 22px;
+  font-size: 12px;
+}
+.os-mancha-objeto-vacio {
+  background: transparent;
+  border: 1px dashed var(--os-linea-suave);
+  color: var(--os-suave);
 }

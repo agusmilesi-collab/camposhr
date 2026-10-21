@@ -84,6 +84,42 @@ function limpiar(campos: Record<string, unknown>): Record<string, unknown> | Fal
         fila[campo] = valor;
         break;
       }
+      // Los objetos en que se separó la respuesta, cada uno con su área. Solo
+      // para mostrar: la localización y el Z salen de `areas`.
+      case 'objetos': {
+        if (valor === null) {
+          fila[campo] = null;
+          break;
+        }
+        const area = (v: unknown) => typeof v === 'string' && /^(WS?|D|DS|Dd|DdS)\d{0,3}$/.test(v);
+        if (
+          !Array.isArray(valor) ||
+          valor.length > 20 ||
+          valor.some(
+            (o) =>
+              !o ||
+              typeof o !== 'object' ||
+              typeof o.texto !== 'string' ||
+              o.texto.length > 300 ||
+              !Array.isArray(o.areas) ||
+              !o.areas.every(area) ||
+              (o.fq !== null && !VALIDOS.fq.has(o.fq)) ||
+              !Array.isArray(o.contenidos) ||
+              o.contenidos.some((c: unknown) => typeof c !== 'string' || !VALIDOS.contenidos.has(c))
+          )
+        ) {
+          return { ok: false, motivo: 'Los objetos no tienen la forma esperada.' };
+        }
+        fila[campo] = valor.map((o) => ({
+          texto: o.texto,
+          areas: o.areas,
+          fq: o.fq,
+          contenidos: o.contenidos,
+          popular: Boolean(o.popular),
+          fueraDeTabla: Boolean(o.fueraDeTabla),
+        }));
+        break;
+      }
       case 'par':
       case 'popular':
       case 'agc':

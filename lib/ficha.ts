@@ -143,6 +143,8 @@ export type Mancha = {
   n_respuesta: number | null;
   localizacion: string | null;
   n_localizacion: string | null;
+  /** Los objetos en que se separó la respuesta, cada uno con su área. */
+  objetos?: { texto: string; areas: string[]; fq: string | null; contenidos: string[] }[] | null;
   /** Las áreas marcadas en la encuesta; nula en lo cargado a mano. */
   areas?: string[] | null;
   determinantes: string[] | null;

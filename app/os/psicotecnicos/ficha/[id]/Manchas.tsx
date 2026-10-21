@@ -592,6 +592,8 @@ export default function Manchas({
               {abiertas.includes(f.id) && (
                 <tr className="os-mancha-detalle">
                   <td colSpan={13}>
+                    {/* Dos columnas iguales: arriba lo que dijo y la encuesta,
+                        abajo los objetos (uno por línea) y la observación. */}
                     <dl>
                       <div>
                         <dt>Respuesta</dt>
@@ -601,6 +603,35 @@ export default function Manchas({
                         <dt>Encuesta</dt>
                         <dd title={f.caracteristica ?? undefined}>{f.caracteristica || '—'}</dd>
                       </div>
+                      {/* Separada en objetos: la fila lleva la localización
+                          general, y acá va dónde cayó cada uno. */}
+                      {f.objetos && f.objetos.length > 0 && (
+                        <div>
+                          <dt>Objetos</dt>
+                          <dd className="os-mancha-objetos">
+                            <ul>
+                              {f.objetos.map((o, i) => (
+                                <li key={i}>
+                                  <span className="os-mancha-objeto-texto">{o.texto}</span>
+                                  {/* Con los mismos colores que las columnas de
+                                      la tabla: área, FQ y contenidos. */}
+                                  {o.areas.map((a) => (
+                                    <Chip key={a} valor={a} opciones={[]} />
+                                  ))}
+                                  {o.fq ? (
+                                    <Chip valor={o.fq} opciones={FQ} />
+                                  ) : (
+                                    <span className="os-chip os-mancha-objeto-vacio" title="Sin FQ">—</span>
+                                  )}
+                                  {o.contenidos.map((c) => (
+                                    <Chip key={c} valor={c} opciones={CONTENIDOS} />
+                                  ))}
+                                </li>
+                              ))}
+                            </ul>
+                          </dd>
+                        </div>
+                      )}
                       {f.observacion && f.observacion !== f.verbalizacion && (
                         <div>
                           <dt>Observación</dt>
