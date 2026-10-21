@@ -120,7 +120,7 @@ const ESCRITAS: [RegExp, string[]][] = [
   [/(pene|vagina|cl[íi]toris|senos?|pechos?|nalgas|labios vaginales|esperma|sexo)/, ['Sx']],
   [/(comida|pastel|mel[óo]n|carne|calabaza|huevo|gamba|langostino|bonito|bacalao)/, ['Fd']],
   [/(sangre|explosi[óo]n|bomba)/, ['Ex']],
-  [/(murci[ée]lago|mariposa|insecto|bicho|araña|escarabajo|abeja|avispa|hormiga|mosca|mosquito|libélula|polilla|langosta|cangrejo|pulga|grillo|ci[en]mpi[ée]s|cucaracha|gusano|oruga|larva|garrapata|piojo|chinche|termita|luciérnaga|saltamontes|mantis|vaquita|abejorro|cascarudo|alacrán|escorpi[óo]n|tarántula|lombriz|caracol|ameba|gorila|babuino|p[áa]jaro|[áa]guila|cuervo|lechuza|pato|gallina|pez|rana|tortuga|serpiente|caim[áa]n|dragón|perro|gato|oso|lobo|conejo|vaca|cerdo|rat[óo]n|ardilla|foca|simio|roedor|animal|pulpo|medusa)/, ['A']],
+  [/(murci[ée]lago|mariposa|insecto|bicho|araña|escarabajo|abeja|avispa|hormiga|mosca|mosquito|libélula|polilla|langosta|cangrejo|pulga|grillo|ci[en]mpi[ée]s|cucaracha|gusano|oruga|larva|garrapata|piojo|chinche|termita|luciérnaga|saltamontes|mantis|vaquita|abejorro|cascarudo|alacrán|escorpi[óo]n|tarántula|lombriz|caracol|molusco|almeja|ostra|ameba|gorila|babuino|p[áa]jaro|[áa]guila|cuervo|lechuza|pato|gallina|pez|rana|tortuga|serpiente|caim[áa]n|dragón|perro|gato|oso|lobo|conejo|vaca|cerdo|rat[óo]n|ardilla|foca|simio|roedor|animal|pulpo|medusa)/, ['A']],
 ];
 
 /**
