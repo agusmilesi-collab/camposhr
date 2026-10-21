@@ -9,7 +9,8 @@ import Precio from './Precio';
 import Bateria from './Bateria';
 import ServiciosPrecios from './ServiciosPrecios';
 import './servicios-precios.css';
-import { SERVICIOS_CON_PRECIO, preciosDeServicios } from '@/lib/precios-servicios';
+import { SERVICIOS_CON_PRECIO, preciosDeServiciosConFechas } from '@/lib/precios-servicios';
+import { hoyIso } from '@/lib/hora';
 
 /**
  * Las baterías: qué incluye cada una, cuánto dura y cuánto sale.
@@ -35,7 +36,7 @@ export default async function Baterias() {
   const [baterias, cambio, servicios] = await Promise.all([
     leerBaterias(),
     dolarTarjeta(),
-    preciosDeServicios(),
+    preciosDeServiciosConFechas(),
   ]);
 
   const pesos = (n: number) =>
@@ -111,7 +112,14 @@ export default async function Baterias() {
       </div>
 
       <ServiciosPrecios
-        filas={SERVICIOS_CON_PRECIO.map((s) => ({ ...s, rige: servicios[s.clave] }))}
+        filas={SERVICIOS_CON_PRECIO.map((s) => ({
+          ...s,
+          rige: servicios.rige[s.clave],
+          proximo: servicios.proximo?.precios[s.clave] ?? null,
+        }))}
+        proximoDesde={servicios.proximo?.desde ?? null}
+        tramos={servicios.tramos}
+        hoy={hoyIso()}
       />
     </>
   );

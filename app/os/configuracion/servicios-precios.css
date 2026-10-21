@@ -17,3 +17,11 @@
   gap: 10px;
   margin-top: 14px;
 }
+.os-servicios-precios-desde {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.os-servicios-precios-desde .os-campo {
+  width: auto;
+}
