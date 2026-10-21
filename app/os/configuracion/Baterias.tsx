@@ -118,6 +118,9 @@ export default async function Baterias() {
           proximo: servicios.proximo?.precios[s.clave] ?? null,
         }))}
         proximoDesde={servicios.proximo?.desde ?? null}
+        proximoIpc={servicios.proximo?.ajuste ?? null}
+        ultimoIpc={servicios.ajustes.at(-1) ?? null}
+        sinIpc={servicios.sinIpc}
         tramos={servicios.tramos}
         hoy={hoyIso()}
       />

@@ -14,7 +14,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import type { TramoDePrecios } from '@/lib/precios-servicios';
+import type { AjustePorIpc, TramoDePrecios } from '@/lib/precios-servicios';
 
 type Fila = {
   clave: string;
@@ -25,6 +25,14 @@ type Fila = {
   /** El precio del aumento ya cargado que todavía no empezó. */
   proximo: number | null;
 };
+
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+/** "IPC jul a sep 5,8 %". */
+function ipcTexto(a: AjustePorIpc): string {
+  const mes = (m: string) => MESES[Number(m.slice(5, 7)) - 1];
+  return `IPC ${mes(a.meses[0])} a ${mes(a.meses[a.meses.length - 1])} ${a.porcentaje.toLocaleString('es-AR')} %`;
+}
 
 function dia(fecha: string): string {
   return new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'long', year: 'numeric' }).format(
@@ -43,11 +51,20 @@ function pesos(n: number): string {
 export default function ServiciosPrecios({
   filas,
   proximoDesde,
+  proximoIpc,
+  ultimoIpc,
+  sinIpc,
   tramos,
   hoy,
 }: {
   filas: Fila[];
   proximoDesde: string | null;
+  /** Si lo próximo es el ajuste trimestral, con qué meses y cuánto. */
+  proximoIpc: AjustePorIpc | null;
+  /** El último ajuste por IPC que ya se aplicó, si hubo. */
+  ultimoIpc: AjustePorIpc | null;
+  /** El ajuste que ya tocaba y no se aplicó porque falta un mes del IPC. */
+  sinIpc: string | null;
   tramos: TramoDePrecios[];
   /** Hoy en Argentina, del servidor, para el valor inicial de la fecha. */
   hoy: string;
@@ -123,16 +140,34 @@ export default function ServiciosPrecios({
       </div>
       <div className="os-panel-cuerpo">
         <p className="os-columna-nota">
-          Coaching, entrevistas y referencias, como salen en la página de precios. El cambio rige
-          desde la fecha que se elige: con la de hoy se ve apenas se guarda.
+          Coaching, entrevistas y referencias, como salen en la página de precios. Suben solos cada
+          trimestre (1/11, 1/2, 1/5 y 1/8) con el IPC acumulado de los tres últimos meses publicados
+          por el INDEC, redondeado a $ 5.000. Un precio cargado a mano rige desde la fecha que se
+          elige y los ajustes siguientes parten de él.
         </p>
+        {ultimoIpc && (
+          <p className="os-columna-nota">
+            Último ajuste: {dia(ultimoIpc.desde)}, {ipcTexto(ultimoIpc)}.
+          </p>
+        )}
+        {sinIpc && (
+          <p className="os-form-error">
+            El ajuste del {dia(sinIpc)} no se aplicó: falta publicar un mes del IPC o la API no
+            contestó. Se aplica solo apenas esté.
+          </p>
+        )}
         <table className="os-tabla">
           <thead>
             <tr>
               <th>Servicio</th>
               <th>Unidad</th>
               <th className="os-tabla-num">Precio</th>
-              {proximoDesde && <th className="os-tabla-num">Desde el {dia(proximoDesde)}</th>}
+              {proximoDesde && (
+                <th className="os-tabla-num">
+                  Desde el {dia(proximoDesde)}
+                  {proximoIpc && <span className="os-servicios-precios-ipc">{ipcTexto(proximoIpc)}</span>}
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>

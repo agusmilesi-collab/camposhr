@@ -1,6 +1,7 @@
 import 'server-only';
 import { ajuste } from '@/lib/ajustes';
 import { hoyIso } from '@/lib/hora';
+import { ipcMensual } from '@/lib/ipc';
 import { COACHING, DEVOLUCION, ENTREVISTAS } from '@/app/psicotecnicos/servicios';
 
 /**
@@ -99,23 +100,97 @@ function completos(precios: Record<string, number>): Record<string, number> {
 }
 
 /**
- * Los precios de hoy, el próximo aumento cargado y los tramos guardados.
+ * El ajuste automático por IPC.
  *
- * Rige el último tramo que ya empezó; el próximo es el primero que todavía no.
+ * Pedido de Lorena el 21/10/2026: los otros servicios suben cada trimestre con
+ * el IPC acumulado, redondeado a $ 5.000. El primero es el 1/11/2026 y después
+ * cada tres meses (1/2, 1/5, 1/8, 1/11). Cada ajuste usa los tres últimos meses
+ * que el INDEC ya publicó ese día: el 1/11 son julio, agosto y septiembre,
+ * porque octubre sale a mediados de noviembre y entra en el ajuste siguiente.
+ * Así ningún mes queda afuera ni se cuenta dos veces, y no se usa ninguna
+ * proyección.
+ *
+ * Se aplica sobre el último precio cargado a mano: un precio guardado con
+ * fecha pisa el ajuste de ese trimestre y los siguientes parten de él.
+ */
+const PRIMER_AJUSTE = '2026-11-01';
+const REDONDEO = 5_000;
+
+export type AjustePorIpc = { desde: string; meses: string[]; porcentaje: number };
+
+/** "2026-11-01" más n meses, en el día 1. */
+function sumarMeses(fecha: string, n: number): string {
+  const [a, m] = fecha.split('-').map(Number);
+  const total = a * 12 + (m - 1) + n;
+  return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}-01`;
+}
+
+/** Los meses del IPC que usa el ajuste de esa fecha: los tres que terminan dos meses antes. */
+function mesesDelAjuste(desde: string): string[] {
+  return [-4, -3, -2].map((n) => sumarMeses(desde, n).slice(0, 7));
+}
+
+const redondear = (n: number) => Math.round(n / REDONDEO) * REDONDEO;
+
+/**
+ * Los precios de hoy, el próximo aumento y lo que se ajustó por IPC.
+ *
+ * Rige el último tramo que ya empezó, con los ajustes trimestrales que vinieron
+ * después; el próximo es el primer tramo cargado que todavía no empezó, o si no
+ * hay, el próximo ajuste por IPC (sin precio: depende de meses sin publicar).
  */
 export async function preciosDeServiciosConFechas(hoy = hoyIso()): Promise<{
   rige: Record<string, number>;
-  proximo: { desde: string; precios: Record<string, number> } | null;
+  proximo: { desde: string; precios: Record<string, number>; ajuste?: AjustePorIpc } | null;
   tramos: TramoDePrecios[];
+  ajustes: AjustePorIpc[];
+  proximoAjuste: string;
+  /** El trimestre que ya tocaba y no se pudo aplicar porque falta un mes del IPC. */
+  sinIpc: string | null;
 }> {
-  const tramos = preciosDeServiciosValidos(await ajuste<unknown>('servicios_precios'))?.tramos ?? [];
+  const [guardado, ipc] = await Promise.all([ajuste<unknown>('servicios_precios'), ipcMensual()]);
+  const tramos = preciosDeServiciosValidos(guardado)?.tramos ?? [];
   const vigente = [...tramos].reverse().find((t) => t.desde <= hoy);
   const siguiente = tramos.find((t) => t.desde > hoy);
-  return {
-    rige: completos(vigente?.precios ?? {}),
-    proximo: siguiente ? { desde: siguiente.desde, precios: completos(siguiente.precios) } : null,
-    tramos,
-  };
+
+  const rige = completos(vigente?.precios ?? {});
+  const ajustes: AjustePorIpc[] = [];
+  let sinIpc: string | null = null;
+  let fecha = PRIMER_AJUSTE;
+  while (fecha <= hoy) {
+    if (!vigente || fecha > vigente.desde) {
+      const meses = mesesDelAjuste(fecha);
+      const valores = meses.map((m) => ipc.get(m));
+      if (valores.some((v) => v === undefined)) {
+        sinIpc = fecha;
+        break;
+      }
+      const factor = (valores as number[]).reduce((f, v) => f * (1 + v / 100), 1);
+      for (const k of Object.keys(rige)) rige[k] = redondear(rige[k] * factor);
+      ajustes.push({ desde: fecha, meses, porcentaje: Math.round((factor - 1) * 10_000) / 100 });
+    }
+    fecha = sumarMeses(fecha, 3);
+  }
+
+  // El próximo: el tramo cargado si llega antes que el ajuste; si no, el
+  // ajuste por IPC, con precios solo si sus tres meses ya están publicados.
+  let proximo: { desde: string; precios: Record<string, number>; ajuste?: AjustePorIpc } | null = null;
+  if (siguiente && siguiente.desde <= fecha) {
+    proximo = { desde: siguiente.desde, precios: completos(siguiente.precios) };
+  } else if (!sinIpc) {
+    const meses = mesesDelAjuste(fecha);
+    const valores = meses.map((m) => ipc.get(m));
+    if (valores.every((v) => v !== undefined)) {
+      const factor = (valores as number[]).reduce((f, v) => f * (1 + v / 100), 1);
+      proximo = {
+        desde: fecha,
+        precios: Object.fromEntries(Object.entries(rige).map(([k, v]) => [k, redondear(v * factor)])),
+        ajuste: { desde: fecha, meses, porcentaje: Math.round((factor - 1) * 10_000) / 100 },
+      };
+    }
+  }
+
+  return { rige, proximo, tramos, ajustes, proximoAjuste: fecha, sinIpc };
 }
 
 /** El precio que rige hoy de cada servicio, por clave. */

@@ -25,3 +25,10 @@
 .os-servicios-precios-desde .os-campo {
   width: auto;
 }
+.os-servicios-precios-ipc {
+  display: block;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--os-suave);
+}
