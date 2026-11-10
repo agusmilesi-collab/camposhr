@@ -125,7 +125,7 @@ export const SECCIONES: Seccion[] = [
     titulo: 'Renovar el mes',
     parrafos: [
       `A partir del ${DIA_DE_RENOVAR} de cada mes, en Inicio te preguntamos si seguís con las mismas horas el mes que viene.`,
-      'Si no seguís, avisale a Lucila por WhatsApp.',
+      'Si no renovás el mes, avisale a Lucila por WhatsApp.',
       'Podés seguir igual tocando "Sí", o tocar "Editar horas": ahí tocás las horas fijas que ya no vas a usar (quedan tachadas y no se renuevan) y podés sumar horas fijas: elegís día y consultorio, y tocás las horas que están libres todas las semanas.',
       'Si no contestás, seguís con las mismas horas. El último día del mes, a las 10, se generan las reservas y el cargo del mes que viene, y desde ahí la respuesta ya no se cambia.',
       'Los feriados el Centro cierra y no se reservan ni se cobran. Si querés usar la sala un feriado, lo elegís al renovar.',

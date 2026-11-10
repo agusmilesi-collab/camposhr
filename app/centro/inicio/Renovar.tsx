@@ -371,9 +371,9 @@ export default function Renovar({
       )}
       {/* Sin botón de "No" (decisión de Agustín, 10/11/2026): al lado de
           "Editar horas" se confundía con no renovar algunas horas. Quien no
-          sigue lo habla con Lucila, que termina sus bandas desde la ficha. */}
+          renueva el mes lo habla con Lucila, que termina sus bandas desde la ficha. */}
       {!contestada && !editando && (
-        <small className="centro-renovar-cerrado">Si no seguís, avisale a Lucila por WhatsApp.</small>
+        <small className="centro-renovar-cerrado">Si no renovás el mes, avisale a Lucila por WhatsApp.</small>
       )}
     </article>
   );
