@@ -3054,3 +3054,50 @@ button.centro-abrir {
     font-size: 0.74rem;
   }
 }
+
+/* Sus horas fijas dentro de la renovación: una fila por banda, una casilla por
+   hora. La que deja se tacha en rojo. */
+.centro-renovar-bandas {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  font-size: 0.8rem;
+  color: var(--tinta-media);
+}
+.centro-renovar-bandas > div {
+  display: grid;
+  gap: 4px;
+}
+.centro-renovar-bandas b {
+  color: var(--tinta);
+  font-weight: 500;
+}
+.centro-renovar-bandas > div > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.centro-renovar-bandas button {
+  min-width: 30px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.centro-renovar-bandas button.deja {
+  border-color: color-mix(in srgb, var(--rojo) 45%, var(--linea));
+  background: color-mix(in srgb, var(--rojo) 10%, var(--panel));
+  color: var(--rojo);
+  text-decoration: line-through;
+}
+.centro-renovar-cerrado {
+  white-space: normal;
+  color: var(--tinta-media);
+}

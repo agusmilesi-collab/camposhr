@@ -17,5 +17,12 @@ export type Renovacion = {
   nota: string | null;
   /** Los feriados de ese mes en los que igual quiere usar su sala. */
   feriados: string[];
+  /**
+   * Las horas que deja, marcadas sobre sus bandas: `{ contrato, hora }` es la
+   * hora que empieza a `hora` en esa banda. Lo que quiere sumar va en `nota`.
+   */
+  deja: { contrato: string; hora: number }[];
+  /** Cuándo la apertura del mes ya lo pasó a los contratos. */
+  aplicada_at: string | null;
   respondido_at: string;
 };

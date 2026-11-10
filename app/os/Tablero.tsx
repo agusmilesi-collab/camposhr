@@ -596,7 +596,7 @@ export default function Tablero({
                         {r.respuesta === 'no'
                           ? 'No renueva sus horas'
                           : [
-                              r.respuesta === 'cambiar' ? `Quiere cambiar horas: ${r.nota ?? ''}` : null,
+                              r.respuesta === 'cambiar' ? `Quiere sumar horas: ${r.nota ?? ''}` : null,
                               r.feriados && r.feriados.length > 0
                                 ? `Usa su sala el feriado del ${r.feriados.join(' y ')}`
                                 : null,
@@ -606,8 +606,8 @@ export default function Tablero({
                       </span>
                     </div>
                     <div className="os-mini-acciones">
-                      <Link className="os-boton" href={`/os/consultorios/inquilino/${r.inquilinoId}`}>
-                        Ver ficha
+                      <Link className="os-boton" href="/os/consultorios?ver=mes">
+                        Mes que viene
                       </Link>
                       <button
                         type="button"

@@ -23,6 +23,7 @@ import {
 } from '@/lib/consultorios';
 import { facturasDelCentro } from '@/lib/facturas-centro';
 import { DIA_DE_RENOVAR, renovacionDe } from '@/lib/renovaciones';
+import { mesesAbiertosDesde } from '@/lib/apertura-mes';
 import { feriadosEntre } from '@/lib/feriados';
 import { turnosDe } from '@/lib/turnos';
 import Renovar from './Renovar';
@@ -119,7 +120,10 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
     // prevista que después no se renovó, o sobre una hora que se soltó).
     yo.mirando ? Promise.resolve([]) : turnosDe(yo.id, hoy, finDeMes(mesCorrido(periodoDe(hoy), MESES_PREVISTOS))),
   ]);
-  const feriadosProximos = await feriadosEntre(proximoMes, finDeMes(proximoMes));
+  const [feriadosProximos, abiertos] = await Promise.all([
+    feriadosEntre(proximoMes, finDeMes(proximoMes)),
+    mesesAbiertosDesde(proximoMes),
+  ]);
   const salaDe = (id: string) => espacios.find((e) => e.id === id)?.nombre ?? 'Sala';
 
   // Cada hora de la reserva con su paciente, si lo anotó en Mis turnos. La
@@ -387,6 +391,15 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                   nota={renovacion?.nota ?? null}
                   feriados={feriadosSuyos}
                   tildados={renovacion?.feriados ?? []}
+                  bandas={mios.map((b) => ({
+                    id: b.id,
+                    dia: DIAS_CORTOS[b.dia_semana],
+                    sala: salaDe(b.espacio_id),
+                    desde: hora(b.desde_hora),
+                    hasta: hora(b.hasta_hora),
+                  }))}
+                  dejadas={renovacion?.deja ?? []}
+                  abierto={abiertos.includes(proximoMes)}
                 />
               )}
               {c.tarjetas.length === 0 && !(c.titulo === 'Hoy' && extrasDeHoy > 0) && (

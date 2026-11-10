@@ -28,6 +28,8 @@ import Espacios from './Espacios';
 import Finanzas from './Finanzas';
 import { aFacturarDelCentro, facturasDelCentro } from '@/lib/facturas-centro';
 import { listarEmisoras } from '@/lib/facturas';
+import MesQueViene from './MesQueViene';
+import { mesesAbiertosDesde, planDelMes } from '@/lib/apertura-mes';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,12 +50,14 @@ export const dynamic = 'force-dynamic';
 
 const PESTANAS = [
   { clave: 'semana', texto: 'Calendario' },
+  { clave: 'mes', texto: 'Mes que viene' },
   { clave: 'inquilinos', texto: 'Inquilinos' },
   { clave: 'finanzas', texto: 'Finanzas' },
   { clave: 'espacios', texto: 'Configuración' },
 ];
 
 const QUE_HACE: Record<string, string> = {
+  mes: 'El mes se abre solo el último día del anterior, con las horas fijas de cada uno. Acá se ve qué contestaron y se resuelve lo que quieren sumar.',
   finanzas:
     'Lo que entra, lo que sale y qué queda. Abajo, contra qué decidir: quién sostiene el mes y qué horas están vacías.',
 };
@@ -148,6 +152,19 @@ export default async function Consultorios(
     ver === 'espacios' ? escalas() : Promise.resolve([]),
     ver === 'finanzas' ? leerGastos() : Promise.resolve([]),
   ]);
+
+  /*
+   * El mes que viene, en su pestaña. Si el mes en curso quedó sin abrir, ese
+   * primero: es el que está costando plata.
+   */
+  const delMesQueViene =
+    ver === 'mes'
+      ? await (async () => {
+          const abiertos = await mesesAbiertosDesde(periodoDe(hoy));
+          const cual = abiertos.includes(periodoDe(hoy)) ? mesCorrido(periodoDe(hoy), 1) : periodoDe(hoy);
+          return planDelMes(cual);
+        })()
+      : null;
 
   // Lo que hay para facturar del mes y lo ya emitido: solo en su pestaña, que
   // son tres lecturas más y en el calendario no se miran.
@@ -301,6 +318,22 @@ export default async function Consultorios(
             />
           </div>
         </>
+      )}
+
+      {delMesQueViene && (
+        <MesQueViene
+          mes={mesLargo(delMesQueViene.periodo)}
+          periodo={delMesQueViene.periodo}
+          abierto={delMesQueViene.abierto}
+          automatico={
+            // Un mes en curso que quedó sin abrir lo abre el cron de mañana.
+            delMesQueViene.periodo === periodoDe(hoy) ? sumarDias(hoy, 1) : sumarDias(delMesQueViene.periodo, -1)
+          }
+          inquilinos={delMesQueViene.inquilinos}
+          choques={delMesQueViene.choques}
+          reservas={delMesQueViene.filas.length}
+          importe={delMesQueViene.filas.reduce((n, f) => n + (f.importe ?? 0), 0)}
+        />
       )}
 
       {ver === 'inquilinos' && (

@@ -39,6 +39,7 @@ import {
 import { mandar, pesos } from '../../acciones';
 import Facturar, { type Facturable, type FacturaEmitida } from '../../Facturar';
 import type { Emisora } from '@/lib/facturas-tipos';
+import Bandas from './Bandas';
 
 const NOMBRE: Record<Movimiento['tipo'], string> = {
   cargo: 'Reserva',
@@ -214,9 +215,6 @@ export default function Ficha({
   const total = saldoDe(movimientos);
 
   const horas = horasSemanalesTotales(contratos, i.id, hoy);
-  const vigentes = contratos.filter(
-    (c) => c.vigente_desde <= hoy && (c.vigente_hasta === null || c.vigente_hasta >= hoy)
-  );
 
   /**
    * Cada hora del mes, con lo que costó.
@@ -588,41 +586,7 @@ export default function Ficha({
             <span className="os-panel-cuenta">· {horas} h por semana</span>
           </h2>
         </div>
-        {vigentes.length === 0 ? (
-          <p className="os-vacio">Hoy no tiene horas fijas. Lo que reserve va como hora suelta.</p>
-        ) : (
-          <table className="os-tabla os-tabla-fija">
-            <colgroup>
-              <col style={{ width: '18%' }} />
-              <col style={{ width: '26%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '18%' }} />
-              <col style={{ width: '18%' }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Día</th>
-                <th>Sala</th>
-                <th>Horario</th>
-                <th className="os-tabla-num">Horas</th>
-                <th>Desde</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vigentes.map((c) => (
-                <tr key={c.id}>
-                  <td>{DIAS_CORTOS[c.dia_semana]}</td>
-                  <td>{salaDe(c.espacio_id)}</td>
-                  <td>
-                    {c.desde_hora.slice(0, 5)} a {c.hasta_hora.slice(0, 5)}
-                  </td>
-                  <td className="os-tabla-num">{hora(c.hasta_hora) - hora(c.desde_hora)} h</td>
-                  <td>{dia(c.vigente_desde)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <Bandas inquilinoId={i.id} contratos={contratos} espacios={espacios} hoy={hoy} />
       </div>
 
       {/* Las dos historias van juntas y no en dos paneles: las horas explican la

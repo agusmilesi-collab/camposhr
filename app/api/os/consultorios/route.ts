@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { comprobantePorId, darPorRegistrados, loQueDebe } from '@/lib/comprobantes-pago';
 import { darPorVista } from '@/lib/renovaciones';
+import { abrirMes, mesesAbiertosDesde, terminarBanda } from '@/lib/apertura-mes';
 import { hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { quienSoy } from '@/lib/identidad';
@@ -604,6 +605,79 @@ export async function POST(req: Request) {
         const id = String(datos?.id ?? '');
         if (!UUID.test(id)) return mal('Aviso inválido.');
         await darPorVista(id);
+        break;
+      }
+
+      // Abre el mes, o lo completa si ya estaba abierto: aplica lo que cada
+      // uno contestó y genera las reservas que falten (`lib/apertura-mes.ts`).
+      case 'mes-abrir': {
+        const periodo = String(datos?.periodo ?? '');
+        if (!FECHA.test(periodo) || !periodo.endsWith('-01')) return mal('Mes inválido.');
+        // Con una persona, solo la suya: completar sin tocar a nadie más.
+        const solo = UUID.test(String(datos?.inquilinoId ?? '')) ? String(datos.inquilinoId) : undefined;
+        extra = await abrirMes(periodo, yo.nombre, solo);
+        break;
+      }
+
+      // Una banda fija nueva. Si el mes en que empieza ya está abierto, se le
+      // generan las reservas que le tocan desde ese día, solo a esa persona.
+      case 'contrato-alta': {
+        const inquilinoId = String(datos?.inquilinoId ?? '');
+        const espacioId = String(datos?.espacioId ?? '');
+        const dia = Number(datos?.dia);
+        const desdeHora = String(datos?.desdeHora ?? '');
+        const hastaHora = String(datos?.hastaHora ?? '');
+        const desde = String(datos?.desde ?? '');
+        if (!UUID.test(inquilinoId) || !UUID.test(espacioId)) return mal('Falta la persona o la sala.');
+        if (!Number.isInteger(dia) || dia < 0 || dia >= DIAS_CORTOS.length) return mal('Día inválido.');
+        if (!HORA.test(desdeHora) || !HORA.test(hastaHora) || hora(hastaHora) <= hora(desdeHora)) {
+          return mal('La hora de fin va después de la de inicio.');
+        }
+        if (!FECHA.test(desde)) return mal('Falta desde cuándo rige.');
+
+        // Nadie más en esa sala a esa hora, ni esta persona en otra sala.
+        const todos = await leerContratos();
+        const espacios = await listarEspacios();
+        const choca = todos.find(
+          (c) =>
+            c.dia_semana === dia &&
+            (c.vigente_hasta === null || c.vigente_hasta >= desde) &&
+            (c.espacio_id === espacioId || c.inquilino_id === inquilinoId) &&
+            hora(c.desde_hora) < hora(hastaHora) &&
+            hora(c.hasta_hora) > hora(desdeHora)
+        );
+        if (choca) {
+          const sala = espacios.find((e) => e.id === choca.espacio_id)?.nombre ?? 'esa sala';
+          return mal(
+            choca.inquilino_id === inquilinoId
+              ? `Ya tiene una banda ese día de ${choca.desde_hora.slice(0, 5)} a ${choca.hasta_hora.slice(0, 5)} en ${sala}.`
+              : `${sala} ya está tomada ese día de ${choca.desde_hora.slice(0, 5)} a ${choca.hasta_hora.slice(0, 5)}.`
+          );
+        }
+        await insert('contratos', {
+          inquilino_id: inquilinoId,
+          espacio_id: espacioId,
+          dia_semana: dia,
+          desde_hora: desdeHora.slice(0, 5) + ':00',
+          hasta_hora: hastaHora.slice(0, 5) + ':00',
+          vigente_desde: desde,
+        });
+        let reservas = 0;
+        for (const p of await mesesAbiertosDesde(periodoDe(desde))) {
+          reservas += (await abrirMes(p, yo.nombre, inquilinoId)).reservas;
+        }
+        extra = { reservas };
+        break;
+      }
+
+      // Termina una banda en una fecha. Las reservas que ya había generado
+      // después de esa fecha se cancelan con su cargo.
+      case 'contrato-baja': {
+        const id = String(datos?.id ?? '');
+        const hasta = String(datos?.hasta ?? '');
+        if (!UUID.test(id)) return mal('Banda inválida.');
+        if (!FECHA.test(hasta)) return mal('Falta hasta cuándo rige.');
+        extra = { canceladas: await terminarBanda(id, hasta) };
         break;
       }
 

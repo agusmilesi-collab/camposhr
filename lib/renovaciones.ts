@@ -17,7 +17,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function renovacionDe(inquilinoId: string, periodo: string): Promise<Renovacion | null> {
   const filas = await select<Renovacion>(
     'renovaciones',
-    `select=id,inquilino_id,periodo,respuesta,nota,feriados,respondido_at&inquilino_id=eq.${inquilinoId}&periodo=eq.${periodo}&limit=1`
+    `select=id,inquilino_id,periodo,respuesta,nota,feriados,deja,aplicada_at,respondido_at&inquilino_id=eq.${inquilinoId}&periodo=eq.${periodo}&limit=1`
   );
   return filas[0] ?? null;
 }
@@ -28,7 +28,8 @@ export async function responderRenovacion(
   periodo: string,
   respuesta: Respuesta,
   nota: string | null,
-  feriados: string[] = []
+  feriados: string[] = [],
+  deja: { contrato: string; hora: number }[] = []
 ): Promise<void> {
   await upsert(
     'renovaciones',
@@ -39,6 +40,7 @@ export async function responderRenovacion(
       nota: respuesta === 'cambiar' ? nota : null,
       // Quien no sigue no usa ningún feriado.
       feriados: respuesta === 'no' ? [] : feriados,
+      deja: respuesta === 'cambiar' ? deja : [],
       respondido_at: new Date().toISOString(),
       visto_at: null,
     },
@@ -51,7 +53,7 @@ export async function responderRenovacion(
 export async function renovacionesDe(periodo: string): Promise<Record<string, Renovacion>> {
   const filas = await select<Renovacion>(
     'renovaciones',
-    `select=id,inquilino_id,periodo,respuesta,nota,feriados,respondido_at&periodo=eq.${periodo}`
+    `select=id,inquilino_id,periodo,respuesta,nota,feriados,deja,aplicada_at,respondido_at&periodo=eq.${periodo}`
   );
   return Object.fromEntries(filas.map((r) => [r.inquilino_id, r]));
 }
@@ -60,14 +62,18 @@ export async function renovacionesDe(periodo: string): Promise<Record<string, Re
  * Las respuestas que le piden algo al equipo y nadie atendió todavía.
  *
  * Un "sí" a secas no entra: es lo que se esperaba y no hay nada que hacer. Un
- * "no" deja horas para vender, un "cambiar" pide mover bandas, y un "sí" con
- * un feriado tildado pide reservarle la sala un día en que el Centro cierra.
+ * "no" deja horas para vender, y un "cambiar" con algo escrito pide sumarle
+ * horas, que depende de qué esté libre.
+ *
+ * Desde el 10/11/2026 lo que se deja y los feriados tildados los aplica solos
+ * la apertura del mes (`lib/apertura-mes.ts`), así que un "cambiar" que solo
+ * deja horas, o un feriado, ya no le piden nada al equipo y no avisan.
  */
 export async function renovacionesPorAtender(): Promise<(Renovacion & { inquilino: string })[]> {
   const filas = await select<Renovacion & { inquilinos: { nombre: string } | null }>(
     'renovaciones',
-    'select=id,inquilino_id,periodo,respuesta,nota,feriados,respondido_at,inquilinos(nombre)' +
-      '&or=(respuesta.in.(no,cambiar),feriados.neq.{})&visto_at=is.null&order=respondido_at.asc'
+    'select=id,inquilino_id,periodo,respuesta,nota,feriados,deja,aplicada_at,respondido_at,inquilinos(nombre)' +
+      '&or=(respuesta.eq.no,and(respuesta.eq.cambiar,nota.not.is.null))&visto_at=is.null&order=respondido_at.asc'
   );
   return filas.map(({ inquilinos, ...r }) => ({ ...r, inquilino: inquilinos?.nombre ?? 'Sin nombre' }));
 }

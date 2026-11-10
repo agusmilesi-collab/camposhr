@@ -130,10 +130,14 @@ agenda de la consulta y las fichas, que se cobra como adicional mensual sobre el
 alquiler. Se dejaron a la vista a propósito: verlas en la barra es lo que hace
 que alguien pregunte por ellas, y muestra para dónde va el sistema.
 
-**Y del lado del OS queda pendiente lo que el calendario todavía no hace solo**:
-generar las reservas de un mes desde los contratos al abrirlo, y la pantalla de
-renovación del 26 en adelante. Hoy las bandas fijas se cargaron una vez con un
-script, fuera del repositorio porque lleva nombres de personas.
+**El mes se abre solo desde el 10/11/2026** (`lib/apertura-mes.ts`). Hasta ese
+día lo abría un script desde una computadora, y noviembre no se abrió: el
+calendario quedó vacío, Lucila volvió a la planilla y un inquilino se cargó el
+mes entero como horas sueltas. Ahora el cron diario (`/api/cron/abrir-mes`) abre
+el mes siguiente el último día del anterior, y si un mes quedó sin abrir lo
+abre al día siguiente. La pestaña **Mes que viene** muestra qué contestó cada
+uno y cuánto se va a generar, con un botón para abrir antes o completar. Las
+bandas se agregan y se terminan desde la ficha de cada persona.
 
 ### La pantalla de una persona
 
@@ -462,8 +466,17 @@ saca la banda a alguien que la quería y deja la hora sin vender. Quien no
 sigue, lo dice. El sistema avisa el 20 y el 24, y hasta el 25 se puede soltar
 sin cargo.
 
-En el OS, la pantalla de renovación lista contrato por contrato con confirmar o
-soltar, y muestra qué queda liberado para vender.
+**Lo que se deja se marca, lo que se suma se escribe.** Al renovar, el
+inquilino ve sus horas fijas una por una y toca las que deja; la apertura del
+mes recorta esas bandas sola. Lo que quiere sumar va en texto, porque depende
+de qué esté libre: le aparece a Lucila en Inicio y en Mes que viene, y lo carga
+como banda nueva desde la ficha. Quien contesta que no sigue pierde sus bandas
+desde el 1. Abierto el mes, la respuesta ya no se cambia desde el portal.
+
+**La apertura usa la misma cuenta que el alta a mano** (`cotizar` con el tramo
+de las horas semanales del mes que se abre) y no duplica: una fecha en la que
+esa persona ya tiene algo en esa sala, reservado o soltado, se saltea. Los
+feriados no se reservan salvo los tildados al renovar.
 
 ---
 

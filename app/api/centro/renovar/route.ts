@@ -10,6 +10,8 @@ import {
 } from '@/lib/consultorios';
 import { feriadosEntre } from '@/lib/feriados';
 import { responderRenovacion, type Respuesta } from '@/lib/renovaciones';
+import { mesesAbiertosDesde } from '@/lib/apertura-mes';
+import { hora } from '@/lib/consultorios-calculo';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,10 +33,13 @@ export async function POST(req: Request) {
   const respuesta = String(datos?.respuesta ?? '') as Respuesta;
   if (!['si', 'no', 'cambiar'].includes(respuesta)) return mal('Respuesta inválida.');
   const nota = String(datos?.nota ?? '').trim().slice(0, 600) || null;
-  if (respuesta === 'cambiar' && !nota) return mal('Contanos qué horas querés cambiar.');
 
   const hoy = hoyISO();
   const periodo = mesCorrido(periodoDe(hoy), 1);
+  // Abierto el mes, las reservas y los cargos ya salieron de lo contestado.
+  if ((await mesesAbiertosDesde(periodo)).includes(periodo)) {
+    return mal('Ese mes ya está abierto. Para cambiar algo, escribile a Lucila.');
+  }
 
   // Los feriados que tildó, contra lo que de verdad puede tildar: un feriado
   // de ese mes que cae en un día en que tiene horas fijas. Lo demás se descarta
@@ -53,7 +58,26 @@ export async function POST(req: Request) {
     .map((f) => f.fecha)
     .filter((f) => pedidos.includes(f) && susDias.has(diaSemanaDe(f)));
 
-  await responderRenovacion(yo.id, periodo, respuesta, nota, validos);
+  // Las horas que deja, contra sus bandas de ese mes: una hora que no es suya
+  // o que cae fuera de la banda se descarta.
+  const pedidasDeja: { contrato: string; hora: number }[] = Array.isArray(datos?.deja)
+    ? datos.deja.map((d: { contrato?: unknown; hora?: unknown }) => ({
+        contrato: String(d?.contrato ?? ''),
+        hora: Number(d?.hora),
+      }))
+    : [];
+  const deja = pedidasDeja.filter((d, n) => {
+    const c = contratos.find(
+      (x) => x.id === d.contrato && x.inquilino_id === yo.id && (x.vigente_hasta === null || x.vigente_hasta >= periodo)
+    );
+    const repetida = pedidasDeja.findIndex((o) => o.contrato === d.contrato && o.hora === d.hora) !== n;
+    return c && !repetida && Number.isInteger(d.hora) && d.hora >= hora(c.desde_hora) && d.hora < hora(c.hasta_hora);
+  });
+  if (respuesta === 'cambiar' && !nota && deja.length === 0) {
+    return mal('Marcá las horas que dejás o contanos cuáles querés sumar.');
+  }
+
+  await responderRenovacion(yo.id, periodo, respuesta, nota, validos, deja);
   return NextResponse.json({ ok: true });
 }
 
