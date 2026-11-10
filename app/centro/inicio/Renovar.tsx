@@ -3,7 +3,7 @@
 /**
  * La pregunta del 25: ¿seguís con tus horas el mes que viene?
  *
- * Tres salidas. Sí y No se contestan de un toque. "Editar horas" muestra sus
+ * Dos salidas: Sí, de un toque, y "Editar horas", que muestra sus
  * horas fijas, una por una, y se tocan las que deja: eso se aplica solo al
  * abrirse el mes (`lib/apertura-mes.ts`). Lo que quiere sumar se escribe,
  * porque depende de qué esté libre y lo arma el equipo. Hasta el 10/11/2026
@@ -364,13 +364,16 @@ export default function Renovar({
           <button type="button" className="firme" onClick={() => responder('si')} disabled={enviando}>
             Sí
           </button>
-          <button type="button" onClick={() => responder('no')} disabled={enviando}>
-            No
-          </button>
           <button type="button" onClick={() => setEditando(true)} disabled={enviando}>
             Editar horas
           </button>
         </div>
+      )}
+      {/* Sin botón de "No" (decisión de Agustín, 10/11/2026): al lado de
+          "Editar horas" se confundía con no renovar algunas horas. Quien no
+          sigue lo habla con Lucila, que termina sus bandas desde la ficha. */}
+      {!contestada && !editando && (
+        <small className="centro-renovar-cerrado">Si no seguís, avisale a Lucila por WhatsApp.</small>
       )}
     </article>
   );
