@@ -15,11 +15,14 @@ import {
   hora,
   horasSemanalesTotales,
   mesCorrido,
+  mesLargo,
   periodoDe,
   sumarDias,
+  hoyISO,
   type Contrato,
 } from '@/lib/consultorios-calculo';
 import { renovacionesDe, type Renovacion } from '@/lib/renovaciones';
+import { avisarFallaDeApertura, avisarMesAbierto } from '@/lib/correo-centro';
 
 /**
  * La apertura del mes del Centro: las reservas y los cargos que salen de las
@@ -352,7 +355,8 @@ export async function abrirMes(
 
   const importe = plan.filas.reduce((n, f) => n + (f.importe ?? 0), 0);
   // Si ya estaba abierto queda la primera apertura: completar no la pisa. Ni
-  // completar a una sola persona da por abierto el mes de todos.
+  // completar a una sola persona da por abierto el mes de todos. Lucila se
+  // entera por correo, abra quien lo abra.
   if (!plan.abierto && !soloInquilino) {
     await upsert(
       'centro_meses',
@@ -360,6 +364,14 @@ export async function abrirMes(
       'periodo',
       false
     );
+    await avisarMesAbierto({
+      periodo,
+      mes: mesLargo(periodo),
+      reservas: plan.filas.length,
+      importe,
+      quien,
+      choques: plan.choques.length,
+    });
   }
   revalidateTag('consultorios', { expire: 0 });
   return { reservas: plan.filas.length, importe, choques: plan.choques };
@@ -381,8 +393,14 @@ export async function abrirSiToca(hoy: string): Promise<{ periodo: string; reser
   const hechos: { periodo: string; reservas: number; importe: number }[] = [];
   for (const p of candidatos) {
     if (abiertos.some((a) => a.periodo === p)) continue;
-    const r = await abrirMes(p, 'Apertura automática');
-    hechos.push({ periodo: p, reservas: r.reservas, importe: r.importe });
+    try {
+      const r = await abrirMes(p, 'Apertura automática');
+      hechos.push({ periodo: p, reservas: r.reservas, importe: r.importe });
+    } catch (e) {
+      // Sin abrir, el mes queda vacío: que lo sepa alguien hoy y no el día 10.
+      await avisarFallaDeApertura({ periodo: p, mes: mesLargo(p), error: e instanceof Error ? e.message : String(e) });
+      throw e;
+    }
   }
   return hechos;
 }
@@ -423,4 +441,69 @@ export async function terminarBanda(contratoId: string, hasta: string): Promise<
   }
   revalidateTag('consultorios', { expire: 0 });
   return futuras.length;
+}
+
+export type EstadoDeLaApertura = {
+  /** El mes del que habla, escrito: "diciembre". */
+  mes: string;
+  titulo: string;
+  detalle: string;
+  /** En rojo: un mes en curso sin abrir. */
+  urgente: boolean;
+};
+
+/**
+ * Lo que la tarjeta de Inicio dice de la apertura, o null si no hay nada que
+ * decir. Desde el 26 habla del mes que viene; antes, solo si el mes en curso
+ * quedó sin abrir.
+ */
+export async function estadoDeLaApertura(hoy = hoyISO()): Promise<EstadoDeLaApertura | null> {
+  const actual = periodoDe(hoy);
+  const siguiente = mesCorrido(actual, 1);
+  const filas = await select<{ periodo: string; reservas: number; importe: number; abierto_at: string }>(
+    'centro_meses',
+    `select=periodo,reservas,importe,abierto_at&periodo=in.(${actual},${siguiente})`
+  );
+  const solo = (p: string) => mesLargo(p).split(' ')[0];
+  const pesos = (n: number) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(n));
+
+  if (!filas.some((f) => f.periodo === actual)) {
+    return {
+      mes: solo(actual),
+      titulo: `${solo(actual)} sin abrir`,
+      detalle: 'El calendario está vacío. Se abre solo mañana a las 10, o tocá "Abrir ahora".',
+      urgente: true,
+    };
+  }
+  if (Number(hoy.slice(8, 10)) < 26) return null;
+
+  const abierto = filas.find((f) => f.periodo === siguiente);
+  if (abierto) {
+    return {
+      mes: solo(siguiente),
+      titulo: `${solo(siguiente)} abierto`,
+      detalle: `${abierto.reservas} reservas por ${pesos(abierto.importe)}.`,
+      urgente: false,
+    };
+  }
+  const [contratos, inquilinos, renovaciones] = await Promise.all([
+    leerContratos(),
+    listarInquilinos(),
+    renovacionesDe(siguiente),
+  ]);
+  const activos = new Set(inquilinos.filter((i) => i.activo).map((i) => i.id));
+  const conHoras = new Set(
+    contratos
+      .filter((c) => activos.has(c.inquilino_id) && (c.vigente_hasta === null || c.vigente_hasta >= siguiente))
+      .map((c) => c.inquilino_id)
+  );
+  const contestaron = [...conHoras].filter((id) => renovaciones[id]).length;
+  const dia = Number(sumarDias(siguiente, -1).slice(8, 10));
+  return {
+    mes: solo(siguiente),
+    titulo: `${solo(siguiente)} se abre el ${dia} a las 10`,
+    detalle: `Contestaron ${contestaron} de ${conHoras.size}. Quien no contesta renueva sus mismas horas.`,
+    urgente: false,
+  };
 }

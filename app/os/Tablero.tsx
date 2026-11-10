@@ -252,6 +252,7 @@ export default function Tablero({
   sinAsignar = null,
   comprobantes = [],
   renovaciones = [],
+  aperturaMes = null,
 }: {
   filas: Evaluacion[];
   /**
@@ -305,6 +306,12 @@ export default function Tablero({
     /** Los feriados en los que igual quiere su sala, ya escritos: "23/11". */
     feriados?: string[];
   }[];
+  /**
+   * La apertura del mes del Centro (`estadoDeLaApertura`): desde el 26, cuándo
+   * se abre el mes que viene o con cuánto se abrió; en rojo, un mes en curso
+   * sin abrir.
+   */
+  aperturaMes?: { mes: string; titulo: string; detalle: string; urgente: boolean } | null;
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -584,6 +591,27 @@ export default function Tablero({
                       </div>
                     </article>
                   ))}
+              {c.clave === 'hoy' && aperturaMes && (
+                <article className="os-mini os-mini-seguimiento os-mini-comprobante">
+                  <div className="os-mini-cuerpo">
+                    <span className="os-mini-comprobante-top">
+                      <span
+                        className="os-mini-nombre"
+                        style={aperturaMes.urgente ? { color: 'var(--os-rojo, #b3261e)' } : undefined}
+                      >
+                        {aperturaMes.titulo.charAt(0).toUpperCase() + aperturaMes.titulo.slice(1)}
+                      </span>
+                      <span className="os-mini-importe">Centro</span>
+                    </span>
+                    <span className="os-mini-detalle">{aperturaMes.detalle}</span>
+                  </div>
+                  <div className="os-mini-acciones">
+                    <Link className="os-boton" href="/os/consultorios?ver=mes">
+                      Mes que viene
+                    </Link>
+                  </div>
+                </article>
+              )}
               {c.clave === 'hoy' &&
                 porRenovar.map((r) => (
                   <article key={r.id} className="os-mini os-mini-seguimiento os-mini-comprobante">

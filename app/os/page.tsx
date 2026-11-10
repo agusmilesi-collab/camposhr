@@ -14,6 +14,7 @@ import { cuentasDeLaBarra } from '@/app/os/psicotecnicos/datos';
 import { comprobantesSinRegistrar, loQueDebe } from '@/lib/comprobantes-pago';
 import { mesLargo } from '@/lib/consultorios-calculo';
 import { renovacionesPorAtender } from '@/lib/renovaciones';
+import { estadoDeLaApertura } from '@/lib/apertura-mes';
 
 /** Las etapas de una evaluación que todavía pide trabajo. */
 const ABIERTAS = new Set(['Sin asignar', 'Por citar', 'Por entrevistar', 'Por analizar']);
@@ -174,6 +175,15 @@ export default async function Inicio() {
         }))
       : [];
 
+  /*
+   * La apertura del mes del Centro, en Hoy: desde el 26 dice cuándo se abre el
+   * mes que viene y cómo vienen las respuestas, y una vez abierto, con cuánto.
+   * Si el mes en curso quedó sin abrir, lo dice en rojo cualquier día. Lo ven
+   * las mismas personas que las renovaciones.
+   */
+  const aperturaMes =
+    yo.nombre.startsWith('Lucila') || yo.alcance === 'todo' ? await estadoDeLaApertura() : null;
+
   const cuentas = await cuentasDeLaBarra();
 
   return (
@@ -189,7 +199,7 @@ export default async function Inicio() {
             Ver el pipeline
           </Link>
         </div>
-        {mios.length === 0 && seguimientos.length === 0 && !sinAsignar && comprobantes.length === 0 && renovaciones.length === 0 ? (
+        {mios.length === 0 && seguimientos.length === 0 && !sinAsignar && comprobantes.length === 0 && renovaciones.length === 0 && !aperturaMes ? (
           <p className="os-vacio">
             {yo.alcance === 'todo'
               ? 'No hay evaluaciones abiertas.'
@@ -204,6 +214,7 @@ export default async function Inicio() {
             sinAsignar={sinAsignar}
             comprobantes={comprobantes}
             renovaciones={renovaciones}
+            aperturaMes={aperturaMes}
           />
         )}
       </section>

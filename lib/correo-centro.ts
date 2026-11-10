@@ -11,7 +11,8 @@
  */
 
 import 'server-only';
-import { enviarCorreo, escapar, type Envio } from '@/lib/correo';
+import { direcciones, enviarCorreo, escapar, type Envio } from '@/lib/correo';
+import { select } from '@/lib/supabase';
 import { HORAS_DEL_ENLACE } from '@/lib/centro-acceso';
 
 const PARRAFO = 'font-size:15px;line-height:1.5;margin:0 0 12px;';
@@ -74,14 +75,14 @@ export async function enviarRecordatorioRenovacion(a: {
 }): Promise<Envio> {
   const nombre = a.nombre.trim().split(/\s+/)[0] || a.nombre;
   const saludo = `Hola, ${nombre}.`;
-  const que = `Todavía no nos dijiste si seguís con las mismas horas en ${a.mes}. Entrá a Inicio y contestá: seguir igual, cambiar las horas o avisar que no seguís.`;
+  const que = `Todavía no contestaste si renovás tus horas en ${a.mes}. Entrá a Inicio y tocá "Sí", o "Editar horas" para marcar las que no renovás o sumar horas fijas. Si no renovás el mes, avisale a Lucila por WhatsApp.`;
   const silencio =
-    'Si no contestás, seguís con las mismas horas: el día 1 se generan las reservas y el cargo del mes.';
+    'Si no contestás, renovás las mismas horas: el último día del mes, a las 10, se generan las reservas y el cargo del mes que viene.';
   const enlace = 'https://centro.camposhr.com/centro/inicio';
   return enviarCorreo({
     de: 'centro',
     para: [a.correo],
-    asunto: `¿Seguís con tus horas en ${a.mes}?`,
+    asunto: `¿Renovás tus horas en ${a.mes}?`,
     clave: `centro-renovar-${a.periodo}-${a.inquilinoId}`,
     texto: [saludo, '', que, '', enlace, '', silencio, '', 'Centro Integral Santiago · Santiago 1269, Rosario'].join('\n'),
     html: hoja(
@@ -91,4 +92,88 @@ export async function enviarRecordatorioRenovacion(a: {
         `    <p style="font-size:13px;line-height:1.5;color:#7b7770;margin:0;">${escapar(silencio)}</p>\n`
     ),
   });
+}
+
+/**
+ * A quién le avisa el sistema lo del Centro: a Lucila, que lo lleva, con copia
+ * a Agustín (`CORREO_ERRORES`). La dirección de ella sale de `evaluadoras`: el
+ * repositorio es público y las direcciones van en la base.
+ */
+async function destinosDelEquipo(): Promise<{ para: string[]; copia: string[] }> {
+  const filas = await select<{ email: string | null }>(
+    'evaluadoras',
+    'select=email&nombre=ilike.Lucila*&limit=1'
+  ).catch(() => []);
+  const copia = direcciones([process.env.CORREO_ERRORES]);
+  const para = direcciones(filas.map((f) => f.email));
+  return para.length > 0 ? { para, copia } : { para: copia, copia: [] };
+}
+
+const pesosCorreo = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
+
+const MES_QUE_VIENE = 'https://os.camposhr.com/os/consultorios?ver=mes';
+
+/**
+ * El aviso de que el mes se abrió: cuántas reservas y cuánto hay para cobrar.
+ * Si el último día del mes a las 10 no llegó, algo falló. No tira.
+ */
+export async function avisarMesAbierto(a: {
+  periodo: string;
+  mes: string;
+  reservas: number;
+  importe: number;
+  quien: string;
+  choques: number;
+}): Promise<void> {
+  try {
+    const { para, copia } = await destinosDelEquipo();
+    const frase = `${a.mes.charAt(0).toUpperCase() + a.mes.slice(1)} ya está abierto: ${a.reservas} reservas por ${pesosCorreo(a.importe)}.`;
+    const como = a.quien === 'Apertura automática' ? 'Lo abrió el sistema solo.' : `Lo abrió ${a.quien}.`;
+    const choque =
+      a.choques > 0
+        ? `Hay ${a.choques} ${a.choques === 1 ? 'hora fija que no se pudo reservar' : 'horas fijas que no se pudieron reservar'} porque otra persona ya tenía esa sala: miralas en "Mes que viene".`
+        : '';
+    await enviarCorreo({
+      de: 'centro',
+      para,
+      copia,
+      asunto: `${a.mes.charAt(0).toUpperCase() + a.mes.slice(1)} abierto: ${a.reservas} reservas`,
+      clave: `centro-mes-abierto-${a.periodo}`,
+      texto: [frase, como, choque, '', `Ver el mes: ${MES_QUE_VIENE}`].filter((x) => x !== null).join('\n'),
+      html: hoja(
+        `    <p style="${PARRAFO}"><b>${escapar(frase)}</b></p>\n` +
+          `    <p style="${PARRAFO}">${escapar(como)}</p>\n` +
+          (choque ? `    <p style="${PARRAFO}color:#8c3b3b;">${escapar(choque)}</p>\n` : '') +
+          `    <p style="${PARRAFO}margin:18px 0 0;"><a href="${MES_QUE_VIENE}" style="${BOTON}">Ver el mes</a></p>\n`
+      ),
+    });
+  } catch (e) {
+    console.error('[aviso de mes abierto]', e);
+  }
+}
+
+/** El aviso de que la apertura automática falló, para abrirlo a mano. No tira. */
+export async function avisarFallaDeApertura(a: { periodo: string; mes: string; error: string }): Promise<void> {
+  try {
+    const { para, copia } = await destinosDelEquipo();
+    const frase = `${a.mes.charAt(0).toUpperCase() + a.mes.slice(1)} no se pudo abrir solo.`;
+    const que = 'Entrá a Consultorios, pestaña "Mes que viene", y tocá "Abrir ahora".';
+    await enviarCorreo({
+      de: 'centro',
+      para,
+      copia,
+      asunto: `${a.mes.charAt(0).toUpperCase() + a.mes.slice(1)} no se abrió: abrilo a mano`,
+      clave: `centro-mes-falla-${a.periodo}-${new Date().toISOString().slice(0, 10)}`,
+      texto: [frase, que, '', `Detalle: ${a.error}`, '', MES_QUE_VIENE].join('\n'),
+      html: hoja(
+        `    <p style="${PARRAFO}color:#8c3b3b;"><b>${escapar(frase)}</b></p>\n` +
+          `    <p style="${PARRAFO}">${escapar(que)}</p>\n` +
+          `    <p style="${PARRAFO}margin:18px 0 18px;"><a href="${MES_QUE_VIENE}" style="${BOTON}">Abrir el mes</a></p>\n` +
+          `    <p style="font-size:12px;line-height:1.5;color:#7b7770;margin:0;">Detalle: ${escapar(a.error)}</p>\n`
+      ),
+    });
+  } catch (e) {
+    console.error('[aviso de falla de apertura]', e);
+  }
 }
