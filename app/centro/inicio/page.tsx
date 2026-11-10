@@ -24,6 +24,7 @@ import {
 import { facturasDelCentro } from '@/lib/facturas-centro';
 import { DIA_DE_RENOVAR, renovacionDe } from '@/lib/renovaciones';
 import { mesesAbiertosDesde } from '@/lib/apertura-mes';
+import { libresParaSumar } from '@/lib/bandas-inquilino';
 import { feriadosEntre } from '@/lib/feriados';
 import { turnosDe } from '@/lib/turnos';
 import Renovar from './Renovar';
@@ -272,6 +273,10 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
   const mios = contratos.filter(
     (c) => c.inquilino_id === yo.id && (c.vigente_hasta === null || c.vigente_hasta >= proximoMes)
   );
+  // Las horas libres para sumar como fijas: solo mientras se pregunta y el mes
+  // no se abrió, que es cuando se pueden sumar.
+  const mesAbierto = abiertos.includes(proximoMes);
+  const libres = preguntaRenovar && !mesAbierto ? await libresParaSumar(yo.id, proximoMes) : [];
   const feriadosSuyos = feriadosProximos
     .map((f) => ({
       fecha: f.fecha,
@@ -391,7 +396,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                   nota={renovacion?.nota ?? null}
                   feriados={feriadosSuyos}
                   tildados={renovacion?.feriados ?? []}
-                  bandas={mios.map((b) => ({
+                  bandas={mios.filter((b) => b.vigente_desde < proximoMes).map((b) => ({
                     id: b.id,
                     dia: DIAS_CORTOS[b.dia_semana],
                     sala: salaDe(b.espacio_id),
@@ -399,7 +404,18 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                     hasta: hora(b.hasta_hora),
                   }))}
                   dejadas={renovacion?.deja ?? []}
-                  abierto={abiertos.includes(proximoMes)}
+                  abierto={mesAbierto}
+                  libres={libres}
+                  mirando={Boolean(yo.mirando)}
+                  sumadas={mios
+                    .filter((b) => b.vigente_desde >= proximoMes)
+                    .map((b) => ({
+                      id: b.id,
+                      dia: DIAS_CORTOS[b.dia_semana],
+                      sala: salaDe(b.espacio_id),
+                      desde: hora(b.desde_hora),
+                      hasta: hora(b.hasta_hora),
+                    }))}
                 />
               )}
               {c.tarjetas.length === 0 && !(c.titulo === 'Hoy' && extrasDeHoy > 0) && (

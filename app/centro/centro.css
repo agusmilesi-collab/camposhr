@@ -3101,3 +3101,100 @@ button.centro-abrir {
   white-space: normal;
   color: var(--tinta-media);
 }
+
+/* La renovación abierta para editar: tres secciones (feriados, horas que no
+   se renuevan, sumar horas fijas), cada una con su título arriba y su
+   explicación en gris, separadas con aire para que se lean de a una. */
+.centro-tarjeta.centro-renovar.abierta {
+  gap: 14px;
+  padding-bottom: 16px;
+}
+.centro-renovar-titulo {
+  display: block;
+  color: var(--tinta);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+.centro-renovar-feriados,
+.centro-renovar-bandas {
+  gap: 10px;
+  padding: 12px 14px;
+  line-height: 1.45;
+}
+.centro-renovar-bandas > div {
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--linea);
+}
+.centro-renovar-bandas > div > span {
+  gap: 6px;
+}
+.centro-renovar-bandas button {
+  height: 30px;
+  padding: 0 10px;
+}
+/* Sumar horas fijas: el mismo recuadro que las horas que no se renuevan, con
+   el día y el consultorio arriba y las horas libres para tocar. La elegida va
+   en verde, porque suma; la que no se renueva va tachada en rojo. */
+.centro-renovar-elegir {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.centro-renovar-elegir select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 0.8rem;
+}
+.centro-renovar-bandas button.suma {
+  border-color: color-mix(in srgb, var(--verde) 50%, var(--linea));
+  background: color-mix(in srgb, var(--verde) 14%, var(--panel));
+  color: var(--tinta);
+  font-weight: 600;
+}
+.centro-renovar-bandas button.centro-renovar-sumar-boton {
+  width: 100%;
+  height: 32px;
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: #f6f5f2;
+  font-weight: 500;
+}
+.centro-renovar-bandas button.centro-renovar-sumar-boton:disabled {
+  background: var(--panel);
+  border-color: var(--linea);
+  color: var(--tinta-media);
+  cursor: default;
+}
+.centro-renovar-sumadas {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.centro-renovar-sumadas li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 6px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--verde) 12%, var(--panel));
+  color: var(--tinta);
+  font-weight: 500;
+}
+.centro-tarjeta.centro-renovar.abierta .centro-renovar-botones {
+  margin-top: 2px;
+}
+.centro-renovar-sumadas li.centro-renovar-sumadas-titulo {
+  padding: 0;
+  background: none;
+  color: var(--tinta-media);
+  font-weight: 500;
+}

@@ -26,8 +26,9 @@ import {
   diaSemanaDe,
   DIAS_CORTOS,
   DIAS_DE_LA_SEMANA,
-  DIAS_PARA_SOLTAR,
+  HORAS_PARA_SOLTAR,
   HORAS_LIBERABLES,
+  horasHastaQueEmpiece,
   MINUTOS_PARA_DESHACER,
   grillaDeUnaSala,
   hora,
@@ -272,15 +273,18 @@ export default function Reservar({
     const reciente =
       r.created_at !== undefined &&
       (Date.now() - new Date(r.created_at).getTime()) / 60000 <= MINUTOS_PARA_DESHACER;
-    const aTiempo = r.fecha >= sumarDias(hoy, DIAS_PARA_SOLTAR);
-    const porQueNo = reciente
-      ? null
-      : !aTiempo
-        ? `Se suelta hasta ${DIAS_PARA_SOLTAR} días antes`
-        : horas > HORAS_LIBERABLES
-          ? `Son ${horas} horas y el tope es ${HORAS_LIBERABLES} por mes`
-          : null;
-    return { horas, reciente, porQueNo };
+    const fija = r.origen === 'contrato';
+    const aTiempo = horasHastaQueEmpiece(r.fecha, r.desde_hora) >= HORAS_PARA_SOLTAR;
+    const porQueNo = fija
+      ? 'Las horas fijas del mes no se cancelan'
+      : reciente
+        ? null
+        : !aTiempo
+          ? `Una hora suelta se suelta hasta ${HORAS_PARA_SOLTAR} horas antes`
+          : horas > HORAS_LIBERABLES
+            ? `Son ${horas} horas y el tope es ${HORAS_LIBERABLES} por mes`
+            : null;
+    return { horas, reciente, fija, porQueNo };
   }
 
   async function soltar(id: string) {
@@ -299,7 +303,7 @@ export default function Reservar({
     setOk(
       r.deshecha
         ? 'Listo, la reserva se canceló y no queda ningún cargo.'
-        : 'La hora quedó libre y el crédito descuenta del mes que viene.'
+        : 'La hora quedó libre y no se te cobra. Si ya la pagaste, Lucila te devuelve la plata.'
     );
     router.refresh();
   }
@@ -430,11 +434,11 @@ export default function Reservar({
                   qué pasa si se aprieta y después se aprieta, que es el orden
                   en que se decide. */}
               <p className="centro-regla">
-                Una reserva recién hecha se cancela sin cargo durante{' '}
-                {MINUTOS_PARA_DESHACER} minutos. Pasados los {MINUTOS_PARA_DESHACER} minutos, una
-                hora se puede liberar hasta {DIAS_PARA_SOLTAR} días antes y hasta un máximo de{' '}
-                {HORAS_LIBERABLES} horas por mes, y el crédito descuenta del mes siguiente. Pasado
-                ese plazo, la hora se paga.
+                {c.fija
+                  ? 'Es una de tus horas fijas del mes: no se cancela.'
+                  : `Una reserva recién hecha se cancela sin cargo durante ${MINUTOS_PARA_DESHACER} minutos. ` +
+                    `Después, una hora suelta se puede soltar hasta ${HORAS_PARA_SOLTAR} horas antes de que ` +
+                    `empiece, hasta ${HORAS_LIBERABLES} horas por mes, y no se cobra. Pasado ese plazo, se paga.`}
               </p>
               {c.porQueNo ? (
                 <p className="centro-nota">{c.porQueNo}.</p>

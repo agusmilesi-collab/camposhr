@@ -377,7 +377,7 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
 
               {consumos.some((c) => c.liberada) && (
                 <p className="centro-nota">
-                  Las horas marcadas como liberadas se soltaron fuera del plazo de siete días: la
+                  Las horas marcadas como liberadas se soltaron fuera del plazo de veinticuatro horas: la
                   sala volvió al calendario para venderse de nuevo, y la hora se cobra igual, como
                   dice el documento de convivencia.
                 </p>

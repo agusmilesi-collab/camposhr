@@ -86,12 +86,19 @@ export type Reserva = {
 export const HORAS_LIBERABLES = 2;
 
 /**
- * Con cuánta anticipación se puede soltar una hora y recibir el crédito.
+ * Con cuánta anticipación se puede soltar una hora suelta y que no se cobre.
  *
- * Siete días, que es lo que hace falta para revenderla: las consultas por horas
- * sueltas llegan con menos de una semana de anticipación.
+ * Veinticuatro horas antes de que empiece (decisión de Agustín, 10/11/2026;
+ * eran siete días). Solo las sueltas: **las horas fijas del mes no se
+ * cancelan**, porque la banda se alquila entera. Lo soltado a tiempo no se
+ * cobra, y si ya estaba pagado Lucila devuelve la plata.
  */
-export const DIAS_PARA_SOLTAR = 7;
+export const HORAS_PARA_SOLTAR = 24;
+
+/** Cuántas horas faltan, desde `ahora`, para que empiece esa reserva. */
+export function horasHastaQueEmpiece(fecha: string, desdeHora: string, ahora = Date.now()): number {
+  return (new Date(`${fecha}T${desdeHora.slice(0, 5)}:00-03:00`).getTime() - ahora) / 3_600_000;
+}
 
 /**
  * Cuánto dura el deshacer de una reserva recién hecha.

@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { inquilinoQueEscribe } from '@/lib/centro-sesion';
 import {
   deshacerReserva,
-  DIAS_PARA_SOLTAR,
+  HORAS_PARA_SOLTAR,
   HORAS_LIBERABLES,
   MINUTOS_PARA_DESHACER,
   horasSoltadasEn,
   liberarReserva,
 } from '@/lib/consultorios-escritura';
-import { hora, hoyISO, periodoDe, sumarDias } from '@/lib/consultorios';
+import { hora, periodoDe } from '@/lib/consultorios';
+import { horasHastaQueEmpiece } from '@/lib/consultorios-calculo';
 import { select } from '@/lib/supabase';
 import { anotarAcceso } from '@/lib/accesos';
 
@@ -17,18 +18,17 @@ export const runtime = 'nodejs';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Soltar una hora propia.
+ * Soltar una hora suelta propia.
  *
- * Lo reservado se paga, así que soltar no borra el cargo: dentro del plazo deja
- * un crédito que descuenta del mes siguiente, y la hora vuelve al calendario
- * para venderse de nuevo.
+ * **Las horas fijas del mes no se cancelan** (decisión de Agustín, 10/11/2026):
+ * la banda se alquila entera. Solo se suelta una hora suelta, hasta
+ * veinticuatro horas antes de que empiece y hasta dos horas por mes. Soltada a
+ * tiempo no se cobra: el cargo queda anulado en el mismo mes con un renglón
+ * que lo compensa (no se borra, porque puede estar en una factura), y si ya
+ * estaba pagada Lucila devuelve la plata y la registra en la ficha.
  *
- * Dos límites: cuarenta y ocho horas de anticipación, que alcanzan para avisar
- * y para intentar revenderla, y dos horas por mes, para que una banda no se
- * desarme de a pedazos.
- *
- * Fuera de plazo no se suelta desde acá: eso lo resuelven las propietarias, que
- * pueden liberar con el motivo escrito.
+ * Fuera de eso no se suelta desde acá: lo resuelven las propietarias, que
+ * pueden liberar desde el calendario.
  */
 export async function POST(req: Request) {
   const sesion = await inquilinoQueEscribe();
@@ -48,16 +48,22 @@ export async function POST(req: Request) {
     desde_hora: string;
     hasta_hora: string;
     estado: string;
+    origen: string;
     created_at: string;
   }>(
     'reservas',
-    `select=id,inquilino_id,fecha,desde_hora,hasta_hora,estado,created_at&id=eq.${id}`
+    `select=id,inquilino_id,fecha,desde_hora,hasta_hora,estado,origen,created_at&id=eq.${id}`
   );
   const reserva = filas[0];
   // La reserva de otro no existe para quien pregunta: contestar distinto diría
   // que esa hora es de alguien.
   if (!reserva || reserva.inquilino_id !== yo.id) return mal('Esa reserva no existe.');
   if (reserva.estado !== 'activa') return mal('Esa reserva ya no está activa.');
+  // Antes que el deshacer: una hora fija la genera el sistema al abrir el mes,
+  // y en los quince minutos siguientes pasaría por recién hecha.
+  if (reserva.origen === 'contrato') {
+    return mal('Las horas fijas del mes no se cancelan. Si necesitás algo, escribile a Lucila.');
+  }
 
   /*
    * El deshacer, antes que todo lo demás.
@@ -79,11 +85,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, deshecha: true });
   }
 
-  const hoy = hoyISO();
-  if (reserva.fecha < sumarDias(hoy, DIAS_PARA_SOLTAR)) {
+  if (horasHastaQueEmpiece(reserva.fecha, reserva.desde_hora) < HORAS_PARA_SOLTAR) {
     return mal(
-      `Esta hora es del ${reserva.fecha.slice(8, 10)}/${reserva.fecha.slice(5, 7)} y se puede soltar hasta ` +
-        `${DIAS_PARA_SOLTAR} días antes. Escribile a Lorena o a Lucila para ver qué se puede hacer.`
+      `Una hora suelta se puede soltar hasta ${HORAS_PARA_SOLTAR} horas antes de que empiece. ` +
+        'Escribile a Lucila para ver qué se puede hacer.'
     );
   }
 
@@ -96,12 +101,12 @@ export async function POST(req: Request) {
     // banda de cuatro, que es el caso más común.
     return mal(
       yaSoltadas === 0
-        ? `Esta reserva es de ${estas} horas y el tope es ${HORAS_LIBERABLES} por mes. Escribile a Lorena o a Lucila.`
+        ? `Esta reserva es de ${estas} horas y el tope es ${HORAS_LIBERABLES} por mes. Escribile a Lucila.`
         : `Este mes ya soltaste ${yaSoltadas} ${yaSoltadas === 1 ? 'hora' : 'horas'}, y el tope es ${HORAS_LIBERABLES} por mes.`
     );
   }
 
-  await liberarReserva(id, true, 'Hora liberada por el inquilino', yo.nombre);
+  await liberarReserva(id, true, 'Hora suelta soltada a tiempo: no se cobra', yo.nombre);
   await anotarAcceso({
     accion: 'escritura',
     recurso: 'reserva',

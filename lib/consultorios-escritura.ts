@@ -10,7 +10,7 @@
 import 'server-only';
 
 import { insert, patch, select } from '@/lib/supabase';
-import { DIAS_PARA_SOLTAR, HORAS_LIBERABLES, MINUTOS_PARA_DESHACER } from '@/lib/consultorios-calculo';
+import { HORAS_PARA_SOLTAR, HORAS_LIBERABLES, MINUTOS_PARA_DESHACER } from '@/lib/consultorios-calculo';
 import {
   contratos as leerContratos,
   escalaVigente,
@@ -33,7 +33,7 @@ export type Pedido = {
 /* Los dos límites de soltar viven en el módulo de cálculo: la pantalla del
    inquilino los muestra y este módulo los hace cumplir, y con la constante acá
    (que lleva `server-only`) el navegador no podía leerlos. */
-export { DIAS_PARA_SOLTAR, HORAS_LIBERABLES, MINUTOS_PARA_DESHACER } from '@/lib/consultorios-calculo';
+export { HORAS_PARA_SOLTAR, HORAS_LIBERABLES, MINUTOS_PARA_DESHACER } from '@/lib/consultorios-calculo';
 
 /**
  * Crea la reserva y su cargo.

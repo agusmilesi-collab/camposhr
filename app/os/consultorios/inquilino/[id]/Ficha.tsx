@@ -388,6 +388,16 @@ export default function Ficha({
     router.refresh();
   }
 
+  /** Le devolvió la plata que tenía a favor en este mes. */
+  async function devolver() {
+    setGuardando(true);
+    const r = await mandar({ accion: 'devolucion-alta', inquilinoId: i.id, periodo, importe: -saldo });
+    setGuardando(false);
+    if (!r.ok) return setError(r.motivo ?? 'No se pudo registrar la devolución.');
+    setError(null);
+    router.refresh();
+  }
+
   async function borrarMovimiento(id: string) {
     const r = await mandar({ accion: 'movimiento-baja', id });
     if (!r.ok) return setError(r.motivo ?? 'No se pudo borrar.');
@@ -897,6 +907,13 @@ export default function Ficha({
                   ? `Tiene ${pesos(-saldo)} a favor.`
                   : 'Está al día con este mes.'}
             </span>
+            {/* Lo a favor sale de una hora suelta soltada después de pagarla:
+                se le devuelve la plata, no queda para el mes siguiente. */}
+            {saldo < 0 && (
+              <button className="os-boton" type="button" onClick={devolver} disabled={guardando}>
+                Registrar la devolución de {pesos(-saldo)}
+              </button>
+            )}
             <button
               className="os-boton os-boton-firme os-boton-derecha"
               type="button"

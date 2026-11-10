@@ -21,6 +21,7 @@ import {
   aperturas as leerAperturas,
   periodoDe,
   RUBROS,
+  hoyISO,
 } from '@/lib/consultorios';
 
 export const runtime = 'nodejs';
@@ -516,6 +517,28 @@ export async function POST(req: Request) {
             });
           }
         }
+        break;
+      }
+
+      // Lucila le devolvió la plata a quien quedó con saldo a favor (una hora
+      // suelta soltada a tiempo después de pagarla). Se anota como ajuste,
+      // que suma: deja la cuenta en cero sin tocar el cargo ni su factura.
+      case 'devolucion-alta': {
+        const inquilinoId = String(datos?.inquilinoId ?? '');
+        const periodo = String(datos?.periodo ?? '');
+        const importe = Number(datos?.importe);
+        if (!UUID.test(inquilinoId)) return mal('Inquilino inválido.');
+        if (!FECHA.test(periodo)) return mal('Falta el mes.');
+        if (!Number.isFinite(importe) || importe <= 0) return mal('El importe tiene que ser mayor a cero.');
+        await insert('movimientos', {
+          inquilino_id: inquilinoId,
+          tipo: 'ajuste',
+          fecha: hoyISO(),
+          periodo,
+          importe,
+          detalle: 'Devolución de dinero',
+          quien: yo.nombre,
+        });
         break;
       }
 

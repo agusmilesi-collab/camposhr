@@ -73,8 +73,10 @@ export async function POST(req: Request) {
     const repetida = pedidasDeja.findIndex((o) => o.contrato === d.contrato && o.hora === d.hora) !== n;
     return c && !repetida && Number.isInteger(d.hora) && d.hora >= hora(c.desde_hora) && d.hora < hora(c.hasta_hora);
   });
-  if (respuesta === 'cambiar' && !nota && deja.length === 0) {
-    return mal('Marcá las horas que dejás o contanos cuáles querés sumar.');
+  // Lo que suma ya quedó guardado como banda desde el 1 (`/api/centro/bandas`).
+  const sumo = contratos.some((c) => c.inquilino_id === yo.id && c.vigente_desde >= periodo);
+  if (respuesta === 'cambiar' && !nota && deja.length === 0 && !sumo) {
+    return mal('Marcá las horas que no renovás o sumá horas fijas.');
   }
 
   await responderRenovacion(yo.id, periodo, respuesta, nota, validos, deja);

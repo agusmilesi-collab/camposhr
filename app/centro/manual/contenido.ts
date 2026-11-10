@@ -2,12 +2,12 @@
  * El manual del inquilino: cómo se usa el sistema y qué reglas hace cumplir.
  *
  * Es texto, no datos: se edita acá y sale publicado con el sitio. Los números
- * (días para soltar, tope de horas, minutos para deshacer) se leen de las
+ * (horas para soltar, tope de horas, minutos para deshacer) se leen de las
  * constantes del motor, así el manual no puede decir una cosa y el sistema
  * hacer otra.
  */
 import {
-  DIAS_PARA_SOLTAR,
+  HORAS_PARA_SOLTAR,
   HORAS_LIBERABLES,
   MINUTOS_PARA_DESHACER,
 } from '@/lib/consultorios-calculo';
@@ -70,7 +70,7 @@ export const SECCIONES: Seccion[] = [
       'En Reservar ves las semanas que quedan del mes, con las tres salas por día o una sola.',
       'Tocá la hora donde querés empezar. Con el mouse arrastrá hasta la última; en el teléfono elegís hasta cuándo en la burbuja. Antes de confirmar ves cuánto sale.',
       'Lo blanco está libre. Lo verde es tuyo. Lo gris está ocupado por otra persona o ya pasó, y lo rayado es el Centro cerrado.',
-      'El mes que viene se abre el día 1: hasta fin de mes renuevan quienes tienen horas fijas, y recién ahí se sabe qué queda libre.',
+      'Para reservar horas sueltas, el mes que viene se abre el día 1. El último día del mes anterior se generan las horas fijas de todos, y recién ahí se sabe qué queda libre.',
       'Toda hora reservada se cobra, aunque no la uses.',
     ],
     capturas: [
@@ -82,13 +82,14 @@ export const SECCIONES: Seccion[] = [
     titulo: 'Soltar una hora',
     parrafos: [
       'Tocá una hora tuya en Reservar: se abre una burbuja con el día, las horas, el precio y el botón "Soltar la hora".',
-      `Podés soltar una reserva hasta ${DIAS_PARA_SOLTAR} días antes. Queda como crédito para el mes siguiente.`,
+      'Tus horas fijas del mes no se cancelan: se alquilan enteras y se pagan todas.',
+      `Una hora suelta se puede soltar hasta ${HORAS_PARA_SOLTAR} horas antes de que empiece, y no se cobra. Si ya la pagaste, se te devuelve el dinero.`,
       `El tope es de ${HORAS_LIBERABLES} horas por mes. Se suelta la reserva entera, así que una reserva de más horas que el tope no se puede soltar.`,
       `Si te equivocaste al reservar, tenés ${MINUTOS_PARA_DESHACER} minutos para deshacerla sin condiciones: se borra el cargo y no cuenta para el tope.`,
       'Una hora soltada fuera de plazo se cobra igual y queda marcada en tu cuenta.',
     ],
     capturas: [
-      { archivo: 'soltar.jpg', alt: 'La burbuja de una hora propia: sala, día, horario, precio, las condiciones para soltar y el botón "Soltar la hora".', ancho: 460 },
+      { archivo: 'soltar.jpg', alt: 'La burbuja de una hora suelta propia: sala, día, horario, precio, las condiciones para soltarla y el botón "Soltar la hora".', ancho: 460 },
     ],
   },
   {
@@ -124,12 +125,13 @@ export const SECCIONES: Seccion[] = [
     titulo: 'Renovar el mes',
     parrafos: [
       `A partir del ${DIA_DE_RENOVAR} de cada mes, en Inicio te preguntamos si seguís con las mismas horas el mes que viene.`,
-      'Podés seguir igual, cambiar las horas o avisar que no seguís, hasta el último día del mes.',
-      'Si no contestás, seguís con las mismas horas: el día 1 se generan las reservas y el cargo del mes.',
+      'Podés seguir igual, avisar que no seguís, o tocar "Editar horas": ahí tocás las horas fijas que ya no vas a usar (quedan tachadas y no se renuevan) y podés sumar horas fijas: elegís día y consultorio, y tocás las horas que están libres todas las semanas.',
+      'Si no contestás, seguís con las mismas horas. El último día del mes, a las 10, se generan las reservas y el cargo del mes que viene, y desde ahí la respuesta ya no se cambia.',
       'Los feriados el Centro cierra y no se reservan ni se cobran. Si querés usar la sala un feriado, lo elegís al renovar.',
     ],
     capturas: [
       { archivo: 'renovar.jpg', alt: `Inicio desde el ${DIA_DE_RENOVAR}: la pregunta de si renovás el mes que viene, con Sí, No y Editar horas.`, ancho: 360 },
+      { archivo: 'renovar-editar.jpg', alt: 'Editar horas: las horas fijas que no se renuevan, tachadas, y sumar horas fijas eligiendo día, consultorio y horas libres.', ancho: 360 },
     ],
   },
   {
@@ -139,7 +141,7 @@ export const SECCIONES: Seccion[] = [
       'Turnos es la agenda de tu consulta sobre las horas que reservaste. Se ve por semana o por mes.',
       'Cada hora reservada es una pastilla: azul con el nombre de quien atendés, verde si está libre. Tocala y escribí el nombre; se guarda con Enter o al salir. La cruz del desplegable borra el turno.',
       'Al escribir, el desplegable te sugiere tus pacientes. Si elegís uno, el turno queda atado a su ficha y el ícono de la izquierda la abre.',
-      'Las horas rayadas son tus horas fijas del mes que viene: ya podés anotar turnos, y se confirman el día 1 cuando se renueva el mes.',
+      'Las horas rayadas son tus horas fijas del mes que viene: ya podés anotar turnos, y se confirman el último día del mes, cuando se abre el mes siguiente.',
       'Un turno en rojo quedó sin sala: la hora se soltó o el mes no se renovó. Inicio también lo avisa.',
       'Lo que no está reservado se ve en gris y no admite turnos: primero se reserva la hora en Reservar.',
     ],

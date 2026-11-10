@@ -466,12 +466,18 @@ saca la banda a alguien que la quería y deja la hora sin vender. Quien no
 sigue, lo dice. El sistema avisa el 20 y el 24, y hasta el 25 se puede soltar
 sin cargo.
 
-**Lo que se deja se marca, lo que se suma se escribe.** Al renovar, el
-inquilino ve sus horas fijas una por una y toca las que deja; la apertura del
-mes recorta esas bandas sola. Lo que quiere sumar va en texto, porque depende
-de qué esté libre: le aparece a Lucila en Inicio y en Mes que viene, y lo carga
-como banda nueva desde la ficha. Quien contesta que no sigue pierde sus bandas
-desde el 1. Abierto el mes, la respuesta ya no se cambia desde el portal.
+**El inquilino arma su mes solo.** Al renovar ve sus horas fijas una por una y
+toca las que no renueva; la apertura del mes recorta esas bandas sola. Para
+sumar, elige día y consultorio y toca entre las horas libres todas las semanas
+del mes que viene (`lib/bandas-inquilino.ts`, la misma cuenta que la
+disponibilidad para alquilar): la banda queda creada desde el 1 y quien elige
+después ya la ve tomada. Quien contesta que no sigue pierde sus bandas desde el
+1. Abierto el mes, la respuesta ya no se cambia desde el portal.
+
+**Las horas fijas del mes no se cancelan.** Una suelta se suelta hasta 24 horas
+antes, hasta 2 por mes, y no se cobra; si ya estaba pagada, Lucila devuelve la
+plata y lo registra en la ficha (`devolucion-alta`, un ajuste que deja la
+cuenta en cero sin tocar el cargo ni su factura).
 
 **La apertura usa la misma cuenta que el alta a mano** (`cotizar` con el tramo
 de las horas semanales del mes que se abre) y no duplica: una fecha en la que

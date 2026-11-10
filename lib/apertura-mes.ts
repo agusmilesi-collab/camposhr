@@ -66,6 +66,8 @@ export type ResumenInquilino = {
   nota: string | null;
   /** Cuántas horas por semana deja marcadas sobre sus bandas. */
   horasQueDeja: number;
+  /** Cuántas horas por semana sumó él mismo para ese mes, antes de abrirse. */
+  horasQueSuma: number;
   feriados: string[];
   horasSemanaAntes: number;
   horasSemana: number;
@@ -227,6 +229,11 @@ export async function planDelMes(periodo: string, soloInquilino?: string): Promi
       respuesta: r?.respuesta ?? null,
       nota: r?.nota ?? null,
       horasQueDeja: r?.aplicada_at ? 0 : (r?.deja ?? []).length,
+      horasQueSuma: abierto[0]
+        ? 0
+        : delMes
+            .filter((c) => c.inquilino_id === id && c.vigente_desde === periodo)
+            .reduce((n, c) => n + hora(c.hasta_hora) - hora(c.desde_hora), 0),
       feriados: r?.feriados ?? [],
       horasSemanaAntes: horasSemanalesTotales(delMes, id, periodo),
       horasSemana: horasSemanalesTotales(comoQueda, id, periodo),

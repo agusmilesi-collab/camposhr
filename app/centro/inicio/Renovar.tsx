@@ -38,6 +38,9 @@ export default function Renovar({
   bandas = [],
   dejadas = [],
   abierto = false,
+  libres = [],
+  sumadas: guardadas = [],
+  mirando = false,
 }: {
   /** El mes que se renueva, escrito: "noviembre". */
   mes: string;
@@ -55,6 +58,12 @@ export default function Renovar({
   dejadas?: { contrato: string; hora: number }[];
   /** Si el mes ya se abrió: la respuesta queda como está. */
   abierto?: boolean;
+  /** Las horas libres todas las semanas del mes que viene, por sala y día. */
+  libres?: { espacioId: string; sala: string; dia: number; horas: number[] }[];
+  /** Las bandas que ya sumó para el mes que viene. */
+  sumadas?: { id: string; dia: string; sala: string; desde: number; hasta: number }[];
+  /** El equipo mirando su pantalla: lo que se suma se muestra y no se guarda. */
+  mirando?: boolean;
 }) {
   const router = useRouter();
   const [editando, setEditando] = useState(false);
@@ -62,6 +71,54 @@ export default function Renovar({
   const [texto, setTexto] = useState(nota ?? '');
   const [usa, setUsa] = useState<string[]>(tildados);
   const [deja, setDeja] = useState<{ contrato: string; hora: number }[]>(dejadas);
+  const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const diasLibres = [...new Set(libres.map((l) => l.dia))].sort((a, b) => a - b);
+  const [diaSuma, setDiaSuma] = useState<number | null>(diasLibres[0] ?? null);
+  const salasDelDia = libres.filter((l) => l.dia === diaSuma);
+  const [salaSuma, setSalaSuma] = useState<string | null>(salasDelDia[0]?.espacioId ?? null);
+  const libre = salasDelDia.find((l) => l.espacioId === salaSuma) ?? salasDelDia[0] ?? null;
+  const [elegidas, setElegidas] = useState<number[]>([]);
+  // Mirando, lo sumado queda en la pantalla para ver cómo se ve, sin guardarse.
+  const [deMuestra, setDeMuestra] = useState<typeof guardadas>([]);
+  const sumadas = [...guardadas, ...deMuestra];
+  const horasSumadas = sumadas.reduce((n, b) => n + b.hasta - b.desde, 0);
+
+  async function banda(cuerpo: Record<string, unknown>) {
+    setError(null);
+    if (mirando) {
+      if (cuerpo.accion === 'quitar') {
+        setDeMuestra((xs) => xs.filter((x) => x.id !== cuerpo.id));
+      } else if (libre) {
+        const horas = [...elegidas].sort((a, b) => a - b);
+        setDeMuestra((xs) => [
+          ...xs,
+          { id: `muestra-${Date.now()}`, dia: DIAS[diaSuma ?? 0].slice(0, 3), sala: libre.sala, desde: horas[0], hasta: horas[horas.length - 1] + 1 },
+        ]);
+        setElegidas([]);
+      }
+      return;
+    }
+    setEnviando(true);
+    try {
+      const res = await fetch('/api/centro/bandas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cuerpo),
+      });
+      const d = await res.json().catch(() => null);
+      if (!res.ok || !d?.ok) {
+        setError(d?.motivo ?? 'No se pudo guardar. Probá de nuevo.');
+        return;
+      }
+      setElegidas([]);
+      router.refresh();
+    } catch {
+      setError('No se pudo guardar. Probá de nuevo.');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
   const marcada = (contrato: string, h: number) => deja.some((d) => d.contrato === contrato && d.hora === h);
   const alternar = (contrato: string, h: number) =>
     setDeja((xs) =>
@@ -108,7 +165,13 @@ export default function Renovar({
       <small title={contestada && respuesta === 'cambiar' ? (nota ?? undefined) : undefined}>
         {contestada
           ? respuesta === 'cambiar'
-            ? [dejadas.length > 0 ? `Dejás ${dejadas.length} h` : '', nota ?? ''].filter(Boolean).join(' · ') ||
+            ? [
+                dejadas.length > 0 ? `${dejadas.length} h no se renuevan` : '',
+                horasSumadas > 0 ? `sumás ${horasSumadas} h` : '',
+                nota ?? '',
+              ]
+                .filter(Boolean)
+                .join(' · ') ||
               `Para ${mes}`
             : `Para ${mes}`
           : 'Tus mismas horas, un mes más'}
@@ -119,6 +182,7 @@ export default function Renovar({
           se le suman al mes. Contestado, dice cuáles eligió. */}
       {feriados.length > 0 && respuesta !== 'no' && (
         <div className="centro-renovar-feriados">
+          <b className="centro-renovar-titulo">Feriados</b>
           <span>
             {feriados.length === 1 ? `En ${mes} hay un feriado` : `En ${mes} hay feriados`} en tus
             días. El Centro cierra los feriados.
@@ -145,7 +209,7 @@ export default function Renovar({
         </div>
       )}
 
-      {error && <small className="centro-soltar-error">{error}</small>}
+      {error && !editando && <small className="centro-soltar-error">{error}</small>}
 
       {abierto ? (
         <small className="centro-renovar-cerrado">
@@ -159,7 +223,8 @@ export default function Renovar({
         <>
           {bandas.length > 0 && (
             <div className="centro-renovar-bandas">
-              <span>Tocá las horas que dejás.</span>
+              <b className="centro-renovar-titulo">Horas que no renovás</b>
+              <span>Tocá las que ya no vas a usar: quedan tachadas.</span>
               {bandas.map((b) => (
                 <div key={b.id}>
                   <b>
@@ -174,9 +239,9 @@ export default function Renovar({
                         aria-pressed={marcada(b.id, h)}
                         onClick={() => alternar(b.id, h)}
                         disabled={enviando}
-                        title={`${h} a ${h + 1}`}
+                        title={marcada(b.id, h) ? 'No se renueva. Tocala de nuevo para quedártela.' : undefined}
                       >
-                        {h}
+                        {h} a {h + 1}
                       </button>
                     ))}
                   </span>
@@ -184,13 +249,100 @@ export default function Renovar({
               ))}
             </div>
           )}
-          <textarea
-            className="centro-renovar-nota"
-            rows={2}
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder="¿Querés sumar horas? Contanos cuáles: lo arma Lucila según lo que esté libre."
-          />
+          <div className="centro-renovar-bandas centro-renovar-sumar">
+            <b className="centro-renovar-titulo">Sumar horas fijas</b>
+            <span>
+              Todas las semanas, desde el 1 de {mes}. Elegí día y consultorio, y tocá las horas libres.
+              Para una hora suelta, usá Reservar.
+            </span>
+
+
+            {libres.length === 0 ? (
+              <span>No quedan horas libres para sumar en {mes}.</span>
+            ) : (
+              <div>
+                <div className="centro-renovar-elegir">
+                  <select
+                    value={diaSuma ?? ''}
+                    onChange={(e) => {
+                      const d = Number(e.target.value);
+                      setDiaSuma(d);
+                      setSalaSuma(libres.find((l) => l.dia === d)?.espacioId ?? null);
+                      setElegidas([]);
+                    }}
+                    aria-label="Día"
+                  >
+                    {diasLibres.map((d) => (
+                      <option key={d} value={d}>
+                        {DIAS[d]}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={libre?.espacioId ?? ''}
+                    onChange={(e) => {
+                      setSalaSuma(e.target.value);
+                      setElegidas([]);
+                    }}
+                    aria-label="Consultorio"
+                  >
+                    {salasDelDia.map((l) => (
+                      <option key={l.espacioId} value={l.espacioId}>
+                        {l.sala}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <span>
+                  {libre?.horas
+                    // Lo sumado de muestra deja de ofrecerse, como pasaría guardado.
+                    .filter((h) => !deMuestra.some((m) => m.sala === libre.sala && m.dia === DIAS[diaSuma ?? 0].slice(0, 3) && h >= m.desde && h < m.hasta))
+                    .map((h) => (
+                    <button
+                      key={h}
+                      type="button"
+                      className={elegidas.includes(h) ? 'suma' : undefined}
+                      aria-pressed={elegidas.includes(h)}
+                      onClick={() =>
+                        setElegidas((xs) => (xs.includes(h) ? xs.filter((x) => x !== h) : [...xs, h]))
+                      }
+                      disabled={enviando}
+                    >
+                      {h} a {h + 1}
+                    </button>
+                  ))}
+                </span>
+                <button
+                  type="button"
+                  className="centro-renovar-sumar-boton"
+                  onClick={() => banda({ accion: 'sumar', espacioId: libre?.espacioId, dia: diaSuma, horas: elegidas })}
+                  disabled={enviando || elegidas.length === 0}
+                >
+                  {elegidas.length === 0
+                    ? 'Tocá las horas que querés sumar'
+                    : `Sumar ${elegidas.length} ${elegidas.length === 1 ? 'hora' : 'horas'} los ${DIAS[diaSuma ?? 0].toLowerCase()}`}
+                </button>
+              </div>
+            )}
+            {sumadas.length > 0 && (
+              <ul className="centro-renovar-sumadas">
+                <li className="centro-renovar-sumadas-titulo">
+                  {mirando ? 'Sumadas (vista previa: mirando no se guarda)' : 'Ya sumaste'}
+                </li>
+                {sumadas.map((b) => (
+                  <li key={b.id}>
+                    <span>
+                      {b.dia} · {b.sala} · {b.desde} a {b.hasta}
+                    </span>
+                    <button type="button" onClick={() => banda({ accion: 'quitar', id: b.id })} disabled={enviando}>
+                      Quitar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {error && <small className="centro-soltar-error">{error}</small>}
           <div className="centro-renovar-botones">
             <button type="button" onClick={() => setEditando(false)} disabled={enviando}>
               Volver
@@ -198,8 +350,10 @@ export default function Renovar({
             <button
               type="button"
               className="firme"
-              onClick={() => responder('cambiar')}
-              disabled={enviando || (texto.trim() === '' && deja.length === 0)}
+              // Sin nada marcado ni sumado, enviar es renovar igual: entrar a
+              // mirar y no cambiar nada no puede dejar a nadie sin contestar.
+              onClick={() => responder(deja.length > 0 || sumadas.length > 0 ? 'cambiar' : 'si')}
+              disabled={enviando}
             >
               {enviando ? 'Enviando…' : 'Enviar'}
             </button>

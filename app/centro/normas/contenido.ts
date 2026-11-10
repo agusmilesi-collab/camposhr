@@ -11,13 +11,13 @@
  * y se cambia `NORMAS_FECHA`: queda registrado qué versión aceptó cada uno.
  */
 import {
-  DIAS_PARA_SOLTAR,
+  HORAS_PARA_SOLTAR,
   HORAS_LIBERABLES,
   MINUTOS_PARA_DESHACER,
 } from '@/lib/consultorios-calculo';
 import { DIA_DE_RENOVAR } from '@/lib/renovaciones';
 
-export const NORMAS_FECHA = 'Octubre de 2026';
+export const NORMAS_FECHA = 'Noviembre de 2026';
 
 export type Bloque = {
   id: string;
@@ -43,10 +43,11 @@ export const NORMAS: Bloque[] = [
       'Las reservas se hacen en el sistema (centro.camposhr.com), no por mensaje. El calendario es la constancia de qué hora es de quién.',
       'Se usa solamente la sala reservada, en el horario reservado. Sin reserva no se usa ningún consultorio ni el SUM.',
       'Las reservas son siempre a nombre del profesional que las hace. No se cede el espacio, total ni parcialmente, gratis ni a cambio de dinero, ni se subalquila.',
-      `Una hora reservada se puede soltar hasta ${DIAS_PARA_SOLTAR} días antes y queda como crédito para el mes siguiente, con un tope de ${HORAS_LIBERABLES} horas por mes. Fuera de ese plazo, la hora se cobra igual.`,
+      'Las horas fijas del mes no se cancelan: se alquilan enteras y se pagan todas.',
+      `Una hora suelta se puede soltar hasta ${HORAS_PARA_SOLTAR} horas antes de que empiece, con un tope de ${HORAS_LIBERABLES} horas por mes, y no se cobra. Si ya estaba pagada, se devuelve el dinero. Fuera de ese plazo, la hora se cobra igual.`,
       `Una reserva hecha por error se puede deshacer dentro de los ${MINUTOS_PARA_DESHACER} minutos, sin cargo y sin contar para el tope.`,
       'Los feriados el Centro cierra: no se reservan ni se cobran. Quien quiera usar la sala un feriado lo elige al renovar el mes.',
-      `A partir del ${DIA_DE_RENOVAR} de cada mes, el sistema pregunta en Inicio si se sigue con las mismas horas el mes siguiente. Se puede seguir igual, cambiar las horas o avisar que no se sigue, hasta el último día del mes. Quien no contesta sigue con las mismas horas: el día 1 se generan las reservas y el cargo del mes.`,
+      `A partir del ${DIA_DE_RENOVAR} de cada mes, el sistema pregunta en Inicio si se sigue con las mismas horas el mes siguiente. Se puede seguir igual, marcar las horas fijas que no se renuevan, sumar horas fijas entre las que están libres todas las semanas, o avisar que no se sigue. Quien no contesta sigue con las mismas horas. El último día del mes, a las 10, se generan las reservas y el cargo del mes siguiente, y desde ahí la respuesta ya no se cambia.`,
     ],
   },
   {

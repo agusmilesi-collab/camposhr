@@ -32,8 +32,9 @@ function respuesta(i: ResumenInquilino): string {
   if (i.respuesta === 'no') return 'No sigue';
   if (i.respuesta === 'cambiar') {
     const partes = [
-      i.horasQueDeja > 0 ? `deja ${i.horasQueDeja} h` : '',
-      i.nota ? 'quiere sumar' : '',
+      i.horasQueDeja > 0 ? `no renueva ${i.horasQueDeja} h` : '',
+      i.horasQueSuma > 0 ? `suma ${i.horasQueSuma} h` : '',
+      i.nota ? 'dejó una nota' : '',
     ].filter(Boolean);
     return partes.length ? `Cambia: ${partes.join(' y ')}` : 'Cambia';
   }
@@ -139,7 +140,7 @@ export default function MesQueViene({
           <ul className="os-lista-avisos os-panel-nota" style={{ paddingLeft: 36 }}>
             {porSumar.map((i) => (
               <li key={i.id}>
-                <b>{i.nombre}</b> quiere sumar: «{i.nota}». Cargale la banda desde{' '}
+                <b>{i.nombre}</b> escribió: «{i.nota}». Si pide una banda, cargásela desde{' '}
                 <Link href={`/os/consultorios/inquilino/${i.id}`}>su ficha</Link>; si el mes ya está
                 abierto, sus reservas se generan solas.
               </li>
