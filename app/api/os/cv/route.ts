@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { MAXIMO_CV, leerCvs } from '@/lib/cv-lectura';
+import { traerEntrante } from '@/lib/entrantes';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -34,7 +35,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'No se pudo leer el formulario.' }, { status: 400 });
   }
 
-  const archivos = form.getAll('cv').filter((a): a is File => a instanceof File);
+  // Lo normal son las rutas de lo que el navegador ya subió al bucket
+  // (`lib/entrantes.ts`); los archivos sueltos, de una pantalla abierta desde
+  // antes del cambio. Uno que no se encuentra vuelve vacío.
+  const rutas = form.getAll('ruta').map(String).slice(0, MAXIMO_CV);
+  const nombres = form.getAll('nombre').map(String);
+  const archivos = rutas.length
+    ? (await Promise.all(rutas.map((r, i) => traerEntrante(r, nombres[i] ?? '')))).map(
+        (a, i) => a ?? new File([], nombres[i] ?? '')
+      )
+    : form.getAll('cv').filter((a): a is File => a instanceof File);
   if (archivos.length === 0) {
     return NextResponse.json({ error: 'No llegó ningún archivo.' }, { status: 400 });
   }

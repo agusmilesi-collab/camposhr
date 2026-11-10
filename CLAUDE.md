@@ -1501,7 +1501,10 @@ Vercel rechaza todo pedido de más de 4,5 MB antes de que llegue al código, con
 un 413 en texto plano, y el límite cuenta el formulario entero: todos los CV
 más el descriptivo. Así un cliente no podía mandar un pedido con un CV pesado y
 veía un error en inglés. Pasó con Crucijuegos (5/11/2026) y casi seguro con
-Federada (10/11/2026).
+Federada (10/11/2026). El mismo día le pasó a Lucila en "Agregar candidato"
+del OS, que mostraba "Sin respuesta.": el OS sube igual, por
+`/api/os/subida` con su sesión (`cvPorRuta` en `lib/subida-cliente.ts`), en la
+tarjeta de alta y en el cajón "Editar datos y CV".
 
 **El navegador sube cada archivo directo al bucket**, a `entrantes/`, con una
 dirección firmada que da `/api/portal/subida` (`lib/entrantes.ts`). Los CV

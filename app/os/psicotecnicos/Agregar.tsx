@@ -38,6 +38,7 @@
  */
 
 import { partesDelNombre } from '@/lib/personas';
+import { cvPorRuta, subirAlBucket } from '@/lib/subida-cliente';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import PedidoNuevo from './PedidoNuevo';
@@ -120,6 +121,11 @@ export default function Agregar({
   const telefono = useRef<HTMLInputElement>(null);
   const email = useRef<HTMLInputElement>(null);
   const cv = useRef<HTMLInputElement>(null);
+  /**
+   * El CV que ya subió al bucket al soltarlo, para leerlo desde ahí y no
+   * volver a subirlo al guardar. Por Vercel no pasa nada de más de 4,5 MB.
+   */
+  const subido = useRef<{ archivo: File; ruta: string } | null>(null);
 
   const opciones = [...pedidos, ...nuevos.filter((n) => !pedidos.some((p) => p.id === n.id))];
 
@@ -208,8 +214,16 @@ export default function Agregar({
     setAviso(null);
     setLeyendo(true);
     try {
+      subido.current = null;
+      const [s] = await subirAlBucket('/api/os/subida', [archivo]);
+      if (!s.ok) {
+        setAviso(`${s.motivo} No se pudo leer el CV.`);
+        return;
+      }
+      subido.current = { archivo, ruta: s.ruta };
       const cuerpo = new FormData();
-      cuerpo.append('cv', archivo);
+      cuerpo.append('ruta', s.ruta);
+      cuerpo.append('nombre', archivo.name);
       const res = await fetch('/api/os/cv', { method: 'POST', body: cuerpo });
       const r = await res.json().catch(() => null);
       const leido = r?.leidos?.[0];
@@ -297,14 +311,22 @@ export default function Agregar({
       datos.set('tipo', 'candidato');
       datos.set('pedidoId', pedido);
       datos.set('evaluadoraId', evaluadora);
+      const sinSubir = await cvPorRuta(datos, '/api/os/subida', subido.current);
+      if (sinSubir) {
+        setError(sinSubir);
+        return;
+      }
       const res = await fetch('/api/os/altas', { method: 'POST', body: datos });
-      const r = await res.json().catch(() => ({ error: 'Sin respuesta.' }));
+      const r = await res
+        .json()
+        .catch(() => ({ error: `No se pudo guardar (error ${res.status}).` }));
       if (!res.ok) {
         setError(r.error ?? 'No se pudo guardar.');
         return;
       }
       // Se limpia y queda listo para el siguiente, con el pedido puesto.
       form.reset();
+      subido.current = null;
       setArchivo('');
       setAviso(null);
       setHecho(

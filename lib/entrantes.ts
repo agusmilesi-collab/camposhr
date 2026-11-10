@@ -88,3 +88,25 @@ export async function borrarEntrantes(rutas: string[]): Promise<void> {
     console.error('entrantes: no se pudieron borrar', e);
   }
 }
+
+/**
+ * El CV de un formulario del OS: el que el navegador subió al bucket
+ * (`cvRuta`), o el archivo suelto de un formulario abierto desde antes del
+ * cambio. `perdido` si vino una ruta y el archivo no está: el alta no sigue
+ * sin él, porque quien lo cargó cree que lo adjuntó.
+ */
+export async function cvDelFormulario(
+  form: FormData
+): Promise<{ cv: File | null; ruta: string | null; perdido: boolean }> {
+  const ruta = (form.get('cvRuta') ?? '').toString().trim();
+  if (ruta) {
+    const cv = await traerEntrante(ruta, (form.get('cvNombre') ?? '').toString());
+    return { cv, ruta, perdido: !cv };
+  }
+  const adjunto = form.get('cv');
+  return {
+    cv: adjunto instanceof File && adjunto.size > 0 ? adjunto : null,
+    ruta: null,
+    perdido: false,
+  };
+}

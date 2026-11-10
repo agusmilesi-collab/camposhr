@@ -26,6 +26,7 @@ import type { PedidoOpcion } from './Agregar';
 import SoltarArchivo from '@/app/os/SoltarArchivo';
 import { paraInput } from '@/lib/hora';
 import { partesDePersona } from '@/lib/personas';
+import { cvPorRuta } from '@/lib/subida-cliente';
 
 /**
  * Lo que el cajón necesita saber del candidato.
@@ -111,8 +112,16 @@ export default function Candidato({
     setError(null);
     setEnviando(true);
     try {
+      // El CV sube directo al bucket: por Vercel no pasa nada de más de 4,5 MB.
+      const sinSubir = await cvPorRuta(datos, '/api/os/subida');
+      if (sinSubir) {
+        setError(sinSubir);
+        return;
+      }
       const res = await fetch('/api/os/candidatos', { method: 'POST', body: datos });
-      const r = await res.json().catch(() => ({ ok: false, motivo: 'Sin respuesta.' }));
+      const r = await res
+        .json()
+        .catch(() => ({ ok: false, motivo: `No se pudo guardar (error ${res.status}).` }));
       if (!r.ok) {
         setError(r.motivo ?? 'No se pudo guardar.');
         return;

@@ -8,6 +8,7 @@ import { borrarCandidato, editarCandidato, guardarCorreo } from '@/lib/candidato
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
 import { entrevistaAlDia } from '@/lib/entrevista-agendada';
+import { borrarEntrantes, cvDelFormulario } from '@/lib/entrantes';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,8 +42,15 @@ export async function POST(req: Request) {
 
   const texto = (k: string) => (form.get(k) ?? '').toString().trim();
   const id = texto('id');
-  const adjunto = form.get('cv');
-  const cv = adjunto instanceof File && adjunto.size > 0 ? adjunto : null;
+  // El CV llega subido al bucket (`lib/entrantes.ts`): por Vercel no pasa
+  // nada de más de 4,5 MB.
+  const { cv, ruta: cvRuta, perdido } = await cvDelFormulario(form);
+  if (perdido) {
+    return NextResponse.json(
+      { ok: false, motivo: 'No llegó el CV. Volvé a adjuntarlo y guardá de nuevo.' },
+      { status: 502 }
+    );
+  }
   if (cv && cv.size > MAX_CV) {
     return NextResponse.json({ ok: false, motivo: 'El CV supera los 10 MB.' }, { status: 400 });
   }
@@ -93,6 +101,7 @@ export async function POST(req: Request) {
         : {}),
       cv,
     });
+    if (cvRuta) await borrarEntrantes([cvRuta]);
     if (!r.ok) return NextResponse.json(r, { status: 400 });
 
     // Desde acá se cambian la evaluadora, la fecha y la modalidad: el

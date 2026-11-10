@@ -9,6 +9,7 @@ import { crearOrden } from '@/lib/orden-compra';
 import { avisarOrden } from '@/lib/correo-orden';
 import { anotarAcceso } from '@/lib/accesos';
 import { quienSoy } from '@/lib/identidad';
+import { borrarEntrantes, cvDelFormulario } from '@/lib/entrantes';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -127,8 +128,15 @@ async function altaCandidato(
     );
   }
 
-  const adjunto = form.get('cv');
-  const cv = adjunto instanceof File && adjunto.size > 0 ? adjunto : null;
+  // El CV llega subido al bucket (`lib/entrantes.ts`): por Vercel no pasa
+  // nada de más de 4,5 MB.
+  const { cv, ruta: cvRuta, perdido } = await cvDelFormulario(form);
+  if (perdido) {
+    return NextResponse.json(
+      { error: 'No llegó el CV. Volvé a adjuntarlo y guardá de nuevo.' },
+      { status: 502 }
+    );
+  }
   if (cv && cv.size > MAX_CV) {
     return NextResponse.json({ error: 'El CV supera los 10 MB.' }, { status: 400 });
   }
@@ -144,6 +152,7 @@ async function altaCandidato(
     origen: 'interno',
     cv,
   });
+  if (cvRuta) await borrarEntrantes([cvRuta]);
 
   // Toda carga genera su orden de compra, también la que hace el equipo: así
   // todo trabajo tiene su papel. Si falla, el candidato ya entró.
