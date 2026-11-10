@@ -49,7 +49,7 @@ export const dynamic = 'force-dynamic';
  */
 
 const PESTANAS = [
-  { clave: 'semana', texto: 'Calendario' },
+  { clave: 'semana', texto: 'Mes actual' },
   { clave: 'mes', texto: 'Mes que viene' },
   { clave: 'inquilinos', texto: 'Inquilinos' },
   { clave: 'finanzas', texto: 'Finanzas' },
