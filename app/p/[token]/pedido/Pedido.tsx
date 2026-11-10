@@ -46,6 +46,9 @@ function colorDeBateria(codigo: string): string {
   return `precios-pill-${codigo.match(/\d/)?.[0] ?? '1'}`;
 }
 
+/** Lo que se cuenta de un archivo en un aviso de falla: cuál era y cuánto pesaba. */
+const datosDe = (a: File) => ({ nombre: a.name, kb: Math.round(a.size / 1024) });
+
 /** Cuántos candidatos entran de una vez. */
 const MAXIMO = 12;
 
@@ -57,6 +60,12 @@ type Fila = {
   telefono: string;
   mail: string;
   cv: File | null;
+  /**
+   * Dónde quedó el CV en el bucket, si ya subió. Se sube apenas se suelta, del
+   * navegador directo al bucket (`subir`): por Vercel no pasa nada de más de
+   * 4,5 MB. Null si todavía no subió; se vuelve a probar al mandar.
+   */
+  cvRuta: string | null;
   /** De qué archivo salieron los datos, para poder decirlo. */
   desdeCv: boolean;
   /**
@@ -83,6 +92,7 @@ function vacia(id: number): Fila {
     telefono: '',
     mail: '',
     cv: null,
+    cvRuta: null,
     desdeCv: false,
     ciudad: '',
     otraCiudad: false,
@@ -402,34 +412,114 @@ export default function Pedido({
    * Lo leído queda en campos editables: el mail y el teléfono salen casi
    * siempre, el nombre acierta la mayoría de las veces.
    */
-  async function leerCv(archivos: File[]): Promise<Partial<Fila>[]> {
+  async function leerCv(archivos: File[], rutas: (string | null)[]): Promise<Partial<Fila>[]> {
+    // Se leen los que ya están en el bucket; el lector los trae de ahí.
+    const subidos = archivos.map((_, i) => i).filter((i) => rutas[i]);
+    const sinLeer = archivos.map((cv, i) => ({ cv, cvRuta: rutas[i], desdeCv: false }));
+    if (subidos.length === 0) return sinLeer;
     const cuerpo = new FormData();
     cuerpo.set('token', token);
-    for (const a of archivos) cuerpo.append('cv', a);
+    for (const i of subidos) {
+      cuerpo.append('ruta', rutas[i]!);
+      cuerpo.append('nombre', archivos[i].name);
+    }
     try {
       const r = await fetch('/api/portal/cv', { method: 'POST', body: cuerpo });
-      if (!r.ok) throw new Error('sin lectura');
+      if (!r.ok) throw new Error(`el lector respondió ${r.status}`);
       const { leidos } = (await r.json()) as {
         leidos: { nombre: string; mail: string; telefono: string }[];
       };
       // El lector devuelve el nombre entero: se reparte en los dos campos y
       // queda a la vista, para que quien carga lo corrija si cortó mal.
-      return archivos.map((cv, i) => {
-        const partes = partesDelNombre(leidos[i]?.nombre ?? '');
+      return sinLeer.map((fila, i) => {
+        const k = subidos.indexOf(i);
+        if (k < 0) return fila;
+        const partes = partesDelNombre(leidos[k]?.nombre ?? '');
         return {
-        cv,
-        desdeCv: true,
-        nombre: partes.nombres,
-        apellido: partes.apellido,
-        mail: leidos[i]?.mail ?? '',
-        telefono: leidos[i]?.telefono ?? '',
+          ...fila,
+          desdeCv: true,
+          nombre: partes.nombres,
+          apellido: partes.apellido,
+          mail: leidos[k]?.mail ?? '',
+          telefono: leidos[k]?.telefono ?? '',
         };
       });
-    } catch {
+    } catch (e) {
+      avisar('lectura', String(e), { archivos: archivos.map(datosDe) });
       // Si la lectura falla, los archivos se adjuntan igual y los datos se
       // escriben: quedarse sin poder cargar sería peor que escribir tres campos.
-      return archivos.map((cv) => ({ cv, desdeCv: false }));
+      return sinLeer;
     }
+  }
+
+  /**
+   * Le cuenta al equipo que algo falló, sin esperar la respuesta: lo que el
+   * navegador ve y el servidor no (un archivo que no subió, una respuesta que
+   * no se pudo leer, la conexión cortada). Queda registrado y le llega un
+   * correo a Agustín.
+   */
+  function avisar(paso: 'subida' | 'lectura' | 'pedido', motivo: string, detalle?: object) {
+    fetch('/api/portal/error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, paso, motivo, detalle }),
+    }).catch(() => {});
+  }
+
+  /**
+   * Sube los archivos del navegador directo al bucket y devuelve dónde quedó
+   * cada uno, o null si no subió. Los que no se aceptan (tipo o peso) vuelven
+   * en `rechazos`, con la frase para el cliente: eso no es una falla.
+   */
+  async function subir(
+    archivos: File[]
+  ): Promise<{ rutas: (string | null)[]; rechazos: (string | null)[]; fallo: boolean }> {
+    const rutas: (string | null)[] = archivos.map(() => null);
+    const rechazos: (string | null)[] = archivos.map(() => null);
+    let fallo = false;
+    try {
+      const r = await fetch('/api/portal/subida', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          archivos: archivos.map((a) => ({ nombre: a.name, tamano: a.size })),
+        }),
+      });
+      // Si falla del lado del servidor, ese ya avisó.
+      if (!r.ok) return { rutas, rechazos, fallo: true };
+      const { firmas } = (await r.json()) as {
+        firmas: ({ ok: true; ruta: string; url: string; tipo: string } | { ok: false; error: string })[];
+      };
+      await Promise.all(
+        archivos.map(async (a, i) => {
+          const f = firmas[i];
+          if (!f) return;
+          if (!f.ok) {
+            rechazos[i] = f.error;
+            return;
+          }
+          try {
+            const s = await fetch(f.url, {
+              method: 'PUT',
+              headers: { 'Content-Type': f.tipo },
+              body: a,
+            });
+            if (!s.ok) throw new Error(`el almacenamiento respondió ${s.status}: ${await s.text()}`);
+            rutas[i] = f.ruta;
+          } catch (e) {
+            fallo = true;
+            avisar('subida', `No subió ${a.name}: ${String(e)}`, { archivo: datosDe(a) });
+          }
+        })
+      );
+    } catch (e) {
+      fallo = true;
+      avisar('subida', `No se pudo pedir la subida: ${String(e)}`, {
+        archivos: archivos.map(datosDe),
+      });
+    }
+    return { rutas, rechazos, fallo };
   }
 
   async function tomarArchivos(lista: FileList | null) {
@@ -438,7 +528,18 @@ export default function Pedido({
     setLeyendo(true);
     setError(null);
     try {
-      const leidos = await leerCv(archivos);
+      const subida = await subir(archivos);
+      // Lo que no se acepta (otro tipo, más de 10 MB) no entra y se dice.
+      const malos = subida.rechazos.filter(Boolean);
+      if (malos.length > 0) setError(malos.join(' '));
+      const quedan = archivos
+        .map((a, i) => ({ a, ruta: subida.rutas[i] }))
+        .filter((_, i) => !subida.rechazos[i]);
+      if (quedan.length === 0) return;
+      const leidos = await leerCv(
+        quedan.map((x) => x.a),
+        quedan.map((x) => x.ruta)
+      );
       setFilas((f) => {
         // Las filas vacías se aprovechan antes de agregar otras nuevas.
         const libres = f.filter((x) => !x.nombre.trim() && !x.cv);
@@ -471,6 +572,33 @@ export default function Pedido({
     setEnviando(true);
     setError(null);
     try {
+      /* Lo que todavía no subió se sube ahora, del navegador al bucket: los CV
+         que fallaron al soltarlos y el descriptivo. Por el formulario viaja
+         solo dónde quedaron. */
+      const conNombre = filas.filter((f) => f.nombre.trim());
+      const faltaSubir = conNombre.filter((f) => f.cv && !f.cvRuta);
+      const paraSubir = [...faltaSubir.map((f) => f.cv!), ...(descriptivo ? [descriptivo] : [])];
+      const rutaDe = new Map<number, string>();
+      let rutaDescriptivo: string | null = null;
+      if (paraSubir.length > 0) {
+        const subida = await subir(paraSubir);
+        const malos = subida.rechazos.filter(Boolean);
+        if (malos.length > 0) throw new Error(malos.join(' '));
+        faltaSubir.forEach((f, i) => {
+          if (subida.rutas[i]) rutaDe.set(f.id, subida.rutas[i]!);
+        });
+        if (descriptivo) rutaDescriptivo = subida.rutas[faltaSubir.length];
+        if (subida.fallo || rutaDe.size < faltaSubir.length || (descriptivo && !rutaDescriptivo)) {
+          throw new Error(
+            'No pudimos subir los archivos. Revisá la conexión y probá de nuevo. Ya nos llegó el aviso.'
+          );
+        }
+        // Lo subido queda anotado: si el envío falla, no se vuelve a subir.
+        setFilas((x) =>
+          x.map((f) => (rutaDe.has(f.id) ? { ...f, cvRuta: rutaDe.get(f.id)! } : f))
+        );
+      }
+
       const cuerpo = new FormData();
       cuerpo.set('token', token);
       if (enGrupo) cuerpo.set('empresaId', paraCual);
@@ -497,7 +625,10 @@ export default function Pedido({
       }
       cuerpo.set('contactoId', contacto);
       cuerpo.set('comentarios', comentarios.trim());
-      if (descriptivo) cuerpo.set('descriptivo', descriptivo);
+      if (descriptivo && rutaDescriptivo) {
+        cuerpo.set('descriptivoRuta', rutaDescriptivo);
+        cuerpo.set('descriptivoNombre', descriptivo.name);
+      }
 
       filas
         .filter((f) => f.nombre.trim())
@@ -506,14 +637,40 @@ export default function Pedido({
           cuerpo.set(`apellido-${i}`, f.apellido.trim());
           cuerpo.set(`telefono-${i}`, f.telefono.trim());
           cuerpo.set(`mail-${i}`, f.mail.trim());
-          if (f.cv) cuerpo.set(`cv-${i}`, f.cv);
+          const cvRuta = f.cvRuta ?? rutaDe.get(f.id);
+          if (f.cv && cvRuta) {
+            cuerpo.set(`cvRuta-${i}`, cvRuta);
+            cuerpo.set(`cvNombre-${i}`, f.cv.name);
+          }
           if (conCiudad) cuerpo.set(`ciudad-${i}`, ciudadDe(f));
           if (f.prioridadAlta) cuerpo.set(`prioridad-${i}`, 'alta');
         });
 
-      const r = await fetch('/api/pedidos', { method: 'POST', body: cuerpo });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error ?? 'No se pudo enviar el pedido.');
+      let r: Response;
+      try {
+        r = await fetch('/api/pedidos', { method: 'POST', body: cuerpo });
+      } catch (e) {
+        avisar('pedido', `El envío no llegó al servidor: ${String(e)}`, { puesto });
+        throw new Error(
+          'No pudimos enviar el pedido: se cortó la conexión. Probá de nuevo. Ya nos llegó el aviso.'
+        );
+      }
+      const data = await r.json().catch(() => null);
+      if (!r.ok) {
+        // Con su frase es el servidor diciendo qué corregir, o una falla que
+        // él mismo ya avisó. Sin frase, la respuesta no la escribió el código
+        // (un límite de Vercel, una caída): eso lo avisa el navegador.
+        if (data?.error) throw new Error(data.error);
+        avisar('pedido', `El servidor respondió ${r.status} sin explicación.`, {
+          puesto,
+          candidatos: conNombre.length,
+        });
+        throw new Error(
+          `No pudimos guardar el pedido (error ${r.status}). Ya nos llegó el aviso y lo estamos ` +
+            'viendo; probá de nuevo en unos minutos o escribinos.'
+        );
+      }
+      if (!data) throw new Error('No pudimos leer la respuesta. Revisá en tu portal si el pedido entró.');
       setHecho(data.resumen as string);
       setOrden((data.orden as Orden | null) ?? null);
       router.refresh();

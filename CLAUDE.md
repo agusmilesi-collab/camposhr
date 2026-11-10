@@ -1495,6 +1495,29 @@ formas terminan en el mismo `<input file>`, que es el que viaja con el alta, as�
 que el archivo arrastrado se mete ahí con un `DataTransfer` en vez de quedar
 solo leído.
 
+## Los archivos del portal no pasan por Vercel
+
+Vercel rechaza todo pedido de más de 4,5 MB antes de que llegue al código, con
+un 413 en texto plano, y el límite cuenta el formulario entero: todos los CV
+más el descriptivo. Así un cliente no podía mandar un pedido con un CV pesado y
+veía un error en inglés. Pasó con Crucijuegos (5/11/2026) y casi seguro con
+Federada (10/11/2026).
+
+**El navegador sube cada archivo directo al bucket**, a `entrantes/`, con una
+dirección firmada que da `/api/portal/subida` (`lib/entrantes.ts`). Los CV
+suben apenas se sueltan y el lector los lee desde ahí; el descriptivo, al
+mandar. Por el formulario viaja solo la ruta (`cvRuta-<n>`,
+`descriptivoRuta`), y el alta trae el archivo y lo guarda con el camino de
+siempre, que le pone el tipo por la extensión. Después borra el temporal.
+
+**Cada falla del sistema queda en `portal_errores` y le manda un correo a
+Agustín** (`lib/portal-errores.ts`, a la dirección de `CORREO_ERRORES`). Los
+registros de Vercel duran una hora en el plan Hobby. Lo que el servidor ve lo
+registra él; lo que solo ve el navegador (un archivo que no subió, una
+respuesta sin frase, la conexión cortada) lo manda el formulario a
+`/api/portal/error`. Lo que el formulario le pide corregir al cliente no se
+registra.
+
 ## Los datos de personas van a Supabase, no al repositorio
 
 Un repositorio de git no sirve para guardar una evaluación psicológica: no

@@ -269,7 +269,9 @@ export type CandidatoNuevo = {
  * "Por citar", que es el trabajo siguiente; sin nadie, queda en "Sin asignar",
  * que es la pantalla donde se reparte.
  */
-export async function crearCandidato(c: CandidatoNuevo): Promise<{ id: string }> {
+export async function crearCandidato(
+  c: CandidatoNuevo
+): Promise<{ id: string; cvPerdido?: boolean }> {
   const pedido = (
     await select<{ empresa_id: string }>(
       'pedidos',
@@ -290,9 +292,13 @@ export async function crearCandidato(c: CandidatoNuevo): Promise<{ id: string }>
     origen: c.origen,
   });
 
+  // Si el CV no sube, el candidato entra igual y quien lo cargó se entera por
+  // `cvPerdido`: perder el adjunto no puede costar el alta entera.
+  let cvPerdido = false;
   if (c.cv) {
     const ruta = await subirCv(persona.id, c.cv);
     if (ruta) await actualizarPersona(persona.id, { cv_path: ruta });
+    else cvPerdido = true;
   }
 
   const evaluacion = await insertar<{ id: string }>('evaluaciones', {
@@ -312,7 +318,7 @@ export async function crearCandidato(c: CandidatoNuevo): Promise<{ id: string }>
   // pedido cerrado no admite candidatos, así que dejarlo cerrado con alguien
   // adentro esconde ese trabajo.
   await ajustarPedidoDe(evaluacion.id);
-  return evaluacion;
+  return cvPerdido ? { ...evaluacion, cvPerdido } : evaluacion;
 }
 
 async function actualizarPersona(id: string, campos: Record<string, unknown>) {

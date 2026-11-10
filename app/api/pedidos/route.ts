@@ -12,6 +12,8 @@ import { empresasDelGrupo } from '@/lib/grupo';
 import { avisarPedidoNuevo } from '@/lib/correo-equipo';
 import { empresaDelToken } from '@/lib/portal-supabase';
 import { esDemo, NOMBRE_DEMO } from '@/lib/portal-demo';
+import { borrarEntrantes, traerEntrante } from '@/lib/entrantes';
+import { registrarError } from '@/lib/portal-errores';
 import { DEL_JEFE, DEL_PUESTO } from '@/lib/pedido-campos';
 import {
   ESTRATOS,
@@ -208,6 +210,13 @@ export async function POST(req: Request) {
     telefono: string;
     mail: string;
     cv: File | null;
+    /**
+     * Dónde quedó el CV que el navegador subió directo al bucket
+     * (`lib/entrantes.ts`), que es lo normal: por Vercel no pasa nada de más de
+     * 4,5 MB. `cv` queda para un formulario abierto desde antes del cambio.
+     */
+    cvRuta: string | null;
+    cvNombre: string;
     ciudad: string | null;
     /** Si el cliente lo marcó como de prioridad alta. */
     prioridadAlta: boolean;
@@ -216,6 +225,7 @@ export async function POST(req: Request) {
     let nombre = texto(`nombre-${i}`);
     if (!nombre) continue;
     const adjunto = form.get(`cv-${i}`);
+    const cvRuta = texto(`cvRuta-${i}`);
     let apellido = texto(`apellido-${i}`);
     // Un formulario abierto desde antes de que el apellido tuviera su campo
     // manda todo en el nombre ("Gastón Álvarez"): se parte acá, en vez de
@@ -234,6 +244,8 @@ export async function POST(req: Request) {
       telefono: texto(`telefono-${i}`),
       mail: texto(`mail-${i}`),
       cv: adjunto instanceof File && adjunto.size > 0 ? adjunto : null,
+      cvRuta: cvRuta || null,
+      cvNombre: texto(`cvNombre-${i}`),
       ciudad: conCiudad ? texto(`ciudad-${i}`).slice(0, 60) || null : null,
       prioridadAlta: texto(`prioridad-${i}`) === 'alta',
     });
@@ -265,6 +277,27 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+  /* Los archivos que subió el navegador se traen antes de crear nada: si uno
+     no está, el pedido no entra a medias y sin ese CV. */
+  const rutasSubidas: string[] = [];
+  for (const g of gente) {
+    if (!g.cvRuta) continue;
+    rutasSubidas.push(g.cvRuta);
+    g.cv = await traerEntrante(g.cvRuta, g.cvNombre);
+    if (!g.cv) {
+      await registrarError({
+        empresaId: empresa.id,
+        paso: 'pedido',
+        motivo: `No se encontró en el almacenamiento el CV de ${g.completo}.`,
+        detalle: { ruta: g.cvRuta, archivo: g.cvNombre },
+      });
+      return NextResponse.json(
+        { error: `No pudimos recibir el CV de ${g.completo}. Sacalo, volvé a adjuntarlo y mandá de nuevo.` },
+        { status: 502 }
+      );
+    }
+  }
+
   const pesado = gente.find((g) => g.cv && g.cv.size > MAX_CV);
   if (pesado) {
     return NextResponse.json(
@@ -276,8 +309,25 @@ export async function POST(req: Request) {
   /* El descriptivo de puesto, si lo adjuntaron: es opcional, en un pedido
      nuevo y al sumarle candidatos a uno que ya existe. */
   const adjuntoPuesto = form.get('descriptivo');
-  const descriptivoPuesto =
+  const descriptivoRuta = texto('descriptivoRuta');
+  let descriptivoPuesto =
     adjuntoPuesto instanceof File && adjuntoPuesto.size > 0 ? adjuntoPuesto : null;
+  if (descriptivoRuta) {
+    rutasSubidas.push(descriptivoRuta);
+    descriptivoPuesto = await traerEntrante(descriptivoRuta, texto('descriptivoNombre'));
+    if (!descriptivoPuesto) {
+      await registrarError({
+        empresaId: empresa.id,
+        paso: 'pedido',
+        motivo: 'No se encontró en el almacenamiento el descriptivo de puesto.',
+        detalle: { ruta: descriptivoRuta, archivo: texto('descriptivoNombre') },
+      });
+      return NextResponse.json(
+        { error: 'No pudimos recibir el descriptivo de puesto. Sacalo, volvé a adjuntarlo y mandá de nuevo.' },
+        { status: 502 }
+      );
+    }
+  }
   if (descriptivoPuesto && descriptivoPuesto.size > MAX_DESCRIPTIVO) {
     return NextResponse.json(
       { error: 'El descriptivo de puesto supera los 10 MB.' },
@@ -367,7 +417,14 @@ export async function POST(req: Request) {
 
     // El descriptivo se cuelga del pedido. No tira: si falla, el pedido entra
     // igual.
-    if (descriptivoPuesto) await subirDescriptivo(pedidoDestino, descriptivoPuesto);
+    if (descriptivoPuesto && !(await subirDescriptivo(pedidoDestino, descriptivoPuesto))) {
+      await registrarError({
+        empresaId: empresa.id,
+        paso: 'pedido',
+        motivo: 'El pedido entró sin su descriptivo de puesto: no se pudo guardar el archivo.',
+        detalle: { pedido: pedidoDestino, archivo: descriptivoPuesto.name },
+      });
+    }
 
     // De a uno y no todos a la vez: cada candidato sube su CV, y si algo falla
     // en el tercero los dos primeros ya quedaron cargados en vez de perderse.
@@ -389,6 +446,14 @@ export async function POST(req: Request) {
         solicitanteId: pide?.id ?? null,
       });
       cargadas.push(evaluacion.id);
+      if (evaluacion.cvPerdido) {
+        await registrarError({
+          empresaId: empresa.id,
+          paso: 'pedido',
+          motivo: `${g.completo} entró sin su CV: no se pudo guardar el archivo.`,
+          detalle: { evaluacion: evaluacion.id, archivo: g.cv?.name ?? '' },
+        });
+      }
     }
 
     // La orden de compra de esta carga: lo que acaban de pedir y cuánto sale.
@@ -410,11 +475,25 @@ export async function POST(req: Request) {
       comentarios,
     });
 
+    // Ya están guardados con su nombre definitivo.
+    await borrarEntrantes(rutasSubidas);
+
     revalidateTag(CACHE_PSICOTECNICOS, { expire: 0 });
     revalidateTag(CACHE_CLIENTES, { expire: 0 });
     return NextResponse.json({ resumen: base, guardado: true, orden });
   } catch (e) {
     console.error('[alta de pedido]', e);
+    await registrarError({
+      empresaId: empresa.id,
+      paso: 'pedido',
+      motivo: 'El pedido no se pudo guardar.',
+      detalle: {
+        error: e instanceof Error ? e.message : String(e),
+        puesto: puesto || null,
+        pedidoId: pedidoId || null,
+        candidatos: gente.map((g) => g.completo),
+      },
+    });
     return NextResponse.json(
       { error: 'El pedido no se pudo guardar. Probá de nuevo o avisanos.' },
       { status: 502 }
