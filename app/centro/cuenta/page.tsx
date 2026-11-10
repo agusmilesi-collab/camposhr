@@ -10,6 +10,7 @@ import {
   movimientos as leerMovimientos,
   periodoDe,
   recargoDelDia,
+  ultimoDiaSinRecargo,
   reservasEntre,
   saldoDe,
   signo,
@@ -396,9 +397,9 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
                       <tr>
                         <td>
                           {pct === 0
-                            ? 'Sin recargo: estamos antes del 10'
+                            ? `Sin recargo: hasta el ${ultimoDiaSinRecargo(periodo)}`
                             : pct === 15
-                              ? 'Recargo del 15 % por pagar entre el 11 y el 20'
+                              ? `Recargo del 15 % por pagar entre el ${ultimoDiaSinRecargo(periodo) + 1} y el 20`
                               : 'Recargo del 25 % por pagar después del 20'}
                         </td>
                         <td className="centro-num">{pesos(Math.round((saldo * pct) / 100))}</td>

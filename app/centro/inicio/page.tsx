@@ -15,6 +15,7 @@ import {
   movimientosDe,
   periodoDe,
   recargoDelDia,
+  ultimoDiaSinRecargo,
   reservasDe,
   saldoDe,
   sumarDias,
@@ -350,7 +351,7 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                 clave: 'pagar',
                 titulo: `Pagar ${mesLargo(mesAPagar).split(' ')[0]}`,
                 detalle:
-                  aPagar > saldoAPagar ? 'Ya lleva recargo' : 'Hasta el 10, sin recargo',
+                  aPagar > saldoAPagar ? 'Ya lleva recargo' : `Hasta el ${ultimoDiaSinRecargo(mesAPagar)}, sin recargo`,
                 dato: pesos(aPagar),
                 enlace: { href: '/centro/cuenta#pagar', texto: 'Ver cómo se paga' },
                 aviso: true,

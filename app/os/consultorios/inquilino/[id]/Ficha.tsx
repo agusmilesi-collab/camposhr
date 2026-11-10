@@ -28,6 +28,7 @@ import {
   mesLargo,
   periodoDe,
   recargoDelDia,
+  ultimoDiaSinRecargo,
   saldoDe,
   signo,
   type Contrato,
@@ -1163,11 +1164,11 @@ export default function Ficha({
               <table className="os-papel-tabla os-papel-plazos">
                 <tbody>
                   <tr>
-                    <td>Pagando hasta el 10 de {soloMes(periodo)}</td>
+                    <td>Pagando hasta el {ultimoDiaSinRecargo(periodo)} de {soloMes(periodo)}</td>
                     <td className="os-papel-num">{pesos(saldo)}</td>
                   </tr>
                   <tr>
-                    <td>Del 11 al 20, con el 15 % de recargo</td>
+                    <td>Del {ultimoDiaSinRecargo(periodo) + 1} al 20, con el 15 % de recargo</td>
                     <td className="os-papel-num">{pesos(Math.round(saldo * 1.15))}</td>
                   </tr>
                   <tr>

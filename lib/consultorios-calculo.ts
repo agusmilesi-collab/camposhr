@@ -374,9 +374,22 @@ export function recargoDelDia(fecha: string, periodo: string): number {
   if (mesDeLaFecha < mesDePago) return 0;
   if (mesDeLaFecha > mesDePago) return 25;
   const dia = Number(fecha.slice(8, 10));
-  if (dia <= 10) return 0;
+  if (dia <= ultimoDiaSinRecargo(mesDePago)) return 0;
   if (dia <= 20) return 15;
   return 25;
+}
+
+/**
+ * Los meses en que el plazo sin recargo se corrió, con su último día.
+ *
+ * Noviembre de 2026 se abrió el 10, con el mes ya empezado, así que se pagó
+ * sin recargo hasta el 14 (decisión de Agustín, 10/11/2026).
+ */
+const PLAZO_CORRIDO: Record<string, number> = { '2026-11-01': 14 };
+
+/** El último día del mes que se paga sin recargo: el 10, salvo excepción. */
+export function ultimoDiaSinRecargo(periodo: string): number {
+  return PLAZO_CORRIDO[periodoDe(periodo)] ?? 10;
 }
 
 /** El día de la semana con lunes en 0, como `DIAS` en `lib/opciones.ts`. */
