@@ -28,6 +28,8 @@ import {
   mesLargo,
   periodoDe,
   saldoDe,
+  aCobrarDe,
+  cobradoDe,
   hora,
   type Reserva,
   type Inquilino,
@@ -92,8 +94,9 @@ export default function Inquilinos({
       // Lo que hay que pagar del mes: los cargos menos los créditos de horas
       // soltadas, más recargos y ajustes. Solo los cargos daba un importe que
       // no cerraba con los pagos de quien había soltado una hora.
-      cargos: saldoDe(suyosDelMes.filter((m) => m.tipo !== 'pago')),
-      pagos: suyosDelMes.filter((m) => m.tipo === 'pago').reduce((n, m) => n + m.importe, 0),
+      cargos: aCobrarDe(suyosDelMes),
+      // Los pagos menos lo que se devolvió: una devolución no es plata que entró.
+      pagos: cobradoDe(suyosDelMes),
       saldo: saldoDe(suyosDelMes),
       movimientos: suyosDelMes,
       // El saldo de todos los meses, que es lo que de verdad se debe.

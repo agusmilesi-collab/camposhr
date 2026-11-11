@@ -30,6 +30,7 @@ import {
   recargoDelDia,
   ultimoDiaSinRecargo,
   aCobrarDe,
+  cobradoDe,
   saldoDe,
   signo,
   type Contrato,
@@ -195,6 +196,12 @@ export default function Ficha({
 
   const i = inquilino;
   const pct = recargoDelDia(hoy, periodo);
+  /*
+   * El recargo del pago que se está cargando sale de la fecha del pago y no de
+   * hoy: una transferencia del 8 registrada el 15 no lleva recargo.
+   */
+  const [fechaPago, setFechaPago] = useState(hoy);
+  const pctPago = recargoDelDia(fechaPago, periodo);
   const salaDe = (id: string) => espacios.find((e) => e.id === id)?.nombre ?? 'Sala';
 
   const delMes = movimientos.filter((m) => m.periodo === periodo);
@@ -373,7 +380,7 @@ export default function Ficha({
   async function cobrar(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
     const d = new FormData(ev.currentTarget);
-    const recargo = conRecargo && pct > 0 ? Math.round((saldo * pct) / 100) : 0;
+    const recargo = conRecargo && pctPago > 0 ? Math.round((saldo * pctPago) / 100) : 0;
     setGuardando(true);
     const r = await mandar({
       accion: 'pago-alta',
@@ -441,8 +448,10 @@ export default function Ficha({
         </div>
         <div className="os-cifra">
           <div className="os-cifra-rotulo">Del mes</div>
-          <div className="os-cifra-valor">{pesos(cargos + otros)}</div>
-          <div className="os-cifra-pie">{pagos > 0 ? `pagó ${pesos(pagos)}` : 'sin pagos'}</div>
+          <div className="os-cifra-valor">{pesos(aCobrarDe(delMes))}</div>
+          <div className="os-cifra-pie">
+            {cobradoDe(delMes) !== 0 ? `pagó ${pesos(cobradoDe(delMes))}` : 'sin pagos'}
+          </div>
         </div>
         <div className="os-cifra">
           <div className="os-cifra-rotulo">Debe</div>
@@ -799,7 +808,10 @@ export default function Ficha({
                         desaparece de la cuenta de alguien sin que nadie lo haya
                         decidido dos veces, y el movimiento no se puede
                         deshacer. */}
+                    {/* El crédito de una hora liberada no se borra: el cargo
+                        volvería a deberse con la hora ya libre. */}
                     {m.tipo !== 'cargo' &&
+                      !(m.tipo === 'credito' && m.reserva_id) &&
                       (porBorrar === m.id ? (
                         <>
                           <button
@@ -853,7 +865,8 @@ export default function Ficha({
                 className="os-campo os-campo-suave"
                 type="date"
                 name="fecha"
-                defaultValue={hoy}
+                value={fechaPago}
+                onChange={(e) => setFechaPago(e.target.value || hoy)}
                 required
               />
             </label>
@@ -877,18 +890,19 @@ export default function Ficha({
                 name="importe"
                 inputMode="numeric"
                 autoComplete="off"
-                defaultValue={Math.round(saldo + (conRecargo && pct > 0 ? (saldo * pct) / 100 : 0))}
+                key={`${fechaPago}|${conRecargo}`}
+                defaultValue={Math.round(saldo + (conRecargo && pctPago > 0 ? (saldo * pctPago) / 100 : 0))}
                 required
               />
             </label>
-            {pct > 0 && (
+            {pctPago > 0 && (
               <label className="os-tilde-fila">
                 <input
                   type="checkbox"
                   checked={conRecargo}
                   onChange={(e) => setConRecargo(e.target.checked)}
                 />
-                Sumar {pct}% ({pesos(Math.round((saldo * pct) / 100))})
+                Sumar {pctPago}% ({pesos(Math.round((saldo * pctPago) / 100))})
               </label>
             )}
             <button className="os-boton os-boton-firme" type="submit" disabled={guardando}>

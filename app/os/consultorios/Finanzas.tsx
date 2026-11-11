@@ -36,6 +36,7 @@ import {
   type Movimiento,
   type Reserva,
   aCobrarDe,
+  cobradoDe,
 } from '@/lib/consultorios-calculo';
 import { mandar, pesos } from './acciones';
 
@@ -193,9 +194,8 @@ export default function Finanzas({
   // Lo que se cobra, no lo que se reservó: una hora suelta soltada a tiempo
   // tiene su crédito y no entra.
   const facturado = aCobrarDe(movimientos.filter((m) => m.periodo === periodo));
-  const cobrado = movimientos
-    .filter((m) => m.periodo === periodo && m.tipo === 'pago')
-    .reduce((n, m) => n + m.importe, 0);
+  // Lo que entró: los pagos menos las devoluciones.
+  const cobrado = cobradoDe(movimientos.filter((m) => m.periodo === periodo));
   const delMes = gastos.filter((g) => g.periodo === periodo);
   const costos = delMes.reduce((n, g) => n + g.importe, 0);
   const resultado = facturado - costos;

@@ -10,7 +10,10 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * El recordatorio de renovar, el día 28 de cada mes.
+ * El recordatorio de renovar, el día 26 de cada mes.
+ *
+ * El 26 y no el 28: el mes se abre el último día a las 10, y en febrero el 28
+ * es el último día; el recordatorio llegaba una hora antes del cierre.
  *
  * Lo dispara el cron de Vercel (`vercel.json`), que llega con
  * `Authorization: Bearer <CRON_SECRET>`. Sin la variable cargada, o con otro
@@ -23,7 +26,7 @@ export const dynamic = 'force-dynamic';
  *
  * Con `?dia=2026-10-28` se finge la fecha, solo fuera de producción. Con
  * `?simular=1` cuenta a quién le escribiría y no manda nada, en cualquier
- * entorno: sirve para mirar la lista antes del 28.
+ * entorno: sirve para mirar la lista antes del 26.
  */
 export async function GET(req: Request) {
   const secreto = process.env.CRON_SECRET;

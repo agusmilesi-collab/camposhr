@@ -15,6 +15,10 @@ export async function mandar(
   /** Cuántas fechas entraron y cuáles ya estaban ocupadas, al repetir. */
   creadas?: number;
   chocaron?: string[];
+  /** Las fechas en que la sala estaba cerrada o era feriado, al repetir. */
+  cerradas?: string[];
+  /** Cuántas reservas liberó un cierre, sin cobrarlas. */
+  liberadas?: number;
 }> {
   const res = await fetch('/api/os/consultorios', {
     method: 'POST',

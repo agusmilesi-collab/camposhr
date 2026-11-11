@@ -1,5 +1,5 @@
 import 'server-only';
-import { revalidateTag } from 'next/cache';
+import { invalidarCentro } from '@/lib/consultorios-escritura';
 import { insert, select, upsert } from '@/lib/supabase';
 import {
   contratos as leerContratos,
@@ -180,7 +180,7 @@ export async function sumarBanda(
     'inquilino_id,periodo',
     false
   );
-  revalidateTag('consultorios', { expire: 0 });
+  invalidarCentro();
   return { ok: true };
 }
 
@@ -209,6 +209,6 @@ export async function quitarBanda(
     headers: { apikey: key, Authorization: `Bearer ${key}` },
     cache: 'no-store',
   });
-  revalidateTag('consultorios', { expire: 0 });
+  invalidarCentro();
   return { ok: true };
 }

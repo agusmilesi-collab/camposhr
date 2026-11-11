@@ -54,6 +54,28 @@ export async function select<T>(
   return res.json();
 }
 
+/**
+ * SELECT de todas las filas, de a mil.
+ *
+ * PostgREST devuelve como mucho mil filas por pedido y sin avisar: una tabla
+ * que crece (los movimientos del Centro, los renglones de factura) quedaba
+ * cortada, y lo que caía afuera desaparecía de las cuentas. `query` tiene que
+ * traer un `order` estable para que las páginas no se pisen.
+ */
+export async function selectTodas<T>(
+  tabla: string,
+  query: string,
+  etiqueta?: string | string[]
+): Promise<T[]> {
+  const PAGINA = 1000;
+  const todas: T[] = [];
+  for (let desde = 0; ; desde += PAGINA) {
+    const filas = await select<T>(tabla, `${query}&limit=${PAGINA}&offset=${desde}`, etiqueta);
+    todas.push(...filas);
+    if (filas.length < PAGINA) return todas;
+  }
+}
+
 /** INSERT de una fila. Devuelve la fila creada. */
 export async function insert<T>(
   tabla: string,

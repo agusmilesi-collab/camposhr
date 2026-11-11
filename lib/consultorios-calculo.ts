@@ -351,7 +351,24 @@ export function saldoDe(ms: Movimiento[]): number {
  * (11/11/2026).
  */
 export function aCobrarDe(ms: Movimiento[]): number {
-  return saldoDe(ms.filter((m) => m.tipo !== 'pago'));
+  return saldoDe(ms.filter((m) => m.tipo !== 'pago' && !esDevolucion(m)));
+}
+
+/** El detalle con que se anota una devolución de dinero (`devolucion-alta`). */
+export const DETALLE_DEVOLUCION = 'Devolución de dinero';
+
+/**
+ * Una devolución es un ajuste que suma al saldo, pero no es un ingreso: es
+ * plata que se le devolvió a quien pagó una hora que después no se cobró. Va
+ * contra lo cobrado, no contra lo facturado.
+ */
+export function esDevolucion(m: Pick<Movimiento, 'tipo' | 'detalle'>): boolean {
+  return m.tipo === 'ajuste' && m.detalle === DETALLE_DEVOLUCION;
+}
+
+/** Lo que de verdad entró: los pagos menos lo que se devolvió. */
+export function cobradoDe(ms: Movimiento[]): number {
+  return ms.reduce((n, m) => n + (m.tipo === 'pago' ? m.importe : esDevolucion(m) ? -m.importe : 0), 0);
 }
 
 /** El primer día del mes de una fecha, que es como se guarda `periodo`. */

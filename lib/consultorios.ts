@@ -22,7 +22,7 @@
 
 import 'server-only';
 
-import { select } from '@/lib/supabase';
+import { select, selectTodas } from '@/lib/supabase';
 import { feriadosEntre } from '@/lib/feriados';
 import type {
   Apertura,
@@ -154,9 +154,9 @@ export async function contratos(): Promise<Contrato[]> {
 
 export async function movimientos(periodo?: string): Promise<Movimiento[]> {
   const filtro = periodo ? `&periodo=eq.${periodo}` : '';
-  const filas = await select<Movimiento>(
+  const filas = await selectTodas<Movimiento>(
     'movimientos',
-    `select=id,inquilino_id,tipo,fecha,periodo,importe,reserva_id,detalle,quien${filtro}&order=fecha.desc`
+    `select=id,inquilino_id,tipo,fecha,periodo,importe,reserva_id,detalle,quien${filtro}&order=fecha.desc,id.asc`
   );
   return filas.map((m) => ({ ...m, importe: Number(m.importe) }));
 }
@@ -192,20 +192,21 @@ export async function inquilinoPorId(id: string): Promise<Inquilino | null> {
  */
 export async function reservasDe(inquilinoId: string): Promise<Reserva[]> {
   if (!ID_VALIDO.test(inquilinoId)) return [];
-  return select<Reserva>(
+  return selectTodas<Reserva>(
     'reservas',
     `select=id,espacio_id,inquilino_id,fecha,desde_hora,hasta_hora,origen,estado,importe,inquilinos(nombre)` +
-      `&inquilino_id=eq.${inquilinoId}&estado=eq.activa&order=fecha.asc,desde_hora.asc`
+      `&inquilino_id=eq.${inquilinoId}&estado=eq.activa&order=fecha.asc,desde_hora.asc,id.asc`
   );
 }
 
 /** Su cuenta entera, de todos los meses: el saldo que se arrastra sale de acá. */
 export async function movimientosDe(inquilinoId: string): Promise<Movimiento[]> {
   if (!ID_VALIDO.test(inquilinoId)) return [];
-  const filas = await select<Movimiento>(
+  // De a mil: la cuenta de una persona pasa las mil filas en un par de años.
+  const filas = await selectTodas<Movimiento>(
     'movimientos',
     'select=id,inquilino_id,tipo,fecha,periodo,importe,reserva_id,detalle,quien' +
-      `&inquilino_id=eq.${inquilinoId}&order=fecha.desc`
+      `&inquilino_id=eq.${inquilinoId}&order=fecha.desc,id.asc`
   );
   return filas.map((m) => ({ ...m, importe: Number(m.importe) }));
 }

@@ -3,6 +3,8 @@ import { revalidateTag } from 'next/cache';
 import { comprobantePorId, darPorRegistrados, loQueDebe } from '@/lib/comprobantes-pago';
 import { darPorVista } from '@/lib/renovaciones';
 import { abrirMes, mesesAbiertosDesde, terminarBanda } from '@/lib/apertura-mes';
+import { pasarDeActiva } from '@/lib/consultorios-escritura';
+import { CACHE_COMERCIAL } from '@/lib/etiquetas';
 import { hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { quienSoy } from '@/lib/identidad';
@@ -14,14 +16,17 @@ import {
   DIAS_CORTOS,
   contratos as leerContratos,
   cotizar,
-  escalaVigente,
   hora,
   horasSemanalesTotales,
   listarEspacios,
   aperturas as leerAperturas,
+  cierresEntre,
+  escalas as leerEscalas,
   periodoDe,
   RUBROS,
   hoyISO,
+  diaSemanaDe,
+  DETALLE_DEVOLUCION,
 } from '@/lib/consultorios';
 
 export const runtime = 'nodejs';
@@ -286,7 +291,48 @@ export async function POST(req: Request) {
             motivo,
           });
         }
-        extra = { creadas: fechas.length };
+        /*
+         * Lo reservado que el cierre tapa se libera sin cobrar: el Centro
+         * cierra, la hora no se usa. Antes quedaba oculta debajo del cierre,
+         * sin poder liberarse, y se seguía cobrando.
+         */
+        let liberadas = 0;
+        {
+          const url = process.env.SUPABASE_URL;
+          const key = process.env.SUPABASE_SERVICE_KEY as string;
+          const cab = { apikey: key, Authorization: `Bearer ${key}` };
+          const filtroSala = espacioId ? `&espacio_id=eq.${espacioId}` : '';
+          const res = await fetch(
+            `${url}/rest/v1/reservas?select=id,desde_hora,hasta_hora&estado=eq.activa&fecha=in.(${fechas.join(',')})${filtroSala}`,
+            { headers: cab, cache: 'no-store' }
+          );
+          const tapadas = ((res.ok ? await res.json() : []) as { id: string; desde_hora: string; hasta_hora: string }[]).filter(
+            (r) => desdeHora === null || (r.desde_hora < (hastaHora as string) && r.hasta_hora > desdeHora)
+          );
+          for (const r of tapadas) {
+            if (!(await pasarDeActiva(r.id, 'liberada'))) continue;
+            const cargos = (await (
+              await fetch(`${url}/rest/v1/movimientos?reserva_id=eq.${r.id}&tipo=eq.cargo&select=importe,periodo,inquilino_id`, {
+                headers: cab,
+                cache: 'no-store',
+              })
+            ).json()) as { importe: number; periodo: string; inquilino_id: string }[];
+            for (const c of cargos) {
+              await insert('movimientos', {
+                inquilino_id: c.inquilino_id,
+                tipo: 'credito',
+                fecha: hoyISO(),
+                periodo: c.periodo,
+                importe: c.importe,
+                reserva_id: r.id,
+                detalle: `Cierre del Centro: ${motivo}`,
+                quien: yo.nombre,
+              });
+            }
+            liberadas++;
+          }
+        }
+        extra = { creadas: fechas.length, liberadas };
         break;
       }
 
@@ -396,31 +442,63 @@ export async function POST(req: Request) {
         if (hastaHora <= desdeHora) return mal('La hora de fin va después de la de inicio.');
 
         // El precio se congela acá: una actualización de la escala no vuelve a
-        // tocar lo ya reservado.
-        const [espacios, escala, todosLosContratos] = await Promise.all([
+        // tocar lo ya reservado. Cada fecha con la escala que rige ese día: una
+        // repetición que cruza un aumento cobraba todo con la de la primera.
+        const ordenadas = [...fechas].sort();
+        const [espacios, todasLasEscalas, todosLosContratos, aperturasDe, cierresDe] = await Promise.all([
           listarEspacios(),
-          escalaVigente(fecha),
+          leerEscalas(),
           leerContratos(),
+          leerAperturas(),
+          cierresEntre(ordenadas[0], ordenadas[ordenadas.length - 1]),
         ]);
         const espacio = espacios.find((e) => e.id === espacioId);
         if (!espacio) return mal('Esa sala no existe.');
         const horas = hora(hastaHora) - hora(desdeHora);
+        const escalaDe = (f: string) => {
+          const desde = todasLasEscalas.map((t) => t.desde).filter((d) => d <= f).sort().pop();
+          return todasLasEscalas.filter((t) => t.desde === desde);
+        };
         // Una hora suelta se cobra a precio de hora suelta: el tramo es el de
         // esta reserva sola, tenga o no contrato (decisión de Agustín,
         // 15/10/2026). Solo la banda fija entra al tramo de lo contratado.
-        const tramo =
-          origen === 'contrato'
-            ? Math.max(horasSemanalesTotales(todosLosContratos, inquilinoId, fecha), horas)
-            : horas;
-        const cotizacion = cotizar(escala.tarifas, espacio.id, tramo);
-        const importe = cotizacion ? cotizacion.precioHora * horas : null;
+        const importeDe = (f: string) => {
+          const tramo =
+            origen === 'contrato' ? Math.max(horasSemanalesTotales(todosLosContratos, inquilinoId, f), horas) : horas;
+          const cotizacion = cotizar(escalaDe(f), espacio.id, tramo);
+          return cotizacion ? cotizacion.precioHora * horas : null;
+        };
+        /*
+         * Una fecha en que la sala no abre a esa hora, o tiene un cierre, no se
+         * reserva. Un feriado tampoco, salvo que se reserve esa sola fecha: es
+         * cómo Lucila le da un feriado a quien lo pidió. Antes "Cada semana"
+         * reservaba y cobraba feriados y días cerrados.
+         */
+        const cerrada = (f: string) => {
+          const ap = aperturasDe.find((a) => a.espacio_id === espacioId && a.dia_semana === diaSemanaDe(f));
+          if (!ap || desdeHora < ap.desde_hora.slice(0, 5) || hastaHora > ap.hasta_hora.slice(0, 5)) return true;
+          return cierresDe.some(
+            (c) =>
+              c.fecha === f &&
+              (c.espacio_id === null || c.espacio_id === espacioId) &&
+              (c.feriado
+                ? fechas.length > 1
+                : c.desde_hora === null || (c.desde_hora < hastaHora && (c.hasta_hora ?? '24:00') > desdeHora))
+          );
+        };
 
         // Una fecha ocupada no cancela las demás: se guardan las que entran y
         // se avisa cuáles no. Abortando todo por una, había que ir sacando
         // fechas a mano hasta dar con la que chocaba.
         const chocaron: string[] = [];
+        const cerradas: string[] = [];
         let creadas = 0;
         for (const f of fechas) {
+          if (cerrada(f)) {
+            cerradas.push(f);
+            continue;
+          }
+          const importe = importeDe(f);
           let reserva: { id: string };
           try {
             reserva = await insert<{ id: string }>('reservas', {
@@ -461,11 +539,13 @@ export async function POST(req: Request) {
         if (creadas === 0) {
           return mal(
             fechas.length === 1
-              ? 'Esa hora ya está reservada en esa sala.'
-              : 'Todas esas fechas ya estaban reservadas.'
+              ? cerradas.length
+                ? 'La sala está cerrada a esa hora.'
+                : 'Esa hora ya está reservada en esa sala.'
+              : 'Ninguna de esas fechas se pudo reservar: estaban ocupadas o cerradas.'
           );
         }
-        extra = { creadas, chocaron };
+        extra = { creadas, chocaron, cerradas };
         break;
       }
 
@@ -487,7 +567,8 @@ export async function POST(req: Request) {
             return mal('Las horas fijas del mes no se liberan. Si deja de alquilarla, terminá la banda desde su ficha.');
           }
         }
-        await patch('reservas', `id=eq.${id}`, { estado: 'liberada' });
+        // Solo si sigue activa: dos pedidos seguidos dejaban dos créditos.
+        if (!(await pasarDeActiva(id, 'liberada'))) return mal('Esa reserva ya no está activa.');
         {
           const url = process.env.SUPABASE_URL;
           const key = process.env.SUPABASE_SERVICE_KEY as string;
@@ -521,7 +602,7 @@ export async function POST(req: Request) {
             await insert('movimientos', {
               inquilino_id: c.inquilino_id,
               tipo: 'credito',
-              fecha: new Date().toISOString().slice(0, 10),
+              fecha: hoyISO(),
               periodo: c.periodo,
               importe: c.importe,
               reserva_id: id,
@@ -549,7 +630,7 @@ export async function POST(req: Request) {
           fecha: hoyISO(),
           periodo,
           importe,
-          detalle: 'Devolución de dinero',
+          detalle: DETALLE_DEVOLUCION,
           quien: yo.nombre,
         });
         break;
@@ -761,12 +842,50 @@ export async function POST(req: Request) {
         if (!UUID.test(id)) return mal('Movimiento inválido.');
         const url = process.env.SUPABASE_URL;
         const key = process.env.SUPABASE_SERVICE_KEY as string;
+        const cab = { apikey: key, Authorization: `Bearer ${key}` };
+        const [m] = (await (
+          await fetch(`${url}/rest/v1/movimientos?id=eq.${id}&select=id,tipo,reserva_id,inquilino_id,periodo`, {
+            headers: cab,
+            cache: 'no-store',
+          })
+        ).json()) as { id: string; tipo: string; reserva_id: string | null; inquilino_id: string; periodo: string | null }[];
+        if (!m) return mal('Ese movimiento ya no existe.');
+        /*
+         * Lo que no se borra, porque deja la cuenta contradiciendo al resto:
+         * el crédito de una hora liberada (el cargo volvía a deberse con la
+         * hora ya libre en el calendario, el caso de Paula del 10/11/2026) y un
+         * cargo que ya está en una factura.
+         */
+        if (m.tipo === 'credito' && m.reserva_id) {
+          return mal('Es el crédito de una hora liberada: si se borra, se le cobra una hora que ya no tiene.');
+        }
+        if (m.tipo === 'cargo') {
+          const fact = (await (
+            await fetch(`${url}/rest/v1/factura_items?movimiento_id=eq.${id}&select=id&limit=1`, {
+              headers: cab,
+              cache: 'no-store',
+            })
+          ).json()) as unknown[];
+          if (fact.length > 0) return mal('Ese cargo ya está facturado: no se puede borrar.');
+        }
         const res = await fetch(`${url}/rest/v1/movimientos?id=eq.${id}`, {
           method: 'DELETE',
-          headers: { apikey: key, Authorization: `Bearer ${key}` },
+          headers: cab,
           cache: 'no-store',
         });
         if (!res.ok) return mal(`Supabase respondió ${res.status}.`);
+        // Sin el pago, el comprobante que lo respaldaba vuelve a esperar.
+        if (m.tipo === 'pago' && m.periodo) {
+          await fetch(
+            `${url}/rest/v1/comprobantes_pago?inquilino_id=eq.${m.inquilino_id}&periodo=eq.${m.periodo}`,
+            {
+              method: 'PATCH',
+              headers: { ...cab, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+              body: JSON.stringify({ registrado_at: null }),
+              cache: 'no-store',
+            }
+          );
+        }
         break;
       }
 
@@ -778,6 +897,10 @@ export async function POST(req: Request) {
   }
 
   revalidateTag('consultorios', { expire: 0 });
+  // La cola de facturar del Centro se lee con esta etiqueta: sin invalidarla,
+  // se facturaba hasta cinco minutos con datos viejos (un CUIT recién cargado,
+  // una hora recién liberada).
+  revalidateTag(CACHE_COMERCIAL, { expire: 0 });
   await anotarAcceso({
     accion: 'escritura',
     recurso: 'consultorios',

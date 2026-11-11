@@ -30,6 +30,7 @@ import { aFacturarDelCentro, facturasDelCentro } from '@/lib/facturas-centro';
 import { listarEmisoras } from '@/lib/facturas';
 import MesQueViene from './MesQueViene';
 import { mesesAbiertosDesde, planDelMes } from '@/lib/apertura-mes';
+import { horasSoltadasPorPeriodo } from '@/lib/consultorios-escritura';
 
 export const dynamic = 'force-dynamic';
 
@@ -149,7 +150,7 @@ export default async function Consultorios(
     leerContratos(),
     ver === 'semana' ? escalaVigente(hoy) : Promise.resolve({ desde: null, tarifas: [] }),
     ver === 'inquilinos' || ver === 'finanzas' ? leerMovimientos() : Promise.resolve([]),
-    ver === 'espacios' ? escalas() : Promise.resolve([]),
+    ver === 'espacios' || ver === 'semana' ? escalas() : Promise.resolve([]),
     ver === 'finanzas' ? leerGastos() : Promise.resolve([]),
   ]);
 
@@ -172,6 +173,11 @@ export default async function Consultorios(
     ver === 'inquilinos'
       ? await Promise.all([aFacturarDelCentro(periodo), listarEmisoras(), facturasDelCentro()])
       : [[], [], []];
+
+  // Las horas soltadas de cada persona en los meses que muestra el calendario:
+  // la burbuja de liberar dice cuántas lleva, contra el tope de 2.
+  const soltadas =
+    ver === 'semana' ? await horasSoltadasPorPeriodo([...new Set(dias.map((d) => periodoDe(d)))]) : {};
 
   const activos = espacios.filter((e) => e.activo);
   // Lo que se dibuja: todas las salas, o la elegida. La ocupación de arriba
@@ -311,6 +317,8 @@ export default async function Consultorios(
               reservas={reservas}
               inquilinos={inquilinos}
               tarifas={escala.tarifas}
+              escalas={todasLasEscalas}
+              soltadas={soltadas}
               contratos={contratos}
               vista={enMes ? 'mes' : 'semana'}
               ancla={dias}

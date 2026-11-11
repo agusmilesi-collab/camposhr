@@ -91,6 +91,8 @@ export default function Calendario({
   reservas,
   inquilinos,
   tarifas,
+  escalas = [],
+  soltadas = {},
   contratos,
   vista,
   ancla,
@@ -102,6 +104,14 @@ export default function Calendario({
   reservas: Reserva[];
   inquilinos: Inquilino[];
   tarifas: Tarifa[];
+  /**
+   * Todas las escalas cargadas, para cotizar con la que rige la fecha elegida y
+   * no con la de hoy: con un aumento ya cargado, la pantalla mostraba el
+   * precio viejo y se cobraba el nuevo.
+   */
+  escalas?: Tarifa[];
+  /** Horas soltadas con crédito por persona y mes (`inquilino|periodo`). */
+  soltadas?: Record<string, number>;
   contratos: Contrato[];
   vista: 'semana' | 'mes';
   /** El lunes de la semana, o los días hábiles del mes. */
@@ -261,13 +271,17 @@ export default function Calendario({
     return h;
   }
 
+  const escalaDe = (f: string) => {
+    const desde = escalas.map((t) => t.desde).filter((d) => d <= f).sort().pop();
+    return desde ? escalas.filter((t) => t.desde === desde) : tarifas;
+  };
   const espacio = espacios.find((e) => e.id === elegida?.espacioId) ?? null;
   const cantidad = elegida ? hasta - elegida.desde : 0;
   const fechas = elegida ? fechasRepetidas(elegida.fecha, repetirHasta, repetir) : [];
   const cotizacion =
     elegida && espacio && quien && quien !== 'nueva'
       ? // A precio de hora suelta: el tramo es el de esta reserva sola.
-        cotizar(tarifas, espacio.id, cantidad)
+        cotizar(escalaDe(elegida.fecha), espacio.id, cantidad)
       : null;
   const importe = cotizacion ? cotizacion.precioHora * cantidad : null;
   const total = importe === null ? null : importe * fechas.length;
@@ -295,6 +309,13 @@ export default function Calendario({
       });
       setGuardando(false);
       if (!r.ok) return setError(r.motivo ?? 'No se pudo cerrar.');
+      // Lo reservado debajo del cierre se liberó sin cobrar: se dice.
+      if (r.liberadas && r.liberadas > 0) {
+        setError(
+          `Cerrado. ${r.liberadas === 1 ? 'Había 1 reserva' : `Había ${r.liberadas} reservas`} en esa franja: se liberaron sin cobrarlas.`
+        );
+        return router.refresh();
+      }
       cerrar();
       return router.refresh();
     }
@@ -315,6 +336,9 @@ export default function Calendario({
         return setError(alta.motivo ?? 'No se pudo dar de alta a la persona.');
       }
       inquilinoId = alta.id;
+      // Ya existe: si la reserva falla y se vuelve a intentar, no se da de
+      // alta otra persona con el mismo nombre.
+      setQuien(alta.id);
     }
 
     const r = await mandar({
@@ -330,11 +354,17 @@ export default function Calendario({
     // Las fechas que ya estaban ocupadas no cancelan el resto: se guardó lo que
     // entró y hay que decir qué quedó afuera, o la persona cree que reservó el
     // mes entero.
-    if (r.chocaron && r.chocaron.length > 0) {
+    if ((r.chocaron && r.chocaron.length > 0) || (r.cerradas && r.cerradas.length > 0)) {
       setError(
-        `Se reservaron ${r.creadas}. Ya estaban ocupadas: ${r.chocaron
-          .map((f) => diaCorto(f))
-          .join(', ')}.`
+        [
+          `Se reservaron ${r.creadas}.`,
+          r.chocaron?.length ? `Ya estaban ocupadas: ${r.chocaron.map((f) => diaCorto(f)).join(', ')}.` : '',
+          r.cerradas?.length
+            ? `Cerradas o feriado, no se reservaron: ${r.cerradas.map((f) => diaCorto(f)).join(', ')}.`
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' ')
       );
       return router.refresh();
     }
@@ -587,7 +617,8 @@ export default function Calendario({
                       <small>
                         {conCredito
                           ? `Corresponde si avisó ${HORAS_PARA_SOLTAR} horas antes y no pasa de 2 horas sueltas en el mes. Si ya la pagó, registrá la devolución en su ficha.`
-                          : 'La hora se cobra igual.'}
+                          : 'La hora se cobra igual.'}{' '}
+                        {`Este mes ya soltó ${soltadas[`${reservaAbierta.inquilino_id}|${reservaAbierta.fecha.slice(0, 7)}-01`] ?? 0} de 2 horas.`}
                       </small>
                     </span>
                   </label>
@@ -754,7 +785,15 @@ export default function Calendario({
                                 // una hora suelta, 24 horas antes de que empiece.
                                 const r = reservas.find((x) => x.id === celda.reservaId);
                                 setConCredito(
-                                  Boolean(r && r.origen === 'suelta' && horasHastaQueEmpiece(r.fecha, r.desde_hora) >= HORAS_PARA_SOLTAR)
+                                  Boolean(
+                                    r &&
+                                      r.origen === 'suelta' &&
+                                      horasHastaQueEmpiece(r.fecha, r.desde_hora) >= HORAS_PARA_SOLTAR &&
+                                      (soltadas[`${r.inquilino_id}|${r.fecha.slice(0, 7)}-01`] ?? 0) +
+                                        hora(r.hasta_hora) -
+                                        hora(r.desde_hora) <=
+                                        2
+                                  )
                                 );
                                 setAbierta({ que: 'reserva', id: celda.reservaId });
                               }

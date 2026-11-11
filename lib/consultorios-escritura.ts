@@ -8,6 +8,8 @@
  */
 
 import 'server-only';
+import { revalidateTag } from 'next/cache';
+import { CACHE_COMERCIAL } from '@/lib/etiquetas';
 
 import { insert, patch, select } from '@/lib/supabase';
 import { HORAS_PARA_SOLTAR, HORAS_LIBERABLES, MINUTOS_PARA_DESHACER, hoyISO } from '@/lib/consultorios-calculo';
@@ -96,6 +98,7 @@ export async function crearReserva(p: Pedido): Promise<{ ok: true } | { ok: fals
       quien: p.quien,
     });
   }
+  invalidarCentro();
   return { ok: true };
 }
 
@@ -115,6 +118,7 @@ export async function crearReserva(p: Pedido): Promise<{ ok: true } | { ok: fals
  */
 export async function deshacerReserva(reservaId: string): Promise<void> {
   if (!(await pasarDeActiva(reservaId, 'cancelada'))) return;
+  invalidarCentro();
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY as string;
   await fetch(`${url}/rest/v1/movimientos?reserva_id=eq.${reservaId}`, {
@@ -134,6 +138,7 @@ export async function liberarReserva(
   // dejaban dos créditos por el mismo cargo. El segundo no encuentra nada que
   // cambiar y no sigue.
   if (!(await pasarDeActiva(reservaId, 'liberada'))) return false;
+  invalidarCentro();
   if (!conCredito) return true;
   const cargos = await select<{ importe: number; periodo: string; inquilino_id: string }>(
     'movimientos',
@@ -177,6 +182,33 @@ export async function pasarDeActiva(reservaId: string, estado: 'liberada' | 'can
   return ((await res.json()) as unknown[]).length > 0;
 }
 
+/**
+ * Las horas soltadas con crédito de cada persona en esos meses, con clave
+ * `inquilino|periodo`: el calendario del OS las muestra al liberar, para que
+ * se vea el tope de 2 por mes antes de decidir.
+ */
+export async function horasSoltadasPorPeriodo(periodos: string[]): Promise<Record<string, number>> {
+  if (periodos.length === 0) return {};
+  const creditos = await select<{ reserva_id: string | null; inquilino_id: string; periodo: string }>(
+    'movimientos',
+    `select=reserva_id,inquilino_id,periodo&tipo=eq.credito&reserva_id=not.is.null&periodo=in.(${periodos.join(',')})`
+  );
+  const ids = [...new Set(creditos.map((c) => c.reserva_id as string))];
+  if (ids.length === 0) return {};
+  const reservas = await select<{ id: string; desde_hora: string; hasta_hora: string }>(
+    'reservas',
+    `select=id,desde_hora,hasta_hora&id=in.(${ids.join(',')})`
+  );
+  const salida: Record<string, number> = {};
+  for (const c of creditos) {
+    const r = reservas.find((x) => x.id === c.reserva_id);
+    if (!r) continue;
+    const clave = `${c.inquilino_id}|${c.periodo}`;
+    salida[clave] = (salida[clave] ?? 0) + hora(r.hasta_hora) - hora(r.desde_hora);
+  }
+  return salida;
+}
+
 /** Cuántas horas soltó con crédito este mes: el tope es lo que impide que una
  *  banda de ocho horas se desarme de a pedazos. */
 export async function horasSoltadasEn(inquilinoId: string, periodo: string): Promise<number> {
@@ -191,4 +223,15 @@ export async function horasSoltadasEn(inquilinoId: string, periodo: string): Pro
     `select=desde_hora,hasta_hora&id=in.(${ids.join(',')})`
   );
   return reservas.reduce((n, r) => n + (hora(r.hasta_hora) - hora(r.desde_hora)), 0);
+}
+
+/**
+ * Después de escribir en el Centro: las pantallas del módulo (etiqueta
+ * 'consultorios') y la cola de facturar (CACHE_COMERCIAL) vuelven a leer. Sin
+ * la segunda, una hora recién reservada o soltada tardaba cinco minutos en
+ * verse en la factura del mes.
+ */
+export function invalidarCentro(): void {
+  revalidateTag('consultorios', { expire: 0 });
+  revalidateTag(CACHE_COMERCIAL, { expire: 0 });
 }

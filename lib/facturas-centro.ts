@@ -1,5 +1,5 @@
 import 'server-only';
-import { select } from '@/lib/supabase';
+import { select, selectTodas } from '@/lib/supabase';
 import { CACHE_COMERCIAL } from '@/lib/etiquetas';
 
 /**
@@ -89,15 +89,17 @@ export async function aFacturarDelCentro(periodo: string): Promise<InquilinoAFac
       'select=id,nombre,razon_social,cuit,dni,condicion_iva,activo&order=nombre.asc',
       CACHE_COMERCIAL
     ),
-    select<FilaMovimiento>(
+    selectTodas<FilaMovimiento>(
       'movimientos',
       `select=id,inquilino_id,tipo,fecha,periodo,importe,detalle,reserva_id&periodo=eq.${periodo}` +
-        '&order=fecha.asc',
+        '&order=fecha.asc,id.asc',
       CACHE_COMERCIAL
     ),
-    select<{ movimiento_id: string | null }>(
+    // Todos y no los primeros mil: cortados, los cargos ya facturados volvían
+    // a la cola y se facturaban dos veces.
+    selectTodas<{ movimiento_id: string | null }>(
       'factura_items',
-      'select=movimiento_id&movimiento_id=not.is.null',
+      'select=movimiento_id&movimiento_id=not.is.null&order=id.asc',
       CACHE_COMERCIAL
     ),
   ]);

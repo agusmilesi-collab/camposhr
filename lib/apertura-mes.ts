@@ -1,6 +1,6 @@
 import 'server-only';
-import { revalidateTag } from 'next/cache';
-import { select, upsert } from '@/lib/supabase';
+import { invalidarCentro } from '@/lib/consultorios-escritura';
+import { select, selectTodas, upsert } from '@/lib/supabase';
 import {
   contratos as leerContratos,
   cierresEntre,
@@ -188,8 +188,13 @@ export async function planDelMes(periodo: string, soloInquilino?: string): Promi
       if (cerrado(c.espacio_id, f, s.desde, s.hasta)) continue;
 
       const mismas = existentes.filter((x) => x.fecha === f && x.espacio_id === c.espacio_id);
-      // Ya lo tiene, o lo tuvo y lo soltó: no se vuelve a crear.
-      if (mismas.some((x) => x.inquilino_id === c.inquilino_id && pisa(x, s.desde, s.hasta))) continue;
+      // Ya lo tiene, o lo tuvo y lo soltó: no se vuelve a crear. Una cancelada
+      // no cuenta: es la que sacó terminar la banda, y si la banda vuelve a
+      // cargarse esa fecha se tiene que generar de nuevo.
+      if (
+        mismas.some((x) => x.estado !== 'cancelada' && x.inquilino_id === c.inquilino_id && pisa(x, s.desde, s.hasta))
+      )
+        continue;
       const otra = mismas.find((x) => x.estado === 'activa' && x.inquilino_id !== c.inquilino_id && pisa(x, s.desde, s.hasta));
       if (otra) {
         choques.push({
@@ -294,20 +299,42 @@ async function aplicarRespuestas(periodo: string, soloInquilino?: string): Promi
         : abiertas(r.inquilino_id).filter((c) => horasQueDeja(r, c.id).length > 0);
 
     for (const c of afectadas) {
+      /*
+       * Primero las bandas recortadas y después el cierre de la vieja. Al
+       * revés, si algo fallaba entre los dos pasos, el reintento ya no veía la
+       * banda (cerrada) y la persona perdía esas horas sin aviso. Así, un
+       * reintento encuentra la vieja todavía abierta y no repite las nuevas que
+       * ya estaban creadas.
+       */
+      if (r.respuesta !== 'no') {
+        const nuevas = recortar(c, horasQueDeja(r, c.id))
+          .map((t) => ({
+            inquilino_id: c.inquilino_id,
+            espacio_id: c.espacio_id,
+            dia_semana: c.dia_semana,
+            desde_hora: hh(t.desde),
+            hasta_hora: hh(t.hasta),
+            vigente_desde: c.vigente_desde >= periodo ? c.vigente_desde : periodo,
+            vigente_hasta: c.vigente_hasta,
+          }))
+          .filter(
+            (n) =>
+              !contratos.some(
+                (x) =>
+                  x.id !== c.id &&
+                  x.inquilino_id === n.inquilino_id &&
+                  x.espacio_id === n.espacio_id &&
+                  x.dia_semana === n.dia_semana &&
+                  x.desde_hora === n.desde_hora &&
+                  x.hasta_hora === n.hasta_hora &&
+                  x.vigente_desde === n.vigente_desde
+              )
+          );
+        if (nuevas.length > 0) await rest('POST', 'contratos', nuevas);
+      }
       // Una banda que recién empieza este mes no tiene historia que guardar.
       if (c.vigente_desde >= periodo) await rest('DELETE', `contratos?id=eq.${c.id}`);
       else await rest('PATCH', `contratos?id=eq.${c.id}`, { vigente_hasta: vispera });
-      if (r.respuesta === 'no') continue;
-      const nuevas = recortar(c, horasQueDeja(r, c.id)).map((t) => ({
-        inquilino_id: c.inquilino_id,
-        espacio_id: c.espacio_id,
-        dia_semana: c.dia_semana,
-        desde_hora: hh(t.desde),
-        hasta_hora: hh(t.hasta),
-        vigente_desde: c.vigente_desde >= periodo ? c.vigente_desde : periodo,
-        vigente_hasta: c.vigente_hasta,
-      }));
-      if (nuevas.length > 0) await rest('POST', 'contratos', nuevas);
     }
     await rest('PATCH', `renovaciones?id=eq.${r.id}`, { aplicada_at: new Date().toISOString() });
   }
@@ -353,6 +380,8 @@ export async function abrirMes(
     if (cargos.length > 0) await rest('POST', 'movimientos', cargos);
   }
 
+  await cargosQueFaltan(periodo, quien, soloInquilino);
+
   const importe = plan.filas.reduce((n, f) => n + (f.importe ?? 0), 0);
   // Si ya estaba abierto queda la primera apertura: completar no la pisa. Ni
   // completar a una sola persona da por abierto el mes de todos. Lucila se
@@ -373,8 +402,50 @@ export async function abrirMes(
       choques: plan.choques.length,
     });
   }
-  revalidateTag('consultorios', { expire: 0 });
+  invalidarCentro();
   return { reservas: plan.filas.length, importe, choques: plan.choques };
+}
+
+/**
+ * Crea el cargo de las horas fijas del mes que tienen precio y no lo tienen.
+ *
+ * Reservas y cargos se escriben en dos pasos: si el segundo fallaba, el
+ * reintento salteaba esas reservas (ya existían) y el mes quedaba con horas
+ * sin cobrar. Abrir o completar el mes las repara.
+ */
+async function cargosQueFaltan(periodo: string, quien: string, soloInquilino?: string): Promise<void> {
+  const fin = finDeMes(periodo);
+  const filtro = soloInquilino ? `&inquilino_id=eq.${soloInquilino}` : '';
+  const [reservas, cargos, espacios] = await Promise.all([
+    selectTodas<{ id: string; inquilino_id: string; espacio_id: string; fecha: string; desde_hora: string; hasta_hora: string; importe: number | null }>(
+      'reservas',
+      `select=id,inquilino_id,espacio_id,fecha,desde_hora,hasta_hora,importe&origen=eq.contrato&estado=eq.activa` +
+        `&importe=not.is.null&fecha=gte.${periodo}&fecha=lte.${fin}${filtro}&order=id.asc`
+    ),
+    selectTodas<{ reserva_id: string }>(
+      'movimientos',
+      `select=reserva_id&tipo=eq.cargo&periodo=eq.${periodo}&reserva_id=not.is.null${filtro}&order=id.asc`
+    ),
+    listarEspacios(),
+  ]);
+  const conCargo = new Set(cargos.map((c) => c.reserva_id));
+  const faltan = reservas.filter((r) => !conCargo.has(r.id));
+  if (faltan.length === 0) return;
+  const sala = (id: string) => espacios.find((e) => e.id === id)?.nombre ?? 'Sala';
+  await rest(
+    'POST',
+    'movimientos',
+    faltan.map((r) => ({
+      inquilino_id: r.inquilino_id,
+      tipo: 'cargo',
+      fecha: r.fecha,
+      periodo: periodoDe(r.fecha),
+      importe: r.importe,
+      reserva_id: r.id,
+      detalle: `${sala(r.espacio_id)}, ${r.desde_hora.slice(0, 5)} a ${r.hasta_hora.slice(0, 5)}`,
+      quien,
+    }))
+  );
 }
 
 /**
@@ -436,10 +507,47 @@ export async function terminarBanda(contratoId: string, hasta: string): Promise<
   );
   if (futuras.length > 0) {
     const ids = futuras.map((r) => r.id).join(',');
-    await rest('DELETE', `movimientos?reserva_id=in.(${ids})&tipo=eq.cargo`);
+    /*
+     * El cargo que ya está en una factura no se borra (la factura quedaría
+     * cobrando horas que la cuenta no tiene): se compensa con un crédito. El
+     * que no se facturó, sí se borra, como al deshacer.
+     */
+    const cargos = await select<{ id: string; inquilino_id: string; importe: number; periodo: string; reserva_id: string }>(
+      'movimientos',
+      `select=id,inquilino_id,importe,periodo,reserva_id&reserva_id=in.(${ids})&tipo=eq.cargo`
+    );
+    const facturados = cargos.length
+      ? new Set(
+          (
+            await select<{ movimiento_id: string }>(
+              'factura_items',
+              `select=movimiento_id&movimiento_id=in.(${cargos.map((c) => c.id).join(',')})`
+            )
+          ).map((f) => f.movimiento_id)
+        )
+      : new Set<string>();
+    const aBorrar = cargos.filter((c) => !facturados.has(c.id));
+    const aCompensar = cargos.filter((c) => facturados.has(c.id));
+    if (aBorrar.length > 0) await rest('DELETE', `movimientos?id=in.(${aBorrar.map((c) => c.id).join(',')})`);
+    if (aCompensar.length > 0) {
+      await rest(
+        'POST',
+        'movimientos',
+        aCompensar.map((c) => ({
+          inquilino_id: c.inquilino_id,
+          tipo: 'credito',
+          fecha: hoyISO(),
+          periodo: c.periodo,
+          importe: c.importe,
+          reserva_id: c.reserva_id,
+          detalle: 'Banda terminada: la hora ya facturada no se cobra',
+          quien: 'Equipo',
+        }))
+      );
+    }
     await rest('PATCH', `reservas?id=in.(${ids})`, { estado: 'cancelada' });
   }
-  revalidateTag('consultorios', { expire: 0 });
+  invalidarCentro();
   return futuras.length;
 }
 
