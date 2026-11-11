@@ -210,6 +210,9 @@ export default function Ficha({
   const porFacturar = pendientes.filter((id) => !fuera.includes(id));
   const cargos = delMes.filter((m) => m.tipo === 'cargo').reduce((n, m) => n + m.importe, 0);
   const pagos = delMes.filter((m) => m.tipo === 'pago').reduce((n, m) => n + m.importe, 0);
+  /** Créditos, recargos y ajustes del mes, con su signo: lo que lleva de las
+   *  horas usadas al saldo además de los pagos. */
+  const otros = saldoDe(delMes.filter((m) => m.tipo !== 'cargo' && m.tipo !== 'pago'));
   const saldo = saldoDe(delMes);
   // Lo que de verdad debe: el mes que se está mirando puede estar al día y
   // arrastrar una deuda de dos meses atrás.
@@ -439,7 +442,7 @@ export default function Ficha({
         </div>
         <div className="os-cifra">
           <div className="os-cifra-rotulo">Del mes</div>
-          <div className="os-cifra-valor">{pesos(cargos)}</div>
+          <div className="os-cifra-valor">{pesos(cargos + otros)}</div>
           <div className="os-cifra-pie">{pagos > 0 ? `pagó ${pesos(pagos)}` : 'sin pagos'}</div>
         </div>
         <div className="os-cifra">
@@ -1139,6 +1142,15 @@ export default function Ficha({
               <td>Horas usadas · {horasDelMes} h</td>
               <td className="os-papel-num">{pesos(cargos)}</td>
             </tr>
+            {otros !== 0 && (
+              <tr>
+                <td>Créditos, recargos y ajustes</td>
+                <td className="os-papel-num">
+                  {otros < 0 ? '− ' : ''}
+                  {pesos(Math.abs(otros))}
+                </td>
+              </tr>
+            )}
             <tr>
               <td>Pagos registrados</td>
               <td className="os-papel-num">− {pesos(pagos)}</td>

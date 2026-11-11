@@ -89,7 +89,10 @@ export default function Inquilinos({
       horas: reservas
         .filter((r) => r.inquilino_id === i.id)
         .reduce((n, r) => n + (hora(r.hasta_hora) - hora(r.desde_hora)), 0),
-      cargos: suyosDelMes.filter((m) => m.tipo === 'cargo').reduce((n, m) => n + m.importe, 0),
+      // Lo que hay que pagar del mes: los cargos menos los créditos de horas
+      // soltadas, más recargos y ajustes. Solo los cargos daba un importe que
+      // no cerraba con los pagos de quien había soltado una hora.
+      cargos: saldoDe(suyosDelMes.filter((m) => m.tipo !== 'pago')),
       pagos: suyosDelMes.filter((m) => m.tipo === 'pago').reduce((n, m) => n + m.importe, 0),
       saldo: saldoDe(suyosDelMes),
       movimientos: suyosDelMes,
