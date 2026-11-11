@@ -35,6 +35,7 @@ import {
   type Inquilino,
   type Movimiento,
   type Reserva,
+  aCobrarDe,
 } from '@/lib/consultorios-calculo';
 import { mandar, pesos } from './acciones';
 
@@ -189,9 +190,9 @@ export default function Finanzas({
   const [cargando, setCargando] = useState(false);
 
   // ------------------------------------------------------------- el mes
-  const facturado = movimientos
-    .filter((m) => m.periodo === periodo && m.tipo === 'cargo')
-    .reduce((n, m) => n + m.importe, 0);
+  // Lo que se cobra, no lo que se reservó: una hora suelta soltada a tiempo
+  // tiene su crédito y no entra.
+  const facturado = aCobrarDe(movimientos.filter((m) => m.periodo === periodo));
   const cobrado = movimientos
     .filter((m) => m.periodo === periodo && m.tipo === 'pago')
     .reduce((n, m) => n + m.importe, 0);
@@ -202,9 +203,7 @@ export default function Finanzas({
   // ------------------------------------------------------------- el año
   const historia = Array.from({ length: MESES }, (_, k) => {
     const p = mesCorrido(periodoDe(hoy), k - (MESES - 1));
-    const ingresos = movimientos
-      .filter((m) => m.periodo === p && m.tipo === 'cargo')
-      .reduce((n, m) => n + m.importe, 0);
+    const ingresos = aCobrarDe(movimientos.filter((m) => m.periodo === p));
     const salidas = gastos.filter((g) => g.periodo === p).reduce((n, g) => n + g.importe, 0);
     return { periodo: p, etiqueta: mesCorto(p), ingresos, salidas, resultado: ingresos - salidas };
   });
@@ -216,9 +215,7 @@ export default function Finanzas({
   // ------------------------------------------------------ quién sostiene
   const ranking = inquilinos
     .map((i) => {
-      const suyos = movimientos.filter(
-        (m) => m.inquilino_id === i.id && m.periodo === periodo && m.tipo === 'cargo'
-      );
+      const suyos = movimientos.filter((m) => m.inquilino_id === i.id && m.periodo === periodo);
       const suyas = reservas.filter((r) => r.inquilino_id === i.id);
       const horas = suyas.reduce((n, r) => n + (hora(r.hasta_hora) - hora(r.desde_hora)), 0);
       // Cuántos días distintos vino: de ahí sale cuántas horas hace cada vez
@@ -226,7 +223,7 @@ export default function Finanzas({
       // hábiles. Alguien que viene dos veces por semana ocho horas no hace una
       // hora y media por día.
       const dias = new Set(suyas.map((r) => r.fecha)).size;
-      return { i, importe: suyos.reduce((n, m) => n + m.importe, 0), horas, dias };
+      return { i, importe: aCobrarDe(suyos), horas, dias };
     })
     .filter((f) => f.importe > 0 || f.horas > 0)
     .sort((a, b) => b.importe - a.importe);

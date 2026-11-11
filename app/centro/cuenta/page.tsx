@@ -12,6 +12,7 @@ import {
   recargoDelDia,
   ultimoDiaSinRecargo,
   reservasEntre,
+  aCobrarDe,
   saldoDe,
   signo,
 } from '@/lib/consultorios';
@@ -188,7 +189,8 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
       return {
         mes,
         horas: cargosDelMes.reduce((n, m) => n + horasDelDetalle(m.detalle), 0),
-        importe: cargosDelMes.reduce((n, m) => n + m.importe, 0),
+        // Lo que se cobró ese mes: sin las horas sueltas soltadas a tiempo.
+        importe: aCobrarDe(suyos),
         cargos: cargosDelMes.slice().sort((x, y) => x.fecha.localeCompare(y.fecha)),
         saldo: saldoDe(suyos),
         facturas: facturasDe(mes),

@@ -342,6 +342,18 @@ export function saldoDe(ms: Movimiento[]): number {
   return ms.reduce((n, m) => n + signo(m.tipo) * m.importe, 0);
 }
 
+/**
+ * Lo que se cobra de esos movimientos: los cargos menos los créditos de horas
+ * soltadas, más recargos y ajustes. Es el saldo sin contar los pagos.
+ *
+ * Sumar solo los cargos contaba como cobrada una hora suelta soltada a tiempo,
+ * que no se cobra: a Paula Vedani le daba $ 37.830 cuando debía $ 27.190
+ * (11/11/2026).
+ */
+export function aCobrarDe(ms: Movimiento[]): number {
+  return saldoDe(ms.filter((m) => m.tipo !== 'pago'));
+}
+
 /** El primer día del mes de una fecha, que es como se guarda `periodo`. */
 export function periodoDe(iso: string): string {
   return `${iso.slice(0, 7)}-01`;

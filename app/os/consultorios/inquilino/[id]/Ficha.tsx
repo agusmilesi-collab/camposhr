@@ -29,6 +29,7 @@ import {
   periodoDe,
   recargoDelDia,
   ultimoDiaSinRecargo,
+  aCobrarDe,
   saldoDe,
   signo,
   type Contrato,
@@ -282,9 +283,7 @@ export default function Ficha({
       horas: reservas
         .filter((r) => periodoDe(r.fecha) === p)
         .reduce((n, r) => n + (hora(r.hasta_hora) - hora(r.desde_hora)), 0),
-      facturado: movimientos
-        .filter((m) => m.periodo === p && m.tipo === 'cargo')
-        .reduce((n, m) => n + m.importe, 0),
+      facturado: aCobrarDe(movimientos.filter((m) => m.periodo === p)),
     };
   });
 

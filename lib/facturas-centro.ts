@@ -58,6 +58,7 @@ type FilaMovimiento = {
   periodo: string | null;
   importe: string | number;
   detalle: string | null;
+  reserva_id: string | null;
 };
 
 /**
@@ -90,7 +91,7 @@ export async function aFacturarDelCentro(periodo: string): Promise<InquilinoAFac
     ),
     select<FilaMovimiento>(
       'movimientos',
-      `select=id,inquilino_id,tipo,fecha,periodo,importe,detalle&periodo=eq.${periodo}` +
+      `select=id,inquilino_id,tipo,fecha,periodo,importe,detalle,reserva_id&periodo=eq.${periodo}` +
         '&order=fecha.asc',
       CACHE_COMERCIAL
     ),
@@ -102,12 +103,23 @@ export async function aFacturarDelCentro(periodo: string): Promise<InquilinoAFac
   ]);
 
   const facturados = new Set(renglones.map((r) => r.movimiento_id));
+  // Una hora suelta soltada a tiempo tiene un crédito que anula su cargo: no
+  // se cobra, así que tampoco se factura.
+  const compensadas = new Set(
+    movimientos.filter((m) => m.tipo === 'credito' && m.reserva_id).map((m) => m.reserva_id)
+  );
 
   return inquilinos
     .filter((i) => i.activo)
     .map((i) => {
       const cargos = movimientos
-        .filter((m) => m.inquilino_id === i.id && m.tipo === 'cargo' && !facturados.has(m.id))
+        .filter(
+          (m) =>
+            m.inquilino_id === i.id &&
+            m.tipo === 'cargo' &&
+            !facturados.has(m.id) &&
+            !(m.reserva_id && compensadas.has(m.reserva_id))
+        )
         .map((m) => ({
           id: m.id,
           fecha: m.fecha,
