@@ -19,6 +19,8 @@ export async function mandar(
   cerradas?: string[];
   /** Cuántas reservas liberó un cierre, sin cobrarlas. */
   liberadas?: number;
+  /** La hora liberada sin cobrar ya estaba facturada: falta la nota de crédito. */
+  facturada?: boolean;
 }> {
   const res = await fetch('/api/os/consultorios', {
     method: 'POST',

@@ -197,6 +197,13 @@ export default function Finanzas({
   // Lo que entró: los pagos menos las devoluciones.
   const cobrado = cobradoDe(movimientos.filter((m) => m.periodo === periodo));
   const delMes = gastos.filter((g) => g.periodo === periodo);
+  // Los fijos del mes anterior que todavía no están en este: el botón los trae.
+  const fijosQueFaltan = gastos.filter(
+    (g) =>
+      g.fijo &&
+      g.periodo === mesCorrido(periodo, -1) &&
+      !delMes.some((x) => x.concepto === g.concepto && x.rubro === g.rubro)
+  );
   const costos = delMes.reduce((n, g) => n + g.importe, 0);
   const resultado = facturado - costos;
 
@@ -266,6 +273,15 @@ export default function Finanzas({
     setError(null);
     setCargando(false);
     (ev.target as HTMLFormElement).reset();
+    router.refresh();
+  }
+
+  async function traerFijos() {
+    setGuardando(true);
+    const r = await mandar({ accion: 'gastos-fijos-copiar', periodo });
+    setGuardando(false);
+    if (!r.ok) return setError(r.motivo ?? 'No se pudieron traer los gastos fijos.');
+    setError(null);
     router.refresh();
   }
 
@@ -473,6 +489,15 @@ export default function Finanzas({
               {guardando ? 'Guardando…' : 'Cargar'}
             </button>
           </form>
+        )}
+
+        {fijosQueFaltan.length > 0 && (
+          <div className="os-panel-nota">
+            <button className="os-boton" type="button" onClick={traerFijos} disabled={guardando}>
+              Traer {fijosQueFaltan.length === 1 ? 'el gasto fijo' : `los ${fijosQueFaltan.length} gastos fijos`} del mes
+              anterior
+            </button>
+          </div>
         )}
 
         {delMes.length === 0 ? (

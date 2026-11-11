@@ -3,7 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { comprobantePorId, darPorRegistrados, loQueDebe } from '@/lib/comprobantes-pago';
 import { darPorVista } from '@/lib/renovaciones';
 import { abrirMes, mesesAbiertosDesde, terminarBanda } from '@/lib/apertura-mes';
-import { pasarDeActiva } from '@/lib/consultorios-escritura';
+import { borrarReserva, copiarGastosFijos, pasarDeActiva } from '@/lib/consultorios-escritura';
 import { CACHE_COMERCIAL } from '@/lib/etiquetas';
 import { hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { cookieDelOs } from '@/lib/os-sesion-servidor';
@@ -524,16 +524,23 @@ export async function POST(req: Request) {
           // precio no hay cargo: es el caso del SUM mientras su tarifa esté sin
           // definir, y la reserva vale igual porque ocupa la sala.
           if (importe !== null) {
-            await insert('movimientos', {
-              inquilino_id: inquilinoId,
-              tipo: 'cargo',
-              fecha: f,
-              periodo: periodoDe(f),
-              importe,
-              reserva_id: reserva.id,
-              detalle: `${espacio.nombre}, ${desdeHora.slice(0, 5)} a ${hastaHora.slice(0, 5)}`,
-              quien: yo.nombre,
-            });
+            try {
+              await insert('movimientos', {
+                inquilino_id: inquilinoId,
+                tipo: 'cargo',
+                fecha: f,
+                periodo: periodoDe(f),
+                importe,
+                reserva_id: reserva.id,
+                detalle: `${espacio.nombre}, ${desdeHora.slice(0, 5)} a ${hastaHora.slice(0, 5)}`,
+                quien: yo.nombre,
+              });
+            } catch (e) {
+              // Sin cargo, la reserva se borra: una hora reservada que no se
+              // cobra no queda en ningún lado para reclamarla.
+              await borrarReserva(reserva.id);
+              throw e;
+            }
           }
         }
         if (creadas === 0) {
@@ -595,6 +602,18 @@ export async function POST(req: Request) {
                 detalle: `${c.detalle ?? 'Reserva'} · se liberó fuera de plazo, se cobra igual`,
               });
             }
+          }
+
+          // Liberada sin cobrar una hora que ya estaba en una factura: la
+          // factura no se toca sola, hay que hacer la nota de crédito. Se avisa.
+          if (conCredito && cargos.length > 0) {
+            const fact = (await (
+              await fetch(
+                `${url}/rest/v1/factura_items?movimiento_id=in.(${cargos.map((c) => c.id).join(',')})&select=id&limit=1`,
+                { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' }
+              )
+            ).json()) as unknown[];
+            if (fact.length > 0) extra = { facturada: true };
           }
 
           if (conCredito)
@@ -820,6 +839,14 @@ export async function POST(req: Request) {
           fijo: datos?.fijo === true,
           quien: yo.nombre,
         });
+        break;
+      }
+
+      // Trae los gastos "todos los meses" del mes anterior que falten en este.
+      case 'gastos-fijos-copiar': {
+        const periodo = String(datos?.periodo ?? '');
+        if (!FECHA.test(periodo) || !periodo.endsWith('-01')) return mal('Mes inválido.');
+        extra = { creadas: await copiarGastosFijos(periodo, yo.nombre) };
         break;
       }
 

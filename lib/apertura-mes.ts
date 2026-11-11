@@ -1,6 +1,6 @@
 import 'server-only';
-import { invalidarCentro } from '@/lib/consultorios-escritura';
-import { select, selectTodas, upsert } from '@/lib/supabase';
+import { copiarGastosFijos, invalidarCentro } from '@/lib/consultorios-escritura';
+import { select, selectTodas } from '@/lib/supabase';
 import {
   contratos as leerContratos,
   cierresEntre,
@@ -353,6 +353,57 @@ export async function abrirMes(
    */
   soloInquilino?: string
 ): Promise<{ reservas: number; importe: number; choques: Choque[] }> {
+  /*
+   * La primera apertura reserva la fila del mes antes de tocar nada. Así, si el
+   * cron y "Abrir ahora" arrancan a la vez, uno solo abre: el otro se entera y
+   * no aplica las renovaciones dos veces (eso duplicaba bandas y el mes no se
+   * podía abrir más). Si la apertura falla, la fila se suelta para reintentar.
+   */
+  let primera = false;
+  if (!soloInquilino) {
+    const [fila] = await select<{ reservas: number; abierto_at: string }>(
+      'centro_meses',
+      `select=reservas,abierto_at&periodo=eq.${periodo}&limit=1`
+    );
+    if (!fila) {
+      primera = await reservarMes(periodo, quien);
+      if (!primera) throw new Error('El mes se está abriendo en este momento. Probá de nuevo en un minuto.');
+    } else if (Number(fila.reservas) === 0 && Date.now() - new Date(fila.abierto_at).getTime() < 3 * 60_000) {
+      throw new Error('El mes se está abriendo en este momento. Probá de nuevo en un minuto.');
+    }
+  }
+  try {
+    return await abrirMesYa(periodo, quien, primera, soloInquilino);
+  } catch (e) {
+    if (primera) await rest('DELETE', `centro_meses?periodo=eq.${periodo}`);
+    throw e;
+  }
+}
+
+/** Reserva la fila del mes. Devuelve si la reservó esta llamada. */
+async function reservarMes(periodo: string, quien: string): Promise<boolean> {
+  const { url, key } = config();
+  const res = await fetch(`${url}/rest/v1/centro_meses?on_conflict=periodo`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=ignore-duplicates,return=representation',
+    },
+    body: JSON.stringify({ periodo, quien, reservas: 0, importe: 0 }),
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Supabase POST centro_meses ${res.status}: ${await res.text()}`);
+  return ((await res.json()) as unknown[]).length > 0;
+}
+
+async function abrirMesYa(
+  periodo: string,
+  quien: string,
+  primera: boolean,
+  soloInquilino?: string
+): Promise<{ reservas: number; importe: number; choques: Choque[] }> {
   await aplicarRespuestas(periodo, soloInquilino);
   const plan = await planDelMes(periodo, soloInquilino);
   const espacios = await listarEspacios();
@@ -386,13 +437,10 @@ export async function abrirMes(
   // Si ya estaba abierto queda la primera apertura: completar no la pisa. Ni
   // completar a una sola persona da por abierto el mes de todos. Lucila se
   // entera por correo, abra quien lo abra.
-  if (!plan.abierto && !soloInquilino) {
-    await upsert(
-      'centro_meses',
-      { periodo, quien, reservas: plan.filas.length, importe },
-      'periodo',
-      false
-    );
+  if (primera) {
+    await rest('PATCH', `centro_meses?periodo=eq.${periodo}`, { reservas: plan.filas.length, importe });
+    // Los gastos de todos los meses (alquiler, expensas) entran con el mes.
+    await copiarGastosFijos(periodo, quien).catch((e) => console.error('[gastos fijos]', e));
     await avisarMesAbierto({
       periodo,
       mes: mesLargo(periodo),

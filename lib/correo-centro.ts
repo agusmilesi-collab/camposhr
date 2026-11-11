@@ -62,7 +62,7 @@ export async function enviarEnlaceDeClave(a: {
 
 /**
  * El recordatorio de renovar: a quien tiene horas fijas y no contestó qué hace
- * el mes que viene. Lo manda el cron del día 26 (`/api/cron/recordar-renovacion`).
+ * el mes que viene. Lo manda el cron del día 28, o del 26 en febrero (`/api/cron/recordar-renovacion`).
  */
 export async function enviarRecordatorioRenovacion(a: {
   correo: string;

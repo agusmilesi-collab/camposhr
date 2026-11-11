@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { contratos as leerContratos, listarInquilinos } from '@/lib/consultorios';
-import { horasSemanalesTotales, hoyISO, mesCorrido, mesLargo, periodoDe } from '@/lib/consultorios-calculo';
+import { finDeMes, horasSemanalesTotales, hoyISO, mesCorrido, mesLargo, periodoDe } from '@/lib/consultorios-calculo';
 import { hayCorreo } from '@/lib/correo';
 import { enviarRecordatorioRenovacion } from '@/lib/correo-centro';
 import { DIRECCION } from '@/lib/direccion';
@@ -10,10 +10,12 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * El recordatorio de renovar, el día 26 de cada mes.
+ * El recordatorio de renovar, el día 28 de cada mes.
  *
- * El 26 y no el 28: el mes se abre el último día a las 10, y en febrero el 28
- * es el último día; el recordatorio llegaba una hora antes del cierre.
+ * Salvo cuando el 28 es el último día del mes (febrero sin bisiesto): el mes
+ * se abre el último día a las 10, y el recordatorio de las 9 llegaba una hora
+ * antes del cierre. Ese mes sale el 26. El cron corre los dos días
+ * (`vercel.json`) y acá se decide cuál de los dos manda.
  *
  * Lo dispara el cron de Vercel (`vercel.json`), que llega con
  * `Authorization: Bearer <CRON_SECRET>`. Sin la variable cargada, o con otro
@@ -26,7 +28,7 @@ export const dynamic = 'force-dynamic';
  *
  * Con `?dia=2026-10-28` se finge la fecha, solo fuera de producción. Con
  * `?simular=1` cuenta a quién le escribiría y no manda nada, en cualquier
- * entorno: sirve para mirar la lista antes del 26.
+ * entorno: sirve para mirar la lista antes del 28.
  */
 export async function GET(req: Request) {
   const secreto = process.env.CRON_SECRET;
@@ -45,6 +47,13 @@ export async function GET(req: Request) {
       ? fingido
       : hoyISO();
   const proximo = mesCorrido(periodoDe(hoy), 1);
+
+  const dia = Number(hoy.slice(8, 10));
+  const ultimo = Number(finDeMes(hoy).slice(8, 10));
+  const toca = ultimo === 28 ? dia === 26 : dia === 28;
+  if (!toca && !url.searchParams.get('simular')) {
+    return NextResponse.json({ ok: true, hoy, nada: 'Hoy no toca el recordatorio.' });
+  }
 
   const [inquilinos, contratos, renovaciones] = await Promise.all([
     listarInquilinos(),

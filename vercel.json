@@ -6,7 +6,7 @@
   "crons": [
     {
       "path": "/api/cron/recordar-renovacion",
-      "schedule": "0 12 26 * *"
+      "schedule": "0 12 26,28 * *"
     },
     {
       "path": "/api/cron/seguimiento",

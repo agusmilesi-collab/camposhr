@@ -85,18 +85,24 @@ export async function crearReserva(p: Pedido): Promise<{ ok: true } | { ok: fals
   }
 
   // Sin precio no hay cargo: es el caso del SUM mientras su tarifa esté sin
-  // definir. La reserva vale igual, porque ocupa la sala.
+  // definir. La reserva vale igual, porque ocupa la sala. Si el cargo no
+  // entra, la reserva se borra: una hora reservada sin cobrar no se reclama.
   if (importe !== null) {
-    await insert('movimientos', {
-      inquilino_id: p.inquilinoId,
-      tipo: 'cargo',
-      fecha: p.fecha,
-      periodo: periodoDe(p.fecha),
-      importe,
-      reserva_id: reserva.id,
-      detalle: `${espacio.nombre}, ${p.desdeHora.slice(0, 5)} a ${p.hastaHora.slice(0, 5)}`,
-      quien: p.quien,
-    });
+    try {
+      await insert('movimientos', {
+        inquilino_id: p.inquilinoId,
+        tipo: 'cargo',
+        fecha: p.fecha,
+        periodo: periodoDe(p.fecha),
+        importe,
+        reserva_id: reserva.id,
+        detalle: `${espacio.nombre}, ${p.desdeHora.slice(0, 5)} a ${p.hastaHora.slice(0, 5)}`,
+        quien: p.quien,
+      });
+    } catch (e) {
+      await borrarReserva(reserva.id);
+      throw e;
+    }
   }
   invalidarCentro();
   return { ok: true };
@@ -234,4 +240,52 @@ export async function horasSoltadasEn(inquilinoId: string, periodo: string): Pro
 export function invalidarCentro(): void {
   revalidateTag('consultorios', { expire: 0 });
   revalidateTag(CACHE_COMERCIAL, { expire: 0 });
+}
+
+/** Borra una reserva que no llegó a tener su cargo. */
+export async function borrarReserva(reservaId: string): Promise<void> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY as string;
+  await fetch(`${url}/rest/v1/reservas?id=eq.${reservaId}`, {
+    method: 'DELETE',
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
+    cache: 'no-store',
+  });
+}
+
+/**
+ * Copia al mes los gastos marcados "todos los meses" del mes anterior que
+ * todavía no estén (mismo concepto y rubro). El tilde se guardaba y nadie lo
+ * repetía, así que el resultado de los meses siguientes salía sin el alquiler
+ * ni las expensas. Lo corre la apertura de cada mes y el botón de Finanzas.
+ * Devuelve cuántos copió.
+ */
+export async function copiarGastosFijos(periodo: string, quien: string): Promise<number> {
+  const anterior = mesCorridoDe(periodo, -1);
+  const [delAnterior, deEste] = await Promise.all([
+    select<{ concepto: string; rubro: string; importe: number }>(
+      'gastos',
+      `select=concepto,rubro,importe&periodo=eq.${anterior}&fijo=is.true`
+    ),
+    select<{ concepto: string; rubro: string }>('gastos', `select=concepto,rubro&periodo=eq.${periodo}`),
+  ]);
+  const faltan = delAnterior.filter((g) => !deEste.some((x) => x.concepto === g.concepto && x.rubro === g.rubro));
+  for (const g of faltan) {
+    await insert('gastos', {
+      fecha: periodo,
+      periodo,
+      concepto: g.concepto,
+      rubro: g.rubro,
+      importe: Number(g.importe),
+      fijo: true,
+      quien,
+    });
+  }
+  if (faltan.length > 0) invalidarCentro();
+  return faltan.length;
+}
+
+function mesCorridoDe(iso: string, n: number): string {
+  const [a, m] = iso.split('-').map(Number);
+  return new Date(Date.UTC(a, m - 1 + n, 1, 12)).toISOString().slice(0, 10);
 }

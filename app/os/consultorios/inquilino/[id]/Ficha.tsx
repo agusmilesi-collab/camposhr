@@ -216,11 +216,23 @@ export default function Ficha({
   const pendientes = facturacion?.cola.find((c) => c.id === i.id)?.cargos.map((c) => c.id) ?? [];
   const [fuera, setFuera] = useState<string[]>([]);
   const porFacturar = pendientes.filter((id) => !fuera.includes(id));
-  const cargos = delMes.filter((m) => m.tipo === 'cargo').reduce((n, m) => n + m.importe, 0);
+  /*
+   * Las horas sueltas soltadas a tiempo: su crédito anula el cargo. No cuentan
+   * como horas cobradas ni van en el resumen, y en la lista se marcan como
+   * soltadas en vez de "ya facturado".
+   */
+  const compensadas = new Set(
+    movimientos.filter((m) => m.tipo === 'credito' && m.reserva_id).map((m) => m.reserva_id as string)
+  );
+  const esCompensado = (m: Movimiento) =>
+    (m.tipo === 'cargo' || m.tipo === 'credito') && Boolean(m.reserva_id) && compensadas.has(m.reserva_id as string);
+  const cargos = delMes
+    .filter((m) => m.tipo === 'cargo' && !esCompensado(m))
+    .reduce((n, m) => n + m.importe, 0);
   const pagos = delMes.filter((m) => m.tipo === 'pago').reduce((n, m) => n + m.importe, 0);
   /** Créditos, recargos y ajustes del mes, con su signo: lo que lleva de las
    *  horas usadas al saldo además de los pagos. */
-  const otros = saldoDe(delMes.filter((m) => m.tipo !== 'cargo' && m.tipo !== 'pago'));
+  const otros = saldoDe(delMes.filter((m) => m.tipo !== 'cargo' && m.tipo !== 'pago' && !esCompensado(m)));
   const saldo = saldoDe(delMes);
   // Lo que de verdad debe: el mes que se está mirando puede estar al día y
   // arrastrar una deuda de dos meses atrás.
@@ -241,7 +253,7 @@ export default function Ficha({
    * guardó con el movimiento.
    */
   const consumos = delMes
-    .filter((m) => m.tipo === 'cargo')
+    .filter((m) => m.tipo === 'cargo' && !esCompensado(m))
     // De la primera hora del mes a la última. En la pantalla la cuenta va al
     // revés, porque ahí se busca lo último que pasó; el resumen se lee como un
     // extracto, del principio del mes al final.
@@ -780,6 +792,10 @@ export default function Ficha({
                             )
                           }
                         />
+                      ) : m.tipo === 'cargo' && esCompensado(m) ? (
+                        <span className="os-dato-falta" title="Hora soltada: no se cobra ni se factura">
+                          —
+                        </span>
                       ) : m.tipo === 'cargo' ? (
                         <span className="os-dato-falta" title="Ya facturado">
                           ✓

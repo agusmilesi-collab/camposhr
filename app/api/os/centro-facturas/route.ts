@@ -176,20 +176,34 @@ export async function POST(req: Request) {
       });
 
       // Un renglón por cargo: el comprobante dice qué día y qué sala se usó, y
-      // el movimiento queda atado para que no se vuelva a facturar.
-      await escribir(
-        'factura_items',
-        i.cargos.map((c) => ({
-          factura_id: factura.id,
-          evaluacion_id: null,
-          movimiento_id: c.id,
-          descripcion: c.detalle ?? 'Alquiler de consultorio',
-          detalle: c.fecha,
-          cantidad: 1,
-          precio_unitario: c.importe,
-          importe: c.importe,
-        }))
-      );
+      // el movimiento queda atado para que no se vuelva a facturar. Si los
+      // renglones no entran, la factura se borra: quedaba una factura vacía y
+      // los cargos seguían en la cola, listos para facturarse otra vez.
+      try {
+        await escribir(
+          'factura_items',
+          i.cargos.map((c) => ({
+            factura_id: factura.id,
+            evaluacion_id: null,
+            movimiento_id: c.id,
+            descripcion: c.detalle ?? 'Alquiler de consultorio',
+            detalle: c.fecha,
+            cantidad: 1,
+            precio_unitario: c.importe,
+            importe: c.importe,
+          }))
+        );
+      } catch (e) {
+        await fetch(`${process.env.SUPABASE_URL}/rest/v1/facturas?id=eq.${factura.id}`, {
+          method: 'DELETE',
+          headers: {
+            apikey: process.env.SUPABASE_SERVICE_KEY as string,
+            Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+          },
+          cache: 'no-store',
+        });
+        throw e;
+      }
 
       hechas.push({ id: factura.id, inquilino: i.nombre, numero });
       if (numero !== null) numero += 1;

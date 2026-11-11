@@ -382,6 +382,12 @@ export default function Calendario({
     });
     setGuardando(false);
     if (!r.ok) return setError(r.motivo ?? 'No se pudo liberar.');
+    if (r.facturada) {
+      setError(
+        'Liberada sin cobrar. Esa hora ya estaba facturada: hacé la nota de crédito en Comprobantes en Línea.'
+      );
+      return router.refresh();
+    }
     cerrar();
     router.refresh();
   }
