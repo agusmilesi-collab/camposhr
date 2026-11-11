@@ -230,12 +230,26 @@ export type Facturable = {
   /** Si el Benziger está acordado en pesos con el cliente: no depende del dólar. */
   benzigerAcordado: boolean;
   /**
-   * El Benziger sale en una segunda factura, en dólares: el cliente lo paga
-   * así (`empresas.benziger_en_dolares`). Entonces `benziger` va null y
-   * `benzigerUsd` trae los dólares de ese renglón.
+   * El Benziger sale en una segunda factura, con su propia orden de compra
+   * del cliente (`empresas.benziger_en_dolares`, hoy solo Cofco). Entonces
+   * `benziger` va null y `benzigerImporteAparte` trae el renglón, en la
+   * moneda de `benzigerMoneda`.
    */
   benzigerAparte: boolean;
   benzigerUsd: number | null;
+  /**
+   * En qué moneda sale la factura del Benziger aparte: en pesos cuando el
+   * cliente lo tiene acordado en pesos, en dólares cuando va por la lista.
+   * Null si no va aparte.
+   */
+  benzigerMoneda: 'PES' | 'DOL' | null;
+  /** El importe de cada renglón de esa factura, en su moneda. */
+  benzigerImporteAparte: number | null;
+  /**
+   * Lo mismo en pesos: el acordado o, si no hay, los USD 40 al dólar tarjeta.
+   * Para cuando al facturar se elige la otra moneda. Null sin cotización.
+   */
+  benzigerPesosAparte: number | null;
   dolar: number | null;
   /**
    * La orden de compra que dio el cliente por esta evaluación, guardada en

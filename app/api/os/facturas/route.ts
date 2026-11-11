@@ -10,6 +10,7 @@ import { cookieDelOs } from "@/lib/os-sesion-servidor";
 import { anotarAcceso } from "@/lib/accesos";
 import { quienSoy } from "@/lib/identidad";
 import { listarAFacturar } from "@/lib/facturas";
+import { BENZIGER_USD } from "@/lib/benziger";
 import { conceptoDe, conceptoPorDefecto, totalDe } from "@/lib/facturas-tipos";
 import { CATEGORIAS_SERVICIOS } from "@/lib/monotributo";
 import {
@@ -191,8 +192,31 @@ export async function POST(req: Request) {
         // Qué se emite: con el Benziger en dólares son dos comprobantes y
         // pueden salir por separado (Cofco manda una orden de compra por cada
         // uno, y no siempre juntas). Lo que no se emite ahora queda en la cola.
-        const emitirPesos = sinComprobante || datos.emitirPesos !== false;
-        const emitirDolares = !sinComprobante && datos.emitirDolares !== false;
+        // Sin factura se marca lo que le falta a la persona: el perfil si
+        // todavía no salió, y si el perfil ya está, el Benziger aparte (11/11/2026:
+        // un perfil facturado por fuera y el Benziger cobrado sin factura).
+        const conPerfilPendiente = entran.filter((e) => e.pendiente.pesos);
+        if (
+          sinComprobante &&
+          conPerfilPendiente.length > 0 &&
+          conPerfilPendiente.length < entran.length
+        ) {
+          return NextResponse.json(
+            {
+              error:
+                "Entre las elegidas hay a quien le falta el perfil y a quien solo el Benziger: van sin factura por separado.",
+            },
+            { status: 400 },
+          );
+        }
+        const soloBenzigerSinFactura =
+          sinComprobante && conPerfilPendiente.length === 0;
+        const emitirPesos = sinComprobante
+          ? !soloBenzigerSinFactura
+          : datos.emitirPesos !== false;
+        const emitirDolares = sinComprobante
+          ? soloBenzigerSinFactura
+          : datos.emitirDolares !== false;
         if (!emitirPesos && !emitirDolares) {
           return NextResponse.json(
             { error: "Hay que emitir al menos una de las dos facturas." },
@@ -204,7 +228,7 @@ export async function POST(req: Request) {
           if (yaEnPesos.length > 0) {
             return NextResponse.json(
               {
-                error: `${yaEnPesos.map((e) => e.candidato).join(", ")} ya ${yaEnPesos.length === 1 ? "tiene" : "tienen"} su factura en pesos: a esa persona solo le falta la de dólares.`,
+                error: `${yaEnPesos.map((e) => e.candidato).join(", ")} ya ${yaEnPesos.length === 1 ? "tiene" : "tienen"} su factura del perfil: solo le falta la del Benziger.`,
               },
               { status: 409 },
             );
@@ -237,7 +261,7 @@ export async function POST(req: Request) {
             {
               error: `Los Benziger elegidos tienen órdenes de compra del cliente distintas (${ocsUsd
                 .map((o) => o || "sin cargar")
-                .join(", ")}). Va una factura en dólares por orden.`,
+                .join(", ")}). Va una factura del Benziger por orden.`,
             },
             { status: 400 },
           );
@@ -265,15 +289,47 @@ export async function POST(req: Request) {
         const enDolares = emitirDolares
           ? entran.filter((e) => e.benzigerAparte && e.pendiente.dolares)
           : [];
-        const totalUsd = enDolares.reduce(
-          (n, e) => n + (e.benzigerUsd ?? 0),
-          0,
-        );
+        // En pesos si el cliente lo tiene acordado en pesos, en dólares si va
+        // por la lista. Una factura es de una sola moneda: si las elegidas
+        // mezclan, va una por moneda.
+        // La moneda la puede elegir quien factura: el cliente a veces pide
+        // en pesos lo que por lista va en dólares, o al revés.
+        const elegida =
+          datos.monedaBenziger === "PES" || datos.monedaBenziger === "DOL"
+            ? (datos.monedaBenziger as "PES" | "DOL")
+            : null;
+        const monedas = elegida
+          ? [elegida]
+          : [...new Set(enDolares.map((e) => e.benzigerMoneda ?? "DOL"))];
+        if (monedas.length > 1) {
+          return NextResponse.json(
+            {
+              error:
+                "Entre las elegidas hay Benziger en pesos y en dólares: va una factura del Benziger por moneda.",
+            },
+            { status: 400 },
+          );
+        }
+        const monedaBzg: "PES" | "DOL" = monedas[0] === "PES" ? "PES" : "DOL";
+        const importeBzg = (e: (typeof enDolares)[number]) =>
+          monedaBzg === "PES" ? e.benzigerPesosAparte : BENZIGER_USD;
+        const sinCotizacion = enDolares.filter((e) => importeBzg(e) === null);
+        if (sinCotizacion.length > 0) {
+          return NextResponse.json(
+            {
+              error: `No hay cotización del dólar para pasar a pesos el Benziger de ${sinCotizacion
+                .map((e) => e.candidato)
+                .join(", ")}.`,
+            },
+            { status: 400 },
+          );
+        }
+        const totalUsd = enDolares.reduce((n, e) => n + (importeBzg(e) ?? 0), 0);
         if (!emitirPesos && enDolares.length === 0) {
           return NextResponse.json(
             {
               error:
-                "Ninguna de las elegidas tiene un Benziger en dólares pendiente de facturar.",
+                "Ninguna de las elegidas tiene un Benziger aparte pendiente de facturar.",
             },
             { status: 400 },
           );
@@ -334,7 +390,13 @@ export async function POST(req: Request) {
               headers: { apikey: key, Authorization: `Bearer ${key}` },
               cache: "no-store",
             });
-            return res.ok ? ((await res.json()) as T[])[0] : undefined;
+            if (!res.ok) {
+              // Sin esto, una lectura fallida se leía como "al cliente le
+              // falta todo" (11/11/2026, con la ficha del cliente completa).
+              console.error(`[facturas] no se pudo leer ${camino.split("?")[0]}: ${res.status} ${await res.text()}`);
+              return undefined;
+            }
+            return ((await res.json()) as T[])[0];
           };
           const [empresa, emisor] = await Promise.all([
             leer<{
@@ -364,7 +426,7 @@ export async function POST(req: Request) {
             return NextResponse.json(
               {
                 error:
-                  "Falta el número de la factura en dólares (la del Benziger).",
+                  "Falta el número de la factura del Benziger.",
               },
               { status: 400 },
             );
@@ -380,9 +442,16 @@ export async function POST(req: Request) {
             return NextResponse.json(
               {
                 error:
-                  "Este cliente exige su orden de compra en la factura: falta la de la factura en dólares (la del Benziger).",
+                  "Este cliente exige su orden de compra en la factura: falta la de la factura del Benziger.",
               },
               { status: 400 },
+            );
+          }
+          if (!empresa) {
+            console.error(`[facturas] cliente no encontrado: ${empresaId}`);
+            return NextResponse.json(
+              { error: "No se pudo leer el cliente. No se generó nada: probá de nuevo." },
+              { status: 502 },
             );
           }
           const faltaCliente = faltaParaFacturarle({
@@ -554,14 +623,14 @@ export async function POST(req: Request) {
               punto_venta: puntoVenta,
               fecha,
               imp_total: totalUsd,
-              moneda: "DOL",
+              moneda: monedaBzg,
               // Unida a la de pesos: la que sale ahora, o la que ya salió.
               hermana_id: factura?.id ?? entran[0]?.pesosFacturada?.id ?? null,
               concepto: conceptoUsd,
               orden_compra: ocUsd,
               notas: null,
               estado: porArca ? "borrador" : "emitida",
-              sin_comprobante: false,
+              sin_comprobante: sinComprobante,
               cobrada_at: null,
               quien: yo.nombre,
             });
@@ -577,10 +646,15 @@ export async function POST(req: Request) {
                 // pesos. Sin segunda línea: la moneda y la cotización las
                 // dice el comprobante en sus totales.
                 descripcion: conOrden(`Adicional BTSA, ${e.candidato}`, ocUsd),
-                detalle: null,
+                detalle:
+                  monedaBzg === "DOL"
+                    ? null
+                    : e.benzigerAcordado
+                      ? "Precio acordado"
+                      : "USD 40 al dólar tarjeta",
                 cantidad: 1,
-                precio_unitario: e.benzigerUsd,
-                importe: e.benzigerUsd,
+                precio_unitario: importeBzg(e),
+                importe: importeBzg(e),
               })),
             );
           } catch (e) {
@@ -595,7 +669,7 @@ export async function POST(req: Request) {
             // Si era lo único que se pedía, no hay nada que haya salido bien.
             if (!factura) {
               return NextResponse.json(
-                { error: "No se pudo generar la factura en dólares." },
+                { error: "No se pudo generar la factura del Benziger." },
                 { status: 500 },
               );
             }

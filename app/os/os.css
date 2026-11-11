@@ -18116,6 +18116,39 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   margin-bottom: 0;
 }
 
+/* Los dos avisos de quien firma (lo que falta cargar, lo que conviene
+   revisar) se dibujan en las cards del OS, fuera de la hoja. Sus colores los
+   define la hoja, así que afuera quedaban sin variable y con el fondo rosa o
+   crema fijo del papel: en el tema oscuro, texto claro sobre fondo claro.
+   Acá toman la paleta del OS, que cambia con el tema. */
+.os .os-panel-cuerpo > .inf-pendientes {
+  border-color: var(--os-rojo);
+  color: var(--os-tinta-media);
+  background: color-mix(in srgb, var(--os-rojo) 9%, var(--os-panel));
+}
+
+.os .os-panel-cuerpo > .inf-pendientes strong {
+  color: var(--os-rojo);
+}
+
+.os .os-panel-cuerpo > .inf-pendientes .inf-pendientes-nota {
+  color: var(--os-suave);
+}
+
+.os .os-panel-cuerpo > .inf-revisar {
+  border-color: var(--os-ambar);
+  background: color-mix(in srgb, var(--os-ambar) 11%, var(--os-panel));
+}
+
+.os .os-panel-cuerpo > .inf-revisar strong,
+.os .os-panel-cuerpo > .inf-revisar summary {
+  color: var(--os-ambar);
+}
+
+.os .os-panel-cuerpo > .inf-revisar .inf-revisar-tipo {
+  color: var(--os-tinta);
+}
+
 /* La card "El informe" va apoyada sobre la hoja: redondeada arriba, como
    cualquier panel, y recta abajo, que es el lado que da a la hoja. */
 .os-panel-informe.os-panel-a-hoja:has(> .os-generar) {
@@ -18942,4 +18975,55 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   50% {
     opacity: 0.5;
   }
+}
+
+/* En la factura del Benziger aparte, la moneda va chica y pegada al importe,
+   dentro del mismo tramo: así orden de compra y concepto quedan alineados con
+   los de la factura del perfil, que no tiene moneda para elegir. */
+.os-importe-con-moneda {
+  display: flex;
+  gap: 8px;
+}
+
+.os-campo-bloque .os-importe-con-moneda select.os-campo {
+  flex: 0 0 auto;
+  width: 76px;
+  min-width: 0;
+}
+
+.os-campo-bloque .os-importe-con-moneda input.os-campo {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Los botones de generar de la factura con el Benziger aparte: todos del ancho
+   del más largo. */
+.os-botones-iguales {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 8px;
+  /* La fila del pie es flexible y lo achicaba: así cada columna quedaba del
+     ancho de su texto y no del más largo. */
+  flex: none;
+}
+
+.os-botones-iguales > .os-boton {
+  width: 100%;
+  justify-self: stretch;
+  justify-content: center;
+}
+
+@media (max-width: 760px) {
+  .os-botones-iguales {
+    grid-auto-flow: row;
+    width: 100%;
+  }
+}
+
+/* El BTSA aparte, debajo del perfil y con su misma letra: son dos facturas
+   del mismo peso (Agustín, 11/11/2026). */
+.os-importe-renglon {
+  display: block;
+  white-space: nowrap;
 }

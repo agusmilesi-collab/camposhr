@@ -143,10 +143,19 @@ export type DatosFactura = {
    */
   cotizacion: { valor: string; fecha: string | null } | null;
   /**
-   * La otra factura del mismo trabajo: en una en dólares, la de pesos de la
-   * que es el adicional; en una en pesos, la de dólares con el Benziger.
+   * La otra factura del mismo trabajo: en la del Benziger, la del perfil de
+   * la que es el adicional; en la del perfil, la del Benziger. Las dos pueden
+   * ser en pesos (Benziger acordado en pesos), así que cuál es cuál lo dice
+   * `delBenziger` y no la moneda.
    */
-  hermana: { id: string; numero: string; moneda: 'PES' | 'DOL'; total: number | null } | null;
+  hermana: {
+    id: string;
+    numero: string;
+    moneda: 'PES' | 'DOL';
+    total: number | null;
+    /** Si la hermana es la factura del Benziger (y esta, la del perfil). */
+    delBenziger: boolean;
+  } | null;
   cae: string | null;
   caeVence: string | null;
   conCae: boolean;
@@ -394,6 +403,9 @@ export async function datosDeFactura(id: string): Promise<DatosFactura | null> {
           numero: hermana.numero === null ? '' : largo(hermana),
           moneda: hermana.moneda === 'DOL' ? 'DOL' : 'PES',
           total: hermana.imp_total === null ? null : Number(hermana.imp_total),
+          // Esta apunta a la hermana por `hermana_id` solo si esta es la del
+          // Benziger; si la hermana apunta a esta, la hermana es la del Benziger.
+          delBenziger: !factura.hermanaId,
         }
       : null,
     renglones:

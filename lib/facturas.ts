@@ -58,8 +58,7 @@ export {
 import { ETAPAS_ENTREVISTADO, type Marcha } from '@/lib/facturas-tipos';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { puestoConCiudad } from '@/lib/pedido-campos';
-import { esEmpresaDePrueba, laVe } from '@/lib/empresa-prueba';
-import { quienSoy } from '@/lib/identidad';
+import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { cortes, mesesDelAnio } from '@/lib/monotributo';
 import { esDelCentro, esDePsicotecnicos, esDeServicios } from '@/lib/facturas-tipos';
 
@@ -364,6 +363,19 @@ export async function fiscalesDe(empresaIds: string[]): Promise<Record<string, F
 }
 
 /**
+ * Clientes a los que les factura siempre la misma evaluadora, sin importar
+ * quién tomó la evaluación. Sus candidatos caen en la cola de ella, que es la
+ * que emite: así puede juntar en una factura a personas que evaluaron las dos.
+ *
+ * Cofco: la licitación la presentó Lorena y Cofco manda órdenes de compra que
+ * mezclan candidatos evaluados por las dos.
+ * Decisión de Agustín, 11/11/2026.
+ */
+const FACTURA_SIEMPRE: Record<string, string> = {
+  'f78d70d6-ce0c-47db-9387-62d2b55f39c6': 'Lorena Campos', // Cofco  Intl
+};
+
+/**
  * El número de factura que le sigue a cada emisora, para proponerlo.
  *
  * Es el más alto que tiene anotado más uno, contando solo las de verdad: las
@@ -454,9 +466,13 @@ export async function listarAFacturar(
   for (const r of renglones) {
     if (r.evaluacion_id && r.facturas) pesosDe.set(r.evaluacion_id, { id: r.facturas.id, numero: numeroCorto(r.facturas) });
   }
+  // El Benziger de una persona ya facturado, en la moneda que sea: en la
+  // factura del Benziger aparte (pesos o dólares) o adentro de una factura en
+  // pesos de antes, que lo llevaba pesificado. Cualquiera de las tres ya lo
+  // cobró y volver a ofrecerlo sería facturarlo dos veces.
   const bzgEnDolaresDe = new Map<string, { id: string; numero: string }>();
   for (const a of adicionales) {
-    if (a.adicional_de && a.facturas && a.facturas.moneda === 'DOL' && a.facturas.estado !== 'anulada') {
+    if (a.adicional_de && a.facturas && a.facturas.estado !== 'anulada') {
       bzgEnDolaresDe.set(a.adicional_de, { id: a.facturas.id, numero: numeroCorto(a.facturas) });
     }
   }
@@ -474,13 +490,15 @@ export async function listarAFacturar(
   // inventados y existen para que un cliente vea el portal (`lib/portal-ejemplo.ts`).
   // La de prueba entra en la cola solo para quien ve todo; pedida por su id
   // (la hoja de entrevista) entra siempre.
-  const { alcance } = await quienSoy();
   return evaluaciones
     .filter(
       (e) =>
         e.pedidos &&
         !esEmpresaEjemplo(e.pedidos.empresas?.nombre) &&
-        (Boolean(soloId) || laVe(alcance, e.pedidos.empresas?.nombre)) &&
+        // La de prueba no entra en la cola de nadie, ni de quien ve todo: no es
+        // trabajo para facturar (Agustín, 11/11/2026). Desde la hoja de
+        // entrevista, pedida por su id, sigue entrando para probar.
+        (Boolean(soloId) || !esEmpresaDePrueba(e.pedidos.empresas?.nombre)) &&
         // Quien se dio de baja no se factura: no corresponde.
         !e.baja_el
     )
@@ -501,10 +519,11 @@ export async function listarAFacturar(
       const bzg = conBenziger
         ? benzigerParaCliente(delCliente, cambio?.valor ?? null, dia)
         : { importe: null, acordado: false };
-      // Al cliente que lo paga en dólares, el Benziger de la lista (en
-      // dólares) no se le pesifica: sale en una segunda factura, en dólares.
-      // Uno acordado en pesos ya está en pesos y va en la misma factura.
-      const aparte = conBenziger && !bzg.acordado && Boolean(pedido.empresas?.benziger_en_dolares);
+      // Al cliente que manda una orden de compra aparte por el Benziger
+      // (Cofco), el Benziger sale en una segunda factura: en dólares si va
+      // por la lista (USD 40), en pesos si tiene precio acordado en pesos.
+      const aparte = conBenziger && Boolean(pedido.empresas?.benziger_en_dolares);
+      const monedaAparte: 'PES' | 'DOL' | null = aparte ? (bzg.acordado ? 'PES' : 'DOL') : null;
       const pesosFacturada = pesosDe.get(e.id) ?? null;
       const benzigerFacturado = aparte ? bzgEnDolaresDe.get(e.id) ?? null : null;
       const pendiente = { pesos: !facturadas.has(e.id), dolares: aparte && !benzigerFacturado };
@@ -514,7 +533,7 @@ export async function listarAFacturar(
         puesto: puestoConCiudad(pedido.puesto, e.ciudad),
         empresaId: pedido.empresa_id,
         cliente: pedido.empresas?.nombre ?? 'sin cliente',
-        evaluadora: e.evaluadoras?.nombre ?? null,
+        evaluadora: FACTURA_SIEMPRE[pedido.empresa_id] ?? e.evaluadoras?.nombre ?? null,
         etapa: e.estado,
         bateria: pedido.baterias?.codigo ?? null,
         bateriaNombre: pedido.baterias?.nombre ?? null,
@@ -527,7 +546,11 @@ export async function listarAFacturar(
         benziger: aparte ? null : bzg.importe,
         benzigerAcordado: bzg.acordado,
         benzigerAparte: aparte,
-        benzigerUsd: aparte ? BENZIGER_USD : null,
+        benzigerUsd: monedaAparte === 'DOL' ? BENZIGER_USD : null,
+        benzigerMoneda: monedaAparte,
+        benzigerPesosAparte: aparte ? bzg.importe : null,
+        benzigerImporteAparte:
+          monedaAparte === 'DOL' ? BENZIGER_USD : monedaAparte === 'PES' ? bzg.importe : null,
         dolar: cambio?.valor ?? null,
         ocCliente: e.oc_cliente?.trim() || null,
         ocClienteUsd: e.oc_cliente_usd?.trim() || null,
