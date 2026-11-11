@@ -210,7 +210,14 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
    *  en una hora fija prevista por el contrato. */
   const topePrevisto = finDeMes(mesCorrido(periodoDe(hoy), MESES_PREVISTOS));
   const feriadosPrevistos = await feriadosEntre(hoy, topePrevisto);
-  const previstas = horasPrevistas(contratos, yo.id, mesCorrido(periodoDe(hoy), 1), topePrevisto, feriadosPrevistos.map((f) => f.fecha));
+  const previstas = horasPrevistas(
+    contratos,
+    yo.id,
+    mesCorrido(periodoDe(hoy), 1),
+    topePrevisto,
+    feriadosPrevistos.map((f) => f.fecha),
+    renovacion
+  );
   const cubre = (fecha: string, h: number) =>
     reservas.some((r) => r.fecha === fecha && hora(r.desde_hora) <= h && h < hora(r.hasta_hora)) ||
     previstas.some((p) => p.fecha === fecha && hora(p.desde_hora) <= h && h < hora(p.hasta_hora));
@@ -258,7 +265,9 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
    * Sin bandas no hay nada que renovar: quien viene por horas sueltas las
    * reserva cuando las necesita. Las horas son las de sus contratos vigentes.
    */
-  const horasFijas = horasSemanalesTotales(contratos, yo.id, hoy);
+  // Las del mes que viene y no las de hoy: a quien Lucila le terminó las bandas
+  // al fin de mes no se le pregunta si renueva.
+  const horasFijas = horasSemanalesTotales(contratos, yo.id, proximoMes);
   const preguntaRenovar = Number(hoy.slice(8, 10)) >= DIA_DE_RENOVAR && horasFijas > 0;
   // Las normas: la primera vez que entra y cada vez que cambian de versión.
   const pideNormas = yo.normas_version !== NORMAS_VERSION;

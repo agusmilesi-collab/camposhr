@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { inquilinoDeLaSesion, legajoAlDia } from '@/lib/centro-sesion';
+import { NORMAS_VERSION } from '@/lib/centro-acceso';
 import {
   cierresEntre,
   contratos as leerContratos,
   escalaVigente,
   hoyISO,
   listarEspacios,
+  periodoDe,
   puedeAlquilar,
   aperturas as leerAperturas,
   reservasEntre,
@@ -14,6 +16,7 @@ import {
 } from '@/lib/consultorios';
 import Barra from './Barra';
 import Reservar from './Reservar';
+import { horasSoltadasEn } from '@/lib/consultorios-escritura';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,16 +78,15 @@ export default async function Centro() {
       <main className="centro-cuerpo">
         <h1 className="centro-titulo">Reservá tu consultorio</h1>
         <p className="centro-bajada">
-          De lunes a viernes, de 8 a 20. Lo que reservás se cobra, así que
-          confirmá solo lo que vas a usar.
+          Lo que reservás se cobra, así que confirmá solo lo que vas a usar.
         </p>
 
         {!legajoAlDia(yo, hoy) && (
           <div className="centro-panel centro-aviso">
             <h2>Falta tu matrícula</h2>
             <p style={{ margin: 0, fontSize: '0.9rem' }}>
-              Para reservar hace falta la matrícula profesional vigente cargada
-              en tu legajo. Mandásela a Lorena o a Lucila y la suben.
+              Para reservar hace falta tu matrícula profesional cargada en tu
+              legajo. Mandásela a Lorena o a Lucila y la cargan.
             </p>
           </div>
         )}
@@ -92,9 +94,9 @@ export default async function Centro() {
         {/* Sin las normas aceptadas la grilla no deja reservar, y tocar una
             celda no hacía nada: Victoria Perino no entendía por qué
             (11/11/2026). El motivo va arriba, con el camino para resolverlo. */}
-        {legajoAlDia(yo, hoy) && !yo.normas_aceptadas_at && (
+        {legajoAlDia(yo, hoy) && yo.normas_version !== NORMAS_VERSION && (
           <div className="centro-panel centro-aviso">
-            <h2>Falta aceptar las normas</h2>
+            <h2>{yo.normas_aceptadas_at ? 'Las normas cambiaron' : 'Falta aceptar las normas'}</h2>
             <p style={{ margin: 0, fontSize: '0.9rem' }}>
               Para reservar, primero leé las normas del Centro y aceptalas al pie.{' '}
               <Link href="/centro/normas">Ir a las normas</Link>
@@ -111,7 +113,8 @@ export default async function Centro() {
           tarifas={escala.tarifas}
           miId={yo.id}
           hoy={hoy}
-          puedeReservar={legajoAlDia(yo, hoy) && Boolean(yo.normas_aceptadas_at)}
+          puedeReservar={legajoAlDia(yo, hoy) && yo.normas_version === NORMAS_VERSION}
+          soltadas={await horasSoltadasEn(yo.id, periodoDe(hoy))}
         />
       </main>
     </>

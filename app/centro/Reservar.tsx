@@ -81,6 +81,7 @@ export default function Reservar({
   miId,
   hoy,
   puedeReservar,
+  soltadas = 0,
 }: {
   espacios: Espacio[];
   aperturas: Apertura[];
@@ -91,6 +92,9 @@ export default function Reservar({
   miId: string;
   hoy: string;
   puedeReservar: boolean;
+  /** Cuántas horas soltó ya este mes: el tope de 2 se cuenta igual que en el
+   *  servidor, para no ofrecer un botón que va a ser rechazado. */
+  soltadas?: number;
 }) {
   const router = useRouter();
 
@@ -204,10 +208,24 @@ export default function Reservar({
     return () => window.removeEventListener('pointerup', soltar);
   }, [arrastrando]);
 
+  /*
+   * La hora de ahora, para no ofrecer las de hoy que ya empezaron: se podían
+   * reservar y quedaban cobradas sin poder soltarse. Se toma después de montar
+   * (en el servidor no hay reloj del navegador) y se renueva cada minuto.
+   */
+  const [ahora, setAhora] = useState<number | null>(null);
+  useEffect(() => {
+    setAhora(Date.now());
+    const t = setInterval(() => setAhora(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  const yaEmpezo = (fecha: string, h: number) =>
+    ahora !== null && fecha === hoy && horasHastaQueEmpiece(fecha, `${String(h).padStart(2, '0')}:00`, ahora) <= 0;
+
   /** Si esa hora está libre en la sala que se está por reservar. */
   function libreEn(salaId: string, fecha: string, h: number): boolean {
     const g = grillas.find((x) => x.espacio.id === salaId);
-    return g?.celdas[`${fecha}|${h}`]?.estado === 'libre';
+    return g?.celdas[`${fecha}|${h}`]?.estado === 'libre' && !yaEmpezo(fecha, h);
   }
 
   function estirar(fecha: string, h: number) {
@@ -281,8 +299,10 @@ export default function Reservar({
         ? null
         : !aTiempo
           ? `Una hora suelta se suelta hasta ${HORAS_PARA_SOLTAR} horas antes`
-          : horas > HORAS_LIBERABLES
-            ? `Son ${horas} horas y el tope es ${HORAS_LIBERABLES} por mes`
+          : soltadas + horas > HORAS_LIBERABLES
+            ? soltadas === 0
+              ? `Son ${horas} horas y el tope es ${HORAS_LIBERABLES} por mes`
+              : `Este mes ya soltaste ${soltadas} ${soltadas === 1 ? 'hora' : 'horas'}, y el tope es ${HORAS_LIBERABLES} por mes`
             : null;
     return { horas, reciente, fija, porQueNo };
   }
@@ -517,7 +537,8 @@ export default function Reservar({
                               );
                             const g = grillas.find((x) => x.espacio.id === e.id);
                             const celda = g?.celdas[`${d}|${h}`];
-                            const estado = celda?.estado ?? 'cerrada';
+                            const crudo = celda?.estado ?? 'cerrada';
+                            const estado = crudo === 'libre' && yaEmpezo(d, h) ? 'cerrada' : crudo;
                             const elegidaAca =
                               elegida?.fecha === d &&
                               elegida.salaId === e.id &&

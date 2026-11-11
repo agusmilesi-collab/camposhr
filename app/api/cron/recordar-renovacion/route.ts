@@ -55,7 +55,9 @@ export async function GET(req: Request) {
       i.correo &&
       DIRECCION.test(i.correo) &&
       !renovaciones[i.id] &&
-      horasSemanalesTotales(contratos, i.id, hoy) > 0
+      // Con horas fijas el mes que viene: a quien se le terminaron las bandas
+      // a fin de mes no se le recuerda renovar.
+      horasSemanalesTotales(contratos, i.id, proximo) > 0
   );
 
   const mes = mesLargo(proximo);

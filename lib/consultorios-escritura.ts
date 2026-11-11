@@ -10,7 +10,7 @@
 import 'server-only';
 
 import { insert, patch, select } from '@/lib/supabase';
-import { HORAS_PARA_SOLTAR, HORAS_LIBERABLES, MINUTOS_PARA_DESHACER } from '@/lib/consultorios-calculo';
+import { HORAS_PARA_SOLTAR, HORAS_LIBERABLES, MINUTOS_PARA_DESHACER, hoyISO } from '@/lib/consultorios-calculo';
 import {
   contratos as leerContratos,
   escalaVigente,
@@ -114,7 +114,7 @@ export async function crearReserva(p: Pedido): Promise<{ ok: true } | { ok: fals
  * obliga a explicar dos renglones que se anulan.
  */
 export async function deshacerReserva(reservaId: string): Promise<void> {
-  await patch('reservas', `id=eq.${reservaId}`, { estado: 'cancelada' });
+  if (!(await pasarDeActiva(reservaId, 'cancelada'))) return;
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY as string;
   await fetch(`${url}/rest/v1/movimientos?reserva_id=eq.${reservaId}`, {
@@ -129,9 +129,12 @@ export async function liberarReserva(
   conCredito: boolean,
   motivo: string,
   quien: string
-): Promise<void> {
-  await patch('reservas', `id=eq.${reservaId}`, { estado: 'liberada' });
-  if (!conCredito) return;
+): Promise<boolean> {
+  // Solo si sigue activa: dos pedidos seguidos (un doble toque, un reintento)
+  // dejaban dos créditos por el mismo cargo. El segundo no encuentra nada que
+  // cambiar y no sigue.
+  if (!(await pasarDeActiva(reservaId, 'liberada'))) return false;
+  if (!conCredito) return true;
   const cargos = await select<{ importe: number; periodo: string; inquilino_id: string }>(
     'movimientos',
     `select=importe,periodo,inquilino_id&reserva_id=eq.${reservaId}&tipo=eq.cargo`
@@ -140,7 +143,8 @@ export async function liberarReserva(
     await insert('movimientos', {
       inquilino_id: c.inquilino_id,
       tipo: 'credito',
-      fecha: new Date().toISOString().slice(0, 10),
+      // La fecha de Argentina: en UTC, después de las 21 quedaba fechado mañana.
+      fecha: hoyISO(),
       periodo: c.periodo,
       importe: c.importe,
       reserva_id: reservaId,
@@ -148,6 +152,29 @@ export async function liberarReserva(
       quien,
     });
   }
+  return true;
+}
+
+/**
+ * Cambia el estado de una reserva solo si sigue activa, y dice si la cambió.
+ * Es lo que hace que soltar, deshacer o liberar dos veces no dupliquen nada.
+ */
+export async function pasarDeActiva(reservaId: string, estado: 'liberada' | 'cancelada'): Promise<boolean> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY as string;
+  const res = await fetch(`${url}/rest/v1/reservas?id=eq.${reservaId}&estado=eq.activa`, {
+    method: 'PATCH',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify({ estado }),
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Supabase PATCH reservas ${res.status}: ${await res.text()}`);
+  return ((await res.json()) as unknown[]).length > 0;
 }
 
 /** Cuántas horas soltó con crédito este mes: el tope es lo que impide que una

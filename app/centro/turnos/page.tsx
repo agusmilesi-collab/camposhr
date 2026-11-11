@@ -16,6 +16,7 @@ import { pacientesDe as nombresUsados, turnosDe } from '@/lib/turnos';
 import { nombreCompleto, pacientesDe } from '@/lib/pacientes';
 import Barra from '../Barra';
 import Turnos from './Turnos';
+import { renovacionDe } from '@/lib/renovaciones';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +39,7 @@ export default async function MisTurnos() {
   const hasta = finDeMes(mesCorrido(periodoDe(hoy), MESES_PREVISTOS));
   const primerMesPrevisto = mesCorrido(periodoDe(hoy), 1);
 
-  const [reservas, espacios, turnos, usados, fichas, contratos, feriados] = await Promise.all([
+  const [reservas, espacios, turnos, usados, fichas, contratos, feriados, renovacion] = await Promise.all([
     reservasDe(yo.id),
     listarEspacios(),
     turnosDe(yo.id, desde, hasta),
@@ -46,6 +47,7 @@ export default async function MisTurnos() {
     pacientesDe(yo.id),
     leerContratos(),
     feriadosEntre(primerMesPrevisto, hasta),
+    renovacionDe(yo.id, primerMesPrevisto),
   ]);
   // Las horas fijas de los meses que vienen, previstas: solo donde todavía no
   // hay reserva de verdad (el día 1 las reemplazan).
@@ -54,7 +56,8 @@ export default async function MisTurnos() {
     yo.id,
     primerMesPrevisto,
     hasta,
-    feriados.map((f) => f.fecha)
+    feriados.map((f) => f.fecha),
+    renovacion
   ).filter((p) => !reservas.some((r) => r.fecha === p.fecha && r.espacio_id === p.espacio_id && r.desde_hora === p.desde_hora));
   // Para completar al escribir: primero las fichas, después los nombres ya
   // usados en la agenda que no tienen ficha.

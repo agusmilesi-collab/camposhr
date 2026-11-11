@@ -106,7 +106,9 @@ export async function POST(req: Request) {
     );
   }
 
-  await liberarReserva(id, true, 'Hora suelta soltada a tiempo: no se cobra', yo.nombre);
+  if (!(await liberarReserva(id, true, 'Hora suelta soltada a tiempo: no se cobra', yo.nombre))) {
+    return mal('Esa reserva ya no está activa.');
+  }
   await anotarAcceso({
     accion: 'escritura',
     recurso: 'reserva',

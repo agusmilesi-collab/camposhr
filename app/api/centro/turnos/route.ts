@@ -14,6 +14,7 @@ import {
 import { feriadosEntre } from '@/lib/feriados';
 import { borrarTurno, guardarTurno, marcarAsistencia, marcarPago } from '@/lib/turnos';
 import { nombreCompleto, pacientesDe } from '@/lib/pacientes';
+import { renovacionDe } from '@/lib/renovaciones';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,8 +50,12 @@ async function validar(req: Request, exigeReserva = true) {
   const primerMesPrevisto = mesCorrido(periodoDe(hoy), 1);
   const tope = finDeMes(mesCorrido(periodoDe(hoy), MESES_PREVISTOS));
   if (!adentro && fecha >= primerMesPrevisto && fecha <= tope) {
-    const [contratos, feriados] = await Promise.all([leerContratos(), feriadosEntre(fecha, fecha)]);
-    adentro = horasPrevistas(contratos, yo.id, fecha, fecha, feriados.map((f) => f.fecha)).some(
+    const [contratos, feriados, renovacion] = await Promise.all([
+      leerContratos(),
+      feriadosEntre(fecha, fecha),
+      renovacionDe(yo.id, primerMesPrevisto),
+    ]);
+    adentro = horasPrevistas(contratos, yo.id, fecha, fecha, feriados.map((f) => f.fecha), renovacion).some(
       (p) => hora(p.desde_hora) <= h && h < hora(p.hasta_hora)
     );
   }

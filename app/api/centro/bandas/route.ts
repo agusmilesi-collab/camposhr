@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { inquilinoQueEscribe } from '@/lib/centro-sesion';
-import { hoyISO, mesCorrido, periodoDe } from '@/lib/consultorios';
-import { quitarBanda, sumarBanda } from '@/lib/bandas-inquilino';
+import { contratos as leerContratos, hoyISO, mesCorrido, periodoDe } from '@/lib/consultorios';
+import { puedeRenovar, quitarBanda, sumarBanda } from '@/lib/bandas-inquilino';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,7 +27,13 @@ export async function POST(req: Request) {
     const dia = Number(datos?.dia);
     const horas: number[] = Array.isArray(datos?.horas) ? datos.horas.map(Number).filter(Number.isInteger) : [];
     if (!UUID.test(espacioId) || !Number.isInteger(dia)) return mal('Elegí día y consultorio.');
-    const r = await sumarBanda(yo.id, periodo, espacioId, dia, horas);
+    if (!puedeRenovar(await leerContratos(), yo.id, hoyISO(), periodo)) {
+      return mal('Las horas fijas se suman al renovar, desde el 25.');
+    }
+    const r = await sumarBanda(yo.id, periodo, espacioId, dia, horas, {
+      feriados: datos?.feriados,
+      deja: datos?.deja,
+    });
     return r.ok ? NextResponse.json({ ok: true }) : mal(r.motivo);
   }
   if (datos?.accion === 'quitar') {

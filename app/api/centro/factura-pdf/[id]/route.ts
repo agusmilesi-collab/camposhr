@@ -19,7 +19,8 @@ export async function GET(_req: Request, props: { params: Promise<{ id: string }
   if (!yo) return NextResponse.json({ error: 'Sin sesión.' }, { status: 401 });
 
   const factura = await verFactura(params.id).catch(() => null);
-  if (!factura || factura.inquilinoId !== yo.id) {
+  // Solo una emitida: en borrador todavía no tiene CAE y no es una factura.
+  if (!factura || factura.inquilinoId !== yo.id || factura.estado !== 'emitida') {
     return NextResponse.json({ error: 'Esa factura no existe.' }, { status: 404 });
   }
   const pdf = await pdfParaBajar(params.id);

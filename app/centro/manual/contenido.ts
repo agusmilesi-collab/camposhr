@@ -98,7 +98,7 @@ export const SECCIONES: Seccion[] = [
     parrafos: [
       'El precio por hora depende de la sala y de las horas fijas por semana que tenés contratadas.',
       'Hay tramos de 1, 4, 8, 12 y 16 horas semanales. Se paga el precio del último tramo que alcanzás: con 10 horas fijas, el de 8.',
-      'Una hora suelta se cobra a precio de hora suelta, tengas o no horas fijas: 1 hora al precio del tramo de 1 a 3, 6 seguidas al precio de 4 a 7. Sumar sueltas no cambia el precio de tus horas fijas.',
+      'Una hora suelta se cobra a precio de hora suelta, tengas o no horas fijas, según las horas de esa reserva: una de 1 hora al precio del tramo de 1 a 3, una de 6 seguidas al de 4 a 7. Sumar sueltas no cambia el precio de tus horas fijas.',
       'La escala vigente está en Documentos, dentro de las normas, y en Reservar la ves al elegir las horas.',
     ],
     capturas: [
@@ -109,7 +109,7 @@ export const SECCIONES: Seccion[] = [
     id: 'pagar',
     titulo: 'Pagar',
     parrafos: [
-      'El alquiler se abona por adelantado, del 1 al 10 del mes que usás.',
+      'El alquiler se abona por adelantado, del 1 al 10 del mes que usás. Por única vez, noviembre de 2026 va sin recargo hasta el 14.',
       'Del 11 al 20 lleva un recargo del 15 %. Después del 20, del 25 %.',
       'En Mi cuenta ves cada hora del mes con su día, sala y precio. Al pie están los pagos registrados, el recargo que corresponde al día de hoy y el saldo a pagar.',
       'Si debés un mes anterior, aparece arriba en rojo y va antes que el mes en curso.',

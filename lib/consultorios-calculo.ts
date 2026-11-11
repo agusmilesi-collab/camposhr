@@ -942,20 +942,44 @@ export function horasPrevistas(
   inquilinoId: string,
   desde: string,
   hasta: string,
-  feriados: string[]
+  feriados: string[],
+  /**
+   * Lo que contestó al renovar el mes que viene, mientras la apertura no lo
+   * aplicó: los feriados que tildó sí se trabajan, y las horas que no renueva
+   * ya no se prevén. Sin esto no podía anotar un paciente en el feriado que
+   * pidió, y las horas tachadas seguían apareciendo como suyas.
+   */
+  renovacion?: { feriados: string[]; deja: { contrato: string; hora: number }[]; aplicada_at?: string | null } | null
 ): { fecha: string; desde_hora: string; hasta_hora: string; espacio_id: string }[] {
   const salida: { fecha: string; desde_hora: string; hasta_hora: string; espacio_id: string }[] = [];
   const suyos = contratos.filter((c) => c.inquilino_id === inquilinoId);
   if (suyos.length === 0) return salida;
+  const usa = new Set(renovacion?.feriados ?? []);
+  const deja = renovacion && !renovacion.aplicada_at ? renovacion.deja : [];
+  const hh = (h: number) => `${String(h).padStart(2, '0')}:00:00`;
   for (let f = desde; f <= hasta; f = sumarDias(f, 1)) {
-    if (feriados.includes(f)) continue;
+    if (feriados.includes(f) && !usa.has(f)) continue;
     const dia = diaSemanaDe(f);
     for (const c of suyos) {
       if (c.dia_semana !== dia) continue;
       if (c.vigente_desde > f) continue;
       // Un contrato con fin ya fijado no se proyecta más allá de su fin.
       if (c.vigente_hasta !== null && c.vigente_hasta < f) continue;
-      salida.push({ fecha: f, desde_hora: c.desde_hora, hasta_hora: c.hasta_hora, espacio_id: c.espacio_id });
+      const fuera = deja.filter((d) => d.contrato === c.id).map((d) => d.hora);
+      if (fuera.length === 0) {
+        salida.push({ fecha: f, desde_hora: c.desde_hora, hasta_hora: c.hasta_hora, espacio_id: c.espacio_id });
+        continue;
+      }
+      // La banda sin las horas que no renueva, en tramos seguidos.
+      let inicio: number | null = null;
+      for (let h = hora(c.desde_hora); h <= hora(c.hasta_hora); h++) {
+        const sigue = h < hora(c.hasta_hora) && !fuera.includes(h);
+        if (sigue && inicio === null) inicio = h;
+        if (!sigue && inicio !== null) {
+          salida.push({ fecha: f, desde_hora: hh(inicio), hasta_hora: hh(h), espacio_id: c.espacio_id });
+          inicio = null;
+        }
+      }
     }
   }
   return salida;

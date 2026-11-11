@@ -116,7 +116,6 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
   const saldo = saldoDe(delMes);
   const pct = recargoDelDia(hoy, periodo);
 
-  const cargos = delMes.filter((m) => m.tipo === 'cargo').reduce((n, m) => n + m.importe, 0);
   const pagos = delMes.filter((m) => m.tipo === 'pago').reduce((n, m) => n + m.importe, 0);
 
   /**
@@ -129,6 +128,17 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
    * guardó con el movimiento.
    */
   const salaDe = (id: string) => espacios.find((e) => e.id === id)?.nombre ?? 'Sala';
+  /*
+   * Las horas sueltas soltadas a tiempo: su crédito anula el cargo. En la lista
+   * van como "soltada, sin cargo" y no suman, y su crédito no se repite abajo
+   * en Pagos y ajustes. Antes la lista las sumaba y el total no cerraba con el
+   * saldo.
+   */
+  const compensadas = new Set(
+    mios.filter((m) => m.tipo === 'credito' && m.reserva_id).map((m) => m.reserva_id as string)
+  );
+  const esCompensado = (m: (typeof mios)[number]) =>
+    (m.tipo === 'cargo' || m.tipo === 'credito') && Boolean(m.reserva_id) && compensadas.has(m.reserva_id as string);
   const consumos = delMes
     .filter((m) => m.tipo === 'cargo')
     .slice()
@@ -156,18 +166,25 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
         // Lo que quedó anotado cuando una hora se soltó fuera de plazo: sin
         // esto, en la cuenta aparece una hora que ya no está en el calendario.
         liberada: (m.detalle ?? '').includes('se cobra igual'),
+        soltada: esCompensado(m),
       };
     });
-  const horasDelMes = consumos.reduce((n, c) => n + c.horas, 0);
+  const horasDelMes = consumos.filter((c) => !c.soltada).reduce((n, c) => n + c.horas, 0);
+  const totalHoras = consumos.filter((c) => !c.soltada).reduce((n, c) => n + c.m.importe, 0);
+  /** Recargos, ajustes (una devolución) y créditos que no son de una hora soltada. */
+  const otrosDelMes = delMes.filter((m) => m.tipo !== 'cargo' && m.tipo !== 'pago' && !esCompensado(m));
+  const otros = saldoDe(otrosDelMes);
 
   // Las facturas emitidas a esta persona, para descargar. Salen del mismo
   // comprobante que ve el equipo: un solo papel para los dos lados.
   const todasLasFacturas = await facturasDelCentro(yo.id);
   /** Las anuladas no se ofrecen: son un papel que ya no vale. El período de
    *  una factura es el primer día de su mes. */
+  // Solo las emitidas: una en borrador todavía no tiene CAE y no es una
+  // factura (Inicio ya filtraba así; acá se mostraban como emitidas).
   const facturasDe = (mes: string) =>
     todasLasFacturas.filter(
-      (f) => f.estado !== 'anulada' && (f.periodo ?? '').slice(0, 7) === mes.slice(0, 7),
+      (f) => f.estado === 'emitida' && (f.periodo ?? '').slice(0, 7) === mes.slice(0, 7),
     );
   const facturas = facturasDe(periodo);
   const numeroDe = (f: (typeof todasLasFacturas)[number]) =>
@@ -185,7 +202,7 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
     .sort((a, b) => b.localeCompare(a))
     .map((mes) => {
       const suyos = mios.filter((m) => m.periodo === mes);
-      const cargosDelMes = suyos.filter((m) => m.tipo === 'cargo');
+      const cargosDelMes = suyos.filter((m) => m.tipo === 'cargo' && !esCompensado(m));
       return {
         mes,
         horas: cargosDelMes.reduce((n, m) => n + horasDelDetalle(m.detalle), 0),
@@ -357,13 +374,14 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
                         <td>
                           {c.sala}
                           {c.liberada && <small className="centro-liberada"> · liberada</small>}
+                          {c.soltada && <small className="centro-liberada"> · soltada, sin cargo</small>}
                         </td>
                         <td>{c.horario}</td>
                         <td className="centro-num">{c.horas > 0 ? `${c.horas} h` : '—'}</td>
                         <td className="centro-num">
                           {c.horas > 0 ? pesos(Math.round(c.m.importe / c.horas)) : '—'}
                         </td>
-                        <td className="centro-num">{pesos(c.m.importe)}</td>
+                        <td className="centro-num">{c.soltada ? 'Sin cargo' : pesos(c.m.importe)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -372,7 +390,7 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
                       <td colSpan={3}>Total del mes</td>
                       <td className="centro-num">{horasDelMes} h</td>
                       <td />
-                      <td className="centro-num">{pesos(cargos)}</td>
+                      <td className="centro-num">{pesos(totalHoras)}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -391,6 +409,15 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
               {delMes.length > 0 && (
                 <table className="centro-cierre centro-cierre-pie">
                   <tbody>
+                    {otros !== 0 && (
+                      <tr>
+                        <td>Ajustes y devoluciones</td>
+                        <td className="centro-num">
+                          {otros < 0 ? '− ' : ''}
+                          {pesos(Math.abs(otros))}
+                        </td>
+                      </tr>
+                    )}
                     <tr>
                       <td>Pagos registrados</td>
                       <td className="centro-num">− {pesos(pagos)}</td>
@@ -420,12 +447,12 @@ export default async function Cuenta(props: { searchParams: Promise<{ ver?: stri
               )}
             </div>
 
-            {delMes.some((m) => m.tipo !== 'cargo') && (
+            {delMes.some((m) => m.tipo !== 'cargo' && !esCompensado(m)) && (
               <div className="centro-panel">
                 <h2>Pagos y ajustes</h2>
                 <ul className="centro-lista">
                   {delMes
-                    .filter((m) => m.tipo !== 'cargo')
+                    .filter((m) => m.tipo !== 'cargo' && !esCompensado(m))
                     .slice()
                     .sort((a, b) => a.fecha.localeCompare(b.fecha))
                     .map((m) => (

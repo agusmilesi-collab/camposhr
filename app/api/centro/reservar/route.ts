@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { inquilinoQueEscribe, legajoAlDia } from '@/lib/centro-sesion';
 import { crearReserva } from '@/lib/consultorios-escritura';
+import { NORMAS_VERSION } from '@/lib/centro-acceso';
+import { horasHastaQueEmpiece } from '@/lib/consultorios-calculo';
 import {
   aperturas as leerAperturas,
   cierresEntre,
@@ -41,12 +43,14 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         ok: false,
-        motivo: 'Falta tu matrícula vigente en el legajo. Avisale a Lorena o a Lucila y lo cargan.',
+        motivo: 'Falta tu matrícula en el legajo. Mandásela a Lorena o a Lucila y la cargan.',
       },
       { status: 403 }
     );
   }
-  if (!yo.normas_aceptadas_at) {
+  // La versión vigente, no cualquiera: cuando las normas cambian se vuelven a
+  // aceptar antes de reservar, como dicen Inicio y las propias normas.
+  if (yo.normas_version !== NORMAS_VERSION) {
     return NextResponse.json(
       { ok: false, motivo: 'Falta aceptar las normas de convivencia.' },
       { status: 403 }
@@ -64,6 +68,8 @@ export async function POST(req: Request) {
   if (hastaHora <= desdeHora) return mal('La hora de fin va después de la de inicio.');
   // Nadie reserva para atrás: la hora ya pasó y el cargo saldría igual.
   if (fecha < hoy) return mal('Esa fecha ya pasó.');
+  // Hoy, tampoco una hora que ya empezó: quedaba cobrada y sin poder soltarse.
+  if (horasHastaQueEmpiece(fecha, desdeHora) <= 0) return mal('Esa hora ya pasó.');
   // El mes que viene se abre el 1: antes renuevan quienes tienen horas fijas.
   if (fecha.slice(0, 7) > hoy.slice(0, 7)) return mal('Ese mes se abre el 1: todavía no se reserva.');
 

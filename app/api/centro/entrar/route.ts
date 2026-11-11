@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { claveCorrecta } from '@/lib/centro-acceso';
-import { armarCookie, COOKIE, DURACION } from '@/lib/centro-cookie';
+import { armarCookie, COOKIE, COOKIE_MIRANDO, DURACION } from '@/lib/centro-cookie';
 import { insert, select } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
@@ -98,6 +98,9 @@ export async function POST(req: Request) {
   await desanotar(anotado);
 
   const res = NextResponse.json({ ok: true });
+  // Entrar con la clave es entrar en serio: sin esto, quien había usado un
+  // pase del OS en ese navegador quedaba en modo solo lectura.
+  res.cookies.delete(COOKIE_MIRANDO);
   res.cookies.set(COOKIE, await armarCookie(yo.id, yo.hash, secreto), {
     httpOnly: true,
     sameSite: 'lax',

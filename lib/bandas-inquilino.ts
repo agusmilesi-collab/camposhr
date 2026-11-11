@@ -7,7 +7,16 @@ import {
   listarEspacios,
   reservasEntre,
 } from '@/lib/consultorios';
-import { finDeMes, hora, puedeAlquilar, semanaTipo } from '@/lib/consultorios-calculo';
+import {
+  diaSemanaDe,
+  finDeMes,
+  hora,
+  horasSemanalesTotales,
+  puedeAlquilar,
+  semanaTipo,
+} from '@/lib/consultorios-calculo';
+import { feriadosEntre } from '@/lib/feriados';
+import { DIA_DE_RENOVAR } from '@/lib/renovaciones-tipos';
 import { mesesAbiertosDesde } from '@/lib/apertura-mes';
 import { renovacionDe } from '@/lib/renovaciones';
 
@@ -25,6 +34,57 @@ import { renovacionDe } from '@/lib/renovaciones';
  * o más. Las horas que otro marcó que no renueva siguen ocupadas hasta que se
  * abre el mes, que es cuando se liberan de verdad.
  */
+
+/**
+ * Si esa persona puede renovar hoy: desde el 25, y solo con horas fijas para
+ * el mes que viene. Las mismas dos condiciones con que Inicio muestra la
+ * pregunta; acá las repite el servidor para lo que llegue armado a mano.
+ */
+export function puedeRenovar(
+  contratos: Awaited<ReturnType<typeof leerContratos>>,
+  inquilinoId: string,
+  hoy: string,
+  periodo: string
+): boolean {
+  return Number(hoy.slice(8, 10)) >= DIA_DE_RENOVAR && horasSemanalesTotales(contratos, inquilinoId, periodo) > 0;
+}
+
+/**
+ * Lo que el inquilino marcó al renovar, contra lo que de verdad puede marcar.
+ *
+ * Feriados: los de ese mes que caen en un día en que tiene horas fijas. Horas
+ * que no renueva: horas suyas, dentro de sus bandas de ese mes. Lo demás se
+ * descarta sin avisar, que solo llega si alguien armó el pedido a mano. Lo
+ * usan las dos rutas que guardan la respuesta: renovar y sumar horas.
+ */
+export async function cambiosValidos(
+  inquilinoId: string,
+  periodo: string,
+  pedidos: { feriados?: unknown; deja?: unknown }
+): Promise<{ feriados: string[]; deja: { contrato: string; hora: number }[]; sumo: boolean }> {
+  const [feriados, contratos] = await Promise.all([feriadosEntre(periodo, finDeMes(periodo)), leerContratos()]);
+  const suyas = contratos.filter(
+    (c) => c.inquilino_id === inquilinoId && (c.vigente_hasta === null || c.vigente_hasta >= periodo)
+  );
+  const susDias = new Set(suyas.map((c) => c.dia_semana));
+  const tildados: string[] = Array.isArray(pedidos.feriados) ? pedidos.feriados.map(String) : [];
+  const validos = feriados
+    .map((f) => f.fecha)
+    .filter((f) => tildados.includes(f) && susDias.has(diaSemanaDe(f)));
+
+  const pedidasDeja: { contrato: string; hora: number }[] = Array.isArray(pedidos.deja)
+    ? (pedidos.deja as { contrato?: unknown; hora?: unknown }[]).map((d) => ({
+        contrato: String(d?.contrato ?? ''),
+        hora: Number(d?.hora),
+      }))
+    : [];
+  const deja = pedidasDeja.filter((d, n) => {
+    const c = suyas.find((x) => x.id === d.contrato);
+    const repetida = pedidasDeja.findIndex((o) => o.contrato === d.contrato && o.hora === d.hora) !== n;
+    return c && !repetida && Number.isInteger(d.hora) && d.hora >= hora(c.desde_hora) && d.hora < hora(c.hasta_hora);
+  });
+  return { feriados: validos, deja, sumo: suyas.some((c) => c.vigente_desde >= periodo) };
+}
 
 export type Libre = { espacioId: string; sala: string; dia: number; horas: number[] };
 
@@ -61,7 +121,13 @@ export async function sumarBanda(
   periodo: string,
   espacioId: string,
   dia: number,
-  pedidas: number[]
+  pedidas: number[],
+  /**
+   * Lo que tenía marcado en la tarjeta al sumar (horas que no renueva,
+   * feriados). Se guarda junto, porque sumar ya deja la respuesta en
+   * "cambiar": sin esto, lo tachado y no enviado se perdía.
+   */
+  marcado: { feriados?: unknown; deja?: unknown } = {}
 ): Promise<{ ok: true } | { ok: false; motivo: string }> {
   if ((await mesesAbiertosDesde(periodo)).includes(periodo)) {
     return { ok: false, motivo: 'Ese mes ya está abierto. Para sumar horas, escribile a Lucila.' };
@@ -92,26 +158,28 @@ export async function sumarBanda(
     });
   }
 
-  // Sumar es renovar con cambios: si no había contestado, o había dicho que
-  // sí o que no, la respuesta pasa a "cambiar" y se conserva lo demás.
+  // Sumar es renovar con cambios: la respuesta pasa a "cambiar", con lo que
+  // tenía marcado en la tarjeta en ese momento.
   const r = await renovacionDe(inquilinoId, periodo);
-  if (r?.respuesta !== 'cambiar') {
-    await upsert(
-      'renovaciones',
-      {
-        inquilino_id: inquilinoId,
-        periodo,
-        respuesta: 'cambiar',
-        nota: r?.nota ?? null,
-        feriados: r?.respuesta === 'no' ? [] : (r?.feriados ?? []),
-        deja: r?.respuesta === 'no' ? [] : (r?.deja ?? []),
-        respondido_at: new Date().toISOString(),
-        visto_at: null,
-      },
-      'inquilino_id,periodo',
-      false
-    );
-  }
+  const cambios = await cambiosValidos(inquilinoId, periodo, {
+    feriados: marcado.feriados ?? r?.feriados ?? [],
+    deja: marcado.deja ?? r?.deja ?? [],
+  });
+  await upsert(
+    'renovaciones',
+    {
+      inquilino_id: inquilinoId,
+      periodo,
+      respuesta: 'cambiar',
+      nota: r?.nota ?? null,
+      feriados: cambios.feriados,
+      deja: cambios.deja,
+      respondido_at: new Date().toISOString(),
+      visto_at: null,
+    },
+    'inquilino_id,periodo',
+    false
+  );
   revalidateTag('consultorios', { expire: 0 });
   return { ok: true };
 }

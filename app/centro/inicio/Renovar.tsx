@@ -151,7 +151,10 @@ export default function Renovar({
     }
   }
 
-  const contestada = (respuesta !== null && !cambiando) || abierto;
+  // Mientras edita no está "contestada" aunque ya haya respuesta guardada:
+  // sumar una hora la guarda, y si eso cerraba la tarjeta se perdía lo
+  // tachado y lo tildado que todavía no había enviado.
+  const contestada = abierto || (respuesta !== null && !cambiando && !editando);
 
   return (
     // Con feriados la tarjeta crece: hay que poder leerlos y tildarlos.
@@ -315,7 +318,7 @@ export default function Renovar({
                 <button
                   type="button"
                   className="centro-renovar-sumar-boton"
-                  onClick={() => banda({ accion: 'sumar', espacioId: libre?.espacioId, dia: diaSuma, horas: elegidas })}
+                  onClick={() => banda({ accion: 'sumar', espacioId: libre?.espacioId, dia: diaSuma, horas: elegidas, deja, feriados: usa })}
                   disabled={enviando || elegidas.length === 0}
                 >
                   {elegidas.length === 0
