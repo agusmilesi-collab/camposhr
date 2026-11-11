@@ -6,8 +6,7 @@
  */
 
 import 'server-only';
-import { laVe } from '@/lib/empresa-prueba';
-import { quienSoy } from '@/lib/identidad';
+import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import * as supabase from '@/lib/psicotecnicos-supabase';
 import type { Evaluacion, Origen } from '@/lib/psicotecnicos-tipos';
@@ -24,9 +23,12 @@ export async function listarEvaluaciones(): Promise<{
     // La empresa de la muestra queda afuera: es la que se le enseña a un
     // cliente desde la página de precios, y sus candidatos inventados aparecían
     // en el tablero del equipo con una entrevista agendada que nadie va a
-    // tomar. Su portal la sigue viendo entera. La de prueba, solo quien ve todo.
-    const [todas, yo] = await Promise.all([supabase.listar(), quienSoy()]);
-    const filas = todas.filter((f) => !esEmpresaEjemplo(f.empresa) && laVe(yo.alcance, f.empresa));
+    // tomar. Su portal la sigue viendo entera. La de prueba tampoco entra, ni
+    // para quien ve todo (Agustín, 11/11/2026): sus candidatos se leían como
+    // trabajo pendiente en Inicio y en Psicotécnicos. Su ficha se sigue
+    // abriendo por la dirección.
+    const todas = await supabase.listar();
+    const filas = todas.filter((f) => !esEmpresaEjemplo(f.empresa) && !esEmpresaDePrueba(f.empresa));
     return { filas, fallaron: [] };
   } catch {
     return { filas: [], fallaron: ['supabase'] };
