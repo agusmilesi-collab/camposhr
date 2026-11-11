@@ -13,7 +13,7 @@ tsconfig.tsbuildinfo
 # Los documentos de clientes no van al repositorio, que es público: viven en
 # el bucket privado y se sirven sólo contra el token del portal. La copia de
 # trabajo está en ~/Documents/camposhr-privado/documentos. Ver lib/servicios.ts.
-documentos/
+/documentos/
 
 
 # Las migraciones con datos de personas reales no van al repositorio, que es
