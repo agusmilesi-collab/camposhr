@@ -474,6 +474,19 @@ export async function POST(req: Request) {
         const motivo = String(datos?.motivo ?? '').trim();
         const conCredito = Boolean(datos?.credito);
         if (!UUID.test(id)) return mal('Reserva inválida.');
+        // Las horas fijas del mes no se liberan: se termina la banda.
+        {
+          const url = process.env.SUPABASE_URL;
+          const key = process.env.SUPABASE_SERVICE_KEY as string;
+          const res = await fetch(`${url}/rest/v1/reservas?id=eq.${id}&select=origen`, {
+            headers: { apikey: key, Authorization: `Bearer ${key}` },
+            cache: 'no-store',
+          });
+          const [r] = res.ok ? ((await res.json()) as { origen: string }[]) : [];
+          if (r?.origen === 'contrato') {
+            return mal('Las horas fijas del mes no se liberan. Si deja de alquilarla, terminá la banda desde su ficha.');
+          }
+        }
         await patch('reservas', `id=eq.${id}`, { estado: 'liberada' });
         {
           const url = process.env.SUPABASE_URL;

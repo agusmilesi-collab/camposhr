@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { inquilinoDeLaSesion, legajoAlDia } from '@/lib/centro-sesion';
 import {
@@ -84,6 +85,19 @@ export default async function Centro() {
             <p style={{ margin: 0, fontSize: '0.9rem' }}>
               Para reservar hace falta la matrícula profesional vigente cargada
               en tu legajo. Mandásela a Lorena o a Lucila y la suben.
+            </p>
+          </div>
+        )}
+
+        {/* Sin las normas aceptadas la grilla no deja reservar, y tocar una
+            celda no hacía nada: Victoria Perino no entendía por qué
+            (11/11/2026). El motivo va arriba, con el camino para resolverlo. */}
+        {legajoAlDia(yo, hoy) && !yo.normas_aceptadas_at && (
+          <div className="centro-panel centro-aviso">
+            <h2>Falta aceptar las normas</h2>
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>
+              Para reservar, primero leé las normas del Centro y aceptalas al pie.{' '}
+              <Link href="/centro/normas">Ir a las normas</Link>
             </p>
           </div>
         )}

@@ -33,6 +33,8 @@ import {
   fechasRepetidas,
   finDeMes,
   hora,
+  HORAS_PARA_SOLTAR,
+  horasHastaQueEmpiece,
   porSemanas,
   tonosPorInquilino,
   type Apertura,
@@ -157,6 +159,16 @@ export default function Calendario({
   const conSabado = aperturas.some(
     (a) => a.dia_semana === 5 && espacios.some((e) => e.id === a.espacio_id)
   );
+  /*
+   * En la vista del mes, los días de la primera y la última semana que son de
+   * otro mes van apagados. Sin eso, el lunes 26/10 arriba de noviembre se leía
+   * como un lunes de noviembre, y una hora de octubre parecía seguir cargada
+   * (Lucila, 11/11/2026).
+   */
+  const mesDeLaVista = vista === 'mes' ? ancla[Math.floor(ancla.length / 2)]?.slice(0, 7) : null;
+  const deOtroMes = (d: string) => Boolean(mesDeLaVista && d.slice(0, 7) !== mesDeLaVista);
+  const APAGADO = { opacity: 0.38 } as const;
+
   const semanas = (vista === 'mes' ? porSemanas(ancla) : [ancla]).map((dias) =>
     conSabado ? dias : dias.filter((d) => diaSemanaDe(d) !== 5)
   );
@@ -336,7 +348,7 @@ export default function Calendario({
       accion: 'reserva-baja',
       id,
       credito: conCredito,
-      motivo: conCredito ? 'Hora liberada con aviso' : 'Hora liberada sin crédito',
+      motivo: conCredito ? 'Hora suelta liberada: no se cobra' : 'Hora liberada: se cobra igual',
     });
     setGuardando(false);
     if (!r.ok) return setError(r.motivo ?? 'No se pudo liberar.');
@@ -546,31 +558,49 @@ export default function Calendario({
 
               {error && <p className="os-burbuja-error">{error}</p>}
 
-              <div className="os-burbuja-pie">
-                <label className="os-tilde-fila">
-                  <input
-                    type="checkbox"
-                    checked={conCredito}
-                    onChange={(e) => setConCredito(e.target.checked)}
-                  />
+              {/* Las horas fijas del mes no se liberan, tampoco desde acá: si
+                  la persona deja de alquilarla, se termina la banda desde su
+                  ficha. Solo una suelta se libera. */}
+              {reservaAbierta.origen === 'contrato' ? (
+                <div className="os-burbuja-pie">
                   <span>
-                    Devolver el importe como crédito del mes que viene
-                    <small>
-                      {conCredito
-                        ? 'Es lo que corresponde cuando avisó con tiempo.'
-                        : 'La hora se cobra igual, como dice el acuerdo.'}
-                    </small>
+                    Las horas fijas del mes no se liberan.
+                    <small> Si deja de alquilarla, terminá la banda desde su ficha.</small>
                   </span>
-                </label>
-                <button
-                  className="os-boton os-boton-firme os-burbuja-principal"
-                  type="button"
-                  disabled={guardando}
-                  onClick={() => liberar(reservaAbierta.id, conCredito)}
-                >
-                  {guardando ? 'Liberando…' : 'Liberar la hora'}
-                </button>
-              </div>
+                  <a
+                    className="os-boton os-burbuja-principal"
+                    href={`/os/consultorios/inquilino/${reservaAbierta.inquilino_id}`}
+                  >
+                    Ver su ficha
+                  </a>
+                </div>
+              ) : (
+                <div className="os-burbuja-pie">
+                  <label className="os-tilde-fila">
+                    <input
+                      type="checkbox"
+                      checked={conCredito}
+                      onChange={(e) => setConCredito(e.target.checked)}
+                    />
+                    <span>
+                      No cobrarla: se devuelve el dinero
+                      <small>
+                        {conCredito
+                          ? `Corresponde si avisó ${HORAS_PARA_SOLTAR} horas antes y no pasa de 2 horas sueltas en el mes. Si ya la pagó, registrá la devolución en su ficha.`
+                          : 'La hora se cobra igual.'}
+                      </small>
+                    </span>
+                  </label>
+                  <button
+                    className="os-boton os-boton-firme os-burbuja-principal"
+                    type="button"
+                    disabled={guardando}
+                    onClick={() => liberar(reservaAbierta.id, conCredito)}
+                  >
+                    {guardando ? 'Liberando…' : 'Liberar la hora'}
+                  </button>
+                </div>
+              )}
             </>
           )}
 
@@ -634,7 +664,12 @@ export default function Calendario({
                     </span>
                   </th>
                   {dias.map((d, i) => (
-                    <th key={d} colSpan={espacios.length} className="os-agenda-dia">
+                    <th
+                      key={d}
+                      colSpan={espacios.length}
+                      className="os-agenda-dia"
+                      style={deOtroMes(d) ? APAGADO : undefined}
+                    >
                       {DIAS_CORTOS[i]} {dia(d)}
                     </th>
                   ))}
@@ -690,11 +725,12 @@ export default function Calendario({
                                (cuánto se aclara el fondo, cuánto se oscurece la
                                tinta) lo decide la hoja, que es la que sabe si
                                el tema es claro u oscuro. */
-                            style={
-                              celda?.estado === 'ocupado'
+                            style={{
+                              ...(celda?.estado === 'ocupado'
                                 ? ({ '--tono': tonos[celda.inquilinoId] ?? 210 } as React.CSSProperties)
-                                : undefined
-                            }
+                                : {}),
+                              ...(deOtroMes(d) ? APAGADO : {}),
+                            }}
                             onPointerDown={(ev) => {
                               if (celda?.estado !== 'libre') return;
                               // Sin esto el navegador arranca a seleccionar el
@@ -714,6 +750,12 @@ export default function Calendario({
                                 anclaRef.current = ev.currentTarget;
                                 setError(null);
                                 setElegida(null);
+                                // No cobrarla viene tildado solo cuando se puede:
+                                // una hora suelta, 24 horas antes de que empiece.
+                                const r = reservas.find((x) => x.id === celda.reservaId);
+                                setConCredito(
+                                  Boolean(r && r.origen === 'suelta' && horasHastaQueEmpiece(r.fecha, r.desde_hora) >= HORAS_PARA_SOLTAR)
+                                );
                                 setAbierta({ que: 'reserva', id: celda.reservaId });
                               }
                               if (celda?.estado === 'cerrado' && celda.cierreId) {
