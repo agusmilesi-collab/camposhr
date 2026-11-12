@@ -26,9 +26,8 @@
  *     como lectura.
  *
  * Las constelaciones entran cuando dan positivo (Lucila, 12/11/2026), con los
- * textos de `rorschach-redacciones-codigos.md`: CDI, DEPI, HVI y OBS. S-CON y
- * PTI no tienen redacción en el diccionario y siguen afuera hasta que la
- * escriban.
+ * textos de `rorschach-redacciones-codigos.md`: CDI, DEPI, HVI, OBS y S-CON
+ * (texto de Lucila del 12/11/2026). PTI no va: lo decidió Lucila el mismo día.
  */
 
 export type Lectura = {
@@ -114,7 +113,7 @@ function texto(s: SumarioCrudo, seccion: string, clave: string, respaldo = ''): 
  */
 function constelacion(
   s: SumarioCrudo,
-  nombre: 'CDI' | 'DEPI' | 'HVI' | 'OBS'
+  nombre: 'CDI' | 'DEPI' | 'HVI' | 'OBS' | 'SCON'
 ): { valor?: number; positivo?: boolean; sub_cumplidos?: number } | null {
   const c = s.constelaciones?.[nombre];
   return c && typeof c === 'object' ? (c as { valor?: number; positivo?: boolean; sub_cumplidos?: number }) : null;
@@ -1725,6 +1724,16 @@ export const TEXTOS = {
     recomienda: [
       'Está recomendado brindarle un espacio de contención para poder expresar libremente su estado emocional cuando lo requiera.',
     ],
+  },
+  'scon-positivo': {
+    area: 'Cómo maneja lo que siente',
+    indice: 'S-CON',
+    cuando: 'S-CON de 8 o más variables',
+    zulliger: { aplica: false },
+    dice: [
+      'Señal de alarma: muestra, o corre el riesgo de mostrar, comportamientos que podrían ser perjudiciales para sí mismo.',
+    ],
+    recomienda: [''],
   },
   'afr-bajo': {
     area: 'Cómo maneja lo que siente',
@@ -3487,6 +3496,11 @@ export function leer(
 
   if (cpuro > c('c-pura-alta')) {
     sumar('c-pura-alta', `C pura ${cpuro}`);
+  }
+
+  const scon = constelacion(s, 'SCON');
+  if (scon?.positivo) {
+    sumar('scon-positivo', `S-CON ${scon.valor ?? ''}`.trim());
   }
 
   const depi = constelacion(s, 'DEPI');
