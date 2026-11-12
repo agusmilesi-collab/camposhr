@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, motivo: 'Cuerpo inválido.' }, { status: 400 });
   }
 
-  const { id, lista, items } = datos ?? {};
+  const { id, lista, items, corregidas } = datos ?? {};
   if (typeof id !== 'string' || !UUID.test(id)) {
     return NextResponse.json({ ok: false, motivo: 'Identificador inválido.' }, { status: 400 });
   }
@@ -137,6 +137,19 @@ export async function POST(req: Request) {
   }
 
   const guardadas: Record<string, unknown> = { ...(fila.informe_listas ?? {}) };
+
+  /* Cada oración corregida, con la que escribió el motor. Sirve para que el
+     sello del índice siga al lado de la oración después de editarla. Si lo
+     corregido ya era una corrección, se apunta a la oración original. */
+  if (corregidas && typeof corregidas === 'object' && !Array.isArray(corregidas)) {
+    const previas = (guardadas.corregidas ?? {}) as Record<string, string>;
+    const nuevas: Record<string, string> = { ...previas };
+    for (const [texto, de] of Object.entries(corregidas as Record<string, unknown>)) {
+      if (typeof de !== 'string' || texto.length > LARGO_PARRAFO || de.length > LARGO_PARRAFO) continue;
+      nuevas[texto] = previas[de] ?? de;
+    }
+    if (Object.keys(nuevas).length > 0) guardadas.corregidas = nuevas;
+  }
   if (volver) delete guardadas[lista as string];
   else if (esResumen) guardadas.resumen = (items as string).trim();
   else if (esBenziger) {

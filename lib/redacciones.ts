@@ -25,8 +25,10 @@
  *   · Y alto y Afr fuera de banda no llevan recomendación, así que entran solo
  *     como lectura.
  *
- * Las constelaciones quedan afuera enteras. Su contenido corresponde a la
- * devolución individual con la psicóloga y no entra en un documento de gestión.
+ * Las constelaciones entran cuando dan positivo (Lucila, 12/11/2026), con los
+ * textos de `rorschach-redacciones-codigos.md`: CDI, DEPI, HVI y OBS. S-CON y
+ * PTI no tienen redacción en el diccionario y siguen afuera hasta que la
+ * escriban.
  */
 
 export type Lectura = {
@@ -106,6 +108,18 @@ function texto(s: SumarioCrudo, seccion: string, clave: string, respaldo = ''): 
   return typeof v === 'string' ? v : respaldo;
 }
 
+/**
+ * Una constelación tal como la deja el motor Exner (`constelaciones.CDI`...).
+ * Null en Zulliger, que no las tiene.
+ */
+function constelacion(
+  s: SumarioCrudo,
+  nombre: 'CDI' | 'DEPI' | 'HVI' | 'OBS'
+): { valor?: number; positivo?: boolean; sub_cumplidos?: number } | null {
+  const c = s.constelaciones?.[nombre];
+  return c && typeof c === 'object' ? (c as { valor?: number; positivo?: boolean; sub_cumplidos?: number }) : null;
+}
+
 /** Decimales con coma, como se escriben en castellano. */
 function dec(v: number, d = 2): string {
   return v.toFixed(d).replace('.', ',');
@@ -131,10 +145,13 @@ function dd(d: number, adjd: number): string {
  */
 export function pEsperado(r: number, test: string = 'Rorschach'): [number, number] {
   if (test === 'Zulliger') return [2, 4];
-  // Rorschach: norma argentina (Lunazzi y otros, 2007), 5,35 ± 1,65, de 4 a 7
-  // para cualquier R. Hasta el 14/10/2026 seguía la tabla de Exner por R.
-  void r;
-  return [4, 7];
+  // Rorschach: lo esperado sube con la cantidad de respuestas. Lucila lo pidió
+  // el 12/11/2026 con un protocolo de R 29 y P 4, que tiene que leerse bajo
+  // (de 6 a 9). Del 14/10 al 12/11/2026 rigió de 4 a 7 para cualquier R (norma
+  // argentina); el velocímetro 1.0 se quedó con esa banda, ver `competencias.ts`.
+  if (r < 17) return [4, 6];
+  if (r <= 28) return [5, 7];
+  return [6, 9];
 }
 
 /**
@@ -592,7 +609,9 @@ export const TEXTOS = {
   'mor-alto': {
     area: 'Cómo piensa',
     indice: 'MOR',
-    corte: { op: 'mayor', valor: 1, decimales: 0 },
+    // Hasta 2 está bien en Rorschach (Lucila, 12/11/2026). Zulliger sigue
+    // desde 2, con su propio corte.
+    corte: { op: 'mayor', valor: 2, decimales: 0 },
     zulliger: {
       corte: { op: 'mayor', valor: 1, decimales: 0 },
     },
@@ -951,6 +970,16 @@ export const TEXTOS = {
       'Darle tareas con un procedimiento claro y repasar juntos el plan de ejecución antes de arrancar, así no resuelve por impulso.',
       'Antes de que ejecute, pedirle que cuente paso a paso cómo lo va a hacer, y priorizar las tareas que tienen un procedimiento definido.',
     ],
+  },
+  'obs-positivo': {
+    area: 'Cómo procesa la información',
+    indice: 'OBS',
+    cuando: 'OBS positivo',
+    zulliger: { aplica: false },
+    dice: [
+      'Tendencia excesiva a la minuciosidad y al perfeccionismo, que le puede traer problemas cuando tiene que resolver situaciones de manera rápida: se pierde en detalles irrelevantes.',
+    ],
+    recomienda: [''],
   },
   'psv-alto': {
     area: 'Cómo procesa la información',
@@ -1498,8 +1527,12 @@ export const TEXTOS = {
   'fm-cero': {
     area: 'Cómo decide y cómo piensa',
     indice: 'FM',
-    corte: { op: 'menor', valor: 1, decimales: 0 },
+    /* En Rorschach FM de 1 también es bajo, con el texto de Lucila del
+       12/11/2026. En Zulliger FM se espera de 0 a 2, así que ahí sigue
+       entrando solo con 0. */
+    corte: { op: 'menor', valor: 2, decimales: 0 },
     zulliger: {
+      corte: { op: 'menor', valor: 1, decimales: 0 },
       dice: [
         'Le cuesta registrar sus propias necesidades.',
         'Registrar lo que necesita le resulta difícil.',
@@ -1512,9 +1545,7 @@ export const TEXTOS = {
       ],
     },
     dice: [
-      'Se le dificulta tomar registro de sus propias necesidades.',
-      'Le cuesta registrar sus propias necesidades.',
-      'Tomar conciencia de sus propias necesidades le resulta difícil.',
+      'Falla en el registro de sus necesidades básicas, lo que puede traerle problemas a mediano o largo plazo en su salud.',
     ],
     recomienda: [
       'En la reunión individual, preguntarle de forma directa qué necesita para trabajar bien, porque es probable que no lo pida por iniciativa propia.',
@@ -1671,6 +1702,28 @@ export const TEXTOS = {
       'Mostrarle los límites que se esperan incluso en las situaciones más caóticas.',
       'Marcarle qué límites siguen vigentes también en las situaciones más caóticas.',
       'Dejar claros los límites que no cambian aunque la situación se acelere.',
+    ],
+  },
+  'depi-cinco': {
+    area: 'Cómo maneja lo que siente',
+    indice: 'DEPI',
+    cuando: 'DEPI en 5',
+    zulliger: { aplica: false },
+    dice: ['Es más vulnerable que otros a tener alteraciones del estado de ánimo.'],
+    recomienda: [
+      'Está recomendado brindarle un espacio de contención para poder expresar libremente su estado emocional cuando lo requiera.',
+    ],
+  },
+  'depi-alto': {
+    area: 'Cómo maneja lo que siente',
+    indice: 'DEPI',
+    cuando: 'DEPI de 6 o más',
+    zulliger: { aplica: false },
+    dice: [
+      'Se detecta la presencia de alguna perturbación en su estado de ánimo, lo que puede generar cierta decaída anímica.',
+    ],
+    recomienda: [
+      'Está recomendado brindarle un espacio de contención para poder expresar libremente su estado emocional cuando lo requiera.',
     ],
   },
   'afr-bajo': {
@@ -2031,6 +2084,31 @@ export const TEXTOS = {
     ],
     recomienda: [''],
   },
+  'cdi-positivo': {
+    area: 'Cómo se relaciona',
+    indice: 'CDI',
+    cuando: 'CDI positivo (4 o más)',
+    // El Zulliger no tiene constelaciones.
+    zulliger: { aplica: false },
+    dice: [
+      'Suele establecer relaciones personales más superficiales: su inconsciente entiende que abrirse profundamente lo haría sentir vulnerable al rechazo. Por eso se aleja, los demás no se acercan por la distancia que pone, y eso le confirma que las personas no se acercan, con lo cual sigue eligiendo relaciones poco profundas para cuidarse.',
+    ],
+    recomienda: [
+      'En cuanto a la profundidad de las relaciones interpersonales, su alcance tendrá un límite que responde a un mecanismo de autocuidado. Si alguna situación requiere mayor profundidad, se recomienda asistir para generar mayor empatía.',
+    ],
+  },
+  'hvi-positivo': {
+    area: 'Cómo se relaciona',
+    indice: 'HVI',
+    cuando: 'HVI positivo',
+    zulliger: { aplica: false },
+    dice: [
+      'Estado de alerta continuo. Se trata de una persona reservada que desconfía de todo lo que no conoce y que necesita procesar cuidadosamente la mayor cantidad de datos antes de relajarse y sentirse seguro. Puede aparecer una actitud negativista y desconfiada hacia el entorno, está muy atento a la preservación de su espacio personal y tenderá a ser muy reservado en sus relaciones interpersonales. Solo se sentirá seguro si controla totalmente la situación.',
+    ],
+    recomienda: [
+      'Brindarle información clara y anticipada sobre las tareas y cambios, para favorecer su sensación de control y seguridad.',
+    ],
+  },
   'cop-cero-ag-bajo': {
     area: 'Cómo se relaciona',
     indice: 'COP / AG',
@@ -2266,6 +2344,14 @@ export const TEXTOS = {
       'Muestra un interés marcado por los demás.',
       'Las otras personas le importan de manera notoria.',
     ],
+    recomienda: [''],
+  },
+  'humanos-alto-hvi': {
+    area: 'Cómo se relaciona',
+    indice: 'Contenidos humanos',
+    cuando: 'sigue a la anterior cuando además HVI es positivo',
+    zulliger: { aplica: false },
+    dice: [' Con HVI positivo, ese interés es cautela ante los demás y desconfianza: se interesa por los otros para protegerse.'],
     recomienda: [''],
   },
   'humanos-alto-cop': {
@@ -3191,6 +3277,11 @@ export function leer(
     }
   }
 
+  const obs = constelacion(s, 'OBS');
+  if (obs?.positivo) {
+    sumar('obs-positivo', 'OBS positivo');
+  }
+
   const psv = n(s, 'procesamiento', 'PSV');
   if (psv > c('psv-alto')) {
     sumar('psv-alto', `PSV ${psv}`);
@@ -3350,7 +3441,7 @@ export function leer(
 
   const fm = n(s, 'determinantes', 'FM');
   if (fm < c('fm-cero')) {
-    sumar('fm-cero', 'FM 0');
+    sumar('fm-cero', `FM ${fm}`);
   } else if (fm > c('fm-alto')) {
     sumar('fm-alto', `FM ${fm}`);
   }
@@ -3396,6 +3487,11 @@ export function leer(
 
   if (cpuro > c('c-pura-alta')) {
     sumar('c-pura-alta', `C pura ${cpuro}`);
+  }
+
+  const depi = constelacion(s, 'DEPI');
+  if (depi?.positivo) {
+    sumar((depi.valor ?? 5) > 5 ? 'depi-alto' : 'depi-cinco', `DEPI ${depi.valor ?? ''}`.trim());
   }
 
   const afr = n(s, 'afectos', 'Afr');
@@ -3485,6 +3581,17 @@ export function leer(
   }
 
   // ── Cómo se relaciona ──────────────────────────────────────────────────────
+  /* CDI es la primera constelación que entra al informe, con el texto de
+     Lucila del 12/11/2026. Las otras siguen afuera hasta que definan si van. */
+  const cdi = constelacion(s, 'CDI');
+  if (cdi?.positivo) {
+    sumar('cdi-positivo', `CDI ${cdi.valor ?? ''}`.trim());
+  }
+  const hvi = constelacion(s, 'HVI');
+  if (hvi?.positivo) {
+    sumar('hvi-positivo', `HVI ${hvi.sub_cumplidos ?? ''}/7`);
+  }
+
   const cop = n(s, 'interpersonal', 'COP');
   const ag = n(s, 'interpersonal', 'AG');
   if (cop === 0 && ag <= 1) {
@@ -3529,7 +3636,11 @@ export function leer(
   const humanos = hPura + hParen + hd + hdParen;
   const [, hMax] = hEsperado(r, estilo, test);
   if (humanos > hMax) {
-    sumar('humanos-alto', `H total ${humanos}`, cop >= 1 ? 'humanos-alto-cop' : null);
+    sumar(
+      'humanos-alto',
+      `H total ${humanos}`,
+      constelacion(s, 'HVI')?.positivo ? 'humanos-alto-hvi' : cop >= 1 ? 'humanos-alto-cop' : null
+    );
   }
 
   const otrosH = hParen + hd + hdParen;

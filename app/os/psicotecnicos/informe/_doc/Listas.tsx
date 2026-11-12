@@ -31,7 +31,18 @@ import { TRAMOS, type Tramo } from '@/lib/plan-incorporacion';
  * en cada arrastre, y con ella React reusaría el renglón equivocado, que es
  * además contra qué se compara para animar el movimiento.
  */
-type Item = { id: number; texto: string; tramo?: Tramo };
+type Item = {
+  id: number;
+  texto: string;
+  tramo?: Tramo;
+  /**
+   * La oración con la que el renglón entró al borrador.
+   *
+   * Si la evaluadora la corrige, al guardar se manda de cuál salió, y así el
+   * sello del índice la sigue acompañando (pedido de Lucila del 12/11/2026).
+   */
+  de?: string;
+};
 
 /** Cuánto dura el reacomodo de los renglones. */
 const ANIMACION = 190;
@@ -67,8 +78,8 @@ export default function Listas({
    *
    * Solo llega desde la ficha: el documento lo pasa cuando recibe `editar`, así
    * que la vista para imprimir y el portal del cliente no lo tienen. Un texto
-   * que la evaluadora corrigió no encuentra su respaldo y sale sin sello, que
-   * es lo correcto: dejó de ser lo que dijo la codificación.
+   * que la evaluadora corrigió conserva el sello de la oración de la que salió:
+   * al guardar se anota esa equivalencia (`informe_listas.corregidas`).
    */
   respaldos?: Record<string, Respaldo>;
   /**
@@ -121,6 +132,7 @@ export default function Listas({
     return textos.map((texto, i) => ({
       id: numerador.current++,
       texto,
+      de: texto,
       ...(plan ? { tramo: suyos?.[i] ?? 'siempre' } : {}),
     }));
   }
@@ -191,6 +203,16 @@ export default function Listas({
     setMovido(hasta);
   }
 
+  /** Cada oración corregida, con la oración de la que salió. */
+  function corregidas(): Record<string, string> {
+    const salida: Record<string, string> = {};
+    for (const x of borrador) {
+      const texto = x.texto.trim();
+      if (texto && x.de && texto !== x.de) salida[texto] = x.de;
+    }
+    return salida;
+  }
+
   async function mandar(cuerpo: string[] | { texto: string; tramo: Tramo }[] | null) {
     setGuardando(true);
     setError(null);
@@ -198,7 +220,7 @@ export default function Listas({
       const res = await fetch('/api/os/informe-listas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, lista, items: cuerpo }),
+        body: JSON.stringify({ id, lista, items: cuerpo, corregidas: cuerpo ? corregidas() : {} }),
       });
       const r = await res.json();
       if (!r.ok) throw new Error(r.motivo ?? 'No se pudo guardar.');

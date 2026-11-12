@@ -658,6 +658,24 @@ function armarResumen(lecturas: Lectura[], destacadas: Lectura[]): string[] {
  * análisis como para las recomendaciones al líder: las dos cosas salen de la
  * misma lectura y comparten su índice.
  */
+/**
+ * Suma el respaldo de las oraciones que la evaluadora corrigió.
+ *
+ * Una oración corregida toma el sello de la oración del motor de la que salió
+ * (`informe_listas.corregidas`, que guarda corregida → original).
+ */
+function conCorregidas(
+  respaldos: Record<string, Respaldo>,
+  corregidas: unknown
+): Record<string, Respaldo> {
+  if (!corregidas || typeof corregidas !== 'object') return respaldos;
+  const salida = { ...respaldos };
+  for (const [texto, de] of Object.entries(corregidas as Record<string, unknown>)) {
+    if (typeof de === 'string' && respaldos[de] && !salida[texto]) salida[texto] = respaldos[de];
+  }
+  return salida;
+}
+
 function respaldosDe(
   lecturas: Lectura[],
   cortes: Cortes,
@@ -1157,14 +1175,14 @@ export function desdeFicha(
       esperadas: elegir('esperadas', esperadas.map((l) => l.dice)),
       desarrollar: elegir('desarrollar', desarrollar.map((l) => l.dice)),
     },
-    respaldos: respaldosDe(
+    respaldos: conCorregidas(respaldosDe(
       lecturas,
       cortes,
       proyectivoDe(f) === 'Zulliger' ? 'Zulliger' : 'Rorschach',
       typeof sumario?.control_estres?.estilo === 'string'
         ? (sumario.control_estres.estilo as string)
         : 'Ambigual'
-    ),
+    ), (c.informe_listas as any)?.corregidas),
     analizadas: analizadasDe(
       lecturas,
       cortes,

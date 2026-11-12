@@ -32,6 +32,9 @@
 .os-mancha-detalle td {
   padding-top: 10px;
   padding-bottom: 14px;
+  /* La tabla no corta línea en sus celdas de códigos, y el detalle lo heredaba:
+     una respuesta larga seguía de largo y se montaba sobre la encuesta. */
+  white-space: normal;
 }
 .os-mancha-detalle dt {
   flex: none;
@@ -121,6 +124,7 @@
 }
 .os-mancha-detalle dl > div dd {
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 /* Los objetos de una respuesta separada, uno por renglón. */

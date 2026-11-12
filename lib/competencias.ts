@@ -718,7 +718,12 @@ const POPULARES: Indicador = {
     const p = num(s, 'procesamiento', 'P') ?? num(s, 'calidad_formal', 'P');
     const r = num(s, 'cabecera', 'R');
     if (p === null || r === null) return null;
-    const [minimo, maximo] = pEsperado(r);
+    /* El velocímetro 1.0 está congelado desde el 15/10/2026 con P de 4 a 7
+       para cualquier R. Las frases del informe pasaron a la tabla por R el
+       12/11/2026; mover esta banda cambiaría el puntaje de informes ya
+       entregados. */
+    void r;
+    const [minimo, maximo] = [4, 7];
     if (p > maximo) return 3;
     return p < minimo ? 1 : 2;
   },
