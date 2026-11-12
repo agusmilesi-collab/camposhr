@@ -12,6 +12,7 @@ const nextConfig = {
   // otra persona puede tardar hasta 30 segundos en aparecer.
   experimental: {
     staleTimes: { dynamic: 30 },
+    agentUpgrade: 'security',
   },
   // Lo que no se importa desde el código no viaja al paquete de la función, así
   // que hay que decirle a Next que lo suba.
