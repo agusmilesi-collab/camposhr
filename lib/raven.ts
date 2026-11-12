@@ -26,6 +26,40 @@ export const AVISO_MINUTOS = 5;
 export const OPCIONES = 8;
 
 /**
+ * Los dos Raven que se mandan por enlace.
+ *
+ * El de 36 es el completo, con su baremo y sus rangos. El de 12 es la serie
+ * corta: tiene sus propias láminas en el bucket (`laminas/raven12/`), su clave
+ * y su reloj, y lo que da va a `raven.corto`, que no tiene percentil ni rango.
+ * La evaluadora elige cuál al copiar el enlace.
+ */
+export type Serie = 12 | 36;
+
+/** `aviso`: a cuántos minutos del final se le avisa que se está terminando. */
+export const SERIES: Record<
+  Serie,
+  { laminas: number; minutos: number; aviso: number; carpeta: string }
+> = {
+  36: { laminas: RAVEN_MAXIMO, minutos: MINUTOS, aviso: AVISO_MINUTOS, carpeta: 'raven' },
+  12: { laminas: 12, minutos: 10, aviso: 2, carpeta: 'raven12' },
+};
+
+/**
+ * La serie corta se toma solo en la Batería 1. Lo repiten la hoja, que no
+ * ofrece el botón en las demás, y la ruta que genera el enlace, que lo rechaza.
+ */
+export const BATERIA_RAVEN_12 = 'Batería 1';
+
+export function admiteRaven12(codigoBateria: string | null | undefined): boolean {
+  return codigoBateria === BATERIA_RAVEN_12;
+}
+
+/** La serie de un valor guardado o pedido: cualquier cosa que no sea 12 es la de 36. */
+export function serieDe(valor: unknown): Serie {
+  return Number(valor) === 12 ? 12 : 36;
+}
+
+/**
  * Qué porcentaje de la población de referencia queda por debajo.
  *
  * No es el porcentaje de respuestas correctas: para eso está el puntaje
@@ -130,14 +164,15 @@ export const SIN_MEDICION = 'Sin medición';
 export function duracionDeSesion(
   iniciado: string | null,
   terminado: string | null,
-  cierre: string | null
+  cierre: string | null,
+  minutos: number = MINUTOS
 ): number | null {
   if (!iniciado || !terminado) return null;
   const segundos = Math.max(
     0,
     Math.round((new Date(terminado).getTime() - new Date(iniciado).getTime()) / 1000)
   );
-  return cierre === 'tiempo' ? Math.min(segundos, MINUTOS * 60) : segundos;
+  return cierre === 'tiempo' ? Math.min(segundos, minutos * 60) : segundos;
 }
 
 export function duracion(segundos: number | null): string | null {

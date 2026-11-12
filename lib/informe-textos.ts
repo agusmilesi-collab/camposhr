@@ -184,12 +184,20 @@ const COMUNES = [
   'Entrevista por competencias.',
   'Test de Bender.',
   'Test gráfico (dibujo de dos personas trabajando).',
-  'Test de lógica: Raven, serie avanzada II.',
 ];
 
-export function tecnicas(bateria: string | null, conBenziger: boolean): string[] {
+/**
+ * El Raven se nombra por la serie que rindió: la de 36 láminas es la serie
+ * avanzada II y la de 12, la serie avanzada I.
+ */
+export function tecnicas(
+  bateria: string | null,
+  conBenziger: boolean,
+  laminasRaven: 12 | 36 = 36
+): string[] {
   const manchas = bateria === 'Batería 1' ? 'Test de Zulliger.' : 'Test de Rorschach.';
-  const lista = [...COMUNES, manchas];
+  const raven = `Test de lógica: Raven, serie avanzada ${laminasRaven === 12 ? 'I' : 'II'}.`;
+  const lista = [...COMUNES, raven, manchas];
   if (bateria === 'Batería 3') lista.push('Análisis discursivo según E. Jaques.');
   if (conBenziger) lista.push('Cuestionario Benziger (licencia original).');
   return lista;

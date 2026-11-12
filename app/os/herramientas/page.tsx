@@ -136,9 +136,15 @@ const FICHAS: Ficha[] = [
     icono: 'lapiz',
   },
   {
-    titulo: 'Raven',
+    titulo: 'Raven 36',
     detalle: 'Vista de prueba, sin guardar nada.',
     href: '/raven',
+    icono: 'matriz',
+  },
+  {
+    titulo: 'Raven 12',
+    detalle: 'La serie corta, de prueba y sin guardar nada.',
+    href: '/raven?serie=12',
     icono: 'matriz',
   },
   {
@@ -196,13 +202,17 @@ export default async function Herramientas() {
           // El del Raven es otro: abre la vista de prueba, que no guarda nada,
           // y por eso no dice "para el candidato". El que rinde un candidato
           // sale de su hoja de entrevista.
-          const deRaven = f.href === '/raven';
+          const deRaven = f.href.startsWith('/raven');
           const test = deRaven ? 'raven' : f.href.match(/^\/os\/laminas\/([a-z]+)$/)?.[1];
           if (!test) return tarjeta;
           return (
             <div className="os-tarjeta-con-link" key={f.titulo}>
               {tarjeta}
-              <CopiarLinkLaminas test={test} texto={deRaven ? 'Copiar link de prueba' : undefined} />
+              <CopiarLinkLaminas
+                test={test}
+                texto={deRaven ? 'Copiar link de prueba' : undefined}
+                sufijo={f.href === '/raven?serie=12' ? '?serie=12' : ''}
+              />
             </div>
           );
         })}

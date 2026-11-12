@@ -2,7 +2,7 @@ import 'server-only';
 import { puestoConCiudad } from '@/lib/pedido-campos';
 import { enlaceDelAudio } from '@/lib/audio-discurso';
 import type { EstadoRaven } from '@/lib/raven-estado';
-import { duracionDeSesion } from '@/lib/raven';
+import { duracionDeSesion, SERIES, serieDe } from '@/lib/raven';
 import { select } from '@/lib/supabase';
 import { TEST_COMPETENCIAS } from '@/lib/entrevista-competencias';
 import { llevaBenziger } from '@/lib/benziger';
@@ -124,6 +124,8 @@ export type Entrevista = {
     desvios: number | null;
     resultado: string | null;
     origen: 'test' | 'manual' | null;
+    /** Aciertos sobre 12, si rindió la serie corta. */
+    corto: number | null;
   } | null;
   /** La sesión, si rindió por su enlace: dice si se cortó por el reloj. */
   ravenSesion: {
@@ -131,6 +133,8 @@ export type Entrevista = {
     terminado_at: string | null;
     cierre: string | null;
     respuestas: Record<string, number> | null;
+    /** De cuántas láminas es el enlace: 36 o 12. */
+    laminas: number | null;
   } | null;
   /** Cuánto tardó, si ya lo terminó. */
   ravenDuracion: number | null;
@@ -202,9 +206,10 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
       terminado_at: string | null;
       cierre: string | null;
       respuestas: Record<string, number> | null;
+      laminas: number | null;
     }>(
       'raven_sesiones',
-      `select=iniciado_at,terminado_at,cierre,respuestas&evaluacion_id=eq.${id}` +
+      `select=iniciado_at,terminado_at,cierre,respuestas,laminas&evaluacion_id=eq.${id}` +
         '&order=creado_at.desc&limit=1'
     ),
     select<{
@@ -226,9 +231,10 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
       desvios: number | null;
       resultado: string | null;
       origen: 'test' | 'manual' | null;
+      corto: number | null;
     }>(
       'raven',
-      `select=raw,percentil,desvios,resultado,origen&evaluacion_id=eq.${id}&limit=1`
+      `select=raw,percentil,desvios,resultado,origen,corto&evaluacion_id=eq.${id}&limit=1`
     ).catch(() => []),
     // El informe del Benziger, que se sube en la misma hoja.
     select<{ pdf_nombre: string | null }>(
@@ -294,6 +300,11 @@ export async function entrevistaDe(id: string): Promise<Entrevista | null> {
     ravenIniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
     ravenMedida: medidas[0] ?? null,
     ravenSesion: sesiones[0] ?? null,
-    ravenDuracion: duracionDeSesion(s?.iniciado_at ?? null, s?.terminado_at ?? null, s?.cierre ?? null),
+    ravenDuracion: duracionDeSesion(
+        s?.iniciado_at ?? null,
+        s?.terminado_at ?? null,
+        s?.cierre ?? null,
+        SERIES[serieDe(s?.laminas)].minutos
+      ),
   };
 }

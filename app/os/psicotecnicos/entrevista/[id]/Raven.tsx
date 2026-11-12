@@ -27,7 +27,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import type { EstadoRaven } from '@/lib/raven-estado';
-import { MINUTOS, RAVEN_MAXIMO, duracion } from '@/lib/raven';
+import { RAVEN_MAXIMO, SERIES, duracion, serieDe, type Serie } from '@/lib/raven';
 import LinkRaven from '../../LinkRaven';
 
 /**
@@ -44,7 +44,13 @@ import LinkRaven from '../../LinkRaven';
  */
 const CADA = 60_000;
 
-type Medida = { raw: number | null; percentil: number | null; resultado: string | null };
+type Medida = {
+  raw: number | null;
+  percentil: number | null;
+  resultado: string | null;
+  /** Aciertos sobre 12, si rindió la serie corta. */
+  corto?: number | null;
+};
 
 export default function Raven({
   id,
@@ -52,8 +58,14 @@ export default function Raven({
   iniciado: iniciadoServidor,
   duracionSegundos,
   medida,
+  laminas: laminasServidor = 36,
+  conDoce = false,
 }: {
   id: string;
+  /** De cuántas láminas es el enlace que se mandó, si se mandó. */
+  laminas?: Serie;
+  /** Si la batería admite la serie corta: solo la Batería 1. */
+  conDoce?: boolean;
   estado: EstadoRaven;
   iniciado: string | null;
   duracionSegundos: number | null;
@@ -65,6 +77,7 @@ export default function Raven({
   const [iniciado, setIniciado] = useState(iniciadoServidor);
   const [tardo, setTardo] = useState(duracionSegundos);
   const [resultado, setResultado] = useState<Medida | null>(medida);
+  const [laminas, setLaminas] = useState<Serie>(laminasServidor);
   /** Segundos que le quedan. Null hasta que corre en el navegador. */
   const [restan, setRestan] = useState<number | null>(null);
 
@@ -75,7 +88,8 @@ export default function Raven({
     setIniciado(iniciadoServidor);
     setTardo(duracionSegundos);
     setResultado(medida);
-  }, [delServidor, iniciadoServidor, duracionSegundos, medida]);
+    setLaminas(laminasServidor);
+  }, [delServidor, iniciadoServidor, duracionSegundos, medida, laminasServidor]);
 
   // En una referencia y no en el efecto: así el temporizador del sondeo no se
   // rearma en cada dibujo, que es lo que haría empezar la cuenta de nuevo.
@@ -95,6 +109,7 @@ export default function Raven({
         setIniciado(r.iniciado ?? null);
         setTardo(r.duracion ?? null);
         setResultado(r.resultado ?? null);
+        setLaminas(serieDe(r.laminas));
         if (r.estado !== mostrando.current) {
           setEstado(r.estado);
           // Y se pide la pantalla de nuevo, porque el resto de la hoja también
@@ -127,12 +142,12 @@ export default function Raven({
       setRestan(null);
       return;
     }
-    const fin = new Date(iniciado).getTime() + MINUTOS * 60 * 1000;
+    const fin = new Date(iniciado).getTime() + SERIES[laminas].minutos * 60 * 1000;
     const leer = () => setRestan(Math.max(0, Math.round((fin - Date.now()) / 1000)));
     leer();
     const t = setInterval(leer, 1000);
     return () => clearInterval(t);
-  }, [iniciado]);
+  }, [iniciado, laminas]);
 
   return (
     /* El reloj y el enlace van contra el margen derecho, del otro lado de la
@@ -161,24 +176,50 @@ export default function Raven({
                 {resultado.raw}/{RAVEN_MAXIMO}
               </span>
             )}
+            {resultado !== null && resultado.raw === null && typeof resultado.corto === 'number' && (
+              <span className="os-sello-estado os-verde os-raven-puntaje" title="Serie corta, sin rango">
+                {resultado.corto}/12
+              </span>
+            )}
           </>
-        ) : (
-          <Reloj iniciado={iniciado} restan={restan} />
+        ) : estado === 'sin enlace' ? null : (
+          /* Sin enlace no se sabe cuál se va a mandar, así que no hay minutos
+             que mostrar. Mandado, el reloj es el de esa serie. */
+          <Reloj
+            iniciado={iniciado}
+            restan={restan}
+            minutos={SERIES[laminas].minutos}
+            aviso={SERIES[laminas].aviso}
+          />
         )}
       </span>
 
-      <LinkRaven evaluacionId={id} />
+      {/* Un botón por serie: la evaluadora elige si manda el de 36 o el de 12.
+          Si ya mandó uno y no lo abrió, el otro botón cambia ese mismo enlace. */}
+      <LinkRaven evaluacionId={id} laminas={36} confirmar={conDoce} />
+      {conDoce && <LinkRaven evaluacionId={id} laminas={12} confirmar />}
     </div>
   );
 }
 
-function Reloj({ iniciado, restan }: { iniciado: string | null; restan: number | null }) {
+function Reloj({
+  iniciado,
+  restan,
+  minutos,
+  aviso,
+}: {
+  iniciado: string | null;
+  restan: number | null;
+  minutos: number;
+  /** Desde cuántos minutos del final el reloj se pinta de urgente. */
+  aviso: number;
+}) {
   // Sin abrir todavía: el tiempo está entero y quieto. Se muestra igual, para
   // saber de cuánto dispone cuando empiece.
   if (!iniciado) {
     return (
       <span className="os-raven-reloj" title="Todavía no lo abrió">
-        {MINUTOS}:00
+        {minutos}:00
       </span>
     );
   }
@@ -191,7 +232,7 @@ function Reloj({ iniciado, restan }: { iniciado: string | null; restan: number |
   const s = restan % 60;
   return (
     <span
-      className={`os-raven-reloj${restan <= 5 * 60 ? ' urge' : ''}`}
+      className={`os-raven-reloj${restan <= aviso * 60 ? ' urge' : ''}`}
       title="Tiempo que le queda"
     >
       Quedan {m}:{String(s).padStart(2, '0')}

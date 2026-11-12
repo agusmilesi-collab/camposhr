@@ -1,8 +1,8 @@
 import Test from './[token]/Test';
-import { MINUTOS } from '@/lib/raven';
+import { SERIES, serieDe } from '@/lib/raven';
 import './[token]/raven.css';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 /**
  * El test de Raven, para mirarlo.
@@ -16,6 +16,17 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function RavenPrueba() {
-  return <Test token="" respuestas={{}} restan={MINUTOS * 60} empezado={false} prueba />;
+/** `?serie=12` muestra la serie corta; sin nada, la de 36. */
+export default async function RavenPrueba(props: { searchParams: Promise<{ serie?: string }> }) {
+  const serie = serieDe((await props.searchParams).serie);
+  return (
+    <Test
+      token=""
+      respuestas={{}}
+      restan={SERIES[serie].minutos * 60}
+      empezado={false}
+      serie={serie}
+      prueba
+    />
+  );
 }

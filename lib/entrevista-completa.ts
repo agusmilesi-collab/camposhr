@@ -26,7 +26,7 @@ type Fila = {
   /** Si a esta persona le corresponde, aunque el pedido no lo haya comprado. */
   con_benziger: boolean | null;
   /** Uno a uno: PostgREST lo devuelve como objeto, no como lista. */
-  raven: { raw: number | null } | null;
+  raven: { raw: number | null; corto: number | null } | null;
   /** La grabación de los cinco minutos, que es la marca del análisis discursivo. */
   analisis_discursivo: { audio_path: string | null } | null;
   pedidos: { con_benziger: boolean | null; baterias: { tests: string[] | null } | null } | null;
@@ -34,7 +34,7 @@ type Fila = {
 
 const CAMPOS =
   'estado,proyectivo_administrado,bender_administrado,grafico_2_personas_administrado,' +
-  'benziger_administrado,con_benziger,raven(raw),analisis_discursivo(audio_path),' +
+  'benziger_administrado,con_benziger,raven(raw,corto),analisis_discursivo(audio_path),' +
   'pedidos(con_benziger,baterias(tests))';
 
 /** Qué marca mira cada test de la batería. Los que no están, no dejan marca. */
@@ -43,7 +43,8 @@ const MARCA: Record<string, (f: Fila) => boolean> = {
   Zulliger: (f) => f.proyectivo_administrado,
   Bender: (f) => f.bender_administrado,
   'Gráfico 2 personas': (f) => f.grafico_2_personas_administrado,
-  Raven: (f) => f.raven?.raw !== null && f.raven?.raw !== undefined,
+  Raven: (f) =>
+    (f.raven?.raw !== null && f.raven?.raw !== undefined) || typeof f.raven?.corto === 'number',
   [TEST_DISCURSIVO]: (f) => Boolean(f.analisis_discursivo?.audio_path),
 };
 

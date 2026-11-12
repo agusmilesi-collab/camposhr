@@ -19051,3 +19051,44 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   font-weight: 700;
   margin-right: 4px;
 }
+
+/* El cartel que pregunta qué Raven se administra antes de copiar el enlace,
+   en la Batería 1 (`LinkRaven.tsx`). Centrado sobre la hoja y con el fondo
+   apagado: es una decisión sobre qué test se le toma a la persona. */
+.os-aviso-raven {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(26, 29, 33, 0.4);
+  white-space: normal;
+}
+
+.os-aviso-raven-caja {
+  width: min(400px, 100%);
+  padding: 22px 22px 18px;
+  border-radius: 12px;
+  background: var(--os-panel);
+  box-shadow: 0 18px 50px rgba(26, 29, 33, 0.25);
+}
+
+.os-aviso-raven-caja p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.os-aviso-raven-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.os-link-raven .os-aviso-raven-botones .os-boton {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+}

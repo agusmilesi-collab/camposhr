@@ -8,7 +8,7 @@ import {
   sesionPorToken,
   type Sesion,
 } from '@/lib/raven-test';
-import { calcularRaven, MINUTOS, OPCIONES, RAVEN_MAXIMO } from '@/lib/raven';
+import { calcularRaven, OPCIONES, SERIES } from '@/lib/raven';
 import { anotarAcceso } from '@/lib/accesos';
 import { siEstaTodoTomado } from '@/lib/entrevista-completa';
 
@@ -51,7 +51,8 @@ async function patch(id: string, campos: Record<string, unknown>) {
 
 /** Corrige, guarda el puntaje y cierra la sesión. */
 async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
-  const aciertos = corregir(s.respuestas);
+  const aciertos = corregir(s.respuestas, s.laminas);
+  const minutos = SERIES[s.laminas].minutos;
   const terminado = new Date();
   await patch(s.id, { terminado_at: terminado.toISOString(), cierre });
 
@@ -60,7 +61,7 @@ async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
   // cierre en llegar: un "50:01" se lee como que el reloj la dejó seguir.
   const duracion = s.iniciado_at
     ? Math.min(
-        cierre === 'tiempo' ? MINUTOS * 60 : Infinity,
+        cierre === 'tiempo' ? minutos * 60 : Infinity,
         Math.max(0, Math.round((terminado.getTime() - new Date(s.iniciado_at).getTime()) / 1000))
       )
     : null;
@@ -68,7 +69,9 @@ async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
   // Sin la clave cargada no se corrige: dejar un cero sería un resultado, y lo
   // que hay es una corrección pendiente.
   if (aciertos !== null) {
-    const r = calcularRaven(aciertos);
+    // El de 12 va a `corto` y deja vacío lo del de 36: su número no se lee
+    // con el baremo de 36 ni tiene rango. Y al revés, el de 36 vacía `corto`.
+    const r = s.laminas === 36 ? calcularRaven(aciertos) : null;
     const { url, key } = config();
     await fetch(`${url}/rest/v1/raven`, {
       method: 'POST',
@@ -84,6 +87,7 @@ async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
         percentil: r?.percentil ?? null,
         desvios: r?.desvios ?? null,
         resultado: r?.resultado ?? null,
+        corto: s.laminas === 12 ? aciertos : null,
         origen: 'test',
         duracion_segundos: duracion,
         actualizado_at: new Date().toISOString(),
@@ -101,7 +105,7 @@ async function cerrar(s: Sesion, cierre: 'entregado' | 'tiempo') {
     accion: 'escritura',
     recurso: 'raven_sesion',
     recursoId: s.evaluacion_id,
-    detalle: { cierre, respondidas: Object.keys(s.respuestas).length, aciertos },
+    detalle: { cierre, respondidas: Object.keys(s.respuestas).length, aciertos, laminas: s.laminas },
   });
 }
 
@@ -123,7 +127,7 @@ export async function POST(req: Request) {
       // El reloj arranca una sola vez: volver a entrar no lo reinicia.
       if (!s.iniciado_at) await patch(s.id, { iniciado_at: new Date().toISOString() });
       const iniciado = s.iniciado_at ?? new Date().toISOString();
-      return NextResponse.json({ ok: true, restan: segundosRestantes(iniciado) });
+      return NextResponse.json({ ok: true, restan: segundosRestantes(iniciado, s.laminas) });
     }
 
     if (accion === 'responder') {
@@ -139,7 +143,7 @@ export async function POST(req: Request) {
       }
       const lamina = Number(datos?.lamina);
       const opcion = datos?.opcion === null ? null : Number(datos?.opcion);
-      if (!Number.isInteger(lamina) || lamina < 1 || lamina > RAVEN_MAXIMO) {
+      if (!Number.isInteger(lamina) || lamina < 1 || lamina > SERIES[s.laminas].laminas) {
         return NextResponse.json({ ok: false, motivo: 'Lámina inválida.' }, { status: 400 });
       }
       if (opcion !== null && (!Number.isInteger(opcion) || opcion < 1 || opcion > OPCIONES)) {
@@ -153,7 +157,7 @@ export async function POST(req: Request) {
       else respuestas[String(lamina)] = opcion;
 
       await patch(s.id, { respuestas });
-      return NextResponse.json({ ok: true, restan: segundosRestantes(s.iniciado_at) });
+      return NextResponse.json({ ok: true, restan: segundosRestantes(s.iniciado_at, s.laminas) });
     }
 
     if (accion === 'reloj') {
@@ -164,7 +168,7 @@ export async function POST(req: Request) {
         await cerrar(s, 'tiempo');
         return NextResponse.json({ ok: false, motivo: 'Se terminó el tiempo.' }, { status: 409 });
       }
-      return NextResponse.json({ ok: true, restan: segundosRestantes(s.iniciado_at) });
+      return NextResponse.json({ ok: true, restan: segundosRestantes(s.iniciado_at, s.laminas) });
     }
 
     if (accion === 'terminar') {

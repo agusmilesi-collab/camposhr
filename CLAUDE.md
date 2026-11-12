@@ -173,6 +173,15 @@ El reloj también es del servidor. `iniciado_at` se sella cuando se pide la
 primera lámina y `segundosRestantes()` mide contra eso: si el tiempo lo llevara
 el navegador, recargar la página lo reiniciaría.
 
+**Hay dos series, y la elige la evaluadora al copiar el enlace** ("Copiar link
+36" o "Copiar link 12", desde el 12/11/2026). La sesión guarda cuál es
+(`raven_sesiones.laminas`, `supabase/raven-serie.sql`) y de ahí salen las
+láminas, el reloj y la clave (`SERIES` en `lib/raven.ts`, `CLAVE_12` en
+`lib/raven-test.ts`). Las de 12 están en `laminas/raven12/` del bucket. Lo que
+da el de 12 va a `raven.corto` y nunca a `raw`, que se lee sobre 36 con su
+baremo. Si el enlace abierto es de la otra serie y no se abrió, se le cambia la
+serie al mismo enlace; si ya lo empezó, se rechaza.
+
 ## Un solo desplegable para todo el OS
 
 `app/os/Desplegable.tsx`. El del navegador no deja pintar sus opciones, y en

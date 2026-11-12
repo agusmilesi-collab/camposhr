@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { select } from '@/lib/supabase';
-import { duracionDeSesion } from '@/lib/raven';
+import { duracionDeSesion, SERIES, serieDe } from '@/lib/raven';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -45,13 +45,18 @@ export async function GET(req: Request) {
 
   try {
     const [sesiones, medidas] = await Promise.all([
-      select<{ iniciado_at: string | null; terminado_at: string | null; cierre: string | null }>(
+      select<{
+        iniciado_at: string | null;
+        terminado_at: string | null;
+        cierre: string | null;
+        laminas: number | null;
+      }>(
         'raven_sesiones',
-        `select=iniciado_at,terminado_at,cierre&evaluacion_id=eq.${id}&order=creado_at.desc&limit=1`
+        `select=iniciado_at,terminado_at,cierre,laminas&evaluacion_id=eq.${id}&order=creado_at.desc&limit=1`
       ),
-      select<{ raw: number | null; percentil: number | null; resultado: string | null }>(
+      select<{ raw: number | null; percentil: number | null; resultado: string | null; corto: number | null }>(
         'raven',
-        `select=raw,percentil,resultado&evaluacion_id=eq.${id}&limit=1`
+        `select=raw,percentil,resultado,corto&evaluacion_id=eq.${id}&limit=1`
       ).catch(() => []),
     ]);
     const s = sesiones[0];
@@ -66,10 +71,17 @@ export async function GET(req: Request) {
     return NextResponse.json({
       ok: true,
       estado,
+      // De cuántas láminas es el enlace: el reloj de la hoja cuenta sus minutos.
+      laminas: serieDe(s?.laminas),
       // Mientras corre, cuándo arrancó; entregado, cuánto le llevó. Son los dos
       // datos que la hoja muestra en la misma columna.
       iniciado: s?.terminado_at ? null : (s?.iniciado_at ?? null),
-      duracion: duracionDeSesion(s?.iniciado_at ?? null, s?.terminado_at ?? null, s?.cierre ?? null),
+      duracion: duracionDeSesion(
+        s?.iniciado_at ?? null,
+        s?.terminado_at ?? null,
+        s?.cierre ?? null,
+        SERIES[serieDe(s?.laminas)].minutos
+      ),
       resultado: medidas[0] ?? null,
     });
   } catch {

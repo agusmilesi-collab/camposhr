@@ -158,8 +158,9 @@ export default function Crudo({
               </tbody>
             </table>
             <p className="inf-crudo-nota">
-              Test de Matrices Progresivas de Raven, escala general, sin límite de
-              ayuda y con tiempo tomado.
+              {inf.raven.raw !== null
+                ? 'Test de Matrices Progresivas de Raven, escala general, sin límite de ayuda y con tiempo tomado.'
+                : 'Test de Matrices Progresivas de Raven, serie avanzada I (12 láminas), con tiempo tomado. No tiene baremo propio: no da percentil ni rango.'}
             </p>
           </>
         )}

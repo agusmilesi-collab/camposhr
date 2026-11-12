@@ -3,7 +3,7 @@ import { hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { sesionPorToken } from '@/lib/raven-test';
 import { esPruebaDeRaven } from '@/lib/laminas-enlace';
-import { OPCIONES, RAVEN_MAXIMO } from '@/lib/raven';
+import { OPCIONES, SERIES, serieDe, type Serie } from '@/lib/raven';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -37,10 +37,10 @@ export async function GET(req: Request) {
   const token = url.searchParams.get('token') ?? '';
   const n = Number(url.searchParams.get('n'));
   const parte = url.searchParams.get('parte') ?? 'matriz';
+  // La serie que se pide. Con el token de una sesión manda la de la sesión y
+  // no lo que diga la dirección: quien rinde el de 12 no puede pedir las 36.
+  let serie: Serie = serieDe(url.searchParams.get('serie'));
 
-  if (!Number.isInteger(n) || n < 1 || n > RAVEN_MAXIMO) {
-    return new NextResponse('No existe esa lámina.', { status: 404 });
-  }
   // La matriz, o una de las ocho opciones. Nada más.
   const archivo =
     parte === 'matriz'
@@ -50,18 +50,25 @@ export async function GET(req: Request) {
         : null;
   if (!archivo) return new NextResponse('No existe esa parte.', { status: 404 });
 
-  const entra = token
-    ? token.startsWith('lm_')
-      ? await esPruebaDeRaven(token)
-      : Boolean(await sesionPorToken(token))
-    : await conSesionDelOs(req);
+  let entra: boolean;
+  if (!token) entra = await conSesionDelOs(req);
+  else if (token.startsWith('lm_')) entra = await esPruebaDeRaven(token);
+  else {
+    const s = await sesionPorToken(token);
+    entra = Boolean(s);
+    if (s) serie = s.laminas;
+  }
   if (!entra) return new NextResponse('Sin sesión.', { status: 401 });
+
+  if (!Number.isInteger(n) || n < 1 || n > SERIES[serie].laminas) {
+    return new NextResponse('No existe esa lámina.', { status: 404 });
+  }
 
   const base = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY;
   if (!base || !key) return new NextResponse('Sin configuración.', { status: 500 });
 
-  const ruta = `laminas/raven/${String(n).padStart(2, '0')}-${archivo}.png`;
+  const ruta = `laminas/${SERIES[serie].carpeta}/${String(n).padStart(2, '0')}-${archivo}.png`;
   const res = await fetch(`${base}/storage/v1/object/${BUCKET}/${ruta}`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
     cache: 'no-store',

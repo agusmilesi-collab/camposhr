@@ -1308,7 +1308,11 @@ export function desdeFicha(
         : null,
     // La misma condición que la sección: una técnica sin un solo resultado no
     // se puede declarar como usada.
-    tecnicas: tecnicas(c.pedidos?.baterias?.codigo ?? null, hayBenziger),
+    tecnicas: tecnicas(
+      c.pedidos?.baterias?.codigo ?? null,
+      hayBenziger,
+      f.raven && typeof f.raven.raw !== 'number' && typeof f.raven.corto === 'number' ? 12 : 36
+    ),
     crudo: {
       sumario: textoDelSumario(f.sumario?.crudo) ?? null,
       protocolo: f.manchas.map((m) => ({

@@ -16,9 +16,12 @@ import { useState } from 'react';
 export default function CopiarLinkLaminas({
   test,
   texto = 'Copiar link para el candidato',
+  sufijo = '',
 }: {
   test: string;
   texto?: string;
+  /** Lo que se le agrega al enlace: `?serie=12` para el Raven de 12. */
+  sufijo?: string;
 }) {
   const [estado, setEstado] = useState<'quieto' | 'copiado' | 'error'>('quieto');
 
@@ -43,7 +46,7 @@ export default function CopiarLinkLaminas({
       } catch {
         // Ídem.
       }
-      await navigator.clipboard.writeText(r.enlace);
+      await navigator.clipboard.writeText(r.enlace + sufijo);
       setEstado('copiado');
     } catch {
       setEstado('error');

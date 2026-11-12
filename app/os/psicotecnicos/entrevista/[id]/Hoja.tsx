@@ -27,7 +27,7 @@ import Bateria from '../../Bateria';
 import Whatsapp from '../../Whatsapp';
 import { enlaceDelCv } from '@/lib/cv';
 import { ajuste } from '@/lib/ajustes';
-import { RANGOS, rangosValidos } from '@/lib/raven';
+import { RANGOS, admiteRaven12, rangosValidos, serieDe } from '@/lib/raven';
 import Orden from './Orden';
 import Competencias from './Competencias';
 import Nacimiento from './Nacimiento';
@@ -185,7 +185,10 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
          mandar": el Raven se puede tomar en papel, y ahí no hay enlace que
          mandar pero el test está tomado igual, que es lo que la lista plegada
          tiene que decir. */
-      if (e.ravenMedida?.raw !== null && e.ravenMedida?.raw !== undefined) {
+      if (
+        (e.ravenMedida?.raw !== null && e.ravenMedida?.raw !== undefined) ||
+        typeof e.ravenMedida?.corto === 'number'
+      ) {
         return <span className="os-sello-estado os-test-estado os-verde">Administrado</span>;
       }
       /* Como todos los tests de la lista: administrado o no. En qué anda el
@@ -273,6 +276,8 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
             <RavenPuntaje
               id={e.id}
               raw={e.ravenMedida?.raw ?? null}
+              corto={e.ravenMedida?.corto ?? null}
+              puedeSerDoce={admiteRaven12(e.bateria)}
               percentil={e.ravenMedida?.percentil ?? null}
               desvios={e.ravenMedida?.desvios ?? null}
               resultado={e.ravenMedida?.resultado ?? null}
@@ -287,6 +292,8 @@ export default async function HojaDeEntrevista({ id }: { id: string }) {
                   iniciado={e.ravenIniciado}
                   duracionSegundos={e.ravenDuracion}
                   medida={e.ravenMedida}
+                  laminas={serieDe(e.ravenSesion?.laminas)}
+                  conDoce={admiteRaven12(e.bateria)}
                 />
               }
             />

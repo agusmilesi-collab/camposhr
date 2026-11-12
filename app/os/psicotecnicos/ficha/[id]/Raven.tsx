@@ -39,6 +39,8 @@ export type Sesion = {
   terminado_at: string | null;
   cierre: string | null;
   respuestas: Record<string, number> | null;
+  /** De cuántas láminas era el enlace. Null en las sesiones viejas: 36. */
+  laminas?: number | null;
 };
 
 /** Un decimal, escrito como se escribe en castellano. */
@@ -75,7 +77,8 @@ function Origen({
   // Sin repetir que se lo tomó por su enlace ni cuánto tardó: las dos cosas
   // están arriba, en la cabecera de la tarjeta. Acá queda lo que no está en
   // ningún otro lado: cuándo terminó y cuántas láminas contestó.
-  const comoCerro = `${fechaHora(sesion?.terminado_at ?? null)}, con ${respondidas} de ${RAVEN_MAXIMO} láminas respondidas`;
+  const total = sesion?.laminas === 12 ? 12 : RAVEN_MAXIMO;
+  const comoCerro = `${fechaHora(sesion?.terminado_at ?? null)}, con ${respondidas} de ${total} láminas respondidas`;
 
   if (origen === 'test') {
     return (
@@ -105,6 +108,8 @@ function Origen({
 export default function Raven({
   id,
   raw,
+  corto = null,
+  puedeSerDoce = false,
   percentil,
   desvios,
   resultado,
@@ -116,6 +121,10 @@ export default function Raven({
 }: {
   id: string;
   raw: number | null;
+  /** Aciertos sobre 12, si rindió la serie corta. */
+  corto?: number | null;
+  /** Si la batería admite el de 12: sin enlace, todavía puede ser cualquiera. */
+  puedeSerDoce?: boolean;
   percentil: number | null;
   desvios: number | null;
   resultado: string | null;
@@ -144,6 +153,42 @@ export default function Raven({
   const suyo =
     enEscala?.numeral ?? rangos.find((r) => texto.startsWith(`Rango ${r.numeral} ·`))?.numeral ?? null;
   const tramos = puntajesPorRango(rangos);
+
+  // Lo del de 36 (sobre 36, percentil, desvíos, rangos) sale solo cuando se
+  // sabe que es el de 36: tiene puntaje de 36, el enlace mandado es de 36, o
+  // la batería no admite otro. En la Batería 1, sin enlace todavía puede ser
+  // cualquiera de los dos; y la serie corta no
+  // tiene baremo, así que se muestra su puntaje sobre 12 y nada que lo lea
+  // como 36.
+  const esDoce = typeof corto === 'number' || sesion?.laminas === 12;
+  if (raw === null && (esDoce || (!sesion && puedeSerDoce))) {
+    return (
+      <div className="os-raven">
+        <div className="os-raven-carga">
+          <span className="os-raven-campo">
+            <span className="os-dato-rotulo">
+              {esDoce ? 'Puntaje directo · serie corta' : 'Puntaje directo'}
+            </span>
+            <span className="os-raven-entrada">
+              <strong className="os-raven-directo">{corto ?? '—'}</strong>
+              {esDoce && <span className="os-raven-sobre">de 12</span>}
+            </span>
+          </span>
+          {derecha && <div className="os-raven-derecha">{derecha}</div>}
+        </div>
+        {typeof corto === 'number' && (
+          <Origen origen={origen} sesion={sesion} raw={corto} tardo={tardo} />
+        )}
+        <div className="os-raven-glosario">
+          <p>
+            {esDoce
+              ? 'El Raven de 12 láminas no tiene baremo propio: no da percentil ni rango.'
+              : 'Todavía no se mandó el enlace. El percentil y el rango aparecen con el de 36.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="os-raven">

@@ -27,7 +27,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AVISO_MINUTOS, MINUTOS, OPCIONES, RAVEN_MAXIMO } from '@/lib/raven';
+import { OPCIONES, SERIES, type Serie } from '@/lib/raven';
 import Ejemplo from './Ejemplo';
 
 function reloj(segundos: number): string {
@@ -41,15 +41,26 @@ export default function Test({
   respuestas: iniciales,
   restan: restanInicial,
   empezado,
+  serie = 36,
   prueba = false,
 }: {
   token: string;
   respuestas: Record<string, number>;
   restan: number;
   empezado: boolean;
+  /** De cuántas láminas es: el completo o la serie corta. */
+  serie?: Serie;
   /** Para mirar el test sin tomárselo a nadie: no guarda ni corrige. */
   prueba?: boolean;
 }) {
+  // Los mismos nombres que tenían como constantes, para que el resto del
+  // componente se lea igual: ahora salen de la serie.
+  const RAVEN_MAXIMO = SERIES[serie].laminas;
+  const MINUTOS = SERIES[serie].minutos;
+  const AVISO_MINUTOS = SERIES[serie].aviso;
+  // Las láminas se piden con la serie: el servidor la toma de la sesión, y en
+  // la prueba (sin sesión) de acá.
+  const deLaSerie = serie === 12 ? '&serie=12' : '';
   const [arrancado, setArrancado] = useState(empezado);
   const [lamina, setLamina] = useState(1);
   const [respuestas, setRespuestas] = useState(iniciales);
@@ -162,12 +173,12 @@ export default function Test({
     for (const n of vecinas) {
       for (const parte of partes) {
         const img = new Image();
-        img.src = `/api/raven/lamina?token=${token}&n=${n}&parte=${parte}`;
+        img.src = `/api/raven/lamina?token=${token}&n=${n}&parte=${parte}${deLaSerie}`;
         pedidas.push(img);
       }
     }
     return () => pedidas.forEach((i) => (i.src = ''));
-  }, [lamina, token]);
+  }, [lamina, token, RAVEN_MAXIMO, deLaSerie]);
 
   async function responder(opcion: number) {
     // Tocar la que ya estaba elegida la borra.
@@ -224,7 +235,7 @@ export default function Test({
         )}
         <h1>Test de razonamiento</h1>
         {/* El ejemplo antes que nada: la consigna dice qué hay que hacer y esto
-            lo muestra. No es una lámina del test, que las 36 se puntúan. */}
+            lo muestra. No es una lámina del test, que todas se puntúan. */}
         <Ejemplo />
         {/* La consigna va destacada: es lo único que hay que entender para
             empezar, y lo demás son detalles de cómo funciona la pantalla. */}
@@ -263,7 +274,7 @@ export default function Test({
   const avisando = restan <= AVISO_MINUTOS * 60;
 
   return (
-    <main className="rv">
+    <main className="rv rv-jugando">
       {prueba && (
         <p className="rv-prueba">
           Estás viendo el test como lo ve el candidato. Nada de lo que respondas se guarda.
@@ -282,8 +293,8 @@ export default function Test({
       <div className="rv-aviso" role="status">
         {avisando && (
           <p>
-            Quedan {Math.ceil(restan / 60)} minutos. Buen momento para revisar las láminas
-            que dejaste sin responder.
+            {Math.ceil(restan / 60) <= 1 ? 'Queda menos de un minuto' : `Quedan ${Math.ceil(restan / 60)} minutos`}.
+            Buen momento para revisar las láminas que dejaste sin responder.
           </p>
         )}
       </div>
@@ -291,7 +302,7 @@ export default function Test({
       <figure className="rv-lamina">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`/api/raven/lamina?token=${token}&n=${lamina}&parte=matriz`}
+          src={`/api/raven/lamina?token=${token}&n=${lamina}&parte=matriz${deLaSerie}`}
           alt={`Lámina ${lamina}`}
         />
       </figure>
@@ -308,7 +319,7 @@ export default function Test({
             <span className="rv-opcion-numero">{o}</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`/api/raven/lamina?token=${token}&n=${lamina}&parte=${o}`}
+              src={`/api/raven/lamina?token=${token}&n=${lamina}&parte=${o}${deLaSerie}`}
               alt=""
               aria-hidden
             />
@@ -360,11 +371,11 @@ export default function Test({
           <div className="rv-confirmar-caja">
             <h2 id="rv-confirmar-titulo">¿Entregar el test?</h2>
             {sinResponder.length === 0 ? (
-              <p>Respondiste las 36 láminas.</p>
+              <p>Respondiste las {RAVEN_MAXIMO} láminas.</p>
             ) : (
               <>
                 <p>
-                  Te quedan <strong>{sinResponder.length} láminas sin responder</strong> de las 36.
+                  Te quedan <strong>{sinResponder.length} láminas sin responder</strong> de las {RAVEN_MAXIMO}.
                   {sinResponder.length === 1
                     ? ` Es la ${sinResponder[0]}.`
                     : ` Son la ${sinResponder.slice(0, 8).join(', ')}${sinResponder.length > 8 ? ' y otras más' : ''}.`}

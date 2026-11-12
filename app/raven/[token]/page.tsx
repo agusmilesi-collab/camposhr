@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Test from './Test';
 import { seAcabo, segundosRestantes, sesionPorToken } from '@/lib/raven-test';
 import { esPruebaDeRaven } from '@/lib/laminas-enlace';
-import { MINUTOS } from '@/lib/raven';
+import { SERIES, serieDe } from '@/lib/raven';
 import './raven.css';
 
 export const dynamic = 'force-dynamic';
@@ -19,13 +19,27 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function RavenPagina(props: { params: Promise<{ token: string }> }) {
+export default async function RavenPagina(props: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ serie?: string }>;
+}) {
   const params = await props.params;
   // El enlace de prueba que se copia desde Herramientas: el mismo test, sin
   // guardar nada. El token va para que las láminas abran sin sesión del OS.
   if (params.token.startsWith('lm_')) {
     if (!(await esPruebaDeRaven(params.token))) notFound();
-    return <Test token={params.token} respuestas={{}} restan={MINUTOS * 60} empezado={false} prueba />;
+    // En la prueba se elige la serie por la dirección (`?serie=12`).
+    const serie = serieDe((await props.searchParams).serie);
+    return (
+      <Test
+        token={params.token}
+        respuestas={{}}
+        restan={SERIES[serie].minutos * 60}
+        empezado={false}
+        serie={serie}
+        prueba
+      />
+    );
   }
 
   const s = await sesionPorToken(params.token);
@@ -44,8 +58,9 @@ export default async function RavenPagina(props: { params: Promise<{ token: stri
     <Test
       token={s.token}
       respuestas={s.respuestas ?? {}}
-      restan={segundosRestantes(s.iniciado_at)}
+      restan={segundosRestantes(s.iniciado_at, s.laminas)}
       empezado={s.iniciado_at !== null}
+      serie={s.laminas}
     />
   );
 }

@@ -1699,7 +1699,11 @@ export function calcularCompetencias(
         indicador: i.nombre,
         mide: i.mide,
         nivel,
-        corte: comoSeLee(i, n, e),
+        // Con la serie corta, los cortes del de 36 no dicen nada: van los suyos.
+        corte:
+          i === RAVEN && typeof ctx.ravenRaw !== 'number' && typeof ctx.ravenCorto === 'number'
+            ? 'serie corta: hasta 7 bajo; de 8 a 11 medio; 12 aporta 75'
+            : comoSeLee(i, n, e),
         peso:
           nivel === 1 && i.bajoNoCuentaSi?.(s)
             ? 0
