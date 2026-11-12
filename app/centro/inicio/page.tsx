@@ -30,6 +30,8 @@ import { feriadosEntre } from '@/lib/feriados';
 import { turnosDe } from '@/lib/turnos';
 import Renovar from './Renovar';
 import Asistencia from './Asistencia';
+import Visto from './Visto';
+import { select } from '@/lib/supabase';
 import { NORMAS_VERSION } from '@/lib/centro-acceso';
 import Barra from '../Barra';
 
@@ -73,6 +75,8 @@ type Tarjeta = {
   hora?: number;
   /** Un turno de hoy cuya hora ya pasó: va al final y apagado. */
   pasada?: boolean;
+  /** Lleva el "Ok" que la saca de Inicio: la factura emitida y el pago. */
+  visto?: boolean;
 };
 
 /**
@@ -122,6 +126,13 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
     // prevista que después no se renovó, o sobre una hora que se soltó).
     yo.mirando ? Promise.resolve([]) : turnosDe(yo.id, hoy, finDeMes(mesCorrido(periodoDe(hoy), MESES_PREVISTOS))),
   ]);
+  // Los avisos que la persona ya sacó con "Ok". Si la lectura falla, salen
+  // todos: es preferible repetir un aviso que dejar Inicio sin dibujar.
+  const vistos = new Set(
+    await select<{ clave: string }>('centro_avisos_vistos', `select=clave&inquilino_id=eq.${yo.id}`)
+      .then((filas) => filas.map((f) => f.clave))
+      .catch(() => [] as string[])
+  );
   const [feriadosProximos, abiertos] = await Promise.all([
     feriadosEntre(proximoMes, finDeMes(proximoMes)),
     mesesAbiertosDesde(proximoMes),
@@ -257,7 +268,10 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
         enlace: { href: `/api/centro/recibo/${m.id}`, texto: 'Abrir el recibo', afuera: true },
         aviso: true,
       })),
-  ].sort((a, b) => b.fecha.localeCompare(a.fecha));
+  ]
+    .filter((a) => !vistos.has(a.clave))
+    .map((a) => ({ ...a, visto: !yo.mirando }))
+    .sort((a, b) => b.fecha.localeCompare(a.fecha));
 
   /*
    * La renovación: desde el 25, y solo a quien tiene horas fijas.
@@ -459,13 +473,16 @@ export default async function Inicio(props: { searchParams: Promise<{ hoy?: stri
                     </ul>
                   )}
                   {t.enlace && (
-                    <a
-                      className="centro-tarjeta-boton"
-                      href={t.enlace.href}
-                      {...(t.enlace.afuera ? { target: '_blank', rel: 'noreferrer' } : {})}
-                    >
-                      {t.enlace.texto}
-                    </a>
+                    <div className={t.visto ? 'centro-tarjeta-acciones' : undefined}>
+                      <a
+                        className="centro-tarjeta-boton"
+                        href={t.enlace.href}
+                        {...(t.enlace.afuera ? { target: '_blank', rel: 'noreferrer' } : {})}
+                      >
+                        {t.enlace.texto}
+                      </a>
+                      {t.visto && <Visto clave={t.clave} />}
+                    </div>
                   )}
                 </article>
               ))}

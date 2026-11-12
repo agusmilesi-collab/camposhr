@@ -708,6 +708,25 @@ export async function POST(req: Request) {
         const comprobante = await comprobantePorId(String(datos?.id ?? ''));
         if (!comprobante) return mal('Ese comprobante ya no espera un pago.');
         const debe = await loQueDebe(comprobante);
+        // "Otro importe": el papel dice una cifra distinta de la tarjeta y se
+        // registra la que entró, sin recargo aparte, porque un pago parcial no
+        // arrastra el recargo del total. Lo que falte queda como saldo del mes.
+        if (datos?.importe !== undefined) {
+          const importe = Math.round(Number(datos.importe));
+          if (!Number.isFinite(importe) || importe <= 0) return mal('El importe tiene que ser mayor a cero.');
+          await insert('movimientos', {
+            inquilino_id: comprobante.inquilino_id,
+            tipo: 'pago',
+            fecha: debe.fecha,
+            periodo: comprobante.periodo,
+            importe,
+            detalle: 'Transferencia',
+            quien: yo.nombre,
+          });
+          await darPorRegistrados(comprobante.inquilino_id, comprobante.periodo);
+          extra = { registrado: importe };
+          break;
+        }
         if (debe.total > 0) {
           if (debe.recargo > 0) {
             await insert('movimientos', {

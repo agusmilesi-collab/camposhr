@@ -18198,17 +18198,33 @@ html[data-os-tema='oscuro'] .os-agenda-suelta {
   gap: 6px;
 }
 
+/* La tarjeta del comprobante lleva tres, del mismo ancho. */
+.os-mini-acciones.os-mini-acciones-tres {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* En una columna angosta, "Ver comprobante" se recorta en vez de partirse. */
+.os-mini-acciones.os-mini-acciones-tres .os-boton {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* El importe que entró, en el lugar de "Ver comprobante": del alto de los
+   botones y sin ancho propio, así no empuja a los otros dos. */
+.os-mini-acciones .os-mini-importe-campo {
+  height: 28px;
+  width: 100%;
+  min-width: 0;
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .os-mini-acciones .os-boton {
   height: 28px;
   padding: 0 6px;
   font-size: 0.74rem;
   min-width: 0;
-}
-
-.os-mini-comprobante .os-mini-otro {
-  flex: none;
-  font-size: 0.7rem;
-  color: var(--os-suave);
 }
 
 /*
@@ -19026,4 +19042,12 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
 .os-importe-renglon {
   display: block;
   white-space: nowrap;
+}
+
+/* El tilde de "Está ok" en la tarjeta del comprobante: verde sobre el botón
+   oscuro, para que se lea como aprobar antes de leer el texto. */
+.os-mini-acciones .os-mini-tilde {
+  color: #4ade80;
+  font-weight: 700;
+  margin-right: 4px;
 }

@@ -2787,6 +2787,30 @@
   background: var(--azul-fuerte);
 }
 
+/* El papel y el "Ok" que saca el aviso de Inicio, en una sola fila. */
+.centro-tarjeta-acciones {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+}
+
+.centro-tarjeta-ok {
+  height: 28px;
+  padding: 0 14px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.centro-tarjeta-ok:hover:not(:disabled) {
+  border-color: var(--suave);
+}
+
 .centro-renovar-botones {
   display: grid;
   grid-auto-flow: column;

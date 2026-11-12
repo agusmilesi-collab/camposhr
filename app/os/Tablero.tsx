@@ -348,14 +348,18 @@ export default function Tablero({
   const [porPagar, setPorPagar] = useState<string | null>(null);
   const [pagados, setPagados] = useState<string[]>([]);
 
-  async function pagado(id: string) {
+  /** El comprobante cuyo papel dice otro importe, con lo que se va escribiendo. */
+  const [otroImporte, setOtroImporte] = useState<{ id: string; valor: string } | null>(null);
+
+  async function pagado(id: string, importe?: number) {
     setPorPagar(null);
+    setOtroImporte(null);
     setPagados((xs) => [...xs, id]);
     try {
       const res = await fetch('/api/os/consultorios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accion: 'comprobante-pagado', id }),
+        body: JSON.stringify({ accion: 'comprobante-pagado', id, ...(importe ? { importe } : {}) }),
       });
       const r = await res.json().catch(() => null);
       if (!res.ok || !r?.ok) throw new Error(r?.motivo);
@@ -532,29 +536,49 @@ export default function Tablero({
                           <span className="os-mini-nombre">{k.inquilino}</span>
                           <span className="os-mini-importe">{pesos(k.debe)}</span>
                         </span>
-                        {/* Cuando el papel dice otro importe, el pago se carga
-                            a mano en la ficha, que deja escribir cuánto entró.
-                            Va en el renglón de la descripción y no en uno
-                            propio: con una franja más, esta tarjeta era más
-                            alta que todas las del tablero. */}
-                        <span className="os-mini-comprobante-top">
-                          <span className="os-mini-detalle" title={k.mes}>
-                            Subió comprobante de pago
-                          </span>
-                          <Link
-                            className="os-enlace os-mini-otro"
-                            href={`/os/consultorios/inquilino/${k.inquilinoId}?periodo=${k.periodo}`}
-                          >
-                            No coincide
-                          </Link>
+                        {/* Sin enlace de "No coincide" al lado: el texto fijo se
+                            leía como un veredicto sobre el pago (Lucila,
+                            12/11/2026). Ese caso es el botón "Otro importe". */}
+                        <span className="os-mini-detalle" title={k.mes}>
+                          Subió comprobante de pago
                         </span>
                       </div>
-                      {/* Dos botones del mismo ancho: mirar el papel y dar el
-                          pago por recibido. Al confirmar siguen siendo dos, en
-                          el mismo lugar: cancelar donde estaba mirar, y
-                          confirmar donde estaba marcar. */}
-                      <div className="os-mini-acciones">
-                        {porPagar === k.id ? (
+                      {/* Tres botones: mirar el papel, escribir el importe que
+                          entró cuando el papel dice otro, y dar el pago por
+                          recibido. "Otro importe" vuelve la fila un campo con
+                          cancelar y confirmar; "Está ok" pide confirmar. */}
+                      <div className={`os-mini-acciones${porPagar === k.id ? '' : ' os-mini-acciones-tres'}`}>
+                        {otroImporte?.id === k.id ? (
+                          <>
+                            <input
+                              className="os-campo os-mini-importe-campo"
+                              inputMode="numeric"
+                              placeholder="Importe"
+                              aria-label="Importe que pagó"
+                              autoFocus
+                              value={otroImporte.valor}
+                              onChange={(e) =>
+                                setOtroImporte({ id: k.id, valor: e.target.value.replace(/\D/g, '') })
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && Number(otroImporte.valor) > 0)
+                                  pagado(k.id, Number(otroImporte.valor));
+                                if (e.key === 'Escape') setOtroImporte(null);
+                              }}
+                            />
+                            <button type="button" className="os-boton" onClick={() => setOtroImporte(null)}>
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              className="os-boton os-boton-firme"
+                              disabled={!(Number(otroImporte.valor) > 0)}
+                              onClick={() => pagado(k.id, Number(otroImporte.valor))}
+                            >
+                              Confirmar
+                            </button>
+                          </>
+                        ) : porPagar === k.id ? (
                           <>
                             <button type="button" className="os-boton" onClick={() => setPorPagar(null)}>
                               Cancelar
@@ -577,14 +601,24 @@ export default function Tablero({
                               target="_blank"
                               rel="noreferrer"
                             >
-                              Ver comprobante
+                              Ver
                             </a>
+                            <button
+                              type="button"
+                              className="os-boton"
+                              onClick={() => {
+                                setPorPagar(null);
+                                setOtroImporte({ id: k.id, valor: '' });
+                              }}
+                            >
+                              Otro importe
+                            </button>
                             <button
                               type="button"
                               className="os-boton os-boton-firme"
                               onClick={() => setPorPagar(k.id)}
                             >
-                              {k.debe > 0 ? 'Marcar pagado' : 'Quitar aviso'}
+                              {k.debe > 0 ? (<><span className="os-mini-tilde" aria-hidden="true">✓</span> Está ok</>) : 'Quitar aviso'}
                             </button>
                           </>
                         )}
