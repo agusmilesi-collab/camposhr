@@ -18,20 +18,53 @@ import 'server-only';
 import { patch, select } from '@/lib/supabase';
 import { enviarCorreo, escapar, hayCorreo } from '@/lib/correo';
 import { BOTON, PARRAFO, destinosDe, hoja } from '@/lib/correo-destinos';
+import { ICONO_WHATSAPP } from '@/lib/correo-candidato';
 
 const PORTAL = 'https://clientes.camposhr.com';
 
 /**
- * El aviso de informe listo está apagado (Agustín, 7/10/2026).
+ * El aviso de informe listo (Agustín, 12/11/2026): cuando la evaluadora pasa
+ * la evaluación a Entregado, que es cuando el informe aparece en el portal, le
+ * sale este correo a quien pidió el candidato. Lleva el botón al informe, la
+ * devolución de 10 minutos incluida en el servicio y la firma de la evaluadora
+ * con su foto y su WhatsApp.
  *
- * Los informes todavía se hacen por fuera del OS y se mandan a mano; el portal
- * dice "próximamente" donde iría el informe. Avisar con un enlace ahí sería
- * mandar al cliente a una página vacía. Se prende el día que los informes del
- * OS sean los que se entregan. Mientras tanto no se anota nada como avisado:
- * al prenderlo hay que marcar antes lo ya entregado, o salen todos juntos.
+ * Estuvo apagado del 7/10 al 12/11/2026, mientras los informes se entregaban
+ * por fuera del OS. Al prenderlo se marcaron como avisados los ya entregados
+ * (respaldo en camposhr-privado/respaldo-sin-aviso-informe-2026-11-12.json),
+ * para que no salieran todos juntos.
  */
-const AVISA_INFORME: boolean = false;
+const AVISA_INFORME: boolean = true;
 const ZONA = 'America/Argentina/Cordoba';
+
+/**
+ * La firma de la evaluadora: su foto, su nombre y su WhatsApp.
+ *
+ * La foto es la del equipo en el sitio (`public/equipo/<nombre>.png`) y va
+ * contra el sitio publicado: un correo no carga imágenes de localhost. Sin
+ * teléfono cargado, la firma sale sin la línea de WhatsApp.
+ */
+function firmaDe(nombre: string, telefono: string | null): { html: string; texto: string[] } {
+  const archivo = nombre
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-');
+  const foto = `https://camposhr.com/equipo/${archivo}.png`;
+  const tel = telefono?.trim() || null;
+  const whatsapp = tel
+    ? `<br><a href="https://wa.me/${tel.replace(/\D/g, '')}" style="color:#7a756b;font-size:13px;text-decoration:none;white-space:nowrap;">` +
+      `<img src="${ICONO_WHATSAPP}" width="15" height="15" alt="WhatsApp" style="vertical-align:-2px;border:0;"> ${escapar(tel)}</a>`
+    : '';
+  const html =
+    `    <p style="${PARRAFO}margin:24px 0 12px;">Saludos,</p>\n` +
+    `    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>\n` +
+    `      <td style="padding:0 12px 0 0;vertical-align:middle;"><img src="${foto}" width="48" height="48" alt="${escapar(nombre)}" style="display:block;border:0;border-radius:50%;"></td>\n` +
+    `      <td style="vertical-align:middle;font-size:15px;line-height:1.4;"><strong>${escapar(nombre)}</strong>${whatsapp}</td>\n` +
+    `    </tr></table>`;
+  return { html, texto: ['Saludos,', nombre, ...(tel ? [`WhatsApp: ${tel}`] : []), ''] };
+}
 
 type Fila = {
   id: string;
@@ -43,12 +76,12 @@ type Fila = {
   aviso_informe_at: string | null;
   solicitante_id: string | null;
   personas: { nombre: string } | null;
-  evaluadoras: { email: string | null } | null;
+  evaluadoras: { email: string | null; nombre: string | null; telefono: string | null } | null;
   pedidos: {
     puesto: string;
     empresa_id: string;
     solicitante_id: string | null;
-    empresas: { token_portal: string | null } | null;
+    empresas: { token_portal: string | null; informes_visibles: boolean | null } | null;
   } | null;
 };
 
@@ -73,7 +106,7 @@ export async function avisarSiCorresponde(evaluacionId: string): Promise<void> {
     const [e] = await select<Fila>(
       'evaluaciones',
       'select=id,estado,modalidad,fecha_entrevista,baja_el,aviso_entrevista_fecha,aviso_informe_at,solicitante_id,' +
-        'personas(nombre),evaluadoras(email),pedidos(puesto,empresa_id,solicitante_id,empresas(token_portal))' +
+        'personas(nombre),evaluadoras(email,nombre,telefono),pedidos(puesto,empresa_id,solicitante_id,empresas(token_portal,informes_visibles))' +
         `&id=eq.${evaluacionId}&limit=1`
     );
     if (!e?.pedidos || e.baja_el) return;
@@ -126,23 +159,40 @@ export async function avisarSiCorresponde(evaluacionId: string): Promise<void> {
       AVISA_INFORME &&
       (e.estado === 'Entregado' || e.estado === 'Seguimiento') &&
       !e.aviso_informe_at &&
-      token
+      token &&
+      // Un cliente con los informes apagados en su ficha ve "Próximamente" en
+      // el portal: el enlace del correo no abriría nada.
+      e.pedidos.empresas?.informes_visibles !== false
     ) {
       const d = await destinosDe('informe', e.pedidos.empresa_id, pidio);
       if (d.para.length > 0) {
-        const enlace = `${PORTAL}/${token}/evaluacion/${e.id}`;
+        const enlace = `${PORTAL}/p/${token}/evaluacion/${e.id}`;
         const saludo = d.nombre ? `Hola ${d.nombre}:` : 'Hola:';
         const frase = `El informe de ${persona} para el puesto ${puesto} ya está en tu portal. Desde ahí se lee y se descarga en PDF.`;
+        // Firma quien hizo la evaluación: el cliente la conoce a ella.
+        const quien = e.evaluadoras?.nombre?.trim();
+        const firma = quien ? firmaDe(quien, e.evaluadoras?.telefono ?? null) : null;
+        // La devolución incluida en el servicio (Agustín, 12/11/2026). Se
+        // coordina por WhatsApp con la evaluadora; sin teléfono, respondiendo.
+        const pila = persona.split(/\s+/)[0];
+        const devolucion =
+          `El servicio incluye una devolución de 10 minutos por videollamada para conversar sobre ${pila}; ` +
+          `puede sumarse quien vaya a ser su jefe directo. ` +
+          (e.evaluadoras?.telefono?.trim()
+            ? 'Para coordinarla, escribime por WhatsApp.'
+            : 'Para coordinarla, respondé este correo.');
         const envio = await enviarCorreo({
           de: 'pedidos',
           para: d.para,
           copia: d.copia,
           asunto: `Informe listo: ${persona} · ${puesto}`,
-          texto: [saludo, '', frase, '', `Ver el informe: ${enlace}`, '', 'Campos HR · www.camposhr.com'].join('\n'),
+          texto: [saludo, '', frase, '', `Ver el informe: ${enlace}`, '', devolucion, '', ...(firma ? firma.texto : []), 'Campos HR · www.camposhr.com'].join('\n'),
           html: hoja(
             `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n` +
               `    <p style="${PARRAFO}">${escapar(frase)}</p>\n` +
-              `    <p style="margin:24px 0 0;"><a href="${enlace}" style="${BOTON}">Ver el informe</a></p>`
+              `    <p style="margin:24px 0 0;"><a href="${enlace}" style="${BOTON}">Ver el informe</a></p>\n` +
+              `    <p style="${PARRAFO}margin:24px 0 0;">${escapar(devolucion)}</p>` +
+              (firma ? `\n${firma.html}` : '')
           ),
           responderA,
           clave: `informe-${e.id}`,
