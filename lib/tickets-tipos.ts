@@ -5,13 +5,14 @@
  * cliente: es la misma razón por la que existe `lib/pendientes-tipos.ts`.
  */
 
-export const ESTADOS_TICKET = ['Nuevo', 'En curso', 'Hecho', 'Descartado'] as const;
+export const ESTADOS_TICKET = ['Nuevo', 'En curso', 'Bloqueado', 'Hecho', 'Descartado'] as const;
 
 export type EstadoTicket = (typeof ESTADOS_TICKET)[number];
 
 export const COLOR_TICKET: Record<EstadoTicket, string> = {
   Nuevo: 'os-azul',
   'En curso': 'os-ambar',
+  Bloqueado: 'os-violeta',
   Hecho: 'os-verde',
   Descartado: 'os-gris',
 };
@@ -20,6 +21,8 @@ export const COLOR_TICKET: Record<EstadoTicket, string> = {
 export const ABIERTO: Record<EstadoTicket, boolean> = {
   Nuevo: true,
   'En curso': true,
+  /** Sigue abierto: espera algo de afuera para avanzar. */
+  Bloqueado: true,
   Hecho: false,
   Descartado: false,
 };
