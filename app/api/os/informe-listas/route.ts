@@ -7,6 +7,7 @@ import { anotarAcceso } from '@/lib/accesos';
 import { LISTAS_DEL_INFORME, PARRAFOS_BENZIGER, type ListaDelInforme } from '@/lib/informe';
 import { esTramo } from '@/lib/plan-incorporacion';
 import { TOPE_RESUMEN } from '@/lib/informe-textos';
+import { CAMPOS_DE_CONDUCCION } from '@/lib/benziger-textos';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -52,19 +53,25 @@ export async function POST(req: Request) {
   /* El capítulo Benziger no es una lista: son cuatro párrafos con nombre
      (`PARRAFOS_BENZIGER`), y se guardan solo los que la evaluadora cambió. */
   const esBenziger = lista === 'benziger';
+  /* Cómo conducir a esta persona: los renglones del Benziger para el líder,
+     por clave (`CAMPOS_DE_CONDUCCION`). Se guardan igual que los párrafos. */
+  const esConducir = lista === 'conducir';
+  const clavesValidas: readonly string[] = esConducir
+    ? CAMPOS_DE_CONDUCCION.map((c) => c.clave)
+    : PARRAFOS_BENZIGER;
   /* El resumen tampoco: es un párrafo solo, y se guarda como texto. */
   const esResumen = lista === 'resumen';
-  if (!esBenziger && !esResumen && !LISTAS_DEL_INFORME.includes(lista)) {
+  if (!esBenziger && !esConducir && !esResumen && !LISTAS_DEL_INFORME.includes(lista)) {
     return NextResponse.json({ ok: false, motivo: 'Lista desconocida.' }, { status: 400 });
   }
   const volver = items === null;
-  if (esBenziger && !volver) {
+  if ((esBenziger || esConducir) && !volver) {
     const valido =
       items &&
       typeof items === 'object' &&
       !Array.isArray(items) &&
       Object.entries(items).every(
-        ([k, v]) => (PARRAFOS_BENZIGER as readonly string[]).includes(k) && typeof v === 'string'
+        ([k, v]) => clavesValidas.includes(k) && typeof v === 'string'
       );
     if (!valido) {
       return NextResponse.json({ ok: false, motivo: 'Párrafos inválidos.' }, { status: 400 });
@@ -91,7 +98,7 @@ export async function POST(req: Request) {
      listas, el texto solo. */
   const conTramo = lista === 'recomendaciones';
   const textoDe = (x: any): string => (conTramo ? x?.texto : x);
-  if (!volver && !esBenziger && !esResumen) {
+  if (!volver && !esBenziger && !esConducir && !esResumen) {
     const valido = (x: any) =>
       conTramo
         ? x && typeof x === 'object' && typeof x.texto === 'string' && esTramo(x.tramo)
@@ -152,7 +159,7 @@ export async function POST(req: Request) {
   }
   if (volver) delete guardadas[lista as string];
   else if (esResumen) guardadas.resumen = (items as string).trim();
-  else if (esBenziger) {
+  else if (esBenziger || esConducir) {
     // Un párrafo vacío no se guarda: vuelve a lo calculado. Para que un
     // párrafo no salga, se lo saca desde Configuración.
     const suyos = Object.fromEntries(
@@ -160,8 +167,8 @@ export async function POST(req: Request) {
         .map(([k, v]) => [k, v.trim()])
         .filter(([, v]) => v)
     );
-    if (Object.keys(suyos).length > 0) guardadas.benziger = suyos;
-    else delete guardadas.benziger;
+    if (Object.keys(suyos).length > 0) guardadas[lista as string] = suyos;
+    else delete guardadas[lista as string];
   } else
     guardadas[lista as ListaDelInforme] = conTramo
       ? (items as { texto: string; tramo: string }[])
@@ -188,7 +195,7 @@ export async function POST(req: Request) {
     detalle: {
       fila: id,
       lista,
-      items: volver ? 'vuelve a lo calculado' : esResumen ? 1 : esBenziger ? Object.keys(items).length : (items as string[]).length,
+      items: volver ? 'vuelve a lo calculado' : esResumen ? 1 : esBenziger || esConducir ? Object.keys(items).length : (items as string[]).length,
     },
   });
 

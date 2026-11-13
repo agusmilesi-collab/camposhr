@@ -9,6 +9,7 @@ import Crudo from '../_doc/Crudo';
 import Escalera from './Escalera';
 import BenzigerLecturas from '../_doc/BenzigerLecturas';
 import EditarBenziger from '../_doc/EditarBenziger';
+import EditarConducir from '../_doc/EditarConducir';
 import EditarResumen from '../_doc/EditarResumen';
 
 /**
@@ -399,6 +400,7 @@ export function seccionesDe(
         {inf.benziger?.textos && inf.benziger.textos.conducir.length > 0 && (
           <>
             <h3 className="sitio-sub">Cómo conducir a esta persona</h3>
+            <EditarConducir id={editar} renglones={inf.benziger.textos.conducir}>
             <dl className="inf-conducir">
               {inf.benziger.textos.conducir.map((c) => (
                 <div key={c.rotulo}>
@@ -410,6 +412,7 @@ export function seccionesDe(
                 </div>
               ))}
             </dl>
+            </EditarConducir>
           </>
         )}
       </>

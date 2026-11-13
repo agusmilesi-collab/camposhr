@@ -374,7 +374,16 @@ export type Informe = {
       /** De dónde sale, para la etiqueta que ve quien evalúa. */
       comoEsFuente: string;
       /** Los renglones del manual para el líder; un campo vaciado en Configuración no sale. */
-      conducir: { rotulo: string; texto: string; fuente: string }[];
+      conducir: {
+        clave: string;
+        rotulo: string;
+        texto: string;
+        /** Lo de Configuración, para saber qué cambió al editar. */
+        calculado: string;
+        /** Reescrito a mano para esta persona. */
+        editado: boolean;
+        fuente: string;
+      }[];
     } | null;
     /** Los cuatro totales del perfil adulto, que es el que se grafica. */
     adulto: Cuatro | null;
@@ -1098,11 +1107,21 @@ export function desdeFicha(
         return {
           comoEs: suyos.comoEs,
           comoEsFuente: fuente('comoEs'),
-          conducir: CAMPOS_DE_CONDUCCION.map((c) => ({
-            rotulo: c.rotulo,
-            texto: suyos[c.clave],
-            fuente: fuente(c.clave),
-          })).filter((c) => c.texto),
+          // Lo que reescribió la evaluadora para esta persona
+          // (`informe_listas.conducir`) gana sobre lo de Configuración. Un
+          // campo vaciado en Configuración no sale aunque esté reescrito.
+          conducir: CAMPOS_DE_CONDUCCION.map((campo) => {
+            const propio = (c.informe_listas as any)?.conducir?.[campo.clave];
+            const reescrito = typeof propio === 'string' && propio.trim() ? propio : null;
+            return {
+              clave: campo.clave,
+              rotulo: campo.rotulo,
+              texto: suyos[campo.clave] ? reescrito ?? suyos[campo.clave] : '',
+              calculado: suyos[campo.clave],
+              editado: Boolean(reescrito),
+              fuente: reescrito ? `Benziger ${clave} · reescrito` : fuente(campo.clave),
+            };
+          }).filter((x) => x.texto),
         };
       })()
     : null;
