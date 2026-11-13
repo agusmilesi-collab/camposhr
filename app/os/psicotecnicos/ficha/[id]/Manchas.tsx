@@ -32,7 +32,8 @@ import {
 import type { Mancha } from '@/lib/ficha';
 import { areasDe, Z } from '@/lib/rorschach-tabla-a';
 import { CAMPOS_HR, conRepresentacionHumana } from '@/lib/representacion-humana';
-import { zAutomatico } from '@/lib/rorschach-z';
+import { localizacionFinal, zAutomatico } from '@/lib/rorschach-z';
+import { localizacionesPosibles } from '@/lib/rorschach-sugerencias';
 import Calcular from './Calcular';
 import Codigo from './Codigo';
 import { Multiple, Simple, Tilde } from './Celdas';
@@ -66,6 +67,24 @@ const porNumero = (a: string, b: string) => Number(a) - Number(b);
  * van del 1 al 9 para D y del 21 al 40 para Dd, que cubren lo cargado hasta
  * hoy.
  */
+/**
+ * Lo que ofrece la celda de localización.
+ *
+ * Con la localización elegida, todas. Sin elegir pero con las áreas marcadas en
+ * la entrevista, solo las compatibles con esas áreas y el rótulo de la que
+ * corresponde ("D · elegir DQ"): la evaluadora ubicó la respuesta y le falta
+ * nada más el DQ, y la celda vacía se leía como que la localización se perdió.
+ */
+function pendienteDeDq(f: Mancha): { opciones: Opcion[]; todas?: Opcion[]; vacio?: string } {
+  const areas = Array.isArray(f.areas) ? (f.areas as string[]) : [];
+  if (f.localizacion || !f.lamina || areas.length === 0) return { opciones: LOCALIZACION };
+  const posibles = localizacionesPosibles(f.lamina, areas);
+  const opciones = LOCALIZACION.filter((o) => posibles.includes(o.v));
+  if (opciones.length === 0) return { opciones: LOCALIZACION };
+  const { familia } = localizacionFinal(f.lamina, areas);
+  return { opciones, todas: LOCALIZACION, vacio: `${familia} · DQ` };
+}
+
 function numerosDeLoc(lamina: string | null, localizacion: string | null): Opcion[] {
   const familia = (localizacion ?? '').replace(/[o+v/]+$/, '').replace('S', '');
   if (familia === 'W') return [opcion('1')];
@@ -469,7 +488,11 @@ export default function Manchas({
                 <td>
                   <Simple
                     valor={f.localizacion}
-                    opciones={LOCALIZACION}
+                    /* Si en la entrevista se marcó el área y no el DQ, la
+                       localización ya se sabe (W, D, Dd, con o sin S) y falta
+                       solo el DQ: la celda lo dice y ofrece solo las de esa
+                       localización, con "Mostrar todas" para corregirla. */
+                    {...pendienteDeDq(f)}
                     /* Una respuesta que toma la mancha entera está en el área 1
                        de esa lámina, siempre: no hay dos maneras de tomarla
                        entera. Lo pone el sistema al elegir la localización, así

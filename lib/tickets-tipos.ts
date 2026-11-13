@@ -46,5 +46,7 @@ export type Ticket = {
   donde: string | null;
   prioridad: Prioridad;
   estado: EstadoTicket;
+  /** Qué se hizo, en palabras de quien lo resolvió. */
+  respuesta: string | null;
   created_at: string;
 };

@@ -19156,3 +19156,23 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* La respuesta de quien resolvió el ticket, plegada debajo del pedido. */
+.os-ticket-respuesta {
+  margin-top: 6px;
+}
+
+.os-ticket-respuesta summary {
+  font-size: 0.75rem;
+  color: var(--os-azul);
+  cursor: pointer;
+}
+
+.os-tabla-tickets .os-ticket-respuesta p {
+  margin: 6px 0 0;
+  padding: 7px 10px;
+  border-left: 3px solid var(--os-verde);
+  background: var(--os-panel-2);
+  color: var(--os-tinta);
+  white-space: pre-wrap;
+}

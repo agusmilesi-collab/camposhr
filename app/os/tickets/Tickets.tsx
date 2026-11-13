@@ -179,6 +179,7 @@ export default function Tickets({ tickets, yo }: { tickets: Ticket[]; yo: string
                     <td data-campo="Qué pide" className="os-ticket-texto">
                       {t.texto}
                       {t.donde && <span className="os-ticket-donde">{t.donde}</span>}
+                      <Respuesta texto={t.respuesta} />
                     </td>
                     <td data-campo="Prioridad">
                       <Desplegable
@@ -206,5 +207,20 @@ export default function Tickets({ tickets, yo }: { tickets: Ticket[]; yo: string
         )}
       </section>
     </>
+  );
+}
+
+/**
+ * Qué se hizo con el pedido, plegado debajo del pedido mismo. La escribe quien
+ * resuelve el ticket (un agente, por la ruta o la base); desde la pantalla solo
+ * se lee. Sin respuesta, no se dibuja nada.
+ */
+function Respuesta({ texto }: { texto: string | null }) {
+  if (!texto) return null;
+  return (
+    <details className="os-ticket-respuesta">
+      <summary>Ver respuesta</summary>
+      <p>{texto}</p>
+    </details>
   );
 }
