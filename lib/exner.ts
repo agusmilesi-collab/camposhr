@@ -884,7 +884,7 @@ function formatearZdunic(s: any) {
   L.push([
     kv('3r+(2)/R', pct(aut.Ego_num, cab.R, aut.Ego)),
     kv('(2)', aut.Pares),
-    kv('Fr', aut.Fr),
+    kv('Fr+rF', aut.Fr_plus_rF),
     kv('FD', aut.FD),
   ].join(SEP));
   L.push([kv('SumV', aut.SumV), kv('An+Xy', aut.An_plus_Xy), kv('MOR', aut.MOR)].join(SEP));
