@@ -73,12 +73,19 @@ export type Envio =
   | { ok: true; id: string; a: string[] }
   | { ok: false; motivo: 'apagado' | 'sin destinatario' | 'rechazado'; detalle?: string };
 
-/** Las direcciones bien escritas, sin repetir. */
+/**
+ * Las direcciones bien escritas, sin repetir.
+ *
+ * Un campo puede traer más de una, separadas por coma, punto y coma o espacio:
+ * hay contactos con el correo de la empresa y uno personal, y el aviso les
+ * tiene que llegar a los dos (Crucijuegos, 13/11/2026).
+ */
 export function direcciones(lista: (string | null | undefined)[]): string[] {
   return [
     ...new Set(
       lista
-        .map((x) => (x ?? '').trim().toLowerCase())
+        .flatMap((x) => (x ?? '').split(/[\s,;]+/))
+        .map((x) => x.trim().toLowerCase())
         .filter((x) => DIRECCION.test(x))
     ),
   ];

@@ -19262,3 +19262,9 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
 .os-ticket-pastilla .os-desplegable-texto {
   flex: none;
 }
+
+/* Un contacto con dos correos: uno debajo del otro. */
+.os-contacto-mails {
+  display: inline-grid;
+  gap: 2px;
+}

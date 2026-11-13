@@ -263,7 +263,8 @@ export default function Contactos({
           <input
             className="os-campo"
             type="email"
-            placeholder="Mail"
+            multiple
+            placeholder="Mail (si son dos, separados por coma)"
             value={b.email}
             onChange={(e) => setBorrador({ ...b, email: e.target.value })}
           />
@@ -332,9 +333,18 @@ export default function Contactos({
         <span>
           <span className="os-ctc-detalle-r">Mail</span>
           {c.email ? (
-            <a className="os-contacto-mail" href={`mailto:${c.email}`}>
-              {c.email}
-            </a>
+            /* Puede tener más de uno, separados por coma: los avisos salen a
+               todos (`direcciones` en lib/correo.ts). */
+            <span className="os-contacto-mails">
+              {c.email
+                .split(/[\s,;]+/)
+                .filter(Boolean)
+                .map((m) => (
+                  <a key={m} className="os-contacto-mail" href={`mailto:${m}`}>
+                    {m}
+                  </a>
+                ))}
+            </span>
           ) : (
             <span className="os-dato-falta" title="Sin mail no le llega ningún correo.">
               sin mail
