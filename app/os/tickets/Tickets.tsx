@@ -189,7 +189,7 @@ export default function Tickets({ tickets, yo }: { tickets: Ticket[]; yo: string
               </thead>
               <tbody>
                 {ordenados.map((t) => (
-                  <tr key={t.numero} className={ABIERTO[t.estado] ? undefined : 'os-ticket-cerrado'}>
+                  <tr key={t.numero} id={`ticket-${t.numero}`} className={ABIERTO[t.estado] ? undefined : 'os-ticket-cerrado'}>
                     <td data-campo="N°" className="os-tabla-num">
                       {t.numero}
                     </td>

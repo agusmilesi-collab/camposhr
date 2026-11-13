@@ -253,6 +253,7 @@ export default function Tablero({
   comprobantes = [],
   renovaciones = [],
   aperturaMes = null,
+  tickets = [],
 }: {
   filas: Evaluacion[];
   /**
@@ -312,6 +313,12 @@ export default function Tablero({
    * sin abrir.
    */
   aperturaMes?: { mes: string; titulo: string; detalle: string; urgente: boolean } | null;
+  /**
+   * Los tickets que pidió quien mira y tienen una respuesta sin contestar
+   * (`ticketsParaContestar`). La tarjeta lleva al ticket y se va sola cuando
+   * ella contesta o el ticket se cierra.
+   */
+  tickets?: { numero: number; pedido: string; autor: string; ultimo: string }[];
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -497,7 +504,8 @@ export default function Tablero({
                       ? seguimientos.filter((s) => !seguidas.includes(s.id)).length +
                         (sinAsignar && sinAsignar.cuantos > 0 ? 1 : 0) +
                         comprobantes.filter((k) => !pagados.includes(k.id)).length +
-                        porRenovar.length
+                        porRenovar.length +
+                        tickets.length
                       : 0)}
                 </span>
               </div>
@@ -523,6 +531,22 @@ export default function Tablero({
                   </div>
                 </article>
               )}
+              {c.clave === 'hoy' &&
+                tickets.map((t) => (
+                  <article key={`ticket-${t.numero}`} className="os-mini os-mini-asignar os-mini-ticket">
+                    <div className="os-mini-cuerpo">
+                      <span className="os-mini-nombre">Ticket N° {t.numero} · te respondieron</span>
+                      <span className="os-mini-detalle" title={t.ultimo}>
+                        {t.autor}: {t.ultimo}
+                      </span>
+                    </div>
+                    <div className="os-mini-pie">
+                      <Link className="os-enlace" href={`/os/tickets#ticket-${t.numero}`}>
+                        Ver y contestar
+                      </Link>
+                    </div>
+                  </article>
+                ))}
               {c.clave === 'hoy' &&
                 comprobantes
                   .filter((k) => !pagados.includes(k.id))

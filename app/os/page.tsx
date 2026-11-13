@@ -15,6 +15,7 @@ import { comprobantesSinRegistrar, loQueDebe } from '@/lib/comprobantes-pago';
 import { mesLargo } from '@/lib/consultorios-calculo';
 import { renovacionesPorAtender } from '@/lib/renovaciones';
 import { estadoDeLaApertura } from '@/lib/apertura-mes';
+import { ticketsParaContestar } from '@/lib/tickets';
 
 /** Las etapas de una evaluación que todavía pide trabajo. */
 const ABIERTAS = new Set(['Sin asignar', 'Por citar', 'Por entrevistar', 'Por analizar']);
@@ -184,6 +185,10 @@ export default async function Inicio() {
   const aperturaMes =
     yo.nombre.startsWith('Lucila') || yo.alcance === 'todo' ? await estadoDeLaApertura() : null;
 
+  /* Los tickets que pidió quien mira y tienen respuesta del agente sin
+     contestar: tarjeta en Hoy hasta que conteste o se cierre. */
+  const tickets = await ticketsParaContestar(yo.nombre);
+
   const cuentas = await cuentasDeLaBarra();
 
   return (
@@ -199,7 +204,7 @@ export default async function Inicio() {
             Ver el pipeline
           </Link>
         </div>
-        {mios.length === 0 && seguimientos.length === 0 && !sinAsignar && comprobantes.length === 0 && renovaciones.length === 0 && !aperturaMes ? (
+        {mios.length === 0 && seguimientos.length === 0 && !sinAsignar && comprobantes.length === 0 && renovaciones.length === 0 && !aperturaMes && tickets.length === 0 ? (
           <p className="os-vacio">
             {yo.alcance === 'todo'
               ? 'No hay evaluaciones abiertas.'
@@ -215,6 +220,7 @@ export default async function Inicio() {
             comprobantes={comprobantes}
             renovaciones={renovaciones}
             aperturaMes={aperturaMes}
+            tickets={tickets}
           />
         )}
       </section>
