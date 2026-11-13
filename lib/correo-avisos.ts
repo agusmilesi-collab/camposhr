@@ -44,7 +44,7 @@ const ZONA = 'America/Argentina/Cordoba';
  * contra el sitio publicado: un correo no carga imágenes de localhost. Sin
  * teléfono cargado, la firma sale sin la línea de WhatsApp.
  */
-function firmaDe(nombre: string, telefono: string | null): { html: string; texto: string[] } {
+export function firmaDe(nombre: string, telefono: string | null): { html: string; texto: string[] } {
   const archivo = nombre
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')

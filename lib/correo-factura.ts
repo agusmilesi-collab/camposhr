@@ -26,6 +26,7 @@ import { pesosDeOrden } from '@/lib/orden-compra-tipos';
 import { formaDelRecibo, reciboDePago } from '@/lib/orden-compra';
 import { archivoDeOrden, pdfDeOrden } from '@/lib/orden-pdf';
 import { PARRAFO, destinosDe, hoja, type Destinos } from '@/lib/correo-destinos';
+import { firmaDe } from '@/lib/correo-avisos';
 
 export type EnvioDeFactura = {
   /** A quién va si se manda ahora, con los que van en copia. Vacío es que no hay a quién. */
@@ -39,6 +40,19 @@ export type EnvioDeFactura = {
   portal: boolean;
 };
 
+/**
+ * La cuenta a la que se transfiere: la de quien emite la factura
+ * (`supabase/emisores-cuenta-banco.sql`). Los datos están en la base y no acá,
+ * que el repositorio es público.
+ */
+type Cuenta = {
+  banco: string | null;
+  titular: string | null;
+  numero_cuenta: string | null;
+  cbu: string | null;
+  alias: string | null;
+};
+
 type Fila = {
   empresa_id: string | null;
   estado: string;
@@ -46,7 +60,9 @@ type Fila = {
   enviada_a: string[] | null;
   recibo_enviado_at: string | null;
   empresas: { email_facturacion: string | null; portal_proveedores: boolean | null } | null;
-  emisores: { evaluadoras: { email: string | null } | null } | null;
+  emisores: (Cuenta & {
+    evaluadoras: { email: string | null; nombre: string | null; telefono: string | null } | null;
+  }) | null;
   factura_items: {
     evaluaciones: { solicitante_id: string | null; pedidos: { solicitante_id: string | null } | null } | null;
   }[];
@@ -60,7 +76,7 @@ async function leer(
   const [f] = await select<Fila>(
     'facturas',
     'select=empresa_id,estado,enviada_at,enviada_a,recibo_enviado_at,empresas(email_facturacion,portal_proveedores),' +
-      'emisores(evaluadoras(email)),factura_items(evaluaciones(solicitante_id,pedidos(solicitante_id)))' +
+      'emisores(banco,titular,numero_cuenta,cbu,alias,evaluadoras(email,nombre,telefono)),factura_items(evaluaciones(solicitante_id,pedidos(solicitante_id)))' +
       `&id=eq.${id}&limit=1`
   );
   if (!f) return null;
@@ -90,7 +106,39 @@ export async function envioDeFactura(id: string): Promise<EnvioDeFactura | null>
   };
 }
 
-function cuerpo(d: DatosFactura, nombre: string | null) {
+/**
+ * Los datos de la transferencia, en dos columnas: banco, titular y CUIL de un
+ * lado; cuenta, CBU y alias del otro. Un CBU que empieza con 000 es un CVU
+ * (billetera virtual) y se rotula así. Sin cuenta cargada no sale nada.
+ */
+function datosDeCuenta(c: Cuenta | null, cuil: string): { html: string; texto: string[] } | null {
+  if (!c?.cbu && !c?.alias) return null;
+  const clave = c.cbu ? ([c.cbu.startsWith('000') ? 'CVU' : 'CBU', c.cbu] as [string, string]) : null;
+  const izq: [string, string | null][] = [
+    ['Banco', c.banco],
+    ['Titular', c.titular],
+    ['CUIL', cuil && cuil !== '—' ? cuil : null],
+  ];
+  const der: [string, string | null][] = [['Cuenta', c.numero_cuenta], ...(clave ? [clave] : []), ['Alias', c.alias]];
+  const llenas = (xs: [string, string | null][]) => xs.filter((x): x is [string, string] => Boolean(x[1]));
+  const columna = (xs: [string, string][]) =>
+    `<td valign="top" style="padding:0;font-size:12px;line-height:1.35;color:#7a756b;width:50%;">` +
+    xs.map(([k, v]) => `${escapar(k)}: ${escapar(v)}`).join('<br>') +
+    '</td>';
+  const html =
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>' +
+    columna(llenas(izq)) +
+    columna(llenas(der)) +
+    '</tr></table>';
+  return { html, texto: [...llenas(izq), ...llenas(der)].map(([k, v]) => `${k}: ${v}`) };
+}
+
+function cuerpo(
+  d: DatosFactura,
+  nombre: string | null,
+  cuenta: Cuenta | null,
+  firma: { html: string; texto: string[] } | null
+) {
   const papel = `${d.titulo} C N° ${d.numeroLargo}`;
   const saludo = nombre ? `Hola ${nombre}:` : 'Hola:';
   const entrada = d.esNota
@@ -110,9 +158,11 @@ function cuerpo(d: DatosFactura, nombre: string | null) {
           ? ([['Cotización', `$ ${d.cotizacion.valor} (BNA divisa vendedor)`]] as [string, string][])
           : []),
         ['Vencimiento del pago', d.vencePago],
-        ['Forma de pago', 'Transferencia bancaria'],
         ...(d.cliente.ordenPropia ? ([['Orden de compra', d.cliente.ordenPropia]] as [string, string][]) : []),
+        ['Forma de pago', 'Transferencia bancaria'],
       ];
+  // La cuenta va debajo de la forma de pago; en una nota de crédito no se paga nada.
+  const transferencia = d.esNota ? null : datosDeCuenta(cuenta, d.emisor.cuit);
   const importe = (n: number | null) => (n === null ? '' : enMoneda(n));
 
   const texto = [
@@ -123,7 +173,9 @@ function cuerpo(d: DatosFactura, nombre: string | null) {
     ...d.renglones.map((r) => `- ${r.texto}${r.importe === null ? '' : `: ${importe(r.importe)}`}`),
     '',
     ...datos.map(([k, v]) => `${k}: ${v}`),
+    ...(transferencia ? transferencia.texto : []),
     '',
+    ...(firma ? firma.texto : []),
     'Campos HR · www.camposhr.com',
   ].join('\n');
 
@@ -149,13 +201,20 @@ function cuerpo(d: DatosFactura, nombre: string | null) {
     </table>
     <div style="margin-top:20px;">
       ${datos.map(([k, v]) => `<p style="font-size:13px;line-height:1.5;margin:0 0 4px;"><b>${escapar(k)}:</b> ${escapar(v)}</p>`).join('')}
+      ${transferencia ? transferencia.html : ''}
     </div>
-  </div>
+${firma ? `${firma.html}\n` : ''}  </div>
   <p style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7a756b;margin:20px 0 0;">www.camposhr.com</p>
 </div>
 </body></html>`;
 
   return { asunto: `${papel} · ${d.emisor.razonSocial}`, html, texto };
+}
+
+/** Firma quien emitió: es a quien le llega la respuesta del cliente. */
+function firmaDeLaEmisora(f: Fila) {
+  const e = f.emisores?.evaluadoras;
+  return e?.nombre ? firmaDe(e.nombre, e.telefono) : null;
 }
 
 export type ResultadoDeEnvio = { ok: true; a: string[] } | { ok: false; error: string };
@@ -191,7 +250,7 @@ export async function enviarFactura(id: string): Promise<ResultadoDeEnvio> {
     de: 'facturacion',
     para,
     copia,
-    ...cuerpo(d, nombre),
+    ...cuerpo(d, nombre, datos.f.emisores, firmaDeLaEmisora(datos.f)),
     adjuntos: [{ nombre: pdf.nombre, bytes: pdf.bytes }],
     responderA: [datos.f.emisores?.evaluadoras?.email ?? ''],
     // Dos toques seguidos llevan el mismo envío anterior y Resend descarta el
