@@ -1901,3 +1901,16 @@ Google Cloud la aplicación tiene que estar "En producción": en "Prueba" el
 permiso vence a los siete días. El bloque del evento dura lo que dice la
 batería del pedido (`baterias.duracion_min`, Configuración → Baterías), y dos
 horas si no la tiene cargada.
+
+## Los tickets se contestan en su conversación
+
+`/os/tickets` es donde las evaluadoras piden cambios del OS (`public.tickets`,
+`supabase/tickets*.sql`). Quien toma un ticket le contesta con una fila en
+**`public.ticket_mensajes`** (`numero`, `autor`, `texto`; la hora la pone la
+base), firmada `autor: 'Agente'`, y no en `tickets.respuesta`, que quedó sin
+uso desde el 13/11/2026: la pantalla ya no la lee. La evaluadora contesta en el
+mismo hilo desde la pantalla, firmada con su nombre.
+
+Los estados: Nuevo, En curso, Bloqueado (se le preguntó algo y espera que
+conteste), Hecho, Descartado. Al preguntar, el ticket pasa a Bloqueado; al
+terminar, a Hecho con un último mensaje que diga qué se hizo.

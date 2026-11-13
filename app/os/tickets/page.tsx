@@ -21,7 +21,8 @@ export default async function PaginaTickets() {
   try {
     tickets = await select<Ticket>(
       'tickets',
-      'select=numero,pide,texto,donde,prioridad,estado,respuesta,created_at&order=numero.desc&limit=500'
+      'select=numero,pide,texto,donde,prioridad,estado,created_at,ticket_mensajes(autor,texto,created_at)' +
+        '&order=numero.desc&ticket_mensajes.order=created_at.asc&limit=500'
     );
   } catch (e) {
     console.error('tickets:', e);

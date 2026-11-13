@@ -11,7 +11,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Desplegable from '@/app/os/Desplegable';
-import { fechaCorta } from '@/lib/hora';
+import { fechaCorta, fechaHora } from '@/lib/hora';
 import {
   ABIERTO,
   COLOR_PRIORIDAD,
@@ -21,6 +21,7 @@ import {
   PESO_PRIORIDAD,
   PRIORIDADES,
   type EstadoTicket,
+  type Mensaje,
   type Prioridad,
   type Ticket,
 } from '@/lib/tickets-tipos';
@@ -92,6 +93,24 @@ export default function Tickets({ tickets, yo }: { tickets: Ticket[]; yo: string
         return resto;
       });
       setError(err instanceof Error ? err.message : 'No se pudo guardar el cambio.');
+    }
+  }
+
+  async function responder(numero: number, mensaje: string): Promise<boolean> {
+    setError(null);
+    try {
+      const res = await fetch('/api/os/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ numero, mensaje }),
+      });
+      const r = await res.json();
+      if (!r.ok) throw new Error(r.motivo ?? 'No se pudo mandar el mensaje.');
+      router.refresh();
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo mandar el mensaje.');
+      return false;
     }
   }
 
@@ -179,24 +198,26 @@ export default function Tickets({ tickets, yo }: { tickets: Ticket[]; yo: string
                     <td data-campo="Qué pide" className="os-ticket-texto">
                       {t.texto}
                       {t.donde && <span className="os-ticket-donde">{t.donde}</span>}
-                      <Respuesta texto={t.respuesta} />
+                      <Conversacion
+                        mensajes={t.ticket_mensajes ?? []}
+                        abierto={ABIERTO[t.estado]}
+                        onEnviar={(mensaje) => responder(t.numero, mensaje)}
+                      />
                     </td>
-                    <td data-campo="Prioridad">
+                    <td data-campo="Prioridad" className="os-ticket-pastilla">
                       <Desplegable
                         valor={t.prioridad}
                         opciones={OPCIONES_PRIORIDAD}
                         alElegir={(v) => cambiar(t.numero, { prioridad: v as Prioridad })}
                         etiqueta={`Prioridad del ticket ${t.numero}`}
-                        ancho={110}
                       />
                     </td>
-                    <td data-campo="Estado">
+                    <td data-campo="Estado" className="os-ticket-pastilla">
                       <Desplegable
                         valor={t.estado}
                         opciones={OPCIONES}
                         alElegir={(v) => cambiar(t.numero, { estado: v as EstadoTicket })}
                         etiqueta={`Estado del ticket ${t.numero}`}
-                        ancho={128}
                       />
                     </td>
                   </tr>
@@ -211,16 +232,58 @@ export default function Tickets({ tickets, yo }: { tickets: Ticket[]; yo: string
 }
 
 /**
- * Qué se hizo con el pedido, plegado debajo del pedido mismo. La escribe quien
- * resuelve el ticket (un agente, por la ruta o la base); desde la pantalla solo
- * se lee. Sin respuesta, no se dibuja nada.
+ * La conversación del ticket, debajo del pedido: quién escribió, cuándo y qué.
+ *
+ * Quien resuelve el ticket (un agente) pregunta acá y lo deja Bloqueado; la
+ * evaluadora contesta en el mismo hilo. Mientras el ticket está abierto se
+ * puede escribir; cerrado, solo se lee.
  */
-function Respuesta({ texto }: { texto: string | null }) {
-  if (!texto) return null;
+function Conversacion({
+  mensajes,
+  abierto,
+  onEnviar,
+}: {
+  mensajes: Mensaje[];
+  abierto: boolean;
+  onEnviar: (mensaje: string) => Promise<boolean>;
+}) {
+  const [texto, setTexto] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  if (mensajes.length === 0 && !abierto) return null;
+
+  async function enviar(e: React.FormEvent) {
+    e.preventDefault();
+    if (!texto.trim()) return;
+    setEnviando(true);
+    if (await onEnviar(texto.trim())) setTexto('');
+    setEnviando(false);
+  }
+
   return (
-    <details className="os-ticket-respuesta">
-      <summary>Ver respuesta</summary>
-      <p>{texto}</p>
-    </details>
+    <div className="os-ticket-dialogo">
+      {mensajes.map((m, i) => (
+        <div key={i} className="os-ticket-mensaje">
+          <span className="os-ticket-mensaje-quien">
+            <strong>{m.autor}</strong> · {fechaHora(m.created_at)}
+          </span>
+          <p>{m.texto}</p>
+        </div>
+      ))}
+      {abierto && (
+        <form className="os-ticket-contestar" onSubmit={enviar}>
+          <textarea
+            className="os-campo"
+            rows={1}
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            maxLength={LARGO_TICKET}
+            placeholder={mensajes.length ? 'Contestar…' : 'Agregar un comentario…'}
+          />
+          <button className="os-boton" type="submit" disabled={enviando || !texto.trim()}>
+            {enviando ? 'Enviando…' : 'Enviar'}
+          </button>
+        </form>
+      )}
+    </div>
   );
 }

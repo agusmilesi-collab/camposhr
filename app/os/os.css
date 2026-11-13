@@ -19157,22 +19157,73 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   }
 }
 
-/* La respuesta de quien resolvió el ticket, plegada debajo del pedido. */
-.os-ticket-respuesta {
-  margin-top: 6px;
+/* La conversación del ticket, debajo del pedido: cada mensaje con quién y
+   cuándo, y al pie el campo para contestar mientras el ticket está abierto. */
+.os-ticket-dialogo {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding-left: 12px;
+  border-left: 2px solid var(--os-linea-suave);
 }
 
-.os-ticket-respuesta summary {
-  font-size: 0.75rem;
-  color: var(--os-azul);
-  cursor: pointer;
+.os-ticket-mensaje-quien {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--os-suave);
 }
 
-.os-tabla-tickets .os-ticket-respuesta p {
-  margin: 6px 0 0;
-  padding: 7px 10px;
-  border-left: 3px solid var(--os-verde);
-  background: var(--os-panel-2);
+.os-ticket-mensaje-quien strong {
+  font-weight: 600;
+  color: var(--os-tinta);
+}
+
+.os-tabla-tickets .os-ticket-mensaje p {
+  margin: 2px 0 0;
   color: var(--os-tinta);
   white-space: pre-wrap;
+}
+
+.os-ticket-contestar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.os-ticket-contestar textarea.os-campo {
+  width: 100%;
+  min-height: 36px;
+  resize: vertical;
+}
+
+/* Prioridad y estado de los tickets: pastillas del color de su valor, como la
+   prioridad de las tarjetas de Inicio (`.os-mini-prioridad`). Con el punto
+   solo, las dos columnas se leían iguales y había que leer cada palabra. */
+.os-ticket-pastilla .os-desplegable-boton {
+  width: auto;
+  gap: 5px;
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--punto, var(--os-gris)) 34%, transparent);
+  background: color-mix(in srgb, var(--punto, var(--os-gris)) 15%, transparent);
+  color: var(--punto, var(--os-tinta));
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.os-ticket-pastilla .os-desplegable-boton::before {
+  display: none;
+}
+
+.os-ticket-pastilla .os-desplegable-boton:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--punto, var(--os-gris)) 60%, transparent);
+  background: color-mix(in srgb, var(--punto, var(--os-gris)) 24%, transparent);
+}
+
+.os-ticket-pastilla .os-desplegable-flecha {
+  width: 8px;
+  opacity: 0.7;
+  color: inherit;
 }

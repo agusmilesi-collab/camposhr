@@ -67,7 +67,7 @@ export async function PUT(req: Request) {
   return NextResponse.json({ ok: true, fila });
 }
 
-/** Cambio de estado, de prioridad o de la respuesta. */
+/** Cambio de estado o de prioridad, o un mensaje nuevo en la conversación. */
 export async function POST(req: Request) {
   if (!(await conSesion())) return NextResponse.json({ ok: false, motivo: 'Sin sesión.' }, { status: 401 });
   const cfg = config();
@@ -78,6 +78,26 @@ export async function POST(req: Request) {
   if (!Number.isInteger(numero) || numero < 1) {
     return NextResponse.json({ ok: false, motivo: 'Número inválido.' }, { status: 400 });
   }
+  /* Un mensaje nuevo en la conversación, firmado por quien está en el OS. */
+  if (datos?.mensaje !== undefined) {
+    const texto = typeof datos.mensaje === 'string' ? datos.mensaje.trim() : '';
+    if (!texto || texto.length > LARGO_TICKET) {
+      return NextResponse.json({ ok: false, motivo: 'Mensaje inválido.' }, { status: 400 });
+    }
+    const yo = await quienSoy();
+    const res = await fetch(`${cfg.url}/rest/v1/ticket_mensajes`, {
+      method: 'POST',
+      headers: cabeceras(cfg.key),
+      body: JSON.stringify({ numero, autor: yo.nombre, texto }),
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      return NextResponse.json({ ok: false, motivo: `Supabase respondió ${res.status}` }, { status: 400 });
+    }
+    const [fila] = await res.json();
+    return NextResponse.json({ ok: true, fila });
+  }
+
   const cambios: Record<string, string | null> = {};
   if (datos?.estado !== undefined) {
     if (!ESTADOS_TICKET.includes(datos.estado)) {
@@ -90,13 +110,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, motivo: 'Esa prioridad no existe.' }, { status: 400 });
     }
     cambios.prioridad = datos.prioridad;
-  }
-  if (datos?.respuesta !== undefined) {
-    const r = datos.respuesta;
-    if (r !== null && (typeof r !== 'string' || r.length > LARGO_TICKET)) {
-      return NextResponse.json({ ok: false, motivo: 'Respuesta inválida.' }, { status: 400 });
-    }
-    cambios.respuesta = typeof r === 'string' && r.trim() ? r.trim() : null;
   }
   if (Object.keys(cambios).length === 0) {
     return NextResponse.json({ ok: false, motivo: 'Nada para cambiar.' }, { status: 400 });
