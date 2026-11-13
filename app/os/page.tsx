@@ -185,9 +185,9 @@ export default async function Inicio() {
   const aperturaMes =
     yo.nombre.startsWith('Lucila') || yo.alcance === 'todo' ? await estadoDeLaApertura() : null;
 
-  /* Los tickets que pidió quien mira y tienen respuesta del agente sin
-     contestar: tarjeta en Hoy hasta que conteste o se cierre. */
-  const tickets = await ticketsParaContestar(yo.nombre);
+  /* Los tickets con respuesta del agente sin contestar: los propios, y quien
+     ve todo, los de todas. Tarjeta en Hoy hasta que conteste o se cierre. */
+  const tickets = await ticketsParaContestar(yo.nombre, yo.alcance === 'todo');
 
   const cuentas = await cuentasDeLaBarra();
 

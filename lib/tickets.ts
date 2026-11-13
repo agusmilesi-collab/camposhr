@@ -10,24 +10,34 @@ import type { Mensaje } from '@/lib/tickets-tipos';
  */
 export type TicketParaContestar = {
   numero: number;
+  /** Quién lo pidió: la tarjeta lo nombra cuando quien mira ve todo. */
+  pide: string;
   pedido: string;
   autor: string;
   ultimo: string;
 };
 
-export async function ticketsParaContestar(nombre: string): Promise<TicketParaContestar[]> {
+/**
+ * Quien ve todo (`alcance: 'todo'`, Agustín) recibe los de todas, como en el
+ * resto de Inicio; las demás, solo los suyos.
+ */
+export async function ticketsParaContestar(
+  nombre: string,
+  todos = false
+): Promise<TicketParaContestar[]> {
   try {
-    const filas = await select<{ numero: number; texto: string; ticket_mensajes: Mensaje[] }>(
+    const filas = await select<{ numero: number; pide: string; texto: string; ticket_mensajes: Mensaje[] }>(
       'tickets',
-      `select=numero,texto,ticket_mensajes(autor,texto,created_at)` +
-        `&pide=eq.${encodeURIComponent(nombre)}` +
+      `select=numero,pide,texto,ticket_mensajes(autor,texto,created_at)` +
+        (todos ? '' : `&pide=eq.${encodeURIComponent(nombre)}`) +
         `&estado=in.(Nuevo,"En curso",Bloqueado)` +
         `&ticket_mensajes.order=created_at.asc&order=numero.asc`
     );
     return filas.flatMap((t) => {
       const ultimo = t.ticket_mensajes?.[t.ticket_mensajes.length - 1];
-      if (!ultimo || ultimo.autor === nombre) return [];
-      return [{ numero: t.numero, pedido: t.texto, autor: ultimo.autor, ultimo: ultimo.texto }];
+      // Espera respuesta de quien lo pidió: el último mensaje es de otro.
+      if (!ultimo || ultimo.autor === t.pide) return [];
+      return [{ numero: t.numero, pide: t.pide, pedido: t.texto, autor: ultimo.autor, ultimo: ultimo.texto }];
     });
   } catch (e) {
     console.error('tickets para contestar:', e);

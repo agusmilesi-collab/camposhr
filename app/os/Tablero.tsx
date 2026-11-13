@@ -318,7 +318,7 @@ export default function Tablero({
    * (`ticketsParaContestar`). La tarjeta lleva al ticket y se va sola cuando
    * ella contesta o el ticket se cierra.
    */
-  tickets?: { numero: number; pedido: string; autor: string; ultimo: string }[];
+  tickets?: { numero: number; pide: string; pedido: string; autor: string; ultimo: string }[];
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -535,7 +535,10 @@ export default function Tablero({
                 tickets.map((t) => (
                   <article key={`ticket-${t.numero}`} className="os-mini os-mini-asignar os-mini-ticket">
                     <div className="os-mini-cuerpo">
-                      <span className="os-mini-nombre">Ticket N° {t.numero} · te respondieron</span>
+                      <span className="os-mini-nombre">
+                        Ticket N° {t.numero} ·{' '}
+                        {conEvaluadora ? `espera a ${t.pide.split(' ')[0]}` : 'te respondieron'}
+                      </span>
                       <span className="os-mini-detalle" title={t.ultimo}>
                         {t.autor}: {t.ultimo}
                       </span>

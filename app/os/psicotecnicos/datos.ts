@@ -1,5 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
+import { ticketsParaContestar } from '@/lib/tickets';
 import { listarEvaluaciones, type Evaluacion } from '@/lib/psicotecnicos';
 import { SECCIONES, columnaDelTablero, type Seccion } from '@/lib/psicotecnicos-tipos';
 import { anotarAcceso } from '@/lib/accesos';
@@ -98,8 +99,9 @@ export async function cuentasDeLaBarra(): Promise<Record<string, number>> {
  * y tienen que seguir siéndolo**: un número que no coincide con lo que se ve al
  * entrar no sirve. Lo que entra: las evaluaciones propias puestas en Hoy, las
  * que hay que citar y nadie movió, las que tienen entrevista hoy sin tomar, las propuestas que hay que seguir, el aviso de
- * candidatos sin evaluadora (uno, sean los que sean) y los comprobantes de los
- * inquilinos del Centro que esperan su pago.
+ * candidatos sin evaluadora (uno, sean los que sean), los comprobantes de los
+ * inquilinos del Centro que esperan su pago y los tickets con respuesta sin
+ * contestar (`ticketsParaContestar`).
  */
 async function cuantoHayHoy(filas: Evaluacion[]): Promise<number> {
   const [yo, cotizaciones] = await Promise.all([quienSoy(), listarCotizaciones()]);
@@ -127,7 +129,10 @@ async function cuantoHayHoy(filas: Evaluacion[]): Promise<number> {
       ? (await comprobantesSinRegistrar()).length + (await renovacionesPorAtender()).length
       : 0;
 
-  return enHoy + seguimientos + sinAsignar + comprobantes;
+  // Los tickets con respuesta sin contestar: la misma lectura que la tarjeta.
+  const tickets = (await ticketsParaContestar(yo.nombre, yo.alcance === 'todo')).length;
+
+  return enHoy + seguimientos + sinAsignar + comprobantes + tickets;
 }
 
 /** Las etapas que todavía piden trabajo: las que entran al tablero de Inicio. */
