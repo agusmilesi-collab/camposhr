@@ -19275,3 +19275,59 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   background: color-mix(in srgb, var(--os-verde) 9%, var(--os-panel, #fff));
   border-color: color-mix(in srgb, var(--os-verde) 30%, transparent);
 }
+
+/* El pedido plegado: el primer renglón a la vista, el resto al abrir. */
+.os-ticket-plegado summary {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  column-gap: 6px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.os-ticket-plegado summary::-webkit-details-marker {
+  display: none;
+}
+
+/* La flecha que dice que se abre, girada cuando está abierto. */
+.os-ticket-plegado summary::before {
+  content: '';
+  grid-row: 1;
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--os-suave);
+  border-bottom: 1.5px solid var(--os-suave);
+  transform: rotate(-45deg);
+  transition: transform 0.15s;
+}
+
+.os-ticket-plegado[open] summary::before {
+  transform: rotate(45deg);
+}
+
+.os-ticket-primera {
+  grid-column: 2;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.os-ticket-plegado[open] .os-ticket-primera {
+  white-space: pre-wrap;
+}
+
+.os-ticket-resumen {
+  grid-column: 2;
+  font-size: 0.72rem;
+  color: var(--os-suave);
+}
+
+.os-ticket-plegado > :not(summary) {
+  margin-left: 18px;
+}
+
+.os-tabla-tickets .os-ticket-resto {
+  margin: 4px 0 0 18px;
+  white-space: pre-wrap;
+}

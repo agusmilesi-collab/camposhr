@@ -4,12 +4,12 @@
  * La cola de pedidos de cambio del OS: arriba el formulario para dejar uno,
  * abajo la tabla con número, fecha, quién lo pidió, qué pide, prioridad y estado.
  *
- * El estado se cambia desde la misma tabla, con el desplegable del OS. Lo
- * abierto (Nuevo, En curso) va arriba; lo cerrado, abajo.
+ * El estado se cambia desde la misma tabla, con el desplegable del OS. Van
+ * del más nuevo al más viejo, por número.
  */
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Desplegable from '@/app/os/Desplegable';
 import { fechaCorta, fechaHora } from '@/lib/hora';
 import {
@@ -18,7 +18,6 @@ import {
   COLOR_TICKET,
   ESTADOS_TICKET,
   LARGO_TICKET,
-  PESO_PRIORIDAD,
   PRIORIDADES,
   type EstadoTicket,
   type Mensaje,
@@ -41,12 +40,8 @@ export default function Tickets({ tickets, yo }: { tickets: Ticket[]; yo: string
 
   const ordenados = tickets
     .map((t) => ({ ...t, ...locales[t.numero] }))
-    .sort(
-      (a, b) =>
-        Number(ABIERTO[b.estado]) - Number(ABIERTO[a.estado]) ||
-        PESO_PRIORIDAD[b.prioridad] - PESO_PRIORIDAD[a.prioridad] ||
-        b.numero - a.numero
-    );
+    // Del más nuevo al más viejo, por número: la cola se lee como llegó.
+    .sort((a, b) => b.numero - a.numero);
   const abiertos = ordenados.filter((t) => ABIERTO[t.estado]).length;
 
   async function enviar(e: React.FormEvent) {
@@ -196,13 +191,7 @@ export default function Tickets({ tickets, yo }: { tickets: Ticket[]; yo: string
                     <td data-campo="Fecha">{fechaCorta(t.created_at)}</td>
                     <td data-campo="Pidió">{t.pide}</td>
                     <td data-campo="Qué pide" className="os-ticket-texto">
-                      {t.texto}
-                      {t.donde && <span className="os-ticket-donde">{t.donde}</span>}
-                      <Conversacion
-                        mensajes={t.ticket_mensajes ?? []}
-                        abierto={ABIERTO[t.estado]}
-                        onEnviar={(mensaje) => responder(t.numero, mensaje)}
-                      />
+                      <Plegado t={t} onEnviar={(mensaje) => responder(t.numero, mensaje)} />
                     </td>
                     <td data-campo="Prioridad" className="os-ticket-pastilla">
                       <Desplegable
@@ -285,5 +274,45 @@ function Conversacion({
         </form>
       )}
     </div>
+  );
+}
+
+/**
+ * El pedido plegado: a la vista, el primer renglón; al abrir, el resto del
+ * texto, dónde y la conversación. Solo cambia cómo se ve: lo guardado es lo
+ * mismo, así que los agentes que escriben en los tickets no se enteran.
+ *
+ * Se abre solo si la dirección apunta a este ticket (`#ticket-N`), que es a
+ * donde llevan las tarjetas de Inicio.
+ */
+function Plegado({ t, onEnviar }: { t: Ticket; onEnviar: (mensaje: string) => Promise<boolean> }) {
+  const [abierto, setAbierto] = useState(false);
+  useEffect(() => {
+    if (window.location.hash === `#ticket-${t.numero}`) setAbierto(true);
+  }, [t.numero]);
+
+  const [primera, ...resto] = t.texto.split('\n');
+  const mensajes = t.ticket_mensajes ?? [];
+  const ultimo = mensajes[mensajes.length - 1];
+
+  return (
+    <details
+      className="os-ticket-plegado"
+      open={abierto}
+      onToggle={(e) => setAbierto((e.currentTarget as HTMLDetailsElement).open)}
+    >
+      <summary>
+        <span className="os-ticket-primera">{primera}</span>
+        {!abierto && mensajes.length > 0 && (
+          <span className="os-ticket-resumen">
+            {mensajes.length} {mensajes.length === 1 ? 'mensaje' : 'mensajes'} · último de {ultimo.autor},{' '}
+            {fechaHora(ultimo.created_at)}
+          </span>
+        )}
+      </summary>
+      {resto.join('\n').trim() && <p className="os-ticket-resto">{resto.join('\n').trim()}</p>}
+      {t.donde && <span className="os-ticket-donde">{t.donde}</span>}
+      <Conversacion mensajes={mensajes} abierto={ABIERTO[t.estado]} onEnviar={onEnviar} />
+    </details>
   );
 }
