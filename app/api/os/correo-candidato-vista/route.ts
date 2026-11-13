@@ -31,6 +31,7 @@ export function GET(req: Request) {
     ? armarCorreoBzg({
         pila: 'Lucía',
         con: 'Lorena Campos',
+        whatsapp: '+54 9 3416 40-2533',
         fecha: VISTA_PREVIA.fecha(),
       })
     : armarCorreoCandidato({

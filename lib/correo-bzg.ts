@@ -20,6 +20,7 @@ import { enviarCorreo, escapar, hayCorreo } from '@/lib/correo';
 import { PARRAFO, hoja } from '@/lib/correo-destinos';
 import { llevaBenziger } from '@/lib/benziger';
 import { partesDePersona } from '@/lib/personas';
+import { firmaDeQuien } from '@/lib/correo-firma';
 
 const GRIS = '#7a756b';
 
@@ -31,6 +32,8 @@ export type DatosCorreoBzg = {
   pila: string;
   /** La evaluadora: firma el correo. */
   con: string | null;
+  /** Su WhatsApp, que va en la firma. */
+  whatsapp?: string | null;
   /** Cuándo es la entrevista: el cuestionario tiene que estar hecho para ese día. */
   fecha: string | null;
 };
@@ -72,23 +75,22 @@ export function armarCorreoBzg(d: DatosCorreoBzg): { asunto: string; texto: stri
   const dos =
     'La mayoría de las preguntas son de opción múltiple. Solo tres piden redactar la respuesta: ' +
     `${DETALLE}`;
-  const firma = [con, 'Campos HR'].filter(Boolean) as string[];
+  const firma = firmaDeQuien(con ? { nombre: con, telefono: d.whatsapp ?? null } : null);
 
   return {
     asunto: 'Indicaciones BZG',
-    texto: [saludo, '', uno, '', plazo, '', dos, '', ...firma].join('\n'),
+    texto: [saludo, '', uno, '', plazo, '', dos, '', ...firma.texto, 'Campos HR · www.camposhr.com'].join('\n'),
     html: hoja(
         `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n` +
         `    <p style="${PARRAFO}">${escapar(uno)}</p>\n` +
         `    <p style="${PARRAFO}">${plazoHtml}</p>\n` +
         // El pedido de detalle va subrayado: es lo único del correo que la
         // persona tiene que hacer distinto de contestar.
-        `    <p style="${PARRAFO}margin-bottom:24px;">${escapar(dos).replace(
+        `    <p style="${PARRAFO}margin:0;">${escapar(dos).replace(
           escapar(DETALLE),
           `<u>${escapar(DETALLE)}</u>`
         )}</p>\n` +
-        `    <p style="${PARRAFO}margin:0;">${con ? `<strong>${escapar(con)}</strong><br>` : ''}` +
-        `<span style="color:${GRIS};">Campos HR</span></p>`
+        firma.html
     ),
   };
 }
@@ -133,6 +135,7 @@ export async function avisarBzg(evaluacionId: string): Promise<void> {
       ...armarCorreoBzg({
         pila: partesDePersona(e.personas).pila,
         con: e.evaluadoras?.nombre ?? null,
+        whatsapp: e.evaluadoras?.telefono ?? null,
         fecha: e.fecha_entrevista,
       }),
       responderA: [e.evaluadoras?.email ?? ''],

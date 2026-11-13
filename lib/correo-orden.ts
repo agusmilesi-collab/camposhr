@@ -11,6 +11,7 @@ import 'server-only';
 import { patch, select } from '@/lib/supabase';
 import { direcciones, enviarCorreo, escapar, type Envio } from '@/lib/correo';
 import { destinosDe } from '@/lib/correo-destinos';
+import { firmaDeQuien, type Firma } from '@/lib/correo-firma';
 import { archivoDeOrden, pdfDeOrden } from '@/lib/orden-pdf';
 import {
   CONDICIONES,
@@ -40,19 +41,27 @@ async function aQuien(ordenId: string) {
  * después. Ahí la respuesta va a todas las activas: es mejor que la lean dos
  * que no saber a cuál de las dos le tocaba.
  */
-async function quienResponde(ordenId: string): Promise<string[]> {
+async function quienResponde(ordenId: string): Promise<{ responderA: string[]; firma: Firma }> {
+  type Evaluadora = { email: string | null; nombre: string | null; telefono: string | null };
   const [items, todas] = await Promise.all([
-    select<{ evaluaciones: { evaluadoras: { email: string | null } | null } | null }>(
+    select<{ evaluaciones: { evaluadoras: Evaluadora | null } | null }>(
       'orden_items',
-      `select=evaluaciones(evaluadoras(email))&orden_id=eq.${ordenId}`
+      `select=evaluaciones(evaluadoras(email,nombre,telefono))&orden_id=eq.${ordenId}`
     ),
     select<{ email: string | null }>('evaluadoras', 'select=email&activa=is.true'),
   ]);
-  const suyas = direcciones(items.map((i) => i.evaluaciones?.evaluadoras?.email));
-  return suyas.length > 0 ? suyas : direcciones(todas.map((e) => e.email));
+  const ellas = items.map((i) => i.evaluaciones?.evaluadoras).filter((e): e is Evaluadora => Boolean(e));
+  const suyas = direcciones(ellas.map((e) => e.email));
+  // Firma la evaluadora si es una sola; repartida entre dos, o sin repartir
+  // todavía, firma el equipo.
+  const una = new Set(ellas.map((e) => e.nombre)).size === 1 ? ellas[0] : null;
+  return {
+    responderA: suyas.length > 0 ? suyas : direcciones(todas.map((e) => e.email)),
+    firma: firmaDeQuien(una),
+  };
 }
 
-function cuerpo(orden: Orden, nombre: string | null) {
+function cuerpo(orden: Orden, nombre: string | null, firma: Firma) {
   const personas = [...new Set(orden.filas.map((f) => f.detalle).filter(Boolean))];
   const cuantas = personas.length === 1 ? '1 candidato' : `${personas.length} candidatos`;
   const titulo = `Orden de compra #${orden.numero}`;
@@ -80,6 +89,7 @@ function cuerpo(orden: Orden, nombre: string | null) {
     ...PASOS_SIGUIENTES.map((p, i) => `${i + 1}. ${p}`),
     ...(bajar ? ['', `Bajar la orden: ${bajar}`] : []),
     '',
+    ...firma.texto,
     'Campos HR · www.camposhr.com',
   ].join('\n');
 
@@ -119,6 +129,7 @@ function cuerpo(orden: Orden, nombre: string | null) {
         ? `<p style="margin:28px 0 0;"><a href="${bajar}" style="display:inline-block;background:#16202b;color:#ffffff;text-decoration:none;font-size:14px;padding:12px 20px;">Bajar la orden en PDF</a></p>`
         : ''
     }
+${firma.html}
   </div>
   <p style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7a756b;margin:20px 0 0;">www.camposhr.com</p>
 </div>
@@ -138,13 +149,14 @@ export async function avisarOrden(orden: Orden | null): Promise<Envio | null> {
     const quien = await aQuien(orden.id);
     if (!quien || quien.para.length === 0) return { ok: false, motivo: 'sin destinatario' };
 
+    const responde = await quienResponde(orden.id).catch(() => ({ responderA: [], firma: firmaDeQuien(null) }));
     const envio = await enviarCorreo({
       de: 'pedidos',
       para: quien.para,
       copia: quien.copia,
-      ...cuerpo(orden, quien.nombre),
+      ...cuerpo(orden, quien.nombre, responde.firma),
       adjuntos: [{ nombre: archivoDeOrden(orden), bytes: await pdfDeOrden(orden) }],
-      responderA: await quienResponde(orden.id).catch(() => []),
+      responderA: responde.responderA,
       clave: `orden-${orden.id}`,
     });
     if (envio.ok) {

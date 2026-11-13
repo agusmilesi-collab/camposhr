@@ -29,6 +29,7 @@ import { PARRAFO, destinosDe, hoja } from '@/lib/correo-destinos';
 import { esEmpresaDePrueba } from '@/lib/empresa-prueba';
 import { esEmpresaEjemplo } from '@/lib/portal-ejemplo';
 import { partesDePersona } from '@/lib/personas';
+import { firmaDeQuien } from '@/lib/correo-firma';
 import {
   EN_EL_CORREO,
   LARGO_COMENTARIO,
@@ -48,7 +49,7 @@ type Vencido = {
   seguimiento_enviado_el: string | null;
   fecha_ingreso_empresa: string | null;
   personas: { nombre: string; nombre_pila: string | null; apellido: string | null } | null;
-  evaluadoras: { email: string | null } | null;
+  evaluadoras: { email: string | null; nombre: string | null; telefono: string | null } | null;
   pedidos: {
     puesto: string;
     empresa_id: string;
@@ -87,7 +88,7 @@ async function leer(filtro: string): Promise<Vencido[]> {
   const filas = await select<Vencido>(
     'evaluaciones',
     'select=id,solicitante_id,seguimiento_token,seguimiento_enviado_el,fecha_ingreso_empresa,' +
-      'personas(nombre,nombre_pila,apellido),evaluadoras(email),' +
+      'personas(nombre,nombre_pila,apellido),evaluadoras(email,nombre,telefono),' +
       'pedidos(puesto,empresa_id,solicitante_id,empresas(nombre))' +
       '&ingreso=is.true&estado=eq.Seguimiento&baja_el=is.null&seguimiento_respondido_el=is.null' +
       filtro
@@ -129,6 +130,7 @@ export async function preguntar(e: Vencido, recordatorio = false): Promise<Resul
     puesto: pedido.puesto.trim(),
     enlace: `${SITIO}/seguimiento/${token}`,
     recordatorio,
+    evaluadora: e.evaluadoras,
   });
 
   const envio = await enviarCorreo({
@@ -170,7 +172,10 @@ export function armarCorreoSeguimiento(a: {
   puesto: string;
   enlace: string;
   recordatorio: boolean;
+  /** Quien hizo la evaluación: firma el correo. Sin ella, firma el equipo. */
+  evaluadora?: { nombre: string | null; telefono: string | null } | null;
 }): { asunto: string; texto: string; html: string } {
+  const firma = firmaDeQuien(a.evaluadora);
   const pila = a.pila || a.persona;
   const saludo = a.nombre ? `Hola ${a.nombre}:` : 'Hola:';
   const frase = a.recordatorio
@@ -190,7 +195,7 @@ export function armarCorreoSeguimiento(a: {
     .join('\n      ');
   return {
     asunto: `${a.recordatorio ? 'Recordatorio: ' : ''}¿Cómo le va a ${a.persona}? · ${a.puesto}`,
-    texto: [saludo, '', frase, '', reenviar, '', `Responder: ${a.enlace}`, '', porQue, '', 'Campos HR · www.camposhr.com'].join('\n'),
+    texto: [saludo, '', frase, '', reenviar, '', `Responder: ${a.enlace}`, '', porQue, '', ...firma.texto, 'Campos HR · www.camposhr.com'].join('\n'),
     // Cómo reenviarlo va pegado a la presentación, antes de la pregunta: es
     // lo que decide quien lo recibe antes de contestar. Al final, para qué
     // sirve, que cierra el correo.
@@ -200,7 +205,8 @@ export function armarCorreoSeguimiento(a: {
         `    <p style="${PARRAFO}">${escapar(reenviar)}</p>\n` +
         `    <p style="${PARRAFO}margin-top:22px;font-weight:bold;">${escapar(EN_EL_CORREO.pregunta(pila))}</p>\n` +
         `    <div>\n      ${botones}\n    </div>\n` +
-        `    <p style="${PARRAFO}margin:22px 0 0;">${escapar(porQue)}</p>`
+        `    <p style="${PARRAFO}margin:22px 0 0;">${escapar(porQue)}</p>\n` +
+        firma.html
     ),
   };
 }

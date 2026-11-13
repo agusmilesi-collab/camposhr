@@ -38,6 +38,7 @@ import { BOTON, PARRAFO, hoja } from '@/lib/correo-destinos';
 import { CONSULTORIO, CONSULTORIO_CON_TIMBRE, CONSULTORIO_MAPA } from '@/lib/consultorio';
 import { partesDelNombre, partesDePersona } from '@/lib/personas';
 import { avisarBzg } from '@/lib/correo-bzg';
+import { ICONO_WHATSAPP, firmaDeQuien } from '@/lib/correo-firma';
 
 const ZONA = 'America/Argentina/Cordoba';
 
@@ -89,12 +90,8 @@ const BOTON_CONFIRMAR =
   'display:inline-block;background:#d9f2d0;color:#16202b;border:1px solid #16202b;border-radius:999px;' +
   'text-decoration:none;font-size:14px;padding:11px 19px;';
 
-/**
- * El ícono de WhatsApp del correo (`public/correo/whatsapp.png`). Va siempre
- * contra el sitio publicado y no contra `SITIO`: un correo no puede cargar una
- * imagen de localhost, y Gmail no dibuja SVG ni imágenes incrustadas.
- */
-export const ICONO_WHATSAPP = 'https://camposhr.com/correo/whatsapp.png';
+// El ícono vive con la firma; se reexporta para quien lo importaba de acá.
+export { ICONO_WHATSAPP };
 
 /** El gris de lo que acompaña: la hora de Argentina y la línea de las dudas, al pie. */
 const GRIS = '#7a756b';
@@ -308,14 +305,13 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
       `<img src="${ICONO_WHATSAPP}" width="15" height="15" alt="WhatsApp" style="vertical-align:-2px;border:0;"> ` +
       `${escapar(whatsapp)}</a>`
     : '';
-  // Va al pie, que es donde la persona busca a quién escribirle.
-  const pila2 = con ? con.split(/\s+/)[0] : '';
+  // Va al pie, que es donde la persona busca a quién escribirle. El número
+  // está en la firma, que va debajo.
   const cambio = whatsapp
-    ? `Por cualquier duda, escribile por WhatsApp a ${pila2} al ${whatsapp}.`
+    ? 'Por cualquier duda, escribime por WhatsApp.'
     : 'Por cualquier duda, respondé este correo.';
-  const cambioHtml = whatsapp
-    ? `Por cualquier duda, escribile por WhatsApp a ${escapar(pila2)} al ${numeroHtml}.`
-    : escapar(cambio);
+  const cambioHtml = escapar(cambio);
+  const firma = firmaDeQuien(con ? { nombre: con, telefono: whatsapp } : null);
   const pedido = 'Confirmá que vas a estar:';
   // Solo en la online: parte de los tests se hace dibujando, y en el
   // consultorio el papel y el lápiz los pone la evaluadora.
@@ -342,6 +338,7 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
       '',
       cambio,
       '',
+      ...firma.texto,
       'Campos HR · www.camposhr.com',
     ].join('\n'),
     html: hoja(
@@ -367,7 +364,8 @@ export function armarCorreoCandidato(d: DatosCorreoCandidato): {
             `<img src="${ICONO_VIDEO}" width="18" height="18" alt="" style="vertical-align:-4px;border:0;margin-right:8px;">` +
             `Entrar a la videollamada</a></p>\n`
           : `    <p style="${PARRAFO}margin-bottom:36px;"><a href="${escapar(CONSULTORIO_MAPA)}" style="${BOTON}">Ver en Google Maps</a>${botonCalendario}</p>\n`) +
-        `    <p style="${PARRAFO}margin:0;font-size:14px;color:${GRIS};">${cambioHtml}</p>`
+        `    <p style="${PARRAFO}margin:0;font-size:14px;color:${GRIS};">${cambioHtml}</p>\n` +
+        firma.html
     ),
   };
 }

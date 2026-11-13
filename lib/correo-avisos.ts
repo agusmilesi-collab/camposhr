@@ -18,7 +18,7 @@ import 'server-only';
 import { patch, select } from '@/lib/supabase';
 import { enviarCorreo, escapar, hayCorreo } from '@/lib/correo';
 import { BOTON, PARRAFO, destinosDe, hoja } from '@/lib/correo-destinos';
-import { ICONO_WHATSAPP } from '@/lib/correo-candidato';
+import { firmaDe, firmaDeQuien } from '@/lib/correo-firma';
 
 const PORTAL = 'https://clientes.camposhr.com';
 
@@ -36,35 +36,6 @@ const PORTAL = 'https://clientes.camposhr.com';
  */
 const AVISA_INFORME: boolean = true;
 const ZONA = 'America/Argentina/Cordoba';
-
-/**
- * La firma de la evaluadora: su foto, su nombre y su WhatsApp.
- *
- * La foto es la del equipo en el sitio (`public/equipo/<nombre>.png`) y va
- * contra el sitio publicado: un correo no carga imágenes de localhost. Sin
- * teléfono cargado, la firma sale sin la línea de WhatsApp.
- */
-export function firmaDe(nombre: string, telefono: string | null): { html: string; texto: string[] } {
-  const archivo = nombre
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-');
-  const foto = `https://camposhr.com/equipo/${archivo}.png`;
-  const tel = telefono?.trim() || null;
-  const whatsapp = tel
-    ? `<br><a href="https://wa.me/${tel.replace(/\D/g, '')}" style="color:#7a756b;font-size:13px;text-decoration:none;white-space:nowrap;">` +
-      `<img src="${ICONO_WHATSAPP}" width="15" height="15" alt="WhatsApp" style="vertical-align:-2px;border:0;"> ${escapar(tel)}</a>`
-    : '';
-  const html =
-    `    <p style="${PARRAFO}margin:24px 0 12px;">Saludos,</p>\n` +
-    `    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>\n` +
-    `      <td style="padding:0 12px 0 0;vertical-align:middle;"><img src="${foto}" width="48" height="48" alt="${escapar(nombre)}" style="display:block;border:0;border-radius:50%;"></td>\n` +
-    `      <td style="vertical-align:middle;font-size:15px;line-height:1.4;"><strong>${escapar(nombre)}</strong>${whatsapp}</td>\n` +
-    `    </tr></table>`;
-  return { html, texto: ['Saludos,', nombre, ...(tel ? [`WhatsApp: ${tel}`] : []), ''] };
-}
 
 type Fila = {
   id: string;
@@ -133,15 +104,17 @@ export async function avisarSiCorresponde(evaluacionId: string): Promise<void> {
           `La entrevista de ${persona} para el puesto ${puesto} ` +
           `${otraVez ? 'se reprogramó' : 'quedó agendada'} para el ${cuando(e.fecha_entrevista)}, ` +
           `modalidad ${e.modalidad.toLowerCase()}.`;
+        const firma = firmaDeQuien(e.evaluadoras);
         const envio = await enviarCorreo({
           de: 'pedidos',
           para: d.para,
           copia: d.copia,
           asunto: `Entrevista ${otraVez ? 'reprogramada' : 'agendada'}: ${persona} · ${puesto}`,
-          texto: [saludo, '', frase, '', 'Campos HR · www.camposhr.com'].join('\n'),
+          texto: [saludo, '', frase, '', ...firma.texto, 'Campos HR · www.camposhr.com'].join('\n'),
           html: hoja(
             `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n` +
-              `    <p style="${PARRAFO}margin:0;">${escapar(frase)}</p>`
+              `    <p style="${PARRAFO}margin:0;">${escapar(frase)}</p>\n` +
+              firma.html
           ),
           responderA,
           clave: `entrevista-${e.id}-${new Date(e.fecha_entrevista).getTime()}`,

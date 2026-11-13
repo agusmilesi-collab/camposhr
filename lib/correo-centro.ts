@@ -14,6 +14,20 @@ import 'server-only';
 import { direcciones, enviarCorreo, escapar, type Envio } from '@/lib/correo';
 import { select } from '@/lib/supabase';
 import { HORAS_DEL_ENLACE } from '@/lib/centro-acceso';
+import { firmaDe, type Firma } from '@/lib/correo-firma';
+
+/**
+ * Lo que le llega al inquilino lo firma Lucila, que lleva el Centro, con su
+ * foto y su WhatsApp. El número sale de su ficha de evaluadora: el repositorio
+ * es público. Si no se puede leer, firma igual, sin el número.
+ */
+async function firmaDeLucila(): Promise<Firma> {
+  const [l] = await select<{ nombre: string | null; telefono: string | null }>(
+    'evaluadoras',
+    'select=nombre,telefono&nombre=ilike.Lucila*&limit=1'
+  ).catch(() => []);
+  return firmaDe(l?.nombre?.trim() || 'Lucila Campos', l?.telefono ?? null);
+}
 
 const PARRAFO = 'font-size:15px;line-height:1.5;margin:0 0 12px;';
 const BOTON =
@@ -45,17 +59,19 @@ export async function enviarEnlaceDeClave(a: {
   const saludo = `Hola, ${nombre}.`;
   const que = `Con este enlace elegís tu contraseña para entrar a los consultorios del Centro. Vale ${HORAS_DEL_ENLACE} horas y se usa una sola vez.`;
   const despues = 'Si no pediste este correo, no hace falta que hagas nada: tu contraseña sigue igual.';
+  const firma = await firmaDeLucila();
   return enviarCorreo({
     de: 'centro',
     para: [a.correo],
     asunto: 'Tu contraseña para los consultorios del Centro',
     clave: `centro-clave-${a.token}`,
-    texto: [saludo, '', que, '', a.enlace, '', despues, '', 'Centro Integral Santiago · Santiago 1269, Rosario'].join('\n'),
+    texto: [saludo, '', que, '', a.enlace, '', despues, '', ...firma.texto, 'Centro Integral Santiago · Santiago 1269, Rosario'].join('\n'),
     html: hoja(
       `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n` +
         `    <p style="${PARRAFO}">${escapar(que)}</p>\n` +
         `    <p style="${PARRAFO}margin:18px 0 22px;"><a href="${escapar(a.enlace)}" style="${BOTON}">Elegir mi contraseña</a></p>\n` +
-        `    <p style="font-size:13px;line-height:1.5;color:#7b7770;margin:0;">${escapar(despues)}</p>\n`
+        `    <p style="font-size:13px;line-height:1.5;color:#7b7770;margin:0;">${escapar(despues)}</p>\n` +
+        firma.html
     ),
   });
 }
@@ -79,17 +95,19 @@ export async function enviarRecordatorioRenovacion(a: {
   const silencio =
     'Si no contestás, renovás las mismas horas: el último día del mes, a las 10, se generan las reservas y el cargo del mes que viene.';
   const enlace = 'https://centro.camposhr.com/centro/inicio';
+  const firma = await firmaDeLucila();
   return enviarCorreo({
     de: 'centro',
     para: [a.correo],
     asunto: `¿Renovás tus horas en ${a.mes}?`,
     clave: `centro-renovar-${a.periodo}-${a.inquilinoId}`,
-    texto: [saludo, '', que, '', enlace, '', silencio, '', 'Centro Integral Santiago · Santiago 1269, Rosario'].join('\n'),
+    texto: [saludo, '', que, '', enlace, '', silencio, '', ...firma.texto, 'Centro Integral Santiago · Santiago 1269, Rosario'].join('\n'),
     html: hoja(
       `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n` +
         `    <p style="${PARRAFO}">${escapar(que)}</p>\n` +
         `    <p style="${PARRAFO}margin:18px 0 22px;"><a href="${enlace}" style="${BOTON}">Contestar en Inicio</a></p>\n` +
-        `    <p style="font-size:13px;line-height:1.5;color:#7b7770;margin:0;">${escapar(silencio)}</p>\n`
+        `    <p style="font-size:13px;line-height:1.5;color:#7b7770;margin:0;">${escapar(silencio)}</p>\n` +
+        firma.html
     ),
   });
 }

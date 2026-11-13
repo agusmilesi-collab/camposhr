@@ -26,7 +26,7 @@ import { pesosDeOrden } from '@/lib/orden-compra-tipos';
 import { formaDelRecibo, reciboDePago } from '@/lib/orden-compra';
 import { archivoDeOrden, pdfDeOrden } from '@/lib/orden-pdf';
 import { PARRAFO, destinosDe, hoja, type Destinos } from '@/lib/correo-destinos';
-import { firmaDe } from '@/lib/correo-avisos';
+import { firmaDe } from '@/lib/correo-firma';
 
 export type EnvioDeFactura = {
   /** A quién va si se manda ahora, con los que van en copia. Vacío es que no hay a quién. */
@@ -312,15 +312,17 @@ export async function avisarRecibo(id: string): Promise<void> {
       (comprobante ? `, correspondiente a ${/^Órdenes/.test(comprobante) ? 'las' : 'la'} ${comprobante}` : '') +
       '. El recibo va adjunto en PDF.';
     const saludo = nombre ? `Hola ${nombre}:` : 'Hola:';
+    const firma = firmaDeLaEmisora(datos.f);
 
     const envio = await enviarCorreo({
       de: 'facturacion',
       para,
       copia,
       asunto: `${titulo} · Campos HR`,
-      texto: [saludo, '', entrada, '', 'Campos HR · www.camposhr.com'].join('\n'),
+      texto: [saludo, '', entrada, '', ...(firma ? firma.texto : []), 'Campos HR · www.camposhr.com'].join('\n'),
       html: hoja(
-        `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n    <p style="${PARRAFO}margin:0;">${escapar(entrada)}</p>`
+        `    <p style="${PARRAFO}">${escapar(saludo)}</p>\n    <p style="${PARRAFO}margin:0;">${escapar(entrada)}</p>` +
+          (firma ? `\n${firma.html}` : '')
       ),
       adjuntos: [{ nombre: archivoDeOrden(papel, forma.archivo), bytes: await pdfDeOrden(papel, forma) }],
       responderA: [datos.f.emisores?.evaluadoras?.email ?? ''],
