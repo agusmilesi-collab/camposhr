@@ -2,6 +2,7 @@ import { parrafoBenziger, type Informe } from '@/lib/informe';
 import { bandaDe } from '@/lib/exigencia';
 import { CONFIDENCIALIDAD, CUADRANTES, FIRMAS, NIVELES, NOTA_AJUSTE } from '@/lib/informe-textos';
 import { firmaEnDatos } from '@/lib/firmas';
+import { recomendacionesSinTramos } from '@/lib/empresa-prueba';
 import Listas from '../_doc/Listas';
 import { EscalaBandas, IconoNivel, RadarCompetencias, Velocimetro, tono } from '../_doc/piezas';
 import Comprension from '../_doc/Comprension';
@@ -386,11 +387,14 @@ export function seccionesDe(
   /* ── Plan de incorporación ──────────────────────────────────────────────────
      Después de todo lo que sostiene la decisión: es lo que el líder necesita
      si la persona entra, un agregado y no un fundamento. */
+  const sinTramos = recomendacionesSinTramos(inf.empresa);
   secciones.push({
     id: 'lider',
-    titulo: 'Plan de incorporación',
+    titulo: sinTramos ? 'Recomendaciones para su líder' : 'Plan de incorporación',
     corta: inf.recomendaciones.length === 0 && !(inf.benziger?.textos?.conducir.length ?? 0),
-    bajada: 'Primeros 90 días, para su líder, en caso de que la persona ingrese',
+    bajada: sinTramos
+      ? 'Lo que el líder tendría que hacer con esta persona'
+      : 'Primeros 90 días, para su líder, en caso de que la persona ingrese',
     cuerpo: (
       <>
         <Listas
@@ -398,6 +402,7 @@ export function seccionesDe(
           lista="recomendaciones"
           items={inf.recomendaciones.map((r) => r.texto)}
           tramos={inf.recomendaciones.map((r) => r.tramo)}
+          sinTramos={sinTramos}
           intervenida={inf.intervenidas.includes('recomendaciones')}
           vacio="No surgen indicadores fuera de los rangos esperados que requieran una gestión particular."
           respaldos={editar ? inf.respaldos : undefined}
@@ -460,6 +465,14 @@ export function seccionesDe(
         </div>
     ),
   });
+
+  /* Para los clientes que las piden así (Cofco), las recomendaciones al líder
+     van en la segunda hoja, detrás de la carilla de conclusiones: es la hoja
+     que se le pasa sola al jefe directo para decidir. */
+  if (sinTramos) {
+    const i = secciones.findIndex((x) => x.id === 'lider');
+    if (i > 1) secciones.splice(1, 0, ...secciones.splice(i, 1));
+  }
 
   return secciones;
 }

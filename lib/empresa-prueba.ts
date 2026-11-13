@@ -40,3 +40,17 @@ export const INFORME_EN_HOJAS_PARA_TODOS = true;
 export function informeEnHojas(nombre: string | null | undefined): boolean {
   return INFORME_EN_HOJAS_PARA_TODOS || esEmpresaDePrueba(nombre);
 }
+
+/**
+ * Los clientes que reciben las recomendaciones al líder como una lista, en la
+ * segunda hoja del informe, y no como plan de incorporación por tramos.
+ *
+ * Lo pidió Cofco (Florencia, 13/11/2026): le pasa esa hoja sola al jefe
+ * directo para que vea lo que tendría que hacer con el candidato y decida sí o
+ * no. En esa instancia de la selección todavía no se piensa en la inducción.
+ */
+const RECOMENDACIONES_SIN_TRAMOS = [/^cofco/i];
+
+export function recomendacionesSinTramos(nombre: string | null | undefined): boolean {
+  return Boolean(nombre && RECOMENDACIONES_SIN_TRAMOS.some((r) => r.test(nombre.trim())));
+}

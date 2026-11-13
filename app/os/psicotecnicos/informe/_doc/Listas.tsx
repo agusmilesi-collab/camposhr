@@ -58,6 +58,7 @@ export default function Listas({
   respaldos,
   grupo,
   tramos,
+  sinTramos = false,
   origen,
 }: {
   /**
@@ -95,6 +96,13 @@ export default function Listas({
    * incorporación y sale agrupada por tramo en vez de numerada.
    */
   tramos?: Tramo[];
+  /**
+   * El plan sale como una lista numerada, sin agrupar por tramo y sin los
+   * puntos fijos de la inducción. Lo pidió Cofco (13/11/2026): el jefe
+   * directo lee esa hoja para decidir si lo toma, y en esa instancia todavía
+   * no se piensa en inducirlo. Al editar, cada renglón conserva su tramo.
+   */
+  sinTramos?: boolean;
   /**
    * De qué test sale la lista ("Rorschach", "Zulliger"), para quien evalúa.
    *
@@ -324,7 +332,7 @@ export default function Listas({
    * propio no sale, salvo el de los días 31 a 90, que es el único que habla de
    * soltar y el diccionario casi no tiene lecturas para eso.
    */
-  if (!editando && plan && items.length > 0) {
+  if (!editando && plan && !sinTramos && items.length > 0) {
     return envuelto(
       <div className="inf-plan">
         {TRAMOS.map((t) => {
@@ -363,7 +371,7 @@ export default function Listas({
     return envuelto(
       items.length === 0 ? (
         <p className="inf-vacio">{vacio}</p>
-      ) : numerada ? (
+      ) : numerada || sinTramos ? (
         <ol className="inf-recomendaciones">
           {items.map((t, i) => (
             <li key={i}>
