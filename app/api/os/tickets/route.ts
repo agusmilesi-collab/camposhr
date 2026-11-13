@@ -80,6 +80,25 @@ export async function POST(req: Request) {
   if (!Number.isInteger(numero) || numero < 1) {
     return NextResponse.json({ ok: false, motivo: 'Número inválido.' }, { status: 400 });
   }
+  /* Quien pidió el ticket vio que se cerró: se apaga su tarjeta de Inicio.
+     Solo cuenta si lo abre ella; otra persona mirándolo no lo marca. */
+  if (datos?.visto === true) {
+    const yo = await quienSoy();
+    const res = await fetch(
+      `${cfg.url}/rest/v1/tickets?numero=eq.${numero}&pide=eq.${encodeURIComponent(yo.nombre)}`,
+      {
+        method: 'PATCH',
+        headers: cabeceras(cfg.key),
+        body: JSON.stringify({ visto_el: new Date().toISOString() }),
+        cache: 'no-store',
+      }
+    );
+    if (!res.ok) {
+      return NextResponse.json({ ok: false, motivo: `Supabase respondió ${res.status}` }, { status: 400 });
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   /* Un mensaje nuevo en la conversación, firmado por quien está en el OS. */
   if (datos?.mensaje !== undefined) {
     const texto = typeof datos.mensaje === 'string' ? datos.mensaje.trim() : '';

@@ -19268,3 +19268,10 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   display: inline-grid;
   gap: 2px;
 }
+
+/* El ticket resuelto, en Hoy: verde, porque es una buena noticia y no algo
+   para contestar. */
+.os-mini.os-mini-asignar.os-mini-ticket.os-mini-resuelto {
+  background: color-mix(in srgb, var(--os-verde) 9%, var(--os-panel, #fff));
+  border-color: color-mix(in srgb, var(--os-verde) 30%, transparent);
+}

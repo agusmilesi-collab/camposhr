@@ -1,6 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { ticketsParaContestar } from '@/lib/tickets';
+import { ticketsParaContestar, ticketsResueltos } from '@/lib/tickets';
 import { listarEvaluaciones, type Evaluacion } from '@/lib/psicotecnicos';
 import { SECCIONES, columnaDelTablero, type Seccion } from '@/lib/psicotecnicos-tipos';
 import { anotarAcceso } from '@/lib/accesos';
@@ -130,7 +130,9 @@ async function cuantoHayHoy(filas: Evaluacion[]): Promise<number> {
       : 0;
 
   // Los tickets con respuesta sin contestar: la misma lectura que la tarjeta.
-  const tickets = (await ticketsParaContestar(yo.nombre, yo.alcance === 'todo')).length;
+  const tickets =
+    (await ticketsParaContestar(yo.nombre, yo.alcance === 'todo')).length +
+    (await ticketsResueltos(yo.nombre)).length;
 
   return enHoy + seguimientos + sinAsignar + comprobantes + tickets;
 }

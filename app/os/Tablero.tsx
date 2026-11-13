@@ -254,6 +254,7 @@ export default function Tablero({
   renovaciones = [],
   aperturaMes = null,
   tickets = [],
+  resueltos = [],
 }: {
   filas: Evaluacion[];
   /**
@@ -319,6 +320,11 @@ export default function Tablero({
    * ella contesta o el ticket se cierra.
    */
   tickets?: { numero: number; pide: string; pedido: string; autor: string; ultimo: string }[];
+  /**
+   * Los tickets propios que se cerraron y no vio (`ticketsResueltos`). Al
+   * abrir la tarjeta se marca visto y se va.
+   */
+  resueltos?: { numero: number; estado: string; pedido: string; ultimo: string | null }[];
 }) {
   const router = useRouter();
   const [, empezar] = useTransition();
@@ -326,6 +332,24 @@ export default function Tablero({
   const [encima, setEncima] = useState<ColumnaTablero | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [trabajando, setTrabajando] = useState<string | null>(null);
+  /** Los tickets resueltos que se acaban de abrir: la tarjeta se va al toque. */
+  const [vistos, setVistos] = useState<number[]>([]);
+
+  /** Marca visto el ticket cerrado y lleva a él en la cola. */
+  async function verResuelto(numero: number) {
+    setVistos((xs) => [...xs, numero]);
+    try {
+      await fetch('/api/os/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ numero, visto: true }),
+      });
+    } catch (e) {
+      console.error('ticket visto:', e);
+    }
+    router.push(`/os/tickets#ticket-${numero}`);
+  }
+
   /** Las que alguien acaba de seguir, para que la tarjeta se vaya al toque. */
   const [seguidas, setSeguidas] = useState<string[]>([]);
 
@@ -505,7 +529,8 @@ export default function Tablero({
                         (sinAsignar && sinAsignar.cuantos > 0 ? 1 : 0) +
                         comprobantes.filter((k) => !pagados.includes(k.id)).length +
                         porRenovar.length +
-                        tickets.length
+                        tickets.length +
+                        resueltos.filter((t) => !vistos.includes(t.numero)).length
                       : 0)}
                 </span>
               </div>
@@ -531,6 +556,30 @@ export default function Tablero({
                   </div>
                 </article>
               )}
+              {c.clave === 'hoy' &&
+                resueltos
+                  .filter((t) => !vistos.includes(t.numero))
+                  .map((t) => (
+                    <article key={`resuelto-${t.numero}`} className="os-mini os-mini-asignar os-mini-ticket os-mini-resuelto">
+                      <div className="os-mini-cuerpo">
+                        <span className="os-mini-nombre">
+                          Ticket N° {t.numero} · {t.estado === 'Hecho' ? 'resuelto' : 'descartado'}
+                        </span>
+                        <span className="os-mini-detalle" title={t.ultimo ?? t.pedido}>
+                          {t.ultimo ?? t.pedido}
+                        </span>
+                      </div>
+                      <div className="os-mini-pie os-mini-ticket-pie">
+                        <button
+                          type="button"
+                          className="os-boton-chico os-mini-ticket-boton"
+                          onClick={() => verResuelto(t.numero)}
+                        >
+                          Ver
+                        </button>
+                      </div>
+                    </article>
+                  ))}
               {c.clave === 'hoy' &&
                 tickets.map((t) => (
                   <article key={`ticket-${t.numero}`} className="os-mini os-mini-asignar os-mini-ticket">

@@ -44,3 +44,37 @@ export async function ticketsParaContestar(
     return [];
   }
 }
+
+/**
+ * Los tickets que pidió esta persona y se cerraron sin que ella lo viera
+ * (`visto_el` null; ver `supabase/tickets-visto.sql`). Van como tarjeta en
+ * Hoy hasta que la abre. Solo a quien lo pidió: es su aviso, y lo apaga ella.
+ */
+export type TicketResuelto = {
+  numero: number;
+  estado: string;
+  pedido: string;
+  /** El último mensaje, que dice qué se hizo. */
+  ultimo: string | null;
+};
+
+export async function ticketsResueltos(nombre: string): Promise<TicketResuelto[]> {
+  try {
+    const filas = await select<{ numero: number; estado: string; texto: string; ticket_mensajes: Mensaje[] }>(
+      'tickets',
+      `select=numero,estado,texto,ticket_mensajes(autor,texto,created_at)` +
+        `&pide=eq.${encodeURIComponent(nombre)}` +
+        `&estado=in.(Hecho,Descartado)&visto_el=is.null` +
+        `&ticket_mensajes.order=created_at.asc&order=numero.asc`
+    );
+    return filas.map((t) => ({
+      numero: t.numero,
+      estado: t.estado,
+      pedido: t.texto,
+      ultimo: t.ticket_mensajes?.[t.ticket_mensajes.length - 1]?.texto ?? null,
+    }));
+  } catch (e) {
+    console.error('tickets resueltos:', e);
+    return [];
+  }
+}
