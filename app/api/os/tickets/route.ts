@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { hayPuerta, huella, igual } from '@/lib/os-sesion';
 import { cookieDelOs } from '@/lib/os-sesion-servidor';
 import { quienSoy } from '@/lib/identidad';
 import { ESTADOS_TICKET, LARGO_TICKET, PRIORIDADES } from '@/lib/tickets-tipos';
+import { avisarSoporte } from '@/lib/yellow-soporte';
 
 export const runtime = 'nodejs';
 
@@ -64,6 +65,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ ok: false, motivo: `Supabase respondió ${res.status}` }, { status: 400 });
   }
   const [fila] = await res.json();
+  after(() => avisarSoporte(`Ticket nuevo #${fila.numero}.`));
   return NextResponse.json({ ok: true, fila });
 }
 
@@ -95,6 +97,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, motivo: `Supabase respondió ${res.status}` }, { status: 400 });
     }
     const [fila] = await res.json();
+    after(() => avisarSoporte(`Mensaje nuevo de Campos HR en el ticket #${numero}.`));
     return NextResponse.json({ ok: true, fila });
   }
 
