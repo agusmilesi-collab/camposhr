@@ -120,7 +120,14 @@ export async function POST(req: Request) {
     console.error('entrar, tope:', e);
   }
 
-  const ok = Boolean(esperada) && clave.length > 0 && clave === esperada;
+  // Agustín tiene su propia clave (`OS_CLAVE_AGUSTIN`) para no compartir la
+  // del equipo. Entra a la misma sesión: la cookie se arma siempre con la
+  // huella de `OS_CLAVE`, así el resto del OS no se entera de cuál se usó.
+  const propia = process.env.OS_CLAVE_AGUSTIN;
+  const ok =
+    Boolean(esperada) &&
+    clave.length > 0 &&
+    (clave === esperada || (Boolean(propia) && clave === propia));
   if (!ok) {
     return NextResponse.redirect(
       new URL(`/os/entrar?error=1&destino=${encodeURIComponent(destino)}`, req.url),
