@@ -19092,3 +19092,67 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
   padding: 0 14px;
   font-size: 0.85rem;
 }
+
+/* ---------- Tickets ---------- */
+/* Los pedidos de cambio del OS (`app/os/tickets`). El formulario arriba, en una
+   columna: el texto es lo importante y va entero. */
+.os-ticket-alta {
+  display: grid;
+  gap: 12px;
+}
+
+.os-ticket-alta textarea.os-campo,
+.os-ticket-alta input.os-campo {
+  width: 100%;
+}
+
+.os-ticket-aviso {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--os-verde);
+}
+
+.os-ticket-cola {
+  margin-top: 22px;
+}
+
+.os-tabla-tickets {
+  width: 100%;
+}
+
+.os-tabla-tickets td {
+  vertical-align: top;
+}
+
+/* El texto del pedido va entero, en varios renglones si hace falta: es lo que
+   hay que leer, y recortado no se entiende qué pide. */
+.os-tabla-tickets td.os-ticket-texto {
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.os-ticket-donde {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--os-suave);
+}
+
+.os-tabla-tickets .os-ticket-cerrado td {
+  color: var(--os-suave);
+}
+
+/* Dónde y prioridad en la misma fila: el lugar se lleva el ancho y la
+   prioridad lo que mide su desplegable. */
+.os-ticket-fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+
+@media (max-width: 560px) {
+  .os-ticket-fila {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

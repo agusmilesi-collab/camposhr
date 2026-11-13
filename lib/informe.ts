@@ -24,7 +24,7 @@ import {
   protocoloAlcanza,
   type Competencia,
 } from '@/lib/competencias';
-import { RANGOS, rangosValidos, type Rango } from '@/lib/raven';
+import { RANGOS, comprensionDe, rangosValidos, type Comprension, type Rango } from '@/lib/raven';
 import { ajuste } from '@/lib/ajustes';
 import { puestoConCiudad } from '@/lib/pedido-campos';
 import { medianasDeCompetencias, percentilEntre, type Medianas } from '@/lib/competencias-mediana';
@@ -266,6 +266,11 @@ export type Informe = {
    * batería cargada.
    */
   noIncluidas: { nombre: string; requiere: string }[];
+  /**
+   * Con el Raven de 12 láminas, Habilidad cognitiva sale sin velocímetro: va
+   * esta conclusión en tres niveles (`comprensionDe` en `lib/raven.ts`).
+   */
+  comprension: (Comprension & { aciertos: number }) | null;
   /**
    * La mediana de cada competencia entre todas las personas evaluadas, para el
    * radar. Null cuando todavía no hay casos suficientes o no se pudo calcular.
@@ -1069,8 +1074,14 @@ export function desdeFicha(
   // { "Control emocional": 55 }) pisa el calculado. Es por caso: no toca el
   // motor ni a ningún otro candidato.
   const aMano = (f.cabecera.informe_listas as any)?.puntajes as Record<string, unknown> | undefined;
+  // Con el Raven de 12 y sin el de 36, Habilidad cognitiva no lleva número:
+  // la serie corta verifica comprensión y no mide capacidad.
+  const ravenDe12 =
+    typeof f.raven?.raw !== 'number' && typeof f.raven?.corto === 'number' ? f.raven.corto : null;
+  const comprension = ravenDe12 === null ? null : { ...comprensionDe(ravenDe12), aciertos: ravenDe12 };
   const competencias = calculadas
     .filter((c) => competenciaIncluida(c.nombre, testsDeLaBateria))
+    .filter((c) => !(comprension && c.nombre === 'Habilidad cognitiva'))
     .map((c) => {
       const n = aMano?.[c.nombre];
       return typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 100
@@ -1171,6 +1182,7 @@ export function desdeFicha(
     nivel: nivelDeConclusion(c.recomendacion),
     competencias,
     noIncluidas,
+    comprension,
     percentiles,
     medianas,
     protocoloCorto: corto,

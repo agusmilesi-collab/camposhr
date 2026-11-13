@@ -102,7 +102,7 @@ export function cortesValidos(c: {
  * No son dos bandas, es una sola que se informa junta, pero un 5 y un 30 no se
  * leen igual y el color lo dice sin nombrarlo.
  */
-const COLOR: Record<Banda | 'MuyBajo', [number, number, number]> = {
+export const COLOR: Record<Banda | 'MuyBajo', [number, number, number]> = {
   Sobresaliente: [58, 122, 74],
   Alto: [110, 163, 118],
   Adecuado: [127, 143, 58],

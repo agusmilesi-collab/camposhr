@@ -1379,6 +1379,18 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* Con un número impar de tarjetas, la última ocupa la fila entera: una sola
+   en la última fila dejaba una columna con una tarjeta más que la otra. Solo
+   en pantalla: impreso va de a tres, con la regla de `informe.css`. */
+@media screen {
+  .sitio .inf-competencias > .inf-competencia:last-child {
+    grid-column: auto;
+  }
+  .sitio .inf-competencias > .inf-competencia:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
 .sitio .inf-competencia {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

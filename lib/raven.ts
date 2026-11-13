@@ -233,3 +233,44 @@ export function rangosValidos(guardados: unknown): Rango[] | null {
   }
   return salida;
 }
+
+/**
+ * Lo que dice el Raven de 12 láminas en el informe.
+ *
+ * El de 12 es la prueba de demostración: verifica que la persona comprende una
+ * consigna nueva y se usa en la Batería 1, para puestos operativos. Con 12
+ * láminas fáciles no se puede saber cuánto habría hecho en el de 36, así que no
+ * va en el velocímetro de Habilidad cognitiva: sale una conclusión en tres
+ * niveles (decisión de Agustín, 13/11/2026). No modifica el nivel de ajuste.
+ */
+export type Comprension = { clave: 'adecuado' | 'guia' | 'simples'; rotulo: string; texto: string };
+
+export const COMPRENSION: { desde: number; nivel: Comprension }[] = [
+  {
+    desde: 8,
+    nivel: { clave: 'adecuado', rotulo: 'Adecuado', texto: 'Comprende consignas nuevas sin ayuda.' },
+  },
+  {
+    desde: 5,
+    nivel: {
+      clave: 'guia',
+      rotulo: 'Necesita guía',
+      texto: 'Comprende la tarea si se la muestran y le repiten la consigna, de a un paso por vez.',
+    },
+  },
+  {
+    desde: 0,
+    nivel: {
+      clave: 'simples',
+      rotulo: 'Tareas simples',
+      texto: 'Rinde en tareas simples, repetitivas y con supervisión.',
+    },
+  },
+];
+
+export const NOTA_COMPRENSION =
+  'El Raven de 12 láminas verifica la comprensión de una consigna nueva. Para medir la capacidad de razonamiento se usa el de 36.';
+
+export function comprensionDe(aciertos: number): Comprension {
+  return (COMPRENSION.find((c) => aciertos >= c.desde) ?? COMPRENSION[COMPRENSION.length - 1]).nivel;
+}

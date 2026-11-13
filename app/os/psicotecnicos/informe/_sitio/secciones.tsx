@@ -4,6 +4,7 @@ import { CONFIDENCIALIDAD, CUADRANTES, FIRMAS, NIVELES, NOTA_AJUSTE } from '@/li
 import { firmaEnDatos } from '@/lib/firmas';
 import Listas from '../_doc/Listas';
 import { EscalaBandas, IconoNivel, RadarCompetencias, Velocimetro, tono } from '../_doc/piezas';
+import Comprension from '../_doc/Comprension';
 import Cerebro from '../_doc/Cerebro';
 import Crudo from '../_doc/Crudo';
 import Escalera from './Escalera';
@@ -190,10 +191,16 @@ export function seccionesDe(
   secciones.push({
     id: 'competencias',
     titulo: 'Competencias evaluadas',
-    corta: inf.competencias.length === 0,
+    corta: inf.competencias.length === 0 && !inf.comprension,
     cuerpo:
       inf.competencias.length === 0 ? (
-        <p className="sitio-vacio">Sin sumario cargado no se pueden calcular las competencias.</p>
+        inf.comprension ? (
+          <div className="inf-competencias">
+            <Comprension inf={inf} editar={editar} />
+          </div>
+        ) : (
+          <p className="sitio-vacio">Sin sumario cargado no se pueden calcular las competencias.</p>
+        )
       ) : (
         <>
           {inf.protocoloCorto && (
@@ -228,6 +235,7 @@ export function seccionesDe(
                 <p className="inf-mide">{c.mide}</p>
               </article>
             ))}
+            <Comprension inf={inf} editar={editar} />
           </div>
 
           <EscalaBandas exigencia={inf.exigencia} />

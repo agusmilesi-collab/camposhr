@@ -1,5 +1,6 @@
 import { bandaDe, bandasDe } from '@/lib/exigencia';
 import { EscalaBandas, IconoNivel, RadarCompetencias, Velocimetro, tono } from './piezas';
+import Comprension from './Comprension';
 import BenzigerLecturas from './BenzigerLecturas';
 import EditarBenziger from './EditarBenziger';
 import { parrafoBenziger, type Informe } from '@/lib/informe';
@@ -199,9 +200,15 @@ export default async function Documento({
       {va('fundamentos') && (
       <Capitulo numero={num()} titulo="Competencias evaluadas">
         {inf.competencias.length === 0 ? (
-          <p className="inf-vacio">
-            Sin sumario cargado no se pueden calcular las competencias.
-          </p>
+          inf.comprension ? (
+            <div className="inf-competencias">
+              <Comprension inf={inf} editar={editar} />
+            </div>
+          ) : (
+            <p className="inf-vacio">
+              Sin sumario cargado no se pueden calcular las competencias.
+            </p>
+          )
         ) : (
           <>
             {/* Tablero: una tarjeta por competencia, el anillo primero y el
@@ -249,6 +256,7 @@ export default async function Documento({
                   </article>
                 );
               })}
+              <Comprension inf={inf} editar={editar} />
             </div>
             <EscalaBandas exigencia={inf.exigencia} />
             {/* Lo que esta batería no midió se nombra sin número: la pregunta

@@ -516,6 +516,15 @@
   gap: 14px;
 }
 
+/* De a tres: si la última fila queda incompleta, la última tarjeta se estira
+   hasta el final en vez de dejar un hueco. */
+.inf-competencia:last-child:nth-child(3n + 2) {
+  grid-column: span 2;
+}
+.inf-competencia:last-child:nth-child(3n + 1) {
+  grid-column: 1 / -1;
+}
+
 /* El radar: las competencias juntas, arriba de sus velocímetros. Va centrado y
    con ancho tope, porque estirado a todo el capítulo los rótulos quedan
    chicos al lado de una figura enorme. */
@@ -2627,4 +2636,25 @@
     display: block;
     overflow-x: auto;
   }
+}
+
+/* Habilidad cognitiva con el Raven de 12: la misma tarjeta que las demás,
+   con la conclusión en un círculo del tamaño del anillo, sin número. */
+.inf-comprension-sello {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 7px solid;
+  border-radius: 50%;
+  padding: 0 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.inf-comprension-nota {
+  margin: 6px 0 0;
+  font-size: 0.66rem;
+  line-height: 1.4;
+  color: var(--suave);
 }
