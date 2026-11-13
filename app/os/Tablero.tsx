@@ -543,8 +543,10 @@ export default function Tablero({
                         {t.autor}: {t.ultimo}
                       </span>
                     </div>
-                    <div className="os-mini-pie">
-                      <Link className="os-enlace" href={`/os/tickets#ticket-${t.numero}`}>
+                    {/* Botón oscuro y chico: las tarjetas de Inicio miden 96 px
+                        y el de "Entrevistar" a todo el ancho no entraba. */}
+                    <div className="os-mini-pie os-mini-ticket-pie">
+                      <Link className="os-boton-chico os-mini-ticket-boton" href={`/os/tickets#ticket-${t.numero}`}>
                         Ver y contestar
                       </Link>
                     </div>

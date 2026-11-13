@@ -19239,11 +19239,24 @@ button.os-ctc-tilde:hover:not(:disabled) .os-chequeo-caja:not(.si) {
 }
 
 .os-mini-ticket .os-mini-detalle {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
-  white-space: normal;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.os-mini-ticket-pie {
+  justify-content: flex-end;
+}
+
+.os-mini-ticket .os-mini-ticket-boton {
+  border-color: var(--os-tinta);
+  background: var(--os-tinta);
+  color: var(--os-panel);
+  text-decoration: none;
+}
+
+.os-mini-ticket .os-mini-ticket-boton:hover {
+  opacity: 0.88;
 }
 
 .os-ticket-pastilla .os-desplegable-texto {
